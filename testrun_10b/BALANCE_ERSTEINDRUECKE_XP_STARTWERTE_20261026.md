@@ -1,280 +1,117 @@
-# Avereth Engine – erste Balance-Eindrücke aus den bisherigen natürlichen Runs
+# Avereth – gemeinsame Balancebewertung und nächste F-Balancerunde
 
-**Stand:** 26.10.2026 · **UNVERBINDLICHE BEOBACHTUNGEN UND HYPOTHESEN – KEIN BALANCEBESCHLUSS, KEIN IMPLEMENTIERUNGSAUFTRAG.**  
-**Bezugsstand:** Produktbranch `claude/c-planner-prototype-2026-10-02-gpt-c666`, zuletzt unabhängig verifizierter Build `.95` / `681c2b4`; der jüngste natürliche Langlauf ist Run 20 auf `.95` (Original-ZIP separat im Chat, Review im Runordner). Frühe Abschnitte behalten ihren damaligen Beobachtungsstand; aktuelle Ergänzungen stehen unten.
-**Quellen/Methode:** [Testindex](README.md), mehrere ältere und jüngere `REVIEW.md`-Dateien quer gelesen, [aktueller Stand](../03_AKTUELLER_PROJEKTSTAND.md), [Kanon `5](../02_DESIGN_KANON.md#5-kampf-und-progression), [10B-Journal, Balance und Simulator](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0ebf4496f185a69ebac235a337ab9dd2e2b470c7/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md#3-b--kampfsimulator-erste-ergebnisse-methodische-leitplanken) und tatsächliche XP-/Stat-Formeln im .95-Produktcode. **Keine neue eigenständige Wiederholung aller Original-ZIPs, keine neue Simulation/Node-Testausführung, keine kontrollierten A/B-Läufe.** Historische Reviews und damalige Nutzer-/Implementiererbewertungen sind Ausgangsbelege, aber **keine verbindliche Schlussfolgerung**. Positive Entwicklungen sind mit zahlreichen parallel implementierten Engine-, Board-, Runner- und Player-Prompt-Korrekturen vermischt.
+**Stand: 28.10.2026 · Produktbasis `.113` / `55c547f`.** Zusammenführung von Sols Neubewertung und dem vom Nutzer übermittelten GPT-6-Review `Chatgpt Feedback(20261028-161936).md`. **Die nachfolgenden Versuchswerte sind konkrete Umsetzungsempfehlungen, noch keine geänderten Produktwerte oder neue Kanonentscheidungen.** Auftrag dieses Standes: Reviews zusammenführen, Dokumentation aktualisieren und Änderungen empfehlen; keine Engineimplementierung.
 
-## 1. Kurzurteil / vorläufige Gewichtung
+**Aktuelle Hauptquelle für die Balancebewertung ist diese Datei.** Die [vorherige Fassung mit frühen Eindrücken und Run-20-Originalprüfung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/a1cb7976b41f3e761ba125d7eff53d43a395e1a0/testrun_10b/BALANCE_ERSTEINDRUECKE_XP_STARTWERTE_20261026.md) bleibt als datiertes Archiv erhalten. [Sol-Scalingentwurf](ENTWURF_F_RANG_PROGRESSION_UND_E_UEBERGANG.md) und [GPT-Scalingstudie](scaling_gpt.md) enthalten weiterführende F/E-Alternativen auf Basis `.95`, keine aktuelle Ist-Beschreibung sämtlicher Systeme.
 
-- **×2-XP:** Als frühe Progressionsentscheidung **plausibel und derzeit nicht erkennbar generell zu hoch**. Ein funktionierender Quest-/Kampfzyklus belohnt spürbar; die extrem langsamen Alt-Runs werden eher von gescheiterten Aktionen, ungebuchten Aufgaben und Leerlauf erklärt als von mathematisch zu knappen XP. **Sicherheit dieser Einordnung: mittel**, kein kontrollierter Balancebeweis.
-- **Startwerte 7 statt 5:** Der spürbare Frühspiel-Puffer ist **mechanisch eindeutig**, der kausale Beitrag zum Überleben **nicht isoliert messbar**. Besonders Mage profitiert von MP, etwas HP, Initiative und ggf. Widerstand; kein Beleg für Übermacht. **Mechanik: hoch; Balancewirkung: niedrig bis mittel.**
-- **Beide Änderungen zusammen:** Vermutlich bessere Spielbarkeit und weniger tödliche oder zeitraubende Startphasen. Zugleich mögliche **verstärkende Rückkopplung**: bessere Kampf-/Ressourcenreserve → mehr echte Erfolge → durch ×2 XP frühere Level/Staterhöhungen → erneut bessere Reserve. **Plausible Hypothese, bisher nicht quantitativ abgenommen.**
-- **Level 15:** Noch keine natürliche Kampagne annähernd bis zum Ziel. Der jüngste vollständige relevante Zustand erreicht L5 nach 89 Inputs, nicht L15; das ist weder ein Beweis für zu langsame Progression noch eine Prognose, dass 1.000 Inputs genügen. **Sehr niedrige Evidenz über L5.**
-- **Keine unmittelbare Zahlenempfehlung:** Weder XP erneut erhöhen/senken noch Startwerte, Monster-ATK/HP, Questpreise oder Regeneration pauschal ändern. Zuerst ein natürlicher längerer Lauf mit `.95` und erkennbar funktionierenden Kernschleifen.
+## 1. Gemeinsames Urteil und Korrekturen zwischen den Reviews
 
-## 2. Was tatsächlich geändert wurde – nicht vermischen
+**F ist im frühen und mittleren Bereich inzwischen spielbar. Die nächste Arbeit soll tatsächlich Balance und interessante Entwicklung verändern, statt nur weitere technische Sicherheitsfälle zu sammeln.** Die größte offene Verbindung liegt zwischen bewältigten Abenteuern, verfügbarem Geld und spürbarer Ausrüstungs-/Skillentwicklung. Auf weitere Level-15-Daten muss eine erste F-Balancerunde nicht warten.
 
-### 2.1 XP ×2 ab Build .67
+| Aussage | Zusammengeführte Bewertung |
+|---|---|
+| XP ×2 und Startstats7 zurücknehmen oder nochmals erhöhen | Beides derzeit nicht begründet. Vorläufig behalten; kein kontrollierter A/B-Nachweis ihrer isolierten Wirkung. |
+| Außerhalb Dungeons gibt es fast nur Level1 | Für neue Jagdpopulationen überholt. `.96` verbindet Jagden und gespeicherte Habitatfenster; aktuelle Originalgegner erreichen tatsächlich höhere F-Level. |
+| Alle F-Level4–14 seien schon natürlich abgenommen | Zu weit. Level4–7 sind belegt; obere Angebote existieren, aber eine tragfähige natürliche Level9–14-Laufbahn fehlt. |
+| Gear und Lernen funktionieren nicht | Nicht nachgewiesen. Viele Spieler versuchen entsprechende Käufe/Trainings gar nicht. Dennoch ist ihr geringer Beitrag zur erlebten Entwicklung ein relevantes Designproblem. |
+| Proficiency-P2 spart bei Bolt wegen Rundung nichts | **Im neuen GPT-Review veraltet:** `.96` behebt dies für F-Progressionskampagnen. Bolt kostet dort P1–P5 **10/9/9/9/9 MP**. Kein zweiter Rundungsfix nötig. |
+| Es entstehen keine neuen Entwicklungen | Falsch als Pauschalaussage: P4, Rare-Passives und aktive Entwicklungsangebote sind natürlich belegt. Selten sind neue tatsächlich erlernte und genutzte aktive Techniken. |
+| Viele Siege belegen zu schwache Monster | Nein. Auswahl, Rückkehr, Erholung und vorzeitig gestorbene Kampagnen verzerren eine Siegquote. Gruppen bleiben gefährlich. |
+| Man müsse vor jeder Änderung erst obere F-Kämpfe abwarten | Zu zurückhaltend. Größere Waffenunterschiede, bessere Angebote und kürzere Entwicklungswege können jetzt bewusst als Versuch umgesetzt werden. |
 
-Technik: [`PATCH10B_XP_REWARDS.md`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/681c2b4f6a85a30b2dba4357cd621f483ed42be5/avereth-engine/docs/PATCH10B_XP_REWARDS.md), `content/rules.json:xp.reward_multiplier = 2`; `src/progression.js:defeatXp` und `questXp` multiplizieren **nach** bisheriger Rundung. Gilt für neue Kampf-/Questbelohnungen; Rangabstand, Gegnerart, Gegnerstärke, Questtyp bleiben zusätzliche Faktoren. Bereits gespeicherte Belohnungs-Events bleiben unverändert; kein doppeltes Multiplizieren in `awardXp`, kein rückwirkendes Save-Upgrade.
+Kein Klassenranking: Unterschiedliche Gegner, Seeds, Aufträge und Spielentscheidungen erklären einen erheblichen Teil der unterschiedlichen Endlevel. E bleibt als anschließendes Fachgebiet vorgemerkt, ist keine Voraussetzung dieser F-Runde.
 
-Konkreter Vorher-Fall: Run 6 auf `.66`, vier Hounds zu jeweils 12 XP plus Guild-Quest 30 XP ergeben **78 XP**, der Level-1-Mage bleibt L1. Für dieselben Buchungen mit Multiplikator 2 wären es **156 XP**, also L2 mit **56 Rest-XP**; dieser mathematische Gegenfall wurde ausdrücklich als XP-Regression dokumentiert. **Er sagt nichts darüber aus, ob der Mage danach den Dungeon überleben würde**.
+## 2. Belastbare Beobachtungen
 
-Die XP-Schwelle ist unverändert: von Level L zum nächsten Level benötigt man **L × 100 XP**. Für L1→L15 summieren sich die Schwellen auf **10.500 XP**; der höhere L15-Bereich ist erheblich teurer als die ersten Level. Normale Levelups geben fünf freie Punkte plus Klassenwachstum, **aber keine automatische HP-/MP-Vollheilung**. XP verdoppelt also Fortschritt und indirekt langfristig Werte, nicht sofortige Überlebensressourcen mitten im Kampf.
-
-### 2.2 Höhere Grundstats ab Build .91
-
-Technik: [`PATCH_PC_START_STATS.md`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/681c2b4f6a85a30b2dba4357cd621f483ed42be5/avereth-engine/docs/PATCH_PC_START_STATS.md); neue PCs **STR/VIT/AGI/INT/PER/WIL = 7** statt jeweils 5; zwei klasseneigene Favored Stats erhalten weiterhin +1, also 8/8. Menschliche NPCs und alte Kampagnen bleiben bei ihren bisherigen Werten.
-
-Der Mage startet dadurch rechnerisch bei:
-
-| Mage, Level 1 | Vor .91 (Basis 5) | Ab .91 (Basis 7) | Veränderung |
-|---|---:|---:|---:|
-| HP-Maximum | 80 | 90 | +10 / **+12,5 %** |
-| MP-Maximum | 72 | 96 | +24 / **+33,3 %** |
-| Initiative (AGI) | 7 | 10 | +3 |
-| Grund-DEF aus VIT | 1 | 1 | keine Änderung in dieser Ganzzahlstufe |
-| Grund-MDEF aus WIL | 1 | 2 | +1 |
-
-Ableitung über `src/derived.js` und die aktuellen `rules.derived`-Faktoren: `HP=50+5×Level+5×VIT`, `MP=8×INT+4×WIL`, `Initiative=floor(1,5×AGI)`, defensive Grundwerte `floor(VIT/4)` und `floor(WIL/4)`. **Diese Tabelle umfasst ausdrücklich nicht alle Klassen oder alle aus Stats skalierenden Angriffs-/Skillformeln.** Jede Klasse erhält zwei Punkte pro ursprünglichem Basisattribut mehr; die relativen Effekte unterscheiden sich durch Favored Stats, Fähigkeiten und Ausrüstung. Direkte Schadenssteigerungen der Skillformeln durch INT/andere Stats sind plausibel, werden hier aber nicht als pauschaler DPS-Prozentsatz ausgegeben.
-
-**Spielgefühl-Hypothese:** Die zusätzlichen 24 MP sind für den frühen Mage wahrscheinlich wichtiger als die 10 HP. Mehr Aktionsreserve kann vor allem eine weitere Fähigkeit oder weniger erzwungene Schlaf-/Rastzyklen bedeuten. Auch der höhere MP-Pool erhöht bei prozentualer Regeneration die **absolute** MP-Menge pro Reststunde. Die Initiative kann den Zeitpunkt des ersten eigenen Zugs verbessern. Die HP-Steigerung verhindert dagegen keine beliebig starken Gruppenangriffe.
-
-## 3. Querblick auf aussagekräftige natürliche Runs (keine kontrollierte Messreihe)
-
-| Stand / Run | XP ×2? / Stats 7? | Beobachtetes Ergebnis | Bedeutung und Einschränkung |
+| Kampagne | Inputs / Endlevel | Kampf-XP / Quest-XP | Begonnene Kämpfe / Guildabschlüsse |
 |---|---|---|---|
-| **.66, Run 6** [Review](20261024-104654Z-current_test/REVIEW.md) | Nein / Nein | 35 Inputs, L1, vier echte Hound-Siege plus Guild-Turn-in = 78 XP; Tod gegen 3 Skelette Lv4/3/2 | Gutes **identisches XP-Rechenbeispiel**, aber Gruppen-/Dungeonrisiko nicht durch XP-Rechnung erklärt |
-| **.67, Run 7** [Review](20261024-120700Z-current_test/REVIEW.md) | Ja / Nein | 100 Inputs, nur L2; Lieferung und private Arbeit verursachten viel Leerlauf | Verdopplung allein garantiert keine zügige Progression, wenn wenige echte Belohnungen entstehen |
-| **.68, Run 8** [Review](20261024-142854Z-current_test/REVIEW.md) | Ja / Nein | L3 nach 3-Skelett-Sieg (288 Kampf-XP; 334 kumuliert), aber nur 5/80 HP und 2 MP | XP kann **sprunghaft** voranschreiten, während der Kampf beinahe tödlich ist; schon vor Stats-7 |
-| **.72, Run 10** [Review](20261024-235637Z-current_test/REVIEW.md) | Ja / Nein | 75 Inputs, L2, Tod beim Fünfer-Wespenkampf | Gute Quest-/Kampfbelege, aber große Gruppe; kein Beweis, dass XP zu klein oder +2 Stats nötig waren |
-| **.76, Run 11** [Review](20261025-020335Z-current_test/REVIEW.md) | Ja / Nein | 100 Inputs, L4, 8/8 Encounters gewonnen, drei vergütete Gildenaufträge | Bereits **ohne** Startwertboost sind längere, erfolgreiche Kampagnen und mehrere Level möglich |
-| **.82, Run 13** [Review](20261025-081303Z-current_test/REVIEW.md) | Ja / Nein | 100 Inputs, L2, nur 3 Kämpfe; Boardausfälle/NPC-Handlungen lenken ab | Fortschritt pro Input stark von tatsächlichen Tätigkeiten und technischem Leerlauf abhängig |
-| **.87, Run 15** [Review](20261025-124809Z-current_test/REVIEW.md) | Ja / Nein | 100 Inputs, L3; drei Questabgaben, 7 registrierte Kills, mehrere Lootverkäufe | Ökonomie kann Geld aufbauen, ohne dass automatisch bessere Gear-/Skillprogression entsteht |
-| **.91, Run 16** [Review](20261025-232041Z-current_test/REVIEW.md) | Ja / Ja | 58 Inputs, L3, 6 Encounters/10 Kills, 2 Guild-Abschlüsse, kein Tod; Extractor-Abbruch | Kompatibel mit besseren Ressourcen; aber Spielauswahl und spätere Codefixes verhindern A/B-Zuordnung |
-| **.92, Run 17** [Review](20261026-012245Z-current_test/REVIEW.md) | Ja / Ja | 57 Inputs, L3, 5 Siege/9 Kills, 2 Guild-Abschlüsse, kein Tod; Planner-Abbruch | Gute Novizen-Kernschleife; kein kontrollierter Schadenstest gegenüber altem Mage |
-| **.93, Run 18** [Review](20261026-031107Z-current_test/REVIEW.md) | Ja / Ja | 58 Inputs, L3; Tod durch fälschlich am Dungeon-Eingang erzeugtes **Lv28/E-Skelett** | **Kein** verwertbarer Beleg, Startstats seien zu niedrig oder Dungeon-F-Schaden zu hoch; Ursache durch .94 adressiert |
-| **.94, Run 19** [Review](20261026-044406Z-current_test/REVIEW.md) | Ja / Ja | 89 Inputs, L5 mit 8 Rest-XP; 8/8 Encounters, 15 Kills, 3 Guild-Auszahlungen, kein Tod; Planner-Abbruch | Bisher stärkster **gemeinsamer** Beleg für eine längere erfolgreiche frühe Progression; Run endete an Handelsinterpretation, in .95 adressiert |
+| `.95` Mage, Run20 | 252 / L8 | 1.636 / 1.488 | 30 / 10 |
+| `.106` Warrior | 250 / L7 | 1.892 / 692 | 16 / 4 |
+| `.106` Mage | 250 / L10 | 3.580 / 1.790 | 23 / 11 |
+| `.112` Warrior | 80 / L6, Tod auf E-Ebene | 1.080 / 692 | 10 / 4 |
+| `.113` Warrior | 150 / L9, Inputlimit | 2.660 / 1.080 | 14 / 4 |
+| `.113` Mage | 77 / L5, Kampftod | 786 / 272 | 7, davon6 gewonnen / 3 |
 
-**Wichtige Verzerrungen:** Fast alle detaillierten jüngeren Stichproben sind **Mage**, häufig GLM-5.3-Flash; Personas/Startorte/Klassen-Skills/Gegnergruppen sind nicht konstant. Mit den Builds änderten sich Dungeons, Quests/Board, Handel, World-Identität, Schadensziele, Runner-Prompt und Mechanikguards. Manche 100-Input-Runs mussten bei ihrem damaligen Testziel zwangsläufig aufhören, andere endeten an Provider/Planner/Extractor oder Tod. **Die Tabellenzeilen sind nicht als Experiment „.90 vs .91“ zu lesen.**
+Quellen: [Run20](20261026-063907Z-current_test/REVIEW.md), [.106/GPT](batch-20261028-051913Z/REVIEW.md), [.106/Sol](batch-20261028-051913Z/SOL_COUNTERREVIEW.md), [.112](batch-20261028-111133Z/REVIEW.md), [.113](batch-20261028-140431Z/REVIEW.md). Ältere Quellen wurden gezielt verglichen, nicht sämtliche historischen ZIPs nochmals ausgewertet. Die `.113`-Originalevents wurden zusätzlich selbst gefaltet und ausgewertet. Dessen ZIP liegt als Chat-Anhang vor, nicht auf GitHub; SHA-256 `1b3003e58a8c214eb689a1b794c4c4982c914ce6116f1066ae713736a574db84`.
 
-## 4. Frühprogression: Was die XP-Verdopplung wahrscheinlich tut
+- **Fortschritt:** `.113`-Warrior erzielt3.740 XP, also35,6% der10.500 XP bisL15. Von150 Eingaben berühren37 einen Kampf. Reise, Erholung, Verkauf und Gespräche sind deshalb nicht automatisch113 verlorene Eingaben. L10 ist kein belegtes Fortschrittslimit; mehrere Runs endeten am150-/250-Input-Limit.
+- **Weltgefahr:** Alle22 Gegner dieses Warriors liegen aufL4–7. Seine Boards enthalten auch L9/10-Arbeit, das Mage-Board L9/10 undL13. Diese schwierigeren Angebote wurden nicht durchgehend gespielt. Der `.106`-Mage wiederholt vor allem Boar-/Adder-Jagden.
+- **Konkreter Kampfdruck:** Warrior L1 gegen Hunde L6/L4:95→45 HP. Warrior L4 gegen Hunde L7/L7/L6:158→38 HP. Später L8 gegen zwei Dungeon-Gruppen L4/5:260→254 HP über beide Kämpfe. Dieselbe Welt kann gefährlichen Einstieg und später glaubwürdige Überlegenheit bieten.
+- **Tod ist nicht automatisch Fehlbalance:** Mage L5 beginnt den letzten Kampf mit53/115 HP gegen einen L7-Eber mit108 HP/ATK31. Der eigene Bolt verursacht51 Schaden;26+29 Gegenschaden töten ihn vor der nächsten Entscheidung. Initiative/Kampföffnung ist als Designachse relevant, kein daraus bewiesener Rechenfehler.
+- **Kaufkraft ohne Entwicklung:** `.106`-Mage endet mit1.044cp ohne Gearwechsel. `.113`: Warrior379cp, Mage333cp, ebenfalls ohne Wechsel. In beiden jüngsten Kampagnen wurde kein mechanisches Gearangebot gebucht. Also weder ein gescheiterter Upgrade-Kauf noch eine faire Endwirtschaft belegt.
+- **Growth:** `.106`-Warrior Heavy Slash P4; `.106`-Mage echte Rare-Passive. `.113`-Warrior Heavy Slash P2/69 und Basic P2/33, Rare-Passive angenommen, Ironkeeper Riposte angeboten, nicht angenommen. Mage Bolt P1/54, Ward P1/0. Ein Angebot ersetzt die bewusste Annahme nicht.
 
-### Eher positiv
+## 3. Konkrete Empfehlung A: F-Waffen, echte Angebote und Kaufkraft
 
-1. **Sichtbare Belohnung nach echten Erfolgen:** Quest-XP von z. B. 46/120/180 und Kampf-XP von 24 pro gewöhnlichem Level-1-Ziel erlauben frühen Stufenfortschritt, wenn Spieler die Arbeit tatsächlich abschließen. Bei drei Skeletten in Run 8 waren es 288 Combat-XP in einem Encounter; ein dreifacher Kampf kann ein komplettes frühes Levelbudget abdecken.
-2. **Mehr Anreiz, Abenteuer zu spielen statt Verwaltungsdialoge zu stapeln.** Eine hohe XP-Belohnung *bei Erfolg* macht Gildenjagden attraktiv; sie entfernt nicht die Notwendigkeit, geeignete Gegner, Rast und Risiko zu wählen.
-3. **Die bisherigen Langsamkeitsfälle scheinen überwiegend „zu wenige echte Buchungen pro Spielerzug“:** Phantomangebote, nicht vorhandene Schalter, Händler-/Buchungsprobleme, abgelehnte Reise/Questannahme, endlose Lieferlogik. An solchen Stellen würde eine weitere XP-Verdopplung überhaupt nichts an der Ursache ändern.
+**Hohe Priorität. Die bisherige Minimalvariante „bis MATK12 und bessere Anzeige“ reicht als nächster Balanceversuch nicht mehr.** Sie wurde in Teilen schon `.96` umgesetzt, ohne dass Gear in den längeren Läufen zu einer tragenden Entwicklungsachse wurde. Das beweist keinen Zahlenfehler, rechtfertigt aber ein entschiedeneres Designexperiment.
 
-### Mögliche Probleme / ausdrücklich nur Hypothesen
+Vorschlag für **neu erzeugte F-Waffen/Foki**, bestehende Qualitätsnamen und Slots:
 
-- **Sprunghafte Mehrfach-Levelups:** Run 8 zeigt zwei frühe Level aus einem riskanten Encounter. Das kann sich belohnend anfühlen, aber ggf. die Zeit für eigenes Ausprobieren von neuen Skills, Trainingszielen oder unterschiedlicher Ausrüstung zwischen Levelstufen verkürzen.
-- **XP-Tempo vs. erlernte Fertigkeiten:** Wenn XP stark steigt, Skill-/Passive-Progression aber eigene Nutzungskriterien hat, kann Charakterlevel die tatsächliche Vielfalt der Spieloptionen überholen. Dass die jüngsten Charaktere noch kaum neue Skills hatten, könnte teils damit zusammenhängen; **belegt ist vor allem die fehlende natürliche Langzeitabnahme**.
-- **Questmix und XP-Quellen:** Ein Spieler, der die Gilde effizient abarbeitet, dürfte eine ganz andere XP/Zug-Kurve zeigen als ein frei reisender Erkundungsspieler mit seltenen offiziellen Abschlüssen. Das ist möglicherweise **gewünschte** Spezialisierung, kein Fehler. Ob es zu einem unfairen Zwang zu einer einzigen Spielweise wird, ist offen.
-- **Spätere Ranggrenzen:** Gegner-XP berücksichtigt Level, Stärke, Typ und Rangabstand. Die ×2-Einstellung multipliziert eine bereits differenzierte Basis. Bei starken Elites/Bossen oder E-Gegnern könnten überproportionale XP-Spitzen entstehen; es gibt dazu bisher **keine natürliche L5→15-Datenbasis**.
+| Qualität | ATK beziehungsweise MATK | Preisrichtwert am Fachhändler, cp |
+|---|---:|---:|
+| crude | 6 | 25–45 |
+| common | 10 | 60–100 |
+| fine | 14 | 110–180 |
+| superior | 18 | 220–320 |
+| exceptional | 22 | 400–600 |
 
-## 5. Höhere Startwerte: Spielgefühl, Gefahren und mögliche Nebeneffekte
+Starterwaffen bleiben10. Keine zusätzlichen Stats, Affixe, Sockel, Slots oder versteckten Levelanforderungen. Die Tabelle ist eine neue F-Versuchskalibrierung; Waffenfamilien behalten Reichweiten und ihre vorhandenen Besonderheiten. Bei INT33/P1 hebt MATK10→22 einen Arcane Bolt von81,875 auf93,875 Rohpower, **etwa14,7%**, nicht120%. Damit wird der Kauf spürbarer, ohne die gesamte Formel umzubauen. Verteidigung und nötige Treffer entscheiden über den realen Nutzen.
 
-### Wahrscheinlich nützlicher Puffer
+**Angebot und Werte gemeinsam:** Ein tatsächlich besuchter passender Waffen-/Fokushändler soll im bestehenden Offer-System zwei bis drei passende Qualitätsoptionen führen können, darunter eine echte Verbesserung gegenüber10. Normale Händler dürfen einfache Ersatzware führen. Bestehende Verkäuferidentität, Anwesenheit, lokale Offerten und einmaliger Kauf bleiben verbindlich; kein Laden entsteht durch bloßes Erwähnen. Ein kleines Content-Sortiment analog zu den vorhandenen Gildenprimern ist zuverlässiger als ein weiterer bloßer Narratorhinweis. Namen/Beschreibung bleiben generativ; Werte, Preis und Kaufbarkeit sind sichtbar gebucht. Kein automatischer Kauf und keine automatische Bestückung jeder Taverne.
 
-- Alte Mage-Anfänge: 80 HP/72 MP. Neue Mage-Anfänge: 90 HP/96 MP. Die MP-Steigerung ist relativ größer und kann mehrere Kämpfe/Rastphasen spürbar verändern.
-- In Runs 16/17 werden Kills, Gildenabschlüsse, sinnvolle MP-Verwendung und Regeneration tatsächlich gebucht, ohne dass das Spiel sofort endet. Das **passt** zur beabsichtigten verbesserten Einstiegserfahrung; es beweist ihre Ursache nicht.
-- **Mehr Initiative und eventuell Skill-Schaden** können das Risiko mindern, vor der zweiten eigenen Aktion zu sterben. Ob die neuen Werte in echten gleichartigen Gruppenkämpfen reichen, lässt sich nicht aus den verschiedenen Starts/Builds ableiten.
+Preisrichtwerte sind Händlerorientierung, keine neue harte Kaufverweigerung. Der heutige lineare Wertansatz `8cp × Statpunkte` muss zur Qualitätsstaffel passen, etwa mit einem kleinen tabellierten Qualitätsaufschlag **nur für Gear**; sonst widersprechen Preisaudit und neues Sortiment einander. Verbrauchsgüter und feste Angebote nicht nebenbei umpreisen. Bestehende Rüstungs-/Schildwerte zunächst behalten, vorhandene Qualitätsoptionen ebenfalls sichtbar anbieten: mehr DEF wirkt bei Gruppen pro Treffer und soll nicht zugleich mit den Waffen pauschal steigen.
 
-### Risiken, noch spekulativ
+**Technischer Zuschnitt:** `content/gear.json`, `src/v4/items.js:itemProfile/valueOf/Shopanzeige` sowie der bestehende lokale Offer-Erzeugungspfad. Eine kleine F-Waffentabelle nach bestehender Qualität genügt; nicht die gemeinsam mit Rüstung und Verbrauchsgütern verwendeten Qualitätsfaktoren pauschal ändern. Neue F-Waffenwerte ausdrücklich aufF begrenzen: nicht unbemerkt über `rankFactor` auch sämtliche E–S-Neuerzeugung hochsetzen. Dass außergewöhnliches F22 einige bisherige E-Waffen übertrifft, ist für den Versuch bewusst akzeptiert; der spätere E-Anschluss wird gesondert kalibriert. Bereits gespeicherte Itemprofile und abgeschlossene Preise bleiben bestehen.
 
-1. **Anfänger-Gegner könnten zu harmlos werden**, wenn die zusätzlichen Ressourcen plus bessere Initiative aus einfachen 1-vs-1-Kämpfen einseitige Farmkämpfe machen. Aus acht Siegen in Run 19 ohne Gegner-/Ressourcenvergleich folgt das aber nicht.
-2. **Angriffs-/Defensivschwellen sind diskret**: Eine +2-Stats-Erhöhung erzeugt je nach Klasse und Teiler eine andere DEF-/MDEF-Stufe. Das kann Warrior, Mage und Rogue verschieden treffen; keine verallgemeinerte Klassenrangliste aus Mage-Runs.
-3. **Magier-lastige Samples verschleiern andere Probleme:** Warrior und Rogue sind im gleichen natürlichen Langzeitumfang nicht getestet. Ressourcen, effektive Angriffe, Distanzspiel und defensive Skills können sich anders auswirken.
-4. **Der Dungeon bleibt gefährlich, wenn Gruppen und Ränge wirklich höher liegen.** Run 18s Lv28-Spawn war ein Enginefehler, kein Balancefall; die legitimen frühen Gruppenbegegnungen aus Run 6 (3 Skelette) und Run 10 (5 Wespen) verdienen Vergleich, aber nicht pauschale Nerfs.
-5. **Stat-Erhöhungen und ×2 XP greifen ineinander:** Mehr Siege begünstigen schnellere Levelups; damit erhöhen die unveränderten fünf freien Punkte und Favored-Stat-Wachstum den Abstand gegenüber gleichstufigen, nicht nachträglich geboosteten NPCs möglicherweise schneller. Ob das in späteren Leveln ein Problem wird, ist offen.
+## 4. Konkrete Empfehlung B: Aktive Entwicklung früher lohnend machen
 
-## 6. Level-15-Ziel: vorsichtiger Ausblick
+**Hohe Priorität, gemeinsam mit A für den nächsten Balancebuild empfohlen.** Keine neuen Effektfamilien nötig; die vorhandenen Lern-, PP-, Trainings- und Annahmepfade genügen.
 
-Die mathematische Summe **10.500 XP bis L15** ist fix unter der aktuellen Progressionsformel. Run 19 hatte nach L5 noch **8 Rest-XP**, also rechnerisch **1.008 kumulierte XP** aus 89 Inputs (rund **9,6 %** des gesamten L1→15-XP-Budgets). Daraus eine lineare Hochrechnung abzuleiten wäre **fachlich schlecht**:
-
-- XP pro Gegner steigt mit Gegnerlevel, Stärkefaktor, Art und Rangdifferenz.
-- Später kann der PC mehrere Gegner schneller oder sicherer besiegen; umgekehrt können schwierige Gruppen Kämpfe bremsen oder töten.
-- Quests wechseln, höhere Empfehlungslevel und Questtypen verändern Auszahlungen.
-- Frühzeit sind Charaktererstellung, Guild-Einschreibung, fehlendes Gear, Wege und Systemlernen übergewichtet; spätere Phasen könnten schneller werden, aber auch mehr Erkundungszeit verlangen.
-
-**Erste vorsichtige Vermutung:** Für Level 15 ist der Weg über sinnvoll steigende Gilden-/Gebietsrisiken und funktionierende Shop-/Skillzyklen wichtiger als eine weitere pauschale XP-Anpassung. Der großzügige 1.000-Turn-Rahmen sollte erst dann als zu eng gelten, wenn ein echter funktionaler Langlauf seine Grenzen erreicht.
-
-## 7. Ökonomie, Ausrüstung und Skill-Growth: mögliche Balanceschatten
-
-**Geld ≠ Power.** In Run 15 lagen zeitweise über 600 cp im Inventar, in Run 19 **289 cp** am Ende, und dennoch blieb im jüngsten Test **Starterstaff/Starterrobe**. Ein älterer echter Jagdmesser-Kauf in Run 12 tauschte beim Mage **MATK 10 gegen MATK 0** – eine wirksam bestätigte, aber für Zauber schlechte Wahl. Solche Beobachtungen zeigen zunächst eine **fehlende/nicht genutzte Upgrade-Schleife**, keine bewiesene Geldinflation oder zu hohe Level-XP.
-
-Eine mögliche Ökonomie-Hypothese: **Loot-Verkaufswerte, Gildenlöhne, Gearpreise und tatsächliche Fähigkeitspreise könnten auseinanderlaufen**. Der ältere 10B-Plan nennt beispielhaft sehr niedrige erzählte Skill-Stone-Preise gegenüber einem höheren Richtwert. Da Verkäufer-/Angebotsidentität und Preisbuchung lange instabil waren, taugen diese Zahlen noch nicht als belastbare Wirtschaftsstatistik. Der geplante strukturiert erzeugte Angebots-/Board-Fachplan ist separat und nicht allein wegen dieser Notiz freigegeben.
-
-**Skill-Erwerb:** Startauswahl und vorhandene Skills funktionieren; einzelne Runs belegen eine Rare-Passive bzw. Skillentwicklungsangebote. Aber **keine überzeugende natürliche Level-1→15-Kette** aus trainierter Fähigkeit, Entwicklung, Evolution, Ausstattung und F→E. Das könnte später wichtiger sein als reine XP-Geschwindigkeit: Der Charakter steigt mechanisch auf, ohne dass seine interessanten Optionen im selben Tempo wachsen. **Nur Beobachtung, keine Forderung nach Gratis-Skills.**
-
-**Regeneration:** Prozentuale HP-/MP-Erholung pro gebuchter Stunde wirkt in mehreren Runs; unmittelbare Levelups heilen nicht. Bei 96 statt 72 MP und 15 % MP-Regeneration je Stunde ist die absolute Erholung nach einer regulären Ruhephase größer; die **wirtschaftlichen Kosten und Zeitkosten echter Rast** gehören später in die Progressionsbewertung.
-
-## 8. Welche Daten helfen als Nächstes wirklich? (keine neuen Runnerpflichten)
-
-Für den nächsten natürlichen `.95`-Run, möglichst mit einer frischen Kampagne, vorhandene Events/Logs **nachträglich auswerten** – nicht das Spiel oder den Player-Guide dafür skripten:
-
-1. **Level-/XP-Kurve:** Inputs je Stufenaufstieg, kumulierte XP, Kampf- vs. Quest-XP, Gegnerlevel/-rang, XP pro tatsächlichem Kampf und pro 25–50 echten Spielerinputs.
-2. **Kampfdruck:** 1-vs.-1/2/3/5, Eröffnungsband, eigene bis zur zweiten Aktion erlittene HP, MP pro Kampf, Restressourcen beim Kampfende, notwendige Rast/Flucht, HP-/MP-Kosten je Quest.
-3. **Schwierigkeit vs. tatsächliche Empfehlung:** Quest-/Dungeon-Einstufung, tatsächliche Monster-/Floor-Profile und erkennbare Warnungen sauber voneinander trennen.
-4. **Ausrüstung/Skills:** Zeitpunkt erster *wirklicher* Shopkauf→Equip, tatsächliche Werteverbesserung nach Klasse, erster neu erworbener Skill/Passive, sinnvolle Skillnutzung/Proficiency vs. Level.
-5. **Ökonomie:** verdiente Guild-cp und Lootverkauf, tatsächliche Käufe/Servicekosten, verfügbare sinnvolle Upgrades – Geld in der Tasche allein ist keine getestete Wirtschaft.
-6. **Leerlauf:** Technische/semantische Ablehnungen und unbestätigte Narratorerfolge getrennt von echten freiwilligen Stadtbesuchen, Reisen oder Gesprächen. Nur so unterscheidet man zu langsames XP von unnötig verlorenen Spielzügen.
-
-Bei späterem Verdacht: gezielte **paarige Simulationen** mit identischen Gegnern, Seeds, Positionen, Skillkits und Player-Taktik für Basisstats 5 vs. 7 (und ×1 vs. ×2 XP separat); im Status klar halten, dass XP **keinen einzelnen Kampftreffer** ändert, sondern die mittel-/langfristige Levelkurve. Die alte 10B-Basismatrix (ca. 60.700 simulierte Kämpfe) hat PC-/NPC-Taktikasymmetrie und ist keine Klassen-Balancefreigabe.
-
-## 9. Persönliche Arbeitshypothesen – ausdrücklich nicht beschlossen
-
-| Hypothese | Meine vorläufige Neigung | Sicherheitsgrad / entscheidender Gegenbeleg |
+| Stellgröße | Heute | Empfohlener Versuch |
 |---|---|---|
-| **XP ×2 behalten** | **Eher ja**: frühe Belohnungen fühlen sich relevanter an; funktionierende Questzyklen schaffen Fortschritt, ohne bisherige Langzeitübermacht zu zeigen | Mittel; ein längerer Run könnte plötzliche Levelsprünge/zu schnelles F→E offenlegen |
-| **Basisstats 7 behalten** | **Eher ja**: Magierressourcen/startfähiges Spiel wirken glaubwürdiger; die Rücknahme wäre jetzt schlecht begründet | Niedrig–mittel; gepaarte Gruppenkampfsimulation könnte Über-/Unterkorrektur zeigen |
-| **Frühe Gruppen sind potenziell die eigentliche Härtespitze** | Plausibel: 3–5 Feinde handeln mehrfach, HP-Bonus schützt begrenzt | Niedrig–mittel; vergleichbare neue Gruppenkämpfe mit legitimen Slots fehlen |
-| **L1→L5 wirkt recht zügig, L5→L15 kann trotzdem lang sein** | Plausibel, weil die Schwelle je Level steigt und höherklassige Angebote noch kaum erprobt sind | Niedrig; 10.500-XP-Gesamtsumme allein beweist kein langsames Spiel |
-| **Progression der Skills könnte hinter der Levelzahl zurückbleiben** | Beobachtungswürdig; selten echte zusätzliche Skills trotz häufigem XP-/Gildenfortschritt | Niedrig; erst mechanische Skill-/Gear- und Langzeitevents prüfen |
-| **Das Hauptproblem für Level 15 bleibt vorerst Spielablauf statt Zahlen** | Eher ja: Abbrüche, echte Händler-/Orts-/Quest-Zyklen bestimmen XP pro Input stark | Mittel; nach stabiler .95-Kampagne erneut beurteilen |
-| **XP-Erhöhung + Stats wirken gegenseitig verstärkend** | Theoretisch ja, möglicherweise erwünscht; weder endgültiger Buff noch Nerf ableitbar | Niedrig; erst echte späterlevelige Monster, Builds und Ressourcen messen |
+| PP pro Proficiency-Aufstieg C1/C2/C3 | 75 / 100 / 150 | **50 / 75 / 100** |
+| LP-Tagesgrenze Eigenstudium / Lehrer | 20 / 40 | **40 / 60** |
+| Gewöhnlicher Guild-Primer | 120cp | **80cp** |
 
-### Schlussfolgerung
+PP je qualifizierendem Kampf, Challenge-Prüfung, Affinity, LP-Stundenraten10/20 und Skill-Schadensfaktoren bleiben bestehen. Bei18 PP wird C1-P5 nach mindestens **12 statt17** qualifizierenden Kämpfen erreichbar. Die höheren Tagesgrenzen verringern Kalendertage, nicht die gesamte notwendige Lernzeit; keine Sofortkenntnis durch Kauf. Training bleibt eine freiwillige Alternative. Bekannte Techniken nicht doppelt lernen; keine automatische Annahme und kein Gratis-Skill nach bestimmtem Charakterlevel.
 
-**Nichts hiervon ist verbindlich.** Die zwei bereits getroffenen Balanceentscheidungen sind bislang **plausible, eher hilfreiche Startbedingungen**, aber noch keine geprüfte Endbalance. Priorität ist **beobachten statt nachjustieren**: zunächst längerer natürlicher `.95`-Lauf, dann entscheiden, ob es wirklich um XP, Startstärke, Klassenasymmetrie, Gruppengefahr, Gear/Skills oder bloß um technische Umwege geht.
+Passende offene Entwicklungen und vorhandene Lernangebote müssen in den bestehenden Systemanzeigen verständlich sein: was wird gelernt, welche Quelle ist vorhanden, wie nimmt man an oder beginnt Training? Die vorhandene `#skills`-/Offer-Anzeige gezielt benutzen, keinen zweiten Skillbaum bauen. Die regulären Primer decken bereits Strike, Bolt, Guard, Ward und Mend ab. Bessere Zugänglichkeit vorhandener Rollen ist zunächst sinnvoller als noch mehr fast gleichartige Schadenszauber.
 
-Nicht aus diesem Dokument neue Patchprioritäten, verbindliche Kanonregeln, Spielertest-Routen, XP- oder Statänderungen ableiten.
-## Nachtrag: frühe Gruppen-AoE und laufender 250-Züge-Test (26.10.2026)
+**Technischer Zuschnitt:** `content/rules.json:proficiency.promotion_progress`, `growth.lp_day_cap`, `growth.guild_manual_cp`; vorhandene `skills.js`-, `v4/growth.js`- und Guild-Offer-Pfade. Kosten-/Powerboni und `.96`-Rundung nicht nochmals ändern. Bei geänderter PP-Schwelle darf alter PP-Überhang weder verschwinden noch bei Replay rückwirkend neue Skills vergeben; Behandlung vor Umsetzung festlegen, vorzugsweise beim nächsten regulären Fortschritt mit sauberem Carryover. Historische `skill.progress`-Events bleiben unverändert.
 
-**Status: neue Nutzeridee und erste technische Gegenüberlegung, kein verbindlicher Kanon und keine Implementierungsfreigabe.** Der Nutzer erwägt, innerhalb der **jeweils sechs wählbaren Starterskills** mindestens Mage und Warrior **eine AoE-Option** anzubieten; Rogue ist ausdrücklich optional. Beim Mage soll der bisherige `mage.arcane_burst` (AoE nur ENGAGED um den Zaubernden) **durch einen Fernkampf-AoE** ersetzt werden. Für Warrior wird ein physischer **Cleave** nach Art der bisherigen Arcane-Burst-Flächenmechanik vorgeschlagen. Rogue darf als stärkerer Einzelziel-/Mobility-/Präzisionsstil abweichen; die Annahme „Rogue = nur Assassin“ ist kein verbindliches Klassenlimit.
+## 5. Konkrete Empfehlung C: Schweres F finanziell lohnend machen
 
-### Design-Eindruck – plausibler Spielwert, mehrere offene Risiken
+**Mittlere Priorität, Bestandteil derselben F-Wirtschaftsrunde sinnvoll.** Nicht alle Auszahlungen erhöhen. Statt des bisherigen engen Novice-Richtwerts10–200cp folgende Orientierung für eine übliche Jagd verwenden:
 
-1. **Pro:** Eine frühe aktive Gegenoption zu bereits enginekorrekt als Gruppen kämpfenden Monstern. Gerade 3–5 Gegner können mehrfach handeln; ein AoE reduziert möglicherweise die Zahl gefährlicher gegnerischer Aktionen, anstatt globale Monster-HP/ATK zu verringern. Das könnte Spaß, Spielbarkeit und taktische Vielfalt verbessern.
-2. **Pro:** Verschiedene Klassenidentitäten: Mage distanziert/positionierend; Warrior als Frontlinien-Sweeper; Rogue kann Präzision, Mobility, Disengage, Ambush und einzelne gefährliche Ziele betonen. **Gleiche Werkzeuganzahl ist nicht gleichbedeutend mit identischen Werkzeugen.**
-3. **Balance-Risiko:** AoE-Mehrfachtreffer sind potentiell eine massive Schadens-/Tempoverbesserung gegen Gruppen. Bei sonst gleichen Formeln kann Gesamtschaden grob mit Zielzahl wachsen. Besonders zusammen mit bereits erhöhten Startstats und XP ×2 könnte dies **indirekt** zu deutlich schnellerem Leveln führen, weil Gegner leichter besiegt werden – nicht weil jeder Kill zusätzliche XP hätte. Gegen einen einzelnen Gegner sollte AoE nicht die immer beste Angriffswahl sein.
-4. **Spielerentscheidung:** Von sechs verfügbaren Skills wählt der Spieler anfangs **zwei**. Das neue AoE wäre also ein **Angebot**, kein automatisch verfügbares Grundrecht jeder Figur. Wenn Gruppenkämpfe zwingend ein AoE verlangen würden, wäre die Starterauswahl nur scheinbar frei. Das muss in Tests berücksichtigt werden.
-5. **Risikozone und Gegenwirkung:** Warrior-Cleave erfordert Nahkampf/ENGAGED; Mage-Fern-AoE könnte eine Gruppe vor ihrem ersten Herankommen treffen. Reichweite, Deckung, Zielgruppe, Kosten, Eigentreffer/Friendly Fire, Schadensverteilung und tatsächlich benutzte Bewegung können deshalb nicht einfach identische Werte bekommen. Eine AoE-Option sollte eine **situative Alternative** zu Heavy Slash/Power Strike bzw. Arcane Bolt/Flame Lance bieten, nicht jeden anderen Offensivskill ersetzen.
-6. **Nur Hypothese:** Auch defensive/evasive/positionierende Optionen könnten gegen Gruppen helfen. Daher beweisen frühe Gruppentode **nicht**, dass zwingend alle Klassen einen AoE brauchen. Normale Novizen-Einzelkämpfe und Gruppen mit Gegner-Leveln oberhalb des PCs getrennt betrachten.
+| Tatsächlich etablierte Herausforderung / Empfehlungslevel | Auszahlung, cp |
+|---|---:|
+| 1–3, Einstieg | 30–80 |
+| 4–7 | 90–180 |
+| 8–11 | 200–350 |
+| 12–14 | 350–600 |
 
-### Technische Abgrenzung aus Codeprüfung (.95)
+Menge, Elite-/Bossgefahr, Aufwand und Loot bestimmen die Einordnung innerhalb beziehungsweise oberhalb des Richtbereichs. Keine feste Auszahlung allein aus dem Spielerlevel. Eine einzelne gewöhnliche Schlange und eine Mehrfachjagd desselben Empfehlungslevels sind wirtschaftlich nicht gleich. Diese Bereiche gelten als Generator-/Repair-Richtwerte für **neue** Verträge, nicht als rückwirkende Preisänderung oder starre Validierungsgrenzen.
 
-- In `content/classes.json` hat Mage bereits sechs Starter-Skills inklusive `mage.arcane_burst`: Complexity 2, 14 MP, `range.band=ENGAGED`, `area=caster_engaged`; er trifft alle am Zaubernden ENGAGED befindlichen gültigen Ziele. Das ist **kein Fernkampf-AoE**.
-- Warrior hat sechs Starter-Skills (Heavy Slash, Guard, Power Strike, Quick Slash, Charge, Deflect), **keinen** AoE. Ein Cleave könnte die etablierte `caster_engaged`-Ziellogik mit physischem Angriff und STA nutzen, sofern Klasse und Aktionsprofil zum gewünschten Spielgefühl passen. Welcher der sechs dafür ersetzt würde, ist **nicht entschieden**.
-- Rogue hat ebenfalls sechs Starter-Skills ohne AoE; eine pauschale Übertragung der Warrior-Lösung ist **nicht nötig** und derzeit nicht beschlossen.
-- **Wichtig:** `src/skills.js` erlaubt für die formale Area-Skill-Definition aktuell nur `shape=caster_engaged` und fordert bei Area `range.band=ENGAGED` ohne Multi-Strike. `src/combat.js` berechnet normale Char-AoE gegen am Zaubernden ENGAGED stehende Ziele; eine separate `burst`-Geometrie gibt es bereits für explosive geworfene **Items** mit vorbestimmtem Zielcluster. Ein Mage-Fern-AoE benötigt deshalb **eine eng geprüfte Erweiterung/Übernahme vorhandener Zielcluster-/Reichweitenmechanik**; nicht bloß einen JSON-Wert austauschen und Erfolg behaupten. Bei C können AoE-Angriffe auch andere anwesende Kreaturen als die eigentlichen Gegner treffen; das ist ein wichtiger Friendly-Fire-/Player-Agency-/Narrator-Truth-Test.
-- Vor einem konkreten Fachplan erst die **natürliche** Gruppenkampf- und Skill-Auswahl beobachten; dann passend abgegrenzte Tradeoffs und Regressionen formulieren. **Keinen AoE ohne ausdrücklichen Auftrag implementieren.**
+Weltpopulationen und4+1-/5-Jagden-Verteilung beibehalten. Schwere Jagden sollen mit tatsächlichem Habitat, sichtbarer Empfehlung, Gegnerzahl und Risiko attraktiv sein; sie werden nicht automatisch zum Pflichtinhalt und keine bestehende Population skaliert mit dem PC. Lootpreise nicht zusätzlich pauschal multiplizieren. Der Mehrertrag soll hochwertige Ware und Lernquellen bezahlen, statt lediglich den Geldstand zu vergrößern.
 
-### Laufender 250-Züge-Test: keine vorzeitige XP-Schlussfolgerung
+**Technischer Zuschnitt:** `rules.guild.board.payout_guide_cp` und die bestehende Board-Request-/Repair-Anleitung mit denselben Richtwerten. Auszahlungen, Quest-XP, Herkunftsprüfung und Abgabeautorität bleiben der bestehende Enginepfad. Kein neues Belohnungssystem.
 
-Nach Nutzerangabe läuft **der erste natürliche Test mit 250 Inputs**, bislang **noch nicht Level 10**. Build, tatsächlich bestätigter Charakterlevel, Anzahl **effektiv gebuchter** Aktionen, XP-Quellen, Kampf-/Quest-Dichte, Runende und Integrität sind ohne den abgeschlossenen Originalexport **nicht verifiziert**. Daraus weder lineare Hochrechnung auf 1.000 Turns noch Aussagen über zu kleine XP ableiten.
+## 6. Kampf und oberes F: gezielte nächste Entscheidungen
 
-Bei der späteren Auswertung besonders **produktive Spielzüge vs. verlorene Verwaltungs-/LLM-/Engine-Missverständnis-Züge** unterscheiden. Hilfreich wären: XP/Level über Spielzüge, Charakteraktivität, echte Questzahlungen, Kampfgegner-/Gruppendichte, legitime Risikoentscheidungen, Skillwahl/-einsatz und gebuchter Loot/Shop/Equip. Die XP-×2- und Stats-7-Entscheidungen bleiben bis dahin unverändert und werden weiter beobachtet.
+**Main/Minor ist der nächste eigenständige Gameplayversuch**, keine Voraussetzung fürA–C und kein neuer Mini-Hotfix: den [bereits vorbereiteten Fachplan](../patch_plans_10b/PATCH_COMBAT_MAIN_MINOR_ACTIONS.md) umsetzen, sobald separat freigegeben. Höchstens eine Haupt- und eine Nebenaktion; normale Ein-Band-Bewegung und Mobility-Skill teilen denselben Minor-Slot; dieselben Regeln für Gegner. Das kann Blink/Evasion und Positionierung nützlicher machen, ohne einen weiteren globalen HP-Puffer. Bereits beschlossene Aktionszuordnungen aus dem Fachplan übernehmen, hier keine neuen Potion-/Guard-Sonderregeln hinzufügen.
 
-**Keine Designkanon-, Runner- oder Produktcodeänderung durch diesen Nachtrag.**
+Allgemeine Monsterwerte, Gruppenzahlen, Initiative und First Strike für die erste A–C-Runde nicht zusätzlich verändern. Ein korrekt gebuchter Tod ist kein automatischer Nerfauftrag. Der tatsächliche Doppelangriff vor der nächsten Entscheidung ist anschließend zusammen mit der Aktionsökonomie zu bewerten, nicht durch eine spontane Sonderausnahme für den letzten Eber.
 
+**Verbleibende Dungeonlücke:** Standard-Rollenfenster eines reinen F-Bands liegen heute bei Minions1–5, Guards4–8, Boss5–9; rein numerisch wird10–14 kaum genutzt, Boss-/Elite-Multiplikatoren erhöhen die Gefahr dennoch. Nicht pauschal sämtliche frühen Dungeons auf12–14 setzen. Ein anschließender Weltcontent-Schritt kann einzelne ausdrücklich schwere, feste F-Etagen mit höheren **bestehenden** Levelspannen und entsprechendem Boardhinweis vorsehen. Kein neues Spezies-, Gebiets- oder Rangsystem. Die präzise Spreizung bleibt dafür eine offene Designentscheidung; keine heimliche Hochstufung alter Dungeons.
 
-## Nachtrag: Run 20 – 252 Inputs auf .95, erste belastbarere Früh-/Mittelspiel-Daten (26.10.2026)
+## 7. Umsetzungsempfehlung und Auswertung
 
-**UNVERBINDLICHE neue Beobachtungen und Balancehypothesen, keine neue Designregel/XP-/Stat-/Skillentscheidung und keine Patchfreigabe.** Vollständiger Original-/Engine-Review: [`20261026-063907Z-current_test/REVIEW.md`](20261026-063907Z-current_test/REVIEW.md). Dieser Run ist länger als alle bisherigen, aber **kein kontrolliertes A/B-Experiment**. Original ZIP (41.435.082 Bytes, SHA-256 `058e1a02ede73b17aabc939b1b4fbab8471b8182a3c8c51a3bdbaa6566a5a307`) im Chat CRC-geprüft; separater Git-Binärupload nicht bestätigt.
+**Empfehlung jetzt: A+B+C als fachlich zusammenhängende F-Balancerunde freigeben.** Nicht drei weitere spekulative Reviews abwarten. Innerhalb der Umsetzung passende Formelbeispiele und wenige bestehende Encounter vergleichen; kein riesiger neuer Simulator als Voraussetzung. Main/Minor anschließend separat, damit eine veränderte Aktionsökonomie und neue Itemwerte nicht ununterscheidbar zusammenfallen.
 
-### Neue Messpunkte statt intuitiver Turnzahl
+- Neue natürliche Kampagnen auf dem Balancebuild; für einen wirklichen Level15-Versuch das vorhandene150-/250-Input-Limit großzügiger konfigurieren, statt künstlich XP zu schenken. Freie Quest-, Gear- und Skillwahl bleibt erhalten, keine Einkaufspflicht und keine Fixtures im natürlichen Lauf.
+- Wenige Wirksamkeitsfragen: Bringt ein echter Kauf einen merklichen Vorteil? Wird mindestens eine zusätzliche Technik gelernt/genutzt? Sind schwereF-Jagden nach Verbrauch und Erholung lohnend? Wie viel XP entsteht pro abgeschlossenem Abenteuer, nicht nur pro Eingabe?
+- Nebenwirkungen bewusst akzeptieren und beobachten: bessere Waffen können frühe Kämpfe verkürzen; schnelleres P5 bringt Entwicklungen früher; höhere obere-F-Löhne erhöhen Kaufkraft. Das sind gewollte Versuchseffekte. Wenn sie triviale Dauersiege oder wirtschaftliche Belanglosigkeit erzeugen, Werte gemeinsam nachjustieren.
+- **Rollback:** vor dem Produktpatch `.113` als Vergleich erhalten, Änderungen fachlich trennbar committen. Neue Versuchsprofile bleiben gespeicherte Instanzen; ein Code-Revert darf nicht als automatische Rückrechnung bestehender Kampagnen ausgegeben werden. Für einen sauberen Rückvergleich frische Kampagnen verwenden.
+- **Unverändert:** XP×2, Startstats7, Levelschwellen, allgemeine Stat-/Schadensformeln, Monster-ATK/HP, Regeneration, bestehende Gearslots, Legacy-Regelstand1 und formale Gildenautorität. E-Quellen und endgültige F→E-Balance folgen später, nicht nebenbei.
 
-- **252 echte Spielerinputs, L8 und 324 aktuelle XP**, insgesamt **3.124 kumulierte XP**; **30/30 Kämpfe gewonnen, 44 echte Kills, zehn abgeschlossene offizielle Gildenquests**. Kein Tod, Abschluss durch T252-Extractor-Reparatur-Transportabbruch. Level 15 also nicht erreicht.
-- L2 T25, L3 T33, L4 T48, L5 T110, L6 T152, L7 T167, L8 T215. **Checkpoint T100: L4, 358/400 XP**. L5 nur zehn Eingaben später, danach Dauer und XP-Quellen sehr unterschiedlich. Die Einordnung „noch nicht Level 10 nach ~250 Inputs“ wird dadurch bestätigt, aber kein Modell allgemeiner Levelgeschwindigkeit.
-- **XP pro 50 Inputs:** 614 / 344 / 484 / **1.056** / 602 (plus 24 auf T251). Die starke Spitze **T151–200** entstand vor allem durch Dungeonmonster und einen wertvollen Clearance-Auftrag: Zwei Zweiergegner-Encounters **168+216 XP**, Warden **252 XP**, Dungeonabgabe **270 XP**. Langsameres Leveln in den übrigen Fenstern war daher nicht nur Eingabeverschwendung, sondern auch unterschiedliche **Qualität/Höhe der gewählten Gegner und offiziellen Aufgaben**.
-- **XP-Quellen:** **1.636 Kampf-XP (52,4 %)** und **1.488 Quest-XP (47,6 %)**. Beide tragen wesentlich bei; weder Kampf noch Gildenabgabe ist numerisch entbehrlich. Der Charakter verdient insgesamt **29,75 % der 10.500 XP bis L15**. Ein gedankenloses Fortschreiben der ersten 252 Züge würde die dynamischen Gegner-, Quest- und Spielentscheidungen ignorieren. **„Effektive Abenteuerzüge“ sind nicht objektiv nachgezählt**; soziale Gespräche, Reise, Einkauf, Schlaf und Training können sinnvolles Gameplay sein und sind nicht per se „verschwendet“.
-- Für eine verlässlichere Turn-Prognose brauchen wir eine zusätzliche Phase mit **Level-8–12-relevanten** Gegnern und geeigneten Quests sowie Zeit- und Risikoaufwand. Der 1.000-Input-Rahmen ist mit diesem einen Datenpunkt weder widerlegt noch bestätigt.
-
-### Entscheidender neuer Befund: Gildenboard kann unterhalb des tatsächlichen Spielerlevels stecken bleiben
-
-**Alle 35 in dieser Kampagne generierten Guild-Angebote waren Novice, Level 1–3:** 12× L1, 16× L2, 7× L3. Das aktuelle Regelwerk erlaubt für die Novice-Stufe aber **Level 1–14**. Die Aufnahme in „Proven“ verlangt mindestens fünf erledigte Novice-Verträge **und** den E-Powerrang des Spielers, erst ab Level 15; der L8-Spieler mit zehn Erfolgen bleibt also zu Recht Novice.
-
-**Hypothese mit mittlerer Wichtigkeit:** Die bisherige Board-Erzeugung bietet fast nur niedrigstufige F-Rang-Arbeit an, obwohl das F-/Novice-Band noch bis L14 reicht. Das könnte zu einem **vermeidbar zähen Mittelspiel** führen: immer mehr triviale 24-XP-Monster und niedrig empfohlene Quests bei immer höheren Schwellen von 700/800/900 XP. Ohne neue anspruchsvollere **F-Rang**-Angebote wird die XP-Verdopplung zunehmend weniger spürbar. **Aber:** Das ist ein einzelfallbezogenes Generations-/Auswahlmuster und **keine harte Codegrenze Level 3**. Vor einer Änderung prüfen, ob Spielerbitten nach schwererer F-Rang-Arbeit, andere Branches und Board-Neugenerierungen höhere L4–14-Aufträge erzeugen. Ein sinnvolles späteres Designziel könnte größere **vielfältige Auswahl innerhalb des bestehenden festen Rangbands** statt PC-Level-Skalierung sein. Das würde die Freiheit und Gebietsstärke erhalten und stärkere Fortschritte nur gegen stärkere Gefahr ermöglichen.
-
-### Gruppen: nicht zu leicht trotz 30/30
-
-- **Sechs Owlbeak Rooks (T20–25):** Nach Sieg noch **23 HP/16 MP**. **Fünf Goblins (T42–48):** nach Sieg **1 HP**. Der Magier hatte die aktuellen stärkeren Basisstats und XP×2, erhielt trotzdem schwere Ressourcenverluste. **Ein eindeutiges Gegenargument gegen „30 Siege = viel zu leicht“.**
-- Gleichzeitig halfen konzentrierte Einzelzielzauber, taktische Angriffe und anschließende echte Rast, sodass alle Kämpfe überstanden wurden. Das kann gute risikobehaftete Spielbarkeit sein, keine Fehlkalibrierung.
-- **Rückbezug auf die AoE-Idee:** Der Spieler wählte **Arcane Bolt + Arcane Ward** statt Arcane Burst und benutzte fast nur Bolt. Das bereits vorhandene Mage-AoE ist **nahkampfbasiert**; ein optionaler Fern-AoE und ein Warrior-Cleave könnten bei Gruppen helfen, aber nur, wenn sie nicht zum erzwungenen Starterpick werden. Ein AoE sollte gegen ein Einzelziel nicht pauschal stärker sein als der passende Single-Target-Skill. **Wichtige neue Erkenntnis:** 6er- und 5er-Encounters sind in den Logs **echte Gruppen-Encounters**, daher lässt sich der hypothetische Flächenschadennutzen später mit identischen historischen Gegner-/Runden-Setups gezielt simulieren. Eine AoE-Fähigkeit ersetzt nicht Erkundung, Risikoentscheidung, Cover, Ressourcen oder Rückzug.
-- **Separates Risiko, spekulativ:** Ein Fern-AoE kann mehrere Gegner **vor deren ersten Aktionen** treffen. Ein früher solcher Skill könnte den gefährlichen Gruppenteil *stärker als erwartet* entschärfen, während ein ENGAGED-Warrior-Cleave erst nach der Annäherung wirkt. Beides sollte nicht blind dieselbe Rohpower/Mana-/Staminakosten erhalten. Der Fern-AoE benötigt nach aktuellem Code außerdem eine eigene definierte Zielcluster-/Geometrie-Lösung; `caster_engaged` allein genügt nicht.
-
-### Höhere Startwerte + XP: bestätigte Spielbarkeit, aber nicht isolierte Wirkung
-
-- L8 hat **140 HP Maximum**, **380 MP Maximum** und **INT 33**, nach normalen Levelups und überwiegend INT/WIL-Zuweisungen. L8 gegen einen Bog Strider mit **24 HP**: `Arcane Bolt` erzeugt 77,875 Rohpower und im Ambush **105 Schaden**. Das zeigt ein starkes Übergewicht gegen **Level-1-Fauna**, nicht notwendigerweise gegen hochrangige Gegner.
-- Die bis L8 ungebremste F-Rang-Einzelzielstärke könnte einen Teil der Schwierigkeit aus den repetitiven Novizenjagden nehmen. Statt sofort Startstats/XP zurückzunehmen zuerst den **Gegnerlevel-/Gefahr-/Auftragsmix** bei höheren eigenen Leveln bewerten.
-- Die zwei nur sehr knapp gewonnenen Frühgruppenkämpfe zeigen andererseits, dass `7` als Basis nicht automatisch sicher oder trivial bedeutet. Vor einer Balanceänderung lieber einen vergleichbaren Warrior/Rogue-Start und eine echte L8–12-Kampagne abwarten.
-
-### Gear und Skills sind möglicherweise der engere Progressionsengpass
-
-- Der Spieler zahlte **90 cp (Willowwood Staff + Tonic)**, später **240 cp (Ashwood Staff)** und **120 cp (Walking Boots)**. Der ausgerüstete Mage-Waffenbonus ist **MATK 6**, der ursprünglich ausgerüstete Starterstab hatte **MATK 10**. Das ist trotz erfolgreicher Käufe/Equip **keine echte Waffenverbesserung**, eher ein **Downgrade**. Boots wurden gekauft, aber nie eindeutig ausgerüstet. Am Ende **711 cp** Bargeld und Starterrobes. **Folgerung:** Der Spieler kann im Verlauf reich werden und neue Dinge kaufen, ohne seine Leistungsfähigkeit sinnvoll zu erhöhen. Die Problemursache könnte im Produktangebot, der Item-Werbewirkung, der Anzeige oder in seiner Entscheidungslogik liegen; nicht allein fehlendes Gold oder XP.
-- Trotz **30 Encounters** nur **sechs gültige PP-Fortschrittsbuchungen**, alle für Bolt (P1→P2/33 PP), **kein neuer Skill und keine Passive**. Das kann **regelkonform** sein: PP gibt es nur bei ernsthafter Nutzung gegen echte Herausforderung, ein einfaches L1-Monster im Endgame soll keine Farmquelle für Skill-Power sein. Der Charakter wählt außerdem ständig denselben Skill; Arcane Ward scheint praktisch keine Progression zu erhalten. **Spielgefühl-Risiko:** Level 8, viel stärkerer Schaden, aber dasselbe Fähigkeitsspektrum wie am Start. Nicht ohne Prüfung die PP-Bedingungen senken; erst Ursachen für fehlende echte neue Skills/Growth-Angebote und Zugänglichkeit von Training beobachten.
-- Eine höhere XP-Kurve zusammen mit **zu wenig ansteigendem Questlevel, Gear-Nutzen und Skillwachstum** könnte eine numerische, aber monoton spielende Figur erzeugen. Das ist **derzeit eine Designhypothese**, noch keine nachgewiesene Fehlbalance.
-
-### Ungeklärter technischer Endabbruch ist kein Balanceereignis
-
-Die letzte Erzählerantwort behauptete **4/4 Bog Striders**, obwohl die Engine **3/4** registrierte. Der Extractor schlug vorzeitig `quest.ready` vor, sein erster JSON-Plan scheiterte aber **nachweislich an der fehlenden `scene` beim früheren `thread` vor der `arrive`-Aktion** – nicht am READY-Vorschlag als protokolliertem Repair-Grund. Der anschließende Repair bekam **keine Modellantwort** und der Host abortierte nach ca. 125 s. Es wurde **kein** vierter Kill oder Questabschluss gebucht. Der Status meldet zudem **ein nicht näher ausgewiesenes Integritätsproblem**. Beides separat im Run-Review dokumentiert; daraus keine XP-, Skill- oder Mobwertänderung folgern. Die Engine-Guards schützen hier zumindest gegen die frei erfundene Questvollendung.
-
-### Aktualisierte unverbindliche Tendenz
-
-| Offene Frage | Meine erste Neigung nach Run 20 | Belastbarkeit |
-|---|---|---|
-| **XP ×2 weiterhin behalten?** | **Ja, vorerst.** XP steigen bei höherwertigem Dungeon deutlich; schwache Novice-Monster und Verwaltungs-/World-Umwege bremsen dennoch | Mittel |
-| **Startstats 7 weiterhin behalten?** | **Ja.** Zwei tatsächliche Gruppenkämpfe waren trotz Boost fast tödlich | Mittel für diese Mage-Erfahrung; niedrig über andere Klassen |
-| **Sind frühe Gruppen zu stark?** | **Teilweise sehr riskant**, aber nicht global unangemessen: 6er/5er erfolgreich bei Rest-HP23/1 | Mittel für die konkreten Encounter; niedrig für breite Balance |
-| **AoE Mage/Warrior früh anbieten?** | **Interessante taktische Option**, kein unmittelbarer Grund zur Pflicht- oder Overpower-Variante | Niedrig–mittel |
-| **Wird L15 in 1.000 Eingaben erreichbar?** | **Offen.** L8 nach 252 und wechselnde XP-Fenster erlauben keine seriöse Turn-Prognose | Niedrig |
-| **Was könnte Progression am stärksten bremsen?** | Nicht allein XP: **Novice-Auftragsauswahl 1–3 trotz Level 8**, wenig sinnvolle Gear-Upgrades, kaum organische neue Skills | Mittel für beobachtete Symptome; Ursachen offen |
-
-**Handlungsentscheidung: keine.** Weder die existierende ×2-XP-/Stats7-Entscheidung noch die sechs Starter-Skills oder das Guild-System werden aufgrund dieses Dokuments verändert. Längere Läufe und gezielte Gegenproben vor Design- oder Codefreigabe.
-
-## Sol – unabhängige Ergänzung nach Originalprüfung von Run 20 (26.10.2026)
-
-**Keine Designentscheidung und kein Implementierungsauftrag.** Eigenständig geprüft: die bereitgestellte Original-ZIP (41.435.082 Bytes, SHA-256 `058e1a02ede73b17aabc939b1b4fbab8471b8182a3c8c51a3bdbaa6566a5a307`, CRC fehlerfrei), Events, Zustandsfold, Modellrequests und Spielereingaben sowie Produktcode `.95`/`681c2b4`. Die archivierten Reviews der Runs 1–19 wurden als historischer Vergleich quergeprüft; **nicht alle alten Original-ZIPs erneut ausgewertet**. Code-Sonden sind keine neue Simulation, keine Node-Suite und kein weiterer natürlicher Test.
-
-### 1. Was ich aus den bisherigen Läufen tatsächlich ableite
-
-Die jüngeren Läufe zeigen einen funktionierenden frühen Abenteuerkern: Run 15 drei Gildenabschlüsse ohne Tod, Runs 16/17 erfolgreiche Jagden bis L3, Run 19 L5, jetzt Run 20 L8 mit 30 Siegen/44 besiegten Gegnern und zehn Auszahlungen. Gleichzeitig gab es bereits vor Stats 7 längere erfolgreiche Läufe und knapp gewonnene Dungeonkämpfe. **Startwerte 7 sind damit plausibel hilfreich, aber nicht als alleinige Ursache bewiesen.** Frühe Todesfälle durch fehlerhafte Eskalation oder den ungebundenen L28-Spawn aus Run 18 gehören nicht in eine normale Klassen-/Monsterbilanz. Die ordnungsgemäßen Gruppen aus älteren Dungeonläufen bleiben relevante Gefahrenbeispiele.
-
-XP ×2 und Stats 7 würde ich vorerst behalten. Ihre Wirkung ist unterschiedlich: Stats verbessern den konkreten Kampf, XP verbessern die folgenden Level. Als reines Rechenbeispiel ergäbe die Halbierung exakt derselben 3.124 Run-20-Belohnungen 1.562 XP, also L6/62 Rest-XP statt L8/324. **Das ist kein simuliertes ×1-Spiel:** Der schwächere Charakter hätte andere Kämpfe, Entscheidungen oder Überlebenschancen gehabt. Die zusätzlichen zwei Basis-INT erhöhen einen L1-Arcane-Bolt bei unverändert MATK10 von 31,25 auf 35 Rohpower, neben 80→90 HP und 72→96 MP. Auch der stärkere Starterstab aus .53 ist eine eigene, ältere Starthilfe und darf nicht mit der Statänderung verwechselt werden.
-
-### 2. Wichtigste Präzisierung: Nicht nur das Board hält die Gegner niedrig
-
-**Belegt:** Alle 35 generierten Questangebote liegen auf Empfehlungslevel 1–3. Die Original-Boardrequests erlauben ausdrücklich Novice-Level 1–14; es gibt keine dortige feste Level-3-Grenze. Dieser Generator erhält aber weder PC-Level noch dessen bisherigen Quest-Erfolg als ausdrücklichen Auswahlkontext. Er kann somit kein verlässliches persönliches Mittelspielangebot aus diesen Informationen ableiten. Das ist keine Aufforderung zu automatischem Mitskalieren.
-
-**Zusätzlich durch Originalprofile und Code belegt:** In sämtlichen **27 Kämpfen außerhalb der drei Dungeonbegegnungen** waren alle Gegner Level 1. Die drei Dungeonkämpfe verwenden dagegen Gegner Level 3/4, 5/4 und Boss 7. `engine.js:materialise` nutzt außerhalb eines klassifizierten Dungeons `truth(scene.location,'danger')`, sonst `unknown`; `npcgen.js:chooseCreatureLevel` setzt `unknown` auf **1–1**. Für alle 52 im Run erstmals erzeugten Kreaturenprofile war dieser allgemeine Gefahr-Kontext `unknown`; die fünf höherstufigen Dungeonprofile wurden über die Living-Slotfenster bestimmt. Kein einschlägiges `danger`-Faktum wurde etabliert.
-
-**Folgerung:** Höhere Zahlen am Questangebot allein erzeugen noch keine höherstufigen Weltgegner. Empfehlung, Gegnerprofil und Gebietseinstufung sind getrennte Datenpfade. Ein späterer Fachplan muss prüfen, wie die **bereits vorhandenen** Gebietsgefahr-/Levelbänder tatsächlich erreichbar und am richtigen Ort verankert werden. Kein PC-Level-Nachziehen, kein nachträgliches Aufwerten materialisierter Gegner und keine neue Speziesverwaltung. Der konkrete Run bestätigt den konservativen Standard, nicht die Behauptung, die gesamte offene Welt müsse immer Level 1 bleiben.
-
-**Arbeitshypothese, mittlere Sicherheit:** Niedrige Questempfehlungen plus fehlende etablierte Gebietsgefahr erklären einen großen Teil des zähen Mittelspiels besser als ein generell zu kleiner XP-Multiplikator. Die steigenden L×100-Schwellen treffen überwiegend auf weiter niedrige Einzelbelohnungen. Der Dungeon zeigt den Gegenfall: fünf höherstufige Gegner liefern 636 Kampf-XP und zusätzlich 270 Quest-XP, ohne einen weiteren globalen Buff.
-
-### 3. Skillfortschritt: Die Ursache ist hier genauer bestimmbar
-
-Die sechs PP-Buchungen sind nicht bloß eine Vermutung über triviale Kämpfe. Ich habe `fightQualifies` gegen jeden ursprünglichen Encounterzustand ausgewertet: **Sechs qualifizieren sich; die übrigen 24 scheitern sämtlich bereits am Levelabstand.** Nur ein Gegner innerhalb von PC-Level minus zwei genügt; zusätzlich verlangt die Regel einen gegnerischen Angriff. Die sechs qualifizierenden Kämpfe vergeben jeweils korrekt 18 PP an Bolt: 108 PP ergeben bei C1/75 PP pro Aufstieg P2/33. Kein Beleg für verschwundene PP.
-
-Auch „kein neuer Skill“ ist nicht automatisch ein Growth-Defekt: Ward wurde kein einziges Mal als eigene erfolgreiche Kampfaktion gebucht. T9 verlangt Ward und Bolt im selben Zug und erzeugt eine Klärung statt zweier Aktionen. Der Spieler sucht keinen Lehrer und beginnt kein Training. Basic-Breakthroughs verlangen passende Basic-Nutzung, Kombinationen verschiedene Skills und Evolution P5; ständiges Bolt-Wiederholen soll keine beliebige neue Fähigkeit erzeugen.
-
-**Designrisiko, keine Fehlerdiagnose:** Weil XP wächst, während niedrige Gegner keinen PP-Anreiz mehr geben, kann die Figur numerisch stärker und spielerisch eintönig werden. Zuerst angemessene Herausforderungen und verständliche Entwicklungsmöglichkeiten prüfen. Nicht vorschnell PP-Farmverbote entfernen oder Gratisfähigkeiten verteilen. Für C1-P5 sind bei unveränderten 18 PP mindestens 17 qualifizierende Kämpfe nötig, danach weitere passende P5-Belege für Evolution; 30 beliebige Siege ersetzen diese Bedingungen nicht.
-
-### 4. Gear: Der Startbonus nimmt gewöhnlichen Käufen viel Upgrade-Spielraum
-
-Hier ist die Ursachenlage deutlicher als „der Spieler kauft falsch“: Das F-Fokusband ist MATK4–10. Die vorhandene Profilfunktion ergibt für **gewöhnlich/fine/superior/exceptional** benannte F-Stäbe **6/8/10/12 MATK**. Der Starterstab liegt mit MATK10 bereits am oberen gewöhnlichen Bandende. Ein normaler guter Kauf ist deshalb oft schlechter oder bestenfalls gleichwertig; ein echter Waffenanstieg braucht besondere F-Qualität oder später einen nutzbaren höheren Rang. Das ist eine nachvollziehbare Folge der früheren Starthilfe, kein neuer Buchungsfehler.
-
-Beim Stabmacher T72 besitzen **alle drei** Angebote für 240/400/550 cp mechanisch denselben F-common/MATK6-Profilwert. Kupfer- und Silberkern allein erzeugen keine neue Mechanik. Die Engine hält entsprechende Preisaudit-Hinweise fest, verweigert hohe Preise aber bewusst nicht. Vor dem ersten Kauf enthält der tatsächlich gelieferte Player-Screen keine MATK6-Angabe für den angebotenen Willowwood-Stab; beim zweiten Kauf zeigt MATK6 im HUD den **bereits getragenen** Stab. Korrekte Werte im Planner-Katalog sind keine sichere spielersichtbare Kaufberatung. Hier ist die geplante direkte Engine-Anzeige von Angeboten fachlich naheliegender als weitere Shopping-Pflichten des Testspielers.
-
-Die Boots sind ausdrücklich `equipment:false`, `profile:null`, gewöhnlicher Gegenstand ohne Kampfsystem-Slot. Das fehlende Equip ist insoweit **korrekt und kein verlorener Bonus**. Gemäß Nutzerentscheidung keine neuen Slots daraus ableiten. Nützliche Alternativen gab es schon T37: Roben mit DEF3/MDEF3 statt Starter-DEF2/MDEF3 und ein Buckler mit DEF4/MDEF3; Kauf und Nutzung wurden nicht getestet. „Überhaupt keine bessere defensive Ware angeboten“ wäre deshalb ebenfalls falsch.
-
-**Einordnung des Schadens:** MATK10→6 bedeutet nicht 40 % weniger Zauberschaden. Bei INT33 fällt Bolt-Rohpower von 81,875 auf 77,875, ungefähr 4,9 % gegenüber dem Starterstab, vor Proficiency, Variation und Verteidigung. Trotzdem sind teure gleichwertige oder schlechtere Käufe kein befriedigender Fortschritt. Geldinflation, pauschale Händlerpreisdeckel oder Starter-Nerf sind daraus noch nicht beschlossen.
-
-### 5. Gruppen und AoE – meine vorläufige Designneigung
-
-Die sechsfache Rook-Gruppe bringt den L1-Mage von 83 auf 23 HP und 76 auf 16 MP. Die fünf Goblins bringen den L3-Mage von 95 auf 1 HP. Einzelne Rooks hatten Level1/18HP/ATK7, die Goblins Level1/45HP/ATK11: **gleiche Level und gleiche Gegnerzahl bedeuten nicht gleiche Gefahr.** Der Rückschluss „alle 30 Siege waren leicht“ ist unhaltbar; umgekehrt bilden 30 überlebte Kämpfe einer einzelnen, abbrechenden Kampagne keine statistische Überlebensrate ab.
-
-Ich halte eine optionale frühe Fern-AoE für Mage und einen ENGAGED-Cleave für Warrior für sinnvoll prüfbar. Der größte Nutzen wäre weniger gegnerische Folgeaktionen, nicht bloß höherer Gesamtschaden. Ein Fern-AoE kann die Gruppe vor dem Schließen dezimieren und braucht deshalb einen echten Nachteil gegenüber Einzelzielzaubern: etwa niedrigeren Schaden je Ziel, nennenswerte Kosten oder begrenzte räumliche Bündelung. Welche Variante passt, ist offen. Im C-Pfad können vorhandene Flächenangriffe auch Verbündete/Unbeteiligte treffen; das gehört zur Entscheidung und nicht erst zur Abnahme.
-
-**Spekulation:** Ein sehr starker Fern-AoE könnte gerade die L1-Gegnerhäufungen verdecken, ohne das fehlende Mittelspiel-Angebot zu lösen. Ebenso könnte er zur Pflichtwahl unter den zwei Startskills werden. Ein Rogue muss nicht dieselbe Flächenlösung bekommen; sichere Einzelziel-Elimination, Bewegung und Entkommen könnten seine Gruppenantwort sein. Ob diese Werkzeuge aktuell gleichwertig wirken, ist mangels vergleichbarer Warrior-/Rogue-Langläufe offen. Keine automatische Skillwahl und keine neue Zahlenfreigabe aus dieser Notiz.
-
-### 6. Was die technische Gegenprüfung für die Balanceaussagen ändert
-
-- **Integrität konkret lokalisiert:** Ab T236/E472 erzeugt `offer.closed` den normalen Status `repriced`, den `validateState` nicht zulässt. Das ist die einzige final gemeldete Verletzung; keine im Fold nachgewiesene Quest-/XP-/Inventarkorruption. Der Warnungsgrund ist damit nicht mehr ungeklärt und entstand vor T252.
-- **T252 präzisiert:** Erste Extraktion 5.344 ms, Repair **120.005 ms**, zusammen 125.349 ms. `index.js:v4Llm` hat einen 120.000-ms-Abbruchtimer. Ein Timeout ist daher die naheliegende Erklärung, nicht ein 125-Sekunden-Repair oder bewiesener allgemeiner Kontextkollaps. Welcher Timer/Hostabbruch tatsächlich feuerte und weshalb der Provider nicht antwortete, ist ohne dessen Logs nicht abschließend beweisbar.
-- **Questschutz stärker belegt:** Bereits T251/E502 wird das falsche 4/4-READY durch `quest_count` bei tatsächlichen 3/4 verworfen. Eine isolierte T252-Sonde ohne den beanstandeten Thread-Delta bucht die Ankunft, verwirft READY wiederum wegen 3/4 und zahlt nichts aus. Das ist eine Funktionssonde, kein natürlicher erfolgreicher Repair. Szenenfehler, Providerabbruch und Zählfehler sind zu trennen.
-- **Nicht alle Ortsprobleme erledigt:** T203 liefert GO Wethervord, anschließend unqualifiziert GO Guild hall. Ohne lokale Halle greift weiterhin die Vertragsfilial-Auflösung nach Alderwatch. Die Auszahlung ist dort regulär, der Stadtwechsel passt jedoch nicht zum ausdrücklich genannten lokalen Besuch. Der .95-Landmarkenfix löst diesen zusammengesetzten Ortsbezug nicht. Solche Umwege sind technische Reibung, keine mangelnde Abenteuerlust oder zu kleine XP.
-
-**Mein vorläufiges Fazit:** Zahlen vorerst beibehalten. Mehr Erkenntnis versprechen eine tatsächlich nutzbare Spannweite weltgebundener F-Gefahren, sichtbare verbindliche Warenwerte und echte Alternativen im Fähigkeitengebrauch. Die XP-Verteilung ist derzeit weniger auffällig als das Zusammenspiel aus niedrigem Gegnerstandard, teurer wirkungsgleicher Ware und dadurch stagnierendem Skillrepertoire. **Das ist eine begründete Arbeitsrichtung, keine neue Architektur- oder Balanceentscheidung.**
+**Status dieses Commits:** ausschließlich gemeinsame Bewertung und konkreter Balancevorschlag; keine Produkt-, Runner-, Kanon- oder Teständerung, keine neue Test- oder Smoke-Abnahme. Bereits bestehende technische Reviewfragen bleiben in ihren Runreviews, nicht als neue Balanceblocker.

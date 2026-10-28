@@ -45,7 +45,7 @@ const TRADE_RE = /\b(?:buy|buys|bought|sell|sells|sold|pay|pays|paid|price|cost|
  * Initial campaign events from content/campaign_start.json and the First Message's location line. runtime 'v4' starts
  * a Runtime V4 campaign (docs/RUNTIME_V4_PLAN.md): the same start, plus the place tree and the start node.
  */
-export function startCampaign(content, { seed = newSeed(), firstMessage = '', runtime = 'v3', planner, ruleset = content.start.ruleset || 1 } = {}) {
+export function startCampaign(content, { seed = newSeed(), firstMessage = '', runtime = 'v3', planner, fBalance = true, ruleset = content.start.ruleset || 1 } = {}) {
     const st = content.start;
     const m = /Location:\s*[^\n`]*?\boutside\s+([A-Z][\w' -]*?)\s*,\s*([A-Z][\w' -]*)/.exec(String(firstMessage));
     let loc = m ? locationByName(content, m[1].trim()) : null;
@@ -75,7 +75,7 @@ export function startCampaign(content, { seed = newSeed(), firstMessage = '', ru
             ruleset,
             // .83: free NPC help in new campaigns; historical start events keep their original policy.
             private_quests: false,
-            ...(v4 && ruleset >= 2 && planner !== false ? { f_progression: true } : {}),
+            ...(v4 && ruleset >= 2 && planner !== false ? { f_progression: true, ...(fBalance ? { f_balance: true } : {}) } : {}),
             // Patch 7.2: a V4 campaign keeps the path it started on (c: the semantic planner, the product path; a: the
             // interpreter of Runtime V4-A), whatever the setting says later (src/v4/runtime.js campaignPath)
             ...(v4 ? { runtime: 'v4', ...(typeof planner === 'boolean' ? { path: planner ? 'c' : 'a' } : {}), places: v4.places, at: v4.at } : {}),

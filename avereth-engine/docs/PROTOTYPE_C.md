@@ -2231,3 +2231,7 @@ Unfreiwillige Ortswechsel nur mit wörtlich erzählter Verlagerung; bekannte abw
 ## 28.10.2026 — .108: Belegprüfung für unfreiwillige Ortswechsel
 
 Nur Bewegungen Alarics selbst, zum Ziel von `arrive.at`; Auslöser (grabbed, arrested, portal) nur mit erzählter Richtung; Rede in einfachen Anführungszeichen, satzweite Erinnerung und Kurzformen (`'ll`, `n't`, `'d` als had/would) erkannt. [Umsetzung und Abnahme](PATCH_PROTECT108_FORCED_EVIDENCE.md).
+
+## 28.10.2026 — .114: erste gemeinsame F-Balancerunde
+
+Neue V4-C-Kampagnen: F-Waffen6/10/14/18/22, lokales Fachhändlersortiment, PP50/75/100, LP-Tagesgrenzen40/60, Primer80cp und gestaffelte Novice-Vergütungsrichtwerte. Historische Kampagnen behalten ihre Zahlenpolicy; XP, Startstats, Monster und Aktionsökonomie unverändert. Umsetzung, Nachweise und Grenzen: [PATCH_F_BALANCE114.md](PATCH_F_BALANCE114.md).

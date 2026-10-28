@@ -156,7 +156,7 @@ function skills(state, content) {
     for (const [id, v] of Object.entries(s.skills)) {
         const sk = skillOf(content, id, state);
         if (!sk) { lines.push(`${id} | UNKNOWN DEFINITION`); continue; }
-        lines.push(`${sk.name}${sk.dynamic ? ' (learned in this campaign)' : ''} | ${sk.category} | Rank ${sk.rank || '-'} | Complexity ${sk.complexity || '-'} | P${v.prof} (${ppText(content, sk, v)}) | Tags ${joinList(sk.tags, '-')}${aspectsText(sk)} | Cost ${skillCost(sk, v.prof, content, s, state.meta.f_progression === true)}`);
+        lines.push(`${sk.name}${sk.dynamic ? ' (learned in this campaign)' : ''} | ${sk.category} | Rank ${sk.rank || '-'} | Complexity ${sk.complexity || '-'} | P${v.prof} (${ppText(content, sk, v, state)}) | Tags ${joinList(sk.tags, '-')}${aspectsText(sk)} | Cost ${skillCost(sk, v.prof, content, s, state.meta.f_progression === true)}`);
     }
     if (lines.length === 1) lines.push('No Skills known yet.');
     // Patch 9A: the plain attack of the weapon he holds, no learned Skill (it comes and goes with the weapon)
@@ -176,8 +176,8 @@ function skills(state, content) {
 const aspectsText = (sk) => (sk.aspects?.length ? ` | Aspects ${sk.aspects.join(', ')}` : '');
 
 /** Patch 9B-1: his PP toward the next Proficiency (its threshold by the Skill's Complexity), "max" at P5. */
-function ppText(content, sk, v) {
-    return v.prof >= 5 ? 'PP max' : `PP ${v.pp || 0}/${promotionPp(content, sk)}`;
+function ppText(content, sk, v, state) {
+    return v.prof >= 5 ? 'PP max' : `PP ${v.pp || 0}/${promotionPp(content, sk, state)}`;
 }
 
 function skill(state, content, arg) {
@@ -191,7 +191,7 @@ function skill(state, content, arg) {
     if (!known) return `[SYSTEM // SKILL]\n${sk.name} is not a Skill Alaric knows.`;
     const dv = deriveCharacter(s, content);
     const prof = content.rules.proficiency.levels[String(known.prof)];
-    const lines = [`[SYSTEM // SKILL] ${sk.name}`, `Category ${sk.category} | Rank ${sk.rank || '-'} | Complexity ${sk.complexity || '-'} | ${known.weapon ? `weapon attack of the equipped ${known.weapon} (not a learned Skill)` : `Proficiency P${known.prof} (${ppText(content, sk, known)})`} | Tags ${joinList(sk.tags, '-')}${aspectsText(sk)}`];
+    const lines = [`[SYSTEM // SKILL] ${sk.name}`, `Category ${sk.category} | Rank ${sk.rank || '-'} | Complexity ${sk.complexity || '-'} | ${known.weapon ? `weapon attack of the equipped ${known.weapon} (not a learned Skill)` : `Proficiency P${known.prof} (${ppText(content, sk, known, state)})`} | Tags ${joinList(sk.tags, '-')}${aspectsText(sk)}`];
     lines.push(`Cost: ${skillCost(sk, known.prof, content, s, state.meta.f_progression === true)}${sk.ammo ? ` | Ammo: ${sk.ammo.qty} ${content.items.get(sk.ammo.item)?.name || sk.ammo.item} when fired from a bow` : ''}`);
     if (sk.range) lines.push(`Range: ${sk.range.band}${sk.range.extra_band ? ' (EXTRA-BAND movement: may move one additional band and must end ENGAGED)' : ''}${sk.range.area ? ` | Area: ${sk.range.area}` : ''}`);
     if (sk.attack) {
@@ -204,7 +204,7 @@ function skill(state, content, arg) {
     // Patch 9B-1: the numbers its effects give now, at his Proficiency (the same values src/combat.js books)
     const now = effectsNow(content, sk, effectiveStats(s, content), known.prof, rulesetOf(state));
     if (now.length) lines.push(`Current effect: ${now.join(' | ')}${effectFactor(content, known.prof, rulesetOf(state)) !== 1 ? ` (×${effectFactor(content, known.prof, rulesetOf(state))} Proficiency, rounded)` : ''}`);
-    if (!known.weapon && rulesetOf(state) >= 2 && s.class) lines.push(`Proficiency Progress: ${ppText(content, sk, known)} · Affinity ×${affinityFor(content, s.class, sk)} (highest of its tags)`);
+    if (!known.weapon && rulesetOf(state) >= 2 && s.class) lines.push(`Proficiency Progress: ${ppText(content, sk, known, state)} · Affinity ×${affinityFor(content, s.class, sk)} (highest of its tags)`);
     const lineage = rulesetOf(state) >= 2 ? lineageText(state, content, sk.id) : null;
     if (lineage) lines.push(lineage);
     return lines.join('\n');

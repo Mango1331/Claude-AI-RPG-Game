@@ -241,9 +241,9 @@ export function learnSkill(state, content, who, skillId, why = null) {
 
 // ------------------------------------------------------------------------------------------------ Proficiency
 /** The PP one promotion of this Skill takes (Core #5: C1 75, C2 100, C3 150; a Skill without one is C1). */
-export function promotionPp(content, skill) {
+export function promotionPp(content, skill, state = null) {
     const c = [1, 2, 3].includes(skill?.complexity) ? skill.complexity : 1;
-    return content.rules.proficiency.promotion_progress[String(c)];
+    return (state?.meta?.f_balance ? content.rules.f_balance.promotion_progress : content.rules.proficiency.promotion_progress)[String(c)];
 }
 
 /** Core #5: the single highest Class Affinity of his class for the Skill's tags (otherwise the class's otherwise, 1). */
@@ -260,12 +260,12 @@ export function ppAward(content, sheet, skill) {
 }
 
 /** Where gained PP take a Skill: promotions by its Complexity, carry-over kept, P5 the end (no PP beyond it). */
-export function advancePp(content, entry, skill, gained) {
+export function advancePp(content, entry, skill, gained, state = null) {
     let prof = entry.prof || 1;
     let pp = entry.pp || 0;
     if (prof >= 5) return null;
     pp += gained;
-    const need = promotionPp(content, skill);
+    const need = promotionPp(content, skill, state);
     while (prof < 5 && pp >= need) { pp -= need; prof += 1; }
     if (prof >= 5) pp = 0;
     return { prof, pp };
@@ -317,9 +317,9 @@ function progressEvents(content, state, skillId, gained, why, key) {
     const entry = sheet.skills[skillId];
     const skill = skillOf(content, skillId, state);
     if (!entry || !skill || gained <= 0) return [];
-    const to = advancePp(content, entry, skill, gained);
+    const to = advancePp(content, entry, skill, gained, state);
     if (!to) return [];
-    return [{ t: 'skill.progress', d: { id: 'pc', skill: skillId, name: skill.name, gained, from: { prof: entry.prof || 1, pp: entry.pp || 0 }, to, need: promotionPp(content, skill), why, key } }];
+    return [{ t: 'skill.progress', d: { id: 'pc', skill: skillId, name: skill.name, gained, from: { prof: entry.prof || 1, pp: entry.pp || 0 }, to, need: promotionPp(content, skill, state), why, key } }];
 }
 
 export const DEFENSE = new Set(['temp_def', 'temp_mdef', 'barrier', 'incoming_damage_reduction', 'damage_reduction_next']);

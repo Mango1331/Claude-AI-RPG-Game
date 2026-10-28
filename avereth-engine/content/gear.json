@@ -658,7 +658,26 @@
         "mp": 0.8,
         "sta": 0.5
       },
-      "_restore_note": "Patch 7.2: a restorative's guideline is the points it restores × the rate of its resource × the Rank factor (a common F Healing potion, 30 HP: 24 cp; Mana potion, 25 MP: 20 cp; Stamina tonic, 30 STA: 15 cp). A first guideline, not the balance of potions, which a later patch sets."
+      "_restore_note": "Patch 7.2: a restorative's guideline is the points it restores × the rate of its resource × the Rank factor (a common F Healing potion, 30 HP: 24 cp; Mana potion, 25 MP: 20 cp; Stamina tonic, 30 STA: 15 cp). A first guideline, not the balance of potions, which a later patch sets.",
+      "gear_quality_factor": {
+        "crude": 1,
+        "common": 1,
+        "fine": 1.25,
+        "superior": 1.75,
+        "exceptional": 2.5
+      }
+    },
+    "f_weapon_values": {
+      "crude": 6,
+      "common": 10,
+      "fine": 14,
+      "superior": 18,
+      "exceptional": 22
+    },
+    "f_weapon_prices": {
+      "fine": 140,
+      "superior": 260,
+      "exceptional": 480
     }
   }
 }

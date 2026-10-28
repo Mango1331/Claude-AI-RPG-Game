@@ -590,7 +590,7 @@ export function openGuildManuals(s, content, emit, hall) {
     const lines = ['strike', 'bolt', 'guard', 'ward', 'mend'].map(fn => {
         const what = `Primer of ${fn[0].toUpperCase() + fn.slice(1)}`;
         const profile = itemProfile(content, { name: what, kind: 'document', teaches: { source: 'manual', fn, tags: null, aspects: null } });
-        return { id: fn, what, kind: 'goods', qty: 1, price_cp: content.rules.growth.guild_manual_cp ?? 120, profile };
+        return { id: fn, what, kind: 'goods', qty: 1, price_cp: (s.meta.f_balance ? content.rules.f_balance.guild_manual_cp : content.rules.growth.guild_manual_cp) ?? 120, profile };
     });
     emit({ t: 'offer.created', d: { offer: { id, seller, at: hall, status: 'open', canon: true, stock: 'manuals', turn: s.turn, lines } } });
 }
@@ -664,7 +664,7 @@ function retainedListings(s, need) {
 
 export function boardRequest(s, content, need) {
     const [lo, hi] = content.rules.guild.rank_levels[need.rank];
-    const guide = content.rules.guild.board?.payout_guide_cp?.[need.rank];
+    const guide = s.meta.f_balance && need.rank === 'Novice' ? [30, 600] : content.rules.guild.board?.payout_guide_cp?.[need.rank];
     const town = s.places[need.branch];
     const realm = town?.realm && s.places[town.realm] ? s.places[town.realm].name : null;
     const profile = boardProfile(s, content, need);
@@ -716,6 +716,7 @@ export function boardRequest(s, content, need) {
             '- Dungeon clearance has one DEFEAT objective with qty null, where naming the exact known Dungeon and level number. proof is []. Include a short explicit danger/risk warning in task; a rank-compatible floor is not automatically safe for a fresh solo adventurer.',
         ] : []),
         `- rank is "${need.rank}"; level is the quest level, an integer from ${lo} to ${hi}; qtype is minor, standard, dangerous or major.`,
+        ...(s.meta.f_balance && need.rank === 'Novice' ? ['- F hunt payout guidance by actual challenge: levels 1–3: 30–80 cp; 4–7: 90–180 cp; 8–11: 200–350 cp; 12–14: 350–600 cp. Consider actual quantity, elite/boss risk, supplies and travel; a level label alone does not justify a high price. These are guidelines, not validation limits.'] : []),
         `- payout_cp is the Guild's one fixed payout in copper (1 silver = 10 copper)${guide ? `; for ${need.rank} work ${guide[0]}–${guide[1]} cp is usual (a guide, not a limit)` : ''}.`,
         '- A cull names how many its notice asks for: the DEFEAT objective\'s qty (4 wolves; 1 for a single beast). A clearance of a Dungeon level names the level ("level 1") and no number: the level is cleared when its threats are. One listing is one of the two, never both: a cull\'s desired_end_state is that number of them dealt with, not a cleared level or place; a clearance\'s is the level cleared, with no number. Its title says the same: a clearance is titled by what is cleared ("Clear …", "Purge …", "Secure …"), never "Cull" or "Thin", which promise a number.',
         '- 1 to 4 objectives: {verb, what, qty, unit, where, delivery}; verb is one of GO, FIND, TALK, GET, GATHER, GIVE, DELIVER, USE, REPAIR, DEFEND, ESCORT, ATTACK, DEFEAT. These are continuity memories for play, not a rigid checklist the narrator must force in order.',
@@ -1025,7 +1026,7 @@ function cullTask(s, content, q) {
 /** Book validated listings: quest.created (listed) for each, and the board. The payout is fixed from here on. */
 export function bookBoard(s, content, need, listings, emit) {
     const ids = [];
-    const guide = content.rules.guild.board?.payout_guide_cp?.[need.rank];
+    const guide = s.meta.f_balance && need.rank === 'Novice' ? [30, 600] : content.rules.guild.board?.payout_guide_cp?.[need.rank];
     for (const l of listings) {
         // the generator never names ids (its schema has none); a fixture's own id (tests) is kept when it is free
         let id = typeof l.id === 'string' && /^quest\.[a-z0-9_]+$/.test(l.id) && !s.quests[l.id] ? l.id : `quest.${slug(l.title) || 'contract'}`;

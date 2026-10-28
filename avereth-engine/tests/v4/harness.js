@@ -22,11 +22,12 @@ export class Chat4 {
      * @param {{seed?: number, greeting?: string, listings?: object[]|null, boardFails?: boolean}} opts listings: what the
      *   Board generator answers (a fixture's listings, ids removed as the generator never writes ids)
      */
-    constructor(content, { seed = 7, greeting = GREETING, listings = null, boardFails = false, legacyPrivateQuests = false, fProgression = false } = {}) {
+    constructor(content, { seed = 7, greeting = GREETING, listings = null, boardFails = false, legacyPrivateQuests = false, fProgression = false, fBalance = false } = {}) {
         this.content = content;
         this.chat = [{ mes: greeting, is_user: false, is_system: false, extra: {} }];
         ensureCampaign(this.chat, content, { seed, runtime: 'v4' });
-        // Historical regression scenarios keep their original board/world policy; current-policy tests opt in.
+        // Historical regression scenarios keep their original numeric policy; current-policy tests opt in.
+        if (!fBalance) delete rec(this.chat[0]).events.find(e => e.t === 'campaign.started').d.f_balance;
         if (!fProgression) delete rec(this.chat[0]).events.find(e => e.t === 'campaign.started').d.f_progression;
         // Rule-1 fixtures replay the old campaign-start format; product campaigns keep the new flag.
         if (content.start.ruleset === 1 || legacyPrivateQuests) {

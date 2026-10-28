@@ -232,6 +232,7 @@
       "effect_scale": 1.5
     }
   },
+  "f_balance": {"promotion_progress": {"1": 50, "2": 75, "3": 100}, "lp_day_cap": {"teacher": 60, "self": 40}, "guild_manual_cp": 80},
   "growth": {
     "guild_manual_cp": 120,
     "src": "Patch 9C-1 (docs/PATCH9C1_SKILL_ACQUISITION_TRAINING.md): provisional numbers of Skill acquisition and training under ruleset 2 (src/v4/growth.js); Learning Progress needed is proficiency.learning_progress by Complexity",

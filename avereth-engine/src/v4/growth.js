@@ -179,11 +179,12 @@ function teacherNow(state, content, id, tags) {
 
 // ------------------------------------------------------------------------------------------------ progress
 /** The Learning Progress a day's minutes claim for a goal (rules.json growth.lp_note). */
-function dayClaim(content, cls, goal, day) {
+function dayClaim(content, cls, goal, day, state) {
     const r = R(content);
     const m = goal.days?.[day] || {};
-    const self = Math.min(r.lp_day_cap.self, (r.lp_per_hour.self * (m.self || 0)) / 60);
-    const raw = Math.min(r.lp_day_cap.teacher, (r.lp_per_hour.teacher * (m.teacher || 0)) / 60 + self);
+    const cap = state?.meta.f_balance ? content.rules.f_balance.lp_day_cap : r.lp_day_cap;
+    const self = Math.min(cap.self, (r.lp_per_hour.self * (m.self || 0)) / 60);
+    const raw = Math.min(cap.teacher, (r.lp_per_hour.teacher * (m.teacher || 0)) / 60 + self);
     // Patch 9C-2c: a quality of himself he trains has no discipline: no affinity
     return Math.floor(raw * (goal.target.passive ? 1 : affinityFor(content, cls, { tags: goal.target.tags })));
 }
@@ -203,7 +204,7 @@ function sessionProgress(state, content, goalId, days) {
     for (const day of days) {
         const g = growthOf(s).goals[goalId];
         if (!g || g.lp >= g.need) break;
-        const gain = Math.min(g.need - g.lp, dayClaim(content, cls, g, day) - (g.days?.[day]?.lp || 0));
+        const gain = Math.min(g.need - g.lp, dayClaim(content, cls, g, day, s) - (g.days?.[day]?.lp || 0));
         if (gain <= 0) continue;
         const e = { t: 'growth.progress', d: { goal: goalId, day, lp: gain, total: g.lp + gain, need: g.need } };
         out.push(e);

@@ -49,7 +49,7 @@ export function validateState(state, content) {
             if (!sk) p.push(`${where}: unknown skill ${sid}`);
             if (!isInt(v.prof) || v.prof < 1 || v.prof > 5) p.push(`${where}: skill ${sid} proficiency ${v.prof}`);
             // Patch 9B-1: PP below the next promotion, none at P5
-            if (sk && v.pp !== undefined && (!isInt(v.pp) || v.pp < 0 || (v.prof >= 5 ? v.pp !== 0 : v.pp >= promotionPp(content, sk)))) p.push(`${where}: skill ${sid} PP ${v.pp} at P${v.prof}`);
+            if (sk && v.pp !== undefined && (!isInt(v.pp) || v.pp < 0 || (v.prof >= 5 ? v.pp !== 0 : v.pp >= promotionPp(content, sk, state)))) p.push(`${where}: skill ${sid} PP ${v.pp} at P${v.prof}`);
         }
         // Patch 9B-2: a Passive he has is one of this campaign's, as it was defined
         for (const [pid, had] of Object.entries(s.passives || {})) {

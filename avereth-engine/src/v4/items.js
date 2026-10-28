@@ -10,7 +10,7 @@
 //
 // The words of a thing's name decide (content/rules.json items), once, when the thing comes into his hands: the object
 // keeps its `use` and, for food, `fresh_until`. A document or a trophy is kept, never used up.
-import { normText } from '../util.js';
+import { normText, slug } from '../util.js';
 import { itemTemplateOf, restoreTemplateOf, weaponFamily } from '../content.js';
 import { rankOf, rankIndex } from '../derived.js';
 import { composerFunctions, composeTags, composeAspects } from '../skill_composer.js';
@@ -130,10 +130,10 @@ export function offerCard(state, content, offer) {
 }
 
 /** Same content-derived market vocabulary for narrator, planner and extractor; no new slots or numbers. */
-export function gearMarketText(content) {
+export function gearMarketText(content, balance = false) {
     const kinds = content.gear?.instances?.gear_kinds || [];
-    const staff = ['common', 'fine', 'superior', 'exceptional'].map(q => `${q} ${itemProfile(content, { name: `${q} staff` })?.matk ?? '?'}`).join(', ');
-    return `GEAR MARKET — Mechanical equipment uses only these supported categories: ${kinds.map(k => `${k.words.slice(0, 2).join('/')} (${k.slot})`).join('; ')}. Use a recognized kind in a combat equipment offer's name; appearance may vary freely. Only the engine fixes its values. No extra head, leg, hand or jewelry slots or bonuses. Separate armor parts are not whole armor. Ordinary tools, clothes and decoration remain available, explicitly without combat stats. F staff MATK by actual quality: ${staff}; starter staff MATK 10. For requested upgrades, a suitable specialist may offer genuinely finer/superior/exceptional supported ware; do not keep offering common gear under expensive material names. If no upgrade is available, say so. Copper/silver cores and higher prices alone grant no stats. Keep the named quality and price stable; armour/offhand, consumables and supported Skill manuals are other voluntary improvements.`;
+    const staff = ['common', 'fine', 'superior', 'exceptional'].map(q => `${q} ${itemProfile(content, { name: `${q} staff`, balance })?.matk ?? '?'}`).join(', ');
+    return `GEAR MARKET — Mechanical equipment uses only these supported categories: ${kinds.map(k => `${k.words.slice(0, 2).join('/')} (${k.slot})`).join('; ')}. Use a recognized kind in a combat equipment offer's name; appearance may vary freely. Only the engine fixes its values. No extra head, leg, hand or jewelry slots or bonuses. Separate armor parts are not whole armor. Ordinary tools, clothes and decoration remain available, explicitly without combat stats. F weapon/focus values by actual quality: ${staff}; starter staff MATK 10. For requested upgrades, a suitable specialist may offer genuinely finer/superior/exceptional supported ware; do not keep offering common gear under expensive material names. If no upgrade is available, say so. Copper/silver cores and higher prices alone grant no stats. Keep the named quality and price stable; armour/offhand, consumables and supported Skill manuals are other voluntary improvements.`;
 }
 
 /**
@@ -151,7 +151,7 @@ export function gearMarketText(content) {
 // not name stays null and teaches nothing). The profile describes the source, never a finished Skill; the engine
 // composes the Skill when it is learned (src/v4/growth.js). A return stone, a pebble or a storybook is none.
 const has = (name, list) => (list || []).some((w) => words(name).includes(` ${normText(w)} `));
-export function skillSource(content, { name, kind = 'item', teaches = null }) {
+export function skillSource(content, { name, kind = 'item', teaches = null, balance = false }) {
     const r = content.rules.growth?.sources;
     if (!r || !name || !teaches || typeof teaches !== 'object' || !['stone', 'manual'].includes(teaches.source)) return null;
     // Patch 9C-2c: what is called a Passive Stone is no Skill Stone of the story's: its power is the engine's alone
@@ -185,7 +185,7 @@ export function sourceText(p) {
     return `${p.title} · ${p.rank} · ${p.fn ? (p.source === 'stone' ? 'holds' : 'teaches') : 'holds'} ${what}`;
 }
 
-export function itemProfile(content, { name, kind = 'item', effect = null, teaches = null }) {
+export function itemProfile(content, { name, kind = 'item', effect = null, teaches = null, balance = false }) {
     const src = skillSource(content, { name, kind, teaches });
     if (src) return src;
     if (!name || kind === 'document' || kind === 'trophy' || kind === 'resource') return null;
@@ -229,9 +229,10 @@ export function itemProfile(content, { name, kind = 'item', effect = null, teach
         const [lo, hi] = ref[key] || [0, 0];
         return Math.max(1, Math.round((lo + q.at * (hi - lo)) * rankFactor(content, r)));
     };
-    const vals = Object.fromEntries(Object.entries(g.values).map(([k, key]) => [k, stat(key)]));
+    const vals = Object.fromEntries(Object.entries(g.values).map(([k, key]) => [k,
+        balance && r === 'F' && g.slot === 'weapon' ? (content.gear.instances.f_weapon_values?.[q.tier] ?? stat(key)) : stat(key)]));
     const family = g.family === 'by_words' ? weaponFamily(content, name) || 'melee' : g.family;
-    const p = { kind: 'gear', base: g.id, title: null, rank: r, quality: q.tier, slot: g.slot, family, atk: vals.atk || 0, matk: vals.matk || 0, def: vals.def || 0, mdef: vals.mdef || 0 };
+    const p = { kind: 'gear', base: g.id, title: null, rank: r, quality: q.tier, ...(balance && r === 'F' && g.slot === 'weapon' ? { balance: 114 } : {}), slot: g.slot, family, atk: vals.atk || 0, matk: vals.matk || 0, def: vals.def || 0, mdef: vals.mdef || 0 };
     return { ...p, value_cp: valueOf(content, p) };
 }
 
@@ -244,7 +245,7 @@ export function valueOf(content, p) {
     const f = rankFactor(content, p.rank) ** 2;
     if (p.kind === 'attack') return Math.max(1, Math.round(p.power * (v.attack_cp_per_power ?? 0.6) * (p.area ? v.area_factor ?? 1.5 : 1) * (p.uses ?? 1) * f / rankFactor(content, p.rank)));
     if (p.kind === 'restore') return Math.max(1, Math.round(p.amount * (v.restore_cp_per_point?.[p.resource] ?? 0.8) * (p.uses ?? 1) * f / rankFactor(content, p.rank)));
-    if (p.kind === 'gear') return Math.max(1, Math.round(((p.atk || 0) + (p.matk || 0) + (p.def || 0) + (p.mdef || 0)) * (v.gear_cp_per_point ?? 8) * f / rankFactor(content, p.rank)));
+    if (p.kind === 'gear') return Math.max(1, Math.round(((p.atk || 0) + (p.matk || 0) + (p.def || 0) + (p.mdef || 0)) * (v.gear_cp_per_point ?? 8) * (p.balance === 114 && p.rank === 'F' && p.slot === 'weapon' ? (v.gear_quality_factor?.[p.quality] ?? 1) : 1) * f / rankFactor(content, p.rank)));
     return null;
 }
 
@@ -320,8 +321,8 @@ export function restoreEffect(content, p, { level, current, max }) {
  * minute it keeps until; Patch 7.1: an item with values of its own (gear, an attack item) its profile, fixed now. Spread
  * into object.created; a purchase carries the offer line's profile instead (src/v4/trade.js).
  */
-export function itemTraits(content, { name, kind = 'item', unit = null, effect = null, teaches = null }, minute, profile = undefined) {
-    const own = profile !== undefined ? profile : itemProfile(content, { name, kind, effect, teaches });
+export function itemTraits(content, { name, kind = 'item', unit = null, effect = null, teaches = null, balance = false }, minute, profile = undefined) {
+    const own = profile !== undefined ? profile : itemProfile(content, { name, kind, effect, teaches, balance });
     const use = own?.kind === 'gear' ? 'equipment' : useOf(content, { name, kind });
     if (own) return { use, profile: own };
     if (use !== 'food') return { use };
@@ -337,4 +338,27 @@ export const spoiled = (s, o) => Number.isFinite(o?.fresh_until) && (s.clock?.mi
 export function unitsOf(n, unit) {
     if (!unit) return String(n);
     return `${n} ${n === 1 ? unit.replace(/s$/, '') : unit.endsWith('s') ? unit : `${unit}s`}`;
+}
+
+/** Small ordinary specialist stock: fixed offers, never a new seller, remote purchase or free equipment. */
+export function openEquipmentStock(s, content, emit) {
+    if (!s.meta.f_balance || s.encounter || s.pending_combat?.length) return;
+    const place = s.places[s.scene.at];
+    if (!place || !/\b(?:smith|smithy|blacksmith|weaponsmith|armou?rer|fletcher|staffmaker|wandmaker|weapons?|armou?ry|workshop|shop|store|stall|forge)\b/i.test(place.name || '')) return;
+    for (const id of s.scene.present || []) {
+        const e = s.entities[id];
+        if (e?.kind !== 'npc' || e.at !== s.scene.at || e.status === 'dead') continue;
+        const occupation = Object.values(s.facts || {}).filter(f => f.s === id && f.p === 'occupation' && !f.until).map(f => f.o).join(' ');
+        const role = normText(`${occupation} ${(e.descriptors || []).join(' ')}`);
+        if (!/\b(?:blacksmith|smith|weaponsmith|armou?rer|fletcher|staffmaker|wandmaker|weapon merchant)\b/.test(role) || /\b(?:former|retired|ex|not)\b/.test(role)) continue;
+        const kind = /staffmaker|wandmaker/.test(role) ? 'staff' : /fletcher/.test(role) ? 'bow' : /armou?rer/.test(role) ? 'chainmail' : 'sword';
+        for (const quality of ['fine', 'superior', 'exceptional']) {
+            const key = `offer.gear.${slug(id)}.${slug(s.scene.at)}.${Math.floor(s.clock.minute / 1440)}.${quality}`;
+            if (s.offers[key]) continue; // consumed stock stays consumed for this day, including replay
+            const what = `${quality} F-Rank ${kind}`;
+            const profile = itemProfile(content, { name: what, balance: true });
+            emit({ t: 'offer.created', d: { offer: { id: key, seller: id, at: s.scene.at, status: 'open', canon: false, stock: 'f_gear', turn: s.turn,
+                lines: [{ id: 'l1', what, kind: 'goods', equipment: true, qty: 1, price_cp: profile.slot === 'weapon' ? content.gear.instances.f_weapon_prices[quality] : profile.value_cp, profile }] } } });
+        }
+    }
 }

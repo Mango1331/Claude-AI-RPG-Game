@@ -36,7 +36,7 @@ import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.j
 import { reachedEvents, setIntentEvents } from './intents.js';
 import { featureNamed, featureEvent, applySpring } from './features.js';
 import { complexOf, dungeonOf, trueDungeonOf, classified, rankText, linkBetween, sameWay, linksAt, wayBetween, roomByName, roomKnown, markEvents, newLink, linkEvent, levelVia, blockerOf, visited } from './dungeon.js';
-import { itemTraits, useOf, itemProfile, priceAudit, gearOfferWhy } from './items.js';
+import { itemTraits, useOf, itemProfile, priceAudit, gearOfferWhy, openEquipmentStock } from './items.js';
 import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity.js';
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
 import { anchorFor, templateFor, rulesetOf } from '../content.js';
@@ -1426,7 +1426,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
         if (type === 'take' && e.taken === true && !events.some((x) => x.t === 'object.created' && x.d.object.holder?.entity === 'pc') && !events.some((x) => x.t === 'object.moved' && x.d.to?.entity === 'pc')) {
             const name = (auth.takeNames || {})[k];
-            if (name && !isLooseCoin(name)) emit({ t: 'object.created', d: { object: { id: uniqueObjectId(s, tag, name), name, kind: 'item', stack: false, qty: 1, unit: null, ...itemTraits(content, { name }, s.clock.minute), holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'taken' } } } });
+            if (name && !isLooseCoin(name)) emit({ t: 'object.created', d: { object: { id: uniqueObjectId(s, tag, name), name, kind: 'item', stack: false, qty: 1, unit: null, ...itemTraits(content, { name, balance: s.meta.f_balance === true }, s.clock.minute), holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'taken' } } } });
         }
         if ((type === 'buy' || type === 'pay') && e.taken_anyway === true) overreach(type === 'buy' ? 'purchase' : 'payment', `the reply had Alaric ${type === 'buy' ? 'take or use what he had not bought' : 'pay'} although he had not agreed`);
         if ((type === 'buy' || type === 'pay') && e.priced === true) {
@@ -1572,6 +1572,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const fightFrom = events.length;
     const opened = openCommitted(s, content, dice, emit, { hold: false, c: cPath });
     if (opened) opened.from = fightFrom;
+    if (cPath && !opened) openEquipmentStock(s, content, emit);
     return { events, rejected, corrections, system, opened, state: s, arrivedHall };
 
     // ---------------------------------------------------------------------------------------------- step helpers
@@ -2170,7 +2171,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (holder.entity === 'pc' && box && s.features[box].status === 'active' && s.features[box].kind === 'obstacle') { reject(d, 'shut_in', `it lies in ${s.features[box].name} (${box}), which is not open yet`); return; }
         const id = uniqueObjectId(s, tag, d.name);
         if (holder.entity === 'pc' && ((auth.take || []).length || auth.gather)) grant('player.take');
-        emit({ t: 'object.created', d: { object: { id, name: String(d.name).slice(0, 80), kind: d.kind, stack: d.kind === 'resource', qty: d.qty ?? 1, unit: d.unit || null, ...itemTraits(content, d, s.clock.minute), holder, marks: [], for_quests: q ? [q.id] : [], ...(box ? { in: box } : d.in && holder.loc ? { in_name: String(d.in).slice(0, 80) } : {}), source: { turn: s.turn, how: holder.entity === 'pc' ? (((auth.take || []).length || auth.gather) ? 'taken' : 'world_gift') : 'story' } } } });
+        emit({ t: 'object.created', d: { object: { id, name: String(d.name).slice(0, 80), kind: d.kind, stack: d.kind === 'resource', qty: d.qty ?? 1, unit: d.unit || null, ...itemTraits(content, { ...d, balance: s.meta.f_balance === true }, s.clock.minute), holder, marks: [], for_quests: q ? [q.id] : [], ...(box ? { in: box } : d.in && holder.loc ? { in_name: String(d.in).slice(0, 80) } : {}), source: { turn: s.turn, how: holder.entity === 'pc' ? (((auth.take || []).length || auth.gather) ? 'taken' : 'world_gift') : 'story' } } } });
         const key = normText(d.name);
         objectsNew.set(key, objectsNew.has(key) ? null : id); // duplicate labels are ambiguous, never last-wins
     }
@@ -2398,7 +2399,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const line = { id: `l${i + 1}`, what: l.what, kind: l.kind, service: l.service ?? null, qty: l.qty ?? 1, price_cp: l.price_cp, ...(l.said !== undefined ? { said: l.said } : {}) };
             // Patch 7.2: a restorative's kind as the extractor gave it (effect), checked by itemProfile (a consumable at all)
             // Patch 9C-2b: a Skill Stone or a manual by what the reply says it teaches (fixed with the line)
-            let profile = line.kind === 'goods' ? itemProfile(content, { name: line.what, effect: l.effect ?? null, teaches: l.teaches ?? null }) : null;
+            let profile = line.kind === 'goods' ? itemProfile(content, { name: line.what, balance: s.meta.f_balance === true, effect: l.effect ?? null, teaches: l.teaches ?? null }) : null;
             if (cPath && rulesetOf(s) >= 2 && line.kind === 'goods') {
                 const why = gearOfferWhy(content, l, profile);
                 if (why) {

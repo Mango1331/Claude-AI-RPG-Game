@@ -1,6 +1,6 @@
 # Avereth Engine – Ideenarchiv und spätere Kandidaten
 
-**Stand:** 27.10.2026. **Ideen sind keine Patchfreigaben.** Aktueller Stand ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md), Designentscheidungen in [02](02_DESIGN_KANON.md), technische 10B-Befunde in [06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md).
+**Stand:** 28.10.2026. **Ideen sind keine Patchfreigaben.** Aktueller Stand ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md), Designentscheidungen in [02](02_DESIGN_KANON.md), technische 10B-Befunde in [06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md).
 
 **Verlustfreie historische Quelle:** Die zuvor sehr ausführliche Fassung mit sämtlichen alten Patch-8-/9-Plänen, Gegenreviews und einzelnen Messergebnissen bleibt [auf dem ursprünglichen main-Commit 0ebf449](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0ebf4496f185a69ebac235a337ab9dd2e2b470c7/04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md) vollständig erhalten. Historische Formulierungen wie „nächster Patch“ sind damit nicht automatisch aktuelle Aufträge.
 
@@ -101,6 +101,7 @@ Im langen Chat wurden **141 nummerierte Punkte** kritisch bewertet. Diese Übers
   - Nach langer Abwesenheit erkennt ein wichtiger NPC Alaric wieder und bezieht sich auf **ein besonders relevantes gemeinsames Ereignis**, ohne bei jeder Begegnung dieselbe Erinnerung künstlich zu wiederholen oder alle vergangenen Gespräche wortgetreu aufzuzählen.
 - **Möglicher technischer Ansatz – zunächst nur prüfen:** Bestehende `knowledge`-/`memories`-/Relations-Events und NPC-IDs **wiederverwenden**, keine parallele zweite Wahrheit oder wachsende Dossierbank einführen. Für Stufe 2 nur ausgewählte, wichtige Episoden samt Herkunft und Zeit speichern bzw. gezielt abrufen; vergangene Episoden behalten, aber die im aktuellen Narrator-Prompt dargestellte Auswahl knapp halten. Herkunfts-/Wissensgrenzen und Änderungen bestehender Fakten (z. B. Versprechen erfüllt, Beziehung gewandelt, Gerücht als falsch erkannt) müssen unterscheidbar bleiben. **Archivierte Fakten, gespeichertes NPC-Wissen und tatsächlich im Gespräch verwendeter Kontext sind drei verschiedene Prüfebenen**.
 - **Offene Fragen für die spätere Machbarkeitsprüfung:** Wie werden Wichtigkeit, automatische Auswahl und ggf. Rückstufung ohne Fehlentscheidungen bestimmt? Wie viele hervorgehobene NPCs und Ereignisse bleiben bei langen Kampagnen performant? Was darf `#NPC Name` anzeigen/markieren, ohne Geheimnisse des NPC an den Spieler zu verraten? Wie werden Doppel-IDs, Namenswechsel, Tod, Abwesenheit, Save/Reload, Swipe und alte Spielstände behandelt? Was geschieht, wenn ein wichtiges Ereignis nicht sauber extrahiert oder eine Erinnerung objektiv falsch erzählt wurde? Wann lohnt sich gegenüber Stufe 1 tatsächlich die vertiefte Speicherung?
+- **Ergänzung aus der Recherche (28.10.2026):** Abruf und Wissensgrenzen gibt es bereits. `src/retrieval.js` bewertet wie Generative Agents (Entität, Wichtigkeit, Wortnähe, Ort, Quest, Beziehung, Aktualität), RELEVANT erhält 25 % des Kontextbudgets, `learn` kennt Quellen, Gerüchte und `claims`. Stufe 2 bräuchte daher keine neue Wissensstruktur, sondern höchstens eine Bogen-Verdichtung aus Events, die nie Fakten erzeugt und bei Swipe oder Bearbeitung der Quellnachricht verfällt. Erst zu prüfen, wenn die Messung oben eine Lücke zeigt. [§7a](#7a-externe-ai-rpg-recherche-28102026--konsolidiertes-ergebnis-keine-freigabe), [Fachdatei §4.4](recherche/AI_RPG_RECHERCHE_20261028.md#44-bogen-gedächtnis-ebene-4-erst-nach-der-messung-aus-3b)
 - **Qualitätsziel, kein Gameplayzwang:** Wichtige Personen sollen sich wie **dieselben Menschen mit gemeinsamer Geschichte** anfühlen; normale Figuren müssen nicht mehr als ihre stabile Rolle, Identität und grundlegende Haltung mitbringen. NPCs dürfen lügen, irren, unterschiedliche Perspektiven haben und sich entwickeln; sie dürfen nicht unbegründet alles wissen oder mechanisch bestätigte Ereignisse vergessen/umschreiben. **Kein Zwang zu zusätzlichen sozialen Gesprächen** im Testspielerleitfaden.
 
 **Status ausdrücklich zurückgestellt:** Nur Ideenablage für eine spätere Design- und technische Machbarkeitsprüfung. **Aktuell keine Umsetzung und keine zusätzlichen Memory-Abnahmen**. Priorität bleibt bei **technischen Fehlern, zuverlässigen natürlichen Tests und Scaling F→E**.
@@ -141,30 +142,92 @@ Nutzer berichtet: **im .26-Livetest wiederholt stundenlang im Dungeon gerastet, 
 - **Noch nicht eingebaut:** Gefahr nach Zone/Sicherheit, Dauer, Zeit seit letzter relevanter Begegnung/Pacing-Tendenz, geeignete konkrete Erlebnisse (Kampf, Entdeckung, andere Abenteurer, ggf. nichts).
 - Der Nutzer erinnert sich an unsere frühere Diskussion: **zufällige Ereigniswahrscheinlichkeit kann bei langer ereignisloser Zeit steigen**; keine Garantie, dass immer nach X Nachrichten ein Event entsteht.
 - **Noch keine freigegebene neue Mechanik.** Beim Engine-only-Rest oder ROAD AHEAD als wichtigen Design-Testfall berücksichtigen. Nicht stundenlange Ruhe im gefährlichen Dungeon ohne überprüfte Gefahrenlage automatisch als sicher behandeln; keine PC-Folgehandlung erfinden.
+- **Präzisierter Vorschlag nach der Recherche (28.10.2026, keine Freigabe):**
+  - **Gefahrenrate je Spielminute statt je Rastversuch:** p = 1 − e^(−λ·t). Geteilte Rasten tragen dasselbe Risiko, und ein Swipe würfelt über den Seed-Hash nicht neu.
+  - λ steigt bei langer ereignisloser Zeit in gefährlicher Umgebung, **bleibt aber unter 100 %**. Die klassische Dota-PRD erreicht 100 % und damit einen festen Begegnungstermin; das ist nicht gewollt.
+  - Zurücksetzen nach einem bedeutenden Ereignis, Ruhefenster nach schwerem Kampf, an sicheren Orten λ = 0.
+  - Vorsicht (Wache, versteckter Lagerplatz) senkt λ.
+  - Der Wurf liefert die **Minute der Unterbrechung**: Zeit und Regeneration werden nur bis dahin gebucht.
+  - **Was** auftritt, legt die Engine aus der echten Belegung fest (Living-Dungeon-Slots, wandernde Gruppen, Regionstabelle), wie bei DUNGEON AHEAD. Das ist nicht nur Kampf.
+  - ROAD AHEAD nutzt dieselbe Rate je Etappe.
+  - [Fachdatei §4.1](recherche/AI_RPG_RECHERCHE_20261028.md#41-gefahr-bei-rast-warten-und-reise-nutzerfeedback-6a)
 
 ## 7. Spätere technische Möglichkeiten – keine Freigabe
 
 - Provider/Performance: effektive Reasoningbudgets, Cache und echte LLM-Kosten getrennt messen; weniger Aufrufe nur mit identischen autoritativen World-Ergebnissen und Replay-Abnahme.
+  - **Messbasis 28.10.2026:** Der Live-Runner erfasst die Werte je Rolle bereits (`report.md` „Performance“/„Laufzeit (gemessen)“).
+  - Lauf `20261026-132758Z` (.98, 73 Eingaben):
+    - Median 21 s Spielzeit je Zug, mit Testspieler Ø 25 s.
+    - API-Zeit: Erzähler 45 %, Extraktor 35 % (davon Reparaturen 5 %), Planner 16 %.
+    - **Prompt-Caching wirkt (≈ 75 %)**; frühere Werte mit `cached_tokens` = 0 und ≈ 19 Token/s aus V3/Pretest 5 sind überholt.
+    - Der Extraktor schreibt so viele Inhaltszeichen wie der Erzähler.
+  - Lange Tests entstehen vor allem durch die Zahl der Eingaben.
+  - **Prüfideen:**
+    - kompaktere Extraktor-Ausgabe (nur geänderte Felder), Gültigkeit messen;
+    - Reparaturquote des Extraktors;
+    - Erzähler-Länge;
+    - Erzählermodell A/B (Endpoint bietet u. a. GLM-5.3, DeepSeek-V4-Pro, Kimi-K2.6; Rollenmodell-Unterstützung ungeprüft);
+    - neue Kennzahl **Zeit je tatsächlich ausgeführter Handlung**.
+  - [Fachdatei §4.8](recherche/AI_RPG_RECHERCHE_20261028.md#48-laufzeit--korrigierte-messbasis)
 - ROAD AHEAD, Such- und Chase-Erweiterungen: getrennte Kandidaten statt neuer pauschaler Reise-/NPC-Engine; erst nach natürlichen Blockern priorisieren.
 - Optionales UI/UX: Engine-only-Anzeigen, Quick-Replies, Fast Travel, Rest-/Wait-Komfort. Patch 10A nicht als Ganzes neu planen.
 - Aktuell detailliert offen: [F→E-Scaling GPT](testrun_10b/scaling_gpt.md), [F-/E-Entwurf Sol](testrun_10b/ENTWURF_F_RANG_PROGRESSION_UND_E_UEBERGANG.md), [Balance-Ersteindrücke](testrun_10b/BALANCE_ERSTEINDRUECKE_XP_STARTWERTE_20261026.md).
 - Historische Performance-/8.2-Versuche mit methodischen Grenzen: [vollständiger Originaltext](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0ebf4496f185a69ebac235a337ab9dd2e2b470c7/04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md#7-performance--realer-26-test-und-patch-82-reviewentwurf).
 
-### 7a. Externe AI-RPG-Recherche (28.10.2026) – spätere Design-/Architekturimpulse, **keine Freigabe**
+### 7a. Externe AI-RPG-Recherche (28.10.2026) – konsolidiertes Ergebnis, **keine Freigabe**
 
-**Einordnung:** Inspiration durch Craft RPG, SillyTavern-Memory-Projekte, AI Dungeon, Tapestria und Generative Agents; das Spielgefühl von OurDream/Obsidian Summoner/Goblin Overlord soll ergänzend **durch eigene Spielbeispiele** verglichen werden. Nicht als Beweis für unveröffentlichte OurDream-Interna oder als Auftrag zur Nachahmung. Priorität bleibt beim laufenden natürlichen Batch, technischer Abnahme und F→E-Balance. Vor einer Umsetzung zuerst prüfen, welche der folgenden Funktionen Avereth bereits besitzt (`src/knowledge.js`, `src/context.js`, World-Events, organische Skills, Living Dungeons).
+**Einordnung:**
+- Entstanden in vier Schritten: GPT-Recherche (erste Fassung dieses Abschnitts, `8adf9cb`), unabhängige Claude-Gegenrecherche mit Code-Abgleich auf `.108`, GPT-Bewertung, Claude-Endbewertung mit Messung aus einem vorhandenen Lauf-ZIP.
+- Vollständiger Abgleich, geprüfte Quellenlage, Umsetzungswege und alle Quellen: **[Fachdatei](recherche/AI_RPG_RECHERCHE_20261028.md)**.
+- Externe Projekte sind Ideengeber, keine Vorlage zur Nachahmung. Priorität bleibt bei natürlichem Batch, technischer Abnahme, F→E-Scaling und Combat Main/Minor.
 
-| Idee / möglicher Nutzen | Spätere Prüfrichtung (keine fertige Umsetzung) | Quellen |
+**Kernaussagen:**
+1. **Keine neue Architektur.** Ernstzunehmende Projekte trennen ebenfalls „LLM erzählt und schlägt vor, Code entscheidet“ (Tapestria, Quilltale, Intra, World-State Transformations 2026). RPGBench: LLMs erzählen gut, setzen Regeln aber schwach durch.
+2. **Avereth liegt bewusst auf der strengen Seite.** Friends & Fables aktualisiert den Zustand „probabilistic“ über nachgelagerte LLMs; reine LLM-RPGs wie OurDream brauchen manuelle Korrekturen. Craft benennt den Preis der Strenge: „invisible walls“. Fail-soft ist die Brücke; diese Wände sollen künftig gemessen werden.
+3. **Vieles existiert schon.**
+   - Retrieval nach Generative Agents (`src/retrieval.js`).
+   - Wissen je Person mit Übertragungsweg, Quelle, Gerücht und `claim` (`src/delta.js`).
+   - Fakten mit `until` statt Löschen.
+   - Deterministische Simulation außerhalb der Szene (`src/v4/living.js` `syncEvents`).
+   - Seed-Hash-Wurf je Reiseetappe und DUNGEON AHEAD.
+   - Der Runner misst bereits Laufzeit je Rolle.
+
+   Der Hebel liegt daher in **besserer Nutzung vorhandener Informationen**, weniger in neuen Speicherstrukturen.
+4. **Neue Weltdynamik zuerst deterministisch und replaybar**, mit möglichst wenigen zusätzlichen LLM-Aufrufen.
+
+| Idee | Konsolidierte Prüfrichtung (keine Freigabe) | Fachdatei |
 |---|---|---|
-| **Mehrstufiges Story-Gedächtnis** – Beziehungen und Handlungsbögen über Hunderte Züge erlebbar halten | Bereits gespeicherte Fakten, NPC-Wissen, Episoden und Threads szenen-/bogenweise **verdichten und gezielter abrufen**; Zusammenfassungen niemals als neue Weltwahrheit buchen. An die bestehende zweistufige NPC-Memory-Idee in **§3b** anschließen, keine zweite Memory-Engine. | [Memory Books](https://github.com/aikohanasaki/SillyTavern-MemoryBooks), [AI Dungeon Memory System](https://help.aidungeon.com/faq/the-memory-system), [Smart Memory](https://github.com/senjinthedragon/Smart-Memory) |
-| **NPC-Eigenziele und sparsame Weltfortschreibung** – Orte verändern sich glaubhaft bei Abwesenheit des Spielers | Vorhandene Agenden/Threads anhand von Spielzeit, Ortswechsel oder einschneidenden Events **bei Bedarf** weiterentwickeln; kein permanenter Multi-Agent-LLM-Betrieb. Nur validierte World-Events dürfen kanonisch werden. | [Generative Agents (Park et al.)](https://arxiv.org/abs/2304.03442), [Tapestria Architektur](https://tapestria.quest/docs/architecture/) |
-| **Gerüchte, unterschiedliche Perspektiven und soziale Folgen** | Wissensweitergabe entlang glaubwürdiger Begegnungen/Boten und Quellen; Weltfakt, Zeugenaussage, Irrtum, Geheimnis und Gerücht getrennt halten. Bestehendes per-NPC-Wissen wiederverwenden, keinen globalen Allwissens-/Reputationsschalter einführen. | [Smart Memory](https://github.com/senjinthedragon/Smart-Memory), [Tapestria](https://tapestria.quest/docs/) |
-| **Aus Weltzustand entstehende freie Konflikte** | NPC-Interessen, offene Probleme und Konsequenzen zu Szenen und Hilfsangeboten machen; **nicht** automatisch jede Bitte in einen formalen Quest mit XP umwandeln. Optionale, seltene Nachwirkung (*aftermath*) nach relevanten abgeschlossenen Ereignissen; Engine-Autorität unverändert. | [Tapestria Architektur](https://tapestria.quest/docs/architecture/) |
-| **Kontext nach Ort und LLM-Aufgabe fokussieren** | Hierarchische Orte und bestehendes Retrieval besser nutzen; Planner, Narrator, Extractor und spätere Spezialgeneratoren erhalten nur die jeweils relevanten Daten. Erst Prompt-/Abruflücken messen, **keine** pauschale neue Datenbank oder Vektor-RAG-Pflicht. | [Craft – A New Approach](https://www.craftrpgs.com/blog/craft-a-new-approach-to-ai-rpgs), [SillyTavern Data Bank](https://docs.sillytavern.app/usage/core-concepts/data-bank/) |
-| **Kreative nichtkämpferische Skill-Wirkungen; später Summons/Begleiter** | Organische Fähigkeiten sollen neue zulässige Weltaktionen ermöglichen (z. B. Hindernisse, Schutz, Erkundung), nicht nur Schadensvarianten. Beschwörungen möglichst über bestehende Entitäten, Effekte, Encounter-Slots und Event-Replay; keine parallele Kampfengine. Separat mit Main-/Minor-Plan und Balance prüfen. | [Tapestria Architektur](https://tapestria.quest/docs/architecture/), [Craft](https://www.craftrpgs.com/blog/craft-a-new-approach-to-ai-rpgs) |
-| **Spielgefühl als eigene Batch-Messung** | Lange natürliche Runs nicht nur auf Stopps/Level testen: ungewöhnliche Aktionen, erneute NPC-Begegnungen, neue Handlungsbögen, Szenenvielfalt und Motivation nach Turn 100/200 beobachten. OurDream nach dem neuen Update anhand **konkreter eigener Spielszenen** vergleichen; öffentliche Versionsdetails nicht ungeprüft übernehmen. | [Crafts Rückblick auf Friends & Fables](https://www.craftrpgs.com/blog/craft-a-new-approach-to-ai-rpgs), [AI Dungeon Memory](https://help.aidungeon.com/faq/the-memory-system) |
+| **Gefahr bei Rast, Warten, Reise** | Präzisiert in **§6a**: Rate je Spielminute, steigend, aber unter 100 %, Unterbrechungsminute mit anteiliger Regeneration, Inhalt aus echter Belegung. | [§4.1](recherche/AI_RPG_RECHERCHE_20261028.md#41-gefahr-bei-rast-warten-und-reise-nutzerfeedback-6a) |
+| **NPC- und Fraktionsuhren** | Wenige Fortschrittsuhren (Blades in the Dark, Dungeon-World-Fronts) für Stufe-2-NPCs (§3b), Fraktionen und Konflikte; Prototyp etwa 3 je Region.<br>Die Uhr bildet eine Absicht ab, kein Drehbuch:<br>• tickt nur bei erfüllten Weltbedingungen;<br>• kann anhalten oder zurücklaufen;<br>• Alarics validierte Handlungen drehen sie vor oder zurück.<br>Eine volle Uhr hat nur kleine, engine-eigene Folgen (NPC-Ort, Agenda, offener Thread, Aushang), nie XP, Geld oder Kampf. Tick nach dem Muster von `syncEvents`. | [§4.2](recherche/AI_RPG_RECHERCHE_20261028.md#42-npc--und-fraktionsuhren) |
+| **Wissensverbreitung außerhalb der Szene** | Kein neues Wissensmodell. Haltung nach Übertragungsweg wie in `delta.js`, nicht nach Zahl der Weitergaben.<br>Die Engine erfindet keine Verfälschungen, das wäre nicht erzählter Inhalt.<br>Verbreitung bei vergehender Zeit über Ort, kontaktreiche Berufe und Beziehungen, mit Verzögerung; Geheimnisse nie. Zuerst nur im Kontext wirksam, kein globaler Ruf. | [§4.3](recherche/AI_RPG_RECHERCHE_20261028.md#43-wissensverbreitung-außerhalb-der-szene) |
+| **Bogen-Gedächtnis (Ebene 4)** | Erst nach der Messung aus §3b. Szenenbruch als Auslöser, Event mit Text und Quell-Event-IDs, nie Fakten; verfällt bei Swipe oder Bearbeitung der Quelle (Smart Memory kann das nicht). | [§4.4](recherche/AI_RPG_RECHERCHE_20261028.md#44-bogen-gedächtnis-ebene-4-erst-nach-der-messung-aus-3b) |
+| **Story Sifting statt LLM-Aftermath** | Feste Muster über dem Event-Log (Felt/Winnow): Rettung → Wiedersehen, Versprechen → Frist, Schuld, wiederholter Konflikt.<br>**Nur Erzählhinweis im RELEVANT-Kontext, nie gebucht.** Höchstens 1 Hinweis je Zug, mit Wiederholungsschutz. Freie Konflikte werden nicht automatisch zu Quests. | [§4.5](recherche/AI_RPG_RECHERCHE_20261028.md#45-story-sifting-nur-als-erzählhinweis) |
+| **Kontext nach Ort und Aufgabe** | Bleibt gültig. Zuerst Abruflücken messen, keine Vektordatenbank als Pflicht, keine ST-Memory-Erweiterungen parallel zur Avereth-Persistenz. | [§2/§3](recherche/AI_RPG_RECHERCHE_20261028.md#3-was-avereth-bereits-hat-code-108) |
+| **Skills als Weltoperationen; Summons/Begleiter** | Effekt-Tags auf vorhandene Delta-Typen, ohne feste Ausführungsreihenfolge.<br>Summons: keine kostenlosen Zusatzaktionen, Befehl kostet eine Aktion, Anzahl begrenzt (PF2e-Minion als Muster). Prototyp-Hypothese: 1 Wesen, Befehl = Minor. Balance erst mit Main/Minor. | [§4.6/§4.7](recherche/AI_RPG_RECHERCHE_20261028.md#46-skills-als-weltoperationen) |
+| **Laufzeit** | Siehe **§7**: aktuelle Messbasis, Caching wirkt bereits, Hebel bei Erzähler-Länge und Extraktor-Ausgabe, neue Kennzahl „Zeit je ausgeführter Handlung“. | [§4.8](recherche/AI_RPG_RECHERCHE_20261028.md#48-laufzeit--korrigierte-messbasis) |
+| **Spielgefühl messen** | Objektiv aus Events: Wiederbegegnungen, Threads, Orts- und Szenenvielfalt, wiederholte Auftragsarten, **„unsichtbare Wände“ je 100 Eingaben**.<br>**Wiederholungsmaß ohne LLM:** wiederkehrende Wort-5-Gramme je NPC bzw. Erzähler.<br>Dazu eine qualitative Stichprobe mit festem Protokoll (Wiederbegegnungen, je 50 Eingaben, Szenen nach Ablehnungen). Ein LLM-Bewerter ist höchstens Hilfsmittel. Dasselbe Protokoll für den eigenen OurDream-Vergleich. | [§4.9](recherche/AI_RPG_RECHERCHE_20261028.md#49-spielgefühl-messen) |
 
-**Reihenfolge/Abgrenzung:** Zuerst natürliche Läufe und F→E-Scaling auswerten; Combat Main/Minor bleibt der getrennte vorhandene Fachplan. Danach bei **konkretem Nachweis eines Qualitätsdefizits** narrative Langzeitkontinuität, NPC-Agenden/Gerüchte und Weltfolgen gezielt prüfen. Externe Tools als **Ideengeber**, nicht parallel zur kanonischen Avereth-Persistenz installieren. Zusätzliche LLM-Aufrufe, Kosten, Save/Reload/Swipe, Geheimnisgrenzen und Replay-Sicherheit sind jeweils eigene Abnahmekriterien.
+**Quellenlage, korrigiert gegenüber der ersten Fassung:**
+- Tapestria ist noch nicht veröffentlicht (Designdokument mit Warteliste).
+- Quilltale ist ein kleines Projekt mit Selbstmessung.
+- Craft veröffentlicht keinen Harness.
+- OurDream:
+  - Öffentlich gefunden ist nur „Obsidian Summoner RPG [V4.6]“ auf winkme.ai (Valdoria, `#system/#bag/#pets`).
+  - Creator-Zuordnung, „ourdream-ai-wiki“ und die Goblin-Overlord-Fassung sind **nicht belegt**; „Mørkyn“ war nicht auffindbar.
+  - Grundlage für Vergleiche ist nur der eigene Test mit kopierten Originalszenen.
+
+**Reihenfolge:**
+1. **Jetzt, ohne Produktänderung:**
+   - Batchauswertung einschließlich der vorhandenen Laufzeittabellen;
+   - Zeit je ausgeführter Handlung;
+   - „unsichtbare Wände“;
+   - qualitative Stichprobe.
+2. **Nach F→E-Scaling und Combat Main/Minor:** Gefahr bei Rast und Reise, danach ein Uhren-Prototyp.
+3. **Bei nachgewiesenem Bedarf:** Bogen-Gedächtnis, Sifting-Hinweise, Wissensverbreitung.
+4. **Später, eigenständig designen:** Skill-Weltoperationen, Summons und Begleiter.
+5. **Nicht verfolgen:** Vektordatenbank als Pflicht, parallele ST-Memory-Erweiterungen, dauerlaufende Multi-Agent-LLMs.
+
+Zusätzliche LLM-Aufrufe, Kosten, Save/Reload/Swipe, Geheimnisgrenzen und Replay-Sicherheit bleiben jeweils eigene Abnahmekriterien.
 
 ## 8. Pflege
 

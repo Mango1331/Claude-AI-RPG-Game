@@ -1938,6 +1938,144 @@
       "effects": [],
       "effect_text": "none. The blow of a person without a weapon or any combat training (fists, an improvised tool); it is no learned Skill.",
       "source_text": "Bare-Handed Blow (untrained attack, Patch 9A)\nRank: F\nComplexity: 1\nTags: Martial\nType: Physical / Melee\nBase Power: 3\nScaling: STR × 1.00\nUses: ATK\nCost: 5 STA\nRange: ENGAGED\nEffect: none.\nThe attack of someone who holds no weapon and knows no class Basic Attack (an untrained person, Patch 9A). It is not a learned Skill."
+    },
+    {
+      "id": "warrior.cleave",
+      "name": "Cleave",
+      "class": "warrior",
+      "basic": false,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": 2,
+      "tags": [
+        "Martial"
+      ],
+      "type_text": "Physical / Area",
+      "cost": {
+        "resource": "sta",
+        "amount": 10
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": false,
+        "area": "caster_engaged"
+      },
+      "attack": {
+        "base": 8,
+        "scaling": [
+          {
+            "stat": "STR",
+            "coef": 1.25,
+            "text": "1.25"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1,
+        "damage_type": "physical"
+      },
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "area",
+          "shape": "caster_engaged",
+          "shared_rolls": true
+        }
+      ],
+      "effect_text": "Resolve damage separately against everyone ENGAGED with the caster, friend or foe.",
+      "source_text": "Cleave [Offensive]\nRank: F\nComplexity: 2\nBase Power: 8\nScaling: STR × 1.25\nUses: ATK\nCost: 10 STA\nRange: ENGAGED\nEffect: Resolve damage separately against everyone ENGAGED with the caster, friend or foe."
+    },
+    {
+      "id": "mage.arcane_wave",
+      "name": "Arcane Wave",
+      "class": "mage",
+      "basic": false,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": 2,
+      "tags": [
+        "Arcane"
+      ],
+      "type_text": "Magical / Area",
+      "cost": {
+        "resource": "mp",
+        "amount": 14
+      },
+      "ammo": null,
+      "range": {
+        "band": "MEDIUM",
+        "extra_band": false,
+        "area": "target_band"
+      },
+      "attack": {
+        "base": 8,
+        "scaling": [
+          {
+            "stat": "INT",
+            "coef": 1.25,
+            "text": "1.25"
+          }
+        ],
+        "uses": "MATK",
+        "share": 1,
+        "damage_type": "magical"
+      },
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "area",
+          "shape": "target_band",
+          "shared_rolls": true
+        }
+      ],
+      "effect_text": "Choose a visible target within range. Resolve damage separately against everyone in that target's Range Band after declared movement, friend or foe; no cluster or direction restriction. Other bands are not hit.",
+      "source_text": "Arcane Wave [Offensive]\nRank: F\nComplexity: 2\nBase Power: 8\nScaling: INT × 1.25\nUses: MATK\nCost: 14 MP\nRange: MEDIUM\nEffect: Choose a visible target within range. Resolve damage separately against everyone in that target's Range Band after declared movement, friend or foe; no cluster or direction restriction. Other bands are not hit."
+    },
+    {
+      "id": "rogue.fan_of_blades",
+      "name": "Fan of Blades",
+      "class": "rogue",
+      "basic": false,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": 2,
+      "tags": [
+        "Precision"
+      ],
+      "type_text": "Physical / Area",
+      "cost": {
+        "resource": "sta",
+        "amount": 10
+      },
+      "ammo": null,
+      "range": {
+        "band": "SHORT",
+        "extra_band": false,
+        "area": "target_band"
+      },
+      "attack": {
+        "base": 6,
+        "scaling": [
+          {
+            "stat": "AGI",
+            "coef": 1.125,
+            "text": "1.125"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1,
+        "damage_type": "physical"
+      },
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "area",
+          "shape": "target_band",
+          "shared_rolls": true
+        }
+      ],
+      "effect_text": "Choose a visible target within range. Resolve damage separately against everyone in that target's Range Band after declared movement, friend or foe; no cluster or direction restriction. Other bands are not hit.",
+      "source_text": "Fan of Blades [Offensive]\nRank: F\nComplexity: 2\nBase Power: 6\nScaling: AGI × 1.125\nUses: ATK\nCost: 10 STA\nRange: SHORT\nEffect: Choose a visible target within range. Resolve damage separately against everyone in that target's Range Band after declared movement, friend or foe; no cluster or direction restriction. Other bands are not hit."
     }
   ],
   "weapon_attacks": {

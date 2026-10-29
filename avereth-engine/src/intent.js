@@ -5,7 +5,7 @@
 // routing WorldInfo entries.
 import { bandIndex, normText } from './util.js';
 import { sceneHandle } from './v4/scene_handles.js';
-import { rulesetOf, startClasses, skillOf, skillsNamed, skillNames } from './content.js';
+import { rulesetOf, startClasses, skillOf, skillsNamed, skillNames, starterPool } from './content.js';
 import { actionsOf, weaponAttackNamed } from './derived.js';
 
 const ATTACK_VERBS = String.raw`attack(?:s|ed|ing)?|shoot(?:s|ing)?(?!\s+(?:(?:him|her|them|me|us|it)\s+)?(?:a|an)\s+(?:look|glance|glare|smile|grin|wink|question)\b)|stab(?:s|bed|bing)?|slash(?:es|ed|ing)?|(?:strike|strikes|struck|striking)(?!\s+(?:up|out|a\s+(?:deal|bargain|match|pose|chord|balance|light))\b)|hit(?:s|ting)?(?!\s+(?:it\s+off|the\s+(?:road|trail|hay|sack|books|bottle|town|streets|tavern|inn|market))\b)|punch(?:es|ed|ing)?(?!\s+in\b)|kick(?:s|ed|ing)?(?!\s+(?:off|back|in)\b)|smash(?:es|ed|ing)?|kill(?:s|ed|ing)?(?!\s+time\b)|bash(?:es|ed|ing)?|pierce(?:s|d)?|swing(?:s|ing)?(?!\s+by\b)|swung(?!\s+by\b)`;
@@ -241,7 +241,7 @@ export function parseIntent(text, state, content, { masked = null } = {}) {
             return { kind: 'creation.invalid', reason: cls.length ? 'choose exactly one Base Class' : 'no Base Class named' };
         }
         if (state.creation.step === 2) {
-            const pool = content.classes.get(state.creation.class).skill_pool.map((id) => content.skills.get(id));
+            const pool = starterPool(content, state.creation.class, state).map((id) => content.skills.get(id));
             const chosen = pool.filter((s) => wordRe(s.name.toLowerCase()).test(t)).map((s) => s.id);
             return chosen.length ? { kind: 'creation.skills', skills: chosen } : { kind: 'creation.invalid', reason: 'no Skill from the pool named' };
         }

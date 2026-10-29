@@ -29,7 +29,7 @@ const EFFECTS = {
     reposition: { on: 'self', fields: { bands: [1, 1], extra: 'bool' } },
     post_attack_temp_def: { on: 'attack', fields: { flat: [1, 4], until: ['own_next_turn'] } },
     extra_band: { on: 'attack', fields: {} },
-    area: { on: 'attack', fields: { shape: ['caster_engaged'], shared_rolls: 'bool' } },
+    area: { on: 'attack', fields: { shape: ['caster_engaged', 'target_band'], shared_rolls: 'bool' } },
     // Patch 9B-2: his own HP restored (a fixed amount by a stat), and MP or STA restored from the other resource's cost
     heal: { on: 'self', fields: { base: [1, 16], stat: ['VIT', 'WIL', 'INT'], coef: [0, 2], floor: 'bool' } },
     restore: { on: 'self', fields: { resource: ['mp', 'sta'], amount: [1, 22] } },
@@ -173,7 +173,7 @@ export function skillDefErrors(def, content, state = null) {
             else {
                 if (!!range.extra_band !== kinds.includes('extra_band')) e.push('range.extra_band exactly with the extra_band effect');
                 if (range.extra_band && range.band !== 'ENGAGED') e.push('extra_band: an ENGAGED attack');
-                if (kinds.includes('area') && (range.band !== 'ENGAGED' || strikes > 1 || range.extra_band)) e.push('area: an ENGAGED single-strike attack around him');
+                if (kinds.includes('area') && (strikes > 1 || range.extra_band || (effects.find(e => e.kind === 'area').shape === 'caster_engaged' && range.band !== 'ENGAGED'))) e.push('area: single strike without extra movement; caster_engaged requires ENGAGED range');
             }
             if (cal && isNum(attack.base) && scaling) {
                 // content.6: LONG range, ignoring Partial Cover, extra band movement, area, multi-hit and a rider consume

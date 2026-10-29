@@ -10,7 +10,7 @@ import { defeatXp, awardXp, strengthOf } from './progression.js';
 import { scaleCreature } from './npcgen.js';
 import { lookOf } from './knowledge.js';
 import { bandIndex, bandName, clone, num, roundHalfUp } from './util.js';
-import { sceneHandle } from './v4/scene_handles.js';
+import { sceneHandle, areaBand } from './v4/scene_handles.js';
 import { itemEffectOf, rulesetOf, skillOf as resolveSkill } from './content.js';
 import { effectValue, flatEffectValue, noteUse, fightProgress, restoration } from './skills.js';
 import { fightGrowth } from './v4/growth.js';
@@ -442,8 +442,9 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
     const charSkill = actor.model === 'character' ? (thing && itemEffectOf(content, thing)?.attack ? itemEffectOf(content, thing) : skillOf(content, skillId, state)) : null;
     const charArea = !!charSkill?.effects?.some((e) => e.kind === 'area');
     // Hotfix c.6.6.18: a thrown burst (an offensive item) lands where it is thrown: the one it is thrown at must be seen
+    const bandArea = charSkill?.effects?.some(e => e.kind === 'area' && e.shape === 'target_band');
     const burst = charSkill?.effects?.find((e) => e.kind === 'area' && e.shape === 'burst') || null;
-    if (target.current.cover === 'full' && (!charArea || burst)) return { illegal: `${target.name} is behind full cover (no line of sight)` };
+    if (target.current.cover === 'full' && (!charArea || burst || bandArea)) return { illegal: `${target.name} is behind full cover (no line of sight)` };
     // ---- character attack (Skill)
     if (actor.model === 'character') {
         const skill = charSkill;
@@ -464,14 +465,14 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         // A movement command has its own focus. Old/V3 callers did not carry it, so they keep the attack target as
         // their focus; Prototype C explicitly carries null for "move closer to the group / into the middle".
         const moveTarget = extra.moveTarget === undefined ? targetId : extra.moveTarget;
-        const groupMove = actorId === 'pc' && isArea && extra.move === 'closer' && moveTarget === null;
+        const groupMove = actorId === 'pc' && isArea && !bandArea && extra.move === 'closer' && moveTarget === null;
         // declared "close in" = the normal one-band move; EXTRA-BAND skills (Charge/Lunge/Shield Charge) add their
         // written extra band and may combine with the normal move (Content: "may combine with the normal one-band
         // Turn movement"), so declaring the skill authorises both.
         const allowed = (extra.move === 'closer' || skill.range.extra_band || extra.autoNormalMove ? 1 : 0) + (skill.range.extra_band ? 1 : 0);
         // Prototype C (4.3.0-c.6.6.6, review): an area attack's reach is who stands ENGAGED with him (below), not where its
         // nominal target stands: a hound at SHORT does not veto a burst that reaches the companion at his side
-        if (!groupMove && !(ctx.c && isArea)) {
+        if (!groupMove && !(ctx.c && isArea && !bandArea)) {
             while (!rangeReaches(skill.range.band, band) && moved < allowed && bandIndex(band) > 0) {
                 band = bandName(bandIndex(band) - 1);
                 moved += 1;
@@ -489,10 +490,11 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
             if (moveTarget !== null && c.id !== moveTarget) return before;
             return bandName(bandIndex(before) - 1);
         };
+        const selectedBand = areaBand(skill, plannedBand(target));
         const plannedAreaTargets = isArea ? Object.values(enc.combatants)
-            .filter((c) => areaVictim(ctx, actor, c) && plannedBand(c) === 'ENGAGED')
+            .filter((c) => areaVictim(ctx, actor, c) && (!bandArea || c.current.cover !== 'full') && plannedBand(c) === selectedBand)
             .map((c) => c.id) : [];
-        if (isArea && !plannedAreaTargets.length) return { illegal: `${skill.name} needs a valid target ENGAGED with ${actor.name} after the declared movement` };
+        if (isArea && !plannedAreaTargets.length) return { illegal: bandArea ? `${skill.name} needs a valid target in ${selectedBand || "a chosen band"} after the declared movement` : `${skill.name} needs a valid target ENGAGED with ${actor.name} after the declared movement` };
         // resources (after legality of target/range, before RNG): Cost + Ammo committed together (Core #21)
         const cost = skillCostAmount(content, skill, byItem ? 1 : actor.fixed.actions[skill.id].prof, actor.fixed.passive?.cost, ctx.state.meta?.f_progression === true);
         if (skill.cost && actor.current[skill.cost.resource] < cost) {
@@ -542,6 +544,7 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         const power = { atk: actor.fixed.atk + (edge?.stat.ATK || 0), matk: actor.fixed.matk + (edge?.stat.MATK || 0) };
         if (edge && (edge.stat.ATK || edge.stat.MATK)) record.passive = edge.names;
         const raw = rawPower(skill, actor.fixed.stats, power);
+        if (isArea) record.area_band = selectedBand;
         record.raw = raw;
         record.raw_text = rawPowerText(skill, actor.fixed.stats, power);
         const opts = { raw, profPower: prof.power, buffPowerPct, ambush: !!extra.opening };
@@ -552,9 +555,9 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
             const ids = uniqIds([targetId, ...(extra.burst || [])]).filter((id) => enc.combatants[id] && areaVictim(ctx, actor, enc.combatants[id]));
             for (const tid of ids) record.strikes.push(resolveStrike(ctx, actor, enc.combatants[tid], skill.attack, opts));
         } else if (isArea) {
-            // area: every target actually ENGAGED after the declared movement is hit, each with its own pipeline.
+            // Area: every valid target in the resolved band is hit, each with its own damage pipeline.
             const areaTargets = Object.values(enc.combatants)
-                .filter((c) => areaVictim(ctx, actor, c) && distance(enc, actorId, c.id) === 'ENGAGED')
+                .filter((c) => areaVictim(ctx, actor, c) && (!bandArea || c.current.cover !== 'full') && distance(enc, actorId, c.id) === areaBand(skill, distance(enc, actorId, targetId)))
                 .map((c) => c.id);
             for (const tid of areaTargets) record.strikes.push(resolveStrike(ctx, actor, enc.combatants[tid], skill.attack, opts));
         } else {

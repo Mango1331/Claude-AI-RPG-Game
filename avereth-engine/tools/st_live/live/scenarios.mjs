@@ -16,19 +16,23 @@ export function scenarioGuide(guide, id) {
     if (!id) return guide;
     const s = scenarioById(id);
     if (!guide.openRun || guide.fixture) throw new Error('Scenarios require a natural open-run guide, without a fixture');
+    const aoe = guide.starterAoe?.[s.baseClass.toLowerCase()];
+    const loadout = aoe ? `One of the two starter skills MUST be ${aoe}; choose the other freely. Use AoE only when tactically useful; do not force fights or ignore friendly fire.` : 'choose your own two starter skills';
     return {
-        ...guide, scenario: { id: s.id, focus: s.focus, baseClass: s.baseClass },
-        brief: `Start a genuinely new Level-1 campaign. Base class for this run: ${s.baseClass}. Select it through normal character creation; choose your own two starter skills. ${s.goal} Develop your character through real play until the Engine confirms Level ${guide.openRun.targetLevel || 15}, death, a genuine blocker or the technical limits. During sensible town visits sell surplus loot, compare affordable gear and supplies, equip useful purchases and pursue skill learning or development. Keep needed equipment and quest cargo. Allocate earned stats and recover before danger. Routes, contracts, tactics, equipment and skills are yours; incidental help and detours remain welcome. No fixtures, injected resources, scripted victories, forced fights or compulsory quest route. Trust the newest System result over narration.`,
-        milestones: guide.milestones.map(m => m.id === 'creation_complete' ? { ...m, goal: `Create a genuine Level-1 ${s.baseClass} through the ordinary creation menu; choose your own starter skills.` } : m),
+        ...guide, scenario: { id: s.id, focus: s.focus, baseClass: s.baseClass, ...(aoe ? { starterAoe: aoe } : {}) },
+        brief: `Start a genuinely new Level-1 campaign. Base class for this run: ${s.baseClass}. Select it through normal character creation; ${loadout}. ${s.goal} Develop your character through real play until the Engine confirms Level ${guide.openRun.targetLevel || 15}, death, a genuine blocker or the technical limits. During sensible town visits sell surplus loot, compare affordable gear and supplies, equip useful purchases and pursue skill learning or development. Keep needed equipment and quest cargo. Allocate earned stats and recover before danger. Routes, contracts, tactics, equipment and skills are yours; incidental help and detours remain welcome. No fixtures, injected resources, scripted victories, forced fights or compulsory quest route. Trust the newest System result over narration.`,
+        milestones: guide.milestones.map(m => m.id === 'creation_complete' ? { ...m, goal: `Create a genuine Level-1 ${s.baseClass} through the ordinary creation menu; ${loadout}.` } : m),
         focus: [s.goal, 'Observe engine-confirmed progress, loot sales, equipment, recovery and skill growth. Note contradictions and choose alternatives to persistent optional blockages.'],
         personas: ['cautious adventurer: prepare and recover, weigh threats and withdraw when sensible', 'curious adventurer: follow interesting opportunities without forcing dangerous encounters', 'pragmatic adventurer: sell surplus loot and invest in useful equipment and techniques'],
     };
 }
 
 /** A mislabeled run is recorded as such, never corrected by rewriting the character. */
-export function scenarioMismatch(state, scenario) {
-    if (!scenario || state.creation?.step < 3 || !state.entities?.pc?.sheet?.class) return null;
+export function scenarioMismatch(state, scenario, starterAoe = null) {
+    if (state.creation?.step < 3 || !state.entities?.pc?.sheet?.class) return null;
     const actual = state.entities.pc.sheet.class;
-    return actual === scenario.baseClass.toLowerCase() ? null
-        : { kind: 'scenario_mismatch', why: `requested ${scenario.baseClass}, Engine created ${actual}` };
+    if (scenario && actual !== scenario.baseClass.toLowerCase()) return { kind: 'scenario_mismatch', why: `requested ${scenario.baseClass}, Engine created ${actual}` };
+    const required = scenario?.starterAoe || starterAoe?.[actual];
+    if (required && !state.entities.pc.sheet.skills?.[required]) return { kind: 'scenario_mismatch', why: `required AoE starter ${required} was not selected` };
+    return null;
 }

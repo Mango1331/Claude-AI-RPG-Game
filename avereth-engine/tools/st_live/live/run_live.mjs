@@ -407,7 +407,7 @@ export async function run(o) {
             if (guide.openRun?.targetLevel) {
                 const state = foldChat(chat).state;
                 const pc = state.entities?.pc;
-                const mismatch = scenarioMismatch(state, guide.scenario);
+                const mismatch = scenarioMismatch(state, guide.scenario, guide.starterAoe);
                 if (mismatch) { end = mismatch; log(`stopped: ${end.why}`); break; }
                 if (state.creation?.step >= 3 && pc?.status === 'alive' && pc.sheet.hp > 0 && pc.sheet.level < guide.openRun.targetLevel) continue;
             }

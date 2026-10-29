@@ -1,7 +1,7 @@
 // Character creation (System #12, Content #0/#11): deterministic two-step flow. The LLM only renders the result.
 import { deriveCharacter } from './derived.js';
 import { clone } from './util.js';
-import { rulesetOf, startClasses, kitOf } from './content.js';
+import { rulesetOf, startClasses, kitOf, starterPool } from './content.js';
 
 export function selectClass(state, content, classId) {
     if (state.mode !== 'creation' || state.creation.step !== 1) {
@@ -25,7 +25,7 @@ export function selectSkills(state, content, skillIds) {
     const ids = [...new Set(skillIds)];
     const errors = [];
     if (ids.length !== content.start.creation.choose_skills) errors.push(`Select exactly ${content.start.creation.choose_skills} distinct Skills.`);
-    for (const id of ids) if (!cls.skill_pool.includes(id)) errors.push(`${id} is not in the ${cls.name} Base Skill Pool.`);
+    for (const id of ids) if (!starterPool(content, cls.id, state).includes(id)) errors.push(`${id} is not in the ${cls.name} Base Skill Pool.`);
     if (errors.length) return { events: [], errors };
     const kit = kitOf(content, cls.id, rulesetOf(state)); // 4.3.0-c.6.6.53: by the campaign's ruleset
     const equip = {};

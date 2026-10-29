@@ -77,6 +77,8 @@ export function tacticalHere(state, { friendly = true } = {}) {
 }
 
 const BANDS = ['ENGAGED', 'SHORT', 'MEDIUM', 'LONG'];
+export const areaBand = (skill, targetBand) => skill?.effects?.some(e => e.kind === 'area' && e.shape === 'target_band')
+    ? (BANDS.includes(targetBand) ? targetBand : null) : 'ENGAGED';
 /**
  * Prototype C (4.3.0-c.6.6.6): who Alaric's one-band step brings him nearer to (or farther from) outside the fight's
  * combatants (their bands are the fight's, src/combat.js repositionPc): the one he names, else those he moves among —
@@ -102,15 +104,17 @@ export function approachedBy(state, { move = null, moveTarget = null } = {}) {
  * Hound A, and his Arcane Burst struck A alone): ENGAGED is how near someone is to him, not whether they fight. An area
  * attack centred on him catches everyone present ENGAGED with him after the one-band step he declares with it (see
  * approachedBy): foe, bystander or friend. These are the ones outside the fight; they enter it when the attack happens
- * (src/engine.js). Who stands farther off is not caught.
+ * (src/engine.js). The optional target selects one band for a band-AoE instead; no cluster test.
  * @returns {string[]}
  */
-export function areaCaught(state, { move = null, moveTarget = null } = {}) {
+export function areaCaught(state, { move = null, moveTarget = null, band = 'ENGAGED', target = null, visible = false } = {}) {
     const stepped = new Map(approachedBy(state, { move: move === 'closer' ? 'closer' : null, moveTarget }).map((x) => [x.id, x.to]));
+    let wanted = target ? (stepped.get(target) || bandOf(state, target)) : band;
+    if (target && state.encounter?.combatants?.[target] && move === 'closer' && (!moveTarget || moveTarget === target)) wanted = BANDS[Math.max(0, BANDS.indexOf(wanted) - 1)];
     return (state.scene?.present || []).filter((id) => {
         const e = state.entities?.[id];
         if (id === 'pc' || !e || e.status === 'dead' || !['npc', 'creature'].includes(e.kind) || state.encounter?.combatants?.[id]) return false;
-        return (stepped.get(id) || state.scene.positions?.[id]?.band) === 'ENGAGED';
+        return (!visible || state.scene.positions?.[id]?.cover !== 'full') && (stepped.get(id) || state.scene.positions?.[id]?.band) === wanted;
     });
 }
 

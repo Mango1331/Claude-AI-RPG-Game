@@ -1,4 +1,4 @@
-import { questVisible } from './content.js';
+import { questVisible, starterPool } from './content.js';
 // System commands (System #1-#10) answered by the engine from state + content: zero LLM calls, zero story time,
 // no combat Turn advance. Only #assign changes state (an explicitly defined state-changing command, System #1).
 // #system <question> is the one natural-language query; it is passed to the narrator in System-only mode.
@@ -100,7 +100,7 @@ export function creationPanel(state, content, outcome) {
         ...startClasses(content, rulesetOf(state)).map((c) => `- ${c.name} — Favored Stats ${c.favored.join(' / ')}`),
     ];
     const poolMenu = () => {
-        const pool = cls.skill_pool.map((id) => content.skills.get(id));
+        const pool = starterPool(content, cls.id, state).map((id) => content.skills.get(id));
         return [
             `Choose exactly ${content.start.creation.choose_skills} Skills from the ${cls.name} Base Pool (for example "${pool[0].name} + ${pool[1].name}"):`,
             ...pool.map((sk) => `- ${skillSummary(sk)}`),

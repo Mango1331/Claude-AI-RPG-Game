@@ -2239,3 +2239,7 @@ Neue V4-C-Kampagnen: F-Waffen6/10/14/18/22, lokales Fachhändlersortiment, PP50/
 ## 29.10.2026 — .115: Batch-10-Folgekorrekturen
 
 Gemeinsame Einstufung von ST-Providerfehlern hinter HTTP 200, Dungeonwarnung vom Vertragsziel getrennt, expliziter lokaler Habitatbezug und Zustimmung zu den tatsächlich gekauften Positionen. F-Balance und Runner unverändert. Originalfälle, Kompatibilität und Abnahme: [PATCH_BATCH10_FOLLOWUP115.md](PATCH_BATCH10_FOLLOWUP115.md).
+
+## 29.10.2026 — .116: frühe AoE-Starteroptionen
+
+Cleave, Arcane Wave und Fan of Blades für neue C-Kampagnen; Fern-AoE über genau ein Band, ausdrückliche Nichtausführung nicht unterstützter Schutzskills und vorgeschriebene AoE-Starterwahl nur im aktuellen Testprofil. Historische Skills/NPCs und .114-Balance bleiben erhalten. [Technik, Werte, Kompatibilität und Abnahme](PATCH_AOE116_STARTER_TRIAL.md).

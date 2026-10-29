@@ -39,7 +39,8 @@ test('batch profiles cover Guild and exploration by all three current classes, w
         assert.ok(prompt.includes(`Base class for this run: ${s.baseClass}`));
         assert.ok(prompt.includes(s.goal));
         assert.ok(g.brief.includes('sell surplus loot'));
-        assert.ok(g.brief.includes('choose your own two starter skills'));
+        assert.ok(g.brief.includes('One of the two starter skills MUST be'));
+        assert.equal(g.scenario.starterAoe, original.starterAoe[s.baseClass.toLowerCase()]);
         assert.deepEqual(g.openRun, original.openRun);
         assert.deepEqual(g.limits, original.limits);
         assert.deepEqual(g.milestones.map(m => m.id), original.milestones.map(m => m.id));

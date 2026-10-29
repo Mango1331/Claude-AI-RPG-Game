@@ -30,7 +30,7 @@ import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, ro
 import { seedPlaces, lineage, populationAt } from './v4/domain.js';
 import { rankAt, dungeonOf, trueDungeonOf } from './v4/dungeon.js';
 import { syncEvents, levelSpan } from './v4/living.js';
-import { attackTargetHere, tacticalHere, areaCaught, approachedBy, sideOf, burstCaught } from './v4/scene_handles.js';
+import { attackTargetHere, tacticalHere, areaCaught, areaBand, approachedBy, sideOf, burstCaught } from './v4/scene_handles.js';
 import { lootEvents } from './v4/loot.js';
 import { groupJoiners } from './v4/group_combat.js';
 import { featureEvent } from './v4/features.js';
@@ -75,7 +75,7 @@ export function startCampaign(content, { seed = newSeed(), firstMessage = '', ru
             ruleset,
             // .83: free NPC help in new campaigns; historical start events keep their original policy.
             private_quests: false,
-            ...(v4 && ruleset >= 2 && planner !== false ? { f_progression: true, ...(fBalance ? { f_balance: true } : {}) } : {}),
+            ...(v4 && ruleset >= 2 && planner !== false ? { f_progression: true, starter_aoe: true, ...(fBalance ? { f_balance: true } : {}) } : {}),
             // Patch 7.2: a V4 campaign keeps the path it started on (c: the semantic planner, the product path; a: the
             // interpreter of Runtime V4-A), whatever the setting says later (src/v4/runtime.js campaignPath)
             ...(v4 ? { runtime: 'v4', ...(typeof planner === 'boolean' ? { path: planner ? 'c' : 'a' } : {}), places: v4.places, at: v4.at } : {}),
@@ -195,6 +195,14 @@ function storyTurn(s, content, text, intent, dice, emit, situations, c = false) 
     if (pcAction?.kind === 'ability_world') return worldUse(s, content, pcAction, dice, emit);
     // Patch 9B-2: a heal or a restore on himself outside a fight is the engine's, as in one (src/skills.js restoration)
     if (pcAction?.kind === 'skill' && restorative(s, content, pcAction.skill)) return selfRestore(s, content, pcAction, emit);
+    if (c && pcAction?.kind === 'skill' && skillOf(content, pcAction.skill, s)?.effects?.some(e =>
+        ['temp_def', 'temp_mdef', 'barrier', 'incoming_damage_reduction', 'damage_reduction_next', 'next_attack_buff'].includes(e.kind))) {
+        return {
+            kind: 'note',
+            text: `${skillOf(content, pcAction.skill, s)?.name || pcAction.skill}: NOT EXECUTED — this non-restorative Skill is resolved in combat only. No cost or defensive effect was applied; do not narrate it as active.`,
+            notice: 'Skill not executed outside combat (nothing spent, no effect)',
+        };
+    }
     if (intent.kind === 'stealth') {
         const r = stealthEvents(s, content, dice);
         r.events.forEach(emit);
@@ -631,7 +639,10 @@ function caughtBy(s, content, act) {
     // Hotfix c.6.6.18: a thrown burst catches whom it was fixed to strike (burstOf), those outside the fight with them
     if (act.item) return (act.burst || []).filter((id) => id !== act.target && !s.encounter?.combatants?.[id]);
     if (!areaSkill(content, act.skill, s)) return [];
-    return areaCaught(s, { move: act.move, moveTarget: act.move_target ?? null }).filter((id) => {
+    const skill = skillOf(content, act.skill, s);
+    const bandArea = skill.effects.some(e => e.kind === 'area' && e.shape === 'target_band');
+    const band = areaBand(skill, s.encounter?.combatants?.[act.target]?.current.band ?? s.scene.positions?.[act.target]?.band);
+    return areaCaught(s, { move: act.move, moveTarget: act.move_target ?? null, band, visible: bandArea, ...(bandArea ? { target: act.target } : {}) }).filter((id) => {
         const e = s.entities[id];
         return !!(e.sheet || e.profile || e.kind === 'npc' || content.anchors.get(e.anchor) || anchorFor(content, [e.species, ...(e.descriptors || [])].join(' ')));
     });

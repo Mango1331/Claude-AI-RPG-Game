@@ -117,6 +117,12 @@ export function startClasses(content, ruleset) {
     return rulesetDef(content, ruleset).classes.map((id) => content.classes.get(id)).filter(Boolean);
 }
 
+/** Creation choices only: old campaigns and NPC templates retain their original pools. */
+export function starterPool(content, classId, state) {
+    return (state.meta.starter_aoe ? rulesetDef(content, rulesetOf(state)).starter_aoe_pools?.[classId] : null)
+        || content.classes.get(classId).skill_pool;
+}
+
 /** The words of a name, as a set (a thing's name against a profile's match words). */
 export const nameWords = (name) => new Set(normText(name || '').split(/[^a-z0-9]+/).filter(Boolean));
 

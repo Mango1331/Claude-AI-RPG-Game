@@ -1,4 +1,4 @@
-import { privateQuestsOf, questVisible } from './content.js';
+import { privateQuestsOf, questVisible, starterPool } from './content.js';
 import { chronicleLine } from './v4/combat_truth.js';
 // Context Builder: turns the campaign state into the smallest high-signal prompt block for this turn
 // ("smallest possible set of high-signal tokens", Anthropic context engineering). Sections are prioritised and
@@ -372,7 +372,7 @@ function outcomeLines(state, content, outcome, { v4 = false } = {}) {
         lines.push(`CLASS SELECTED: ${cls.name.toUpperCase()} — favored ${cls.favored.join(' +1, ')} +1; Basic Attack granted (P1/PP0).`);
         lines.push(`Stats now: STR ${s.stats.STR} VIT ${s.stats.VIT} AGI ${s.stats.AGI} INT ${s.stats.INT} PER ${s.stats.PER} WIL ${s.stats.WIL}; MaxHP ${dv.maxHp} MaxMP ${dv.maxMp} MaxSTA ${dv.maxSta}; Init ${dv.init}; Base DEF ${dv.baseDef} Base MDEF ${dv.baseMdef}; XP 0/100.`);
         lines.push('Show CHARACTER CREATION — STEP 2/2 and ask the player to Select exactly 2 Skills from this pool (present each with these exact values):');
-        for (const sid of cls.skill_pool) lines.push(`  ${skillSummary(content.skills.get(sid))}`);
+        for (const sid of starterPool(content, cls.id, state)) lines.push(`  ${skillSummary(content.skills.get(sid))}`);
         lines.push('Starter Gear is granted only after Step 2. Story time stays frozen: no world narration.');
     } else if (outcome.kind === 'creation.complete') {
         const s = state.entities.pc.sheet;
@@ -404,7 +404,7 @@ export function skillSummary(skill) {
     const bits = [`${skill.name} [${skill.category}]`];
     if (skill.cost) bits.push(`Cost ${skill.cost.amount} ${skill.cost.resource.toUpperCase()}`);
     if (skill.ammo) bits.push(`Ammo ${skill.ammo.qty} arrow${skill.ammo.qty > 1 ? 's' : ''} (bow)`);
-    if (skill.range) bits.push(`Range ${skill.range.band}${skill.range.extra_band ? ' after movement (EXTRA-BAND)' : ''}${skill.range.area ? ' AREA around caster' : ''}`);
+    if (skill.range) bits.push(`Range ${skill.range.band}${skill.range.extra_band ? ' after movement (EXTRA-BAND)' : ''}${skill.range.area ? (skill.range.area === 'target_band' ? ' AREA chosen band' : ' AREA around caster') : ''}`);
     if (skill.attack) {
         const f = `${skill.attack.base} + ${skill.attack.scaling.map((t) => `${t.stat} × ${t.text ?? t.coef}`).join(' + ')} + ${skill.attack.share === 1 ? skill.attack.uses : `${skill.attack.share * 100}% of ${skill.attack.uses}`}`;
         if (skill.attack.ignores_partial_cover) bits.push('ignores Partial Cover');

@@ -55,6 +55,8 @@ const TURNS = [
         reply: 'Fire pours into the cracked floor. Resin hisses in the seams, and the ground groans under the scorpions.', swipe: 'Alaric drives the lance into the floor. The cracks glow red and widen with a dry snap.' },
     { key: 'search', player: 'I look for a way out', plan: plan({ type: 'activity', kind: 'search', what: 'a way out', minutes: null, until: null, quote: 'I look for a way out' }),
         reply: 'Alaric keeps his eyes on the pincers in front of him.' },
+    { key: 'area', player: 'I cast Arcane Wave at Barkscorpion A', plan: plan({ type: 'use_skill', skill: 'mage.arcane_wave', target: A, quote: 'I cast Arcane Wave at Barkscorpion A' }),
+        reply: 'The wave strikes the barkscorpions in the chosen Range Band.' },
 ];
 const turnOf = (text) => TURNS.find((t) => text.includes(`PLAYER MESSAGE:\n${t.player}`));
 
@@ -272,7 +274,7 @@ try {
     }
 
     await send('Mage');
-    await send('Flame Lance + Arcane Burst');
+    await send('Flame Lance + Arcane Wave');
     const afterCreation = calls.filter((c) => c.purpose === 'plan').length;
     const steps = {};
     let failsoft=null;
@@ -372,7 +374,7 @@ const checks = {
         && /Alaric: Flame Lance → Barkscorpion B|Flame Lance/.test(engineOf(narratorFor('alias')[0])) && !/Alaric[^\n]*Basic Attack/.test(engineOf(narratorFor('alias')[0])),
     aliasA0WasBasicAttack: S('alias').look.record?.plan?.a0?.skill === 'mage.basic_attack',
     // 2 the safety catch: a question in a System panel, nothing spent, no narrator call
-    typoAsks: S('typo').look.next?.system === true && /CLARIFY/.test(S('typo').look.next.mes) && /Options: Basic Attack · Flame Lance · Arcane Burst/.test(S('typo').look.next.mes)
+    typoAsks: S('typo').look.next?.system === true && /CLARIFY/.test(S('typo').look.next.mes) && /Options: Basic Attack · Flame Lance · Arcane Wave/.test(S('typo').look.next.mes)
         && S('typo').state.mp === S('alias').state.mp && narratorFor('typo').length === 0 && S('typo').look.record?.events?.length === 0,
     // 3 a skill on a thing: cost and check die, the narrator told it is an attempt with no effect on any combatant
     worldUseBooked: S('world').look.pcSteps[0]?.kind === 'ability_world' && S('world').look.pcSteps[0]?.goal === 'drop them into the hollow' && S('world').state.mp === S('typo').state.mp - 16
@@ -385,6 +387,8 @@ const checks = {
     searchNotTaken: S('search').look.pcSteps.length === 0 && /searching is not possible during a fight/.test(S('search').look.planNotes[0] || '')
         && /- NOT TAKEN THIS TURN \(it does not happen; do not narrate it as done\): searching is not possible during a fight/.test(engineOf(narratorFor('search')[0]))
         && /NOT TAKEN — searching is not possible during a fight/.test(`${S('search').look.next?.display}\n${S('search').look.next?.shown}`),
+    bandAreaOnce: S('area').look.pcSteps[0]?.skill === 'mage.arcane_wave' && S('area').look.pcSteps[0]?.strikes?.length === 2
+        && S('area').state.mp === S('search').state.mp - 14,
     proseOnlyRequests: narr.every((c) => engineOf(c).trimEnd().endsWith(V4_OUTPUT_LINE)),
     statusLine: status.includes(`Avereth Engine ${ENGINE_VERSION}`) && /runtime v4 \(LLM: custom endpoint\)/.test(status) && /integrity: OK/.test(status),
     noPageErrors: pageErrors.length === 0,

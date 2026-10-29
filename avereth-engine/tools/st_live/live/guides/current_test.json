@@ -5,11 +5,11 @@
     "targetLevel": 15,
     "checkpointTurns": 100
   },
-  "brief": "Start a genuinely new Level-1 campaign, choosing your own base class and two starter skills. Play until the engine confirms Level 15, death or a genuine campaign blocker; technical safety limits also apply. Make becoming a capable Guild adventurer your central motivation: seek suitable official Guild contracts, explore, gain levels, allocate earned stats and pursue real skill learning, training and development. During sensible town visits sell surplus combat loot, compare affordable weapons, armour and supplies early, buy useful equipment upgrades and equip them. Keep needed gear, supplies and quest cargo; revisit shops when money or stock changes. Check resources and recovery, including sleep, before danger. Assess enemy numbers and strength, choose easier work or withdraw when sensible. Choose your own quests, route, tactics, gear and build. Incidental NPC help, relationships, paid work and detours remain welcome; do not seek private errands as your main occupation. Note persistent optional blockages and choose alternatives. No forced fights, farming, scripted route, fixtures, injected resources or invented accomplishments. The first 100 inputs are a comparison checkpoint, not the finish.",
+  "brief": "Start a genuinely new Level-1 campaign, choosing your own base class and two starter skills. For this AoE comparison choose one of your two starter skills as Cleave (Warrior), Arcane Wave (Mage), or Fan of Blades (Rogue); choose the other freely. Use AoE only when tactically useful, checking the target band and possible friendly fire; withdraw or choose easier work when needed. Play until the engine confirms Level 15, death or a genuine campaign blocker; technical safety limits also apply. Make becoming a capable Guild adventurer your central motivation: seek suitable official Guild contracts, explore, gain levels, allocate earned stats and pursue real skill learning, training and development. During sensible town visits sell surplus combat loot, compare affordable weapons, armour and supplies early, buy useful equipment upgrades and equip them. Keep needed gear, supplies and quest cargo; revisit shops when money or stock changes. Check resources and recovery, including sleep, before danger. Assess enemy numbers and strength, choose easier work or withdraw when sensible. Choose your own quests, route, tactics, gear and build. Incidental NPC help, relationships, paid work and detours remain welcome; do not seek private errands as your main occupation. Note persistent optional blockages and choose alternatives. No forced fights, farming, scripted route, fixtures, injected resources or invented accomplishments. The first 100 inputs are a comparison checkpoint, not the finish.",
   "milestones": [
     {
       "id": "creation_complete",
-      "goal": "Create a genuine Level-1 character with your own base class and starter-skill choices.",
+      "goal": "Create a genuine Level-1 character with your own base class and starter-skill choices. For this AoE comparison choose one of your two starter skills as Cleave (Warrior), Arcane Wave (Mage), or Fan of Blades (Rogue); choose the other freely. Use AoE only when tactically useful, checking the target band and possible friendly fire; withdraw or choose easier work when needed.",
       "maxTurns": 8
     },
     {
@@ -30,5 +30,10 @@
     "independent cautious Guild adventurer: choose suitable contracts, prepare, recover, sell surplus loot and improve equipment and skills",
     "curious Guild adventurer: freely explore and choose interesting contracts while developing levels, gear and techniques; incidental help remains welcome",
     "pragmatic Guild adventurer: value achievable contracts, loot sales and useful gear or skill investments without reckless fights"
-  ]
+  ],
+  "starterAoe": {
+    "warrior": "warrior.cleave",
+    "mage": "mage.arcane_wave",
+    "rogue": "rogue.fan_of_blades"
+  }
 }

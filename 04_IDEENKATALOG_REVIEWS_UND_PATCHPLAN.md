@@ -270,6 +270,12 @@ Zusätzliche LLM-Aufrufe, Kosten, Save/Reload/Swipe, Geheimnisgrenzen und Replay
 
 **Späterer, noch nicht freigegebener Untersuchungs-/Testauftrag:** Daten- und Referenzinventar aller `entity.id`-Verbraucher; Zeitpunkt bestimmen, zu dem ein Standardgegner sicher abgeschlossen ist; minimale Ergebnis-/Zählstruktur auswählen; geschützte Migration/Event-Replay-Strategie für alte Saves entwerfen. Rot-Grün-Gegenfälle: zwei Wolfgruppen und stabile Labels im laufenden Kampf; Guild-Cull vor/nach Verdichtung; gleichartige Kills vor/innerhalb/nach Auftragslaufzeit; Dungeon-Minions/Guardian/Endboss, eigene vs. fremde Credit, mehrfacher Resetzyklus ohne Doppelzählung; Loot exakt einmal; Flüchtige/Wiederbegegnung; Save/Reload, Swipe, Retcon und vollständiger Fold. **Keine neuen Kampf-, Spawn-, Boss-, Loot-, XP- oder Scaling-Regeln**, keine Implementierung allein durch diesen Ideeneintrag.
 
+### 7d. Flächenfähigkeiten über Reichweitenbänder und spätere räumliche Verfeinerung (29.10.2026)
+
+**Aktuell beschlossen, noch nicht implementiert:** Fern-AoE trifft zunächst alle gültigen Ziele im gewählten Reichweitenband, ohne Cluster- oder Richtungsprüfung; maßgeblich ist [02 §5](02_DESIGN_KANON.md#5-kampf-und-progression). Mage-Fern-AoE, Warrior-Cleave und eine mögliche Rogue-Gruppenoption sind im [Batch-11-Review §8](testrun_10b/batch-20261029-025441Z/REVIEW.md#8-sol--diskussionsvorschlag-frühe-aoe-option-je-klasse) eingeordnet; konkrete Skills/Zahlen und Startergewährung noch nicht freigegeben.
+
+**Spätere Ideen, keine aktuelle Umsetzung:** Einzelne besondere Skills könnten ausdrücklich mehrere Reichweitenbänder zugleich treffen, etwa alle drei Fernbänder SHORT/MEDIUM/LONG. Ob ENGAGED ebenfalls dazugehört, bestimmt dann der konkrete Skill; keine automatische Ausweitung gewöhnlicher AoE. Eine spätere räumliche Darstellung mit 360 Grad, Sektoren oder echten örtlichen Clustern könnte gezieltere Flächen erlauben. Nur bei erkennbarem Gameplay-Nutzen und vertretbarem Aufwand prüfen; keine Voraussetzung für die erste Band-AoE und jetzt keine neue Positionsengine.
+
 ## 8. Pflege
 
 Nur echte neue oder bewusst zurückgestellte Ideen hier eintragen, mit Status und Nachweislink. Historische Patchberichte nicht wieder kopieren; tiefe Analysen in laufenden Fachdateien. **Jetzt Vorrang für technische Fehler, natürliche Sechserbatch-Abnahme und F→E-Scaling.**

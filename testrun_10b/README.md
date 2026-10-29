@@ -84,6 +84,10 @@ Frühere ausführliche Zeilen mit SHA-256-/Git-Blob-Prüfungen und allen technis
 
 [**GPT-Originalreview**](batch-20261029-091447Z/REVIEW.md). ZIP 49 Einträge/CRC/SHA geprüft, **nicht auf main**; **352 Inputs** auf .116. **Warrior 150/L1 Limit**, L1-Wolf besiegt und Vertrag READY, aber **43× Guild-Turn-in verweigert** (41× keine kanonische Guildhalle), 0 Questauszahlungen, 0 cp; **Mage 150/L8 Limit**, 17 Siege, 6 Gildenabschlüsse, 3.076 XP, Endkonto **1.252 cp ohne Gearwechsel**, **12 Arcane Waves/29 Treffer, darunter 3 real verletzte NPCs**, 2 sichere Planner-Fortsetzungen; **Rogue 52/L1 Tod gegen einzelnen L7-Snapper**, keine Fan-/Evasive-Step-Anwendung, zwei Boardfehler und eine sichere Extractor-Fortsetzung. Hauptbefunde: Guild-Hall-Autorität und LLM-Endlosschleife statt falsch niedriger XP; AoE-Freundbeschuss ist mechanisch echt und designkonform. **Keine Produkt-/Runner-/Balanceänderungen.**
 
+## Batch 14 (.117) – AoE aller drei Klassen, Rogue manuell abgebrochen
+
+[**GPT-Originalreview**](batch-20261029-131555Z/REVIEW.md). Original-ZIP **48 Einträge/CRC/SHA geprüft**, nicht auf main. **Warrior 150/L8 Limit**: 12/12 Siege, 5 Guildabschlüsse, dynamischer Skill *Iron Ward Riposte*, 614 cp, **2 sicher fortgesetzte Planner-Verkaufspreisfehler**. **Mage 150/L9 Limit**: 17/17 Siege, 7 Guildabschlüsse, 993 cp, keine finale technische Störung. **Rogue 116 Eingaben abgeschlossen, 117. bei Narratorantwort manuell per Ctrl+C abgebrochen / L6 lebend**: 8/8 Siege, 4 Gildenabschlüsse, Rare-Passive *Wolf-Won Grit*, 367 cp. **Rogue ist weder gestorben noch regulär am Limit angekommen.** Natürliche AoE: **Cleave 9 Anwendungen/14 Strikes (4 Mehrziel), Wave 8/15 (4 Mehrziel), Fan 8/10 (2 Mehrziel)**. **Kein Gearwechsel bei allen drei**; **keine natürlich etablierte neue .117-Gildenfiliale**, nur vorhandene Gildenorte; frühere 43×-Abgabeschleife nicht wiederholt. **Keine Produkt-/Runner-/Balanceänderung.**
+
 ## Umgang mit neuen Runs
 
 - Unveränderte ZIP im nach der Original-Run-ID benannten Ordner sichern. Format und Hash bei Übertragung prüfen; niemals vorhandene Originaldateien oder Reviews still überschreiben.

@@ -11,7 +11,7 @@ import { formatClock, normText } from '../util.js';
 import { sceneHandle } from './scene_handles.js';
 import {
     placePath, placeName, settlementOf, realmOf, hallOf, hallOfSettlement, childrenOf, heldBy, lyingAt, openOffers,
-    membership, listingsOf, today, contracts, listedToday,
+    membership, listingsOf, today, contracts, listedToday, guildJourney,
 } from './domain.js';
 import { catalogText } from './interpret.js';
 import { defeatTally, tallyText, readyText, proofMemory, goalText, amountText } from './guild.js';
@@ -375,7 +375,7 @@ export function extractorCatalog(state, content, opts = {}) {
         && (truth(state, id, 'status')[0]?.since?.turn ?? -1) >= state.turn - 3);
     const deadText = dead.length ? `\nRECENT DEAD (here, killed in the engine's fights; never a creature.new, never alive, never fleeing): ${dead.map((id) => `${id} [${sceneHandle(state, content, id)}] (${personLabel(state, content, id)})`).join(' · ')}` : '';
     return {
-        text: catalogText(c) + `\nPLACE ANCESTRY: ${[c.here, ...c.places].map(x => state.places[x.id]).filter(Boolean).map(p => `${p.id} [${p.kind}, parent:${p.parent || 'none'}${p.population ? `, population:${p.population.species}, ${p.population.anchor}, levels ${p.population.levels.join('-')}` : ''}]`).join(' · ')}` + deadText + threadText + `\nKNOWN PERSON CONTINUITY (not present; use enter for an actual return, person.named for a fuller name):\n${npcContinuity(state, opts.input || '').map(x => x.text).join('\n') || 'none relevant'}` + (!privateQuestsOf(state) ? `\nFREE HELP: only Guild contracts are formal quests. NPC help, agreements and thanks are ordinary world interactions.\nRECENT COIN HANDOVERS (already received; recount with coin.gift repeat_of, never pay again):\n${(state.credits || []).filter(x => x.gift).map(x => `${x.gift.id}: ${x.gift.from}, ${x.cp} cp, ${x.gift.why}; ${x.gift.said}`).join('\n') || 'none'}` : ''),
+        text: catalogText(c) + `\nPLACE ANCESTRY: ${[c.here, ...c.places].map(x => state.places[x.id]).filter(Boolean).map(p => `${p.id} [${p.kind}, parent:${p.parent || 'none'}${p.population ? `, population:${p.population.species}, ${p.population.anchor}, levels ${p.population.levels.join('-')}` : ''}]`).join(' · ')}` + deadText + threadText + `\nKNOWN PERSON CONTINUITY (not present; use enter for an actual return, person.named for a fuller name):\n${npcContinuity(state, opts.input || '').map(x => x.text).join('\n') || 'none relevant'}` + (!privateQuestsOf(state) ? `\nFREE HELP: only Guild contracts are formal quests. NPC help, agreements and thanks are ordinary world interactions.\nRECENT COIN HANDOVERS (sales/payouts/gifts already credited; use repeat_of for recounts):\n${(state.credits || []).map(x => `${x.id || x.gift?.id || 'historical credit'}: ${x.from || x.gift?.from || 'engine'}, ${x.cp} cp, ${x.gift?.why || x.for || x.quest || 'engine payment'}${x.gift?.said ? `; ${x.gift.said}` : ''}`).join('\n') || 'none'}` : ''),
         places: [...new Set([c.here.id, ...c.places.map((p) => p.id)].filter(Boolean))],
         quests: [...new Set([...c.quests, ...c.board, ...c.completed, ...(c.known || [])].map((q) => q.id))],
         objects: c.objects.map((o) => o.id),
@@ -392,6 +392,7 @@ export function guardContext(state, content, catalog = buildCatalog(state, conte
     return {
         inGuildHall: !!hallOf(state, state.scene.at),
         guildHalls: new Set([catalog.here.id, ...catalog.places.map((p) => p.id)].filter((id) => hallOf(state, id) === id)),
+        guildJourney: c => rulesetOf(state) >= 2 && guildJourney(state, c),
         present: catalog.present.map((p) => ({ id: p.id, names: [p.handle, p.label, state.entities[p.id]?.name].filter(Boolean) })),
         objects,
         registrationPending: !!reg,

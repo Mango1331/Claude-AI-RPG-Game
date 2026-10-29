@@ -50,7 +50,7 @@ const SMALL = { a: 1, an: 1, one: 1, single: 1, two: 2, three: 3, four: 4, five:
 
 /** "two", "twenty-five", "a hundred", "3", "a dozen" -> number, or null. */
 function numberOf(words) {
-    const w = words.filter((x) => x && x !== 'and');
+    const w = words.filter((x, i) => x && x !== 'and' && !(['a', 'an'].includes(x) && words[i + 1] === 'single'));
     if (!w.length) return null;
     if (w.length === 1 && /^\d+$/.test(w[0])) return Number(w[0]);
     let total = 0;
@@ -72,6 +72,7 @@ export function coinEvidence(text, content) {
         .replace(/(\d)\s*(cp|c|s|g)\b/g, '$1 $2').replace(/[-–—]/g, ' ');
     const tokens = [...clean.matchAll(/[a-z0-9]+(?:'[a-z0-9]+)*/g)].map(m => ({ word: m[0], start: m.index, end: m.index + m[0].length }));
     const parts = [];
+    let complete = true;
     const currency = content.rules.currency;
     for (let i = 0; i < tokens.length; i++) {
         if (!/^(?:gold|golds|g|silver|silvers|s|copper|coppers|cp|c)$/.test(tokens[i].word)) continue;
@@ -79,7 +80,11 @@ export function coinEvidence(text, content) {
         while (j > 0 && (/^\d+$/.test(tokens[j - 1].word) || SMALL[tokens[j - 1].word] !== undefined || ['hundred', 'and'].includes(tokens[j - 1].word))) j--;
         while (j < i && tokens[j].word === 'and') j++;
         const n = numberOf(tokens.slice(j, i).map(t => t.word));
-        if (n === null) continue; // a gold necklace or a person's initial names no price
+        if (n === null) {
+            // An unquantified currency is not zero: "eight copper and the silver" is only a partial sum.
+            if (/^(?:gold|golds|silver|silvers|copper|coppers|cp)$/.test(tokens[i].word)) complete = false;
+            continue; // a gold necklace or a person's initial names no price
+        }
         // Build .107 (audit of .106: "five silver and not a copper less" read as two prices): "not a (single) copper"
         // names no sum of its own; it insists on the other one
         if (tokens[j - 1]?.word === 'not' || (tokens[j - 1]?.word === 'single' && tokens[j - 3]?.word === 'not')) continue;
@@ -104,7 +109,7 @@ export function coinEvidence(text, content) {
     // "one silver and five copper" is one sum; two prices with intervening prose are not.
     const compound = cp !== null && new Set(parts.map(p => p.unit)).size === parts.length
         && parts.every((p, i) => !i || /^[\s,]*(?:and\s*)?$/.test(clean.slice(parts[i - 1].end, p.start)));
-    return { cp, mentions: parts.map(p => p.cp), compound };
+    return { cp, mentions: parts.map(p => p.cp), compound, complete };
 }
 
 /** "two silver" -> 20; "a silver and five coppers" -> 15; no stated whole-coin amount -> null. */

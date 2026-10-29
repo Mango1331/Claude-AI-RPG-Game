@@ -350,7 +350,7 @@ export function guardCommands(message, commands, context = {}, { language = true
         if (type === 'use' && objects.get(idOf(c.object))?.source === 'stone' && WISH.test(evidence)) { drop(c, 'wish', 'the evidence wishes to use the Skill Stone; it is not activated now'); continue; }
         if (otherSpeech(message, evidence, context)) { drop(c, 'npc_speech', "the evidence is someone else's quoted words"); continue; }
         if (otherActor(evidence, context)) { drop(c, 'npc_actor', 'the evidence is what someone else does'); continue; }
-        const goesToHall = kept.some((k) => k.type === 'go' && (halls.has(idOf(k.to)) || /guild/i.test(String(k.to?.new ?? ''))));
+        const goesToHall = kept.some((k) => k.type === 'go' && (halls.has(idOf(k.to)) || /guild/i.test(String(k.to?.new ?? '')) || context.guildJourney?.(k)));
         if (GUILD_ACTS.has(type) && PURPOSE.test(text) && !context.inGuildHall && !goesToHall) { drop(c, 'purpose', 'the evidence names the purpose of a later visit to a Guild hall, not an act here'); continue; }
         if (stateCheck(c, text)) continue;
         kept.push(c);

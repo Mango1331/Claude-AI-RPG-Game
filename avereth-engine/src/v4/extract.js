@@ -19,7 +19,7 @@ export function worldVocab(vocab, state) {
     return { ...vocab, version: vocab.version,
         rules: [...vocab.rules.filter(r => !r.startsWith('Paid work FOR an NPC')),
             'FREE HELP: NPC requests, help, agreements and offered wages are ordinary facts, promises, threads and memories. Never create private quests or job ids. Formal quest deltas concern only existing Guild contracts. Helping earns no automatic Quest XP or payout.',
-            'coin.gift is an ACTUAL new handover now, including voluntary thanks, wages, advance or reward from any present NPC. No job or acceptance is required. Promises and conditional/future payments are facts/threads, not coin.gift. In said quote the exact current handover clause INCLUDING the amount and currency, never invent an amount. For a recount of a RECENT COIN HANDOVER set repeat_of to its existing id; it never pays twice. A distinct new gift uses repeat_of:null even for the same giver/amount.'],
+            'coin.gift is an ACTUAL new handover now, including voluntary thanks, wages, advance or reward from any present NPC. No job or acceptance is required. Promises and conditional/future payments are facts/threads, not coin.gift. In said quote the exact current handover clause INCLUDING the FULL amount and every currency; an unquantified remainder ("and the silver", "a handful of silver") is not a complete sum. Never invent an amount or report only the quantified part. For a recount of a RECENT COIN HANDOVER (including an engine-paid sale or Guild payout) set repeat_of to its existing id; picking up those proceeds never pays again. A distinct new gift uses repeat_of:null even for the same giver/amount.'],
         deltas: vocab.deltas.filter(d => d.type !== 'quest.offer').map(d => {
             if (d.type !== 'coin.gift') return d;
             const { job, ...fields } = d.fields;
@@ -29,7 +29,7 @@ export function worldVocab(vocab, state) {
     };
 }
 
-export const EXTRACTOR_VERSION = 'extract-5.18';
+export const EXTRACTOR_VERSION = 'extract-5.19';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 

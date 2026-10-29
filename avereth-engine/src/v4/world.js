@@ -16,7 +16,7 @@ import { transferCargo, deliveryStatus, deliveryObjectives, confirmDelivery, add
 import { Dice } from '../rng.js';
 import { applyEvent } from '../state.js';
 import { clone, normText, slug, hash32 } from '../util.js';
-import { coinFromWords, coinMentions, numbersIn } from '../economy.js';
+import { coinFromWords, coinEvidence, coinMentions, numbersIn } from '../economy.js';
 import { trainingOfferWhy } from './growth.js';
 import { deriveCharacter } from '../derived.js';
 import { reportToEvents, makeResolver, isGroup, GROUP_WORDS } from '../delta.js';
@@ -1185,15 +1185,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     reject(d, 'guild_branch', at.error || 'a branch needs an identified Guild premises in a canonical settlement');
                     break;
                 }
-                const hall = hallOfSettlement(s, town);
-                if (hall && hall !== at.id && !lineage(s, at.id).includes(hall) && !lineage(s, hall).includes(at.id)) {
-                    // Link separate premises only; neither direction of an existing ancestry may be inverted.
-                    emit({ t: 'place.updated', d: { id: at.id, set: { parent: hall, kind: 'interior' } } });
-                } else if (!hall) {
-                    emit({ t: 'place.updated', d: { id: at.id, set: { tags: [...new Set([...(place.tags || []), 'guild_hall'])] } } });
-                    system.push(`GUILD BRANCH ESTABLISHED — ${placeName(s, at.id)}. Contract services use the existing Guild rules; no contract or payment is created by establishing this branch.`);
-                }
-                if (hallOf(s, s.scene.at)) arrivedHall = hallOf(s, s.scene.at);
+                establishBranch(at.id);
                 break;
             }
             case 'place.reported': {
@@ -1280,13 +1272,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 const from = idOf(d.from);
                 const free = !privateQuestsOf(s);
                 const quote = normText(d.said || '').replace(/[^a-z0-9]+/g, ' ').trim();
+                const amount = free ? coinEvidence(d.said, content) : null;
                 const giftId = `gift.${tag}.${hash32(`${from || d.from}|${quote}`)}`;
                 if (free && (d.repeat_of != null || (s.credits || []).some(c => c.gift?.id === giftId))) {
                     reject(d, 'coin_already_received', 'an existing handover or its recount never creates another payment');
                     break;
                 }
                 if (free && (!quote || !normText(prose).replace(/[^a-z0-9]+/g, ' ').includes(quote)
-                    || coinFromWords(d.said, content) === null
+                    || amount.cp === null || !amount.complete
                     || /\b(?:promis(?:e|es|ed)\s+to\s+|(?:will|would|could|might)\s+|(?:i|he|she|they)['’]ll\s+)(?:give|pay|hand|pass|put|transfer)\b|\b(?:already|previously)\s+(?:gave|paid|handed|passed|put|transferred)\b/i.test(d.said))) {
                     reject(d, 'coin_evidence', 'a gift needs a quoted current handover with an explicit currency amount; promises, recounts and invented quotes do not pay');
                     break;
@@ -1300,7 +1293,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     break;
                 }
                 const coin = s.entities.pc.sheet.coin_cp;
-                const cp = free ? coinFromWords(d.said, content) : evidenced(d.cp, d.said, d);
+                const cp = free ? amount.cp : evidenced(d.cp, d.said, d);
                 if (free && cp !== d.cp) emit({ t: 'note', d: { kind: 'amount.corrected', seq: d.seq, type: d.type, reported_cp: d.cp, said: d.said, cp } });
                 if (cp === null) {
                     reject(d, 'coin', `${d.cp} cp is no sum the reply names`);
@@ -1570,6 +1563,24 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
     }
     step = { kind: 'engine' };
+    // The ordinary, accepted local place + present staff data also establish a branch. The optional
+    // guild.branch delta remains useful for remote premises; omitting it cannot break a real local visit.
+    if (cPath && rulesetOf(s) >= 2 && !hallOf(s, s.scene.at)) {
+        const premises = lineage(s, s.scene.at).find(id => ['site', 'interior'].includes(s.places[id].kind)
+            && /\bguild\b.*\b(?:hall|house|office|branch|desk|counter|reception)\b/i.test(s.places[id].name || ''));
+        const staffed = s.scene.present.some(id => {
+            const e = s.entities[id], occupation = truth(s, id, 'occupation')[0]?.o;
+            // V3 introductions keep the structured role as their first descriptor. Older occupation
+            // deltas sometimes resolved "clerk" to that NPC's own id instead of a literal profession.
+            const role = occupation && !s.entities[occupation] ? occupation : e?.descriptors?.[0];
+            return e?.kind === 'npc' && statusOf(s, id) !== 'dead' && (!e.at || e.at === s.scene.at)
+                && /^(?:(?:adventurers['’]?\s+)?guild\s+)?(?:clerk|registrar|receptionist)$/i.test(String(role || '').trim());
+        });
+        const shown = staffed && String(prose).split(/[.!?\n]+/).some(sentence => /\b(?:clerk|registrar|receptionist)\b/i.test(sentence)
+            && !/\bno\s+(?:\w+[ -]){0,2}(?:clerk|registrar|receptionist)\b/i.test(sentence)
+            && narratedEvent(prose, sentence.trim()).ok);
+        if (premises && shown && settlementOf(s, premises) && !dungeonOf(s, premises)) establishBranch(premises);
+    }
     for (const id of readied) {
         const r = contractReady(s, content, s.quests[id], { c: true });
         const correction = `"${s.quests[id].title}" is NOT READY for turn-in yet: ${r.reason}. Its goal and recipient stay as they are: it is done when he hands it over there (no new recipient, address or condition).`;
@@ -1827,6 +1838,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
      */
     function coinRefusal(d, from) {
         const giver = from ? s.entities[from] : null;
+        // Preserve the transaction's purpose across turns: pocketing a paid sale is no second payment.
+        // A distinct gift/thanks/bonus is allowed, even from the same buyer for the same amount.
+        const purpose = keyWords(d.why || '');
+        const extra = /\b(?:another|additional|extra|bonus|gift|tip|thanks|thank\w*)\b/i.test(d.said || '');
+        const paidSale = !privateQuestsOf(s) && !extra && /\b(?:payment|sale|price|proceeds|sold)\b/i.test(d.why || '')
+            && (s.credits || []).some(c => !c.gift && c.from === from && c.for && c.at === s.scene.at
+                && keyWords(c.for).filter(w => purpose.includes(w)).length >= Math.min(2, keyWords(c.for).length));
+        if (paidSale) return { rule: 'engine_booked', why: 'these sale proceeds are already in his purse', fix: 'the sale already credited its full agreed price; a recount is not another handover' };
         if (giver?.kind === 'npc' && statusOf(s, from) !== 'dead' && s.scene.present.includes(from)) {
             if (counterparts.has(from) || counterparts.has('*')) return { rule: 'engine_booked', why: 'the other side of a trade the engine booked this turn does not give him coin', fix: 'the engine booked that trade at its price' };
             return null;
@@ -1953,6 +1972,18 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const target = go.to || placeIdentity(s, expected[String(go.seq)]?.at, content, { c: true });
         if (target) return hallOf(s, target) === hall;
         return guildDestination(s, go.newName || go.name, town, { allowNew: true })?.id === hall;
+    }
+
+    /** Both explicit branch evidence and accepted local staff use the same persistent place identity. */
+    function establishBranch(id) {
+        const place = s.places[id], hall = hallOfSettlement(s, settlementOf(s, id));
+        if (hall && hall !== id && !lineage(s, id).includes(hall) && !lineage(s, hall).includes(id)) {
+            emit({ t: 'place.updated', d: { id, set: { parent: hall, kind: 'interior' } } });
+        } else if (!hall) {
+            emit({ t: 'place.updated', d: { id, set: { tags: [...new Set([...(place.tags || []), 'guild_hall'])] } } });
+            system.push(`GUILD BRANCH ESTABLISHED — ${placeName(s, id)}. Contract services use the existing Guild rules; no contract or payment is created by establishing this branch.`);
+        }
+        if (hallOf(s, s.scene.at)) arrivedHall = hallOf(s, s.scene.at);
     }
 
     function arriveThrough(id, party) {

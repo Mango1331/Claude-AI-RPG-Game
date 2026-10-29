@@ -21,7 +21,7 @@ import { entityLabel, setFactEvents, truth } from '../knowledge.js';
 import { normText, slug, formatClock, hash32 } from '../util.js';
 import { deriveCharacter } from '../derived.js';
 import {
-    lineage, placeName, hallOf, hallOfSettlement, guildDestination, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey, isLooseCoin, listedToday,
+    lineage, placeName, hallOf, hallOfSettlement, guildDestination, guildJourney, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey, isLooseCoin, listedToday,
 } from './domain.js';
 import { sameWant, keyWords, wantedLines } from './world.js';
 import { LOOT_WORDS, lootedHere } from './loot.js';
@@ -465,6 +465,8 @@ const HANDLERS = {
     },
     go(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT GO — not while the fight runs.' };
+        const guildTown = envx?.c && rulesetOf(s) >= 2 && guildJourney(s, c);
+        if (guildTown) c = { ...c, to: { new: `Guild hall in ${s.places[guildTown].name}` } };
         let guildCandidate = false;
         let guildSettlement = null;
         // Reuse an established branch. In C/Ruleset 2 a new premises may be visited,

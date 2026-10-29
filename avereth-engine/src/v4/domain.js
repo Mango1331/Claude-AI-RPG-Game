@@ -16,10 +16,10 @@
 //   quests     the shared quest map; V4 quests carry kind guild_contract|private and the fields of plan §6.3
 //   guild      {membership: {rank, since, branch} | null, boards: {"<branch>|<rank>": {branch, rank, day, listings[]}}}
 //   decisions  [{id, kind: registration|purchase|payment|sale, what, offer, seller, at, turn, max_cp, any_price, priced}]
-//   credits    [{cp, at, day}] the engine's last credits to Alaric (Guild payouts, sales), set on first use
+//   credits    [{id, cp, at, day, turn, from, for, offer, quest, gift?}] last six receipts; derived from transactions
 //   features   id -> an obstacle or hazard of a place (Patch 6, src/v4/features.js)
 //   links      id -> a way between two rooms of a dungeon (Patch 7, src/v4/dungeon.js)
-import { clone, normText } from '../util.js';
+import { clone, normText, hash32 } from '../util.js';
 import { applyLivingEvent } from './living.js';
 
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
@@ -255,7 +255,12 @@ export function applyDomainEvent(state, e) {
             }
             // the engine's own credits to Alaric (a Guild payout, a sale), by place and day: coin the story then shows
             // him pick up there that day is this coin, not new coin (src/v4/world.js coin.gift). His payments are audit.
-            if (d.to === 'pc') state.credits = [...(state.credits || []), { cp: d.cp, at: d.at ?? state.scene?.at ?? null, day: today(state), ...(d.gift ? { gift: { ...clone(d.gift), from: d.from } } : {}) }].slice(-6);
+            if (d.to === 'pc') state.credits = [...(state.credits || []), {
+                id: d.gift?.id || `credit.${state.turn}.${hash32(JSON.stringify(d))}`,
+                cp: d.cp, at: d.at ?? state.scene?.at ?? null, day: today(state), turn: state.turn,
+                from: d.from ?? null, for: d.for ?? null, offer: d.offer ?? null, quest: d.quest ?? null,
+                ...(d.gift ? { gift: { ...clone(d.gift), from: d.from } } : {}),
+            }].slice(-6);
             break;
         // audit only: the record of what was interpreted, resolved, applied or refused
         case 'proof.checked':
@@ -318,6 +323,12 @@ export const settlementOf = (state, id) => lineage(state, id).find((x) => state.
 export const realmOf = (state, id) => lineage(state, id).find((x) => state.places[x].kind === 'realm') || null;
 /** The Guild hall node that contains a place (the hall itself or anything below it), or null. */
 export const hallOf = (state, id) => lineage(state, id).find((x) => (state.places[x].tags || []).includes('guild_hall')) || null;
+/** A GO encoded as the town may explicitly target its Guild hall; it still authorizes no arrival by itself. */
+export function guildJourney(state, go) {
+    return state.places?.[go.to]?.kind === 'settlement'
+        && /\b(?:to|for|towards?|into)\s+(?:the\s+)?(?:adventurers['’]?\s+)?guild(?:\s+(?:hall|house|office|branch|desk|counter))?\b/i.test(go.quote || '')
+        ? go.to : null;
+}
 /** A Guild destination, not an independent place using the Guild as a landmark. */
 export function guildDestination(state, text, fallback = null, { allowNew = false } = {}) {
     const words = String(text || '').trim().replace(/^(?:the|a|an)\s+/i, '');

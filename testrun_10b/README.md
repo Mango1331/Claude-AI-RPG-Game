@@ -76,6 +76,10 @@ Frühere ausführliche Zeilen mit SHA-256-/Git-Blob-Prüfungen und allen technis
 
 [**GPT-Originalreview mit Guild-Klassenhistorie**](batch-20261029-025441Z/REVIEW.md). **192 Inputs** auf .115 (9c65e9a), Original-ZIP **50 Dateien/CRC/SHA geprüft**, nicht auf main. Warrior **150/L6 Limit, 10/10 Siege gegen Einzelgegner, 3 Gildenabschlüsse**, **ein nichtfataler extract.failed mit safe continuation**; Mage **19/L2 Tod gegen 5 L6–7-Hunde**; Rogue **23/L1 Tod gegen 3 Goblins L1/3/4 auf Mossback-Floor1**. **Natürlicher Habitatnachweis:** GO.within erzeugt Unterorte innerhalb Jagdsite, Materialisierung und Population/Questcredit stimmen. **Kein Waffenupgrade**, Provider-200-Fall/Fehlwarenkauf nicht wiederholt. Historische wirklich gestartete Guild-Runs .101–.115: **Warrior 1 Tod/9, Mage 4/8, Rogue 4/5**; Gegenbeleg zur Vermutung: **Rogue .101 überlebte 150 Inputs/L8 mit 10/10 Siegen**. Keine Balance-/Produktänderung.
 
+## Batch 12 (.116) – erste natürliche AoE-Starterserie
+
+[**GPT-Originalreview**](batch-20261029-055532Z/REVIEW.md). **331 Inputs**, original `batch-20261029-055532Z.zip` **49 Einträge, CRC/SHA bestätigt**, nicht auf main; Build **.116 / `41a17fc`**, alle drei `starter_aoe:true`. **Warrior 31/L1 Tod** gegen vier L5–7-Eber mit nur 36 HP vor Kampfbeginn, **Mage 150/L8 Limit** (15 Siege, 9 Guildabschlüsse, 1 Dungeon-Floor-Clear, ein sicher fortgesetzter Extractorfehler), **Rogue 150/L4 Limit** (6 Siege/1 Flucht, 3 Guildabschlüsse, Rogue-Rare-Passive). Vier natürliche AoE-Aktionen: **Cleave 2× je ein Ziel, Arcane Wave 1× zwei Ziele/14 MP, Fan of Blades 1× ein Ziel**. Mage **846 cp und kein Waffenupgrade**, Rogue **17 korrekt zurückgewiesene Phantom-Dungeongegner**. **Keine belegte Klassenbalancewirkung der AoE, kein zwingender neuer Hotfix; keine Produktänderungen.**
+
 ## Umgang mit neuen Runs
 
 - Unveränderte ZIP im nach der Original-Run-ID benannten Ordner sichern. Format und Hash bei Übertragung prüfen; niemals vorhandene Originaldateien oder Reviews still überschreiben.

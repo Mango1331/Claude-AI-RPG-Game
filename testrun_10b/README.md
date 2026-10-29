@@ -80,6 +80,10 @@ Frühere ausführliche Zeilen mit SHA-256-/Git-Blob-Prüfungen und allen technis
 
 [**GPT-Originalreview**](batch-20261029-055532Z/REVIEW.md). **331 Inputs**, original `batch-20261029-055532Z.zip` **49 Einträge, CRC/SHA bestätigt**, nicht auf main; Build **.116 / `41a17fc`**, alle drei `starter_aoe:true`. **Warrior 31/L1 Tod** gegen vier L5–7-Eber mit nur 36 HP vor Kampfbeginn, **Mage 150/L8 Limit** (15 Siege, 9 Guildabschlüsse, 1 Dungeon-Floor-Clear, ein sicher fortgesetzter Extractorfehler), **Rogue 150/L4 Limit** (6 Siege/1 Flucht, 3 Guildabschlüsse, Rogue-Rare-Passive). Vier natürliche AoE-Aktionen: **Cleave 2× je ein Ziel, Arcane Wave 1× zwei Ziele/14 MP, Fan of Blades 1× ein Ziel**. Mage **846 cp und kein Waffenupgrade**, Rogue **17 korrekt zurückgewiesene Phantom-Dungeongegner**. **Keine belegte Klassenbalancewirkung der AoE, kein zwingender neuer Hotfix; keine Produktänderungen.**
 
+## Batch 13 (.116, Runner-Folgecommit 846a7c) – AoE-Mehrzielbeleg und Guild-Stagnation
+
+[**GPT-Originalreview**](batch-20261029-091447Z/REVIEW.md). ZIP 49 Einträge/CRC/SHA geprüft, **nicht auf main**; **352 Inputs** auf .116. **Warrior 150/L1 Limit**, L1-Wolf besiegt und Vertrag READY, aber **43× Guild-Turn-in verweigert** (41× keine kanonische Guildhalle), 0 Questauszahlungen, 0 cp; **Mage 150/L8 Limit**, 17 Siege, 6 Gildenabschlüsse, 3.076 XP, Endkonto **1.252 cp ohne Gearwechsel**, **12 Arcane Waves/29 Treffer, darunter 3 real verletzte NPCs**, 2 sichere Planner-Fortsetzungen; **Rogue 52/L1 Tod gegen einzelnen L7-Snapper**, keine Fan-/Evasive-Step-Anwendung, zwei Boardfehler und eine sichere Extractor-Fortsetzung. Hauptbefunde: Guild-Hall-Autorität und LLM-Endlosschleife statt falsch niedriger XP; AoE-Freundbeschuss ist mechanisch echt und designkonform. **Keine Produkt-/Runner-/Balanceänderungen.**
+
 ## Umgang mit neuen Runs
 
 - Unveränderte ZIP im nach der Original-Run-ID benannten Ordner sichern. Format und Hash bei Übertragung prüfen; niemals vorhandene Originaldateien oder Reviews still überschreiben.

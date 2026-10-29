@@ -1186,8 +1186,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     break;
                 }
                 const hall = hallOfSettlement(s, town);
-                if (hall && hall !== at.id && !lineage(s, at.id).includes(hall)) {
-                    // Preserve an existing room's identity, linking it to the same institution.
+                if (hall && hall !== at.id && !lineage(s, at.id).includes(hall) && !lineage(s, hall).includes(at.id)) {
+                    // Link separate premises only; neither direction of an existing ancestry may be inverted.
                     emit({ t: 'place.updated', d: { id: at.id, set: { parent: hall, kind: 'interior' } } });
                 } else if (!hall) {
                     emit({ t: 'place.updated', d: { id: at.id, set: { tags: [...new Set([...(place.tags || []), 'guild_hall'])] } } });

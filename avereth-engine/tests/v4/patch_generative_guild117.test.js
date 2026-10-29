@@ -150,3 +150,21 @@ test('117 original input through Planner, guard, World extraction, saved record 
     assert.equal(foldChat(reload).state.entities.pc.sheet.coin_cp,30);
     reload[2].mes=original.prose;assert.equal(foldChat(reload).state.entities.pc.sheet.coin_cp,70);
 });
+test('118 a branch first established in a reception never reparents its own ancestor',()=>{
+    const s=base(),town='loc.stonebrook',building=town+'.guild_building',reception=building+'.reception';
+    for(const place of [
+        {id:town,name:'Stonebrook',kind:'settlement',parent:'realm.caelreth'},
+        {id:building,name:'Stonebrook Guild building',kind:'site',parent:town},
+        {id:reception,name:'Guild reception',kind:'interior',parent:building},
+    ]) applyEvent(s,{t:'place.created',d:{place:{...place,realm:'realm.caelreth',tags:[]}}});
+    plan(s,[]);const prose='A Guild clerk receives adventurers at the counter.';
+    const first=applyWorld(s,content,{scene:'here',expected:{},deltas:[branch(reception,prose,1)]},{prose});
+    assert.equal(hallOfSettlement(first.state,town),reception);
+    const second=applyWorld(first.state,content,{scene:'here',expected:{},deltas:[branch(building,prose,1)]},{prose});
+    assert.equal(second.state.places[building].parent,town,'the building cannot become a child of its own reception');
+    assert.equal(second.state.places[reception].parent,building);
+    assert.equal(hallOfSettlement(second.state,town),reception);
+    const visited=new Set();for(let id=reception;id;id=second.state.places[id]?.parent){assert.ok(!visited.has(id),'acyclic place ancestry');visited.add(id);}
+    assert.deepEqual(fold(JSON.parse(JSON.stringify(second.events)),first.state),second.state);
+    assert.deepEqual(validateState(second.state,content),[]);
+});

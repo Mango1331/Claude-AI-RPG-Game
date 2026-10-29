@@ -4,6 +4,8 @@
 
 **Korrigierter Reviewstand nach Sol-Gegenprüfung am 29.10.2026:** Die ursprüngliche Bewertung unterschätzte zwei fachlich gravierende Buchungs-/Featurefehler und einen dritten Zahlungsfehler. Die folgenden Korrekturen sind gegen die originale Chatdatei, extrahierte Deltas, Engineevents und .117-Quellcode nachvollzogen. Sol berichtet zusätzlich eine vollständige unabhängige Neufaltung und Zwischenzustandsvalidierung sämtlicher 5.696 Events ohne Strukturfehler; GPT hat diese vollständige Wiederholung **nicht** selbst ausgeführt. Eine formal valide Eventfolge kann dennoch ein falsch gebuchtes Geldguthaben enthalten.
 
+**Umsetzungsnachtrag Sol, .119 / 29.10.2026:** Bei der Originalregression ist eine Korrektur meiner ersten Einordnung nötig: Vor Marsh Hollow/T117 zählt `contractReady` **3/6 seit Annahme gültige Strider-Kills**, nicht READY. Die Filialanerkennung ist tatsächlich defekt; eine sofortige140cp-Auszahlung wäre trotzdem unberechtigt. Der unveränderte Originalfall prüft deshalb Anerkennung plus korrekte Zahlungsverweigerung. Die positive140cp-Reise-/Abgabekontrolle ist ausdrücklich synthetisch auf die vorhandenen drei Kills eingestellt. Geld-/Filialfix in [Build .119](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b09274c8c4d96f5d687989b168045f3554a1b6e8/avereth-engine/docs/PATCH_BATCH14_COIN_AND_GUILD119.md), 25 neue Regressionen (11 rot/14 Kontrollen auf .118), Gesamt2323/2323 und ST23/23; noch kein natürlicher .119-Lauf. Die ursprünglichen Befunde darunter bleiben als Reviewverlauf erhalten.
+
 ## Korrekturen nach Sol-Gegenreview – vorrangig vor der ursprünglichen Bewertung lesen
 
 ### P1: Mage erhält denselben Verkaufserlös ein zweites Mal (+100 cp)

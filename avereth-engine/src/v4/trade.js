@@ -15,7 +15,7 @@ import { normText } from '../util.js';
 import { hallOf } from './domain.js';
 import { rulesetOf } from '../content.js';
 import { trainingOfferWhy } from './growth.js';
-import { coinFromWords, coinMentions, coinEvidence } from '../economy.js';
+import { coinFromWords, coinMentions, coinEvidence, numbersIn } from '../economy.js';
 
 const flat = text => normText(text || '').replace(/[^a-z0-9]+/g, ' ').trim();
 const contains = (text, part) => !!flat(part) && ` ${flat(text)} `.includes(` ${flat(part)} `);
@@ -35,7 +35,7 @@ export function saleOfferLines(state, seller, lines) {
 
 /** Match separately named prices to selected offer positions, never sum unrelated amounts. */
 function positionPrices(quote, picks, currency) {
-    if (!picks || picks.length < 2) return null;
+    if (!picks || picks.length < 2 || coinMentions(quote, { rules: { currency } }).length < 2) return null;
     const clauses = quote.split(/\s+(?:and|then)\s+|[;.!?]/i);
     const seen = new Set();
     for (const clause of clauses) {
@@ -51,6 +51,21 @@ function positionPrices(quote, picks, currency) {
     return seen.size === picks.length ? true : null;
 }
 
+/** Explicit product words constrain a selection; a generic "deal" remains valid.
+ * Use distinguishing words from this actual offer, not a dictionary of room/product special cases.
+ */
+function selectionWhy(quote, offer, selected) {
+    const ignored = new Set(['the', 'for', 'and', 'with', 'night', 'one', 'per', 'pair', 'copper', 'cp', 'silver', 'gold']);
+    const words = line => [...new Set(requestWords(`${line.what} ${line.service || ''} ${line.said || ''}`).filter(w => w.length > 2 && !ignored.has(w) && !numbersIn(w).length))];
+    const unique = new Map(offer.lines.map(line => [line.id, words(line).filter(w => offer.lines.filter(other => words(other).includes(w)).length === 1)]));
+    const names = (text, line) => unique.get(line.id).some(w => requestWords(text).includes(w));
+    const exclusions = [...quote.matchAll(/\b(?:not|without|except)\s+([^,.;!?]*?)(?=\bbut\b|[,.;!?]|$)/gi)].map(m => m[1]);
+    if (selected.some(line => exclusions.some(text => names(text, line)))) return 'selected goods include a position he explicitly excluded';
+    if (!offer.lines.some(line => names(quote, line))) return null;
+    return selected.some(line => unique.get(line.id).length && !names(quote, line))
+        ? 'selected goods differ from his explicit order; clarify the offer positions' : null;
+}
+
 /** Explicit consent constraints, shared by the planner repair and the command handler. No inferred new party. */
 export function acceptanceWhy(c, offer, party, currency) {
     const addressed = String(c.quote || '').match(/\b(?:[Dd]one|[Dd]eal|[Yy]es|[Ff]ine|[Aa]greed|[Tt]hanks),\s+([A-Z][a-z'-]*(?:\s+[A-Z][a-z'-]*){0,2})(?=[.!?]|$)/);
@@ -61,6 +76,8 @@ export function acceptanceWhy(c, offer, party, currency) {
     const quote = String(c.quote || '');
     const lines = (offer.lines || []).filter(l => !c.lines?.length || c.lines.includes(l.id));
     const picked = offer.bid ? null : pickLines(offer, c.lines, c.qty ?? null);
+    const selection = !offer.bid && selectionWhy(quote, offer, lines);
+    if (selection) return selection;
     const total = offer.bid ? (lines.length === offer.lines.length && Number.isInteger(offer.price_cp) ? offer.price_cp : lines.reduce((n, l) => n + (l.price_cp || 0), 0)) : picked.cp;
     const qty = offer.bid ? (lines.length === 1 ? lines[0].qty : 0) : (picked.picks?.length === 1 ? picked.picks[0].units : 0);
     const mentions = currency ? coinMentions(quote, { rules: { currency } }) : [];

@@ -833,11 +833,14 @@ export function parseBoard(answer, content, need, s = null) {
         : (need.have || []).some(t => dungeonNamed(s, near, t));
     for (const l of value.listings) {
         const text = [l.title, l.task, l.desired_end_state, ...l.objectives.map((o) => `${o.what} ${o.where || ''}`)].join(' \n ').toLowerCase();
-        const at = near.length ? dungeonNamed(s, near, text) : null;
+        // Structured hunt/clearance contracts name their actual location in DEFEAT.where.
+        // A warning in task is not a second destination. Legacy listings retain their old interpretation.
+        const targetText = profile?.countOnly ? l.objectives.filter(o => o.verb === 'DEFEAT').map(o => o.where || '').join(' \n ').toLowerCase() : text;
+        const at = near.length ? dungeonNamed(s, near, targetText) : null;
         const limited = profile ? boardFamily(s, content, l) === 'dungeon' : !!at;
         let why = l.rank !== need.rank ? `rank ${l.rank} is not ${need.rank}` : l.level < lo || l.level > hi ? `level ${l.level} outside ${lo}–${hi}` : l.objectives.length > 4 ? 'more than 4 objectives' : l.proof.length > 2 ? 'more than 2 verification examples'
             : need.c && (!s || deliveryRuleset(s) >= 2) && l.objectives.some(nonphysicalDelivery) ? 'DELIVER/GIVE requires physical cargo; use TALK for a spoken message or warning'
-                : limited && inDungeon ? (profile ? 'at most one Dungeon clearance on this board' : 'at most one Dungeon job on this board, and one is there already') : at ? dungeonPartWhy(s, content, need.rank, at, text) || noCullWhy(s, content, need, at, l, text) : null;
+                : limited && inDungeon ? (profile ? 'at most one Dungeon clearance on this board' : 'at most one Dungeon job on this board, and one is there already') : at ? dungeonPartWhy(s, content, need.rank, at, profile?.countOnly ? `${l.title.toLowerCase()} ${targetText}` : targetText) || noCullWhy(s, content, need, at, l, targetText) : null;
         // Patch 8.1 (§3, §10): the Dungeon its work lies in, fixed with the listing (the gate and the count read this)
         if (at) l.dungeon = at;
         if (!why && profile) why = simpleListingWhy(s, content, l, profile, boardFamily(s, content, l));

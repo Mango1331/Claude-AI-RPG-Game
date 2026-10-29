@@ -1,4 +1,4 @@
-import { placeParent, placeIdentity, samePlace } from './place_refs.js';
+import { placeParent, placeIdentity, samePlace, scopedPlaces } from './place_refs.js';
 import { sceneIssues, localSceneDelta } from './extract.js';
 import { privateQuestsOf, questVisible } from '../content.js';
 // Runtime V4: applying the extractor's world deltas (docs/RUNTIME_V4_PLAN.md §5.2). After the narrator's reply the
@@ -187,6 +187,7 @@ function locationOf(s, id) {
  * @returns {{events, rejected, corrections, system, opened, state, arrivedHall}}
  */
 export function applyWorld(state, content, answer, { msg = null, prose = '', chronicle = null } = {}) {
+    answer = scopedPlaces(answer, state);
     const s = clone(state);
     const dice = Dice.from(s);
     const events = [];

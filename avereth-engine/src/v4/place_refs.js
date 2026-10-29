@@ -53,3 +53,32 @@ export function placeKey(s, ref, content) {
     return JSON.stringify([normText(n.name || ''), n.kind, parent]);
 }
 export const samePlace = (s, a, b, content) => placeKey(s, a, content) === placeKey(s, b, content);
+
+/** Preserve only a player-authorized local habitat relation for the arrival's new place.
+ * No scope, unconfirmed arrival, known/independent parent or unrelated name: unchanged.
+ */
+export function scopedPlaces(answer, state) {
+    const scopes = (state.last?.outcome?.auth?.gos || []).filter(g => g.within
+        && state.places[g.within]?.population && lineage(state, state.scene.at).includes(g.within));
+    if (!scopes.length) return answer;
+    const rewrite = value => {
+        if (Array.isArray(value)) return value.map(rewrite);
+        if (!value || typeof value !== 'object') return value;
+        const fresh = value.new;
+        if (fresh && typeof fresh === 'object' && ['site', 'wilderness', 'interior'].includes(fresh.kind)) {
+            const hits = scopes.filter(g => {
+                const expected = answer.expected?.[String(g.seq)];
+                return expected?.arrived === true && expected.at?.new
+                    && normText(expected.at.new.name) === normText(fresh.name);
+            });
+            if (hits.length === 1) {
+                const root = hits[0].within;
+                const parent = fresh.parent;
+                if (parent == null || (typeof parent === 'string' && ['realm', 'region'].includes(state.places[parent]?.kind) && lineage(state, root).includes(parent)))
+                    return { ...value, new: { ...fresh, parent: root } };
+            }
+        }
+        return Object.fromEntries(Object.entries(value).map(([key, v]) => [key, rewrite(v)]));
+    };
+    return rewrite(answer);
+}

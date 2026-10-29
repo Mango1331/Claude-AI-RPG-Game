@@ -24,7 +24,7 @@ import { attackTargetHere, sceneHandle, tacticalHere, areaCaught, approachedBy, 
 import { itemEffectOf, rulesetOf, skillOf } from '../content.js';
 import { actionsOf, weaponAttackOf, weaponAttackNamed } from '../derived.js';
 import { restoreOf } from './items.js';
-import { settlementOf, placeName } from './domain.js';
+import { settlementOf, placeName, lineage } from './domain.js';
 import { dungeonOf, roomKnown } from './dungeon.js';
 import { extractJsonObject } from './json.js';
 import { validate } from './schema.js';
@@ -327,12 +327,14 @@ export function planContext(state, content, catalog) {
     const learning = rulesetOf(state) >= 2 ? openGoals(state).map((g) => ({ id: g.id, text: goalText(g) })) : [];
     const techniques = rulesetOf(state) >= 2 ? composerFunctions(content) : [];
     const jobs = privateQuestsOf(state) && rulesetOf(state) >= 2 ? Object.values(state.quests).filter(q => q.kind === 'private' && ['offered', 'active'].includes(q.status)) : [];
-    return { tradeChecks: rulesetOf(state) >= 2, privateQuests: privateQuestsOf(state), fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content), jobs };
+    const habitat = lineage(state, state.scene.at).find(id => state.places[id].population);
+    return { habitat, tradeChecks: rulesetOf(state) >= 2, privateQuests: privateQuestsOf(state), fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content), jobs };
 }
 
 /** The user message: the interpreter's CATALOG, then skills, opponents, engine facts, RECENT and the message. */
 export function plannerUser(ctx, text, { recent = '' } = {}) {
     const L = [catalogText(ctx.catalog)];
+    if (ctx.habitat) L.push(`CURRENT HABITAT: ${ctx.habitat}. A GO following this population's signs to a local den or part uses within:${ctx.habitat}. Actual departure, another settlement, or an independent new place uses within:null. Never infer a local population merely from similar species.`);
     if (ctx.jobs?.length) L.push('PRIVATE JOBS (optional job on actual work actions only):', ...ctx.jobs.map(q => `- ${q.id}: ${q.title}; ${(q.objectives || []).map(o => o.what).join('; ')}`));
     L.push('KNOWN SKILLS (the only skill ids):');
     for (const s of ctx.skills) L.push(`- ${s.id}: ${s.name} — ${s.text}`);

@@ -1,3 +1,4 @@
+import { providerResponseError } from '../../src/v4/narrator_recovery.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -69,8 +70,8 @@ test('Run20 actual repricing closes the old offer; accepting the new price pays 
 });
 function hostLlm(fetch,fireTimeout=()=>{}) {
  const index=fs.readFileSync(new URL('../../index.js',import.meta.url),'utf8'),start=index.indexOf('async function v4Llm('),end=index.indexOf('\n}',start)+2;
- const make=new Function('ctx','fetch','setTimeout','clearTimeout','LLM_TIMEOUT_MS',`let llmPath;${index.slice(start,end)};return v4Llm;`);
- return make(()=>({mainApi:'openai',chatCompletionSettings:{chat_completion_source:'custom'},getRequestHeaders:()=>({})}),fetch,(fn,ms)=>{fireTimeout(fn,ms);return 1;},()=>{},120000);
+ const make=new Function('ctx','fetch','setTimeout','clearTimeout','LLM_TIMEOUT_MS','providerResponseError',`let llmPath;${index.slice(start,end)};return v4Llm;`);
+ return make(()=>({mainApi:'openai',chatCompletionSettings:{chat_completion_source:'custom'},getRequestHeaders:()=>({})}),fetch,(fn,ms)=>{fireTimeout(fn,ms);return 1;},()=>{},120000,providerResponseError);
 }
 test('Run20 host timeout keeps 120s limit and identifies its own abort',async()=>{
  let timeout;const llm=hostLlm(async()=>{timeout();throw new DOMException('aborted','AbortError');},(fn,ms)=>{timeout=fn;assert.equal(ms,120000);});

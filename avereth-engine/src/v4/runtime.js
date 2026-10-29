@@ -137,8 +137,8 @@ async function ask(llm, messages, purpose, overrides = {}) {
         const kind = ({ LLM_TIMEOUT: 'timeout', LLM_CANCELLED: 'cancelled', LLM_PROVIDER: 'provider' })[err?.code]
             || (err?.name === 'AbortError' ? 'aborted' : 'transport');
         const status = Number(err?.status) || null;
-        const retryable = !['cancelled', 'aborted'].includes(kind) && (kind !== 'provider' || status === 408 || status === 429 || status >= 500);
-        return { ok: false, retryable, error: String(err?.message || err).slice(0, 200), ms, call: { purpose, ms, error: true, error_kind: kind, ...(!['LLM_TIMEOUT','LLM_PROVIDER','LLM_CANCELLED'].includes(err?.code) && err?.name !== 'AbortError' ? {unclassified:true} : {}), ...(status ? { status } : {}) } };
+        const retryable = !['cancelled', 'aborted'].includes(kind) && (kind !== 'provider' || (typeof err?.retryable === 'boolean' ? err.retryable : status === 408 || status === 429 || status >= 500));
+        return { ok: false, retryable, error: String(err?.message || err).slice(0, 200), ms, call: { purpose, ms, error: true, error_kind: kind, ...(kind === 'provider' ? { provider_retryable: retryable, ...(err.provider_code ? { provider_code: err.provider_code } : {}), ...(err.provider_type ? { provider_type: err.provider_type } : {}) } : {}), ...(!['LLM_TIMEOUT','LLM_PROVIDER','LLM_CANCELLED'].includes(err?.code) && err?.name !== 'AbortError' ? {unclassified:true} : {}), ...(status ? { status } : {}) } };
     }
 }
 
@@ -569,7 +569,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
             if (!current()) return stale();
             r.perf = turnPerf(r, t0, f0, waited);
             if (r.interp?.failed) {
-                const hard = (r.plan?.llm || []).some(x => x.error && (x.unclassified || ['unknown','cancelled','aborted'].includes(x.error_kind) || (x.error_kind === 'provider' && x.status < 500 && ![408,429].includes(x.status))));
+                const hard = (r.plan?.llm || []).some(x => x.error && (x.unclassified || ['unknown','cancelled','aborted'].includes(x.error_kind) || (x.error_kind === 'provider' && (x.provider_retryable === false || (x.provider_retryable !== true && x.status < 500 && ![408,429].includes(x.status))))));
                 if (!hard) r.continuation = {kind:'planner_not_executed', reason:'model'};
                 commit();
                 return {
@@ -801,7 +801,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
     }
 
     if (!isCurrent()) return { changed: false, cancelled: true };
-    const hard = calls.some(x => x.error && (x.unclassified || ['unknown','cancelled','aborted'].includes(x.error_kind) || (x.error_kind === 'provider' && x.status < 500 && ![408,429].includes(x.status))));
+    const hard = calls.some(x => x.error && (x.unclassified || ['unknown','cancelled','aborted'].includes(x.error_kind) || (x.error_kind === 'provider' && (x.provider_retryable === false || (x.provider_retryable !== true && x.status < 500 && ![408,429].includes(x.status))))));
     return applyExtraction(chat, id, content, parsed, { hash: req.hash, ms, repaired, recovery, error, hud, calls, errorKind:hard ? 'provider' : 'model' });
 }
 

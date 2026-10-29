@@ -1,4 +1,4 @@
-import { placeKey } from './place_refs.js';
+import { placeKey, scopedPlaces } from './place_refs.js';
 import { privateQuestsOf } from '../content.js';
 // Runtime V4: the world-delta extractor (docs/RUNTIME_V4_PLAN.md §5, D2 = A). After every story reply a separate call
 // reads the reply and reports, as typed deltas in story order, what it established in the world; the engine answers
@@ -29,7 +29,7 @@ export function worldVocab(vocab, state) {
     };
 }
 
-export const EXTRACTOR_VERSION = 'extract-5.16';
+export const EXTRACTOR_VERSION = 'extract-5.17';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 
@@ -127,6 +127,7 @@ export const FORMAT_RULES = [
     'Trade evidence: offer/bid said quotes the actual commercial clause, including who offers, unit/lot price and conditions. Third-party price advice is fact/place.reported, not an offer or bid of the speaker. Price ranges, possible future prices and unaccepted discounts are not fixed prices. For a unit rate compute the total for the declared units; for a lot keep its total. Never invent a seller commitment from a recommendation.',
     'string[] is always a JSON array, even when it contains only one value.',
     `place-ref is an exact known place id from the CATALOG, or {"new":{"name":"...","kind":"...","parent":...}}. For a new place, kind must be exactly one of: ${PLACE_KINDS.join(', ')}. Use settlement for a city, town, village or hamlet; site for a building, inn or Guild hall; interior for a room; wilderness for natural outdoor terrain.`,
+    'LOCAL HUNT EXPLORATION is an authorized continuation inside an existing habitat: a newly reached den, quarry hollow or other part keeps the stated habitat id as parent, not the realm. A separate journey does not inherit a population just because its species sounds similar. Arrive is still required.',
     'When the CATALOG already contains the place, quest or object, copy its id exactly. Never rewrite an id, invent another id for it, or substitute its title/name.',
     'quest-ref and object-ref mean the exact matching CATALOG id; use {"new":"..."} only when the thing is genuinely new and that reference type permits it.',
     'For a newly created object use object.new {name:"bread",holder:"npc.giver",...} then object.move {object:{new:"bread"},to:"pc",...}. object.new has no ref field. Never invent an obj.* id. The new-name reference must identify exactly one earlier created object; otherwise distinguish the actual objects by their established descriptions.',
@@ -283,7 +284,7 @@ export function sceneIssues(value, startScene, state = null, content = null, exp
 export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequired = false, startScene = null, state = null, content = null, explicitArrivals = sceneRequired } = {}) {
     const parsed = extractJsonObject(answer);
     const { error, raw } = parsed;
-    const value = normalizeSoftFields(parsed.value, vocab);
+    const value = state ? scopedPlaces(normalizeSoftFields(parsed.value, vocab), state) : normalizeSoftFields(parsed.value, vocab);
     const want = Object.keys(expectedKeys || {});
     if (!value) return { value: null, valid: false, complete: false, errors: [error || 'no JSON object'], missing: want, raw: false };
     const exp = value && typeof value.expected === 'object' && value.expected ? value.expected : {};

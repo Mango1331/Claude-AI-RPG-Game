@@ -16,7 +16,7 @@
 import { loadContentPack } from './src/content.js';
 import { onEdited, foldChat, ensureCampaign, hasCampaign, projectPromptHistory, reportRequest, applyReportAnswer, rec, setRec } from './src/host.js';
 import { prepareGenerationAsync, processReplyAny, runExtraction, applyExtraction, pendingExtraction, campaignRuntime, onEditedV4, perfSummary } from './src/v4/runtime.js';
-import { createNarratorRecovery, narratorProviderResponse } from './src/v4/narrator_recovery.js';
+import { createNarratorRecovery, narratorProviderResponse, providerResponseError } from './src/v4/narrator_recovery.js';
 import { verifySavedChat } from './src/v4/continuation.js';
 import { createWorldJobs } from './src/v4/world_jobs.js';
 import { validateState } from './src/validate.js';
@@ -143,7 +143,7 @@ async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500, signal = n
             };
             const res = await fetch('/api/backends/chat-completions/generate', { method: 'POST', headers: c.getRequestHeaders(), body: JSON.stringify(body), signal: ctl.signal });
             const json = await res.json().catch(() => null);
-            if (!res.ok || !json || json.error || !json.choices) throw Object.assign(new Error(`the LLM call failed (HTTP ${res.status}${json?.error?.message ? `: ${String(json.error.message).slice(0, 120)}` : ''})`), { code: 'LLM_PROVIDER', status: res.status });
+            if (!res.ok || !json || json.error || !json.choices) throw providerResponseError(res.status, json);
             const m = json.choices[0]?.message || {};
             const text = typeof m.content === 'string' ? m.content : Array.isArray(m.content) ? m.content.map((x) => x?.text || '').join('') : '';
             // Patch 8.2: why the answer ended and the provider's token counts go along as telemetry (runtime.js callMeta)

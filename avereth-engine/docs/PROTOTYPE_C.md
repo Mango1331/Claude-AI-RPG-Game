@@ -2235,3 +2235,7 @@ Nur Bewegungen Alarics selbst, zum Ziel von `arrive.at`; Auslöser (grabbed, arr
 ## 28.10.2026 — .114: erste gemeinsame F-Balancerunde
 
 Neue V4-C-Kampagnen: F-Waffen6/10/14/18/22, lokales Fachhändlersortiment, PP50/75/100, LP-Tagesgrenzen40/60, Primer80cp und gestaffelte Novice-Vergütungsrichtwerte. Historische Kampagnen behalten ihre Zahlenpolicy; XP, Startstats, Monster und Aktionsökonomie unverändert. Umsetzung, Nachweise und Grenzen: [PATCH_F_BALANCE114.md](PATCH_F_BALANCE114.md).
+
+## 29.10.2026 — .115: Batch-10-Folgekorrekturen
+
+Gemeinsame Einstufung von ST-Providerfehlern hinter HTTP 200, Dungeonwarnung vom Vertragsziel getrennt, expliziter lokaler Habitatbezug und Zustimmung zu den tatsächlich gekauften Positionen. F-Balance und Runner unverändert. Originalfälle, Kompatibilität und Abnahme: [PATCH_BATCH10_FOLLOWUP115.md](PATCH_BATCH10_FOLLOWUP115.md).

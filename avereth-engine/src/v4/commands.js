@@ -21,7 +21,7 @@ import { entityLabel, setFactEvents, truth } from '../knowledge.js';
 import { normText, slug, formatClock, hash32 } from '../util.js';
 import { deriveCharacter } from '../derived.js';
 import {
-    placeName, hallOf, hallOfSettlement, guildDestination, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey, isLooseCoin, listedToday,
+    lineage, placeName, hallOf, hallOfSettlement, guildDestination, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey, isLooseCoin, listedToday,
 } from './domain.js';
 import { sameWant, keyWords, wantedLines } from './world.js';
 import { LOOT_WORDS, lootedHere } from './loot.js';
@@ -495,11 +495,17 @@ const HANDLERS = {
         const known = typeof c.to === 'string';
         if (known && !s.places[c.to]) return { status: 'refused', reason: 'unknown place', line: 'CANNOT GO — no such place is known.' };
         if (known && c.to === s.scene.at) return { status: 'refused', reason: 'already here', done: true, line: `NOTHING TO DO — he is already at ${placeName(s, c.to)}.` };
+        if (c.within != null && (!envx?.c || !s.meta.f_progression || rulesetOf(s) < 2 || known || !s.places[c.within]?.population || !lineage(s, s.scene.at).includes(c.within)))
+            return { status: 'refused', reason: 'invalid local habitat scope', line: 'CANNOT GO — local exploration needs the current habitat; choose a normal destination to leave it.' };
         const name = known ? placeName(s, c.to) : String(c.to?.new || 'somewhere');
         const t = content.rules.time;
         const inside = known && !!dungeonOf(s, s.scene.at) && dungeonOf(s, s.scene.at) === dungeonOf(s, c.to);
         const cap = !known ? t.unknown_place_cap_min : inside || sameSettlement(s, c.to, s.scene.at) ? t.default_cap_min : t.travel_cap_min;
         const go = { seq: c.seq, to: known ? c.to : null, name, hall: known && !!hallOf(s, c.to), newName: known ? null : name };
+        if (c.within) {
+            go.within = c.within;
+            ctx.extra.push(`LOCAL HUNT EXPLORATION — ${name} is a new part of ${placeName(s, c.within)} (${c.within}), not a new independent population. Its new site/den uses that parent. This authorizes no arrival by itself.`);
+        }
         // Patch 8 (src/v4/living.js): a true Dungeon is established at its first contact; passing its gate is checked
         // (who may enter, its fee only with his consent, how many are inside); and going on into a part he has not seen,
         // the engine places what that part holds before the story tells it

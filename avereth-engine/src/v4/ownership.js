@@ -234,6 +234,7 @@ export const DELTA_WRITES = {
     thread: { writes: ['threads'] },
     // Patch 2: a place known by report (src/v4/known.js): the place tree only, never a fact
     'place.reported': { writes: ['places'] },
+    'guild.branch': { writes: ['places'] },
     // Patch 6: an obstacle or hazard of the place (src/v4/features.js): established, named again, or destroyed by the world
     feature: { writes: ['features'] },
     // Patch 7: a way between two rooms of a dungeon (src/v4/dungeon.js), and the room it leads to

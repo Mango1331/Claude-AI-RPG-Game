@@ -21,8 +21,8 @@ export function placeIdentity(s, ref, content, { c = true, reported = false, dep
     if (!n || typeof n !== 'object' || !n.name || depth > 1) return null;
     const opts = { c, reported, depth: depth + 1 };
     const rawParent = n.parent == null ? s.scene.at : placeIdentity(s, n.parent, content, opts);
-    const hall = guildDestination(s, n.name, settlementOf(s, rawParent || s.scene.at));
-    if (hall) return hall.id || null;
+    const hall = guildDestination(s, n.name, settlementOf(s, rawParent || s.scene.at), { allowNew: c && s.meta.ruleset >= 2 });
+    if (hall?.id || hall?.error) return hall.id || null;
     const gate = c && content ? entranceOf(s, content, ref) : null;
     if (gate) return gate;
     const parent = placeParent(s, n.kind, rawParent, c);

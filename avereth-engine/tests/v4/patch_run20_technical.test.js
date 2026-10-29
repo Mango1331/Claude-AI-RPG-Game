@@ -18,7 +18,7 @@ test('Run20 T203: explicit preceding Wethervord GO cannot authorize Alderwatch o
  assert.equal(r.events.some(e=>e.t==='coin.changed'),false);assert.ok(r.resolutions.some(x=>x.status==='refused'));
 });
 test('Run20 local entry without town repetition remains local, while an unqualified wilderness return works',()=>{
- const r=run([{seq:1,type:'go',to:{new:'the Guild hall'},quote:'I enter the Guild hall.'}]);assert.equal(r.auth.gos.length,0);
+ const r=run([{seq:1,type:'go',to:{new:'the Guild hall'},quote:'I enter the Guild hall.'}]);assert.equal(r.auth.gos[0].guild_candidate,true);assert.equal(r.auth.gos[0].guild_settlement,'loc.wethervord');assert.equal(r.auth.gos[0].to,null);
  const s=structuredClone(f.state203);s.scene.at=Object.values(s.places).find(p=>p.kind==='wilderness').id;
  const back=run([{seq:1,type:'go',to:{new:'the Guild hall'},quote:'I go back to the Guild hall.'}],s);assert.equal(back.auth.gos[0].to,'loc.alderwatch.guild_hall');
 });

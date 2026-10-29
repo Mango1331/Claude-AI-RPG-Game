@@ -60,21 +60,21 @@ test('Run19 T59 Guild landmark stays an inn, never a foreign Hall',()=>{
  }
 });
 test('Run19 explicit settlement cannot be replaced by contract branch',()=>{
- const r=run(before(117),[{seq:1,type:'go',to:{new:'Guild hall in Thornbury'},quote:'I enter the Guild hall in Thornbury'}]);assert.equal(r.auth.gos.length,0);assert.equal(r.resolutions[0].status,'refused');
+ const r=run(before(117),[{seq:1,type:'go',to:{new:'Guild hall in Thornbury'},quote:'I enter the Guild hall in Thornbury'}]);assert.equal(r.auth.gos[0].to,null);assert.equal(r.auth.gos[0].guild_candidate,true);assert.equal(r.auth.gos[0].guild_settlement,'loc.thornbury');
  const a=run(before(117),[{seq:1,type:'go',to:{new:'Guild branch in Asterhall'},quote:'I go to the Guild branch in Asterhall'}]);assert.equal(a.auth.gos[0].to,'loc.asterhall.guild_hall');
 });
 test('Run19 T20 original Guild branch resolves to existing Hall without parallel place',()=>{
  const x=f.cases[20],s=before(x.i+1);const r=applyWorld(s,content,x.answer,{msg:x.i+1,prose:x.prose});assert.equal(r.state.scene.at,'loc.asterhall.guild_hall');assert.equal(r.events.some(e=>e.t==='place.created'&&/guild_branch/.test(e.d.place.id)),false);
  assert.deepEqual(fold(r.events,s),r.state);
 });
-test('Run19 new Hall aliases and real interiors, but no fabricated branch',()=>{
+test('Run19 Hall aliases preserve real interiors; an unstaffed new hall has no branch status',()=>{
  const s=before(39);s.scene.at='loc.asterhall';
  for(const name of ['Guild branch','Guild reception','Guild counter','Asterhall Guild branch']){
   const r=applyWorld(s,content,{scene:'here',expected:{},deltas:[{seq:1,type:'arrive',at:{new:{name,kind:'site',parent:'loc.asterhall'}},forced_by:null,with:null}]},{msg:200});
   assert.equal(r.events.some(e=>e.t==='place.created'&&e.d.place.name===name),false,name);
  }
  assert.equal(hallOf(s,'loc.asterhall.guild_hall'),'loc.asterhall.guild_hall');assert.equal(hallOf(s,'loc.asterhall'),null);
- const x=f.cases[75],r=applyWorld(before(x.i+1),content,x.answer,{msg:x.i+1,prose:x.prose});assert.equal(r.events.some(e=>e.t==='coin.changed'&&e.d.delta===90),false);assert.equal(r.state.scene.at,'loc.marrowbridge');
+ const x=f.cases[75],r=applyWorld(before(x.i+1),content,x.answer,{msg:x.i+1,prose:x.prose});assert.equal(r.events.some(e=>e.t==='coin.changed'&&e.d.delta===90),false);assert.equal(hallOf(r.state,r.state.scene.at),null);assert.equal(r.state.places[r.state.scene.at].parent,'loc.marrowbridge');
 });
 
 test('Run19 pure trade conflict survives malformed repair as a side-effect-free clarification',async()=>{

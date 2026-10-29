@@ -6,7 +6,7 @@
 // event-sourced part of the product state: every change is an event on a chat message, the state is their fold.
 //
 //   places     id -> {id, name, kind, sub, parent, realm, tags[], by}      kind: realm|region|wilderness|settlement|
-//                                                                       district|site|interior; Guild halls are engine
+//                                                                       district|site|interior; seeded Guild halls are engine
 //                                                                       nodes "<settlement>.guild_hall" (tag guild_hall)
 //   objects    id -> {id, name, kind, stack, qty, unit, holder, marks[], for_quests[], source}
 //              holder: {entity: id} | {loc: place id} | {consumed: by}; what Alaric holds is mirrored into his sheet's
@@ -319,24 +319,28 @@ export const realmOf = (state, id) => lineage(state, id).find((x) => state.place
 /** The Guild hall node that contains a place (the hall itself or anything below it), or null. */
 export const hallOf = (state, id) => lineage(state, id).find((x) => (state.places[x].tags || []).includes('guild_hall')) || null;
 /** A Guild destination, not an independent place using the Guild as a landmark. */
-export function guildDestination(state, text, fallback = null) {
+export function guildDestination(state, text, fallback = null, { allowNew = false } = {}) {
     const words = String(text || '').trim().replace(/^(?:the|a|an)\s+/i, '');
-    const m = words.match(/^(.*?)\bguild(?:\s+(?:hall|house|office|lodge|building|branch|desk|counter|reception))?(?:\s+(?:desk|counter))?(?:\s+(?:in|at|of)\s+(.+))?$/i);
+    const m = words.match(allowNew
+        ? /^(.*?)\bguild(?:\s+(?:hall|house|office|lodge|building|branch|desk|counter|reception|room)){0,3}(?:\s+(?:in|at|of)\s+(.+))?$/i
+        : /^(.*?)\bguild(?:\s+(?:hall|house|office|lodge|building|branch|desk|counter|reception))?(?:\s+(?:desk|counter))?(?:\s+(?:in|at|of)\s+(.+))?$/i);
     if (!m) return null;
     const prefix = m[1].trim().replace(/^adventurers['’]?$/i, '');
-    if (prefix && !Object.values(state.places || {}).some(p => p.kind === 'settlement' && normText(p.name) === normText(prefix.replace(/['’]s$/, '')))) return null;
+    if (prefix && !Object.values(state.places || {}).some(p => p.kind === 'settlement' && normText(p.name) === normText(prefix.replace(/['’]s$/, '')))
+        && (!allowNew || /\b(?:near|beside|opposite|behind|from|by|inn|shop|road)\b/i.test(prefix))) return null;
     const qualifier = (m[2] || prefix).replace(/['’]s\s*$/i, '').trim();
     const towns = Object.values(state.places || {}).filter(p => p.kind === 'settlement' && normText(p.name) === normText(qualifier));
-    if (qualifier && towns.length !== 1) return { error: 'the named Guild settlement is not uniquely known' };
+    if (qualifier && towns.length !== 1) return allowNew && !towns.length ? { candidate: true, settlement: qualifier } : { error: 'the named Guild settlement is not uniquely known' };
     const town = qualifier ? towns[0].id : fallback;
     const id = town && hallOfSettlement(state, town);
-    return id ? { id } : { error: 'Guild halls are engine nodes; there is no branch in this settlement' };
+    return id ? { id } : allowNew ? { candidate: true, settlement: town || null } : { error: 'Guild halls are engine nodes; there is no branch in this settlement' };
 }
 
-/** The Guild hall of a settlement (the engine's fixed node), or null when it has no branch. */
+/** One functional branch per settlement: a seeded node or an established existing premises. */
 export function hallOfSettlement(state, settlement) {
     const id = `${settlement}.guild_hall`;
-    return state.places?.[id] && (state.places[id].tags || []).includes('guild_hall') ? id : null;
+    if (state.places?.[id] && (state.places[id].tags || []).includes('guild_hall')) return id;
+    return Object.values(state.places || {}).find(p => (p.tags || []).includes('guild_hall') && settlementOf(state, p.id) === settlement)?.id || null;
 }
 export const childrenOf = (state, id) => Object.values(state.places || {}).filter((p) => p.parent === id).map((p) => p.id);
 

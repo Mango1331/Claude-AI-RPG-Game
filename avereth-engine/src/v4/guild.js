@@ -14,7 +14,7 @@ import { awardXp, questXp } from '../progression.js';
 import { rankOf, rankIndex } from '../derived.js';
 import { slug, normText, hash32 } from '../util.js';
 import { itemProfile } from './items.js';
-import { hallOf, settlementOf, realmOf, heldBy, membership, listingsOf, boardKey, today, contracts, supportedRanks, placeName, namesKind, namesPeople, peopleNamed, sameKinds, namesYoung } from './domain.js';
+import { hallOf, hallOfSettlement, settlementOf, realmOf, heldBy, membership, listingsOf, boardKey, today, contracts, supportedRanks, placeName, namesKind, namesPeople, peopleNamed, sameKinds, namesYoung } from './domain.js';
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
@@ -1039,7 +1039,7 @@ export function bookBoard(s, content, need, listings, emit) {
             rank: need.rank, level: l.level, qtype: l.qtype, payout_cp: l.payout_cp, reward: `${l.payout_cp} cp`,
             task: l.task ? String(l.task).slice(0, 240) : null, desired_end_state: l.desired_end_state, objectives: cullNumbers(s, content, l, need).map((o, i) => ({ id: `o${i + 1}`, ...o, status: 'open' })),
             proof: l.proof.map((p, i) => ({ id: `p${i + 1}`, ...p, consume: p.kind === 'object' ? p.consume !== false : undefined })),
-            source: { board: `${need.branch}.guild_hall`, branch: need.branch, listed: { turn: s.turn, minute: s.clock.minute, day: need.day } },
+            source: { board: hallOfSettlement(s, need.branch) || `${need.branch}.guild_hall`, branch: need.branch, listed: { turn: s.turn, minute: s.clock.minute, day: need.day } },
             schedule: { starts_at: null, deadline: null }, status: 'listed', taker: null, history: [{ turn: s.turn, minute: s.clock.minute, status: 'listed' }],
             details: [], notes: [], ...(guide && (l.payout_cp < guide[0] || l.payout_cp > guide[1]) ? { audit: [`payout ${l.payout_cp} cp outside the guide ${guide[0]}–${guide[1]} cp`] } : {}),
         };

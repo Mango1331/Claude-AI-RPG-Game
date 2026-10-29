@@ -16,7 +16,7 @@ import { normText } from '../util.js';
 /** Preserve the historical wire vocabulary; new campaigns have only Guild quests. */
 export function worldVocab(vocab, state) {
     if (privateQuestsOf(state)) return vocab;
-    return { ...vocab, version: 'delta-1.7',
+    return { ...vocab, version: vocab.version,
         rules: [...vocab.rules.filter(r => !r.startsWith('Paid work FOR an NPC')),
             'FREE HELP: NPC requests, help, agreements and offered wages are ordinary facts, promises, threads and memories. Never create private quests or job ids. Formal quest deltas concern only existing Guild contracts. Helping earns no automatic Quest XP or payout.',
             'coin.gift is an ACTUAL new handover now, including voluntary thanks, wages, advance or reward from any present NPC. No job or acceptance is required. Promises and conditional/future payments are facts/threads, not coin.gift. In said quote the exact current handover clause INCLUDING the amount and currency, never invent an amount. For a recount of a RECENT COIN HANDOVER set repeat_of to its existing id; it never pays twice. A distinct new gift uses repeat_of:null even for the same giver/amount.'],
@@ -29,7 +29,7 @@ export function worldVocab(vocab, state) {
     };
 }
 
-export const EXTRACTOR_VERSION = 'extract-5.17';
+export const EXTRACTOR_VERSION = 'extract-5.18';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 
@@ -248,7 +248,7 @@ function normalizeSoftFields(value, vocab) {
 /** Local semantic diagnostics, also enforced by World against its actually reached state.
  * These are not malformed JSON; one repair may clarify them without losing independent information.
  */
-export const localSceneDelta = d => !['time', 'arrive', 'overreach', 'place.reported', 'dungeon'].includes(d.type)
+export const localSceneDelta = d => !['time', 'arrive', 'overreach', 'place.reported', 'dungeon', 'guild.branch'].includes(d.type)
     && !(['person.new', 'creature.new'].includes(d.type) && d.present === false);
 export function sceneIssues(value, startScene, state = null, content = null, explicitArrivals = false) {
     const sceneKey = ref => placeKey(state, ref, content);
@@ -330,6 +330,6 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
         const names = value.deltas.filter(x => x?.type === 'object.new' && x.seq < d.seq && typeof x.name === 'string').map(x => x.name);
         if (names.length) errors.push(`$.deltas[${i}].object: unknown catalog id; object.new has no ref. Use {new:exact earlier name}, e.g. ${JSON.stringify({ new: names[0] })}; never invent an obj.* id`);
     }
-    if (sceneRequired && value.scene == null && (Object.values(expectedKeys || {}).includes('go') || (Array.isArray(value.deltas) && value.deltas.some(d => !['time', 'overreach', 'place.reported', 'dungeon'].includes(d?.type))))) errors.push('$.scene: actual narrative setting required for world changes');
+    if (sceneRequired && value.scene == null && (Object.values(expectedKeys || {}).includes('go') || (Array.isArray(value.deltas) && value.deltas.some(d => !['time', 'overreach', 'place.reported', 'dungeon', 'guild.branch'].includes(d?.type))))) errors.push('$.scene: actual narrative setting required for world changes');
     return { value, issues: [...semanticIssues, ...(sceneRequired && startScene ? sceneIssues(value, startScene, state, content, explicitArrivals) : [])], valid: errors.length === 0, complete: missing.length === 0, errors: [...errors.slice(0, 8), ...missing.map((k) => `expected key "${k}" not answered`)], missing, raw };
 }

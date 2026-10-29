@@ -183,7 +183,7 @@ function pickQuest(s, ref, statuses, kind = null) {
  * The Guild hall an earlier GO of this message leads to. He is not there yet (the reply decides whether he arrives), so
  * what is done at its desk waits for the arrival: a conditional the world applier books there (src/v4/world.js).
  */
-const hallAhead = (ctx, c) => ctx.auth.gos.filter((g) => g.hall && g.seq < c.seq).at(-1) || null;
+const hallAhead = (ctx, c, candidate = false) => ctx.auth.gos.filter((g) => (g.hall || (candidate && g.guild_candidate)) && g.seq < c.seq).at(-1) || null;
 
 /** Prototype C: giving up a Guild contract (quest.abandon on the planner path). No payout, Quest XP or completion. */
 function abandonGuild(s, content, q, c, ctx, emit) {
@@ -465,8 +465,10 @@ const HANDLERS = {
     },
     go(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT GO — not while the fight runs.' };
-        // "the guild building", "back to the guild": the Guild hall is an engine node, never a new place to invent
-        // (live 30.09.2026 14:56: the narrator made a "Guild desk" of it where no payout is possible)
+        let guildCandidate = false;
+        let guildSettlement = null;
+        // Reuse an established branch. In C/Ruleset 2 a new premises may be visited,
+        // but only World evidence can grant its functional Guild status.
         if (typeof c.to?.new === 'string') {
             // A preceding destination qualifies this Hall even if that GO was refused as "already here".
             // It is reference context only: arrival and turn-in remain conditional on the actual route.
@@ -475,9 +477,11 @@ const HANDLERS = {
                 ? knownByName(s, previous.to.new, s.places[s.scene.at]?.realm || s.scene.location, { reportedOnly: false })?.id : null;
             const town = target && settlementOf(s, target)
                 || (/^(?:i\s+)?(?:enter|step|walk)\b/i.test(String(c.quote || '').trim()) ? settlementOf(s, s.scene.at) : null);
-            const destination = guildDestination(s, c.to.new, town || settlementOf(s, guildHallMeant(s)));
+            const destination = guildDestination(s, c.to.new, town || settlementOf(s, guildHallMeant(s)), { allowNew: !!envx?.c && rulesetOf(s) >= 2 });
             if (destination?.error) return { status: 'refused', reason: destination.error, line: `CANNOT GO — ${destination.error}.` };
-            if (destination) c = { ...c, to: destination.id };
+            if (destination?.id) c = { ...c, to: destination.id };
+            guildCandidate = !!destination?.candidate;
+            guildSettlement = destination?.settlement || null;
         }
         if (envx?.c && rulesetOf(s) >= 2 && typeof c.to?.new === 'string') {
             const p = knownByName(s, c.to.new, s.places[s.scene.at]?.realm || s.scene.location, { reportedOnly: false });
@@ -501,7 +505,9 @@ const HANDLERS = {
         const t = content.rules.time;
         const inside = known && !!dungeonOf(s, s.scene.at) && dungeonOf(s, s.scene.at) === dungeonOf(s, c.to);
         const cap = !known ? t.unknown_place_cap_min : inside || sameSettlement(s, c.to, s.scene.at) ? t.default_cap_min : t.travel_cap_min;
-        const go = { seq: c.seq, to: known ? c.to : null, name, hall: known && !!hallOf(s, c.to), newName: known ? null : name };
+        const go = { seq: c.seq, to: known ? c.to : null, name, hall: known && !!hallOf(s, c.to), newName: known ? null : name,
+            ...((guildCandidate || (envx?.c && rulesetOf(s) >= 2 && known && guildDestination(s, name, settlementOf(s, c.to), { allowNew: true })?.candidate))
+                ? { guild_candidate: true, guild_settlement: guildSettlement || (known ? settlementOf(s, c.to) : null) } : {}) };
         if (c.within) {
             go.within = c.within;
             ctx.extra.push(`LOCAL HUNT EXPLORATION — ${name} is a new part of ${placeName(s, c.within)} (${c.within}), not a new independent population. Its new site/den uses that parent. This authorizes no arrival by itself.`);
@@ -1179,15 +1185,15 @@ const HANDLERS = {
             ctx.booked.turnIns.push(q.id);
             return { status: 'resolved', line: `TURNS IN — ${questLine(q)}: the world has established the contract outcome; the Guild accepts the turn-in and pays ${q.payout_cp} cp.${hands}` };
         }
-        const go = hallAhead(ctx, c);
+        const go = hallAhead(ctx, c, !!envx?.c && rulesetOf(s) >= 2);
         if (go) {
             // the same check the desk makes on arrival (guild.js contractReady)
             const ready = contractReady(s, content, q, { c: cc });
-            ctx.conditionals.push({ seq: c.seq, kind: 'turn_in', quest: q.id, condition: 'arrive_guild_hall', hall: go.to });
+            ctx.conditionals.push({ seq: c.seq, kind: 'turn_in', quest: q.id, condition: 'arrive_guild_hall', hall: go.guild_candidate ? null : go.to, ...(go.guild_candidate ? { guild_candidate: true, go_seq: go.seq } : {}) });
             ctx.booked.turnIns.push(q.id);
             return {
                 status: 'conditional', condition: 'arrive_guild_hall',
-                line: `TURNS IN, when he reaches the Guild hall — ${questLine(q)}: ${ready.ok ? `the achieved outcome is ready for desk acceptance; the Guild pays ${q.payout_cp} cp` : ready.mode === 'count_short' || (cc && ready.mode !== 'not_ready') ? `the desk will refuse it: ${ready.reason}` : 'the story has not yet established the contract outcome as achieved'}.${ready.ok ? hands : ''} If the reply does not reach the hall, nothing is turned in.`,
+                line: `TURNS IN, when he reaches the Guild hall — ${questLine(q)}: ${ready.ok ? `the achieved outcome is ready for desk acceptance; the Guild pays ${q.payout_cp} cp` : ready.mode === 'count_short' || (cc && ready.mode !== 'not_ready') ? `the desk will refuse it: ${ready.reason}` : 'the story has not yet established the contract outcome as achieved'}.${ready.ok ? hands : ''} If the reply does not reach the hall, nothing is turned in.${go.guild_candidate ? " This destination is not yet a recognized branch: only a narrated operating, staffed Guild desk can establish it. A sign or rumor cannot. Do not add further proof or payment requirements." : ""}`,
             };
         }
         return { status: 'refused', reason: 'not at a Guild hall', line: `CANNOT TURN IN — ${questLine(q)}: contracts are turned in at a Guild hall.` };

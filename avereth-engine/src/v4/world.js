@@ -27,7 +27,7 @@ import { firewall, pcWound, pcActIn } from './firewall.js';
 import { stripOwned, wrongClaim, ownershipViolation, stateRegions, effectViolation } from './ownership.js';
 import { mayOpenFight, mayTake, attackCommitted } from './envelope.js';
 import {
-    PLACE_PARENTS, HALL_NAME, guildDestination, hallOf, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind, SERVICE_ROLE,
+    PLACE_PARENTS, HALL_NAME, lineage, guildDestination, hallOf, hallOfSettlement, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind, SERVICE_ROLE,
     progressKey, sameKinds, kindOf,
 } from './domain.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
@@ -43,7 +43,7 @@ import { anchorFor, templateFor, rulesetOf } from '../content.js';
 import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotMet, resolved, slotForNew, resolvedSlotNamed, slotEntityEvents, establishEvents, syncEvents, insideOf } from './living.js';
 import { unbookedDungeonThreat } from './run9_evidence.js';
 import { jobOf, paymentJob, recordJobWork } from './private_jobs.js';
-import { forcedRelocation, presenceInReply } from './narration_evidence.js';
+import { forcedRelocation, presenceInReply, narratedEvent } from './narration_evidence.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
 // delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
@@ -141,8 +141,8 @@ function resolvePlace(s, ref, emit, depth = 0, { c = false, reported = false } =
     if (!n || typeof n !== 'object' || !n.name) return { error: 'a place needs an id or {new: {name, kind, parent}}' };
     if (depth > 1) return { error: 'at most one level of new parents' };
     const town = typeof n.parent === 'string' ? settlementOf(s, n.parent) : settlementOf(s, s.scene.at);
-    const hall = guildDestination(s, n.name, town);
-    if (hall) return hall;
+    const hall = guildDestination(s, n.name, town, { allowNew: c && rulesetOf(s) >= 2 });
+    if (hall?.id || hall?.error) return hall;
     const parent = n.parent === null || n.parent === undefined ? { id: s.scene.at } : resolvePlace(s, n.parent, emit, depth + 1, { c, reported });
     if (parent.error) return parent;
     let pid = parent.id;
@@ -325,6 +325,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const startAt = s.scene.at;
     let arrived = null;
     let arrivedHall = null;
+    const arrivals = new Set();
     let freshPart = null; // Patch 8: the new part of a Living Dungeon this reply brought him into
     const conditionals = (outcome.conditionals || []).map((c) => ({ ...c, done: false }));
     const idOf = (ref) => {
@@ -823,7 +824,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const origin = sceneOf(d);
         const remote = ['person.new', 'creature.new'].includes(d.type) && d.present === false;
         if (cPath && rulesetOf(s) >= 2 && origin != null && !remote
-            && !['time', 'arrive', 'overreach', 'place.reported', 'dungeon'].includes(d.type) && !sceneMatches(origin)) {
+            && !['time', 'arrive', 'overreach', 'place.reported', 'dungeon', 'guild.branch'].includes(d.type) && !sceneMatches(origin)) {
             refusedScene = true;
             reject(d, 'scene_context', 'the narrative setting is not the location reached at this step');
             const correction = `Alaric remains at ${placeName(s, s.scene.at)}. The other scene was not reached: its people, objects and quest outcomes were not booked here. Continue from the canonical location; do not invent a completed journey.`;
@@ -1166,6 +1167,33 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     break;
                 }
                 v3({ threads: [{ id: d.id || null, text: text.text, kind: d.kind, status: d.status, resolution: resolution.text || null }] }, d);
+                break;
+            }
+            case 'guild.branch': {
+                // World establishes a staffed institution; its desk mechanics remain engine-owned.
+                const proof = narratedEvent(prose, d.evidence);
+                const staffed = /\b(?:clerk|registrar|receptionist|staffed|operating)\b/i.test(d.evidence || '');
+                if (!cPath || rulesetOf(s) < 2 || !proof.ok || !staffed) {
+                    reject(d, 'guild_branch', proof.why || 'an operating staffed Guild branch must be established in the narration');
+                    break;
+                }
+                const at = resolvePlace(s, d.place, emit, 0, { c: true, reported: true });
+                const town = !at.error && settlementOf(s, at.id);
+                const place = s.places[at.id];
+                if (!town || !['site', 'interior'].includes(place?.kind) || dungeonOf(s, at.id)
+                    || !/\bguild\b/i.test(`${place.name} ${d.evidence}`)) {
+                    reject(d, 'guild_branch', at.error || 'a branch needs an identified Guild premises in a canonical settlement');
+                    break;
+                }
+                const hall = hallOfSettlement(s, town);
+                if (hall && hall !== at.id && !lineage(s, at.id).includes(hall)) {
+                    // Preserve an existing room's identity, linking it to the same institution.
+                    emit({ t: 'place.updated', d: { id: at.id, set: { parent: hall, kind: 'interior' } } });
+                } else if (!hall) {
+                    emit({ t: 'place.updated', d: { id: at.id, set: { tags: [...new Set([...(place.tags || []), 'guild_hall'])] } } });
+                    system.push(`GUILD BRANCH ESTABLISHED — ${placeName(s, at.id)}. Contract services use the existing Guild rules; no contract or payment is created by establishing this branch.`);
+                }
+                if (hallOf(s, s.scene.at)) arrivedHall = hallOf(s, s.scene.at);
                 break;
             }
             case 'place.reported': {
@@ -1550,7 +1578,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
 
     step = { kind: 'conditional' };
     // Deferred READY/proof checks now settled: retry only the player's still-current desk handover.
-    for (const k of conditionals.filter(x => !x.done && x.kind === 'turn_in' && hallOf(s, s.scene.at) === x.hall)) {
+    for (const k of conditionals.filter(x => !x.done && x.kind === 'turn_in' && hallOf(s, s.scene.at) && (
+        x.guild_candidate ? arrivals.has(s.scene.at) && candidateHallReached(x) : hallOf(s, s.scene.at) === x.hall))) {
         const q = s.quests[k.quest];
         const r = q?.status === 'active' ? completeContract(s, content, q, emit, { step: k.seq, c: cPath }) : { ok: false, reason: 'the contract is no longer active' };
         k.done = true;
@@ -1914,6 +1943,18 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const name = normText(s.places[id]?.name || '');
         return fw.accept.find((d) => d.type === 'passage' && d.dir && (d.to === id || normText(d.to?.new?.name || d.to?.new || '') === name)) || null;
     }
+    function candidateHallReached(k) {
+        const go = (auth.gos || []).find(g => g.seq === k.go_seq && g.guild_candidate);
+        if (!go) return false;
+        const hall = hallOf(s, s.scene.at);
+        const town = settlementOf(s, hall);
+        if (go.guild_settlement && go.guild_settlement !== town
+            && normText(go.guild_settlement) !== normText(s.places[town]?.name || '')) return false;
+        const target = go.to || placeIdentity(s, expected[String(go.seq)]?.at, content, { c: true });
+        if (target) return hallOf(s, target) === hall;
+        return guildDestination(s, go.newName || go.name, town, { allowNew: true })?.id === hall;
+    }
+
     function arriveThrough(id, party) {
         const via = throughGoal(id);
         if (via) arrive(via, party);
@@ -2005,6 +2046,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     }
 
     function arrive(id, party = []) {
+        arrivals.add(id);
         const town = locationOf(s, id);
         const from = s.scene.at;
         // Patch 7: two rooms of a building or cave out in the wild that he walks between make it a dungeon (with the
@@ -2100,7 +2142,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             arrivedHall = hall;
             for (const k of conditionals.filter((x) => !x.done && x.condition === 'arrive_guild_hall')) {
                 // Prototype C (4.3.0-c.5): a contract taken or a board read at its own hall waits for that hall
-                if (k.hall && k.hall !== hall) continue;
+                if (k.guild_candidate || (k.hall && k.hall !== hall)) continue;
                 const q = s.quests[k.quest];
                 if (k.kind === 'turn_in' && q?.status === 'active' && !contractReady(s, content, q, { c: cPath }).ok) continue;
                 k.done = true;

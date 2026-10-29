@@ -1,0 +1,3908 @@
+{
+  "source": "batch-20261029-091447Z, Warrior input 14 / ST27-28; recorded .116 events before input and original plan/extraction/prose",
+  "events": [
+    {
+      "t": "campaign.started",
+      "d": {
+        "seed": 3423271262,
+        "minute": 540,
+        "entities": [
+          {
+            "id": "pc",
+            "kind": "pc",
+            "name": "Alaric",
+            "race": "Human",
+            "age": 18,
+            "origin": "Earth",
+            "descriptors": [
+              "alaric",
+              "stranger",
+              "traveler"
+            ],
+            "status": "alive",
+            "location": "loc.glassmere",
+            "sheet": {
+              "level": 1,
+              "class": null,
+              "stats": {
+                "STR": 7,
+                "VIT": 7,
+                "AGI": 7,
+                "INT": 7,
+                "PER": 7,
+                "WIL": 7
+              },
+              "skills": {},
+              "equipment": {
+                "clothing": "simple_travelers_clothes"
+              },
+              "inventory": {
+                "small_pouch": 1
+              },
+              "coin_cp": 50,
+              "xp": 0,
+              "free_points": 0,
+              "hp": 90,
+              "mp": 84,
+              "sta": 100
+            }
+          }
+        ],
+        "location": "loc.glassmere",
+        "place": "public roadside verge outside Glassmere",
+        "facts": [
+          {
+            "id": "f.pc.name",
+            "s": "pc",
+            "p": "name",
+            "o": "Alaric",
+            "visibility": "public",
+            "since": {
+              "turn": 0,
+              "minute": 540
+            },
+            "until": null,
+            "importance": 0.9,
+            "hard": false,
+            "source": {
+              "kind": "campaign_start"
+            }
+          },
+          {
+            "id": "f.pc.appearance",
+            "s": "pc",
+            "p": "appearance",
+            "o": "Human, about eighteen; wears simple traveler's clothes",
+            "visibility": "public",
+            "since": {
+              "turn": 0,
+              "minute": 540
+            },
+            "until": null,
+            "importance": 0.9,
+            "hard": false,
+            "source": {
+              "kind": "campaign_start"
+            }
+          },
+          {
+            "id": "f.pc.origin",
+            "s": "pc",
+            "p": "origin",
+            "o": "Earth (transmigrated; memories intact)",
+            "visibility": "secret",
+            "since": {
+              "turn": 0,
+              "minute": 540
+            },
+            "until": null,
+            "importance": 0.9,
+            "hard": false,
+            "source": {
+              "kind": "campaign_start"
+            }
+          },
+          {
+            "id": "f.pc.arrival_witnesses",
+            "s": "pc",
+            "p": "arrival_witnesses",
+            "o": "none",
+            "visibility": "secret",
+            "since": {
+              "turn": 0,
+              "minute": 540
+            },
+            "until": null,
+            "importance": 0.9,
+            "hard": false,
+            "source": {
+              "kind": "campaign_start"
+            }
+          }
+        ],
+        "knowledge": [
+          {
+            "who": "pc",
+            "about": "f.pc.name",
+            "stance": "knows",
+            "source": "self",
+            "turn": 0,
+            "minute": 540
+          },
+          {
+            "who": "pc",
+            "about": "f.pc.appearance",
+            "stance": "knows",
+            "source": "self",
+            "turn": 0,
+            "minute": 540
+          },
+          {
+            "who": "pc",
+            "about": "f.pc.origin",
+            "stance": "knows",
+            "source": "self",
+            "turn": 0,
+            "minute": 540
+          },
+          {
+            "who": "pc",
+            "about": "f.pc.arrival_witnesses",
+            "stance": "knows",
+            "source": "self",
+            "turn": 0,
+            "minute": 540
+          }
+        ],
+        "campaign": "avereth",
+        "content_version": "4.2.0",
+        "engine_version": "4.3.0-c.6.6.116",
+        "ruleset": 2,
+        "private_quests": false,
+        "f_progression": true,
+        "starter_aoe": true,
+        "f_balance": true,
+        "runtime": "v4",
+        "path": "c",
+        "places": [
+          {
+            "id": "realm.valedorn_crown",
+            "name": "Valedorn Crown",
+            "kind": "realm",
+            "parent": null,
+            "realm": "realm.valedorn_crown",
+            "tags": [],
+            "by": "content"
+          },
+          {
+            "id": "realm.caelreth",
+            "name": "Caelreth",
+            "kind": "realm",
+            "parent": null,
+            "realm": "realm.caelreth",
+            "tags": [],
+            "by": "content"
+          },
+          {
+            "id": "realm.duskreach",
+            "name": "Duskreach",
+            "kind": "realm",
+            "parent": null,
+            "realm": "realm.duskreach",
+            "tags": [],
+            "by": "content"
+          },
+          {
+            "id": "realm.ashen_scale_dominion",
+            "name": "Ashen Scale Dominion",
+            "kind": "realm",
+            "parent": null,
+            "realm": "realm.ashen_scale_dominion",
+            "tags": [],
+            "by": "content"
+          },
+          {
+            "id": "realm.verdant_fang_court",
+            "name": "Verdant Fang Court",
+            "kind": "realm",
+            "parent": null,
+            "realm": "realm.verdant_fang_court",
+            "tags": [],
+            "by": "content"
+          },
+          {
+            "id": "loc.alderwatch",
+            "name": "Alderwatch",
+            "kind": "settlement",
+            "sub": "city",
+            "parent": "realm.valedorn_crown",
+            "realm": "realm.valedorn_crown",
+            "tags": [],
+            "by": "content"
+          },
+          {
+            "id": "loc.alderwatch.guild_hall",
+            "name": "Adventurers' Guild hall",
+            "kind": "site",
+            "parent": "loc.alderwatch",
+            "realm": "realm.valedorn_crown",
+            "tags": [
+              "guild_hall"
+            ],
+            "by": "engine"
+          },
+          {
+            "id": "loc.glassmere",
+            "name": "Glassmere",
+            "kind": "settlement",
+            "sub": "city",
+            "parent": "realm.caelreth",
+            "realm": "realm.caelreth",
+            "tags": [],
+            "by": "content"
+          },
+          {
+            "id": "loc.glassmere.guild_hall",
+            "name": "Adventurers' Guild hall",
+            "kind": "site",
+            "parent": "loc.glassmere",
+            "realm": "realm.caelreth",
+            "tags": [
+              "guild_hall"
+            ],
+            "by": "engine"
+          },
+          {
+            "id": "loc.ashbridge",
+            "name": "Ashbridge",
+            "kind": "settlement",
+            "sub": "city",
+            "parent": "realm.duskreach",
+            "realm": "realm.duskreach",
+            "tags": [],
+            "by": "content"
+          },
+          {
+            "id": "loc.ashbridge.guild_hall",
+            "name": "Adventurers' Guild hall",
+            "kind": "site",
+            "parent": "loc.ashbridge",
+            "realm": "realm.duskreach",
+            "tags": [
+              "guild_hall"
+            ],
+            "by": "engine"
+          },
+          {
+            "id": "loc.crownheart",
+            "name": "Crownheart",
+            "kind": "settlement",
+            "sub": "capital",
+            "parent": "realm.valedorn_crown",
+            "realm": "realm.valedorn_crown",
+            "tags": [],
+            "by": "content"
+          },
+          {
+            "id": "loc.crownheart.guild_hall",
+            "name": "Adventurers' Guild hall",
+            "kind": "site",
+            "parent": "loc.crownheart",
+            "realm": "realm.valedorn_crown",
+            "tags": [
+              "guild_hall"
+            ],
+            "by": "engine"
+          },
+          {
+            "id": "loc.asterhall",
+            "name": "Asterhall",
+            "kind": "settlement",
+            "sub": "capital",
+            "parent": "realm.caelreth",
+            "realm": "realm.caelreth",
+            "tags": [],
+            "by": "content"
+          },
+          {
+            "id": "loc.asterhall.guild_hall",
+            "name": "Adventurers' Guild hall",
+            "kind": "site",
+            "parent": "loc.asterhall",
+            "realm": "realm.caelreth",
+            "tags": [
+              "guild_hall"
+            ],
+            "by": "engine"
+          },
+          {
+            "id": "loc.blackgate",
+            "name": "Blackgate",
+            "kind": "settlement",
+            "sub": "capital",
+            "parent": "realm.duskreach",
+            "realm": "realm.duskreach",
+            "tags": [],
+            "by": "content"
+          },
+          {
+            "id": "loc.blackgate.guild_hall",
+            "name": "Adventurers' Guild hall",
+            "kind": "site",
+            "parent": "loc.blackgate",
+            "realm": "realm.duskreach",
+            "tags": [
+              "guild_hall"
+            ],
+            "by": "engine"
+          },
+          {
+            "id": "loc.cinder_throne",
+            "name": "Cinder Throne",
+            "kind": "settlement",
+            "sub": "seat",
+            "parent": "realm.ashen_scale_dominion",
+            "realm": "realm.ashen_scale_dominion",
+            "tags": [],
+            "by": "content"
+          },
+          {
+            "id": "loc.thornheart",
+            "name": "Thornheart",
+            "kind": "settlement",
+            "sub": "seat",
+            "parent": "realm.verdant_fang_court",
+            "realm": "realm.verdant_fang_court",
+            "tags": [],
+            "by": "content"
+          },
+          {
+            "id": "loc.mossback_warrens",
+            "name": "Mossback Warrens",
+            "kind": "site",
+            "parent": "realm.duskreach",
+            "realm": "realm.duskreach",
+            "tags": [],
+            "by": "content",
+            "near": "loc.ashbridge",
+            "where": "a moss-grown hill half a day's walk east of Ashbridge, off the old quarry track",
+            "rooms": true,
+            "dungeon": {
+              "real": true,
+              "theme": "goblin warrens: tunnels dug into a mossy hill, crude palisades, goblin scouts and warriors, a shaman deeper down",
+              "rank": {
+                "min": "F",
+                "max": "E"
+              },
+              "levels": {
+                "1": {
+                  "min": "F",
+                  "max": "F"
+                },
+                "2": {
+                  "min": "E",
+                  "max": "E"
+                }
+              },
+              "control": "the Adventurers' Guild of Ashbridge keeps its entry ledger under a charter of the Duskreach crown",
+              "hidden": [],
+              "heard": [],
+              "guild": [
+                "theme",
+                "rank",
+                "level:1",
+                "level:2",
+                "control"
+              ]
+            }
+          },
+          {
+            "id": "loc.glimmerdeep_grotto",
+            "name": "Glimmerdeep Grotto",
+            "kind": "site",
+            "parent": "realm.caelreth",
+            "realm": "realm.caelreth",
+            "tags": [],
+            "by": "content",
+            "near": "loc.glassmere",
+            "where": "a cleft in the hills a morning's walk north of Glassmere, where the stream runs out of the rock",
+            "rooms": true,
+            "dungeon": {
+              "real": true,
+              "theme": "crystal caverns: glittering grottos of mana-fed crystal, crystal beetles and mineral slimes",
+              "rank": {
+                "min": "F",
+                "max": "F"
+              },
+              "levels": {
+                "1": {
+                  "min": "F",
+                  "max": "F"
+                }
+              },
+              "control": "a Glassmere academy of magic holds the cleft and lets registered adventurers cull its outer grottos; what they kill and the free crystal there is theirs, the deep galleries the academy's",
+              "hidden": [],
+              "heard": [],
+              "guild": [
+                "theme",
+                "rank",
+                "level:1",
+                "control"
+              ]
+            }
+          },
+          {
+            "id": "loc.old_crown_catacombs",
+            "name": "Old Crown Catacombs",
+            "kind": "site",
+            "parent": "realm.valedorn_crown",
+            "realm": "realm.valedorn_crown",
+            "tags": [],
+            "by": "content",
+            "near": "loc.alderwatch",
+            "where": "beneath a ruined chapel an hour's ride west of Alderwatch",
+            "rooms": true,
+            "dungeon": {
+              "real": true,
+              "theme": "undead catacombs: burial galleries, restless skeletons, ghouls deeper down",
+              "rank": {
+                "min": "F",
+                "max": "E"
+              },
+              "levels": {
+                "1": {
+                  "min": "F",
+                  "max": "F"
+                },
+                "2": {
+                  "min": "E",
+                  "max": "E"
+                }
+              },
+              "control": "the temple wardens of Alderwatch, who ask the Guild to keep the upper galleries culled",
+              "hidden": [],
+              "heard": [],
+              "guild": [
+                "theme",
+                "rank",
+                "level:1",
+                "level:2",
+                "control"
+              ]
+            }
+          },
+          {
+            "id": "loc.glassmere.verge",
+            "name": "public roadside verge outside Glassmere",
+            "kind": "site",
+            "parent": "loc.glassmere",
+            "realm": "realm.caelreth",
+            "tags": [],
+            "by": "content"
+          }
+        ],
+        "at": "loc.glassmere.verge"
+      }
+    },
+    {
+      "t": "turn.begun",
+      "d": {
+        "turn": 1,
+        "input_hash": "33c476a9",
+        "input": "Warrior"
+      }
+    },
+    {
+      "t": "creation.class_selected",
+      "d": {
+        "class": "warrior",
+        "favored": [
+          "STR",
+          "VIT"
+        ],
+        "basic_attack": "warrior.basic_attack"
+      }
+    },
+    {
+      "t": "outcome.recorded",
+      "d": {
+        "outcome": {
+          "kind": "creation.step2",
+          "class": "warrior"
+        },
+        "situations": []
+      }
+    },
+    {
+      "t": "turn.begun",
+      "d": {
+        "turn": 2,
+        "input_hash": "46893cb9",
+        "input": "Cleave and Guard"
+      }
+    },
+    {
+      "t": "creation.completed",
+      "d": {
+        "skills": [
+          "warrior.guard",
+          "warrior.cleave"
+        ],
+        "equip": {
+          "weapon": "starter_longsword_r2",
+          "armor": "starter_heavy_armor"
+        },
+        "items": {},
+        "hp": 95,
+        "mp": 84,
+        "sta": 100
+      }
+    },
+    {
+      "t": "outcome.recorded",
+      "d": {
+        "outcome": {
+          "kind": "creation.complete",
+          "class": "warrior",
+          "skills": [
+            "warrior.guard",
+            "warrior.cleave"
+          ],
+          "kit": [
+            "starter_longsword_r2",
+            "starter_heavy_armor"
+          ]
+        },
+        "situations": []
+      }
+    },
+    {
+      "t": "turn.begun",
+      "d": {
+        "turn": 3,
+        "input_hash": "c2215414",
+        "input": "I walk through the city gates into Glassmere and head for the Adventurers' Guild hall to look at the contract board."
+      }
+    },
+    {
+      "t": "cmd.interpreted",
+      "d": {
+        "version": "plan-c0.1",
+        "source": "json",
+        "ms": 2350,
+        "failed": false,
+        "commands": [
+          {
+            "seq": 1,
+            "type": "go",
+            "to": "loc.glassmere.guild_hall",
+            "quote": "I walk through the city gates into Glassmere and head for the Adventurers' Guild hall",
+            "within": null
+          },
+          {
+            "seq": 2,
+            "type": "board.read",
+            "rank": null,
+            "quote": "to look at the contract board",
+            "needs": 1
+          }
+        ],
+        "dropped": []
+      }
+    },
+    {
+      "t": "quest.created",
+      "d": {
+        "quest": {
+          "id": "quest.clear_the_crystal_beetles_of_glimmerdeep_grotto_level_1",
+          "title": "Clear the Crystal Beetles of Glimmerdeep Grotto, Level 1",
+          "kind": "guild_contract",
+          "client": "Warden Elspeth Vairn, Glassmere Academy of Magic",
+          "giver": null,
+          "rank": "Novice",
+          "level": 1,
+          "qtype": "minor",
+          "payout_cp": 40,
+          "reward": "40 cp",
+          "task": "Clear level 1 of Glimmerdeep Grotto. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedition.",
+          "desired_end_state": "Level 1 of Glimmerdeep Grotto is clear.",
+          "objectives": [
+            {
+              "id": "o1",
+              "verb": "DEFEAT",
+              "what": "crystal beetles and mineral slimes in Glimmerdeep Grotto level 1",
+              "qty": null,
+              "unit": null,
+              "where": "Glimmerdeep Grotto, level 1",
+              "status": "open"
+            }
+          ],
+          "proof": [],
+          "source": {
+            "board": "loc.glassmere.guild_hall",
+            "branch": "loc.glassmere",
+            "listed": {
+              "turn": 3,
+              "minute": 540,
+              "day": 1
+            }
+          },
+          "schedule": {
+            "starts_at": null,
+            "deadline": null
+          },
+          "status": "listed",
+          "taker": null,
+          "history": [
+            {
+              "turn": 3,
+              "minute": 540,
+              "status": "listed"
+            }
+          ],
+          "details": [],
+          "notes": [],
+          "clear": {
+            "dungeon": "loc.glimmerdeep_grotto",
+            "floor": 1
+          },
+          "dungeon": "loc.glimmerdeep_grotto",
+          "floor": 1
+        }
+      }
+    },
+    {
+      "t": "place.created",
+      "d": {
+        "place": {
+          "id": "realm.caelreth.the_pastures_and_pens_around_stonebrook",
+          "name": "the pastures and pens around Stonebrook",
+          "kind": "site",
+          "parent": "realm.caelreth",
+          "realm": "realm.caelreth",
+          "tags": [],
+          "known": "reported",
+          "reports": [],
+          "by": "guild",
+          "created": {
+            "turn": 3,
+            "minute": 540
+          },
+          "population": {
+            "anchor": "wolf",
+            "species": "grey wolf",
+            "levels": [
+              1,
+              1
+            ]
+          }
+        }
+      }
+    },
+    {
+      "t": "quest.created",
+      "d": {
+        "quest": {
+          "id": "quest.slay_the_lamb_rending_wolf_of_stonebrook",
+          "title": "Slay the Lamb-Rending Wolf of Stonebrook",
+          "kind": "guild_contract",
+          "client": "Shepherds' common of the village of Stonebrook",
+          "giver": null,
+          "rank": "Novice",
+          "level": 1,
+          "qtype": "minor",
+          "payout_cp": 40,
+          "reward": "40 cp",
+          "task": "Kill 1 the lamb-rending wolf at the pastures and pens around Stonebrook. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+          "desired_end_state": "1 the lamb-rending wolf killed at the pastures and pens around Stonebrook.",
+          "objectives": [
+            {
+              "id": "o1",
+              "verb": "DEFEAT",
+              "what": "the lamb-rending wolf",
+              "qty": 1,
+              "unit": "wolf",
+              "where": "the pastures and pens around Stonebrook",
+              "status": "open"
+            }
+          ],
+          "proof": [],
+          "source": {
+            "board": "loc.glassmere.guild_hall",
+            "branch": "loc.glassmere",
+            "listed": {
+              "turn": 3,
+              "minute": 540,
+              "day": 1
+            },
+            "profile": "count_hunt_clear"
+          },
+          "schedule": {
+            "starts_at": null,
+            "deadline": null
+          },
+          "status": "listed",
+          "taker": null,
+          "history": [
+            {
+              "turn": 3,
+              "minute": 540,
+              "status": "listed"
+            }
+          ],
+          "details": [],
+          "notes": [],
+          "hunt": {
+            "at": "realm.caelreth.the_pastures_and_pens_around_stonebrook"
+          },
+          "count_rule": "killed"
+        }
+      }
+    },
+    {
+      "t": "place.created",
+      "d": {
+        "place": {
+          "id": "realm.caelreth.the_eel_weirs_of_the_reed_flats",
+          "name": "the eel-weirs of the Reed Flats",
+          "kind": "site",
+          "parent": "realm.caelreth",
+          "realm": "realm.caelreth",
+          "tags": [],
+          "known": "reported",
+          "reports": [],
+          "by": "guild",
+          "created": {
+            "turn": 3,
+            "minute": 540
+          },
+          "population": {
+            "anchor": "arthropod",
+            "species": "bog striders",
+            "levels": [
+              4,
+              7
+            ]
+          }
+        }
+      }
+    },
+    {
+      "t": "quest.created",
+      "d": {
+        "quest": {
+          "id": "quest.cull_the_reed_flats_bog_striders",
+          "title": "Cull the Reed Flats Bog Striders",
+          "kind": "guild_contract",
+          "client": "Marda Otterleigh, mistress of the Reed Flats eel-weirs",
+          "giver": null,
+          "rank": "Novice",
+          "level": 4,
+          "qtype": "standard",
+          "payout_cp": 120,
+          "reward": "120 cp",
+          "task": "Kill 6 bog striders at the eel-weirs of the Reed Flats. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+          "desired_end_state": "6 bog striders killed at the eel-weirs of the Reed Flats.",
+          "objectives": [
+            {
+              "id": "o1",
+              "verb": "DEFEAT",
+              "what": "bog striders",
+              "qty": 6,
+              "unit": "bog striders",
+              "where": "the eel-weirs of the Reed Flats",
+              "status": "open"
+            }
+          ],
+          "proof": [],
+          "source": {
+            "board": "loc.glassmere.guild_hall",
+            "branch": "loc.glassmere",
+            "listed": {
+              "turn": 3,
+              "minute": 540,
+              "day": 1
+            },
+            "profile": "count_hunt_clear"
+          },
+          "schedule": {
+            "starts_at": null,
+            "deadline": null
+          },
+          "status": "listed",
+          "taker": null,
+          "history": [
+            {
+              "turn": 3,
+              "minute": 540,
+              "status": "listed"
+            }
+          ],
+          "details": [],
+          "notes": [],
+          "hunt": {
+            "at": "realm.caelreth.the_eel_weirs_of_the_reed_flats"
+          },
+          "count_rule": "killed"
+        }
+      }
+    },
+    {
+      "t": "place.created",
+      "d": {
+        "place": {
+          "id": "realm.caelreth.the_drowned_millpond_ruins_at_weftbridge",
+          "name": "the drowned millpond ruins at Weftbridge",
+          "kind": "site",
+          "parent": "realm.caelreth",
+          "realm": "realm.caelreth",
+          "tags": [],
+          "known": "reported",
+          "reports": [],
+          "by": "guild",
+          "created": {
+            "turn": 3,
+            "minute": 540
+          },
+          "population": {
+            "anchor": "serpent",
+            "species": "marsh serpent",
+            "levels": [
+              8,
+              11
+            ]
+          }
+        }
+      }
+    },
+    {
+      "t": "quest.created",
+      "d": {
+        "quest": {
+          "id": "quest.cull_the_marsh_serpent_of_drowned_mill_pond",
+          "title": "Cull the Marsh Serpent of Drowned Mill Pond",
+          "kind": "guild_contract",
+          "client": "Alderman Corvin Hale of the mill hamlet of Weftbridge",
+          "giver": null,
+          "rank": "Novice",
+          "level": 8,
+          "qtype": "dangerous",
+          "payout_cp": 260,
+          "reward": "260 cp",
+          "task": "Kill 1 the marsh serpent at the drowned millpond ruins at Weftbridge. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+          "desired_end_state": "1 the marsh serpent killed at the drowned millpond ruins at Weftbridge.",
+          "objectives": [
+            {
+              "id": "o1",
+              "verb": "DEFEAT",
+              "what": "the marsh serpent",
+              "qty": 1,
+              "unit": "serpent",
+              "where": "the drowned millpond ruins at Weftbridge",
+              "status": "open"
+            }
+          ],
+          "proof": [],
+          "source": {
+            "board": "loc.glassmere.guild_hall",
+            "branch": "loc.glassmere",
+            "listed": {
+              "turn": 3,
+              "minute": 540,
+              "day": 1
+            },
+            "profile": "count_hunt_clear"
+          },
+          "schedule": {
+            "starts_at": null,
+            "deadline": null
+          },
+          "status": "listed",
+          "taker": null,
+          "history": [
+            {
+              "turn": 3,
+              "minute": 540,
+              "status": "listed"
+            }
+          ],
+          "details": [],
+          "notes": [],
+          "hunt": {
+            "at": "realm.caelreth.the_drowned_millpond_ruins_at_weftbridge"
+          },
+          "count_rule": "killed"
+        }
+      }
+    },
+    {
+      "t": "place.created",
+      "d": {
+        "place": {
+          "id": "realm.caelreth.the_charcoal_burners_clearing_in_the_cleft_woods",
+          "name": "the charcoal-burners' clearing in the Cleft Woods",
+          "kind": "site",
+          "parent": "realm.caelreth",
+          "realm": "realm.caelreth",
+          "tags": [],
+          "known": "reported",
+          "reports": [],
+          "by": "guild",
+          "created": {
+            "turn": 3,
+            "minute": 540
+          },
+          "population": {
+            "anchor": "bear",
+            "species": "gloommane bear",
+            "levels": [
+              12,
+              14
+            ]
+          }
+        }
+      }
+    },
+    {
+      "t": "quest.created",
+      "d": {
+        "quest": {
+          "id": "quest.cull_the_gloommane_bear_of_the_cleft_woods",
+          "title": "Cull the Gloommane Bear of the Cleft Woods",
+          "kind": "guild_contract",
+          "client": "Charcoal-burners' camp of the Cleft Woods",
+          "giver": null,
+          "rank": "Novice",
+          "level": 12,
+          "qtype": "dangerous",
+          "payout_cp": 450,
+          "reward": "450 cp",
+          "task": "Kill 1 the gloommane bear at the charcoal-burners' clearing in the Cleft Woods. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+          "desired_end_state": "1 the gloommane bear killed at the charcoal-burners' clearing in the Cleft Woods.",
+          "objectives": [
+            {
+              "id": "o1",
+              "verb": "DEFEAT",
+              "what": "the gloommane bear",
+              "qty": 1,
+              "unit": "bear",
+              "where": "the charcoal-burners' clearing in the Cleft Woods",
+              "status": "open"
+            }
+          ],
+          "proof": [],
+          "source": {
+            "board": "loc.glassmere.guild_hall",
+            "branch": "loc.glassmere",
+            "listed": {
+              "turn": 3,
+              "minute": 540,
+              "day": 1
+            },
+            "profile": "count_hunt_clear"
+          },
+          "schedule": {
+            "starts_at": null,
+            "deadline": null
+          },
+          "status": "listed",
+          "taker": null,
+          "history": [
+            {
+              "turn": 3,
+              "minute": 540,
+              "status": "listed"
+            }
+          ],
+          "details": [],
+          "notes": [],
+          "hunt": {
+            "at": "realm.caelreth.the_charcoal_burners_clearing_in_the_cleft_woods"
+          },
+          "count_rule": "killed"
+        }
+      }
+    },
+    {
+      "t": "board.refreshed",
+      "d": {
+        "key": "loc.glassmere|Novice",
+        "branch": "loc.glassmere",
+        "rank": "Novice",
+        "day": 1,
+        "listings": [
+          "quest.clear_the_crystal_beetles_of_glimmerdeep_grotto_level_1",
+          "quest.slay_the_lamb_rending_wolf_of_stonebrook",
+          "quest.cull_the_reed_flats_bog_striders",
+          "quest.cull_the_marsh_serpent_of_drowned_mill_pond",
+          "quest.cull_the_gloommane_bear_of_the_cleft_woods"
+        ]
+      }
+    },
+    {
+      "t": "cmd.resolved",
+      "d": {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "I walk through the city gates into Glassmere and head for the Adventurers' Guild hall"
+      }
+    },
+    {
+      "t": "cmd.resolved",
+      "d": {
+        "seq": 2,
+        "type": "board.read",
+        "status": "conditional",
+        "condition": "arrive_guild_hall",
+        "quote": "to look at the contract board"
+      }
+    },
+    {
+      "t": "outcome.recorded",
+      "d": {
+        "outcome": {
+          "kind": "v4",
+          "actions": [
+            "1. GOES — to Adventurers' Guild hall, Glassmere (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop.",
+            "2. READS the Novice board, when he reaches the Guild hall — BOARD (these listings now become canonical because Alaric actually reads them; show exactly these, invent no other official contract; present the notices in the existing title-first readable format; these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display):\n**Clear the Crystal Beetles of Glimmerdeep Grotto, Level 1** — Clear Glimmerdeep Grotto, level 1 — client: Warden Elspeth Vairn, Glassmere Academy of Magic · reward: 40 cp · Clear level 1 of Glimmerdeep Grotto. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedition.\n**Slay the Lamb-Rending Wolf of Stonebrook** (1) — client: Shepherds' common of the village of Stonebrook · reward: 40 cp · Kill 1 the lamb-rending wolf at the pastures and pens around Stonebrook. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Cull the Reed Flats Bog Striders** (6) — client: Marda Otterleigh, mistress of the Reed Flats eel-weirs · reward: 120 cp · Kill 6 bog striders at the eel-weirs of the Reed Flats. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Cull the Marsh Serpent of Drowned Mill Pond** (1) — client: Alderman Corvin Hale of the mill hamlet of Weftbridge · reward: 260 cp · Kill 1 the marsh serpent at the drowned millpond ruins at Weftbridge. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Cull the Gloommane Bear of the Cleft Woods** (1) — client: Charcoal-burners' camp of the Cleft Woods · reward: 450 cp · Kill 1 the gloommane bear at the charcoal-burners' clearing in the Cleft Woods. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\nStored objectives and any verification examples are continuity memory only.\nIf the reply does not reach the hall, he sees none of it."
+          ],
+          "extra": [],
+          "resolutions": [
+            {
+              "seq": 1,
+              "type": "go",
+              "status": "authorized",
+              "quote": "I walk through the city gates into Glassmere and head for the Adventurers' Guild hall"
+            },
+            {
+              "seq": 2,
+              "type": "board.read",
+              "status": "conditional",
+              "condition": "arrive_guild_hall",
+              "quote": "to look at the contract board"
+            }
+          ],
+          "expected_keys": {
+            "1": "go"
+          },
+          "auth": {
+            "go": {
+              "seq": 1,
+              "to": "loc.glassmere.guild_hall",
+              "name": "Adventurers' Guild hall, Glassmere",
+              "hall": true,
+              "newName": null
+            },
+            "gos": [
+              {
+                "seq": 1,
+                "to": "loc.glassmere.guild_hall",
+                "name": "Adventurers' Guild hall, Glassmere",
+                "hall": true,
+                "newName": null
+              }
+            ],
+            "roam": false,
+            "take": [],
+            "takeNames": {},
+            "gather": false,
+            "rest": false,
+            "timeCap": 120,
+            "c": true,
+            "booked_min": 0,
+            "recovered": false
+          },
+          "conditionals": [
+            {
+              "seq": 2,
+              "kind": "board",
+              "condition": "arrive_guild_hall",
+              "hall": "loc.glassmere.guild_hall",
+              "branch": "loc.glassmere",
+              "rank": "Novice",
+              "listings": [
+                "quest.clear_the_crystal_beetles_of_glimmerdeep_grotto_level_1",
+                "quest.slay_the_lamb_rending_wolf_of_stonebrook",
+                "quest.cull_the_reed_flats_bog_striders",
+                "quest.cull_the_marsh_serpent_of_drowned_mill_pond",
+                "quest.cull_the_gloommane_bear_of_the_cleft_woods"
+              ]
+            }
+          ],
+          "booked": {
+            "registration": false,
+            "grants": [],
+            "turnIns": [],
+            "accepted": [],
+            "sellers": [],
+            "goods": []
+          },
+          "board": {
+            "branch": "loc.glassmere",
+            "rank": "Novice",
+            "listings": [
+              "quest.clear_the_crystal_beetles_of_glimmerdeep_grotto_level_1",
+              "quest.slay_the_lamb_rending_wolf_of_stonebrook",
+              "quest.cull_the_reed_flats_bog_striders",
+              "quest.cull_the_marsh_serpent_of_drowned_mill_pond",
+              "quest.cull_the_gloommane_bear_of_the_cleft_woods"
+            ]
+          },
+          "search_checks": [],
+          "check_die": null,
+          "interp_failed": false,
+          "dropped": []
+        },
+        "situations": []
+      }
+    },
+    {
+      "t": "scene.moved",
+      "d": {
+        "at": "loc.glassmere.guild_hall",
+        "location": "loc.glassmere",
+        "place": "Adventurers' Guild hall, Glassmere",
+        "reset_present": true,
+        "track_history": true
+      }
+    },
+    {
+      "t": "board.shown",
+      "d": {
+        "branch": "loc.glassmere",
+        "rank": "Novice",
+        "listings": [
+          "quest.clear_the_crystal_beetles_of_glimmerdeep_grotto_level_1",
+          "quest.slay_the_lamb_rending_wolf_of_stonebrook",
+          "quest.cull_the_reed_flats_bog_striders",
+          "quest.cull_the_marsh_serpent_of_drowned_mill_pond",
+          "quest.cull_the_gloommane_bear_of_the_cleft_woods"
+        ]
+      }
+    },
+    {
+      "t": "cmd.completed",
+      "d": {
+        "seq": 2,
+        "ok": true,
+        "reason": null
+      }
+    },
+    {
+      "t": "entity.created",
+      "d": {
+        "entity": {
+          "id": "npc.npcscarred_clerk_woman",
+          "kind": "npc",
+          "name": null,
+          "descriptors": [
+            "clerk",
+            "a scarred woman at the guild desk, argui",
+            "npc.scarred_clerk_woman"
+          ],
+          "traits": "a scarred woman at the Guild desk, arguing quietly with a clerk, then doing paperwork",
+          "status": "alive",
+          "location": "loc.glassmere",
+          "created": {
+            "turn": 3,
+            "minute": 540
+          },
+          "source": {
+            "kind": "narration",
+            "msg": 6
+          },
+          "card": {},
+          "template": "commoner"
+        }
+      }
+    },
+    {
+      "t": "scene.entered",
+      "d": {
+        "id": "npc.npcscarred_clerk_woman",
+        "band": "SHORT"
+      }
+    },
+    {
+      "t": "scene.tactical",
+      "d": {
+        "id": "npc.npcscarred_clerk_woman",
+        "relevant": true,
+        "threat": false
+      }
+    },
+    {
+      "t": "fact.asserted",
+      "d": {
+        "fact": {
+          "id": "f.npc_npcscarred_clerk_wom.occupation.63d26409.t3",
+          "s": "npc.npcscarred_clerk_woman",
+          "p": "occupation",
+          "o": "clerk",
+          "since": {
+            "turn": 3,
+            "minute": 540
+          },
+          "until": null,
+          "visibility": "public",
+          "importance": 0.5,
+          "hard": false,
+          "source": {
+            "kind": "narration",
+            "msg": 6
+          }
+        }
+      }
+    },
+    {
+      "t": "scene.awareness",
+      "d": {
+        "id": "npc.npcscarred_clerk_woman",
+        "level": "aware"
+      }
+    },
+    {
+      "t": "time.advanced",
+      "d": {
+        "minutes": 15,
+        "why": "travel"
+      }
+    },
+    {
+      "t": "knowledge.gained",
+      "d": {
+        "who": "npc.npcscarred_clerk_woman",
+        "about": "f.pc.appearance",
+        "stance": "knows",
+        "source": "witnessed",
+        "turn": 3,
+        "minute": 555
+      }
+    },
+    {
+      "t": "memory.recorded",
+      "d": {
+        "memory": {
+          "id": "m.t3.seen.npc.npcscarred_clerk_woman",
+          "turn": 3,
+          "minute": 555,
+          "text": "first saw {pc} at Adventurers' Guild hall, Glassmere",
+          "who": [
+            "npc.npcscarred_clerk_woman",
+            "pc"
+          ],
+          "witnesses": [
+            "npc.npcscarred_clerk_woman"
+          ],
+          "seen": [
+            "npc.npcscarred_clerk_woman"
+          ],
+          "location": "loc.glassmere",
+          "place": "Adventurers' Guild hall, Glassmere",
+          "importance": 4,
+          "kind": "meeting"
+        }
+      }
+    },
+    {
+      "t": "memory.recorded",
+      "d": {
+        "memory": {
+          "id": "m.t3.m6.ep",
+          "turn": 3,
+          "minute": 555,
+          "text": "Adventurers' Guild hall, Glassmere: {pc}: \"I walk through the city gates into Glassmere and head for the Adventurers' Guild hall to look at the contract board.\"",
+          "who": [
+            "pc"
+          ],
+          "about": [
+            "npc.npcscarred_clerk_woman"
+          ],
+          "witnesses": [
+            "pc"
+          ],
+          "seen": [
+            "pc"
+          ],
+          "location": "loc.glassmere",
+          "place": "Adventurers' Guild hall, Glassmere",
+          "importance": 3,
+          "kind": "episode",
+          "msg": 6
+        }
+      }
+    },
+    {
+      "t": "extract.applied",
+      "d": {
+        "version": "extract-5.17",
+        "source": "extractor",
+        "ms": 4892,
+        "repaired": false,
+        "deltas": 3,
+        "rejected": 0
+      }
+    },
+    {
+      "t": "turn.begun",
+      "d": {
+        "turn": 4,
+        "input_hash": "7be8955b",
+        "input": "I approach the clerk and ask to register with the Guild as a novice adventurer."
+      }
+    },
+    {
+      "t": "cmd.interpreted",
+      "d": {
+        "version": "plan-c0.1",
+        "source": "json",
+        "ms": 2292,
+        "failed": false,
+        "commands": [
+          {
+            "seq": 1,
+            "type": "guild.register",
+            "quote": "I approach the clerk and ask to register with the Guild as a novice adventurer."
+          }
+        ],
+        "dropped": []
+      }
+    },
+    {
+      "t": "offer.created",
+      "d": {
+        "offer": {
+          "id": "offer.registration",
+          "seller": "guild",
+          "at": "loc.glassmere.guild_hall",
+          "status": "open",
+          "canon": true,
+          "turn": 4,
+          "lines": [
+            {
+              "id": "l1",
+              "what": "Guild registration fee",
+              "kind": "service",
+              "service": "guild_registration",
+              "qty": 1,
+              "price_cp": 20
+            }
+          ]
+        }
+      }
+    },
+    {
+      "t": "decision.opened",
+      "d": {
+        "decision": {
+          "id": "dec.registration",
+          "kind": "registration",
+          "what": "Guild registration",
+          "offer": "offer.registration",
+          "at": "loc.glassmere.guild_hall",
+          "turn": 4,
+          "price_cp": 20
+        }
+      }
+    },
+    {
+      "t": "cmd.resolved",
+      "d": {
+        "seq": 1,
+        "type": "guild.register",
+        "status": "pending",
+        "reason": "fee",
+        "quote": "I approach the clerk and ask to register with the Guild as a novice adventurer."
+      }
+    },
+    {
+      "t": "outcome.recorded",
+      "d": {
+        "outcome": {
+          "kind": "v4",
+          "actions": [
+            "1. REGISTERS — pending: the Guild's registration fee is 2 silver (20 cp), one-time; a new member starts at Guild Rank Novice (the Guild's ranks run Novice to Legend); Power Rank (F to S) is a person's measured strength, a separate scale the Guild reads but never grants. Let the clerk name the fee and explain; stop there: he has not agreed to pay."
+          ],
+          "extra": [],
+          "resolutions": [
+            {
+              "seq": 1,
+              "type": "guild.register",
+              "status": "pending",
+              "reason": "fee",
+              "quote": "I approach the clerk and ask to register with the Guild as a novice adventurer."
+            }
+          ],
+          "expected_keys": {},
+          "auth": {
+            "go": null,
+            "gos": [],
+            "roam": false,
+            "take": [],
+            "takeNames": {},
+            "gather": false,
+            "rest": false,
+            "timeCap": 120,
+            "c": true,
+            "booked_min": 0,
+            "recovered": false
+          },
+          "conditionals": [],
+          "booked": {
+            "registration": false,
+            "grants": [],
+            "turnIns": [],
+            "accepted": [],
+            "sellers": [],
+            "goods": []
+          },
+          "board": null,
+          "search_checks": [],
+          "check_die": null,
+          "interp_failed": false,
+          "dropped": []
+        },
+        "situations": []
+      }
+    },
+    {
+      "t": "memory.recorded",
+      "d": {
+        "memory": {
+          "id": "m.t4.m8.ep",
+          "turn": 4,
+          "minute": 555,
+          "text": "Adventurers' Guild hall, Glassmere: {pc}: \"I approach the clerk and ask to register with the Guild as a novice adventurer.\"",
+          "who": [
+            "pc"
+          ],
+          "about": [
+            "npc.npcscarred_clerk_woman"
+          ],
+          "witnesses": [
+            "pc"
+          ],
+          "seen": [
+            "pc"
+          ],
+          "location": "loc.glassmere",
+          "place": "Adventurers' Guild hall, Glassmere",
+          "importance": 3,
+          "kind": "episode",
+          "msg": 8
+        }
+      }
+    },
+    {
+      "t": "extract.applied",
+      "d": {
+        "version": "extract-5.17",
+        "source": "extractor",
+        "ms": 2966,
+        "repaired": false,
+        "deltas": 0,
+        "rejected": 0
+      }
+    },
+    {
+      "t": "turn.begun",
+      "d": {
+        "turn": 5,
+        "input_hash": "85b4eca2",
+        "input": "I pay the two silver fee and touch the measuring stone to complete my registration."
+      }
+    },
+    {
+      "t": "cmd.interpreted",
+      "d": {
+        "version": "plan-c0.1",
+        "source": "json",
+        "ms": 5000,
+        "failed": false,
+        "commands": [
+          {
+            "seq": 1,
+            "type": "offer.accept",
+            "offer": "offer.registration",
+            "lines": [
+              "l1"
+            ],
+            "qty": null,
+            "quote": "I pay the two silver fee",
+            "party_words": null,
+            "agreed_cp": null
+          },
+          {
+            "seq": 2,
+            "type": "other",
+            "what": "touches the measuring stone to complete his registration",
+            "quote": "touch the measuring stone to complete my registration"
+          }
+        ],
+        "dropped": []
+      }
+    },
+    {
+      "t": "transaction.completed",
+      "d": {
+        "offer": "offer.registration",
+        "lines": [
+          "l1"
+        ],
+        "cp": 20,
+        "seller": "guild"
+      }
+    },
+    {
+      "t": "coin.changed",
+      "d": {
+        "id": "pc",
+        "value": 30,
+        "delta": -20,
+        "why": "Guild registration fee"
+      }
+    },
+    {
+      "t": "offer.closed",
+      "d": {
+        "id": "offer.registration",
+        "status": "accepted"
+      }
+    },
+    {
+      "t": "guild.registered",
+      "d": {
+        "rank": "Novice",
+        "branch": "loc.glassmere",
+        "power_rank": "F"
+      }
+    },
+    {
+      "t": "object.created",
+      "d": {
+        "object": {
+          "id": "obj.guild_plate",
+          "name": "Guild plate",
+          "kind": "document",
+          "stack": false,
+          "qty": 1,
+          "unit": null,
+          "holder": {
+            "entity": "pc"
+          },
+          "marks": [
+            {
+              "text": "Novice stamp",
+              "by": "guild",
+              "turn": 5
+            }
+          ],
+          "for_quests": [],
+          "source": {
+            "turn": 5,
+            "how": "guild"
+          }
+        }
+      }
+    },
+    {
+      "t": "fact.asserted",
+      "d": {
+        "fact": {
+          "id": "f.pc.guild_rank.d0460f90.t5",
+          "s": "pc",
+          "p": "guild_rank",
+          "o": "Novice",
+          "since": {
+            "turn": 5,
+            "minute": 555
+          },
+          "until": null,
+          "visibility": "public",
+          "importance": 0.7,
+          "hard": false,
+          "source": {
+            "kind": "engine"
+          }
+        }
+      }
+    },
+    {
+      "t": "knowledge.gained",
+      "d": {
+        "who": "npc.npcscarred_clerk_woman",
+        "about": "f.pc.guild_rank.d0460f90.t5",
+        "stance": "knows",
+        "source": "witnessed",
+        "turn": 5,
+        "minute": 555
+      }
+    },
+    {
+      "t": "knowledge.gained",
+      "d": {
+        "who": "npc.npcscarred_clerk_woman",
+        "about": "f.pc.name",
+        "stance": "knows",
+        "source": "told:pc",
+        "turn": 5,
+        "minute": 555
+      }
+    },
+    {
+      "t": "decision.closed",
+      "d": {
+        "id": "dec.registration",
+        "status": "accepted"
+      }
+    },
+    {
+      "t": "cmd.resolved",
+      "d": {
+        "seq": 1,
+        "type": "offer.accept",
+        "status": "resolved",
+        "quote": "I pay the two silver fee"
+      }
+    },
+    {
+      "t": "cmd.resolved",
+      "d": {
+        "seq": 2,
+        "type": "other",
+        "status": "resolved",
+        "quote": "touch the measuring stone to complete my registration"
+      }
+    },
+    {
+      "t": "outcome.recorded",
+      "d": {
+        "outcome": {
+          "kind": "v4",
+          "actions": [
+            "1. PAYS — the Guild registration fee, 20 cp: registered at Guild Rank Novice; the crystal reads his Power Rank: F (his measured strength, a separate scale from the Guild's ranks); he receives his Guild plate.",
+            "2. DOES — \"touch the measuring stone to complete my registration\": his own action; tell it as it happens. It books nothing: no HP, MP, STA, stats or Stat Points, Skills, coin or possessions change by it."
+          ],
+          "extra": [],
+          "resolutions": [
+            {
+              "seq": 1,
+              "type": "offer.accept",
+              "status": "resolved",
+              "quote": "I pay the two silver fee"
+            },
+            {
+              "seq": 2,
+              "type": "other",
+              "status": "resolved",
+              "quote": "touch the measuring stone to complete my registration"
+            }
+          ],
+          "expected_keys": {},
+          "auth": {
+            "go": null,
+            "gos": [],
+            "roam": false,
+            "take": [],
+            "takeNames": {},
+            "gather": false,
+            "rest": false,
+            "timeCap": 120,
+            "c": true,
+            "booked_min": 0,
+            "recovered": false
+          },
+          "conditionals": [],
+          "booked": {
+            "registration": true,
+            "grants": [
+              "Guild plate"
+            ],
+            "turnIns": [],
+            "accepted": [],
+            "sellers": [],
+            "goods": []
+          },
+          "board": null,
+          "search_checks": [],
+          "check_die": null,
+          "interp_failed": false,
+          "dropped": [],
+          "coin": [
+            {
+              "kind": "purchase",
+              "delta": -20,
+              "before": 50,
+              "after": 30,
+              "why": "Guild registration fee"
+            }
+          ]
+        },
+        "situations": []
+      }
+    },
+    {
+      "t": "fact.asserted",
+      "d": {
+        "fact": {
+          "id": "f.t5.m10.d1.1",
+          "s": "npc.npcscarred_clerk_woman",
+          "p": "name",
+          "o": "Alaric Red",
+          "since": {
+            "turn": 5,
+            "minute": 555
+          },
+          "until": null,
+          "visibility": "public",
+          "importance": 0.4,
+          "hard": false,
+          "source": {
+            "kind": "narration",
+            "msg": 10
+          }
+        }
+      }
+    },
+    {
+      "t": "knowledge.gained",
+      "d": {
+        "who": "npc.npcscarred_clerk_woman",
+        "about": "f.t5.m10.d1.1",
+        "stance": "knows",
+        "source": "witnessed",
+        "turn": 5,
+        "minute": 555
+      }
+    },
+    {
+      "t": "memory.recorded",
+      "d": {
+        "memory": {
+          "id": "m.t5.m10.ep",
+          "turn": 5,
+          "minute": 555,
+          "text": "Adventurers' Guild hall, Glassmere: {pc}: \"I pay the two silver fee and touch the measuring stone to complete my registration.\"",
+          "who": [
+            "pc"
+          ],
+          "about": [
+            "npc.npcscarred_clerk_woman"
+          ],
+          "witnesses": [
+            "pc"
+          ],
+          "seen": [
+            "pc"
+          ],
+          "location": "loc.glassmere",
+          "place": "Adventurers' Guild hall, Glassmere",
+          "importance": 3,
+          "kind": "episode",
+          "msg": 10
+        }
+      }
+    },
+    {
+      "t": "extract.applied",
+      "d": {
+        "version": "extract-5.17",
+        "source": "extractor",
+        "ms": 6475,
+        "repaired": false,
+        "deltas": 1,
+        "rejected": 0
+      }
+    },
+    {
+      "t": "turn.begun",
+      "d": {
+        "turn": 6,
+        "input_hash": "a2ea89e9",
+        "input": "I ask the clerk to accept the Slay the Lamb-Rending Wolf of Stonebrook contract for me."
+      }
+    },
+    {
+      "t": "cmd.interpreted",
+      "d": {
+        "version": "plan-c0.1",
+        "source": "json",
+        "ms": 2144,
+        "failed": false,
+        "commands": [
+          {
+            "seq": 1,
+            "type": "quest.accept",
+            "quest": "quest.slay_the_lamb_rending_wolf_of_stonebrook",
+            "quote": "I ask the clerk to accept the Slay the Lamb-Rending Wolf of Stonebrook contract for me."
+          }
+        ],
+        "dropped": []
+      }
+    },
+    {
+      "t": "quest.status",
+      "d": {
+        "id": "quest.slay_the_lamb_rending_wolf_of_stonebrook",
+        "from": "listed",
+        "to": "active",
+        "taker": "pc",
+        "at": "loc.glassmere.guild_hall",
+        "step": 1
+      }
+    },
+    {
+      "t": "board.refreshed",
+      "d": {
+        "key": "loc.glassmere|Novice",
+        "branch": "loc.glassmere",
+        "rank": "Novice",
+        "day": 1,
+        "listings": [
+          "quest.clear_the_crystal_beetles_of_glimmerdeep_grotto_level_1",
+          "quest.cull_the_reed_flats_bog_striders",
+          "quest.cull_the_marsh_serpent_of_drowned_mill_pond",
+          "quest.cull_the_gloommane_bear_of_the_cleft_woods"
+        ]
+      }
+    },
+    {
+      "t": "object.created",
+      "d": {
+        "object": {
+          "id": "obj.slip.slay_the_lamb_rending_wolf_of_stonebrook",
+          "name": "Guild contract slip: Slay the Lamb-Rending Wolf of Stonebrook",
+          "kind": "document",
+          "stack": false,
+          "qty": 1,
+          "unit": null,
+          "holder": {
+            "entity": "pc"
+          },
+          "marks": [],
+          "for_quests": [
+            "quest.slay_the_lamb_rending_wolf_of_stonebrook"
+          ],
+          "source": {
+            "turn": 6,
+            "how": "guild"
+          }
+        }
+      }
+    },
+    {
+      "t": "fact.asserted",
+      "d": {
+        "fact": {
+          "id": "f.pc.accepted.quest.slay_the_lamb_rending_wolf_of_stonebrook",
+          "s": "pc",
+          "p": "accepted_contract",
+          "o": "Slay the Lamb-Rending Wolf of Stonebrook",
+          "since": {
+            "turn": 6,
+            "minute": 555
+          },
+          "until": null,
+          "visibility": "public",
+          "importance": 0.7,
+          "hard": false,
+          "source": {
+            "kind": "engine"
+          }
+        }
+      }
+    },
+    {
+      "t": "knowledge.gained",
+      "d": {
+        "who": "npc.npcscarred_clerk_woman",
+        "about": "f.pc.accepted.quest.slay_the_lamb_rending_wolf_of_stonebrook",
+        "stance": "knows",
+        "source": "witnessed",
+        "turn": 6,
+        "minute": 555
+      }
+    },
+    {
+      "t": "cmd.resolved",
+      "d": {
+        "seq": 1,
+        "type": "quest.accept",
+        "status": "resolved",
+        "quote": "I ask the clerk to accept the Slay the Lamb-Rending Wolf of Stonebrook contract for me."
+      }
+    },
+    {
+      "t": "outcome.recorded",
+      "d": {
+        "outcome": {
+          "kind": "v4",
+          "actions": [
+            "1. ACCEPTS — \"Slay the Lamb-Rending Wolf of Stonebrook\" at the Guild desk; the clerk logs it and hands him its contract slip. Contract memory: 1 the lamb-rending wolf killed at the pastures and pens around Stonebrook.. Proof: the contract slip itself; its Guild seal shows READY once the world has established the outcome (the engine marks it). No trophies or body parts are required or handed over; what he takes from his kills is his own loot. The stored objectives and any verification examples are continuity guidance, not mandatory steps or wording. Payout (40 cp), XP, completed-contract credit and promotion remain engine-owned at explicit turn-in."
+          ],
+          "extra": [],
+          "resolutions": [
+            {
+              "seq": 1,
+              "type": "quest.accept",
+              "status": "resolved",
+              "quote": "I ask the clerk to accept the Slay the Lamb-Rending Wolf of Stonebrook contract for me."
+            }
+          ],
+          "expected_keys": {},
+          "auth": {
+            "go": null,
+            "gos": [],
+            "roam": false,
+            "take": [],
+            "takeNames": {},
+            "gather": false,
+            "rest": false,
+            "timeCap": 120,
+            "c": true,
+            "booked_min": 0,
+            "recovered": false
+          },
+          "conditionals": [],
+          "booked": {
+            "registration": false,
+            "grants": [
+              "contract slip"
+            ],
+            "turnIns": [],
+            "accepted": [
+              "quest.slay_the_lamb_rending_wolf_of_stonebrook"
+            ],
+            "sellers": [],
+            "goods": []
+          },
+          "board": null,
+          "search_checks": [],
+          "check_die": null,
+          "interp_failed": false,
+          "dropped": []
+        },
+        "situations": []
+      }
+    },
+    {
+      "t": "time.advanced",
+      "d": {
+        "minutes": 5,
+        "why": "narration"
+      }
+    },
+    {
+      "t": "quest.detailed",
+      "d": {
+        "id": "quest.slay_the_lamb_rending_wolf_of_stonebrook",
+        "note": "Clerk: Stonebrook is a shepherding village on the east road out of Glassmere, half a day's walk; ask anyone with sheep once close and they'll point to the pens. If it proves to be a pack, walk away an",
+        "schedule": null
+      }
+    },
+    {
+      "t": "fact.asserted",
+      "d": {
+        "fact": {
+          "id": "f.t6.m12.d3.1",
+          "s": "npc.npcscarred_clerk_woman",
+          "p": "logged",
+          "o": "the Slay the Lamb-Rending Wolf of Stonebrook contract as active in her ledger",
+          "since": {
+            "turn": 6,
+            "minute": 560
+          },
+          "until": null,
+          "visibility": "public",
+          "importance": 0.5,
+          "hard": false,
+          "source": {
+            "kind": "narration",
+            "msg": 12,
+            "because": null
+          }
+        }
+      }
+    },
+    {
+      "t": "delta.rejected",
+      "d": {
+        "item": {
+          "scene": null,
+          "seq": 4,
+          "type": "person.new",
+          "ref": "npc.sleeping_boy",
+          "name": null,
+          "role": "villager",
+          "desc": [
+            "a boy asleep on a bench in the Guild hall, snorting and shifting"
+          ],
+          "armed": null,
+          "present": true,
+          "relevant": false,
+          "threat": false,
+          "at": "loc.glassmere.guild_hall",
+          "band": "SHORT",
+          "distinct_from": null
+        },
+        "rule": "ambient",
+        "reason": "scene colour: an unnamed person nothing else of the reply deals with is not kept; the story brings them back when they matter"
+      }
+    },
+    {
+      "t": "memory.recorded",
+      "d": {
+        "memory": {
+          "id": "m.t6.m12.ep",
+          "turn": 6,
+          "minute": 560,
+          "text": "Adventurers' Guild hall, Glassmere: {pc}: \"I ask the clerk to accept the Slay the Lamb-Rending Wolf of Stonebrook contract for me.\"",
+          "who": [
+            "pc"
+          ],
+          "about": [
+            "npc.npcscarred_clerk_woman"
+          ],
+          "witnesses": [
+            "pc"
+          ],
+          "seen": [
+            "pc"
+          ],
+          "location": "loc.glassmere",
+          "place": "Adventurers' Guild hall, Glassmere",
+          "importance": 3,
+          "kind": "episode",
+          "msg": 12
+        }
+      }
+    },
+    {
+      "t": "extract.applied",
+      "d": {
+        "version": "extract-5.17",
+        "source": "extractor",
+        "ms": 12858,
+        "repaired": true,
+        "deltas": 4,
+        "rejected": 1
+      }
+    },
+    {
+      "t": "turn.begun",
+      "d": {
+        "turn": 7,
+        "input_hash": "3b7aeb99",
+        "input": "I head out the east road toward Stonebrook."
+      }
+    },
+    {
+      "t": "cmd.interpreted",
+      "d": {
+        "version": "plan-c0.1",
+        "source": "json",
+        "ms": 2095,
+        "failed": false,
+        "commands": [
+          {
+            "seq": 1,
+            "type": "go",
+            "to": "realm.caelreth.the_pastures_and_pens_around_stonebrook",
+            "quote": "I head out the east road toward Stonebrook.",
+            "within": null
+          }
+        ],
+        "dropped": []
+      }
+    },
+    {
+      "t": "intent.set",
+      "d": {
+        "intent": {
+          "id": "intent.1",
+          "goal": "reach the pastures and pens around Stonebrook",
+          "place": "realm.caelreth.the_pastures_and_pens_around_stonebrook",
+          "status": "active",
+          "since": {
+            "turn": 7,
+            "minute": 560
+          },
+          "updated": {
+            "turn": 7,
+            "minute": 560
+          },
+          "quote": "I head out the east road toward Stonebrook.",
+          "why": "he set off for it"
+        }
+      }
+    },
+    {
+      "t": "cmd.resolved",
+      "d": {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "I head out the east road toward Stonebrook."
+      }
+    },
+    {
+      "t": "outcome.recorded",
+      "d": {
+        "outcome": {
+          "kind": "v4",
+          "actions": [
+            "1. GOES — to the pastures and pens around Stonebrook (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+          ],
+          "extra": [
+            "THE ROAD — this leg toward the pastures and pens around Stonebrook is uneventful: no ambush, attack or obstacle meets him on it. Scenery, weather, far-off animals and harmless travellers are atmosphere; carry the travel forward until he arrives or the day's travel ends, and leave every choice about it to him."
+          ],
+          "resolutions": [
+            {
+              "seq": 1,
+              "type": "go",
+              "status": "authorized",
+              "quote": "I head out the east road toward Stonebrook."
+            }
+          ],
+          "expected_keys": {
+            "1": "go"
+          },
+          "auth": {
+            "go": {
+              "seq": 1,
+              "to": "realm.caelreth.the_pastures_and_pens_around_stonebrook",
+              "name": "the pastures and pens around Stonebrook",
+              "hall": false,
+              "newName": null
+            },
+            "gos": [
+              {
+                "seq": 1,
+                "to": "realm.caelreth.the_pastures_and_pens_around_stonebrook",
+                "name": "the pastures and pens around Stonebrook",
+                "hall": false,
+                "newName": null
+              }
+            ],
+            "roam": false,
+            "take": [],
+            "takeNames": {},
+            "gather": false,
+            "rest": false,
+            "timeCap": 10080,
+            "road": "quiet",
+            "c": true,
+            "booked_min": 0,
+            "recovered": false
+          },
+          "conditionals": [],
+          "booked": {
+            "registration": false,
+            "grants": [],
+            "turnIns": [],
+            "accepted": [],
+            "sellers": [],
+            "goods": []
+          },
+          "board": null,
+          "search_checks": [],
+          "check_die": null,
+          "interp_failed": false,
+          "dropped": []
+        },
+        "situations": []
+      }
+    },
+    {
+      "t": "time.advanced",
+      "d": {
+        "minutes": 160,
+        "why": "narration"
+      }
+    },
+    {
+      "t": "entity.updated",
+      "d": {
+        "id": "npc.npcscarred_clerk_woman",
+        "set": {
+          "at": "loc.glassmere.guild_hall"
+        }
+      }
+    },
+    {
+      "t": "scene.moved",
+      "d": {
+        "at": "realm.caelreth.the_pastures_and_pens_around_stonebrook",
+        "location": "realm.caelreth",
+        "place": "the pastures and pens around Stonebrook",
+        "reset_present": true,
+        "track_history": true
+      }
+    },
+    {
+      "t": "place.updated",
+      "d": {
+        "id": "realm.caelreth.the_pastures_and_pens_around_stonebrook",
+        "set": {
+          "known": "visited",
+          "visited": {
+            "turn": 7,
+            "minute": 720
+          }
+        }
+      }
+    },
+    {
+      "t": "intent.set",
+      "d": {
+        "intent": {
+          "id": "intent.1",
+          "goal": "reach the pastures and pens around Stonebrook",
+          "place": "realm.caelreth.the_pastures_and_pens_around_stonebrook",
+          "status": "done",
+          "since": {
+            "turn": 7,
+            "minute": 560
+          },
+          "updated": {
+            "turn": 7,
+            "minute": 720
+          },
+          "quote": "I head out the east road toward Stonebrook.",
+          "why": "he arrived at the pastures and pens around Stonebrook"
+        }
+      }
+    },
+    {
+      "t": "entity.created",
+      "d": {
+        "entity": {
+          "id": "npc.npcpen_mender",
+          "kind": "npc",
+          "name": null,
+          "descriptors": [
+            "villager",
+            "a woman mending the top rail of a pen, s",
+            "tells of three lambs torn at the throat ",
+            "npc.pen_mender"
+          ],
+          "traits": "a woman mending the top rail of a pen, sleeves rolled, mallet in her fist, tells of three lambs torn at the throat this month",
+          "status": "alive",
+          "location": "realm.caelreth",
+          "created": {
+            "turn": 7,
+            "minute": 720
+          },
+          "source": {
+            "kind": "narration",
+            "msg": 14
+          },
+          "card": {},
+          "template": "commoner"
+        }
+      }
+    },
+    {
+      "t": "scene.entered",
+      "d": {
+        "id": "npc.npcpen_mender",
+        "band": "SHORT"
+      }
+    },
+    {
+      "t": "scene.tactical",
+      "d": {
+        "id": "npc.npcpen_mender",
+        "relevant": true,
+        "threat": false
+      }
+    },
+    {
+      "t": "fact.asserted",
+      "d": {
+        "fact": {
+          "id": "f.npc_npcpen_mender.occupation.d7258fc9.t7",
+          "s": "npc.npcpen_mender",
+          "p": "occupation",
+          "o": "villager",
+          "since": {
+            "turn": 7,
+            "minute": 720
+          },
+          "until": null,
+          "visibility": "public",
+          "importance": 0.5,
+          "hard": false,
+          "source": {
+            "kind": "narration",
+            "msg": 14
+          }
+        }
+      }
+    },
+    {
+      "t": "quest.detailed",
+      "d": {
+        "id": "quest.slay_the_lamb_rending_wolf_of_stonebrook",
+        "note": "Three lambs torn at the throat this month, left where they fell. The wolf hunts the near pens at dusk and after; a local woman warns it is cleverer than a wolf has any business being, and her Tam swea",
+        "schedule": "hunts the near pens at dusk and after"
+      }
+    },
+    {
+      "t": "thread.set",
+      "d": {
+        "thread": {
+          "id": "thread.t7.1",
+          "text": "The lamb-rending wolf watches shepherds from the tree line and avoids open confrontation; it hunts the near pens at dusk.",
+          "kind": "threat",
+          "status": "open",
+          "since": {
+            "turn": 7,
+            "minute": 720
+          },
+          "updated": {
+            "turn": 7,
+            "minute": 720
+          },
+          "source": {
+            "kind": "narration",
+            "msg": 14
+          },
+          "at": "realm.caelreth.the_pastures_and_pens_around_stonebrook"
+        }
+      }
+    },
+    {
+      "t": "knowledge.gained",
+      "d": {
+        "who": "npc.npcpen_mender",
+        "about": "f.pc.appearance",
+        "stance": "knows",
+        "source": "witnessed",
+        "turn": 7,
+        "minute": 720
+      }
+    },
+    {
+      "t": "memory.recorded",
+      "d": {
+        "memory": {
+          "id": "m.t7.seen.npc.npcpen_mender",
+          "turn": 7,
+          "minute": 720,
+          "text": "first saw {pc} at the pastures and pens around Stonebrook",
+          "who": [
+            "npc.npcpen_mender",
+            "pc"
+          ],
+          "witnesses": [
+            "npc.npcpen_mender"
+          ],
+          "seen": [
+            "npc.npcpen_mender"
+          ],
+          "location": "realm.caelreth",
+          "place": "the pastures and pens around Stonebrook",
+          "importance": 4,
+          "kind": "meeting"
+        }
+      }
+    },
+    {
+      "t": "memory.recorded",
+      "d": {
+        "memory": {
+          "id": "m.t7.m14.ep",
+          "turn": 7,
+          "minute": 720,
+          "text": "the pastures and pens around Stonebrook: {pc}: \"I head out the east road toward Stonebrook.\"",
+          "who": [
+            "pc"
+          ],
+          "about": [
+            "npc.npcpen_mender"
+          ],
+          "witnesses": [
+            "pc"
+          ],
+          "seen": [
+            "pc"
+          ],
+          "location": "realm.caelreth",
+          "place": "the pastures and pens around Stonebrook",
+          "importance": 3,
+          "kind": "episode",
+          "msg": 14
+        }
+      }
+    },
+    {
+      "t": "extract.applied",
+      "d": {
+        "version": "extract-5.17",
+        "source": "extractor",
+        "ms": 6746,
+        "repaired": false,
+        "deltas": 5,
+        "rejected": 0
+      }
+    },
+    {
+      "t": "turn.begun",
+      "d": {
+        "turn": 8,
+        "input_hash": "425ebc03",
+        "input": "I ask the villager where the near pens are and whether there's a good hiding spot to wait for the wolf at dusk."
+      }
+    },
+    {
+      "t": "cmd.interpreted",
+      "d": {
+        "version": "plan-c0.1",
+        "source": "json",
+        "ms": 1626,
+        "failed": false,
+        "commands": [],
+        "dropped": []
+      }
+    },
+    {
+      "t": "outcome.recorded",
+      "d": {
+        "outcome": {
+          "kind": "v4",
+          "actions": [
+            "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; narrate what he says and does, and the world's response."
+          ],
+          "extra": [],
+          "resolutions": [],
+          "expected_keys": {},
+          "auth": {
+            "go": null,
+            "gos": [],
+            "roam": false,
+            "take": [],
+            "takeNames": {},
+            "gather": false,
+            "rest": false,
+            "timeCap": 120,
+            "c": true,
+            "booked_min": 0,
+            "recovered": false
+          },
+          "conditionals": [],
+          "booked": {
+            "registration": false,
+            "grants": [],
+            "turnIns": [],
+            "accepted": [],
+            "sellers": [],
+            "goods": []
+          },
+          "board": null,
+          "search_checks": [],
+          "check_die": null,
+          "interp_failed": false,
+          "dropped": []
+        },
+        "situations": []
+      }
+    },
+    {
+      "t": "quest.detailed",
+      "d": {
+        "id": "quest.slay_the_lamb_rending_wolf_of_stonebrook",
+        "note": "The villager: the wolf hits the three nearest closes by the stream, entering through a gap in the hedge (Tam's long-planned gate), coming up from the trees along the water and leaving the same way; it",
+        "schedule": null
+      }
+    },
+    {
+      "t": "thread.set",
+      "d": {
+        "thread": {
+          "id": "thread.t7.1",
+          "text": "The wolf works the near pens by the stream, entering and leaving along the water through the hedge gap, and avoids dogs and open fields — it knows what a man standing in a field looks like, but perhap",
+          "kind": "threat",
+          "status": "open",
+          "since": {
+            "turn": 7,
+            "minute": 720
+          },
+          "updated": {
+            "turn": 8,
+            "minute": 720
+          },
+          "source": {
+            "kind": "narration",
+            "msg": 14
+          },
+          "at": "realm.caelreth.the_pastures_and_pens_around_stonebrook"
+        }
+      }
+    },
+    {
+      "t": "memory.recorded",
+      "d": {
+        "memory": {
+          "id": "m.t8.m16.ep",
+          "turn": 8,
+          "minute": 720,
+          "text": "the pastures and pens around Stonebrook: {pc}: \"I ask the villager where the near pens are and whether there's a good hiding spot to wait for the wolf at dusk.\"",
+          "who": [
+            "pc"
+          ],
+          "about": [
+            "npc.npcpen_mender"
+          ],
+          "witnesses": [
+            "pc"
+          ],
+          "seen": [
+            "pc"
+          ],
+          "location": "realm.caelreth",
+          "place": "the pastures and pens around Stonebrook",
+          "importance": 3,
+          "kind": "episode",
+          "msg": 16
+        }
+      }
+    },
+    {
+      "t": "extract.applied",
+      "d": {
+        "version": "extract-5.17",
+        "source": "extractor",
+        "ms": 6800,
+        "repaired": false,
+        "deltas": 2,
+        "rejected": 0
+      }
+    },
+    {
+      "t": "turn.begun",
+      "d": {
+        "turn": 9,
+        "input_hash": "b938f518",
+        "input": "I thank the villager, then settle into the old lambing byre to wait quietly for dusk."
+      }
+    },
+    {
+      "t": "cmd.interpreted",
+      "d": {
+        "version": "plan-c0.1",
+        "source": "json_repaired",
+        "ms": 4582,
+        "failed": false,
+        "commands": [
+          {
+            "seq": 1,
+            "type": "activity",
+            "kind": "wait",
+            "what": "quietly in the old lambing byre",
+            "minutes": null,
+            "until": "evening",
+            "quote": "settle into the old lambing byre to wait quietly for dusk",
+            "learn": null,
+            "teacher": null,
+            "tags": null,
+            "aspects": null,
+            "material": null
+          }
+        ],
+        "dropped": []
+      }
+    },
+    {
+      "t": "time.advanced",
+      "d": {
+        "minutes": 360,
+        "why": "wait"
+      }
+    },
+    {
+      "t": "cmd.resolved",
+      "d": {
+        "seq": 1,
+        "type": "activity",
+        "status": "resolved",
+        "cap": 360,
+        "quote": "settle into the old lambing byre to wait quietly for dusk"
+      }
+    },
+    {
+      "t": "outcome.recorded",
+      "d": {
+        "outcome": {
+          "kind": "v4",
+          "actions": [
+            "1. WAITS quietly in the old lambing byre until evening — resolved by the engine: 360 minutes pass; it is now Day 1, 18:00 (evening). Narrate it as done, at that length; do not cut it short or add time."
+          ],
+          "extra": [],
+          "resolutions": [
+            {
+              "seq": 1,
+              "type": "activity",
+              "status": "resolved",
+              "cap": 360,
+              "quote": "settle into the old lambing byre to wait quietly for dusk"
+            }
+          ],
+          "expected_keys": {
+            "1": "activity"
+          },
+          "auth": {
+            "go": null,
+            "gos": [],
+            "roam": false,
+            "take": [],
+            "takeNames": {},
+            "gather": false,
+            "rest": false,
+            "timeCap": 360,
+            "c": true,
+            "booked_min": 360,
+            "recovered": false
+          },
+          "conditionals": [],
+          "booked": {
+            "registration": false,
+            "grants": [],
+            "turnIns": [],
+            "accepted": [],
+            "sellers": [],
+            "goods": []
+          },
+          "board": null,
+          "search_checks": [],
+          "check_die": null,
+          "interp_failed": false,
+          "dropped": [],
+          "engine_lines": [
+            "TIME — wait until evening: 360 min (now Day 1, 18:00 (evening))"
+          ]
+        },
+        "situations": []
+      }
+    },
+    {
+      "t": "entity.created",
+      "d": {
+        "entity": {
+          "id": "mon.lamb_wolf",
+          "kind": "creature",
+          "name": null,
+          "descriptors": [
+            "big for a wolf, grey the color of wet st",
+            "lamb_wolf"
+          ],
+          "traits": "",
+          "status": "alive",
+          "location": "realm.caelreth",
+          "created": {
+            "turn": 9,
+            "minute": 1080
+          },
+          "source": {
+            "kind": "narration",
+            "msg": 18
+          },
+          "card": {},
+          "species": "grey wolf",
+          "anchor": "wolf"
+        }
+      }
+    },
+    {
+      "t": "scene.entered",
+      "d": {
+        "id": "mon.lamb_wolf",
+        "band": "MEDIUM"
+      }
+    },
+    {
+      "t": "entity.updated",
+      "d": {
+        "id": "mon.lamb_wolf",
+        "set": {
+          "variation": "strong"
+        }
+      }
+    },
+    {
+      "t": "entity.updated",
+      "d": {
+        "id": "mon.lamb_wolf",
+        "set": {
+          "profile": {
+            "model": "creature",
+            "anchor": "wolf",
+            "body_plan": "Wolf / canid",
+            "level": 1,
+            "rank": "F",
+            "type": "normal",
+            "variation": "strong",
+            "max_hp": 28,
+            "atk": 11,
+            "def": 1,
+            "mdef": 1,
+            "init": 14,
+            "attack": {
+              "name": "Bite",
+              "damage_type": "physical",
+              "range": "ENGAGED"
+            },
+            "temperament": "aggressive"
+          },
+          "population_at": "realm.caelreth.the_pastures_and_pens_around_stonebrook"
+        }
+      },
+      "rng_to": 1
+    },
+    {
+      "t": "scene.awareness",
+      "d": {
+        "id": "mon.lamb_wolf",
+        "level": "suspicious"
+      }
+    },
+    {
+      "t": "thread.set",
+      "d": {
+        "thread": {
+          "id": "thread.t7.1",
+          "text": "The lamb-rending wolf seen at dusk at the hedge gap by the stream, watching the pens before moving in",
+          "kind": "threat",
+          "status": "open",
+          "since": {
+            "turn": 7,
+            "minute": 720
+          },
+          "updated": {
+            "turn": 9,
+            "minute": 1080
+          },
+          "source": {
+            "kind": "narration",
+            "msg": 14
+          },
+          "at": "realm.caelreth.the_pastures_and_pens_around_stonebrook"
+        }
+      }
+    },
+    {
+      "t": "memory.recorded",
+      "d": {
+        "memory": {
+          "id": "m.t9.m18.ep",
+          "turn": 9,
+          "minute": 1080,
+          "text": "the pastures and pens around Stonebrook: {pc}: \"I thank the villager, then settle into the old lambing byre to wait quietly for dusk.\"",
+          "who": [
+            "pc"
+          ],
+          "about": [
+            "npc.npcpen_mender",
+            "mon.lamb_wolf"
+          ],
+          "witnesses": [
+            "pc"
+          ],
+          "seen": [
+            "pc"
+          ],
+          "location": "realm.caelreth",
+          "place": "the pastures and pens around Stonebrook",
+          "importance": 3,
+          "kind": "episode",
+          "msg": 18
+        }
+      }
+    },
+    {
+      "t": "extract.applied",
+      "d": {
+        "version": "extract-5.17",
+        "source": "extractor",
+        "ms": 7246,
+        "repaired": false,
+        "deltas": 4,
+        "rejected": 0
+      }
+    },
+    {
+      "t": "turn.begun",
+      "d": {
+        "turn": 10,
+        "input_hash": "eb6facfb",
+        "input": "I stay hidden and quiet in the byre, watching through the window gap to see where the wolf moves."
+      }
+    },
+    {
+      "t": "scene.concealed",
+      "d": {
+        "ids": [
+          "pc"
+        ]
+      },
+      "rng_to": 2
+    },
+    {
+      "t": "scene.awareness",
+      "d": {
+        "id": "npc.npcpen_mender",
+        "level": "unaware"
+      }
+    },
+    {
+      "t": "scene.awareness",
+      "d": {
+        "id": "mon.lamb_wolf",
+        "level": "unaware"
+      }
+    },
+    {
+      "t": "outcome.recorded",
+      "d": {
+        "outcome": {
+          "kind": "check",
+          "check": {
+            "label": "Stealth (AGI 7) vs Detection of villager (PER 5)",
+            "actor_score": 7,
+            "opposition": 5,
+            "chance": 58.33,
+            "roll": 41,
+            "success": true,
+            "note": null
+          },
+          "c": true
+        },
+        "situations": [
+          "stealth"
+        ]
+      }
+    },
+    {
+      "t": "scene.position",
+      "d": {
+        "id": "mon.lamb_wolf",
+        "band": "SHORT",
+        "cover": "none"
+      }
+    },
+    {
+      "t": "scene.awareness",
+      "d": {
+        "id": "mon.lamb_wolf",
+        "level": "unaware"
+      }
+    },
+    {
+      "t": "combat.intent",
+      "d": {
+        "who": "mon.lamb_wolf",
+        "intent": "attack"
+      }
+    },
+    {
+      "t": "memory.recorded",
+      "d": {
+        "memory": {
+          "id": "m.t10.m20.ep",
+          "turn": 10,
+          "minute": 1080,
+          "text": "the pastures and pens around Stonebrook: {pc}: \"I stay hidden and quiet in the byre, watching through the window gap to see where the wolf moves.\"",
+          "who": [
+            "pc"
+          ],
+          "about": [
+            "npc.npcpen_mender",
+            "mon.lamb_wolf"
+          ],
+          "witnesses": [
+            "pc"
+          ],
+          "seen": [
+            "pc"
+          ],
+          "location": "realm.caelreth",
+          "place": "the pastures and pens around Stonebrook",
+          "importance": 3,
+          "kind": "episode",
+          "msg": 20
+        }
+      }
+    },
+    {
+      "t": "extract.applied",
+      "d": {
+        "version": "extract-5.17",
+        "source": "extractor",
+        "ms": 4654,
+        "repaired": false,
+        "deltas": 3,
+        "rejected": 0
+      }
+    },
+    {
+      "t": "turn.begun",
+      "d": {
+        "turn": 11,
+        "input_hash": "9b70c06e",
+        "input": "I burst from the byre and charge the wolf, swinging Cleave at it before it can reach the ewe."
+      }
+    },
+    {
+      "t": "outcome.recorded",
+      "d": {
+        "outcome": {
+          "kind": "combat",
+          "records": [],
+          "illegal": "Cleave needs a valid target ENGAGED with Alaric after the declared movement",
+          "not_started": true,
+          "c": true
+        },
+        "situations": []
+      }
+    },
+    {
+      "t": "fact.asserted",
+      "d": {
+        "fact": {
+          "id": "f.t11.m22.d1.1",
+          "s": "mon.lamb_wolf",
+          "p": "attacked",
+          "o": "the old ewe at the wall's corner, gripping its neck and dragging it down",
+          "since": {
+            "turn": 11,
+            "minute": 1080
+          },
+          "until": null,
+          "visibility": "public",
+          "importance": 0.5,
+          "hard": false,
+          "source": {
+            "kind": "narration",
+            "msg": 22,
+            "because": null
+          }
+        }
+      }
+    },
+    {
+      "t": "fact.asserted",
+      "d": {
+        "fact": {
+          "id": "f.t11.m22.d2_2.1",
+          "s": "mon.lamb_wolf",
+          "p": "position",
+          "o": "braced low over the downed ewe, holding its grip",
+          "since": {
+            "turn": 11,
+            "minute": 1080
+          },
+          "until": null,
+          "visibility": "public",
+          "importance": 0.5,
+          "hard": false,
+          "source": {
+            "kind": "narration",
+            "msg": 22,
+            "because": null
+          }
+        }
+      }
+    },
+    {
+      "t": "thread.set",
+      "d": {
+        "thread": {
+          "id": "thread.t7.1",
+          "text": "The wolf rushed and brought down the old ewe at the wall's corner; the flock broke and spilled through the middle close in panic.",
+          "kind": "threat",
+          "status": "open",
+          "since": {
+            "turn": 7,
+            "minute": 720
+          },
+          "updated": {
+            "turn": 11,
+            "minute": 1080
+          },
+          "source": {
+            "kind": "narration",
+            "msg": 14
+          },
+          "at": "realm.caelreth.the_pastures_and_pens_around_stonebrook"
+        }
+      }
+    },
+    {
+      "t": "extract.applied",
+      "d": {
+        "version": "extract-5.17",
+        "source": "extractor",
+        "ms": 3736,
+        "repaired": false,
+        "deltas": 3,
+        "rejected": 0
+      }
+    },
+    {
+      "t": "turn.begun",
+      "d": {
+        "turn": 12,
+        "input_hash": "dd33565b",
+        "input": "I rush the wolf while it's pinned on the ewe and swing Cleave at it at close range."
+      }
+    },
+    {
+      "t": "outcome.recorded",
+      "d": {
+        "outcome": {
+          "kind": "combat",
+          "records": [],
+          "illegal": "Cleave needs a valid target ENGAGED with Alaric after the declared movement",
+          "not_started": true,
+          "c": true
+        },
+        "situations": []
+      }
+    },
+    {
+      "t": "delta.rejected",
+      "d": {
+        "item": {
+          "scene": null,
+          "seq": 2,
+          "type": "fact",
+          "s": "mon.lamb_wolf",
+          "p": "state",
+          "o": "paused its grip, head up, muzzle dark with blood, sides working; looked along the close at the fleeing flock, the open grass and the hedge it had come through"
+        },
+        "rule": "engine_owned_fact",
+        "reason": "a known Guild contract keeps payout and formal status/completion in the engine domain; use quest.detail/quest.progress/quest.ready for story progress instead of overriding that state with a free fact"
+      }
+    },
+    {
+      "t": "fact.asserted",
+      "d": {
+        "fact": {
+          "id": "f.t12.m24.d1.1",
+          "s": "mon.lamb_wolf",
+          "p": "position",
+          "o": "braced low over the downed ewe at the wall's corner, three lengths from Alaric",
+          "since": {
+            "turn": 12,
+            "minute": 1080
+          },
+          "until": null,
+          "visibility": "public",
+          "importance": 0.5,
+          "hard": false,
+          "source": {
+            "kind": "narration",
+            "msg": 24,
+            "because": null
+          }
+        }
+      }
+    },
+    {
+      "t": "thread.set",
+      "d": {
+        "thread": {
+          "id": "thread.t7.1",
+          "text": "The ewe's kicking is slowing under the wolf's grip; the flock streams through the middle gap while the wolf weighs its escape routes.",
+          "kind": "threat",
+          "status": "open",
+          "since": {
+            "turn": 7,
+            "minute": 720
+          },
+          "updated": {
+            "turn": 12,
+            "minute": 1080
+          },
+          "source": {
+            "kind": "narration",
+            "msg": 14
+          },
+          "at": "realm.caelreth.the_pastures_and_pens_around_stonebrook"
+        }
+      }
+    },
+    {
+      "t": "extract.applied",
+      "d": {
+        "version": "extract-5.17",
+        "source": "extractor",
+        "ms": 4205,
+        "repaired": false,
+        "deltas": 3,
+        "rejected": 1
+      }
+    },
+    {
+      "t": "turn.begun",
+      "d": {
+        "turn": 13,
+        "input_hash": "cb247d4e",
+        "input": "I draw my sword, close the distance to the wolf, and strike it with Basic Attack once in reach."
+      }
+    },
+    {
+      "t": "encounter.started",
+      "d": {
+        "encounter": {
+          "id": "enc.t13",
+          "phase": "ACTIVE",
+          "round": 1,
+          "order": [
+            "mon.lamb_wolf",
+            "pc"
+          ],
+          "turn_index": 1,
+          "current": "pc",
+          "combatants": {
+            "pc": {
+              "id": "pc",
+              "name": "Alaric",
+              "side": "pc",
+              "model": "character",
+              "fixed": {
+                "level": 1,
+                "rank": "F",
+                "class": "warrior",
+                "stats": {
+                  "STR": 8,
+                  "VIT": 8,
+                  "AGI": 7,
+                  "INT": 7,
+                  "PER": 7,
+                  "WIL": 7
+                },
+                "max_hp": 95,
+                "max_mp": 84,
+                "max_sta": 100,
+                "atk": 10,
+                "matk": 0,
+                "def": 8,
+                "mdef": 3,
+                "init": 10,
+                "type": "normal",
+                "actions": {
+                  "warrior.basic_attack": {
+                    "prof": 1,
+                    "pp": 0
+                  },
+                  "warrior.guard": {
+                    "prof": 1,
+                    "pp": 0
+                  },
+                  "warrior.cleave": {
+                    "prof": 1,
+                    "pp": 0
+                  }
+                },
+                "weapon_family": "melee",
+                "temperament": null,
+                "sapient": true
+              },
+              "current": {
+                "hp": 95,
+                "mp": 84,
+                "sta": 95,
+                "ammo": {},
+                "band": null,
+                "cover": "none",
+                "effects": [],
+                "defeated": false,
+                "escaped": false,
+                "surrendered": false
+              }
+            },
+            "mon.lamb_wolf": {
+              "id": "mon.lamb_wolf",
+              "name": "Grey Wolf A",
+              "side": "hostile",
+              "model": "creature",
+              "fixed": {
+                "level": 1,
+                "rank": "F",
+                "type": "normal",
+                "body_plan": "Wolf / canid",
+                "max_hp": 28,
+                "atk": 11,
+                "def": 1,
+                "mdef": 1,
+                "init": 14,
+                "attack": {
+                  "name": "Bite",
+                  "damage_type": "physical",
+                  "range": "ENGAGED"
+                },
+                "temperament": "aggressive",
+                "sapient": false,
+                "variation": "strong",
+                "defeat_xp": 30
+              },
+              "current": {
+                "hp": 0,
+                "band": "ENGAGED",
+                "cover": "none",
+                "effects": [],
+                "defeated": true,
+                "escaped": false,
+                "surrendered": false
+              },
+              "label": "Grey Wolf A"
+            }
+          },
+          "pc_rank": "F",
+          "pending_xp": 30,
+          "defeated": [
+            "mon.lamb_wolf"
+          ],
+          "escaped": [],
+          "trigger": {
+            "actor": "pc",
+            "target": "mon.lamb_wolf",
+            "skill": "warrior.basic_attack",
+            "move": "closer",
+            "move_target": "mon.lamb_wolf"
+          },
+          "log": [
+            {
+              "round": 0,
+              "actor": "pc",
+              "kind": "attack",
+              "target": "mon.lamb_wolf",
+              "opening": true,
+              "move": {
+                "bands": 1,
+                "from": "SHORT",
+                "to": "ENGAGED"
+              },
+              "cost": {
+                "resource": "sta",
+                "amount": 5,
+                "before": 100,
+                "after": 95
+              },
+              "skill": "warrior.basic_attack",
+              "skill_name": "Basic Attack",
+              "raw": 24,
+              "raw_text": "4 + STR 8×1.25 + ATK 10 = 24",
+              "strikes": [
+                {
+                  "target": "mon.lamb_wolf",
+                  "crit": {
+                    "ambush": true,
+                    "multiplier": 1.5
+                  },
+                  "power": 24,
+                  "defense": 1,
+                  "post_def": 23,
+                  "variance": 0.91,
+                  "final": 31,
+                  "absorbed": 0,
+                  "hp_before": 28,
+                  "hp_after": 0,
+                  "steps": [
+                    "Raw 24",
+                    "DEF 1: max(24-1, 24×0.10) = 23",
+                    "×0.91 variance = 20.93",
+                    "×1.5 Ambush Crit = 31.395",
+                    "round once = 31"
+                  ],
+                  "defeated": true
+                }
+              ],
+              "pending_xp_added": 30,
+              "note": "Opening Action (true Ambush: every strike is a Critical Hit ×1.5)"
+            }
+          ],
+          "opening": true,
+          "started": {
+            "turn": 13,
+            "minute": 1080
+          },
+          "intents": {
+            "mon.lamb_wolf": "attack"
+          },
+          "ambush": true,
+          "ambush_reason": "target awareness: unaware -> true Ambush (Opening Action: guaranteed Critical Hit ×1.5)",
+          "career": {
+            "damage": {
+              "mon.lamb_wolf": 28
+            },
+            "personal": {
+              "mon.lamb_wolf": 28
+            }
+          },
+          "trigger_done": true,
+          "pp": {
+            "used": {
+              "warrior.basic_attack": "an attack on a foe"
+            },
+            "wait": null,
+            "threatened": false,
+            "last": "warrior.basic_attack",
+            "answer": "warrior.basic_attack",
+            "guarding": null,
+            "marks": {
+              "warrior.basic_attack": [
+                "closing"
+              ]
+            }
+          },
+          "round_marker": 1.01
+        }
+      },
+      "rng_to": 3
+    },
+    {
+      "t": "scene.awareness",
+      "d": {
+        "id": "mon.lamb_wolf",
+        "level": "aware"
+      }
+    },
+    {
+      "t": "resource.changed",
+      "d": {
+        "id": "pc",
+        "resource": "sta",
+        "value": 95
+      }
+    },
+    {
+      "t": "entity.status",
+      "d": {
+        "id": "mon.lamb_wolf",
+        "status": "dead"
+      }
+    },
+    {
+      "t": "fact.asserted",
+      "d": {
+        "fact": {
+          "id": "f.mon.lamb_wolf.status.t13",
+          "s": "mon.lamb_wolf",
+          "p": "status",
+          "o": "dead",
+          "since": {
+            "turn": 13,
+            "minute": 1080
+          },
+          "until": null,
+          "visibility": "public",
+          "importance": 0.9,
+          "hard": true,
+          "source": {
+            "kind": "engine",
+            "encounter": "enc.t13"
+          }
+        }
+      }
+    },
+    {
+      "t": "knowledge.gained",
+      "d": {
+        "who": "pc",
+        "about": "f.mon.lamb_wolf.status.t13",
+        "stance": "knows",
+        "source": "witnessed",
+        "turn": 13,
+        "minute": 1080
+      }
+    },
+    {
+      "t": "xp.changed",
+      "d": {
+        "id": "pc",
+        "xp": 30,
+        "amount": 30,
+        "reason": "Combat XP (Grey Wolf A 30)"
+      }
+    },
+    {
+      "t": "career.recorded",
+      "d": {
+        "source": "fight:enc.t13",
+        "stats": {
+          "fights_won": 1,
+          "foes_defeated": 1,
+          "stronger_defeated": 0,
+          "extraordinary_wins": 0
+        },
+        "feats": [],
+        "style": {
+          "Martial": 1,
+          "offense": 1
+        }
+      }
+    },
+    {
+      "t": "encounter.ended",
+      "d": {
+        "id": "enc.t13",
+        "summary": {
+          "defeated": [
+            "mon.lamb_wolf"
+          ],
+          "escaped": [],
+          "xp_awarded": 30,
+          "pc_dead": false,
+          "pc_escaped": false
+        }
+      }
+    },
+    {
+      "t": "memory.recorded",
+      "d": {
+        "memory": {
+          "id": "m.enc.t13",
+          "turn": 13,
+          "minute": 1080,
+          "text": "Fight at the pastures and pens around Stonebrook: {pc} (Basic Attack) vs the big for a wolf, grey the color of wet st — killed.",
+          "who": [
+            "pc",
+            "mon.lamb_wolf"
+          ],
+          "witnesses": [
+            "pc"
+          ],
+          "seen": [
+            "pc"
+          ],
+          "location": "realm.caelreth",
+          "place": "the pastures and pens around Stonebrook",
+          "importance": 7,
+          "kind": "combat"
+        }
+      }
+    },
+    {
+      "t": "entity.updated",
+      "d": {
+        "id": "mon.lamb_wolf",
+        "set": {
+          "looted": "enc.t13"
+        }
+      }
+    },
+    {
+      "t": "object.created",
+      "d": {
+        "object": {
+          "id": "obj.loot.grey_wolf.pelt.f",
+          "name": "F-Rank Grey Wolf Pelt",
+          "kind": "resource",
+          "stack": true,
+          "qty": 1,
+          "unit": null,
+          "holder": {
+            "entity": "pc"
+          },
+          "marks": [],
+          "for_quests": [],
+          "source": {
+            "turn": 13,
+            "how": "loot",
+            "encounter": "enc.t13"
+          },
+          "rank": "F",
+          "level": 1,
+          "material": "pelt",
+          "species": "Grey Wolf",
+          "anchor": "wolf",
+          "value_cp": 8
+        }
+      }
+    },
+    {
+      "t": "object.created",
+      "d": {
+        "object": {
+          "id": "obj.loot.grey_wolf.fang.f",
+          "name": "F-Rank Grey Wolf Fang",
+          "kind": "resource",
+          "stack": true,
+          "qty": 1,
+          "unit": null,
+          "holder": {
+            "entity": "pc"
+          },
+          "marks": [],
+          "for_quests": [],
+          "source": {
+            "turn": 13,
+            "how": "loot",
+            "encounter": "enc.t13"
+          },
+          "rank": "F",
+          "level": 1,
+          "material": "fang",
+          "species": "Grey Wolf",
+          "anchor": "wolf",
+          "value_cp": 2
+        }
+      }
+    },
+    {
+      "t": "outcome.recorded",
+      "d": {
+        "outcome": {
+          "kind": "combat",
+          "started": {
+            "reason": "target awareness: unaware -> true Ambush (Opening Action: guaranteed Critical Hit ×1.5)",
+            "order": "Grey Wolf A > Alaric",
+            "ambush": true
+          },
+          "records": [
+            {
+              "round": 0,
+              "actor": "pc",
+              "kind": "attack",
+              "target": "mon.lamb_wolf",
+              "opening": true,
+              "move": {
+                "bands": 1,
+                "from": "SHORT",
+                "to": "ENGAGED"
+              },
+              "cost": {
+                "resource": "sta",
+                "amount": 5,
+                "before": 100,
+                "after": 95
+              },
+              "skill": "warrior.basic_attack",
+              "skill_name": "Basic Attack",
+              "raw": 24,
+              "raw_text": "4 + STR 8×1.25 + ATK 10 = 24",
+              "strikes": [
+                {
+                  "target": "mon.lamb_wolf",
+                  "crit": {
+                    "ambush": true,
+                    "multiplier": 1.5
+                  },
+                  "power": 24,
+                  "defense": 1,
+                  "post_def": 23,
+                  "variance": 0.91,
+                  "final": 31,
+                  "absorbed": 0,
+                  "hp_before": 28,
+                  "hp_after": 0,
+                  "steps": [
+                    "Raw 24",
+                    "DEF 1: max(24-1, 24×0.10) = 23",
+                    "×0.91 variance = 20.93",
+                    "×1.5 Ambush Crit = 31.395",
+                    "round once = 31"
+                  ],
+                  "defeated": true
+                }
+              ],
+              "pending_xp_added": 30,
+              "note": "Opening Action (true Ambush: every strike is a Critical Hit ×1.5)"
+            }
+          ],
+          "illegal": null,
+          "next": null,
+          "board": {
+            "round": 1,
+            "order": [
+              {
+                "id": "mon.lamb_wolf",
+                "init": 14
+              },
+              {
+                "id": "pc",
+                "init": 10
+              }
+            ],
+            "hp": [
+              {
+                "id": "mon.lamb_wolf",
+                "hp": 0,
+                "max": 28,
+                "state": "defeated",
+                "band": "ENGAGED",
+                "cover": "none"
+              },
+              {
+                "id": "pc",
+                "hp": 95,
+                "max": 95,
+                "state": null
+              }
+            ],
+            "labels": {
+              "mon.lamb_wolf": "Grey Wolf A"
+            },
+            "pc": {
+              "mp": 84,
+              "max_mp": 84,
+              "sta": 95,
+              "max_sta": 100,
+              "arrows": 0
+            }
+          },
+          "ended": {
+            "defeated": [
+              "mon.lamb_wolf"
+            ],
+            "escaped": [],
+            "xp_awarded": 30,
+            "pc_dead": false,
+            "pc_escaped": false
+          },
+          "levelups": [],
+          "loot": [
+            "F-Rank Grey Wolf Pelt ×1",
+            "F-Rank Grey Wolf Fang ×1"
+          ],
+          "booked": {
+            "registration": false,
+            "grants": [
+              "F-Rank Grey Wolf Pelt",
+              "F-Rank Grey Wolf Fang"
+            ],
+            "turnIns": [],
+            "accepted": []
+          },
+          "c": true
+        },
+        "situations": []
+      }
+    },
+    {
+      "t": "quest.ready",
+      "d": {
+        "id": "quest.slay_the_lamb_rending_wolf_of_stonebrook",
+        "note": "The lamb-rending wolf was struck down at the pens: one sword stroke felled it and it died on the grass beside the flock."
+      }
+    },
+    {
+      "t": "fact.asserted",
+      "d": {
+        "fact": {
+          "id": "f.t13.m26.d2.1",
+          "s": "mon.lamb_wolf",
+          "p": "death",
+          "o": "killed by Alaric's sword stroke at the pens; it died on the grass after a few heaving breaths",
+          "since": {
+            "turn": 13,
+            "minute": 1080
+          },
+          "until": null,
+          "visibility": "public",
+          "importance": 0.5,
+          "hard": false,
+          "source": {
+            "kind": "narration",
+            "msg": 26,
+            "because": null
+          }
+        }
+      }
+    },
+    {
+      "t": "fact.asserted",
+      "d": {
+        "fact": {
+          "id": "f.t13.m26.d3_2.1",
+          "s": "npc.npcpen_mender",
+          "p": "alarm",
+          "o": "shouting toward the houses, raising the alarm; a lamp moves down by the houses and doors are opening in the dark",
+          "since": {
+            "turn": 13,
+            "minute": 1080
+          },
+          "until": null,
+          "visibility": "public",
+          "importance": 0.5,
+          "hard": false,
+          "source": {
+            "kind": "narration",
+            "msg": 26,
+            "because": null
+          }
+        }
+      }
+    },
+    {
+      "t": "thread.set",
+      "d": {
+        "thread": {
+          "id": "thread.t13.1",
+          "text": "The villager's alarm has found ears: lamps and doors stir by the houses, and people are coming toward the pens where the wolf lies dead.",
+          "kind": "sign",
+          "status": "open",
+          "since": {
+            "turn": 13,
+            "minute": 1080
+          },
+          "updated": {
+            "turn": 13,
+            "minute": 1080
+          },
+          "source": {
+            "kind": "narration",
+            "msg": 26
+          },
+          "at": "realm.caelreth.the_pastures_and_pens_around_stonebrook"
+        }
+      }
+    },
+    {
+      "t": "time.advanced",
+      "d": {
+        "minutes": 5,
+        "why": "narration"
+      }
+    },
+    {
+      "t": "object.marked",
+      "d": {
+        "id": "obj.slip.slay_the_lamb_rending_wolf_of_stonebrook",
+        "mark": "READY — the Guild seal shows the contract fulfilled",
+        "by": "guild",
+        "turn": 13
+      }
+    },
+    {
+      "t": "extract.applied",
+      "d": {
+        "version": "extract-5.17",
+        "source": "extractor",
+        "ms": 6117,
+        "repaired": false,
+        "deltas": 5,
+        "rejected": 0
+      }
+    }
+  ],
+  "input": "I show the villager the dead wolf, then head back to Stonebrook's Guild hall to turn in the wolf contract.",
+  "commands": [
+    {
+      "seq": 1,
+      "type": "go",
+      "to": {
+        "new": "Stonebrook's Guild hall"
+      },
+      "quote": "head back to Stonebrook's Guild hall"
+    },
+    {
+      "seq": 2,
+      "type": "quest.turn_in",
+      "quest": "quest.slay_the_lamb_rending_wolf_of_stonebrook",
+      "needs": 1,
+      "quote": "to turn in the wolf contract"
+    }
+  ],
+  "answer": {
+    "scene": {
+      "new": {
+        "name": "Stonebrook Guild hall",
+        "kind": "site",
+        "parent": {
+          "new": {
+            "name": "Stonebrook",
+            "kind": "settlement",
+            "parent": "realm.caelreth"
+          }
+        }
+      }
+    },
+    "expected": {
+      "1": {
+        "arrived": true,
+        "at": {
+          "new": {
+            "name": "Stonebrook Guild hall",
+            "kind": "site",
+            "parent": {
+              "new": {
+                "name": "Stonebrook",
+                "kind": "settlement",
+                "parent": "realm.caelreth"
+              }
+            }
+          }
+        },
+        "with": null
+      }
+    },
+    "deltas": [
+      {
+        "seq": 1,
+        "type": "fact",
+        "s": "npc.npcpen_mender",
+        "p": "learns",
+        "o": "the lamb-rending wolf lies dead at the pen gap, beside a killed ewe",
+        "scene": "realm.caelreth.the_pastures_and_pens_around_stonebrook"
+      },
+      {
+        "seq": 2,
+        "type": "attitude",
+        "who": "npc.npcpen_mender",
+        "delta": 15,
+        "why": "sees the dead wolf and says the close will sleep tonight",
+        "scene": "realm.caelreth.the_pastures_and_pens_around_stonebrook"
+      },
+      {
+        "seq": 3,
+        "type": "place.reported",
+        "place": {
+          "new": {
+            "name": "Stonebrook Guild hall",
+            "kind": "site",
+            "parent": {
+              "new": {
+                "name": "Stonebrook",
+                "kind": "settlement",
+                "parent": "realm.caelreth"
+              }
+            }
+          }
+        },
+        "by": "npc.npcpen_mender",
+        "how": "told",
+        "where": "follow the main road past the well — the big door with the horns carved over it",
+        "scene": "realm.caelreth.the_pastures_and_pens_around_stonebrook"
+      },
+      {
+        "seq": 4,
+        "type": "arrive",
+        "at": {
+          "new": {
+            "name": "Stonebrook Guild hall",
+            "kind": "site",
+            "parent": {
+              "new": {
+                "name": "Stonebrook",
+                "kind": "settlement",
+                "parent": "realm.caelreth"
+              }
+            }
+          }
+        },
+        "forced_by": null,
+        "with": null
+      },
+      {
+        "seq": 5,
+        "type": "person.new",
+        "ref": "npc.stonebrook_clerk",
+        "name": null,
+        "role": "clerk",
+        "desc": [
+          "broad-shouldered clerk with spectacles pushed up into grey hair",
+          "sorting slips into a ledger at the front desk"
+        ],
+        "armed": null,
+        "present": true,
+        "relevant": true,
+        "threat": false,
+        "at": null,
+        "band": "SHORT",
+        "distinct_from": null
+      },
+      {
+        "seq": 6,
+        "type": "aware",
+        "who": "npc.stonebrook_clerk",
+        "level": "aware",
+        "evidence": "He glanced up as the door shut behind Alaric. \"Evening. Desk's open.\""
+      }
+    ]
+  },
+  "prose": "The lamp reached the pen gap before he'd finished wiping the blade. The woman came through it at a hurry, mallet still in her fist, and stopped dead at the sight of him standing over the grey body — sword in one hand, wolf at his feet, the dead ewe beyond it at the wall's corner.\n\n\"That it?\" She came no closer than the rail. Her eyes went from the wolf's dark muzzle to the torn throat of the ewe and stayed there. \"Three lambs this month. Three, at the throat, same as that.\" She looked at him differently now, the mallet lowering to her side. \"Well. The close'll sleep tonight, at least. Someone'll want to see to Bramble.\" She nodded at the ewe, not without feeling, and then, as he turned toward the lane, called after him: \"There's a Guild hall in the village, if that's where you're headed. Follow the main road past the well — the big door with the horns carved over it.\"\n\nThe road into Stonebrook was short and cooling, lamps coming on in windows as he passed. A man carrying a bucket gave the sword at his hip a long look and stepped wide. The well sat in the middle of things as promised, and past it the Guild hall stood with its lamplit front and its carved door — a big room beyond, warm with woodsmoke, a handful of tables, a hearth, and a front desk where a broad-shouldered clerk with spectacles pushed up into grey hair was sorting slips into a ledger. He glanced up as the door shut behind Alaric.\n\n\"Evening. Desk's open.\""
+}

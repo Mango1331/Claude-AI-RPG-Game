@@ -2243,3 +2243,7 @@ Gemeinsame Einstufung von ST-Providerfehlern hinter HTTP 200, Dungeonwarnung vom
 ## 29.10.2026 — .116: frühe AoE-Starteroptionen
 
 Cleave, Arcane Wave und Fan of Blades für neue C-Kampagnen; Fern-AoE über genau ein Band, ausdrückliche Nichtausführung nicht unterstützter Schutzskills und vorgeschriebene AoE-Starterwahl nur im aktuellen Testprofil. Historische Skills/NPCs und .114-Balance bleiben erhalten. [Technik, Werte, Kompatibilität und Abnahme](PATCH_AOE116_STARTER_TRIAL.md).
+
+### .117 · 29.10.2026 — generative Gildenfilialen
+
+Narrativ bestätigte betriebene Filialen verwenden vorhandene Orts-IDs, eine funktionale Filiale je Siedlung. GO→Abgabe wartet auf Filialstatus und Ankunft; Board- und Geldregeln bleiben erhalten. [Umsetzung, Kompatibilität und Abnahme](PATCH_GENERATIVE_GUILD117.md).

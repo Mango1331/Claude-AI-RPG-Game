@@ -98,6 +98,8 @@ export const PLAYER_MECHANICS = [
 
 const NEXT_DECISION = 'NEXT DECISION: use the newest System result; do not assume an unconfirmed success. Return decision JSON, with your action only in "message".';
 
+const PLAYER_SHOPPING = 'GEAR CHECK: Early and on town returns with new income/loot, sell surplus and visit a weapons/armour merchant for an upgrade offer. Buy/equip useful affordable gear; reserve recovery money. If none, note it and continue. Recheck only with substantially more money, a new merchant or confirmed stock changes.';
+
 export function playerSystemPrompt(guide, { username, persona }) {
     const ms = guide.milestones.map((m, i) => `${i + 1}. ${m.id}: ${m.goal}${m.required === false ? ' (if it comes within reach)' : ''}`).join('\n');
     const focus = guide.focus?.length ? `\nWHAT THIS TEST LOOKS AT (watch for it):\n${guide.focus.map((f) => `- ${f}`).join('\n')}` : '';
@@ -109,6 +111,7 @@ export function playerSystemPrompt(guide, { username, persona }) {
         '',
         PLAYER_COMMANDS,
         PLAYER_MECHANICS,
+        guide.openRun ? PLAYER_SHOPPING : '',
         '',
         `THE TEST: ${guide.brief}`,
         '',

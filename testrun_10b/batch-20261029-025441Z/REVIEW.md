@@ -1,0 +1,74 @@
+# Unabhängiger GPT-Review – Batch 11 / .115 und historische Klassenüberlebensbilanz
+
+**Stand 29.10.2026.** Grundlage: originale hochgeladene ZIP plus überflogene historische 10B-Guild-Runreviews auf main. Nur Dokumentation, keine Implementierung oder neue Testausführung.
+
+## 1. Originalbeleg und Enden
+
+ZIP: batch-20261029-025441Z.zip, SHA-256: 52e206049e8f025d475c8272c4a5dd3271a5c27dd1198f2d248a8097adb3dc82. Etwa 31 MiB, 50 Einträge, vollständige CRC-Prüfung ohne Fehler. **Original-ZIP nicht auf GitHub main.** Build 4.3.0-c.6.6.115, Produktcommit 9c65e9ada6a2f9eb60632525136fbdbbd5c85f41, echte GLM-5.3-Flash-Runs über SillyTavern 1.19, sauberer Build, kein Stub. Runstatus aller Profile: integrity OK, keine PageErrors oder ServerErrors, Profil unverändert. Die ZIP enthält drei tatsächlich abgeschlossene Runnerprozesse; keiner erreichte das Ziel Level 15.
+
+| Profil | Spielerinputs | Endlevel | Ende | Kämpfe | Gildenabschlüsse |
+|---|---:|---:|---|---|---:|
+| Guild-Warrior | 150 | 6 | Reguläres Inputlimit, nicht gestorben | 10/10 Siege; alle 10 Kämpfe gegen genau einen Gegner | 3 |
+| Guild-Mage | 19 | 2 | Mechanischer Tod | 1/2 Siege; zuletzt 5 Hunde | 0 |
+| Guild-Rogue | 23 | 1 | Mechanischer Tod | 1/2 Siege; zuletzt 3 Goblins | 1 |
+| Gesamt | 192 | | 1 Limit / 2 Kampftode / 0 terminale technische Stopps | 12 Siege, 14 Encounter | 4 |
+
+**Wichtige Einschränkung zum Warrior:** run.json weist safeContinuations=1 aus, evaluation.json modelFailures.world=1. Bei Chatindex 110 nach Runner-T55/Engine-T55 scheitert eine Extraktion nach Reparatur an einer ungültigen place.reported.place-Referenz, extract.failed wird verbucht. In der folgenden Antwort werden wieder gültige Deltas übernommen; die nicht anwendbaren Worlddeltas des fehlgeschlagenen Turns bleiben aber verloren. **150 Inputs ohne terminalen Abbruch sind nicht gleich 150 fehlerfrei angewendete Worldturns.** 133 turn.begun und 130 extract.applied stehen im Export. Eine unabhängige vollständige Event-Neufaltung wurde nicht zusätzlich ausgeführt; integrity OK ist die Originalstatusmeldung.
+
+## 2. Was Build .115 natürlich belegt
+
+**Positiver Habitat-Fixbeleg:** Der echte Warrior-Planner gibt mehrfach GO.within für örtliche Fortsetzungen aus; die World erzeugt old mooring posts und willow hummock unter dem etablierten millpond-reed-bank-Habitat sowie north strip, striker larder und striker den unter dem Bramblewick-Orchards-Habitat. Die dort entstandenen Whip-Tailed Strikers besitzen population_at des Orchards-Jagdgebiets und Level 4 bis 7. Der Mage erzeugt die ridge above tanning sheds als Unterort des Feral-Dog-Habitats; fünf Hunde behalten population_at und Level 6/6/6/6/7. Das ist der jetzt tatsächlich natürliche Nachweis der zusammengehörigen Planner-/Orts-/Gegner-/Questkette. Unabhängige Reiseziele bleiben separat.
+
+**Board:** Rogue erhält nach einem initialen anderen Boardfehler einen gültigen Level-1-Dungeon-Clear für Mossback Warrens und nimmt ihn an. Der konkrete alte .114-Fehler mit der Level-2-Warnung tritt hier nicht nochmals in identischer Form auf. Die beiden initialen nichtfatalen board.failed betreffen andere Eingaben: Warrior: introductory Millpond Frog mit ungeeigneter L1-Stärke; Rogue: Novice board needs an introductory single-foe hunt. Keine neue Board-Regressionsbehauptung.
+
+**Provider-Recovery und Warenkonsens:** Der spezifische HTTP-200-internal_server_error tritt nicht erneut auf, daher kein natürlicher 1:1-Beleg für die .115-Providerklassifikation. Der Warrior-Schema-Extractorfehler ist ein anderer Fall mit anschließender sicherer Fortsetzung. Eine gleichpreisige falsche Warenpositionenauswahl wie in .114 wurde hier nicht beobachtet; für den Handelsfix bleibt die technische Abnahme maßgeblich.
+
+**F-Balance:** Keine Fachhändler-F-Waffenofferte und keine Ausrüstungsänderung in sämtlichen drei Profilen; die neue Waffenstaffel ist weiterhin natürlich nicht bewertet. Keine neue aktive Technik, kein Proficiency-Aufstieg. Die 50-PP-Schwelle funktioniert: Warrior Heavy Slash P1/36 und Basic P1/18; Mage Bolt P1/18; Rogue Piercing Thrust P1/18. Alle blieben unter der neuen Promotiongrenze.
+
+## 3. Kampf-, Risiko- und Progressionsanalyse
+
+**Warrior:** 150 Inputs, Level 6, 10/10 Siege sämtlich gegen einzelne Gegner, drei abgeschlossene Guild-Hunts (Mire Lynx: 50 cp/46 XP; zwei Orchard-Striker-Abgaben je 140 cp/300 XP). 964 Kampf-XP + 646 Quest-XP = 1.610 kumulierte XP. Endkonto 338 cp, ohne mechanisches Gear-Upgrade. L4 nach 100 Eingaben. Ein großer Teil der Eingaben entfällt auf Reise, Stadt- und NPC-Kontakte; eine 150er-Rohturnzahl misst daher nicht allein den XP-Fluss. Die sicher fortgesetzte Extractorfehlstelle ist getrennt zu beachten.
+
+**Mage:** L1 gewinnt gegen einen L5-Hund und erhält 120 XP, erreicht L2. Auf L2 geht er mit zuvor 77/100 HP gegen fünf L6/6/6/6/7-Feral-Dogs mit ATK 19/19/19/19/21 vor. Der Spieler versucht im Text Arcane Ward und Arcane Bolt, aber die Engine gewährt keine zwei kostenlosen Hauptaktionen. Der folgende Gruppenkampf endet bei HP 0 und 0 XP für den verlorenen Encounter. Die fünf Gegner haben den korrekten Habitatbezug. **Kein nachgewiesener Damagebug oder falsches Habitatlevel**, sondern extreme Überzahl/Leveldifferenz und riskante Spielerwahl.
+
+**Rogue:** L1 gewinnt gegen einen L1-Hund, erhält 24 Kampf-XP und schließt einen 46-XP-/40-cp-Gildenauftrag ab: L1/70 XP. Dann nimmt er freiwillig die ausdrücklich als gruppenriskant beschriebene F-Dungeon-Ebene 1 von Mossback Warrens an. Gegen drei Goblin Scouts mit L4/L3/L1, 72/63/45 MaxHP und ATK18/16/11 startet der Kampf bei 84/90 HP; die HP gehen 84→56→21→1→0. Der Spieler greift selbst bei angezeigtem 1/90 HP noch offensiv an. Rogue DEF3 gegenüber Warrior DEF8 bei L1 in diesem Batch; Gefahr durch mehrere Gegneraktionen bei kleinerer Abwehr ernst nehmen, aber nicht ohne kontrollierten Vergleich als Klassenfehler behaupten.
+
+**Fazit zu .115:** Wieder zwei mechanische Tode, aber nicht durch eine erhöhte .114-Monsterskalierung. Warrior-Überleben profitiert in diesem Batch erheblich von Einzelgegnerwahl. XP×2, Stats7, Waffenkalibrierung und alle Monsterwerte zunächst belassen.
+
+## 4. Historische Guild-Survival-Übersicht (ab .101; ältere Reviews überflogen)
+
+**Explizite Stichprobendefinition:** nur tatsächlich gestartete Guildprofile mit mindestens einem echten Spielerinput aus den dokumentierten 10B-Batches .101 bis .115. Exkludiert: Exploreprofile (anderer Spielstil), frühe technisch nicht vergleichbare .100-Starts, Null-Input-Profile, manuelle Abbrüche einschließlich .110-Warrior und nicht gestartete Fälle. Die beiden separaten .113-Batches werden separat gezählt.
+
+| Build | Warrior | Mage | Rogue |
+|---|---|---|---|
+| .101 / Batch 2 | 150/L7 Limit | 99/L3 Tod | **150/L8 Limit** |
+| .102 / Batch 3 | 250/L10 Limit | 102/L5 technischer Stopp | 87/L2 Tod |
+| .104 / Batch 4 | 137/L7 technischer Stopp | 46/L5 technischer Stopp | 29/L2 Tod |
+| .106 / Batch 5 | 250/L7 Limit | 250/L10 Limit | 0 Input, ausgeschlossen |
+| .112 / Batch 7 | 80/L6 **Tod auf E-Dungeon-Ebene** | 150/L8 Limit | 0 Input, ausgeschlossen |
+| .113 / Batch 8 | 22/L1 Provider-429-Stopp | 0 Input, ausgeschlossen | nicht gestartet |
+| .113 / Batch 9 | 150/L9 Limit | 77/L5 Tod | 0 Input, ausgeschlossen |
+| .114 / Batch 10 | 72/L3 technischer Stopp | 89/L7 Tod | 58/L2 Tod |
+| .115 / Batch 11 | 150/L6 Limit | 19/L2 Tod | 23/L1 Tod |
+
+| Klasse | gestartete Guild-Runs | am Limit ohne Tod | mechanischer Tod | technischer Stopp |
+|---|---:|---:|---:|---:|
+| **Warrior** | **9** | **5** | **1** | **3** |
+| **Mage** | **8** | **2** | **4** | **2** |
+| **Rogue** | **5** | **1** | **4** | **0** |
+
+**Wichtige Korrektur der Vermutung:** Rogue hat **doch** einen 150-Input-Lauf ohne Tod abgeschlossen: .101, Level 8, zehn gewonnene Kämpfe und sechs Gildenabschlüsse. Seine danach vier tatsächlich gestarteten Kampagnen (.102, .104, .114, .115) endeten allerdings sämtlich durch Tod – meist auf L1/2 gegen größere, höherstufige Gruppen. Warrior starb in der Vergleichskohorte nur einmal, und zwar auf einer E-Dungeon-Ebene gegen L15–17 mit Charakterlevel 6; nicht bei einer üblichen F-Gildenjagd. Der Mage weist vier gebuchte Tode auf, auch häufig nach riskanten Gruppenentscheidungen.
+
+Die naiven Endursachen-Anteile 1/9=11,1% Warrior, 4/8=50% Mage und 4/5=80% Rogue sind **keine bereinigten Klassen-Sterbewahrscheinlichkeiten**. Laufdauer, technische Zensierung, Encounterauswahl, Gegnerlevel, Gruppen, Ausrüstung, HP vor Kampfbeginn, Flucht und Testspielerentscheidungen unterscheiden sich erheblich. Der .101-Rogue zeigt, dass Überleben möglich ist; die vier späteren Rogue-Tode rechtfertigen eine ernsthafte Fairness-/Taktikprüfung, aber keinen unkontrollierten Sofort-Buff.
+
+**Hauptquellen im Archiv:** Batch-2-Review (batch-20261027-073917Z/REVIEW.md), Batch-3 (batch-20261027-150205Z/REVIEW.md), Batch-4 (batch-20261028-022553Z/REVIEW.md), Batch-5 (batch-20261028-051913Z/REVIEW.md), Batch-7 (batch-20261028-111133Z/REVIEW.md), Batch-8/9 (.113), Batch-10 (.114); jeweils Engine-Endursachen statt bloßer Storydeutung.
+
+## 5. Designentscheidung und Nachtests (nicht freigegeben)
+
+- **Kein sofortiger Rogue-HP-/DEF-Buff aus 4/5** und keine Pauschalabschwächung aller Monstergruppen. Vielmehr kontrollierte Prüfung gleicher Gegner, Gruppen, HP-Ausgangslage, Gefahrenhinweise und realer Evasion-/Bewegungs-/Fluchtwege bei verschiedenen Klassen; zugleich beobachten, welche Entscheidungen der aktuelle LLM-Testspieler trifft.
+- Der Rogue-L1-Tod und Mage-L2-Tod demonstrieren frühe Gruppenrisiken. Ein F-kompatibler Gildenauftrag ist **kein** Versprechen, dass ein einzelner L1-Abenteurer das gesamte Dungeonlevel allein mühelos erledigen kann.
+- Den vorbereiteten Main-/Minor-Kampfpatch **getrennt** von Rogue-Klassenbuffs oder weiterem Waffenbalancing entscheiden, damit die Effekte messbar bleiben.
+- .115-Habitatbeleg erhalten; konkrete Provider-200- und Handelszustimmungsfälle warten weiter auf spontane natürliche Wiederbegegnung, sind bereits technisch geprüft.
+- Die .114-A+B+C-Werte unverändert belassen, bis überhaupt tatsächliche Fachhändler-F-Waffen gekauft und eingesetzt werden. Level 15 wurde weiterhin nicht natürlich erreicht.
+
+**Dokumentationsreview ohne Produkt-/Runneränderung. Original-ZIP nicht in das Repository übernommen.**

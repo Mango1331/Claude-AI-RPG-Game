@@ -1,6 +1,6 @@
 # Avereth Engine — Verbindlicher Design-Kanon und Leitplanken
 
-**Stand:** 30.10.2026 · Fassung 16: keine Pflicht zur Weiterbespielbarkeit historischer Kampagnen; Architekturplanung noch nicht implementiert. **[VERBINDLICH]** beschreibt gewolltes Verhalten, **[GEPLANT]** ein beschlossenes, noch nicht umgesetztes Ziel, **[OFFEN]** eine unentschiedene Idee. Tatsächlicher Produkt-/Abnahmestand ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md).
+**Stand:** 30.10.2026 · Fassung 17: Architekturplanung finalisiert; preisbegrenzte Kaufzustimmung präzisiert, noch nicht implementiert. **[VERBINDLICH]** beschreibt gewolltes Verhalten, **[GEPLANT]** ein beschlossenes, noch nicht umgesetztes Ziel, **[OFFEN]** eine unentschiedene Idee. Tatsächlicher Produkt-/Abnahmestand ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md).
 
 Vollständige Vorfassung mit Beschlusshistorie: [7994fa4](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/7994fa42b115f21b705c0b770e2b4e31fde67f77/02_DESIGN_KANON.md). Alte Implementierungsberichte und überholte Zwischenstände werden hier nicht wiederholt. **Leitprinzip: LLM versteht wie ein GM; Engine rechnet und persistiert wie ein Spiel.**
 
@@ -26,6 +26,8 @@ Diese Entscheidung ersetzt ältere allgemeine Kompatibilitätszusagen in den fol
 **Ankunft:** In neuen Ruleset-2/V4-C-Berichten buchen nur explizite, chronologisch eingeordnete und autorisierte `arrive`-Deltas Bewegung. Szene, erwartetes Ziel und Reisezeit sind keine zusätzliche Berechtigung. Kompakte Reisen und echte Zwischenhalte innerhalb einer Antwort bleiben möglich; Gate-, Forced-Movement- und Agency-Schutz gelten weiter. Historische Events bleiben unverändert.
 
 **Handelszustimmung:** Kauf-/Verkaufszusagen gelten für den konkreten aktuellen Vorgang und Ort, nicht als dauernde Vollmacht. Reise plus bedingter Kauf ist nach bestätigter Ankunft mit eindeutiger Gegenpartei, Angebot und Preislimit möglich. Ohne passende Zustimmung bleibt die Offerte offen. Im F-Balance-Versuch.123 bekommen neue reguläre F-Gear-Offerten beim Erstellen einen verbindlichen Enginepreis; eine Korrektur der erzählten Summe verlangt erneute Zustimmung statt automatischer Abbuchung. Gespeicherte Angebote bleiben unverändert, andere Handelsarten und E+-Gear flexibel. [Umsetzung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/c300f3d77262ab334bd343dbaf488dcfabff29dd/avereth-engine/docs/PATCH123_PP_GEAR_PREPARATION.md).
+
+**[GEPLANT – Architekturpatch nach .126]** Bei neuer regulärer Gearofferte ersetzt ein gültiger Enginepreis allein keine Kaufzustimmung. Eine abweichende oder zuvor nicht belegte Summe darf jedoch im selben Zug gebucht werden, wenn Waren/Mengen eindeutig autorisiert sind und ein ausdrücklich gesetztes Gesamtpreislimit eingehalten wird. `any_price` allein genügt dafür nicht. Dies präzisiert die obige .123-Regel für die künftige Umsetzung; aktuelle Produktlogik bis dahin unverändert. [Finale Umsetzungsspezifikation](patch_plans_10b/PATCH_ARCHITEKTUR_126_KONSOLIDIERT.md#d2--preis-und-zustimmung-getrennt).
 
 SillyTavern ist der aktuelle Host, kein notwendiger Weltbestandteil. Sprachmodelle bleiben austauschbar; keine Abhängigkeit von proprietären Modellfähigkeiten erzwingen.
 

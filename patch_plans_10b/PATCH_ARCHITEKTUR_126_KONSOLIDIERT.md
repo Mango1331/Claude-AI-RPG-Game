@@ -1,191 +1,174 @@
-# Avereth – konsolidierter Architektur-Fachplan nach vier Reviews
+# Avereth – finale Patchnotes und Umsetzungsspezifikation nach Architekturreview .126
 
-**Stand: 30.10.2026 · Basis: Build .126, Produktcommit [b8d2af4](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b8d2af4b76cd0bc52ac178b8c500e5733878ecee).**  
-**Status: zur letzten unabhängigen Gegenprüfung; noch nicht implementiert und keine Produktfreigabe.** Dieser Plan ersetzt die widersprechenden Fahrpläne der vier Reviewrunden. Produkt-/Abnahmestand bleibt in [03](../03_AKTUELLER_PROJEKTSTAND.md).
+**Festgelegt: 30.10.2026 · Produktbasis: [b8d2af4](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b8d2af4b76cd0bc52ac178b8c500e5733878ecee), Build .126.**  
+**Status: Planung abgeschlossen, noch nicht implementiert.** Dieser Auftrag legt den Umfang fest, er ist keine zusätzliche Implementierungsfreigabe und kein Abnahmenachweis. Buildnummern erst bei Umsetzung anhand des aktuellen HEAD vergeben. Tatsächlicher Produktstand: [03](../03_AKTUELLER_PROJEKTSTAND.md).
 
-## 1. Quellen und Entscheidungsrang
+Maßgeblich ist diese Fassung. Vorherige Entwurfsentscheidungen werden durch die folgenden Regeln ersetzt; die [Planfassung einschließlich GPT-Nachtrag](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/c036f3c617f095dc876df4ff0589d6cbaff27f4c/patch_plans_10b/PATCH_ARCHITEKTUR_126_KONSOLIDIERT.md) bleibt historisch erreichbar.
 
-| Quelle | Rolle |
-|---|---|
-| [1 – Claude: Architekturaudit](architekturaudit_126/01_CLAUDE_AUDIT.md) | Breite Bestandsaufnahme .126; eigener Testlauf 2429/2429 und lesende Sonden laut Bericht; neuere Batchzahlen dort teils nur aus Reviews. |
-| [2 – Sol: Gegenfeedback](architekturaudit_126/02_SOL_GEGENFEEDBACK.md) | Codeprüfung und lesende Arten-/Gear-Sonden, keine neue Vollsuite; enthält spätere Nutzerklarstellung zu alten Kampagnen. |
-| [3 – Claude: Gegenreview](architekturaudit_126/03_CLAUDE_GEGENREVIEW.md) | Präzisierte Nutzeranalyse; Verarbeitungs-Replay auf .98 laut Bericht 60/60 Antworten und 61/61 Spielerzüge, zwei Board-/Forge-Züge ausgenommen. |
-| [4 – Sol: Entscheidungen/Präzisierungen](architekturaudit_126/04_SOL_ENTSCHEIDUNGEN.md) | Abschließende Chatbewertung, Designempfehlungen und drei technische Korrekturen; kein weiterer Testlauf. |
-| [Batch-Originalkorpus](../testrun_10b/ARCHIV_BATCHES.md) | Vollständige verfügbare Batchdateien mit Prüfsummen; Originalreviews bleiben in den Runordnern. Archivierung ist kein neuer Replay- oder Abnahmenachweis. |
+## 1. Grundlagen und Grenzen
 
-Frühere Empfehlungen sind keine automatisch gültigen Beschlüsse. Für diesen Plan gelten die folgenden Nutzerentscheidungen und übernommenen Planungsgrundlagen:
+Quellen: [Claude-Audit](architekturaudit_126/01_CLAUDE_AUDIT.md), [Sol-Gegenfeedback](architekturaudit_126/02_SOL_GEGENFEEDBACK.md), [Claude-Gegenreview](architekturaudit_126/03_CLAUDE_GEGENREVIEW.md), [Sol-Präzisierungen](architekturaudit_126/04_SOL_ENTSCHEIDUNGEN.md), anschließend [Claude-Abschlussreview mit Sonden](architekturaudit_126/05_CLAUDE_ABSCHLUSSREVIEW.md). Das zusätzliche GPT-Feedback wurde im verlinkten Entwurf aufgenommen. Originaldateien aller 19 Batches: [Archivindex](../testrun_10b/ARCHIV_BATCHES.md).
 
-- **Keine Pflicht zur Weiterbespielbarkeit alter Kampagnen.** Historische Runs bleiben Fehlerbelege. Aktuelle Kampagnen müssen innerhalb des unterstützten Protokolls replay-/reload-/swipesicher bleiben.
-- Aktuelles Produktziel: V4-C, Ruleset 2, drei Klassen und aktuelle F-Regeln. Nicht mehr benötigte Varianten abbauen, keine historische Policy-Engine neu bauen.
-- Delivery/Escort ruhend erhalten; formale Privatquests bleiben abgeschafft. Freie Hilfe, Übergaben, Geschenke und Arbeit bleiben möglich.
-- Bedingte Käufe erhalten; vorhandene reguläre Preise und Preislimits schützen. Kein neues Feilschen, keine Pflicht zu einem weiteren Einkaufszug.
-- Reisen, Szenenfolge, NPC-Eigeninitiative und aktuelle Kampf-/Dungeonregeln bleiben unverändert. Einschränkungen dürfen später mit konkret belegtem Gewinn vorgeschlagen werden.
-- Keine XP-, PP-, Startwert-, Preiswert-, Damage- oder Main/Minor-Balanceänderungen in diesem Vorhaben.
-- Batchveröffentlichung ist autorisiert; keine Schlüssel archivieren. Nur tatsächlich vorhandene/verifizierte Quellen als hochgeladen bezeichnen.
+- Aktuelles Produktziel: V4-C, Ruleset 2, drei Klassen und die aktuellen F-Regeln. Alte Kampagnen begrenzen die Weiterentwicklung nicht. Aktuelle Geld-, Inventar-, Orts-, Kampf-, Quest- und Replayintegrität bleiben verbindlich.
+- Keine neuen Kampf-, Reise-, NPC-Bewegungs- oder Questmechaniken. Delivery/Escort ruhend erhalten, keine neuen automatischen Lieferangebote. Formale Privatquests bleiben abgeschafft; freie Hilfe, Arbeit und Geschenke bleiben.
+- XP, PP, Startwerte, Preise als Zahlenwerte, Skills, Monster- und Main/Minor-Balance unverändert. Keine neuen Gearslots.
+- Bedingte Käufe und kompakte Reisen bleiben möglich. Kein zusätzlicher Pflichtkaufzug, kein neues Shopsystem, kein WorldTxn, keine Kill-Credit-Verbrauchsverwaltung.
+- Originalreviews und Archive unverändert; historische Sicherheitsfälle auf aktuelle Konfiguration übertragen. Keine nachträgliche Reparatur alter Kampagnen.
+- Laufende Batches auf ihrem Build beenden. Produktcode auf Dev, zentrale Planung/Status auf main; nach Umsetzung technische Ergebnisse einmal in der Dev-Fachpatchnote festhalten.
 
-## 2. Ziel und belegte Ursachen
+**Geprüfte Nachweise unterscheiden:** Claudes Abschlussreview berichtet eigene Verarbeitungssonden auf .126 mit Original-Vorzuständen: Batch19 Antworten 268/273 eventgleich, Planner295/295, Board/Forge7/7, Steuerzüge24/24. Die fünf Antwortabweichungen entsprechen den .126-Artkorrekturen. Batch17/18 zeigen weitere erwartbare Buildunterschiede; das ist keine rote Regression des geplanten Patches. Sol hat die entscheidenden Codepfade statisch gegengeprüft, aber diese neue Replaymessung nicht nochmals ausgeführt. Durch diese Dokumentation keine neue Node-/ST-Abnahme.
 
-**Ziel:** Mechanisch relevante Bedeutungen einmal ausdrücklich festlegen und vorhandene Enginebuchungen weiterverwenden. Unsichere Namensableitung und unnötige historische Varianten reduzieren, ohne neue allgemeine Frameworks einzuführen.
+## 2. Prioritäten und Umsetzungsschnitt
 
-| Ursache | Beleg / betroffener Weg | Einordnung |
-|---|---|---|
-| Population aus wechselnden Namenswörtern | `domain.populationAt` → `engine.materialise` → `guild.defeatTally/cullKind`; Batch19 Records214/218/272, zusätzliche stag/hind/alpha/tusker-Sonden | Bestätigte Fehlerklasse; .126 behebt konkrete Fälle, nicht alle Bezeichnungen. |
-| Gearprofil aus Angebotsname, Preisprosa vor Enginepreis | `world.offerLines` → `items.itemProfile`/`qualityOf` → `gearRetailPrice` → `trade.bookPurchase`; Batch18 Paket, Batch19 finer-Schwert | Bestätigte Struktur; neuer Preisreihenfolgefall vor Umsetzung noch als Regression reproduzieren. |
-| Fehlerhafter Fold wird weiterverwendet | `host.foldChat` fängt Reducerfehler, Runtime nutzt `.state` | Bestätigter Codepfad; kein nachgewiesener Schaden der jüngsten Batches. |
-| Testdefaults häufig historisch | `tests/helpers.js`, `tests/v4/harness.js`; aktuelle direkte Tests existieren ebenfalls | Verbesserungsbedarf, keine pauschale Entwertung der 2429 Tests. |
-| Historische Varianten ohne aktuellen Produktbedarf | `f_*`, `starter_aoe`, private Quests, V3/V4-A/Ruleset1 | Durch Nutzerentscheidung entfallene Anforderung; gemeinsame aktuelle Funktionen bleiben. |
-
-Keine Begründung für einen Umbau allein aus Regex-Anzahl, Dateigröße oder alten .98-Repairquoten. Keine Behauptung, geschlossene IDs würden semantische Modellfehler vollständig ausschließen.
-
-## 3. Prioritäten und Abhängigkeiten
-
-| Paket | Priorität / Umfang | Abhängigkeit | Abnahmeziel |
+| Paket | Priorität und Umfang | Voraussetzung | Ergebnis |
 |---|---|---|---|
-| **A – Integrität und aktuelle Testbasis** | Hoch; mittlerer Umfang | Keine Produktänderung davor nötig | Foldfehler verursachen keine Buchung; Verarbeitungskorpus und aktuelle Integrationskette belastbar. |
-| **B – Kleiner Variantenabbau** | Hoch; mittlerer Umfang | A | Aktuelle Regeln ohne unnötige F-/Privatquest-Legacyzweige, gleiche aktuelle Mechanik. |
-| **C – Kreaturen und Jagdidentität** | Hoch; mittlerer Umfang | A, vorzugsweise B | Originalfehlerklasse ohne Wortlistenserie; korrekte Art-, Alters-, Level- und Creditgrenzen. |
-| **D – Strukturierte Angebotserzeugung** | Hoch; mittlerer Umfang | A, vorzugsweise B; unabhängig von C | Gearvorlagen, Pakete und Enginepreise korrekt; bestehender Kaufpfad bleibt. |
-| **E – Größerer historischer Pfadabbau** | Danach; größerer Umfang | A; aktuelle Funktionen vorher eindeutig erfasst | V3/V4-A/Ruleset1-Spielpfade entfallen ohne Beschädigung des aktuellen C-Pfads. |
-| **F – Natürliche Messung** | Nach C/D, E muss nicht blockieren | Technische Abnahme | Fehler/Repairs und tatsächliches Gameplay messen; keine vorsorgliche Mikrofixserie. |
+| A – Integrität und Testbasis | Hoch, mittel | Aktuellen HEAD festhalten | Keine Buchung aus beschädigtem Fold; belastbarer Verarbeitungskorpus |
+| B1 – Aktuelle F-Regeln ohne historische Schalter | Hoch, mittel | A | Eine aktuelle Regelvariante als gemeinsame Grundlage für C/D |
+| C – Population, Alter und Jagdidentität | Hoch, mittel | A + B1 | Zugehörigkeit unabhängig von Namen/Level; kein falscher Credit oder Duplikat |
+| D – Strukturierte Gearangebote und Kaufzustimmung | Hoch, mittel | A + B1; unabhängig von C | Richtige Profile, einzeln erkennbare Waren, verbindliche Preise und sichere Paketkäufe |
+| B2 – Formale Privatquest-Restpfade | Nachrangig, begrenzt | A | Unnötige historische Sonderprüfungen entfallen |
+| E – Größerer historischer Pfadabbau | Nachrangig, größer | A + Nutzungskarte | Nicht benötigte V3/V4-A/Ruleset1-Spielpfade entfallen |
+| F – Natürlicher Batch | Direkt nach C/D-Abnahme | Technische Abnahme des Kernpatches | Gameplay und tatsächliche Vereinfachung messen |
 
-Pakete sind fachliche Einheiten, keine Aufforderung zu einer großen Anzahl kleiner Releases. B/C/D können nach Freigabe innerhalb einer zusammenhängenden Umsetzung mit getrennt prüfbaren Commits erfolgen. Konkrete Buildnummer erst anhand des dann aktuellen HEAD vergeben. Kein laufender Batch wird aktualisiert.
+**Reihenfolge: A → B1 → C/D → F.** B2 kann unabhängig von C/D bearbeitet werden; E folgt nachgelagert. B2/E blockieren F nicht und sind keine Voraussetzung des nächsten Kernpatches. Keine parallelen Agenten oder separaten Mini-Releases erforderlich: fachlich prüfbare Commits innerhalb einer freigegebenen Umsetzung genügen.
 
-## 4. Paket A – Zustandsintegrität und überprüfbare Verarbeitung
+B1 gehört vor C/D: `materialise/populationAt/areaLevels` hängen heute an `f_progression`, reguläre Gearpreise an `f_balance`. Diese Varianten erst vereinheitlichen, statt neue Strukturregeln doppelt zu implementieren.
 
-### A1 – Verarbeitungs-Replay
+## 3. Paket A – Foldintegrität und aktuelle Abnahmebasis
 
-Aus vorhandenen Originalrecords einen begrenzten, reproduzierbaren Offline-Korpus erstellen. Keine Provideranfragen für diesen Testschritt.
+**Ursache:** `host.foldChat()` sammelt Reducerfehler, liefert aber einen partiellen Zustand. V4-Runtimepfade verwenden dessen `.state` weiter. Kein nachgewiesener jüngster Geldschaden; ein konkret unsicherer Commitpfad.
 
-- Antwortfall: aufgezeichneter Vorzustand, Narration und finale Extractorantwort erneut durch den tatsächlichen World-/Replypfad ausführen.
-- Spielerfall: Originalinput und aufgezeichnete Modellantworten am LLM-Einstieg einspeisen, anschließend tatsächlichen Runtime-/Planner-/Commandpfad prüfen.
-- Zwei Ebenen unterscheiden: gezielte Verarbeitung eines Originalvorzustands und eine zusammenhängende Zugkette. Erstere lokalisiert Fehler, letztere erkennt Folgeschäden.
-- Raw-Board-/Forge-Antworten einbinden, soweit tatsächlich vorhanden. Fehlende Daten als übersprungen mit Grund ausweisen. Gespeicherte fertige Forge-Einträge ersetzen keine Prüfung des Forgeparsers.
-- Baseline auf dem gewählten aktuellen Ausgangscommit festhalten, nicht den alten Originalbuild als zwingenden Sollwert für neue Regeln verwenden. Neuere verfügbare Batches liefen auf .125/.123/.122, nicht automatisch auf .126.
-- Eventarten, Reihenfolge, IDs, Geld, Inventar, Ort, Quests, Kampfzustand und RNG vergleichen. Nur benannte volatile Diagnose-/Zeitfelder ausnehmen; keine pauschale Normalisierung, die fachliche Unterschiede verbirgt.
+**Betroffen:** `src/host.js:foldChat`, `src/v4/runtime.js:prepareGenerationAsync/processReplyV4/extractionRequest/runExtraction/applyExtraction`, `src/v4/world_jobs.js`, Fehler-/Speicherpfade in `index.js`; aktuelle Testharnesses und ein begrenzter Offline-Korpus.
 
-Ein historischer Event-Fold bleibt eine eigene Prüfung der Reducer. Er ersetzt A1 nicht. Bereits gespeicherte Fehler dürfen nicht allein durch identische Wiederholung zur richtigen Baseline erklärt werden.
+### A1 – Verarbeitungskorpus statt bloßem Event-Fold
 
-### A2 – Fehlende Aufzeichnungen gezielt schließen
+- Batch17–19 verwenden, ergänzt um den Batch16-Verkaufsfall Record78 und vorhandene gezielte Sicherheitsregressionen. Originalvorzustand + Input/Narration + aufgezeichnete Modellantwort durch die tatsächlichen World-/Runtime-/Plannerpfade verarbeiten; keine Provideranfragen.
+- Baseline aus dem gewählten Startcommit erzeugen und mit dessen SHA festhalten. Reiner Umbau: null fachliche Differenzen. Beabsichtigte Änderung: pro Record begründete Differenzliste, einschließlich abhängiger Quest-/Kauf-/Fortschrittswirkungen. Nicht gegen alte Originalbuilds blind Nullabweichung verlangen.
+- Serialisierte Events samt Reihenfolge/IDs/RNG und Recordausgaben `corrections/system/rejected/continuation` vergleichen. Nur ausdrücklich benannte Diagnosefelder ausnehmen, anfangs `ms` und Versionsstrings in `extract.applied/cmd.interpreted`. Fachliche Felder niemals pauschal normalisieren.
+- Event-Fold und `validateState` zusätzlich durchführen; vorhandene Zustandsinvarianten behalten. Gleiche Events gelten nicht als Freibrief für direkte, nicht gebuchte Zustandsänderungen.
+- Versteckte `#`-/Steuerinputs im Harness so einspeisen, dass `lastPlayerIndex` sie tatsächlich verarbeitet. Board-/Forgeantworten aus Completion-Logs nutzen, über Requestzweck, Reihenfolge und zugehörigen Spielerzug zuordnen; wiederholter identischer Spielertext allein ist keine eindeutige Zuordnung.
+- Abdeckung, bewusst übersprungene Fälle und Gründe numerisch ausweisen. Kein zweiter vollständiger Durchlauf alter LLM-Antworten auf bereits veränderten Folgezuständen als verpflichtender Nullvergleich. Eine kleine aktuelle Integrationskette Erstellung → Gilde → Jagd → Kampf → Verkauf/Kauf → Fortschritt bleibt als Übergangsprüfung.
+- Aktuelle Harnessdefaults und Sicherheitsfälle erhalten. Historische Sollzahlen/Varianten nur entfernen, wenn sie keine aktuelle Anforderung mehr prüfen.
 
-`runtime`-Records und Board-/Forge-Aufrufstellen prüfen. Vollständige entscheidungsrelevante Antworten statt abgeschnittener `plan.raw` speichern; Boardantworten samt Repairfolge erhalten. Bereits vorhandene Completion-Logs zuerst nutzen. Keine redundante zweite Vollkopie aller Requests im Chat nur für den Testzweck erzeugen. Schlüssel und Authheader werden nie gespeichert.
+**Aufzeichnungen:** Keine zusätzliche Vollkopie von `plan.raw`, Board-/Forgeantworten in Chatrecords. Laut Abschlussreview reichen die vorhandenen Completion-Logs, dort keine abgeschnittenen Plannerantworten. Nur eine konkret nachgewiesene Datenlücke gezielt schließen.
 
-### A3 – Foldfehler begrenzt sperren
+### A2 – Alle autoritativen Schreibgrenzen absichern
 
-Betroffen: `src/host.js:foldChat`, V4-Runtime vor Planner/World-Buchung, `index.js` als Anzeige-/Abbruchgrenze.
+- Vor neuem Planner-/Extractorauftrag und vor jedem autoritativen Commit Foldfehler prüfen; ausdrücklich auch im laufenden Extraktor nach dessen Antwort. Den bisherigen Chat unverändert lassen: keine Geld-/Zeitbuchung, kein Kampfzug, kein `setRec` mit Ersatzevents.
+- Begrenztes gemeinsames Ergebnis für „Fold ungültig“ verwenden, keine allgemeine Exception- oder Transaktionsarchitektur.
+- **World-Job-Fehlerpfad:** Ein Foldabbruch darf nicht in `failed → applyExtraction(null, errorKind:'engine')` gelangen. Dieser Pfad würde `extract.failed` buchen. Ein Foldabbruch ist auch keine sichere `world_not_applied`-Fortsetzung.
+- Vorhandener Pending-Record bleibt unverändert; Host zeigt die Blockade statt eines vermeintlich normal weiterlaufenden Extraktors. Keine automatischen Provider-Wiederholungen wegen desselben beschädigten Verlaufs.
+- Meldung: erster fehlerhafter Nachrichtenindex/Eventart und Wiederherstellungsweg. Gültigen Stand laden oder betroffenen Verlauf nach bewusstem Nutzereingriff ab der Fehlerstelle verwerfen; kein automatisches Löschen/Heilen. Export/Rohhistorie erhalten, partiellen Zustand nicht als gültiges HUD ausgeben.
+- Ein gültiger Zustand mit einem harmlos verworfenen NPC-Delta bleibt normal nutzbar. Bestehende Stale-, Chat-, Text-, Swipe- und Save-Sicherungen bleiben.
 
-- Foldfehler vor neuer autoritativer Verarbeitung auswerten: ausdrücklich in `prepareGenerationAsync()` und im nachfolgenden `applyExtraction()` vor `replyTurnV4()`/`setRec()`, einschließlich bereits laufender Extraktorjobs. Auch `extractionRequest()` darf aus einem fehlerhaften Fold keinen neuen Modellauftrag erzeugen. Die bestehende Prüfung an jeder benötigten Grenze gemeinsam nutzen; ein einmaliger Check nur vor dem Planner reicht nicht. Kein Planneraufruf, keine Zahlung, kein Kampfzug und kein Eventcommit aus einem unvollständig aufgebauten Zustand.
-- Sichtbare Meldung mit betroffener Nachricht/Eventart und Wiederherstellungsoption; keine erfundene Zustandsreparatur und kein stilles Überspringen.
-- Erneutes Laden eines gültigen Standes beziehungsweise Regenerate nach echter Korrektur muss funktionieren. Lesbare Rohhistorie/Export erhalten; einen partiellen Zustand nicht als gültigen HUD-Stand ausgeben.
-- Nicht mit fail-soft für ein unwichtiges verworfenes NPC-Delta verwechseln. Ein gültiger Zustand mit einer abgewiesenen Erzählangabe darf normal weiterlaufen.
+**Abnahme:** Foldfehler vor Spielerzug, vor Extraktoranfrage, während laufender Anfrage und im Job-Fehlerpfad: keine neue autoritative Buchung/Providerfortsetzung, kein Fehler-Ersatzrecord. Nach Laden eines gültigen Standes funktioniert der Ablauf wieder. Aktuelle Integrationskette, Replay/Reload/Swipe, volle Node-Suite und echter ST-Smoke einschließlich gespeicherter Records.
 
-### A4 – Aktuelle Testkonfiguration
+## 4. Paket B1/B2 – Variantenabbau und kleine Kompatibilitätsgrenze
 
-Neue Harness-Defaults behalten aktuelle Produktflags und Produktcontent. Historische Testfälle sichten: Sicherheitsabsicht übertragen, ausschließlich veraltete Zahlen-/Pfaderwartung entfernen. Keine rote Assertion allein deshalb umschreiben, weil sie stört. Aktuelle vollständige Kette Erstellung → Gilde → Jagd → Kampf → Verkauf/Kauf → Fortschritt ergänzen.
+**B1:** `f_progression`, `f_balance`, `starter_aoe` und die Jahrlingsoption nicht länger als alte/neue Kampagnenvarianten auswerten. Aktuelle Werte bleiben unverändert. Betroffen: Kampagnenstart, Domain, Guild, Items, Skills/Growth, Harness/Fixtures und ihre tatsächlichen Nutzer. Exakte entfernte Schalter im Diff ausweisen.
 
-**Abnahme:** gültige Kette inklusive Reload/Swipe; injizierter Foldfehler ohne jede neue Buchung/Provideranfrage; bestehende erlaubte sichere Fortsetzung bleibt. Gezielte Rot-/Grünfälle, angrenzende und volle Node-Suite. Echter ST-Smoke für Host-/Recordänderungen, einschließlich gespeicherter Records nach Reload. A1 weist Abdeckung und Auslassungen numerisch aus.
+**Versionsschutz ohne neues Feld:** Vorhandenes `campaign.started` samt `engine_version` nutzen. Aktuelle Startmetadaten werden im Reducer nicht vollständig in `state.meta` übernommen; vorhandenen Startrecord auswerten, keine fehlende Metadatenpersistenz unterstellen.
 
-## 5. Paket B – Aktuelle Regeln ohne historische Schalter
+- B1 unterstützt die bisherige .126-Konfiguration V4/C, Ruleset2, aktuelle F-Flags und `private_quests:false`. Abweichende historische Konfigurationen vor neuer Verarbeitung mit verständlicher Meldung sperren.
+- Neu erzeugte Kampagnen nach Entfernen der Flags über ihre unterstützte Startversion erkennen; nicht für immer das Vorhandensein der gerade abgeschafften Flags verlangen. Keine neue Policytabelle.
+- C führt die tatsächliche inkompatible Grenze ein: neue Populations-/Altersverträge. Einen Mindest-Startbuild anhand der dann vergebenen Produktversion festlegen; frühere Kampagnen nicht still umdeuten. Falls C/D gemeinsam erscheinen, dieselbe Grenze nutzen.
+- Versionen numerisch parsen, nicht lexikografisch vergleichen. Fehlende, nicht unterstützte oder unlesbare Startmetadaten ablehnen; keine Warnung mit anschließendem Weiterspielen. Keine Migration und kein neues Kennungsfeld. Aktuelle unterstützte Saves bleiben reload-/swipesicher.
 
-Betroffen: `engine.startCampaign`, `domain`, `guild`, `items`, `skills/growth`, private Questzweige, Harness/Fixtures und zugehörige Anzeigen/Prompts. Exakte Nutzerliste im Implementierungsdiff festhalten.
+**B2:** ausschließlich historische Erzeugungs-/Ausführungs-/Anzeigewege formaler Privatquests entfernen. Gemeinsame Guild-Funktionen, Delivery/Escort, freie Arbeit, NPC-Hilfe, Geld-/Sachgeschenke, Fakten und Erinnerungen erhalten. Kein größerer V3-/Ruleset1-Abbau innerhalb B1/B2.
 
-- `f_progression`, `f_balance`, `starter_aoe` nicht länger als Trennung alter/neuer Kampagnen auswerten, soweit sie keine echte aktuelle Auswahl steuern. Aktuelle Werte bleiben identisch.
-- `.126`-Jahrlingsoption zugunsten der aktuellen einheitlichen Regel entfernen.
-- Verarbeitungs-/Anzeigewege formaler Privatquests entfernen, die nur für alte Kampagnen bestehen. Gemeinsame Guild-Funktionen, freie Arbeit, NPC-Geld-/Sachgeschenke, Fakten und Erinnerungen bewahren.
-- Kein großer Ruleset1-/V3-Abbau innerhalb B. Keine Preis- oder XPkalibrierung nebenbei.
+**Abnahme:** B1 und reine B2-Bereinigung auf der aktuellen Replaybaseline ohne fachliche Abweichung. Aktuelle Hilfe/Geschenke und Gilde funktionieren; keine formalen Privatquests. Nicht unterstützte Kampagne ohne Geld-, Zeit-, Record- oder Provideränderung gesperrt; korrekt neu erzeugte Kampagne wird angenommen. Sicherheitsfälle übertragen, alte Zahlenpolicies nicht nachbauen.
 
-**Versionsschutz:** Eine kleine Kampagnen-Kompatibilitätskennung verwenden; vorhandene Startmetadaten zuerst prüfen. Sie ist keine Policytabelle und nicht die Buildnummer. Nicht unterstützte/fehlende Kennung nach einer tatsächlich inkompatiblen Umstellung sperrt neue Züge mit klarer Meldung, kein stiller Upgradeversuch. Unterstützte aktuelle Saves bleiben nutzbar. Die Implementierung muss festlegen, bei welchem Paket die erste inkompatible Grenze entsteht.
+## 5. Paket C – Ausdrückliche Population, Alter und individuelle Identität
 
-**Abnahme:** aktuelle Ausgangskonfiguration vor/nach B fachlich gleich; freie Hilfe/Geschenke und Guild unverändert; keine Privatquestobjekte; Versionssperre ohne Geld-/Zeit-/Recordänderung. Aktuelle Replays und Vollsuite. Alte Saves müssen nicht weiterlaufen; Originalbelege werden nicht überschrieben.
+**Ursache:** Arten-/Namensrekonstruktion beeinflusst Anker, Level und Jagdzählung unterschiedlich. In `materialise()` hängt `population_at` zudem vom Levelbereich ab. Batch19 Records214/218/232/272/376 sowie Batch18-Kröten belegen die wechselnde Fehlerklasse.
 
-## 6. Paket C – Ausdrückliche Population statt Namensrekonstruktion
+**Betroffen:** `content/deltas.json`, Extractorprompt/-parser/Katalog, `world.newEntity`, `domain.populationAt`, `engine.materialise`, `guild.areaOf/defeatTally/cullKind` und neue Huntvertragsvalidierung; Entity-Validator/Reducer nur soweit für die vorhandenen Strukturen erforderlich.
 
-Betroffen: `content/deltas.json`, `src/v4/extract.js`, `catalog.js`, `world.js:newEntity`, `domain.js:populationAt`, `engine.js:materialise`, `guild.js:defeatTally/cullKind` und Huntvertrag/-validator; Evaluator nur für Diagnose.
+### C1 – Zugehörigkeit und Fehlerbehandlung
 
-### Vertrag und Verarbeitung
+- Neue Outdoor-`creature.new` melden `population` als gültige Populations-Orts-ID oder ausdrücklich `independent`, dazu `life_stage: adult|young`. Die Engine validiert am bestätigten Ereignisort und dessen Vorfahren; bei entfernter Sichtung nicht blind am PC-Ort. Mitgliedschaft erzeugt keine Anwesenheit.
+- Diese Angaben sind fachlich erforderlich, aber nicht als fehlendes Schema-Pflichtfeld oder dynamisches ID-Enum zu behandeln: optionale Stringfelder im Transport, fehlende/unbekannte/ortsfremde Werte über den vorhandenen semantischen `issues`-Pfad reparieren. Auch unklare Altersangaben lokal behandeln. Echte JSON-/Typfehler bleiben Schemafehler.
+- Vorhandenes Repair-/Fail-soft-Verfahren wiederverwenden, keinen neuen Retrykreis. Nach erfolglosem Repair betroffene Kreatur und wirklich abhängige Wirkungen ablehnen; unabhängige gültige Geld-, Ankunfts- und Faktendeltas erhalten.
+- Ungültige Population niemals zu `independent` umdeuten. Im neuen Protokoll keine Namensfallback-Zuordnung zur Population.
+- **Echte Dungeons:** keine Outdoor-Mitgliedschaft verlangen. Fehlende Angabe oder `independent` bedeutet dort nur „keine Außenpopulation“; eine Außenpopulations-ID ist ein semantisches Issue. Living-Slots behalten Identität, Anker und Level. Kein Slotgegner-Doppelspawn und keine Außenbindung über die Dungeon-Vorfahren.
 
-1. Für neue frei erzeugte Outdoor-Kreaturen strukturierte Zugehörigkeit verlangen: gültige Populations-Orts-ID aus dem Ereignisort und seinen Vorfahren oder ausdrücklich `independent`. Bei entfernten Meldungen den bestätigten Ereignisort verwenden, nicht blind den PC-Ort. Eine Zuordnung erzeugt keine Anwesenheit.
-2. Altersgruppe separat deklarieren. `adult`/`young` sind mechanische Kategorien für bisherige Regeln, keine neue Biologiesimulation.
-3. Ein Mitglied erhält die kanonische Art und den Anker der referenzierten Population; freier Individuenname/Beschreibung bleibt möglich. Strukturell widersprüchliche Angaben, falsche Ortslinie oder unbekannte Population ablehnen.
-4. **Ungültige Referenz niemals zu independent umdeuten.** Vorhandene Repair-/Fail-soft-Mechanismen verwenden, keinen zusätzlichen Retrykreis bauen. Bei endgültiger Ablehnung nur betroffene Kreatur und wirklich abhängige Wirkungen verwerfen; unabhängige gültige Deltas erhalten.
-5. Kein Textfallback für das neue Protokoll. Legacy-Testkonvertierung gehört in Testwerkzeuge, nicht in den Produktpfad.
-6. Echte Living-Dungeon-Slots bleiben Eigentümer ihrer Population/IDs/Level. Die Outdoorreferenz darf weder diese Vorgaben ersetzen noch Slotgegner doppelt erzeugen. Schema-/Promptumfang für Dungeonmeldungen ausdrücklich festlegen, keine sinnlosen Outdoorpflichten erzwingen.
+### C2 – Datenbedeutung, Stärke und Questcredit
 
-### Identität, Alter, Stärke und Credit getrennt halten
+- `entity.population_at` = validierte Zugehörigkeit, unabhängig vom individuellen Level. `entity.life_stage` speichert die Alterskategorie. Kanonische Populationsart/-anker aus `places[population_at].population` beziehen, keine zweite kanonische Artkopie.
+- **`entity.species` bleibt die individuelle Bezeichnung.** Nicht alle Tiere auf dieselbe Artzeichenfolge umbenennen. Populationsart dient der mechanischen Zuordnung; freier Name/Bezeichnung bleiben sichtbar.
+- Anker muss mit der Population vereinbar sein. Erwachsene erhalten das geltende Level-Fenster; explizite Individuen-/Dungeonvorgaben behalten ihre Priorität. Jungtiere übernehmen kein pauschales Erwachsenenfenster. Bestehende ausdrücklich juvenile und individuelle Vorgaben nutzen, keinen neuen Altersmultiplikator einführen.
+- Neue Populationsjagden speichern die erlaubte Altersgruppe bei Veröffentlichung, standardmäßig `adult`; ein ausdrücklich zulässiger Jungtierauftrag legt `young` fest. Generator, Inhaltsprüfung und Ausführung teilen diese Bedeutung.
+- Im Populationsauftrag entscheiden Zugehörigkeit, Vertragsalter, die geltende Populations-Levelspanne und tatsächlicher Tod/erlaubte Flucht seit Annahme. Die bislang durch `population_at` indirekt erzwungene Levelgrenze separat erhalten: Ein ausdrücklich schwaches erwachsenes Mitglied außerhalb der Zielspanne bleibt zugehörig, gibt aber keinen unberechtigten Questcredit. `guild.defeatTally()` darf anschließend nicht erneut am individuellen `species`-Text scheitern. Sonstige bestehende Vertragsbedingungen erhalten. Dungeon-/Personenziele nicht pauschal auf Outdoorregeln umstellen.
+- Kein Kill-Verbrauch/zusätzliche Credit-Events: überlappende gezählte Jagden bleiben nach bestehender Regel gesperrt.
 
-- Population legt die mechanische Art fest. Erwachsene erhalten ihr bestehendes Level-Fenster nach den geltenden Prioritäten.
-- Jungtiere erhalten **nicht automatisch** das Erwachsenenfenster. Aktuelle individuelle, Dungeon- und ausdrücklich juvenile Vorgaben erhalten; ansonsten die bisherige Jungtierbehandlung nutzen. Kein neuer Altersmultiplikator.
-- **Verbindliche Feldsemantik für C:** `population_at` bezeichnet die validierte Populationszugehörigkeit, unabhängig vom individuellen Level; es ist weder Levelberechtigung noch Killcredit. Heute setzt `engine.materialise()` das Feld nur innerhalb des Populationsfensters. Diese Kopplung bei C ausdrücklich auflösen und alle Leser prüfen, insbesondere `guild.areaOf()`. Altersgruppe und zulässige Vertragsbedingungen separat prüfen; ein Jungtier außerhalb des Erwachsenenfensters bleibt Mitglied, erfüllt aber keinen Erwachsenenauftrag. Keine zweite gleichbedeutende Populationsquelle einführen.
-- Populationsjagden prüfen gespeicherte Zugehörigkeit, erlaubte Altersgruppe und tatsächlichen Tod/erlaubte Flucht seit Annahme. Jungtierziele bei Vertragsveröffentlichung strukturiert festlegen; später keine erneute Prosaableitung.
-- Der Name darf weder Level noch Questcredit nachträglich umschreiben. Dungeonrollen und Personenziele nicht still auf dieselbe Outdoorregel umstellen.
-- Kein neuer Kill-Verbrauch/keine Credit-Events: derzeit keine überlappenden gezählten Jagden. Diese Erweiterung bleibt separat.
+### C3 – Individuen, Gruppen und abhängige Behauptungen
 
-### Individuelle Wiedererkennung
+- Eindeutige vorhandene Entity-/Storyreferenzen und Scene-Handles zuerst verwenden. Population bezeichnet niemals ein Individuum. Zwei Sauen derselben Population bleiben getrennt; eine verletzte Sau behält bei eindeutiger Wiedererkennung ID und HP trotz veränderter Beschreibung.
+- Rückkehr-, `here`-, `back`- und Gruppenpfade in `newEntity()` zusammen prüfen. Bestehende Gruppenreferenzen und `more` erhalten. Gleiche Art allein beweist keine Identität; unterschiedliche Prosa allein beweist kein neues Tier. Vorhandene begrenzte Klärung verwenden, keine neue Identitätsengine.
+- Abgelehnte Kreaturenreferenzen einschließlich Gruppenmitglieder in die vorhandene lokale Referenzsperre einbeziehen. Spätere `hostile/position/aware` oder Fakten dürfen nicht per Resolver auf eine andere bestehende Kreatur ausweichen.
+- Referenzfelder der tatsächlich betroffenen Deltas berücksichtigen, nicht nur die bisherigen Personenfelder. Keine globale Sperre unabhängiger gültiger Tiere; explizit an ein abgewiesenes Delta gebundene Wirkungen bleiben abgewiesen.
 
-`world.newEntity()` verwendet bei Rückkehr, anwesenden Gruppen und `back` noch exakte `species`-Textgleichheit. C muss diese Übergänge mit den bestehenden Entity-/Storyreferenzen, Scene-Handles, Gruppenreferenzen und `more` prüfen. Reihenfolge: eindeutige vorhandene Identität wiederverwenden; erst bei tatsächlich neuen Individuen Population/Art zuordnen. Eine gemeinsame Population oder ein ähnlicher Name allein darf keine Individuen verschmelzen. Ein anderer Beschreibungsname allein darf eine ausdrücklich referenzierte bestehende Kreatur nicht duplizieren. Mehrdeutige Identität über die vorhandene begrenzte Klärung behandeln; keine neue Identitätsengine und keine umfassende Lösung beliebiger Pronomen verlangen.
+**Regressionen:** Originalfälle oben; stag/hind/alpha/tusker ohne weitere Wortlisten; GiantBoar≠Turtle; falsche Populations-ID/Ort, unabhängige Kreatur, Fernsichtung; adult/young mit eigenem Level und getrenntem Credit; explizit schwaches Erwachsenenindividuum außerhalb des Zielbandes; zwei Sauen und verletzte Rückkehr; Gruppenvergrößerung; abgelehnter Tusker + `hostile by` bei anderem anwesendem Boar; echte Dungeons samt äußeren Vorfahren; Tod/Flucht vor/nach Annahme; Ablehnung einer Kreatur bei gültigem Geschenk/Ankunft im selben Report; Replay/Reload/Swipe.
 
-**Zusätzliche Gegenfälle:** dieselbe Sau als `wild boar`/`wild boar sow` mit identischem bestehenden Handle; zwei unterschiedliche Sauen derselben Population mit getrennten Handles; Rückkehr einer verletzten Kreatur ohne HP-/ID-Reset; Gruppenerweiterung und gleichnamige unabhängige Gruppe. Fehlende Referenz bei gleicher Art ist ausdrücklich kein Beweis, dass es dasselbe Tier ist.
+**Grenze:** Eine formal gültige, aber semantisch falsche Populationswahl bleibt als Modellfehler möglich. Im Evaluator beobachten, kein neues Prosa-Veto. Optional beide Richtungen diagnostizieren: auffällige Bindung und auffälliges `independent`; Diagnosen steuern niemals Credit/Level.
 
-### Verbleibender Modellfehler
+## 6. Paket D – Strukturierte Gearangebote auf bestehendem Handelspfad
 
-Ein Modell kann bei gleichem Körperbau eine falsche, aber formal gültige Population wählen. Zunächst Diagnose im Evaluator statt neuem Produkt-Textveto. Fehlende gemeinsame Namenswörter sind nur ein Hinweis; die Diagnose steuert niemals Credit oder Level. Diese Grenze ausdrücklich im natürlichen Review beobachten.
+**Ursache:** Namen werden als Gearprofile interpretiert; Wortpreisprüfung läuft vor Enginepreis. Batch18 Records172/173 zeigen ein bezahltes Schwert-/Rüstungspaket als einziges Armorobjekt. Abschlussreview berichtet mindestens fünf natürlich abgewiesene reguläre Gearzeilen wegen Preisbelegen und49 Preiskorrekturen in Batch18/19.
 
-**Regressionen:** Batch19 Records214/218/272 und unabhängige3/4-Kontrolle126; stag/hind/alpha/tusker ohne neue Wortlisten; Giant Boar≠Turtle; gleiche Anker/falsche Population; ausdrückliche unabhängige Kreatur; ungültige ID nicht downgraded; falscher/entfernter Ort; adult/young inklusive eigenem Juvenilenfenster; festgelegtes Individuum; entfernte Sichtung ohne Spawn; Dungeon-Slotidentität; Tod/Flucht vor/nach Annahme; Replay/Reload/Swipe.
+**Betroffen:** Offer-Delta/Extractor, `world.offerLines`, `items.itemProfile/gearRetailPrice/gearOfferWhy`, vorhandene Gearvorlagen/-kataloge und Anzeigen; `trade.pickLines/bookPurchase` bleibt Buchungspfad.
 
-**Abnahme:** strukturelle und fachliche Fehler mit getrenntem Rot-/Grünnachweis, Vollsuite und echter ST-Smoke wegen Extractorschema/-prompt. Protokollversionen und gegebenenfalls Kampagnenkennung nachvollziehbar erhöhen; eine Kartenänderung nur, falls der Narratorvertrag wirklich betroffen ist.
+### D1 – Genau eine unterstützte Ware je Zeile
 
-## 7. Paket D – Verbindliche Gearvorlagen am vorhandenen Angebot
+- Reguläre Gearzeile erhält genau eine `base`-ID aus Enginecontent und eine unterstützte `quality`. Aus ihnen Profil, Slot, Rang und Werte bestimmen; unbekannte Vorlage ablehnen, kein stiller Common-/Dekorationsfallback. Keine neue Ausrüstungsebene.
+- Angebotszeile, Systempreis, Kaufbestätigung und erzeugter Objektname nennen eindeutig den Engine-Vorlagentitel samt Qualität; Werte bleiben in der bestehenden Anzeige sichtbar. Narratorname nur als Beschreibung speichern/anzeigen, nicht als Kauf-/Equipidentität.
+- Schwert+Rüstung = zwei Zeilen mit zwei Profilen, Preisen und Mengen. Eine Zeile mit einer Basis kann mechanisch nur diesen Gegenstand liefern. Eine Paketbezeichnung darf weder Gesamtpaketzustimmung noch das Erzeugen zweier Objekte vortäuschen.
+- Automatische Auswahl für einen vorab erklärten Paketkauf nur, wenn alle verlangten Komponenten eindeutig durch Zeilen abgedeckt sind. Bei fehlender Komponente nichts als vollständiges Paket kaufen; keine frei erfundenen Zeilen ergänzen. Ein später ausdrücklich akzeptierter einzelner Enginegegenstand darf normal gekauft werden.
+- Vorhandene Zeilen-IDs, Profile, `offer.created`, Mengen-/Geld-/Verkäufer-/Ortsprüfung und atomare Mehrzeilenbuchung nutzen. Buy→Equip verwendet dasselbe Profil, keine neue Namensanalyse.
+- Kanonische Fachhändlerangebote und Narratorangebote müssen denselben Vorlagen-/Preisvertrag einhalten. Lootverkauf, Skillmaterial, Dienstleistungen und Geschenke nicht nebenbei umbauen.
 
-Betroffen: Offer-Delta/Extractor, `world.js:offerLines`, `items.js:itemProfile/gearRetailPrice/gearOfferWhy`, `trade.js:bookPurchase/pickLines`, vorhandener Händlerkatalog und Anzeigen; Contentvorlagen, nicht neue Slots.
+### D2 – Preis und Zustimmung getrennt
 
-1. Mechanisch wirksame Gearzeile erhält unterstützte Basisvorlage und Qualitätsstufe. Profil/Slot/Rang/Werte aus Enginecontent, freier Verkaufsname getrennt. Unbekannte Vorlage ablehnen, nicht still Common oder Dekoration daraus machen.
-2. Namen dürfen Common/Fine/Superior nicht mehr indirekt überschreiben. Eine unbekannte exotische Bezeichnung kann eine unterstützte Vorlage beschreiben; keine automatische Einführung neuer Mechanik, Völker oder Ausrüstungsslots.
-3. **Regulärer Enginepreis vor Prosa-Preisprüfung:** erst Ware klassifizieren, dann ihre geltende Preisquelle wählen. Für reguläre F-Gearpreise keinen wörtlichen Narratorbetrag als Voraussetzung verlangen. Flexible Waren, Verkaufserlöse, Dienstleistungen und Geschenke behalten ihre eigenen Belegregeln.
-4. Jede Zeile entspricht einer tatsächlichen Vorlage/Quantität. Schwert+Rüstung ist ein Angebot mit zwei Zeilen, nicht ein Objekt mit verschmolzenem Profil. Ein Einkauf darf weiterhin mehrere Zeilen atomar kaufen.
-5. Vorhandene `offer.created`, Zeilen-IDs, Profil-Snapshot, `bookPurchase`, Verkäufer-/Orts-/Geld-/Mengenprüfung, Zustimmung und einmalige Buchung wiederverwenden. Keine zweite Shopengine.
-6. Gleicher-Zug-Kauf nur bei bereits ausreichend bestimmter Zustimmung zu diesen Waren/Quantitäten und gültigem Preislimit. Eine Preisänderung nach abweichend erzähltem Preis darf nicht über eine unzureichende frühere Zustimmung abbuchen. **Erhalt der Sicherheitsanforderung**, nicht zwingend bytegleiches Belassen jeder bisherigen Bedingung.
-7. Enginewerte und verbindliche Preise sichtbar machen. Bestehende Anzeigen ergänzen, kein zweites Angebots-UI. Kanonische Fachhändlerangebote und Narratorangebote dürfen die Preis-/Profilregel nicht gegenseitig umgehen.
-8. Standardsortiment und Quelldefinitionen wiederverwenden. Skillmaterial, Lootverkauf, freie Sachgeschenke und Unterkunft nicht ungefragt neu modellieren. Falls derselbe Gear-Gegenstand später aus einem Angebot übernommen wird, dessen gespeichertes Profil nutzen, keine zweite Namensauswertung.
+- Erst Ware/Profil klassifizieren, dann Preisquelle wählen. Regulärer F-Enginepreis vor der bisherigen Wortpreisprüfung: fehlende oder andere erzählte Summe verhindert nicht allein das gültige Angebot.
+- Flexible Waren, Verkaufserlöse, Geschenke, Dienste und besondere/E+-Gegenstände behalten ihre bisherigen Beleg-/Preisregeln. Reguläre Preiswerte selbst unverändert.
+- **Angebot ist keine Kaufzustimmung.** Bestehende ausdrücklich akzeptierte Angebote bleiben verbindlich, kein stilles nachträgliches Umwerten.
+- Bei einem abweichenden oder zuvor nicht belegten Enginepreis darf im selben Zug nur bei konkreter Zustimmung zu Waren und Mengen sowie ausdrücklichem `max_cp` gekauft werden, wenn der Engine-Gesamtpreis aller gewählten Zeilen das Limit einhält. Auch bei vorhandener `any_price`-Markierung darf ein ausdrücklich gesetztes Limit nicht übergangen werden.
+- Die bisherige pauschale Sperre jeder Preiskorrektur für diese ausreichend begrenzten Käufe ersetzen. Kein erneuter Bestätigungszug bei bereits passender Zustimmung und Limit.
+- `any_price` allein erlaubt keinen automatisch abweichenden oder zuvor unbekannten Enginepreis. Angebot offen lassen, ohne Abbuchung; explizite Annahme des sichtbaren Angebots bleibt möglich. Unveränderter belegter Preis im bisherigen eindeutig autorisierten Vorgang bleibt zulässig.
+- Fehlende Mittel, ungeklärte Auswahl, nicht anwesender Verkäufer oder noch nicht bestätigte Ankunft verhindern weiterhin die Buchung. Keine automatische Spielerreise.
 
-**Regressionen:** Original Batch18 Paket; finer/better/improved mit expliziter Vorlage/Qualität; unbekannte Basis; mehrere Zeilen mit Gesamtlimit; fehlender/abweichender Preisbeleg bei regulärem Gear; flexibler Verkauf/Geschenk weiterhin belegpflichtig; Geld knapp/kein anwesender Verkäufer; vorab begrenzter Kauf; Preiskorrektur ohne unberechtigte Abbuchung; identische Wiedernennung; kanonische/narrative Angebotspfade; Buy→Equip-Profilgleichheit; Replay/Reload/Swipe.
+**Regressionen:** Originalpaket, später korrektes Zweizeilenangebot und Buy→Equip; feinere/bessere freie Bezeichnung ohne Profiländerung; unbekannte Basis; fehlender/anderer Prosa-Gearpreis; Paket mit fehlender Komponente; richtige Auswahl mit Gesamtlimit, darunter/gleich/darüber; `max_cp` trotz `any_price`; Repricing mit/ohne ausreichende Zustimmung; `any_price` bei unbekanntem/neuem Preis; unverändertes gespeichertes Angebot; kanonischer Händler; gewöhnlicher Verkauf/Geschenk weiterhin belegpflichtig; kein Geld/kein Verkäufer; wiederholte Erwähnung; Replay/Reload/Swipe.
 
-**Abnahme:** Originaldefekte vor Änderung rot, positive Kontrollen dokumentiert; Vollsuite, ST-Smoke wegen Protokolländerung; reguläre Preiswerte selbst unverändert. Explizite Invariante: Ein gültiger Enginepreis legitimiert die Angebotserstellung, aber allein keine Abbuchung. Ohne passende Kaufzustimmung bleibt das Geld unverändert; ausreichende vorherige Zustimmung samt Preislimit darf weiterhin im selben Zug kaufen. Keine natürliche Erfolgsbehauptung vor dem nächsten Batch.
+**Bewusste Grenze:** Eine falsche, aber gültige Basiswahl kann weiter vorkommen. Der Spieler sieht vor Kauf den verbindlichen Einzelgegenstand. Keine zusätzliche allgemeine Paket-Prosaerkennung vorab; nur bei nachgewiesenem verbleibendem Fehler gezielt prüfen.
 
-## 8. Paket E – Historische Ausführungspfade begrenzt entfernen
+## 7. Paket E – Historische Spielpfade später entfernen
 
-Erst nach Nutzungskarte der Funktionen: V3-Runtime, V4-A und ausschließlich historische Ruleset1-Zweige entfernen. `interpret.js` wird teilweise vom Planner genutzt; `intent.js` trägt Erstellung, Steuerbefehle und Hilfsfunktionen; `delta.reportToEvents` verarbeitet weiterhin aktuelle World-Deltas. Diese nicht pauschal löschen.
+Vor Entfernung Nutzungskarte erstellen. V3-Runtime, V4-A und nur historische Ruleset1-Zweige dürfen entfallen; aktuell gemeinsam genutzte Funktionen bleiben.
 
-Aktuelle Combat-Zielauflösung darf nicht allein wegen V3-Dateiname entfallen. Benötigte gemeinsame Funktionen können klein herausgelöst werden. Kein allgemeines WorldTxn und keine vollständige Neuorganisation von `world.js` als Vorbedingung.
+Insbesondere `delta.reportToEvents`, Teile von `interpret.js` (Plannerhilfen/`amountErrors`), `intent.js` (Erstellung/Befehle/`mentionedSkills`), `engine.playerTurn` und `combat.js` nicht allein wegen alter Herkunft löschen. Gemeinsame Helfer nur bei konkretem Nutzen klein herauslösen. Kein vollständiges World-Modul-Refactoring.
 
-Reine Strukturcommits müssen gegenüber einer freigegebenen aktuellen Baseline dieselben fachlichen Events und Zustände erzeugen. Diagnose-/Metadatenänderungen separat ausweisen. Sicherheitstests übertragen, rein historische Zahlen-/Klassenfixtures nicht weiter als Produktanforderung behandeln. Delivery/Escort unverändert ruhend lassen.
+**Abnahme:** aktuelle Verarbeitung fachlich identisch, Replaydifferenz0 auf freigegebener aktueller Baseline; Vollsuite und betroffene ST-Abnahme. Erhaltene Sicherheitsregeln und bewusst entfernte historische Szenarien ausweisen. Keine Verpflichtung, alle alten Klassen-/Zahlenfixtures weiterzuführen. B2/E separat fertigstellen, ohne F hinauszuschieben.
 
-## 9. Gemeinsame Abnahme und natürliche Beobachtung
+## 8. Gemeinsame technische Abnahme und natürlicher Nachweis
 
-- Vor jeder Umsetzung HEAD und zwischenzeitliche Änderungen prüfen; Rotnachweis nur für tatsächlich bestätigte Fehler behaupten.
-- Gezielte Tests, angrenzende Regressionen, abschließend vollständige `npm test` pro freigegebener Fachabnahme. Bei Host-/Modellschnittstellen echten ST-Smoke ausführen und gespeicherte Records nach Reload prüfen. Zahlen tatsächlich berichten.
-- Identitäts-, Orts-, Geld-, Kampf-, Quest- und RNG-Invarianten gemeinsam prüfen. Aktuelle Swipes/Reloads buchen nichts doppelt.
-- Produktcode/technische Abnahme auf Dev, Status/Kanon auf main. Originalreviews und Exporte unverändert lassen; keine lange Ergebnisduplizierung.
-- Nach C/D natürlicher unveränderter Guildbatch aller drei Klassen, idealerweise bis angenommener E-Klasse. Keine künstlichen Erfolge, keine Fixtures und kein gleichzeitiges Balancing.
-- Messen: erfolgreiche mechanische Aktionen, verwendete Eingaben/Zeit, Repairursachen, sichere Fortsetzungen, verlorene World-Vorgänge, tatsächliche Integritätsfehler. Artzuordnungen, Gearwerte, Pakete und Equip besonders prüfen. Regelgebuchter Tod/Spielerfehler nicht als Enginebug umetikettieren.
+1. Vor Codebeginn HEAD und relevante Änderungen prüfen; Build-/Protokollgrenzen verbindlich notieren. Noch keine konkrete künftige Buildnummer in dieser Planung.
+2. Bestätigte Originaldefekte und Gegenfälle gegen unveränderte Basis rot/grün nachweisen. Schemaänderungen mit transparent umgerechneten Offline-Testdaten prüfen; keine nachträgliche Änderung der Originalarchive. Unveränderte alte Rohantworten sind ab C/D nicht automatisch gültiger neuer Input.
+3. Für reine Umbauten Replaydifferenz0; für C/D begründete Liste aller betroffenen Records und fachlichen Folgewirkungen. Keine pauschale Freigabe „alle Creature-/Offer-Records dürfen abweichen“. Originalzustandsproben ersetzen keine aktuellen Übergangstests.
+4. Gezielte und angrenzende Regressionen, abschließend volle `npm test` für den freigegebenen Kernpatch. Echten ST-Smoke für Host-/Extractor-/Angebotsprotokolländerungen ausführen: Recordcommit + Save, Reload, Swipe, nicht nur sichtbare Prosa. Ergebnisse/Blockaden tatsächlich berichten.
+5. Extractor-/Delta-/gegebenenfalls Angebotsversionen bei geänderten Verträgen erhöhen, Prompts/Katalog/Schema gemeinsam anpassen. Narratorkartenrevision nur bei tatsächlicher Änderung ihres Vertrags, nicht automatisch bei jedem Produktbuild.
+6. Nach A/B1/C/D technisch abgenommenem Stand genau den bestehenden natürlichen Guildbatch für Warrior/Mage/Rogue ausführen; unveränderte Ziele und Balance, bis ausdrücklich angenommener E-Klasse oder regulärem Ende. Kein künstlicher Fortschritt und keine laufenden Batches umstellen.
+7. Messen: mechanisch erfolgreiche Handlungen, Inputs/Zeit, sichere Fortsetzungen, verlorene Weltinformationen, Integritätsfehler und semantische Repairs; besonders Population/Alter/Credit sowie Gearprofile/Pakete/Käufe. Modellfehler, Bedienfehler und regelgerechte Tode getrennt ausweisen.
+8. Vereinfachungsgewinn knapp aus Diff/Testbericht: entfernte aktive historische Schalter, tatsächlich ersetzte Namensheuristiken/zusammengeführte Prüfungen, verbleibende Ausnahmen und Korpusabdeckung. Kein neues Metriksystem; weniger Zeilen/Regex allein sind kein Erfolg.
+9. Danach unabhängiger Diff-Gegenreview gemäß Arbeitsweise. Keine weitere vorsorgliche Architektur-Reviewphase oder Mikrofixserie ohne konkreten neuen Befund.
 
-**Zurückgestellt:** Reisegefahrenwurf, Ein-Szenen-Regel, strikt zweizügiger Einkauf, neue Kill-Credit-Verwaltung, Foldcache, große Savesanierung, weiterer Prompt-/Modellumbau ohne Vergleichsdaten. Main/Minor bleibt eigener bestehender Plan.
+## 9. Abschlussentscheidungen aus dem letzten Review
 
-## 10. Letzte Reviewfragen vor Freigabe
+K1/K2 (Replay und World-Job-Foldschutz), K3–K6 (individuelle Bezeichnung, semantische Populationissues, abhängige Kreaturenreferenzen, Dungeonabgrenzung), K7/K8 (sichtbare Einzelvorlagen und preisbegrenzte Kaufzustimmung) sowie K9 (vorhandene Startmetadaten) sind übernommen und oben konkretisiert.
 
-1. Entfernt B wirklich nur historische Unterschiede, ohne unbemerkt aktuelle konfigurierte Regeln zu verändern?
-2. Kann C Artidentität, Jungtiergrenze und Levelprioritäten ohne doppelte Zustandsquelle abbilden? Ist eine ungültige Referenz überall sichtbar und lokal begrenzt?
-3. Prüft D Zustimmung und Gesamtpreis auch bei automatisch erzeugten Angeboten und Paketen korrekt?
-4. Erfasst A den tatsächlichen World-/Commandpfad und macht fehlende Board-/Forge-Aufzeichnungen sichtbar?
-5. Welche konkrete Codeabhängigkeit fehlt noch? Welche vorgeschlagene Änderung lässt sich streichen, ohne das Ziel zu verlieren?
+**Bewusste Präzisierungen gegenüber dem Review:** Ein echter Dungeon muss kein nutzloses Outdoor-Pflichtfeld liefern. Gleichartige Tiere werden nicht allein durch Populationsbindung identisch. Reine Eventgleichheit behält Fold-/Zustandsvalidierung als Gegenprobe. Bei beabsichtigten Änderungen sind auch Folgewirkungen prüfpflichtig. Fehlende Paketkomponenten erlauben keinen vorab zugesagten vollständigen Paketkauf. Die Meldung eines Foldabbruchs muss den Host erreichen, ohne dessen allgemeinen Fehlerbuchungspfad auszulösen.
 
-Nach dieser Prüfung fachlich freigeben oder konkrete Blocker benennen. Keine weitere vorsorgliche Reviewkette und keine Umsetzung allein aufgrund dieses Plans.
+**Gestrichen:** zusätzliche Vollantwortkopien in Chatrecords, verpflichtende zusammenhängende Wiedergabe alter Modellantworten nach geändertem Zustand, neues Kompatibilitätsfeld, Populations-ID-Enum als globaler Schemafehler, Überschreiben individueller Artenbezeichnungen, Kill-Credit-Events.
 
-## 11. Nachtrag – GPT-Feedback vom 30.10.2026
+**Zurückgestellt:** Foldcache, Save-Verschlankung, Prompt-/Modellwechsel, neue Reise-/Szenenregeln, pauschaler Zweizugkauf, universelles Transaktionssystem, umfassende NPC-Identitätsengine und weitere Balanceänderungen.
 
-Grundlage: beigefügtes `Chatgpt Feedback(20261030-180745).md`, am unveränderten Produktcommit `b8d2af4` gezielt nachgeprüft. Keine neue Testausführung, keine Produktänderung. Die vier ursprünglichen Reviewgrundlagen bleiben unverändert archiviert.
-
-- **Übernommen:** unabhängige Semantik von `population_at`, konkrete Foldgrenzen einschließlich Extraktor-Commit sowie individuelle Wiedererkennung in C. Letztere ist ein zusätzlicher Regressionsumfang, kein Nachweis, dass jede wechselnde Tierbezeichnung aktuell eine Duplikation erzeugt.
-- **Bereits enthalten, hervorgehoben:** Angebotspreis und Kaufzustimmung getrennt abnehmen. Kein neues Zustimmungsverfahren und kein verpflichtender zusätzlicher Einkaufszug.
-- **Prioritäten bestätigt:** A zuerst; B danach, C/D dürfen nach tragfähiger A-Abnahme unabhängig von vollständigem B vorankommen. E bleibt nachrangig. Wie bereits in Abschnitt 9 festgelegt, folgt F nach C/D und muss nicht auf E warten. Die Kurzfolge `A → B → C/D → E → F` aus dem Feedback ist insofern zu strikt.
-- **Vereinfachungsgewinn knapp belegen:** je Fachabnahme entfernte aktive historische Schalter, ersetzte Namensheuristiken und tatsächlich zusammengeführte Prüfstellen nennen; verbleibende Ausnahmen und Verarbeitungstest-Abdeckung angeben. Bestehenden Diff und Testbericht nutzen, kein neues Metriksystem. Weniger Zeilen/Regex sind allein kein Erfolgskriterium; gleiche Sicherheit und geringerer konkreter Pflegeaufwand zählen.
-
-Diese Präzisierungen gehören in Claudes laufende Schlussprüfung; sie eröffnen keine weitere allgemeine Auditphase und erteilen keine Implementierungsfreigabe.
+Damit ist die Planung abgeschlossen. Als nächster Auftrag genügt die ausdrückliche Umsetzung des Kernpatches A/B1/C/D anhand dieser Datei; keine erneute Grundlagenanalyse erforderlich.

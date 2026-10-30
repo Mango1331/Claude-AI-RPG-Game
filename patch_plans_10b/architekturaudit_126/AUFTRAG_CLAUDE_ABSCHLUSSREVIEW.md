@@ -1,5 +1,7 @@
 # Auftrag an Claude – letzte Gegenprüfung des konsolidierten Architekturplans
 
+**Erledigt am 30.10.2026.** [Original-Abschlussreview](05_CLAUDE_ABSCHLUSSREVIEW.md) archiviert und in den [finalen Fachplan](../PATCH_ARCHITEKTUR_126_KONSOLIDIERT.md) eingearbeitet. Nachfolgend der historische Auftrag; keine erneute Prüfung daraus starten.
+
 Repository: `Mango1331/Claude-AI-RPG-Game`. Produktbranch: `claude/c-planner-prototype-2026-10-02-gpt-c666`. Planbasis: `.126`, `b8d2af4`.
 
 **Nur prüfen, noch nichts implementieren.** Prüfe zuerst beide aktuellen Git-HEADs. Lies `01` und `03` auf `main`, dann `patch_plans_10b/PATCH_ARCHITEKTUR_126_KONSOLIDIERT.md`. Die vier Reviewrunden liegen daneben in `architekturaudit_126/`; ziehe sie gezielt bei Widersprüchen hinzu. Wiederhole nicht das gesamte Architekturaudit.

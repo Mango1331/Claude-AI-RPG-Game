@@ -1,6 +1,6 @@
 # Avereth Engine – Ideenarchiv und spätere Kandidaten
 
-**Stand:** 28.10.2026. **Ideen sind keine Patchfreigaben.** Aktueller Stand ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md), Designentscheidungen in [02](02_DESIGN_KANON.md), technische 10B-Befunde in [06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md).
+**Stand:** 30.10.2026. **Ideen sind keine Patchfreigaben.** Aktueller Stand ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md), Designentscheidungen in [02](02_DESIGN_KANON.md), technische 10B-Befunde in [06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md).
 
 **Verlustfreie historische Quelle:** Die zuvor sehr ausführliche Fassung mit sämtlichen alten Patch-8-/9-Plänen, Gegenreviews und einzelnen Messergebnissen bleibt [auf dem ursprünglichen main-Commit 0ebf449](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0ebf4496f185a69ebac235a337ab9dd2e2b470c7/04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md) vollständig erhalten. Historische Formulierungen wie „nächster Patch“ sind damit nicht automatisch aktuelle Aufträge.
 
@@ -275,6 +275,15 @@ Zusätzliche LLM-Aufrufe, Kosten, Save/Reload/Swipe, Geheimnisgrenzen und Replay
 **Als .116 implementiert:** Fern-AoE trifft zunächst alle gültigen Ziele im gewählten Reichweitenband, ohne Cluster- oder Richtungsprüfung; maßgeblich ist [02 §5](02_DESIGN_KANON.md#5-kampf-und-progression). Mage-Fern-AoE, Warrior-Cleave und Rogue-Klingenfächer sind im [Batch-11-Review §8](testrun_10b/batch-20261029-025441Z/REVIEW.md#8-sol--diskussionsvorschlag-frühe-aoe-option-je-klasse) eingeordnet; Werte und Starterwahl sind im [.116-Versuch](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/41a17fc50ba2fb4bc96dcc83a86dc0cea779f46e/avereth-engine/docs/PATCH_AOE116_STARTER_TRIAL.md) umgesetzt; genau zwei freie Skills im Spiel, AoE-Pflicht nur für den aktuellen Testspieler.
 
 **Spätere Ideen, keine aktuelle Umsetzung:** Einzelne besondere Skills könnten ausdrücklich mehrere Reichweitenbänder zugleich treffen, etwa alle drei Fernbänder SHORT/MEDIUM/LONG. Ob ENGAGED ebenfalls dazugehört, bestimmt dann der konkrete Skill; keine automatische Ausweitung gewöhnlicher AoE. Eine spätere räumliche Darstellung mit 360 Grad, Sektoren oder echten örtlichen Clustern könnte gezieltere Flächen erlauben. Nur bei erkennbarem Gameplay-Nutzen und vertretbarem Aufwand prüfen; keine Voraussetzung für die erste Band-AoE und jetzt keine neue Positionsengine.
+
+### 7e. Spätere Questfreiheit und überlappende Jagdaufträge (30.10.2026)
+
+**Nutzerwunsch für eine spätere stabile Entwicklungsphase; Idee, keine aktuelle Implementierungsfreigabe.** Der vorläufige Duplikatschutz aus .120 soll die Spielwelt langfristig nicht auf voneinander isolierte Jagden beschränken. Später zusammenhängende Anliegen, gezielte Einzelgegner wie ein Rudelalpha, unterschiedliche Auftraggeber und gegebenenfalls weitere geeignete Auftragsarten wieder aufgreifen.
+
+- Beispiel: eine gewöhnliche Wolfs-Cull und die Jagd auf deren konkret identifizierten Alpha dürfen parallel bestehen. Unterschiedliche Titel allein begründen keine unterschiedlichen Ziele; der besondere Gegner braucht eine eindeutige mechanische Zielreferenz.
+- Falls auch echte überlappende Jagden erlaubt werden: jeden individuellen Kill dauerhaft höchstens einem Jagdvertrag zuordnen; spezifisches Ziel vor allgemeinem Cull, danach eine nachvollziehbare Reihenfolge. Abbruch, Abschluss, Replay und Reload dürfen alte Kills nicht neu verteilen. Umfang und Migrationsaufwand zuvor prüfen; keine solche Verbrauchsbuchhaltung ist derzeit beschlossen.
+- Dungeon-Clearance als eigener Gesamterfolg gesondert betrachten. Mehr Freiheit darf keine doppelte Auszahlung desselben Vertrags oder aus bloßer Erzählung erzeugte Erfolge ermöglichen.
+- Vorhandene Quest-/Delivery-/Escort-Funktionen bevorzugen, neue Arten nur bei nachweisbarem Gameplay-Nutzen. Keine Wiederaufnahme automatisch ausgesetzter Lieferangebote durch diesen Ideeneintrag und kein neues allgemeines Questframework. Konkreter Ausbau erst nach stabilen natürlichen Vergleichsläufen und eigener Freigabe; siehe auch Abschnitt5 zur Quest-Erweiterbarkeit.
 
 ## 8. Pflege
 

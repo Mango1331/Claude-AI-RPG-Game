@@ -622,6 +622,12 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         commit();
         dirty = true;
     }
+    // .127 review: a record resolved earlier (swipe, regenerate, a command panel not yet posted) is reused only on a whole
+    // fold as well; a new resolution above was checked before it was resolved
+    if (!dirty) {
+        const reused = foldBlock(foldChat(chat, u));
+        if (reused) return { action: 'fold_blocked', dirty, index: u, block: reused, notice: reused.notice };
+    }
     if (r?.route === 'v4' && r.interp?.failed) {
         return {
             action: 'abort', dirty,
@@ -682,6 +688,11 @@ export function processReplyAny(chat, id, content, opts = {}) {
     if (r && r.text_hash === hash32(msg.mes)) return { changed: false };
     const u = lastUserIndex(chat, id);
     if (u < 0) return { changed: false };
+    // .127: a reply after a broken record is neither cleaned, recorded (not even as a system answer), shown with a HUD of
+    // a partial state nor queued for extraction
+    const fold = foldChat(chat, id);
+    const blocked = foldBlock(fold);
+    if (blocked) return { changed: false, foldBlocked: blocked };
     const clean = extractReport(msg.mes).clean;
     // V4 prose is also the extractor's evidence. Post-generation word swaps can corrupt canonical names/content
     // (live 28.09.: "Deliver a Ledger" became "Deliver a Register"). Keep V4 text byte-faithful apart from retired blocks.
@@ -690,10 +701,6 @@ export function processReplyAny(chat, id, content, opts = {}) {
         setRec(msg, { v: RECORD_V4, events: [], system_answer: true, text_hash: hash32(msg.mes) });
         return { changed: true };
     }
-    const fold = foldChat(chat, id);
-    // .127: a reply after a broken record is neither shown with a HUD of a partial state nor queued for extraction
-    const blocked = foldBlock(fold);
-    if (blocked) return { changed: false, foldBlocked: blocked };
     const { state } = fold;
     // Patch 8.2: the narrator's time (index.js: engine block handed over → reply received), telemetry with the record
     const narration = Number.isFinite(opts.narrationMs) ? { ms: opts.narrationMs } : null;

@@ -205,10 +205,22 @@ export async function replayCorpus(root = ROOT, corpusDir = DEFAULT_CORPUS, { la
     return result;
 }
 
+/**
+ * The acceptance comparison. Every run the baseline names must have been replayed (and no unknown run may appear), every
+ * case must match, and a replayed run must have no replay error, fold error or validation problem: any of these is a
+ * listed difference, so `--check` fails on it by itself (review of .127).
+ */
 export function compareToBaseline(baseline, result) {
     const diffs = [];
     let compared = 0;
+    for (const label of Object.keys(baseline.runs)) {
+        if (!result.runs[label]) diffs.push({ id: label, missing: 'baseline run not replayed' });
+    }
     for (const [label, run] of Object.entries(result.runs)) {
+        const errors = Object.values(run.cases).filter((c) => c.error).length;
+        if (errors) diffs.push({ id: label, integrity: `${errors} replay error(s)` });
+        if (run.fold?.fold_errors) diffs.push({ id: label, integrity: `${run.fold.fold_errors} fold error(s)` });
+        if (run.fold?.problem_count) diffs.push({ id: label, integrity: `${run.fold.problem_count} validation problem(s)` });
         const base = baseline.runs[label];
         if (!base) { diffs.push({ id: label, missing: 'run not in baseline' }); continue; }
         const ids = new Set([...Object.keys(base.cases), ...Object.keys(run.cases)]);

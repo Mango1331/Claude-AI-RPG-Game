@@ -164,6 +164,50 @@ test('A2: after loading a valid state the same turn and reply are processed exac
     assert.deepEqual(recordOutput(rec(reply[BOARD_REPLY]), { kind: 'reply' }), baseline.runs['b19-mage'].cases[`b19-mage#${BOARD_REPLY}`]);
 });
 
+test('A2 review: a command panel not yet posted is neither posted nor marked on a broken record', async () => {
+    const ASSIGN = 33; // "#assign INT 2 WIL 3": its record holds the System panel
+    const unposted = () => { const chat = prefix(ASSIGN); rec(chat[ASSIGN]).command.posted = false; return chat; };
+    const control = unposted();
+    const ok = await prepareGenerationAsync(control, content, { type: 'normal', settings: {}, llm: counting().llm });
+    assert.equal(ok.action, 'panels', 'control: a whole record posts the panel once');
+    assert.equal(rec(control[ASSIGN]).command.posted, true);
+    const chat = damage(unposted());
+    const before = snapshot(chat);
+    const m = counting();
+    const r = await prepareGenerationAsync(chat, content, { type: 'normal', settings: {}, llm: m.llm });
+    assert.equal(r.action, 'fold_blocked');
+    assert.equal(r.block.index, 9);
+    assert.deepEqual(m.calls, []);
+    assert.equal(rec(chat[ASSIGN]).command.posted, false);
+    assert.equal(snapshot(chat), before);
+});
+
+test('A2 review: a reply after a broken record is neither cleaned nor recorded as a system answer', () => {
+    const ask = (broken) => {
+        const chat = prefix(BOARD_TURN);
+        rec(chat[BOARD_TURN]).command = { panels: [], llm: { question: 'help' } }; // an engine System question the narrator answers
+        chat.push({ mes: 'The clerk explains the board.\n<avereth>{}</avereth>', is_user: false, is_system: false, extra: {} });
+        return broken ? damage(chat) : chat;
+    };
+    const control = ask(false);
+    const ok = processReplyAny(control, BOARD_TURN + 1, content, {});
+    assert.equal(ok.changed, true, 'control: a whole record answers the System question');
+    assert.equal(rec(control[BOARD_TURN + 1]).system_answer, true);
+    assert.equal(control[BOARD_TURN + 1].mes, 'The clerk explains the board.');
+    const chat = ask(true);
+    const r = processReplyAny(chat, BOARD_TURN + 1, content, {});
+    assert.equal(r.changed, false);
+    assert.equal(r.foldBlocked.index, 9);
+    assert.equal(rec(chat[BOARD_TURN + 1]), undefined);
+    assert.equal(chat[BOARD_TURN + 1].mes, 'The clerk explains the board.\n<avereth>{}</avereth>', 'the reply text stays as it came');
+    // an ordinary reply's text is not cleaned on a broken record either
+    const plain = damage(withoutRecord(prefix(BOARD_REPLY), BOARD_REPLY));
+    plain[BOARD_REPLY].mes += '\n<avereth>{"new":[]}</avereth>';
+    const text = plain[BOARD_REPLY].mes;
+    assert.equal(processReplyAny(plain, BOARD_REPLY, content, {}).foldBlocked.index, 9);
+    assert.equal(plain[BOARD_REPLY].mes, text);
+});
+
 test('A2: index.js wires every fold block to the host notice, never to a save or failure record', () => {
     const src = fs.readFileSync(`${ROOT}/index.js`, 'utf8');
     const block = src.slice(src.indexOf("if (r.action === 'fold_blocked')"), src.indexOf("if (r.action === 'not_executed')"));

@@ -64,3 +64,14 @@ test('A1: only the named diagnostic fields are ignored; every other difference i
     assert.deepEqual(firstDifference(a, { ...a, continuation: { kind: 'world_not_applied' } }), { field: 'continuation' });
     assert.deepEqual(firstDifference(a, { ...a, events: [...a.events, { t: 'xp.changed', d: {} }] }), { event: 2, baseline: null, now: 'xp.changed' });
 });
+
+test('A1 review: the check itself fails on a missing run and on replay, fold or validation errors', () => {
+    const run = (cases, fold = { fold_errors: 0, problem_count: 0 }) => ({ cases, fold });
+    const base = { runs: { a: { cases: { 'a#1': { kind: 'player', events: [] } } }, b: { cases: { 'b#1': { kind: 'reply', events: [] } } } } };
+    const whole = { runs: { a: run({ 'a#1': { kind: 'player', events: [] } }), b: run({ 'b#1': { kind: 'reply', events: [] } }) } };
+    assert.deepEqual(compareToBaseline(base, whole).diffs, []);
+    assert.deepEqual(compareToBaseline(base, { runs: { a: whole.runs.a } }).diffs, [{ id: 'b', missing: 'baseline run not replayed' }]);
+    assert.deepEqual(compareToBaseline(base, { runs: { ...whole.runs, c: run({}) } }).diffs, [{ id: 'c', missing: 'run not in baseline' }]);
+    const broken = { runs: { a: run({ 'a#1': { kind: 'player', events: [] } }, { fold_errors: 2, problem_count: 1 }), b: run({ 'b#1': { kind: 'reply', error: 'boom' } }) } };
+    assert.deepEqual(compareToBaseline(base, broken).diffs.map((d) => d.integrity || d.field || d.missing), ['2 fold error(s)', '1 validation problem(s)', '1 replay error(s)', 'error']);
+});

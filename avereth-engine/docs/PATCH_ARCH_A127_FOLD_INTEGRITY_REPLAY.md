@@ -61,3 +61,17 @@ Selbst ausgeführt in dieser Umgebung:
 - Der Korpus enthält keine Antwort-Swipes mit eigener Extraktion und keine `late`-Abschlüsse; beides bleibt durch bestehende Tests abgedeckt. Board/Forge sind nur so weit abgedeckt, wie sie in Batch16–19 vorkamen (25/3).
 - Nach C/D sind alte Rohantworten nicht automatisch gültiger Input des neuen Protokolls; Schemaänderungen brauchen transparent umgerechnete Testdaten (Fachplan §8.2).
 - Vereinfachungsgewinn A: keine historischen Schalter entfernt (B1), keine Namensheuristik ersetzt. Eine gemeinsame Foldprüfung an sechs Schreibgrenzen; der bisher verdeckte Foldfehler in zwei Testaufbauten ist sichtbar geworden.
+
+## Reviewkorrektur .128 (GPT-Gegenreview zu `167e2e9`)
+
+Build **`4.3.0-c.6.6.128`**. Beide Befunde am Code bestätigt und geschlossen; keine neue Architektur, Baseline unverändert.
+
+- **Wiederverwendete Records/Systembefehle:** Bei einem bereits aufgelösten Record (Swipe, Regenerate, noch nicht veröffentlichtes Befehlspanel) prüft `prepareGenerationAsync` jetzt den Fold **vor** `command.posted`/`setRec`/Panelausgabe. Ein neu aufgelöster Zug war bereits vorher geprüft.
+- **`processReplyAny`:** Foldprüfung vor Textbereinigung (`msg.mes`) und vor dem `system_answer`-Record; bei beschädigtem Verlauf bleiben Text und Message unverändert.
+- **Replay-Checker:** `compareToBaseline` meldet nicht wiedergegebene Baseline-Runs, unbekannte Runs sowie Replay-, Fold- und Validierungsfehler selbst als Differenz. `npm run replay:check` ist damit eine eigenständige Abnahme mit Exit 1, geprüft mit einem unvollständigen Korpus.
+
+**Nachweise:**
+
+- 3 neue Regressionen (2 A2-Fälle mit positiven Kontrollen, 1 Checkerfall); auf `167e2e9` alle 3 rot, danach grün. `tests/replay` 22/22.
+- Volle Suite **2451/2451**; voller Korpus **2.235 Fälle, 0 Abweichungen** zur .126-Baseline.
+- Echter SillyTavern-1.19.0-Smoke auf .128 im ersten Lauf: `smoke:st:c` **24/24**, Failsoft-Variante mit Record-Rücklesen **29/29**, jeweils ohne PageErrors.

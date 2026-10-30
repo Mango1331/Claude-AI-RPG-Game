@@ -1,11 +1,11 @@
 {
   "id": "current_test",
-  "title": "Open-world progression — natural Level 1 to 15",
+  "title": "Open-world progression — natural Level 1 through E class evolution",
   "openRun": {
     "targetLevel": 15,
     "checkpointTurns": 100
   },
-  "brief": "Start a genuinely new Level-1 campaign, choosing your own base class and two starter skills. For this AoE comparison choose one of your two starter skills as Cleave (Warrior), Arcane Wave (Mage), or Fan of Blades (Rogue); choose the other freely. Use AoE only when tactically useful, checking the target band and possible friendly fire; withdraw or choose easier work when needed. Play until the engine confirms Level 15, death or a genuine campaign blocker; technical safety limits also apply. Make becoming a capable Guild adventurer your central motivation: seek suitable official Guild contracts, explore, gain levels, allocate earned stats and pursue real skill learning, training and development. During sensible town visits sell surplus combat loot, compare affordable weapons, armour and supplies early, buy useful equipment upgrades and equip them. Keep needed gear, supplies and quest cargo; revisit shops when money or stock changes. Check resources and recovery, including sleep, before danger. Assess enemy numbers and strength, choose easier work or withdraw when sensible. Choose your own quests, route, tactics, gear and build. Incidental NPC help, relationships, paid work and detours remain welcome; do not seek private errands as your main occupation. Note persistent optional blockages and choose alternatives. No forced fights, farming, scripted route, fixtures, injected resources or invented accomplishments. The first 100 inputs are a comparison checkpoint, not the finish.",
+  "brief": "Start a genuine Level-1 campaign. Make becoming a capable Guild adventurer your central motivation: choose contracts, exploration, combat, loot sales, equipment and skill development freely. Play until the Engine confirms Level 15 AND your chosen E class evolution; death, genuine blockers and technical safety limits remain separate endings. At sensible town visits sell surplus loot, seek affordable weapon/armour upgrades and supplies, buy useful upgrades and equip them. Keep needed gear, supplies and quest cargo; revisit shops when money or stock changes. Allocate earned stats and pursue real learning or training. Recover, including sleep, before danger, assess enemy strength and numbers, and choose easier work or withdraw when sensible. Quests, routes, tactics and build remain yours. Incidental NPC help, relationships, paid work and detours are welcome; do not seek private errands as your main occupation. Note optional blockages and choose alternatives. No forced fights, farming, scripted routes, fixtures or invented accomplishments. Input 100 is a comparison checkpoint, not the finish.",
   "milestones": [
     {
       "id": "creation_complete",
@@ -14,7 +14,11 @@
     },
     {
       "id": "open_run_level",
-      "goal": "Develop your freely chosen Level-1 character through real play until the engine confirms Level 15. Keep choosing suitable adventures and improving gear and skills; the runner checks the recorded level."
+      "goal": "Develop your freely chosen Level-1 character through real play until the Engine confirms Level 15. Keep improving gear and skills; then continue to class evolution instead of stopping."
+    },
+    {
+      "id": "class_accepted",
+      "goal": "After Level 15, finish pending danger, inspect #class/#feats and freely choose an offered E class. Panels are read-only; if the offer is due, take a safe ordinary story turn. Normal is valid: never farm Rare. Only Engine-confirmed acceptance finishes this milestone; no E fight is required."
     }
   ],
   "focus": [

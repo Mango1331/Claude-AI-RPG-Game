@@ -14,7 +14,7 @@ test('current_test is an open Level-1 campaign without a seeded fixture or force
     assert.deepEqual(guideErrors(g), []);
     assert.equal(g.fixture, undefined);
     assert.equal(g.character, undefined);
-    assert.deepEqual(g.milestones.map(m => m.id), ['creation_complete', 'open_run_level']);
+    assert.deepEqual(g.milestones.map(m => m.id), ['creation_complete', 'open_run_level', 'class_accepted']);
     assert.equal(g.openRun.targetLevel, 15);
     assert.ok(g.limits.maxTurns >= g.openRun.checkpointTurns);
     assert.doesNotMatch(g.brief, /one XP before|synthetic fixture data|choose the offensive melee/i);

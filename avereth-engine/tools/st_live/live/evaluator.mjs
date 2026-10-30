@@ -325,7 +325,8 @@ export function evaluate(chat, { guide = null } = {}) {
             }
         }
         counts.events += ev.length;
-        for (const e of ev) {
+        // Class milestones, like the level goal, require the active reply's recorded events, never a stale swipe.
+        for (const e of messageEvents(m)) {
             if (e.t === 'level.up' && e.d.id === 'pc' && e.d.rank === 'E') hit('class_rank_e', i);
             if (e.t === 'decision.opened' && e.d.decision.kind === 'class') hit('class_offered', i);
             if (e.t === 'class.evolved' && e.d.id === 'pc') { evolvedClass = { ...e.d.profile, at:i }; hit('class_accepted',i,{name:e.d.profile.name}); }

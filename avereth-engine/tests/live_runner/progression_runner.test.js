@@ -7,6 +7,7 @@ import { doneEnd, resolveTurnLimit } from '../../tools/st_live/live/run_live.mjs
 import { loadProductContent } from '../helpers.js';
 import { campaign, inject } from '../v4/patch8_lib.js';
 import { hash32 } from '../../src/util.js';
+import { classDrafts, offerClass, acceptClass } from '../../src/v4/class_growth.js';
 
 const guide = () => loadGuide('current_test');
 const game = async () => campaign(await loadProductContent(), { cls: 'Mage', skills: 'Flame Lance + Arcane Ward' });
@@ -17,7 +18,7 @@ test('current_test aims at natural Level 15 with a 100-input checkpoint and boun
     assert.equal(g.openRun.targetLevel, 15);
     assert.equal(g.openRun.checkpointTurns, 100);
     assert.equal(g.openRun.minTurns, undefined);
-    assert.deepEqual(g.milestones.map(m => m.id), ['creation_complete', 'open_run_level']);
+    assert.deepEqual(g.milestones.map(m => m.id), ['creation_complete', 'open_run_level', 'class_accepted']);
     assert.equal(g.limits.maxTurns, 1000);
     assert.equal(g.limits.maxMinutes, 1440);
     assert.ok(g.brief.length < 2500, 'replace the repeated shopping instructions with a compact guide');
@@ -36,28 +37,56 @@ test('100 inputs, narrated Level 15 and a premature player done do not complete 
     assert.equal(ev.progression.checkpoint.turn, 100);
 });
 
-test('recorded Level 14 continues; recorded Level 15 finishes even before 100 inputs', async () => {
+test('recorded Level 15 completes only the second milestone; an actual chosen E class completes the run', async () => {
     const g = await game();
     level(g, 14);
     assert.equal(finished(evaluate(g.chat, { guide: guide() })), false);
     level(g, 15);
     const ev = evaluate(g.chat, { guide: guide() });
-    assert.equal(finished(ev), true);
+    assert.equal(finished(ev), false);
     assert.equal(ev.progression.currentLevel, 15);
     assert.equal(ev.progression.checkpoint, null);
     assert.equal(ev.reached.open_run_level.level, 15);
-    assert.equal(doneEnd(ev).kind, 'done');
+    assert.equal(doneEnd(ev).kind, 'incomplete');
+    const content = await loadProductContent();
+    const drafts = classDrafts(g.state(), content);
+    assert.ok(drafts.length);
+    inject(g, offerClass(g.state(), content, drafts).events);
+    assert.equal(finished(evaluate(g.chat, { guide: guide() })), false, 'an offer is not a chosen class');
+    const skills = structuredClone(g.state().entities.pc.sheet.skills);
+    const choice = acceptClass(g.state(), content, drafts[0].def.id);
+    assert.ok(choice.events?.some(e => e.t === 'class.evolved'));
+    inject(g, choice.events);
+    assert.equal(finished(evaluate(JSON.parse(JSON.stringify(g.chat)), { guide: guide() })), true);
+    assert.equal(doneEnd(evaluate(g.chat, { guide: guide() })).kind, 'done');
+    assert.deepEqual(g.state().entities.pc.sheet.skills, skills, 'class choice preserves skills, PP and Proficiency');
 });
 
 test('Level 15 in a stale reply swipe cannot complete the campaign; reload preserves valid progress', async () => {
     const g = await game();
     const text = 'A recorded level-up.';
     g.chat.push({ is_user: false, mes: text, extra: { avereth: { text_hash: hash32(text), events: [{ t: 'level.up', d: { id: 'pc', level: 15, free_points: 5, favored: [], xp_after: 0 } }] } } });
-    assert.equal(finished(evaluate(JSON.parse(JSON.stringify(g.chat)), { guide: guide() })), true);
+    assert.ok(evaluate(JSON.parse(JSON.stringify(g.chat)), { guide: guide() }).reached.open_run_level);
+    assert.equal(finished(evaluate(g.chat, { guide: guide() })), false, 'Level 15 alone no longer finishes');
     g.chat.at(-1).mes = 'A different swipe without that level-up.';
     const ev = evaluate(g.chat, { guide: guide() });
     assert.equal(finished(ev), false);
     assert.equal(ev.progression.currentLevel, 1);
+});
+
+test('only the current reply can finish class evolution; narration alone and a stale swipe cannot', async () => {
+    const g = await game(), content = await loadProductContent();
+    level(g, 15);
+    g.chat.push({ is_user: false, mes: 'Your class has evolved into an E class.' });
+    assert.equal(finished(evaluate(g.chat, { guide: guide() })), false);
+    const drafts = classDrafts(g.state(), content);
+    inject(g, offerClass(g.state(), content, drafts).events);
+    const choice = acceptClass(g.state(), content, drafts[0].def.id);
+    const text = 'The engine confirmed his chosen class.';
+    g.chat.push({ is_user: false, mes: text, extra: { avereth: { text_hash: hash32(text), events: choice.events } } });
+    assert.equal(finished(evaluate(JSON.parse(JSON.stringify(g.chat)), { guide: guide() })), true);
+    g.chat.at(-1).mes = 'Another swipe: he is still considering the offered classes.';
+    assert.equal(finished(evaluate(g.chat, { guide: guide() })), false);
 });
 
 test('the checkpoint is the state at its own turn, not a later level-up', async () => {

@@ -345,7 +345,19 @@ function dungeonGo(s, c) {
         if (meant?.ambiguous) return { refuse: { status: 'clarify', reason: 'which way?', line: `CLARIFY — which way does he take: to ${meant.ambiguous.map((id) => placeName(s, id)).join(' or to ')}?` } };
         if (!meant) {
             const want = keyOf(name);
-            const f = featuresAt(s, here).find((x) => x.kind === 'obstacle' && x.status === 'active' && keyOf(x.name).some((w) => want.includes(w)));
+            const side = (words) => [['left', 'right'], ['north', 'south'], ['east', 'west']].map(pair => pair.find(w => words.includes(w)));
+            const way = (words) => words.some(w => /^(?:passage|corridor|tunnel|path|route|way|door|gate|archway|stair|stairs)$/.test(w));
+            const toward = side(want);
+            const f = featuresAt(s, here).find((x) => {
+                if (x.kind !== 'obstacle' || x.status !== 'active') return false;
+                const have = keyOf(x.name);
+                const atSide = side(have);
+                // Before a passage has a canonical link, its direction can still identify the barred way.
+                // Conflicting directions never match; a shared generic word alone does not identify it.
+                if (toward.some((d, i) => d && atSide[i] && d !== atSide[i])) return false;
+                if (way(want) && way(have) && toward.some((d, i) => d && d === atSide[i])) return true;
+                return want.length > 0 && want.every(w => have.includes(w));
+            });
             return f ? { refuse: barred(f, name) } : {};
         }
         to = meant.id;

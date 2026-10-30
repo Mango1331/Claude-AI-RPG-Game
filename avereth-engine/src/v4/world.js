@@ -373,7 +373,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         && !s.scene.present.includes(id) && s.entities[id].at !== s.scene.at && statusOf(s, id) !== 'dead';
     const personLabels = (id) => {
         const e = s.entities[id] || {};
-        return [e.name, e.known_name, truth(s, id, 'occupation')[0]?.o, e.role, ...(e.descriptors || [])].filter((x) => typeof x === 'string' && x.trim());
+        const names = [e.name, e.known_name].filter(x => typeof x === 'string' && x.trim());
+        // As in makeResolver, one word of a known name can identify its owner. Arrival evidence must also be
+        // unambiguous among absent people: never borrow the shared "Marla" of two different known persons.
+        const others = new Set(Object.values(s.entities).filter(x => ['npc', 'pc'].includes(x.kind) && x.id !== id)
+            .flatMap(x => [x.name, x.known_name].filter(Boolean).flatMap(name => normText(name).split(' '))));
+        const short = names.flatMap(name => normText(name).split(' ')).filter(word => word.length >= 3 && !others.has(word));
+        return [...names, ...short, truth(s, id, 'occupation')[0]?.o, e.role, ...(e.descriptors || [])].filter((x) => typeof x === 'string' && x.trim());
     };
     const notBroughtIn = (d, ids) => {
         const away = ids.filter(absentKnown);

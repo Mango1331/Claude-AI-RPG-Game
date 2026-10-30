@@ -126,7 +126,8 @@ export function offerAdvice(what, said, party, places, here, prose = '') {
     const spoken = !prose || [...prose.matchAll(/["“]([^"”]+)["”]/g)].some(m => contains(m[1], text));
     if (spoken && /\b(?:he|she|they)(?:'ll| will| would)\s+(?:give|pay|charge|sell|buy)\b/i.test(text)) return true;
     for (const m of text.matchAll(/\b([A-Z][a-z'-]*(?:\s+[A-Z][a-z'-]*){0,2})\s+(?:(?:will|would|can)\s+)?(?:sells?|buys?|charges?|offers?|asks?|pays?)\b/g)) {
-        if (/^(?:I|We|You|He|She|They|It)$/.test(m[1])) continue;
+        // First-person contractions are the speaker, not names of other traders ("I'd pay the next man").
+        if (/^(?:(?:I|We)(?:['’](?:d|ll))?|You|He|She|They|It)$/.test(m[1])) continue;
         const name = party.split(',')[0];
         if (!contains(name, m[1]) && !contains(m[1], name)) return true;
     }

@@ -6,6 +6,7 @@
 
 | Bereich | Maßgebliche Quelle / Grenze |
 |---|---|
+| Architektur nach .126 | [Konsolidierter Fachplan aus vier Reviews](patch_plans_10b/PATCH_ARCHITEKTUR_126_KONSOLIDIERT.md). Integrität/Testbasis, Variantenabbau, Kreaturen/Jagd, Gearangebote; **letzte Gegenprüfung, keine Produktfreigabe**. Alte Kampagnen keine Kompatibilitätsgrenze; Delivery bleibt ruhend. [Originalkorpus Batch1–19](testrun_10b/ARCHIV_BATCHES.md). |
 | Natürliche GLM-/ST-Langläufe | [Runindex](testrun_10b/README.md). Technische Stopps, sichere Fortsetzung, verlorene Aktion, regelgebuchter Tod und manuelles Ende unterscheiden. Nächster Schritt nur in 03. |
 | Combat Main/Minor | [Fachplan](patch_plans_10b/PATCH_COMBAT_MAIN_MINOR_ACTIONS.md), [02 §5](02_DESIGN_KANON.md#5-kampf-und-progression). Design beschlossen, **nicht implementiert**; Planbasis .104 vor Freigabe neu abgleichen. |
 | F-/E-Balance | F-Testpolicy und AoE sind bereits implementiert; endgültiges Balancing und natürlicher Level-15-Übergang offen. [Balancebeobachtungen](testrun_10b/BALANCE_ERSTEINDRUECKE_XP_STARTWERTE_20261026.md), [Sol-Entwurf](testrun_10b/ENTWURF_F_RANG_PROGRESSION_UND_E_UEBERGANG.md), [GPT-Entwurf](testrun_10b/scaling_gpt.md). Historische Vorschlagszahlen sind kein aktueller Sollwert. |
@@ -40,3 +41,4 @@ Maßgeblich im [Ideenkatalog04](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md), nicht
 ## 5. Pflege- und Reviewregel
 
 [01](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) regelt die Arbeit. Ein Review oder Plan ist keine Codefreigabe. Technik nur in der Fachpatchnote, Originalanalyse beim Run, aktueller Status in 03. Das ausführliche frühere Journal mit §§0–32 bleibt [auf 0ebf449](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0ebf4496f185a69ebac235a337ab9dd2e2b470c7/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) erhalten; frühere Ketten nur bei konkretem Bedarf lesen.
+

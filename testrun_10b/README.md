@@ -2,7 +2,7 @@
 
 **Stand: 30.10.2026. Quellenindex, keine zweite Patchplanung.** Produkt/Abnahme/nächste Arbeit in [03](../03_AKTUELLER_PROJEKTSTAND.md), Fixketten/Commits in[06](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). Ausführliche Bewertungen bleiben unverändert im jeweiligen Runordner.
 
-Die ZIP-Spalte folgt dem tatsächlich vorhandenen `main`-Dateibaum. **„Nein“ heißt nicht unabhängig im nächsten Chat prüfbar:** Ein früher geprüfter Chatupload ersetzt keinen hier verfügbaren Originalexport. Niemals aus einem Review eine eigene Originalprüfung behaupten. Vollständige frühere Indextexte/Hashhinweise: [7994fa4](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/7994fa42b115f21b705c0b770e2b4e31fde67f77/testrun_10b/README.md).
+Bei Einzelruns folgt die ZIP-Spalte dem tatsächlich vorhandenen `main`-Dateibaum. Für Batches ist der [Archivindex](ARCHIV_BATCHES.md) maßgeblich. **„Nein“ heißt nicht unabhängig im nächsten Chat prüfbar:** Ein früher geprüfter Chatupload ersetzt keinen hier verfügbaren Originalexport. Niemals aus einem Review eine eigene Originalprüfung behaupten. Vollständige frühere Indextexte/Hashhinweise: [7994fa4](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/7994fa42b115f21b705c0b770e2b4e31fde67f77/testrun_10b/README.md).
 
 ## Einzelruns
 
@@ -33,7 +33,7 @@ Die ZIP-Spalte folgt dem tatsächlich vorhandenen `main`-Dateibaum. **„Nein“
 
 ## Natürliche Batchläufe
 
-W/M/R = Warrior/Mage/Rogue; Limit und manueller Stopp sind kein technischer Fehler. **Level 15 wurde in Batch17 zweimal natürlich erreicht; eine ausdrückliche E-Klassenannahme ist noch nicht natürlich abgenommen.** Alle folgenden Batch-ZIPs fehlen im derzeitigen Git-Dateibaum; Reviews und gegebenenfalls Quellenmanifeste sind vorhanden. Ausführliche Zahlen/Hashes bei den Runs, kein erneuter Volltext hier.
+W/M/R = Warrior/Mage/Rogue; Limit und manueller Stopp sind kein technischer Fehler. **Level 15 wurde in Batch17 zweimal natürlich erreicht; eine ausdrückliche E-Klassenannahme ist noch nicht natürlich abgenommen.** **Alle 19 folgenden Batches sind jetzt vollständig als verlustfrei neu verpackte Originaldateien auf main verfügbar:** [Archivindex, Downloadlinks und SHA-256](ARCHIV_BATCHES.md). Die Originaldateibytes bleiben erhalten, der ZIP-Container wird durch TAR.XZ ersetzt. Angaben zu fehlenden ZIPs in alten Reviews beschreiben den damaligen Prüfzeitpunkt. Ausführliche Zahlen/Hashes bei den Runs, kein erneuter Volltext hier.
 
 | Batch / Originalreview | Build | Profile / Ende | Einordnung / späterer Fix |
 |---|---|---|---|
@@ -66,3 +66,4 @@ W/M/R = Warrior/Mage/Rogue; Limit und manueller Stopp sind kein technischer Fehl
 ## Umgang mit neuen Runs
 
 Originaldateien/Reviews unverändert erhalten, ZIP/Integrität und Quellenverfügbarkeit ehrlich ausweisen. Für neue Runs genau eine kurze Indexzeile; Ursachen, Requests, Events, Gegenbewertungen und spätere Umsetzung beim Run beziehungsweise in der Dev-Fachpatchnote. Keine API-Schlüssel archivieren. Runner-„completed“ bedeutet beendet, nicht Levelziel erreicht. Ein Mock-Smoke ist kein natürlicher GLM-Nachweis.
+

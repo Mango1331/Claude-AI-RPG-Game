@@ -1,0 +1,162 @@
+{
+  "batch": "batch-20261028-134108Z",
+  "source_zip": {
+    "name": "batch-20261028-134108Z.zip",
+    "size_bytes": 3818625,
+    "sha256": "3677958fc140c2395071d55be1ddc27b8ace5b717009eb6096ee3a8254cd22c6"
+  },
+  "representation": "lossless tar.xz of every original ZIP file; original ZIP container is not reproduced",
+  "files": [
+    {
+      "path": "batch-20261028-134108Z/001-guild-warrior/20261028-134108Z-current_test/avereth-events.json",
+      "size_bytes": 182117,
+      "sha256": "3b4667f0b80262bc18abb545686c8dd8ee8a0e453a05165196f2634abb84f963"
+    },
+    {
+      "path": "batch-20261028-134108Z/001-guild-warrior/20261028-134108Z-current_test/calls.json",
+      "size_bytes": 45607,
+      "sha256": "099ccfdea8512101162f6858ae733e7b66c212e0d3dc089e795a8c7328f46cff"
+    },
+    {
+      "path": "batch-20261028-134108Z/001-guild-warrior/20261028-134108Z-current_test/chat-completions.jsonl",
+      "size_bytes": 3028434,
+      "sha256": "f4b369458d555c1096b94b118c29dd3eafa0a02e0f513fc048cd4d68ec4ab852"
+    },
+    {
+      "path": "batch-20261028-134108Z/001-guild-warrior/20261028-134108Z-current_test/chat.jsonl",
+      "size_bytes": 544024,
+      "sha256": "3372f0eb1df79c3ec750f0570f2d18877793e1d584ba2512804f11602f0d132b"
+    },
+    {
+      "path": "batch-20261028-134108Z/001-guild-warrior/20261028-134108Z-current_test/evaluation.json",
+      "size_bytes": 33344,
+      "sha256": "2be436ecc7816452fd662f6897db712ec395316521e4e56e07fd28766d047725"
+    },
+    {
+      "path": "batch-20261028-134108Z/001-guild-warrior/20261028-134108Z-current_test/import.json",
+      "size_bytes": 14021,
+      "sha256": "3135210347e85c1b562a93e39293f10bd54cd9c754ef1dfae5d5c9406636d2b9"
+    },
+    {
+      "path": "batch-20261028-134108Z/001-guild-warrior/20261028-134108Z-current_test/player.jsonl",
+      "size_bytes": 168893,
+      "sha256": "fb4df90229241fa18e3fa33bcc1e511c1b01682085356443f60ab940248a697d"
+    },
+    {
+      "path": "batch-20261028-134108Z/001-guild-warrior/20261028-134108Z-current_test/report.md",
+      "size_bytes": 14609,
+      "sha256": "8671953f6018b19e5792efdda34b2c05d276152300f070391d4aa778f96587c8"
+    },
+    {
+      "path": "batch-20261028-134108Z/001-guild-warrior/20261028-134108Z-current_test/run.json",
+      "size_bytes": 9872,
+      "sha256": "ef4481f80871341090420a5e0db36d678771208cdce062cd43d8b9fe88ea611f"
+    },
+    {
+      "path": "batch-20261028-134108Z/001-guild-warrior/20261028-134108Z-current_test/screens/final.png",
+      "size_bytes": 151582,
+      "sha256": "2a4c5c04b3f5c9227f73063e5622cdca36826c9530d0c5854e055816d3cd0004"
+    },
+    {
+      "path": "batch-20261028-134108Z/001-guild-warrior/20261028-134108Z-current_test/screens/turn-022-problem.png",
+      "size_bytes": 151582,
+      "sha256": "2a4c5c04b3f5c9227f73063e5622cdca36826c9530d0c5854e055816d3cd0004"
+    },
+    {
+      "path": "batch-20261028-134108Z/001-guild-warrior/20261028-134108Z-current_test/server.log",
+      "size_bytes": 3260207,
+      "sha256": "803abbeb293e34cf0b8b5bcfc4917c2662cf30265abb533b69bd3da6994be559"
+    },
+    {
+      "path": "batch-20261028-134108Z/001-guild-warrior/20261028-134108Z-current_test/server.timed.log",
+      "size_bytes": 3570043,
+      "sha256": "6c4ff4372f9ff2cca8ca685840aded909afc262a9b37e37435448e30c93ba7c8"
+    },
+    {
+      "path": "batch-20261028-134108Z/002-guild-mage/20261028-135130Z-current_test/avereth-events.json",
+      "size_bytes": 11642,
+      "sha256": "a2ddfae28e75b3ed7e71b40433300fdb4ea4a748e7b9da8b528d76f0dfd5fbb9"
+    },
+    {
+      "path": "batch-20261028-134108Z/002-guild-mage/20261028-135130Z-current_test/calls.json",
+      "size_bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "path": "batch-20261028-134108Z/002-guild-mage/20261028-135130Z-current_test/chat-completions.jsonl",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "batch-20261028-134108Z/002-guild-mage/20261028-135130Z-current_test/chat.jsonl",
+      "size_bytes": 18845,
+      "sha256": "3e42306471b4480efc0f2147ea49003cfbb9f4aa147134dff50e7e11112470cc"
+    },
+    {
+      "path": "batch-20261028-134108Z/002-guild-mage/20261028-135130Z-current_test/evaluation.json",
+      "size_bytes": 1655,
+      "sha256": "42fdcfa39d080454f04398318ef5dbdb152417a35a4465ef32dfc36ec9f85bc1"
+    },
+    {
+      "path": "batch-20261028-134108Z/002-guild-mage/20261028-135130Z-current_test/import.json",
+      "size_bytes": 14021,
+      "sha256": "3135210347e85c1b562a93e39293f10bd54cd9c754ef1dfae5d5c9406636d2b9"
+    },
+    {
+      "path": "batch-20261028-134108Z/002-guild-mage/20261028-135130Z-current_test/player.jsonl",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "batch-20261028-134108Z/002-guild-mage/20261028-135130Z-current_test/report.md",
+      "size_bytes": 6694,
+      "sha256": "a5efa57b2c00345ec344ffe91a2c586c1889d07b79775e2d5c5857775e34e4ea"
+    },
+    {
+      "path": "batch-20261028-134108Z/002-guild-mage/20261028-135130Z-current_test/run.json",
+      "size_bytes": 3162,
+      "sha256": "e0375acc59e4a39c1d3d23343f1d5de5c34e530282c42f2f5e0b9040391980eb"
+    },
+    {
+      "path": "batch-20261028-134108Z/002-guild-mage/20261028-135130Z-current_test/screens/final.png",
+      "size_bytes": 149973,
+      "sha256": "b2591088245e5e5800fcb9d6c38a098eabd4dd4e533a6cdd4fb54adfec1b232f"
+    },
+    {
+      "path": "batch-20261028-134108Z/002-guild-mage/20261028-135130Z-current_test/server.log",
+      "size_bytes": 33962,
+      "sha256": "67feebbd5585294cce6fc7cdd98da164ff5089d74f60f4511b3a140e95d37384"
+    },
+    {
+      "path": "batch-20261028-134108Z/002-guild-mage/20261028-135130Z-current_test/server.timed.log",
+      "size_bytes": 38848,
+      "sha256": "a16af2fec4a6841b70d5bba455efea8f4f69e54da129d93891b9b6b61b77dad9"
+    },
+    {
+      "path": "batch-20261028-134108Z/batch.json",
+      "size_bytes": 2025,
+      "sha256": "ef02ba46f5f668b6d2ec5520edb8f12ab64181a31680864137ccd7a6b96bd7b9"
+    },
+    {
+      "path": "batch-20261028-134108Z/report.md",
+      "size_bytes": 592,
+      "sha256": "2b22a2a628ca04266c314d7c665c67cce86f1688120c97e14cd252cd691b2ecc"
+    }
+  ],
+  "scan": {
+    "status": "no_pattern_matches",
+    "patterns": [
+      "provider_key",
+      "bearer",
+      "assigned_secret",
+      "jwt"
+    ],
+    "findings": []
+  },
+  "archive": {
+    "path": "batch-20261028-134108Z.tar.xz",
+    "size_bytes": 545988,
+    "sha256": "d887bf372fd9a8291936fccd5dde0f9ec473e38346ace40f82db9c0e3972afb2",
+    "all_member_hashes_verified": true
+  }
+}

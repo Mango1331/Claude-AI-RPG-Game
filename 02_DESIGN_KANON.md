@@ -1,8 +1,14 @@
 # Avereth Engine — Verbindlicher Design-Kanon und Leitplanken
 
-**Stand:** 30.10.2026 · Fassung 15: XP-Balanceversuch .121 auf Nutzerauftrag. **[VERBINDLICH]** beschreibt gewolltes Verhalten, **[GEPLANT]** ein beschlossenes, noch nicht umgesetztes Ziel, **[OFFEN]** eine unentschiedene Idee. Tatsächlicher Produkt-/Abnahmestand ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md).
+**Stand:** 30.10.2026 · Fassung 16: keine Pflicht zur Weiterbespielbarkeit historischer Kampagnen; Architekturplanung noch nicht implementiert. **[VERBINDLICH]** beschreibt gewolltes Verhalten, **[GEPLANT]** ein beschlossenes, noch nicht umgesetztes Ziel, **[OFFEN]** eine unentschiedene Idee. Tatsächlicher Produkt-/Abnahmestand ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md).
 
 Vollständige Vorfassung mit Beschlusshistorie: [7994fa4](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/7994fa42b115f21b705c0b770e2b4e31fde67f77/02_DESIGN_KANON.md). Alte Implementierungsberichte und überholte Zwischenstände werden hier nicht wiederholt. **Leitprinzip: LLM versteht wie ein GM; Engine rechnet und persistiert wie ein Spiel.**
+
+## 0. Aktuelle Kompatibilitätsentscheidung (30.10.2026)
+
+**[VERBINDLICH]** Alte Kampagnen sind keine Einschränkung für technische Weiterentwicklung. Historische Runs und Reviews bleiben unveränderte Belege, begründen aber keine dauerhafte Unterstützung von V3, V4-A, Ruleset 1 oder alten Zahlenpolicies. Fachliche Sicherheitsfälle sind auf den aktuellen Produktpfad zu übertragen. Replay, Reload, Swipe und Regenerate innerhalb des unterstützten aktuellen Kampagnenprotokolls bleiben Pflicht. Laufende Batches nicht während des Tests aktualisieren.
+
+Diese Entscheidung ersetzt ältere allgemeine Kompatibilitätszusagen in den folgenden historischen Umsetzungsangaben. Gemeinsam aktuell benötigte Funktionen bleiben; keine pauschale Löschung aufgrund alter Modulnamen. **Delivery/Escort bleiben ausdrücklich ruhend erhalten**, ebenso freie Übergaben, NPC-Hilfe und Geschenke. Ein geplanter kleiner Protokollschutz sperrt neue Buchungen bei tatsächlich inkompatiblen Kampagnen; keine Migrations- oder historische Policy-Engine. [Maßgeblicher Fachplan](patch_plans_10b/PATCH_ARCHITEKTUR_126_KONSOLIDIERT.md), noch ohne Produktfreigabe.
 
 ## 1. Spielerfahrung und Prioritätensystem
 
@@ -153,3 +159,4 @@ Keine Pflicht-Continues, Beweistrophäen, Traglast-/Routinebürokratie, Temperam
 ## 11. Lesen und Aktualisieren
 
 Nur neue ausdrückliche Designentscheidungen ändern diesen Kanon. Reviews sind Hinweise, kein Beschluss. Unterschiede zu Produktcode, Lore und Narrator-Vertrag benennen; Implementierungs-/Teststand nur in 03, Ideen in 04, technische Nachweise in Dev-Patchnotes. Historische Regeln nur gezielt über die verlinkte Vorfassung nachlesen.
+

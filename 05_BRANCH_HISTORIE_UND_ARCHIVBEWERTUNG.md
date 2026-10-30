@@ -21,4 +21,4 @@ Damals gab es main, einen aktiven Entwicklungsbranch und 16 alte Branches. **13*
 - Keine alten Branch-Entscheidungen in [02](02_DESIGN_KANON.md) übernehmen, wenn sie nicht längst Bestandteil des aktuellen Kanons oder der Engine sind.
 - Die 13 seinerzeit redundant geprüften Branches sind in der [alten Tabelle](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0ebf4496f185a69ebac235a337ab9dd2e2b470c7/05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md#3-die-13-vollständig-übernommenen-und-als-branch-redundanten-stände) mit sämtlichen SHAs dokumentiert; **vor tatsächlicher Aufräumarbeit aktuelle Branchliste und Vorfahrrelation neu prüfen**.
 
-**Jetzt vorrangig:** technische GLM-/Runner-Stabilität und F→E-Scaling gemäß [03](03_AKTUELLER_PROJEKTSTAND.md). Diese Datei ist nur ein historischer Sicherheitsvermerk.
+Diese Datei bleibt ein historischer Sicherheitsvermerk. Aktuelle Prioritäten ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md).

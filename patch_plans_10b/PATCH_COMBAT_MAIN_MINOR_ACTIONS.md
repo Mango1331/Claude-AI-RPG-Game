@@ -1,6 +1,6 @@
 # Kampf: Hauptaktion und Nebenaktion – Analyse und technischer Fachplan
 
-**Stand:** 28.10.2026. **Status: Planung, keine Produktimplementierung oder Testausführung.** Auftrag: Feedback bewerten, vollständigen technischen Weg vorbereiten; Umsetzung folgt als eigener Arbeitsabschnitt. Der parallel gestartete natürliche Vergleichsbatch bleibt auf seinem tatsächlich gestarteten Build.
+**Planbasis: 28.10.2026/.104; Statusabgleich 30.10.2026: weiterhin nicht implementiert.** Das Design ist beschlossen; Umsetzung benötigt einen eigenen Auftrag und Codeabgleich mit dem dann aktuellen Produkt-HEAD. Insbesondere spätere F-/AoE-Änderungen berücksichtigen. Die folgende technische Spezifikation bleibt erhalten; laufender Stand ausschließlich in [03](../03_AKTUELLER_PROJEKTSTAND.md).
 
 **Geprüfte Codebasis:** Entwicklungsbranch `claude/c-planner-prototype-2026-10-02-gpt-c666`, Build **4.3.0-c.6.6.104**, [Commit b9ffa2c](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b9ffa2c1bfe7c6e00c760d5a115f9d53eec95016). `main` vor diesem Dokument: `10918bd`. Grundlage ist außerdem das Nutzerfeedback `Chatgpt Feedback(20261028-022433).md`. Das Feedback wird hier bewertet, nicht als unabhängiger Testnachweis ausgegeben.
 

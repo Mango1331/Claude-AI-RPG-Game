@@ -1,6 +1,6 @@
 # Geplante Fachpatches – Engine-Anzeige für Gildenboard und Handel
 
-**Status: Fachplan zur Gegenprüfung, nicht implementiert.** Stand 25.10.2026; geprüfte Produktbasis **.90 / `b47d85743d6fdb3644e975f826843efe73ab77ae`**. Keine Buildnummer oder Testergebnisse für diese Planung. Die .90-Abnahme betrifft den bisherigen Produktcode, nicht diesen Entwurf.
+**Zurückgestellter Fachplan, keine aktuelle Umsetzungsfreigabe.** Planbasis 25.10.2026/.90; keine eigene Produktabnahme. Bestehende Engine-Boardkarten und Offerten sind nicht gleichbedeutend mit der hier vorgeschlagenen vollständigen Pipeline. Vor neuer Arbeit späteren Handel/Guild-Code abgleichen; Status und Priorität in [03](../03_AKTUELLER_PROJEKTSTAND.md).
 
 ## Entscheidungsvorschlag und Bewertung des Feedbacks
 

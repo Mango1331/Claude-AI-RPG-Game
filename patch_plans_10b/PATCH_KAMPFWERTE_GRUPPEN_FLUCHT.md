@@ -1,6 +1,6 @@
 # Patch 10B – Kampfwerte: Gruppenrisiko, Schadensspitzen und Flucht (Fach-Patchnote)
 
-**Status:** GEPLANT / BALANCEKANDIDAT, NICHT IMPLEMENTIERT. **Priorität P2 nach den bestätigten Quest-P1.** Getrennter Combat-Fachpatch, **nicht** Bestandteil von Sols parallel laufender Board-/Lieferarbeit. Ausgang: [Run 9](../testrun_10b/20261024-202508Z-current_test/REVIEW.md) auf .71 und [Run 10](../testrun_10b/20261024-235637Z-current_test/REVIEW.md) auf .72. Aktuellen Code/Simulator-HEAD vor Ausführung neu abgleichen.
+**Historischer Balancekandidat auf Basis.71/.72, keine aktuelle Patchfreigabe.** Seitdem wurden Startwerte, F-Testbalance und AoE geändert; frühere Priorität und Parallelauftrag sind erledigt. Vor einer neuen Entscheidung mit aktuellen Runs und dem separaten [Main-/Minor-Plan](PATCH_COMBAT_MAIN_MINOR_ACTIONS.md) abgleichen. Die folgende Analyse bleibt unverändert als damalige Hypothese erhalten; aktueller Stand in [03](../03_AKTUELLER_PROJEKTSTAND.md).
 
 ## 1. Was belegt ist – und was nicht
 

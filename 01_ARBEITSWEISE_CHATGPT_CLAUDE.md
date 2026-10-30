@@ -1,6 +1,6 @@
 # Avereth Engine – Zusammenarbeit und Arbeitsweise
 
-**Stand:** 24.10.2026 · dauerhaft gültige Arbeitsregeln. **Aktueller Projektstand:** [03_AKTUELLER_PROJEKTSTAND.md](03_AKTUELLER_PROJEKTSTAND.md). Dieses Dokument enthält bewusst keine laufenden Buildnummern, Testergebnisse oder alten Patchaufträge.
+**Stand:** 30.10.2026 · dauerhaft gültige Arbeitsregeln. **Aktueller Projektstand:** [03_AKTUELLER_PROJEKTSTAND.md](03_AKTUELLER_PROJEKTSTAND.md). Dieses Dokument enthält bewusst keine laufenden Buildnummern, Testergebnisse oder alten Patchaufträge.
 
 ## Projekt und Rollen
 
@@ -43,4 +43,4 @@ Deutsch, du-Form, knapp und fachlich vollständig. Wenn der Nutzer einen Auftrag
 | Technische Patchumsetzung | **Eine passende Fach-Patchnote** im Entwicklungsbranch |
 | Original-Livetest | `testrun_10b/<Run-ID>/REVIEW.md` und Original-ZIP |
 
-Andere Dateien **verlinken** die maßgebliche Quelle. Normale Patches nicht in sämtlichen Übersichten erneut ausführlich beschreiben; 03 bei relevanten Status-/Abnahmeschritten kurz aktualisieren, 02 nur nach neuer Designentscheidung, 01 nur bei Prozessänderung. Keine automatische neue Datei, Auditnotiz oder weitere Prüfphase. Historische Quellen und einzigartige Entscheidungen erhalten; alte Snapshots bleiben datierte Geschichte, niemals aktuelle Aufträge.
+Andere Dateien **verlinken** die maßgebliche Quelle. Normale Patches nicht in sämtlichen Übersichten erneut ausführlich beschreiben; 03 bei relevanten Status-/Abnahmeschritten kurz aktualisieren, 02 nur nach neuer Designentscheidung, 01 nur bei Prozessänderung. Keine automatische neue Datei, Auditnotiz oder weitere Prüfphase. Erledigte Planabschnitte auf Ergebnis, Produktcommit und maßgebliche Patchnote kürzen; die vollständige Vorfassung per festem Commitlink erhalten. Einzigartige Entscheidungen und Originalreviews nicht still umschreiben. Offene Ideen knapp mit Status und Quelle führen. Alte Snapshots sind Geschichte, keine aktuellen Aufträge.

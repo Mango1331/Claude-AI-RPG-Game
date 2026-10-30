@@ -11,7 +11,7 @@
 | Warrior | **200** | **2.229** | **L11**, Limit | **12/12 Siege** | **4** | **4.235 / 1.730**, Gesamt 5.965 | **130 cp** |
 | Mage | **22** | **283** | **L3**, Tod | **2 Siege, 1 Tod** | **1** | **300 / 115**, Gesamt 415 | **70 cp** |
 | Rogue | **200** | **2.278** | **L6**, Limit **in laufendem Kampf** | **18/18 beendete Kämpfe gewonnen; 1 weiterer offen** | **1** | **1.820 / 115**, Gesamt 1.935 | **42 cp** |
-| **Gesamt** | **422** | **4.790** | 2 Limits, 1 Kampftod | **32 Siege / 33 abgeschlossene Encounters; 1 offen** | **6** | **8.285 XP gesamt** | – |
+| **Gesamt** | **422** | **4.790** | 2 Limits, 1 Kampftod | **32 Siege / 33 abgeschlossene Encounters; 1 offen** | **6** | **8.315 XP gesamt** | – |
 
 Kein Teilrun erreicht L15, keine `class.evolved`-Events, keine `class_accepted`-Etappe. Meilensteine jeweils **1/3** (Charaktererstellung). Die dritte Runner-Etappe ist damit in **diesem** Batch **nicht praktisch geprüft**; weder ihr Scheitern noch ein Defekt der E-Klassenauswahl wird belegt. **200 Inputs** sind das bewusst gesetzte Eingabelimit und kein terminaler Technikabbruch. `pageErrors=[]` in allen drei Runs; Export-`integrity: OK`. Ein Rogue-Encounter (`enc.t183`) begann am Limit noch, ist aber **nicht** abgeschlossen; dafür weder Sieg noch XP vorwegnehmen.
 

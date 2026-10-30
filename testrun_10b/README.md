@@ -33,10 +33,11 @@ Die ZIP-Spalte folgt dem tatsächlich vorhandenen `main`-Dateibaum. **„Nein“
 
 ## Natürliche Batchläufe
 
-W/M/R = Warrior/Mage/Rogue; Limit und manueller Stopp sind kein technischer Fehler. **Level 15 ist bisher nicht natürlich abgenommen.** Alle folgenden Batch-ZIPs fehlen im derzeitigen Git-Dateibaum; Reviews und gegebenenfalls Quellenmanifeste sind vorhanden. Ausführliche Zahlen/Hashes bei den Runs, kein erneuter Volltext hier.
+W/M/R = Warrior/Mage/Rogue; Limit und manueller Stopp sind kein technischer Fehler. **Level 15 wurde in Batch17 zweimal natürlich erreicht; eine ausdrückliche E-Klassenannahme ist noch nicht natürlich abgenommen.** Alle folgenden Batch-ZIPs fehlen im derzeitigen Git-Dateibaum; Reviews und gegebenenfalls Quellenmanifeste sind vorhanden. Ausführliche Zahlen/Hashes bei den Runs, kein erneuter Volltext hier.
 
 | Batch / Originalreview | Build | Profile / Ende | Einordnung / späterer Fix |
 |---|---|---|---|
+| [18: batch-20261030-082423Z](batch-20261030-082423Z/REVIEW.md) | **.123** | **W200/L11 limit; M22/L3 Tod; R200/L6 limit** | 4790 Events, 32 abgeschlossene Siege / 1 Mage-Tod / 1 Rogue-Kampf offen; 6 Guildabschlüsse; Rogue 0/4 wegen falscher ungebundener L1-Turtles statt L4–7-Population; Warrior-Zweiteile-Gearpaket als ein Armor-Objekt; PP bis P3 |
 | [17: batch-20261030-040258Z](batch-20261030-040258Z/REVIEW.md) · [Sol](batch-20261030-040258Z/SOL_COUNTERREVIEW.md) | **.122** | **W168/L15 done; M106/L15 done; R141/L13 manuell gestoppt** | XP×5 erstmals natürlich L15 (2/3); 48/48 Siege, 16 Guildabschlüsse, Warrior 2 echte Gearupgrades zum auffällig günstigen Narratorpreis; P1-/Skillwachstum hinkt hinterher |
 | [16: batch-20261030-002939Z](batch-20261030-002939Z/REVIEW.md) · [Sol](batch-20261030-002939Z/SOL_COUNTERREVIEW.md) | .120 | W29/L1Tod; M150/L9Limit; R150/L8Limit | 30/31 Siege; 15 Guildabschlüsse; 4424 Events gültig; drei begrenzte Fehlablehnungen, kein Gearupgrade |
 | [15: batch-20261029-174048Z](batch-20261029-174048Z/REVIEW.md) | .119 | W73/L3Tod; M150/L8Limit; R33/L2Tod | 17/19Siege; T141 wirklich erfüllt/unbezahlt → .120; neue Doppeljagden gesperrt |

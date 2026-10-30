@@ -15,7 +15,7 @@ import { worldVocab } from './extract.js';
 //
 // A V3 campaign never reaches this module's V4 branches: prepareGenerationAsync and processReplyAny hand it to host.js.
 import {
-    rec, setRec, foldChat, hasCampaign, lastUserIndex, lastPlayerIndex, lastReplyIndex, prepareGeneration, processReply,
+    rec, setRec, foldChat, foldBlock, hasCampaign, lastUserIndex, lastPlayerIndex, lastReplyIndex, prepareGeneration, processReply,
     turnBlock, laterTurns, showPanel, messageEvents, foldStats,
 } from '../host.js';
 import { playerTurn } from '../engine.js';
@@ -557,7 +557,11 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
             if (late) setRec(chat[p], rec(staged[p]));
             setRec(msg, r);
         };
-        const before = foldChat(staged, u).state;
+        const fold = foldChat(staged, u);
+        // Architecture patch A (.127): no planner call, payment, fight round or record from a fold that is not whole
+        const blocked = foldBlock(fold);
+        if (blocked) return { action: 'fold_blocked', dirty: false, index: u, block: blocked, notice: blocked.notice };
+        const before = fold.state;
         // the message read once (Gen 3.5 Intent IR): its route, its links, the parsed act the V3 engine resolves
         const ir = readTurn(msg.mes, before, content);
         // prototype C: the planner reads every free-text message; '#' commands, character creation and a dead PC stay
@@ -630,7 +634,10 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         setRec(msg, r);
         return { action: 'panels', panels: r.command.panels, index: u, dirty: true };
     }
-    const { state, errors, context } = turnBlock(chat, u, content, settings);
+    const { state, errors, failures, context } = turnBlock(chat, u, content, settings);
+    // .127: a reused record (swipe, regenerate, continue) is narrated only from a whole state as well
+    const blocked = foldBlock({ failures });
+    if (blocked) return { action: 'fold_blocked', dirty, index: u, block: blocked, notice: blocked.notice };
     return { action: 'context', context, loreKeys: loreKeys(state, content), dirty, errors };
 }
 
@@ -683,7 +690,11 @@ export function processReplyAny(chat, id, content, opts = {}) {
         setRec(msg, { v: RECORD_V4, events: [], system_answer: true, text_hash: hash32(msg.mes) });
         return { changed: true };
     }
-    const { state } = foldChat(chat, id);
+    const fold = foldChat(chat, id);
+    // .127: a reply after a broken record is neither shown with a HUD of a partial state nor queued for extraction
+    const blocked = foldBlock(fold);
+    if (blocked) return { changed: false, foldBlocked: blocked };
+    const { state } = fold;
     // Patch 8.2: the narrator's time (index.js: engine block handed over → reply received), telemetry with the record
     const narration = Number.isFinite(opts.narrationMs) ? { ms: opts.narrationMs } : null;
     // Patch 8.2 (live 21.10.2026 13:33, message 36: the narrator's 4,096 tokens went to its reasoning, the reply was
@@ -708,7 +719,9 @@ export function extractionRequest(chat, id, content) {
     const msg = chat[id];
     const r = rec(msg);
     if (!msg || !r || r.extraction?.status !== 'pending' || r.text_hash !== hash32(msg.mes) || laterTurns(chat, id)) return null;
-    const { state } = foldChat(chat, id);
+    const fold = foldChat(chat, id);
+    if (foldBlock(fold)) return null; // .127: no model request from a broken record (runExtraction reports the block)
+    const { state } = fold;
     const o = state.last?.outcome || {};
     const gos = (o.auth?.gos || []).map((g) => g.to).filter(Boolean);
     // Prototype C (4.3.0-c.5): the contracts he read on a board, by id, also for a contract or board taken on arrival
@@ -732,6 +745,14 @@ export function extractionRequest(chat, id, content) {
  */
 export async function runExtraction(chat, id, content, llm, { hud = 'closed', isCurrent = () => true } = {}) {
     if (!isCurrent()) return { changed: false, cancelled: true };
+    // .127: a broken record stops here, before any provider request; the pending record stays untouched (a plain
+    // result, no exception: the host's failure path would book extract.failed)
+    const blockedAt = () => {
+        const r = rec(chat[id]);
+        return r?.extraction?.status === 'pending' ? foldBlock(foldChat(chat, id)) : null;
+    };
+    const blocked = blockedAt();
+    if (blocked) return { changed: false, foldBlocked: blocked };
     const req = extractionRequest(chat, id, content);
     if (!req) return { changed: false };
     // A provider failure may be caused by a swipe, edit, or newer Engine turn.
@@ -786,6 +807,9 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
             if (++invalidAnswers >= 2) break;
         }
         if (attempt === 2) break;
+        // .127: no repair request on a record that broke while the answer was out
+        const broke = blockedAt();
+        if (broke) return { changed: false, foldBlocked: broke };
         repaired = true;
         if (candidate) {
             messages = extractorRequest(vocab, { catalog: req.catalog, actions: req.actions, player: req.player,
@@ -811,7 +835,12 @@ export function applyExtraction(chat, id, content, parsed, { hash, ms = null, re
     const r = rec(msg);
     if (!msg || !r || r.extraction?.status !== 'pending' || r.text_hash !== hash || hash32(msg.mes) !== hash) return { changed: false };
     if (laterTurns(chat, id)) return { changed: false, late: true };
-    const { state } = foldChat(chat, id);
+    const fold = foldChat(chat, id);
+    // .127: checked after the extractor's answer and on the host's failure path alike: no replyTurnV4, no setRec, no
+    // extract.failed replacement record from a broken fold; the reply stays pending
+    const blocked = foldBlock(fold);
+    if (blocked) return { changed: false, foldBlocked: blocked };
+    const { state } = fold;
     if (!parsed?.valid) {
         const events = extractionFailedEvents(error || 'no valid answer', ms);
         const view = errorKind === 'engine' ? {} : display(msg, content, state, { failed: `the extractor gave no valid answer (${String(error || 'no answer').slice(0, 80)})`, state }, hud);

@@ -113,7 +113,8 @@ test('Run21 known target in the catalog does not authorize travel or relax malfo
 test('Run21 T90 original response applies once through runtime, reload and a new swipe', async () => {
     const g = await campaign(content, { cls: 'Mage', skills: 'Arcane Bolt + Blink', fProgression: true });
     inject(g, [
-        ...['realm.caelreth', 'loc.barrowford', 'loc.barrowford.the_shepherds_house', site].map(id => ({ t: 'place.created', d: { place: copy(f.t90.state.places[id]) } })),
+        // .127: places the product campaign already has (realm.caelreth) are not created twice (Paket A fold integrity)
+        ...['realm.caelreth', 'loc.barrowford', 'loc.barrowford.the_shepherds_house', site].filter(id => !g.state().places[id]).map(id => ({ t: 'place.created', d: { place: copy(f.t90.state.places[id]) } })),
         { t: 'quest.created', d: { quest: copy(f.t90.state.quests[quest]) } },
         { t: 'scene.moved', d: { at: f.t90.state.scene.at, location: 'realm.caelreth', place: 'the shepherds house', reset_present: true } },
     ]);

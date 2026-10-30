@@ -297,6 +297,20 @@ async function v4Page(DATA) {
     handlers.ms();
     const warned = window.__log.filter((m) => m.startsWith('warn ') && m.includes('narrator contract on this character card is outdated'));
     result.contractOutdated = older !== contract && status().includes('narrator contract: OUTDATED') && warned.length === 1;
+    // Architecture patch A (.127): an earlier record that no longer folds (an event of a deleted message) stops the next
+    // turn and the next reply in the host: an error notice, no model request (the request list below stays exact), no
+    // save, no record on the new message, no engine block
+    chat[r1].extra.avereth.events.push({ t: 'entity.updated', d: { id: 'npc.ghost_of_a_deleted_message', set: { note: 'x' } } });
+    const saved = window.__saved || 0;
+    const logged = window.__log.length;
+    window.__prompt = 'stale';
+    await send('I read the board again.');
+    const blockedTurn = chat.at(-1);
+    const r4 = await reply('A reply arriving after the broken record.');
+    const notices = window.__log.slice(logged);
+    result.foldBlocked = aborted && window.__prompt === '' && !rec(blockedTurn) && !rec(chat[r4]) && (window.__saved || 0) === saved
+        && notices.length === 1 && notices[0].startsWith(`error BLOCKED — the campaign record could not be rebuilt: message ${r1} (entity.updated)`)
+        && status().includes('integrity: 1 problem(s)');
     window.__result = result;
 }
 
@@ -388,7 +402,7 @@ if (!v4.requests) console.log('V4 requests:', JSON.stringify(llmCalls, null, 1))
 const okV3 = v3.campaign && v3.step2 && v3.creation && v3.firstStory && v3.stripped && v3.retcon && v3.combatShown && v3.command && v3.commitShown && v3.loreBridge && v3.wordSwap && v3.settingsUi
     && v3.hud && v3.trackersRemoved && v3.hudNotInPrompt && v3.historyWindow && v3.reportRequest && !v3.errors.length && !v3.log.length;
 const okV4 = v4.v4Campaign && v4.creation && v4.playerActions && v4.pendingShown && v4.barrier && v4.worldShown && v4.registerPending && v4.generateRawPath
-    && v4.world && v4.statusLine && v4.contractOutdated && v4.settingsUi && v4.requests && !v4.errors.length && !v4.log.length;
+    && v4.world && v4.statusLine && v4.contractOutdated && v4.settingsUi && v4.requests && v4.foldBlocked && !v4.errors.length && !v4.log.length;
 console.log(`V3 page: ${okV3 ? 'OK' : 'FAILED'} | V4 page: ${okV4 ? 'OK' : 'FAILED'}`);
 console.log(okV3 && okV4 ? 'BROWSER SMOKE: OK' : 'BROWSER SMOKE: FAILED');
 process.exit(okV3 && okV4 ? 0 : 1);

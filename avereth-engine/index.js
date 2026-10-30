@@ -39,6 +39,15 @@ let persistenceBlocked = null;
 // Build .107 (audit of .106): SillyTavern 1.19 keeps one chat array for every chat and refills it in place, so the
 // block names its chat and record: another chat is never blocked or released by it
 const blockPersistence = (c, id) => { persistenceBlocked = { chat: c.chat, chatId: c.getCurrentChatId(), id, message: c.chat[id] }; };
+// Architecture patch A (.127): a campaign record that no longer folds whole stops every new authoritative step. The
+// host only shows it (no chat message, no save, no failure record): the player loads a valid state or deletes from there
+let foldWarned = null;
+function showFoldBlock(block) {
+    if (!block) return;
+    const key = `${ctx().getCurrentChatId()}:${block.index}:${block.type}`;
+    if (foldWarned !== key) toastr.error(block.notice, 'Avereth Engine', { timeOut: 0, extendedTimeOut: 0 });
+    foldWarned = key;
+}
 let pendingReport = null; // {chatId, id, hash, job}: the report request of the latest reply, while it runs
 let llmPath = null; // Runtime V4: which call the last LLM request used ('custom endpoint' | 'generateRaw')
 let narrationStart = null; // Patch 8.2: {chatId, user, t}: when the engine block of a story turn was handed to SillyTavern
@@ -174,8 +183,11 @@ const worldJobs = createWorldJobs({
         const c = ctx();
         return { chat: c.chat, chatId: c.getCurrentChatId() };
     },
-    run: (chat, id, { isCurrent, signal }) =>
-        runExtraction(chat, id, content, (req) => v4Llm({ ...req, signal }), { hud: settings().hud, isCurrent }),
+    run: async (chat, id, { isCurrent, signal }) => {
+        const result = await runExtraction(chat, id, content, (req) => v4Llm({ ...req, signal }), { hud: settings().hud, isCurrent });
+        if (result?.foldBlocked && isCurrent()) { showFoldBlock(result.foldBlocked); renderDebug(); }
+        return result;
+    },
     failed: ({chat, id, hash}, error, isCurrent) => isCurrent()
         ? applyExtraction(chat,id,content,null,{hash,error:String(error?.message || error),errorKind:'engine',hud:settings().hud})
         : {changed:false},
@@ -243,6 +255,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
                 const w0 = Date.now();
                 const completed = await job;
                 if (completed?.persistenceFailed) throw new Error('World records could not be saved safely; no new turn was started.');
+                if (completed?.foldBlocked) { abort(true); setPrompt(''); showFoldBlock(completed.foldBlocked); renderDebug(); return; }
                 if (!isCurrent()) { abort(true); return; }
                 waited = Date.now() - w0;
             }
@@ -264,6 +277,13 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
             // 'clear': quiet/impersonate generations get no engine block; 'none': no campaign or no player message yet
             setPrompt('');
             if (r.dirty) await c.saveChat();
+            return;
+        }
+        if (r.action === 'fold_blocked') {
+            abort(true);
+            setPrompt('');
+            showFoldBlock(r.block);
+            renderDebug();
             return;
         }
         if (r.action === 'not_executed') {
@@ -376,6 +396,7 @@ async function onMessageReceived(messageId) {
         const started = narrationStart?.chatId === c.getCurrentChatId() && Number(messageId) > narrationStart.user ? narrationStart.t : null;
         narrationStart = null;
         const r = processReplyAny(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers, recover, runtime: newRuntime(), planner: newPlanner(), narrationMs: started === null ? null : Date.now() - started });
+        if (r.foldBlocked) { showFoldBlock(r.foldBlocked); renderDebug(); return; }
         if (!r.changed) return;
         rerender(c, Number(messageId));
         await c.saveChat();

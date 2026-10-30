@@ -51,23 +51,45 @@ const FOLDS = { calls: 0, ms: 0 };
 const clock = () => (typeof performance !== 'undefined' && typeof performance.now === 'function' ? performance.now() : Date.now());
 export const foldStats = () => ({ ...FOLDS });
 
-/** Fold messages [0, end) into the campaign state. Events that no longer apply (e.g. after deletions) are skipped. */
+/**
+ * Fold messages [0, end) into the campaign state. Events that no longer apply (e.g. after deletions) are skipped, so a
+ * display can still show something; `failures` names each one (message index, event type). Architecture patch A
+ * (.127): such a state is partial and never the basis of a new authoritative step (foldBlock below).
+ */
 export function foldChat(chat, end = chat.length) {
     const t0 = clock();
     const state = emptyState();
     const errors = [];
+    const failures = [];
     for (let i = 0; i < Math.min(end, chat.length); i++) {
         for (const e of messageEvents(chat[i])) {
             try {
                 applyEvent(state, e);
             } catch (err) {
                 errors.push(`message ${i}: ${e.t}: ${err.message}`);
+                failures.push({ index: i, type: e.t, error: String(err.message).slice(0, 200) });
             }
         }
     }
     FOLDS.calls += 1;
     FOLDS.ms += clock() - t0;
-    return { state, errors };
+    return { state, errors, failures };
+}
+
+/**
+ * Architecture patch A (.127): the one shared verdict on a fold that is not whole. null when every event applied;
+ * otherwise the first failing message and event type, and the notice the host shows. Nothing is booked, saved or asked
+ * of a model on such a state; the player loads a valid saved state or deliberately discards the history from there.
+ */
+export function foldBlock(fold) {
+    const first = fold?.failures?.[0];
+    if (!first) return null;
+    return {
+        index: first.index, type: first.type, error: first.error, count: fold.failures.length,
+        notice: `BLOCKED — the campaign record could not be rebuilt: message ${first.index} (${first.type}) no longer applies`
+            + ` (${first.error})${fold.failures.length > 1 ? `, ${fold.failures.length} failing events in all` : ''}. Nothing was booked,`
+            + ` saved or sent to a model. Load a valid saved state, or deliberately delete the messages from ${first.index} onward, then continue.`,
+    };
 }
 
 export function hasCampaign(chat) {
@@ -142,7 +164,7 @@ export function prepareGeneration(chat, content, { type = 'normal', settings = {
 /** The engine block for player message u: the state after that message, the reply before it, the host's settings. */
 export function turnBlock(chat, u, content, settings = {}) {
     const r = rec(chat[u]);
-    const { state, errors } = foldChat(chat, u + 1);
+    const { state, errors, failures } = foldChat(chat, u + 1);
     const p = lastReplyIndex(chat, u);
     const prev = p >= 0 ? rec(chat[p]) : null;
     const previousInput = chat.slice(0,u).findLast(m => m.is_user);
@@ -160,7 +182,7 @@ export function turnBlock(chat, u, content, settings = {}) {
         lore: settings.engineLore !== false,
         envelope: settings.engineEnvelope !== false,
     });
-    return { state, errors, context };
+    return { state, errors, failures, context };
 }
 
 export const laterTurns = (chat, id) => chat.slice(id + 1).some((m) => messageEvents(m).length);

@@ -374,7 +374,9 @@ export async function run(o) {
             let soft = softExtractionFailure(chat, userAt, fault);
             if (soft) {
                 validationContent ||= await loadContentPack(async name => JSON.parse(fs.readFileSync(path.join(ENGINE,'content',name),'utf8')));
-                if (validateState(foldChat(chat).state,validationContent).length) {
+                // .127: a fold with events that no longer apply is no basis for a continuation either
+                const folded = foldChat(chat);
+                if (folded.errors.length || validateState(folded.state,validationContent).length) {
                     end={kind:'integrity_failed',why:`turn ${turn}: failed state validation before continuation`,turn}; break;
                 }
                 let saved=false;

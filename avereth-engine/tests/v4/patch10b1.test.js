@@ -58,8 +58,9 @@ test('10B-1 functional A-B-A history in one turn, explicit IDs and references su
 async function registration() {
     const g = await campaign(content);
     const s = g.state(), at = 'loc.ashbridge.guild_hall';
+    // .127: only a hall the campaign does not have yet is created (a second place.created no longer folds: Paket A)
     inject(g, [
-        { t: 'place.created', d: { place: { id: at, name: 'Guild hall', kind: 'guild_hall', parent: s.scene.location, realm: 'realm.valedorn_crown', tags: ['guild'] } } },
+        ...(s.places[at] ? [] : [{ t: 'place.created', d: { place: { id: at, name: 'Guild hall', kind: 'guild_hall', parent: s.scene.location, realm: 'realm.valedorn_crown', tags: ['guild'] } } }]),
         { t: 'scene.moved', d: { at, location: s.scene.location, place: 'Guild hall', reset_present: true } },
         { t: 'offer.created', d: { offer: { id: 'offer.registration', seller: 'guild', at, status: 'open', canon: true, lines: [{ id: 'l1', what: 'Guild registration fee', kind: 'service', service: 'guild_registration', qty: 1, price_cp: 20 }] } } },
     ]);

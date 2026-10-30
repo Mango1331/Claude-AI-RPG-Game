@@ -27,7 +27,7 @@ import { buildContext } from './context.js';
 import { targetQuestion } from './display.js';
 import { parseCoin } from './economy.js';
 import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, roundHalfUp, ENGINE_VERSION } from './util.js';
-import { seedPlaces, lineage, populationAt, encounterArea } from './v4/domain.js';
+import { seedPlaces, lineage, populationAt, encounterArea, namesYoung } from './v4/domain.js';
 import { rankAt, dungeonOf, trueDungeonOf } from './v4/dungeon.js';
 import { syncEvents, levelSpan } from './v4/living.js';
 import { attackTargetHere, tacticalHere, areaCaught, areaBand, approachedBy, sideOf, burstCaught } from './v4/scene_handles.js';
@@ -383,16 +383,19 @@ export function materialise(s, content, dice, emit, id) {
             || (s.meta.f_progression && lineage(s, at).some(p => s.places[p].kind === 'wilderness') ? 'wilderness' : 'unknown');
         // Room-by-room navigation (a den inside a hunting site) is not a true Dungeon population.
         const population = s.meta.f_progression && !trueDungeonOf(s, at) ? populationAt(s, at, e, content, { matchAnchor: false }) : null;
+        const young = s.meta.f_progression && namesYoung(content, `${e.species || ''} ${e.name || ''}`);
+        const populationLevels = population && (!young || namesYoung(content, population.population.species)) ? population.population.levels : null;
         const anchor = content.anchors.get(population?.population.anchor || e.anchor) || anchorFor(content, [e.species, ...(e.descriptors || [])].join(' '));
         if (!anchor) throw new Error(`creature ${id} has no valid body-plan anchor`);
-        const areaLevels = s.meta.f_progression && !trueDungeonOf(s, at) && e.threat !== false ? encounterArea(s, at)?.encounter_levels : null;
+        const areaLevels = s.meta.f_progression && !young && !trueDungeonOf(s, at) && e.threat !== false ? encounterArea(s, at)?.encounter_levels : null;
         const rank = !e.level ? rankAt(s, at) : null;
         const lo = rank && content.rules.ranks.bands.find((b) => b.rank === rank.min);
         const hi = rank && content.rules.ranks.bands.find((b) => b.rank === rank.max);
         // Patch 8: in a Living Dungeon, an ordinary foe of a level is drawn from that level's own window (its Rank band's
         // lower part, fixed when the Dungeon was established: src/v4/living.js), never across the whole band
         const span = !e.level && rank ? levelSpan(s, at) : null;
-        const band = span || population?.population.levels || areaLevels;
+        // Species identity alone does not assign adult habitat levels to an explicitly young individual.
+        const band = span || populationLevels || areaLevels;
         const level = e.level || (band ? dice.int(band[0], band[1], 'creature level') : lo && hi ? dice.int(lo.min, hi.max, 'creature level') : chooseCreatureLevel(area, content, dice));
         const belongs = population && level >= population.population.levels[0] && level <= population.population.levels[1];
         emit({ t: 'entity.updated', d: { id, set: { ...(population ? { anchor: anchor.id } : {}), profile: scaleCreature(anchor, level, e.type || 'normal', content, e.variation || null), ...(belongs ? { population_at: population.id } : {}), ...(dungeonOf(s, at) && !e.met_at ? { met_at: at } : {}) } } });

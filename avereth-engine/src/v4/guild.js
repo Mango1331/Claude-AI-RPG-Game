@@ -123,7 +123,7 @@ function huntTargets(s, content, q, branch = q.source?.branch) {
     }
     const targets = new Set();
     if (q.dungeon) cullPopulation(s, content, q.dungeon, sl => {
-        if (objectives.some(o => cullKind(content, o, { species: sl.species, anchor: sl.anchor, role: sl.role, title: sl.name })))
+        if (objectives.some(o => cullKind(content, o, { species: sl.species, anchor: sl.anchor, role: sl.role, title: sl.name, yearlings: !!s.meta.f_progression })))
             targets.add(`slot:${q.dungeon}:${sl.ref}`);
         return false;
     }, { levels: Number.isInteger(q.floor) ? [q.floor] : levelsNamed(objectives.map(o => o.where || '').join('\n')) });
@@ -234,7 +234,7 @@ export function defeatTally(s, content, q) {
         // 4.1.2 counted creatures only, so five dead bandits made 0 of 5)
         const people = peopleNamed(o.what, content);
         // Patch 8.3: by its kind and its part in a Dungeon's encounter, the rule the board's count was fixed by (cullKind)
-        const kind = (e) => cullKind(content, o, { species: e.species, anchor: e.anchor || e.profile?.anchor, role: e.slot?.role, title: slotNameOf(s, e), name: e.name }, same);
+        const kind = (e) => cullKind(content, o, { species: e.species, anchor: e.anchor || e.profile?.anchor, role: e.slot?.role, title: slotNameOf(s, e), name: e.name, yearlings: !!s.meta.f_progression }, same);
         const counts = (e) => area(e) && (people.size
             ? e.kind === 'npc' && (e.descriptors || []).some((d) => [...peopleNamed(d, content)].some((t) => people.has(t)))
             : e.kind === 'creature' && kind(e));
@@ -939,7 +939,7 @@ function dungeonCull(s, content, root, o, levels) {
     if (!s || !root || !KILL_WORK.has(o.verb)) return null;
     const same = sameKinds(content);
     // Patch 8.3: the encounters as drawn for the cycle he meets, by the rule the engine counts their kills with
-    return cullPopulation(s, content, root, (sl) => cullKind(content, o, { species: sl.species, anchor: sl.anchor, role: sl.role, title: sl.name }, same), { levels });
+    return cullPopulation(s, content, root, (sl) => cullKind(content, o, { species: sl.species, anchor: sl.anchor, role: sl.role, title: sl.name, yearlings: !!s.meta.f_progression }, same), { levels });
 }
 
 /**
@@ -950,11 +950,11 @@ function dungeonCull(s, content, root, o, levels) {
  * words; the young of a kind only where the objective names them); a Dungeon's guardian or boss only where the
  * objective names it by its own name (8.1 §10: "crystal beetles" is not the Glimmer Queen). Different kinds stay apart.
  */
-function cullKind(content, o, { species, anchor, role = null, title = null, name = null }, same = sameKinds(content)) {
+function cullKind(content, o, { species, anchor, role = null, title = null, name = null, yearlings = true }, same = sameKinds(content)) {
     if (role && role !== 'minion') return namesBoss(o.what, title);
-    const young = namesYoung(content, `${o.what} ${o.unit || ''}`);
+    const young = namesYoung(content, `${o.what} ${o.unit || ''}`, { yearlings });
     return [o.what, o.unit].filter(Boolean).some((w) => namesKind(w, species || '', content.anchors.get(anchor), same))
-        && (young || !namesYoung(content, `${species || ''} ${name || ''}`));
+        && (young || !namesYoung(content, `${species || ''} ${name || ''}`, { yearlings }));
 }
 /** The levels a listing's text names ("level 2", "the first level"), or null for none. */
 function levelsNamed(text) {

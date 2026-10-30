@@ -307,9 +307,14 @@ export function lineage(state, id) {
 /** A population fixed at a small hunting site; other species there keep their own world context. No spawning. */
 export function populationAt(state, at, entity, content, { matchAnchor = true } = {}) {
     // Species labels are noun phrases: "snapping" modifies "turtle", not an objective's action clause.
-    // Compare their final kind, never a shared adjective such as "giant". Global objective matching stays unchanged.
+    // Ignore established individual suffixes, never replace the species with a shared adjective such as "giant".
     const same = sameKinds(content);
-    const head = text => { const h = kindOf(text, { species: true }).head; return same?.get(h) || h; };
+    const qualifiers = new Set([...(content.monsters.kind_words?.individual || []), ...(content.monsters.kind_words?.young || [])].map(stem));
+    const head = text => {
+        const words = [...kindOf(text, { species: true }).phrase];
+        while (words.length > 1 && qualifiers.has(words.at(-1))) words.pop();
+        const h = words.at(-1); return same?.get(h) || h;
+    };
     const species = head(entity.species || '');
     return lineage(state, at).map(id => state.places[id]).find(p => p.population
         && (!matchAnchor || p.population.anchor === (entity.anchor || entity.profile?.anchor))
@@ -468,7 +473,8 @@ function kindWordsOf(content) {
 /** The content's map of kind words to one kind, for namesKind (null without content kind_words). */
 export const sameKinds = (content) => (kindWordsOf(content).same.size ? kindWordsOf(content).same : null);
 /** Does a text name the young of a kind ("feral hound pups", "the mudwyrm brood")? */
-export const namesYoung = (content, text) => [...kindOf(text || '').words].some((w) => kindWordsOf(content).young.has(w));
+export const namesYoung = (content, text, { yearlings = true } = {}) => [...kindOf(text || '').words]
+    .some((w) => kindWordsOf(content).young.has(w) && (yearlings || w !== 'yearling'));
 
 // the NPC templates' words for a person that name no role (content npc_templates.json: commoner): they sit in monster
 // names ("the wolf-man", "a man-eating tiger") and say nothing about whom a contract is against

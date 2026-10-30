@@ -36,7 +36,7 @@ import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.j
 import { reachedEvents, setIntentEvents } from './intents.js';
 import { featureNamed, featureEvent, applySpring } from './features.js';
 import { complexOf, dungeonOf, trueDungeonOf, classified, rankText, linkBetween, sameWay, linksAt, wayBetween, roomByName, roomKnown, markEvents, newLink, linkEvent, levelVia, blockerOf, visited } from './dungeon.js';
-import { itemTraits, useOf, itemProfile, priceAudit, gearOfferWhy, openEquipmentStock } from './items.js';
+import { itemTraits, useOf, itemProfile, priceAudit, gearRetailPrice, gearOfferWhy, openEquipmentStock } from './items.js';
 import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity.js';
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
 import { anchorFor, templateFor, rulesetOf } from '../content.js';
@@ -2478,8 +2478,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             if (!corrections.includes(correction)) corrections.push(correction);
         }
         // Patch 7.1: what the extractor reports of a line is its words, kind, amount and price; the goods' own values are
-        // the engine's, fixed now with the offer (the variant he would buy), and the price is checked against them (an
-        // audit, never a refusal: merchants differ)
+        // the engine's, fixed now with the offer. Ordinary F-balance gear also gets its retail price here;
+        // historical and other goods keep flexible prices with an advisory audit.
+        const correctedPrices = new Set();
         const lines = priced.filter((l) => !unproven.includes(l)).map((l, i) => {
             const line = { id: `l${i + 1}`, what: l.what, kind: l.kind, service: l.service ?? null, qty: l.qty ?? 1, price_cp: l.price_cp, ...(l.said !== undefined ? { said: l.said } : {}) };
             // Patch 7.2: a restorative's kind as the extractor gave it (effect), checked by itemProfile (a consumable at all)
@@ -2498,6 +2499,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 if (!profile) return { ...line, profile: null };
             }
             if (!profile) return line;
+            const retail = cPath && s.meta.f_balance ? gearRetailPrice(content, profile) : null;
+            // Repeating an existing bargain never silently reprices that stored contract.
+            const existing = openOffers(s).filter(o => !o.bid && o.seller === seller).flatMap(o => o.lines)
+                .find(x => sameWant(line.what, x.what) && sameWant(x.what, line.what)
+                    && x.price_cp === line.price_cp && (x.qty ?? 1) === line.qty);
+            if (Number.isInteger(retail) && !existing && line.price_cp !== retail * line.qty) {
+                correctedPrices.add(line.id);
+                line.price_cp = retail * line.qty;
+                system.push(`PRICE CONFIRMED — ${line.what}: ${line.price_cp} cp for ${line.qty}. The narrated price was corrected; explicitly accept this offer to buy.`);
+            }
             const audit = priceAudit(content, profile, line.price_cp, line.qty);
             return { ...line, profile, ...(audit ? { audit } : {}) };
         }).filter(Boolean);
@@ -2528,6 +2539,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             if (!lines.length) continue;
             const pick = pickLines(o, lines.map((l) => l.id), dec.qty ?? null);
             if (pick.clarify || pick.error) { system.push(`NOT BOUGHT — ${pick.error || `which of ${pick.clarify.join(' or ')} he wants ${dec.qty} of is open`}`); continue; }
+            if (pick.picks.some(p => correctedPrices.has(p.line.id))) {
+                system.push('NOT BOUGHT — the gear price was corrected. Review the displayed offer and accept it explicitly.');
+                emit({ t: 'decision.closed', d: { id: dec.id, status: 'expired' } });
+                continue;
+            }
             const price = pick.cp;
             const what = pick.picks.map((p) => unitsText(p.line.what, p.units)).join(', ');
             const coin = s.entities.pc.sheet.coin_cp;

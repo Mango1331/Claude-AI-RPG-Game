@@ -362,8 +362,17 @@ export function noteUse(ctx, r) {
     usePatterns(ctx, pp, skill, r);
     if (before && before !== skill.id) pp.pairs = [...new Set([...(pp.pairs || []), [before, skill.id].sort().join('+')])];
     pp.last = skill.id;
-    if (r.kind === 'attack' && (r.strikes || []).some((s) => hostile(s.target))) pp.used[skill.id] ||= 'an attack on a foe';
-    else if (r.kind === 'skill') {
+    if (r.kind === 'attack' && (r.strikes || []).some((s) => hostile(s.target))) {
+        pp.used[skill.id] ||= 'an attack on a foe';
+        // Keep the actual target qualification, not the trimmed encounter log or a strong spectator.
+        if (ctx.state.meta.f_balance) {
+            const below = ctx.content.rules.proficiency.award?.challenge?.levels_below ?? 2;
+            const worthy = r.strikes.some(s => hostile(s.target)
+                && (enc.combatants[s.target].fixed.level ?? 0) >= enc.combatants.pc.fixed.level - below);
+            const offense = (pp.offense ||= {});
+            offense[skill.id] = offense[skill.id] === true || worthy;
+        }
+    } else if (r.kind === 'skill') {
         const kinds = (skill.effects || []).map((e) => e.kind);
         if (kinds.includes('reposition') && r.reposition) pp.used[skill.id] ||= 'a step that moved him';
         // Patch 9B-2: a heal or a restore that gave him something back is its effect, shown
@@ -441,15 +450,22 @@ export function fightQualifies(state, content, enc) {
 /**
  * Patch 9B-1: the Proficiency Progress of a fight that is over (src/combat.js endEncounterEvents): for each Skill he
  * used meaningfully, once, when the fight was a real challenge: a foe at most `challenge.levels_below` Levels below him
- * and a foe's attack on him. None when he died or ran from it, none in a legacy campaign.
+ * and a foe's attack on him. F-balance offensive uses instead qualify by their actual target and victory,
+ * including immediate kills. None when he died or ran from it, none in a legacy campaign.
  */
 export function fightProgress(state, content, enc) {
-    if (!fightQualifies(state, content, enc)) return [];
+    if (rulesetOf(state) < 2 || !enc.pp || enc.combatants.pc.current.defeated || enc.combatants.pc.current.escaped) return [];
+    const qualified = fightQualifies(state, content, enc);
+    const won = Object.values(enc.combatants).filter(c => c.side === 'hostile')
+        .every(c => c.current.defeated || c.current.escaped || c.current.surrendered);
     const sheet = state.entities.pc.sheet;
     const out = [];
     const after = { ...sheet, skills: { ...sheet.skills } };
     const view = { ...state, entities: { ...state.entities, pc: { ...state.entities.pc, sheet: after } } };
     for (const [sid, why] of Object.entries(enc.pp.used)) {
+        const offense = state.meta.f_balance ? enc.pp.offense?.[sid] : undefined;
+        // Historical snapshots without this evidence and defensive/utility uses retain the old gate.
+        if (offense !== undefined ? !offense || !won : !qualified) continue;
         const skill = skillOf(content, sid, state);
         if (!skill || !sheet.skills[sid] || state.pp_keys?.[`fight:${enc.id}:${sid}`]) continue;
         const ev = progressEvents(content, view, sid, ppAward(content, sheet, skill), `${why} in ${enc.id}`, `fight:${enc.id}:${sid}`);

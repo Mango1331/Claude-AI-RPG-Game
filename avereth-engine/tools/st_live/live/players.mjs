@@ -100,10 +100,20 @@ const NEXT_DECISION = 'NEXT DECISION: use the newest System result; do not assum
 
 const PLAYER_SHOPPING = 'GEAR CHECK: Early and on town returns with new income/loot, sell surplus and visit a weapons/armour merchant for an upgrade offer. Buy/equip useful affordable gear; reserve recovery money. If none, note it and continue. Recheck only with substantially more money, a new merchant or confirmed stock changes.';
 
-// Controlled shopping trial for the Guild Warrior only; the other profiles keep their existing prompt.
-const warriorShoppingTrial = (guide) => guide.openRun && guide.scenario?.id === 'guild-warrior';
-const WARRIOR_SHOPPING = 'WARRIOR GEAR TRIAL — required preparation: At your next safe town/village visit with at least 100 copper (10 silver), sell surplus loot and actually enter a working blacksmith, weaponsmith or armourer shop. Ask the present smith for concrete weapon AND armour upgrade offers and compare their System-confirmed values with your equipped gear. Buy and equip useful affordable upgrades, keeping at least 20 copper for recovery; do not substitute supplies, repairs or loot sales for this gear check. Do this before leaving for another optional hunt, without interrupting combat or urgent recovery. Keep this shopping goal across the necessary steps until offers have been checked. Choose the shop and purchases yourself. If no useful affordable offer is available or the shop is inaccessible after a focused attempt, note why and resume adventuring. Recheck after enough new income for the next known upgrade, a different smith or confirmed stock changes; never loop on unchanged refusals.';
-const WARRIOR_SHOPPING_REMINDER = 'WARRIOR PRIORITY: At a safe settlement with 100+ cp, visit a smith before another hunt; compare weapon/armour offers, buy/equip useful upgrades, keep 20 cp. If already checked without changed conditions, continue.';
+// Preparation is required for the three Guild profiles; decisions and actual purchases remain the player's.
+function gearPreparation(guide) {
+    if (!guide.openRun || !/^guild-(warrior|mage|rogue)$/.test(guide.scenario?.id || '')) return null;
+    const cls = guide.scenario.baseClass;
+    const shops = cls === 'Mage'
+        ? 'a mage shop, staffmaker or wandmaker for a magical staff/focus, and a light armour merchant for suitable robes/light armour; visit separate shops if needed'
+        : cls === 'Rogue'
+            ? 'a smith or weapons merchant for light weapons compatible with your skills, and light armour; one smith may offer both, otherwise visit separate shops'
+            : 'a blacksmith, weaponsmith or armourer for a compatible weapon and armour';
+    return {
+        prompt: `GEAR — required preparation: At a safe town/village visit with at least 100 copper (10 silver), sell surplus loot and actually enter ${shops}. Check BOTH gear types against System stats/prices and skill compatibility. Buy/equip useful affordable upgrades, keeping at least 20 copper for recovery. Prepare before optional hunts, after danger/recovery; keep this goal across visits. Supplies/repairs do not replace it. Choose freely. If inaccessible or no useful affordable gear, note why and continue. Recheck only with new income/merchants/stock; never loop on unchanged refusals.`,
+        reminder: `GEAR PRIORITY: Safe settlement and 100+ cp: check ${cls === 'Mage' ? 'a focus/staff seller AND light armour' : cls === 'Rogue' ? 'light weapons AND light armour' : 'a smith for weapon AND armour'} before another optional hunt; buy/equip useful affordable upgrades, keep 20 cp. Separate shops if needed. Already checked and unchanged? Continue.`,
+    };
+}
 
 export function playerSystemPrompt(guide, { username, persona }) {
     const ms = guide.milestones.map((m, i) => `${i + 1}. ${m.id}: ${m.goal}${m.required === false ? ' (if it comes within reach)' : ''}`).join('\n');
@@ -116,7 +126,7 @@ export function playerSystemPrompt(guide, { username, persona }) {
         '',
         PLAYER_COMMANDS,
         PLAYER_MECHANICS,
-        guide.openRun ? (warriorShoppingTrial(guide) ? WARRIOR_SHOPPING : PLAYER_SHOPPING) : '',
+        guide.openRun ? (gearPreparation(guide)?.prompt || PLAYER_SHOPPING) : '',
         '',
         `THE TEST: ${guide.brief}`,
         '',
@@ -172,7 +182,7 @@ export const LONG_MESSAGE = 600; // characters: a player's turn, not a paragraph
 export function llmPlayer({ guide, username, persona, url, model, key, temperature = 0.8, maxTokens = 3000, body = null, extraBody = null, timeoutMs = 180000, record = () => {}, fetchImpl = fetch, backoffMs = 3000 }) {
     const notes = [];
     const system = playerSystemPrompt(guide, { username, persona });
-    const shoppingReminder = warriorShoppingTrial(guide) ? WARRIOR_SHOPPING_REMINDER : null;
+    const shoppingReminder = gearPreparation(guide)?.reminder || null;
     const endpoint = `${String(url).replace(/\/+$/, '')}/chat/completions`;
     const steer = { ...(body || {}), ...(extraBody || {}) };
     async function call(messages, temp) {

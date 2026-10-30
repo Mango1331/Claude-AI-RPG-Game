@@ -249,6 +249,13 @@ export function valueOf(content, p) {
     return null;
 }
 
+/** Ordinary F gear retail; null leaves special/higher-rank goods and other trades flexible. */
+export function gearRetailPrice(content, profile) {
+    if (profile?.kind !== 'gear' || profile.rank !== 'F') return null;
+    if (profile.slot === 'weapon') return content.gear.instances.f_weapon_prices?.[profile.quality] ?? profile.value_cp;
+    return profile.value_cp;
+}
+
 /**
  * The plausibility of a price for a profile: null when it lies within the guideline's span (content gear
  * instances.value.plausible, per unit), else a note for the audit. Merchants differ; nothing is refused for it.
@@ -358,7 +365,7 @@ export function openEquipmentStock(s, content, emit) {
             const what = `${quality} F-Rank ${kind}`;
             const profile = itemProfile(content, { name: what, balance: true });
             emit({ t: 'offer.created', d: { offer: { id: key, seller: id, at: s.scene.at, status: 'open', canon: false, stock: 'f_gear', turn: s.turn,
-                lines: [{ id: 'l1', what, kind: 'goods', equipment: true, qty: 1, price_cp: profile.slot === 'weapon' ? content.gear.instances.f_weapon_prices[quality] : profile.value_cp, profile }] } } });
+                lines: [{ id: 'l1', what, kind: 'goods', equipment: true, qty: 1, price_cp: gearRetailPrice(content, profile), profile }] } } });
         }
     }
 }

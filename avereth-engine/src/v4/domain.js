@@ -305,11 +305,20 @@ export function lineage(state, id) {
 }
 
 /** A population fixed at a small hunting site; other species there keep their own world context. No spawning. */
-export function populationAt(state, at, entity, content) {
+export function populationAt(state, at, entity, content, { matchAnchor = true } = {}) {
     return lineage(state, at).map(id => state.places[id]).find(p => p.population
-        && p.population.anchor === (entity.anchor || entity.profile?.anchor)
+        && (!matchAnchor || p.population.anchor === (entity.anchor || entity.profile?.anchor))
         && namesKind(p.population.species, entity.species, entity.anchor || entity.profile?.anchor, sameKinds(content))) || null;
 }
+
+/** Fixed F-world windows; one content definition for new habitats and area classifications. */
+export const validEncounterLevels = (content, levels) => Array.isArray(levels) && levels.length === 2
+    && (content.monsters.encounter_windows || [[1,1],[1,3],[4,7],[8,11],[12,14]])
+        .some(([lo, hi]) => levels[0] === lo && levels[1] === hi);
+
+/** The nearest explicit area profile; a population is more specific and is read separately. */
+export const encounterArea = (state, at) => lineage(state, at).map(id => state.places[id])
+    .find(p => Array.isArray(p.encounter_levels)) || null;
 
 export const pathNames = (state, id) => lineage(state, id).map((x) => state.places[x].name);
 

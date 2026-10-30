@@ -108,7 +108,7 @@ test('free help: scoped prompts omit private offer/job instructions; Legacy voca
  const before=JSON.stringify(content.deltaVocab),v=extraction.worldVocab(content.deltaVocab,s);
  assert.ok(!v.deltas.some(d=>d.type==='quest.offer'));assert.ok(!v.deltas.find(d=>d.type==='coin.gift').fields.job);
  assert.ok(v.deltas.find(d=>d.type==='coin.gift').fields.repeat_of);assert.equal(JSON.stringify(content.deltaVocab),before);
- assert.equal(extraction.worldVocab(content.deltaVocab,scene({legacy:true})),content.deltaVocab);
+ assert.deepEqual(extraction.worldVocab(content.deltaVocab,scene({legacy:true})),{...content.deltaVocab,deltas:content.deltaVocab.deltas.filter(d=>d.type!=='area')});
 });
 test('free help: old private jobs still accept, finish authorized work and pay once',()=>{
  const s=scene({legacy:true}),q=oldJob(s);resolveCommands(s,content,[{seq:1,type:'quest.accept',quest:q.id}],e=>applyEvent(s,e),{c:true});

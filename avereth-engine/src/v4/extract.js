@@ -15,6 +15,7 @@ import { normText } from '../util.js';
 
 /** Preserve the historical wire vocabulary; new campaigns have only Guild quests. */
 export function worldVocab(vocab, state) {
+    if (!state?.meta.f_progression) vocab = { ...vocab, deltas: vocab.deltas.filter(d => d.type !== 'area') };
     if (privateQuestsOf(state)) return vocab;
     return { ...vocab, version: vocab.version,
         rules: [...vocab.rules.filter(r => !r.startsWith('Paid work FOR an NPC')),
@@ -29,7 +30,7 @@ export function worldVocab(vocab, state) {
     };
 }
 
-export const EXTRACTOR_VERSION = 'extract-5.19';
+export const EXTRACTOR_VERSION = 'extract-5.20';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 
@@ -127,6 +128,7 @@ export const FORMAT_RULES = [
     'Trade evidence: offer/bid said quotes the actual commercial clause, including who offers, unit/lot price and conditions. Third-party price advice is fact/place.reported, not an offer or bid of the speaker. Price ranges, possible future prices and unaccepted discounts are not fixed prices. For a unit rate compute the total for the declared units; for a lot keep its total. Never invent a seller commitment from a recommendation.',
     'string[] is always a JSON array, even when it contains only one value.',
     `place-ref is an exact known place id from the CATALOG, or {"new":{"name":"...","kind":"...","parent":...}}. For a new place, kind must be exactly one of: ${PLACE_KINDS.join(', ')}. Use settlement for a city, town, village or hamlet; site for a building, inn or Guild hall; interior for a room; wilderness for natural outdoor terrain.`,
+    'AREA LEVELS: when an outdoor area’s danger is actually established, report area once with a fixed supported F window. Copy existing area/population levels from the catalog; never adapt to Alaric, overwrite them, or use a mere rumour. A local population’s body plan is authoritative over a free species-name guess. A newly reached local part keeps its genuine geographic parent; never infer a remote relationship merely to inherit levels.',
     'LOCAL HUNT EXPLORATION is an authorized continuation inside an existing habitat: a newly reached den, quarry hollow or other part keeps the stated habitat id as parent, not the realm. A separate journey does not inherit a population just because its species sounds similar. Arrive is still required.',
     'When the CATALOG already contains the place, quest or object, copy its id exactly. Never rewrite an id, invent another id for it, or substitute its title/name.',
     'quest-ref and object-ref mean the exact matching CATALOG id; use {"new":"..."} only when the thing is genuinely new and that reference type permits it.',
@@ -248,7 +250,7 @@ function normalizeSoftFields(value, vocab) {
 /** Local semantic diagnostics, also enforced by World against its actually reached state.
  * These are not malformed JSON; one repair may clarify them without losing independent information.
  */
-export const localSceneDelta = d => !['time', 'arrive', 'overreach', 'place.reported', 'dungeon', 'guild.branch'].includes(d.type)
+export const localSceneDelta = d => !['time', 'arrive', 'overreach', 'place.reported', 'dungeon', 'area', 'guild.branch'].includes(d.type)
     && !(['person.new', 'creature.new'].includes(d.type) && d.present === false);
 export function sceneIssues(value, startScene, state = null, content = null, explicitArrivals = false) {
     const sceneKey = ref => placeKey(state, ref, content);
@@ -330,6 +332,6 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
         const names = value.deltas.filter(x => x?.type === 'object.new' && x.seq < d.seq && typeof x.name === 'string').map(x => x.name);
         if (names.length) errors.push(`$.deltas[${i}].object: unknown catalog id; object.new has no ref. Use {new:exact earlier name}, e.g. ${JSON.stringify({ new: names[0] })}; never invent an obj.* id`);
     }
-    if (sceneRequired && value.scene == null && (Object.values(expectedKeys || {}).includes('go') || (Array.isArray(value.deltas) && value.deltas.some(d => !['time', 'overreach', 'place.reported', 'dungeon', 'guild.branch'].includes(d?.type))))) errors.push('$.scene: actual narrative setting required for world changes');
+    if (sceneRequired && value.scene == null && (Object.values(expectedKeys || {}).includes('go') || (Array.isArray(value.deltas) && value.deltas.some(d => !['time', 'overreach', 'place.reported', 'dungeon', 'area', 'guild.branch'].includes(d?.type))))) errors.push('$.scene: actual narrative setting required for world changes');
     return { value, issues: [...semanticIssues, ...(sceneRequired && startScene ? sceneIssues(value, startScene, state, content, explicitArrivals) : [])], valid: errors.length === 0, complete: missing.length === 0, errors: [...errors.slice(0, 8), ...missing.map((k) => `expected key "${k}" not answered`)], missing, raw };
 }

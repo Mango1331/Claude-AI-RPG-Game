@@ -1,3 +1,4 @@
+import { validEncounterLevels } from './v4/domain.js';
 import { classDefErrors, classOffer } from './v4/class_growth.js';
 // Validation layer.
 //  * validateState: invariants the engine guarantees after every fold (used by tests, #audit tooling and the ST
@@ -160,6 +161,7 @@ export function validateState(state, content) {
         const onBoard = new Set(Object.values(state.guild?.boards || {}).flatMap((b) => b.listings || []));
         for (const q of Object.values(state.quests)) if (q.status === 'listed' && !onBoard.has(q.id)) p.push(`listed ${q.id} is on no board`);
         for (const o of Object.values(state.offers || {})) if (!['open', 'accepted', 'declined', 'expired', 'repriced'].includes(o.status)) p.push(`offer ${o.id} status ${o.status}`);
+        for (const place of Object.values(state.places)) if (place.encounter_levels && !validEncounterLevels(content, place.encounter_levels)) p.push(`invalid F area levels at ${place.id}`);
         for (const place of Object.values(state.places)) if (place.population) {
             const pop = place.population;
             if (!content.anchors.has(pop.anchor) || typeof pop.species !== 'string' || !pop.species.trim()

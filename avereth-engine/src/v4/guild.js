@@ -3,7 +3,7 @@
 // board and its listings (from the Board generator, validated and booked before the narrator describes them), the
 // acceptance with its contract slip, the turn-in with the proof check, the payout, Quest XP, the contract count and
 // the promotion. The narrator only tells what the engine booked; the extractor's deltas cannot change any of it.
-import { rulesetOf as deliveryRuleset, anchorFor } from '../content.js';
+import { rulesetOf as deliveryRuleset, speciesAnchor } from '../content.js';
 import { deliveryStatus, confirmsOnly, nonphysicalDelivery, deliveryWhere, genericRecipient } from './delivery.js';
 import { nearDungeons, dungeonText, rankText, guildRecord, trueDungeonOf } from './dungeon.js';
 import { clearOf, clearDone, clearTarget, cullPopulation, slotNameOf, floorAt } from './living.js';
@@ -14,7 +14,7 @@ import { awardXp, questXp } from '../progression.js';
 import { rankOf, rankIndex } from '../derived.js';
 import { slug, normText, hash32 } from '../util.js';
 import { itemProfile } from './items.js';
-import { hallOf, hallOfSettlement, settlementOf, realmOf, heldBy, membership, listingsOf, boardKey, today, contracts, supportedRanks, placeName, namesKind, namesPeople, peopleNamed, sameKinds, namesYoung } from './domain.js';
+import { hallOf, hallOfSettlement, settlementOf, realmOf, heldBy, membership, listingsOf, boardKey, today, contracts, supportedRanks, placeName, validEncounterLevels, namesKind, namesPeople, peopleNamed, sameKinds, namesYoung } from './domain.js';
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
@@ -579,7 +579,6 @@ export function listingSchema(content) {
 }
 
 const progressive = (s, need) => !!s?.meta?.f_progression && need.c && need.progression && need.rank === 'Novice';
-const F_WINDOWS = [[1, 1], [1, 3], [4, 7], [8, 11], [12, 14]];
 
 /** Identity is local to the branch's land; an ambiguous or already incompatible place is never overwritten. */
 function habitatPlace(s, need, where) {
@@ -593,10 +592,10 @@ function habitatWhy(s, content, need, l) {
     const o = l.objectives.find(o => o.verb === 'DEFEAT');
     if (!o.where?.trim() || !h.species.trim()) return 'habitat needs a species and a precise DEFEAT destination in where';
     if (!namesKind(o.what, h.species, h.anchor, sameKinds(content))) return 'habitat.species/anchor does not match the hunted kind';
-    if (!F_WINDOWS.some(([a, b]) => a === h.min_level && b === h.max_level) || l.level < h.min_level || l.level > h.max_level)
+    if (!validEncounterLevels(content, [h.min_level, h.max_level]) || l.level < h.min_level || l.level > h.max_level)
         return 'habitat level window must be 1-1, 1-3, 4-7, 8-11 or 12-14 and contain the quest recommendation';
     const anchor = content.anchors.get(h.anchor);
-    const named = anchorFor(content, h.species);
+    const named = speciesAnchor(content, h.species, h.anchor);
     if (named && named.id !== h.anchor) return 'habitat.anchor contradicts the named species body plan';
     if (l.level === 1 && o.qty === 1 && l.qtype === 'minor' && (h.max_level !== 1 || !introAnchor(anchor)))
         return 'introductory habitat needs a weak ordinary level-1 individual (max HP 35, ATK 10)';

@@ -28,7 +28,7 @@ import { stripOwned, wrongClaim, ownershipViolation, stateRegions, effectViolati
 import { mayOpenFight, mayTake, attackCommitted } from './envelope.js';
 import {
     PLACE_PARENTS, HALL_NAME, lineage, guildDestination, hallOf, hallOfSettlement, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind, SERVICE_ROLE,
-    progressKey, sameKinds, kindOf,
+    progressKey, sameKinds, kindOf, populationAt, validEncounterLevels,
 } from './domain.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
 import { pickLines, bookPurchase, bookSale, saleUnits, unitsText, tradePrice, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines, offerAvailability } from './trade.js';
@@ -39,7 +39,7 @@ import { complexOf, dungeonOf, trueDungeonOf, classified, rankText, linkBetween,
 import { itemTraits, useOf, itemProfile, priceAudit, gearRetailPrice, gearOfferWhy, openEquipmentStock } from './items.js';
 import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity.js';
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
-import { anchorFor, templateFor, rulesetOf } from '../content.js';
+import { anchorFor, speciesAnchor, templateFor, rulesetOf } from '../content.js';
 import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotMet, resolved, slotForNew, resolvedSlotNamed, slotEntityEvents, establishEvents, syncEvents, insideOf } from './living.js';
 import { unbookedDungeonThreat } from './run9_evidence.js';
 import { jobOf, paymentJob, recordJobWork } from './private_jobs.js';
@@ -487,7 +487,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // 4.3.0-c.6.6.24 (livetest 21.10.2026: "restless skeleton" on the rat body plan, Bite and pelts): a species the
         // content names by one of its body plan's own words ("skeleton") is that body plan, whatever anchor came with it,
         // unless the given anchor's words name the species too
-        if (kind === 'creature' && d.species) {
+        if (kind === 'creature' && d.species && s.meta.f_progression) {
+            const population = s.meta.f_progression && !trueDungeonOf(s, s.scene.at) && d.present !== false
+                ? populationAt(s, s.scene.at, d, content, { matchAnchor: false }) : null;
+            const anchor = population ? content.anchors.get(population.population.anchor) : speciesAnchor(content, d.species, d.anchor);
+            if (anchor) d = { ...d, anchor: anchor.id };
+        } else if (kind === 'creature' && d.species) {
             const named = anchorFor(content, d.species);
             const given = content.anchors.get(d.anchor);
             // Patch 8: the more specific name decides ("goblin shaman" is the caster, not the goblin its words also name)
@@ -1233,6 +1238,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             }
             case 'passage':
                 passage(d);
+                break;
+            case 'area':
+                areaClass(d);
                 break;
             case 'dungeon':
                 dungeonClass(d);
@@ -2060,6 +2068,26 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const level = levelVia(s, a, l);
             if (Number.isInteger(level)) emit({ t: 'place.updated', d: { id: b, set: { level } } });
         }
+    }
+
+    /** Classification fixes world defaults, never arrival, population replacement or existing creatures. */
+    function areaClass(d) {
+        const levels = [d.min_level, d.max_level];
+        if (!s.meta.f_progression || rulesetOf(s) < 2 || !validEncounterLevels(content, levels)
+            || !['seen', 'guild'].includes(d.how) || !d.evidence?.trim() || !prose.includes(d.evidence)) {
+            reject(d, 'area', 'a fixed F area needs a supported level window and the reply’s actual seen/Guild evidence'); return;
+        }
+        const at = d.place == null ? { id: s.scene.at } : place(d.place);
+        const p = s.places[at.id];
+        if (!p || !['region', 'wilderness', 'site'].includes(p.kind) || trueDungeonOf(s, at.id)
+            || (d.how === 'seen' && !lineage(s, s.scene.at).includes(at.id))
+            || (d.how === 'guild' && !normText(d.evidence).includes(normText(p.name).replace(/^the /, '')))) {
+            reject(d, 'area', 'classify an outdoor area actually reached, or established by Guild knowledge; never a town or true Dungeon'); return;
+        }
+        if (p.encounter_levels && p.encounter_levels.some((v, i) => v !== levels[i])) {
+            reject(d, 'world_canon', `${p.name} keeps its established area levels ${p.encounter_levels.join('–')}`); return;
+        }
+        if (!p.encounter_levels) emit({ t: 'place.updated', d: { id: at.id, set: { encounter_levels: levels } } });
     }
 
     /**

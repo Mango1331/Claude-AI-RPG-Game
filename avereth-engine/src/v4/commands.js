@@ -425,7 +425,7 @@ function livingGo(s, content, c, ctx, emit, { known, nav, envx }) {
 function boardCard(s, content, rank, branch, listed) {
     return [
         `SYSTEM — GUILD BOARD · ${rank} · ${placeName(s, branch)}`,
-        ...listed.map((q) => `${q.title}${goalText(s, content, q, { board: true })} · ${q.rank || rank}${s.meta.f_progression ? ` · recommended level ${q.level}` : ''} · client: ${q.client || 'unspecified'} · reward: ${cpText(q.payout_cp, content)} · ${String(q.task || q.desired_end_state || objectiveText(q)).replace(/\s+/g, ' ').slice(0, 120)}`),
+        ...listed.map((q) => `${q.title}${goalText(s, content, q, { board: true })} · ${q.rank || rank}${s.meta.f_progression ? (q.hunt && s.places[q.hunt.at]?.population ? ` · enemy levels ${s.places[q.hunt.at].population.levels.join('–')} · risk depends on species and encounter numbers` : ` · quest level ${q.level}`) : ''} · client: ${q.client || 'unspecified'} · reward: ${cpText(q.payout_cp, content)} · ${String(q.task || q.desired_end_state || objectiveText(q)).replace(/\s+/g, ' ').slice(0, 120)}`),
     ];
 }
 

@@ -1,3 +1,4 @@
+import { encounterArea } from './v4/domain.js';
 import { trueDungeonOf } from './v4/dungeon.js';
 import { offerAvailability } from './v4/trade.js';
 // What the player sees of the mechanics: a System block at the top of a reply, rendered from the engine's own records,
@@ -218,6 +219,9 @@ function commandLines(o) {
 export function worldPanel(state, content, reply = {}) {
     const o = state.last?.outcome;
     const lines = [];
+    const current = reply.state || state;
+    const area = current.meta.f_progression && !trueDungeonOf(current, current.scene.at) ? encounterArea(current, current.scene.at) : null;
+    if (area) lines.push(sys(`AREA LEVELS — ${area.name}: ${area.encounter_levels.join('–')} · typical new foes; species and encounter numbers affect danger`));
     // A concretely visible actor becoming relevant before Combat gets a player-facing handle + Range immediately
     // above the same narration that revealed them. Creatures also have their already locked HP; NPC HP stays hidden
     // until the combat profile is materialised. This is scene information, not Initiative, and starts no fight.

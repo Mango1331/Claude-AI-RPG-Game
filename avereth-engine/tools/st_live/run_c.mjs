@@ -41,12 +41,13 @@ const B = 'mon.barkscorpion_2';
 const plan = (...commands) => ({ commands: commands.map((c, i) => ({ seq: i + 1, ...c })) });
 const TURNS = [
     { key: 'burrow', player: 'I climb down into the old burrow.', plan: plan({ type: 'go', to: { new: 'the old burrow' }, quote: 'I climb down into the old burrow' }),
-        reply: 'Alaric lowers himself into the burrow. The air is dry and smells of resin. Three barkscorpions skitter out of the dark and rush at him, pincers raised.',
+        reply: 'Alaric lowers himself into the burrow. The burrow is a nearby low-danger wilderness. Three barkscorpions skitter out of the dark and rush at him, pincers raised.',
         answer: { expected: { 1: { arrived: true, at: { new: { name: 'the old burrow', kind: 'wilderness', parent: 'loc.alderwatch' } }, with: null } }, deltas: [
             { seq: 1, type: 'arrive', at: { new: { name: 'the old burrow', kind: 'wilderness', parent: 'loc.alderwatch' } }, with: null, forced_by: null },
-            { seq: 2, type: 'creature.new', ref: 'barkscorpion', species: 'barkscorpion', anchor: 'arthropod', desc: ['bark-plated'], count: 3, present: true, band: 'SHORT', stronger: null },
+            { seq: 2, type: 'area', place: null, min_level: 1, max_level: 3, how: 'seen', evidence: 'The burrow is a nearby low-danger wilderness.' },
+            { seq: 3, type: 'creature.new', ref: 'barkscorpion', species: 'barkscorpion', anchor: 'arthropod', desc: ['bark-plated'], count: 3, present: true, band: 'SHORT', stronger: null },
             // Patch 7.2B (delta-0.98): the whole group attacks, said with scope all and the reply's own words
-            { seq: 3, type: 'hostile', by: ['barkscorpion'], scope: 'all', evidence: 'Three barkscorpions skitter out of the dark and rush at him' },
+            { seq: 4, type: 'hostile', by: ['barkscorpion'], scope: 'all', evidence: 'Three barkscorpions skitter out of the dark and rush at him' },
         ] } },
     { key: 'alias', player: 'I Fire Lance Barkscorpion B', plan: plan({ type: 'use_skill', skill: 'mage.flame_lance', target: B, quote: 'I Fire Lance Barkscorpion B' }),
         reply: 'A lance of flame leaves Alaric\'s palm and bores into Barkscorpion B. Its bark plates blacken and split.' },
@@ -252,7 +253,7 @@ try {
         const ctx = SillyTavern.getContext();
         const { foldChat } = await import('/scripts/extensions/third-party/avereth-engine/src/host.js').catch(() => import('/extensions/avereth-engine/src/host.js')).catch(() => ({}));
         const s = foldChat ? foldChat(ctx.chat).state : null;
-        return s ? { mp: s.entities.pc.sheet.mp, encounter: !!s.encounter, foes: s.encounter ? Object.values(s.encounter.combatants).filter((c) => c.side === 'hostile').map((c) => ({ id: c.id, hp: c.current.hp })) : [] } : null;
+        return s ? { areaLevels: s.places[s.scene.at]?.encounter_levels || null, mp: s.entities.pc.sheet.mp, encounter: !!s.encounter, foes: s.encounter ? Object.values(s.encounter.combatants).filter((c) => c.side === 'hostile').map((c) => ({ id: c.id, hp: c.current.hp })) : [] } : null;
     });
     // Exercise the exact natural-run driver, including automatic Host recovery.
     const driver = new Driver(page, { turnTimeoutMs: 60000 });
@@ -367,6 +368,7 @@ const checks = {
     keyAddedBySillyTavern: calls.length > 0 && calls.every((c) => c.auth === `Bearer ${DUMMY_KEY}`),
     keyNeverInBrowser: keyInBrowser.length === 0,
     keyNotInChatFile: chatText.length > 0 && !chatText.includes(DUMMY_KEY),
+    areaWindowCommitted: JSON.stringify(S('burrow').state?.areaLevels) === '[1,3]' && /AREA LEVELS.*1–3/.test(S('burrow').look.next?.display || ''),
     fightOpened: S('burrow').state?.encounter === true && S('burrow').state.foes.length === 3,
     // 1 alias: Flame Lance on B, booked by the engine; A's own reading (kept in the record) was a Basic Attack
     aliasBooksFlameLance: S('alias').look.pcSteps[0]?.skill === 'mage.flame_lance' && S('alias').look.pcSteps[0]?.target === B && S('alias').state.mp === S('burrow').state.mp - 16

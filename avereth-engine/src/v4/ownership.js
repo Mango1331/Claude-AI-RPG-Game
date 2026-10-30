@@ -241,6 +241,7 @@ export const DELTA_WRITES = {
     passage: { writes: ['places'] },
     // review of Patch 7: a true Dungeon's classification (theme, Rank, levels, control), as the world establishes it
     dungeon: { writes: ['places'] },
+    area: { writes: ['places'] },
     recover: { writes: ['entities'], gates: { 'pc.vitals': 'player.rest' } },
     'object.new': { writes: ['objects'], gates: { 'pc.inventory': 'player.take' } },
     // a thing handed to him (a gift), or taken from where it lies by his own take

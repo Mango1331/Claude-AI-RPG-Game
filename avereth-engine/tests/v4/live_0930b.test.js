@@ -16,7 +16,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { loadContent, ROOT } from '../helpers.js';
+import { loadContent, ROOT, cumulativeXp } from '../helpers.js';
 import { answerOf } from './replay_lib.js';
 import { Chat4 } from './harness.js';
 import { validateState } from '../../src/validate.js';
@@ -88,7 +88,7 @@ test('the returning strider is the one that withdrew: three striders in all, all
     assert.equal(striders(S(40)).length, 3, 'the run made a fourth, "Bog Strider D"');
     const end = g.state();
     assert.deepEqual(striders(end).map((e) => [e.id, e.status]).sort(), [['mon.npcbog_strider_flankers_1', 'dead'], ['mon.npcbog_strider_flankers_2', 'dead'], [mound, 'dead']]);
-    assert.equal(end.entities.pc.sheet.xp, 72, 'three striders, doubled to 24 XP each');
+    assert.equal(cumulativeXp(end.entities.pc.sheet, content), 3 * content.rules.xp.base_per_level * content.rules.xp.reward_multiplier, 'three striders at the configured XP, including level carryover');
 });
 
 test('the contract is not ready on four pairs of joints for three kills: the engine count stands, the story may still say how', () => {

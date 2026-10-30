@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { loadContent, ROOT } from '../helpers.js';
+import { loadContent, ROOT, cumulativeXp } from '../helpers.js';
 import { Chat4 } from './harness.js';
 import { applyEvent } from '../../src/state.js';
 import { applyWorld } from '../../src/v4/world.js';
@@ -108,7 +108,7 @@ test('a way the story establishes otherwise still completes it, once: the altern
     assert.equal(paid.ctx.resolutions[0].status, 'resolved');
     assert.equal(coin(paid.s), coin(s) + 90);
     assert.equal(paid.events.filter((e) => e.t === 'coin.changed').length, 1);
-    assert.equal(paid.s.entities.pc.sheet.xp, s.entities.pc.sheet.xp + questXp(1, 'standard', content), 'Quest XP once');
+    assert.equal(cumulativeXp(paid.s.entities.pc.sheet, content), cumulativeXp(s.entities.pc.sheet, content) + questXp(1, 'standard', content), 'Quest XP once');
     assert.equal(paid.s.quests['quest.x'].status, 'completed');
     const again = play(paid.s, TURN_IN);
     assert.equal(again.ctx.resolutions[0].reason, 'already_completed');

@@ -128,13 +128,13 @@ test('C3/C4: at message 51 the catalog shows the journey underway; the arrival a
     assert.equal(S(52).places[S(52).scene.at].name, 'Millbrook');
 });
 
-test('D: the turn-in pays the posted 90 cp once and its Quest XP; four wolves and the escort make Level 2', () => {
+test('D: the turn-in pays the posted 90 cp once and its Quest XP; four wolves and the escort make Level 3', () => {
     const s = S(61);
     assert.equal(s.quests[ESCORT].status, 'completed');
     assert.equal(s.entities.pc.sheet.coin_cp, 50 - 20 + 90, '120 cp: 1 gold 2 silver, as the run');
     const xp = 4 * defeatXp(1, 'normal', 'F', content) + questXp(2, 'standard', content);
-    assert.equal(xp, 216);
-    assert.deepEqual([s.entities.pc.sheet.level, s.entities.pc.sheet.xp], [2, xp - 100]);
+    assert.equal(xp, 540);
+    assert.deepEqual([s.entities.pc.sheet.level, s.entities.pc.sheet.xp], [3, xp - 300]);
 });
 
 test('C6: taking the paid-out copper makes no second copper; the water costs its one copper once, after he agrees', () => {

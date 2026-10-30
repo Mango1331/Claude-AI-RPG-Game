@@ -9,7 +9,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { loadContent, ROOT } from '../helpers.js';
+import { loadContent, ROOT, cumulativeXp } from '../helpers.js';
 import { Chat4 } from './harness.js';
 import { validateState } from '../../src/validate.js';
 import { pathNames } from '../../src/v4/domain.js';
@@ -53,7 +53,8 @@ function excerpt(s) {
     return {
         clock: formatClock(s.clock.minute).split(' (')[0],
         coin_cp: s.entities.pc.sheet.coin_cp,
-        xp: s.entities.pc.sheet.xp,
+        // The historical gold's XP is earned XP, now possibly spent across a level threshold.
+        xp: cumulativeXp(s.entities.pc.sheet, content),
         member: s.guild.membership?.rank ?? null,
         scene_at: s.scene.at,
         scene_path: pathNames(s, s.scene.at),
@@ -224,6 +225,7 @@ test('E7–E10: a long gathering is authorised; the marshmint is an object; "car
     assert.equal(e.quests[main.ids.get('quest.herb_run_marshmint')], 'completed');
     assert.equal(e.coin_cp, 70);
     assert.equal(e.xp, questXp(1, 'minor', content));
+    assert.deepEqual([t7.afterReply.entities.pc.sheet.level, t7.afterReply.entities.pc.sheet.xp], [2, 15]);
     assert.equal(e.objects['obj.t16.marshmint'], 'consumed');
     assert.equal(e.novice_contracts_done, 1);
     const ev = t7.rep.record.events.map((x) => x.t);

@@ -2,7 +2,7 @@
 // hard facts, coin/items/quests consistency, CHECK DIE recomputation.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loadContent, Game } from '../helpers.js';
+import { loadContent, Game, cumulativeXp } from '../helpers.js';
 import { extractReport, tolerantJson, reportToEvents } from '../../src/delta.js';
 import { turnPanel } from '../../src/display.js';
 import { questXp } from '../../src/progression.js';
@@ -153,9 +153,9 @@ test('Quest XP (Core #25): locked when offered, awarded once on completion throu
     const Q = content.rules.xp.quest_base_per_level;
     const rats = Math.round(3 * Q * 1.5) * content.rules.xp.reward_multiplier; // minor x1.5: 45 then, 68 now
     g.reply({ quests: [{ title: 'Rats in the Cellar', status: 'completed' }] });
-    assert.equal(g.state.entities.pc.sheet.xp, rats - 100);
+    assert.equal(cumulativeXp(g.state.entities.pc.sheet, content), rats);
     g.reply({ quests: [{ title: 'Rats in the Cellar', status: 'completed' }] });
-    assert.equal(g.state.entities.pc.sheet.xp, rats - 100, 'awarded once');
+    assert.equal(cumulativeXp(g.state.entities.pc.sheet, content), rats, 'awarded once');
     // a new quest without its Level and type is not recorded: its Quest XP could never be fixed (Testrun 3 rat quest)
     const r = g.reply({ quests: [{ title: 'Escort the Carter', status: 'active', type: 'escort' }] });
     assert.match(reasons(r), /^new quest "Escort the Carter" needs level \(its hidden XP basis: the Level the task suits, a whole number from 1\) and type \(minor\|standard\|dangerous\|major\), which fix its Quest XP; missing: level and type\. Report the quest again with both$/);
@@ -167,8 +167,8 @@ test('Quest XP (Core #25): locked when offered, awarded once on completion throu
     g.reply({ quests: [{ title: 'Big Job', status: 'completed' }] });
     const s = g.state.entities.pc.sheet;
     const total = rats + 10 * Q * 3 * content.rules.xp.reward_multiplier; // Big Job: dangerous x3
-    assert.ok(total >= 1000 && total < 1500, 'the numbers below cross four Level thresholds');
-    assert.deepEqual([s.level, s.xp], [5, total - 100 - 200 - 300 - 400], `${total} XP: Level 1 -> 5 with carry-over`);
+    assert.ok(total >= 2100 && total < 2800, 'the configured rewards cross six Level thresholds');
+    assert.deepEqual([s.level, s.xp], [7, total - 2100], `${total} XP: Level 1 -> 7 with carry-over`);
 });
 
 test('a reply without a report: the next report may still record what the player decided in that turn (Testrun 3)', () => {
@@ -423,7 +423,7 @@ test('a Guild contract is completed only at a Guild front desk, where the engine
     assert.match(r.corrections.join('\n'), /quest "Wolf Problem — Millbrook Hamlet" stays active: a Guild contract is completed only when Alaric turns it in at a Guild front desk/);
     const wolf = () => g.state.quests['quest.wolf_problem_millbrook_hamlet'];
     const pc = () => g.state.entities.pc.sheet;
-    assert.deepEqual([wolf().status, wolf().notes.at(-1), pc().xp, pc().coin_cp], ['active', 'the reeve signed the proof', 0, 50]);
+    assert.deepEqual([wolf().status, wolf().notes.at(-1), cumulativeXp(pc(), content), pc().coin_cp], ['active', 'the reeve signed the proof', 0, 50]);
     // what he earns otherwise is his; coin that names the contract is its reward, whenever it comes
     g.input('*I sell a wolf pelt to the tanner*');
     assert.deepEqual(g.reply({ coin: [{ cp: 30, why: 'wolf pelt sold to the tanner' }] }).rejected, []);
@@ -433,11 +433,11 @@ test('a Guild contract is completed only at a Guild front desk, where the engine
     const t = g.reply({ location: 'Tidecross', place: "Adventurers' Guild hall, front desk", quests: [{ title: 'Wolf Problem', status: 'completed' }], coin: [{ cp: 80, why: 'payout from the clerk' }] });
     assert.deepEqual(t.accepted.filter((a) => /^(?:location|quest|Guild reward|Quest XP|coin)/.test(a)), ['location -> Tidecross', 'quest Wolf Problem — Millbrook Hamlet: completed', 'Guild reward +80 cp', `Quest XP +${WOLF_XP}`]);
     assert.equal(reasons(t), 'the Guild pays the posted 8 Silver of the Guild contract "Wolf Problem — Millbrook Hamlet" with this turn-in, and the engine books it: no coin is reported for it');
-    assert.deepEqual([wolf().status, pc().coin_cp, pc().xp], ['completed', 50 + 30 + 80, WOLF_XP]);
+    assert.deepEqual([wolf().status, pc().coin_cp, cumulativeXp(pc(), content)], ['completed', 50 + 30 + 80, WOLF_XP]);
     // reported completed again, and its reward: nothing is paid twice
     const again = g.reply({ quests: [{ title: 'Wolf Problem — Millbrook Hamlet', status: 'completed' }], coin: [{ cp: 80, why: 'Wolf Problem reward' }] });
     assert.equal(reasons(again), 'the Guild paid the posted 8 Silver of the Guild contract "Wolf Problem — Millbrook Hamlet" when it was turned in, and the engine booked it: no coin is reported for it');
-    assert.deepEqual([pc().coin_cp, pc().xp], [160, WOLF_XP]);
+    assert.deepEqual([pc().coin_cp, cumulativeXp(pc(), content)], [160, WOLF_XP]);
 });
 
 // Review of 3.1.5: a city has a Guild branch, but Alaric in a cellar of Alderwatch is not at its front desk. Turning a
@@ -456,7 +456,7 @@ test('a Guild contract is completed only when the player turns it in, in a city 
     g.reply({ place: 'grain cellars under the tally-house' });
     g.input('*I stamp on the last rat and look around the cellar*');
     const a = g.reply({ quests: [{ title: 'Rats in the Grain Cellars', status: 'completed' }], coin: [{ cp: 30, why: 'the tally-house pays for the rats' }] });
-    assert.deepEqual([g.state.scene.location, status('quest.rats_in_the_grain_cellars'), pc().coin_cp, pc().xp], ['loc.alderwatch', 'active', 50, 0]);
+    assert.deepEqual([g.state.scene.location, status('quest.rats_in_the_grain_cellars'), pc().coin_cp, cumulativeXp(pc(), content)], ['loc.alderwatch', 'active', 50, 0]);
     assert.ok(a.accepted.includes('quest Rats in the Grain Cellars: active (turned in only at a Guild front desk)'));
     assert.ok(a.corrections.includes(HOLD('Rats in the Grain Cellars')));
     assert.match(reasons(a), /^the reward of the Guild contract "Rats in the Grain Cellars" is paid by the Guild when Alaric turns it in at a Guild front desk/);
@@ -466,22 +466,22 @@ test('a Guild contract is completed only when the player turns it in, in a city 
     g.input('*I walk back to Alderwatch*');
     const b = g.reply({ location: 'Alderwatch', quests: [{ title: 'Wolf Problem', status: 'completed' }] });
     assert.ok(b.accepted.includes('location -> Alderwatch') && b.accepted.includes('quest Wolf Problem — Millbrook Hamlet: active (turned in only at a Guild front desk)'));
-    assert.deepEqual([status('quest.wolf_problem_millbrook_hamlet'), pc().coin_cp, pc().xp], ['active', 50, 0]);
+    assert.deepEqual([status('quest.wolf_problem_millbrook_hamlet'), pc().coin_cp, cumulativeXp(pc(), content)], ['active', 50, 0]);
     // C: the player turns the wolf contract in by name: only that one is completed, paid and worth its Quest XP
     g.input('*I return to the Guild and turn in Wolf Problem*');
     const c = g.reply({ place: "Adventurers' Guild hall, front desk", quests: [{ title: 'Wolf Problem', status: 'completed' }, { title: 'Rats in the Grain Cellars', status: 'completed' }], coin: [{ cp: 80, why: 'the clerk pays out' }] });
     assert.deepEqual(c.accepted.filter((x) => /^(?:quest|Guild reward|Quest XP)/.test(x)), ['quest Wolf Problem — Millbrook Hamlet: completed', 'Guild reward +80 cp', `Quest XP +${WOLF_XP}`, 'quest Rats in the Grain Cellars: active (turned in only at a Guild front desk)']);
     assert.equal(reasons(c), 'the Guild pays the posted 8 Silver of the Guild contract "Wolf Problem — Millbrook Hamlet" with this turn-in, and the engine books it: no coin is reported for it');
-    assert.deepEqual([status('quest.wolf_problem_millbrook_hamlet'), status('quest.rats_in_the_grain_cellars'), pc().coin_cp, pc().xp], ['completed', 'active', 130, WOLF_XP]);
+    assert.deepEqual([status('quest.wolf_problem_millbrook_hamlet'), status('quest.rats_in_the_grain_cellars'), pc().coin_cp, cumulativeXp(pc(), content)], ['completed', 'active', 130, WOLF_XP]);
     // D: turned in again: no second reward, no second Quest XP
     g.input('*I turn in the Wolf Problem quest again*');
     const d = g.reply({ quests: [{ title: 'Wolf Problem', status: 'completed' }] });
     assert.ok(!d.accepted.some((x) => /^(?:Guild reward|Quest XP)/.test(x)));
-    assert.deepEqual([pc().coin_cp, pc().xp, Object.values(g.state.quests).filter((q) => q.rank && q.status === 'completed').length], [130, WOLF_XP, 1]);
+    assert.deepEqual([pc().coin_cp, cumulativeXp(pc(), content), Object.values(g.state.quests).filter((q) => q.rank && q.status === 'completed').length], [130, WOLF_XP, 1]);
     // "the quest" without a name: the one contract still active
     g.input('*I hand the rat tails over and turn the quest in*');
     assert.ok(g.reply({ quests: [{ title: 'Rats in the Grain Cellars', status: 'completed' }] }).accepted.includes('Guild reward +30 cp'));
-    assert.deepEqual([status('quest.rats_in_the_grain_cellars'), pc().coin_cp, pc().xp], ['completed', 160, WOLF_XP + MINOR_XP - 100]);
+    assert.deepEqual([status('quest.rats_in_the_grain_cellars'), pc().coin_cp, cumulativeXp(pc(), content)], ['completed', 160, WOLF_XP + MINOR_XP]);
 });
 
 // Review of 3.1.6: "I turn the quest in" named no contract and so turned in every one the report completed.
@@ -499,7 +499,7 @@ test('a turn-in without a name ("turn the quest in") turns in the one active Gui
     g.reply({ quests: [{ title: 'Rats in the Grain Cellars', status: 'active' }] });
     g.input('*I go to the front desk and turn the quest in*');
     assert.ok(g.reply({ quests: [{ title: 'Rats in the Grain Cellars', status: 'completed' }] }).accepted.includes('Guild reward +30 cp'));
-    assert.deepEqual([status()['Rats in the Grain Cellars'], pc().coin_cp, pc().xp], ['completed', 80, MINOR_XP]);
+    assert.deepEqual([status()['Rats in the Grain Cellars'], pc().coin_cp, cumulativeXp(pc(), content)], ['completed', 80, MINOR_XP]);
     // 2: two contracts active, "turn the quest in", the report completes both: neither is, and the player is told to name one
     g.input('*I take the Wolf Problem quest and the Herb Run quest*');
     g.reply({ quests: [{ title: 'Wolf Problem', status: 'active' }, { title: 'Herb Run', status: 'active' }] });
@@ -513,18 +513,18 @@ test('a turn-in without a name ("turn the quest in") turns in the one active Gui
         '`QUEST STILL ACTIVE — Wolf Problem — Millbrook Hamlet: more than one Guild contract is active; one is turned in by its name`',
         '`QUEST STILL ACTIVE — Herb Run: more than one Guild contract is active; one is turned in by its name`',
     ]);
-    assert.deepEqual([status()['Wolf Problem'], status()['Herb Run'], pc().coin_cp, pc().xp, completed()], ['active', 'active', 80, MINOR_XP, 1]);
+    assert.deepEqual([status()['Wolf Problem'], status()['Herb Run'], pc().coin_cp, cumulativeXp(pc(), content), completed()], ['active', 'active', 80, MINOR_XP, 1]);
     // 3: two contracts active, "turn in Wolf Problem": only the wolf contract is completed
     g.input('*I turn in Wolf Problem*');
     const named = g.reply({ quests: [{ title: 'Wolf Problem', status: 'completed' }, { title: 'Herb Run', status: 'completed' }] });
     assert.deepEqual(named.accepted.filter((x) => /^(?:quest|Guild reward|Quest XP)/.test(x)), ['quest Wolf Problem — Millbrook Hamlet: completed', 'Guild reward +80 cp', `Quest XP +${WOLF_XP}`, 'quest Herb Run: active (turned in only at a Guild front desk)']);
-    assert.deepEqual([status()['Wolf Problem'], status()['Herb Run'], pc().coin_cp, pc().xp, completed()], ['completed', 'active', 160, MINOR_XP + WOLF_XP - 100, 2]);
+    assert.deepEqual([status()['Wolf Problem'], status()['Herb Run'], pc().coin_cp, cumulativeXp(pc(), content), completed()], ['completed', 'active', 160, MINOR_XP + WOLF_XP, 2]);
     // 4: turned in again: no second reward, no second Quest XP; and a message that names a quest turns in no other, even
     // the one contract still active
     g.input('*I turn in the Wolf Problem quest again*');
     const again = g.reply({ quests: [{ title: 'Wolf Problem', status: 'completed' }, { title: 'Herb Run', status: 'completed' }] });
     assert.ok(!again.accepted.some((x) => /^(?:Guild reward|Quest XP)/.test(x)));
-    assert.deepEqual([status()['Herb Run'], pc().coin_cp, pc().xp, completed()], ['active', 160, MINOR_XP + WOLF_XP - 100, 2]);
+    assert.deepEqual([status()['Herb Run'], pc().coin_cp, cumulativeXp(pc(), content), completed()], ['active', 160, MINOR_XP + WOLF_XP, 2]);
 });
 
 test('the Guild pays the first amount its posted reward names; a reward without an amount is paid by nobody; work without a Quest Rank is private and settles where it is done', () => {

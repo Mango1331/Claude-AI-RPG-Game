@@ -63,13 +63,13 @@ function escort(state, { objective = 'ESCORT' } = {}) {
 const FORD = { new: { name: 'Ford Narrows', kind: 'wilderness', parent: 'realm.veyrhold' } };
 const rules = (r) => r.events.filter((e) => e.t === 'delta.rejected').map((e) => e.d.rule);
 
-test('XP: four same-rank Level-1 wolves and the Level-2 standard escort reach Level 2 with 8 XP carried over (Core #25)', () => {
+test('XP: four same-rank Level-1 wolves and the Level-2 standard escort reach Level 3 with 240 XP carried over (Core #25)', () => {
     const wolf = defeatXp(1, 'normal', 'F', content);
     const quest = questXp(2, 'standard', content);
-    assert.deepEqual([wolf, quest, 4 * wolf + quest], [24, 120, 216], 'the run had 4 × 10 + 40 = 80: no Level-up');
-    const events = awardXp({ level: 1, class: 'warrior', xp: 4 * wolf }, quest, content, 'Quest XP');
-    assert.equal(events.find((e) => e.t === 'level.up')?.d.level, 2);
-    assert.equal(events.find((e) => e.t === 'level.up')?.d.xp_after, 116);
+    assert.deepEqual([wolf, quest, 4 * wolf + quest], [60, 300, 540], 'the run had 4 × 10 + 40 = 80: no Level-up');
+    const events = awardXp({ level: 2, class: 'warrior', xp: 4 * wolf - 100 }, quest, content, 'Quest XP');
+    assert.equal(events.find((e) => e.t === 'level.up')?.d.level, 3);
+    assert.equal(events.find((e) => e.t === 'level.up')?.d.xp_after, 240);
 });
 
 test('a present return journey with "came from" is not dropped as a remembered one', () => {

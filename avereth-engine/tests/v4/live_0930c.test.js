@@ -110,15 +110,15 @@ test('the quest note keeps the story, not "registered and active; payout 60 cp"'
     assert.deepEqual(at[16].rec.corrections, [], 'the contract is active now: the claim is true, nothing to correct');
 });
 
-test('three boars killed: the engine counts them for the active contract; the big boar, a common one in its numbers, gives 12 XP like the others', () => {
+test('three boars killed: the engine counts them for the active contract; the big boar, a common one in its numbers, gives configured Level-1 XP like the others', () => {
     const end = g.state();
     const boars = Object.values(end.entities).filter((e) => e.kind === 'creature');
     assert.deepEqual(boars.map((e) => e.status), ['dead', 'dead', 'dead']);
     assert.ok(boars.every((e) => e.profile.max_hp === 41 && e.profile.atk === 11 && !e.profile.variation), 'the recorded answer named it "big boar" and nothing more');
     const xp = g.chat.flatMap((m) => m.extra?.avereth?.events || []).filter((e) => e.t === 'xp.changed');
     assert.equal(xp.length, 1, 'Combat XP once, at the end of the encounter');
-    assert.equal(xp[0].d.amount, 72);
-    assert.match(xp[0].d.reason, /Big Boar A 24/);
+    assert.equal(xp[0].d.amount, 3 * content.rules.xp.base_per_level * content.rules.xp.reward_multiplier);
+    assert.ok(xp[0].d.reason.includes(`Big Boar A ${content.rules.xp.base_per_level * content.rules.xp.reward_multiplier}`));
     assert.equal(tallyText(defeatTally(end, content, end.quests[Q])), '3 of 3 tusked pen-breaking boars');
     assert.match(buildCatalog(end, content).quests.find((x) => x.id === Q).info, /defeated \(engine count\): 3 of 3/);
 });

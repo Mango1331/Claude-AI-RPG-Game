@@ -79,7 +79,7 @@ test('Batch3 T196: legacy active duplicates remain payable once, with quest-spec
     const x = structuredClone(f.payout), t = begin(x), r = finish(x, t), events = [...t.events, ...r.events];
     assert.equal(r.state.quests[A].status, 'completed'); assert.equal(r.state.quests[B].status, 'completed');
     assert.deepEqual(events.filter(e => e.t === 'transaction.completed' && e.d.from === 'guild').map(e => [e.d.quest, e.d.cp]), [[A, 60], [B, 120]]);
-    assert.deepEqual(events.filter(e => e.t === 'xp.changed' && e.d.reason.startsWith('Quest XP:')).map(e => [e.d.quest, e.d.amount]), [[A, 46], [B, 180]]);
+    assert.deepEqual(events.filter(e => e.t === 'xp.changed' && e.d.reason.startsWith('Quest XP:')).map(e => [e.d.quest, e.d.amount]), [[A, 115], [B, 450]]);
     replay(x.state, events, r.state);
     const again = playerTurnV4(r.state, content, x.player, { c: true, commands: x.commands, msg: 600 });
     assert.ok(!again.events.some(e => e.t === 'coin.changed' || e.t === 'xp.changed'));

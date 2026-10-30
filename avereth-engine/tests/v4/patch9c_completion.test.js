@@ -181,15 +181,16 @@ test('9C completion (2): a Skill at P5 that showed a pattern in two hard fights 
 
 test('9C completion (3): only fights at P5 count, each evidence takes its fights for good: a decline needs two new ones, the successor its own; a fight that was no challenge notes nothing', async () => {
     const g = await hero();
+    // Qualification, not XP pace: each positive fight matches his current level.
     // a fight before P5 is noted, but counts for no evolution
-    const early = await fight(g, { plan: always('warrior.heavy_slash') });
+    const early = await fight(g, { plan: always('warrior.heavy_slash'), level: sheetOf(g).level });
     assert.equal(g.state().growth.marks['warrior.heavy_slash'][0].prof, 1);
     await reply(g, 'Over.');
     atP5(g, 'warrior.heavy_slash');
-    const a = await fight(g, { plan: always('warrior.heavy_slash') });
+    const a = await fight(g, { plan: always('warrior.heavy_slash'), level: sheetOf(g).level });
     assert.equal(a.d.summary.developments, undefined, 'the fight before P5 does not count');
     await reply(g, 'Over.');
-    const b = await fight(g, { plan: always('warrior.heavy_slash') });
+    const b = await fight(g, { plan: always('warrior.heavy_slash'), level: sheetOf(g).level });
     assert.deepEqual(b.d.summary.developments, [`evo:warrior.heavy_slash:crowd:${a.d.id}+${b.d.id}`]);
     assert.ok(!b.d.summary.developments[0].includes(early.d.id));
     const offer = skillOffers(g.state())[0];
@@ -200,17 +201,17 @@ test('9C completion (3): only fights at P5 count, each evidence takes its fights
     assert.ok(sheetOf(g).skills['warrior.heavy_slash']);
     await reply(g, 'He lets it go.');
     // one new fight is not enough (a and b are spent); two are
-    const c = await fight(g, { plan: always('warrior.heavy_slash') });
+    const c = await fight(g, { plan: always('warrior.heavy_slash'), level: sheetOf(g).level });
     assert.equal(c.d.summary.developments, undefined);
     await reply(g, 'Over.');
-    const d = await fight(g, { plan: always('warrior.heavy_slash') });
+    const d = await fight(g, { plan: always('warrior.heavy_slash'), level: sheetOf(g).level });
     assert.deepEqual(d.d.summary.developments, [`evo:warrior.heavy_slash:crowd:${c.d.id}+${d.d.id}`]);
     const again = skillOffers(g.state())[0];
     await reply(g, 'Over.');
     await say(g, 'I accept it.', { type: 'development.accept', offer: again.id, replace: null, quote: 'I accept it' });
     await reply(g, 'It is his.');
     // the successor at P5 counts its own fights only: one is not enough
-    const e = await fight(g, { plan: always(again.skill.id) });
+    const e = await fight(g, { plan: always(again.skill.id), level: sheetOf(g).level });
     assert.equal(e.d.summary.developments, undefined, 'the old Skill\'s fights are not the successor\'s');
     assert.deepEqual(validateState(g.state(), content), []);
     // a fight against a foe far below him, who never struck him, is no challenge: nothing is noted

@@ -143,9 +143,9 @@ test('a stronger individual has the individual variation of the content as its n
     // XP: a standard creature its Level's XP exactly; the stronger one more, less than an Elite or the next Level
     assert.equal(strengthOf({ max_hp: 41, atk: 11 }, std, content), 1);
     const x = (f, type = 'normal') => defeatXp(1, type, 'F', content, strengthOf(f, scaleCreature(boar, 1, type, content), content));
-    assert.deepEqual([x(std), x(strong), x(scaleCreature(boar, 1, 'elite', content), 'elite'), defeatXp(2, 'normal', 'F', content)], [24, 28, 36, 48]);
+    assert.deepEqual([x(std), x(strong), x(scaleCreature(boar, 1, 'elite', content), 'elite'), defeatXp(2, 'normal', 'F', content)], [12, 14, 18, 24].map(n => n * content.rules.xp.reward_multiplier));
     // an Elite that is also a stronger individual is worth more than an Elite
-    assert.ok(x(scaleCreature(boar, 1, 'elite', content, 'strong'), 'elite') > 36);
+    assert.ok(x(scaleCreature(boar, 1, 'elite', content, 'strong'), 'elite') > 18 * content.rules.xp.reward_multiplier);
 });
 
 async function boarFight(stronger) {
@@ -173,11 +173,11 @@ async function boarFight(stronger) {
 
 test('two common boars and a stronger one: the stronger gives more XP; the name "big boar" alone does not; each fight pays once at its end', async () => {
     const plain = await boarFight(null);
-    assert.deepEqual(plain.defeat, { 'Wild Boar A': 24, 'Wild Boar B': 24, 'Big Boar A': 24 }, 'a name alone');
+    assert.deepEqual(plain.defeat, { 'Wild Boar A': 60, 'Wild Boar B': 60, 'Big Boar A': 60 }, 'a name alone');
     const strong = await boarFight(true);
     // 4.3.0-c.6.6.5: the strong boar's own numbers (49 HP, ATK 13, DEF 3) also count against an ordinary creature of
     // its Level (content rules.xp.strength): 15, was 14; the common ones stay at their Level's 12
-    assert.deepEqual(strong.defeat, { 'Wild Boar A': 24, 'Wild Boar B': 24, 'Big Boar A': 30 });
+    assert.deepEqual(strong.defeat, { 'Wild Boar A': 60, 'Wild Boar B': 60, 'Big Boar A': 75 });
     const big = Object.values(strong.g.state().entities).find((e) => e.species === 'big boar');
     assert.deepEqual([big.profile.max_hp, big.profile.atk, big.profile.variation], [49, 13, 'strong']);
     for (const f of [plain, strong]) {
@@ -185,7 +185,7 @@ test('two common boars and a stronger one: the stronger gives more XP; the name 
         assert.equal(f.xp.length, 3, 'Combat XP once per fight, at its end');
         assert.deepEqual(f.xp.map((e) => e.d.amount), f.ended.map((e) => e.d.summary.xp_awarded));
     }
-    assert.deepEqual(strong.xp.map((e) => e.d.amount), [24, 24, 30]);
+    assert.deepEqual(strong.xp.map((e) => e.d.amount), [60, 60, 75]);
     assert.equal(Object.values(strong.g.state().entities).filter((e) => e.kind === 'creature' && e.status === 'dead').length, 3);
 });
 

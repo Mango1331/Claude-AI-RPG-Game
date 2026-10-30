@@ -109,10 +109,10 @@ test('coin, items, rest, quests and Quest XP a reply changed read like a game lo
     const b2 = g.state;
     const r2 = g.reply({ quests: [{ title: 'Rats in the Cellar', status: 'completed' }], recover: [{ sta: 5, why: 'short rest' }] }, 'Mara pays.');
     const lines = turnPanel(b2, content, null, r2).split('\n');
-    // 10 × quest_base_per_level × 1.5 Quest XP (150 until 4.0.8, 225 since the live test 30.09.): Level 1 -> 2 with the rest carried over
+    // Current reward calibration crosses four thresholds; the panel must show all level-ups and the final carryover.
     const xp = Math.round(10 * content.rules.xp.quest_base_per_level * 1.5) * content.rules.xp.reward_multiplier;
-    assert.ok(xp >= 300 && xp < 600, 'two Level thresholds');
-    assert.deepEqual(lines, ['`QUEST COMPLETED — Rats in the Cellar (Mara)`', `\`+${xp} XP → XP ${xp - 300}/300 · Quest XP: Rats in the Cellar (XP basis Level 10, minor)\``, '`LEVEL UP → Level 2 (+5 free Stat Points) · spend them with #assign <STAT> <n>, e.g. #assign INT 3 WIL 2`', '`LEVEL UP → Level 3 (+5 free Stat Points) · spend them with #assign <STAT> <n>, e.g. #assign INT 3 WIL 2`']);
+    assert.ok(xp >= 1000 && xp < 1500, 'four Level thresholds');
+    assert.deepEqual(lines, ['`QUEST COMPLETED — Rats in the Cellar (Mara)`', `\`+${xp} XP → XP ${xp - 1000}/500 · Quest XP: Rats in the Cellar (XP basis Level 10, minor)\``, '`LEVEL UP → Level 2 (+5 free Stat Points) · spend them with #assign <STAT> <n>, e.g. #assign INT 3 WIL 2`', '`LEVEL UP → Level 3 (+5 free Stat Points) · spend them with #assign <STAT> <n>, e.g. #assign INT 3 WIL 2`', '`LEVEL UP → Level 4 (+5 free Stat Points) · spend them with #assign <STAT> <n>, e.g. #assign INT 3 WIL 2`', '`LEVEL UP → Level 5 (+5 free Stat Points) · spend them with #assign <STAT> <n>, e.g. #assign INT 3 WIL 2`']);
     assert.equal(turnPanel(b2, content, null, { ...r2, events: [] }), '', 'nothing changed, nothing shown');
 });
 

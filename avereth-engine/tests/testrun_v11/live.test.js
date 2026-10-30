@@ -11,7 +11,7 @@
 // listed the two clerks.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loadContent, readJson } from '../helpers.js';
+import { loadContent, readJson, cumulativeXp } from '../helpers.js';
 import { prepareGeneration, processReply, foldChat, reportRequest, applyReportAnswer, PLACE_REQUEST_HEAD } from '../../src/host.js';
 import { validateState } from '../../src/validate.js';
 import { parseSwaps, hash32, ENGINE_VERSION } from '../../src/util.js';
@@ -147,7 +147,7 @@ test('C: in Millbrook the contract stays active: the heads and the reeve\'s seal
     assert.equal(wolf.status, 'active');
     assert.equal(wolf.notes.at(-1), 'two wolf heads delivered as proof, signature pending from reeve Aldous');
     assert.equal(s.entities.pc.sheet.inventory[Object.keys(s.entities.pc.sheet.inventory).find((k) => /sealed/.test(k))], 1);
-    assert.equal(s.entities.pc.sheet.xp, WOLVES_XP); // the two wolves, nothing else
+    assert.equal(cumulativeXp(s.entities.pc.sheet, content), WOLVES_XP); // the two wolves, nothing else
     // the next engine block: the contract, who pays it, and the correction
     const text = run.at[29].gen.context.text;
     assert.match(text, /- Quest \(active, Novice Guild contract\): Wolf Problem — Millbrook Hamlet — from Millbrook Hamlet — reward: 8 silver on proof of at least two wolves \(paid by the Guild when turned in at a front desk, never by its client or other locals\)/, 'Patch 8.3: the Guild pays; no local is said to confirm it');
@@ -191,11 +191,14 @@ test('H: the fight with the two wolves is the run\'s: the same events, dice and 
     for (const r of [run, asRun]) {
         assert.deepEqual(stored(r.at[20].rec.events), atCurrentXp(f.events20));
         assert.deepEqual(stored(r.at[21].rec.events), atCurrentXp(f.events21));
-        assert.deepEqual(noTotal(r.at[23].rec.events), atCurrentXp(noTotal(f.events23)));
+        const expectedEnd = atCurrentXp(noTotal(f.events23));
+        expectedEnd.find(e => e.t === 'outcome.recorded').d.outcome.levelups = ['Level 2'];
+        assert.deepEqual(noTotal(r.at[23].rec.events.filter(e => e.t !== 'level.up')), expectedEnd);
+        assert.deepEqual(r.at[23].rec.events.filter(e => e.t === 'level.up').map(e => [e.d.level, e.d.xp_after, e.d.free_points]), [[2, WOLVES_XP - 100, 5]]);
         assert.deepEqual([f.events23.find((e) => e.t === 'xp.changed').d.xp, r.at[23].rec.events.find((e) => e.t === 'xp.changed').d.xp], [35, WOLVES_XP]);
         assert.deepEqual([r.at[20].panel, r.at[22].panel], [f.panel20, f.panel22]);
         assert.ok(f.panel24.includes('+20 XP → XP 35/100'), 'the run');
-        assert.equal(r.at[24].panel, f.panel24.replace('+20 XP → XP 35/100', `+${WOLVES_XP} XP → XP ${WOLVES_XP}/100`));
+        assert.equal(r.at[24].panel, f.panel24.replace('+20 XP → XP 35/100', `+${WOLVES_XP} XP → XP ${WOLVES_XP - 100}/200`) + '\n`LEVEL UP → Level 2 (+5 free Stat Points) · spend them with #assign <STAT> <n>, e.g. #assign INT 3 WIL 2`');
     }
 });
 

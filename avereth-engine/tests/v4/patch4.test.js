@@ -8,7 +8,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { loadProductContent, ROOT } from '../helpers.js';
+import { loadProductContent, ROOT, cumulativeXp } from '../helpers.js';
 import { prepareGenerationAsync } from '../../src/v4/runtime.js';
 import { rec } from '../../src/host.js';
 import { buildContext } from '../../src/context.js';
@@ -232,7 +232,7 @@ test('patch 4 (16, 17, 18): his flight from two wolves in melee is one escape ro
 test('patch 4 (21, 22, 23): a group fight pays each kill once, loots each body once, and the contract counts the kills, not the one that ran', async () => {
     const g = await pack();
     inject(g, [{ t: 'quest.set', d: { quest: { id: 'quest.wolves', title: 'Wolves at the Quarry', kind: 'guild_contract', status: 'active', rank: 'Novice', level: 1, payout_cp: 120, objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'wolves', qty: 4, status: 'open' }], proof: [], details: [], notes: [], history: [{ turn: 1, minute: 0, status: 'active' }], source: {} } } }]);
-    const xp0 = g.state().entities.pc.sheet.xp;
+    const xp0 = cumulativeXp(g.state().entities.pc.sheet, content);
     await say(g, '*i wait and watch*');
     await g.reply('Three wolves come at him; the fourth hangs back.', rush({ [W[0]]: 'ENGAGED', [W[1]]: 'SHORT', [W[2]]: 'LONG' }, [W[0], W[1], W[2]]));
     await say(g, '*i flame lance it*', LANCE(W[0]));
@@ -247,14 +247,14 @@ test('patch 4 (21, 22, 23): a group fight pays each kill once, loots each body o
     }
     const s = g.state();
     const dead = W.filter((id) => s.entities[id].status === 'dead');
-    const xp = s.entities.pc.sheet.xp - xp0;
+    const xp = cumulativeXp(s.entities.pc.sheet, content) - xp0;
     assert.ok(ended, 'the fight is over');
     assert.deepEqual(ended.defeated.slice().sort(), dead.slice().sort(), 'XP for the kills only');
     assert.deepEqual(ended.escaped, [W[2]], 'the one that ran escaped');
     assert.equal(s.entities[W[2]].fled?.encounter !== undefined, true, 'driven off, not dead');
     assert.equal(xp, ended.xp_awarded, 'once');
     assert.deepEqual(dead.slice().sort(), [W[0], W[1]], 'A and B killed');
-    assert.equal(ended.xp_awarded, 2 * 24, 'each kill its locked Defeat XP (Level 1 wolf: 24), the runner none');
+    assert.equal(ended.xp_awarded, 2 * content.rules.xp.base_per_level * content.rules.xp.reward_multiplier, 'each kill its locked configured Defeat XP, the runner none');
     const pelts = Object.values(s.objects).filter((o) => o.holder?.entity === 'pc' && /wolf pelt/i.test(o.name)).reduce((a, o) => a + (o.qty ?? 1), 0);
     assert.equal(pelts, dead.length, 'one pelt per body, no doubles');
     const tally = defeatTally(s, content, s.quests['quest.wolves'])[0];

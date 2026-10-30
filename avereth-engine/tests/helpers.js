@@ -48,6 +48,9 @@ export async function readJson(rel) {
     return JSON.parse(await readFile(path.join(ROOT, rel), 'utf8'));
 }
 
+/** XP already spent on level thresholds plus the sheet's current carryover (test assertions across balance changes). */
+export const cumulativeXp = (sheet, content) => sheet.xp + (sheet.level * (sheet.level - 1) / 2) * content.rules.progression.xp_to_next_per_level;
+
 export const FIRST_MESSAGE = 'SYSTEM INITIALIZATION COMPLETE\n`Location: Public roadside verge outside Tidecross, Solmere`';
 
 /** Plays a campaign turn by turn; every step is checked against the state invariants. */

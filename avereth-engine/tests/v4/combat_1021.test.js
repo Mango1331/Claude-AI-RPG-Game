@@ -96,8 +96,8 @@ test('combat 21.10: a surrender gives no XP; the same skeleton killed afterwards
     await g.reply('The skeleton stays on its knees among the bones.', { expected: {}, deltas: [] });
     const kill = await say(g, fx.messages[47].mes, { type: 'use_skill', skill: 'mage.flame_lance', target: C, quote: 'i finish it off with a flame lance' });
     assert.equal(g.state().entities[C].status, 'dead');
-    assert.equal(xpOf([kill]), 312, 'its Defeat XP, once');
-    assert.equal(xpOf([surrender, kill]), 312);
+    assert.equal(xpOf([kill]), 156 * content.rules.xp.reward_multiplier, 'its Defeat XP, once');
+    assert.equal(xpOf([surrender, kill]), 156 * content.rules.xp.reward_multiplier);
 });
 
 test('combat 21.10: combat truth reads the skeleton\'s death in the gallery as the skeleton\'s (dead in the engine), not as a gallery killed', () => {

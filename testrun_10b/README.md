@@ -37,6 +37,7 @@ W/M/R = Warrior/Mage/Rogue; Limit und manueller Stopp sind kein technischer Fehl
 
 | Batch / Originalreview | Build | Profile / Ende | Einordnung / späterer Fix |
 |---|---|---|---|
+| [17: batch-20261030-040258Z](batch-20261030-040258Z/REVIEW.md) | **.122** | **W168/L15 done; M106/L15 done; R141/L13 manuell gestoppt** | XP×5 erstmals natürlich L15 (2/3); 48/48 Siege, 16 Guildabschlüsse, Warrior 2 echte Gearupgrades zum auffällig günstigen Narratorpreis; P1-/Skillwachstum hinkt hinterher |
 | [16: batch-20261030-002939Z](batch-20261030-002939Z/REVIEW.md) · [Sol](batch-20261030-002939Z/SOL_COUNTERREVIEW.md) | .120 | W29/L1Tod; M150/L9Limit; R150/L8Limit | 30/31 Siege; 15 Guildabschlüsse; 4424 Events gültig; drei begrenzte Fehlablehnungen, kein Gearupgrade |
 | [15: batch-20261029-174048Z](batch-20261029-174048Z/REVIEW.md) | .119 | W73/L3Tod; M150/L8Limit; R33/L2Tod | 17/19Siege; T141 wirklich erfüllt/unbezahlt → .120; neue Doppeljagden gesperrt |
 | [14: batch-20261029-131555Z](batch-20261029-131555Z/REVIEW.md) | .117 | W150/L8, M150/L9Limit; R116Inputs/L6, danach manuell | Geld/Filiale → .119; T117 erst3/6Kills, dort kein Zahlungsausfall |

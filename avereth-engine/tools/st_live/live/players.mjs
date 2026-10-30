@@ -100,6 +100,11 @@ const NEXT_DECISION = 'NEXT DECISION: use the newest System result; do not assum
 
 const PLAYER_SHOPPING = 'GEAR CHECK: Early and on town returns with new income/loot, sell surplus and visit a weapons/armour merchant for an upgrade offer. Buy/equip useful affordable gear; reserve recovery money. If none, note it and continue. Recheck only with substantially more money, a new merchant or confirmed stock changes.';
 
+// Controlled shopping trial for the Guild Warrior only; the other profiles keep their existing prompt.
+const warriorShoppingTrial = (guide) => guide.openRun && guide.scenario?.id === 'guild-warrior';
+const WARRIOR_SHOPPING = 'WARRIOR GEAR TRIAL — required preparation: At your next safe town/village visit with at least 100 copper (10 silver), sell surplus loot and actually enter a working blacksmith, weaponsmith or armourer shop. Ask the present smith for concrete weapon AND armour upgrade offers and compare their System-confirmed values with your equipped gear. Buy and equip useful affordable upgrades, keeping at least 20 copper for recovery; do not substitute supplies, repairs or loot sales for this gear check. Do this before leaving for another optional hunt, without interrupting combat or urgent recovery. Keep this shopping goal across the necessary steps until offers have been checked. Choose the shop and purchases yourself. If no useful affordable offer is available or the shop is inaccessible after a focused attempt, note why and resume adventuring. Recheck after enough new income for the next known upgrade, a different smith or confirmed stock changes; never loop on unchanged refusals.';
+const WARRIOR_SHOPPING_REMINDER = 'WARRIOR PRIORITY: At a safe settlement with 100+ cp, visit a smith before another hunt; compare weapon/armour offers, buy/equip useful upgrades, keep 20 cp. If already checked without changed conditions, continue.';
+
 export function playerSystemPrompt(guide, { username, persona }) {
     const ms = guide.milestones.map((m, i) => `${i + 1}. ${m.id}: ${m.goal}${m.required === false ? ' (if it comes within reach)' : ''}`).join('\n');
     const focus = guide.focus?.length ? `\nWHAT THIS TEST LOOKS AT (watch for it):\n${guide.focus.map((f) => `- ${f}`).join('\n')}` : '';
@@ -111,7 +116,7 @@ export function playerSystemPrompt(guide, { username, persona }) {
         '',
         PLAYER_COMMANDS,
         PLAYER_MECHANICS,
-        guide.openRun ? PLAYER_SHOPPING : '',
+        guide.openRun ? (warriorShoppingTrial(guide) ? WARRIOR_SHOPPING : PLAYER_SHOPPING) : '',
         '',
         `THE TEST: ${guide.brief}`,
         '',
@@ -140,18 +145,19 @@ export function notesText(notes, { recent = 6 } = {}) {
     return earlier + notes.slice(-recent).map((n) => `${n.turn}. you wrote: ${JSON.stringify(clip(n.message, 160))} — ${n.milestone || '?'}: ${clip(n.intent || '', 120)}${n.observations ? ` — noted: ${clip(n.observations, 160)}` : ''}`).join('\n');
 }
 
-export function playerTurnPrompt(view, notes, { turn, maxTurns, recent = 6 } = {}) {
-    return `TURN ${turn} of at most ${maxTurns}.\n\nYOUR NOTES SO FAR:\n${notesText(notes, { recent })}\n\nTHE SCREEN NOW (the newest at the bottom):\n\n${screenText(view)}\n\n${NEXT_DECISION}`;
+export function playerTurnPrompt(view, notes, { turn, maxTurns, recent = 6, shoppingReminder = null } = {}) {
+    return `TURN ${turn} of at most ${maxTurns}.\n\nYOUR NOTES SO FAR:\n${notesText(notes, { recent })}\n\nTHE SCREEN NOW (the newest at the bottom):\n\n${screenText(view)}\n\n${shoppingReminder ? `${shoppingReminder}\n\n` : ''}${NEXT_DECISION}`;
 }
 
 /** The smallest prompt: the newest messages and the HUD, the milestone at hand, the last notes (after a reasoning loop). */
-function shortTurnPrompt(view, notes, { turn, maxTurns, milestone, minimal = false }) {
+function shortTurnPrompt(view, notes, { turn, maxTurns, milestone, minimal = false, shoppingReminder = null }) {
     const newest = { ...view, messages: view.messages.slice(minimal ? -1 : -2) };
     return [
         `TURN ${turn} of at most ${maxTurns}. Answer at once with the JSON object: no deliberation.`,
         milestone ? `YOUR MILESTONE NOW: ${milestone}` : '',
         minimal ? '' : `YOUR LAST NOTES:\n${notesText(notes, { recent: 3 })}`,
         `THE SCREEN NOW:\n\n${screenText(newest, { maxChars: minimal ? 1500 : 3000, hudChars: minimal ? 1200 : 2500 })}`,
+        shoppingReminder,
         NEXT_DECISION,
     ].filter(Boolean).join('\n\n');
 }
@@ -166,6 +172,7 @@ export const LONG_MESSAGE = 600; // characters: a player's turn, not a paragraph
 export function llmPlayer({ guide, username, persona, url, model, key, temperature = 0.8, maxTokens = 3000, body = null, extraBody = null, timeoutMs = 180000, record = () => {}, fetchImpl = fetch, backoffMs = 3000 }) {
     const notes = [];
     const system = playerSystemPrompt(guide, { username, persona });
+    const shoppingReminder = warriorShoppingTrial(guide) ? WARRIOR_SHOPPING_REMINDER : null;
     const endpoint = `${String(url).replace(/\/+$/, '')}/chat/completions`;
     const steer = { ...(body || {}), ...(extraBody || {}) };
     async function call(messages, temp) {
@@ -195,7 +202,7 @@ export function llmPlayer({ guide, username, persona, url, model, key, temperatu
             // the milestone he last said he works on (his own note), else the first: for the shorter prompts
             const at = guide.milestones.find((x) => x.id === notes.at(-1)?.milestone) || guide.milestones[0];
             const milestone = at ? `${at.id}: ${at.goal}` : null;
-            const full = [{ role: 'system', content: system }, { role: 'user', content: playerTurnPrompt(view, notes, { turn, maxTurns }) }];
+            const full = [{ role: 'system', content: system }, { role: 'user', content: playerTurnPrompt(view, notes, { turn, maxTurns, shoppingReminder }) }];
             let messages = full;
             let strategy = 'full';
             let temp = temperature;
@@ -223,7 +230,7 @@ export function llmPlayer({ guide, username, persona, url, model, key, temperatu
                     // a smaller prompt and a cooler temperature, then the smallest one
                     strategy = attempt === 0 ? 'short' : 'minimal';
                     temp = Math.min(temperature, attempt === 0 ? 0.4 : 0.2);
-                    messages = [{ role: 'system', content: system }, { role: 'user', content: shortTurnPrompt(view, notes, { turn, maxTurns, milestone, minimal: strategy === 'minimal' }) }];
+                    messages = [{ role: 'system', content: system }, { role: 'user', content: shortTurnPrompt(view, notes, { turn, maxTurns, milestone, minimal: strategy === 'minimal', shoppingReminder }) }];
                     continue;
                 }
                 if (!r.ok) { await sleep(backoffMs * (attempt + 1)); continue; }

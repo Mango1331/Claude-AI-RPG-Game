@@ -18,3 +18,5 @@ Prüfe am tatsächlichen Code insbesondere:
 Überprüfe auch deine früheren Empfehlungen kritisch. Streiche Vorschläge ohne belegten praktischen Nutzen. Benenne nur konkrete Blocker oder notwendige Präzisierungen mit Datei/Funktion, möglichem Gegenfall und kleinstem Lösungsweg. Optionale Verbesserungen getrennt aufführen; keine neue vorsorgliche Review- oder Mikrofixserie.
 
 Ergebnis: kurzes Urteil **„umsetzungsreif“, „mit folgenden Korrekturen umsetzungsreif“ oder „noch nicht umsetzungsreif“**, höchstens die wesentlichen priorisierten Befunde und eine bestätigte oder korrigierte Umsetzungsreihenfolge. Selbst ausgeführte Sonden klar von statischen Befunden trennen. Keine Produktänderungen oder Commits.
+
+**Nachtrag 30.10.2026:** Abschnitt 11 des Fachplans berücksichtigt das zusätzliche GPT-Feedback. Bitte die präzisierte `population_at`-Semantik, individuelle Wiedererkennung ohne Populations-Merging und Foldschutz im Extraktor-Commit mitprüfen. Prioritäten bleiben bestehen; der natürliche Batch soll nach C/D nicht auf den größeren E-Abbau warten. Kein vollständiger Neustart deiner bereits laufenden Prüfung erforderlich.

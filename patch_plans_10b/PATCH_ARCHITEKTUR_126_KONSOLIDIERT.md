@@ -73,7 +73,7 @@ Ein historischer Event-Fold bleibt eine eigene Prüfung der Reducer. Er ersetzt 
 
 Betroffen: `src/host.js:foldChat`, V4-Runtime vor Planner/World-Buchung, `index.js` als Anzeige-/Abbruchgrenze.
 
-- Foldfehler vor neuer autoritativer Verarbeitung auswerten. Kein Planneraufruf, keine Zahlung, kein Kampfzug und kein Eventcommit aus einem unvollständig aufgebauten Zustand.
+- Foldfehler vor neuer autoritativer Verarbeitung auswerten: ausdrücklich in `prepareGenerationAsync()` und im nachfolgenden `applyExtraction()` vor `replyTurnV4()`/`setRec()`, einschließlich bereits laufender Extraktorjobs. Auch `extractionRequest()` darf aus einem fehlerhaften Fold keinen neuen Modellauftrag erzeugen. Die bestehende Prüfung an jeder benötigten Grenze gemeinsam nutzen; ein einmaliger Check nur vor dem Planner reicht nicht. Kein Planneraufruf, keine Zahlung, kein Kampfzug und kein Eventcommit aus einem unvollständig aufgebauten Zustand.
 - Sichtbare Meldung mit betroffener Nachricht/Eventart und Wiederherstellungsoption; keine erfundene Zustandsreparatur und kein stilles Überspringen.
 - Erneutes Laden eines gültigen Standes beziehungsweise Regenerate nach echter Korrektur muss funktionieren. Lesbare Rohhistorie/Export erhalten; einen partiellen Zustand nicht als gültigen HUD-Stand ausgeben.
 - Nicht mit fail-soft für ein unwichtiges verworfenes NPC-Delta verwechseln. Ein gültiger Zustand mit einer abgewiesenen Erzählangabe darf normal weiterlaufen.
@@ -114,10 +114,16 @@ Betroffen: `content/deltas.json`, `src/v4/extract.js`, `catalog.js`, `world.js:n
 
 - Population legt die mechanische Art fest. Erwachsene erhalten ihr bestehendes Level-Fenster nach den geltenden Prioritäten.
 - Jungtiere erhalten **nicht automatisch** das Erwachsenenfenster. Aktuelle individuelle, Dungeon- und ausdrücklich juvenile Vorgaben erhalten; ansonsten die bisherige Jungtierbehandlung nutzen. Kein neuer Altersmultiplikator.
-- Entscheiden und testen, wie mechanische Mitgliedschaft gespeichert wird, wenn das Jungtierlevel außerhalb des Erwachsenenfensters liegt: Artmitgliedschaft darf nicht versehentlich Erwachsenencredit bedeuten. Bereits vorhandene Felder bevorzugen, keine doppelte gleichbedeutende Populationsquelle.
+- **Verbindliche Feldsemantik für C:** `population_at` bezeichnet die validierte Populationszugehörigkeit, unabhängig vom individuellen Level; es ist weder Levelberechtigung noch Killcredit. Heute setzt `engine.materialise()` das Feld nur innerhalb des Populationsfensters. Diese Kopplung bei C ausdrücklich auflösen und alle Leser prüfen, insbesondere `guild.areaOf()`. Altersgruppe und zulässige Vertragsbedingungen separat prüfen; ein Jungtier außerhalb des Erwachsenenfensters bleibt Mitglied, erfüllt aber keinen Erwachsenenauftrag. Keine zweite gleichbedeutende Populationsquelle einführen.
 - Populationsjagden prüfen gespeicherte Zugehörigkeit, erlaubte Altersgruppe und tatsächlichen Tod/erlaubte Flucht seit Annahme. Jungtierziele bei Vertragsveröffentlichung strukturiert festlegen; später keine erneute Prosaableitung.
 - Der Name darf weder Level noch Questcredit nachträglich umschreiben. Dungeonrollen und Personenziele nicht still auf dieselbe Outdoorregel umstellen.
 - Kein neuer Kill-Verbrauch/keine Credit-Events: derzeit keine überlappenden gezählten Jagden. Diese Erweiterung bleibt separat.
+
+### Individuelle Wiedererkennung
+
+`world.newEntity()` verwendet bei Rückkehr, anwesenden Gruppen und `back` noch exakte `species`-Textgleichheit. C muss diese Übergänge mit den bestehenden Entity-/Storyreferenzen, Scene-Handles, Gruppenreferenzen und `more` prüfen. Reihenfolge: eindeutige vorhandene Identität wiederverwenden; erst bei tatsächlich neuen Individuen Population/Art zuordnen. Eine gemeinsame Population oder ein ähnlicher Name allein darf keine Individuen verschmelzen. Ein anderer Beschreibungsname allein darf eine ausdrücklich referenzierte bestehende Kreatur nicht duplizieren. Mehrdeutige Identität über die vorhandene begrenzte Klärung behandeln; keine neue Identitätsengine und keine umfassende Lösung beliebiger Pronomen verlangen.
+
+**Zusätzliche Gegenfälle:** dieselbe Sau als `wild boar`/`wild boar sow` mit identischem bestehenden Handle; zwei unterschiedliche Sauen derselben Population mit getrennten Handles; Rückkehr einer verletzten Kreatur ohne HP-/ID-Reset; Gruppenerweiterung und gleichnamige unabhängige Gruppe. Fehlende Referenz bei gleicher Art ist ausdrücklich kein Beweis, dass es dasselbe Tier ist.
 
 ### Verbleibender Modellfehler
 
@@ -142,7 +148,7 @@ Betroffen: Offer-Delta/Extractor, `world.js:offerLines`, `items.js:itemProfile/g
 
 **Regressionen:** Original Batch18 Paket; finer/better/improved mit expliziter Vorlage/Qualität; unbekannte Basis; mehrere Zeilen mit Gesamtlimit; fehlender/abweichender Preisbeleg bei regulärem Gear; flexibler Verkauf/Geschenk weiterhin belegpflichtig; Geld knapp/kein anwesender Verkäufer; vorab begrenzter Kauf; Preiskorrektur ohne unberechtigte Abbuchung; identische Wiedernennung; kanonische/narrative Angebotspfade; Buy→Equip-Profilgleichheit; Replay/Reload/Swipe.
 
-**Abnahme:** Originaldefekte vor Änderung rot, positive Kontrollen dokumentiert; Vollsuite, ST-Smoke wegen Protokolländerung; reguläre Preiswerte selbst unverändert. Keine natürliche Erfolgsbehauptung vor dem nächsten Batch.
+**Abnahme:** Originaldefekte vor Änderung rot, positive Kontrollen dokumentiert; Vollsuite, ST-Smoke wegen Protokolländerung; reguläre Preiswerte selbst unverändert. Explizite Invariante: Ein gültiger Enginepreis legitimiert die Angebotserstellung, aber allein keine Abbuchung. Ohne passende Kaufzustimmung bleibt das Geld unverändert; ausreichende vorherige Zustimmung samt Preislimit darf weiterhin im selben Zug kaufen. Keine natürliche Erfolgsbehauptung vor dem nächsten Batch.
 
 ## 8. Paket E – Historische Ausführungspfade begrenzt entfernen
 
@@ -172,3 +178,14 @@ Reine Strukturcommits müssen gegenüber einer freigegebenen aktuellen Baseline 
 5. Welche konkrete Codeabhängigkeit fehlt noch? Welche vorgeschlagene Änderung lässt sich streichen, ohne das Ziel zu verlieren?
 
 Nach dieser Prüfung fachlich freigeben oder konkrete Blocker benennen. Keine weitere vorsorgliche Reviewkette und keine Umsetzung allein aufgrund dieses Plans.
+
+## 11. Nachtrag – GPT-Feedback vom 30.10.2026
+
+Grundlage: beigefügtes `Chatgpt Feedback(20261030-180745).md`, am unveränderten Produktcommit `b8d2af4` gezielt nachgeprüft. Keine neue Testausführung, keine Produktänderung. Die vier ursprünglichen Reviewgrundlagen bleiben unverändert archiviert.
+
+- **Übernommen:** unabhängige Semantik von `population_at`, konkrete Foldgrenzen einschließlich Extraktor-Commit sowie individuelle Wiedererkennung in C. Letztere ist ein zusätzlicher Regressionsumfang, kein Nachweis, dass jede wechselnde Tierbezeichnung aktuell eine Duplikation erzeugt.
+- **Bereits enthalten, hervorgehoben:** Angebotspreis und Kaufzustimmung getrennt abnehmen. Kein neues Zustimmungsverfahren und kein verpflichtender zusätzlicher Einkaufszug.
+- **Prioritäten bestätigt:** A zuerst; B danach, C/D dürfen nach tragfähiger A-Abnahme unabhängig von vollständigem B vorankommen. E bleibt nachrangig. Wie bereits in Abschnitt 9 festgelegt, folgt F nach C/D und muss nicht auf E warten. Die Kurzfolge `A → B → C/D → E → F` aus dem Feedback ist insofern zu strikt.
+- **Vereinfachungsgewinn knapp belegen:** je Fachabnahme entfernte aktive historische Schalter, ersetzte Namensheuristiken und tatsächlich zusammengeführte Prüfstellen nennen; verbleibende Ausnahmen und Verarbeitungstest-Abdeckung angeben. Bestehenden Diff und Testbericht nutzen, kein neues Metriksystem. Weniger Zeilen/Regex sind allein kein Erfolgskriterium; gleiche Sicherheit und geringerer konkreter Pflegeaufwand zählen.
+
+Diese Präzisierungen gehören in Claudes laufende Schlussprüfung; sie eröffnen keine weitere allgemeine Auditphase und erteilen keine Implementierungsfreigabe.

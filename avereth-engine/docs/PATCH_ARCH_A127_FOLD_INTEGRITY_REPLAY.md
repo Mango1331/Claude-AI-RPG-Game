@@ -51,9 +51,13 @@ Selbst ausgeführt in dieser Umgebung:
 
 **Zwei Testaufbauten korrigiert, Assertions unverändert:** `patch10b1` (Gildenhalle) und `patch_run21_habitat_catalog` (T90, `realm.caelreth`) injizierten `place.created` für bereits vorhandene Orte. Der Reducer warf „place exists“, der bisherige Fold überging das still, und die Tests liefen auf einem teilweise gescheiterten Zustand. Jetzt werden nur fehlende Orte angelegt.
 
+- **Echter SillyTavern-1.19.0-Smoke** `npm run smoke:st:c` (frisches Checkout, Chromium, Mock-Provider, Build .127), nach Freigabe durch den Nutzer nachgeholt:
+  - **24/24**, 6 Extractor-Aufrufe, keine PageErrors, Statuszeile Build .127 mit „integrity: OK“. Ein erster unveränderter Lauf war 23/24 allein wegen des ST-Seitenfehlers „AbortReason @ openai.js:4565“ (`noPageErrors`); dieselbe Störungsart ist bei .120/.124 dokumentiert.
+  - **`AVERETH_SMOKE_FAILSOFT=1`: 29/29**, darunter gespeicherte Records per `verifySavedChat` vom Datenträger zurückgelesen (`failsoftSaved`), erkannte verschluckte Speicherfehler, gesperrte Weltfolge ohne doppelten Kampf; keine PageErrors.
+  - Der Smoke prüft die Hostbindung auf gültigen Verläufen. Die Fold-Sperre selbst ist im Chromium-Mock und in den Node-Tests nachgewiesen, nicht als eigener ST-Fall.
+
 ## Einschränkungen und offene Punkte
 
-- **Kein echter SillyTavern-1.19-Smoke ausgeführt.** In dieser Umgebung wurde die Installation/Ausführung eines externen SillyTavern-Checkouts samt npm-Abhängigkeiten nicht freigegeben. Nachweis bisher: Node-Pfade, Korpus und Chromium-Mock der Hostbindung. Ein ST-Smoke `npm run smoke:st:c` mit Reload/gespeicherten Records steht aus.
 - Der Korpus enthält keine Antwort-Swipes mit eigener Extraktion und keine `late`-Abschlüsse; beides bleibt durch bestehende Tests abgedeckt. Board/Forge sind nur so weit abgedeckt, wie sie in Batch16–19 vorkamen (25/3).
 - Nach C/D sind alte Rohantworten nicht automatisch gültiger Input des neuen Protokolls; Schemaänderungen brauchen transparent umgerechnete Testdaten (Fachplan §8.2).
 - Vereinfachungsgewinn A: keine historischen Schalter entfernt (B1), keine Namensheuristik ersetzt. Eine gemeinsame Foldprüfung an sechs Schreibgrenzen; der bisher verdeckte Foldfehler in zwei Testaufbauten ist sichtbar geworden.

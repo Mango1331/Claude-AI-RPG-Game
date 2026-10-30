@@ -37,7 +37,7 @@ W/M/R = Warrior/Mage/Rogue; Limit und manueller Stopp sind kein technischer Fehl
 
 | Batch / Originalreview | Build | Profile / Ende | Einordnung / späterer Fix |
 |---|---|---|---|
-| [16: batch-20261030-002939Z](batch-20261030-002939Z/REVIEW.md) | .120 | W29/L1Tod; M150/L9Limit; R150/L8Limit | 30/31 Siege; 15 Guildabschlüsse; echte Coldwell-Filiale, Rogue-17-cp-Verkauf ungebucht; kein Gearupgrade |
+| [16: batch-20261030-002939Z](batch-20261030-002939Z/REVIEW.md) · [Sol](batch-20261030-002939Z/SOL_COUNTERREVIEW.md) | .120 | W29/L1Tod; M150/L9Limit; R150/L8Limit | 30/31 Siege; 15 Guildabschlüsse; 4424 Events gültig; drei begrenzte Fehlablehnungen, kein Gearupgrade |
 | [15: batch-20261029-174048Z](batch-20261029-174048Z/REVIEW.md) | .119 | W73/L3Tod; M150/L8Limit; R33/L2Tod | 17/19Siege; T141 wirklich erfüllt/unbezahlt → .120; neue Doppeljagden gesperrt |
 | [14: batch-20261029-131555Z](batch-20261029-131555Z/REVIEW.md) | .117 | W150/L8, M150/L9Limit; R116Inputs/L6, danach manuell | Geld/Filiale → .119; T117 erst3/6Kills, dort kein Zahlungsausfall |
 | [13: batch-20261029-091447Z](batch-20261029-091447Z/REVIEW.md) | .116 | W150/L1, M150/L8Limit; R52/L1Tod | 43Warrior-Abgaben blockiert → .117; Mage-AoE mit Friendly Fire |
@@ -54,7 +54,7 @@ W/M/R = Warrior/Mage/Rogue; Limit und manueller Stopp sind kein technischer Fehl
 | [2: batch-20261027-073917Z](batch-20261027-073917Z/REVIEW.md) | .101 | Guild W150/L7, R150/L8; M99Tod; Explore W87/M123technisch | Nur5 bewertet, Run6 manuell ausgeschlossen |
 | [1: batch-20261027-030034Z](batch-20261027-030034Z/REVIEW.md) | .100 | 6gestartet; 5technische Stopps, 1manuell | Grundlage .101-Recovery |
 
-**Neueste Gegenprüfung:** Batch15-Review enthält Sols unabhängige Neufaltung aller3845 Events und den .120-Nachtrag: T141 ist ein tatsächlicher Auszahlungsfehler, T127 bei5/6 dagegen noch nicht erfüllt. Sechs identische Kills für zwei unterschiedliche Altverträge waren kein doppelter Vollzug derselben Quest; neue überlappende Jagden sind nun vorläufig gesperrt. Die4-cp-Kurzform Sallows scheitert bereits vor .119. Kein Gearupgrade, kein technischer Endstopp und keine pauschale Balancefreigabe.
+**Neueste Gegenprüfung:** [Batch16/Sol](batch-20261030-002939Z/SOL_COUNTERREVIEW.md) faltet alle4424 Events fehlerfrei und reproduziert drei begrenzte Fehlablehnungen: „I’d“ als fremder Käufername, linke Passage durch rechtes Hindernis blockiert und Marlas Vorname nicht erkannt. Kein beschädigter Save, kein terminaler Technikabbruch; .121-XP und neuer Warrior-Gearhinweis noch nicht natürlich getestet. Historische Gegenprüfungen bleiben beim jeweiligen Run.
 
 ## Balance und spätere Designs
 

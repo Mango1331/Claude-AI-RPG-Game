@@ -37,6 +37,7 @@ W/M/R = Warrior/Mage/Rogue; Limit und manueller Stopp sind kein technischer Fehl
 
 | Batch / Originalreview | Build | Profile / Ende | Einordnung / späterer Fix |
 |---|---|---|---|
+| [16: batch-20261030-002939Z](batch-20261030-002939Z/REVIEW.md) | .120 | W29/L1Tod; M150/L9Limit; R150/L8Limit | 30/31 Siege; 15 Guildabschlüsse; echte Coldwell-Filiale, Rogue-17-cp-Verkauf ungebucht; kein Gearupgrade |
 | [15: batch-20261029-174048Z](batch-20261029-174048Z/REVIEW.md) | .119 | W73/L3Tod; M150/L8Limit; R33/L2Tod | 17/19Siege; T141 wirklich erfüllt/unbezahlt → .120; neue Doppeljagden gesperrt |
 | [14: batch-20261029-131555Z](batch-20261029-131555Z/REVIEW.md) | .117 | W150/L8, M150/L9Limit; R116Inputs/L6, danach manuell | Geld/Filiale → .119; T117 erst3/6Kills, dort kein Zahlungsausfall |
 | [13: batch-20261029-091447Z](batch-20261029-091447Z/REVIEW.md) | .116 | W150/L1, M150/L8Limit; R52/L1Tod | 43Warrior-Abgaben blockiert → .117; Mage-AoE mit Friendly Fire |

@@ -9,11 +9,33 @@ import { Dice } from '../../src/rng.js';
 import { parseBoard, bookBoard } from '../../src/v4/guild.js';
 import { parseExtraction, worldVocab } from '../../src/v4/extract.js';
 import { validateState } from '../../src/validate.js';
-import { boardKey, today } from '../../src/v4/domain.js';
+import { boardKey, today, populationAt } from '../../src/v4/domain.js';
 import { resolveCommands } from '../../src/v4/commands.js';
 import { buildContext } from '../../src/context.js';
 import { extractorCatalog } from '../../src/v4/catalog.js';
 const c = await loadProductContent(), clone = structuredClone;
+test('population lookup rejects a giant boar among giant snapping turtles', () => {
+ const s = state();
+ s.places['loc.forest'].population = {species:'giant snapping turtles', anchor:'aquatic', levels:[4,7]};
+ assert.equal(populationAt(s, 'loc.forest', {species:'giant boar', anchor:'boar'}, c, {matchAnchor:false}), null);
+});
+test('World keeps a foreign giant boar on its own body plan and area levels, including replay', () => {
+ const s = area(state()).state;
+ s.places['loc.forest'].population = {species:'giant snapping turtles', anchor:'aquatic', levels:[4,7]};
+ const r = applyWorld(s, c, {scene:'here', expected:{}, deltas:[{seq:1,type:'creature.new',ref:'boar',species:'giant boar',anchor:'boar',desc:[],count:1,present:true,band:'MEDIUM',more:true}]}, {msg:105,prose:'A giant boar stands in the forest.'});
+ const e = Object.values(r.state.entities).find(e => e.kind === 'creature');
+ assert.equal(e.anchor, 'boar'); assert.equal(e.profile.anchor, 'boar');
+ assert.equal(e.population_at, undefined); assert.ok(e.profile.level >= 8 && e.profile.level <= 11);
+ const replay = clone(s); for (const event of JSON.parse(JSON.stringify(r.events))) applyEvent(replay, event);
+ assert.deepEqual(replay, r.state); assert.deepEqual(validateState(replay,c), []);
+});
+test('population species retain singular/plural and established kind synonyms', () => {
+ const s = state(), p = s.places['loc.forest'];
+ for (const [population,species] of [['giant snapping turtles','giant snapping turtle'],['giant snapping turtle','giant snapping turtles'],['dogs','feral hound']]) {
+  p.population = {species:population,anchor:'aquatic',levels:[4,7]};
+  assert.equal(populationAt(s,'loc.forest',{species,anchor:'rat'},c,{matchAnchor:false}),p);
+ }
+});
 const fixture = JSON.parse(fs.readFileSync(new URL('./fixtures/batch18_turtles.json',import.meta.url)));
 const pop = 'realm.valedorn_crown.the_millpond_at_gristbeck_upstream_of_the_millrace_gates';
 for (const sample of fixture.samples) test(`Batch18 original ${sample.i}: turtles retain the established aquatic population and L4-7`,()=>{

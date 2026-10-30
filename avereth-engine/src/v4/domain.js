@@ -306,9 +306,14 @@ export function lineage(state, id) {
 
 /** A population fixed at a small hunting site; other species there keep their own world context. No spawning. */
 export function populationAt(state, at, entity, content, { matchAnchor = true } = {}) {
+    // Species labels are noun phrases: "snapping" modifies "turtle", not an objective's action clause.
+    // Compare their final kind, never a shared adjective such as "giant". Global objective matching stays unchanged.
+    const same = sameKinds(content);
+    const head = text => { const h = kindOf(text, { species: true }).head; return same?.get(h) || h; };
+    const species = head(entity.species || '');
     return lineage(state, at).map(id => state.places[id]).find(p => p.population
         && (!matchAnchor || p.population.anchor === (entity.anchor || entity.profile?.anchor))
-        && namesKind(p.population.species, entity.species, entity.anchor || entity.profile?.anchor, sameKinds(content))) || null;
+        && species && head(p.population.species) === species) || null;
 }
 
 /** Fixed F-world windows; one content definition for new habitats and area classifications. */
@@ -414,9 +419,9 @@ const DETERMINERS = new Set(['the', 'a', 'an', 'some', 'those', 'these', 'its', 
  * The creature a text names: the stems of all its words, of its noun phrase (up to a place, a clause or a participle:
  * "the rats in the cellar", "the wolves harrying the sheep", not "the stirring dead") and of its last word.
  */
-export function kindOf(text) {
+export function kindOf(text, { species = false } = {}) {
     const tokens = normText(text).replace(/[^a-z\s-]+/g, ' ').split(/\s+/).filter(Boolean);
-    const cut = tokens.findIndex((w, i) => PLACE_WORDS.has(w) || (i > 0 && w.length >= 6 && w.endsWith('ing') && !w.includes('-') && !DETERMINERS.has(tokens[i - 1])));
+    const cut = tokens.findIndex((w, i) => PLACE_WORDS.has(w) || (!species && i > 0 && w.length >= 6 && w.endsWith('ing') && !w.includes('-') && !DETERMINERS.has(tokens[i - 1])));
     const words = (list) => list.flatMap((w) => w.split('-')).filter(Boolean).map(stem);
     const phrase = words(cut < 0 ? tokens : tokens.slice(0, cut));
     return { words: new Set(words(tokens)), phrase: new Set(phrase), head: phrase.at(-1) || null };

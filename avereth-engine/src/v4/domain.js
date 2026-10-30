@@ -341,6 +341,15 @@ export function guildDestination(state, text, fallback = null, { allowNew = fals
         && (!allowNew || /\b(?:near|beside|opposite|behind|from|by|inn|shop|road)\b/i.test(prefix))) return null;
     const qualifier = (m[2] || prefix).replace(/['’]s\s*$/i, '').trim();
     const towns = Object.values(state.places || {}).filter(p => p.kind === 'settlement' && normText(p.name) === normText(qualifier));
+    if (allowNew) {
+        // Resolve existing premises before interpreting their descriptive prefix as a new settlement.
+        // Articles and possessives do not change an institution's identity; ambiguous names select nothing.
+        const key = name => normText(name || '').replace(/^(?:the|a|an)\s+/, '').replace(/['’]s(?=\s|$)/g, '');
+        const halls = [...new Set(Object.values(state.places || {}).filter(p => key(p.name) === key(words)
+            && (qualifier ? towns.length !== 1 || settlementOf(state, p.id) === towns[0].id : settlementOf(state, p.id) === fallback))
+            .map(p => hallOf(state, p.id)).filter(Boolean))];
+        if (halls.length === 1) return { id: halls[0] };
+    }
     if (qualifier && towns.length !== 1) return allowNew && !towns.length ? { candidate: true, settlement: qualifier } : { error: 'the named Guild settlement is not uniquely known' };
     const town = qualifier ? towns[0].id : fallback;
     const id = town && hallOfSettlement(state, town);

@@ -1967,6 +1967,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (!go) return false;
         const hall = hallOf(s, s.scene.at);
         const town = settlementOf(s, hall);
+        // A confirmed known premises supplies the canonical identity even when its descriptive town
+        // prefix was not a complete settlement name. A conflicting canonical town id still refuses.
+        if (s.places[go.guild_settlement]?.kind === 'settlement' && go.guild_settlement !== town) return false;
+        const destination = guildDestination(s, go.newName || go.name, town, { allowNew: true });
+        if (destination?.id) return hallOf(s, destination.id) === hall;
         if (go.guild_settlement && go.guild_settlement !== town
             && normText(go.guild_settlement) !== normText(s.places[town]?.name || '')) return false;
         const target = go.to || placeIdentity(s, expected[String(go.seq)]?.at, content, { c: true });

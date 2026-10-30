@@ -18,7 +18,12 @@ const fixture = JSON.parse(fs.readFileSync(new URL('./fixtures/batch10_followup.
 for (const answer of fixture.board.answers) {
     test(`original board C${answer.call}: a forbidden-floor warning is not a second target`, () => {
         const p = parseBoard(answer.text, c, fixture.board.need, fixture.board.state);
-        assert.equal(p.listings.length, 5, JSON.stringify(p.refused));
+        // .120 rejects the independent dog notice: that counted population already has an active hunt.
+        // The original Dungeon warning must still be accepted as a warning, not a second E-floor target.
+        assert.equal(p.listings.length, 4, JSON.stringify(p.refused));
+        assert.equal(p.refused.length, 1);
+        assert.match(p.refused[0].why, /duplicate counted hunt targets: active hunt/);
+        assert.ok(p.listings.some(l => l.title.includes('Mossback')));
     });
     test(`original board C${answer.call}: a real E objective stays forbidden`, () => {
         const value = JSON.parse(answer.text.replace(/^```(?:json)?\s*|\s*```$/g, '').trim());

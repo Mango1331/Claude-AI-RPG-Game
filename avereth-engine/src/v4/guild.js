@@ -18,7 +18,7 @@ import { hallOf, hallOfSettlement, settlementOf, realmOf, heldBy, membership, li
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
-export const BOARD_VERSION = 'board-5.4';
+export const BOARD_VERSION = 'board-5.5';
 export const HUNT_BOARD_PROFILE = 'hunt_clear'; // cached historical board answers
 export const COUNT_BOARD_PROFILE = 'count_hunt_clear';
 const QTYPES = ['minor', 'standard', 'dangerous', 'major'];
@@ -111,10 +111,42 @@ export function activeClearConflict(s, q) {
     });
 }
 
+/** Existing mechanical targets, not notice titles, define duplicate hunts. No per-kill allocation. */
+function huntTargets(s, content, q, branch = q.source?.branch) {
+    if (!s || deliveryRuleset(s) < 2 || (q.kind && q.kind !== 'guild_contract') || clearOf(s, q)) return new Set();
+    const objectives = (q.objectives || []).filter(o => KILL_WORK.has(o.verb) && Number.isInteger(o.qty) && o.qty > 0);
+    if (!objectives.length) return new Set();
+    if (q.hunt?.at) return new Set([`population:${q.hunt.at}`]);
+    if (q.habitat) {
+        const where = objectives[0].where || '', p = habitatPlace(s, { branch }, where)[0];
+        return new Set([p ? `population:${p.id}` : `new:${realmOf(s, branch)}:${normText(where)}`]);
+    }
+    const targets = new Set();
+    if (q.dungeon) cullPopulation(s, content, q.dungeon, sl => {
+        if (objectives.some(o => cullKind(content, o, { species: sl.species, anchor: sl.anchor, role: sl.role, title: sl.name })))
+            targets.add(`slot:${q.dungeon}:${sl.ref}`);
+        return false;
+    }, { levels: Number.isInteger(q.floor) ? [q.floor] : levelsNamed(objectives.map(o => o.where || '').join('\n')) });
+    return targets;
+}
+
+function huntConflict(s, content, q, pool, branch) {
+    const targets = huntTargets(s, content, q, branch);
+    return targets.size ? pool.find(other => other !== q && (!q.id || other.id !== q.id)
+        && [...huntTargets(s, content, other, other.source?.branch || branch)].some(key => targets.has(key))) : null;
+}
+
+export function activeHuntConflict(s, content, q, branch = q.source?.branch) {
+    return huntConflict(s, content, q, Object.values(s.quests).filter(other => other.status === 'active'
+        && other.kind === 'guild_contract' && (other.taker || 'pc') === 'pc'), branch);
+}
+
 /** Accept a listed contract at its hall: active, the clerk logs it, Alaric receives its contract slip. */
 export function acceptContract(s, content, q, emit, { step } = {}) {
     const conflict = activeClearConflict(s, q);
     if (conflict) return { ok: false, reason: `he already holds the active contract ${conflict.id} for this Dungeon and level` };
+    const hunt = activeHuntConflict(s, content, q);
+    if (hunt) return { ok: false, reason: `he already holds the active hunt ${hunt.id} for these counted targets` };
     emit({ t: 'quest.status', d: { id: q.id, from: q.status, to: 'active', taker: 'pc', at: s.scene.at, step } });
     const b = s.guild.boards[boardKey(q.source?.branch, q.rank)];
     if (b?.listings?.includes(q.id)) emit({ t: 'board.refreshed', d: { key: boardKey(q.source.branch, q.rank), branch: q.source.branch, rank: q.rank, day: b.day, listings: b.listings.filter((x) => x !== q.id) } });
@@ -252,7 +284,7 @@ export function goalText(s, content, q, { board = false } = {}) {
     }
     const kills = (q.objectives || []).filter((o) => o.verb === 'DEFEAT' && Number.isInteger(o.qty) && o.qty > 0);
     if (!kills.length) return '';
-    if (board || q.status !== 'active') return ` (${kills.map((o) => o.qty).join(' + ')})`;
+    if (board || q.status !== 'active') return ` (${kills.map((o) => o.qty).join(' + ')})${q.status === 'listed' && activeHuntConflict(s, content, q) ? ' — ALREADY ACTIVE under another hunt; cannot take the same targets twice' : ''}`;
     return ` — ${defeatTally(s, content, q).map((t) => `${t.done}/${t.qty} defeated`).join(', ')}`;
 }
 
@@ -686,6 +718,7 @@ export function boardRequest(s, content, need) {
         '',
         'Rules:',
         '- A contract is a concrete request to change a current situation in the world. Build it from: cause (why now), stakeholder/client, current problem, desired end state, 1–4 useful objective memories, and reward. Verification is optional story guidance, not a mandatory token.',
+        ...(need.c && deliveryRuleset(s) >= 2 ? ['- No duplicate counted hunts: do not offer targets already assigned to an ACTIVE HUNT or another retained/new notice. A different title, client, quantity, day or Guild branch does not make the same population new work. Mechanically distinct targets (such as regular Dungeon foes and its named boss) remain independent; a Dungeon clearance is separate.'] : []),
         '- task is what the notice asks the adventurer to do, one imperative sentence the board shows ("Hunt and cull the bog strider colony at the eel-weirs of the Reed Flats so the eel boats can launch safely again."). desired_end_state is the COMPLETE outcome the Guild recognizes when it is reached ("The bog strider colony is culled and the eel boats launch again."). Keep the two apart.',
         '- desired_end_state is the single semantic completion gate and MUST cover every substantive result the contract actually requires. Never leave required work only in objectives. Objectives may remember useful route/work detail, but may not secretly add required results.',
         hunt,
@@ -741,6 +774,7 @@ export function boardRequest(s, content, need) {
         .map(([id, ns]) => ` In ${s.places[id].name} that part is ${levelWords(ns)}: write it with its number in the task or an objective's where ("upper galleries" alone names no level).`).join('');
     const user = [
         `BRANCH: ${town?.name || need.branch}${realm ? `, ${realm}` : ''} (${town?.sub || 'settlement'})`,
+        ...(need.c && deliveryRuleset(s) >= 2 ? [`ACTIVE HUNTS (already assigned counted targets): ${Object.values(s.quests).filter(q => q.status === 'active' && (q.taker || 'pc') === 'pc' && huntTargets(s, content, q).size).map(q => `${q.id}: ${(q.objectives || []).filter(o => KILL_WORK.has(o.verb)).map(o => `${o.what} at ${q.hunt?.at ? placeName(s, q.hunt.at) : o.where}`).join('; ')}`).join(' · ') || 'none'}`] : []),
         ...(progressive(s, need) ? [`ESTABLISHED HUNTING SITES: ${Object.values(s.places).filter(p => p.population && realmOf(s, p.id) === realmOf(s, need.branch)).slice(-20).map(p => `${p.name}: ${p.population.species}, anchor ${p.population.anchor}, levels ${p.population.levels.join('-')}`).join(' | ') || 'none yet; new sites may be established by these contracts'}`] : []),
         ...(dungeons.length ? [`KNOWN DUNGEONS NEAR THIS BRANCH (the Guild's records): ${dungeons.join(' · ')}. ${up ? (profile ? 'A Dungeon clearance is already listed: add no second clearance; numbered hunts in suitable parts remain allowed.' : 'A Dungeon job is on the board already: write no other work in them.') : `At most one listing may be clearance work in one of them, and only in a part whose danger Rank is ${fits.join(' or ')} (this board's work; ${order.filter((r) => !fits.includes(r)).length ? 'deeper or stronger parts are not this board\'s' : 'any part'}): name the Dungeon exactly as written, the part (a level, a gallery) and its concrete outcome; ${profile ? 'this is the separate Dungeon slot, and numbered hunts there do not consume it' : 'it counts as one of the culling jobs'}.${levelRule}`}`] : []),
         `RANK: ${need.rank} · DAY ${need.day}`,
@@ -849,6 +883,11 @@ export function parseBoard(answer, content, need, s = null) {
         if (!why && l.habitat && ok.some(x => x.habitat && normText(x.objectives.find(o => o.verb === 'DEFEAT')?.where) === normText(l.objectives.find(o => o.verb === 'DEFEAT')?.where)
             && (normText(x.habitat.species) !== normText(l.habitat.species) || x.habitat.anchor !== l.habitat.anchor
                 || x.habitat.min_level !== l.habitat.min_level || x.habitat.max_level !== l.habitat.max_level))) why = 'habitat conflicts with another notice in this board';
+        if (!why && need.c && s) {
+            const active = activeHuntConflict(s, content, l, need.branch);
+            const duplicate = active || huntConflict(s, content, l, [...retainedListings(s, need), ...ok], need.branch);
+            if (duplicate) why = `duplicate counted hunt targets: ${active ? 'active hunt' : 'another listing'} ${duplicate.id || duplicate.title}; choose different targets`;
+        }
         // Patch 8.4.1 (live 22.10.2026 05:43: "Cull the Burial Gallery Skeletons", a clearance of level 1 with no number):
         // a clearance's title says clearing; a cull's verb would promise a count the contract does not have
         if (at && clearanceListing(l, text)) l.title = l.title.replace(CULL_VERB, 'Clear');

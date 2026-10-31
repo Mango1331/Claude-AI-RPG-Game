@@ -1,0 +1,154 @@
+{
+  "source_zip": {
+    "name": "batch-20261031-140346Z.zip",
+    "bytes": 45535839,
+    "sha256": "41f5328ac067e3e7e83608544aacaf09359362cbb09917e57aaa0e961a028523"
+  },
+  "crc": "passed",
+  "files": [
+    {
+      "path": "batch-20261031-140346Z/001-guild-warrior/20261031-140347Z-current_test/avereth-events.json",
+      "bytes": 1848746,
+      "sha256": "76c3e1a30fc52fda7e1115f8ab7d941746213f525be137a59c5ff6a994217d62"
+    },
+    {
+      "path": "batch-20261031-140346Z/001-guild-warrior/20261031-140347Z-current_test/calls.json",
+      "bytes": 553828,
+      "sha256": "2565519f5becf6185da9bf20739df51868e5d388c8d2a446d41ff399d06cfe76"
+    },
+    {
+      "path": "batch-20261031-140346Z/001-guild-warrior/20261031-140347Z-current_test/chat-completions.jsonl",
+      "bytes": 40350615,
+      "sha256": "56e3d3906bd750f6b8b5a5a34038eb080203e9cf15a615ae424c17b4aa2ecf9f"
+    },
+    {
+      "path": "batch-20261031-140346Z/001-guild-warrior/20261031-140347Z-current_test/chat.jsonl",
+      "bytes": 6296985,
+      "sha256": "699d8e8cc4e8dc398128896da2afba9af02cf51cc2b320df4a8afdb9a525caae"
+    },
+    {
+      "path": "batch-20261031-140346Z/001-guild-warrior/20261031-140347Z-current_test/evaluation.json",
+      "bytes": 353192,
+      "sha256": "38335cc814730e45877fca67cfc2aa87c7cd6b954ead28686eda724ac5fce443"
+    },
+    {
+      "path": "batch-20261031-140346Z/001-guild-warrior/20261031-140347Z-current_test/import.json",
+      "bytes": 14021,
+      "sha256": "3135210347e85c1b562a93e39293f10bd54cd9c754ef1dfae5d5c9406636d2b9"
+    },
+    {
+      "path": "batch-20261031-140346Z/001-guild-warrior/20261031-140347Z-current_test/player.jsonl",
+      "bytes": 2024467,
+      "sha256": "ed32c213a56c08fd5386e6d7b4ad5024afed0735d0f0a8a5413bfd23dcd25bd8"
+    },
+    {
+      "path": "batch-20261031-140346Z/001-guild-warrior/20261031-140347Z-current_test/report.md",
+      "bytes": 93449,
+      "sha256": "2770a8a66d8040ef68363b97cf92c0d3e33d6d53b6dc46bf2b6dff2f4087ab68"
+    },
+    {
+      "path": "batch-20261031-140346Z/001-guild-warrior/20261031-140347Z-current_test/run.json",
+      "bytes": 75305,
+      "sha256": "3aefcb5bd5af6d40bfe2cc86601f80cccd31bc1d82e0fd49490daf6a044df4e7"
+    },
+    {
+      "path": "batch-20261031-140346Z/001-guild-warrior/20261031-140347Z-current_test/screens/final.png",
+      "bytes": 175520,
+      "sha256": "036df58c3099e4a26c5d4d7cab8beaba24ccf137aebdb922443dde9883e47fee"
+    },
+    {
+      "path": "batch-20261031-140346Z/001-guild-warrior/20261031-140347Z-current_test/server.log",
+      "bytes": 42736422,
+      "sha256": "ce9b5aaf3970459729a0cde71cd43b84c5d6319646ab5bb264b7f916d68cd72b"
+    },
+    {
+      "path": "batch-20261031-140346Z/001-guild-warrior/20261031-140347Z-current_test/server.timed.log",
+      "bytes": 46455023,
+      "sha256": "5d7a19e10e9e662c3d95d3e97856b07e020ef792102f73cc828cfb1406577b32"
+    },
+    {
+      "path": "batch-20261031-140346Z/002-guild-mage/20261031-154730Z-current_test/avereth-events.json",
+      "bytes": 69235,
+      "sha256": "5040eca62f355c772f432b45f8a73a5f69738768d4e5ce8843068ce20ecd323b"
+    },
+    {
+      "path": "batch-20261031-140346Z/002-guild-mage/20261031-154730Z-current_test/calls.json",
+      "bytes": 14871,
+      "sha256": "b144484569d80fe9aaa2309ef85de2ea5b1d58350aadcd2e6531b68d3eb8b9c6"
+    },
+    {
+      "path": "batch-20261031-140346Z/002-guild-mage/20261031-154730Z-current_test/chat-completions.jsonl",
+      "bytes": 1032863,
+      "sha256": "029e3464838c946324e8c93b55a138e7100fcede3c6bb9ec543dd1bb6adbc831"
+    },
+    {
+      "path": "batch-20261031-140346Z/002-guild-mage/20261031-154730Z-current_test/chat.jsonl",
+      "bytes": 183711,
+      "sha256": "135873944a619489cd179e8e7992d2ea4d9a476d889d15cc3227d93a17ec4241"
+    },
+    {
+      "path": "batch-20261031-140346Z/002-guild-mage/20261031-154730Z-current_test/evaluation.json",
+      "bytes": 15227,
+      "sha256": "4f07bbd225224149d83dfba55fda3f910ed972c1f246381040857eae69baf5e1"
+    },
+    {
+      "path": "batch-20261031-140346Z/002-guild-mage/20261031-154730Z-current_test/import.json",
+      "bytes": 14021,
+      "sha256": "3135210347e85c1b562a93e39293f10bd54cd9c754ef1dfae5d5c9406636d2b9"
+    },
+    {
+      "path": "batch-20261031-140346Z/002-guild-mage/20261031-154730Z-current_test/player.jsonl",
+      "bytes": 60670,
+      "sha256": "fa250b5cde625d96cd4e7b51d48f72aa08d5a11a73a37aceec3b380fe2a92da7"
+    },
+    {
+      "path": "batch-20261031-140346Z/002-guild-mage/20261031-154730Z-current_test/report.md",
+      "bytes": 10012,
+      "sha256": "1eeb9b4bd456e9f52267af7fc677087ae7a0ce04940b6fc95f961c6ee5e54dd4"
+    },
+    {
+      "path": "batch-20261031-140346Z/002-guild-mage/20261031-154730Z-current_test/run.json",
+      "bytes": 5786,
+      "sha256": "0e15dc708b8b006596d88097bead115273b2e743ca954fc4929d01b1aac69804"
+    },
+    {
+      "path": "batch-20261031-140346Z/002-guild-mage/20261031-154730Z-current_test/screens/final.png",
+      "bytes": 156778,
+      "sha256": "67177f14c55cf0ed6e157047c468e35286a63c1607e6e830c8d27703216083d2"
+    },
+    {
+      "path": "batch-20261031-140346Z/002-guild-mage/20261031-154730Z-current_test/server.log",
+      "bytes": 1133707,
+      "sha256": "084078e694b444dfb3f1d58401068e8c73e71dc694c6492d2ac279e88bc08534"
+    },
+    {
+      "path": "batch-20261031-140346Z/002-guild-mage/20261031-154730Z-current_test/server.timed.log",
+      "bytes": 1240653,
+      "sha256": "54b6adc18ac7ab7a5ce6e7963b01e53d12e8bc8ee300498114fcccde7c43e715"
+    },
+    {
+      "path": "batch-20261031-140346Z/batch.json",
+      "bytes": 1987,
+      "sha256": "9cb4a2e1daf02cc9c9d73426f1256ea79e17e5b2dc42d5240a700b955be65eb7"
+    },
+    {
+      "path": "batch-20261031-140346Z/report.md",
+      "bytes": 592,
+      "sha256": "bd6896793fa6dfd03f939face4cedc161f274a6b4d008843dee856d11adc6bbd"
+    }
+  ],
+  "secret_scan": {
+    "typical_token_bearer_key_patterns": "no matches",
+    "scope": "all regular ZIP entries",
+    "limitation": "pattern scan, not proof against every possible secret format"
+  },
+  "archive_zip": {
+    "name": "batch-20261031-140346Z.zip",
+    "bytes": 3105732,
+    "sha256": "6b9d38b287472889398447fd3faee3b56139e545eaa7a63ac3d097f957a20cde",
+    "compression": "ZIP_LZMA",
+    "container_byte_identical_to_source": false,
+    "all_33_regular_file_bytes_identical": true
+  },
+  "repack_reason": "Upload transport request limit; lossless ZIP recompression, original entry names and file bytes preserved"
+}

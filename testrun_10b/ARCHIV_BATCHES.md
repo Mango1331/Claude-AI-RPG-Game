@@ -1,10 +1,10 @@
-# Originaldateien der Batches 1–19
+# Originaldateien der Batches
 
 **Archiviert am 30.10.2026; Veröffentlichung vom Projektinhaber freigegeben.** Maßgeblicher Quellenindex für die Batch-Originaldateien. Reviews: [Runindex](README.md); nächste technische Arbeit: [Architektur-Fachplan](../patch_plans_10b/PATCH_ARCHITEKTUR_126_KONSOLIDIERT.md).
 
 ## Inhalt und Integrität
 
-Alle **19** im Runindex besprochenen Batcharchive enthalten zusammen **787 Originaldateien**. Die ursprünglichen ZIPs umfassen **944,619,885 Bytes**; die verlustfreie TAR.XZ-Neuverpackung benötigt **70,883,940 Bytes** (rund 67.6 MiB).
+Die am 30.10. archivierten **19** Batcharchive enthalten zusammen **787 Originaldateien**. Die ursprünglichen ZIPs umfassen **944,619,885 Bytes**; die verlustfreie TAR.XZ-Neuverpackung benötigt **70,883,940 Bytes** (rund 67.6 MiB).
 
 - Alle regulären ZIP-Dateieinträge sind enthalten: Chats, Completion- und Serverlogs, Runnerdaten, Reports und sonstige Originaldateien. Keine Prosa, Events oder Modellantworten gekürzt.
 - Jede entpackte Datei wurde nach der Neuverpackung gegen Größe und SHA-256 ihres ZIP-Originals geprüft. Zusätzlich wurde beim ZIP-Lesen die CRC geprüft.
@@ -37,6 +37,16 @@ Die Archive liegen jeweils unter `original/` im vorhandenen Batchordner. Der Ind
 | 17: [batch-20261030-040258Z](batch-20261030-040258Z/REVIEW.md) | [TAR.XZ](batch-20261030-040258Z/original/batch-20261030-040258Z.tar.xz) | [MANIFEST.json](batch-20261030-040258Z/original/MANIFEST.json) | 38 | 4686632 |
 | 18: [batch-20261030-082423Z](batch-20261030-082423Z/REVIEW.md) | [TAR.XZ](batch-20261030-082423Z/original/batch-20261030-082423Z.tar.xz) | [MANIFEST.json](batch-20261030-082423Z/original/MANIFEST.json) | 39 | 4667028 |
 | 19: [batch-20261030-133348Z](batch-20261030-133348Z/REVIEW.md) | [TAR.XZ](batch-20261030-133348Z/original/batch-20261030-133348Z.tar.xz) | [MANIFEST.json](batch-20261030-133348Z/original/MANIFEST.json) | 40 | 3750568 |
+
+## Ergänzung 31.10.2026 – Original-ZIP
+
+Batch20 ist anders als Batches1–19 **als verlustfrei neu verpackte ZIP/LZMA** archiviert. Alle33 enthaltenen Originaldateien und Eintragsnamen sind byteidentisch; der Container ist neu. Die obigen Sammelgrößen beziehen sich ausschließlich auf Batches1–19. CRC und sämtliche Dateihashes geprüft, typische Schlüssel-/Bearer-Muster ohne Treffer; Musterprüfung ist kein absoluter Geheimnisnachweis.
+
+| Batch | Originalarchiv | Manifest | Dateien | Archivbytes |
+|---|---|---|---:|---:|
+| 20: [batch-20261031-140346Z](batch-20261031-140346Z/REVIEW.md) | [ZIP](batch-20261031-140346Z/batch-20261031-140346Z.zip) | [MANIFEST.json](batch-20261031-140346Z/MANIFEST.json) | 33 | 3105732 |
+
+Archiv-ZIP-SHA-256: `6b9d38b287472889398447fd3faee3b56139e545eaa7a63ac3d097f957a20cde`; Quell-ZIP-SHA-256: `41f5328ac067e3e7e83608544aacaf09359362cbb09917e57aaa0e961a028523`. Mit Python `zipfile` oder einem ZIP/LZMA-fähigen Archivprogramm entpacken; das folgende TAR.XZ-Prüfwerkzeug gilt für Batches1–19.
 
 ## Prüfen und entpacken
 

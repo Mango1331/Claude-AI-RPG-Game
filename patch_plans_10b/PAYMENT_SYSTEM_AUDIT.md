@@ -1,5 +1,8 @@
 # Avereth Engine – Tiefenaudit der Zahlungs- und Handelsarchitektur
 
+> **Gemeinsame Analysedatei, ergänzt am 31.10.2026:** §§0–11 enthalten Claudes ursprünglichen Audit aus [416462b](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/416462b55be1680442411a497584fd8a649867b4/patch_plans_10b/PAYMENT_SYSTEM_AUDIT.md). [§12](#12-sol--unabhängiger-vollständiger-gegen-audit) ergänzt Sols unabhängig am Code und an Originaldaten geprüfte Sicht. [§13](#13-abschließende-bewertung-beider-sichtweisen-und-entscheidungsvorlage) bewertet beide Vorschläge und präzisiert die Empfehlung. **Analyse, keine Implementierungsfreigabe; abweichende Vorschläge sind am Ende ausdrücklich markiert.**
+
+
 **31.10.2026 · Claude · Analyse und Fachplan, keine Implementierung.** Prüfstand: Entwicklungsbranch
 `claude/c-planner-prototype-2026-10-02-gpt-c666`, **Build `.141` / `3d8f062`** (vor Beginn erneut abgerufen). Grundlage: Produktcode
 `.141`, Diffs `.137→.138→.139→.140→.141`, `avereth-engine/docs/FIX138_FINANCE.md`,
@@ -462,3 +465,239 @@ Belegbarkeitsquote wurde mit einem vereinfachten Klassifikator geschätzt, nicht
 echter Drittbedingungen ist im Korpus gering; die schweren Bedingungsfälle sind konstruiert, aber über reale Vorzustände
 reproduziert. Die Positionssummen-Schätzung in §4 ließ beliebige Teilmengen genannter Beträge zu; die hier empfohlene strengere
 Regel (Summe aller genannten Positionen) kann für Gebote niedriger liegen.
+
+---
+
+## 12. Sol – unabhängiger vollständiger Gegen-Audit
+
+**31.10.2026 · Analyse, keine Umsetzung.** Produkt-HEAD erneut unabhängig abgefragt: **3d8f062143956b4932398c4583f8962c9dfcffdd / .141**, unverändert. Dieser Teil ist Sols eigene Prüfung; §§0–11 bleiben Claudes ursprünglicher, noch nicht freigegebener Vorschlag. Die abschließende Bewertung beider Sichtweisen steht in §13. Empfehlungen sind keine neuen verbindlichen Spielregeln.
+
+### 12.1 Prüfgrundlage, Methode und Grenzen
+
+- Gelesen: 01/03 auf main, Finanzpatchnote, Produktänderungen .137→.141 sowie die betroffenen Planner-, Agency-, Handels-, Geschenk-, Event- und Hostpfade. Der Vergleich berücksichtigt auch die bestehenden D-Auswahl-/Paket-, Registrierungs-, Service-, Geschenk- und Replaytests. **Keine neue Suite, kein vollständiger Replay, kein ST-Smoke und kein natürlicher Batch ausgeführt.**
+- Originaldaten: zehn unveränderte Replay-Korpusläufe b16–b19 und der vollständige Warrior-Export von Batch20 aus Git. Nicht nur die zugeschnittene Finanzfixture wurde ausgewertet.
+- Git-Batch20-ZIP: SHA-256 **6b9d38b287472889398447fd3faee3b56139e545eaa7a63ac3d097f957a20cde**, CRC fehlerfrei; **26/26 manifestierte Dateien** haben den erwarteten Inhaltshash. Die Git-ZIP ist eine Neuverpackung von 3.105.732 Bytes; ihr Hash ist ausdrücklich nicht der im Manifest zusätzlich genannte Hash der früher hochgeladenen 45-MB-Quell-ZIP. Letztere wurde hier nicht separat geprüft.
+- Eigene Sonden führten Original-Extraktionen auf dem zuvor gefalteten Originalzustand durch applyWorld; Zahlungsproben liefen durch guardCommands und resolveCommands. Für synthetische Fehlbuchungen wurde Guthaben absichtlich auf 200 cp gesetzt bzw. eine passende Verkaufszustimmung ergänzt, damit ein leerer Geldbeutel oder fehlendes Einverständnis den Belegfehler nicht verdeckt. Solche Varianten sind **keine zusätzlich behaupteten Liveereignisse**.
+- Für Geschenkkontrollen wurde der Originalvorzustand #116 auf eine gewöhnliche lokale Interaktion ohne laufende Verkaufsentscheidung reduziert; danach wurde exakt derselbe Geschenkbeleg einmal allein und einmal neben einem Gebot verarbeitet. Diese kontrollierte Zustandsänderung dient der Ursachenisolierung.
+- Nachweisgrade dieses Teils: **R** selbst reproduziert, **C** selbst am Code geprüft, **D** selbst aus Originaldaten gezählt, **P** Planrisiko ohne implementierten Zielcode. Claudes Schätzungen werden nicht als eigene Messungen ausgegeben.
+
+[Fixierter Produktcode](https://github.com/Mango1331/Claude-AI-RPG-Game/tree/3d8f062143956b4932398c4583f8962c9dfcffdd/avereth-engine). Alle folgenden Dateipfade sind relativ zu avereth-engine; Zeilen beziehen sich auf .141.
+
+### 12.2 Datenfluss und tatsächliche Verantwortlichkeiten
+
+Die Matrix aus §1.2 ist im Grundsatz richtig. Für den Umsetzungsschnitt sind folgende präzisere Grenzen entscheidend:
+
+| Übergang / Funktionen | Zuständigkeit und bereits vorhandener Schutz | Fehler oder Gefahr am Übergang |
+|---|---|---|
+| Spielertext → planner.parsePlan / interpret.amountErrors | LLM wählt Handlung, Ziel, Ware, Menge, Geldgrenze und Zitat. JS prüft Schema/Katalog sowie Beträge; ein Repair darf noch nichts buchen. | Der Betragsprüfer kann ein richtiges Modell in eine falsche Reparatur lenken: Bree zuerst 20, Repair 30, original −30. |
+| Plan → agency.guardCommands / payEvidence | Gegen Fragen, Vergangenheit, Negation, fremde Akteure und fehlendes Eigentum absichern. | Die Zahlungsrichtung wird nochmals aus Verben und Geldwörtern erschlossen. Ein passender Betrag beweist weder Geldübergabe noch Empfänger. Zitat → berührte Sätze → ganze Nachricht kann fremde Handlungsevidenz vermischen. |
+| Commands → pay, buy, sell, offer.accept | Registrierung und Kaufzahlungen auf bestehende kanonische Angebote/Käufe routen; eigenständige Zahlungen getrennt zulassen. | Ein behaltenes freies pay erreicht unmittelbar coin.changed. Betrag unlesbar und Betrag nicht genannt werden vorher beide null; eine frei erfundene Zahl ist dadurch nicht zuverlässig ausgeschlossen. |
+| Spieler-Vorabzustimmung → decision.opened | Gegenpartei, Ort, Ware, Menge, max_cp/min_cp und aktueller Turn binden. | Eine Preisgrenze autorisiert keinen bloß angekündigten oder erfundenen NPC-Vertrag. Neue Offerte und Zustimmung müssen unabhängig gültig sein. |
+| Narrator → extract.parseExtraction | Weltsemantik als bid, offer, coin.gift und vorhandene Referenzen berichten; bestehender begrenzter Repair. | Die Typen tragen Richtung bereits, aber Zustand einer Zusage/Übergabe und Preisbasis sind nur unzureichend ausdrückbar. Ein fehlendes Feld darf später nicht verbindlich heißen. |
+| Extractor → World / evidenced / tradePrice | Zitat, Preisbezug und aktuelle Gegenpartei prüfen, dann erst speichern. | Fehlendes/unpassendes Zitat führt auf einen schwächeren Ganztextfallback. Fehlende Preisnennung kann die Modellzahl stehen lassen. Auch ein exaktes Teilzitat kann die Bedingung abschneiden. |
+| World → offer.created → Sofortbuchung | Neue Angebote/Gebote mit eigener aktueller Vorabzustimmung abgleichen. | Heute reicht zur Sofortbuchung derselbe schwache Preisnachweis wie zur Speicherung. Ein passendes Limit beseitigt die Beleglücke nicht. |
+| Gespeichertes Angebot → acceptanceWhy / pickLines / bidSale | Auswahl und ausdrücklich genannte Preis-/Parteibindung prüfen; gespeicherte Preise bleiben erhalten. | Der Spielertext wird teils nochmals numerisch interpretiert. Diese Zustimmungskontrolle ist nötig, darf aber keine neue NPC-Offerte erfinden oder einen unsicheren Vertragsstatus überschreiben. |
+| Buchung → bookPurchase / bookSale / acceptBid | Mengen/Besitz, verfügbares Angebot, Preis, Guthaben, unterstützte Ware und Split prüfen; Gegenbuchungen innerhalb desselben Records. | Die Bucher können die ursprüngliche Narration nicht sinnvoll nachprüfen. Neue Bedingungen/Bestätigungen müssen aber auch an der letzten Buchungsgrenze gelten, nicht nur im HUD. |
+| Weltgeschenk → coin.gift / coinRefusal | Anwesender Geber bzw. autorisierter TAKE, vollständige explizite Geldsumme, Wiederholungsbezug und bestehende Credits prüfen. | Vollständiger Betrag ist noch keine vollzogene Übergabe. Der pauschale Handelspartnerausschluss blockiert daneben echte unabhängige Geschenke. |
+| Commit → runtime.applyExtraction / host.setRec / world_jobs / Fold | Aktueller Reply/Hash/Turn/Swipe, privater World-Zustand, ein Record mit Events; Speicherung und Fehlerstatus getrennt. | Deterministischer Replay beweist Wiederholbarkeit, nicht die semantische Richtigkeit des ursprünglichen pay/bid. Kein Befund rechtfertigt einen Hostumbau. |
+
+**Buchungsatomarität richtig einordnen:** bookPurchase prüft vor den wirtschaftlichen Emits und schließt sein Angebot selbst. bookSale prüft den gesamten Warenblock vorher; das Schließen des Gebots erledigen acceptBid bzw. world.bid als Aufrufer. Diese gemeinsame Kette muss atomar erhalten bleiben. Die Aussage „alle Bucher schließen selbst“ wäre falsch. state.applyEvent setzt bei coin.changed den absoluten Wert; transaction.completed führt Audit/Credits, ist keine zweite Münzgutschrift. Ein zweites pay in einem neuen Spielerzug ist dagegen eine neue Handlung und nicht automatisch eine Replay-Dublette.
+
+### 12.3 Fachliche Vorgänge getrennt betrachtet
+
+| Vorgang | Bestehender autoritativer Weg | Was verbindlich sein muss / was nicht genügt |
+|---|---|---|
+| Direkte Zahlung, Trinkgeld, Spende, Vorschuss, Entschädigung, Rückzahlung | commands.pay → coin.changed + transaction.completed | Tatsächliche ausgehende Spielerhandlung, Empfänger und zugehöriger Betrag. Ein Besitzbetrag, Verkaufspreis, Beleg oder Lohnanspruch genügt nicht. Eine Schuld liefert keine automatische Abbuchung ohne Spielerentscheidung. |
+| Kauf / Service / Zimmer | buy oder offer.accept bzw. korrekt geroutetes pay → bookPurchase | Angebot, Auswahl, Menge, Service und Preiszustimmung. Ein Geldabgang allein bucht kein Zimmer; eine Zimmerbuchung darf nicht nochmals als freie Zahlung belastet werden. |
+| Registrierung / Gildenabgabe | vorhandenes kanonisches Registrierungsangebot bzw. completeContract | Gebühr/Mitgliedschaft bzw. READY/Abgabe/Questbelohnung bleiben Engine-owned. Narrator-Lohn oder Geschenk darf sie nicht ersetzen. |
+| Verkauf, Teilverkauf, mehrere Stapel, Paket | sell/offer.accept → akzeptiertes bid → bookSale | Eigentum, exakte Einheiten, gemeinsamer oder positionsbezogener Preis und Einverständnis beider Seiten. Ein Lospreis darf nicht auf jede Position kopiert oder ein gemeinsames Los ungewollt geteilt werden. |
+| Lohn, Dank, Belohnung, eingehende Rückzahlung, Geschenk | freie aktuelle NPC-Übergabe über coin.gift | Kein Privatquestvertrag nötig; aber tatsächlich neue Übergabe statt Versprechen/Preisangebot/Nachzählung. Gleicher NPC und gleicher Betrag allein beweisen weder Wiederholung noch Eigenständigkeit. |
+| Erlös / Wechselgeld / Nachzählung | bestehende Verkauf-/Kauftransaktion; repeat_of/Credits für Erzählung | Keine zweite Zahlung über coin.gift. Recounts müssen auf die bereits verbuchte Transaktion zeigen. |
+| Verhandlung, Kreditangebot, Preisalternative, spätere Prüfung | Information oder bedingte Preisangabe bis zu einer gültigen festen Offerte | Kein neues Kredit-/Banksystem. „Cash or credit“ legt nicht von sich aus ein Guthaben an; ein fester Preis und eine Zahlungsformwahl sind von einer ausstehenden Freigabe zu trennen. |
+| Enginepreis für reguläres F-Gear / Manuals | vorhandene Preisfunktionen und kanonische Angebote | Enginebetrag braucht keinen Prosa-Rechenbeleg. **Er beweist aber nicht Verfügbarkeit, sofortige Lieferung oder das Fehlen einer Bedingung.** |
+| Loot / Guildpayout / legitimierter Zwang | lootEvents / completeContract / coerce mit mayTake | Eigenständige vorhandene Regeln und Quellen; nicht durch einen allgemeinen Handelsparser ersetzen. Andere NPC-Geldbörsen sind derzeit kein simuliertes Kontensystem. |
+
+Die gemeinsame Konstante ist **die Bindung einer konkreten Handlung an eine konkrete wirtschaftliche Wirkung**. Weder eine Zahl irgendwo im Text noch ein gleichartiges Objekt noch ein anwesender NPC allein reichen.
+
+### 12.4 Eigene Befundmatrix und Kontrollen
+
+| Beleg / Variante | Selbst beobachtetes Ergebnis auf .141 | Einordnung |
+|---|---|---|
+| Original T50/#99, „I'll take that fifty copper now“ | Ursprungsrun: pay 50, **abgewiesen wegen zu wenig Geld**. Heute blockiert der Guard den Anspruch. Die früheren Fehlbuchungsproben erhöhen deshalb gezielt das Guthaben. | **D/C.** Falsche Planrichtung; keine tatsächliche −50-cp-Zahlung im ursprünglichen T50. |
+| Acht Sätze aus dem .141-Gegenreview: Ware für 50 cp, Geld einstecken/zählen, Beleg übergeben | Mit falschem pay und 200 cp jeweils **−50 cp** über Guard → resolveCommands. | **R, P1.** Betrag/Verb werden fälschlich zur Zahlungsabsicht zusammengesetzt. |
+| „I give Tam two plates for five copper“ + falsches pay 5 | **−5 cp**; ein Anspruchswort-Veto schlägt nicht an. | **R, P1.** Claudes vorgeschlagene 10-cp-Grenze schließt die Klasse nicht. |
+| „I pay Tam three copper and the silver“ + pay 3 | coinEvidence: cp 3, **complete:false**; amountErrors leer; Guard behält; **−3 cp**. | **R, P1.** Auch bei eindeutigem Zahlungsverbum wird unvollständiges Geld als endgültiger Teilbetrag gebucht. |
+| „I pay Tam five copper“ | −5 cp. | **R, positive Kontrolle.** Klare Zahlung soll ohne Zusatzbürokratie funktionieren. |
+| Bree b17-rogue#19 | Originalcompletions: Planner 20 → Repair 30 → original −30. Der .140/.141-Pfad und die vorhandene Regression verwenden wieder 20. | **D/C.** Richtige erste Modellantwort wurde durch die Engine verschlechtert; keine pauschale Aussage „Planner falsch“. |
+| Original #106/#110/#116/#218 | Vorhandene .138-Regressionsketten sichern 84/28/56 und Zuschlag 4. | **C; frühere selbst ausgeführte Abnahme**, hier nicht als neuer Testlauf ausgegeben. |
+| Original #52, 24 für sechs Platten + 6 Drüse + 4 Gel = 34 | Auf gefaltetem Originalvorzustand kein Gebot/kein Geld. **Historisch wird nach der nächsten eindeutigen Preisbestätigung zu T28 korrekt verkauft.** | **R/D, QoL-Fehlablehnung**, nicht dauerhafter Verlust dieser 34 cp. Der Splitter ist ein anderer Fall ohne gültiges Gebot. |
+| Original #380, explizit „One hundred fifty copper — fifteen silver — for everything on the counter“ | Gebot 150 abgelehnt; **keine spezifische Erzählerkorrektur** in corrections. | **R, hohe Priorität.** Gesamtsumme wird trotz richtiger Modellzahl nicht erkannt. |
+| Original #381/#382 | Ohne gespeichertes Gebot min_cp 150 an beiden sell-Positionen; in #382 Geschenkmeldung und Warenbewegungen korrekt abgewiesen. | **R/D.** Geteilte Mindestgrenzen verhindern eine neu entstehende Sofortofferte; keine Begründung, den Geschenkweg für Erlöse zu öffnen. |
+| Gegenprobe zu #381: denselben Vorzustand um ein korrekt gespeichertes 150-cp-Gebot aus #380 ergänzt | Originalplan passiert parsePlan und Guard; **ein Verkauf, +150 cp, eine transaction.completed**, beide Positionen enthalten. | **R, kontrollierte Gegenprobe.** Bestehende Gruppierung reicht für diesen natürlichen Folgepfad. Kein neuer Paketmechanismus nötig. |
+| Original #438: 21×2 + 4×30 = 162, „if they're not burst“ | Abgelehnt, Begründung nur Betragsfehler. | **R.** Rechenbetrag plausibel, **kein unbedingter Vertrag bewiesen**. Die Ablehnung ist nicht automatisch ein verlorener legitimer Sofortverkauf. |
+| once / Bedingung im Folgesatz / exaktes Teilzitat ohne Bedingung | Mit passender Vorabzustimmung jeweils neues Gebot **und +56 cp**. | **R, P1.** Bindung fehlt, nicht bloß Betragserkennung. |
+| Unpassendes said / kein said und Antwort „He has not named a price“ | Jeweils Gebot **und +56 cp**. | **R, P1.** Fallback legitimiert einen Preis ohne Preisbeleg. |
+| „Four copper and the silver for the lot“ | Auf null Mindestpreis isoliert: **Gebot 4 und +4 cp**. | **R, P1.** Vollständigkeit wird im Handel nicht konsequent weitergereicht. |
+| Fester Preis „Four copper each, fifty-six copper total“ | Gebot und +56 cp mit aktueller passender Vorabzustimmung. | **R, positive Kontrolle.** Kein allgemeiner Zweizugzwang. |
+| Klare 5-cp-Dankesübergabe allein, anwesender NPC | +5 cp. | **R, positive Geschenkkontrolle.** |
+| **Derselbe klare neue Dank neben einem Gebot desselben NPC** | Geschenk abgelehnt mit „the other side of a trade … does not give him coin“. Das Gebot allein genügt für counterparts. | **R, neue Schutzlücke im Fachumfang.** Ein unabhängiges Geschenk wird pauschal blockiert, obwohl keine Doppelzahlung vorliegt. |
+| **„The smith offers Alaric five copper as a reward once the appraiser approves“**, irrtümlich als coin.gift, ohne Handel im Zustand | **+5 cp**. | **R, neue P1-Klasse.** Betrag vollständig und wörtlich; eine tatsächlich neue Übergabe fehlt. |
+
+Die letzten beiden Fälle sind kontrollierte Proben, keine bisher ungemeldeten Ereignisse des natürlichen Batch20. Sie verhindern aber die unzutreffende Planung, coin.gift sei als ganzer Fachpfad fertig abgesichert.
+
+### 12.5 Unabhängige Korpusauswertung und Grenzen der Zahlen
+
+Gezählt wurden final gespeicherte **interp.commands vor dem Guard** sowie extraction.raw und Originalevents: zehn Korpusläufe plus Batch20-Warrior, **2.719 Nachrichten mit Avereth-Record**. Alle 53 bid-Deltas und alle 13 pay-Kommandos wurden erfasst; für die Zahlungsfälle wurden Zitat, Betrag, Status und Münzänderung einzeln angesehen.
+
+| Messgröße | Eigene Zählung | Aussagegrenze |
+|---|---:|---|
+| pay / buy / sell / offer.accept in gespeicherten Interpretationen | **13 / 29 / 106 / 81** | Enthält abgewiesene und geroutete Kommandos; das sind nicht 13 freie Geldabgänge. Claudes 102 sell / 80 accept wurden mit dieser Definition nicht bestätigt. |
+| pay resolved / refused / pending | **7 / 5 / 1** | Zwei resolved gehören zur Registrierung. Unter den ursprünglichen resolved ist Bree die konkret nachgewiesene falsche Summe. T50 ist ein falsches Kommando, aber kein gebuchter Abgang. |
+| bid / offer / coin.gift als berichtete Deltas | **53 / 93 / 36** | offer-Deltas sind nicht Angebotspositionen; die Einheiten dürfen nicht vermischt werden. |
+| offer.created / transaction.completed / coin.changed | **147 / 124 / 127** | Enthält Gebote, Offerten, kanonische Dienste, Gilden-/Lootereignisse usw.; keine Erfolgsquote allein aus diesen Zahlen ableiten. |
+| Ursprüngliche bid-Ablehnungen „no sum the reply names“ | **8** | Die Liste aus Claudes §2/§4 ist als Ereignismenge bestätigt. Inhaltliche Gültigkeit bleibt getrennt zu prüfen. |
+
+**Wichtige Korrektur an der Interpretation:** „Sechs von acht Beträgen sind rechnerisch richtig“ ist kein Nachweis, dass die Engine insgesamt häufiger korrekte als falsche Transaktionen verwirft. Das ist eine Vorauswahl abgewiesener Gebote; akzeptierte, möglicherweise falsche Geschäfte fehlen im Nenner. #438 hat einen passenden Betrag, aber eine echte Bedingung. Das Ergebnis rechtfertigt gezielte Verbesserungen der Preisbelege, keine generelle Lockerung.
+
+Die 90-/66-Prozent-Belegbarkeitswerte aus Claudes §4 sind ausdrücklich **nicht unabhängig bestätigt**. Sie stammen aus einer hypothetischen arithmetischen Klassifikation, nicht aus dem empfohlenen Produktvalidator oder einer semantisch annotierten Referenzmenge. Beliebige Teil-/Positionssummen und falsche Bedeutungszuordnung können diese Quote erhöhen, ohne die Sicherheit zu erhöhen. Sie dürfen nicht als garantierte künftige Erfolgsquote oder Grundlage einer pauschalen Freigabe dienen.
+
+### 12.6 Gemeinsame Ursachen – und tatsächlich getrennte Fehler
+
+**U1 – Fehlende Verbindung zwischen Betrag, Rolle und Vorgang.** Ein Text enthält 50 cp, doch diese können Besitz, Kaufpreis, Erlös, Forderung oder tatsächlich ausgegebene Münzen sein. Type pay/bid/offer liefert bereits eine semantische Richtung, ist aber eine fallible Modellbehauptung. Arithmetische Übereinstimmung beweist sie nicht. paysAct/actAmount/amountErrors überlagern diese Modellentscheidung mit eigenen, ebenfalls falliblen Sprachentscheidungen.
+
+**U2 – Informationsverlust in Ergebnissen.** Für freie Zahlung werden „keine Zahl genannt“, „Betrag unvollständig“ und „Betrag nicht sicher lesbar“ nicht durchgehend auseinandergehalten. Für Handel werden Betrag und Handelsbindung zu stark in handled/cp zusammengefasst. Damit kann der nächste Aufrufer nicht mehr unterscheiden, ob er eine bekannte Verpflichtung verwenden darf oder sicher klären muss. Die explizite Vollständigkeit von coinEvidence darf an keinem Geldbuchungspfad verschwinden.
+
+**U3 – Nicht monotone Evidenz.** Die schwächere Prüfung nach unpassendem said verleiht mehr Autorität als die strengere Prüfung davor. Hinzu kommt die Erweiterung des Suchraums vom zugehörigen Teil zur ganzen Nachricht/Antwort. Der Reparaturweg kann dadurch sogar richtige Daten verschlechtern. Eine spätere Ausweichprüfung darf aus fehlender oder widersprüchlicher Zuordnung keinen verbindlichen Preis machen.
+
+**U4 – Kontext und zeitliche Phase fehlen.** Ein Teilstring belegt keine abgeschlossene Vertragsaussage; ein Satz ist ebenfalls nicht immer der ganze Kontext. Geldangebot, firmes Gebot, bedingte Zusage und ausgeführte Übergabe sind unterschiedliche Phasen. Dies betrifft **coin.gift genauso wie Handel**. Ein neues condition-Feld nur an Offerten schließt die Gesamtlücke deshalb nicht.
+
+**U5 – Zu grobe Transaktionszuordnung.** counterparts ist eine Menge von Personen bzw. „*“, keine Liste konkreter wirtschaftlicher Vorgänge. Das schützt vor Erlös-Doppelbuchungen, kann aber ein unabhängiges Geschenk derselben Person blockieren. Umgekehrt kann eine sprachliche Umdeutung eines Erlöses zum Dank die beabsichtigte Beziehung verschleiern. Vorhandene Credits, repeat_of und Transaktions-/Angebotsbezüge sollten genauer genutzt werden; kein neuer Geld-Ledger nötig.
+
+**U6 – Rückmeldungen und Zustimmungsumfang.** Die fehlende spezifische Gebotskorrektur lässt den Narrator auf einer abgewiesenen Annahme weitererzählen. Die doppelte Los-Untergrenze ist ein anderer, realer Zuordnungsfehler, wird im konkreten #380→#381-Verlauf aber schon durch das gültige gespeicherte Gebot aufgefangen. Nicht jeden Folgefehler als neues Systemproblem behandeln.
+
+**Warum die letzten Builds nicht ausreichten:** .139 stärkte Handlungstrennung und Bedingungswörter; .140 reparierte Brees Betragsrolle und Bedingungssatzgrenzen; .141 schloss Mengen/up und weitere Bedingungsmarker. Die Verbesserungen sind real. Sie ändern jedoch nicht U2/U3 und versuchen bei U1/U4 weiter, beliebige englische Bedeutung über positive/negative Muster vollständig zu rekonstruieren. Ein neuer Ausdruck bewegt lediglich die Grenze zwischen Fehlbuchung und Fehlablehnung.
+
+### 12.7 Architekturvergleich und eigenes Zielbild
+
+| Ansatz | Nutzen | Praktischer Preis / Grenze | Urteil |
+|---|---|---|---|
+| A: Nur jetzige Parser konsolidieren | Kleinster Vertragsdiff, Fallbackfehler lassen sich gezielt schließen. | Richtung, Phase und Stück-/Loszuordnung bleiben versteckte Sprachheuristiken. | Nötige Hygiene, allein nicht nachhaltig. |
+| B: Strukturierte Modellsemantik, JS vertraut ihr vollständig | Natürliche Sprache bleibt beim LLM; weniger Prosa-Sonderfälle. | Falsches pay oder gift kann weiterhin korrektes JSON sein. Ein zusätzliches Flag ist keine unabhängige Bestätigung. | Ohne Zustands-/Beleggrenzen zu schwach. |
+| C: Begrenzte strukturierte Semantik plus Beleg- und Zustandsprüfung | Wiederverwendung vorhandener Angebote, Entscheidungen, Bucher und Repair; keine Pflicht-Zusatzanfrage. | Ergebniszustände und wenige Vertragsangaben müssen ausdrücklich werden; Restfehler der Semantik bleiben möglich. | **Bevorzugt, mit den Korrekturen unten.** |
+| D: Alles vor Ausführung bestätigen | Weniger sofortige Fehlwirkungen. | Zusätzliche Züge auch bei eindeutigen Käufen/Geschenken; falsch verstandenem Bestätigungswort drohen eigene Fehler. | Keine allgemeine Spielregel. |
+| E: Alle freien Preise durch Enginewerte ersetzen | Eliminierte Preisinterpretation für definierte Waren; bei F-Gear bereits bewährt. | Verlust freier Verhandlung und keine fertige Preistabelle für beliebige Waren/Dienste/NPC-Hilfe. | Nur vorhandene kanonische Quellen weiterverwenden, nicht heimlich das ganze Handelsdesign ersetzen. |
+
+**Drei getrennte Prüfungen statt eines universellen Finanzinterpreters:**
+
+1. **Quellbeleg:** konkrete zusammengehörige Handlung und ihre vollständigen Geldangaben; explizit missing / incomplete / contradicted / verified. Keine Aussage zur Rolle allein aus Zahlen. Auslassungszitate können Fundstellen markieren, dürfen aber ausgelassene Bedingungen nicht zum Verschwinden bringen. Ein Folgesatz muss als möglicher kommerzieller Kontext erhalten bleiben. Das Verfahren beansprucht kein mathematisch vollständiges Verständnis beliebiger Prosa.
+2. **Vertragsbedeutung:** LLM liefert, ob ein NPC bereits ein festes Angebot macht, nur eine bedingte/unklare Angabe nennt oder tatsächlich Geld übergibt. Die vorhandenen Typen liefern die Richtung. Diese fallible Behauptung wird nicht durch eine zweite vollständige JS-Sprachinterpretation ersetzt. Erkennbare Widersprüche dürfen nur herabstufen/klären.
+3. **Mechanische Ausführbarkeit:** Partei/Ort/Präsenz, Waren-/Mengenbezug, gespeicherter Preis, Zustimmung, Ressourcen und Transaktionsstatus. Hier bleiben JS-Prüfungen verbindlich, auch am letzten Buchungsübergang.
+
+Das kann eine kleine gemeinsame Belegfunktion plus die vorhandenen Fachfunktionen sein. **Keine allgemeine Regelengine, kein neuer universeller Zahlungsmanager.** coinEvidence bleibt ein Zahlenbaustein, nicht der Richter über NPC-Zusagen.
+
+**Notwendige Vertragsinformationen, ohne vorab ein großes Schema festzuschreiben:**
+
+| Information | Empfehlung / konkreter Nutzen |
+|---|---|
+| Richtung / Geldgeber / Empfänger | pay, bid, offer und coin.gift kodieren Richtung bereits. Vorhandene Gegenparteien verwenden. Kein zusätzliches direction-Flag nur zur Wiederholung des Typs. |
+| Status der Offerte bzw. Übergabe | Fest / bedingt / unklar muss ausdrückbar sein; bei gift tatsächliche neue Übergabe statt bloß angeboten. Ein fehlendes frisches Feld darf nicht still „fest“ oder „ausgezahlt“ heißen. |
+| Betragsteil und Preisbasis | Bei reinem Gesamtpreis vorhandener Betrag plus vollständiger Quellbezug. Für belegte Multiplikation bzw. Positionssummen braucht die Prüfung **zugeordnete** Einheit-/Gesamtpreisbelege, bei Bedarf ein kleines basis-Feld (unit / lot / positions) mit den betroffenen Zeilen. „Eine von mehreren Rechnungen ergibt zufällig cp“ reicht nicht. |
+| Belegkontext | Ein belegter Geldteil und der zugehörige Angebots-/Übergabekontext sind verschiedene Informationen. Nicht verlangen, dass ein einziger selbstgewählter said-Teilstring beides zuverlässig ersetzt. Die genaue kleinste Darstellung ist im Patchschema festzulegen. |
+| Wiederholung / unabhängige Zahlung | Vorhandenes repeat_of und Credits nutzen; Bezug auf konkrete Zahlung statt pauschal auf die Person. Eine unabhängige Übergabe bleibt trotz laufendem Handel zulässig. |
+
+**Warum Preisbasis nicht optional wegargumentiert werden kann:** „Four copper each“, Menge 14, gemeldeter Gesamtbetrag 4. Die 4 cp sind wortgetreu belegt, aber nicht der Lospreis. .141 berechnet hier richtig 56. Claudes Regel „belegt, wenn Betrag einer genannten Summe ODER Satz×Menge entspricht“ könnte 4 wieder als festen Gesamtpreis legitimieren. Umgekehrt sind bei #380 60+80=140 und ausdrücklich 150 für alles genannt: Ein eigenständiger Paketpreis ist zulässig und darf nicht zugunsten der Positionsaddition überschrieben werden. **Rechnen ist deterministisch; welche Zahlen diese Rechnung tragen, benötigt einen ausdrücklich bestimmten Bezug.**
+
+**Ungeklärte Vorschläge dürfen sichtbar bleiben.** Sie müssen nicht komplett aus der Welt verschwinden. Als „nicht verbindlicher Preisvorschlag“ können sie dem Spieler Orientierung geben. Daraus folgt aber noch keine Zustimmung des NPC: Der Spieler kann durch „Ja, 56 cp“ eine fremde Bedingung nicht aufheben und einen erfundenen NPC-Preis nicht beweisen. Die bestehende bounded Repair kann fehlende/fehlerhafte strukturierte Angaben desselben Textes korrigieren; fehlt die tatsächliche Zusage in der Erzählung, muss erst eine gültige NPC-Offerte entstehen. Kein endloser automatischer Repair.
+
+**Zahlungsbestätigung:** Nur wo wirklich Betrag, Richtung oder Zuordnung offen sind; keine pauschale Bestätigung nach Höhe. Eine klare 20-cp-Zahlung ist nicht unsicherer als eine klare 5-cp-Zahlung. Wenn ein ungeklärter Zahlungsvorschlag bestätigt werden soll, muss die Entscheidung Empfänger, genauen Betrag, Zweck, Quelle und Gültigkeit tragen und die nächste Eingabe ausdrücklich diese Entscheidung annehmen. Der vorhandene payment-Decision-Typ speichert heute keinen solchen Bestätigungszustand; sein Katalogtext lautet „the amount is not known yet“. **„Dasselbe pay nochmals“ ist keine sichere Bestätigung**, sondern kann die Wiederholung desselben Modellfehlers sein.
+
+**Keine falsche Garantie:** Weder ein condition-Feld noch Beleggleichheit beweisen alle englischen Bedeutungen. Absolute Fehlerfreiheit bei beliebiger freier Sprache ohne zusätzliche Bestätigung ist nicht zugesichert. Das Ziel ist, Unsicherheit nicht mehr systematisch in Geldwirkung umzuwandeln, bekannte Verpflichtungen sicher direkt auszuführen und ungeklärte Fälle gezielt aufzulösen.
+
+### 12.8 Konsolidierter Umsetzungsschnitt – ein Patch, noch nicht freigegeben
+
+| Interner Schritt | Konkrete Dateien / Wiederverwendung | Abnahme und Abhängigkeit |
+|---|---|---|
+| 1. Ein Belegergebnis definieren | economy.coinEvidence als Tokenizer; kleine Finanzbelegfunktion in trade oder eigenem eng begrenztem Modul; interpret.amountErrors und world.evidenced darauf ausrichten. | Fehlend, unvollständig, widersprochen, belegt unterscheidbar. Kein Fallback kann heraufstufen. |
+| 2. Quellbezug und Preisbasis festlegen | Vorhandenes bid/offer und ihre Zeilen; extract-Schema/Prompt gezielt erweitern. Einheitsraten, Lospreis und Positionspreis nur zugeordnet prüfen. | #106/#110/#116, #52, #380, Äquivalenzen und echte Paketaufschläge funktionieren; keine beliebigen Teilmengen-/Ganztextzahlen. |
+| 3. Bindung und tatsächliche Übergabe ausdrücklich behandeln | extract.parseExtraction/Repair, world.bid/offer/coin.gift; vorhandene Fakten für Versprechen verwenden. | Bedingungen im Kontext/Folgesatz, unpassendes said und erfundene Beträge erzeugen keine Soforttransaktion. Gifts nicht als Ausnahme ausnehmen. |
+| 4. Sichere Offerten und offene Vorschläge unterscheiden | offer-Daten, domain-Reducer, catalog/display, offerAvailability/acceptanceWhy und letzte Buchungsgrenze. | Nur festes gültiges Angebot bzw. legitimierte Bestätigung kann buchen; bedingte Position blockiert nicht ausgewählte unabhängige feste Ware, aber ein gemeinsames Paket wird nicht still teilweise gekauft. |
+| 5. Ausgehendes pay vereinheitlichen | agency, interpret, commands.pay; Registrierung-/Kaufrouting beibehalten. Bestehende payment-Decision nur gezielt erweitern, falls eine echte Bestätigung benötigt wird. | Ausgehende Richtung und vollständiger Betrag zusammengehörig; klares Bezahlen bleibt direkt; kein Teilbetrag, keine Zahlung aus Verkauf/Anspruch/Beleg. Empfänger-/Betragswechsel ist keine Bestätigung. |
+| 6. Transaktionsbezüge und Rückmeldung korrigieren | world.coinRefusal, vorhandene Credits/repeat_of, saleProceeds-Repair und konkrete bid-Korrekturen. | Echter Dank neben Handel möglich; Erlös/Recount nie doppelt; Ablehnungen sagen, was tatsächlich ungebucht blieb und wie es weitergeht. |
+| 7. Vorhandene Paketkette prüfen, nicht ersetzen | resolveCommands-Auswahlgruppen, acceptBid, pickLines, bidSale, bookPurchase/bookSale. | Original #380→#381 bucht einmal 150. Zusätzliche Los-Zustimmung nur korrigieren, falls ein nach Korrektur der Quelle noch defekter Neugeschäftspfad reproduziert wird. |
+| 8. Gemeinsamer Rückbau und Abnahme | Nach Ersatz ihrer Aufgaben positive Finanz-Verblisten und openCondition-Familie entfernen; Auswahl-/Zustimmungs- und Eigentumsschutz erhalten. | Keine Doppelimplementierung alter/neuer Preislesart; Vollsuite, Fingerprint-Replay und echte Hostintegration am fertigen Patch, keine Mikroreleasefolge. |
+
+**Umfang:** Mehrere eng verbundene Dateien, mittlerer Aufwand; kein ehrlicher „Zwei-Zeilen-Hotfix“. Kein Schätzwert in Stunden aus den bisherigen Messungen ableitbar. Der Belegkern darf nicht zum Sammelplatz für Pay-, Gift-, Service-, Auswahl- und Weltsemantik werden. Seine Aufgabe ist Zahlen-/Quellkonsistenz; die Fachpfade behalten ihre Zuständigkeiten.
+
+### 12.9 Regressionen, Host und Replay – konkrete Abnahme
+
+Neue Tests erst bei Implementierung. Jetzt wurden nur temporäre Sonden ausgeführt.
+
+| Invariante / Testgruppe | Rote Fälle / positive Kontrollen |
+|---|---|
+| Keine Autoritätssteigerung durch schlechteren Beleg | Fester korrekter Beleg → fehlender, abweichender oder abgeschnittener Beleg darf niemals mehr Geldwirkung erzeugen. Fehlender Betrag und „fifty-six nails“ sind kein Preis. |
+| Kein Geld aus Gegenstands-/Besitz-/Forderungsrollen | Acht Zahlungsfälle, 5-cp-Gegenfall, Ware für Geld, Quittung, Besitz 30 bei tatsächlicher Zahlung 20; daneben echte Zahlung, Trinkgeld und Rückzahlung. |
+| Vollständigkeit gilt für jeden Pfad | „three copper and the silver“, „four copper and the silver for the lot“, Zuschlag T109, unbekannter Rest. Entweder vollständige belegte Summe oder keine Buchung, niemals stiller Teilbetrag. |
+| Preisbezug statt zufälliger Rechnung | 4 je Einheit ×14=56, Stück-/Los-/Positionspreise, gleiche Stapel 7+14, andere Eigenschaften/Einheiten, doppelte Währungsschreibweise. #380 darf Paketpreis150 trotz Zwischenrechnung140 verwenden. |
+| Bindung und Phase | Echte spätere Gutachter-/Qualitäts-/Lieferbedingungen in und nach dem said-Kontext; abgeschlossene Prüfung; reine Cash-Wahl; feste Vorabzustimmung führt weiter direkt zum Geschäft. |
+| Unabhängige Geldereignisse | Gleicher NPC: Verkauf plus neues separates Geschenk; späteres echtes gleiches Geschenk; Wiederholung derselben Auszahlung; angebotenes Geschenk statt aktueller Übergabe; falscher/abwesender Geber. |
+| Bestätigungen nur falls nötig | Konkrete offene Entscheidung annehmen → einmal; anderer Betrag/Empfänger, abgelaufene Entscheidung, bloße Wiederholung oder Nachfrage → keine stille Freigabe. Keinen 10-cp-Sicherheitsbeweis unterstellen. |
+| Vollständige Originalketten | T50, Bree mit beiden gespeicherten Planantworten, T26–T32, T53–T62, #380→#381→#382 und #438; nach Quellkorrektur nicht nur „kein Geld verloren“, sondern auch wirklich einmal erfolgreich gehandelt. |
+| Bestehende Spielregeln | Gildenregistrierung und Abgaben, Service/Zimmer, Gearpreise/Preiszustimmung, Einzel-/Paket-/Teilmengenkäufe, vorhandene D-Fälle und unabhängige Geschenke. |
+| Persistenz | Aktiven Record falten, Reload/Swipe/Regenerate, abgebrochene/überholte Extraktion, doppelte Annahme, gleichzeitige gekaufte Ware und Geld. Keine neue Providerantwort oder Buchung nur durch Fold. |
+
+**Replay-Konvertierung sauber trennen:** Ein schon gespeichertes historisches Angebot ist eine historische Verpflichtung. Eine alte aufgezeichnete Modellantwort ohne neues Bindungsfeld ist dagegen **kein Nachweis für condition:null/firm**. Ein Replay-Konverter darf das Feld zur technischen Schemaanpassung ergänzen, aber diese Ergänzung nicht als natürliches Modellverständnis oder Sicherheitsnachweis verkaufen. Für neue Ausgaben gilt ein fehlendes Pflichtfeld als unklar/repairbedürftig, nicht als fest. Jede geänderte Ausgabe einzeln begründen; keine pauschalen Accepted-Neuerzeugungen. Aktuelle Save-/Eventintegrität erhalten, ohne Altprotokolle zum Designzwang zu machen.
+
+**Host-Abnahme:** Fertiger Patch: vollständige Node-Suite, die bestehende Fingerprintprüfung, echter ST-Standard und Failsoft. Ergänzend eine kurze echte Handelsintegration mit Modellstub für falsche/bedingte Antworten und gespeicherten Records, nicht nur Parsertests. Natürlicher Batch erst nach Freigabe; er prüft semantische Trefferquote, wiederholte Klärungen, verlorene Verkäufe und unabhängige Geschenke. Diese Ergebnisse sind jetzt ausdrücklich noch nicht vorhanden.
+
+---
+
+## 13. Abschließende Bewertung beider Sichtweisen und Entscheidungsvorlage
+
+### 13.1 Was ich von Claude übernehme
+
+- **Gemeinsamer Befund:** Die Buchungsalgorithmen sind überwiegend tragfähig; die Finanzinterpretation davor verletzt Zuständigkeits- und Evidenzgrenzen. Ein neues Handelsframework wäre unverhältnismäßig.
+- **Explizite Unsicherheit und monotone Belege:** Sehr wichtig. Die Ausweichleiter von evidenced muss für neue Handelsbeträge entfallen, statt nur härtere Prüfungen vor sie zu setzen.
+- **Semantik zum bestehenden Modell zurück:** Richtung ist bereits durch Typen ausgedrückt. Nicht vorsorglich viele redundante direction-/role-Flags oder eine weitere Pflicht-Modellanfrage hinzufügen.
+- **Offene Informationen nicht aus der Welt löschen:** Ungeklärte Preisvorschläge dürfen angezeigt und später geklärt werden; sie sind deswegen noch keine annehmbaren NPC-Verträge.
+- **Konkrete Gebotskorrekturen und Rückbau:** Beides ist nötig, damit Fehlablehnungen nicht in Gift-/Erlös- und Umformulierungsloops übergehen.
+- **Ein fachlich zusammenhängender Patch mit Eigenschaften statt immer neuen Formulierungslisten.**
+
+### 13.2 Wo ich Claude korrigiere oder den Plan enger fasse
+
+| Claudes Aussage/Vorschlag | Gegenbewertung / empfohlene Änderung |
+|---|---|
+| „Engine verwirft häufiger richtige Modellwerte als falsche“ | Aus 6/8 vorselektierten Preisablehnungen nicht ableitbar; #438 ist außerdem bedingt. Die genaue eigene Zählung steht in §12.5. |
+| „Netto ≈400 Produktzeilen“ (§1.3) | Die vier angegebenen Diffs ergeben 401 hinzugefügte und 125 entfernte Zeilen in src/content, also **netto 276**, nicht 400. Das zeigt Wachstum, ist allein aber kein Architektur- oder Overengineeringbeweis. |
+| „13 freie Zahlungen, zwei falsch“ | 13 geplante pay-Kommandos, davon zwei Registrierungen und mehrere abgewiesene Handlungen. T50 wurde im Original nicht ausgezahlt. Eine 10-cp-Grenze ist aus dieser kleinen und gemischten Menge nicht validiert. |
+| „≤10 cp sofort, darüber bestätigen“ | **Nicht als Sicherheitslösung übernehmen.** Der selbst reproduzierte 5-cp-Warenverkauf wird trotzdem fälschlich belastet. Eine optionale Komfort-/Risikoeinstellung wäre eine gesonderte Designentscheidung, keine Ursachenbehebung. |
+| „Betrag gleich irgendeiner genannten Summe oder einer zulässigen Rechnung“ | **Zu permissiv.** Rolle und Preisbasis müssen zur konkreten Position passen. Ein falscher Lospreis4 darf nicht durch einen wörtlichen Stückpreis4 legitimiert werden. |
+| „Ein neues condition-Feld reicht“ | Als fehlende Bindungsinformation sinnvoll. Es erklärt weder Preisbasis noch tatsächliche Geschenkübergabe. Die minimal nötigen Felder müssen nach Aufgabe bestimmt werden, nicht vorab auf genau eines begrenzt sein. |
+| „Ganzes Zitatsatz + etwa elf Bindewörter“ | Nur ein begrenztes herabstufendes Hilfssignal, kein Beweis für Unbedingtheit. Eine Bedingung im nächsten Satz bleibt sonst unsichtbar. Keine neue vollständige Sprachlogik daraus machen. |
+| „Unbelegt speichern, Spieler nennt Preis, dann annehmen“ | Nur wenn die NPC-Zusage bereits unabhängig feststeht und die Spielerangabe eine echte offene Zustimmung klärt. Der Spieler darf keinen fehlenden NPC-Preis oder fremden Vorbehalt überstimmen. |
+| „Ein zweites gleiches pay bestätigt“ | Bestehender Decision-Typ ist nicht dafür implementiert. Explizite Entscheidungsbindung nötig; sonst können LLM-Wiederholungen den ersten Fehler nur noch einmal autorisieren. |
+| „coin.gift unverändert lassen“ | **Ablehnen.** Gleicher Betrag heißt noch keine aktuelle Übergabe; ein separater Dank neben einem Gebot wird derzeit pauschal blockiert. Beides selbst reproduziert. |
+| „Bucher unverändert“ | Kernalgorithmen behalten. Neue terms-/Bestätigungsgrenzen müssen trotzdem bis zur letzten Buchungsstelle gelten, einschließlich Direkt-/Vorabpfad und Teilpaketen. Kleine Schutzaufrufe können nötig sein. |
+| „Enginebepreiste Angebote bleiben firm“ | Enginepreis ja, automatisch verfügbare/unbedingte Ware nein. Preisautorität und Verfügbarkeit/Bindung getrennt behandeln. |
+| „Neue Package-/Losgrenze im selben Patch?“ | Original #381 funktioniert bereits, sobald #380 korrekt gespeichert ist. Diesen Gegenfall zuerst sichern; nur einen übrig bleibenden neuen Angebotsfall gezielt korrigieren, keinen neuen Paketmechanismus vorsehen. |
+| „Alte Modellantworten condition:null“ | Nur offengelegte Replay-Anpassung, kein Beleg für ein festes Angebot. Frische fehlende Felder nicht fail-open normalisieren. |
+| „Weniger Repairs, geringe zusätzliche Token“ | Plausible Ziele, noch keine Messung. Schema, Katalog, Anzeigen und Erklärungen kosten zusätzlich; den echten Requestumfang und die Reparaturquote nach Umsetzung messen. |
+
+### 13.3 Korrektur auch an Sols bisheriger Sicht
+
+Meine frühere Einschätzung „Buchung trägt, hauptsächlich pay und tradePrice korrigieren“ war zu eng. Die eigene vollständige Prüfung zeigt die Geschenkphase und die zu grobe Zuordnung über counterparts als weitere Finanz-Schnittstellenprobleme. Eine zentrale Betragsfunktion allein löst sie nicht. Ebenso ist ein automatisches Verwerfen jedes nicht arithmetisch belegten Angebots keine gute QoL-Lösung: Fehlende Daten, echter Widerspruch und ein bloß unverbindlicher Vorschlag müssen unterschiedlich beantwortet werden. Das rechtfertigt jedoch kein künstlich verbindliches Bestätigungsangebot.
+
+Keine der beiden vorherigen Reviews ist ein Korrektheitsbeweis. Die Bewertung folgt aus den hier beschriebenen eigenen Sonden und Codepfaden.
+
+### 13.4 Empfohlene Entscheidungen vor Umsetzung
+
+1. **Keine feste Geldschwelle als Zahlungsschutz.** Eindeutige, vollständige eigene Zahlung bleibt direkt; nur echte Unsicherheit bekommt eine konkret gebundene Klärung. Eine bewusst höhere Bestätigungssicherheit für große freie Zahlungen kann separat gewählt werden.
+2. **Bedingte Offerte nicht einseitig annehmbar.** Erst gültige feste NPC-Zusage; eine bestehende Spielerpreisgrenze bleibt bis dahin nur Zustimmung, keine Garantie der Gegenpartei.
+3. **Ungeklärte Vorschläge sichtbar, aber nicht als gültige Offerte ausgeben.** Reparatur vorhandener Modelldaten oder Klärung der tatsächlichen NPC-Bedingung; keine Pflicht zu mehreren Zügen bei eindeutigen normalen Geschäften.
+4. **Positionssummen zulassen, wenn eindeutig zugeordnet; ausdrückliche Lospreise respektieren.** Keine beliebigen Teilmengen, keine Geldbestände oder Äquivalenzwiederholungen addieren.
+5. **Geschenke in denselben fachlichen Patch einbeziehen.** Aktuelle Übergabe und eigenständiger Vorgang statt pauschaler Handelspartnerblockade. Keine Wiederbelebung von Privatjobs oder neuen Lohnverträgen.
+6. **Vorhandene Paketabwicklung beibehalten.** #380→#381 als erfolgreiche Originalkette abnehmen; größere Los-/Planner-Erweiterungen nur bei verbliebenem reproduziertem Bedarf.
+7. **Ein finaler Umsetzungsschnitt nach §12.8, ein Build, ein Gegenreview, danach natürlicher Batch.** Neue Reviews sollen Verletzungen der gemeinsamen Invarianten nachweisen; nicht jedes anders formulierte Beispiel eine neue Sonderregel rechtfertigen.
+
+**Gesamturteil:** Claude hat die zentralen Ursachen überzeugend gefunden und mit zusätzlichen Originalfällen gestützt. Sein Plan ist in der Richtung gut, als Umsetzungsspezifikation aber noch nicht sicher genug: Schwellenwert, beliebige passende Rechnungen, Preisbestätigung und unveränderte Geschenke würden wesentliche Fehlerklassen offenlassen. Variante C mit den vorstehenden Begrenzungen ist die kleinste tragfähige Konsolidierung. Sie reduziert die doppelte Sprachinterpretation, erhält bewährte Transaktionsmechanik und macht verbleibende Modellunsicherheit sichtbar, statt sie durch Fallbacks zu Geld zu erklären.
+
+**Abschlussstatus:** Nur diese zentrale Analysedatei auf main ergänzt. Produktbranch weiterhin .141 / 3d8f062; keine Produkt-, Schema-, Prompt-, Test-, Fingerprint- oder Originalarchivänderung. Keine Umsetzung freigegeben oder begonnen.

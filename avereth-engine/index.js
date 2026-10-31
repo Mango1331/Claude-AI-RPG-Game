@@ -59,6 +59,17 @@ function unsupported(chat) {
     supportWarned = key;
     return block;
 }
+// B1 review (.131): the greeting that stores this campaign's start no longer matches its record (changed without the
+// edit event the engine re-reads): nothing is started over it and nothing is booked; the notice says how to recover
+let hiddenWarned = null;
+function hiddenStart() {
+    if (hiddenWarned === ctx().getCurrentChatId()) return;
+    hiddenWarned = ctx().getCurrentChatId();
+    toastr.error('CAMPAIGN START HIDDEN — the greeting that holds this campaign\'s start record was changed without the engine '
+        + 'reading the edit. The engine starts no second campaign over it. Nothing was booked, saved or sent to a model. '
+        + 'Swipe back to the original greeting, or edit and save the greeting once more so the engine re-reads it.',
+    'Avereth Engine', { timeOut: 0, extendedTimeOut: 0 });
+}
 let pendingReport = null; // {chatId, id, hash, job}: the report request of the latest reply, while it runs
 let llmPath = null; // Runtime V4: which call the last LLM request used ('custom endpoint' | 'generateRaw')
 let narrationStart = null; // Patch 8.2: {chatId, user, t}: when the engine block of a story turn was handed to SillyTavern
@@ -237,6 +248,9 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         return;
     }
     try {
+        // B1 review (.131): the version guard reads the stored start record before anything may start a campaign, so a
+        // refused campaign is never re-initialised over; a stored start hidden by a changed greeting is never replaced
+        if (unsupported(c.chat)) { abort(true); setPrompt(''); setLoreKeys([]); renderDebug(); return; }
         if (!hasCampaign(c.chat)) {
             const created = ensureCampaign(c.chat, content, { seed: newSeed(), runtime: newRuntime(), planner: newPlanner() });
             if (created === 'legacy') {
@@ -245,8 +259,8 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
                 setPrompt('');
                 return;
             }
+            if (created === 'hidden') { abort(true); setPrompt(''); setLoreKeys([]); hiddenStart(); renderDebug(); return; }
         }
-        if (unsupported(c.chat)) { abort(true); setPrompt(''); setLoreKeys([]); renderDebug(); return; }
         // the report still being asked for belongs to the turn before this new message: its facts come first
         if (pendingReport && pendingReport.chatId === c.getCurrentChatId() && (!type || type === 'normal') && c.chat.findLastIndex((m) => m.is_user) > pendingReport.id) {
             await Promise.race([pendingReport.job, new Promise((done) => setTimeout(done, REPORT_WAIT_MS))]);

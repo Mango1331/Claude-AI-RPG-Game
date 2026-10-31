@@ -96,6 +96,15 @@ export function hasCampaign(chat) {
     return chat.some((m) => messageEvents(m).some((e) => e.t === 'campaign.started'));
 }
 
+/**
+ * B1 review (.131): does a message still store a campaign.started record, whether or not its text still matches it? A
+ * greeting changed without the engine's edit handling hides its record from the fold (messageEvents); the record is
+ * still the campaign's and must never be replaced by a new start.
+ */
+export function hasStoredCampaign(chat) {
+    return chat.some((m) => (rec(m)?.events || []).some((e) => e?.t === 'campaign.started'));
+}
+
 export function lastUserIndex(chat, before = chat.length) {
     for (let i = Math.min(before, chat.length) - 1; i >= 0; i--) if (chat[i].is_user && !chat[i].is_system) return i;
     return -1;
@@ -114,11 +123,13 @@ export function lastReplyIndex(chat, before) {
 
 /**
  * Start the campaign on the greeting (message 0) if none exists. A chat that already ran without the engine is left
- * alone ('legacy') unless force is set: its history cannot be reconstructed into mechanical state.
- * @returns {'exists'|'created'|'legacy'|'none'}
+ * alone ('legacy') unless force is set: its history cannot be reconstructed into mechanical state. A chat whose stored
+ * start record is hidden by a changed greeting text is left alone too ('hidden', B1 review): no second start over it.
+ * @returns {'exists'|'created'|'legacy'|'hidden'|'none'}
  */
 export function ensureCampaign(chat, content, { seed, force = false, runtime = 'v3', planner, ruleset } = {}) {
     if (hasCampaign(chat)) return 'exists';
+    if (hasStoredCampaign(chat)) return 'hidden';
     const first = chat[0];
     if (!first || first.is_user) return 'none';
     const played = chat.filter((m) => m.is_user && !m.is_system).length;

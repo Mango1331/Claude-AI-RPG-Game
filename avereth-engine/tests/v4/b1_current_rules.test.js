@@ -5,9 +5,9 @@
 // asked, recorded or saved. No migration, no new field.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
 import { loadProductContent } from '../helpers.js';
 import { campaign } from './patch8_lib.js';
+import { host } from './host_lib.js';
 import { rec, foldChat } from '../../src/host.js';
 import { campaignSupport, campaignStart, parseBuild, compareBuilds, FLAGLESS_SINCE } from '../../src/v4/runtime.js';
 import { startCampaign } from '../../src/engine.js';
@@ -32,7 +32,7 @@ test('B1: builds are compared as numbers, never as text; an unreadable build is 
     assert.ok(compareBuilds(parseBuild('4.3.0-c.6.6.129'), parseBuild(FLAGLESS_SINCE)) < 0);
     assert.ok(compareBuilds(parseBuild('4.10.0-c.1.1.1'), parseBuild('4.9.9-c.9.9.999')) > 0);
     for (const bad of [undefined, null, '', 'dev', '4.3.0', '4.3.0-c.6.6', '4.3.0-c.6.6.130-rc1', 4130]) assert.equal(parseBuild(bad), null, String(bad));
-    assert.equal(ENGINE_VERSION, FLAGLESS_SINCE, 'this build is the first flagless one');
+    assert.ok(compareBuilds(parseBuild(ENGINE_VERSION), parseBuild(FLAGLESS_SINCE)) >= 0, 'this build writes no switches');
 });
 
 test('B1: every run of the processing corpus (.126 configuration) is a supported campaign', () => {
@@ -98,26 +98,6 @@ test('B1: a flagless campaign plays the current values (AoE starter pool, F bala
     assert.ok(worldVocab(content.deltaVocab, s).deltas.some((d) => d.type === 'area'));
     assert.equal(namesYoung(content, 'thorn-backed boar yearling'), true, 'a yearling is the young of its kind');
 });
-
-/** index.js with a minimal SillyTavern host on this chat (as tests/v4/patch_failsoft_host_block.test.js). */
-async function host(chat, tag) {
-    const calls = { raw: 0, saves: 0, errors: [], aborted: 0, prompts: [] };
-    const handlers = {};
-    let initialized;
-    const c = { chat, characters: [{ name: 'test', avatar: 'test.png' }], characterId: 0, extensionSettings: {}, getCurrentChatId: () => `b1-${tag}`, getRequestHeaders: () => ({}),
-        eventTypes: { MESSAGE_RECEIVED: 'received', GENERATION_ENDED: 'ended', CHAT_COMPLETION_SETTINGS_READY: 'ready', GENERATION_STOPPED: 'stop', MESSAGE_EDITED: 'edited', CHAT_CHANGED: 'chat', MESSAGE_DELETED: 'deleted', MESSAGE_SWIPED: 'swiped' },
-        eventSource: { on(type, fn) { (handlers[type] ||= []).push(fn); if (type === 'swiped') initialized(); } },
-        saveChat: async () => { calls.saves++; }, saveSettingsDebounced() {}, setExtensionPrompt(...a) { calls.prompts.push(a[1]); }, addOneMessage() {},
-        generateRaw: async () => { calls.raw++; return JSON.stringify({ commands: [] }); } }; // a valid, empty plan
-    globalThis.fetch = async (url) => (String(url).startsWith('file:') ? { ok: true, json: async () => JSON.parse(await readFile(url, 'utf8')) } : { ok: true, json: async () => [{}, ...structuredClone(c.chat)] }); // the saved chat is what the host holds
-    globalThis.document = { getElementById: () => null, querySelector: () => null };
-    globalThis.SillyTavern = { getContext: () => c };
-    globalThis.toastr = { error(text) { calls.errors.push(text); }, warning() {} };
-    const ready = new Promise((r) => { initialized = r; });
-    await import(`../../index.js?b1-${tag}`);
-    await ready;
-    return { c, calls, handlers };
-}
 
 test('B1 host: an unsupported campaign is refused at every entry without money, time, record, save or provider call', async () => {
     const keys = ['fetch', 'document', 'SillyTavern', 'toastr', 'averethInterceptor'];

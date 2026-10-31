@@ -101,3 +101,30 @@ Für Produktkampagnen (V4-C, Ruleset 2) ist B1 gleich .126/.129 – belegt durch
   jetzt die aktuellen F-Werte.
 - Einstellungsfelder Runtime/Planner und die alten Content-Werte bleiben bis Paket E.
 - Der Schutz kennt keine Teilmigration: eine abgelehnte Kampagne läuft nur auf ihrem Startbuild weiter.
+
+## Reviewkorrektur .131 – keine Neuinitialisierung über einen gespeicherten Startrecord
+
+Build **`4.3.0-c.6.6.131`**. Befund des Gegenreviews bestätigt: `messageEvents()` blendet den `campaign.started`-Record
+der Begrüßung aus, sobald ihr Text nicht mehr zum gespeicherten Hash passt (Änderung ohne von der Engine gelesenes
+Edit-Event). `hasCampaign()` war dann `false`, und der Interceptor rief `ensureCampaign()` **vor** dem Versionsschutz auf:
+bei höchstens einem Spielerzug wurde der Startrecord durch eine neue Kampagne ersetzt (nachgestellt: Seed 1 → 99), bei
+mehr Zügen kam fälschlich „played without the engine“.
+
+- `ensureCampaign()` (`src/host.js`) prüft mit `hasStoredCampaign()` den gespeicherten Record unabhängig vom Text und
+  liefert dann `'hidden'` – nie eine zweite Kampagne, auch nicht mit `force`. Damit ist auch der Begrüßungspfad über
+  `MESSAGE_RECEIVED` (`processReply`) abgedeckt.
+- Interceptor (`index.js`): Versionsschutz **vor** jeder Kampagnenanlage; bei `'hidden'` Abbruch, leerer Prompt, eine
+  Meldung pro Chat („CAMPAIGN START HIDDEN … Nothing was booked, saved or sent to a model …“, mit Hinweis: zur
+  ursprünglichen Begrüßung zurückswipen oder sie erneut bearbeiten und speichern, dann liest die Engine sie neu).
+- Unverändert: ein über SillyTavern bearbeiteter Begrüßungstext (`MESSAGE_EDITED`) wird wie bisher neu gehasht, die
+  Kampagne läuft weiter. Eine alternative Begrüßung ist in SillyTavern 1.19 ein eigener Swipe mit eigenem `extra`
+  (`syncSwipeToMes`); ohne gespeicherten Record startet die Kampagne dort wie bisher. Keine Migration, keine Regeländerung.
+
+Nachweise:
+- Neue Regressionen `tests/v4/b1_start_record.test.js` (7) über den echten Hostablauf (`index.js`, gemeinsamer Helfer
+  `tests/v4/host_lib.js`): abgelehnte Altkampagne (Pfad A; teilweise F-Schalter) und unterstützte Kampagne mit
+  veränderter Begrüßung – Startrecord unverändert, kein Record, kein Save, kein Provideraufruf, eine Meldung; dasselbe
+  mit mehreren gespielten Zügen; Kontrollen: gelesene Bearbeitung spielt weiter, alternative Begrüßung startet.
+- **Rot auf `59e1305` (.130):** 5 rot (die geschützten Fälle), 2 Kontrollen grün; danach 7/7 grün.
+- Volle Suite **2467/2467**; voller Korpus **2.235 Fälle, 0 Abweichungen**; Chromium-Mock-Smoke **OK**; echter
+  SillyTavern 1.19.0 `smoke:st:c` **OK** und Failsoft-Variante **OK** (Build .131).

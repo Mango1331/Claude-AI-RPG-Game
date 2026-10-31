@@ -14,7 +14,7 @@
 //   * Lore Bridge           -> the current realm and location as World Info scan text (never part of the prompt), so
 //                              the narrator card's lorebook (lorebook/, docs/LOREBOOK.md) activates the right entries
 import { loadContentPack } from './src/content.js';
-import { onEdited, foldChat, ensureCampaign, hasCampaign, projectPromptHistory, reportRequest, applyReportAnswer, rec, setRec } from './src/host.js';
+import { onEdited, foldChat, ensureCampaign, hasCampaign, hasStoredCampaign, projectPromptHistory, reportRequest, applyReportAnswer, rec, setRec } from './src/host.js';
 import { prepareGenerationAsync, processReplyAny, runExtraction, applyExtraction, pendingExtraction, campaignRuntime, campaignSupport, onEditedV4, perfSummary } from './src/v4/runtime.js';
 import { createNarratorRecovery, narratorProviderResponse, providerResponseError } from './src/v4/narrator_recovery.js';
 import { verifySavedChat } from './src/v4/continuation.js';
@@ -69,6 +69,19 @@ function hiddenStart() {
         + 'reading the edit. The engine starts no second campaign over it. Nothing was booked, saved or sent to a model. '
         + 'Swipe back to the original greeting, or edit and save the greeting once more so the engine re-reads it.',
     'Avereth Engine', { timeOut: 0, extendedTimeOut: 0 });
+}
+// Hotfix .137 (natural batch 20261031-125921Z: CAMPAIGN START HIDDEN at turn 1 for all three classes): SillyTavern keeps a
+// greeting raw ({{user}}, {{pick::…}}) until it writes the resolved text into chat[0].mes, when message 0 is rendered
+// (script.js messageFormatting) and at the first generation (Generate). When it rebuilds a chat nobody has played yet
+// from the card (createOrEditCharacter, e.g. on the runner's chat rename) it announces the greeting (MESSAGE_RECEIVED
+// 'first_message') before rendering it, so the campaign was started on the raw text and hidden right after. Right before
+// a start, the greeting is resolved once by SillyTavern's own substituteParams ({{pick}} is seeded per chat: the text it
+// shows and keeps). Never once a start record is stored: a later change of the greeting stays a change.
+function settleGreeting(c) {
+    const first = c.chat?.[0];
+    if (!first || first.is_user || first.is_system || hasStoredCampaign(c.chat) || typeof c.substituteParams !== 'function') return;
+    const resolved = c.substituteParams(first.mes);
+    if (typeof resolved === 'string' && resolved !== first.mes) first.mes = resolved;
 }
 let pendingReport = null; // {chatId, id, hash, job}: the report request of the latest reply, while it runs
 let llmPath = null; // Runtime V4: which call the last LLM request used ('custom endpoint' | 'generateRaw')
@@ -252,6 +265,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         // refused campaign is never re-initialised over; a stored start hidden by a changed greeting is never replaced
         if (unsupported(c.chat)) { abort(true); setPrompt(''); setLoreKeys([]); renderDebug(); return; }
         if (!hasCampaign(c.chat)) {
+            settleGreeting(c);
             const created = ensureCampaign(c.chat, content, { seed: newSeed(), runtime: newRuntime(), planner: newPlanner() });
             if (created === 'legacy') {
                 if (legacyWarned !== c.getCurrentChatId()) toastr.warning('Avereth Engine: this chat was played without the engine. Start a new chat to use it.');
@@ -425,6 +439,7 @@ async function onMessageReceived(messageId) {
         // Patch 8.2: the narrator's time, from the engine block handed over to the reply received (telemetry)
         const started = narrationStart?.chatId === c.getCurrentChatId() && Number(messageId) > narrationStart.user ? narrationStart.t : null;
         narrationStart = null;
+        if (!hasCampaign(chat)) settleGreeting(c); // the greeting of a new chat starts the campaign here (hotfix .137)
         const r = processReplyAny(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers, recover, runtime: newRuntime(), planner: newPlanner(), narrationMs: started === null ? null : Date.now() - started });
         if (r.foldBlocked) { showFoldBlock(r.foldBlocked); renderDebug(); return; }
         if (!r.changed) return;

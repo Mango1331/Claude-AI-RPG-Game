@@ -8,6 +8,8 @@ import { floorAt } from '../../../src/v4/living.js';
 import { hallOf, placeName } from '../../../src/v4/domain.js';
 import { trueDungeonOf } from '../../../src/v4/dungeon.js';
 import { spendsStatPoints } from '../../../src/commands.js';
+import { locationByName } from '../../../src/content.js';
+import { hash32 } from '../../../src/util.js';
 
 const STATS = { rules: { stats: ['STR', 'VIT', 'AGI', 'INT', 'PER', 'WIL'] } };
 const KILLS = new Set(['ATTACK', 'DEFEAT']);
@@ -107,6 +109,31 @@ export function turnOutcome(chat, u) {
  * Does not rewrite visible player history or alter the original turnOutcome API:
  * this is a runner-only diagnostic/stop decision, not a game rule.
  */
+/**
+ * Hotfix .137 (batch 20261031-125921Z): the campaign start, checked before the first player turn and again after the
+ * turn that started it. A stored campaign.started record must be one, readable (its text hash is the greeting as saved,
+ * so the fold sees it; a hidden one stops every turn), on a greeting without unresolved SillyTavern macros (resolved at the
+ * first generation, they would hide it), and start where the greeting the player sees says
+ * ("Location: … outside <place>, <realm>", as the engine reads it). null: no record yet, or a consistent one.
+ * @returns {string|null} what is wrong
+ */
+export function startRecordProblem(chat, content) {
+    const first = chat?.[0];
+    const stored = (rec(first)?.events || []).filter((e) => e.t === 'campaign.started');
+    if (!stored.length) return null;
+    if (stored.length > 1) return `the greeting holds ${stored.length} campaign starts`;
+    // SillyTavern resolves its macros into the greeting at the first generation: a start on the unresolved text is bound
+    // to be hidden by it (the .136 batch stop), so it is found here, before the first player turn
+    const macro = /\{\{[^{}]+\}\}/.exec(String(first.mes || ''));
+    if (macro && messageEvents(first).length) return `the campaign start record holds the greeting with the unresolved SillyTavern macro ${macro[0].slice(0, 40)}; the first generation resolves it and hides the record`;
+    if (!messageEvents(first).length) return `the campaign start record is hidden: its text hash ${rec(first).text_hash} is not the greeting's ${hash32(first.mes)} (the greeting changed after the start, e.g. an unresolved macro)`;
+    const m = /Location:\s*[^\n`]*?\boutside\s+([A-Z][\w' -]*?)\s*,\s*([A-Z][\w' -]*)/.exec(String(first.mes));
+    const shown = m ? locationByName(content, m[1].trim()) : null;
+    if (m && !shown) return `the greeting's place "${m[1].trim()}" is no known start location`;
+    if (shown && shown.id !== stored[0].d.location) return `the greeting shows ${shown.id}, the campaign started at ${stored[0].d.location}`;
+    return null;
+}
+
 export function turnFailure(chat, u) {
     const o = turnOutcome(chat, u);
     if (o.kind === 'narrator_empty') return { kind: 'narrator_empty', at: o.at, reason: null };

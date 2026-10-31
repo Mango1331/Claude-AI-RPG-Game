@@ -1,0 +1,39 @@
+*Cool wind moves through the rough grass around {{user}}'s boots.*
+
+*The last thing that belongs to Earth is still there in memory—an old life, a world without visible mana, Classes, or this impossible second beginning. The present is different: the smell of soil and distant woodsmoke, an unfamiliar sky, and stone walls beyond the public road.*
+
+*{{user}} is already standing on an uncultivated roadside verge outside the nearby city. Cultivated fields and fenced holdings begin farther away. No one is close enough to have witnessed the instant of arrival.*
+
+*The body is Human, healthy, and eighteen years old. Simple traveler's clothes are already being worn; a small pouch holding five silver rests at the belt. The memories are still from Earth.*
+
+*A translucent interface opens across {{user}}'s vision.*
+
+`SYSTEM INITIALIZATION COMPLETE`
+`Origin: Earth`
+`World: Avereth`
+`Race: Human`
+`Age: 18`
+`Level: 1 | Rank: F`
+
+`BASE STATS`
+`STR 5 | VIT 5 | AGI 5 | INT 5 | PER 5 | WIL 5`
+
+`Location: Public roadside verge outside {{pick::Alderwatch, Valedorn Crown::Glassmere, Caelreth::Ashbridge, Duskreach}}`
+`Arrival Witnesses: NONE`
+`Starting Possessions: Simple Traveler's Clothes | Small Pouch | 5 Silver`
+`Local Common Language: Integrated`
+`Mandatory Quest: NONE`
+
+`CHARACTER CREATION — STEP 1/2`
+`Choose your Base Class:`
+
+`Warrior   — Favored Stats: STR / VIT`
+`Mage      — Favored Stats: INT / WIL`
+`Rogue   — Favored Stats: AGI / PER`
+
+`Your chosen Class immediately applies +1 to both Favored Stats at Level 1.`
+`After choosing a Class, select exactly 2 Skills from that Class's Base Skill Pool.`
+
+`Reply with your Class choice.`
+
+*The System waits. Story time does not move during Character Creation.*

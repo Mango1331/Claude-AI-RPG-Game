@@ -28,7 +28,7 @@ import { loadPlaywright, launchBrowser, Driver } from './driver.mjs';
 import { llmPlayer, scriptedPlayer, screenText, playerReasoning } from './players.mjs';
 import { loadGuide } from './guide.mjs';
 import { scenarioById, scenarioGuide, scenarioMismatch } from './scenarios.mjs';
-import { evaluate, finished, nextMilestone, turnOutcome, turnFailure, softExtractionFailure, driverFailure, failureEnd, settled, openMilestones } from './evaluator.mjs';
+import { evaluate, finished, nextMilestone, turnOutcome, turnFailure, softExtractionFailure, driverFailure, failureEnd, settled, openMilestones, startRecordProblem } from './evaluator.mjs';
 import { parseCalls } from './calls.mjs';
 import { readChatJsonl, eventsLog, jsonl, secretScan } from './export.mjs';
 import { buildReport } from './report.mjs';
@@ -293,6 +293,13 @@ export async function run(o) {
             await driver.screenshot(g.check(path.join(runDir, 'screens', 'greeting-no-campaign.png')));
             log('no campaign at the greeting: noted; the engine starts it with the first message');
         } else log(`campaign started in chat "${opened.chatId}"`);
+        // hotfix .137: a hidden or inconsistent start record stops the run before the first player turn (it would stop
+        // every turn: CAMPAIGN START HIDDEN), with the greeting and its record exported
+        if (opened.started && !o.fixture) {
+            validationContent ||= await loadContentPack(async name => JSON.parse(fs.readFileSync(path.join(ENGINE,'content',name),'utf8')));
+            const problem = startRecordProblem(await driver.chat(), validationContent);
+            if (problem) { end = { kind: 'integrity_failed', why: `campaign start before turn 1: ${problem}`, turn: 0 }; log(`stopped: ${end.why}`); throw new Error('stop'); }
+        }
 
         if (o.fixture) {
             await driver.installFixture(await makeClassFixture(o.fixture, seed, setup.card));
@@ -365,6 +372,11 @@ export async function run(o) {
             const priorChat = chat;
             chat = await driver.chat();
             if (!(chat[0]?.extra?.avereth?.events || []).some((e) => e.t === 'campaign.started')) { end = { kind: 'ui', why: `the engine started no campaign, neither at the greeting nor with the message of turn ${turn}` }; break; }
+            if (turn === 1) {
+                validationContent ||= await loadContentPack(async name => JSON.parse(fs.readFileSync(path.join(ENGINE,'content',name),'utf8')));
+                const problem = startRecordProblem(chat, validationContent);
+                if (problem) { end = { kind: 'integrity_failed', why: `campaign start after turn 1: ${problem}`, turn }; break; }
+            }
             // Patch 8.4.1: a story turn needs the narrator's story; a command's System answer or the engine's own one is
             // a turn of its own kind. The Driver has waited for Host recovery;
             // the runner itself starts no swipe/regenerate and preserves terminal failures.

@@ -202,3 +202,65 @@ Gegenfälle, die grün bleiben oder werden müssen: Preis + Geldbestand (333) �
 - **Streichen:** Sols P2 „mehrsätziger Belegfix T149“. **Unverändert lassen:** XP-Kurve, Balance und Bewegungs-/Anwesenheitsregeln. Einverstanden mit §4: Progression über die Boardwahl statt XP-Erhöhung.
 
 **Gesamturteil:** Sols Review ist sorgfältig belegt. Zahlen, Fold und die T58-Ursache stimmen, und die Kernempfehlung (gemeinsame kontextbezogene Betragsprüfung statt einzelner Formulierungsfixes) ist richtig. Korrekturen: (1) Die Plattenschleife beginnt mit zwei Fehlablehnungen in `tradePrice`, der Fix muss also dessen Lesart schärfen und nicht nur den Fallback entfernen. (2) T50 ist ein echtes Abbuchungsrisiko. (3) T149 ist ein Identitätsfehler des Extractors mit irreführender Begründung, keine Fehlablehnung der Engine. (4) Die allgemeine Consent-Rückfrage verdeckt die Ursache und gehört als kleine P2 dazu.
+
+## 8. Sol – abschließende Gegenbewertung beider Reviews (31.10.2026)
+
+**Maßgebliche Zusammenführung vor dem nächsten Fachpatch; keine Implementierung.** Grundlage: Claudes [Gegenreview auf `4cce085`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/4cce08549d904e0140c30fac736f2a24ab13347e), die bereits geprüfte Original-ZIP und unveränderter Produktstand **.137 / `5124373`**. Ich habe die Originalrecords #106/#110/#116/#218 erneut read-only mit `applyWorld()` auf ihrem jeweils gefalteten Vorzustand verarbeitet, T149 mit ursprünglicher und korrigierter Personen-ID verglichen sowie T50 mit 200 cp durch `guardCommands()` und `resolveCommands()` verfolgt. Keine neuen Tests, kein Smoke und kein Produktcode geändert. Die früheren Abschnitte bleiben als Reviewverlauf erhalten; die folgenden Korrekturen ersetzen ihre abweichenden Empfehlungen.
+
+### 8.1 Was Claude richtig beziehungsweise besser herausarbeitet
+
+| Punkt | Abschließende Bewertung |
+|---|---|
+| **Preisablehnungen schon T53/T55** | **Übernommen.** Original #106 verwirft das 84-cp-Gebot für zwei gehaltene Stapel; #110 verwirft den 28-cp-Stückpreis wegen eines nachfolgenden `if`. Die Schleife beginnt vor dem falsch gespeicherten 4-cp-Gebot. Nur den späteren allgemeinen Fallback zu entfernen würde diese ersten Fehlablehnungen nicht lösen. |
+| **Mengenfehler am Schleifenanfang** | **Meine Formulierung korrigiert:** T53 hält der PC tatsächlich **7+14=21 Platten**; der Planner nennt dort beide korrekten Objekt-IDs. Erst T55 legt der Planner die gesamten21 auf die ältere Siebener-ID und plant den Kauf vor dem Verkauf. Die Engine lehnt diese konkreten Kommandos korrekt ab. Der Spieler hat mit21 insgesamt keine erfundene Menge genannt. |
+| **T50 bei ausreichendem Guthaben** | **Bestätigt:** Mit200cp lässt der Guard denselben `pay` passieren; die Commandverarbeitung bucht **200→150** an Tam. Das untermauert die bereits von mir gesetzte P1-Priorität. Im Original wurde trotzdem nichts falsch abgebucht; dort verhinderte der Kontostand43cp die Zahlung. |
+| **T149 / Osric** | **Claude hat recht, meine frühere Kausalzuordnung war falsch.** `world.enter` ruft `presenceInReply()` auf, nicht allein `narratedEvent()`. Der aufrufende Pfad findet zulässige einzelne Sätze selbst. Mit `npc.blacksmith` (Osric) wird die Originalankunft bereits akzeptiert; mit `npc.npcsmith` (anderer Schmied) zu Recht nicht. Ich hatte aus der isolierten Hilfsfunktionssonde zu viel abgeleitet. |
+| **Irreführende Fehlgründe** | **Übernommen.** T149 meldet „spoken“, obwohl die falsche Identität entscheidend ist. Beim Kristall werden teils bereits gebuchte Erlöse behauptet, obwohl der konkrete Splitter nie verkauft wurde. Die Buchung kann korrekt verweigert und ihre Erklärung trotzdem sachlich falsch sein. Keine bezahlten Vorgänge erfinden, um den Erklärungstext nachträglich wahr zu machen. |
+| **Verdeckter Preiswiderspruch im Planner-Fallback** | **Übernommen, mit Erhalt des Fallbacks.** `runtime.planMessage()` ersetzt nach erfolglosem Repair den konkreten Zustimmungskonflikt durch „Do you buy or sell ...?“. Dadurch wird aus einem Preiswiderspruch scheinbar eine fehlende Bedienangabe. |
+| **XP und höhere F-Angebote** | **Unverändert bestätigt.** 7.590XP korrekt, L12+990; L8–11/L12–14 sichtbar angeboten, nicht gewählt. Kein neuer Beleg für eine notwendige pauschale XP-Erhöhung. |
+
+**Damit entfällt ausdrücklich der in §6 vorgeschlagene mehrsätzige Belegfix.** Auch die dortige Invariante6 ist zu ersetzen: Mit der richtigen Identität muss der Originalbeleg funktionieren (tut er auf.137 bereits), mit der falschen bleibt er abgewiesen. Keinen neuen allgemeinen Narrations-/Bewegungsfilter und keine automatische Zusammenführung gleichartiger Schmiede einbauen.
+
+### 8.2 Runner-Fallbacks: beabsichtigte Bedienhilfe erhalten
+
+Die Rückfragen und sicheren Fortsetzungen wurden bewusst eingeführt, weil der LLM-Testspieler Bedienkonventionen schlechter erkennt und verfolgt als ein menschlicher Spieler. Ein reiner Zustimmungskonflikt soll deshalb nicht zur terminalen Plannerstörung werden. Die bestehenden Batch2-Regressionen dokumentieren genau diesen Zweck, einschließlich eines leeren, ungültigen oder fehlgeschlagenen Repairs.
+
+**Claudes Kritik trifft die verlorene Information, nicht die Existenz dieser Hilfe.** Die richtige Verbesserung ist:
+
+- Keine abgelehnten Kommandos ausführen, keine zusätzliche Zahlung und keine zusätzlichen Modellversuche einführen.
+- Bei bekanntem Konflikt den **mechanischen Sachverhalt** nennen: beispielsweise „Das gespeicherte Gebot beträgt4cp für14 Platten; du akzeptierst56cp. Nichts wurde übertragen. Lass das Gebot korrigieren oder wähle einen anderen Händler.“ Ein echter Preisfehler wird damit sichtbar statt zum Wortlautproblem.
+- Bei tatsächlich unbekannter Ware, Person oder Menge bleibt die allgemeine Rückfrage sinnvoll. Nicht bloß interne JSON-Felder, Stacktraces oder `agreed_cp`-Validierungstexte an den Spieler durchreichen.
+- Die vorhandene Grenze zur sicheren Klärung und die Mehraktionssicherung erhalten: Aus einem verworfenen Plan dürfen auch Reise, Schlaf oder Nebenkommandos nicht versehentlich ausgeführt werden.
+
+Das ist eine begrenzte Verbesserung der bestehenden Hilfe. Eine neue Retry-Schleife, ein allgemeiner neuer Assistent oder das Entfernen des Fallbacks sind nicht gerechtfertigt. Ebenso bleibt die vorhandene Empfehlung an den LLM-Spieler richtig, nach wiederholtem unverändertem optionalem Stillstand einmal zu prüfen und dann weiterzuziehen. Ein weiterer großer Promptblock ist aus diesem Lauf nicht abzuleiten.
+
+### 8.3 Wo Claudes Preisvorschläge enger gefasst werden sollten
+
+**Gemeinsame Richtung angenommen:** Ein fachlich zusammenhängender Fix an `tradePrice()`/`evidenced()` und der zugehörigen Betragsprüfung, nicht Einzelwörter für jede Ware ergänzen. Speicherung und spätere Zustimmung müssen dieselbe Preisbedeutung verwenden. Stückpreis, Gesamtpreis, Umrechnung und Geldbestand sind verschiedene Rollen; ein ungelöstes Handelsproblem darf nicht anschließend zum allgemeinen scheinbar sicheren Teilbetrag werden.
+
+Vier Grenzen sind dabei wichtig:
+
+1. **Bedingungen sind nicht nur dann relevant, wenn sie einen anderen Betrag nennen.** Claudes entsprechende Regel aus §7.3 ist zu weit. „Four copper each, if the appraiser approves“ nennt keinen Alternativbetrag und kann trotzdem noch keine verbindliche Käuferzusage sein. T55 betrifft dagegen eine Wahl zwischen Münze und Gutschrift; bei tatsächlicher Zustimmung zum Barverkauf lässt sich diese Bedingung erfüllen. Betrag, Kaufzusage und erfüllte Bedingung unterscheiden; keine allgemeine `if`-Sperre, aber auch keine pauschale Freigabe aller Bedingungen ohne zweiten Preis. Dafür kein neues Kredit-/Schuldenbuch entwickeln.
+2. **Keine neue dauerhafte Pflicht, jede Gesamtsumme nochmals auszusprechen.** Dass24/6/4 für verschiedene Waren in T26 aktuell ungeklärt bleiben, ist kein dringender weiterer Bug und rechtfertigt keine Nebenbaustelle. Es ist aber keine verbindliche Gameplayentscheidung, dass eindeutig zugeordnete Einzelpreise niemals addiert werden dürfen. Bei verschiedenen Waren niemals deren Gesamtstückzahl mit nur einem Stückpreis multiplizieren. T53 betrifft zwei gleichartige Stapel,7 und14; die Original-IDs und Mengen erhalten, nicht21 Einheiten auf eine Siebener-ID legen. Der nächste Fix darf eine klar genannte Gesamtsumme nicht wegen der Mehrstapeligkeit verlieren.
+3. **Nicht jeden Ordinal- oder Zahlbezug nach einer Währung als unvollständigen Betrag behandeln.** T109 „then a fourth added“ verändert die übergebene Summe. „Three copper, then he visits the fourth stall“ tut das nicht. Der sichere Umfang ist der tatsächliche Betrags-/Übergabebeleg; bei erkannter, aber nicht aufgelöster Ergänzung sichtbar ungeklärt statt still3 buchen. Einen allgemeinen englischen Rechen- oder Satzinterpreter braucht Avereth nicht.
+4. **Ein Paketpreis darf bewusst vom Stückpreis abweichen.** Bloßer widersprüchlicher Rechenbefund ist ungeklärt; eine ausdrücklich vereinbarte und vom Spieler angenommene abweichende Paketsumme bleibt erlaubt. Keine neuen Preisregeln, keine Pflicht-Rückfrage bei konsistenten Angaben, keine Umwertung bereits gespeicherter Käufe oder archivierter Events.
+
+Die vorhandenen `coinEvidence`-Token und `tradePrice`-Ergebnisformen sind geeignete Ansatzpunkte. Nicht vorsorglich ein universelles Preisframework, neue Pflichtfelder oder eine globale Neuinterpretation sämtlicher Geldvorgänge einführen. T109 ist als eigenständiger Geldübergabefall innerhalb desselben Fachpakets zu schützen; Handelslogik darf nicht wahllos Geschenke oder Guild-Auszahlungen verändern.
+
+### 8.4 Extractor: bestehende Regeln gezielt wirksam machen
+
+Claudes Empfehlung zu Verkauf versus Geschenk ist richtig, aber **die Grundregel steht bereits in `extract.js:127–128`**: Verkaufspreis als `bid`, `expected.sold` nur Zusammenfassung, kein unabhängiger Geldzugang. Eine bloße Wiederholung als weiterer langer Promptabsatz wäre kein belastbarer Ursachenfix.
+
+Sinnvoll zu prüfen ist eine kurze eindeutige Abgrenzung zu `coin.gift` und die bestehende lokale semantische Reparatur. Bei eindeutigem aktuellem Verkauf, als verkauft gemeldeten gehaltenen Waren und fehlendem passenden Gebot soll der Extractor gezielt das richtige Handelsdelta nachliefern. **Keine automatische Umwandlung eines Geschenks in einen Verkauf**, keine erfundenen Objektmengen und kein zweites Ausführen des Spielerzugs. Eine eigenständige Dankeszahlung neben einem Verkauf bleibt möglich. Vorhandene begrenzte Repair-/Failsoft-Wege verwenden; unabhängige gültige World-Deltas dürfen daran nicht erneut komplett scheitern.
+
+Bei Osric ist die richtige vorhandene ID zu verwenden. Das verlangt keine Lockerung von NPC-Anwesenheit und keinen neuen Identitätsunterbau. Genauere Ablehnungsgründe helfen hier der nächsten Modellentscheidung; sie ersetzen nicht die Preis- oder Referenzkorrektur.
+
+### 8.5 Abschließende Priorität und Abnahmegrenze
+
+**Ein nächster begrenzter Finanzpatch** sollte zusammenhängend abdecken: Originale #106/#110/#116, klare Preiszustimmung und Mengen je Objekt, T109-Vollständigkeit, T50 mit ausreichendem Guthaben sowie die konkrete statt allgemeine Zustimmungserklärung. Die Erklärung ist im Schleifenfall praktisch wichtiger als ein nur kosmetisches P3-Thema, erfordert aber keine neue Mechanik. Verkaufs-/Geschenktrennung gezielt an bestehender Validierung/Repair mitprüfen, ohne den Umfang in einen allgemeinen World-Umbau auszuweiten.
+
+**Nicht aufnehmen:** den zurückgenommenen T149-Belegfix, allgemeine neue NPC-/Bewegungsfilter, zusätzliche unbeschränkte Retries, veränderte XP/Startwerte/PP/Preise, B2/E oder eine neue Kredit-/Tauscharchitektur. Die Originaldaten bleiben unverändert.
+
+Für die spätere Implementierung: gezieltes Rot/Grün mit den Originalvorzuständen, Kontrollen für gleichwertige Währungen, mehrere klar getrennte Artikel, echte Preisalternativen, erfüllte/nicht erfüllte Bedingungen, Paket-/Einzelkauf, ausdrückliche Geschenke und sichere Fortsetzung. Gespeicherte Ereignisse müssen weiterhin identisch faltbar sein; ein korrigiertes erneutes Verarbeiten einer Originalantwort darf dagegen begründet andere Events ergeben. **Nur diese einzeln geprüften Änderungen** als erwartete Replay-/Fingerprint-Abweichungen akzeptieren, keine pauschale Neuerzeugung aller Vergleichswerte.
+
+**Schlussentscheidung:** Claudes Gegenreview verbessert die Ursachenanalyse wesentlich und korrigiert meinen T149-Befund. Die Hilfen für den LLM-Spieler bleiben sinnvoll. Verbessert werden müssen die zugrunde liegende Preisbedeutung und die Ehrlichkeit der konkreten Rückmeldung; weder weniger Zustandsautorität noch weitere Schichten sind dafür erforderlich. Der nächste Schritt ist der ausdrücklich freizugebende Fachpatch, nicht eine weitere allgemeine Reviewrunde.

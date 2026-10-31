@@ -112,3 +112,16 @@ Nachweise:
 - Die Ausführungsumgebung fiel zwischenzeitlich aus. Nach Wiederherstellung Änderungen erneut geprüft, Rotnachweis gegen separate unveränderte .133-Arbeitskopie und vollständige Node-/Replayprüfung erfolgreich wiederholt.
 - Echte ST-Standard- und Failsoft-Smokes erneut versucht: beide vor Szenariostart am weiterhin fehlenden Chromium-Headless-Shell blockiert. **Keine .134-ST-Abnahme, keine Livefreigabe.** Kein Produktworkaround, keine Browser-/Hoständerungen.
 - Build .134; Extractor/Delta/Narrator-Protokolle unverändert, kein Kartenupdate. Keine weiteren Pakete oder natürlichen Batches begonnen. Nach Veröffentlichung Stopp für Gegenreview.
+
+## Einzelkauf-QoL-Korrektur .135
+
+Basis `3c33350` (.134). Enger Randfall in `trade.selectionWhy()`: „I'll buy the sword. The armor is too expensive.“ wurde als Bestellung beider Artikel behandelt.
+
+- Auswahlpflichten und Auswahlzulässigkeit werden nun aus den Kaufsätzen ermittelt, statt jede Erwähnung im gesamten Zitat als Bestellung zu zählen. Ein separater Kommentar vor oder nach dem Kaufsatz fügt keinen Artikel hinzu.
+- Die vorhandenen Artikelwörter und Ausschlussregeln bleiben maßgeblich. Reine Artikellisten behalten ihren bisherigen Abgleich. Kurze Ergänzungen wie „The armor, please.“ oder „The armor too.“ bleiben Teil der Bestellung; eine echte unvollständige Auswahl wird weiter abgewiesen.
+- Kein neuer Warenkatalog, kein Negativwortfilter für „expensive“, kein neuer Kaufablauf. Geld-/Preis-/Mengenprüfung, Buchung, Protokolle und Narratorkarte unverändert.
+- Sieben zusätzliche Regressionen in `tests/v4/d134_review.test.js`: auf unverändertem .134 vier rot/drei positive Kontrollen; einschließlich der neun .134-Tests zunächst **4/16 rot**, danach **16/16 grün**. Echter Handlerfall bucht exakt140cp und ein Schwert, keine Rüstung. Gegenfälle prüfen ungewolltes Hinzufügen der Rüstung, Kauf in mehreren Sätzen, kurze Ergänzungen und reine Artikellisten.
+- Angrenzende Review-/Gear-/Failsoft-Suiten **60/60**, vollständiges `npm test -- --test-concurrency=4` **2518/2518**, keine Auslassungen.
+- Vollständiger `npm run replay:check`: **2235 Fälle, unveränderte190 exakt akzeptierte Fingerprints, null offen, null stale**. Baseline und C-/D-Fingerprintdateien unverändert. `git diff --check` grün.
+- Bisherige echte ST-Abnahme weiterhin offen; dieser reine Auswahlfix ändert keine Host-/Protokollschnittstelle. Kein neuer ST-Erfolgsnachweis behauptet.
+- Build .135. Keine weiteren Pakete, Balanceänderungen oder natürlichen Batches begonnen; Stopp nach Veröffentlichung.

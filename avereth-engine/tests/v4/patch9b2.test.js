@@ -201,18 +201,19 @@ test('9B-2 C: a cost reduction acts once, only on its resource and tag, rounded 
     const g = hero('Rogue', 'Guarded Cut + Evasive Step');
     setProf(g, 'rogue.guarded_cut', 4);
     grant(g, THRIFT);
-    // Guarded Cut (Precision, 8 STA) at P4: 8 × 0.925 × 0.90 = 6.66 → 7 (two roundings would give 6)
-    assert.match(panel(g, '#skills'), /Guarded Cut .* Cost 7 STA \(base 8\)/);
+    // Guarded Cut (Precision, 8 STA) at P4: 8 × 0.925 × 0.90 = 6.66 → 7, one rounding. B1 (.130): the current rule
+    // keeps a mastery that rounding would lose (the reduction alone is 8 × 0.90 = 7.2 → 7): one less, 6
+    assert.match(panel(g, '#skills'), /Guarded Cut .* Cost 6 STA \(base 8\)/);
     assert.match(panel(g, '#skills'), /Evasive Step .* Cost 5 STA\n/, 'Mobility/Defense: not Precision');
     assert.match(panel(g, '#skills'), /Basic Attack .* Cost 5 STA/, 'Precision: 5 × 0.90 = 4.5 → 5');
     spawn(g, 'mon.boar', { anchor: 'boar', hp: 500 });
     const ctx = fight(g, ['mon.boar']);
     const cut = attackAction(ctx, 'pc', 'mon.boar', 'rogue.guarded_cut');
-    assert.equal(cut.cost.amount, 7);
+    assert.equal(cut.cost.amount, 6);
     assert.equal(skillAction(ctx, 'pc', 'rogue.evasive_step', { dir: 'closer' }).cost.amount, 5);
-    assert.match(renderHud({ ...g.state, encounter: ctx.enc }, content), /Guarded Cut[^·]*7 STA/);
+    assert.match(renderHud({ ...g.state, encounter: ctx.enc }, content), /Guarded Cut[^·]*6 STA/);
     // a reduction of MP lowers no STA cost; more reductions are capped (Patch 9C-2c: at the shared 30% in total)
-    const h = hero('Rogue', 'Piercing Thrust + Feint');
+    const h = hero('Rogue', 'Piercing Thrust + Fan of Blades'); // B1 (.130): the current starter pool (Feint's slot)
     grant(h, { ...THRIFT, id: 'dyn.passive_mana_thrift', name: 'Mana Thrift', effects: [{ kind: 'cost_reduction', resource: 'mp', pct: 10 }] });
     assert.match(panel(h, '#skill Piercing Thrust'), /Cost: 9 STA\n|Cost: 9 STA \|/);
     grant(h, THRIFT, { ...THRIFT, id: 'dyn.passive_breath', name: 'Breath', effects: [{ kind: 'cost_reduction', resource: 'sta', pct: 10 }] },

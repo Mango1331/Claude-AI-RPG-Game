@@ -17,7 +17,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadContent, ROOT, cumulativeXp } from '../helpers.js';
-import { answerOf } from './replay_lib.js';
+import { answerOf, settledLand } from './replay_lib.js';
 import { Chat4 } from './harness.js';
 import { validateState } from '../../src/validate.js';
 import { parseIntent } from '../../src/intent.js';
@@ -34,7 +34,7 @@ const QUEST = 'quest.bog_striders_in_the_reed_flats';
 const striders = (s) => Object.values(s.entities).filter((e) => e.kind === 'creature' && e.species === 'bog strider');
 
 async function replay() {
-    const g = new Chat4(content, { seed: fx.seed, greeting: fx.greeting, listings: fx.listings });
+    const g = settledLand(new Chat4(content, { seed: fx.seed, greeting: fx.greeting, listings: fx.listings }));
     for (const m of fx.creation) await g.player(m);
     const at = {};
     const problems = [];

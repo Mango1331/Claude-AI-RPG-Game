@@ -16,7 +16,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadContent, ROOT } from '../helpers.js';
-import { answerOf } from './replay_lib.js';
+import { answerOf, settledLand } from './replay_lib.js';
 import { Chat4 } from './harness.js';
 import { validateState } from '../../src/validate.js';
 import { routeTurn } from '../../src/v4/turn.js';
@@ -30,7 +30,7 @@ const ACCEPT = [{ seq: 1, type: 'quest.accept', quest: Q, quote: 'i take the Cul
 const events = (g, i) => g.chat[i]?.extra?.avereth?.events || [];
 
 async function replay() {
-    const g = new Chat4(content, { seed: fx.seed, greeting: fx.greeting, listings: fx.listings });
+    const g = settledLand(new Chat4(content, { seed: fx.seed, greeting: fx.greeting, listings: fx.listings }));
     for (const m of fx.creation) await g.player(m);
     const at = {};
     const problems = [];

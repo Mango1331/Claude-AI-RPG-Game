@@ -243,7 +243,7 @@ export function learnSkill(state, content, who, skillId, why = null) {
 /** The PP one promotion of this Skill takes (Core #5: C1 75, C2 100, C3 150; a Skill without one is C1). */
 export function promotionPp(content, skill, state = null) {
     const c = [1, 2, 3].includes(skill?.complexity) ? skill.complexity : 1;
-    return (state?.meta?.f_balance ? content.rules.f_balance.promotion_progress : content.rules.proficiency.promotion_progress)[String(c)];
+    return content.rules.f_balance.promotion_progress[String(c)];
 }
 
 /** Core #5: the single highest Class Affinity of his class for the Skill's tags (otherwise the class's otherwise, 1). */
@@ -365,13 +365,11 @@ export function noteUse(ctx, r) {
     if (r.kind === 'attack' && (r.strikes || []).some((s) => hostile(s.target))) {
         pp.used[skill.id] ||= 'an attack on a foe';
         // Keep the actual target qualification, not the trimmed encounter log or a strong spectator.
-        if (ctx.state.meta.f_balance) {
-            const below = ctx.content.rules.proficiency.award?.challenge?.levels_below ?? 2;
-            const worthy = r.strikes.some(s => hostile(s.target)
-                && (enc.combatants[s.target].fixed.level ?? 0) >= enc.combatants.pc.fixed.level - below);
-            const offense = (pp.offense ||= {});
-            offense[skill.id] = offense[skill.id] === true || worthy;
-        }
+        const below = ctx.content.rules.proficiency.award?.challenge?.levels_below ?? 2;
+        const worthy = r.strikes.some(s => hostile(s.target)
+            && (enc.combatants[s.target].fixed.level ?? 0) >= enc.combatants.pc.fixed.level - below);
+        const offense = (pp.offense ||= {});
+        offense[skill.id] = offense[skill.id] === true || worthy;
     } else if (r.kind === 'skill') {
         const kinds = (skill.effects || []).map((e) => e.kind);
         if (kinds.includes('reposition') && r.reposition) pp.used[skill.id] ||= 'a step that moved him';
@@ -463,7 +461,7 @@ export function fightProgress(state, content, enc) {
     const after = { ...sheet, skills: { ...sheet.skills } };
     const view = { ...state, entities: { ...state.entities, pc: { ...state.entities.pc, sheet: after } } };
     for (const [sid, why] of Object.entries(enc.pp.used)) {
-        const offense = state.meta.f_balance ? enc.pp.offense?.[sid] : undefined;
+        const offense = enc.pp.offense?.[sid];
         // Historical snapshots without this evidence and defensive/utility uses retain the old gate.
         if (offense !== undefined ? !offense || !won : !qualified) continue;
         const skill = skillOf(content, sid, state);

@@ -53,7 +53,8 @@ test('Run21 habitat kills count once through movement, replay and reload; fixed 
 
 test('Run21 habitat guard preserves true Dungeons, foreign species, explicit weak levels and existing profiles', () => {
     const base = world(f.world[1]).state;
-    for (const variant of ['true dungeon', 'foreign species', 'elsewhere', 'explicit weak', 'already fixed', 'legacy']) {
+    for (const variant of ['true dungeon', 'foreign species', 'elsewhere', 'explicit weak', 'already fixed']) {
+        // B1 (.130): a campaign without the F flags is no variant of its own any more (refused by its start build)
         const s = copy(base), id = 'mon.guard_probe';
         const e = { id, kind: 'creature', species: 'gray wolf', anchor: 'wolf', met_at: site, status: 'alive' };
         if (variant === 'true dungeon') s.places[site].dungeon = { real: true, rank: { min: 'F', max: 'F' }, levels: {}, hidden: [], heard: [] };
@@ -61,7 +62,6 @@ test('Run21 habitat guard preserves true Dungeons, foreign species, explicit wea
         if (variant === 'elsewhere') e.met_at = 'loc.barrowford';
         if (variant === 'explicit weak') e.level = 1;
         if (variant === 'already fixed') e.profile = copy(s.entities['mon.monfeeding_gray_wolf'].profile);
-        if (variant === 'legacy') delete s.meta.f_progression;
         s.entities[id] = e;
         const before = copy(e.profile);
         materialise(s, content, Dice.from(s), on(s), id);

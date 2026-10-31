@@ -236,6 +236,9 @@ test('patch 4 (21, 22, 23): a group fight pays each kill once, loots each body o
     await say(g, '*i wait and watch*');
     await g.reply('Three wolves come at him; the fourth hangs back.', rush({ [W[0]]: 'ENGAGED', [W[1]]: 'SHORT', [W[2]]: 'LONG' }, [W[0], W[1], W[2]]));
     await say(g, '*i flame lance it*', LANCE(W[0]));
+    // B1 (.130): the historical run is evaluated under the current rules (its wolves take the quarry's area levels);
+    // the Defeat XP each wolf locked at the fight's start is what a kill pays
+    const locked = Object.fromEntries(W.map((id) => [id, g.state().encounter?.combatants[id]?.fixed.defeat_xp]));
     await g.reply('Wolf C breaks and runs.', { expected: {}, deltas: [{ seq: 1, type: 'intent', who: W[2], intent: 'flee' }] });
     let ended = null;
     for (let n = 0; n < 6 && g.state().encounter; n++) {
@@ -254,7 +257,8 @@ test('patch 4 (21, 22, 23): a group fight pays each kill once, loots each body o
     assert.equal(s.entities[W[2]].fled?.encounter !== undefined, true, 'driven off, not dead');
     assert.equal(xp, ended.xp_awarded, 'once');
     assert.deepEqual(dead.slice().sort(), [W[0], W[1]], 'A and B killed');
-    assert.equal(ended.xp_awarded, 2 * content.rules.xp.base_per_level * content.rules.xp.reward_multiplier, 'each kill its locked configured Defeat XP, the runner none');
+    assert.ok(locked[W[0]] > 0 && locked[W[1]] > 0 && locked[W[2]] > 0, JSON.stringify(locked));
+    assert.equal(ended.xp_awarded, locked[W[0]] + locked[W[1]], 'each kill its locked configured Defeat XP, the runner none');
     const pelts = Object.values(s.objects).filter((o) => o.holder?.entity === 'pc' && /wolf pelt/i.test(o.name)).reduce((a, o) => a + (o.qty ?? 1), 0);
     assert.equal(pelts, dead.length, 'one pelt per body, no doubles');
     const tally = defeatTally(s, content, s.quests['quest.wolves'])[0];

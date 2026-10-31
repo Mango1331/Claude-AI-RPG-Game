@@ -27,7 +27,7 @@ const GREETING = 'SYSTEM INITIALIZATION COMPLETE\n`Location: Public roadside ver
 async function campaign() {
     const g = new Chat4(content, { greeting: GREETING });
     await g.player('Mage');
-    await g.player('Flame Lance + Arcane Burst');
+    await g.player('Flame Lance + Arcane Wave');
     const ask = g.llm;
     g.purposes = [];
     g.llm = async (req) => {

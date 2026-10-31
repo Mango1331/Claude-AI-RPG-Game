@@ -77,10 +77,14 @@ test('9C-1 A: a competent teacher who sold him lessons, two days of booked lesso
     assert.match(runCommands(g.state(), content, '#skills').panels.join('\n'), /LEARNING:\n- learn\.1: Fire bolt \(Arcane\) from Mira · 60\/100 LP/);
     assert.equal(sheetOf(g).skills['dyn.ember_bolt'], undefined, 'no Skill before the learning is complete');
     await reply(g, 'She shows him the shape of it.');
-    // the same day: its claim is spent; the time passes, nothing more is credited
+    // B1 (.130): the current daily teacher ceiling (F balance) is 60: two more hours the same day reach it (60 × 1.5);
+    // then its claim is spent; the time passes, nothing more is credited
     await train(g, '*i keep training with Mira for two more hours*', { minutes: 120, learn: 'learn.1', teacher: 'npc.mira' });
-    assert.equal(goalOf(g).lp, 60);
-    assert.match(outcomeOf(g).engine_lines.join('\n'), /\+0 LP → 60\/100 \(today's learning is used up\)/);
+    assert.equal(goalOf(g).lp, 90);
+    await reply(g);
+    await train(g, '*i keep training with Mira for two more hours*', { minutes: 120, learn: 'learn.1', teacher: 'npc.mira' });
+    assert.equal(goalOf(g).lp, 90);
+    assert.match(outcomeOf(g).engine_lines.join('\n'), /\+0 LP → 90\/100 \(today's learning is used up\)/);
     await reply(g);
     await sleepTillMorning(g);
     const r = await train(g, '*i train with Mira for two hours again*', { minutes: 120, learn: 'learn.1', teacher: 'npc.mira' });
@@ -112,7 +116,8 @@ test('9C-1 B: a non-offensive technique from a guard who promised to teach him (
     person(g, 'npc.brannoc', 'guard', { name: 'Brannoc', cls: 'warrior', consent: 'fact' });
     assert.ok(['Defense', 'Martial'].every((t) => teacherTags(g.state(), content, 'npc.brannoc').includes(t)), 'a trained Warrior teaches what his class favours');
     await train(g, '*i drill the guard stance with Brannoc for three hours*', { minutes: 180, learn: 'guard', teacher: 'npc.brannoc' });
-    assert.deepEqual([goalOf(g).target.tags, goalOf(g).source.basis, goalOf(g).lp], [['Defense'], 'fact', 50], 'the day\'s cap 40 × Warrior Defense 1.25 = 50');
+    // B1 (.130): the current daily teacher ceiling (F balance) is 60
+    assert.deepEqual([goalOf(g).target.tags, goalOf(g).source.basis, goalOf(g).lp], [['Defense'], 'fact', 75], 'the day\'s cap 60 × Warrior Defense 1.25 = 75');
     await reply(g);
     await sleepTillMorning(g);
     await train(g, '*i drill the stance with Brannoc for three more hours*', { minutes: 180, learn: 'learn.1', teacher: 'npc.brannoc' });
@@ -238,8 +243,13 @@ test('9C-1 F: split sessions give what one long one gives; teacher time and own 
     // own practice the same day, the teacher gone: counted apart, at the own rate, inside the day's cap
     inject(split, [{ t: 'scene.left', d: { id: 'npc.mira' } }]);
     await train(split, '*i practise the fire bolt on my own for an hour*', { minutes: 60, learn: 'learn.1' });
-    assert.deepEqual(goalOf(split).days[0], { teacher: 120, self: 60, lp: 60 }, 'min(40, 40 + min(20, 10)) × 1.5 = 60: the teacher cap holds');
-    assert.match(outcomeOf(split).engine_lines.join(' '), /on his own: 60 min, \+0 LP/);
+    // B1 (.130): the current daily ceilings (F balance) are teacher 60 and own practice 40
+    assert.deepEqual(goalOf(split).days[0], { teacher: 120, self: 60, lp: 75 }, 'min(60, 40 + min(40, 10)) × 1.5 = 75');
+    assert.match(outcomeOf(split).engine_lines.join(' '), /on his own: 60 min, \+15 LP/);
+    await reply(split);
+    await train(split, '*i practise the fire bolt on my own for three hours*', { minutes: 180, learn: 'learn.1' });
+    assert.deepEqual(goalOf(split).days[0], { teacher: 120, self: 240, lp: 90 }, 'min(60, 40 + min(40, 40)) × 1.5 = 90: the teacher cap holds');
+    assert.match(outcomeOf(split).engine_lines.join(' '), /on his own: 180 min, \+15 LP/);
     await reply(split);
     // over midnight: each day its own claim
     const late = await campaign(content, { cls: 'Mage', skills: 'Arcane Bolt + Arcane Ward' });
@@ -392,9 +402,10 @@ test('9C-1 K: a legacy campaign learns nothing this way (an ordinary training); 
 
 // ------------------------------------------------------------------------------------------------ 9C-1 review corrections
 test('9C-1 review: overnight practice adds both daily PP awards sequentially, including a promotion', async () => {
-    for (const initial of [0, 70]) {
+    // B1 (.130): the current C1 threshold is 50 PP (F balance); 45 is five short of it
+    for (const initial of [0, 45]) {
         const g = await campaign(content, { cls: 'Mage', skills: 'Arcane Bolt + Arcane Ward' });
-        if (initial) inject(g, [{ t: 'skill.progress', d: { id: 'pc', skill: 'mage.arcane_bolt', gained: initial, from: { prof: 1, pp: 0 }, to: { prof: 1, pp: initial }, need: 75, why: 'test precondition' } }]);
+        if (initial) inject(g, [{ t: 'skill.progress', d: { id: 'pc', skill: 'mage.arcane_bolt', gained: initial, from: { prof: 1, pp: 0 }, to: { prof: 1, pp: initial }, need: 50, why: 'test precondition' } }]);
         await say(g, '*i wait until late at night*', ACT('wait', { minutes: 1380 - clockOf(g) }));
         await reply(g);
         await train(g, '*i practise my arcane bolt for two hours*', { minutes: 120, learn: 'mage.arcane_bolt' });
@@ -411,6 +422,10 @@ test('9C-1 review: a multi-day lesson earns the same LP and Skill as the same ti
     async function lessons(parts) {
         const g = await campaign(content, { cls: 'Warrior', skills: 'Heavy Slash + Charge' });
         person(g, 'npc.mira', 'hedge_mage', { cls: 'mage', consent: 'fact' });
+        // B1 (.130): under the current daily ceiling (60) the lesson starts at 23:00, so that its three calendar days
+        // (20 + 60 + 20 LP) all count before the goal completes
+        await say(g, '*i wait until late at night*', ACT('wait', { minutes: 1380 - clockOf(g), quote: 'i wait until late at night' }));
+        await reply(g);
         for (const minutes of parts) {
             await train(g, '*i train the force bolt with Mira for a long time*', { minutes, learn: goalOf(g) ? 'learn.1' : 'bolt', teacher: 'npc.mira', tags: ['Control'] });
             await reply(g);
@@ -418,7 +433,7 @@ test('9C-1 review: a multi-day lesson earns the same LP and Skill as the same ti
         return g;
     }
     const one = await lessons([2880]);
-    const split = await lessons([900, 1440, 540]);
+    const split = await lessons([60, 1440, 1380]);
     assert.equal(clockOf(one), clockOf(split));
     assert.equal(goalOf(one), undefined, 'all three calendar days count before the ledger is trimmed');
     assert.ok(sheetOf(one).skills['dyn.binding_bolt']);

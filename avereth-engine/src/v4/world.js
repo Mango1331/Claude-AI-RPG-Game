@@ -487,8 +487,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // 4.3.0-c.6.6.24 (livetest 21.10.2026: "restless skeleton" on the rat body plan, Bite and pelts): a species the
         // content names by one of its body plan's own words ("skeleton") is that body plan, whatever anchor came with it,
         // unless the given anchor's words name the species too
-        if (kind === 'creature' && d.species && s.meta.f_progression) {
-            const population = s.meta.f_progression && !trueDungeonOf(s, s.scene.at) && d.present !== false
+        if (kind === 'creature' && d.species) {
+            const population = !trueDungeonOf(s, s.scene.at) && d.present !== false
                 ? populationAt(s, s.scene.at, d, content, { matchAnchor: false }) : null;
             const anchor = population ? content.anchors.get(population.population.anchor) : speciesAnchor(content, d.species, d.anchor);
             if (anchor) d = { ...d, anchor: anchor.id };
@@ -1462,7 +1462,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
         if (type === 'take' && e.taken === true && !events.some((x) => x.t === 'object.created' && x.d.object.holder?.entity === 'pc') && !events.some((x) => x.t === 'object.moved' && x.d.to?.entity === 'pc')) {
             const name = (auth.takeNames || {})[k];
-            if (name && !isLooseCoin(name)) emit({ t: 'object.created', d: { object: { id: uniqueObjectId(s, tag, name), name, kind: 'item', stack: false, qty: 1, unit: null, ...itemTraits(content, { name, balance: s.meta.f_balance === true }, s.clock.minute), holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'taken' } } } });
+            if (name && !isLooseCoin(name)) emit({ t: 'object.created', d: { object: { id: uniqueObjectId(s, tag, name), name, kind: 'item', stack: false, qty: 1, unit: null, ...itemTraits(content, { name, balance: true }, s.clock.minute), holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'taken' } } } });
         }
         if ((type === 'buy' || type === 'pay') && e.taken_anyway === true) overreach(type === 'buy' ? 'purchase' : 'payment', `the reply had Alaric ${type === 'buy' ? 'take or use what he had not bought' : 'pay'} although he had not agreed`);
         if ((type === 'buy' || type === 'pay') && e.priced === true) {
@@ -2073,7 +2073,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     /** Classification fixes world defaults, never arrival, population replacement or existing creatures. */
     function areaClass(d) {
         const levels = [d.min_level, d.max_level];
-        if (!s.meta.f_progression || rulesetOf(s) < 2 || !validEncounterLevels(content, levels)
+        if (rulesetOf(s) < 2 || !validEncounterLevels(content, levels)
             || !['seen', 'guild'].includes(d.how) || !d.evidence?.trim() || !prose.includes(d.evidence)) {
             reject(d, 'area', 'a fixed F area needs a supported level window and the reply’s actual seen/Guild evidence'); return;
         }
@@ -2284,7 +2284,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (holder.entity === 'pc' && box && s.features[box].status === 'active' && s.features[box].kind === 'obstacle') { reject(d, 'shut_in', `it lies in ${s.features[box].name} (${box}), which is not open yet`); return; }
         const id = uniqueObjectId(s, tag, d.name);
         if (holder.entity === 'pc' && ((auth.take || []).length || auth.gather)) grant('player.take');
-        emit({ t: 'object.created', d: { object: { id, name: String(d.name).slice(0, 80), kind: d.kind, stack: d.kind === 'resource', qty: d.qty ?? 1, unit: d.unit || null, ...itemTraits(content, { ...d, balance: s.meta.f_balance === true }, s.clock.minute), holder, marks: [], for_quests: q ? [q.id] : [], ...(box ? { in: box } : d.in && holder.loc ? { in_name: String(d.in).slice(0, 80) } : {}), source: { turn: s.turn, how: holder.entity === 'pc' ? (((auth.take || []).length || auth.gather) ? 'taken' : 'world_gift') : 'story' } } } });
+        emit({ t: 'object.created', d: { object: { id, name: String(d.name).slice(0, 80), kind: d.kind, stack: d.kind === 'resource', qty: d.qty ?? 1, unit: d.unit || null, ...itemTraits(content, { ...d, balance: true }, s.clock.minute), holder, marks: [], for_quests: q ? [q.id] : [], ...(box ? { in: box } : d.in && holder.loc ? { in_name: String(d.in).slice(0, 80) } : {}), source: { turn: s.turn, how: holder.entity === 'pc' ? (((auth.take || []).length || auth.gather) ? 'taken' : 'world_gift') : 'story' } } } });
         const key = normText(d.name);
         objectsNew.set(key, objectsNew.has(key) ? null : id); // duplicate labels are ambiguous, never last-wins
     }
@@ -2513,7 +2513,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const line = { id: `l${i + 1}`, what: l.what, kind: l.kind, service: l.service ?? null, qty: l.qty ?? 1, price_cp: l.price_cp, ...(l.said !== undefined ? { said: l.said } : {}) };
             // Patch 7.2: a restorative's kind as the extractor gave it (effect), checked by itemProfile (a consumable at all)
             // Patch 9C-2b: a Skill Stone or a manual by what the reply says it teaches (fixed with the line)
-            let profile = line.kind === 'goods' ? itemProfile(content, { name: line.what, balance: s.meta.f_balance === true, effect: l.effect ?? null, teaches: l.teaches ?? null }) : null;
+            let profile = line.kind === 'goods' ? itemProfile(content, { name: line.what, balance: true, effect: l.effect ?? null, teaches: l.teaches ?? null }) : null;
             if (cPath && rulesetOf(s) >= 2 && line.kind === 'goods') {
                 const why = gearOfferWhy(content, l, profile);
                 if (why) {
@@ -2527,7 +2527,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 if (!profile) return { ...line, profile: null };
             }
             if (!profile) return line;
-            const retail = cPath && s.meta.f_balance ? gearRetailPrice(content, profile) : null;
+            const retail = cPath ? gearRetailPrice(content, profile) : null;
             // Repeating an existing bargain never silently reprices that stored contract.
             const existing = openOffers(s).filter(o => !o.bid && o.seller === seller).flatMap(o => o.lines)
                 .find(x => sameWant(line.what, x.what) && sameWant(x.what, line.what)

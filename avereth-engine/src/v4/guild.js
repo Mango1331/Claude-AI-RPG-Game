@@ -123,7 +123,7 @@ function huntTargets(s, content, q, branch = q.source?.branch) {
     }
     const targets = new Set();
     if (q.dungeon) cullPopulation(s, content, q.dungeon, sl => {
-        if (objectives.some(o => cullKind(content, o, { species: sl.species, anchor: sl.anchor, role: sl.role, title: sl.name, yearlings: !!s.meta.f_progression })))
+        if (objectives.some(o => cullKind(content, o, { species: sl.species, anchor: sl.anchor, role: sl.role, title: sl.name })))
             targets.add(`slot:${q.dungeon}:${sl.ref}`);
         return false;
     }, { levels: Number.isInteger(q.floor) ? [q.floor] : levelsNamed(objectives.map(o => o.where || '').join('\n')) });
@@ -234,7 +234,7 @@ export function defeatTally(s, content, q) {
         // 4.1.2 counted creatures only, so five dead bandits made 0 of 5)
         const people = peopleNamed(o.what, content);
         // Patch 8.3: by its kind and its part in a Dungeon's encounter, the rule the board's count was fixed by (cullKind)
-        const kind = (e) => cullKind(content, o, { species: e.species, anchor: e.anchor || e.profile?.anchor, role: e.slot?.role, title: slotNameOf(s, e), name: e.name, yearlings: !!s.meta.f_progression }, same);
+        const kind = (e) => cullKind(content, o, { species: e.species, anchor: e.anchor || e.profile?.anchor, role: e.slot?.role, title: slotNameOf(s, e), name: e.name }, same);
         const counts = (e) => area(e) && (people.size
             ? e.kind === 'npc' && (e.descriptors || []).some((d) => [...peopleNamed(d, content)].some((t) => people.has(t)))
             : e.kind === 'creature' && kind(e));
@@ -578,7 +578,7 @@ export function listingSchema(content) {
     });
 }
 
-const progressive = (s, need) => !!s?.meta?.f_progression && need.c && need.progression && need.rank === 'Novice';
+const progressive = (s, need) => need.c && need.progression && need.rank === 'Novice';
 
 /** Identity is local to the branch's land; an ambiguous or already incompatible place is never overwritten. */
 function habitatPlace(s, need, where) {
@@ -612,7 +612,7 @@ function habitatWhy(s, content, need, l) {
 
 /** Ordinary reusable primers, through the existing canonical offer/purchase path; no free Skill or extra lesson ledger. */
 export function openGuildManuals(s, content, emit, hall) {
-    if (!s.meta.f_progression || deliveryRuleset(s) < 2) return;
+    if (deliveryRuleset(s) < 2) return;
     const seller = deskStaff(s)[0];
     if (!seller) return; // Use an actual present clerk; narration of the purchase follows normal seller deduplication.
     const id = `offer.manuals.${slug(hall)}`;
@@ -621,7 +621,7 @@ export function openGuildManuals(s, content, emit, hall) {
     const lines = ['strike', 'bolt', 'guard', 'ward', 'mend'].map(fn => {
         const what = `Primer of ${fn[0].toUpperCase() + fn.slice(1)}`;
         const profile = itemProfile(content, { name: what, kind: 'document', teaches: { source: 'manual', fn, tags: null, aspects: null } });
-        return { id: fn, what, kind: 'goods', qty: 1, price_cp: (s.meta.f_balance ? content.rules.f_balance.guild_manual_cp : content.rules.growth.guild_manual_cp) ?? 120, profile };
+        return { id: fn, what, kind: 'goods', qty: 1, price_cp: content.rules.f_balance.guild_manual_cp ?? 120, profile };
     });
     emit({ t: 'offer.created', d: { offer: { id, seller, at: hall, status: 'open', canon: true, stock: 'manuals', turn: s.turn, lines } } });
 }
@@ -695,7 +695,7 @@ function retainedListings(s, need) {
 
 export function boardRequest(s, content, need) {
     const [lo, hi] = content.rules.guild.rank_levels[need.rank];
-    const guide = s.meta.f_balance && need.rank === 'Novice' ? [30, 600] : content.rules.guild.board?.payout_guide_cp?.[need.rank];
+    const guide = need.rank === 'Novice' ? [30, 600] : content.rules.guild.board?.payout_guide_cp?.[need.rank];
     const town = s.places[need.branch];
     const realm = town?.realm && s.places[town.realm] ? s.places[town.realm].name : null;
     const profile = boardProfile(s, content, need);
@@ -748,7 +748,7 @@ export function boardRequest(s, content, need) {
             '- Dungeon clearance has one DEFEAT objective with qty null, where naming the exact known Dungeon and level number. proof is []. Include a short explicit danger/risk warning in task; a rank-compatible floor is not automatically safe for a fresh solo adventurer.',
         ] : []),
         `- rank is "${need.rank}"; level is the quest level, an integer from ${lo} to ${hi}; qtype is minor, standard, dangerous or major.`,
-        ...(s.meta.f_balance && need.rank === 'Novice' ? ['- F hunt payout guidance by actual challenge: levels 1–3: 30–80 cp; 4–7: 90–180 cp; 8–11: 200–350 cp; 12–14: 350–600 cp. Consider actual quantity, elite/boss risk, supplies and travel; a level label alone does not justify a high price. These are guidelines, not validation limits.'] : []),
+        ...(need.rank === 'Novice' ? ['- F hunt payout guidance by actual challenge: levels 1–3: 30–80 cp; 4–7: 90–180 cp; 8–11: 200–350 cp; 12–14: 350–600 cp. Consider actual quantity, elite/boss risk, supplies and travel; a level label alone does not justify a high price. These are guidelines, not validation limits.'] : []),
         `- payout_cp is the Guild's one fixed payout in copper (1 silver = 10 copper)${guide ? `; for ${need.rank} work ${guide[0]}–${guide[1]} cp is usual (a guide, not a limit)` : ''}.`,
         '- A cull names how many its notice asks for: the DEFEAT objective\'s qty (4 wolves; 1 for a single beast). A clearance of a Dungeon level names the level ("level 1") and no number: the level is cleared when its threats are. One listing is one of the two, never both: a cull\'s desired_end_state is that number of them dealt with, not a cleared level or place; a clearance\'s is the level cleared, with no number. Its title says the same: a clearance is titled by what is cleared ("Clear …", "Purge …", "Secure …"), never "Cull" or "Thin", which promise a number.',
         '- 1 to 4 objectives: {verb, what, qty, unit, where, delivery}; verb is one of GO, FIND, TALK, GET, GATHER, GIVE, DELIVER, USE, REPAIR, DEFEND, ESCORT, ATTACK, DEFEAT. These are continuity memories for play, not a rigid checklist the narrator must force in order.',
@@ -939,7 +939,7 @@ function dungeonCull(s, content, root, o, levels) {
     if (!s || !root || !KILL_WORK.has(o.verb)) return null;
     const same = sameKinds(content);
     // Patch 8.3: the encounters as drawn for the cycle he meets, by the rule the engine counts their kills with
-    return cullPopulation(s, content, root, (sl) => cullKind(content, o, { species: sl.species, anchor: sl.anchor, role: sl.role, title: sl.name, yearlings: !!s.meta.f_progression }, same), { levels });
+    return cullPopulation(s, content, root, (sl) => cullKind(content, o, { species: sl.species, anchor: sl.anchor, role: sl.role, title: sl.name }, same), { levels });
 }
 
 /**
@@ -950,11 +950,11 @@ function dungeonCull(s, content, root, o, levels) {
  * words; the young of a kind only where the objective names them); a Dungeon's guardian or boss only where the
  * objective names it by its own name (8.1 §10: "crystal beetles" is not the Glimmer Queen). Different kinds stay apart.
  */
-function cullKind(content, o, { species, anchor, role = null, title = null, name = null, yearlings = true }, same = sameKinds(content)) {
+function cullKind(content, o, { species, anchor, role = null, title = null, name = null }, same = sameKinds(content)) {
     if (role && role !== 'minion') return namesBoss(o.what, title);
-    const young = namesYoung(content, `${o.what} ${o.unit || ''}`, { yearlings });
+    const young = namesYoung(content, `${o.what} ${o.unit || ''}`);
     return [o.what, o.unit].filter(Boolean).some((w) => namesKind(w, species || '', content.anchors.get(anchor), same))
-        && (young || !namesYoung(content, `${species || ''} ${name || ''}`, { yearlings }));
+        && (young || !namesYoung(content, `${species || ''} ${name || ''}`));
 }
 /** The levels a listing's text names ("level 2", "the first level"), or null for none. */
 function levelsNamed(text) {
@@ -1067,7 +1067,7 @@ function cullTask(s, content, q) {
 /** Book validated listings: quest.created (listed) for each, and the board. The payout is fixed from here on. */
 export function bookBoard(s, content, need, listings, emit) {
     const ids = [];
-    const guide = s.meta.f_balance && need.rank === 'Novice' ? [30, 600] : content.rules.guild.board?.payout_guide_cp?.[need.rank];
+    const guide = need.rank === 'Novice' ? [30, 600] : content.rules.guild.board?.payout_guide_cp?.[need.rank];
     for (const l of listings) {
         // the generator never names ids (its schema has none); a fixture's own id (tests) is kept when it is free
         let id = typeof l.id === 'string' && /^quest\.[a-z0-9_]+$/.test(l.id) && !s.quests[l.id] ? l.id : `quest.${slug(l.title) || 'contract'}`;

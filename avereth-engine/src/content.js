@@ -119,7 +119,7 @@ export function startClasses(content, ruleset) {
 
 /** Creation choices only: old campaigns and NPC templates retain their original pools. */
 export function starterPool(content, classId, state) {
-    return (state.meta.starter_aoe ? rulesetDef(content, rulesetOf(state)).starter_aoe_pools?.[classId] : null)
+    return rulesetDef(content, rulesetOf(state)).starter_aoe_pools?.[classId]
         || content.classes.get(classId).skill_pool;
 }
 

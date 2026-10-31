@@ -28,8 +28,23 @@ export function huntBoard(dungeon = 'Old Crown Catacombs') {
     });
 }
 
+/**
+ * B1 (.130): huntBoard as the current Novice board profile asks for it (world progression is no campaign variant): every
+ * world hunt with its habitat in a fixed F window, the introductory hunt at 1-1, a mid-F (4-7) and an upper-F (8-11) hunt.
+ */
+export function progressionBoard(dungeon = 'Old Crown Catacombs') {
+    const habitat = [['wolf', 'wolf', 1, 1, 1], ['feral dog', 'wolf', 4, 7, 4], ['wolf', 'wolf', 8, 11, 8], ['wolf', 'wolf', 1, 3, 2]];
+    let i = 0;
+    return huntBoard(dungeon).map((l) => {
+        if (l.objectives[0].qty === null) return l;
+        const [species, anchor, min, max, level] = habitat[i++];
+        return { ...l, level, ...(level > 1 ? { qtype: 'standard' } : {}), habitat: { species, anchor, min_level: min, max_level: max } };
+    });
+}
+
 export async function campaign(content, { greeting = ALDERWATCH, cls = 'Mage', skills = 'Flame Lance + Focused Ward', legacyPrivateQuests = false, fProgression = false } = {}) {
-    const g = new Chat4(content, { greeting, legacyPrivateQuests, fProgression });
+    // B1 (.130): the planner campaigns of these suites pin path C on their start, as a product campaign does
+    const g = new Chat4(content, { greeting, legacyPrivateQuests, fProgression, planner: true });
     await g.player(cls);
     await g.player(skills);
     const ask = g.llm;

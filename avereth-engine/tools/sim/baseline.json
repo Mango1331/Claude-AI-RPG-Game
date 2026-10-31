@@ -583,7 +583,7 @@
         "class": "warrior",
         "level": 1,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -602,7 +602,7 @@
         "class": "warrior",
         "level": 1,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -621,7 +621,7 @@
         "class": "warrior",
         "level": 1,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -640,7 +640,7 @@
         "class": "warrior",
         "level": 1,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -659,7 +659,7 @@
         "class": "warrior",
         "level": 1,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -678,7 +678,7 @@
         "class": "warrior",
         "level": 1,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -697,7 +697,7 @@
         "class": "warrior",
         "level": 5,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -716,7 +716,7 @@
         "class": "warrior",
         "level": 5,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -735,7 +735,7 @@
         "class": "warrior",
         "level": 5,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -754,7 +754,7 @@
         "class": "warrior",
         "level": 5,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -773,7 +773,7 @@
         "class": "warrior",
         "level": 5,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -792,7 +792,7 @@
         "class": "warrior",
         "level": 5,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -811,7 +811,7 @@
         "class": "warrior",
         "level": 10,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -830,7 +830,7 @@
         "class": "warrior",
         "level": 10,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -849,7 +849,7 @@
         "class": "warrior",
         "level": 10,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -868,7 +868,7 @@
         "class": "warrior",
         "level": 10,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -887,7 +887,7 @@
         "class": "warrior",
         "level": 10,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -906,7 +906,7 @@
         "class": "warrior",
         "level": 10,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -925,7 +925,7 @@
         "class": "warrior",
         "level": 14,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -944,7 +944,7 @@
         "class": "warrior",
         "level": 14,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -963,7 +963,7 @@
         "class": "warrior",
         "level": 14,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -982,7 +982,7 @@
         "class": "warrior",
         "level": 14,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -1001,7 +1001,7 @@
         "class": "warrior",
         "level": 14,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -1020,7 +1020,7 @@
         "class": "warrior",
         "level": 14,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -1039,7 +1039,7 @@
         "class": "warrior",
         "level": 15,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -1058,7 +1058,7 @@
         "class": "warrior",
         "level": 15,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -1077,7 +1077,7 @@
         "class": "warrior",
         "level": 15,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -1096,7 +1096,7 @@
         "class": "warrior",
         "level": 15,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -1115,7 +1115,7 @@
         "class": "warrior",
         "level": 15,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -1134,7 +1134,7 @@
         "class": "warrior",
         "level": 15,
         "skills": [
-          "warrior.power_strike",
+          "warrior.cleave",
           "warrior.quick_slash"
         ]
       },
@@ -1724,7 +1724,7 @@
         "level": 1,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -1743,7 +1743,7 @@
         "level": 1,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -1762,7 +1762,7 @@
         "level": 1,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -1781,7 +1781,7 @@
         "level": 1,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -1800,7 +1800,7 @@
         "level": 1,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -1819,7 +1819,7 @@
         "level": 1,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -1838,7 +1838,7 @@
         "level": 5,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -1857,7 +1857,7 @@
         "level": 5,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -1876,7 +1876,7 @@
         "level": 5,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -1895,7 +1895,7 @@
         "level": 5,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -1914,7 +1914,7 @@
         "level": 5,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -1933,7 +1933,7 @@
         "level": 5,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -1952,7 +1952,7 @@
         "level": 10,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -1971,7 +1971,7 @@
         "level": 10,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -1990,7 +1990,7 @@
         "level": 10,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -2009,7 +2009,7 @@
         "level": 10,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -2028,7 +2028,7 @@
         "level": 10,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -2047,7 +2047,7 @@
         "level": 10,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -2066,7 +2066,7 @@
         "level": 14,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -2085,7 +2085,7 @@
         "level": 14,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -2104,7 +2104,7 @@
         "level": 14,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -2123,7 +2123,7 @@
         "level": 14,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -2142,7 +2142,7 @@
         "level": 14,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -2161,7 +2161,7 @@
         "level": 14,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -2180,7 +2180,7 @@
         "level": 15,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -2199,7 +2199,7 @@
         "level": 15,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -2218,7 +2218,7 @@
         "level": 15,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -2237,7 +2237,7 @@
         "level": 15,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -2256,7 +2256,7 @@
         "level": 15,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {
@@ -2275,7 +2275,7 @@
         "level": 15,
         "skills": [
           "mage.flame_lance",
-          "mage.arcane_burst"
+          "mage.arcane_wave"
         ]
       },
       "opponent": {

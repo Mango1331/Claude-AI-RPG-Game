@@ -15,7 +15,7 @@
 //                              the narrator card's lorebook (lorebook/, docs/LOREBOOK.md) activates the right entries
 import { loadContentPack } from './src/content.js';
 import { onEdited, foldChat, ensureCampaign, hasCampaign, projectPromptHistory, reportRequest, applyReportAnswer, rec, setRec } from './src/host.js';
-import { prepareGenerationAsync, processReplyAny, runExtraction, applyExtraction, pendingExtraction, campaignRuntime, onEditedV4, perfSummary } from './src/v4/runtime.js';
+import { prepareGenerationAsync, processReplyAny, runExtraction, applyExtraction, pendingExtraction, campaignRuntime, campaignSupport, onEditedV4, perfSummary } from './src/v4/runtime.js';
 import { createNarratorRecovery, narratorProviderResponse, providerResponseError } from './src/v4/narrator_recovery.js';
 import { verifySavedChat } from './src/v4/continuation.js';
 import { createWorldJobs } from './src/v4/world_jobs.js';
@@ -47,6 +47,17 @@ function showFoldBlock(block) {
     const key = `${ctx().getCurrentChatId()}:${block.index}:${block.type}`;
     if (foldWarned !== key) toastr.error(block.notice, 'Avereth Engine', { timeOut: 0, extendedTimeOut: 0 });
     foldWarned = key;
+}
+// Architecture patch B1 (.130): a campaign of a retired protocol (V3, path A, Ruleset 1, an older F configuration) is
+// refused at every host entry before anything is resolved, asked, recorded or saved; the notice says why, once per chat
+let supportWarned = null;
+function unsupported(chat) {
+    const block = campaignSupport(chat);
+    if (!block) return null;
+    const key = `${ctx().getCurrentChatId()}:${block.reason}`;
+    if (supportWarned !== key) toastr.error(block.notice, 'Avereth Engine', { timeOut: 0, extendedTimeOut: 0 });
+    supportWarned = key;
+    return block;
 }
 let pendingReport = null; // {chatId, id, hash, job}: the report request of the latest reply, while it runs
 let llmPath = null; // Runtime V4: which call the last LLM request used ('custom endpoint' | 'generateRaw')
@@ -99,13 +110,15 @@ function loreFromWorldInfo() {
 
 /** Settings for the engine block. Turns still in the prompt's history window are not retrieved again, turns before it are. */
 /** The runtime a campaign started in this chat gets (the setting applies to new campaigns only). */
+// Architecture patch B1 (.130): every new campaign starts on the one supported protocol (V4-C); the old runtime and
+// planner settings no longer choose a retired variant (their UI goes with package E)
 function newRuntime() {
-    return settings().runtime === 'v3' ? 'v3' : 'v4';
+    return 'v4';
 }
 
-/** Patch 7.2: the path a V4 campaign started now keeps (true: V4-C, the semantic planner; false: V4-A). */
+/** Patch 7.2: the path a V4 campaign started now keeps; since B1 always C (the semantic planner). */
 function newPlanner() {
-    return settings().planner !== false;
+    return true;
 }
 
 function engineSettings() {
@@ -184,6 +197,7 @@ const worldJobs = createWorldJobs({
         return { chat: c.chat, chatId: c.getCurrentChatId() };
     },
     run: async (chat, id, { isCurrent, signal }) => {
+        if (campaignSupport(chat)) return { changed: false, unsupported: true };
         const result = await runExtraction(chat, id, content, (req) => v4Llm({ ...req, signal }), { hud: settings().hud, isCurrent });
         if (result?.foldBlocked && isCurrent()) { showFoldBlock(result.foldBlocked); renderDebug(); }
         return result;
@@ -232,6 +246,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
                 return;
             }
         }
+        if (unsupported(c.chat)) { abort(true); setPrompt(''); setLoreKeys([]); renderDebug(); return; }
         // the report still being asked for belongs to the turn before this new message: its facts come first
         if (pendingReport && pendingReport.chatId === c.getCurrentChatId() && (!type || type === 'normal') && c.chat.findLastIndex((m) => m.is_user) > pendingReport.id) {
             await Promise.race([pendingReport.job, new Promise((done) => setTimeout(done, REPORT_WAIT_MS))]);
@@ -390,6 +405,7 @@ async function onMessageReceived(messageId) {
     const chat = c.chat; // stable origin, even if getContext() later points at another chat
     const chatId = c.getCurrentChatId();
     try {
+        if (unsupported(chat)) { renderDebug(); return; }
         const recover = settings().recoverReports && typeof c.generateRaw === 'function';
         // the greeting of a new chat arrives here too (SillyTavern: MESSAGE_RECEIVED 'first_message') and starts the campaign
         // Patch 8.2: the narrator's time, from the engine block handed over to the reply received (telemetry)
@@ -453,6 +469,7 @@ function requestReport(id) {
 function resumeReport() {
     const c = ctx();
     if (!settings().enabled || !content || !c.chat?.length) return;
+    if (campaignSupport(c.chat)) return;
     if (campaignRuntime(c.chat) === 'v4') {
         const id = pendingExtraction(c.chat);
         if (id >= 0) startWorld(id);
@@ -470,6 +487,7 @@ async function onMessageEdited(messageId) {
     if (!settings().enabled) return;
     const c = ctx();
     try {
+        if (unsupported(c.chat)) return;
         const r = campaignRuntime(c.chat) === 'v4' ? onEditedV4(c.chat, Number(messageId)) : onEdited(c.chat, Number(messageId), content);
         if (!r.changed) {
             resumeReport(); // edits to a player message can also cancel a pending world job

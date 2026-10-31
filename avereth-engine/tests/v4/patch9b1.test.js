@@ -100,7 +100,7 @@ test('9B-1 (1): a dynamic Skill is defined (skill.defined), then learned (skill.
     assert.deepEqual(again.skill_defs, g.state.skill_defs);
     assert.deepEqual(again.entities.pc.sheet.skills, sheet(g).skills);
     // another campaign of the same content knows nothing of it
-    const other = hero('Rogue', 'Razor Cut + Feint');
+    const other = hero('Rogue', 'Razor Cut + Fan of Blades');
     assert.equal(skillOf(content, 'dyn.viper_sting', other.state), null);
     assert.match(panel(other, '#skill Viper Sting'), /UNKNOWN SKILL "Viper Sting"/);
     assert.deepEqual(learnSkill(other.state, content, 'pc', 'dyn.viper_sting').errors, ['no Skill dyn.viper_sting']);
@@ -111,7 +111,7 @@ test('9B-1 (1): a dynamic Skill is defined (skill.defined), then learned (skill.
 });
 
 test('9B-1 (1): only the engine books a Skill definition: an extractor delta that would write it breaks the Decision Ownership', () => {
-    const e = defineSkill(hero('Rogue', 'Razor Cut + Feint').state, content, VIPER).events[0];
+    const e = defineSkill(hero('Rogue', 'Razor Cut + Fan of Blades').state, content, VIPER).events[0];
     assert.equal(eventKind(e), 'skills');
     for (const type of ['fact', 'person.new', 'object.new', 'feature']) assert.match(ownershipViolation({ kind: 'delta', type }, e, null) || '', /skills|without declared writes/, type);
     assert.equal(ownershipViolation({ kind: 'engine' }, e, null), null, 'the engine\'s own step');
@@ -136,7 +136,7 @@ test('9B-1 (2): static and dynamic Skills go through the same resolver: id, name
     assert.equal(hit.illegal, undefined, hit.illegal);
     assert.equal(hit.raw_text, '9 + AGI 6×1.6 + ATK 10 = 28.6'); // 4.3.0-c.6.6.53: the Starter Dagger of ruleset 2, ATK 10
     assert.equal(ctx.enc.combatants.pc.current.sta, 94, 'its own cost');
-    const g2 = taught(STONE, 'Razor Cut + Feint');
+    const g2 = taught(STONE, 'Razor Cut + Fan of Blades');
     spawn(g2, 'mon.boar', { anchor: 'boar' });
     const ctx2 = fight(g2, ['mon.boar']);
     const r = skillAction(ctx2, 'pc', 'dyn.stone_skin');
@@ -165,11 +165,12 @@ test('9B-1 (3): the planner, the HUD, #skills and #skill know a learned dynamic 
     assert.ok(ctx.contentSkills.has('rogue.razor_cut'));
     assert.equal(withContentSkills({}, content).contentSkills.has('dyn.viper_sting'), false);
     assert.match(renderHud(g.state, content), /Viper Sting P1/);
-    assert.match(panel(g, '#skills'), /Viper Sting \(learned in this campaign\) \| Offensive \| Rank F \| Complexity 1 \| P1 \(PP 0\/75\) \| Tags Precision \| Cost 6 STA/);
+    // B1 (.130): the F balance promotion thresholds (C1 50, C2 75, C3 100) are the current rule
+    assert.match(panel(g, '#skills'), /Viper Sting \(learned in this campaign\) \| Offensive \| Rank F \| Complexity 1 \| P1 \(PP 0\/50\) \| Tags Precision \| Cost 6 STA/);
     const one = panel(g, '#skill Viper Sting');
     assert.match(one, /Base Power 9 \| Scaling AGI ×1\.6 \| Uses ATK \| physical/);
     assert.match(one, /Effect: A darting cut at an opening in the guard\./);
-    assert.match(one, /Proficiency Progress: PP 0\/75 · Affinity ×1\.5 \(highest of its tags\)/);
+    assert.match(one, /Proficiency Progress: PP 0\/50 · Affinity ×1\.5 \(highest of its tags\)/);
     spawn(g, 'mon.boar', { anchor: 'boar' });
     g.input('Viper Sting the boar');
     assert.match(renderHud(g.state, content), /Viper Sting/, 'the combat HUD lists it');
@@ -264,8 +265,9 @@ test('9B-1 (5): the 18 starter Skills of Warrior, Mage and Rogue have a Complexi
     assert.deepEqual([12 * 1.5, 12 * 1.25, 12 * 0.75].map(Math.round), [18, 15, 9]);
     assert.equal(ppAward(content, { class: 'warrior' }, sk('mage.arcane_bolt')), 9);
     assert.equal(ppAward(content, { class: 'rogue' }, sk('rogue.evasive_step')), 15);
-    assert.deepEqual([1, 2, 3].map((c) => promotionPp(content, { complexity: c })), [75, 100, 150]);
-    assert.equal(promotionPp(content, { complexity: null }), 75, 'no Complexity: C1');
+    // B1 (.130): the F balance thresholds are the current rule
+    assert.deepEqual([1, 2, 3].map((c) => promotionPp(content, { complexity: c })), [50, 75, 100]);
+    assert.equal(promotionPp(content, { complexity: null }), 50, 'no Complexity: C1');
 });
 
 // ------------------------------------------------------------------------------------------------ 6. PP award
@@ -281,8 +283,8 @@ test('9B-1 (6): a real fight books PP once per Skill when it is over, by the hig
     assert.ok(last.indexOf('skill.progress') < last.indexOf('encounter.ended'));
     assert.equal(turns.slice(0, -1).flatMap((r) => r.events).filter((e) => e.t === 'skill.progress').length, 0);
     const shown = turnPanel(g.state, content);
-    assert.match(shown, /SKILL \+18 PP Razor Cut → P1 18\/75/);
-    assert.match(shown, /SKILL \+15 PP Evasive Step → P1 15\/75/);
+    assert.match(shown, /SKILL \+18 PP Razor Cut → P1 18\/50/);
+    assert.match(shown, /SKILL \+15 PP Evasive Step → P1 15\/50/);
     assert.deepEqual(sheet(g).skills['rogue.basic_attack'], { prof: 1, pp: 0 }, 'not used, nothing gained');
     assert.deepEqual(fold(g.log).entities.pc.sheet.skills, sheet(g).skills);
     assert.deepEqual(fold(g.log).pp_keys, g.state.pp_keys);
@@ -305,7 +307,9 @@ test('9B-1 (6): no PP for a trivial foe, a foe that never attacked, a defense no
     spawn(g, 'mon.wolf');
     const c2 = fight(g, ['mon.wolf']);
     noteUse(c2, attackAction(c2, 'pc', 'mon.wolf', 'rogue.razor_cut'));
-    assert.deepEqual(fightProgress(g.state, content, c2.enc), [], 'no foe attacked him');
+    // B1 (.130): the F balance offensive award is the current rule: an attack on a worthy foe counts even before the
+    // foe attacked him (a defense still needs a tested attack, below)
+    assert.deepEqual(fightProgress(g.state, content, c2.enc).map((e) => e.d.skill), ['rogue.razor_cut'], 'a worthy foe attacked');
     noteUse(c2, { actor: 'mon.wolf', kind: 'attack', strikes: [{ target: 'pc' }] });
     assert.deepEqual(fightProgress(g.state, content, c2.enc).map((e) => e.d.skill), ['rogue.razor_cut']);
     // a defense nobody tested: Evasive Step and then the fight ends; his own next action comes first
@@ -341,32 +345,33 @@ test('9B-1 (6): no PP for a trivial foe, a foe that never attacked, a defense no
 
 test('9B-1 (6): promotions by Complexity with the carry-over; P5 is the end and triggers nothing', () => {
     const c1 = { complexity: 1 };
-    assert.deepEqual(advancePp(content, { prof: 1, pp: 70 }, c1, 18), { prof: 2, pp: 13 });
-    assert.deepEqual(advancePp(content, { prof: 2, pp: 99 }, { complexity: 2 }, 18), { prof: 3, pp: 17 });
-    assert.deepEqual(advancePp(content, { prof: 3, pp: 140 }, { complexity: 3 }, 18), { prof: 4, pp: 8 });
-    assert.deepEqual(advancePp(content, { prof: 4, pp: 70 }, c1, 18), { prof: 5, pp: 0 });
+    // B1 (.130): the F balance thresholds (C1 50, C2 75, C3 100) are the current rule
+    assert.deepEqual(advancePp(content, { prof: 1, pp: 45 }, c1, 18), { prof: 2, pp: 13 });
+    assert.deepEqual(advancePp(content, { prof: 2, pp: 70 }, { complexity: 2 }, 18), { prof: 3, pp: 13 });
+    assert.deepEqual(advancePp(content, { prof: 3, pp: 95 }, { complexity: 3 }, 18), { prof: 4, pp: 13 });
+    assert.deepEqual(advancePp(content, { prof: 4, pp: 45 }, c1, 18), { prof: 5, pp: 0 });
     assert.equal(advancePp(content, { prof: 5, pp: 0 }, c1, 18), null);
-    assert.deepEqual(advancePp(content, { prof: 1, pp: 0 }, c1, 160), { prof: 3, pp: 10 }, 'every promotion takes the same 75 PP');
+    assert.deepEqual(advancePp(content, { prof: 1, pp: 0 }, c1, 160), { prof: 4, pp: 10 }, 'every promotion takes the same 50 PP');
     // in a real fight: a promotion and its line at the end of the fight; #skills shows the threshold of its Complexity
     const g = hero('Rogue', 'Razor Cut + Evasive Step');
-    setProf(g, 'rogue.razor_cut', 1, 70);
+    setProf(g, 'rogue.razor_cut', 1, 45);
     spawn(g, 'mon.wolf');
     const turns = fightOut(g, ['Razor Cut the wolf']);
     const up = progressOf(turns).find((e) => e.d.skill === 'rogue.razor_cut');
-    assert.deepEqual([up.d.from, up.d.to], [{ prof: 1, pp: 70 }, { prof: 2, pp: 13 }]);
-    assert.match(turnPanel(g.state, content), /SKILL \+18 PP Razor Cut → P2 13\/75 · PROFICIENCY P1 → P2/);
+    assert.deepEqual([up.d.from, up.d.to], [{ prof: 1, pp: 45 }, { prof: 2, pp: 13 }]);
+    assert.match(turnPanel(g.state, content), /SKILL \+18 PP Razor Cut → P2 13\/50 · PROFICIENCY P1 → P2/);
     assert.deepEqual(validateState(g.state, content), []);
-    assert.match(panel(g, '#skills'), /Razor Cut \| Offensive \| Rank F \| Complexity 1 \| P2 \(PP 13\/75\)/);
+    assert.match(panel(g, '#skills'), /Razor Cut \| Offensive \| Rank F \| Complexity 1 \| P2 \(PP 13\/50\)/);
     const m = hero('Mage', 'Flame Lance + Blink');
     setProf(m, 'mage.flame_lance', 2, 40);
-    assert.match(panel(m, '#skills'), /Flame Lance \| Offensive \| Rank F \| Complexity 2 \| P2 \(PP 40\/100\)/, 'C2: 100 PP, at any Proficiency');
+    assert.match(panel(m, '#skills'), /Flame Lance \| Offensive \| Rank F \| Complexity 2 \| P2 \(PP 40\/75\)/, 'C2: 75 PP, at any Proficiency');
     setProf(m, 'mage.flame_lance', 5, 0);
     assert.match(panel(m, '#skills'), /Flame Lance .* P5 \(PP max\)/);
     assert.match(panel(m, '#skill Flame Lance'), /Proficiency P5 \(PP max\)/);
 });
 
 test('9B-1 (6): a check of real difficulty with a learned Skill outside a fight is PP once per Skill and thing; a trivial one is none', async () => {
-    const g = await campaign(content, { cls: 'Rogue', skills: 'Razor Cut + Feint' });
+    const g = await campaign(content, { cls: 'Rogue', skills: 'Razor Cut + Fan of Blades' });
     const at = g.state().scene.at;
     const feature = (id, difficulty) => ({ t: 'feature.set', d: { feature: { id, at, name: `knotted rope ${id}`, kind: 'obstacle', hidden: false, status: 'active', trigger: null, on: null, stat: 'AGI', difficulty, harm: null, since: 1, found: true, history: [] } } });
     inject(g, [feature('feat.rope', 'hard'), feature('feat.twine', 'trivial')]);
@@ -396,7 +401,8 @@ test('9B-1 (7): cost, power and the non-damage factors by Proficiency; #skill sh
     const ctx = fight(m, ['mon.boar']);
     const r = skillAction(ctx, 'pc', 'mage.arcane_ward');
     assert.deepEqual(r.effects, ['Barrier 16 HP (until destroyed or the start of Alaric\'s next turn)']);
-    assert.equal(r.cost.amount, 10, 'P3 cost ×0.95 = 9.5 → 10');
+    // B1 (.130): ×0.95 = 9.5 rounds back to 10; the current rule keeps that lost mastery: 9
+    assert.equal(r.cost.amount, 9, 'P3 cost ×0.95 = 9.5 → 10, mastery kept: 9');
     assert.match(panel(m, '#skill Arcane Ward'), /Current effect: Barrier 16 HP \(×1\.05 Proficiency, rounded\)/);
     const bolt = attackAction(ctx, 'pc', 'mon.boar', 'mage.arcane_bolt');
     assert.match(bolt.strikes[0].steps.join(' '), /×1\.15 Proficiency/, 'power by P4');
@@ -460,7 +466,9 @@ test('9B-1 (9): a legacy campaign gains no PP from a fight; its sheets, saves an
     assert.deepEqual(progressOf(turns), []);
     for (const v of Object.values(sheet(g).skills)) assert.deepEqual(v, { prof: 1, pp: 0 });
     assert.equal(g.state.pp_keys, undefined);
-    assert.match(panel(g, '#skills'), /P1 \(PP 0\/75\)/);
+    // B1 (.130): the promotion thresholds are one current rule (F balance); a legacy campaign, refused by the product's
+    // version guard, shows them too and still gains no PP
+    assert.match(panel(g, '#skills'), /P1 \(PP 0\/50\)/);
     // a state saved before Patch 9B-1 (no skill_defs) resolves, validates and folds as before
     const saved = JSON.parse(JSON.stringify(g.state));
     delete saved.skill_defs;
@@ -518,7 +526,7 @@ test('9B-1 review (2): a dynamic Arcane Skill with the aspect Fire: validated, s
     assert.deepEqual([s.tags, s.aspects], [['Arcane'], ['Fire']]);
     assert.match(s.source_text, /Tags: Arcane\nAspects: Fire/);
     assert.deepEqual(fold(g.log).skill_defs['dyn.ember_dart'], s, 'replay');
-    assert.match(panel(g, '#skills'), /Ember Dart \(learned in this campaign\) \| Offensive \| Rank F \| Complexity 1 \| P1 \(PP 0\/75\) \| Tags Arcane \| Aspects Fire \| Cost 8 MP/);
+    assert.match(panel(g, '#skills'), /Ember Dart \(learned in this campaign\) \| Offensive \| Rank F \| Complexity 1 \| P1 \(PP 0\/50\) \| Tags Arcane \| Aspects Fire \| Cost 8 MP/);
     assert.match(panel(g, '#skill Ember Dart'), /\| Tags Arcane \| Aspects Fire\n/);
     // no mechanical effect: the affinity reads the tags only, the attack is the plain magical one
     assert.equal(affinityFor(content, 'mage', s), 1.5);

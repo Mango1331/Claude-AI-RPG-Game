@@ -83,10 +83,11 @@ test('rumours, unquoted evidence, invalid ranges, towns and true Dungeons establ
   assert.equal(r.state.places['loc.forest'].encounter_levels,undefined,mode);
  }
 });
-test('explicit individuals, harmless fauna and historical campaigns keep their own levels',()=>{
+test('explicit individuals and harmless fauna keep their own levels (B1: no historical campaign variant)',()=>{
  const s=area(state()).state;assert.equal(beast(s,{level:1}).profile.level,1);
  assert.ok(beast(s,{id:'mon.pet',threat:false}).profile.level<=3);
- const old=clone(s);delete old.meta.f_progression;assert.ok(beast(old,{id:'mon.old'}).profile.level<=3);
+ // B1 (.130): the area span is the current rule; a state without the old flag is no exception
+ const old=clone(s);delete old.meta.f_progression;assert.deepEqual(beast(old,{id:'mon.old'}).profile.level,beast(clone(s),{id:'mon.old'}).profile.level);
 });
 test('population span appears on the actual board card, distinct from quest XP level',()=>{
  const s=state(),hall=Object.values(s.places).find(p=>p.tags?.includes('guild_hall'));s.scene.at=hall.id;
@@ -137,9 +138,9 @@ test('area and population remain separate, both visible to narrator and player',
  assert.match(text,/AREA LEVELS.*8–11/);assert.match(text,/ESTABLISHED WORLD POPULATIONS/);assert.match(text,/individual levels 4-7/);
  const {worldPanel}=await import('../../src/display.js');assert.match(worldPanel(s,c,{state:s,events:[]}),/AREA LEVELS.*8–11/);
 });
-test('invalid persisted spans are detected and historical extractor vocabularies omit the new classification',()=>{
+test('invalid persisted spans are detected; the extractor vocabulary always holds the area classification (B1)',()=>{
  const s=state();s.places['loc.forest'].encounter_levels=[99,1];assert.ok(validateState(s,c).some(x=>x.includes('area levels')));
- delete s.meta.f_progression;assert.ok(!worldVocab(c.deltaVocab,s).deltas.some(d=>d.type==='area'));
+ delete s.meta.f_progression;assert.ok(worldVocab(c.deltaVocab,s).deltas.some(d=>d.type==='area'));
 });
 test('accepted creature species and new board validation agree for singular/plural away from populations',()=>{
  for(const species of ['giant snapping turtle','giant snapping turtles']){

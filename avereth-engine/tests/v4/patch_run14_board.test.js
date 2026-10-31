@@ -47,8 +47,14 @@ test('Run14 board: unsuitable dungeon floor and unavailable cull population rema
  assert.ok(parse(s,ls).refused.some(r=>/level 99/.test(r.why)));
 });
 test('Run14 board: generator and one repair obey the same profile',async()=>{
- const s=state(),n=boardFor(s,c,[{seq:1,type:'board.read',rank:'Novice'}],{c:true}),calls=[];
- const r=await generateBoard(async req=>{calls.push(req);return JSON.stringify({listings:calls.length===1?old():board().map(l=>({...l,objectives:l.objectives.filter(o=>o.verb==='DEFEAT')}))});},s,c,n);
+ // B1 (.130): world progression is the current Novice board profile (no campaign variant): the repair is five
+ // world-bound hunts in its level windows, on a branch without a suitable known dungeon
+ const s=state();for(const p of Object.values(s.places))delete p.dungeon;
+ const n=boardFor(s,c,[{seq:1,type:'board.read',rank:'Novice'}],{c:true}),calls=[];
+ const repair=[[1,1],[4,7],[8,11],[12,14],[1,3]].map(([min,max],i)=>({...hunt('Cull the mire wolves '+i,i?2:1),level:min,qtype:i?'standard':'minor',payout_cp:50+i*25,
+  task:`Cull ${i?2:1} feral wolves at Mire Pasture ${i}.`,desired_end_state:`The ${i?2:1} feral wolves at Mire Pasture ${i} are defeated.`,
+  objectives:[{verb:'DEFEAT',what:'feral wolves',qty:i?2:1,unit:null,where:`Mire Pasture ${i}`}],proof:[],habitat:{species:'feral wolf',anchor:'wolf',min_level:min,max_level:max}}));
+ const r=await generateBoard(async req=>{calls.push(req);return JSON.stringify({listings:calls.length===1?old():repair});},s,c,n);
  assert.equal(calls.length,2);assert.equal(r.listings.length,5);assert.equal(r.profile,'count_hunt_clear');
  assert.match(calls[1].messages.at(-1).content,/suspended|valid listing/);
  let count=0;const failed=await generateBoard(async()=>{count++;return JSON.stringify({listings:old()});},s,c,n);

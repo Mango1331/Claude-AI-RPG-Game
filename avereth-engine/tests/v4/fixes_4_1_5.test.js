@@ -18,6 +18,7 @@ import { defeatXp, strengthOf } from '../../src/progression.js';
 import { EXTRACTOR_VERSION } from '../../src/v4/extract.js';
 import { NARRATOR_CONTRACT_REVISION } from '../../src/util.js';
 import { setFactEvents } from '../../src/knowledge.js';
+import { deriveCharacter } from '../../src/derived.js';
 
 const content = await loadContent();
 const fx = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests/v4/live_0930c.json'), 'utf8'));
@@ -159,7 +160,12 @@ async function boarFight(stronger) {
     });
     // one boar after the other, each fight to its end (the others stand by until attacked)
     for (const label of ['Wild Boar A', 'Wild Boar B', 'Big Boar A']) {
-        for (let n = 0; n < 12; n++) {
+        // B1 (.130): the wallow's boars take the wilderness level of the current rules (Level 3); a test precondition
+        // rests him to full between the fights, so each fight runs to his win and its pay can be checked
+        const dv = deriveCharacter(g.state().entities.pc.sheet, content);
+        g.chat.findLast((m) => m.extra?.avereth?.events).extra.avereth.events.push(
+            { t: 'resource.changed', d: { id: 'pc', resource: 'hp', value: dv.maxHp } }, { t: 'resource.changed', d: { id: 'pc', resource: 'sta', value: dv.maxSta } });
+        for (let n = 0; n < 40; n++) {
             await g.player(`*I basic attack ${label}*`);
             await g.reply('Steel and tusk.', { expected: {}, deltas: [] });
             if (!g.state().encounter) break;
@@ -173,19 +179,20 @@ async function boarFight(stronger) {
 
 test('two common boars and a stronger one: the stronger gives more XP; the name "big boar" alone does not; each fight pays once at its end', async () => {
     const plain = await boarFight(null);
-    assert.deepEqual(plain.defeat, { 'Wild Boar A': 60, 'Wild Boar B': 60, 'Big Boar A': 60 }, 'a name alone');
+    assert.deepEqual(plain.defeat, { 'Wild Boar A': 185, 'Wild Boar B': 185, 'Big Boar A': 185 }, 'a name alone');
     const strong = await boarFight(true);
-    // 4.3.0-c.6.6.5: the strong boar's own numbers (49 HP, ATK 13, DEF 3) also count against an ordinary creature of
-    // its Level (content rules.xp.strength): 15, was 14; the common ones stay at their Level's 12
-    assert.deepEqual(strong.defeat, { 'Wild Boar A': 60, 'Wild Boar B': 60, 'Big Boar A': 75 });
+    // 4.3.0-c.6.6.5: the strong boar's own numbers also count against an ordinary creature of its Level (content
+    // rules.xp.strength). B1 (.130): at the wilderness Level 3 of the current rules (68 HP, ATK 19) that is 230 against
+    // the common ones' 185 (at Level 1 before: 75 against 60)
+    assert.deepEqual(strong.defeat, { 'Wild Boar A': 185, 'Wild Boar B': 185, 'Big Boar A': 230 });
     const big = Object.values(strong.g.state().entities).find((e) => e.species === 'big boar');
-    assert.deepEqual([big.profile.max_hp, big.profile.atk, big.profile.variation], [49, 13, 'strong']);
+    assert.deepEqual([big.profile.level, big.profile.max_hp, big.profile.atk, big.profile.variation], [3, 68, 19, 'strong']);
     for (const f of [plain, strong]) {
         assert.equal(f.ended.length, 3, 'three fights, each to its end');
         assert.equal(f.xp.length, 3, 'Combat XP once per fight, at its end');
         assert.deepEqual(f.xp.map((e) => e.d.amount), f.ended.map((e) => e.d.summary.xp_awarded));
     }
-    assert.deepEqual(strong.xp.map((e) => e.d.amount), [60, 60, 75]);
+    assert.deepEqual(strong.xp.map((e) => e.d.amount), [185, 185, 230]);
     assert.equal(Object.values(strong.g.state().entities).filter((e) => e.kind === 'creature' && e.status === 'dead').length, 3);
 });
 

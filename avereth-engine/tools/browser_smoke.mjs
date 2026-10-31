@@ -1,6 +1,7 @@
 // Optional real-browser smoke test of the SillyTavern binding (index.js): serves this folder, loads index.js in
 // Chromium with a minimal mock of SillyTavern.getContext() and plays two campaigns.
-// V3 page (runtime set to V3): greeting -> creation (System panels) -> reply -> retcon edit -> #command -> Runtime V3
+// Legacy page (B1, .130; formerly the V3 page): campaigns of retired protocols are refused at every host entry.
+// Former V3 page (runtime set to V3): greeting -> creation (System panels) -> reply -> retcon edit -> #command -> Runtime V3
 // (HUD under replies, tracker blocks removed, prompt-only history projection) -> a reply without a fact report, asked
 // for separately (generateRaw) before the next message is resolved.
 // V4 page (default settings): the greeting starts a V4 campaign (SillyTavern 1.19 sends MESSAGE_RECEIVED for it) ->
@@ -30,123 +31,63 @@ try {
     ({ chromium } = require(path.join(globalRoot, 'playwright')));
 }
 
+// Architecture patch B1 (.130): the former V3 page. New campaigns start only on V4-C; a chat that holds a campaign of a
+// retired protocol is refused at every host entry: one error notice per chat, no engine block, no record, no save, no
+// model request (the request list of the V4 page below stays exact), also for a reply and an edit.
 const PAGE = `<!doctype html><html><body><div id="extensions_settings2"></div><div id="chat"></div><script type="module">
 const FIRST = 'Arrival.\\n\\\`Location: Public roadside verge outside Ashbridge, Duskreach\\\`';
-const chat = [{ is_user: false, is_system: false, mes: FIRST, swipe_id: 0, swipes: [FIRST], swipe_info: [{ extra: {} }], extra: {} }];
 const handlers = {};
 window.__log = [];
 window.toastr = { warning: (m) => window.__log.push('warn ' + m), error: (m) => window.__log.push('error ' + m), info: () => {} };
+let chatId = 'none';
 const ctx = {
-  chat, extensionSettings: { avereth: { runtime: 'v3' } }, saveSettingsDebounced() {}, saveChat: async () => { window.__saved = (window.__saved || 0) + 1; },
-  // like SillyTavern: updateMessageBlock on a message that is not rendered yet throws inside its reasoning UI
-  updateMessageBlock(id) { const el = document.querySelector('#chat [mesid="' + id + '"]'); el.getAttribute('mesid'); window.__rerendered = (window.__rerendered || []).concat(id); },
-  setExtensionPrompt(key, value, position, depth, scan) { (window.__ext ||= {})[key] = { value, position, scan }; if (key === 'avereth_engine') window.__prompt = value; },
+  chat: [], extensionSettings: { avereth: {} }, saveSettingsDebounced() {}, saveChat: async () => { window.__saved = (window.__saved || 0) + 1; },
+  updateMessageBlock() {}, setExtensionPrompt(key, value) { if (key === 'avereth_engine') window.__prompt = value; },
   characters: [{ name: 'Avereth', data: { extensions: { world: '' } } }], characterId: 0,
   addOneMessage(m) { window.__panels = (window.__panels || []).concat(m.mes); },
-  // the separate request for a missing fact report (Test 5 run 2); answered after a delay, like a real model
-  async generateRaw({ systemPrompt, prompt }) { window.__raw = { systemPrompt, prompt }; window.__rawCount = (window.__rawCount || 0) + 1; await new Promise((r) => setTimeout(r, 300)); return '<avereth>{"time":5,"place":"the old mill"}</avereth>'; },
-  getCurrentChatId: () => 'smoke', eventTypes: { MESSAGE_RECEIVED: 'mr', MESSAGE_EDITED: 'me', CHAT_CHANGED: 'cc', MESSAGE_DELETED: 'md', MESSAGE_SWIPED: 'ms' },
+  async generateRaw() { window.__raw = (window.__raw || 0) + 1; return '{}'; },
+  getCurrentChatId: () => chatId, eventTypes: { MESSAGE_RECEIVED: 'mr', MESSAGE_EDITED: 'me', CHAT_CHANGED: 'cc', MESSAGE_DELETED: 'md', MESSAGE_SWIPED: 'ms' },
   eventSource: { on(t, f) { handlers[t] = f; } },
 };
 window.SillyTavern = { getContext: () => ctx };
 await import('/index.js');
 for (let i = 0; i < 100 && !handlers.mr; i++) await new Promise((r) => setTimeout(r, 50));
+const { loadContentPack } = await import('/src/content.js');
+const { startCampaign } = await import('/src/engine.js');
+const { rec } = await import('/src/host.js');
+const content = await loadContentPack(async (n) => (await fetch('/content/' + n)).json());
+const start = (opts, edit = (d) => d) => { const events = startCampaign(content, { seed: 7, firstMessage: FIRST, ...opts }); edit(events[0].d); return events; };
+const VARIANTS = {
+  v3: [start({ runtime: 'v3' }), 'it was started on Runtime V3'],
+  pathA: [start({ runtime: 'v4', planner: false, ruleset: 2 }), 'it plays the retired path A (interpreter)'],
+  olderF: [start({ runtime: 'v4', planner: true, ruleset: 2 }, (d) => { d.engine_version = '4.3.0-c.6.6.126'; }), 'it was started with an older F rule configuration'],
+  unreadable: [start({ runtime: 'v4', planner: true, ruleset: 2 }, (d) => { d.engine_version = 'dev build'; }), 'its start build is missing or unreadable'],
+};
 const result = {};
-await handlers.mr(0);
-result.campaign = (chat[0].extra.avereth?.events || []).some((e) => e.t === 'campaign.started' && (e.d.runtime || 'v3') === 'v3');
-chat.push({ is_user: true, is_system: false, mes: 'Ranger', extra: {} });
-let aborted = false;
-await globalThis.averethInterceptor(chat, 8000, () => { aborted = true; }, 'normal');
-// character creation is answered by the engine's System panel without a narrator call (Pre-Test-5); the line is hidden
-const panelText = () => (window.__panels || []).join('\\n');
-result.step2 = aborted && /CLASS SELECTED: RANGER[\\s\\S]*Initiative 9[\\s\\S]*- Aimed Shot \\[/.test(panelText()) && chat[1].is_system === true;
-aborted = false;
-chat.push({ is_user: true, is_system: false, mes: 'Aimed Shot + Power Shot', extra: {} });
-await globalThis.averethInterceptor(chat, 8000, () => { aborted = true; }, 'normal');
-result.creation = aborted && /CHARACTER CREATION COMPLETE[\\s\\S]*Starter Shortbow/.test(panelText());
-// like SillyTavern, the interceptor gets coreChat: a new array of shallow copies without hidden lines (the saved chat stays untouched)
-let core = null;
-const ask = async (input) => {
-  chat.push({ is_user: true, is_system: false, mes: input, extra: {} });
-  core = chat.filter((m) => !m.is_system).map((m) => ({ ...m }));
-  await globalThis.averethInterceptor(core, 8000, () => {}, 'normal');
-};
-await ask('I walk along the road.');
-result.firstStory = /mode: story/.test(window.__prompt) && /CHARACTER CREATION is complete/.test(window.__prompt) && core.every((m) => !/^(Ranger|Aimed Shot \\+ Power Shot)$/.test(m.mes));
-// without streaming SillyTavern emits MESSAGE_RECEIVED before it renders the message (Testrun 2)
-const r1 = chat.length;
-chat.push({ is_user: false, is_system: false, mes: 'A quiet road.\\n<avereth>{}</avereth>', swipe_id: 0, swipes: ['x'], swipe_info: [{ extra: {} }], extra: {} });
-const savedBefore = window.__saved || 0;
-await handlers.mr(r1);
-result.stripped = chat[r1].mes === 'A quiet road.' && (window.__saved || 0) > savedBefore && !(window.__rerendered || []).includes(r1);
-document.getElementById('chat').insertAdjacentHTML('beforeend', '<div class="mes" mesid="' + r1 + '"><div class="mes_text"></div></div>');
-chat[r1].mes = 'A quiet road, retold.\\n<avereth>{}</avereth>';
-await handlers.me(r1);
-await new Promise((r) => setTimeout(r, 0)); // SillyTavern redraws from mes after MESSAGE_EDITED; the engine redraws after that
-result.retcon = chat[r1].mes === 'A quiet road, retold.' && chat[r1].extra.avereth.retcon === true && (window.__rerendered || []).includes(r1);
-// a combat turn: the reply shows the engine's System block (display_text), the prompt text stays plain
-const turn = async (input, reply) => {
-  await ask(input);
-  chat.push({ is_user: false, is_system: false, mes: reply, swipe_id: 0, swipes: [reply], swipe_info: [{ extra: {} }], extra: {} });
+for (const [name, [events, why]] of Object.entries(VARIANTS)) {
+  chatId = 'legacy-' + name;
+  const chat = [{ is_user: false, is_system: false, mes: FIRST, swipe_id: 0, swipes: [FIRST], swipe_info: [{ extra: {} }], extra: { avereth: { v: 2, events, text_hash: null } } }];
+  const { hash32 } = await import('/src/util.js');
+  chat[0].extra.avereth.text_hash = hash32(FIRST);
+  ctx.chat = chat;
+  const saved = window.__saved || 0;
+  const logged = window.__log.length;
+  window.__prompt = 'stale';
+  chat.push({ is_user: true, is_system: false, mes: 'I walk to the Guild hall.', extra: {} });
+  let aborted = false;
+  await globalThis.averethInterceptor(chat, 8000, () => { aborted = true; }, 'normal');
+  const turn = chat.at(-1);
+  chat.push({ is_user: false, is_system: false, mes: 'A reply.', swipe_id: 0, swipes: ['A reply.'], swipe_info: [{ extra: {} }], extra: {} });
   await handlers.mr(chat.length - 1);
-};
-await turn('I look around.', 'A boar. A hunter writes in his ledger.\\n<avereth>{"new":[{"ref":"boar","kind":"creature","species":"boar","band":"MEDIUM"}]}</avereth>');
-// Word replacements (default ledger=register): the reply text in the chat, and so in the next prompt, no longer has it
-result.wordSwap = chat.at(-1).mes === 'A boar. A hunter writes in his register.';
-// Lore Bridge: realm and city as World Info scan text, never inserted (position NONE); engine lore until a lorebook is linked
-const bridge = window.__ext.avereth_lore_keys;
-result.loreBridge = bridge && bridge.value === 'Duskreach\\nAshbridge' && bridge.position === -1 && bridge.scan === true && /\\nLORE:\\n/.test(window.__prompt);
-ctx.characters[0].data.extensions.world = 'Avereth World Lore v0.14'; // linked as Character Lore: descriptive lore comes from it
-await turn('I Power Shot the boar', 'The arrow flies.\\n<avereth>{}</avereth>');
-result.loreBridge = result.loreBridge && !/\\nLORE:\\n/.test(window.__prompt) && window.__ext.avereth_lore_keys.value === 'Duskreach\\nAshbridge';
-const last = chat.at(-1);
-// 4.3.0-c.6.4+: the stored panel (record) keeps its lines; the message shows them as one System card above the prose
-const card = (m) => /^<div class="avereth-system-panel avereth-system-combat">/.test(m.extra.display_text || '');
-const panelOf = (m) => m.extra.avereth?.panel || '';
-result.combatShown = card(last) && /COMBAT START/.test(last.extra.display_text) && /^\`COMBAT START\`\\n\`Initiative: /.test(panelOf(last)) && last.mes === 'The arrow flies.' && /\`HP: /.test(panelOf(last));
-chat.push({ is_user: true, is_system: false, mes: '#status', extra: {} });
-await globalThis.averethInterceptor(chat, 8000, () => { aborted = true; }, 'normal');
-result.command = aborted && /SYSTEM \\/\\/ STATUS/.test((window.__panels || []).join('')) && chat.at(-1).is_system === true;
-// an NPC's attack reported by the reply: the fight is fixed at once and shown above that reply (Testrun 3)
-await turn('I look around again.', 'A wolf lunges out of the brush.\\n<avereth>{"new":[{"ref":"wolf","kind":"creature","species":"wolf","band":"SHORT"}],"combat":{"by":"wolf"}}</avereth>');
-// the wolf by its target label for the fight (live run 25.09.: "Wolf A"), listed among the targets
-result.commitShown = card(chat.at(-1)) && /COMBAT( START)? — Wolf A (attacks|joins)/.test(chat.at(-1).extra.display_text) && /\`COMBAT TARGETS — [^\`]*Wolf A \\[/.test(panelOf(chat.at(-1))) && /\`Next: /.test(panelOf(chat.at(-1)));
-// Runtime V3: a reply that still writes Megumin tracker blocks — removed from the text, the engine HUD below it
-const BLOCKS = '\\n<Blocks>\\n<World_State>**Loc:** nowhere</World_State>\\n<Character_Sheet>HP: 1/80 | Coin: 99 Gold</Character_Sheet>\\n<New_NPC name="Brom">**Background:** invented</New_NPC>\\n</Blocks>';
-await turn('I wait.', 'The wind turns.\\n<avereth>{}</avereth>' + BLOCKS);
-const v3 = chat.at(-1);
-const probe = document.createElement('div');
-probe.innerHTML = v3.extra.display_text || '';
-// outside a fight the Character and World HUDs; in a fight (the wolf's, still running) one tactical combat HUD replaces them
-const huds = probe.querySelectorAll('details.avereth-hud');
-result.hud = ((huds.length === 2 && /Alaric/.test(huds[0].querySelector('summary').textContent))
-    || (huds.length === 1 && /avereth-combat-hud/.test(huds[0].className) && /⚔ COMBAT/.test(huds[0].querySelector('summary').textContent)))
-  && /HP \\d+\\/80/.test(probe.textContent) && !/99 Gold|1\\/80|nowhere/.test(probe.textContent);
-result.trackersRemoved = v3.mes === 'The wind turns.' && !chat.some((m) => /<World_State>|<Character_Sheet>|<New_NPC>/.test(m.mes));
-// the prompt never carries the HUD; the next interceptor call trims its coreChat copy to the history window
-await turn('I walk on.', 'The road bends.\\n<avereth>{}</avereth>');
-result.hudNotInPrompt = !/avereth-hud/.test(window.__prompt) && core.every((m) => !/avereth-hud/.test(m.mes));
-result.historyWindow = core.filter((m) => m.is_user).length === 4 && chat.filter((m) => m.is_user && !m.is_system).length > 4;
-// a reply without a report: asked for separately while the player reads; a message sent at once waits for its facts
-await turn('I walk to the old mill.', 'The mill wheel creaks in the stream.');
-const millId = chat.length - 1;
-const pending = /NO FACT REPORT: asking for it separately/.test(chat[millId].extra.display_text || '') && chat[millId].extra.avereth.recovery === 'pending';
-await ask('I look around the mill.');
-result.reportRequest = pending && (window.__raw?.systemPrompt || '').startsWith('[AVERETH ENGINE — FACT REPORT REQUEST]') && (window.__raw?.prompt || '').includes("NARRATOR'S REPLY:" + String.fromCharCode(10) + 'The mill wheel creaks')
-  && (chat[millId].extra.display_text || '').includes('REPORT RECOVERED') && window.__prompt.includes('— the old mill | mode: ') && chat[millId].extra.avereth.recovery.from === 'no <avereth> report';
-// a swipe while the request still runs: the new text is asked for again; the answer for the old text is refused
-await turn('I cross the bridge.', 'The bridge sways.');
-const bridgeId = chat.length - 1;
-const asked = window.__rawCount;
-const swiped = 'The bridge holds, barely.';
-Object.assign(chat[bridgeId], { mes: swiped, swipes: [...chat[bridgeId].swipes, swiped], swipe_id: 1, swipe_info: [...chat[bridgeId].swipe_info, { extra: {} }] });
-await handlers.mr(bridgeId);
-await new Promise((r) => setTimeout(r, 800));
-result.reportRequest = result.reportRequest && window.__rawCount === asked + 1 && chat[bridgeId].mes === swiped && (chat[bridgeId].extra.display_text || '').includes('REPORT RECOVERED');
-result.settingsUi = !!document.getElementById('avereth_enabled') && document.getElementById('avereth_swaps')?.value === 'ledger=register'
-  && document.getElementById('avereth_hud')?.value === 'closed' && document.getElementById('avereth_history')?.value === '4' && document.getElementById('avereth_strip')?.checked === true
-  && document.getElementById('avereth_recover')?.checked === true;
-result.log = window.__log;
+  chat[0].mes = FIRST + ' (edited)';
+  await handlers.me(0);
+  const notices = window.__log.slice(logged).filter((n) => n.startsWith('error '));
+  const detail = { aborted, prompt: window.__prompt === '', noTurnRecord: !rec(turn), noReplyRecord: !rec(chat.at(-1)), notSaved: (window.__saved || 0) === saved,
+    noModel: !window.__raw, oneNotice: notices.length === 1 && notices[0].startsWith('error UNSUPPORTED CAMPAIGN — ' + why) };
+  result[name] = Object.values(detail).every(Boolean);
+  if (!result[name]) result[name + 'Detail'] = detail;
+}
+result.log = window.__log.slice();
 window.__result = result;
 </script></body></html>`;
 
@@ -170,6 +111,11 @@ function toProduct(answer) {
     return a;
 }
 const TURNS = gold.turns.slice(0, 3).map((t, i) => ({ player: t.player, commands: t.commands, reply: v12[i].reply, answer: toProduct(t.recovery) }));
+// B1 (.130): the page plays V4-C. The historical V12 board of turn 3 does not meet the current board profile (4 hunts +
+// clearance, F level recommendations); its board turn is covered by the processing corpus (tools/replay). Turn 3 keeps
+// the fee payment through generateRaw, without the board read and the board's listing of the reply.
+TURNS[2] = { ...TURNS[2], commands: TURNS[2].commands.filter((c) => c.type !== 'board.read'),
+    answer: { ...TURNS[2].answer, deltas: TURNS[2].answer.deltas.filter((d) => d.type !== 'listing.gone') } };
 const warrior = content.classes.get('warrior');
 const EXTRACT_DELAY_MS = 1200;
 const V4 = {
@@ -274,8 +220,7 @@ async function v4Page(DATA) {
     const coin = state().entities.pc.sheet.coin_cp;
     await send(DATA.turns[2].player);
     const p3 = window.__prompt || '';
-    result.generateRawPath = rawCalls === 2 && status().includes('LLM: generateRaw') && p3.includes('PAYS — the Guild registration fee, 20 cp')
-        && p3.includes("**Miller's Run Escort** — client: Harrow's mill · reward: 80 cp");
+    result.generateRawPath = rawCalls === 1 && status().includes('LLM: generateRaw') && p3.includes('PAYS — the Guild registration fee, 20 cp');
     ctx.mainApi = 'openai';
     const r3 = await reply(DATA.turns[2].reply);
     await until(() => rec(chat[r3]).extraction?.status !== 'pending');
@@ -283,8 +228,7 @@ async function v4Page(DATA) {
     const x3 = rec(chat[r3]);
     // the recorded reply has the Weasel contract taken in the reply that shows the board: refused since 4.0.9, it stays listed
     result.world = rec(chat[r2]).extraction?.status === 'applied' && x3.extraction?.status === 'applied'
-        && JSON.stringify((x3.rejected || []).map((x) => x.rule)) === '["board_first_display"]'
-        && s.guild.membership?.rank === 'Novice' && s.entities.pc.sheet.coin_cp === coin - 20 && s.quests[DATA.weasel]?.status === 'listed';
+        && s.guild.membership?.rank === 'Novice' && s.entities.pc.sheet.coin_cp === coin - 20;
     result.statusLine = status().includes('runtime v4 (LLM: custom endpoint)') && status().includes('integrity: OK') && status().includes('narrator contract: current');
     result.settingsUi = document.getElementById('avereth_runtime')?.value === 'v4';
     result.log = window.__log.slice();
@@ -327,7 +271,8 @@ function mockAnswer(system, user) {
     }
     if (system.startsWith('You read one reply')) {
         const t = TURNS.find((x) => user.includes(x.reply.slice(0, 60)));
-        return { purpose: 'extract', content: asBooked(JSON.stringify(t ? t.answer : { expected: {}, deltas: [] })), delay: EXTRACT_DELAY_MS };
+        // B1 (.130): new campaigns play V4-C / Ruleset 2, whose extractor names the reply's scene ('here': no move)
+        return { purpose: 'extract', content: asBooked(JSON.stringify({ scene: 'here', ...(t ? t.answer : { expected: {}, deltas: [] }) })), delay: EXTRACT_DELAY_MS };
     }
     if (system.startsWith('You write the official contracts')) {
         return { purpose: 'board', content: JSON.stringify({ listings: gold.board_generator.listings.map(generatorListing) }), delay: 400 };
@@ -365,7 +310,8 @@ const server = http.createServer(async (req, res) => {
         res.writeHead(200, { 'content-type': type });
         res.end(await readFile(file));
     } catch {
-        res.writeHead(404); res.end();
+        if (!res.headersSent) res.writeHead(404);
+        res.end();
     }
 });
 await new Promise((r) => server.listen(0, '127.0.0.1', r));
@@ -391,7 +337,7 @@ server.close();
 
 // what the V4 page asked for, in order, and how: SillyTavern's endpoint with the custom source, the settings' URL and
 // model, the P0 temperatures, no streaming, the CSRF header SillyTavern's getRequestHeaders() gives, and no key
-const want = [['interpret', 'custom'], ['extract', 'custom'], ['interpret', 'custom'], ['extract', 'custom'], ['interpret', 'generateRaw'], ['board', 'generateRaw'], ['extract', 'custom']];
+const want = [['interpret', 'custom'], ['extract', 'custom'], ['interpret', 'custom'], ['extract', 'custom'], ['interpret', 'generateRaw'], ['extract', 'custom']];
 v4.llmCalls = llmCalls.map((c) => `${c.purpose}/${c.path}${c.path === 'custom' ? ` t=${c.temperature}` : ''}`);
 v4.requests = JSON.stringify(llmCalls.map((c) => [c.purpose, c.path])) === JSON.stringify(want)
     && llmCalls.filter((c) => c.path === 'custom').every((c) => c.source === 'custom' && c.url === V4.customUrl && c.model === V4.model && c.stream === false
@@ -399,10 +345,9 @@ v4.requests = JSON.stringify(llmCalls.map((c) => [c.purpose, c.path])) === JSON.
 
 console.log(JSON.stringify({ v3, v4 }, null, 1));
 if (!v4.requests) console.log('V4 requests:', JSON.stringify(llmCalls, null, 1));
-const okV3 = v3.campaign && v3.step2 && v3.creation && v3.firstStory && v3.stripped && v3.retcon && v3.combatShown && v3.command && v3.commitShown && v3.loreBridge && v3.wordSwap && v3.settingsUi
-    && v3.hud && v3.trackersRemoved && v3.hudNotInPrompt && v3.historyWindow && v3.reportRequest && !v3.errors.length && !v3.log.length;
+const okV3 = v3.v3 && v3.pathA && v3.olderF && v3.unreadable && !v3.errors.length;
 const okV4 = v4.v4Campaign && v4.creation && v4.playerActions && v4.pendingShown && v4.barrier && v4.worldShown && v4.registerPending && v4.generateRawPath
     && v4.world && v4.statusLine && v4.contractOutdated && v4.settingsUi && v4.requests && v4.foldBlocked && !v4.errors.length && !v4.log.length;
-console.log(`V3 page: ${okV3 ? 'OK' : 'FAILED'} | V4 page: ${okV4 ? 'OK' : 'FAILED'}`);
+console.log(`Legacy page: ${okV3 ? 'OK' : 'FAILED'} | V4 page: ${okV4 ? 'OK' : 'FAILED'}`);
 console.log(okV3 && okV4 ? 'BROWSER SMOKE: OK' : 'BROWSER SMOKE: FAILED');
 process.exit(okV3 && okV4 ? 0 : 1);

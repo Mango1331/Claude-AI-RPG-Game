@@ -53,7 +53,7 @@ const pcHeld = (s, re) => Object.values(s.objects).filter((o) => o.holder?.entit
 async function campaign() {
     const g = plannerOn(new Chat4(content, { legacyPrivateQuests: true, greeting: GREETING }));
     await g.player('Mage');
-    await g.player('Flame Lance + Arcane Burst');
+    await g.player('Flame Lance + Arcane Wave');
     return g;
 }
 

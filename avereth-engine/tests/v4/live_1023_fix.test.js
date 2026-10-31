@@ -106,7 +106,8 @@ test('.53 the Dungeon\'s root (live #22): goblins of the Mossback Warrens the re
 
 // ------------------------------------------------------------------------------------------------ starter weapons
 test('.53 starter weapons (ruleset 2): Warrior Longsword ATK 10, Mage Staff MATK 10, Rogue Dagger ATK 10, Rank F; the creation menu says so', async () => {
-    const cases = [['Warrior', 'Heavy Slash + Guard', 'atk', 10], ['Mage', 'Arcane Bolt + Arcane Ward', 'matk', 10], ['Rogue', 'Razor Cut + Feint', 'atk', 10]];
+    // B1 (.130): the starter AoE pool is the current creation rule (Fan of Blades in Feint's slot)
+    const cases = [['Warrior', 'Heavy Slash + Guard', 'atk', 10], ['Mage', 'Arcane Bolt + Arcane Ward', 'matk', 10], ['Rogue', 'Razor Cut + Fan of Blades', 'atk', 10]];
     for (const [cls, skills, stat, value] of cases) {
         const g = await campaign(content, { cls, skills });
         const sheet = g.state().entities.pc.sheet;

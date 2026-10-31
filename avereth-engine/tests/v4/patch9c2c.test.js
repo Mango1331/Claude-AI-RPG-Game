@@ -79,12 +79,16 @@ test('9C-2c (1): long training of his mind ends in an offered Ordinary Passive; 
     assert.match(outcomeOf(g).actions[0], /TRAINS — his mind \(INT\) for 120 minutes on his own, booked by the engine: Learning Progress 20\/200 toward an Ordinary Passive\. Nothing about him changes yet/);
     assert.equal(outcomeOf(g).passive_offers, undefined);
     await reply(g, 'He sits and breathes.');
-    // the same day again: its claim is spent
+    // B1 (.130): the current daily ceiling of own practice (F balance) is 40 LP: a second session the same day reaches
+    // it, a third finds the day's claim spent
     await say(g, first, ACT('train', { learn: 'INT', minutes: 120, quote: words(first) }));
-    assert.match(outcomeOf(g).actions[0], /Learning Progress 20\/200/);
+    assert.match(outcomeOf(g).actions[0], /Learning Progress 40\/200/);
+    await reply(g, 'He sits and breathes.');
+    await say(g, first, ACT('train', { learn: 'INT', minutes: 120, quote: words(first) }));
+    assert.match(outcomeOf(g).actions[0], /Learning Progress 40\/200/);
     await reply(g, 'He sits and breathes.');
     await sleepTillMorning(g);
-    const r = await trainMind(g, { days: 9 });
+    const r = await trainMind(g, { days: 8 });
     const o = outcomeOf(g);
     assert.match(o.actions[0], /Learning Progress 200\/200 toward an Ordinary Passive\. The training is complete; what came of it is offered only if the engine names it below \(POSSIBLE PASSIVE\)/);
     assert.equal(calls.length, 1, 'one Forge request for the offer');

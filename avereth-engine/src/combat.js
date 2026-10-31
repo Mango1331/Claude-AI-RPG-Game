@@ -496,7 +496,7 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
             .map((c) => c.id) : [];
         if (isArea && !plannedAreaTargets.length) return { illegal: bandArea ? `${skill.name} needs a valid target in ${selectedBand || "a chosen band"} after the declared movement` : `${skill.name} needs a valid target ENGAGED with ${actor.name} after the declared movement` };
         // resources (after legality of target/range, before RNG): Cost + Ammo committed together (Core #21)
-        const cost = skillCostAmount(content, skill, byItem ? 1 : actor.fixed.actions[skill.id].prof, actor.fixed.passive?.cost, ctx.state.meta?.f_progression === true);
+        const cost = skillCostAmount(content, skill, byItem ? 1 : actor.fixed.actions[skill.id].prof, actor.fixed.passive?.cost, true);
         if (skill.cost && actor.current[skill.cost.resource] < cost) {
             return { illegal: `${actor.name} lacks ${skill.cost.resource.toUpperCase()} for ${skill.name} (${actor.current[skill.cost.resource]} < ${cost})` };
         }
@@ -621,7 +621,7 @@ export function skillAction(ctx, actorId, skillId, extra = {}) {
     const actor = enc.combatants[actorId];
     const skill = skillOf(content, skillId, ctx.state);
     if (actor.model !== 'character' || !actor.fixed.actions[skill.id]) return { illegal: `${actor.name} does not know ${skill.name}` };
-    const cost = skillCostAmount(content, skill, actor.fixed.actions[skill.id].prof, actor.fixed.passive?.cost, ctx.state.meta?.f_progression === true);
+    const cost = skillCostAmount(content, skill, actor.fixed.actions[skill.id].prof, actor.fixed.passive?.cost, true);
     if (skill.cost && actor.current[skill.cost.resource] < cost) return { illegal: `${actor.name} lacks ${skill.cost.resource.toUpperCase()} for ${skill.name}` };
     // Patch 9B-2: a heal or a restore with nothing to restore is refused before anything is paid
     const who = () => ({ stats: actor.fixed.stats, pools: { hp: actor.current.hp, mp: actor.current.mp, sta: actor.current.sta }, max: { hp: actor.fixed.max_hp, mp: actor.fixed.max_mp, sta: actor.fixed.max_sta } });
@@ -681,7 +681,7 @@ export function worldAction(ctx, actorId, act) {
     const actor = enc.combatants[actorId];
     const skill = skillOf(content, act.skill, ctx.state);
     if (!skill || actor.model !== 'character' || !actor.fixed.actions[skill.id]) return { illegal: `${actor.name} does not know ${skill?.name || act.skill}` };
-    const cost = skillCostAmount(content, skill, actor.fixed.actions[skill.id].prof, actor.fixed.passive?.cost, ctx.state.meta?.f_progression === true);
+    const cost = skillCostAmount(content, skill, actor.fixed.actions[skill.id].prof, actor.fixed.passive?.cost, true);
     if (skill.cost && actor.current[skill.cost.resource] < cost) return { illegal: `${actor.name} lacks ${skill.cost.resource.toUpperCase()} for ${skill.name} (${actor.current[skill.cost.resource]} < ${cost})` };
     let ammoUsed = 0;
     if (skill.ammo && actor.fixed.weapon_family === 'bow') {
@@ -783,7 +783,7 @@ export function damagePreview(enc, content, targetId, state = null) {
         const band = target.current.band;
         const reach = rangeReaches(skill.range.band, band) || (bandIndex(band) > 0 && rangeReaches(skill.range.band, bandName(bandIndex(band) - 1)));
         const prof = PROF(content, known.prof);
-        const cost = skillCostAmount(content, skill, known.prof, pc.fixed.passive?.cost, state?.meta?.f_progression === true);
+        const cost = skillCostAmount(content, skill, known.prof, pc.fixed.passive?.cost, true);
         const arrows = skill.ammo && pc.fixed.weapon_family === 'bow' ? (pc.current.ammo?.[skill.ammo.item] || 0) >= skill.ammo.qty : true;
         if (!reach || (skill.cost && pc.current[skill.cost.resource] < cost) || !arrows) continue;
         const isRanged = skill.range.band !== 'ENGAGED';
@@ -950,7 +950,7 @@ function npcAttackSkill(ctx, me) {
         if (!s || !s.attack) continue;
         if (s.ammo && (me.fixed.weapon_family !== 'bow' || !hasAmmo(me, s))) continue;
         // review of 9B-2: the cost its execution books (its Proficiency, its Passives' reductions)
-        const cost = skillCostAmount(ctx.content, s, me.fixed.actions[s.id].prof, me.fixed.passive?.cost, ctx.state.meta?.f_progression === true);
+        const cost = skillCostAmount(ctx.content, s, me.fixed.actions[s.id].prof, me.fixed.passive?.cost, true);
         if (s.cost && me.current[s.cost.resource] < cost) continue;
         const reach = s.range.extra_band ? 'SHORT' : s.range.band;
         if (bandIndex(band) > bandIndex(reach) + 1) continue;
@@ -1082,17 +1082,17 @@ export function npcTactic(ctx, me, decision) {
     const ownLast = enc.log.findLastIndex((r) => r.actor === me.id);
     if (ownLast >= 0 && enc.log[ownLast].kind === 'skill') return null;
     const known = Object.keys(me.fixed.actions).map((sid) => resolveSkill(content, sid, ctx.state)).filter((s) => s && !s.attack && !s.item);
-    const payable = (s, spent = 0) => !s.cost || me.current[s.cost.resource] - spent >= skillCostAmount(content, s, me.fixed.actions[s.id].prof, me.fixed.passive?.cost, ctx.state.meta?.f_progression === true);
+    const payable = (s, spent = 0) => !s.cost || me.current[s.cost.resource] - spent >= skillCostAmount(content, s, me.fixed.actions[s.id].prof, me.fixed.passive?.cost, true);
     // 9D: existing self-heals/restores are executable; choose only a concrete recovery, at most the existing tactics cap.
     for (const skill of known.filter((k) => payable(k))) {
-        const paid = skillCostAmount(content, skill, me.fixed.actions[skill.id].prof, me.fixed.passive?.cost, ctx.state.meta?.f_progression === true);
+        const paid = skillCostAmount(content, skill, me.fixed.actions[skill.id].prof, me.fixed.passive?.cost, true);
         const r = restoration(content, skill, me.fixed.actions[skill.id].prof, rulesetOf(ctx.state), { stats: me.fixed.stats, pools: me.current, max: { hp: me.fixed.max_hp, mp: me.fixed.max_mp, sta: me.fixed.max_sta } }, paid);
         if (!r || r.full || r.after <= r.before) continue;
         if (r.resource === 'hp' && me.current.hp <= 0.5 * me.fixed.max_hp) return { skill: skill.id, why: 'hurt to half HP or less: restores HP with a known Skill' };
         if (r.resource !== 'hp' && Object.keys(me.fixed.actions).some((id) => {
             const a = resolveSkill(content, id, ctx.state);
             if (!a?.attack || a.cost?.resource !== r.resource) return false;
-            const cost = skillCostAmount(content, a, me.fixed.actions[id].prof, me.fixed.passive?.cost, ctx.state.meta?.f_progression === true);
+            const cost = skillCostAmount(content, a, me.fixed.actions[id].prof, me.fixed.passive?.cost, true);
             return me.current[r.resource] < cost && r.after >= cost;
         })) return { skill: skill.id, why: 'a known restore makes an otherwise unaffordable attack payable' };
     }
@@ -1114,8 +1114,8 @@ export function npcTactic(ctx, me, decision) {
     const sid = npcAttackSkill(ctx, me);
     const blow = sid ? resolveSkill(content, sid, ctx.state) : null;
     if (!blow || blow.range.band !== 'ENGAGED' || me.current.band !== 'ENGAGED') return null;
-    const spent = feint.cost ? skillCostAmount(content, feint, me.fixed.actions[feint.id].prof, me.fixed.passive?.cost, ctx.state.meta?.f_progression === true) : 0;
-    const then = blow.cost ? skillCostAmount(content, blow, me.fixed.actions[blow.id].prof, me.fixed.passive?.cost, ctx.state.meta?.f_progression === true) : 0;
+    const spent = feint.cost ? skillCostAmount(content, feint, me.fixed.actions[feint.id].prof, me.fixed.passive?.cost, true) : 0;
+    const then = blow.cost ? skillCostAmount(content, blow, me.fixed.actions[blow.id].prof, me.fixed.passive?.cost, true) : 0;
     if (blow.cost && (blow.cost.resource === feint.cost?.resource ? me.current[blow.cost.resource] - spent : me.current[blow.cost.resource]) < then) return null;
     const pc = enc.combatants.pc;
     const magical = blow.attack.damage_type === 'magical';

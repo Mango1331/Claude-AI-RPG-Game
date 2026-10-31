@@ -83,3 +83,5 @@ Build **`4.3.0-c.6.6.129`**. Ein wiederverwendeter Spielerrecord wird jetzt eins
 - Regression `fold_integrity.test.js` („a reused player record is checked with its own events“): auf `5ccbf81` rot, danach grün.
 - Volle Suite **2452/2452**; voller Korpus **2.235 Fälle, 0 Abweichungen**.
 - Keine Host-/Protokolländerung, daher kein neuer ST-Smoke.
+
+Fortsetzung: Etappe B1 (.130) in `docs/PATCH_ARCH_B1_130_CURRENT_RULES.md`.

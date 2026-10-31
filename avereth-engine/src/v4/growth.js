@@ -182,7 +182,7 @@ function teacherNow(state, content, id, tags) {
 function dayClaim(content, cls, goal, day, state) {
     const r = R(content);
     const m = goal.days?.[day] || {};
-    const cap = state?.meta.f_balance ? content.rules.f_balance.lp_day_cap : r.lp_day_cap;
+    const cap = content.rules.f_balance.lp_day_cap;
     const self = Math.min(cap.self, (r.lp_per_hour.self * (m.self || 0)) / 60);
     const raw = Math.min(cap.teacher, (r.lp_per_hour.teacher * (m.teacher || 0)) / 60 + self);
     // Patch 9C-2c: a quality of himself he trains has no discipline: no affinity

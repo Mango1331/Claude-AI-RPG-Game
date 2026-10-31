@@ -13,6 +13,8 @@ export function generatorListing({ id, ...l }) {
         title: l.title, client: l.client, rank: l.rank, level: l.level, qtype: l.qtype, payout_cp: l.payout_cp, ...(l.task !== undefined ? { task: l.task } : {}), desired_end_state: l.desired_end_state,
         objectives: (l.objectives || []).map((o) => ({ verb: o.verb, what: o.what, qty: o.qty ?? null, unit: o.unit ?? null, where: o.where ?? null })),
         proof: (l.proof || []).map((p) => ({ kind: p.kind, what: p.what, qty: p.qty ?? null, unit: p.unit ?? null, on: p.on ?? null, consume: p.consume ?? null })),
+        // B1 (.130): the current generator writes a world hunt's population (src/v4/guild.js habitatWhy)
+        ...(l.habitat !== undefined ? { habitat: l.habitat } : {}),
     };
 }
 
@@ -22,10 +24,10 @@ export class Chat4 {
      * @param {{seed?: number, greeting?: string, listings?: object[]|null, boardFails?: boolean}} opts listings: what the
      *   Board generator answers (a fixture's listings, ids removed as the generator never writes ids)
      */
-    constructor(content, { seed = 7, greeting = GREETING, listings = null, boardFails = false, legacyPrivateQuests = false, fProgression = false, fBalance = false, starterAoe = false } = {}) {
+    constructor(content, { seed = 7, greeting = GREETING, listings = null, boardFails = false, legacyPrivateQuests = false, fProgression = false, fBalance = false, starterAoe = false, planner } = {}) {
         this.content = content;
         this.chat = [{ mes: greeting, is_user: false, is_system: false, extra: {} }];
-        ensureCampaign(this.chat, content, { seed, runtime: 'v4' });
+        ensureCampaign(this.chat, content, { seed, runtime: 'v4', planner });
         // Historical regression scenarios keep their original numeric policy; current-policy tests opt in.
         if (!starterAoe) delete rec(this.chat[0]).events.find(e => e.t === 'campaign.started').d.starter_aoe;
         if (!fBalance) delete rec(this.chat[0]).events.find(e => e.t === 'campaign.started').d.f_balance;

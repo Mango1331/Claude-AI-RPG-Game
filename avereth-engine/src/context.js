@@ -638,7 +638,7 @@ export function buildContext(state, content, opts = {}) {
     // Prototype C (4.3.0-c.6.6.5): the settlement around Alaric lives (crowd by time of day, everyday trades by size)
     if (v4 && !state.encounter && (opts.outcome?.auth?.c || opts.outcome?.c)) add('settlement', settlementLife(state, content), 1);
 
-    if (v4 && state.meta.f_progression && !state.encounter) {
+    if (v4 && !state.encounter) {
         const area = lineage(state, state.scene.at).map(id => state.places[id]).find(p => p.encounter_levels);
         if (area) add('world_area', `AREA LEVELS — ${area.name}: ${area.encounter_levels.join('–')}. Fixed world default for suitable new outdoor foes, never PC scaling. Specific local populations and existing individual profiles take priority.`, 0);
         else if (lineage(state, state.scene.at).some(id => ['region', 'wilderness'].includes(state.places[id].kind)))
@@ -654,7 +654,7 @@ export function buildContext(state, content, opts = {}) {
             || Object.values(state.offers || {}).some(o => o.status === 'open' && !o.bid && state.scene.present.includes(o.seller) && o.lines.some(l => l.profile?.kind === 'gear')))) {
         const offers = Object.values(state.offers || {}).filter(o => o.status === 'open' && !o.bid && state.scene.present.includes(o.seller))
             .flatMap(o => o.lines.filter(l => l.kind === 'goods').map(l => `${l.what}: ${gearText(l.profile) || 'ordinary merchandise'}`)).slice(0, 8);
-        add('gear_market', `${gearMarketText(content, state.meta.f_balance === true)}${offers.length ? `\nRECORDED GOODS: ${offers.join('; ')}` : ''}`, 0);
+        add('gear_market', `${gearMarketText(content, true)}${offers.length ? `\nRECORDED GOODS: ${offers.join('; ')}` : ''}`, 0);
     }
 
     // hard facts about the current place, present people and anything named this turn are always shown (binding)

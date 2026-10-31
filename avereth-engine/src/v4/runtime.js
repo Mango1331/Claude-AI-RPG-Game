@@ -85,6 +85,60 @@ export function campaignRuntime(chat) {
 }
 
 /**
+ * Architecture patch B1 (.130): the one campaign protocol this build continues, read from the campaign's own
+ * campaign.started record (the reducer keeps only part of it in state.meta): Runtime V4, path C, Ruleset 2, no formal
+ * private quests, a readable start build, and either the .126 configuration (f_progression, f_balance and starter_aoe
+ * all set, as every campaign since .116 wrote them) or a start build from FLAGLESS_SINCE on, which no longer writes
+ * those retired switches. Anything else is refused before any new step; no migration, no new field.
+ */
+export const FLAGLESS_SINCE = '4.3.0-c.6.6.130';
+
+/** "4.3.0-c.6.6.130" -> [4, 3, 0, 6, 6, 130], compared numerically; null when unreadable. */
+export function parseBuild(version) {
+    const m = /^(\d+)\.(\d+)\.(\d+)-c\.(\d+)\.(\d+)\.(\d+)$/.exec(String(version ?? ''));
+    return m ? m.slice(1).map(Number) : null;
+}
+
+export function compareBuilds(a, b) {
+    for (let i = 0; i < Math.max(a.length, b.length); i++) if ((a[i] ?? 0) !== (b[i] ?? 0)) return (a[i] ?? 0) - (b[i] ?? 0);
+    return 0;
+}
+
+/** The campaign.started record of the chat, read from the stored record itself: an edited greeting (its text no longer
+ * matching the record) must not hide which protocol the campaign was started on. */
+export function campaignStart(chat) {
+    for (const m of chat) {
+        const e = (rec(m)?.events || []).find((x) => x?.t === 'campaign.started');
+        if (e) return e.d || {};
+    }
+    return null;
+}
+
+/** null when the chat holds no campaign yet or a supported one; else why not, and the notice the host shows. */
+export function campaignSupport(chat) {
+    const d = campaignStart(chat);
+    if (!d) return null;
+    const build = parseBuild(d.engine_version);
+    const flags = ['f_progression', 'f_balance', 'starter_aoe'];
+    const set = flags.filter((k) => d[k] === true);
+    const why = (d.runtime || 'v3') !== 'v4' ? 'it was started on Runtime V3'
+        : d.path !== 'c' ? `it plays ${d.path === 'a' ? 'the retired path A (interpreter)' : 'no pinned planner path'}`
+            : d.ruleset !== 2 ? `it plays Ruleset ${d.ruleset ?? 1}`
+                : d.private_quests !== false ? 'it was started with formal private quests'
+                    : !build ? 'its start build is missing or unreadable'
+                        : set.length === flags.length ? null
+                            : set.length === 0 && compareBuilds(build, parseBuild(FLAGLESS_SINCE)) >= 0 ? null
+                                : 'it was started with an older F rule configuration';
+    if (!why) return null;
+    return {
+        reason: why,
+        notice: `UNSUPPORTED CAMPAIGN — ${why} (start build ${d.engine_version || 'unknown'}). This build continues only campaigns of`
+            + ' the current V4-C / Ruleset 2 protocol. Nothing was booked, saved or sent to a model. Start a new chat for a new'
+            + ' campaign, or finish this one on the build it was started with.',
+    };
+}
+
+/**
  * Patch 7.2: the path a V4 campaign plays on, 'c' (the semantic planner, the product path) or 'a' (the interpreter of
  * Runtime V4-A). A campaign started from 4.3.0-c.6.6.21 on keeps the path it started with (campaign.started path), so
  * a later change of the setting never moves a running game to another path. A campaign started before has none and
@@ -466,7 +520,7 @@ export function boardFor(state, content, commands, { c = false } = {}) {
     const size = content.rules.guild.board?.size ?? 5;
     // Prototype C (4.3.0-c.6): a new day's board is a new board: five notices, none of yesterday's (src/v4/commands.js
     // board.read retires those), booked whole or not at all (generateBoard)
-    if (c) return { branch, rank, missing: size, day: today(state), have: [], c: true, ...(rulesetOf(state) >= 2 ? { profile: COUNT_BOARD_PROFILE, ...(state.meta.f_progression && rank === 'Novice' ? { progression: true } : {}) } : {}) };
+    if (c) return { branch, rank, missing: size, day: today(state), have: [], c: true, ...(rulesetOf(state) >= 2 ? { profile: COUNT_BOARD_PROFILE, ...(rank === 'Novice' ? { progression: true } : {}) } : {}) };
     const have = listingsOf(state, branch, rank);
     const missing = size - have.length;
     return missing > 0 ? { branch, rank, missing, day: today(state), have: have.map((q) => q.title) } : null;

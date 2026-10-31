@@ -56,11 +56,12 @@ function beast(s, emit, at, id = 'mon.test', more = {}) {
     return s.entities[id];
 }
 
-test('F progression: new Rule-2 V4 campaigns persist the policy; Rule1 does not', () => {
+test('F progression (B1 .130): world progression is the current rule, no campaign switch; the start names its build', () => {
     const opts = { runtime: 'v4', firstMessage: 'Location: outside Alderwatch, Valedorn Crown', seed: 7 };
-    assert.equal(startCampaign(c, { ...opts, ruleset: 2 })[0].d.f_progression, true);
-    assert.notEqual(startCampaign(c, { ...opts, ruleset: 1 })[0].d.f_progression, true);
-    assert.notEqual(startCampaign(c, { ...opts, ruleset: 2, planner: false })[0].d.f_progression, true);
+    for (const more of [{ ruleset: 2 }, { ruleset: 1 }, { ruleset: 2, planner: false }]) {
+        const start = startCampaign(c, { ...opts, ...more })[0].d;
+        assert.equal('f_progression' in start, false); assert.match(start.engine_version, /^\d+\.\d+\.\d+-c\./);
+    }
 });
 test('F progression: live board requests select world progression without changing the 5-notice family', () => {
     const s = state(), n = boardFor(s, c, [{ seq: 1, type: 'board.read', rank: 'Novice' }], { c: true });
@@ -135,8 +136,9 @@ test('F progression: JSON event replay preserves populations, contracts and crea
     const replay = copy(base); for (const e of JSON.parse(JSON.stringify(events))) applyEvent(replay, e);
     assert.deepEqual(replay.places, s.places); assert.deepEqual(replay.quests, s.quests); assert.deepEqual(replay.entities, s.entities);
 });
-test('F progression: historical boards need no habitat and keep their old contract meaning', () => {
-    const s = state(); delete s.meta.f_progression;
+test('F progression: a board request without world progression (an older rank\'s profile) needs no habitat', () => {
+    // B1 (.130): no campaign is without world progression any more; boardFor still asks a non-Novice rank without it
+    const s = state();
     const ls = listings().map(({ habitat, ...l }) => ({ ...l, level: 1 }));
     const n = { ...need(s) }; delete n.progression;
     assert.equal(parse(s, ls, n).listings?.length, 5);
@@ -175,9 +177,11 @@ test('F progression: Guild reading exposes a priced manual source, normal purcha
     const offer = Object.values(g.state().offers).find(o => o.stock === 'manuals' && o.status === 'open');
     assert.ok(offer, outcomeOf(g)?.actions?.join('\n'));
     const manual = offer.lines.find(l => l.profile?.fn === 'mend'); assert.ok(manual);
-    await say(g, 'I buy the Primer of Mend for 120 copper.', { type: 'offer.accept', offer: offer.id, lines: [manual.id], qty: 1 });
+    // B1 (.130): the F balance price (80 cp) is the current Guild manual price
+    assert.equal(manual.price_cp, 80);
+    await say(g, 'I buy the Primer of Mend for 80 copper.', { type: 'offer.accept', offer: offer.id, lines: [manual.id], qty: 1 });
     const obj = Object.values(g.state().objects).find(o => o.holder?.entity === 'pc' && o.profile?.source === 'manual' && o.profile.fn === 'mend');
-    assert.ok(obj); assert.equal(g.state().entities.pc.sheet.coin_cp, 380);
+    assert.ok(obj); assert.equal(g.state().entities.pc.sheet.coin_cp, 420);
     const gift = await g.reply('Lena hands him the Primer of Mend he just bought.', { expected: {}, deltas: [
         { seq: 1, type: 'object.new', name: 'Primer of Mend', kind: 'document', qty: 1, unit: null, holder: 'npc.clerk', for_quest: null, in: null, effect: null, teaches: { source: 'manual', fn: 'mend', tags: null, aspects: null } },
         { seq: 2, type: 'object.move', object: { new: 'Primer of Mend' }, qty: 1, to: 'pc' },

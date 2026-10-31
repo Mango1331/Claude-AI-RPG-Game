@@ -156,12 +156,12 @@ function skills(state, content) {
     for (const [id, v] of Object.entries(s.skills)) {
         const sk = skillOf(content, id, state);
         if (!sk) { lines.push(`${id} | UNKNOWN DEFINITION`); continue; }
-        lines.push(`${sk.name}${sk.dynamic ? ' (learned in this campaign)' : ''} | ${sk.category} | Rank ${sk.rank || '-'} | Complexity ${sk.complexity || '-'} | P${v.prof} (${ppText(content, sk, v, state)}) | Tags ${joinList(sk.tags, '-')}${aspectsText(sk)} | Cost ${skillCost(sk, v.prof, content, s, state.meta.f_progression === true)}`);
+        lines.push(`${sk.name}${sk.dynamic ? ' (learned in this campaign)' : ''} | ${sk.category} | Rank ${sk.rank || '-'} | Complexity ${sk.complexity || '-'} | P${v.prof} (${ppText(content, sk, v, state)}) | Tags ${joinList(sk.tags, '-')}${aspectsText(sk)} | Cost ${skillCost(sk, v.prof, content, s, true)}`);
     }
     if (lines.length === 1) lines.push('No Skills known yet.');
     // Patch 9A: the plain attack of the weapon he holds, no learned Skill (it comes and goes with the weapon)
     const w = weaponAttackOf(s, content, rulesetOf(state));
-    if (w) lines.push(`${w.skill.name} | weapon attack of the equipped ${w.weapon.name} (not a learned Skill) | Cost ${skillCost(w.skill, 1, content, s, state.meta.f_progression === true)}${w.skill.ammo ? ` + ${w.skill.ammo.qty} arrow` : ''}`);
+    if (w) lines.push(`${w.skill.name} | weapon attack of the equipped ${w.weapon.name} (not a learned Skill) | Cost ${skillCost(w.skill, 1, content, s, true)}${w.skill.ammo ? ` + ${w.skill.ammo.qty} arrow` : ''}`);
     // Patch 9C-1: the techniques he is learning, with their source and Learning Progress (src/v4/growth.js)
     const goals = goalLines(state);
     if (goals.length) lines.push('LEARNING:', ...goals);
@@ -192,7 +192,7 @@ function skill(state, content, arg) {
     const dv = deriveCharacter(s, content);
     const prof = content.rules.proficiency.levels[String(known.prof)];
     const lines = [`[SYSTEM // SKILL] ${sk.name}`, `Category ${sk.category} | Rank ${sk.rank || '-'} | Complexity ${sk.complexity || '-'} | ${known.weapon ? `weapon attack of the equipped ${known.weapon} (not a learned Skill)` : `Proficiency P${known.prof} (${ppText(content, sk, known, state)})`} | Tags ${joinList(sk.tags, '-')}${aspectsText(sk)}`];
-    lines.push(`Cost: ${skillCost(sk, known.prof, content, s, state.meta.f_progression === true)}${sk.ammo ? ` | Ammo: ${sk.ammo.qty} ${content.items.get(sk.ammo.item)?.name || sk.ammo.item} when fired from a bow` : ''}`);
+    lines.push(`Cost: ${skillCost(sk, known.prof, content, s, true)}${sk.ammo ? ` | Ammo: ${sk.ammo.qty} ${content.items.get(sk.ammo.item)?.name || sk.ammo.item} when fired from a bow` : ''}`);
     if (sk.range) lines.push(`Range: ${sk.range.band}${sk.range.extra_band ? ' (EXTRA-BAND movement: may move one additional band and must end ENGAGED)' : ''}${sk.range.area ? ` | Area: ${sk.range.area}` : ''}`);
     if (sk.attack) {
         lines.push(`Base Power ${sk.attack.base} | Scaling ${sk.attack.scaling.map((t) => `${t.stat} ×${t.text ?? t.coef}`).join(' + ')} | Uses ${sk.attack.share === 1 ? '' : `${sk.attack.share * 100}% of `}${sk.attack.uses} | ${sk.attack.damage_type}`);

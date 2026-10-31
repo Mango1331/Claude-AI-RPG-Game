@@ -11,7 +11,8 @@ node tools/sim/combat.mjs --config my-scenarios.json --runs 10 --out results
 
 `baseline.json` is the editable configuration example: `scenarios` and `smoke` (IDs).
 Scenario: unique CSV-safe `id`, `pc` build, `opponent`, `band`, `tactic`.
-Build: `class` warrior/mage/rogue, two actual pool `skills`, `level` 1/5/10/14/15,
+Build: `class` warrior/mage/rogue, two `skills` of the current starter pool (B1 .130: the AoE pool; build 1 uses
+Cleave / Arcane Wave where it used Power Strike / Arcane Burst), `level` 1/5/10/14/15,
 optional positive integer/fraction `stats` weights (all free points distributed),
 optional level15 `evolution` normal/rare and engine-offered `direction` (default offense).
 Rare evidence in that setup is explicitly SYNTHETIC, not a played career.

@@ -21,7 +21,8 @@ const rest = (g) => say(g, '*i rest for ten minutes*', ACT('rest', { minutes: 10
 // ------------------------------------------------------------------------------------------------ R1
 test('.52 review R1: of all his unused successful checks a valid choice over two days is evidence: day 1 A, day 2 B, C and D qualify', async () => {
     const rec = (feature) => ({ t: 'check.recorded', d: { what: 'climb', stat: 'AGI', actor: 6, opposition: 6, chance: 50, roll: 20, success: true, claimed: true, by: 'engine', feature, aim: 'cross', difficulty: 'moderate' } });
-    const g = await campaign(content, { cls: 'Rogue', skills: 'Razor Cut + Feint' });
+    // B1 (.130): the starter AoE pool is the current creation rule (Fan of Blades in Feint's slot)
+    const g = await campaign(content, { cls: 'Rogue', skills: 'Razor Cut + Fan of Blades' });
     inject(g, [rec('feat.a'), { t: 'time.advanced', d: { minutes: 1440, why: 'a test precondition' } }, rec('feat.b'), rec('feat.c'), rec('feat.d')]);
     await rest(g);
     const ev = Object.values(evidenceOf(g.state())).find((x) => x.kind === 'deeds');

@@ -49,9 +49,11 @@ for (const [cls, id] of Object.entries(ids)) {
         r.events.forEach(e => applyEvent(s, e));assert.equal(Object.keys(s.entities.pc.sheet.skills).length, 3);assert.deepEqual(validateState(s, product), []);
     });
 }
-test('old Mage creation and learned Arcane Burst keep their old definition', () => {
+test('B1: Mage creation offers the current AoE pool only; a learned Arcane Burst keeps its old definition', () => {
+    // B1 (.130): the starter AoE pool is the current creation rule, not a campaign variant: Arcane Burst is no choice
     const s = state('mage', true);s.mode = 'creation';s.creation.step = 2;
-    assert.equal(selectSkills(s, product, ['mage.arcane_burst', 'mage.arcane_bolt']).events.length, 1);
+    assert.equal(selectSkills(s, product, ['mage.arcane_burst', 'mage.arcane_bolt']).events.length, 0);
+    assert.equal(selectSkills(s, product, ['mage.arcane_wave', 'mage.arcane_bolt']).events.length, 1);
     const old = product.skills.get('mage.arcane_burst');assert.equal(old.range.band, 'ENGAGED');assert.equal(old.cost.amount, 14);assert.equal(old.effects[0].shape, 'caster_engaged');
 });
 for (const band of ['ENGAGED', 'SHORT', 'MEDIUM']) test(`band AoE selects exactly ${band}, independent of clusters`, () => {

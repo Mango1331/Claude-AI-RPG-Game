@@ -473,8 +473,7 @@ function kindWordsOf(content) {
 /** The content's map of kind words to one kind, for namesKind (null without content kind_words). */
 export const sameKinds = (content) => (kindWordsOf(content).same.size ? kindWordsOf(content).same : null);
 /** Does a text name the young of a kind ("feral hound pups", "the mudwyrm brood")? */
-export const namesYoung = (content, text, { yearlings = true } = {}) => [...kindOf(text || '').words]
-    .some((w) => kindWordsOf(content).young.has(w) && (yearlings || w !== 'yearling'));
+export const namesYoung = (content, text) => [...kindOf(text || '').words].some((w) => kindWordsOf(content).young.has(w));
 
 // the NPC templates' words for a person that name no role (content npc_templates.json: commoner): they sit in monster
 // names ("the wolf-man", "a man-eating tiger") and say nothing about whom a contract is against

@@ -28,7 +28,7 @@ const content = await loadProductContent();
 const GREETING = 'SYSTEM INITIALIZATION COMPLETE\n`Location: Public roadside verge outside Ashbridge, Duskreach`';
 const REALM = 'realm.duskreach';
 
-async function campaign(cls = 'Mage', skills = 'Flame Lance + Arcane Burst') {
+async function campaign(cls = 'Mage', skills = 'Flame Lance + Arcane Wave') {
     const g = new Chat4(content, { greeting: GREETING });
     await g.player(cls);
     await g.player(skills);
@@ -887,18 +887,19 @@ test('patch 7 review 11, 14: a Dungeon F–D keeps each level\'s Rank; a Rank th
 });
 
 test('patch 7 review C3, 15, 16, 17: Ashbridge knows the Mossback Warrens (F–E); the Novice board may put clearance of its F-Rank level there, one listing at most, as an ordinary Guild contract; going there finds the one place, never a copy', async () => {
+    // B1 (.130): hunts carry the current F board profile (habitat, introductory 1-1, 4-7 and 8-11 recommendations)
     const listings = [
         { id: 'L1', title: 'Clear the first level of the Mossback Warrens', client: 'the Ashbridge Guild', rank: 'Novice', level: 4, qtype: 'standard', payout_cp: 60,
             task: 'Clear level 1 of the Mossback Warrens. Danger: groups may overwhelm solo adventurers.', desired_end_state: 'The goblin scouts of the Mossback Warrens\' first level are dealt with.',
             objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'goblin scout', qty: null, unit: null, where: 'Mossback Warrens, level 1' }], proof: [] },
-        { id: 'L2', title: 'Cull the quarry rats', client: 'the quarry foreman', rank: 'Novice', level: 2, qtype: 'standard', payout_cp: 40, task: 'Cull the giant rats in the old quarry.', desired_end_state: 'The quarry rats are culled.', objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'giant rat', qty: 4, unit: null, where: 'the old quarry' }], proof: [] },
-        { id: 'L3', title: 'Cull the Blackgate feral dogs', client: 'a wool merchant', rank: 'Novice', level: 3, qtype: 'standard', payout_cp: 70, task: 'Cull two feral dogs near Blackgate.', desired_end_state: 'The two feral dogs are defeated.', objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'feral dog', qty: 2, unit: null, where: 'Blackgate pasture' }], proof: [] },
-        { id: 'L4', title: 'Cull wolves at the ford', client: 'the Ashbridge post', rank: 'Novice', level: 1, qtype: 'standard', payout_cp: 30, task: 'Cull two wolves at the ford.', desired_end_state: 'The two wolves are defeated.', objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'wolf', qty: 2, unit: null, where: 'the ford' }], proof: [] },
-        { id: 'L5', title: 'Drive off the reed wolves', client: 'the reed cutters', rank: 'Novice', level: 1, qtype: 'minor', payout_cp: 60, task: 'Drive the wolves off the reed beds.', desired_end_state: 'The wolves no longer prowl the reed beds.', objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'wolf', qty: 1, unit: null, where: 'the reed beds' }], proof: [] },
+        { id: 'L2', title: 'Cull the quarry rats', client: 'the quarry foreman', rank: 'Novice', level: 4, qtype: 'standard', payout_cp: 40, task: 'Cull the giant rats in the old quarry.', desired_end_state: 'The quarry rats are culled.', objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'giant rat', qty: 4, unit: null, where: 'the old quarry' }], proof: [], habitat: { species: 'giant rat', anchor: 'rat', min_level: 4, max_level: 7 } },
+        { id: 'L3', title: 'Cull the Blackgate feral dogs', client: 'a wool merchant', rank: 'Novice', level: 8, qtype: 'standard', payout_cp: 70, task: 'Cull two feral dogs near Blackgate.', desired_end_state: 'The two feral dogs are defeated.', objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'feral dog', qty: 2, unit: null, where: 'Blackgate pasture' }], proof: [], habitat: { species: 'feral dog', anchor: 'wolf', min_level: 8, max_level: 11 } },
+        { id: 'L4', title: 'Cull wolves at the ford', client: 'the Ashbridge post', rank: 'Novice', level: 1, qtype: 'standard', payout_cp: 30, task: 'Cull two wolves at the ford.', desired_end_state: 'The two wolves are defeated.', objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'wolf', qty: 2, unit: null, where: 'the ford' }], proof: [], habitat: { species: 'wolf', anchor: 'wolf', min_level: 1, max_level: 3 } },
+        { id: 'L5', title: 'Drive off the reed wolves', client: 'the reed cutters', rank: 'Novice', level: 1, qtype: 'minor', payout_cp: 60, task: 'Drive the wolves off the reed beds.', desired_end_state: 'The wolves no longer prowl the reed beds.', objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'wolf', qty: 1, unit: null, where: 'the reed beds' }], proof: [], habitat: { species: 'wolf', anchor: 'wolf', min_level: 1, max_level: 1 } },
     ];
     const g = new Chat4(content, { greeting: GREETING, listings });
     await g.player('Mage');
-    await g.player('Flame Lance + Arcane Burst');
+    await g.player('Flame Lance + Arcane Wave');
     const ask = g.llm;
     g.llm = async (req) => (req.purpose.startsWith('plan') ? g.plans.shift() ?? null : ask(req));
     let s = g.state();

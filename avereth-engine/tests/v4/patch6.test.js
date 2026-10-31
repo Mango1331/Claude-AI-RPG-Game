@@ -20,7 +20,7 @@ import { Chat4 } from './harness.js';
 const content = await loadProductContent();
 const GREETING = 'SYSTEM INITIALIZATION COMPLETE\n`Location: Public roadside verge outside Ashbridge, Duskreach`';
 
-async function campaign(cls = 'Mage', skills = 'Flame Lance + Arcane Burst') {
+async function campaign(cls = 'Mage', skills = 'Flame Lance + Arcane Wave') {
     const g = new Chat4(content, { greeting: GREETING });
     await g.player(cls);
     await g.player(skills);

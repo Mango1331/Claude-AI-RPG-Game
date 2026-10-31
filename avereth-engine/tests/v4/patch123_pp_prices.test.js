@@ -62,14 +62,17 @@ test('repeated prose never reprices an already stored same-goods bargain',()=>{
     const r=publish(s);assert.deepEqual(r.state.offers[old.id],old);assert.ok(!offered(r));
     const sel=pickLines(old),es=[];assert.equal(bookPurchase(r.state,e=>{es.push(e);applyEvent(r.state,e);},{offer:old,picks:sel.picks,cp:60,content:c,objectId:()=> 'obj.old'}).error,undefined);assert.equal(r.state.entities.pc.sheet.coin_cp,1940);
 });
-test('historical balance policy leaves new narrated prices flexible',()=>{const s=shop();delete s.meta.f_balance;assert.equal(offered(publish(s)).lines[0].price_cp,60);});
+// B1 (.130): no campaign keeps the historical flexible price; a state without the old flag gets the current retail price
+test('B1: a state without the old balance flag gets the current F retail price',()=>{const s=shop();delete s.meta.f_balance;assert.equal(offered(publish(s)).lines[0].price_cp,260);});
 test('a mixed AoE records the worthy target independently of its primary target',()=>{
  const x=combat();noteUse(x,{actor:'pc',kind:'attack',skill:'mage.arcane_bolt',target:'weak',strikes:[{target:'weak'},{target:'strong'}]});assert.equal(fightProgress(x.state,c,x.enc).length,1);
 });
-test('illegal attacks, living opposition and historical offensive encounters do not gain the new award',()=>{
+test('illegal attacks and living opposition do not gain the new award (B1: no historical variant)',()=>{
  const x=combat();noteUse(x,{actor:'pc',kind:'attack',skill:'mage.arcane_bolt',illegal:'out of range',strikes:[{target:'strong'}]});assert.deepEqual(fightProgress(x.state,c,x.enc),[]);
  hit(x);x.enc.combatants.strong.current.defeated=false;assert.deepEqual(fightProgress(x.state,c,x.enc),[]);
- x.enc.combatants.strong.current.defeated=true;delete x.state.meta.f_balance;assert.deepEqual(fightProgress(x.state,c,x.enc),[]);
+ // B1 (.130): the award is the current rule; a state without the old flag gains it the same way
+ x.enc.combatants.strong.current.defeated=true;const award=fightProgress(x.state,c,x.enc);assert.equal(award.length,1);
+ delete x.state.meta.f_balance;assert.deepEqual(fightProgress(x.state,c,x.enc),award);
 });
 test('an already correct new price can fulfill explicit advance consent normally',()=>{
  const s=shop();s.decisions=[{id:'dec.buy',kind:'purchase',turn:s.turn,seq:1,at:s.scene.at,seller:'npc.alda',what:'superior F-Rank sword',qty:1,max_cp:260,any_price:false}];

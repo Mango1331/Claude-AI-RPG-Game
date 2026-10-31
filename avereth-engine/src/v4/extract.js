@@ -15,7 +15,6 @@ import { normText } from '../util.js';
 
 /** Preserve the historical wire vocabulary; new campaigns have only Guild quests. */
 export function worldVocab(vocab, state) {
-    if (!state?.meta.f_progression) vocab = { ...vocab, deltas: vocab.deltas.filter(d => d.type !== 'area') };
     if (privateQuestsOf(state)) return vocab;
     return { ...vocab, version: vocab.version,
         rules: [...vocab.rules.filter(r => !r.startsWith('Paid work FOR an NPC')),

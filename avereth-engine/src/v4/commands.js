@@ -425,7 +425,7 @@ function livingGo(s, content, c, ctx, emit, { known, nav, envx }) {
 function boardCard(s, content, rank, branch, listed) {
     return [
         `SYSTEM — GUILD BOARD · ${rank} · ${placeName(s, branch)}`,
-        ...listed.map((q) => `${q.title}${goalText(s, content, q, { board: true })} · ${q.rank || rank}${s.meta.f_progression ? (q.hunt && s.places[q.hunt.at]?.population ? ` · enemy levels ${s.places[q.hunt.at].population.levels.join('–')} · risk depends on species and encounter numbers` : ` · quest level ${q.level}`) : ''} · client: ${q.client || 'unspecified'} · reward: ${cpText(q.payout_cp, content)} · ${String(q.task || q.desired_end_state || objectiveText(q)).replace(/\s+/g, ' ').slice(0, 120)}`),
+        ...listed.map((q) => `${q.title}${goalText(s, content, q, { board: true })} · ${q.rank || rank}${q.hunt && s.places[q.hunt.at]?.population ? ` · enemy levels ${s.places[q.hunt.at].population.levels.join('–')} · risk depends on species and encounter numbers` : ` · quest level ${q.level}`} · client: ${q.client || 'unspecified'} · reward: ${cpText(q.payout_cp, content)} · ${String(q.task || q.desired_end_state || objectiveText(q)).replace(/\s+/g, ' ').slice(0, 120)}`),
     ];
 }
 
@@ -513,7 +513,7 @@ const HANDLERS = {
         const known = typeof c.to === 'string';
         if (known && !s.places[c.to]) return { status: 'refused', reason: 'unknown place', line: 'CANNOT GO — no such place is known.' };
         if (known && c.to === s.scene.at) return { status: 'refused', reason: 'already here', done: true, line: `NOTHING TO DO — he is already at ${placeName(s, c.to)}.` };
-        if (c.within != null && (!envx?.c || !s.meta.f_progression || rulesetOf(s) < 2 || known || !s.places[c.within]?.population || !lineage(s, s.scene.at).includes(c.within)))
+        if (c.within != null && (!envx?.c || rulesetOf(s) < 2 || known || !s.places[c.within]?.population || !lineage(s, s.scene.at).includes(c.within)))
             return { status: 'refused', reason: 'invalid local habitat scope', line: 'CANNOT GO — local exploration needs the current habitat; choose a normal destination to leave it.' };
         const name = known ? placeName(s, c.to) : String(c.to?.new || 'somewhere');
         const t = content.rules.time;
@@ -1248,7 +1248,7 @@ const HANDLERS = {
         if (!hall) return { status: 'refused', reason: 'no Guild board here', line: envx.c ? 'NO BOARD HERE — the Guild\'s contract board hangs inside a Guild hall and he is not in one; he sees no listing this turn.' : 'CANNOT READ — the Guild board is in the Guild hall.' };
         const branch = settlementOf(s, hall);
         const rank = c.rank || membership(s)?.rank || 'Novice';
-        if (!ahead && envx.c && s.meta.f_progression) {
+        if (!ahead && envx.c) {
             openGuildManuals(s, content, emit, hall);
             const stock = Object.values(s.offers).find(o => o.stock === 'manuals' && o.status === 'open' && o.at === hall);
             if (stock) ctx.engineLines.push(...offerCard(s, content, stock));

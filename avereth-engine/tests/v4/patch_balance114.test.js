@@ -18,18 +18,19 @@ test('present specialist stock is stable and bought once through normal purchase
 test('absent or non-specialist NPC gives no equipment stock',()=>{const s=shop();assert.equal(typeof items.openEquipmentStock,'function');s.scene.present=[];items.openEquipmentStock(s,c,e=>applyEvent(s,e));assert.equal(Object.keys(s.offers).length,0);s.scene.present=['npc.alda'];s.entities['npc.alda'].descriptors=['innkeeper'];s.places['loc.shop'].name='Inn';items.openEquipmentStock(s,c,e=>applyEvent(s,e));assert.equal(Object.keys(s.offers).length,0);});
 test('trivial fights remain ineligible for PP',()=>{assert.equal(fightQualifies({meta:{ruleset:2}},c,{pp:{threatened:true},combatants:{pc:{fixed:{level:10},current:{}},foe:{side:'hostile',fixed:{level:1}}}}),false);});
 
-test('new campaigns persist balance policy; historical and Rule1 stay unchanged',()=>{const s=shop();assert.equal(s.meta.f_balance,true);const old=emptyState();for(const e of startCampaign(c,{runtime:'v4',ruleset:2,fBalance:false}))applyEvent(old,e);assert.equal(old.meta.f_balance,undefined);assert.equal(items.itemProfile(c,{name:'fine staff'}).matk,8);assert.deepEqual(advancePp(c,{prof:1,pp:0},{complexity:1},54),{prof:1,pp:54});assert.equal(startCampaign(c,{runtime:'v4',ruleset:1})[0].d.f_balance,undefined);});
+// B1 (.130): the F balance values are the current rules of every campaign, not a persisted switch
+test('B1: new campaigns persist no balance switch; the current balance values apply to them',()=>{const s=shop();assert.equal('f_balance' in s.meta,false);for(const ruleset of [1,2])assert.equal('f_balance' in startCampaign(c,{runtime:'v4',ruleset})[0].d,false);assert.equal(items.itemProfile(c,{name:'fine staff'}).matk,8);assert.deepEqual(advancePp(c,{prof:1,pp:0},{complexity:1},54),{prof:2,pp:4});});
 test('stock never permits remote purchase or low funds',()=>{const s=shop();items.openEquipmentStock(s,c,e=>applyEvent(s,e));const o=Object.values(s.offers)[0],sel=pickLines(o);s.scene.present=[];let writes=0;assert.ok(bookPurchase(s,()=>writes++,{offer:o,picks:sel.picks,cp:sel.cp,objectId:()=> 'obj.bad',content:c}).error);s.scene.present=['npc.alda'];s.entities.pc.sheet.coin_cp=0;assert.ok(bookPurchase(s,()=>writes++,{offer:o,picks:sel.picks,cp:sel.cp,objectId:()=> 'obj.bad',content:c}).error);assert.equal(writes,0);});
 test('world completion publishes local specialist stock',async()=>{const {applyWorld}=await import('../../src/v4/world.js');const s=shop();s.last.outcome={c:true};const r=applyWorld(s,c,{v:'delta-1.0',deltas:[]},{text:'Alda works in her shop.',c:true,msg:2});assert.equal(Object.values(r.state.offers).filter(o=>o.stock==='f_gear').length,3);});
 test('Guild request supplies the new nonbinding payout guidance',async()=>{const {boardRequest,openGuildManuals}=await import('../../src/v4/guild.js');const s=shop();s.guild={rank:'Novice',boards:{}};s.places['loc.shop'].realm='realm.caelreth';const need={branch:'loc.glassmere',rank:'Novice',day:1,have:[],missing:5,c:true,progression:true,profile:'count_hunt_clear'};const r=boardRequest(s,c,need);assert.match(r.system,/350–600/);assert.match(r.system,/guidelines, not validation limits/);});
 
-test('new daily LP ceiling changes booked learning, not hours or legacy limits', async () => {
+test('new daily LP ceiling changes booked learning, not hours (B1: no state flag selects it)', async () => {
     const { learningActivity } = await import('../../src/v4/growth.js');
     const s = shop();
     const modern = learningActivity(s, c, { kind: 'train', learn: 'STR', what: 'strength' }, 240, s.clock.minute);
-    const old = structuredClone(s);
-    delete old.meta.f_balance;
-    const historical = learningActivity(old, c, { kind: 'train', learn: 'STR', what: 'strength' }, 240, old.clock.minute);
     assert.equal(modern.events.filter(e => e.t === 'growth.progress').reduce((n,e) => n+e.d.lp,0), 40);
-    assert.equal(historical.events.filter(e => e.t === 'growth.progress').reduce((n,e) => n+e.d.lp,0), 20);
+    // B1 (.130): a stale f_balance:false in a state changes nothing; the ceiling is the current rule
+    const stale = structuredClone(s); stale.meta.f_balance = false;
+    const same = learningActivity(stale, c, { kind: 'train', learn: 'STR', what: 'strength' }, 240, stale.clock.minute);
+    assert.equal(same.events.filter(e => e.t === 'growth.progress').reduce((n,e) => n+e.d.lp,0), 40);
 });

@@ -364,7 +364,8 @@ test('9C completion (8): an outstanding fight like one that gave Rare evidence a
 test('9C completion (9): three successful checks of one core stat the engine rolled, on three features over two days, are Ordinary evidence; a feature counts once, a failure, a narrator\'s check or one day are none', async () => {
     const rec = (feature, success = true, by = 'engine', stat = 'AGI') => ({ t: 'check.recorded', d: { what: 'climb', stat, actor: 6, opposition: 6, chance: 50, roll: 20, success, claimed: success, by, feature, aim: 'cross', difficulty: 'moderate' } });
     const day = (g, n) => inject(g, [{ t: 'time.advanced', d: { minutes: 1440 * n, why: 'a test precondition' } }]);
-    const g = await hero('Rogue', 'Razor Cut + Feint');
+    // B1 (.130): the starter AoE pool is the current creation rule (Fan of Blades in Feint's slot)
+    const g = await hero('Rogue', 'Razor Cut + Fan of Blades');
     inject(g, [rec('feat.wall'), rec('feat.wall'), rec('feat.ledge', false), rec('feat.ledge', true, 'narrator')]);
     day(g, 1);
     inject(g, [rec('feat.ledge'), rec('feat.gap', true, 'engine', 'STR')]);
@@ -380,7 +381,7 @@ test('9C completion (9): three successful checks of one core stat the engine rol
     assert.deepEqual(offer.passive.effects, [{ kind: 'core_stat_bonus', stat: 'AGI', value: content.rules.passive_design.per.ordinary.core_stat_bonus }]);
     await reply(g, 'He rests.');
     // one day only: none
-    const h = await hero('Rogue', 'Razor Cut + Feint');
+    const h = await hero('Rogue', 'Razor Cut + Fan of Blades');
     inject(h, [rec('feat.a'), rec('feat.b'), rec('feat.c')]);
     await rest(h);
     assert.equal(Object.values(evidenceOf(h.state())).filter((x) => x.kind === 'deeds').length, 0);

@@ -492,7 +492,8 @@ test('8.1 board 3 (§11): reading the board shows the official listings in the S
     await say(g, fx.messages[11].mes, { type: 'board.read', rank: null, quote: 'i walk over to the quest board and look at it' });
     const card = outcomeOf(g).engine_lines || [];
     assert.equal(card[0], 'SYSTEM — GUILD BOARD · Novice · Glassmere');
-    assert.match(card[1], /^Cull the Crystal Beetles of Glimmerdeep's Outer Grottos \(2\) · Novice · client: Warden Ellas Vane, Glimmerdeep Cleft Warden for the Amberveil Academy · reward: 60 cp \(6 Silver\) · Enter Glimmerdeep Grotto level 1/);
+    // B1 (.130): the card's quest level is the current board line (no population at a Dungeon level)
+    assert.match(card[1], /^Cull the Crystal Beetles of Glimmerdeep's Outer Grottos \(2\) · Novice · quest level 1 · client: Warden Ellas Vane, Glimmerdeep Cleft Warden for the Amberveil Academy · reward: 60 cp \(6 Silver\) · Enter Glimmerdeep Grotto level 1/);
 });
 
 test('8.1 board 4 (§12, live #12): "wool cart notice — taken" while the board lists it is refused, with the board\'s truth; a story clause adds no term', () => {

@@ -69,7 +69,7 @@ test('9A A1-A4, A8-A9: Warrior, Mage (Flame Lance + Blink) and Rogue each choose
         assert.equal(s.bonuses, undefined, 'no permanent bonus');
         assert.match(panel(g, '#class'), /Passives: none/);
     }
-    const r = sheet(hero('Rogue', 'Razor Cut + Feint'));
+    const r = sheet(hero('Rogue', 'Razor Cut + Fan of Blades'));
     assert.equal(content.items.get(r.equipment.weapon).family, 'precision');
     assert.deepEqual([content.items.get('starter_dagger').atk, content.items.get('starter_light_armor').def, content.items.get('starter_light_armor').mdef], [6, 2, 3]);
 });
@@ -87,7 +87,8 @@ test('9A A5-A7: exactly two distinct pool Skills; another pool\'s, a third or a 
     }
     g.input('Rogue');
     const minute = g.state.clock.minute;
-    for (const bad of ['Razor Cut + Feint + Long Lunge', 'Razor Cut + Razor Cut', 'Heavy Slash + Feint', 'Aimed Shot + Evasive Step']) {
+    // B1 (.130): the starter AoE pool is the current creation rule; Feint (its older slot) is no starting choice
+    for (const bad of ['Razor Cut + Fan of Blades + Long Lunge', 'Razor Cut + Razor Cut', 'Heavy Slash + Fan of Blades', 'Aimed Shot + Evasive Step', 'Feint + Evasive Step']) {
         const p = g.input(bad).command.panels[0];
         assert.match(p, /Not a valid Skill choice: Select exactly 2 distinct Skills/, bad);
         assert.equal(g.state.creation.step, 2, bad);
@@ -140,7 +141,9 @@ test('9A B: the Rogue fights with his Skills: Razor Cut, Long Lunge across an ex
     assert.equal(pc.current.sta, 4);
     assert.equal(ctx.dice.n, n, 'nothing rolled');
     // Evasive Step: a defense and a step back
-    const g2 = hero('Rogue', 'Evasive Step + Feint');
+    // B1 (.130): Feint is no starter choice of the current pool; a Feint he learned later (a test precondition) acts so
+    const g2 = hero('Rogue', 'Evasive Step + Fan of Blades');
+    sheet(g2).skills['rogue.feint'] = { prof: 1, pp: 0 };
     spawn(g2, 'mon.boar', { band: 'ENGAGED' });
     const ctx2 = fight(g2, ['mon.boar']);
     const step = skillAction(ctx2, 'pc', 'rogue.evasive_step', { dir: 'away' });
@@ -154,7 +157,7 @@ test('9A B: the Rogue fights with his Skills: Razor Cut, Long Lunge across an ex
 test('9A B: #skills and #skill show the Rogue\'s Skills with their real cost, reach, formula and effect', () => {
     const g = hero('Rogue', 'Piercing Thrust + Guarded Cut');
     const all = panel(g, '#skills');
-    assert.match(all, /Basic Attack \| Offensive \| Rank F \| Complexity 1 \| P1 \(PP 0\/75\) \| Tags Precision, Martial \| Cost 5 STA/);
+    assert.match(all, /Basic Attack \| Offensive \| Rank F \| Complexity 1 \| P1 \(PP 0\/50\) \| Tags Precision, Martial \| Cost 5 STA/); // B1 (.130): the F balance promotion threshold
     assert.match(all, /Piercing Thrust \| Offensive \| Rank F .* Cost 9 STA/);
     assert.match(all, /Guarded Cut \| Offensive \/ Defensive \| Rank F .* Cost 8 STA/);
     const one = panel(g, '#skill Piercing Thrust');
@@ -168,7 +171,7 @@ test('9A B: #skills and #skill show the Rogue\'s Skills with their real cost, re
 
 // ------------------------------------------------------------------------------------------------ C. weapons
 test('9A C: a Warrior, a Mage and a Rogue holding a bow shoot its Bow Shot: arrows spent, none without them; the class stays', () => {
-    for (const [cls, skills, id] of [['Warrior', 'Heavy Slash + Guard', 'warrior'], ['Mage', 'Flame Lance + Blink', 'mage'], ['Rogue', 'Razor Cut + Feint', 'rogue']]) {
+    for (const [cls, skills, id] of [['Warrior', 'Heavy Slash + Guard', 'warrior'], ['Mage', 'Flame Lance + Blink', 'mage'], ['Rogue', 'Razor Cut + Fan of Blades', 'rogue']]) {
         const g = hero(cls, skills);
         assert.equal(weaponAttackOf(sheet(g), content, 2), null, `${cls}: his own weapon needs no other attack`);
         bow(g, 2);
@@ -216,7 +219,7 @@ test('9A C: "I shoot the wolf" with a bow is the Bow Shot through the real turn:
 });
 
 test('9A C: the product path (planner): a Rogue holding a bow who "shoots the wolf" makes the Bow Shot; "slashes" stays his Basic Attack', async () => {
-    const g = await campaign(content, { cls: 'Rogue', skills: 'Razor Cut + Feint' });
+    const g = await campaign(content, { cls: 'Rogue', skills: 'Razor Cut + Fan of Blades' });
     const s = g.state();
     assert.equal(s.meta.ruleset, 2);
     const p = scaleCreature(content.anchors.get('wolf'), 1, 'normal', content);
@@ -362,7 +365,7 @@ test('9A E: recorded campaigns (before Patch 9A) fold as before: no ruleset mean
 });
 
 test('9A E: replaying a new campaign gives the same sheet: no second kit, no doubled Skill, no class change; a fixed encounter keeps its actions', () => {
-    const g = hero('Rogue', 'Razor Cut + Feint');
+    const g = hero('Rogue', 'Razor Cut + Fan of Blades');
     assert.deepEqual(g.refold().entities.pc.sheet, sheet(g));
     assert.equal(g.log.filter((e) => e.t === 'creation.completed').length, 1);
     assert.equal(g.log.find((e) => e.t === 'campaign.started').d.ruleset, 2);
@@ -377,7 +380,7 @@ test('9A E: replaying a new campaign gives the same sheet: no second kit, no dou
 
 // ------------------------------------------------------------------------------------------------ F. System and UI
 test('9A F / 9D: #class shows the implemented E milestone in a new campaign (a legacy one keeps its panel); texts follow the ruleset', () => {
-    const g = hero('Rogue', 'Razor Cut + Feint');
+    const g = hero('Rogue', 'Razor Cut + Fan of Blades');
     const k = panel(g, '#class');
     assert.match(k, /Base Class: Rogue \| Rank F \| Favored Stats: AGI \/ PER/);
     assert.match(k, /Next class evolution: Level 15 \/ E/);

@@ -349,7 +349,7 @@ export function unitsOf(n, unit) {
 
 /** Small ordinary specialist stock: fixed offers, never a new seller, remote purchase or free equipment. */
 export function openEquipmentStock(s, content, emit) {
-    if (!s.meta.f_balance || s.encounter || s.pending_combat?.length) return;
+    if (s.encounter || s.pending_combat?.length) return;
     const place = s.places[s.scene.at];
     if (!place || !/\b(?:smith|smithy|blacksmith|weaponsmith|armou?rer|fletcher|staffmaker|wandmaker|weapons?|armou?ry|workshop|shop|store|stall|forge)\b/i.test(place.name || '')) return;
     for (const id of s.scene.present || []) {

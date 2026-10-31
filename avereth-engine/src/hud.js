@@ -216,7 +216,7 @@ function combatHud(state, content) {
     // cost, defenses and utilities with cost and a short effect; one he cannot pay now stays listed, marked
     const known = Object.entries(pc.fixed.actions || {}).map(([sid, v]) => [skillOf(content, sid, state), v]).filter(([s]) => s);
     const skillRow = (kind) => known.filter(([s]) => skillKind(s) === kind).map(([s, v]) => {
-        const cost = skillCostOf(s, v, content, pc.fixed.passive?.cost, state.meta.f_progression === true);
+        const cost = skillCostOf(s, v, content, pc.fixed.passive?.cost, true);
         const short = cost && Number(pc.current[cost.resource] ?? 0) < cost.amount ? cost.resource.toUpperCase()
             : s.ammo && pc.fixed.weapon_family === 'bow' && (pc.current.ammo?.[s.ammo.item] || 0) < s.ammo.qty ? 'arrows' : null;
         const bits = [cost ? `${cost.amount} ${cost.resource.toUpperCase()}` : null, s.ammo && pc.fixed.weapon_family === 'bow' ? `${s.ammo.qty} arrow` : null, kind === 'attack' ? null : effectShort(s)].filter(Boolean).join(', ');

@@ -195,7 +195,21 @@ test('7. the boar cull: its slip is the proof and shows READY from the world\'s 
     assert.match(accepts, /^1\. ACCEPTS — "Clear the Root-Hollow of Thorn-Backed Boars" at the Guild desk; .* Proof: the contract slip itself; its Guild seal shows READY once the world has established the outcome/);
     assert.ok(!/tusk/i.test(accepts), 'no trophy in the terms');
     // the den cleared (live #28): quest.ready, and the engine marks the slip
-    const g = live(27);
+    // B1 (.130): a yearling is the young of its kind and no cull target under the current rules (the live run, an
+    // older build, counted it): the den's sow and yearling are 1 of 2, and the engine refuses the story's READY
+    const young = live(27);
+    const no = await young.reply(fx.ready.reply, fx.ready.extract);
+    assert.ok(!no.record.events.some((e) => e.t === 'quest.ready'));
+    assert.match(JSON.stringify(no.record.events.find((e) => e.t === 'delta.rejected')), /counts 1 of 2 thorn-backed boars/);
+    // with a second grown boar dead at the hollow before (a test precondition) the world's outcome makes it READY
+    const grown = (g) => {
+        const sow = g.state().entities['mon.creaturethorn_backed_sow'];
+        const died = Object.values(g.state().facts).find((f) => f.s === sow.id && f.p === 'status');
+        g.chat.findLast((m) => m.extra?.avereth?.events).extra.avereth.events.push({ t: 'entity.created', d: { entity: { ...structuredClone(sow), id: 'mon.thorn_boar_grown', species: 'thorn-backed boar', variation: null } } },
+            { t: 'fact.asserted', d: { fact: { ...structuredClone(died), id: 'f.mon.thorn_boar_grown.status.t11', s: 'mon.thorn_boar_grown' } } });
+        return g;
+    };
+    const g = grown(live(27));
     const x = await g.reply(fx.ready.reply, fx.ready.extract);
     assert.ok(x.record.events.some((e) => e.t === 'quest.ready' && e.d.id === BOARS));
     assert.deepEqual(g.state().objects[SLIP].marks.map((m) => [m.text, m.by]), [[SLIP_READY, 'guild']]);
@@ -213,7 +227,7 @@ test('7. the boar cull: its slip is the proof and shows READY from the world\'s 
     assert.ok(!y.record.events.some((e) => e.t === 'object.consumed'));
     assert.ok(s.objects[SLIP].marks.some((m) => m.text === SLIP_DONE && m.by === 'guild'));
     // and without any trophy at all the desk pays the same
-    const bare = live(28).state();
+    const bare = grown(live(28)).state();
     for (const o of Object.values(bare.objects)) if (/tusk/.test(o.name)) delete bare.objects[o.id];
     const ev = [];
     const ctx = resolveCommands(at(bare, AW_HALL), content, [{ seq: 1, type: 'quest.turn_in', quest: BOARS, quote: 'i turn it in' }], (e) => { applyEvent(bare, e); ev.push(e); }, { c: true });

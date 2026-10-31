@@ -16,6 +16,20 @@ const CONTRACT_098 = new Map([
     ['18 npc.bog_strider_flankers', { scope: 'all', evidence: 'two more long-legged silhouettes slide sideways through them, low and deliberate, cutting off the plank path' }],
     ['22 cre.boar_pair', { scope: 'all', evidence: 'The boars had not lifted their heads' }],
 ]);
+/**
+ * B1 (.130): the world progression of the current rules draws a creature of an ordinary wilderness at Levels 1-3, where
+ * the September runs' builds drew Level 1 for an area whose danger the story never established. Their recorded courses
+ * (four wolves felled by the run's own blows) are replayed in settled land: a danger fact on the start realm (the
+ * current rule's "settled" context, Level 1) on the start realm stands for what their builds assumed. A precondition, not a rule of its own.
+ */
+export function settledLand(g) {
+    const s = g.state();
+    let realm = s.scene.location;
+    while (s.places[realm]?.parent) realm = s.places[realm].parent;
+    const fact = { id: `f.${realm}.danger.replay`, s: realm, p: 'danger', o: 'settled', since: { turn: 0, minute: s.clock.minute }, until: null, visibility: 'public', importance: 0.5, hard: true, source: { kind: 'engine' } };
+    g.chat[0].extra.avereth.events.push({ t: 'fact.asserted', d: { fact } });
+    return g;
+}
 /** A recorded turn's extractor answer in the delta-0.98 form (see CONTRACT_098). */
 export function answerOf(t) {
     const a = t.answer ?? { expected: {}, deltas: [] };

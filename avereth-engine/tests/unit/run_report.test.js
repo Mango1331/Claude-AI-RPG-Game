@@ -127,6 +127,8 @@ test('a report request is a row of its own: its player message, its time from th
 test('the replay plays a fixture\'s creation inputs first (Test 5): every story turn has its engine block, not the creation panel', async () => {
     for (const f of ['tests/testrun_v5/fixture.json', 'tests/testrun_v5/fixture_run2.json']) {
         const fx = await readJson(f);
+        // B1 (.130): the starter AoE pool is the current creation rule; run2's historical Power Strike is its slot's Cleave
+        fx.creation = fx.creation?.map((x) => x.replace('Power Strike', 'Cleave'));
         const { turns } = await replayFixture(fx);
         assert.equal(turns.size, fx.turns.length);
         for (const [input, t] of turns) assert.ok(t.engine > 3000, `${f} "${input}": engine block ${t.engine} chars`);

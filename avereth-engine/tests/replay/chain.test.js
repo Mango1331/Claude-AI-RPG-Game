@@ -7,7 +7,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadProductContent } from '../helpers.js';
 import { rec, foldChat, messageEvents, foldBlock } from '../../src/host.js';
-import { prepareGenerationAsync } from '../../src/v4/runtime.js';
+import { prepareGenerationAsync, campaignSupport } from '../../src/v4/runtime.js';
 import { validateState } from '../../src/validate.js';
 import { loadRun } from '../../tools/replay/replay.mjs';
 
@@ -36,7 +36,12 @@ test('chain: creation, Guild, contract, fight, level-up, payout, sale and purcha
     const { state } = foldChat(chat);
     assert.equal(state.meta.runtime, 'v4');
     assert.equal(state.meta.ruleset, 2);
-    assert.equal(state.meta.f_progression && state.meta.f_balance && state.meta.starter_aoe, true);
+    // B1 (.130): the F flags are no state any more; the campaign's own start record carries the supported .126
+    // configuration, and the version guard accepts it
+    const start = messageEvents(chat[0]).find((e) => e.t === 'campaign.started').d;
+    assert.equal(start.f_progression && start.f_balance && start.starter_aoe, true);
+    assert.equal('f_progression' in state.meta || 'f_balance' in state.meta || 'starter_aoe' in state.meta, false);
+    assert.equal(campaignSupport(chat), null);
     assert.ok(state.entities.pc.sheet.level >= 2);
 });
 

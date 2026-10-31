@@ -40,11 +40,11 @@ Die Archive liegen jeweils unter `original/` im vorhandenen Batchordner. Der Ind
 
 ## Ergänzung 31.10.2026 – Original-ZIP
 
-Batch20 ist anders als Batches1–19 **als verlustfrei neu verpackte ZIP/LZMA** archiviert. Alle33 enthaltenen Originaldateien und Eintragsnamen sind byteidentisch; der Container ist neu. Die obigen Sammelgrößen beziehen sich ausschließlich auf Batches1–19. CRC und sämtliche Dateihashes geprüft, typische Schlüssel-/Bearer-Muster ohne Treffer; Musterprüfung ist kein absoluter Geheimnisnachweis.
+Batch20 ist anders als Batches1–19 **als verlustfrei neu verpackte ZIP/LZMA** archiviert. Alle26 enthaltenen Originaldateien und Eintragsnamen sind byteidentisch (33 ZIP-Einträge einschließlich sieben Verzeichnissen); der Container ist neu. Die obigen Sammelgrößen beziehen sich ausschließlich auf Batches1–19. CRC und sämtliche Dateihashes geprüft, typische Schlüssel-/Bearer-Muster ohne Treffer; Musterprüfung ist kein absoluter Geheimnisnachweis.
 
 | Batch | Originalarchiv | Manifest | Dateien | Archivbytes |
 |---|---|---|---:|---:|
-| 20: [batch-20261031-140346Z](batch-20261031-140346Z/REVIEW.md) | [ZIP](batch-20261031-140346Z/batch-20261031-140346Z.zip) | [MANIFEST.json](batch-20261031-140346Z/MANIFEST.json) | 33 | 3105732 |
+| 20: [batch-20261031-140346Z](batch-20261031-140346Z/REVIEW.md) | [ZIP](batch-20261031-140346Z/batch-20261031-140346Z.zip) | [MANIFEST.json](batch-20261031-140346Z/MANIFEST.json) | 26 | 3105732 |
 
 Archiv-ZIP-SHA-256: `6b9d38b287472889398447fd3faee3b56139e545eaa7a63ac3d097f957a20cde`; Quell-ZIP-SHA-256: `41f5328ac067e3e7e83608544aacaf09359362cbb09917e57aaa0e961a028523`. Mit Python `zipfile` oder einem ZIP/LZMA-fähigen Archivprogramm entpacken; das folgende TAR.XZ-Prüfwerkzeug gilt für Batches1–19.
 

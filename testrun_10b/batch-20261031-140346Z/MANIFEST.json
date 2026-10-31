@@ -148,7 +148,10 @@
     "sha256": "6b9d38b287472889398447fd3faee3b56139e545eaa7a63ac3d097f957a20cde",
     "compression": "ZIP_LZMA",
     "container_byte_identical_to_source": false,
-    "all_33_regular_file_bytes_identical": true
+    "all_regular_file_bytes_identical": true
   },
-  "repack_reason": "Upload transport request limit; lossless ZIP recompression, original entry names and file bytes preserved"
+  "repack_reason": "Upload transport request limit; lossless ZIP recompression, original entry names and file bytes preserved",
+  "entry_count": 33,
+  "file_count": 26,
+  "directory_count": 7
 }

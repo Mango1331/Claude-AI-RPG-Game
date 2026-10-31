@@ -701,3 +701,19 @@ Keine der beiden vorherigen Reviews ist ein Korrektheitsbeweis. Die Bewertung fo
 **Gesamturteil:** Claude hat die zentralen Ursachen überzeugend gefunden und mit zusätzlichen Originalfällen gestützt. Sein Plan ist in der Richtung gut, als Umsetzungsspezifikation aber noch nicht sicher genug: Schwellenwert, beliebige passende Rechnungen, Preisbestätigung und unveränderte Geschenke würden wesentliche Fehlerklassen offenlassen. Variante C mit den vorstehenden Begrenzungen ist die kleinste tragfähige Konsolidierung. Sie reduziert die doppelte Sprachinterpretation, erhält bewährte Transaktionsmechanik und macht verbleibende Modellunsicherheit sichtbar, statt sie durch Fallbacks zu Geld zu erklären.
 
 **Abschlussstatus:** Nur diese zentrale Analysedatei auf main ergänzt. Produktbranch weiterhin .141 / 3d8f062; keine Produkt-, Schema-, Prompt-, Test-, Fingerprint- oder Originalarchivänderung. Keine Umsetzung freigegeben oder begonnen.
+
+
+---
+
+## 14. Zusätzliches GPT-Feedback und technischer Fachplan
+
+**31.10.2026.** Nutzerquelle: **Chatgpt Feedback(20261031-214616).md**, als Bewertung beider Audits übermittelt. Keine neue unabhängige Reproduktion oder Erfolgsquote wird daraus abgeleitet.
+
+Übernommen werden die vier ausdrücklich hervorgehobenen Umsetzungsgates: ausgehende Zahlungsabsicht statt bloßer Geldzahl, zugeordnete Preisbasis, tatsächliche und eigenständige Geschenkübergabe sowie fehlende NPC-Zustimmung, die nicht durch Spielerbestätigung ersetzt werden kann. Ebenfalls übernommen: positive vollständige Geschäftsketten abnehmen, bestehende Buchungsalgorithmen beibehalten und keine weitere allgemeine Reviewrunde vor dem Umsetzungsschnitt.
+
+Präzisierung: Ein neues Modellfeld oder wörtlicher Betrag ist kein semantischer Korrektheitsbeweis. Die vorgeschlagene Konsolidierung beseitigt systematische Autoritätssteigerung und schafft begrenzte Klärung, garantiert aber kein fehlerfreies Verständnis beliebiger Prosa. Token-/Repairverbesserungen bleiben zu messen.
+
+**Konkrete Umsetzungsvorlage zur Freigabe:** [PATCH_PAYMENT_CONSOLIDATION.md](PATCH_PAYMENT_CONSOLIDATION.md).
+Sie legt Belegzustände, Quellen-/Preisbasen, bindende versus offene Offerten, Zahlungsentscheidung, Geschenkzuordnung, letzte Buchungsgrenzen, Dateien, Protokoll-/Replaybehandlung und Abnahmematrix fest. Die früheren, abweichenden Vorschläge in §§0–11 bleiben als ursprüngliche Sicht erhalten und sind nicht unverändert der Implementierungsauftrag.
+
+**Stand:** Nur Planung und Dokumentation. Entwicklungsbranch unverändert .141 / 3d8f062; Umsetzung weiterhin erst nach gesonderter Freigabe.

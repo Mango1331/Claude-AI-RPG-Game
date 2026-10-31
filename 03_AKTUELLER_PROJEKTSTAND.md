@@ -23,7 +23,7 @@
 
 ## Nächste Reihenfolge
 
-1. **Finanz-Gegenreview abgeschlossen und zwei weitere P1-Lücken in .141 korrigiert** ([Patchnote §9](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/3d8f062143956b4932398c4583f8962c9dfcffdd/avereth-engine/docs/FIX138_FINANCE.md)): Gegenstandsanzahl und „hood up“ belegen keine Zahlung; verknüpfte Voraussetzungen und weitere Bedingungsmarker verhindern vorzeitige Preisbindung. Keine Änderung an Runner, XP×5, Startwerten oder Balance. Nächster Schritt ist der natürliche Batch auf .141; keine weitere vorsorgliche Patchrunde.
+1. **Finanzkonsolidierung fachlich vorbereitet, noch nicht implementiert.** [Gemeinsamer Audit einschließlich GPT-Feedback](patch_plans_10b/PAYMENT_SYSTEM_AUDIT.md) und [konsolidierter technischer Fachplan](patch_plans_10b/PATCH_PAYMENT_CONSOLIDATION.md). Bekannte P1-Lücken betreffen Zahlungszuordnung, unsichere Preisbelege und Geschenkphasen. Nächster Schritt: gesonderte Implementierungsfreigabe für einen zusammenhängenden Finanzpatch; danach technische Abnahme und natürlicher Batch. Produkt bleibt .141; keine neue Wortlisten-Mikroserie.
 2. **Natürlichen Batch F danach fortsetzen:** Warrior/Mage/Rogue bis Erstellung → Level15 → ausdrückliche E-Klassenannahme; Batch20 prüfte weder L15 noch E und erlaubt keine vollständige Drei-Klassen-Balanceaussage. [Runner-Anleitung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/6cc09cd/avereth-engine/docs/LIVE_RUNNER.md).
 3. **B2/E bleiben nachrangig und nicht begonnen.** Main/Minor, F/E-Scaling, Monsterdesign und NPC-Memory sind eigene Themen mit eigener Freigabe. [Offene Kandidaten](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md).
 

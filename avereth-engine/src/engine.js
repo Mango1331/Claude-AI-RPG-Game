@@ -380,9 +380,15 @@ export function materialise(s, content, dice, emit, id) {
         const local = lineage(s, at).map(p => truth(s, p, 'danger')[0]?.o).find(Boolean);
         const area = local || truth(s, s.scene.location, 'danger')[0]?.o
             || (lineage(s, at).some(p => s.places[p].kind === 'wilderness') ? 'wilderness' : 'unknown');
-        // Room-by-room navigation (a den inside a hunting site) is not a true Dungeon population.
-        const population = !trueDungeonOf(s, at) ? populationAt(s, at, e, content, { matchAnchor: false }) : null;
-        const young = namesYoung(content, `${e.species || ''} ${e.name || ''}`);
+        // Package C (.132): a creature of the planner path carries its validated membership (population_at) and life
+        // stage from its creation; an adult takes its population's window, a young one never the adults' window. An
+        // older record's creature (no life stage) keeps the earlier reading by name, room-by-room navigation (a den
+        // inside a hunting site) being no true Dungeon population
+        const stated = !!e.life_stage;
+        const population = stated ? (e.population_at && s.places[e.population_at]?.population ? s.places[e.population_at] : null)
+            : !trueDungeonOf(s, at) ? populationAt(s, at, e, content, { matchAnchor: false }) : null;
+        const young = stated ? e.life_stage === 'young' : namesYoung(content, `${e.species || ''} ${e.name || ''}`);
+        // a young one takes its population's window only where the population itself is one of young animals
         const populationLevels = population && (!young || namesYoung(content, population.population.species)) ? population.population.levels : null;
         const anchor = content.anchors.get(population?.population.anchor || e.anchor) || anchorFor(content, [e.species, ...(e.descriptors || [])].join(' '));
         if (!anchor) throw new Error(`creature ${id} has no valid body-plan anchor`);
@@ -396,7 +402,7 @@ export function materialise(s, content, dice, emit, id) {
         // Species identity alone does not assign adult habitat levels to an explicitly young individual.
         const band = span || populationLevels || areaLevels;
         const level = e.level || (band ? dice.int(band[0], band[1], 'creature level') : lo && hi ? dice.int(lo.min, hi.max, 'creature level') : chooseCreatureLevel(area, content, dice));
-        const belongs = population && level >= population.population.levels[0] && level <= population.population.levels[1];
+        const belongs = !stated && population && level >= population.population.levels[0] && level <= population.population.levels[1];
         emit({ t: 'entity.updated', d: { id, set: { ...(population ? { anchor: anchor.id } : {}), profile: scaleCreature(anchor, level, e.type || 'normal', content, e.variation || null), ...(belongs ? { population_at: population.id } : {}), ...(dungeonOf(s, at) && !e.met_at ? { met_at: at } : {}) } } });
         return;
     }

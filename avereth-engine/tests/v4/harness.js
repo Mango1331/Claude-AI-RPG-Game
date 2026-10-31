@@ -4,6 +4,7 @@
 import { samePlace } from '../../src/v4/place_refs.js';
 import { ensureCampaign, foldChat, rec } from '../../src/host.js';
 import { prepareGenerationAsync, processReplyAny, runExtraction } from '../../src/v4/runtime.js';
+import { hasContract, contractValue } from '../../tools/replay/contract_c.mjs';
 
 export const GREETING = 'SYSTEM INITIALIZATION COMPLETE\n`Location: Public roadside verge outside Redmarch, Veyrhold`';
 
@@ -67,9 +68,12 @@ export class Chat4 {
     wireAnswer(answer) {
         const s = this.state();
         if ((s.meta.ruleset || 1) < 2 || !(s.last?.outcome?.c || s.last?.outcome?.auth?.c)) return answer;
+        // Package C (.132): scripted answers written before the population contract get the documented conversion of
+        // tools/replay/contract_c.mjs (what .126 read into them); fields a test states stay; contract: false sends as is
+        const contract = (a) => (this.contract !== false && hasContract(this.content.deltaVocab) ? contractValue(a, s, this.content) : a);
         const a = structuredClone(answer);
         const ds = a.deltas || [];
-        if (ds.some(d => d.type === 'arrive')) return a;
+        if (ds.some(d => d.type === 'arrive')) return contract(a);
         for (const [seq, e] of Object.entries(a.expected || {})) {
             if (e?.arrived === true && !e.at) e.at = s.last?.outcome?.auth?.gos?.find(g => String(g.seq) === seq)?.to || null;
             if (e?.arrived !== true || !e.at || ds.some(d => d.type === 'arrive' && samePlace(s, d.at, e.at, this.content))) continue;
@@ -87,7 +91,7 @@ export class Chat4 {
             const renumber = new Map(ds.filter(d => d.seq !== undefined).map(d => [d.seq, ds.indexOf(d) + 1]));
             a.deltas = ds.map((d, i) => ({ ...d, seq: i + 1, ...(d.depends_on ? { depends_on: d.depends_on.map(x => renumber.get(x) ?? x) } : {}) }));
         }
-        return a;
+        return contract(a);
     }
 
     /** Replace a fixture's listing ids by the ids the engine booked (deep). */

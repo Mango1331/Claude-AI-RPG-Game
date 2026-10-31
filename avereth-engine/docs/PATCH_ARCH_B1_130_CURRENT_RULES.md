@@ -128,3 +128,5 @@ Nachweise:
 - **Rot auf `59e1305` (.130):** 5 rot (die geschützten Fälle), 2 Kontrollen grün; danach 7/7 grün.
 - Volle Suite **2467/2467**; voller Korpus **2.235 Fälle, 0 Abweichungen**; Chromium-Mock-Smoke **OK**; echter
   SillyTavern 1.19.0 `smoke:st:c` **OK** und Failsoft-Variante **OK** (Build .131).
+
+Fortsetzung: Paket C (.132) setzt den Mindest-Startbuild auf `4.3.0-c.6.6.132`; die hier noch unterstützte .126-Konfiguration und .130/.131-Kampagnen werden seitdem abgelehnt (`docs/PATCH_ARCH_C132_POPULATION_AGE.md`).

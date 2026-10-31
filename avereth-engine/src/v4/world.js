@@ -1,4 +1,4 @@
-import { placeParent, placeIdentity, samePlace, scopedPlaces } from './place_refs.js';
+import { placeParent, placeIdentity, placeKey, samePlace, scopedPlaces } from './place_refs.js';
 import { sceneIssues, localSceneDelta } from './extract.js';
 import { privateQuestsOf, questVisible } from '../content.js';
 // Runtime V4: applying the extractor's world deltas (docs/RUNTIME_V4_PLAN.md §5.2). After the narrator's reply the
@@ -30,6 +30,7 @@ import {
     PLACE_PARENTS, HALL_NAME, lineage, guildDestination, hallOf, hallOfSettlement, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind, SERVICE_ROLE,
     progressKey, sameKinds, kindOf, populationAt, validEncounterLevels,
 } from './domain.js';
+import { creatureContract } from './population.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
 import { pickLines, bookPurchase, bookSale, saleUnits, unitsText, tradePrice, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines, offerAvailability } from './trade.js';
 import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
@@ -289,6 +290,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
 
     // 2. world deltas in story order, each against the state at its step
     const blockedPeople = new Set(); // only a rejected person.new and its dependent claims in this reply
+    // Package C (.132): the refs of a creature.new this reply could not book (and its numbered members): a later hostile,
+    // position, aware, intent or fact under such a ref is refused, never resolved to another creature already here
+    const blockedCreatures = new Set();
+    const blockCreature = (d) => {
+        const ref = normText(d?.ref || '');
+        if (!ref) return;
+        blockedCreatures.add(ref);
+        for (let i = 1; i <= Math.min(12, d.count || 1); i++) blockedCreatures.add(`${ref} ${i}`);
+    };
     const refs = new Map(); // a delta's ref -> the entity it names (person.new, creature.new of this answer)
     const groups = new Map(); // a creature.new ref with count > 1 -> its individual ids
     const objectsNew = new Map(); // name -> object id, for object.move {new: name} of this answer
@@ -487,7 +497,25 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // 4.3.0-c.6.6.24 (livetest 21.10.2026: "restless skeleton" on the rat body plan, Bite and pelts): a species the
         // content names by one of its body plan's own words ("skeleton") is that body plan, whatever anchor came with it,
         // unless the given anchor's words name the species too
-        if (kind === 'creature' && d.species) {
+        // Package C (.132): on the planner path every new creature states its population (or independent) and its life
+        // stage; World validates them at the place of the event (a remote sighting: the place its scene names, else
+        // none) by the parser's rule, after the one repair the parser could ask for. A creature whose statement is
+        // still invalid is not booked, and neither is anything said under its ref later in this reply
+        let contract = null;
+        if (kind === 'creature' && cPath && rulesetOf(s) >= 2) {
+            const named = d.scene != null && d.scene !== 'here' ? placeKey(s, d.scene, content) : null;
+            const at = d.present === false ? (s.places[named] ? named : null) : s.scene.at;
+            contract = creatureContract(s, content, at, d);
+            if (contract.why) {
+                reject(d, 'population', contract.why);
+                blockCreature(d);
+                const fix = `The ${d.species || d.ref} of the last reply ${(d.count || 1) > 1 ? 'were' : 'was'} not booked: the engine could not tell which population ${(d.count || 1) > 1 ? 'they belong' : 'it belongs'} to or how old ${(d.count || 1) > 1 ? 'they are' : 'it is'}. Nothing of ${(d.count || 1) > 1 ? 'them' : 'it'} acts, attacks or can be fought until the story establishes ${(d.count || 1) > 1 ? 'them' : 'it'} again.`;
+                if (!corrections.includes(fix)) corrections.push(fix);
+                return [];
+            }
+            const anchor = contract.anchor ? content.anchors.get(contract.anchor) : speciesAnchor(content, d.species, d.anchor);
+            if (anchor) d = { ...d, anchor: anchor.id };
+        } else if (kind === 'creature' && d.species) {
             const population = !trueDungeonOf(s, s.scene.at) && d.present !== false
                 ? populationAt(s, s.scene.at, d, content, { matchAnchor: false }) : null;
             const anchor = population ? content.anchors.get(population.population.anchor) : speciesAnchor(content, d.species, d.anchor);
@@ -514,6 +542,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const dead = resolvedSlotNamed(s, d);
             if (dead) {
                 reject(d, 'dungeon_slot', `${dead.slot.name || dead.slot.species} of this cycle is already defeated; it stays so until the Dungeon renews`);
+                blockCreature(d);
                 const fix = `${dead.slot.name ? dead.slot.name : `The ${dead.slot.species}s`} of level ${dead.floor} ${dead.slot.count > 1 ? 'are' : 'is'} defeated (the engine's); nothing takes ${dead.slot.count > 1 ? 'their' : 'its'} place until the Dungeon renews.`;
                 if (!corrections.includes(fix)) corrections.push(fix);
                 return [];
@@ -562,6 +591,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 const name = s.places[root]?.name || root;
                 excludedFoes.push({ ref: d.ref, species: d.species, count: d.count });
                 reject(d, 'dungeon_foe', `only the engine adds the foes of ${name}: ${d.species || d.ref} is no encounter of this level`);
+                blockCreature(d);
                 const fix = `The ${d.species || d.ref} of the last reply is no foe here: in ${name} only the engine adds foes (its DUNGEON lines). It is not there as one: nothing of it acts, attacks or can be fought. Its imagined keys add no gate requirement; use the existing Dungeon seal and booked objects.`;
                 if (!corrections.includes(fix)) corrections.push(fix);
                 return [];
@@ -631,6 +661,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (unclear) {
             const which = d.more === false ? 'which of the groups here they are' : 'whether they are those already here or others';
             reject(d, 'group_unclear', `${count} ${d.species}: the reply does not say ${which} (a group's ref, or more)`);
+            blockCreature(d);
             const correction = `The engine holds ${here.map((id) => sceneHandle(s, content, id)).join(', ')} here; the ${count > 1 ? `${count} ` : ''}${d.species} of the last reply ${count > 1 ? 'were' : 'was'} not added: it could not tell ${which}. If others came, the story shows them arriving; if not, it names those here.`;
             if (!corrections.includes(correction)) corrections.push(correction);
             return [];
@@ -642,6 +673,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             ? Object.values(s.entities).filter((e) => nearby(e) && anchorOf(e) === d.anchor && normText(e.species || '') === normText(d.species || '')).map((e) => e.id) : [];
         if (back.length && (count < back.length || new Set(back.map((id) => s.entities[id].group || id)).size > 1)) {
             reject(d, 'group_unclear', `${count} ${d.species}: ${back.length} of this kind were left here a short while ago; the reply does not say which`);
+            blockCreature(d);
             const correction = `${back.map((id) => sceneHandle(s, content, id)).join(', ')} ${back.length > 1 ? 'were' : 'was'} left here a short while ago; the ${count > 1 ? `${count} ` : ''}${d.species} of the last reply ${count > 1 ? 'were' : 'was'} not added: the engine could not tell which of them ${count > 1 ? 'they are' : 'it is'}. If the story shows them again, it shows all of them; if others came, they are others.`;
             if (!corrections.includes(correction)) corrections.push(correction);
             return [];
@@ -671,6 +703,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (d.present !== false) for (const id of created) bornHere.add(id);
         const known = r.accepted.map((a) => /^known (\S+) \(not duplicated\)$/.exec(a)?.[1]).filter(Boolean);
         const ids = [...again, ...created, ...known];
+        // Package C: the validated membership and life stage, fixed with the individual and independent of its level
+        if (contract) for (const id of created) emit({ t: 'entity.updated', d: { id, set: { life_stage: contract.life_stage || 'adult', ...(contract.population ? { population_at: contract.population } : {}) } } });
         // the members of a group keep its name (the ref the story gave them), so a later "the quarry pack" means them; one
         // that joins those already here joins their group (review of c.6.6.12: the fifth wolf under the ref "wolves" is
         // of the quarry pack); a group of others never takes the name of a group already here
@@ -807,7 +841,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // Authority is checked again at the actual story step: earlier deltas may have changed its context.
         const stepFw = firewall([d], { ...firewallContext(s, content, chronicle, excludedFoes), unprovenForced });
         if (!stepFw.accept.length) {
-            for (const x of stepFw.reject) { reject(x.delta, x.rule, x.why); refusedArrival(x.delta); }
+            for (const x of stepFw.reject) { reject(x.delta, x.rule, x.why); refusedArrival(x.delta); if (x.delta?.type === 'creature.new') blockCreature(x.delta); }
             for (const x of stepFw.corrections) if (!corrections.includes(x)) corrections.push(x);
             continue;
         }
@@ -823,6 +857,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const name = s.entities[id]?.name;
             return name && !s.scene.present.includes(id) && (` ${normText(d.text || '')} `).includes(` ${normText(name)} `);
         });
+        if (d.type !== 'creature.new' && people.some(x => blockedCreatures.has(normText(x)))) {
+            reject(d, 'creature_continuity', 'dependent claim about a creature this reply could not book');
+            continue;
+        }
         if (d.type !== 'enter' && d.type !== 'person.new' && (blockedStory || people.some(x => blockedPeople.has(normText(x)) || blockedPeople.has(normText(idOf(x) || ''))))) {
             reject(d, 'npc_continuity', 'dependent claim about a rejected person reintroduction');
             continue;

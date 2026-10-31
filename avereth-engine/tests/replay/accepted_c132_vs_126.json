@@ -1,0 +1,440 @@
+{
+ "format": "avereth-replay-accepted-1",
+ "baseline_sha": "b8d2af4b76cd0bc52ac178b8c500e5733878ecee",
+ "baseline_engine": "4.3.0-c.6.6.126",
+ "engine": "4.3.0-c.6.6.132",
+ "note": "Package C (.132): every record whose replay differs from the .126 baseline, with its reason (docs/PATCH_ARCH_C132_POPULATION_AGE.md). Old answers are converted by tools/replay/contract_c.mjs.",
+ "categories": {
+  "representation": "population contract recorded, no mechanical consequence: entity.updated {life_stage, population_at} at creation (population_at no longer set on the profile event), quest.hunt.age on hunt contracts, converted population/life_stage fields inside an already rejected creature.new",
+  "rejection reason": "a claim already refused in .126 (aware of an unknown creature) is now refused by the creature reference lock (creature_continuity)",
+  "mechanical": "C3 reference lock: the refused glass beetles (dungeon_foe) no longer hand their aware claim (scope all) to an existing encounter beetle; that beetle keeps its awareness"
+ },
+ "cases": {
+  "b16-rogue-sale#5": {
+   "category": "representation"
+  },
+  "b16-rogue-sale#16": {
+   "category": "representation"
+  },
+  "b16-rogue-sale#30": {
+   "category": "representation"
+  },
+  "b16-rogue-sale#44": {
+   "category": "representation"
+  },
+  "b16-rogue-sale#58": {
+   "category": "representation"
+  },
+  "b17-mage#5": {
+   "category": "representation"
+  },
+  "b17-mage#14": {
+   "category": "representation"
+  },
+  "b17-mage#28": {
+   "category": "representation"
+  },
+  "b17-mage#34": {
+   "category": "representation"
+  },
+  "b17-mage#42": {
+   "category": "representation"
+  },
+  "b17-mage#48": {
+   "category": "representation"
+  },
+  "b17-mage#62": {
+   "category": "representation"
+  },
+  "b17-mage#71": {
+   "category": "representation"
+  },
+  "b17-mage#78": {
+   "category": "representation"
+  },
+  "b17-mage#92": {
+   "category": "representation"
+  },
+  "b17-mage#100": {
+   "category": "representation"
+  },
+  "b17-mage#106": {
+   "category": "representation"
+  },
+  "b17-mage#124": {
+   "category": "representation"
+  },
+  "b17-mage#130": {
+   "category": "representation"
+  },
+  "b17-mage#134": {
+   "category": "representation"
+  },
+  "b17-mage#141": {
+   "category": "representation"
+  },
+  "b17-mage#150": {
+   "category": "representation"
+  },
+  "b17-mage#172": {
+   "category": "representation"
+  },
+  "b17-mage#186": {
+   "category": "representation"
+  },
+  "b17-rogue#5": {
+   "category": "representation"
+  },
+  "b17-rogue#14": {
+   "category": "representation"
+  },
+  "b17-rogue#36": {
+   "category": "representation"
+  },
+  "b17-rogue#50": {
+   "category": "representation"
+  },
+  "b17-rogue#76": {
+   "category": "representation"
+  },
+  "b17-rogue#84": {
+   "category": "representation"
+  },
+  "b17-rogue#90": {
+   "category": "representation"
+  },
+  "b17-rogue#97": {
+   "category": "representation"
+  },
+  "b17-rogue#106": {
+   "category": "representation"
+  },
+  "b17-rogue#124": {
+   "category": "representation"
+  },
+  "b17-rogue#132": {
+   "category": "representation"
+  },
+  "b17-rogue#140": {
+   "category": "representation"
+  },
+  "b17-rogue#178": {
+   "category": "representation"
+  },
+  "b17-rogue#196": {
+   "category": "representation"
+  },
+  "b17-rogue#200": {
+   "category": "mechanical"
+  },
+  "b17-rogue#219": {
+   "category": "representation"
+  },
+  "b17-rogue#240": {
+   "category": "representation"
+  },
+  "b17-rogue#254": {
+   "category": "representation"
+  },
+  "b17-rogue#262": {
+   "category": "representation"
+  },
+  "b17-rogue#268": {
+   "category": "representation"
+  },
+  "b17-warrior#25": {
+   "category": "representation"
+  },
+  "b17-warrior#32": {
+   "category": "representation"
+  },
+  "b17-warrior#42": {
+   "category": "representation"
+  },
+  "b17-warrior#46": {
+   "category": "representation"
+  },
+  "b17-warrior#94": {
+   "category": "representation"
+  },
+  "b17-warrior#104": {
+   "category": "representation"
+  },
+  "b17-warrior#135": {
+   "category": "representation"
+  },
+  "b17-warrior#152": {
+   "category": "representation"
+  },
+  "b17-warrior#159": {
+   "category": "representation"
+  },
+  "b17-warrior#162": {
+   "category": "representation"
+  },
+  "b17-warrior#180": {
+   "category": "representation"
+  },
+  "b17-warrior#198": {
+   "category": "representation"
+  },
+  "b17-warrior#204": {
+   "category": "representation"
+  },
+  "b17-warrior#210": {
+   "category": "representation"
+  },
+  "b17-warrior#217": {
+   "category": "representation"
+  },
+  "b17-warrior#224": {
+   "category": "representation"
+  },
+  "b17-warrior#230": {
+   "category": "representation"
+  },
+  "b17-warrior#261": {
+   "category": "representation"
+  },
+  "b17-warrior#274": {
+   "category": "representation"
+  },
+  "b17-warrior#284": {
+   "category": "representation"
+  },
+  "b17-warrior#295": {
+   "category": "representation"
+  },
+  "b17-warrior#306": {
+   "category": "representation"
+  },
+  "b17-warrior#312": {
+   "category": "representation"
+  },
+  "b18-mage#7": {
+   "category": "representation"
+  },
+  "b18-mage#16": {
+   "category": "representation"
+  },
+  "b18-mage#32": {
+   "category": "representation"
+  },
+  "b18-mage#40": {
+   "category": "representation"
+  },
+  "b18-rogue#20": {
+   "category": "representation"
+  },
+  "b18-rogue#42": {
+   "category": "representation"
+  },
+  "b18-rogue#52": {
+   "category": "representation"
+  },
+  "b18-rogue#66": {
+   "category": "representation"
+  },
+  "b18-rogue#72": {
+   "category": "representation"
+  },
+  "b18-rogue#100": {
+   "category": "representation"
+  },
+  "b18-rogue#140": {
+   "category": "representation"
+  },
+  "b18-rogue#170": {
+   "category": "representation"
+  },
+  "b18-rogue#202": {
+   "category": "representation"
+  },
+  "b18-rogue#210": {
+   "category": "representation"
+  },
+  "b18-rogue#248": {
+   "category": "representation"
+  },
+  "b18-rogue#272": {
+   "category": "representation"
+  },
+  "b18-rogue#288": {
+   "category": "representation"
+  },
+  "b18-rogue#292": {
+   "category": "representation"
+  },
+  "b18-rogue#296": {
+   "category": "representation"
+  },
+  "b18-rogue#306": {
+   "category": "representation"
+  },
+  "b18-rogue#384": {
+   "category": "representation"
+  },
+  "b18-rogue#398": {
+   "category": "representation"
+  },
+  "b18-warrior#5": {
+   "category": "representation"
+  },
+  "b18-warrior#14": {
+   "category": "representation"
+  },
+  "b18-warrior#64": {
+   "category": "representation"
+  },
+  "b18-warrior#66": {
+   "category": "representation"
+  },
+  "b18-warrior#84": {
+   "category": "representation"
+  },
+  "b18-warrior#106": {
+   "category": "representation"
+  },
+  "b18-warrior#114": {
+   "category": "representation"
+  },
+  "b18-warrior#191": {
+   "category": "representation"
+  },
+  "b18-warrior#198": {
+   "category": "representation"
+  },
+  "b18-warrior#202": {
+   "category": "rejection reason"
+  },
+  "b18-warrior#248": {
+   "category": "representation"
+  },
+  "b18-warrior#262": {
+   "category": "representation"
+  },
+  "b18-warrior#272": {
+   "category": "representation"
+  },
+  "b18-warrior#284": {
+   "category": "representation"
+  },
+  "b18-warrior#294": {
+   "category": "representation"
+  },
+  "b18-warrior#325": {
+   "category": "representation"
+  },
+  "b18-warrior#334": {
+   "category": "representation"
+  },
+  "b18-warrior#344": {
+   "category": "representation"
+  },
+  "b18-warrior#366": {
+   "category": "representation"
+  },
+  "b18-warrior#378": {
+   "category": "representation"
+  },
+  "b18-warrior#392": {
+   "category": "representation"
+  },
+  "b19-mage#13": {
+   "category": "representation"
+  },
+  "b19-mage#20": {
+   "category": "representation"
+  },
+  "b19-mage#30": {
+   "category": "representation"
+  },
+  "b19-mage#54": {
+   "category": "representation"
+  },
+  "b19-mage#66": {
+   "category": "representation"
+  },
+  "b19-mage#72": {
+   "category": "representation"
+  },
+  "b19-mage#88": {
+   "category": "representation"
+  },
+  "b19-mage#118": {
+   "category": "representation"
+  },
+  "b19-mage#167": {
+   "category": "representation"
+  },
+  "b19-mage#184": {
+   "category": "representation"
+  },
+  "b19-rogue#13": {
+   "category": "representation"
+  },
+  "b19-rogue#20": {
+   "category": "representation"
+  },
+  "b19-rogue#56": {
+   "category": "representation"
+  },
+  "b19-rogue#58": {
+   "category": "representation"
+  },
+  "b19-warrior#7": {
+   "category": "representation"
+  },
+  "b19-warrior#16": {
+   "category": "representation"
+  },
+  "b19-warrior#58": {
+   "category": "representation"
+  },
+  "b19-warrior#96": {
+   "category": "representation"
+  },
+  "b19-warrior#118": {
+   "category": "representation"
+  },
+  "b19-warrior#138": {
+   "category": "representation"
+  },
+  "b19-warrior#171": {
+   "category": "representation"
+  },
+  "b19-warrior#186": {
+   "category": "representation"
+  },
+  "b19-warrior#214": {
+   "category": "representation"
+  },
+  "b19-warrior#218": {
+   "category": "representation"
+  },
+  "b19-warrior#232": {
+   "category": "representation"
+  },
+  "b19-warrior#272": {
+   "category": "representation"
+  },
+  "b19-warrior#286": {
+   "category": "representation"
+  },
+  "b19-warrior#294": {
+   "category": "representation"
+  },
+  "b19-warrior#298": {
+   "category": "representation"
+  },
+  "b19-warrior#351": {
+   "category": "representation"
+  },
+  "b19-warrior#358": {
+   "category": "representation"
+  },
+  "b19-warrior#376": {
+   "category": "representation"
+  }
+ }
+}

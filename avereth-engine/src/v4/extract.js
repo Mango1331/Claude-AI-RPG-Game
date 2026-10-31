@@ -12,6 +12,7 @@ import { O, S, B, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 import { saleOfferLines } from './trade.js';
 import { normText } from '../util.js';
+import { creatureContract } from './population.js';
 
 /** Preserve the historical wire vocabulary; new campaigns have only Guild quests. */
 export function worldVocab(vocab, state) {
@@ -29,7 +30,7 @@ export function worldVocab(vocab, state) {
     };
 }
 
-export const EXTRACTOR_VERSION = 'extract-5.20';
+export const EXTRACTOR_VERSION = 'extract-5.21';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 
@@ -318,6 +319,16 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
             && placeKey(state, d.scene ?? value.scene, content) === stepAt) entered.set(d.who, stepAt);
         if (d?.type === 'offer' && saleOfferLines(state, d.seller, d.lines || []).length)
             semanticIssues.push({index:i, seq:d.seq, why:`$.deltas[${i}]: these are current PC sale goods; use bid with buyer, held object ids and price_cp, not offer/seller`});
+        // Package C (.132): population and life stage of a new creature, at the place of its event (a remote sighting:
+        // the place its scene names, else none), by the rule World enforces (src/v4/population.js)
+        if (d?.type === 'creature.new') {
+            const named = d.scene != null && d.scene !== 'here' ? placeKey(state, d.scene, content) : null;
+            const at = d.present === false ? named : named || stepAt;
+            // a place this report creates is validated at its known parent (its own population cannot exist yet)
+            const parent = typeof at === 'string' && at.startsWith('[') ? (() => { try { return JSON.parse(at)[2]; } catch { return null; } })() : null;
+            const c = creatureContract(state, content, state.places[at] ? at : state.places[parent] ? parent : null, d);
+            if (c.why) semanticIssues.push({ index: i, seq: d.seq, why: `$.deltas[${i}].${c.why}` });
+        }
         if (d?.type === 'person.new' && d.present !== false) {
             const exact = Object.values(state.entities).filter(e => e.kind === 'npc' && d.name && normText(e.name || e.known_name || '') === normText(d.name));
             const known = state.entities[d.ref] || (exact.length === 1 ? exact[0] : null);

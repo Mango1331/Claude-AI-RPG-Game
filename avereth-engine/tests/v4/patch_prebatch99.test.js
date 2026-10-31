@@ -14,11 +14,13 @@ import { boardNeed, HUNT_BOARD_PROFILE, boardRequest } from '../../src/v4/guild.
 import { foldChat, rec } from '../../src/host.js';
 import { Dice } from '../../src/rng.js';
 import { campaign, say } from './patch8_lib.js';
+// Package C (.132): original answers predate the population contract; the documented conversion (tools/replay/contract_c.mjs)
+import { contractValue } from '../../tools/replay/contract_c.mjs';
 const content = await loadProductContent(),
     copy = structuredClone;
 const f = JSON.parse(fs.readFileSync(new URL('./fixtures/run22_prebatch.json', import.meta.url)));
 const t90 = JSON.parse(fs.readFileSync(new URL('./fixtures/run21_habitat_catalog.json', import.meta.url))).t90;
-const world = (x, a = x.answers[0], s = x.state) => applyWorld(copy(s), content, copy(a), {
+const world = (x, a = x.answers[0], s = x.state) => applyWorld(copy(s), content, contractValue(copy(a), copy(s), content), {
     msg: x.i,
     prose: x.prose
 });
@@ -340,7 +342,7 @@ test('101 explicit arrival preserves the earlier departure gift and then arrives
         }]
     };
     a.deltas.push({seq: 3, type: 'arrive', at: to, with: null, forced_by: null});
-    const r = applyWorld(s, content, a, {
+    const r = applyWorld(s, content, contractValue(a, s, content), {
         msg: 501,
         prose: 'The keeper gives Alaric a copper button. Then Alaric leaves and reaches the town square.'
     });
@@ -523,7 +525,7 @@ test('99 a normal explicitly authorized room arrival still succeeds', () => {
             1: 'go'
         }
     };
-    const r = applyWorld(s, content, {
+    const r = applyWorld(s, content, contractValue({
         scene: to,
         expected: {
             1: {
@@ -539,7 +541,7 @@ test('99 a normal explicitly authorized room arrival still succeeds', () => {
             with: null,
             forced_by: null
         }]
-    }, {
+    }, s, content), {
         msg: 502,
         prose: 'Alaric enters the guest room he chose.'
     });
@@ -729,7 +731,7 @@ test('101 second explicit arrival follows the gift at the intermediate stop', ()
         }]
     };
     a.deltas.push({seq: 4, type: 'arrive', at: start, with: null, forced_by: null});
-    const r = applyWorld(s, content, a, {
+    const r = applyWorld(s, content, contractValue(a, s, content), {
         msg: 503,
         prose: 'The keeper walks to the square with Alaric and gives him a brass pin. Alaric then returns to the Guild hall.'
     });
@@ -793,7 +795,7 @@ test('99 review: ambiguous here in an Expected-only arrival never establishes th
     } = expectedOnlyPerson('here');
     const p = parse(s, answer);
     assert.equal(p.valid, true, p.errors.join('; '));
-    const r = applyWorld(s, content, p.value, {
+    const r = applyWorld(s, content, contractValue(p.value, s, content), {
         msg: 504,
         prose: 'Alaric reaches the square. Only there does he meet Nessa the porter.'
     });
@@ -813,7 +815,7 @@ test('101 review: a destination scene cannot substitute for the missing arrival'
         to,
         answer
     } = expectedOnlyPerson('loc.alderwatch');
-    const r = applyWorld(s, content, answer, {
+    const r = applyWorld(s, content, contractValue(answer, s, content), {
         msg: 504,
         prose: 'Alaric reaches the square and meets Nessa there.'
     });
@@ -830,7 +832,7 @@ test('101 review: explicit departure scene preserves an earlier NPC before arriv
         answer
     } = expectedOnlyPerson(f.wait.state.scene.at);
     answer.deltas.push({seq: 2, type: 'arrive', at: to, with: null, forced_by: null});
-    const r = applyWorld(s, content, answer, {
+    const r = applyWorld(s, content, contractValue(answer, s, content), {
         msg: 504,
         prose: 'Nessa speaks to him in the hall. He then goes to the square.'
     });
@@ -846,7 +848,7 @@ test('99 review: here remains valid for spontaneous local arrivals when the jour
         from,
         answer
     } = expectedOnlyPerson('here', false);
-    const r = applyWorld(s, content, answer, {
+    const r = applyWorld(s, content, contractValue(answer, s, content), {
         msg: 504,
         prose: 'Alaric remains in the hall. Nessa walks in to speak to him.'
     });

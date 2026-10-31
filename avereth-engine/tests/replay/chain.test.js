@@ -41,7 +41,8 @@ test('chain: creation, Guild, contract, fight, level-up, payout, sale and purcha
     const start = messageEvents(chat[0]).find((e) => e.t === 'campaign.started').d;
     assert.equal(start.f_progression && start.f_balance && start.starter_aoe, true);
     assert.equal('f_progression' in state.meta || 'f_balance' in state.meta || 'starter_aoe' in state.meta, false);
-    assert.equal(campaignSupport(chat), null);
+    // package C (.132): the minimum start build is the population contract's; this .126 campaign is refused by the host
+    assert.match(campaignSupport(chat).reason, /older F rule configuration/);
     assert.ok(state.entities.pc.sheet.level >= 2);
 });
 

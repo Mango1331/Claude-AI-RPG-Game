@@ -7,6 +7,8 @@ import { applyEvent, fold } from '../../src/state.js';
 import { foldChat, setRec } from '../../src/host.js';
 import { hash32 } from '../../src/util.js';
 import { establishEvents, floorAt } from '../../src/v4/living.js';
+// Package C (.132): original answers predate the population contract; the documented conversion (tools/replay/contract_c.mjs)
+import { contractValue } from '../../tools/replay/contract_c.mjs';
 
 const content = await loadProductContent();
 const f = JSON.parse(fs.readFileSync(new URL('./fixtures/run18_entry.json', import.meta.url)));
@@ -18,7 +20,7 @@ const rejected = r => r.events.filter(e => e.t === 'delta.rejected' && e.d.rule 
 function step(s, n, answer = f.steps[n].answer) {
     s = copy(s);
     for (const e of f.steps[n].events) applyEvent(s, e);
-    return applyWorld(s, content, copy(answer), { msg: f.steps[n].i + 1, prose: f.steps[n].text });
+    return applyWorld(s, content, contractValue(copy(answer), s, content), { msg: f.steps[n].i + 1, prose: f.steps[n].text });
 }
 function beforeEntry() { return step(fold(f.before), 0).state; }
 function entry(change = () => {}) {
@@ -63,7 +65,7 @@ test('Run18 first root registration: neither extra groups nor remote dungeon foe
 test('Run18 an ordinary ruin outside the Dungeon still permits freely introduced creatures', () => {
     const s = beforeEntry();
     const d = copy(f.steps[1].answer.deltas.find(d => d.type === 'creature.new'));
-    const r = applyWorld(s, content, { scene: 'here', expected: {}, deltas: [d] }, { msg: 114, prose: f.steps[1].text });
+    const r = applyWorld(s, content, contractValue({ scene: 'here', expected: {}, deltas: [d] }, s, content), { msg: 114, prose: f.steps[1].text });
     assert.equal(r.state.scene.at, s.scene.at);
     assert.equal(created(r).length, 1);
     assert.equal(rejected(r).length, 0);
@@ -93,7 +95,7 @@ test('Run18 valid canonical slots on actual F and E floors retain identity, rank
         const sl = preview.run.floors[floor].slots.find(x => x.role === 'minion');
         const d = { ...copy(f.steps[1].answer.deltas.find(d => d.type === 'creature.new')), ref: sl.ref, species: sl.species, anchor: sl.anchor, count: sl.count };
         const answer = { scene: 'here', expected: {}, deltas: [d] };
-        const r = applyWorld(s, content, answer, { msg: 114 });
+        const r = applyWorld(s, content, contractValue(answer, s, content), { msg: 114 });
         const foes = created(r).map(e => r.state.entities[e.d.entity.id]);
         assert.equal(foes.length, sl.count);
         for (const e of foes) {
@@ -102,7 +104,7 @@ test('Run18 valid canonical slots on actual F and E floors retain identity, rank
             assert.ok(e.profile.level >= (floor === 1 ? 1 : 15));
             assert.ok(e.profile.level <= (floor === 1 ? 5 : 19));
         }
-        const again = applyWorld(r.state, content, answer, { msg: 115 });
+        const again = applyWorld(r.state, content, contractValue(answer, r.state, content), { msg: 115 });
         assert.equal(created(again).length, 0, 'the same reference reuses the slot population');
         assert.deepEqual(again.state.dungeons[ROOT].run.floors[floor].slots.find(x => x.id === sl.id).entities, foes.map(e => e.id));
     }
@@ -133,7 +135,7 @@ test('Run18 historical .93 profiles remain loadable and are not retroactively ch
     const id = 'mon.crerisen_skeleton_1';
     const old = copy(s.entities[id].profile);
     assert.equal(old.level, 28);
-    const r = applyWorld(s, content, { scene: 'here', expected: {}, deltas: [] }, { msg: 116 });
+    const r = applyWorld(s, content, contractValue({ scene: 'here', expected: {}, deltas: [] }, s, content), { msg: 116 });
     assert.deepEqual(r.state.entities[id].profile, old);
     assert.equal(created(r).length, 0);
 });

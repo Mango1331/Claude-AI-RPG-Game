@@ -45,7 +45,8 @@ const TURNS = [
         answer: { expected: { 1: { arrived: true, at: { new: { name: 'the old burrow', kind: 'wilderness', parent: 'loc.alderwatch' } }, with: null } }, deltas: [
             { seq: 1, type: 'arrive', at: { new: { name: 'the old burrow', kind: 'wilderness', parent: 'loc.alderwatch' } }, with: null, forced_by: null },
             { seq: 2, type: 'area', place: null, min_level: 1, max_level: 3, how: 'seen', evidence: 'The burrow is a nearby low-danger wilderness.' },
-            { seq: 3, type: 'creature.new', ref: 'barkscorpion', species: 'barkscorpion', anchor: 'arthropod', desc: ['bark-plated'], count: 3, present: true, band: 'SHORT', stronger: null },
+            // Package C (.132): the mock extractor answers the current contract (the burrow holds no population)
+            { seq: 3, type: 'creature.new', ref: 'barkscorpion', species: 'barkscorpion', anchor: 'arthropod', desc: ['bark-plated'], count: 3, present: true, band: 'SHORT', stronger: null, population: 'independent', life_stage: 'adult' },
             // Patch 7.2B (delta-0.98): the whole group attacks, said with scope all and the reply's own words
             { seq: 4, type: 'hostile', by: ['barkscorpion'], scope: 'all', evidence: 'Three barkscorpions skitter out of the dark and rush at him' },
         ] } },

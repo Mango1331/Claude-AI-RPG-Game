@@ -23,15 +23,20 @@ test('A1: the corpus holds every recorded engine call and the baseline names its
     assert.equal(baseline.sha, 'b8d2af4b76cd0bc52ac178b8c500e5733878ecee');
     assert.equal(baseline.engine, '4.3.0-c.6.6.126');
     assert.deepEqual(baseline.ignored, IGNORED);
+    assert.equal(ACCEPTED.baseline_sha, baseline.sha);
     assert.equal(Object.values(baseline.runs).reduce((n, r) => n + Object.keys(r.cases).length, 0), 2235);
 });
 
-test('A1: the four quick runs replay exactly as on the start commit, from whole and valid states', async () => {
+// Package C (.132): the intended differences to the .126 baseline, record by record with their reason
+// (tools/replay/replay.mjs --accepted; docs/PATCH_ARCH_C132_POPULATION_AGE.md)
+const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_c132_vs_126.json', import.meta.url), 'utf8'));
+test('A1/C: the four quick runs replay as on the start commit, from whole and valid states, apart from the accepted package C records', async () => {
     const result = await replayCorpus(undefined, undefined, { labels: QUICK });
     const sub = { ...baseline, runs: Object.fromEntries(QUICK.map((l) => [l, baseline.runs[l]])) };
     const { compared, diffs } = compareToBaseline(sub, result);
     assert.equal(compared, QUICK.reduce((n, l) => n + Object.keys(baseline.runs[l].cases).length, 0));
-    assert.deepEqual(diffs, []);
+    assert.deepEqual(diffs.map((d) => d.id).sort(), Object.keys(ACCEPTED.cases).filter((id) => QUICK.includes(id.split('#')[0])).sort());
+    assert.ok(diffs.every((d) => ACCEPTED.cases[d.id].category === 'representation'), 'in the quick runs only the recorded contract fields differ');
     for (const [label, run] of Object.entries(result.runs)) {
         assert.equal(Object.values(run.cases).filter((c) => c.error).length, 0, label);
         assert.equal(run.fold.fold_errors, 0, label);

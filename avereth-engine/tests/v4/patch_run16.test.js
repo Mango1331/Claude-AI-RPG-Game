@@ -11,6 +11,8 @@ import { guardCommands } from '../../src/v4/agency.js';
 import { applyWorld } from '../../src/v4/world.js';
 import { parseExtraction } from '../../src/v4/extract.js';
 import { extractionRequest, runExtraction } from '../../src/v4/runtime.js';
+// Package C (.132): original answers predate the population contract; the documented conversion (tools/replay/contract_c.mjs)
+import { contractValue } from '../../tools/replay/contract_c.mjs';
 
 const content = await loadProductContent();
 const f = JSON.parse(fs.readFileSync(new URL('./fixtures/run16.json', import.meta.url)));
@@ -78,7 +80,7 @@ test('Run16 combat boundary rejects a direct attack on an absent known entity', 
     assert.deepEqual(r.state.quests, s.quests);
 });
 test('Run16 T35 arrival and local scene share the canonical parent', () => {
-    const s = before(70), r = applyWorld(s, content, structuredClone(f.t35.answer), { msg: 70, prose: f.t35.text });
+    const s = before(70), r = applyWorld(s, content, contractValue(structuredClone(f.t35.answer), s, content), { msg: 70, prose: f.t35.text });
     assert.equal(r.rejected.filter(x => x.rule === 'scene_context').length, 0);
     assert.equal(r.state.places[r.state.scene.at].parent, 'realm.caelreth');
     assert.equal(created(r).length, 12); // existing crowd cap; no balance change
@@ -88,19 +90,19 @@ test('Run16 canonical scene comparison does not create places or authorize trave
     const s = before(70), a = structuredClone(f.t35.answer);
     s.last.outcome = { c: true, auth: { c: true, gos: [] }, expected_keys: {} };
     a.expected = {};
-    const r = applyWorld(s, content, a, { msg: 70, prose: f.t35.text });
+    const r = applyWorld(s, content, contractValue(a, s, content), { msg: 70, prose: f.t35.text });
     assert.equal(r.state.scene.at, s.scene.at);
     assert.deepEqual(r.state.places, s.places);
     assert.equal(created(r).length, 0);
 });
 test('Run16 same name under a different valid parent is not the current scene', () => {
     const s = before(70), a = structuredClone(f.t35.answer);
-    const arrived = applyWorld(s, content, a, { msg: 70, prose: f.t35.text }).state;
+    const arrived = applyWorld(s, content, contractValue(a, s, content), { msg: 70, prose: f.t35.text }).state;
     arrived.places['realm.other'] = { id: 'realm.other', name: 'Other', kind: 'realm', parent: null };
     a.scene.new.parent = 'realm.other';
     a.deltas = a.deltas.filter(d => d.type === 'person.new');
     a.expected = {}; // this reply only tests the mismatching local scene, not a new arrival
-    const r = applyWorld(arrived, content, a, { msg: 72 });
+    const r = applyWorld(arrived, content, contractValue(a, arrived, content), { msg: 72 });
     assert.ok(r.rejected.every(x => x.rule === 'scene_context'));
     assert.ok(!r.events.some(e => e.t === 'scene.entered'));
 });
@@ -111,28 +113,29 @@ test('Run16 T58 original and annotation-only repair report the premature local i
         const p = parse(a);
         assert.equal(p.valid, true);
         assert.match(p.issues.map(x => x.why).join(' '), /arrival.*before|before.*arrival/i);
-        const r = applyWorld(before(116), content, p.value, { msg: 116, prose: f.t58.text });
+        const r = applyWorld(before(116), content, contractValue(p.value, before(116), content), { msg: 116, prose: f.t58.text });
         assert.equal(created(r).length, 0, 'premature introductions remain rejected');
     }
 });
 test('Run16 correctly ordered T58 introduces three creatures exactly once, with replay and reload', () => {
     const a = ordered(), p = parse(a);
     assert.equal(p.valid, true, p.errors.join('; '));
-    const s = before(116), r = applyWorld(s, content, p.value, { msg: 116, prose: f.t58.text });
+    const s = before(116), r = applyWorld(s, content, contractValue(p.value, s, content), { msg: 116, prose: f.t58.text });
     assert.equal(created(r).length, 3);
     assert.equal(r.rejected.filter(x => x.rule === 'scene_context' && x.type === 'creature.new').length, 0);
     const replay = structuredClone(s);
     for (const e of JSON.parse(JSON.stringify(r.events))) applyEvent(replay, e);
     assert.deepEqual(replay, r.state);
-    assert.deepEqual(applyWorld(s, content, a, { msg: 116, prose: f.t58.text }).state, r.state);
+    assert.deepEqual(applyWorld(s, content, contractValue(a, s, content), { msg: 116, prose: f.t58.text }).state, r.state);
 });
 test('Run16 repair uses the existing second call, then commits once and never retries an applied reply', async () => {
     const chat = pending(), requests = [];
     const annotated = JSON.parse(f.t58.repair);
     annotated.deltas.find(d => d.type === 'quest.detail').scene = structuredClone(annotated.scene);
+    const was = foldChat(chat, 116).state;
     await runExtraction(chat, 116, content, async req => {
         requests.push(req);
-        return JSON.stringify(requests.length === 1 ? annotated : ordered());
+        return JSON.stringify(contractValue(requests.length === 1 ? annotated : ordered(), was, content));
     });
     assert.equal(requests.length, 2);
     assert.match(requests[1].messages.at(-1).content, /arrival.*before|before.*arrival/i);
@@ -147,7 +150,7 @@ test('Run16 failed arrival never grants local destination creatures', () => {
     const s = before(116), a = ordered();
     s.last.outcome = { c: true, auth: { c: true, gos: [] }, expected_keys: {} };
     a.expected = {};
-    const r = applyWorld(s, content, a, { msg: 116, prose: f.t58.text });
+    const r = applyWorld(s, content, contractValue(a, s, content), { msg: 116, prose: f.t58.text });
     assert.equal(r.state.scene.at, s.scene.at);
     assert.equal(created(r).length, 0);
 });

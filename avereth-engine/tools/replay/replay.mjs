@@ -21,6 +21,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../..');
+import { hasContract, contractText } from './contract_c.mjs';
+
 export const DEFAULT_CORPUS = path.join(ROOT, 'tests/replay/corpus');
 export const DEFAULT_BASELINE = path.join(ROOT, 'tests/replay/baseline.json.gz');
 
@@ -66,8 +68,9 @@ export async function engineAt(root = ROOT) {
     return { host, runtime, state, validate, util, content, version: util.ENGINE_VERSION };
 }
 
-/** A scripted model: the recorded answers of one message, in order; a different request is a visible replay error. */
-function scripted(answers = []) {
+/** A scripted model: the recorded answers of one message, in order; a different request is a visible replay error.
+ * convert: package C's transparent conversion of an older extractor answer (tools/replay/contract_c.mjs). */
+function scripted(answers = [], convert = null) {
     const queue = [...answers];
     const asked = [];
     const llm = async ({ purpose }) => {
@@ -82,7 +85,7 @@ function scripted(answers = []) {
             throw Object.assign(new Error(`replayed ${next.error.kind} error`), code ? { code } : {}, next.error.status ? { status: next.error.status } : {},
                 typeof next.error.retryable === 'boolean' ? { retryable: next.error.retryable } : {});
         }
-        return next.content;
+        return convert && /^extract/.test(purpose) ? convert(next.content) : next.content;
     };
     return { llm, asked, left: () => queue.length };
 }
@@ -128,7 +131,10 @@ export async function replayRun(E, run) {
             if (r.system_answer) { skip('system answer (no world)'); continue; }
             if (!r.extraction && r.events?.some((e) => e.t === 'campaign.started')) { skip('campaign start'); continue; }
             if (r.extraction?.status === 'late') { skip('extraction closed late'); continue; }
-            const s = scripted(run.answers[i]);
+            // package C (.132): an engine of the population contract gets the recorded answer converted, the state it is
+            // converted against being the one the reply is applied to (the fold before it)
+            const before = hasContract(content.deltaVocab) ? host.foldChat(copy, i).state : null;
+            const s = scripted(run.answers[i], before ? (text) => contractText(text, before, content) : null);
             let p;
             let x = null;
             try {
@@ -264,9 +270,15 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const check = opt('--check');
     if (check) {
         const baseline = JSON.parse(zlib.gunzipSync(fs.readFileSync(check)).toString('utf8'));
-        const { compared, diffs } = compareToBaseline(baseline, result);
-        console.log(`baseline ${baseline.sha} (${baseline.engine}): ${compared} cases compared, ${diffs.length} differing`);
+        const { compared, diffs: all } = compareToBaseline(baseline, result);
+        // --accepted <file>: a reasoned list of the records an intended change makes differ (package C:
+        // tests/replay/accepted_c132_vs_126.json); a listed record that no longer differs is reported too
+        const accepted = opt('--accepted') ? JSON.parse(fs.readFileSync(opt('--accepted'), 'utf8')).cases : {};
+        const diffs = all.filter((d) => !accepted[d.id]);
+        const stale = Object.keys(accepted).filter((id) => !all.some((d) => d.id === id));
+        console.log(`baseline ${baseline.sha} (${baseline.engine}): ${compared} cases compared, ${all.length} differing${opt('--accepted') ? `, ${all.length - diffs.length} of them accepted, ${diffs.length} not accepted, ${stale.length} accepted but equal` : ''}`);
         for (const d of diffs.slice(0, Number(opt('--show') || 50))) console.log(JSON.stringify(d));
-        if (diffs.length) process.exitCode = 1;
+        for (const id of stale) console.log(JSON.stringify({ id, accepted_but_equal: true }));
+        if (diffs.length || stale.length) process.exitCode = 1;
     }
 }

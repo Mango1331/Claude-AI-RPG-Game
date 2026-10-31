@@ -12,6 +12,8 @@ import { Chat4 } from './harness.js';
 import { rec } from '../../src/host.js';
 import { processReplyAny, runExtraction } from '../../src/v4/runtime.js';
 import * as recovery from '../../src/v4/narrator_recovery.js';
+// Package C (.132): original answers predate the population contract; the documented conversion (tools/replay/contract_c.mjs)
+import { contractValue } from '../../tools/replay/contract_c.mjs';
 const c = await loadProductContent();
 const fixture = JSON.parse(fs.readFileSync(new URL('./fixtures/batch10_followup.json', import.meta.url)));
 
@@ -36,10 +38,11 @@ for (const [i, f] of fixture.habitats.entries()) {
         const habitat = f.state.quests[f.quest].hunt.at;
         const before = structuredClone(f.state);
         const turn = playerTurnV4(before, c, f.input, { c: true, commands: [{ ...f.command, within: habitat }] });
-        const r = applyWorld(turn.state, c, f.answer, { prose: f.prose, msg: 500 });
+        const r = applyWorld(turn.state, c, contractValue(f.answer, turn.state, c), { prose: f.prose, msg: 500 });
         const creatures = r.events.filter(e => e.t === 'entity.updated' && e.d.set?.profile);
         assert.ok(creatures.length >= 3);
-        assert.ok(creatures.every(e => e.d.set.population_at === habitat));
+        // Package C (.132): membership is recorded when the creature is created, not with its profile
+        assert.ok(creatures.every(e => r.state.entities[e.d.id].population_at === habitat));
         assert.ok(creatures.every(e => e.d.set.profile.level >= 4 && e.d.set.profile.level <= 7));
         const replay = structuredClone(before);
         for (const e of [...turn.events, ...r.events]) applyEvent(replay, JSON.parse(JSON.stringify(e)));
@@ -48,8 +51,8 @@ for (const [i, f] of fixture.habitats.entries()) {
     });
     test(`original habitat ${i}: unrelated departure is not assigned to the hunt`, () => {
         const turn = playerTurnV4(f.state, c, f.input, { c: true, commands: [f.command] });
-        const r = applyWorld(turn.state, c, f.answer, { prose: f.prose, msg: 500 });
-        assert.ok(r.events.filter(e => e.t === 'entity.updated' && e.d.set?.profile).every(e => !e.d.set.population_at));
+        const r = applyWorld(turn.state, c, contractValue(f.answer, turn.state, c), { prose: f.prose, msg: 500 });
+        assert.ok(r.events.filter(e => e.t === 'entity.updated' && e.d.set?.profile).every(e => !r.state.entities[e.d.id].population_at));
     });
 }
 test('original purchase: cot plus box bed is not consent for box bed plus stew', () => {
@@ -120,7 +123,7 @@ test('scope does not fabricate an unconfirmed arrival or relocate a known creatu
     const answer = structuredClone(f.answer);
     answer.expected['1'].arrived = false;
     answer.deltas = answer.deltas.filter(d => d.type !== 'arrive');
-    const r = applyWorld(turn.state, c, answer, { prose: f.prose, msg: 500 });
+    const r = applyWorld(turn.state, c, contractValue(answer, turn.state, c), { prose: f.prose, msg: 500 });
     assert.equal(r.state.scene.at, turn.state.scene.at);
     assert.equal(r.events.some(e => e.t === 'entity.created' && e.d.entity.kind === 'creature'), false);
 });

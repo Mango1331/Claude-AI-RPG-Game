@@ -14,13 +14,15 @@ import { extractionRequest, processReplyAny, runExtraction } from '../../src/v4/
 import { foldChat, rec } from '../../src/host.js';
 import { hash32 } from '../../src/util.js';
 import { campaign, inject, say } from './patch8_lib.js';
+// Package C (.132): original answers predate the population contract; the documented conversion (tools/replay/contract_c.mjs)
+import { contractValue } from '../../tools/replay/contract_c.mjs';
 
 const content = await loadProductContent();
 const f = JSON.parse(fs.readFileSync(new URL('./fixtures/run21_habitat_catalog.json', import.meta.url)));
 const site = 'realm.caelreth.the_mill_road_treeline_east_of_barrowford';
 const quest = 'quest.thin_the_mill_road_wolves';
 const copy = structuredClone;
-const world = sample => applyWorld(copy(sample.state), content, copy(sample.answer), { msg: sample.i, prose: sample.prose });
+const world = sample => applyWorld(copy(sample.state), content, contractValue(copy(sample.answer), copy(sample.state), content), { msg: sample.i, prose: sample.prose });
 const on = (s, events = []) => e => { events.push(copy(e)); applyEvent(s, e); };
 
 for (const sample of f.world) test(`Run21 i${sample.i}: original gray wolves inherit the outdoor habitat despite rooms:true`, () => {
@@ -77,7 +79,7 @@ test('Run21 T90: the active visited hunt site is a valid shared Planner/Extracto
     const p = parseExtraction(JSON.stringify(f.t90.answer263), content.deltaVocab, { places: extractor.places, quests: extractor.quests, objects: extractor.objects }, s.last.outcome.expected_keys, { startScene: s.scene.at, sceneRequired: true });
     assert.equal(p.valid, true, p.errors.join('; '));
     assert.equal(p.complete, true);
-    const r = applyWorld(s, content, p.value, { msg: 180, prose: f.t90.prose });
+    const r = applyWorld(s, content, contractValue(p.value, s, content), { msg: 180, prose: f.t90.prose });
     assert.equal(r.state.scene.at, site);
     assert.equal(r.events.filter(e => e.t === 'scene.moved').length, 1);
     assert.equal(r.events.some(e => e.t === 'quest.ready' || e.t === 'coin.changed' || e.t === 'xp.changed'), false);
@@ -105,7 +107,7 @@ test('Run21 known target in the catalog does not authorize travel or relax malfo
     assert.ok(repair.errors.some(e => e.includes('.s: expected string')));
     const before = s.scene.at;
     s.last.outcome.auth = { c: true, gos: [] }; s.last.outcome.expected_keys = {};
-    const r = applyWorld(s, content, { scene: site, expected: {}, deltas: [{ seq: 1, type: 'arrive', at: site, with: null, forced_by: null }] }, { msg: 180, prose: f.t90.prose });
+    const r = applyWorld(s, content, contractValue({ scene: site, expected: {}, deltas: [{ seq: 1, type: 'arrive', at: site, with: null, forced_by: null }] }, s, content), { msg: 180, prose: f.t90.prose });
     assert.equal(r.state.scene.at, before);
     assert.ok(r.rejected.some(e => e.rule === 'no_go'));
 });

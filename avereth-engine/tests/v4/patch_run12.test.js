@@ -7,7 +7,7 @@ import { applyEvent } from '../../src/state.js';
 import { deliveryTarget } from '../../src/v4/delivery.js';
 const content = await loadProductContent();
 const base = (await campaign(content)).state();
-const world = (s,d) => applyWorld(s,content,{expected:{},deltas:d},{msg:146,prose:'Three skeletons stand in the chamber beyond the crawl.'});
+const world = (s,d) => applyWorld(s,content,contractValue({expected:{},deltas:d}, s, content),{msg:146,prose:'Three skeletons stand in the chamber beyond the crawl.'});
 test('Run12 distant exact slot creates one population, then enters once and replays', async () => {
  const g=await campaign(content); hero(g); await walk(g,CATA); await delve(g,'First Burial Gallery',{bring:false});
  const s=g.state(), x=s.dungeons[CATA], sl=x.run.floors[1].slots.find(a=>!a.entities.length && !a.taken);
@@ -47,11 +47,13 @@ test('typed role is independent of display where and survives JSON',()=>{
 import fs from 'node:fs';
 import { parseBoard, bookBoard } from '../../src/v4/guild.js';
 import { transferCargo } from '../../src/v4/delivery.js';
+// Package C (.132): original answers predate the population contract; the documented conversion (tools/replay/contract_c.mjs)
+import { contractValue } from '../../tools/replay/contract_c.mjs';
 const original = JSON.parse(fs.readFileSync(new URL('./fixtures/run12_e146.json',import.meta.url)));
 const boards = JSON.parse(fs.readFileSync(new URL('./fixtures/run12_boards.json',import.meta.url)));
 const need={branch:'loc.ashbridge',rank:'Novice',missing:5,have:[],day:1,c:true};
 test('original E146: six-body path becomes exactly three distant slot identities',()=>{
- const r=applyWorld(original.state,content,original.raw,{msg:146,prose:'Three goblins stand beyond the crawl.'});
+ const r=applyWorld(original.state,content,contractValue(original.raw, original.state, content),{msg:146,prose:'Three goblins stand beyond the crawl.'});
  const created=r.events.filter(e=>e.t==='entity.created' && e.d.entity.kind==='creature').map(e=>e.d.entity.id);
  assert.equal(created.length,3); assert.ok(created.every(id=>r.state.entities[id].slot && !r.state.scene.present.includes(id)));
  assert.equal(r.events.filter(e=>e.t==='dungeon.slot' && e.d.set.entities).length,1);

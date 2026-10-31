@@ -11,6 +11,7 @@ import { O, S, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 import { setFactEvents, perceivers, knows, truth, PC_NAME_FACT } from '../knowledge.js';
 import { awardXp, questXp } from '../progression.js';
+import { lifeStageOf } from './population.js';
 import { rankOf, rankIndex } from '../derived.js';
 import { slug, normText, hash32 } from '../util.js';
 import { itemProfile } from './items.js';
@@ -229,7 +230,27 @@ export function defeatTally(s, content, q) {
     // (wolves along the way to the den are the same hunt; a wolf of another realm is not). Only beings met in his own
     // story count: the companies of a Living Dungeon never make entities, so what they kill never fills his count
     const area = areaOf(s, q);
+    // Package C (.132): a world hunt counts the members of its population (population_at, fixed when the creature was
+    // met), of the age the contract allows, inside the population's level window: an explicitly weaker grown member
+    // stays a member but earns no credit; the individual's own name decides nothing
+    const pop = q.hunt ? s.places[q.hunt.at]?.population : null;
+    // a contract booked before .132 carries no age: its grown animals, and the young too where its objective names them
+    // (the earlier cullKind reading)
+    const ageOk = !q.hunt ? null : q.hunt.age ? (st) => st === q.hunt.age
+        : ((q.objectives || []).some((o) => o.verb === 'DEFEAT' && namesYoung(content, `${o.what} ${o.unit || ''}`)) ? () => true : (st) => st === 'adult');
+    // the window is the grown animals' (src/engine.js materialise): a young member of it is credited by membership and age
+    const member = q.hunt ? (e) => {
+        const stage = lifeStageOf(e, namesYoung(content, `${e.species || ''} ${e.name || ''}`));
+        const windowed = stage === 'adult' || (pop && namesYoung(content, pop.species));
+        return e.kind === 'creature' && e.population_at === q.hunt.at && ageOk(stage)
+            && (!windowed || !pop || !e.profile || (e.profile.level >= pop.levels[0] && e.profile.level <= pop.levels[1]));
+    } : null;
     return (q.objectives || []).filter((o) => o.verb === 'DEFEAT' && Number.isInteger(o.qty) && o.qty > 0).map((o) => {
+        if (member) {
+            const killed = dead.filter(member).length;
+            const driven = fled.filter(member).length;
+            return { what: o.what, qty: o.qty, done: killed + driven, killed, driven };
+        }
         // animals and monsters by their kind; people by their role ("raiders": a dead brigand counts, review of 4.1.3:
         // 4.1.2 counted creatures only, so five dead bandits made 0 of 5)
         const people = peopleNamed(o.what, content);
@@ -573,7 +594,7 @@ export function listingSchema(content) {
         listings: A(O({
             title: S(), client: S(), rank: E(ranksOf(content)), level: I(1, 104), qtype: E(QTYPES), payout_cp: I(0),
             task: N(S()), desired_end_state: S(), objectives: A(OBJECTIVE, 1), proof: A(PROOF),
-            habitat: N(O({ species: S(), anchor: E([...content.anchors.keys()]), min_level: I(1, 14), max_level: I(1, 14) })),
+            habitat: N(O({ species: S(), anchor: E([...content.anchors.keys()]), min_level: I(1, 14), max_level: I(1, 14), life_stage: N(E(['adult', 'young'])) })),
         })),
     });
 }
@@ -592,6 +613,12 @@ function habitatWhy(s, content, need, l) {
     const o = l.objectives.find(o => o.verb === 'DEFEAT');
     if (!o.where?.trim() || !h.species.trim()) return 'habitat needs a species and a precise DEFEAT destination in where';
     if (!namesKind(o.what, h.species, h.anchor, sameKinds(content))) return 'habitat.species/anchor does not match the hunted kind';
+    // Package C (.132): a hunt of the young is stated (habitat.life_stage "young") and its objective names the young; a
+    // hunt of the grown never asks for the young by its objective's kind words ("wolf pups" is not a hunt of wolves)
+    // by the objective's head nouns: "wolf pups" asks for the young, "the lamb-rending wolf" for a wolf
+    const young = [o.what, o.unit].some((t) => namesYoung(content, String(t || '').trim().split(/\s+/).at(-1) || ''));
+    if (h.life_stage === 'young' && !young) return 'habitat.life_stage young needs a DEFEAT objective that names the young of the kind (pups, cubs, yearlings ...)';
+    if (h.life_stage !== 'young' && young) return 'habitat.life_stage: a hunt of the young states life_stage "young"';
     if (!validEncounterLevels(content, [h.min_level, h.max_level]) || l.level < h.min_level || l.level > h.max_level)
         return 'habitat level window must be 1-1, 1-3, 4-7, 8-11 or 12-14 and contain the quest recommendation';
     const anchor = content.anchors.get(h.anchor);
@@ -735,6 +762,7 @@ export function boardRequest(s, content, need) {
             '- For every non-Dungeon hunt add habitat:{species:"the actual creature kind",anchor:"one supported body-plan id",min_level:4,max_level:7}. Allowed fixed population windows: 1-1 (intro), 1-3, 4-7, 8-11, 12-14. The quest level lies inside that window. This describes a world population, NOT a change to existing creatures or a spawn instruction. Other listings use habitat:null.',
             `- Intro eligible body-plan ids (ordinary level 1, calculated from Content): ${[...content.anchors.values()].filter(introAnchor).map(a => a.id).join(', ')}. Species names must still fit their body plan.`,
             `- Supported body-plan ids: ${[...content.anchors.keys()].join(', ')}. The DEFEAT objective where is the one canonical hunting-site label (no duplicate place field in habitat); use the same species/kind. A weak introduction has one ordinary level-1 animal/Monster, anchor HP <=35 and ATK <=10, no hidden group/elite/boss.`,
+            '- A world hunt is for the grown animals of its population (habitat.life_stage "adult" or null). Only a notice whose DEFEAT objective names the young of the kind (pups, cubs, yearlings ...) is a hunt of the young: habitat.life_stage "young". The engine counts only members of the hunted population of that age within its level window.',
             '- Established populations below are binding. New sites and species names are welcome, but never rename, move or upscale a known population. Do not locate several incompatible populations at the same small site. Clearly warn of stronger groups and high-F work; availability never means safe for the reader.',
         ] : []),
         ...(profile ? [
@@ -850,6 +878,8 @@ export function parseBoard(answer, content, need, s = null) {
     // a listing without its board text is still a listing: the board then shows the desired end state (as before 4.1.2)
     for (const l of Array.isArray(value.listings) ? value.listings : []) if (l && typeof l === 'object' && l.task === undefined) l.task = null;
     for (const l of Array.isArray(value.listings) ? value.listings : []) if (l && typeof l === 'object' && l.habitat === undefined) l.habitat = null;
+    // Package C (.132): a hunt's age, stated by the generator; none stated is a hunt of the grown animals
+    for (const l of Array.isArray(value.listings) ? value.listings : []) if (l?.habitat && typeof l.habitat === 'object' && l.habitat.life_stage === undefined) l.habitat.life_stage = null;
     for (const l of Array.isArray(value.listings) ? value.listings : [])
         for (const o of Array.isArray(l?.objectives) ? l.objectives : [])
             if (o && typeof o === 'object' && o.delivery === undefined) o.delivery = null;
@@ -1093,7 +1123,9 @@ export function bookBoard(s, content, need, listings, emit) {
                 p = { id: pid, name: where, kind: 'site', parent, realm: realmOf(s, need.branch), tags: [], known: 'reported', reports: [], by: 'guild', created: { turn: s.turn, minute: s.clock.minute }, population };
                 emit({ t: 'place.created', d: { place: p } });
             } else if (!p.population) emit({ t: 'place.updated', d: { id: p.id, set: { population } } });
-            quest.hunt = { at: p.id };
+            // Package C (.132): the age the hunt allows, fixed at publication as the generator stated it (habitatWhy checked
+            // it against the objective): a hunt of the young only when stated, else of the grown animals
+            quest.hunt = { at: p.id, age: h.life_stage === 'young' ? 'young' : 'adult' };
         }
         // Patch 8: a level of a Dungeon to clear, booked with the contract (src/v4/living.js)
         const clear = need.c ? clearTarget(s, quest) : null;

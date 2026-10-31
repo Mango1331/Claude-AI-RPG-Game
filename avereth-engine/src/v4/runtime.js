@@ -87,11 +87,17 @@ export function campaignRuntime(chat) {
 /**
  * Architecture patch B1 (.130): the one campaign protocol this build continues, read from the campaign's own
  * campaign.started record (the reducer keeps only part of it in state.meta): Runtime V4, path C, Ruleset 2, no formal
- * private quests, a readable start build, and either the .126 configuration (f_progression, f_balance and starter_aoe
- * all set, as every campaign since .116 wrote them) or a start build from FLAGLESS_SINCE on, which no longer writes
- * those retired switches. Anything else is refused before any new step; no migration, no new field.
+ * private quests, a readable start build without the retired F switches (FLAGLESS_SINCE), and since package C a start
+ * build from CONTRACT_SINCE on (the .126 configuration B1 still continued holds creatures of the earlier reading). Anything
+ * else is refused before any new step; no migration, no new field.
  */
 export const FLAGLESS_SINCE = '4.3.0-c.6.6.130';
+/**
+ * Package C (.132): the first build of the population and age contract of creatures (src/v4/population.js). It is the
+ * minimum start build of a continued campaign: an earlier campaign holds creatures and hunts of the earlier reading
+ * (membership by name, only inside the level window) and is refused, never silently reinterpreted.
+ */
+export const CONTRACT_SINCE = '4.3.0-c.6.6.132';
 
 /** "4.3.0-c.6.6.130" -> [4, 3, 0, 6, 6, 130], compared numerically; null when unreadable. */
 export function parseBuild(version) {
@@ -126,9 +132,9 @@ export function campaignSupport(chat) {
             : d.ruleset !== 2 ? `it plays Ruleset ${d.ruleset ?? 1}`
                 : d.private_quests !== false ? 'it was started with formal private quests'
                     : !build ? 'its start build is missing or unreadable'
-                        : set.length === flags.length ? null
-                            : set.length === 0 && compareBuilds(build, parseBuild(FLAGLESS_SINCE)) >= 0 ? null
-                                : 'it was started with an older F rule configuration';
+                        : set.length || compareBuilds(build, parseBuild(FLAGLESS_SINCE)) < 0 ? 'it was started with an older F rule configuration'
+                            : compareBuilds(build, parseBuild(CONTRACT_SINCE)) < 0 ? `it was started before the population and age contract of build ${CONTRACT_SINCE}`
+                                : null;
     if (!why) return null;
     return {
         reason: why,

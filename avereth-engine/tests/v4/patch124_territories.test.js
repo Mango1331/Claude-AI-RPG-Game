@@ -19,15 +19,24 @@ test('population lookup rejects a giant boar among giant snapping turtles', () =
  s.places['loc.forest'].population = {species:'giant snapping turtles', anchor:'aquatic', levels:[4,7]};
  assert.equal(populationAt(s, 'loc.forest', {species:'giant boar', anchor:'boar'}, c, {matchAnchor:false}), null);
 });
-test('World keeps a foreign giant boar on its own body plan and area levels, including replay', () => {
+// Package C (.132): membership is the report's; a giant boar reported independent keeps its own body plan and the
+// area's levels, one reported into the turtle population is no member of it and is not booked (GiantBoar ≠ Turtle)
+test('World keeps a foreign giant boar on its own body plan and area levels, including replay; never a turtle member', () => {
  const s = area(state()).state;
  s.places['loc.forest'].population = {species:'giant snapping turtles', anchor:'aquatic', levels:[4,7]};
- const r = applyWorld(s, c, {scene:'here', expected:{}, deltas:[{seq:1,type:'creature.new',ref:'boar',species:'giant boar',anchor:'boar',desc:[],count:1,present:true,band:'MEDIUM',more:true}]}, {msg:105,prose:'A giant boar stands in the forest.'});
+ const boar = (population) => ({scene:'here', expected:{}, deltas:[{seq:1,type:'creature.new',ref:'boar',species:'giant boar',anchor:'boar',desc:[],count:1,present:true,band:'MEDIUM',more:true,population,life_stage:'adult'},
+  {seq:2,type:'hostile',by:['boar'],scope:null,evidence:'The giant boar charges.'}]});
+ const r = applyWorld(s, c, boar('independent'), {msg:105,prose:'A giant boar stands in the forest. The giant boar charges.'});
  const e = Object.values(r.state.entities).find(e => e.kind === 'creature');
  assert.equal(e.anchor, 'boar'); assert.equal(e.profile.anchor, 'boar');
  assert.equal(e.population_at, undefined); assert.ok(e.profile.level >= 8 && e.profile.level <= 11);
  const replay = clone(s); for (const event of JSON.parse(JSON.stringify(r.events))) applyEvent(replay, event);
  assert.deepEqual(replay, r.state); assert.deepEqual(validateState(replay,c), []);
+ const member = applyWorld(s, c, boar('loc.forest'), {msg:105,prose:'A giant boar stands in the forest. The giant boar charges.'});
+ assert.equal(Object.values(member.state.entities).filter(e => e.kind === 'creature').length, 0);
+ assert.match(member.rejected.find(x => x.rule === 'population').why, /no member/);
+ assert.ok(member.rejected.some(x => x.rule === 'creature_continuity' && x.type === 'hostile'), 'its hostile is refused with it');
+ assert.equal(member.state.encounter, s.encounter);
 });
 test('population species retain singular/plural and established kind synonyms', () => {
  const s = state(), p = s.places['loc.forest'];
@@ -38,8 +47,10 @@ test('population species retain singular/plural and established kind synonyms', 
 });
 const fixture = JSON.parse(fs.readFileSync(new URL('./fixtures/batch18_turtles.json',import.meta.url)));
 const pop = 'realm.valedorn_crown.the_millpond_at_gristbeck_upstream_of_the_millrace_gates';
+// Package C: the originals with the turtles stated as members of the millpond population, adults
+const turtles = (a) => ({ ...a, deltas: a.deltas.map(d => d.type === 'creature.new' ? { ...d, population: pop, life_stage: 'adult' } : d) });
 for (const sample of fixture.samples) test(`Batch18 original ${sample.i}: turtles retain the established aquatic population and L4-7`,()=>{
- const s=fold(sample.events_before),r=applyWorld(s,c,clone(sample.answer),{msg:sample.i,prose:sample.prose});
+ const s=fold(sample.events_before),r=applyWorld(s,c,turtles(clone(sample.answer)),{msg:sample.i,prose:sample.prose});
  const ids=r.events.filter(e=>e.t==='entity.created'&&e.d.entity.kind==='creature').map(e=>e.d.entity.id);
  assert.ok(ids.length>=2);
  for(const id of ids){const e=r.state.entities[id];assert.equal(e.anchor,'aquatic');assert.equal(e.profile.anchor,'aquatic');assert.equal(e.population_at,pop);assert.ok(e.profile.level>=4&&e.profile.level<=7);}
@@ -144,7 +155,7 @@ test('invalid persisted spans are detected; the extractor vocabulary always hold
 });
 test('accepted creature species and new board validation agree for singular/plural away from populations',()=>{
  for(const species of ['giant snapping turtle','giant snapping turtles']){
-  const s=state(),r=applyWorld(s,c,{scene:'here',expected:{},deltas:[{seq:1,type:'creature.new',ref:'cre.turtle',species,anchor:'aquatic',desc:[],count:1,present:true,band:'MEDIUM',more:true}]},{msg:103,prose:'A giant snapping turtle rests by the water.'});
+  const s=state(),r=applyWorld(s,c,{scene:'here',expected:{},deltas:[{seq:1,type:'creature.new',ref:'cre.turtle',species,anchor:'aquatic',desc:[],count:1,present:true,band:'MEDIUM',more:true,population:'independent',life_stage:'adult'}]},{msg:103,prose:'A giant snapping turtle rests by the water.'});
   const e=Object.values(r.state.entities).find(x=>x.kind==='creature');assert.equal(e.anchor,'armored_beast');
  }
 });

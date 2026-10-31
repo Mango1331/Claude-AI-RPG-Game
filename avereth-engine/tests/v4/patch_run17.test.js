@@ -11,6 +11,8 @@ import { resolveCommands } from '../../src/v4/commands.js';
 import { guardCommands } from '../../src/v4/agency.js';
 import { prepareGenerationAsync } from '../../src/v4/runtime.js';
 import { attackCommitted } from '../../src/v4/envelope.js';
+// Package C (.132): original answers predate the population contract; the documented conversion (tools/replay/contract_c.mjs)
+import { contractValue } from '../../tools/replay/contract_c.mjs';
 
 const content = await loadProductContent();
 const f = JSON.parse(fs.readFileSync(new URL('./fixtures/run17.json', import.meta.url)));
@@ -23,9 +25,9 @@ function run(s, commands) {
     return { state, events };
 }
 function quote(s, lines) {
-    return applyWorld(s, content, { scene: s.scene.at, expected: {}, deltas: [
+    return applyWorld(s, content, contractValue({ scene: s.scene.at, expected: {}, deltas: [
         { seq: 1, type: 'offer', seller: teacher, lines },
-    ] }, { msg: 90 });
+    ] }, s, content), { msg: 90 });
 }
 const lesson = { what: 'arcane bolt lesson', kind: 'service', service: 'training', qty: 1, price_cp: 40, said: 'four silver', teaches: null };
 function purchaseState(cp = 50) {
@@ -36,7 +38,7 @@ async function act(commands, text, mutate = () => {}) {
     const chat = Array.from({ length: 114 }, () => ({ mes: '', is_user: false, is_system: false, extra: {} }));
     for (const r of f.records) setRec(chat[r.i], { events: structuredClone(r.events) });
     const price = f.cases.price;
-    setRec(chat[112], { events: applyWorld(before(112), content, price.answer, { msg: 112, prose: price.text }).events });
+    setRec(chat[112], { events: applyWorld(before(112), content, contractValue(price.answer, before(112), content), { msg: 112, prose: price.text }).events });
     // Isolate consumer regressions on the agreed price; the original T56 publication is tested separately.
     rec(chat[112]).events.find(e => e.t === 'offer.created').d.offer.lines[0].price_cp = 50;
     mutate(rec(chat[112]));
@@ -74,7 +76,7 @@ test('Run17 a mixed-currency unit price keeps quantity math and rejects two inde
     assert.equal(tradePrice(null, 'one silver each and five copper each', 2, content).cp, null);
 });
 test('Run17 original T56 creates the two actual 50/30 prices without a false correction', () => {
-    const c = f.cases.price, r = applyWorld(before(c.i), content, c.answer, { msg: c.i, prose: c.text });
+    const c = f.cases.price, r = applyWorld(before(c.i), content, contractValue(c.answer, before(c.i), content), { msg: c.i, prose: c.text });
     assert.deepEqual(r.events.find(e => e.t === 'offer.created').d.offer.lines.map(l => l.price_cp), [50, 30]);
     assert.ok(!r.events.some(e => e.t === 'note' && e.d.kind === 'amount.corrected'));
 });
@@ -137,7 +139,7 @@ test('Run17 guards do not mistake a wish to use the newly bought item for activa
     assert.equal(r.state.entities.pc.sheet.mp, 47);
 });
 test('Run17 original bundled training is not published as an executable paid lesson', () => {
-    const c = f.cases.training, r = applyWorld(before(c.i), content, c.answer, { msg: c.i, prose: c.text });
+    const c = f.cases.training, r = applyWorld(before(c.i), content, contractValue(c.answer, before(c.i), content), { msg: c.i, prose: c.text });
     assert.ok(!r.events.some(e => e.t === 'offer.created' && e.d.offer.lines.some(l => l.service === 'training')));
     assert.equal(money(r).length, 0);
 });
@@ -190,7 +192,7 @@ test('Run17 a missing teacher, ordinary services and legacy contracts retain the
     assert.equal(money(run(s, [f.cases.lesson.commands[0]])).length, 0);
 });
 test('Run17 original sprang attack starts a fight without a player attack', () => {
-    const c = f.cases.hound, r = applyWorld(before(c.i), content, c.answer, { msg: c.i, prose: c.text });
+    const c = f.cases.hound, r = applyWorld(before(c.i), content, contractValue(c.answer, before(c.i), content), { msg: c.i, prose: c.text });
     assert.ok(r.state.encounter);
     assert.ok(!r.rejected.some(e => e.rule === 'attack_commitment'));
 });
@@ -205,7 +207,7 @@ test('Run17 finding a bed and waking in retrospect never grant unbooked sleep', 
     const r = run(before(c.i), c.commands);
     assert.equal(r.state.entities.pc.sheet.mp, 47);
     assert.ok(!r.events.some(e => e.t === 'resource.changed'));
-    const m = f.cases.dawn, dawn = applyWorld(before(m.i), content, m.answer, { msg: m.i });
+    const m = f.cases.dawn, dawn = applyWorld(before(m.i), content, contractValue(m.answer, before(m.i), content), { msg: m.i });
     assert.equal(dawn.state.entities.pc.sheet.mp, 47);
 });
 test('Run17 explicit turning in for the night uses existing sleep/recovery and price protections', () => {

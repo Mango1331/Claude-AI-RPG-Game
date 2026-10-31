@@ -152,16 +152,26 @@ test('A2: the failure path of a world job books no extract.failed on a broken re
     }
 });
 
-test('A2: after loading a valid state the same turn and reply are processed exactly as in the .126 baseline', async () => {
+// Package C (.132): the board turn's record now carries the hunt's age (tests/replay/accepted_c132_vs_126.json), so the
+// repaired run is compared with the same turn and reply processed on the undamaged chat by this build; the corpus check
+// (npm run replay:check) compares that build with the .126 baseline record by record
+test('A2: after loading a valid state the same turn and reply are processed exactly as on the undamaged chat', async () => {
+    const control = withoutRecord(prefix(BOARD_TURN), BOARD_TURN);
+    const c = await prepareGenerationAsync(control, content, { type: 'normal', settings: {}, llm: counting(run.answers[BOARD_TURN]).llm });
     const turn = repair(damage(withoutRecord(prefix(BOARD_TURN), BOARD_TURN)));
     const m = counting(run.answers[BOARD_TURN]);
     const r = await prepareGenerationAsync(turn, content, { type: 'normal', settings: {}, llm: m.llm });
     assert.equal(r.action, 'context');
-    assert.deepEqual(recordOutput(rec(turn[BOARD_TURN]), { kind: 'player', action: r.action }), baseline.runs['b19-mage'].cases[`b19-mage#${BOARD_TURN}`]);
+    assert.deepEqual(recordOutput(rec(turn[BOARD_TURN]), { kind: 'player', action: r.action }), recordOutput(rec(control[BOARD_TURN]), { kind: 'player', action: c.action }));
+    const { events, ...rest } = baseline.runs['b19-mage'].cases[`b19-mage#${BOARD_TURN}`];
+    assert.deepEqual({ ...recordOutput(rec(turn[BOARD_TURN]), { kind: 'player', action: r.action }), events: 0 }, { ...rest, events: 0 }, 'apart from its events, as on .126');
+    const ctl = pending(prefix(BOARD_REPLY), BOARD_REPLY);
+    await runExtraction(ctl, BOARD_REPLY, content, counting(run.answers[BOARD_REPLY]).llm);
     const reply = repair(damage(pending(prefix(BOARD_REPLY), BOARD_REPLY)));
     const x = await runExtraction(reply, BOARD_REPLY, content, counting(run.answers[BOARD_REPLY]).llm);
     assert.equal(x.applied, true);
-    assert.deepEqual(recordOutput(rec(reply[BOARD_REPLY]), { kind: 'reply' }), baseline.runs['b19-mage'].cases[`b19-mage#${BOARD_REPLY}`]);
+    assert.deepEqual(recordOutput(rec(reply[BOARD_REPLY]), { kind: 'reply' }), recordOutput(rec(ctl[BOARD_REPLY]), { kind: 'reply' }));
+    assert.deepEqual(recordOutput(rec(reply[BOARD_REPLY]), { kind: 'reply' }), baseline.runs['b19-mage'].cases[`b19-mage#${BOARD_REPLY}`], 'the reply (no creature) as on .126');
 });
 
 test('A2 review: a command panel not yet posted is neither posted nor marked on a broken record', async () => {

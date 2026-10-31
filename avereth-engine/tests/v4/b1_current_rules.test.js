@@ -35,11 +35,13 @@ test('B1: builds are compared as numbers, never as text; an unreadable build is 
     assert.ok(compareBuilds(parseBuild(ENGINE_VERSION), parseBuild(FLAGLESS_SINCE)) >= 0, 'this build writes no switches');
 });
 
-test('B1: every run of the processing corpus (.126 configuration) is a supported campaign', () => {
+// Package C (.132) sets the minimum start build to CONTRACT_SINCE: the .126 configuration B1 still continued holds
+// creatures of the earlier reading and is refused from then on (plan §4: "frühere Kampagnen nicht still umdeuten")
+test('B1/C: every run of the processing corpus (.126 configuration) is refused since package C, never reinterpreted', () => {
     for (const run of loadCorpus()) {
         const d = campaignStart(run.chat);
         assert.equal(d.f_progression && d.f_balance && d.starter_aoe, true, run.source.label);
-        assert.equal(campaignSupport(run.chat), null, run.source.label);
+        assert.match(campaignSupport(run.chat).reason, /older F rule configuration/, run.source.label);
     }
 });
 
@@ -76,9 +78,14 @@ test('B1: every historical configuration is refused with its reason', async () =
         assert.match(block.reason, why);
         assert.match(block.notice, /^UNSUPPORTED CAMPAIGN — .*Nothing was booked, saved or sent to a model/);
     }
-    // the .126 configuration itself, on its own build
+    // the .126 configuration itself, on its own build: continued by B1, refused since package C; a flagless campaign of
+    // .130/.131 is refused as one started before the population and age contract
     const old = await variant((d) => Object.assign(d, { f_progression: true, f_balance: true, starter_aoe: true, engine_version: '4.3.0-c.6.6.126' }));
-    assert.equal(campaignSupport(old.chat), null);
+    assert.match(campaignSupport(old.chat).reason, /older F rule configuration/);
+    for (const build of ['4.3.0-c.6.6.130', '4.3.0-c.6.6.131']) {
+        const b1 = await variant((d) => { d.engine_version = build; });
+        assert.match(campaignSupport(b1.chat).reason, /before the population and age contract of build 4\.3\.0-c\.6\.6\.132/, build);
+    }
 });
 
 test('B1: an edited greeting does not hide the protocol its record was started on', async () => {

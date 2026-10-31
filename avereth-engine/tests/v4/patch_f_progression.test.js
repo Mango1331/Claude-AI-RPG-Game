@@ -201,7 +201,8 @@ test('F progression: actual arrival and extraction bind a creature to the report
     s.last.outcome = { c: true, auth: { c: true, go: { seq: 1, to: at }, gos: [{ seq: 1, to: at }], timeCap: 180 }, expected_keys: { 1: 'go' } };
     const r = applyWorld(s, c, { scene: at, expected: { 1: { arrived: true, at, with: null } }, deltas: [
         { seq: 1, type: 'arrive', at, with: null, because: 1 },
-        { seq: 2, type: 'creature.new', ref: 'cre.mire_pack', species: 'feral wolf', anchor: 'wolf', desc: ['feral wolves'], count: 2, present: true, band: 'MEDIUM', more: true, scene: at },
+        // Package C (.132): the report states the membership (the target population) and the age
+        { seq: 2, type: 'creature.new', ref: 'cre.mire_pack', species: 'feral wolf', anchor: 'wolf', desc: ['feral wolves'], count: 2, present: true, band: 'MEDIUM', more: true, scene: at, population: at, life_stage: 'adult' },
     ] }, { msg: 20, prose: 'Alaric reaches the pasture. Two feral wolves circle the trough.' });
     assert.equal(r.state.scene.at, at);
     const foes = Object.values(r.state.entities).filter(e => e.population_at === at);
@@ -280,7 +281,8 @@ test('F progression: Guild materials need an actual present clerk and cannot be 
 test('F progression: a reported creature enters under its canonical ID and gets its local profile only when encountered', () => {
     const { s, quests } = booked(), at = quests[2].hunt.at;
     s.last.outcome = { c: true, auth: { c: true, gos: [] }, expected_keys: {} };
-    const seen = { seq: 1, type: 'creature.new', ref: 'cre.reported_wolf', species: 'feral wolf', anchor: 'wolf', desc: [], count: 1, present: false, band: null, more: true, scene: at };
+    // Package C (.132): a remote sighting states its membership at the place its scene names (membership is no presence)
+    const seen = { seq: 1, type: 'creature.new', ref: 'cre.reported_wolf', species: 'feral wolf', anchor: 'wolf', desc: [], count: 1, present: false, band: null, more: true, scene: at, population: at, life_stage: 'adult' };
     const first = applyWorld(s, c, { scene: s.scene.at, expected: {}, deltas: [seen] }, { msg: 60 });
     const created = first.events.find(e => e.t === 'entity.created' && e.d.entity.kind === 'creature');
     const e = created && first.state.entities[created.d.entity.id];

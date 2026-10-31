@@ -8,12 +8,14 @@ import { setFactEvents } from '../../src/knowledge.js';
 import { nextSlot, aheadEvents, catalogLines, floorText, syncEvents, sealRefusal } from '../../src/v4/living.js';
 import { deliveryTarget, transferCargo } from '../../src/v4/delivery.js';
 import { validateState } from '../../src/validate.js';
+// Package C (.132): original answers predate the population contract; the documented conversion (tools/replay/contract_c.mjs)
+import { contractValue } from '../../tools/replay/contract_c.mjs';
 
 const content = await loadProductContent();
 const original = JSON.parse(fs.readFileSync(new URL('./fixtures/run12_e146.json', import.meta.url)));
 const json = x => JSON.parse(JSON.stringify(x));
 const root = 'loc.mossback_warrens';
-const world = (s, answer) => applyWorld(s, content, answer, { msg: 146, prose: 'Three goblins stand beyond the crawl.' });
+const world = (s, answer) => applyWorld(s, content, contractValue(answer, s, content), { msg: 146, prose: 'Three goblins stand beyond the crawl.' });
 const slotOf = s => s.dungeons[root].run.floors[1].slots.find(sl => sl.id === 'warband');
 function reserve() { return world(original.state, original.raw); }
 function actualArrival(s, { repeat = false, name = 'Actual warband chamber' } = {}) {
@@ -161,7 +163,7 @@ for (const [floor, role] of [[1, 'guard'], [2, 'boss']]) test(`distant ${role} r
 test('a newly introduced NPC role works through world events, physical transfer and replay', () => {
     const { s, q, o } = receiving();
     delete s.entities['npc.odell']; s.scene.present = [];
-    const r = applyWorld(s, content, { expected: {}, deltas: [{ seq: 1, type: 'person.new', ref: 'npc.new_keeper', name: 'Odell', role: 'granary keeper', desc: ['old spectacles'], present: true, relevant: false, threat: false }] }, { msg: 201, prose: 'Odell, the granary keeper, greets Alaric.' });
+    const r = applyWorld(s, content, contractValue({ expected: {}, deltas: [{ seq: 1, type: 'person.new', ref: 'npc.new_keeper', name: 'Odell', role: 'granary keeper', desc: ['old spectacles'], present: true, relevant: false, threat: false }] }, s, content), { msg: 201, prose: 'Odell, the granary keeper, greets Alaric.' });
     const id = r.events.find(e => e.t === 'entity.created').d.entity.id;
     assert.equal(deliveryTarget(r.state, q, o, { entity: id }), true);
     const before = json(r.state), transfers = [];

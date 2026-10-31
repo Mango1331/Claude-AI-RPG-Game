@@ -37,7 +37,7 @@ import { jobAction, jobOf } from './private_jobs.js';
 import { acceptPassive, declinePassive } from './passive_growth.js';
 import { acceptSkill, declineSkill, developmentOffers, skillOffers } from './skill_growth.js';
 import { classOffer, classSelection, acceptClass } from './class_growth.js';
-import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, offerAvailability, purchaseLines, samePurchaseRequest, purchaseDecisionMatches } from './trade.js';
+import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, rateUnits, offerAvailability, purchaseLines, samePurchaseRequest, purchaseDecisionMatches } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import { attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
 import { dungeonOf, trueDungeonOf, isRoom, roomKnown, wayBetween, knownRoomNamed, hiddenWayFinds, linkEvent, otherEnd, linksAt, blockerOf, goesFrom, firstStop } from './dungeon.js';
@@ -1020,7 +1020,7 @@ const HANDLERS = {
             return { status: 'refused', reason: 'no open offer', line: 'CANNOT ACCEPT — there is no such open offer.' };
         }
         if (ctx.auth.c && rulesetOf(s) >= 2) {
-            const why = acceptanceWhy(c, o, who(s, o.seller), content.rules.currency);
+            const why = acceptanceWhy(c, o, who(s, o.seller), content.rules.currency, o.bid ? rateUnits(o.lines, (id) => s.objects[id]) : null);
             if (why) return { status: 'refused', reason: why, line: `NOT AGREED — ${why}. Nothing changes hands; clarify the party or price.` };
         }
         if (o.bid) return acceptBid(s, content, c, ctx, emit, o);

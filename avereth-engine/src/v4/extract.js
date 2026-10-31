@@ -247,6 +247,21 @@ function normalizeSoftFields(value, vocab) {
     return { scene: null, ...value, expected: value.expected && typeof value.expected === 'object' ? value.expected : {}, deltas };
 }
 
+/** Build .138: a coin.gift that is the price of things Alaric sells now, with no bid of that buyer in the same answer. */
+function saleProceeds(state, value, d) {
+    if (d.repeat_of != null || typeof d.from !== 'string' || state.entities[d.from]?.kind !== 'npc') return false;
+    const why = normText(`${d.why || ''}`);
+    if (!/\b(?:sale|sold|sells?|selling|price|proceeds|payment for|paid for|pays? for|buys?|bought)\b/.test(why) || /\b(?:thanks|thank|tip|bonus|gift|extra|reward|wage|wages)\b/.test(why)) return false;
+    const bids = (value.deltas || []).filter((x) => x?.type === 'bid' && x.buyer === d.from);
+    const bidFor = new Set(bids.flatMap((x) => (x.lines || []).map((l) => l.object)));
+    const held = Object.values(state.objects || {}).filter((o) => o.holder?.entity === 'pc');
+    const words = (t) => normText(t).split(/[^a-z0-9]+/).filter((w) => w.length > 3);
+    const named = held.filter((o) => { const n = words(o.name || ''); return n.length && n.filter((w) => words(why).includes(w)).length >= Math.min(2, n.length); });
+    // the coin names held goods that no bid of this buyer in the answer covers (a bid for other goods does not pay them)
+    if (named.length) return named.some((o) => !bidFor.has(o.id));
+    return !bids.length && Object.values(value.expected || {}).some((e) => e && typeof e === 'object' && e.sold === true);
+}
+
 /** Local semantic diagnostics, also enforced by World against its actually reached state.
  * These are not malformed JSON; one repair may clarify them without losing independent information.
  */
@@ -319,6 +334,11 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
             && placeKey(state, d.scene ?? value.scene, content) === stepAt) entered.set(d.who, stepAt);
         if (d?.type === 'offer' && saleOfferLines(state, d.seller, d.lines || []).length)
             semanticIssues.push({index:i, seq:d.seq, why:`$.deltas[${i}]: these are current PC sale goods; use bid with buyer, held object ids and price_cp, not offer/seller`});
+        // Build .138 (batch 20 crystal shard T26–T32, seven plates T58): the buyer's coin for things Alaric sells, reported
+        // as coin.gift without the buyer's bid, is never paid; the existing repair asks for the bid. Nothing is converted:
+        // a separate thanks or tip stays a gift, and a recount (repeat_of) stays a recount.
+        if (d?.type === 'coin.gift' && saleProceeds(state, value, d))
+            semanticIssues.push({ index: i, seq: d.seq, why: `$.deltas[${i}]: this coin pays for goods Alaric sells; report the buyer's price as bid (buyer, his held object ids and units, price_cp, the price words as said), not coin.gift. A sale pays only through that bid; keep coin.gift only for a separate gift or thanks` });
         // Package C (.132): population and life stage of a new creature, at the place of its event (a remote sighting:
         // the place its scene names, else none), by the rule World enforces (src/v4/population.js)
         if (d?.type === 'creature.new') {

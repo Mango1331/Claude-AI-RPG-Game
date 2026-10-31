@@ -208,7 +208,7 @@
     },
     {
       "type": "pay",
-      "summary": "Alaric hands over coin to a present person. amount_cp when the message or an open offer names it, else null; for: what it pays for, or null. Use offer.accept when he accepts an open offer; never pay it again in another command.",
+      "summary": "Alaric hands over coin to a present person. amount_cp when the message or an open offer names it, else null; for: what it pays for, or null. Use offer.accept when he accepts an open offer; never pay it again in another command. Only his own will to pay: asking for, collecting or taking money owed to him (wages, a reward, a debt) is no pay.",
       "args": {
         "to": {
           "ref": "person"
@@ -228,7 +228,8 @@
       ],
       "negative": [
         "I paid you yesterday.",
-        "I'm not paying that."
+        "I'm not paying that.",
+        "I'll take that fifty copper now."
       ]
     },
     {

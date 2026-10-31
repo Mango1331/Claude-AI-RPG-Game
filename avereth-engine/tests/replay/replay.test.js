@@ -29,7 +29,8 @@ test('A1: the corpus holds every recorded engine call and the baseline names its
 
 // Package C (.132): the intended differences to the .126 baseline, record by record with their reason
 // (tools/replay/replay.mjs --accepted; docs/PATCH_ARCH_C132_POPULATION_AGE.md)
-const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_d133_vs_126.json', import.meta.url), 'utf8'));
+// Finance patch F (.138): the D list plus six individually reasoned records (docs/FIX138_FINANCE.md)
+const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_f138_vs_126.json', import.meta.url), 'utf8'));
 const SUB = { ...baseline, runs: Object.fromEntries(QUICK.map((l) => [l, baseline.runs[l]])) };
 let quick = null; // the four quick runs, replayed once for this file
 const quickRuns = async () => (quick ||= await replayCorpus(undefined, undefined, { labels: QUICK }));
@@ -38,7 +39,7 @@ test('A1/C: the four quick runs replay as on the start commit, from whole and va
     const { compared, diffs } = compareToBaseline(SUB, result);
     assert.equal(compared, QUICK.reduce((n, l) => n + Object.keys(baseline.runs[l].cases).length, 0));
     assert.deepEqual(diffs.map((d) => d.id).sort(), Object.keys(ACCEPTED.cases).filter((id) => QUICK.includes(id.split('#')[0])).sort());
-    assert.ok(diffs.every((d) => ['representation','D offer contract'].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D differences are allowed');
+    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138'].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F differences are allowed');
     const { open, accepted, stale } = acceptedDiffs(diffs, ACCEPTED.cases, result);
     assert.deepEqual([open, stale, accepted.length], [[], [], diffs.length], 'every accepted record has exactly the fingerprinted output');
     for (const [label, run] of Object.entries(result.runs)) {
@@ -126,4 +127,12 @@ test('C review: an unexpected change of money, quest or events inside an already
 test('D retains every original C fingerprint and reason unchanged',()=>{
  const c=JSON.parse(fs.readFileSync(new URL('./accepted_c132_vs_126.json',import.meta.url)));
  for(const [id,entry] of Object.entries(c.cases)) assert.deepEqual(ACCEPTED.cases[id],entry,id);
+});
+
+test('F retains every D fingerprint and reason unchanged and adds exactly the six reasoned .138 records', () => {
+    const d = JSON.parse(fs.readFileSync(new URL('./accepted_d133_vs_126.json', import.meta.url)));
+    for (const [id, entry] of Object.entries(d.cases)) assert.deepEqual(ACCEPTED.cases[id], entry, id);
+    const added = Object.keys(ACCEPTED.cases).filter((id) => !d.cases[id]).sort();
+    assert.deepEqual(added, ['b17-warrior#134', 'b17-warrior#73', 'b18-rogue#196', 'b18-warrior#44', 'b18-warrior#54', 'b19-mage#152']);
+    for (const id of added) assert.equal(ACCEPTED.cases[id].category, 'finance 138', id);
 });

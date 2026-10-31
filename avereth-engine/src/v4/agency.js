@@ -301,6 +301,19 @@ function planned(parts, type) {
 
 const idOf = (ref) => (typeof ref === 'string' ? ref : null);
 
+// Build .138: his own outgoing payment in his words; "pay me", "pay up", "give us" and someone else paying are not his
+const PAY_OUT = /(?<!\b(?:you|you'll|you will|he|she|they|it)\s)\b(?:pay|pays|paying|paid|give|gives|giving|gave|hand|hands|handing|handed|toss|tosses|tossing|tossed|slide|slides|sliding|slid|press|presses|pressing|pressed|put|puts|putting|place|places|placing|placed|lay|lays|laying|laid|leave|leaves|leaving|left|drop|drops|dropping|tip|tips|tipping|tipped|settle|settles|settling|cover|covers|covering|spend|spends|spending|donate|donates|lend|lends|repay|repays|repaying|offer|offers|offering|flip|flips|flipping|throw|throws|throwing|push|pushes|pushing|pushed|pass|passes|passing|passed|count out|counts out|counting out)\b(?!\s+(?:me|us)\b)/;
+const GIVE_THESE = /(?:^|[.!?;:,"“]\s*|\band\s+)(?:here(?:'s| is| are)\b|take\s+(?:this|these|it|them|the\s+coins?|my\s+coin)\b|keep\s+the\s+change\b)/;
+// … and words that claim money for him: when the command's own words say this, the rest of the message cannot stand in
+const CLAIM = /\b(?:pay|give|hand)\s+(?:me|us)\b|\bpay\s+up\b|\bowe[sd]?\s+(?:me|us)\b|\b(?:take|takes|taking|collect|collects|collecting|get|gets|getting|receive|receives|receiving|claim|claims|claiming|want|wants|need|needs|expect|expects)\b[^.;!?]{0,30}\b(?:coins?|coppers?|silvers?|golds?|cp|wages?|pay|payment|fee|money|reward|share|cut|due)\b/;
+export const claimsOwn = (text) => CLAIM.test(String(text || '').toLowerCase().replace(/[‘’]/g, "'"));
+/** His will to pay out his own coin: in the command's words, or (when they claim nothing for him) in his message. */
+export function paysOut(text) {
+    // "pay up" asks someone else to pay
+    const t = String(text || '').toLowerCase().replace(/[‘’]/g, "'").replace(/\bpay(?:s|ing)?\s+up\b/g, ' ');
+    return PAY_OUT.test(t) || GIVE_THESE.test(t);
+}
+
 /**
  * Check the interpreter's commands against their evidence and the state.
  * @param {string} message the player's message
@@ -350,6 +363,10 @@ export function guardCommands(message, commands, context = {}, { language = true
         if (type === 'use' && objects.get(idOf(c.object))?.source === 'stone' && WISH.test(evidence)) { drop(c, 'wish', 'the evidence wishes to use the Skill Stone; it is not activated now'); continue; }
         if (otherSpeech(message, evidence, context)) { drop(c, 'npc_speech', "the evidence is someone else's quoted words"); continue; }
         if (otherActor(evidence, context)) { drop(c, 'npc_actor', 'the evidence is what someone else does'); continue; }
+        // Build .138 (batch 20 T50: "I'll take that fifty copper now" became pay 50 cp to Tam, booked with enough coin):
+        // a payment moves his own coin out, so its evidence must show his will to pay it (pay, give, hand, put, tip,
+        // "here are", "take these coins"). Asking for, collecting or taking money owed to him pays nobody.
+        if (type === 'pay' && !paysOut(c.quote) && (claimsOwn(c.quote) || (!paysOut(text) && (claimsOwn(text) || !paysOut(message))))) { drop(c, 'not_paying', 'the evidence shows no payment of his own coin (asking for or taking money owed to him pays nobody)'); continue; }
         const goesToHall = kept.some((k) => k.type === 'go' && (halls.has(idOf(k.to)) || /guild/i.test(String(k.to?.new ?? '')) || context.guildJourney?.(k)));
         if (GUILD_ACTS.has(type) && PURPOSE.test(text) && !context.inGuildHall && !goesToHall) { drop(c, 'purpose', 'the evidence names the purpose of a later visit to a Guild hall, not an act here'); continue; }
         if (stateCheck(c, text)) continue;

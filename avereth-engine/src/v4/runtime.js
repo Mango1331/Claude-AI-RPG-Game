@@ -254,6 +254,7 @@ export async function planMessage(llm, content, ctx, text, { recent = '', isCurr
     let repaired = false;
     let recovery = null;
     let consentClarify = !!p.tradeConflict;
+    let tradeNote = p.tradeConflict ? p.tradeNote || null : null;
     if (!p.commands) {
         if (!isCurrent()) return { commands: null, failed: true, error: 'stale request', ms, repaired: false, raw, calls };
         const rep = plannerRequest(vocab, ctx, text, { recent, previous: first.content, errors: p.errors });
@@ -265,6 +266,7 @@ export async function planMessage(llm, content, ctx, text, { recent = '', isCurr
             raw.push(String(second.content).slice(0, 2000));
             p = parsePlan(second.content, vocab, ctx, text);
             consentClarify ||= !!p.tradeConflict;
+            if (p.tradeConflict && p.tradeNote) tradeNote = p.tradeNote;
         }
         // 10B-4a: two reasoning-only/empty answers can exhaust the usual 2000-token
         // budget without returning any JSON. Make one fresh, bounded attempt with
@@ -286,7 +288,7 @@ export async function planMessage(llm, content, ctx, text, { recent = '', isCurr
     }
     // Only schema-valid plans whose sole remaining errors concern trade consent may ask back.
     // Nothing from either rejected plan is executed, including dependent travel and sleep.
-    if (!p.commands && consentClarify) return { commands: [{ seq: 1, type: 'clarify', about: 'action', question: 'Do you buy or sell, which goods, with whom, and at what total price? Nothing changes hands until clarified.', options: [] }], failed: false, error: null, ms, repaired, raw, calls };
+    if (!p.commands && consentClarify) return { commands: [{ seq: 1, type: 'clarify', about: 'action', question: tradeNote || 'Do you buy or sell, which goods, with whom, and at what total price? Nothing changes hands until clarified.', options: [] }], failed: false, error: null, ms, repaired, raw, calls };
     return p.commands ? { commands: p.commands, failed: false, error: null, ms, repaired, raw, calls, ...(recovery ? { recovery } : {}) } : { commands: null, failed: true, error: (p.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired, raw, calls, ...(recovery ? { recovery } : {}) };
 }
 

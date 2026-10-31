@@ -32,7 +32,7 @@ import {
 } from './domain.js';
 import { creatureContract } from './population.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
-import { pickLines, bookPurchase, bookSale, saleUnits, unitsText, tradePrice, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines, offerAvailability } from './trade.js';
+import { pickLines, bookPurchase, bookSale, saleUnits, unitsText, tradePrice, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines, offerAvailability, rateUnits } from './trade.js';
 import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
 import { reachedEvents, setIntentEvents } from './intents.js';
 import { featureNamed, featureEvent, applySpring } from './features.js';
@@ -1895,11 +1895,18 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const purpose = keyWords(d.why || '');
         const extra = /\b(?:another|additional|extra|bonus|gift|tip|thanks|thank\w*)\b/i.test(d.said || '');
         const paidSale = !privateQuestsOf(s) && !extra && /\b(?:payment|sale|price|proceeds|sold)\b/i.test(d.why || '')
-            && (s.credits || []).some(c => !c.gift && c.from === from && c.for && c.at === s.scene.at
+            && (s.credits || []).find(c => !c.gift && c.from === from && c.for && c.at === s.scene.at
                 && keyWords(c.for).filter(w => purpose.includes(w)).length >= Math.min(2, keyWords(c.for).length));
-        if (paidSale) return { rule: 'engine_booked', why: 'these sale proceeds are already in his purse', fix: 'the sale already credited its full agreed price; a recount is not another handover' };
+        // Build .138 (batch 20 T32: "these sale proceeds are already in his purse" for a shard that was never sold): the
+        // refusal names the sale the engine actually credited, and claims no payment for anything else
+        if (paidSale) return { rule: 'engine_booked', why: `sale proceeds come only through an accepted bid; the sale credited here (${String(paidSale.for).slice(0, 80)}, ${paidSale.cp} cp) is not paid again`, fix: `only the sale of ${String(paidSale.for).slice(0, 80)} was credited (${paidSale.cp} cp); a recount is not another handover, and anything else is not sold until its bid is accepted` };
         if (giver?.kind === 'npc' && statusOf(s, from) !== 'dead' && s.scene.present.includes(from)) {
-            if (counterparts.has(from) || counterparts.has('*')) return { rule: 'engine_booked', why: 'the other side of a trade the engine booked this turn does not give him coin', fix: 'the engine booked that trade at its price' };
+            // … and does not say a trade was booked when only an offer or an open sale exists this turn
+            if (counterparts.has(from) || counterparts.has('*')) {
+                const booked = events.some((e) => e.t === 'transaction.completed' && [e.d.from, e.d.to, e.d.seller].includes(from));
+                return booked ? { rule: 'engine_booked', why: 'the other side of a trade the engine booked this turn does not give him coin', fix: 'the engine booked that trade at its price' }
+                    : { rule: 'engine_booked', why: 'the other side of a trade in this reply does not give him coin; a sale pays only through its accepted bid', fix: 'nothing was sold or paid: a sale pays only when Alaric accepts a matching bid' };
+            }
             return null;
         }
         const took = Object.entries(outcome.expected_keys || {}).some(([k, t]) => t === 'take' && expected[k]?.taken === true)
@@ -2410,6 +2417,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 }
             }
             const v = inReply ? coinFromWords(said, content) : null;
+            // Build .138 (#116: "Four copper the plate, fifty-six the lot" stored 4 cp for fourteen plates): a trade
+            // position of several units whose words the trade reading could not place is open; the one coin amount in
+            // the words is no safer total than the reported one
+            if (v !== null && v !== cp && inReply && tradeQty !== null && tradeQty !== 1) {
+                emit({ t: 'note', d: { kind: 'amount.unproven', seq: d?.seq ?? 0, type: d?.type ?? null, reported_cp: cp, said: String(said).slice(0, 60), why: 'the trade words do not settle the price of these units' } });
+                return null;
+            }
             if (v !== null) {
                 if (v !== cp) emit({ t: 'note', d: { kind: 'amount.corrected', seq: d?.seq ?? 0, type: d?.type ?? null, reported_cp: cp, said: String(said).slice(0, 60), cp: v } });
                 return v;
@@ -2665,7 +2679,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             else lines.push({ id: `l${lines.length + 1}`, what: o.name, kind: 'goods', service: null, object: o.id, qty, price_cp: null });
         }
         if (!lines.length || !Number.isInteger(d.price_cp)) { reject(d, 'offer', 'a bid names his things and one price'); return; }
-        const price = evidenced(d.price_cp, d.said, d, cPath && rulesetOf(s) >= 2 ? (lines.length === 1 ? lines[0].qty : 0) : null);
+        // Build .138 (#106: seven and fourteen plates of the same goods at "four copper the plate"): stacks of the same
+        // goods share the unit rate; each line keeps its own object and units
+        const price = evidenced(d.price_cp, d.said, d, cPath && rulesetOf(s) >= 2 ? rateUnits(lines, (id) => s.objects[id]) : null);
         if (price === null) { reject(d, 'offer', `${d.price_cp} cp is no sum the reply names`); return; }
         // A changed price replaces the entire overlapping lot, never an unrelated bid.
         for (const old of openOffers(s).filter(x => x.bid && x.seller === buyer

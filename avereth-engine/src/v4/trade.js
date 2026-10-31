@@ -15,7 +15,7 @@ import { normText } from '../util.js';
 import { hallOf } from './domain.js';
 import { rulesetOf } from '../content.js';
 import { trainingOfferWhy } from './growth.js';
-import { coinFromWords, coinMentions, coinEvidence, numbersIn } from '../economy.js';
+import { coinFromWords, coinMentions, coinEvidence, numbersIn, trailingNumber } from '../economy.js';
 
 const flat = text => normText(text || '').replace(/[^a-z0-9]+/g, ' ').trim();
 const contains = (text, part) => !!flat(part) && ` ${flat(text)} `.includes(` ${flat(part)} `);
@@ -78,7 +78,7 @@ function selectionWhy(quote, offer, selected) {
 }
 
 /** Explicit consent constraints, shared by the planner repair and the command handler. No inferred new party. */
-export function acceptanceWhy(c, offer, party, currency) {
+export function acceptanceWhy(c, offer, party, currency, units = null) {
     const addressed = String(c.quote || '').match(/\b(?:[Dd]one|[Dd]eal|[Yy]es|[Ff]ine|[Aa]greed|[Tt]hanks),\s+([A-Z][a-z'-]*(?:\s+[A-Z][a-z'-]*){0,2})(?=[.!?]|$)/);
     for (const named of [c.party_words, addressed?.[1]].filter(Boolean)) {
         const label = /^the\s/i.test(named) ? party.split(',').slice(0, 2).join(', ') : party.split(',')[0];
@@ -90,7 +90,8 @@ export function acceptanceWhy(c, offer, party, currency) {
     const selection = !offer.bid && selectionWhy(quote, offer, lines);
     if (selection) return selection;
     const total = offer.bid ? (lines.length === offer.lines.length && Number.isInteger(offer.price_cp) ? offer.price_cp : lines.reduce((n, l) => n + (l.price_cp || 0), 0)) : picked.cp;
-    const qty = offer.bid ? (lines.length === 1 ? lines[0].qty : 0) : (picked.picks?.length === 1 ? picked.picks[0].units : 0);
+    // Build .138: the bid's own unit count (stacks of the same goods together, rateUnits) when all its lines are taken
+    const qty = offer.bid ? (lines.length === 1 ? lines[0].qty : Number.isInteger(units) && lines.length === offer.lines.length ? units : 0) : (picked.picks?.length === 1 ? picked.picks[0].units : 0);
     const mentions = currency ? coinMentions(quote, { rules: { currency } }) : [];
     const positions = currency && !offer.bid ? positionPrices(quote, picked.picks, currency) : null;
     if (positions === false) return 'a stated item price differs from the selected position';
@@ -109,6 +110,38 @@ export function acceptanceWhy(c, offer, party, currency) {
     return null;
 }
 
+/**
+ * Build .138 (batch 20, #106/#110/#116): which goods may share one unit rate. Stacks of the same goods (every own
+ * property equal: name, kind, unit, rank, level, material, …) count together; where they are kept, how many there are
+ * and how they were found do not make them different goods. Different qualities or units never share a rate because
+ * their names agree.
+ */
+const STACK_BOOKKEEPING = new Set(['id', 'qty', 'holder', 'source', 'marks', 'for_quests', 'had_pc', 'in_name']);
+export function sameGoods(a, b) {
+    if (!a || !b) return false;
+    const keys = new Set([...Object.keys(a), ...Object.keys(b)].filter((k) => !STACK_BOOKKEEPING.has(k)));
+    return [...keys].every((k) => JSON.stringify(a[k] ?? null) === JSON.stringify(b[k] ?? null));
+}
+
+/** The units a unit rate of these bid lines counts: one line its units, stacks of the same goods together, else 0. */
+export function rateUnits(lines, objectOf) {
+    const list = lines || [];
+    if (list.length === 1) return list[0].qty ?? 1;
+    const objects = list.map((l) => objectOf(l.object));
+    if (!list.length || objects.some((o) => !o || !sameGoods(o, objects[0]))) return 0;
+    return list.reduce((n, l) => n + (l.qty ?? 1), 0);
+}
+
+// Build .138 (batch 20 #110: "four copper each, if you want the coin more than the credit"): a condition whose only
+// content is the choice of how he is paid leaves the amount as it is; an approval, a quality or a later event keeps
+// the price open ("if the appraiser approves"). The amount alone is read here: the sale still needs his own acceptance
+// and pays in coin; nothing is credited or bartered.
+const paymentChoice = (clause) => /\b(?:coins?|cash|credit|credited|trade|barter|in kind)\b/.test(clause)
+    && /\b(?:want|wants|prefer|prefers|rather|like|choose|chooses)\b/.test(clause)
+    && !/\d|\b(?:gold|silver|coppers?|cp)\b/.test(clause);
+// Collective units are no unit rate ("five silver the pair"); a price per piece is ("four copper the plate").
+const PER_THE = String.raw`the\s+(?!(?:lot|all|whole|rest|pair|brace|dozen|set|bundle|batch|bunch|stack|sack|bag|crate|load|box|barrel|cask|basket|heap|pile)\b)[a-z]+(?=\s*(?:[,;.!?\u2013\u2014-]|$|and\b|or\b|for\b))`;
+
 /** Price evidence for trade only. A unit rate is not a lot total; ranges and several rates are unresolved. */
 export function tradePrice(cp, said, qty, content) {
     const text = String(said || '');
@@ -116,16 +149,40 @@ export function tradePrice(cp, said, qty, content) {
     if (/\b(?:between|from)\s+(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)\b[^.;]{0,25}\b(?:and|to)\s+(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)\b|\b(?:gold|silver|coppers?|cp)\s+or\b|\b(?:one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+or\s+(?:one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+(?:gold|silver|coppers?|cp)\b/i.test(text)) return { cp: null, handled: true };
     const totals = [...text.matchAll(/((?:[a-z0-9-]+\s+){1,5}(?:gold|silver|coppers?|cp))\s+(?:for\s+)?(?:the\s+)?(?:lot|all|together|total)\b/gi)]
         .map(m => coinFromWords(m[1], content)).filter(Number.isInteger);
-    if (totals.length) return { cp: totals.length === 1 ? totals[0] : null, handled: true };
+    // Build .138 (#116: "Four copper the plate, fifty-six the lot"): a lot total without its own currency word is in
+    // the one currency the quote names
+    const kinds = new Set([...text.toLowerCase().matchAll(/\b(gold|silver|copper|coppers|cp)\b/g)].map((m) => m[1].startsWith('c') ? 'copper' : m[1]));
+    if (kinds.size === 1) {
+        for (const m of text.matchAll(/(?:\s+for)?\s+the\s+(?:whole\s+)?lot\b|\s+(?:in\s+)?total\b|\s+all\s+told\b/gi)) {
+            const n = trailingNumber(text.slice(0, m.index));
+            if (n !== null) totals.push(coinFromWords(`${n} ${[...kinds][0]}`, content));
+        }
+    }
+    const distinct = [...new Set(totals.filter(Number.isInteger))];
+    if (distinct.length) return { cp: distinct.length === 1 ? distinct[0] : null, handled: true };
     // Build .107: "two silver a fair deal" judges the price; it is no rate per unit
-    const rates = [...text.matchAll(/\b(?:gold|silver|coppers?|cp)\s+(?:each\b|apiece\b|per\b|(?:a|an)\s+(?!piece of coin\b|(?:fair|good|great|decent|reasonable|honest|fine|square|bargain|steal|deal|price|sum|total)\b))/gi)];
+    const rates = [...text.matchAll(new RegExp(String.raw`\b(?:gold|silver|coppers?|cp)\s+(?:each\b|apiece\b|per\b|${PER_THE}|(?:a|an)\s+(?!piece of coin\b|(?:fair|good|great|decent|reasonable|honest|fine|square|bargain|steal|deal|price|sum|total)\b))`, 'gi'))];
     const evidence = coinEvidence(text, content);
     if (rates.length) {
-        if (/\b(?:if|unless|depending|provided)\b/i.test(text.slice(rates[0].index))) return {cp:null,handled:true};
-        return { cp: rates.length === 1 && evidence.compound && qty > 0 ? evidence.cp * qty : null, handled: true };
+        const after = text.slice(rates[0].index);
+        const conditions = [...after.matchAll(/\b(?:if|unless|depending|provided)\b([^.;!?]*)/gi)];
+        if (conditions.some((m) => !/^if$/i.test(m[0].split(/\s/)[0]) || !paymentChoice(m[1].toLowerCase()))) return { cp: null, handled: true };
+        if (rates.length !== 1 || !(qty > 0) || evidence.cp === null) return { cp: null, handled: true };
+        // Build .138 (#106: "four copper the plate. That's eighty-four copper—eight silver and four"): the rate times the
+        // units is the price; saying that total again, in any coins, confirms it. Any other sum (another article, his
+        // purse, an earlier price) leaves it open.
+        const rate = coinEvidence(text.slice(0, rates[0].index + rates[0][0].match(/^\S+/)[0].length), content).sums.at(-1)?.cp;
+        if (!Number.isInteger(rate)) return { cp: null, handled: true };
+        const total = rate * qty;
+        const others = evidence.sums.map((x) => x.cp);
+        others.splice(others.indexOf(rate), 1);
+        return { cp: others.every((v) => v === rate || v === total) ? total : null, handled: true };
     }
-    if (evidence.mentions.length > 1 || (evidence.mentions.length && evidence.cp === null))
-        return { cp: evidence.compound ? evidence.cp : null, handled: true };
+    if (evidence.mentions.length > 1 || (evidence.mentions.length && evidence.cp === null)) {
+        // Build .138: one sum said twice ("140 copper — that's 1 gold 4 silver") is that sum, not their addition
+        const said = [...new Set((evidence.sums || []).map((x) => x.cp))];
+        return { cp: evidence.cp !== null && said.length === 1 ? said[0] : null, handled: true };
+    }
     return { cp, handled: false };
 }
 

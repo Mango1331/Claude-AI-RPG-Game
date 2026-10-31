@@ -17,6 +17,7 @@ import { jobAction } from './private_jobs.js';
 // reused unchanged; the planner adds eight types: use_skill, ability_world, move, flee, stealth, attempt, other, clarify.
 // Pure module: the host makes the call (src/v4/runtime.js), the same state and answer give the same result.
 import { normText } from '../util.js';
+import { formatCoin } from '../economy.js';
 import { spendsStatPoints, assignHint } from '../commands.js';
 import { mentionedSkills } from '../intent.js';
 import { activeHostiles } from '../combat.js';
@@ -34,7 +35,7 @@ import { openGoals, goalText } from './growth.js';
 import { composerFunctions } from '../skill_composer.js';
 import { disciplineTags, skillAspects, DEFENSE } from '../skills.js';
 import { CORE_STATS } from '../passives.js';
-import { acceptanceWhy } from './trade.js';
+import { acceptanceWhy, rateUnits } from './trade.js';
 
 export const PLANNER_VERSION = 'plan-c0.1';
 
@@ -328,7 +329,9 @@ export function planContext(state, content, catalog) {
     const techniques = rulesetOf(state) >= 2 ? composerFunctions(content) : [];
     const jobs = privateQuestsOf(state) && rulesetOf(state) >= 2 ? Object.values(state.quests).filter(q => q.kind === 'private' && ['offered', 'active'].includes(q.status)) : [];
     const habitat = lineage(state, state.scene.at).find(id => state.places[id].population);
-    return { habitat, tradeChecks: rulesetOf(state) >= 2, privateQuests: privateQuestsOf(state), fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content), jobs };
+    // Build .138: the unit count each open bid's rate applies to (stacks of the same goods together)
+    const bidUnits = Object.fromEntries(Object.values(state.offers || {}).filter((o) => o.bid && o.status === 'open').map((o) => [o.id, rateUnits(o.lines, (id) => state.objects[id])]));
+    return { habitat, bidUnits, tradeChecks: rulesetOf(state) >= 2, privateQuests: privateQuestsOf(state), fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content), jobs };
 }
 
 /** The user message: the interpreter's CATALOG, then skills, opponents, engine facts, RECENT and the message. */
@@ -431,6 +434,14 @@ function learningErrors(c, ctx, at) {
     return e;
 }
 
+/** Build .138: what the player is told when his stated price differs from the standing offer or bid; nothing moved. */
+export function priceConflictNote(offer, standing, named, currency) {
+    const coin = (cp) => currency ? formatCoin(cp, { rules: { currency } }) : `${cp} cp`;
+    const goods = (offer.lines || []).map((l) => `${Number.isInteger(l.qty) && l.qty > 1 ? `${l.qty} × ` : ''}${l.what}`).join(', ');
+    const kind = offer.bid ? 'bid' : 'offer';
+    return `${offer.seller ? `${String(offer.seller).split(',')[0]}'s` : 'The'} standing ${kind} is ${coin(standing)}${goods ? ` for ${goods}` : ''}; you named ${coin(named)}. Nothing changed hands. Accept the standing ${kind} at its price, have it corrected, or deal with someone else?`;
+}
+
 /**
  * Read and check a planner answer.
  * @returns {{commands: object[]|null, errors: string[]}} commands in the planner's order (seq), or the error lines
@@ -442,6 +453,7 @@ export function parsePlan(answer, vocab, ctx, message) {
     const errors = [];
     const jobs = new Map();
     const tradeErrors = [];
+    let tradeNote = null;
     const story = new Map((vocab.commands || []).map((c) => [c.type, c]));
     const schema = interpreterSchema(vocab, ctx.catalog);
     const people = new Set([...ctx.opponents.map((o) => o.id), ...(ctx.catalog.present || []).map((p) => p.id)]);
@@ -518,7 +530,11 @@ export function parsePlan(answer, vocab, ctx, message) {
                     errors.push(why); tradeErrors.push(why);
                 }
                 if (offer) {
-                    const why = acceptanceWhy(c, offer, offer.seller, ctx.currency);
+                    const why = acceptanceWhy(c, offer, offer.seller, ctx.currency, ctx.bidUnits?.[offer.id] ?? null);
+                    // Build .138 (batch 20 T59–T77: a stored 4 cp bid against his 56 cp showed only "Do you buy or sell
+                    // …?"): the mechanical facts of a known price conflict, for the safe clarification
+                    const differs = why?.match(/^agreed price (\d+) cp differs from this offer's (\d+) cp$/);
+                    if (differs && !tradeNote) tradeNote = priceConflictNote(offer, Number(differs[2]), Number(differs[1]), ctx.currency);
                     if (why) {
                         const error = `${at}: ${why}; clarify instead of substituting an offer`;
                         errors.push(error);
@@ -572,7 +588,7 @@ export function parsePlan(answer, vocab, ctx, message) {
     }
     errors.push(...amountErrors(value.commands, ctx.currency, ctx.catalog));
     for (const [c, job] of jobs) c.job = job;
-    if (errors.length) return { commands: null, errors: errors.slice(0, 8), tradeConflict: tradeErrors.length === errors.length && !ctx.fight };
+    if (errors.length) return { commands: null, errors: errors.slice(0, 8), tradeConflict: tradeErrors.length === errors.length && !ctx.fight, tradeNote };
     return { commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [] };
 }
 

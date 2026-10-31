@@ -130,3 +130,75 @@ Wenige gemeinsame Invarianten sollten den späteren Rot-/Grün-Lauf leiten:
 7. Atomare Ware/Geld-Buchung, Limits, Doppelbuchungsschutz, Reload/Swipe/Event-Replay bleiben unverändert. Alte Originalexports nicht zur passenden Regression umschreiben.
 
 **Danach** natürliche Progression prüfen: passende höhere F-Hunts anbieten und wählen lassen, vorhandene Stillstandsregel wirksamer erinnern, keine festen Questwege oder Kampfzwänge. XP, Startwerte, Skillbalance und allgemeine Weltregeln vorerst unverändert. B2/E nicht aus diesem Review heraus beginnen. Claudes Gegenreview soll Diagnose, Priorität und die kleinste gemeinsame Korrektur kritisch prüfen; er muss diese Empfehlung nicht ungeprüft übernehmen.
+
+## 7. Claude – Gegenreview (31.10.2026)
+
+**Analyse, keine Implementierung, kein Produktcode geändert.** Grundlage: die ZIP aus diesem Ordner (Stand `3524cc0`) und Build .137 (`5124373`). Einzelne Originalrecords habe ich read-only mit `applyWorld()` auf dem zuvor gefalteten Zustand neu verarbeitet. Für #106, #110, #116 und #218 entstehen dabei **genau die gespeicherten Ablehnungen, Angebote und Buchungen**. Diese Records taugen also ohne neue Modellaufrufe als Rot-/Grün-Fälle. Dazu kommen read-only Sonden von `tradePrice`, `coinEvidence`, `resolveCommands`, `guardCommands` und `presenceInReply`. Ich habe keine Tests geschrieben, keine Suite, keinen Smoke und keinen Batch gestartet.
+
+### 7.1 Bestätigt
+
+| Punkt | Ergebnis der Gegenprüfung |
+|---|---|
+| Archiv | Neu verpackte ZIP: SHA-256 `6b9d38b2…a20cde` stimmt. **26/26 Dateien** passen zu den Manifest-Hashes. Die 45-MB-Quell-ZIP lag mir nicht vor, ihr Hash ist also nicht nachgeprüft. |
+| Fold | 3.501 Events, 0 Foldfehler, 0 Validierungsprobleme. Endstand L12 +990 XP, 193 cp. 24 Siege / 35 Gegner. XP 7.590 = 5.745 Kampf + 1.845 Quest. Höchstes Gegnerlevel 7, davon 20 Gegner auf L1. |
+| Planner/Extractor | Nach Repair ungültig: T56, T152, T187, T220. 34 Planner- und 24 Extractor-Repairs, 0 Extraktionsfehler, 0 `pending`. Mage: 9 Inputs, manuell abgebrochen. |
+| Board T84 | Angeboten werden Strider L4–7, Schlange L1, Wölfe L8–11, Hirsch L12–14 und Glimmerdeep L1. Sols Widerlegung („nur zu schwache Gegner“) stimmt. |
+| T58 / #116 | Gebot 56 cp für 14 Platten → `tradePrice` nicht zuständig → `coinFromWords` = 4 → `offer.t116.7` zu 4 cp. Genau wie beschrieben. |
+| T109 / #218 | Extractor liefert 4, `coinEvidence` meldet 3 mit `complete:true`, gebucht werden 3 (`amount.corrected 4→3`). |
+| Sondentabelle §5 | Alle sechs Werte sind identisch reproduziert (56/60, 60 ohne Konflikt, 280, 333, 3). |
+| Kristall T26–T32 | Der Splitter wird nie verkauft und bleibt beim PC. Der Extractor liefert für ihn nur `coin.gift` und `expected.sold`, **nie ein Gebot**. Ergänzung: Platten, Drüse und Gel werden T28 korrekt über `offer.accept` zu 34 cp gebucht. Das T26-Gebot über 34 cp scheitert, weil die Antwort nur Einzelpreise nennt (24/6/4) und keine Summe. Das ist vertretbar: T27 nennt die Summe, T28 bucht sie. |
+| T145/T146 | Der Schmied wird T144 auf Ortsebene `loc.millpond` angelegt. T145 wechselt die Szene in die Schmiede (`reset_present`), der Extractor liefert `person.named`, aber kein `enter` → „seller not present“. Das folgt der geltenden Regel. T146 bietet `npc.npcsmith`, also die falsche Identität. |
+| T235 | Abgewiesen mit „the engine counts 5 of 6“. T237 READY, T239 abgeschlossen. |
+
+Nicht selbst nachgeprüft: 17 Reichweitenversuche, 96 Spieler-JSON-Repairs, 139 `delta.rejected` / `scene_context`, Jungtiere unter den Strider-Kills, Ausrüstungskäufe T81/T195/T244 und Marda T248–251. Für T5 habe ich nur bestätigt, dass kein `board.read` existiert.
+
+### 7.2 Abweichende oder erweiterte Befunde
+
+**(1) Die Plattenschleife hat drei verschiedene Preisbeleg-Fehler, nicht einen.** Schon vor T58 werden zwei rechnerisch korrekte Gebote verworfen:
+
+| Record | Gebot / Beleg | `tradePrice` | Ursache im Code (`trade.js:113–130`) |
+|---|---|---|---|
+| #106 (T53) | 84 cp für 21 Platten; `I'll give you four copper the plate. That's eighty-four copper—eight silver and four.` | `null` → „84 cp is no sum the reply names“ | `copper the plate` gilt nicht als Stückpreis. Eine Summe erkennt die Funktion nur mit Währung direkt vor `lot/all/together/total`. Danach werden mehrere Erwähnungen (4, 84, 80) als mehrdeutig verworfen. Auch `four copper each. That's eighty-four copper.` mit Menge 21 ergibt `null`: Neben einem Stückpreis macht **jede** zweite Betragsnennung den Preis ungültig, selbst die passende Summe. |
+| #110 (T55) | 28 cp für 7; `I'll still take the seven at four copper each, if you want the coin more than the credit` | `null` → abgewiesen | Bedingungsheuristik (Z. 124): jedes `if` nach dem Satz macht den Preis ungültig. Hier betrifft die Bedingung nur die Zahlungsform, Münze oder Gutschrift. Ohne den Nebensatz ergibt dieselbe Funktion 28. |
+| #116 (T58) | wie Sol | nicht zuständig → Fallback 4 | wie §5 |
+
+Folge: Vor T58 gab es kein gültiges gespeichertes Gebot. Der in T58 erzählte Verkauf von 7 Platten zu 28 cp („Done at four … Twenty-eight.“) wird nie gebucht: Der Extractor meldet `coin.gift` und `expected.sold` statt eines Gebots (dasselbe Muster wie beim Kristall). Die 7 Platten `enc_t37` bleiben beim PC. Mit gespeichertem #110-Gebot hätte T58 direkt buchen können. Sols Satz „anfangs falsche Mengen“ trifft deshalb nicht die Hauptursache: **Die ersten Ablehnungen sind Fehlablehnungen der Engine**, keine Fehler bei den Mengen.
+
+**(2) T59–T77: Die Ursache ist verdeckt.** Der Planner erzeugt richtig `offer.accept offer.t116.7 agreed_cp 56`, die Zustimmungsprüfung lehnt korrekt gegen die gespeicherten 4 cp ab. Bleibt der Repair ungültig, ersetzt `runtime.js:289` die Begründung durch die allgemeine Rückfrage „Do you buy or sell, which goods, with whom, and at what total price?“. Dadurch sieht der Spieler rund ein Dutzend gleicher Rückfragen. Erst T78 zeigt „NOT AGREED — agreed price 56 cp differs from this offer's 4 cp“. Das Gegengebot T78 legt `offer.t156.8` zu 56 cp an, T80 verkauft. Der Fehler sitzt in der Preisspeicherung; die verdeckte Begründung ist aber der Grund, warum er ~20 Inputs lang unsichtbar blieb.
+
+**(3) T50 ist ein echtes Geldrisiko, nicht nur eine Verwechslung ohne Folgen.** Sonde mit 200 cp statt 43: `resolveCommands` meldet „PAYS — 50 cp to Tam“ (200 → 150), und `guardCommands` lässt die Zahlung durch (`dropped: []`). Im Lauf hat nur der zu niedrige Kontostand die Abbuchung verhindert. Ich bestätige P1.
+
+**(4) T149 ist keine Fehlablehnung der Engine. Ich widerspreche Sols P2-Einordnung.** Der Extractor nennt `enter.who = npc.npcsmith`, den Schmied aus Record 102 an einem anderen Ort. Osric ist `npc.blacksmith` (T145, Record 290 `entity.updated name Osric`). World prüft nicht über `narratedEvent()` allein, sondern über `presenceInReply()`, und das prüft Satz für Satz:
+- Original-Beleg mit beiden Sätzen und Osrics Bezeichnungen → `ok:true`. Mit der richtigen Identität wäre die Ankunft auf .137 also akzeptiert worden.
+- Mit den Bezeichnungen von `npc.npcsmith` scheitert der Beleg, weil der Text diese Person nicht nennt. Gemeldet wird aber nur der erste Fehlgrund, „it is spoken, not narrated“. **Die Ablehnung ist richtig, die Begründung irreführend.**
+
+Dazu passt der Fakt in Record 300 („Osric is away …“), der an `npc.npcsmith` gebunden ist. Die direkte `narratedEvent`-Sonde trifft nicht den Weg, den die Engine tatsächlich nimmt. **Eine mehrsätzige Lockerung von `narratedEvent` ist durch T149 nicht begründet.** Invariante 6 in §6 sollte lauten: Mit der richtigen Identität besteht der Originalbeleg (das ist bereits so); mit der falschen bleibt er abgewiesen und die Begründung nennt die Identität.
+
+**(5) Weitere irreführende Begründungen beim Kristall.** T26 lehnt das `coin.gift` ab mit „the other side of a trade the engine booked this turn“, obwohl in diesem Zug nichts gebucht wurde. T32 sagt „these sale proceeds are already in his purse“, obwohl die 100 cp für den Splitter nie gezahlt wurden. Das Ergebnis ist richtig, denn ein Verkauf zahlt nicht über ein Geschenk aus. Die Texte führen aber Spieler und Auswertung in die Irre (gleiche Klasse wie T149).
+
+### 7.3 Bewertung der Preisempfehlung (§5/§6)
+
+**Grundsätzlich einverstanden:** eine kontextbezogene Betragsprüfung je Position oder angenommenem Paket mit eindeutigem Ergebnis, kein allgemeiner Zahlenfallback nach ungeklärter Handelsbedeutung, strenge Zustimmungsprüfung, keine Listen einzelner Formulierungen. Sechs Präzisierungen:
+
+1. **Den Fallback zu entfernen reicht nicht.** #116 würde dadurch nur von 4 cp zu „ungeklärt“ wechseln. Das ist sicherer, aber der Verkauf scheitert weiter. #106 und #110 scheitern bereits *innerhalb* von `tradePrice`. Die Korrektur muss die Lesart in `tradePrice` selbst schärfen, und zwar allgemein statt über Wortlisten:
+   - Stückpreisformen wie `<Betrag> the/a/per <Einheit>` als Stückpreis erkennen.
+   - Eine **zum Stückpreis passende** Summe (Stückpreis × Menge = Summe) bestätigt den Preis, statt ihn ungültig zu machen.
+   - Eine Summe ohne wiederholte Währung (`fifty-six the lot`) gilt, wenn das Zitat selbst eine Währung nennt.
+   - Gleichwertige Umrechnungen (84 copper = 8 silver 4) zählen einmal.
+   - Bedingungen machen den Preis nur dann ungültig, wenn sie einen anderen Betrag oder eine Alternative einführen. Eine Bedingung zur Zahlungsform (#110) ändert den Betrag nicht.
+2. **Den Fallback nur auf Handelspositionen mit bekannter Menge begrenzen.** `evidenced()` prüft auch Geschenke (Z. 1348), Questbelohnungen (Z. 2511) und Angebote ohne `tradeQty`. Dort gelten eigene Belegregeln; sie werden nicht pauschal mitgeändert.
+3. **Mehrere Positionen mit Einzelpreisen** (Kristall T26: 24/6/4 ohne Summe) bleiben ungeklärt, solange keine Summe genannt ist. Das ist kein P1. Der Stückpreis einer Position darf nie auf andere Waren übertragen werden: Die Sonde mit Gesamtmenge 8 ergibt 32 statt 34. Die Engine übergibt bei mehreren Positionen heute Menge 0, deshalb tritt das im Lauf nicht auf. Es gehört aber als Gegenfall in die Tests.
+4. **Abweichender Paketpreis** (`Four copper each, sixty copper total.`): Ein bloßer Rechenwiderspruch bleibt ungeklärt. Eine Summe, die ausdrücklich als eigener Paketpreis formuliert ist (Nachlass oder Aufschlag), darf gelten. Das muss vor der Umsetzung als Testfall festgelegt werden, nicht stillschweigend.
+5. **T109:** Wenn hinter einer Währungsnennung ein weiterer Zahl- oder Ordinalbezug folgt („then a fourth added“), darf `coinEvidence` nicht `complete:true` melden. Ergebnis: vollständig 4 oder sichtbar ungeklärt, nie stillschweigend 3.
+6. **Zustimmung und Speicherung:** Einverstanden. Nach der Speicherung ist der gespeicherte Gesamtpreis verbindlich, `acceptanceWhy` bleibt streng. Ergänzung: Eine abgelehnte Zustimmung muss ihre konkrete Begründung zeigen und nicht die allgemeine Rückfrage aus `runtime.js:289` (siehe 7.2 (2)).
+
+Gegenfälle, die grün bleiben oder werden müssen: Preis + Geldbestand (333) → 140 oder ungeklärt. Gleichwertige Umrechnung (280) → 140. `eight copper apiece. Fifty-six the lot.` (T146) → 56, das geht heute schon. `two silver a fair deal` (.107) ist kein Stückpreis. Alternativen (`four or three if chipped`) bleiben ungeklärt. Die Originalrecords #106/#110/#116/#218 über die oben beschriebene Neuverarbeitung, mit ausdrücklicher Freigabe der dadurch entstehenden Fingerprint-Abweichungen in `replay:check`.
+
+### 7.4 Eigene Priorisierung
+
+- **P1 (ein Patch, finanzielle Integrität):** Betragslesart von `tradePrice`/`evidenced` für Handelspositionen (#106, #110, #116), kein Fallback nach ungeklärter Handelsbedeutung, Vollständigkeit bei T109. Zusätzlich die T50-Richtung: Eine Lohn- oder Schuldforderung an den PC ist keine ausgehende `pay`. Regression mit ausreichendem Kontostand.
+- **P2:** (a) Die konkrete Ablehnungsbegründung statt der allgemeinen Consent-Rückfrage anzeigen. Klein, ohne Regeländerung, hätte die Schleife früh sichtbar gemacht. (b) Extractor-Vertrag: Ein erzählter Verkauf mit Preis ist ein `bid`, kein `coin.gift`/`expected.sold` (Kristall, T58 7 Platten). NPC-Identität bei bekannten Personen (T146, T149, Record 300). Messung per Replay, keine Lockerung der Firewall.
+- **P3:** Genauere Ablehnungsbegründungen (T149 Identität statt „spoken“, Kristall T26/T32).
+- **Streichen:** Sols P2 „mehrsätziger Belegfix T149“. **Unverändert lassen:** XP-Kurve, Balance und Bewegungs-/Anwesenheitsregeln. Einverstanden mit §4: Progression über die Boardwahl statt XP-Erhöhung.
+
+**Gesamturteil:** Sols Review ist sorgfältig belegt. Zahlen, Fold und die T58-Ursache stimmen, und die Kernempfehlung (gemeinsame kontextbezogene Betragsprüfung statt einzelner Formulierungsfixes) ist richtig. Korrekturen: (1) Die Plattenschleife beginnt mit zwei Fehlablehnungen in `tradePrice`, der Fix muss also dessen Lesart schärfen und nicht nur den Fallback entfernen. (2) T50 ist ein echtes Abbuchungsrisiko. (3) T149 ist ein Identitätsfehler des Extractors mit irreführender Begründung, keine Fehlablehnung der Engine. (4) Die allgemeine Consent-Rückfrage verdeckt die Ursache und gehört als kleine P2 dazu.

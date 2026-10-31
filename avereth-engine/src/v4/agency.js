@@ -30,6 +30,7 @@
 //
 // Only clear cases are removed. Everything else goes to the engine, whose guards refuse what cannot be done there.
 import { normText } from '../util.js';
+import { coinEvidence } from '../economy.js';
 
 // the words that name a thing ("boar meat" ~ "the meat"), as the world applier matches a want (src/v4/world.js sameWant)
 const thingWords = (t) => normText(t).split(/[^a-z0-9]+/).map((w) => w.replace(/s$/, '')).filter((w) => w.length >= 3 && !['the', 'and', 'some', 'any', 'his', 'its', 'that', 'this'].includes(w));
@@ -301,17 +302,51 @@ function planned(parts, type) {
 
 const idOf = (ref) => (typeof ref === 'string' ? ref : null);
 
-// Build .138: his own outgoing payment in his words; "pay me", "pay up", "give us" and someone else paying are not his
-const PAY_OUT = /(?<!\b(?:you|you'll|you will|he|she|they|it)\s)\b(?:pay|pays|paying|paid|give|gives|giving|gave|hand|hands|handing|handed|toss|tosses|tossing|tossed|slide|slides|sliding|slid|press|presses|pressing|pressed|put|puts|putting|place|places|placing|placed|lay|lays|laying|laid|leave|leaves|leaving|left|drop|drops|dropping|tip|tips|tipping|tipped|settle|settles|settling|cover|covers|covering|spend|spends|spending|donate|donates|lend|lends|repay|repays|repaying|offer|offers|offering|flip|flips|flipping|throw|throws|throwing|push|pushes|pushing|pushed|pass|passes|passing|passed|count out|counts out|counting out)\b(?!\s+(?:me|us)\b)/;
-const GIVE_THESE = /(?:^|[.!?;:,"“]\s*|\band\s+)(?:here(?:'s| is| are)\b|take\s+(?:this|these|it|them|the\s+coins?|my\s+coin)\b|keep\s+the\s+change\b)/;
-// … and words that claim money for him: when the command's own words say this, the rest of the message cannot stand in
+// Build .138: his own outgoing payment in his words. A payment verb ("pay", "tip", "settle", "repay") is one; any other
+// giving verb counts only with the money it moves ("put one silver on the counter", not "put the receipt in my bag",
+// "and leave"). "pay me", "pay up", "give us" and someone else paying are not his.
+const NOT_HIS = String.raw`(?<!\b(?:you|you'll|you will|he|she|they|it)\s)`;
+const PAY_VERB = new RegExp(String.raw`${NOT_HIS}\b(?:pay|pays|paying|paid|tip|tips|tipping|tipped|settle|settles|settling|settled|repay|repays|repaying|repaid)\b(?!\s+(?:me|us)\b)`);
+const GIVE_VERB = new RegExp(String.raw`${NOT_HIS}\b(?:give|gives|giving|gave|hand|hands|handing|handed|toss|tosses|tossing|tossed|slide|slides|sliding|slid|press|presses|pressing|pressed|put|puts|putting|place|places|placing|placed|lay|lays|laying|laid|leave|leaves|leaving|left|drop|drops|dropping|cover|covers|covering|spend|spends|spending|donate|donates|lend|lends|offer|offers|offering|flip|flips|flipping|throw|throws|throwing|push|pushes|pushing|pushed|pass|passes|passing|passed|count out|counts out|counting out)\b(?!\s+(?:me|us)\b)`, 'g');
+const HANDING = /(?:^|["“]\s*)(?:here(?:'s| is| are)|take\s+(?:this|these|it|them|the|my))\b/;
+const COIN_WORDS = /\b(?:coins?|coppers?|silvers?|golds?|cp|pennies|fee|toll|price|change|money|wages?|payment|\d+\s*[csg])\b/;
+const NUMBER = /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred)\b/;
+// … and words that claim money for him
 const CLAIM = /\b(?:pay|give|hand)\s+(?:me|us)\b|\bpay\s+up\b|\bowe[sd]?\s+(?:me|us)\b|\b(?:take|takes|taking|collect|collects|collecting|get|gets|getting|receive|receives|receiving|claim|claims|claiming|want|wants|need|needs|expect|expects)\b[^.;!?]{0,30}\b(?:coins?|coppers?|silvers?|golds?|cp|wages?|pay|payment|fee|money|reward|share|cut|due)\b/;
-export const claimsOwn = (text) => CLAIM.test(String(text || '').toLowerCase().replace(/[‘’]/g, "'"));
-/** His will to pay out his own coin: in the command's words, or (when they claim nothing for him) in his message. */
+const lower = (text) => String(text || '').toLowerCase().replace(/[‘’]/g, "'");
+// "Take these coins" said to someone hands them over; "I'll take that fifty copper" claims them
+export const claimsOwn = (text) => CLAIM.test(lower(text).replace(/(?:^|["“,.;!?:]\s*)take\s+(?:this|these|it|them|the|my)\b/g, ' '));
+/** One act each: sentences, clauses and "and/then/but" before another act (not inside "one silver and five copper"). */
+const clauses = (text) => lower(text).split(/[.;!?]+|,\s*|\s+(?:and|then|but)\s+(?!(?:\d+|a|an|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|half)\b)/).map((x) => x.trim()).filter(Boolean);
+function paysClause(x) {
+    const t = x.replace(/\bpay(?:s|ing)?\s+up\b/g, ' ');
+    if (PAY_VERB.test(t) || /\bkeep\s+the\s+change\b/.test(t)) return true;
+    // the money it moves: a coin word after the verb, or a number after it where the act names coin ("I have three
+    // silver—I'll give two to Bree")
+    for (const m of t.matchAll(GIVE_VERB)) if (COIN_WORDS.test(t.slice(m.index)) || (NUMBER.test(t.slice(m.index)) && COIN_WORDS.test(t))) return true;
+    const h = t.match(HANDING);
+    return !!h && (COIN_WORDS.test(t.slice(h.index)) || NUMBER.test(t.slice(h.index)));
+}
+/** Does the text pay out his own coin somewhere (one of its acts)? */
 export function paysOut(text) {
-    // "pay up" asks someone else to pay
-    const t = String(text || '').toLowerCase().replace(/[‘’]/g, "'").replace(/\bpay(?:s|ing)?\s+up\b/g, ' ');
-    return PAY_OUT.test(t) || GIVE_THESE.test(t);
+    return clauses(text).some(paysClause);
+}
+/**
+ * The evidence for this pay command in a text: 'pays' when one of its acts pays out his coin, claims nothing for him,
+ * names no other present person as the one paid and no other amount; else 'claims' when it claims money for him; else
+ * 'none'. A separate tip after asking for his wage stays the tip's own command.
+ */
+function payEvidence(text, c, context) {
+    const others = (context.present || []).filter((p) => p.id !== idOf(c.to))
+        .flatMap((p) => p.names.map((n) => lower(n).split(',')[0].replace(/^the\s+/, '').trim()).filter((n) => n.length >= 3));
+    const currency = context.currency;
+    const fits = clauses(text).filter((x) => paysClause(x) && !claimsOwn(x)).filter((x) => {
+        if (others.some((n) => new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(x))) return false;
+        if (!Number.isInteger(c.amount_cp) || !currency) return true;
+        const said = coinEvidence(x, { rules: { currency } }).cp;
+        return said === null || said === c.amount_cp;
+    });
+    return fits.length ? 'pays' : claimsOwn(text) ? 'claims' : 'none';
 }
 
 /**
@@ -366,7 +401,7 @@ export function guardCommands(message, commands, context = {}, { language = true
         // Build .138 (batch 20 T50: "I'll take that fifty copper now" became pay 50 cp to Tam, booked with enough coin):
         // a payment moves his own coin out, so its evidence must show his will to pay it (pay, give, hand, put, tip,
         // "here are", "take these coins"). Asking for, collecting or taking money owed to him pays nobody.
-        if (type === 'pay' && !paysOut(c.quote) && (claimsOwn(c.quote) || (!paysOut(text) && (claimsOwn(text) || !paysOut(message))))) { drop(c, 'not_paying', 'the evidence shows no payment of his own coin (asking for or taking money owed to him pays nobody)'); continue; }
+        if (type === 'pay' && [c.quote, text, message].reduce((r, x) => (r === 'none' ? payEvidence(x, c, context) : r), 'none') !== 'pays') { drop(c, 'not_paying', 'the evidence shows no payment of his own coin (asking for or taking money owed to him pays nobody)'); continue; }
         const goesToHall = kept.some((k) => k.type === 'go' && (halls.has(idOf(k.to)) || /guild/i.test(String(k.to?.new ?? '')) || context.guildJourney?.(k)));
         if (GUILD_ACTS.has(type) && PURPOSE.test(text) && !context.inGuildHall && !goesToHall) { drop(c, 'purpose', 'the evidence names the purpose of a later visit to a Guild hall, not an act here'); continue; }
         if (stateCheck(c, text)) continue;

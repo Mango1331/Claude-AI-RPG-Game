@@ -780,9 +780,10 @@
    "fingerprint": "sha256:58329de04f21e4ef22b0417b11aff5c628756bb7c46d15fcf3e818f0c8575f3b"
   },
   "b19-warrior#82": {
-   "category": "D offer contract",
-   "reason": "D: offer schema contract/diagnostic changed without granting goods or coin.",
-   "fingerprint": "sha256:ac8d91f923b858d6f8821364a4821b57d66aef48707ff24fa6d0155580d0552f"
+   "category": "finance 138",
+   "reason": "F (.138 review): \"A copper a bowl, if you're wanting it\" — a condition that is only the addressee's own choice no longer voids the price; the porridge offer is stored at 1 cp instead of refused with \"no price was recorded\". Earlier D reason: D: offer schema contract/diagnostic changed without granting goods or coin.",
+   "supersedes": "sha256:ac8d91f923b858d6f8821364a4821b57d66aef48707ff24fa6d0155580d0552f",
+   "fingerprint": "sha256:878b3365161ade52f9e7723142b1389ecc6143144951a8b596c7954cc91155c8"
   },
   "b19-warrior#86": {
    "category": "D offer contract",

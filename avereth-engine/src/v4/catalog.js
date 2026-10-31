@@ -398,5 +398,7 @@ export function guardContext(state, content, catalog = buildCatalog(state, conte
         registrationPending: !!reg,
         registrationOffer: reg ? reg.id : null,
         member: !!membership(state),
+        // Build .138: the payment guard reads the amount of each act (src/v4/agency.js)
+        currency: content.rules?.currency || null,
     };
 }

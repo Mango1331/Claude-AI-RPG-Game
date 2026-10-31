@@ -104,3 +104,42 @@ lehnt solche Geschenke wie bisher ab.
   aber auch keine Addition in diesem Patch.
 - Die Wirkung der Extractor-Reparatur ist nur am Hinweis und an Kontrollen geprüft; eine echte Reparaturantwort zeigt
   erst ein natürlicher Lauf. Mock-Smokes, kein natürlicher Batch.
+
+## 7. Reviewkorrektur `.139` (unabhängiges Feedback zu `c3fa856`)
+
+Build **`4.3.0-c.6.6.139`**, selber Fachpatch, kein neuer Umfang. Drei Befunde geprüft und reproduziert:
+
+- **P1 Zahlungs-Guard bestätigt:** „I'll take my fifty copper and leave.“, „Pay me fifty copper, then I leave.“, „I collect my
+  wages and put the receipt in my bag.“ passierten den Guard (`leave`/`put` galten als Zahlungsabsicht) und hätten mit 200 cp
+  50 cp abgebucht. Korrektur: Der Beleg wird je Handlung (Satz, Teilsatz, „and/then/but“ vor einer neuen Handlung) gelesen.
+  Zahlungsverben (`pay/tip/settle/repay`) zählen selbst; jedes andere Gebeverb nur mit dem bewegten Geld (Münzwort danach,
+  oder eine Zahl danach, wenn die Handlung Münzen nennt: „I have three silver—I'll give two to Bree“). Eine Handlung, die
+  Geld für ihn beansprucht, zählt nicht; eine zahlende Handlung, die eine **andere anwesende Person** nennt oder einen
+  **anderen Betrag** als das Kommando, belegt dieses Kommando nicht. Damit bleibt „Lohn verlangen und dem Jungen einen
+  Kupfer geben“ als eigenes Trinkgeld möglich, trägt aber keine falsche Zahlung an den Auftraggeber. „Take these coins“ ist
+  Übergabe, „I'll take that fifty copper“ Anspruch. `guardContext` liefert dafür die Währung.
+- **P1 Bedingungen bestätigt:** „Four copper each, fifty-six copper total, if the appraiser approves.“ und „… if you want cash
+  and the appraiser approves.“ ergaben verbindliche 56 cp (Gesamtsumme vor der Bedingungsprüfung; Zahlungsform-Ausnahme zu
+  weit). Korrektur: Die Bedingungsprüfung gilt jetzt vor Gesamtsumme und Stückpreis gleichermaßen (ab dem ersten Münzwort).
+  Offen bleibt der Preis bei `unless/depending/provided`, bei Bedingungen mit eigenem Betrag, bei Warten/Zustimmung/Prüfung
+  (`wait/until/approve/check/inspect/appraise/confirm/clear`) und bei jedem Teil, dessen Subjekt nicht der Angesprochene ist.
+  Eine Bedingung, die nur die eigene Wahl des Angesprochenen ist („if you want the coin more than the credit“, „if you're
+  leaving them together“, „a copper a bowl, if you're wanting it“), entscheidet dessen Annahme und lässt den Betrag stehen.
+  Bedingungen vor dem ersten Münzwort („If they're all of a match, I'd give you eight copper apiece“) werden wie vor .138
+  nicht gelesen.
+- **P2 #382 bestätigt:** Mit dem korrekten Gebot entsteht ein offenes Gebot über 150 cp, aber in dieser Antwort kein Verkauf,
+  weil der Planner 150 cp als Mindestpreis an **beide** Positionen schrieb (zusammen 300; die Platten zudem mit Menge 1). Kein
+  Geldverlust; Test umbenannt und erweitert: Gebot 150 cp, Geschenk zahlt nichts, **ausdrückliche Annahme zahlt genau einmal
+  150 cp**, zweite Annahme nichts. Die Mindestpreis-Zuordnung des Planners bleibt außerhalb dieses Patchs.
+
+Nachweise `.139`: neue Gegenfälle in `fix138_finance.test.js` (17 Tests; die Reviewfälle waren auf `c3fa856` reproduzierbar
+falsch) inkl. World-Nachweis der Gutachterbedingung; **volle Suite 2550/2550**; Replay **2235 Fälle, 196 exakt akzeptiert,
+0 offen**. Eine D-Abnahme ändert sich begründet: **b19-warrior#82** („A copper a bowl, if you're wanting it“) speichert jetzt
+das Porridge-Angebot zu 1 cp statt es abzulehnen; der Eintrag trägt den neuen Fingerprint und `supersedes` mit dem alten
+(Test prüft, dass dies die einzige Ersetzung ist). Während der Korrektur zeigte das Replay zwei Zwischenfehler, die vor dem
+Abschluss behoben wurden (zu strenge Bedingungsregel: b17-warrior#68/#82, b18-rogue#92, b19-warrior#108; zu strenger Guard:
+b17-rogue#19). Browser-Smoke OK; **echter ST-Smoke Standard 24/24, Failsoft 29/29**, keine PageErrors.
+
+Beobachtung ohne Änderung: In b17-rogue#19 zahlt der Planner 30 cp für „I have three silver—I'll give two to Bree“; der
+Guard prüft nur, dass die Handlung den Kommandobetrag nicht widerlegt (die Handlung nennt 3 Silber), nicht die
+Plannerbetragswahl selbst.

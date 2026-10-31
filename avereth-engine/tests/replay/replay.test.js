@@ -129,9 +129,13 @@ test('D retains every original C fingerprint and reason unchanged',()=>{
  for(const [id,entry] of Object.entries(c.cases)) assert.deepEqual(ACCEPTED.cases[id],entry,id);
 });
 
-test('F retains every D fingerprint and reason unchanged and adds exactly the six reasoned .138 records', () => {
+test('F retains every D fingerprint and reason unchanged (one reasoned supersession) and adds exactly the six reasoned .138 records', () => {
     const d = JSON.parse(fs.readFileSync(new URL('./accepted_d133_vs_126.json', import.meta.url)));
-    for (const [id, entry] of Object.entries(d.cases)) assert.deepEqual(ACCEPTED.cases[id], entry, id);
+    const superseded = Object.entries(ACCEPTED.cases).filter(([, e]) => e.supersedes).map(([id]) => id);
+    // review of .138: the one D record whose output the addressee-choice condition rule changes, with its old fingerprint
+    assert.deepEqual(superseded, ['b19-warrior#82']);
+    assert.equal(ACCEPTED.cases['b19-warrior#82'].supersedes, d.cases['b19-warrior#82'].fingerprint);
+    for (const [id, entry] of Object.entries(d.cases)) if (!superseded.includes(id)) assert.deepEqual(ACCEPTED.cases[id], entry, id);
     const added = Object.keys(ACCEPTED.cases).filter((id) => !d.cases[id]).sort();
     assert.deepEqual(added, ['b17-warrior#134', 'b17-warrior#73', 'b18-rogue#196', 'b18-warrior#44', 'b18-warrior#54', 'b19-mage#152']);
     for (const id of added) assert.equal(ACCEPTED.cases[id].category, 'finance 138', id);

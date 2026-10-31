@@ -99,6 +99,10 @@ test('.138 price reading: rate × units, confirmed totals, equivalent coins, oth
     assert.equal(price('Four copper each, unless they are chipped.', 14), null);
     assert.equal(price('Four copper each, if you would rather have coin than credit.', 14), 56, 'a payment choice is no price condition');
     assert.equal(price('Four copper each, or three if chipped.', 14), null, 'an alternative amount stays open');
+    // review of .138: an open buyer condition keeps a total open too, and a payment choice does not cover another condition
+    assert.equal(price('Four copper each, fifty-six copper total, if the appraiser approves.', 14), null);
+    assert.equal(price('Four copper each, if you want cash and the appraiser approves.', 14), null);
+    assert.equal(price('Fifty-six copper the lot, if you want coin or credit.', 14), 56);
     assert.equal(price('Four copper each, but fifty copper for the lot.', 14), 50, 'an explicit lot price may differ from the rate');
     assert.equal(price('Fifty-six copper the lot, or sixty copper the lot with the gland.', 14), null, 'two lot prices are open');
     assert.equal(price("If they're all of a match, I'd give you eight copper apiece. Fifty-six the lot.", 7), 56);
@@ -170,6 +174,16 @@ test('.138 payment direction: his own payments stay possible; claims for money o
         assert.equal(pay(q).kept.length, 1, q);
     for (const q of ["I'll take that fifty copper now", 'Pay up, Tam', 'Pay me the five copper', 'I collect my wages now', 'Give me my five copper', 'You owe me five copper'])
         assert.equal(pay(q).kept.length, 0, q);
+    // review of .138: leaving or pocketing a receipt is no payment beside a claim for his wage
+    for (const q of ["I'll take my fifty copper and leave.", 'Pay me fifty copper, then I leave.', 'I collect my wages and put the receipt in my bag.'])
+        assert.equal(pay(q).kept.length, 0, q);
+    // a separate tip after asking for his wage stays possible; the wrong pay to Tam in the same words does not ride on it
+    const boy = (T50.state.scene.present || []).find((id) => id !== 'pc' && id !== tam);
+    const both = 'I collect my wages and pay the porter a copper.';
+    assert.equal(guardCommands(both, [{ seq: 1, type: 'pay', to: tam, amount_cp: 50, for: null, quote: both }], t50Context()).kept.length, 0);
+    if (boy) assert.equal(guardCommands(both, [{ seq: 1, type: 'pay', to: boy, amount_cp: 1, for: null, quote: 'pay the porter a copper' }], t50Context()).kept.length, 1);
+    assert.equal(pay('I put five copper on the crate for him').kept.length, 1);
+    assert.equal(pay('I give him one silver and five copper', 'I give him one silver and five copper').kept.length, 0, 'another amount than the command’s is not this payment');
     // a quote without the act in a message that pays: the message's act stands, unless the quote claims money for him
     assert.equal(pay('the five copper', 'I agree to the fee and pay the five copper.').kept.length, 1);
     assert.equal(pay("I'll take my five copper now", "I'll take my five copper now and pay the boy a copper.").kept.length, 0);
@@ -226,7 +240,7 @@ test('.138 extractor: sale proceeds reported as coin.gift ask the existing repai
     assert.equal(issues(64, covered).length, 0);
 });
 
-test('.138 #382: with the bid the sale books once at its price; the gift beside it pays nothing more', () => {
+test('.138 #382: the bid is created at 150 cp and the gift beside it pays nothing; his explicit acceptance then pays 150 exactly once', () => {
     const raw = structuredClone(R[382].raw);
     const gift = raw.deltas.find((d) => d.type === 'coin.gift');
     raw.deltas.push({ scene: null, seq: 9, type: 'bid', buyer: gift.from, lines: [{ object: 'obj.loot.bog_strider.chitin.f', qty: 15 }, { object: 'obj.loot.bog_strider.venom.f', qty: 4 }], price_cp: 150, said: gift.said });
@@ -234,8 +248,21 @@ test('.138 #382: with the bid the sale books once at its price; the gift beside 
     const [o] = offers(res);
     assert.equal(o.price_cp, 150);
     assert.deepEqual(o.lines.map((l) => l.qty), [15, 4]);
-    assert.ok(coin(res).every((d) => d === 150) && coin(res).length <= 1, 'at most the one sale');
-    assert.equal(rejected(res, 'coin.gift').length, 1, 'the gift is no second payment');
+    // the reply itself completes no sale: the planner wrote 150 cp as minimum of each of the two positions (300 together),
+    // so the bid stays open; nothing is paid in this reply
+    assert.deepEqual(coin(res), []);
+    assert.equal(res.events.some((e) => e.t === 'transaction.completed'), false);
+    assert.equal(rejected(res, 'coin.gift').length, 1, 'the gift is no payment');
+    const s = res.state;
+    const before = s.entities.pc.sheet.coin_cp;
+    const c = { seq: 1, type: 'offer.accept', offer: o.id, lines: null, qty: null, party_words: null, agreed_cp: 150, quote: 'I accept the 150 copper for the plates and glands.' };
+    const events = [];
+    resolveCommands(s, content, [c], (e) => { events.push(e); applyEvent(s, e); }, { c: true, msg: 383 });
+    assert.equal(s.entities.pc.sheet.coin_cp, before + 150);
+    assert.equal(events.filter((e) => e.t === 'transaction.completed').length, 1);
+    const again = [];
+    resolveCommands(s, content, [{ ...c, seq: 2 }], (e) => { again.push(e); applyEvent(s, e); }, { c: true, msg: 384 });
+    assert.equal(again.filter((e) => e.t === 'coin.changed').length, 0, 'sold once');
 });
 
 test('.138 refusal reasons claim no payment that did not happen (T26 and T32 of the crystal shard)', () => {
@@ -245,4 +272,16 @@ test('.138 refusal reasons claim no payment that did not happen (T26 and T32 of 
     const t32 = rejected(world(64), 'coin.gift')[0].d.reason;
     assert.doesNotMatch(t32, /these sale proceeds are already in his purse/);
     assert.match(t32, /F-Rank Crystal Beetle Chitin Plate.*34 cp/);
+});
+
+test('.138 review: an original bid under an open condition stores no binding price; the payment choice alone does', () => {
+    for (const [said, want] of [['Four copper each, fifty-six copper total, if the appraiser approves.', null], ['Four copper each, if you want cash and the appraiser approves.', null], ['Four copper each, if you want the coin more than the credit.', 56]]) {
+        const raw = structuredClone(R[116].raw);
+        const bid = raw.deltas.find((d) => d.type === 'bid');
+        const prose = R[116].prose.replace(bid.said, said);
+        bid.said = said;
+        const res = applyWorld(structuredClone(R[116].state), content, raw, { msg: 116, prose });
+        assert.deepEqual(offers(res).map((o) => o.price_cp), want === null ? [] : [want], said);
+        assert.deepEqual(coin(res), [], said);
+    }
 });

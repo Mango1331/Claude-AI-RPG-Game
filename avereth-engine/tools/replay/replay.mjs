@@ -15,6 +15,7 @@
 // --check           compare the outputs of --engine with a stored baseline; exit 1 on any difference
 // --original        additionally count differences to the events the original build stored (build drift, informative)
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import zlib from 'node:zlib';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -211,6 +212,44 @@ export async function replayCorpus(root = ROOT, corpusDir = DEFAULT_CORPUS, { la
     return result;
 }
 
+/** JSON with sorted keys (undefined left out): the same output gives the same text whatever order its keys were built in. */
+export function canonicalJson(v) {
+    if (Array.isArray(v)) return `[${v.map((x) => (x === undefined ? 'null' : canonicalJson(x))).join(',')}]`;
+    if (v && typeof v === 'object') return `{${Object.keys(v).sort().filter((k) => v[k] !== undefined).map((k) => `${JSON.stringify(k)}:${canonicalJson(v[k])}`).join(',')}}`;
+    return JSON.stringify(v);
+}
+
+/**
+ * Review of package C: the fingerprint of one record's complete compared output (every event normalized as the
+ * comparison normalizes it, corrections, system, rejected, continuation, extraction status, action, errors). An accepted
+ * difference holds for exactly the output it was checked with, never for the record id alone.
+ */
+export function recordFingerprint(out) {
+    const x = out ? { ...out, events: (out.events || []).map(normalizeEvent) } : null;
+    return `sha256:${crypto.createHash('sha256').update(canonicalJson(x)).digest('hex')}`;
+}
+
+/**
+ * The differences an accepted list (tests/replay/accepted_c132_vs_126.json) covers: a listed record whose replayed output
+ * has exactly the listed fingerprint. A listed record with any other output is an open difference ("accepted record
+ * changed"); a listed record that no longer differs is stale. Run-level integrity findings are never accepted.
+ * @returns {{open: object[], accepted: string[], stale: string[]}}
+ */
+export function acceptedDiffs(diffs, accepted, result) {
+    const open = [];
+    const covered = [];
+    const caseOf = (id) => result.runs[id.split('#')[0]]?.cases?.[id];
+    for (const d of diffs) {
+        const a = accepted?.[d.id];
+        if (!a || !d.id.includes('#')) { open.push(d); continue; }
+        const now = recordFingerprint(caseOf(d.id));
+        if (now === a.fingerprint) covered.push(d.id);
+        else open.push({ ...d, accepted_record_changed: { expected: a.fingerprint || null, now } });
+    }
+    const stale = Object.keys(accepted || {}).filter((id) => !diffs.some((d) => d.id === id) && result.runs[id.split('#')[0]]);
+    return { open, accepted: covered, stale };
+}
+
 /**
  * The acceptance comparison. Every run the baseline names must have been replayed (and no unknown run may appear), every
  * case must match, and a replayed run must have no replay error, fold error or validation problem: any of these is a
@@ -271,14 +310,22 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     if (check) {
         const baseline = JSON.parse(zlib.gunzipSync(fs.readFileSync(check)).toString('utf8'));
         const { compared, diffs: all } = compareToBaseline(baseline, result);
-        // --accepted <file>: a reasoned list of the records an intended change makes differ (package C:
-        // tests/replay/accepted_c132_vs_126.json); a listed record that no longer differs is reported too
-        const accepted = opt('--accepted') ? JSON.parse(fs.readFileSync(opt('--accepted'), 'utf8')).cases : {};
-        const diffs = all.filter((d) => !accepted[d.id]);
-        const stale = Object.keys(accepted).filter((id) => !all.some((d) => d.id === id));
-        console.log(`baseline ${baseline.sha} (${baseline.engine}): ${compared} cases compared, ${all.length} differing${opt('--accepted') ? `, ${all.length - diffs.length} of them accepted, ${diffs.length} not accepted, ${stale.length} accepted but equal` : ''}`);
-        for (const d of diffs.slice(0, Number(opt('--show') || 50))) console.log(JSON.stringify(d));
+        // --accepted <file>: the reasoned list of the records an intended change makes differ (package C:
+        // tests/replay/accepted_c132_vs_126.json), each accepted only with the exact output it was checked with
+        // (its fingerprint); a listed record with another output, or one that no longer differs, fails the check
+        const file = opt('--accepted');
+        const list = file ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+        // --write-fingerprints: after an intended, reviewed change, record the current outputs of the listed records
+        if (file && args.includes('--write-fingerprints')) {
+            for (const id of Object.keys(list.cases)) list.cases[id].fingerprint = recordFingerprint(result.runs[id.split('#')[0]]?.cases?.[id]);
+            list.engine = result.engine;
+            fs.writeFileSync(file, `${JSON.stringify(list, null, 1)}\n`);
+            console.log(`fingerprints written: ${file} (${Object.keys(list.cases).length} records, ${result.engine})`);
+        }
+        const { open, accepted, stale } = acceptedDiffs(all, list?.cases || {}, result);
+        console.log(`baseline ${baseline.sha} (${baseline.engine}): ${compared} cases compared, ${all.length} differing${file ? `, ${accepted.length} of them accepted with their exact output, ${open.length} not accepted, ${stale.length} accepted but equal` : ''}`);
+        for (const d of open.slice(0, Number(opt('--show') || 50))) console.log(JSON.stringify(d));
         for (const id of stale) console.log(JSON.stringify({ id, accepted_but_equal: true }));
-        if (diffs.length || stale.length) process.exitCode = 1;
+        if (open.length || stale.length) process.exitCode = 1;
     }
 }

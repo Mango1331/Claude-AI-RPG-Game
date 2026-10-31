@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import zlib from 'node:zlib';
-import { loadCorpus, replayCorpus, compareToBaseline, firstDifference, normalizeEvent, IGNORED, DEFAULT_BASELINE } from '../../tools/replay/replay.mjs';
+import { loadCorpus, replayCorpus, compareToBaseline, firstDifference, normalizeEvent, IGNORED, DEFAULT_BASELINE, acceptedDiffs, recordFingerprint } from '../../tools/replay/replay.mjs';
 
 const baseline = JSON.parse(zlib.gunzipSync(fs.readFileSync(DEFAULT_BASELINE)).toString('utf8'));
 const QUICK = ['b16-rogue-sale', 'b18-mage', 'b19-mage', 'b19-rogue'];
@@ -30,13 +30,17 @@ test('A1: the corpus holds every recorded engine call and the baseline names its
 // Package C (.132): the intended differences to the .126 baseline, record by record with their reason
 // (tools/replay/replay.mjs --accepted; docs/PATCH_ARCH_C132_POPULATION_AGE.md)
 const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_c132_vs_126.json', import.meta.url), 'utf8'));
-test('A1/C: the four quick runs replay as on the start commit, from whole and valid states, apart from the accepted package C records', async () => {
-    const result = await replayCorpus(undefined, undefined, { labels: QUICK });
-    const sub = { ...baseline, runs: Object.fromEntries(QUICK.map((l) => [l, baseline.runs[l]])) };
-    const { compared, diffs } = compareToBaseline(sub, result);
+const SUB = { ...baseline, runs: Object.fromEntries(QUICK.map((l) => [l, baseline.runs[l]])) };
+let quick = null; // the four quick runs, replayed once for this file
+const quickRuns = async () => (quick ||= await replayCorpus(undefined, undefined, { labels: QUICK }));
+test('A1/C: the four quick runs replay as on the start commit, from whole and valid states, apart from the accepted package C records with their exact output', async () => {
+    const result = await quickRuns();
+    const { compared, diffs } = compareToBaseline(SUB, result);
     assert.equal(compared, QUICK.reduce((n, l) => n + Object.keys(baseline.runs[l].cases).length, 0));
     assert.deepEqual(diffs.map((d) => d.id).sort(), Object.keys(ACCEPTED.cases).filter((id) => QUICK.includes(id.split('#')[0])).sort());
     assert.ok(diffs.every((d) => ACCEPTED.cases[d.id].category === 'representation'), 'in the quick runs only the recorded contract fields differ');
+    const { open, accepted, stale } = acceptedDiffs(diffs, ACCEPTED.cases, result);
+    assert.deepEqual([open, stale, accepted.length], [[], [], diffs.length], 'every accepted record has exactly the fingerprinted output');
     for (const [label, run] of Object.entries(result.runs)) {
         assert.equal(Object.values(run.cases).filter((c) => c.error).length, 0, label);
         assert.equal(run.fold.fold_errors, 0, label);
@@ -79,4 +83,42 @@ test('A1 review: the check itself fails on a missing run and on replay, fold or 
     assert.deepEqual(compareToBaseline(base, { runs: { ...whole.runs, c: run({}) } }).diffs, [{ id: 'c', missing: 'run not in baseline' }]);
     const broken = { runs: { a: run({ 'a#1': { kind: 'player', events: [] } }, { fold_errors: 2, problem_count: 1 }), b: run({ 'b#1': { kind: 'reply', error: 'boom' } }) } };
     assert.deepEqual(compareToBaseline(base, broken).diffs.map((d) => d.integrity || d.field || d.missing), ['2 fold error(s)', '1 validation problem(s)', '1 replay error(s)', 'error']);
+});
+
+// Review of package C: acceptance is bound to the exact output of .132 (fingerprint), not to the record id. An extra,
+// unexpected change inside an accepted record (money, a quest, an event) is an open difference again.
+test('C review: an unexpected change of money, quest or events inside an already accepted record is detected', async () => {
+    const result = await quickRuns();
+    const { diffs } = compareToBaseline(SUB, result);
+    const ids = ['b19-mage#13', 'b16-rogue-sale#5', 'b19-mage#20'];
+    for (const id of ids) assert.ok(ACCEPTED.cases[id] && diffs.some((d) => d.id === id), `${id} is an accepted difference`);
+    assert.equal(recordFingerprint(result.runs['b19-mage'].cases['b19-mage#13']), ACCEPTED.cases['b19-mage#13'].fingerprint);
+    const changed = (id, change) => {
+        const r = structuredClone(result);
+        change(r.runs[id.split('#')[0]].cases[id]);
+        return acceptedDiffs(compareToBaseline(SUB, r).diffs, ACCEPTED.cases, r).open;
+    };
+    const mutations = {
+        money: ['b19-mage#20', (c) => c.events.push({ t: 'coin.changed', d: { id: 'pc', value: 999, delta: 5 } })],
+        quest: ['b19-mage#13', (c) => { c.events.find((e) => e.t === 'quest.created').d.quest.payout_cp += 1; }],
+        'quest age': ['b16-rogue-sale#5', (c) => { const q = c.events.find((e) => e.t === 'quest.created').d.quest; if (q.hunt) q.hunt.age = 'young'; else q.reward = 'other'; }],
+        'event dropped': ['b19-mage#20', (c) => { c.events.splice(1, 1); }],
+        'event reordered': ['b19-mage#20', (c) => { c.events.reverse(); }],
+        correction: ['b19-mage#13', (c) => { c.corrections = [...(c.corrections || []), 'an unexpected correction']; }],
+    };
+    for (const [what, [id, change]] of Object.entries(mutations)) {
+        const open = changed(id, change);
+        assert.equal(open.length, 1, what);
+        assert.equal(open[0].id, id, what);
+        assert.match(open[0].accepted_record_changed.now, /^sha256:[0-9a-f]{64}$/, what);
+        assert.notEqual(open[0].accepted_record_changed.now, open[0].accepted_record_changed.expected, what);
+    }
+    // an output equal to the accepted one in another key order is the same output
+    const reordered = structuredClone(result), c = reordered.runs['b19-mage'].cases['b19-mage#13'];
+    reordered.runs['b19-mage'].cases['b19-mage#13'] = Object.fromEntries(Object.entries(c).reverse());
+    assert.deepEqual(acceptedDiffs(compareToBaseline(SUB, reordered).diffs, ACCEPTED.cases, reordered).open, []);
+    // a listed record without a fingerprint accepts nothing
+    const bare = structuredClone(ACCEPTED.cases);
+    delete bare['b19-mage#13'].fingerprint;
+    assert.deepEqual(acceptedDiffs(diffs, bare, result).open.map((d) => d.id), ['b19-mage#13']);
 });

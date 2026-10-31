@@ -99,3 +99,25 @@ behalten die alte Lesart; `populationAt` dient nur noch dieser und der Offline-U
 
 Eine formal gültige, aber fachlich falsche Populationswahl bleibt als Modellfehler möglich (kein Prosa-Veto);
 im natürlichen Batch (F) beobachten.
+
+## Reviewkorrektur – Freigabe nur für die exakt geprüften Ergebnisse
+
+Befund des Gegenreviews bestätigt: `--accepted` filterte Abweichungen bisher nur nach Record-ID; jede weitere
+Änderung innerhalb eines der 142 freigegebenen Records (Geld, Quest, Events) wäre unbemerkt durchgegangen.
+
+- `tests/replay/accepted_c132_vs_126.json` (Format `avereth-replay-accepted-2`) trägt je Record zusätzlich einen
+  **Fingerprint**: SHA-256 des vollständigen normalisierten Recordoutputs von Build .132 (alle Events wie im Vergleich
+  normalisiert, `corrections`, `system`, `rejected`, `continuation`, Extraktionsstatus, Aktion, Fehler; kanonisches
+  JSON mit sortierten Schlüsseln). Kategorien und Begründungen sowie die .126-Baseline bleiben unverändert.
+- `tools/replay/replay.mjs`: `recordFingerprint`, `acceptedDiffs`. Ein gelisteter Record ist nur mit genau diesem
+  Output freigegeben; jeder andere Output ist eine offene Abweichung (`accepted_record_changed` mit erwartetem und
+  aktuellem Fingerprint), ein Record ohne Fingerprint gibt nichts frei, ein gelisteter Record ohne Abweichung bleibt ein
+  Fehler (`accepted_but_equal`). `--write-fingerprints` schreibt sie nach einer geprüften, beabsichtigten Änderung neu.
+- Nachweise:
+  - Fingerprints aus einem vollen Replay geschrieben und von einem zweiten, unabhängigen vollen Replay exakt bestätigt:
+    `npm run replay:check` → **2.235 Fälle, 142 abweichend, 142 mit exaktem Output freigegeben, 0 offen, 0 gleich**.
+  - Neuer Test `tests/replay/replay.test.js` („C review: …“): in bereits freigegebenen Records zusätzliches
+    `coin.changed`, geänderte Questbelohnung, geändertes Jagdalter, entferntes und umgeordnetes Event, zusätzliche
+    Korrektur → jeweils offene Abweichung; gleicher Output in anderer Schlüsselreihenfolge bleibt freigegeben.
+    **Rot mit der Freigaberegel von `8908850` (nur Record-ID), grün mit Fingerprints.**
+  - Volle Suite **2482/2482**.

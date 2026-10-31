@@ -1,9 +1,9 @@
 {
- "format": "avereth-replay-accepted-1",
+ "format": "avereth-replay-accepted-2",
  "baseline_sha": "b8d2af4b76cd0bc52ac178b8c500e5733878ecee",
  "baseline_engine": "4.3.0-c.6.6.126",
  "engine": "4.3.0-c.6.6.132",
- "note": "Package C (.132): every record whose replay differs from the .126 baseline, with its reason (docs/PATCH_ARCH_C132_POPULATION_AGE.md). Old answers are converted by tools/replay/contract_c.mjs.",
+ "note": "Package C (.132): every record whose replay differs from the .126 baseline, with its reason (docs/PATCH_ARCH_C132_POPULATION_AGE.md). Old answers are converted by tools/replay/contract_c.mjs. Each record is accepted only with the exact output it was checked with: fingerprint = sha256 of its complete normalized record output (tools/replay/replay.mjs recordFingerprint), written by --write-fingerprints.",
  "categories": {
   "representation": "population contract recorded, no mechanical consequence: entity.updated {life_stage, population_at} at creation (population_at no longer set on the profile event), quest.hunt.age on hunt contracts, converted population/life_stage fields inside an already rejected creature.new",
   "rejection reason": "a claim already refused in .126 (aware of an unknown creature) is now refused by the creature reference lock (creature_continuity)",
@@ -11,430 +11,572 @@
  },
  "cases": {
   "b16-rogue-sale#5": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:a01fe9b973f9d597e47214ed5423ca8cb1bbc06fe6729f963c31f07026f77684"
   },
   "b16-rogue-sale#16": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:d7eed12d7db0e53a8451fcce1885c8fbe4b4ae3b7c75d53f6c45a064261b8867"
   },
   "b16-rogue-sale#30": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:55c47fa35af4232285a006f7f9ed19568f74908fd3fe0a1f16cb7c64dae4a851"
   },
   "b16-rogue-sale#44": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:548b21f64d4ab61094a16472cb3d224d461b94c6b6295b273a86230b3e7bcf35"
   },
   "b16-rogue-sale#58": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:b712fc6fa0d750045b500d1c0395ea47ccc2278d09363b60f1dc24d390642bf5"
   },
   "b17-mage#5": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:3ab4f58f428a47433744ec1bba8c5bc347417d59000a6cd4c8dcc553a2614a30"
   },
   "b17-mage#14": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:3dc6d89d5bad3da2dba425f414ac0f43d6e2a80bf1e9bb7468a7e9991fb9cbea"
   },
   "b17-mage#28": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:a1608b287be27e27f4e4fd1d45c877786ae9ba0b1c46dcce6aa5630138790cc0"
   },
   "b17-mage#34": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:01fef1c53a5611452a1865848486567f35778fde9c430f67fca47e2e51563920"
   },
   "b17-mage#42": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:19f2226011f278f5039a7fd8c476e37953a3d28ae00095303129ed5b1e8a51de"
   },
   "b17-mage#48": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:550b43f451bb1d671c41a4777a1379836e2df4c7d4567f23cde8988c327a6db7"
   },
   "b17-mage#62": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:ec5b43a70bd9e8fa9c71e448a6200b0c249cc2b61b86b5aa20eb094e0e4292ad"
   },
   "b17-mage#71": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:c57ccb02195d06b2941d4dd1030f124293969a5d3bca7d34187303e9cc4ebe73"
   },
   "b17-mage#78": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:08eae8ab08cd6adaa19e69ad4955dbbca4096798ce2b16bf058955f510f0c4dd"
   },
   "b17-mage#92": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:f43b45d5582a26c3e62503d048823953001fb05ffbdfbcc6e5b8929c341a8c40"
   },
   "b17-mage#100": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:417c5b350146b1c3eee0117120f8e9c7db5862d7013e87b1a12d6248862cd5fc"
   },
   "b17-mage#106": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:4d20f98a8f41099d8141c4111892b160122b2bc9c904ebd74e21ab00e3137237"
   },
   "b17-mage#124": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:9aa0dd9c7d18daf60fdd66c99be3c57f4258fe6fce842a8ecc8b08c9b5240585"
   },
   "b17-mage#130": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:b2d7df4576a03d5b26a8ce02e93a012de77d2d5973ac49b472c45f08fdf05bea"
   },
   "b17-mage#134": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:311c2d9fedd5d4d43930d5cbdf45d9da615fcf9e409da14a9f24f1d899db50c4"
   },
   "b17-mage#141": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:445d8340326a9d7c0b6a86cc7dfe9e558470f74ffd5835cb9755829980444bfa"
   },
   "b17-mage#150": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:6f9482d30839273b31a52dc324c1058414b1c7aa358912c76a60555429dde4cc"
   },
   "b17-mage#172": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:f2e9f1390982290227a0881bd8239ab8f9e5dc8c1e550e9c40a8e5639b5cd64d"
   },
   "b17-mage#186": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:4ad7ad5689e927f53239b9e3754866fc3930e7d0d7c8af3ec7dfb0ecc31f903f"
   },
   "b17-rogue#5": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:94832df55dd476ecad096e1c3a4aa02ff4ec67a108a8de595e8a154ef4528893"
   },
   "b17-rogue#14": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:d699db4f9d39c135fe680a6baccea4ea5094f9614b64d6646a09d7b802afef99"
   },
   "b17-rogue#36": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:7f64fd2c1c9ccb3843fad7cfff1245c0ca15cab94620b616be42aaa7dee36c8b"
   },
   "b17-rogue#50": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:8cb73e852dc7873711d12b306d6f48fa2cf583238b6c94ef50913732a234d0b5"
   },
   "b17-rogue#76": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:8de26a781681eb4993e33a9e79247605e7b89554b78af08cfa0e477ebbb37d39"
   },
   "b17-rogue#84": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:e52c24a010933663a75d8baef3c3e043a790f27544f9b649e1f4e19ee27a5727"
   },
   "b17-rogue#90": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:d3318718e75ee4ef7d14e6d071e6403599c4fb9d4f89b18d12388ed9622c58b9"
   },
   "b17-rogue#97": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:9362a8526afc1c3d80163266921a503989fad6850c470f10dcabd935b9205557"
   },
   "b17-rogue#106": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:39abd033fafd738adbcf0464ff1f3f7f65866b15088c5ce3eb8b9a5042f477af"
   },
   "b17-rogue#124": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:8b660790e64a982a6a69f7c13a5c2a4c9003b14ded3af1dec0608ca5f8c7d9db"
   },
   "b17-rogue#132": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:970f442da8b0aff5cfe844704b1048d16f8dd3dcc8fef43b68d8f488e2091bfb"
   },
   "b17-rogue#140": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:7c772c7f3fa23223286e7bc8ee741771bfb228171178fe316a64e99ab7b89917"
   },
   "b17-rogue#178": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:81a13271e045435a2acd885ee66e7fca93b0a51cc1d5fb8248bf8a8b25e19844"
   },
   "b17-rogue#196": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:f06444f299112d46506ccac3745ed8e93944b282c031137ba7bcbaadb26f598a"
   },
   "b17-rogue#200": {
-   "category": "mechanical"
+   "category": "mechanical",
+   "fingerprint": "sha256:108d4d4492351f10b746efaeedb9f9d6a550b4e3443b4ea40f518774284834e7"
   },
   "b17-rogue#219": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:b2e1c58d4c0977d94cb50540bd1fe27817438fe4fafb4609abcf0ac688d02444"
   },
   "b17-rogue#240": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:c7d27581c7bd27c5d11a8cafded9a424d8384de60f29739c757d901eba171b7d"
   },
   "b17-rogue#254": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:e21c7fe0a2e9e4d8ec6d405a97a22cfdb796fb3190d7ae5852eef1d8ef5d06f9"
   },
   "b17-rogue#262": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:2992ae172c82179c64e7482ac0dfbc3c59e6317a9f8602e5ca825f6d73cb4b7b"
   },
   "b17-rogue#268": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:729677ced8edc4bb166e86ae5f3d3e92bb911431c1be0302a84eec48aeab0cbe"
   },
   "b17-warrior#25": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:38549f0c1eb0d742c5cd478e73dcbbf6b70b619c29f34da6e049df0ff497307a"
   },
   "b17-warrior#32": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:0f5338462dfc71261b2cd41cd32e736a84e01246d982a2ed9ccfa50ba9ee0daa"
   },
   "b17-warrior#42": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:041e9f7f2ec61d56564268226123b321a0932b0782eb13ff0225be153ae211d8"
   },
   "b17-warrior#46": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:6ec0486d0ce0f9275b8aeca10213f7b796aa1feae913315fe48b9bcae239575d"
   },
   "b17-warrior#94": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:9829a300a066f456488a89bd8c038f04a68b93c92752a0c74c58232edddd2705"
   },
   "b17-warrior#104": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:ce214fba0a0d1a89fa7bd9fcf86192041fd22bfc61653c1aadd9ccdead9b1b37"
   },
   "b17-warrior#135": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:82a1271bee2aba93cdf16808620c0e3bdcfb76862edd0768b3e4f56c532612f0"
   },
   "b17-warrior#152": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:3f7ccaa77f6e97eb26817659555f66593baad7d74e06c3c2a819a626c676dfc8"
   },
   "b17-warrior#159": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:72210788a849ef9de0eef152a0ee4b3e07ec8ee043d647ba292b7275a5e2411e"
   },
   "b17-warrior#162": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:7cfa7540b89b30bb059c7515ffa9f85eb85695b29fc2f9ee084794cd6e3ff167"
   },
   "b17-warrior#180": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:0499dbe10ef96a866931dfce40d6acb0624ae988cfeb2f4a61b4016d7cd86b8f"
   },
   "b17-warrior#198": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:f781c706675aaa03ab5737f10d43f9451f47512d3d00e0f2c82899728fd8dab9"
   },
   "b17-warrior#204": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:aefe4a161ec64df606c6d28ac87cf4960fcb143ea03fc16dd44028b8a47c7c55"
   },
   "b17-warrior#210": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:881ac4bb6bb500e84e122d8cb9633b896eae33b27c4b37faebae4964ed9d0d71"
   },
   "b17-warrior#217": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:3b22fbab6a6ce1de6410f0d655b987e91189d0bdf20b05cf6daa43c5f4e9e99b"
   },
   "b17-warrior#224": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:c94c4acb474028824fddcd40b03dfea844f52f6988c8c61fd8d9be027900b385"
   },
   "b17-warrior#230": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:bd3bc85fd9c047eac727a336d1541a1325b8c7acb99a150d990163b6b96ebdfa"
   },
   "b17-warrior#261": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:c4db2121166c251d086db05b1dbe25a4d04333d213b1b301d98ed86f2d2d110f"
   },
   "b17-warrior#274": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:94ef7b812ee2b21950b009c679306a436927d14211b4260710d75a964f31cd32"
   },
   "b17-warrior#284": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:b0e154602948a7926bbb4cd249d936b8e4b80e1c7f7b665cc85ed3812fbd919a"
   },
   "b17-warrior#295": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:4911365a778cf7e92967f20f80fcdc0fe51685dd9fe47a7300493a260efc7da7"
   },
   "b17-warrior#306": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:e0b8684c060ff441499f595d0e49a451b27b1ae62b8caac90907b2d2b59a87b9"
   },
   "b17-warrior#312": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:17c660dce1336e35e00ea5cd271159969a909d817b4c8ef572f5cb6cf1146cb9"
   },
   "b18-mage#7": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:26cc6215875d32890afbdcc79bc3d624b7a10be525b2b3e8638b67011bad6a46"
   },
   "b18-mage#16": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:0ebf29e7f608b505f28ced3375d41ff2cca5a30a3752b3189456da6ffa50a32c"
   },
   "b18-mage#32": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:08cd7bbc54157b6a680c2647ff215967cc9ac691d45a577d87a84fb28e3f89f5"
   },
   "b18-mage#40": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:de51a13583f645090ffdc13915a723e3aff242128ba649841dd2cc5d2b3101a2"
   },
   "b18-rogue#20": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:23268e6ae80da77fa174511bcfa1774fb30c983a1f94ac6be46d40af603c1a79"
   },
   "b18-rogue#42": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:b5f8efaa17b1e289990a6a72717d2d300eb4377ba351dab5bd5e4b3ff6cc77f8"
   },
   "b18-rogue#52": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:a06561aafa9d17affd1c60ddcf9e613ecccf3895c5b5a03d4cb3bbf1556f2675"
   },
   "b18-rogue#66": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:90b02ae8b8e79c262367793b128ec94d6395ffc45c9be519300bcc388196d8cf"
   },
   "b18-rogue#72": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:a6df40fee349b80a4d1a774af99d960b555b22aa6230d5d05496fe7ba44f8c20"
   },
   "b18-rogue#100": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:e6480d7fc24fdea7c752f18e60feb786221c613b4cca057da2fe1a1948cd0de6"
   },
   "b18-rogue#140": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:37eba9594b7a46dd3826b6f7be9170dee3b9f40d7aa982850c987e90786a2b05"
   },
   "b18-rogue#170": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:08ddc009422eebc601e3979c281723852165197c80f10770728b3030eaaa95bb"
   },
   "b18-rogue#202": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:28637a60809f25137d424e143dd624700af6497d43e255cb06a918c284011396"
   },
   "b18-rogue#210": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:9b380981255bcaed79d825499b69e69cd05f9c504f7953dbdb2219001167e211"
   },
   "b18-rogue#248": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:e6d06cb53d28d1269abf9f5030e5c9fee37bd80d285e1f3072536cc8373ae62f"
   },
   "b18-rogue#272": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:aa4956e3262d03acb2209f43180056d48171599cf2da4811934f74e0c5f6d4f2"
   },
   "b18-rogue#288": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:e70bfeed2642a7e070cfd6dde1bc7727f2dd8199ea554b918eafb36f94bc3862"
   },
   "b18-rogue#292": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:b97b07f90e3c55cb111ff5fce658213b601137ec74cd3fbcc1f963d3ad52f10c"
   },
   "b18-rogue#296": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:df71a2c92639c7a42bdabfb11867150f9bbb2ec62ea023f89f65ec3ce5062b1c"
   },
   "b18-rogue#306": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:da40ac0667d3df984a0d4051585d25116d15eb1558bf38b7581c22f6d6a6bb69"
   },
   "b18-rogue#384": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:cf0071d78b1eb7ada559a8d9b2fad764c1c0f254247d2e8eb3120b2a59e3c7a0"
   },
   "b18-rogue#398": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:d6ee4bcafdebc36190b35c305bf4b5b5c2a3743e22446a65aea482c58e8b2cf1"
   },
   "b18-warrior#5": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:bc2ddaf11be2c04f8d6ddd6be09fdd6aee9956bf38eda577ca9b095d9af1df7e"
   },
   "b18-warrior#14": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:a2babd6c80177b7a786b9ad41398c6b678bb388696e152a412bd4b413fe29e2e"
   },
   "b18-warrior#64": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:cabb44851201cd9f5c991b8cc5214b01dbf8e8c74eeeefed78099b935ef9ec35"
   },
   "b18-warrior#66": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:c64a1189e54a66b334be4fa1f7135985c124f228b24cfe9cc0de291b5cf4ed85"
   },
   "b18-warrior#84": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:a4cb77837d997a5a5432571581ba818e99373c315b2fdbf74da19dc36d92c9bd"
   },
   "b18-warrior#106": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:c0e70a3016aba0e0ce1756859b711a44f3819d4ba98a1fceb409258c1eb278fe"
   },
   "b18-warrior#114": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:7bba54318060d4a7d8558e9a6bc7a97150397054dde2825b66e19ff10cb5a768"
   },
   "b18-warrior#191": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:e85c61bda7188ab527560b69e897b54834f68293a900122f2fa34ab61ecd9a16"
   },
   "b18-warrior#198": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:c44505419e08fc74e6a6fe0d0100928fa979a5d43a85a909a3eeadc67a2a4898"
   },
   "b18-warrior#202": {
-   "category": "rejection reason"
+   "category": "rejection reason",
+   "fingerprint": "sha256:7ace3880012daa4fc1c24ddc02ae436549a705a7c5440ab4ca03b5afe4a194de"
   },
   "b18-warrior#248": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:b17d7dd12b324fb3a8c779778c811e549308166a9a5378797d4c47d487929ba9"
   },
   "b18-warrior#262": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:8083aab92a9f3b0f070d448c6545f5378e1f08f63cdea3c53979e7a02891bd45"
   },
   "b18-warrior#272": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:906e64a36b723cc56c59dc29198a5416f69685f80ae53ae71d6b20a6770086a5"
   },
   "b18-warrior#284": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:115c1887a255033de10fd03b2dd1ecf7d55408efee98f490e582cc557244c2d7"
   },
   "b18-warrior#294": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:6c8d49359aa8492d8cdcf543b2dfad6fd93c8ca5cd32e5d0a3096d2d95db2dfe"
   },
   "b18-warrior#325": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:d8580fc5c2aad0a0eb06600fbafb750d8dbe95a9fbe31e8e9089ba96bae8ed65"
   },
   "b18-warrior#334": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:6c8ec8d8bb1910a88ffad001b876d158772194042bcd0b8bbfa94bfcdab90443"
   },
   "b18-warrior#344": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:e211800ca82d23ce87468b835f7f020670a255dc6a11c9d182fc3ef14c0c916d"
   },
   "b18-warrior#366": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:e7db7a2ad8bbe23d27f9554b50d609feffe8ee3b08d25118d31c7324c9537135"
   },
   "b18-warrior#378": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:e744b35743e4862091338e73fb07a1978e4d70958d8cfb16828881767334bde9"
   },
   "b18-warrior#392": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:d7cecfb15fd6474ff621d451d0145dd4cb49d164fb22ed5c8d02200882e609c3"
   },
   "b19-mage#13": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:441e1f046458c53e474f010d7b4ab018fdbc763c4ea38665bd614f0d7465bc51"
   },
   "b19-mage#20": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:73c3fdc97bd9ed1f6fe4d51f53c1913c57c199e43be156bd1522d6440f4a1484"
   },
   "b19-mage#30": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:4bc3b2e3e977f4daf02368355f2bbc668dcfbcc5406546ae64266bf112deaf19"
   },
   "b19-mage#54": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:28b28d13756ba5a8c1904d9769e6443c70a1e1e4f50f9db609de297289629e21"
   },
   "b19-mage#66": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:8d253d28aed4ea560d2a3e86b813f57ac9e06bf53d176c89a512fc3b21ea1a02"
   },
   "b19-mage#72": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:d12ad778f97c072df762ed0a2e651b891a54b6a41166c2b60b0ba7ced6e2e046"
   },
   "b19-mage#88": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:0e6aef0a5fd24369a4495c68f59cae1870eaecd9944d06e6dff2b1c203287d5c"
   },
   "b19-mage#118": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:055511fb9d48e60755344353e08f584b97074d7396fae07ae9545bf13542544f"
   },
   "b19-mage#167": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:4178c755c106c871f76557265c3bcbc5a011d62903bbe98ceff535b76ad165fc"
   },
   "b19-mage#184": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:732d58e0e925be96cdd4816fc4769a957e51813169c2583bdf3224ca6323f34f"
   },
   "b19-rogue#13": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:7c6e347fa25b06f0abb965265bb9b290320322ddbbf9362dbb24fc382aa674a4"
   },
   "b19-rogue#20": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:d9a6f1b3e0cd64832a3401ddc94ed37647bccea51504bee061b22756fd6a8f98"
   },
   "b19-rogue#56": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:2d8369b718db9d74c547f765acb62672e0586c4ac65560dfaf859a7337ea4acb"
   },
   "b19-rogue#58": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:2b54fff57b36c3a37faf88ebb086291263d3ddc00ca08f2fae048e02ad389f4b"
   },
   "b19-warrior#7": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:f445b7f6298995e38e780769df5935a617df7c317ab0b5437e81266257f0d0f7"
   },
   "b19-warrior#16": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:dee3fb63e1c157c85bbdaceec875ea5151e3b2fdfec680e4fc043d34902264e4"
   },
   "b19-warrior#58": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:c49b6ce1ecd0197b4c9ad4fbe920846ba5f05420d7f17abad913bf66e9ae30eb"
   },
   "b19-warrior#96": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:9747addde247c391f44eb3ee08b5dbde823f93cbfa994c970bc5943d1e29dcb2"
   },
   "b19-warrior#118": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:307592df95824630d5bc6eb50b9f098170254371550f714f4aeafb306cbda0db"
   },
   "b19-warrior#138": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:bf97874c30b3c4d85dd0e50e187ec2661e93ca1db2f80afa1484b537cb5c4fb2"
   },
   "b19-warrior#171": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:f888714505e3d47d22852e1d8641dce11e1d549cd2e3fe478d36ef4172f3c8c7"
   },
   "b19-warrior#186": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:59c904e99eddc43739b973f84c1b9c4cc23bb23d29591cd103f4e68c3549d59e"
   },
   "b19-warrior#214": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:d7f4d419cdeba1889bbb2ffcd240c003f32806b1b465210cf511aec012541d43"
   },
   "b19-warrior#218": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:0871d40da2d4d31e86f52bcdc5ff6ca565b062b619718156e9f15db1e5f7cc14"
   },
   "b19-warrior#232": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:a9dd30f44b1b91bf279be565d49a0a600ee13cc214ff33069419f1ada275b6be"
   },
   "b19-warrior#272": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:d12ca0f1a990e7d91de1ed36765c1988d67fc34ecdd9f75bdb451688e4b8cb4b"
   },
   "b19-warrior#286": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:f9571146cc3873c23905149d9f132f73bdd6c2b2c3c5f51e6e5ddb444fea3551"
   },
   "b19-warrior#294": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:7343002aca5ddf9a0b65a15c9c9914eec0e63f5d4bfa39ac667be456faa32317"
   },
   "b19-warrior#298": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:1b083a51bc8a6e3d9d4732883d65ab7637d29cb86a851f29b5da8a194fa6fc63"
   },
   "b19-warrior#351": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:0be79d57f0875088b410eac1ee2d287e26c1013410505c570252bd2d86e32398"
   },
   "b19-warrior#358": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:f73d49d2579344731673e7e80cc9646b52e93e9faf65bc5cd316712f6962fbf2"
   },
   "b19-warrior#376": {
-   "category": "representation"
+   "category": "representation",
+   "fingerprint": "sha256:9c383f014142884a85f50c394456f8af1b5f5d32ed1f3ffa86dda2ef20dc4fa2"
   }
  }
 }

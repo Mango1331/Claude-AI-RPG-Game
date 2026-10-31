@@ -336,3 +336,37 @@ test('.139 corpus b17-rogue#19: "I have three silver—I\'ll give two to Bree" p
     assert.equal(guardCommands(quote, cmd(30), ctx).kept.length, 0, 'the 30 cp he holds are not what he gives');
     assert.equal(guardCommands(quote, cmd(20), ctx).kept.length, 1);
 });
+
+// .141: a quantity of goods is not coin, and linked conditions retain their prerequisites.
+test('.141 non-money acts never carry a pay, but cash and an inherited coin unit do', () => {
+    const s = structuredClone(T50.state); s.entities.pc.sheet.coin_cp = 200;
+    const ctx = t50Context(s);
+    for (const quote of ['I give Tam two loaves and collect my fifty copper.', 'I put my hood up and collect my fifty copper.', 'I hand Tam two plates and collect my wages.']) {
+        const g = guardCommands(quote, [{ ...T50.commands[0], quote }], ctx);
+        const events = [];
+        resolveCommands(structuredClone(s), content, g.kept, e => events.push(e), { c: true, text: quote });
+        assert.equal(g.kept.length, 0, quote);
+        assert.equal(events.some(e => e.t === 'coin.changed'), false, quote);
+    }
+    for (const quote of ['I hand Tam five copper.', 'I settle up with Tam: five copper', 'I settle up with Tam.'])
+        assert.equal(guardCommands(quote, [{ ...T50.commands[0], amount_cp: 5, quote }], ctx).kept.length, 1, quote);
+});
+
+test('.141 all linked NPC conditions are checked, including speaker prerequisites and a second unless', () => {
+    const quotes = [
+        "Four copper each, if you want cash and I must obtain the appraiser's approval.",
+        'Four copper each, if you want the coin, unless the plates are cracked.',
+        'Four copper each, if you want cash and I must obtain approval for fifty-six copper.',
+    ];
+    for (const said of quotes) {
+        const s = structuredClone(R[116].state), raw = structuredClone(R[116].raw);
+        const bid = raw.deltas.find(d => d.type === 'bid');
+        bid.said = said; raw.deltas = [bid]; raw.expected = {};
+        s.decisions.push({ id: 'dec.review.sale', kind: 'sale', turn: s.turn, at: s.scene.at,
+            seller: bid.buyer, object: bid.lines[0].object, qty: 14, min_cp: 56, seq: 1 });
+        const res = applyWorld(s, content, raw, { msg: 116, prose: said });
+        assert.deepEqual(offers(res), [], said);
+        assert.deepEqual(coin(res), [], said);
+    }
+    assert.equal(price("Four copper each, if you want cash and I'll take all fourteen.", 14), 56);
+});

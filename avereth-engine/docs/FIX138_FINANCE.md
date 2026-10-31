@@ -178,3 +178,38 @@ Grenzen: Die ausstehenden Wörter, die Zahlungsverb-Redewendungen und die Fortse
 Gruppen. Sie entscheiden nur, ob ein Preis bindet oder eine Zahlung belegt ist; im Zweifel entsteht kein verbindlicher Preis
 und keine Zahlung (sichtbare Ablehnung/Klärung), nie eine stille Buchung. Mehrere gleichzeitige Bedingungen in
 Nominalform („if you want the plates and the gland“) gelten als erfüllt, solange nichts aussteht.
+
+
+## 9. Gezielte Gegenreviewkorrektur .141
+
+Build **`4.3.0-c.6.6.141`**, Basis `.140` / `c37a677`. Zwei weitere P1-Lücken gegen den unveränderten Stand reproduziert:
+
+- **Gegenstände sind kein Zahlungsbeleg:** Bei einem falschen `pay` über 50 cp ließ der Guard „I give Tam two loaves and
+  collect my fifty copper“ beziehungsweise „I put my hood up and collect my fifty copper“ durch; die echte
+  Befehlsauflösung zog Geld ab. `paysAct` akzeptierte jede Zahl nach einem Gebeverb und `up` als allgemeines Geldwort.
+  Jetzt darf eine bloße Zahl nur mit einem tatsächlich aufgelösten Geldbetrag die Münzart ihres Satzes übernehmen.
+  Gegenstandsmengen liefern diesen Betrag nicht. `up` gilt nur innerhalb von `settle up`. Planner-Betragsprüfung und
+  Zahlungs-Guard verwenden weiterhin denselben Betragsleser; Brees „three silver—I'll give two“ bleibt 20 cp.
+- **Verknüpfte Angebotsbedingungen:** „if you want cash and I must obtain the appraiser's approval“ wurde durch die
+  Sprecher-Ausnahme freigegeben; ein zweites `unless` im selben Satz wurde überhaupt nicht geprüft. Am Originalzustand
+  #116 erzeugte das mit einer passenden Verkaufsentscheidung einen verbindlichen Preis und 56 cp Auszahlung.
+  Jetzt werden sämtliche Bedingungsmarker des Satzes geprüft und ausstehende verknüpfte Voraussetzungen vor den
+  Sprecher-/Betragsausnahmen ausgewertet. Die reine Zahlungsformwahl sowie „and I'll take all fourteen“ bleiben gültig.
+  Spielerpreisgrenzen und getrennte Bemerkungen wie „— stew's on“ behalten ihre bisherige Lesart.
+
+**Regressionen:** Zwei zusätzliche Testgruppen in `fix138_finance.test.js`: auf `.140` **18 grün / 2 rot**, nach der
+Korrektur **20/20 grün**. Negative Fälle laufen durch Guard und echte Befehlsauflösung beziehungsweise `applyWorld`
+mit dem aufgezeichneten Vorzustand #116; keine bloße Prüfung eines Hilfsvalidators. Gegenproben erhalten explizite
+Geldübergabe, `settle up`, Brees verkürzte Münzangabe und gültige sofortige Angebotswahl.
+
+**Abnahme:** Vollsuite **2553/2553**; Replay **2235 Fälle, 198 exakt akzeptierte Abweichungen, 0 offen**. Keine neue oder
+geänderte Accepted-Ausnahme; Baseline und sämtliche Fingerprints bleiben unverändert. Browser-Mock-Smoke bestanden.
+Echter ST-1.19-Smoke: **Standard 24/24** (6 Extractor-Aufrufe), **Failsoft 29/29** (8, einschließlich der absichtlich
+fehlerhaften Antwort und Reparatur), keine PageErrors im erfolgreichen Lauf. Der erste Failsoft-Versuch erreichte
+28/29: zwei `AbortReason`-Konsolenmeldungen aus STs Verbindungsstatusprüfung (`openai.js:4565`) ließen `noPageErrors`
+scheitern; alle Funktionschecks waren grün. Kontrolllauf auf unverändertem `.140`: 29/29. Anschließende Wiederholung
+auf `.141` ohne Produkt-/Teständerung: 29/29. Die anfängliche Hostbeobachtung ist damit dokumentiert, nicht ausgefiltert.
+
+**Grenze:** Dies bleibt eine begrenzte deterministische Belegprüfung, kein allgemeines Sprachverständnis. Ungewöhnliche
+Formulierungen können weiterhin eine Klärung erfordern. Keine neuen Events, Savefelder, Recovery-Budgets, Prompts oder
+Spielregeln; keine Kartenaktualisierung erforderlich. Kein natürlicher GLM-Batch durch diesen Patch gestartet.

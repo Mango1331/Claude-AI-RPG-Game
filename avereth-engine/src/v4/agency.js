@@ -310,7 +310,7 @@ const NOT_HIS = String.raw`(?<!\b(?:you|you'll|you will|he|she|they|it)\s)`;
 const PAY_VERB = new RegExp(String.raw`${NOT_HIS}\b(?:pay|pays|paying|paid|repay|repays|repaying|repaid)\b(?!\s+(?:me|us|attention|heed|a\s+visit|visit|respects?|mind|homage|court|no\s+mind)\b)`);
 const GIVE_VERB = new RegExp(String.raw`${NOT_HIS}\b(?:give|gives|giving|gave|hand|hands|handing|handed|toss|tosses|tossing|tossed|slide|slides|sliding|slid|press|presses|pressing|pressed|put|puts|putting|place|places|placing|placed|lay|lays|laying|laid|leave|leaves|leaving|left|drop|drops|dropping|cover|covers|covering|spend|spends|spending|donate|donates|lend|lends|offer|offers|offering|flip|flips|flipping|throw|throws|throwing|push|pushes|pushing|pushed|pass|passes|passing|passed|tip|tips|tipping|tipped|settle|settles|settling|settled|count out|counts out|counting out)\b(?!\s+(?:me|us)\b)`, 'g');
 const HANDING = /(?:^|["“]\s*)(?:here(?:'s| is| are)|take\s+(?:this|these|it|them|the|my))\b/;
-const COIN_WORDS = /\b(?:coins?|coppers?|silvers?|golds?|cp|pennies|fee|toll|price|change|money|wages?|payment|bill|debt|tab|up|\d+\s*[csg])\b/;
+const COIN_WORDS = /\b(?:coins?|coppers?|silvers?|golds?|cp|pennies|fee|toll|price|change|money|wages?|payment|bill|debt|tab|\d+\s*[csg])\b/;
 const NUMBER = /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred)\b/;
 // … and words that claim money for him
 const CLAIM = /\b(?:pay|give|hand)\s+(?:me|us)\b|\bpay\s+up\b|\bowe[sd]?\s+(?:me|us)\b|\b(?:take|takes|taking|collect|collects|collecting|get|gets|getting|receive|receives|receiving|claim|claims|claiming|want|wants|need|needs|expect|expects)\b[^.;!?]{0,30}\b(?:coins?|coppers?|silvers?|golds?|cp|wages?|pay|payment|fee|money|reward|share|cut|due)\b/;
@@ -320,13 +320,14 @@ export const claimsOwn = (text) => CLAIM.test(lower(text).replace(/(?:^|["“,.;
 const SPLIT = /,\s*|\s*[—–]\s*|\s+-\s+|\s+(?:and|then|but)\s+(?!(?:\d+|a|an|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|half)\b)/;
 /** Each act with the sentence it is part of (the sentence gives a bare number its coin: "three silver—I'll give two"). */
 const acts = (text) => lower(text).split(/[.;!?]+/).flatMap((sentence) => sentence.split(SPLIT).map((x) => x.trim()).filter(Boolean).map((act) => ({ act, sentence })));
-function paysAct(x) {
+function paysAct(x, amount = null) {
     if (/\bpay(?:s|ing)?\s+up\b/.test(x) && !/\bsettl/.test(x)) return false;
-    if (PAY_VERB.test(x) || /\bkeep\s+the\s+change\b/.test(x)) return true;
-    // the money the act moves: a coin word after the verb, or a number after it (its coin named in the sentence)
-    for (const m of x.matchAll(GIVE_VERB)) { const rest = x.slice(m.index + m[0].length); if (COIN_WORDS.test(rest) || NUMBER.test(rest)) return true; }
+    if (PAY_VERB.test(x) || /\bkeep\s+the\s+change\b|\bsettl(?:e|es|ing|ed)\s+up\b/.test(x)) return true;
+    // A bare quantity is no money evidence. Only a resolved amount can inherit its coin from the sentence;
+    // otherwise this giving act must name money itself. "up" belongs only to "settle up", never every giving verb.
+    for (const m of x.matchAll(GIVE_VERB)) { const rest = x.slice(m.index + m[0].length); if (COIN_WORDS.test(rest) || (Number.isInteger(amount) && NUMBER.test(rest))) return true; }
     const h = x.match(HANDING);
-    return !!h && (COIN_WORDS.test(x.slice(h.index)) || NUMBER.test(x.slice(h.index)));
+    return !!h && (COIN_WORDS.test(x.slice(h.index)) || (Number.isInteger(amount) && NUMBER.test(x.slice(h.index))));
 }
 /**
  * The amount an act pays: its own coin words; a bare number takes the one coin of its sentence ("I have three silver—
@@ -346,7 +347,7 @@ export function paysOut(text) {
 }
 /** The amounts his paying acts in this text name (for the planner's amount check); acts claiming money for him do not pay. */
 export function paidAmounts(text, currency) {
-    return acts(text).filter((x) => paysAct(x.act) && !claimsOwn(x.act)).map((x) => actAmount(x, currency)).filter(Number.isInteger);
+    return acts(text).filter((x) => paysAct(x.act, currency ? actAmount(x, currency) : null) && !claimsOwn(x.act)).map((x) => actAmount(x, currency)).filter(Number.isInteger);
 }
 /**
  * The evidence for this pay command in a text: 'pays' when one of its acts pays out his coin, claims nothing for him,
@@ -357,7 +358,7 @@ function payEvidence(text, c, context) {
     const others = (context.present || []).filter((p) => p.id !== idOf(c.to))
         .flatMap((p) => p.names.map((n) => lower(n).split(',')[0].replace(/^the\s+/, '').trim()).filter((n) => n.length >= 3));
     const currency = context.currency;
-    const paying = acts(text).filter((x) => paysAct(x.act) && !claimsOwn(x.act));
+    const paying = acts(text).filter((x) => paysAct(x.act, currency ? actAmount(x, currency) : null) && !claimsOwn(x.act));
     const fits = paying.filter((x) => {
         if (others.some((n) => new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(x.act))) return false;
         if (!Number.isInteger(c.amount_cp) || !currency) return true;

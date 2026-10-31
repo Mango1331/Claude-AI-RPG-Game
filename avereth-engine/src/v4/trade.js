@@ -153,21 +153,24 @@ const choicePart = (x) => YOU.test(x) && !PENDING.test(x) && !AMOUNT.test(x);
 /** Review of .138/.139: does an open condition stand anywhere in the price quote, whether the amount is a rate or a total? */
 function openCondition(text) {
     for (const sentence of String(text).toLowerCase().replace(/[‘’]/g, "'").split(/[.;!?]+/)) {
-        const m = sentence.match(/\b(if|unless|depending|provided|as long as|so long as)\b/);
-        if (!m) continue;
-        if (m[1] !== 'if') return true;
-        // the whole rest of the sentence: the condition, then only the addressee's choices, the speaker's own words or
-        // the price itself
-        // parts after the condition: one joined by "and/or/but" continues it (its own subject or verb counts); one after a
-        // comma or dash alone is a new statement ("— stew's on") unless it names something still pending
-        const pieces = sentence.slice(m.index + m[0].length).split(/(,|\s*[—–]\s*|\s+-\s+|\b(?:and|or|but|while)\b)/);
-        const condition = pieces[0].trim();
-        if (!condition || !choicePart(condition)) return true;
-        for (let i = 1; i < pieces.length; i += 2) {
-            const joined = /\b(?:and|or|but|while)\b/.test(pieces[i]);
-            const x = (pieces[i + 1] || '').trim();
-            if (!x || AMOUNT.test(x) || SPEAKER.test(x) || choicePart(x)) continue;
-            if (PENDING.test(x) || (joined && FURTHER.test(x))) return true;
+        const conditions = [...sentence.matchAll(/\b(if|unless|depending|provided|as long as|so long as)\b/g)];
+        for (const [index, m] of conditions.entries()) {
+            if (m[1] !== 'if') return true;
+            // Read each condition up to the next marker; later conditions are checked on their own.
+            // parts after the condition: one joined by "and/or/but" continues it (its own subject or verb counts); one after a
+            // comma or dash alone is a new statement ("— stew's on") unless it names something still pending
+            const pieces = sentence.slice(m.index + m[0].length, conditions[index + 1]?.index).split(/(,|\s*[—–]\s*|\s+-\s+|\b(?:and|or|but|while)\b)/);
+            const condition = pieces[0].trim();
+            if (!condition || !choicePart(condition)) return true;
+            for (let i = 1; i < pieces.length; i += 2) {
+                const joined = /\b(?:and|or|but|while)\b/.test(pieces[i]);
+                const x = (pieces[i + 1] || '').trim();
+                if (!x) continue;
+                // A linked prerequisite is checked before exemptions for the speaker or a price.
+                if (joined && PENDING.test(x)) return true;
+                if (AMOUNT.test(x) || SPEAKER.test(x) || choicePart(x)) continue;
+                if (PENDING.test(x) || (joined && FURTHER.test(x))) return true;
+            }
         }
     }
     return false;

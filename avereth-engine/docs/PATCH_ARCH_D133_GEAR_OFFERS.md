@@ -1,6 +1,6 @@
 # Architekturpatch D – strukturierte Gearangebote (.133)
 
-Basis: `a42d02327f95650088eb692c65e61564820ac35a` (.132). Umsetzung von Paket D aus dem finalen Architekturfachplan auf main. **Implementiert; Node-/Replayabnahme unten. Echte ST-Abnahme blockiert, keine Livefreigabe.** B2/E und natürlicher Batch nicht begonnen.
+Basis: `a42d02327f95650088eb692c65e61564820ac35a` (.132). Umsetzung von Paket D aus dem finalen Architekturfachplan auf main. **Implementiert; Node-/Replayabnahme unten. Echte ST-Host-Smokes (Mockprovider) auf .136 bestanden, siehe „Echte SillyTavern-Abnahme .136“ am Ende; kein natürlicher Livetest mit echtem Modell.** B2/E und natürlicher Batch nicht begonnen.
 
 ## Verhalten und technische Änderungen
 
@@ -22,7 +22,7 @@ Basis: `a42d02327f95650088eb692c65e61564820ac35a` (.132). Umsetzung von Paket D 
 - D: `accepted_d133_vs_126.json` übernimmt die **142 C-Einträge samt Fingerprint und Grund unverändert** und ergänzt die unten einzeln aufgeführten **48 D-Records** mit vollständigen Output-Fingerprints. `npm run replay:check` nutzt diese Liste. Die ursprüngliche C-Datei und .126-Baseline bleiben unverändert. Ein zusätzlicher Test prüft die unveränderte Übernahme; Geld-/Quest-/Eventmutationen in akzeptierten Records werden weiter erkannt.
 - Gesamte Node-Suite und abschließender unabhängiger Replayvergleich: siehe Abschluss unten.
 
-## Echte SillyTavern-Abnahme: blockiert
+## Echte SillyTavern-Abnahme: blockiert (.133–.135; auf .136 nachgeholt, siehe Ende)
 
 Standard `npm run smoke:st:c` und Failsoft-Variante mit der vorhandenen ST-Installation `/workspace/scratch/f22261d02397/st124` versucht. Beide scheitern vor dem Szenario an fehlendem Playwright-Chromium/Headless-Shell. Nachinstallation für installierte und aktuelle Playwright-Version versucht; die CDN-Downloads liefern leere/beschädigte ZIP-Dateien („End of central directory record signature not found“).
 
@@ -135,3 +135,57 @@ Basis `3ddf7ef` (.135). „I'll buy the sword. Please add the armor.“ verlor b
 - Fünf neue Regressionen: auf unverändertem .135 vier rot/eine positive Kontrolle; danach **21/21** in der gemeinsamen Auswahl-Reviewsuite. Die Einzelkauf-/Kommentar-/Ausschluss-/Kurzergänzungsfälle aus .134/.135 bleiben unverändert grün. Gezielte benachbarte Suiten **65/65**.
 - Vollständiges `npm test -- --test-concurrency=4`: **2523/2523**, keine Auslassungen. Vollständiges `npm run replay:check`: **2235 Fälle, unveränderte190 exakt akzeptierte Fingerprints, null offen, null stale**. Keine Änderungen an Baseline oder Fingerprintlisten. Kritischer Diffreview und `git diff --check` durchgeführt.
 - Build .136; Preise, Buchungsregeln und Protokolle unverändert. Die offene echte ST-Abnahme bleibt ausdrücklich bestehen. Keine weiteren Pakete oder natürlichen Batches begonnen; Stopp nach Veröffentlichung.
+
+## Echte SillyTavern-Abnahme .136
+
+Produkt unverändert auf `8efb926` (Build `4.3.0-c.6.6.136`); nur Dokumentation. **Art des Nachweises: ST-Host-Smoke mit
+Mockprovider**, kein natürlicher Livetest mit echtem Modell: Planner-, Extractor- und Narratorantworten liefert ein
+lokaler, geskripteter OpenAI-kompatibler Mock (`tools/st_live/run_c.mjs`); geprüft werden SillyTavern-Host,
+Extension, Records, Save/Reload und Anzeige, nicht die Spielqualität eines Modells.
+
+**Umgebung:** Cloud-Container Linux 6.18, Node 22.22.0, Playwright 1.63.0 mit dem dort **vorinstallierten** Chromium
+153.0.8010.12 (`/opt/pw-browsers/chromium-1243`; Start vorab geprüft, kein Download, keine Neuinstallation).
+SillyTavern **1.19.0** (Tag `1.19.0`, `7e8663c`) als isolierte Testinstallation im Sitzungs-Scratch-Verzeichnis,
+Server `127.0.0.1:8123`, Mock `127.0.0.1:5001`, Dummy-Schlüssel `smoke-not-a-real-key` (vorherige `secrets.json` nach dem
+Lauf wiederhergestellt). Die Extension wird bei jedem Lauf frisch aus dem Engine-Checkout kopiert. Die frühere
+Blockade (.133–.135) betraf eine andere Ausführungsumgebung ohne Browserbinary; hier war keine Umgehung nötig.
+
+**Standard `npm run smoke:st:c` – 24/24 Assertions grün** (zwei unabhängige Läufe, beide 24/24). Ablauf: Erstellung
+(Mage, Flame Lance + Arcane Wave) ohne Planner, dann sechs freie Züge: Abstieg in einen Bau mit drei Barkscorpions
+(Gebietsfenster 1–3, Kampf), Flame Lance per Alias auf Barkscorpion B, Tippfehler-Rückfrage, Fähigkeit auf ein Objekt
+mit anschließendem **Swipe**, Suche im Kampf (nicht genommen), Arcane Wave (Flächenangriff).
+- Aufrufe: **18 = 6 Planner + 6 Narrator + 6 Extractor**; ein Plannerruf je freier Nachricht, keiner für Erstellung,
+  Rückfrage oder Swipe, kein Interpreter; je Narratorantwort genau eine Extraktion (der Swipe eingeschlossen);
+  Plannerparameter (kein Stream, Temperatur 0.1, max. 2000 Token), Kampfprompt im Kampf.
+- Buchungen/Meldungen: Kampf mit drei Gegnern eröffnet; Flame Lance auf B −16 MP, Fähigkeit auf Objekt −16 MP mit
+  Prüfwurf, Arcane Wave −14 MP mit zwei Treffern; Rückfrage als System-Panel ohne MP/Events/Narratorruf; „NOT TAKEN —
+  searching is not possible during a fight“ im Engineblock und in den Systemzeilen; Gebietsfenster gespeichert und
+  angezeigt; Engine- und Narratortext im Runner getrennt.
+- Swipe: gleicher Plan, identische Events und MP, kein zweiter Plannerruf, zwei Narratorrufe mit identischem Engineblock.
+- Schlüssel: von SillyTavern gesetzt, nie im Browser, nicht in der Chatdatei. **PageErrors: 0.** Statuszeile
+  `Avereth Engine 4.3.0-c.6.6.136 | runtime v4 (LLM: custom endpoint) | … | integrity: OK`.
+
+**Failsoft `AVERETH_SMOKE_FAILSOFT=1 npm run smoke:st:c` – 29/29 Assertions grün** (die 24 oben plus 5):
+- Planner-Failsoft: absichtlich ungültige Plannerantwort (Original + eine Reparatur) → sichtbar „NOT EXECUTED“,
+  Spielerrecord ohne Events mit `continuation: planner_not_executed`, keine Buchung, kein Narratorruf; Save am Server
+  verifiziert (`verifySaved`).
+- World-Failsoft: ungültige Extraktorantwort (Original + eine Reparatur) → `extraction: failed`,
+  `continuation: world_not_applied`, terminal, keine Wiederholung.
+- Keine doppelte Kampfbuchung über die Failsoftzüge (MP unverändert).
+- Speicherfehler: injiziertes HTTP 500 auf `/api/chats/save`; SillyTavern löst `saveChat` trotzdem auf (Fehler nur in
+  der Konsole, getrennt als erwartete Fixture-Meldung erfasst), die Engine-Prüfung `verifySavedChat` erkennt den nicht
+  gespeicherten Stand. Danach regulär gespeichert.
+- Aufrufe: **24 = 9 Planner (6 Szenario + 2 Planner-Probe + 1 World-Probe) + 7 Narrator + 8 Extractor (6 + 2 Probe)**.
+  **PageErrors: 0.**
+
+**Unabhängige Reload-Gegenprobe:** Die von SillyTavern gespeicherten JSONL-Dateien beider Läufe offline mit der
+Engine neu gefaltet: **0 Foldfehler, kein Foldblock, 0 Validierungsprobleme**, Kampagne vom Versionsschutz akzeptiert
+(Startbuild .136), genau ein `turn.begun` je Spielerzug (7 bzw. 8), der geswipte Record ohne Doppelbuchung, alle
+Kreaturen mit `life_stage`. Failsoft-Datei: genau die zwei erwarteten Fortsetzungsrecords (`planner_not_executed`,
+`world_not_applied`), sonst alle Extraktionen angewendet. Im Wiederholungslauf beendete Arcane Wave den Kampf (neuer
+Kampagnenseed, andere Gegnerstufen); die XP wurde genau einmal gebucht und überstand den Reload.
+
+**Grenzen:** Der Smoke enthält **keinen Händler-/Kaufablauf**; die D-spezifischen Gearangebote und Kaufzustimmungen sind
+durch die Node-/Replaynachweise oben belegt, nicht durch diesen ST-Lauf. Kein Browser-Neuladen der Seite; Reload ist
+durch den Server-Readback (`verifySaved`) und die Offline-Neufaltung der gespeicherten Datei belegt. Kein natürlicher
+Lauf, keine Spielbalance-Aussage. Keine Fehler, keine Wiederholungen nötig; keine Produkt-, Test- oder Hoständerung.

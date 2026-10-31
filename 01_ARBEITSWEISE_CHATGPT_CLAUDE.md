@@ -1,49 +1,45 @@
 # Avereth Engine – Zusammenarbeit und Arbeitsweise
 
-**Stand:** 30.10.2026 · dauerhaft gültige Arbeitsregeln. **Aktueller Projektstand:** [03_AKTUELLER_PROJEKTSTAND.md](03_AKTUELLER_PROJEKTSTAND.md). Dieses Dokument enthält bewusst keine laufenden Buildnummern, Testergebnisse oder alten Patchaufträge.
+**Stand: 31.10.2026.** Dauerhafte Arbeitsregeln, **keine** Patch-, Test- oder Statushistorie. **Aktueller Stand in [03](03_AKTUELLER_PROJEKTSTAND.md), Designentscheidungen in [02](02_DESIGN_KANON.md).**
 
-## Projekt und Rollen
+## Projekt, Rollen und Freigaben
 
-Wir entwickeln Avereth Engine, ein persistentes Fantasy-Sandbox-RPG als SillyTavern-Extension. Leitprinzip: **Das LLM versteht und gestaltet die Welt wie ein Game Master; die deterministische JavaScript-Engine entscheidet, berechnet und persistiert Mechanik und Zustand.** Player Agency, sinnvolle Entscheidungen, glaubwürdige Konsequenzen und Spieltempo haben Vorrang vor Simulationsbürokratie. Der verbindliche Design-Kanon steht in [02_DESIGN_KANON.md](02_DESIGN_KANON.md).
+**LLM versteht und erzählt wie ein GM; die deterministische JS-Engine prüft, berechnet und persistiert wie ein Spiel.** Spielerfreiheit, glaubwürdige Konsequenzen und sinnvolles Tempo vor Simulationsbürokratie.
 
-- **Nutzer:** bestimmt Gameplay-Ziele, Prioritäten, Freigabe und Implementierer; führt echte SillyTavern-Livetests durch und liefert Originalexporte sowie Spielerfeedback.
-- **ChatGPT/Codex:** prüft Quellen, Code, Git und Livetests; unterscheidet Bug, Regel, Design und Geschmack; priorisiert und schreibt umsetzbare Patchaufträge. Implementiert, testet und committet auf ausdrücklichen Auftrag auch selbst.
-- **Claude Code/Sol:** implementiert freigegebene Patches oder prüft unabhängig die Arbeit von ChatGPT/Codex. Wer implementiert, wird pro Auftrag bestimmt.
-- **Zweite unabhängige Architektursitzung:** bei großen, riskanten oder grundlegenden Änderungen vorab kritisch gegenprüfen lassen; bei klaren kleinen Korrekturen kein obligatorischer zusätzlicher Review.
+- **Nutzer:** Design, Priorität und Freigabe; führt natürliche SillyTavern-Batches lokal durch und liefert Originalarchive/Feedback.
+- **ChatGPT/Codex:** unabhängiger Code-, Git-, Design- und Run-Gegenreview; schreibt konkrete Patchaufträge und kann auf ausdrücklichen Auftrag selbst implementieren.
+- **Claude/Sol:** implementiert oder prüft unabhängig entsprechend dem jeweiligen Auftrag.
+- **Größere riskante Architektur-/Designänderung:** gezielten unabhängigen Gegenreview einplanen. Ein klarer Hotfix braucht keine vorsorgliche zusätzliche Auditphase.
 
-**Auftragsgrenze:** Eigenständig und vollständig **innerhalb des freigegebenen Umfangs** arbeiten. Eine Review-Priorität, eine Patchspezifikation, ein hochgeladenes ZIP oder ein Vorschlag ist noch keine Codefreigabe. „Bewerten“ bedeutet prüfen, nicht implementieren. Große freigegebene Fachpatches werden in sich geschlossen umgesetzt; unnötige Mini-Patchketten vermeiden. Gezielte Folgekorrekturen dürfen die bestehende Patchnote ergänzen und benötigen keine neue Prozessphase.
+**Review, Patchplan, ZIP und Empfehlung sind keine Implementierungsfreigabe.** Innerhalb eines ausdrücklich freigegebenen Auftrags eigenständig arbeiten, aber nicht unbemerkt neue Mechanik, Balance, Testszenarien oder Architektur als Nebenprojekt beginnen. Vorhandene Funktionen bevorzugen. Zusammenhängende Fachkorrekturen nicht unnötig in Mikroreleases zerlegen.
 
-## Einstieg und Quellenprüfung
+## Einstieg und Quellen
 
-**Bei einem neuen Chat nur zwei Einstiegsdokumente vollständig lesen:** diese Datei **01** und die kompakte aktuelle Statusübersicht **03** auf `main`. Danach je Auftrag gezielt die maßgeblichen Abschnitte aus **02**, die konkrete Fachspezifikation, betroffene Quellcodepfade und bei Bedarf Originalbelege lesen. **04**, **05**, ältere Abschnitte aus **06**, historische Patchnotes, Übergaben und `docs/PROTOTYPE_C.md` sind Nachschlagequellen, keine vollständige Pflichtlektüre.
+Im neuen Chat zuerst nur **01 und 03 vollständig** auf `main`; danach relevant: 02 (Kanon), 04 (Ideen), 06 (Fachindex), konkrete Fachpatchnote und tatsächlich betroffene Codepfade. Historische Reviews und Archive nur für belegte Fragen, keine Pflichtkomplettlektüre.
 
-Vor technischen Aussagen Entwicklungsbranch, aktuellen HEAD und tatsächlich implementierten Code prüfen; `main` enthält die führende Projektdokumentation, nicht zwingend den aktuellen Produktcode. Bereits gelesene, unveränderte Dateien im selben Chat nicht erneut laden; nach Unterbrechungen zuerst Git-Diff und Änderungen seit dem letzten geprüften Stand ansehen. **Vor Änderungen Branch und aktuelle Fassung der betroffenen Dateien prüfen; erneut lesen nur bei zwischenzeitlichen Änderungen oder fehlendem Kontext.** Lesetiefe an Aufgabe und Risiko anpassen: ein Bug verlangt betroffene Funktions-, Event-, Persistenz- und Testpfade; kein vollständiges Studium aller Archive.
+**Vor technischen Behauptungen** Produktbranch/HEAD und betroffenen Code prüfen: `main` ist die Dokumentationsquelle, nicht automatisch der neueste Produktbuild. Nach Unterbrechung Änderungen seit dem letzten geprüften Commit ansehen; unveränderte Quellen nicht erneut lesen. Originalzip, vorhandene Completion-Requests, Engine-Events und Chat gemeinsam auswerten; schöne Prosa ist keine mechanische Buchung. Modellfehler, Enginefehler, Spielerbedienung, regelgerechten Tod und Infrastruktur unterscheiden.
 
-## Aufwand begrenzen
+## Effiziente Arbeits- und Testfolge
 
-Gezielt mit Dateinamen, Überschriften und Textsuche beginnen; nur die relevanten Abschnitte und ihre nötigen Abhängigkeiten lesen. Unabhängige Suchen bündeln. Die Prüfung erweitern, wenn ein konkreter Widerspruch oder ein Risiko auftaucht, nicht vorsorglich sämtliche Archive laden. Bei reiner Dokumentationspflege genügen Inhalts-, Link- und Diffprüfung; keine Node-/ST-Läufe oder erneute vollständige Codeanalyse. Zusammengehörige Änderungen gesammelt pro betroffenem Branch committen. Keine zusätzliche Auditdatei und keine wiederholten Statusnachträge allein für Dokumentationsarbeit. Zum Abschluss Ergebnis, Commit und echte offene Punkte kurz nennen, den Auftrag nicht nochmals erklären.
+1. **Ursache belegen:** kleinen Originalfall reproduzieren, betroffene Host-/Event-/Persistenzpfade prüfen; Regression gegen Basis erst rot, danach grün, soweit möglich.
+2. **Bei engem Integrations-/Start-Hotfix den realen Fehler früh prüfen:** minimal korrigieren, **kurzen echten ST-Hostlauf mit dem Originaleingang** bis zur ersten erfolgreichen Aktion durchführen. Nicht erst stundenlang sämtliche historischen Testmatrizen abarbeiten. Bei C/D-Mechanikpatches fachlich passende Integrationsketten wählen.
+3. **Abschließend pro freigegebenem Codepatch** angrenzende Tests, aktuelle vollständige Node-Suite, Replay/Fingerprintprüfung und bei relevanten Host-/Protokolländerungen echten ST-Standard-/Failsoft-Smoke. Ein statischer Mock-Smoke ersetzt keinen Makro-Starttest und keinen natürlichen Batch; Node-, Host-, Replay- und Modell-Livenachweis getrennt benennen.
+4. **Ehrlich berichten:** nur tatsächlich ausgeführte Tests und echte Ergebnisse nennen, Implementiererberichte von unabhängig geprüften Daten trennen. Nach Implementierung unabhängiger **Diff-Gegenreview**, keine wiederholte Prüfkette ohne neuen Befund.
 
-## Prüfung, Tests und Kommunikation
+Alte Kampagnen begrenzen die neue V4-C-/Ruleset-2-Entwicklung nicht. Historische Originalbelege unangetastet lassen, alte Zahlen und Legacy-Runtime nicht aus Prinzip weiter unterstützen. Event-/Geld-/Questintegrität, Swipe, Reload und Replay **für aktuelle Kampagnen** erhalten. Laufende Batches nie unbemerkt aktualisieren.
 
-Livetests anhand von Spielerchat/JSONL, Engine-Events und tatsächlichen Completion-Requests gemeinsam bewerten. Gute Narrator-Prosa ist **kein** Beleg für eine Engine-Buchung. Planner-, Narrator-, Extractor-, Repair- und Provider-Latenzen sowie `finish_reason`, Reasoning und Cache getrennt betrachten. Ursache und reproduzierbaren Befund vor Lösungsvorschlägen prüfen; vorhandene Integrationspunkte nutzen, keine parallele Zustandsquelle oder unnötigen Mechanikumbau einführen.
+Kosten und Zeit an Aufgabe ausrichten: gezielte Dateisuche, zusammengehörige Arbeit bündeln, bei reiner Dokumentationspflege Inhalts-/Diff-/Linkprüfung statt Node/ST; keine neuen Berichtsdateien allein für eine Statuskorrektur. Nutzer erhält eine kompakte Entscheidung mit tatsächlichem Commit und den offenen Punkten. Deutsch, du-Form; angeforderte Patchtexte direkt kopierbar. Keine Schlüssel/Zugangsdaten in Chat/Commit/Exports.
 
-Alte Kampagnen begrenzen die technische Weiterentwicklung nicht. Historische Exporte bleiben unveränderte Belege; ihre Sicherheitsfälle werden auf die aktuelle Konfiguration übertragen, nicht sämtliche alten Zahlen-/Pfadregeln erhalten. Gemeinsam genutzte Funktionen vor Legacy-Abbau prüfen. Tatsächlich inkompatible Updates ausdrücklich kennzeichnen; laufende Batches auf ihrem Build beenden.
+## Maßgebliche Dokumentationsorte
 
-Bei Codeänderungen passende Rot-/Grün-Regressionen, aktuelle Produktkonfiguration, Replay/Swipe/Reload und nach Risiko Integrationsprüfungen vorsehen; vollständige `npm test`-Abschlussprüfung pro freigegebenem Fachpatch. ST-Smoke bei relevanten Hoständerungen. **Keine erfundenen Test-, Commit-, Smoke- oder Live-Ergebnisse.** Berichte des Implementierers von selbst geprüften Quellen und selbst ausgeführten Tests unterscheiden. Nach Umsetzung ist ein unabhängiger **Gegenreview des Diffs** vorgesehen; zusätzliche vorgelagerte/abschließende Prüfrunden nur nach tatsächlichem Risiko.
-
-Deutsch, du-Form, knapp und fachlich vollständig. Wenn der Nutzer einen Auftragstext verlangt, nur den kopierbaren Auftrag liefern. Bei ausdrücklichem Implementierungsauftrag die Arbeit ausführen. Keine unnötigen Codes, Logs, Wiederholungen oder Höflichkeitsprosa. Keine API-Schlüssel in Chats, Dateien, Exporten oder Commits anfordern.
-
-## Dokumentation: genau ein maßgeblicher Ort
-
-| Information | Maßgeblicher Ort |
+| Inhalt | Ein Ort |
 |---|---|
-| Arbeitsweise | Diese Datei **01** |
-| Verbindlicher Kanon | **02** |
-| Aktueller Produkt-, Test- und Abnahmestand | **03** |
-| Ideen und Branch-Historie | **04** / **05** |
-| Entscheidungen und Reviews in Patch 10B | **06** (kurze verlinkte Einträge) |
-| Technische Patchumsetzung | **Eine passende Fach-Patchnote** im Entwicklungsbranch |
-| Original-Livetest | `testrun_10b/<Run-ID>/REVIEW.md` und Original-ZIP |
+| Zusammenarbeit/Tests | **01** (hier) |
+| Verbindlicher Design-Kanon | **02** |
+| Laufender Produkt-/Abnahmestand und nächste Schritte | **03** |
+| Bewusst offene Ideen | **04** |
+| Fachquellen und Commitwegweiser 10B | **06** |
+| Technische Implementierung und rote/grüne Regressionen | Jeweilige Dev-Fachpatchnote und Produktcommit |
+| Natürlicher Livetest | Originalexport + `testrun_10b/<Run>/REVIEW.md`, Verweise im Runindex |
 
-Andere Dateien **verlinken** die maßgebliche Quelle. Normale Patches nicht in sämtlichen Übersichten erneut ausführlich beschreiben; 03 bei relevanten Status-/Abnahmeschritten kurz aktualisieren, 02 nur nach neuer Designentscheidung, 01 nur bei Prozessänderung. Keine automatische neue Datei, Auditnotiz oder weitere Prüfphase. Erledigte Planabschnitte auf Ergebnis, Produktcommit und maßgebliche Patchnote kürzen; die vollständige Vorfassung per festem Commitlink erhalten. Einzigartige Entscheidungen und Originalreviews nicht still umschreiben. Offene Ideen knapp mit Status und Quelle führen. Alte Snapshots sind Geschichte, keine aktuellen Aufträge.
-
+In Übersichten **nur die jeweils maßgebliche Quelle verlinken**, keine vollständigen alten Patchberichte wiederholen. Historische Vorfassungen über festen Commitlink erhalten. 03 nur bei relevantem Statuswechsel aktualisieren, 02 nur bei Designentscheidung, 01 nur bei Prozessänderung. Keine erfundenen Abnahmeergebnisse oder automatischen Freigaben.

@@ -1,7 +1,6 @@
 # Avereth – finale Patchnotes und Umsetzungsspezifikation nach Architekturreview .126
 
-**Festgelegt: 30.10.2026 · Produktbasis: [b8d2af4](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b8d2af4b76cd0bc52ac178b8c500e5733878ecee), Build .126.**  
-**Status: Planung abgeschlossen, noch nicht implementiert.** Dieser Auftrag legt den Umfang fest, er ist keine zusätzliche Implementierungsfreigabe und kein Abnahmenachweis. Buildnummern erst bei Umsetzung anhand des aktuellen HEAD vergeben. Tatsächlicher Produktstand: [03](../03_AKTUELLER_PROJEKTSTAND.md).
+**Historische finale Spezifikation vom 30.10.2026 auf Produktbasis [Build .126 / b8d2af4](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b8d2af4b76cd0bc52ac178b8c500e5733878ecee).** Die folgenden Anforderungen dokumentieren den damaligen Umsetzungsauftrag, **nicht** den heutigen Aufgabenstand. **A/B1/C/D sind inzwischen bis [.136 / 8efb926](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/8efb926) implementiert** ([A .127](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/167e2e9), [B1 .130/.131](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/cc71256), [C .132](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/8908850), [D .133–.136](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/8efb926)); ST-Host-Smokes auf .136 bestanden. **Aktuell offen:** Makro-Kampagnenstart vor dem natürlichen Batch F; nachrangig B2/E. Einzige laufende Priorisierung: [03](../03_AKTUELLER_PROJEKTSTAND.md).
 
 Maßgeblich ist diese Fassung. Vorherige Entwurfsentscheidungen werden durch die folgenden Regeln ersetzt; die [Planfassung einschließlich GPT-Nachtrag](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/c036f3c617f095dc876df4ff0589d6cbaff27f4c/patch_plans_10b/PATCH_ARCHITEKTUR_126_KONSOLIDIERT.md) bleibt historisch erreichbar.
 
@@ -171,4 +170,4 @@ K1/K2 (Replay und World-Job-Foldschutz), K3–K6 (individuelle Bezeichnung, sema
 
 **Zurückgestellt:** Foldcache, Save-Verschlankung, Prompt-/Modellwechsel, neue Reise-/Szenenregeln, pauschaler Zweizugkauf, universelles Transaktionssystem, umfassende NPC-Identitätsengine und weitere Balanceänderungen.
 
-Damit ist die Planung abgeschlossen. Als nächster Auftrag genügt die ausdrückliche Umsetzung des Kernpatches A/B1/C/D anhand dieser Datei; keine erneute Grundlagenanalyse erforderlich.
+**Archivgrenze:** Die geplanten Schritte, Regressionen und frühere Implementierungsanweisungen oben bleiben als Originalanforderungen dokumentiert, sind **kein neuer Umsetzungsauftrag**. Abgeschlossene Produktdetails stehen beim [Commitabschluss .136](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/8efb926) und der [Fachpatchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/019c32b/avereth-engine/docs/PATCH_ARCH_D133_GEAR_OFFERS.md). Offene Schritte ausschließlich in [03](../03_AKTUELLER_PROJEKTSTAND.md).

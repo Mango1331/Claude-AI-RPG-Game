@@ -63,7 +63,8 @@ function selectionWhy(quote, offer, selected) {
     if (selected.some(line => exclusions.some(text => names(text, line)))) return 'selected goods include a position he explicitly excluded';
     // Separate buying clauses from comments; bare article orders keep the original matching.
     const clauses = quote.split(/[.!?;]+/);
-    const buying = clauses.filter(text => /\b(?:buy|take|accept|purchase|order)\b/i.test(text));
+    const buying = clauses.filter(text => /\b(?:buy|take|accept|purchase|order)\b/i.test(text)
+        || /^\s*(?:please\s+)?add\b/i.test(text));
     const articleWords = new Set(offer.lines.flatMap(line => requestWords(line.what)));
     const bareOrder = text => offer.lines.some(line => names(text, line))
         && requestWords(text).every(word => articleWords.has(word) || ['too', 'also'].includes(word));

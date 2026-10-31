@@ -125,3 +125,13 @@ Basis `3c33350` (.134). Enger Randfall in `trade.selectionWhy()`: „I'll buy th
 - Vollständiger `npm run replay:check`: **2235 Fälle, unveränderte190 exakt akzeptierte Fingerprints, null offen, null stale**. Baseline und C-/D-Fingerprintdateien unverändert. `git diff --check` grün.
 - Bisherige echte ST-Abnahme weiterhin offen; dieser reine Auswahlfix ändert keine Host-/Protokollschnittstelle. Kein neuer ST-Erfolgsnachweis behauptet.
 - Build .135. Keine weiteren Pakete, Balanceänderungen oder natürlichen Batches begonnen; Stopp nach Veröffentlichung.
+
+## Abschließender Auswahl-Gegenfall .136
+
+Basis `3ddf7ef` (.135). „I'll buy the sword. Please add the armor.“ verlor bei unvollständiger Zeilenauswahl den Rüstungswunsch: der Satzfilter zählte den ausdrücklichen Zusatzauftrag nicht zu den Kaufsätzen.
+
+- Ausschließlich den bestehenden Filter in `trade.selectionWhy()` ergänzt: ein Satz, der mit `Add` oder `Please add` beginnt, gehört ebenfalls zum Auftrag. Kein allgemeiner neuer Prosainterpreter und keine neuen Negativwortlisten.
+- Damit wird eine nur ausgewählte Schwertzeile bei diesem Zweierauftrag weiter geklärt statt bezahlt. Vollständige Auswahl bleibt zulässig. Beschreibende Kommentare wie „The armor will add protection“ zählen nicht als Zusatzauftrag.
+- Fünf neue Regressionen: auf unverändertem .135 vier rot/eine positive Kontrolle; danach **21/21** in der gemeinsamen Auswahl-Reviewsuite. Die Einzelkauf-/Kommentar-/Ausschluss-/Kurzergänzungsfälle aus .134/.135 bleiben unverändert grün. Gezielte benachbarte Suiten **65/65**.
+- Vollständiges `npm test -- --test-concurrency=4`: **2523/2523**, keine Auslassungen. Vollständiges `npm run replay:check`: **2235 Fälle, unveränderte190 exakt akzeptierte Fingerprints, null offen, null stale**. Keine Änderungen an Baseline oder Fingerprintlisten. Kritischer Diffreview und `git diff --check` durchgeführt.
+- Build .136; Preise, Buchungsregeln und Protokolle unverändert. Die offene echte ST-Abnahme bleibt ausdrücklich bestehen. Keine weiteren Pakete oder natürlichen Batches begonnen; Stopp nach Veröffentlichung.

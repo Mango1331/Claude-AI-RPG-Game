@@ -75,3 +75,11 @@ Build **`4.3.0-c.6.6.128`**. Beide Befunde am Code bestätigt und geschlossen; k
 - 3 neue Regressionen (2 A2-Fälle mit positiven Kontrollen, 1 Checkerfall); auf `167e2e9` alle 3 rot, danach grün. `tests/replay` 22/22.
 - Volle Suite **2451/2451**; voller Korpus **2.235 Fälle, 0 Abweichungen** zur .126-Baseline.
 - Echter SillyTavern-1.19.0-Smoke auf .128 im ersten Lauf: `smoke:st:c` **24/24**, Failsoft-Variante mit Record-Rücklesen **29/29**, jeweils ohne PageErrors.
+
+## Folgekorrektur .129 (Gegenreview zu `5ccbf81`)
+
+Build **`4.3.0-c.6.6.129`**. Ein wiederverwendeter Spielerrecord wird jetzt einschließlich seiner eigenen Events geprüft (`foldChat(chat, u + 1)` statt bis vor `u`). Vorher konnte ein noch nicht veröffentlichtes Befehlspanel veröffentlicht und `command.posted` geschrieben werden, wenn nur der Record selbst ein nicht mehr anwendbares Event trug.
+
+- Regression `fold_integrity.test.js` („a reused player record is checked with its own events“): auf `5ccbf81` rot, danach grün.
+- Volle Suite **2452/2452**; voller Korpus **2.235 Fälle, 0 Abweichungen**.
+- Keine Host-/Protokolländerung, daher kein neuer ST-Smoke.

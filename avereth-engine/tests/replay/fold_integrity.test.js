@@ -182,6 +182,22 @@ test('A2 review: a command panel not yet posted is neither posted nor marked on 
     assert.equal(snapshot(chat), before);
 });
 
+test('A2 review: a reused player record is checked with its own events, not only the history before it', async () => {
+    const ASSIGN = 33;
+    const chat = prefix(ASSIGN);
+    rec(chat[ASSIGN]).command.posted = false;
+    damage(chat, ASSIGN); // the history before it folds whole; the record itself holds the event that no longer applies
+    assert.equal(foldBlock(foldChat(chat, ASSIGN)), null);
+    const before = snapshot(chat);
+    const m = counting();
+    const r = await prepareGenerationAsync(chat, content, { type: 'normal', settings: {}, llm: m.llm });
+    assert.equal(r.action, 'fold_blocked');
+    assert.equal(r.block.index, ASSIGN);
+    assert.deepEqual(m.calls, []);
+    assert.equal(rec(chat[ASSIGN]).command.posted, false);
+    assert.equal(snapshot(chat), before);
+});
+
 test('A2 review: a reply after a broken record is neither cleaned nor recorded as a system answer', () => {
     const ask = (broken) => {
         const chat = prefix(BOARD_TURN);

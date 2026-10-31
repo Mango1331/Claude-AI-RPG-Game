@@ -623,9 +623,9 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         dirty = true;
     }
     // .127 review: a record resolved earlier (swipe, regenerate, a command panel not yet posted) is reused only on a whole
-    // fold as well; a new resolution above was checked before it was resolved
+    // fold including its own events; a new resolution above was checked before it was resolved
     if (!dirty) {
-        const reused = foldBlock(foldChat(chat, u));
+        const reused = foldBlock(foldChat(chat, u + 1)); // the reused record's own events included
         if (reused) return { action: 'fold_blocked', dirty, index: u, block: reused, notice: reused.notice };
     }
     if (r?.route === 'v4' && r.interp?.failed) {

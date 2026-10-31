@@ -61,6 +61,9 @@ function selectionWhy(quote, offer, selected) {
     const names = (text, line) => unique.get(line.id).some(w => requestWords(text).includes(w));
     const exclusions = [...quote.matchAll(/\b(?:not|without|except)\s+([^,.;!?]*?)(?=\bbut\b|[,.;!?]|$)/gi)].map(m => m[1]);
     if (selected.some(line => exclusions.some(text => names(text, line)))) return 'selected goods include a position he explicitly excluded';
+    const requested = offer.lines.filter(line => names(quote, line) && !exclusions.some(text => names(text, line)));
+    if (selected.length && requested.some(line => !selected.some(p => p.id === line.id)))
+        return 'selected goods omit a position in his explicit order; clarify the offer positions';
     if (!offer.lines.some(line => names(quote, line))) return null;
     return selected.some(line => unique.get(line.id).length && !names(quote, line))
         ? 'selected goods differ from his explicit order; clarify the offer positions' : null;

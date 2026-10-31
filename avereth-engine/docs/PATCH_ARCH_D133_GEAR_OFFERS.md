@@ -95,3 +95,20 @@ Für den Gegenreview besonders prüfen: tatsächliche Warenabdeckung bei Paketwa
 - Vollständiges `npm run replay:check`, nach der Fingerprinterfassung erneut unabhängig ausgeführt: **2235 Fälle, 190 Abweichungen, 190 exakt fingerprintgeprüft akzeptiert, null offen, null stale**. Darin unveränderte142 C- und48 einzeln begründete D-Ergebnisse. Keine Replay-/Fold-/State-Validierungsfehler.
 - `git diff --check` grün. Kritischer Diffreview der Produktänderungen und ihrer Testanpassungen durchgeführt.
 - **ST Standard und Failsoft weiterhin blockiert; technische Gesamtfreigabe bis zum echten ST-Nachweis offen.**
+
+## Gezielte Reviewkorrektur .134
+
+Basis `bc44df1` (.133). Ausschließlich zwei bestätigte Befunde korrigiert:
+
+1. `trade.selectionWhy()` prüfte nur, ob ausgewählte Zeilen zur ausdrücklichen Bestellung gehören, nicht die Gegenrichtung. Ein ausdrücklich genannter zweiter Artikel konnte fehlen. Jetzt müssen alle durch die bestehenden unterscheidenden Artikelwörter erkannten, nicht ausgeschlossenen Positionen auch ausgewählt sein. Sonst Klärung und keine Zahlung/Objekte. Einzelkäufe, `not/without/except`, vollständige Käufe und allgemeines „Deal“ bleiben möglich. Ungültige Zeilen-IDs behalten die vorhandene Anzeige gültiger Positionen; sie werden nicht vom neuen Auswahlcheck verdeckt.
+2. `commands.buy()` priorisiert bei der Ausgabe das vorhandene `max_cp` vor `any_price`. Meldung nennt das Limit und die Ablehnung oberhalb davon; ohne Limit bleibt echte unbeschränkte Zustimmung verfügbar. Buchungsregeln/Preiswerte unverändert.
+
+Nachweise:
+
+- `tests/v4/d134_review.test.js`: neun neue Tests; auf unverändertem .133 **vier rot / fünf Kontrollen**, danach **9/9**. Direkte Zustimmungsprüfung, echter `offer.accept`-Handler mit Geld-/Objektkontrolle und JSON-Event-Replay sowie Meldung/gespeichertes Limit aus `buy`.
+- Gezielte Review-/Failsoft-Suiten **32/32**; bestehende D-Gearregressionen **21/21**.
+- Vollständiges `npm test -- --test-concurrency=4`: **2511/2511**, keine Auslassungen. Erster Gesamtlauf deckte auf, dass die neue Meldung bei ungültiger Zeilen-ID die vorhandene Positionshilfe verdeckte; dies durch Prüfung nur bei nichtleerer gültiger Auswahl korrigiert. Der vorhandene Test blieb unverändert und ist wieder grün.
+- Vollständiger Fingerprint-Replay: **2235 Fälle, dieselben190 exakt akzeptierten Abweichungen, null offen, null stale**. C-/D-Fingerprintdateien und Baseline unverändert; keine neue Ausnahmefreigabe.
+- Die Ausführungsumgebung fiel zwischenzeitlich aus. Nach Wiederherstellung Änderungen erneut geprüft, Rotnachweis gegen separate unveränderte .133-Arbeitskopie und vollständige Node-/Replayprüfung erfolgreich wiederholt.
+- Echte ST-Standard- und Failsoft-Smokes erneut versucht: beide vor Szenariostart am weiterhin fehlenden Chromium-Headless-Shell blockiert. **Keine .134-ST-Abnahme, keine Livefreigabe.** Kein Produktworkaround, keine Browser-/Hoständerungen.
+- Build .134; Extractor/Delta/Narrator-Protokolle unverändert, kein Kartenupdate. Keine weiteren Pakete oder natürlichen Batches begonnen. Nach Veröffentlichung Stopp für Gegenreview.

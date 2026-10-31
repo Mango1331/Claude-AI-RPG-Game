@@ -974,9 +974,9 @@ const HANDLERS = {
         emit({ t: 'decision.opened', d: { decision: { id: `dec.t${s.turn}.${c.seq}`, kind: 'purchase', what: c.what, seller: c.from || null, at: s.scene.at, turn: s.turn, max_cp: limit ? c.max_cp : null, any_price: !!c.any_price, qty: c.qty || null, priced: false, seq: c.seq } } });
         ctx.expectedKeys[String(c.seq)] = 'buy';
         if (limit || c.any_price) {
-            const rule = c.any_price ? 'at any price' : `if the price is at most ${c.max_cp} cp`;
+            const rule = limit ? `if the price is at most ${c.max_cp} cp` : 'at any price';
             return {
-                status: 'conditional', condition: 'priced_within', line: `BUYS — ${c.what} ${rule}: when the seller names the price, he pays it and takes it${c.any_price ? '' : '; above it he declines'}.`,
+                status: 'conditional', condition: 'priced_within', line: `BUYS — ${c.what} ${rule}: when the seller names the price, he pays it and takes it${limit ? '; above it he declines' : ''}.`,
             };
         }
         return {

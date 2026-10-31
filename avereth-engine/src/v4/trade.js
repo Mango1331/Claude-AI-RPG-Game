@@ -225,7 +225,7 @@ export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = nu
         return { error: selection.error || 'selection or price changed' };
     offer = live; picks = selection.picks;
     if (consent?.kind === 'purchase' && rulesetOf(s) >= 2 && (consent.turn !== s.turn || !purchaseDecisionMatches(consent, offer, picks))) return { error: 'purchase consent is stale or mismatched' };
-    if (consent && !consent.any_price && Number.isInteger(consent.max_cp) && cp > consent.max_cp) return { error: 'above his price limit' };
+    if (consent && Number.isInteger(consent.max_cp) && cp > consent.max_cp) return { error: 'above his price limit' };
     if (content && picks.some(p => p.line.equipment === true && (p.line.profile?.kind !== 'gear' || !equipmentSlotKnown(content, p.line.profile.slot)))) return { error: 'equipment has no supported profile' };
     if (content && rulesetOf(s) >= 2) {
         const why = picks.map(p => trainingOfferWhy(s, content, offer.seller, p.line)).find(Boolean);
@@ -247,7 +247,7 @@ export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = nu
         const base = objectId(p.line.what);
         let id = base;
         for (let n = 2; s.objects[id]; n++) id = `${base}_${n}`;
-        emit({ t: 'object.created', d: { object: { id, name: p.line.what, kind: 'item', stack: p.units > 1, qty: p.units, unit: null, ...traits, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'bought', from: offer.seller } } } });
+        emit({ t: 'object.created', d: { object: { id, name: p.line.what, ...(p.line.appearance ? {appearance:p.line.appearance} : {}), kind: 'item', stack: p.units > 1, qty: p.units, unit: null, ...traits, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'bought', from: offer.seller } } } });
     }
     for (const p of picks.filter((x) => x.line.kind === 'service' && x.line.service !== 'guild_registration')) {
         // Each bought training line is a separate commitment, even in the same transaction and minute.

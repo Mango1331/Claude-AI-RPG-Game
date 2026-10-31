@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { loadProductContent } from '../helpers.js';
 import { applyEvent } from '../../src/state.js';
-import { applyWorld } from '../../src/v4/world.js';
+import { applyWorld } from './wire_d.js';
 import { resolveCommands } from '../../src/v4/commands.js';
 import { parseExtraction, worldVocab } from '../../src/v4/extract.js';
 import { buildCatalog } from '../../src/v4/catalog.js';
@@ -59,16 +59,16 @@ test('supported gear is fixed at publication and survives purchase/equip with it
 });
 test('buy then equip the exact newly bought name works in one player turn', () => {
     const r = publish(base(), 'fine chainmail', true), o = offers(r)[0];
-    const b = run(r.state, [buy(o), equip({ new: 'fine chainmail' })]);
+    const b = run(r.state, [buy(o), equip({ new: o.lines[0].what })]);
     assert.ok(b.events.some(e => e.t === 'item.equipped' && e.d.slot === 'armor'));
     assert.equal(b.events.filter(e => e.t === 'coin.changed').length, 1);
 });
 test('new-name equip cannot use someone else’s possession or an ambiguous purchase', () => {
     const s = base(); s.objects.foreign = { id: 'foreign', name: 'fine chainmail', kind: 'item', qty: 1, holder: { entity: seller }, profile: itemProfile(content, { name: 'fine chainmail' }) };
-    const r = run(s, [equip({ new: 'fine chainmail' })]); assert.ok(!r.events.some(e => e.t === 'item.equipped'));
+    const r = run(s, [equip({ new: 'fine F-Rank chainmail' })]); assert.ok(!r.events.some(e => e.t === 'item.equipped'));
     const published = publish(base(), 'fine chainmail', true), first = offers(published)[0];
     const second = clone(first); second.id = 'offer.independent'; published.state.offers[second.id] = second;
-    const b = run(published.state, [buy(first), buy(second), equip({ new: 'fine chainmail' })]);
+    const b = run(published.state, [buy(first), buy(second), equip({ new: 'fine F-Rank chainmail' })]);
     assert.equal(b.events.filter(e => e.t === 'object.created').length, 2);
     assert.ok(!b.events.some(e => e.t === 'item.equipped'), 'two exact new names require an object ID');
 });

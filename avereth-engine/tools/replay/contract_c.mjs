@@ -1,3 +1,4 @@
+import {gearContract} from './contract_d.mjs';
 // Architecture package C (.132): the transparent conversion of a recorded extractor answer written before the population
 // and age contract (patch_plans_10b/PATCH_ARCHITEKTUR_126_KONSOLIDIERT.md §8.2: "Schemaänderungen mit transparent
 // umgerechneten Offline-Testdaten prüfen"). Old answers carry no population and no life_stage on creature.new; the
@@ -22,7 +23,7 @@ export const hasContract = (vocab) => !!vocab?.deltas?.find((d) => d.type === 'c
 /** The answer object with population and life_stage on every creature.new; null in, null out. */
 export function contractValue(value, state, content) {
     if (!value || !Array.isArray(value.deltas)) return value;
-    const v = structuredClone(value);
+    const v = content.deltaVocab?.version === 'delta-1.12' ? gearContract(value, content) : structuredClone(value);
     // places are read as the engine reads them: a new local place inside a player-authorized hunting site is the
     // site's (scopedPlaces, applied by the parser and World before anything else)
     const scoped = scopedPlaces(structuredClone(v), state).deltas;
@@ -48,6 +49,6 @@ export function contractValue(value, state, content) {
 export function contractText(text, state, content) {
     if (typeof text !== 'string') return text;
     const { value } = extractJsonObject(text);
-    if (!value || typeof value !== 'object' || !Array.isArray(value.deltas) || !value.deltas.some((d) => d?.type === 'creature.new')) return text;
+    if (!value || typeof value !== 'object' || !Array.isArray(value.deltas) || !value.deltas.some((d) => d?.type === 'creature.new' || (content.deltaVocab?.version === 'delta-1.12' && d?.type === 'offer'))) return text;
     return JSON.stringify(contractValue(value, state, content));
 }

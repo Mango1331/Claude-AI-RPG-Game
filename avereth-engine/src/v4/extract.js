@@ -30,7 +30,7 @@ export function worldVocab(vocab, state) {
     };
 }
 
-export const EXTRACTOR_VERSION = 'extract-5.21';
+export const EXTRACTOR_VERSION = 'extract-5.22';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 
@@ -49,7 +49,7 @@ const EFFECTS = ['heal', 'restore_mp', 'restore_sta'];
 // Patch 9C-2b: what a Skill Stone or a manual teaches, as the story establishes it (the engine checks it against the
 // techniques it can compose, src/v4/items.js skillSource); every field left out is null
 const TEACHES = O({ source: E(['stone', 'manual']), fn: N(S()), tags: N(A(S())), aspects: N(A(S())) });
-const OFFER_LINE = O({ what: S(), kind: E(['goods', 'service']), service: N(E(SERVICES)), qty: I(1), price_cp: I(0), said: N(S()), effect: N(E(EFFECTS)), teaches: N(TEACHES), equipment: N(B()) });
+const OFFER_LINE = O({ what: S(), kind: E(['goods', 'service']), service: N(E(SERVICES)), qty: I(1), price_cp: I(0), said: N(S()), effect: N(E(EFFECTS)), teaches: N(TEACHES), equipment: N(B()), base: N(S()), quality: N(S()) });
 // 4.3.0-c.6.6.5: a bid's line is one of Alaric's things and how many of it the buyer would take
 const bidLine = (refs) => A(O({ object: refs.object, qty: I(1) }), 1);
 
@@ -136,8 +136,8 @@ export const FORMAT_RULES = [
     'In a multi-place reply use the existing per-delta scene explicitly for events before the last arrival. Example: enter known npc.giver at the starting place; create bread on that giver there; move {new:"bread"} to pc there; arrive at the authorized destination. present describes co-presence at that step, not only the reply ending. A returning known NPC uses enter, not person.new.',
     'Chronology: when the reply establishes arrival and then meets local people or creatures, emit arrive BEFORE their present:true introductions, with increasing seq. A destination scene label never makes an earlier introduction local. Remote sightings use present:false. In a repair correct both missing scene fields and event order to match the REPLY; never invent an arrival or sort every arrival to the front.',
     'person-ref is a person id from PRESENT or the CATALOG, or the ref of a person.new/creature.new earlier in the same answer.',
-    'offer_line is {"what":string,"kind":"goods"|"service","service":"lodging"|"bath"|"laundry"|"meal"|"healing"|"training"|"other"|null,"qty":integer>=1,"price_cp":integer>=0,"said":string|null (the reply\'s words for the price),"effect":"heal"|"restore_mp"|"restore_sta"|null (only for a potion, draught or tonic that restores HP, MP or STA; the engine fixes how much),"teaches":teaches|null,"equipment":boolean|null}.',
-    'For offer_line.equipment use true for intended combat equipment, false for ordinary/cosmetic merchandise, null if unspecified. This intent supplies no slot or numbers. Use supported categories from GEAR MARKET; separate armor parts have no combat slot. Do not sell ordinary decoration as a combat upgrade.',
+    'offer_line is {"what":string,"kind":"goods"|"service","service":"lodging"|"bath"|"laundry"|"meal"|"healing"|"training"|"other"|null,"qty":integer>=1,"price_cp":integer>=0,"said":string|null (the reply\'s words for the price),"effect":"heal"|"restore_mp"|"restore_sta"|null (only for a potion, draught or tonic that restores HP, MP or STA; the engine fixes how much),"teaches":teaches|null,"equipment":boolean|null,"base":string|null,"quality":string|null}.',
+    'Regular F gear offers require base and quality from GEAR MARKET; use separate lines for separate articles, never a package in one base. Missing/unknown bases do not grant equipment. For offer_line.equipment use true for intended combat equipment, false for ordinary/cosmetic merchandise, null if unspecified. This intent supplies no slot or numbers. Use supported categories from GEAR MARKET; separate armor parts have no combat slot. Do not sell ordinary decoration as a combat upgrade.',
     'teaches is {"source":"stone"|"manual","fn":"strike"|"bolt"|"guard"|"ward"|"mend"|null,"tags":string[]|null,"aspects":string[]|null} or null: only for a Skill Stone, or a manual, primer or treatise, that the reply establishes as teaching a technique. fn: strike (a close weapon or body technique), bolt (a ranged spell), guard (a defensive stance), ward (a magical barrier), mend (a healing); tags (Martial, Precision, Mobility, Defense, Arcane, Control) and aspects (Fire, Ice, Lightning, Water, Earth, Wind, Shadow, Light, Poison, Nature, Blood, Sound) only as the reply states them; null for anything the reply does not say. Never for an ordinary stone, a return stone, a storybook or a letter.',
     'A mechanical training service requires an established qualified teacher. A Skill Stone/manual is goods, never silently included in a training service: report separately priced goods and lessons only when the reply actually supplies those separate prices. An indivisible bundle with no split price remains information, not an executable training offer. Ordinary nonmechanical lessons may be service other; none grant automatic skills or progress.',
     'bid_line is {"object":object-ref (an exact OBJECTS id of a thing held by Alaric),"qty":integer>=1}.',
@@ -239,7 +239,7 @@ function normalizeSoftFields(value, vocab) {
         }
         if (d.type === 'memory' && x.who === undefined) x.who = [];
         // Patch 3: an offer line's words for its price may be left out like a |null field
-        if (d.type === 'offer' && Array.isArray(x.lines)) x.lines = x.lines.map((l) => (l && typeof l === 'object' ? { ...l, ...(l.said === undefined ? { said: null } : {}), ...(l.effect === undefined ? { effect: null } : {}), teaches: softTeaches(l.teaches), equipment: l.equipment ?? null } : l));
+        if (d.type === 'offer' && Array.isArray(x.lines)) x.lines = x.lines.map((l) => (l && typeof l === 'object' ? { ...l, ...(l.said === undefined ? { said: null } : {}), ...(l.effect === undefined ? { effect: null } : {}), teaches: softTeaches(l.teaches), equipment: l.equipment ?? null, base:l.base ?? null, quality:l.quality ?? null } : l));
         // Patch 9C-2b: the fields of a teaches the reply does not state are null
         if (d.type === 'object.new') x.teaches = softTeaches(x.teaches);
         return x;

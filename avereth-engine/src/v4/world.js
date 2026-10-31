@@ -37,7 +37,7 @@ import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.j
 import { reachedEvents, setIntentEvents } from './intents.js';
 import { featureNamed, featureEvent, applySpring } from './features.js';
 import { complexOf, dungeonOf, trueDungeonOf, classified, rankText, linkBetween, sameWay, linksAt, wayBetween, roomByName, roomKnown, markEvents, newLink, linkEvent, levelVia, blockerOf, visited } from './dungeon.js';
-import { itemTraits, useOf, itemProfile, priceAudit, gearRetailPrice, gearOfferWhy, openEquipmentStock } from './items.js';
+import { itemTraits, useOf, itemProfile, priceAudit, gearRetailPrice, gearOfferProfile, gearOfferName, gearOfferWhy, openEquipmentStock } from './items.js';
 import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity.js';
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
 import { anchorFor, speciesAnchor, templateFor, rulesetOf } from '../content.js';
@@ -2535,11 +2535,27 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             d = { ...d, lines: d.lines.filter(l => !reversed.includes(l)) };
             if (!d.lines.length) return;
         }
-        const priced = d.lines.map((l) => ({ ...l, price_cp: evidenced(l.price_cp, l.said, d, cPath && rulesetOf(s) >= 2 ? l.qty ?? 1 : null) }));
+        const sameArticle = (a,b) => a.profile?.kind === 'gear' || b.profile?.kind === 'gear'
+            ? normText(a.what) === normText(b.what)
+            : sameWant(a.what,b.what) && sameWant(b.what,a.what);
+        const priced = d.lines.map(l => {
+            const named = l.kind === 'goods' ? itemProfile(content, {name:l.what, balance:true, effect:l.effect, teaches:l.teaches}) : null;
+            const regular = l.kind === 'goods' && l.equipment !== false && (l.base != null || l.equipment === true || (named?.kind === 'gear' && named.rank === 'F')) && (!named?.rank || named.rank === 'F');
+            if (regular) {
+                const existing = openOffers(s).filter(o=>!o.bid && o.seller===seller).flatMap(o=>o.lines).find(x=>normText(l.what) === normText(x.what) && (x.qty??1)===(l.qty??1) && x.price_cp===evidenced(l.price_cp,l.said,d,l.qty??1));
+                if(existing) return {...existing,engine_price:true};
+                const profile = gearOfferProfile(content,l);
+                if (!profile) { reject({...d,lines:[l]}, 'gear_offer', 'regular equipment requires a supported base and quality'); return null; }
+                const price_cp = gearRetailPrice(content,profile) * (l.qty ?? 1);
+                return {...l, what:gearOfferName(profile), appearance:l.what, profile, price_cp, engine_price:true,
+                    price_changed:evidenced(l.price_cp,l.said,d,l.qty ?? 1) !== price_cp};
+            }
+            return {...l,raw_line:l,raw_price:l.price_cp,price_cp:evidenced(l.price_cp,l.said,d,cPath && rulesetOf(s)>=2 ? l.qty ?? 1 : null)};
+        }).filter(Boolean);
         // a price the reply does not say is not offered (review of c.6.6.11); the seller's other lines stand
-        const unproven = priced.filter((l, i) => l.price_cp === null && Number.isInteger(d.lines[i].price_cp));
+        const unproven = priced.filter(l => l.price_cp === null && Number.isInteger(l.raw_price));
         if (unproven.length) {
-            reject({ ...d, lines: d.lines.filter((l, i) => unproven.includes(priced[i])) }, 'offer', 'a price the reply does not name');
+            reject({ ...d, lines: unproven.map(l=>l.raw_line) }, 'offer', 'a price the reply does not name');
             const correction = `No price was recorded for ${unproven.map((l) => String(l.what).slice(0, 40)).join(', ')}: the last reply names no such sum. A price stands only as the story names it.`;
             if (!corrections.includes(correction)) corrections.push(correction);
         }
@@ -2548,12 +2564,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // historical and other goods keep flexible prices with an advisory audit.
         const correctedPrices = new Set();
         const lines = priced.filter((l) => !unproven.includes(l)).map((l, i) => {
-            const line = { id: `l${i + 1}`, what: l.what, kind: l.kind, service: l.service ?? null, qty: l.qty ?? 1, price_cp: l.price_cp, ...(l.said !== undefined ? { said: l.said } : {}) };
+            const line = { id: `l${i + 1}`, what: l.what, ...(l.engine_price ? {base:l.base,quality:l.quality,appearance:l.appearance} : {}), kind: l.kind, service: l.service ?? null, qty: l.qty ?? 1, price_cp: l.price_cp, ...(l.said !== undefined ? { said: l.said } : {}) };
             // Patch 7.2: a restorative's kind as the extractor gave it (effect), checked by itemProfile (a consumable at all)
             // Patch 9C-2b: a Skill Stone or a manual by what the reply says it teaches (fixed with the line)
-            let profile = line.kind === 'goods' ? itemProfile(content, { name: line.what, balance: true, effect: l.effect ?? null, teaches: l.teaches ?? null }) : null;
+            let profile = l.profile || (line.kind === 'goods' ? itemProfile(content, { name: line.what, balance: true, effect: l.effect ?? null, teaches: l.teaches ?? null }) : null);
             if (cPath && rulesetOf(s) >= 2 && line.kind === 'goods') {
-                const why = gearOfferWhy(content, l, profile);
+                const why = l.engine_price ? null : gearOfferWhy(content, l, profile);
                 if (why) {
                     reject({ ...d, lines: [l] }, 'gear_offer', why);
                     system.push(`NOT OFFERED AS EQUIPMENT — ${line.what}: ${why}. No coin was spent.`);
@@ -2568,12 +2584,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const retail = cPath ? gearRetailPrice(content, profile) : null;
             // Repeating an existing bargain never silently reprices that stored contract.
             const existing = openOffers(s).filter(o => !o.bid && o.seller === seller).flatMap(o => o.lines)
-                .find(x => sameWant(line.what, x.what) && sameWant(x.what, line.what)
+                .find(x => sameArticle(line,x)
                     && x.price_cp === line.price_cp && (x.qty ?? 1) === line.qty);
-            if (Number.isInteger(retail) && !existing && line.price_cp !== retail * line.qty) {
+            if (l.price_changed || (Number.isInteger(retail) && !existing && line.price_cp !== retail * line.qty)) {
                 correctedPrices.add(line.id);
                 line.price_cp = retail * line.qty;
-                system.push(`PRICE CONFIRMED — ${line.what}: ${line.price_cp} cp for ${line.qty}. The narrated price was corrected; explicitly accept this offer to buy.`);
+                system.push(`PRICE CONFIRMED — ${line.what}: ${line.price_cp} cp for ${line.qty}. The engine price is binding; purchase requires matching consent and a sufficient explicit total limit, or acceptance of this offer.`);
             }
             const audit = priceAudit(content, profile, line.price_cp, line.qty);
             return { ...line, profile, ...(audit ? { audit } : {}) };
@@ -2581,8 +2597,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (!lines.length) return;
         // the seller's latest price for the same thing stands: an open offer of theirs for it closes (one price at a
         // time, as for a buyer's bid); an unchanged one stays and is not offered twice
-        const same = openOffers(s).filter((o) => !o.bid && !o.canon && o.seller === seller && o.lines.some((x) => lines.some((l) => sameWant(l.what, x.what) && sameWant(x.what, l.what))));
-        if (same.length && same.every((o) => lines.every((l) => o.lines.some((x) => sameWant(l.what, x.what) && x.price_cp === l.price_cp && (x.qty ?? 1) === (l.qty ?? 1))))) return;
+        const same = openOffers(s).filter((o) => !o.bid && !o.canon && o.seller === seller && o.lines.some((x) => lines.some((l) => sameArticle(l,x))));
+        if (same.length && same.every((o) => lines.every((l) => o.lines.some((x) => sameArticle(l,x) && x.price_cp === l.price_cp && (x.qty ?? 1) === (l.qty ?? 1))))) return;
         for (const o of same) emit({ t: 'offer.closed', d: { id: o.id, status: 'repriced' } });
         const id = `offer.t${tag}.${Object.keys(s.offers).length + 1}`;
         emit({ t: 'offer.created', d: { offer: { id, seller, at: s.scene.at, status: 'open', canon: false, turn: s.turn, lines } } });
@@ -2605,7 +2621,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             if (!lines.length) continue;
             const pick = pickLines(o, lines.map((l) => l.id), dec.qty ?? null);
             if (pick.clarify || pick.error) { system.push(`NOT BOUGHT — ${pick.error || `which of ${pick.clarify.join(' or ')} he wants ${dec.qty} of is open`}`); continue; }
-            if (pick.picks.some(p => correctedPrices.has(p.line.id))) {
+            if (pick.picks.some(p => correctedPrices.has(p.line.id)) && !Number.isInteger(dec.max_cp)) {
                 system.push('NOT BOUGHT — the gear price was corrected. Review the displayed offer and accept it explicitly.');
                 emit({ t: 'decision.closed', d: { id: dec.id, status: 'expired' } });
                 continue;
@@ -2613,7 +2629,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const price = pick.cp;
             const what = pick.picks.map((p) => unitsText(p.line.what, p.units)).join(', ');
             const coin = s.entities.pc.sheet.coin_cp;
-            if (!dec.any_price && price > dec.max_cp) { system.push(`NOT BOUGHT — ${what}: ${price} cp is above his limit of ${dec.max_cp} cp`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'too_expensive' } }); continue; }
+            if ((!dec.any_price && !Number.isInteger(dec.max_cp)) || (Number.isInteger(dec.max_cp) && price > dec.max_cp)) { system.push(`NOT BOUGHT — ${what}: ${price} cp is above his limit of ${dec.max_cp} cp`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'too_expensive' } }); continue; }
             if (coin < price) { system.push(`NOT BOUGHT — ${price} cp needed, he has ${coin} cp`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'no_coin' } }); continue; }
             grant('player.buy');
             const booked = bookPurchase(s, emit, { offer: o, picks: pick.picks, cp: price, objectId: (name) => uniqueObjectId(s, tag, name), content, consent: dec });

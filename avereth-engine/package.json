@@ -1,6 +1,6 @@
 {
   "name": "avereth-engine",
-  "version": "4.3.0-c.6.6.132",
+  "version": "4.3.0-c.6.6.133",
   "description": "Deterministic RPG engine for the Avereth campaign (SillyTavern extension + Node test suite). Zero runtime dependencies.",
   "type": "module",
   "private": true,
@@ -17,7 +17,7 @@
     "live:st:check": "node tools/st_live/live/run_live.mjs --check",
     "live:st:selftest": "node tools/st_live/live/selftest.mjs",
     "sim:combat": "node tools/sim/combat.mjs",
-    "replay:check": "node tools/replay/replay.mjs --check tests/replay/baseline.json.gz --accepted tests/replay/accepted_c132_vs_126.json"
+    "replay:check": "node tools/replay/replay.mjs --check tests/replay/baseline.json.gz --accepted tests/replay/accepted_d133_vs_126.json"
   },
   "engines": {
     "node": ">=20"

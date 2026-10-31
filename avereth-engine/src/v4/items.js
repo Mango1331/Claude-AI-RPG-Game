@@ -88,6 +88,19 @@ function gearKindOf(content, name) {
     return null;
 }
 
+/** Stable supported article IDs; synonyms remain distinct labels with the same existing stats. */
+export function gearBases(content) {
+    return (content.gear?.instances?.gear_kinds || []).flatMap(g => g.words.map(name => ({id: slug(name), name, kind: g.id})));
+}
+export function gearOfferProfile(content, line) {
+    const base = gearBases(content).find(b => b.id === line.base);
+    const quality = content.gear.instances.quality.find(q => q.tier === line.quality);
+    if (!base || !quality) return null;
+    const name = `${quality.tier} F-Rank ${base.name}`;
+    return {...itemProfile(content, {name, balance:true}), title:base.name};
+}
+export const gearOfferName = p => `${p.quality} ${p.rank}-Rank ${p.title}`;
+
 /** Existing equipment slots only, including supported noncombat clothing/quiver templates. */
 export const equipmentSlotKnown = (content, slot) => [...content.items.values()].some(i => i.slot === slot)
     || (content.gear?.instances?.gear_kinds || []).some(k => k.slot === slot);
@@ -133,7 +146,7 @@ export function offerCard(state, content, offer) {
 export function gearMarketText(content, balance = false) {
     const kinds = content.gear?.instances?.gear_kinds || [];
     const staff = ['common', 'fine', 'superior', 'exceptional'].map(q => `${q} ${itemProfile(content, { name: `${q} staff`, balance })?.matk ?? '?'}`).join(', ');
-    return `GEAR MARKET — Mechanical equipment uses only these supported categories: ${kinds.map(k => `${k.words.slice(0, 2).join('/')} (${k.slot})`).join('; ')}. Use a recognized kind in a combat equipment offer's name; appearance may vary freely. Only the engine fixes its values. No extra head, leg, hand or jewelry slots or bonuses. Separate armor parts are not whole armor. Ordinary tools, clothes and decoration remain available, explicitly without combat stats. F weapon/focus values by actual quality: ${staff}; starter staff MATK 10. For requested upgrades, a suitable specialist may offer genuinely finer/superior/exceptional supported ware; do not keep offering common gear under expensive material names. If no upgrade is available, say so. Copper/silver cores and higher prices alone grant no stats. Keep the named quality and price stable; armour/offhand, consumables and supported Skill manuals are other voluntary improvements.`;
+    return `GEAR MARKET — Mechanical equipment uses only these supported categories: ${kinds.map(k => `${k.words.slice(0, 2).join('/')} (${k.slot})`).join('; ')}. Every regular F equipment offer needs base and quality; names are appearance only. BASES: ${gearBases(content).map(b => `${b.id}=${b.name}`).join('; ')}. QUALITY: ${content.gear.instances.quality.map(q => q.tier).join(', ')}. One base per line; packages need separate lines. Only the engine fixes its values. No extra head, leg, hand or jewelry slots or bonuses. Separate armor parts are not whole armor. Ordinary tools, clothes and decoration remain available, explicitly without combat stats. F weapon/focus values by actual quality: ${staff}; starter staff MATK 10. For requested upgrades, a suitable specialist may offer genuinely finer/superior/exceptional supported ware; do not keep offering common gear under expensive material names. If no upgrade is available, say so. Copper/silver cores and higher prices alone grant no stats. Keep the named quality and price stable; armour/offhand, consumables and supported Skill manuals are other voluntary improvements.`;
 }
 
 /**
@@ -362,10 +375,11 @@ export function openEquipmentStock(s, content, emit) {
         for (const quality of ['fine', 'superior', 'exceptional']) {
             const key = `offer.gear.${slug(id)}.${slug(s.scene.at)}.${Math.floor(s.clock.minute / 1440)}.${quality}`;
             if (s.offers[key]) continue; // consumed stock stays consumed for this day, including replay
-            const what = `${quality} F-Rank ${kind}`;
-            const profile = itemProfile(content, { name: what, balance: true });
+            const base = slug(kind);
+            const profile = gearOfferProfile(content, {base, quality});
+            const what = gearOfferName(profile);
             emit({ t: 'offer.created', d: { offer: { id: key, seller: id, at: s.scene.at, status: 'open', canon: false, stock: 'f_gear', turn: s.turn,
-                lines: [{ id: 'l1', what, kind: 'goods', equipment: true, qty: 1, price_cp: gearRetailPrice(content, profile), profile }] } } });
+                lines: [{ id: 'l1', what, base, quality, kind: 'goods', equipment: true, qty: 1, price_cp: gearRetailPrice(content, profile), profile }] } } });
         }
     }
 }

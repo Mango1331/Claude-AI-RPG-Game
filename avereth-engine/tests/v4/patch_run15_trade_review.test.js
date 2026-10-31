@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import { loadProductContent } from '../helpers.js';
 import { applyEvent } from '../../src/state.js';
 import { resolveCommands } from '../../src/v4/commands.js';
-import { applyWorld } from '../../src/v4/world.js';
+import { applyWorld } from './wire_d.js';
 const content = await loadProductContent();
 const f = JSON.parse(fs.readFileSync(new URL('./fixtures/run15_trade.json', import.meta.url)));
 const clone = structuredClone;

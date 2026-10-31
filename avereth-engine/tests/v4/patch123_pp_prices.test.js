@@ -4,7 +4,7 @@ import { loadProductContent, Game } from '../helpers.js';
 import { noteUse, fightProgress, fightQualifies } from '../../src/skills.js';
 import { applyEvent, emptyState } from '../../src/state.js';
 import { startCampaign } from '../../src/engine.js';
-import { applyWorld } from '../../src/v4/world.js';
+import { applyWorld } from './wire_d.js';
 import { itemProfile, openEquipmentStock } from '../../src/v4/items.js';
 import { bookPurchase, pickLines } from '../../src/v4/trade.js';
 const c = await loadProductContent();
@@ -49,14 +49,6 @@ test('armor uses profile value; quantities use unit retail; E gear is not forced
     assert.equal(offered(publish(shop(),'superior F-Rank sword',60,2)).lines[0].price_cp,520);
     assert.equal(offered(publish(shop(),'superior E-Rank sword')).lines[0].price_cp,60);
 });
-for(const any_price of [false,true])test(`corrected price requires fresh consent, even with ${any_price?'any price':'a generous limit'}`,()=>{
-    const s=shop();s.decisions=[{id:'dec.buy',kind:'purchase',turn:s.turn,seq:1,at:s.scene.at,seller:'npc.alda',what:'superior F-Rank sword',qty:1,max_cp:1000,any_price}];
-    const r=publish(s);assert.ok(offered(r));assert.equal(r.state.entities.pc.sheet.coin_cp,2000);assert.ok(!r.events.some(e=>e.t==='transaction.completed'));
-    const o=offered(r),sel=pickLines(o),events=[];const base=structuredClone(r.state);const emit=e=>{events.push(e);applyEvent(r.state,e);};
-    assert.equal(bookPurchase(r.state,emit,{offer:o,picks:sel.picks,cp:sel.cp,content:c,objectId:()=> 'obj.sword'}).error,undefined);
-    assert.equal(r.state.entities.pc.sheet.coin_cp,1740);assert.ok(bookPurchase(r.state,emit,{offer:o,picks:sel.picks,cp:sel.cp,content:c,objectId:()=> 'obj.again'}).error);
-    for(const e of JSON.parse(JSON.stringify(events)))applyEvent(base,e);assert.deepEqual(base,r.state);
-});
 test('repeated prose never reprices an already stored same-goods bargain',()=>{
     const s=shop();const old={id:'offer.old',seller:'npc.alda',at:s.scene.at,status:'open',canon:false,turn:s.turn,lines:[{id:'l1',what:'superior F-Rank sword',kind:'goods',equipment:true,qty:1,price_cp:60,profile:itemProfile(c,{name:'superior F-Rank sword',balance:true})}]};s.offers[old.id]=structuredClone(old);
     const r=publish(s);assert.deepEqual(r.state.offers[old.id],old);assert.ok(!offered(r));
@@ -93,9 +85,9 @@ test('real first strike victory books PP through combat end while LP/development
  const result=endEncounterEvents(g.state,c,enc);assert.equal(result.events.filter(e=>e.t==='skill.progress').length,1);
  assert.ok(!result.events.some(e=>e.t==='growth.noted'||e.t==='growth.progress'||e.t==='growth.evidence'));
 });
-test('a corrected line blocks the whole advance package; no partial charge or free equipment',()=>{
+test('D: a bounded package buys all corrected lines atomically',()=>{
  const s=shop();s.decisions=[{id:'dec.buy',kind:'purchase',turn:s.turn,seq:1,at:s.scene.at,seller:'npc.alda',what:'superior F-Rank sword and fine F-Rank plate armor',qty:null,max_cp:1000,any_price:true}];
  const r=applyWorld(s,c,{scene:s.scene.at,expected:{},deltas:[{seq:1,type:'offer',seller:'npc.alda',lines:[{what:'superior F-Rank sword',kind:'goods',equipment:true,qty:1,price_cp:60,said:'Sixty copper for the sword.'},{what:'fine F-Rank plate armor',kind:'goods',equipment:true,qty:1,price_cp:30,said:'Thirty copper for the armor.'}]}]},{msg:20,prose:'Sixty copper for the sword. Thirty copper for the armor.'});
- assert.equal(r.state.entities.pc.sheet.coin_cp,2000);assert.ok(!r.events.some(e=>e.t==='transaction.completed'||e.t==='object.created'));
+ assert.equal(r.state.entities.pc.sheet.coin_cp,1668);assert.equal(r.events.filter(e=>e.t==='transaction.completed').length,1);assert.equal(r.events.filter(e=>e.t==='object.created').length,2);
  assert.deepEqual(offered(r).lines.map(l=>l.price_cp),[260,72]);
 });

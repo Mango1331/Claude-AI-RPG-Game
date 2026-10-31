@@ -29,7 +29,7 @@ test('A1: the corpus holds every recorded engine call and the baseline names its
 
 // Package C (.132): the intended differences to the .126 baseline, record by record with their reason
 // (tools/replay/replay.mjs --accepted; docs/PATCH_ARCH_C132_POPULATION_AGE.md)
-const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_c132_vs_126.json', import.meta.url), 'utf8'));
+const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_d133_vs_126.json', import.meta.url), 'utf8'));
 const SUB = { ...baseline, runs: Object.fromEntries(QUICK.map((l) => [l, baseline.runs[l]])) };
 let quick = null; // the four quick runs, replayed once for this file
 const quickRuns = async () => (quick ||= await replayCorpus(undefined, undefined, { labels: QUICK }));
@@ -38,7 +38,7 @@ test('A1/C: the four quick runs replay as on the start commit, from whole and va
     const { compared, diffs } = compareToBaseline(SUB, result);
     assert.equal(compared, QUICK.reduce((n, l) => n + Object.keys(baseline.runs[l].cases).length, 0));
     assert.deepEqual(diffs.map((d) => d.id).sort(), Object.keys(ACCEPTED.cases).filter((id) => QUICK.includes(id.split('#')[0])).sort());
-    assert.ok(diffs.every((d) => ACCEPTED.cases[d.id].category === 'representation'), 'in the quick runs only the recorded contract fields differ');
+    assert.ok(diffs.every((d) => ['representation','D offer contract'].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D differences are allowed');
     const { open, accepted, stale } = acceptedDiffs(diffs, ACCEPTED.cases, result);
     assert.deepEqual([open, stale, accepted.length], [[], [], diffs.length], 'every accepted record has exactly the fingerprinted output');
     for (const [label, run] of Object.entries(result.runs)) {
@@ -121,4 +121,9 @@ test('C review: an unexpected change of money, quest or events inside an already
     const bare = structuredClone(ACCEPTED.cases);
     delete bare['b19-mage#13'].fingerprint;
     assert.deepEqual(acceptedDiffs(diffs, bare, result).open.map((d) => d.id), ['b19-mage#13']);
+});
+
+test('D retains every original C fingerprint and reason unchanged',()=>{
+ const c=JSON.parse(fs.readFileSync(new URL('./accepted_c132_vs_126.json',import.meta.url)));
+ for(const [id,entry] of Object.entries(c.cases)) assert.deepEqual(ACCEPTED.cases[id],entry,id);
 });

@@ -24,7 +24,8 @@ const world = (i, raw = R[i].raw) => applyWorld(structuredClone(R[i].state), con
 const offers = (res) => res.events.filter((e) => e.t === 'offer.created').map((e) => e.d.offer);
 const rejected = (res, type) => res.events.filter((e) => e.t === 'delta.rejected' && e.d.item.type === type);
 const coin = (res) => res.events.filter((e) => e.t === 'coin.changed').map((e) => e.d.delta);
-const price = (said, qty) => tradePrice(null, said, qty, content).cp;
+// the bid or offer words of another (world.js reads them so); his own words keep the rate-only condition reading
+const price = (said, qty) => tradePrice(null, said, qty, content, { npc: true }).cp;
 const ENC37 = 'obj.loot.crystal_beetle.chitin.f.enc_t37';
 const ENC40 = 'obj.loot.crystal_beetle.chitin.f.enc_t40';
 
@@ -103,10 +104,26 @@ test('.138 price reading: rate × units, confirmed totals, equivalent coins, oth
     assert.equal(price('Four copper each, fifty-six copper total, if the appraiser approves.', 14), null);
     assert.equal(price('Four copper each, if you want cash and the appraiser approves.', 14), null);
     assert.equal(price('Fifty-six copper the lot, if you want coin or credit.', 14), 56);
+    // second review: the whole condition, before the price, after a comma, and work still to be done
+    assert.equal(price('Four copper each, if you want cash, and the appraiser approves.', 14), null);
+    assert.equal(price('If the appraiser approves, four copper each, fifty-six copper total.', 14), null);
+    assert.equal(price('Four copper each, if you finish the work tomorrow.', 14), null);
+    assert.equal(price('Four copper each, if you can wait for the appraiser.', 14), null);
+    // the addressee's own choice to take it stays a price (corpus: "a copper a bowl, if you're wanting it")
+    assert.equal(price("Thirty-four copper the lot, if you're leaving them together", 4), 34);
+    assert.equal(price("A copper a bowl, if you're wanting it", 1), 1);
+    assert.equal(price("Four copper a plate, if you want them, and I'll take all fourteen.", 14), 56);
+    assert.equal(tradePrice(6, "Six if you'd sleep by this fire down here, six copper.", 1, content, { npc: true }).cp, 6, 'a variant he takes by accepting');
+    assert.equal(tradePrice(2, "Supper's two more if you want it—stew and ale", 1, content, { npc: true }).cp, 2, 'the goods described after the condition');
+    assert.equal(price("Four copper each, if you want cash, and the master says yes.", 14), null);
+    // his own limit is no open condition of a seller (.51: "a room if it's no more than 6 copper")
+    assert.equal(tradePrice(null, "I take a room if it's no more than 6 copper", 1, content).handled, false);
     assert.equal(price('Four copper each, but fifty copper for the lot.', 14), 50, 'an explicit lot price may differ from the rate');
     assert.equal(price('Fifty-six copper the lot, or sixty copper the lot with the gland.', 14), null, 'two lot prices are open');
-    assert.equal(price("If they're all of a match, I'd give you eight copper apiece. Fifty-six the lot.", 7), 56);
-    assert.equal(price('Two silver a fair deal.', 3), tradePrice(null, 'Two silver a fair deal.', 3, content).cp);
+    // .139: a condition before the price counts too; a quality the buyer has not checked yet keeps it open
+    assert.equal(price("If they're all of a match, I'd give you eight copper apiece. Fifty-six the lot.", 7), null);
+    assert.equal(price("I'd give you eight copper apiece. Fifty-six the lot.", 7), 56);
+    assert.equal(price('Two silver a fair deal.', 3), tradePrice(null, 'Two silver a fair deal.', 3, content, { npc: true }).cp);
     assert.notEqual(price('Two silver a fair deal.', 3), 60, '.107: a judgement is no rate');
     assert.notEqual(price('Five silver the pair.', 4), 200, 'a collective unit is no unit rate');
     // different goods never share one rate (the engine passes 0 units for them)
@@ -177,6 +194,11 @@ test('.138 payment direction: his own payments stay possible; claims for money o
     // review of .138: leaving or pocketing a receipt is no payment beside a claim for his wage
     for (const q of ["I'll take my fifty copper and leave.", 'Pay me fifty copper, then I leave.', 'I collect my wages and put the receipt in my bag.'])
         assert.equal(pay(q).kept.length, 0, q);
+    // second review: an ambiguous verb is no money act; the act must move money
+    for (const q of ['I settle on the bench and collect my fifty copper.', 'I pay attention to Tam and collect my fifty copper.', 'I tip my hat to Tam and collect my wages.'])
+        assert.equal(pay(q).kept.length, 0, q);
+    for (const q of ['I settle up with Tam: five copper', 'I settle the bill with five copper', 'I tip him five copper'])
+        assert.equal(pay(q).kept.length, 1, q);
     // a separate tip after asking for his wage stays possible; the wrong pay to Tam in the same words does not ride on it
     const boy = (T50.state.scene.present || []).find((id) => id !== 'pc' && id !== tam);
     const both = 'I collect my wages and pay the porter a copper.';
@@ -275,7 +297,9 @@ test('.138 refusal reasons claim no payment that did not happen (T26 and T32 of 
 });
 
 test('.138 review: an original bid under an open condition stores no binding price; the payment choice alone does', () => {
-    for (const [said, want] of [['Four copper each, fifty-six copper total, if the appraiser approves.', null], ['Four copper each, if you want cash and the appraiser approves.', null], ['Four copper each, if you want the coin more than the credit.', 56]]) {
+    for (const [said, want] of [['Four copper each, fifty-six copper total, if the appraiser approves.', null], ['Four copper each, if you want cash and the appraiser approves.', null],
+        ['Four copper each, if you want cash, and the appraiser approves.', null], ['If the appraiser approves, four copper each, fifty-six copper total.', null],
+        ['Four copper each, if you finish the work tomorrow.', null], ['Four copper each, if you want the coin more than the credit.', 56]]) {
         const raw = structuredClone(R[116].raw);
         const bid = raw.deltas.find((d) => d.type === 'bid');
         const prose = R[116].prose.replace(bid.said, said);
@@ -284,4 +308,31 @@ test('.138 review: an original bid under an open condition stores no binding pri
         assert.deepEqual(offers(res).map((o) => o.price_cp), want === null ? [] : [want], said);
         assert.deepEqual(coin(res), [], said);
     }
+});
+
+// ------------------------------------------------------------------------------------------------ amount of the act
+test('.139 corpus b17-rogue#19: "I have three silver—I\'ll give two to Bree" pays the 20 cp of the act, not the 30 cp he holds', async () => {
+    const R = await import('../../tools/replay/replay.mjs');
+    const { prepareGenerationAsync } = await import('../../src/v4/runtime.js');
+    const { rec } = await import('../../src/host.js');
+    const run = R.loadRun('b17-rogue');
+    const answers = run.answers[19].map((a) => a.content);
+    assert.deepEqual(answers.map((a) => JSON.parse(a).commands[0].amount_cp), [20, 30], 'recorded: 20 first, the repair 30');
+    const chat = run.chat.slice(0, 20);
+    chat[19] = structuredClone(chat[19]);
+    delete chat[19].extra.avereth;
+    const asked = [];
+    await prepareGenerationAsync(chat, content, { type: 'normal', settings: {}, llm: async ({ purpose }) => { asked.push(purpose); return answers.shift(); } });
+    const r = rec(chat[19]);
+    assert.deepEqual(asked, ['plan'], 'the correct first answer stands; no repair toward his purse');
+    assert.deepEqual(r.events.filter((e) => e.t === 'coin.changed').map((e) => e.d.delta), [-20]);
+    // the planner's amount check and the guard read the same act
+    const { amountErrors } = await import('../../src/v4/interpret.js');
+    const quote = "I have three silver—I'll give two to Bree for the days she can't work";
+    const cmd = (amount_cp) => [{ seq: 1, type: 'pay', to: 'npc.bree', amount_cp, for: null, quote }];
+    assert.deepEqual(amountErrors(cmd(20), content.rules.currency), []);
+    assert.equal(amountErrors(cmd(30), content.rules.currency).length, 1);
+    const ctx = { present: [{ id: 'npc.bree', names: ['Bree'] }], currency: content.rules.currency };
+    assert.equal(guardCommands(quote, cmd(30), ctx).kept.length, 0, 'the 30 cp he holds are not what he gives');
+    assert.equal(guardCommands(quote, cmd(20), ctx).kept.length, 1);
 });

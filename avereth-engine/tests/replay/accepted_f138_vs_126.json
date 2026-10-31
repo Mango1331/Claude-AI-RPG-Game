@@ -2,8 +2,8 @@
  "format": "avereth-replay-accepted-2",
  "baseline_sha": "b8d2af4b76cd0bc52ac178b8c500e5733878ecee",
  "baseline_engine": "4.3.0-c.6.6.126",
- "engine": "4.3.0-c.6.6.138",
- "note": "Package C (.132): every record whose replay differs from the .126 baseline, with its reason (docs/PATCH_ARCH_C132_POPULATION_AGE.md). Old answers are converted by tools/replay/contract_c.mjs. Each record is accepted only with the exact output it was checked with: fingerprint = sha256 of its complete normalized record output (tools/replay/replay.mjs recordFingerprint), written by --write-fingerprints. Package D: additional records pin exact output; original C entries unchanged. Individual changes in docs/PATCH_ARCH_D133_GEAR_OFFERS.md. Finance patch F (.138): six further records pin exact output; earlier entries unchanged (docs/FIX138_FINANCE.md).",
+ "engine": "4.3.0-c.6.6.140",
+ "note": "Package C (.132): every record whose replay differs from the .126 baseline, with its reason (docs/PATCH_ARCH_C132_POPULATION_AGE.md). Old answers are converted by tools/replay/contract_c.mjs. Each record is accepted only with the exact output it was checked with: fingerprint = sha256 of its complete normalized record output (tools/replay/replay.mjs recordFingerprint), written by --write-fingerprints. Package D: additional records pin exact output; original C entries unchanged. Individual changes in docs/PATCH_ARCH_D133_GEAR_OFFERS.md. Finance patch F (.138–.140): eight further records pin exact output, one D record superseded with reason; earlier entries otherwise unchanged (docs/FIX138_FINANCE.md).",
  "categories": {
   "representation": "population contract recorded, no mechanical consequence: entity.updated {life_stage, population_at} at creation (population_at no longer set on the profile event), quest.hunt.age on hunt contracts, converted population/life_stage fields inside an already rejected creature.new",
   "rejection reason": "a claim already refused in .126 (aware of an unknown creature) is now refused by the creature reference lock (creature_continuity)",
@@ -849,6 +849,16 @@
    "category": "finance 138",
    "reason": "F (.138): \"Two shillings and four copper\" for two different goods: no 4 cp shadow bid is stored from the one coin word; the bid stays unresolved (amount.unproven) instead of replacing the open bid.",
    "fingerprint": "sha256:34aa432e34a3e44e648caf85fcbc34d56dd678e84b04681dd51e9702095feec1"
+  },
+  "b17-rogue#19": {
+   "category": "finance 138",
+   "reason": "F (.140, second review): \"I have three silver—I'll give two to Bree\" — the payment amount is read from the paying act (\"give two\", its coin from the sentence: 20 cp), not from the three silver he holds. The planner's correct first answer (20 cp) is no longer rejected and repaired to 30 cp; he pays 20 cp instead of 30 cp.",
+   "fingerprint": "sha256:96c7c1d8d12275e3d967b3a0efac706c95f526ff24cea55fbfac6a444461637d"
+  },
+  "b19-mage#132": {
+   "category": "finance 138",
+   "reason": "F (.140, second review): \"If it's gone deep enough to need packing inside the wound, it's twelve\" — a factual condition nobody has confirmed keeps this variant's price open; the 12 cp variant is not stored as a binding offer (\"no price was recorded\"), the unconditional 8 cp service line stays.",
+   "fingerprint": "sha256:b56f08d3b732d2f9ec9e08fe09a3bc4ed1fd5e3e987cdbf5aa759fd30e7cd4c7"
   }
  }
 }

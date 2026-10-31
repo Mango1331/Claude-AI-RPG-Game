@@ -9,6 +9,7 @@ import { tradePrice } from './trade.js';
 import { O, S, B, I, E, A, N, REF, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 import { coinFromWords } from '../economy.js';
+import { paidAmounts } from './agency.js';
 
 export function commandVocabFor(vocab, privateQuests = true) {
     return privateQuests ? vocab : { ...vocab, commands: vocab.commands.map(c => c.type === 'quest.accept'
@@ -212,7 +213,11 @@ export function amountErrors(commands, currency, catalog = {}) {
             errors.push(`${c.type} seq ${c.seq}: ambiguous price or quantity in this quote. Copy only this item's exact price clause; ${f} is the TOTAL for the selected quantity, not a unit rate.`);
             continue;
         }
-        const v = price.handled ? price.cp : coinFromWords(c.quote, content);
+        // Build .139 (review: "I have three silver—I'll give two to Bree" rejected a correct 20 cp and steered the repair
+        // to the 30 cp he holds): a payment's amount is the amount of his paying act, never every coin the quote names
+        const paid = c.type === 'pay' ? [...new Set(paidAmounts(c.quote, currency))] : null;
+        if (paid && (paid.includes(c[f]) || paid.length !== 1)) continue;
+        const v = paid ? paid[0] : price.handled ? price.cp : coinFromWords(c.quote, content);
         // Build .107 (audit of .106: "2 cp total for qty 1" steered the repair to a wrong limit): without a qty of his
         // command the hint names the rate for one unit and asks for the quantity, never asserting one unit is meant
         const basis = c.qty != null ? `${v} cp total for qty ${c.qty}` : c.type === 'sell' && object ? `${v} cp total for his held stack of ${units}` : `${v} cp for one unit at his rate`;

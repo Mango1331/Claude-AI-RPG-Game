@@ -2410,7 +2410,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const flatSaid = normText(said).replace(/[^a-z0-9]+/g, ' ').trim();
             const inReply = !prose || normText(prose).replace(/[^a-z0-9]+/g, ' ').includes(flatSaid);
             if (inReply && tradeQty !== null) {
-                const p = tradePrice(cp, said, tradeQty, content);
+                const p = tradePrice(cp, said, tradeQty, content, { npc: true });
                 if (p.handled) {
                     if (p.cp !== null && p.cp !== cp) emit({ t: 'note', d: { kind: 'amount.corrected', seq: d?.seq ?? 0, type: d?.type ?? null, reported_cp: cp, said: String(said).slice(0, 60), cp: p.cp } });
                     return p.cp;

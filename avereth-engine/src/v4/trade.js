@@ -132,37 +132,59 @@ export function rateUnits(lines, objectOf) {
     return list.reduce((n, l) => n + (l.qty ?? 1), 0);
 }
 
-// Build .138 (batch 20 #110: "four copper each, if you want the coin more than the credit"; corpus: "a copper, if you
-// want it", "the lot, if you're leaving them together"): a condition that is only the addressee's own choice ("if you
-// want …", "if you're …") is decided by his acceptance and leaves the amount as it is. Any other condition keeps the
-// price open: someone else's approval or a wait ("if you want cash and the appraiser approves", "if you can wait for
-// the appraiser"), a quality ("if they're whole"), "unless", and a condition with its own amount. The amount alone is
-// read here: the sale still needs his acceptance and pays in coin; nothing is credited or bartered.
-const addresseeChoice = (clause) => {
-    const c = clause.split(',')[0].trim();
-    if (/\d|\b(?:gold|silver|coppers?|cp)\b/.test(c) || /\b(?:wait\w*|till|until|approv\w*|check\w*|inspect\w*|apprais\w*|confirm\w*|clear\w*)\b/.test(c)) return false;
-    return c.split(/\b(?:and|but|while|once|when|after|before|until)\b/).map((x) => x.trim()).filter(Boolean)
-        .every((x) => /^(?:you|you're|you'd|you'll|you've|ye)\b/.test(x));
-};
-/**
- * Review of .138: a price under an open condition ("… fifty-six copper total, if the appraiser approves") is no binding
- * price, whether the amount comes from a rate or a total; read from the first coin word on.
- */
+// Build .138/.139 (batch 20 #110: "four copper each, if you want the coin more than the credit"; corpus: "a copper, if
+// you want it", "the lot, if you're leaving them together"): a condition that is only the addressee's present choice
+// to take the deal ("if you want …", "if you'd rather …", "if you're eating") is decided by his acceptance and leaves
+// the amount as it is. Every other condition keeps the price open, wherever it stands in the quote and however far it
+// runs: someone else's approval ("if the appraiser approves", also after a further comma or before the price), a
+// quality ("if they're all of a match"), something still to be done ("if you finish the work tomorrow", "if you can
+// wait"), "unless/provided/depending", and a condition with its own amount. The amount alone is read here: the sale
+// still needs his acceptance and pays in coin; nothing is credited or bartered.
+const YOU = /^(?:you|you're|you are|you'd|you would|you'll|you will|you've|ye)\b/;
+const SPEAKER = /^(?:i|i'll|i will|i'd|i would|i'm|i've|we|we'll|we'd|that's|that is|it's|it is)\b/;
+const PENDING = /\b(?:tomorrow|tonight|later|first|soon|next|today|after|before|once|until|till|when|wait\w*|finish\w*|bring\w*|fetch\w*|return\w*|come back|approv\w*|check\w*|inspect\w*|apprais\w*|confirm\w*|clear\w*|prove\w*|agree\w*|allow\w*|permit\w*|say|says|decide\w*|can|could|manage\w*)\b/;
+// a further part of the condition with its own subject or verb ("…, and the appraiser approves", "and they're whole");
+// a bare noun phrase after it ("two more if you want it—stew and ale") describes the goods
+const FURTHER = /^(?:he|she|they|it|someone|somebody|the\s+\w+\s+(?:is|are|was|says?|agrees?|approves?|allows?))\b|\b(?:is|are|was|were|'s|'re|be|been|has|had|must|should|does|did)\b/;
+const AMOUNT = /\d|\b(?:gold|silver|coppers?|cp)\b/;
+// a condition about the addressee himself ("if you'd sleep by this fire", "if you're content to share the loft") is the
+// variant he takes by accepting; one he must still fulfil ("if you finish the work tomorrow", "if you can wait") is not
+const choicePart = (x) => YOU.test(x) && !PENDING.test(x) && !AMOUNT.test(x);
+/** Review of .138/.139: does an open condition stand anywhere in the price quote, whether the amount is a rate or a total? */
 function openCondition(text) {
-    const first = text.search(/\b(?:gold|silver|coppers?|cp)\b/i);
-    if (first < 0) return false;
-    return [...text.slice(first).matchAll(/\b(?:if|unless|depending|provided)\b([^.;!?]*)/gi)]
-        .some((m) => !/^if$/i.test(m[0].split(/\s/)[0]) || !addresseeChoice(m[1].toLowerCase().replace(/[‘’]/g, "'")));
+    for (const sentence of String(text).toLowerCase().replace(/[‘’]/g, "'").split(/[.;!?]+/)) {
+        const m = sentence.match(/\b(if|unless|depending|provided|as long as|so long as)\b/);
+        if (!m) continue;
+        if (m[1] !== 'if') return true;
+        // the whole rest of the sentence: the condition, then only the addressee's choices, the speaker's own words or
+        // the price itself
+        // parts after the condition: one joined by "and/or/but" continues it (its own subject or verb counts); one after a
+        // comma or dash alone is a new statement ("— stew's on") unless it names something still pending
+        const pieces = sentence.slice(m.index + m[0].length).split(/(,|\s*[—–]\s*|\s+-\s+|\b(?:and|or|but|while)\b)/);
+        const condition = pieces[0].trim();
+        if (!condition || !choicePart(condition)) return true;
+        for (let i = 1; i < pieces.length; i += 2) {
+            const joined = /\b(?:and|or|but|while)\b/.test(pieces[i]);
+            const x = (pieces[i + 1] || '').trim();
+            if (!x || AMOUNT.test(x) || SPEAKER.test(x) || choicePart(x)) continue;
+            if (PENDING.test(x) || (joined && FURTHER.test(x))) return true;
+        }
+    }
+    return false;
 }
 // Collective units are no unit rate ("five silver the pair"); a price per piece is ("four copper the plate").
 const PER_THE = String.raw`the\s+(?!(?:lot|all|whole|rest|pair|brace|dozen|set|bundle|batch|bunch|stack|sack|bag|crate|load|box|barrel|cask|basket|heap|pile)\b)[a-z]+(?=\s*(?:[,;.!?\u2013\u2014-]|$|and\b|or\b|for\b))`;
 
-/** Price evidence for trade only. A unit rate is not a lot total; ranges and several rates are unresolved. */
-export function tradePrice(cp, said, qty, content) {
+/**
+ * Price evidence for trade only. A unit rate is not a lot total; ranges and several rates are unresolved.
+ * `npc`: the words are another's bid or offer (world.js), whose conditions decide whether the price binds (.139); his
+ * own words (his limit "if it's no more than 6 copper", his acceptance) keep the rate-only condition reading.
+ */
+export function tradePrice(cp, said, qty, content, { npc = false } = {}) {
     const text = String(said || '');
     if (!text.trim()) return { cp, handled: false };
     if (/\b(?:between|from)\s+(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)\b[^.;]{0,25}\b(?:and|to)\s+(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)\b|\b(?:gold|silver|coppers?|cp)\s+or\b|\b(?:one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+or\s+(?:one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+(?:gold|silver|coppers?|cp)\b/i.test(text)) return { cp: null, handled: true };
-    if (openCondition(text)) return { cp: null, handled: true };
+    if (npc && openCondition(text)) return { cp: null, handled: true };
     const totals = [...text.matchAll(/((?:[a-z0-9-]+\s+){1,5}(?:gold|silver|coppers?|cp))\s+(?:for\s+)?(?:the\s+)?(?:lot|all|together|total)\b/gi)]
         .map(m => coinFromWords(m[1], content)).filter(Number.isInteger);
     // Build .138 (#116: "Four copper the plate, fifty-six the lot"): a lot total without its own currency word is in
@@ -180,6 +202,7 @@ export function tradePrice(cp, said, qty, content) {
     const rates = [...text.matchAll(new RegExp(String.raw`\b(?:gold|silver|coppers?|cp)\s+(?:each\b|apiece\b|per\b|${PER_THE}|(?:a|an)\s+(?!piece of coin\b|(?:fair|good|great|decent|reasonable|honest|fine|square|bargain|steal|deal|price|sum|total)\b))`, 'gi'))];
     const evidence = coinEvidence(text, content);
     if (rates.length) {
+        if (!npc && /\b(?:if|unless|depending|provided)\b/i.test(text.slice(rates[0].index))) return { cp: null, handled: true };
         if (rates.length !== 1 || !(qty > 0) || evidence.cp === null) return { cp: null, handled: true };
         // Build .138 (#106: "four copper the plate. That's eighty-four copper—eight silver and four"): the rate times the
         // units is the price; saying that total again, in any coins, confirms it. Any other sum (another article, his

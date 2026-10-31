@@ -143,3 +143,38 @@ b17-rogue#19). Browser-Smoke OK; **echter ST-Smoke Standard 24/24, Failsoft 29/2
 Beobachtung ohne Änderung: In b17-rogue#19 zahlt der Planner 30 cp für „I have three silver—I'll give two to Bree“; der
 Guard prüft nur, dass die Handlung den Kommandobetrag nicht widerlegt (die Handlung nennt 3 Silber), nicht die
 Plannerbetragswahl selbst.
+
+## 8. Abschluss `.140` (zweites unabhängiges Feedback zu `5db8657`)
+
+Build **`4.3.0-c.6.6.140`**. Alle drei Befunde reproduziert und an der Ursache korrigiert, ohne neue Mechanik:
+
+- **Bree (Korpus b17-rogue#19) – Besitz ≠ Zahlung:** Der Planner lieferte richtig 20 cp; `amountErrors()` las „I have three
+  silver“ als Betrag, erzwang per Repair 30 cp, die Engine buchte 30. Jetzt lesen Planner-Prüfung (`interpret.amountErrors`
+  über `agency.paidAmounts`) und Guard denselben Betrag: den der **zahlenden Handlung**. Handlungen werden auch an
+  Gedankenstrichen getrennt; eine bloße Zahl der Handlung („give two“) nimmt die eine Münzart ihres Satzes (20 cp). Zahlt die
+  Handlung einen anderen Betrag oder eine andere Person, belegt keine lockerere Lesart desselben Textes das Kommando
+  („other“). Der aufgezeichnete Lauf zahlt jetzt 20 cp ohne Repair; der alte Fingerprint (30 cp) ist gezielt ersetzt.
+- **Mehrdeutige Verben:** Nur `pay/repay` sind Zahlungsverben (nicht in „pay attention/a visit/respects/heed/mind“). `settle`
+  und `tip` zählen wie alle anderen Gebeverben nur mit bewegtem Geld in derselben Handlung („settle up“, „settle the bill“,
+  „tip him five copper“); „I settle on the bench and collect my fifty copper“, „I tip my hat …“ zahlen nichts.
+- **Bedingungen vollständig (nur für Gebote/Angebote anderer, `tradePrice(…, {npc:true})` in `world.evidenced`):** Geprüft wird
+  jeder Satz des Preiszitats, auch vor dem Betrag („If the appraiser approves, four copper each …“) und über Kommas hinaus
+  („…, if you want cash, and the appraiser approves“). Die Bedingung selbst bindet nur, wenn sie den Angesprochenen betrifft
+  und nichts aussteht (kein `tomorrow/later/first/after/until/wait/finish/bring/return/approve/check/inspect/appraise/confirm/
+  agree/allow/say/can/…`); „if you finish the work tomorrow“ bleibt offen. Mit „and/or/but“ angeschlossene weitere Teile
+  setzen die Bedingung fort (eigenes Subjekt/Verb oder ausstehende Wörter → offen); ein Teil nach Komma/Strich ohne
+  Konjunktion ist eine neue Aussage („two more if you want it — stew's on“). `unless/provided/depending/as long as` bleiben
+  offen. Seine eigenen Worte (Kaufgrenze „if it's no more than 6 copper“, Annahme) behalten die Lesart von vor .138.
+  Folge im Korpus: b19-mage#132 speichert die 12-cp-Variante „if it's gone deep enough …“ nicht mehr als verbindliches
+  Angebot (Sachbedingung unbestätigt); die bedingungslose 8-cp-Leistung bleibt.
+
+Nachweise `.140`: `fix138_finance.test.js` **18 Tests, auf `.139` 4 rot** (genau die Reviewfälle: Bedingungen, `settle`, Bree)
+und 14 grün; Bree über `prepareGenerationAsync` mit den aufgezeichneten Plannerantworten (20 cp, kein Repair); Bedingungen
+zusätzlich über `applyWorld` am Originalvorzustand #116. **Volle Suite 2551/2551.** Replay **2235 Fälle, 198 abweichend, alle
+198 mit exaktem Fingerprint akzeptiert, 0 offen**; gegenüber `.139` zwei weitere einzeln begründete Records (b17-rogue#19,
+b19-mage#132). Browser-Smoke OK; **echter ST-Smoke Standard 24/24, Failsoft 29/29**, keine PageErrors.
+
+Grenzen: Die ausstehenden Wörter, die Zahlungsverb-Redewendungen und die Fortsetzungsregel sind kurze geschlossene
+Gruppen. Sie entscheiden nur, ob ein Preis bindet oder eine Zahlung belegt ist; im Zweifel entsteht kein verbindlicher Preis
+und keine Zahlung (sichtbare Ablehnung/Klärung), nie eine stille Buchung. Mehrere gleichzeitige Bedingungen in
+Nominalform („if you want the plates and the gland“) gelten als erfüllt, solange nichts aussteht.

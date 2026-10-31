@@ -27,4 +27,4 @@
 
 ## Pflege und Grenzen
 
-**Zunächst aktuellen Blocker und natürlichen Batch gemäß [03](03_AKTUELLER_PROJEKTSTAND.md) abschließen.** Die oben genannten Punkte sind bewusst zurückgestellt. Ältere Reviews, verworfene Varianten und bereits implementierte Details nur über Archiv/Commits nachlesen; keine automatischen Reaktivierungen. Neue Idee nur mit eigenem Nutzen, Priorität und späterer ausdrücklicher Freigabe.
+**Zunächst den natürlichen Batch auf dem korrigierten Startbuild .137 gemäß [03](03_AKTUELLER_PROJEKTSTAND.md) auswerten.** Die oben genannten Punkte sind bewusst zurückgestellt. Ältere Reviews, verworfene Varianten und bereits implementierte Details nur über Archiv/Commits nachlesen; keine automatischen Reaktivierungen. Neue Idee nur mit eigenem Nutzen, Priorität und späterer ausdrücklicher Freigabe.

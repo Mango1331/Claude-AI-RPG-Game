@@ -7,8 +7,8 @@
 | Bereich | Stand / maßgebliche Quelle |
 |---|---|
 | Architektur A → B1 → C → D | **Implementiert bis Build .136**, Code- und Replaynachweise sowie ST-Host-Smokes in [03](03_AKTUELLER_PROJEKTSTAND.md), [ursprüngliche Umsetzungsspezifikation](patch_plans_10b/PATCH_ARCHITEKTUR_126_KONSOLIDIERT.md). Produktkommits: [A .127](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/167e2e9), [B1 .130](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/59e1305), [B1-Startschutz .131](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/cc71256), [C .132](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/8908850), [D .133](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/bc44df1), [D-Reviewabschluss .136](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/8efb926). |
-| Start mit Makros | **Offener Hotfix**, natürlicher Batch vom 31.10. bereits beim ersten Zug mit `CAMPAIGN START HIDDEN` abgebrochen. Details und unmittelbare Reihenfolge in [03](03_AKTUELLER_PROJEKTSTAND.md). Kein bestätigter neuer Produktbuild. |
-| Paket F / natürliche Batchprüfung | **Offen**; Nutzer startet drei Guildprofile lokal erst nach dem kurzen echten Makro-Startnachweis. [Runner](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/6cc09cd/avereth-engine/docs/LIVE_RUNNER.md), [Runindex](testrun_10b/README.md). |
+| Start mit Makros | **Behoben in [.137 / 5124373](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/5124373)**: Start auf aufgelöster ST-Begrüßung mit korrektem Ort; echter ST-Makro-Start 26/26, Fullsuite und Replay grün laut Implementierung. Der ursprüngliche .136-Batch ist als abgebrochener Beleg erhalten. [03](03_AKTUELLER_PROJEKTSTAND.md). |
+| Paket F / natürliche Batchprüfung | **Offen**; Nutzer startet drei Guildprofile lokal auf .137 (ggf. zuerst kurze eigene Gegenprobe). [Runner](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/6cc09cd/avereth-engine/docs/LIVE_RUNNER.md), [Runindex](testrun_10b/README.md). |
 | B2 / E | **Nicht begonnen und nicht Voraussetzung für F.** B2 entfernt rein historische formale Privatquestreste; E den größeren ungenutzten V3/V4-A/Ruleset1-Pfad nach Nutzungskarte. [Fachplan](patch_plans_10b/PATCH_ARCHITEKTUR_126_KONSOLIDIERT.md). |
 | Main/Minor | Beschlossener, **noch nicht implementierter** [Fachplan](patch_plans_10b/PATCH_COMBAT_MAIN_MINOR_ACTIONS.md). Vor der Umsetzung alte Kompatibilitätsstellen aktualisieren. |
 | F-/E-Scaling, Monster, NPC-Langzeitwissen, Questfreiheit | **Spätere Themen ohne aktuelle Freigabe.** [Ideenkatalog](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md). |
@@ -27,6 +27,6 @@ Keine erneuten Patchdetails oder historischen Testzahlen in diesem Index; Implem
 
 ## Natürliche Originalbelege
 
-Alle vorherigen Batches und Gegenreviews stehen **nur** im [Runindex](testrun_10b/README.md) und im [Originalarchiv 1–19](testrun_10b/ARCHIV_BATCHES.md). Der jüngste Batch vom 31.10.2026 ist vor der Charaktererstellung technisch abgebrochen; nicht als natürliche A–D-Abnahme darstellen. Seinen Status in [03](03_AKTUELLER_PROJEKTSTAND.md) verfolgen.
+Alle vorherigen Batches und Gegenreviews stehen **nur** im [Runindex](testrun_10b/README.md) und im [Originalarchiv 1–19](testrun_10b/ARCHIV_BATCHES.md). Der erste Batch vom 31.10.2026 ist auf .136 vor der Charaktererstellung technisch abgebrochen; .137 behebt den Start, aber noch kein natürlicher A–D-Langbatch. Seinen Status in [03](03_AKTUELLER_PROJEKTSTAND.md) verfolgen.
 
 **Pflege:** Ein neuer Nachweis gehört in Run-Review oder Dev-Fachpatchnote, der Status in 03. Hier nur neue Fachquellen oder wesentliche Abschlüsse kurz verlinken. Keine historische Patchkette neu erzählen.

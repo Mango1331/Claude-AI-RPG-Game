@@ -236,3 +236,86 @@ Gegenproben ausgeführt; keine neuen Tests angelegt und keine Suite oder ST-Abna
 **Nächster Schritt:** gesonderte Implementierungsfreigabe dieses Fachpatches.
 Produkt bleibt .142; keine Code-, Prompt-, Schema-, Test-, Fingerprint- oder Archivänderung
 durch diese Planung. Kein natürlicher Batch vor Korrektur und unabhängiger Abnahme.
+
+## 7. Ergänzung Claude: Gegenprüfung des Plans und des GPT-Feedbacks (01.11.2026)
+
+**Bewertung:** Plan und GPT-Feedback werden übernommen. Q1–Q4, G1/G2 und Z1/Z2 sind am Code von .142
+nachvollzogen (`priceEvidence.literal()` und `payArgument()` fallen auf die ganze Quelle zurück,
+`giftFree()` ebenso; `commands.pay` kehrt mit `confirmPayment()` vor allen Fachprüfungen zurück).
+Kein Umbau, nur die folgenden Ergänzungen. Sie gehören in denselben Folgepatch.
+
+### 7.1 Zwei weitere reproduzierte Lücken auf .142 (Gegenprobe wie §2, Vorzustand #99, 200 cp)
+
+| ID | Fall | .142 | Ursache | Zuordnung |
+|---|---|---|---|---|
+| Q5 / P1 | Offener Vorschlag über 5 cp an Tam; nächste Nachricht `Yes. I pay Tam five copper.`; Planner sendet Bestätigung **und** direktes `pay` | **−5, −5** | Die Bestätigung hat keine Geldspanne; F1.5 (verbrauchte Münzfundstelle) erfasst sie nicht | F1/F3 |
+| G3 / P1 | `I hand Tam two silver and five copper.` als zwei Kommandos (`money` „two silver“, 20 / „five copper“, 5) | **−20** gebucht, 5 als Vorschlag | `CONTINUES` erkennt „and five copper“ (Zahl + Münze) nicht als Fortsetzung: Teilbetrag einer Übergabe | F2 |
+
+G3 bestätigt GPTs Präzisierung auf andere Weise: Das Risiko ist nicht nur die Doppel-, sondern auch
+die **Teilbuchung** einer zerlegten Übergabe.
+
+### 7.2 Präzisierungen für die Umsetzung
+
+1. **Identität einer Zahlung = vollständige Geldgruppe der Handlung**, nicht die zitierte Spanne
+   (GPT-Hinweis, G3). Die Geldspanne wird auf die vollständige `coinEvidence`-Gruppe ihres Satzes
+   erweitert. Ein Zitat, das nur einen Teil einer größeren Gruppe trifft, ist `incomplete` (beidseitig:
+   „two silver“ vor „and five copper“ und „five copper“ hinter „two silver and“). Verbraucht wird die
+   ganze Gruppe; ein zweites Kommando auf derselben Gruppe bucht nicht.
+2. **Q5:** Eine Nachricht verbraucht einen offenen Vorschlag höchstens einmal. Bucht im selben Aufruf eine
+   direkte Zahlung an dieselbe Partei über denselben Betrag, schließt sie den Vorschlag
+   (`decision.closed`, erledigt) statt einer zweiten Buchung durch die Bestätigung; umgekehrt verbraucht
+   die bestätigte Zahlung die Geldgruppe der Nachricht. Kein Abgleich über spätere Nachrichten.
+3. **Zone der Münzart (Bree/T26):** §3 F1.3 sagt „aus demselben Satz“. Die .142-Positionsprüfung
+   (T26 „Gland at six. Gel at four.“, Münze im ersten Satz desselben `said`) braucht als Zone **das eigene
+   Handels-`said` des Deltas**, nie die übrige Antwort. Bitte so festschreiben, sonst wird der bestehende
+   grüne T26-Test rot oder F1 wieder geöffnet.
+4. **Z2 einfacher lösen:** Für Registrierung, Kauf und Service gar **keinen freien Zahlungsvorschlag**
+   anlegen. Diese Zwecke gehen schon beim ersten Kommando in ihren Fachweg (Registrierung offen,
+   `WANTS`/bedingter Kauf, Angebotsannahme) und klären dort. Freie Vorschläge und `confirmPayment()`
+   bleiben nur für freie Zahlungen (Trinkgeld, Spende, Rückzahlung, Geschenk). Wo ein Vorschlag bleibt,
+   speichert die Entscheidung ihre **Route** beim Anlegen; die Bestätigung errät den Zweck nicht erneut
+   aus `for`-Text. Damit entfällt die Fachweg-Wiederholung in `confirmPayment()` weitgehend (F3.4–3.5).
+5. **Z1 nicht zu einer neuen Wortliste werden lassen:** Annahme nur, wenn die aktuelle Aussage
+   (a) ein kurzes Ja zu genau diesem einen offenen Vorschlag ist oder (b) dasselbe Zahlungsverb mit
+   Empfänger/Betrag nennt. Alles andere ist keine Annahme. Diese Regel nicht erweitern, wenn neue
+   Gegenbeispiele auftauchen (siehe §7.4).
+6. **`said` wird für neue Gebote, Angebotszeilen und Geschenke faktisch Pflicht.** Der Extractor-Prompt
+   muss das sagen (Version nachziehen). Erwartung offen benennen: mehr einmalige Repairs und mehr
+   nicht erfasste Angebote, wo das Modell `said` auslässt. Beides messen und berichten.
+7. **Replay-Adapter:** `contract_f.mjs` liest alte Antworten ohne `said` heute aus der ganzen Antwort.
+   Unter F1 darf er das nicht als Beleg weiterreichen und auch kein `said` erfinden. Erwartet wird eine
+   größere, aber gleichartige Gruppe nicht mehr erfasster Altangebote; diese als **eine** begründete
+   Kategorie „alter Vertrag ohne Handlungsanker“ führen, nicht einzeln umdeuten. Die Rot-/Grün-Abnahme
+   stützt sich auf frische Antworten im neuen Vertrag, nicht auf den Adapter.
+8. **Bekannte harmlose Heuristik offenlegen:** `giftFree()` lehnt über das `why` Erlöse gutgeschriebener
+   Verkäufe und Zahlungen für noch gehaltene Waren ab. Das kann nur ablehnen, nie zahlen; es bleibt,
+   wird aber nicht erweitert.
+
+Zusätzliche Pflichtfälle für §5: Q5, G3 (beide Zerlegungsrichtungen), „two silver and five copper“ als
+**ein** Kommando zahlt 25 direkt (Kontrolle), Registrierung mit unklarem Betrag erzeugt keinen freien
+Vorschlag.
+
+### 7.3 Grenzen, die dieser Patch nicht schließt
+
+- Ein konsistent falsches Modellbild (falsche Partei, falsche `relation`, falsches `phase: firm` bei
+  Qualitätsbedingungen wie #438) bleibt Restrisiko; Belegprüfung kann es nicht beweisen.
+- Herabstufungen durch den Bedingungscheck können falsch positiv sein; sie verhindern Käufe, nie Abgänge.
+- Bestätigung per Freitext bleibt eine Auslegung des Planners; §7.2 Nr. 5 begrenzt sie, beweist sie nicht.
+
+### 7.4 Stoppregel: danach Design vereinfachen statt weiter zu patchen
+
+Findet der unabhängige Gegenreview des Folgepatches **erneut eine P1-Lücke** in einer der Klassen unten,
+wird nicht noch eine Regel ergänzt. Stattdessen wird die zugehörige Designvereinfachung umgesetzt
+(jeweils mit eigener kurzer Freigabe):
+
+| Klasse | Vereinfachung |
+|---|---|
+| Freie ausgehende Zahlungen (Richtung, Argument, Doppel-/Teilbuchung) | Freie Zahlungen nur noch über eine **Engine-Bestätigung** (Panel-/Slash-Aktion mit Entscheidungs-ID, kein Freitext-„Yes“). Sofort nur bei Kauf/Registrierung/Service über deren Fachweg. Kostet einen Klick bei Trinkgeld/Spende. |
+| Bestätigung | Wie oben: deterministische Bestätigungsaktion statt Annahmeerkennung im Freitext. |
+| NPC-Preise (Quelle, Basis, Positionen, nackte Zahlen) | Gespeichert wird nur ein Preis, dessen `said` **eine vollständige Münzgruppe** enthält (Gesamt- oder Stückpreis). Positionen, nackte Zahlen und Währungserbschaft werden nicht mehr gelesen; der Händler muss den Gesamtpreis nennen, sonst „Preis erfragen“. |
+| Eingehende Geschenke | Erzählte Geldgeschenke werden nur bis zu einer kleinen Obergrenze gebucht oder als Annahmeentscheidung angeboten; größere Summen kommen nur über Engine-Wege (Quest, Verkauf, Fund per TAKE). |
+| Mehrfachkommandos | Höchstens eine freie Zahlung je Empfänger und Nachricht; weitere werden zur Klärung. |
+
+Diese Vereinfachungen tauschen etwas Spielfluss gegen deterministische Sicherheit. Sie sind bewusst
+nicht Teil des Folgepatches, sondern die vereinbarte Ausweichrichtung, damit die Finanzthemen nicht
+in weiteren Gegenreview-Runden kreisen.

@@ -1,6 +1,6 @@
 # Avereth Engine – Finanzabläufe behalten oder vereinfachen
 
-**Stand: 01.11.2026 · neuer Fach- und Entscheidungsplan, keine Implementierung.**
+**Stand: 01.11.2026 · Fach- und Entscheidungsplan, nach GPT-Gegenreview präzisiert; keine Implementierung.**
 Produkt geprüft: **[.143 / d2a292a](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/d2a292a1ba6ce1fc537238e9f51306a8bec2cce9)**.
 Die .143-Gegenprüfung hat Q5 erneut als P1 reproduziert. Die Stoppregel des
 [bisherigen Fachplans §7.4](PATCH_FINANCE_REVIEW142.md) ist damit für freie Zahlungen/Bestätigung ausgelöst.
@@ -181,6 +181,9 @@ Ein Button wäre eine alternative Oberfläche desselben Enginewegs, kein zweiter
 Native Enginebefehle werden vor `turn.begun` behandelt (`engine.js:107–118`). Deshalb die
 alte Freitext-Bestätigungsprüfung auf `s.turn - 1` nicht unverändert übernehmen: Gültigkeit
 muss zur offenen Entscheidung und ihrer Quelle passen, auch nach reinen Statuspanels.
+Reload allein macht einen noch gültigen Vorschlag nicht ungültig. Die Bestätigung muss aber
+im aktuellen Chat-/Eventzweig auf einen offenen Vorschlag zeigen; ein verlassener oder
+verworfener Swipe ist keine Autorisierung. Keine globale Nebenliste für bezahlte IDs einführen.
 
 ## 5. Konkrete Zielabläufe
 
@@ -222,15 +225,26 @@ Versprechen oder erneutes Erzählen derselben Übergabe zahlen nicht.
 - `pay`-Freitext erzeugt ausschließlich Vorschläge. Richtung/Partei/Betrag werden sichtbar;
   unvollständige Beträge sind nicht bestätigbar, nicht still Teilbeträge.
 - Zunächst ein minimaler direkter Enginebefehl, beispielsweise `#pay <decision-id>`;
-  optional später ein Button. Name/Oberfläche sind noch zu entscheiden.
+  optional später ein Button. Die vollständige Eingabe muss allein aus Befehl und genau einer
+  Vorschlags-ID bestehen. Kein Aufruf aus Zitaten, Prosa, angehängten `#`-Fragmenten,
+  mehreren Systembefehlen oder Narratorausgaben; vor der allgemeinen Hashtag-Zerlegung prüfen.
 - Höchstens ein freier Vorschlag pro Empfänger und Nachricht. Bei widersprüchlichen Summen
   keine automatische Zusammenrechnung; eine eindeutige Entscheidung verlangen.
 - Native Bestätigung verwendet gespeicherte Partei, cp, Zweck und Route, prüft aktuellen Ort,
   Präsenz, Gültigkeit und Guthaben und bucht Transaktion/Entscheidungsschluss zusammen.
-- Freitext-`confirmation`, `paymentConsent()` und der Zuordnungsabgleich über gleiches `for`
-  entfallen als Zahlungsautorität. Keine weitere Sprachregel für Ja, Adverbien oder Nebenhandlungen.
+- Beide bisherigen freien Abbuchungswege entfallen: direkte Freitextzahlung auch bei verifiziertem
+  Beleg sowie vom Planner gemeldete Freitext-`confirmation`. `paymentConsent()` und gleiches `for`
+  sind keine Zahlungsautorität mehr. Kein alter Ausweichpfad bei ungültigem `#pay`.
+  Bekannte Fachzahlungen sind davon getrennt; den vorhandenen Bucher für die native Aktion wiederverwenden.
 - Bekannte Käufe, Registrierung und Dienste bleiben ihre Fachwege. Offenes Registrierungsangebot
   allein macht ein unabhängiges Trinkgeld nicht zur Gebühr.
+- Jeder bestätigbare Vorschlag zeigt Partei, Zweck, Betrag, Wallet vorher/nachher und die exakte
+  Eingabe `#pay <seine-ID>` sowie „noch nicht bezahlt“. Unvollständige Vorschläge zeigen keinen
+  ausführbaren Zahlungsbefehl. Bestätigung oder Ablehnung liefert ein eindeutiges Engine-Ergebnis.
+- Runner-Anleitung (`PLAYER_COMMANDS`/`PLAYER_MECHANICS`) knapp ergänzen: nur gewollte Vorschläge
+  mit der angezeigten eigenständigen Eingabe bestätigen; „Yes, I pay“ zahlt nicht. Der Driver
+  erzeugt, ersetzt oder bestätigt keine Entscheidung. Keine neue Strategie und kein Modellaufruf
+  für die native Buchung.
 - Kein neuer bezahlter Reise-/Kampf-/Wartezug allein für diese Bestätigung. Der zusätzliche
   Bedienvorgang und seine Auswirkung auf die Runner-Inputzahl werden transparent berichtet.
 
@@ -243,8 +257,19 @@ Versprechen oder erneutes Erzählen derselben Übergabe zahlen nicht.
   neue einfache Endpreisangabe statt dieser Berechnungsarten; nicht mehrere alte Wege dahinter behalten.
 - Mehrere gespeicherte Enginepositionen und deren Mengenrechnung bleiben zulässig.
   Regel „neuer freier Endpreis“ ist kein Verbot der Enginearithmetik.
+- Ein gemeinsamer Lospreis bindet genau die vollständigen gespeicherten Artikel/IDs und Mengen.
+  Daraus keine Einzelpreise ableiten, die Summe nicht an jede Position kopieren und keine Teilmenge
+  still buchen. Für Teilverkäufe nur vorhandene eigenständig bepreiste Positionen nutzen oder
+  eine neue Endofferte einholen; `bidSale()`/Buchungsprüfungen erhalten. Fehlt für einen neuen
+  Einkaufslospreis die vorhandene eindeutige Repräsentation, nach ausdrücklichen Endpreisen je
+  Artikel fragen, statt künstlich Einzelpreise zu verteilen oder ein neues Paketmodell einzuführen.
 - Bedingungen bleiben unverbindlich, bis eine neue feste Offerte existiert. Der Erzähler darf
   weiter handeln, prüfen, Preise begründen und ablehnen; nicht jede Gesprächszahl wird ein Angebot.
+- Den Endpreisvertrag im tatsächlichen Narrator-Kontext und im Extractor-Vertrag erklären:
+  Für eine feste Offerte das benannte Los und eine vollständige gegenwärtige Endsumme nennen.
+  Fehlt diese, zeigt die Engine konkret Ware/Menge und fehlende Gesamtsumme oder offene Bedingung;
+  der Narrator darf darauf natürlich antworten. Kein allgemeines „Preis ungültig“, kein automatischer
+  Zuschlag und kein neuer Pflichtdialog vor bereits eindeutigen Geschäften.
 - Annahme verwendet gespeicherte Positionen/Preise und explizite Preisgrenzen.
   `acceptanceWhy()` darf den Geldbestand/Nebenpreis nicht mehr zu einer zweiten Preisvereinbarung machen.
   Dafür bestehenden doppelten Preisleser entfernen; Auswahl-/Rabatt-/Partei-/Mengenprüfungen erhalten.
@@ -258,6 +283,9 @@ keinen zusätzlichen Bestätigungsklick.
 
 **S1+S2 als ein freizugebender Fachpatch** mit getrennten internen Schritten und einem
 unabhängigen Gegenreview. Keine neue Serie aus „now“, „too“, „one more“, „the plate“ usw.
+Die Endpreisregel entfernt mehrdeutige Rechenrollen, beweist aber nicht die Bedeutung jeder
+freien Offerte: Quelle, Gegenpartei und Bindung bleiben Teil des Modellvertrags und seiner
+bestehenden Prüfung. Keine Vollgarantie und keine neue Sprachheuristik daraus ableiten.
 
 ### Nicht in diesem Patch: allgemeiner Engine-Ankauf
 
@@ -272,10 +300,10 @@ Für den jetzigen Plan empfehle ich erst den klaren Endpreisweg; keine automatis
 |---|---|---|
 | Freier Vorschlag/Bestätigung | `v4/commands.js:pay/paymentProposal/confirmPayment/freePayment`; `commands.js:runCommands` | Nur native bestätigte Entscheidungen buchen freie Abgänge. Den alten Freitext-Bucher wirklich entfernen, nicht nur verstecken. |
 | Host/Persistenz | `v4/runtime.js`, `host.js`, vorhandene Enginebefehl-Routen | Native Aktion als Eventrecord speichern; nur UI-Panel und Zustandsänderung, kein unnötiger Modellaufruf. Wiederholung/Reload/Swipe konsistent. |
-| Neue Preisquelle | `v4/extract.js`, Vokabularbeschreibungen, `finance_evidence.js`, `world.offer/bid/dealTerms` | Ein einfacher expliziter Gesamtpreisvertrag; die zurückgestellten Interpretationstypen nicht mehr als Ausweichweg verwenden. |
+| Neue Preisquelle | `v4/extract.js`, `v4/context.js`/tatsächlich gelieferter Narrator-Vertrag, Vokabularbeschreibungen, `finance_evidence.js`, `world.offer/bid/dealTerms` | Expliziter Gesamtpreisvertrag, konkrete Klärungsmeldung und unteilbares Los; keine alten Preisinterpretationen als Ausweichweg. Falls der Kartenvertrag betroffen ist, Revision und Updatehinweis anpassen. |
 | Zustimmung | `trade.acceptanceWhy/positionPrices/tradePrice`, `interpret.amountErrors`, `planner`, `commands.offer.accept` | Eine zugeordnete Preiszustimmung statt mehrerer Ganztextleser; vorhandene Limits und Auswahl weiter prüfen. |
 | Unveränderter Buchungskern | `trade.linePrice/pickLines/bookPurchase/bookSale`, `guild.completeContract`, `lootEvents` | Nur soweit ein neuer klarer Aufrufer nötig ist anfassen; keine neue Arithmetik, Preisbalance oder Eigentumslogik. |
-| Runner | `tools/st_live/live/players.mjs` und Engine-Ergebnisdarstellung | Falls S1 freigegeben: nur die neue Bedienaktion erklären, keine automatischen Zahlungen/Bestätigungen durch den Driver und keine neue Spielstrategie. |
+| Runner | `tools/st_live/live/players.mjs` (`PLAYER_COMMANDS`/`PLAYER_MECHANICS`) und Engine-Ergebnisdarstellung | Exakte Bedienaktion samt Vorschlags-ID erklären; keine automatischen Zahlungen/Bestätigungen durch den Driver und keine neue Spielstrategie. |
 | Dokumentation/Kanon | 02 nach Designfreigabe; 03 aktueller Stand; eine Dev-Patchnote | Dieser Plan ist Vorschlag. Alte Analysen nicht umschreiben und nicht überall dieselbe Begründung kopieren. |
 
 **Pflichtfälle bei Umsetzung:**
@@ -285,12 +313,20 @@ Für den jetzigen Plan empfehle ich erst den klaren Endpreisweg; keine automatis
 2. Q5 mit verschiedenem `for`, beiden Reihenfolgen und Folgefrage: vor nativer Bestätigung
    kein freier Abgang, genau eine Entscheidung, danach genau eine Transaktion.
 3. Normale Rollenspiel-Zahlungsformen erzeugen denselben Vorschlag; kein wachsender Wortkatalog.
-   Quote/Narrator/Geldforderung kann die native Bestätigungsaktion nicht imitieren.
+   Nur eine eigenständige Engine-Eingabe bestätigt: Zitat, Narrator, angehängter Befehl,
+   Mehrfachbefehl, Freitext-`confirmation` und direkte Freitextzahlung dürfen nicht buchen.
+   Geschlossene/unbekannte/verworfene IDs zahlen nichts; eine gültige offene ID bleibt nach
+   Statuspanel/Reload nutzbar. Wiederholung zahlt kein zweites Mal, Swipe folgt dem aktuellen Eventzweig.
+   Host/Runner-Kette mit sichtbarem Vorschlag → vom Testspieler selbst gewähltem `#pay` → genau einer
+   Buchung prüfen; kein verstecktes Bestätigen und kein zusätzlicher Planner/Narrator/Extractor-Aufruf.
 4. Drei Einheiten eines gespeicherten6-cp-Preises kosten18; bekannte260/160 ergeben420.
    Unteilbare Lose bleiben abgewiesen. Geänderte/fehlende Ware oder abwesende Partei buchen nicht.
 5. Neue freie Rede „four each“/mehrere Teilpreise ohne Endsumme wird nicht als Gesamtlospreis
    gebucht; klare Endofferte wird gespeichert und korrekt angenommen. Alte/alternative Preise
-   und echte Bedingungen werden nicht als neue Zustimmung behandelt.
+   und echte Bedingungen werden nicht als neue Zustimmung behandelt. Gemeinsamer Lospreis:
+   vollständige Auswahl bucht einmal; einzelne Position oder Mengenänderung ohne eigenen Preis
+   bucht nichts. Narrator/Extractor erhalten denselben Endpreisvertrag, fehlende Summe erzeugt
+   die konkrete Rückfrage; klare Endofferte benötigt keinen weiteren Pflichtzug.
 6. Neues Annahmebeispiel mit300-cp-Geldbestand und festem260-cp-Angebot funktioniert,
    aber ein tatsächliches Limit250, ein Gegengebot oder eine unvollständige Artikelauswahl bucht nichts.
 7. Verkäufe und Käufe/Trinkgeld in einem Input werden nicht gegenseitig zur zweiten Buchung.
@@ -322,3 +358,18 @@ So unterscheiden wir eine mehrfach wiederholte Verkaufsschleife von vielen versc
 **Noch keine Umsetzung.** Produkt bleibt .143. Die notwendigen konkreten Verluste an Komfort
 und die bewusst erhaltenen Fähigkeiten stehen hier zur Entscheidung; nicht als bereits beschlossener
 Designkanon behandeln. Nach Freigabe ein begrenzter Fachpatch, keine erneute allgemeine Finanz-Auditserie.
+
+## 9. Bewertung des GPT-Gegenreviews (01.11.2026)
+
+Grundlage: `Chatgpt Feedback(20261101-092246).md`, geprüft gegen den unveränderten Produktstand .143.
+Den vier Ergänzungen stimme ich zu: exakte native Eingabe, bedienbarer sichtbarer Vorschlag,
+Narrator-/Extractor-Endpreisvertrag mit Losschutz und Entfernung der zweiten Preisrekonstruktion.
+Sie präzisieren §§4.4, 6 und 7; keine zusätzliche Architekturmaßnahme oder neue Auditphase nötig.
+`runCommands()`/`splitCommands()` und der Runner bestätigen die genannten Ansatzpunkte;
+`bidSale()` schützt bereits unbepreiste Teillose und soll dafür weiter genutzt werden.
+
+Zwei Grenzen bleiben ausdrücklich: Reload ist nicht selbst ein Ungültigkeitsgrund, und „alte
+Zahlungswege entfernen“ betrifft die beiden **freien** Abbuchungswege, nicht Kauf, Registrierung
+oder Dienste. S1 folgt aus Q5/Stoppregel; S2 bleibt eine zusätzliche bewusste Vereinfachung.
+Die Freigabeempfehlung des Reviews ist keine Nutzerfreigabe zur Implementierung. Produkt und
+Designkanon bleiben unverändert; als Nächstes ist nur die gemeinsame Entscheidung über S1+S2 nötig.

@@ -1,0 +1,1600 @@
+{
+ "end": {
+  "kind": "defeat",
+  "why": "turn 20: he died"
+ },
+ "milestones": [
+  {
+   "at": 3,
+   "turn": 2,
+   "skills": [
+    "mage.arcane_bolt",
+    "mage.arcane_wave"
+   ],
+   "class": "mage",
+   "id": "creation_complete",
+   "check": "creation_complete",
+   "required": true,
+   "goal": "Create a genuine Level-1 Mage through the ordinary creation menu; One of the two starter skills MUST be mage.arcane_wave; choose the other freely. Use AoE only when tactically useful; do not force fights or ignore friendly fire..",
+   "reached": true
+  },
+  {
+   "id": "open_run_level",
+   "check": "open_run_level",
+   "required": true,
+   "goal": "Develop your freely chosen Level-1 character through real play until the Engine confirms Level 15. Keep improving gear and skills; then continue to class evolution instead of stopping.",
+   "reached": false
+  },
+  {
+   "id": "class_accepted",
+   "check": "class_accepted",
+   "required": true,
+   "goal": "After Level 15, finish pending danger, inspect #class/#feats and freely choose an offered E class. Panels are read-only; if the offer is due, take a safe ordinary story turn. Normal is valid: never farm Rare. Only Engine-confirmed acceptance finishes this milestone; no E fight is required.",
+   "reached": false
+  }
+ ],
+ "reached": {
+  "creation_complete": {
+   "at": 3,
+   "turn": 2,
+   "skills": [
+    "mage.arcane_bolt",
+    "mage.arcane_wave"
+   ],
+   "class": "mage"
+  },
+  "guild_registered": {
+   "at": 9,
+   "turn": 5,
+   "rank": "Novice",
+   "branch": "loc.glassmere"
+  },
+  "board_shown": {
+   "at": 11,
+   "turn": 6,
+   "listings": 5
+  },
+  "numeric_cull_active": {
+   "at": 13,
+   "turn": 7,
+   "quest": "quest.a_single_strangler_in_the_reeds",
+   "title": "A Single Strangler in the Reeds",
+   "count": 1,
+   "dungeon": null
+  },
+  "fight_started": {
+   "at": 20,
+   "turn": 10
+  },
+  "fight_won": {
+   "at": 21,
+   "turn": 11,
+   "encounter": "enc.t9r"
+  },
+  "quest_ready": {
+   "at": 22,
+   "turn": 11,
+   "quest": "quest.a_single_strangler_in_the_reeds"
+  },
+  "quest_completed": {
+   "at": 24,
+   "turn": 12,
+   "quest": "quest.a_single_strangler_in_the_reeds",
+   "title": "A Single Strangler in the Reeds"
+  },
+  "dungeon_quest_active": {
+   "at": 29,
+   "turn": 15,
+   "quest": "quest.clear_glimmerdeep_grotto_level_1",
+   "title": "Clear Glimmerdeep Grotto Level 1"
+  },
+  "inside_dungeon": {
+   "at": 34,
+   "turn": 17,
+   "place": "loc.glimmerdeep_grotto.outer_galleries",
+   "floor": 1
+  },
+  "group_fight": {
+   "at": 37,
+   "turn": 19,
+   "foes": 4
+  },
+  "guild_registered_fee": {
+   "at": 9,
+   "turn": 5,
+   "fee": 20,
+   "paid": 20,
+   "payments": 1
+  },
+  "dungeon_gate": {
+   "at": 34,
+   "turn": 17,
+   "dungeon": "loc.glimmerdeep_grotto",
+   "floor": 1,
+   "fee": 0,
+   "paid": 0
+  },
+  "dungeon_population": {
+   "at": 34,
+   "turn": 17,
+   "dungeon": "loc.glimmerdeep_grotto",
+   "floor": 1,
+   "slot": "beetles",
+   "creatures": 3
+  }
+ },
+ "encounters": [
+  {
+   "id": "enc.t9r",
+   "at": 20,
+   "turn": 10,
+   "foes": [
+    "mon.creaturemarsh_constrictor"
+   ],
+   "groups": [],
+   "stayedOut": [],
+   "concealed": false,
+   "awareness": {},
+   "ended": 21,
+   "defeated": [
+    "mon.creaturemarsh_constrictor"
+   ],
+   "escaped": [],
+   "pcDead": false,
+   "pcEscaped": false,
+   "xp": 60
+  },
+  {
+   "id": "enc.t16",
+   "at": 37,
+   "turn": 19,
+   "foes": [
+    "mon.glimmerdeep_grotto_c1_l1_e1_1",
+    "npc.brenna",
+    "mon.glimmerdeep_grotto_c1_l1_e1_2",
+    "mon.glimmerdeep_grotto_c1_l1_e1_3"
+   ],
+   "groups": [
+    "glimmerdeep_grotto_c1_l1_e1"
+   ],
+   "stayedOut": [],
+   "concealed": false,
+   "awareness": {},
+   "ended": 39,
+   "defeated": [
+    "mon.glimmerdeep_grotto_c1_l1_e1_2",
+    "mon.glimmerdeep_grotto_c1_l1_e1_3",
+    "mon.glimmerdeep_grotto_c1_l1_e1_1"
+   ],
+   "escaped": [],
+   "pcDead": true,
+   "pcEscaped": false,
+   "xp": 0
+  }
+ ],
+ "quests": [
+  {
+   "id": "quest.a_single_strangler_in_the_reeds",
+   "title": "A Single Strangler in the Reeds",
+   "kind": "guild_contract",
+   "dungeon": null,
+   "floor": null,
+   "task": "Kill 1 marsh constrictor at the ford stones of the Aldwyn Crossing. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+   "end_state": "1 marsh constrictor killed at the ford stones of the Aldwyn Crossing.",
+   "created": 11,
+   "statuses": [
+    {
+     "to": "active",
+     "at": 13,
+     "turn": 7
+    },
+    {
+     "to": "completed",
+     "at": 24,
+     "turn": 12
+    }
+   ],
+   "ready": 22,
+   "payout": 40,
+   "xp": 115,
+   "payout_attribution": "quest_id",
+   "payout_cp": 40,
+   "atHall": true
+  },
+  {
+   "id": "quest.cull_the_quarry_ridge_boars",
+   "title": "Cull the Quarry Ridge Boars",
+   "kind": "guild_contract",
+   "dungeon": null,
+   "floor": null,
+   "task": "Kill 5 tusked ridge boars at the scrub slopes above Marrowdelve Quarry. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+   "end_state": "5 tusked ridge boars killed at the scrub slopes above Marrowdelve Quarry.",
+   "created": 11,
+   "statuses": []
+  },
+  {
+   "id": "quest.thin_the_glasswing_raptor_roost",
+   "title": "Thin the Glasswing Raptor Roost",
+   "kind": "guild_contract",
+   "dungeon": null,
+   "floor": null,
+   "task": "Kill 4 glasswing raptors at the cliff roost over the Saltmere Flats. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+   "end_state": "4 glasswing raptors killed at the cliff roost over the Saltmere Flats.",
+   "created": 11,
+   "statuses": []
+  },
+  {
+   "id": "quest.slay_the_pale_stag_of_hollowmere",
+   "title": "Slay the Pale Stag of Hollowmere",
+   "kind": "guild_contract",
+   "dungeon": null,
+   "floor": null,
+   "task": "Kill 1 the pale stag of Hollowmere at the reed islets of Hollowmere Fen. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+   "end_state": "1 the pale stag of Hollowmere killed at the reed islets of Hollowmere Fen.",
+   "created": 11,
+   "statuses": []
+  },
+  {
+   "id": "quest.clear_glimmerdeep_grotto_level_1",
+   "title": "Clear Glimmerdeep Grotto Level 1",
+   "kind": "guild_contract",
+   "dungeon": "loc.glimmerdeep_grotto",
+   "floor": 1,
+   "task": "Clear level 1 of Glimmerdeep Grotto. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedition.",
+   "end_state": "Level 1 of Glimmerdeep Grotto is clear.",
+   "created": 11,
+   "statuses": [
+    {
+     "to": "active",
+     "at": 29,
+     "turn": 15
+    }
+   ],
+   "mine": 29
+  }
+ ],
+ "defeat": {
+  "at": 39,
+  "turn": 20,
+  "why": "he died"
+ },
+ "issues": [
+  {
+   "at": 24,
+   "turn": 12,
+   "kind": "extraction_repaired",
+   "text": "the extractor's first answer needed a repair"
+  },
+  {
+   "at": 32,
+   "turn": 16,
+   "kind": "extraction_repaired",
+   "text": "the extractor's first answer needed a repair"
+  },
+  {
+   "at": 34,
+   "turn": 17,
+   "kind": "extraction_repaired",
+   "text": "the extractor's first answer needed a repair"
+  }
+ ],
+ "counts": {
+  "modelFailures": {
+   "planner": 0,
+   "world": 0
+  },
+  "rejected": {
+   "ambient": 1,
+   "guild_canon": 2,
+   "engine_owned_memory": 1,
+   "engine_owned_fact": 3,
+   "group_unclear": 1,
+   "world_rule": 3,
+   "engine_owned_combat": 1
+  },
+  "panels": {
+   "clarify": 0,
+   "not_taken": 1,
+   "refused": 0,
+   "blocked": 0,
+   "failed": 0,
+   "not_recorded": 0
+  },
+  "events": 334,
+  "recovery": {
+   "narrator": {
+    "markedAttempts": 0,
+    "withStory": 0,
+    "empty": 0,
+    "missing": 0,
+    "applied": 0
+   },
+   "planner": {
+    "empty": 0,
+    "transport": 0,
+    "zeroCommands": 0
+   },
+   "extractor": {
+    "empty": 0,
+    "transport": 0,
+    "zeroDeltas": 0
+   }
+  }
+ },
+ "turns": [
+  {
+   "turn": 1,
+   "at": 1,
+   "input": "I choose Mage.",
+   "route": "v3",
+   "system": true,
+   "place": "loc.glassmere.verge",
+   "placeName": "public roadside verge outside Glassmere",
+   "hp": 90,
+   "mp": 84,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "creation.class_selected",
+    "outcome.recorded"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 4,
+    "plan": null,
+    "board": null,
+    "narrator": null,
+    "extract": null
+   },
+   "calls": [],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 2,
+   "at": 3,
+   "input": "I select Arcane Wave and Arcane Bolt as my two skills.",
+   "route": "v3",
+   "system": true,
+   "place": "loc.glassmere.verge",
+   "placeName": "public roadside verge outside Glassmere",
+   "hp": 90,
+   "mp": 96,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "creation.completed",
+    "outcome.recorded"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 3,
+    "plan": null,
+    "board": null,
+    "narrator": null,
+    "extract": null
+   },
+   "calls": [],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 3,
+   "at": 5,
+   "input": "I walk to the gates of Glassmere and enter the city.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere",
+   "placeName": "Glassmere",
+   "hp": 90,
+   "mp": 96,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "cmd.resolved",
+    "outcome.recorded",
+    "time.advanced",
+    "scene.moved",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 24,
+    "plan": 18329,
+    "board": null,
+    "narrator": 9292,
+    "extract": 2226
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 18329,
+     "finish": "stop",
+     "prompt": 11575,
+     "cached": 0,
+     "completion": 74
+    },
+    {
+     "purpose": "extract",
+     "ms": 2226,
+     "finish": "stop",
+     "prompt": 12628,
+     "cached": 10774,
+     "completion": 106
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 4,
+   "at": 7,
+   "input": "I head toward the taller building with the carved lintel, looking for the Adventurers' Guild.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.guild_hall",
+   "placeName": "Adventurers' Guild hall, Glassmere",
+   "hp": 90,
+   "mp": 96,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "cmd.resolved",
+    "outcome.recorded",
+    "scene.moved",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "delta.rejected",
+    "delta.rejected",
+    "time.advanced",
+    "knowledge.gained",
+    "memory.recorded",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 6,
+    "plan": 2339,
+    "board": null,
+    "narrator": 11933,
+    "extract": 6257
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2339,
+     "finish": "stop",
+     "prompt": 11594,
+     "cached": 10376,
+     "completion": 47
+    },
+    {
+     "purpose": "extract",
+     "ms": 6257,
+     "finish": "stop",
+     "prompt": 12624,
+     "cached": 10767,
+     "completion": 366
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 5,
+   "at": 9,
+   "input": "I place two silver on the counter. \"Registration, please.\"",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.guild_hall",
+   "placeName": "Adventurers' Guild hall, Glassmere",
+   "hp": 90,
+   "mp": 96,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "offer.created",
+    "decision.opened",
+    "transaction.completed",
+    "coin.changed",
+    "offer.closed",
+    "guild.registered",
+    "object.created",
+    "fact.asserted",
+    "knowledge.gained",
+    "knowledge.gained",
+    "decision.closed",
+    "cmd.resolved",
+    "cmd.resolved",
+    "outcome.recorded",
+    "time.advanced",
+    "fact.asserted",
+    "knowledge.gained",
+    "fact.asserted",
+    "delta.rejected",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 16,
+    "plan": 2747,
+    "board": null,
+    "narrator": 8624,
+    "extract": 4097
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2747,
+     "finish": "stop",
+     "prompt": 11608,
+     "cached": 10385,
+     "completion": 150
+    },
+    {
+     "purpose": "extract",
+     "ms": 4097,
+     "finish": "stop",
+     "prompt": 12493,
+     "cached": 10783,
+     "completion": 223
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 6,
+   "at": 11,
+   "input": "I walk to the contract board and read the low contracts available to a Novice.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.guild_hall",
+   "placeName": "Adventurers' Guild hall, Glassmere",
+   "hp": 90,
+   "mp": 96,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "offer.created",
+    "place.created",
+    "quest.created",
+    "place.created",
+    "quest.created",
+    "place.created",
+    "quest.created",
+    "place.created",
+    "quest.created",
+    "quest.created",
+    "board.refreshed",
+    "board.shown",
+    "cmd.resolved",
+    "outcome.recorded",
+    "entity.created",
+    "scene.entered",
+    "fact.asserted",
+    "fact.asserted",
+    "fact.asserted",
+    "knowledge.gained",
+    "memory.recorded",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 16,
+    "plan": 1935,
+    "board": 11988,
+    "narrator": 6961,
+    "extract": 5268
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 1935,
+     "finish": "stop",
+     "prompt": 11635,
+     "cached": 10387,
+     "completion": 40
+    },
+    {
+     "purpose": "board",
+     "ms": 11988,
+     "finish": "stop",
+     "prompt": 2602,
+     "cached": 2602,
+     "completion": 1156
+    },
+    {
+     "purpose": "extract",
+     "ms": 5268,
+     "finish": "stop",
+     "prompt": 14255,
+     "cached": 10987,
+     "completion": 272
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 7,
+   "at": 13,
+   "input": "I return to the counter and ask the clerk to take the contract \"A Single Strangler in the Reeds.\"",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.guild_hall",
+   "placeName": "Adventurers' Guild hall, Glassmere",
+   "hp": 90,
+   "mp": 96,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "quest.status",
+    "board.refreshed",
+    "object.created",
+    "fact.asserted",
+    "knowledge.gained",
+    "knowledge.gained",
+    "cmd.resolved",
+    "outcome.recorded",
+    "delta.rejected",
+    "quest.detailed",
+    "fact.asserted",
+    "time.advanced",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 7,
+    "plan": 2495,
+    "board": null,
+    "narrator": 6427,
+    "extract": 6627
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2495,
+     "finish": "stop",
+     "prompt": 12871,
+     "cached": 10431,
+     "completion": 82
+    },
+    {
+     "purpose": "extract",
+     "ms": 6627,
+     "finish": "stop",
+     "prompt": 13844,
+     "cached": 10959,
+     "completion": 282
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 8,
+   "at": 15,
+   "input": "I set out east on the river road toward the Aldwyn Crossing.",
+   "route": "v4",
+   "system": false,
+   "place": "realm.caelreth.the_ford_stones_of_the_aldwyn_crossing",
+   "placeName": "the ford stones of the Aldwyn Crossing",
+   "hp": 90,
+   "mp": 96,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "intent.set",
+    "cmd.resolved",
+    "outcome.recorded",
+    "time.advanced",
+    "entity.updated",
+    "entity.updated",
+    "scene.moved",
+    "place.updated",
+    "intent.set",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "scene.awareness",
+    "fact.ended",
+    "fact.asserted",
+    "quest.detailed",
+    "thread.set",
+    "knowledge.gained",
+    "memory.recorded",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 11,
+    "plan": 2461,
+    "board": null,
+    "narrator": 6185,
+    "extract": 6203
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2461,
+     "finish": "stop",
+     "prompt": 12909,
+     "cached": 10433,
+     "completion": 62
+    },
+    {
+     "purpose": "extract",
+     "ms": 6203,
+     "finish": "stop",
+     "prompt": 14223,
+     "cached": 10970,
+     "completion": 482
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 9,
+   "at": 17,
+   "input": "I move to the bank within casting range of the reeds around the middle stones and cast Arcane Wave into the still water there.",
+   "route": "v3",
+   "system": true,
+   "place": "realm.caelreth.the_ford_stones_of_the_aldwyn_crossing",
+   "placeName": "the ford stones of the Aldwyn Crossing",
+   "hp": 90,
+   "mp": 96,
+   "level": 1,
+   "encounter": false,
+   "events": [],
+   "perf": {
+    "wait": null,
+    "engine": 9,
+    "plan": 3653,
+    "board": null,
+    "narrator": null,
+    "extract": null
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 3653,
+     "finish": "stop",
+     "prompt": 12352,
+     "cached": 10423,
+     "completion": 193
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 10,
+   "at": 19,
+   "input": "I wade carefully along the ford stones toward the middle of the crossing, watching the still water among the reeds, ready to cast Arcane Wave the moment the snake shows itself.",
+   "route": "v4",
+   "system": false,
+   "place": "realm.caelreth.the_ford_stones_of_the_aldwyn_crossing",
+   "placeName": "the ford stones of the Aldwyn Crossing",
+   "hp": 85,
+   "mp": 96,
+   "level": 1,
+   "encounter": true,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "cmd.resolved",
+    "outcome.recorded",
+    "entity.created",
+    "scene.entered",
+    "entity.updated",
+    "entity.updated",
+    "scene.position",
+    "scene.awareness",
+    "combat.pending",
+    "combat.intent",
+    "thread.set",
+    "memory.recorded",
+    "combat.pending_cleared",
+    "encounter.started",
+    "scene.awareness",
+    "resource.changed",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 7,
+    "plan": 2113,
+    "board": null,
+    "narrator": 8753,
+    "extract": 7878
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2113,
+     "finish": "stop",
+     "prompt": 12362,
+     "cached": 10420,
+     "completion": 96
+    },
+    {
+     "purpose": "extract",
+     "ms": 7878,
+     "finish": "stop",
+     "prompt": 13505,
+     "cached": 10893,
+     "completion": 705
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 11,
+   "at": 21,
+   "input": "I cast Arcane Bolt at the marsh constrictor.",
+   "route": "v3",
+   "system": false,
+   "place": "realm.caelreth.the_ford_stones_of_the_aldwyn_crossing",
+   "placeName": "the ford stones of the Aldwyn Crossing",
+   "hp": 85,
+   "mp": 86,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "encounter.updated",
+    "resource.changed",
+    "entity.status",
+    "fact.asserted",
+    "knowledge.gained",
+    "knowledge.gained",
+    "xp.changed",
+    "skill.progress",
+    "career.recorded",
+    "encounter.ended",
+    "entity.updated",
+    "memory.recorded",
+    "entity.updated",
+    "object.created",
+    "object.created",
+    "outcome.recorded",
+    "delta.rejected",
+    "relation.set",
+    "memory.recorded",
+    "quest.ready",
+    "object.marked",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 15,
+    "plan": 2223,
+    "board": null,
+    "narrator": 7367,
+    "extract": 10801
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2223,
+     "finish": "stop",
+     "prompt": 5402,
+     "cached": 3415,
+     "completion": 48
+    },
+    {
+     "purpose": "extract",
+     "ms": 10801,
+     "finish": "stop",
+     "prompt": 13341,
+     "cached": 10932,
+     "completion": 489
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 12,
+   "at": 23,
+   "input": "I thank the carter and take the road back west toward the Guild hall in town to turn in the contract.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.guild_hall",
+   "placeName": "Adventurers' Guild hall, Glassmere",
+   "hp": 85,
+   "mp": 86,
+   "level": 2,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "intent.set",
+    "cmd.resolved",
+    "cmd.resolved",
+    "outcome.recorded",
+    "entity.updated",
+    "entity.updated",
+    "scene.moved",
+    "intent.set",
+    "proof.checked",
+    "coin.changed",
+    "transaction.completed",
+    "xp.changed",
+    "level.up",
+    "quest.status",
+    "fact.asserted",
+    "cmd.completed",
+    "delta.rejected",
+    "fact.asserted",
+    "entity.updated",
+    "fact.asserted",
+    "time.advanced",
+    "object.marked",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 9,
+    "plan": 2335,
+    "board": null,
+    "narrator": 8551,
+    "extract": 13710
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2335,
+     "finish": "stop",
+     "prompt": 12440,
+     "cached": 10437,
+     "completion": 81
+    },
+    {
+     "purpose": "extract",
+     "ms": 8761,
+     "finish": "stop",
+     "prompt": 13882,
+     "cached": 10947,
+     "completion": 529
+    },
+    {
+     "purpose": "extract_repair",
+     "ms": 4949,
+     "finish": "stop",
+     "prompt": 14366,
+     "cached": 13941,
+     "completion": 335
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 13,
+   "at": 25,
+   "input": "#assign INT 2 WIL 2 VIT 1",
+   "route": "v3",
+   "system": true,
+   "place": "loc.glassmere.guild_hall",
+   "placeName": "Adventurers' Guild hall, Glassmere",
+   "hp": 85,
+   "mp": 86,
+   "level": 2,
+   "encounter": false,
+   "events": [
+    "stat.assigned",
+    "stat.assigned",
+    "stat.assigned"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 6,
+    "plan": null,
+    "board": null,
+    "narrator": null,
+    "extract": null
+   },
+   "calls": [],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 14,
+   "at": 27,
+   "input": "I take the wrapping from the shelf and bind the bite on my forearm, then ask the clerk what contracts are on the Novice board today.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.guild_hall",
+   "placeName": "Adventurers' Guild hall, Glassmere",
+   "hp": 85,
+   "mp": 86,
+   "level": 2,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "cmd.resolved",
+    "cmd.resolved",
+    "outcome.recorded",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "fact.asserted",
+    "scene.awareness",
+    "object.created",
+    "cmd.completed",
+    "knowledge.gained",
+    "memory.recorded",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 11,
+    "plan": 3977,
+    "board": null,
+    "narrator": 10092,
+    "extract": 4967
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 3977,
+     "finish": "stop",
+     "prompt": 12774,
+     "cached": 10415,
+     "completion": 128
+    },
+    {
+     "purpose": "extract",
+     "ms": 4967,
+     "finish": "stop",
+     "prompt": 13751,
+     "cached": 10949,
+     "completion": 184
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 15,
+   "at": 29,
+   "input": "I tell the clerk: \"I'll take the Glimmerdeep Grotto contract — stamp the slip for me, please.\"",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.guild_hall",
+   "placeName": "Adventurers' Guild hall, Glassmere",
+   "hp": 85,
+   "mp": 86,
+   "level": 2,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "quest.status",
+    "board.refreshed",
+    "object.created",
+    "fact.asserted",
+    "knowledge.gained",
+    "cmd.resolved",
+    "outcome.recorded",
+    "delta.rejected",
+    "fact.asserted",
+    "scene.position",
+    "scene.awareness",
+    "quest.detailed",
+    "time.advanced",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 13,
+    "plan": 2154,
+    "board": null,
+    "narrator": 6988,
+    "extract": 6621
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2154,
+     "finish": "stop",
+     "prompt": 12799,
+     "cached": 10424,
+     "completion": 69
+    },
+    {
+     "purpose": "extract",
+     "ms": 6621,
+     "finish": "stop",
+     "prompt": 13764,
+     "cached": 10952,
+     "completion": 535
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 16,
+   "at": 31,
+   "input": "\"I am. Fourteen silver and glowing crystal sounds better than boar tusks alone — but if you want to split it, the reward splits too. Coming, or watching?\" I head for the north road toward the academy cleft.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glimmerdeep_grotto",
+   "placeName": "Glimmerdeep Grotto",
+   "hp": 85,
+   "mp": 86,
+   "level": 2,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "dungeon.established",
+    "cmd.resolved",
+    "outcome.recorded",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "fact.asserted",
+    "knowledge.gained",
+    "memory.recorded",
+    "entity.updated",
+    "scene.moved",
+    "place.updated",
+    "scene.entered",
+    "fact.asserted",
+    "memory.recorded",
+    "time.advanced",
+    "dungeon.booked",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 14,
+    "plan": 2804,
+    "board": null,
+    "narrator": 9572,
+    "extract": 9679
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2804,
+     "finish": "stop",
+     "prompt": 12862,
+     "cached": 10423,
+     "completion": 137
+    },
+    {
+     "purpose": "extract",
+     "ms": 5538,
+     "finish": "stop",
+     "prompt": 14016,
+     "cached": 10940,
+     "completion": 362
+    },
+    {
+     "purpose": "extract_repair",
+     "ms": 4141,
+     "finish": "stop",
+     "prompt": 14442,
+     "cached": 14047,
+     "completion": 274
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 17,
+   "at": 33,
+   "input": "\"Light's mine — stay a step behind and loose at anything that skitters.\" I step into the grotto, staff raised, and head into the outer galleries.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glimmerdeep_grotto.outer_galleries",
+   "placeName": "outer galleries",
+   "hp": 85,
+   "mp": 86,
+   "level": 2,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "dungeon.ahead",
+    "cmd.resolved",
+    "outcome.recorded",
+    "place.created",
+    "scene.moved",
+    "link.set",
+    "place.updated",
+    "dungeon.part",
+    "scene.entered",
+    "fact.asserted",
+    "fact.asserted",
+    "entity.created",
+    "scene.entered",
+    "entity.created",
+    "scene.entered",
+    "entity.created",
+    "scene.entered",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "dungeon.slot",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "delta.rejected",
+    "time.advanced",
+    "dungeon.booked",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 15,
+    "plan": 2423,
+    "board": null,
+    "narrator": 12605,
+    "extract": 15156
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2423,
+     "finish": "stop",
+     "prompt": 12424,
+     "cached": 10462,
+     "completion": 67
+    },
+    {
+     "purpose": "extract",
+     "ms": 8262,
+     "finish": "stop",
+     "prompt": 13720,
+     "cached": 10955,
+     "completion": 563
+    },
+    {
+     "purpose": "extract_repair",
+     "ms": 6894,
+     "finish": "stop",
+     "prompt": 14226,
+     "cached": 13840,
+     "completion": 467
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 18,
+   "at": 35,
+   "input": "I cast Arcane Wave at the cluster of beetles, hoping to catch all three.",
+   "route": "v3",
+   "system": true,
+   "place": "loc.glimmerdeep_grotto.outer_galleries",
+   "placeName": "outer galleries",
+   "hp": 85,
+   "mp": 86,
+   "level": 2,
+   "encounter": false,
+   "events": [],
+   "perf": {
+    "wait": null,
+    "engine": 13,
+    "plan": 2525,
+    "board": null,
+    "narrator": null,
+    "extract": null
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2525,
+     "finish": "stop",
+     "prompt": 12737,
+     "cached": 10507,
+     "completion": 87
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 19,
+   "at": 37,
+   "input": "I cast Arcane Wave at Crystal Beetle A, Crystal Beetle B and Crystal Beetle C — the whole cluster.",
+   "route": "v3",
+   "system": false,
+   "place": "loc.glimmerdeep_grotto.outer_galleries",
+   "placeName": "outer galleries",
+   "hp": 21,
+   "mp": 72,
+   "level": 2,
+   "encounter": true,
+   "events": [
+    "turn.begun",
+    "entity.sheet_set",
+    "encounter.started",
+    "scene.awareness",
+    "scene.awareness",
+    "scene.awareness",
+    "scene.awareness",
+    "resource.changed",
+    "resource.changed",
+    "entity.status",
+    "fact.asserted",
+    "knowledge.gained",
+    "knowledge.gained",
+    "knowledge.gained",
+    "knowledge.gained",
+    "entity.status",
+    "fact.asserted",
+    "knowledge.gained",
+    "knowledge.gained",
+    "knowledge.gained",
+    "outcome.recorded",
+    "fact.asserted",
+    "combat.intent",
+    "delta.rejected",
+    "delta.rejected",
+    "delta.rejected",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 16,
+    "plan": 2882,
+    "board": null,
+    "narrator": 8317,
+    "extract": 5256
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2882,
+     "finish": "stop",
+     "prompt": 12741,
+     "cached": 10504,
+     "completion": 179
+    },
+    {
+     "purpose": "extract",
+     "ms": 5256,
+     "finish": "stop",
+     "prompt": 13693,
+     "cached": 10986,
+     "completion": 434
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 20,
+   "at": 39,
+   "input": "I grab the staff and hit Crystal Beetle A with my Basic Attack to finish it off.",
+   "route": "v3",
+   "system": false,
+   "place": "loc.glimmerdeep_grotto.outer_galleries",
+   "placeName": "outer galleries",
+   "hp": 0,
+   "mp": 72,
+   "level": 2,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "encounter.updated",
+    "resource.changed",
+    "entity.status",
+    "fact.asserted",
+    "knowledge.gained",
+    "knowledge.gained",
+    "entity.status",
+    "fact.asserted",
+    "knowledge.gained",
+    "career.recorded",
+    "encounter.ended",
+    "resource.changed",
+    "resource.changed",
+    "scene.position",
+    "entity.updated",
+    "memory.recorded",
+    "outcome.recorded",
+    "time.advanced",
+    "fact.asserted",
+    "delta.rejected",
+    "dungeon.booked",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 16,
+    "plan": 2418,
+    "board": null,
+    "narrator": 7527,
+    "extract": 5481
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2418,
+     "finish": "stop",
+     "prompt": 5752,
+     "cached": 3472,
+     "completion": 124
+    },
+    {
+     "purpose": "extract",
+     "ms": 5481,
+     "finish": "stop",
+     "prompt": 13586,
+     "cached": 10993,
+     "completion": 370
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  }
+ ],
+ "dungeon": {
+  "root": "loc.glimmerdeep_grotto",
+  "name": "Glimmerdeep Grotto",
+  "floor": 1,
+  "quest": "quest.clear_glimmerdeep_grotto_level_1"
+ },
+ "character": {
+  "ruleset": 2,
+  "class": "mage",
+  "skills": [
+   "mage.arcane_bolt",
+   "mage.arcane_wave"
+  ]
+ },
+ "growth": {
+  "noted": [],
+  "offers": [],
+  "accepted": null,
+  "signatures": {}
+ },
+ "progression": {
+  "targetLevel": 15,
+  "currentLevel": 2,
+  "checkpointTurns": 100,
+  "checkpoint": null
+ },
+ "coverage": {
+  "visitedPlaces": [
+   {
+    "at": 6,
+    "turn": 3,
+    "id": "loc.glassmere"
+   },
+   {
+    "at": 8,
+    "turn": 4,
+    "id": "loc.glassmere.guild_hall"
+   },
+   {
+    "at": 16,
+    "turn": 8,
+    "id": "realm.caelreth.the_ford_stones_of_the_aldwyn_crossing"
+   },
+   {
+    "at": 32,
+    "turn": 16,
+    "id": "loc.glimmerdeep_grotto"
+   },
+   {
+    "at": 34,
+    "turn": 17,
+    "id": "loc.glimmerdeep_grotto.outer_galleries"
+   }
+  ],
+  "sales": [],
+  "equipmentChanges": [],
+  "skillChanges": []
+ }
+}

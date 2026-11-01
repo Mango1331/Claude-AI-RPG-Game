@@ -1,0 +1,112 @@
+{
+  "startedAt": "2026-11-01T17:47:04.687Z",
+  "status": "completed",
+  "git": "9136f8ff664a",
+  "stub": false,
+  "maxHours": 24,
+  "runs": [
+    {
+      "index": 1,
+      "id": "guild-warrior",
+      "baseClass": "Warrior",
+      "focus": "guild",
+      "seed": 1346262523,
+      "folder": "001-guild-warrior",
+      "status": "finished",
+      "end": {
+        "kind": "defeat",
+        "why": "turn 32: he died"
+      },
+      "recordedEnd": {
+        "kind": "defeat",
+        "why": "turn 32: he died"
+      },
+      "exit": {
+        "code": 2,
+        "signal": null
+      },
+      "runDir": "20261101-174705Z-current_test",
+      "build": "4.3.0-c.6.6.146",
+      "git": {
+        "commit": "9136f8ff664a",
+        "branch": "claude/c-planner-prototype-2026-10-02-gpt-c666",
+        "dirty": []
+      },
+      "stub": false,
+      "inputs": 32,
+      "level": 2,
+      "actualClass": "warrior",
+      "profileUnchanged": true,
+      "secretHits": 0
+    },
+    {
+      "index": 2,
+      "id": "guild-mage",
+      "baseClass": "Mage",
+      "focus": "guild",
+      "seed": 1346262524,
+      "folder": "002-guild-mage",
+      "status": "finished",
+      "end": {
+        "kind": "defeat",
+        "why": "turn 20: he died"
+      },
+      "recordedEnd": {
+        "kind": "defeat",
+        "why": "turn 20: he died"
+      },
+      "exit": {
+        "code": 2,
+        "signal": null
+      },
+      "runDir": "20261101-180428Z-current_test",
+      "build": "4.3.0-c.6.6.146",
+      "git": {
+        "commit": "9136f8ff664a",
+        "branch": "claude/c-planner-prototype-2026-10-02-gpt-c666",
+        "dirty": []
+      },
+      "stub": false,
+      "inputs": 20,
+      "level": 2,
+      "actualClass": "mage",
+      "profileUnchanged": true,
+      "secretHits": 0
+    },
+    {
+      "index": 3,
+      "id": "guild-rogue",
+      "baseClass": "Rogue",
+      "focus": "guild",
+      "seed": 1346262525,
+      "folder": "003-guild-rogue",
+      "status": "finished",
+      "end": {
+        "kind": "ui",
+        "why": "turn 282: chat persistence failed"
+      },
+      "recordedEnd": {
+        "kind": "ui",
+        "why": "turn 282: chat persistence failed"
+      },
+      "exit": {
+        "code": 2,
+        "signal": null
+      },
+      "runDir": "20261101-181218Z-current_test",
+      "build": "4.3.0-c.6.6.146",
+      "git": {
+        "commit": "9136f8ff664a",
+        "branch": "claude/c-planner-prototype-2026-10-02-gpt-c666",
+        "dirty": []
+      },
+      "stub": false,
+      "inputs": 282,
+      "level": 15,
+      "actualClass": "rogue",
+      "profileUnchanged": true,
+      "secretHits": 0
+    }
+  ],
+  "endedAt": "2026-11-01T21:34:37.823Z"
+}

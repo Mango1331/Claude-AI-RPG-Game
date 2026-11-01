@@ -1,0 +1,342 @@
+{
+ "runId": "20261101-180428Z-current_test",
+ "build": "4.3.0-c.6.6.146",
+ "git": {
+  "commit": "9136f8ff664a",
+  "branch": "claude/c-planner-prototype-2026-10-02-gpt-c666",
+  "dirty": []
+ },
+ "scenario": {
+  "id": "guild-mage",
+  "focus": "guild",
+  "baseClass": "Mage",
+  "starterAoe": "mage.arcane_wave"
+ },
+ "stub": false,
+ "seed": 1346262524,
+ "fixture": null,
+ "fixtureReload": null,
+ "persona": "curious adventurer: follow interesting opportunities without forcing dangerous encounters",
+ "guide": {
+  "id": "current_test",
+  "chain": [
+   "current_test"
+  ],
+  "files": [
+   "tools\\st_live\\live\\guides\\current_test.json"
+  ]
+ },
+ "end": {
+  "kind": "defeat",
+  "why": "turn 20: he died"
+ },
+ "timing": {
+  "totalMs": 467966,
+  "stStartMs": 17274,
+  "setupMs": 45416,
+  "turns": 20,
+  "gameMs": 354270,
+  "decideMs": 52447
+ },
+ "preflight": {
+  "endpoint": "http://127.0.0.1:5050/v1/models",
+  "reachable": true,
+  "status": 200,
+  "models": [
+   "Qwen/Qwen3.8-27B",
+   "zai-org/GLM-5.3-Flash",
+   "zai-org/GLM-5.3",
+   "deepseek-ai/DeepSeek-V4.1-Flash",
+   "deepseek-ai/DeepSeek-V4-Pro",
+   "moonshotai/Kimi-K2.6"
+  ],
+  "found": true,
+  "error": null
+ },
+ "route": {
+  "profile": {
+   "source": "custom",
+   "via": "custom_url",
+   "url": "http://127.0.0.1:5050/v1",
+   "model": "zai-org/GLM-5.3-Flash",
+   "key": "secrets.json api_key_custom"
+  },
+  "runner": {
+   "source": "custom",
+   "via": "custom_url",
+   "url": "http://127.0.0.1:5050/v1",
+   "model": "zai-org/GLM-5.3-Flash",
+   "key": "secrets.json api_key_custom"
+  },
+  "same": true,
+  "differences": [],
+  "reverseProxy": null,
+  "proxyPassword": false,
+  "proxyPresets": true
+ },
+ "player": {
+  "type": "llm",
+  "reasoning": {
+   "body": {
+    "reasoning_effort": "low",
+    "clear_thinking": true
+   },
+   "source": "profile",
+   "keys": [
+    "reasoning_effort",
+    "clear_thinking"
+   ],
+   "note": "as the game's own requests carry them (custom_include_body and the preset's reasoning_effort), same endpoint and model"
+  },
+  "probe": {
+   "ok": true,
+   "status": 200,
+   "finish": "stop",
+   "content": "OK",
+   "reasoningChars": 0,
+   "error": null
+  },
+  "dropped": null
+ },
+ "setup": {
+  "card": "Avereth Engine Test v4",
+  "greeting": "profile",
+  "world": "Avereth World Lore v0.14",
+  "preset": "Avereth Narrator V4",
+  "source": "custom",
+  "via": "custom_url",
+  "model": "zai-org/GLM-5.3-Flash",
+  "stream": false,
+  "host": "127.0.0.1:5050"
+ },
+ "conn": {
+  "mainApi": "openai",
+  "source": "custom",
+  "url": "http://127.0.0.1:5050/v1",
+  "model": "zai-org/GLM-5.3-Flash",
+  "stream": false,
+  "preset": "Avereth Narrator V4",
+  "connected": true,
+  "status": "Status check bypassed"
+ },
+ "chatId": "Avereth Live 20261101-180428Z-current_test",
+ "safeContinuations": 0,
+ "turns": [
+  {
+   "turn": 1,
+   "text": "I choose Mage.",
+   "decideMs": 5877,
+   "ok": true,
+   "ms": 2287,
+   "replyMs": 474,
+   "outcome": "engine",
+   "milestone": "creation_complete"
+  },
+  {
+   "turn": 2,
+   "text": "I select Arcane Wave and Arcane Bolt as my two skills.",
+   "decideMs": 1496,
+   "ok": true,
+   "ms": 2115,
+   "replyMs": 296,
+   "outcome": "engine",
+   "milestone": "creation_complete"
+  },
+  {
+   "turn": 3,
+   "text": "I walk to the gates of Glassmere and enter the city.",
+   "decideMs": 1426,
+   "ok": true,
+   "ms": 32011,
+   "replyMs": 28058,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 4,
+   "text": "I head toward the taller building with the carved lintel, looking for the Adventurers' Guild.",
+   "decideMs": 1541,
+   "ok": true,
+   "ms": 22586,
+   "replyMs": 14575,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 5,
+   "text": "I place two silver on the counter. \"Registration, please.\"",
+   "decideMs": 2093,
+   "ok": true,
+   "ms": 17455,
+   "replyMs": 11715,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 6,
+   "text": "I walk to the contract board and read the low contracts available to a Novice.",
+   "decideMs": 4214,
+   "ok": true,
+   "ms": 28438,
+   "replyMs": 21145,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 7,
+   "text": "I return to the counter and ask the clerk to take the contract \"A Single Strangler in the Reeds.\"",
+   "decideMs": 6469,
+   "ok": true,
+   "ms": 17647,
+   "replyMs": 9144,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 8,
+   "text": "I set out east on the river road toward the Aldwyn Crossing.",
+   "decideMs": 1910,
+   "ok": true,
+   "ms": 17192,
+   "replyMs": 9115,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 9,
+   "text": "I move to the bank within casting range of the reeds around the middle stones and cast Arcane Wave into the still water there.",
+   "decideMs": 3271,
+   "ok": true,
+   "ms": 5840,
+   "replyMs": 3990,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 10,
+   "text": "I wade carefully along the ford stones toward the middle of the crossing, watching the still water among the reeds, ready to cast Arcane Wave the moment the snake shows itself.",
+   "decideMs": 1688,
+   "ok": true,
+   "ms": 20724,
+   "replyMs": 11100,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 11,
+   "text": "I cast Arcane Bolt at the marsh constrictor.",
+   "decideMs": 1412,
+   "ok": true,
+   "ms": 22703,
+   "replyMs": 9891,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 12,
+   "text": "I thank the carter and take the road back west toward the Guild hall in town to turn in the contract.",
+   "decideMs": 2199,
+   "ok": true,
+   "ms": 26546,
+   "replyMs": 11348,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 13,
+   "text": "#assign INT 2 WIL 2 VIT 1",
+   "decideMs": 1564,
+   "ok": true,
+   "ms": 2139,
+   "replyMs": 298,
+   "outcome": "system",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 14,
+   "text": "I take the wrapping from the shelf and bind the bite on my forearm, then ask the clerk what contracts are on the Novice board today.",
+   "decideMs": 2582,
+   "ok": true,
+   "ms": 21336,
+   "replyMs": 14339,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 15,
+   "text": "I tell the clerk: \"I'll take the Glimmerdeep Grotto contract — stamp the slip for me, please.\"",
+   "decideMs": 2834,
+   "ok": true,
+   "ms": 18119,
+   "replyMs": 9465,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 16,
+   "text": "\"I am. Fourteen silver and glowing crystal sounds better than boar tusks alone — but if you want to split it, the reward splits too. Coming, or watching?\" I head for the north road toward the academy cleft.",
+   "decideMs": 2347,
+   "ok": true,
+   "ms": 24013,
+   "replyMs": 12695,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 17,
+   "text": "\"Light's mine — stay a step behind and loose at anything that skitters.\" I step into the grotto, staff raised, and head into the outer galleries.",
+   "decideMs": 2110,
+   "ok": true,
+   "ms": 32552,
+   "replyMs": 15372,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 18,
+   "text": "I cast Arcane Wave at the cluster of beetles, hoping to catch all three.",
+   "decideMs": 1850,
+   "ok": true,
+   "ms": 4529,
+   "replyMs": 2945,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 19,
+   "text": "I cast Arcane Wave at Crystal Beetle A, Crystal Beetle B and Crystal Beetle C — the whole cluster.",
+   "decideMs": 2653,
+   "ok": true,
+   "ms": 18479,
+   "replyMs": 11667,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 20,
+   "text": "I grab the staff and hit Crystal Beetle A with my Basic Attack to finish it off.",
+   "decideMs": 2911,
+   "ok": true,
+   "ms": 17559,
+   "replyMs": 10241,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  }
+ ],
+ "status": "Avereth Engine 4.3.0-c.6.6.146 | runtime v4 (LLM: custom endpoint) | turn 17 | mode story | events 334 | integrity: OK | last block ~1528 tokens | history: 23 older message(s) left out, 0 tracker block(s) removed | lore: World Info (Avereth World Lore v0.14) | narrator contract: current | last turn: engine 0.0 s (1 folds, 2 ms) · planner 2.4 s · narrator 7.5 s · extractor 5.5 s",
+ "toasts": [
+  {
+   "at": 1793556310862,
+   "kind": "info",
+   "text": "Rename ChatRenaming chat…",
+   "origin": "runner"
+  }
+ ],
+ "pageErrors": [],
+ "serverErrors": [],
+ "notes": [],
+ "protection": {
+  "unchanged": true
+ },
+ "secretHits": 0
+}

@@ -1,0 +1,327 @@
+{
+  "batch": "batch-20261101-174704Z",
+  "label": "Batch 22",
+  "build": "4.3.0-c.6.6.146",
+  "product_commit": "9136f8ff664ad12e29fc74190f5d8a0909e3d4eb",
+  "archive": {
+    "name": "batch-20261101-174704Z.zip",
+    "bytes": 61070612,
+    "sha256": "ce1bb79b3a6d7ea312c8f2406feb66daebb9c35b8d752e3b7ac2f48c2b513406",
+    "crc_check": "all entries passed",
+    "parts": [
+      {
+        "path": "parts/batch-20261101-174704Z.zip.part01",
+        "offset": 0,
+        "bytes": 8388608,
+        "sha256": "a1149f19d080607b222a8b681e4b4861db92a77650a02f16c656537c38bff47b",
+        "git_blob_sha1": "e7ce18118e864026b7ccdb624d39351dc5fdcab5"
+      },
+      {
+        "path": "parts/batch-20261101-174704Z.zip.part02",
+        "offset": 8388608,
+        "bytes": 8388576,
+        "sha256": "4e1d4241bee386630edf2d51476a3411f26aaffb25c1ee840272ddaf23ab702a",
+        "git_blob_sha1": "0c0a13cb3fbea37fa2d40bb26ad7088f255c1d19"
+      },
+      {
+        "path": "parts/batch-20261101-174704Z.zip.part03",
+        "offset": 16777184,
+        "bytes": 8388576,
+        "sha256": "c3ed5f0f5298894e9cc8c03fe471f8667f8692d5c8a4deeddc8cd17caaf3ba90",
+        "git_blob_sha1": "231ba89375437d87c305b155ce2521cb25fa20d1"
+      },
+      {
+        "path": "parts/batch-20261101-174704Z.zip.part04",
+        "offset": 25165760,
+        "bytes": 8388576,
+        "sha256": "4eb3093d85968a321259fdda0395e9e2b541b26b4b4f0e07111daba5ac1f12f0",
+        "git_blob_sha1": "f4b5a210353e97675cff950ba968e9f1894146bc"
+      },
+      {
+        "path": "parts/batch-20261101-174704Z.zip.part05",
+        "offset": 33554336,
+        "bytes": 8388576,
+        "sha256": "60ba9eb156e0781b8545c54a903ec7fc3368ed8da2046acda2a20973433ead5d",
+        "git_blob_sha1": "c11189a835dff9abb2abf418a31c20e03b19ae2e"
+      },
+      {
+        "path": "parts/batch-20261101-174704Z.zip.part06",
+        "offset": 41942912,
+        "bytes": 8388576,
+        "sha256": "c5b34df0dc105e94c9acc783c147e15ef72be655f4ad4507ce5eeb1273c95686",
+        "git_blob_sha1": "8e7b0a79b18362049640251e147f39a74f7bc0d2"
+      },
+      {
+        "path": "parts/batch-20261101-174704Z.zip.part07",
+        "offset": 50331488,
+        "bytes": 8388576,
+        "sha256": "c7932f20906a39a30f129ae5fc97df40cba2b215f71bba18215f0e1ee5429161",
+        "git_blob_sha1": "47e1dfb1c418036efa510fbeadd61aea8ecfc592"
+      },
+      {
+        "path": "parts/batch-20261101-174704Z.zip.part08",
+        "offset": 58720064,
+        "bytes": 2350548,
+        "sha256": "d9e478f39a65b88dbcbe46758f7e4b2e4d6863539b1fdd18b97b75674dc83470",
+        "git_blob_sha1": "dc6a478849690483a6a8c55a590460aedf5fec99"
+      }
+    ]
+  },
+  "original_files": [
+    {
+      "path": "001-guild-warrior/20261101-174705Z-current_test/avereth-events.json",
+      "bytes": 304439,
+      "sha256": "073bcd5c598411428c03a6891c2eabdf303400f78052f93a00c0a9059fa7953a",
+      "crc32": "1c28425e"
+    },
+    {
+      "path": "001-guild-warrior/20261101-174705Z-current_test/calls.json",
+      "bytes": 73219,
+      "sha256": "a239079776975e31c2d622deed30da4c0cc40379fa63939236238c85f17aaff3",
+      "crc32": "1ce748b9"
+    },
+    {
+      "path": "001-guild-warrior/20261101-174705Z-current_test/chat-completions.jsonl",
+      "bytes": 5293780,
+      "sha256": "f5cabdf43f4a8ceaf5c4a0a788cd7b9f3843850cf297a8ea141860910aacb21f",
+      "crc32": "6706f651"
+    },
+    {
+      "path": "001-guild-warrior/20261101-174705Z-current_test/chat.jsonl",
+      "bytes": 824155,
+      "sha256": "03ac78348e4f557d2cc3d4bc01419a73066dd97d11044f6d7971acf2c6e486ac",
+      "crc32": "2abe9682"
+    },
+    {
+      "path": "001-guild-warrior/20261101-174705Z-current_test/evaluation.json",
+      "bytes": 48966,
+      "sha256": "e1459505edb8f06397407f0c0951a17e67cc1678b3363ef9b08aca0fec1a5580",
+      "crc32": "4324d2b7"
+    },
+    {
+      "path": "001-guild-warrior/20261101-174705Z-current_test/import.json",
+      "bytes": 14021,
+      "sha256": "3135210347e85c1b562a93e39293f10bd54cd9c754ef1dfae5d5c9406636d2b9",
+      "crc32": "c2c18c30"
+    },
+    {
+      "path": "001-guild-warrior/20261101-174705Z-current_test/player.jsonl",
+      "bytes": 229577,
+      "sha256": "d9f4a49ae5a8b80572bc50e228e53996f5955c77918882cae1e6ab252adccf35",
+      "crc32": "fc17b622"
+    },
+    {
+      "path": "001-guild-warrior/20261101-174705Z-current_test/report.md",
+      "bytes": 17071,
+      "sha256": "a30a180999cc3a66bbd95c7a4b1791651eb17166d312814274f5a6cd5d1f7dbf",
+      "crc32": "089844f6"
+    },
+    {
+      "path": "001-guild-warrior/20261101-174705Z-current_test/run.json",
+      "bytes": 11564,
+      "sha256": "dab0586d6272831224d7ed087ec3bec84bde3cdba190ca364c093c12b95c6474",
+      "crc32": "15a1abab"
+    },
+    {
+      "path": "001-guild-warrior/20261101-174705Z-current_test/screens/final.png",
+      "bytes": 167200,
+      "sha256": "5cc59cd16aedcbdbc539bfd0a0d92f4b82ac5720ff6c228fc4dc937d0ce34bf2",
+      "crc32": "4fc973a8"
+    },
+    {
+      "path": "001-guild-warrior/20261101-174705Z-current_test/screens/turn-032-defeat.png",
+      "bytes": 167200,
+      "sha256": "5cc59cd16aedcbdbc539bfd0a0d92f4b82ac5720ff6c228fc4dc937d0ce34bf2",
+      "crc32": "4fc973a8"
+    },
+    {
+      "path": "001-guild-warrior/20261101-174705Z-current_test/server.log",
+      "bytes": 5631563,
+      "sha256": "4e106c91276e7659d43e32d84ae19b235aeb04f367223291021e75286078c551",
+      "crc32": "c80450bc"
+    },
+    {
+      "path": "001-guild-warrior/20261101-174705Z-current_test/server.timed.log",
+      "bytes": 6122344,
+      "sha256": "fc04c1b1fb4dc47838830d5cda982f7b52adc9360f0a33ca42d15f7c3e4a2430",
+      "crc32": "1e4099a5"
+    },
+    {
+      "path": "002-guild-mage/20261101-180428Z-current_test/avereth-events.json",
+      "bytes": 206492,
+      "sha256": "76a89add49aa55272c225f0171d4dc6472595f634f77feb85df896a53af8b17f",
+      "crc32": "8c787fde"
+    },
+    {
+      "path": "002-guild-mage/20261101-180428Z-current_test/calls.json",
+      "bytes": 38187,
+      "sha256": "2aec4b2e65e1390b502077ab1d9f5b7af9904dfb0f83dd4e849e1434d1b04a94",
+      "crc32": "81ade481"
+    },
+    {
+      "path": "002-guild-mage/20261101-180428Z-current_test/chat-completions.jsonl",
+      "bytes": 2795882,
+      "sha256": "1a10b6f238bdc6cf204fa5b5cbcfe0d22b08334f483fdcb6c777314b99fe652b",
+      "crc32": "6516c383"
+    },
+    {
+      "path": "002-guild-mage/20261101-180428Z-current_test/chat.jsonl",
+      "bytes": 500497,
+      "sha256": "0ef67b7a2badb89e5c05e9f995b6a71b895dffdf6f23db77d3bcd35866b733cb",
+      "crc32": "759dc854"
+    },
+    {
+      "path": "002-guild-mage/20261101-180428Z-current_test/evaluation.json",
+      "bytes": 33249,
+      "sha256": "4a555521d502356a8f37080949441af4e8cf18eb5fe2a97ef006b29de6765d78",
+      "crc32": "5104d485"
+    },
+    {
+      "path": "002-guild-mage/20261101-180428Z-current_test/import.json",
+      "bytes": 14021,
+      "sha256": "3135210347e85c1b562a93e39293f10bd54cd9c754ef1dfae5d5c9406636d2b9",
+      "crc32": "c2c18c30"
+    },
+    {
+      "path": "002-guild-mage/20261101-180428Z-current_test/player.jsonl",
+      "bytes": 137229,
+      "sha256": "d6026cd45758c0b80121ff165ef633d6a304fca8bab7fcca9b8477713a608a86",
+      "crc32": "e038e1f8"
+    },
+    {
+      "path": "002-guild-mage/20261101-180428Z-current_test/report.md",
+      "bytes": 14176,
+      "sha256": "6f02e4f5eb05d32db9cdb48644e6e08bce430307cf8fe2fd4915beb915c99670",
+      "crc32": "05d5d833"
+    },
+    {
+      "path": "002-guild-mage/20261101-180428Z-current_test/run.json",
+      "bytes": 8591,
+      "sha256": "471127514d94e8d9a1b4bc34e4a47c14d34e602a8eb58b60b1aed3c4e61b039e",
+      "crc32": "728a5547"
+    },
+    {
+      "path": "002-guild-mage/20261101-180428Z-current_test/screens/final.png",
+      "bytes": 148315,
+      "sha256": "2eb47ac8481d3decb4f01a3fb783d57cc8a0495a925097fad6e878859ea196a0",
+      "crc32": "2a0e445d"
+    },
+    {
+      "path": "002-guild-mage/20261101-180428Z-current_test/screens/turn-020-defeat.png",
+      "bytes": 148315,
+      "sha256": "2eb47ac8481d3decb4f01a3fb783d57cc8a0495a925097fad6e878859ea196a0",
+      "crc32": "2a0e445d"
+    },
+    {
+      "path": "002-guild-mage/20261101-180428Z-current_test/server.log",
+      "bytes": 2994324,
+      "sha256": "f2d035d2da6ced2b992380ecb40aa08bbf692c9980304e894e11da4ffb1846cd",
+      "crc32": "ec1b08c4"
+    },
+    {
+      "path": "002-guild-mage/20261101-180428Z-current_test/server.timed.log",
+      "bytes": 3257360,
+      "sha256": "a8e41062c58feab9f06090c2cbda724c34d5b781c8c11807647630eb4afd7fab",
+      "crc32": "4d7c15f9"
+    },
+    {
+      "path": "003-guild-rogue/20261101-181218Z-current_test/avereth-events.json",
+      "bytes": 1811462,
+      "sha256": "d346d203743fe1eb648288b33d1f953d6bdf0b2213cf2014b9a05c24d74358ed",
+      "crc32": "afec2d3a"
+    },
+    {
+      "path": "003-guild-rogue/20261101-181218Z-current_test/calls.json",
+      "bytes": 617046,
+      "sha256": "58ff360d70e6b22628e5428037b746825a96ea51b6864fa79d49355db1de0f76",
+      "crc32": "a0221ad4"
+    },
+    {
+      "path": "003-guild-rogue/20261101-181218Z-current_test/chat-completions.jsonl",
+      "bytes": 47436596,
+      "sha256": "376ac613eba2253504227ce331cac855f4d571ea3a74942bfcbad95eff67e5ad",
+      "crc32": "03e4b60e"
+    },
+    {
+      "path": "003-guild-rogue/20261101-181218Z-current_test/chat.jsonl",
+      "bytes": 6691596,
+      "sha256": "8062404019d1219497355daa12d682bcf9031ff1b35faf2876779f6e13ffb9b5",
+      "crc32": "2ab573e9"
+    },
+    {
+      "path": "003-guild-rogue/20261101-181218Z-current_test/evaluation.json",
+      "bytes": 380964,
+      "sha256": "8a797682289e1ae372556a67c1df50517b8d5fe42782db20cf96577568630934",
+      "crc32": "2e678272"
+    },
+    {
+      "path": "003-guild-rogue/20261101-181218Z-current_test/import.json",
+      "bytes": 14021,
+      "sha256": "3135210347e85c1b562a93e39293f10bd54cd9c754ef1dfae5d5c9406636d2b9",
+      "crc32": "c2c18c30"
+    },
+    {
+      "path": "003-guild-rogue/20261101-181218Z-current_test/player.jsonl",
+      "bytes": 2160210,
+      "sha256": "77a60ca9ce9069a0cd3e0158e9eeaa8c655c0f898051f0f9209f66e58a25ebe3",
+      "crc32": "49a17599"
+    },
+    {
+      "path": "003-guild-rogue/20261101-181218Z-current_test/report.md",
+      "bytes": 105830,
+      "sha256": "a028200b5aca1a0aa84775200df3e7742d15da9a68e2ae43cf109f1afeacc92e",
+      "crc32": "395120bc"
+    },
+    {
+      "path": "003-guild-rogue/20261101-181218Z-current_test/run.json",
+      "bytes": 80484,
+      "sha256": "8d4a0679b4eedc3462cc77dc94712eea169d77ef3b757a9b99ec88287fb80a4d",
+      "crc32": "3c7b1234"
+    },
+    {
+      "path": "003-guild-rogue/20261101-181218Z-current_test/screens/final.png",
+      "bytes": 184272,
+      "sha256": "3a6585b3676bd55eaa3abacf4e68de1afa08bbbce4f741ee4bc430dc5fa8b7fa",
+      "crc32": "5da92f62"
+    },
+    {
+      "path": "003-guild-rogue/20261101-181218Z-current_test/screens/turn-282-problem.png",
+      "bytes": 184272,
+      "sha256": "3a6585b3676bd55eaa3abacf4e68de1afa08bbbce4f741ee4bc430dc5fa8b7fa",
+      "crc32": "5da92f62"
+    },
+    {
+      "path": "003-guild-rogue/20261101-181218Z-current_test/server.log",
+      "bytes": 50130842,
+      "sha256": "55d94abc57fff625ef7c9129b301b1eae8953ec55d5ab2b07ca9860a5febd812",
+      "crc32": "eecf469d"
+    },
+    {
+      "path": "003-guild-rogue/20261101-181218Z-current_test/server.timed.log",
+      "bytes": 54352933,
+      "sha256": "2857b8567e06edd6603855a840b6ac80e787241e221c153af5cfc83fb700362d",
+      "crc32": "a47a9977"
+    },
+    {
+      "path": "batch.json",
+      "bytes": 2661,
+      "sha256": "938c90cc797d8d5b372c48b8659b33fb4d93c0e6689e80aecd9983ab3d909ad3",
+      "crc32": "12126675"
+    },
+    {
+      "path": "report.md",
+      "bytes": 645,
+      "sha256": "aeafef13080e6fb17a52fe803cd611fefb1bb2e22f16a1cca57b99765f497894",
+      "crc32": "4e3e3474"
+    }
+  ],
+  "credential_scan": {
+    "known_token_and_authorization_patterns": "no matches",
+    "runner_secretHits": [
+      0,
+      0,
+      0
+    ],
+    "note": "Pattern scan is no mathematical proof of absence. No archive content changed."
+  }
+}

@@ -1,0 +1,2990 @@
+{
+ "runId": "20261101-181218Z-current_test",
+ "build": "4.3.0-c.6.6.146",
+ "git": {
+  "commit": "9136f8ff664a",
+  "branch": "claude/c-planner-prototype-2026-10-02-gpt-c666",
+  "dirty": []
+ },
+ "scenario": {
+  "id": "guild-rogue",
+  "focus": "guild",
+  "baseClass": "Rogue",
+  "starterAoe": "rogue.fan_of_blades"
+ },
+ "stub": false,
+ "seed": 1346262525,
+ "fixture": null,
+ "fixtureReload": null,
+ "persona": "cautious adventurer: prepare and recover, weigh threats and withdraw when sensible",
+ "guide": {
+  "id": "current_test",
+  "chain": [
+   "current_test"
+  ],
+  "files": [
+   "tools\\st_live\\live\\guides\\current_test.json"
+  ]
+ },
+ "end": {
+  "kind": "ui",
+  "why": "turn 282: chat persistence failed"
+ },
+ "timing": {
+  "totalMs": 12129880,
+  "stStartMs": 17794,
+  "setupMs": 32326,
+  "turns": 282,
+  "gameMs": 10089977,
+  "decideMs": 1551764
+ },
+ "preflight": {
+  "endpoint": "http://127.0.0.1:5050/v1/models",
+  "reachable": true,
+  "status": 200,
+  "models": [
+   "Qwen/Qwen3.8-27B",
+   "zai-org/GLM-5.3-Flash",
+   "zai-org/GLM-5.3",
+   "deepseek-ai/DeepSeek-V4.1-Flash",
+   "deepseek-ai/DeepSeek-V4-Pro",
+   "moonshotai/Kimi-K2.6"
+  ],
+  "found": true,
+  "error": null
+ },
+ "route": {
+  "profile": {
+   "source": "custom",
+   "via": "custom_url",
+   "url": "http://127.0.0.1:5050/v1",
+   "model": "zai-org/GLM-5.3-Flash",
+   "key": "secrets.json api_key_custom"
+  },
+  "runner": {
+   "source": "custom",
+   "via": "custom_url",
+   "url": "http://127.0.0.1:5050/v1",
+   "model": "zai-org/GLM-5.3-Flash",
+   "key": "secrets.json api_key_custom"
+  },
+  "same": true,
+  "differences": [],
+  "reverseProxy": null,
+  "proxyPassword": false,
+  "proxyPresets": true
+ },
+ "player": {
+  "type": "llm",
+  "reasoning": {
+   "body": {
+    "reasoning_effort": "low",
+    "clear_thinking": true
+   },
+   "source": "profile",
+   "keys": [
+    "reasoning_effort",
+    "clear_thinking"
+   ],
+   "note": "as the game's own requests carry them (custom_include_body and the preset's reasoning_effort), same endpoint and model"
+  },
+  "probe": {
+   "ok": true,
+   "status": 200,
+   "finish": "stop",
+   "content": "OK",
+   "reasoningChars": 0,
+   "error": null
+  },
+  "dropped": null
+ },
+ "setup": {
+  "card": "Avereth Engine Test v4",
+  "greeting": "profile",
+  "world": "Avereth World Lore v0.14",
+  "preset": "Avereth Narrator V4",
+  "source": "custom",
+  "via": "custom_url",
+  "model": "zai-org/GLM-5.3-Flash",
+  "stream": false,
+  "host": "127.0.0.1:5050"
+ },
+ "conn": {
+  "mainApi": "openai",
+  "source": "custom",
+  "url": "http://127.0.0.1:5050/v1",
+  "model": "zai-org/GLM-5.3-Flash",
+  "stream": false,
+  "preset": "Avereth Narrator V4",
+  "connected": true,
+  "status": "Status check bypassed"
+ },
+ "chatId": "Avereth Live 20261101-181218Z-current_test",
+ "safeContinuations": 1,
+ "turns": [
+  {
+   "turn": 1,
+   "text": "I choose Rogue.",
+   "decideMs": 3225,
+   "ok": true,
+   "ms": 2301,
+   "replyMs": 479,
+   "outcome": "engine",
+   "milestone": "creation_complete"
+  },
+  {
+   "turn": 2,
+   "text": "I select Fan of Blades and Piercing Thrust as my two skills.",
+   "decideMs": 2008,
+   "ok": true,
+   "ms": 2093,
+   "replyMs": 294,
+   "outcome": "engine",
+   "milestone": "creation_complete"
+  },
+  {
+   "turn": 3,
+   "text": "I walk toward the city gates of Alderwatch and head for the Adventurers' Guild to look for a suitable novice contract.",
+   "decideMs": 1629,
+   "ok": true,
+   "ms": 39235,
+   "replyMs": 31939,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 4,
+   "text": "I ask the clerk to register me with the Guild and pay the two silver fee.",
+   "decideMs": 1376,
+   "ok": true,
+   "ms": 20072,
+   "replyMs": 13577,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 5,
+   "text": "I tell the clerk I'll take the Millpond Wolf contract and ask her to sign it out to me.",
+   "decideMs": 1643,
+   "ok": true,
+   "ms": 16343,
+   "replyMs": 9884,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 6,
+   "text": "I take the slip and head out of the Guild, following the towpath downriver toward Marrow & Sons Gristmill.",
+   "decideMs": 1401,
+   "ok": true,
+   "ms": 16915,
+   "replyMs": 11191,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 7,
+   "text": "I move quietly along the reed line toward the far end of the pond, watching for the wolf.",
+   "decideMs": 4651,
+   "ok": true,
+   "ms": 20821,
+   "replyMs": 12761,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 8,
+   "text": "I open with Fan of Blades at the wolf from twenty paces, then close in with my dagger drawn.",
+   "decideMs": 1813,
+   "ok": true,
+   "ms": 15549,
+   "replyMs": 11143,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 9,
+   "text": "I head back along the towpath to the Adventurers' Guild in Alderwatch and turn in the completed Millpond Wolf contract for the reward.",
+   "decideMs": 3035,
+   "ok": true,
+   "ms": 32016,
+   "replyMs": 20177,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 10,
+   "text": "#assign AGI 2 PER 2 WIL 1",
+   "decideMs": 3963,
+   "ok": true,
+   "ms": 2145,
+   "replyMs": 304,
+   "outcome": "system",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 11,
+   "text": "I ask the clerk if the Guild buys wolf pelts and fangs, and if so, what he'll offer for one pelt and three fangs.",
+   "decideMs": 9573,
+   "ok": true,
+   "ms": 22104,
+   "replyMs": 11600,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 12,
+   "text": "\"Log them, twelve copper suits me fine.\" I hand over the pelt and three fangs.",
+   "decideMs": 1877,
+   "ok": true,
+   "ms": 28272,
+   "replyMs": 21415,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 13,
+   "text": "\"Done — the pelt and three fangs for twelve copper, as you logged it.\" I hand the goods over and take the coins.",
+   "decideMs": 3372,
+   "ok": true,
+   "ms": 20122,
+   "replyMs": 8694,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 14,
+   "text": "I walk to the Guild contract board and look over the fresh postings.",
+   "decideMs": 1461,
+   "ok": true,
+   "ms": 13280,
+   "replyMs": 8879,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 15,
+   "text": "I take the Bramble Fen Adders contract slip and ask the clerk to accept it as my active contract.",
+   "decideMs": 3477,
+   "ok": true,
+   "ms": 17119,
+   "replyMs": 9600,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 16,
+   "text": "I leave the Guild and follow the drainage road south and east toward the reed-cutters' path in Alderwatch Fen, watching the ground for adders as I go.",
+   "decideMs": 1775,
+   "ok": true,
+   "ms": 15849,
+   "replyMs": 10395,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 17,
+   "text": "I move carefully along the corduroy path, checking the near hummocks for adders.",
+   "decideMs": 2968,
+   "ok": true,
+   "ms": 18170,
+   "replyMs": 9118,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 18,
+   "text": "I throw a Fan of Blades at the two adders on the hummock.",
+   "decideMs": 4328,
+   "ok": true,
+   "ms": 15122,
+   "replyMs": 10430,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 19,
+   "text": "I finish Fen Adder A with a Piercing Thrust.",
+   "decideMs": 1725,
+   "ok": true,
+   "ms": 16741,
+   "replyMs": 9517,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 20,
+   "text": "I finish Fen Adder B with a Piercing Thrust.",
+   "decideMs": 1360,
+   "ok": true,
+   "ms": 17713,
+   "replyMs": 10923,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 21,
+   "text": "I spend my free stat points: #assign VIT 4 WIL 3 STR 3",
+   "decideMs": 2188,
+   "ok": true,
+   "ms": 13854,
+   "replyMs": 9383,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 22,
+   "text": "I press on along the corduroy path, checking the next hummocks for adders.",
+   "decideMs": 1516,
+   "ok": true,
+   "ms": 24351,
+   "replyMs": 16817,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 23,
+   "text": "I back off a few strides along the corduroy log, then throw a Fan of Blades at the den mouth where the hiss comes from.",
+   "decideMs": 2076,
+   "ok": true,
+   "ms": 8877,
+   "replyMs": 7057,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 24,
+   "text": "I step closer and prod the hissing den mouth with my dagger to draw the adder out.",
+   "decideMs": 4013,
+   "ok": true,
+   "ms": 20263,
+   "replyMs": 12738,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 25,
+   "text": "I strike the coiled adder with a Piercing Thrust, then immediately step back toward the log to keep my distance.",
+   "decideMs": 1702,
+   "ok": true,
+   "ms": 18927,
+   "replyMs": 11467,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 26,
+   "text": "I finish the wounded adder with a Basic Attack.",
+   "decideMs": 1309,
+   "ok": true,
+   "ms": 14481,
+   "replyMs": 9081,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 27,
+   "text": "I spend my free stat points: #assign VIT 5 WIL 5 STR 5",
+   "decideMs": 1605,
+   "ok": true,
+   "ms": 15611,
+   "replyMs": 10938,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 28,
+   "text": "#status",
+   "decideMs": 2675,
+   "ok": true,
+   "ms": 2118,
+   "replyMs": 312,
+   "outcome": "system",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 29,
+   "text": "#assign VIT 5 WIL 5 STR 5",
+   "decideMs": 3709,
+   "ok": true,
+   "ms": 2119,
+   "replyMs": 314,
+   "outcome": "system",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 30,
+   "text": "I leave the den mound alone and follow the corduroy path back toward town to recover and sell my adder loot before hunting the last two.",
+   "decideMs": 3653,
+   "ok": true,
+   "ms": 21996,
+   "replyMs": 13816,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 31,
+   "text": "I head to the market row and ask the hides buyer what he'll pay for my three adder skins, four fangs and two venom sacs.",
+   "decideMs": 1812,
+   "ok": true,
+   "ms": 23498,
+   "replyMs": 13880,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 32,
+   "text": "I take the seventeen copper in trade: sell the lot and ask for a salve and bandaging for my arm.",
+   "decideMs": 4652,
+   "ok": true,
+   "ms": 13284,
+   "replyMs": 11476,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 33,
+   "text": "I accept the 16 copper bid and ask for the salve and bandaging.",
+   "decideMs": 3125,
+   "ok": true,
+   "ms": 22199,
+   "replyMs": 15670,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 34,
+   "text": "I take the five-copper deal: salve, bandaging, and the second pot.",
+   "decideMs": 1869,
+   "ok": true,
+   "ms": 16894,
+   "replyMs": 10681,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 35,
+   "text": "I place five copper on the counter and buy the fen salve, the bandaging roll and the second pot of salve for five copper, then wash my arm at the trough and pack the salve into the punctures before wrapping it.",
+   "decideMs": 5450,
+   "ok": true,
+   "ms": 39938,
+   "replyMs": 29326,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 36,
+   "text": "I buy the second pot of fen salve for one copper, then wrap my arm with the bandaging roll.",
+   "decideMs": 2216,
+   "ok": true,
+   "ms": 18540,
+   "replyMs": 12271,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 37,
+   "text": "I ask a smith on the market row what he'd charge for a better dagger and a suit of light armor.",
+   "decideMs": 4556,
+   "ok": true,
+   "ms": 28498,
+   "replyMs": 11535,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 38,
+   "text": "I'll take the common jerkin for 48 copper and have it fitted — that's what I can afford alongside my other gear.",
+   "decideMs": 5952,
+   "ok": true,
+   "ms": 19079,
+   "replyMs": 14202,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 39,
+   "text": "I equip the new common jerkin in place of the starter light armor.",
+   "decideMs": 1803,
+   "ok": true,
+   "ms": 15363,
+   "replyMs": 10428,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 40,
+   "text": "I leave the smithy and head back to the Bramble Fen to hunt the last two adders for my contract.",
+   "decideMs": 3531,
+   "ok": true,
+   "ms": 18255,
+   "replyMs": 11251,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 41,
+   "text": "I walk east out of Alderwatch along the fen road, taking the corduroy path into the Bramble Fen to hunt the last two adders.",
+   "decideMs": 3993,
+   "ok": true,
+   "ms": 26038,
+   "replyMs": 15918,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 42,
+   "text": "I strike the sunning adder with Piercing Thrust, then back toward the fork to keep the reeds in view.",
+   "decideMs": 4533,
+   "ok": true,
+   "ms": 35616,
+   "replyMs": 29888,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 43,
+   "text": "I back away down the path away from both the adder and the still reeds, and head back to Alderwatch to rest — I'm too badly wounded to fight two snakes.",
+   "decideMs": 4292,
+   "ok": true,
+   "ms": 23215,
+   "replyMs": 11495,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 44,
+   "text": "I go to the inn and ask for a room for the night, then sleep until morning.",
+   "decideMs": 1695,
+   "ok": true,
+   "ms": 20393,
+   "replyMs": 11662,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 45,
+   "text": "I accept the innkeeper's offer: the room for the night plus supper and porridge at first light, six copper total.",
+   "decideMs": 1416,
+   "ok": true,
+   "ms": 21638,
+   "replyMs": 15633,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 46,
+   "text": "I'll take the soup and bread for three copper, and the porridge at first light for two — six copper for the food in total.",
+   "decideMs": 2256,
+   "ok": true,
+   "ms": 26010,
+   "replyMs": 17727,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 47,
+   "text": "I eat the soup and bread, then go up to my room and sleep until morning.",
+   "decideMs": 3267,
+   "ok": true,
+   "ms": 20632,
+   "replyMs": 13095,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 48,
+   "text": "I pay the two copper and eat the porridge, then head to the Guild hall to check the contract board.",
+   "decideMs": 1571,
+   "ok": true,
+   "ms": 54864,
+   "replyMs": 48874,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 49,
+   "text": "I ask the clerk to turn in my adder contract — I've defeated three of the five adders so far.",
+   "decideMs": 1811,
+   "ok": true,
+   "ms": 27447,
+   "replyMs": 15209,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 50,
+   "text": "I take the slip back and head to the Bramble Fen to hunt the last two adders.",
+   "decideMs": 2327,
+   "ok": true,
+   "ms": 20137,
+   "replyMs": 13797,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 51,
+   "text": "I circle the hummock quietly and search the thorn tangle for the adder, dagger ready.",
+   "decideMs": 3404,
+   "ok": true,
+   "ms": 21158,
+   "replyMs": 12525,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 52,
+   "text": "I lunge at the adder's head with Piercing Thrust.",
+   "decideMs": 2796,
+   "ok": true,
+   "ms": 12419,
+   "replyMs": 7169,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 53,
+   "text": "I step forward to close the distance, then strike at the adder's head with Piercing Thrust.",
+   "decideMs": 1467,
+   "ok": true,
+   "ms": 13059,
+   "replyMs": 7886,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 54,
+   "text": "I search the reed banks and mud along the corduroy path for the fifth and last adder, dagger ready.",
+   "decideMs": 1562,
+   "ok": true,
+   "ms": 14310,
+   "replyMs": 9613,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 55,
+   "text": "I circle back to the bramble hummocks and search them for the fifth adder, dagger ready.",
+   "decideMs": 3467,
+   "ok": true,
+   "ms": 17395,
+   "replyMs": 11339,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 56,
+   "text": "I wade out along the water's edge where the mud is softest and search the shallows for the fifth adder.",
+   "decideMs": 1776,
+   "ok": true,
+   "ms": 15674,
+   "replyMs": 10198,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 57,
+   "text": "I strike at the adder's head with Piercing Thrust before it can slip deeper into the water.",
+   "decideMs": 2829,
+   "ok": true,
+   "ms": 13439,
+   "replyMs": 7958,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 58,
+   "text": "I wade through the shallow mud to close the distance, then strike at the adder's head with Piercing Thrust.",
+   "decideMs": 5111,
+   "ok": true,
+   "ms": 16452,
+   "replyMs": 9942,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 59,
+   "text": "#assign AGI 3 PER 2",
+   "decideMs": 1635,
+   "ok": true,
+   "ms": 2145,
+   "replyMs": 329,
+   "outcome": "system",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 60,
+   "text": "I head back along the corduroy path to the Guild hall in town and turn in the completed adder contract.",
+   "decideMs": 1525,
+   "ok": true,
+   "ms": 17752,
+   "replyMs": 9921,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 61,
+   "text": "I'll take the Primer of Guard for 80 copper.",
+   "decideMs": 2368,
+   "ok": true,
+   "ms": 21461,
+   "replyMs": 14395,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 62,
+   "text": "I read the Primer of Guard with my dagger in hand to learn the guard skill.",
+   "decideMs": 19333,
+   "ok": true,
+   "ms": 6368,
+   "replyMs": 4575,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 63,
+   "text": "I read the Primer of Guard with my dagger in hand for 2 hours to learn the guard skill.",
+   "decideMs": 2829,
+   "ok": true,
+   "ms": 15202,
+   "replyMs": 9425,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 64,
+   "text": "I head to the tanner's shop and ask to broker the fen adder skins and wolf pelt as arranged.",
+   "decideMs": 1687,
+   "ok": true,
+   "ms": 20760,
+   "replyMs": 11306,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 65,
+   "text": "I'll take the twelve silver outright for the lot.",
+   "decideMs": 1561,
+   "ok": true,
+   "ms": 10442,
+   "replyMs": 8640,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 66,
+   "text": "I sell the two fen adder skins and the wolf pelt to the tanner outright for twelve silver total.",
+   "decideMs": 1828,
+   "ok": true,
+   "ms": 24797,
+   "replyMs": 15189,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 67,
+   "text": "#bag",
+   "decideMs": 2001,
+   "ok": true,
+   "ms": 2459,
+   "replyMs": 336,
+   "outcome": "system",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 68,
+   "text": "I sell the two fen adder skins to the tanner outright for twelve silver total, as she offered.",
+   "decideMs": 3644,
+   "ok": true,
+   "ms": 21032,
+   "replyMs": 10284,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 69,
+   "text": "Two and a half silver for that one skin, then. I accept your offer and hand over the skin.",
+   "decideMs": 2014,
+   "ok": true,
+   "ms": 9034,
+   "replyMs": 6867,
+   "outcome": "soft_continued",
+   "softFailure": "sell seq 1: the price words \"Two and a half\" carry no single amount in his message (currency_not_unique); quote exactly his one price, or set price_evidence to null",
+   "unresolvedActions": null,
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 70,
+   "text": "I hand over the adder skin on the counter and take the two and a half silver for it.",
+   "decideMs": 1643,
+   "ok": true,
+   "ms": 20660,
+   "replyMs": 14871,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 71,
+   "text": "Two silver it is — I take the coins and hand over the skin.",
+   "decideMs": 1975,
+   "ok": true,
+   "ms": 15297,
+   "replyMs": 8759,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 72,
+   "text": "I still have one more fen adder skin — I offer it to her at the same two silver.",
+   "decideMs": 2562,
+   "ok": true,
+   "ms": 23126,
+   "replyMs": 16298,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 73,
+   "text": "I head to the smithy up the row to check light weapons and armour against my skills and coin.",
+   "decideMs": 3875,
+   "ok": true,
+   "ms": 32079,
+   "replyMs": 9433,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 74,
+   "text": "I ask the smith to show me the light armor in the back yard, and mention I'm also eyeing the fine dagger on the rack.",
+   "decideMs": 4662,
+   "ok": true,
+   "ms": 23476,
+   "replyMs": 10252,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 75,
+   "text": "I'll take the common dagger for 80 copper — I hand over the coins and take it.",
+   "decideMs": 7527,
+   "ok": true,
+   "ms": 28669,
+   "replyMs": 26584,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 76,
+   "text": "I buy the common F-Rank dagger from Smith B for 80 copper total — I hand over the coins and take the dagger.",
+   "decideMs": 4355,
+   "ok": true,
+   "ms": 7701,
+   "replyMs": 5878,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 77,
+   "text": "I want to buy the common F-Rank dagger from Smith B for a total price of 80 copper. I pay 80 copper and take the dagger.",
+   "decideMs": 2746,
+   "ok": true,
+   "ms": 17547,
+   "replyMs": 12831,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 78,
+   "text": "I equip the new common F-Rank dagger and ask the smith if he'll buy my retired starter dagger off me.",
+   "decideMs": 2875,
+   "ok": true,
+   "ms": 14568,
+   "replyMs": 8701,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 79,
+   "text": "I accept — ten copper for the starter dagger, deal.",
+   "decideMs": 1477,
+   "ok": true,
+   "ms": 18789,
+   "replyMs": 7403,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 80,
+   "text": "Before I go — do you buy fen adder fangs? I've got a few spare from the fens.",
+   "decideMs": 2365,
+   "ok": true,
+   "ms": 14661,
+   "replyMs": 7995,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 81,
+   "text": "I head to the apothecary on Cordwainer Lane and ask Wren if she'll buy my four fen adder fangs.",
+   "decideMs": 2029,
+   "ok": true,
+   "ms": 29625,
+   "replyMs": 14419,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 82,
+   "text": "I lay the four fen adder fangs out on her counter for inspection.",
+   "decideMs": 4634,
+   "ok": true,
+   "ms": 25450,
+   "replyMs": 8739,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 83,
+   "text": "I'll take the five copper for the lot — deal.",
+   "decideMs": 2986,
+   "ok": true,
+   "ms": 53060,
+   "replyMs": 26059,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 84,
+   "text": "The sound ones I'll keep for Marta's return — but I'll sell you the cracked fang for the copper, if you'll take it now.",
+   "decideMs": 3564,
+   "ok": true,
+   "ms": 31639,
+   "replyMs": 21194,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 85,
+   "text": "I pocket all four fangs to carry myself, thank Wren, and head to the tanner to broker the adder skin as arranged.",
+   "decideMs": 4027,
+   "ok": true,
+   "ms": 36574,
+   "replyMs": 24249,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 86,
+   "text": "I unroll the adder skin and show it to her. What will you give me for it — and I've a wolf pelt to sell too, if you take those.",
+   "decideMs": 2040,
+   "ok": true,
+   "ms": 22108,
+   "replyMs": 14699,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 87,
+   "text": "I'll take the six copper for the adder skin — and I pull out the wolf pelt and hand it over for her to inspect.",
+   "decideMs": 3284,
+   "ok": true,
+   "ms": 89798,
+   "replyMs": 32908,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 88,
+   "text": "I'll take the twenty copper for the wolf pelt — deal.",
+   "decideMs": 5916,
+   "ok": true,
+   "ms": 32399,
+   "replyMs": 20146,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 89,
+   "text": "I step back from the counter. \"My mistake — the pelt's not mine to sell either. Keep it, I'll not press a bad trade.\" I thank her and leave the shop.",
+   "decideMs": 3084,
+   "ok": true,
+   "ms": 18556,
+   "replyMs": 11477,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 90,
+   "text": "#assign AGI 3 PER 2",
+   "decideMs": 2159,
+   "ok": true,
+   "ms": 2530,
+   "replyMs": 371,
+   "outcome": "system",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 91,
+   "text": "I head from the tanner's row to find an inn with a room for the night.",
+   "decideMs": 4602,
+   "ok": true,
+   "ms": 32058,
+   "replyMs": 13056,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 92,
+   "text": "\"Done — if the wolf's dead by my hand and your niece safe, I'll call at the Bellfounder for that silver.\" I shake on it if he will, then cross the square to the Sluice & Cask and ask the innkeep the price of a room and a meal for the night.",
+   "decideMs": 4149,
+   "ok": true,
+   "ms": 32002,
+   "replyMs": 14069,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 93,
+   "text": "\"Staying. Room for the night and the hot stew — that's twelve copper.\" I pay her.",
+   "decideMs": 1963,
+   "ok": true,
+   "ms": 40254,
+   "replyMs": 34143,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 94,
+   "text": "\"The stew at four copper, then — I'll take it now.\" I pay her and eat before heading out.",
+   "decideMs": 2276,
+   "ok": true,
+   "ms": 28387,
+   "replyMs": 22464,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 95,
+   "text": "I head east to the Bellfounder smithy and ask the smith to see his light weapons and light armour.",
+   "decideMs": 3029,
+   "ok": true,
+   "ms": 23834,
+   "replyMs": 14580,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 96,
+   "text": "\"What's the price on the common light armor and the gambeson? I've the coin for a fair upgrade on either.\"",
+   "decideMs": 1819,
+   "ok": true,
+   "ms": 17217,
+   "replyMs": 9934,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 97,
+   "text": "\"Forty-eight copper for the leather — that's beyond my forty-four, so no sale today.\" I thank the smith and look around the yard for Harl Ottoway, who said he'd be at the Bellfounder this morning about the sluice wolf.",
+   "decideMs": 10633,
+   "ok": true,
+   "ms": 22931,
+   "replyMs": 11024,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 98,
+   "text": "\"Still willing — one silver, paid when the wolf's dead and your niece is safe. I'll head to the sluice now.\"",
+   "decideMs": 4789,
+   "ok": true,
+   "ms": 33769,
+   "replyMs": 15169,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 99,
+   "text": "I draw my dagger and aim a Piercing Thrust at the wolf's throat.",
+   "decideMs": 3299,
+   "ok": true,
+   "ms": 17901,
+   "replyMs": 10857,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 100,
+   "text": "I strike with Piercing Thrust at the wolf.",
+   "decideMs": 2076,
+   "ok": true,
+   "ms": 20127,
+   "replyMs": 13726,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 101,
+   "text": "I close the distance to the wolf and thrust with Piercing Thrust as soon as I'm in reach.",
+   "decideMs": 4145,
+   "ok": true,
+   "ms": 13887,
+   "replyMs": 8670,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 102,
+   "text": "I brace and drive Piercing Thrust up into the wolf as it lands on me.",
+   "decideMs": 4439,
+   "ok": true,
+   "ms": 13019,
+   "replyMs": 8198,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 103,
+   "text": "I step into SHORT range and loose Fan of Blades at the wolf.",
+   "decideMs": 3096,
+   "ok": true,
+   "ms": 15363,
+   "replyMs": 9401,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 104,
+   "text": "I skin the proof of the kill, take the pelt and fangs, and head back to Harl Ottoway at the mill to tell him the sluice wolf is dead and claim the one silver he promised.",
+   "decideMs": 1677,
+   "ok": true,
+   "ms": 40303,
+   "replyMs": 17175,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 105,
+   "text": "I thank Harl and head to the tanner down the lane to ask his price for the wolf pelt.",
+   "decideMs": 1904,
+   "ok": true,
+   "ms": 23486,
+   "replyMs": 10581,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 106,
+   "text": "I accept the four copper and hand over the pelt, then ask if he knows a smith or trader in Valedorn Crown who sells light weapons and armour.",
+   "decideMs": 3086,
+   "ok": true,
+   "ms": 19215,
+   "replyMs": 12803,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 107,
+   "text": "I head to Cordery's on Buckle Street and tell old Cordery that Bramm the tanner sent me, then ask to see his light daggers and armour.",
+   "decideMs": 3957,
+   "ok": true,
+   "ms": 30809,
+   "replyMs": 18587,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 108,
+   "text": "I ask Cordery the prices on the fine dagger, the oiled common leathers, and the fine boiled-leather light armor, and whether he'd take my old jerkin and starter armor in trade.",
+   "decideMs": 3336,
+   "ok": true,
+   "ms": 22898,
+   "replyMs": 16544,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 109,
+   "text": "I take off the old jerkin and my starter light armor and hand both to Cordery, asking what he'd knock off the fine light armor's price for the pair.",
+   "decideMs": 3636,
+   "ok": true,
+   "ms": 23013,
+   "replyMs": 15550,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 110,
+   "text": "I shake my head and take back my old jerkin and starter armor. \"Nineteen silver is beyond my purse today, Cordery — I'll keep my old kit for now. Thanks for the straight look.\"",
+   "decideMs": 4434,
+   "ok": true,
+   "ms": 44758,
+   "replyMs": 22616,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 111,
+   "text": "I thank Cordery and head to the Adventurers' Guild hall to look over the contract board for a job I can take at my level.",
+   "decideMs": 3689,
+   "ok": true,
+   "ms": 28627,
+   "replyMs": 23396,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 112,
+   "text": "I take the Fen Adders contract slip from the Novice board and bring it to the clerk to accept it.",
+   "decideMs": 2755,
+   "ok": true,
+   "ms": 28072,
+   "replyMs": 17745,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 113,
+   "text": "I head out of Alderwatch toward the bramble hummocks along the reed-cutters' corduroy path in Alderwatch Fen to hunt fen adders.",
+   "decideMs": 1711,
+   "ok": true,
+   "ms": 41110,
+   "replyMs": 15331,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 114,
+   "text": "I thank the reed-cutters and move toward the east brambles where the big adder went down, keeping low and watching the reeds for movement.",
+   "decideMs": 9237,
+   "ok": true,
+   "ms": 32913,
+   "replyMs": 17933,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 115,
+   "text": "I close the distance slowly through the thin reeds, then strike with Piercing Thrust at the adder's exposed back before it can lift its head.",
+   "decideMs": 3195,
+   "ok": true,
+   "ms": 372978,
+   "replyMs": 365328,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 116,
+   "text": "I close the remaining distance to reach ENGAGED range, then strike the adder with Piercing Thrust before it can lift its head.",
+   "decideMs": 39571,
+   "ok": true,
+   "ms": 66390,
+   "replyMs": 24281,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 117,
+   "text": "I circle wide around the hummock's flank toward the tunnel mouth from the water side, moving carefully until I reach ENGAGED range with the adder, then strike it with Piercing Thrust.",
+   "decideMs": 2226,
+   "ok": true,
+   "ms": 19428,
+   "replyMs": 13791,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 118,
+   "text": "I throw Fan of Blades at the adder from where I stand on the tussock.",
+   "decideMs": 1932,
+   "ok": true,
+   "ms": 21104,
+   "replyMs": 16468,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 119,
+   "text": "I wade the seep noisily toward the adder, closing the distance to SHORT range, then strike it with Piercing Thrust.",
+   "decideMs": 9341,
+   "ok": true,
+   "ms": 29209,
+   "replyMs": 22390,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 120,
+   "text": "I strike the adder's head with Piercing Thrust while it waits at the water's edge.",
+   "decideMs": 2793,
+   "ok": true,
+   "ms": 16147,
+   "replyMs": 9159,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 121,
+   "text": "I push the last step through the mud to reach ENGAGED range with the adder's head, then strike with Piercing Thrust.",
+   "decideMs": 1785,
+   "ok": true,
+   "ms": 24125,
+   "replyMs": 11051,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 122,
+   "text": "#assign AGI 3 PER 2",
+   "decideMs": 4548,
+   "ok": true,
+   "ms": 2795,
+   "replyMs": 447,
+   "outcome": "system",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 123,
+   "text": "I check the quest tally, then head back along the reed-cutters' path toward the corduroy path to find the remaining adders.",
+   "decideMs": 2929,
+   "ok": true,
+   "ms": 34577,
+   "replyMs": 23468,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 124,
+   "text": "I circle quietly around the hummock's flank to ambush the adder, then strike its head with Piercing Thrust.",
+   "decideMs": 5594,
+   "ok": true,
+   "ms": 19320,
+   "replyMs": 12734,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 125,
+   "text": "I strike the adder's head with Piercing Thrust from ambush.",
+   "decideMs": 1839,
+   "ok": true,
+   "ms": 18699,
+   "replyMs": 11469,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 126,
+   "text": "I continue north along the corduroy road, watching the brambles ahead for the next adder's den.",
+   "decideMs": 9635,
+   "ok": true,
+   "ms": 22109,
+   "replyMs": 13487,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 127,
+   "text": "I move quietly around the thicket's edge to find a clear line on the den mouth, staying in cover.",
+   "decideMs": 5686,
+   "ok": true,
+   "ms": 26980,
+   "replyMs": 16193,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 128,
+   "text": "I hold still and take an aimed Piercing Thrust at the adder's head through the gap in the canes.",
+   "decideMs": 1764,
+   "ok": true,
+   "ms": 27043,
+   "replyMs": 8274,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 129,
+   "text": "I close the ten paces of open mud quickly toward the den mouth, then thrust at the adder's head the moment I'm in reach.",
+   "decideMs": 18822,
+   "ok": true,
+   "ms": 33358,
+   "replyMs": 28283,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 130,
+   "text": "I withdraw quietly from the adder's den and head back along the corduroy road toward the path to hunt adders I can actually reach.",
+   "decideMs": 22481,
+   "ok": true,
+   "ms": 15644,
+   "replyMs": 10545,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 131,
+   "text": "I move quietly back over the hummock skirt and follow the corduroy road south toward the path.",
+   "decideMs": 2288,
+   "ok": true,
+   "ms": 30461,
+   "replyMs": 16323,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 132,
+   "text": "I creep quietly along the logs toward the basking adder, downwind, and thrust at its head the moment I'm in reach.",
+   "decideMs": 6099,
+   "ok": true,
+   "ms": 16097,
+   "replyMs": 10834,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 133,
+   "text": "I thrust my dagger at the adder's head from point-blank.",
+   "decideMs": 5282,
+   "ok": true,
+   "ms": 5187,
+   "replyMs": 3354,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 134,
+   "text": "Piercing Thrust at the adder's head.",
+   "decideMs": 1308,
+   "ok": true,
+   "ms": 15573,
+   "replyMs": 10828,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 135,
+   "text": "I step the one long stride along the logs to point-blank and Piercing Thrust at the adder's head.",
+   "decideMs": 1484,
+   "ok": true,
+   "ms": 16084,
+   "replyMs": 11204,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 136,
+   "text": "I walk carefully along the logs until I am truly engaged with the adder, then Piercing Thrust at its head.",
+   "decideMs": 2114,
+   "ok": true,
+   "ms": 17645,
+   "replyMs": 10982,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 137,
+   "text": "I head back along the corduroy path toward the Guild hall to turn in the adder contract.",
+   "decideMs": 1928,
+   "ok": true,
+   "ms": 22027,
+   "replyMs": 15012,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 138,
+   "text": "I pocket the slip and head back out the corduroy path to the fen hummocks to hunt the fourth adder.",
+   "decideMs": 9125,
+   "ok": true,
+   "ms": 20051,
+   "replyMs": 13115,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 139,
+   "text": "I circle wide around the hummock's flank toward the tunnel mouth, staying quiet, to find the adder at its den.",
+   "decideMs": 4571,
+   "ok": true,
+   "ms": 28107,
+   "replyMs": 15061,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 140,
+   "text": "I strike at the adder's head at the tunnel mouth with Piercing Thrust.",
+   "decideMs": 28792,
+   "ok": true,
+   "ms": 19169,
+   "replyMs": 11616,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 141,
+   "text": "I assign all 5 free stat points to AGI, then head back along the corduroy path to the Guild hall to turn in the adder contract.",
+   "decideMs": 1486,
+   "ok": true,
+   "ms": 32077,
+   "replyMs": 16256,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 142,
+   "text": "#assign AGI 5 PER 5",
+   "decideMs": 2244,
+   "ok": true,
+   "ms": 2919,
+   "replyMs": 530,
+   "outcome": "system",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 143,
+   "text": "I ask the clerk what novice contracts are on the board tonight.",
+   "decideMs": 1902,
+   "ok": true,
+   "ms": 16266,
+   "replyMs": 11590,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 144,
+   "text": "I ask the clerk to take the Cull the Millpond Wolf contract, then I equip my Starter Light Armor.",
+   "decideMs": 2872,
+   "ok": true,
+   "ms": 17334,
+   "replyMs": 10033,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 145,
+   "text": "I sell the four fen adder fangs and three grey wolf fangs to Cordery the tanner down the lane, asking his prices.",
+   "decideMs": 2171,
+   "ok": true,
+   "ms": 30408,
+   "replyMs": 21227,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 146,
+   "text": "I sell all the fangs for the 54 copper you offered. If that's settled, I'll take the fine F-Rank dagger and the fine F-Rank light armor as well, and equip both.",
+   "decideMs": 3397,
+   "ok": true,
+   "ms": 18544,
+   "replyMs": 13620,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 147,
+   "text": "I sell the old common dagger and the Starter Light Armor to Cordery if he'll buy them, then head south to the gristmill for the millpond wolf.",
+   "decideMs": 2321,
+   "ok": true,
+   "ms": 33574,
+   "replyMs": 16843,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 148,
+   "text": "I ask Harl how big the wolf is and whether it hunts alone, then circle the pond toward the reed bank on the far side to track it.",
+   "decideMs": 4651,
+   "ok": true,
+   "ms": 30298,
+   "replyMs": 16968,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 149,
+   "text": "I follow the pressed track into the reed bank quietly, hunting for the wolf's den.",
+   "decideMs": 2799,
+   "ok": true,
+   "ms": 25335,
+   "replyMs": 16229,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 150,
+   "text": "I draw my dagger and use Piercing Thrust on the wolf blocking the den mouth.",
+   "decideMs": 4779,
+   "ok": true,
+   "ms": 17645,
+   "replyMs": 11621,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 151,
+   "text": "I step into ENGAGED range and use Piercing Thrust on the wolf.",
+   "decideMs": 4887,
+   "ok": true,
+   "ms": 16962,
+   "replyMs": 10440,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 152,
+   "text": "I skin nothing here — the pelt and fangs are taken. I head back to the mill to tell Harl the wolf is dead, then turn the contract in at the Guild hall.",
+   "decideMs": 2057,
+   "ok": true,
+   "ms": 35372,
+   "replyMs": 19143,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 153,
+   "text": "I ask the clerk if any contracts suit a Novice rogue are posted, then head to an inn for a bed and sleep until morning.",
+   "decideMs": 4516,
+   "ok": true,
+   "ms": 30405,
+   "replyMs": 23542,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 154,
+   "text": "I take the bed for 10 copper and sleep until morning.",
+   "decideMs": 1503,
+   "ok": true,
+   "ms": 15941,
+   "replyMs": 10794,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 155,
+   "text": "I buy the porridge for 2 copper, then head to the Guild hall and sign out the contract to clear Old Crown Catacombs, Level 1.",
+   "decideMs": 2333,
+   "ok": true,
+   "ms": 21316,
+   "replyMs": 14227,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 156,
+   "text": "I wait for fresh postings, and meanwhile head to Cordery's shop to sell my surplus fen adder skin and venom sac, and ask his prices on light weapons and light armor.",
+   "decideMs": 3095,
+   "ok": true,
+   "ms": 42914,
+   "replyMs": 18131,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 157,
+   "text": "I accept: both together for fourteen silver, and hand over the skin and the venom sac.",
+   "decideMs": 3119,
+   "ok": true,
+   "ms": 39671,
+   "replyMs": 17434,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 158,
+   "text": "Cordery, give me your total price for exactly one fen adder skin and one fen adder venom sac together — name the sum and I'll take it.",
+   "decideMs": 2933,
+   "ok": true,
+   "ms": 18918,
+   "replyMs": 12239,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 159,
+   "text": "Twelve silver for the pair, agreed. I lay the fen adder skin and the venom sac on the felt and take the twelve silver.",
+   "decideMs": 2435,
+   "ok": true,
+   "ms": 38664,
+   "replyMs": 28775,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 160,
+   "text": "Cordery, you've now bought from me twice — I'll take that superior jerkin for eighteen silver if the offer stands.",
+   "decideMs": 4677,
+   "ok": true,
+   "ms": 51120,
+   "replyMs": 34672,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 161,
+   "text": "I pay Cordery the eighteen silver for the superior jerkin and put it on, having him wrap my old fine light armor to carry.",
+   "decideMs": 4364,
+   "ok": true,
+   "ms": 9747,
+   "replyMs": 7316,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 162,
+   "text": "I buy the superior F-Rank light armor jerkin from Cordery for a total of eighteen silver (180 copper), and equip it, having him wrap my old fine light armor to carry.",
+   "decideMs": 2059,
+   "ok": true,
+   "ms": 12091,
+   "replyMs": 9982,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 163,
+   "text": "I buy the superior F-Rank jerkin at 180 cp, Cordery's confirmed price, and equip it.",
+   "decideMs": 9589,
+   "ok": true,
+   "ms": 10353,
+   "replyMs": 7923,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 164,
+   "text": "buy at 180 cp from Cordery",
+   "decideMs": 2550,
+   "ok": true,
+   "ms": 18502,
+   "replyMs": 16066,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 165,
+   "text": "accept the jerkin deal at 180 cp",
+   "decideMs": 3001,
+   "ok": true,
+   "ms": 10250,
+   "replyMs": 7914,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 166,
+   "text": "accept the superior jerkin at 180 cp",
+   "decideMs": 4817,
+   "ok": true,
+   "ms": 12692,
+   "replyMs": 10293,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 167,
+   "text": "accept the superior jerkin at 72 cp",
+   "decideMs": 4277,
+   "ok": true,
+   "ms": 7552,
+   "replyMs": 5437,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 168,
+   "text": "Cordery, please make me a binding offer on the superior jerkin.",
+   "decideMs": 1702,
+   "ok": true,
+   "ms": 17495,
+   "replyMs": 9145,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 169,
+   "text": "I accept Cordery's binding offer of 72 cp for the superior F-Rank jerkin, pay it, and equip the jerkin.",
+   "decideMs": 2770,
+   "ok": true,
+   "ms": 144031,
+   "replyMs": 121712,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 170,
+   "text": "Cordery, before I go — would you buy these two fen adder skins, and what would you offer for them?",
+   "decideMs": 17495,
+   "ok": true,
+   "ms": 61590,
+   "replyMs": 42356,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 171,
+   "text": "I'll take the twenty copper for both skins.",
+   "decideMs": 6165,
+   "ok": true,
+   "ms": 24531,
+   "replyMs": 19498,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 172,
+   "text": "I leave Cordery's and head to the smithy on Buckle Street to compare light weapon upgrades.",
+   "decideMs": 3015,
+   "ok": true,
+   "ms": 159604,
+   "replyMs": 140186,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 173,
+   "text": "The fine dagger matches my blade at ATK 14 and the superior one costs 260 copper — more than my 157. No useful affordable upgrade here, so I thank the smith and head to the Guild hall to look for contracts.",
+   "decideMs": 10663,
+   "ok": true,
+   "ms": 46040,
+   "replyMs": 36716,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 174,
+   "text": "I take the Clear the Adders from the Corduroy Path notice to the clerk and ask to have it registered as my active contract.",
+   "decideMs": 3960,
+   "ok": true,
+   "ms": 16138,
+   "replyMs": 10098,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 175,
+   "text": "I leave the Guild hall through the east gate and head for the reed-cutters' corduroy path in Alderwatch Fen to hunt the four adders.",
+   "decideMs": 4014,
+   "ok": true,
+   "ms": 25214,
+   "replyMs": 18999,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 176,
+   "text": "I move cautiously along the log path to the fourth hummock and strike the adder at the den mouth with Piercing Thrust.",
+   "decideMs": 12288,
+   "ok": true,
+   "ms": 33378,
+   "replyMs": 19022,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 177,
+   "text": "I press the attack, thrusting again at the adder's head with Piercing Thrust.",
+   "decideMs": 5971,
+   "ok": true,
+   "ms": 28079,
+   "replyMs": 21706,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 178,
+   "text": "I move on along the corduroy path to the hummock north of the fallen bough and search its bramble skirt for the adder's den.",
+   "decideMs": 3777,
+   "ok": true,
+   "ms": 27495,
+   "replyMs": 18493,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 179,
+   "text": "I search the bramble skirt of this hummock for the adder's den.",
+   "decideMs": 3369,
+   "ok": true,
+   "ms": 17058,
+   "replyMs": 11603,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 180,
+   "text": "I give up on this hummock and move farther along the corduroy path to the next hummock out, searching there for an adder den.",
+   "decideMs": 3192,
+   "ok": true,
+   "ms": 23311,
+   "replyMs": 14234,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 181,
+   "text": "I approach the dark gap between the root buttresses and strike at the adder inside with Piercing Thrust.",
+   "decideMs": 5351,
+   "ok": true,
+   "ms": 6284,
+   "replyMs": 3754,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 182,
+   "text": "I prod the flattened fern at the den mouth with my dagger to draw the adder out into the open.",
+   "decideMs": 2439,
+   "ok": true,
+   "ms": 24222,
+   "replyMs": 14734,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 183,
+   "text": "I strike at the adder with Piercing Thrust.",
+   "decideMs": 2494,
+   "ok": true,
+   "ms": 19227,
+   "replyMs": 11997,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 184,
+   "text": "I spend my free points on my reflexes and awareness: #assign AGI 3 PER 2",
+   "decideMs": 3055,
+   "ok": true,
+   "ms": 14397,
+   "replyMs": 10047,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 185,
+   "text": "I follow the corduroy path north toward where I heard the dry rustling, searching the reeds for the last adder.",
+   "decideMs": 2540,
+   "ok": true,
+   "ms": 28353,
+   "replyMs": 10696,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 186,
+   "text": "I circle wide around the hummock's flank to reach the tunnel mouth, staying out of the adder's strike range.",
+   "decideMs": 4818,
+   "ok": true,
+   "ms": 26965,
+   "replyMs": 18512,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 187,
+   "text": "I advance along the logs toward the adder's threshold and strike with Piercing Thrust as soon as I come within reach.",
+   "decideMs": 3475,
+   "ok": true,
+   "ms": 18530,
+   "replyMs": 12645,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 188,
+   "text": "I close the remaining distance along the flattened fern to the hummock mouth, keeping my thrust ready for the adder's head.",
+   "decideMs": 4313,
+   "ok": true,
+   "ms": 19455,
+   "replyMs": 11941,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 189,
+   "text": "I step in to the hummock mouth and strike the adder's head with Piercing Thrust.",
+   "decideMs": 3803,
+   "ok": true,
+   "ms": 16548,
+   "replyMs": 10221,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 190,
+   "text": "I step right up to the adder within arm's reach and strike its head with Piercing Thrust.",
+   "decideMs": 6632,
+   "ok": true,
+   "ms": 15132,
+   "replyMs": 9788,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 191,
+   "text": "I head back to the Guild hall and hand in the completed adder slip to claim the 150 cp reward.",
+   "decideMs": 7719,
+   "ok": true,
+   "ms": 54662,
+   "replyMs": 19884,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 192,
+   "text": "I return along the corduroy path and search the bramble hummocks for the fourth adder, checking each den mouth as I go.",
+   "decideMs": 3275,
+   "ok": true,
+   "ms": 34730,
+   "replyMs": 24630,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 193,
+   "text": "I move to the den under the fourth hummock and strike the adder waiting at the tunnel mouth with Piercing Thrust.",
+   "decideMs": 2322,
+   "ok": true,
+   "ms": 25722,
+   "replyMs": 14878,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 194,
+   "text": "I circle wide around the hummock's flank toward the tunnel mouth by the den north of the fallen bough, dagger ready.",
+   "decideMs": 5743,
+   "ok": true,
+   "ms": 28212,
+   "replyMs": 14238,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 195,
+   "text": "I wade noisily through the black mud seep toward the adder's basking spot, dagger drawn.",
+   "decideMs": 9803,
+   "ok": true,
+   "ms": 32662,
+   "replyMs": 20533,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 196,
+   "text": "I follow the drag-trail toward the parted reeds thirty paces off and strike the adder there with Piercing Thrust.",
+   "decideMs": 4214,
+   "ok": true,
+   "ms": 39941,
+   "replyMs": 29285,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 197,
+   "text": "I strike the adder with Piercing Thrust, keeping my footing on the firm peat at the edge of its strike range.",
+   "decideMs": 1782,
+   "ok": true,
+   "ms": 22943,
+   "replyMs": 14400,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 198,
+   "text": "I close the ten paces to ENGAGED and strike the adder with Piercing Thrust.",
+   "decideMs": 5080,
+   "ok": true,
+   "ms": 33105,
+   "replyMs": 12736,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 199,
+   "text": "I charge straight across the open peat until I am ENGAGED with the adder, then strike with Piercing Thrust.",
+   "decideMs": 20708,
+   "ok": true,
+   "ms": 46788,
+   "replyMs": 33328,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 200,
+   "text": "With the fourth adder down and the contract at 4/4, I head back to the Guild hall in Alderwatch to turn in Clear the Adders from the Corduroy Path.",
+   "decideMs": 16828,
+   "ok": true,
+   "ms": 33708,
+   "replyMs": 23403,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 201,
+   "text": "#assign AGI 5 PER 5",
+   "decideMs": 4528,
+   "ok": true,
+   "ms": 3229,
+   "replyMs": 641,
+   "outcome": "system",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 202,
+   "text": "I ask the clerk what contracts are on the board for a Novice.",
+   "decideMs": 2048,
+   "ok": true,
+   "ms": 36332,
+   "replyMs": 25041,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 203,
+   "text": "I take the Millpond Wolf slip from the board and tell the clerk I'm accepting Cull the Millpond Wolf.",
+   "decideMs": 11068,
+   "ok": true,
+   "ms": 39740,
+   "replyMs": 25815,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 204,
+   "text": "I head out the Guild hall and take the river road toward Marrow & Sons Gristmill, watching for the wolf as dusk settles.",
+   "decideMs": 32434,
+   "ok": true,
+   "ms": 38839,
+   "replyMs": 22681,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 205,
+   "text": "I ask Harl where the wolf crosses the fence into the reeds, then take position near the weir baskets to wait for it.",
+   "decideMs": 29502,
+   "ok": true,
+   "ms": 70488,
+   "replyMs": 34401,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 206,
+   "text": "I hold still in the rail's shadow until the wolf commits toward the baskets, then lunge from hiding and drive a Piercing Thrust into its flank.",
+   "decideMs": 5840,
+   "ok": true,
+   "ms": 36587,
+   "replyMs": 22870,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 207,
+   "text": "I strike from the shadows, driving a Piercing Thrust into the wolf's flank as it passes within reach.",
+   "decideMs": 3914,
+   "ok": true,
+   "ms": 21176,
+   "replyMs": 13983,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 208,
+   "text": "I step out of the shadow and close the ten paces, driving a Piercing Thrust into the wolf's flank while it's busy with the fish.",
+   "decideMs": 19070,
+   "ok": true,
+   "ms": 64373,
+   "replyMs": 49843,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 209,
+   "text": "I pull the dagger free and call back to Harl, \"Done — the wolf's dead. Contract's filled.\"",
+   "decideMs": 2365,
+   "ok": true,
+   "ms": 63246,
+   "replyMs": 40371,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 210,
+   "text": "I follow Harl up to the mill for bread and beer, and tell him I'll take the Guild slip in the morning.",
+   "decideMs": 9840,
+   "ok": true,
+   "ms": 188083,
+   "replyMs": 29365,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 211,
+   "text": "I tell Marrow the truth: it came out of the reeds at dusk to fish the weir baskets, and I found only one — but I'll ask the Guild to keep the contract open a while longer in case Tam's second wolf is real.",
+   "decideMs": 7189,
+   "ok": true,
+   "ms": 38241,
+   "replyMs": 25732,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 212,
+   "text": "I thank Marrow, climb up to the loft, and sleep until morning.",
+   "decideMs": 8364,
+   "ok": true,
+   "ms": 87603,
+   "replyMs": 32163,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 213,
+   "text": "I turn to Tam. \"Go on then — what did you want to tell me?\"",
+   "decideMs": 3169,
+   "ok": true,
+   "ms": 31470,
+   "replyMs": 18341,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 214,
+   "text": "I thank Tam and ask him to show me the boundary stone spot, then take the Guild slip from Harl to turn in the first wolf.",
+   "decideMs": 3654,
+   "ok": true,
+   "ms": 74340,
+   "replyMs": 35726,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 215,
+   "text": "I take the slip, thank Bess for the bundle, and set off down the lane toward the Guild branch in town to turn in the contract.",
+   "decideMs": 13998,
+   "ok": true,
+   "ms": 67268,
+   "replyMs": 40838,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 216,
+   "text": "\"Not yet — there are tracks and a witness, but no kill. I'll keep watching evenings. Meanwhile, what's on the contract board for a Novice Rogue today?\"",
+   "decideMs": 15811,
+   "ok": true,
+   "ms": 100906,
+   "replyMs": 34848,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 217,
+   "text": "I take out the Primer of Guard I'm carrying and ask the clerk: \"This primer — can you teach me the guard skill from it?\"",
+   "decideMs": 6231,
+   "ok": true,
+   "ms": 66876,
+   "replyMs": 26766,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 218,
+   "text": "I head through the side door to the training yard and ask Serah if she has a slot today to put me through the Primer of Guard.",
+   "decideMs": 10731,
+   "ok": true,
+   "ms": 128392,
+   "replyMs": 53976,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 219,
+   "text": "#skills",
+   "decideMs": 48465,
+   "ok": true,
+   "ms": 3259,
+   "replyMs": 1128,
+   "outcome": "system",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 220,
+   "text": "I sit at the fence rail and wait for the trainees to finish, then step up for my drill slot with Serah, paying the two silver.",
+   "decideMs": 7452,
+   "ok": true,
+   "ms": 110697,
+   "replyMs": 99711,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 221,
+   "text": "I place two silver in Serah's palm. \"The Guard primer drill — that's what I want from this slot.\"",
+   "decideMs": 2809,
+   "ok": true,
+   "ms": 29159,
+   "replyMs": 27004,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 222,
+   "text": "I study the Guard primer drill with Serah for two hours.",
+   "decideMs": 4314,
+   "ok": true,
+   "ms": 68155,
+   "replyMs": 54491,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 223,
+   "text": "I book a training slot with Serah: one hour drilling Guard with a stave in hand, and ask what it costs.",
+   "decideMs": 16089,
+   "ok": true,
+   "ms": 71239,
+   "replyMs": 33698,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 224,
+   "text": "#skills",
+   "decideMs": 15187,
+   "ok": true,
+   "ms": 3244,
+   "replyMs": 1118,
+   "outcome": "system",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 225,
+   "text": "I sit on the fence rail and read the Primer of Guard cover to cover.",
+   "decideMs": 10699,
+   "ok": true,
+   "ms": 15476,
+   "replyMs": 13341,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 226,
+   "text": "I sit on the fence rail and read the Primer of Guard cover to cover for two hours.",
+   "decideMs": 3557,
+   "ok": true,
+   "ms": 70226,
+   "replyMs": 50813,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 227,
+   "text": "I walk over to Serah. \"Book me that paid slot now — one hour, Guard, stave in hand.\" I hold out the silver.",
+   "decideMs": 9907,
+   "ok": true,
+   "ms": 33157,
+   "replyMs": 22084,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 228,
+   "text": "I hand Serah exactly two silver, pick a stave from the rack, and set my feet the way the primer showed.",
+   "decideMs": 4677,
+   "ok": true,
+   "ms": 132316,
+   "replyMs": 76198,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 229,
+   "text": "I hold out two silver to Serah. \"Paid. Start the hour.\"",
+   "decideMs": 2925,
+   "ok": true,
+   "ms": 86788,
+   "replyMs": 50174,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 230,
+   "text": "#skills",
+   "decideMs": 5765,
+   "ok": true,
+   "ms": 3278,
+   "replyMs": 1143,
+   "outcome": "system",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 231,
+   "text": "I return the stave to the rack and head to Cordery's shop to see his weapons and light armour.",
+   "decideMs": 10488,
+   "ok": true,
+   "ms": 113276,
+   "replyMs": 77903,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 232,
+   "text": "I lay out my surplus loot — the two fen adder fangs, the adder skin, and the rest of my carried pelts and hides — and ask Cordery what he'll pay for the lot.",
+   "decideMs": 21599,
+   "ok": true,
+   "ms": 267142,
+   "replyMs": 128005,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 233,
+   "text": "\"Done — twelve silver four for the lot, bag it up.\" I count the sale alongside my coin and check whether nothing here beats my equipped gear — my superior jerkin already matches his best armor, so I decline any purchase and head back toward the Guild to look for another contract.",
+   "decideMs": 34886,
+   "ok": true,
+   "ms": 9383,
+   "replyMs": 7255,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 234,
+   "text": "I sell the adder skins, fangs, venom sacs, wolf pelts and wolf fangs to Cordery for his offered total of twelve silver four copper.",
+   "decideMs": 3543,
+   "ok": true,
+   "ms": 34148,
+   "replyMs": 9363,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 235,
+   "text": "I head back to the Guild hall and check the contract board for another job.",
+   "decideMs": 10031,
+   "ok": true,
+   "ms": 70346,
+   "replyMs": 63230,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 236,
+   "text": "I take the Sablewood boar contract slip to the clerk and ask her to register it as my active contract.",
+   "decideMs": 3542,
+   "ok": true,
+   "ms": 59519,
+   "replyMs": 50462,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 237,
+   "text": "I buy the Primer of Guard for 80 copper at the Guild counter, then head east across the stone bridge toward the Sablewood charcoal camps.",
+   "decideMs": 2392,
+   "ok": true,
+   "ms": 78488,
+   "replyMs": 54254,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 238,
+   "text": "\"Yes, Guild — for the boar work. Anything you can tell me about where they've been ranging lately?\"",
+   "decideMs": 5712,
+   "ok": true,
+   "ms": 42677,
+   "replyMs": 20658,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 239,
+   "text": "\"I'll take the stew, Dag — one copper. Then I'll head for the wallow before dusk and sit for them.\"",
+   "decideMs": 27389,
+   "ok": true,
+   "ms": 125875,
+   "replyMs": 108558,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 240,
+   "text": "I stay hidden behind the fallen oak, watching the wallow quietly for the boars' arrival.",
+   "decideMs": 5802,
+   "ok": true,
+   "ms": 64024,
+   "replyMs": 36398,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 241,
+   "text": "I burst from cover and use Piercing Thrust on the closer boar rooting in the wallow.",
+   "decideMs": 4291,
+   "ok": true,
+   "ms": 13592,
+   "replyMs": 11436,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 242,
+   "text": "I burst from cover and use Piercing Thrust on Sablewood Boar A, the closer one rooting in the wallow.",
+   "decideMs": 2493,
+   "ok": true,
+   "ms": 140996,
+   "replyMs": 129643,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 243,
+   "text": "I charge across the mud toward Sablewood Boar A and use Piercing Thrust as soon as I reach it.",
+   "decideMs": 5588,
+   "ok": true,
+   "ms": 30001,
+   "replyMs": 18061,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 244,
+   "text": "I finish the wounded boar with a Basic Attack on Sablewood Boar A.",
+   "decideMs": 5518,
+   "ok": true,
+   "ms": 552766,
+   "replyMs": 536766,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 245,
+   "text": "I drag the boar hide and tusks free of the mud, then pull back from the wallow toward the charcoal camp before anything else comes.",
+   "decideMs": 9054,
+   "ok": true,
+   "ms": 128907,
+   "replyMs": 91417,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 246,
+   "text": "I check the camp shelter carefully for anyone or anything inside, then bandage my torn hip and rest there until morning.",
+   "decideMs": 7257,
+   "ok": true,
+   "ms": 127641,
+   "replyMs": 94421,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 247,
+   "text": "#assign AGI 5",
+   "decideMs": 2331,
+   "ok": true,
+   "ms": 3487,
+   "replyMs": 1290,
+   "outcome": "system",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 248,
+   "text": "I hunt the remaining boars at the seep by the camp, starting with the smaller ones away from the wallow's edge.",
+   "decideMs": 6160,
+   "ok": true,
+   "ms": 71552,
+   "replyMs": 33042,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 249,
+   "text": "I charge the smallest boar (Boar D) and use Fan of Blades as I reach it, staying clear of the yearling.",
+   "decideMs": 10481,
+   "ok": true,
+   "ms": 67103,
+   "replyMs": 41524,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 250,
+   "text": "I sprint across the open ground to close on Boar D, then use Fan of Blades once it is in SHORT range.",
+   "decideMs": 17814,
+   "ok": true,
+   "ms": 60203,
+   "replyMs": 39482,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 251,
+   "text": "I withdraw from the open seep and circle through the timber to get ahead of the fleeing boars' trail, then wait in cover for one to come within SHORT range.",
+   "decideMs": 8974,
+   "ok": true,
+   "ms": 53720,
+   "replyMs": 42338,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 252,
+   "text": "I slip into the dense brush beside the trail and wait in cover for the boars to come up the run.",
+   "decideMs": 12529,
+   "ok": true,
+   "ms": 95284,
+   "replyMs": 81761,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 253,
+   "text": "I use Fan of Blades on Boar D at SHORT range, keeping clear of the yearling.",
+   "decideMs": 2258,
+   "ok": true,
+   "ms": 42655,
+   "replyMs": 27727,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 254,
+   "text": "I use Piercing Thrust on Sablewood Boar F.",
+   "decideMs": 9791,
+   "ok": true,
+   "ms": 50706,
+   "replyMs": 39645,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 255,
+   "text": "I bandage the wound on my leg, then walk back to the charcoal camps and head for the Guild hall to turn in the boar cull contract.",
+   "decideMs": 1987,
+   "ok": true,
+   "ms": 48764,
+   "replyMs": 40630,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 256,
+   "text": "I follow the run back the way I came, up toward the charcoal camps.",
+   "decideMs": 11655,
+   "ok": true,
+   "ms": 65222,
+   "replyMs": 51726,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 257,
+   "text": "I head from the north charcoal camp down to the river crossing and on to the Guild hall in Crownheart, to turn in the boar cull contract.",
+   "decideMs": 11125,
+   "ok": true,
+   "ms": 92680,
+   "replyMs": 48670,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 258,
+   "text": "I leave the Guild hall and head back toward the charcoal camps to hunt the two remaining Sablewood boars.",
+   "decideMs": 4597,
+   "ok": true,
+   "ms": 30093,
+   "replyMs": 16905,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 259,
+   "text": "I sit, take the tea, and ask Dag where exactly north of the seep the big boars root, and whether he's seen them today.",
+   "decideMs": 9132,
+   "ok": true,
+   "ms": 21721,
+   "replyMs": 13730,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 260,
+   "text": "I finish the tea, thank Dag, and head north past the seep, giving the deadfall a wide berth until I reach the storm-flat where the oaks came down, listening for the boars rooting there.",
+   "decideMs": 5864,
+   "ok": true,
+   "ms": 27887,
+   "replyMs": 18740,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 261,
+   "text": "I take Dag's advice: I stay at the camp, treat the leg with the fen salve and a fresh bandage, and rest until the evening root before going after the boars.",
+   "decideMs": 2758,
+   "ok": true,
+   "ms": 33629,
+   "replyMs": 20021,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 262,
+   "text": "I set out north past the seep toward the storm-flat in the dusk, listening for the boars and staying downwind.",
+   "decideMs": 4283,
+   "ok": true,
+   "ms": 38882,
+   "replyMs": 25994,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 263,
+   "text": "I walk north from the camp toward the sound of the rooting boars, keeping downwind.",
+   "decideMs": 10633,
+   "ok": true,
+   "ms": 39228,
+   "replyMs": 18747,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 264,
+   "text": "I stay downwind in the brush and strike the lean yearling with Piercing Thrust before the others notice me.",
+   "decideMs": 3504,
+   "ok": true,
+   "ms": 30254,
+   "replyMs": 18258,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 265,
+   "text": "I creep low across the open ground toward the yearling, staying downwind; if I reach it unseen, I strike it with Piercing Thrust.",
+   "decideMs": 25289,
+   "ok": true,
+   "ms": 32436,
+   "replyMs": 21143,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 266,
+   "text": "I drive Piercing Thrust into the yearling's flank from behind.",
+   "decideMs": 1468,
+   "ok": true,
+   "ms": 23160,
+   "replyMs": 15012,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 267,
+   "text": "I hold low behind the yearling's carcass and let the sow come; when she is within a pace, I drive Piercing Thrust into her from behind.",
+   "decideMs": 4182,
+   "ok": true,
+   "ms": 23198,
+   "replyMs": 13826,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 268,
+   "text": "I step forward the last pace beside the carcass and drive Piercing Thrust into the sow's flank.",
+   "decideMs": 2521,
+   "ok": true,
+   "ms": 27487,
+   "replyMs": 21276,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 269,
+   "text": "#assign AGI 5",
+   "decideMs": 3631,
+   "ok": true,
+   "ms": 3327,
+   "replyMs": 1183,
+   "outcome": "system",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 270,
+   "text": "I follow the big boar's trail into the treeline while the light lasts, moving quietly; if the track goes cold or the boar proves too dangerous in the dark, I withdraw.",
+   "decideMs": 6214,
+   "ok": true,
+   "ms": 30022,
+   "replyMs": 16384,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 271,
+   "text": "I use the stream noise and the mud-smell to close on the wallowing boar unseen, staying downwind; if I reach it without being noticed, I drive Piercing Thrust into its flank from behind.",
+   "decideMs": 3309,
+   "ok": true,
+   "ms": 31841,
+   "replyMs": 23703,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 272,
+   "text": "I sidestep behind the stream bank to break its charge, then drive Piercing Thrust into the boar as it turns.",
+   "decideMs": 9608,
+   "ok": true,
+   "ms": 20761,
+   "replyMs": 13646,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 273,
+   "text": "I dress my wound with the bandaging roll, then head back toward the charcoal camp to sleep until morning.",
+   "decideMs": 7680,
+   "ok": true,
+   "ms": 26572,
+   "replyMs": 20340,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 274,
+   "text": "I walk back through the treeline toward the abandoned charcoal camp, following the stream's sound until I reach it; if I arrive safely, I settle there and sleep until morning.",
+   "decideMs": 3727,
+   "ok": true,
+   "ms": 21900,
+   "replyMs": 15117,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 275,
+   "text": "I settle in the lean-to out of the wind and sleep until morning.",
+   "decideMs": 1436,
+   "ok": true,
+   "ms": 18144,
+   "replyMs": 12139,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 276,
+   "text": "I walk back to Rooksford and head for the Guild hall to turn in the completed boar contract.",
+   "decideMs": 1548,
+   "ok": true,
+   "ms": 22809,
+   "replyMs": 12905,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 277,
+   "text": "#assign AGI 2 PER 2 INT 1",
+   "decideMs": 1744,
+   "ok": true,
+   "ms": 3576,
+   "replyMs": 1381,
+   "outcome": "system",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 278,
+   "text": "I head to the smith's workshop to compare light daggers and light armour against my current gear, and ask whether he buys surplus weapons and jerkins.",
+   "decideMs": 2247,
+   "ok": true,
+   "ms": 37291,
+   "replyMs": 26960,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 279,
+   "text": "I'll take the superior F-Rank dagger for 260 copper — that's my consent and my total limit. I also want to sell my surplus: a common F-Rank jerkin, a common F-Rank dagger, and my starter light armor. What's your offer for the three?",
+   "decideMs": 5586,
+   "ok": true,
+   "ms": 27891,
+   "replyMs": 20450,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 280,
+   "text": "I accept the smith's offer and hand over all three pieces for 50 copper, then unwrap the new superior dagger and equip it.",
+   "decideMs": 1803,
+   "ok": true,
+   "ms": 17656,
+   "replyMs": 12540,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 281,
+   "text": "#class",
+   "decideMs": 2317,
+   "ok": true,
+   "ms": 3616,
+   "replyMs": 1394,
+   "outcome": "system",
+   "milestone": "class_accepted"
+  },
+  {
+   "turn": 282,
+   "text": "I choose Bloodhound Rogue as my class.",
+   "decideMs": 2058,
+   "ok": false,
+   "problem": "chat persistence failed",
+   "ms": 13789,
+   "milestone": "class_accepted"
+  }
+ ],
+ "status": "Avereth Engine 4.3.0-c.6.6.146 | runtime v4 (LLM: custom endpoint) | turn 246 | mode story | events 3381 | integrity: OK | last block ~1480 tokens | history: 482 older message(s) left out, 0 tracker block(s) removed | lore: World Info (Avereth World Lore v0.14) | narrator contract: current | last turn: engine 0.1 s (1 folds, 22 ms) · planner 2.1 s · narrator 5.6 s · extractor 2.4 s",
+ "toasts": [
+  {
+   "at": 1793556767945,
+   "kind": "info",
+   "text": "Rename ChatRenaming chat…",
+   "origin": "runner"
+  },
+  {
+   "at": 1793568860282,
+   "kind": "error",
+   "text": "Chat could not be savedCheck the server connection and reload the page to prevent data loss.",
+   "origin": "game"
+  }
+ ],
+ "pageErrors": [
+  {
+   "at": 1793568860496,
+   "text": "Error: Internal Server Error\n    at saveChat (http://127.0.0.1:8123/script.js:7456:19)\n    at async Object.saveChatConditional [as saveChat] (http://127.0.0.1:8123/script.js:9428:13)\n    at async EventEmitter.onMessageReceived (http://127.0.0.1:8123/scripts/extensions/third-party/avereth-engine/index.js:447:9)\n    at async EventEmitter.emit (http://127.0.0.1:8123/lib/eventemitter.js:146:17)\n    at async saveReply (http://127.0.0.1:8123/script.js:6781:27)\n    at async onSuccess (http://127.0.0.1:8123/script.js:5532:41)\n    at async SimpleMutex.sendTextareaMessage [as callback] (http://127.0.0.1"
+  }
+ ],
+ "serverErrors": [
+  {
+   "at": 1793563730129,
+   "which": "err",
+   "line": "Generation failed AbortError: The operation was aborted."
+  },
+  {
+   "at": 1793565630523,
+   "which": "err",
+   "line": "Generation failed AbortError: The operation was aborted."
+  },
+  {
+   "at": 1793568860266,
+   "which": "err",
+   "line": "Error: EPERM: operation not permitted, rename 'C:\\Users\\mmitr\\AppData\\Local\\Temp\\avereth-live-20261101-181218Z-current_test-kG8pdf\\data\\default-user\\chats\\Avereth Engine Test v4\\Avereth Live 20261101-181218Z-current_test.jsonl.2635124315' -> 'C:\\Users\\mmitr\\AppData\\Local\\Temp\\avereth-live-20261101-181218Z-current_test-kG8pdf\\data\\default-user\\chats\\Avereth Engine Test v4\\Avereth Live 20261101-1812"
+  }
+ ],
+ "notes": [],
+ "protection": {
+  "unchanged": true
+ },
+ "secretHits": 0
+}

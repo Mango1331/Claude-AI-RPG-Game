@@ -1,0 +1,462 @@
+{
+ "runId": "20261101-174705Z-current_test",
+ "build": "4.3.0-c.6.6.146",
+ "git": {
+  "commit": "9136f8ff664a",
+  "branch": "claude/c-planner-prototype-2026-10-02-gpt-c666",
+  "dirty": []
+ },
+ "scenario": {
+  "id": "guild-warrior",
+  "focus": "guild",
+  "baseClass": "Warrior",
+  "starterAoe": "warrior.cleave"
+ },
+ "stub": false,
+ "seed": 1346262523,
+ "fixture": null,
+ "fixtureReload": null,
+ "persona": "curious adventurer: follow interesting opportunities without forcing dangerous encounters",
+ "guide": {
+  "id": "current_test",
+  "chain": [
+   "current_test"
+  ],
+  "files": [
+   "tools\\st_live\\live\\guides\\current_test.json"
+  ]
+ },
+ "end": {
+  "kind": "defeat",
+  "why": "turn 32: he died"
+ },
+ "timing": {
+  "totalMs": 1040761,
+  "stStartMs": 19362,
+  "setupMs": 33594,
+  "turns": 32,
+  "gameMs": 847151,
+  "decideMs": 133409
+ },
+ "preflight": {
+  "endpoint": "http://127.0.0.1:5050/v1/models",
+  "reachable": true,
+  "status": 200,
+  "models": [
+   "Qwen/Qwen3.8-27B",
+   "zai-org/GLM-5.3-Flash",
+   "zai-org/GLM-5.3",
+   "deepseek-ai/DeepSeek-V4.1-Flash",
+   "deepseek-ai/DeepSeek-V4-Pro",
+   "moonshotai/Kimi-K2.6"
+  ],
+  "found": true,
+  "error": null
+ },
+ "route": {
+  "profile": {
+   "source": "custom",
+   "via": "custom_url",
+   "url": "http://127.0.0.1:5050/v1",
+   "model": "zai-org/GLM-5.3-Flash",
+   "key": "secrets.json api_key_custom"
+  },
+  "runner": {
+   "source": "custom",
+   "via": "custom_url",
+   "url": "http://127.0.0.1:5050/v1",
+   "model": "zai-org/GLM-5.3-Flash",
+   "key": "secrets.json api_key_custom"
+  },
+  "same": true,
+  "differences": [],
+  "reverseProxy": null,
+  "proxyPassword": false,
+  "proxyPresets": true
+ },
+ "player": {
+  "type": "llm",
+  "reasoning": {
+   "body": {
+    "reasoning_effort": "low",
+    "clear_thinking": true
+   },
+   "source": "profile",
+   "keys": [
+    "reasoning_effort",
+    "clear_thinking"
+   ],
+   "note": "as the game's own requests carry them (custom_include_body and the preset's reasoning_effort), same endpoint and model"
+  },
+  "probe": {
+   "ok": true,
+   "status": 200,
+   "finish": "stop",
+   "content": "OK",
+   "reasoningChars": 0,
+   "error": null
+  },
+  "dropped": null
+ },
+ "setup": {
+  "card": "Avereth Engine Test v4",
+  "greeting": "profile",
+  "world": "Avereth World Lore v0.14",
+  "preset": "Avereth Narrator V4",
+  "source": "custom",
+  "via": "custom_url",
+  "model": "zai-org/GLM-5.3-Flash",
+  "stream": false,
+  "host": "127.0.0.1:5050"
+ },
+ "conn": {
+  "mainApi": "openai",
+  "source": "custom",
+  "url": "http://127.0.0.1:5050/v1",
+  "model": "zai-org/GLM-5.3-Flash",
+  "stream": false,
+  "preset": "Avereth Narrator V4",
+  "connected": true,
+  "status": "Status check bypassed"
+ },
+ "chatId": "Avereth Live 20261101-174705Z-current_test",
+ "safeContinuations": 0,
+ "turns": [
+  {
+   "turn": 1,
+   "text": "Warrior",
+   "decideMs": 1528,
+   "ok": true,
+   "ms": 2278,
+   "replyMs": 436,
+   "outcome": "engine",
+   "milestone": "creation_complete"
+  },
+  {
+   "turn": 2,
+   "text": "I choose Cleave and Guard as my two skills.",
+   "decideMs": 2553,
+   "ok": true,
+   "ms": 2155,
+   "replyMs": 316,
+   "outcome": "engine",
+   "milestone": "creation_complete"
+  },
+  {
+   "turn": 3,
+   "text": "I walk toward the city gate of Glassmere and enter the city.",
+   "decideMs": 1264,
+   "ok": true,
+   "ms": 25390,
+   "replyMs": 14045,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 4,
+   "text": "I enter the Adventurers' Guild hall and look for the contract board and a registration clerk.",
+   "decideMs": 2150,
+   "ok": true,
+   "ms": 46898,
+   "replyMs": 33706,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 5,
+   "text": "\"Alaric Red. Register me, please.\" I put two silver on the counter.",
+   "decideMs": 2700,
+   "ok": true,
+   "ms": 27835,
+   "replyMs": 16776,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 6,
+   "text": "I take the Guild plate and thank the clerk, then head to the market square to look for a blacksmith or armourer.",
+   "decideMs": 1885,
+   "ok": true,
+   "ms": 44189,
+   "replyMs": 15901,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 7,
+   "text": "I step inside the armoury and ask Hallvan what he'd charge for a better longsword and breastplate than my starter gear.",
+   "decideMs": 3582,
+   "ok": true,
+   "ms": 43483,
+   "replyMs": 27481,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 8,
+   "text": "I'll take the fine longsword and the fine breastplate — that's twenty-one silver and two copper in total, right? Here's the coin.",
+   "decideMs": 6159,
+   "ok": true,
+   "ms": 31411,
+   "replyMs": 23638,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 9,
+   "text": "I'll take just the fine longsword for fourteen silver — here's the coin.",
+   "decideMs": 5137,
+   "ok": true,
+   "ms": 21830,
+   "replyMs": 16873,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 10,
+   "text": "I thank Hallvan and head to the Adventurers' Guild hall to pick a starter contract from the board.",
+   "decideMs": 10763,
+   "ok": true,
+   "ms": 62154,
+   "replyMs": 55093,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 11,
+   "text": "I take the fen cat notice to the clerk and ask her to accept the contract for me.",
+   "decideMs": 17185,
+   "ok": true,
+   "ms": 63910,
+   "replyMs": 41145,
+   "outcome": "story",
+   "milestone": null
+  },
+  {
+   "turn": 12,
+   "text": "I leave the Guild hall and head south past the willow line to the eel stakes to hunt the fen cat.",
+   "decideMs": 17849,
+   "ok": true,
+   "ms": 68019,
+   "replyMs": 42081,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 13,
+   "text": "I thank the fisher and walk the walkways out toward the far end of the stakes, watching for the fen cat.",
+   "decideMs": 2358,
+   "ok": true,
+   "ms": 28571,
+   "replyMs": 19268,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 14,
+   "text": "I wade into the reeds toward the trampled hummock, sword ready in case the fen cat bursts out.",
+   "decideMs": 3050,
+   "ok": true,
+   "ms": 44133,
+   "replyMs": 27010,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 15,
+   "text": "I swing my longsword at the fen cat as it springs at me.",
+   "decideMs": 2856,
+   "ok": true,
+   "ms": 13327,
+   "replyMs": 7868,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 16,
+   "text": "I swing my longsword at the fen cat as it comes at me.",
+   "decideMs": 3493,
+   "ok": true,
+   "ms": 14096,
+   "replyMs": 9685,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 17,
+   "text": "I finish it with a Basic Attack at the wounded fen cat.",
+   "decideMs": 1370,
+   "ok": true,
+   "ms": 13830,
+   "replyMs": 9149,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 18,
+   "text": "I collect myself and walk back north along the walkways to the fisher at the eel stakes, then head for the Guild hall in Glassmere to turn in the fen cat contract.",
+   "decideMs": 1773,
+   "ok": true,
+   "ms": 29547,
+   "replyMs": 14779,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 19,
+   "text": "#assign STR 2 VIT 2 AGI 1",
+   "decideMs": 1694,
+   "ok": true,
+   "ms": 2142,
+   "replyMs": 313,
+   "outcome": "system",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 20,
+   "text": "I ask the clerk what contracts are on the board suitable for a Novice.",
+   "decideMs": 1602,
+   "ok": true,
+   "ms": 14334,
+   "replyMs": 9626,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 21,
+   "text": "I take the Boar Sounder contract slip and ask the clerk to accept it.",
+   "decideMs": 2001,
+   "ok": true,
+   "ms": 14298,
+   "replyMs": 8600,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 22,
+   "text": "I ask the clerk where I can find a blacksmith or weaponsmith in Glassmere.",
+   "decideMs": 1553,
+   "ok": true,
+   "ms": 16654,
+   "replyMs": 9875,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 23,
+   "text": "I walk to the Harrow Lane forge and ask Master Ellery what weapons and armor he has suitable for a Novice warrior.",
+   "decideMs": 2807,
+   "ok": true,
+   "ms": 23335,
+   "replyMs": 13211,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 24,
+   "text": "\"Nothing I can afford today, Master Ellery — I'll keep my starter gear for now. Do you buy fen cat pelts and claws?\"",
+   "decideMs": 8579,
+   "ok": true,
+   "ms": 21208,
+   "replyMs": 13198,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 25,
+   "text": "\"Six copper the lot — done, Master Ellery.\" I hand over the pelt and both claws and take the coins, then set off for the Tallowwood to hunt the boar sounder.",
+   "decideMs": 5456,
+   "ok": true,
+   "ms": 7017,
+   "replyMs": 5208,
+   "outcome": "engine",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 26,
+   "text": "I sell the fen cat pelt and both claws to Master Ellery for six copper total, then leave for the Tallowwood.",
+   "decideMs": 2740,
+   "ok": true,
+   "ms": 37661,
+   "replyMs": 18526,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 27,
+   "text": "I follow the freshest boar trail deeper into the trees, moving quietly and watching ahead for the sounder.",
+   "decideMs": 3790,
+   "ok": true,
+   "ms": 30087,
+   "replyMs": 13790,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 28,
+   "text": "I back away quietly from the hollow before the sow catches my scent, then circle to look for boar separated from the sounder.",
+   "decideMs": 3597,
+   "ok": true,
+   "ms": 18342,
+   "replyMs": 11264,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 29,
+   "text": "I brace behind a thick oak trunk and use Cleave on the lead sow as she closes within reach.",
+   "decideMs": 2621,
+   "ok": true,
+   "ms": 16826,
+   "replyMs": 10493,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 30,
+   "text": "I swing Cleave at the charging sow (Boar A) as she reaches my reach.",
+   "decideMs": 2251,
+   "ok": true,
+   "ms": 23025,
+   "replyMs": 13785,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 31,
+   "text": "I use Cleave at the two engaged boars (A and B), then Guard against their counterattacks.",
+   "decideMs": 4185,
+   "ok": true,
+   "ms": 23200,
+   "replyMs": 14078,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  },
+  {
+   "turn": 32,
+   "text": "I use Cleave again on the two engaged boars (A and B).",
+   "decideMs": 2878,
+   "ok": true,
+   "ms": 15966,
+   "replyMs": 10722,
+   "outcome": "story",
+   "milestone": "open_run_level"
+  }
+ ],
+ "status": "Avereth Engine 4.3.0-c.6.6.146 | runtime v4 (LLM: custom endpoint) | turn 30 | mode story | events 476 | integrity: OK | last block ~2054 tokens | history: 49 older message(s) left out, 0 tracker block(s) removed | lore: World Info (Avereth World Lore v0.14) | narrator contract: current | last turn: engine 0.0 s (1 folds, 2 ms) · planner 1.9 s · narrator 8.4 s · extractor 3.5 s",
+ "toasts": [
+  {
+   "at": 1793555255371,
+   "kind": "info",
+   "text": "Rename ChatRenaming chat…",
+   "origin": "runner"
+  }
+ ],
+ "pageErrors": [],
+ "serverErrors": [],
+ "notes": [],
+ "protection": {
+  "unchanged": true
+ },
+ "secretHits": 0
+}

@@ -1,0 +1,2433 @@
+{
+ "end": {
+  "kind": "defeat",
+  "why": "turn 32: he died"
+ },
+ "milestones": [
+  {
+   "at": 3,
+   "turn": 2,
+   "skills": [
+    "warrior.guard",
+    "warrior.cleave"
+   ],
+   "class": "warrior",
+   "id": "creation_complete",
+   "check": "creation_complete",
+   "required": true,
+   "goal": "Create a genuine Level-1 Warrior through the ordinary creation menu; One of the two starter skills MUST be warrior.cleave; choose the other freely. Use AoE only when tactically useful; do not force fights or ignore friendly fire..",
+   "reached": true
+  },
+  {
+   "id": "open_run_level",
+   "check": "open_run_level",
+   "required": true,
+   "goal": "Develop your freely chosen Level-1 character through real play until the Engine confirms Level 15. Keep improving gear and skills; then continue to class evolution instead of stopping.",
+   "reached": false
+  },
+  {
+   "id": "class_accepted",
+   "check": "class_accepted",
+   "required": true,
+   "goal": "After Level 15, finish pending danger, inspect #class/#feats and freely choose an offered E class. Panels are read-only; if the offer is due, take a safe ordinary story turn. Normal is valid: never farm Rare. Only Engine-confirmed acceptance finishes this milestone; no E fight is required.",
+   "reached": false
+  }
+ ],
+ "reached": {
+  "creation_complete": {
+   "at": 3,
+   "turn": 2,
+   "skills": [
+    "warrior.guard",
+    "warrior.cleave"
+   ],
+   "class": "warrior"
+  },
+  "guild_registered": {
+   "at": 9,
+   "turn": 5,
+   "rank": "Novice",
+   "branch": "loc.glassmere"
+  },
+  "board_shown": {
+   "at": 20,
+   "turn": 10,
+   "listings": 5
+  },
+  "numeric_cull_active": {
+   "at": 21,
+   "turn": 11,
+   "quest": "quest.cull_the_fen_cat_at_the_eel_stakes",
+   "title": "Cull the Fen Cat at the Eel Stakes",
+   "count": 1,
+   "dungeon": null
+  },
+  "fight_started": {
+   "at": 31,
+   "turn": 16
+  },
+  "skill_pattern_noted": {
+   "at": 33,
+   "turn": 17,
+   "fight": "enc.t16"
+  },
+  "fight_won": {
+   "at": 33,
+   "turn": 17,
+   "encounter": "enc.t16"
+  },
+  "quest_completed": {
+   "at": 36,
+   "turn": 18,
+   "quest": "quest.cull_the_fen_cat_at_the_eel_stakes",
+   "title": "Cull the Fen Cat at the Eel Stakes"
+  },
+  "group_fight": {
+   "at": 59,
+   "turn": 30,
+   "foes": 6
+  },
+  "guild_registered_fee": {
+   "at": 9,
+   "turn": 5,
+   "fee": 20,
+   "paid": 20,
+   "payments": 1
+  }
+ },
+ "encounters": [
+  {
+   "id": "enc.t16",
+   "at": 31,
+   "turn": 16,
+   "foes": [
+    "mon.fen_cat"
+   ],
+   "groups": [],
+   "stayedOut": [],
+   "concealed": false,
+   "awareness": {},
+   "ended": 33,
+   "defeated": [
+    "mon.fen_cat"
+   ],
+   "escaped": [],
+   "pcDead": false,
+   "pcEscaped": false,
+   "xp": 60
+  },
+  {
+   "id": "enc.t28",
+   "at": 59,
+   "turn": 30,
+   "foes": [
+    "mon.boarbig",
+    "mon.boarsounder_1",
+    "mon.boarsounder_2",
+    "mon.boarsounder_3",
+    "mon.boarsounder_4",
+    "mon.boarsounder_5"
+   ],
+   "groups": [
+    "boar.sounder"
+   ],
+   "stayedOut": [],
+   "concealed": false,
+   "awareness": {},
+   "ended": 63,
+   "defeated": [],
+   "escaped": [],
+   "pcDead": true,
+   "pcEscaped": false,
+   "xp": 0
+  }
+ ],
+ "quests": [
+  {
+   "id": "quest.cull_the_fen_cat_at_the_eel_stakes",
+   "title": "Cull the Fen Cat at the Eel Stakes",
+   "kind": "guild_contract",
+   "dungeon": null,
+   "floor": null,
+   "task": "Kill 1 mangy fen cat at the eel stakes south of Glassmere. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+   "end_state": "1 mangy fen cat killed at the eel stakes south of Glassmere.",
+   "created": 19,
+   "statuses": [
+    {
+     "to": "active",
+     "at": 21,
+     "turn": 11
+    },
+    {
+     "to": "completed",
+     "at": 36,
+     "turn": 18
+    }
+   ],
+   "payout": 40,
+   "xp": 115,
+   "payout_attribution": "quest_id",
+   "payout_cp": 40,
+   "atHall": true
+  },
+  {
+   "id": "quest.thin_the_boar_sounder_in_the_tallowwood",
+   "title": "Thin the Boar Sounder in the Tallowwood",
+   "kind": "guild_contract",
+   "dungeon": null,
+   "floor": null,
+   "task": "Kill 4 wild boar of the Tallowwood sounder at the Tallowwood east of Glassmere. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+   "end_state": "4 wild boar of the Tallowwood sounder killed at the Tallowwood east of Glassmere.",
+   "created": 19,
+   "statuses": [
+    {
+     "to": "active",
+     "at": 41,
+     "turn": 21
+    }
+   ]
+  },
+  {
+   "id": "quest.break_the_ridge_serpent_nest",
+   "title": "Break the Ridge Serpent Nest",
+   "kind": "guild_contract",
+   "dungeon": null,
+   "floor": null,
+   "task": "Kill 2 ridge serpents of the quarry-terrace nest at the old quarry terraces in the Cleft Hills. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+   "end_state": "2 ridge serpents of the quarry-terrace nest killed at the old quarry terraces in the Cleft Hills.",
+   "created": 19,
+   "statuses": []
+  },
+  {
+   "id": "quest.slay_the_pale_stag_of_the_mist_fen",
+   "title": "Slay the Pale Stag of the Mist Fen",
+   "kind": "guild_contract",
+   "dungeon": null,
+   "floor": null,
+   "task": "Kill 1 the pale stag of the Mist Fen at the Mist Fen reed-beds west of Glassmere. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+   "end_state": "1 the pale stag of the Mist Fen killed at the Mist Fen reed-beds west of Glassmere.",
+   "created": 19,
+   "statuses": []
+  },
+  {
+   "id": "quest.clear_glimmerdeep_grotto_level_1",
+   "title": "Clear Glimmerdeep Grotto Level 1",
+   "kind": "guild_contract",
+   "dungeon": "loc.glimmerdeep_grotto",
+   "floor": 1,
+   "task": "Clear level 1 of Glimmerdeep Grotto. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedition.",
+   "end_state": "Level 1 of Glimmerdeep Grotto is clear.",
+   "created": 19,
+   "statuses": []
+  }
+ ],
+ "defeat": {
+  "at": 63,
+  "turn": 32,
+  "why": "he died"
+ },
+ "issues": [
+  {
+   "at": 6,
+   "turn": 3,
+   "kind": "extraction_repaired",
+   "text": "the extractor's first answer needed a repair"
+  },
+  {
+   "at": 7,
+   "turn": 4,
+   "kind": "board_failed",
+   "text": "the board generator failed"
+  },
+  {
+   "at": 8,
+   "turn": 4,
+   "kind": "extraction_repaired",
+   "text": "the extractor's first answer needed a repair"
+  },
+  {
+   "at": 9,
+   "turn": 5,
+   "kind": "planner_repaired",
+   "text": "the planner's first answer needed a repair"
+  },
+  {
+   "at": 12,
+   "turn": 6,
+   "kind": "extraction_repaired",
+   "text": "the extractor's first answer needed a repair"
+  },
+  {
+   "at": 15,
+   "turn": 8,
+   "kind": "planner_repaired",
+   "text": "the planner's first answer needed a repair"
+  },
+  {
+   "at": 17,
+   "turn": 9,
+   "kind": "planner_repaired",
+   "text": "the planner's first answer needed a repair"
+  },
+  {
+   "at": 36,
+   "turn": 18,
+   "kind": "extraction_repaired",
+   "text": "the extractor's first answer needed a repair"
+  },
+  {
+   "at": 49,
+   "turn": 25,
+   "kind": "planner_repaired",
+   "text": "the planner's first answer needed a repair"
+  },
+  {
+   "at": 51,
+   "turn": 26,
+   "kind": "planner_repaired",
+   "text": "the planner's first answer needed a repair"
+  }
+ ],
+ "counts": {
+  "modelFailures": {
+   "planner": 0,
+   "world": 0
+  },
+  "rejected": {
+   "guild_canon_price": 1,
+   "engine_owned_fact": 2,
+   "attack_commitment": 1,
+   "guild_completion": 1,
+   "engine_owned_memory": 1,
+   "group_unclear": 1,
+   "world_rule": 8
+  },
+  "panels": {
+   "clarify": 1,
+   "not_taken": 2,
+   "refused": 0,
+   "blocked": 0,
+   "failed": 0,
+   "not_recorded": 0
+  },
+  "events": 476,
+  "recovery": {
+   "narrator": {
+    "markedAttempts": 0,
+    "withStory": 0,
+    "empty": 0,
+    "missing": 0,
+    "applied": 0
+   },
+   "planner": {
+    "empty": 0,
+    "transport": 0,
+    "zeroCommands": 0
+   },
+   "extractor": {
+    "empty": 0,
+    "transport": 0,
+    "zeroDeltas": 0
+   }
+  }
+ },
+ "turns": [
+  {
+   "turn": 1,
+   "at": 1,
+   "input": "Warrior",
+   "route": "v3",
+   "system": true,
+   "place": "loc.glassmere.verge",
+   "placeName": "public roadside verge outside Glassmere",
+   "hp": 90,
+   "mp": 84,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "creation.class_selected",
+    "outcome.recorded"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 3,
+    "plan": null,
+    "board": null,
+    "narrator": null,
+    "extract": null
+   },
+   "calls": [],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 2,
+   "at": 3,
+   "input": "I choose Cleave and Guard as my two skills.",
+   "route": "v3",
+   "system": true,
+   "place": "loc.glassmere.verge",
+   "placeName": "public roadside verge outside Glassmere",
+   "hp": 95,
+   "mp": 84,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "creation.completed",
+    "outcome.recorded"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 3,
+    "plan": null,
+    "board": null,
+    "narrator": null,
+    "extract": null
+   },
+   "calls": [],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 3,
+   "at": 5,
+   "input": "I walk toward the city gate of Glassmere and enter the city.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere",
+   "placeName": "Glassmere",
+   "hp": 95,
+   "mp": 84,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "cmd.resolved",
+    "outcome.recorded",
+    "time.advanced",
+    "scene.moved",
+    "entity.created",
+    "scene.entered",
+    "fact.asserted",
+    "scene.awareness",
+    "fact.asserted",
+    "fact.asserted",
+    "knowledge.gained",
+    "memory.recorded",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 20,
+    "plan": 3043,
+    "board": null,
+    "narrator": 10594,
+    "extract": 9845
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 3043,
+     "finish": "stop",
+     "prompt": 11555,
+     "cached": 0,
+     "completion": 84
+    },
+    {
+     "purpose": "extract",
+     "ms": 6516,
+     "finish": "stop",
+     "prompt": 12750,
+     "cached": 0,
+     "completion": 363
+    },
+    {
+     "purpose": "extract_repair",
+     "ms": 3329,
+     "finish": "stop",
+     "prompt": 13106,
+     "cached": 12809,
+     "completion": 301
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 4,
+   "at": 7,
+   "input": "I enter the Adventurers' Guild hall and look for the contract board and a registration clerk.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.guild_hall",
+   "placeName": "Adventurers' Guild hall, Glassmere",
+   "hp": 95,
+   "mp": 84,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "board.failed",
+    "cmd.resolved",
+    "cmd.resolved",
+    "outcome.recorded",
+    "entity.updated",
+    "scene.moved",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "scene.awareness",
+    "delta.rejected",
+    "fact.asserted",
+    "fact.asserted",
+    "time.advanced",
+    "knowledge.gained",
+    "memory.recorded",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 20,
+    "plan": 3311,
+    "board": 20073,
+    "narrator": 9867,
+    "extract": 11776
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 3311,
+     "finish": "stop",
+     "prompt": 11597,
+     "cached": 10382,
+     "completion": 101
+    },
+    {
+     "purpose": "board",
+     "ms": 11604,
+     "finish": "stop",
+     "prompt": 2602,
+     "cached": 0,
+     "completion": 1257
+    },
+    {
+     "purpose": "board",
+     "ms": 8469,
+     "finish": "stop",
+     "prompt": 3859,
+     "cached": 2841,
+     "completion": 1247
+    },
+    {
+     "purpose": "extract",
+     "ms": 7393,
+     "finish": "stop",
+     "prompt": 12672,
+     "cached": 10774,
+     "completion": 605
+    },
+    {
+     "purpose": "extract_repair",
+     "ms": 4383,
+     "finish": "stop",
+     "prompt": 13227,
+     "cached": 12805,
+     "completion": 514
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 5,
+   "at": 9,
+   "input": "\"Alaric Red. Register me, please.\" I put two silver on the counter.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.guild_hall",
+   "placeName": "Adventurers' Guild hall, Glassmere",
+   "hp": 95,
+   "mp": 84,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "offer.created",
+    "decision.opened",
+    "transaction.completed",
+    "coin.changed",
+    "offer.closed",
+    "guild.registered",
+    "object.created",
+    "fact.asserted",
+    "knowledge.gained",
+    "knowledge.gained",
+    "decision.closed",
+    "cmd.resolved",
+    "cmd.resolved",
+    "outcome.recorded",
+    "fact.asserted",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 14,
+    "plan": 7469,
+    "board": null,
+    "narrator": 9041,
+    "extract": 9025
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 3077,
+     "finish": "stop",
+     "prompt": 11610,
+     "cached": 10399,
+     "completion": 149
+    },
+    {
+     "purpose": "plan_repair",
+     "ms": 4392,
+     "finish": "stop",
+     "prompt": 11770,
+     "cached": 11614,
+     "completion": 91
+    },
+    {
+     "purpose": "extract",
+     "ms": 9025,
+     "finish": "stop",
+     "prompt": 12399,
+     "cached": 10804,
+     "completion": 137
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 6,
+   "at": 11,
+   "input": "I take the Guild plate and thank the clerk, then head to the market square to look for a blacksmith or armourer.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.hallvans_armoury",
+   "placeName": "Hallvan's Armoury",
+   "hp": 95,
+   "mp": 84,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "cmd.resolved",
+    "cmd.resolved",
+    "outcome.recorded",
+    "place.created",
+    "entity.updated",
+    "scene.moved",
+    "place.created",
+    "entity.created",
+    "fact.asserted",
+    "fact.asserted",
+    "place.created",
+    "scene.moved",
+    "entity.created",
+    "fact.asserted",
+    "fact.asserted",
+    "time.advanced",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 9,
+    "plan": 2162,
+    "board": null,
+    "narrator": 13362,
+    "extract": 26394
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2162,
+     "finish": "stop",
+     "prompt": 11636,
+     "cached": 10395,
+     "completion": 77
+    },
+    {
+     "purpose": "extract",
+     "ms": 19899,
+     "finish": "stop",
+     "prompt": 12749,
+     "cached": 10796,
+     "completion": 840
+    },
+    {
+     "purpose": "extract_repair",
+     "ms": 6495,
+     "finish": "stop",
+     "prompt": 13460,
+     "cached": 12889,
+     "completion": 651
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 7,
+   "at": 13,
+   "input": "I step inside the armoury and ask Hallvan what he'd charge for a better longsword and breastplate than my starter gear.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.hallvans_armoury",
+   "placeName": "Hallvan's Armoury",
+   "hp": 95,
+   "mp": 84,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "cmd.resolved",
+    "outcome.recorded",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "scene.awareness",
+    "offer.created",
+    "fact.asserted",
+    "knowledge.gained",
+    "memory.recorded",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 6,
+    "plan": 10395,
+    "board": null,
+    "narrator": 16688,
+    "extract": 14440
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 10395,
+     "finish": "stop",
+     "prompt": 11677,
+     "cached": 10402,
+     "completion": 43
+    },
+    {
+     "purpose": "extract",
+     "ms": 14440,
+     "finish": "stop",
+     "prompt": 12787,
+     "cached": 10827,
+     "completion": 887
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 8,
+   "at": 15,
+   "input": "I'll take the fine longsword and the fine breastplate — that's twenty-one silver and two copper in total, right? Here's the coin.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.hallvans_armoury",
+   "placeName": "Hallvan's Armoury",
+   "hp": 95,
+   "mp": 84,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "cmd.resolved",
+    "outcome.recorded",
+    "fact.asserted",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 18,
+    "plan": 16672,
+    "board": null,
+    "narrator": 6577,
+    "extract": 5869
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 14640,
+     "finish": "stop",
+     "prompt": 11892,
+     "cached": 10458,
+     "completion": 141
+    },
+    {
+     "purpose": "plan_repair",
+     "ms": 2032,
+     "finish": "stop",
+     "prompt": 12037,
+     "cached": 11888,
+     "completion": 104
+    },
+    {
+     "purpose": "extract",
+     "ms": 5869,
+     "finish": "stop",
+     "prompt": 12555,
+     "cached": 10881,
+     "completion": 245
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 9,
+   "at": 17,
+   "input": "I'll take just the fine longsword for fourteen silver — here's the coin.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.hallvans_armoury",
+   "placeName": "Hallvan's Armoury",
+   "hp": 95,
+   "mp": 84,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "cmd.resolved",
+    "outcome.recorded",
+    "fact.asserted",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 16,
+    "plan": 5839,
+    "board": null,
+    "narrator": 10818,
+    "extract": 3284
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 3933,
+     "finish": "stop",
+     "prompt": 11876,
+     "cached": 10457,
+     "completion": 129
+    },
+    {
+     "purpose": "plan_repair",
+     "ms": 1906,
+     "finish": "stop",
+     "prompt": 11999,
+     "cached": 11873,
+     "completion": 82
+    },
+    {
+     "purpose": "extract",
+     "ms": 3284,
+     "finish": "stop",
+     "prompt": 12503,
+     "cached": 10892,
+     "completion": 151
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 10,
+   "at": 19,
+   "input": "I thank Hallvan and head to the Adventurers' Guild hall to pick a starter contract from the board.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.guild_hall",
+   "placeName": "Adventurers' Guild hall, Glassmere",
+   "hp": 95,
+   "mp": 84,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "place.created",
+    "quest.created",
+    "place.created",
+    "quest.created",
+    "place.created",
+    "quest.created",
+    "place.created",
+    "quest.created",
+    "quest.created",
+    "board.refreshed",
+    "cmd.resolved",
+    "cmd.resolved",
+    "outcome.recorded",
+    "time.advanced",
+    "entity.updated",
+    "scene.moved",
+    "board.shown",
+    "cmd.completed",
+    "scene.entered",
+    "fact.asserted",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 22,
+    "plan": 3849,
+    "board": 40910,
+    "narrator": 9993,
+    "extract": 5279
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 3849,
+     "finish": "stop",
+     "prompt": 11889,
+     "cached": 10463,
+     "completion": 66
+    },
+    {
+     "purpose": "board",
+     "ms": 28522,
+     "finish": "stop",
+     "prompt": 2602,
+     "cached": 2602,
+     "completion": 1262
+    },
+    {
+     "purpose": "board",
+     "ms": 12388,
+     "finish": "stop",
+     "prompt": 3876,
+     "cached": 2821,
+     "completion": 1288
+    },
+    {
+     "purpose": "extract",
+     "ms": 5279,
+     "finish": "stop",
+     "prompt": 14333,
+     "cached": 11018,
+     "completion": 191
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 11,
+   "at": 21,
+   "input": "I take the fen cat notice to the clerk and ask her to accept the contract for me.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.guild_hall",
+   "placeName": "Adventurers' Guild hall, Glassmere",
+   "hp": 95,
+   "mp": 84,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "quest.status",
+    "board.refreshed",
+    "object.created",
+    "fact.asserted",
+    "knowledge.gained",
+    "cmd.resolved",
+    "outcome.recorded",
+    "delta.rejected",
+    "fact.asserted",
+    "quest.detailed",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 13,
+    "plan": 18867,
+    "board": null,
+    "narrator": 21926,
+    "extract": 21125
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 18867,
+     "finish": "stop",
+     "prompt": 12799,
+     "cached": 0,
+     "completion": 77
+    },
+    {
+     "purpose": "extract",
+     "ms": 21125,
+     "finish": "stop",
+     "prompt": 13916,
+     "cached": 0,
+     "completion": 340
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 12,
+   "at": 23,
+   "input": "I leave the Guild hall and head south past the willow line to the eel stakes to hunt the fen cat.",
+   "route": "v4",
+   "system": false,
+   "place": "realm.caelreth.the_eel_stakes_south_of_glassmere",
+   "placeName": "the eel stakes south of Glassmere",
+   "hp": 95,
+   "mp": 84,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "intent.set",
+    "cmd.resolved",
+    "outcome.recorded",
+    "scene.moved",
+    "place.updated",
+    "intent.set",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "scene.awareness",
+    "fact.ended",
+    "fact.asserted",
+    "quest.detailed",
+    "quest.progressed",
+    "memory.recorded",
+    "time.advanced",
+    "knowledge.gained",
+    "memory.recorded",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 9,
+    "plan": 19164,
+    "board": null,
+    "narrator": 22639,
+    "extract": 23897
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 19164,
+     "finish": "stop",
+     "prompt": 12847,
+     "cached": 0,
+     "completion": 66
+    },
+    {
+     "purpose": "extract",
+     "ms": 23897,
+     "finish": "stop",
+     "prompt": 14379,
+     "cached": 10994,
+     "completion": 498
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 13,
+   "at": 25,
+   "input": "I thank the fisher and walk the walkways out toward the far end of the stakes, watching for the fen cat.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.the_far_platform_of_the_eel_stakes",
+   "placeName": "the far platform of the eel stakes",
+   "hp": 95,
+   "mp": 84,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "cmd.resolved",
+    "outcome.recorded",
+    "place.created",
+    "entity.updated",
+    "scene.moved",
+    "fact.asserted",
+    "fact.asserted",
+    "quest.progressed",
+    "thread.set",
+    "time.advanced",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 11,
+    "plan": 2216,
+    "board": null,
+    "narrator": 16686,
+    "extract": 7731
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2216,
+     "finish": "stop",
+     "prompt": 12418,
+     "cached": 10460,
+     "completion": 59
+    },
+    {
+     "purpose": "extract",
+     "ms": 7731,
+     "finish": "stop",
+     "prompt": 13770,
+     "cached": 10964,
+     "completion": 645
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 14,
+   "at": 27,
+   "input": "I wade into the reeds toward the trampled hummock, sword ready in case the fen cat bursts out.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.the_trampled_hummock",
+   "placeName": "the trampled hummock",
+   "hp": 95,
+   "mp": 84,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "cmd.resolved",
+    "outcome.recorded",
+    "place.created",
+    "scene.moved",
+    "fact.asserted",
+    "entity.created",
+    "scene.entered",
+    "entity.updated",
+    "entity.updated",
+    "scene.position",
+    "time.advanced",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 7,
+    "plan": 3000,
+    "board": null,
+    "narrator": 23677,
+    "extract": 15468
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 3000,
+     "finish": "stop",
+     "prompt": 12439,
+     "cached": 10456,
+     "completion": 67
+    },
+    {
+     "purpose": "extract",
+     "ms": 15468,
+     "finish": "stop",
+     "prompt": 13700,
+     "cached": 10978,
+     "completion": 425
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 15,
+   "at": 29,
+   "input": "I swing my longsword at the fen cat as it springs at me.",
+   "route": "v3",
+   "system": false,
+   "place": "loc.the_trampled_hummock",
+   "placeName": "the trampled hummock",
+   "hp": 95,
+   "mp": 84,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "outcome.recorded",
+    "scene.position",
+    "delta.rejected",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 16,
+    "plan": 2081,
+    "board": null,
+    "narrator": 5450,
+    "extract": 3701
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2081,
+     "finish": "stop",
+     "prompt": 12491,
+     "cached": 10465,
+     "completion": 44
+    },
+    {
+     "purpose": "extract",
+     "ms": 3701,
+     "finish": "stop",
+     "prompt": 13244,
+     "cached": 10982,
+     "completion": 174
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 16,
+   "at": 31,
+   "input": "I swing my longsword at the fen cat as it comes at me.",
+   "route": "v3",
+   "system": false,
+   "place": "loc.the_trampled_hummock",
+   "placeName": "the trampled hummock",
+   "hp": 91,
+   "mp": 84,
+   "level": 1,
+   "encounter": true,
+   "events": [
+    "turn.begun",
+    "encounter.started",
+    "scene.awareness",
+    "resource.changed",
+    "resource.changed",
+    "outcome.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 13,
+    "plan": 1637,
+    "board": null,
+    "narrator": 7640,
+    "extract": 2491
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 1637,
+     "finish": "stop",
+     "prompt": 12487,
+     "cached": 10463,
+     "completion": 44
+    },
+    {
+     "purpose": "extract",
+     "ms": 2491,
+     "finish": "stop",
+     "prompt": 13469,
+     "cached": 10973,
+     "completion": 53
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 17,
+   "at": 33,
+   "input": "I finish it with a Basic Attack at the wounded fen cat.",
+   "route": "v3",
+   "system": false,
+   "place": "loc.the_trampled_hummock",
+   "placeName": "the trampled hummock",
+   "hp": 91,
+   "mp": 84,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "encounter.updated",
+    "resource.changed",
+    "entity.status",
+    "fact.asserted",
+    "knowledge.gained",
+    "xp.changed",
+    "skill.progress",
+    "growth.noted",
+    "career.recorded",
+    "encounter.ended",
+    "memory.recorded",
+    "entity.updated",
+    "object.created",
+    "object.created",
+    "outcome.recorded",
+    "object.marked",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 18,
+    "plan": 1659,
+    "board": null,
+    "narrator": 7211,
+    "extract": 2791
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 1659,
+     "finish": "stop",
+     "prompt": 5573,
+     "cached": 0,
+     "completion": 45
+    },
+    {
+     "purpose": "extract",
+     "ms": 2791,
+     "finish": "stop",
+     "prompt": 13619,
+     "cached": 11000,
+     "completion": 68
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 18,
+   "at": 35,
+   "input": "I collect myself and walk back north along the walkways to the fisher at the eel stakes, then head for the Guild hall in Glassmere to turn in the fen cat contract.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.guild_hall",
+   "placeName": "Adventurers' Guild hall, Glassmere",
+   "hp": 91,
+   "mp": 84,
+   "level": 2,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "intent.set",
+    "cmd.resolved",
+    "cmd.resolved",
+    "cmd.resolved",
+    "outcome.recorded",
+    "delta.rejected",
+    "delta.rejected",
+    "place.created",
+    "scene.moved",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "fact.asserted",
+    "knowledge.gained",
+    "memory.recorded",
+    "entity.updated",
+    "scene.moved",
+    "intent.set",
+    "proof.checked",
+    "coin.changed",
+    "transaction.completed",
+    "xp.changed",
+    "level.up",
+    "quest.status",
+    "fact.asserted",
+    "cmd.completed",
+    "scene.entered",
+    "delta.rejected",
+    "time.advanced",
+    "object.marked",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 12,
+    "plan": 4563,
+    "board": null,
+    "narrator": 9972,
+    "extract": 12666
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 4563,
+     "finish": "stop",
+     "prompt": 12580,
+     "cached": 10473,
+     "completion": 170
+    },
+    {
+     "purpose": "extract",
+     "ms": 7304,
+     "finish": "stop",
+     "prompt": 14667,
+     "cached": 11012,
+     "completion": 693
+    },
+    {
+     "purpose": "extract_repair",
+     "ms": 5362,
+     "finish": "stop",
+     "prompt": 15338,
+     "cached": 14719,
+     "completion": 622
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 19,
+   "at": 37,
+   "input": "#assign STR 2 VIT 2 AGI 1",
+   "route": "v3",
+   "system": true,
+   "place": "loc.glassmere.guild_hall",
+   "placeName": "Adventurers' Guild hall, Glassmere",
+   "hp": 91,
+   "mp": 84,
+   "level": 2,
+   "encounter": false,
+   "events": [
+    "stat.assigned",
+    "stat.assigned",
+    "stat.assigned"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 8,
+    "plan": null,
+    "board": null,
+    "narrator": null,
+    "extract": null
+   },
+   "calls": [],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 20,
+   "at": 39,
+   "input": "I ask the clerk what contracts are on the board suitable for a Novice.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.guild_hall",
+   "placeName": "Adventurers' Guild hall, Glassmere",
+   "hp": 91,
+   "mp": 84,
+   "level": 2,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "offer.created",
+    "board.shown",
+    "cmd.resolved",
+    "outcome.recorded",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 15,
+    "plan": 2357,
+    "board": null,
+    "narrator": 7012,
+    "extract": 2599
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2357,
+     "finish": "stop",
+     "prompt": 12943,
+     "cached": 10464,
+     "completion": 41
+    },
+    {
+     "purpose": "extract",
+     "ms": 2599,
+     "finish": "stop",
+     "prompt": 14461,
+     "cached": 11055,
+     "completion": 29
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 21,
+   "at": 41,
+   "input": "I take the Boar Sounder contract slip and ask the clerk to accept it.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.guild_hall",
+   "placeName": "Adventurers' Guild hall, Glassmere",
+   "hp": 91,
+   "mp": 84,
+   "level": 2,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "quest.status",
+    "board.refreshed",
+    "object.created",
+    "fact.asserted",
+    "knowledge.gained",
+    "cmd.resolved",
+    "outcome.recorded",
+    "time.advanced",
+    "quest.detailed",
+    "memory.recorded",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 12,
+    "plan": 2031,
+    "board": null,
+    "narrator": 6116,
+    "extract": 4224
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2031,
+     "finish": "stop",
+     "prompt": 13080,
+     "cached": 10484,
+     "completion": 67
+    },
+    {
+     "purpose": "extract",
+     "ms": 4224,
+     "finish": "stop",
+     "prompt": 14022,
+     "cached": 11028,
+     "completion": 237
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 22,
+   "at": 43,
+   "input": "I ask the clerk where I can find a blacksmith or weaponsmith in Glassmere.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.guild_hall",
+   "placeName": "Adventurers' Guild hall, Glassmere",
+   "hp": 91,
+   "mp": 84,
+   "level": 2,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "outcome.recorded",
+    "fact.asserted",
+    "place.created",
+    "place.updated",
+    "fact.asserted",
+    "place.created",
+    "place.updated",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 11,
+    "plan": 3355,
+    "board": null,
+    "narrator": 6222,
+    "extract": 4737
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 3355,
+     "finish": "stop",
+     "prompt": 13146,
+     "cached": 10491,
+     "completion": 9
+    },
+    {
+     "purpose": "extract",
+     "ms": 4737,
+     "finish": "stop",
+     "prompt": 13939,
+     "cached": 11039,
+     "completion": 318
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 23,
+   "at": 45,
+   "input": "I walk to the Harrow Lane forge and ask Master Ellery what weapons and armor he has suitable for a Novice warrior.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.harrow_lane_forge",
+   "placeName": "Harrow Lane forge",
+   "hp": 91,
+   "mp": 84,
+   "level": 2,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "intent.set",
+    "cmd.resolved",
+    "outcome.recorded",
+    "scene.moved",
+    "place.updated",
+    "intent.set",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "entity.created",
+    "scene.entered",
+    "fact.asserted",
+    "offer.created",
+    "time.advanced",
+    "knowledge.gained",
+    "memory.recorded",
+    "knowledge.gained",
+    "memory.recorded",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 12,
+    "plan": 2897,
+    "board": null,
+    "narrator": 9841,
+    "extract": 8206
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2897,
+     "finish": "stop",
+     "prompt": 13218,
+     "cached": 10486,
+     "completion": 45
+    },
+    {
+     "purpose": "extract",
+     "ms": 8206,
+     "finish": "stop",
+     "prompt": 14558,
+     "cached": 11048,
+     "completion": 546
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 24,
+   "at": 47,
+   "input": "\"Nothing I can afford today, Master Ellery — I'll keep my starter gear for now. Do you buy fen cat pelts and claws?\"",
+   "route": "v4",
+   "system": false,
+   "place": "loc.glassmere.harrow_lane_forge",
+   "placeName": "Harrow Lane forge",
+   "hp": 91,
+   "mp": 84,
+   "level": 2,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "outcome.recorded",
+    "offer.created",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 11,
+    "plan": 7207,
+    "board": null,
+    "narrator": 5561,
+    "extract": 6257
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 7207,
+     "finish": "stop",
+     "prompt": 12841,
+     "cached": 10514,
+     "completion": 21
+    },
+    {
+     "purpose": "extract",
+     "ms": 6257,
+     "finish": "stop",
+     "prompt": 13696,
+     "cached": 11056,
+     "completion": 183
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 25,
+   "at": 49,
+   "input": "\"Six copper the lot — done, Master Ellery.\" I hand over the pelt and both claws and take the coins, then set off for the Tallowwood to hunt the boar sounder.",
+   "route": "v3",
+   "system": true,
+   "place": "loc.glassmere.harrow_lane_forge",
+   "placeName": "Harrow Lane forge",
+   "hp": 91,
+   "mp": 84,
+   "level": 2,
+   "encounter": false,
+   "events": [],
+   "perf": {
+    "wait": null,
+    "engine": 17,
+    "plan": 4954,
+    "board": null,
+    "narrator": null,
+    "extract": null
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2288,
+     "finish": "stop",
+     "prompt": 12940,
+     "cached": 10538,
+     "completion": 138
+    },
+    {
+     "purpose": "plan_repair",
+     "ms": 2666,
+     "finish": "stop",
+     "prompt": 13120,
+     "cached": 12946,
+     "completion": 174
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 26,
+   "at": 51,
+   "input": "I sell the fen cat pelt and both claws to Master Ellery for six copper total, then leave for the Tallowwood.",
+   "route": "v4",
+   "system": false,
+   "place": "realm.caelreth.the_tallowwood_east_of_glassmere",
+   "placeName": "the Tallowwood east of Glassmere",
+   "hp": 91,
+   "mp": 84,
+   "level": 2,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "object.moved",
+    "object.moved",
+    "coin.changed",
+    "transaction.completed",
+    "offer.closed",
+    "intent.set",
+    "cmd.resolved",
+    "cmd.resolved",
+    "outcome.recorded",
+    "time.advanced",
+    "entity.updated",
+    "entity.updated",
+    "scene.moved",
+    "place.updated",
+    "intent.set",
+    "fact.asserted",
+    "thread.set",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 20,
+    "plan": 6635,
+    "board": null,
+    "narrator": 11500,
+    "extract": 17556
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 3915,
+     "finish": "stop",
+     "prompt": 12925,
+     "cached": 10536,
+     "completion": 136
+    },
+    {
+     "purpose": "plan_repair",
+     "ms": 2720,
+     "finish": "stop",
+     "prompt": 13104,
+     "cached": 12928,
+     "completion": 130
+    },
+    {
+     "purpose": "extract",
+     "ms": 17556,
+     "finish": "stop",
+     "prompt": 14337,
+     "cached": 11070,
+     "completion": 289
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 27,
+   "at": 53,
+   "input": "I follow the freshest boar trail deeper into the trees, moving quietly and watching ahead for the sounder.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.boar_wallow_hollow",
+   "placeName": "Boar wallow hollow",
+   "hp": 91,
+   "mp": 84,
+   "level": 2,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "cmd.resolved",
+    "outcome.recorded",
+    "place.created",
+    "scene.moved",
+    "entity.created",
+    "scene.entered",
+    "entity.created",
+    "scene.entered",
+    "entity.created",
+    "scene.entered",
+    "entity.created",
+    "scene.entered",
+    "entity.created",
+    "scene.entered",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.created",
+    "scene.entered",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "delta.rejected",
+    "thread.set",
+    "time.advanced",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 11,
+    "plan": 2920,
+    "board": null,
+    "narrator": 10425,
+    "extract": 14317
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2920,
+     "finish": "stop",
+     "prompt": 12714,
+     "cached": 10452,
+     "completion": 87
+    },
+    {
+     "purpose": "extract",
+     "ms": 14317,
+     "finish": "stop",
+     "prompt": 14040,
+     "cached": 11009,
+     "completion": 805
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 28,
+   "at": 55,
+   "input": "I back away quietly from the hollow before the sow catches my scent, then circle to look for boar separated from the sounder.",
+   "route": "v3",
+   "system": false,
+   "place": "loc.boar_wallow_hollow",
+   "placeName": "Boar wallow hollow",
+   "hp": 91,
+   "mp": 84,
+   "level": 2,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "scene.concealed",
+    "scene.awareness",
+    "scene.awareness",
+    "scene.awareness",
+    "scene.awareness",
+    "scene.awareness",
+    "scene.awareness",
+    "outcome.recorded",
+    "delta.rejected",
+    "scene.awareness",
+    "scene.position",
+    "delta.rejected",
+    "fact.asserted",
+    "thread.set",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 19,
+    "plan": 3354,
+    "board": null,
+    "narrator": 7595,
+    "extract": 5208
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 3354,
+     "finish": "stop",
+     "prompt": 12960,
+     "cached": 10505,
+     "completion": 170
+    },
+    {
+     "purpose": "extract",
+     "ms": 5208,
+     "finish": "stop",
+     "prompt": 13876,
+     "cached": 11056,
+     "completion": 358
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 29,
+   "at": 57,
+   "input": "I brace behind a thick oak trunk and use Cleave on the lead sow as she closes within reach.",
+   "route": "v3",
+   "system": false,
+   "place": "loc.boar_wallow_hollow",
+   "placeName": "Boar wallow hollow",
+   "hp": 91,
+   "mp": 84,
+   "level": 2,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "outcome.recorded",
+    "scene.position",
+    "scene.position",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 24,
+    "plan": 2784,
+    "board": null,
+    "narrator": 7363,
+    "extract": 4275
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2784,
+     "finish": "stop",
+     "prompt": 12946,
+     "cached": 10501,
+     "completion": 118
+    },
+    {
+     "purpose": "extract",
+     "ms": 4275,
+     "finish": "stop",
+     "prompt": 13894,
+     "cached": 11043,
+     "completion": 264
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 30,
+   "at": 59,
+   "input": "I swing Cleave at the charging sow (Boar A) as she reaches my reach.",
+   "route": "v3",
+   "system": false,
+   "place": "loc.boar_wallow_hollow",
+   "placeName": "Boar wallow hollow",
+   "hp": 60,
+   "mp": 84,
+   "level": 2,
+   "encounter": true,
+   "events": [
+    "turn.begun",
+    "encounter.started",
+    "scene.awareness",
+    "scene.awareness",
+    "scene.awareness",
+    "scene.awareness",
+    "resource.changed",
+    "resource.changed",
+    "outcome.recorded",
+    "fact.asserted",
+    "delta.rejected",
+    "delta.rejected",
+    "delta.rejected",
+    "delta.rejected",
+    "thread.set",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 15,
+    "plan": 2157,
+    "board": null,
+    "narrator": 11272,
+    "extract": 7218
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2157,
+     "finish": "stop",
+     "prompt": 12947,
+     "cached": 10507,
+     "completion": 90
+    },
+    {
+     "purpose": "extract",
+     "ms": 7218,
+     "finish": "stop",
+     "prompt": 14081,
+     "cached": 11039,
+     "completion": 429
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 31,
+   "at": 61,
+   "input": "I use Cleave at the two engaged boars (A and B), then Guard against their counterattacks.",
+   "route": "v3",
+   "system": false,
+   "place": "loc.boar_wallow_hollow",
+   "placeName": "Boar wallow hollow",
+   "hp": 28,
+   "mp": 84,
+   "level": 2,
+   "encounter": true,
+   "events": [
+    "turn.begun",
+    "encounter.updated",
+    "resource.changed",
+    "resource.changed",
+    "outcome.recorded",
+    "delta.rejected",
+    "delta.rejected",
+    "thread.set",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 19,
+    "plan": 3068,
+    "board": null,
+    "narrator": 10740,
+    "extract": 6992
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 3068,
+     "finish": "stop",
+     "prompt": 6148,
+     "cached": 3502,
+     "completion": 85
+    },
+    {
+     "purpose": "extract",
+     "ms": 6992,
+     "finish": "stop",
+     "prompt": 13989,
+     "cached": 11044,
+     "completion": 464
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  },
+  {
+   "turn": 32,
+   "at": 63,
+   "input": "I use Cleave again on the two engaged boars (A and B).",
+   "route": "v3",
+   "system": false,
+   "place": "loc.boar_wallow_hollow",
+   "placeName": "Boar wallow hollow",
+   "hp": 0,
+   "mp": 84,
+   "level": 2,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "encounter.updated",
+    "resource.changed",
+    "resource.changed",
+    "entity.status",
+    "fact.asserted",
+    "knowledge.gained",
+    "knowledge.gained",
+    "knowledge.gained",
+    "knowledge.gained",
+    "knowledge.gained",
+    "knowledge.gained",
+    "career.recorded",
+    "encounter.ended",
+    "entity.updated",
+    "scene.position",
+    "entity.updated",
+    "scene.position",
+    "entity.updated",
+    "scene.position",
+    "entity.updated",
+    "scene.position",
+    "entity.updated",
+    "scene.position",
+    "entity.updated",
+    "scene.position",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "memory.recorded",
+    "outcome.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 19,
+    "plan": 1854,
+    "board": null,
+    "narrator": 8372,
+    "extract": 3490
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 1854,
+     "finish": "stop",
+     "prompt": 6139,
+     "cached": 3501,
+     "completion": 53
+    },
+    {
+     "purpose": "extract",
+     "ms": 3490,
+     "finish": "stop",
+     "prompt": 13989,
+     "cached": 11046,
+     "completion": 114
+    }
+   ],
+   "recovery": {
+    "narrator": null,
+    "planner": null,
+    "extractor": null
+   }
+  }
+ ],
+ "dungeon": null,
+ "character": {
+  "ruleset": 2,
+  "class": "warrior",
+  "skills": [
+   "warrior.guard",
+   "warrior.cleave"
+  ]
+ },
+ "growth": {
+  "noted": [
+   {
+    "at": 33,
+    "turn": 17,
+    "fight": "enc.t16",
+    "marks": {
+     "warrior.basic_attack": {
+      "prof": 1,
+      "patterns": [
+       "riposte"
+      ]
+     }
+    },
+    "pairs": []
+   }
+  ],
+  "offers": [],
+  "accepted": null,
+  "signatures": {}
+ },
+ "progression": {
+  "targetLevel": 15,
+  "currentLevel": 2,
+  "checkpointTurns": 100,
+  "checkpoint": null
+ },
+ "coverage": {
+  "visitedPlaces": [
+   {
+    "at": 6,
+    "turn": 3,
+    "id": "loc.glassmere"
+   },
+   {
+    "at": 8,
+    "turn": 4,
+    "id": "loc.glassmere.guild_hall"
+   },
+   {
+    "at": 12,
+    "turn": 6,
+    "id": "loc.glassmere.market_square"
+   },
+   {
+    "at": 12,
+    "turn": 6,
+    "id": "loc.glassmere.hallvans_armoury"
+   },
+   {
+    "at": 24,
+    "turn": 12,
+    "id": "realm.caelreth.the_eel_stakes_south_of_glassmere"
+   },
+   {
+    "at": 26,
+    "turn": 13,
+    "id": "loc.the_far_platform_of_the_eel_stakes"
+   },
+   {
+    "at": 28,
+    "turn": 14,
+    "id": "loc.the_trampled_hummock"
+   },
+   {
+    "at": 36,
+    "turn": 18,
+    "id": "loc.the_fishers_platform_at_the_eel_stakes"
+   },
+   {
+    "at": 46,
+    "turn": 23,
+    "id": "loc.glassmere.harrow_lane_forge"
+   },
+   {
+    "at": 52,
+    "turn": 26,
+    "id": "realm.caelreth.the_tallowwood_east_of_glassmere"
+   },
+   {
+    "at": 54,
+    "turn": 27,
+    "id": "loc.boar_wallow_hollow"
+   }
+  ],
+  "sales": [
+   {
+    "at": 51,
+    "turn": 26,
+    "buyer": "npc.ellery",
+    "cp": 6,
+    "what": "F-Rank Mangy Fen Cat Pelt ×1, F-Rank Mangy Fen Cat Claw ×2"
+   }
+  ],
+  "equipmentChanges": [],
+  "skillChanges": []
+ }
+}

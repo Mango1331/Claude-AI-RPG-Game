@@ -63,3 +63,12 @@ Das Ziel muss leer sein. Ohne `--extract` werden nur Archiv und sämtliche Origi
 Quelle sind die vom Nutzer bereitgestellten ZIPs. Bei mehrfach hochgeladenen gleichnamigen Archiven wurde eine konkret verfügbare Fassung gewählt; exakt diese ist mit ZIP-Hash dokumentiert. Der Inhalt älterer Reviews wurde nicht nachträglich geändert. Deren Aussagen „nur Chatupload“ beziehungsweise „ZIP fehlt“ gelten für den damaligen Prüfzeitpunkt; ab dieser Archivierung sind die enthaltenen Originaldateien hier verfügbar.
 
 Einzelruns außerhalb der Batchreihe behalten ihren im Runindex angegebenen Quellenstatus. Es wird weder behauptet, deren fehlende ZIPs ebenfalls archiviert zu haben, noch dass irgendein alter Run bereits mit dem neuen Architekturplan ausgeführt wurde.
+
+
+## Ergänzung 01.11.2026 – Batch21, unveränderte Upload-ZIP
+
+| Batch | Originalarchiv | Manifest | Dateien | Archivbytes |
+|---|---|---|---:|---:|
+| 21: [batch-20261101-152756Z](batch-20261101-152756Z/REVIEW.md) | [ZIP](batch-20261101-152756Z/batch-20261101-152756Z.zip) | [MANIFEST.json](batch-20261101-152756Z/MANIFEST.json) | 14 | 11712628 |
+
+Diese ZIP ist **byteidentisch zum Chatupload**, keine Neuverpackung. SHA-256: `afcc0eaa6d097d8a997977a9cacc8e41181ffcbe5c97706c645aa594d61feff0`; CRC und Einzeldateihashes geprüft. Typische Provider-/GitHub-Schlüssel und Schlüsselzuweisungen ohne Treffer; kein absoluter Geheimnisnachweis. Warrior in Eingabe63 manuell abgebrochen, Mage/Rogue nicht gestartet.

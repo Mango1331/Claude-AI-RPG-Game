@@ -1,6 +1,6 @@
 # Avereth Engine – Zusammenarbeit und Arbeitsweise
 
-**Stand: 31.10.2026.** Dauerhafte Arbeitsregeln, **keine** Patch-, Test- oder Statushistorie. **Aktueller Stand in [03](03_AKTUELLER_PROJEKTSTAND.md), Designentscheidungen in [02](02_DESIGN_KANON.md).**
+**Stand: 01.11.2026.** Dauerhafte Arbeitsregeln, **keine** Patch-, Test- oder Statushistorie. **Aktueller Stand in [03](03_AKTUELLER_PROJEKTSTAND.md), Designentscheidungen in [02](02_DESIGN_KANON.md).**
 
 ## Projekt, Rollen und Freigaben
 
@@ -17,7 +17,7 @@
 
 Im neuen Chat zuerst nur **01 und 03 vollständig** auf `main`; danach relevant: 02 (Kanon), 04 (Ideen), 06 (Fachindex), konkrete Fachpatchnote und tatsächlich betroffene Codepfade. Historische Reviews und Archive nur für belegte Fragen, keine Pflichtkomplettlektüre.
 
-**Vor technischen Behauptungen** Produktbranch/HEAD und betroffenen Code prüfen: `main` ist die Dokumentationsquelle, nicht automatisch der neueste Produktbuild. Nach Unterbrechung Änderungen seit dem letzten geprüften Commit ansehen; unveränderte Quellen nicht erneut lesen. Originalzip, vorhandene Completion-Requests, Engine-Events und Chat gemeinsam auswerten; schöne Prosa ist keine mechanische Buchung. Modellfehler, Enginefehler, Spielerbedienung, regelgerechten Tod und Infrastruktur unterscheiden.
+**Vor technischen Behauptungen** Produktbranch/HEAD und betroffenen Code prüfen: `main` ist die Dokumentationsquelle, nicht automatisch der neueste Produktbuild. Nach Unterbrechung Änderungen seit dem letzten geprüften Commit ansehen; unveränderte Quellen nicht erneut lesen. Originalzip, vorhandene Completion-Requests, Engine-Events und Chat gemeinsam auswerten; schöne Prosa ist keine mechanische Buchung. Modellfehler, Enginefehler, Spielerbedienung, regelgerechten Tod und Infrastruktur unterscheiden. **Wiederholt blockierte mechanisch gültige Aktionen** (z. B. aus falscher NPC-Identität oder fehlender Inventarauflösung) sind Integrationsfehler; ein korrekt abgewiesener Vorgang, den der Narrator dennoch als erfolgreich erzählt, ist zunächst ein Modell-/Erzählfehler. Seltene lokale Erzählwidersprüche tolerieren, solange der autoritative Zustand korrekt und der Run fortsetzbar bleibt; wiederkehrende Handlungsschleifen nicht als harmlose Unschönheiten abtun.
 
 ## Effiziente Arbeits- und Testfolge
 

@@ -23,7 +23,7 @@
 
 ## Nächste Reihenfolge
 
-1. **Finanz-Folgepatch `.143` umgesetzt und technisch abgenommen; jetzt unabhängiger Diff-Gegenreview.** [Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/d2a292a1ba6ce1fc537238e9f51306a8bec2cce9/avereth-engine/docs/FIX143_FINANCE_BOUNDARIES.md). Bis dahin keine natürlichen Batches und keine vorsorglichen Nachkorrekturen. Bei erneut bestätigten strukturellen P1-Lücken die vereinbarte Designvereinfachung nach [§7.4](patch_plans_10b/PATCH_FINANCE_REVIEW142.md) gesondert entscheiden; keine neue sprachliche Mikrofixserie.
+1. **.143-Gegenreview abgeschlossen: Q5-Doppelabbuchung bei verschiedenem `for` von Claude und Sol reproduziert; Stoppregel §7.4 greift.** Kein weiterer Sprach-Mikrofix und keine Freigabe für natürliche Batches. Neuer [Finanz-Fachplan: Beibehalten oder Vereinfachen](patch_plans_10b/PATCH_FINANCE_SIMPLIFICATION.md) trennt tragfähige Käufe/Buchungen von störanfälliger Prosa-Preisbildung und freier Zahlungsbestätigung. S1 (native freie Zahlungsbestätigung) und S2 (einfache Endofferten, keine zweite Ganztext-Preislesart bei Annahme) sind Empfehlungen, **noch nicht umgesetzt oder als Design freigegeben**. Produkt bleibt .143.
 2. **Natürlichen Batch F danach fortsetzen:** Warrior/Mage/Rogue bis Erstellung → Level15 → ausdrückliche E-Klassenannahme; Batch20 prüfte weder L15 noch E und erlaubt keine vollständige Drei-Klassen-Balanceaussage. [Runner-Anleitung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/6cc09cd/avereth-engine/docs/LIVE_RUNNER.md).
 3. **B2/E bleiben nachrangig und nicht begonnen.** Main/Minor, F/E-Scaling, Monsterdesign und NPC-Memory sind eigene Themen mit eigener Freigabe. [Offene Kandidaten](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md).
 

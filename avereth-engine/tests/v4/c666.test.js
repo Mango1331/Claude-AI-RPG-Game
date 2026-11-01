@@ -91,7 +91,7 @@ test('c.6.6.6 presence + AoE (tests 1, 3, 4): in the den, "I walk in front of th
     await g.reply(fx.messages[118].mes, LIVE_DEN);
     const mp = g.state().entities.pc.sheet.mp;
     // the live planner's answer (no step): the pups are at SHORT, the burst reaches ENGAGED only
-    const r0 = await say(g, fx.messages[119].mes, BURST);
+    const r0 = await say(g, fx.messages[119].mes, { ...BURST, target: PUPS[0], targets: PUPS });
     assert.ok(!(r0.panels || []).some((p) => /TARGET NEEDED/.test(p)), 'no "ATTACK — TARGET NEEDED"');
     assert.ok(!g.state().encounter, 'nobody ENGAGED: no fight');
     assert.equal(g.state().entities.pc.sheet.mp, mp, 'nothing spent');
@@ -100,7 +100,8 @@ test('c.6.6.6 presence + AoE (tests 1, 3, 4): in the den, "I walk in front of th
     const h = live(117);
     await say(h, fx.messages[117].mes, { type: 'go', to: { new: 'into the dark toward the pups' }, quote: 'i walk into the dark looking for the pups' });
     await h.reply(fx.messages[118].mes, LIVE_DEN);
-    await say(h, fx.messages[119].mes, { type: 'move', dir: 'closer', target: null, quote: 'i walk in front of them' }, BURST);
+    // .148: this test intentionally attacks all four neutral pups, rather than incidental bystanders.
+    await say(h, 'I walk in front of them and cast Arcane Burst at all four pups.', { type: 'move', dir: 'closer', target: null, quote: 'I walk in front of them' }, { ...BURST, target: PUPS[0], targets: PUPS, quote: 'cast Arcane Burst at all four pups' });
     const burst = burstOf(h);
     assert.ok(burst, 'the burst happened');
     assert.deepEqual(burst.strikes.map((k) => k.target).sort(), [...PUPS].sort(), 'each pup ENGAGED after the step');
@@ -113,7 +114,7 @@ test('c.6.6.6 presence + AoE (tests 1, 3, 4): in the den, "I walk in front of th
     await say(w, fx.messages[117].mes, { type: 'go', to: { new: 'into the dark toward the pups' }, quote: 'i walk into the dark looking for the pups' });
     await w.reply(fx.messages[118].mes, LIVE_DEN);
     inject(w, PUPS.map((id) => ({ t: 'scene.awareness', d: { id, level: 'aware' } })));
-    await say(w, fx.messages[119].mes, { type: 'move', dir: 'closer', target: null, quote: 'i walk in front of them' }, BURST);
+    await say(w, 'I walk in front of them and cast Arcane Burst at all four pups.', { type: 'move', dir: 'closer', target: null, quote: 'I walk in front of them' }, { ...BURST, target: PUPS[0], targets: PUPS, quote: 'cast Arcane Burst at all four pups' });
     const open = lastUser(w).events.find((e) => e.t === 'encounter.started')?.d.encounter;
     assert.equal(open.ambush, false);
     assert.deepEqual(PUPS.map((id) => open.combatants[id].side), PUPS.map(() => 'neutral'));
@@ -146,7 +147,7 @@ test('c.6.6.6 AoE (tests 2, 3, 4): the live burst at #111 strikes Hound A in the
     for (const id of [B, C, D].filter((x) => s.entities[x].status !== 'dead' && s.encounter)) assert.ok(fighters.includes(id), `${id} fights on`);
 });
 
-test('c.6.6.6 AoE friendly fire (test 2): a neutral townsperson ENGAGED beside the hounds is struck too and enters the fight; one at SHORT is not', async () => {
+test('.148: ordinary Arcane Burst spares neutral townspeople at ENGAGED and SHORT', async () => {
     const g = live(111);
     const s0 = g.state();
     const near = bystanderEvents(s0, content, { ref: 'tanner\'s boy' });
@@ -159,9 +160,9 @@ test('c.6.6.6 AoE friendly fire (test 2): a neutral townsperson ENGAGED beside t
     assert.ok(!s1.scene.threats.includes(near.ids[0]), 'no foe');
     await say(g, fx.messages[111].mes, BURST);
     const struck = burstOf(g).strikes.map((k) => k.target);
-    assert.ok(struck.includes(near.ids[0]), 'friendly fire: the boy at arm\'s length is struck');
+    assert.ok(!struck.includes(near.ids[0]), 'ordinary skill spares a neutral bystander');
     assert.ok(!struck.includes(far.ids[0]), 'the carter at SHORT is not');
-    assert.ok(outcomeOf(g).started.joined.includes(near.ids[0]), 'struck, he is in the fight: he acts for himself on his Turns');
+    assert.ok(!outcomeOf(g).started?.joined?.includes(near.ids[0]), 'the unstruck bystander does not enter the fight');
 });
 
 // ------------------------------------------------------------------------------------------------ review: every side
@@ -189,7 +190,8 @@ test('c.6.6.6 review: Arcane Burst strikes a companion already fighting at Alari
     assert.equal(s1.encounter.combatants[DOG].side, 'ally');
     assert.equal(s1.encounter.combatants[DOG].current.band, 'ENGAGED');
     const mp = s1.entities.pc.sheet.mp;
-    await say(g, fx.messages[111].mes, BURST);
+    // .148: deliberate attack, not incidental friendly fire.
+    await say(g, 'I cast Arcane Burst at Brindle.', { ...BURST, target: DOG, quote: 'I cast Arcane Burst at Brindle.' });
     const burst = burstOf(g);
     const struck = burst.strikes.map((k) => k.target);
     assert.ok(struck.includes(DOG), 'the companion beside the hound is struck (c.6.6.6: filtered out as no opponent)');
@@ -215,19 +217,18 @@ test('c.6.6.6 review: Arcane Burst strikes a companion already fighting at Alari
     }
 });
 
-test('c.6.6.6 review (validation): with only the companion in reach and the hounds at SHORT, the burst is legal and strikes the companion alone; on path A the same burst finds no target', async () => {
+test('.148 validation: only an explicitly targeted companion is a valid area victim when foes are out of reach', async () => {
     const g = live(111);
     const far = { [A]: 'SHORT', [B]: 'SHORT', [C]: 'SHORT', [D]: 'SHORT' };
     const s1 = withAlly(g, { bands: far });
     assert.deepEqual(areaCaught(s1), [], 'no one outside the fight in reach');
     await say(g, fx.messages[111].mes, BURST);
-    const burst = burstOf(g);
-    assert.ok(burst, outcomeOf(g).illegal);
-    assert.deepEqual(burst.strikes.map((k) => k.target), [DOG]);
+    assert.ok(outcomeOf(g).illegal, 'an unselected companion cannot make an otherwise empty area legal');
     // the area check itself, before any strike: C (planner) counts everyone in reach; A only opponents
     const enc = structuredClone(s1.encounter);
     const ctx = (c) => ({ enc: structuredClone(enc), content, dice: new Dice(1, 0), state: s1, c });
-    assert.ok(!attackAction(ctx(true), 'pc', A, 'mage.arcane_burst').illegal);
+    assert.ok(attackAction(ctx(true), 'pc', A, 'mage.arcane_burst').illegal);
+    assert.deepEqual(attackAction(ctx(true), 'pc', DOG, 'mage.arcane_burst').strikes.map(x => x.target), [DOG]);
     assert.match(attackAction(ctx(false), 'pc', A, 'mage.arcane_burst').illegal, /at SHORT; Arcane Burst reaches ENGAGED at most/, 'A as before: its nominal target out of reach');
 });
 
@@ -236,10 +237,11 @@ test('c.6.6.6 review: a townsperson caught in the burst enters the fight as no f
     const near = bystanderEvents(g.state(), content, { ref: 'tanner\'s boy' });
     near.events.find((e) => e.t === 'scene.entered').d.band = 'ENGAGED';
     inject(g, near.events);
-    await say(g, fx.messages[111].mes, BURST);
+    await say(g, "I cast Arcane Burst at the tanner's boy.", { ...BURST, target: near.ids[0], quote: "I cast Arcane Burst at the tanner's boy." });
     const boy = near.ids[0];
     const out = outcomeOf(g);
-    assert.ok(out.started.joined.includes(boy));
+    assert.ok(out.records.some(r => r.strikes?.some(k => k.target === boy)));
+    assert.equal(new Set(g.state().encounter.order).size, g.state().encounter.order.length, 'one initiative entry per deliberate target');
     const opened = lastUser(g).events.find((e) => e.t === 'encounter.updated')?.d.encounter;
     const own = out.records.filter((r) => r.actor === boy);
     const turned = own.some((r) => r.turned);

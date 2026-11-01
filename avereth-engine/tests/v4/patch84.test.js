@@ -199,8 +199,8 @@ test('8.4 cull 1 (live #11): the beetle cull says four everywhere: its task ("Cu
     g.llm = async (req) => (req.purpose.startsWith('plan') ? g.plans.shift() ?? null : ask(req));
     await say(g, fx.messages[11].mes, { type: 'board.read', rank: null, quote: 'i walk over to the board and look at it' });
     const card = (outcomeOf(g).engine_lines || []).join('\n');
-    assert.match(card, /Cull the Crystal Beetles of the Outer Grottos \(4\) · Novice · .* · Cull four crystal beetles in the outer galleries of Glimmerdeep Grotto, level 1/);
-    assert.match(outcomeOf(g).actions[0], /\*\*Cull the Crystal Beetles of the Outer Grottos\*\* \(4\) — .* · Cull four crystal beetles/);
+    assert.match(card, /Cull the Crystal Beetles of the Outer Grottos \(4\) · 4 kills total · .*Novice · .* · Cull four crystal beetles in the outer galleries of Glimmerdeep Grotto, level 1/);
+    assert.match(outcomeOf(g).actions[0], /\*\*Cull the Crystal Beetles of the Outer Grottos\*\* \(4\) · 4 kills total · .* — .* · Cull four crystal beetles/);
     await g.reply('He reads the board.', { expected: {}, deltas: [] });
     const id = Object.values(g.state().quests).find((x) => x.title === 'Cull the Crystal Beetles of the Outer Grottos').id;
     await say(g, '*i take the Cull the Crystal Beetles quest*', { type: 'quest.accept', quest: id, quote: 'i take the Cull the Crystal Beetles quest' });

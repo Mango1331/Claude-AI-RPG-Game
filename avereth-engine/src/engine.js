@@ -30,7 +30,7 @@ import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, ro
 import { seedPlaces, lineage, populationAt, encounterArea, namesYoung } from './v4/domain.js';
 import { rankAt, dungeonOf, trueDungeonOf } from './v4/dungeon.js';
 import { syncEvents, levelSpan } from './v4/living.js';
-import { attackTargetHere, tacticalHere, areaCaught, areaBand, approachedBy, sideOf, burstCaught } from './v4/scene_handles.js';
+import { attackTargetHere, tacticalHere, areaCaught, areaBand, approachedBy, sideOf, burstCaught, skillAreaTarget } from './v4/scene_handles.js';
 import { lootEvents } from './v4/loot.js';
 import { groupJoiners } from './v4/group_combat.js';
 import { featureEvent } from './v4/features.js';
@@ -180,13 +180,12 @@ function storyTurn(s, content, text, intent, dice, emit, situations, c = false) 
         const eligible = c ? new Set(tacticalHere(s, { friendly: false })) : new Set();
         // 4.3.0-c.6.6.5: the people of a crowd it is thrown into (src/v4/runtime.js crowdIntent) are in it too
         const field = c && Array.isArray(pcAction.field) ? pcAction.field.filter((id) => eligible.has(id) || (pcAction.crowd && s.scene.present.includes(id))) : [];
-        // 4.3.0-c.6.6.6: and everyone it catches, ENGAGED with him after his step, whether foe, bystander or friend; each
-        // enters on the side they stand on (review: a bystander or a friend is no foe because he caught them)
+        // Ordinary skills recruit only opponents or deliberate targets in reach; thrown items keep physical areas.
         const caught = c ? caughtBy(s, content, pcAction) : [];
         const committed = uniq([...field, ...caught]);
         const sides = c && areaSkill(content, pcAction.skill, s) ? Object.fromEntries([pcAction.target, ...committed].filter(Boolean).map((id) => [id, sideOf(s, id)])) : null;
         const item = pcAction.item ? { item: pcAction.item, burst: pcAction.burst } : {};
-        return combatTurn(s, content, dice, emit, { trigger: { actor: 'pc', target: pcAction.target, skill: pcAction.skill, move: pcAction.move, move_target: pcAction.move_target, ...item }, committed, sides, pcAction: null, c }, situations);
+        return combatTurn(s, content, dice, emit, { trigger: { actor: 'pc', target: pcAction.target, skill: pcAction.skill, move: pcAction.move, move_target: pcAction.move_target, ...(pcAction.crowd ? { field: pcAction.field, crowd: true } : {}), ...item }, committed, sides, pcAction: null, c }, situations);
     }
     if (pcAction?.kind === 'engage') return engagementTurn(s, content, dice, emit, pcAction.targets, { c });
     // 3) declared stealth: opposed check (or automatic with nobody around)
@@ -557,13 +556,11 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
         const fresh = pcAction?.kind === 'attack' && pcAction.target && !enc.combatants[pcAction.target] ? pcAction.target : null;
         if (fresh) {
             materialise(s, content, dice, emit, pcAction.target);
-            addCombatant(enc, s, content, pcAction.target, 'hostile', null, { c });
+            addCombatant(enc, s, content, pcAction.target, c && areaSkill(content, pcAction.skill, s) ? sideOf(s, pcAction.target) : 'hostile', null, { c });
         }
-        // Prototype C (4.3.0-c.6.6.6, live 18.10.2026: Arcane Burst struck Hound A, the one combatant, and not Hounds B, C
-        // and D ENGAGED beside it): an area attack catches everyone ENGAGED with him, in the fight or not. Those outside
-        // it enter it when the attack is legal (a refused one, no MP or no one in reach, drags no one in); each then
-        // acts for itself on its Turns (src/combat.js npcDecide: fights back, flees or holds)
-        const caught = c && pcAction?.kind === 'attack' ? caughtBy(s, content, pcAction) : [];
+        // A legal ordinary area recruits only opponents or explicitly attacked actors in its band;
+        // physical thrown bursts retain their separate bystander recruitment.
+        const caught = c && pcAction?.kind === 'attack' ? caughtBy(s, content, pcAction).filter(id => !enc.combatants[id]) : [];
         if (caught.length && areaLegal(s, content, dice, enc, caught, pcAction, c)) {
             for (const id of caught) {
                 materialise(s, content, dice, emit, id);
@@ -642,7 +639,7 @@ const areaSkill = (content, id, s = null) => !!skillOf(content, id, s)?.effects?
 
 /**
  * Prototype C (4.3.0-c.6.6.6): who Alaric's area attack catches outside the fight (src/v4/scene_handles.js areaCaught),
- * those the engine can give a combat profile: everyone ENGAGED with him after his declared step.
+ * eligible opponents/explicit targets with combat profiles in the selected band after his declared step.
  */
 function caughtBy(s, content, act) {
     // Hotfix c.6.6.18: a thrown burst catches whom it was fixed to strike (burstOf), those outside the fight with them
@@ -653,7 +650,9 @@ function caughtBy(s, content, act) {
     const band = areaBand(skill, s.encounter?.combatants?.[act.target]?.current.band ?? s.scene.positions?.[act.target]?.band);
     return areaCaught(s, { move: act.move, moveTarget: act.move_target ?? null, band, visible: bandArea, ...(bandArea ? { target: act.target } : {}) }).filter((id) => {
         const e = s.entities[id];
-        return !!(e.sheet || e.profile || e.kind === 'npc' || content.anchors.get(e.anchor) || anchorFor(content, [e.species, ...(e.descriptors || [])].join(' ')));
+        const explicit = [act.target, ...(act.crowd ? act.field || [] : [])];
+        return skillAreaTarget({ id: 'pc', side: 'pc' }, { id, side: sideOf(s, id) }, explicit)
+            && !!(e.sheet || e.profile || e.kind === 'npc' || content.anchors.get(e.anchor) || anchorFor(content, [e.species, ...(e.descriptors || [])].join(' ')));
     });
 }
 

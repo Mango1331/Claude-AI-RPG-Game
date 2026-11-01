@@ -493,7 +493,7 @@ function livingGo(s, content, c, ctx, emit, { known, nav, envx }) {
 function boardCard(s, content, rank, branch, listed) {
     return [
         `SYSTEM — GUILD BOARD · ${rank} · ${placeName(s, branch)}`,
-        ...listed.map((q) => `${q.title}${goalText(s, content, q, { board: true })} · ${q.rank || rank}${q.hunt && s.places[q.hunt.at]?.population ? ` · enemy levels ${s.places[q.hunt.at].population.levels.join('–')} · risk depends on species and encounter numbers` : ` · quest level ${q.level}`} · client: ${q.client || 'unspecified'} · reward: ${cpText(q.payout_cp, content)} · ${String(q.task || q.desired_end_state || objectiveText(q)).replace(/\s+/g, ' ').slice(0, 120)}`),
+        ...listed.map((q) => `${q.title}${goalText(s, content, q, { board: true, danger: true })} · ${q.rank || rank}${q.hunt && s.places[q.hunt.at]?.population ? '' : ` · quest level ${q.level}`} · client: ${q.client || 'unspecified'} · reward: ${cpText(q.payout_cp, content)} · ${String(q.task || q.desired_end_state || objectiveText(q)).replace(/\s+/g, ' ').slice(0, 120)}`),
     ];
 }
 
@@ -1364,7 +1364,7 @@ const HANDLERS = {
         else ctx.conditionals.push({ seq: c.seq, kind: 'board', condition: 'arrive_guild_hall', hall, branch, rank, listings: listed.map((q) => q.id) });
         ctx.boardShown = { branch, rank, listings: listed.map((q) => q.id) };
         // Patch 8: a cull's number and a Dungeon level to clear show on the board (src/v4/guild.js goalText)
-        const rows = listed.map((q) => `**${q.title}**${envx?.c ? goalText(s, content, q, { board: true }) : ''} — client: ${q.client || 'unspecified'} · reward: ${q.payout_cp} cp · ${q.task || q.desired_end_state || objectiveText(q)}`).join('\n');
+        const rows = listed.map((q) => `**${q.title}**${envx?.c ? goalText(s, content, q, { board: true, danger: true }) : ''} — client: ${q.client || 'unspecified'} · reward: ${q.payout_cp} cp · ${q.task || q.desired_end_state || objectiveText(q)}`).join('\n');
         // Prototype C (4.3.0-c.6.2): only the reading that posts the day's board shows new notices; a later reading that
         // day shows the same ones again, not as new
         const fresh = !envx.c || !!gen?.listings?.length;

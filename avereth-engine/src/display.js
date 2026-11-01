@@ -12,7 +12,7 @@ import { deriveCharacter } from './derived.js';
 import { formatCoin } from './economy.js';
 import { bandIndex, itemLabel } from './util.js';
 import { damagePreview, combatTargets, targetLabel } from './combat.js';
-import { sceneHandle, tacticalHere } from './v4/scene_handles.js';
+import { sceneHandle, tacticalHere, sideOf } from './v4/scene_handles.js';
 import { livingOf, gateCard, floorAt } from './v4/living.js';
 import { skillOf } from './content.js';
 import { offerCard } from './v4/items.js';
@@ -222,6 +222,11 @@ export function worldPanel(state, content, reply = {}) {
     const current = reply.state || state;
     const area = !trueDungeonOf(current, current.scene.at) ? encounterArea(current, current.scene.at) : null;
     if (area) lines.push(sys(`AREA LEVELS — ${area.name}: ${area.encounter_levels.join('–')} · typical new foes; species and encounter numbers affect danger`));
+    // Count only actually visible, living threats. Contract totals never imply simultaneous opponents.
+    const visible = tacticalHere(current).filter(id => !current.scene.concealed.includes(id)
+        && current.scene.positions?.[id]?.cover !== 'full' && sideOf(current, id) === 'hostile'
+        && !current.encounter?.combatants?.[id]?.current?.defeated && !current.encounter?.combatants?.[id]?.current?.escaped && !current.encounter?.combatants?.[id]?.current?.surrendered);
+    if (visible.length > 1) lines.push(sys(`VISIBLE THREATS — ${visible.length} visible; contract kill totals are not this encounter's group size. A step back is not a completed escape.`));
     // A concretely visible actor becoming relevant before Combat gets a player-facing handle + Range immediately
     // above the same narration that revealed them. Creatures also have their already locked HP; NPC HP stays hidden
     // until the combat profile is materialised. This is scene information, not Initiative, and starts no fight.

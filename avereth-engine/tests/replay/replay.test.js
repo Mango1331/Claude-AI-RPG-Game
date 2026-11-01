@@ -38,7 +38,8 @@ const ACCEPTED143 = JSON.parse(fs.readFileSync(new URL('./accepted_f143_vs_126.j
 // Finance simplification (.144, S1+S2): the .143 list checked against the full .143 replay record by record; unchanged
 // entries kept, every changed record in one of six reasoned categories with the .143 entry it supersedes
 const ACCEPTED144 = JSON.parse(fs.readFileSync(new URL('./accepted_f144_vs_126.json', import.meta.url), 'utf8'));
-const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_f146_vs_126.json', import.meta.url), 'utf8'));
+const ACCEPTED146 = JSON.parse(fs.readFileSync(new URL('./accepted_f146_vs_126.json', import.meta.url), 'utf8'));
+const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_design148_vs_126.json', import.meta.url), 'utf8'));
 const F144 = ['finance 144 payment card', 'finance 144 contract fields', 'finance 144 acceptance hint', 'finance 144 price open', 'finance 144 unit limit', 'finance 144 acceptance', 'finance 144 own coin'];
 const SUB = { ...baseline, runs: Object.fromEntries(QUICK.map((l) => [l, baseline.runs[l]])) };
 let quick = null; // the four quick runs, replayed once for this file
@@ -48,7 +49,7 @@ test('A1/C: the four quick runs replay as on the start commit, from whole and va
     const { compared, diffs } = compareToBaseline(SUB, result);
     assert.equal(compared, QUICK.reduce((n, l) => n + Object.keys(baseline.runs[l].cases).length, 0));
     assert.deepEqual(diffs.map((d) => d.id).sort(), Object.keys(ACCEPTED.cases).filter((id) => QUICK.includes(id.split('#')[0])).sort());
-    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138','finance 142','finance 142 contract fields', 'batch21 integration 146', ...F144].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F/integration differences are allowed');
+    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138','finance 142','finance 142 contract fields', 'batch21 integration 146', 'design148 danger', 'design148 area', ...F144].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F/integration differences are allowed');
     const { open, accepted, stale } = acceptedDiffs(diffs, ACCEPTED.cases, result);
     assert.deepEqual([open, stale, accepted.length], [[], [], diffs.length], 'every accepted record has exactly the fingerprinted output');
     for (const [label, run] of Object.entries(result.runs)) {
@@ -198,6 +199,7 @@ test('F .144 keeps every .143 entry or supersedes it in a reasoned .144 category
 });
 
 test('.146 changes only the seven reviewed integration records; all other exact fingerprints stay unchanged', () => {
+    const ACCEPTED = ACCEPTED146;
     const changed = [];
     assert.deepEqual(ACCEPTED.returned, ACCEPTED144.returned);
     assert.deepEqual(Object.keys(ACCEPTED.cases).sort(), Object.keys(ACCEPTED144.cases).sort());
@@ -213,4 +215,17 @@ test('.146 changes only the seven reviewed integration records; all other exact 
     }
     assert.deepEqual(changed.sort(), ['b17-warrior#126', 'b18-rogue#328', 'b18-warrior#42',
         'b18-warrior#44', 'b18-warrior#52', 'b19-mage#140', 'b19-mage#151'].sort());
+});
+
+// .148 is a deliberate design release; old accepted outputs remain immutable.
+test('.148 supersedes only the 40 individually reviewed display/AoE records', () => {
+    const changed = [];
+    for (const [id, entry] of Object.entries(ACCEPTED.cases)) {
+        const old = ACCEPTED146.cases[id];
+        if (!entry.category.startsWith('design148 ')) { assert.deepEqual(entry, old, id); continue; }
+        changed.push(id);assert.match(entry.reason, new RegExp(id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+        assert.match(entry.supersedes_147.fingerprint, /^sha256:/);
+        if (old) assert.deepEqual(entry.previous_acceptance, old, id);
+    }
+    assert.equal(changed.length, 40);
 });

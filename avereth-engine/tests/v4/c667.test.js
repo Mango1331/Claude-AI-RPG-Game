@@ -209,7 +209,8 @@ test('c.6.6.7 G: a burst that strikes only a bystander (a packhorse, no foe): th
     const g = live(119);
     inject(g, horseEvents(g.state()));
     const xp = g.state().entities.pc.sheet.xp;
-    await say(g, '*i arcane burst*', BURST);
+    // .148: a deliberate attack still triggers the existing bystander reaction.
+    await say(g, 'I cast Arcane Burst at the packhorse.', { ...BURST, target: HORSE, quote: 'I cast Arcane Burst at the packhorse.' });
     const o = outcomeOf(g);
     assert.equal(o.records[0].actor, 'pc');
     assert.deepEqual(struckBy(o.records[0]), [HORSE]);
@@ -227,7 +228,7 @@ test('c.6.6.7 G: a burst that strikes only a bystander (a packhorse, no foe): th
     const h = live(119);
     const guard = guardEvents(h.state(), 'ENGAGED', 1);
     inject(h, guard.events);
-    await say(h, '*i arcane burst*', BURST);
+    await say(h, 'I cast Arcane Burst at the guard.', { ...BURST, target: guard.id, quote: 'I cast Arcane Burst at the guard.' });
     const p = outcomeOf(h);
     const turn = p.records.find((r) => r.actor === guard.id);
     const rounds = p.records.filter((r) => r.actor === guard.id).map((r) => r.round);
@@ -246,13 +247,14 @@ test('c.6.6.7 H: the burst kills the last hound and hurts a packhorse beside it:
     const g = live(111);
     const s0 = g.state();
     inject(g, [...[B, C, D].map((id) => ({ t: 'scene.position', d: { id, band: 'SHORT', cover: 'none' } })), ...horseEvents(s0)]);
-    await say(g, fx.messages[111].mes, BURST);
+    // .148: explicitly attack the horse/companion to keep the reaction regression meaningful.
+    await say(g, 'I cast Arcane Burst at the packhorse.', { ...BURST, target: HORSE, quote: 'I cast Arcane Burst at the packhorse.' });
     const o = outcomeOf(g);
     const burst = o.records.find((r) => r.actor === 'pc');
     assert.deepEqual(struckBy(burst), [A, HORSE].sort());
     assert.equal(g.state().entities[A].status, 'dead');
     const answer = o.records.filter((r) => r.actor === HORSE);
-    assert.equal(answer.length, 1, 'live (c.6.6.6): the fight ended without it');
+    assert.equal(answer.length, 1, 'one reaction to the deliberate attack');
     assert.equal(answer[0].reaction, true);
     assert.ok(o.ended);
     assert.deepEqual(o.ended.defeated, [A]);
@@ -261,7 +263,7 @@ test('c.6.6.7 H: the burst kills the last hound and hurts a packhorse beside it:
     const h = live(111);
     const guard = guardEvents(h.state());
     inject(h, [...[B, C, D].map((id) => ({ t: 'scene.position', d: { id, band: 'SHORT', cover: 'none' } })), ...guard.events]);
-    await say(h, fx.messages[111].mes, BURST);
+    await say(h, 'I cast Arcane Burst at the guard.', { ...BURST, target: guard.id, quote: 'I cast Arcane Burst at the guard.' });
     const p = outcomeOf(h);
     if (h.state().entities[guard.id].status !== 'dead') {
         const turn = p.records.filter((r) => r.actor === guard.id);
@@ -287,7 +289,7 @@ test('c.6.6.7 I: nothing left to answer, the fight ends at once; a companion ans
     const enc = structuredClone(s1.encounter);
     addCombatant(enc, s1, content, dog, 'ally', null, { c: true });
     inject(g, [...made, { t: 'encounter.updated', d: { encounter: enc } }]);
-    await say(g, fx.messages[111].mes, BURST);
+    await say(g, 'I cast Arcane Burst at Brindle.', { ...BURST, target: dog, quote: 'I cast Arcane Burst at Brindle.' });
     const o = outcomeOf(g);
     assert.deepEqual(o.records.map((r) => `${r.actor}:${r.kind}`), ['pc:attack', `${dog}:move`], 'his burst and its one answer, nothing else');
     assert.equal(o.records[1].reaction, true);
@@ -305,7 +307,7 @@ test('c.6.6.7 I: nothing left to answer, the fight ends at once; a companion ans
     addCombatant(enc2, t1, content, dog, 'ally', null, { c: true });
     enc2.combatants[A].current.hp = 400; // the hound lives through the burst: the fight goes on
     inject(h, [...m2, { t: 'encounter.updated', d: { encounter: enc2 } }]);
-    await say(h, fx.messages[111].mes, BURST);
+    await say(h, 'I cast Arcane Burst at Brindle.', { ...BURST, target: dog, quote: 'I cast Arcane Burst at Brindle.' });
     assert.ok(h.state().encounter, 'the fight goes on');
     const first = outcomeOf(h).records.filter((r) => r.actor === dog);
     assert.equal(first.length, 1, 'its own Turn answers the fresh strike');

@@ -21,7 +21,7 @@ import { formatCoin } from '../economy.js';
 import { spendsStatPoints, assignHint } from '../commands.js';
 import { mentionedSkills } from '../intent.js';
 import { activeHostiles } from '../combat.js';
-import { attackTargetHere, sceneHandle, tacticalHere, areaCaught, approachedBy, burstAim } from './scene_handles.js';
+import { attackTargetHere, sceneHandle, tacticalHere, areaCaught, approachedBy, burstAim, sideOf } from './scene_handles.js';
 import { itemEffectOf, rulesetOf, skillOf } from '../content.js';
 import { actionsOf, weaponAttackOf, weaponAttackNamed } from '../derived.js';
 import { restoreOf } from './items.js';
@@ -81,7 +81,7 @@ export const MECH_COMMANDS = [
 
 // written for the rules with a catalog of their own; no example is a message of the S4b corpus or the test corpora
 export const MECH_EXAMPLES = [
-    'Examples (another place, not the current scene). Example catalog: KNOWN SKILLS mage.frost_dart (Frost Dart: attack · single target), mage.basic_attack (Basic Attack: attack · single target), mage.ember_ring (Ember Ring: attack · area: everyone ENGAGED with Alaric, friend or foe) · OPPONENTS mon.x1 Cave Rat A (unhurt · ENGAGED), mon.x2 Cave Rat B (wounded · SHORT) · PLACES loc.mill (the old mill) · ENGINE FACTS: Cave Rat B bit Alaric (last round)',
+    'Examples (another place, not the current scene). Example catalog: KNOWN SKILLS mage.frost_dart (Frost Dart: attack · single target), mage.basic_attack (Basic Attack: attack · single target), mage.ember_ring (Ember Ring: attack · area: opponents ENGAGED with Alaric; explicit NPC targets remain attackable) · OPPONENTS mon.x1 Cave Rat A (unhurt · ENGAGED), mon.x2 Cave Rat B (wounded · SHORT) · PLACES loc.mill (the old mill) · ENGINE FACTS: Cave Rat B bit Alaric (last round)',
     '- "Frostdart rat B!" → {"commands":[{"seq":1,"type":"use_skill","skill":"mage.frost_dart","target":"mon.x2","quote":"Frostdart rat B!"}]}',
     '- "I shatter the icicles with a Frost Dart so they bury the tunnel" → {"commands":[{"seq":1,"type":"ability_world","skill":"mage.frost_dart","target":{"new":"the icicles over the tunnel"},"target_words":"the icicles","goal":"bury the tunnel","quote":"I shatter the icicles with a Frost Dart so they bury the tunnel"}]}',
     '- "I call down Lightning on Rat A" → {"commands":[{"seq":1,"type":"use_skill","skill":{"new":"Lightning"},"target":"mon.x1","quote":"I call down Lightning on Rat A"}]}',
@@ -89,6 +89,7 @@ export const MECH_EXAMPLES = [
     '- "Frost Dart the biter" → {"commands":[{"seq":1,"type":"use_skill","skill":"mage.frost_dart","target":"mon.x2","quote":"Frost Dart the biter"}]}',
     '- "I kick the one in front of me" → {"commands":[{"seq":1,"type":"use_skill","skill":null,"target":"mon.x1","quote":"I kick the one in front of me"}]}',
     '- "I back off a step and Frost Dart Rat A" → {"commands":[{"seq":1,"type":"move","dir":"away","target":null,"quote":"I back off a step"},{"seq":2,"type":"use_skill","skill":"mage.frost_dart","target":"mon.x1","quote":"Frost Dart Rat A"}]}',
+    '- Ordinary area skills spare unselected allies and neutral bystanders. For an explicitly intended attack on multiple named actors, use optional targets:["id1","id2"] with the one use_skill command; target selects the range band. Never include incidental bystanders.',
     '- "I step right in among them and then Ember Ring" → {"commands":[{"seq":1,"type":"move","dir":"closer","target":null,"quote":"I step right in among them"},{"seq":2,"type":"use_skill","skill":"mage.ember_ring","target":null,"quote":"Ember Ring"}]}',
     '- "I bolt for the exit" → {"commands":[{"seq":1,"type":"flee","quote":"I bolt for the exit"}]}',
     '- (no fight) "I back away from the sleeping bear and slip back out to the old mill" → {"commands":[{"seq":1,"type":"go","to":"loc.mill","quote":"I back away from the sleeping bear and slip back out to the old mill"}]}',
@@ -264,7 +265,7 @@ export function plannerSystem(vocab, { fight = false, privateQuests = true } = {
 function skillText(skill) {
     const area = (skill.effects || []).some((e) => e.kind === 'area');
     const bits = [skill.attack ? 'attack' : 'not an attack'];
-    if (skill.attack) bits.push(area ? (skill.effects.some(e => e.shape === 'target_band') ? 'area: name a target to choose ONE band within reach; everyone in that band, friend or foe, after movement; other bands unaffected' : 'area: everyone ENGAGED with Alaric, friend or foe') : 'single target');
+    if (skill.attack) bits.push(area ? (skill.effects.some(e => e.shape === 'target_band') ? 'area: name a target to choose ONE band within reach; opponents in that band after movement, plus explicit NPC targets; other bands unaffected' : 'area: opponents ENGAGED with Alaric; explicit NPC targets remain attackable') : 'single target');
     if (skill.range?.band && skill.attack) bits.push(`reaches ${skill.range.band}`);
     if (!skill.attack) bits.push(...(skill.effects || []).map((e) => e.kind.replace(/_/g, ' ')));
     if (skill.cost?.amount) bits.push(`${skill.cost.amount} ${skill.cost.resource.toUpperCase()}`);
@@ -405,7 +406,7 @@ export function inMessage(message, quote) {
 }
 
 const FIELDS = {
-    use_skill: ['skill', 'target', 'quote'],
+    use_skill: ['skill', 'target', 'targets', 'quote'],
     ability_world: ['skill', 'target', 'target_words', 'goal', 'quote'],
     move: ['dir', 'target', 'quote'],
     flee: ['quote'],
@@ -554,13 +555,18 @@ export function parsePlan(answer, vocab, ctx, message) {
         for (const k of NULLABLE[type] || []) if (c[k] === undefined) c[k] = null;
         const extra = Object.keys(c).filter((k) => k !== 'seq' && k !== 'type' && !FIELDS[type].includes(k));
         if (extra.length) errors.push(`${at}: unknown field${extra.length > 1 ? 's' : ''} ${extra.join(', ')} (the engine decides outcomes; write only ${FIELDS[type].join(', ')})`);
-        for (const k of FIELDS[type]) if (c[k] === undefined) errors.push(`${at}: "${k}" is missing`);
+        for (const k of FIELDS[type]) if (c[k] === undefined && !(type === 'use_skill' && k === 'targets')) errors.push(`${at}: "${k}" is missing`);
         if (type !== 'clarify' && (typeof c.quote !== 'string' || !inMessage(message, c.quote))) errors.push(`${at}: quote must be his exact words from the message`);
         if (type === 'use_skill' || type === 'ability_world') {
             const s = c.skill;
             if (!(s === null || isNew(s) || (typeof s === 'string' && ctx.contentSkills.has(s)))) errors.push(`${at}: skill must be an id from KNOWN SKILLS, {"new": "<the name he used>"} or null`);
         }
         if (type === 'use_skill') {
+            if (c.targets !== undefined && (!Array.isArray(c.targets) || !c.targets.length
+                || c.targets.some(id => typeof id !== 'string' || !people.has(id))
+                || (typeof c.target === 'string' && !c.targets.includes(c.target))
+                || !ctx.areaSkills?.has(c.skill || ctx.basic)))
+                errors.push(`${at}: optional targets is a nonempty list of present actor ids intentionally attacked by one area skill`);
             const t = c.target;
             if (!(t === null || isNew(t) || (typeof t === 'string' && people.has(t)))) errors.push(`${at}: target must be an id from OPPONENTS or PRESENT, {"new": "<description>"} or null${typeof t === 'string' && objects.has(t) ? ' (a thing: use ability_world)' : ''}`);
         }
@@ -862,13 +868,16 @@ export function mapPlan(commands, ctx, content, message, state) {
         return base({ kind: 'ability_world', skill, target_id: typeof main.target === 'string' ? main.target : null, target_text, goal: main.goal ? String(main.goal).slice(0, 120) : null });
     }
 
+    // use_skill.targets explicitly authorizes a multi-actor area attack, not incidental same-band people.
     // use_skill: the target; {new} is no one here (the engine says so); null only where he named no one at all
     const dir = move ? move.dir : null;
     if (move && !def.attack && !(def.effects || []).some((e) => e.kind === 'reposition')) leaveMove(`not taken this turn (${def.name} moves no one; the engine resolves no step with it)`);
     const asAction = (target, how) => (def.attack
-        ? { kind: 'attack', skill, target, target_how: how, move: dir, move_target: move?.target || null }
+        ? { kind: 'attack', skill, target, target_how: how, move: dir, move_target: move?.target || null, ...(main.targets?.length ? { field: main.targets, crowd: true } : {}) }
         : { kind: 'skill', skill, dir: dir || 'away', target });
     if (isNew(main.target)) return base({ kind: 'no_target', skill, ref: String(main.target.new).slice(0, 60) });
+    if (main.targets?.some(id => !attackTargetHere(state, id))) return base({ kind: 'no_target', skill, ref: 'an explicitly attacked actor is no longer here' });
+    if (main.target === null && main.targets?.length) return base(asAction(main.targets[0], 'planner'));
     if (typeof main.target === 'string') {
         // livetest 21.10.2026 ("*i Basic Attack D*", D dead, C the planner's target): the handle he names is the target
         const other = def.attack ? namedPeer(state, content, main.target, main.quote) : null;
@@ -891,10 +900,10 @@ export function mapPlan(commands, ctx, content, message, state) {
         // pups were no foes, "I walk in front of them and then I arcane burst" asked for a target); with nobody in
         // reach, the engine refuses it at no cost
         if (!fight && state) {
-            const caught = areaCaught(state, { move: dir, moveTarget: move?.target ?? null });
-            const field = [...new Set([...tacticalHere(state, { friendly: false }), ...caught])];
+            const caught = areaCaught(state, { move: dir, moveTarget: move?.target ?? null }).filter(id => sideOf(state, id) === 'hostile');
+            const field = [...new Set([...tacticalHere(state, { friendly: false }), ...caught])].filter(id => sideOf(state, id) === 'hostile');
             const band = (id) => (caught.includes(id) ? -1 : ['ENGAGED', 'SHORT', 'MEDIUM', 'LONG'].indexOf(state.scene.positions[id].band));
-            const near = [...(field.length ? field : tacticalHere(state))].sort((a, b) => band(a) - band(b))[0];
+            const near = [...field].sort((a, b) => band(a) - band(b))[0];
             if (near) return base({ ...asAction(near, 'area'), field });
         }
     }
@@ -978,5 +987,6 @@ function itemRestore(c, content, state) {
 
 /** The planner's view of the content: every skill id (for the validator's "is this a skill at all"), Patch 9B-1 the campaign's own too. */
 export function withContentSkills(ctx, content, state = null) {
-    return { ...ctx, contentSkills: new Set([...content.skills.keys(), ...Object.keys(state?.skill_defs || {})]), currency: content.rules.currency };
+    const ids = [...content.skills.keys(), ...Object.keys(state?.skill_defs || {})];
+    return { ...ctx, contentSkills: new Set(ids), areaSkills: new Set(ids.filter(id => area(skillOf(content, id, state)))), currency: content.rules.currency };
 }

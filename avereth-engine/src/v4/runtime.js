@@ -359,7 +359,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     if (m.route === 'v3') {
         // 4.3.0-c.6.6.5: a fight among the crowd of a settlement's street makes people of it first (the passer-by he
         // names, the people closest to an area attack), in this turn's record; nobody in a crowd is out of reach
-        const crowd = crowdIntent(before, content, m.intent);
+        const crowd = crowdIntent(before, content, m.intent, msg.mes);
         const at = crowd ? clone(before) : before;
         if (crowd) for (const e of crowd.events) applyEvent(at, e);
         const t = playerTurn(at, content, msg.mes, { msg: u, intent: crowd ? crowd.intent : m.intent, c: true });
@@ -506,14 +506,14 @@ export async function generateForge(llm, state, content, drafts, previous = null
  * people standing closest, become people of the scene, and the attack goes to them. null when there is no crowd here,
  * the attack named no person, or a fight is running.
  */
-export function crowdIntent(state, content, intent) {
+export function crowdIntent(state, content, intent, message = '') {
     if (!intent || intent.kind !== 'no_target' || state.encounter) return null;
     const people = crowdCount(state, content);
     const def = skillOf(content, intent.skill, state);
     if (!people || !def?.attack) return null;
     const area = (def.effects || []).some((e) => e.kind === 'area');
     if (intent.ref && !personWords(intent.ref)) return null;
-    if (!intent.ref && !area) return null;
+    if (!intent.ref && (!area || !personWords(message))) return null;
     const made = intent.ref ? bystanderEvents(state, content, { ref: intent.ref }) : bystanderEvents(state, content, { count: people });
     const { ref, ...rest } = intent;
     return { events: made.events, intent: { ...rest, kind: 'attack', target: made.ids[0], target_how: area ? 'area' : 'planner', move: null, move_target: null, ...(area ? { field: made.ids, crowd: true } : {}) } };

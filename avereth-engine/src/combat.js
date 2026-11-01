@@ -10,7 +10,7 @@ import { defeatXp, awardXp, strengthOf } from './progression.js';
 import { scaleCreature } from './npcgen.js';
 import { lookOf } from './knowledge.js';
 import { bandIndex, bandName, clone, num, roundHalfUp } from './util.js';
-import { sceneHandle, areaBand } from './v4/scene_handles.js';
+import { sceneHandle, areaBand, skillAreaTarget } from './v4/scene_handles.js';
 import { itemEffectOf, rulesetOf, skillOf as resolveSkill } from './content.js';
 import { effectValue, flatEffectValue, noteUse, fightProgress, restoration } from './skills.js';
 import { fightGrowth } from './v4/growth.js';
@@ -95,12 +95,10 @@ export function combatantOf(state, id, content, side) {
     throw new Error(`no combat profile for ${id}`);
 }
 
-/**
- * Who an area attack strikes. Prototype C (4.3.0-c.6.6.6, review): everyone alive in its reach, whatever their side in
- * the fight (a companion at Alaric's side, a bystander caught in it, a foe that surrendered), never the caster; A keeps
- * its opponents-only area.
- */
-const areaVictim = (ctx, actor, c) => (ctx.c ? c.id !== actor.id && alive(c) : isOpponent(actor, c) && alive(c) && !c.current.surrendered);
+// Ordinary skills spare non-targeted allies/neutrals. Thrown bursts retain their physical friendly fire.
+const areaVictim = (ctx, actor, c, explicit = [], physical = false) => alive(c) && (ctx.c
+    ? physical ? c.id !== actor.id : skillAreaTarget(actor, c, explicit) && (!c.current.surrendered || explicit.includes(c.id))
+    : isOpponent(actor, c) && !c.current.surrendered);
 
 export function activeHostiles(enc) {
     return Object.values(enc.combatants).filter((c) => c.side === 'hostile' && !c.current.defeated && !c.current.escaped && !c.current.surrendered);
@@ -491,8 +489,9 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
             return bandName(bandIndex(before) - 1);
         };
         const selectedBand = areaBand(skill, plannedBand(target));
+        const explicit = [targetId, ...(extra.crowd ? extra.field || [] : [])];
         const plannedAreaTargets = isArea ? Object.values(enc.combatants)
-            .filter((c) => areaVictim(ctx, actor, c) && (!bandArea || c.current.cover !== 'full') && plannedBand(c) === selectedBand)
+            .filter((c) => areaVictim(ctx, actor, c, explicit) && (!bandArea || c.current.cover !== 'full') && plannedBand(c) === selectedBand)
             .map((c) => c.id) : [];
         if (isArea && !plannedAreaTargets.length) return { illegal: bandArea ? `${skill.name} needs a valid target in ${selectedBand || "a chosen band"} after the declared movement` : `${skill.name} needs a valid target ENGAGED with ${actor.name} after the declared movement` };
         // resources (after legality of target/range, before RNG): Cost + Ammo committed together (Core #21)
@@ -552,12 +551,12 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         if (burst) {
             // Hotfix c.6.6.18, Patch 7.1: a thrown burst strikes the one it is thrown at and those the engine fixed with it
             // (its knot: src/engine.js burstOf, however many), each with its own pipeline; no one else
-            const ids = uniqIds([targetId, ...(extra.burst || [])]).filter((id) => enc.combatants[id] && areaVictim(ctx, actor, enc.combatants[id]));
+            const ids = uniqIds([targetId, ...(extra.burst || [])]).filter((id) => enc.combatants[id] && areaVictim(ctx, actor, enc.combatants[id], [], true));
             for (const tid of ids) record.strikes.push(resolveStrike(ctx, actor, enc.combatants[tid], skill.attack, opts));
         } else if (isArea) {
             // Area: every valid target in the resolved band is hit, each with its own damage pipeline.
             const areaTargets = Object.values(enc.combatants)
-                .filter((c) => areaVictim(ctx, actor, c) && (!bandArea || c.current.cover !== 'full') && distance(enc, actorId, c.id) === areaBand(skill, distance(enc, actorId, targetId)))
+                .filter((c) => areaVictim(ctx, actor, c, explicit) && (!bandArea || c.current.cover !== 'full') && distance(enc, actorId, c.id) === areaBand(skill, distance(enc, actorId, targetId)))
                 .map((c) => c.id);
             for (const tid of areaTargets) record.strikes.push(resolveStrike(ctx, actor, enc.combatants[tid], skill.attack, opts));
         } else {
@@ -1260,7 +1259,7 @@ export function runCombat(ctx, pcAction) {
         const t = enc.trigger;
         let r;
         if (t.actor === 'pc') {
-            r = attackAction(ctx, 'pc', t.target, t.skill, { opening: true, move: t.move, moveTarget: t.move_target, item: t.item, burst: t.burst });
+            r = attackAction(ctx, 'pc', t.target, t.skill, { opening: true, move: t.move, moveTarget: t.move_target, item: t.item, burst: t.burst, field: t.field, crowd: t.crowd });
             if (r.illegal) return { enc, records, stopped: 'illegal', illegal: r.illegal };
             pcActed = true;
         } else {
@@ -1282,7 +1281,7 @@ export function runCombat(ctx, pcAction) {
         const t = enc.trigger;
         let r;
         if (t.actor === 'pc') {
-            r = attackAction(ctx, 'pc', t.target, t.skill, { move: t.move, moveTarget: t.move_target, item: t.item, burst: t.burst });
+            r = attackAction(ctx, 'pc', t.target, t.skill, { move: t.move, moveTarget: t.move_target, item: t.item, burst: t.burst, field: t.field, crowd: t.crowd });
             if (r.illegal) return { enc, records, stopped: 'illegal', illegal: r.illegal };
             pcActed = true;
         } else {
@@ -1329,11 +1328,11 @@ export function runCombat(ctx, pcAction) {
         startTurn(enc, actorId);
         if (actorId === 'pc') {
             if (pcActed) return { enc, records, stopped: 'pc_turn' };
-            const act = pcAction || (enc.trigger && enc.trigger.actor === 'pc' && !enc.trigger_done ? { kind: 'attack', skill: enc.trigger.skill, target: enc.trigger.target, move: enc.trigger.move, move_target: enc.trigger.move_target, item: enc.trigger.item, burst: enc.trigger.burst } : null);
+            const act = pcAction || (enc.trigger && enc.trigger.actor === 'pc' && !enc.trigger_done ? { kind: 'attack', skill: enc.trigger.skill, target: enc.trigger.target, move: enc.trigger.move, move_target: enc.trigger.move_target, item: enc.trigger.item, burst: enc.trigger.burst, field: enc.trigger.field, crowd: enc.trigger.crowd } : null);
             if (enc.trigger && enc.trigger.actor === 'pc') enc.trigger_done = true;
             if (!act) return { enc, records, stopped: 'pc_turn' };
             let r;
-            if (act.kind === 'attack') r = attackAction(ctx, 'pc', act.target, act.skill, { move: act.move, moveTarget: act.move_target, item: act.item, burst: act.burst });
+            if (act.kind === 'attack') r = attackAction(ctx, 'pc', act.target, act.skill, { move: act.move, moveTarget: act.move_target, item: act.item, burst: act.burst, field: act.field, crowd: act.crowd });
             else if (act.kind === 'skill') r = skillAction(ctx, 'pc', act.skill, { dir: act.dir, target: act.target });
             else if (act.kind === 'move') r = ctx.c && act.dir === 'closer' && fleeing(enc, act.target) ? chase(ctx, act.target) : moveAction(ctx, 'pc', act.dir, act.target);
             else if (act.kind === 'ability_world') r = worldAction(ctx, 'pc', act);

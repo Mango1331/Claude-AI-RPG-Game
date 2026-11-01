@@ -187,3 +187,10 @@ export function sideOf(state, id) {
     if (tacticalHere(state, { friendly: false }).includes(id)) return 'hostile';
     return (state.relations?.[`rel.${id}.attitude.pc`]?.value ?? 0) >= 20 ? 'ally' : 'neutral';
 }
+
+/** Ordinary skill areas target the opposing side or explicitly attacked actors, never incidental bystanders.
+ * Shared by precombat recruitment and the actual strike; physical bursts deliberately do not use this rule. */
+export function skillAreaTarget(actor, other, explicit = []) {
+    return actor.id !== other.id && (explicit.includes(other.id)
+        || (other.side !== 'neutral' && actor.side !== 'neutral' && (actor.side === 'hostile') !== (other.side === 'hostile')));
+}

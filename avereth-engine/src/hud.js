@@ -126,7 +126,7 @@ export function worldRows(state, content) {
     } else if ((state.pending_combat || []).length) {
         rows.push(['Combat', `${state.pending_combat.map((p) => label(p.by)).join(', ')} committed to attack`]);
     }
-    const quests = Object.values(state.quests).filter(q => questVisible(state, q)).filter((q) => q.status === 'active').map((q) => `${q.title}${state.meta?.runtime === 'v4' && q.kind === 'guild_contract' ? goalText(state, content, q) : ''}`);
+    const quests = Object.values(state.quests).filter(q => questVisible(state, q)).filter((q) => q.status === 'active').map((q) => `${q.title}${state.meta?.runtime === 'v4' && q.kind === 'guild_contract' ? goalText(state, content, q, { danger: true }) : ''}`);
     if (quests.length) rows.push(['Active quests', `${list(quests.slice(0, 3))}${quests.length > 3 ? ` · +${quests.length - 3} more (#quests)` : ''}`]);
     // Patch 2: his goals; the hints of this place; a few lasting leads. Everything else is in #journal
     const goals = goalLines(state, { max: 3, ids: false }).map((g) => `${g.status === 'paused' ? '(paused) ' : ''}${g.text}`);

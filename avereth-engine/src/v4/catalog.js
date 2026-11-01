@@ -137,7 +137,7 @@ function questInfo(state, content, q, { c = false } = {}) {
         const progress = (q.progress || []).slice(-3).map((p) => `${p.objective}: ${p.status}`).join('; ');
         return ['Guild contract', q.status, q.rank, q.payout_cp !== null && q.payout_cp !== undefined ? `${q.payout_cp} cp` : null,
             q.hunt && state.places[q.hunt.at]?.population ? `target population: ${state.places[q.hunt.at].population.species} at ${q.hunt.at} (${state.places[q.hunt.at].name}), body-plan ${state.places[q.hunt.at].population.anchor}, levels ${state.places[q.hunt.at].population.levels.join('-')}; kills elsewhere are not this contract` : null,
-            c && goalText(state, content, q) ? `goal${goalText(state, content, q).replace(/^ — | \(/, ': ').replace(/\)$/, '')}` : null,
+            c && goalText(state, content, q, { danger: true }) ? `goal${goalText(state, content, q, { danger: true }).replace(/^ — | \(/, ': ').replace(/\)$/, '')}` : null,
             q.count_rule ? `fixed count rule: ${q.count_rule}; no narrative second condition or substitute; turn in explicitly at the Guild` : null,
             q.desired_end_state ? `desired outcome: ${q.desired_end_state}` : null,
             (q.objectives || []).length ? `job memory: ${objectiveText(q)}` : null,

@@ -405,6 +405,7 @@ export function skillSummary(skill) {
     if (skill.cost) bits.push(`Cost ${skill.cost.amount} ${skill.cost.resource.toUpperCase()}`);
     if (skill.ammo) bits.push(`Ammo ${skill.ammo.qty} arrow${skill.ammo.qty > 1 ? 's' : ''} (bow)`);
     if (skill.range) bits.push(`Range ${skill.range.band}${skill.range.extra_band ? ' after movement (EXTRA-BAND)' : ''}${skill.range.area ? (skill.range.area === 'target_band' ? ' AREA chosen band' : ' AREA around caster') : ''}`);
+    if (skill.effects?.some(e => e.kind === 'area' && e.shape !== 'burst')) bits.push('opponents only, plus explicitly attacked NPC targets; bystanders spared');
     if (skill.attack) {
         const f = `${skill.attack.base} + ${skill.attack.scaling.map((t) => `${t.stat} × ${t.text ?? t.coef}`).join(' + ')} + ${skill.attack.share === 1 ? skill.attack.uses : `${skill.attack.share * 100}% of ${skill.attack.uses}`}`;
         if (skill.attack.ignores_partial_cover) bits.push('ignores Partial Cover');

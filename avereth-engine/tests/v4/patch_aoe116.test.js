@@ -69,9 +69,10 @@ test('out of range band costs nothing and starts no encounter', () => {
 test('insufficient MP drags no bystanders into a fight', () => {
     const f = setup();f.s.entities.pc.sheet.mp = 1;const r = attack(f);assert.ok(r.outcome.illegal);assert.equal(r.state.encounter, null);assert.equal(r.state.entities.pc.sheet.mp, 1);
 });
-test('same-band neutral actor is struck but a nearer neutral is not', () => {
+// .148: deliberate design change; ordinary skills no longer catch neutral bystanders.
+test('same-band neutral actor and nearer neutral are both spared', () => {
     const f = setup();f.s.entities['mon.test1'].threat = false;f.s.entities['mon.test2'].threat = false;
-    assert.deepEqual(strikes(attack(f)).map(x => x.target).sort(), ['mon.test0', 'mon.test1']);
+    assert.deepEqual(strikes(attack(f)).map(x => x.target).sort(), ['mon.test0']);
 });
 test('movement selects the target band after the declared step', () => {
     const f = setup('target_band', 'MEDIUM', ['MEDIUM', 'SHORT', 'MEDIUM']);
@@ -116,12 +117,12 @@ test('a hidden nominal target does not authorize a ranged area attack', () => {
     const f = setup();f.s.scene.positions['mon.test0'].cover = 'full';const r = attack(f);
     assert.ok(r.outcome.illegal);assert.equal(r.state.entities.pc.sheet.mp, f.s.entities.pc.sheet.mp);assert.equal(r.state.encounter, null);
 });
-test('active-fight movement recomputes the band before adding a neutral outsider', () => {
+test('active-fight movement preserves the band and spares a neutral outsider', () => {
     const f = setup();f.s = attack(f).state;
     f.s.encounter.combatants['mon.test0'].current.band = 'MEDIUM';
     const id = 'mon.new_neutral';f.s.entities[id] = structuredClone(f.s.entities['mon.test0']);Object.assign(f.s.entities[id], { id, threat: false });
     f.s.scene.present.push(id);f.s.scene.positions[id] = { band: 'SHORT', cover: 'none' };
-    const r = attack(f, { move: 'closer', move_target: 'mon.test0' });assert.ok(strikes(r).some(x => x.target === id));
+    const r = attack(f, { move: 'closer', move_target: 'mon.test0' });assert.ok(!strikes(r).some(x => x.target === id));
 });
 test('new skill menus describe a chosen band rather than an area around the caster', async () => {
     const { skillSummary } = await import('../../src/context.js');

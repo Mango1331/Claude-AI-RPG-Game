@@ -107,7 +107,7 @@ test('population span appears on the actual board card, distinct from quest XP l
  const q={id:'quest.example',kind:'guild_contract',title:'Forest wolves',status:'listed',rank:'Novice',level:4,payout_cp:50,qtype:'standard',task:'Kill four wolves.',hunt:{at:'loc.forest'},objectives:[{id:'o1',verb:'DEFEAT',what:'wolf',where:'Blackthorn Forest',qty:4}],source:{branch},history:[],proof:[]};
  s.quests[q.id]=q;s.guild.boards[boardKey(branch,'Novice')]={rank:'Novice',branch,day:today(s),listings:[q.id]};
  const out=resolveCommands(s,c,[{seq:1,type:'board.read',rank:'Novice',quote:'I read the board.'}],e=>applyEvent(s,e),{c:true});
- assert.match(JSON.stringify(out),/enemy levels 4.7/);assert.doesNotMatch(JSON.stringify(out),/recommended level 4/);
+ assert.match(JSON.stringify(out),/reported individuals L4.7/);assert.doesNotMatch(JSON.stringify(out),/recommended level 4/);
 });
 test('narrator and extractor receive the same inherited area span',()=>{
  const s=area(state()).state;s.places['loc.den']={id:'loc.den',name:'A hollow',kind:'site',parent:'loc.forest'};s.scene.at='loc.den';

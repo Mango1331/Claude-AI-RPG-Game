@@ -291,12 +291,21 @@ function areaOf(s, q) {
     return (e) => { const p = where(e); return !p || !s.places[p] || !realmOf(s, p) || realmOf(s, p) === realm; };
 }
 
+/** Public contract reports, not exact individual combat knowledge or a promise of a solo encounter. */
+export function huntDangerText(s, q) {
+    const levels = q.hunt?.at ? s.places[q.hunt.at]?.population?.levels : null;
+    const pcLevel = s.entities.pc.sheet.level;
+    return [levels?.length === 2 ? `reported individuals L${levels[0]}–${levels[1]}` : null,
+        'kills are a total contract goal, not encounter group size; groups may be dangerous',
+        levels?.[0] > pcLevel ? `reported minimum exceeds your level ${pcLevel}` : null].filter(Boolean).join(' · ');
+}
+
 /**
  * Patch 8: what a contract's goal is, as the board, the catalog and the HUD show it: "(4)" for a cull with its number
  * (on the board), "— 2/4 defeated" once taken; "— Clear Old Crown Catacombs, level 1" for a Dungeon level, with its
  * state once taken. Empty for other work.
  */
-export function goalText(s, content, q, { board = false } = {}) {
+export function goalText(s, content, q, { board = false, danger = false } = {}) {
     const clear = clearOf(s, q);
     if (clear) {
         const name = s.places[clear.dungeon]?.name || clear.dungeon;
@@ -305,8 +314,9 @@ export function goalText(s, content, q, { board = false } = {}) {
     }
     const kills = (q.objectives || []).filter((o) => o.verb === 'DEFEAT' && Number.isInteger(o.qty) && o.qty > 0);
     if (!kills.length) return '';
-    if (board || q.status !== 'active') return ` (${kills.map((o) => o.qty).join(' + ')})${q.status === 'listed' && activeHuntConflict(s, content, q) ? ' — ALREADY ACTIVE under another hunt; cannot take the same targets twice' : ''}`;
-    return ` — ${defeatTally(s, content, q).map((t) => `${t.done}/${t.qty} defeated`).join(', ')}`;
+    const risk = danger ? ` · ${kills.map(o => o.qty).join(' + ')} kills total · ${huntDangerText(s, q)}` : '';
+    if (board || q.status !== 'active') return ` (${kills.map((o) => o.qty).join(' + ')})${risk}${q.status === 'listed' && activeHuntConflict(s, content, q) ? ' — ALREADY ACTIVE under another hunt; cannot take the same targets twice' : ''}`;
+    return ` — ${defeatTally(s, content, q).map((t) => `${t.done}/${t.qty} defeated`).join(', ')}${risk}`;
 }
 
 /** Does the contract allow its targets to be driven off ("driven off or destroyed", "Clear the hounds from …")? */

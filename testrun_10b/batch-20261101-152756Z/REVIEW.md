@@ -106,3 +106,10 @@ Die Welt erzählt frei weiter: Hilfe bei der Bauernfamilie, kostenlose Unterkunf
 3. **Kein weiterer vorsorglicher Finanzumbau, keine XP-/Gearpreisänderung und kein verschärfter Runner-Kaufzwang.** Die übrigen lokalen Prosa-/Geschenkverluste dokumentieren und tolerieren. Nach den ausgewählten Integrationskorrekturen wieder natürliche Daten sammeln.
 
 Der manuelle Stopp ist nachvollziehbar: Der Zustand ist technisch fortsetzbar, aber die wiederholten Handelsblockaden sind häufig genug, um sie nicht als exotische Restunschönheiten abzutun. **Empfehlung: diese konkreten Schnittstellen beheben, nicht S1/S2 erneut grundsätzlich aufrollen.** Dieser Review implementiert nichts.
+
+
+## 8. Umsetzungsstand nach GPT-Feedback – 01.11.2026
+
+Die vier Ursachen A–D sind in **Build .146 / [9136f8f](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/9136f8ff664ad12e29fc74190f5d8a0909e3d4eb)** als ein begrenzter Integrationspatch umgesetzt. Der zusätzliche GPT-Prüfpunkt zu mehreren Jagden wurde übernommen: Der bestehende Schutz verwendet bereits Habitatidentität; ein Singular-/Plural-Doppelangebot bleibt durch Regression abgesichert. Kein zweiter Duplikatmechanismus, keine XP-/Preis-/Runneränderung. Originalreview und ZIP bleiben als Belege des .145-Zustands erhalten.
+
+**Abnahme:** 16 neue Original-/Integrationsfälle auf .145 zwölf rot/vier grüne Kontrollen, danach16/16; Vollsuite2635/2635; Replay2235 Fälle, sieben einzeln begründete Änderungen gegenüber .145, insgesamt398 exakt akzeptiert/0 offen/veraltet. Echte ST-Smokes32/32 und37/37 ohne PageErrors. Der separate Browser-Mock scheitert auf .145 und .146 gleich am vorhandenen GenerateRaw-Zähltest; ausdrücklich kein grüner Nachweis. [Technische Umsetzung, einzelne Replaybegründungen und Restgrenzen](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/9136f8ff664ad12e29fc74190f5d8a0909e3d4eb/avereth-engine/docs/FIX146_BATCH21_TRADE_BOARD.md). Natürliche .146-Folgeabnahme steht aus; kein Batch eigenständig gestartet.

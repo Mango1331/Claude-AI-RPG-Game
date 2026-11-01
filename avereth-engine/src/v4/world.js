@@ -32,7 +32,7 @@ import {
 } from './domain.js';
 import { creatureContract } from './population.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
-import { pickLines, bookPurchase, bookSale, saleUnits, unitsText, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines, offerAvailability, rateUnits } from './trade.js';
+import { tradeObject, pickLines, bookPurchase, bookSale, saleUnits, unitsText, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines, offerAvailability, rateUnits } from './trade.js';
 import { findQuote, priceEvidence, openConditionNear, moneyLiteral } from './finance_evidence.js';
 import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
 import { reachedEvents, setIntentEvents } from './intents.js';
@@ -2804,7 +2804,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const lines = [];
         const given = [];
         for (const l of d.lines || []) {
-            const o = objectRef(l.object);
+            const o = typeof l.object === 'string' ? tradeObject(s, content, l.object) : objectRef(l.object);
             if (!o || o.holder?.entity !== 'pc') { reject(d, 'offer', `a bid is for things Alaric holds (${JSON.stringify(l.object).slice(0, 60)} is not his)`); return; }
             const have = lines.find((x) => x.object === o.id);
             const units = Number.isInteger(l.qty) && l.qty > 0 ? l.qty : (o.qty ?? 1);
@@ -2817,7 +2817,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
         if (!lines.length || !Number.isInteger(d.price_cp)) { reject(d, 'offer', 'a bid names his things and one price'); return; }
         // Build .138: stacks of the same goods share the unit rate; each line keeps its own object and units
-        const t = dealTerms(d, { units: rateUnits(lines, (id) => s.objects[id]), lines: given, reported: d.price_cp, goods: lines.map((l) => s.objects[l.object]?.name).filter(Boolean) });
+        const t = dealTerms(d, { units: rateUnits(lines, (id) => tradeObject(s, content, id)), lines: given, reported: d.price_cp, goods: lines.map(l => l.what) });
         const goods = lines.map(l => unitsText(l.what, l.qty)).join(', ');
         if (t.contradicted) {
             reject(d, 'offer', `the bid of ${d.price_cp} cp is not recorded: ${t.why}`);

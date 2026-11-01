@@ -15,7 +15,7 @@ import { lifeStageOf } from './population.js';
 import { rankOf, rankIndex } from '../derived.js';
 import { slug, normText, hash32 } from '../util.js';
 import { itemProfile } from './items.js';
-import { hallOf, hallOfSettlement, settlementOf, realmOf, heldBy, membership, listingsOf, boardKey, today, contracts, supportedRanks, placeName, validEncounterLevels, namesKind, namesPeople, peopleNamed, sameKinds, namesYoung } from './domain.js';
+import { hallOf, hallOfSettlement, settlementOf, realmOf, heldBy, membership, listingsOf, boardKey, today, contracts, supportedRanks, placeName, validEncounterLevels, namesKind, namesPeople, peopleNamed, sameKinds, namesYoung, sameSpecies } from './domain.js';
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
@@ -630,8 +630,10 @@ function habitatWhy(s, content, need, l) {
     if (places.length > 1) return 'habitat.place is ambiguous in this land';
     const p = places[0];
     if (p && (trueDungeonOf(s, p.id) || ['realm', 'region', 'settlement', 'district'].includes(p.kind))) return 'habitat must be a small hunting site, not a whole region, town or Dungeon';
-    if (p?.population && (normText(p.population.species) !== normText(h.species) || p.population.anchor !== h.anchor
-        || p.population.levels[0] !== h.min_level || p.population.levels[1] !== h.max_level)) return 'habitat conflicts with an established population';
+    if (p?.population && (!sameSpecies(p.population.species, h.species) || p.population.anchor !== h.anchor
+        || p.population.levels[0] !== h.min_level || p.population.levels[1] !== h.max_level))
+        return `habitat conflicts with an established population; at ${p.name} use species ${JSON.stringify(p.population.species)}, anchor ${p.population.anchor}, min_level ${p.population.levels[0]}, max_level ${p.population.levels[1]}`;
+    if (p?.population) h.species = p.population.species;
     if (p && !p.population && Object.values(s.entities).some(e => (e.at === p.id || e.met_at === p.id) && (e.profile || e.sheet)))
         return 'habitat already has established individuals; do not relabel its population';
     return null;

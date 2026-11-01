@@ -31,7 +31,7 @@ export function worldVocab(vocab, state) {
     };
 }
 
-export const EXTRACTOR_VERSION = 'extract-5.24';
+export const EXTRACTOR_VERSION = 'extract-5.25';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 
@@ -382,11 +382,29 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     }
     let stepAt = startScene;
     const entered = new Map();
+    const present = new Set(state?.scene?.present || []), introduced = new Set();
     if (!errors.length && sceneRequired && state?.meta?.ruleset >= 2) for (const { d, i } of value.deltas.map((d, i) => ({ d, i })).sort((a, b) => a.d.seq - b.d.seq)) {
-        if (d?.type === 'arrive') stepAt = placeKey(state, d.at, content);
+        if (d?.type === 'arrive') {
+            stepAt = placeKey(state, d.at, content);
+            present.clear();
+            for (const id of d.with || []) present.add(id);
+        }
         // A prior local enter may explain the reintroduction. World still validates that event.
         if (d?.type === 'enter' && state.entities[d.who]?.kind === 'npc'
-            && placeKey(state, d.scene ?? value.scene, content) === stepAt) entered.set(d.who, stepAt);
+            && placeKey(state, d.scene ?? value.scene, content) === stepAt) {
+            entered.set(d.who, stepAt);
+            present.add(d.who);
+        }
+        if (d?.type === 'leave') present.delete(d.who);
+        if (d?.type === 'person.new' && d.present !== false) introduced.add(d.ref);
+        // .146: an arrival resets co-presence. A merchant report cannot silently restore it or invent an id.
+        // Ask the existing bounded repair for the actual encounter, never synthesize enter or authorize travel.
+        if (d?.type === 'offer' || d?.type === 'bid') {
+            const field = d.type === 'offer' ? 'seller' : 'buyer', id = d[field];
+            if (!introduced.has(id) && ((state.entities[id]?.kind === 'npc' && !present.has(id))
+                || (typeof id === 'string' && id.startsWith('npc.') && !state.entities[id])))
+                semanticIssues.push({ index: i, seq: d.seq, why: `$.deltas[${i}].${field}: counterparty ${id} is not established as present at this step. Copy the exact known person id from the CATALOG. Only if this REPLY shows that person actually meeting/trading here, report enter with its reply evidence before this ${d.type}; a genuinely new person needs person.new first. Otherwise omit the local trade. Never infer presence from an offer, remembered workplace or the PC's arrival alone.` });
+        }
         if (d?.type === 'offer' && saleOfferLines(state, d.seller, d.lines || []).length)
             semanticIssues.push({index:i, seq:d.seq, why:`$.deltas[${i}]: these are current PC sale goods; use bid with buyer, held object ids and price_cp, not offer/seller`});
         // Build .138 (batch 20 crystal shard T26–T32, seven plates T58): the buyer's coin for things Alaric sells, reported

@@ -27,7 +27,7 @@ import {
 import { sameWant, keyWords, wantedLines } from './world.js';
 import { LOOT_WORDS, lootedHere } from './loot.js';
 import { shopSearch, findTrades } from './settlement.js';
-import { journeyReady, knownAt } from './catalog.js';
+import { journeyReady, knownAt, personLabel } from './catalog.js';
 import { continueOptions, setIntentEvents, endIntentEvents, activeIntents, goSetsGoal } from './intents.js';
 import { knownByName } from './known.js';
 import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf, restoreEffect, namedSource, equipmentSlotKnown, offerCard } from './items.js';
@@ -38,7 +38,7 @@ import { jobAction, jobOf } from './private_jobs.js';
 import { acceptPassive, declinePassive } from './passive_growth.js';
 import { acceptSkill, declineSkill, developmentOffers, skillOffers } from './skill_growth.js';
 import { classOffer, classSelection, acceptClass } from './class_growth.js';
-import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, rateUnits, offerAvailability, tradeTermsWhy, purchaseLines, samePurchaseRequest, purchaseDecisionMatches } from './trade.js';
+import { tradeObject as objectOf, pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, rateUnits, offerAvailability, tradeTermsWhy, purchaseLines, samePurchaseRequest, purchaseDecisionMatches } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import { attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
 import { dungeonOf, trueDungeonOf, isRoom, roomKnown, wayBetween, knownRoomNamed, hiddenWayFinds, linkEvent, otherEnd, linksAt, blockerOf, goesFrom, firstStop } from './dungeon.js';
@@ -155,17 +155,6 @@ function paymentProposal(s, content, c, ctx, emit, ev = null) {
 const present = (s, id) => typeof id === 'string' && s.scene.present.includes(id) && s.entities[id]?.status !== 'dead';
 const cpText = (cp, content) => `${cp} cp${cp >= 10 ? ` (${formatCoin(cp, content)})` : ''}`;
 const feeWords = (fee) => (fee % 10 === 0 ? `${fee / 10} silver (${fee} cp)` : `${fee} cp`);
-
-/** A catalog object id: a V4 object, or "item.<template>" for what Alaric's own sheet carries. */
-function objectOf(s, content, ref) {
-    if (typeof ref !== 'string') return null;
-    if (ref.startsWith('item.')) {
-        const tpl = ref.slice(5);
-        const qty = s.entities.pc.sheet.inventory[tpl];
-        return qty ? { id: ref, template: tpl, name: content.items.get(tpl)?.name || s.item_names?.[tpl] || tpl, qty, holder: { entity: 'pc' } } : null;
-    }
-    return s.objects[ref] || null;
-}
 
 /** Materialise outgoing sheet units once; a returned object keeps this physical identity. */
 function transferTemplate(s, o, to, n, seq, ctx, emit, envx, { drop = false } = {}) {
@@ -1120,7 +1109,7 @@ const HANDLERS = {
         if (ctx.auth.c && rulesetOf(s) >= 2) {
             const units = o.bid ? rateUnits(o.lines, (id) => s.objects[id]) : (pickLines(o, c.lines, c.qty ?? null).picks || []).reduce((n, p) => n + p.units, 0) || 1;
             if (unitOnly(c, 'agreed_cp', content, ctx, units)) return unitAsk('AGREED', o.lines.map((l) => unitsText(l.what, l.qty ?? 1)).join(', '), c.price_evidence.quote);
-            const why = acceptanceWhy(c, o, who(s, o.seller), content.rules.currency, o.bid ? rateUnits(o.lines, (id) => s.objects[id]) : null);
+            const why = acceptanceWhy(c, o, personLabel(s, content, o.seller), content.rules.currency, o.bid ? rateUnits(o.lines, (id) => objectOf(s, content, id)) : null);
             if (why) return { status: 'refused', reason: why, line: `NOT AGREED — ${why}. Nothing changes hands; clarify the party or price.` };
         }
         if (o.bid) return acceptBid(s, content, c, ctx, emit, o);

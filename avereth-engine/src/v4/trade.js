@@ -65,8 +65,11 @@ export function acceptanceWhy(c, offer, party, currency = null, units = null) {
     const terms = tradeTermsWhy(offer, c.lines);
     if (terms) return terms;
     const addressed = String(c.quote || '').match(/\b(?:[Dd]one|[Dd]eal|[Yy]es|[Ff]ine|[Aa]greed|[Tt]hanks),\s+([A-Z][a-z'-]*(?:\s+[A-Z][a-z'-]*){0,2})(?=[.!?]|$)/);
-    for (const named of [c.party_words, addressed?.[1]].filter(Boolean)) {
-        const label = /^the\s/i.test(named) ? party.split(',').slice(0, 2).join(', ') : party.split(',')[0];
+    for (const [named, directName] of [[c.party_words, false], [addressed?.[1], true]]) {
+        if (!named) continue;
+        // The offer already identifies its party. Descriptive words may name that person's known look/role;
+        // a direct "Done, Tam" still has to address the name, not someone mentioned in a description.
+        const label = directName ? party.split(',')[0] : party;
         if (!contains(label, named.replace(/^the\s+/i, ''))) return `counterparty ${named} is not ${party}`;
     }
     const quote = String(c.quote || '');
@@ -280,7 +283,18 @@ export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = nu
     return { picks, cp };
 }
 
-/** How many units of a catalog thing Alaric holds: a V4 object he holds, or a sheet item "item.<template>". */
+/** One catalog object representation for commands and bids; template items remain in the sheet inventory. */
+export function tradeObject(s, content, ref) {
+    if (typeof ref !== 'string') return null;
+    if (ref.startsWith('item.')) {
+        const template = ref.slice(5), qty = s.entities.pc.sheet.inventory[template];
+        return qty ? { id: ref, template, name: content.items.get(template)?.name || s.item_names?.[template] || template,
+            qty, holder: { entity: 'pc' } } : null;
+    }
+    return s.objects[ref] || null;
+}
+
+/** Units held in either inventory representation; equipped templates are not an extra carried copy. */
 export function heldUnits(s, ref) {
     if (typeof ref !== 'string') return 0;
     if (ref.startsWith('item.')) return s.entities.pc.sheet.inventory[ref.slice(5)] || 0;

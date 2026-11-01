@@ -442,6 +442,12 @@ export function kindOf(text, { species = false } = {}) {
     return { words: new Set(words(tokens)), phrase: new Set(phrase), head: phrase.at(-1) || null };
 }
 
+/** The complete species name, using the existing noun stems; a shared head/body plan alone is not identity. */
+export function sameSpecies(a, b) {
+    const x = kindOf(a, { species: true }).words, y = kindOf(b, { species: true }).words;
+    return x.size > 0 && x.size === y.size && [...x].every(word => y.has(word));
+}
+
 /**
  * Does a hunting objective ("the vermin in the cellar", "wild goats") name this creature kind? By the kind the text
  * names, never by the body plan alone (review of 4.1.0: the deer plan's alias "goat" made sheep wild-goat targets):

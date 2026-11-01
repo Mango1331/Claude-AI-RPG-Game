@@ -44,7 +44,7 @@ const coin = (g) => g.state().entities.pc.sheet.coin_cp;
 
 // the live planner's answer to #89 and the live narration of #90, #92
 const LIVE_GIVES = Object.entries(PARTS).map(([object, qty]) => ({ type: 'give', object, qty, to: KEEPER, quote: 'i take out every monster part i carry with me' }));
-const LIVE_BID = { seq: 1, type: 'bid', buyer: KEEPER, lines: Object.entries(PARTS).map(([object, qty]) => ({ object, qty })), price_cp: 80 };
+const LIVE_BID = { said: 'eight silver for the lot', seq: 1, type: 'bid', buyer: KEEPER, lines: Object.entries(PARTS).map(([object, qty]) => ({ object, qty })), price_cp: 80 };
 const SHOW = '*i take out every monster part i carry with me*';
 const SELL = '*i accept and sell all parts to her*';
 
@@ -113,7 +113,7 @@ test('c.6.6.5 trade 5: a bid declined or left open moves nothing; 337 cp and all
 
 test('c.6.6.5 trade 6: selling part of a stack keeps the rest with its Rank, species, origin and value; a bid for things he no longer holds is void, never a negative stock', async () => {
     const g = live(89);
-    const bid = { seq: 1, type: 'bid', buyer: KEEPER, lines: [{ object: 'obj.loot.mudwyrm.scale.f', qty: 1 }], price_cp: 4 };
+    const bid = { said: 'Four copper for one plate', seq: 1, type: 'bid', buyer: KEEPER, lines: [{ object: 'obj.loot.mudwyrm.scale.f', qty: 1 }], price_cp: 4 };
     await say(g, '*i show her one of the scale plates*');
     await g.reply('"Four copper for one plate."', { expected: {}, deltas: [bid] });
     const open = Object.values(g.state().offers).find((o) => o.status === 'open' && o.bid);
@@ -129,7 +129,7 @@ test('c.6.6.5 trade 6: selling part of a stack keeps the rest with its Rank, spe
     assert.equal(part.rank, 'F');
     // a bid for three plates when he holds two: not sold, nothing moves
     // Build .142 (§3.1): a bare "six" in a reply that names no coin is no price; the fixture's reply now says the coin
-    await g.reply('"Then the other plates too - I\'ll give six copper for three."', { expected: {}, deltas: [{ seq: 1, type: 'bid', buyer: KEEPER, lines: [{ object: 'obj.loot.mudwyrm.scale.f', qty: 3 }], price_cp: 6 }] });
+    await g.reply('"Then the other plates too - I\'ll give six copper for three."', { expected: {}, deltas: [{ seq: 1, type: 'bid', buyer: KEEPER, lines: [{ object: 'obj.loot.mudwyrm.scale.f', qty: 3 }], said: 'give six copper for three', price_cp: 6 }] });
     const stale = Object.values(g.state().offers).find((o) => o.status === 'open' && o.bid);
     assert.equal(stale.lines[0].qty, 2, 'a bid is for what he holds');
 });
@@ -137,7 +137,7 @@ test('c.6.6.5 trade 6: selling part of a stack keeps the rest with its Rank, spe
 test('c.6.6.5 trade 7: an offer stored the wrong way round (the c.6.6.4 extractor\'s "mudwyrm parts … the lot") is never paid for: naming his things it is sold, else the System asks', async () => {
     const g = live(89);
     await say(g, SHOW, ...LIVE_GIVES);
-    await g.reply(fx.messages[90].mes, { expected: {}, deltas: [{ seq: 1, type: 'offer', seller: KEEPER, lines: [{ what: 'F-Rank mudwyrm parts: 2 skins, 2 fangs, 2 venom sacs, 3 scale plates — the lot', kind: 'goods', service: null, qty: 1, price_cp: 80 }] }] });
+    await g.reply(fx.messages[90].mes, { expected: {}, deltas: [{ seq: 1, type: 'offer', seller: KEEPER, lines: [{ what: 'F-Rank mudwyrm parts: 2 skins, 2 fangs, 2 venom sacs, 3 scale plates — the lot', kind: 'goods', service: null, qty: 1, said: 'eight silver for the lot', price_cp: 80 }] }] });
     const offer = Object.values(g.state().offers).find((o) => o.status === 'open' && o.seller === KEEPER);
     assert.ok(!offer.bid);
     await say(g, SELL, { type: 'offer.accept', offer: offer.id, lines: ['l1'], qty: null, quote: 'i accept and sell all parts to her' });
@@ -146,7 +146,7 @@ test('c.6.6.5 trade 7: an offer stored the wrong way round (the c.6.6.4 extracto
     // an offer that names none of his things: no purchase, a question
     const h = live(89);
     await say(h, '*i look at her shelves*');
-    await h.reply('"Salted eel skins, three for a silver."', { expected: {}, deltas: [{ seq: 1, type: 'offer', seller: KEEPER, lines: [{ what: 'salted eel skins', kind: 'goods', service: null, qty: 3, price_cp: 10 }] }] });
+    await h.reply('"Salted eel skins, three for a silver."', { expected: {}, deltas: [{ seq: 1, type: 'offer', seller: KEEPER, lines: [{ what: 'salted eel skins', kind: 'goods', service: null, qty: 3, said: 'three for a silver', price_cp: 10 }] }] });
     const eel = Object.values(h.state().offers).find((o) => o.status === 'open' && o.seller === KEEPER);
     h.chat.push({ mes: 'I accept and sell them to her', is_user: true, is_system: false, extra: {} });
     h.plans = [JSON.stringify({ commands: [{ seq: 1, type: 'offer.accept', offer: eel.id, lines: null, qty: null, quote: 'I accept and sell them to her' }] })];
@@ -172,7 +172,7 @@ test('c.6.6.5 trade 8-9: a gift stays a give, showing is none; buying from an of
     assert.ok(r.events.some((e) => e.t === 'object.moved' && e.d.to.entity === KEEPER && e.d.qty === 1));
     assert.equal(g.state().objects['obj.loot.mudwyrm.fang.f'].qty, 1);
     // an ordinary purchase from her offer still pays
-    await g.reply('"A salted eel skin? One copper."', { expected: {}, deltas: [{ seq: 1, type: 'offer', seller: KEEPER, lines: [{ what: 'salted eel skin', kind: 'goods', service: null, qty: 1, price_cp: 1 }] }] });
+    await g.reply('"A salted eel skin? One copper."', { expected: {}, deltas: [{ seq: 1, type: 'offer', seller: KEEPER, lines: [{ what: 'salted eel skin', kind: 'goods', service: null, qty: 1, said: 'One copper', price_cp: 1 }] }] });
     const eel = Object.values(g.state().offers).find((o) => o.status === 'open' && !o.bid && o.seller === KEEPER);
     const bought = await say(g, 'I\'ll take it.', { type: 'offer.accept', offer: eel.id, lines: null, qty: null, quote: 'I\'ll take it.' });
     assert.ok(bought.events.some((e) => e.t === 'coin.changed' && e.d.delta === -1));

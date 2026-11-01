@@ -1908,7 +1908,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const within = saidAt.state === 'found' ? saidAt : null;
         const literal = (w) => moneyLiteral(prose, money.quote, { content, currencyQuote: money.currency_quote ?? null, within: w });
         const near = money && within ? literal(within) : null;
-        const ev = !money ? { state: 'missing', reason: 'no_money_quote', source: null } : near && near.state !== 'missing' ? near : literal(null);
+        const ev = near || { state: 'missing', reason: 'no_action_anchor', source: null };
         const at = ev.source?.ranges?.[0] || null;
         // the record identity of a gift stays its reported handover (said), as before: the same money words or the same
         // amount from the same giver alone are no repetition (§7.2)

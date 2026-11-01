@@ -33,7 +33,8 @@ test('A1: the corpus holds every recorded engine call and the baseline names its
 const ACCEPTED_F138 = JSON.parse(fs.readFileSync(new URL('./accepted_f138_vs_126.json', import.meta.url), 'utf8'));
 // Finance consolidation (.142): the F list checked against the .141 replay record by record – unchanged entries kept,
 // additive contract fields named, every other change reasoned (docs/FIX142_FINANCE_CONSOLIDATION.md)
-const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_f142_vs_126.json', import.meta.url), 'utf8'));
+const ACCEPTED142 = JSON.parse(fs.readFileSync(new URL('./accepted_f142_vs_126.json', import.meta.url), 'utf8'));
+const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_f143_vs_126.json', import.meta.url), 'utf8'));
 const SUB = { ...baseline, runs: Object.fromEntries(QUICK.map((l) => [l, baseline.runs[l]])) };
 let quick = null; // the four quick runs, replayed once for this file
 const quickRuns = async () => (quick ||= await replayCorpus(undefined, undefined, { labels: QUICK }));
@@ -147,17 +148,28 @@ test('F retains every D fingerprint and reason unchanged (one reasoned supersess
 
 test('F .142 keeps every F entry or supersedes it with its old fingerprint and a named cause; every new record is named or reasoned', () => {
     for (const [id, entry] of Object.entries(ACCEPTED_F138.cases)) {
-        const now = ACCEPTED.cases[id];
+        const now = ACCEPTED142.cases[id];
         // a record whose output is the .126 baseline again is no accepted difference any more; it is named with its reason
-        if (!now) { assert.ok(ACCEPTED.returned?.[id]?.reason, `${id} returned to the baseline with a reason`); continue; }
+        if (!now) { assert.ok(ACCEPTED142.returned?.[id]?.reason, `${id} returned to the baseline with a reason`); continue; }
         if (now.fingerprint === entry.fingerprint) { assert.deepEqual(now, entry, id); continue; }
         assert.equal(now.supersedes, entry.fingerprint, id);
         assert.ok(now.finance_142 || (now.category === 'finance 142' && now.reason), id);
     }
-    for (const [id, entry] of Object.entries(ACCEPTED.cases)) {
+    for (const [id, entry] of Object.entries(ACCEPTED142.cases)) {
         if (ACCEPTED_F138.cases[id]) continue;
         assert.ok(['finance 142', 'finance 142 contract fields'].includes(entry.category), id);
         if (entry.category === 'finance 142') assert.ok(entry.reason && entry.reason.length > 40, id);
         assert.match(entry.fingerprint, /^sha256:[0-9a-f]{64}$/, id);
     }
+});
+
+test('F .143 pins only the individually reviewed boundary changes',()=>{
+ const changed=[];
+ for(const[id,entry]of Object.entries(ACCEPTED142.cases)){
+  const now=ACCEPTED.cases[id];
+  if(!now){assert.ok(ACCEPTED.returned[id]?.reason);changed.push(id);continue;}
+  if(now.fingerprint===entry.fingerprint)assert.deepEqual(now,entry,id);
+  else{assert.equal(now.supersedes_142,entry.fingerprint,id);assert.ok(now.finance_143?.length>40,id);changed.push(id);}
+ }
+ assert.deepEqual(changed.sort(),['b16-rogue-sale#78','b17-rogue#138','b17-rogue#170','b18-rogue#341','b18-warrior#52','b18-warrior#160','b18-warrior#166','b18-warrior#260','b19-rogue#32','b19-warrior#328'].sort());
 });

@@ -35,7 +35,7 @@ const coin = (res) => res.events.filter((e) => e.t === 'coin.changed').map((e) =
 // words; an open condition around them makes it non-binding (open:…)
 const T = (quote) => ({ basis: 'total', quote, currency_quote: null }), U = (quote) => ({ basis: 'unit', quote, currency_quote: null });
 function read(said, units, pricing, goods = []) {
-    const ev = priceEvidence(pricing, { source: said, content, units, goods });
+    const ev = priceEvidence(pricing, { source: said, within: findQuote(said, said), content, units, goods });
     if (ev.state !== 'verified') return null;
     const at = ev.source?.ranges?.[0];
     return at && openConditionNear(said, at.start, at.end) ? `open:${ev.cp}` : ev.cp;

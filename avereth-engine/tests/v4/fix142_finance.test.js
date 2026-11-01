@@ -174,7 +174,7 @@ const ENC40 = 'obj.loot.crystal_beetle.chitin.f.enc_t40';
 function bidReply(prose, { price, pricing, phase = 'firm', condition = null, lines = [{ object: ENC40, qty: 14 }], said = null, consent = 50 } = {}) {
     const s = clone(PLATES.state), raw = clone(PLATES.raw);
     const bid = raw.deltas.find((d) => d.type === 'bid');
-    Object.assign(bid, { lines, price_cp: price, said, phase, condition, pricing });
+    Object.assign(bid, { lines, price_cp: price, said: said ?? prose, phase, condition, pricing });
     raw.deltas = [bid]; raw.expected = {};
     if (consent !== null) s.decisions.push({ id: 'dec.test.sale', kind: 'sale', turn: s.turn, at: s.scene.at, seller: bid.buyer, object: lines[0].object, qty: lines[0].qty, min_cp: consent, seq: 1 });
     return applyWorld(s, content, raw, { msg: 116, prose });
@@ -359,8 +359,8 @@ test('.142 evidence module: role checks of money words (the readers that replace
     assert.equal(lit('Five copper and five copper.', 'Five copper and five copper').state, 'contradicted');
     assert.equal(lit('three copper and the silver', 'three copper').state, 'incomplete');
     assert.equal(lit('A copper or two per plate.', 'A copper').state, 'contradicted');
-    assert.equal(F.priceEvidence(TOTAL('two copper'), { source: 'two copper a pelt', content, units: 4, goods: ['wolf pelt'] }).reason, 'unit_price_as_total');
-    assert.equal(F.priceEvidence(TOTAL('Two silver'), { source: 'Two silver a fair deal.', content, units: 3, goods: ['wolf pelt'] }).cp, 20);
+    assert.equal(F.priceEvidence(TOTAL('two copper'), { source: 'two copper a pelt', within: F.findQuote('two copper a pelt','two copper a pelt'), content, units: 4, goods: ['wolf pelt'] }).reason, 'unit_price_as_total');
+    assert.equal(F.priceEvidence(TOTAL('Two silver'), { source: 'Two silver a fair deal.', within: F.findQuote('Two silver a fair deal.','Two silver a fair deal.'), content, units: 3, goods: ['wolf pelt'] }).cp, 20);
     const act = (m, money) => F.payArgument(m, { to: 'npc.tam', amount_cp: null, quote: m, money: { quote: money, currency_quote: null } }, { content, present: [{ id: 'npc.tam', names: ['Tam'] }] }).act;
     assert.equal(act('I hand Tam five copper.', 'five copper'), 'outgoing');
     assert.equal(act('I hand over five copper.', 'five copper'), 'outgoing');

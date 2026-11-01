@@ -146,7 +146,7 @@ test('coin: the other side of a trade the engine books does not give him coin (a
     assert.equal(coin(change.state), coin(v) - 3);
     assert.deepEqual(rules(change), ['engine_booked']);
     // a payment of an amount he chose (a silver for a 1 cp toll): the change is real coin back
-    const paid = play(v, [{ seq: 1, type: 'pay', to: 'npc.vendor', amount_cp: 10, for: 'the toll', quote: 'i give him one silver waiting for my change' }]);
+    const paid = play(v, [{ seq: 1, type: 'pay', to: 'npc.vendor', amount_cp: 10, for: 'the toll', quote: 'i give him one silver for the toll' }]);
     const back = applyWorld(paid.after(), content, { expected: {}, deltas: [gift('npc.vendor', 9, 'change from the silver')] }, { msg: 9 });
     assert.equal(coin(back.state), coin(v) - 1);
 });

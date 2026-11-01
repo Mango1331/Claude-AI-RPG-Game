@@ -35,6 +35,7 @@ const flatten = (text) => view(text).flat.trim();
  * nowhere: missing; more than once: ambiguous (which act it belongs to is then not known).
  */
 export function findQuote(source, quote, within = null) {
+    if (within && (!Number.isInteger(within.start) || !Number.isInteger(within.end))) return { state: 'missing' };
     const q = flatten(quote);
     if (!q) return { state: 'missing' };
     const v = view(source);
@@ -44,6 +45,7 @@ export function findQuote(source, quote, within = null) {
         if ((k > 0 && v.flat[k - 1] !== ' ') || (k + q.length < v.flat.length && v.flat[k + q.length] !== ' ')) continue;
         const start = v.at[k];
         const end = v.at[k + q.length - 1] + 1;
+        if (start > 1 && /[-–]/.test(v.raw[start - 1]) && /[a-z0-9]/i.test(v.raw[start - 2])) continue;
         if (within && (start < within.start || end > within.end)) continue;
         hits.push({ start, end });
     }
@@ -87,6 +89,17 @@ export function moneyLiteral(source, quote, { content, currencyQuote = null, wit
     }
     if (q.state !== 'found') return result(EVIDENCE.MISSING, { reason: 'quote_not_found' });
     const raw = String(source);
+    // A quoted prefix/suffix of one mixed-currency group is never a complete handover.
+    const sen = sentenceOf(raw, q.start, q.end);
+    for (const sum of coinEvidence(raw.slice(sen.start, sen.end), content).sums || []) {
+        let start = sen.start + sum.raw_start;
+        // A preceding goods count ("a fine one, forty copper") is not a coin constituent.
+        if (start < q.start && !kindsIn(raw.slice(start, q.start)).size) start = q.start;
+        let end = Math.min(sen.end, sen.start + sum.raw_end);
+        while (end > start && /[^a-z0-9]/i.test(raw[end - 1])) end--;
+        if (start < q.end && q.start < end && (start < q.start || end > q.end))
+            return result(EVIDENCE.INCOMPLETE, { reason: 'partial_money_group', source: { ranges: [{ start, end }] } });
+    }
     const text = raw.slice(q.start, q.end);
     const range = { start: q.start, end: q.end };
     const sentence = sentenceOf(raw, q.start, q.end);
@@ -105,7 +118,7 @@ export function moneyLiteral(source, quote, { content, currencyQuote = null, wit
         // said: "Plates at four copper each … Gland at six. Gel at four."), and only where exactly one coin kind stands
         const around = scope || within;
         const zone = around && around.start <= q.start && q.end <= around.end
-            ? { start: Math.min(around.start, sentence.start), end: Math.max(around.end, sentence.end) } : sentence;
+            ? around : sentence;
         // the coin word may stand more than once there ("four copper … another copper"): it is the same coin
         const cq = findQuote(raw, currencyQuote, zone);
         const c = cq.state === 'ambiguous' ? cq.hits[0] : cq;
@@ -157,7 +170,7 @@ export function priceEvidence(pricing, { source, content, units = 1, lines = nul
     if (!pricing || typeof pricing !== 'object' || !pricing.basis || pricing.basis === 'unknown') return done(result(EVIDENCE.MISSING, { reason: 'pricing_unknown' }));
     const literal = (p) => {
         const near = within ? moneyLiteral(source, p.quote, { content, currencyQuote: p.currency_quote ?? null, within }) : null;
-        return near && near.state !== EVIDENCE.MISSING ? near : moneyLiteral(source, p.quote, { content, currencyQuote: p.currency_quote ?? null });
+        return near || result(EVIDENCE.MISSING, { reason: 'no_action_anchor' });
     };
     if (pricing.basis === 'total' || pricing.basis === 'unit') {
         const m = literal(pricing);
@@ -256,12 +269,13 @@ export function payArgument(message, c, { content, present = [] } = {}) {
     const CORE = new RegExp(String.raw`${LEAD}${GIVING}\s+(?:(?:back|over)\s+)?(?:${recipientWords}\s+)?(?:(?:back|over)\s+)?${DET}$`, 'i');
     const money = c?.money && typeof c.money === 'object' ? c.money : null;
     const actText = within ? raw.slice(within.start, within.end) : String(c?.quote || '');
+    if (!within) return { state: EVIDENCE.MISSING, act: 'unclear', cp: null, reason: 'no_action_anchor' };
     if (!money) {
         const will = new RegExp(String.raw`(?:^|[^a-z'])(?:pay|pays|paying|repay|repays|settle\s+up|settle\s+(?:the|my)\s+(?:bill|debt|tab|account))\b(?!\s+(?:me|us|up|attention|heed|a\s+visit|respects?|mind|homage|no\s+mind)\b)`, 'i').test(actText);
         return { state: EVIDENCE.MISSING, act: claimsMoney(actText) ? 'claim' : will ? 'will' : 'unclear', cp: null, reason: 'no_money_argument' };
     }
     const m = findQuote(raw, money.quote, within) ;
-    const at = m.state === 'found' ? m : findQuote(raw, money.quote);
+    const at = within ? m : { state: 'missing' };
     if (at.state !== 'found') return { state: EVIDENCE.MISSING, act: claimsMoney(actText) ? 'claim' : 'unclear', cp: null, reason: at.state === 'ambiguous' ? 'money_ambiguous' : 'money_not_found' };
     const sentence = sentenceOf(raw, at.start, at.end);
     const lit = moneyLiteral(raw, money.quote, { content, currencyQuote: money.currency_quote ?? null, within: sentence });
@@ -274,6 +288,8 @@ export function payArgument(message, c, { content, present = [] } = {}) {
     const laid = new RegExp(String.raw`${LEAD}(?:put|puts|putting|place|places|placing|lay|lays|laying|set|sets|setting|push|pushes|pushing|slide|slides|sliding)\s+${DET}$`, 'i').test(before)
         && /^\s*(?:down\s+)?(?:on|onto|across|over)\s+(?:the|his|her|their)\s+(?:counter|desk|table|bar|board|ledger|tray)\b/.test(after);
     let kind = CORE.test(before) || HANDING.test(before) || laid ? 'outgoing' : 'unclear';
+    // Positive argument boundary, not a blacklist of goods/material names.
+    if (!/^\s*(?:(?:coins?|pieces?|fee|payment)\b\s*)?(?:$|[,;.!?—–*]|(?:to|for|toward|towards|on|onto|across|over|as|and|then|i|we)\b)/i.test(after)) kind = 'unclear';
     // into his own purse, or coin someone gave him: not his outgoing coin
     if (kind === 'outgoing' && (/^\s*(?:back\s+)?(?:in|into|to)\s+(?:my|myself|his own|her own)\b/.test(after) || /^\s*(?:that\s+|which\s+)?(?:he|she|they|you)\s+(?:gave|paid|handed)\s+(?:me|us)\b/.test(after))) kind = 'unclear';
     if (claimsMoney(act) && kind !== 'outgoing') kind = 'claim';
@@ -287,11 +303,11 @@ export function payArgument(message, c, { content, present = [] } = {}) {
     if (kind === 'outgoing' && others.some((n) => new RegExp(`\\b${escape(n)}\\b`).test(actLow)) && !payee.some((n) => new RegExp(`\\b${escape(n)}\\b`).test(actLow))) kind = 'other';
     if (lit.state !== EVIDENCE.VERIFIED) return { state: lit.state, act: kind, cp: null, reason: lit.reason };
     if (Number.isInteger(c?.amount_cp) && lit.cp !== c.amount_cp) return { state: EVIDENCE.CONTRADICTED, act: kind === 'outgoing' ? 'other' : kind, cp: lit.cp, reason: 'amount_differs' };
-    return { state: EVIDENCE.VERIFIED, act: kind, cp: lit.cp, reason: lit.reason };
+    return { state: EVIDENCE.VERIFIED, act: kind, cp: lit.cp, reason: lit.reason, source: { start: at.start, end: at.end } };
 }
 
 /** A player's own price words for a limit or an agreed price (§4.1): total or unit × the selected units. */
 export function playerPrice(message, evidence, { content, units = 1, goods = [] } = {}) {
     if (!evidence || typeof evidence !== 'object') return result(EVIDENCE.MISSING, { reason: 'no_price_evidence' });
-    return priceEvidence({ basis: evidence.basis, quote: evidence.quote, currency_quote: evidence.currency_quote ?? null }, { source: message, content, units, goods });
+    return priceEvidence({ basis: evidence.basis, quote: evidence.quote, currency_quote: evidence.currency_quote ?? null }, { source: message, content, units, goods, within: findQuote(message, evidence.quote) });
 }

@@ -183,7 +183,7 @@ test('a purchase agreed in advance ("if it\'s no more than 6 copper") is booked 
     assert.deepEqual(statuses(g), ['conditional']);
     const coin = g.state().entities.pc.sheet.coin_cp;
     await g.reply('"A bed? Four copper," says the clerk.', fill({ expected: { 1: { priced: true, taken_anyway: false } }, deltas: [
-        { seq: 1, type: 'offer', seller: 'npc.guild_clerk', lines: [{ what: 'bed in the Guild dormitory', kind: 'service', service: 'lodging', qty: 1, price_cp: 4 }] },
+        { seq: 1, type: 'offer', seller: 'npc.guild_clerk', lines: [{ what: 'bed in the Guild dormitory', kind: 'service', service: 'lodging', qty: 1, price_cp: 4, said: 'Four copper' }] },
     ] }));
     const s = g.state();
     assert.equal(s.entities.pc.sheet.coin_cp, coin - 4);

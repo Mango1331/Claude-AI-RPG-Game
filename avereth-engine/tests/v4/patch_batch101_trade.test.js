@@ -48,7 +48,7 @@ function destinationTrade({ price = 6, arrive = true, ambiguous = false } = {}) 
     const s = base(), at = 'loc.alderwatch.test_inn';
     s.places[at] = { id: at, name: 'Test Inn', kind: 'site', parent: 'loc.alderwatch', realm: 'realm.valedorn_crown', tags: [] };
     const t = turn(s, [{ seq: 1, type: 'go', to: at }, { seq: 2, type: 'buy', what: 'a corner room', from: ambiguous ? null : buyer, max_cp: 10 }]);
-    const offer = (seller, seq) => ({ seq, type: 'offer', seller, scene: at, lines: [{ what: 'a corner room', kind: 'service', service: 'lodging', qty: 1, price_cp: price, said: `A corner room costs ${price} copper.`, equipment: false }] });
+    const offer = (seller, seq) => ({ seq, type: 'offer', seller, scene: at, lines: [{ what: 'a corner room', kind: 'service', service: 'lodging', qty: 1, price_cp: price, said: `The innkeeper offers a corner room for ${price} copper.`, equipment: false }] });
     const deltas = arrive ? [{ seq: 1, type: 'arrive', at, with: [], forced_by: null }, { seq: 2, type: 'enter', who: buyer, scene: at }, offer(buyer, 3)] : [offer(buyer, 3)];
     if (ambiguous) deltas.push({ seq: 4, type: 'person.new', ref: 'second_clerk', name: 'Nella', role: 'innkeeper', desc: [], at, present: true, relevant: true, scene: at }, offer('second_clerk', 5));
     const r = applyWorld(t, content, { scene: at, expected: { 1: { arrived: arrive, at: arrive ? at : null, with: [] }, 2: { priced: true, taken_anyway: false } }, deltas }, { msg: 502, prose: `The innkeeper offers a corner room for ${price} copper.` });

@@ -22,7 +22,9 @@ function replay(before, result) {
 }
 
 test('batch16: original own 17-cp bid, same recorded acceptance: one payment and one transfer per lot', () => {
-    const f = original.sale;
+    const f = structuredClone(original.sale);
+    // Fresh .143 answer: complete located commercial anchor, no ellipsis recovery.
+    f.answer.deltas.find(d=>d.type==='bid').said = "Seventeen copper for everything. That's desk price, same as I'd pay the next man.";
     const r = applyWorld(f.state, content, f.answer, { prose: f.prose, msg: 78 });
     const bid = r.events.find(e => e.t === 'offer.created' && e.d.offer.bid)?.d.offer;
     assert.ok(bid, 'the buyer herself offers seventeen copper, not third-party advice');

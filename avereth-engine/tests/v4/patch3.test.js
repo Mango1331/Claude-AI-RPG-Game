@@ -71,7 +71,13 @@ test('#51 live: "I use the flint and steel to make a small light and continue" i
 
 test('#8/#9 live: the chartmaker\'s "two silver" is 20 cp although the extractor wrote 200; Alaric can pay it, and the price is the story\'s own', async () => {
     const g = live(7);
-    await g.reply(fx.messages[8].mes, recorded(8).extraction.raw);
+    const fresh = structuredClone(recorded(8).extraction.raw);
+    if (typeof fresh === 'string') throw new Error('expected parsed recorded answer');
+    for (const d of fresh.deltas.filter(d=>d.type==='offer')) {
+        d.lines[0].said = 'two silver to take it';
+        d.lines[1].said = 'twelve coppers';
+    }
+    await g.reply(fx.messages[8].mes, fresh);
     let s = g.state();
     const map = Object.values(s.offers).flatMap((x) => x.lines).find((l) => /regional map/.test(l.what));
     assert.equal(map.price_cp, 20, 'read from the reply: "two silver to take it"');

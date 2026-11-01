@@ -20,6 +20,7 @@ for (const [words, cp] of [['a copper a plate at most',1],['one silver',10],['on
 
 test('Batch2 C386: two independent bids from Corr coexist; overlapping lots replace whole old lots',()=>{
  const x=clone(f['005_119']);x.answer.deltas=x.answer.deltas.filter(d=>d.type==='bid');
+ x.answer.deltas[0].said="Six silver for the pair, and I'd not be robbing you.";
  const r=run(x), bids=Object.values(r.state.offers).filter(o=>o.status==='open'&&o.bid&&o.seller==='npc.corr');
  assert.equal(bids.length,2);assert.deepEqual(bids.map(o=>o.price_cp).sort((a,b)=>a-b),[10,60]);
  const one=bids.find(o=>o.price_cp===60), egg=bids.find(o=>o.price_cp===10);

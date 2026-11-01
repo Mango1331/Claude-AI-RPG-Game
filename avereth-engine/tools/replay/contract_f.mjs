@@ -11,8 +11,7 @@
 //     single plain reading: one money group equal to the number (total), or one group times the units (unit).
 //     Anything else stays "unknown"/null, and the engine then treats it as unproven – so the replay shows exactly
 //     where the old answers lack evidence. The recorded words of a bid or offer line are its `said`; the old contract
-//     let `said` be null, and the old engine then looked for the number in the whole reply – so a line without words
-//     of its own is read against the reply (`prose`), by the same single plain reading (one group only).
+//     let `said` be null. Build .143 leaves that missing anchor unverified; it never invents said from prose.
 //   - A gift from someone with a trade in the same record, or in the same answer, gets relation "unclear" (the old
 //     contract could not say whether it was proceeds); a recount (repeat_of) gets "recount".
 //   - Answers that already carry the new fields are left as they are. The archive and the recorded answers stay
@@ -94,7 +93,7 @@ function pricingOf(said, price, units, content, prose = null) {
     // the line's own words, unless they hold no money at all ("Eighty-five the lot"): then, as the old engine did, the reply
     const ownWords = typeof said === 'string' && said.trim() ? said : null;
     const own = ownWords && groups(ownWords, content).length ? ownWords : null;
-    const words = own ?? (typeof prose === 'string' ? prose : null);
+    const words = ownWords; // .143: historical missing anchors stay missing; never invent said from prose.
     if (!Number.isInteger(price) || !words) return { basis: 'unknown' };
     const g = groups(words, content);
     // the same sum said twice ("eighty-four copper—eight silver and four") is still one reading of it

@@ -49,7 +49,7 @@ export function toProduct(answer, expectedKeys = {}) {
 }
 // Build .142 (finance contract delta-1.13): the inn's prices of t8 as a fresh answer reports them – each line with the
 // reply's own words for its price; the gold file stays as recorded (it predates the contract)
-const FINANCE_T8 = [['Room\'s four copper', 'four copper', null], ['hot bath two more', 'two more', 'copper'], ['another copper for the wash', 'another copper', null], ["stew's two", "stew's two", null]];
+const FINANCE_T8 = [['Room\'s four copper', 'four copper', null], ["Room's four copper, hot bath two more", 'two more', 'copper'], ['another copper for the wash', 'another copper', null], ["stew's two", "stew's two", null]];
 function answerOf(turn, which = 'recovery') {
     const a = toProduct(turn[which], turn.expected_keys);
     if (turn.id === 't8') for (const d of a.deltas.filter((x) => x.type === 'offer')) d.lines = d.lines.map((l, i) => ({ ...l, said: FINANCE_T8[i][0], phase: 'firm', condition: null,

@@ -31,7 +31,7 @@ export function worldVocab(vocab, state) {
     };
 }
 
-export const EXTRACTOR_VERSION = 'extract-5.23';
+export const EXTRACTOR_VERSION = 'extract-5.24';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 
@@ -140,7 +140,7 @@ export const FORMAT_RULES = [
     'scene is the actual narrative setting at the end of this reply: a place-ref, or "here" ONLY when it is the current engine scene. It never authorizes arrival. Every delta may override scene with a place-ref or "here" (null/omitted inherits the answer scene); use this for earlier scenes in a reply with multiple arrivals. Do not label an unreached camp as here merely because the engine still lists a shop. Local changes need the actual scene; distant reports remain reports. A new scene label creates no place by itself.',
     'TRAVEL: Every actual arrival, including a road or intermediate stop, MUST have its own arrive delta in chronological order. expected.arrived:true requires that matching arrive; expected, time and scene never move Alaric. Local introductions and exchanges follow the arrival at their scene; actions before departure keep the earlier scene. Down means another Dungeon FLOOR, not a sloping passage on the same floor.',
     'SALES: Report an actual buyer price with bid (buyer, exact item ids and quantities, price, said). expected.sold is only a summary, never an independent payment. A current minimum-price instruction can accept a matching bid; a promise or appraisal is not an actual final bid.',
-    'Trade evidence: offer/bid said quotes the actual commercial clause, including who offers, unit/lot price and conditions. Third-party price advice is fact/place.reported, not an offer or bid of the speaker. Price ranges, possible future prices and unaccepted discounts are not fixed prices. For a unit rate compute the total for the declared units; for a lot keep its total. Never invent a seller commitment from a recommendation.',
+    'Trade evidence: said is required for every NEW financial claim, including each offer line and coin.gift; missing or unlocatable said leaves it unverified. pricing.quote/money.quote must occur inside its own said, never in unrelated narration. offer/bid said quotes the actual commercial clause, including who offers, unit/lot price and conditions. Third-party price advice is fact/place.reported, not an offer or bid of the speaker. Price ranges, possible future prices and unaccepted discounts are not fixed prices. For a unit rate compute the total for the declared units; for a lot keep its total. Never invent a seller commitment from a recommendation.',
     'string[] is always a JSON array, even when it contains only one value.',
     `place-ref is an exact known place id from the CATALOG, or {"new":{"name":"...","kind":"...","parent":...}}. For a new place, kind must be exactly one of: ${PLACE_KINDS.join(', ')}. Use settlement for a city, town, village or hamlet; site for a building, inn or Guild hall; interior for a room; wilderness for natural outdoor terrain.`,
     'AREA LEVELS: when an outdoor area’s danger is actually established, report area once with a fixed supported F window. Copy existing area/population levels from the catalog; never adapt to Alaric, overwrite them, or use a mere rumour. A local population’s body plan is authoritative over a free species-name guess. A newly reached local part keeps its genuine geographic parent; never infer a remote relationship merely to inherit levels.',
@@ -382,6 +382,14 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
                 if (!x || typeof x !== 'object') return;
                 const where = d.type === 'bid' ? `$.deltas[${i}]` : `$.deltas[${i}].lines[${k}]`;
                 const gear = d.type === 'offer' && (x.base != null || x.equipment === true);
+                if (!gear && (!x.said || (reply && findQuote(reply, x.said).state !== 'found')))
+                    semanticIssues.push({ index: i, seq: d.seq, why: `${where}.said: provide the exact complete commercial clause from this reply; without its own located action anchor the price stays unverified` });
+                if (reply && !gear && x.said) {
+                    const anchor = findQuote(reply, x.said);
+                    const quotes = x.pricing?.basis === 'positions' ? (x.pricing.positions || []).map(p=>p.quote) : [x.pricing?.quote];
+                    if (anchor.state === 'found' && quotes.some(q=>q && findQuote(reply,q,anchor).state === 'missing'))
+                        semanticIssues.push({ index: i, seq: d.seq, why: `${where}.pricing: every money quote must belong to this same said, not another sentence or purse` });
+                }
                 if (x.phase == null) semanticIssues.push({ index: i, seq: d.seq, why: `${where}.phase: say whether this price binds now ("firm"), waits for something ("conditional" with condition) or is "unclear"` });
                 else if (x.phase === 'firm' && x.condition) semanticIssues.push({ index: i, seq: d.seq, why: `${where}: "firm" with a condition; a price that waits for "${String(x.condition).slice(0, 40)}" is "conditional"` });
                 if (!gear && Number.isInteger(x.price_cp) && x.price_cp > 0 && (!x.pricing || x.pricing.basis === 'unknown'))
@@ -394,6 +402,9 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
             });
         }
         if (d?.type === 'coin.gift' && !privateQuestsOf(state)) {
+            const anchor = reply && d.said ? findQuote(reply,d.said) : null;
+            if (!d.said || (reply && (anchor?.state !== 'found' || (d.money?.quote && findQuote(reply,d.money.quote,anchor).state === 'missing'))))
+                semanticIssues.push({ index:i, seq:d.seq, why:`$.deltas[${i}].said: quote the complete actual handover with its own money; no amount from elsewhere in the reply` });
             if (d.phase == null || d.relation == null) semanticIssues.push({ index: i, seq: d.seq, why: `$.deltas[${i}]: say phase ("transferred" only for coin handed over now) and relation ("independent", "trade_settlement" or "recount")` });
             else if (d.phase === 'transferred' && !d.money) semanticIssues.push({ index: i, seq: d.seq, why: `$.deltas[${i}].money: quote the exact words of the coin handed over, with the full amount` });
         }

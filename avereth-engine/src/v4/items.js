@@ -138,6 +138,8 @@ export function offerCard(state, content, offer) {
             return `${k.toUpperCase()} equipped ${current[k] || 0}, ${d >= 0 ? '+' : ''}${d}`;
         }).join('; ') : '';
         const info = gearText(p) || sourceText(p) || (p?.kind === 'restore' ? `${p.amount} ${p.resource.toUpperCase()}` : 'ordinary merchandise');
+        // Build .142: a price that does not bind is shown as information, not as something to buy
+        if ((l.terms ?? 'firm') !== 'firm') return clean(`NOT BINDING — ${seller}: ${l.what} · ${Number.isInteger(l.price_cp) ? `${l.qty ?? 1} for ${l.price_cp} cp` : 'no confirmed price'} · ${l.terms === 'conditional' ? `conditional${l.condition ? `: ${l.condition}` : ''}` : 'price not confirmed'} · cannot be bought yet`);
         return clean(`SHOP — ${seller}: ${l.what} · ${l.qty ?? 1} for ${l.price_cp} cp${l.kind === 'service' ? ` · ${l.service || 'service'}` : ` · ${info}`}${compare ? ` · vs ${compare}` : ''}${p?.value_cp ? ` · value guide ~${p.value_cp} cp each (not the asking price)` : ''}`);
     });
 }

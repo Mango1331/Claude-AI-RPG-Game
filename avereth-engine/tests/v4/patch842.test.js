@@ -71,8 +71,15 @@ test('8.4.2 fee 2: a higher amount for the registration is no payment either; th
 });
 
 test('8.4.2 fee 3: the fee itself registers at once (unchanged); a tip that names its own purpose stays an ordinary payment, in the same message and after it', async () => {
+    // Build .142 (§5.2): "leave her five copper" is outside the narrow core of outgoing acts (the .141 verb catalog is
+    // gone): the fee registers, the tip is a concrete proposal to confirm – never the fee, never lost
+    const k = live(9);
+    await say(k, '*I pay the two silver and register, and leave her five copper for her trouble*', { type: 'pay', to: CLERK, amount_cp: 20, for: 'Guild registration', quote: 'I pay the two silver' }, { type: 'guild.register', quote: 'and register' }, { type: 'pay', to: CLERK, amount_cp: 5, for: 'a tip for her trouble', quote: 'leave her five copper for her trouble' });
+    assert.ok(userEvents(k).some((e) => e.t === 'guild.registered'));
+    assert.deepEqual(paid(k).map((e) => e.d.delta), [-20]);
+    assert.ok(userEvents(k).some((e) => e.t === 'decision.opened' && e.d.decision.kind === 'payment' && e.d.decision.amount_cp === 5));
     const g = live(9);
-    await say(g, '*I pay the two silver and register, and leave her five copper for her trouble*', { type: 'pay', to: CLERK, amount_cp: 20, for: 'Guild registration', quote: 'I pay the two silver' }, { type: 'guild.register', quote: 'and register' }, { type: 'pay', to: CLERK, amount_cp: 5, for: 'a tip for her trouble', quote: 'leave her five copper for her trouble' });
+    await say(g, '*I pay the two silver and register, and give her five copper for her trouble*', { type: 'pay', to: CLERK, amount_cp: 20, for: 'Guild registration', quote: 'I pay the two silver' }, { type: 'guild.register', quote: 'and register' }, { type: 'pay', to: CLERK, amount_cp: 5, for: 'a tip for her trouble', quote: 'give her five copper for her trouble' });
     assert.ok(userEvents(g).some((e) => e.t === 'guild.registered'));
     assert.deepEqual(paid(g).map((e) => [e.d.delta, e.d.why]), [[-20, 'Guild registration fee'], [-5, 'paid the guild registration clerk for a tip for her trouble']]);
     assert.equal(coin(g), 25);

@@ -23,6 +23,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../..');
 import { hasContract, contractText } from './contract_c.mjs';
+import { hasFinanceContract, financeText } from './contract_f.mjs';
 
 export const DEFAULT_CORPUS = path.join(ROOT, 'tests/replay/corpus');
 export const DEFAULT_BASELINE = path.join(ROOT, 'tests/replay/baseline.json.gz');
@@ -86,7 +87,7 @@ function scripted(answers = [], convert = null) {
             throw Object.assign(new Error(`replayed ${next.error.kind} error`), code ? { code } : {}, next.error.status ? { status: next.error.status } : {},
                 typeof next.error.retryable === 'boolean' ? { retryable: next.error.retryable } : {});
         }
-        return convert && /^extract/.test(purpose) ? convert(next.content) : next.content;
+        return convert ? convert(next.content, purpose) : next.content;
     };
     return { llm, asked, left: () => queue.length };
 }
@@ -111,7 +112,10 @@ export async function replayRun(E, run) {
         if (m.is_user) {
             if (!r.input_hash) { skip('player record without input'); continue; }
             if (m.is_system && r.command) own.is_system = false; // a command line the host hid after answering it
-            const s = scripted(run.answers[i]);
+            // Build .142: a recorded planner answer from before the finance contract gets its disclosed translation
+            // (tools/replay/contract_f.mjs); it adds evidence only where the recorded words carry the recorded number
+            const prior = hasFinanceContract(content.deltaVocab) ? host.foldChat(copy, i).state : null;
+            const s = scripted(run.answers[i], prior ? (text, purpose) => financeText(text, purpose, prior, content, { message: own.mes ?? null }) : null);
             let res;
             try {
                 res = await runtime.prepareGenerationAsync(copy, content, { type: 'normal', settings: {}, llm: s.llm });
@@ -134,8 +138,14 @@ export async function replayRun(E, run) {
             if (r.extraction?.status === 'late') { skip('extraction closed late'); continue; }
             // package C (.132): an engine of the population contract gets the recorded answer converted, the state it is
             // converted against being the one the reply is applied to (the fold before it)
-            const before = hasContract(content.deltaVocab) ? host.foldChat(copy, i).state : null;
-            const s = scripted(run.answers[i], before ? (text) => contractText(text, before, content) : null);
+            const finance = hasFinanceContract(content.deltaVocab);
+            const before = hasContract(content.deltaVocab) || finance ? host.foldChat(copy, i).state : null;
+            // Build .142: and an extractor answer from before the finance contract its translation (contract_f.mjs)
+            const s = scripted(run.answers[i], before ? (text, purpose) => {
+                let t = /^extract/.test(purpose) && hasContract(content.deltaVocab) ? contractText(text, before, content, { prose: copy[i]?.mes ?? null }) : text;
+                if (finance) t = financeText(t, purpose, before, content, { prose: copy[i]?.mes ?? null });
+                return t;
+            } : null);
             let p;
             let x = null;
             try {

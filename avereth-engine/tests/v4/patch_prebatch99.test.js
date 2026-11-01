@@ -4,8 +4,8 @@ import fs from 'node:fs';
 import { loadProductContent } from '../helpers.js';
 import { worldPanel } from '../../src/display.js';
 import { applyEvent } from '../../src/state.js';
-import { applyWorld } from '../../src/v4/world.js';
-import { resolveCommands } from '../../src/v4/commands.js';
+import { applyWorldLegacy as applyWorld } from './finance_legacy.js'; // Build .142: pre-delta-1.13 scripted answers
+import { resolveCommandsLegacy as resolveCommands } from './finance_legacy.js'; // Build .142: pre-cmd-1.8 scripted commands
 import { bookPurchase, pickLines } from '../../src/v4/trade.js';
 import { buildCatalog, extractorCatalog } from '../../src/v4/catalog.js';
 import { parseExtraction } from '../../src/v4/extract.js';
@@ -48,11 +48,13 @@ const offerState = () => {
     s.offers['offer.t112.4'].status = 'open';
     return s;
 };
+// Build .142 (§3.1, "Währungen keine freie Erbschaft"): "Supper's two more if you want it" names no coin in its own
+// sentence, so that line is not recorded and "Six coppers the lot" (room and supper) is the offer's second line now
 const accept = {
     seq: 1,
     type: 'offer.accept',
     offer: 'offer.t112.4',
-    lines: ['l3'],
+    lines: ['l2'],
     quote: 'I buy the corner room for six copper.'
 };
 const parse = (s, a) => {
@@ -111,7 +113,7 @@ test('99 the shared booker refuses stale accepted offers without any side effect
         applyEvent(s, e);
     }, {
         offer: o,
-        ...pickLines(o, ['l3']),
+        ...pickLines(o, ['l2']),
         objectId: () => 'obj.test',
         content
     });
@@ -558,7 +560,7 @@ test('99 hard malformed deltas do not throw and missing lines never partially bu
     }).valid, false);
     const r = command(offerState(), [{
         ...accept,
-        lines: ['l3', 'nonexistent']
+        lines: ['l2', 'nonexistent']
     }]);
     assert.equal(events(r, 'transaction.completed').length, 0);
 });

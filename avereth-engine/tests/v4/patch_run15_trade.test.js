@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { loadProductContent } from '../helpers.js';
 import { applyEvent } from '../../src/state.js';
-import { resolveCommands } from '../../src/v4/commands.js';
-import { applyWorld } from '../../src/v4/world.js';
+import { resolveCommandsLegacy as resolveCommands } from './finance_legacy.js'; // Build .142: pre-cmd-1.8 scripted commands
+import { applyWorldLegacy as applyWorld } from './finance_legacy.js'; // Build .142: pre-delta-1.13 scripted answers
 import { planContext, parsePlan, withContentSkills } from '../../src/v4/planner.js';
 import { buildCatalog } from '../../src/v4/catalog.js';
 import { campaign, inject, say, lastUser } from './patch8_lib.js';
@@ -151,8 +151,16 @@ test('a successful purchase survives event replay and JSON reload without anothe
     assert.deepEqual(commands(s, simple()).events, r.events, 'alternate reply recomputes from the same pre-turn state');
 });
 test('Ruleset 1 keeps its historical independent payment interpretation', () => {
+    // Build .142 (§5.1/§5.2): ruleset 1 still never routes a pay into a purchase – but a pay whose words carry no coin
+    // ("I hand over the coins for the pair") is no longer paid a second time beside the purchase (.141: 454, the pair's
+    // 80 cp twice); it is a concrete proposal he can confirm. With the coin in his words it is the independent payment.
     const s = clone(f.cases.duplicate.state); s.meta.ruleset = 1;
-    assert.equal(cp(commands(s, simple())), 454);
+    const r = commands(s, simple());
+    assert.equal(cp(r), 534);
+    assert.deepEqual(r.ctx.resolutions.map(x => [x.type, x.status]), [['offer.accept', 'resolved'], ['pay', 'pending']]);
+    assert.ok(r.events.some(e => e.t === 'decision.opened' && e.d.decision.kind === 'payment'));
+    const said = commands(s, [simple()[0], { ...pay, seq: 2, quote: 'I hand over eight silver for the pair.' }]);
+    assert.equal(cp(said), 454);
 });
 
 test('ordinary polite acceptance is not mistaken for a named counterparty', () => {
@@ -187,8 +195,13 @@ test('ordinary narrative third-person offers still work', () => {
     assert.equal(r.state.offers['offer.t52.6'].price_cp, 4);
 });
 test('a tip identified in its quote remains independent even without a for field', () => {
-    const r = commands(f.cases.duplicate.state, [simple()[0], { ...pay, seq: 2, for: null, quote: 'And eight silver as a tip for you.' }]);
+    const r = commands(f.cases.duplicate.state, [simple()[0], { ...pay, seq: 2, for: null, quote: 'And I give you eight silver as a tip.' }]);
     assert.equal(cp(r), 454); assert.equal(coins(r).length, 2);
+    // Build .142 (§5.2): the verbless "And eight silver as a tip for you." is outside the narrow core of an outgoing
+    // act – still independent (never the purchase), but a concrete proposal to confirm instead of an immediate payment
+    const e = commands(f.cases.duplicate.state, [simple()[0], { ...pay, seq: 2, for: null, quote: 'And eight silver as a tip for you.' }]);
+    assert.equal(cp(e), 534); assert.equal(coins(e).length, 1);
+    assert.equal(e.ctx.resolutions.at(-1).reason, 'payment_unconfirmed');
 });
 test('a partial lot purchase and its payment buy exactly the selected units', () => {
     const s = clone(f.cases.duplicate.state), o = s.offers[purchase.offer];
@@ -282,6 +295,10 @@ test('same payee and amount without a purpose do not authorize an extra payment'
 });
 test('an explicit tip before buying is not redirected into the open purchase', () => {
     const s = clone(f.cases.duplicate.state); s.offers[purchase.offer].lines = [s.offers[purchase.offer].lines[0]];
-    const r = commands(s, [{ ...pay, seq: 1, for: 'a tip for your help', quote: 'Eight silver as a tip for you.' }, { ...simple()[0], seq: 2 }]);
+    const r = commands(s, [{ ...pay, seq: 1, for: 'a tip for your help', quote: 'I give you eight silver as a tip.' }, { ...simple()[0], seq: 2 }]);
     assert.equal(coins(r).length, 2); assert.equal(r.events.filter(e => e.t === 'object.created').length, 1);
+    // Build .142: the verbless form is a proposal (§5.2), and still not the purchase: the pair is bought once
+    const e = commands(s, [{ ...pay, seq: 1, for: 'a tip for your help', quote: 'Eight silver as a tip for you.' }, { ...simple()[0], seq: 2 }]);
+    assert.equal(coins(e).length, 1); assert.equal(e.events.filter(x => x.t === 'object.created').length, 1);
+    assert.equal(e.ctx.resolutions[0].reason, 'payment_unconfirmed');
 });

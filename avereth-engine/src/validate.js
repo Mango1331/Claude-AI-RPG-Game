@@ -161,6 +161,14 @@ export function validateState(state, content) {
         const onBoard = new Set(Object.values(state.guild?.boards || {}).flatMap((b) => b.listings || []));
         for (const q of Object.values(state.quests)) if (q.status === 'listed' && !onBoard.has(q.id)) p.push(`listed ${q.id} is on no board`);
         for (const o of Object.values(state.offers || {})) if (!['open', 'accepted', 'declined', 'expired', 'repriced'].includes(o.status)) p.push(`offer ${o.id} status ${o.status}`);
+        // Build .142: the binding terms of a bid, or of each offer line, are one of the known values when present
+        const TERMS = ['firm', 'conditional', 'unverified'];
+        for (const o of Object.values(state.offers || {})) {
+            if (o.terms !== undefined && !TERMS.includes(o.terms)) p.push(`offer ${o.id} terms ${o.terms}`);
+            for (const l of o.lines || []) if (l.terms !== undefined && !TERMS.includes(l.terms)) p.push(`offer ${o.id} line ${l.id} terms ${l.terms}`);
+            if (o.bid && (o.terms ?? 'firm') === 'firm' && !Number.isInteger(o.price_cp)) p.push(`binding bid ${o.id} without a price`);
+        }
+        for (const d of state.decisions || []) if (d.kind === 'payment' && d.state === 'needs_confirmation' && !(Number.isInteger(d.amount_cp) && d.amount_cp > 0 && d.seller)) p.push(`payment proposal ${d.id} without payee or amount`);
         for (const place of Object.values(state.places)) if (place.encounter_levels && !validEncounterLevels(content, place.encounter_levels)) p.push(`invalid F area levels at ${place.id}`);
         for (const place of Object.values(state.places)) if (place.population) {
             const pop = place.population;

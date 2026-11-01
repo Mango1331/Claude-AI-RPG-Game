@@ -61,8 +61,10 @@ test('8.1 gate 1: at the gate the gate\'s own fee is on offer at once (before he
 test('8.1 gate 2: the watchman\'s own "entry, 10 cp" (live #18) is refused as the gate\'s; his torch is his to sell; the narrator hears the one price', async () => {
     const g = live(17);
     await say(g, fx.messages[17].mes);
-    const r = await g.reply(fx.messages[18].mes, { expected: {}, deltas: [
-        { seq: 1, type: 'offer', seller: WATCHMAN, lines: [{ what: 'entry to Glimmerdeep Grotto, marked down by the watchman', kind: 'service', service: 'other', qty: 1, price_cp: 10, said: 'Ten copper to walk in' }, { what: 'a pitch torch', kind: 'goods', service: null, qty: 1, price_cp: 2, said: 'Ten copper to walk in' }] },
+    // Build .142 (§3): the torch line's price stands only on words of its own; the recorded reply has none for it (its said
+    // copied the entry's), so the reply gets the watchman's torch sentence and the line quotes it
+    const r = await g.reply(`${fx.messages[18].mes}\n\n"A pitch torch is two copper, if you want one."`, { expected: {}, deltas: [
+        { seq: 1, type: 'offer', seller: WATCHMAN, lines: [{ what: 'entry to Glimmerdeep Grotto, marked down by the watchman', kind: 'service', service: 'other', qty: 1, price_cp: 10, said: 'Ten copper to walk in' }, { what: 'a pitch torch', kind: 'goods', service: null, qty: 1, price_cp: 2, said: 'A pitch torch is two copper' }] },
     ] });
     assert.ok(r.record.rejected.some((x) => x.rule === 'gate_fee'));
     const s = g.state();

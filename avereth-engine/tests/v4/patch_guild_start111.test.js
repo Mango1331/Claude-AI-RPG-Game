@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {loadProductContent} from '../helpers.js';
 import {emptyState,applyEvent} from '../../src/state.js';
-import {resolveCommands} from '../../src/v4/commands.js';
-import {applyWorld} from '../../src/v4/world.js';
+import { resolveCommandsLegacy as resolveCommands } from './finance_legacy.js'; // Build .142: pre-cmd-1.8 scripted commands
+import { applyWorldLegacy as applyWorld } from './finance_legacy.js'; // Build .142: pre-delta-1.13 scripted answers
 import {parsePlan,planContext,withContentSkills} from '../../src/v4/planner.js';
 import {buildCatalog} from '../../src/v4/catalog.js';
 import {buildContext} from '../../src/context.js';

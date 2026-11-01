@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {loadProductContent} from '../helpers.js';
 import {emptyState,applyEvent} from '../../src/state.js';
 import {startCampaign} from '../../src/engine.js';
-import {applyWorld} from '../../src/v4/world.js';
+import { applyWorldLegacy as applyWorld } from './finance_legacy.js'; // Build .142: pre-delta-1.13 scripted answers
 import {pickLines,bookPurchase} from '../../src/v4/trade.js';
 const c=await loadProductContent();
 function shop(){const s=emptyState();startCampaign(c,{runtime:'v4',ruleset:2,seed:11}).forEach(e=>applyEvent(s,e));s.scene.at='loc.shop';s.places['loc.shop']={id:'loc.shop',name:'Alda workshop',kind:'interior'};s.entities['npc.alda']={id:'npc.alda',kind:'npc',name:'Alda',at:'loc.shop',status:'alive',descriptors:['smith']};s.scene.present=['npc.alda'];s.entities.pc.sheet.coin_cp=2000;s.last.outcome={c:true};return s;}

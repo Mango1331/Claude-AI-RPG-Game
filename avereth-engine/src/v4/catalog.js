@@ -191,6 +191,8 @@ export function openDecisionTexts(state) {
         if (d.kind === 'registration') return `registration: the Guild's fee ${d.price_cp} cp is due (${d.offer}); he has not paid yet`;
         if (d.kind === 'purchase') return `purchase: ${d.qty > 1 ? `${d.qty} × ` : ''}${d.what}${d.max_cp !== null && d.max_cp !== undefined ? ` (at most ${d.max_cp} cp)` : d.any_price ? ' (any price)' : ''}; ${d.priced ? 'priced, not agreed' : 'no price known yet'}`;
         if (d.kind === 'sale') return `sale: ${d.qty > 1 ? `${d.qty} × ` : ''}${d.what}${d.min_cp ? ` (at least ${d.min_cp} cp)` : ''}; no price agreed yet`;
+        // Build .142 (§5.3): a payment proposal carries its id; he pays only by confirming exactly it (pay.confirmation)
+        if (d.kind === 'payment' && d.state === 'needs_confirmation') return `PAYMENT PROPOSAL ${d.id}: pay ${d.seller} ${d.amount_cp} cp for ${d.what}; NOT paid – only his explicit confirmation of exactly this pays it (pay with confirmation "${d.id}")`;
         if (d.kind === 'payment') return `payment: ${d.what}; the amount is not known yet`;
         return `${d.kind}: ${d.what}`;
     });
@@ -296,7 +298,9 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         .map((o) => (o.bid
             // 4.3.0-c.6.6.5: a buyer's bid for his things (he would be paid), by the ids of his things
             ? { id: o.id, seller: personLabel(state, content, o.seller), bid: true, price_cp: o.price_cp, lines: o.lines.map((l) => ({ id: l.id, what: l.what, object: l.object, qty: l.qty, ...(Number.isInteger(l.price_cp) ? { price_cp: l.price_cp } : {}) })) }
-            : { id: o.id, seller: o.gate ? 'the gate' : o.canon ? 'Guild' : personLabel(state, content, o.seller), lines: o.lines.map((l) => ({ id: l.id, what: l.what, price_cp: l.price_cp, ...(gearText(l.profile) ? { equipment: gearText(l.profile) } : {}), ...(sourceText(l.profile) ? { source: sourceText(l.profile) } : {}), ...(l.qty > 1 ? { qty: l.qty } : {}) })) }));
+            : { id: o.id, seller: o.gate ? 'the gate' : o.canon ? 'Guild' : personLabel(state, content, o.seller), lines: o.lines.map((l) => ({ id: l.id, what: l.what, price_cp: l.price_cp, ...(gearText(l.profile) ? { equipment: gearText(l.profile) } : {}), ...(sourceText(l.profile) ? { source: sourceText(l.profile) } : {}), ...(l.qty > 1 ? { qty: l.qty } : {}),
+                // Build .142: a line whose price does not bind is shown as such and cannot be accepted
+                ...((l.terms ?? 'firm') !== 'firm' ? { terms: l.terms, ...(l.condition ? { condition: l.condition } : {}), binding: false } : {}) })) }));
     const objects = [
         ...heldBy(state, 'pc').map((o) => objectEntry(state, content, o)),
         ...sheetObjects(state, content),

@@ -5,6 +5,7 @@ import { samePlace } from '../../src/v4/place_refs.js';
 import { ensureCampaign, foldChat, rec } from '../../src/host.js';
 import { prepareGenerationAsync, processReplyAny, runExtraction } from '../../src/v4/runtime.js';
 import { hasContract, contractValue } from '../../tools/replay/contract_c.mjs';
+import { hasFinanceContract, financeAnswer, financePlan } from '../../tools/replay/contract_f.mjs';
 
 export const GREETING = 'SYSTEM INITIALIZATION COMPLETE\n`Location: Public roadside verge outside Redmarch, Veyrhold`';
 
@@ -46,7 +47,7 @@ export class Chat4 {
         this.ids = new Map(); // a fixture's listing id -> the id the engine booked
         this.llm = async ({ messages, purpose }) => {
             this.calls.push({ purpose, messages });
-            if (purpose.startsWith('interpret')) return JSON.stringify({ commands: this.map(this.commands) });
+            if (purpose.startsWith('interpret')) return JSON.stringify(this.contract !== false && hasFinanceContract(this.content.deltaVocab) ? financePlan({ commands: this.map(this.commands) }, this.content) : { commands: this.map(this.commands) });
             if (purpose.startsWith('extract')) {
                 // Historical scripted fixtures omit the new context; migrate their wire answer only.
                 let answer = this.answer;
@@ -67,10 +68,14 @@ export class Chat4 {
      * archived events are never rewritten. Tests of malformed current responses call runtime directly. */
     wireAnswer(answer) {
         const s = this.state();
-        if ((s.meta.ruleset || 1) < 2 || !(s.last?.outcome?.c || s.last?.outcome?.auth?.c)) return answer;
+        // Build .142: the finance translation applies to every scripted answer the current contract reads (below)
+        const finance = (a) => (this.contract !== false && hasFinanceContract(this.content.deltaVocab) ? financeAnswer(a, s, this.content, { prose: this.prose ?? null }) : a);
+        if ((s.meta.ruleset || 1) < 2 || !(s.last?.outcome?.c || s.last?.outcome?.auth?.c)) return finance(answer);
         // Package C (.132): scripted answers written before the population contract get the documented conversion of
         // tools/replay/contract_c.mjs (what .126 read into them); fields a test states stay; contract: false sends as is
-        const contract = (a) => (this.contract !== false && hasContract(this.content.deltaVocab) ? contractValue(a, s, this.content) : a);
+        // Build .142: and a scripted answer from before the finance contract its disclosed translation
+        // (tools/replay/contract_f.mjs: old phase/relation meaning, evidence only where its words carry its number)
+        const contract = (a) => finance(this.contract !== false && hasContract(this.content.deltaVocab) ? contractValue(a, s, this.content, { prose: this.prose ?? null }) : a);
         const a = structuredClone(answer);
         const ds = a.deltas || [];
         if (ds.some(d => d.type === 'arrive')) return contract(a);
@@ -127,6 +132,7 @@ export class Chat4 {
     /** The narrator's reply (prose); the extractor answers `answer`. Guild boards are generated only by an explicit board.read player turn. */
     async reply(prose, answer = { expected: {}, deltas: [] }) {
         this.chat.push({ mes: prose, is_user: false, is_system: false, extra: {} });
+        this.prose = prose;
         const id = this.chat.length - 1;
         const p = processReplyAny(this.chat, id, this.content, {});
         this.answer = answer;

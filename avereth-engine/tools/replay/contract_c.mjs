@@ -17,13 +17,23 @@ import { placeKey, scopedPlaces } from '../../src/v4/place_refs.js';
 import { populationAt, namesYoung } from '../../src/v4/domain.js';
 import { trueDungeonOf } from '../../src/v4/dungeon.js';
 
+// Build .142: the one conversion of a recorded answer to the current protocol also translates the finance fields of
+// answers written before delta-1.13 (tools/replay/contract_f.mjs: the old contract's meaning, evidence only where the
+// recorded words carry the recorded number). It is no evidence for fresh answers.
+import { hasFinanceContract, financeAnswer } from './contract_f.mjs';
+
+// package D's gear contract holds from delta-1.12 on (Build .142: also in delta-1.13)
+const gearVocab = (vocab) => /^delta-1\.(?:1[2-9]|[2-9]\d)$/.test(vocab?.version || '');
+
 /** Does this vocabulary hold the contract (the engine under test is from .132 on)? */
 export const hasContract = (vocab) => !!vocab?.deltas?.find((d) => d.type === 'creature.new')?.fields?.population;
 
 /** The answer object with population and life_stage on every creature.new; null in, null out. */
-export function contractValue(value, state, content) {
+export function contractValue(value, state, content, { prose = null } = {}) {
     if (!value || !Array.isArray(value.deltas)) return value;
-    const v = content.deltaVocab?.version === 'delta-1.12' ? gearContract(value, content) : structuredClone(value);
+    // Build .142: and the finance translation, with the reply it reports when known (contract_f.mjs)
+    if (hasFinanceContract(content.deltaVocab)) value = financeAnswer(value, state, content, { prose });
+    const v = gearVocab(content.deltaVocab) ? gearContract(value, content) : structuredClone(value);
     // places are read as the engine reads them: a new local place inside a player-authorized hunting site is the
     // site's (scopedPlaces, applied by the parser and World before anything else)
     const scoped = scopedPlaces(structuredClone(v), state).deltas;
@@ -46,9 +56,10 @@ export function contractValue(value, state, content) {
 }
 
 /** The same for an answer as recorded text; text that holds no JSON object stays as it is. */
-export function contractText(text, state, content) {
+export function contractText(text, state, content, { prose = null } = {}) {
     if (typeof text !== 'string') return text;
     const { value } = extractJsonObject(text);
-    if (!value || typeof value !== 'object' || !Array.isArray(value.deltas) || !value.deltas.some((d) => d?.type === 'creature.new' || (content.deltaVocab?.version === 'delta-1.12' && d?.type === 'offer'))) return text;
-    return JSON.stringify(contractValue(value, state, content));
+    if (!value || typeof value !== 'object' || !Array.isArray(value.deltas) || !value.deltas.some((d) => d?.type === 'creature.new' || (gearVocab(content.deltaVocab) && d?.type === 'offer')
+        || (hasFinanceContract(content.deltaVocab) && ['bid', 'offer', 'coin.gift'].includes(d?.type)))) return text;
+    return JSON.stringify(contractValue(value, state, content, { prose }));
 }

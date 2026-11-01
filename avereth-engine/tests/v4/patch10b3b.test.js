@@ -5,8 +5,8 @@ import { loadProductContent } from '../helpers.js';
 import { campaign, inject, say } from './patch8_lib.js';
 import { transferCargo, deliveryStatus, additionalContainerReturn } from '../../src/v4/delivery.js';
 import { applyEvent } from '../../src/state.js';
-import { applyWorld } from '../../src/v4/world.js';
-import { resolveCommands } from '../../src/v4/commands.js';
+import { applyWorldLegacy as applyWorld } from './finance_legacy.js'; // Build .142: pre-delta-1.13 scripted answers
+import { resolveCommandsLegacy as resolveCommands } from './finance_legacy.js'; // Build .142: pre-cmd-1.8 scripted commands
 import { boardFor } from '../../src/v4/runtime.js';
 import { buildContext } from '../../src/context.js';
 const content = await loadProductContent();

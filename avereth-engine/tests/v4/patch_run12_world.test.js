@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { loadProductContent } from '../helpers.js';
 import { applyEvent } from '../../src/state.js';
-import { applyWorld } from '../../src/v4/world.js';
+import { applyWorldLegacy as applyWorld } from './finance_legacy.js'; // Build .142: pre-delta-1.13 scripted answers
 import { parseExtraction } from '../../src/v4/extract.js';
 import { reportedTarget } from '../../src/v4/known.js';
-import { resolveCommands } from '../../src/v4/commands.js';
+import { resolveCommandsLegacy as resolveCommands } from './finance_legacy.js'; // Build .142: pre-cmd-1.8 scripted commands
 const content = await loadProductContent();
 const earlier = JSON.parse(fs.readFileSync(new URL('./fixtures/run12_e146.json', import.meta.url)));
 const tail = JSON.parse(fs.readFileSync(new URL('./fixtures/run12_world_tail.json', import.meta.url)));
@@ -269,9 +269,10 @@ for(const sourceSeq of [1,2]) test(`final evidence: hand-over before its purchas
   {seq:1,type:'object.new',name:'brass compass',kind:'item',qty:1,holder:'npc.marta'},
   {seq:2,type:'object.move',object:{new:'brass compass'},to:'pc'},
   dependent(3,String(sourceSeq)),
-  {seq:4,type:'offer',seller:'npc.marta',lines:[{what:'brass compass',kind:'goods',qty:1,price_cp:3}]},
+  {seq:4,type:'offer',seller:'npc.marta',lines:[{what:'brass compass',kind:'goods',qty:1,price_cp:3,said:'three copper'}]},
   dependent(5,'4','quest.last')
- ]},{msg:202});
+ // Build .142 (§3): the offer's price stands only as the reply's words carry it; this reply once named none
+ ]},{msg:202,prose:'Marta hands him the brass compass. "Three copper," she says.'});
  assert.ok(r.rejected.some(x=>x.seq===sourceSeq&&x.rule==='engine_booked'));
  assert.equal(r.state.quests['quest.dependent'].ready,false);
  assert.equal(r.state.quests['quest.last'].ready,true,'the genuine offer itself remains accepted');

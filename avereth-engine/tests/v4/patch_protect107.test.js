@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { loadProductContent } from '../helpers.js';
-import { applyWorld } from '../../src/v4/world.js';
+import { applyWorldLegacy as applyWorld } from './finance_legacy.js'; // Build .142: pre-delta-1.13 scripted answers
 import { amountErrors } from '../../src/v4/interpret.js';
 import { prepareGenerationAsync } from '../../src/v4/runtime.js';
 import { rec } from '../../src/host.js';
@@ -185,31 +185,41 @@ test('protect107: a persistence block stays with its chat (A fails -> B unaffect
 
 // ------------------------------------------------------------------------------------------------ 5. prices
 const cur = content.rules.currency;
-const held = { objects: [{ id: 'obj.pelts', qty: 4 }, { id: 'obj.fangs', qty: 9 }, { id: 'obj.sword', qty: 1 }] };
+// Build .142 (§3.3, §4.1): the price check reads the role the planner assigns to his words (price_evidence: total or
+// unit, quoting exactly the money) instead of guessing a rate from the whole quote; without it the number is simply
+// unproven (no consent in advance), so each control states the evidence a fresh answer gives.
+const held = { objects: [{ id: 'obj.pelts', name: 'wolf pelt', qty: 4 }, { id: 'obj.fangs', name: 'wolf fang', qty: 9 }, { id: 'obj.sword', name: 'old sword', qty: 1 }] };
 const price = (type, c) => amountErrors([{ seq: 1, type, ...c }], cur, held);
+const ev = (basis, quote) => ({ price_evidence: { basis, quote, currency_quote: null } });
 
 test('protect107: the three confirmed price misreadings', () => {
-    assert.deepEqual(price('sell', { object: 'obj.sword', min_cp: 50, quote: 'five silver and not a copper less' }), []);
-    assert.deepEqual(price('buy', { qty: 1, max_cp: 15, quote: 'a room at one silver five a night' }), []);
-    assert.deepEqual(price('sell', { object: 'obj.pelts', min_cp: 20, quote: 'the pelts for two silver a fair deal' }), []);
+    assert.deepEqual(price('sell', { object: 'obj.sword', min_cp: 50, quote: 'five silver and not a copper less', ...ev('total', 'five silver') }), []);
+    assert.deepEqual(price('buy', { qty: 1, max_cp: 15, quote: 'a room at one silver five a night', ...ev('total', 'one silver five') }), []);
+    assert.deepEqual(price('sell', { object: 'obj.pelts', min_cp: 20, quote: 'the pelts for two silver a fair deal', ...ev('total', 'two silver') }), [], '"a fair deal" is no rate');
 });
 
 test('protect107: price controls keep their meaning', () => {
-    assert.deepEqual(price('sell', { object: 'obj.pelts', min_cp: 8, quote: 'two copper a pelt' }), []);
-    assert.equal(price('sell', { object: 'obj.pelts', min_cp: 2, quote: 'two copper a pelt' }).length, 1);
-    assert.deepEqual(price('sell', { object: 'obj.fangs', min_cp: 9, quote: 'a copper apiece for the fangs' }), []);
-    assert.match(price('sell', { object: 'obj.fangs', min_cp: 9, quote: 'two copper a pelt and a copper apiece for the fangs' })[0], /ambiguous/);
-    assert.deepEqual(price('buy', { max_cp: 2, quote: 'a healing potion at two copper each' }), [], 'one unit stays a normal purchase');
-    assert.equal(price('sell', { object: 'obj.sword', min_cp: 40, quote: 'five silver and not a copper less' }).length, 1, 'the amount itself is still checked');
+    assert.deepEqual(price('sell', { object: 'obj.pelts', min_cp: 8, quote: 'two copper a pelt', ...ev('unit', 'two copper') }), []);
+    assert.equal(price('sell', { object: 'obj.pelts', min_cp: 2, quote: 'two copper a pelt', ...ev('unit', 'two copper') }).length, 1);
+    // the unit price called the total of four pelts: the rate right after it says otherwise (gate 2)
+    assert.match(price('sell', { object: 'obj.pelts', min_cp: 2, quote: 'two copper a pelt', ...ev('total', 'two copper') })[0], /rate \("a pelt"\)/);
+    assert.deepEqual(price('sell', { object: 'obj.fangs', min_cp: 9, quote: 'a copper apiece for the fangs', ...ev('unit', 'a copper') }), []);
+    // two prices in his words: the one the planner assigns to the fangs decides, and is checked
+    assert.deepEqual(price('sell', { object: 'obj.fangs', min_cp: 9, quote: 'two copper a pelt and a copper apiece for the fangs', ...ev('unit', 'a copper') }), []);
+    assert.equal(price('sell', { object: 'obj.fangs', min_cp: 9, quote: 'two copper a pelt and a copper apiece for the fangs', ...ev('unit', 'two copper') }).length, 1);
+    assert.deepEqual(price('buy', { max_cp: 2, quote: 'a healing potion at two copper each', ...ev('total', 'two copper') }), [], 'one unit stays a normal purchase');
+    assert.equal(price('sell', { object: 'obj.sword', min_cp: 40, quote: 'five silver and not a copper less', ...ev('total', 'five silver') }).length, 1, 'the amount itself is still checked');
+    assert.deepEqual(price('sell', { object: 'obj.sword', min_cp: 40, quote: 'five silver and not a copper less', price_evidence: null }), [], 'no evidence: nothing to check, the number is unproven');
 });
 
 test('protect107: a unit-rate mismatch without qty asks for the total and the quantity, never asserts one unit', () => {
-    const [e] = price('buy', { max_cp: 6, quote: 'three torches at two copper each' });
+    const [e] = price('buy', { max_cp: 6, quote: 'three torches at two copper each', ...ev('unit', 'two copper') });
     assert.ok(e, 'the mismatch is still reported to the one repair');
     assert.doesNotMatch(e, /for qty 1\b/);
     assert.match(e, /TOTAL/);
     assert.match(e, /set qty/);
-    assert.deepEqual(price('buy', { qty: 3, max_cp: 6, quote: 'three torches at two copper each' }), []);
+    assert.deepEqual(price('buy', { qty: 3, max_cp: 6, quote: 'three torches at two copper each', ...ev('unit', 'two copper') }), []);
+    assert.match(price('buy', { qty: 3, max_cp: 2, quote: 'three torches at two copper each', ...ev('total', 'two copper') })[0], /rate \("each"\)/);
 });
 
 // ------------------------------------------------------------------------------------------------ 6. NOT EXECUTED

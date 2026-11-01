@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { loadProductContent } from '../helpers.js';
 import { fold, applyEvent } from '../../src/state.js';
-import { applyWorld } from '../../src/v4/world.js';
-import { resolveCommands } from '../../src/v4/commands.js';
+import { applyWorldLegacy as applyWorld } from './finance_legacy.js'; // Build .142: pre-delta-1.13 scripted answers
+import { resolveCommandsLegacy as resolveCommands } from './finance_legacy.js'; // Build .142: pre-cmd-1.8 scripted commands
 import { extractorCatalog, guardContext } from '../../src/v4/catalog.js';
 import { guardCommands } from '../../src/v4/agency.js';
 import { hallOf, hallOfSettlement } from '../../src/v4/domain.js';
@@ -27,22 +27,42 @@ function original(name, mutate = () => {}) {
     const p = plan(s, c.commands, c.input); mutate(s, a);
     return { ...applyWorld(s, content, a, { prose: c.prose, msg: c.msg }), planned: s, p };
 }
-function gift(s, { cp = 5, said = 'Hemm handed him five copper as a gift.', why = 'a separate gift', repeat_of = null, from = 'npc.salter_hemm' } = {}) {
+// Build .142 (finance consolidation §4.3/§7): these gifts are written as a fresh answer in the finance contract
+// (delta-1.13) would carry them – phase, relation and the money words given explicitly – because what they test (a
+// separate gift beside a trade pays, a recount never does) is exactly what the old contract could not say; the old
+// answer's translation (finance_legacy.js) leaves a same-turn trade partner's gift "unclear", and an unclear gift pays
+// nothing (I1). The recorded original answers below keep that translation.
+function gift(s, { cp = 5, said = 'Hemm handed him five copper as a gift.', money = 'five copper', why = 'a separate gift', repeat_of = null, from = 'npc.salter_hemm', relation = repeat_of != null ? 'recount' : 'independent', phase = 'transferred' } = {}) {
     plan(s, []);
-    return applyWorld(s, content, { scene: 'here', expected: {}, deltas: [{ seq: 1, type: 'coin.gift', from, cp, said, why, repeat_of }] }, { prose: said, msg: 106 });
+    return applyWorld(s, content, { scene: 'here', expected: {}, deltas: [{ seq: 1, type: 'coin.gift', from, cp, said, why, repeat_of, phase, relation, money: { quote: money, currency_quote: null } }] }, { prose: said, msg: 106 });
 }
 test('119 original Mage T51 sale is credited once; T52 pocketing the same proceeds never pays another 100', () => {
     const r = original('recount');
     assert.equal(r.planned.entities.pc.sheet.coin_cp, 432);
     assert.equal(r.state.entities.pc.sheet.coin_cp, 432);
-    assert.ok(r.rejected.some(x => x.type === 'coin.gift' && ['engine_booked', 'coin_evidence'].includes(x.rule)));
+    // Build .142: the recorded answer cannot say what the coin is for (translated relation "unclear") – no payment
+    assert.ok(r.rejected.some(x => x.type === 'coin.gift' && ['engine_booked', 'coin_evidence', 'coin_relation'].includes(x.rule)));
+    // … and every reading a fresh answer could give of the same words pays nothing either
+    for (const relation of ['trade_settlement', 'recount', 'independent', 'unclear']) {
+        const again = original('recount', (s, a) => Object.assign(a.deltas.find(d => d.type === 'coin.gift'), { phase: 'transferred', relation, money: { quote: 'a gold and a handful of silver', currency_quote: null } }));
+        assert.equal(again.state.entities.pc.sheet.coin_cp, 432, relation);
+        assert.ok(again.rejected.some(x => x.type === 'coin.gift'), relation);
+    }
 });
 test('119 a fully quantified later recount is blocked by its recorded sale, independently of amount validation', () => {
-    const s = structuredClone(states.recount), r = gift(s, { cp: 163,
+    // Build .142: reported as the sale's proceeds (trade_settlement) or – contradicting its own why – as independent
+    for (const relation of ['trade_settlement', 'independent']) {
+        const s = structuredClone(states.recount), r = gift(s, { cp: 163, relation, money: 'a gold and six silver and three copper',
+            said: 'Hemm handed him a gold and six silver and three copper for the plates and glands.',
+            why: 'payment for the bog strider plates and venom glands' });
+        assert.equal(r.state.entities.pc.sheet.coin_cp, 432, relation);
+        assert.ok(r.rejected.some(x => x.rule === 'engine_booked'), relation);
+    }
+    const s = structuredClone(states.recount), r = gift(s, { cp: 163, relation: 'recount', repeat_of: s.credits.find(x => x.cp === 163).id, money: 'a gold and six silver and three copper',
         said: 'Hemm handed him a gold and six silver and three copper for the plates and glands.',
         why: 'payment for the bog strider plates and venom glands' });
     assert.equal(r.state.entities.pc.sheet.coin_cp, 432);
-    assert.ok(r.rejected.some(x => x.rule === 'engine_booked'));
+    assert.ok(r.rejected.some(x => x.rule === 'coin_already_received'));
 });
 test('119 original sale event retains counterparty, goods and offer on replay and reaches extractor context', () => {
     const s = states.recount, credit = s.credits.find(x => x.cp === 163);
@@ -53,9 +73,9 @@ test('119 original sale event retains counterparty, goods and offer on replay an
 });
 test('119 independent later gifts from the same merchant, even the same amount, remain valid', () => {
     const s = structuredClone(states.recount), before = s.entities.pc.sheet.coin_cp;
-    const first = gift(s, { cp: 163, said: 'Hemm handed him a gold and six silver and three copper as a separate gift.', why: 'thanks for helping his family' });
+    const first = gift(s, { cp: 163, money: 'a gold and six silver and three copper', said: 'Hemm handed him a gold and six silver and three copper as a separate gift.', why: 'thanks for helping his family' });
     assert.equal(first.state.entities.pc.sheet.coin_cp, before + 163);
-    const later = gift(first.state, { cp: 163, said: 'Hemm gave him a new gift of a gold and six silver and three copper.', why: 'a new gift' });
+    const later = gift(first.state, { cp: 163, money: 'a gold and six silver and three copper', said: 'Hemm gave him a new gift of a gold and six silver and three copper.', why: 'a new gift' });
     assert.equal(later.state.entities.pc.sheet.coin_cp, before + 326);
 });
 test('119 an explicitly additional bonus for sold goods remains distinct from their paid price', () => {
@@ -66,7 +86,7 @@ test('119 an explicitly additional bonus for sold goods remains distinct from th
 test('119 another present NPC may give the same amount after a sale; explicit sale repeat_of never pays', () => {
     const s = structuredClone(states.recount), id = 'npc.other_donor';
     s.entities[id] = { ...structuredClone(s.entities['npc.salter_hemm']), id, name: 'Iris' }; s.scene.present.push(id);
-    const r = gift(s, { from: id, cp: 163, said: 'Iris gave him a gold and six silver and three copper.', why: 'payment for her errands' });
+    const r = gift(s, { from: id, cp: 163, money: 'a gold and six silver and three copper', said: 'Iris gave him a gold and six silver and three copper.', why: 'payment for her errands' });
     assert.equal(r.state.entities.pc.sheet.coin_cp, 595);
     const repeat = gift(structuredClone(states.recount), { repeat_of: 'offer.t98.6' });
     assert.equal(repeat.state.entities.pc.sheet.coin_cp, 432);
@@ -88,11 +108,11 @@ test('119 Warrior T18 partial eight-copper-and-the-silver quote never silently p
 });
 test('119 full mixed-currency evidence, including a single silver, deterministically pays eighteen', () => {
     assert.equal(coinFromWords('eight copper and a single silver piece', content), 18);
-    const s = structuredClone(states.partial), r = gift(s, { from: 'npc.marda', cp: 18, said: 'Marda handed him eight copper and a single silver piece.', why: 'thanks for his help' });
+    const s = structuredClone(states.partial), r = gift(s, { from: 'npc.marda', cp: 18, money: 'eight copper and a single silver piece', said: 'Marda handed him eight copper and a single silver piece.', why: 'thanks for his help' });
     assert.equal(r.state.entities.pc.sheet.coin_cp, s.entities.pc.sheet.coin_cp + 18);
 });
 test('119 a gold and an unspecified handful of silver cannot be truncated to one gold', () => {
-    const s = structuredClone(states.recount), r = gift(s, { cp: 163, said: 'Hemm handed him a gold and a handful of silver.', why: 'a gift' });
+    const s = structuredClone(states.recount), r = gift(s, { cp: 163, money: 'a gold and a handful of silver', said: 'Hemm handed him a gold and a handful of silver.', why: 'a gift' });
     assert.equal(r.state.entities.pc.sheet.coin_cp, s.entities.pc.sheet.coin_cp);
     assert.ok(r.rejected.some(x => x.rule === 'coin_evidence'));
 });

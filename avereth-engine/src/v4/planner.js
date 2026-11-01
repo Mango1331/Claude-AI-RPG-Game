@@ -29,7 +29,7 @@ import { settlementOf, placeName, lineage } from './domain.js';
 import { dungeonOf, roomKnown } from './dungeon.js';
 import { extractJsonObject } from './json.js';
 import { validate } from './schema.js';
-import { interpreterSystem, vocabularyText, catalogText, interpreterSchema, PLAIN_FORMAT, repairMessage, amountErrors } from './interpret.js';
+import { interpreterSystem, vocabularyText, catalogText, interpreterSchema, PLAIN_FORMAT, repairMessage, amountErrors, softMoney, financeHints } from './interpret.js';
 import { anchorQuote } from './agency.js';
 import { openGoals, goalText } from './growth.js';
 import { composerFunctions } from '../skill_composer.js';
@@ -506,6 +506,7 @@ export function parsePlan(answer, vocab, ctx, message) {
         if (story.has(type)) {
             // a story command: the interpreter's own schema, missing nullable arguments as null (as parseInterpretation)
             for (const [k, spec] of Object.entries(story.get(type).args || {})) if (spec.nullable && c[k] === undefined) c[k] = null;
+            softMoney(c);
             if (c.seq === undefined) c.seq = i + 1;
             // "needs" (ORDER_RULES) is the planner's own field, checked here: an earlier step of this answer, or nothing
             const needs = c.needs ?? null;
@@ -586,10 +587,10 @@ export function parsePlan(answer, vocab, ctx, message) {
             if (!Array.isArray(c.options) || c.options.some((o) => typeof o !== 'string')) errors.push(`${at}: options must be a list of ids or short texts`);
         }
     }
-    errors.push(...amountErrors(value.commands, ctx.currency, ctx.catalog));
+    errors.push(...amountErrors(value.commands, ctx.currency, ctx.catalog, message));
     for (const [c, job] of jobs) c.job = job;
     if (errors.length) return { commands: null, errors: errors.slice(0, 8), tradeConflict: tradeErrors.length === errors.length && !ctx.fight, tradeNote };
-    return { commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [] };
+    return { commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [], hints: financeHints(value.commands, ctx.currency, message) };
 }
 
 // --------------------------------------------------------------------------------------------- safety catch

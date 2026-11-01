@@ -199,9 +199,10 @@ test('c.6.6.4 give: "here to deliver this crate" says why he came, no hand-over;
 test('c.6.6.4 lodging: going up to the room he just paid for is part of the booking; another room without a go is not', async () => {
     const g = live();
     await say(g, '*i go find the nearest inn*', { type: 'go', to: { new: 'the nearest inn' }, quote: 'i go find the nearest inn' });
-    await g.reply('The Tavern by the Gate has rooms; the keeper names prices.', { expected: { 1: { arrived: true, at: { new: { name: 'Tavern by the Gate', kind: 'site', parent: 'loc.ashbridge' } }, with: null } }, deltas: [
+    // Build .142 (§3): the keeper's reply now says the price it reports (it once named "prices" and no amount)
+    await g.reply('The Tavern by the Gate has rooms. "A proper room is one silver five," the keeper says.', { expected: { 1: { arrived: true, at: { new: { name: 'Tavern by the Gate', kind: 'site', parent: 'loc.ashbridge' } }, with: null } }, deltas: [
         { seq: 1, type: 'person.new', ref: 'keeper', name: null, role: 'tavern keeper', desc: ['broad tavern keeper'], present: true, relevant: true, threat: false, at: null, band: 'SHORT' },
-        { seq: 2, type: 'offer', seller: 'keeper', lines: [{ what: 'a proper room for the night', kind: 'service', service: 'lodging', qty: 1, price_cp: 15 }] }] });
+        { seq: 2, type: 'offer', seller: 'keeper', lines: [{ what: 'a proper room for the night', kind: 'service', service: 'lodging', qty: 1, price_cp: 15, said: 'one silver five' }] }] });
     const s0 = g.state();
     const tavern = s0.scene.at;
     const offer = Object.values(s0.offers).find((o) => o.status === 'open' && o.at === tavern && o.lines.some((l) => l.service === 'lodging'));

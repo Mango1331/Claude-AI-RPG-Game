@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {loadProductContent} from '../helpers.js';
 import {emptyState,applyEvent} from '../../src/state.js';
 import {startCampaign} from '../../src/engine.js';
-import {resolveCommands} from '../../src/v4/commands.js';
+import { resolveCommandsLegacy as resolveCommands } from './finance_legacy.js'; // Build .142: pre-cmd-1.8 scripted commands
 import {acceptanceWhy} from '../../src/v4/trade.js';
 const c=await loadProductContent();
 const offer={id:'offer.test',seller:'npc.smith',at:'loc.shop',status:'open',canon:false,lines:[{id:'sword',what:'fine F-Rank sword',kind:'goods',qty:1,price_cp:140},{id:'armor',what:'fine F-Rank plate armor',kind:'goods',qty:1,price_cp:72}]};

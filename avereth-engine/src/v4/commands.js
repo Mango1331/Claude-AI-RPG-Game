@@ -15,6 +15,7 @@ import { privateQuestsOf, questVisible } from '../content.js';
 // reply (conditionals) go into the turn's outcome; the world applier (src/v4/world.js) reads them from there.
 import { transferCargo, bookDelivery, cargoProvenance } from './delivery.js';
 import { formatCoin, numbersIn } from '../economy.js';
+import { payArgument, playerPrice } from './finance_evidence.js';
 import { spendsStatPoints, assignHint } from '../commands.js';
 import { resolveCheck } from '../checks.js';
 import { entityLabel, setFactEvents, truth } from '../knowledge.js';
@@ -37,7 +38,7 @@ import { jobAction, jobOf } from './private_jobs.js';
 import { acceptPassive, declinePassive } from './passive_growth.js';
 import { acceptSkill, declineSkill, developmentOffers, skillOffers } from './skill_growth.js';
 import { classOffer, classSelection, acceptClass } from './class_growth.js';
-import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, rateUnits, offerAvailability, purchaseLines, samePurchaseRequest, purchaseDecisionMatches } from './trade.js';
+import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, rateUnits, offerAvailability, tradeTermsWhy, purchaseLines, samePurchaseRequest, purchaseDecisionMatches } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import { attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
 import { dungeonOf, trueDungeonOf, isRoom, roomKnown, wayBetween, knownRoomNamed, hiddenWayFinds, linkEvent, otherEnd, linksAt, blockerOf, goesFrom, firstStop } from './dungeon.js';
@@ -74,7 +75,76 @@ export function newTurnContext(content) {
 }
 
 // ------------------------------------------------------------------------------------------------ helpers
-const who = (s, id) => (id === 'guild' ? 'the Guild' : entityLabel(s, id));
+// (someone the planner names as new, {new: "the Guild clerk"}, by those words)
+const who = (s, id) => (id === 'guild' ? 'the Guild' : id && typeof id === 'object' ? String(id.new ?? 'someone') : entityLabel(s, id));
+// Build .142: the present people by the words that may name them (finance_evidence.payArgument)
+const presentNames = (s) => (s.scene.present || []).filter((id) => id !== 'pc' && s.entities[id])
+    .map((id) => ({ id, names: [entityLabel(s, id), s.entities[id].name, s.entities[id].known_name].filter(Boolean) }));
+/**
+ * Build .142 (§4.1): a limit or agreed price of his command as far as his own words carry it (price_evidence); a
+ * number the model gives without those words is unproven: no limit, no consent in advance (null).
+ */
+function provenNumber(c, field, content, ctx, units = 1, goods = []) {
+    if (!Number.isInteger(c[field]) || !c.price_evidence) return null;
+    const r = playerPrice(env(ctx).text || c.quote || '', c.price_evidence, { content, units, goods: [c.what, ...goods].filter(Boolean) });
+    return r.state === 'verified' && r.cp === c[field] ? c[field] : null;
+}
+/** Build .142: one free payment, booked once (coin and the transaction in the same record). */
+function bookPayment(s, content, c, emit, decision = null) {
+    const coin = s.entities.pc.sheet.coin_cp;
+    if (coin < c.amount_cp) return { status: 'refused', reason: 'not enough coin', line: `CANNOT PAY — ${cpText(c.amount_cp, content)} needed, he has ${coin} cp.` };
+    emit({ t: 'coin.changed', d: { id: 'pc', value: coin - c.amount_cp, delta: -c.amount_cp, why: `paid ${who(s, c.to)}${c.for ? ` for ${c.for}` : ''}` } });
+    emit({ t: 'transaction.completed', d: { to: c.to, cp: c.amount_cp, for: c.for || null, ...(decision ? { decision: decision.id } : {}) } });
+    if (decision) emit({ t: 'decision.closed', d: { id: decision.id, status: 'accepted' } });
+    return { status: 'resolved', line: `PAYS — ${cpText(c.amount_cp, content)} to ${who(s, c.to)}${c.for ? ` for ${c.for}` : ''}.` };
+}
+const UNPROVEN = {
+    no_money_argument: 'his words name no coin he hands over',
+    amount_differs: 'his words hand over another amount',
+    money_continues: 'the amount in his words is not complete',
+    money_incomplete: 'the amount in his words is not complete',
+    several_amounts: 'his words name several amounts',
+    currency_missing: 'his words name no coin for the number',
+    currency_not_unique: 'his words name no single coin for the number',
+};
+/**
+ * Build .142 (§5.3): a payment his words do not prove becomes a concrete, visible proposal – payee, amount, purpose,
+ * wallet before and after – that he can confirm by its id in his next message; nothing changes hands now. One open
+ * proposal at a time; it lapses with his next action that does not confirm it, a change of place or of the payee.
+ */
+function paymentProposal(s, content, c, ctx, emit, ev) {
+    if (!present(s, c.to)) return { status: 'refused', reason: 'nobody to pay', line: 'CANNOT PAY — the one he means to pay is not here.' };
+    if (!Number.isInteger(c.amount_cp) || c.amount_cp <= 0) {
+        emit({ t: 'decision.opened', d: { decision: { id: `dec.t${s.turn}.${c.seq}`, kind: 'payment', state: 'needs_amount', what: c.for || 'a payment', seller: c.to, at: s.scene.at, turn: s.turn } } });
+        ctx.expectedKeys[String(c.seq)] = 'pay';
+        return {
+            status: 'pending', reason: 'no_amount', line: `WANTS TO PAY — ${who(s, c.to)}${c.for ? ` for ${c.for}` : ''}; the amount is not known.`,
+            extra: [`OPEN DECISION — Alaric means to pay ${who(s, c.to)}${c.for ? ` for ${c.for}` : ''}; the amount is not known. Let ${who(s, c.to)} name it, then stop: he has not paid yet.`],
+        };
+    }
+    for (const old of (s.decisions || []).filter((d) => d.kind === 'payment' && d.state === 'needs_confirmation')) emit({ t: 'decision.closed', d: { id: old.id, status: 'expired' } });
+    const id = `dec.pay.t${s.turn}.${c.seq}`;
+    const coin = s.entities.pc.sheet.coin_cp;
+    emit({ t: 'decision.opened', d: { decision: { id, kind: 'payment', state: 'needs_confirmation', seller: c.to, at: s.scene.at, amount_cp: c.amount_cp, what: c.for || 'a payment', turn: s.turn, source: { message: env(ctx).msg ?? null, seq: c.seq } } } });
+    const why = UNPROVEN[ev?.reason] || (ev?.act === 'other' ? 'his words pay someone else or another amount' : 'his words do not show him handing this coin over');
+    const after = coin - c.amount_cp;
+    return {
+        status: 'pending', reason: 'payment_unconfirmed',
+        line: `NOT PAID — pay ${who(s, c.to)} ${cpText(c.amount_cp, content)}${c.for ? ` for ${c.for}` : ''}? Wallet ${coin} cp → ${after < 0 ? 'not enough coin' : `${after} cp`}. Nothing changed hands (${why}). Payment proposal ${id}: he pays only if he confirms exactly this.`,
+        extra: [`OPEN DECISION — Alaric has NOT paid ${who(s, c.to)}; the engine asks him to confirm or drop the payment of ${cpText(c.amount_cp, content)}. Narrate no handover of coin.`],
+    };
+}
+/** Build .142: his confirmation of exactly the proposal of his previous message pays it once. */
+function confirmPayment(s, content, c, ctx, emit, ev) {
+    const dec = (s.decisions || []).find((d) => d.id === c.confirmation && d.kind === 'payment' && d.state === 'needs_confirmation');
+    if (!dec) return { status: 'refused', reason: 'no payment proposal', line: `NOT PAID — there is no open payment proposal ${String(c.confirmation).slice(0, 40)}; nothing changed hands.` };
+    const lapse = (why) => { emit({ t: 'decision.closed', d: { id: dec.id, status: 'expired' } }); return { status: 'refused', reason: why, line: `NOT PAID — the payment proposal ${dec.id} ${why}; nothing changed hands.` }; };
+    if (ev.act === 'claim') return lapse('was answered with a claim for his own money');
+    if (dec.turn !== s.turn - 1) return lapse('belongs to an earlier message');
+    if (dec.at !== s.scene.at || !present(s, dec.seller)) return lapse('lapsed: the place or the payee changed');
+    if (dec.seller !== c.to || dec.amount_cp !== c.amount_cp || (c.for && normText(c.for) !== normText(dec.what || ''))) return lapse(`was for ${cpText(dec.amount_cp, content)} to ${who(s, dec.seller)} for ${dec.what}; another payment is not its confirmation`);
+    return bookPayment(s, content, { ...c, for: c.for || (dec.what !== 'a payment' ? dec.what : null) }, emit, dec);
+}
 const present = (s, id) => typeof id === 'string' && s.scene.present.includes(id) && s.entities[id]?.status !== 'dead';
 const cpText = (cp, content) => `${cp} cp${cp >= 10 ? ` (${formatCoin(cp, content)})` : ''}`;
 const feeWords = (fee) => (fee % 10 === 0 ? `${fee / 10} silver (${fee} cp)` : `${fee} cp`);
@@ -296,6 +366,8 @@ function bidOfOffer(s, o) {
  */
 function acceptBid(s, content, c, ctx, emit, o) {
     if (!present(s, o.seller)) return { status: 'refused', reason: 'the buyer is not here', line: `CANNOT SELL — ${who(s, o.seller)} is not here.` };
+    const terms = tradeTermsWhy(o);
+    if (terms) return { status: 'refused', reason: 'not binding', line: `NOT SOLD — ${terms}. Nothing changes hands.` };
     // a bid priced only for the whole lot is accepted whole unless he holds part of it back in words ("only the
     // fangs", "but I keep the sacs"): the line ids a planner copies along are no choice of his (live: lines ["l1"])
     const priced = (o.lines || []).every((l) => Number.isInteger(l.price_cp));
@@ -894,6 +966,15 @@ const HANDLERS = {
         return { status: 'resolved', line: `USES — ${o.name}${qty > 1 ? ` (${qty})` : ''}; ${left > 0 ? `used up: ${qty}, ${left} left` : 'it is used up'}.` };
     },
     pay(s, content, c, ctx, emit) {
+        // Build .142 (finance consolidation §5): what his words prove of this payment – the coin of the act, its amount,
+        // the payee – read once by the pure check; the type pay alone is no proof of outgoing coin.
+        const ev = payArgument(env(ctx).text || c.quote || '', c, { content, present: presentNames(s) });
+        if (c.confirmation) return confirmPayment(s, content, c, ctx, emit, ev);
+        if (ev.act === 'claim') return { status: 'refused', reason: 'asks for his own money', line: `NOT PAID — his words ask for money owed to Alaric; asking for or taking his own money pays nobody. His coin stays ${cpText(s.entities.pc.sheet.coin_cp, content)}.` };
+        // a known obligation (the Guild fee, an offer, a purchase) gives the amount, never the will to pay: that is his
+        // own act of paying, proven or at least a plain "I pay …" of his
+        const will = ev.act === 'outgoing' || ev.act === 'will';
+        if (!will) return paymentProposal(s, content, c, ctx, emit, ev);
         const reg = s.offers[REGISTRATION_OFFER];
         const fee = feeOf(content);
         const theFee = c.amount_cp === null || c.amount_cp === undefined || c.amount_cp === fee;
@@ -938,7 +1019,10 @@ const HANDLERS = {
         if (purchase) {
             if (!present(s, c.to)) return { status: 'refused', reason: 'nobody to pay', line: 'CANNOT BUY — the seller is not here; nothing was paid.' };
             if (!c.for) return { status: 'clarify', reason: 'purchase purpose missing', line: 'NOT PAID — which offered goods or service is this payment for? Nothing changes hands.' };
-            const buy = {...c, type:'buy', what:c.for, from:c.to, qty:null, max_cp:c.amount_cp ?? null, any_price:false};
+            // Build .142: the coin his own words hand over for it is his limit; an amount they do not carry is none
+            const proven = ev.state === 'verified' && ev.cp === c.amount_cp && ['outgoing', 'will'].includes(ev.act) && c.money?.quote;
+            const buy = {...c, type:'buy', what:c.for, from:c.to, qty:null, max_cp:c.amount_cp ?? null, any_price:false,
+                price_evidence: proven ? { basis: 'total', quote: c.money.quote, currency_quote: c.money.currency_quote ?? null } : null};
             expirePurchaseRequest(s, buy, emit);
             return HANDLERS.buy(s, content, buy, ctx, emit);
         }
@@ -948,19 +1032,11 @@ const HANDLERS = {
             && (c.amount_cp === null || c.amount_cp === undefined || pickLines(o).cp === c.amount_cp));
         if (offer) return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: offer.id, lines: null }, ctx, emit);
         if (!present(s, c.to)) return { status: 'refused', reason: 'nobody to pay', line: 'CANNOT PAY — the one he means to pay is not here.' };
-        if (c.amount_cp === null || c.amount_cp === undefined) {
-            emit({ t: 'decision.opened', d: { decision: { id: `dec.t${s.turn}.${c.seq}`, kind: 'payment', what: c.for || 'a payment', seller: c.to, at: s.scene.at, turn: s.turn } } });
-            ctx.expectedKeys[String(c.seq)] = 'pay';
-            return {
-                status: 'pending', reason: 'no_amount', line: `WANTS TO PAY — ${who(s, c.to)}${c.for ? ` for ${c.for}` : ''}; the amount is not known.`,
-                extra: [`OPEN DECISION — Alaric means to pay ${who(s, c.to)}${c.for ? ` for ${c.for}` : ''}; the amount is not known. Let ${who(s, c.to)} name it, then stop: he has not paid yet.`],
-            };
-        }
-        const coin = s.entities.pc.sheet.coin_cp;
-        if (coin < c.amount_cp) return { status: 'refused', reason: 'not enough coin', line: `CANNOT PAY — ${cpText(c.amount_cp, content)} needed, he has ${coin} cp.` };
-        emit({ t: 'coin.changed', d: { id: 'pc', value: coin - c.amount_cp, delta: -c.amount_cp, why: `paid ${who(s, c.to)}${c.for ? ` for ${c.for}` : ''}` } });
-        emit({ t: 'transaction.completed', d: { to: c.to, cp: c.amount_cp, for: c.for || null } });
-        return { status: 'resolved', line: `PAYS — ${cpText(c.amount_cp, content)} to ${who(s, c.to)}${c.for ? ` for ${c.for}` : ''}.` };
+        if (c.amount_cp === null || c.amount_cp === undefined) return paymentProposal(s, content, c, ctx, emit, ev);
+        // a free payment (tip, gift, debt, compensation) is paid only from the proven coin of his own act; anything less
+        // is a concrete proposal he can confirm, never a payment because a number stands in his words
+        if (ev.state !== 'verified' || ev.act !== 'outgoing' || ev.cp !== c.amount_cp) return paymentProposal(s, content, c, ctx, emit, ev);
+        return bookPayment(s, content, c, emit);
     },
     buy(s, content, c, ctx, emit) {
         const offers = Object.values(s.offers).filter((o) => o.status === 'open' && !o.bid
@@ -970,11 +1046,13 @@ const HANDLERS = {
         const match = matches[0];
         // an offer lists it: buying is accepting that line, in the number he names and within the limit he set
         if (match) return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: match.o.id, lines: match.lines.map((l) => l.id), qty: c.qty ?? null }, ctx, emit);
-        const limit = c.max_cp !== null && c.max_cp !== undefined;
-        emit({ t: 'decision.opened', d: { decision: { id: `dec.t${s.turn}.${c.seq}`, kind: 'purchase', what: c.what, seller: c.from || null, at: s.scene.at, turn: s.turn, max_cp: limit ? c.max_cp : null, any_price: !!c.any_price, qty: c.qty || null, priced: false, seq: c.seq } } });
+        // Build .142 (§4.1, §6.3): his limit authorises a purchase in advance only as far as his own words carry it
+        const max = provenNumber(c, 'max_cp', content, ctx, c.qty || 1);
+        const limit = max !== null;
+        emit({ t: 'decision.opened', d: { decision: { id: `dec.t${s.turn}.${c.seq}`, kind: 'purchase', what: c.what, seller: c.from || null, at: s.scene.at, turn: s.turn, max_cp: limit ? max : null, any_price: !!c.any_price, qty: c.qty || null, priced: false, seq: c.seq } } });
         ctx.expectedKeys[String(c.seq)] = 'buy';
         if (limit || c.any_price) {
-            const rule = limit ? `if the price is at most ${c.max_cp} cp` : 'at any price';
+            const rule = limit ? `if the price is at most ${max} cp` : 'at any price';
             return {
                 status: 'conditional', condition: 'priced_within', line: `BUYS — ${c.what} ${rule}: when the seller names the price, he pays it and takes it${limit ? '; above it he declines' : ''}.`,
             };
@@ -1003,10 +1081,12 @@ const HANDLERS = {
         const n = saleUnits(s, o.id, c.qty ?? null);
         if (n.error) return { status: 'refused', reason: 'he holds fewer', line: `CANNOT SELL — ${c.qty} ${o.name}: ${n.error}.` };
         const what = (o.qty ?? 1) > 1 ? unitsText(o.name, n.units) : o.name;
-        emit({ t: 'decision.opened', d: { decision: { id: `dec.t${s.turn}.${c.seq}`, kind: 'sale', what: o.name, object: o.id, seller: c.to || null, at: s.scene.at, turn: s.turn, min_cp: c.min_cp ?? null, qty: n.units, seq: c.seq } } });
+        // Build .142 (§4.1, §6.3): his lowest price authorises a sale in advance only as far as his own words carry it
+        const min = provenNumber(c, 'min_cp', content, ctx, n.units, [o.name]);
+        emit({ t: 'decision.opened', d: { decision: { id: `dec.t${s.turn}.${c.seq}`, kind: 'sale', what: o.name, object: o.id, seller: c.to || null, at: s.scene.at, turn: s.turn, min_cp: min, qty: n.units, seq: c.seq } } });
         ctx.expectedKeys[String(c.seq)] = 'sell';
-        if (c.min_cp !== null && c.min_cp !== undefined) {
-            return { status: 'conditional', condition: 'buyer_agrees', line: `SELLS — ${what}${c.to ? ` to ${who(s, c.to)}` : ''} if the buyer pays at least ${c.min_cp} cp (the story decides whether the buyer agrees).` };
+        if (min !== null) {
+            return { status: 'conditional', condition: 'buyer_agrees', line: `SELLS — ${what}${c.to ? ` to ${who(s, c.to)}` : ''} if the buyer pays at least ${min} cp (the story decides whether the buyer agrees).` };
         }
         return {
             status: 'pending', reason: 'no_price', line: `WANTS TO SELL — ${what}; no price is agreed.`,
@@ -1019,6 +1099,9 @@ const HANDLERS = {
             if (o?.bid && o.status === 'accepted' && ctx.soldInBid?.size) return { status: 'resolved', done: true, line: 'SOLD — with the lot above.' };
             return { status: 'refused', reason: 'no open offer', line: 'CANNOT ACCEPT — there is no such open offer.' };
         }
+        // Build .142 (§6.2): an open or unconfirmed price is not accepted, on every path that leads here
+        const terms = tradeTermsWhy(o, c.lines);
+        if (terms) return { status: 'refused', reason: 'not binding', line: `NOT AGREED — ${terms}. Nothing changes hands; the other side has to name a binding price first.` };
         if (ctx.auth.c && rulesetOf(s) >= 2) {
             const why = acceptanceWhy(c, o, who(s, o.seller), content.rules.currency, o.bid ? rateUnits(o.lines, (id) => s.objects[id]) : null);
             if (why) return { status: 'refused', reason: why, line: `NOT AGREED — ${why}. Nothing changes hands; clarify the party or price.` };
@@ -1039,7 +1122,8 @@ const HANDLERS = {
             // fangs … the lot") is the buyer's price for them; anything else is a question, never a purchase
             const lot = bidOfOffer(s, o);
             if (lot) {
-                const bid = { ...o, bid: true, lines: lot.lines, price_cp: lot.price_cp };
+                // Build .142: a lot read from the offer's lines binds only as far as every one of those lines did
+                const bid = { ...o, bid: true, lines: lot.lines, price_cp: lot.price_cp, terms: o.lines.every((l) => (l.terms ?? 'firm') === 'firm') ? 'firm' : 'unverified' };
                 emit({ t: 'offer.created', d: { offer: bid } });
                 return acceptBid(s, content, { ...c, lines: null }, ctx, emit, bid);
             }
@@ -1601,6 +1685,10 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
         emit({ t: 'cmd.resolved', d: res });
         if (lines.has(res.seq)) ctx.actions.push(`${res.seq}. ${lines.get(res.seq)}`);
     }
+    // Build .142 (§5.3): a payment proposal answers only the next message of his that acts; one that did not confirm
+    // it, or a change of place, lets it lapse (a status panel is no such message: it runs no commands)
+    if (envx.c) for (const d of (s.decisions || []).filter((x) => x.kind === 'payment' && x.state === 'needs_confirmation' && (x.turn < s.turn || x.at !== s.scene.at)))
+        emit({ t: 'decision.closed', d: { id: d.id, status: 'expired' } });
     delete ctx.env;
     return ctx;
 }

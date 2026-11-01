@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import { loadProductContent } from '../helpers.js';
 import { applyEvent } from '../../src/state.js';
 import { applyWorld } from './wire_d.js';
-import { resolveCommands } from '../../src/v4/commands.js';
+import { resolveCommandsLegacy as resolveCommands } from './finance_legacy.js'; // Build .142: pre-cmd-1.8 scripted commands
 import { parseExtraction, worldVocab } from '../../src/v4/extract.js';
 import { buildCatalog } from '../../src/v4/catalog.js';
 import { catalogText } from '../../src/v4/interpret.js';

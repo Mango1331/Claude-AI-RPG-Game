@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { loadProductContent } from '../helpers.js';
-import { applyWorld } from '../../src/v4/world.js';
+import { applyWorldLegacy as applyWorld } from './finance_legacy.js'; // Build .142: pre-delta-1.13 scripted answers
 import { offerAdvice } from '../../src/v4/trade.js';
 import { playerTurnV4 } from '../../src/v4/turn.js';
 import { applyEvent } from '../../src/state.js';

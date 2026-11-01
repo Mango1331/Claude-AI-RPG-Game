@@ -12,6 +12,7 @@ import { O, S, B, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 import { saleOfferLines } from './trade.js';
 import { normText } from '../util.js';
+import { findQuote, openConditionNear } from './finance_evidence.js';
 import { creatureContract } from './population.js';
 
 /** Preserve the historical wire vocabulary; new campaigns have only Guild quests. */
@@ -20,7 +21,7 @@ export function worldVocab(vocab, state) {
     return { ...vocab, version: vocab.version,
         rules: [...vocab.rules.filter(r => !r.startsWith('Paid work FOR an NPC')),
             'FREE HELP: NPC requests, help, agreements and offered wages are ordinary facts, promises, threads and memories. Never create private quests or job ids. Formal quest deltas concern only existing Guild contracts. Helping earns no automatic Quest XP or payout.',
-            'coin.gift is an ACTUAL new handover now, including voluntary thanks, wages, advance or reward from any present NPC. No job or acceptance is required. Promises and conditional/future payments are facts/threads, not coin.gift. In said quote the exact current handover clause INCLUDING the FULL amount and every currency; an unquantified remainder ("and the silver", "a handful of silver") is not a complete sum. Never invent an amount or report only the quantified part. For a recount of a RECENT COIN HANDOVER (including an engine-paid sale or Guild payout) set repeat_of to its existing id; picking up those proceeds never pays again. A distinct new gift uses repeat_of:null even for the same giver/amount.'],
+            'coin.gift is an ACTUAL new handover now, including voluntary thanks, wages, advance or reward from any present NPC. No job or acceptance is required. Promises and conditional/future payments are facts/threads, not coin.gift. In said quote the exact current handover clause INCLUDING the FULL amount and every currency; an unquantified remainder ("and the silver", "a handful of silver") is not a complete sum. Never invent an amount or report only the quantified part. For a recount of a RECENT COIN HANDOVER (including an engine-paid sale or Guild payout) set repeat_of to its existing id; picking up those proceeds never pays again. A distinct new gift uses repeat_of:null even for the same giver/amount. Set phase "transferred" only for coin handed over now, relation "independent" for a gift/thanks/wage/reward of its own, "trade_settlement" for proceeds or change of a purchase or sale (report its bid instead; they are paid by the trade), "recount" with repeat_of, and money with the exact words of the full amount.'],
         deltas: vocab.deltas.filter(d => d.type !== 'quest.offer').map(d => {
             if (d.type !== 'coin.gift') return d;
             const { job, ...fields } = d.fields;
@@ -30,7 +31,7 @@ export function worldVocab(vocab, state) {
     };
 }
 
-export const EXTRACTOR_VERSION = 'extract-5.22';
+export const EXTRACTOR_VERSION = 'extract-5.23';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 
@@ -49,7 +50,17 @@ const EFFECTS = ['heal', 'restore_mp', 'restore_sta'];
 // Patch 9C-2b: what a Skill Stone or a manual teaches, as the story establishes it (the engine checks it against the
 // techniques it can compose, src/v4/items.js skillSource); every field left out is null
 const TEACHES = O({ source: E(['stone', 'manual']), fn: N(S()), tags: N(A(S())), aspects: N(A(S())) });
-const OFFER_LINE = O({ what: S(), kind: E(['goods', 'service']), service: N(E(SERVICES)), qty: I(1), price_cp: I(0), said: N(S()), effect: N(E(EFFECTS)), teaches: N(TEACHES), equipment: N(B()), base: N(S()), quality: N(S()) });
+// Build .142 (finance consolidation §3.3, §4.2, §4.3): which words carry a price (one total or unit literal, or the
+// positions of a bid) and the exact words of handed-over coin; a left-out currency_quote is null (normalizeSoftFields)
+const MONEY_WORDS = O({ quote: S(), currency_quote: N(S()) });
+const PRICING = { anyOf: [
+    O({ basis: E(['total', 'unit']), quote: S(), currency_quote: N(S()) }),
+    O({ basis: E(['positions']), positions: A(O({ line: I(1), basis: E(['total', 'unit']), quote: S(), currency_quote: N(S()) }), 1) }),
+    O({ basis: E(['unknown']) }),
+] };
+const PHASE = E(['firm', 'conditional', 'unclear']);
+const OFFER_LINE = O({ what: S(), kind: E(['goods', 'service']), service: N(E(SERVICES)), qty: I(1), price_cp: I(0), said: N(S()), effect: N(E(EFFECTS)), teaches: N(TEACHES), equipment: N(B()), base: N(S()), quality: N(S()),
+    phase: N(PHASE), condition: N(S()), pricing: N(PRICING) });
 // 4.3.0-c.6.6.5: a bid's line is one of Alaric's things and how many of it the buyer would take
 const bidLine = (refs) => A(O({ object: refs.object, qty: I(1) }), 1);
 
@@ -60,6 +71,8 @@ function fieldSchema(spec, refs) {
     else if (spec.enum) s = E(spec.enum);
     else if (spec.array === 'offer_line') s = A(OFFER_LINE, 1);
     else if (spec.object === 'teaches') s = TEACHES;
+    else if (spec.object === 'pricing') s = PRICING;
+    else if (spec.object === 'money') s = MONEY_WORDS;
     else if (spec.array === 'bid_line') s = bidLine(refs);
     else if (spec.array) s = A(S());
     else if (spec.type === 'integer') s = I(spec.min, spec.max);
@@ -106,6 +119,8 @@ function fieldType(spec) {
     if (spec.enum) return spec.enum.map((v) => JSON.stringify(v)).join('|');
     if (spec.array === 'offer_line') return 'offer_line[]';
     if (spec.object === 'teaches') return 'teaches';
+    if (spec.object === 'pricing') return 'pricing';
+    if (spec.object === 'money') return 'money';
     if (spec.array === 'bid_line') return 'bid_line[]';
     if (spec.array) return 'string[]';
     if (spec.type === 'integer') {
@@ -136,7 +151,10 @@ export const FORMAT_RULES = [
     'In a multi-place reply use the existing per-delta scene explicitly for events before the last arrival. Example: enter known npc.giver at the starting place; create bread on that giver there; move {new:"bread"} to pc there; arrive at the authorized destination. present describes co-presence at that step, not only the reply ending. A returning known NPC uses enter, not person.new.',
     'Chronology: when the reply establishes arrival and then meets local people or creatures, emit arrive BEFORE their present:true introductions, with increasing seq. A destination scene label never makes an earlier introduction local. Remote sightings use present:false. In a repair correct both missing scene fields and event order to match the REPLY; never invent an arrival or sort every arrival to the front.',
     'person-ref is a person id from PRESENT or the CATALOG, or the ref of a person.new/creature.new earlier in the same answer.',
-    'offer_line is {"what":string,"kind":"goods"|"service","service":"lodging"|"bath"|"laundry"|"meal"|"healing"|"training"|"other"|null,"qty":integer>=1,"price_cp":integer>=0,"said":string|null (the reply\'s words for the price),"effect":"heal"|"restore_mp"|"restore_sta"|null (only for a potion, draught or tonic that restores HP, MP or STA; the engine fixes how much),"teaches":teaches|null,"equipment":boolean|null,"base":string|null,"quality":string|null}.',
+    'offer_line is {"what":string,"kind":"goods"|"service","service":"lodging"|"bath"|"laundry"|"meal"|"healing"|"training"|"other"|null,"qty":integer>=1,"price_cp":integer>=0,"said":string|null (the reply\'s words for the price),"effect":"heal"|"restore_mp"|"restore_sta"|null (only for a potion, draught or tonic that restores HP, MP or STA; the engine fixes how much),"teaches":teaches|null,"equipment":boolean|null,"base":string|null,"quality":string|null,"phase":"firm"|"conditional"|"unclear","condition":string|null,"pricing":pricing}.',
+    'pricing names the reply\'s words that carry a price: {"basis":"total","quote":"the exact money words that are the price of the whole lot or line"} or {"basis":"unit","quote":"the exact money words of the price of one unit"} (the engine multiplies by the units) or, for a bid priced line by line, {"basis":"positions","positions":[{"line":1,"basis":"unit"|"total","quote":"…"}, …]} with every bid line once (line = its position in lines, from 1), or {"basis":"unknown"} when no words carry it. Quote only money words ("four copper", "one hundred fifty copper", "eight silver and four"); a bare number needs "currency_quote": the coin word of the same sentence. An explicit price for everything ("one hundred fifty for the lot") is a total even after line prices.',
+    'phase of a bid or offer line: "firm" only when that side offers this price NOW and only Alaric\'s acceptance is missing (a choice he makes by accepting – "if you want it", "coin or credit" – is no condition); "conditional" when something must still happen first (someone\'s approval or appraisal, an inspection, a delivery, a later time, the goods passing a test), and condition says what; "unclear" when the reply does not settle it. Never firm for a promise, a guess or a price someone else would pay.',
+    'money is {"quote":"the exact words of the coin handed over, with the full amount","currency_quote":null|"the coin word of the same sentence for a bare number"}.',
     'Regular F gear offers require base and quality from GEAR MARKET; use separate lines for separate articles, never a package in one base. Missing/unknown bases do not grant equipment. For offer_line.equipment use true for intended combat equipment, false for ordinary/cosmetic merchandise, null if unspecified. This intent supplies no slot or numbers. Use supported categories from GEAR MARKET; separate armor parts have no combat slot. Do not sell ordinary decoration as a combat upgrade.',
     'teaches is {"source":"stone"|"manual","fn":"strike"|"bolt"|"guard"|"ward"|"mend"|null,"tags":string[]|null,"aspects":string[]|null} or null: only for a Skill Stone, or a manual, primer or treatise, that the reply establishes as teaching a technique. fn: strike (a close weapon or body technique), bolt (a ranged spell), guard (a defensive stance), ward (a magical barrier), mend (a healing); tags (Martial, Precision, Mobility, Defense, Arcane, Control) and aspects (Fire, Ice, Lightning, Water, Earth, Wind, Shadow, Light, Poison, Nature, Blood, Sound) only as the reply states them; null for anything the reply does not say. Never for an ordinary stone, a return stone, a storybook or a letter.',
     'A mechanical training service requires an established qualified teacher. A Skill Stone/manual is goods, never silently included in a training service: report separately priced goods and lessons only when the reply actually supplies those separate prices. An indivisible bundle with no split price remains information, not an executable training offer. Ordinary nonmechanical lessons may be service other; none grant automatic skills or progress.',
@@ -219,6 +237,14 @@ export function extractorRequest(vocab, { catalog, actions, player = null, expec
  */
 const softTeaches = (t) => (t && typeof t === 'object' && !Array.isArray(t) ? { fn: null, tags: null, aspects: null, ...t } : t ?? null);
 
+function softWords(w) {
+    if (!w || typeof w !== 'object' || Array.isArray(w)) return w;
+    const out = { ...w };
+    if (out.quote !== undefined && out.currency_quote === undefined) out.currency_quote = null;
+    if (Array.isArray(out.positions)) out.positions = out.positions.map((p) => (p && typeof p === 'object' && p.currency_quote === undefined ? { ...p, currency_quote: null } : p));
+    return out;
+}
+
 function normalizeSoftFields(value, vocab) {
     if (!value || typeof value !== 'object') return value;
     const specs = new Map((vocab.deltas || []).map((d) => [d.type, d]));
@@ -238,6 +264,12 @@ function normalizeSoftFields(value, vocab) {
             if (x.count === undefined) x.count = 1;
         }
         if (d.type === 'memory' && x.who === undefined) x.who = [];
+        // Build .142: a left-out currency_quote of pricing/money is null; an offer line's phase, condition and pricing
+        // left out are null (unclear/unknown – never firm)
+        if (x.pricing && typeof x.pricing === 'object') x.pricing = softWords(x.pricing);
+        if (x.money && typeof x.money === 'object') x.money = softWords(x.money);
+        if (d.type === 'offer' && Array.isArray(x.lines)) x.lines = x.lines.map((l) => (l && typeof l === 'object' ? { ...l, phase: l.phase === undefined ? null : l.phase,
+            condition: l.condition === undefined ? null : l.condition, pricing: l.pricing === undefined ? null : (l.pricing && typeof l.pricing === 'object' ? softWords(l.pricing) : l.pricing) } : l));
         // Patch 3: an offer line's words for its price may be left out like a |null field
         if (d.type === 'offer' && Array.isArray(x.lines)) x.lines = x.lines.map((l) => (l && typeof l === 'object' ? { ...l, ...(l.said === undefined ? { said: null } : {}), ...(l.effect === undefined ? { effect: null } : {}), teaches: softTeaches(l.teaches), equipment: l.equipment ?? null, base:l.base ?? null, quality:l.quality ?? null } : l));
         // Patch 9C-2b: the fields of a teaches the reply does not state are null
@@ -249,17 +281,20 @@ function normalizeSoftFields(value, vocab) {
 
 /** Build .138: a coin.gift that is the price of things Alaric sells now, with no bid of that buyer in the same answer. */
 function saleProceeds(state, value, d) {
-    if (d.repeat_of != null || typeof d.from !== 'string' || state.entities[d.from]?.kind !== 'npc') return false;
+    if (d.repeat_of != null || d.relation === 'recount' || typeof d.from !== 'string' || state.entities[d.from]?.kind !== 'npc') return false;
+    const bids = (value.deltas || []).filter((x) => x?.type === 'bid' && x.buyer === d.from);
+    const sold = Object.values(value.expected || {}).some((e) => e && typeof e === 'object' && e.sold === true);
+    // Build .142 (§7.2): reported as proceeds of a sale, the sale needs its bid (the trade pays, not the gift)
+    if (d.relation === 'trade_settlement') return sold && !bids.length;
     const why = normText(`${d.why || ''}`);
     if (!/\b(?:sale|sold|sells?|selling|price|proceeds|payment for|paid for|pays? for|buys?|bought)\b/.test(why) || /\b(?:thanks|thank|tip|bonus|gift|extra|reward|wage|wages)\b/.test(why)) return false;
-    const bids = (value.deltas || []).filter((x) => x?.type === 'bid' && x.buyer === d.from);
     const bidFor = new Set(bids.flatMap((x) => (x.lines || []).map((l) => l.object)));
     const held = Object.values(state.objects || {}).filter((o) => o.holder?.entity === 'pc');
     const words = (t) => normText(t).split(/[^a-z0-9]+/).filter((w) => w.length > 3);
     const named = held.filter((o) => { const n = words(o.name || ''); return n.length && n.filter((w) => words(why).includes(w)).length >= Math.min(2, n.length); });
-    // the coin names held goods that no bid of this buyer in the answer covers (a bid for other goods does not pay them)
+    // a hint for the repair only: the coin names held goods that no bid of this buyer covers
     if (named.length) return named.some((o) => !bidFor.has(o.id));
-    return !bids.length && Object.values(value.expected || {}).some((e) => e && typeof e === 'object' && e.sold === true);
+    return !bids.length && sold;
 }
 
 /** Local semantic diagnostics, also enforced by World against its actually reached state.
@@ -298,7 +333,7 @@ export function sceneIssues(value, startScene, state = null, content = null, exp
     return issues;
 }
 
-export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequired = false, startScene = null, state = null, content = null, explicitArrivals = sceneRequired } = {}) {
+export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequired = false, startScene = null, state = null, content = null, explicitArrivals = sceneRequired, reply = null } = {}) {
     const parsed = extractJsonObject(answer);
     const { error, raw } = parsed;
     const value = state ? scopedPlaces(normalizeSoftFields(parsed.value, vocab), state) : normalizeSoftFields(parsed.value, vocab);
@@ -338,7 +373,30 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
         // as coin.gift without the buyer's bid, is never paid; the existing repair asks for the bid. Nothing is converted:
         // a separate thanks or tip stays a gift, and a recount (repeat_of) stays a recount.
         if (d?.type === 'coin.gift' && saleProceeds(state, value, d))
-            semanticIssues.push({ index: i, seq: d.seq, why: `$.deltas[${i}]: this coin pays for goods Alaric sells; report the buyer's price as bid (buyer, his held object ids and units, price_cp, the price words as said), not coin.gift. A sale pays only through that bid; keep coin.gift only for a separate gift or thanks` });
+            semanticIssues.push({ index: i, seq: d.seq, why: `$.deltas[${i}]: this coin pays for goods Alaric sells; report the buyer's price as bid (buyer, his held object ids and units, price_cp, phase, pricing), and give this coin relation "trade_settlement". A sale pays only through that bid; keep coin.gift relation "independent" only for a separate gift or thanks` });
+        // Build .142 (§4.4): a finance report without its phase, pricing or relation is unclear, never firm or paid;
+        // the existing bounded repair is asked once for the missing meaning
+        if (d?.type === 'bid' || d?.type === 'offer') {
+            const items = d.type === 'bid' ? [d] : (Array.isArray(d.lines) ? d.lines : []);
+            items.forEach((x, k) => {
+                if (!x || typeof x !== 'object') return;
+                const where = d.type === 'bid' ? `$.deltas[${i}]` : `$.deltas[${i}].lines[${k}]`;
+                const gear = d.type === 'offer' && (x.base != null || x.equipment === true);
+                if (x.phase == null) semanticIssues.push({ index: i, seq: d.seq, why: `${where}.phase: say whether this price binds now ("firm"), waits for something ("conditional" with condition) or is "unclear"` });
+                else if (x.phase === 'firm' && x.condition) semanticIssues.push({ index: i, seq: d.seq, why: `${where}: "firm" with a condition; a price that waits for "${String(x.condition).slice(0, 40)}" is "conditional"` });
+                if (!gear && Number.isInteger(x.price_cp) && x.price_cp > 0 && (!x.pricing || x.pricing.basis === 'unknown'))
+                    semanticIssues.push({ index: i, seq: d.seq, why: `${where}.pricing: quote the money words that carry price_cp (basis total, unit${d.type === 'bid' ? ' or positions' : ''}), or keep "unknown" only when the reply names no price` });
+                if (x.phase === 'firm' && !x.condition && reply && typeof x.said === 'string') {
+                    const at = findQuote(reply, x.said);
+                    const word = at.state === 'found' ? openConditionNear(reply, at.start, at.end) : null;
+                    if (word) semanticIssues.push({ index: i, seq: d.seq, why: `${where}: the reply names an open condition next to this price ("${word}"); "firm" only if the price binds now regardless, else "conditional" with condition` });
+                }
+            });
+        }
+        if (d?.type === 'coin.gift' && !privateQuestsOf(state)) {
+            if (d.phase == null || d.relation == null) semanticIssues.push({ index: i, seq: d.seq, why: `$.deltas[${i}]: say phase ("transferred" only for coin handed over now) and relation ("independent", "trade_settlement" or "recount")` });
+            else if (d.phase === 'transferred' && !d.money) semanticIssues.push({ index: i, seq: d.seq, why: `$.deltas[${i}].money: quote the exact words of the coin handed over, with the full amount` });
+        }
         // Package C (.132): population and life stage of a new creature, at the place of its event (a remote sighting:
         // the place its scene names, else none), by the rule World enforces (src/v4/population.js)
         if (d?.type === 'creature.new') {

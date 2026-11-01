@@ -47,7 +47,15 @@ export function toProduct(answer, expectedKeys = {}) {
     for (const [k, t] of Object.entries(expectedKeys)) if ((t === 'buy' || t === 'pay') && a.expected?.[k] && a.expected[k].taken_anyway === undefined) a.expected[k].taken_anyway = false;
     return a;
 }
-const answerOf = (turn, which = 'recovery') => toProduct(turn[which], turn.expected_keys);
+// Build .142 (finance contract delta-1.13): the inn's prices of t8 as a fresh answer reports them – each line with the
+// reply's own words for its price; the gold file stays as recorded (it predates the contract)
+const FINANCE_T8 = [['Room\'s four copper', 'four copper', null], ['hot bath two more', 'two more', 'copper'], ['another copper for the wash', 'another copper', null], ["stew's two", "stew's two", null]];
+function answerOf(turn, which = 'recovery') {
+    const a = toProduct(turn[which], turn.expected_keys);
+    if (turn.id === 't8') for (const d of a.deltas.filter((x) => x.type === 'offer')) d.lines = d.lines.map((l, i) => ({ ...l, said: FINANCE_T8[i][0], phase: 'firm', condition: null,
+        pricing: { basis: 'total', quote: FINANCE_T8[i][1], currency_quote: FINANCE_T8[i][2] } }));
+    return a;
+}
 
 function excerpt(s) {
     return {
@@ -125,7 +133,9 @@ const R = (id) => run.find((x) => x.id === id);
 // Guild's ranks and rules are the engine's canon and such a fact is refused (guild_canon). Since 4.0.9 (live run
 // 30.09.2026) a listing the board has just shown cannot be taken away in the same reading reply: the recorded reply
 // of t3 has the Weasel Sign "already taken" (seq 3), which is refused (board_first_display)
-const EXPECTED_REFUSALS = { t2: [{ seq: 1, type: 'fact', rule: 'guild_canon' }], t3: [{ seq: 3, type: 'listing.gone', rule: 'board_first_display' }] };
+// Build .142: the inn's wash ("another copper", no amount of its own) and stew ("stew's two", no coin in its sentence) are
+// prices the reply's words do not carry (finance consolidation §3.1/§3.2): not recorded, the narrator is told (seq 5)
+const EXPECTED_REFUSALS = { t2: [{ seq: 1, type: 'fact', rule: 'guild_canon' }], t3: [{ seq: 3, type: 'listing.gone', rule: 'board_first_display' }], t8: [{ seq: 5, type: 'offer', rule: 'offer' }] };
 
 /**
  * The gold of a turn under the rules the engine has now; the gold file itself stays as recorded. Intended changes since
@@ -137,6 +147,8 @@ function current(t) {
     const c = structuredClone(t);
     if (c.id === 't1' && c.after_reply) delete c.after_reply.listings;
     if (c.id === 't3' && c.after_reply?.listings) c.after_reply.listings['quest.weasel_fenwick'] = 'listed';
+    // Build .142: the room (four copper) and the bath ("two more", in the sentence of the copper) stand; see EXPECTED_REFUSALS
+    if (c.id === 't8' && c.after_reply) Object.assign(c.after_reply, { offers_open_lines: [4, 2], corrections: 2 });
     return c;
 }
 /** A board line of the gold ("Title · 80 cp") as the title-first line of the board now. */
@@ -237,12 +249,13 @@ test('E11: looking for an inn books no price: buy pending, the inn\'s offer 4/2/
     const t8 = R('t8');
     assert.equal(t8.outcome.resolutions[2].status, 'pending');
     const e = excerpt(t8.afterReply);
-    for (const p of [4, 2, 1]) assert.ok(e.offers_open_lines.includes(p));
+    // Build .142: the room and the bath; the wash and the stew name no price of their own words (EXPECTED_REFUSALS)
+    assert.deepEqual(e.offers_open_lines, [4, 2]);
     assert.equal(e.coin_cp, 70);
     assert.deepEqual(e.decisions, ['purchase'], 'the wish for a room waits for his agreement, at the inn');
     const rec = t8.rep.record;
     assert.ok(rec.system.some((x) => x.startsWith('NOT APPLIED')));
-    assert.equal(rec.corrections.length, 1);
+    assert.equal(rec.corrections.length, 2);
     // Patch 10A.2: the refusal is routine bookkeeping: kept in the raw panel record (#audit), not on the player's card
     assert.match(main.chat[t8.rep.id].extra.avereth.panel, /NOT APPLIED/);
     assert.doesNotMatch(main.chat[t8.rep.id].extra.display_text, /NOT APPLIED/);

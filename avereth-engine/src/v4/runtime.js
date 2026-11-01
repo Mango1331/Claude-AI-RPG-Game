@@ -211,15 +211,20 @@ export async function interpretMessage(llm, content, catalog, text) {
     let ms = first.ms;
     const calls = [first.call];
     if (!first.ok) return { commands: null, failed: true, error: first.error, ms, repaired: false, calls };
-    let p = parseInterpretation(first.content, vocab, catalog, { currency: content.rules.currency });
+    let p = parseInterpretation(first.content, vocab, catalog, { currency: content.rules.currency, text });
     let repaired = false;
-    if (!p.commands) {
-        const rep = interpreterRequest(vocab, catalog, text, { previous: first.content, errors: p.errors });
+    // Build .142 (§4.4): an answer that is valid but leaves a named price or coin without its evidence gets the same one
+    // repair as a hint; its first commands stand if the repair brings no valid answer
+    if (!p.commands || p.hints?.length) {
+        const rep = interpreterRequest(vocab, catalog, text, { previous: first.content, errors: p.commands ? p.hints : p.errors });
         const second = await ask(llm, rep.messages, 'interpret_repair');
         ms += second.ms;
         calls.push(second.call);
         repaired = true;
-        if (second.ok) p = parseInterpretation(second.content, vocab, catalog, { currency: content.rules.currency });
+        if (second.ok) {
+            const q = parseInterpretation(second.content, vocab, catalog, { currency: content.rules.currency, text });
+            if (q.commands || !p.commands) p = q;
+        }
     }
     return p.commands ? { commands: p.commands, failed: false, error: null, ms, repaired, raw: p.raw, calls } : { commands: null, failed: true, error: (p.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired, calls };
 }
@@ -284,6 +289,21 @@ export async function planMessage(llm, content, ctx, text, { recent = '', isCurr
                 raw.push(String(third.content).slice(0, 2000));
                 p = parsePlan(third.content, vocab, ctx, text);
             }
+        }
+    }
+    // Build .142 (§4.4): a valid plan that leaves a named price or coin without its evidence gets the same one repair as
+    // a hint; the first valid plan stands if the repair brings none (no further call)
+    if (p.commands && p.hints?.length && !repaired) {
+        if (!isCurrent()) return { commands: null, failed: true, error: 'stale request', ms, repaired, raw, calls };
+        const rep = plannerRequest(vocab, ctx, text, { recent, previous: first.content, errors: p.hints });
+        const second = await ask(llm, rep.messages, 'plan_repair');
+        ms += second.ms;
+        calls.push(second.call);
+        repaired = true;
+        if (second.ok) {
+            raw.push(String(second.content).slice(0, 2000));
+            const q = parsePlan(second.content, vocab, ctx, text);
+            if (q.commands) p = q;
         }
     }
     // Only schema-valid plans whose sole remaining errors concern trade consent may ask back.
@@ -865,7 +885,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
             recovery = 'empty';
         } else {
             const p = parseExtraction(response.content, vocab, req.ids, req.expectedKeys,
-                { sceneRequired: req.sceneRequired, startScene: req.startScene, state: req.state, content, explicitArrivals: req.sceneRequired });
+                { sceneRequired: req.sceneRequired, startScene: req.startScene, state: req.state, content, explicitArrivals: req.sceneRequired, reply: chat[id].mes });
             if (p.valid && (!parsed || ((p.issues?.length || 0) <= (parsed.issues?.length || 0)
                 && (p.complete || p.missing.length < parsed.missing.length)))) parsed = p;
             if (p.valid && p.complete && !p.issues?.length) break;

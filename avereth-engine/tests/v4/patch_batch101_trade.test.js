@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { loadProductContent } from '../helpers.js';
-import { applyWorld } from '../../src/v4/world.js';
+import { applyWorldLegacy as applyWorld } from './finance_legacy.js'; // Build .142: pre-delta-1.13 scripted answers
 import { playerTurnV4 } from '../../src/v4/turn.js';
 import { bookSale } from '../../src/v4/trade.js';
 import { applyEvent } from '../../src/state.js';
@@ -11,7 +11,8 @@ const f = JSON.parse(fs.readFileSync(new URL('./fixtures/run22_prebatch.json', i
 const base = () => { const s = applyWorld(structuredClone(f.purchase.state), content, structuredClone(f.purchase.answers[0]), { msg: f.purchase.i, prose: f.purchase.prose }).state; s.offers = {}; return s; };
 const buyer = 'npc.npclodging_clerk', object = 'obj.loot.bog_strider.chitin.f';
 const turn = (s, commands) => playerTurnV4(s, content, 'I sell this chitin for at least five copper.', { c: true, msg: 500, commands }).state;
-const sell = { seq: 1, type: 'sell', object, qty: 1, to: buyer, min_cp: 5 };
+// Build .142 (cmd-1.8 §4.1): his lowest price is consent in advance only with the words that carry it
+const sell = { seq: 1, type: 'sell', object, qty: 1, to: buyer, min_cp: 5, quote: 'I sell this chitin for at least five copper.', price_evidence: { basis: 'total', quote: 'five copper', currency_quote: null } };
 const bid = (cp, at) => ({ seq: 1, type: 'bid', buyer, lines: [{ object, qty: 1 }], price_cp: cp, said: `I will pay ${cp} copper for this plate.`, scene: at });
 for (const mode of ['too cheap', 'absent buyer', 'no bid']) test(`101 sale: Expected cannot pay with ${mode}`, () => {
     const s = turn(base(), [sell]);
@@ -23,7 +24,7 @@ for (const mode of ['too cheap', 'absent buyer', 'no bid']) test(`101 sale: Expe
 });
 test('101 sale: a matching current bid commits once at its actual price and survives replay', () => {
     const s = turn(base(), [sell]);
-    const r = applyWorld(s, content, { scene: s.scene.at, expected: { 1: { sold: true, price_cp: 5 } }, deltas: [bid(7, s.scene.at), { seq: 2, type: 'leave', who: buyer, scene: s.scene.at }] }, { msg: 501, prose: 'The clerk pays seven copper, then leaves.' });
+    const r = applyWorld(s, content, { scene: s.scene.at, expected: { 1: { sold: true, price_cp: 5 } }, deltas: [bid(7, s.scene.at), { seq: 2, type: 'leave', who: buyer, scene: s.scene.at }] }, { msg: 501, prose: 'The clerk says, "I will pay 7 copper for this plate." He pays, then leaves.' });
     assert.equal(r.state.entities.pc.sheet.coin_cp, s.entities.pc.sheet.coin_cp + 7);
     assert.equal(r.events.filter(e => e.t === 'transaction.completed').length, 1);
     const replay = structuredClone(s); for (const e of JSON.parse(JSON.stringify(r.events))) applyEvent(replay, e); assert.deepEqual(replay, r.state);

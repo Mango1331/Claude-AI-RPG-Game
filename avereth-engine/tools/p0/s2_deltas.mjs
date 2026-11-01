@@ -200,7 +200,11 @@ export function concreteDelta(pattern, seq, vocab, catalog) {
     if (pattern.type === 'offer' && c.lines) d.lines = c.lines.map((l) => ({ what: 'item', kind: 'goods', service: null, qty: 1, price_cp: 1, ...said, ...l }));
     // Current offer intent is nullable; the historical P0 vocabulary stays unchanged.
     // (product vocabularies from delta-1.6 on; Build .107 raised it to 1.7)
-    if (/^delta-1\.(?:[6-9]|\d{2,})$/.test(vocab.version) && Array.isArray(d.lines)) d.lines = d.lines.map(l => ({ ...l, equipment: l.equipment ?? null, ...(vocab.version === 'delta-1.12' ? {base:null,quality:null} : {}) }));
+    // delta-1.12 added base/quality to every offer line; Build .142 (delta-1.13) phase/condition/pricing (all nullable):
+    // a gold answer carries no finance evidence, so they stay null (the engine reads that as unproven, never firm)
+    const minor = Number(/^delta-1\.(\d+)$/.exec(vocab.version)?.[1] ?? -1);
+    if (minor >= 6 && Array.isArray(d.lines)) d.lines = d.lines.map(l => ({ ...l, equipment: l.equipment ?? null, ...(minor >= 12 ? { base: l.base ?? null, quality: l.quality ?? null } : {}),
+        ...(minor >= 13 && pattern.type === 'offer' ? { phase: l.phase ?? null, condition: l.condition ?? null, pricing: l.pricing ?? null } : {}) }));
     return d;
 }
 

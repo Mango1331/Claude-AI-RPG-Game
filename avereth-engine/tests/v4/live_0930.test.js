@@ -142,5 +142,10 @@ test('C6: taking the paid-out copper makes no second copper; the water costs its
     assert.equal(S(64).entities.pc.sheet.coin_cp, 120);
     assert.deepEqual(S(65).last.outcome.resolutions.map((r) => [r.type, r.status]), [['buy', 'pending'], ['activity', 'authorized']]);
     assert.equal(S(66).entities.pc.sheet.coin_cp, 120, 'nothing is paid before he agrees');
-    assert.equal(S(68).entities.pc.sheet.coin_cp, 119);
+    // Build .142 (§5.1–5.3): the recorded reply of #66 named the price only as a fact, never as an offer, and "i pay the
+    // copper" names no complete coin group – the 1 cp was the planner's number alone. That is no payment now but a
+    // concrete proposal he can confirm (.141 paid it: 119); with a recorded offer, paying it is accepting it at once.
+    assert.equal(S(68).entities.pc.sheet.coin_cp, 120);
+    assert.deepEqual(S(67).last.outcome.resolutions.map((r) => [r.type, r.status, r.reason ?? null]), [['pay', 'pending', 'payment_unconfirmed'], ['go', 'authorized', null]]);
+    assert.match(S(67).last.outcome.actions[0], /1 cp for water\? Wallet 120 cp → 119 cp\. Nothing changed hands/);
 });

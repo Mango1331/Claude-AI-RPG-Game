@@ -128,7 +128,8 @@ test('c.6.6.5 trade 6: selling part of a stack keeps the rest with its Rank, spe
     assert.equal(part.qty, 1);
     assert.equal(part.rank, 'F');
     // a bid for three plates when he holds two: not sold, nothing moves
-    await g.reply('"Then the other plates too - I\'ll give six for three."', { expected: {}, deltas: [{ seq: 1, type: 'bid', buyer: KEEPER, lines: [{ object: 'obj.loot.mudwyrm.scale.f', qty: 3 }], price_cp: 6 }] });
+    // Build .142 (§3.1): a bare "six" in a reply that names no coin is no price; the fixture's reply now says the coin
+    await g.reply('"Then the other plates too - I\'ll give six copper for three."', { expected: {}, deltas: [{ seq: 1, type: 'bid', buyer: KEEPER, lines: [{ object: 'obj.loot.mudwyrm.scale.f', qty: 3 }], price_cp: 6 }] });
     const stale = Object.values(g.state().offers).find((o) => o.status === 'open' && o.bid);
     assert.equal(stale.lines[0].qty, 2, 'a bid is for what he holds');
 });

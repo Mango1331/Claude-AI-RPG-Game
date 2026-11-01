@@ -20,13 +20,18 @@ const ACT = (kind, more = {}) => ({ type: 'activity', kind, what: null, minutes:
 const TRAIN = ACT('train', { what: 'concentration drills', minutes: 120, learn: 'INT', quote: 'I spend two hours in focused meditation drilling my concentration' });
 const SLEEP = (more = {}) => ACT('sleep', { until: 'morning', quote: 'sleep until morning', ...more });
 const KEEPER = { seq: 1, type: 'person.new', ref: 'keeper', name: null, role: 'innkeeper', desc: ['stout innkeeper'], present: true, relevant: true, threat: false, at: null, band: 'SHORT' };
-const ROOM = (price_cp, seller = 'keeper', seq = 2) => ({ seq, type: 'offer', seller, lines: [{ what: 'a room for the night', kind: 'service', service: 'lodging', qty: 1, price_cp }] });
+// Build .142 (finance consolidation §3, §6.1): a price stands only as the reply's words carry it. These fixtures once
+// let the innkeeper's reply name no money at all ("He goes.") while the answer reported 4 cp – .141 took any number when a
+// reply named no coin (world.js evidenced) – so the replies now say the price, and the offer line quotes it (`said`).
+const WORDS = { 2: 'two copper', 4: 'four copper', 9: 'nine copper', 80: 'eighty copper', 900: 'nine gold' };
+const ROOM = (price_cp, seller = 'keeper', seq = 2, said = `${WORDS[price_cp]} a night`) => ({ seq, type: 'offer', seller, lines: [{ what: 'a room for the night', kind: 'service', service: 'lodging', qty: 1, price_cp, said }] });
 const MSG = 'I spend two hours in focused meditation drilling my concentration, then pay for the room and sleep until morning.';
 
 /** Alaric (Mage, ruleset 2) at the Dented Kettle; the innkeeper there, with a room on offer at `price` (none: no offer). */
 async function atInn(price = 4) {
     const g = await campaign(content, { cls: 'Mage', skills: 'Arcane Bolt + Arcane Ward' });
-    await walk(g, 'loc.alderwatch', { text: '*i walk into town to the inn*', at: { new: { name: 'The Dented Kettle', kind: 'site', parent: 'loc.alderwatch' } }, deltas: [KEEPER, ...(price === null ? [] : [ROOM(price)])] });
+    await walk(g, 'loc.alderwatch', { text: '*i walk into town to the inn*', at: { new: { name: 'The Dented Kettle', kind: 'site', parent: 'loc.alderwatch' } }, deltas: [KEEPER, ...(price === null ? [] : [ROOM(price)])],
+        prose: price === null ? 'He goes.' : `He goes. "A room is ${WORDS[price]} a night," the innkeeper says.` });
     return g;
 }
 const sheet = (g) => g.state().entities.pc.sheet;
@@ -67,7 +72,7 @@ test('.51 (2): the room\'s price not known yet ("pay for another night\'s room",
         assert.equal(sheet(g).coin_cp, coin);
         assert.equal(lodging(g).length, 0);
         // the reply names the price; nothing is paid by it
-        await g.reply('"Four copper a night," the innkeeper says.', { expected: { 1: { minutes: 120, done: true }, 2: { priced: true, taken_anyway: false } }, deltas: [ROOM(4, 'npc.keeper', 1)] });
+        await g.reply('"Four copper a night," the innkeeper says.', { expected: { 1: { minutes: 120, done: true }, 2: { priced: true, taken_anyway: false } }, deltas: [ROOM(4, 'npc.keeper', 1, 'Four copper a night')] });
         assert.equal(sheet(g).coin_cp, coin);
         assert.equal(lodging(g).length, 0);
         // he pays and sleeps: now he sleeps in it
@@ -88,7 +93,7 @@ test('.51 (2b): a room taken only "if it is no more than 6 copper" is not booked
     assert.deepEqual(statuses(g), [['buy', 'conditional', null], ['activity', 'refused', 'room not booked']]);
     assert.match(outcomeOf(g).actions[1], /it is not his yet: its price is still to be named, nothing is paid for it yet\. He does not sleep in this reply/);
     assert.equal(g.state().clock.minute, minute, 'no night passes');
-    await g.reply('"Four copper," the innkeeper says, and he counts it out.', { expected: { 1: { priced: true, taken_anyway: false } }, deltas: [ROOM(4, 'npc.keeper', 1)] });
+    await g.reply('"Four copper," the innkeeper says, and he counts it out.', { expected: { 1: { priced: true, taken_anyway: false } }, deltas: [ROOM(4, 'npc.keeper', 1, 'Four copper')] });
     assert.equal(sheet(g).coin_cp, coin - 4, 'the purchase he agreed to in advance');
     assert.equal(lodging(g).length, 1);
     assert.equal(g.state().clock.minute < minute + 600, true, 'the night was not booked with it');
@@ -110,25 +115,31 @@ test('.51 (3): a booking that fails makes no paid night: too little coin, or a p
     await say(h, "I'll take a room if it's no more than 3 copper, then sleep till morning.",
         { type: 'buy', what: 'a room for the night', from: 'npc.keeper', qty: null, max_cp: 3, any_price: false, quote: "I'll take a room if it's no more than 3 copper" }, SLEEP({ quote: 'then sleep till morning' }));
     assert.deepEqual(statuses(h), [['buy', 'conditional', null], ['activity', 'refused', 'room not booked']]);
-    await h.reply('"Nine copper," the innkeeper says. He shakes his head.', { expected: { 1: { priced: true, taken_anyway: false } }, deltas: [ROOM(9, 'npc.keeper', 1)] });
+    await h.reply('"Nine copper," the innkeeper says. He shakes his head.', { expected: { 1: { priced: true, taken_anyway: false } }, deltas: [ROOM(9, 'npc.keeper', 1, 'Nine copper')] });
     assert.equal(sheet(h).coin_cp, coin);
     assert.equal(lodging(h).length, 0);
 });
 
 // ------------------------------------------------------------------------------------------------ 4 the other "needs"
 test('.51 (4): the other "needs" stay as they were: the ferry (go after the pay, also when it is agreed in advance), a sleep after a go, a training that needs nothing', async () => {
-    const ferry = async (price, buy) => {
+    const ferry = async (price, buy, text = '*i pay the ferryman and cross to the far bank*') => {
         const g = await campaign(content, { cls: 'Mage', skills: 'Arcane Bolt + Arcane Ward' });
         await walk(g, 'loc.alderwatch', { text: '*i go down to the ferry*', at: { new: { name: 'Alder Ferry', kind: 'site', parent: 'loc.alderwatch' } }, deltas: [
-            { ...KEEPER, role: 'ferryman', desc: ['old ferryman'] }, ...(price === null ? [] : [{ seq: 2, type: 'offer', seller: 'keeper', lines: [{ what: 'crossing to the far bank', kind: 'service', service: 'other', qty: 1, price_cp: price }] }])] });
+            { ...KEEPER, role: 'ferryman', desc: ['old ferryman'] }, ...(price === null ? [] : [{ seq: 2, type: 'offer', seller: 'keeper', lines: [{ what: 'crossing to the far bank', kind: 'service', service: 'other', qty: 1, price_cp: price, said: `${WORDS[price]} for the crossing` }] }])],
+            prose: price === null ? 'He goes.' : `He goes. "${WORDS[price]} for the crossing," the ferryman says.` });
         const offer = Object.values(g.state().offers).find((o) => o.status === 'open');
-        await say(g, '*i pay the ferryman and cross to the far bank*', buy ? buy : { type: 'offer.accept', offer: offer.id, lines: ['l1'], qty: null, quote: 'i pay the ferryman' },
+        await say(g, text, buy ? buy : { type: 'offer.accept', offer: offer.id, lines: ['l1'], qty: null, quote: 'i pay the ferryman' },
             { type: 'go', to: { new: 'the far bank' }, needs: 1, quote: 'cross to the far bank' });
         return statuses(g).map((x) => x.slice(0, 2));
     };
     assert.deepEqual(await ferry(2), [['offer.accept', 'resolved'], ['go', 'authorized']]);
     assert.deepEqual(await ferry(900), [['offer.accept', 'refused'], ['go', 'refused']]);
-    assert.deepEqual(await ferry(null, { type: 'buy', what: 'the crossing', from: 'npc.keeper', qty: null, max_cp: 5, any_price: false, quote: 'i pay the ferryman' }), [['buy', 'conditional'], ['go', 'authorized']], 'the story decides the crossing, as before');
+    // Build .142: a limit he names in advance is consent, and the story decides the crossing, as before; the same
+    // command with a limit his words never named (the old fixture's 5 cp beside "i pay the ferryman") is no consent
+    // (I1, gate 4): the purchase waits for a price, and the go that needs it does not happen
+    assert.deepEqual(await ferry(null, { type: 'buy', what: 'the crossing', from: 'npc.keeper', qty: null, max_cp: 5, any_price: false, quote: 'i pay the ferryman up to five copper' },
+        '*i pay the ferryman up to five copper and cross to the far bank*'), [['buy', 'conditional'], ['go', 'authorized']], 'the story decides the crossing, as before');
+    assert.deepEqual(await ferry(null, { type: 'buy', what: 'the crossing', from: 'npc.keeper', qty: null, max_cp: 5, any_price: false, quote: 'i pay the ferryman' }), [['buy', 'pending'], ['go', 'refused']], 'no limit in his words');
     // a sleep after a go: as ever; a training before a pending room: on its own
     const g = await atInn(null);
     await say(g, '*i go up to the hayloft and sleep until morning*', { type: 'go', to: { new: 'the hayloft' }, quote: 'i go up to the hayloft' }, SLEEP({ needs: 1, quote: 'sleep until morning' }));

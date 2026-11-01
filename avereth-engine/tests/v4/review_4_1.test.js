@@ -9,8 +9,8 @@ import path from 'node:path';
 import { loadContent, ROOT } from '../helpers.js';
 import { Chat4 } from './harness.js';
 import { applyEvent } from '../../src/state.js';
-import { applyWorld } from '../../src/v4/world.js';
-import { resolveCommands } from '../../src/v4/commands.js';
+import { applyWorldLegacy as applyWorld } from './finance_legacy.js'; // Build .142: pre-delta-1.13 scripted answers
+import { resolveCommandsLegacy as resolveCommands } from './finance_legacy.js'; // Build .142: pre-cmd-1.8 scripted commands
 import { buildCatalog, journeyReady } from '../../src/v4/catalog.js';
 import { catalogText, parseInterpretation } from '../../src/v4/interpret.js';
 import { deltaVocabularyText } from '../../src/v4/extract.js';
@@ -130,13 +130,13 @@ test('coin: the other side of a trade the engine books does not give him coin (a
     const s = person(structuredClone(base), 'npc.tanner', 'tanner');
     s.objects['obj.pelt'] = { id: 'obj.pelt', name: 'wolf pelt', kind: 'item', stack: false, qty: 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source: {} };
     s.entities.pc.sheet.inventory['obj.pelt'] = 1;
-    const sell = play(s, [{ seq: 1, type: 'sell', object: 'obj.pelt', qty: null, to: 'npc.tanner', min_cp: 20, quote: 'not under 20' }]);
+    const sell = play(s, [{ seq: 1, type: 'sell', object: 'obj.pelt', qty: null, to: 'npc.tanner', min_cp: 20, quote: 'not under 20 copper' }]);
     const sold = applyWorld(sell.after(), content, { expected: { 1: { sold: true, price_cp: 25 } }, deltas: [gift('npc.tanner', 25, 'payment for the pelt')] }, { msg: 9 });
     assert.equal(coin(sold.state), coin(s) + 25);
     assert.deepEqual(rules(sold), ['engine_booked']);
     // someone else here is no party to that sale
     person(s, 'npc.child', 'tanner\'s daughter');
-    const tip = applyWorld(play(s, [{ seq: 1, type: 'sell', object: 'obj.pelt', qty: null, to: 'npc.tanner', min_cp: 20, quote: 'not under 20' }]).after(), content, { expected: { 1: { sold: false, price_cp: null } }, deltas: [gift('npc.child', 1, 'a copper for the story')] }, { msg: 9 });
+    const tip = applyWorld(play(s, [{ seq: 1, type: 'sell', object: 'obj.pelt', qty: null, to: 'npc.tanner', min_cp: 20, quote: 'not under 20 copper' }]).after(), content, { expected: { 1: { sold: false, price_cp: null } }, deltas: [gift('npc.child', 1, 'a copper for the story')] }, { msg: 9 });
     assert.equal(coin(tip.state), coin(s) + 1);
     // a purchase: he paid exactly the price; "change" from the seller is not a gift
     const v = person(structuredClone(base), 'npc.vendor', 'water vendor');
@@ -162,7 +162,10 @@ function vendor(lines) {
     s.offers['offer.w'] = { id: 'offer.w', seller: 'npc.vendor', at: s.scene.at, status: 'open', canon: false, turn: s.turn, lines: lines.map((l, i) => ({ id: `l${i + 1}`, kind: 'goods', service: null, ...l })) };
     return s;
 }
-const buy = (extra) => ({ seq: 1, type: 'buy', what: 'water flask', from: 'npc.vendor', qty: null, max_cp: null, any_price: false, quote: 'water', ...extra });
+// Build .142 (§4.1): a limit is consent in advance only as far as his words carry it, so these scripted commands now
+// say the limit they name (they once named a number his quote never held: "water" with max_cp 10)
+const limitWords = (n, how) => (Number.isInteger(n) ? ` ${how} ${n} copper` : '');
+const buy = (extra) => ({ seq: 1, type: 'buy', what: 'water flask', from: 'npc.vendor', qty: null, max_cp: null, any_price: false, quote: `water${limitWords(extra?.max_cp, 'for at most')}`, ...extra });
 const accept = (extra) => ({ seq: 1, type: 'offer.accept', offer: 'offer.w', lines: ['l1'], qty: null, quote: 'deal', ...extra });
 
 test('purchase: the number he names is bought and paid, by buy and by offer.accept; his limit holds for that total', () => {
@@ -209,11 +212,13 @@ test('purchase: a purchase agreed in advance (a limit, no price yet) books the n
     const s = person(structuredClone(base), 'npc.vendor', 'water vendor');
     const ask = play(s, [buy({ qty: 3, max_cp: 10 })]);
     assert.equal(ask.ctx.resolutions[0].status, 'conditional');
-    const offer = { seq: 1, type: 'offer', seller: 'npc.vendor', lines: [{ what: 'water flask', kind: 'goods', service: null, qty: 1, price_cp: 3 }] };
-    const r = applyWorld(ask.after(), content, { expected: { 1: { priced: true, taken_anyway: false } }, deltas: [offer] }, { msg: 9 });
+    // Build .142 (§3): the vendor's reply says the price it reports (this one once came without any reply text)
+    const offer = { seq: 1, type: 'offer', seller: 'npc.vendor', lines: [{ what: 'water flask', kind: 'goods', service: null, qty: 1, price_cp: 3, said: 'three copper a flask' }] };
+    const prose = '"Water flasks, three copper a flask," the vendor says.';
+    const r = applyWorld(ask.after(), content, { expected: { 1: { priced: true, taken_anyway: false } }, deltas: [offer] }, { msg: 9, prose });
     assert.deepEqual([coin(s) - coin(r.state), held(r.state)], [9, [['water flask', 3]]]);
     const dear = play(s, [buy({ qty: 3, max_cp: 8 })]);
-    const no = applyWorld(dear.after(), content, { expected: { 1: { priced: true, taken_anyway: false } }, deltas: [offer] }, { msg: 9 });
+    const no = applyWorld(dear.after(), content, { expected: { 1: { priced: true, taken_anyway: false } }, deltas: [offer] }, { msg: 9, prose });
     assert.deepEqual([coin(no.state), held(no.state)], [coin(s), []], '9 cp is above his limit of 8');
     assert.ok(no.system.some((x) => /NOT BOUGHT — 3 water flask: 9 cp is above his limit of 8 cp/.test(x)));
 });
@@ -236,7 +241,7 @@ function herbs(qty, template = false) {
     }
     return s;
 }
-const sell = (object, extra) => ({ seq: 1, type: 'sell', object, qty: null, to: 'npc.herbalist', min_cp: null, quote: 'I sell', ...extra });
+const sell = (object, extra) => ({ seq: 1, type: 'sell', object, qty: null, to: 'npc.herbalist', min_cp: null, quote: `I sell${limitWords(extra?.min_cp, 'for no less than')}`, ...extra });
 const buyerHolds = (s) => Object.values(s.objects).filter((o) => o.holder?.entity === 'npc.herbalist').map((o) => [o.name, o.qty]);
 
 test('sale: never more than he holds; a part of a stack leaves him and the rest stays; he is paid the agreed price once', () => {

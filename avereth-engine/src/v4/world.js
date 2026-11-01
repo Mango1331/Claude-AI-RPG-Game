@@ -32,7 +32,8 @@ import {
 } from './domain.js';
 import { creatureContract } from './population.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
-import { pickLines, bookPurchase, bookSale, saleUnits, unitsText, tradePrice, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines, offerAvailability, rateUnits } from './trade.js';
+import { pickLines, bookPurchase, bookSale, saleUnits, unitsText, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines, offerAvailability, rateUnits } from './trade.js';
+import { findQuote, priceEvidence, openConditionNear, moneyLiteral } from './finance_evidence.js';
 import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
 import { reachedEvents, setIntentEvents } from './intents.js';
 import { featureNamed, featureEvent, applySpring } from './features.js';
@@ -287,6 +288,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     corrections.push(...fw.corrections);
     // the other side of a trade the engine books this turn: a sale's buyer, a seller he paid exactly (coin.gift below)
     const counterparts = new Set([...(outcome.booked?.sellers || []), ...s.decisions.filter((x) => x.kind === 'sale' && x.turn === s.turn).map((x) => x.seller || '*')]);
+    // Build .142: the money ranges of gifts booked in this reply (one handover pays once)
+    const giftRanges = [];
 
     // 2. world deltas in story order, each against the state at its step
     const blockedPeople = new Set(); // only a rejected person.new and its dependent claims in this reply
@@ -1323,6 +1326,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             case 'coin.gift': {
                 const from = idOf(d.from);
                 const free = !privateQuestsOf(s);
+                if (free) { giftFree(d, from); break; }
                 const quote = normText(d.said || '').replace(/[^a-z0-9]+/g, ' ').trim();
                 const amount = free ? coinEvidence(d.said, content) : null;
                 const giftId = `gift.${tag}.${hash32(`${from || d.from}|${quote}`)}`;
@@ -1888,21 +1892,82 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
      *   - and never when it is the coin the engine credited him at this place today (a Guild payout, a sale): the
      *     story counting it out on the counter and him pocketing it is the same coin
      */
+    /**
+     * Build .142 (finance consolidation §4.3, §7): a coin gift on the free path pays only an actual handover now
+     * (phase transferred) that is its own economic event (relation independent), with the complete amount in the words
+     * the report assigns (money), from a giver who is here (or coin he takes himself). Proceeds or change of a trade
+     * are paid by the trade (relation trade_settlement); a recount (repeat_of, recount) never pays again; a promise
+     * pays nothing; the same handover reported twice in this reply pays once. A trade partner may still give a
+     * separate thanks.
+     */
+    function giftFree(d, from) {
+        const money = d.money && typeof d.money === 'object' ? d.money : null;
+        // the money words are looked for first where the report's own words of this handover stand (said), as for a
+        // bid or offer line: "three silver" told twice for two handovers is each one's own
+        const saidAt = typeof d.said === 'string' ? findQuote(prose, d.said) : { state: 'missing' };
+        const within = saidAt.state === 'found' ? saidAt : null;
+        const literal = (w) => moneyLiteral(prose, money.quote, { content, currencyQuote: money.currency_quote ?? null, within: w });
+        const near = money && within ? literal(within) : null;
+        const ev = !money ? { state: 'missing', reason: 'no_money_quote', source: null } : near && near.state !== 'missing' ? near : literal(null);
+        const at = ev.source?.ranges?.[0] || null;
+        // the record identity of a gift stays its reported handover (said), as before: the same money words or the same
+        // amount from the same giver alone are no repetition (§7.2)
+        const giftId = `gift.${tag}.${hash32(`${from || d.from}|${normText(d.said || money?.quote || '').replace(/[^a-z0-9]+/g, ' ').trim()}`)}`;
+        const refuse = (rule, why, fix) => {
+            reject(d, rule, why);
+            const correction = `Alaric's purse did not change: the ${d.cp} cp from ${String(d.from).slice(0, 60)} in the last reply were not booked (${fix}).`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+        };
+        if (d.repeat_of != null || d.relation === 'recount' || (s.credits || []).some(c => c.gift?.id === giftId))
+            return refuse('coin_already_received', 'an existing handover or its recount never creates another payment', 'it recounts a handover already booked');
+        if (d.phase !== 'transferred')
+            return refuse('coin_phase', d.phase === 'promised' ? 'a promised or offered payment is no handover now' : 'the report does not say that coin changed hands now', 'no coin changed hands now');
+        if (d.relation === 'trade_settlement')
+            return refuse('engine_booked', 'proceeds or change of a trade come only through the trade itself (its accepted bid or offer), never as a gift', 'proceeds of a trade are paid only through its accepted bid or offer');
+        if (d.relation !== 'independent')
+            return refuse('coin_relation', 'the report does not say whether this coin is a gift or part of a trade', 'it is not known what this coin is for');
+        if (ev.state !== 'verified' || /\b(?:promis(?:e|es|ed)\s+to\s+|(?:will|would|could|might)\s+|(?:i|he|she|they)['’]ll\s+)(?:give|pay|hand|pass|put|transfer)\b|\b(?:already|previously)\s+(?:gave|paid|handed|passed|put|transferred)\b/i.test(`${d.said || ''} ${money?.quote || ''}`))
+            return refuse('coin_evidence', ev.state === 'incomplete' ? 'the handed-over amount is not complete in the reply' : 'a gift needs the exact words of a current handover with its full amount; promises, recounts and invented quotes do not pay', 'the reply does not show this amount handed over now');
+        if (from === 'pc') { reject(d, 'coin', 'Alaric does not gift himself coin'); return; }
+        if (at && giftRanges.some(r => r.start < at.end && at.start < r.end)) return refuse('coin_already_received', 'the same handover is reported twice in this reply', 'it is the same handover as another report');
+        const refusal = coinRefusal(d, from);
+        if (refusal) return refuse(refusal.rule, refusal.why, refusal.fix);
+        const cp = ev.cp;
+        if (cp !== d.cp) emit({ t: 'note', d: { kind: 'amount.corrected', seq: d.seq, type: d.type, reported_cp: d.cp, said: String(money.quote).slice(0, 60), cp } });
+        if (at) giftRanges.push(at);
+        grant('envelope.give');
+        const coin = s.entities.pc.sheet.coin_cp;
+        emit({ t: 'coin.changed', d: { id: 'pc', value: coin + cp, delta: cp, why: `${from ? entityLabel(s, from) : d.from}: ${String(d.why || 'a gift').slice(0, 80)}` } });
+        emit({ t: 'transaction.completed', d: { to: 'pc', from: from || String(d.from), cp, at: s.scene.at, gift: { id: giftId, said: String(money.quote).slice(0, 300), why: String(d.why || 'a gift').slice(0, 120) } } });
+    }
+
     function coinRefusal(d, from) {
         const giver = from ? s.entities[from] : null;
         // Preserve the transaction's purpose across turns: pocketing a paid sale is no second payment.
         // A distinct gift/thanks/bonus is allowed, even from the same buyer for the same amount.
         const purpose = keyWords(d.why || '');
         const extra = /\b(?:another|additional|extra|bonus|gift|tip|thanks|thank\w*)\b/i.test(d.said || '');
-        const paidSale = !privateQuestsOf(s) && !extra && /\b(?:payment|sale|price|proceeds|sold)\b/i.test(d.why || '')
+        // Build .142 (§7.2, "vorhandene credits … und den zugeordneten Quellvorgang verwenden"; "widersprüchliche Angaben
+        // werden … abgewiesen"): a gift whose own why names it the payment for goods this giver's sale here already
+        // credited is that sale again, whatever relation the report gives it – unless the words make it an explicitly
+        // separate extra. The trade partner alone (counterparts) stays a rule of the legacy private path only.
+        const legacy = privateQuestsOf(s);
+        const paidSale = !extra && /\b(?:payment|sale|price|proceeds|sold)\b/i.test(d.why || '')
             && (s.credits || []).find(c => !c.gift && c.from === from && c.for && c.at === s.scene.at
                 && keyWords(c.for).filter(w => purpose.includes(w)).length >= Math.min(2, keyWords(c.for).length));
         // Build .138 (batch 20 T32: "these sale proceeds are already in his purse" for a shard that was never sold): the
         // refusal names the sale the engine actually credited, and claims no payment for anything else
         if (paidSale) return { rule: 'engine_booked', why: `sale proceeds come only through an accepted bid; the sale credited here (${String(paidSale.for).slice(0, 80)}, ${paidSale.cp} cp) is not paid again`, fix: `only the sale of ${String(paidSale.for).slice(0, 80)} was credited (${paidSale.cp} cp); a recount is not another handover, and anything else is not sold until its bid is accepted` };
+        // Build .142 (§4.3 "Quell-, Transaktions-… prüfungen bleiben nötig"; batch 20 T26): coin whose own why names it the
+        // payment for goods Alaric still holds is the price of a sale that did not happen – whatever relation the report
+        // gives it; the sale pays only through its accepted bid, the goods stay his
+        const unsold = !extra && /\b(?:payment|sale|price|proceeds|sold)\b/i.test(d.why || '') && from && s.entities[from]?.kind === 'npc'
+            && Object.values(s.objects || {}).find((o) => o.holder?.entity === 'pc' && keyWords(o.name).length
+                && keyWords(o.name).filter((w) => purpose.includes(w)).length >= Math.min(2, keyWords(o.name).length));
+        if (unsold) return { rule: 'engine_booked', why: `coin for ${String(unsold.name).slice(0, 80)}, which Alaric still holds, is the price of a sale: it pays only through an accepted bid`, fix: `${String(unsold.name).slice(0, 80)} was not sold and stays his; a sale pays only when Alaric accepts a matching bid` };
         if (giver?.kind === 'npc' && statusOf(s, from) !== 'dead' && s.scene.present.includes(from)) {
             // … and does not say a trade was booked when only an offer or an open sale exists this turn
-            if (counterparts.has(from) || counterparts.has('*')) {
+            if (legacy && (counterparts.has(from) || counterparts.has('*'))) {
                 const booked = events.some((e) => e.t === 'transaction.completed' && [e.d.from, e.d.to, e.d.seller].includes(from));
                 return booked ? { rule: 'engine_booked', why: 'the other side of a trade the engine booked this turn does not give him coin', fix: 'the engine booked that trade at its price' }
                     : { rule: 'engine_booked', why: 'the other side of a trade in this reply does not give him coin; a sale pays only through its accepted bid', fix: 'nothing was sold or paid: a sale pays only when Alaric accepts a matching bid' };
@@ -2405,25 +2470,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
      * - the reply names no sum at all ("presses a few coins into his hand") -> the extractor's number stands: the story
      *   left the amount to the engine's reading, and the booking event keeps it.
      */
-    function evidenced(cp, said, d, tradeQty = null) {
+    // Legacy paths only (Build .142): private-quest campaigns (wages, rewards) and the pre-planner path. On the planner
+    // path trade prices and gifts are read by finance_evidence against the model's assigned words, never by this ladder.
+    function evidenced(cp, said, d) {
         if (typeof said === 'string' && said.trim()) {
             const flatSaid = normText(said).replace(/[^a-z0-9]+/g, ' ').trim();
             const inReply = !prose || normText(prose).replace(/[^a-z0-9]+/g, ' ').includes(flatSaid);
-            if (inReply && tradeQty !== null) {
-                const p = tradePrice(cp, said, tradeQty, content, { npc: true });
-                if (p.handled) {
-                    if (p.cp !== null && p.cp !== cp) emit({ t: 'note', d: { kind: 'amount.corrected', seq: d?.seq ?? 0, type: d?.type ?? null, reported_cp: cp, said: String(said).slice(0, 60), cp: p.cp } });
-                    return p.cp;
-                }
-            }
             const v = inReply ? coinFromWords(said, content) : null;
-            // Build .138 (#116: "Four copper the plate, fifty-six the lot" stored 4 cp for fourteen plates): a trade
-            // position of several units whose words the trade reading could not place is open; the one coin amount in
-            // the words is no safer total than the reported one
-            if (v !== null && v !== cp && inReply && tradeQty !== null && tradeQty !== 1) {
-                emit({ t: 'note', d: { kind: 'amount.unproven', seq: d?.seq ?? 0, type: d?.type ?? null, reported_cp: cp, said: String(said).slice(0, 60), why: 'the trade words do not settle the price of these units' } });
-                return null;
-            }
             if (v !== null) {
                 if (v !== cp) emit({ t: 'note', d: { kind: 'amount.corrected', seq: d?.seq ?? 0, type: d?.type ?? null, reported_cp: cp, said: String(said).slice(0, 60), cp: v } });
                 return v;
@@ -2552,25 +2605,44 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const sameArticle = (a,b) => a.profile?.kind === 'gear' || b.profile?.kind === 'gear'
             ? normText(a.what) === normText(b.what)
             : sameWant(a.what,b.what) && sameWant(b.what,a.what);
+        // Build .142 (§3.3, §6.1): every line carries its terms (dealTerms) on the planner path; the price of a line is
+        // the one its own words carry, never a coin amount found elsewhere in the reply. A line whose figures disagree,
+        // or whose words carry no price at all, is not recorded (the story is told so); a line with a price that does
+        // not bind (conditional, or unconfirmed) is recorded as information that cannot be bought.
+        const terms = true;
+        const quoted = (l) => { const at = typeof l.said === 'string' ? findQuote(prose, l.said) : { state: 'missing' };
+            const q = priceEvidence(l.pricing, { source: prose, content, units: l.qty ?? 1, reported: l.price_cp, within: at.state === 'found' ? at : null, goods: [l.what] });
+            return q.state === 'verified' ? q.cp : null; };
         const priced = d.lines.map(l => {
             const named = l.kind === 'goods' ? itemProfile(content, {name:l.what, balance:true, effect:l.effect, teaches:l.teaches}) : null;
             const regular = l.kind === 'goods' && l.equipment !== false && (l.base != null || l.equipment === true || (named?.kind === 'gear' && named.rank === 'F')) && (!named?.rank || named.rank === 'F');
             if (regular) {
-                const existing = openOffers(s).filter(o=>!o.bid && o.seller===seller).flatMap(o=>o.lines).find(x=>normText(l.what) === normText(x.what) && (x.qty??1)===(l.qty??1) && x.price_cp===evidenced(l.price_cp,l.said,d,l.qty??1));
+                const said = terms ? quoted(l) : evidenced(l.price_cp, l.said, d);
+                const existing = openOffers(s).filter(o=>!o.bid && o.seller===seller).flatMap(o=>o.lines).find(x=>normText(l.what) === normText(x.what) && (x.qty??1)===(l.qty??1) && x.price_cp===said);
                 if(existing) return {...existing,engine_price:true};
                 const profile = gearOfferProfile(content,l);
                 if (!profile) { reject({...d,lines:[l]}, 'gear_offer', 'regular equipment requires a supported base and quality'); return null; }
                 const price_cp = gearRetailPrice(content,profile) * (l.qty ?? 1);
-                return {...l, what:gearOfferName(profile), appearance:l.what, profile, price_cp, engine_price:true,
-                    price_changed:evidenced(l.price_cp,l.said,d,l.qty ?? 1) !== price_cp};
+                // the engine's price needs no words; whether the seller offers it now still does
+                const t = terms ? dealTerms(l, { units: l.qty ?? 1, reported: l.price_cp, enginePrice: price_cp }) : null;
+                return {...l, what:gearOfferName(profile), appearance:l.what, profile, price_cp, engine_price:true, price_changed: said !== price_cp,
+                    ...(t ? { terms: t.terms, condition: t.condition, evidence: t.evidence, why: t.why } : {})};
             }
-            return {...l,raw_line:l,raw_price:l.price_cp,price_cp:evidenced(l.price_cp,l.said,d,cPath && rulesetOf(s)>=2 ? l.qty ?? 1 : null)};
+            if (!terms) return {...l,raw_line:l,raw_price:l.price_cp,price_cp:evidenced(l.price_cp,l.said,d)};
+            const t = dealTerms(l, { units: l.qty ?? 1, reported: l.price_cp, note: { seq: d.seq, type: d.type } });
+            if (t.contradicted) return { ...l, raw_line: l, raw_price: l.price_cp, price_cp: null, why: t.why };
+            return { ...l, raw_line: l, raw_price: l.price_cp, price_cp: t.price, terms: t.terms, condition: t.condition, evidence: t.evidence, why: t.why };
         }).filter(Boolean);
-        // a price the reply does not say is not offered (review of c.6.6.11); the seller's other lines stand
+        // a price the reply does not carry is not offered (review of c.6.6.11); the seller's other lines stand
         const unproven = priced.filter(l => l.price_cp === null && Number.isInteger(l.raw_price));
         if (unproven.length) {
             reject({ ...d, lines: unproven.map(l=>l.raw_line) }, 'offer', 'a price the reply does not name');
-            const correction = `No price was recorded for ${unproven.map((l) => String(l.what).slice(0, 40)).join(', ')}: the last reply names no such sum. A price stands only as the story names it.`;
+            const correction = `No price was recorded for ${unproven.map((l) => `${String(l.what).slice(0, 40)}${l.why ? ` (${l.why})` : ''}`).join(', ')}: the last reply does not carry such a price. A price stands only as the story names it.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+        }
+        for (const l of priced.filter(l => !unproven.includes(l) && l.terms && l.terms !== 'firm')) {
+            system.push(`NOT A BINDING OFFER — ${l.what}${Number.isInteger(l.price_cp) ? ` (${l.price_cp} cp)` : ''}: ${l.why}. It cannot be bought yet.`);
+            const correction = `${entityLabel(s, seller)}'s price for ${String(l.what).slice(0, 60)} is not binding: ${l.why}. Nothing was bought; a purchase needs a binding offer and Alaric's acceptance.`;
             if (!corrections.includes(correction)) corrections.push(correction);
         }
         // Patch 7.1: what the extractor reports of a line is its words, kind, amount and price; the goods' own values are
@@ -2578,7 +2650,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // historical and other goods keep flexible prices with an advisory audit.
         const correctedPrices = new Set();
         const lines = priced.filter((l) => !unproven.includes(l)).map((l, i) => {
-            const line = { id: `l${i + 1}`, what: l.what, ...(l.engine_price ? {base:l.base,quality:l.quality,appearance:l.appearance} : {}), kind: l.kind, service: l.service ?? null, qty: l.qty ?? 1, price_cp: l.price_cp, ...(l.said !== undefined ? { said: l.said } : {}) };
+            const line = { id: `l${i + 1}`, what: l.what, ...(l.engine_price ? {base:l.base,quality:l.quality,appearance:l.appearance} : {}), kind: l.kind, service: l.service ?? null, qty: l.qty ?? 1, price_cp: l.price_cp, ...(l.said !== undefined ? { said: l.said } : {}),
+                ...(l.terms ? { terms: l.terms, condition: l.condition ?? null, evidence: l.evidence, ...(Number.isInteger(l.raw_price) && l.raw_price !== l.price_cp ? { reported_cp: l.raw_price } : {}) } : {}) };
             // Patch 7.2: a restorative's kind as the extractor gave it (effect), checked by itemProfile (a consumable at all)
             // Patch 9C-2b: a Skill Stone or a manual by what the reply says it teaches (fixed with the line)
             let profile = l.profile || (line.kind === 'goods' ? itemProfile(content, { name: line.what, balance: true, effect: l.effect ?? null, teaches: l.teaches ?? null }) : null);
@@ -2611,9 +2684,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (!lines.length) return;
         // the seller's latest price for the same thing stands: an open offer of theirs for it closes (one price at a
         // time, as for a buyer's bid); an unchanged one stays and is not offered twice
+        // Build .142: the same terms are part of "the same price"; an unconfirmed new report never closes a standing offer
         const same = openOffers(s).filter((o) => !o.bid && !o.canon && o.seller === seller && o.lines.some((x) => lines.some((l) => sameArticle(l,x))));
-        if (same.length && same.every((o) => lines.every((l) => o.lines.some((x) => sameArticle(l,x) && x.price_cp === l.price_cp && (x.qty ?? 1) === (l.qty ?? 1))))) return;
-        for (const o of same) emit({ t: 'offer.closed', d: { id: o.id, status: 'repriced' } });
+        if (same.length && same.every((o) => lines.every((l) => o.lines.some((x) => sameArticle(l,x) && x.price_cp === l.price_cp && (x.qty ?? 1) === (l.qty ?? 1) && (x.terms ?? 'firm') === (l.terms ?? 'firm'))))) return;
+        for (const o of same) if (lines.some((l) => (l.terms ?? 'firm') !== 'unverified' && o.lines.some((x) => sameArticle(l, x)))) emit({ t: 'offer.closed', d: { id: o.id, status: 'repriced' } });
         const id = `offer.t${tag}.${Object.keys(s.offers).length + 1}`;
         emit({ t: 'offer.created', d: { offer: { id, seller, at: s.scene.at, status: 'open', canon: false, turn: s.turn, lines } } });
         // a purchase Alaric agreed to in advance, within his limit (buy with max_cp or any_price), in the number he named
@@ -2631,7 +2705,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 if (new Set(candidates.map(x => String(x.seller))).size > 1) continue;
             }
             if (o.status !== 'open') continue;
-            const lines = cPath && rulesetOf(s) >= 2 ? purchaseLines(dec.what, o.lines) : wantedLines(dec.what, o.lines);
+            // Build .142: his consent in advance buys only what binds (a firm line); his limit makes nothing binding
+            const binding = o.lines.filter((l) => (l.terms ?? 'firm') === 'firm');
+            const lines = cPath && rulesetOf(s) >= 2 ? purchaseLines(dec.what, binding) : wantedLines(dec.what, o.lines);
             if (!lines.length) continue;
             const pick = pickLines(o, lines.map((l) => l.id), dec.qty ?? null);
             if (pick.clarify || pick.error) { system.push(`NOT BOUGHT — ${pick.error || `which of ${pick.clarify.join(' or ')} he wants ${dec.qty} of is open`}`); continue; }
@@ -2661,6 +2737,51 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
      * each, and one price for all of them; nothing changes hands until his own acceptance (commands.js offer.accept).
      * A changed bid replaces an overlapping lot; independent goods keep their bids.
      */
+    /**
+     * Build .142 (finance consolidation §3, §4.2, §6.1): what binds of a reported price. The model says whether the
+     * other side makes a binding offer now (phase firm), names an open condition (conditional, condition) or is
+     * unclear, and which words carry the price (pricing). The engine checks only those words (finance_evidence) and a
+     * strong open-condition word next to them, which can only take the binding away. Result: firm (binding, with its
+     * price), conditional (information with its condition), unverified (information; the report or its words do not
+     * carry a binding price) or contradicted (the assigned figures disagree: not stored). A gear line's price is the
+     * engine's own (enginePrice) and needs no words; its binding still needs the report and the words around it.
+     */
+    function dealTerms(x, { units = 1, lines = null, reported = null, enginePrice = null, goods = [], note = null } = {}) {
+        const phase = ['firm', 'conditional', 'unclear'].includes(x.phase) ? x.phase : 'unclear';
+        const condition = typeof x.condition === 'string' && x.condition.trim() ? x.condition.trim().slice(0, 160) : null;
+        const saidAt = typeof x.said === 'string' ? findQuote(prose, x.said) : { state: 'missing' };
+        const within = saidAt.state === 'found' ? saidAt : null;
+        const ev = Number.isInteger(enginePrice)
+            ? { state: 'verified', cp: enginePrice, reason: 'engine_price', source: null }
+            : priceEvidence(x.pricing, { source: prose, content, units, lines, reported, within, goods: [...goods, x.what].filter(Boolean) });
+        const anchor = within || ev.source?.ranges?.[0] || null;
+        const marker = anchor ? openConditionNear(prose, anchor.start, anchor.end) : null;
+        const evidence = { source_reference: { message: msg, text_hash: hash32(prose) }, ranges: [...(within ? [{ start: within.start, end: within.end }] : []), ...(ev.source?.ranges || [])].slice(0, 4),
+            basis: Number.isInteger(enginePrice) ? 'engine' : x.pricing?.basis ?? 'unknown', derived_cp: ev.state === 'verified' ? ev.cp : null, reason: ev.reason ?? null };
+        if (ev.state === 'contradicted') return { contradicted: true, why: `the price words do not add up (${ev.reason})`, evidence };
+        // §3.1/§3.3: a report that converted its own coin words wrongly ("two silver, ten copper" reported as 25; "2 silver"
+        // as 200) is corrected to the words as before (amount.corrected); a plain copper sum that differs from the number is
+        // no conversion – the words were given another role (his till, another article): no price
+        const converts = (q) => /\b(?:silver|silvers|gold|golds)\b/i.test(String(q ?? '')) || (x.pricing?.positions || []).some((p) => /\b(?:silver|gold)/i.test(String(p?.quote ?? '')));
+        if (ev.state === 'verified' && ev.reported_mismatch && Number.isInteger(reported) && ![10, 100].some((k) => ev.cp * k === reported || reported * k === ev.cp) && !converts(x.pricing?.quote))
+            return { contradicted: true, why: `the reported ${reported} cp is not what its price words carry (${ev.cp} cp)`, evidence };
+        if (ev.state === 'verified' && ev.reported_mismatch && note)
+            emit({ t: 'note', d: { kind: 'amount.corrected', seq: note.seq ?? 0, type: note.type ?? null, reported_cp: reported, said: String(x.pricing?.quote ?? '').slice(0, 60), cp: ev.cp } });
+        const price = ev.state === 'verified' ? ev.cp : null;
+        if (phase === 'conditional' || condition) return { terms: 'conditional', price, condition: condition || 'a condition the reply names', evidence, why: `it is conditional: ${condition || 'an open condition'}` };
+        if (phase === 'firm' && price !== null && !marker) return { terms: 'firm', price, condition: null, evidence, why: null };
+        const why = phase !== 'firm' ? 'the report does not say that this offer binds now'
+            : price === null ? `the reply's words do not carry this price (${ev.reason})` : `the reply names an open condition ("${marker}")`;
+        return { terms: 'unverified', price, condition: null, evidence, why };
+    }
+
+    /**
+     * Prototype C (4.3.0-c.6.6.5): someone names what they would pay Alaric for things he holds (live 15.10.2026: "eight
+     * silver for the lot" became an offer to SELL him his own parts). The bid names his things by id and the units of
+     * each, and one price for all of them; nothing changes hands until his own acceptance (commands.js offer.accept).
+     * Build .142: the bid stores its terms (dealTerms); only a firm bid can be accepted or sold under his consent in
+     * advance. A firm or conditional new bid replaces an overlapping lot; an unverified report never closes a firm one.
+     */
     function bid(d) {
         const buyer = idOf(d.buyer);
         if (!buyer || buyer === 'pc' || !s.scene.present.includes(buyer)) { reject(d, 'offer', `the buyer ${String(d.buyer).slice(0, 40)} is not present`); return; }
@@ -2668,35 +2789,55 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             reject(d, 'offer', 'third-party price advice is not this speaker’s bid'); return;
         }
         const lines = [];
+        const given = [];
         for (const l of d.lines || []) {
             const o = objectRef(l.object);
             if (!o || o.holder?.entity !== 'pc') { reject(d, 'offer', `a bid is for things Alaric holds (${JSON.stringify(l.object).slice(0, 60)} is not his)`); return; }
             const have = lines.find((x) => x.object === o.id);
-            let qty = (have?.qty || 0) + (Number.isInteger(l.qty) && l.qty > 0 ? l.qty : (o.qty ?? 1));
+            const units = Number.isInteger(l.qty) && l.qty > 0 ? l.qty : (o.qty ?? 1);
+            given.push({ qty: units });
+            let qty = (have?.qty || 0) + units;
             if (!explicitTravel) qty = Math.min(qty, o.qty ?? 1);
             if (qty > (o.qty ?? 1)) { reject(d, 'offer', 'the bid exceeds the held quantity'); return; }
             if (have) have.qty = qty;
             else lines.push({ id: `l${lines.length + 1}`, what: o.name, kind: 'goods', service: null, object: o.id, qty, price_cp: null });
         }
         if (!lines.length || !Number.isInteger(d.price_cp)) { reject(d, 'offer', 'a bid names his things and one price'); return; }
-        // Build .138 (#106: seven and fourteen plates of the same goods at "four copper the plate"): stacks of the same
-        // goods share the unit rate; each line keeps its own object and units
-        const price = evidenced(d.price_cp, d.said, d, cPath && rulesetOf(s) >= 2 ? rateUnits(lines, (id) => s.objects[id]) : null);
-        if (price === null) { reject(d, 'offer', `${d.price_cp} cp is no sum the reply names`); return; }
-        // A changed price replaces the entire overlapping lot, never an unrelated bid.
-        for (const old of openOffers(s).filter(x => x.bid && x.seller === buyer
+        // Build .138: stacks of the same goods share the unit rate; each line keeps its own object and units
+        const t = dealTerms(d, { units: rateUnits(lines, (id) => s.objects[id]), lines: given, reported: d.price_cp, goods: lines.map((l) => s.objects[l.object]?.name).filter(Boolean) });
+        const goods = lines.map(l => unitsText(l.what, l.qty)).join(', ');
+        if (t.contradicted) {
+            reject(d, 'offer', `the bid of ${d.price_cp} cp is not recorded: ${t.why}`);
+            corrections.push(`No bid was recorded for ${goods}: ${t.why}. Nothing was sold; Alaric still holds them and his coin is unchanged.`);
+            return;
+        }
+        if (t.price === null) {
+            reject(d, 'offer', `${d.price_cp} cp is no sum the reply carries (${t.evidence.reason})`);
+            corrections.push(`No bid was recorded for ${goods}: the last reply's words do not carry the price ${d.price_cp} cp. Nothing was sold; Alaric still holds them and his coin is unchanged.`);
+            return;
+        }
+        if (t.price !== d.price_cp) emit({ t: 'note', d: { kind: 'amount.corrected', seq: d.seq ?? 0, type: 'bid', reported_cp: d.price_cp, said: String(d.said ?? '').slice(0, 60), cp: t.price } });
+        // A changed binding price replaces the entire overlapping lot, never an unrelated bid.
+        if (t.terms !== 'unverified') for (const old of openOffers(s).filter(x => x.bid && x.seller === buyer
             && x.lines.some(l => lines.some(n => n.object === l.object)))) emit({ t: 'offer.closed', d: { id: old.id, status: 'expired' } });
         const id = `offer.t${tag}.${Object.keys(s.offers).length + 1}`;
-        emit({ t: 'offer.created', d: { offer: { id, seller: buyer, bid: true, at: s.scene.at, status: 'open', canon: false, turn: s.turn, price_cp: price, lines } } });
+        emit({ t: 'offer.created', d: { offer: { id, seller: buyer, bid: true, at: s.scene.at, status: 'open', canon: false, turn: s.turn, price_cp: t.price, lines,
+            terms: t.terms, condition: t.condition, ...(t.price !== d.price_cp ? { reported_cp: d.price_cp } : {}), evidence: t.evidence } } });
         counterparts.add(buyer);
+        if (t.terms !== 'firm') {
+            system.push(`NOT A BINDING BID — ${entityLabel(s, buyer)} for ${goods} (${t.price} cp): ${t.why}. Nothing was sold.`);
+            corrections.push(`${entityLabel(s, buyer)}'s bid for ${goods} is not binding: ${t.why}. Nothing was sold; Alaric still holds the goods and his coin is unchanged. A sale needs a binding price from the buyer and Alaric's acceptance.`);
+            return;
+        }
         if (explicitTravel) {
+            const price = t.price;
             const consents = lines.map(l => s.decisions.find(x => x.kind === 'sale' && x.turn === s.turn && x.at === s.scene.at
                 && (!x.seller || x.seller === buyer) && x.object === l.object && x.qty === l.qty && Number.isInteger(x.min_cp)));
             const ambiguous = fw.accept.filter(x => x.type === 'bid' && x.lines?.some(l => lines.some(y => y.object === l.object)));
             if (consents.some(x => !x) || (consents.some(x => !x.seller) && new Set(ambiguous.map(x => String(x.buyer))).size > 1)
                 || price < consents.reduce((sum, x) => sum + x.min_cp, 0)) return;
             grant('player.sell');
-            const result = bookSale(s, emit, { offer: s.offers[id], buyer, cp: price, what: lines.map(l => unitsText(l.what, l.qty)).join(', '),
+            const result = bookSale(s, emit, { offer: s.offers[id], buyer, cp: price, what: goods,
                 items: lines.map(l => ({ ref: l.object, units: l.qty, splitId: `${l.object}_${tag}_${d.seq}` })) });
             if (result.error) { reject(d, 'sale', result.error); return; }
             emit({ t: 'offer.closed', d: { id, status: 'accepted' } });

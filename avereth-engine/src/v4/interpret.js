@@ -1,4 +1,3 @@
-import { tradePrice } from './trade.js';
 // Runtime V4: the command interpreter call (docs/RUNTIME_V4_PLAN.md §4.2). The player's story message becomes typed
 // commands for Alaric; the engine checks and books them. Prompt, schema and validator come from one vocabulary
 // (content/commands.json). The call itself is the host's (index.js, generateRaw); this module builds it and reads
@@ -8,8 +7,8 @@ import { tradePrice } from './trade.js';
 // (P0/S0: json_schema is accepted but not enforced by the provider; plain JSON was 30/30 valid).
 import { O, S, B, I, E, A, N, REF, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
-import { coinFromWords } from '../economy.js';
-import { paidAmounts } from './agency.js';
+import { payArgument, playerPrice } from './finance_evidence.js';
+import { coinEvidence } from '../economy.js';
 
 export function commandVocabFor(vocab, privateQuests = true) {
     return privateQuests ? vocab : { ...vocab, commands: vocab.commands.map(c => c.type === 'quest.accept'
@@ -170,9 +169,19 @@ export function catalogIds(catalog) {
     };
 }
 
+// Build .142 (finance consolidation §4.1): the exact words of the money of a payment, and of a price he names
+const MONEY = O({ quote: S(), currency_quote: N(S()) });
+/** A left-out currency_quote of money/price_evidence is null, like a |null argument (no repair call for it). */
+export function softMoney(c) {
+    for (const k of ['money', 'price_evidence']) if (c && c[k] && typeof c[k] === 'object' && !Array.isArray(c[k]) && c[k].currency_quote === undefined) c[k].currency_quote = null;
+    return c;
+}
+const PRICE_EVIDENCE = O({ basis: E(['total', 'unit']), quote: S(), currency_quote: N(S()) });
 function argSchema(spec, ids) {
     let s;
-    if (spec.ref) s = REF(ids[spec.ref] || []);
+    if (spec.object === 'money') s = MONEY;
+    else if (spec.object === 'price_evidence') s = PRICE_EVIDENCE;
+    else if (spec.ref) s = REF(ids[spec.ref] || []);
     else if (spec.enum) s = E(spec.enum);
     else if (spec.array) s = A(S());
     else if (spec.type === 'integer') s = I(spec.min, spec.max);
@@ -197,36 +206,60 @@ export function interpreterSchema(vocab, catalog) {
  * Read an interpreter answer: the commands if the JSON is valid against the schema, else the errors for a repair.
  * @returns {{commands: object[]|null, errors: string[], raw: boolean}}
  */
-// Patch 3: a sum the player names is the sum he names (the engine reads "two silver" itself): a command whose amount
-// differs from his own words goes back to the one repair call with both numbers, never replaced here
-const AMOUNT_FIELDS = { pay: 'amount_cp', buy: 'max_cp', sell: 'min_cp' };
-export function amountErrors(commands, currency, catalog = {}) {
+// Build .142 (finance consolidation §3.3, §4.1): the money of a command is checked against the words the model assigns
+// to it – pay.money (the coin he hands over), price_evidence (his limit or agreed price). The engine never reads its
+// own number into a quote any more (Bree: a correct 20 cp was "repaired" to the 30 cp he held). A contradiction or an
+// incomplete amount goes back to the one repair with both readings; missing evidence is no error here: the handler then
+// treats the number as unproven (no payment, no limit, no price consent), never as given.
+const PRICE_FIELDS = { buy: 'max_cp', sell: 'min_cp', 'offer.accept': 'agreed_cp' };
+export function amountErrors(commands, currency, catalog = {}, message = null) {
     const errors = [];
+    if (!currency) return errors;
+    const content = { rules: { currency } };
     for (const c of commands || []) {
-        const f = AMOUNT_FIELDS[c?.type];
-        if (!f || !Number.isInteger(c[f]) || typeof c.quote !== 'string' || !currency) continue;
-        const content = { rules: { currency } };
-        const object = (catalog.objects || []).find(o => o.id === c.object);
-        const units = c.qty ?? (c.type === 'sell' ? (object ? object.qty ?? 1 : null) : 1);
-        const price = c.type === 'pay' ? {handled:false} : tradePrice(null,c.quote,units,content);
-        if (price.handled && price.cp === null) {
-            errors.push(`${c.type} seq ${c.seq}: ambiguous price or quantity in this quote. Copy only this item's exact price clause; ${f} is the TOTAL for the selected quantity, not a unit rate.`);
+        if (!c || typeof c !== 'object') continue;
+        const source = typeof message === 'string' && message ? message : String(c.quote || '');
+        if (c.type === 'pay' && c.money && Number.isInteger(c.amount_cp)) {
+            const present = (catalog.present || []).map((p) => ({ id: p.id, names: [p.handle, p.label, p.name].filter(Boolean) }));
+            const r = payArgument(source, c, { content, present });
+            if (r.state === 'contradicted') errors.push(`pay seq ${c.seq}: amount_cp ${c.amount_cp} is not the coin his words "${String(c.money.quote).slice(0, 40)}" hand over${Number.isInteger(r.cp) ? ` (${r.cp} cp)` : ' (several different amounts)'}; set amount_cp to the coin he actually hands over and quote exactly that money (1 silver = ${currency.copper_per_silver} copper, 1 gold = ${currency.copper_per_silver * currency.silver_per_gold} copper)`);
+            else if (r.state === 'incomplete') errors.push(`pay seq ${c.seq}: the money "${String(c.money.quote).slice(0, 40)}" continues in his words; quote the complete amount he hands over, or null when he names no complete amount`);
+            else if (r.state === 'missing' && r.reason !== 'no_money_argument') errors.push(`pay seq ${c.seq}: the money "${String(c.money.quote).slice(0, 40)}" is no single amount in his message (${r.reason}); quote his exact coin words, or null when he names none`);
             continue;
         }
-        // Build .139 (review: "I have three silver—I'll give two to Bree" rejected a correct 20 cp and steered the repair
-        // to the 30 cp he holds): a payment's amount is the amount of his paying act, never every coin the quote names
-        const paid = c.type === 'pay' ? [...new Set(paidAmounts(c.quote, currency))] : null;
-        if (paid && (paid.includes(c[f]) || paid.length !== 1)) continue;
-        const v = paid ? paid[0] : price.handled ? price.cp : coinFromWords(c.quote, content);
-        // Build .107 (audit of .106: "2 cp total for qty 1" steered the repair to a wrong limit): without a qty of his
-        // command the hint names the rate for one unit and asks for the quantity, never asserting one unit is meant
-        const basis = c.qty != null ? `${v} cp total for qty ${c.qty}` : c.type === 'sell' && object ? `${v} cp total for his held stack of ${units}` : `${v} cp for one unit at his rate`;
-        if (v !== null && v !== c[f]) errors.push(`${c.type} seq ${c.seq}: ${f} ${c[f]} is not what his words "${c.quote.slice(0, 60)}" say: ${basis}. ${f} is the TOTAL for the selected quantity; if he means several units, set qty to that number (1 silver = ${currency.copper_per_silver} copper, 1 gold = ${currency.copper_per_silver * currency.silver_per_gold} copper)`);
+        const f = PRICE_FIELDS[c.type];
+        if (!f || !Number.isInteger(c[f]) || !c.price_evidence) continue;
+        const object = (catalog.objects || []).find(o => o.id === c.object);
+        const units = c.qty ?? (c.type === 'sell' ? (object ? object.qty ?? 1 : 1) : 1);
+        const r = playerPrice(source, c.price_evidence, { content, units, goods: [c.what, object?.name].filter(Boolean) });
+        if (r.reason === 'unit_price_as_total') errors.push(`${c.type} seq ${c.seq}: his words "${String(c.price_evidence.quote).slice(0, 40)}" are followed by a rate ("${r.calculation?.rate}"): that is the price of one unit – price_evidence.basis "unit", ${f} the TOTAL for the selected quantity`);
+        else if (r.state === 'verified' && r.cp !== c[f]) errors.push(`${c.type} seq ${c.seq}: ${f} ${c[f]} is not what his price words "${String(c.price_evidence.quote).slice(0, 40)}" give (${c.price_evidence.basis === 'unit' ? `${r.calculation.amounts[0]} cp × ${units} = ` : ''}${r.cp} cp); ${f} is the TOTAL for the selected quantity${c.price_evidence.basis === 'unit' && c.qty == null && c.type === 'buy' ? '; if he buys several, set qty to their number' : ''}`);
+        else if (r.state !== 'verified') errors.push(`${c.type} seq ${c.seq}: the price words "${String(c.price_evidence.quote).slice(0, 40)}" ${r.state === 'incomplete' ? 'are not a complete amount' : r.reason === 'price_range' ? 'are a range, not one price' : r.state === 'contradicted' ? 'are several different amounts' : `carry no single amount in his message (${r.reason})`}; quote exactly his one price, or set price_evidence to null`);
     }
     return errors;
 }
 
-export function parseInterpretation(answer, vocab, catalog, { currency = null } = {}) {
+/**
+ * Build .142 (finance consolidation §4.4): a trade number his words may carry, or a pay beside money words, without the
+ * evidence fields that tie it to them. Not an error: the number stays unproven (no consent in advance, no payment) –
+ * the hint asks the one existing repair for the evidence, and the first valid answer stands if it brings none.
+ */
+export function financeHints(commands, currency, message = null) {
+    if (!currency) return [];
+    const content = { rules: { currency } };
+    const hints = [];
+    for (const c of commands || []) {
+        if (!c || typeof c !== 'object') continue;
+        const words = typeof message === 'string' && message ? message : String(c.quote || '');
+        if (!(coinEvidence(words, content).sums || []).length) continue;
+        const f = PRICE_FIELDS[c.type];
+        if (f && Number.isInteger(c[f]) && !c.price_evidence) hints.push(`${c.type} seq ${c.seq}: ${f} ${c[f]} has no price_evidence; quote his exact price words for it (basis total or unit), or set ${f} to null if his words name no price for this`);
+        if (c.type === 'pay' && Number.isInteger(c.amount_cp) && !c.money && !c.confirmation) hints.push(`pay seq ${c.seq}: money is null; quote exactly the coin he hands over (currency_quote for a bare number), or keep it null if he hands over no named coin`);
+    }
+    return hints;
+}
+
+export function parseInterpretation(answer, vocab, catalog, { currency = null, text = null } = {}) {
     const { value, error, raw } = extractJsonObject(answer);
     if (!value) return { commands: null, errors: [error || 'no JSON object'], raw: false };
     // an argument that may be null may also be left out (as the extractor's |null fields): no repair call for it
@@ -235,13 +268,14 @@ export function parseInterpretation(answer, vocab, catalog, { currency = null } 
         for (const c of value.commands) {
             if (!c || typeof c !== 'object') continue;
             for (const [k, spec] of Object.entries(specs.get(c.type) || {})) if (spec.nullable && c[k] === undefined) c[k] = null;
+            softMoney(c);
         }
     }
     const errors = validate(value, interpreterSchema(vocab, catalog));
     if (errors.length) return { commands: null, errors: errors.slice(0, 8), raw };
-    const sums = amountErrors(value.commands, currency, catalog);
+    const sums = amountErrors(value.commands, currency, catalog, text);
     if (sums.length) return { commands: null, errors: sums.slice(0, 8), raw };
-    return { commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [], raw };
+    return { commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [], raw, hints: financeHints(value.commands, currency, text) };
 }
 
 /** The follow-up message of the one repair call (the previous answer stays in the conversation). */

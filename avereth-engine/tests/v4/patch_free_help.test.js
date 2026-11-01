@@ -4,8 +4,8 @@ import { loadProductContent } from '../helpers.js';
 import { campaign, say, inject } from './patch8_lib.js';
 import { startCampaign } from '../../src/engine.js';
 import { applyEvent, fold } from '../../src/state.js';
-import { applyWorld } from '../../src/v4/world.js';
-import { resolveCommands } from '../../src/v4/commands.js';
+import { applyWorldLegacy as applyWorld } from './finance_legacy.js'; // Build .142: pre-delta-1.13 scripted answers
+import { resolveCommandsLegacy as resolveCommands } from './finance_legacy.js'; // Build .142: pre-cmd-1.8 scripted commands
 import { buildCatalog, extractorCatalog } from '../../src/v4/catalog.js';
 import { planContext, plannerRequest } from '../../src/v4/planner.js';
 import * as extraction from '../../src/v4/extract.js';
@@ -90,7 +90,13 @@ test('free help: an independent second gift of the same amount remains possible'
 test('free help: no offscreen giver, invented journey or Guild payout can pass as a gift',()=>{
  const s=scene();s.scene.present=s.scene.present.filter(id=>id!=='npc.mira');const r=world(s,[gift()]);assert.equal(r.state.entities.pc.sheet.coin_cp,s.entities.pc.sheet.coin_cp);
  const away=world(scene(),[gift()],undefined,{scene:{new:{name:'Unreached town',kind:'settlement',parent:'realm.valedorn'}}});assert.ok(away.rejected.some(x=>x.rule==='scene_context'));
- const trade=scene();trade.last.outcome.booked={sellers:['npc.mira']};assert.ok(world(trade,[gift()]).rejected.some(x=>x.rule==='engine_booked'));
+ // Build .142 (§7.2): beside a trade booked with her this turn, the recorded answer cannot say what the coin is for
+ // (translated relation "unclear"): no payment. A fresh answer decides by its relation – her proceeds/change never pay
+ // as a gift, a separate thanks of hers does.
+ const trade=scene();trade.last.outcome.booked={sellers:['npc.mira']};assert.ok(world(trade,[gift()]).rejected.some(x=>['engine_booked','coin_relation'].includes(x.rule)));
+ const fresh=(relation)=>world(clone(trade),[gift(30,'Mira places three silver in his hand.',{phase:'transferred',relation,money:{quote:'three silver',currency_quote:null}})],'Mira places three silver in his hand.');
+ assert.ok(fresh('trade_settlement').rejected.some(x=>x.rule==='engine_booked'));
+ assert.equal(fresh('independent').state.entities.pc.sheet.coin_cp,trade.entities.pc.sheet.coin_cp+30);
 });
 test('free help: stale private commands and claims do not recreate formal progression or displays',()=>{
  const s=scene(),q=oldJob(s),before=s.entities.pc.sheet.xp;

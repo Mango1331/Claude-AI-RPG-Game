@@ -4,13 +4,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { loadProductContent, loadContent } from '../helpers.js';
 import { applyEvent } from '../../src/state.js';
-import { resolveCommands } from '../../src/v4/commands.js';
+import { resolveCommandsLegacy as resolveCommands } from './finance_legacy.js'; // Build .142: pre-cmd-1.8 scripted commands
 import { validateState } from '../../src/validate.js';
 import { parseExtraction, extractorRequest } from '../../src/v4/extract.js';
 import { runExtraction, processReplyAny } from '../../src/v4/runtime.js';
 import { Chat4 } from './harness.js';
 import { rec } from '../../src/host.js';
-import { applyWorld } from '../../src/v4/world.js';
+import { applyWorldLegacy as applyWorld } from './finance_legacy.js'; // Build .142: pre-delta-1.13 scripted answers
 const c=await loadProductContent(),f=JSON.parse(fs.readFileSync(new URL('./fixtures/run20_technical.json',import.meta.url)));
 const run=(commands,state=f.state203)=>{const s=structuredClone(state),events=[];const result=resolveCommands(s,c,structuredClone(commands),e=>{events.push(e);applyEvent(s,e);},{c:true,msg:406});return {s,events,...result};};
 test('Run20 T203: explicit preceding Wethervord GO cannot authorize Alderwatch or a payout',()=>{

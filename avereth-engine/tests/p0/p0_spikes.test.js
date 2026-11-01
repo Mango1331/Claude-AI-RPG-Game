@@ -259,7 +259,8 @@ test('S2 after P0, --vocab v4: the product extractor and its firewall; a forbidd
                 const r = await inner(req);
                 if (!req.messages.some((m) => m.content.includes('Reeve Aldous') && m.content.includes('TURNS IN'))) return r;
                 const v = JSON.parse(r.content);
-                v.deltas.push({ scene: null, seq: v.deltas.length + 1, type: 'coin.gift', from: 'npc.reeve_aldous', cp: 80, why: 'payment for the Wolf Problem', said: null, job: null });
+                // in the current contract (delta-1.13: phase, relation, money) – the reeve claims a handover now
+                v.deltas.push({ scene: null, seq: v.deltas.length + 1, type: 'coin.gift', from: 'npc.reeve_aldous', cp: 80, why: 'payment for the Wolf Problem', said: null, job: null, phase: 'transferred', relation: 'independent', money: null });
                 return { content: JSON.stringify(v) };
             },
         });

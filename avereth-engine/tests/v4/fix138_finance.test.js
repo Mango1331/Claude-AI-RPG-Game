@@ -6,26 +6,40 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import zlib from 'node:zlib';
 import { loadProductContent } from '../helpers.js';
-import { applyWorld } from '../../src/v4/world.js';
+import { applyWorldLegacy as applyWorld, legacyCommands } from './finance_legacy.js'; // Build .142: recorded pre-delta-1.13/cmd-1.8 answers
 import { applyEvent } from '../../src/state.js';
-import { tradePrice, sameGoods, rateUnits, acceptanceWhy } from '../../src/v4/trade.js';
+import { sameGoods, rateUnits, acceptanceWhy } from '../../src/v4/trade.js';
+import { financeText } from '../../tools/replay/contract_f.mjs';
+import { priceEvidence, openConditionNear, payArgument, findQuote } from '../../src/v4/finance_evidence.js';
 import { coinEvidence } from '../../src/economy.js';
-import { guardCommands, paysOut } from '../../src/v4/agency.js';
+import { guardCommands } from '../../src/v4/agency.js';
 import { guardContext, buildCatalog } from '../../src/v4/catalog.js';
-import { resolveCommands } from '../../src/v4/commands.js';
+import { resolveCommandsLegacy as resolveCommands } from './finance_legacy.js';
 import { planContext, withContentSkills, parsePlan, priceConflictNote } from '../../src/v4/planner.js';
 import { planMessage } from '../../src/v4/runtime.js';
 import { parseExtraction, worldVocab } from '../../src/v4/extract.js';
 
 const content = await loadProductContent();
+// Build .142 (finance consolidation): the recorded answers of these chains predate the finance contract; they run through
+// the disclosed translation (tests/v4/finance_legacy.js → tools/replay/contract_f.mjs). The readers .138–.141 tested
+// directly (tradePrice's NPC mode, agency.paysOut) are removed; their phrases are checked here against the readers
+// that replace them (finance_evidence.priceEvidence / openConditionNear / payArgument). Fresh-answer classification:
+// tests/v4/fix142_finance.test.js.
 const FIX = JSON.parse(zlib.gunzipSync(fs.readFileSync(new URL('./fixtures/batch20_finance138.json.gz', import.meta.url))));
 const R = FIX.records;
 const world = (i, raw = R[i].raw) => applyWorld(structuredClone(R[i].state), content, structuredClone(raw), { msg: Number(i), prose: R[i].prose });
 const offers = (res) => res.events.filter((e) => e.t === 'offer.created').map((e) => e.d.offer);
 const rejected = (res, type) => res.events.filter((e) => e.t === 'delta.rejected' && e.d.item.type === type);
 const coin = (res) => res.events.filter((e) => e.t === 'coin.changed').map((e) => e.d.delta);
-// the bid or offer words of another (world.js reads them so); his own words keep the rate-only condition reading
-const price = (said, qty) => tradePrice(null, said, qty, content, { npc: true }).cp;
+// Build .142: the reading of another's price words is the role the answer gives them (pricing), verified against the
+// words; an open condition around them makes it non-binding (open:…)
+const T = (quote) => ({ basis: 'total', quote, currency_quote: null }), U = (quote) => ({ basis: 'unit', quote, currency_quote: null });
+function read(said, units, pricing, goods = []) {
+    const ev = priceEvidence(pricing, { source: said, content, units, goods });
+    if (ev.state !== 'verified') return null;
+    const at = ev.source?.ranges?.[0];
+    return at && openConditionNear(said, at.start, at.end) ? `open:${ev.cp}` : ev.cp;
+}
 const ENC37 = 'obj.loot.crystal_beetle.chitin.f.enc_t37';
 const ENC40 = 'obj.loot.crystal_beetle.chitin.f.enc_t40';
 
@@ -90,44 +104,32 @@ test('.138 #218/T109: "Three coppers, then a fourth added" pays 4, not 3', () =>
 });
 
 // ------------------------------------------------------------------------------------------------ price reading
-test('.138 price reading: rate × units, confirmed totals, equivalent coins, other sums and conditions', () => {
-    assert.equal(price('Four copper each, fifty-six copper total.', 14), 56);
-    assert.equal(price("I'll give you four copper each. That's eighty-four copper.", 21), 84);
-    assert.equal(price("140 copper — that's 1 gold 4 silver", 1), 140, 'one sum said twice counts once');
-    assert.equal(price('The sword costs 140 copper; I have 193 copper.', 1), null, 'his purse is no part of the price');
-    assert.equal(price('Four copper each, and the gland I had at six copper.', 14), null, 'another article’s price is not added');
-    assert.equal(price('Four copper each, if the appraiser approves.', 14), null, 'a pending approval keeps the price open');
-    assert.equal(price('Four copper each, unless they are chipped.', 14), null);
-    assert.equal(price('Four copper each, if you would rather have coin than credit.', 14), 56, 'a payment choice is no price condition');
-    assert.equal(price('Four copper each, or three if chipped.', 14), null, 'an alternative amount stays open');
-    // review of .138: an open buyer condition keeps a total open too, and a payment choice does not cover another condition
-    assert.equal(price('Four copper each, fifty-six copper total, if the appraiser approves.', 14), null);
-    assert.equal(price('Four copper each, if you want cash and the appraiser approves.', 14), null);
-    assert.equal(price('Fifty-six copper the lot, if you want coin or credit.', 14), 56);
-    // second review: the whole condition, before the price, after a comma, and work still to be done
-    assert.equal(price('Four copper each, if you want cash, and the appraiser approves.', 14), null);
-    assert.equal(price('If the appraiser approves, four copper each, fifty-six copper total.', 14), null);
-    assert.equal(price('Four copper each, if you finish the work tomorrow.', 14), null);
-    assert.equal(price('Four copper each, if you can wait for the appraiser.', 14), null);
-    // the addressee's own choice to take it stays a price (corpus: "a copper a bowl, if you're wanting it")
-    assert.equal(price("Thirty-four copper the lot, if you're leaving them together", 4), 34);
-    assert.equal(price("A copper a bowl, if you're wanting it", 1), 1);
-    assert.equal(price("Four copper a plate, if you want them, and I'll take all fourteen.", 14), 56);
-    assert.equal(tradePrice(6, "Six if you'd sleep by this fire down here, six copper.", 1, content, { npc: true }).cp, 6, 'a variant he takes by accepting');
-    assert.equal(tradePrice(2, "Supper's two more if you want it—stew and ale", 1, content, { npc: true }).cp, 2, 'the goods described after the condition');
-    assert.equal(price("Four copper each, if you want cash, and the master says yes.", 14), null);
-    // his own limit is no open condition of a seller (.51: "a room if it's no more than 6 copper")
-    assert.equal(tradePrice(null, "I take a room if it's no more than 6 copper", 1, content).handled, false);
-    assert.equal(price('Four copper each, but fifty copper for the lot.', 14), 50, 'an explicit lot price may differ from the rate');
-    assert.equal(price('Fifty-six copper the lot, or sixty copper the lot with the gland.', 14), null, 'two lot prices are open');
-    // .139: a condition before the price counts too; a quality the buyer has not checked yet keeps it open
-    assert.equal(price("If they're all of a match, I'd give you eight copper apiece. Fifty-six the lot.", 7), null);
-    assert.equal(price("I'd give you eight copper apiece. Fifty-six the lot.", 7), 56);
-    assert.equal(price('Two silver a fair deal.', 3), tradePrice(null, 'Two silver a fair deal.', 3, content, { npc: true }).cp);
-    assert.notEqual(price('Two silver a fair deal.', 3), 60, '.107: a judgement is no rate');
-    assert.notEqual(price('Five silver the pair.', 4), 200, 'a collective unit is no unit rate');
-    // different goods never share one rate (the engine passes 0 units for them)
-    assert.equal(price('Plates at four copper each, so twenty-four for the six. Gland at six. Gel at four.', 0), null);
+test('.138 price reading (now .142 pricing roles): rate × units, confirmed totals, equivalent coins, other sums and conditions', () => {
+    assert.equal(read('Four copper each, fifty-six copper total.', 14, T('fifty-six copper')), 56);
+    assert.equal(read('Four copper each, fifty-six copper total.', 14, U('Four copper')), 56);
+    assert.equal(read('Four copper each, fifty-six copper total.', 14, T('Four copper')), null, 'the unit price is no total of fourteen (gate 2)');
+    assert.equal(read("I'll give you four copper each. That's eighty-four copper.", 21, T('eighty-four copper')), 84);
+    assert.equal(read("140 copper — that's 1 gold 4 silver", 1, T('140 copper')), 140, 'one sum said twice counts once');
+    assert.equal(read('The sword costs 140 copper; I have 193 copper.', 1, T('140 copper')), 140, 'his purse is no part of the price');
+    assert.equal(read('Four copper each, and the gland I had at six copper.', 14, U('Four copper')), 56, 'another article’s price is not added');
+    assert.equal(read('Four copper each, if the appraiser approves.', 14, U('Four copper')), 'open:56', 'a pending approval keeps the price open');
+    assert.equal(read('Four copper each, unless they are chipped.', 14, U('Four copper')), 'open:56');
+    assert.equal(read('Four copper each, if you would rather have coin than credit.', 14, U('Four copper')), 56, 'a payment choice is no price condition');
+    assert.equal(read('Four copper each, fifty-six copper total, if the appraiser approves.', 14, T('fifty-six copper')), 'open:56');
+    assert.equal(read('Four copper each, if you want cash and the appraiser approves.', 14, U('Four copper')), 'open:56');
+    assert.equal(read('Fifty-six copper the lot, if you want coin or credit.', 14, T('Fifty-six copper')), 56);
+    assert.equal(read('If the appraiser approves, four copper each, fifty-six copper total.', 14, T('fifty-six copper')), 'open:56');
+    assert.equal(read('Four copper each, if you finish the work tomorrow.', 14, U('Four copper')), 'open:56');
+    assert.equal(read("Thirty-four copper the lot, if you're leaving them together", 4, T('Thirty-four copper')), 34);
+    assert.equal(read("A copper a bowl, if you're wanting it", 1, T('A copper')), 1);
+    assert.equal(read("Four copper a plate, if you want them, and I'll take all fourteen.", 14, U('Four copper')), 56);
+    assert.equal(read('Four copper each, but fifty copper for the lot.', 14, T('fifty copper')), 50, 'an explicit lot price may differ from the rate');
+    assert.equal(read("If they're all of a match, I'd give you eight copper apiece. Fifty-six the lot.", 7, U('eight copper')), 56,
+        'a plain "if" is no open-condition word: the condition before the price is the answer’s phase (fix142), not a prose reading');
+    assert.equal(read('Two silver a fair deal.', 3, T('Two silver')), 20, '.107: a judgement is no rate');
+    assert.equal(read('Five silver the pair.', 2, T('Five silver')), 50);
+    assert.equal(read('Plates at four copper each, so twenty-four for the six. Gland at six. Gel at four.', 0, U('four copper')), null, 'different goods never share one rate');
+    assert.equal(read('A copper or two per plate.', 4, U('A copper')), null, 'a range is no price');
 });
 
 test('.138 same goods: stacks share a rate only when every own property agrees; ids and units stay per line', () => {
@@ -175,41 +177,38 @@ test('.138 T50: "I\'ll take that fifty copper now" pays nobody, also with enough
     assert.equal(T50.commands[0].type, 'pay');
     const rich = structuredClone(T50.state);
     rich.entities.pc.sheet.coin_cp = 200;
-    // red on .137: the command layer pays it whenever the guard lets it through
+    // Build .142: the handler itself reads the act (payArgument) – a claim for his own money pays nobody, whether or not
+    // a guard ran before it (.137 paid −50 here whenever the guard let it through)
     const events = [];
-    resolveCommands(structuredClone(rich), content, T50.commands, (e) => events.push(e), { c: true, msg: 99 });
-    assert.deepEqual(events.filter((e) => e.t === 'coin.changed').map((e) => e.d.delta), [-50]);
-    const g = guardCommands(T50.message, T50.commands, t50Context(rich));
+    const ctx = resolveCommands(structuredClone(rich), content, T50.commands, (e) => events.push(e), { c: true, msg: 99, text: T50.message });
+    assert.deepEqual(events.filter((e) => e.t === 'coin.changed'), []);
+    assert.equal(ctx.resolutions[0].status, 'refused');
+    const g = guardCommands(T50.message, legacyCommands(T50.commands, content), t50Context(rich));
     assert.deepEqual(g.kept, []);
     assert.deepEqual(g.dropped.map((d) => d.rule), ['not_paying']);
 });
 
-test('.138 payment direction: his own payments stay possible; claims for money owed to him are no pay', () => {
+test('.138 payment direction (now .142 payArgument): his own payments stay possible; claims for money owed to him are no pay', () => {
     const tam = T50.commands[0].to;
-    const pay = (quote, message = quote) => guardCommands(message, [{ seq: 1, type: 'pay', to: tam, amount_cp: 5, for: null, quote }], t50Context());
-    for (const q of ['I pay him five copper for his trouble', 'I hand Tam five copper', 'I toss him five copper', 'Here are five copper, Tam', 'Take these five coins, Tam', 'I leave five copper on the crate for him', 'I settle up with Tam: five copper', 'I give back the five copper I owe him'])
-        assert.equal(pay(q).kept.length, 1, q);
-    for (const q of ["I'll take that fifty copper now", 'Pay up, Tam', 'Pay me the five copper', 'I collect my wages now', 'Give me my five copper', 'You owe me five copper'])
-        assert.equal(pay(q).kept.length, 0, q);
-    // review of .138: leaving or pocketing a receipt is no payment beside a claim for his wage
-    for (const q of ["I'll take my fifty copper and leave.", 'Pay me fifty copper, then I leave.', 'I collect my wages and put the receipt in my bag.'])
-        assert.equal(pay(q).kept.length, 0, q);
-    // second review: an ambiguous verb is no money act; the act must move money
-    for (const q of ['I settle on the bench and collect my fifty copper.', 'I pay attention to Tam and collect my fifty copper.', 'I tip my hat to Tam and collect my wages.'])
-        assert.equal(pay(q).kept.length, 0, q);
-    for (const q of ['I settle up with Tam: five copper', 'I settle the bill with five copper', 'I tip him five copper'])
-        assert.equal(pay(q).kept.length, 1, q);
-    // a separate tip after asking for his wage stays possible; the wrong pay to Tam in the same words does not ride on it
-    const boy = (T50.state.scene.present || []).find((id) => id !== 'pc' && id !== tam);
+    const present = (T50.state.scene.present || []).filter((id) => id !== 'pc' && T50.state.entities[id]).map((id) => ({ id, names: [T50.state.entities[id].name, ...(T50.state.entities[id].descriptors || [])].filter(Boolean) }));
+    // the money words a fresh answer names (cmd-1.8 money), read in the whole act
+    const act = (message, money = 'five copper', amount = 5, to = tam) => payArgument(message, { to, amount_cp: amount, quote: message, money: money ? { quote: money, currency_quote: null } : null }, { content, present }).act;
+    for (const q of ['I pay him five copper for his trouble', 'I hand Tam five copper', 'I toss him five copper', 'Here are five copper, Tam', 'Take these five copper, Tam', 'I tip him five copper', 'I put five copper on the counter for him'])
+        assert.equal(act(q), 'outgoing', q);
+    for (const q of ["I'll take that five copper now", 'Pay me the five copper', 'Give me my five copper', 'You owe me five copper'])
+        assert.equal(act(q), 'claim', q);
+    for (const q of ['Pay up, Tam', 'I collect my wages now']) assert.equal(act(q, null), 'claim', q);
+    // outside the narrow core: no payment now, a concrete proposal (§5.2) – never a payment because a verb and a number stand somewhere
+    for (const q of ['I leave five copper on the crate for him', 'I put five copper on the crate for him', 'I settle up with Tam: five copper'])
+        assert.equal(act(q), 'unclear', q);
+    assert.equal(act('I give back the five copper I owe him'), 'outgoing');
+    // another amount than the command's is not this payment
+    assert.equal(payArgument('I give him one silver and five copper', { to: tam, amount_cp: 5, quote: 'I give him one silver and five copper', money: { quote: 'one silver and five copper', currency_quote: null } }, { content, present }).state, 'contradicted');
+    // a separate tip after asking for his wage stays possible; the claim does not ride on it
+    const boy = present.find((p) => p.id !== tam);
     const both = 'I collect my wages and pay the porter a copper.';
-    assert.equal(guardCommands(both, [{ seq: 1, type: 'pay', to: tam, amount_cp: 50, for: null, quote: both }], t50Context()).kept.length, 0);
-    if (boy) assert.equal(guardCommands(both, [{ seq: 1, type: 'pay', to: boy, amount_cp: 1, for: null, quote: 'pay the porter a copper' }], t50Context()).kept.length, 1);
-    assert.equal(pay('I put five copper on the crate for him').kept.length, 1);
-    assert.equal(pay('I give him one silver and five copper', 'I give him one silver and five copper').kept.length, 0, 'another amount than the command’s is not this payment');
-    // a quote without the act in a message that pays: the message's act stands, unless the quote claims money for him
-    assert.equal(pay('the five copper', 'I agree to the fee and pay the five copper.').kept.length, 1);
-    assert.equal(pay("I'll take my five copper now", "I'll take my five copper now and pay the boy a copper.").kept.length, 0);
-    assert.equal(paysOut('I refuse to pay'), true, 'negation is the existing negation rule, not this one');
+    assert.equal(guardCommands(both, [{ seq: 1, type: 'pay', to: tam, amount_cp: 50, for: null, quote: both, money: null, recipient_quote: null, confirmation: null }], t50Context()).kept.length, 0);
+    if (boy) assert.equal(guardCommands(both, [{ seq: 1, type: 'pay', to: boy.id, amount_cp: 1, for: null, quote: 'pay the porter a copper', money: { quote: 'a copper', currency_quote: null }, recipient_quote: null, confirmation: null }], t50Context()).kept.length, 1);
 });
 
 // ------------------------------------------------------------------------------------------------ clarification
@@ -288,12 +287,23 @@ test('.138 #382: the bid is created at 150 cp and the gift beside it pays nothin
 });
 
 test('.138 refusal reasons claim no payment that did not happen (T26 and T32 of the crystal shard)', () => {
-    const t26 = rejected(world(52), 'coin.gift')[0].d.reason;
-    assert.doesNotMatch(t26, /booked this turn/);
-    assert.match(t26, /accepted bid/);
-    const t32 = rejected(world(64), 'coin.gift')[0].d.reason;
-    assert.doesNotMatch(t32, /these sale proceeds are already in his purse/);
-    assert.match(t32, /F-Rank Crystal Beetle Chitin Plate.*34 cp/);
+    // Build .142: the recorded answers cannot say what the coin is for (translated relation "unclear") – the refusal says
+    // so and claims no booking; a fresh answer's relation gives the concrete reason
+    for (const i of [52, 64]) {
+        const why = rejected(world(i), 'coin.gift')[0].d.reason;
+        assert.doesNotMatch(why, /booked this turn|already in his purse/, `#${i}`);
+    }
+    const fresh = (i, relation) => {
+        const raw = structuredClone(R[i].raw);
+        const g = raw.deltas.find((d) => d.type === 'coin.gift');
+        Object.assign(g, { phase: 'transferred', relation, money: { quote: g.said, currency_quote: null } });
+        return rejected(applyWorld(structuredClone(R[i].state), content, raw, { msg: i, prose: R[i].prose }), 'coin.gift')[0]?.d.reason;
+    };
+    assert.match(fresh(52, 'trade_settlement'), /accepted bid/);
+    assert.doesNotMatch(fresh(52, 'trade_settlement'), /booked this turn/);
+    // reported as independent while its own why names the goods: T26 the shard he still holds, T32 the sale credited
+    assert.match(fresh(52, 'independent'), /crystal shard, which Alaric still holds.*accepted bid/);
+    assert.match(fresh(64, 'independent'), /F-Rank Crystal Beetle Chitin Plate.*34 cp/);
 });
 
 test('.138 review: an original bid under an open condition stores no binding price; the payment choice alone does', () => {
@@ -305,36 +315,51 @@ test('.138 review: an original bid under an open condition stores no binding pri
         const prose = R[116].prose.replace(bid.said, said);
         bid.said = said;
         const res = applyWorld(structuredClone(R[116].state), content, raw, { msg: 116, prose });
-        assert.deepEqual(offers(res).map((o) => o.price_cp), want === null ? [] : [want], said);
+        // Build .142 (§6.1): a price under an open condition may stay visible, but never binding (terms not firm)
+        const firm = offers(res).filter((o) => o.terms === 'firm');
+        assert.deepEqual(firm.map((o) => o.price_cp), want === null ? [] : [want], said);
         assert.deepEqual(coin(res), [], said);
     }
 });
 
 // ------------------------------------------------------------------------------------------------ amount of the act
 test('.139 corpus b17-rogue#19: "I have three silver—I\'ll give two to Bree" pays the 20 cp of the act, not the 30 cp he holds', async () => {
-    const R = await import('../../tools/replay/replay.mjs');
+    const RP = await import('../../tools/replay/replay.mjs');
     const { prepareGenerationAsync } = await import('../../src/v4/runtime.js');
     const { rec } = await import('../../src/host.js');
-    const run = R.loadRun('b17-rogue');
-    const answers = run.answers[19].map((a) => a.content);
-    assert.deepEqual(answers.map((a) => JSON.parse(a).commands[0].amount_cp), [20, 30], 'recorded: 20 first, the repair 30');
-    const chat = run.chat.slice(0, 20);
-    chat[19] = structuredClone(chat[19]);
-    delete chat[19].extra.avereth;
-    const asked = [];
-    await prepareGenerationAsync(chat, content, { type: 'normal', settings: {}, llm: async ({ purpose }) => { asked.push(purpose); return answers.shift(); } });
-    const r = rec(chat[19]);
-    assert.deepEqual(asked, ['plan'], 'the correct first answer stands; no repair toward his purse');
-    assert.deepEqual(r.events.filter((e) => e.t === 'coin.changed').map((e) => e.d.delta), [-20]);
-    // the planner's amount check and the guard read the same act
+    const run = RP.loadRun('b17-rogue');
+    const recorded = run.answers[19].map((a) => a.content);
+    assert.deepEqual(recorded.map((a) => JSON.parse(a).commands[0].amount_cp), [20, 30], 'recorded: 20 first, the repair 30');
+    const play = async (answer) => {
+        const chat = run.chat.slice(0, 20);
+        chat[19] = structuredClone(chat[19]);
+        delete chat[19].extra.avereth;
+        const answers = [...answer], asked = [];
+        await prepareGenerationAsync(chat, content, { type: 'normal', settings: {}, llm: async ({ purpose }) => { asked.push(purpose); return answers.shift(); } });
+        return { asked, r: rec(chat[19]) };
+    };
+    // Build .142: the recorded answers through the disclosed translation: "two" takes the one coin of its sentence
+    // (§3.2, the Bree rule: money "two", currency_quote "silver") – the first answer stands, he pays the 20 cp of his act
+    const old = await play(recorded.map((a) => financeText(a, 'plan', null, content, { message: run.chat[19].mes })));
+    assert.deepEqual(old.asked, ['plan'], 'the first answer stands; no repair toward his purse');
+    assert.deepEqual(old.r.events.filter((e) => e.t === 'coin.changed').map((e) => e.d.delta), [-20]);
+    // the recorded repair alone (the three silver he holds, 30 cp) is valid, but not the coin of his act: nothing paid
+    const repairOnly = await play([financeText(recorded[1], 'plan', null, content, { message: run.chat[19].mes })]);
+    assert.deepEqual(repairOnly.r.events.filter((e) => e.t === 'coin.changed'), []);
+    assert.ok(repairOnly.r.events.some((e) => e.t === 'decision.opened' && e.d.decision.kind === 'payment'));
+    // the same first answer in the finance contract: "two" with the sentence's coin (currency_quote) pays 20 at once
+    const fresh = JSON.parse(recorded[0]);
+    Object.assign(fresh.commands[0], { money: { quote: 'two', currency_quote: 'silver' }, recipient_quote: 'Bree', confirmation: null });
+    const now = await play([JSON.stringify(fresh)]);
+    assert.deepEqual(now.asked, ['plan']);
+    assert.deepEqual(now.r.events.filter((e) => e.t === 'coin.changed').map((e) => e.d.delta), [-20]);
+    // the planner's amount check and the handler read the same act
     const { amountErrors } = await import('../../src/v4/interpret.js');
     const quote = "I have three silver—I'll give two to Bree for the days she can't work";
-    const cmd = (amount_cp) => [{ seq: 1, type: 'pay', to: 'npc.bree', amount_cp, for: null, quote }];
-    assert.deepEqual(amountErrors(cmd(20), content.rules.currency), []);
-    assert.equal(amountErrors(cmd(30), content.rules.currency).length, 1);
-    const ctx = { present: [{ id: 'npc.bree', names: ['Bree'] }], currency: content.rules.currency };
-    assert.equal(guardCommands(quote, cmd(30), ctx).kept.length, 0, 'the 30 cp he holds are not what he gives');
-    assert.equal(guardCommands(quote, cmd(20), ctx).kept.length, 1);
+    const cmd = (amount_cp) => [{ seq: 1, type: 'pay', to: 'npc.bree', amount_cp, for: null, quote, money: { quote: 'two', currency_quote: 'silver' }, recipient_quote: null, confirmation: null }];
+    const catalog = { present: [{ id: 'npc.bree', handle: 'Bree' }] };
+    assert.deepEqual(amountErrors(cmd(20), content.rules.currency, catalog, quote), []);
+    assert.equal(amountErrors(cmd(30), content.rules.currency, catalog, quote).length, 1, 'the 30 cp he holds are not what he gives');
 });
 
 // .141: a quantity of goods is not coin, and linked conditions retain their prerequisites.
@@ -365,8 +390,8 @@ test('.141 all linked NPC conditions are checked, including speaker prerequisite
         s.decisions.push({ id: 'dec.review.sale', kind: 'sale', turn: s.turn, at: s.scene.at,
             seller: bid.buyer, object: bid.lines[0].object, qty: 14, min_cp: 56, seq: 1 });
         const res = applyWorld(s, content, raw, { msg: 116, prose: said });
-        assert.deepEqual(offers(res), [], said);
+        assert.deepEqual(offers(res).filter((o) => o.terms === 'firm'), [], said);
         assert.deepEqual(coin(res), [], said);
     }
-    assert.equal(price("Four copper each, if you want cash and I'll take all fourteen.", 14), 56);
+    assert.equal(read("Four copper each, if you want cash and I'll take all fourteen.", 14, U('Four copper')), 56);
 });

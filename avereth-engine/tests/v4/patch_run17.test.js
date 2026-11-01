@@ -6,8 +6,8 @@ import { fold, applyEvent } from '../../src/state.js';
 import { setRec, rec, foldChat } from '../../src/host.js';
 import { coinFromWords, coinMentions } from '../../src/economy.js';
 import { tradePrice } from '../../src/v4/trade.js';
-import { applyWorld } from '../../src/v4/world.js';
-import { resolveCommands } from '../../src/v4/commands.js';
+import { applyWorldLegacy as applyWorld } from './finance_legacy.js'; // Build .142: pre-delta-1.13 scripted answers
+import { resolveCommandsLegacy as resolveCommands } from './finance_legacy.js'; // Build .142: pre-cmd-1.8 scripted commands
 import { guardCommands } from '../../src/v4/agency.js';
 import { prepareGenerationAsync } from '../../src/v4/runtime.js';
 import { attackCommitted } from '../../src/v4/envelope.js';
@@ -24,10 +24,13 @@ function run(s, commands) {
     resolveCommands(state, content, commands, e => { events.push(e); applyEvent(state, e); }, { c: true, msg: 113 });
     return { state, events };
 }
+// Build .142 (§3): a price stands only as the reply's words carry it, so the teacher's reply now says each line's price
+// (these offers once came with no reply text at all)
 function quote(s, lines) {
+    const prose = `"${lines.map((l) => `${l.what}, ${l.said}`).join('; ')}," the teacher says.`;
     return applyWorld(s, content, contractValue({ scene: s.scene.at, expected: {}, deltas: [
         { seq: 1, type: 'offer', seller: teacher, lines },
-    ] }, s, content), { msg: 90 });
+    ] }, s, content), { msg: 90, prose });
 }
 const lesson = { what: 'arcane bolt lesson', kind: 'service', service: 'training', qty: 1, price_cp: 40, said: 'four silver', teaches: null };
 function purchaseState(cp = 50) {
@@ -155,7 +158,7 @@ test('Run17 a previously published unqualified lesson is refused before payment'
 });
 test('Run17 qualified lessons and separately priced stones remain valid without automatic skill gains', () => {
     const s = before(91); s.entities[teacher].template = 'hedge_mage';
-    const stone = { what: 'Arcane Bolt Skill Stone', kind: 'goods', service: null, qty: 1, price_cp: 10,
+    const stone = { what: 'Arcane Bolt Skill Stone', kind: 'goods', service: null, qty: 1, price_cp: 10, said: 'one silver',
         teaches: { source: 'stone', fn: 'bolt', tags: ['Arcane'], aspects: [] } };
     const quoted = quote(s, [lesson, stone]);
     const o = quoted.events.find(e => e.t === 'offer.created').d.offer;

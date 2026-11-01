@@ -30,7 +30,10 @@ test('A1: the corpus holds every recorded engine call and the baseline names its
 // Package C (.132): the intended differences to the .126 baseline, record by record with their reason
 // (tools/replay/replay.mjs --accepted; docs/PATCH_ARCH_C132_POPULATION_AGE.md)
 // Finance patch F (.138): the D list plus six individually reasoned records (docs/FIX138_FINANCE.md)
-const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_f138_vs_126.json', import.meta.url), 'utf8'));
+const ACCEPTED_F138 = JSON.parse(fs.readFileSync(new URL('./accepted_f138_vs_126.json', import.meta.url), 'utf8'));
+// Finance consolidation (.142): the F list checked against the .141 replay record by record – unchanged entries kept,
+// additive contract fields named, every other change reasoned (docs/FIX142_FINANCE_CONSOLIDATION.md)
+const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_f142_vs_126.json', import.meta.url), 'utf8'));
 const SUB = { ...baseline, runs: Object.fromEntries(QUICK.map((l) => [l, baseline.runs[l]])) };
 let quick = null; // the four quick runs, replayed once for this file
 const quickRuns = async () => (quick ||= await replayCorpus(undefined, undefined, { labels: QUICK }));
@@ -39,7 +42,7 @@ test('A1/C: the four quick runs replay as on the start commit, from whole and va
     const { compared, diffs } = compareToBaseline(SUB, result);
     assert.equal(compared, QUICK.reduce((n, l) => n + Object.keys(baseline.runs[l].cases).length, 0));
     assert.deepEqual(diffs.map((d) => d.id).sort(), Object.keys(ACCEPTED.cases).filter((id) => QUICK.includes(id.split('#')[0])).sort());
-    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138'].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F differences are allowed');
+    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138','finance 142','finance 142 contract fields'].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F differences are allowed');
     const { open, accepted, stale } = acceptedDiffs(diffs, ACCEPTED.cases, result);
     assert.deepEqual([open, stale, accepted.length], [[], [], diffs.length], 'every accepted record has exactly the fingerprinted output');
     for (const [label, run] of Object.entries(result.runs)) {
@@ -126,11 +129,12 @@ test('C review: an unexpected change of money, quest or events inside an already
 
 test('D retains every original C fingerprint and reason unchanged',()=>{
  const c=JSON.parse(fs.readFileSync(new URL('./accepted_c132_vs_126.json',import.meta.url)));
- for(const [id,entry] of Object.entries(c.cases)) assert.deepEqual(ACCEPTED.cases[id],entry,id);
+ for(const [id,entry] of Object.entries(c.cases)) assert.deepEqual(ACCEPTED_F138.cases[id],entry,id);
 });
 
 test('F retains every D fingerprint and reason unchanged (one reasoned supersession) and adds exactly the eight reasoned .138–.140 records', () => {
     const d = JSON.parse(fs.readFileSync(new URL('./accepted_d133_vs_126.json', import.meta.url)));
+    const ACCEPTED = ACCEPTED_F138;
     const superseded = Object.entries(ACCEPTED.cases).filter(([, e]) => e.supersedes).map(([id]) => id);
     // review of .138: the one D record whose output the addressee-choice condition rule changes, with its old fingerprint
     assert.deepEqual(superseded, ['b19-warrior#82']);
@@ -139,4 +143,21 @@ test('F retains every D fingerprint and reason unchanged (one reasoned supersess
     const added = Object.keys(ACCEPTED.cases).filter((id) => !d.cases[id]).sort();
     assert.deepEqual(added, ['b17-rogue#19', 'b17-warrior#134', 'b17-warrior#73', 'b18-rogue#196', 'b18-warrior#44', 'b18-warrior#54', 'b19-mage#132', 'b19-mage#152']);
     for (const id of added) assert.equal(ACCEPTED.cases[id].category, 'finance 138', id);
+});
+
+test('F .142 keeps every F entry or supersedes it with its old fingerprint and a named cause; every new record is named or reasoned', () => {
+    for (const [id, entry] of Object.entries(ACCEPTED_F138.cases)) {
+        const now = ACCEPTED.cases[id];
+        // a record whose output is the .126 baseline again is no accepted difference any more; it is named with its reason
+        if (!now) { assert.ok(ACCEPTED.returned?.[id]?.reason, `${id} returned to the baseline with a reason`); continue; }
+        if (now.fingerprint === entry.fingerprint) { assert.deepEqual(now, entry, id); continue; }
+        assert.equal(now.supersedes, entry.fingerprint, id);
+        assert.ok(now.finance_142 || (now.category === 'finance 142' && now.reason), id);
+    }
+    for (const [id, entry] of Object.entries(ACCEPTED.cases)) {
+        if (ACCEPTED_F138.cases[id]) continue;
+        assert.ok(['finance 142', 'finance 142 contract fields'].includes(entry.category), id);
+        if (entry.category === 'finance 142') assert.ok(entry.reason && entry.reason.length > 40, id);
+        assert.match(entry.fingerprint, /^sha256:[0-9a-f]{64}$/, id);
+    }
 });

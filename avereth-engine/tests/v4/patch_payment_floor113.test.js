@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
-import {loadProductContent} from '../helpers.js';import {resolveCommands} from '../../src/v4/commands.js';import {applyWorld} from '../../src/v4/world.js';import {applyEvent} from '../../src/state.js';import {worldPanel} from '../../src/display.js';
+import {loadProductContent} from '../helpers.js';import { resolveCommandsLegacy as resolveCommands } from './finance_legacy.js';import { applyWorldLegacy as applyWorld, legacyAnswer, legacyCommands } from './finance_legacy.js'; /* Build .142: pre-cmd-1.8/pre-delta-1.13 scripted inputs */import {applyEvent} from '../../src/state.js';import {worldPanel} from '../../src/display.js';
 const c=await loadProductContent(),f=JSON.parse(fs.readFileSync(new URL('./fixtures/batch7_payment_stairs.json',import.meta.url)));
 function run(state,commands){const s=structuredClone(state),events=[],emit=e=>{events.push(e);applyEvent(s,e);};const ctx=resolveCommands(s,c,commands,emit,{c:true,text:f.room.text});const replay=structuredClone(state);for(const e of JSON.parse(JSON.stringify(events)))applyEvent(replay,e);assert.deepEqual(replay,s);return {s,ctx,events};}
 const pay=f.room.commands[0],seller=pay.to;
@@ -14,12 +14,15 @@ const root='loc.mossback_warrens',stair=root+'.goblin_widened_stair_down';
 test('113 actual arrival on level 2 produces a clear engine message',()=>{const {before,after}=moved(f.stairs.state.scene.at,stair);const panel=worldPanel(before,c,{state:after,events:[{t:'scene.moved',d:{at:stair}}]});assert.match(panel,/ENTERED — Mossback Warrens, Level 2 · Rank E/);});
 test('113 first entry announces level 1, a room change on the same level does not',()=>{const at=f.stairs.state.scene.at,{before,after}=moved(root,at);assert.match(worldPanel(before,c,{state:after,events:[{t:'scene.moved',d:{at}}]}),/ENTERED — Mossback Warrens, Level 1 · Rank F/);before.scene.at=at;assert.doesNotMatch(worldPanel(before,c,{state:after,events:[{t:'scene.moved',d:{at}}]}),/ENTERED —/);});
 test('113 prose, pending or a refused arrival never creates a floor message',()=>{const {before,after}=moved(f.stairs.state.scene.at,stair);assert.doesNotMatch(worldPanel(before,c,{state:after,pending:true,events:[]}),/ENTERED —/);});
-test('113 a room debt remains a debt, not a new booking',()=>{const r=run(f.room.state,[{...pay,for:'old room debt',quote:'I repay my old room debt'}]);assert.equal(r.s.entities.pc.sheet.coin_cp,416);assert.ok(!r.events.some(e=>e.t==='service.granted'));});
+// Build .142: a debt repayment whose words name no amount is no proven payment: a concrete proposal, paid once he confirms it
+test('113 a room debt remains a debt, not a new booking',()=>{const r=run(f.room.state,[{...pay,for:'old room debt',quote:'I repay my old room debt'}]);assert.equal(r.s.entities.pc.sheet.coin_cp,424);assert.ok(!r.events.some(e=>e.t==='service.granted'));
+ const dec=r.s.decisions.find(d=>d.kind==='payment'&&d.state==='needs_confirmation');assert.equal(dec.amount_cp,8);r.s.turn+=1;
+ const k=run(r.s,[{...pay,for:'old room debt',quote:'Yes, I repay the old room debt',confirmation:dec.id,money:null}]);assert.equal(k.s.entities.pc.sheet.coin_cp,416);assert.ok(!k.events.some(e=>e.t==='service.granted'));});
 test('113 a purchase payment missing its item asks instead of transferring cash',()=>{const r=run(f.room.state,[{...pay,for:null}]);assert.equal(r.s.entities.pc.sheet.coin_cp,424);assert.equal(r.ctx.resolutions[0].status,'clarify');});
 test('113 the other party offer cannot book this seller room',()=>{const s=structuredClone(f.room.state);s.offers.room={id:'room',seller:'npc.other',at:s.scene.at,status:'open',lines:[{id:'l1',what:'room',kind:'service',service:'lodging',qty:1,price_cp:8}]};assert.equal(run(s,[pay]).s.entities.pc.sheet.coin_cp,424);});
 test('113 original Mage T143–145: one booked room costs eight, serialized replay stays identical',async()=>{
  const {playerTurnV4,replyTurnV4}=await import('../../src/v4/turn.js');let s=structuredClone(f.room.state);const all=[];
- for(const step of f.roomSteps){const p=playerTurnV4(s,c,step.text,{commands:step.commands,c:true,msg:step.turn*2-1});all.push(...p.events);const r=replyTurnV4(p.state,c,step.raw,{prose:step.prose,msg:step.turn*2});all.push(...r.events);s=r.state;}
+ for(const step of f.roomSteps){const p=playerTurnV4(s,c,step.text,{commands:legacyCommands(step.commands,c),c:true,msg:step.turn*2-1});all.push(...p.events);const r=replyTurnV4(p.state,c,legacyAnswer(step.raw,p.state,c),{prose:step.prose,msg:step.turn*2});all.push(...r.events);s=r.state;}
  assert.equal(s.entities.pc.sheet.coin_cp,416);assert.equal(all.filter(e=>e.t==='service.granted'&&e.d.service==='lodging').length,1);
  const replay=structuredClone(f.room.state);for(const e of JSON.parse(JSON.stringify(all)))applyEvent(replay,e);assert.deepEqual(replay,s);
 });

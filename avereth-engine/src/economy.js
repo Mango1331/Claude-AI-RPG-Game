@@ -69,9 +69,38 @@ function numberOf(words) {
 }
 
 /** Numeric/word amounts share one tokenizer; apostrophes inside words are never currency separators. */
+/**
+ * Build .142: the tokenizer's view of a text with, for every character of it, the offset in the raw text. Lowercase,
+ * curly apostrophes straight, dashes as spaces, and a digit and its unit apart ("5cp" → "5 cp"); the money groups the
+ * reader finds are given back as raw ranges, so a check can show and compare exactly the words it read.
+ */
+function cleanView(raw) {
+    let base = '';
+    const at = [];
+    for (let i = 0; i < raw.length; i++) {
+        let ch = raw[i].toLowerCase();
+        if (ch.length !== 1) ch = raw[i];
+        if (/[‘’‛′]/.test(ch)) ch = "'";
+        if (/[-–—]/.test(ch)) ch = ' ';
+        base += ch; at.push(i);
+    }
+    let clean = '';
+    const map = [];
+    let last = 0;
+    for (const m of base.matchAll(/(\d)\s*(cp|c|s|g)\b/g)) {
+        for (let k = last; k <= m.index; k++) { clean += base[k]; map.push(at[k]); }
+        clean += ' '; map.push(at[m.index] + 1);
+        const unit = m.index + m[0].length - m[2].length;
+        for (let k = unit; k < m.index + m[0].length; k++) { clean += base[k]; map.push(at[k]); }
+        last = m.index + m[0].length;
+    }
+    for (let k = last; k < base.length; k++) { clean += base[k]; map.push(at[k]); }
+    map.push(raw.length);
+    return { clean, map };
+}
+
 export function coinEvidence(text, content) {
-    const clean = String(text ?? '').toLowerCase().replace(/[‘’‛′]/g, "'")
-        .replace(/(\d)\s*(cp|c|s|g)\b/g, '$1 $2').replace(/[-–—]/g, ' ');
+    const { clean, map } = cleanView(String(text ?? ''));
     const tokens = [...clean.matchAll(/[a-z0-9]+(?:'[a-z0-9]+)*/g)].map(m => ({ word: m[0], start: m.index, end: m.index + m[0].length }));
     const parts = [];
     let complete = true;
@@ -146,6 +175,8 @@ export function coinEvidence(text, content) {
             last.cp += p.cp; last.end = p.end;
         } else sums.push({ cp: p.cp, start: p.start, end: p.end });
     }
+    // Build .142: each sum also as its range in the raw text (raw_start inclusive, raw_end exclusive)
+    for (const x of sums) { x.raw_start = map[x.start]; x.raw_end = map[x.end - 1] + 1; }
     return { cp, mentions: parts.map(p => p.cp), compound, complete, sums };
 }
 
@@ -165,6 +196,20 @@ export function numbersIn(text) {
     const out = new Set();
     let run = [];
     const flush = () => { if (run.length) { const n = numberOf(run); if (n !== null) out.add(n); for (const w of run) { const m = numberOf([w]); if (m !== null && !['a', 'an'].includes(w)) out.add(m); } } run = []; };
+    for (const w of tokens) {
+        if (/^\d+$/.test(w) || (SMALL[w] !== undefined && !['a', 'an', 'single'].includes(w)) || w === 'hundred') run.push(w);
+        else flush();
+    }
+    flush();
+    return out;
+}
+
+/** Build .142: the numbers a text names, one per run of number words ("twenty-four" is 24, not 20 and 4). */
+export function numberRuns(text) {
+    const tokens = String(text ?? '').toLowerCase().replace(/[-–]/g, ' ').replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).filter(Boolean);
+    const out = [];
+    let run = [];
+    const flush = () => { if (run.length) { const n = numberOf(run); if (n !== null) out.push(n); } run = []; };
     for (const w of tokens) {
         if (/^\d+$/.test(w) || (SMALL[w] !== undefined && !['a', 'an', 'single'].includes(w)) || w === 'hundred') run.push(w);
         else flush();

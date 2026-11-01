@@ -271,10 +271,12 @@ test('amounts in his own words: a pay whose number differs from "two silver" goe
     const s = foldChat(fx.messages, 18).state;
     const ctx = withContentSkills(planContext(s, content, buildCatalog(s, content, { c: true })), content);
     const msg = '*i pay her two silver*';
-    const bad = parsePlan(JSON.stringify({ commands: [{ seq: 1, type: 'pay', to: 'npc.npcfletcher', amount_cp: 200, for: null, quote: 'i pay her two silver' }] }), content.commandVocab, ctx, msg);
+    // Build .142 (cmd-1.8): the planner names the coin of his act (money); its amount is checked against those words
+    const money = { money: { quote: 'two silver', currency_quote: null }, recipient_quote: null, confirmation: null };
+    const bad = parsePlan(JSON.stringify({ commands: [{ seq: 1, type: 'pay', to: 'npc.npcfletcher', amount_cp: 200, for: null, quote: 'i pay her two silver', ...money }] }), content.commandVocab, ctx, msg);
     assert.equal(bad.commands, null);
-    assert.match(bad.errors.join('\n'), /amount_cp 200 is not what his words "i pay her two silver" say: 20 cp/);
-    const ok = parsePlan(JSON.stringify({ commands: [{ seq: 1, type: 'pay', to: 'npc.npcfletcher', amount_cp: 20, for: null, quote: 'i pay her two silver' }] }), content.commandVocab, ctx, msg);
+    assert.match(bad.errors.join('\n'), /amount_cp 200.*"two silver".*20 cp/);
+    const ok = parsePlan(JSON.stringify({ commands: [{ seq: 1, type: 'pay', to: 'npc.npcfletcher', amount_cp: 20, for: null, quote: 'i pay her two silver', ...money }] }), content.commandVocab, ctx, msg);
     assert.equal(ok.errors.length, 0, ok.errors.join('; '));
 });
 

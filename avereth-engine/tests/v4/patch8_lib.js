@@ -3,6 +3,7 @@
 import { prepareGenerationAsync } from '../../src/v4/runtime.js';
 import { rec } from '../../src/host.js';
 import { Chat4 } from './harness.js';
+import { hasFinanceContract, financeText } from '../../tools/replay/contract_f.mjs';
 
 export const ALDERWATCH = 'SYSTEM INITIALIZATION COMPLETE\n`Location: Public roadside verge outside Alderwatch, Valedorn Crown`';
 export const CATA = 'loc.old_crown_catacombs';
@@ -55,7 +56,10 @@ export async function campaign(content, { greeting = ALDERWATCH, cls = 'Mage', s
 export async function say(g, text, ...commands) {
     g.chat.push({ mes: text, is_user: true, is_system: false, extra: {} });
     const own = (q) => (q && text.includes(q) ? q : text.replace(/\*/g, '').trim());
-    g.plans = [JSON.stringify({ commands: commands.map((c, i) => ({ seq: i + 1, ...c, quote: own(c.quote) })) })];
+    // Build .142: scripted planner commands from before the finance contract (cmd-1.8) get the same disclosed
+    // translation as the replay (tools/replay/contract_f.mjs); contract: false on the chat sends them as they are
+    const plan = JSON.stringify({ commands: commands.map((c, i) => ({ seq: i + 1, ...c, quote: own(c.quote) })) });
+    g.plans = [g.contract !== false && hasFinanceContract(g.content.deltaVocab) ? financeText(plan, 'plan', null, g.content) : plan];
     const r = await prepareGenerationAsync(g.chat, g.content, { type: 'normal', settings: { planner: true }, llm: g.llm });
     if (r.action === 'panels') g.chat.push({ mes: r.panels.join('\n\n'), is_user: false, is_system: true, extra: { avereth_panel: true } });
     return r;

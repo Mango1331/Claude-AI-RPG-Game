@@ -1,11 +1,12 @@
-# Avereth Engine – Finanzabläufe behalten oder vereinfachen
+# Avereth Engine – Finanzvereinfachung S1 + S2
 
-**Stand: 01.11.2026 · Fach- und Entscheidungsplan, nach GPT-Gegenreview (§9) und Claude-Gegenprüfung (§10) präzisiert; keine Implementierung.**
+**Stand: 01.11.2026 · abschließend konsolidierter technischer Fachplan; noch keine Implementierung.**
 Produkt geprüft: **[.143 / d2a292a](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/d2a292a1ba6ce1fc537238e9f51306a8bec2cce9)**.
 Die .143-Gegenprüfung hat Q5 erneut als P1 reproduziert. Die Stoppregel des
 [bisherigen Fachplans §7.4](PATCH_FINANCE_REVIEW142.md) ist damit für freie Zahlungen/Bestätigung ausgelöst.
-Dieser Plan ordnet zusätzlich das gesamte aktive Finanzspiel nach praktischen Vorgängen.
-Er ersetzt keine Preis- oder Balancetabelle und gibt keinen Produktpatch frei.
+Dieser Plan trennt funktionierende Abwicklung von bewusst vereinfachter Spracheingabe und legt
+S1 + S2 als **einen zusammenhängenden Produktpatch** fest. §§6–9 sind die Umsetzungsvorgabe;
+§§1–5 enthalten Einordnung und Belege. Die Planfertigstellung ist keine Implementierungsfreigabe.
 
 ## 1. Ergebnis
 
@@ -37,6 +38,8 @@ Wegfallen soll das Erraten, *welche* erzählte Zahl mit *welcher* Menge gerechne
 - Claude Feedback(7).md und eigene read-only Gegenproben auf .143:
   Q5 mit verschiedenem `for` in beiden Reihenfolgen **−5/−5**; zusätzliche Zahlungsentscheidung nach
   `Yes. I pay him.`; Fehlablehnungen normaler Ja-/Zahlungsformen; Registrierungsfehlleitung.
+- GPT-Gegenreview und Claude-Ergänzungen samt anschließender Sol-Bewertung sind hier konsolidiert.
+  Die bisherigen vollständigen Reviews bleiben in der [Vorfassung §§9–10](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/94ab3c4d0a71137ee40aac46e600766d130a7896/patch_plans_10b/PATCH_FINANCE_SIMPLIFICATION.md#9-bewertung-des-gpt-gegenreviews-01112026) erhalten; keine zusätzliche Reviewdatei.
 - Für diesen Plan zusätzlich Codepfade von Preisbildung bis Buchung gelesen und kleine
   Funktionssonden für Mengenrechnung und Angebotsannahme ausgeführt. Keine neue Suite,
   keine Originalarchive verändert und kein neuer natürlicher Lauf.
@@ -200,7 +203,7 @@ Gibt es nur eine neue freie Händlerrede, nennt der Händler für diese Auswahl 
 **14 Platten verkaufen:** IDs und Menge bleiben14. Eine freie Offerte sagt eindeutig
 „56 copper for these fourteen plates“. Ein fester gespeicherter56-cp-Bid wird einmal angenommen
 und einmal gebucht. Aus allein „four each“ wird unter der vorgeschlagenen Vereinfachung
-noch kein neuer bindender Lospreis. Der Händler kann die Summe nennen; der Spieler muss sie nicht ausrechnen.
+noch kein neuer bindender Lospreis. Der Händler nennt die Endsumme; der Spieler muss sie nicht ausrechnen.
 
 **Platten und Drüsen:** Ein Los mit festgehaltenen Objekt-IDs und Mengen, eine Endsumme.
 Oder mehrere bereits separat bepreiste Engine-Positionen. Kein Stückpreis der Platten für die
@@ -218,316 +221,282 @@ Ein gleichzeitig gemeldetes `pay` oder ein späteres „Yes“ darf kein zweiter
 30 cp, keine Privatquest und keine Spendenbestätigung. Eine spätere eigenständige Gabe bleibt erlaubt.
 Versprechen oder erneutes Erzählen derselben Übergabe zahlen nicht.
 
-## 6. Empfohlener nächster Fachpatch – noch freizugeben
+## 6. S1 – Freie Zahlungen: Vorschlag und native Bestätigung
 
-### S1 – Freie Zahlungen vereinfachen (ausgelöste Stoppregel)
+### 6.1 Festlegungen und Umfang
 
-- `pay`-Freitext erzeugt ausschließlich Vorschläge. Richtung/Partei/Betrag werden sichtbar;
-  unvollständige Beträge sind nicht bestätigbar, nicht still Teilbeträge.
-- Zunächst ein minimaler direkter Enginebefehl, beispielsweise `#pay <decision-id>`;
-  optional später ein Button. Die vollständige Eingabe muss allein aus Befehl und genau einer
-  Vorschlags-ID bestehen. Kein Aufruf aus Zitaten, Prosa, angehängten `#`-Fragmenten,
-  mehreren Systembefehlen oder Narratorausgaben; vor der allgemeinen Hashtag-Zerlegung prüfen.
-- Höchstens ein freier Vorschlag pro Empfänger und Nachricht. Bei widersprüchlichen Summen
-  keine automatische Zusammenrechnung; eine eindeutige Entscheidung verlangen.
-- Native Bestätigung verwendet gespeicherte Partei, cp, Zweck und Route, prüft aktuellen Ort,
-  Präsenz, Gültigkeit und Guthaben und bucht Transaktion/Entscheidungsschluss zusammen.
-- Beide bisherigen freien Abbuchungswege entfallen: direkte Freitextzahlung auch bei verifiziertem
-  Beleg sowie vom Planner gemeldete Freitext-`confirmation`. `paymentConsent()` und gleiches `for`
-  sind keine Zahlungsautorität mehr. Kein alter Ausweichpfad bei ungültigem `#pay`.
-  Bekannte Fachzahlungen sind davon getrennt; den vorhandenen Bucher für die native Aktion wiederverwenden.
-- Bekannte Käufe, Registrierung und Dienste bleiben ihre Fachwege. Offenes Registrierungsangebot
-  allein macht ein unabhängiges Trinkgeld nicht zur Gebühr.
-- Jeder bestätigbare Vorschlag zeigt Partei, Zweck, Betrag, Wallet vorher/nachher und die exakte
-  Eingabe `#pay <seine-ID>` sowie „noch nicht bezahlt“. Unvollständige Vorschläge zeigen keinen
-  ausführbaren Zahlungsbefehl. Bestätigung oder Ablehnung liefert ein eindeutiges Engine-Ergebnis.
-- Runner-Anleitung (`PLAYER_COMMANDS`/`PLAYER_MECHANICS`) knapp ergänzen: nur gewollte Vorschläge
-  mit der angezeigten eigenständigen Eingabe bestätigen; „Yes, I pay“ zahlt nicht. Der Driver
-  erzeugt, ersetzt oder bestätigt keine Entscheidung. Keine neue Strategie und kein Modellaufruf
-  für die native Buchung.
-- Kein neuer bezahlter Reise-/Kampf-/Wartezug allein für diese Bestätigung. Der zusätzliche
-  Bedienvorgang und seine Auswirkung auf die Runner-Inputzahl werden transparent berichtet.
-
-### S2 – Variable NPC-Preise und Annahme vereinfachen (zusätzliche Empfehlung)
-
-- Für **neue freie** Offerten/Gebote nur ein vollständiger ausdrücklicher Endpreis je
-  ausgewähltem Los/Angebotsposition. Ein Endpreis benennt seine Währung und gilt jetzt.
-- Aus freier Prosa keine neue `pricing.positions`-Summe, nackte Währungsübernahme,
-  Ordinal-Zuschläge oder Stückpreis×Menge ableiten. Im neuen strikten Weg steht die
-  neue einfache Endpreisangabe statt dieser Berechnungsarten; nicht mehrere alte Wege dahinter behalten.
-- Mehrere gespeicherte Enginepositionen und deren Mengenrechnung bleiben zulässig.
-  Regel „neuer freier Endpreis“ ist kein Verbot der Enginearithmetik.
-- Ein gemeinsamer Lospreis bindet genau die vollständigen gespeicherten Artikel/IDs und Mengen.
-  Daraus keine Einzelpreise ableiten, die Summe nicht an jede Position kopieren und keine Teilmenge
-  still buchen. Für Teilverkäufe nur vorhandene eigenständig bepreiste Positionen nutzen oder
-  eine neue Endofferte einholen; `bidSale()`/Buchungsprüfungen erhalten. Fehlt für einen neuen
-  Einkaufslospreis die vorhandene eindeutige Repräsentation, nach ausdrücklichen Endpreisen je
-  Artikel fragen, statt künstlich Einzelpreise zu verteilen oder ein neues Paketmodell einzuführen.
-- Bedingungen bleiben unverbindlich, bis eine neue feste Offerte existiert. Der Erzähler darf
-  weiter handeln, prüfen, Preise begründen und ablehnen; nicht jede Gesprächszahl wird ein Angebot.
-- Den Endpreisvertrag im tatsächlichen Narrator-Kontext und im Extractor-Vertrag erklären:
-  Für eine feste Offerte das benannte Los und eine vollständige gegenwärtige Endsumme nennen.
-  Fehlt diese, zeigt die Engine konkret Ware/Menge und fehlende Gesamtsumme oder offene Bedingung;
-  der Narrator darf darauf natürlich antworten. Kein allgemeines „Preis ungültig“, kein automatischer
-  Zuschlag und kein neuer Pflichtdialog vor bereits eindeutigen Geschäften.
-- Annahme verwendet gespeicherte Positionen/Preise und explizite Preisgrenzen.
-  `acceptanceWhy()` darf den Geldbestand/Nebenpreis nicht mehr zu einer zweiten Preisvereinbarung machen.
-  Dafür bestehenden doppelten Preisleser entfernen; Auswahl-/Rabatt-/Partei-/Mengenprüfungen erhalten.
-- Änderungen bestehender Angebote erzeugen nachvollziehbar eine neue gültige Offerte.
-  Bereits abgeschlossene Transaktionen nicht neu bepreisen.
-
-**Bewusster Verlust:** Eine neue bloße Stückpreisrede reicht nicht mehr, ebenso wenig
-eine nur aus mehreren frei erzählten Teilbeträgen erschlossene Summe. Das kann eine Rückfrage
-zum endgültigen Preis kosten. Normale Katalogkäufe und vorhandene feste Angebote kosten
-keinen zusätzlichen Bestätigungsklick.
-
-**S1+S2 als ein freizugebender Fachpatch** mit getrennten internen Schritten und einem
-unabhängigen Gegenreview. Keine neue Serie aus „now“, „too“, „one more“, „the plate“ usw.
-Die Endpreisregel entfernt mehrdeutige Rechenrollen, beweist aber nicht die Bedeutung jeder
-freien Offerte: Quelle, Gegenpartei und Bindung bleiben Teil des Modellvertrags und seiner
-bestehenden Prüfung. Keine Vollgarantie und keine neue Sprachheuristik daraus ableiten.
-
-### Nicht in diesem Patch: allgemeiner Engine-Ankauf
-
-Als spätere Alternative zu S2 könnte die Engine Standardloot selbst bepreisen. Das würde
-mehr Prosa-Preisinterpretation entfernen, benötigt aber eine bewusste Preis-/Händlerentscheidung
-und könnte die Testökonomie verändern. Dafür ist kein großes Marktmodell nötig.
-Für den jetzigen Plan empfehle ich erst den klaren Endpreisweg; keine automatische neue Ankaufstabelle.
-
-## 7. Technische Umsetzung und Abnahmegrenzen
-
-| Bereich | Bestehende Stellen | Was später konkret zu ändern wäre |
-|---|---|---|
-| Freier Vorschlag/Bestätigung | `v4/commands.js:pay/paymentProposal/confirmPayment/freePayment`; `commands.js:runCommands` | Nur native bestätigte Entscheidungen buchen freie Abgänge. Den alten Freitext-Bucher wirklich entfernen, nicht nur verstecken. |
-| Host/Persistenz | `v4/runtime.js`, `host.js`, vorhandene Enginebefehl-Routen | Native Aktion als Eventrecord speichern; nur UI-Panel und Zustandsänderung, kein unnötiger Modellaufruf. Wiederholung/Reload/Swipe konsistent. |
-| Neue Preisquelle | `v4/extract.js`, `v4/context.js`/tatsächlich gelieferter Narrator-Vertrag, Vokabularbeschreibungen, `finance_evidence.js`, `world.offer/bid/dealTerms` | Expliziter Gesamtpreisvertrag, konkrete Klärungsmeldung und unteilbares Los; keine alten Preisinterpretationen als Ausweichweg. Falls der Kartenvertrag betroffen ist, Revision und Updatehinweis anpassen. |
-| Zustimmung | `trade.acceptanceWhy/positionPrices/tradePrice`, `interpret.amountErrors`, `planner`, `commands.offer.accept` | Eine zugeordnete Preiszustimmung statt mehrerer Ganztextleser; vorhandene Limits und Auswahl weiter prüfen. |
-| Unveränderter Buchungskern | `trade.linePrice/pickLines/bookPurchase/bookSale`, `guild.completeContract`, `lootEvents` | Nur soweit ein neuer klarer Aufrufer nötig ist anfassen; keine neue Arithmetik, Preisbalance oder Eigentumslogik. |
-| Runner | `tools/st_live/live/players.mjs` (`PLAYER_COMMANDS`/`PLAYER_MECHANICS`) und Engine-Ergebnisdarstellung | Exakte Bedienaktion samt Vorschlags-ID erklären; keine automatischen Zahlungen/Bestätigungen durch den Driver und keine neue Spielstrategie. |
-| Dokumentation/Kanon | 02 nach Designfreigabe; 03 aktueller Stand; eine Dev-Patchnote | Dieser Plan ist Vorschlag. Alte Analysen nicht umschreiben und nicht überall dieselbe Begründung kopieren. |
-
-**Pflichtfälle bei Umsetzung:**
-
-1. A1–A14 als Positivmatrix: Waffe/Fokus/Rüstung, Manuals, Einzelartikel, bekannte Mengen,
-   Warenkorb, Dienst, Bid-Annahme, Teilmenge, Registrierung, Quest, Loot und erneuter unabhängiger Vorgang.
-2. Q5 mit verschiedenem `for`, beiden Reihenfolgen und Folgefrage: vor nativer Bestätigung
-   kein freier Abgang, genau eine Entscheidung, danach genau eine Transaktion.
-3. Normale Rollenspiel-Zahlungsformen erzeugen denselben Vorschlag; kein wachsender Wortkatalog.
-   Nur eine eigenständige Engine-Eingabe bestätigt: Zitat, Narrator, angehängter Befehl,
-   Mehrfachbefehl, Freitext-`confirmation` und direkte Freitextzahlung dürfen nicht buchen.
-   Geschlossene/unbekannte/verworfene IDs zahlen nichts; eine gültige offene ID bleibt nach
-   Statuspanel/Reload nutzbar. Wiederholung zahlt kein zweites Mal, Swipe folgt dem aktuellen Eventzweig.
-   Host/Runner-Kette mit sichtbarem Vorschlag → vom Testspieler selbst gewähltem `#pay` → genau einer
-   Buchung prüfen; kein verstecktes Bestätigen und kein zusätzlicher Planner/Narrator/Extractor-Aufruf.
-4. Drei Einheiten eines gespeicherten6-cp-Preises kosten18; bekannte260/160 ergeben420.
-   Unteilbare Lose bleiben abgewiesen. Geänderte/fehlende Ware oder abwesende Partei buchen nicht.
-5. Neue freie Rede „four each“/mehrere Teilpreise ohne Endsumme wird nicht als Gesamtlospreis
-   gebucht; klare Endofferte wird gespeichert und korrekt angenommen. Alte/alternative Preise
-   und echte Bedingungen werden nicht als neue Zustimmung behandelt. Gemeinsamer Lospreis:
-   vollständige Auswahl bucht einmal; einzelne Position oder Mengenänderung ohne eigenen Preis
-   bucht nichts. Narrator/Extractor erhalten denselben Endpreisvertrag, fehlende Summe erzeugt
-   die konkrete Rückfrage; klare Endofferte benötigt keinen weiteren Pflichtzug.
-6. Neues Annahmebeispiel mit300-cp-Geldbestand und festem260-cp-Angebot funktioniert,
-   aber ein tatsächliches Limit250, ein Gegengebot oder eine unvollständige Artikelauswahl bucht nichts.
-7. Verkäufe und Käufe/Trinkgeld in einem Input werden nicht gegenseitig zur zweiten Buchung.
-   Geschenk/Nachzählung/Versprechen bleiben getrennt; echte freiwillige NPC-Gabe funktioniert.
-8. Bestehende aktuelle Zustände, originale Archive, Tests und Fingerprints nachvollziehbar behandeln.
-   Kein automatisches Umwerten alter Angebote, kein Verfälschen historischer Modellantworten;
-   alte Kampagnen brauchen dafür keinen allgemeinen Migrationsapparat.
-9. Zielregressionen zuerst rot, dann grün; vollständige Node-Suite, einzeln begründeter
-   Replay und echte ST-Hostintegration der neuen nativen Aktion. Danach unabhängiger Review,
-   erst anschließend natürlicher Batch.
-
-Im natürlichen Vergleich künftig **pro einmaligem Geschäft** erfassen:
-Angebot entsteht, wird gewählt, korrekt gebucht oder korrekt/fehlerhaft abgewiesen;
-Anzahl zusätzlicher Spielerinputs, Repairs und Erzählwidersprüche getrennt.
-So unterscheiden wir eine mehrfach wiederholte Verkaufsschleife von vielen verschiedenen Fehlern.
-
-## 8. Vor Umsetzung zu entscheiden
-
-| Entscheidung | Empfehlung |
+| Punkt | Festlegung für diesen Fachpatch |
 |---|---|
-| S1: freie Zahlungen nur direkt bestätigt? | **Ja.** Die vereinbarte Grenze ist auf .143 nachweislich gescheitert. |
-| Oberfläche für S1? | Zunächst exakter Enginebefehl mit ID und sichtbarer Vorschlagskarte; optional später Button. |
-| S2: neue freie NPC-Preise nur als ausdrückliche Endofferte? | **Ja**, samt Entfernung der zweiten Preisrekonstruktion bei Annahme. Engine-Mengen und Katalogkörbe behalten. |
-| Alle eingehenden Geschenke bestätigen oder deckeln? | **Nein**, derzeit kein neuer struktureller P1-Nachweis; bestehende Grenzen und klare Übergabe erhalten. |
-| Alle Händler auf feste Enginepreise umstellen? | **Nein.** Reguläres F-Gear/Manuals sind bereits so; Standardloot-Ankauf wäre ein eigener wirtschaftlicher Schritt. |
-| Alle Käufe auf Klick/Slash umstellen? | **Nein.** Klare gewöhnliche Käufe und gespeicherte Offerten weiter natürlich annehmbar. |
-| Preise/Balancing zugleich ändern? | **Nein**, dieser Eingriff ordnet Autorität und Bedienung. Keine stillen Ankaufquoten. |
+| Oberfläche | Exakte eigenständige Eingabe `#pay <decision-id>`; ein Button ist nicht Teil dieses Patchs. |
+| Mehrere Personen | Eine offene freie Karte je Empfänger aus derselben Spielernachricht; separat bestätigen. |
+| Unklare Käufe | Keine zusätzliche Kaufkarte. Vorhandene Angebotsauswahl/Registrierungs-/Servicewege bleiben; Karten dafür sind nur eine spätere Ausweichoption. |
+| Gültigkeit | Bis zur nächsten normalen handelnden Spielernachricht oder einem Ortswechsel; kein Verfall allein durch Statuspanel oder Reload. |
+| Vorabkauf | Nur eine ausdrücklich zugeordnete Gesamtgrenze autorisiert einen noch unbekannten Preis (§7.3). |
+| Abnahme | Feste Sicherheits- und Komfortgrenzen nach §9. |
 
-**Noch keine Umsetzung.** Produkt bleibt .143. Die notwendigen konkreten Verluste an Komfort
-und die bewusst erhaltenen Fähigkeiten stehen hier zur Entscheidung; nicht als bereits beschlossener
-Designkanon behandeln. Nach Freigabe ein begrenzter Fachpatch, keine erneute allgemeine Finanz-Auditserie.
+Die feste Stoppregel wurde vom Nutzer ausdrücklich gewählt. Die drei übrigen Auswahlfelder
+blieben unbeantwortet; dieser fertige Plan verwendet die angekündigten Empfehlungen
+(pro Empfänger, keine Kaufkarte, Gesamtlimit). Daraus keine zusätzliche Produktfreigabe ableiten.
 
-## 9. Bewertung des GPT-Gegenreviews (01.11.2026)
+### 6.2 Freitext erzeugt Karten, niemals freie Abbuchungen
 
-Grundlage: `Chatgpt Feedback(20261101-092246).md`, geprüft gegen den unveränderten Produktstand .143.
-Den vier Ergänzungen stimme ich zu: exakte native Eingabe, bedienbarer sichtbarer Vorschlag,
-Narrator-/Extractor-Endpreisvertrag mit Losschutz und Entfernung der zweiten Preisrekonstruktion.
-Sie präzisieren §§4.4, 6 und 7; keine zusätzliche Architekturmaßnahme oder neue Auditphase nötig.
-`runCommands()`/`splitCommands()` und der Runner bestätigen die genannten Ansatzpunkte;
-`bidSale()` schützt bereits unbepreiste Teillose und soll dafür weiter genutzt werden.
+- `pay` darf außerhalb bekannter Fachgeschäfte nur einen Vorschlag öffnen. Das gilt auch bei
+  eindeutigem Zahlungsverb und vollständig verifiziertem Betrag. Kein freier Sofortabgang.
+- Kartenvoraussetzungen: identifizierter anwesender Empfänger, vollständiger positiver
+  Geldbetrag aus der zugeordneten Spielerquelle und keine Geldforderung an den NPC.
+  Unsicherheit über die Übergabeform darf eine Karte ergeben; eine unbelegte Modellzahl,
+  ein Teilbetrag, fehlendes Geldargument oder abwesender Empfänger wird dadurch nicht legitim.
+- Wiederholte identische Meldungen derselben Handlung ergeben eine Karte. Verschiedene Beträge
+  oder widersprüchliche Zwecke an dieselbe Person innerhalb eines Inputs: klären, keine
+  Addition und kein „letzter Befehl gewinnt“. Unterschiedliche Empfänger verdrängen sich nicht.
+- Eine spätere eigenständige Gabe bleibt zulässig. Keine globale Sperre nach NPC/Betrag.
+- Karte zeigt Richtung PC → NPC, Name, Zweck, cp, Wallet aktuell/nach Zahlung, eindeutige ID,
+  „NOT PAID“ und den vollständig kopierbaren Befehl. Bei unvollständigem Betrag kein
+  ausführbarer Bestätigungsbefehl. Kein neues Kartensystem: vorhandene Entscheidungen/Panels nutzen.
+- Registrierung, Einkauf und Services dürfen nicht als freie Gabe umgangen werden.
+  Ein offenes Registrierungsangebot allein macht ein unabhängiges Trinkgeld nicht zur Gebühr.
+  Unklare Kaufzuordnung zeigt das konkrete bestehende Angebot oder die fehlende Auswahl;
+  sie wird weder frei bezahlt noch mit weiteren Zahlungswortlisten „repariert“.
 
-Zwei Grenzen bleiben ausdrücklich: Reload ist nicht selbst ein Ungültigkeitsgrund, und „alte
-Zahlungswege entfernen“ betrifft die beiden **freien** Abbuchungswege, nicht Kauf, Registrierung
-oder Dienste. S1 folgt aus Q5/Stoppregel; S2 bleibt eine zusätzliche bewusste Vereinfachung.
-Die Freigabeempfehlung des Reviews ist keine Nutzerfreigabe zur Implementierung. Produkt und
-Designkanon bleiben unverändert; als Nächstes ist nur die gemeinsame Entscheidung über S1+S2 nötig.
+### 6.3 Native Bestätigung, Gültigkeit und Einmaligkeit
 
-## 10. Claude-Gegenprüfung des Vereinfachungsplans (01.11.2026)
+1. Vor `splitCommands()` die **gesamte echte Spielereingabe** auf `#pay` plus genau eine ID
+   prüfen. Kein Zitat, Prosa, angehängter Befehl, Mehrfachbefehl oder Narrator-/Extractor-Text
+   darf auslösen. Ungültige Eingaben werden sichtbar abgewiesen, ohne Freitext-Zahlungsfallback.
+2. Nur eine aktuell offene Entscheidung mit `kind:'payment'`, `route:'free'`,
+   `state:'needs_confirmation'` und vollständigem Betrag ist bestätigbar.
+   `needs_amount`, Eintrittsgebühren und andere Fachentscheidungen sind ausgeschlossen.
+3. Da native Befehle vor `turn.begun` laufen, gilt im unveränderten Ablauf `d.turn === s.turn`.
+   Zusätzlich Quelle, Standort, lebender/anwesender Empfänger, Betrag, Route und Guthaben prüfen.
+   `#pay` erhöht weder den normalen Spielzug noch Zeit, Kampf, Gebühren oder Modellaufrufe.
+4. Mit der nächsten normalen handelnden Nachricht verfallen alte Karten; Ortswechsel ebenfalls.
+   Reine Panels und die Bestätigung einer anderen gültigen Karte verbrauchen dieses Fenster nicht.
+   „Yes, I pay“ bestätigt nicht: alte Karte verfällt, ein vollständiger neuer Zahlungswunsch
+   kann eine neue Karte erzeugen. Keine neue Karte allein aus einer nackten Zustimmung erfinden.
+5. Vorhandenen Zahlungsbucher wiederverwenden: `coin.changed`, `transaction.completed` und
+   `decision.closed` in einem gespeicherten Record. Zweiter Aufruf derselben ID zahlt nichts.
+   Bei mehreren Karten Guthaben nach jeder tatsächlichen Zahlung neu prüfen; die Vorschau
+   einer anderen Karte ist keine Reservierung von Geld.
 
-Grundlage: dieser Plan auf `076ca69`. Den .143-Code ([d2a292a](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/d2a292a1ba6ce1fc537238e9f51306a8bec2cce9))
-habe ich an den unten genannten Stellen gelesen. Dazu kam eine read-only Funktionssonde (zwei Empfänger in einer Nachricht).
-Keine Suite, kein Replay, kein Lauf; Pfade relativ zu `avereth-engine/`.
+### 6.4 Edit, Reload, Swipe und Erzählerkontinuität
 
-**Urteil:** S1 und S2 gehen in die richtige Richtung, und die Stoppregel ist richtig angewendet.
-Vor der Freigabe fehlen ein paar Festlegungen, ohne die die Umsetzung wieder Auslegungsfragen
-selbst entscheiden müsste. Keiner der Punkte unten ist eine neue Sprachregel. Jeder Punkt legt
-eine Gültigkeit fest, entfernt Code, nutzt einen vorhandenen Mechanismus oder legt einen Ausweg
-und eine Abbruchgrenze im Voraus fest.
+`turn + seq` ist nach Bearbeitungen keine hinreichende Identität. Vorschlag an seine Quelle
+binden: vorhandene Nachrichtenreferenz, Inputhash und Sequenz; daraus eine stabile ID ableiten
+oder diese Quellenidentität gleichwertig prüfen. Kein zufälliger globaler Zähler.
 
-### 10.1 S1 – Präzisierungen aus dem Code
+Das native Zahlungsrecord speichert die bestätigte Quellenreferenz und den fachlichen
+Schnappschuss (ID, Empfänger, cp, Ort, freie Route, Zweck). Beim erneuten Fold **vor seinen
+Geldereignissen** prüfen: Quelle unverändert und genau dieser Vorschlag im aktuellen Zweig offen.
+Fehlt er oder hat er sich geändert, den gesamten Zahlungsrecord als Foldfehler behandeln;
+vorhandenes `foldBlock` verhindert die Weiterverarbeitung. `foldBlock` selbst stellt keine
+inhaltliche Gleichheit her. Eine Prüfung erst nach dem Geldabgang ist unzureichend.
+Keine allgemeine neue Eventmaschine und keine Nebenliste bezahlter IDs.
 
-1. **Gültigkeitsfenster konkret festlegen, statt es offen zu lassen.**
-   - Heute gibt es schon eine einfache Regel: Ein Vorschlag verfällt am Ende der nächsten handelnden
-     Nachricht oder beim Ortswechsel. Statuspanels zählen nicht als handelnde Nachricht
-     (`src/v4/commands.js:1724–1727`).
-   - Diese Regel als S1-Fenster übernehmen. Weil `#pay` vor `turn.begun` läuft, prüft die
-     Bestätigung `d.turn === s.turn` (gleicher Zug wie der Vorschlag) statt `s.turn − 1`.
-   - Wer statt `#pay` „Yes, I pay“ schreibt, lässt den alten Vorschlag verfallen. Nennt der Text einen
-     Betrag, entsteht eine neue Karte. Damit ist auch der Q5-Fall über zwei Nachrichten gelöst,
-     ohne `for`-Vergleich und ohne Abgleich von Geschwister-Befehlen.
-2. **Mehrere Empfänger: heutiges Verhalten widerspricht §6.**
-   - Jeder neue Vorschlag schließt *alle* anderen offenen freien Vorschläge, auch die derselben
-     Nachricht (`src/v4/commands.js:125`).
-   - Sonde: `I leave five copper for Tam and two copper for Wim on the crate.` mit zwei `pay`.
-     Nur Wims Vorschlag bleibt offen, Tams ist `expired`.
-   - §6 sagt dagegen „höchstens ein freier Vorschlag pro Empfänger und Nachricht“. Entscheiden:
-     - **Empfehlung:** pro Empfänger. Das globale Schließen entfällt, ein neuer Vorschlag ersetzt
-       nur den an denselben Empfänger, und alle verfallen über Nr. 1.
-     - Alternative: bewusst global eine Karte (einfacher, verliert das Trinkgeld an zwei Personen).
-   - Nicht implizit lassen.
-3. **`#pay` nimmt nur `kind:'payment' && route:'free' && state:'needs_confirmation'` an.**
-   - Dieselbe Art `payment` verwenden auch Entscheidungen ohne Betrag
-     (`needs_amount`, `src/v4/commands.js:118`) und Eintrittsgebühren von Living Dungeons
-     (`src/v4/living.js:457`, kanonisches Angebot).
-   - Beide sind per `#pay` nicht bestätigbar und erhalten eine klare Ablehnung.
-4. **Den Planner-Vertrag mitziehen, sonst läuft der alte Weg als Leerlauf weiter.**
-   - Die Katalogzeile sagt dem Planner heute: „pay with confirmation "<id>"“ (`src/v4/catalog.js:195`).
-     cmd-1.8 enthält `confirmation`.
-   - Unter S1 beides entfernen, mit Versionssprung des Befehlsvertrags. Die Katalogzeile sagt dann:
-     Nur das eigene `#pay` des Spielers zahlt; dafür wird kein Befehl erzeugt.
-   - Sonst erzeugt der Planner weiter Bestätigungen, die nur noch verfallen, und kostet Promptumfang.
-5. **Der Erzähler erfährt von einer `#pay`-Buchung heute nichts.**
-   - Der Vorschlagszug sagt dem Erzähler „Narrate no handover of coin“ (`src/v4/commands.js:134`).
-     `#pay` läuft ohne Modellaufruf.
-   - Im Kontext der nächsten Geschichtsnachricht steht nur der neue Geldbestand, nicht die Übergabe.
-     Das erzeugt genau die Erzählwidersprüche, die §7 zählen will.
-   - Lösung nach vorhandenem Vorbild (`PREVIOUS INPUT NOT EXECUTED`, `src/host.js:182–183`): eine
-     einmalige Faktzeile aus dem Eventrecord. Etwa: „Before this input Alaric handed Tam 5 cp
-     (confirmed). Narrate it as done.“ Keine Nebenliste, kein zusätzlicher Modellaufruf.
-6. **Swipe und Bearbeiten genau unterscheiden.**
-   - Der Host speichert das aufgelöste Record an der Spielernachricht (`src/host.js:154–170`).
-     Swipes und Regenerationen der Erzählung verwenden es erneut; ein Befehlspanel wird einmal
-     gepostet (`posted`).
-   - Ein Swipe ändert also nie einen Vorschlag und zahlt nie erneut. Dafür ist kein neuer
-     Mechanismus nötig.
-   - Der echte Fall ist das **Bearbeiten oder Löschen einer früheren Spielernachricht**. Ihr Record
-     wird neu berechnet. IDs `dec.pay.t<turn>.<seq>` können dann mit anderem Inhalt wiederkehren.
-     `decision.opened` ersetzt dieselbe ID still, und `decision.closed` ignoriert unbekannte IDs
-     (`src/v4/domain.js:246–251`). Ein gespeichertes `#pay` würde gegen geänderten Inhalt
-     nachgespielt.
-   - Lösung mit dem vorhandenen Fold-Schutz (`foldBlock`, Architekturpatch A .127): Das native
-     Zahlungsrecord trägt einen Schnappschuss (ID, Empfänger, cp). Beim Fold gilt es nur, wenn
-     genau diese Entscheidung offen ist; sonst entsteht ein Foldfehler mit der vorhandenen
-     BLOCKED-Meldung.
-7. **Der Code muss schrumpfen. Ausdrücklich entfallen für freie Zahlungen:**
-   - `paymentConsent()`
-   - die Suche nach dem Geschwister-Befehl
-   - `paymentSources`
-   - der `for`-Vergleich in `confirmPayment`/`freePayment`
-   - die „unbewiesen“-Begründungen im Vorschlagstext
-   - jeder direkte freie Abgang aus Text
+Reload eines gültigen offenen Vorschlags bleibt zulässig. Regeneration/Swipe der aktuellen
+Erzählung verwendet das bereits aufgelöste Spielerrecord und erzeugt keine zweite Zahlung.
+Frühere Edits, Löschungen und abweichende Zweige müssen ausdrücklich geprüft werden;
+die Aussage „Swipe ist immer unkritisch“ ist dafür keine Ersatzgarantie.
 
-   Als Bedingung für eine Karte bleiben nur: Empfänger anwesend, vollständiger Betrag aus den
-   eigenen Worten, keine Forderungsrichtung (`claim`). Grundsatz: **im Zweifel Karte statt
-   Ablehnung.** Eine überflüssige Karte kostet nichts; eine fehlende erzeugt Wiederholungsnachrichten.
-8. **Grenze von S1 offen benennen.**
-   - `payArgument()` und seine Liste erlaubter Wörter nach dem Betrag bleiben Autorität für die
-     Fachwege: `will` in `src/v4/commands.js:1008` steuert Registrierung, Angebotsannahme und Kauf
-     über `pay`.
-   - Die bekannten Fehlablehnungen („now“, „too“, „with a nod“) bleiben dort Sackgassen
-     („NOT PAID — confirm the purchase with the seller“).
-   - **Die Liste nicht erweitern.**
-   - Option mit eigener Freigabe, nicht Teil von S1: Solche Sackgassen bekommen dieselbe Karte.
-     `#pay <id>` ruft dann den vorhandenen Bucher (`offer.accept`/Registrierung) mit gespeichertem
-     Angebot und Preis auf, nach erneuter Prüfung, dass das Angebot offen und unverändert ist.
-   - Das wäre der allgemeine Ausweg „Engine kann nicht sicher entscheiden → Karte“ statt neuer
-     Satzmuster. Eine Klickpflicht für klare Käufe ist es nicht.
+Vor der nächsten normalen Erzählung die seit dem letzten erzählten Spielerzug gebuchten
+nativen Zahlungen aus bestehenden Records in eine kurze bestätigte Faktzeile übernehmen:
+„Before this input Alaric handed Tam 5 cp (confirmed). Do not pay it again.“
+Auch `#pay` → `#bag` → normale Handlung und mehrere Karten müssen funktionieren.
+Nicht nur die unmittelbar vorige Nachricht ansehen. Kein persistenter Bestätigungs-Queue,
+kein Modellaufruf für `#pay`, keine erneute Geldbuchung durch diese Faktzeile.
 
-### 10.2 S2 – Präzisierungen
+### 6.5 Entfallender Code und Modell-/Runner-Vertrag
 
-1. **Zustimmung eines NPC zum Preis des Spielers.**
-   - Seit .143 bindet ein Gebot oder Angebot nur mit vollständiger Münzgruppe im `said`.
-   - „Deal.“ oder „Done.“ tragen keine. Das häufige Verhandlungsmuster „Sixty copper for the lot?“ –
-     „Done.“ ergibt deshalb kein Angebot und führt in die bekannte Wiederholungsschleife.
-   - Der Erzählervertrag muss sagen: **Wer einem Preis zustimmt, wiederholt die Summe**
-     („Sixty copper it is.“). Pflichtfall. Keine Zustimmungserkennung in der Engine.
-2. **Die vorhandene Stückpreis-Sperre bleibt die einzige Gegenwehr und wird nicht erweitert.**
-   `unit_price_as_total` (`src/v4/finance_evidence.js:152–185`) verhindert, dass „four copper each“
-   als Lospreis gebunden wird. Mit S2 wird sie wichtiger, weil die Stückpreis-Rolle wegfällt.
-3. **Reichweite von „kein Stückpreis × Menge“ entscheiden.**
-   - `priceEvidence()` wird auch für Spielergrenzen verwendet (`provenNumber`/`playerPrice`,
-     `src/v4/commands.js:87–91`). Entfällt `basis:'unit'`, ändert sich auch „at most four copper each“.
-   - **Empfehlung:** dieselbe Regel. Eine Vorabgrenze erlaubt einen Sofortkauf nur als ausdrückliche
-     Gesamtsumme. Ein Stücklimit bleibt ein Wunsch; das konkrete Angebot kann er weiter annehmen.
-   - Sonst bliebe Prosa-Stückrechnung genau dort, wo sie ausgehendes Geld autorisiert.
-4. **Dienste mit Dauer gehören zum bewussten Verlust.** „two silver a night“ gilt für eine Nacht
-   weiter (eine Einheit). Mehrere Nächte brauchen eine Summe. Zimmer sind häufig, deshalb im
-   Verlustabsatz von §6 ausdrücklich nennen.
-5. **Replay realistisch abnehmen.**
-   - S1 und S2 verschieben große gleichartige Gruppen: alte freie Zahlungen werden zur Karte, alte
-     Stück- oder Positionspreise erzeugen kein Angebot mehr.
-   - Wie im bisherigen Fachplan §7.2 Nr. 7 als **begründete Kategorien mit Stichproben** führen,
-     nicht Fall für Fall. Pflichtfall 9 entsprechend lesen.
-   - Der Replay zeigt nur Verluste. Gewinne zeigen sich erst in frischen Läufen mit neuem
-     Erzählervertrag und `#pay`, das in alten Chats nicht vorkommt.
+Für freie Zahlungen entfallen direkte Freitextabbuchung, `paymentConsent()`,
+Geschwister-`pay`-Suche, `paymentSources` und der `for`-Vergleich als Zahlungsautorität.
+Eindeutige Fachrouten und der gemeinsame Bucher bleiben.
 
-### 10.3 Stoppregel für S1+S2: vorher festlegen, was danach passiert
+`pay.confirmation` aus dem aktiven Planner-Schema und der Kataloganweisung entfernen.
+Betroffene Protokollversion anheben; nicht nur das Feld ignorieren und weiter anfordern.
+Der Planner erzeugt keine Bestätigung für den nativen Befehl.
 
-Damit nach S1+S2 kein neuer Rundlauf beginnt, wird vor dem natürlichen Batch freigegeben:
+`PLAYER_COMMANDS`/`PLAYER_MECHANICS` und Hilfe erklären knapp: Nur eine gewollte, sichtbare
+Karte durch genau ihren Befehl bestätigen; Freitext-„Yes“ zahlt nicht. Der LLM-Spieler
+entscheidet selbst. Driver/Batchrunner dürfen nichts automatisch bestätigen, umschreiben
+oder aus Engineinternas auswählen. Ziele, Klassenstrategie und Fortschrittsregeln bleiben.
 
-| Messpunkt | Erwartung | Wenn verfehlt |
+## 7. S2 – Neue Preise als klare Endofferten
+
+### 7.1 Neuer Preisvertrag, erhaltene Arithmetik
+
+- Für neue freie NPC-Offerten/Gebote genau eine vollständige ausdrückliche Endsumme je
+  angebotenem Los oder eigenständig bepreister Position. Ware, IDs/Mengen, Gegenpartei und
+  gegenwärtige Bindung müssen zum Angebot gehören. Vollständige Währung; kein nackter Betrag.
+- Im aktiven neuen Preisvertrag `basis:'unit'` und `basis:'positions'` entfernen bzw. als
+  nicht ausführbar ablehnen. Keine alternative Rückkehr zur Extractorzahl, zu allgemeinen
+  Zahlenlesern, geerbter Währung oder impliziten Zuschlägen nach gescheitertem Endpreisbeleg.
+  Gemeinsam genutzte Münz-/Geschenkleser nicht pauschal löschen.
+- Quellenbindung und bestehende vollständige Geldbelege behalten. `phase`/Bedingung bleiben
+  Teil des Modellvertrags; vorhandene Prüfung darf nur herabstufen. Die vorhandene
+  `unit_price_as_total`-Sperre erhalten, nicht zum allgemeinen Sprachparser erweitern.
+- Bedingungen wie Gutachter, Qualitätsprüfung oder spätere Lieferung bleiben Information.
+  Erst eine neue feste Offerte kann angenommen werden; keine automatische Bedingungsausführung.
+- Gespeicherte Enginepreise, `linePrice()`, `pickLines()` und Losregeln bleiben:
+  3 × 6 = 18 cp, 260 + 160 = 420 cp; zwei Stück aus „3 für 10“ werden nicht still gerundet.
+  Bestehende feste Angebote nicht umwerten, abgeschlossene Transaktionen nie neu bepreisen.
+- Ein neuer Gesamtpreis eines mehrteiligen Loses darf nicht auf jede Position kopiert oder
+  willkürlich verteilt werden. `bidSale()` schützt bereits unbepreiste Teillose.
+  Teilmenge oder Einzelartikel daraus benötigen einen eigenen gespeicherten Preis/neue Offerte.
+  Bei Einkaufslosen ohne passende vorhandene Repräsentation getrennte Endpreise verlangen,
+  kein neues Bündel-/Rabattmodell entwickeln.
+- Verkauf und Einkauf bleiben getrennte vollständige Transaktionen. Beide können im selben
+  Input erfolgen, wenn jeweils autorisiert; keine stille Nettoverrechnung, Gutschrift oder Kredit.
+
+### 7.2 Narrator und Extractor bedienen denselben Vertrag
+
+Der tatsächlich gelieferte Narrator-Kontext muss erklären: Bei einer festen Händlerzusage
+die vollständige Endsumme wiederholen, auch wenn der Spieler sie vorgeschlagen hat.
+„Sixty copper for the lot?“ → „Done.“ reicht nicht; „Sixty copper it is, for all fourteen plates.“
+liefert die nötige Preisquelle. Keine neue JS-Zustimmungserkennung.
+
+Extractor-Schema, Beispiele, Repairhinweis und `world.offer/bid → dealTerms` konsistent anpassen.
+Bei unklarem Preis konkret mitteilen, **welche Ware/Menge keine bestätigte Endsumme hat**
+oder welche Bedingung noch offen ist. Keine bloße Meldung „Preis ungültig“.
+Vorhandenen begrenzten Repair wiederverwenden, keine zusätzliche Modellrunde als Pflicht.
+Klare neue Endofferten und normale gespeicherte Käufe benötigen keinen weiteren Pflichtdialog.
+
+**Bewusster Verlust:** Neue bloße Stückpreisrede für ein größeres Los, nur errechnete
+Positionssummen, implizite Währung und Zuschläge ergeben noch keinen bindenden Gesamtpreis.
+Auch neue Zimmerangebote für mehrere Nächte benötigen eine Endsumme. Ein Preis für **eine**
+Nacht kann hingegen als eine Einheit gespeichert werden; spätere Mengenrechnung eines bereits
+gültig gespeicherten Einzelangebots bleibt erhalten. Keine widersprüchliche pauschale
+Abschaffung aller „pro Nacht“-Preise.
+
+### 7.3 Annahme und ausdrückliche Spielergrenzen
+
+- Gespeicherte gültige Auswahl akzeptiert ihren gespeicherten Preis. In `acceptanceWhy()`
+  die zweite Preisrekonstruktion über `positionPrices()`, `tradePrice()`, `coinMentions()`
+  und Ganztext-`coinFromWords()` entfernen, soweit sie diesem Zweck dient.
+- Geldbestand, Nebenbetrag oder Kommentar sind keine neue Preisvereinbarung.
+  Partei, Positionen, Mengen, vollständige Mehrartikelauswahl und echte Ausschlüsse weiter prüfen.
+- Zugeordnete ausdrückliche `agreed_cp`, `max_cp` und `min_cp` bleiben verbindlich und
+  quellengestützt. Ein Rabattwunsch/Gegengebot nimmt nicht automatisch den alten Preis an.
+  Keine stille Entfernung eines ausdrücklich genannten Limits, auch bei `any_price`.
+- Für Vorabkäufe nur eine ausdrückliche **Gesamtgrenze** verwenden. „Drei Stück, höchstens
+  vier Kupfer pro Stück“ ist ein Wunsch, keine Autorisierung des unbekannten Gesamtpreises.
+  Das konkrete gespeicherte Angebot kann danach normal angenommen werden. Ein ausdrücklich
+  genanntes Stücklimit darf dabei nicht still als Zustimmung zu einem höheren Preis behandelt
+  werden; bei fehlender zuordenbarer Gesamtgrenze konkret nach Gesamtlimit/Annahme fragen.
+  Keine neue Stückpreis-Prosa-Arithmetik in `provenNumber()`/`playerPrice()`.
+  Ein gemeldeter Stücklimit- oder sonst ungültiger Limitbeleg führt über den vorhandenen
+  Klärungsweg zum Buchungsstopp; ihn nicht zu `null` degradieren und dann grenzenlos kaufen.
+  Falls `basis:'unit'` dafür noch als nicht ausführbare Eingabemarkierung gebraucht wird,
+  bleibt nur diese Ablehnung erhalten, nicht die Multiplikation oder eine neue Preisautorität.
+- Ein vorhandener 260-cp-Kauf funktioniert auch bei „I have 300 copper. I buy the sword.“
+  Ein tatsächliches Gesamtlimit 250 cp oder ein abweichendes Gegengebot verhindert die Buchung.
+
+Die Endpreisregel reduziert unsichere Preisrollen, beweist aber nicht beliebige Semantik.
+Falsch klassifizierte Bindung bleibt ein Modellvertragsrisiko; keine Vollgarantie behaupten
+und daraus keine neue Folge von Bedingungswortlisten ableiten.
+
+## 8. Ein Fachpatch: Umsetzung und technische Abnahme
+
+### 8.1 Reihenfolge und Verantwortlichkeiten
+
+| Schritt | Betroffene Stellen unter `avereth-engine/` | Konkreter Abschluss |
 |---|---|---|
-| Freier Abgang ohne `#pay` | 0 | Umsetzungsfehler gegen diesen Plan beheben, keine neue Regel |
-| Doppelbuchung einer Übergabe | 0 | wie oben |
-| Zusätzliche Spielerinputs je Handelsgeschäft (Metrik aus §7) | Vorschlag: im Mittel ≤ 1; kein Geschäft mit ≥ 3 Wiederholungen desselben Konflikts. Schwelle vor dem Lauf freigeben | Kein weiterer Preisleser. Für Standard-Loot den Engine-Ankauf (§6, „Nicht in diesem Patch“) freigeben; für unklare Kaufzuordnung die Karten-Option aus 10.1 Nr. 8 |
-| Erzählwidersprüche bei Zahlungen (erzählt, aber nicht gebucht, oder umgekehrt) | getrennt gezählt | Erzählervertrag und Faktzeile (10.1 Nr. 5) prüfen, keine Engine-Wortliste |
+| 1. Regressionen auf Basis .143 | Finanz-/Hosttests und Originalfixtures | Entscheidende Fehler rot zeigen; funktionierende Kontrollen unverändert. Originalarchive nicht editieren. |
+| 2. S1-Kern | `src/v4/commands.js`, `src/commands.js`, `src/v4/domain.js` soweit nötig | Nur Vorschläge aus Freitext; native Aktion, mehrere Empfänger, Gültigkeit, einmaliger vorhandener Zahlungsbucher. |
+| 3. S1-Host/Vertrag | `src/host.js`, `src/v4/runtime.js`, `src/v4/catalog.js`, Kommandoschema/-beschreibungen | Quellen-/Foldschutz vor Geldereignissen, Erzählerfakt, kein Planner-`confirmation`. Echten ST-Kurzpfad früh prüfen. |
+| 4. S2 | `src/v4/finance_evidence.js`, `extract.js`, `world.js`, `trade.js`, `interpret.js`, `planner.js` | Endpreis auf allen aktiven Eingängen, keine schwächeren Fallbacks; gespeicherte Annahme ohne zweite Preislesart. |
+| 5. Bedienung | `src/v4/context.js`/Narrator-Vertrag, Hilfe, `tools/st_live/live/players.mjs` | Endpreisregel und konkrete Rückfragen; sichtbare native Bestätigung, keine Driverautomatik. |
+| 6. Abschluss | Versionen, eine Dev-Fachpatchnote, passende Hauptdokumente | Nächste freie Buildnummer; betroffene Protokollversionen anheben. Falls persönliche Karte geändert wird, Revision und Updatehinweis nennen. |
 
-Zusätzlich berichtet die Patchnote, wie sich Regex und Wortlisten in `finance_evidence.js` und im
-`pay`-Pfad verändern. Erwartet wird netto weniger.
+`bookPurchase()`, `bookSale()`, Gearpreise, `completeContract()`, Loot, Mengen-/Besitz- und
+Präsenzregeln bleiben der bestehende Kern. Nur notwendige Aufruferanpassungen.
+Die Grenze `#pay` gilt auf allen aktiven freien Zahlungseingängen; keinen erreichbaren
+Altpfad als Ausweichweg stehen lassen. Keine Pflicht, alte Runtimeformate weiterzuentwickeln.
 
-### 10.4 Zusätzliche Pflichtfälle zu §7
+### 8.2 Regressionsmatrix
 
-- Zwei Empfänger in einer Nachricht ergeben zwei Karten (oder bewusst eine, je nach 10.1 Nr. 2).
-- `#pay` auf `needs_amount`, Eintrittsgebühr, geschlossene oder unbekannte ID: nichts gebucht,
-  klare Meldung.
-- Text-„Yes, I pay“ statt `#pay`: kein Abgang, alter Vorschlag verfällt, gegebenenfalls neue Karte.
-- Nach `#pay` erzählt die nächste Antwort die Übergabe als erfolgt, ohne neuen Vorschlag.
-- Bearbeitung der Vorschlagsnachricht nach `#pay` (andere Summe oder anderer Empfänger): Fold blockiert;
-  keine stille Umbuchung.
-- „Sixty copper for the lot?“ – „Done.“ ergibt kein Angebot und die konkrete Rückfrage.
-  „Sixty copper it is.“ ergibt ein festes Angebot.
-- Spieler-Stücklimit nach Entscheidung 10.2 Nr. 3.
-
-### 10.5 Zusätzlicher Entscheidungsbedarf (ergänzt §8)
-
-| Entscheidung | Empfehlung |
+| Bereich | Pflichtfälle und erwartete Events |
 |---|---|
-| Mehrere offene freie Karten pro Nachricht (10.1 Nr. 2)? | **Pro Empfänger**, globales Schließen entfernen. |
-| Karte auch für unklare Fachzahlung (10.1 Nr. 8)? | **Nicht in S1**; vorbereitete Ausweichrichtung nach 10.3. |
-| Spieler-Stücklimit (10.2 Nr. 3)? | **Nur eine Gesamtgrenze erlaubt einen Sofortkauf.** |
-| Schwellen der Stoppregel (10.3)? | Vor dem Batch freigeben; Vorschlag steht in der Tabelle. |
+| Positivmatrix A1–A14 | Waffe/Fokus/Rüstung, Manuals, Einzelkauf, Menge, Warenkorb, Dienst, feste Bid-Annahme, Split, Registrierung, Quest und Loot buchen über bisherige Fachwege; keine allgemeine Bestätigungspflicht. |
+| Q5 / beide Reihenfolgen | Gleiches Geld mit verschiedenem `for`, direkte Zahlung plus alte `confirmation`: kein freier Abgang; eindeutiger Vorschlag, nach `#pay` genau eine Transaktion. |
+| Mehrere Empfänger | Tam 5/Wim 2: zwei Karten; beide nacheinander bestätigbar, keine gegenseitige Verdrängung, ausreichendes Geld jeweils neu prüfen. Konflikt an Tam: keine Last-wins-Karte. |
+| Native Eingabe | Nur vollständiges eigenständiges `#pay ID` löst aus. Zitat, angehängter Text/Befehl, mehrere IDs, Narratorausgabe und Plannerfeld zahlen nichts. |
+| Andere Entscheidungen | `needs_amount`, Dungeon-Eintritt, unbekannte/geschlossene/abgelaufene IDs: keine Geldereignisse. Vorhandene kanonische Bezahlwege funktionieren. |
+| Gültigkeit | Panels/Reload erhalten offene Karte; normale Handlung/Ortswechsel lassen sie verfallen. „Yes, I pay“ zahlt nicht; ein neuer vollständiger Wunsch kann neue Karte ergeben. |
+| Edit/Replay/Swipe | Nach Zahlung alte Quelle ändern/löschen; auch gleicher Turn/Seq mit anderem Inhalt: Fold blockiert vor ihrem Geldrecord. Unveränderter Reload/Regenerate zahlt nicht doppelt; Zweigwechsel konsistent. |
+| Erzählerfakt | Zahlung → normale Handlung; Zahlung → `#bag` → Handlung; zwei Zahlungen → Panel → Handlung: alle bestätigten Übergaben korrekt im nächsten Kontext, keine neue Auszahlung. |
+| Neue Endpreise | T53/T55/T58, Platten/Drüsen, Stück-/Positions-/alte/neue Preise: ohne vollständige Endsumme keine bindende Offerte; neue klare Summe einmal richtig buchbar. |
+| NPC-Zustimmung | „Done.“ allein bleibt ohne Gebot; konkrete Rückfrage. Wiederholte Endsumme für das Los ergibt feste Offerte ohne weiteren Pflichtzug. |
+| Menge/Los/Dauer | Gespeichert 3×6=18,260+160=420; unverteilbarer Lospreis nicht teilbar. Neue Mehrnächte-Offerte nur mit Endsumme; gespeicherte gültige Einzelpreise weiterhin berechenbar. |
+| Annahme/Limits | 300-cp-Besitz blockiert 260-cp-Schwert nicht. Limit250, Gegengebot, falsche Partei, ausgeschlossene/fehlende Ware und unvollständiger Paketwunsch bleiben geschützt. Stücklimit autorisiert keinen Vorabkauf. |
+| Gemischte Vorgänge | Verkauf + Kauf + getrenntes Trinkgeld; Kauf nicht freie Zahlung, Verkauf nicht Geschenk. Betrag, Ware und Zustimmung je Geschäft; keine zweite Auszahlung. |
+| Geschenke | Tatsächliche neue freiwillige NPC-Gabe mit vollständigem Betrag zählt; Versprechen, Nachzählung und schon gebuchter Erlös nicht. Keine neue Geschenkdeckelung, keine Privatquests. |
+| Fachweg-Grenzen | Offene Registrierung + unabhängiges Trinkgeld; klare Zahlung für gültigen Kauf; unklare Kaufzuordnung ohne Karte/Geldverlust. Keine Erweiterung der Zahlungswortlisten. |
+| Runner/Host | Sichtbarer Vorschlag → vom Testspieler gewählte Nachricht `#pay` → einmalige Buchung und Speicherung. Kein zusätzlicher Planner/Narrator/Extractor; keine automatisierte Bestätigung. |
 
-Mit diesen Festlegungen halte ich S1+S2 für freigabefähig. Weitere Ergänzungen sehe ich nicht;
-alles Weitere gehört in die Messung nach 10.3, nicht in eine neue Planrunde.
+Zieltests gegen unverändertes .143 und korrigierten Stand laufen lassen; Red/Green nur für
+wirkliche Verhaltensänderungen fordern. Neue Fähigkeiten wie `#pay` zusätzlich durch vollständige
+Hostketten prüfen, nicht nur durch Parser-Unit-Tests. Danach angrenzende und volle Node-Suite,
+Fingerprint-Replay und echte ST-Standard-/Failsoft-Smokes. Blockierte Abnahme ehrlich offenlassen.
+
+### 8.3 Replay ohne pauschale Akzeptanz
+
+Einmaliges vollständiges Replay mit unveränderten historischen Requests/Antworten.
+Erwartete Änderungen nach Ursachen gruppieren: freier Abgang → Karte, freier Preis ohne
+Endsumme → unverbindlich, neuer Vertrag statt alter Felder, korrigierte Annahme/Meldung.
+Gruppen mit repräsentativen Originalfällen begründen; **jeder akzeptierte Record bleibt exakt
+fingerprintgebunden**. Unerwartete Geld-, Eigentums-, Parteien- oder Mengenänderungen einzeln
+untersuchen; keine pauschalen Fingerprintupdates und keine Freigabe allein durch eine Kategorie.
+Historische falsche Buchungen nicht als zu erhaltendes Soll behandeln.
+
+Replay zeigt auch Korrekturen alter Fehlbuchungen, nicht nur Funktionsverluste.
+Er kann den neuen Dialog und die Nutzung von `#pay` durch ein echtes Modell nicht messen.
+Dafür neue Vertragsfixtures/Hostfälle und anschließend ein freigegebener natürlicher Batch;
+Originalarchive niemals umschreiben, um den neuen Dialog vorzutäuschen.
+
+## 9. Feste Stoppregel, Grenzen und Übergabe
+
+### 9.1 Sicherheit und Komfort getrennt bewerten
+
+| Messpunkt | Festlegung | Konsequenz bei Verfehlung |
+|---|---|---|
+| Freier Abgang ohne gültiges natives `#pay` | **0**. Kanonische Käufe/Gebühren sind keine freien Abgänge. | Technische Abnahme nicht bestanden; fehlenden Schutz gegen diesen Plan korrigieren, keine neue Zahlungswortliste. |
+| Doppelbuchung derselben Übergabe | **0** | Wie oben; natürliche Batches erst nach gesicherter Einmaligkeit. |
+| Zusätzliche Spielerinputs je einmaligem Finanzgeschäft | **Im Mittel höchstens 1**, einschließlich notwendigem `#pay`. | Ursachenprüfung und bewusste Vereinfachungsentscheidung; kein weiterer Preisparser. |
+| Derselbe Konflikt bei einem Geschäft | **Ab der dritten Wiederholung Prüfgrenze erreicht.** | Spielerschleife von Engine-/Vertragsfehler trennen; über Ausweichweg entscheiden, keine neue Wortliste. |
+| Erzählung widerspricht Buchung | Separat erfassen: erzählt/ungebucht bzw. gebucht/unerzählt. | Gelieferten Kontext, Faktzeile und Modellantwort prüfen; keine automatische Geldkorrektur aus Prosa. |
+
+**Zählregel:** Ein Geschäft ist dieselbe Auswahl/Partei/Richtung, keine neue Einheit pro
+Wiederholungsnachricht. Vom ersten konkreten Ausführungswunsch bis Buchung, endgültiger
+Ablehnung oder bewusstem Abbruch verfolgen. Baseline: bei bekanntem Angebot eine Annahme;
+bei noch unbekanntem Preis einmal Angebot einholen plus einmal annehmen; bei freier Zahlung
+ein ursprünglicher Zahlungswunsch. Weitere zur Durchführung nötige Eingaben zählen zusätzlich,
+auch `#pay`, Preispräzisierung und Fehlerwiederholung. Ein `#bag` zur Behebung eines Finanzkonflikts
+zählt, freiwilliges Rollenspiel/Feilschen oder unabhängige Reise nicht.
+Abgebrochene/ungeklärte Geschäfte und Stichprobengröße mitberichten; nicht nur erfolgreiche
+Transaktionen betrachten. Native Bestätigungen und ungeplante Klärungen getrennt ausweisen.
+
+Eine überschrittene Komfortgrenze autorisiert **keinen** automatischen Umbau.
+Für Standardloot kann später ein Engine-Ankauf, für unklare Käufe eine native Kaufkarte
+gesondert entschieden werden. Weder Preisquoten noch neue Bestätigungsrouten sind hier freigegeben.
+Nicht jede ungeschickte LLM-Spielereingabe ist ein Enginefehler.
+
+### 9.2 Nichtziele und Abschluss
+
+Keine neue Finanzengine, kein allgemeiner Sprachparser, keine Bank/Kredit-/Tauschsimulation,
+keine automatische Verrechnung, kein neuer allgemeiner Lootankauf und keine vorsorgliche
+Einschränkung eingehender Geschenke. Keine Kampf-, XP-, PP-, Gearpreis-, Welt-, Reise-,
+Quest-, Skill- oder Runnerstrategieänderungen. Historische Belege bleiben unverändert.
+
+Ein zusammenhängender Produktpatch mit internen Schritten S1 → Host/Verträge → S2 → Abnahme,
+keine Serie separat veröffentlichter Sprach-Mikrofixes. Patchnote nennt entfernte Leser/Guards,
+verbliebene Grenzen, Prompt-/Protokolländerungen, echte Testzahlen und einzeln begründete
+wirtschaftliche Replayabweichungen. Erwartet wird weniger doppelte Logik; keine künstliche
+Zeilenzahlvorgabe, welche die notwendige native Validierung verhindert.
+Status auf `main` knapp, technische Nachweise einmal in der Dev-Fachpatchnote.
+
+**Danach unabhängiger Gegenreview und Stopp.** Natürlichen Batch erst nach Freigabe starten.
+Neue strukturelle P1-Lücken führen zur vereinbarten Vereinfachungsentscheidung; ein isolierter
+nachweisbarer Implementierungsfehler ist keine automatische Freigabe für einen Komplettumbau.
+
+**Jetzt nur Planung abgeschlossen. Produkt bleibt .143 / d2a292a.**
+Implementierung, neue Tests, Fingerprintänderungen und Produktbuild sind erst Gegenstand
+eines gesonderten Umsetzungsauftrags.

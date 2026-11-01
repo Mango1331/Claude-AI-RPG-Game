@@ -1,6 +1,6 @@
 # Avereth Engine – Finanzabläufe behalten oder vereinfachen
 
-**Stand: 01.11.2026 · Fach- und Entscheidungsplan, nach GPT-Gegenreview präzisiert; keine Implementierung.**
+**Stand: 01.11.2026 · Fach- und Entscheidungsplan, nach GPT-Gegenreview (§9) und Claude-Gegenprüfung (§10) präzisiert; keine Implementierung.**
 Produkt geprüft: **[.143 / d2a292a](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/d2a292a1ba6ce1fc537238e9f51306a8bec2cce9)**.
 Die .143-Gegenprüfung hat Q5 erneut als P1 reproduziert. Die Stoppregel des
 [bisherigen Fachplans §7.4](PATCH_FINANCE_REVIEW142.md) ist damit für freie Zahlungen/Bestätigung ausgelöst.
@@ -373,3 +373,161 @@ Zahlungswege entfernen“ betrifft die beiden **freien** Abbuchungswege, nicht K
 oder Dienste. S1 folgt aus Q5/Stoppregel; S2 bleibt eine zusätzliche bewusste Vereinfachung.
 Die Freigabeempfehlung des Reviews ist keine Nutzerfreigabe zur Implementierung. Produkt und
 Designkanon bleiben unverändert; als Nächstes ist nur die gemeinsame Entscheidung über S1+S2 nötig.
+
+## 10. Claude-Gegenprüfung des Vereinfachungsplans (01.11.2026)
+
+Grundlage: dieser Plan auf `076ca69`. Den .143-Code ([d2a292a](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/d2a292a1ba6ce1fc537238e9f51306a8bec2cce9))
+habe ich an den unten genannten Stellen gelesen. Dazu kam eine read-only Funktionssonde (zwei Empfänger in einer Nachricht).
+Keine Suite, kein Replay, kein Lauf; Pfade relativ zu `avereth-engine/`.
+
+**Urteil:** S1 und S2 gehen in die richtige Richtung, und die Stoppregel ist richtig angewendet.
+Vor der Freigabe fehlen ein paar Festlegungen, ohne die die Umsetzung wieder Auslegungsfragen
+selbst entscheiden müsste. Keiner der Punkte unten ist eine neue Sprachregel. Jeder Punkt legt
+eine Gültigkeit fest, entfernt Code, nutzt einen vorhandenen Mechanismus oder legt einen Ausweg
+und eine Abbruchgrenze im Voraus fest.
+
+### 10.1 S1 – Präzisierungen aus dem Code
+
+1. **Gültigkeitsfenster konkret festlegen, statt es offen zu lassen.**
+   - Heute gibt es schon eine einfache Regel: Ein Vorschlag verfällt am Ende der nächsten handelnden
+     Nachricht oder beim Ortswechsel. Statuspanels zählen nicht als handelnde Nachricht
+     (`src/v4/commands.js:1724–1727`).
+   - Diese Regel als S1-Fenster übernehmen. Weil `#pay` vor `turn.begun` läuft, prüft die
+     Bestätigung `d.turn === s.turn` (gleicher Zug wie der Vorschlag) statt `s.turn − 1`.
+   - Wer statt `#pay` „Yes, I pay“ schreibt, lässt den alten Vorschlag verfallen. Nennt der Text einen
+     Betrag, entsteht eine neue Karte. Damit ist auch der Q5-Fall über zwei Nachrichten gelöst,
+     ohne `for`-Vergleich und ohne Abgleich von Geschwister-Befehlen.
+2. **Mehrere Empfänger: heutiges Verhalten widerspricht §6.**
+   - Jeder neue Vorschlag schließt *alle* anderen offenen freien Vorschläge, auch die derselben
+     Nachricht (`src/v4/commands.js:125`).
+   - Sonde: `I leave five copper for Tam and two copper for Wim on the crate.` mit zwei `pay`.
+     Nur Wims Vorschlag bleibt offen, Tams ist `expired`.
+   - §6 sagt dagegen „höchstens ein freier Vorschlag pro Empfänger und Nachricht“. Entscheiden:
+     - **Empfehlung:** pro Empfänger. Das globale Schließen entfällt, ein neuer Vorschlag ersetzt
+       nur den an denselben Empfänger, und alle verfallen über Nr. 1.
+     - Alternative: bewusst global eine Karte (einfacher, verliert das Trinkgeld an zwei Personen).
+   - Nicht implizit lassen.
+3. **`#pay` nimmt nur `kind:'payment' && route:'free' && state:'needs_confirmation'` an.**
+   - Dieselbe Art `payment` verwenden auch Entscheidungen ohne Betrag
+     (`needs_amount`, `src/v4/commands.js:118`) und Eintrittsgebühren von Living Dungeons
+     (`src/v4/living.js:457`, kanonisches Angebot).
+   - Beide sind per `#pay` nicht bestätigbar und erhalten eine klare Ablehnung.
+4. **Den Planner-Vertrag mitziehen, sonst läuft der alte Weg als Leerlauf weiter.**
+   - Die Katalogzeile sagt dem Planner heute: „pay with confirmation "<id>"“ (`src/v4/catalog.js:195`).
+     cmd-1.8 enthält `confirmation`.
+   - Unter S1 beides entfernen, mit Versionssprung des Befehlsvertrags. Die Katalogzeile sagt dann:
+     Nur das eigene `#pay` des Spielers zahlt; dafür wird kein Befehl erzeugt.
+   - Sonst erzeugt der Planner weiter Bestätigungen, die nur noch verfallen, und kostet Promptumfang.
+5. **Der Erzähler erfährt von einer `#pay`-Buchung heute nichts.**
+   - Der Vorschlagszug sagt dem Erzähler „Narrate no handover of coin“ (`src/v4/commands.js:134`).
+     `#pay` läuft ohne Modellaufruf.
+   - Im Kontext der nächsten Geschichtsnachricht steht nur der neue Geldbestand, nicht die Übergabe.
+     Das erzeugt genau die Erzählwidersprüche, die §7 zählen will.
+   - Lösung nach vorhandenem Vorbild (`PREVIOUS INPUT NOT EXECUTED`, `src/host.js:182–183`): eine
+     einmalige Faktzeile aus dem Eventrecord. Etwa: „Before this input Alaric handed Tam 5 cp
+     (confirmed). Narrate it as done.“ Keine Nebenliste, kein zusätzlicher Modellaufruf.
+6. **Swipe und Bearbeiten genau unterscheiden.**
+   - Der Host speichert das aufgelöste Record an der Spielernachricht (`src/host.js:154–170`).
+     Swipes und Regenerationen der Erzählung verwenden es erneut; ein Befehlspanel wird einmal
+     gepostet (`posted`).
+   - Ein Swipe ändert also nie einen Vorschlag und zahlt nie erneut. Dafür ist kein neuer
+     Mechanismus nötig.
+   - Der echte Fall ist das **Bearbeiten oder Löschen einer früheren Spielernachricht**. Ihr Record
+     wird neu berechnet. IDs `dec.pay.t<turn>.<seq>` können dann mit anderem Inhalt wiederkehren.
+     `decision.opened` ersetzt dieselbe ID still, und `decision.closed` ignoriert unbekannte IDs
+     (`src/v4/domain.js:246–251`). Ein gespeichertes `#pay` würde gegen geänderten Inhalt
+     nachgespielt.
+   - Lösung mit dem vorhandenen Fold-Schutz (`foldBlock`, Architekturpatch A .127): Das native
+     Zahlungsrecord trägt einen Schnappschuss (ID, Empfänger, cp). Beim Fold gilt es nur, wenn
+     genau diese Entscheidung offen ist; sonst entsteht ein Foldfehler mit der vorhandenen
+     BLOCKED-Meldung.
+7. **Der Code muss schrumpfen. Ausdrücklich entfallen für freie Zahlungen:**
+   - `paymentConsent()`
+   - die Suche nach dem Geschwister-Befehl
+   - `paymentSources`
+   - der `for`-Vergleich in `confirmPayment`/`freePayment`
+   - die „unbewiesen“-Begründungen im Vorschlagstext
+   - jeder direkte freie Abgang aus Text
+
+   Als Bedingung für eine Karte bleiben nur: Empfänger anwesend, vollständiger Betrag aus den
+   eigenen Worten, keine Forderungsrichtung (`claim`). Grundsatz: **im Zweifel Karte statt
+   Ablehnung.** Eine überflüssige Karte kostet nichts; eine fehlende erzeugt Wiederholungsnachrichten.
+8. **Grenze von S1 offen benennen.**
+   - `payArgument()` und seine Liste erlaubter Wörter nach dem Betrag bleiben Autorität für die
+     Fachwege: `will` in `src/v4/commands.js:1008` steuert Registrierung, Angebotsannahme und Kauf
+     über `pay`.
+   - Die bekannten Fehlablehnungen („now“, „too“, „with a nod“) bleiben dort Sackgassen
+     („NOT PAID — confirm the purchase with the seller“).
+   - **Die Liste nicht erweitern.**
+   - Option mit eigener Freigabe, nicht Teil von S1: Solche Sackgassen bekommen dieselbe Karte.
+     `#pay <id>` ruft dann den vorhandenen Bucher (`offer.accept`/Registrierung) mit gespeichertem
+     Angebot und Preis auf, nach erneuter Prüfung, dass das Angebot offen und unverändert ist.
+   - Das wäre der allgemeine Ausweg „Engine kann nicht sicher entscheiden → Karte“ statt neuer
+     Satzmuster. Eine Klickpflicht für klare Käufe ist es nicht.
+
+### 10.2 S2 – Präzisierungen
+
+1. **Zustimmung eines NPC zum Preis des Spielers.**
+   - Seit .143 bindet ein Gebot oder Angebot nur mit vollständiger Münzgruppe im `said`.
+   - „Deal.“ oder „Done.“ tragen keine. Das häufige Verhandlungsmuster „Sixty copper for the lot?“ –
+     „Done.“ ergibt deshalb kein Angebot und führt in die bekannte Wiederholungsschleife.
+   - Der Erzählervertrag muss sagen: **Wer einem Preis zustimmt, wiederholt die Summe**
+     („Sixty copper it is.“). Pflichtfall. Keine Zustimmungserkennung in der Engine.
+2. **Die vorhandene Stückpreis-Sperre bleibt die einzige Gegenwehr und wird nicht erweitert.**
+   `unit_price_as_total` (`src/v4/finance_evidence.js:152–185`) verhindert, dass „four copper each“
+   als Lospreis gebunden wird. Mit S2 wird sie wichtiger, weil die Stückpreis-Rolle wegfällt.
+3. **Reichweite von „kein Stückpreis × Menge“ entscheiden.**
+   - `priceEvidence()` wird auch für Spielergrenzen verwendet (`provenNumber`/`playerPrice`,
+     `src/v4/commands.js:87–91`). Entfällt `basis:'unit'`, ändert sich auch „at most four copper each“.
+   - **Empfehlung:** dieselbe Regel. Eine Vorabgrenze erlaubt einen Sofortkauf nur als ausdrückliche
+     Gesamtsumme. Ein Stücklimit bleibt ein Wunsch; das konkrete Angebot kann er weiter annehmen.
+   - Sonst bliebe Prosa-Stückrechnung genau dort, wo sie ausgehendes Geld autorisiert.
+4. **Dienste mit Dauer gehören zum bewussten Verlust.** „two silver a night“ gilt für eine Nacht
+   weiter (eine Einheit). Mehrere Nächte brauchen eine Summe. Zimmer sind häufig, deshalb im
+   Verlustabsatz von §6 ausdrücklich nennen.
+5. **Replay realistisch abnehmen.**
+   - S1 und S2 verschieben große gleichartige Gruppen: alte freie Zahlungen werden zur Karte, alte
+     Stück- oder Positionspreise erzeugen kein Angebot mehr.
+   - Wie im bisherigen Fachplan §7.2 Nr. 7 als **begründete Kategorien mit Stichproben** führen,
+     nicht Fall für Fall. Pflichtfall 9 entsprechend lesen.
+   - Der Replay zeigt nur Verluste. Gewinne zeigen sich erst in frischen Läufen mit neuem
+     Erzählervertrag und `#pay`, das in alten Chats nicht vorkommt.
+
+### 10.3 Stoppregel für S1+S2: vorher festlegen, was danach passiert
+
+Damit nach S1+S2 kein neuer Rundlauf beginnt, wird vor dem natürlichen Batch freigegeben:
+
+| Messpunkt | Erwartung | Wenn verfehlt |
+|---|---|---|
+| Freier Abgang ohne `#pay` | 0 | Umsetzungsfehler gegen diesen Plan beheben, keine neue Regel |
+| Doppelbuchung einer Übergabe | 0 | wie oben |
+| Zusätzliche Spielerinputs je Handelsgeschäft (Metrik aus §7) | Vorschlag: im Mittel ≤ 1; kein Geschäft mit ≥ 3 Wiederholungen desselben Konflikts. Schwelle vor dem Lauf freigeben | Kein weiterer Preisleser. Für Standard-Loot den Engine-Ankauf (§6, „Nicht in diesem Patch“) freigeben; für unklare Kaufzuordnung die Karten-Option aus 10.1 Nr. 8 |
+| Erzählwidersprüche bei Zahlungen (erzählt, aber nicht gebucht, oder umgekehrt) | getrennt gezählt | Erzählervertrag und Faktzeile (10.1 Nr. 5) prüfen, keine Engine-Wortliste |
+
+Zusätzlich berichtet die Patchnote, wie sich Regex und Wortlisten in `finance_evidence.js` und im
+`pay`-Pfad verändern. Erwartet wird netto weniger.
+
+### 10.4 Zusätzliche Pflichtfälle zu §7
+
+- Zwei Empfänger in einer Nachricht ergeben zwei Karten (oder bewusst eine, je nach 10.1 Nr. 2).
+- `#pay` auf `needs_amount`, Eintrittsgebühr, geschlossene oder unbekannte ID: nichts gebucht,
+  klare Meldung.
+- Text-„Yes, I pay“ statt `#pay`: kein Abgang, alter Vorschlag verfällt, gegebenenfalls neue Karte.
+- Nach `#pay` erzählt die nächste Antwort die Übergabe als erfolgt, ohne neuen Vorschlag.
+- Bearbeitung der Vorschlagsnachricht nach `#pay` (andere Summe oder anderer Empfänger): Fold blockiert;
+  keine stille Umbuchung.
+- „Sixty copper for the lot?“ – „Done.“ ergibt kein Angebot und die konkrete Rückfrage.
+  „Sixty copper it is.“ ergibt ein festes Angebot.
+- Spieler-Stücklimit nach Entscheidung 10.2 Nr. 3.
+
+### 10.5 Zusätzlicher Entscheidungsbedarf (ergänzt §8)
+
+| Entscheidung | Empfehlung |
+|---|---|
+| Mehrere offene freie Karten pro Nachricht (10.1 Nr. 2)? | **Pro Empfänger**, globales Schließen entfernen. |
+| Karte auch für unklare Fachzahlung (10.1 Nr. 8)? | **Nicht in S1**; vorbereitete Ausweichrichtung nach 10.3. |
+| Spieler-Stücklimit (10.2 Nr. 3)? | **Nur eine Gesamtgrenze erlaubt einen Sofortkauf.** |
+| Schwellen der Stoppregel (10.3)? | Vor dem Batch freigeben; Vorschlag steht in der Tabelle. |
+
+Mit diesen Festlegungen halte ich S1+S2 für freigabefähig. Weitere Ergänzungen sehe ich nicht;
+alles Weitere gehört in die Messung nach 10.3, nicht in eine neue Planrunde.

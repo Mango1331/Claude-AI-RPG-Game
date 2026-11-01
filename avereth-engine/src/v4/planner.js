@@ -506,6 +506,9 @@ export function parsePlan(answer, vocab, ctx, message) {
         if (story.has(type)) {
             // a story command: the interpreter's own schema, missing nullable arguments as null (as parseInterpretation)
             for (const [k, spec] of Object.entries(story.get(type).args || {})) if (spec.nullable && c[k] === undefined) c[k] = null;
+            // Build .144 (S1): words never confirm a payment card (cmd-1.9 dropped the field); an older answer still
+            // carrying it is read as the plain pay it also is
+            if (type === 'pay') delete c.confirmation;
             softMoney(c);
             if (c.seq === undefined) c.seq = i + 1;
             // "needs" (ORDER_RULES) is the planner's own field, checked here: an earlier step of this answer, or nothing

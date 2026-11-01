@@ -141,10 +141,13 @@ test('selected products that are explicitly excluded are refused; excluding anot
     assert.match(acceptanceWhy({ ...f.command, quote: 'I take the box bed, not the cot.', lines: ['l3'], agreed_cp: null }, offer, 'innkeeper', c.rules.currency), /excluded/);
     assert.equal(acceptanceWhy({ ...f.command, quote: 'I take the box bed, not the cot.', lines: ['l4'], agreed_cp: null }, offer, 'innkeeper', c.rules.currency), null);
 });
-test('separately priced selections still enforce individual prices', () => {
+// Build .144 (S2): separately priced selections book their stored prices; item prices in his words are not read again
+// (the stored total is what he accepts; an explicit other total is agreed_cp and stops it)
+test('separately priced selections book their stored prices; an explicit other total stops them', () => {
     const f = fixture.purchase, offer = f.state.offers[f.command.offer];
     assert.equal(acceptanceWhy({ ...f.command, quote: 'I take the box bed for four copper and stew for two copper.', lines: ['l2', 'l4'] }, offer, 'innkeeper', c.rules.currency), null);
-    assert.ok(acceptanceWhy({ ...f.command, quote: 'I take the box bed for two copper and stew for four copper.', lines: ['l2', 'l4'] }, offer, 'innkeeper', c.rules.currency));
+    assert.equal(acceptanceWhy({ ...f.command, quote: 'I take the box bed for two copper and stew for four copper.', lines: ['l2', 'l4'] }, offer, 'innkeeper', c.rules.currency), null);
+    assert.ok(acceptanceWhy({ ...f.command, quote: 'I take the box bed and stew for five copper.', lines: ['l2', 'l4'], agreed_cp: 5 }, offer, 'innkeeper', c.rules.currency));
 });
 for (const status of [401, 403, 404]) test(`HTTP ${status} is not made transient by a misleading message`, () => {
     assert.equal(recovery.providerResponseError(status, { error: { message: 'Internal Server Error' } }).retryable, false);

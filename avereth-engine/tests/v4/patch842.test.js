@@ -78,17 +78,23 @@ test('8.4.2 fee 3: the fee itself registers at once (unchanged); a tip that name
     assert.ok(userEvents(k).some((e) => e.t === 'guild.registered'));
     assert.deepEqual(paid(k).map((e) => e.d.delta), [-20]);
     assert.ok(userEvents(k).some((e) => e.t === 'decision.opened' && e.d.decision.kind === 'payment' && e.d.decision.amount_cp === 5));
+    // Build .144 (S1): the tip beside the fee is its own payment card; his "#pay <id>" pays it, never the fee path
+    const card = (g) => g.state().decisions.find((d) => d.kind === 'payment' && d.state === 'needs_confirmation')?.id;
     const g = live(9);
     await say(g, '*I pay the two silver and register, and give her five copper for her trouble*', { type: 'pay', to: CLERK, amount_cp: 20, for: 'Guild registration', quote: 'I pay the two silver' }, { type: 'guild.register', quote: 'and register' }, { type: 'pay', to: CLERK, amount_cp: 5, for: 'a tip for her trouble', quote: 'give her five copper for her trouble' });
     assert.ok(userEvents(g).some((e) => e.t === 'guild.registered'));
+    assert.deepEqual(paid(g).map((e) => [e.d.delta, e.d.why]), [[-20, 'Guild registration fee']]);
+    await say(g, `#pay ${card(g)}`);
     assert.deepEqual(paid(g).map((e) => [e.d.delta, e.d.why]), [[-20, 'Guild registration fee'], [-5, 'paid the guild registration clerk for a tip for her trouble']]);
     assert.equal(coin(g), 25);
-    // a member pays the clerk for something else: an ordinary payment
+    // a member pays the clerk for something else: an ordinary payment card
     await say(g, '*I give her two copper for the directions*', { type: 'pay', to: CLERK, amount_cp: 2, for: 'the directions', quote: 'I give her two copper' });
+    await say(g, `#pay ${card(g)}`);
     assert.equal(coin(g), 23);
     // before he registers, a tip without a registration in the message is ordinary as well
     const h = live(9);
     await say(h, '*I slide her a copper for the help*', { type: 'pay', to: CLERK, amount_cp: 1, for: 'her help', quote: 'I slide her a copper' });
+    await say(h, `#pay ${card(h)}`);
     assert.equal(coin(h), 49);
 });
 

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { amountErrors,catalogText } from '../../src/v4/interpret.js';
-import { tradePrice } from '../../src/v4/trade.js';
+import { playerPrice } from '../../src/v4/finance_evidence.js';
 import { extractorRequest } from '../../src/v4/extract.js';
 import { loadProductContent } from '../helpers.js';
 import { campaign } from './patch8_lib.js';
@@ -12,21 +12,31 @@ const content=await loadProductContent(),currency=content.rules.currency;
 // (price_evidence: basis and quote); the engine no longer reads its own number into the quote. A contradiction goes
 // to the repair; without evidence the number is not an error here but stays unproven (no limit, see below).
 const sell=(quote,qty,min_cp,basis='unit')=>({seq:1,type:'sell',object:'obj.pelts',quote,qty,min_cp,price_evidence:{basis,quote,currency_quote:null}});
+// Build .144 (S2): his limit is only a TOTAL; a price per unit for several units is a wish, no limit and no repair (the
+// handler leaves the number unproven), the engine never multiplies it. One unit: the unit price is the total.
 for(const [quote,qty,cp] of [['two copper',4,8],['a copper',9,9],['two silver',3,60],['one silver and eight copper',2,36]])
- test(`price: total ${cp} from ${quote} each`,()=>assert.deepEqual(amountErrors([sell(quote,qty,cp)],currency),[]));
+ test(`price (.144): ${quote} each for ${qty} is no limit of ${cp} (no repair either); the total in his words is`,()=>{
+  assert.deepEqual(amountErrors([sell(quote,qty,cp)],currency),[]);
+  assert.equal(playerPrice(quote,{basis:'unit',quote},{content:{rules:{currency}},units:qty}).reason,'total_required');
+  assert.deepEqual(amountErrors([sell(quote,1,cp/qty)],currency),[]);
+  assert.deepEqual(amountErrors([sell(quote,qty,amountTotal(quote),'total')],currency),[]);
+ });
+function amountTotal(quote){return {'two copper':2,'a copper':1,'two silver':20,'one silver and eight copper':18}[quote];}
+// .144: a unit price for several units is no limit whatever number the model gives (no underprice can bind either)
 for(const c of [sell('two copper',4,2),sell('a copper',9,1),sell('two copper a pelt, a copper',4,3)])
- test(`price: rejects underprice or ambiguous scope ${c.price_evidence.quote}`,()=>assert.ok(amountErrors([c],currency).length));
-test('price: missing qty uses whole held stack, not a single unit',()=>{
+ test(`price (.144): a unit price for several units binds no limit, also no underprice: ${c.price_evidence.quote}`,()=>{
+  assert.deepEqual(amountErrors([c],currency),[]);
+  assert.notEqual(playerPrice(c.quote,c.price_evidence,{content:{rules:{currency}},units:c.qty}).state,'verified');
+ });
+test('price (.144): missing qty uses the whole held stack: a unit price for it is no limit and no error',()=>{
  assert.deepEqual(amountErrors([sell('two copper',null,8)],currency,{objects:[{id:'obj.pelts',qty:4}]}),[]);
- assert.ok(amountErrors([sell('two copper',null,2)],currency,{objects:[{id:'obj.pelts',qty:4}]}).length);
+ assert.deepEqual(amountErrors([sell('two copper',null,2)],currency,{objects:[{id:'obj.pelts',qty:4}]}),[]);
+ assert.ok(amountErrors([sell('two copper',null,3,'total')],currency,{objects:[{id:'obj.pelts',qty:1}]}).length,'a total is still checked');
 });
 test('price: a number without its words is no error here; the handler leaves it unproven',()=>{
  assert.deepEqual(amountErrors([{seq:1,type:'sell',object:'obj.pelts',quote:'two copper a pelt',qty:4,min_cp:2,price_evidence:null}],currency),[]);
 });
-test('price: apiece and ambiguous multiple rates share World evidence semantics',()=>{
- assert.deepEqual(tradePrice(null,'a copper apiece',9,content),{handled:true,cp:9});
- assert.equal(tradePrice(null,'two copper a pelt, a copper apiece for the fangs',4,content).cp,null);
-});
+// Build .144 (S2): tradePrice is removed; a rate per piece is no binding price any more (finance_evidence total_required)
 test('repair: place-ref diagnostic states full shape and preserves valid scene',()=>{
  const r=extractorRequest(content.deltaVocab,{catalog:'',actions:'',expectedKeys:{},reply:'A traveller waits.',startScene:'loc.glassmere'}, {previous:'{"scene":"here","expected":{},"deltas":[]}',errors:['$.deltas[1] (person.new): .at: matches none of anyOf']});
  assert.match(r.messages.at(-1).content,/parent/);assert.match(r.messages.at(-1).content,/Preserve.*valid.*scene/i);
@@ -52,15 +62,17 @@ for(const x of original.answers)test(`Batch4 original C${x.call}: reject malform
  assert.deepEqual(value,snapshot);
  if(x.call===130){assert.deepEqual(validate(value.scene,placeRef(original.ids.places)),[]);assert.ok(!p.errors.some(e=>/^\$\.scene:/.test(e)));}
 });
-for(const [quote,qty,cp,basis] of [['eight copper',4,8,'total'],['one silver and eight copper',2,18,'total'],['two copper, three',4,null,'unit'],['two copper a pelt, three copper',4,null,'unit']])
- test(`price control: ${quote}`,()=>{
- const r=amountErrors([sell(quote,qty,cp??8,basis)],currency);
- if(cp===null) assert.ok(r.length);else assert.deepEqual(r,[]);
+// .144: totals are checked; unit prices for several units are no limit (no error, no binding number)
+for(const [quote,qty,cp,basis] of [['eight copper',4,8,'total'],['one silver and eight copper',2,18,'total'],['two copper, three',4,null,'unit'],['two copper a pelt, three copper',4,null,'unit'],['eight copper',4,null,'total-wrong']])
+ test(`price control: ${quote} ${basis}`,()=>{
+ const r=amountErrors([sell(quote,qty,basis==='total-wrong'?9:(cp??8),basis==='total-wrong'?'total':basis)],currency);
+ if(basis==='total-wrong') assert.ok(r.length);else assert.deepEqual(r,[]);
  });
 test('price control: pay and buy limits keep currency and total semantics',()=>{
  assert.deepEqual(amountErrors([{type:'pay',seq:1,amount_cp:20,quote:'I pay two silver.',money:{quote:'two silver',currency_quote:null}}],currency),[]);
  assert.ok(amountErrors([{type:'pay',seq:1,amount_cp:200,quote:'I pay two silver.',money:{quote:'two silver',currency_quote:null}}],currency).length);
- assert.deepEqual(amountErrors([{type:'buy',seq:1,qty:4,max_cp:8,quote:'two copper apiece',price_evidence:{basis:'unit',quote:'two copper',currency_quote:null}}],currency),[]);
+ assert.deepEqual(amountErrors([{type:'buy',seq:1,qty:4,max_cp:8,quote:'two copper apiece',price_evidence:{basis:'unit',quote:'two copper',currency_quote:null}}],currency),[], '.144: a unit price for four is no limit, no repair');
+ assert.deepEqual(amountErrors([{type:'buy',seq:1,qty:4,max_cp:8,quote:'eight copper for all four',price_evidence:{basis:'total',quote:'eight copper',currency_quote:null}}],currency),[]);
 });
 
 import {parsePlan} from '../../src/v4/planner.js';

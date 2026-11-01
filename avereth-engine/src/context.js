@@ -635,6 +635,13 @@ export function buildContext(state, content, opts = {}) {
         add('guild_authority', `OFFICIAL GUILD OFFERS — ENGINE AUTHORITY: Only listed contracts below are official selectable offers. Active/completed/expired contracts are not new offers. If none are listed, do not invent notices or claim another adventurer took them; invite a board reading. Private NPC jobs and rumours remain possible, clearly separate from official listings. Novice and Floor One are rank/depth labels, not promises of solo safety; describe only established risks, otherwise uncertainty.\n${official.map(q => `- ${q.id}: ${q.title} [${q.status}]`).join('\n') || '- No official listings established.'}`, 0);
     }
 
+    // Build .144 (finance simplification S2, plan §6/§10.2): the one price contract of the story – the extractor reads a
+    // binding price only as one total, so the narrator is told the same whenever a trade is in play here (its own
+    // allowance, like the situational rules: it displaces no scene section)
+    const trading = (opts.situations || []).includes('trade') || Object.values(state.offers || {}).some((o) => o.status === 'open' && !o.canon && o.at === state.scene.at)
+        || (state.decisions || []).some((d) => (d.kind === 'purchase' || d.kind === 'sale') && (!d.at || d.at === state.scene.at));
+    if (v4 && trading && state.mode !== 'creation') add('price_contract', 'PRICES — a price binds only as ONE total in coin for exactly the goods or service named ("fifty-six copper for these fourteen plates", "two silver for the room tonight"). A price per piece, several part prices or a usual rate are talk until the trader states that total. Whoever agrees to a price says the total again ("Sixty copper it is."); a bare "Done." binds nothing. An appraisal, approval or later delivery keeps a price open until a new total is stated.', 0, true);
+
     // Prototype C (4.3.0-c.6.6.5): the settlement around Alaric lives (crowd by time of day, everyday trades by size)
     if (v4 && !state.encounter && (opts.outcome?.auth?.c || opts.outcome?.c)) add('settlement', settlementLife(state, content), 1);
 
@@ -765,7 +772,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'world_area', 'world_populations', 'gear_market', 'npc_continuity', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
+    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'world_area', 'world_populations', 'gear_market', 'price_contract', 'npc_continuity', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text) };

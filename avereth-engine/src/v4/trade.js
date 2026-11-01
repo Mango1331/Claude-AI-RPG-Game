@@ -15,7 +15,7 @@ import { normText } from '../util.js';
 import { hallOf } from './domain.js';
 import { rulesetOf } from '../content.js';
 import { trainingOfferWhy } from './growth.js';
-import { coinFromWords, coinMentions, coinEvidence, numbersIn, trailingNumber } from '../economy.js';
+import { numbersIn } from '../economy.js';
 
 const flat = text => normText(text || '').replace(/[^a-z0-9]+/g, ' ').trim();
 const contains = (text, part) => !!flat(part) && ` ${flat(text)} `.includes(` ${flat(part)} `);
@@ -31,24 +31,6 @@ export function saleOfferLines(state, seller, lines) {
     return lines.filter(l => (l.kind || 'goods') === 'goods'
         && sales.some(d => d.seller === seller || (state.scene.present.includes(seller) && purchaseLines(state.objects[d.object].name, [l]).length))
         && !current.some(d => d.kind === 'purchase' && purchaseLines(d.what, [l]).length));
-}
-
-/** Match separately named prices to selected offer positions, never sum unrelated amounts. */
-function positionPrices(quote, picks, currency) {
-    if (!picks || picks.length < 2 || coinMentions(quote, { rules: { currency } }).length < 2) return null;
-    const clauses = quote.split(/\s+(?:and|then)\s+|[;.!?]/i);
-    const seen = new Set();
-    for (const clause of clauses) {
-        const mentions = coinMentions(clause, { rules: { currency } });
-        if (!mentions.length) continue;
-        if (mentions.length !== 1) return null;
-        const named = picks.filter(p => flat(p.line.what).split(' ').filter(w => w.length > 2 && !['the','for','with','and','night'].includes(w)).some(w => contains(clause, w)));
-        if (named.length !== 1 || seen.has(named[0].line.id)) return null;
-        const p = named[0];
-        if (mentions[0] !== p.cp) return false;
-        seen.add(p.line.id);
-    }
-    return seen.size === picks.length ? true : null;
 }
 
 /** Explicit product words constrain a selection; a generic "deal" remains valid.
@@ -78,7 +60,7 @@ function selectionWhy(quote, offer, selected) {
 }
 
 /** Explicit consent constraints, shared by the planner repair and the command handler. No inferred new party. */
-export function acceptanceWhy(c, offer, party, currency, units = null) {
+export function acceptanceWhy(c, offer, party, currency = null, units = null) {
     // Build .142 (§6.2, I4): his consent never makes the other side's open or unconfirmed price binding
     const terms = tradeTermsWhy(offer, c.lines);
     if (terms) return terms;
@@ -92,22 +74,18 @@ export function acceptanceWhy(c, offer, party, currency, units = null) {
     const picked = offer.bid ? null : pickLines(offer, c.lines, c.qty ?? null);
     const selection = !offer.bid && selectionWhy(quote, offer, lines);
     if (selection) return selection;
+    // Build .144 (S2): the quantity check stays – one number for several positions is a selection to clarify, never a
+    // price guessed from his words (an unknown or unsplittable position is the handler's own refusal)
+    if (!offer.bid && picked.clarify) return 'one quantity for several positions; clarify which position and how many';
     const total = offer.bid ? (lines.length === offer.lines.length && Number.isInteger(offer.price_cp) ? offer.price_cp : lines.reduce((n, l) => n + (l.price_cp || 0), 0)) : picked.cp;
-    // Build .138: the bid's own unit count (stacks of the same goods together, rateUnits) when all its lines are taken
-    const qty = offer.bid ? (lines.length === 1 ? lines[0].qty : Number.isInteger(units) && lines.length === offer.lines.length ? units : 0) : (picked.picks?.length === 1 ? picked.picks[0].units : 0);
-    const mentions = currency ? coinMentions(quote, { rules: { currency } }) : [];
-    const positions = currency && !offer.bid ? positionPrices(quote, picked.picks, currency) : null;
-    if (positions === false) return 'a stated item price differs from the selected position';
-    const price = positions === true ? { handled: true, cp: total } : currency ? tradePrice(null, quote, qty, { rules: { currency } }) : { handled: false };
-    if (price.handled && price.cp === null) return 'the quoted trade price is not unambiguous';
-    const said = price.handled ? price.cp : currency && mentions.length === 1 ? coinFromWords(quote, { rules: { currency } }) : null;
+    // Build .144 (S2, plan §4.2): the stored price is the price he accepts. His message is not read for a second price
+    // (a purse he mentions, a side price, a comment: "I have 300 copper. I buy the superior longsword." for 260 cp is
+    // an acceptance); only an explicit agreed price or limit of his command (agreed_cp/max_cp/min_cp, checked against
+    // his own words by the planner) can stop it. A discount request is no acceptance of the old price.
     const discount = /\bdiscount\b|\b\w*(?:pence|copper|silver|gold|percent)\s+off\b|\b(?:knock|take)\b[^.;]{0,25}\boff\b|\bfor less\b/i.test(quote);
-    const fixedPrice = said === total && /\b(?:agreed|offered|final|new|discount(?:ed)?) price\b/i.test(quote) && /\b(?:accept|deal|take|buy)\b/i.test(quote);
-    if (discount && !fixedPrice) return 'a requested discount needs an agreed new price; the old offer is not accepted';
-    if (Number.isInteger(c.agreed_cp) && said !== null && c.agreed_cp !== said) return 'agreed_cp contradicts the player’s stated price';
-    const agreed = Number.isInteger(c.agreed_cp) ? c.agreed_cp : said;
-    if (agreed !== null && agreed !== undefined && Number.isInteger(total) && agreed !== total)
-        return `agreed price ${agreed} cp differs from this offer's ${total} cp`;
+    if (discount && !(Number.isInteger(c.agreed_cp) && c.agreed_cp === total)) return 'a requested discount needs an agreed new price; the old offer is not accepted';
+    if (Number.isInteger(c.agreed_cp) && Number.isInteger(total) && c.agreed_cp !== total)
+        return `agreed price ${c.agreed_cp} cp differs from this offer's ${total} cp`;
     if (Number.isInteger(c.max_cp) && total > c.max_cp && !c.any_price) return 'the offer is above his price limit';
     if (Number.isInteger(c.min_cp) && total < c.min_cp) return 'the bid is below his price limit';
     return null;
@@ -135,56 +113,8 @@ export function rateUnits(lines, objectOf) {
     return list.reduce((n, l) => n + (l.qty ?? 1), 0);
 }
 
-// Collective units are no unit rate ("five silver the pair"); a price per piece is ("four copper the plate").
-const PER_THE = String.raw`the\s+(?!(?:lot|all|whole|rest|pair|brace|dozen|set|bundle|batch|bunch|stack|sack|bag|crate|load|box|barrel|cask|basket|heap|pile)\b)[a-z]+(?=\s*(?:[,;.!?\u2013\u2014-]|$|and\b|or\b|for\b))`;
-
-/**
- * HIS OWN price words in an acceptance (acceptanceWhy), when his command carries no price_evidence: a blocking check of
- * his consent only – a price he states that differs from the stored one stops the acceptance; it never sets a price.
- * Build .142: the words of the other side (bids and offers) are read only by finance_evidence.priceEvidence against
- * the model's pricing; their conditions by the model's phase/condition (world.js). A unit rate is not a lot total;
- * ranges and several rates are unresolved.
- */
-export function tradePrice(cp, said, qty, content) {
-    const text = String(said || '');
-    if (!text.trim()) return { cp, handled: false };
-    if (/\b(?:between|from)\s+(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)\b[^.;]{0,25}\b(?:and|to)\s+(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)\b|\b(?:gold|silver|coppers?|cp)\s+or\b|\b(?:one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+or\s+(?:one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+(?:gold|silver|coppers?|cp)\b/i.test(text)) return { cp: null, handled: true };
-    const totals = [...text.matchAll(/((?:[a-z0-9-]+\s+){1,5}(?:gold|silver|coppers?|cp))\s+(?:for\s+)?(?:the\s+)?(?:lot|all|together|total)\b/gi)]
-        .map(m => coinFromWords(m[1], content)).filter(Number.isInteger);
-    // Build .138 (#116: "Four copper the plate, fifty-six the lot"): a lot total without its own currency word is in
-    // the one currency the quote names
-    const kinds = new Set([...text.toLowerCase().matchAll(/\b(gold|silver|copper|coppers|cp)\b/g)].map((m) => m[1].startsWith('c') ? 'copper' : m[1]));
-    if (kinds.size === 1) {
-        for (const m of text.matchAll(/(?:\s+for)?\s+the\s+(?:whole\s+)?lot\b|\s+(?:in\s+)?total\b|\s+all\s+told\b/gi)) {
-            const n = trailingNumber(text.slice(0, m.index));
-            if (n !== null) totals.push(coinFromWords(`${n} ${[...kinds][0]}`, content));
-        }
-    }
-    const distinct = [...new Set(totals.filter(Number.isInteger))];
-    if (distinct.length) return { cp: distinct.length === 1 ? distinct[0] : null, handled: true };
-    // Build .107: "two silver a fair deal" judges the price; it is no rate per unit
-    const rates = [...text.matchAll(new RegExp(String.raw`\b(?:gold|silver|coppers?|cp)\s+(?:each\b|apiece\b|per\b|${PER_THE}|(?:a|an)\s+(?!piece of coin\b|(?:fair|good|great|decent|reasonable|honest|fine|square|bargain|steal|deal|price|sum|total)\b))`, 'gi'))];
-    const evidence = coinEvidence(text, content);
-    if (rates.length) {
-        if (/\b(?:if|unless|depending|provided)\b/i.test(text.slice(rates[0].index))) return { cp: null, handled: true };
-        if (rates.length !== 1 || !(qty > 0) || evidence.cp === null) return { cp: null, handled: true };
-        // Build .138 (#106: "four copper the plate. That's eighty-four copper—eight silver and four"): the rate times the
-        // units is the price; saying that total again, in any coins, confirms it. Any other sum (another article, his
-        // purse, an earlier price) leaves it open.
-        const rate = coinEvidence(text.slice(0, rates[0].index + rates[0][0].match(/^\S+/)[0].length), content).sums.at(-1)?.cp;
-        if (!Number.isInteger(rate)) return { cp: null, handled: true };
-        const total = rate * qty;
-        const others = evidence.sums.map((x) => x.cp);
-        others.splice(others.indexOf(rate), 1);
-        return { cp: others.every((v) => v === rate || v === total) ? total : null, handled: true };
-    }
-    if (evidence.mentions.length > 1 || (evidence.mentions.length && evidence.cp === null)) {
-        // Build .138: one sum said twice ("140 copper — that's 1 gold 4 silver") is that sum, not their addition
-        const said = [...new Set((evidence.sums || []).map((x) => x.cp))];
-        return { cp: evidence.cp !== null && said.length === 1 ? said[0] : null, handled: true };
-    }
-    return { cp, handled: false };
-}
+// Build .144 (S2): tradePrice (a second reading of prices from his acceptance words: lot totals, unit rates times
+// units) and positionPrices are removed; the stored offer is the price, his command's explicit limits stop it.
 
 /** Known remote services and explicit third-party price advice are information, not this speaker's offer. */
 export function offerAdvice(what, said, party, places, here, prose = '') {

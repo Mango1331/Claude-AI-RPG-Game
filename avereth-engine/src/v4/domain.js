@@ -247,6 +247,14 @@ export function applyDomainEvent(state, e) {
             state.decisions = [...state.decisions.filter((x) => x.id !== d.decision.id), clone(d.decision)];
             break;
         case 'decision.closed':
+            // Build .144 (S1): "#pay <id>" closes exactly the card it saw (payee, amount, route). If an edited earlier
+            // message changed or removed that card, the stored payment no longer applies: the fold stops (foldBlock)
+            // instead of booking the old coin against a different card
+            if (d.expect) {
+                const open = state.decisions.find((x) => x.id === d.id);
+                if (!open || open.kind !== 'payment' || open.state !== 'needs_confirmation' || open.route !== d.expect.route
+                    || open.seller !== d.expect.seller || open.amount_cp !== d.expect.amount_cp) throw new Error(`payment card ${d.id} is no longer the one that was paid`);
+            }
             state.decisions = state.decisions.filter((x) => x.id !== d.id);
             break;
         case 'transaction.completed':

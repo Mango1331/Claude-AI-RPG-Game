@@ -59,7 +59,8 @@ test('8.4.1 A1/A2: the player is the player character: short actions, speech, co
     assert.match(p, /Not like this: I steady my breathing/);
     // A4: the commands
     assert.match(p, /A command is a message of its own: only the command, nothing else in it/);
-    assert.match(p, /spent only with #assign, several stats in one command: #assign WIL 2 INT 2 VIT 1\. Words like "I put two points into INT" change nothing\. Look at the System answer or the HUD afterwards/);
+    // Build .144 (S1): the same line also names #pay for a payment card; words change neither
+    assert.match(p, /Free Stat Points are spent only with #assign \(several stats at once: #assign WIL 2 INT 2 VIT 1\); a PAYMENT CARD \(tip, gift, debt; NOT PAID\) only with #pay <its id>, if you want exactly it\. Words change neither\. Check the System answer or HUD afterwards/);
     assert.match(p, /#bag, #equipment[\s\S]*#status[\s\S]*not before every small step\. Use confirmed possessions/);
     // A3: decide quickly; short notes
     assert.match(p, /DECIDE QUICKLY/);

@@ -1,3 +1,4 @@
+import { financeHints } from '../../src/v4/interpret.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -5,7 +6,6 @@ import { loadProductContent } from '../helpers.js';
 import { fold, applyEvent } from '../../src/state.js';
 import { setRec, rec, foldChat } from '../../src/host.js';
 import { coinFromWords, coinMentions } from '../../src/economy.js';
-import { tradePrice } from '../../src/v4/trade.js';
 import { applyWorldLegacy as applyWorld } from './finance_legacy.js'; // Build .142: pre-delta-1.13 scripted answers
 import { resolveCommandsLegacy as resolveCommands } from './finance_legacy.js'; // Build .142: pre-cmd-1.8 scripted commands
 import { guardCommands } from '../../src/v4/agency.js';
@@ -68,29 +68,23 @@ test('Run17 numeric currency abbreviations stay supported consistently', () => {
     }
     assert.equal(coinFromWords('1g 2s 3cp', content), 123);
 });
-test('Run17 compound currency is one price, separate prices remain ambiguous', () => {
-    assert.equal(tradePrice(null, 'one silver and five copper', 1, content).cp, 15);
-    assert.equal(tradePrice(null, '1s 5c', 1, content).cp, 15);
-    assert.equal(tradePrice(null, 'five silver for one; three silver for the other', 1, content).cp, null);
-    assert.equal(tradePrice(null, 'five silver or three silver', 1, content).cp, null);
-});
-test('Run17 a mixed-currency unit price keeps quantity math and rejects two independent rates', () => {
-    assert.equal(tradePrice(null, 'one silver and five copper each', 2, content).cp, 30);
-    assert.equal(tradePrice(null, 'one silver each and five copper each', 2, content).cp, null);
-});
+// Build .144 (S2): tradePrice, the second price reader of his acceptance words, is removed (finance simplification
+// §4.2); compound and mixed coin groups stay covered by coinFromWords/coinMentions above and finance_evidence.
 test('Run17 original T56 creates the two actual 50/30 prices without a false correction', () => {
     const c = f.cases.price, r = applyWorld(before(c.i), content, contractValue(c.answer, before(c.i), content), { msg: c.i, prose: c.text });
     assert.deepEqual(r.events.find(e => e.t === 'offer.created').d.offer.lines.map(l => l.price_cp), [50, 30]);
     assert.ok(!r.events.some(e => e.t === 'note' && e.d.kind === 'amount.corrected'));
 });
-test('Run17 explicit compound consent cannot silently pay an unrelated price', () => {
-    const c = { ...f.cases.accept.commands[0], quote: "I'll take it for one silver and five copper.", agreed_cp: null };
+// Build .144 (S2): his named price is his explicit agreed_cp (the planner carries it, asked by a hint when it is left
+// out); the engine compares it with the stored total and reads no second price from the quote
+test('Run17 (.144) explicit compound consent: an agreed total other than the posted price pays nothing', () => {
+    const c = { ...f.cases.accept.commands[0], quote: "I'll take it for one silver and five copper.", agreed_cp: 15, price_evidence: { basis: 'total', quote: 'one silver and five copper', currency_quote: null } };
     assert.equal(money(run(purchaseState(50), [c])).length, 0);
     assert.equal(money(run(purchaseState(15), [c]))[0].d.delta, -15);
+    assert.ok(financeHints([{ ...c, agreed_cp: null, price_evidence: null }], content.rules.currency).length, 'left out, the planner is asked for it');
 });
-test('Run17 short-unit consent and ambiguous alternatives cannot bypass the posted price', () => {
-    for (const quote of ["I'll take it for 1s.", "I'll pay five silver or three silver."])
-        assert.equal(money(run(purchaseState(50), [{ ...f.cases.accept.commands[0], quote, agreed_cp: null }])).length, 0);
+test('Run17 (.144) short-unit consent: the agreed 10 cp is not the posted 50 cp', () => {
+    assert.equal(money(run(purchaseState(50), [{ ...f.cases.accept.commands[0], quote: "I'll take it for 1s.", agreed_cp: 10, price_evidence: { basis: 'total', quote: '1s', currency_quote: null } }])).length, 0);
 });
 test('Run17 original purchase then drink resolves after ownership exists, exactly once', async () => {
     const r = await act(f.cases.accept.commands, f.cases.accept.text);

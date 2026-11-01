@@ -148,7 +148,8 @@ function current(t) {
     if (c.id === 't1' && c.after_reply) delete c.after_reply.listings;
     if (c.id === 't3' && c.after_reply?.listings) c.after_reply.listings['quest.weasel_fenwick'] = 'listed';
     // Build .142: the room (four copper) and the bath ("two more", in the sentence of the copper) stand; see EXPECTED_REFUSALS
-    if (c.id === 't8' && c.after_reply) Object.assign(c.after_reply, { offers_open_lines: [4, 2], corrections: 2 });
+    // Build .144 (S2): plus one PRICE CONTRACT correction for the two lines without a binding total (wash and stew)
+    if (c.id === 't8' && c.after_reply) Object.assign(c.after_reply, { offers_open_lines: [4, 2], corrections: 3 });
     return c;
 }
 /** A board line of the gold ("Title · 80 cp") as the title-first line of the board now. */
@@ -255,7 +256,9 @@ test('E11: looking for an inn books no price: buy pending, the inn\'s offer 4/2/
     assert.deepEqual(e.decisions, ['purchase'], 'the wish for a room waits for his agreement, at the inn');
     const rec = t8.rep.record;
     assert.ok(rec.system.some((x) => x.startsWith('NOT APPLIED')));
-    assert.equal(rec.corrections.length, 2);
+    assert.equal(rec.corrections.length, 3);
+    assert.ok(rec.corrections.some((x) => /^PRICE CONTRACT: .*named no binding total for .*wash.*stew/.test(x)), rec.corrections.join('\n'));
+    assert.ok(rec.system.some((x) => /^PRICE OPEN — /.test(x)));
     // Patch 10A.2: the refusal is routine bookkeeping: kept in the raw panel record (#audit), not on the player's card
     assert.match(main.chat[t8.rep.id].extra.avereth.panel, /NOT APPLIED/);
     assert.doesNotMatch(main.chat[t8.rep.id].extra.display_text, /NOT APPLIED/);

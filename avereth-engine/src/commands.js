@@ -21,6 +21,7 @@ import { clone, itemLabel, joinList, normText, formatClock, roundHalfUp, ENGINE_
 import { currentThreads, threadHere } from './threads.js';
 import { knownNote } from './v4/known.js';
 import { dungeonOf, mapText } from './v4/dungeon.js';
+import { nativePay } from './v4/native_pay.js';
 
 const HELP = [
     ['#status', 'full current status (alias #stats)'], ['#skills', 'all known Skills'], ['#skill <name>', 'full Skill definition with current values'],
@@ -28,7 +29,7 @@ const HELP = [
     ['#bag', 'inventory and coin (alias #inventory)'], ['#item <name>', 'Item definition'], ['#quests', 'known Quests'],
     ['#quest <name>', 'Quest details'], ['#effects', 'active effects'], ['#effect <name>', 'effect details'],
     ['#combat', 'encounter audit (read-only)'], ['#system <question>', 'mechanics question answered by the System'],
-    ['#assign <STAT> <n>', 'spend free Stat Points (state-changing)'], ['#npc <name>', 'what Alaric knows about someone'],
+    ['#assign <STAT> <n>', 'spend free Stat Points (state-changing)'], ['#pay <card id>', 'pay exactly that payment card (alone in the message)'], ['#npc <name>', 'what Alaric knows about someone'],
     ['#log [n]', "Alaric's recent memories"], ['#journal', 'goals, places known by report, open and settled threads'], ['#map', 'the rooms and ways of the dungeon you are in, as far as you know them'], ['#audit', 'rolls, rejected reports and corrections of the last turn'], ['#help', 'this list'],
 ];
 
@@ -456,6 +457,17 @@ export function runCommands(state, content, text) {
                 }
                 lines.push(`Free Stat Points left: ${pcSheet(s).free_points} (current HP/MP/STA are not refilled)`);
                 panels.push(lines.join('\n'));
+                break;
+            }
+            case 'pay': {
+                // Build .144 (S1): the only payer of a free payment card; the whole message must be "#pay <id>"
+                // (src/v4/native_pay.js), never a # fragment inside other words or beside other commands
+                const r = nativePay(s, content, text);
+                if (r.paid) {
+                    if (s === state) s = clone(state);
+                    for (const e of r.events) { applyEvent(s, e); events.push(e); }
+                }
+                panels.push(`[SYSTEM // PAY]\n${r.line}`);
                 break;
             }
             default: panels.push(`[SYSTEM]\nUnknown command #${name}. Use #help.`);

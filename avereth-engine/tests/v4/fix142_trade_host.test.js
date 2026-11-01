@@ -49,9 +49,9 @@ test('.142 host: a clear purchase is booked at once and stays booked after reloa
 test('.142 host: a false pay report beside a goods price moves no coin; the open decision is stored', async () => {
     const g = await shop();
     const before = coin(g);
-    await say(g, 'I give Odo my spare rope for five copper.', { type: 'pay', to: ODO(g), amount_cp: 5, for: null, quote: 'I give Odo my spare rope for five copper.', money: { quote: 'five copper', currency_quote: null }, recipient_quote: 'Odo', confirmation: null });
+    await say(g, 'I give Odo my spare rope for five copper.', { type: 'pay', to: ODO(g), amount_cp: 5, for: null, quote: 'I give Odo my spare rope for five copper.', money: { quote: 'five copper', currency_quote: null }, recipient_quote: 'Odo' });
     assert.equal(coin(g), before);
-    assert.deepEqual(statuses(g), [['pay', 'pending']]);
+    assert.deepEqual(statuses(g), [['pay', 'pending']]); // Build .144 (S1): a payment card, never a debit
     const r = lastUser(g);
     assert.ok(!r.events.some((e) => e.t === 'coin.changed' || e.t === 'transaction.completed'));
     assert.ok(r.events.some((e) => e.t === 'decision.opened' && e.d.decision.kind === 'payment'));

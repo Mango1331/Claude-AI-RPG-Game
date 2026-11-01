@@ -117,8 +117,8 @@ export function s1MockResponder(cases, scenes, vocab, { wrong = [], invalid = []
         const c = byUser.get(users[0]?.content);
         if (!c) return { content: '{"commands": []}' };
         if (invalid.includes(c.id) && users.length === 1) return { content: '{"commands": [{"seq": "first"}' };
-        // the wrong answer speaks the current command contract (cmd-1.8: money, recipient_quote, confirmation)
-        if (wrong.includes(c.id)) return { content: JSON.stringify({ commands: [{ seq: 1, type: 'pay', to: { new: 'someone' }, amount_cp: 5, for: null, quote: 'x', money: null, recipient_quote: null, confirmation: null }] }) };
+        // the wrong answer speaks the current command contract (cmd-1.9: money, recipient_quote)
+        if (wrong.includes(c.id)) return { content: JSON.stringify({ commands: [{ seq: 1, type: 'pay', to: { new: 'someone' }, amount_cp: 5, for: null, quote: 'x', money: null, recipient_quote: null }] }) };
         return { content: JSON.stringify(goldAnswer(vocab, c)) };
     };
 }

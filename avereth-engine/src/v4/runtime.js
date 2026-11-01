@@ -306,6 +306,9 @@ export async function planMessage(llm, content, ctx, text, { recent = '', isCurr
             if (q.commands) p = q;
         }
     }
+    // Build .144 (S2): the engine reads no second price out of his words. A price conflict of the first answer is not
+    // resolved by a repair that only drops agreed_cp while his acceptance still names money: the conflict stands
+    if (p.commands && consentClarify && (p.hints || []).some((h) => /^offer\.accept seq \d+: his acceptance names money/.test(h))) p = { ...p, commands: null };
     // Only schema-valid plans whose sole remaining errors concern trade consent may ask back.
     // Nothing from either rejected plan is executed, including dependent travel and sleep.
     if (!p.commands && consentClarify) return { commands: [{ seq: 1, type: 'clarify', about: 'action', question: tradeNote || 'Do you buy or sell, which goods, with whom, and at what total price? Nothing changes hands until clarified.', options: [] }], failed: false, error: null, ms, repaired, raw, calls };

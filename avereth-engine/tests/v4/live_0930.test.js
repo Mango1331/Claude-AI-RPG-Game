@@ -147,5 +147,6 @@ test('C6: taking the paid-out copper makes no second copper; the water costs its
     // concrete proposal he can confirm (.141 paid it: 119); with a recorded offer, paying it is accepting it at once.
     assert.equal(S(68).entities.pc.sheet.coin_cp, 120);
     assert.deepEqual(S(67).last.outcome.resolutions.map((r) => [r.type, r.status, r.reason ?? null]), [['pay', 'pending', 'payment_unconfirmed'], ['go', 'authorized', null]]);
-    assert.match(S(67).last.outcome.actions[0], /1 cp for water\? Wallet 120 cp → 119 cp\. Nothing changed hands/);
+    // Build .144 (S1): that proposal is a payment card; only his "#pay <id>" pays it
+    assert.match(S(67).last.outcome.actions[0], /payment card dec\.pay\.t\d+\.1: pay .* 1 cp for water\. Wallet 120 cp → 119 cp\. Nothing changed hands\. Only the player's own message "#pay dec\.pay\.t\d+\.1"/);
 });

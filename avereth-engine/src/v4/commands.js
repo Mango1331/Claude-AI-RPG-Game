@@ -14,8 +14,8 @@ import { privateQuestsOf, questVisible } from '../content.js';
 // reply may change because of a command (auth), what the extractor must answer (expectedKeys) and what waits for the
 // reply (conditionals) go into the turn's outcome; the world applier (src/v4/world.js) reads them from there.
 import { transferCargo, bookDelivery, cargoProvenance } from './delivery.js';
-import { formatCoin, numbersIn, coinEvidence } from '../economy.js';
-import { payArgument, playerPrice, findQuote, sentenceOf } from './finance_evidence.js';
+import { formatCoin, numbersIn } from '../economy.js';
+import { payArgument, playerPrice } from './finance_evidence.js';
 import { spendsStatPoints, assignHint } from '../commands.js';
 import { resolveCheck } from '../checks.js';
 import { entityLabel, setFactEvents, truth } from '../knowledge.js';
@@ -89,30 +89,13 @@ function provenNumber(c, field, content, ctx, units = 1, goods = []) {
     const r = playerPrice(env(ctx).text || c.quote || '', c.price_evidence, { content, units, goods: [c.what, ...goods].filter(Boolean) });
     return r.state === 'verified' && r.cp === c[field] ? c[field] : null;
 }
-/** Build .142: one free payment, booked once (coin and the transaction in the same record). */
-function bookPayment(s, content, c, emit, decision = null) {
-    const coin = s.entities.pc.sheet.coin_cp;
-    if (coin < c.amount_cp) return { status: 'refused', reason: 'not enough coin', line: `CANNOT PAY — ${cpText(c.amount_cp, content)} needed, he has ${coin} cp.` };
-    emit({ t: 'coin.changed', d: { id: 'pc', value: coin - c.amount_cp, delta: -c.amount_cp, why: `paid ${who(s, c.to)}${c.for ? ` for ${c.for}` : ''}` } });
-    emit({ t: 'transaction.completed', d: { to: c.to, cp: c.amount_cp, for: c.for || null, ...(decision ? { decision: decision.id } : {}) } });
-    if (decision) emit({ t: 'decision.closed', d: { id: decision.id, status: 'accepted' } });
-    return { status: 'resolved', line: `PAYS — ${cpText(c.amount_cp, content)} to ${who(s, c.to)}${c.for ? ` for ${c.for}` : ''}.` };
-}
-const UNPROVEN = {
-    no_money_argument: 'his words name no coin he hands over',
-    amount_differs: 'his words hand over another amount',
-    money_continues: 'the amount in his words is not complete',
-    money_incomplete: 'the amount in his words is not complete',
-    several_amounts: 'his words name several amounts',
-    currency_missing: 'his words name no coin for the number',
-    currency_not_unique: 'his words name no single coin for the number',
-};
 /**
- * Build .142 (§5.3): a payment his words do not prove becomes a concrete, visible proposal – payee, amount, purpose,
- * wallet before and after – that he can confirm by its id in his next message; nothing changes hands now. One open
- * proposal at a time; it lapses with his next action that does not confirm it, a change of place or of the payee.
+ * Build .144 (finance simplification S1): a free payment (tip, gift, debt, compensation) is never paid from words. His
+ * words make a payment card – payee, amount, purpose, wallet before and after, its id – and only his own message
+ * "#pay <id>" pays it (src/v4/native_pay.js). The card lasts until his next acting message or a change of place
+ * (resolveCommands); a new card for the same payee replaces the open one, cards for other people stay open.
  */
-function paymentProposal(s, content, c, ctx, emit, ev) {
+function paymentProposal(s, content, c, ctx, emit) {
     if (!present(s, c.to)) return { status: 'refused', reason: 'nobody to pay', line: 'CANNOT PAY — the one he means to pay is not here.' };
     if (!Number.isInteger(c.amount_cp) || c.amount_cp <= 0) {
         emit({ t: 'decision.opened', d: { decision: { id: `dec.t${s.turn}.${c.seq}`, kind: 'payment', state: 'needs_amount', what: c.for || 'a payment', seller: c.to, at: s.scene.at, turn: s.turn } } });
@@ -122,59 +105,24 @@ function paymentProposal(s, content, c, ctx, emit, ev) {
             extra: [`OPEN DECISION — Alaric means to pay ${who(s, c.to)}${c.for ? ` for ${c.for}` : ''}; the amount is not known. Let ${who(s, c.to)} name it, then stop: he has not paid yet.`],
         };
     }
-    for (const old of (s.decisions || []).filter((d) => d.kind === 'payment' && d.state === 'needs_confirmation')) emit({ t: 'decision.closed', d: { id: old.id, status: 'expired' } });
+    // §6 B2: at most one card per payee and message; a second payment to the same person waits for its own message
+    // (no sums are added up, no second card guessed). A card of an earlier message for him is replaced.
+    const mine = (s.decisions || []).filter((d) => d.kind === 'payment' && d.state === 'needs_confirmation' && d.seller === c.to);
+    const here = mine.find((d) => d.turn === s.turn);
+    if (here) return {
+        status: 'clarify', reason: 'one card per payee',
+        line: `NOT PAID — payment card ${here.id} (${cpText(here.amount_cp, content)} to ${who(s, c.to)}) already stands for this message; another payment to ${who(s, c.to)} needs a message of its own after "#pay ${here.id}". Nothing changed hands.`,
+    };
+    for (const old of mine) emit({ t: 'decision.closed', d: { id: old.id, status: 'replaced' } });
     const id = `dec.pay.t${s.turn}.${c.seq}`;
     const coin = s.entities.pc.sheet.coin_cp;
     emit({ t: 'decision.opened', d: { decision: { id, kind: 'payment', state: 'needs_confirmation', route: 'free', seller: c.to, at: s.scene.at, amount_cp: c.amount_cp, what: c.for || 'a payment', turn: s.turn, source: { message: env(ctx).msg ?? null, seq: c.seq } } } });
-    const why = UNPROVEN[ev?.reason] || (ev?.act === 'other' ? 'his words pay someone else or another amount' : 'his words do not show him handing this coin over');
     const after = coin - c.amount_cp;
     return {
         status: 'pending', reason: 'payment_unconfirmed',
-        line: `NOT PAID — pay ${who(s, c.to)} ${cpText(c.amount_cp, content)}${c.for ? ` for ${c.for}` : ''}? Wallet ${coin} cp → ${after < 0 ? 'not enough coin' : `${after} cp`}. Nothing changed hands (${why}). Payment proposal ${id}: he pays only if he confirms exactly this.`,
-        extra: [`OPEN DECISION — Alaric has NOT paid ${who(s, c.to)}; the engine asks him to confirm or drop the payment of ${cpText(c.amount_cp, content)}. Narrate no handover of coin.`],
+        line: `NOT PAID — payment card ${id}: pay ${who(s, c.to)} ${cpText(c.amount_cp, content)}${c.for ? ` for ${c.for}` : ''}. Wallet ${coin} cp → ${after < 0 ? 'not enough coin' : `${after} cp`}. Nothing changed hands. Only the player's own message "#pay ${id}", sent on its own, pays exactly this; words do not.`,
+        extra: [`OPEN DECISION — Alaric has NOT paid ${who(s, c.to)}; he may offer or reach for the coin, but no coin changes hands in this reply. Narrate no handover of coin.`],
     };
-}
-/** Build .142: his confirmation of exactly the proposal of his previous message pays it once. */
-function confirmPayment(s, content, c, ctx, emit, ev) {
-    const dec = (s.decisions || []).find((d) => d.id === c.confirmation && d.kind === 'payment' && d.state === 'needs_confirmation');
-    if (!dec) return { status: 'refused', reason: 'no payment proposal', line: `NOT PAID — there is no open payment proposal ${String(c.confirmation).slice(0, 40)}; nothing changed hands.` };
-    const lapse = (why) => { emit({ t: 'decision.closed', d: { id: dec.id, status: 'expired' } }); return { status: 'refused', reason: why, line: `NOT PAID — the payment proposal ${dec.id} ${why}; nothing changed hands.` }; };
-    if (!paymentConsent(env(ctx).text || c.quote || '', c, ev, s, content)) return lapse('was not positively confirmed');
-    if (ev.act === 'claim') return lapse('was answered with a claim for his own money');
-    if (dec.turn !== s.turn - 1) return lapse('belongs to an earlier message');
-    if (dec.at !== s.scene.at || !present(s, dec.seller)) return lapse('lapsed: the place or the payee changed');
-    if (dec.seller !== c.to || dec.amount_cp !== c.amount_cp || (c.for && normText(c.for) !== normText(dec.what || ''))) return lapse(`was for ${cpText(dec.amount_cp, content)} to ${who(s, dec.seller)} for ${dec.what}; another payment is not its confirmation`);
-    if (dec.route !== 'free') return lapse('has no free-payment route');
-    const sibling = (env(ctx).commands || []).find(x => x !== c && x.type === 'pay' && !x.confirmation && x.to === dec.seller && x.amount_cp === dec.amount_cp && (x.for || 'a payment') === dec.what);
-    const source = sibling ? payArgument(env(ctx).text, sibling, { content, present: presentNames(s) }) : ev;
-    const r = freePayment(s, content, { ...c, for: dec.what !== 'a payment' ? dec.what : null }, ctx, emit, source, dec);
-    return r;
-}
-function paymentConsent(text, c, ev, s, content) {
-    const quote = String(c.quote || '').trim();
-    const at = findQuote(text, quote);
-    if (at.state !== 'found') return false;
-    const span = sentenceOf(text, at.start, at.end);
-    const statement = String(text).slice(span.start, span.end).trim().replace(/^\*|\*$/g, '');
-    if (/^(?:yes|yes, please|yes please|confirmed|I confirm(?: this payment)?)$/i.test(statement)) return true;
-    if (!c.money) {
-        const sums = coinEvidence(quote, content).sums || [];
-        if (sums.length === 1) ev = payArgument(text, { ...c, money: { quote: quote.slice(sums[0].raw_start, sums[0].raw_end).trim(), currency_quote: null } }, { content, present: presentNames(s) });
-    }
-    return ev.act === 'outgoing' && ev.state === 'verified' && ev.cp === c.amount_cp;
-}
-function freePayment(s, content, c, ctx, emit, ev, decision = null) {
-    const used = ctx.paymentSources ||= [];
-    if (ev.source && used.some(x => x.to === c.to && x.start < ev.source.end && ev.source.start < x.end))
-        return { status: 'resolved', line: 'NOT PAID AGAIN — this same payment was already booked.' };
-    const proposal = decision || (s.decisions || []).find(d => d.kind === 'payment' && d.state === 'needs_confirmation'
-        && d.route === 'free' && d.turn === s.turn - 1 && d.seller === c.to && d.at === s.scene.at && d.amount_cp === c.amount_cp
-        && (d.what === (c.for || 'a payment')));
-    const r = bookPayment(s, content, c, emit, proposal);
-    if (r.status === 'resolved') {
-        if (ev.source) used.push({ ...ev.source, to: c.to });
-    }
-    return r;
 }
 const present = (s, id) => typeof id === 'string' && s.scene.present.includes(id) && s.entities[id]?.status !== 'dead';
 const cpText = (cp, content) => `${cp} cp${cp >= 10 ? ` (${formatCoin(cp, content)})` : ''}`;
@@ -1001,7 +949,6 @@ const HANDLERS = {
         // the payee – read once by the pure check; the type pay alone is no proof of outgoing coin.
         const ev = payArgument(env(ctx).text || c.quote || '', c, { content, present: presentNames(s) });
         if (c.money && ['incomplete', 'contradicted'].includes(ev.state)) return { status: 'clarify', line: 'NOT PAID — the full money argument is incomplete or contradictory; nothing changed hands.' };
-        if (c.confirmation) return confirmPayment(s, content, c, ctx, emit, ev);
         if (ev.act === 'claim') return { status: 'refused', reason: 'asks for his own money', line: `NOT PAID — his words ask for money owed to Alaric; asking for or taking his own money pays nobody. His coin stays ${cpText(s.entities.pc.sheet.coin_cp, content)}.` };
         // a known obligation (the Guild fee, an offer, a purchase) gives the amount, never the will to pay: that is his
         // own act of paying, proven or at least a plain "I pay …" of his
@@ -1013,8 +960,11 @@ const HANDLERS = {
         // Registration-purpose money belongs to the canonical service, never the ordinary cash fallback.
         const explicitPurpose = !c.for && registrationPaymentWords(c, env(ctx).text);
         const asksRegistration = explicitPurpose || (env(ctx).commands || []).some(x => x.type === 'guild.register');
+        // Build .144 (B15): an open registration alone makes only the fee's own amount (or a payment without one) the fee;
+        // an independent tip of another amount beside it stays an ordinary payment card
+        const feePurpose = !c.for || /^(?:the )?fee$/i.test(c.for);
         const registrationFee = !independentPayment(c) && (/\b(?:regist\w*|membership|guild fee)\b/i.test(c.for || '')
-            || ((asksRegistration || reg?.status === 'open') && (!c.for || /^(?:the )?fee$/i.test(c.for))));
+            || (asksRegistration && feePurpose) || (reg?.status === 'open' && theFee && feePurpose));
         if (ctx.auth.c && rulesetOf(s) >= 2 && registrationFee) {
             if (membership(s)) return { status: 'refused', reason: 'already a member', line: 'NOT PAID — already registered; no second registration fee.' };
             if (!hallOf(s, s.scene.at)) return { status: 'refused', reason: 'not at a Guild hall', line: 'NOT PAID — registration requires arrival inside a Guild hall; the registration fee stays with Alaric.' };
@@ -1068,11 +1018,10 @@ const HANDLERS = {
             && (c.amount_cp === null || c.amount_cp === undefined || pickLines(o).cp === c.amount_cp));
         if (will && offer) return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: offer.id, lines: null }, ctx, emit);
         if (!present(s, c.to)) return { status: 'refused', reason: 'nobody to pay', line: 'CANNOT PAY — the one he means to pay is not here.' };
-        if (c.amount_cp === null || c.amount_cp === undefined) return paymentProposal(s, content, c, ctx, emit, ev);
-        // a free payment (tip, gift, debt, compensation) is paid only from the proven coin of his own act; anything less
-        // is a concrete proposal he can confirm, never a payment because a number stands in his words
-        if (ev.state !== 'verified' || ev.act !== 'outgoing' || ev.cp !== c.amount_cp) return paymentProposal(s, content, c, ctx, emit, ev);
-        return freePayment(s, content, c, ctx, emit, ev);
+        // Build .144 (S1): a free payment is only ever a card; his own "#pay <id>" pays it. Words naming someone else as
+        // the payee make no card for this one.
+        if (ev.act === 'other') return { status: 'clarify', reason: 'payee unclear', line: `NOT PAID — his words hand this coin to someone else or another amount than ${who(s, c.to)}; nothing changed hands and no payment card was made.` };
+        return paymentProposal(s, content, c, ctx, emit);
     },
     buy(s, content, c, ctx, emit) {
         const offers = Object.values(s.offers).filter((o) => o.status === 'open' && !o.bid
@@ -1721,8 +1670,8 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
         emit({ t: 'cmd.resolved', d: res });
         if (lines.has(res.seq)) ctx.actions.push(`${res.seq}. ${lines.get(res.seq)}`);
     }
-    // Build .142 (§5.3): a payment proposal answers only the next message of his that acts; one that did not confirm
-    // it, or a change of place, lets it lapse (a status panel is no such message: it runs no commands)
+    // Build .142 (§5.3), .144 (S1 validity window): a payment card lasts until his next message that acts or a change of
+    // place; "#pay <id>" in between pays it (a status panel or another # command runs no story turn and keeps it open)
     if (envx.c) for (const d of (s.decisions || []).filter((x) => x.kind === 'payment' && x.state === 'needs_confirmation' && (x.turn < s.turn || x.at !== s.scene.at)))
         emit({ t: 'decision.closed', d: { id: d.id, status: 'expired' } });
     delete ctx.env;

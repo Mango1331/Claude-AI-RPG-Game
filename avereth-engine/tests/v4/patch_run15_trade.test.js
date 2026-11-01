@@ -6,10 +6,12 @@ import { applyEvent } from '../../src/state.js';
 import { resolveCommandsLegacy as resolveCommands } from './finance_legacy.js'; // Build .142: pre-cmd-1.8 scripted commands
 import { applyWorldLegacy as applyWorld } from './finance_legacy.js'; // Build .142: pre-delta-1.13 scripted answers
 import { planContext, parsePlan, withContentSkills } from '../../src/v4/planner.js';
+import { amountErrors } from '../../src/v4/interpret.js';
 import { buildCatalog } from '../../src/v4/catalog.js';
 import { campaign, inject, say, lastUser } from './patch8_lib.js';
 import { prepareGenerationAsync, processReplyAny, runExtraction } from '../../src/v4/runtime.js';
 import { foldChat } from '../../src/host.js';
+import { payAllCards } from './pay_card.js'; // Build .144 (S1): a tip is a card his #pay pays
 const content = await loadProductContent();
 const vocab = JSON.parse(fs.readFileSync(new URL('../../content/commands.json', import.meta.url)));
 const f = JSON.parse(fs.readFileSync(new URL('./fixtures/run15_trade.json', import.meta.url)));
@@ -60,7 +62,8 @@ test('two genuinely independent purchases of equal price from one seller both bo
 });
 test('an explicit tip remains a separate payment, even at the same amount', () => {
     const r = commands(f.cases.duplicate.state, [simple()[0], { ...pay, seq: 2, for: 'a tip for your help', quote: 'I also give you eight silver as a tip.' }]);
-    assert.equal(cp(r), 454); assert.equal(coins(r).length, 2);
+    assert.equal(cp(r), 534); assert.equal(coins(r).length, 1);
+    assert.equal(payAllCards(r.state, content).filter((x) => x.paid).length, 1); assert.equal(cp(r), 454);
 });
 test('insufficient funds never create goods or a second payment', () => {
     const s = clone(f.cases.duplicate.state); s.entities.pc.sheet.coin_cp = 70;
@@ -89,9 +92,12 @@ test('party evidence must be copied from the player message', () => {
     const c = f.cases.wrongParty, p = plan(c.state, 'Deal.', [{ ...c.commands[0], quote: 'Deal.', party_words: 'Doss' }]);
     assert.equal(p.commands, null);
 });
-test('Run15 T26 original: four correctly extracted copper stay four, not one', () => {
-    const r = world('price'), o = Object.values(r.state.offers).find(o => o.id === 'offer.t52.6');
-    assert.equal(o.price_cp, 4);
+// Build .144 (S2): "a copper a plate at most" for four plates names no total: no bid is stored (neither 4 nor 1), and
+// the engine asks for the total instead of multiplying the rate
+test('Run15 T26 original (.144): a price per plate for four plates is no bid; the total is asked for', () => {
+    const r = world('price');
+    assert.equal(Object.values(r.state.offers).some(o => o.id === 'offer.t52.6'), false);
+    assert.ok(r.system.some((x) => /^PRICE OPEN — .* for 4 /.test(x)), r.system.join('\n'));
 });
 test('a lot price is not multiplied by its quantity', () => {
     const said = 'Four plates for one copper, the whole lot.';
@@ -160,7 +166,7 @@ test('Ruleset 1 keeps its historical independent payment interpretation', () => 
     assert.deepEqual(r.ctx.resolutions.map(x => [x.type, x.status]), [['offer.accept', 'resolved'], ['pay', 'pending']]);
     assert.ok(r.events.some(e => e.t === 'decision.opened' && e.d.decision.kind === 'payment'));
     const said = commands(s, [simple()[0], { ...pay, seq: 2, quote: 'I hand over eight silver for the pair.' }]);
-    assert.equal(cp(said), 454);
+    assert.equal(cp(said), 534); payAllCards(said.state, content); assert.equal(cp(said), 454);
 });
 
 test('ordinary polite acceptance is not mistaken for a named counterparty', () => {
@@ -196,7 +202,7 @@ test('ordinary narrative third-person offers still work', () => {
 });
 test('a tip identified in its quote remains independent even without a for field', () => {
     const r = commands(f.cases.duplicate.state, [simple()[0], { ...pay, seq: 2, for: null, quote: 'And I give you eight silver as a tip.' }]);
-    assert.equal(cp(r), 454); assert.equal(coins(r).length, 2);
+    assert.equal(cp(r), 534); assert.equal(coins(r).length, 1); payAllCards(r.state, content); assert.equal(cp(r), 454);
     // Build .142 (§5.2): the verbless "And eight silver as a tip for you." is outside the narrow core of an outgoing
     // act – still independent (never the purchase), but a concrete proposal to confirm instead of an immediate payment
     const e = commands(f.cases.duplicate.state, [simple()[0], { ...pay, seq: 2, for: null, quote: 'And eight silver as a tip for you.' }]);
@@ -224,7 +230,9 @@ test('a different explicit price is returned to planner repair', () => {
 test('constraint fields cannot conceal a contradictory quoted party or price', () => {
     const c = f.cases.wrongParty;
     const r = commands(c.state, [{ ...c.commands[0], party_words: 'Doss', agreed_cp: 1 }]); assert.equal(coins(r).length, 0);
-    const cs = [{ ...c.commands[0], quote: 'Twelve silver for the lot.', agreed_cp: 1 }]; assert.equal(coins(commands(c.state, cs)).length, 0);
+    // Build .144 (S2): a price in his words is checked by the planner against agreed_cp (no engine re-reading)
+    const cs = [{ ...c.commands[0], seq: 1, quote: 'Twelve silver for the lot.', agreed_cp: 1, price_evidence: { basis: 'total', quote: 'Twelve silver', currency_quote: null } }];
+    assert.ok(amountErrors(cs, content.rules.currency, {}, 'Twelve silver for the lot.').length);
 });
 test('a role description mentioning another trader is no identity alias', () => {
     const c = f.cases.wrongParty, s = clone(c.state); s.entities['npc.doss'].descriptors.push('Hessel is his friend');
@@ -296,7 +304,8 @@ test('same payee and amount without a purpose do not authorize an extra payment'
 test('an explicit tip before buying is not redirected into the open purchase', () => {
     const s = clone(f.cases.duplicate.state); s.offers[purchase.offer].lines = [s.offers[purchase.offer].lines[0]];
     const r = commands(s, [{ ...pay, seq: 1, for: 'a tip for your help', quote: 'I give you eight silver as a tip.' }, { ...simple()[0], seq: 2 }]);
-    assert.equal(coins(r).length, 2); assert.equal(r.events.filter(e => e.t === 'object.created').length, 1);
+    assert.equal(coins(r).length, 1); assert.equal(r.events.filter(e => e.t === 'object.created').length, 1);
+    assert.equal(payAllCards(r.state, content).filter((x) => x.paid).length, 1, 'the tip: its own card, never the purchase');
     // Build .142: the verbless form is a proposal (§5.2), and still not the purchase: the pair is bought once
     const e = commands(s, [{ ...pay, seq: 1, for: 'a tip for your help', quote: 'Eight silver as a tip for you.' }, { ...simple()[0], seq: 2 }]);
     assert.equal(coins(e).length, 1); assert.equal(e.events.filter(x => x.t === 'object.created').length, 1);

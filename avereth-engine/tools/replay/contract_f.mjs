@@ -175,7 +175,7 @@ export function financePlan(value, content, { message = null, state = null } = {
             const g = groups(wordsOf(c), content).filter((x) => x.cp === c.amount_cp);
             // or a bare number with the one coin of its sentence ("I have three silver—I'll give two")
             const bare = !g.length ? bareReading(wordsOf(c), c.amount_cp, typeof message === 'string' ? message : wordsOf(c), content) : null;
-            Object.assign(c, { money: g.length === 1 ? { quote: g[0].quote, currency_quote: null } : bare, recipient_quote: null, confirmation: null });
+            Object.assign(c, { money: g.length === 1 ? { quote: g[0].quote, currency_quote: null } : bare, recipient_quote: null });
         }
         const f = field[c.type];
         if (f && c.price_evidence === undefined) {

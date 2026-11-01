@@ -34,7 +34,11 @@ const ACCEPTED_F138 = JSON.parse(fs.readFileSync(new URL('./accepted_f138_vs_126
 // Finance consolidation (.142): the F list checked against the .141 replay record by record – unchanged entries kept,
 // additive contract fields named, every other change reasoned (docs/FIX142_FINANCE_CONSOLIDATION.md)
 const ACCEPTED142 = JSON.parse(fs.readFileSync(new URL('./accepted_f142_vs_126.json', import.meta.url), 'utf8'));
-const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_f143_vs_126.json', import.meta.url), 'utf8'));
+const ACCEPTED143 = JSON.parse(fs.readFileSync(new URL('./accepted_f143_vs_126.json', import.meta.url), 'utf8'));
+// Finance simplification (.144, S1+S2): the .143 list checked against the full .143 replay record by record; unchanged
+// entries kept, every changed record in one of six reasoned categories with the .143 entry it supersedes
+const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_f144_vs_126.json', import.meta.url), 'utf8'));
+const F144 = ['finance 144 payment card', 'finance 144 contract fields', 'finance 144 acceptance hint', 'finance 144 price open', 'finance 144 unit limit', 'finance 144 acceptance'];
 const SUB = { ...baseline, runs: Object.fromEntries(QUICK.map((l) => [l, baseline.runs[l]])) };
 let quick = null; // the four quick runs, replayed once for this file
 const quickRuns = async () => (quick ||= await replayCorpus(undefined, undefined, { labels: QUICK }));
@@ -43,7 +47,7 @@ test('A1/C: the four quick runs replay as on the start commit, from whole and va
     const { compared, diffs } = compareToBaseline(SUB, result);
     assert.equal(compared, QUICK.reduce((n, l) => n + Object.keys(baseline.runs[l].cases).length, 0));
     assert.deepEqual(diffs.map((d) => d.id).sort(), Object.keys(ACCEPTED.cases).filter((id) => QUICK.includes(id.split('#')[0])).sort());
-    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138','finance 142','finance 142 contract fields'].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F differences are allowed');
+    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138','finance 142','finance 142 contract fields', ...F144].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F differences are allowed');
     const { open, accepted, stale } = acceptedDiffs(diffs, ACCEPTED.cases, result);
     assert.deepEqual([open, stale, accepted.length], [[], [], diffs.length], 'every accepted record has exactly the fingerprinted output');
     for (const [label, run] of Object.entries(result.runs)) {
@@ -165,6 +169,7 @@ test('F .142 keeps every F entry or supersedes it with its old fingerprint and a
 
 test('F .143 pins only the individually reviewed boundary changes',()=>{
  const changed=[];
+ const ACCEPTED=ACCEPTED143;
  for(const[id,entry]of Object.entries(ACCEPTED142.cases)){
   const now=ACCEPTED.cases[id];
   if(!now){assert.ok(ACCEPTED.returned[id]?.reason);changed.push(id);continue;}
@@ -172,4 +177,20 @@ test('F .143 pins only the individually reviewed boundary changes',()=>{
   else{assert.equal(now.supersedes_142,entry.fingerprint,id);assert.ok(now.finance_143?.length>40,id);changed.push(id);}
  }
  assert.deepEqual(changed.sort(),['b16-rogue-sale#78','b17-rogue#138','b17-rogue#170','b18-rogue#341','b18-warrior#52','b18-warrior#160','b18-warrior#166','b18-warrior#260','b19-rogue#32','b19-warrior#328'].sort());
+});
+
+test('F .144 keeps every .143 entry or supersedes it in a reasoned .144 category; the five new records are reasoned', () => {
+    const changed = [], added = [];
+    for (const [id, entry] of Object.entries(ACCEPTED143.cases)) {
+        const now = ACCEPTED.cases[id];
+        assert.ok(now, `${id} still differs from the baseline`);
+        if (now.fingerprint === entry.fingerprint) assert.deepEqual(now, entry, id);
+        else { assert.ok(F144.includes(now.category), id); assert.deepEqual(now.supersedes_143, { category: entry.category, fingerprint: entry.fingerprint }, id); assert.ok(now.reason?.length > 80, id); changed.push(id); }
+    }
+    for (const [id, entry] of Object.entries(ACCEPTED.cases)) if (!ACCEPTED143.cases[id]) { assert.ok(F144.includes(entry.category), id); added.push(id); }
+    assert.equal(changed.length, 34);
+    assert.deepEqual(added.sort(), ['b17-warrior#185', 'b17-warrior#69', 'b18-rogue#335', 'b18-rogue#341', 'b19-warrior#163'].sort());
+    assert.deepEqual(ACCEPTED.returned, ACCEPTED143.returned);
+    // money moves in a .144 record only where the player's explicit acceptance of stored positions is booked
+    for (const [id, e] of Object.entries(ACCEPTED.cases)) if (e.category === 'finance 144 acceptance') assert.ok(['b17-warrior#69', 'b17-warrior#185', 'b19-warrior#163'].includes(id));
 });

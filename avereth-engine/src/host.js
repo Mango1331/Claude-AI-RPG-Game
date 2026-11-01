@@ -5,6 +5,7 @@
 // Storage: every message carries its own events in message.extra.avereth. SillyTavern keeps `extra` per swipe, so
 // each alternative reply owns its own facts. ST copies `extra` into a NEW swipe before it is generated, so an
 // assistant record is only applied while its text_hash matches the message text (stale copies are ignored).
+import { paidCardFacts } from './v4/native_pay.js';
 import { applyEvent, emptyState } from './state.js';
 import { startCampaign, playerTurn, narratorReply, turnContext } from './engine.js';
 import { loreKeys, reportKeys } from './context.js';
@@ -181,9 +182,12 @@ export function turnBlock(chat, u, content, settings = {}) {
     const previousInput = chat.slice(0,u).findLast(m => m.is_user);
     const notExecuted = rec(previousInput)?.continuation?.kind === 'planner_not_executed'
         ? [`PREVIOUS INPUT NOT EXECUTED: ${String(previousInput.mes).slice(0,180)}. It caused no action, travel, payment or combat round. Resolve only the current input now.`] : [];
+    // Build .144 (S1): a payment card paid by "#pay" between the last reply and this input ran no story turn; the reply
+    // tells the handover as done (one line from the stored record, no extra model call)
+    const paidCards = paidCardFacts(state, chat.slice(Math.max(p, 0) + 1, u).filter((m) => m.is_user && rec(m)?.command).flatMap((m) => messageEvents(m)));
     const context = turnContext(state, content, {
         input: chat[u].mes,
-        corrections: [...notExecuted, ...(prev && !prev.system_answer ? prev.corrections || [] : [])],
+        corrections: [...notExecuted, ...paidCards, ...(prev && !prev.system_answer ? prev.corrections || [] : [])],
         lastReply: p >= 0 ? chat[p].mes : '',
         chronicle: state.meta?.runtime === 'v4' && (state.encounter || state.last?.outcome?.kind === 'combat') ? combatChronicle(chat.slice(0, u + 1), messageEvents) : null,
         budget: settings.budget,

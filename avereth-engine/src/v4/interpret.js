@@ -176,6 +176,7 @@ export function softMoney(c) {
     for (const k of ['money', 'price_evidence']) if (c && c[k] && typeof c[k] === 'object' && !Array.isArray(c[k]) && c[k].currency_quote === undefined) c[k].currency_quote = null;
     return c;
 }
+// Build .144 (S2): "unit" stays readable (an older answer, or one unit) but binds only for exactly one unit
 const PRICE_EVIDENCE = O({ basis: E(['total', 'unit']), quote: S(), currency_quote: N(S()) });
 function argSchema(spec, ids) {
     let s;
@@ -232,8 +233,10 @@ export function amountErrors(commands, currency, catalog = {}, message = null) {
         const object = (catalog.objects || []).find(o => o.id === c.object);
         const units = c.qty ?? (c.type === 'sell' ? (object ? object.qty ?? 1 : 1) : 1);
         const r = playerPrice(source, c.price_evidence, { content, units, goods: [c.what, object?.name].filter(Boolean) });
-        if (r.reason === 'unit_price_as_total') errors.push(`${c.type} seq ${c.seq}: his words "${String(c.price_evidence.quote).slice(0, 40)}" are followed by a rate ("${r.calculation?.rate}"): that is the price of one unit – price_evidence.basis "unit", ${f} the TOTAL for the selected quantity`);
-        else if (r.state === 'verified' && r.cp !== c[f]) errors.push(`${c.type} seq ${c.seq}: ${f} ${c[f]} is not what his price words "${String(c.price_evidence.quote).slice(0, 40)}" give (${c.price_evidence.basis === 'unit' ? `${r.calculation.amounts[0]} cp × ${units} = ` : ''}${r.cp} cp); ${f} is the TOTAL for the selected quantity${c.price_evidence.basis === 'unit' && c.qty == null && c.type === 'buy' ? '; if he buys several, set qty to their number' : ''}`);
+        // Build .144 (S2, plan §10.2 Nr. 3): a limit or agreed price binds only as his TOTAL. A price per unit for several
+        // units is a wish, not an error: no repair, the handler leaves the number unproven (no limit, no consent in advance)
+        if (r.reason === 'unit_price_as_total' || r.reason === 'total_required') continue;
+        if (r.state === 'verified' && r.cp !== c[f]) errors.push(`${c.type} seq ${c.seq}: ${f} ${c[f]} is not what his price words "${String(c.price_evidence.quote).slice(0, 40)}" give (${r.cp} cp); ${f} is his TOTAL for the selected quantity`);
         else if (r.state !== 'verified') errors.push(`${c.type} seq ${c.seq}: the price words "${String(c.price_evidence.quote).slice(0, 40)}" ${r.state === 'incomplete' ? 'are not a complete amount' : r.reason === 'price_range' ? 'are a range, not one price' : r.state === 'contradicted' ? 'are several different amounts' : `carry no single amount in his message (${r.reason})`}; quote exactly his one price, or set price_evidence to null`);
     }
     return errors;
@@ -253,8 +256,12 @@ export function financeHints(commands, currency, message = null) {
         const words = typeof message === 'string' && message ? message : String(c.quote || '');
         if (!(coinEvidence(words, content).sums || []).length) continue;
         const f = PRICE_FIELDS[c.type];
-        if (f && Number.isInteger(c[f]) && !c.price_evidence) hints.push(`${c.type} seq ${c.seq}: ${f} ${c[f]} has no price_evidence; quote his exact price words for it (basis total or unit), or set ${f} to null if his words name no price for this`);
-        if (c.type === 'pay' && Number.isInteger(c.amount_cp) && !c.money && !c.confirmation) hints.push(`pay seq ${c.seq}: money is null; quote exactly the coin he hands over (currency_quote for a bare number), or keep it null if he hands over no named coin`);
+        if (f && Number.isInteger(c[f]) && !c.price_evidence) hints.push(`${c.type} seq ${c.seq}: ${f} ${c[f]} has no price_evidence; quote his exact words of that TOTAL (basis total), or set ${f} to null if his words name no total for this`);
+        // Build .144 (S2): the engine no longer reads a second price out of his acceptance; a price his own acceptance
+        // names belongs into agreed_cp (with its words), so that it binds as his explicit limit
+        if (c.type === 'offer.accept' && !Number.isInteger(c.agreed_cp) && (coinEvidence(String(c.quote || ''), content).sums || []).length)
+            hints.push(`offer.accept seq ${c.seq}: his acceptance names money ("${String(c.quote).slice(0, 60)}"); if that is the TOTAL he agrees to pay or be paid, set agreed_cp to it with price_evidence; if it is no price for this (coin he holds, another thing), keep agreed_cp null`);
+        if (c.type === 'pay' && Number.isInteger(c.amount_cp) && !c.money) hints.push(`pay seq ${c.seq}: money is null; quote exactly the coin he hands over (currency_quote for a bare number), or keep it null if he hands over no named coin`);
     }
     return hints;
 }
@@ -268,6 +275,9 @@ export function parseInterpretation(answer, vocab, catalog, { currency = null, t
         for (const c of value.commands) {
             if (!c || typeof c !== 'object') continue;
             for (const [k, spec] of Object.entries(specs.get(c.type) || {})) if (spec.nullable && c[k] === undefined) c[k] = null;
+            // Build .144 (S1): words never confirm a payment card (cmd-1.9 dropped the field); an older answer still carrying
+            // it is read as the plain pay it also is
+            if (c.type === 'pay') delete c.confirmation;
             softMoney(c);
         }
     }

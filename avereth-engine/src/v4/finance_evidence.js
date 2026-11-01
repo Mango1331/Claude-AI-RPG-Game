@@ -1,7 +1,7 @@
 // Build .142 – finance consolidation (patch_plans_10b/PATCH_PAYMENT_CONSOLIDATION.md §3, §5.2): the one pure check of
 // money claims against the text they come from. No state, no provider, no hidden chat history. It finds the words a
 // claim quotes, reads their complete money group (economy.coinEvidence), and does only the calculation the claim
-// names (a lot total, a unit rate times the units, the positions of a lot). Every result says what it is:
+// names (since .144 S2 only one total; a unit price only for one unit). Every result says what it is:
 //   verified      the amount is complete and carried by the named calculation;
 //   missing       no source, no unique place of the words, or no amount in them (never "0 cp");
 //   incomplete    the money continues ("and the silver", "then a fourth") or cannot be finished;
@@ -145,8 +145,8 @@ export function moneyLiteral(source, quote, { content, currencyQuote = null, wit
 
 /**
  * A price claim of the model against the reply (§3.3): basis total (the quoted money is the price of exactly this
- * lot or line), unit (quoted money × the units offered; several stacks only when they are the same goods, `units`),
- * positions (each line of a bid once, its unit price × its units or its own total, summed) or unknown. `within`: the
+ * lot or line), unit (only for one unit: its total) or unknown; a unit price for several units and the positions of a
+ * lot are no price any more (Build .144 S2, total_required). `within`: the
  * place of the delta's own commercial words (`said`), searched first. The reported number is kept beside the result.
  */
 // a rate right after the money ("four copper a plate", "two silver each", "one silver five a night", "per pelt"): those
@@ -172,40 +172,18 @@ export function priceEvidence(pricing, { source, content, units = 1, lines = nul
         const near = within ? moneyLiteral(source, p.quote, { content, currencyQuote: p.currency_quote ?? null, within }) : null;
         return near || result(EVIDENCE.MISSING, { reason: 'no_action_anchor' });
     };
+    // Build .144 (finance simplification S2): a new price binds only as ONE total in its own words for exactly these
+    // units. A price per unit is that total only for one unit; for more units, and for a sum of part prices
+    // (positions), nothing is multiplied or added up from prose: the price stays open (total_required) until a total is
+    // named. Stored engine prices and their arithmetic (trade.linePrice, pickLines) are not read here.
+    if (pricing.basis === 'unit' && units !== 1) return done(result(EVIDENCE.MISSING, { reason: 'total_required' }));
+    if (pricing.basis === 'positions') return done(result(EVIDENCE.MISSING, { reason: 'total_required' }));
     if (pricing.basis === 'total' || pricing.basis === 'unit') {
         const m = literal(pricing);
         if (m.state !== EVIDENCE.VERIFIED) return done(m);
-        if (pricing.basis === 'total') {
-            const rate = units !== 1 ? moneyRanges(m).map((r) => rateAfter(source, r.end, goods)).find(Boolean) ?? null : null;
-            if (rate) return done(result(EVIDENCE.CONTRADICTED, { reason: 'unit_price_as_total', source: m.source, calculation: { basis: 'total', amounts: [m.cp], rate } }));
-            return done({ ...m, calculation: { basis: 'total', amounts: [m.cp], quantities: [] } });
-        }
-        if (!(Number.isInteger(units) && units > 0)) return done(result(EVIDENCE.CONTRADICTED, { reason: 'unit_rate_needs_same_goods', source: m.source }));
-        return done({ ...m, cp: m.cp * units, reason: 'unit_rate', calculation: { basis: 'unit', amounts: [m.cp], quantities: [units] } });
-    }
-    if (pricing.basis === 'positions') {
-        const list = Array.isArray(pricing.positions) ? pricing.positions : [];
-        const n = (lines || []).length;
-        const seen = new Set(list.map((p) => p?.line));
-        if (!n || list.length !== n || seen.size !== n || [...seen].some((k) => !Number.isInteger(k) || k < 1 || k > n))
-            return done(result(EVIDENCE.CONTRADICTED, { reason: 'positions_do_not_match_lines' }));
-        let cp = 0;
-        const ranges = [];
-        const amounts = [];
-        const quantities = [];
-        for (const p of list) {
-            if (!['total', 'unit'].includes(p.basis)) return done(result(EVIDENCE.CONTRADICTED, { reason: 'position_basis' }));
-            const m = literal(p);
-            if (m.state !== EVIDENCE.VERIFIED) return done({ ...m, reason: `position_${p.line}_${m.reason}` });
-            const qty = lines[p.line - 1].qty ?? 1;
-            if (p.basis === 'total' && qty !== 1 && moneyRanges(m).some((r) => rateAfter(source, r.end, [...goods, lines[p.line - 1].what, lines[p.line - 1].name].filter(Boolean))))
-                return done(result(EVIDENCE.CONTRADICTED, { reason: `position_${p.line}_unit_price_as_total`, source: m.source }));
-            cp += p.basis === 'unit' ? m.cp * qty : m.cp;
-            ranges.push(...(m.source?.ranges || []));
-            amounts.push(m.cp);
-            quantities.push(p.basis === 'unit' ? qty : 1);
-        }
-        return done(result(EVIDENCE.VERIFIED, { cp, reason: 'positions', source: { ranges }, calculation: { basis: 'positions', amounts, quantities } }));
+        const rate = units !== 1 ? moneyRanges(m).map((r) => rateAfter(source, r.end, goods)).find(Boolean) ?? null : null;
+        if (rate) return done(result(EVIDENCE.CONTRADICTED, { reason: 'unit_price_as_total', source: m.source, calculation: { basis: 'total', amounts: [m.cp], rate } }));
+        return done({ ...m, calculation: { basis: 'total', amounts: [m.cp], quantities: [] } });
     }
     return done(result(EVIDENCE.MISSING, { reason: 'pricing_unknown' }));
 }

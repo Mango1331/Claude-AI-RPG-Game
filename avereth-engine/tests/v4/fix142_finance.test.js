@@ -15,6 +15,7 @@ import { resolveCommands } from '../../src/v4/commands.js';
 import { guardCommands } from '../../src/v4/agency.js';
 import { guardContext, buildCatalog } from '../../src/v4/catalog.js';
 import { validateState } from '../../src/validate.js';
+import { openCards, payCard, payAllCards } from './pay_card.js';
 
 const content = await loadProductContent();
 const gz = (name) => JSON.parse(zlib.gunzipSync(fs.readFileSync(new URL(`./fixtures/${name}`, import.meta.url))));
@@ -37,7 +38,7 @@ function hall(coin = 200) {
 }
 /** A pay command as cmd-1.8 has it. */
 const PAY = (to, cp, quote, money = null, more = {}) => ({ seq: 1, type: 'pay', to, amount_cp: cp, for: null, quote,
-    money: money ? { quote: money, currency_quote: null } : null, recipient_quote: null, confirmation: null, ...more });
+    money: money ? { quote: money, currency_quote: null } : null, recipient_quote: null, ...more });
 /** One player message through the product's order: the agency guard, then the commands. */
 function turn(s, message, commands, msg = 600) {
     const g = guardCommands(message, commands, guardContext(s, content, buildCatalog(s, content, { known: true, c: true })));
@@ -77,12 +78,16 @@ test('.142 pay direction: a goods price of five copper is no payment; receipts, 
 
 test('.142 pay direction: a claim for his wage beside a separate tip pays only the tip', () => {
     const message = 'I collect my wages and tip the porter a copper.';
-    const r = turn(hall(), message, [PAY(TAM, 50, 'I collect my wages', null), { ...PAY(PORTER, 1, 'tip the porter a copper', 'a copper'), seq: 2 }]);
-    assert.deepEqual(coins(r.events), [-1]);
-    assert.deepEqual(r.events.filter((e) => e.t === 'transaction.completed').map((e) => [e.d.to, e.d.cp]), [[PORTER, 1]]);
+    const s = hall();
+    const r = turn(s, message, [PAY(TAM, 50, 'I collect my wages', null), { ...PAY(PORTER, 1, 'tip the porter a copper', 'a copper'), seq: 2 }]);
+    // Build .144 (S1): the tip is a card, the claim none; his #pay pays the tip only
+    assert.deepEqual(coins(r.events), []);
+    assert.deepEqual(openCards(s).map((d) => [d.seller, d.amount_cp]), [[PORTER, 1]]);
+    assert.deepEqual(payAllCards(s, content).flatMap((x) => x.events).filter((e) => e.t === 'transaction.completed').map((e) => [e.d.to, e.d.cp]), [[PORTER, 1]]);
 });
 
-test('.142 positive controls: his own clear payments are booked at once, no confirmation turn', () => {
+// Build .144 (S1): his own clear payment is a card at once (no words of confirmation needed); his #pay books it once
+test('.142 positive controls: his own clear payments are one card each; #pay books exactly it once', () => {
     for (const [message, money, cp] of [
         ['I pay Tam five copper for his trouble.', 'five copper', 5],
         ['I tip Tam two copper.', 'two copper', 2],
@@ -90,9 +95,13 @@ test('.142 positive controls: his own clear payments are booked at once, no conf
         ['I give back the five copper I owe him.', 'the five copper', 5],
         ['I hand Tam one silver and five copper.', 'one silver and five copper', 15],
     ]) {
-        const r = turn(hall(), message, [PAY(TAM, cp, message, money)]);
-        assert.deepEqual(coins(r.events), [-cp], message);
-        assert.equal(r.events.filter((e) => e.t === 'transaction.completed').length, 1, message);
+        const s = hall();
+        const r = turn(s, message, [PAY(TAM, cp, message, money)]);
+        assert.deepEqual(coins(r.events), [], message);
+        assert.deepEqual(openCards(s).map((d) => d.amount_cp), [cp], message);
+        const paid = payAllCards(s, content).flatMap((x) => x.events);
+        assert.deepEqual(coins(paid), [-cp], message);
+        assert.equal(paid.filter((e) => e.t === 'transaction.completed').length, 1, message);
     }
 });
 
@@ -123,46 +132,54 @@ test('.142 a pay beside an open offer of the same amount does not buy it when hi
 });
 
 // ------------------------------------------------------------------------------------------------ confirmation
-test('.142 confirmation: an unproven payment is a concrete proposal; confirming its id once in the next message pays once', () => {
+// Build .144 (S1): the card is concrete and visible; words never confirm it; "#pay <id>" pays it once, also after a fold
+test('.142 confirmation (.144): a payment is a concrete card; only #pay pays it, once; words in the next message lapse it', () => {
     const s = hall();
     const message = 'I leave five copper on the crate for Tam.';
     const first = turn(s, message, [PAY(TAM, 5, message, 'five copper')]);
-    assert.deepEqual(coins(first.events), [], 'nothing changes hands with the proposal');
+    assert.deepEqual(coins(first.events), [], 'nothing changes hands with the card');
     const dec = first.events.find((e) => e.t === 'decision.opened' && e.d.decision.kind === 'payment')?.d.decision;
-    assert.ok(dec, 'a concrete payment decision');
-    assert.deepEqual([dec.seller, dec.amount_cp, dec.state], [TAM, 5, 'needs_confirmation']);
-    assert.match(first.ctx.actions[0], /NOT PAID — pay .* 5 cp\? Wallet 200 cp → 195 cp\. Nothing changed hands/);
-    const yes = turn(next(s), 'Yes, pay him the five copper.', [PAY(TAM, 5, 'Yes, pay him the five copper.', null, { confirmation: dec.id })], 601);
-    assert.deepEqual(coins(yes.events), [-5]);
-    assert.equal(yes.events.find((e) => e.t === 'transaction.completed').d.decision, dec.id);
-    // the same confirmation again: no second payment
-    const again = turn(next(s), 'Yes, pay him the five copper.', [PAY(TAM, 5, 'Yes, pay him the five copper.', null, { confirmation: dec.id })], 602);
-    assert.deepEqual(coins(again.events), []);
+    assert.ok(dec, 'a concrete payment card');
+    assert.deepEqual([dec.seller, dec.amount_cp, dec.state, dec.route], [TAM, 5, 'needs_confirmation', 'free']);
+    assert.match(first.ctx.actions[0], new RegExp(`NOT PAID — payment card ${dec.id.replace(/\./g, '\\.')}: pay .* 5 cp\\. Wallet 200 cp → 195 cp\\. Nothing changed hands\\. Only the player's own message "#pay ${dec.id.replace(/\./g, '\\.')}"`));
+    const paid = payCard(s, content, dec.id);
+    assert.deepEqual(coins(paid.events), [-5]);
+    assert.equal(paid.events.find((e) => e.t === 'transaction.completed').d.decision, dec.id);
+    // the same #pay again: no second payment
+    assert.equal(payCard(s, content, dec.id).paid, false);
     // fold of the stored events reproduces the state
-    const replay = fold([...first.events, ...yes.events, ...again.events].map((e) => JSON.parse(JSON.stringify(e))), hall());
+    const replay = fold([...first.events, ...paid.events].map((e) => JSON.parse(JSON.stringify(e))), hall());
     assert.equal(replay.entities.pc.sheet.coin_cp, 195);
+    // words confirm nothing, and his next acting message lapses the card
+    const t = hall();
+    const id = turn(t, message, [PAY(TAM, 5, message, 'five copper')]).events.find((e) => e.t === 'decision.opened').d.decision.id;
+    assert.deepEqual(coins(turn(next(t), 'Yes, pay him the five copper.', [PAY(TAM, 5, 'Yes, pay him the five copper.', null)], 601).events), []);
+    assert.equal(payCard(t, content, id).paid, false);
 });
 
-test('.142 confirmation: another payee or amount, a later message, another place or a claim pays nothing', () => {
+// Build .144 (S1): #pay pays nothing for a card of an earlier message, another place, an absent payee or an unknown id
+test('.142 confirmation (.144): #pay after a later message, at another place, without the payee or with no such card pays nothing', () => {
     const proposal = () => {
         const s = hall();
         const r = turn(s, 'I leave five copper on the crate for Tam.', [PAY(TAM, 5, 'I leave five copper on the crate for Tam.', 'five copper')]);
         return { s, id: r.events.find((e) => e.t === 'decision.opened').d.decision.id };
     };
     const cases = [
-        ['another amount', (s, id) => [PAY(TAM, 6, 'Yes, pay him.', null, { confirmation: id })]],
-        ['another payee', (s, id) => [PAY(PORTER, 5, 'Yes, pay him.', null, { confirmation: id })]],
-        ['a claim', (s, id) => [PAY(TAM, 5, 'Pay me the five copper.', null, { confirmation: id })]],
-        ['two messages later', (s, id) => { next(s); return [PAY(TAM, 5, 'Yes, pay him.', null, { confirmation: id })]; }],
-        ['another place', (s, id) => { s.scene.at = 'loc.elsewhere'; return [PAY(TAM, 5, 'Yes, pay him.', null, { confirmation: id })]; }],
-        ['no such proposal', (s) => [PAY(TAM, 5, 'Yes, pay him.', null, { confirmation: 'dec.pay.t1.9' })]],
+        ['a later acting message', (s, id) => { turn(next(s), 'I look around.', [], 601); return id; }],
+        ['a later turn without the engine closing it', (s, id) => { next(s); return id; }],
+        ['another place', (s, id) => { s.scene.at = 'loc.elsewhere'; return id; }],
+        ['the payee gone', (s, id) => { s.scene.present = s.scene.present.filter((x) => x !== TAM); return id; }],
+        ['no such card', () => 'dec.pay.t1.9'],
+        ['a card that is no free payment', (s) => { s.decisions.push({ id: 'dec.gate.x', kind: 'payment', what: 'the entry fee', offer: 'offer.gate', at: s.scene.at, turn: s.turn, price_cp: 5 }); return 'dec.gate.x'; }],
+        ['not enough coin', (s, id) => { s.entities.pc.sheet.coin_cp = 4; return id; }],
     ];
     for (const [name, make] of cases) {
         const { s, id } = proposal();
-        next(s);
-        const cmds = make(s, id);
-        const r = turn(s, cmds[0].quote, cmds, 601);
-        assert.deepEqual(coins(r.events), [], name);
+        const target = make(s, id);
+        const before = s.entities.pc.sheet.coin_cp;
+        const r = payCard(s, content, target);
+        assert.equal(r.paid, false, name);
+        assert.equal(s.entities.pc.sheet.coin_cp, before, name);
     }
 });
 
@@ -182,20 +199,26 @@ function bidReply(prose, { price, pricing, phase = 'firm', condition = null, lin
 const TOTAL = (quote, currency_quote = null) => ({ basis: 'total', quote, currency_quote });
 const UNIT = (quote, currency_quote = null) => ({ basis: 'unit', quote, currency_quote });
 
-test('.142 price basis: fourteen plates at four copper each are 56; the unit price 4 is never the lot price', () => {
+// Build .144 (S2): a rate per piece for several pieces is no bid (the total is asked for); the total binds
+test('.142 price basis (.144): "four copper each" for fourteen is no bid; "fifty-six copper for all fourteen" is 56; the unit price 4 is never the lot price', () => {
     const prose = 'The smith weighs a plate. "Four copper each, and I take all fourteen."';
     const unit = bidReply(prose, { price: 56, pricing: UNIT('Four copper') });
-    assert.deepEqual(offersOf(unit).map((o) => o.price_cp), [56]);
-    assert.deepEqual(coins(unit.events), [56], 'his consent in advance (at least 50) sells at the binding 56');
+    assert.deepEqual(offersOf(unit), []);
+    assert.deepEqual(coins(unit.events), []);
+    assert.ok(unit.system.some((x) => /^PRICE OPEN — .* for 14 /.test(x)), unit.system.join('\n'));
+    assert.ok(unit.corrections.some((x) => /^PRICE CONTRACT: .*names one total|says one total/.test(x)), unit.corrections.join('\n'));
+    const total = bidReply('The smith weighs a plate. "Fifty-six copper for all fourteen."', { price: 56, pricing: TOTAL('Fifty-six copper') });
+    assert.deepEqual(offersOf(total).map((o) => o.price_cp), [56]);
+    assert.deepEqual(coins(total.events), [56], 'his consent in advance (at least 50) sells at the binding 56');
     const lot = bidReply(prose, { price: 4, pricing: TOTAL('Four copper') });
     assert.deepEqual(offersOf(lot).filter((o) => o.terms === 'firm' || o.terms === undefined).map((o) => o.price_cp), []);
     assert.deepEqual(coins(lot.events), []);
 });
 
-test('.142 price basis: stacks 7+14 share one rate (84); a different quality is no shared rate', () => {
+test('.142 price basis (.144): stacks 7+14 bind by their named total (84), never by the rate; a different quality is no shared rate', () => {
     const lines = [{ object: ENC37, qty: 7 }, { object: ENC40, qty: 14 }];
     const prose = '"I\'ll give you four copper the plate. That\'s eighty-four copper for all of them."';
-    assert.deepEqual(offersOf(bidReply(prose, { price: 84, pricing: UNIT('four copper'), lines, consent: null })).map((o) => o.price_cp), [84]);
+    assert.deepEqual(offersOf(bidReply(prose, { price: 84, pricing: UNIT('four copper'), lines, consent: null })).map((o) => o.price_cp), []);
     assert.deepEqual(offersOf(bidReply(prose, { price: 84, pricing: TOTAL('eighty-four copper'), lines, consent: null })).map((o) => o.price_cp), [84]);
     const s = clone(PLATES.state);
     s.objects[ENC37] = { ...s.objects[ENC37], quality: 'fine' };
@@ -206,7 +229,8 @@ test('.142 price basis: stacks 7+14 share one rate (84); a different quality is 
     assert.deepEqual(offersOf(applyWorld(s, content, raw, { msg: 116, prose })).map((o) => o.price_cp), [], 'different goods never share one rate');
 });
 
-test('.142 price basis: T26 positions 24+6+4 (a bare number takes the one coin of its own words) store the 34 cp bid', () => {
+// Build .144 (S2): part prices are not added up from prose: no bid, the total is asked for
+test('.142 price basis (.144): T26 positions 24+6+4 store no bid; the total is asked for', () => {
     const r = R[52], raw = clone(r.raw);
     const bid = raw.deltas.find((d) => d.type === 'bid');
     Object.assign(bid, { phase: 'firm', condition: null, pricing: { basis: 'positions', positions: [
@@ -214,7 +238,8 @@ test('.142 price basis: T26 positions 24+6+4 (a bare number takes the one coin o
         { line: 2, basis: 'total', quote: 'Gland at six', currency_quote: 'copper' },
         { line: 3, basis: 'total', quote: 'Gel at four', currency_quote: 'copper' }] } });
     const res = applyWorld(clone(r.state), content, raw, { msg: 52, prose: r.prose });
-    assert.deepEqual(offersOf(res).filter((o) => o.bid).map((o) => [o.price_cp, o.terms]), [[34, 'firm']]);
+    assert.deepEqual(offersOf(res).filter((o) => o.bid), []);
+    assert.ok(res.system.some((x) => /^PRICE OPEN — /.test(x)));
     // the same bare "six" with no coin in its words and the two silver of another article beside it: no price
     const bare = clone(raw);
     bare.deltas.find((d) => d.type === 'bid').said = null;
@@ -257,9 +282,9 @@ test('.142 binding: real open conditions before, after or in the next sentence a
     }
 });
 
-test('.142 binding: a firm offer and a plain cash choice bind and sell at once; a past approval is no open condition', () => {
-    for (const prose of ['"Four copper each, fifty-six the lot."', '"Four copper each, if you would rather have coin than credit."', '"Four copper each. The appraiser approved them yesterday."']) {
-        const res = bidReply(prose, { price: 56, pricing: UNIT('Four copper') });
+test('.142 binding (.144 totals): a firm offer and a plain cash choice bind and sell at once; a past approval is no open condition', () => {
+    for (const prose of ['"Fifty-six copper for the fourteen."', '"Fifty-six copper for the fourteen, if you would rather have coin than credit."', '"Fifty-six copper for the fourteen. The appraiser approved them yesterday."']) {
+        const res = bidReply(prose, { price: 56, pricing: TOTAL('Fifty-six copper') });
         assert.deepEqual(offersOf(res).map((o) => [o.price_cp, o.terms ?? 'firm']), [[56, 'firm']], prose);
         assert.deepEqual(coins(res.events), [56], prose);
     }
@@ -271,14 +296,15 @@ test('.142 binding: a fresh answer without the new fields books nothing at once 
     assert.deepEqual(offersOf(res).filter((o) => o.terms === 'firm' || o.terms === undefined), []);
 });
 
-test('.142 #438: "venom glands three silver each, if they\'re not burst" reported conditional is stored, never binding', () => {
+test('.142 #438 (.144): "venom glands three silver each, if they\'re not burst" is no bid at all, never binding', () => {
     const r = B[438], raw = clone(r.raw);
     Object.assign(raw.deltas.find((d) => d.type === 'bid'), { phase: 'conditional', condition: "the glands are not burst", pricing: { basis: 'positions', positions: [
         { line: 1, basis: 'unit', quote: 'two copper', currency_quote: null }, { line: 2, basis: 'unit', quote: 'three silver', currency_quote: null }] } });
     const res = applyWorld(clone(r.state), content, raw, { msg: 438, prose: r.prose });
-    assert.deepEqual(offersOf(res).map((o) => [o.price_cp, o.terms]), [[162, 'conditional']], '21×2 + 4×30');
+    // Build .144 (S2): rates per piece for several lines are no price at all: nothing stored, nothing binding
+    assert.deepEqual(offersOf(res), []);
     assert.deepEqual(coins(res.events), []);
-    assert.ok(res.corrections.some((x) => /not binding/.test(x)));
+    assert.ok(res.corrections.some((x) => /^PRICE CONTRACT: /.test(x)));
 });
 
 // ------------------------------------------------------------------------------------------------ the original chain
@@ -341,12 +367,12 @@ test('.142 T109 (#218): "Three coppers, then a fourth added" pays 4; the words c
 
 // ------------------------------------------------------------------------------------------------ persistence
 test('.142 persistence: terms and evidence of a stored bid survive the event fold and validate', () => {
-    const res = bidReply('"Four copper each, fifty-six the lot."', { price: 56, pricing: UNIT('Four copper'), consent: null });
+    const res = bidReply('"Four copper each, fifty-six copper the lot."', { price: 56, pricing: TOTAL('fifty-six copper'), consent: null });
     const replay = fold(JSON.parse(JSON.stringify(res.events)), clone(PLATES.state));
     assert.deepEqual(replay.offers, res.state.offers);
     assert.deepEqual(validateState(replay, content), []);
     const o = Object.values(replay.offers).find((x) => x.bid && x.status === 'open');
-    assert.deepEqual([o.terms, o.evidence?.basis, o.evidence?.derived_cp], ['firm', 'unit', 56]);
+    assert.deepEqual([o.terms, o.evidence?.basis, o.evidence?.derived_cp], ['firm', 'total', 56]);
 });
 
 // ------------------------------------------------------------------------------------------------ the evidence module

@@ -191,8 +191,8 @@ export function openDecisionTexts(state) {
         if (d.kind === 'registration') return `registration: the Guild's fee ${d.price_cp} cp is due (${d.offer}); he has not paid yet`;
         if (d.kind === 'purchase') return `purchase: ${d.qty > 1 ? `${d.qty} × ` : ''}${d.what}${d.max_cp !== null && d.max_cp !== undefined ? ` (at most ${d.max_cp} cp)` : d.any_price ? ' (any price)' : ''}; ${d.priced ? 'priced, not agreed' : 'no price known yet'}`;
         if (d.kind === 'sale') return `sale: ${d.qty > 1 ? `${d.qty} × ` : ''}${d.what}${d.min_cp ? ` (at least ${d.min_cp} cp)` : ''}; no price agreed yet`;
-        // Build .142 (§5.3): a payment proposal carries its id; he pays only by confirming exactly it (pay.confirmation)
-        if (d.kind === 'payment' && d.state === 'needs_confirmation') return `PAYMENT PROPOSAL ${d.id}: pay ${d.seller} ${d.amount_cp} cp for ${d.what}; NOT paid – only his explicit confirmation of exactly this pays it (pay with confirmation "${d.id}")`;
+        // Build .144 (S1): a payment card carries its id; only the player's own message "#pay <id>" pays it, no command
+        if (d.kind === 'payment' && d.state === 'needs_confirmation') return `PAYMENT CARD ${d.id}: pay ${d.seller} ${d.amount_cp} cp for ${d.what}; NOT paid – only the player's own message "#pay ${d.id}" pays it; no command pays or confirms it`;
         if (d.kind === 'payment') return `payment: ${d.what}; the amount is not known yet`;
         return `${d.kind}: ${d.what}`;
     });

@@ -53,9 +53,11 @@ const TEACHES = O({ source: E(['stone', 'manual']), fn: N(S()), tags: N(A(S())),
 // Build .142 (finance consolidation §3.3, §4.2, §4.3): which words carry a price (one total or unit literal, or the
 // positions of a bid) and the exact words of handed-over coin; a left-out currency_quote is null (normalizeSoftFields)
 const MONEY_WORDS = O({ quote: S(), currency_quote: N(S()) });
+// Build .144 (S2, delta-1.14): a new price is ONE total in the reply's words, or unknown; no unit rate times units and
+// no positions summed from prose (an older answer's "unit" for exactly one unit is that total, everything else of the
+// kind is read as unknown: no binding price, the engine asks for the total – normalizeSoftFields)
 const PRICING = { anyOf: [
-    O({ basis: E(['total', 'unit']), quote: S(), currency_quote: N(S()) }),
-    O({ basis: E(['positions']), positions: A(O({ line: I(1), basis: E(['total', 'unit']), quote: S(), currency_quote: N(S()) }), 1) }),
+    O({ basis: E(['total']), quote: S(), currency_quote: N(S()) }),
     O({ basis: E(['unknown']) }),
 ] };
 const PHASE = E(['firm', 'conditional', 'unclear']);
@@ -140,7 +142,7 @@ export const FORMAT_RULES = [
     'scene is the actual narrative setting at the end of this reply: a place-ref, or "here" ONLY when it is the current engine scene. It never authorizes arrival. Every delta may override scene with a place-ref or "here" (null/omitted inherits the answer scene); use this for earlier scenes in a reply with multiple arrivals. Do not label an unreached camp as here merely because the engine still lists a shop. Local changes need the actual scene; distant reports remain reports. A new scene label creates no place by itself.',
     'TRAVEL: Every actual arrival, including a road or intermediate stop, MUST have its own arrive delta in chronological order. expected.arrived:true requires that matching arrive; expected, time and scene never move Alaric. Local introductions and exchanges follow the arrival at their scene; actions before departure keep the earlier scene. Down means another Dungeon FLOOR, not a sloping passage on the same floor.',
     'SALES: Report an actual buyer price with bid (buyer, exact item ids and quantities, price, said). expected.sold is only a summary, never an independent payment. A current minimum-price instruction can accept a matching bid; a promise or appraisal is not an actual final bid.',
-    'Trade evidence: said is required for every NEW financial claim, including each offer line and coin.gift; missing or unlocatable said leaves it unverified. pricing.quote/money.quote must occur inside its own said, never in unrelated narration. offer/bid said quotes the actual commercial clause, including who offers, unit/lot price and conditions. Third-party price advice is fact/place.reported, not an offer or bid of the speaker. Price ranges, possible future prices and unaccepted discounts are not fixed prices. For a unit rate compute the total for the declared units; for a lot keep its total. Never invent a seller commitment from a recommendation.',
+    'Trade evidence: said is required for every NEW financial claim, including each offer line and coin.gift; missing or unlocatable said leaves it unverified. pricing.quote/money.quote must occur inside its own said, never in unrelated narration. offer/bid said quotes the actual commercial clause, including who offers, unit/lot price and conditions. Third-party price advice is fact/place.reported, not an offer or bid of the speaker. Price ranges, possible future prices and unaccepted discounts are not fixed prices. A price binds only as ONE total for exactly the line or the whole bid, in the reply\'s own words; a price per piece for several pieces, part prices without their sum or a count the reply leaves open is no binding price (pricing unknown, phase unclear). Never compute a total yourself. Never invent a seller commitment from a recommendation.',
     'string[] is always a JSON array, even when it contains only one value.',
     `place-ref is an exact known place id from the CATALOG, or {"new":{"name":"...","kind":"...","parent":...}}. For a new place, kind must be exactly one of: ${PLACE_KINDS.join(', ')}. Use settlement for a city, town, village or hamlet; site for a building, inn or Guild hall; interior for a room; wilderness for natural outdoor terrain.`,
     'AREA LEVELS: when an outdoor area’s danger is actually established, report area once with a fixed supported F window. Copy existing area/population levels from the catalog; never adapt to Alaric, overwrite them, or use a mere rumour. A local population’s body plan is authoritative over a free species-name guess. A newly reached local part keeps its genuine geographic parent; never infer a remote relationship merely to inherit levels.',
@@ -152,7 +154,7 @@ export const FORMAT_RULES = [
     'Chronology: when the reply establishes arrival and then meets local people or creatures, emit arrive BEFORE their present:true introductions, with increasing seq. A destination scene label never makes an earlier introduction local. Remote sightings use present:false. In a repair correct both missing scene fields and event order to match the REPLY; never invent an arrival or sort every arrival to the front.',
     'person-ref is a person id from PRESENT or the CATALOG, or the ref of a person.new/creature.new earlier in the same answer.',
     'offer_line is {"what":string,"kind":"goods"|"service","service":"lodging"|"bath"|"laundry"|"meal"|"healing"|"training"|"other"|null,"qty":integer>=1,"price_cp":integer>=0,"said":string|null (the reply\'s words for the price),"effect":"heal"|"restore_mp"|"restore_sta"|null (only for a potion, draught or tonic that restores HP, MP or STA; the engine fixes how much),"teaches":teaches|null,"equipment":boolean|null,"base":string|null,"quality":string|null,"phase":"firm"|"conditional"|"unclear","condition":string|null,"pricing":pricing}.',
-    'pricing names the reply\'s words that carry a price: {"basis":"total","quote":"the exact money words that are the price of the whole lot or line"} or {"basis":"unit","quote":"the exact money words of the price of one unit"} (the engine multiplies by the units) or, for a bid priced line by line, {"basis":"positions","positions":[{"line":1,"basis":"unit"|"total","quote":"…"}, …]} with every bid line once (line = its position in lines, from 1), or {"basis":"unknown"} when no words carry it. Quote only money words ("four copper", "one hundred fifty copper", "eight silver and four"); a bare number needs "currency_quote": the coin word of the same sentence. An explicit price for everything ("one hundred fifty for the lot") is a total even after line prices.',
+    'pricing names the reply\'s words that carry a price: {"basis":"total","quote":"the exact money words that are the price of the whole line or bid"} or {"basis":"unknown"} when the reply names no such total (only a price per piece for several pieces, only part prices, no price). Quote only money words ("fifty-six copper", "one hundred fifty copper", "eight silver and four"); a bare number needs "currency_quote": the coin word of the same sentence. A price per piece is the total only of one piece (qty 1). An explicit price for everything ("one hundred fifty for the lot") is the total even after line prices.',
     'phase of a bid or offer line: "firm" only when that side offers this price NOW and only Alaric\'s acceptance is missing (a choice he makes by accepting – "if you want it", "coin or credit" – is no condition); "conditional" when something must still happen first (someone\'s approval or appraisal, an inspection, a delivery, a later time, the goods passing a test), and condition says what; "unclear" when the reply does not settle it. Never firm for a promise, a guess or a price someone else would pay.',
     'money is {"quote":"the exact words of the coin handed over, with the full amount","currency_quote":null|"the coin word of the same sentence for a bare number"}.',
     'Regular F gear offers require base and quality from GEAR MARKET; use separate lines for separate articles, never a package in one base. Missing/unknown bases do not grant equipment. For offer_line.equipment use true for intended combat equipment, false for ordinary/cosmetic merchandise, null if unspecified. This intent supplies no slot or numbers. Use supported categories from GEAR MARKET; separate armor parts have no combat slot. Do not sell ordinary decoration as a combat upgrade.',
@@ -237,6 +239,20 @@ export function extractorRequest(vocab, { catalog, actions, player = null, expec
  */
 const softTeaches = (t) => (t && typeof t === 'object' && !Array.isArray(t) ? { fn: null, tags: null, aspects: null, ...t } : t ?? null);
 
+/**
+ * Build .144 (S2): pricing as delta-1.14 has it. A unit price of exactly one unit is its total; a unit price for more
+ * units or the positions of a lot carry no binding price (no arithmetic from prose): unknown, and a "firm" phase of it
+ * is unclear – the engine then asks the narrator and the player for the one total, without a repair call.
+ */
+function totalOnly(p, oneUnit, owner) {
+    if (!p || typeof p !== 'object') return p;
+    if (p.basis === 'unit' && oneUnit) return { basis: 'total', quote: p.quote, currency_quote: p.currency_quote ?? null };
+    if (p.basis === 'unit' || p.basis === 'positions') {
+        if (owner && owner.phase === 'firm') owner.phase = 'unclear';
+        return { basis: 'unknown' };
+    }
+    return p;
+}
 function softWords(w) {
     if (!w || typeof w !== 'object' || Array.isArray(w)) return w;
     const out = { ...w };
@@ -266,10 +282,14 @@ function normalizeSoftFields(value, vocab) {
         if (d.type === 'memory' && x.who === undefined) x.who = [];
         // Build .142: a left-out currency_quote of pricing/money is null; an offer line's phase, condition and pricing
         // left out are null (unclear/unknown – never firm)
-        if (x.pricing && typeof x.pricing === 'object') x.pricing = softWords(x.pricing);
+        if (x.pricing && typeof x.pricing === 'object') x.pricing = totalOnly(softWords(x.pricing), d.type === 'bid' && (d.lines || []).length === 1 && d.lines[0]?.qty === 1, x);
         if (x.money && typeof x.money === 'object') x.money = softWords(x.money);
-        if (d.type === 'offer' && Array.isArray(x.lines)) x.lines = x.lines.map((l) => (l && typeof l === 'object' ? { ...l, phase: l.phase === undefined ? null : l.phase,
-            condition: l.condition === undefined ? null : l.condition, pricing: l.pricing === undefined ? null : (l.pricing && typeof l.pricing === 'object' ? softWords(l.pricing) : l.pricing) } : l));
+        if (d.type === 'offer' && Array.isArray(x.lines)) x.lines = x.lines.map((l) => {
+            if (!l || typeof l !== 'object') return l;
+            const y = { ...l, phase: l.phase === undefined ? null : l.phase, condition: l.condition === undefined ? null : l.condition };
+            y.pricing = l.pricing === undefined ? null : (l.pricing && typeof l.pricing === 'object' ? totalOnly(softWords(l.pricing), l.qty === 1, y) : l.pricing);
+            return y;
+        });
         // Patch 3: an offer line's words for its price may be left out like a |null field
         if (d.type === 'offer' && Array.isArray(x.lines)) x.lines = x.lines.map((l) => (l && typeof l === 'object' ? { ...l, ...(l.said === undefined ? { said: null } : {}), ...(l.effect === undefined ? { effect: null } : {}), teaches: softTeaches(l.teaches), equipment: l.equipment ?? null, base:l.base ?? null, quality:l.quality ?? null } : l));
         // Patch 9C-2b: the fields of a teaches the reply does not state are null
@@ -386,14 +406,14 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
                     semanticIssues.push({ index: i, seq: d.seq, why: `${where}.said: provide the exact complete commercial clause from this reply; without its own located action anchor the price stays unverified` });
                 if (reply && !gear && x.said) {
                     const anchor = findQuote(reply, x.said);
-                    const quotes = x.pricing?.basis === 'positions' ? (x.pricing.positions || []).map(p=>p.quote) : [x.pricing?.quote];
+                    const quotes = [x.pricing?.quote];
                     if (anchor.state === 'found' && quotes.some(q=>q && findQuote(reply,q,anchor).state === 'missing'))
                         semanticIssues.push({ index: i, seq: d.seq, why: `${where}.pricing: every money quote must belong to this same said, not another sentence or purse` });
                 }
                 if (x.phase == null) semanticIssues.push({ index: i, seq: d.seq, why: `${where}.phase: say whether this price binds now ("firm"), waits for something ("conditional" with condition) or is "unclear"` });
                 else if (x.phase === 'firm' && x.condition) semanticIssues.push({ index: i, seq: d.seq, why: `${where}: "firm" with a condition; a price that waits for "${String(x.condition).slice(0, 40)}" is "conditional"` });
-                if (!gear && Number.isInteger(x.price_cp) && x.price_cp > 0 && (!x.pricing || x.pricing.basis === 'unknown'))
-                    semanticIssues.push({ index: i, seq: d.seq, why: `${where}.pricing: quote the money words that carry price_cp (basis total, unit${d.type === 'bid' ? ' or positions' : ''}), or keep "unknown" only when the reply names no price` });
+                if (!gear && Number.isInteger(x.price_cp) && x.price_cp > 0 && (!x.pricing || x.pricing.basis === 'unknown') && x.phase === 'firm')
+                    semanticIssues.push({ index: i, seq: d.seq, why: `${where}.pricing: a firm price needs the reply's one total for it (basis total with its money words); a price per piece for several pieces or part prices without their total are basis "unknown" with phase "unclear"` });
                 if (x.phase === 'firm' && !x.condition && reply && typeof x.said === 'string') {
                     const at = findQuote(reply, x.said);
                     const word = at.state === 'found' ? openConditionNear(reply, at.start, at.end) : null;

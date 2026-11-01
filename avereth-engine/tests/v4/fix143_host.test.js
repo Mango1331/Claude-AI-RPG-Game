@@ -31,17 +31,20 @@ function reloaded(g) {
 }
 
 
-test('.143 host proposal: denial, acceptance and reload are financially exact',async()=>{
- for(const [reply,cp] of [['No, keep it.',0],['Yes.',5]]){
+// Build .144 (S1): a "yes" in words pays nothing; only his own "#pay <id>" message does, once, and the reload agrees
+test('.143 host proposal (.144): words lapse the card, #pay pays it once; reload is financially exact',async()=>{
+ for(const [reply,cp] of [['No, keep it.',0],['Yes.',0],['#pay',5]]){
  const g=await shop();g.contract=false;const before=coin(g),to=ODO(g),m='I leave five copper on the crate for Odo.';
- await say(g,m,{type:'pay',to,amount_cp:5,for:null,quote:m,money:{quote:'five copper',currency_quote:null},recipient_quote:'Odo',confirmation:null});
+ await say(g,m,{type:'pay',to,amount_cp:5,for:null,quote:m,money:{quote:'five copper',currency_quote:null},recipient_quote:'Odo'});
  const dec=g.state().decisions.find(d=>d.state==='needs_confirmation');assert.ok(dec);assert.equal(coin(g),before);
  await g.reply('Odo waits.',{expected:{},deltas:[]});
- await say(g,reply,{type:'pay',to,amount_cp:5,for:null,quote:reply,money:null,recipient_quote:null,confirmation:dec.id});assert.equal(coin(g),before-cp);reloaded(g);
+ if(reply==='#pay'){await say(g,`#pay ${dec.id}`);await say(g,`#pay ${dec.id}`);}
+ else await say(g,reply,{type:'pay',to,amount_cp:5,for:null,quote:reply,money:null,recipient_quote:null});
+ assert.equal(coin(g),before-cp,reply);reloaded(g);
  }
 });
 test('.143 host registration outside the hall creates no cash proposal',async()=>{
  const g=await shop();g.contract=false;const before=coin(g),m='I offer Odo twenty copper for Guild registration.';
- await say(g,m,{type:'pay',to:ODO(g),amount_cp:20,for:'Guild registration',quote:m,money:{quote:'twenty copper',currency_quote:null},recipient_quote:'Odo',confirmation:null});
+ await say(g,m,{type:'pay',to:ODO(g),amount_cp:20,for:'Guild registration',quote:m,money:{quote:'twenty copper',currency_quote:null},recipient_quote:'Odo'});
  assert.equal(coin(g),before);assert.equal(g.state().guild.membership,null);assert.equal(g.state().decisions.some(d=>d.kind==='payment'),false);reloaded(g);
 });

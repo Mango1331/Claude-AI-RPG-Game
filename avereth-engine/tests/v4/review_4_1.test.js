@@ -2,6 +2,7 @@
 // (docs/INTEGRATION_4_1.md §7): coin the story gives Alaric (who hands it over, whether he took it, whether the engine
 // booked it already), the quantities of purchases and sales, the journey he has actually begun, the kind a hunting
 // contract names, and the escort readiness after a refused arrival. Each finding has its positive and negative cases.
+import { payAllCards } from './pay_card.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -147,6 +148,7 @@ test('coin: the other side of a trade the engine books does not give him coin (a
     assert.deepEqual(rules(change), ['engine_booked']);
     // a payment of an amount he chose (a silver for a 1 cp toll): the change is real coin back
     const paid = play(v, [{ seq: 1, type: 'pay', to: 'npc.vendor', amount_cp: 10, for: 'the toll', quote: 'i give him one silver for the toll' }]);
+    assert.equal(payAllCards(paid.s, content).filter((x) => x.paid).length, 1); // Build .144 (S1): his #pay pays the card
     const back = applyWorld(paid.after(), content, { expected: {}, deltas: [gift('npc.vendor', 9, 'change from the silver')] }, { msg: 9 });
     assert.equal(coin(back.state), coin(v) - 1);
 });

@@ -198,28 +198,29 @@ test('protect107: the three confirmed price misreadings', () => {
     assert.deepEqual(price('sell', { object: 'obj.pelts', min_cp: 20, quote: 'the pelts for two silver a fair deal', ...ev('total', 'two silver') }), [], '"a fair deal" is no rate');
 });
 
-test('protect107: price controls keep their meaning', () => {
+// Build .144 (S2): his limit binds only as a TOTAL; a price per unit for several units is a wish (no limit, no repair),
+// one unit's price is its total, and the amount itself is still checked
+test('protect107 (.144): price controls keep their meaning as totals', () => {
     assert.deepEqual(price('sell', { object: 'obj.pelts', min_cp: 8, quote: 'two copper a pelt', ...ev('unit', 'two copper') }), []);
-    assert.equal(price('sell', { object: 'obj.pelts', min_cp: 2, quote: 'two copper a pelt', ...ev('unit', 'two copper') }).length, 1);
-    // the unit price called the total of four pelts: the rate right after it says otherwise (gate 2)
-    assert.match(price('sell', { object: 'obj.pelts', min_cp: 2, quote: 'two copper a pelt', ...ev('total', 'two copper') })[0], /rate \("a pelt"\)/);
-    assert.deepEqual(price('sell', { object: 'obj.fangs', min_cp: 9, quote: 'a copper apiece for the fangs', ...ev('unit', 'a copper') }), []);
-    // two prices in his words: the one the planner assigns to the fangs decides, and is checked
-    assert.deepEqual(price('sell', { object: 'obj.fangs', min_cp: 9, quote: 'two copper a pelt and a copper apiece for the fangs', ...ev('unit', 'a copper') }), []);
-    assert.equal(price('sell', { object: 'obj.fangs', min_cp: 9, quote: 'two copper a pelt and a copper apiece for the fangs', ...ev('unit', 'two copper') }).length, 1);
+    assert.deepEqual(price('sell', { object: 'obj.pelts', min_cp: 2, quote: 'two copper a pelt', ...ev('unit', 'two copper') }), []);
+    // the unit price called the total of four pelts: the rate right after it says otherwise (gate 2) – no limit either
+    assert.deepEqual(price('sell', { object: 'obj.pelts', min_cp: 2, quote: 'two copper a pelt', ...ev('total', 'two copper') }), []);
+    assert.deepEqual(price('sell', { object: 'obj.pelts', min_cp: 8, quote: 'eight copper for the four pelts', ...ev('total', 'eight copper') }), []);
     assert.deepEqual(price('buy', { max_cp: 2, quote: 'a healing potion at two copper each', ...ev('total', 'two copper') }), [], 'one unit stays a normal purchase');
+    assert.deepEqual(price('buy', { max_cp: 2, quote: 'a healing potion at two copper each', ...ev('unit', 'two copper') }), [], 'one unit: its price is the total');
     assert.equal(price('sell', { object: 'obj.sword', min_cp: 40, quote: 'five silver and not a copper less', ...ev('total', 'five silver') }).length, 1, 'the amount itself is still checked');
     assert.deepEqual(price('sell', { object: 'obj.sword', min_cp: 40, quote: 'five silver and not a copper less', price_evidence: null }), [], 'no evidence: nothing to check, the number is unproven');
 });
 
-test('protect107: a unit-rate mismatch without qty asks for the total and the quantity, never asserts one unit', () => {
+test('protect107 (.144): a unit rate for several torches is no limit, never multiplied or asserted for one unit', () => {
+    // without qty the unit price for one torch is its total: the 6 cp the model names are not that total (repair)
     const [e] = price('buy', { max_cp: 6, quote: 'three torches at two copper each', ...ev('unit', 'two copper') });
     assert.ok(e, 'the mismatch is still reported to the one repair');
-    assert.doesNotMatch(e, /for qty 1\b/);
     assert.match(e, /TOTAL/);
-    assert.match(e, /set qty/);
     assert.deepEqual(price('buy', { qty: 3, max_cp: 6, quote: 'three torches at two copper each', ...ev('unit', 'two copper') }), []);
-    assert.match(price('buy', { qty: 3, max_cp: 2, quote: 'three torches at two copper each', ...ev('total', 'two copper') })[0], /rate \("each"\)/);
+    assert.deepEqual(price('buy', { qty: 3, max_cp: 2, quote: 'three torches at two copper each', ...ev('total', 'two copper') }), []);
+    assert.deepEqual(price('buy', { qty: 3, max_cp: 6, quote: 'three torches for six copper', ...ev('total', 'six copper') }), []);
+    assert.ok(price('buy', { qty: 3, max_cp: 7, quote: 'three torches for six copper', ...ev('total', 'six copper') }).length, 'a total is still checked');
 });
 
 // ------------------------------------------------------------------------------------------------ 6. NOT EXECUTED

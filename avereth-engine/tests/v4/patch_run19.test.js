@@ -1,3 +1,4 @@
+import { financeHints } from '../../src/v4/interpret.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -28,10 +29,15 @@ test('Run19 T82: current bed and soup have separate explicit prices',()=>{
  const s=before(163), p=f.cases[82].plans[0];assert.deepEqual(parsePlan(JSON.stringify(p),content.commandVocab,ctx(s),f.cases[82].input).errors,[]);
  const r=run(s,p.commands);assert.deepEqual(r.events.filter(e=>e.t==='coin.changed').map(e=>e.d.delta),[-3]);
 });
-test('Run19 positional prices cannot hide a wrong item price or discount',()=>{
+// Build .144 (S2): the engine reads no second price out of his words; a price he names is agreed_cp (his explicit
+// limit, planner-checked against his words) and stops a different stored total. A discount stays no acceptance.
+test('Run19 (.144) a different agreed total or a discount is no acceptance; item prices in his words are no second price reader',()=>{
  const o=before(163).offers['offer.t162.7'];
- for(const quote of ['Two copper for the soup and a copper for the bed. I take both.', 'Two copper for the bed and two copper for the soup. I take both.', "I take both for two copper.","I want a discount: two copper for the bed and a copper for the soup."])
-  assert.ok(acceptanceWhy({lines:['l1','l2'],quote},o,'Widow Hale',content.rules.currency),quote);
+ for(const [quote,agreed_cp] of [['Two copper for the bed and two copper for the soup. I take both.',4],["I take both for two copper.",2]])
+  assert.ok(acceptanceWhy({lines:['l1','l2'],quote,agreed_cp},o,'Widow Hale',content.rules.currency),quote);
+ assert.ok(acceptanceWhy({lines:['l1','l2'],quote:"I want a discount: two copper for the bed and a copper for the soup."},o,'Widow Hale',content.rules.currency));
+ assert.equal(acceptanceWhy({lines:['l1','l2'],quote:'Two copper for the soup and a copper for the bed. I take both.'},o,'Widow Hale',content.rules.currency),null,'the stored total is accepted');
+ assert.ok(financeHints([{seq:1,type:'offer.accept',offer:o.id,lines:['l1','l2'],agreed_cp:null,quote:"I take both for two copper."}],content.rules.currency).length,'the planner is asked to carry his price as agreed_cp');
 });
 test('Run19 explicit total and mixed currency remain valid',()=>{
  const o=before(163).offers['offer.t162.7'];assert.equal(acceptanceWhy({lines:['l1','l2'],quote:'I take both for three copper.'},o,'Widow Hale',content.rules.currency),null);

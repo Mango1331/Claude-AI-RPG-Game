@@ -79,7 +79,7 @@ export const PLAYER_ROLE = [
 ].join('\n');
 export const PLAYER_COMMANDS = [
     'SYSTEM COMMANDS are real game mechanics. A command is a message of its own: only the command, nothing else in it.',
-    '- After a level-up the HUD shows Free Stat Points. They are spent only with #assign, several stats in one command: #assign WIL 2 INT 2 VIT 1. Words like "I put two points into INT" change nothing. Look at the System answer or the HUD afterwards to see that it worked.',
+    '- Free Stat Points are spent only with #assign (several stats at once: #assign WIL 2 INT 2 VIT 1); a PAYMENT CARD (tip, gift, debt; NOT PAID) only with #pay <its id>, if you want exactly it. Words change neither. Check the System answer or HUD afterwards.',
     '- When unsure of possessions, equipment, values, contracts or skills: #bag, #equipment, #status, #quests, #quest <title>, #skills, #skill <name>. #audit explains recorded changes; #help lists commands.',
     '- Use panels when they help, not before every small step. Use confirmed possessions; a combined purchase and use must be conditional on the purchase succeeding.',
 ].join('\n');

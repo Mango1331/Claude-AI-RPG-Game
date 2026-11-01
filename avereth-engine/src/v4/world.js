@@ -2639,6 +2639,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             reject({ ...d, lines: unproven.map(l=>l.raw_line) }, 'offer', 'a price the reply does not name');
             const correction = `No price was recorded for ${unproven.map((l) => `${String(l.what).slice(0, 40)}${l.why ? ` (${l.why})` : ''}`).join(', ')}: the last reply does not carry such a price. A price stands only as the story names it.`;
             if (!corrections.includes(correction)) corrections.push(correction);
+            // Build .144 (S2): a firm price is one total for exactly the goods; say plainly what is missing
+            priceOpen(entityLabel(s, seller), unproven.map((l) => unitsText(l.what, l.qty ?? 1)).join(', '), 'sell');
         }
         for (const l of priced.filter(l => !unproven.includes(l) && l.terms && l.terms !== 'firm')) {
             system.push(`NOT A BINDING OFFER — ${l.what}${Number.isInteger(l.price_cp) ? ` (${l.price_cp} cp)` : ''}: ${l.why}. It cannot be bought yet.`);
@@ -2746,6 +2748,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
      * carry a binding price) or contradicted (the assigned figures disagree: not stored). A gear line's price is the
      * engine's own (enginePrice) and needs no words; its binding still needs the report and the words around it.
      */
+    /**
+     * Build .144 (S2, plan §6): a price the engine cannot record is no dead end. The player sees what is missing (the
+     * one total for exactly these goods); the narrator is told that whoever means to deal names that total – a price
+     * per piece, part prices or "done" without the sum bind nothing. No automatic price, no repair call.
+     */
+    function priceOpen(party, goods, side) {
+        const line = `PRICE OPEN — ${party} for ${goods}: no binding total was named. Nothing was ${side === 'buy' ? 'sold' : 'bought'}; ask for the total price of exactly these goods.`;
+        if (!system.includes(line)) system.push(line);
+        const correction = `PRICE CONTRACT: ${party} named no binding total for ${goods}. If ${party} means to ${side} them, ${party} says one total in coin for exactly these goods (for example "fifty-six copper for the fourteen plates"); a price per piece, part prices or agreeing without saying the sum bind nothing.`;
+        if (!corrections.includes(correction)) corrections.push(correction);
+    }
     function dealTerms(x, { units = 1, lines = null, reported = null, enginePrice = null, goods = [], note = null } = {}) {
         const phase = ['firm', 'conditional', 'unclear'].includes(x.phase) ? x.phase : 'unclear';
         const condition = typeof x.condition === 'string' && x.condition.trim() ? x.condition.trim().slice(0, 160) : null;
@@ -2814,6 +2827,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (t.price === null) {
             reject(d, 'offer', `${d.price_cp} cp is no sum the reply carries (${t.evidence.reason})`);
             corrections.push(`No bid was recorded for ${goods}: the last reply's words do not carry the price ${d.price_cp} cp. Nothing was sold; Alaric still holds them and his coin is unchanged.`);
+            priceOpen(entityLabel(s, buyer), goods, 'buy');
             return;
         }
         if (t.price !== d.price_cp) emit({ t: 'note', d: { kind: 'amount.corrected', seq: d.seq ?? 0, type: 'bid', reported_cp: d.price_cp, said: String(d.said ?? '').slice(0, 60), cp: t.price } });

@@ -254,6 +254,8 @@ export function applyDomainEvent(state, e) {
                 const open = state.decisions.find((x) => x.id === d.id);
                 if (!open || open.kind !== 'payment' || open.state !== 'needs_confirmation' || JSON.stringify(cardSnapshot(open)) !== JSON.stringify(cardSnapshot(d.expect)))
                     throw new Error(`payment card ${d.id} is no longer the one that was paid`);
+                if (open.turn !== state.turn || open.at !== state.scene.at || !state.scene.present.includes(open.seller) || state.entities[open.seller]?.status === 'dead')
+                    throw new Error(`payment card ${d.id} is no longer payable here`);
             }
             state.decisions = state.decisions.filter((x) => x.id !== d.id);
             break;

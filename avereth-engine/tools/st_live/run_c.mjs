@@ -18,6 +18,7 @@ import { V4_OUTPUT_LINE } from '../../src/context.js';
 import { ENGINE_VERSION } from '../../src/util.js';
 import { Driver } from './live/driver.mjs';
 import { screenText } from './live/players.mjs';
+import { financeTurns, financeSmoke } from './finance_smoke.mjs';
 
 const require = createRequire(import.meta.url);
 let chromium;
@@ -61,6 +62,8 @@ const TURNS = [
         reply: 'The wave strikes the barkscorpions in the chosen Range Band.' },
 ];
 const turnOf = (text) => TURNS.find((t) => text.includes(`PLAYER MESSAGE:\n${t.player}`));
+const finance = financeTurns(plan);
+const allTurns = [...TURNS, ...finance];
 
 // ------------------------------------------------------------------------------------------------ setup (as run_v4.mjs)
 const contract = fs.readFileSync(path.join(ENGINE, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
@@ -101,6 +104,7 @@ fs.writeFileSync(secretsFile, JSON.stringify({ api_key_custom: [{ id: 'smoke', v
 // ------------------------------------------------------------------------------------------------ mock provider
 const calls = [];
 let probeMode = false;
+let financeMode = false;
 const narrated = new Map();
 const mock = http.createServer(async (req, res) => {
     if (req.url.endsWith('/models')) { res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify({ object: 'list', data: [{ id: 'mock-narrator', object: 'model' }] })); return; }
@@ -117,25 +121,25 @@ const mock = http.createServer(async (req, res) => {
     // the planner: its own role in a fight, the interpreter's prompt with the planner's section outside one
     if (system.startsWith('You are the intent planner') || (system.startsWith('You are the command interpreter') && system.includes('Actions with skills, in fights and on things'))) {
         purpose = 'plan';
-        const t = turnOf(users);
+        const t = turnOf(users) || finance.find(t => users.includes(`PLAYER MESSAGE:\n${t.player}`));
         text = JSON.stringify(t ? t.plan : { commands: [] });
     } else if (system.startsWith('You are the command interpreter')) {
         purpose = 'interpret';
         text = JSON.stringify({ commands: [] });
     } else if (system.startsWith('You read one reply')) {
         purpose = 'extract';
-        const t = TURNS.find((x) => x.reply && users.includes(x.reply.slice(0, 60)));
+        const t = allTurns.find((x) => x.reply && users.includes(x.reply.slice(0, 60)));
         text = JSON.stringify({ scene: 'here', ...(t?.answer || { expected: {}, deltas: [] }) });
         delay = 300;
     } else {
-        const t = TURNS.find((x) => lastUser.includes(x.player));
+        const t = allTurns.find((x) => lastUser.includes(x.player));
         const n = (narrated.get(t?.key) || 0) + 1;
         narrated.set(t?.key, n);
         text = t ? (n > 1 && t.swipe ? t.swipe : t.reply || 'The world waits.') : 'The world waits.';
     }
     if (process.env.AVERETH_SMOKE_EMPTY_NARRATOR === '1' && purpose === 'narrator' && lastUser.includes(TURNS[0].player) && narrated.get('burrow') === 1) text = '';
-    const probe = probeMode;
-    if (probe && ((purpose === 'plan' && users.includes('FAILSOFT_PLANNER')) || purpose === 'extract')) text='{bad';
+    const probe = probeMode || financeMode;
+    if (probeMode && ((purpose === 'plan' && users.includes('FAILSOFT_PLANNER')) || purpose === 'extract')) text='{bad';
     calls.push({ probe, empty: !text.trim(), purpose, at: Date.now(), auth: req.headers.authorization || null, stream: !!j.stream, temperature: j.temperature, maxTokens: j.max_tokens, model: j.model, messages: msgs, lastUser });
     if (process.env.AVERETH_SMOKE_PROVIDER_ERROR === '1' && purpose === 'narrator' && lastUser.includes(TURNS[0].player) && narrated.get('burrow') === 1) {
         res.writeHead(200, { 'content-type': 'application/json' });
@@ -257,7 +261,7 @@ try {
         return s ? { areaLevels: s.places[s.scene.at]?.encounter_levels || null, mp: s.entities.pc.sheet.mp, encounter: !!s.encounter, foes: s.encounter ? Object.values(s.encounter.combatants).filter((c) => c.side === 'hostile').map((c) => ({ id: c.id, hp: c.current.hp })) : [] } : null;
     });
     // Exercise the exact natural-run driver, including automatic Host recovery.
-    const driver = new Driver(page, { turnTimeoutMs: 60000 });
+    let driver = new Driver(page, { turnTimeoutMs: 60000 });
     let delayedRecoverySave = false;
     if (process.env.AVERETH_SMOKE_EMPTY_NARRATOR === '1') {
         await page.route('**/api/chats/save', async route => {
@@ -272,12 +276,19 @@ try {
     }
     async function send(text) {
         const r = await driver.send(text);
-        if (!r.ok) throw new Error(`Runner send failed: ${r.problem}`);
+        if (!r.ok) throw new Error(`Runner send failed: ${r.problem} (pending saves: ${driver.pendingSaves.size})`);
     }
 
     await send('Mage');
     await send('Flame Lance + Arcane Wave');
     const afterCreation = calls.filter((c) => c.purpose === 'plan').length;
+    let financeChecks = null;
+    if (process.env.AVERETH_SMOKE_FINANCE === '1') {
+        financeMode = true;
+        financeChecks = await financeSmoke({ page, send, idle, calls, turns: finance,
+            onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); } });
+        financeMode = false;
+    }
     const steps = {};
     let failsoft=null;
     if (process.env.AVERETH_SMOKE_FAILSOFT === '1') {
@@ -327,7 +338,12 @@ try {
     const status = await page.evaluate(() => document.getElementById('avereth_status')?.textContent || '');
     await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); });
     await page.waitForTimeout(800);
-    result = { toggle, greeting, afterCreation, steps, status, delayedRecoverySave, failsoft };
+    result = { toggle, greeting, afterCreation, steps, status, delayedRecoverySave, failsoft, financeChecks };
+} catch (error) {
+    const screen = await page.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(-8000),
+        chat: window.SillyTavern?.getContext?.()?.chat?.map(m => ({ user: m.is_user, system: m.is_system, text: m.mes?.slice(0, 120) })) })).catch(() => null);
+    fs.writeFileSync(path.join(HERE, 'failure.json'), JSON.stringify({ error: String(error), screen, pageErrors }, null, 2));
+    throw error;
 } finally {
     await browser.close();
     st.kill();
@@ -346,6 +362,7 @@ const narr = normalCalls.filter((c) => c.purpose === 'narrator');
 const engineOf = (c) => String(c?.messages?.find((m) => String(m.content).startsWith('[AVERETH ENGINE'))?.content || '');
 const narratorFor = (key) => narr.filter((c) => c.lastUser.includes(TURNS.find((t) => t.key === key).player));
 const checks = {
+    ...(result.financeChecks ? Object.fromEntries(Object.entries(result.financeChecks).map(([k, v]) => [`finance_${k}`, v])) : {}),
     ...(process.env.AVERETH_SMOKE_FAILSOFT === '1' ? {failsoftPlannerVisible:result.failsoft?.visible && result.failsoft?.noBooking,failsoftSaved:result.failsoft?.saved,failsoftWorldTerminal:result.failsoft?.world,failsoftNoDuplicateCombat:result.failsoft?.noDuplicateCombat,failsoftDetectsSwallowedSave:result.failsoft?.saveFault?.resolved && result.failsoft?.saveFault?.rejected} : {}),
     ...(process.env.AVERETH_SMOKE_PROVIDER_ERROR === '1' ? {
         transientProviderRecoveredOnce: narratorFor('burrow').length === 2 && S('burrow').look.record?.events?.filter(e => e.t === 'turn.begun').length === 1,

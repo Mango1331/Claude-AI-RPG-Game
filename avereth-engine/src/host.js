@@ -5,7 +5,7 @@
 // Storage: every message carries its own events in message.extra.avereth. SillyTavern keeps `extra` per swipe, so
 // each alternative reply owns its own facts. ST copies `extra` into a NEW swipe before it is generated, so an
 // assistant record is only applied while its text_hash matches the message text (stale copies are ignored).
-import { paidCardFacts } from './v4/native_pay.js';
+import { paidCardFacts, payCommandId } from './v4/native_pay.js';
 import { applyEvent, emptyState } from './state.js';
 import { startCampaign, playerTurn, narratorReply, turnContext } from './engine.js';
 import { loreKeys, reportKeys } from './context.js';
@@ -52,6 +52,28 @@ const FOLDS = { calls: 0, ms: 0 };
 const clock = () => (typeof performance !== 'undefined' && typeof performance.now === 'function' ? performance.now() : Date.now());
 export const foldStats = () => ({ ...FOLDS });
 
+// .145: a stored card/confirmation is authority only while its actual player input still matches.
+// Keep the original record on edits: restoring the text restores it, without reinterpreting old money.
+function paymentInputError(msg, record, index) {
+    const cards = (record?.events || []).filter(e => e.t === 'decision.opened' && e.d.decision?.route === 'free');
+    const paid = (record?.events || []).filter(e => e.t === 'decision.closed' && e.d.expect);
+    if (!cards.length && !paid.length) return null;
+    const type = paid.length ? 'decision.closed' : 'decision.opened';
+    const invalid = error => ({ type, error });
+    const hash = hash32(msg.mes);
+    // ST marks handled user commands is_system=true after aborting narration; they are still user inputs.
+    if (!msg.is_user || record.input_hash !== hash)
+        return invalid('payment input changed; restore its original text or discard the history from this message');
+    for (const e of cards) {
+        const source = e.d.decision.source;
+        if (source?.message !== index || source.input_hash !== hash)
+            return invalid('payment card source no longer matches its player message');
+    }
+    if (paid.length && (paid.length !== 1 || payCommandId(msg.mes) !== paid[0].d.id))
+        return invalid('payment confirmation is no longer the standalone #pay that was recorded');
+    return null;
+}
+
 /**
  * Fold messages [0, end) into the campaign state. Events that no longer apply (e.g. after deletions) are skipped, so a
  * display can still show something; `failures` names each one (message index, event type). Architecture patch A
@@ -59,11 +81,38 @@ export const foldStats = () => ({ ...FOLDS });
  */
 export function foldChat(chat, end = chat.length) {
     const t0 = clock();
-    const state = emptyState();
+    let state = emptyState();
     const errors = [];
     const failures = [];
     for (let i = 0; i < Math.min(end, chat.length); i++) {
-        for (const e of messageEvents(chat[i])) {
+        const record = rec(chat[i]);
+        const invalid = paymentInputError(chat[i], record, i);
+        if (invalid) {
+            errors.push(`message ${i}: ${invalid.type}: ${invalid.error}`);
+            failures.push({ index: i, ...invalid });
+            break;
+        }
+        const events = messageEvents(chat[i]);
+        // A failed card close must not leave its debit (or any later record) in the folded state.
+        // Only native payment records need this small transaction checkpoint; normal folds are unchanged.
+        if (events.some(e => e.t === 'decision.closed' && e.d.expect)) {
+            const staged = clone(state);
+            let failed = false;
+            for (const e of events) {
+                try { applyEvent(staged, e); }
+                catch (err) {
+                    const error = String(err.message).slice(0, 200);
+                    errors.push(`message ${i}: ${e.t}: ${error}`);
+                    failures.push({ index: i, type: e.t, error });
+                    failed = true;
+                    break;
+                }
+            }
+            if (failed) break;
+            state = staged;
+            continue;
+        }
+        for (const e of events) {
             try {
                 applyEvent(state, e);
             } catch (err) {

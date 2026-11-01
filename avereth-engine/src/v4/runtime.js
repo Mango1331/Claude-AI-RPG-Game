@@ -994,7 +994,12 @@ export function pendingExtraction(chat) {
 export function onEditedV4(chat, id) {
     const msg = chat[id];
     const r = rec(msg);
-    if (!msg || msg.is_user || !r) return { changed: false };
+    if (!msg || !r) return { changed: false };
+    if (msg.is_user) {
+        const payment = (r.events || []).some(e => (e.t === 'decision.opened' && e.d.decision?.route === 'free') || (e.t === 'decision.closed' && e.d.expect));
+        // Refresh the blocked HUD immediately, but never bless edited words by updating input_hash.
+        return payment ? { changed: true, ...(r.input_hash !== hash32(msg.mes) ? { refused: 'Payment input changed. Restore its original text or discard the history from this message before continuing.' } : {}) } : { changed: false };
+    }
     setRec(msg, { ...r, text_hash: hash32(msg.mes) });
     if (r.panel || r.hud) showPanel(msg, r.panel, r.hud, { playerFacing: true });
     return r.panel || r.hud ? { changed: true, text: true } : { changed: true };

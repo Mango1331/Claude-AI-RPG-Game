@@ -38,9 +38,33 @@ export function saleOfferLines(state, seller, lines) {
  */
 function selectionWhy(quote, offer, selected) {
     const ignored = new Set(['the', 'for', 'and', 'with', 'night', 'one', 'per', 'pair', 'copper', 'cp', 'silver', 'gold']);
-    const words = line => [...new Set(requestWords(`${line.what} ${line.service || ''} ${line.said || ''}`).filter(w => w.length > 2 && !ignored.has(w) && !numbersIn(w).length))];
-    const unique = new Map(offer.lines.map(line => [line.id, words(line).filter(w => offer.lines.filter(other => words(other).includes(w)).length === 1)]));
-    const names = (text, line) => unique.get(line.id).some(w => requestWords(text).includes(w));
+    const tokens = text => flat(String(text).replace(/\b[a-z][ -]rank\b/gi, '')).split(' ').map(w => w.replace(/s$/, ''));
+    // Catalog identities, never price/dialogue prose. A compound is one name component: "hand-axe" may be
+    // written "hand axe", but its fragment "hand" is not an article. Prefer a longer actual name at the same
+    // position ("common dagger") over its shared parts ("common", "dagger"); equal names remain alternatives.
+    const phrases = offer.lines.flatMap(line => [line.what, line.service].filter(Boolean).flatMap(label => {
+        const parts = (String(label).toLowerCase().match(/[a-z0-9]+(?:-[a-z0-9]+)*/g) || [])
+            .filter(w => !/^[a-z]-rank$/.test(w) && w.length > 2 && !ignored.has(w) && !numbersIn(w).length)
+            .map(tokens);
+        return parts.flatMap((_, i) => parts.slice(i).map((_, n) => ({ id: line.id, words: parts.slice(i, i + n + 1).flat() })));
+    }));
+    const cache = new Map();
+    const references = text => {
+        if (cache.has(text)) return cache.get(text);
+        const words = tokens(text), spans = new Map();
+        for (const phrase of phrases) for (let i = 0; i <= words.length - phrase.words.length; i++) {
+            if (!phrase.words.every((w, n) => words[i + n] === w)) continue;
+            const end = i + phrase.words.length, key = `${i}:${end}`;
+            if (!spans.has(key)) spans.set(key, { start: i, end, ids: new Set() });
+            spans.get(key).ids.add(phrase.id);
+        }
+        const all = [...spans.values()];
+        const groups = all.filter(a => !all.some(b => b.start <= a.start && b.end >= a.end
+            && b.end - b.start > a.end - a.start)).map(a => a.ids);
+        cache.set(text, groups);
+        return groups;
+    };
+    const names = (text, line) => references(text).some(ids => ids.has(line.id));
     const exclusions = [...quote.matchAll(/\b(?:not|without|except)\s+([^,.;!?]*?)(?=\bbut\b|[,.;!?]|$)/gi)].map(m => m[1]);
     if (selected.some(line => exclusions.some(text => names(text, line)))) return 'selected goods include a position he explicitly excluded';
     // Separate buying clauses from comments; bare article orders keep the original matching.
@@ -51,11 +75,12 @@ function selectionWhy(quote, offer, selected) {
     const bareOrder = text => offer.lines.some(line => names(text, line))
         && requestWords(text).every(word => articleWords.has(word) || ['too', 'also'].includes(word));
     const order = buying.length ? clauses.filter(text => buying.includes(text) || bareOrder(text)).join(' ') : quote;
-    const requested = offer.lines.filter(line => names(order, line) && !exclusions.some(text => names(text, line)));
-    if (selected.length && requested.some(line => !selected.some(p => p.id === line.id)))
+    const requested = references(order).map(ids => [...ids].filter(id => !exclusions.some(text => references(text).some(group => group.has(id)))))
+        .filter(ids => ids.length === 1); // an ambiguous shared name never orders every alternative
+    if (selected.length && requested.some(ids => !selected.some(p => ids.includes(p.id))))
         return 'selected goods omit a position in his explicit order; clarify the offer positions';
-    if (!offer.lines.some(line => names(order, line))) return null;
-    return selected.some(line => unique.get(line.id).length && !names(order, line))
+    if (!requested.length) return null;
+    return selected.some(line => !requested.some(ids => ids.includes(line.id)))
         ? 'selected goods differ from his explicit order; clarify the offer positions' : null;
 }
 

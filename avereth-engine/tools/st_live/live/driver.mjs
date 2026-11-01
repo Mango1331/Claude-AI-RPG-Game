@@ -78,12 +78,24 @@ export class Driver {
         // none of these request bodies/records reach the player.
         this.pendingSaves = new Set();
         this.saveFailures = [];
-        page.on('response', r => { if (/\/api\/(?:chats|chats\/group)\/save(?:\?|$)/.test(r.url()) && !r.ok()) this.saveFailures.push({status:r.status()}); });
+        const failedRequests = new Map();
+        page.on('response', r => {
+            if (/\/api\/(?:chats|chats\/group)\/save(?:\?|$)/.test(r.url()) && !r.ok()) {
+                const failure = { status: r.status(), completed: false };
+                this.saveFailures.push(failure);
+                failedRequests.set(r.request(), failure);
+            }
+        });
         page.on('requestfailed', r => { if (this.pendingSaves.has(r)) this.saveFailures.push({network:true}); });
         page.on('request', r => {
             if (r.method() === 'POST' && /\/api\/(?:chats|chats\/group)\/save(?:\?|$)/.test(r.url())) this.pendingSaves.add(r);
         });
-        for (const event of ['requestfinished', 'requestfailed']) page.on(event, r => this.pendingSaves.delete(r));
+        for (const event of ['requestfinished', 'requestfailed']) page.on(event, r => {
+            const failure = failedRequests.get(r);
+            if (failure) failure.completed = event === 'requestfinished';
+            failedRequests.delete(r);
+            this.pendingSaves.delete(r);
+        });
         this.setupNotes = [];
         // Patch 8.4.1 (live 22.10.2026 05:43: the notice of the runner's own chat rename reached the player, who took it
         // for an oddity of the game): the time spans of the runner's own actions in the page; a notice that comes in one
@@ -243,7 +255,7 @@ export class Driver {
 
     /**
      * Send one player message and wait until the turn is over: the generation ended, the newest reply has been read by
-     * the extractor, and the page stayed quiet for a moment. Returns timing and what went wrong (nothing is retried).
+     * the extractor, and the page stayed quiet for a moment. Only a completed failed save may be retried, never play.
      */
     async send(text) {
         const p = this.page;
@@ -274,9 +286,10 @@ export class Driver {
         }
         const ms = Date.now() - t0;
         if (ms >= this.turnTimeoutMs) return { ok: false, problem: `the turn did not end within ${Math.round(this.turnTimeoutMs / 1000)} s (busy ${last?.busy}, extraction ${last?.extraction})`, extraction: last?.extraction ?? null, ms };
-        if (this.saveFailures.length > failuresBefore) return {ok:false,problem:'chat persistence failed',ms};
+        if (this.saveFailures.length > failuresBefore && !await this.recoverSavedTurn(failuresBefore))
+            return { ok: false, problem: 'chat persistence failed', ms: Date.now() - t0 };
         await p.waitForTimeout(600); // the HUD re-renders after the extraction
-        return { ok: true, ms, replyMs: replyAt ? replyAt - t0 : null };
+        return { ok: true, ms: Date.now() - t0, replyMs: replyAt ? replyAt - t0 : null };
     }
 
     /**
@@ -323,7 +336,7 @@ export class Driver {
         return { messages, hud, hudStale: hudStale(messages, hudMesid), toasts };
     }
 
-    async verifySaved(chat) {
+    async verifySaved(chat, { complete = false } = {}) {
         const identity=await this.identity();
         this.requireTestChat(identity);
         const saved=await this.page.evaluate(async expected => {
@@ -334,7 +347,40 @@ export class Driver {
         },identity);
         this.requireTestChat(await this.identity(),identity);
         const {savedPrefixMatches}=await import('../../../src/v4/continuation.js');
-        return savedPrefixMatches(chat,saved,chat.length-1);
+        if (!complete) return savedPrefixMatches(chat,saved,chat.length-1);
+        // Full economic/confirmation records and saved swipes matter too, not just their event prefix.
+        const relevant = messages => JSON.stringify(messages.map(m => ({ mes: m.mes, name: m.name,
+            user: !!m.is_user, system: !!m.is_system, record: m.extra?.avereth,
+            swipe: m.swipe_id ?? 0, swipes: m.swipes, swipe_info: m.swipe_info })));
+        if (relevant(chat) !== relevant(await this.chat())) throw new Error('chat changed during saved readback');
+        return saved.length === chat.length && relevant(chat) === relevant(saved);
+    }
+
+    /** One persistence-only recovery after an HTTP server error has actually finished. No generation or resend. */
+    async recoverSavedTurn(from) {
+        const failures = this.saveFailures.slice(from);
+        const note = text => { this.setupNotes.push(text); this.log(text); };
+        note(`chat save failed (${failures.map(f => f.network ? 'network' : `HTTP ${f.status}`).join(', ')})`);
+        // A dropped connection does not prove the server's writer has ended; integrity/client errors need a stop.
+        if (!failures.length || failures.some(f => !f.completed || f.status < 500 || f.status > 599)) return false;
+        try {
+            this.requireTestChat(await this.identity());
+            const before = await this.probe();
+            if (this.aborted || before.busy || before.extraction === 'pending' || this.pendingSaves.size) return false;
+            const snapshot = await this.chat();
+            if (await this.verifySaved(snapshot, { complete: true })) {
+                note('chat save recovered: complete readback already matches; no extra write');
+                return true;
+            }
+            note('chat save retrying persistence once; no game action repeated');
+            await this.save();
+            if (!await this.verifySaved(snapshot, { complete: true })) throw new Error('complete saved chat does not match');
+            note('chat save recovered: complete records and swipes verified by readback');
+            return true;
+        } catch (error) {
+            note(`chat save recovery failed: ${error.message}`);
+            return false;
+        }
     }
 
     /** Every notice since the page opened, each with its origin: the runner's own action ("runner") or the game. */
@@ -412,7 +458,24 @@ export class Driver {
 
     async status() { return this.page.evaluate(() => document.getElementById('avereth_status')?.textContent || ''); }
 
-    async save() { this.requireTestChat(await this.identity()); await this.page.evaluate(async () => { await SillyTavern.getContext().saveChat(); }); await this.page.waitForTimeout(800); }
+    async save() {
+        const expected = await this.identity();
+        this.requireTestChat(expected);
+        const drained = async () => {
+            const until = Date.now() + 5000;
+            while (this.pendingSaves.size && Date.now() < until && !this.aborted) await sleep(50);
+            if (this.pendingSaves.size || this.aborted) throw new Error('previous chat save did not finish');
+        };
+        await drained();
+        await this.page.evaluate(async expected => {
+            const c = SillyTavern.getContext();
+            if (c.groupId || c.getCurrentChatId() !== expected.chatId || c.characters[c.characterId]?.avatar !== expected.avatar)
+                throw new Error('wrong test chat before save');
+            await c.saveChat();
+        }, expected);
+        await drained();
+        await this.page.waitForTimeout(800);
+    }
 
     async screenshot(file) { try { await this.page.screenshot({ path: file, fullPage: false }); return file; } catch { return null; } }
 }

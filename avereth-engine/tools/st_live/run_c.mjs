@@ -289,6 +289,41 @@ try {
             onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); } });
         financeMode = false;
     }
+    let saveRecoveryChecks = null;
+    if (process.env.AVERETH_SMOKE_SAVE_RECOVERY === '1') {
+        // Real ST/client/filesystem and Driver, simulated HTTP500 only: not a native Windows EPERM test.
+        const events = chat => chat.flatMap(m => m.extra?.avereth?.events || []);
+        const beforeEvents = events(await driver.chat()), beforeCalls = calls.length;
+        const oldLog = driver.log;
+        let retry = false, failedWrites = 0;
+        driver.log = text => { if (text.startsWith('chat save retrying')) retry = true; };
+        injectingSaveFailure = true;
+        const once = async route => {
+            if (retry) return route.continue();
+            failedWrites++;
+            await route.fulfill({ status: 500, contentType: 'application/json', body: '{"error":"simulated_transient_save_failure"}' });
+        };
+        await page.route('**/api/chats/save', once);
+        let recovered, stopped;
+        try {
+            recovered = await driver.send('#status');
+            if (!recovered.ok || !retry || !failedWrites) throw new Error('save recovery was not exercised');
+            if (!await driver.verifySaved(await driver.chat(), { complete: true })) throw new Error('recovered save readback differs');
+        } finally { await page.unroute('**/api/chats/save', once); driver.log = oldLog; }
+        const always = route => route.fulfill({ status: 500, contentType: 'application/json', body: '{"error":"simulated_permanent_save_failure"}' });
+        await page.route('**/api/chats/save', always);
+        try {
+            stopped = await driver.send('#status');
+            if (stopped.ok || stopped.problem !== 'chat persistence failed') throw new Error('permanent save failure did not stop');
+        } finally { await page.unroute('**/api/chats/save', always); }
+        await driver.save(); // fixture cleanup only; send() still reported the permanent failure
+        injectingSaveFailure = false;
+        const sameEvents = JSON.stringify(beforeEvents) === JSON.stringify(events(await driver.chat()));
+        if (!sameEvents || calls.length !== beforeCalls) throw new Error('save probes executed game/model actions');
+        saveRecoveryChecks = { transientSavedAndReadBack: recovered.ok, permanentFailureStops: !stopped.ok,
+            noRepeatedEngineOrModel: sameEvents && calls.length === beforeCalls,
+            purchaseAndPaymentRecordsPreserved: financeChecks?.nativeOnceNoModel === true && sameEvents };
+    }
     const steps = {};
     let failsoft=null;
     if (process.env.AVERETH_SMOKE_FAILSOFT === '1') {
@@ -338,7 +373,7 @@ try {
     const status = await page.evaluate(() => document.getElementById('avereth_status')?.textContent || '');
     await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); });
     await page.waitForTimeout(800);
-    result = { toggle, greeting, afterCreation, steps, status, delayedRecoverySave, failsoft, financeChecks };
+    result = { toggle, greeting, afterCreation, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks };
 } catch (error) {
     const screen = await page.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(-8000),
         chat: window.SillyTavern?.getContext?.()?.chat?.map(m => ({ user: m.is_user, system: m.is_system, text: m.mes?.slice(0, 120) })) })).catch(() => null);
@@ -362,6 +397,7 @@ const narr = normalCalls.filter((c) => c.purpose === 'narrator');
 const engineOf = (c) => String(c?.messages?.find((m) => String(m.content).startsWith('[AVERETH ENGINE'))?.content || '');
 const narratorFor = (key) => narr.filter((c) => c.lastUser.includes(TURNS.find((t) => t.key === key).player));
 const checks = {
+    ...(result.saveRecoveryChecks ? Object.fromEntries(Object.entries(result.saveRecoveryChecks).map(([k, v]) => [`save_${k}`, v])) : {}),
     ...(result.financeChecks ? Object.fromEntries(Object.entries(result.financeChecks).map(([k, v]) => [`finance_${k}`, v])) : {}),
     ...(process.env.AVERETH_SMOKE_FAILSOFT === '1' ? {failsoftPlannerVisible:result.failsoft?.visible && result.failsoft?.noBooking,failsoftSaved:result.failsoft?.saved,failsoftWorldTerminal:result.failsoft?.world,failsoftNoDuplicateCombat:result.failsoft?.noDuplicateCombat,failsoftDetectsSwallowedSave:result.failsoft?.saveFault?.resolved && result.failsoft?.saveFault?.rejected} : {}),
     ...(process.env.AVERETH_SMOKE_PROVIDER_ERROR === '1' ? {

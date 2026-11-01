@@ -448,7 +448,15 @@ export async function run(o) {
     } catch (e) {
         if (e.message !== 'stop') { end = end || { kind: 'harness', why: String(e.message || e).slice(0, 500) }; log(`error: ${e.stack || e}`); }
     } finally {
-        try { if (driver) { await driver.save(); chat = await driver.chat(); statusLine = await driver.status(); toasts = await driver.toasts(); await driver.screenshot(g.check(path.join(runDir, 'screens', 'final.png'))); } } catch (e) { log(`could not read the page at the end: ${e.message}`); }
+        try {
+            if (driver) {
+                if (!driver.persistenceBlocked) await driver.save();
+                chat = await driver.chat();
+                statusLine = await driver.status();
+                toasts = await driver.toasts();
+                await driver.screenshot(g.check(path.join(runDir, 'screens', 'final.png')));
+            }
+        } catch (e) { log(`could not read the page at the end: ${e.message}`); }
         try { await br?.browser.close(); } catch { /* closed */ }
         try { await server?.stop(); } catch { /* stopped */ }
         try { await stub?.close(); } catch { /* closed */ }

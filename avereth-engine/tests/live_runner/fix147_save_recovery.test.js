@@ -67,6 +67,9 @@ test('.147 completed HTTP500 save retries only persistence and verifies all orig
     assert.equal(events.filter(e => e.t === 'transaction.completed').length, 1);
     assert.ok(h.driver.setupNotes.some(s => /recover|readback/i.test(s)));
     assert.equal(h.driver.saveFailures.length, 1, 'original failure remains recorded');
+    h.driver.aborted = true;
+    await h.driver.save(); // manual cancellation may still export a settled, unblocked chat
+    assert.deepEqual(h.disk(), h.chat);
 });
 
 test('.147 permanent save failure still aborts; no third write or repeated turn', async () => {
@@ -74,6 +77,9 @@ test('.147 permanent save failure still aborts; no third write or repeated turn'
     assert.equal((await h.driver.send('#status')).problem, 'chat persistence failed');
     assert.deepEqual(h.stats(), { writes: 2, executions: 1, overlaps: 0 });
     assert.equal(h.disk().length, h.initial.length);
+    await assert.rejects(h.driver.save(), /persistence failed/);
+    assert.equal((await h.driver.send('Do not run another turn.')).ok, false);
+    assert.deepEqual(h.stats(), { writes: 2, executions: 1, overlaps: 0 });
 });
 
 test('.147 HTTP200 without complete saved records is not recovery', async () => {

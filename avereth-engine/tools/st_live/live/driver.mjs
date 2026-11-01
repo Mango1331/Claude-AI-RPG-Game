@@ -78,6 +78,7 @@ export class Driver {
         // none of these request bodies/records reach the player.
         this.pendingSaves = new Set();
         this.saveFailures = [];
+        this.persistenceBlocked = false;
         const failedRequests = new Map();
         page.on('response', r => {
             if (/\/api\/(?:chats|chats\/group)\/save(?:\?|$)/.test(r.url()) && !r.ok()) {
@@ -260,6 +261,7 @@ export class Driver {
     async send(text) {
         const p = this.page;
         const t0 = Date.now();
+        if (this.persistenceBlocked) return { ok: false, problem: 'chat persistence failed', ms: 0 };
         const before = await this.probe();
         const failuresBefore = this.saveFailures.length;
         if (before.busy) return { ok: false, problem: 'busy before sending', ms: 0 };
@@ -286,8 +288,10 @@ export class Driver {
         }
         const ms = Date.now() - t0;
         if (ms >= this.turnTimeoutMs) return { ok: false, problem: `the turn did not end within ${Math.round(this.turnTimeoutMs / 1000)} s (busy ${last?.busy}, extraction ${last?.extraction})`, extraction: last?.extraction ?? null, ms };
-        if (this.saveFailures.length > failuresBefore && !await this.recoverSavedTurn(failuresBefore))
+        if (this.saveFailures.length > failuresBefore && !await this.recoverSavedTurn(failuresBefore)) {
+            this.persistenceBlocked = true;
             return { ok: false, problem: 'chat persistence failed', ms: Date.now() - t0 };
+        }
         await p.waitForTimeout(600); // the HUD re-renders after the extraction
         return { ok: true, ms: Date.now() - t0, replyMs: replyAt ? replyAt - t0 : null };
     }
@@ -459,12 +463,13 @@ export class Driver {
     async status() { return this.page.evaluate(() => document.getElementById('avereth_status')?.textContent || ''); }
 
     async save() {
+        if (this.persistenceBlocked) throw new Error('chat persistence failed; no further automatic save');
         const expected = await this.identity();
         this.requireTestChat(expected);
         const drained = async () => {
             const until = Date.now() + 5000;
             while (this.pendingSaves.size && Date.now() < until && !this.aborted) await sleep(50);
-            if (this.pendingSaves.size || this.aborted) throw new Error('previous chat save did not finish');
+            if (this.pendingSaves.size) throw new Error('previous chat save did not finish');
         };
         await drained();
         await this.page.evaluate(async expected => {

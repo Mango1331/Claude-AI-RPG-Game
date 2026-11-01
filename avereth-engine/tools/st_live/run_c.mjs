@@ -316,13 +316,16 @@ try {
             stopped = await driver.send('#status');
             if (stopped.ok || stopped.problem !== 'chat persistence failed') throw new Error('permanent save failure did not stop');
         } finally { await page.unroute('**/api/chats/save', always); }
-        await driver.save(); // fixture cleanup only; send() still reported the permanent failure
+        // Explicit fixture cleanup, not normal Runner recovery: a blocked Driver must never silently save again.
+        await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); });
+        if (!await driver.verifySaved(await driver.chat(), { complete: true })) throw new Error('fixture cleanup readback differs');
         injectingSaveFailure = false;
         const sameEvents = JSON.stringify(beforeEvents) === JSON.stringify(events(await driver.chat()));
         if (!sameEvents || calls.length !== beforeCalls) throw new Error('save probes executed game/model actions');
         saveRecoveryChecks = { transientSavedAndReadBack: recovered.ok, permanentFailureStops: !stopped.ok,
             noRepeatedEngineOrModel: sameEvents && calls.length === beforeCalls,
             purchaseAndPaymentRecordsPreserved: financeChecks?.nativeOnceNoModel === true && sameEvents };
+        driver = new Driver(page, { turnTimeoutMs: 60000 }); // fresh fixture driver only after verified cleanup
     }
     const steps = {};
     let failsoft=null;

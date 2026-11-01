@@ -9,7 +9,7 @@
 - **Rast-/Reisegefahr:** Gefahren bei langem Ruhen in gefährlichen Dungeons nicht pauschal ausschließen; Wahrscheinlichkeit eher nach tatsächlich verstrichener Spielzeit als nach Anzahl Eingaben. Sichere Orte risikofrei, Unterbrechung replaystabil, Regeneration/Zeit nur bis dahin buchen; reale lokale Belegung als Quelle. **Nicht implementiert.** [Recherche §4.1](recherche/AI_RPG_RECHERCHE_20261028.md).
 - **Performance:** tatsächliche Modell-/Rollenlatenz, Reasoning, Promptwachstum, Cache, Repairquote, Fold/Save/Reload und Spielhandlungen messen; erst nach belegtem Flaschenhals verändern. Alte V3-Cachewerte nicht als aktuelle Messung nutzen.
 
-## Handel – optionaler Rückfall: Engine-Shops
+## Handel – Engine-Shop-Fallback
 
 **[OFFEN, keine Implementierungs- oder Designfreigabe]** Falls der bestehende freie Handel **nach den konkreten Integrationskorrekturen aus [Batch21](testrun_10b/batch-20261101-152756Z/REVIEW.md)** weiterhin regelmäßig zu nicht auflösbaren Verkaufs-/Kaufschleifen führt, ist ein *Engine-Shop mit frei erzähltem Händler* eine bewusste Vereinfachungsoption. Nicht schon wegen einzelner falscher Narratorformulierungen umstellen; bestehende S1/S2-Buchungen und funktionierende Geschäfte bewahren.
 

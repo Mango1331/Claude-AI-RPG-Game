@@ -217,7 +217,7 @@ const STAT_WORDS = { STR: 'strength', VIT: 'toughness', AGI: 'agility', INT: 'mi
 const techniqueText = (t) => (t.passive ? `an Ordinary Passive of his ${STAT_WORDS[t.stat]} (${t.stat})` : `${t.aspects?.length ? `${t.aspects.join('/')} ` : ''}${t.fn} (${t.tags.join(', ')})`);
 
 /** A learning goal in a few words (the planner's LEARNING, #skills): what, from what, how far. */
-export const goalText = (g) => `${techniqueText(g.target)} from ${g.source.name}, ${g.lp}/${g.need} LP`;
+export const goalText = (g) => `Learning ${techniqueText(g.target)} from ${g.source.name}, ${g.lp}/${g.need} LP; continue actual study/training with this source — another manual does not add LP`;
 
 /** Patch 9C-2c: the Ordinary Passive his training of this core stat would make (its budget, rules.json passive_design). */
 const ordinaryProbe = (content, stat) => ({ id: 'dyn.passive_probe', scope: 'always', effects: [{ kind: 'core_stat_bonus', stat, value: qualityBudget(content, 'ordinary')?.per.core_stat_bonus ?? 2 }] });

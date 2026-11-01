@@ -38,7 +38,7 @@ import { trueDungeonOf } from './dungeon.js';
 import { finalizeGrowth, growthDrafts, activationsOf } from './growth.js';
 import { FORGE_VERSION, forgeRequest, parseForge, passiveForgeRequest, parsePassiveForge } from './forge.js';
 import { passiveDrafts, offerPassives, deedEvidence } from './passive_growth.js';
-import { skillDrafts, offerSkills } from './skill_growth.js';
+import { skillDrafts, offerSkills, skillEvidence } from './skill_growth.js';
 import { classDrafts, offerClass } from './class_growth.js';
 import { developmentFeats } from './feats.js';
 import { classForgeRequest, parseClassForge } from './forge.js';
@@ -433,6 +433,11 @@ async function withGrowth(t, content, llm, previous) {
     // offers left (one Forge request of their own, the same reuse by key and hash)
     let s3 = null;
     if (s2) { try { s3 = after(s2, offered.events); } catch { s3 = null; } }
+    if (s3 && !s3.encounter && !(s3.pending_combat || []).length) {
+        const evidence = skillEvidence(s3, content);
+        f.events.push(...evidence);
+        s3 = after(s3, evidence);
+    }
     const sdrafts = s3 ? skillDrafts(s3, content) : [];
     const sforge = sdrafts.length ? await generateForge(llm, s3, content, sdrafts, cached) : null;
     const skilled = sdrafts.length ? offerSkills(s3, content, sdrafts, sforge?.entries) : { events: [], offers: [] };

@@ -147,10 +147,11 @@
       "3": 150
     },
     "award": {
-      "note": "Patch 9B-1: base PP per Skill and qualifying fight, at most once per Skill and fight, times his single highest Class Affinity for its tags, rounded half up; booked when the fight is over. A fight qualifies when a foe at most levels_below Levels below him took part and a foe attacked him (a won fight against a trivial or passive foe gives none)",
+      "note": "Patch 9B-1: base PP per Skill and qualifying fight, at most once per Skill and fight, times his single highest Class Affinity for its tags, rounded half up; booked when the fight is over. A fight qualifies when a foe at most levels_below Levels below him took part and a foe attacked him (defensive/utility uses retain this gate; offensive F skills use actual struck targets within offensive_f_levels_below and victory, including instant kills)",
       "base_pp": 12,
       "challenge": {
         "levels_below": 2,
+        "offensive_f_levels_below": 4,
         "foe_attack": true
       }
     },
@@ -280,7 +281,7 @@
       "keep_fights": 8,
       "max_offers": 3,
       "npc_signature_level": 5,
-      "note": "a qualifying fight (proficiency.award.challenge) notes the patterns of each Skill he used (the engine's records: two or more foes ENGAGED with him as it struck, a Range Band closed with it, a foe in partial cover, a MEDIUM attack at its full reach, a foe's strike before his next turn, a defense that still let damage through) and the Skills he used one after the other. Evolution: a Skill at P5 that showed one pattern in evolution_fights qualifying fights at P5 (after the last evolution: its successor's own fights) is offered its successor (Complexity +1, the step of that pattern, Rank and Proficiency kept); breakthrough: a pattern of his Basic Attack, or two Skills used one after the other, in breakthrough_fights qualifying fights offer a new technique beside them. Fights of one evidence never count for another of the same Skill. At most max_offers developments (Passives and Skills) are open at a time, one evolution per Skill; the rest waits. A trained person of the world of at least npc_signature_level Levels has one technique of their own (one of their starter Skills developed one step, never an area or multi-strike one), fixed with their sheet"
+      "note": "a qualifying fight (proficiency.award.challenge) notes the patterns of each Skill he used (the engine's records: two or more foes ENGAGED with him as it struck, a Range Band closed with it, a foe in partial cover, a MEDIUM attack at its full reach, a foe's strike before his next turn, a defense that still let damage through) and the Skills he used one after the other. Evolution: a Skill at P5 that showed one pattern in evolution_fights qualifying fights, before or after P5 (after the last evolution: its successor's own fights) is offered its successor (Complexity +1, the step of that pattern, Rank and Proficiency kept); breakthrough: a pattern of his Basic Attack, or two Skills used one after the other, in breakthrough_fights qualifying fights offer a new technique beside them. Fights of one evidence never count for another of the same Skill. At most max_offers developments (Passives and Skills) are open at a time, one evolution per Skill; the rest waits. A trained person of the world of at least npc_signature_level Levels has one technique of their own (one of their starter Skills developed one step, never an area or multi-strike one), fixed with their sheet"
     }
   },
   "composer": {

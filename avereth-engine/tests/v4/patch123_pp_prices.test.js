@@ -74,7 +74,7 @@ test('non-gear goods and lodging retain their narrated prices',()=>{
  const s=shop();const deltas=[{seq:1,type:'offer',seller:'npc.alda',lines:[{what:'healing potion',kind:'goods',qty:1,price_cp:7,said:'Seven copper for the potion.'},{what:'a room',kind:'service',service:'lodging',qty:1,price_cp:9,said:'Nine copper for the room.'}]}];
  const r=applyWorld(s,c,{scene:s.scene.at,expected:{},deltas},{msg:20,prose:'Seven copper for the potion. Nine copper for the room.'});assert.deepEqual(offered(r).lines.map(l=>l.price_cp),[7,9]);
 });
-test('real first strike victory books PP through combat end while LP/development stay behind the old gate',async()=>{
+test('real victory books PP while LP retains the old gate and no unrecorded development pattern is invented',async()=>{
  const { initEncounter, runCombat, endEncounterEvents }=await import('../../src/combat.js');
  const { scaleCreature }=await import('../../src/npcgen.js');const { scriptedDice }=await import('../helpers.js');
  const g=new Game(c);g.input('Mage');g.input('Arcane Bolt + Arcane Ward');g.state.meta.f_balance=true;

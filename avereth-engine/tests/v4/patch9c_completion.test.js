@@ -179,28 +179,24 @@ test('9C completion (2): a Skill at P5 that showed a pattern in two hard fights 
     assert.deepEqual(sweep.strikes.map((x) => x.target).sort(), ids.sort(), 'an area attack: everyone ENGAGED with him');
 });
 
-test('9C completion (3): only fights at P5 count, each evidence takes its fights for good: a decline needs two new ones, the successor its own; a fight that was no challenge notes nothing', async () => {
+test('.149: pre-P5 fights count once P5 is reached, each evidence takes its fights for good: a decline needs two new ones, the successor its own; a fight that was no challenge notes nothing', async () => {
     const g = await hero();
     // Qualification, not XP pace: each positive fight matches his current level.
-    // a fight before P5 is noted, but counts for no evolution
+    // .149: an early matching fight is retained; no evolution until P5.
     const early = await fight(g, { plan: always('warrior.heavy_slash'), level: sheetOf(g).level });
     assert.equal(g.state().growth.marks['warrior.heavy_slash'][0].prof, 1);
     await reply(g, 'Over.');
     atP5(g, 'warrior.heavy_slash');
     const a = await fight(g, { plan: always('warrior.heavy_slash'), level: sheetOf(g).level });
-    assert.equal(a.d.summary.developments, undefined, 'the fight before P5 does not count');
-    await reply(g, 'Over.');
-    const b = await fight(g, { plan: always('warrior.heavy_slash'), level: sheetOf(g).level });
-    assert.deepEqual(b.d.summary.developments, [`evo:warrior.heavy_slash:crowd:${a.d.id}+${b.d.id}`]);
-    assert.ok(!b.d.summary.developments[0].includes(early.d.id));
+    assert.deepEqual(a.d.summary.developments, [`evo:warrior.heavy_slash:crowd:${early.d.id}+${a.d.id}`]);
     const offer = skillOffers(g.state())[0];
     await reply(g, 'Over.');
     await say(g, 'No. I keep my Heavy Slash as it is.', { type: 'development.decline', offer: offer.id, quote: 'I keep my Heavy Slash as it is' });
     assert.match(outcomeOf(g).actions[0], /DECLINES — Sweeping Heavy Slash: he lets this development pass; it does not come back from these fights\. Heavy Slash stays his as it is\./);
-    assert.equal(evidenceOf(g.state())[b.d.summary.developments[0]].status, 'declined');
+    assert.equal(evidenceOf(g.state())[a.d.summary.developments[0]].status, 'declined');
     assert.ok(sheetOf(g).skills['warrior.heavy_slash']);
     await reply(g, 'He lets it go.');
-    // one new fight is not enough (a and b are spent); two are
+    // one new fight is not enough (early and a are spent); two are
     const c = await fight(g, { plan: always('warrior.heavy_slash'), level: sheetOf(g).level });
     assert.equal(c.d.summary.developments, undefined);
     await reply(g, 'Over.');

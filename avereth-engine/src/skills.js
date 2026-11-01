@@ -8,6 +8,7 @@
 //    Proficiency it locked) and only for meaningful use; for a booked check of a Skill outside a fight once per thing.
 // Only the engine books these events (src/v4/ownership.js: skills, pc.progress); nothing here calls an LLM.
 import { skillOf, skillNames, rulesetOf } from './content.js';
+import { rankOf } from './derived.js';
 import { normText, num, roundHalfUp } from './util.js';
 
 const RANKS = ['F', 'E', 'D', 'C', 'B', 'A', 'S'];
@@ -365,7 +366,10 @@ export function noteUse(ctx, r) {
     if (r.kind === 'attack' && (r.strikes || []).some((s) => hostile(s.target))) {
         pp.used[skill.id] ||= 'an attack on a foe';
         // Keep the actual target qualification, not the trimmed encounter log or a strong spectator.
-        const below = ctx.content.rules.proficiency.award?.challenge?.levels_below ?? 2;
+        const challenge = ctx.content.rules.proficiency.award?.challenge || {};
+        const pc = enc.combatants.pc;
+        const fOffense = (pc.fixed.rank || rankOf(pc.fixed.level, ctx.content)) === 'F' && skill.rank === 'F';
+        const below = fOffense ? challenge.offensive_f_levels_below ?? 4 : challenge.levels_below ?? 2;
         const worthy = r.strikes.some(s => hostile(s.target)
             && (enc.combatants[s.target].fixed.level ?? 0) >= enc.combatants.pc.fixed.level - below);
         const offense = (pp.offense ||= {});
@@ -445,6 +449,15 @@ export function fightQualifies(state, content, enc) {
     return worthy && !(rule.challenge?.foe_attack !== false && !enc.pp.threatened);
 }
 
+/** One qualification for offensive PP and offensive development. Other skill uses keep their own gate. */
+export function skillFightQualifies(state, content, enc, sid) {
+    if (rulesetOf(state) < 2 || !enc?.pp || enc.combatants.pc.current.defeated || enc.combatants.pc.current.escaped) return false;
+    const offense = enc.pp.offense?.[sid];
+    if (offense === undefined) return fightQualifies(state, content, enc);
+    return offense === true && Object.values(enc.combatants).filter(c => c.side === 'hostile')
+        .every(c => c.current.defeated || c.current.escaped || c.current.surrendered);
+}
+
 /**
  * Patch 9B-1: the Proficiency Progress of a fight that is over (src/combat.js endEncounterEvents): for each Skill he
  * used meaningfully, once, when the fight was a real challenge: a foe at most `challenge.levels_below` Levels below him
@@ -453,17 +466,12 @@ export function fightQualifies(state, content, enc) {
  */
 export function fightProgress(state, content, enc) {
     if (rulesetOf(state) < 2 || !enc.pp || enc.combatants.pc.current.defeated || enc.combatants.pc.current.escaped) return [];
-    const qualified = fightQualifies(state, content, enc);
-    const won = Object.values(enc.combatants).filter(c => c.side === 'hostile')
-        .every(c => c.current.defeated || c.current.escaped || c.current.surrendered);
     const sheet = state.entities.pc.sheet;
     const out = [];
     const after = { ...sheet, skills: { ...sheet.skills } };
     const view = { ...state, entities: { ...state.entities, pc: { ...state.entities.pc, sheet: after } } };
     for (const [sid, why] of Object.entries(enc.pp.used)) {
-        const offense = enc.pp.offense?.[sid];
-        // Historical snapshots without this evidence and defensive/utility uses retain the old gate.
-        if (offense !== undefined ? !offense || !won : !qualified) continue;
+        if (!skillFightQualifies(state, content, enc, sid)) continue;
         const skill = skillOf(content, sid, state);
         if (!skill || !sheet.skills[sid] || state.pp_keys?.[`fight:${enc.id}:${sid}`]) continue;
         const ev = progressEvents(content, view, sid, ppAward(content, sheet, skill), `${why} in ${enc.id}`, `fight:${enc.id}:${sid}`);

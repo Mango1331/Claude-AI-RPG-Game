@@ -6,7 +6,7 @@
 //              partial cover, a MEDIUM attack at its full reach, a foe's strike before his next turn, a defense that still
 //              let damage through) and the Skills he used one after the other. growth.noted
 //   evidence   from those notes alone, once per its key, at the same fight's end:
-//                evolution     a Skill at P5 that showed one pattern in growth.development.evolution_fights such fights at
+//                evolution     a Skill at P5 that showed one pattern in growth.development.evolution_fights such fights before or after
 //                              P5 (a successor counts its own fights only); never his Basic Attack
 //                breakthrough  his Basic Attack showing one pattern in breakthrough_fights fights: a technique of its own
 //                combination   two of his Skills used one after the other in breakthrough_fights fights: one of them with
@@ -26,7 +26,7 @@
 import { rulesetOf, skillOf } from '../content.js';
 import { applyEvent } from '../state.js';
 import { clone, hash32 } from '../util.js';
-import { defineSkill, learnSkill, fightQualifies, skillDefErrors, rankBar } from '../skills.js';
+import { defineSkill, learnSkill, skillFightQualifies, skillDefErrors, rankBar } from '../skills.js';
 import { developSkill, STEPS, STEP_ORDER, techniqueShape } from '../skill_composer.js';
 import { growthOf } from './growth.js';
 
@@ -59,18 +59,18 @@ export const offerRoom = (state, content) => Math.max(0, (D(content).max_offers 
  * real challenge (proficiency.award.challenge), one he died in or ran from, or in a legacy campaign.
  */
 export function developmentEvents(state, content, enc) {
-    if (rulesetOf(state) < 2 || !enc?.pp || !fightQualifies(state, content, enc)) return [];
+    if (rulesetOf(state) < 2 || !enc?.pp) return [];
     const sheet = state.entities.pc.sheet;
     const fixed = enc.combatants.pc.fixed.actions || {};
     const g = growthOf(state);
     if (Object.values(g.marks || {}).some((list) => list.some((x) => x.fight === enc.id)) || Object.values(g.pairs || {}).some((list) => list.some((x) => x.fight === enc.id))) return [];
     const marks = {};
     for (const [sid, patterns] of Object.entries(enc.pp.marks || {})) {
-        if (!sheet.skills[sid] || !fixed[sid] || fixed[sid].weapon) continue;
+        if (!sheet.skills[sid] || !fixed[sid] || fixed[sid].weapon || !skillFightQualifies(state, content, enc, sid)) continue;
         const kept = STEP_ORDER.filter((p) => patterns.includes(p));
         if (kept.length) marks[sid] = { prof: fixed[sid].prof || 1, patterns: kept };
     }
-    const pairs = (enc.pp.pairs || []).filter((k) => k.split('+').every((id) => sheet.skills[id] && fixed[id] && !fixed[id].weapon)).sort();
+    const pairs = (enc.pp.pairs || []).filter((k) => k.split('+').every((id) => sheet.skills[id] && fixed[id] && !fixed[id].weapon && enc.pp.used[id] && skillFightQualifies(state, content, enc, id))).sort();
     if (!Object.keys(marks).length && !pairs.length) return [];
     const noted = { t: 'growth.noted', d: { fight: enc.id, marks, ...(pairs.length ? { pairs } : {}) } };
     return [noted, ...skillEvidence(after(state, [noted]), content)];
@@ -119,7 +119,7 @@ export function skillEvidence(state, content) {
         return !d.errors.length && !have.has(techniqueShape(d.def));
     };
     const pick = (notes, step, need) => {
-        const fights = notes.filter((n) => n.patterns.includes(step)).map((n) => n.fight);
+        const fights = [...new Set(notes.filter((n) => n.patterns.includes(step)).map((n) => n.fight))];
         return fights.length >= need ? fights.slice(-need) : null;
     };
     for (const [sid, entry] of Object.entries(sheet.skills || {})) {
@@ -138,10 +138,11 @@ export function skillEvidence(state, content) {
             }
             continue;
         }
-        // an evolution: P5, then the pattern in fights he fought at P5 (a successor's own fights: its own id)
+        // Evolution still requires P5 now; real matching encounters may have been fought before mastery.
+        // A successor retains its own identity and cannot reuse its predecessor's marks.
         if ((entry.prof || 1) < 5 || open((x) => x.kind === 'evolution' && x.skill === sid)) continue;
         const spent = used((x) => x.kind === 'evolution' && x.skill === sid);
-        const notes = (g.marks?.[sid] || []).filter((n) => n.prof >= 5 && !spent.has(n.fight));
+        const notes = (g.marks?.[sid] || []).filter((n) => !spent.has(n.fight));
         for (const step of STEP_ORDER) {
             const fights = STEPS[step].applies(k) ? pick(notes, step, r.evolution_fights ?? 2) : null;
             if (!fights || !fresh(k, step)) continue;

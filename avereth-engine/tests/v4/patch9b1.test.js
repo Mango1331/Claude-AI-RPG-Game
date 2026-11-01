@@ -295,13 +295,13 @@ test('9B-1 (6): a real fight books PP once per Skill when it is over, by the hig
 test('9B-1 (6): no PP for a trivial foe, a foe that never attacked, a defense no one tested, an illegal action, a lost fight', () => {
     // a foe far below him: no challenge
     const low = hero('Rogue', 'Razor Cut + Evasive Step');
-    book(low, { t: 'level.up', d: { id: 'pc', level: 5, free_points: 0, favored: [], xp_after: 0 } });
+    book(low, { t: 'level.up', d: { id: 'pc', level: 6, free_points: 0, favored: [], xp_after: 0 } });
     spawn(low, 'mon.wolf');
     const ctx = fight(low, ['mon.wolf']);
     const r1 = attackAction(ctx, 'pc', 'mon.wolf', 'rogue.razor_cut');
     noteUse(ctx, r1);
     noteUse(ctx, { actor: 'mon.wolf', kind: 'attack', strikes: [{ target: 'pc' }] });
-    assert.deepEqual(fightProgress(low.state, content, ctx.enc), [], 'a Level 1 wolf against a Level 5 hero');
+    assert.deepEqual(fightProgress(low.state, content, ctx.enc), [], 'a Level 1 wolf against a Level 6 hero (outside the .149 F window)');
     // a worthy foe that never attacked him
     const g = hero('Rogue', 'Razor Cut + Evasive Step');
     spawn(g, 'mon.wolf');

@@ -1388,7 +1388,11 @@ export function endEncounterEvents(state, content, enc) {
     events.push(...trial);
     // 9C completion: what his Skills showed in a fight that was a real challenge, and the developments it makes possible
     // (src/v4/skill_growth.js); offered at his next turn outside a fight
-    const developed = developmentEvents(state, content, enc);
+    const developmentState = clone(state);
+    for (const e of progress) developmentState.entities.pc.sheet.skills[e.d.skill] = {
+        ...developmentState.entities.pc.sheet.skills[e.d.skill], ...e.d.to,
+    };
+    const developed = developmentEvents(developmentState, content, enc);
     const noted = developed.find((e) => e.t === 'growth.noted');
     if (noted) summary.noted = { skills: Object.keys(noted.d.marks), ...(noted.d.pairs ? { pairs: noted.d.pairs } : {}) };
     const found = developed.filter((e) => e.t === 'growth.evidence').map((e) => e.d.evidence.key);

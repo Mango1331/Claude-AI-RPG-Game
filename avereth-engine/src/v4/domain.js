@@ -252,8 +252,8 @@ export function applyDomainEvent(state, e) {
             // instead of booking the old coin against a different card
             if (d.expect) {
                 const open = state.decisions.find((x) => x.id === d.id);
-                if (!open || open.kind !== 'payment' || open.state !== 'needs_confirmation' || open.route !== d.expect.route
-                    || open.seller !== d.expect.seller || open.amount_cp !== d.expect.amount_cp) throw new Error(`payment card ${d.id} is no longer the one that was paid`);
+                if (!open || open.kind !== 'payment' || open.state !== 'needs_confirmation' || JSON.stringify(cardSnapshot(open)) !== JSON.stringify(cardSnapshot(d.expect)))
+                    throw new Error(`payment card ${d.id} is no longer the one that was paid`);
             }
             state.decisions = state.decisions.filter((x) => x.id !== d.id);
             break;
@@ -562,4 +562,10 @@ export function seedPlaces(content, loc, startName) {
     const at = `${loc.id}.verge`;
     places.push({ id: at, name: startName, kind: 'site', parent: loc.id, realm: loc.realm || null, tags: [], by: 'content' });
     return { places, at };
+}
+
+// Build .144 (S1): the snapshot of a payment card that "#pay" stores and the fold compares (src/v4/native_pay.js)
+export function cardSnapshot(d) {
+    return { route: d.route ?? null, seller: d.seller ?? null, amount_cp: d.amount_cp ?? null, at: d.at ?? null, what: d.what ?? null,
+        source: d.source ? { message: d.source.message ?? null, seq: d.source.seq ?? null, input_hash: d.source.input_hash ?? null } : null };
 }

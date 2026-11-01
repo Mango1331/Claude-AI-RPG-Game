@@ -2611,7 +2611,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // not bind (conditional, or unconfirmed) is recorded as information that cannot be bought.
         const terms = true;
         const quoted = (l) => { const at = typeof l.said === 'string' ? findQuote(prose, l.said) : { state: 'missing' };
-            const q = priceEvidence(l.pricing, { source: prose, content, units: l.qty ?? 1, reported: l.price_cp, within: at.state === 'found' ? at : null, goods: [l.what] });
+            const q = priceEvidence(l.pricing, { source: prose, content, units: l.qty ?? 1, reported: l.price_cp, within: at.state === 'found' ? at : null, goods: [l.what], ownCurrency: true });
             return q.state === 'verified' ? q.cp : null; };
         const priced = d.lines.map(l => {
             const named = l.kind === 'goods' ? itemProfile(content, {name:l.what, balance:true, effect:l.effect, teaches:l.teaches}) : null;
@@ -2766,7 +2766,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const within = saidAt.state === 'found' ? saidAt : null;
         const ev = Number.isInteger(enginePrice)
             ? { state: 'verified', cp: enginePrice, reason: 'engine_price', source: null }
-            : priceEvidence(x.pricing, { source: prose, content, units, lines, reported, within, goods: [...goods, x.what].filter(Boolean) });
+            : priceEvidence(x.pricing, { source: prose, content, units, lines, reported, within, goods: [...goods, x.what].filter(Boolean), ownCurrency: true });
         const anchor = within || ev.source?.ranges?.[0] || null;
         const marker = anchor ? openConditionNear(prose, anchor.start, anchor.end) : null;
         const evidence = { source_reference: { message: msg, text_hash: hash32(prose) }, ranges: [...(within ? [{ start: within.start, end: within.end }] : []), ...(ev.source?.ranges || [])].slice(0, 4),

@@ -79,15 +79,20 @@ test('.144 S1: every normal way to say a payment makes the same card; no wording
     }
 });
 
-test('.144 S1: two people get two cards; a second payment to the same person in one message waits; a claim makes none', () => {
-    const s = hall();
-    const m = 'I leave five copper for Tam, two copper for Wim, and three copper more for Tam. I also collect my fifty copper wage.';
-    const r = turn(s, m, [PAY(TAM, 5, 'I leave five copper for Tam', 'five copper'), { ...PAY(PORTER, 2, 'two copper for Wim', 'two copper'), seq: 2 },
-        { ...PAY(TAM, 3, 'three copper more for Tam', 'three copper'), seq: 3 }, { ...PAY(TAM, 50, 'I also collect my fifty copper wage', null), seq: 4 }]);
-    assert.deepEqual(openCards(s).map((d) => [d.seller, d.amount_cp]), [[TAM, 5], [PORTER, 2]]);
-    assert.deepEqual(r.ctx.resolutions.filter((x) => x.type === 'pay' && x.status !== 'refused').map((x) => x.status), ['pending', 'pending', 'clarify']);
-    assert.equal(openCards(s).some((d) => d.amount_cp === 50), false, 'his wage claim makes no card');
-    assert.match(r.ctx.actions.join('\n'), /already stands for this message; another payment to .* needs a message of its own/);
+test('.144 S1: two people get two cards, paid one after the other; the same payment reported twice is one card; different payments to one person are a question', () => {
+    const s = hall(6);
+    const m = 'I leave five copper for Tam and two copper for Wim. I also collect my fifty copper wage.';
+    turn(s, m, [PAY(TAM, 5, 'I leave five copper for Tam', 'five copper'), { ...PAY(PORTER, 2, 'two copper for Wim', 'two copper'), seq: 2 },
+        { ...PAY(TAM, 5, 'I leave five copper for Tam', 'five copper'), seq: 3 }, { ...PAY(TAM, 50, 'I also collect my fifty copper wage', null), seq: 4 }]);
+    const cards = openCards(s);
+    assert.deepEqual(cards.map((d) => [d.seller, d.amount_cp]), [[TAM, 5], [PORTER, 2]], 'the repeated report is the same card; the wage claim makes none');
+    assert.equal(payCard(s, content, cards[0].id).paid, true);
+    assert.equal(payCard(s, content, cards[1].id).paid, false, 'coin is checked again after each payment (6 − 5 = 1 < 2)');
+    const t = hall();
+    const c = 'I leave five copper for Tam, then three copper more for Tam.';
+    const r = turn(t, c, [PAY(TAM, 5, 'I leave five copper for Tam', 'five copper'), { ...PAY(TAM, 3, 'then three copper more for Tam', 'three copper'), seq: 2 }]);
+    assert.deepEqual(openCards(t), [], 'no card, no sum, no "last one wins"');
+    assert.match(r.ctx.actions.join('\n'), /different payments to .* in one message; no payment card was made/);
 });
 
 test('.144 S1: #pay refuses a card without amount, a gate fee, a closed or unknown id, another place, an absent payee and too little coin', () => {
@@ -209,10 +214,13 @@ test('.144 S2: engine arithmetic of stored prices stays (3 × 6 = 18, 260 + 160 
     assert.match(acceptanceWhy({ lines: ['l2', 'l3'], qty: 2, quote: 'I take both.' }, offer, 'Tam', content.rules.currency), /one quantity for several positions/);
 });
 
-test('.144 S2: a limit is his total; a price per unit for several units is a wish (no limit, no consent in advance)', () => {
+test('.144 S2: a limit is his total; a price per unit for several units stops the booking and asks for the total (no limit, no consent in advance)', () => {
     const s = hall(200);
     const unit = turn(s, 'I buy three torches, at most four copper each.', [{ seq: 1, type: 'buy', what: 'torch', from: TAM, qty: 3, max_cp: 12, any_price: false, quote: 'I buy three torches, at most four copper each.', price_evidence: UNIT('four copper') }]);
-    assert.match(unit.ctx.actions[0], /WANTS — torch; no price is known/);
+    // plan §7.3: the booking stops with a concrete question; no limit of 12, no purchase without one
+    assert.match(unit.ctx.actions[0], /NOT BOUGHT — "four copper" is a price per unit, not his total for 3 torch: name the total limit/);
+    assert.equal(unit.ctx.resolutions[0].status, 'clarify');
+    assert.equal(s.decisions.some((d) => d.kind === 'purchase'), false);
     const t = hall(200);
     const total = turn(t, 'I buy three torches for at most twelve copper.', [{ seq: 1, type: 'buy', what: 'torch', from: TAM, qty: 3, max_cp: 12, any_price: false, quote: 'I buy three torches for at most twelve copper.', price_evidence: TOTAL('twelve copper') }]);
     assert.match(total.ctx.actions[0], /BUYS — torch if the price is at most 12 cp/);

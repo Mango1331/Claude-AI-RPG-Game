@@ -38,7 +38,7 @@ const ACCEPTED143 = JSON.parse(fs.readFileSync(new URL('./accepted_f143_vs_126.j
 // Finance simplification (.144, S1+S2): the .143 list checked against the full .143 replay record by record; unchanged
 // entries kept, every changed record in one of six reasoned categories with the .143 entry it supersedes
 const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_f144_vs_126.json', import.meta.url), 'utf8'));
-const F144 = ['finance 144 payment card', 'finance 144 contract fields', 'finance 144 acceptance hint', 'finance 144 price open', 'finance 144 unit limit', 'finance 144 acceptance'];
+const F144 = ['finance 144 payment card', 'finance 144 contract fields', 'finance 144 acceptance hint', 'finance 144 price open', 'finance 144 unit limit', 'finance 144 acceptance', 'finance 144 own coin'];
 const SUB = { ...baseline, runs: Object.fromEntries(QUICK.map((l) => [l, baseline.runs[l]])) };
 let quick = null; // the four quick runs, replayed once for this file
 const quickRuns = async () => (quick ||= await replayCorpus(undefined, undefined, { labels: QUICK }));
@@ -188,7 +188,7 @@ test('F .144 keeps every .143 entry or supersedes it in a reasoned .144 category
         else { assert.ok(F144.includes(now.category), id); assert.deepEqual(now.supersedes_143, { category: entry.category, fingerprint: entry.fingerprint }, id); assert.ok(now.reason?.length > 80, id); changed.push(id); }
     }
     for (const [id, entry] of Object.entries(ACCEPTED.cases)) if (!ACCEPTED143.cases[id]) { assert.ok(F144.includes(entry.category), id); added.push(id); }
-    assert.equal(changed.length, 34);
+    assert.equal(changed.length, 35);
     assert.deepEqual(added.sort(), ['b17-warrior#185', 'b17-warrior#69', 'b18-rogue#335', 'b18-rogue#341', 'b19-warrior#163'].sort());
     assert.deepEqual(ACCEPTED.returned, ACCEPTED143.returned);
     // money moves in a .144 record only where the player's explicit acceptance of stored positions is booked

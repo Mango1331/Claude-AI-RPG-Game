@@ -90,33 +90,61 @@ function provenNumber(c, field, content, ctx, units = 1, goods = []) {
     return r.state === 'verified' && r.cp === c[field] ? c[field] : null;
 }
 /**
+ * Build .144 (S2, plan §7.3): a limit or agreed price his words give per unit for several units is no total. The booking
+ * stops and the engine asks for his total limit or his acceptance of the stored offer – never null-and-buy, never a
+ * multiplication of his words.
+ */
+function unitOnly(c, field, content, ctx, units = 1, goods = []) {
+    if (!Number.isInteger(c[field]) || !c.price_evidence) return false;
+    const r = playerPrice(env(ctx).text || c.quote || '', c.price_evidence, { content, units, goods: [c.what, ...goods].filter(Boolean) });
+    return r.reason === 'total_required' || r.reason === 'unit_price_as_total';
+}
+const unitAsk = (verb, what, quote) => ({ status: 'clarify', reason: 'limit per unit', line: `NOT ${verb} — "${String(quote).slice(0, 60)}" is a price per unit, not his total for ${what}: name the total limit, or accept the other side's offer once it names its total. Nothing changed hands.` });
+/**
  * Build .144 (finance simplification S1): a free payment (tip, gift, debt, compensation) is never paid from words. His
  * words make a payment card – payee, amount, purpose, wallet before and after, its id – and only his own message
  * "#pay <id>" pays it (src/v4/native_pay.js). The card lasts until his next acting message or a change of place
  * (resolveCommands); a new card for the same payee replaces the open one, cards for other people stay open.
  */
-function paymentProposal(s, content, c, ctx, emit) {
+function paymentProposal(s, content, c, ctx, emit, ev = null) {
     if (!present(s, c.to)) return { status: 'refused', reason: 'nobody to pay', line: 'CANNOT PAY — the one he means to pay is not here.' };
-    if (!Number.isInteger(c.amount_cp) || c.amount_cp <= 0) {
+    // Build .144 (plan §6.2): a card needs the complete amount in his own words; a number of the model alone (no money
+    // words, or other ones) is no card – the amount stays open and nothing can be confirmed
+    const proven = Number.isInteger(c.amount_cp) && c.amount_cp > 0 && ev?.state === 'verified' && ev.cp === c.amount_cp;
+    if (!proven) {
         emit({ t: 'decision.opened', d: { decision: { id: `dec.t${s.turn}.${c.seq}`, kind: 'payment', state: 'needs_amount', what: c.for || 'a payment', seller: c.to, at: s.scene.at, turn: s.turn } } });
         ctx.expectedKeys[String(c.seq)] = 'pay';
+        const named = Number.isInteger(c.amount_cp) && c.amount_cp > 0;
         return {
-            status: 'pending', reason: 'no_amount', line: `WANTS TO PAY — ${who(s, c.to)}${c.for ? ` for ${c.for}` : ''}; the amount is not known.`,
+            status: 'pending', reason: 'no_amount', line: `WANTS TO PAY — ${who(s, c.to)}${c.for ? ` for ${c.for}` : ''}; ${named ? 'his words name no complete amount he hands over, so no payment card was made' : 'the amount is not known'}.`,
             extra: [`OPEN DECISION — Alaric means to pay ${who(s, c.to)}${c.for ? ` for ${c.for}` : ''}; the amount is not known. Let ${who(s, c.to)} name it, then stop: he has not paid yet.`],
         };
     }
-    // §6 B2: at most one card per payee and message; a second payment to the same person waits for its own message
-    // (no sums are added up, no second card guessed). A card of an earlier message for him is replaced.
+    // §6.2 B2: one card per payee and message. The same payment reported twice is that one card; different amounts or
+    // purposes for the same person in one message are a question – no card, no sum, no "last one wins"
+    const purpose = (x) => normText(x || '');
     const mine = (s.decisions || []).filter((d) => d.kind === 'payment' && d.state === 'needs_confirmation' && d.seller === c.to);
     const here = mine.find((d) => d.turn === s.turn);
-    if (here) return {
-        status: 'clarify', reason: 'one card per payee',
-        line: `NOT PAID — payment card ${here.id} (${cpText(here.amount_cp, content)} to ${who(s, c.to)}) already stands for this message; another payment to ${who(s, c.to)} needs a message of its own after "#pay ${here.id}". Nothing changed hands.`,
-    };
+    const conflicts = (ctx.payConflicts ||= new Set());
+    const conflict = () => ({
+        status: 'clarify', reason: 'payments in conflict',
+        line: `NOT PAID — different payments to ${who(s, c.to)} in one message; no payment card was made. Name the one payment he makes, then pay its card with "#pay <id>". Nothing changed hands.`,
+    });
+    if (conflicts.has(c.to)) return conflict();
+    if (here) {
+        const same = here.amount_cp === c.amount_cp && (!c.for || here.what === 'a payment' || purpose(here.what) === purpose(c.for));
+        if (same) return { status: 'pending', reason: 'payment_unconfirmed', line: `NOT PAID — the same payment as card ${here.id} (${cpText(here.amount_cp, content)} to ${who(s, c.to)}); one card, paid only by "#pay ${here.id}".` };
+        emit({ t: 'decision.closed', d: { id: here.id, status: 'conflict' } });
+        conflicts.add(c.to);
+        return conflict();
+    }
     for (const old of mine) emit({ t: 'decision.closed', d: { id: old.id, status: 'replaced' } });
     const id = `dec.pay.t${s.turn}.${c.seq}`;
     const coin = s.entities.pc.sheet.coin_cp;
-    emit({ t: 'decision.opened', d: { decision: { id, kind: 'payment', state: 'needs_confirmation', route: 'free', seller: c.to, at: s.scene.at, amount_cp: c.amount_cp, what: c.for || 'a payment', turn: s.turn, source: { message: env(ctx).msg ?? null, seq: c.seq } } } });
+    // §6.4: the card is bound to its source (message, its words' hash, the step); #pay keeps that snapshot and the fold
+    // checks it before the coin (src/v4/domain.js)
+    const source = { message: env(ctx).msg ?? null, seq: c.seq, input_hash: hash32(String(env(ctx).text ?? c.quote ?? '')) };
+    emit({ t: 'decision.opened', d: { decision: { id, kind: 'payment', state: 'needs_confirmation', route: 'free', seller: c.to, at: s.scene.at, amount_cp: c.amount_cp, what: c.for || 'a payment', turn: s.turn, source } } });
     const after = coin - c.amount_cp;
     return {
         status: 'pending', reason: 'payment_unconfirmed',
@@ -1021,9 +1049,10 @@ const HANDLERS = {
         // Build .144 (S1): a free payment is only ever a card; his own "#pay <id>" pays it. Words naming someone else as
         // the payee make no card for this one.
         if (ev.act === 'other') return { status: 'clarify', reason: 'payee unclear', line: `NOT PAID — his words hand this coin to someone else or another amount than ${who(s, c.to)}; nothing changed hands and no payment card was made.` };
-        return paymentProposal(s, content, c, ctx, emit);
+        return paymentProposal(s, content, c, ctx, emit, ev);
     },
     buy(s, content, c, ctx, emit) {
+        if (ctx.auth.c && unitOnly(c, 'max_cp', content, ctx, c.qty || 1)) return unitAsk('BOUGHT', c.qty > 1 ? `${c.qty} ${c.what}` : c.what, c.price_evidence.quote);
         const offers = Object.values(s.offers).filter((o) => o.status === 'open' && !o.bid
             && !offerAvailability(s, o) && (!o.canon || o.stock === 'manuals') && (!c.from || o.seller === c.from));
         const matches = offers.map((o) => ({ o, lines: purchaseLines(c.what, o.lines) })).filter((x) => x.lines.length);
@@ -1067,6 +1096,7 @@ const HANDLERS = {
         if (n.error) return { status: 'refused', reason: 'he holds fewer', line: `CANNOT SELL — ${c.qty} ${o.name}: ${n.error}.` };
         const what = (o.qty ?? 1) > 1 ? unitsText(o.name, n.units) : o.name;
         // Build .142 (§4.1, §6.3): his lowest price authorises a sale in advance only as far as his own words carry it
+        if (ctx.auth.c && unitOnly(c, 'min_cp', content, ctx, n.units, [o.name])) return unitAsk('SOLD', what, c.price_evidence.quote);
         const min = provenNumber(c, 'min_cp', content, ctx, n.units, [o.name]);
         emit({ t: 'decision.opened', d: { decision: { id: `dec.t${s.turn}.${c.seq}`, kind: 'sale', what: o.name, object: o.id, seller: c.to || null, at: s.scene.at, turn: s.turn, min_cp: min, qty: n.units, seq: c.seq } } });
         ctx.expectedKeys[String(c.seq)] = 'sell';
@@ -1088,6 +1118,8 @@ const HANDLERS = {
         const terms = tradeTermsWhy(o, c.lines);
         if (terms) return { status: 'refused', reason: 'not binding', line: `NOT AGREED — ${terms}. Nothing changes hands; the other side has to name a binding price first.` };
         if (ctx.auth.c && rulesetOf(s) >= 2) {
+            const units = o.bid ? rateUnits(o.lines, (id) => s.objects[id]) : (pickLines(o, c.lines, c.qty ?? null).picks || []).reduce((n, p) => n + p.units, 0) || 1;
+            if (unitOnly(c, 'agreed_cp', content, ctx, units)) return unitAsk('AGREED', o.lines.map((l) => unitsText(l.what, l.qty ?? 1)).join(', '), c.price_evidence.quote);
             const why = acceptanceWhy(c, o, who(s, o.seller), content.rules.currency, o.bid ? rateUnits(o.lines, (id) => s.objects[id]) : null);
             if (why) return { status: 'refused', reason: why, line: `NOT AGREED — ${why}. Nothing changes hands; clarify the party or price.` };
         }

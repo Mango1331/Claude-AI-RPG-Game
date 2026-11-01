@@ -146,7 +146,9 @@ test('C6: taking the paid-out copper makes no second copper; the water costs its
     // copper" names no complete coin group – the 1 cp was the planner's number alone. That is no payment now but a
     // concrete proposal he can confirm (.141 paid it: 119); with a recorded offer, paying it is accepting it at once.
     assert.equal(S(68).entities.pc.sheet.coin_cp, 120);
-    assert.deepEqual(S(67).last.outcome.resolutions.map((r) => [r.type, r.status, r.reason ?? null]), [['pay', 'pending', 'payment_unconfirmed'], ['go', 'authorized', null]]);
-    // Build .144 (S1): that proposal is a payment card; only his "#pay <id>" pays it
-    assert.match(S(67).last.outcome.actions[0], /payment card dec\.pay\.t\d+\.1: pay .* 1 cp for water\. Wallet 120 cp → 119 cp\. Nothing changed hands\. Only the player's own message "#pay dec\.pay\.t\d+\.1"/);
+    // Build .144 (S1, plan §6.2): the planner's 1 cp without his money words is no payment card either – the amount stays
+    // open and nothing can be confirmed
+    assert.deepEqual(S(67).last.outcome.resolutions.map((r) => [r.type, r.status, r.reason ?? null]), [['pay', 'pending', 'no_amount'], ['go', 'authorized', null]]);
+    assert.match(S(67).last.outcome.actions[0], /WANTS TO PAY — .* for water; his words name no complete amount he hands over, so no payment card was made\./);
+    assert.equal((S(67).decisions || []).some((d) => d.state === 'needs_confirmation'), false);
 });

@@ -65,16 +65,21 @@ test('.144 S1 host: a card is visible and unpaid; #pay pays it once without a st
     assert.match(block, /PAID BEFORE THIS INPUT \(#pay dec\.pay\.t\d+\.1\): Alaric handed Odo 5 cp\. It is done/);
 });
 
-test('.144 S1 host: two people in one message get two cards; a second payment to the same person waits for its own message', async () => {
+test('.144 S1 host: two people in one message get two cards, each paid by its own #pay; different payments to one person make no card', async () => {
     const g = await shop();
     const before = coin(g), odo = idOf(g, 'Odo'), pip = idOf(g, 'Pip');
-    const m = 'I leave five copper for Odo and two copper for Pip on the counter, then three copper more for Odo.';
-    await say(g, m, PAY(odo, 5, 'I leave five copper for Odo', 'five copper'), PAY(pip, 2, 'two copper for Pip on the counter', 'two copper'), PAY(odo, 3, 'then three copper more for Odo', 'three copper'));
+    const m = 'I leave five copper for Odo and two copper for Pip on the counter.';
+    await say(g, m, PAY(odo, 5, 'I leave five copper for Odo', 'five copper'), PAY(pip, 2, 'two copper for Pip on the counter', 'two copper'));
     assert.deepEqual(cards(g).map((d) => [d.seller, d.amount_cp]), [[odo, 5], [pip, 2]]);
-    assert.deepEqual(outcomeOf(g).resolutions.map((x) => x.status), ['pending', 'pending', 'clarify']);
     for (const d of cards(g)) await say(g, `#pay ${d.id}`);
     assert.equal(coin(g), before - 7);
     reloaded(g);
+    await g.reply('They take the coins.', { expected: {}, deltas: [] });
+    const c = 'I leave five copper for Odo, then three copper more for Odo.';
+    await say(g, c, PAY(odo, 5, 'I leave five copper for Odo', 'five copper'), PAY(odo, 3, 'then three copper more for Odo', 'three copper'));
+    assert.deepEqual(cards(g), []);
+    assert.deepEqual(outcomeOf(g).resolutions.map((x) => x.status), ['pending', 'clarify']);
+    assert.equal(coin(g), before - 7);
 });
 
 test('.144 S1 host: the card lapses with his next acting message; words never pay it', async () => {
@@ -108,4 +113,39 @@ test('.144 S1 host: deleting the card message after #pay stops the fold instead 
     assert.equal(block.type, 'decision.closed');
     assert.match(block.notice, /BLOCKED — the campaign record could not be rebuilt/);
     assert.ok(rec(g.chat.at(-2)).command);
+});
+
+test('.144 S1 host §6.4: two payments, a panel in between, then a story message: the next narration knows both handovers, once', async () => {
+    const g = await shop();
+    const odo = idOf(g, 'Odo'), pip = idOf(g, 'Pip');
+    const m = 'I leave five copper for Odo and two copper for Pip on the counter.';
+    await say(g, m, PAY(odo, 5, 'I leave five copper for Odo', 'five copper'), PAY(pip, 2, 'two copper for Pip on the counter', 'two copper'));
+    await g.reply('They look at the coins.', { expected: {}, deltas: [] });
+    for (const d of cards(g)) await say(g, `#pay ${d.id}`);
+    await say(g, '#bag');
+    g.chat.push({ mes: 'I nod to them both.', is_user: true, is_system: false, extra: {} });
+    const block = JSON.stringify(turnBlock(g.chat, g.chat.length - 1, content).context);
+    assert.equal((block.match(/PAID BEFORE THIS INPUT/g) || []).length, 2);
+    assert.match(block, /Alaric handed Odo 5 cp/);
+    assert.match(block, /Alaric handed Pip 2 cp/);
+});
+
+test('.144 S1 host §6.4: the same card id with other content after an edit (other words or amount) stops the fold before its coin', async () => {
+    const g = await shop();
+    const odo = idOf(g, 'Odo');
+    const m = 'I leave five copper on the counter for Odo.';
+    await say(g, m, PAY(odo, 5, m, 'five copper'));
+    const id = cards(g)[0].id;
+    const at = g.chat.findLastIndex((x) => x.is_user && x.mes === m);
+    await g.reply('Odo waits.', { expected: {}, deltas: [] });
+    await say(g, `#pay ${id}`);
+    for (const change of [(d) => { d.source.input_hash = 'x0'; }, (d) => { d.amount_cp = 6; }]) {
+        const edited = structuredClone(g.chat);
+        // the card message as an edit re-resolved it: the same id dec.pay.t<turn>.<seq>, other source words or amount
+        change(rec(edited[at]).events.find((e) => e.t === 'decision.opened' && e.d.decision.id === id).d.decision);
+        const fold = foldChat(edited);
+        const block = foldBlock(fold);
+        assert.ok(block, 'the fold stops');
+        assert.equal(block.type, 'decision.closed', 'at the close, before the coin of the payment');
+    }
 });

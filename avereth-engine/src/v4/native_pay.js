@@ -4,10 +4,12 @@
 // turn runs: the engine checks the card against the state and books coin, transaction and the card's close together.
 //
 // The card is valid until his next acting message or a change of place (resolveCommands closes it then); a status panel
-// keeps it. The close carries the card it saw (expect): an edited earlier message that changed the card stops the fold
+// keeps it. The close carries the card it saw (expect: route, payee, amount, place, purpose and its source – message,
+// the hash of its words, the step), checked before the coin: an edited or deleted card message stops the fold
 // (src/v4/domain.js, src/host.js foldBlock) instead of booking the old coin again.
 import { entityLabel } from '../knowledge.js';
 import { formatCoin } from '../economy.js';
+import { cardSnapshot } from './domain.js';
 
 const ALONE = /^\s*#\s*pay\s+(\S+)\s*$/i;
 const cpText = (cp, content) => `${cp} cp${cp >= 10 ? ` (${formatCoin(cp, content)})` : ''}`;
@@ -40,7 +42,7 @@ export function nativePay(s, content, text) {
     const what = d.what && d.what !== 'a payment' ? d.what : null;
     const name = entityLabel(s, d.seller);
     const events = [
-        { t: 'decision.closed', d: { id, status: 'accepted', expect: { route: d.route, seller: d.seller, amount_cp: d.amount_cp } } },
+        { t: 'decision.closed', d: { id, status: 'accepted', expect: cardSnapshot(d) } },
         { t: 'coin.changed', d: { id: 'pc', value: coin - d.amount_cp, delta: -d.amount_cp, why: `paid ${name}${what ? ` for ${what}` : ''}` } },
         { t: 'transaction.completed', d: { to: d.seller, cp: d.amount_cp, for: what, decision: id, native: true } },
     ];

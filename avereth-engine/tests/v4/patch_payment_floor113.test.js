@@ -14,10 +14,13 @@ const root='loc.mossback_warrens',stair=root+'.goblin_widened_stair_down';
 test('113 actual arrival on level 2 produces a clear engine message',()=>{const {before,after}=moved(f.stairs.state.scene.at,stair);const panel=worldPanel(before,c,{state:after,events:[{t:'scene.moved',d:{at:stair}}]});assert.match(panel,/ENTERED — Mossback Warrens, Level 2 · Rank E/);});
 test('113 first entry announces level 1, a room change on the same level does not',()=>{const at=f.stairs.state.scene.at,{before,after}=moved(root,at);assert.match(worldPanel(before,c,{state:after,events:[{t:'scene.moved',d:{at}}]}),/ENTERED — Mossback Warrens, Level 1 · Rank F/);before.scene.at=at;assert.doesNotMatch(worldPanel(before,c,{state:after,events:[{t:'scene.moved',d:{at}}]}),/ENTERED —/);});
 test('113 prose, pending or a refused arrival never creates a floor message',()=>{const {before,after}=moved(f.stairs.state.scene.at,stair);assert.doesNotMatch(worldPanel(before,c,{state:after,pending:true,events:[]}),/ENTERED —/);});
-// Build .142/.144: a debt repayment is a concrete payment card, paid once by his #pay; no lodging is booked
+// Build .144 (plan §6.2): a debt repayment whose words name no amount makes no card (the planner's 8 cp alone are no
+// amount of his); with the coin in his words it is a card his #pay pays once; no lodging is booked either way
 test('113 a room debt remains a debt, not a new booking',()=>{const r=run(f.room.state,[{...pay,for:'old room debt',quote:'I repay my old room debt'}]);assert.equal(r.s.entities.pc.sheet.coin_cp,424);assert.ok(!r.events.some(e=>e.t==='service.granted'));
- const dec=r.s.decisions.find(d=>d.kind==='payment'&&d.state==='needs_confirmation');assert.equal(dec.amount_cp,8);
- const k=payCard(r.s,c,dec.id);assert.equal(r.s.entities.pc.sheet.coin_cp,416);assert.ok(!k.events.some(e=>e.t==='service.granted'));});
+ assert.equal(r.s.decisions.some(d=>d.kind==='payment'&&d.state==='needs_confirmation'),false);
+ const w=run(f.room.state,[{...pay,for:'old room debt',quote:'I repay my old room debt of eight copper',money:{quote:'eight copper',currency_quote:null}}]);
+ const dec=w.s.decisions.find(d=>d.kind==='payment'&&d.state==='needs_confirmation');assert.equal(dec.amount_cp,8);
+ const k=payCard(w.s,c,dec.id);assert.equal(w.s.entities.pc.sheet.coin_cp,416);assert.ok(!k.events.some(e=>e.t==='service.granted'));});
 test('113 a purchase payment missing its item asks instead of transferring cash',()=>{const r=run(f.room.state,[{...pay,for:null}]);assert.equal(r.s.entities.pc.sheet.coin_cp,424);assert.equal(r.ctx.resolutions[0].status,'clarify');});
 test('113 the other party offer cannot book this seller room',()=>{const s=structuredClone(f.room.state);s.offers.room={id:'room',seller:'npc.other',at:s.scene.at,status:'open',lines:[{id:'l1',what:'room',kind:'service',service:'lodging',qty:1,price_cp:8}]};assert.equal(run(s,[pay]).s.entities.pc.sheet.coin_cp,424);});
 test('113 original Mage T143–145: one booked room costs eight, serialized replay stays identical',async()=>{

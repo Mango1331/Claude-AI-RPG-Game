@@ -3,7 +3,7 @@
  "baseline_sha": "b8d2af4b76cd0bc52ac178b8c500e5733878ecee",
  "baseline_engine": "4.3.0-c.6.6.126",
  "engine": "4.3.0-c.6.6.144",
- "note": "Package C (.132): every record whose replay differs from the .126 baseline, with its reason (docs/PATCH_ARCH_C132_POPULATION_AGE.md). Old answers are converted by tools/replay/contract_c.mjs. Each record is accepted only with the exact output it was checked with: fingerprint = sha256 of its complete normalized record output (tools/replay/replay.mjs recordFingerprint), written by --write-fingerprints. Package D: additional records pin exact output; original C entries unchanged. Individual changes in docs/PATCH_ARCH_D133_GEAR_OFFERS.md. Finance patch F (.138–.140): eight further records pin exact output, one D record superseded with reason; earlier entries otherwise unchanged (docs/FIX138_FINANCE.md). Finance consolidation (.142, docs/FIX142_FINANCE_CONSOLIDATION.md): every record that differs from .126 is checked against the .141 replay of the same corpus: unchanged ones keep their entry; ones that differ from .141 only by the finance contract fields of the disclosed translation carry finance_142 (category kept) or the category \"finance 142 contract fields\"; every other change has its own reason (category \"finance 142\"), with the fingerprint it supersedes. .143: only individually reviewed boundary changes supersede their earlier fingerprints; see docs/FIX143_FINANCE_BOUNDARIES.md. .144 (finance simplification S1+S2, docs/FIX144_FINANCE_SIMPLIFICATION.md): checked against the full .143 replay record by record; entries of unchanged records kept; the 39 changed records carry one of six reasoned .144 categories and the .143 entry they supersede (supersedes_143).",
+ "note": "Package C (.132): every record whose replay differs from the .126 baseline, with its reason (docs/PATCH_ARCH_C132_POPULATION_AGE.md). Old answers are converted by tools/replay/contract_c.mjs. Each record is accepted only with the exact output it was checked with: fingerprint = sha256 of its complete normalized record output (tools/replay/replay.mjs recordFingerprint), written by --write-fingerprints. Package D: additional records pin exact output; original C entries unchanged. Individual changes in docs/PATCH_ARCH_D133_GEAR_OFFERS.md. Finance patch F (.138–.140): eight further records pin exact output, one D record superseded with reason; earlier entries otherwise unchanged (docs/FIX138_FINANCE.md). Finance consolidation (.142, docs/FIX142_FINANCE_CONSOLIDATION.md): every record that differs from .126 is checked against the .141 replay of the same corpus: unchanged ones keep their entry; ones that differ from .141 only by the finance contract fields of the disclosed translation carry finance_142 (category kept) or the category \"finance 142 contract fields\"; every other change has its own reason (category \"finance 142\"), with the fingerprint it supersedes. .143: only individually reviewed boundary changes supersede their earlier fingerprints; see docs/FIX143_FINANCE_BOUNDARIES.md. .144 (finance simplification S1+S2, docs/FIX144_FINANCE_SIMPLIFICATION.md): checked against the full .143 replay record by record; entries of unchanged records kept; the 40 changed records carry one of seven reasoned .144 categories and the .143 entry they supersede (supersedes_143).",
  "categories": {
   "representation": "population contract recorded, no mechanical consequence: entity.updated {life_stage, population_at} at creation (population_at no longer set on the profile event), quest.hunt.age on hunt contracts, converted population/life_stage fields inside an already rejected creature.new",
   "rejection reason": "a claim already refused in .126 (aware of an unknown creature) is now refused by the creature reference lock (creature_continuity)",
@@ -11,11 +11,12 @@
   "finance 138": "price reading, complete handovers, truthful refusal texts and the sale-as-gift repair request of build .138; each reasoned individually",
   "finance 142 contract fields": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)",
   "finance 142": "behaviour changed by the finance consolidation (.142); each reasoned individually",
-  "finance 144 payment card": "S1: the recorded free payment (verified outgoing coin) is no longer booked from words; it is a payment card with its id, paid only by the player's own \"#pay <id>\" (the recorded run has no such message). Nothing changes hands in this record.",
+  "finance 144 payment card": "S1 (plan §6.2): the recorded free payment (the complete amount in his own words) is no longer booked from words; it is a payment card with its id, paid only by the player's own \"#pay <id>\" (the recorded run has no such message). Nothing changes hands in this record.",
   "finance 144 contract fields": "cmd-1.9: the recorded pay answer still carries confirmation; it is no command field any more and is dropped when the answer is read. Resolutions, coin and events otherwise unchanged.",
   "finance 144 acceptance hint": "S2 (plan §4.2): the engine reads no second price from his acceptance words; an acceptance that names money without agreed_cp gets the one existing planner repair as a hint. The recorded repair answer stands with the same commands; resolutions, coin and events unchanged.",
   "finance 144 price open": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
-  "finance 144 unit limit": "S2 (plan §10.2 Nr. 3): a player limit given as a price per unit for several units is a wish, not a limit and no repair error: the sale waits for the buyer's total (\"WANTS TO SELL — no price is agreed\") or is refused for its own cause (absent buyer). No coin or goods move.",
+  "finance 144 unit limit": "S2 (plan §7.3): a player limit given as a price per unit for several units is no total: the booking stops with the concrete question for his total limit (NOT SOLD/NOT BOUGHT … name the total limit; a message of only such commands is the System's question, no story turn), never a multiplied limit and never null-and-sell; other commands keep their own result (absent buyer, a sale without a price). No coin or goods move.",
+  "finance 144 own coin": "S2 (plan §7.1): a new NPC price carries its own coin word; \"a copper six\" (a bare number taking its coin from the sentence) is no binding total any more: no offer, PRICE OPEN for the service. No coin moves in this record.",
   "finance 144 acceptance": "S2 (plan §4.2, B9/B10): his explicit acceptance of the stored positions with their matching total (agreed_cp) was refused in .143 only by the removed second price reader (item prices of his words matched against positions); it is now accepted at the stored price and booked once with its service."
  },
  "returned": {
@@ -273,7 +274,7 @@
     "category": "finance 142 contract fields",
     "fingerprint": "sha256:de09920f9d183a390f02256ad8c521585eabc323acc432fb12b9557e5dbfabac"
    },
-   "fingerprint": "sha256:e80f6017b4f6dfffddecdee639eb7c263d979971bf3bfa535a9cb1ffc0c9c190"
+   "fingerprint": "sha256:7784d35fea30436526bd3dd3f8f55d899f0fa1eb1f25d1b184495423d84227b1"
   },
   "b17-rogue#171": {
    "category": "finance 142 contract fields",
@@ -285,12 +286,12 @@
   },
   "b17-rogue#19": {
    "category": "finance 144 payment card",
-   "reason": "S1: the recorded free payment (verified outgoing coin) is no longer booked from words; it is a payment card with its id, paid only by the player's own \"#pay <id>\" (the recorded run has no such message). Nothing changes hands in this record.",
+   "reason": "S1 (plan §6.2): the recorded free payment (the complete amount in his own words) is no longer booked from words; it is a payment card with its id, paid only by the player's own \"#pay <id>\" (the recorded run has no such message). Nothing changes hands in this record.",
    "supersedes_143": {
     "category": "finance 138",
     "fingerprint": "sha256:848f2a8ae9d20616591d268f540a3acc356c5365cedb356d34a7edf7a8f66610"
    },
-   "fingerprint": "sha256:9a679aa84328175c0a148a987f9142b4ea1a73f9e32c9fc899166617d9098ab6"
+   "fingerprint": "sha256:6d691c8855bdd211a6059c5859c0ed312bbd68d51fc69de684425b0e7814f513"
   },
   "b17-rogue#196": {
    "category": "representation",
@@ -472,12 +473,12 @@
   },
   "b17-warrior#133": {
    "category": "finance 144 unit limit",
-   "reason": "S2 (plan §10.2 Nr. 3): a player limit given as a price per unit for several units is a wish, not a limit and no repair error: the sale waits for the buyer's total (\"WANTS TO SELL — no price is agreed\") or is refused for its own cause (absent buyer). No coin or goods move.",
+   "reason": "S2 (plan §7.3): a player limit given as a price per unit for several units is no total: the booking stops with the concrete question for his total limit (NOT SOLD/NOT BOUGHT … name the total limit; a message of only such commands is the System's question, no story turn), never a multiplied limit and never null-and-sell; other commands keep their own result (absent buyer, a sale without a price). No coin or goods move.",
    "supersedes_143": {
     "category": "finance 142 contract fields",
     "fingerprint": "sha256:bcf849088b729bdbf526a2dbcedf16dfce54be4c63d3b71eb0a9090a33e0595f"
    },
-   "fingerprint": "sha256:90717a2a2f5de47bfb1bf0ef73ad4adcf5d53821a7426b5ae7c05d8411e87dc9"
+   "fingerprint": "sha256:f41bac1dfa343a38074b079c82da4649b3203862938354b6e88098deff767890"
   },
   "b17-warrior#134": {
    "category": "finance 138",
@@ -749,20 +750,22 @@
    "fingerprint": "sha256:e6480d7fc24fdea7c752f18e60feb786221c613b4cca057da2fe1a1948cd0de6"
   },
   "b18-rogue#130": {
-   "category": "finance 142",
-   "reason": "F (.142): Master Hult's \"a copper six\" amendment fee is now recorded at 6 cp (its words, coin of its own sentence) instead of refused for a price the reply does not name; it can be paid or accepted later. No coin changes in this record.",
-   "earlier": "D: offer schema contract/diagnostic changed without granting goods or coin.",
-   "supersedes": "sha256:a9f479947b2a91f4beb1cf19ed3ad68189f57eb6d9ae67f509c027de5e2a0bfc",
-   "fingerprint": "sha256:3efee03dc7d6e95d0aaeb79936fe263befff59b10cde2bfa9264eaa7765ea97a"
+   "category": "finance 144 own coin",
+   "reason": "S2 (plan §7.1): a new NPC price carries its own coin word; \"a copper six\" (a bare number taking its coin from the sentence) is no binding total any more: no offer, PRICE OPEN for the service. No coin moves in this record.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:3efee03dc7d6e95d0aaeb79936fe263befff59b10cde2bfa9264eaa7765ea97a"
+   },
+   "fingerprint": "sha256:ba905abd0f61ce748f6472712fc689e5594abfa146d8c102e8cdffd1d4e207e1"
   },
   "b18-rogue#131": {
    "category": "finance 144 payment card",
-   "reason": "S1: the recorded free payment (verified outgoing coin) is no longer booked from words; it is a payment card with its id, paid only by the player's own \"#pay <id>\" (the recorded run has no such message). Nothing changes hands in this record.",
+   "reason": "S1 (plan §6.2): the recorded free payment (the complete amount in his own words) is no longer booked from words; it is a payment card with its id, paid only by the player's own \"#pay <id>\" (the recorded run has no such message). Nothing changes hands in this record.",
    "supersedes_143": {
     "category": "finance 142 contract fields",
     "fingerprint": "sha256:db825b5f3c0ef02629ccb6ff2fd8cb62e2557232baa159f75fe82273c7bf1bd0"
    },
-   "fingerprint": "sha256:12b73b85a99bfd64bc34694dd5eb7239695750182b36a642f7f2093e45cd3628"
+   "fingerprint": "sha256:13f2677e9b3734f7edd5f3b8a7f2b3c384299ec5d5a71b84686b2ded4d0ae2fd"
   },
   "b18-rogue#136": {
    "category": "finance 142 contract fields",
@@ -795,21 +798,21 @@
   },
   "b18-rogue#193": {
    "category": "finance 144 unit limit",
-   "reason": "S2 (plan §10.2 Nr. 3): a player limit given as a price per unit for several units is a wish, not a limit and no repair error: the sale waits for the buyer's total (\"WANTS TO SELL — no price is agreed\") or is refused for its own cause (absent buyer). No coin or goods move.",
+   "reason": "S2 (plan §7.3): a player limit given as a price per unit for several units is no total: the booking stops with the concrete question for his total limit (NOT SOLD/NOT BOUGHT … name the total limit; a message of only such commands is the System's question, no story turn), never a multiplied limit and never null-and-sell; other commands keep their own result (absent buyer, a sale without a price). No coin or goods move.",
    "supersedes_143": {
     "category": "finance 142",
     "fingerprint": "sha256:efe67b179f9b371a4c485de185c565fafeedf9fdd2ce242916e1ce4eece3c720"
    },
-   "fingerprint": "sha256:daca837997e997ffb5b58b54a4841d382623c6936a275554780ce605234fd53a"
+   "fingerprint": "sha256:2552e5c43bde27f243350d4ba872a29f13d8bf4107a3b77fc40cdef808ac40bc"
   },
   "b18-rogue#195": {
    "category": "finance 144 unit limit",
-   "reason": "S2 (plan §10.2 Nr. 3): a player limit given as a price per unit for several units is a wish, not a limit and no repair error: the sale waits for the buyer's total (\"WANTS TO SELL — no price is agreed\") or is refused for its own cause (absent buyer). No coin or goods move.",
+   "reason": "S2 (plan §7.3): a player limit given as a price per unit for several units is no total: the booking stops with the concrete question for his total limit (NOT SOLD/NOT BOUGHT … name the total limit; a message of only such commands is the System's question, no story turn), never a multiplied limit and never null-and-sell; other commands keep their own result (absent buyer, a sale without a price). No coin or goods move.",
    "supersedes_143": {
     "category": "finance 142",
     "fingerprint": "sha256:86870cb5a3ea8dc6e3a445b5cfb3b22728cef587fd63570169e743b4e09b1de3"
    },
-   "fingerprint": "sha256:e479b53b5b478d7df950b1c8b97ca548565e39683421556dbcbb8918004bad67"
+   "fingerprint": "sha256:2552e5c43bde27f243350d4ba872a29f13d8bf4107a3b77fc40cdef808ac40bc"
   },
   "b18-rogue#196": {
    "category": "finance 142",
@@ -922,7 +925,7 @@
   },
   "b18-rogue#335": {
    "category": "finance 144 unit limit",
-   "reason": "S2 (plan §10.2 Nr. 3): a player limit given as a price per unit for several units is a wish, not a limit and no repair error: the sale waits for the buyer's total (\"WANTS TO SELL — no price is agreed\") or is refused for its own cause (absent buyer). No coin or goods move.",
+   "reason": "S2 (plan §7.3): a player limit given as a price per unit for several units is no total: the booking stops with the concrete question for his total limit (NOT SOLD/NOT BOUGHT … name the total limit; a message of only such commands is the System's question, no story turn), never a multiplied limit and never null-and-sell; other commands keep their own result (absent buyer, a sale without a price). No coin or goods move.",
    "fingerprint": "sha256:c5fa1740a12cf8fc3abeb999e5a4fd89c44661e6828c7904c2125b8602a0a8a6"
   },
   "b18-rogue#337": {
@@ -949,8 +952,8 @@
   },
   "b18-rogue#341": {
    "category": "finance 144 unit limit",
-   "reason": "S2 (plan §10.2 Nr. 3): a player limit given as a price per unit for several units is a wish, not a limit and no repair error: the sale waits for the buyer's total (\"WANTS TO SELL — no price is agreed\") or is refused for its own cause (absent buyer). No coin or goods move.",
-   "fingerprint": "sha256:76af7d43f52b6fa1ace21ddf05f201a5979123f7b350f8115d17eac828df53ff"
+   "reason": "S2 (plan §7.3): a player limit given as a price per unit for several units is no total: the booking stops with the concrete question for his total limit (NOT SOLD/NOT BOUGHT … name the total limit; a message of only such commands is the System's question, no story turn), never a multiplied limit and never null-and-sell; other commands keep their own result (absent buyer, a sale without a price). No coin or goods move.",
+   "fingerprint": "sha256:a48edaa2367c61510fa98fd83981be47dc3b3d5b7a8722279604e62ffa8052c3"
   },
   "b18-rogue#343": {
    "category": "finance 142",
@@ -964,7 +967,7 @@
   },
   "b18-rogue#347": {
    "category": "finance 144 unit limit",
-   "reason": "S2 (plan §10.2 Nr. 3): a player limit given as a price per unit for several units is a wish, not a limit and no repair error: the sale waits for the buyer's total (\"WANTS TO SELL — no price is agreed\") or is refused for its own cause (absent buyer). No coin or goods move.",
+   "reason": "S2 (plan §7.3): a player limit given as a price per unit for several units is no total: the booking stops with the concrete question for his total limit (NOT SOLD/NOT BOUGHT … name the total limit; a message of only such commands is the System's question, no story turn), never a multiplied limit and never null-and-sell; other commands keep their own result (absent buyer, a sale without a price). No coin or goods move.",
    "supersedes_143": {
     "category": "finance 142",
     "fingerprint": "sha256:eb795eb820e9ff0e0779218ae6a15b01707f4e47515e0f24461768c08568aaed"
@@ -1174,12 +1177,12 @@
   },
   "b18-warrior#227": {
    "category": "finance 144 payment card",
-   "reason": "S1: the recorded free payment (verified outgoing coin) is no longer booked from words; it is a payment card with its id, paid only by the player's own \"#pay <id>\" (the recorded run has no such message). Nothing changes hands in this record.",
+   "reason": "S1 (plan §6.2): the recorded free payment (the complete amount in his own words) is no longer booked from words; it is a payment card with its id, paid only by the player's own \"#pay <id>\" (the recorded run has no such message). Nothing changes hands in this record.",
    "supersedes_143": {
     "category": "finance 142 contract fields",
     "fingerprint": "sha256:72272c9f3f2a5cd7d3a99a5b378b1f190e893b96c49e6a5963d6a7fdb68b4c9f"
    },
-   "fingerprint": "sha256:b831a50f64e5248c936a362f18c58b0bc8a25c38193fce30aa155b6f807b0dd0"
+   "fingerprint": "sha256:5a70cb01be2dc1a09520a40747ae3bc73c170167c5df9f8b4503b0826fd9f749"
   },
   "b18-warrior#228": {
    "category": "finance 142 contract fields",
@@ -1665,12 +1668,12 @@
   },
   "b19-warrior#157": {
    "category": "finance 144 payment card",
-   "reason": "S1: the recorded free payment (verified outgoing coin) is no longer booked from words; it is a payment card with its id, paid only by the player's own \"#pay <id>\" (the recorded run has no such message). Nothing changes hands in this record.",
+   "reason": "S1 (plan §6.2): the recorded free payment (the complete amount in his own words) is no longer booked from words; it is a payment card with its id, paid only by the player's own \"#pay <id>\" (the recorded run has no such message). Nothing changes hands in this record.",
    "supersedes_143": {
     "category": "finance 142 contract fields",
     "fingerprint": "sha256:94c76f281dd0d54280ee362b040460a435360b49dba0c147ce146bd482c54726"
    },
-   "fingerprint": "sha256:dcd7c3cedb1d03a79355ad068eb7a28afb077750c3199805154ddb9347ef5f3c"
+   "fingerprint": "sha256:89a1ac7fc400241f11a11133946281109f965ee3047b4fa772fb9e9c186a956f"
   },
   "b19-warrior#158": {
    "category": "finance 142 contract fields",
@@ -1829,7 +1832,7 @@
     "category": "finance 142 contract fields",
     "fingerprint": "sha256:013ba84d570f0b91a8d3036f6a601ff1b09a6b284b46cbebe817d1b639aab603"
    },
-   "fingerprint": "sha256:adba2e7374a16eb7a109b97f3f2ac1fd56518d6800eba3f5696b0e5d25f3865b"
+   "fingerprint": "sha256:4466b14b8ede6aa0bbb5d75e864b7a59ca6ea6fce8c52652d543b0c9fb5b36f7"
   },
   "b19-warrior#329": {
    "category": "finance 142 contract fields",

@@ -165,11 +165,13 @@ function rateAfter(source, end, goods = []) {
     return words.has(stem(m[1])) || ['piece', 'unit', 'item'].includes(stem(m[1])) ? m[0].trim() : null;
 }
 
-export function priceEvidence(pricing, { source, content, units = 1, lines = null, reported = null, within = null, goods = [] } = {}) {
+export function priceEvidence(pricing, { source, content, units = 1, lines = null, reported = null, within = null, goods = [], ownCurrency = false } = {}) {
     const done = (r) => ({ ...r, reported_cp: Number.isInteger(reported) ? reported : null, reported_mismatch: r.state === EVIDENCE.VERIFIED && Number.isInteger(reported) && r.cp !== reported });
     if (!pricing || typeof pricing !== 'object' || !pricing.basis || pricing.basis === 'unknown') return done(result(EVIDENCE.MISSING, { reason: 'pricing_unknown' }));
     const literal = (p) => {
-        const near = within ? moneyLiteral(source, p.quote, { content, currencyQuote: p.currency_quote ?? null, within }) : null;
+        // Build .144 (S2, plan §7.1): a new NPC price carries its own coin word (ownCurrency); a bare number with a coin
+        // word taken from its sentence is no binding total
+        const near = within ? moneyLiteral(source, p.quote, { content, currencyQuote: ownCurrency ? null : p.currency_quote ?? null, within }) : null;
         return near || result(EVIDENCE.MISSING, { reason: 'no_action_anchor' });
     };
     // Build .144 (finance simplification S2): a new price binds only as ONE total in its own words for exactly these

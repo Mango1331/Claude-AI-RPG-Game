@@ -59,10 +59,13 @@ test('.138 #106/T53: 84 cp for the two stacks 7+14 at "four copper the plate …
 // Build .144 (S2): a rate per piece for several pieces is no binding bid (no 28, no 4); a total the reply names is
 // ("fifty-six the lot", the coin word of its sentence). The recorded old answers report the rate: they now store no
 // bid and the engine asks for the total; a fresh answer with the total stores 56 and sells once.
-const fresh116 = () => {
+// plan §7.1: the total carries its own coin word; "fifty-six the lot" (copper taken from the sentence) binds nothing
+const fresh116 = (own = true) => {
     const raw = structuredClone(R[116].raw);
-    Object.assign(raw.deltas.find((d) => d.type === 'bid'), { phase: 'firm', condition: null, pricing: { basis: 'total', quote: 'fifty-six', currency_quote: 'copper' } });
-    return applyWorldNow(structuredClone(R[116].state), content, raw, { msg: 116, prose: R[116].prose });
+    const bid = raw.deltas.find((d) => d.type === 'bid');
+    const said = own ? bid.said.replace('fifty-six the lot', 'fifty-six copper the lot') : bid.said;
+    Object.assign(bid, { said, phase: 'firm', condition: null, pricing: own ? { basis: 'total', quote: 'fifty-six copper', currency_quote: null } : { basis: 'total', quote: 'fifty-six', currency_quote: 'copper' } });
+    return applyWorldNow(structuredClone(R[116].state), content, raw, { msg: 116, prose: R[116].prose.replace(R[116].raw.deltas.find((d) => d.type === 'bid').said, said) });
 };
 test('.138 #110/T55 (.144): "four copper each" for seven is no binding bid; the total is asked for; nothing credited', () => {
     assert.ok(R[110].original.some((e) => e.t === 'delta.rejected' && e.d.item.type === 'bid'), '.137 refused it');
@@ -73,9 +76,10 @@ test('.138 #110/T55 (.144): "four copper each" for seven is no binding bid; the 
     assert.equal(res.events.some((e) => /credit/.test(e.t)), false);
 });
 
-test('.138 #116/T58 (.144): "fifty-six the lot" stores 56 cp for fourteen, never the 4 cp shadow price; the old rate answer stores none', () => {
+test('.138 #116/T58 (.144): "fifty-six copper the lot" stores 56 cp for fourteen, never the 4 cp shadow price; the recorded words bind nothing', () => {
     assert.equal(R[116].original.find((e) => e.t === 'offer.created').d.offer.price_cp, 4, '.137 stored 4 cp');
     assert.deepEqual(offers(world(116)).filter((o) => o.terms === 'firm' || o.terms === undefined).map((o) => o.price_cp), [], 'the recorded rate answer: no bid');
+    assert.deepEqual(offers(fresh116(false)).filter((o) => o.terms === 'firm' || o.terms === undefined).map((o) => o.price_cp), [], 'the recorded "fifty-six the lot" has no coin of its own');
     const res = fresh116();
     const [o] = offers(res);
     assert.equal(o.price_cp, 56);

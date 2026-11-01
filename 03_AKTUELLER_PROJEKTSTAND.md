@@ -23,7 +23,7 @@
 
 ## Nächste Reihenfolge
 
-1. **Finanzkonsolidierung als [.142 / f84e6e5](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/f84e6e5) umgesetzt; als Nächstes Sols unabhängiger Gegenreview des tatsächlichen Diffs.** [Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/f84e6e5/avereth-engine/docs/FIX142_FINANCE_CONSOLIDATION.md) mit Rot/Grün, Replaybegründungen, Smokes und Grenzen. Bis dahin keine weiteren Finanzkorrekturen und kein natürlicher Langlauf; danach natürlicher Batch zur Prüfung der neuen Protokollausgaben.
+1. **.142-Gegenreview abgeschlossen: drei P1-Buchungsgrenzen bestätigt; noch keine Freigabe für den natürlichen Batch.** Der konsolidierte [Finanz-Folgeplan](patch_plans_10b/PATCH_FINANCE_REVIEW142.md) schließt Quellenrückfälle, unvollständige Geldargumente und den Bestätigungs-/Fachrouting-Bypass; zusätzlich dieselbe Quellzahlung innerhalb eines Aufrufs nur einmal buchen. **Nur geplant, keine Implementierungsfreigabe; Produkt bleibt .142.** Sol bestätigte Node-/Replayzahlen unabhängig; echte ST-Smokes liegen als Claudes Implementierungsnachweis vor. Als Nächstes gesonderte Freigabe des zusammenhängenden Folgepatches, danach Implementierung und unabhängige Abnahme.
 2. **Natürlichen Batch F danach fortsetzen:** Warrior/Mage/Rogue bis Erstellung → Level15 → ausdrückliche E-Klassenannahme; Batch20 prüfte weder L15 noch E und erlaubt keine vollständige Drei-Klassen-Balanceaussage. [Runner-Anleitung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/6cc09cd/avereth-engine/docs/LIVE_RUNNER.md).
 3. **B2/E bleiben nachrangig und nicht begonnen.** Main/Minor, F/E-Scaling, Monsterdesign und NPC-Memory sind eigene Themen mit eigener Freigabe. [Offene Kandidaten](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md).
 

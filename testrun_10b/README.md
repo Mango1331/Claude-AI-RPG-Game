@@ -43,6 +43,7 @@ W/M/R = Warrior/Mage/Rogue; Limit und manueller Stopp sind kein technischer Fehl
 
 | Batch / Originalreview | Build | Profile / Ende | Einordnung / späterer Fix |
 |---|---|---|---|
+| [23: batch-20261101-232944Z](batch-20261101-232944Z/REVIEW.md) | **.149** | **W375/L15/E; M40/L2 Modellstopp; R216/L15/E** | Original-Chatupload unabhängig geprüft, 8.691 Events ohne Foldfehler. Warrior: falsche Dungeonwurzel plus ein ungültiger Ortsfakt; Mage: reproduzierte Endpreis-Fehlablehnung vor Modellstopp. ZIP nicht auf main archiviert. |
 | [22: batch-20261101-174704Z](batch-20261101-174704Z/REVIEW.md) · [Originalarchiv in 8 Teilen](batch-20261101-174704Z/ARCHIVE.md) | **.146** | **W32/L2 Tod; M20/L2 Tod; R282/L15/E-Klasse, Savefehler** | 4.191 Events gültig gefaltet; Rogue 21/21 Siege, 7 Guildabschlüsse, 11 Verkäufe/16 Käufe, final480cp. E-Annahme Bloodhound Rogue im Export; Windows-EPERM verhindert letzte Saveabnahme. Einzelkauf-Fehlablehnung durch hand/hand-axe reproduziert; Mage-Tod durch Friendly Fire, kein Phantomgegner. |
 | [21: batch-20261101-152756Z](batch-20261101-152756Z/REVIEW.md) · [ZIP](batch-20261101-152756Z/batch-20261101-152756Z.zip) | **.145** | **W63/L3 manuell; M/R nicht gestartet** | 2 Siege, 2 Guildabschlüsse, Fine-Mail- und Unterkunftskauf; final239cp. Fold/State integer. Wiederholte Handelsblockaden: Händleranwesenheit/ID, Rollenlabel, Sheet-Item-Gebot; Board scheitert an Art-Singular/Plural. Originalzustands-Sonden; Integrationsfix [.146/9136f8f](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/9136f8ff664ad12e29fc74190f5d8a0909e3d4eb/avereth-engine/docs/FIX146_BATCH21_TRADE_BOARD.md), natürliche Folgeabnahme offen. |
 | [20: batch-20261031-140346Z](batch-20261031-140346Z/REVIEW.md) · [ZIP](batch-20261031-140346Z/batch-20261031-140346Z.zip) | **.137** | **W260/L12 Limit; M9/L1 manuell, R nicht gestartet** | 3501 Warrior-Events gültig gefaltet; 24/24 Siege, 5 Guildabschlüsse; P1 falscher Loot-Gesamtpreis und Lohn→pay, P2 Ankunftsbeleg/Teilbetrag; XP7590/10500, höhere F-Hunts nicht gewählt. Preis-Ursachenanalyse in derselben Review; noch kein Produktfix. |
@@ -66,7 +67,7 @@ W/M/R = Warrior/Mage/Rogue; Limit und manueller Stopp sind kein technischer Fehl
 | [2: batch-20261027-073917Z](batch-20261027-073917Z/REVIEW.md) | .101 | Guild W150/L7, R150/L8; M99Tod; Explore W87/M123technisch | Nur5 bewertet, Run6 manuell ausgeschlossen |
 | [1: batch-20261027-030034Z](batch-20261027-030034Z/REVIEW.md) | .100 | 6gestartet; 5technische Stopps, 1manuell | Grundlage .101-Recovery |
 
-**Neuester unabhängiger Originalreview:** [Batch22/.146](batch-20261101-174704Z/REVIEW.md): alle drei Originalexporte und 4.191 Events geprüft; natürliche E-Klassenannahme belegt, abschließende Saveabnahme wegen Windows-EPERM offen. Ältere Gegenprüfungen bleiben unverändert beim jeweiligen Run.
+**Neuester unabhängiger Originalreview:** [Batch23/.149](batch-20261101-232944Z/REVIEW.md): drei Originalexporte aus Chatupload und 8.691 Events geprüft; Warrior und Rogue nehmen E-Klasse an, Mage stoppt technisch. Reproduzierte Dungeon-Ortsverwechslung und falsche Endpreisablehnung; ZIP noch nicht in Git. Ältere Gegenprüfungen bleiben unverändert beim jeweiligen Run.
 
 ## Balance und spätere Designs
 

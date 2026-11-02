@@ -32,7 +32,7 @@ Technische Nachweise aus Node, Replay und echtem SillyTavern-Host mit Mockprovid
 
 ## Wann 10B endet und wir wieder eine Roadmap erstellen
 
-**10B wird nicht bei einer fest vorgegebenen Buildnummer, einer bestimmten Anzahl Runs oder automatisch bei Level 15 geschlossen.** Über mehrere aktuelle natürliche Batches auf nachweisbar demselben Build ist zu prüfen, ob eine **für den Nutzer akzeptable Quote** ohne größere technische Aussetzer erreicht wird – **insbesondere ohne technisch erzwungene Runabbrüche**. Den nötigen Grenzwert und die endgültige Freigabe legt der Nutzer anhand der tatsächlichen Ergebnisse fest; jetzt keine erfundene Prozentzahl oder starre Drei-Batch-Garantie.
+**10B wird nicht bei einer fest vorgegebenen Buildnummer, einer bestimmten Anzahl Runs oder automatisch bei Level 15 geschlossen.** Über mehrere aktuelle natürliche Batches auf nachweisbar demselben Build ist zu prüfen, ob eine **für den Nutzer akzeptable Quote** ohne größere technische Aussetzer erreicht wird – **insbesondere ohne technisch erzwungene Runabbrüche**. Den nötigen Grenzwert und die endgültige Freigabe legt der Nutzer anhand der tatsächlichen Ergebnisse fest. Die folgenden Zahlen sind ausdrücklich unverbindliche Diskussionsbeispiele, keine beschlossene Hürde oder automatische Abschlussgarantie.
 
 Für diese Entscheidung künftig je Batch knapp gegenüberstellen:
 
@@ -41,6 +41,21 @@ Für diese Entscheidung künftig je Batch knapp gegenüberstellen:
 3. **Abdeckung:** Neben Gesamtzahlen **substantielle Langläufe** getrennt betrachten: Kampf, Quest, Handel, Reisen, Lernen, Save/Reload sowie L15 und ausdrückliche E-Annahme, soweit natürlich erreicht. Eine Serie aus wenigen kurzen regelgerechten Toden kann die technische Langlaufzuverlässigkeit nicht allein belegen.
 4. **Integrität:** Originalexport und Endgrund, Event-Fold/Validierung, Transaktionen, konkrete Fehlermeldungen und bestätigte Datenträgerpersistenz prüfen, soweit verfügbar. Offene ungesicherte Saves nicht nachträglich als „bestanden“ deklarieren.
 5. **Trend und Restschwere:** Wiederholen sich gravierende Ursachen über aktuelle Batches? Können seltene, lokale und fortsetzbare Fehler bewusst toleriert werden, ohne echte Spieleraktionen zu verlieren? Neue gezielte Patches nur bei relevanten belegten Problemen.
+
+### Mögliche Messgrenzen – ausdrücklich spekulativ
+
+**[DISKUSSIONSVORSCHLAG, keine Abnahmevorgabe]** Statt eine einzige Quote zu verwenden, könnten wir die letzten etwa zehn natürlichen Runs auf demselben Produktbuild und vergleichbarer Konfiguration gemeinsam bewerten:
+
+| Perspektive | Denkbare Größenordnung | Aussage und Grenze |
+|---|---|---|
+| Weitgehend störungsarme Runs | **8/10 ohne größeren technischen Aussetzer** | Kleine lokale Erzählfehler oder sichere automatische Recovery dürfen vorkommen; erhebliche Blockadeschleifen zählen weiterhin als Störung. |
+| Fortsetzbarkeit | **9–10/10 ohne technisch erzwungenen Abbruch**, Ziel 10/10 | Strenger als „überwiegend spielbar“. Ein externer Einzelfall wird sichtbar eingeordnet; derselbe ungelöste Serienstopper spricht gegen den Abschluss. |
+| Einzelne Handlungen | **95–98 % ohne technisch nötige erneute Spielereingabe** | Bezugsgröße sind handlungsbezogene Spielerinputs **einschließlich gescheiterter Versuche**, nicht nur erfolgreich abgeschlossene Engine-Turns. Automatische Repairs separat zählen; regelgerechte Ablehnungen sind keine Technikfehler. |
+| Langlaufabdeckung | Beispielsweise **mindestens drei Runs mit jeweils 150–200 Inputs**, alle drei Klassen in der Serie vertreten | Kurze Tode können technisch korrekt sein, ersetzen aber keine Langlaufprüfung. Länge und Ergebnisse zusätzlich je Klasse ansehen. |
+
+**Empfehlung für die spätere Diskussion:** 8/10 störungsarm **plus** möglichst vollständige Fortsetzbarkeit und echte Langlaufabdeckung ist brauchbarer als „80 % aller Turns funktionieren“. Letzteres ließe ungefähr jede fünfte Handlung scheitern; viele einfache erfolgreiche Turns könnten außerdem einen regelmäßig kaputten Kauf-/Abgabeweg verdecken. Wiederkehrende Probleme deshalb auch je Kernablauf betrachten, ohne neue Testbürokratie einzuführen.
+
+Manuelle Stopps und reguläre Tode bewerten nur den beobachteten Abschnitt, niemals eine nicht gespielte Fortsetzung; ein manueller Stopp *wegen* einer Technikschleife verbirgt deren Ursache nicht. Provider-/Hostausfälle bleiben in der Gesamtsicht sichtbar. **Geld-/Zustandskorruption oder ungesicherte Saves nicht durch eine gute Durchschnittsquote wegmitteln.** Zehn Runs sind eine pragmatische Beobachtungsserie, kein statistischer Zuverlässigkeitsnachweis. Kein Punkt ist allein ein automatischer Blocker oder eine Freigabe; endgültige Gewichtung und tolerierte Restrisiken bleiben Nutzerentscheidung.
 
 **Übergangskriterium:** Sobald die wiederholten aktuellen Naturtests insgesamt hinreichend stabil sind und keine wesentlichen serienmäßigen technischen Runstopper mehr zeigen, entscheiden wir ausdrücklich über das **Ende von 10B**. **Erst danach erarbeiten und priorisieren wir eine neue Roadmap** auf Basis des aktuellen Kanons, der offenen Ideen und der tatsächlich beobachteten Spielqualität. Sie wird nicht heute vorab als nächste Patchnummer oder als automatische Freigabe festgelegt.
 

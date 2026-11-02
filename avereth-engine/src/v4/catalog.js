@@ -19,7 +19,7 @@ import { knownNote, reportedPlaces } from './known.js';
 import { spoiled, profileOf, sourceText, gearText, gearMarketText } from './items.js';
 import { continueOptions, goalLines } from './intents.js';
 import { featuresAt, featureText } from './features.js';
-import { dungeonOf, roomKnown, exitsFrom, exitText, dungeonText, nearDungeons } from './dungeon.js';
+import { dungeonOf, trueDungeonOf, roomKnown, exitsFrom, exitText, dungeonText, nearDungeons } from './dungeon.js';
 import { catalogLines as livingLines } from './living.js';
 import { currentThreads } from '../threads.js';
 import { rulesetOf } from '../content.js';
@@ -73,6 +73,19 @@ function placeEntry(state, id) {
     return { id, name: parent && parent.kind !== 'realm' ? `${p.name} (in ${parent.name})` : p.name };
 }
 
+/** Visited return destinations. From outside a Dungeon, return to its known root, not a remote room. */
+export function routePlaces(state) {
+    const mine = dungeonOf(state, state.scene.at), route = [];
+    for (const id of (state.scene.history || []).slice(-12)) {
+        const dungeon = dungeonOf(state, id);
+        const resolved = dungeon && dungeon !== mine ? dungeon : settlementOf(state, id) || id;
+        const p = state.places[resolved];
+        if (!p || p.kind === 'realm' || route.at(-1)?.id === resolved) continue;
+        route.push({ id: resolved, name: p.name, kind: p.kind });
+    }
+    return route;
+}
+
 /**
  * The places worth naming from here: parent, children, siblings, the settlement and its Guild hall, the realm's other
  * settlements. Patch 7: of a dungeon only the rooms he knows of the one he is in (where its ways lead, where he has
@@ -92,6 +105,8 @@ export function catalogPlaces(state, extra = [], { hidden = false } = {}) {
     // Patch 7: the ways from here first, so a long list of the land does not hide them; and the land outside the
     // dungeon (its realm too: the way out of a ruin in the wilds)
     for (const e of exitsFrom(state, at, { hidden })) add(e.to);
+    // RECENT ROUTE and the reference schema must advertise the same destinations.
+    routePlaces(state).filter(p => trueDungeonOf(state, p.id)).forEach(p => add(p.id));
     // Active hunting sites are named by id in QUESTS, even after a visit removes them from reportedPlaces.
     // Keep those same ids valid for Planner/Extractor references; add still enforces room visibility.
     for (const q of contracts(state)) if (q.status === 'active' && q.hunt?.at) add(q.hunt.at);

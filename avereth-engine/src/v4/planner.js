@@ -22,6 +22,7 @@ import { spendsStatPoints, assignHint } from '../commands.js';
 import { mentionedSkills } from '../intent.js';
 import { activeHostiles } from '../combat.js';
 import { attackTargetHere, sceneHandle, tacticalHere, areaCaught, approachedBy, burstAim, sideOf } from './scene_handles.js';
+import { routePlaces } from './catalog.js';
 import { itemEffectOf, rulesetOf, skillOf } from '../content.js';
 import { actionsOf, weaponAttackOf, weaponAttackNamed } from '../derived.js';
 import { restoreOf } from './items.js';
@@ -318,13 +319,8 @@ export function planContext(state, content, catalog) {
     }
     const basic = content.classes.get(sheet.class)?.basic_attack || null;
     const weapon = sheet.class ? weaponAttackOf(sheet, content, rulesetOf(state))?.skill.id || null : null;
-    const route = [];
-    for (const id of (state.scene?.history || []).slice(-12)) {
-        const resolved = settlementOf(state, id) || id;
-        const p = state.places?.[resolved];
-        if (!p || route.at(-1)?.id === resolved) continue;
-        route.push({ id: resolved, name: p.name, kind: p.kind });
-    }
+    const allowedPlaces = new Set([catalog.here?.id, ...(catalog.places || []).map(p => p.id)]);
+    const route = routePlaces(state).filter(p => allowedPlaces.has(p.id));
     // Patch 9C-1: his open learning goals and what a learning activity may name (src/v4/growth.js)
     const learning = rulesetOf(state) >= 2 ? openGoals(state).map((g) => ({ id: g.id, text: goalText(g) })) : [];
     const techniques = rulesetOf(state) >= 2 ? composerFunctions(content) : [];

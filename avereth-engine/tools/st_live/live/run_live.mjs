@@ -28,7 +28,7 @@ import { loadPlaywright, launchBrowser, Driver } from './driver.mjs';
 import { llmPlayer, scriptedPlayer, screenText, playerReasoning } from './players.mjs';
 import { loadGuide } from './guide.mjs';
 import { scenarioById, scenarioGuide, scenarioMismatch } from './scenarios.mjs';
-import { evaluate, finished, nextMilestone, turnOutcome, turnFailure, softExtractionFailure, driverFailure, failureEnd, settled, openMilestones, startRecordProblem } from './evaluator.mjs';
+import { evaluate, finished, nextMilestone, turnOutcome, turnFailure, softExtractionFailure, driverFailure, failureEnd, settled, openMilestones, startRecordProblem, assessFinalIntegrity } from './evaluator.mjs';
 import { parseCalls } from './calls.mjs';
 import { readChatJsonl, eventsLog, jsonl, secretScan } from './export.mjs';
 import { buildReport } from './report.mjs';
@@ -492,9 +492,13 @@ export async function run(o) {
         put('chat-completions.jsonl', jsonl(calls.map((c) => ({ n: c.n, role: c.role, repair: c.repair, turn: c.turn, at: c.at, ms: c.ms, ...c.full }))), 'jeder Chat-Completion-Request mit seiner Antwort');
         put('calls.json', JSON.stringify(calls.map(({ full, ...c }) => c), null, 1), 'je Aufruf: Rolle, Modell, Zeit, Tokens, finish_reason, Reparatur');
         put('player.jsonl', jsonl(playerLog), 'jede Entscheidung des Spielers mit dem Bildschirmtext, den er sah');
+        validationContent ||= await loadContentPack(async name => JSON.parse(fs.readFileSync(path.join(ENGINE, 'content', name), 'utf8')));
+        const finalCheck = assessFinalIntegrity(messages, validationContent, end);
+        end = finalCheck.end;
         const ev = evaluate(messages, { guide });
-        put('evaluation.json', JSON.stringify({ end, ...ev }, null, 1), 'die Auswertung (Etappen, Kämpfe, Quests, Auffälligkeiten)');
+        put('evaluation.json', JSON.stringify({ end, integrity: finalCheck.integrity, ...ev }, null, 1), 'die Auswertung (Etappen, Kämpfe, Quests, Auffälligkeiten)');
         const driverNotes = [...(driver?.setupNotes || []), ...callErrors.slice(0, 5).map((e) => `server log: ${e}`)];
+        driverNotes.push(`Final saved-state integrity: ${finalCheck.integrity.ok ? 'OK' : 'FAILED'} (${finalCheck.integrity.foldErrors.length} fold errors, ${finalCheck.integrity.problems.length} validation problems).`);
         put('run.json', JSON.stringify({ runId, build: buildOf(), git: gitInfo(), scenario: guide.scenario || null, stub: !!stub, seed, fixture: o.fixture || null, fixtureReload, persona, guide: { id: guide.id, chain: guide.chain, files: guide.files.map((f) => path.relative(ENGINE, f)) }, end, timing, preflight: preflightResult, route: imp.route, player: { type: o.player.type, ...playerSetup }, setup, conn, chatId: opened?.chatId || null, safeContinuations: turnsLog.filter(t=>t.outcome === 'soft_continued').length, turns: turnsLog.map(({ decision, ...t }) => ({ ...t, milestone: decision?.milestone || null })), status: statusLine, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [], notes: driverNotes, stubCalls: stub ? stub.calls : undefined }, null, 1), 'Ablauf des Laufs: Züge, Zeiten, Hinweise, Seitenfehler, Statuszeile');
         put('import.json', JSON.stringify({ ...imp, preset: { ...imp.preset, text: undefined, sha256: imp.preset.text ? sha256(Buffer.from(imp.preset.text)) : null } }, null, 1), 'was aus dem Profil übernommen wurde (ohne Schlüssel)');
 

@@ -1,7 +1,7 @@
 // Read-only identity of a reported place. The World handler alone creates nodes.
 import { normText } from '../util.js';
 import { PLACE_PARENTS, guildDestination, settlementOf, lineage } from './domain.js';
-import { dungeonOf, roomByName } from './dungeon.js';
+import { dungeonOf, trueDungeonOf, roomByName } from './dungeon.js';
 import { knownByName } from './known.js';
 import { entranceOf } from './living.js';
 
@@ -54,12 +54,18 @@ export function placeKey(s, ref, content) {
 }
 export const samePlace = (s, a, b, content) => placeKey(s, a, content) === placeKey(s, b, content);
 
-/** Preserve only a player-authorized local habitat relation for the arrival's new place.
- * No scope, unconfirmed arrival, known/independent parent or unrelated name: unchanged.
+/** Preserve an authorized habitat or known Dungeon parent for a confirmed arrival's new place.
+ * No scope, unconfirmed arrival, explicit independent parent or unrelated name: unchanged.
  */
 export function scopedPlaces(answer, state) {
-    const scopes = (state.last?.outcome?.auth?.gos || []).filter(g => g.within
-        && state.places[g.within]?.population && lineage(state, state.scene.at).includes(g.within));
+    const scopes = (state.last?.outcome?.auth?.gos || []).flatMap(g => {
+        if (g.within && state.places[g.within]?.population && lineage(state, state.scene.at).includes(g.within))
+            return [{ ...g, root: g.within, habitat: true }];
+        // An older repaired GO may use {new:"the <known Dungeon>"}. Resolve it with the existing place identity rules.
+        const to = g.to || (g.newName && placeIdentity(state, { new: { name: g.newName, kind: 'site' } }));
+        const root = to && trueDungeonOf(state, to);
+        return root && root !== trueDungeonOf(state, state.scene.at) ? [{ ...g, root, habitat: false }] : [];
+    });
     if (!scopes.length) return answer;
     const rewrite = value => {
         if (Array.isArray(value)) return value.map(rewrite);
@@ -72,9 +78,11 @@ export function scopedPlaces(answer, state) {
                     && normText(expected.at.new.name) === normText(fresh.name);
             });
             if (hits.length === 1) {
-                const root = hits[0].within;
+                const { root, habitat } = hits[0];
                 const parent = fresh.parent;
-                if (parent == null || (typeof parent === 'string' && ['realm', 'region'].includes(state.places[parent]?.kind) && lineage(state, root).includes(parent)))
+                const impliedParent = parent == null || (habitat && typeof parent === 'string'
+                    && ['realm', 'region'].includes(state.places[parent]?.kind) && lineage(state, root).includes(parent));
+                if ((habitat || fresh.kind === 'interior') && impliedParent)
                     return { ...value, new: { ...fresh, parent: root } };
             }
         }

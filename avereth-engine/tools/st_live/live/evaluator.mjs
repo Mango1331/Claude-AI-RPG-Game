@@ -4,12 +4,24 @@
 // player never sees any of it (players.mjs gets driver.mjs view()). The runner uses it between turns only to end a run
 // (the last milestone reached, a defeat, a milestone that takes far too long).
 import { foldChat, rec, messageEvents } from '../../../src/host.js';
+import { validateState } from '../../../src/validate.js';
+
 import { floorAt } from '../../../src/v4/living.js';
 import { hallOf, placeName } from '../../../src/v4/domain.js';
 import { trueDungeonOf } from '../../../src/v4/dungeon.js';
 import { spendsStatPoints } from '../../../src/commands.js';
 import { locationByName } from '../../../src/content.js';
 import { hash32 } from '../../../src/util.js';
+
+/** A completed milestone is not proof of a valid persisted state. Preserve other end causes, report integrity separately. */
+export function assessFinalIntegrity(chat, content, end) {
+    const folded = foldChat(chat);
+    const integrity = { foldErrors: folded.errors, problems: folded.state.meta?.started ? validateState(folded.state, content) : [] };
+    integrity.ok = !integrity.foldErrors.length && !integrity.problems.length;
+    return { integrity, end: end.kind === 'done' && !integrity.ok
+        ? { ...end, original_kind: end.kind, kind: 'integrity_failed', why: `final saved state: ${integrity.foldErrors.length} fold errors, ${integrity.problems.length} validation problems` }
+        : end };
+}
 
 const STATS = { rules: { stats: ['STR', 'VIT', 'AGI', 'INT', 'PER', 'WIL'] } };
 const KILLS = new Set(['ATTACK', 'DEFEAT']);

@@ -1,0 +1,2754 @@
+{
+ "format": "avereth-replay-accepted-2",
+ "baseline_sha": "b8d2af4b76cd0bc52ac178b8c500e5733878ecee",
+ "baseline_engine": "4.3.0-c.6.6.126",
+ "engine": "4.3.0-c.6.6.149",
+ "note": "Package C (.132): every record whose replay differs from the .126 baseline, with its reason (docs/PATCH_ARCH_C132_POPULATION_AGE.md). Old answers are converted by tools/replay/contract_c.mjs. Each record is accepted only with the exact output it was checked with: fingerprint = sha256 of its complete normalized record output (tools/replay/replay.mjs recordFingerprint), written by --write-fingerprints. Package D: additional records pin exact output; original C entries unchanged. Individual changes in docs/PATCH_ARCH_D133_GEAR_OFFERS.md. Finance patch F (.138\u2013.140): eight further records pin exact output, one D record superseded with reason; earlier entries otherwise unchanged (docs/FIX138_FINANCE.md). Finance consolidation (.142, docs/FIX142_FINANCE_CONSOLIDATION.md): every record that differs from .126 is checked against the .141 replay of the same corpus: unchanged ones keep their entry; ones that differ from .141 only by the finance contract fields of the disclosed translation carry finance_142 (category kept) or the category \"finance 142 contract fields\"; every other change has its own reason (category \"finance 142\"), with the fingerprint it supersedes. .143: only individually reviewed boundary changes supersede their earlier fingerprints; see docs/FIX143_FINANCE_BOUNDARIES.md. .144 (finance simplification S1+S2, docs/FIX144_FINANCE_SIMPLIFICATION.md): checked against the full .143 replay record by record; entries of unchanged records kept; the 40 changed records carry one of seven reasoned .144 categories and the .143 entry they supersede (supersedes_143). .146: seven individually reviewed integration changes against a clean .145 replay; 391 previous entries are byte-for-byte unchanged. See docs/FIX146_BATCH21_TRADE_BOARD.md; supersedes_145 pins the exact previous output. .148: 38 individually identified board-display records and two ordinary-AoE records reviewed against .147; existing economic transactions unchanged. See DESIGN148_COMBAT_QOL.md. .149: 64 original-state records individually compared to .148: actual F-target qualification and completed offensive pattern notes; no recorded attack, coin, item, XP, quest-completion or level event differs. See DESIGN149_SKILL_GROWTH.md. .150: one original dangling place-fact is refused; all 478 previous entries remain unchanged. See FIX150_BATCH23.md.",
+ "categories": {
+  "representation": "population contract recorded, no mechanical consequence: entity.updated {life_stage, population_at} at creation (population_at no longer set on the profile event), quest.hunt.age on hunt contracts, converted population/life_stage fields inside an already rejected creature.new",
+  "rejection reason": "a claim already refused in .126 (aware of an unknown creature) is now refused by the creature reference lock (creature_continuity)",
+  "mechanical": "C3 reference lock: the refused glass beetles (dungeon_foe) no longer hand their aware claim (scope all) to an existing encounter beetle; that beetle keeps its awareness",
+  "finance 138": "price reading, complete handovers, truthful refusal texts and the sale-as-gift repair request of build .138; each reasoned individually",
+  "finance 142 contract fields": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)",
+  "finance 142": "behaviour changed by the finance consolidation (.142); each reasoned individually",
+  "finance 144 payment card": "S1 (plan \u00a76.2): the recorded free payment (the complete amount in his own words) is no longer booked from words; it is a payment card with its id, paid only by the player's own \"#pay <id>\" (the recorded run has no such message). Nothing changes hands in this record.",
+  "finance 144 contract fields": "cmd-1.9: the recorded pay answer still carries confirmation; it is no command field any more and is dropped when the answer is read. Resolutions, coin and events otherwise unchanged.",
+  "finance 144 acceptance hint": "S2 (plan \u00a74.2): the engine reads no second price from his acceptance words; an acceptance that names money without agreed_cp gets the one existing planner repair as a hint. The recorded repair answer stands with the same commands; resolutions, coin and events unchanged.",
+  "finance 144 price open": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
+  "finance 144 unit limit": "S2 (plan \u00a77.3): a player limit given as a price per unit for several units is no total: the booking stops with the concrete question for his total limit (NOT SOLD/NOT BOUGHT \u2026 name the total limit; a message of only such commands is the System's question, no story turn), never a multiplied limit and never null-and-sell; other commands keep their own result (absent buyer, a sale without a price). No coin or goods move.",
+  "finance 144 own coin": "S2 (plan \u00a77.1): a new NPC price carries its own coin word; \"a copper six\" (a bare number taking its coin from the sentence) is no binding total any more: no offer, PRICE OPEN for the service. No coin moves in this record.",
+  "finance 144 acceptance": "S2 (plan \u00a74.2, B9/B10): his explicit acceptance of the stored positions with their matching total (agreed_cp) was refused in .143 only by the removed second price reader (item prices of his words matched against positions); it is now accepted at the stored price and booked once with its service.",
+  "batch21 integration 146": "Individually reviewed .145-to-.146 changes: absent-merchant repair telemetry; sheet-inventory bid resolution and truthful price refusal; an explicit stored broker offer accepted once. Each entry pins its former category/fingerprint and its complete current output.",
+  "design148 danger": "Public reports and total kills rendered from existing contract/population fields; no mechanical event values changed.",
+  "design148 area": "Unselected neutral NPC spared and not materialised by ordinary skill AoE; costs, target authority and physical bursts retain their existing rules.",
+  "design149 offensive growth": "The actual offensive F window and qualification, recorded instant-victory patterns and meaningful learning-goal text; each record pins its .148 output and specifies its changed skill/encounter.",
+  "fix150 place fact": "Concrete unknown loc.-subjects/objects are refused consistently with validateState; free narrative facts remain allowed."
+ },
+ "returned": {
+  "b17-warrior#73": {
+   "earlier": "F (.138): \"two lines totalling 3 cp, and pay Marta the 3 copper\" names one sum twice; the planner no longer reads it as ambiguous, the command layer then refuses the offer positions under the existing selection rule (.134\u2013.136). Nothing changes hands, as before (then: generic clarification panel).",
+   "reason": "F (.142): \"Book them as two lines totalling 3 cp, and pay Marta the 3 copper\": the planner's valid first answer names agreed_cp 3 without price evidence (the translation finds \"3 cp\" and \"3 copper\" twice, no single reading), so the one existing repair is asked (\u00a74.4); the recorded repair of the live run is its clarification (\"Which two lines totalling 3 cp do you mean \u2026\"), shown as the CLARIFY panel exactly as in the original run. .141 executed the first answer and refused the acceptance. Nothing changes hands in either build."
+  },
+  "b18-rogue#341": {
+   "earlier": "F (.142): \"\u2026hand him that sorted pile for 12 copper\": .141 rejected the planner's answer and executed nothing; now the two sales run: the one whose minimum the words carry is agreed in advance, the other waits for a price. No coin moves in this record.",
+   "reason": "Both historical planner answers assign the count one in one pile as a unit price. The bounded evidence cannot carry min_cp 2; the planner safely executes no commands, rather than retaining the fabricated price limit. No coin or goods move."
+  }
+ },
+ "cases": {
+  "b16-rogue-sale#16": {
+   "category": "representation",
+   "fingerprint": "sha256:d7eed12d7db0e53a8451fcce1885c8fbe4b4ae3b7c75d53f6c45a064261b8867"
+  },
+  "b16-rogue-sale#30": {
+   "category": "representation",
+   "fingerprint": "sha256:55c47fa35af4232285a006f7f9ed19568f74908fd3fe0a1f16cb7c64dae4a851"
+  },
+  "b16-rogue-sale#44": {
+   "category": "representation",
+   "fingerprint": "sha256:548b21f64d4ab61094a16472cb3d224d461b94c6b6295b273a86230b3e7bcf35"
+  },
+  "b16-rogue-sale#5": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:7652ff2eb655002e4f86dbaa48b0aaee1a87ae05cf0a4c0dc26414cf02db5727",
+   "supersedes_147": {
+    "fingerprint": "sha256:a01fe9b973f9d597e47214ed5423ca8cb1bbc06fe6729f963c31f07026f77684",
+    "category": "representation"
+   },
+   "reason": "b16-rogue-sale#5: only 1 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: deferred board display after arrival.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:a01fe9b973f9d597e47214ed5423ca8cb1bbc06fe6729f963c31f07026f77684"
+   }
+  },
+  "b16-rogue-sale#58": {
+   "category": "representation",
+   "fingerprint": "sha256:b712fc6fa0d750045b500d1c0395ea47ccc2278d09363b60f1dc24d390642bf5"
+  },
+  "b16-rogue-sale#71": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:1d067b38f1091fae5812f6029f18400f2d6c7443b83be3da80aea0508d11aee2"
+  },
+  "b16-rogue-sale#77": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:479bf9cc78b9107b73da79671e1aaec2b19492e1744c93432339e77f311864d8"
+  },
+  "b16-rogue-sale#78": {
+   "category": "finance 144 price open",
+   "reason": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:52e11eff716f8bb61570703ad180a7399d06518d936034d31156918bf447ce3c"
+   },
+   "fingerprint": "sha256:f6832abd07f4c015227a92db55f72862f092a4411acaa74e3446647632526b46"
+  },
+  "b16-rogue-sale#79": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:c3bc64a0607706a95191fa56570b7bc413349c33fc871be1590b70a158ffd301"
+  },
+  "b16-rogue-sale#9": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:e4870967d6423b9565660422672b86b7baeeed2c56c042634837561989320254"
+  },
+  "b17-mage#100": {
+   "category": "representation",
+   "fingerprint": "sha256:417c5b350146b1c3eee0117120f8e9c7db5862d7013e87b1a12d6248862cd5fc"
+  },
+  "b17-mage#106": {
+   "category": "representation",
+   "fingerprint": "sha256:4d20f98a8f41099d8141c4111892b160122b2bc9c904ebd74e21ab00e3137237"
+  },
+  "b17-mage#124": {
+   "category": "representation",
+   "fingerprint": "sha256:9aa0dd9c7d18daf60fdd66c99be3c57f4258fe6fce842a8ecc8b08c9b5240585"
+  },
+  "b17-mage#130": {
+   "category": "representation",
+   "fingerprint": "sha256:b2d7df4576a03d5b26a8ce02e93a012de77d2d5973ac49b472c45f08fdf05bea"
+  },
+  "b17-mage#134": {
+   "category": "representation",
+   "fingerprint": "sha256:311c2d9fedd5d4d43930d5cbdf45d9da615fcf9e409da14a9f24f1d899db50c4"
+  },
+  "b17-mage#14": {
+   "category": "representation",
+   "fingerprint": "sha256:3dc6d89d5bad3da2dba425f414ac0f43d6e2a80bf1e9bb7468a7e9991fb9cbea"
+  },
+  "b17-mage#141": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:530cdcdb9dc694bc1eab6e302057b2f40840ce65625a59d0a2817d25c513ace2",
+   "supersedes_147": {
+    "fingerprint": "sha256:445d8340326a9d7c0b6a86cc7dfe9e558470f74ffd5835cb9755829980444bfa",
+    "category": "representation"
+   },
+   "reason": "b17-mage#141: only 5 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Cull the Half-Starved Yearling Wolf at the Lowfields Crofts; Cull Fen Adders at the Eel-Weirs; Cull Quarry Gnolls in the Old Quarry Cut; Cull the Pale Stag of Hollowmere.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:445d8340326a9d7c0b6a86cc7dfe9e558470f74ffd5835cb9755829980444bfa"
+   }
+  },
+  "b17-mage#150": {
+   "category": "representation",
+   "fingerprint": "sha256:6f9482d30839273b31a52dc324c1058414b1c7aa358912c76a60555429dde4cc"
+  },
+  "b17-mage#172": {
+   "category": "representation",
+   "fingerprint": "sha256:f2e9f1390982290227a0881bd8239ab8f9e5dc8c1e550e9c40a8e5639b5cd64d"
+  },
+  "b17-mage#176": {
+   "category": "D offer contract",
+   "reason": "D: offer schema contract/diagnostic changed without granting goods or coin.",
+   "fingerprint": "sha256:453157f86428bd06b16e7e18f4167859e9ef9a8e83938080b30e3c6e97d7f4bb",
+   "supersedes": "sha256:8cde43536cb58efd69b7c8ab4fd09231af1757e2dd33c621b5e962e44363a10f",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b17-mage#177": {
+   "category": "finance 144 contract fields",
+   "reason": "cmd-1.9: the recorded pay answer still carries confirmation; it is no command field any more and is dropped when the answer is read. Resolutions, coin and events otherwise unchanged.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:8efaf78eacaa3674510997ac5b379d735a8b3227d0064a71fa54b75fa83cef1d"
+   },
+   "fingerprint": "sha256:b74de6898a654c6414534a273e245ac12d55c447436cf5bd453ac5225f2886df"
+  },
+  "b17-mage#178": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:918908961e4242f0654b574651ff183ec7d705e192402b643858d7831dd902df"
+  },
+  "b17-mage#179": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:96e773cd9df6ca02e48f78c65281b668e9578b4a7e4961811d3db729fe961611"
+  },
+  "b17-mage#180": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:a4ce824d3817b32bcfba088c8cc9fe02ee8814150b40fc5ed633fff7011f2ab4"
+  },
+  "b17-mage#181": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:55a47396dc44a8f53266c4258186df3b2e190c6adefa97a49004de64b6554f1d"
+  },
+  "b17-mage#186": {
+   "category": "representation",
+   "fingerprint": "sha256:4ad7ad5689e927f53239b9e3754866fc3930e7d0d7c8af3ec7dfb0ecc31f903f"
+  },
+  "b17-mage#212": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:2d25fbde0729759e96a8b6cf90582eb3c70a74cc9786cf067d17fbb59b0477fc"
+  },
+  "b17-mage#28": {
+   "category": "representation",
+   "fingerprint": "sha256:a1608b287be27e27f4e4fd1d45c877786ae9ba0b1c46dcce6aa5630138790cc0"
+  },
+  "b17-mage#34": {
+   "category": "representation",
+   "fingerprint": "sha256:01fef1c53a5611452a1865848486567f35778fde9c430f67fca47e2e51563920"
+  },
+  "b17-mage#42": {
+   "category": "representation",
+   "fingerprint": "sha256:19f2226011f278f5039a7fd8c476e37953a3d28ae00095303129ed5b1e8a51de"
+  },
+  "b17-mage#48": {
+   "category": "representation",
+   "fingerprint": "sha256:550b43f451bb1d671c41a4777a1379836e2df4c7d4567f23cde8988c327a6db7"
+  },
+  "b17-mage#5": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:f820259e94bf747e7f95b463285f1ddcd275319b3223e1388ffd4f3ebee7467b",
+   "supersedes_147": {
+    "fingerprint": "sha256:3ab4f58f428a47433744ec1bba8c5bc347417d59000a6cd4c8dcc553a2614a30",
+    "category": "representation"
+   },
+   "reason": "b17-mage#5: only 1 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: deferred board display after arrival.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:3ab4f58f428a47433744ec1bba8c5bc347417d59000a6cd4c8dcc553a2614a30"
+   }
+  },
+  "b17-mage#6": {
+   "category": "D offer contract",
+   "reason": "D: offer schema contract/diagnostic changed without granting goods or coin.",
+   "fingerprint": "sha256:08fa4b2b1cd8741cc89a07c3cc1856bdbb7a78fe5aa75ce83c1f502174e24a2d",
+   "supersedes": "sha256:6790a23b0f38f847890afa6a307443dea756e98b3d0f0fd8352d8555275b1ffc",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b17-mage#62": {
+   "category": "representation",
+   "fingerprint": "sha256:ec5b43a70bd9e8fa9c71e448a6200b0c249cc2b61b86b5aa20eb094e0e4292ad"
+  },
+  "b17-mage#7": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:da5cfb54facb22deacdff9919b69e8077958b24efbee987787259e61753b62be"
+  },
+  "b17-mage#71": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:89ebb9f77008876669d86345061529455c16e5a4b8c91a8b767ba27cb68caeaf",
+   "supersedes_147": {
+    "fingerprint": "sha256:c57ccb02195d06b2941d4dd1030f124293969a5d3bca7d34187303e9cc4ebe73",
+    "category": "representation"
+   },
+   "reason": "b17-mage#71: only 5 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Take the Starved Yearling at the Lowfields Crofts; Clear the Fen Adders from the Eel-Weirs; Drive Down the Quarry Gnolls of the Old Quarry Cut; Slay the Pale Stag of Hollowmere.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:c57ccb02195d06b2941d4dd1030f124293969a5d3bca7d34187303e9cc4ebe73"
+   }
+  },
+  "b17-mage#78": {
+   "category": "representation",
+   "fingerprint": "sha256:08eae8ab08cd6adaa19e69ad4955dbbca4096798ce2b16bf058955f510f0c4dd"
+  },
+  "b17-mage#88": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:a7dcab4511a4fb6e2586aa46a34be9b9be7cee6085c3f9fccfaa6f7c53364dd9"
+  },
+  "b17-mage#89": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:c3a61ab7f3dc0839fcc70e7228714f9abc00bc185bec655f0f38d1cb48c2af3c"
+  },
+  "b17-mage#92": {
+   "category": "representation",
+   "fingerprint": "sha256:f43b45d5582a26c3e62503d048823953001fb05ffbdfbcc6e5b8929c341a8c40"
+  },
+  "b17-rogue#106": {
+   "category": "representation",
+   "fingerprint": "sha256:39abd033fafd738adbcf0464ff1f3f7f65866b15088c5ce3eb8b9a5042f477af"
+  },
+  "b17-rogue#124": {
+   "category": "representation",
+   "fingerprint": "sha256:8b660790e64a982a6a69f7c13a5c2a4c9003b14ded3af1dec0608ca5f8c7d9db"
+  },
+  "b17-rogue#132": {
+   "category": "representation",
+   "fingerprint": "sha256:970f442da8b0aff5cfe844704b1048d16f8dd3dcc8fef43b68d8f488e2091bfb"
+  },
+  "b17-rogue#138": {
+   "category": "finance 142",
+   "reason": "F (.142): the 11 coppers Alaric picks out of the den litter (reported as a gift from \"the den hoard\") was refused in .141 as well; the refusal is now also told to the narrator (\"Alaric's purse did not change \u2026 were not booked (\u2026)\"), the corrected story cannot claim the payment. No coin, goods or offer change.",
+   "fingerprint": "sha256:5ffacec5b54bf1e7d28d91fe97972fdad766039724a533f4f3ae41f57db3ddcb",
+   "supersedes_142": "sha256:6d11f7f91e54eaa5da1b6442dcd64bb9b75262936f7b4b96ec607c03100ac4b6",
+   "finance_143": "The den-hoard report still pays nothing; the unlocated handover anchor now requests the single existing repair. Only repaired:true changes."
+  },
+  "b17-rogue#14": {
+   "category": "representation",
+   "fingerprint": "sha256:d699db4f9d39c135fe680a6baccea4ea5094f9614b64d6646a09d7b802afef99"
+  },
+  "b17-rogue#140": {
+   "category": "representation",
+   "fingerprint": "sha256:7c772c7f3fa23223286e7bc8ee741771bfb228171178fe316a64e99ab7b89917"
+  },
+  "b17-rogue#162": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:a6c3976b7f3ad1778599068e752abe37920ab3191529678c71a08995080a308b"
+  },
+  "b17-rogue#163": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:2ca40c207622ef0c2a153561ee7ad660ba4a4c3b72a9c2941b14f8ce2d1df386"
+  },
+  "b17-rogue#164": {
+   "category": "finance 142",
+   "reason": "F (.142): the recount of 65 cp from Doss (an already credited sale) was refused in .141 as well; the refusal is now also told to the narrator (\"Alaric's purse did not change \u2026 were not booked (\u2026)\"), the corrected story cannot claim the payment. No coin, goods or offer change.",
+   "fingerprint": "sha256:fb49b29093f0d4f18a39da292b02d096847a4066436e87426c58bba15cc34a22"
+  },
+  "b17-rogue#165": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:7954e1982612b76d40434e74da5f4bdb3560947292ad0219bffd5716098c2967"
+  },
+  "b17-rogue#166": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:e96e2c7be88ffa799d9939e494490b266df250ba5c868dd54d31c6469086f94f"
+  },
+  "b17-rogue#167": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:d7f5fa6b31f1c72231ee4f98ac7b97daee36c3119634c7dda9ba3836029634d6"
+  },
+  "b17-rogue#168": {
+   "category": "finance 142",
+   "reason": "F (.142): the recount of 80 cp from Doss (an already credited sale) was refused in .141 as well; the refusal is now also told to the narrator (\"Alaric's purse did not change \u2026 were not booked (\u2026)\"), the corrected story cannot claim the payment. No coin, goods or offer change.",
+   "fingerprint": "sha256:192c67103e11e78c196aa62a08e8589f4addd447519b047365bcfdbd05ddeadf"
+  },
+  "b17-rogue#169": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:0f43c585e16e5dc695ff9b42ae70cb041cf8a46e708064bad1982ee21934e5ad"
+  },
+  "b17-rogue#170": {
+   "category": "finance 144 price open",
+   "reason": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
+   "supersedes_143": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:de09920f9d183a390f02256ad8c521585eabc323acc432fb12b9557e5dbfabac"
+   },
+   "fingerprint": "sha256:7784d35fea30436526bd3dd3f8f55d899f0fa1eb1f25d1b184495423d84227b1"
+  },
+  "b17-rogue#171": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:888f496dcd61d609aeccd36d694e9c3694f595e3c2e7009525d40da8954dc466"
+  },
+  "b17-rogue#178": {
+   "category": "representation",
+   "fingerprint": "sha256:81a13271e045435a2acd885ee66e7fca93b0a51cc1d5fb8248bf8a8b25e19844"
+  },
+  "b17-rogue#19": {
+   "category": "finance 144 payment card",
+   "reason": "S1 (plan \u00a76.2): the recorded free payment (the complete amount in his own words) is no longer booked from words; it is a payment card with its id, paid only by the player's own \"#pay <id>\" (the recorded run has no such message). Nothing changes hands in this record.",
+   "supersedes_143": {
+    "category": "finance 138",
+    "fingerprint": "sha256:848f2a8ae9d20616591d268f540a3acc356c5365cedb356d34a7edf7a8f66610"
+   },
+   "fingerprint": "sha256:6d691c8855bdd211a6059c5859c0ed312bbd68d51fc69de684425b0e7814f513"
+  },
+  "b17-rogue#196": {
+   "category": "representation",
+   "fingerprint": "sha256:f06444f299112d46506ccac3745ed8e93944b282c031137ba7bcbaadb26f598a"
+  },
+  "b17-rogue#200": {
+   "category": "mechanical",
+   "fingerprint": "sha256:108d4d4492351f10b746efaeedb9f9d6a550b4e3443b4ea40f518774284834e7"
+  },
+  "b17-rogue#219": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:6d4c06e8034bb386d57cec8b711ab5fc8acd9333cda3a34543d7e9817f0e58e3",
+   "supersedes_147": {
+    "fingerprint": "sha256:b2e1c58d4c0977d94cb50540bd1fe27817438fe4fafb4609abcf0ac688d02444",
+    "category": "representation"
+   },
+   "reason": "b17-rogue#219: only 5 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Clear the Banded Water Snake at the Washing Stones; Cull the Bog Striders at the Eel-Weirs; Put Down the Old Tusked Boar of Bramble Orchard; Thin the Pine Howlers of the Coldwell Pines.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:b2e1c58d4c0977d94cb50540bd1fe27817438fe4fafb4609abcf0ac688d02444"
+   }
+  },
+  "b17-rogue#221": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:9dffd38f7ff64373c84ac9016604d867e56c3279e5d3f9fb430955c7f3c30746"
+  },
+  "b17-rogue#224": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:024807c93b1ab7097c6ea2eeac6f08d0e75f11fa8116abc4f6de39e25141cb91"
+  },
+  "b17-rogue#225": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:7322ba9f3e3bd41c5909e3692c811e7e9efdabde7707e77e10dec88ed035fc8c"
+  },
+  "b17-rogue#227": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:cfc8f3860dd5b5ed76fb555501ce0f9aa82e221d331506ee731e7d7a2c490e5e"
+  },
+  "b17-rogue#228": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:9d4af6435d8563f4027ab36992c551860bcc9a465ac0e5dca9bb838a013837a3"
+  },
+  "b17-rogue#229": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:117bef940881e51c36ac57fc067b467693ba14ca42b72ec76f5580be4f25b728"
+  },
+  "b17-rogue#240": {
+   "category": "representation",
+   "fingerprint": "sha256:c7d27581c7bd27c5d11a8cafded9a424d8384de60f29739c757d901eba171b7d"
+  },
+  "b17-rogue#246": {
+   "category": "finance 144 price open",
+   "reason": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:c962a3aac60b290d4408d687e2fcd3b84e56e538453217c3e40e9201b02449a1"
+   },
+   "fingerprint": "sha256:301c69ccbd27f406d9d1cfb6e12ab283dac68892cf6023be136da0bfd4ad481b"
+  },
+  "b17-rogue#247": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:92a8b578f16f5e96701bcb96077ccc30fb23b1c9e56355780e1f6dc0bf0a1e52"
+  },
+  "b17-rogue#25": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:554095838a9c0d393670009071f679d7609aef3261a7b0173de70d45ec4cb014"
+  },
+  "b17-rogue#254": {
+   "category": "representation",
+   "fingerprint": "sha256:e21c7fe0a2e9e4d8ec6d405a97a22cfdb796fb3190d7ae5852eef1d8ef5d06f9"
+  },
+  "b17-rogue#26": {
+   "category": "finance 144 price open",
+   "reason": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:f05a13c29a2fc578d320494f4c50d8eab6fdf2158a10687cd7802e3c8b26b940"
+   },
+   "fingerprint": "sha256:da5a99bab5866d08074cb4f3276494e4a440645ed3940bce6ccc8f00e2deefb0"
+  },
+  "b17-rogue#262": {
+   "category": "representation",
+   "fingerprint": "sha256:2992ae172c82179c64e7482ac0dfbc3c59e6317a9f8602e5ca825f6d73cb4b7b"
+  },
+  "b17-rogue#268": {
+   "category": "representation",
+   "fingerprint": "sha256:729677ced8edc4bb166e86ae5f3d3e92bb911431c1be0302a84eec48aeab0cbe"
+  },
+  "b17-rogue#27": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:359735a41b732efbaf6e3026e361b6c2faf4ab1e6008ecb2a1cfc97dd8ab4b24"
+  },
+  "b17-rogue#28": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:a55c97b073e7b3d44d76f8edb4c11fc8d2adf6a8ead5c0824a5e9149251d81fd"
+  },
+  "b17-rogue#36": {
+   "category": "representation",
+   "fingerprint": "sha256:7f64fd2c1c9ccb3843fad7cfff1245c0ca15cab94620b616be42aaa7dee36c8b"
+  },
+  "b17-rogue#5": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:21cbdf329f6d278b6d7669e5e6f6f01e9fdc93f325399a78399cad0d11556da3",
+   "supersedes_147": {
+    "fingerprint": "sha256:94832df55dd476ecad096e1c3a4aa02ff4ec67a108a8de595e8a154ef4528893",
+    "category": "representation"
+   },
+   "reason": "b17-rogue#5: only 1 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: deferred board display after arrival.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:94832df55dd476ecad096e1c3a4aa02ff4ec67a108a8de595e8a154ef4528893"
+   }
+  },
+  "b17-rogue#50": {
+   "category": "representation",
+   "fingerprint": "sha256:8cb73e852dc7873711d12b306d6f48fa2cf583238b6c94ef50913732a234d0b5"
+  },
+  "b17-rogue#76": {
+   "category": "representation",
+   "fingerprint": "sha256:9ca48f89f411424adaf390822abcb42fde62afb21e89de792168d5ad0134529d",
+   "supersedes": "sha256:8de26a781681eb4993e33a9e79247605e7b89554b78af08cfa0e477ebbb37d39",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b17-rogue#77": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:2794f5ac96ac7e1d89b8e695cc887b63100496de346dcd5037e09375eca346a1"
+  },
+  "b17-rogue#8": {
+   "category": "D offer contract",
+   "reason": "D: offer schema contract/diagnostic changed without granting goods or coin.",
+   "fingerprint": "sha256:d511be48e065fced59bcdf6da22dfe09d02a7fd1f22315eb7c43ba9988f42c49",
+   "supersedes": "sha256:1ed6a7593f6ff57140d3b1f508b148a81c09845d88bafcffa1dfaf2d9f23e91c",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b17-rogue#84": {
+   "category": "representation",
+   "fingerprint": "sha256:e52c24a010933663a75d8baef3c3e043a790f27544f9b649e1f4e19ee27a5727"
+  },
+  "b17-rogue#9": {
+   "category": "finance 144 contract fields",
+   "reason": "cmd-1.9: the recorded pay answer still carries confirmation; it is no command field any more and is dropped when the answer is read. Resolutions, coin and events otherwise unchanged.",
+   "supersedes_143": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:1a033c81ecffe97f3cf6a2ba47237cf7c9d079cd96cede9052a3ea5d5371de25"
+   },
+   "fingerprint": "sha256:48fac8f2a7040c7d85649ca9e5a5887a14c30e4cd5cf9314046a76f254cd0ec5"
+  },
+  "b17-rogue#90": {
+   "category": "representation",
+   "fingerprint": "sha256:d3318718e75ee4ef7d14e6d071e6403599c4fb9d4f89b18d12388ed9622c58b9"
+  },
+  "b17-rogue#97": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:7859d87fe2c9b6556f29b0a519d9e97d4d98f403edb43ab315e199377e0c5798",
+   "supersedes_147": {
+    "fingerprint": "sha256:9362a8526afc1c3d80163266921a503989fad6850c470f10dcabd935b9205557",
+    "category": "representation"
+   },
+   "reason": "b17-rogue#97: only 5 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Snake at the Washing Stones; Cull the Bog Striders at the Eel-Weirs; The Old Tusker of Bramble Orchard; Thin the Pine Howlers of Coldwell.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:9362a8526afc1c3d80163266921a503989fad6850c470f10dcabd935b9205557"
+   }
+  },
+  "b17-warrior#104": {
+   "category": "representation",
+   "fingerprint": "sha256:ce214fba0a0d1a89fa7bd9fcf86192041fd22bfc61653c1aadd9ccdead9b1b37"
+  },
+  "b17-warrior#118": {
+   "category": "finance 142",
+   "reason": "F (.142): regular gear is priced by the engine table; the .141 audit note on the narrated price (amount.corrected/unproven) is no longer emitted for it \u2013 the offer, its engine price and the narrator line are unchanged.",
+   "earlier": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "supersedes": "sha256:46874295271a7c06ef9df09ba02e86e3805e5d1a94a1593e886fa35352f57f6a",
+   "fingerprint": "sha256:536a1e0d4e50241b2a219a7c91e28c53960114e9bf62bec2cc956de420ecbaeb"
+  },
+  "b17-warrior#121": {
+   "category": "finance 144 acceptance hint",
+   "reason": "S2 (plan \u00a74.2): the engine reads no second price from his acceptance words; an acceptance that names money without agreed_cp gets the one existing planner repair as a hint. The recorded repair answer stands with the same commands; resolutions, coin and events unchanged.",
+   "supersedes_143": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:0cf89049e288db69d2eebab6e055598adccd0c06b70845fd9b10607a0cea7e94"
+   },
+   "fingerprint": "sha256:700c0314b274768d7fd6c44f28435f91ab79dc60fcd44f2f1cf411d6b6b504a1"
+  },
+  "b17-warrior#124": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:68a0b944fe49d49f66fbbcde4dc7538eb4d63864ac1d2b5d67f6455a8b50bf8a"
+  },
+  "b17-warrior#125": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:45b424961e06d4315e991d867f72e8a07e5d73fbc364e00ab6f2da3d4813011b"
+  },
+  "b17-warrior#126": {
+   "category": "batch21 integration 146",
+   "reason": "The reported Guild buyer is not present. The bounded extractor repair now asks for the actual encounter; the archived repair still supplies no valid enter. Only extract.applied.repaired changes; no goods or coin move.",
+   "supersedes_145": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:44b67f1550d56ca17abfe077a9effc0f11ab8dd6be1f54118e1df6ea10a4807c"
+   },
+   "fingerprint": "sha256:ebf0bf4bbc483444da276649d463f02e7cd01d8aa3cf32d3508e570e02451fca"
+  },
+  "b17-warrior#129": {
+   "category": "finance 142",
+   "reason": "F (.142): \"\u2026at her brokerage price of four silver total\": .141 rejected both planner answers (amount check of the per-stack minimums) and executed nothing; now the first answer gets the one finance repair hint (\u00a74.4) and the recorded repair runs: both sells are refused because the clerk the planner names as new is not here (\"CANNOT SELL \u2014 the Guild clerk is not here.\"). No coin or goods change in either build.",
+   "fingerprint": "sha256:1772d09b610b5682dbb01b2ffb805bad9011a3d9d94d453a4d64df32b6100fcc"
+  },
+  "b17-warrior#131": {
+   "category": "finance 142",
+   "reason": "F (.142): text only: a sale to someone the planner names as new ({new: \u2026}) was refused as before, but its line read \"CANNOT SELL \u2014 [object Object] is not here.\"; it now names him (\"CANNOT SELL \u2014 the Guild clerk is not here.\"). No coin, goods or offer change.",
+   "fingerprint": "sha256:b81b4c5cd18fe98f365f8cf9a0fb483357e768a4cc8e2fa084b7bc1207c03524"
+  },
+  "b17-warrior#133": {
+   "category": "finance 144 unit limit",
+   "reason": "S2 (plan \u00a77.3): a player limit given as a price per unit for several units is no total: the booking stops with the concrete question for his total limit (NOT SOLD/NOT BOUGHT \u2026 name the total limit; a message of only such commands is the System's question, no story turn), never a multiplied limit and never null-and-sell; other commands keep their own result (absent buyer, a sale without a price). No coin or goods move.",
+   "supersedes_143": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:bcf849088b729bdbf526a2dbcedf16dfce54be4c63d3b71eb0a9090a33e0595f"
+   },
+   "fingerprint": "sha256:f41bac1dfa343a38074b079c82da4649b3203862938354b6e88098deff767890"
+  },
+  "b17-warrior#134": {
+   "category": "finance 138",
+   "reason": "F (.138): \"Five pelts, nine fangs. Ten and eighteen. Forty copper.\" The amount words end at the sentence boundary: the sale books the narrated 40 cp instead of 68 cp (other article prices were added before).",
+   "fingerprint": "sha256:47e2c5f0c40395ffa23b7febfe52f0548ab19278a08c7e0e64eea28476b69e0a",
+   "supersedes": "sha256:1f17b1696540e1e8d3eb722cb84573c4969b0be035376d2c8437925d97714cbf",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b17-warrior#135": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:a13d0672f9cda70c8c0ebcab0f77cd8a451ca034466bf18611b29d4a2714dcce",
+   "supersedes_147": {
+    "fingerprint": "sha256:82a1271bee2aba93cdf16808620c0e3bdcfb76862edd0768b3e4f56c532612f0",
+    "category": "representation"
+   },
+   "reason": "b17-warrior#135: only 5 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Cull the Marsh Adder at the Reed Flats Eel-Weirs; Cull the Barrowfield Bramble Wolves; Thin the Thornhollow Great Tusked Boars; The Pale Stag of Hollowmere.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:82a1271bee2aba93cdf16808620c0e3bdcfb76862edd0768b3e4f56c532612f0"
+   }
+  },
+  "b17-warrior#142": {
+   "category": "finance 142",
+   "reason": "F (.142): regular gear is priced by the engine table; the .141 audit note on the narrated price (amount.corrected/unproven) is no longer emitted for it \u2013 the offer, its engine price and the narrator line are unchanged.",
+   "earlier": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "supersedes": "sha256:2b6e83f1aec1042d0c9ef8f32e5e4c50fb4b864a023e13d8a1b8859256a2ffd6",
+   "fingerprint": "sha256:35f526f09251ec9af7810057619fd665b5e3a9251d70b7629cc301b39fcf00a1"
+  },
+  "b17-warrior#143": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:a5cb6c20810d0ec7dab44683a2f691b94c53901882150963bab9ee7f074529d0"
+  },
+  "b17-warrior#145": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:7d56c3b6148497dbc0721c813acc47ccfac896c6abff8e1ffeacd0375991d0b1"
+  },
+  "b17-warrior#147": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:c15105657edf8c45badab8e3b33d96e1fba4d54efb54e0f0c9a85ba0c0461ef1"
+  },
+  "b17-warrior#152": {
+   "category": "representation",
+   "fingerprint": "sha256:3f7ccaa77f6e97eb26817659555f66593baad7d74e06c3c2a819a626c676dfc8"
+  },
+  "b17-warrior#159": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:1b0ad917d3f2a0894b26b33071d91229a69c929e05d4c4fe7aaac4ff5b7eec5e",
+   "supersedes_147": {
+    "fingerprint": "sha256:72210788a849ef9de0eef152a0ee4b3e07ec8ee043d647ba292b7275a5e2411e",
+    "category": "representation"
+   },
+   "reason": "b17-warrior#159: only 6 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Cull the Marsh Adder at the Eel-Weirs; Thin the Barrowfield Wolf Pack; Wharf-Wasp Cull at the Timber Yards; Cull the Thornhollow Tusked Boar; Cull the Pale Stag of Hollowmere.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:72210788a849ef9de0eef152a0ee4b3e07ec8ee043d647ba292b7275a5e2411e"
+   }
+  },
+  "b17-warrior#162": {
+   "category": "representation",
+   "fingerprint": "sha256:7cfa7540b89b30bb059c7515ffa9f85eb85695b29fc2f9ee084794cd6e3ff167"
+  },
+  "b17-warrior#18": {
+   "category": "finance 142",
+   "reason": "F (.142): Ellwin's \"Half of four is two\" (20 cp reported without a quotable complete handover) was refused in .141 as well; the refusal is now also told to the narrator (\"Alaric's purse did not change \u2026 were not booked (\u2026)\"), the corrected story cannot claim the payment. No coin, goods or offer change.",
+   "fingerprint": "sha256:3755b0c8ec6d9d67c0a8bc74a00a6e4247a6807be427253a539d12a4c86c0468"
+  },
+  "b17-warrior#180": {
+   "category": "representation",
+   "fingerprint": "sha256:0499dbe10ef96a866931dfce40d6acb0624ae988cfeb2f4a61b4016d7cd86b8f"
+  },
+  "b17-warrior#184": {
+   "category": "finance 142",
+   "reason": "F (.142): the audit note amount.corrected of the inn's \"Bed and breakfast's four silver\" now names the price words themselves (\"four silver\") instead of the whole said; same correction, same offer.",
+   "fingerprint": "sha256:c72fcda2e193cd01411393964afbfe00329f745d9fb5139b2236b2362659ac3c"
+  },
+  "b17-warrior#185": {
+   "category": "finance 144 acceptance",
+   "reason": "S2 (plan \u00a74.2, B9/B10): his explicit acceptance of the stored positions with their matching total (agreed_cp) was refused in .143 only by the removed second price reader (item prices of his words matched against positions); it is now accepted at the stored price and booked once with its service.",
+   "fingerprint": "sha256:696a482df22aa896c09f600366e9056995c9f042d0bee05cc2152c8706ffe11c"
+  },
+  "b17-warrior#187": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:531aad06d4e7e9a3c41a6a2569ba545178110ca07347d6539189d5be333d4d26"
+  },
+  "b17-warrior#198": {
+   "category": "representation",
+   "fingerprint": "sha256:f781c706675aaa03ab5737f10d43f9451f47512d3d00e0f2c82899728fd8dab9"
+  },
+  "b17-warrior#204": {
+   "category": "representation",
+   "fingerprint": "sha256:aefe4a161ec64df606c6d28ac87cf4960fcb143ea03fc16dd44028b8a47c7c55"
+  },
+  "b17-warrior#210": {
+   "category": "representation",
+   "fingerprint": "sha256:881ac4bb6bb500e84e122d8cb9633b896eae33b27c4b37faebae4964ed9d0d71"
+  },
+  "b17-warrior#217": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:9a1cc81dd80490038dd4d1a3e41c0312515588e8dee289bf0d6d36d936cb5a21",
+   "supersedes_147": {
+    "fingerprint": "sha256:3b22fbab6a6ce1de6410f0d655b987e91189d0bdf20b05cf6daa43c5f4e9e99b",
+    "category": "representation"
+   },
+   "reason": "b17-warrior#217: only 6 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Marsh Adder at the Eel-Weirs; Thin the Barrowfield Pack; Clear the Wharf-Wasp Nests; Boar Hunt at Thornhollow; The Pale Stag of Hollowmere.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:3b22fbab6a6ce1de6410f0d655b987e91189d0bdf20b05cf6daa43c5f4e9e99b"
+   }
+  },
+  "b17-warrior#22": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:a0a20fc8736d76a43fcfe5b14591062223316297ce4c75742c40491a989a5400",
+   "supersedes": "sha256:fc4a86b3350343bc9af9bb55b33788aafc89a508482a096a63b3f320d44a2f7f",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b17-warrior#222": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:f8c764e180d94ac393fb6db4701a3c4efd178e446290db72191dff6294db5027",
+   "supersedes": "sha256:5cafbeabfc051dbde7b37706f6762bc184d11b214fcb0aa213a597d1bf96a857",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b17-warrior#224": {
+   "category": "representation",
+   "fingerprint": "sha256:c94c4acb474028824fddcd40b03dfea844f52f6988c8c61fd8d9be027900b385"
+  },
+  "b17-warrior#230": {
+   "category": "representation",
+   "fingerprint": "sha256:bd3bc85fd9c047eac727a336d1541a1325b8c7acb99a150d990163b6b96ebdfa"
+  },
+  "b17-warrior#25": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:492b2361d29c10d9fc3236304ee8df1c4f7a136f8ea593a870e96bc3e5a8c3f1",
+   "supersedes_147": {
+    "fingerprint": "sha256:38549f0c1eb0d742c5cd478e73dcbbf6b70b619c29f34da6e049df0ff497307a",
+    "category": "representation"
+   },
+   "reason": "b17-warrior#25: only 1 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: deferred board display after arrival.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:38549f0c1eb0d742c5cd478e73dcbbf6b70b619c29f34da6e049df0ff497307a"
+   }
+  },
+  "b17-warrior#258": {
+   "category": "finance 142",
+   "reason": "F (.142): regular gear is priced by the engine table; the .141 audit note on the narrated price (amount.corrected/unproven) is no longer emitted for it \u2013 the offer, its engine price and the narrator line are unchanged.",
+   "earlier": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "supersedes": "sha256:61b6bac9b770b0ad9e16069dac6979bc25e21c5463c027bd2b3ffd696f91480b",
+   "fingerprint": "sha256:9d0911f34e03a5fa211f39377437940878c874bca6563837879d1b28e96f712a"
+  },
+  "b17-warrior#261": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:b0490f11b5b1e00c38deaf945f130f154e4f0b0a54081b3d38c6761a727e0da7",
+   "supersedes_147": {
+    "fingerprint": "sha256:c4db2121166c251d086db05b1dbe25a4d04333d213b1b301d98ed86f2d2d110f",
+    "category": "representation"
+   },
+   "reason": "b17-warrior#261: only 1 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: deferred board display after arrival.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:c4db2121166c251d086db05b1dbe25a4d04333d213b1b301d98ed86f2d2d110f"
+   }
+  },
+  "b17-warrior#265": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:6ea1eec370be9418ae225b08bd4ca9bce9a4aad87cc08a8fa4bd73fba5973aad"
+  },
+  "b17-warrior#266": {
+   "category": "finance 142",
+   "reason": "F (.142): the finance contract asks the one existing extractor repair for missing finance meaning (\u00a74.4: phase/pricing/relation); the corpus has no recorded repair answer, so the first answer applies unchanged (same deltas and refusals; extract.applied repaired:true).",
+   "earlier": "D: offer schema contract/diagnostic changed without granting goods or coin.",
+   "supersedes": "sha256:6379562feb2fa13ae9cc5b288c312189afc7b300e72f0ac125543d202f5d7d77",
+   "fingerprint": "sha256:cd8f9702722132b33eab70e9ab85833d1d1e226df05dabf951d85f95c0b97621"
+  },
+  "b17-warrior#267": {
+   "category": "finance 142",
+   "reason": "F (.142): \"I'll take the smaller back room for one silver ten, please \u2014 here's the coin\": .141 rejected the planner's answer and executed nothing; now the room purchase is a pending wish (its limit is not carried by price evidence in the recorded answer) and the sleep in that room is refused (room not booked). Nothing is paid in either build.",
+   "fingerprint": "sha256:d20e96a6d04662516dda5aea490684f6a6b2844b71513d204dac65b536b15fe7"
+  },
+  "b17-warrior#269": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:970cfe1ff6d6fcaef4a4c327aed56cdc78db25676ff3abc87690af2745a610ce"
+  },
+  "b17-warrior#274": {
+   "category": "representation",
+   "fingerprint": "sha256:94ef7b812ee2b21950b009c679306a436927d14211b4260710d75a964f31cd32"
+  },
+  "b17-warrior#284": {
+   "category": "representation",
+   "fingerprint": "sha256:b0e154602948a7926bbb4cd249d936b8e4b80e1c7f7b665cc85ed3812fbd919a"
+  },
+  "b17-warrior#293": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:946b6a71868398cc7ed6db3193d2272e9165b709351caf93c5a1de8746780563"
+  },
+  "b17-warrior#294": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:fb67ac10662c4f31e9f7bedfe8531bd5aca15fa2eba668d63eec039ef2ac2d8d"
+  },
+  "b17-warrior#295": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:141af2388302353dea3fe0f8d5306d7c77eab4dfd6f184d8ec9f82fa330a16b9",
+   "supersedes_147": {
+    "fingerprint": "sha256:4911365a778cf7e92967f20f80fcdc0fe51685dd9fe47a7300493a260efc7da7",
+    "category": "representation"
+   },
+   "reason": "b17-warrior#295: only 1 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: deferred board display after arrival.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:4911365a778cf7e92967f20f80fcdc0fe51685dd9fe47a7300493a260efc7da7"
+   }
+  },
+  "b17-warrior#300": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:e65aae32e79e33f8013d338fdfd12f939030abe592f1c7fd5b8a64bbf8b5a1a3",
+   "supersedes": "sha256:60d1edb7961a5f530062ad50eb21044b665e6fee6832e0a184d3b87206670b02",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b17-warrior#302": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:5be0405d5e143e15f7ec81a3a203802bd659e5a90544a257365ff47317c352b5",
+   "supersedes": "sha256:ae9bf5b41127d7ce1f52ddd7f67459dc012c4d4e3eda0f047b61c82e43590633",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b17-warrior#306": {
+   "category": "representation",
+   "fingerprint": "sha256:e0b8684c060ff441499f595d0e49a451b27b1ae62b8caac90907b2d2b59a87b9"
+  },
+  "b17-warrior#312": {
+   "category": "representation",
+   "fingerprint": "sha256:17c660dce1336e35e00ea5cd271159969a909d817b4c8ef572f5cb6cf1146cb9"
+  },
+  "b17-warrior#32": {
+   "category": "representation",
+   "fingerprint": "sha256:0f5338462dfc71261b2cd41cd32e736a84e01246d982a2ed9ccfa50ba9ee0daa"
+  },
+  "b17-warrior#42": {
+   "category": "representation",
+   "fingerprint": "sha256:041e9f7f2ec61d56564268226123b321a0932b0782eb13ff0225be153ae211d8"
+  },
+  "b17-warrior#46": {
+   "category": "representation",
+   "fingerprint": "sha256:6ec0486d0ce0f9275b8aeca10213f7b796aa1feae913315fe48b9bcae239575d"
+  },
+  "b17-warrior#65": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:efcad4e23fa9be9505ec66f8693a11b52a90548548c804220a8220dabcd097e9"
+  },
+  "b17-warrior#67": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:288a2b07bca1ec3b691ea6574458805f94e621ca6f33d6242566be472e4563ce"
+  },
+  "b17-warrior#68": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:5e3c75d13b9606efc93869552ac49464e3e459e8dcee63f755074711dda7621a"
+  },
+  "b17-warrior#69": {
+   "category": "finance 144 acceptance",
+   "reason": "S2 (plan \u00a74.2, B9/B10): his explicit acceptance of the stored positions with their matching total (agreed_cp) was refused in .143 only by the removed second price reader (item prices of his words matched against positions); it is now accepted at the stored price and booked once with its service.",
+   "fingerprint": "sha256:14809713794d05f7fcbc8840e0232322050dde13bc83442d6e62128f8f9a7766"
+  },
+  "b17-warrior#75": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:60061598c93a9aa7ecb43199a8d009beae635287326c79cd460bbf7a7f33cce7"
+  },
+  "b17-warrior#76": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:0de67a6a10afb41039e7c0bfacd54eb78c15c5f7413f71490c786be388532145"
+  },
+  "b17-warrior#77": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:96a6c577be4998c07ebe4b1b4684dbf2f6f71d432838280d947ac21566933fa8"
+  },
+  "b17-warrior#78": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:1b18b8950ec98f68deb85cf94314784743037a0375a614706ae61d822a8fb8aa"
+  },
+  "b17-warrior#80": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:8dbfdb89520722df1a7ed0f715dd9015c64df88ed22c436026355d13b339ba5a"
+  },
+  "b17-warrior#81": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:f3eeea9a4ed09655b72dac5cf771e09ec0396b75a01d9c5c4ee1009dc17c9bda"
+  },
+  "b17-warrior#83": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:4c3417a4c2de823080107af1216d8ab747ee989586e6dc7fe654153937b292a5"
+  },
+  "b17-warrior#9": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:3e37716c8cf19b7a459b7172e3dd991fb4577fa78fc811fefc5319152d89a4ad"
+  },
+  "b17-warrior#94": {
+   "category": "representation",
+   "fingerprint": "sha256:9829a300a066f456488a89bd8c038f04a68b93c92752a0c74c58232edddd2705"
+  },
+  "b18-mage#16": {
+   "category": "representation",
+   "fingerprint": "sha256:0ebf29e7f608b505f28ced3375d41ff2cca5a30a3752b3189456da6ffa50a32c"
+  },
+  "b18-mage#32": {
+   "category": "representation",
+   "fingerprint": "sha256:08cd7bbc54157b6a680c2647ff215967cc9ac691d45a577d87a84fb28e3f89f5"
+  },
+  "b18-mage#40": {
+   "category": "representation",
+   "fingerprint": "sha256:de51a13583f645090ffdc13915a723e3aff242128ba649841dd2cc5d2b3101a2"
+  },
+  "b18-mage#7": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:a5c1865abcde5f1c75930da811645a8a9f6d07de39dbfe626c1bcdcdb9f19899",
+   "supersedes_147": {
+    "fingerprint": "sha256:26cc6215875d32890afbdcc79bc3d624b7a10be525b2b3e8638b67011bad6a46",
+    "category": "representation"
+   },
+   "reason": "b18-mage#7: only 5 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Cull the Quarry Track Adder; Thin the Millpond Mire Pike; Cull the Bramblefen Boars; Break the Howlingmere Wolf Pack.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:26cc6215875d32890afbdcc79bc3d624b7a10be525b2b3e8638b67011bad6a46"
+   }
+  },
+  "b18-mage#9": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:22ddf5f3af8d6e10261a8e52529ea08e4146ac548060a43fe2b9ba782460e1ad"
+  },
+  "b18-rogue#100": {
+   "category": "representation",
+   "fingerprint": "sha256:e6480d7fc24fdea7c752f18e60feb786221c613b4cca057da2fe1a1948cd0de6"
+  },
+  "b18-rogue#130": {
+   "category": "finance 144 own coin",
+   "reason": "S2 (plan \u00a77.1): a new NPC price carries its own coin word; \"a copper six\" (a bare number taking its coin from the sentence) is no binding total any more: no offer, PRICE OPEN for the service. No coin moves in this record.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:3efee03dc7d6e95d0aaeb79936fe263befff59b10cde2bfa9264eaa7765ea97a"
+   },
+   "fingerprint": "sha256:ba905abd0f61ce748f6472712fc689e5594abfa146d8c102e8cdffd1d4e207e1"
+  },
+  "b18-rogue#131": {
+   "category": "finance 144 payment card",
+   "reason": "S1 (plan \u00a76.2): the recorded free payment (the complete amount in his own words) is no longer booked from words; it is a payment card with its id, paid only by the player's own \"#pay <id>\" (the recorded run has no such message). Nothing changes hands in this record.",
+   "supersedes_143": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:db825b5f3c0ef02629ccb6ff2fd8cb62e2557232baa159f75fe82273c7bf1bd0"
+   },
+   "fingerprint": "sha256:13f2677e9b3734f7edd5f3b8a7f2b3c384299ec5d5a71b84686b2ded4d0ae2fd"
+  },
+  "b18-rogue#136": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:222058d438ce904e8a3f2e5815eb6f13c06cd7e56d5b7ce937afc63a8465c19e"
+  },
+  "b18-rogue#137": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:8147cddec72f270de4bdfb36d008a76826d1351b4ea19e4a71166c386bc90274"
+  },
+  "b18-rogue#140": {
+   "category": "representation",
+   "fingerprint": "sha256:37eba9594b7a46dd3826b6f7be9170dee3b9f40d7aa982850c987e90786a2b05"
+  },
+  "b18-rogue#170": {
+   "category": "representation",
+   "fingerprint": "sha256:08ddc009422eebc601e3979c281723852165197c80f10770728b3030eaaa95bb"
+  },
+  "b18-rogue#189": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:8f6f7a097de5cfff85efef913be7ef4d2cb32105dc554079f626e78fc814193c"
+  },
+  "b18-rogue#192": {
+   "category": "finance 144 price open",
+   "reason": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:f40a00a3e54c2f1aaa5592a5feeda6e6a43ce7f81639bab044900b67901daa32"
+   },
+   "fingerprint": "sha256:1f31f3f45fc265978114164e08d00745f60116801c71eae28e33566a87ade944"
+  },
+  "b18-rogue#193": {
+   "category": "finance 144 unit limit",
+   "reason": "S2 (plan \u00a77.3): a player limit given as a price per unit for several units is no total: the booking stops with the concrete question for his total limit (NOT SOLD/NOT BOUGHT \u2026 name the total limit; a message of only such commands is the System's question, no story turn), never a multiplied limit and never null-and-sell; other commands keep their own result (absent buyer, a sale without a price). No coin or goods move.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:efe67b179f9b371a4c485de185c565fafeedf9fdd2ce242916e1ce4eece3c720"
+   },
+   "fingerprint": "sha256:2552e5c43bde27f243350d4ba872a29f13d8bf4107a3b77fc40cdef808ac40bc"
+  },
+  "b18-rogue#195": {
+   "category": "finance 144 unit limit",
+   "reason": "S2 (plan \u00a77.3): a player limit given as a price per unit for several units is no total: the booking stops with the concrete question for his total limit (NOT SOLD/NOT BOUGHT \u2026 name the total limit; a message of only such commands is the System's question, no story turn), never a multiplied limit and never null-and-sell; other commands keep their own result (absent buyer, a sale without a price). No coin or goods move.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:86870cb5a3ea8dc6e3a445b5cfb3b22728cef587fd63570169e743b4e09b1de3"
+   },
+   "fingerprint": "sha256:2552e5c43bde27f243350d4ba872a29f13d8bf4107a3b77fc40cdef808ac40bc"
+  },
+  "b18-rogue#196": {
+   "category": "finance 142",
+   "reason": "F (.142): the recorded coin.gift of 153 cp from Tam beside its trade cannot say what the coin is for (translated relation \"unclear\", tools/replay/contract_f.mjs): refused as coin_relation instead of coin_evidence, and the narrator is told. No coin changes, as before.",
+   "earlier": "F (.138): the buyer's 153 cp for sold plates and claws is reported as coin.gift without a bid; the extractor's existing bounded repair is now asked for the bid (no recorded repair answer in the corpus, so the first answer applies unchanged: same deltas and refusals, extract.applied repaired:true).",
+   "supersedes": "sha256:9ca837e6130bc839533ebd4eb976658044f25c5d49b9724bb5f50bbd2afa905a",
+   "fingerprint": "sha256:387979fa135e54d2879c30fe84ceb8ada267d50a01acbd803c1a445185e661ab"
+  },
+  "b18-rogue#20": {
+   "category": "representation",
+   "fingerprint": "sha256:23268e6ae80da77fa174511bcfa1774fb30c983a1f94ac6be46d40af603c1a79"
+  },
+  "b18-rogue#200": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:fc93c5c5c2699f2c18d0fe3701bd71e6629ae93da4b9b7396addbfc203405828",
+   "supersedes": "sha256:3e51752fe2ffa617b255eaa97f7e9e267c89ad78ee2010f1dc497fdb2695e4a3",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b18-rogue#202": {
+   "category": "representation",
+   "fingerprint": "sha256:28637a60809f25137d424e143dd624700af6497d43e255cb06a918c284011396"
+  },
+  "b18-rogue#210": {
+   "category": "representation",
+   "fingerprint": "sha256:9b380981255bcaed79d825499b69e69cd05f9c504f7953dbdb2219001167e211"
+  },
+  "b18-rogue#248": {
+   "category": "representation",
+   "fingerprint": "sha256:e6d06cb53d28d1269abf9f5030e5c9fee37bd80d285e1f3072536cc8373ae62f"
+  },
+  "b18-rogue#259": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:04163803b45fc0a32f8910e6bd241d7e643ec70713c9cedf3e294f9a19d2a8ab"
+  },
+  "b18-rogue#260": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:2d0f437302b98173cdcc4295584ae55df39870b727e5d377c1247fc45795fa1c"
+  },
+  "b18-rogue#261": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:f26947b4b376a22b2dd2219928bdba265d1607f28b2dcca243e3811a98c8a4a1"
+  },
+  "b18-rogue#264": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:69ae1500ce350e388798401080fc4439de0b4d356374af32d0e98c1d1fcad1ab",
+   "supersedes": "sha256:e20632686e4bff45dd660696f17704c3b2e518efb6ac1ab417d68b46bcc21f42",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b18-rogue#266": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:51c83b3debe8010464b82e104e3c27546e8b46956686ddf027186a4041b7d324",
+   "supersedes": "sha256:7e3b8145e7f06aefdfde1f8e4968ed8c46ae867efc85f622d62aa183925fdb92",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b18-rogue#267": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:29ea7031676da36a3cf402437e12c4de4fa727c0369f18ce573153e7a89a8ac2"
+  },
+  "b18-rogue#268": {
+   "category": "D offer contract",
+   "reason": "D: offer schema contract/diagnostic changed without granting goods or coin.",
+   "fingerprint": "sha256:e9a8fdecb5dc50022eef7680da6558b2b6e79c76690a25cbfd1851c07e08aed4",
+   "supersedes": "sha256:ed3cbe7b4c647406f635a4d3b36cced2ad77101c1eecfedfd95637b1a242597e",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b18-rogue#272": {
+   "category": "representation",
+   "fingerprint": "sha256:aa4956e3262d03acb2209f43180056d48171599cf2da4811934f74e0c5f6d4f2"
+  },
+  "b18-rogue#288": {
+   "category": "representation",
+   "fingerprint": "sha256:e70bfeed2642a7e070cfd6dde1bc7727f2dd8199ea554b918eafb36f94bc3862"
+  },
+  "b18-rogue#292": {
+   "category": "representation",
+   "fingerprint": "sha256:b97b07f90e3c55cb111ff5fce658213b601137ec74cd3fbcc1f963d3ad52f10c"
+  },
+  "b18-rogue#296": {
+   "category": "representation",
+   "fingerprint": "sha256:df71a2c92639c7a42bdabfb11867150f9bbb2ec62ea023f89f65ec3ce5062b1c"
+  },
+  "b18-rogue#306": {
+   "category": "representation",
+   "fingerprint": "sha256:da40ac0667d3df984a0d4051585d25116d15eb1558bf38b7581c22f6d6a6bb69"
+  },
+  "b18-rogue#315": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:eedf43ad9c39dc80c3cb4fc82e48fcb479b4ff84eb908092037667ecd7d088e9"
+  },
+  "b18-rogue#316": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:2edc106afc231f9c601b7235e4fb6529eb2924afc2ad0c517ca8c948ea944a69"
+  },
+  "b18-rogue#328": {
+   "category": "batch21 integration 146",
+   "reason": "The Harlow bid names a counterparty absent at this step. The bounded repair is now requested; the archived answer still establishes no valid presence. Only extract.applied.repaired changes, without a sale or payment.",
+   "supersedes_145": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:39b79be063d0ec778b39780e7e6e7d5fb4c39907a57c2b6acb55eca83f122a90"
+   },
+   "fingerprint": "sha256:0e0df7ca0807cc2be268d1731539c952ed8e9795ca16d1b26bad299e6213a15b"
+  },
+  "b18-rogue#331": {
+   "category": "finance 142",
+   "reason": "F (.142): text only: a sale to someone the planner names as new ({new: \u2026}) was refused as before, but its line read \"CANNOT SELL \u2014 [object Object] is not here.\"; it now names him (\"CANNOT SELL \u2014 Harlow is not here.\"). No coin, goods or offer change.",
+   "fingerprint": "sha256:1e9c32adecfa71c367c4fbb63ca2eafaf04c21a1014a2d6e6b6bfe436fe41881"
+  },
+  "b18-rogue#334": {
+   "category": "finance 142",
+   "reason": "F (.142): the recorded coin.gift of 26 cp from Harlow beside its trade cannot say what the coin is for (translated relation \"unclear\", tools/replay/contract_f.mjs): refused as coin_relation instead of coin_evidence, and the narrator is told. No coin changes, as before.",
+   "fingerprint": "sha256:01a3c296d6b2ca168aff29ebd8228f5af02201660bb81e6bc6d5348d2d0f385a"
+  },
+  "b18-rogue#335": {
+   "category": "finance 144 unit limit",
+   "reason": "S2 (plan \u00a77.3): a player limit given as a price per unit for several units is no total: the booking stops with the concrete question for his total limit (NOT SOLD/NOT BOUGHT \u2026 name the total limit; a message of only such commands is the System's question, no story turn), never a multiplied limit and never null-and-sell; other commands keep their own result (absent buyer, a sale without a price). No coin or goods move.",
+   "fingerprint": "sha256:c5fa1740a12cf8fc3abeb999e5a4fd89c44661e6828c7904c2125b8602a0a8a6"
+  },
+  "b18-rogue#337": {
+   "category": "finance 142",
+   "reason": "F (.142): text only: a sale to someone the planner names as new ({new: \u2026}) was refused as before, but its line read \"CANNOT SELL \u2014 [object Object] is not here.\"; it now names him (\"CANNOT SELL \u2014 Harlow is not here.\"). No coin, goods or offer change.",
+   "fingerprint": "sha256:6083681ac568c6f97cd83dbcb0a0808109c1642deba7e66b8250a688355de277"
+  },
+  "b18-rogue#338": {
+   "category": "finance 142",
+   "reason": "F (.142): the recorded coin.gift of 26 cp from Harlow beside its trade cannot say what the coin is for (translated relation \"unclear\", tools/replay/contract_f.mjs): refused as coin_relation instead of coin_evidence, and the narrator is told. No coin changes, as before.",
+   "earlier": "D: offer schema contract/diagnostic changed without granting goods or coin.",
+   "supersedes": "sha256:11646c65a6809473387a8db9a454ed25faa43941e7f61daf58e3ad15a6423019",
+   "fingerprint": "sha256:ef4b80bfb18bd2eb382d9929cfabd9167e06cf3f5604512ba25b41c905a2ea3d"
+  },
+  "b18-rogue#339": {
+   "category": "finance 142",
+   "reason": "F (.142): text only: a sale to someone the planner names as new ({new: \u2026}) was refused as before, but its line read \"CANNOT SELL \u2014 [object Object] is not here.\"; it now names him (\"CANNOT SELL \u2014 Harlow is not here.\"). No coin, goods or offer change.",
+   "fingerprint": "sha256:51f8e3fac10965a7977ba1cee0fd3ea67694439b9167941993aa6d0e1f326744"
+  },
+  "b18-rogue#340": {
+   "category": "finance 142",
+   "reason": "F (.142): the finance contract asks the one existing extractor repair for missing finance meaning (\u00a74.4: phase/pricing/relation); the corpus has no recorded repair answer, so the first answer applies unchanged (same deltas and refusals; extract.applied repaired:true).",
+   "fingerprint": "sha256:e4e5f69012c75a7d6ff0f2084714aaa5b3fc67415df5b99fc1ac7f4f42339a44"
+  },
+  "b18-rogue#341": {
+   "category": "finance 144 unit limit",
+   "reason": "S2 (plan \u00a77.3): a player limit given as a price per unit for several units is no total: the booking stops with the concrete question for his total limit (NOT SOLD/NOT BOUGHT \u2026 name the total limit; a message of only such commands is the System's question, no story turn), never a multiplied limit and never null-and-sell; other commands keep their own result (absent buyer, a sale without a price). No coin or goods move.",
+   "fingerprint": "sha256:a48edaa2367c61510fa98fd83981be47dc3b3d5b7a8722279604e62ffa8052c3"
+  },
+  "b18-rogue#343": {
+   "category": "finance 142",
+   "reason": "F (.142): text only: a sale to someone the planner names as new ({new: \u2026}) was refused as before, but its line read \"CANNOT SELL \u2014 [object Object] is not here.\"; it now names him (\"CANNOT SELL \u2014 Harlow is not here.\"). No coin, goods or offer change.",
+   "fingerprint": "sha256:b4e2a55625e5ca2a49919a7deaec2f79e9c0f22c233109a34c7c4594f18d4260"
+  },
+  "b18-rogue#344": {
+   "category": "finance 142",
+   "reason": "F (.142): the finance contract asks the one existing extractor repair for missing finance meaning (\u00a74.4: phase/pricing/relation); the corpus has no recorded repair answer, so the first answer applies unchanged (same deltas and refusals; extract.applied repaired:true).",
+   "fingerprint": "sha256:491c024e1138d208da6ae5f421e3dff6fbcce5c4e862c74427cec74801f549ab"
+  },
+  "b18-rogue#347": {
+   "category": "finance 144 unit limit",
+   "reason": "S2 (plan \u00a77.3): a player limit given as a price per unit for several units is no total: the booking stops with the concrete question for his total limit (NOT SOLD/NOT BOUGHT \u2026 name the total limit; a message of only such commands is the System's question, no story turn), never a multiplied limit and never null-and-sell; other commands keep their own result (absent buyer, a sale without a price). No coin or goods move.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:eb795eb820e9ff0e0779218ae6a15b01707f4e47515e0f24461768c08568aaed"
+   },
+   "fingerprint": "sha256:170a465955987070ea20b3dfa676159f0f94bf9e1a17c225f3b0368e015b0335"
+  },
+  "b18-rogue#349": {
+   "category": "finance 142",
+   "reason": "F (.142): text only: a sale to someone the planner names as new ({new: \u2026}) was refused as before, but its line read \"CANNOT SELL \u2014 [object Object] is not here.\"; it now names him (\"CANNOT SELL \u2014 Harlow is not here.\"). No coin, goods or offer change.",
+   "fingerprint": "sha256:0540beb782fe1a4d933f99bd7cb89a6a2ebf7c5ae243636b78629608421bbf33"
+  },
+  "b18-rogue#351": {
+   "category": "finance 142",
+   "reason": "F (.142): text only: a sale to someone the planner names as new ({new: \u2026}) was refused as before, but its line read \"CANNOT SELL \u2014 [object Object] is not here.\"; it now names him (\"CANNOT SELL \u2014 Harlow is not here.\"). No coin, goods or offer change.",
+   "fingerprint": "sha256:4b4edda5563055cdcf851298ded64737f230f49992845f28803f2de5c8f2025e"
+  },
+  "b18-rogue#356": {
+   "category": "finance 142",
+   "reason": "F (.142): the finance contract asks the one existing extractor repair for missing finance meaning (\u00a74.4: phase/pricing/relation); the corpus has no recorded repair answer, so the first answer applies unchanged (same deltas and refusals; extract.applied repaired:true).",
+   "fingerprint": "sha256:3bd02d8ae1d6444c4c4d9a92610c74f305a16dcbce8596caab7940f155a0d272"
+  },
+  "b18-rogue#36": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:1c43cf03b605b25fd9911ddb82dee0b0a2e13a8eb0c9f6ac460908a0d4f7b22a",
+   "supersedes": "sha256:4469955404f52cfd758c3c5351970e48928366b04b0ee0c86945fc54ada6c5f2",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b18-rogue#37": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:8d59d841aba3917e04ec76f9dd987c67dfcfafc6a280d95463b86530587dab56"
+  },
+  "b18-rogue#384": {
+   "category": "representation",
+   "fingerprint": "sha256:cf0071d78b1eb7ada559a8d9b2fad764c1c0f254247d2e8eb3120b2a59e3c7a0"
+  },
+  "b18-rogue#398": {
+   "category": "representation",
+   "fingerprint": "sha256:d6ee4bcafdebc36190b35c305bf4b5b5c2a3743e22446a65aea482c58e8b2cf1"
+  },
+  "b18-rogue#42": {
+   "category": "representation",
+   "fingerprint": "sha256:b5f8efaa17b1e289990a6a72717d2d300eb4377ba351dab5bd5e4b3ff6cc77f8"
+  },
+  "b18-rogue#52": {
+   "category": "representation",
+   "fingerprint": "sha256:a06561aafa9d17affd1c60ddcf9e613ecccf3895c5b5a03d4cb3bbf1556f2675"
+  },
+  "b18-rogue#66": {
+   "category": "representation",
+   "fingerprint": "sha256:90b02ae8b8e79c262367793b128ec94d6395ffc45c9be519300bcc388196d8cf"
+  },
+  "b18-rogue#72": {
+   "category": "representation",
+   "fingerprint": "sha256:a6df40fee349b80a4d1a774af99d960b555b22aa6230d5d05496fe7ba44f8c20"
+  },
+  "b18-rogue#8": {
+   "category": "D offer contract",
+   "reason": "D: offer schema contract/diagnostic changed without granting goods or coin.",
+   "fingerprint": "sha256:5265c7ee979778a4448dcc7b1b1e84d27ce5fa9d91fd84492507385f581789bb",
+   "supersedes": "sha256:76b2940a2cc1e1bc155d5685b4ace2099390b4141264c6c3a49ffb8e58a54dcc",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b18-rogue#85": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:4ee46da40ff96945afdd7723fbde853181ad38179acdb82a2d78780372fa5da9"
+  },
+  "b18-rogue#88": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:302bd1a888731dbd4bb15a412d7a7303d211e354cf02f45c3ba46ade86d52688"
+  },
+  "b18-rogue#89": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:b0406f8037ca3b0b01f69c3aa82ae2584c6cd23484e0ef05d86de50c80088bb9"
+  },
+  "b18-rogue#9": {
+   "category": "finance 144 contract fields",
+   "reason": "cmd-1.9: the recorded pay answer still carries confirmation; it is no command field any more and is dropped when the answer is read. Resolutions, coin and events otherwise unchanged.",
+   "supersedes_143": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:faa274feb4017ff9ad3b370f936e6222052cc5610bcc25976fc99c93eeec19d9"
+   },
+   "fingerprint": "sha256:4b1ce328cf3201cca1e778c33ea9f3d3ccb10780728ae085d73b4c87d090e399"
+  },
+  "b18-rogue#92": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:ed5df429e6c052ce5de9cbb7cf71bb34f56f58b9c4951cbc0a6dfa5cccc06ad3"
+  },
+  "b18-rogue#94": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:b6c88fd0d0687dcf14349e7a31d6a85d54c2bf891f5f92ba6a45464a44c88ae6"
+  },
+  "b18-rogue#95": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:1b42af97ca6000aa8e2f411f529102d7d28c8b2985d135deb8fb92da686285e2"
+  },
+  "b18-warrior#106": {
+   "category": "representation",
+   "fingerprint": "sha256:c0e70a3016aba0e0ce1756859b711a44f3819d4ba98a1fceb409258c1eb278fe"
+  },
+  "b18-warrior#114": {
+   "category": "representation",
+   "fingerprint": "sha256:7bba54318060d4a7d8558e9a6bc7a97150397054dde2825b66e19ff10cb5a768"
+  },
+  "b18-warrior#14": {
+   "category": "representation",
+   "fingerprint": "sha256:a2babd6c80177b7a786b9ad41398c6b678bb388696e152a412bd4b413fe29e2e"
+  },
+  "b18-warrior#158": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:793c9faf98d9baf43c2d7022ed7230599fec084a926f8592eee34125a0c308c8"
+  },
+  "b18-warrior#160": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:15dfb8534aa7a572c19491ff1da60d83a6df6c75b6f03f1316cb7584cbcae576",
+   "supersedes_142": "sha256:e4df8b6a8751cd2946c36956b521bebbdceec90771c875da0a5bf1a1d08812d1",
+   "finance_143": "The scene-context refusal remains unchanged; an unlocated said now requests the existing single repair. No booking."
+  },
+  "b18-warrior#161": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:e68babf365025c1814ce2c3c6ec82006624526ffbb369d54ec2f27c76a7d39e2"
+  },
+  "b18-warrior#164": {
+   "category": "finance 142",
+   "reason": "F (.142): the part-buyer's \"Eighty-five copper. Eight silver five if you want it in silver.\" (two equal sums) is now stored as one firm 85 cp bid; .141 refused it. Nothing is sold in this record.",
+   "fingerprint": "sha256:90382832b1fa3282511cc2653ac836a6c6272dcd369b28632728b996e9b22f1d"
+  },
+  "b18-warrior#165": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:e2a348ec23fe0c8e93b4fd7aecc9ea8a3090672a7889349ba3e8be1e8e889dd5"
+  },
+  "b18-warrior#166": {
+   "category": "finance 144 price open",
+   "reason": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
+   "supersedes_143": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:4fb0b0e8ff4b18b5c26a8793926e07ab2007c360c6f0d4f8121f86937c547114"
+   },
+   "fingerprint": "sha256:c26fd80be32790b8b39faaa8308f852bbc3d9103a8ee360ee4e914d384f142d9"
+  },
+  "b18-warrior#167": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:af68da35fae50f29b3424bf6d542c0699631daaa99ad7047e83d46ee624b2f4f"
+  },
+  "b18-warrior#168": {
+   "category": "finance 142",
+   "reason": "F (.142): the recount of 85 cp from the part-buyer (an already credited sale) was refused in .141 as well; the refusal is now also told to the narrator (\"Alaric's purse did not change \u2026 were not booked (\u2026)\"), the corrected story cannot claim the payment. No coin, goods or offer change.",
+   "fingerprint": "sha256:81061cefbc86a8d5a67c15963a0be8023f160298f5b52090dc7c84bde37d8428"
+  },
+  "b18-warrior#170": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:14df7d70283f16a3a8d95e23ffcd270e5c9bb9a53e881e91b891690e2fa22168",
+   "supersedes": "sha256:e163b759b2cae87b5685bb58273fe85adc5329fd31bd92f9a915aa6db1cff40c",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b18-warrior#172": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:3a5c519ec83aec9fedefaec2acf358d24703e74eb6d7091786f2b8072a742c49",
+   "supersedes": "sha256:47b619a664b1d1374b4b1e832469ac99fefa78823e3cf680fa8560895e54f669",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b18-warrior#173": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:34d38bd3fb58acc6dd588f1892afe3abb1eb57ba7640a67a4271a8dd50735924"
+  },
+  "b18-warrior#174": {
+   "category": "finance 144 price open",
+   "reason": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:e997ab9070d6f55c30ad3afbf4b957d1515f2dc544e956729aff01aabdaaeea0"
+   },
+   "fingerprint": "sha256:959b34e67346beb9f2b11290c08b7b27e6cbddbffdbccc2d75186b252353f646"
+  },
+  "b18-warrior#175": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:49f3d4604d8c9893e8919491d861ba4bc35a2e5a7db6969ddf52129ddf24fc69"
+  },
+  "b18-warrior#176": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:0423c5e56a793a7097046074ddab507a26a22a3506d93d373e413d6e120130ea"
+  },
+  "b18-warrior#177": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:fd6bf12c41dc14b0b09378f10a426a0752bbacafec8d9fea1ae80d09c284ed8b"
+  },
+  "b18-warrior#191": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:28d13ecf5f36b087238402f46788b7e003e306c854340f3ed2883e39d9c43358",
+   "supersedes_147": {
+    "fingerprint": "sha256:e85c61bda7188ab527560b69e897b54834f68293a900122f2fa34ab61ecd9a16",
+    "category": "representation"
+   },
+   "reason": "b18-warrior#191: only 1 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: deferred board display after arrival.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:e85c61bda7188ab527560b69e897b54834f68293a900122f2fa34ab61ecd9a16"
+   }
+  },
+  "b18-warrior#198": {
+   "category": "representation",
+   "fingerprint": "sha256:c44505419e08fc74e6a6fe0d0100928fa979a5d43a85a909a3eeadc67a2a4898"
+  },
+  "b18-warrior#202": {
+   "category": "rejection reason",
+   "fingerprint": "sha256:7ace3880012daa4fc1c24ddc02ae436549a705a7c5440ab4ca03b5afe4a194de"
+  },
+  "b18-warrior#226": {
+   "category": "finance 142",
+   "reason": "F (.142): the healer's \"Six copper. Two if you're poor, but \u2026 so six.\" is now recorded as a 6 cp service (.141 refused it as no named sum). Nothing is paid in this record.",
+   "earlier": "D: offer schema contract/diagnostic changed without granting goods or coin.",
+   "supersedes": "sha256:8654f3797189dfe20c179208b0be49e25ac2fbb6be51a318d66f4f182492423e",
+   "fingerprint": "sha256:dc7b4a0a7070de13b90e5869829f37f7724a6dc466bbe0fb7f4a978f7ed12002"
+  },
+  "b18-warrior#227": {
+   "category": "finance 144 payment card",
+   "reason": "S1 (plan \u00a76.2): the recorded free payment (the complete amount in his own words) is no longer booked from words; it is a payment card with its id, paid only by the player's own \"#pay <id>\" (the recorded run has no such message). Nothing changes hands in this record.",
+   "supersedes_143": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:72272c9f3f2a5cd7d3a99a5b378b1f190e893b96c49e6a5963d6a7fdb68b4c9f"
+   },
+   "fingerprint": "sha256:5a70cb01be2dc1a09520a40747ae3bc73c170167c5df9f8b4503b0826fd9f749"
+  },
+  "b18-warrior#228": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:6cb5711abf63705b8ae5ab8ac47b79e6e5436b0ce90dba571ad1f46873f3a4e2"
+  },
+  "b18-warrior#230": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:93f14187ac4371c62ffbe10bdda3bca7be8aa6472351bc87d640de1eba1c9a3b"
+  },
+  "b18-warrior#232": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:56cf1c0ddf6863dc9c0d0a1b28eea254f706527a92bd03e255560e812ed65199",
+   "supersedes": "sha256:8694dcbf244eb264a88100414aa413436a0d67ef2390df3055a853d40b147d33",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b18-warrior#233": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:ec5cffe9306aabd3bc6053d47c3d2459b9b0e91231b85e33fac1aa4ea9397f16"
+  },
+  "b18-warrior#248": {
+   "category": "representation",
+   "fingerprint": "sha256:b17d7dd12b324fb3a8c779778c811e549308166a9a5378797d4c47d487929ba9"
+  },
+  "b18-warrior#256": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:7bd8e2ab2ea53723bee9841e29c6e872fe16bbde1bb86bd2e284b529221e4906",
+   "supersedes": "sha256:df72d28a3dcceb9780e417ada823768d0e8f46d24db3e30651f24c5c5a2a9ad7",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b18-warrior#257": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:cbfcc12db4cce3ed1952002203770f1dc88006b1df3ad5eed424429e7fb8b335"
+  },
+  "b18-warrior#258": {
+   "category": "finance 142",
+   "reason": "F (.142): the recount of 10 cp from Bexley (an already credited sale) was refused in .141 as well; the refusal is now also told to the narrator (\"Alaric's purse did not change \u2026 were not booked (\u2026)\"), the corrected story cannot claim the payment. No coin, goods or offer change.",
+   "earlier": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "supersedes": "sha256:99f36f2b8724e2284035c1a4e32328b95061e8872ac2b4057245e674099df4e4",
+   "fingerprint": "sha256:123343e2a06ff025e0aad95bbb3f7bc51585fbc219d5ddc1692d5fc13b270a09"
+  },
+  "b18-warrior#259": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:19812962c56c48874316d0ca9016885fd10b33823c7c4bbdde39ca0810d8f28d"
+  },
+  "b18-warrior#260": {
+   "category": "finance 144 price open",
+   "reason": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
+   "supersedes_143": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:89f631770b7dcf4e97ce6cafb4fef0aaaa5b1c8f1fcc0489f86b4079aa301e10"
+   },
+   "fingerprint": "sha256:0e1861c41e907cdf080bab4f6107cc2513a890e992360c3e159c543c0cca076a"
+  },
+  "b18-warrior#262": {
+   "category": "representation",
+   "fingerprint": "sha256:8083aab92a9f3b0f070d448c6545f5378e1f08f63cdea3c53979e7a02891bd45"
+  },
+  "b18-warrior#272": {
+   "category": "representation",
+   "fingerprint": "sha256:906e64a36b723cc56c59dc29198a5416f69685f80ae53ae71d6b20a6770086a5"
+  },
+  "b18-warrior#284": {
+   "category": "representation",
+   "fingerprint": "sha256:115c1887a255033de10fd03b2dd1ecf7d55408efee98f490e582cc557244c2d7"
+  },
+  "b18-warrior#294": {
+   "category": "representation",
+   "fingerprint": "sha256:6c8d49359aa8492d8cdcf543b2dfad6fd93c8ca5cd32e5d0a3096d2d95db2dfe"
+  },
+  "b18-warrior#315": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:b907758fe9a94d01c831b379a27ce20401b7f16f3f15efef49187d8839da7878"
+  },
+  "b18-warrior#316": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:fafc0450625d7439a777b49e22e546bd2e969d5fbf9a95ab56ed9e885e5a061b",
+   "supersedes": "sha256:e2e3007cae00035193435bbbb69ec970dfd2cb1c5b751c79582d844c21ae0dbc",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b18-warrior#317": {
+   "category": "finance 142",
+   "reason": "F (.142): the planner's valid first answer leaves a named price or coin without its evidence, so the one existing repair is asked (\u00a74.4); the corpus has no recorded repair answer, the first commands stand (same resolutions; cmd.interpreted json_repaired).",
+   "fingerprint": "sha256:ef6afca872c8f4a19f0419670d0bb3f5a059ca504e03039a11a3dcaa3a188914"
+  },
+  "b18-warrior#320": {
+   "category": "finance 144 price open",
+   "reason": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:086ae8a4537e2a6ee66f64877e5de0f96794c2ec585fbca152c47a3201bb5275"
+   },
+   "fingerprint": "sha256:3a837dc0140312d0bad1353519e384b8c8be1143e64466c48471785d18892795"
+  },
+  "b18-warrior#323": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:5a0b87a1cf79fb2de44289e9912ef63a959826afe04794a54ec4ff9c4e62f687"
+  },
+  "b18-warrior#324": {
+   "category": "finance 142",
+   "reason": "F (.142): the recount of 30 cp from Bexley (an already credited sale) was refused in .141 as well; the refusal is now also told to the narrator (\"Alaric's purse did not change \u2026 were not booked (\u2026)\"), the corrected story cannot claim the payment. No coin, goods or offer change.",
+   "fingerprint": "sha256:6796fdf3bbee101b6e5ea6012c9fa67bebc5884264c62edfc901250846f0916b"
+  },
+  "b18-warrior#325": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:48bb4f8cebb57be4aaa61b1829cd7f5cc76b787c88cddbc77566e4612260cc16",
+   "supersedes_147": {
+    "fingerprint": "sha256:d8580fc5c2aad0a0eb06600fbafb750d8dbe95a9fbe31e8e9089ba96bae8ed65",
+    "category": "representation"
+   },
+   "reason": "b18-warrior#325: only 1 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: deferred board display after arrival.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:d8580fc5c2aad0a0eb06600fbafb750d8dbe95a9fbe31e8e9089ba96bae8ed65"
+   }
+  },
+  "b18-warrior#334": {
+   "category": "representation",
+   "fingerprint": "sha256:6c8ec8d8bb1910a88ffad001b876d158772194042bcd0b8bbfa94bfcdab90443"
+  },
+  "b18-warrior#344": {
+   "category": "representation",
+   "fingerprint": "sha256:e211800ca82d23ce87468b835f7f020670a255dc6a11c9d182fc3ef14c0c916d"
+  },
+  "b18-warrior#366": {
+   "category": "representation",
+   "fingerprint": "sha256:e7db7a2ad8bbe23d27f9554b50d609feffe8ee3b08d25118d31c7324c9537135"
+  },
+  "b18-warrior#378": {
+   "category": "representation",
+   "fingerprint": "sha256:e744b35743e4862091338e73fb07a1978e4d70958d8cfb16828881767334bde9"
+  },
+  "b18-warrior#38": {
+   "category": "finance 142",
+   "reason": "F (.142): Bexley's 20 cp bid is stored as before, now with its terms (firm); the offers are unchanged.",
+   "earlier": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "supersedes": "sha256:9de191d17ae01480df4e0062bbbfd8ab2942ab31fb8a70e71e63aec50d5c49ef",
+   "fingerprint": "sha256:acabe602dc1ac2a95ef0312dd7a6f48cdf3ff3ba3ceedc86da35a9f952736ac6"
+  },
+  "b18-warrior#39": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:fe103241be617ce19d2fd8deba38c767aa6b3ede32d5d32d12a9c7ac38f40235"
+  },
+  "b18-warrior#392": {
+   "category": "representation",
+   "fingerprint": "sha256:d7cecfb15fd6474ff621d451d0145dd4cb49d164fb22ed5c8d02200882e609c3"
+  },
+  "b18-warrior#41": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:28d1ee4107ba14e1e71d2cdb9859f185d5de6f753619b8533205259b997f9c9f"
+  },
+  "b18-warrior#42": {
+   "category": "batch21 integration 146",
+   "reason": "The held Starter Heavy Armor is an item.<template> inventory unit, not a missing s.objects entity. Together with the held serpent skin its fully evidenced 100-cp bid is now stored; this reply transfers neither coin nor goods.",
+   "supersedes_145": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:aa7a3f85e637acbba4be6d1539e4fb69a36cb1c410fb955f45cfe541bcb999e3"
+   },
+   "fingerprint": "sha256:0f7e55ad0a2878961fc292bdf3df9c000dc17f568e40b8b9959de41a648ceb02"
+  },
+  "b18-warrior#43": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:8d0af1f0b7c4b0648a7f738603e4c1a5b371a0e43702bf3d0028742dd7a3b740"
+  },
+  "b18-warrior#44": {
+   "category": "batch21 integration 146",
+   "reason": "The starter armor is correctly recognized as held, but its reported 400-cp bid has no binding total under S2. The refusal now explains pricing_unknown instead of false ownership, with no payment or item transfer.",
+   "supersedes_145": {
+    "category": "finance 142",
+    "fingerprint": "sha256:91fb663f0d3882cd7d7a8daedd734536bd0d07ba12766bf72dfca234d7e43e2f"
+   },
+   "fingerprint": "sha256:b1886915efb71e77908edc7e68dcacf9b02d8e904e15a5fd1b41ae546884c92f"
+  },
+  "b18-warrior#45": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:6f85d5db243e3d67d195bcd63d8121c96c8c2ca622272caa6bb0ccd690e5fa15"
+  },
+  "b18-warrior#5": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:b2195d3d52eb21f2179d4dbe3b8fcb1e0435635933650b3e7276d58563afb427",
+   "supersedes_147": {
+    "fingerprint": "sha256:bc2ddaf11be2c04f8d6ddd6be09fdd6aee9956bf38eda577ca9b095d9af1df7e",
+    "category": "representation"
+   },
+   "reason": "b18-warrior#5: only 1 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: deferred board display after arrival.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:bc2ddaf11be2c04f8d6ddd6be09fdd6aee9956bf38eda577ca9b095d9af1df7e"
+   }
+  },
+  "b18-warrior#52": {
+   "category": "batch21 integration 146",
+   "reason": "Both the spare template armor and physical serpent skin resolve as held. The bare Ten the pair quote still carries no currency-bound total under S2, so the price stays open; only the refusal and correction become accurate.",
+   "supersedes_145": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:97dc76369a402c42c3cc0125d970bacfcd8e409e56e9ee25cf050f6c25106f12"
+   },
+   "fingerprint": "sha256:9ffb26d884c2079152bd7aeaa4611911338e85c3ba6411a20f1d255633a04006"
+  },
+  "b18-warrior#54": {
+   "category": "finance 138",
+   "reason": "F (.138): refusal text of a gift beside an earlier credited sale names that sale (2 fangs, 20 cp) instead of claiming these proceeds were paid; same refusal, no money change.",
+   "fingerprint": "sha256:05a5eac7608c4785746f567999183406d9a267146fa7336b3afb19d7e23c5044",
+   "supersedes": "sha256:3697b9a39f268eb356ac93e1a63342b24cd26fd11f91efe94d519e139441b8ea",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b18-warrior#6": {
+   "category": "D offer contract",
+   "reason": "D: offer schema contract/diagnostic changed without granting goods or coin.",
+   "fingerprint": "sha256:fab5c9087dc07b30db5c5f1df69ca9d5c45b9600f55cd42097f42ebf831924b7",
+   "supersedes": "sha256:fdbf7984156ef8897f49670728f87f6a0b9f926b8d4d1849e35ba854db59cd7e",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b18-warrior#64": {
+   "category": "representation",
+   "fingerprint": "sha256:cabb44851201cd9f5c991b8cc5214b01dbf8e8c74eeeefed78099b935ef9ec35"
+  },
+  "b18-warrior#66": {
+   "category": "representation",
+   "fingerprint": "sha256:c64a1189e54a66b334be4fa1f7135985c124f228b24cfe9cc0de291b5cf4ed85"
+  },
+  "b18-warrior#7": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:fb094d9e236c089c75c9c831edeeddd0c025439c6ae08305fcafa29dc174d7d7"
+  },
+  "b18-warrior#84": {
+   "category": "representation",
+   "fingerprint": "sha256:a4cb77837d997a5a5432571581ba818e99373c315b2fdbf74da19dc36d92c9bd"
+  },
+  "b19-mage#100": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:6ba564c7c954af512650fa2786a946f9aebada5aec73481f0401eea365842cb1"
+  },
+  "b19-mage#101": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:ebae744fcebf672a705c4befd1c4e8ce13bd6dc6527cb27f3493cd7de7ccf721"
+  },
+  "b19-mage#106": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:d077527f20e21c13079f2f945688fe3cf1948ebf020fbf049bcb2c339a9e6242",
+   "supersedes": "sha256:c5fddc2d5df16ae3f2cb644e7be1c4919e2392195ccd863c9901bd511479facb",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b19-mage#108": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:ad04cfe0315b9c0f775bd79e68c9dd3eba46708f46a0eb0fd526ea926cf8a041",
+   "supersedes": "sha256:095b05e47703fdb455d9aee793ade2e381d639104179b57f25e7b2302bb14380",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b19-mage#109": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:f0cf718f92e9fb13ec8b0c0eec8d01700e2c9494c763fdbd0bc46e15fb246df0"
+  },
+  "b19-mage#11": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:8d45aad2eef8a86fbae5581259d685db851e286418d3456f88dc57735a6e4401"
+  },
+  "b19-mage#118": {
+   "category": "representation",
+   "fingerprint": "sha256:055511fb9d48e60755344353e08f584b97074d7396fae07ae9545bf13542544f"
+  },
+  "b19-mage#13": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:d3fa038dc7f85364e61dec31e91d0a25b5044483c75c3b73ce1a46f0673f5330",
+   "supersedes_147": {
+    "fingerprint": "sha256:441e1f046458c53e474f010d7b4ab018fdbc763c4ea38665bd614f0d7465bc51",
+    "category": "representation"
+   },
+   "reason": "b19-mage#13: only 5 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Kill the Quarry Track Wolf; Cull the Reed Flat Otterhounds; Cull the Gallowfen Marsh Cats; Kill the Old Bridge Wyrm.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:441e1f046458c53e474f010d7b4ab018fdbc763c4ea38665bd614f0d7465bc51"
+   }
+  },
+  "b19-mage#131": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:1fd85b4adfa48d4f85e9d6a503e57c1415e0ccc98c3a14180040fcdf32a77d99"
+  },
+  "b19-mage#132": {
+   "category": "finance 144 price open",
+   "reason": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:8cf065186dcc37697d16a6d12c1efa39f9a0b3158723894f4527b5a275881213"
+   },
+   "fingerprint": "sha256:ef46bc2c513fb632adc0450ef07cb87899a1221b9b0e30bff660ec529ea539ee"
+  },
+  "b19-mage#135": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:8ec9f0a12fbb269fb9aa84919703f1df79f41c3009b2b54da42cde909db5d345"
+  },
+  "b19-mage#139": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:54cb2bc5e7547d796e6a38b81a80cc36785fbb4a9a8d51b512da3402ee390fa7"
+  },
+  "b19-mage#140": {
+   "category": "batch21 integration 146",
+   "reason": "The potion offer reports an absent Guild clerk. The bounded extractor repair now requests the real encounter; the archived repair does not provide it. Only extract.applied.repaired changes; no purchase or debit occurs.",
+   "supersedes_145": {
+    "category": "D offer contract",
+    "fingerprint": "sha256:706b595e550d0a912dec8d84afd3f26586c7ce6113645cfcd011b6c45b1874d7"
+   },
+   "fingerprint": "sha256:0b4dabbce22470d56c1f846025b70ba0d2d9f96a02af1bd2dd258a3975a9ab65"
+  },
+  "b19-mage#141": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:c39ab51bce289d212c03cc75cbbe3a4ca31b765ef8e659f48e2c9e9b4646535f"
+  },
+  "b19-mage#142": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:3a33ea139f369dfd4ca21e5f4fa77fc35b102bf93e9ebbda8f4e20b0ff07e4b0"
+  },
+  "b19-mage#146": {
+   "category": "finance 144 price open",
+   "reason": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:65b8f6c7c39fcc8b7772994ae9bf88f05503b97d2bfc3b22eb364f3fc9d6df99"
+   },
+   "fingerprint": "sha256:55befb56e3d8e5e4e399cc2260c39d063205f8953060fa04066371ad894b972f"
+  },
+  "b19-mage#151": {
+   "category": "batch21 integration 146",
+   "reason": "The player explicitly accepts the correct broker offer at its stored 4-cp total for five held scales and one tooth. The broker descriptor identifies that same merchant. Both complete stacks now transfer and one transaction credits exactly 4 cp instead of a false role-label refusal.",
+   "supersedes_145": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:732a9efb9c1b97d297b662cea060488ebe4023c82052e90eb25253f5c8282de7"
+   },
+   "fingerprint": "sha256:a79c145e7212eeb82dcf9ef1d063c1a73852032237579fdd5efcda77dc7c8b7e"
+  },
+  "b19-mage#152": {
+   "category": "finance 144 price open",
+   "reason": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:af0a6167e34c348c720382b9a240665efaae0c131bc79c2f7ab7f6cac14596af"
+   },
+   "fingerprint": "sha256:9f9248faa00cbaa4b3ec77b0e436a774072cdb4be7926235be9c46101e119a1c"
+  },
+  "b19-mage#163": {
+   "category": "finance 144 acceptance hint",
+   "reason": "S2 (plan \u00a74.2): the engine reads no second price from his acceptance words; an acceptance that names money without agreed_cp gets the one existing planner repair as a hint. The recorded repair answer stands with the same commands; resolutions, coin and events unchanged.",
+   "supersedes_143": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:ac00cbd277fc38e520de84b1bd1f3af4d4f26d8d403f45bdc2ba7a70f2ce15ce"
+   },
+   "fingerprint": "sha256:4cf7499e05d8d87601dd3c017799b9b79c521e091e39095b0e277dde201a5699"
+  },
+  "b19-mage#167": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:11f33c4be6f8c473228d843194c595cbca98494dd699a1ff1ea54f44c7f890b8",
+   "supersedes_147": {
+    "fingerprint": "sha256:4178c755c106c871f76557265c3bcbc5a011d62903bbe98ceff535b76ad165fc",
+    "category": "representation"
+   },
+   "reason": "b19-mage#167: only 6 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Slay the Gaunt Wolf on the Old Quarry Track; Thin the Otterhounds at the Eel Weirs; Cull Boars in the Tallow Orchard; Thin the Marsh Cats of Gallowfen; Slay the Bridge Wyrm at Stoneford.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:4178c755c106c871f76557265c3bcbc5a011d62903bbe98ceff535b76ad165fc"
+   }
+  },
+  "b19-mage#171": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:2e38b1f55a37ec4f4ffc8ca3482d061f2b5fd5f43dc196ea298fec2bfa3e4919"
+  },
+  "b19-mage#184": {
+   "category": "representation",
+   "fingerprint": "sha256:732d58e0e925be96cdd4816fc4769a957e51813169c2583bdf3224ca6323f34f"
+  },
+  "b19-mage#20": {
+   "category": "representation",
+   "fingerprint": "sha256:73c3fdc97bd9ed1f6fe4d51f53c1913c57c199e43be156bd1522d6440f4a1484"
+  },
+  "b19-mage#30": {
+   "category": "representation",
+   "fingerprint": "sha256:4bc3b2e3e977f4daf02368355f2bbc668dcfbcc5406546ae64266bf112deaf19"
+  },
+  "b19-mage#38": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:ba1ad266892312c45069098f55d10a0cdcc684d16dae2575f837344e91813a65"
+  },
+  "b19-mage#39": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:232837645fe06eda14667d29f8f39a00a1d0c4cb5a12324a0308645ebe3a5400"
+  },
+  "b19-mage#40": {
+   "category": "finance 142",
+   "reason": "F (.142): the recount of 91 cp from Marta (an already credited sale) was refused in .141 as well; the refusal is now also told to the narrator (\"Alaric's purse did not change \u2026 were not booked (\u2026)\"), the corrected story cannot claim the payment. No coin, goods or offer change.",
+   "fingerprint": "sha256:bfeafc72f62069f63e0468938d865542c104a4f884a12170da8f7b9790f36b7e"
+  },
+  "b19-mage#44": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:03befe7040a07098f11787f1fb7a4871f79ac114cdebb9538dbede1285af86e5",
+   "supersedes": "sha256:07577ce0de1f4c0d6931f82d8a366ee25ed04a79242403a0b7362fa20f4ff3c6",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b19-mage#45": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:37b1c8b9e890d9ef71a23ee9391b0fa93505248ef1f46e0cf43e761adafdaf7b"
+  },
+  "b19-mage#54": {
+   "category": "representation",
+   "fingerprint": "sha256:28b28d13756ba5a8c1904d9769e6443c70a1e1e4f50f9db609de297289629e21"
+  },
+  "b19-mage#66": {
+   "category": "representation",
+   "fingerprint": "sha256:8d253d28aed4ea560d2a3e86b813f57ac9e06bf53d176c89a512fc3b21ea1a02"
+  },
+  "b19-mage#72": {
+   "category": "representation",
+   "fingerprint": "sha256:d12ad778f97c072df762ed0a2e651b891a54b6a41166c2b60b0ba7ced6e2e046"
+  },
+  "b19-mage#78": {
+   "category": "D offer contract",
+   "reason": "D: offer schema contract/diagnostic changed without granting goods or coin.",
+   "fingerprint": "sha256:96d18239627ccd6d42dd603ba4fc981a7d76dfc7573903dc03618492afae648f",
+   "supersedes": "sha256:f657c41554882964607b52d1c326476bdcd5eedf333c480cfb60cac6223802e9",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b19-mage#88": {
+   "category": "representation",
+   "fingerprint": "sha256:0e6aef0a5fd24369a4495c68f59cae1870eaecd9944d06e6dff2b1c203287d5c"
+  },
+  "b19-mage#99": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:2d4b32108da8793aa854e879b6d3049070222bd749f081a4ecd416bbe1d1de6b"
+  },
+  "b19-rogue#11": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:e8b6ef27d2f8556013450fb00a9512b4cdd215abf1a3cafadfc37b5030fbcb3d"
+  },
+  "b19-rogue#13": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:2946091c04ede31faae23353a7b3f15fb5352f5cec24eeea6dbc8fab1d96e01b",
+   "supersedes_147": {
+    "fingerprint": "sha256:7c6e347fa25b06f0abb965265bb9b290320322ddbbf9362dbb24fc382aa674a4",
+    "category": "representation"
+   },
+   "reason": "b19-rogue#13: only 5 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Kill the Quarry Track Ambusher; Thin the Reedmire Herons; Break the Hollowford Boar Sounder; Slay the Drowned Bridge Terror.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:7c6e347fa25b06f0abb965265bb9b290320322ddbbf9362dbb24fc382aa674a4"
+   }
+  },
+  "b19-rogue#20": {
+   "category": "representation",
+   "fingerprint": "sha256:d9a6f1b3e0cd64832a3401ddc94ed37647bccea51504bee061b22756fd6a8f98"
+  },
+  "b19-rogue#32": {
+   "category": "D offer contract",
+   "reason": "D: offer schema contract/diagnostic changed without granting goods or coin.",
+   "fingerprint": "sha256:7b3bac480a99e40447e4f51b270a43a7060ff3c3676706b1bb28c1d2f6d8c9b0",
+   "supersedes": "sha256:b06ff0974ba49a77be1055eb64cd5fba1d78f86457b3bfc76d00c547a6b4e40f",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)",
+   "supersedes_142": "sha256:4c62f4b5d97d22532589c6dc938b98adca53b8a4de258763b39f79f34a01d41f",
+   "finance_143": "The unrelated NPC service lacks a located anchor and requests the existing repair. Guild payout remains exactly 40 cp; NPC-presence and engine-owned-fact refusals are unchanged."
+  },
+  "b19-rogue#38": {
+   "category": "finance 142",
+   "reason": "F (.142): regular gear is priced by the engine table; the .141 audit note on the narrated price (amount.corrected/unproven) is no longer emitted for it \u2013 the offer, its engine price and the narrator line are unchanged.",
+   "earlier": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "supersedes": "sha256:878306f9629f8649025884178f92d12db4cbf2b192145c25dce429e66a1c9cc5",
+   "fingerprint": "sha256:923cb58514d8dac6b26f66182d55fa84160276cf948460212a0d89ba286a5251"
+  },
+  "b19-rogue#39": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:af71b1840bd25b7ebc3f05d412fcec570c422928e566e4eede64d31f791fcdb1"
+  },
+  "b19-rogue#40": {
+   "category": "finance 142",
+   "reason": "F (.142): regular gear is priced by the engine table; the .141 audit note on the narrated price (amount.corrected/unproven) is no longer emitted for it \u2013 the offer, its engine price and the narrator line are unchanged.",
+   "earlier": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "supersedes": "sha256:dc373fb297e5206a2d60d8c62c9e397536dd5db7b17b3825db6827ec4c02eb6d",
+   "fingerprint": "sha256:ea6ea437eff0e5f33710ce64d6535bd250688d5377922f89fac67a5bea468ee9"
+  },
+  "b19-rogue#44": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:480b41028586e8ccd204b08b41489ee25e819de522b52a75e558fc80d8b884b2"
+  },
+  "b19-rogue#48": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:da4e22f54976c343126c4466512285882ce5aba28d9e842cdea391a77a22e174"
+  },
+  "b19-rogue#49": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:b87ca0a496add0b6a63d4040fd17aeebeeccbc606ebeedd3808f80113486dd1b"
+  },
+  "b19-rogue#56": {
+   "category": "representation",
+   "fingerprint": "sha256:2d8369b718db9d74c547f765acb62672e0586c4ac65560dfaf859a7337ea4acb"
+  },
+  "b19-rogue#58": {
+   "category": "representation",
+   "fingerprint": "sha256:2b54fff57b36c3a37faf88ebb086291263d3ddc00ca08f2fae048e02ad389f4b"
+  },
+  "b19-rogue#8": {
+   "category": "D offer contract",
+   "reason": "D: offer schema contract/diagnostic changed without granting goods or coin.",
+   "fingerprint": "sha256:6c09fcc0b3f60b20df93178ab73f585c66cb033d9104f4ad75b8c4684d3b891a",
+   "supersedes": "sha256:8511536ea220f35ef611afab15d289de296f890f35e1abb470b093b19d540c32",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b19-warrior#108": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:ff073b50d05a037b54497abec7e2ae293224a02bde17559864da0b2bd114d08d"
+  },
+  "b19-warrior#109": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:5510c7c8fff2a1fb4ee97c7142e4226e7d16285358a2a6dd896a535f3a5881ff"
+  },
+  "b19-warrior#110": {
+   "category": "finance 142",
+   "reason": "F (.142): the recount of 34 cp from the buyer (an already credited sale) was refused in .141 as well; the refusal is now also told to the narrator (\"Alaric's purse did not change \u2026 were not booked (\u2026)\"), the corrected story cannot claim the payment. No coin, goods or offer change.",
+   "fingerprint": "sha256:dfb7a215ba0ab206cec32558ead90b5ef90989b4762de0a4fb0737b2e8ef1976"
+  },
+  "b19-warrior#112": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:2ca0f015a7b776a9f38f0a9dcd775aa085538ac4472861ae349f489d3b6bfb94",
+   "supersedes": "sha256:4c84ebd915aabf00468189a61912acf78d26a5bac99b36ab8092dd92d26f342c",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b19-warrior#113": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:5374894242acf7c9f5288c0958b3cd0b5efa3c23de0bfca182ee051ab941ed21"
+  },
+  "b19-warrior#114": {
+   "category": "finance 142",
+   "reason": "F (.142): the smith's \"Come back when it wants sharpening and I'll do it for a copper\" is stored as a non-binding 1 cp offer (an open condition: a future service), not as a service bought now; nothing is bought in this record.",
+   "fingerprint": "sha256:590ee280119d13c242c87ba9e1a7d272a2f73ff2473899ec437ac8289a201df0"
+  },
+  "b19-warrior#118": {
+   "category": "representation",
+   "fingerprint": "sha256:307592df95824630d5bc6eb50b9f098170254371550f714f4aeafb306cbda0db"
+  },
+  "b19-warrior#138": {
+   "category": "representation",
+   "fingerprint": "sha256:bf97874c30b3c4d85dd0e50e187ec2661e93ca1db2f80afa1484b537cb5c4fb2"
+  },
+  "b19-warrior#157": {
+   "category": "finance 144 payment card",
+   "reason": "S1 (plan \u00a76.2): the recorded free payment (the complete amount in his own words) is no longer booked from words; it is a payment card with its id, paid only by the player's own \"#pay <id>\" (the recorded run has no such message). Nothing changes hands in this record.",
+   "supersedes_143": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:94c76f281dd0d54280ee362b040460a435360b49dba0c147ce146bd482c54726"
+   },
+   "fingerprint": "sha256:89a1ac7fc400241f11a11133946281109f965ee3047b4fa772fb9e9c186a956f"
+  },
+  "b19-warrior#158": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:7b745c87385a7744dd217ea7d0881054091c88351b118d0efe9d5a13968ba6c9"
+  },
+  "b19-warrior#16": {
+   "category": "representation",
+   "fingerprint": "sha256:dee3fb63e1c157c85bbdaceec875ea5151e3b2fdfec680e4fc043d34902264e4"
+  },
+  "b19-warrior#161": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:558048202dc1f1311efcf01610b83c0a7bffadd21c85eed9625687599b4df98c"
+  },
+  "b19-warrior#162": {
+   "category": "finance 144 price open",
+   "reason": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:d242630b42708f9235fd086456b3f9d9854c8dc512e22ae740d19b7cbe233eb1"
+   },
+   "fingerprint": "sha256:6d2f20394eaa70a55e0d99907058438ff64619ca73b870dbd2950c35ac121f3b"
+  },
+  "b19-warrior#163": {
+   "category": "finance 144 acceptance",
+   "reason": "S2 (plan \u00a74.2, B9/B10): his explicit acceptance of the stored positions with their matching total (agreed_cp) was refused in .143 only by the removed second price reader (item prices of his words matched against positions); it is now accepted at the stored price and booked once with its service.",
+   "fingerprint": "sha256:2c0918e162e62bd0ccf8e1fb2adedb70181b87c5269d1e54e10d399c393926e8"
+  },
+  "b19-warrior#165": {
+   "category": "finance 142",
+   "reason": "F (.142): the planner's valid first answer leaves a named price or coin without its evidence, so the one existing repair is asked (\u00a74.4); the corpus has no recorded repair answer, the first commands stand (same resolutions; cmd.interpreted json_repaired).",
+   "fingerprint": "sha256:18bc9a41d27854c55ccd13aba86e5535eeb645316a8f0cc0db0139b7326d18ff"
+  },
+  "b19-warrior#168": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:bfe825e820dfee842d1cb7a17ed671712425468c69aa021fb8c8259b4d6ba6fc"
+  },
+  "b19-warrior#169": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:b0a306165c5604c153cccc20c3b1aabf9611ba1fb2c276337673ebd655ebf5fa"
+  },
+  "b19-warrior#170": {
+   "category": "finance 142",
+   "reason": "F (.142): the recount of 20 cp from Dorn Fell (an already credited sale) was refused in .141 as well; the refusal is now also told to the narrator (\"Alaric's purse did not change \u2026 were not booked (\u2026)\"), the corrected story cannot claim the payment. No coin, goods or offer change.",
+   "fingerprint": "sha256:d6223c7e90328e8210fe5d26d2c1649b830c4fc2dea9bd41e9e5584650d76824"
+  },
+  "b19-warrior#171": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:4d4df824ae6cbf019848e34c26132a8bed90c9691bd2c2ca4259d6d394b38fab",
+   "supersedes_147": {
+    "fingerprint": "sha256:f888714505e3d47d22852e1d8641dce11e1d549cd2e3fe478d36ef4172f3c8c7",
+    "category": "representation"
+   },
+   "reason": "b19-warrior#171: only 1 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: deferred board display after arrival.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:f888714505e3d47d22852e1d8641dce11e1d549cd2e3fe478d36ef4172f3c8c7"
+   }
+  },
+  "b19-warrior#186": {
+   "category": "representation",
+   "fingerprint": "sha256:59c904e99eddc43739b973f84c1b9c4cc23bb23d29591cd103f4e68c3549d59e"
+  },
+  "b19-warrior#202": {
+   "category": "finance 144 price open",
+   "reason": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:5796256a6d73579f118407589bfd6abdf9c2c060ea59a39bd47fd074a366534c"
+   },
+   "fingerprint": "sha256:2af71139b4f30159592b9b32970c1addb436355d82491d656951784a5bdcd2bb"
+  },
+  "b19-warrior#207": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:691b45e77e1fded6a19e0085ee10339f44dfccc22a6e5194b69e738a52b324ac"
+  },
+  "b19-warrior#214": {
+   "category": "representation",
+   "fingerprint": "sha256:d7f4d419cdeba1889bbb2ffcd240c003f32806b1b465210cf511aec012541d43"
+  },
+  "b19-warrior#218": {
+   "category": "representation",
+   "fingerprint": "sha256:0871d40da2d4d31e86f52bcdc5ff6ca565b062b619718156e9f15db1e5f7cc14"
+  },
+  "b19-warrior#232": {
+   "category": "representation",
+   "fingerprint": "sha256:a9dd30f44b1b91bf279be565d49a0a600ee13cc214ff33069419f1ada275b6be"
+  },
+  "b19-warrior#243": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:86f862b182f318e24eb99c216733a226979f481207383f58267102ffb7363d8b"
+  },
+  "b19-warrior#244": {
+   "category": "finance 144 price open",
+   "reason": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:fb71798a3f6e5d6e16e2ff4ceb24fcbeec402247619d4b56a202b83222d7049e"
+   },
+   "fingerprint": "sha256:06503a34c59a6969e27fbe4c3000c3a2d45571ffe3c136faf75143351b91df06"
+  },
+  "b19-warrior#247": {
+   "category": "finance 144 acceptance hint",
+   "reason": "S2 (plan \u00a74.2): the engine reads no second price from his acceptance words; an acceptance that names money without agreed_cp gets the one existing planner repair as a hint. The recorded repair answer stands with the same commands; resolutions, coin and events unchanged.",
+   "supersedes_143": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:2c1e31538281d5410b5110b6c56994372517282336bd40964a45258f8c7b3f85"
+   },
+   "fingerprint": "sha256:1fcdd63c59cbcd6aa617f589997d1f59172d3f7ed3b270d3a39a684c4f697b5f"
+  },
+  "b19-warrior#272": {
+   "category": "representation",
+   "fingerprint": "sha256:d12ca0f1a990e7d91de1ed36765c1988d67fc34ecdd9f75bdb451688e4b8cb4b"
+  },
+  "b19-warrior#286": {
+   "category": "representation",
+   "fingerprint": "sha256:f9571146cc3873c23905149d9f132f73bdd6c2b2c3c5f51e6e5ddb444fea3551"
+  },
+  "b19-warrior#294": {
+   "category": "representation",
+   "fingerprint": "sha256:7343002aca5ddf9a0b65a15c9c9914eec0e63f5d4bfa39ac667be456faa32317"
+  },
+  "b19-warrior#298": {
+   "category": "representation",
+   "fingerprint": "sha256:1b083a51bc8a6e3d9d4732883d65ab7637d29cb86a851f29b5da8a194fa6fc63"
+  },
+  "b19-warrior#316": {
+   "category": "D offer contract",
+   "reason": "D: offer schema contract/diagnostic changed without granting goods or coin.",
+   "fingerprint": "sha256:39d6c3d78d9ff544fbc367b0cfb8caa396bbd871bcde934d1196c0af3e0dc94e",
+   "supersedes": "sha256:4f2004c8cd0de94c625db3cfedba49ff35c6e6547b93818f6119a0465456e16a",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b19-warrior#317": {
+   "category": "finance 144 contract fields",
+   "reason": "cmd-1.9: the recorded pay answer still carries confirmation; it is no command field any more and is dropped when the answer is read. Resolutions, coin and events otherwise unchanged.",
+   "supersedes_143": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:1959142a8f01e51e8b485f84506ed8456fdf1cc5fde19dc74dba1b64895ec284"
+   },
+   "fingerprint": "sha256:505e81f9ed60032357b3af4af1a73c4a8c7ee01054b22581bb11b4d97b021b06"
+  },
+  "b19-warrior#319": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:b9b8b3cee8b76d3d84f5425c1309cd2ae49cb16f0295d5924ea3ee63b6661f70"
+  },
+  "b19-warrior#320": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:5e2d02e47d68fa1ff7d2cfa8820d69765e0b4ff2360820c3b161b09803e6f91f",
+   "supersedes": "sha256:cc8d54952058a96681bc78d5ae5afb03ffb6e416767f1e3e39ef613ff646da7b",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b19-warrior#323": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:832ca40e7ef462802dd555e3e615e5132b35da772b358b2c7a173e62eaaad62a"
+  },
+  "b19-warrior#327": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:535e316e8dad7ea57c9b7665a506d0e0f2b2902386302f59084876eb6ade6913"
+  },
+  "b19-warrior#328": {
+   "category": "finance 144 price open",
+   "reason": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
+   "supersedes_143": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:013ba84d570f0b91a8d3036f6a601ff1b09a6b284b46cbebe817d1b639aab603"
+   },
+   "fingerprint": "sha256:4466b14b8ede6aa0bbb5d75e864b7a59ca6ea6fce8c52652d543b0c9fb5b36f7"
+  },
+  "b19-warrior#329": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:ee39059dcac4e906cc02b53897b284028b7f918b0a420ba6eece5edcda774fc9"
+  },
+  "b19-warrior#331": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:9f4a0ab324b0c7f71730332acbc61f78ba38120a7e9ab06d8d23d8c47fa3e47c"
+  },
+  "b19-warrior#332": {
+   "category": "finance 144 price open",
+   "reason": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:06f5f3fb65f10830a61de5511e6d6b5c730a12bf0744f40de5194af0dfa43b3c"
+   },
+   "fingerprint": "sha256:4d518cadb779f5a9bba87a1a20444be68c15ee6d9243ef05abf8cc92357e4cb4"
+  },
+  "b19-warrior#333": {
+   "category": "finance 144 acceptance hint",
+   "reason": "S2 (plan \u00a74.2): the engine reads no second price from his acceptance words; an acceptance that names money without agreed_cp gets the one existing planner repair as a hint. The recorded repair answer stands with the same commands; resolutions, coin and events unchanged.",
+   "supersedes_143": {
+    "category": "finance 142 contract fields",
+    "fingerprint": "sha256:d1c13c5bd52b452888d2084289f484c12dfb0246e8a40d3607bdaa4254e06f4f"
+   },
+   "fingerprint": "sha256:f96fa705993a7cb19900a54b4712b00b88477d48a9da930c87722aa6d2b549eb"
+  },
+  "b19-warrior#334": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:bb502b9440bd111cff64d6fccc60433d801ca3227655597a9f93b6528532b9ed",
+   "supersedes": "sha256:344493dc0e8fb44f2e18a4fb2ef2fdeea3c74d67c8bcc6f858876a070f95e434",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b19-warrior#339": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:67fcd3041736fd1f055e5cbf6bd1f02ed956b7fc24add5d27843bbc882a56c5b"
+  },
+  "b19-warrior#340": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:e954d5841da13969d3435076aca595720a96666a2b3880d8ead1d580d4d2ddd2"
+  },
+  "b19-warrior#343": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:cb030885562240d3e23de0d68a4d81703aa3683bfc148c60d3e67c46b40a0940"
+  },
+  "b19-warrior#344": {
+   "category": "finance 142",
+   "reason": "F (.142): the recount of 200 cp from the smith (an already credited sale) was refused in .141 as well; the refusal is now also told to the narrator (\"Alaric's purse did not change \u2026 were not booked (\u2026)\"), the corrected story cannot claim the payment. No coin, goods or offer change.",
+   "fingerprint": "sha256:f34b62eb4d9f03316da655adc71ba660122e3d0ac5e1e30f474f3b4fae578f23"
+  },
+  "b19-warrior#346": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:d1511be1fd1402163fe31e7dadb56be9698663b46354d174f5277d6757c7f79e"
+  },
+  "b19-warrior#347": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:8e602928e9a1a46419381afa404b329b8fd46731a85699e4e51283899dbec942"
+  },
+  "b19-warrior#350": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:8901d8008a89067ae3f204988fc5f972d4fb05c65a206571f765576748b41914",
+   "supersedes": "sha256:2ceac92f403ba21510aac4af577fcee53b6e1993976d2090a5fe7f3aa1056462",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b19-warrior#351": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:ee299d9f0e5afb95510657e652d56acab785f7b6060e3889c5df3fe955928400",
+   "supersedes_147": {
+    "fingerprint": "sha256:0be79d57f0875088b410eac1ee2d287e26c1013410505c570252bd2d86e32398",
+    "category": "representation"
+   },
+   "reason": "b19-warrior#351: only 1 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: deferred board display after arrival.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:0be79d57f0875088b410eac1ee2d287e26c1013410505c570252bd2d86e32398"
+   }
+  },
+  "b19-warrior#358": {
+   "category": "representation",
+   "fingerprint": "sha256:f73d49d2579344731673e7e80cc9646b52e93e9faf65bc5cd316712f6962fbf2"
+  },
+  "b19-warrior#376": {
+   "category": "representation",
+   "fingerprint": "sha256:9c383f014142884a85f50c394456f8af1b5f5d32ed1f3ffa86dda2ef20dc4fa2"
+  },
+  "b19-warrior#38": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:1a8dc5ec10a82041698f0163257e8408a96d64aab55679a95d62f8625044b838"
+  },
+  "b19-warrior#400": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:95694ebbd367d16c2a69d2a249ac5af184c55f655b3a117b6998df41f9926e43"
+  },
+  "b19-warrior#46": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:cba547646603f561f09e02ccd6e618dbfe1729cc9ceeb45aaca0bad8fee809f7",
+   "supersedes": "sha256:58329de04f21e4ef22b0417b11aff5c628756bb7c46d15fcf3e818f0c8575f3b",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b19-warrior#58": {
+   "category": "representation",
+   "fingerprint": "sha256:c49b6ce1ecd0197b4c9ad4fbe920846ba5f05420d7f17abad913bf66e9ae30eb"
+  },
+  "b19-warrior#7": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:d043cb78f0a09388c3c60c3fb492c660e68453689a5f5c45e55d3ca53fbdceb7",
+   "supersedes_147": {
+    "fingerprint": "sha256:f445b7f6298995e38e780769df5935a617df7c317ab0b5437e81266257f0d0f7",
+    "category": "representation"
+   },
+   "reason": "b19-warrior#7: only 5 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Hunt the Millpond Marsh Harrier; Thin the Thornhollow Boar Sounder; Hunt the Ford Serpent of Weeping Bridge; Cull the Barrow Fen Rotwolves.",
+   "previous_acceptance": {
+    "category": "representation",
+    "fingerprint": "sha256:f445b7f6298995e38e780769df5935a617df7c317ab0b5437e81266257f0d0f7"
+   }
+  },
+  "b19-warrior#75": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:ad4c39657c2a31c51378037cec1d057a5c0eccb5d2d7c3acf002742f3bded819"
+  },
+  "b19-warrior#77": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:622a57ea6ac80ef677822ede97f605bc449d09f99a72850cd7f8ee0aa911baf4"
+  },
+  "b19-warrior#78": {
+   "category": "finance 144 price open",
+   "reason": "S2: the line or bid had no binding total in .143 already (rate per piece, part prices, missing coin word or condition); .144 adds the concrete PRICE OPEN line for the player and one PRICE CONTRACT correction for the narrator (name one total for exactly these goods). No offer, coin or goods change.",
+   "supersedes_143": {
+    "category": "finance 142",
+    "fingerprint": "sha256:0ddc02dddce187264a00a31cf0702133dcabfe493445764f58613672e289cbd1"
+   },
+   "fingerprint": "sha256:de036391021ce839ab601d1d3ca7bf8fde11564ce9b1c028e3b2f008eefcc531"
+  },
+  "b19-warrior#79": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:4f5340ab84b2b39ba0e32291890a183c4c3268d7b98a6614fa41dd8e2c92c40b"
+  },
+  "b19-warrior#82": {
+   "category": "finance 138",
+   "reason": "F (.138 review): \"A copper a bowl, if you're wanting it\" \u2014 a condition that is only the addressee's own choice no longer voids the price; the porridge offer is stored at 1 cp instead of refused with \"no price was recorded\". Earlier D reason: D: offer schema contract/diagnostic changed without granting goods or coin.",
+   "supersedes": "sha256:878b3365161ade52f9e7723142b1389ecc6143144951a8b596c7954cc91155c8",
+   "fingerprint": "sha256:0d2fa9154e7041acf44017191c248b2c8918a50a5158faab55aefbd80c26223e",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b19-warrior#86": {
+   "category": "D offer contract",
+   "reason": "D: structured article identity/appearance and engine price before prose validation; original offers preserved when already stored.",
+   "fingerprint": "sha256:d0fd4523e95c1956e8c7096ddafbb79cb8ad5c13c7819e95aacb94ee0452ab9d",
+   "supersedes": "sha256:4addcd107ffc55c01004e49b66e73a58b47e0a9d3609e730db0d5e7b94d45166",
+   "finance_142": "F (.142): unchanged against .141 apart from the finance contract fields the disclosed translation of the recorded answer adds (tools/replay/contract_f.mjs: money/recipient_quote/confirmation/price_evidence on commands; phase/condition/pricing on bids, offer lines and gifts; terms/condition/evidence on stored offers)"
+  },
+  "b19-warrior#9": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:e975c0efae8568c840fbb7e496704c1af558e86fe3c7d876180c38d5249e082a"
+  },
+  "b19-warrior#90": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:14d713e4d6246abaf9cb9cb8bed1b65ab94923b0d0deee27f8b350e6426b79ac"
+  },
+  "b19-warrior#91": {
+   "category": "finance 142 contract fields",
+   "fingerprint": "sha256:6d94ad7e6703ec5e0cc9a0b56d0f32ee83f238bf8df5e2c4ed2c774ca122b72f"
+  },
+  "b19-warrior#96": {
+   "category": "representation",
+   "fingerprint": "sha256:9747addde247c391f44eb3ee08b5dbde823f93cbfa994c970bc5943d1e29dcb2"
+  },
+  "b16-rogue-sale#23": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:31534e088be00348580a6bb1bbd96baa1505e99db6d3ca75c63216d8b14d0ede",
+   "supersedes_147": {
+    "fingerprint": "sha256:00c83076b737db9ab605180e64351e92ffe0ce01c5156a993b63afd449920c22"
+   },
+   "reason": "b16-rogue-sale#23: only 4 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Cull the Gravel-Bar Otterhounds; Cull the Ridgeback Boars; Cull the Hollowfen Marsh Cats."
+  },
+  "b16-rogue-sale#69": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:84d315b9dc99660b8ac19d3c68add8de13c8f6974b3023b27fbfa6899a26b089",
+   "supersedes_147": {
+    "fingerprint": "sha256:1d4c43d7a4ba3b4e487f6f8e559c755adfd7ca0b735822e8ce2769f637c5a721"
+   },
+   "reason": "b16-rogue-sale#69: only 3 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Cull the Ridgeback Boars; Cull the Hollowfen Marsh Cats."
+  },
+  "b17-mage#21": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:670308918751286975eb3de660991b3c35b8ab0e90928dbb902e28e2eaa79b8c",
+   "supersedes_147": {
+    "fingerprint": "sha256:134169a559158b114a9cc4e78c6e934143c02ad46978291a38ad439cd044afac"
+   },
+   "reason": "b17-mage#21: only 4 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Thin the Fen Adders at the Eel-Weirs; Break the Quarry Track Gnoll Pack; Slay the Pale Stag of Hollowmere."
+  },
+  "b17-mage#83": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:437b15c33e9665a1f802233cb1e93461f82dd3e3a2c3001c68178acb35bbd1cd",
+   "supersedes_147": {
+    "fingerprint": "sha256:5150d8e4adec021daa9d0e0119995a0462d3321ea1d446e8da9bfacd88d70260"
+   },
+   "reason": "b17-mage#83: only 4 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Clear the Fen Adders from the Eel-Weirs; Drive Down the Quarry Gnolls of the Old Quarry Cut; Slay the Pale Stag of Hollowmere."
+  },
+  "b17-rogue#15": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:efb06b8410c8e0f84a794f8e7f8ffaac50ac60b9dca03ca40ff8ffa6818e1696",
+   "supersedes_148": "sha256:18ccf423c03cc045b2405922de7e095d1682e5fb033e06f6d4c2ff65fdebf5e9",
+   "reason": "b17-rogue#15: PP before [rogue.fan_of_blades +18 P1/18], after [rogue.fan_of_blades +18 P1/18]. enc.t8 records rogue.fan_of_blades:closing. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148.",
+   "previous_acceptance": {
+    "category": "design148 area",
+    "fingerprint": "sha256:18ccf423c03cc045b2405922de7e095d1682e5fb033e06f6d4c2ff65fdebf5e9",
+    "supersedes_147": {
+     "fingerprint": "sha256:95c19fc92cf91d10a6560ffa65cf290611ffe6cc77b43499b4387dd78d5003d3"
+    },
+    "reason": "b17-rogue#15: washerwoman beside the water snake is unselected and neutral: no combat-sheet materialisation, initiative entry or area/reaction damage. The hostile target and ordinary skill cost remain; economic events match .147 exactly. Removed NPC initiative/RNG consumption and resulting combat snapshots are intended."
+   }
+  },
+  "b17-rogue#29": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:d39ae0f30f79e86ca1224c6182a10a9d313fe3c7c0992b22e059b886200ccae4",
+   "supersedes_147": {
+    "fingerprint": "sha256:876655d3ccc97f045619b0aa24cceb6cd72f7fb1478e8206a513bf3e8cf75b02"
+   },
+   "reason": "b17-rogue#29: only 4 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Cull the Reed Flat Striders; Take the Old Boar of Bramble Orchard; Thin the Howlers of Coldwell Pines."
+  },
+  "b17-rogue#117": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:72ce5671ee016bbd3eabfbc8f15d8b8366d26c4ebb3829398b74f54d841f9a04",
+   "supersedes_147": {
+    "fingerprint": "sha256:10fe2e125c26c346ac0274ac7f229b5f80c67724515de51db393bdb34d3a1b5b"
+   },
+   "reason": "b17-rogue#117: only 4 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Cull the Bog Striders at the Eel-Weirs; The Old Tusker of Bramble Orchard; Thin the Pine Howlers of Coldwell."
+  },
+  "b17-rogue#157": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:0799daf5bb3dc17de65733f1532095bc0d1e872175573e1b2915d83b47f483ab",
+   "supersedes_147": {
+    "fingerprint": "sha256:bc811e9a86416fa9ddd0df408d652584ab56c450d65692c1827516aa53c8f7ed"
+   },
+   "reason": "b17-rogue#157: only 3 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: The Old Tusker of Bramble Orchard; Thin the Pine Howlers of Coldwell."
+  },
+  "b18-mage#23": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:0558776388fb7fa1c03b720756920cb6283e2f2553805b2f887cc32cbdccd088",
+   "supersedes_147": {
+    "fingerprint": "sha256:acd51b5932ed75fb8ebc29f6fc3e8c1b23cc9e5e2ec6b16e24a65b8ccf3eee2f"
+   },
+   "reason": "b18-mage#23: only 4 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Thin the Millpond Mire Pike; Cull the Bramblefen Boars; Break the Howlingmere Wolf Pack."
+  },
+  "b18-rogue#29": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:e9f0ad7dddac88e95d33ed30b04f385fdb157f5dd1aeb6223286237d4f1ff2a1",
+   "supersedes_147": {
+    "fingerprint": "sha256:c47fb45d94e203395d962457d29e1fc1b41d340159d2ca322b13a3d1798a3362"
+   },
+   "reason": "b18-rogue#29: only 4 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Cull the Millpond Snapping Turtles; Cull the Barrowfield Ghouls; Cull the Ashfen Marsh Serpent."
+  },
+  "b18-warrior#59": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:50e6d73b58156d810d1e75bae628ba198c30caa62698699616a8f95ad6d3cd66",
+   "supersedes_147": {
+    "fingerprint": "sha256:6d0bb9d4a786e55d61f96707dc3bd9221a23bb40e6d983a7915ff20bf386fa4c"
+   },
+   "reason": "b18-warrior#59: only 1 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: deferred board display after arrival."
+  },
+  "b18-warrior#235": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:d79d5c52b64e44ad16fc3ba56ef59d316909a1b20962c84cefad7ad349247738",
+   "supersedes_147": {
+    "fingerprint": "sha256:c0907fc8964dc5edb5b848bd776c8c6e2b6dc47efdc2a06641acad231f88d37e"
+   },
+   "reason": "b18-warrior#235: only 1 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: deferred board display after arrival."
+  },
+  "b19-mage#47": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:0e2b0f862ee6293f19f459d79dc04192ad96d0ec2931ed5e9bc2480f9f0c6a1c",
+   "supersedes_147": {
+    "fingerprint": "sha256:fb34d7894cdd9738bdc34d464f994392d60239458322afc408103e479dc78b59"
+   },
+   "reason": "b19-mage#47: only 1 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: deferred board display after arrival."
+  },
+  "b19-rogue#35": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:30d47863722601d9a3907460c80b5ba354e5bcfdee0cc4350a371c58d0a8e230",
+   "supersedes_147": {
+    "fingerprint": "sha256:9c47117eea9ad4ef2a7861f2e90bf4f0bc4c3deab198cff14abb3ab452f6476a"
+   },
+   "reason": "b19-rogue#35: only 4 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Thin the Reedmire Herons; Break the Hollowford Boar Sounder; Slay the Drowned Bridge Terror."
+  },
+  "b19-rogue#51": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:f39f943c2606ad53b772eaee9288ed88633f65c496aa09d9264afb5d55a4fee6",
+   "supersedes_147": {
+    "fingerprint": "sha256:84b158c813cc16051ddc61f6eff374699a2b9aaec13861e5bda30f73c3c3c32b"
+   },
+   "reason": "b19-rogue#51: only 1 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: deferred board display after arrival."
+  },
+  "b19-rogue#59": {
+   "category": "design148 area",
+   "fingerprint": "sha256:476b5fe40daee2f57b514844c7e285c3708a58b41175f687637708b9d6989a7d",
+   "supersedes_147": {
+    "fingerprint": "sha256:db596fe50a77ccb36b9837e6a6255fff23b2fc8b0b005966b144dcac856590c0"
+   },
+   "reason": "b19-rogue#59: weir worker beside the herons is unselected and neutral: no combat-sheet materialisation, initiative entry or area/reaction damage. The hostile target and ordinary skill cost remain; economic events match .147 exactly. Removed NPC initiative/RNG consumption and resulting combat snapshots are intended."
+  },
+  "b19-warrior#41": {
+   "category": "design148 danger",
+   "fingerprint": "sha256:1c4a92bdbbdabb05e7e19774fc26dbd8a54326e3b172a2911cf2fcd9f3b290c2",
+   "supersedes_147": {
+    "fingerprint": "sha256:06da00df839f3d9d90aa9f9a95ea9f90881e0ad01b841184de13884901dc071f"
+   },
+   "reason": "b19-warrior#41: only 4 outcome display text fields change: explicit total-kill counts and reported population/own-level risk; no event, offer, quest, money, item, XP, RNG or combat value changes. Notices: Thin the Thornhollow Boar Sounder; Hunt the Ford Serpent of Weeping Bridge; Cull the Barrow Fen Rotwolves."
+  },
+  "b16-rogue-sale#19": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:4ea0a4f207583d032626296413c51495b2b66b8d6c278113a2eef7729ac760c7",
+   "supersedes_148": "sha256:8b9fe2b0b798e853626c4492f852ea130541e5b6ac05a8290e59b9a37637345e",
+   "reason": "b16-rogue-sale#19: PP before [rogue.razor_cut +18 P1/18], after [rogue.razor_cut +18 P1/18]. enc.t10 records rogue.razor_cut:closing. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-mage#15": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:66e63b8aa47623f34856cccc0a18cd6dc9032de491df180f6d865b53e62aeaa6",
+   "supersedes_148": "sha256:854b84c8b7a52aff6817ac140e6a00c320e40bf14ead471eae9a5a3ca5fbc5c8",
+   "reason": "b17-mage#15: PP before [mage.arcane_bolt +18 P1/18], after [mage.arcane_bolt +18 P1/18]. enc.t8 records mage.arcane_bolt:reach. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-mage#37": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:ec78aaac9410420bc1fa46c28f1b8283c69ec9830d1cc969b88b5c67c8b4b64b",
+   "supersedes_148": "sha256:ce2a1c2e5ccf942356838e3ade0b46271ea8b13d3e768e168d58f0a63f6c3120",
+   "reason": "b17-mage#37: PP before [mage.arcane_bolt +18 P1/18], after [mage.arcane_bolt +18 P1/18]. enc.t17 records mage.arcane_bolt:reach. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-mage#43": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:9897791ebe8a41897aaf598e8866167133b8e7eb6c07c298c90e889ab88214a1",
+   "supersedes_148": "sha256:8b75e5eb7aaf6ede46b500b96042cf80a804c7355da75afd73bfc95f1f5f46a0",
+   "reason": "b17-mage#43: PP before [mage.arcane_bolt +18 P1/18], after [mage.arcane_bolt +18 P1/18]. enc.t19 records mage.arcane_bolt:reach. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-mage#49": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:8191f45623e88a21a588916cad9868b3a714050e41d05a8419702c8daaa5c2b5",
+   "supersedes_148": "sha256:3929e23388946d6e65d297e9ac77f33ed87a9a0378ca1e245b70dfcc01e97685",
+   "reason": "b17-mage#49: PP before [mage.arcane_bolt +18 P1/18], after [mage.arcane_bolt +18 P1/18]. enc.t21 records mage.arcane_bolt:reach. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-mage#125": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:d43bc4173eed8a1a3554f74d3b64a6cd5bfa46e8109b226e2f3db81917acb6ca",
+   "supersedes_148": "sha256:81b2020bc74cdeb0c86cdfe379cb877a4f99ba4fadbd16657317c696180c5fa3",
+   "reason": "b17-mage#125: PP before [], after [mage.arcane_bolt +18 P1/18]. No new pattern is invented. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-mage#153": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:9c7aec4418a7408213f35620d87bd0d53964680d100418baa17ac83b19686014",
+   "supersedes_148": "sha256:2d593154a46b39b0680b0f1f0d8dddb056b1bf728da66739286a33abc8b36911",
+   "reason": "b17-mage#153: PP before [mage.arcane_bolt +18 P1/18], after [mage.arcane_bolt +18 P1/18]. enc.t67 records mage.arcane_bolt:closing/reach. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-mage#159": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:436c2421db3ece1e27b9ed24ac8c3b5f5ea2e78ccb4d3709e910630402845bc6",
+   "supersedes_148": "sha256:59a29b2409b1c96097e171f61a13e294eed2952297bc5a6bb45a344a5b7f4587",
+   "reason": "b17-mage#159: snapshot offensive qualification now reflects the actual F target window (PC L11; mage.arcane_bolt=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-mage#161": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:4b2c8c8351da2fde5c3ff288230e13e0262e5d73d58bd7c2f98590091ba1c067",
+   "supersedes_148": "sha256:66f61bfdf8f067b896e2c0ce0a8f6b0d5fcd23b07c88c42127e93236be65fc80",
+   "reason": "b17-mage#161: snapshot offensive qualification now reflects the actual F target window (PC L11; mage.arcane_bolt=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-mage#165": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:324a952a3332e37305ce0a12be6b6c3f65c63d92447caef9e639e1950cf4d4f4",
+   "supersedes_148": "sha256:305c81fc4d8f6ea5de6dc12db855f3667a73ffe1b6bfc54d54e71ce5681f36f3",
+   "reason": "b17-mage#165: snapshot offensive qualification now reflects the actual F target window (PC L11; mage.arcane_bolt=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-mage#189": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:3933f831d807615aef11a511a96f7a4c8877b2de253c177eb76b3b08c30e3ea7",
+   "supersedes_148": "sha256:86e22effe2e3198479b87d8a9e18c9b91d826cfbc29ef77fd1feec3a0c1d0539",
+   "reason": "b17-mage#189: snapshot offensive qualification now reflects the actual F target window (PC L12; mage.arcane_wave=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-mage#191": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:5744b28ba8f789093c4667290c0d3ccf8a8e71fd907cb8abea41e8e1dd045b53",
+   "supersedes_148": "sha256:a221d4af4c6eb9a7499d1fbcf4399a5fce02131cc48fe7b805958ee68a47f7dc",
+   "reason": "b17-mage#191: snapshot offensive qualification now reflects the actual F target window (PC L12; mage.arcane_bolt=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-rogue#133": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:886bad801f657cf8351e4a007662ba485b58659f77da4bc6000b375747391eed",
+   "supersedes_148": "sha256:a3a6fd54a53296c348ee55cedb55ce72dc96b53b4d1f7c7623651d26dacb27f2",
+   "reason": "b17-rogue#133: snapshot offensive qualification now reflects the actual F target window (PC L8; rogue.fan_of_blades=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-rogue#135": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:4a0f8eb6452bb0194c80102a9ab3662e624495e76fcc1c8a9686d72ae8298960",
+   "supersedes_148": "sha256:6b3fcc077790c0ad4c6f36ae93986a302f213bc267c6bba279b4982714c42618",
+   "reason": "b17-rogue#135: PP before [], after [rogue.razor_cut +18 P3/8]. No new pattern is invented. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-rogue#151": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:a29ec88589941fa69791e30322a2bd3ebcce39c9a0f2af6e516675bd50dc6539",
+   "supersedes_148": "sha256:865bf3176570a5380560d1c893b2e8a6df3a9b367c5b29886b28ecd78c2abe7d",
+   "reason": "b17-rogue#151: PP before [], after [rogue.fan_of_blades +18 P1/54]. No new pattern is invented. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-rogue#211": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:ddc6c93f23d3bac5ed694c4c0ed09bb85fc2036764d76516155fb0ce1474046e",
+   "supersedes_148": "sha256:d6d6ac7d0131ef99e18f9a1d3b0b2b02ce2be83b0982d7fbf30fcbf7b0bd75ae",
+   "reason": "b17-rogue#211: snapshot offensive qualification now reflects the actual F target window (PC L11; rogue.fan_of_blades=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-rogue#213": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:7b2bf40efcb8d3d785e888c822f6036fbc6ebee461f55a1506c3fc43cec9ede2",
+   "supersedes_148": "sha256:89ad4770469564b0a79a9864476de347a150a893ad6702d99948b6f2c820c63b",
+   "reason": "b17-rogue#213: PP before [], after [rogue.fan_of_blades +18 P1/54]. No new pattern is invented. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-warrior#169": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:6b9748c516a1784211793cf9e3f3ee44dc91ff7c5c8aa93f66d5a16f5a476e11",
+   "supersedes_148": "sha256:4defa6a5d33deac2247615c4ce517c90fe291235f7c209e071c77345e77e28aa",
+   "reason": "b17-warrior#169: PP before [], after [warrior.basic_attack +18 P2/4]. enc.t70 records warrior.basic_attack:closing. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-warrior#181": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:8101407fc328758b6cf6ac0c03e85932508def316f1a129109455e6a436c9bac",
+   "supersedes_148": "sha256:0b26fe9f61f1ece12d72a81ea1b9771f9ad8b29fbba3019dbad91494a9755c7f",
+   "reason": "b17-warrior#181: PP before [], after [warrior.basic_attack +18 P2/4]. No new pattern is invented. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-warrior#199": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:5a3eaa6b2d32b71a3c665dfd683127742c6b6488e86484173fff1de61f25c2e5",
+   "supersedes_148": "sha256:d87efd0348618f675e2d6bc7152711d53a917a6ba07578b299dff8dc88baba17",
+   "reason": "b17-warrior#199: PP before [], after [warrior.basic_attack +18 P2/4]. No new pattern is invented. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b17-warrior#205": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:e2744e996495473882650dd05549e04e3a8c96e7374b9826060498cfc8d2716c",
+   "supersedes_148": "sha256:5764accaca86b898da01df599df8675a893b3eb0f4521b6d0803a3f4adfc670d",
+   "reason": "b17-warrior#205: PP before [], after [warrior.basic_attack +18 P2/4]. No new pattern is invented. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-rogue#23": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:9f47c0f22d49d4a725c93ca060b8fc7868648721b55999ac40cb1b89856fb211",
+   "supersedes_148": "sha256:ad151e81b31db0436a66754d5b6034ab14e8dd85c66aeffc1ba91c903e48db79",
+   "reason": "b18-rogue#23: PP before [rogue.piercing_thrust +18 P1/18], after [rogue.piercing_thrust +18 P1/18]. enc.t12 records rogue.piercing_thrust:closing. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-rogue#143": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:debcab98350a14cfc2b9966bfa6ea35df101e7c6e1b829407c2c7737764527e8",
+   "supersedes_148": "sha256:421e5b2d92eafb2bee3a37a9c23026eb771ca6d6c2cb03e1cacc4b9cfd3995bf",
+   "reason": "b18-rogue#143: snapshot offensive qualification now reflects the actual F target window (PC L4; rogue.piercing_thrust=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-rogue#145": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:cc174cc5e1103fed1fd36e8b7c42dfc275b46eb357190013be2c6b600fdfea38",
+   "supersedes_148": "sha256:bb268f96cee1a5a386ec7d938c2fc039326a69f9454698d29bd585ad24478f95",
+   "reason": "b18-rogue#145: snapshot offensive qualification now reflects the actual F target window (PC L4; rogue.piercing_thrust=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-rogue#147": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:5b4b11d680bfd69c01ae994b672e4f6e733951bc42039e680957480dc56e4431",
+   "supersedes_148": "sha256:5081738d6623a2ea99c4baae7444c137821678c22d1a41f80ffa70d33aae8b32",
+   "reason": "b18-rogue#147: snapshot offensive qualification now reflects the actual F target window (PC L4; rogue.piercing_thrust=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-rogue#149": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:d06d76cf6578c73cda82e3ca94e922f85cb2e20ae380c16352d320cb068a15fa",
+   "supersedes_148": "sha256:be90d436b9b0d22d17baece9172068fa24e0f2b2cf8b159cd7db056b02e0e398",
+   "reason": "b18-rogue#149: snapshot offensive qualification now reflects the actual F target window (PC L4; rogue.piercing_thrust=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-rogue#151": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:66badd8f0680bee4d540ca8dfbc4f3d53e4179e890dc99cf436fb04f1f939245",
+   "supersedes_148": "sha256:50d8256396a5843a6839e3d5f37681956de4a70555bd18f1abbd4afd17bcdc1d",
+   "reason": "b18-rogue#151: snapshot offensive qualification now reflects the actual F target window (PC L4; rogue.piercing_thrust=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-rogue#153": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:db77e074feea7872142b3e5cbaefa8e2fcca46df91d5f2c97b50dd2d5d0140af",
+   "supersedes_148": "sha256:85c4167efdceeff3a142c8a92477a3fd8242d141f5c6b89836606097912a5410",
+   "reason": "b18-rogue#153: PP before [], after [rogue.piercing_thrust +18 P3/26]. enc.t68 records rogue.piercing_thrust:crowd/closing/riposte. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-rogue#155": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:4e18e93583b4f129a278dc12aa6631ef4b6f5a7a48ec0dc1c44af24c74fb2f3f",
+   "supersedes_148": "sha256:393b50ace64516e7bde9d5f63c2817dbc49b33a30a7825f81b7ea0cc5e7f094c",
+   "reason": "b18-rogue#155: snapshot offensive qualification now reflects the actual F target window (PC L4; rogue.piercing_thrust=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-rogue#157": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:9e72b66badd235ec0557c16f9464806686aca65680c2fa1e4fb4789e7859c6c0",
+   "supersedes_148": "sha256:94f012919610ae5798380f5f14e013690dfce941bc8ee0beac9f5092ebe9b559",
+   "reason": "b18-rogue#157: PP before [], after [rogue.piercing_thrust +18 P3/26]. enc.t74 records rogue.piercing_thrust:riposte. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-rogue#179": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:3a43cee1a1c629b079214a071542324202b79b9dcfd393ab664a7cf875bb1175",
+   "supersedes_148": "sha256:bf90353b95e57405b077e1e3e4772b3b7d5b442050f2276c44041dfa61f4900f",
+   "reason": "b18-rogue#179: snapshot offensive qualification now reflects the actual F target window (PC L5; rogue.piercing_thrust=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-rogue#181": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:1c566e86862530783130ca79ca457bba8862ef023f6e4b7af93a08c08698c2a8",
+   "supersedes_148": "sha256:b487201dd176ab249ff11e5473c5fef9fdda335ecb3970bbc79d320882024935",
+   "reason": "b18-rogue#181: PP before [], after [rogue.piercing_thrust +18 P3/26]. enc.t84 records rogue.piercing_thrust:riposte. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-rogue#205": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:936ff63ddc1fe919a07c51a9af0cdcc67ebb3adb1f33fbba5efba989e2504724",
+   "supersedes_148": "sha256:30cbebe464f7ab479072184b05e8638cf3a8d1fa0cf93a3a8b056d5365dea4af",
+   "reason": "b18-rogue#205: snapshot offensive qualification now reflects the actual F target window (PC L5; rogue.piercing_thrust=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-rogue#207": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:a32b942e782e63271c19005548beb68ccfa7f5d594fb55bc0b0c72b587c5cf9b",
+   "supersedes_148": "sha256:2cebcfc5684855f6d48516513e9bbe973eddb869dac71312e1ccdc4faeba310e",
+   "reason": "b18-rogue#207: PP before [], after [rogue.piercing_thrust +18 P3/26]. enc.t96 records rogue.piercing_thrust:closing/riposte. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-rogue#231": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:aeb12bd3693763f5f69cd49328f37efd48d6bb7844fd1b356fffc6f42a02bd1f",
+   "supersedes_148": "sha256:4fe43ce67082e7545248ea8d69c45189c36702b894cd8520ebc762e7015027a7",
+   "reason": "b18-rogue#231: PP before [], after [rogue.piercing_thrust +18 P3/26]. No new pattern is invented. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-rogue#241": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:46d9193a10c72d0a27f311021c6bd79cfd1eb4d3fa1284b23108194f02f61257",
+   "supersedes_148": "sha256:41f1bb3e83ec070c95754fa276d87f1a9de5a8fe2df8b82340b77e56b217df03",
+   "reason": "b18-rogue#241: PP before [], after [rogue.piercing_thrust +18 P3/26]. enc.t112 records rogue.piercing_thrust:closing. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-rogue#249": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:a862d0beba4b8a24c3b2b120492b532e6b5df63783a4da321183cca112010d87",
+   "supersedes_148": "sha256:7862e6a69c2e861e7b40457032971d01130a149af311fc79559f38e29f6ec1f9",
+   "reason": "b18-rogue#249: snapshot offensive qualification now reflects the actual F target window (PC L5; rogue.piercing_thrust=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-rogue#251": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:9f5c17b46a77fb9d851d4890bd7bd113a05629807c62bcbeebbb5caed9e1afb0",
+   "supersedes_148": "sha256:9f7c0ccf821f5edf3ad5745031bd0c54df2678173d450d49c49cc7c086e25f52",
+   "reason": "b18-rogue#251: PP before [], after [rogue.basic_attack +18 P1/36]. No new pattern is invented. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-rogue#279": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:5e3b3f68aae6b8c68bf3a46028f1d7e25e8d071ae54e904fcec82d9f3e753b90",
+   "supersedes_148": "sha256:77fe8d1eda801af07022a978f4b1e5d5704aaa70025b8db8160104dff5cd10a7",
+   "reason": "b18-rogue#279: snapshot offensive qualification now reflects the actual F target window (PC L5; rogue.piercing_thrust=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-rogue#281": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:5112dd10318b59582906ffa37061b4d98d5c3b0d5a632075b1259dc13bc098d8",
+   "supersedes_148": "sha256:4a7e2160bceb45c03dd633bf52338df7e1e0dd583e003a5b7aa38614d789911c",
+   "reason": "b18-rogue#281: PP before [], after [rogue.basic_attack +18 P1/36]. No new pattern is invented. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-warrior#69": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:ba954725a9c6f5e19df0b4f8566c2613611aecf6624dba4f972b2e67a50b5aba",
+   "supersedes_148": "sha256:917489a66899a3f8dbbc076fc712928470c389fd0f27e2466784d2292fdabce8",
+   "reason": "b18-warrior#69: PP before [warrior.quick_slash +18 P1/18], after [warrior.quick_slash +18 P1/18]. enc.t28r records warrior.quick_slash:closing. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-warrior#293": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:10098c0a652ba89460a7a82514a129434bea7bb944cc6c7cd3fec3629c82924d",
+   "supersedes_148": "sha256:3300980fe1c52d0a9c945dd30693f76db0ef542781d026ec7bce0b003e973d9c",
+   "reason": "b18-warrior#293: snapshot offensive qualification now reflects the actual F target window (PC L8; warrior.basic_attack=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-warrior#295": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:75531cecfdd0618e952ad7449f300a69016b699e19bf815890054b7ea9fae4dd",
+   "supersedes_148": "sha256:57c274947e6d76433e73455efacd229e04dc2b81ab7ae7c2c955374ce135416f",
+   "reason": "b18-warrior#295: snapshot offensive qualification now reflects the actual F target window (PC L8; warrior.basic_attack=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-warrior#305": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:f107118d5593e518c40c4c8b175d37f2c022fdb102fb0085b2c2da8601200ed1",
+   "supersedes_148": "sha256:36f7149bb9a151daca8dba6313153b1eeb2c54f060a5eb30f6ecfd2326686051",
+   "reason": "b18-warrior#305: snapshot offensive qualification now reflects the actual F target window (PC L8; warrior.basic_attack=false, warrior.quick_slash=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-warrior#307": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:068694f6c2c058daa2283aca8e6cbd077f9ae8763ef9669f36b23b7b43644ed2",
+   "supersedes_148": "sha256:dcc1893262ea555154ef2082f75870a686d98ddb3c41d41001f92f4f4c1e0ee2",
+   "reason": "b18-warrior#307: snapshot offensive qualification now reflects the actual F target window (PC L8; warrior.basic_attack=false, warrior.quick_slash=false, warrior.cleave=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-warrior#309": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:bceeed09a4e282c77d853deba34e4eaac69c3cb0223116adf8b82adc7969ec0c",
+   "supersedes_148": "sha256:b164dd1a2426b81bda2daf24e30c12b0c8c3a0b42eeea9ce3aa68d5b180acd1f",
+   "reason": "b18-warrior#309: PP before [], after [warrior.basic_attack +18 P3/26]. No new pattern is invented. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-warrior#351": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:a89437e78905c7d0e564ed8e49e5e424df40291178d4ee221281ef1349601c41",
+   "supersedes_148": "sha256:40005b3d20df93974ea0f216f88347f6140cc6e698551733c3f75e9fbf2fd3e8",
+   "reason": "b18-warrior#351: snapshot offensive qualification now reflects the actual F target window (PC L10; warrior.cleave=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b18-warrior#353": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:c9a7852269b589c8c4aa2bef35114275055aeaf2eb6492dcb0aa92c127c0811b",
+   "supersedes_148": "sha256:95ceb8763a701354f318fb55251e63342ff1f08e3735fc44d79dac1dae59aa7f",
+   "reason": "b18-warrior#353: snapshot offensive qualification now reflects the actual F target window (PC L10; warrior.cleave=false, warrior.basic_attack=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b19-mage#23": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:106fdf5308880c19277832e8971bac4251471e680daade850ac6bf87721c3ddc",
+   "supersedes_148": "sha256:a1318c6ed0900c742830fcebc78da881e6031045b52ac0dd89806993d70ba706",
+   "reason": "b19-mage#23: PP before [mage.arcane_bolt +18 P1/18], after [mage.arcane_bolt +18 P1/18]. enc.t12 records mage.arcane_bolt:closing/cover/reach. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b19-mage#31": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:7fff24dcb825632248c4c234723ecdeb123fbbac771e16c54889e673390b8912",
+   "supersedes_148": "sha256:fd53ea4448435c0ee519c4639b0d4c47e94a9d8217e3732e0f7b65e2ed29d6ac",
+   "reason": "b19-mage#31: PP before [mage.arcane_bolt +18 P1/36], after [mage.arcane_bolt +18 P1/36]. enc.t15 records mage.arcane_bolt:reach. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b19-mage#57": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:62cf6eca2e33ef7ac35bffea38621ddc54893e51d00ecf3ca3f19d8e0ff5acbf",
+   "supersedes_148": "sha256:f5075cb3c63fd585f7c4abf62ac4e93a4d6d7c004d74c7eb261eb3aa2f084301",
+   "reason": "b19-mage#57: PP before [mage.arcane_bolt +18 P2/4], after [mage.arcane_bolt +18 P2/4]. enc.t26 records mage.arcane_bolt:reach. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b19-mage#73": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:3dfd23288feec0a317314f42bf3a3a767b7b1c591a198837bdbd64760bab8708",
+   "supersedes_148": "sha256:e59a8df700e11941189292f63c25a71b7e67750cb33148d8ccb00d4b1d0adae6",
+   "reason": "b19-mage#73: PP before [mage.arcane_bolt +18 P2/40], after [mage.arcane_bolt +18 P2/40]. enc.t32 records mage.arcane_bolt:reach. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b19-mage#187": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:7a774ae0dd08d243476d4ead1d6266741945d5c879d43a185fcb5db22a1c3af2",
+   "supersedes_148": "sha256:9adfbd7f510f83139ba270da7fbec344515fc9d1b29c6f3150d9b200ed8744c5",
+   "reason": "b19-mage#187: snapshot offensive qualification now reflects the actual F target window (PC L7; mage.arcane_wave=true, mage.arcane_bolt=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b19-warrior#101": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:44fea91a10c1fe347f4bd5fc47288134169ce396d0c09b825b362c4d2e371b99",
+   "supersedes_148": "sha256:58307998fa11f060ff15e145757d7f8b494136fc74075dfcddfa3fe6dafa5701",
+   "reason": "b19-warrior#101: PP before [warrior.cleave +18 P1/36], after [warrior.cleave +18 P1/36]. enc.t46 records warrior.cleave:closing. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b19-warrior#287": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:4ae9d52f261e86ae4ab85a58fa9c9912472edb6cf89611b66fe898e9d0946343",
+   "supersedes_148": "sha256:aa8cc75bfe6922bb8c4130b6f0d2b875471df8186e834199d3172260f2cb844c",
+   "reason": "b19-warrior#287: snapshot offensive qualification now reflects the actual F target window (PC L8; warrior.basic_attack=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b19-warrior#289": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:ba4c25e8fa283de9e980096dd9271e6cc61939a1e7ef38fd97200eefb293d7f2",
+   "supersedes_148": "sha256:76fcb748e65b446127f483764ea9fa03e60eac803709178af078a24c0e116c22",
+   "reason": "b19-warrior#289: PP before [], after [warrior.basic_attack +18 P2/40]. enc.t123 records warrior.basic_attack:riposte. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b19-warrior#303": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:18eb0584c5c6dc4c82bdb104ea4c6913ca4f0ea9c8fb79d5410648b386b762fd",
+   "supersedes_148": "sha256:67e2833812aedf80fb914b931b46520a74bdd271ff74ab923acd3610167dfa8c",
+   "reason": "b19-warrior#303: snapshot offensive qualification now reflects the actual F target window (PC L9; warrior.cleave=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b19-warrior#305": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:d0dc93b6273bcd0d9f7b906d5ae7b95443e525ff3ee8b1c9e57547e21f336ee0",
+   "supersedes_148": "sha256:8d9c5a8a5085bdd858d37cc452021b03f37b3c365e5361d74694b007169cd58e",
+   "reason": "b19-warrior#305: snapshot offensive qualification now reflects the actual F target window (PC L9; warrior.cleave=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b19-warrior#307": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:57365d9d78c1e474ea29706f545dc42152df371d41a59fbb3ce44700249b44e7",
+   "supersedes_148": "sha256:385393bc74504f5627c5c73296ac88233f6be560c919523183b6f8014be0afdc",
+   "reason": "b19-warrior#307: PP before [], after [warrior.basic_attack +18 P2/40]. No new pattern is invented. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b19-warrior#363": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:cf5e9bfb1949a885f6baf9fd60e13df5ee2f1decea4c94feea6547e474f73156",
+   "supersedes_148": "sha256:2bfbcfbfd1a7b2c7daa951c50cbed267cfe68ccf2eb3c7f324e59eda9c0ffdd2",
+   "reason": "b19-warrior#363: snapshot offensive qualification now reflects the actual F target window (PC L10; warrior.basic_attack=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b19-warrior#365": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:7afd12ef9032fa353f5e8e53788d45e2cee96e30b14bf9518e761e797eba4d1c",
+   "supersedes_148": "sha256:fa816664d98b29a426b562e147a5ae7825b0407f78f45a59641b88cf9d5a7df2",
+   "reason": "b19-warrior#365: PP before [], after [warrior.basic_attack +18 P2/40]. No new pattern is invented. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b19-warrior#381": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:5f8ae8c0667b87f09330c7ef1aa15708bb9bbd176ffb1e3fa768f1f9df733cb6",
+   "supersedes_148": "sha256:cbb0199b94108c3682b05f712c853de5917d2432f0e6f99d236a99f9e26de987",
+   "reason": "b19-warrior#381: snapshot offensive qualification now reflects the actual F target window (PC L10; warrior.basic_attack=true); no completed reward changes in this record. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b19-warrior#383": {
+   "category": "design149 offensive growth",
+   "fingerprint": "sha256:2ba31a8cfe375dd8020739b57168b94bd129317f58b42fbfd188fe911bf495f2",
+   "supersedes_148": "sha256:ef2b3d686334bbada97d9680412f363a35e462441bf5cae35fcbe94b5fa89420",
+   "reason": "b19-warrior#383: PP before [], after [warrior.basic_attack +18 P2/40]. enc.t164 records warrior.basic_attack:closing/riposte. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
+  },
+  "b19-warrior#354": {
+   "category": "fix150 place fact",
+   "fingerprint": "sha256:58df719e50597c929f015ba24de34478c76bb9eea51b273510a30955acfaa7b7",
+   "reason": "b19-warrior#354: original fact subject loc.thornhollow.the_orchard_terraces_and_brush_slopes_of_thornhollow is not a known place. Refuse that delta rather than persisting a dangling location fact. No money, goods, combat, XP, movement or quest-completion event changes.",
+   "supersedes_149": "sha256:4374735c48d69a3f2ee20771a8fd95a6989ae720549a7995a16198d85d19239e"
+  }
+ }
+}

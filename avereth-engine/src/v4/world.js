@@ -401,7 +401,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     };
     // Concrete entity handles must resolve to real entities; ordinary narrative
     // phrases remain free text. A rejected person.named must not leave a ghost fact.
-    const missingEntityRef = ref => typeof ref === 'string' && /^(?:npc|mon)\./i.test(ref) && !s.entities[ref];
+    const missingEntityRef = ref => typeof ref === 'string' && (/^(?:npc|mon)\./i.test(ref) ? !s.entities[ref]
+        : /^loc\.[\w.]+$/i.test(ref) && !s.places[ref] && !content.locations.has(ref));
     // Patch 4 (live 18.10.2026: "the two survivors ... calling the rest of the pack in"): a group the story names as a
     // whole, by its ref or as a plural kind or collective; Patch 7.2B: resolved in src/v4/identity.js, which also says
     // whether the delta means all of it (scope)
@@ -2057,7 +2058,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             || (exploring && !roomKnown(s, to) && !linksAt(s, to, { hidden: true }).length && !visited(s, to));
         // a room of another dungeon only where he set out for that dungeon (no jump from one ruin into another's room)
         const dTo = dungeonOf(s, to);
-        const elsewhere = !!dTo && dTo !== to && dTo !== dungeonOf(s, from) && !forced && !(auth.gos || []).some((g) => g.to && dungeonOf(s, g.to) === dTo);
+        const elsewhere = !!dTo && dTo !== to && dTo !== dungeonOf(s, from) && !forced && !(auth.gos || []).some(g => {
+            const destination = g.to || (g.newName && placeIdentity(s, { new: { name: g.newName, kind: 'site' } }));
+            return destination && dungeonOf(s, destination) === dTo;
+        });
         const w = elsewhere ? { none: true } : (unseen && !direct) || (forced && direct) ? { path: [] } : wayBetween(s, from, to);
         if (w.path || w.danger) return null;
         const why = w.blocked
@@ -2207,6 +2211,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
      * told; a rumour is kept as a rumour. It is also explored room by room (rooms).
      */
     function dungeonClass(d) {
+        // An unparented new room cannot make its unrelated starting building a Dungeon. The confirmed GO scope
+        // above supplies a known Dungeon parent; a genuinely new Dungeon needs its own explicit place/root.
+        if (d.place?.new?.kind === 'interior' && d.place.new.parent == null && !trueDungeonOf(s, s.scene.at)) {
+            reject(d, 'place', 'a new Dungeon room needs its Dungeon parent; the current building is not its implied root');
+            return;
+        }
         const at = d.place === null || d.place === undefined ? { id: s.scene.at } : place(d.place);
         if (at.error) { reject(d, 'place', at.error); return; }
         const root = trueDungeonOf(s, at.id) || complexOf(s, at.id) || (['wilderness', 'site', 'interior'].includes(s.places[at.id]?.kind) ? at.id : null);

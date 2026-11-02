@@ -128,6 +128,8 @@ export function moneyLiteral(source, quote, { content, currencyQuote = null, wit
         return result(EVIDENCE.VERIFIED, { cp, reason: 'coin_from_sentence', source: { ranges: [range, { start: c.start, end: c.end }], money: [range] }, calculation: { basis: 'literal', amounts: [cp] } });
     }
     const values = [...new Set(sums.map((x) => x.cp))];
+    // Quote spans may include "the pair, the fang ...". Rate checks start at the actual money, never at quote end.
+    const sourceRanges = { ranges: [range], money: sums.map(x => ({ start: q.start + x.raw_start, end: q.start + x.raw_end })) };
     // the same sum said twice ("eighty-four copper—eight silver and four") is that sum
     // coins of different kinds joined only by "and"/"plus" are one handful ("eight copper and a single silver piece" =
     // 18); anything else between them (a comma, a dash, "or", "that is") may be an equivalent, an alternative or
@@ -136,11 +138,11 @@ export function moneyLiteral(source, quote, { content, currencyQuote = null, wit
     const units = sums.flatMap((x) => [...kindsIn(text.slice(x.raw_start, x.raw_end))]);
     const joined = sums.length > 1 && gaps.every((g) => /^\s+(?:and|plus)\s+$/i.test(g));
     if (joined && values.length > 1 && new Set(units).size === units.length && units.length === sums.length && ev.cp === sums.reduce((a, x) => a + x.cp, 0))
-        return result(EVIDENCE.VERIFIED, { cp: ev.cp, reason: 'literal_handful', source: { ranges: [range] }, calculation: { basis: 'literal', amounts: sums.map((x) => x.cp) } });
+        return result(EVIDENCE.VERIFIED, { cp: ev.cp, reason: 'literal_handful', source: sourceRanges, calculation: { basis: 'literal', amounts: sums.map((x) => x.cp) } });
     // "five copper and five copper" is no single reading (ten, or the same five twice): never the partial five
     if (joined && new Set(units).size !== units.length) return result(EVIDENCE.CONTRADICTED, { reason: 'several_amounts', source: { ranges: [range] }, calculation: { basis: 'literal', amounts: sums.map((x) => x.cp) } });
     if (values.length > 1) return result(EVIDENCE.CONTRADICTED, { reason: 'several_amounts', source: { ranges: [range] }, calculation: { basis: 'literal', amounts: values } });
-    return result(EVIDENCE.VERIFIED, { cp: values[0], reason: 'literal', source: { ranges: [range] }, calculation: { basis: 'literal', amounts: values } });
+    return result(EVIDENCE.VERIFIED, { cp: values[0], reason: 'literal', source: sourceRanges, calculation: { basis: 'literal', amounts: values } });
 }
 
 /**

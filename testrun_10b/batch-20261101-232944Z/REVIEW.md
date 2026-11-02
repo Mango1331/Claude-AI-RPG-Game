@@ -170,3 +170,62 @@ Der Unterschied ist hier wesentlich durch passende Gegner/Quests versus lange L1
 Vergleich .147→.149: `world.js`, `dungeon.js`, `place_refs.js`, `interpret.js` und `finance_evidence.js` unverändert; Änderungen an catalog/commands/planner betreffen hier Gefahrenausgabe und AoE. Die nachgewiesenen Fehlerpfade sind **keine durch den letzten AoE-/PP-Patch neu eingeführten Implementierungen**. Das ist kein Beweis, dass jede ältere Modellantwort sie ausgelöst hätte.
 
 **Gesamturteil:** Fortschritt bei echter Langlaufabdeckung, Gearkäufen und zwei F→E-Abschlüssen. Noch kein technisch störungsarmer .149-Batch: ein technischer Stopp, eine relevante räumliche Integritätsverletzung und ein kleiner formaler World-State-Fehler. Die zwei P1-Ursachen gezielt korrigieren; keine neue Balance- oder Finanz-Perfektionsrunde und keine automatische Umsetzung dieses Reviews.
+
+---
+
+## 7. GPT-Gegenreview – eigenständiger Codeabgleich (02.11.2026)
+
+**Methodik und Grenzen:** Sols vollständigen Batch23-Review gelesen; die problemrelevanten Funktionen im unveränderten Produktstand .149 (b7b30d0) unabhängig anhand ihres Codes geprüft: catalogPlaces, plannerUser, interpreterSchema, resolvePlace, dungeonClass, complexOf, moneyLiteral/priceEvidence, missingEntityRef, validateState und den Runner. **Das Original-ZIP mit rund 111 MB ist nicht auf main hinterlegt und wurde von GPT nicht erneut eingelesen.** Sämtliche T-/I-Stellen, Eventzahlen, Originalzustands-Sonden und Laufstatistiken im oberen Review stammen daher aus **Sols Originalprüfung**. Diese Ergänzung ist eine unabhängige **Code- und Fachbewertung**, kein zweiter Originaldaten-Replay, kein neuer Testlauf und keine Produktfreigabe. Sols Review bleibt unverändert erhalten.
+
+### 7.1 Stabilitätsurteil zu 10B
+
+**Ergebnis:** Der natürliche F→E-Weg wurde in diesem Batch zweimal tatsächlich erreicht. Das ist ein wichtiger Abdeckungsfortschritt, aber **kein technisch störungsarmer Gesamtbatch**:
+
+| Profil | Einordnung für den späteren 10B-Abschluss |
+|---|---|
+| Warrior | 375 Inputs, regulär beendet und E-Klasse angenommen. **Trotzdem nicht integritätsfehlerfrei:** Der falsche Dungeon unter der Gasthauswurzel ist eine erhebliche semantische World-Verfälschung; der nicht auflösbare Ortsfakt zusätzlich formal ungültig. Kein technisch erzwungener Stopp, aber kein „sauberer“ Langlauf. |
+| Mage | 40 Inputs, **technischer Runstopp** nach drei Modellfehlern. Der vorher fälschlich abgelehnte verbindliche Gesamtpreis ist ein separater reproduzierbarer Integrationsfehler, aber kein Beweis, dass dessen Korrektur alle späteren Provider-/Plannerfehler verhindert hätte. |
+| Rogue | 216 Inputs, E-Klasse regulär angenommen und **kein im Review nachgewiesener schwerer Buchungs-/Zustandsdefekt**. Die Slime-Erzählschleife kostete Spielzeit, konnte ohne illegale Buchung verlassen werden. |
+
+Eine neue allgemeingültige Erfolgsquote lässt sich aus drei ungleich langen Kampagnen nicht ableiten. Für 10B **technisch erzwungene Abbrüche** und **schwere technische Aussetzer auch bei weiterlaufenden Spielen** separat zählen; kurze Tode und manuelle Stopps nicht als technische Fehlschläge missverstehen.
+
+### 7.2 P1: Dungeon-Rückkehr ist ein zusammenhängender Vertragsbruch
+
+**Codebestätigung:** catalogPlaces filtert Räume fremder Dungeons bewusst aus den angebotenen PLACES. plannerUser druckt daneben RECENT ROUTE und verlangt die bekannte ID für „zurück“. interpreterSchema lässt als Place-IDs aber nur HERE und PLACES zu, nicht diese Route. Das erklärt den widersprüchlichen Referenzvertrag und die vom Review belegte Schema-Ablehnung.
+
+In world.js hängt resolvePlace eine neue Ortsreferenz ohne Parent zunächst unter den aktuellen Aufenthaltsort; dungeonClass kann anschließend mit complexOf eine ganze Innenraum-/Site-Wurzel als Dungeon klassifizieren. Wenn der Startort ein Gasthaus ist, ist die von Sol beschriebene Verwandlung in einen weiteren Living Dungeon deshalb anhand des Codes technisch plausibel. Ein strukturell korrekter Place-Baum beweist **keine fachlich korrekte Dungeonidentität**.
+
+**Fixumfang begrenzen, aber vollständig halten:** (1) Die dem Planner bewusst beworbenen *zulässigen* bekannten Rückkehrziele müssen auch vom Referenzschema akzeptiert werden, ohne fremde verborgene Räume freizuschalten. (2) Die bekannte Dungeonwurzel und ihre Questbindung müssen bei GO/Ankunft erhalten bleiben. (3) Ein neues externes Dungeon darf nicht bloß aus einem parentlosen Galeriebericht unter dem aktuellen Gasthaus entstehen. Nicht nur „Mossback“ per Textregel erkennen oder das Gasthaus einzeln sperren. I73→I74, Wiederbesuch und ursprünglicher Dungeon-CLEAR-/Questabschluss gehören zu einer verbundenen Regression. Kontraste: echte neue Höhle, wirklicher Gasthausraum, verdeckter Dungeonraum, unautorisierte Reise.
+
+**Priorität P1:** Ein fortgesetzter Run mit fälschlich erzeugter Dungeon-/Populationswurzel kann viele weitere Aktionen fachlich entwerten und die 10B-Stabilitätsquote trotz regulären Abschlusses verschlechtern.
+
+### 7.3 P1: Verbindlicher Gesamtpreis wird fälschlich als Rate interpretiert
+
+**Codebestätigung:** moneyLiteral kann als Source-Range die gesamte zitierte Preisformulierung liefern. moneyRanges übernimmt diese gegebenenfalls, während priceEvidence für mehrere Waren mit rateAfter **hinter dem Ende dieses Zitats** nach Einheiten sucht. rateAfter kann „the“ plus Warenwort als Rate verstehen. Somit lässt sich eine Aufzählung nach „six silver the pair“ fehlinterpretieren, obwohl sie den Umfang des Gesamtloses erläutert. Das passt zu Sols reproduziertem I72-Befund.
+
+**Präzisierung:** Den tatsächlichen Geldspan, den Preiszitatbereich und den Bezug einer Rate auseinanderhalten. Eine nachfolgende Warenaufzählung darf keinen gültigen Gesamtpreis zu einem Einzelpreis machen; „six silver the fang“ für mehrere Fänge darf umgekehrt **nicht** als pauschale Gesamtsumme passieren. S2-Endpreisautorität, Mengen- und Nicht-Doppelbuchungsschutz erhalten. I72 samt echtem BID→Annahme-/Geld-/Eigentumsweg testen, daneben echte Stückpreise, bedingte und nur aus Teilpreisen erschlossene Angebote. Keine neue Wortliste für „pair“, „fang“ und „sac“, keine Finanzarchitekturänderung.
+
+**Priorität P1:** enger, belegter Integrationsfix; technisch falsche Ablehnung der gültigen Transaktion. Die anschließenden leeren Modellantworten separat protokollieren statt dem Preisparser zuzuschreiben.
+
+### 7.4 P2: Konkrete Orts-ID im Fact und Endprüfung
+
+world.js prüft in missingEntityRef nur konkrete npc.- und mon.-Referenzen. Der Fact-Pfad kann damit eine unbekannte loc.-ID persistieren, obwohl validateState solche konkreten Place-Subjects ablehnt. Eine kleine einheitliche Prüfung **tatsächlich als ID behaupteter** Ortsreferenzen vor der Fact-Buchung ist sinnvoll. Freie Erzähltexte dürfen dadurch nicht plötzlich als unbekannte Orte verworfen oder aus Tippfehlern neue Places erzeugt werden. Fachlich zugehörige learn-/Fact-Referenzen nur bei tatsächlichem ID-Gebrauch mitprüfen.
+
+**Zusätzliche Abnahmegrenze:** Der Runner validiert den kompletten Zustand beim Start und vor der Fortsetzung bestimmter versiegelter Modellfehler, aber nicht generell für jeden normalen Zug. Damit kann der abschließende Runstatus „done“ ein formales Zustandsproblem übersehen. Bei einem späteren eng begrenzten Fix deshalb mindestens für den **als abgeschlossen gemeldeten Endzustand** vollständigen Fold und validateState prüfen bzw. im Report getrennt ausweisen. Das diagnostiziert einen bestehenden Defekt, **heilt ihn nicht**; keine neue generische Validator-/GM-Recovery-Architektur nötig.
+
+### 7.5 Pacing und Design: aktuell kein Grund für pauschale Zahlenänderungen
+
+Rogue hat laut Sol P4/30 bei Piercing Thrust, also noch **nicht P5**: Das Ausbleiben einer Skill-Evolution ist mit den beschlossenen Regeln vereinbar. Die zahlreichen sehr schwachen Goblins des Warriors qualifizieren nachvollziehbar nicht für offensive PP bei F−4. Ein bereinigter World-/Dungeonpfad würde Gegnerwahl, Aktionen, Leveltempo und Skill-Evidenz verändern; auf denselben historischen Record begrenztes Replay **simuliert keinen vollständigen neuen Spielerablauf**.
+
+Die 23 berichteten AoE-Angriffe testen reguläre Mehrgegnerwirkung, **nicht** die Schonung eines tatsächlich anwesenden Begleiters. Die Gefahrendarstellung hat dagegen mit der Mage-Entscheidung gegen die L4–7-Wölfe einen begrenzten natürlichen Nutzungsbeleg. Weder XP×5 noch PP-Mengen, LP-Raten, Startwerte oder Skillkosten jetzt erneut ändern.
+
+**Weitere Aussetzung:** Die korrekt zurückgewiesene Slime-Population im Rogue-Dungeon ist ein Narrations-/Interaktionsloop, keine Begründung zur Lockerung der Dungeon-Slots. Der nachgewiesene freie Handel mit mehreren Käufen und Verkäufen rechtfertigt keinen neuen Finanz-Gesamtaudit.
+
+### 7.6 Priorität und Freigabegrenze
+
+1. **P1 World-/Dungeon-Rückkehr** fachlich zusammenhängend korrigieren: Planner-Katalog-/Schema-Konsistenz, kanonische Dungeon-/Parentbindung und CLEAR-Fortsetzung.
+2. **P1 S2-Gesamtpreisbeleg** eng anhand I72 und echter Gegenfälle korrigieren; die berechtigte Sperre reiner Stückpreise nicht aufweichen.
+3. **P2 konkrete loc.-Fact-Referenz** möglichst im World-Fachpatch schließen und bei regulärem „done“ die Zustandsintegrität explizit ausweisen.
+4. Danach weiterer natürlicher Vergleich **auf einer identischen aktuellen Codebasis**. Provider-Aussetzer gesondert verfolgen, keine unbelegten Diagnosen zu Reasoning-Erschöpfung, keine neue XP-, Shop-, Scaling-, Main-/Minor- oder Runnerstrategie aus diesem Batch beschließen.
+
+**10B bleibt ein technischer Langlauf-Stabilisierungsblock.** Zwei E-Annahmen sind wertvoll, aber angesichts eines echten Runstoppers, einer großen stillen Dungeon-Verfälschung und eines formalen Ortsfaktfehlers **noch kein Anlass, die Phase abzuschließen oder eine neue Roadmap zu eröffnen**. Dies ist ausschließlich eine ergänzende Gegenbewertung, **keine automatische Implementierungsfreigabe**.

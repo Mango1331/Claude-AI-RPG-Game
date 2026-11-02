@@ -1,6 +1,12 @@
 # Avereth Engine – aktueller Produkt- und Arbeitsstand
 
-**Stand: 01.11.2026 · einzige laufende Statusquelle.** [Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Designkanon](02_DESIGN_KANON.md) · [Fachindex 10B](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Originalruns](testrun_10b/README.md). Historische Zahlen, vollständige Reviews und alte Patchfolgen stehen in den verlinkten Fachquellen, nicht hier.
+**Stand: 02.11.2026 · einzige laufende Statusquelle.** [Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Designkanon](02_DESIGN_KANON.md) · [Fachindex 10B](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Originalruns](testrun_10b/README.md). Historische Zahlen, vollständige Reviews und alte Patchfolgen stehen in den verlinkten Fachquellen, nicht hier.
+
+## Aktuelle Arbeitsphase: 10B als Langlauf-Stabilisierung
+
+**10B war ursprünglich als Balancepatch geplant, ist durch die natürlichen Langläufe aber überwiegend zu einem technischen Stabilisierungsblock geworden.** Im Vordergrund stehen inzwischen fortsetzbare natürliche Kampagnen ohne schwere Integrations-, Persistenz-, Modell-/Host- oder Runneraussetzer und vor allem ohne technisch erzwungene Abbrüche. Gezielte F-Pacing-/Trainingsänderungen (insbesondere XP×5 und .149) sind erfolgt; die vollständige F-/E-Balance ist **nicht** abgeschlossen. [Begründung, Fehlerklassen und Abschlussmaßstab](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md#10b-ursprüngliche-absicht-und-tatsächlich-entstandener-schwerpunkt).
+
+**Nächstes Phasenziel:** Anhand mehrerer aktueller natürlicher Batches eine vom Nutzer als ausreichend bewertete Quote technisch störungsarmer Läufe und insbesondere möglichst wenige technische Runstopper belegen. Keine feste Prozenthürde ohne Auswertung. Regelgerechte Tode, Limits und manuelle Stopps getrennt klassifizieren; längere Runs für echte Abdeckung berücksichtigen. Sobald das tragfähig ist, **10B ausdrücklich abschließen und erst dann eine neue Roadmap gemeinsam priorisieren**. Offene Content-/Scaling-/Shopvorhaben jetzt nicht als automatische 10B-Pflicht behandeln.
 
 ## Produkt und technische Nachweise
 
@@ -17,9 +23,9 @@
 
 ## Nächste Reihenfolge
 
-1. **.148/.149 implementiert und technisch abgenommen.** Unabhängiger Diff-Gegenreview, danach Nutzerbatch mit Warrior/Mage/Rogue und den bestehenden Etappen Erstellung → Level15 → ausdrücklich angenommene E-Klasse. Kein eigener natürlicher Lauf gestartet.
-2. **Im Naturbatch beobachten:** unbeabsichtigter NPC-Schaden versus absichtliche Attacken, nachvollziehbare Gruppenrisiken, PP-berechtigte tatsächliche Ziele, freiwillige Skill-Evolution und Lernzeit. [Designgrundlage](patch_plans_10b/DESIGN_BATCH22_COMBAT_PROGRESS_SHOPS.md), [Umsetzung/Abnahme](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b7b30d0b763a4142a821d335e250dfbc4c3c8b4a/avereth-engine/docs/DESIGN149_SKILL_GROWTH.md). **XP×5, Levelschwellen, Startwerte, Skillwerte/-kosten, PP-Mengen, LP-Kosten/-Raten und Runner unverändert.** Keine garantierte Mastery bis L15; die bestehende Ablage der letzten acht Belegkämpfe bleibt.
-3. **Engine-Shops, Main/Minor und E-Ausbau bleiben offen.** [Shopfachplan](patch_plans_10b/FACHPLAN_ENGINE_SHOPS.md) ist keine Freigabe. Kein neues Finanz-, Parser- oder Shopprojekt und keine weiteren Designänderungen ohne Nutzerauftrag. .147-Speichergrenzen unverändert.
+1. **.149 ist die aktuelle technisch abgenommene Basis für den nächsten natürlichen Warrior/Mage/Rogue-Batch.** Die tatsächlich dokumentierte Node-/Replay-/ST-Mock-Abnahme steht oben; eine natürliche .149-Abnahme fehlt noch. Im Batch weiterhin Erstellung → Level 15 → ausdrücklich angenommene E-Klasse beobachten, ohne reguläre Tode als technische Ausfälle zu werten.
+2. **10B-Ziel jetzt messen:** Für jeden auswertbaren Lauf Endgrund, technische Stopper gegenüber sicheren Recoveries, wiederholte blockierte gültige Aktionen, Integrität/Persistenz und sinnvolle Langlaufabdeckung festhalten. AoE-/Gefahrenanzeigen und neue PP-/Evolutionsevidenz beobachten, aber nicht erneut vorsorglich XP oder die Finanzarchitektur ändern. [Bewertungsrahmen](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md#wann-10b-endet-und-wir-wieder-eine-roadmap-erstellen), [Runindex](testrun_10b/README.md).
+3. **Erst nach hinreichend stabiler Serie natürlicher Runs** gemeinsam 10B abschließen und eine neue Roadmap aus [04](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md) und den neuen Beobachtungen entwickeln. Nicht vorab Engine-Shops, Main/Minor, F-/E-Scaling oder größere Welt-/Monstermechanik als 10B-Folgepatch freigeben. Kritische neue technische Ausfälle gezielt innerhalb 10B korrigieren.
 
 ## Historische Referenzen statt doppelter Protokolle
 

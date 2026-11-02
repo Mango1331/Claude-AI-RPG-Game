@@ -1,8 +1,14 @@
 # Avereth – Originalruns und Reviews (10B)
 
-**Stand: 01.11.2026. Quellenindex, keine zweite Patchplanung.** Produkt/Abnahme/nächste Arbeit in [03](../03_AKTUELLER_PROJEKTSTAND.md), Fixketten/Commits in[06](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). Ausführliche Bewertungen bleiben unverändert im jeweiligen Runordner.
+**Stand: 02.11.2026. Quellenindex, keine zweite Patchplanung.** Produkt/Abnahme/nächste Arbeit in [03](../03_AKTUELLER_PROJEKTSTAND.md), Fixketten/Commits in[06](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). Ausführliche Bewertungen bleiben unverändert im jeweiligen Runordner.
 
 Bei Einzelruns folgt die ZIP-Spalte dem tatsächlich vorhandenen `main`-Dateibaum. Für Batches ist der [Archivindex](ARCHIV_BATCHES.md) maßgeblich. **„Nein“ heißt nicht unabhängig im nächsten Chat prüfbar:** Ein früher geprüfter Chatupload ersetzt keinen hier verfügbaren Originalexport. Niemals aus einem Review eine eigene Originalprüfung behaupten. Vollständige frühere Indextexte/Hashhinweise: [7994fa4](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/7994fa42b115f21b705c0b770e2b4e31fde67f77/testrun_10b/README.md).
+
+## Rolle der Runs für den Abschluss von 10B
+
+**10B begann als Balance-/Pacingpatch, ist durch diese Langläufe aber vor allem zur technischen Stabilisierung geworden.** Die vielen früheren technischen Stopps waren der Grund für die umfangreichen Integrations-, Fail-soft-, Handels-, Persistenz- und Runnerkorrekturen. [Phasenziel und Bewertungsmaßstab](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md#wann-10b-endet-und-wir-wieder-eine-roadmap-erstellen); aktuelle Lage nur in [03](../03_AKTUELLER_PROJEKTSTAND.md).
+
+Für die spätere **akzeptable Quote** jedes neuen Batches Endgründe **aller tatsächlich gestarteten Profile** sauber unterscheiden: technisch gestoppt, mit erheblichem Aussetzer fortgesetzt, technisch störungsarm abgeschlossen, regulärer Tod, Limit oder manuell. Externe Provider-/Windows-Fehler gesondert markieren; sie beeinträchtigen zwar den Run, belegen aber nicht automatisch einen Enginefehler. Kurze Tode liefern wenig Langlaufabdeckung; substanzielle fortgesetzte Runs gesondert betrachten. Keine fixe Quote oder Roadmap aus einzelnen Resultaten ableiten. Zahlen/Originalbelege beim konkreten Review dokumentieren; der Index führt nur dorthin.
 
 ## Einzelruns
 
@@ -68,5 +74,5 @@ W/M/R = Warrior/Mage/Rogue; Limit und manueller Stopp sind kein technischer Fehl
 
 ## Umgang mit neuen Runs
 
-Originaldateien/Reviews unverändert erhalten, ZIP/Integrität und Quellenverfügbarkeit ehrlich ausweisen. Für neue Runs genau eine kurze Indexzeile; Ursachen, Requests, Events, Gegenbewertungen und spätere Umsetzung beim Run beziehungsweise in der Dev-Fachpatchnote. Keine API-Schlüssel archivieren. Runner-„completed“ bedeutet beendet, nicht Levelziel erreicht. Ein Mock-Smoke ist kein natürlicher GLM-Nachweis.
+Originaldateien/Reviews unverändert erhalten, ZIP/Integrität und Quellenverfügbarkeit ehrlich ausweisen. Für neue Runs genau eine kurze Indexzeile; Ursachen, Requests, Events, Gegenbewertungen, **Endgrund und technische Stopper-/Recovery-Einordnung** sowie spätere Umsetzung beim Run beziehungsweise in der Dev-Fachpatchnote. Keine API-Schlüssel archivieren. Runner-„completed“ bedeutet beendet, nicht Levelziel erreicht. Ein Mock-Smoke ist kein natürlicher GLM-Nachweis.
 

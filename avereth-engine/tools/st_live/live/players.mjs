@@ -155,12 +155,12 @@ export function notesText(notes, { recent = 6 } = {}) {
     return earlier + notes.slice(-recent).map((n) => `${n.turn}. you wrote: ${JSON.stringify(clip(n.message, 160))} — ${n.milestone || '?'}: ${clip(n.intent || '', 120)}${n.observations ? ` — noted: ${clip(n.observations, 160)}` : ''}`).join('\n');
 }
 
-export function playerTurnPrompt(view, notes, { turn, maxTurns, recent = 6, shoppingReminder = null } = {}) {
-    return `TURN ${turn} of at most ${maxTurns}.\n\nYOUR NOTES SO FAR:\n${notesText(notes, { recent })}\n\nTHE SCREEN NOW (the newest at the bottom):\n\n${screenText(view)}\n\n${shoppingReminder ? `${shoppingReminder}\n\n` : ''}${NEXT_DECISION}`;
+export function playerTurnPrompt(view, notes, { turn, maxTurns, recent = 6, shoppingReminder = null, milestoneReminder = null } = {}) {
+    return `TURN ${turn} of at most ${maxTurns}.\n\nYOUR NOTES SO FAR:\n${notesText(notes, { recent })}\n\nTHE SCREEN NOW (the newest at the bottom):\n\n${screenText(view)}\n\n${shoppingReminder ? `${shoppingReminder}\n\n` : ''}${milestoneReminder ? `${milestoneReminder}\n\n` : ''}${NEXT_DECISION}`;
 }
 
 /** The smallest prompt: the newest messages and the HUD, the milestone at hand, the last notes (after a reasoning loop). */
-function shortTurnPrompt(view, notes, { turn, maxTurns, milestone, minimal = false, shoppingReminder = null }) {
+function shortTurnPrompt(view, notes, { turn, maxTurns, milestone, minimal = false, shoppingReminder = null, milestoneReminder = null }) {
     const newest = { ...view, messages: view.messages.slice(minimal ? -1 : -2) };
     return [
         `TURN ${turn} of at most ${maxTurns}. Answer at once with the JSON object: no deliberation.`,
@@ -168,6 +168,7 @@ function shortTurnPrompt(view, notes, { turn, maxTurns, milestone, minimal = fal
         minimal ? '' : `YOUR LAST NOTES:\n${notesText(notes, { recent: 3 })}`,
         `THE SCREEN NOW:\n\n${screenText(newest, { maxChars: minimal ? 1500 : 3000, hudChars: minimal ? 1200 : 2500 })}`,
         shoppingReminder,
+        milestoneReminder,
         NEXT_DECISION,
     ].filter(Boolean).join('\n\n');
 }
@@ -208,11 +209,14 @@ export function llmPlayer({ guide, username, persona, url, model, key, temperatu
         name: 'llm',
         describe: () => ({ type: 'llm', model, endpoint: new URL(endpoint).host, temperature, maxTokens, persona, reasoning: steer }),
         notes,
-        async decide(view, { turn, maxTurns }) {
+        async decide(view, { turn, maxTurns, milestone: confirmedMilestone = null }) {
+            const classStage = confirmedMilestone === 'class_accepted' && guide.openRun?.targetLevel;
+            const milestoneReminder = classStage
+                ? `CURRENT GOAL: The Engine has confirmed Level ${guide.openRun.targetLevel}. Finish immediate danger, then inspect #class and the displayed E-class offers; freely choose one or postpone. No further level grinding is needed for this stage.` : null;
             // the milestone he last said he works on (his own note), else the first: for the shorter prompts
-            const at = guide.milestones.find((x) => x.id === notes.at(-1)?.milestone) || guide.milestones[0];
+            const at = guide.milestones.find((x) => x.id === (classStage ? confirmedMilestone : notes.at(-1)?.milestone)) || guide.milestones[0];
             const milestone = at ? `${at.id}: ${at.goal}` : null;
-            const full = [{ role: 'system', content: system }, { role: 'user', content: playerTurnPrompt(view, notes, { turn, maxTurns, shoppingReminder }) }];
+            const full = [{ role: 'system', content: system }, { role: 'user', content: playerTurnPrompt(view, notes, { turn, maxTurns, shoppingReminder, milestoneReminder }) }];
             let messages = full;
             let strategy = 'full';
             let temp = temperature;
@@ -240,7 +244,7 @@ export function llmPlayer({ guide, username, persona, url, model, key, temperatu
                     // a smaller prompt and a cooler temperature, then the smallest one
                     strategy = attempt === 0 ? 'short' : 'minimal';
                     temp = Math.min(temperature, attempt === 0 ? 0.4 : 0.2);
-                    messages = [{ role: 'system', content: system }, { role: 'user', content: shortTurnPrompt(view, notes, { turn, maxTurns, milestone, minimal: strategy === 'minimal', shoppingReminder }) }];
+                    messages = [{ role: 'system', content: system }, { role: 'user', content: shortTurnPrompt(view, notes, { turn, maxTurns, milestone, minimal: strategy === 'minimal', shoppingReminder, milestoneReminder }) }];
                     continue;
                 }
                 if (!r.ok) { await sleep(backoffMs * (attempt + 1)); continue; }

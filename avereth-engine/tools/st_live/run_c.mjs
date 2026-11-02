@@ -18,6 +18,7 @@ import { V4_OUTPUT_LINE } from '../../src/context.js';
 import { ENGINE_VERSION } from '../../src/util.js';
 import { Driver } from './live/driver.mjs';
 import { screenText } from './live/players.mjs';
+import { softExtractionFailure, turnFailure } from './live/evaluator.mjs';
 import { financeTurns, financeSmoke } from './finance_smoke.mjs';
 
 const require = createRequire(import.meta.url);
@@ -105,6 +106,7 @@ fs.writeFileSync(secretsFile, JSON.stringify({ api_key_custom: [{ id: 'smoke', v
 const calls = [];
 let probeMode = false;
 let financeMode = false;
+let fetchProbeMode = false;
 const narrated = new Map();
 const mock = http.createServer(async (req, res) => {
     if (req.url.endsWith('/models')) { res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify({ object: 'list', data: [{ id: 'mock-narrator', object: 'model' }] })); return; }
@@ -138,7 +140,7 @@ const mock = http.createServer(async (req, res) => {
         text = t ? (n > 1 && t.swipe ? t.swipe : t.reply || 'The world waits.') : 'The world waits.';
     }
     if (process.env.AVERETH_SMOKE_EMPTY_NARRATOR === '1' && purpose === 'narrator' && lastUser.includes(TURNS[0].player) && narrated.get('burrow') === 1) text = '';
-    const probe = probeMode || financeMode;
+    const probe = probeMode || financeMode || fetchProbeMode;
     if (probeMode && ((purpose === 'plan' && users.includes('FAILSOFT_PLANNER')) || purpose === 'extract')) text='{bad';
     calls.push({ probe, empty: !text.trim(), purpose, at: Date.now(), auth: req.headers.authorization || null, stream: !!j.stream, temperature: j.temperature, maxTokens: j.max_tokens, model: j.model, messages: msgs, lastUser });
     if (process.env.AVERETH_SMOKE_PROVIDER_ERROR === '1' && purpose === 'narrator' && lastUser.includes(TURNS[0].player) && narrated.get('burrow') === 1) {
@@ -360,6 +362,48 @@ try {
         probeMode=false;
         failsoft={saveFault,noBooking,saved,world,visible:JSON.stringify(visible).includes('NOT EXECUTED'),noDuplicateCombat:before.mp===state.mp};
     }
+    let fetchChecks = null;
+    if (process.env.AVERETH_SMOKE_FETCH === '1') {
+        fetchProbeMode = true;
+        const before = await driver.chat(), events = chat => chat.flatMap(m => m.extra?.avereth?.events || []);
+        const beforeEvents = JSON.stringify(events(before)), beforeCalls = calls.length;
+        let rejected = 0;
+        const rejectFetch = async route => {
+            const body = route.request().postDataJSON();
+            if (body?.messages?.some(m => String(m.content).includes('PLAYER MESSAGE:\nFETCH_PLANNER'))) {
+                rejected++;
+                return route.abort('failed'); // real browser Fetch promise rejection, not an LLM stub exception
+            }
+            return route.continue();
+        };
+        await page.route('**/api/backends/chat-completions/generate', rejectFetch);
+        let chat, u;
+        try {
+            await send('FETCH_PLANNER I ask about lodging nearby.');
+            chat = await driver.chat(); u = chat.findLastIndex(m => m.is_user);
+        } finally { await page.unroute('**/api/backends/chat-completions/generate', rejectFetch); }
+        const record = chat[u].extra?.avereth;
+        const noExecution = JSON.stringify(events(chat)) === beforeEvents && calls.length === beforeCalls;
+        const knownFailure = rejected === 2 && record?.plan?.llm?.length === 2
+            && record.plan.llm.every(c => c.transport_phase === 'fetch' && c.transport_settled === true && !c.unclassified);
+        const safe = softExtractionFailure(chat, u, turnFailure(chat, u));
+        const saved = await driver.verifySaved(chat, { complete: true });
+        await driver.reload(); // wait for ST initialization and explicitly restore the saved test chat
+        driver = new Driver(page, { turnTimeoutMs: 60000 });
+        const reloaded = await driver.verifySaved(await driver.chat(), { complete: true });
+        await send('FETCH_RECOVERED I wait quietly.');
+        const after = await driver.chat(), next = after.findLast(m => m.is_user)?.extra?.avereth;
+        const reply = after.findLast(m => !m.is_user && !m.is_system)?.extra?.avereth;
+        fetchChecks = {
+            classifiedOncePerAttempt: knownFailure,
+            safeNonexecution: noExecution && safe,
+            savedAndReloaded: saved && reloaded,
+            normalTurnResumedOnce: calls.length === beforeCalls + 3
+                && next?.events?.filter(e => e.t === 'turn.begun').length === 1 && reply?.extraction?.status === 'applied'
+                && JSON.stringify(after[u].extra?.avereth?.events) === '[]',
+        };
+        fetchProbeMode = false;
+    }
     for (const t of TURNS) {
         await send(t.player);
         const view = await driver.view();
@@ -376,7 +420,7 @@ try {
     const status = await page.evaluate(() => document.getElementById('avereth_status')?.textContent || '');
     await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); });
     await page.waitForTimeout(800);
-    result = { toggle, greeting, afterCreation, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks };
+    result = { toggle, greeting, afterCreation, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks };
 } catch (error) {
     const screen = await page.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(-8000),
         chat: window.SillyTavern?.getContext?.()?.chat?.map(m => ({ user: m.is_user, system: m.is_system, text: m.mes?.slice(0, 120) })) })).catch(() => null);
@@ -402,6 +446,7 @@ const narratorFor = (key) => narr.filter((c) => c.lastUser.includes(TURNS.find((
 const checks = {
     ...(result.saveRecoveryChecks ? Object.fromEntries(Object.entries(result.saveRecoveryChecks).map(([k, v]) => [`save_${k}`, v])) : {}),
     ...(result.financeChecks ? Object.fromEntries(Object.entries(result.financeChecks).map(([k, v]) => [`finance_${k}`, v])) : {}),
+    ...(result.fetchChecks ? Object.fromEntries(Object.entries(result.fetchChecks).map(([k, v]) => [`fetch_${k}`, v])) : {}),
     ...(process.env.AVERETH_SMOKE_FAILSOFT === '1' ? {failsoftPlannerVisible:result.failsoft?.visible && result.failsoft?.noBooking,failsoftSaved:result.failsoft?.saved,failsoftWorldTerminal:result.failsoft?.world,failsoftNoDuplicateCombat:result.failsoft?.noDuplicateCombat,failsoftDetectsSwallowedSave:result.failsoft?.saveFault?.resolved && result.failsoft?.saveFault?.rejected} : {}),
     ...(process.env.AVERETH_SMOKE_PROVIDER_ERROR === '1' ? {
         transientProviderRecoveredOnce: narratorFor('burrow').length === 2 && S('burrow').look.record?.events?.filter(e => e.t === 'turn.begun').length === 1,

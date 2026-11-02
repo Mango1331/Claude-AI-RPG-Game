@@ -194,11 +194,15 @@ async function ask(llm, messages, purpose, overrides = {}) {
         return { ok: true, content: String(text), ms: call.ms, call };
     } catch (err) {
         const ms = Date.now() - t0;
+        // A settled browser-fetch rejection before Planner execution is known nonexecution, not an arbitrary
+        // TypeError. The adapter supplies this provenance; a matching message alone never grants continuation.
+        const fetchFailure = /^plan(?:_|$)/.test(purpose) && err?.code === 'LLM_TRANSPORT'
+            && err.phase === 'fetch' && err.settled === true;
         const kind = ({ LLM_TIMEOUT: 'timeout', LLM_CANCELLED: 'cancelled', LLM_PROVIDER: 'provider' })[err?.code]
             || (err?.name === 'AbortError' ? 'aborted' : 'transport');
         const status = Number(err?.status) || null;
         const retryable = !['cancelled', 'aborted'].includes(kind) && (kind !== 'provider' || (typeof err?.retryable === 'boolean' ? err.retryable : status === 408 || status === 429 || status >= 500));
-        return { ok: false, retryable, error: String(err?.message || err).slice(0, 200), ms, call: { purpose, ms, error: true, error_kind: kind, ...(kind === 'provider' ? { provider_retryable: retryable, ...(err.provider_code ? { provider_code: err.provider_code } : {}), ...(err.provider_type ? { provider_type: err.provider_type } : {}) } : {}), ...(!['LLM_TIMEOUT','LLM_PROVIDER','LLM_CANCELLED'].includes(err?.code) && err?.name !== 'AbortError' ? {unclassified:true} : {}), ...(status ? { status } : {}) } };
+        return { ok: false, retryable, error: String(err?.message || err).slice(0, 200), ms, call: { purpose, ms, error: true, error_kind: kind, ...(kind === 'provider' ? { provider_retryable: retryable, ...(err.provider_code ? { provider_code: err.provider_code } : {}), ...(err.provider_type ? { provider_type: err.provider_type } : {}) } : {}), ...(fetchFailure ? { transport_phase: 'fetch', transport_settled: true } : {}), ...(!fetchFailure && !['LLM_TIMEOUT','LLM_PROVIDER','LLM_CANCELLED'].includes(err?.code) && err?.name !== 'AbortError' ? {unclassified:true} : {}), ...(status ? { status } : {}) } };
     }
 }
 

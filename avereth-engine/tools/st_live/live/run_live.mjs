@@ -318,13 +318,14 @@ export async function run(o) {
         const t0 = Date.now();
         let since = 0;
         let lastReached = 0;
+        let playerMilestone = null;
         for (let turn = 1; ; turn++) {
             if (interrupted) { end = { kind: 'harness', why: 'interrupted (Ctrl+C)' }; break; }
             if (turn > maxTurns) { end = { kind: 'limit', why: `${maxTurns} turns` }; break; }
             if (Date.now() - t0 > guide.limits.maxMinutes * 60000) { end = { kind: 'limit', why: `${guide.limits.maxMinutes} minutes` }; break; }
             const view = await driver.view();
             const td = Date.now();
-            const d = await player.decide(view, { turn, maxTurns });
+            const d = await player.decide(view, { turn, maxTurns, milestone: playerMilestone });
             const decideMs = Date.now() - td;
             if (!firstTurnAt) firstTurnAt = td;
             if (o.player.type === 'scripted') playerLog.push({ at: new Date().toISOString(), turn, decision: d });
@@ -426,6 +427,9 @@ export async function run(o) {
                 if (state.creation?.step >= 3 && pc?.status === 'alive' && pc.sheet.hp > 0 && pc.sheet.level < guide.openRun.targetLevel) continue;
             }
             const ev = evaluate(chat, { guide });
+            // Only the public, Engine-confirmed level goal is fed back, never hidden feats or class requirements.
+            playerMilestone = ev.milestones.some(m => m.id === 'open_run_level' && m.reached)
+                && nextMilestone(ev)?.id === 'class_accepted' ? 'class_accepted' : null;
             if (ev.defeat) { await driver.screenshot(g.check(path.join(runDir, 'screens', `turn-${String(turn).padStart(3, '0')}-defeat.png`))); end = { kind: 'defeat', why: `turn ${ev.defeat.turn}: ${ev.defeat.why}` }; break; }
             if (finished(ev)) {
                 if (o.fixture) {

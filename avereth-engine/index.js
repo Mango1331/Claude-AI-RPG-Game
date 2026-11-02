@@ -187,7 +187,16 @@ async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500, signal = n
                 custom_include_body: String(oai.custom_include_body || ''), custom_exclude_body: String(oai.custom_exclude_body || ''),
                 custom_include_headers: String(oai.custom_include_headers || ''), custom_prompt_post_processing: oai.custom_prompt_post_processing || '',
             };
-            const res = await fetch('/api/backends/chat-completions/generate', { method: 'POST', headers: c.getRequestHeaders(), body: JSON.stringify(body), signal: ctl.signal });
+            // Only a rejected browser request gets transport provenance. Setup/program errors remain unknown.
+            const pending = fetch('/api/backends/chat-completions/generate', { method: 'POST', headers: c.getRequestHeaders(), body: JSON.stringify(body), signal: ctl.signal });
+            let res;
+            try { res = await pending; }
+            catch (error) {
+                if (error instanceof TypeError && error.message === 'Failed to fetch') {
+                    throw Object.assign(new Error(error.message), { code: 'LLM_TRANSPORT', phase: 'fetch', settled: true });
+                }
+                throw error;
+            }
             const json = await res.json().catch(() => null);
             if (!res.ok || !json || json.error || !json.choices) throw providerResponseError(res.status, json);
             const m = json.choices[0]?.message || {};

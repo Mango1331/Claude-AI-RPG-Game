@@ -181,3 +181,60 @@ Viele Eingaben gehen auf Suche, Reise, Gespräch, Ruhe, Ziel-/Reichweitenkorrekt
 | Vorerst beibehalten | S1/S2-Handel, .150-Ortsfix, AoE, XP×5, PP/LP/Startwerte | Keine neue bestätigte Finanz- oder Balancefehlbuchung; natürliche positive AoE-Gegenproben und funktionierende Gearketten |
 
 **10B noch nicht allein aufgrund dieses Batches abschließen.** Der Fortschritt ist real: keine nachgewiesene schwere persistente Verfälschung wie im vorherigen Warriorlauf, sichere lokale Fortsetzung nach zwei Modellfehlern, natürliche AoE-Schonung und funktionierende Upgrades. Der verbliebene Transport-Endabbruch und die verfehlte Testspieler-Etappenführung sind die konkreten nächsten Ansatzpunkte. Keine erneute allgemeine Finanz-, Parser- oder Kampfarchitekturprüfung und keine automatische Umsetzung dieses Reviews.
+
+---
+
+## 9. GPT-Gegenreview – unabhängiger Codeabgleich und Stabilitätsbewertung (02.11.2026)
+
+**Prüfgrenze:** Den gesamten obigen Sol-Originalreview gelesen und die für die Befunde relevanten Produktpfade auf Build .150 (bdaacc8) unabhängig geprüft: src/v4/runtime.js, index.js, tools/st_live/live/evaluator.mjs, run_live.mjs, players.mjs, src/v4/world.js und living.js. **Die Original-ZIP mit rund 131,6 MB ist nicht auf main vorhanden und wurde von GPT nicht nochmals eingelesen.** Original-T-/I-Stellen, Event- und Finanzsummen, Modellantworten sowie Originalvorzustands-Replays stammen aus Sols Prüfung. Diese Ergänzung ist eine eigene Code- und Fachbewertung, **kein** neues Replay oder eine erneute originale ZIP-Prüfung. Keine Node-/ST-Tests oder Produktänderungen.
+
+### 9.1 Einordnung im 10B-Stabilitätsmaßstab
+
+Der Fortschritt gegenüber Batch23 ist erheblich. Laut vollständig geprüftem Originalreview: **9.204 Events ohne Fold- und Validatorfehler**, funktionierende lange Handels-/Questketten und keine erneut nachgewiesene schwerwiegende World-/Dungeon-Verfälschung. Besonders überzeugend sind die zwei natürlichen AoE-Fälle mit tatsächlich gleichzeitig anwesenden, aber verschonten NPCs im betroffenen Reichweitenband.
+
+| Profil | Bewertung |
+|---|---|
+| Warrior | 282 Inputs, L18, E-Klasse; **reguläres Ende**, formal integrer Zustand, kein schwerer dokumentierter Technikbruch. |
+| Mage | 120 Inputs, L6, **regelgerechter Tod**. Kein technischer Endabbruch; die neutrale E-Dungeonfauna ist eine separate Design-/Wahrnehmungsfrage. |
+| Rogue | 314 Inputs, L17, **ein technischer Endabbruch** durch Fetch-/Plannerfehler; kein Enginezug beim letzten Input und kein festgestellter Fold-/Validatorfehler. |
+
+Für diesen Batch: **1/3 technische Zwangsstopps, 3/3 formal gültige Endzustände, 2/3 Enden ohne technischen Zwangsstopp**. Diese getrennten Aussagen dürfen nicht zu „2/3 erreichen die E-Klasse“ oder „3/3 problemlose Runs“ umgedeutet werden. Ein einzelner Batch reicht weiterhin nicht zur Festlegung einer allgemeingültigen Stabilitätsquote. Kurze und lange Läufe, sichere lokale Recovery sowie semantische Folgeschäden getrennt betrachten.
+
+### 9.2 Rogue T314 – Fetchklassifikation gezielt untersuchen, nicht global aufweichen
+
+**Codeabgleich bestätigt die Schutzkette:** index.js:v4Llm nutzt beim Custom-Provider den Browser-Fetch zur ST-Chat-Completions-Route. Der Adapter unterscheidet ausdrücklich Caller-Cancel und Zeitlimit, gibt andere Exceptions jedoch weiter. runtime.js:ask stuft sonstige geworfene Fehler zunächst als „transport“ ein, versieht unbekannte Fehler zusätzlich mit „unclassified:true“. planMessage gibt einem retryable Transportfehler bereits **genau einen unveränderten zweiten Versuch**. Der Hard-Guard in prepareGenerationAsync unterdrückt bei einem solchen unclassified-Record den Marker „planner_not_executed“; der Runner erlaubt Soft-Fortsetzung aber nur für diesen Marker bei leerer Engine-Ereignisliste und nach Zustands-/Saveprüfung. Das erklärt die dokumentierte Stoppkette, ohne eine neue .150-Regression zu behaupten.
+
+**Wichtige Grenze:** Die Worte „Failed to fetch“ allein belegen keine eindeutig abgeschlossene, harmlose Netzwerkstörung. Ein unbekannter JavaScript-Fehler oder ein noch laufender/abgebrochener Request kann andere Risiken haben. Daher niemals pauschal unclassified auf false setzen, Fehler nur per Textvergleich freischalten oder alle unbekannten Transportexceptions als sichere Nichtausführung deklarieren.
+
+**Enger nächster Auftrag:** Die tatsächliche Fetch-/Hostanfrage einschließlich Fehlertyp, Phase, Abbruchsignal, Generation-/Chat-/Swipegültigkeit und etwaiger noch laufender Requests untersuchen. **Nur** bei nachgewiesenem Fehler vor jeder Engineausführung, abgeschlossenem/versiegeltem Request und unverändertem gültigem Kontext darf die bereits bestehende Nichtausführungs-/Save-Readback-Fortsetzung genutzt werden. Den ursprünglichen Input **nicht automatisch erneut ausführen**, keine Engineaktion, Zeit oder Zahlung nachbuchen. Unklare Fehler, Caller-Abbruch und veraltete Generationen bleiben harte Stopps. Gegenregressionen zu echtem Netzfehler, unbekanntem TypeError, Cancel/Stale und weiterhin offenem Request durchführen. Dass ein weiterer neuer Spielerzug bei anhaltendem Netzausfall gelingen wird, ist nicht garantiert. Zusätzliche globale Retries lösen den Befund nicht.
+
+### 9.3 Etappenerinnerung – begrenzt sinnvoll, aber Testmethodik kenntlich machen
+
+**Codeabgleich:** players.mjs:llmPlayer.decide erhält aus run_live.mjs derzeit turn/maxTurns. Die verkürzten Wiederholungsaufforderungen richten ihre Etappe nach der zuletzt **vom Testspieler selbst** notierten milestone. Der Runner ermittelt erreichte Etappen bereits, übergibt aber die aktuell offene Etappe nicht als kompakten Hinweis an die nächste Entscheidung. Deshalb sind die laut Originalreview sichtbaren E-Angebote bei Warrior und Rogue länger unbeachtet geblieben, ohne dass die Engine ein Angebot verloren hätte.
+
+**Empfehlung:** Im Levelziel-Runner den **bereits gebuchten und dem Spieler ersichtlichen** Meilenstein kurz und transparent als nächste Aufgabe nennen, sobald L15 erreicht ist: Klasse gegebenenfalls ansehen, danach selbst entscheiden (annehmen oder aufschieben). Bereits sichtbare Skill-/Entwicklungsangebote dürfen zum Prüfen motivieren, aber nicht zur Annahme zwingen. Die Erinnerung gehört auch in den verkürzten Recoveryprompt; keine versteckten Enginefakten, kein automatisches Klassenkommando, keine Umbuchung von Spieleraktionen. Freie Gefahr-, Quest- und Klassenentscheidungen bleiben möglich.
+
+**Vergleichsgrenze:** Eine neue Runnererinnerung verändert das Verhalten des künstlichen Testspielers und damit möglicherweise die Anzahl Inputs nach L15. Folgebatches deshalb transparent als neue Testspielerführung dokumentieren; **kein** Schluss auf veränderte XP-/Engine-Progression aus dem kürzeren L15→E-Abstand. Keine pauschale XP-Erhöhung.
+
+### 9.4 Mage-Tod – korrektes Kampfergebnis, dennoch relevante Sandbox-Grenzfrage
+
+**Codeabgleich:** world.js:newEntity schützt autoritative Dungeon-Slots davor, dass der Narrator zusätzliche feindliche Kreaturen erfindet. Ausdrücklich als „threat:false“ gemeldete Fauna darf jedoch außerhalb dieser Slots existieren; living.js:slotForNew bindet sie nicht als reguläre Slotgegner. Ein neutraler Mossback ist dennoch angreifbar und kann sich verteidigen. Der mit Originalvorzustand laut Sol reproduzierte Unterschied threat:false/true passt zu dieser vorhandenen Ausnahme.
+
+**Bewertung:** Nicht als neuen generellen Spawn-P1 und nicht als Mage-Kampfbalancefehler klassifizieren. Der Spieler wusste von einer E-Etage, griff die Kreatur gezielt an und setzte den Kampf trotz hoher Gegenwehr fort; die dokumentierte Schadens-/Todesfolge ist plausibel. Zugleich bleibt eine **Semantik-/Wahrnehmungsgrenze**: Ein wiederholt guardian-artig erzähltes, sehr starkes Wesen kann über die Neutralfauna-Ausnahme materialisiert werden. **Neutral heißt nicht schwach oder ungefährlich**; eine pauschale Sperre hoher Level oder aller passiven Tiere würde die Sandbox unnötig beschränken. Spätere Designprüfung sinnvoll, ob gefährliche unabhängige Fauna und die erkennbare Gefahr verständlich genug dargestellt sind. Kein sofortiger neuer Monster-, Spawn-, Level- oder Kampfwertepatch.
+
+### 9.5 Skills, Handel und AoE – keine weitere Zahlenkalibrierung
+
+**Skillentwicklung:** Warrior Basic Attack P5 und ein echtes neues Technikangebot sowie das Rogue-Angebot belegen organische Angebote. Dass sie nicht angenommen werden, ist kein Buchungsfehler. Basic Attack bietet eine **zusätzliche Technik** an und entwickelt sich nicht wie ein gewöhnlicher Starter-Skill durch eine eigene Evolution. Die übrigen Skills erreichten laut Originalreview die entsprechenden Voraussetzungen noch nicht. Keine geschenkten PP oder garantierten Skill-Evolutionen.
+
+**Handel:** 71 Buchungen, konsistente Geldstände, natürliche Gearkäufe und keine bestätigte Doppeltransaktion. Einzelne berechtigt zurückgewiesene Preissätze gehören zum S2-Schutz. Zwei eigenständige Geschenke sind in Sols Aufstellung separat erfasst. Kein neuer allgemeiner Finanzparser-/Engine-Shop-Patch.
+
+**AoE:** Cleave verschont den Jungen im ENGAGED-Band; Fan of Blades verschont Tam im SHORT-Band. Das sind echte natürliche **positive** Gegenproben. Sie beweisen jedoch nicht NPC-AoE-Parität, ausdrücklich gegen neutrale Personen gerichtete AoE oder Explosiv-/Umweltwirkung.
+
+### 9.6 Konsequenz und Freigabegrenze
+
+1. **Priorität 1 (Technik):** Fetch-/Planner-Endabbruch eng diagnostizieren; ausschließlich beweisbar sichere Nichtausführung nach den bestehenden Fold-/Save-/Liveness-Grenzen fortsetzen. Keine generische Unknown-Exception-Erlaubnis.
+2. **Priorität 2 (Test-QoL):** Aktuellen sichtbaren Level-/Klassenmeilenstein als kurze Testspieler-Erinnerung in normalen und kurzen Prompt integrieren; bewusstes Prüfen freier Skillangebote, keine automatische Annahme.
+3. **Spätere Designentscheidung:** Neutrale starke Dungeonfauna und verständliche Gefahrenwahrnehmung ohne vorschnelle Slot-/Monsterbeschränkung bewerten.
+4. **Beibehalten:** XP×5, PP/LP, Kampfwerte, .150-Ortsidentität, S1/S2-Handelsregeln, AoE und bestehende Runnerstrategien außerhalb des begrenzten Erinnerungspfads.
+
+**Gesamturteil:** Technischer Langlauf-Fortschritt ist belegt; das verbleibende unklassifizierte Fetch-Ende verhindert noch eine saubere 10B-Abschlussfreigabe. Nach gezielter Diagnose und, falls belegt, begrenztem Fix den nächsten natürlichen Batch auf einer dokumentierten gemeinsamen Produktbasis auswerten. **Dies ist nur Review und Codegegenprüfung, keine Implementierungsfreigabe, kein neuer Testlauf und keine neue Roadmap.**

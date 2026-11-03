@@ -6,12 +6,21 @@ export function financeTurns(plan) {
     const meet = 'I wait one minute by the roadside.';
     const pay = 'I leave five copper on the counter for Nell.';
     const after = 'I wait another minute beside Nell.';
+    const travel = 'I leave two copper for Nell, then go to the nearby courtyard.';
+    const reached = { new: { name: 'nearby courtyard', kind: 'site', parent: 'loc.alderwatch' } };
     return [
         { key: 'finance_meet', player: meet, plan: wait(meet), reply: 'A roadside porter named Nell walks up to Alaric and stops beside him.',
             answer: { expected: {}, deltas: [{ seq: 1, type: 'person.new', ref: 'nell', name: 'Nell', role: 'porter', desc: ['roadside porter'], present: true, relevant: true, threat: false, at: null, band: 'SHORT' }] } },
         { key: 'finance_card', player: pay, plan: plan({ type: 'pay', to: null, amount_cp: 5, for: null, quote: pay, money: { quote: 'five copper', currency_quote: null }, recipient_quote: 'Nell' }),
             reply: 'Nell waits while Alaric considers the payment. No coins change hands.', answer: { expected: {}, deltas: [] } },
         { key: 'finance_after', player: after, plan: wait(after), reply: 'Nell acknowledges the five copper already received and waits beside Alaric.', answer: { expected: {}, deltas: [] } },
+        { key: 'finance_travel', player: travel, plan: plan(
+            { type: 'pay', to: null, amount_cp: 2, for: null, quote: 'I leave two copper for Nell', money: { quote: 'two copper', currency_quote: null }, recipient_quote: 'Nell' },
+            { type: 'go', to: { new: 'nearby courtyard' }, quote: 'then go to the nearby courtyard' }),
+            reply: 'No further coins change hands. Alaric leaves Nell behind and reaches the nearby courtyard.',
+            answer: { expected: { 2: { arrived: true, at: reached, with: null } }, deltas: [{ seq: 1, type: 'arrive', at: reached, with: null, forced_by: null }] } },
+        { key: 'finance_travel_after', player: 'I wait one minute in the courtyard.', plan: wait('I wait one minute in the courtyard.'),
+            reply: 'Alaric waits in the courtyard. No coins change hands.', answer: { expected: {}, deltas: [] } },
     ];
 }
 
@@ -19,7 +28,7 @@ export async function financeSmoke({ page, send, idle, calls, turns, onReload })
     const snapshot = () => page.evaluate(async () => {
         const { foldChat, foldBlock } = await import('/scripts/extensions/third-party/avereth-engine/src/host.js');
         const chat = SillyTavern.getContext().chat, f = foldChat(chat), s = f.state;
-        return { coin: s.entities.pc.sheet.coin_cp, turn: s.turn, blocked: !!foldBlock(f),
+        return { coin: s.entities.pc.sheet.coin_cp, turn: s.turn, blocked: !!foldBlock(f), at: s.scene.at,
             nell: Object.values(s.entities).find(e => e.name === 'Nell')?.id,
             cards: s.decisions.filter(d => d.route === 'free'),
             native: chat.filter(m => m.is_user).flatMap(m => m.extra?.avereth?.events || []).filter(e => e.t === 'transaction.completed' && e.d.native).length,
@@ -87,6 +96,24 @@ export async function financeSmoke({ page, send, idle, calls, turns, onReload })
     const prose = calls.filter(c => c.purpose === 'narrator' && c.lastUser.includes(turns[2].player));
     assert.equal(prose.length, 3);
     assert.ok(prose.every(c => c.messages.some(m => String(m.content).includes('PAID BEFORE THIS INPUT'))));
+    turns[3].plan.commands[0].to = before.nell;
+    await send(turns[3].player);
+    const arrived = await snapshot();
+    assert.deepEqual([arrived.blocked, arrived.coin, arrived.cards.length, arrived.native], [false, resumed.coin, 0, 1]);
+    const arrivalRecord = await page.evaluate(() => {
+        const c = SillyTavern.getContext(), source = c.chat.findLast(m => m.is_user);
+        const id = source.extra.avereth.events.find(e => e.t === 'decision.opened' && e.d.decision?.route === 'free')?.d.decision.id;
+        const reply = c.chat.findLast(m => !m.is_user && !m.is_system).extra.avereth;
+        return { id, expired: reply.events.some(e => e.t === 'decision.closed' && e.d.id === id && e.d.status === 'expired'),
+            reopened: reply.events.some(e => e.t === 'decision.opened' && e.d.decision?.route === 'free') };
+    });
+    assert.ok(arrivalRecord.id && arrivalRecord.expired && !arrivalRecord.reopened);
+    await send(`#pay ${arrivalRecord.id}`);
+    assert.equal((await snapshot()).coin, resumed.coin);
+    await send(turns[4].player);
+    const continued = await snapshot();
+    assert.deepEqual([continued.blocked, continued.coin, continued.at, continued.turn], [false, resumed.coin, arrived.at, arrived.turn + 1]);
     await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); });
-    return { nativeOnceNoModel: true, reload: true, realSourceEdit: true, realConfirmationEdit: true, restoreResumes: true, swipeOnce: true, regenerateOnce: true, narratorFact: true };
+    return { nativeOnceNoModel: true, reload: true, realSourceEdit: true, realConfirmationEdit: true, restoreResumes: true, swipeOnce: true, regenerateOnce: true, narratorFact: true,
+        arrivalCardExpired: true, arrivalThenNormalTurn: true };
 }

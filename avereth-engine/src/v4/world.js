@@ -2313,7 +2313,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // a decision belongs to the place it was opened at: leaving it closes it; one opened in this very turn goes
         // with him ("look for an inn to sleep": the room is bought where he arrives)
         for (const dec of s.decisions.filter((x) => x.at && x.at !== id && x.kind !== 'registration')) {
-            if ((!explicitTravel || !['purchase', 'sale'].includes(dec.kind)) && dec.turn === s.turn) emit({ t: 'decision.opened', d: { decision: { ...dec, at: id } } });
+            // S1 cards belong to their player source and original place, even when opened in this turn.
+            // Never reopen one in the arrival's Assistant record or carry its payee to the destination.
+            if (dec.kind === 'payment' && dec.route === 'free') emit({ t: 'decision.closed', d: { id: dec.id, status: 'expired' } });
+            else if ((!explicitTravel || !['purchase', 'sale'].includes(dec.kind)) && dec.turn === s.turn) emit({ t: 'decision.opened', d: { decision: { ...dec, at: id } } });
             else if (explicitTravel && dec.turn === s.turn && dec.destination && (dec.destination.to === id || (!dec.destination.to && normText(dec.destination.name) === normText(s.places[id]?.name || '')))) emit({ t: 'decision.opened', d: { decision: { ...dec, at: id } } });
             else if (explicitTravel && dec.destination && dec.turn === s.turn) continue;
             else emit({ t: 'decision.closed', d: { id: dec.id, status: 'expired' } });

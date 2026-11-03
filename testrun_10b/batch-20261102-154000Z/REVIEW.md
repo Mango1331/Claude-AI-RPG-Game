@@ -93,3 +93,63 @@ Der .151-Produktdiff änderte weder diesen World-Loop noch den Hostguard. **Kein
 3. **Beibehalten:** XP×5, Startwerte, .149-PP/LP, AoE, Gearpreise, Klassenevolution und die begrenzte .151-Erinnerung. Keine neue Balancefreigabe durch diesen Review.
 
 **Batch25 ist nicht technisch vollständig bestanden.** Warrior hat einen echten, reproduzierten Hostintegritätsstopper. Mage-Tod und Rogue-Endabschluss dagegen nicht als technische Fehler umdeuten. Nach einem begrenzten Fix kann die natürliche Serie weitergehen; keine nächste umfassende Finanz-Gegenreviewspirale.
+
+---
+
+## 8. GPT-Gegenreview – Codeabgleich und 10B-Stabilitätsbewertung (03.11.2026)
+
+**Methode/Prüfgrenze:** Vollständigen Sol-Originalreview gelesen und den maßgeblichen Code auf dem unveränderten Produkt-HEAD .151 (d4f281d) selbst abgeglichen: world.js:arrive, commands.js:paymentProposal, native_pay.js, host.js:paymentInputError/foldChat sowie runtime.js:applyExtraction. **Die Original-ZIP ist nicht auf main archiviert und wurde von GPT nicht erneut eingelesen.** Die T-/I-Belege, exakten Finanzsummen, natürlichen Modellantworten und die Originalvorzustandsreproduktion in §§1–7 stammen aus Sols Prüfung. Diese Sektion ist eine eigenständige **statische Code- und Fachgegenbewertung**, kein zweiter Originaldaten-Replay, keine neue Testsuite und keine Produktimplementierung.
+
+### 8.1 Gesamtbefund
+
+**Sols P1-Einstufung ist richtig.** Der Warrior-Stopp ist nicht eine falsche Abbuchung, sondern ein Verstoß gegen die Integrität des Chatrecords, der den nächsten Enginezug bewusst sperrt. Dass seine vorigen Events und lokalen Zustände mit validateState fehlerfrei sind, widerlegt diesen Fehler **nicht**: Die entscheidende Regel hängt an der **Nachrichtenquelle**, deren Hash und dem Typ des Records. Ein gültiger Zustand und ein gültiger, weiterhin faltbarer Chat sind verschiedene Dinge.
+
+| Profil | Bewertung für den 10B-Abschlussmaßstab |
+|---|---|
+| Warrior | 56 Inputs, L6; **1 schwerer technischer Runstopper**, weil der nach Ankunft gespeicherte Assistantrecord die freie Zahlkarte nochmals eröffnet und damit den Host-Fold blockiert. |
+| Mage | 169 Inputs, L16 vor dem Tod; **regelgerechter Kampfverlust**, kein technischer Abbruch. L15 ist historisch erreicht, auch wenn der auf den lebenden Endzustand abstellende Evaluator das Endziel nach Tod nicht mehr als erreicht markiert. |
+| Rogue | 309 Inputs, L15, E angenommen; **regulärer Abschluss**, trotz zwei sicher und ohne falsche Buchung fortgesetzter Modellfehler. |
+
+Für diesen Batch **1/3 technisch erzwungene Stopps**, **2/3 fehlerfreie Endfolds**, davon ein regulärer Tod. Nicht als „2/3 E-Klasse erreicht“ oder als allgemeine belastbare Erfolgsquote ausgeben. Die 52 protokollierten Handels-/Guildtransaktionen und passenden Guthaben sind ein guter Langlaufnachweis, ohne jeden künftigen Freitext-Handelsfall zu garantieren.
+
+### 8.2 P1 – Zahlungsquelle wird beim Arrival unzulässig dupliziert
+
+**Direkter Codeabgleich bestätigt die Ursache:**
+
+- **S1-Vertrag in commands.js und native_pay.js:** Eine freie Zahlung erzeugt bei vollständig belegtem Betrag nur eine **offene Karte** (route:free, needs_confirmation). Sie wird ausschließlich durch eine eigenständige Nachricht „#pay <id>“ bezahlt; nach der nächsten relevanten Handlung oder einem Ortswechsel verfällt sie. Eine Absicht oder Narrator-Beschreibung ist keine Abbuchung.
+- **world.js:arrive() im Entscheidungsloop:** Der Zweig für im aktuellen Turn geöffnete, nicht als purchase/sale erkannte Entscheidungen **hängt sie trotz expliziter Reise an den neuen Ort um**. Eine freie Zahlung ist weder purchase noch sale und wird deshalb fälschlich als weiteres decision.opened mit alter source und neuer at-Adresse im Assistantrecord erzeugt. Das ist genau die fehlende Typgrenze.
+- **host.js:paymentInputError():** Ein Record mit einem decision.opened der route:free muss selbst eine tatsächliche User-Nachricht mit unverändertem input_hash sein; zusätzlich muss die source auf den betreffenden Userindex zeigen. Der vom World-Pfad erzeugte Assistantrecord kann beides nicht erfüllen. Seine Zurückweisung und die nachfolgende Fold-Sperre sind **korrekt**. Eine Änderung dieses Guards würde eine echte Zahlungs-/Edit-Sicherheitsgrenze beschädigen.
+- **runtime.js:applyExtraction():** Prüft den bisherigen Fold vor dem neuen World-Delta, speichert aber danach erst den vom World-Pfad berechneten Assistantrecord. Der Fehler kann somit im neu erzeugten Record entstehen, obwohl der vorherige Fold gültig war. Ein Endzustandsvalidator allein kann eine falsche Quellbindung ebenfalls nicht erkennen.
+
+**Meine fachliche Fixgrenze:** Die freie, nachrichtengebundene Karte **beim tatsächlichen Ortswechsel als expired schließen**; nicht umhängen, nicht mit neuer source neu eröffnen, keine synthetische #pay-Bestätigung, kein Narratorrecord mit Spielerinput-Hash versehen. Eine ortsgebundene Karte sollte insbesondere nicht wegen „same turn“ oder „explicitTravel“ eine Sonderausnahme von dieser Regel erhalten. Nicht pauschal alle offenen Entscheidungen schließen: Echte am Zielort intendierte Unterkunfts-/Kaufangebote und die bestehenden Arrival-Bedingungen müssen weiter funktionieren. Eine offene Zahlung ohne vollständigen Betrag ist keine bestätigbare free-Karte; ihre bisherigen Klärungsregeln gesondert erhalten bzw. bei Ortswechsel nur soweit erforderlich konsistent behandeln.
+
+**Priorität P1, aber kein neues Finanzsystem.** Kleine Änderung an der bestehenden Verfalls-/Mitnahmeentscheidung statt Parser-, Karten-, Fold- oder Bankbuchungsreform.
+
+### 8.3 Abnahme auf dem echten Fehlerpfad
+
+**Zwingend originalnah:** Vorzustand vor I110, originale Kombination aus paymentProposal/route-free-Karte und bestätigtem journey.continue sowie Original-Extractor-Ankunft durch World und tatsächlichen Assistantrecord führen. Im Ergebnis: Karte als expired geschlossen; **kein neues decision.opened für dieselbe freie Karte im Assistantrecord**, Ankunft am Schmied erhalten, 0 cp Geldbewegung, vollständiger Chat foldbar und validierbar. Danach ein **neuer** legitimer Spielerzug ohne UI-Block; die alte Karten-ID ist nicht mehr mit #pay zahlbar.
+
+**Gegenfälle:** (a) Karte am ursprünglichen Ort mit eigenständigem #pay **vor** Abreise exakt einmal bezahlt, danach keine zweite Transaktion; (b) tatsächliche Reise ohne #pay lässt sie verfallen; (c) reines Statuspanel ohne Ortswechsel erhält die Karte unter den bestehenden S1-Lebensdauerbedingungen; (d) mehrere Empfänger/Karten und unveränderte Source-/Input-Edit-Prüfungen; (e) Reise plus ortsgebundenes Angebot/Zimmerkauf bleibt möglich; (f) Reload, Swipe/Edit und Replay schützen vor alter/duplizierter Zahlung. Die Regression darf nicht nur applyWorld-Events inspizieren, sondern muss mindestens einmal den **neu geschriebenen Assistantrecord über foldChat** wieder lesen.
+
+**Keine allgemeine neue Recovery-Schicht:** Der Erzeugungsfehler ist lokalisiert. Zusätzliche Kandidatenrecord-Validierung vor Persistenz kann später unabhängig erwogen werden, ersetzt aber weder die eigentliche Korrektur noch eine passende Originalregression. Einen fehlerhaften bereits archivierten Lauf nicht stillschweigend nachträglich „repariert“ nennen.
+
+### 8.4 Weitere Funde: Pacing und sichere Weiterläufe
+
+**Mage-Tod:** Laut Originalreview ist die Initiative-/Roundfolge der Höhlenwölfe korrekt. Der Mage greift bei 10 HP nochmals an. Keine Phantomrunde, keine Grundlage für einen allgemeinen Mage-Buff, Monster-Nerf oder eine Fluchtgarantie. Dass die Klasse vor dem Tod nicht gewählt wurde, ist keine Engine-Evolutionsstörung; die .151-Erinnerung lässt die Entscheidung ausdrücklich frei.
+
+**Rogue:** Zwei sichere Modellfortsetzungen trotz fehlender/unklarer Interpretationen und korrekte 4/5-Killzählung zeigen, dass die technischen Schutzmechanismen auch bei langen Kampagnen weiterhelfen. Kein natürlich neuer Nachweis für den .151-Fetchfix, weil der Fehler hier nicht auftrat.
+
+**Intro-Board:** Zwei anfänglich verweigerte ungeeignete Gegner-Listings sind funktionierende Schutzprüfungen mit etwas Generator-Reibung. Falls sie in weiteren Batches wiederkehren, die zulässigen Einstiegsanker für die Modellwahl sichtbarer machen; keinen isolierten P1 oder globalen Schwierigkeitsnerf aus zwei überwundenen Fällen ableiten.
+
+**Wirtschaft/Gear:** Dokumentierte Upgrades bei Mage/Rogue, 52 Buchungen ohne gefundene Doppelzahlung und passende Endwerte sprechen gegen eine neue systemweite Handelsreparatur. Die freie Zahlkarte ist **ein Host-/Source-Verknüpfungsfehler**, kein fehlerhaftes Preislesen. Kein Engine-Shop-, S2- oder neuer Finanzparserauftrag.
+
+**Skill/XP:** Mage L16 bei Input164; Rogue L15 bei290 nach eigenem Gameplay. Keine tragfähige Begründung für weitere XP×5-, PP-/LP-, Skill- oder Startwertänderungen. Das laufende 10B-Ziel ist technische Fortsetzbarkeit, nicht die vollständige F/E-Balance.
+
+### 8.5 Empfehlung und Status
+
+1. **Einziger unmittelbarer Produktfix P1:** route:free-Zahlkarte bei echtem Ortswechsel im bestehenden Arrival-Loop verfallen lassen; Quellbindung, #pay und alle einschlägigen Gegenfälle testen.
+2. **Danach ohne weitere vorsorgliche Reparaturen** vollständige gezielte Node-/Replay-/ST-Abnahme und den nächsten natürlichen Mehrklassen-Batch auf derselben neuen Produktbasis auswerten.
+3. **Andere Beobachtungen als solche belassen:** Intro-Board-Reibung, Modelllatenz, Phantom-Erzählungen und noch nicht gewählte Klassen/Skills sind hier kein gleichwertiger Runstopper.
+4. **10B noch offen:** Die formale Zuverlässigkeit langer Spielverläufe verbessert sich, aber der lokale schwere World→Host-Integrationsbruch verhindert eine Abschlussfreigabe. Eine neue Roadmap erst nach ausdrücklicher gemeinsamer Entscheidung über eine akzeptable Serie.
+
+**Status dieses GPT-Gegenreviews:** fachlich ergänzende Bewertung nach Codeabgleich; **keine Produktänderung**, kein zweiter Originaldatenlauf, keine automatische Fiximplementierung und keine Roadmapfreigabe.

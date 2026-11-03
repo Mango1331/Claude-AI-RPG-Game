@@ -134,3 +134,65 @@ L15→E: W14 zusätzliche Inputs, M3. Die .151-Erinnerung ist im unveränderten 
 3. **Beibehalten:** aktuelle XP-/PP-/LP-Werte, Preise, AoE, Kampfreihenfolge, .151/.152 und freie Etappenwahl. Keine vorsorgliche neue Reihe von Mikrofixes.
 
 **Abnahmeurteil:** Batch26 belegt erstmals in dieser aktuellen Folge drei Enden ohne technischen Zwangsstopp und zwei vollständige F→E-Kampagnen. **Runfortsetzbarkeit deutlich verbessert, Integrität aber nicht perfekt.** Der lokal begrenzte Rüstungsfehler ist nach dem vereinbarten Toleranzmaßstab kein automatischer Grund, natürliche Datensammlung komplett anzuhalten. Für den nächsten gezielten Codepatch sollte er dennoch sauber geschlossen werden. Ob diese Serie für den formalen Abschluss von10B genügt, bleibt eine ausdrückliche gemeinsame Nutzerentscheidung.
+
+---
+
+## 8. GPT-Gegenreview – unabhängiger Codeabgleich und 10B-Stabilitätswertung (03.11.2026)
+
+**Prüfumfang und Grenzen:** Den vollständigen Sol-Originalreview §§1–7 gelesen; aktuelle Produktbranch-Version .152 (`339f88a`) mit GitHub abgeglichen und die betroffenen Codepfade eigenständig untersucht: `src/v4/catalog.js:sheetObjects`, `src/v4/trade.js:tradeObject/heldUnits/bookSale`, `src/v4/commands.js:give/drop/transferTemplate`, `src/v4/domain.js:object.created/object.moved/mirror` sowie `src/validate.js`. **Die originale 119-MB-ZIP liegt nicht im Repository und wurde von GPT nicht erneut eingelesen oder abgespielt.** T-/I-Belege, Event- und Finanzsummen, Gegenproben am Originalprefix, sieben Recoverybelege und exakte Endegründe stammen aus Sols Originalprüfung. Diese Ergänzung ist eine **unabhängige statische Code- und Fachgegenbewertung**; kein neues Node-/Replay-/ST-Testergebnis und kein Produktpatch.
+
+### 8.1 10B: technischer Endabbruch und Integrität getrennt zählen
+
+**Batch26 ist ein deutlicher Stabilitätsfortschritt, aber nicht vollkommen fehlerfrei.**
+
+| Kennzahl | Bewertung |
+|---|---|
+| Technisch erzwungener Endabbruch | **0/3** – Warrior und Mage regulär nach E-Klassenannahme abgeschlossen; Rogue durch regelgerechten Kampftod beendet |
+| Sichere Modellfortsetzungen | **7** – laut Originalreview vier Planner-Nichtausführungen und drei verworfene Worldberichte, jeweils ohne illegale Engineausführung oder Doppelbuchung |
+| Durchgehend gültige Recordzustände | **2/3** (Mage, Rogue); beim Warrior **I479/I480 tatsächlich ungültige Zwischenzustände**, anschließend wieder gültiger Endfold/Endzustand |
+| Schadensklasse des Warrior-Befunds | **Fortsetzbarer, aber integritätsbeschädigender technischer Vorfall** – nicht bloß kosmetisch und nicht technisch erzwungener Abbruch |
+| Natürlicher Nachweis .152 | Freie Zahlkarte verfällt am Ankunftsort ohne erneute Eröffnung, ohne Debit und ohne folgenden Foldstop; **positiv bestätigt** |
+
+Für die 10B-Quote sind somit mindestens **drei Auswertungsachsen** nötig: (1) ohne technischen Endabbruch; (2) ohne gravierenden Zustands-/Buchungsintegritätsfehler; (3) sichere fortsetzbare lokale Modell-/Providerfehler und ihre Häufung. **Ein grüner Endfold allein ist kein Beleg durchgehender Integrität.** Bei Warrior bleiben die frühere Inventarverletzung und die künstlich verdoppelte physische Rüstung bestehen, obwohl später beide Rüstungsidentitäten beim Schmied liegen und der Validator wieder grün meldet. Die 70 ledgerkorrekten Transaktionen widerlegen diese Eigentumsabweichung nicht.
+
+In den unmittelbar vorausgegangenen Batches23–25 trat jeweils ein technischer Endstopper auf; Batch26 ist in dieser Folge der erste Batch ohne einen solchen Stopp. Die Builds, Laufdauern und Fehlerbedingungen unterscheiden sich, weshalb daraus **noch keine belastbare produktbezogene Erfolgsquote und keine automatische 10B-Abschlussentscheidung** abzuleiten sind. Der Fortschritt ist trotzdem konkret und für das gesetzte Ziel relevant.
+
+### 8.2 Objektidentität: Sols Diagnose wird durch die Codeverträge bestätigt
+
+**Katalog vs. Auflösung:**
+- `catalog.js:sheetObjects()` listet die am Körper getragenen Gearreferenzen als `item.<ref>`, also bei dynamischem Gear auch als **`item.obj.<physische-id>`**. Das ist ein vom System selbst angebotener Katalogeintrag; nicht automatisch eine frei erfundene Modell-ID.
+- `trade.js:tradeObject()` interpretiert **jede** `item.`-Referenz über den Sheet-Templatezweig (`inventory[ref.slice(5)]`), selbst wenn der Suffix eine vorhandene physische `obj.`-ID ist. `heldUnits()` unterscheidet ebenfalls nur anhand des `item.`-Präfixes. Damit können Katalogreferenz, Holderobjekt und tatsächliche Menge unterschiedliche Bedeutungen bekommen.
+- `commands.js:give()` ruft den gemeinsamen `objectOf`-Resolver auf und wählt bei `o.template` die **Template-Materialisierung** statt der vorhandenen `transferCargo`-/`object.moved`-Route. `transferTemplate()` zieht einen Sheetbestand ab und legt unter neuer `obj.`-ID ein weiteres physisches Objekt an. Dies ist für echte Sheet-Templates legitim, für ein bereits vorhandenes Rüstungsobjekt **falsch**.
+- `domain.js:mirror()` und `validate.js` verlangen dagegen beim echten Objekt, dessen Holder `pc` ist, einen entsprechenden Inventareintrag **unter dessen originaler Objekt-ID**. Nach der falschen Templateabbuchung bleibt der PC-Holder des Originals bestehen; die lokale Validierung muss anschlagen. Ein späterer Verkauf über die rohe Objekt-ID kann das Original zusätzlich übertragen und so die Zwischendifferenz im Endinventar verschleiern.
+
+**Wichtiges Gegenargument zur falschen Schnellkorrektur:** Nur den Katalogeintrag auf `obj.` umzuschreiben genügt nicht, sofern das Eingabeschema vor dem kombinierten Equip→Give nur die aktuell katalogisierten IDs akzeptiert. Sols Originalgegenprobe berichtet genau diesen Parse-Block. Der Fix muss daher **Katalogvertrag, Auflösung und Befehlsausführung im selben Zug** konsistent halten. Keine neue frei erfundene Aliasart und kein nachträgliches Umschreiben von bereits gebuchten Originalevents.
+
+**Fachliche Zielregel:** Eine durch Kauf erworbene physische Rüstung behält beim Tragen, Ablegen, Weitergeben, Fallenlassen und Verkaufen **dieselbe Objektidentität**. Normale `item.<template>`-Waren (Pfeile/Verbrauchsgüter usw.) behalten dagegen die bisherige Template-/Mengenlogik. Eine `item.obj.<id>`-Aliasreferenz darf ausschließlich auf ein **tatsächlich vorhandenes, zuordenbares `obj.<id>`** auflösen, nicht auf einen neuen Templateeintrag. Besitzer-, Mengen- und Ausrüstungsbedingungen müssen auch über den Alias geprüft werden. Bei bereits getragener Ware ist der im Spiel vorgesehene Equip-/Unequip-Ablauf einzuhalten; der Alias darf keinen Schutz gegen unzulässiges Direktübertragen umgehen.
+
+### 8.3 Priorität P2 vs. Stabilitätsklasse: kein Widerspruch
+
+**P2 als Implementierungspriorität unterstütze ich.** Die konkrete Kampagne endet nicht technisch, die bisher nachgewiesene finanzielle Folge ist lokal begrenzt, und es ist **keine** großflächige wiederholte Exploitserie belegt. Der Fix muss nicht alle weiteren Naturtests blockieren.
+
+**Aber:** Die tatsächlich entstandene **zusätzliche physische Einheit und die erneute Veräußerbarkeit** machen den Fall zu einem *Integritätsfehler* und nicht zu einem tolerierbaren kleinen Narrationsfehler. Der Warrior zählt für Batch26 als **ohne technischen Endabbruch**, nicht als **durchgehend integritätsfehlerfrei**. Die Frage, wann ein solcher P2 nachzuziehen ist, ist eine **Patch-/Terminentscheidung**; die Frage, wie der Run in 10B gewertet wird, ist eine **Messentscheidung**. Beides unabhängig halten.
+
+Ein späterer 10B-Abschluss darf den konkreten Vorfall entweder durch engen Fix schließen oder ausdrücklich als noch offenes Restrisiko mit seiner belegten Schwere akzeptieren. Ein unbemerktes Wegzählen wegen des später grünen Zustands wäre mit dem neuen 10B-Maßstab unvereinbar.
+
+### 8.4 Eng abgegrenzte spätere Regressionen
+
+**Pflichtfall:** Original-I479→I481 mit originalem Katalog und mehreren Befehlen in derselben Spielereingabe. Über die echten Interpreter-/Planner-/Command-/Hostpfade sicherstellen: Superior-Mail wird angelegt; vorheriges Fine-Objekt wird nur **einmal** abgelegt/übergeben; kein neues physisches Rüstungsobjekt entsteht, Inventar/Holder sind nach jedem Record gültig; die übergebene Einheit darf nicht erneut verkauft werden; keine unberechtigte zweite Auszahlung. Das alternative alte `obj.`-Format und die angezeigte `item.obj.`-Aliasform müssen an derselben kanonischen Identität enden.
+
+**Kontrastfälle:** getrenntes Equip→Give, Equip→Drop, direkter Verkauf physischer Ware, echtes `item.<template>` und dessen Mengen-/Materialisierungsregeln, Inventarstapel, zwei **tatsächlich separat erworbene** gleiche Rüstungen, bereits getragene Ware ohne erlaubtes Ablegen, fehlende oder fremde Objekt-ID, NPC- und Ortswechsel, Swap/Edit/Reload/Replay. Nur eine interne Helper-Regression ohne **Katalog/Planner und persistierten Hostrecord** wäre unvollständig. Keine Veränderung der Preise, Coin-Ledger oder allgemeinen Angebotslogik erforderlich.
+
+### 8.5 Andere Batch26-Befunde und nächste Aktion
+
+**Rogue-Tod:** Laut Originalreview sieht der Spieler sechs Gegner und startet mit 96HP den Kampf. Die drei überlebenden Erstgegner fügen einmalig Round-1-Schaden zu, der regelgerecht tötet. Die nur narrativ „dozing“ beschriebene Sow war nicht als unaware im Enginezustand etabliert. Das ist ein begrenzter Befund zur **Awareness-Übertragung**, kein Nachweis eines fehlerhaften Initiativ-/AoE-/Schadenssystems. Der nicht gebuchte Schlaf erklärt zusätzlich die unvollständige Heilung. Kein automatischer Ambushbonus anhand eines Einzelworts und keine pauschale Klassenanpassung.
+
+**Wirtschaft:** Gute natürliche Abdeckung durch 70 Buchungen, Gearkäufe und konsistente Wallets; keine nachgewiesene Doppelzahlung. Gerade deshalb den Objektalias als **Eigentums-/Repräsentationsfehler** isoliert korrigieren und nicht in einen neuen Gesamt-Audit der Preisparser abgleiten.
+
+**Modell-Recoveries:** Sieben sichere Fortsetzungen sind ein positiver Funktionsnachweis der vorhandenen Fail-soft-Grenzen. Die einmaligen HTTP502/Timeout-Recoveries sind zusätzliche überwundene Transportvorfälle, aber **kein** natürlicher Test von zweimal `Failed to fetch` und der neuen .151-Fortsetzungsbedingung.
+
+**Pacing:** Warrior338 vs. Mage183 Inputs für L15/E trotz ähnlicher Gesamt-XP – ein starker Hinweis auf unterschiedliche Inhalte, Vertrags-/Gegnerwahl und Bedien-/Erzählschleifen. Die Zahlen allein tragen keine erneute allgemeine XP-, PP- oder LP-Erhöhung. Skill-Evolution ohne P5 nicht als defektes Angebot ausgeben.
+
+**Meine Priorisierung:** (1) enges P2-Objektalias-/Identitätsproblem bei nächster sinnvoller technischer Gelegenheit beseitigen und mit Originalkette absichern; (2) weitere natürliche Batches **dürfen** parallel laufen, solange das verbleibende Risiko in Reviews benannt und separat gezählt wird; (3) die nun erreichte Abbruchfreiheit über weitere aktuelle Batches überprüfen; (4) 10B **noch nicht automatisch beenden** oder neue Roadmap vorwegnehmen. Keine zusätzlichen vorsorglichen Kampf-, Finanz- oder Runnermaßnahmen aus diesem einen Batch.
+
+**Status:** Unabhängiger GitHub-Codeabgleich und fachliche Gegenbewertung auf Basis der Sol-Originalanalyse; **keine** neue Original-ZIP-Prüfung, kein vollständiger Testdurchlauf, **keine Produktcodeänderung und keine automatische Implementierungsfreigabe**.

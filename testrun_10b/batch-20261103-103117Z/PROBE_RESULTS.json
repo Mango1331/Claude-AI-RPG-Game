@@ -1,0 +1,272 @@
+{
+  "kind": "read-only probes on unchanged .153 product code; manually corrected model output is a counterfactual, not a live LLM repair",
+  "rogue": [
+    {
+      "correct": false,
+      "count": 2,
+      "extraction": {
+        "changed": true,
+        "applied": false,
+        "failed": "$.deltas[0] (bid): .lines[1].object: matches none of anyOf"
+      },
+      "status": "failed",
+      "coin_before": 101,
+      "coin_after": 101,
+      "objects": [
+        {
+          "id": "obj.loot.wolf.pelt.f.enc_t51",
+          "qty": 1,
+          "holder": {
+            "entity": "pc"
+          }
+        },
+        {
+          "id": "obj.loot.wolf.fang.f.enc_t51",
+          "qty": 2,
+          "holder": {
+            "entity": "pc"
+          }
+        }
+      ],
+      "bids": [],
+      "validation": []
+    },
+    {
+      "correct": true,
+      "count": 1,
+      "extraction": {
+        "changed": true,
+        "applied": true
+      },
+      "status": "applied",
+      "coin_before": 101,
+      "coin_after": 101,
+      "objects": [
+        {
+          "id": "obj.loot.wolf.pelt.f.enc_t51",
+          "qty": 1,
+          "holder": {
+            "entity": "pc"
+          }
+        },
+        {
+          "id": "obj.loot.wolf.fang.f.enc_t51",
+          "qty": 2,
+          "holder": {
+            "entity": "pc"
+          }
+        }
+      ],
+      "bids": [
+        {
+          "id": "offer.t176.8",
+          "cp": 12,
+          "lines": [
+            {
+              "id": "l1",
+              "what": "F-Rank Wolf Pelt",
+              "kind": "goods",
+              "service": null,
+              "object": "obj.loot.wolf.pelt.f.enc_t51",
+              "qty": 1,
+              "price_cp": null
+            },
+            {
+              "id": "l2",
+              "what": "F-Rank Wolf Fang",
+              "kind": "goods",
+              "service": null,
+              "object": "obj.loot.wolf.fang.f.enc_t51",
+              "qty": 2,
+              "price_cp": null
+            }
+          ]
+        }
+      ],
+      "validation": [],
+      "accept": {
+        "coin": 113,
+        "transactions": [
+          {
+            "t": "transaction.completed",
+            "d": {
+              "to": "pc",
+              "from": "npc.npctanners_apprentice",
+              "cp": 12,
+              "for": "F-Rank Wolf Pelt ×1, F-Rank Wolf Fang ×2",
+              "at": "loc.glassmere.pump_yard_behind_the_tanners_row",
+              "offer": "offer.t176.8"
+            }
+          }
+        ],
+        "validation": []
+      },
+      "reload": {
+        "coin": 113,
+        "errors": []
+      }
+    }
+  ],
+  "mage": [
+    {
+      "correct": false,
+      "count": 2,
+      "response": {
+        "changed": true,
+        "applied": false,
+        "failed": "$.deltas[1] (offer): .lines[2].pricing: matches none of anyOf"
+      },
+      "status": "failed",
+      "coin_before": 70,
+      "coin_after": 70,
+      "offers": [
+        {
+          "id": "offer.t18.2",
+          "lines": [
+            {
+              "what": "common F-Rank staff",
+              "cp": 80
+            },
+            {
+              "what": "fine F-Rank staff",
+              "cp": 140
+            },
+            {
+              "what": "superior F-Rank staff",
+              "cp": 260
+            }
+          ]
+        },
+        {
+          "id": "offer.manuals.localderwatchguild_hall",
+          "lines": [
+            {
+              "what": "Primer of Strike",
+              "cp": 80
+            },
+            {
+              "what": "Primer of Bolt",
+              "cp": 80
+            },
+            {
+              "what": "Primer of Guard",
+              "cp": 80
+            },
+            {
+              "what": "Primer of Ward",
+              "cp": 80
+            },
+            {
+              "what": "Primer of Mend",
+              "cp": 80
+            }
+          ]
+        },
+        {
+          "id": "offer.t44.4",
+          "lines": [
+            {
+              "what": "common F-Rank staff",
+              "cp": 80
+            },
+            {
+              "what": "fine F-Rank staff",
+              "cp": 140
+            },
+            {
+              "what": "superior F-Rank staff",
+              "cp": 260
+            }
+          ]
+        }
+      ],
+      "validation": []
+    },
+    {
+      "correct": true,
+      "count": 1,
+      "response": {
+        "changed": true,
+        "applied": true
+      },
+      "status": "applied",
+      "coin_before": 70,
+      "coin_after": 70,
+      "offers": [
+        {
+          "id": "offer.t18.2",
+          "lines": [
+            {
+              "what": "common F-Rank staff",
+              "cp": 80
+            },
+            {
+              "what": "fine F-Rank staff",
+              "cp": 140
+            },
+            {
+              "what": "superior F-Rank staff",
+              "cp": 260
+            }
+          ]
+        },
+        {
+          "id": "offer.manuals.localderwatchguild_hall",
+          "lines": [
+            {
+              "what": "Primer of Strike",
+              "cp": 80
+            },
+            {
+              "what": "Primer of Bolt",
+              "cp": 80
+            },
+            {
+              "what": "Primer of Guard",
+              "cp": 80
+            },
+            {
+              "what": "Primer of Ward",
+              "cp": 80
+            },
+            {
+              "what": "Primer of Mend",
+              "cp": 80
+            }
+          ]
+        },
+        {
+          "id": "offer.t44.4",
+          "lines": [
+            {
+              "what": "common F-Rank staff",
+              "cp": 80
+            },
+            {
+              "what": "fine F-Rank staff",
+              "cp": 140
+            },
+            {
+              "what": "superior F-Rank staff",
+              "cp": 260
+            }
+          ]
+        },
+        {
+          "id": "offer.t72.5",
+          "lines": [
+            {
+              "what": "plain room over the kitchen, straw bed, shared privy, with bread and porridge in the morning",
+              "cp": 10
+            },
+            {
+              "what": "binding and cleaning of the wound herself, with clean linen and spirits",
+              "cp": 20
+            }
+          ]
+        }
+      ],
+      "validation": []
+    }
+  ]
+}

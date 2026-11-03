@@ -1,0 +1,104 @@
+{
+  "zip": "batch-20261103-103117Z.zip",
+  "zip_sha256": "8d053a7dcd1a57523d4883dea0753e242ab9429c91c9d88fb4aaff737f8eadf3",
+  "zip_bytes": 115997974,
+  "members": 48,
+  "expanded_bytes": 370402232,
+  "crc_errors": [],
+  "build": "4.3.0-c.6.6.153",
+  "product_commit": "7da43d67b50ec0a348e3dabba47972ca0f7c6105",
+  "note": "Full original ZIP supplied in chat, not stored as one Git file. originals/*.chat.jsonl.gz decompress to byte-identical original members; original completion rows are selected unchanged by call number. No product code or test changes.",
+  "components": [
+    {
+      "path": "originals/001-guild-warrior.chat.jsonl.gz",
+      "source": "batch-20261103-103117Z/001-guild-warrior/20261103-103117Z-current_test/chat.jsonl",
+      "uncompressed_bytes": 9914432,
+      "source_sha256": "6e8f9548272fdb307c6c9054df2762a6e901e912927757fd96358bcca15cccc5",
+      "gzip_bytes": 843822,
+      "gzip_sha256": "d200ed60f7ea08f8011b4df198f9e869ee5f37f73d23258287f405682ea4e85c",
+      "events": 4807,
+      "event_records": 666,
+      "all_record_state_problems": [],
+      "export_mismatches": [],
+      "transactions": 35,
+      "final_coin_cp": 958,
+      "coin_ledger_cp": 958
+    },
+    {
+      "path": "originals/002-guild-mage.chat.jsonl.gz",
+      "source": "batch-20261103-103117Z/002-guild-mage/20261103-134251Z-current_test/chat.jsonl",
+      "uncompressed_bytes": 4600303,
+      "source_sha256": "1d6ad762cd4d35ee55778bb19b8b4a2792c3f4316040850bafb9a4af237ecb1d",
+      "gzip_bytes": 418359,
+      "gzip_sha256": "edf3adb37524dad876da2ff07c93c8a0fedea095c0aaaf74bfc5adf6b05c4107",
+      "events": 2573,
+      "event_records": 317,
+      "all_record_state_problems": [],
+      "export_mismatches": [],
+      "transactions": 21,
+      "final_coin_cp": 657,
+      "coin_ledger_cp": 657
+    },
+    {
+      "path": "originals/003-guild-rogue.chat.jsonl.gz",
+      "source": "batch-20261103-103117Z/003-guild-rogue/20261103-150954Z-current_test/chat.jsonl",
+      "uncompressed_bytes": 2151562,
+      "source_sha256": "0f328745fe091073e5d392e8a7d3b49b99193e7fcf09dee5266953a956b6bf2c",
+      "gzip_bytes": 181892,
+      "gzip_sha256": "1e1babc2ff04c6abc9baddab50c07abdd879e56315c06418572d9f95b653b450",
+      "events": 1101,
+      "event_records": 164,
+      "all_record_state_problems": [],
+      "export_mismatches": [],
+      "transactions": 7,
+      "final_coin_cp": 101,
+      "coin_ledger_cp": 101
+    }
+  ],
+  "selected_completions": {
+    "path": "originals/selected_completions.json.gz",
+    "calls": [
+      [
+        "003-guild-rogue",
+        251
+      ],
+      [
+        "003-guild-rogue",
+        252
+      ],
+      [
+        "003-guild-rogue",
+        256
+      ],
+      [
+        "003-guild-rogue",
+        257
+      ],
+      [
+        "003-guild-rogue",
+        260
+      ],
+      [
+        "003-guild-rogue",
+        261
+      ],
+      [
+        "002-guild-mage",
+        98
+      ],
+      [
+        "002-guild-mage",
+        99
+      ],
+      [
+        "002-guild-mage",
+        446
+      ],
+      [
+        "002-guild-mage",
+        447
+      ]
+    ],
+    "note": "Decoded source JSON rows, reserialized without changing request/response fields; not byte-identical JSONL."
+  }
+}

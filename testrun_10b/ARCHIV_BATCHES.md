@@ -72,3 +72,12 @@ Einzelruns außerhalb der Batchreihe behalten ihren im Runindex angegebenen Quel
 | 21: [batch-20261101-152756Z](batch-20261101-152756Z/REVIEW.md) | [ZIP](batch-20261101-152756Z/batch-20261101-152756Z.zip) | [MANIFEST.json](batch-20261101-152756Z/MANIFEST.json) | 14 | 11712628 |
 
 Diese ZIP ist **byteidentisch zum Chatupload**, keine Neuverpackung. SHA-256: `afcc0eaa6d097d8a997977a9cacc8e41181ffcbe5c97706c645aa594d61feff0`; CRC und Einzeldateihashes geprüft. Typische Provider-/GitHub-Schlüssel und Schlüsselzuweisungen ohne Treffer; kein absoluter Geheimnisnachweis. Warrior in Eingabe63 manuell abgebrochen, Mage/Rogue nicht gestartet.
+
+
+## Ergänzung 03.11.2026 – Batch27, Originalchatstände und gezielte Completions
+
+| Batch | Quellen | Umfang | Vollständige Original-ZIP in Git |
+|---|---|---|---|
+| [27: batch-20261103-103117Z](batch-20261103-103117Z/REVIEW.md) | [SOURCE_MANIFEST.json](batch-20261103-103117Z/SOURCE_MANIFEST.json), `originals/` | Drei vollständige Originalchats als GZIP (dekomprimierte Bytes unverändert), zehn ausgewählte inhaltlich unveränderte Completion-Records neu serialisiert/komprimiert; originale Batchmetadaten und Runner-Kurzbericht | Nein; 115.997.974-Byte-Chatupload mit SHA-256 dokumentiert. Kein vollständiges Archiv aller Server-/Providerlogs. |
+
+Dieses **Teilarchiv** reicht zum erneuten Falten sämtlicher gespeicherter Chatstände und zur Prüfung der hier dokumentierten Problem-Completions. Es ersetzt für andere Provider-/Serverfragen nicht die vollständige ZIP. Die bisherigen Originalarchive und Reviews bleiben unverändert.

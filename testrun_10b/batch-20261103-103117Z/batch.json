@@ -1,0 +1,114 @@
+{
+  "startedAt": "2026-11-03T10:31:17.193Z",
+  "status": "completed",
+  "git": "7da43d67b50e",
+  "stub": false,
+  "maxHours": 24,
+  "runs": [
+    {
+      "index": 1,
+      "id": "guild-warrior",
+      "baseClass": "Warrior",
+      "focus": "guild",
+      "seed": 458150388,
+      "folder": "001-guild-warrior",
+      "status": "finished",
+      "end": {
+        "kind": "done",
+        "why": null
+      },
+      "recordedEnd": {
+        "kind": "done",
+        "why": null
+      },
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "runDir": "20261103-103117Z-current_test",
+      "build": "4.3.0-c.6.6.153",
+      "git": {
+        "commit": "7da43d67b50e",
+        "branch": "claude/c-planner-prototype-2026-10-02-gpt-c666",
+        "dirty": []
+      },
+      "stub": false,
+      "inputs": 356,
+      "level": 18,
+      "actualClass": "warrior",
+      "profileUnchanged": true,
+      "secretHits": 0
+    },
+    {
+      "index": 2,
+      "id": "guild-mage",
+      "baseClass": "Mage",
+      "focus": "guild",
+      "seed": 458150389,
+      "folder": "002-guild-mage",
+      "status": "finished",
+      "end": {
+        "kind": "done",
+        "why": null
+      },
+      "recordedEnd": {
+        "kind": "done",
+        "why": null
+      },
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "runDir": "20261103-134251Z-current_test",
+      "build": "4.3.0-c.6.6.153",
+      "git": {
+        "commit": "7da43d67b50e",
+        "branch": "claude/c-planner-prototype-2026-10-02-gpt-c666",
+        "dirty": []
+      },
+      "stub": false,
+      "inputs": 176,
+      "level": 16,
+      "actualClass": "mage",
+      "profileUnchanged": true,
+      "secretHits": 0
+    },
+    {
+      "index": 3,
+      "id": "guild-rogue",
+      "baseClass": "Rogue",
+      "focus": "guild",
+      "seed": 458150390,
+      "folder": "003-guild-rogue",
+      "status": "finished",
+      "end": {
+        "kind": "repeated_model_failure",
+        "why": "three model failures without mechanical progress",
+        "turn": 88
+      },
+      "recordedEnd": {
+        "kind": "repeated_model_failure",
+        "why": "three model failures without mechanical progress",
+        "turn": 88
+      },
+      "exit": {
+        "code": 2,
+        "signal": null
+      },
+      "runDir": "20261103-150954Z-current_test",
+      "build": "4.3.0-c.6.6.153",
+      "git": {
+        "commit": "7da43d67b50e",
+        "branch": "claude/c-planner-prototype-2026-10-02-gpt-c666",
+        "dirty": []
+      },
+      "stub": false,
+      "inputs": 88,
+      "level": 5,
+      "actualClass": "rogue",
+      "profileUnchanged": true,
+      "secretHits": 0
+    }
+  ],
+  "endedAt": "2026-11-03T15:50:17.730Z"
+}

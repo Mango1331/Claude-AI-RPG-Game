@@ -308,8 +308,19 @@ export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = nu
     return { picks, cp };
 }
 
+// Equipped dynamic gear is catalogued as item.obj.<id>. It is still the same physical object,
+// even when an earlier command in this input has returned it to the inventory.
+function objectRef(s, ref) {
+    if (typeof ref === 'string' && ref.startsWith('item.obj.')) {
+        const id = ref.slice(5);
+        return s.objects[id] ? id : null;
+    }
+    return ref;
+}
+
 /** One catalog object representation for commands and bids; template items remain in the sheet inventory. */
 export function tradeObject(s, content, ref) {
+    ref = objectRef(s, ref);
     if (typeof ref !== 'string') return null;
     if (ref.startsWith('item.')) {
         const template = ref.slice(5), qty = s.entities.pc.sheet.inventory[template];
@@ -321,6 +332,7 @@ export function tradeObject(s, content, ref) {
 
 /** Units held in either inventory representation; equipped templates are not an extra carried copy. */
 export function heldUnits(s, ref) {
+    ref = objectRef(s, ref);
     if (typeof ref !== 'string') return 0;
     if (ref.startsWith('item.')) return s.entities.pc.sheet.inventory[ref.slice(5)] || 0;
     const o = s.objects[ref];
@@ -333,6 +345,7 @@ export function heldUnits(s, ref) {
  * @returns {{units: number} | {error: string}}
  */
 export function saleUnits(s, ref, qty = null) {
+    ref = objectRef(s, ref);
     const held = heldUnits(s, ref);
     if (!held) return { error: 'he does not hold it' };
     if (qty && qty > held) return { error: `he holds only ${held}` };
@@ -349,7 +362,7 @@ export function saleUnits(s, ref, qty = null) {
 export function bookSale(s, emit, { items = null, ref, units, buyer, cp, what, splitId, offer = null }) {
     if (!buyer || buyer === 'pc' || !s.scene.present.includes(buyer) || s.entities[buyer]?.status === 'dead') return { error: 'the buyer is not present' };
     if (!Number.isInteger(cp) || cp < 0) return { error: 'invalid sale price' };
-    const lot = items || [{ ref, units, splitId }];
+    const lot = (items || [{ ref, units, splitId }]).map(it => ({ ...it, ref: objectRef(s, it.ref) }));
     if (!lot.length || new Set(lot.map(it => it.ref)).size !== lot.length) return { error: 'empty or duplicate sale lines' };
     for (const it of lot) {
         if (!Number.isInteger(it.units) || it.units <= 0 || heldUnits(s, it.ref) < it.units) return { error: 'the complete lot is no longer held' };
@@ -362,11 +375,11 @@ export function bookSale(s, emit, { items = null, ref, units, buyer, cp, what, s
         // Build .142 (§6.2): only a binding bid is sold, whoever called
         const terms = tradeTermsWhy(live);
         if (terms) return { error: terms };
-        const ids = live.lines.filter(l => lot.some(it => it.ref === l.object && it.units === l.qty)).map(l => l.id);
+        const ids = live.lines.filter(l => lot.some(it => it.ref === objectRef(s, l.object) && it.units === l.qty)).map(l => l.id);
         const selection = bidSale(s, live, ids);
         if (selection.error || ids.length !== lot.length || selection.cp !== cp) return { error: selection.error || 'the lot or price differs from the bid' };
     }
-    for (const it of items || [{ ref, units, splitId }]) {
+    for (const it of lot) {
         const o = s.objects[it.ref];
         if (o?.holder?.entity === 'pc') {
             const part = it.units < (o.qty ?? 1) ? it.units : null;

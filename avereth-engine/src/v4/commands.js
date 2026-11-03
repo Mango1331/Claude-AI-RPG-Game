@@ -824,7 +824,8 @@ const HANDLERS = {
     drop(s, content, c, ctx, emit, envx) {
         // Patch 3 (live 18.10.2026: "he leaves the staff with them" while the staff stayed equipped): gear he wears or
         // wields comes off first, then it lies here; it gives him nothing while it lies here
-        const worn = typeof c.object === 'string' && c.object.startsWith('item.') && !objectOf(s, content, c.object) && Object.values(s.entities.pc.sheet.equipment || {}).some((r) => r === c.object.slice(5) || r?.object === c.object.slice(5));
+        const object = objectOf(s, content, c.object);
+        const worn = typeof c.object === 'string' && c.object.startsWith('item.') && (!object || object.holder?.consumed === 'equipped') && Object.values(s.entities.pc.sheet.equipment || {}).some((r) => r === c.object.slice(5) || r?.object === c.object.slice(5));
         const off = worn ? HANDLERS.unequip(s, content, { ...c, object: c.object }, ctx, emit) : null;
         // Patch 7.1: a piece of his own, taken off, is that object again
         const o = objectOf(s, content, worn && s.objects[c.object.slice(5)] ? c.object.slice(5) : c.object);

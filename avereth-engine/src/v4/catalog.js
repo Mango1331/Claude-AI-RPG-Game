@@ -176,7 +176,7 @@ export function alaricLine(state, content) {
     return [m ? `Guild member, ${m.rank}` : 'not a Guild member', `${s.coin_cp} cp`, s.hp < dv.maxHp ? `HP ${s.hp}/${dv.maxHp}` : null].filter(Boolean).join(' · ');
 }
 
-/** What Alaric's own sheet carries (template items: pouch, arrows) as catalog objects "item.<template>". */
+/** Sheet items and equipped gear. item.obj.<id> is an alias of the physical object, not a template. */
 function sheetObjects(state, content) {
     const sheet = state.entities.pc?.sheet || {};
     const inv = sheet.inventory || {};

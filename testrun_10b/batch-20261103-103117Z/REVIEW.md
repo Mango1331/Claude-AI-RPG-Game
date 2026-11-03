@@ -105,3 +105,85 @@ Gear wird diesmal tatsächlich gekauft und benutzt. Der gescheiterte Rogue-Dolch
 **Wirkungsgrenze:** Präzisere Diagnosen garantieren noch nicht, dass GLM zukünftig korrekt kopiert. Das muss der nächste natürliche Batch zeigen. Der vorhandene endliche Runner-Stopp bleibt sinnvoll. Die Gorran-Kette ist daneben ein P2 zur Wiederaufnahme nach verworfener Einführung: keine pauschale Freigabe von `enter` für unbekannte NPCs. Badekübel-Anapher und Nahkampfkomfort bleiben lokal tolerierbare P2-/Designpunkte; daraus keine weitere Wortlistenserie machen.
 
 **10B-Urteil:** gegenüber Batch26 diesmal durchgehend valide Zustände in3/3 Läufen, aber1/3 Profile technisch/modellbedingt vorzeitig beendet. Keine nachgewiesene Verschlimmbesserung durch `.153`; der neue Endstopp benutzt den unveränderten Extractor-/Repairpfad. Zwei Batches mit unterschiedlichem Build und unterschiedlichen Endgründen ergeben noch keine belastbare feste Abschlussquote. Die Architektur funktioniert in langen Kampagnen weitgehend; der sinnvollste nächste Eingriff liegt in der konkreten Reparaturdiagnose, nicht in einer neuen Finanzarchitektur, mehr XP oder der Lockerung von Eigentumsregeln.
+
+---
+
+## 7. GPT-Gegenreview – unabhängiger Codeabgleich und 10B-Bewertung (03.11.2026)
+
+**Quellenbasis und Abgrenzung:** Den vollständigen Sol-Originalreview §§1–6 gelesen. Die auf main veröffentlichten Dateien SOURCE_MANIFEST.json, PROBE_RESULTS.json, batch.json sowie die Verzeichnisliste der verlustfrei komprimierten Originalchats und zehn ausgewählten Completions geprüft. **Die komprimierten Originalchats und Completion-Records wurden von GPT nicht eigenständig dekomprimiert oder erneut gefaltet.** Original-T-/I-Belege, Eventzahlen, Hashes, Providerantworten und Original-Hostgegenversuche stammen aus Sols dokumentierter Prüfung; sie sind nicht als zweite unabhängige Ausführung auszugeben. Die folgenden Codeaussagen basieren auf einem eigenen statischen Abgleich des tatsächlichen Produktstands **.153 / 7da43d6**: src/v4/schema.js, src/validate.js, src/v4/extract.js, src/v4/catalog.js und src/v4/runtime.js. Keine Node-/ST-Tests, kein natürliches Testprofil und kein Produktcodepatch in diesem Gegenreview.
+
+### 7.1 Stabilität: klar integre Zustände, aber ein technischer Runstopper
+
+Für Batch27 gelten getrennt:
+
+| Kategorie | Befund und Interpretation |
+|---|---|
+| **Technische Zwangsabbrüche** | **1/3** – Rogue nach wiederholtem Extractor-/Repair-Fehler, nicht aus Kampf oder freiwilligem Ende |
+| **Durchgehend validierte gespeicherte Zwischenzustände** | **3/3 nach Sols Originalprüfung**, insgesamt 8.481 Events / 1.147 Eventrecords; alle Endfolds gültig |
+| **Reguläre E-Klassenabschlüsse** | **2/3** – Warrior T356/L18 und Mage T176/L16 |
+| **Modellfehler vor Zustandsbuchung** | Rogue-Fehler wiederholt abgefangen; **kein illegales Gebot, keine Zahlung, keine beschädigte Objektidentität**, aber drei inhaltlich identische Fehlerfolgen ohne Progress |
+| **.153-Rüstungsidentität** | Kein neuer Holder-/Inventarfehler, positiver Gear-Alltagsbefund; **die kombinierte ursprüngliche EQUIP→Alias-GIVE-Kette wurde nicht noch einmal natürlich getroffen** |
+
+Der Rogue-Fall ist **kein Integritätsbruch im gespeicherten Zustand**, aber für die 10B-Klasse „technisch erzwungener Endabbruch“ trotzdem **ein Fehlschlag**. Die begrenzte Runnerpolitik schützt vor endlosen Wiederholungen, macht diesen Stopper aber nicht zu einem regulären Abschluss. Ein theoretisch weiterhin nutzbarer Chat und eine tatsächlich fortgesetzte automatisierte Kampagne sind unterschiedliche Maßstäbe.
+
+### 7.2 Rogue: Katalog und Schema richtig, Diagnose tatsächlich zu unspezifisch
+
+**Sol-Befund:** Der Extractor hat den zulässigen Objektkatalog mit den vollständigen Beute-IDs einschließlich Encounter-Suffix. Trotzdem erzeugen Initialantwort und Repair in drei aufeinanderfolgenden Spielerzügen die verkürzte Fang-ID. Die aus den Quell-Completions berichteten Antworten enden regulär, nicht mit length. Der Planner trägt in späteren Versuchen sogar die vollständige Identität, sodass ein Katalogfehler oder ein automatisch verstümmelnder Parser nicht belegt ist.
+
+**Eigenständiger Codeabgleich bestätigt den unmittelbaren Diagnoseverlust:**
+
+1. **src/v4/extract.js:deltaSchema():** Ein Bid-Linienobjekt verlangt eine Referenz aus den exakt im aktuellen Katalog enthaltenen Objekt-IDs oder eine ausdrücklich neu berichtete Objektform. Die verkürzte bestehende Loot-ID gehört nicht dazu. Das Schema **muss sie ablehnen**.
+2. **src/validate.js:validateSchema():** Jede anyOf-Alternative wird intern auf Erfolg geprüft. Schlagen alle fehl, wird nach außen nur „matches none of anyOf“ zurückgegeben, ohne den getesteten Stringwert oder einen sinnvollen Subzweig.
+3. **src/v4/schema.js:validate():** Die vorhandene nützliche Spezialisierung löst den **äußeren** discriminierten Delta-Typ anhand von type auf. Innerhalb einer Bid-Zeile liegt aber nochmals ein verschachteltes anyOf für die Objekt-ID. Dort bleibt die generische Fehlermeldung stehen.
+4. **src/v4/extract.js:extractorRequest():** Der normale Repair erhält die verworfene JSON-Antwort und eine begrenzte Fehlerliste. Beim konkreten Fall fehlt ihm darin jedoch: „lines[1].object hat den Wert X; diese ID ist nicht in der aktuellen erlaubten Liste; kopiere eine vorhandene genaue ID“. Eine allgemeine Regel „copy ids exactly“ steht schon im Systemprompt, hat hier nachweislich nicht genügt.
+5. **src/v4/runtime.js:runExtraction():** Der normale Inhalt wird für maximal eine Schema-Repairantwort wieder angeboten; nach zwei ungültigen Antworten je Zug bleibt nur der sichere Fehlerrecord. Der Runner stoppt schließlich nach drei Zügen ohne mechanischen Fortschritt. **Das endliche Budget ist eine Sicherheitsgrenze, nicht die Ursache des falsch referenzierten Gegenstands.**
+
+**Folgerung:** Der richtige erste Eingriff ist die Diagnose **an der konkreten verschachtelten Feldstelle**, nicht das Erweitern des Katalogs, automatisches Anlegen eines Objekts oder das Durchwinken eines unzulässigen Gebots.
+
+**Abnahme der Wirkung:** Sols dokumentierter manueller Hostgegenversuch zeigt, dass bei **ausschließlich korrigierter Fang-ID** ein verbindliches 12-cp-Gebot entsteht, der Spieler es explizit annehmen kann und genau eine Übertragung/Transaktion erfolgt. Das widerlegt einen generell kaputten Verkaufspfad, **beweist aber noch nicht**, dass GLM auf einen verbesserten Repairprompt korrekt antworten wird. Der nächste echte Modellnachweis bleibt nötig.
+
+### 7.3 Mage: dieselbe Diagnosequalität, aber ein anderer Mechanismus
+
+**Codeabgleich:** PRICING in extract.js ist eine strikte anyOf-Union aus (a) total mit quote/currency_quote und (b) unknown **ausschließlich mit basis**. Ein Report mit basis unknown und zusätzlichen quote-Feldern muss deshalb scheitern. normalizeSoftFields/softWords macht aus solchen Feldern **keine** zulässige unknown-Form; die erhaltenen Zusatzfelder – und gegebenenfalls ein ergänztes currency_quote:null – führen zu derselben generischen anyOf-Meldung.
+
+Dies ist **keine neue Auslegungsfrage für den Geldbetrag**. Die Heilerpreisberatung bleibt unbekannt und unverbindlich. Die zwei klaren, voneinander unabhängigen Zimmer-/Versorgungsangebote wurden laut Originalgegenprobe nach einer manuellen reinen **Formkorrektur** gültig und ihre totals durch die vorhandenen S2-Belegregeln auf 10/20 cp begrenzt, **ohne Geldbewegung oder Umdeutung der Heilerin zu einem bindenden Angebot**.
+
+**Gezielter Fixansatz:** Für einen eindeutig anhand basis ausgewählten pricing-Zweig die konkreten unerlaubten Felder in der Reparaturmeldung nennen; beispielsweise „basis unknown: nur basis erlaubt; entferne quote und currency_quote; nicht als total ausgeben, sofern die Narratorworte kein bindendes Gesamtangebot enthalten“. Eine sichere lokale Normalisierung ausdrücklich unknown markierter Preise **kann** zusätzlich erwogen werden, aber nur, wenn sie weder ein unverbindliches Angebot zu firm macht noch ungültige Mengen-/Geldbelege in gültige Buchungen verwandelt. Kein pauschales Wegwerfen beliebiger Felder aller JSON-Objekte.
+
+### 7.4 Für den nächsten eng begrenzten Patch: genaue Regelgrenzen und Regressionen
+
+**Meine Präzisierung gegenüber einer allgemeinen Validator-Überarbeitung:** Keine unbeschränkte Rekursion in alle fehlgeschlagenen anyOf-Zweige einführen, die bei mehrdeutigen Unions widersprüchliche Kandidatenfehler zu einem langen, unverständlichen Repairprompt addiert. Entweder gezielt im Delta-Validator den eindeutig gewählten Strukturzweig weiterverfolgen oder in parseExtraction **nur für klar bekannte Referenz- und Pricingfelder** eine zusätzliche strukturierte Diagnose erzeugen. Bestehende valide Antworten, Protokoll und globale Validatorregeln bleiben möglichst unverändert.
+
+- **Referenzdiagnose:** tatsächlichen fehlerhaften String, vollständigen Feldpfad und eine **begrenzte, aus genau dem an diese Anfrage gebundenen Katalog entnommene** Auswahl gültiger vollständiger IDs nennen. Bei mehreren passenden Encountern die **Mehrdeutigkeit** zeigen, nicht einen Suffix raten. Eine Liste im Prompt ist ausschließlich eine Hilfestellung; die Engine darf weder automatisch korrigieren noch eine bisher unbekannte ID anerkennen.
+- **Strukturdiagnose:** bei basis unknown die unerlaubten Eigenschaften konkret ausweisen, aber kein Ergebnis aus prose errechnen. Gültige total-Angebote unverändert lassen; unabhängige Delta-Teile dürfen durch einen erfolgreich reparierten Gesamtbericht wieder gebucht werden, **nicht** durch unvalidierte Teilbuchung eines weiterhin fehlerhaften Reports.
+- **Bewusste Begrenzungen:** vorhandene eine Schema-Repairrunde, Priorität strikter Reference-/S2-Prüfung, Endstopplimit, gespeicherte Inputs/Events, Save/Edit/Fold und Replay unverändert lassen. Keine zweite Modellinstanz, automatische ID-Präfixergänzung, Preiswortliste, pauschal erhöhte Tokens oder längere retry-Schleifen.
+
+**Rote Original-/Reprotests:** Rogue Calls251/252,256/257,260/261 mit bereits vorhandener Pelt und zwei Fangs; Mage Calls98/99 mit unbekanntem Preis plus unabhängigen gültigen Offerten. Nach dem Eingriff muss der jeweilige **Repairprompt selbst** nachweisbar präziser sein; ein Stub, der die exakt richtige ID/Struktur zurückgibt, prüft den mechanischen Pfad. Der zusätzliche natürliche GLM-Test prüft erst, ob das Modell auf die präzise Diagnose wirklich reagiert.
+
+**Kontraste:** Zwei Wolfsbeute-Sätze aus unterschiedlichen Encountern dürfen nicht still zu einer ID zusammenfallen; unbekannte oder fremde Objekt-ID bleibt ungültig; gültige exakte ID bekommt keinen neuen Fehler; total/unknown/conditional und echte Stückpreisbelege behalten die S2-Grenzen; kein Gebot ohne tatsächlich vorhandenen PC-Bestand, keine Annahme ohne Spielerzustimmung, keine doppelte Veräußerung. Host-Record, Reload/Edit und Replay mitprüfen; vorhandene Abnahmesuite plus ST-Smokes gemäß 01.
+
+### 7.5 Händlersequenz und Pacing: keine zusätzlichen Grundsatzpatches
+
+**Rogue bei Gorran:** Sols belegte Reihenfolge unterscheidet sauber zwischen (1) vorgestelltem Ziel ohne autorisiertes GO, (2) zu früh am falschen Ort erzeugter Person/Offerte, (3) späterer tatsächlicher Ankunft mit nun **nicht existierender** Händler-ID und (4) zurückgewiesenem Direktinventar. Die Guards schützen die Welt, sind hier nicht selbst der Fehler. Die gespielte Wiederholung ist eine **Integrations-/Narrationsreibung**, nicht eine Fehlabbuchung. Es wäre falsch, unbekannte NPCs durch enter pauschal zuzulassen oder rückwirkend die zuvor verworfene Szene verbindlich zu machen. Bei wiederholter Häufung später als eigener P2-Wiederaufnahmepunkt prüfen; jetzt keinen zweiten ungefragten World-/Händlerpatch.
+
+**Mage Badekübel / Preiswiderspruch:** Ein einzelner 1-cp-Anapherfall und die nachgewiesene widersprüchliche Stück-/Gesamtsummenerzählung reichen nicht für neue Geldheuristiken. Der gespeicherte Preis bleibt maßgeblich; keine zusätzliche Zahlungswortliste und kein automatisches Akzeptieren behaupteter 280 cp.
+
+**Rogue Nahkampfreichweite:** Wiederholte unzulässige Angriffe von MEDIUM, ohne die notwendige neue Position zu buchen, sind Bedien-/Sequenzreibung, kein nachgewiesener Schadens- oder Kampfregeldefekt. Bei einer späteren Runner-QoL-Diskussion kann die vorhandene Reichweitenregel prägnanter sichtbar werden; nicht als unmittelbarer 10B-Mechanikpatch ausgeben.
+
+**Warrior/Mage-Leveltempo:** Mage L15 T168, Warrior T337, während letzterer lange L1-Gegner bearbeitet. Das ist ein starkes Indiz für Strategie-/Inhaltswahl und Schleifen, kein Beweis einer zu langsamen allgemeinen XP-Funktion. Die vorhandenen organischen Skillangebote, XP×5 und PP/LP jetzt nicht erneut hochsetzen. Auch .153 wurde hier nicht mit seinem exakten ursprünglichen Equip→Alias-Give-Fall natürlich nachgetestet, wohl aber ohne neue Rüstungsverdoppelung in echten Gearwechseln.
+
+### 7.6 Einordnung der aktuellen Testfolge und Empfehlung
+
+| Batch / Produkt | Technischer Endabbruch | Wesentliche Integritätsbeobachtung |
+|---|---|---|
+| 23 / .149 | **1/3** | Warrior: schwere Dungeon-Verfälschung und unbekannter Ortsfakt trotz regulären Endes |
+| 24 / .150 | **1/3** | Durchgehend gültige End-/Zwischenzustände, Rogue Fetch-/Plannerstopp |
+| 25 / .151 | **1/3** | Warrior: freie Zahlkarte im Assistantrecord, Fold-/Fortsetzungsblockade |
+| 26 / .152 | **0/3** | Warrior: physische Rüstungsduplikation; grüne Endprüfung verdeckt Zwischenfehler |
+| 27 / .153 | **1/3** | Alle gespeicherten Zustände gültig; Rogue scheitert an wiederholter Modell-/Schema-Reparatur |
+
+Über fünf **verschiedene Builds** hinweg sind dies **vier technische Endstopps in 15 Profilen** – lediglich eine historische Momentaufnahme, **keine Zuverlässigkeitsquote von .153**, kein identischer Testaufbau und keine statistische Freigabegrundlage. Fortschritt ist vor allem bei **State-/Objektintegrität und sicheren lokalen Recoveries** sichtbar; das zentrale verbleibende Hindernis ist weiterhin die gelegentliche **endgültige Unterbrechung einer mechanisch möglichen Handlung**.
+
+**Empfehlung:** Ein **gezielter P1-Integrations-/Repair-Diagnose-Fix** für verschachtelte vorhandene Objekt-IDs und eindeutig falsche Pricing-Formen ist fachlich gerechtfertigt. Die hohe Priorität bezieht sich auf den **Runner-Endstopp** und den Verlust unabhängiger Weltinformationen, nicht auf einen bewiesenen Geld- oder Inventarschaden. Den Endstopp nicht dadurch „beheben“, dass der Runner drei weitere gleichartige Fehler toleriert. Nach engem Rot/Grün-/Replay-/Hostnachweis einen neuen natürlichen Mehrklassenbatch **unverändert in Strategie und Balance** ausführen und insbesondere die nächsten unbekannten Referenzfehler sowie die Anzahl tatsächlicher technischer Zwangsstopps messen.
+
+**Status und Freigabegrenze:** Gegenreview/Codeabgleich dokumentiert, keine neue Originalreproduktion, keine Implementierung und keine automatischen Freigaben. **10B nicht allein aufgrund der zwei erfolgreichen E-Klassenläufe beenden.** Eine neue Roadmap bleibt der ausdrücklichen gemeinsamen Entscheidung nach einer hinreichend stabilen Reihe vorbehalten.

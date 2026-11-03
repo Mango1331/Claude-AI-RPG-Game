@@ -43,6 +43,7 @@ W/M/R = Warrior/Mage/Rogue; Limit und manueller Stopp sind kein technischer Fehl
 
 | Batch / Originalreview | Build | Profile / Ende | Einordnung / späterer Fix |
 |---|---|---|---|
+| [26: batch-20261103-015806Z](batch-20261103-015806Z/REVIEW.md) | **.152** | **W338/L15/E; M183/L15/E; R131/L10 Tod** | 0 technische Endabbrüche, 7 sichere Fortsetzungen; .152-Kartenverfall natürlich belegt. 8.685 Events geprüft; Warrior lokal ungültiges Inventar und Rüstungskopie trotz gültigem Endstate, M/R durchgehend validiert. Original-ZIP aus Chatupload geprüft, nicht in Git archiviert. |
 | [25: batch-20261102-154000Z](batch-20261102-154000Z/REVIEW.md) | **.151** | **W56/L6 Technikstopp; M169/L16 Tod; R309/L15/E fertig** | P1: freie Zahlkarte wandert bei Ankunft in Assistantrecord; Original-I110 über applyWorld/Fold reproduziert, keine Abbuchung. Mage/Rogue fehlerfrei gefaltet; 52 Transaktionen, natürliche Gear-Upgrades. ZIP aus Chatupload geprüft, nicht in Git archiviert. |
 | [24: batch-20261102-054921Z](batch-20261102-054921Z/REVIEW.md) | **.150** | **W282/L18/E; M120/L6 Tod; R314/L17 Fetch-/Plannerstopp** | 9.204 Events unabhängig fehlerfrei gefaltet/validiert; keine neue schwere Zustandsverfälschung nachgewiesen. 71 Transaktionen, natürliche AoE-Schonung im selben Band. L15 bei W235/R252; E-Angebote lange ignoriert. ZIP aus Chatupload geprüft, nicht auf main archiviert. |
 | [23: batch-20261101-232944Z](batch-20261101-232944Z/REVIEW.md) | **.149** | **W375/L15/E; M40/L2 Modellstopp; R216/L15/E** | Original-Chatupload unabhängig geprüft, 8.691 Events ohne Foldfehler. Warrior: falsche Dungeonwurzel plus ein ungültiger Ortsfakt; Mage: reproduzierte Endpreis-Fehlablehnung vor Modellstopp. ZIP nicht auf main archiviert. |
@@ -69,7 +70,7 @@ W/M/R = Warrior/Mage/Rogue; Limit und manueller Stopp sind kein technischer Fehl
 | [2: batch-20261027-073917Z](batch-20261027-073917Z/REVIEW.md) | .101 | Guild W150/L7, R150/L8; M99Tod; Explore W87/M123technisch | Nur5 bewertet, Run6 manuell ausgeschlossen |
 | [1: batch-20261027-030034Z](batch-20261027-030034Z/REVIEW.md) | .100 | 6gestartet; 5technische Stopps, 1manuell | Grundlage .101-Recovery |
 
-**Neuester unabhängiger Originalreview:** [Batch25/.151](batch-20261102-154000Z/REVIEW.md): drei Originalexporte geprüft; zwei fehlerfreie Endfolds, ein reproduzierter Warrior-Karten-/Arrival-Stopper. Mage überschreitet L15, stirbt später regelgerecht; Rogue nimmt E-Klasse an. ZIP aus Chatupload, noch nicht in Git. Produkt unverändert; [aktueller Stand](../03_AKTUELLER_PROJEKTSTAND.md).
+**Neuester unabhängiger Originalreview:** [Batch26/.152](batch-20261103-015806Z/REVIEW.md): drei Originalexporte, 8.685 Events, kein technischer Endabbruch; Warrior/Mage nehmen E an, Rogue stirbt regelgerecht. Lokaler Warrior-Objekt-/Templatealiasfehler reproduziert: Endvalidierung verdeckt zwischenzeitlich ungültiges Inventar und eine Rüstungskopie. Produkt unverändert; ZIP als Chatupload geprüft, nicht in Git archiviert. [Aktueller Stand](../03_AKTUELLER_PROJEKTSTAND.md).
 
 ## Balance und spätere Designs
 

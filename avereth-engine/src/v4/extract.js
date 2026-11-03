@@ -353,6 +353,35 @@ export function sceneIssues(value, startScene, state = null, content = null, exp
     return issues;
 }
 
+// Repair diagnostics only: never resolve an ID, change the report, or relax its schema.
+function fieldRepairHint(error, d, i, ids = {}, spec) {
+    const line = /\.lines\[(\d+)\]/.exec(error);
+    const object = d.type === 'bid' && line && error.includes('.object:')
+        ? { value: d.lines?.[Number(line[1])]?.object, path: `$.deltas[${i}].lines[${line[1]}].object` }
+        : Object.entries(spec?.fields || {}).filter(([key, field]) => field.ref === 'object' && error.includes(`.${key}:`))
+            .map(([key]) => ({ value: d[key], path: `$.deltas[${i}].${key}` }))[0];
+    if (typeof object?.value === 'string' && !(ids.objects || []).includes(object.value)) {
+        const known = [...new Set(ids.objects || [])];
+        // Prefix similarity orders suggestions only. Every candidate still requires exact reference/holder checks.
+        const near = known.filter(id => id.startsWith(object.value));
+        const ordered = [...near, ...known.filter(id => !near.includes(id))];
+        const shown = [];
+        for (const id of ordered) {
+            if (shown.length === 12 || JSON.stringify([...shown, id]).length > 1600) break;
+            shown.push(id); // never truncate a candidate ID or conceal an encounter suffix
+        }
+        return ` ${object.path}: invalid object ID ${JSON.stringify(object.value).slice(0, 200)}; copy an exact current CATALOG ID. Candidates${near.length > 1 ? ' include multiple matching identities' : ''}: ${JSON.stringify(shown)}${shown.length < known.length ? ' (others omitted; consult CATALOG)' : ''}. Do not guess an encounter suffix or merge objects; select the actual object. For a genuinely new object created earlier in this reply, use the existing {"new":"exact name"} reference, never an invented obj.* ID. Catalog membership alone does not establish PC ownership or quantity.`;
+    }
+    if (error.includes('.pricing:') && (d.type === 'bid' || (d.type === 'offer' && line))) {
+        const item = d.type === 'bid' ? d : d.lines?.[Number(line[1])];
+        if (item?.pricing?.basis === 'unknown') {
+            const extra = Object.keys(item.pricing).filter(key => key !== 'basis');
+            if (extra.length) return ` $.deltas[${i}]${d.type === 'offer' ? `.lines[${line[1]}]` : ''}.pricing: basis unknown permits only basis; remove forbidden fields ${JSON.stringify(extra).slice(0, 200)}. Keep {"basis":"unknown"}; do not invent a total or binding commitment. Preserve independent valid lines.`;
+        }
+    }
+    return '';
+}
+
 export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequired = false, startScene = null, state = null, content = null, explicitArrivals = sceneRequired, reply = null } = {}) {
     const parsed = extractJsonObject(answer);
     const { error, raw } = parsed;
@@ -373,6 +402,7 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
         const match = /^\$\.deltas\[(\d+)\]/.exec(error);
         const d = match ? value.deltas[Number(match[1])] : null;
         const spec = vocab.deltas.find(x => x.type === d?.type);
+        if (d) errors[errorIndex] += fieldRepairHint(error, d, Number(match[1]), ids, spec);
         const fields = spec ? Object.entries(spec.fields).filter(([key, field]) => field.ref === 'place' && error.includes(`.${key}:`)).map(([key]) => key) : [];
         if (/^\$\.scene:/.test(error) || error.includes('.scene:') || fields.length) {
             if (placeHintAdded) continue;

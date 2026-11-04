@@ -8,5 +8,6 @@ Erster separat dokumentierter **persönlicher** Avereth-Engine-Test (kein Batch-
 - [Original-Chatexport](originals/chat.jsonl) und [Original-Eventexport](originals/events.json)
 - [Quellenmanifest mit Original-SHA-256](SOURCE_MANIFEST.md)
 - [Prüfung des nicht im Git archivierten großen PowerShell-Serverlogs](HOST_LOG_AUDIT.md)
+- [NPC-Kontinuitätsanalyse mit Brenna-Befund und Roadmap-Bewertung (04.11.2026)](../../recherche/NPC_KONTINUITAET_ANALYSE_20261104.md)
 
 **Nur Analyse / Review / Dokumentation; keine Produktpatch-Freigabe, keine neue Vollsuite.**

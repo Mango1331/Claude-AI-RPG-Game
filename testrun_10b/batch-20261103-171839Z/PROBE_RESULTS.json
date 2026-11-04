@@ -1,0 +1,452 @@
+{
+  "note": "Read-only counterfactuals on unchanged .154; not natural live runs or product fixes",
+  "rogue_aoe": {
+    "kind": "counterfactual on unchanged .154, original prefix through I68, no live model",
+    "before_hp": 56,
+    "steps": [
+      {
+        "hp": 30,
+        "sta": 70,
+        "outcome": {
+          "kind": "combat",
+          "started": null,
+          "records": [
+            {
+              "round": 2,
+              "actor": "pc",
+              "kind": "attack",
+              "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+              "opening": false,
+              "cost": {
+                "resource": "sta",
+                "amount": 10,
+                "before": 80,
+                "after": 70
+              },
+              "skill": "rogue.fan_of_blades",
+              "skill_name": "Fan of Blades",
+              "area_band": "ENGAGED",
+              "raw": 28.375,
+              "raw_text": "6 + AGI 11×1.125 + ATK 10 = 28.375",
+              "strikes": [
+                {
+                  "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+                  "power": 28.375,
+                  "defense": 2,
+                  "post_def": 26.375,
+                  "variance": 1.04,
+                  "final": 27,
+                  "absorbed": 0,
+                  "hp_before": 3,
+                  "hp_after": 0,
+                  "steps": [
+                    "Raw 28.375",
+                    "DEF 2: max(28.375-2, 28.375×0.10) = 26.375",
+                    "×1.04 variance = 27.43",
+                    "round once = 27"
+                  ],
+                  "defeated": true
+                },
+                {
+                  "target": "mon.old_crown_catacombs_c1_l1_e1_2",
+                  "power": 28.375,
+                  "defense": 4,
+                  "post_def": 24.375,
+                  "variance": 1.06,
+                  "final": 26,
+                  "absorbed": 0,
+                  "hp_before": 27,
+                  "hp_after": 1,
+                  "steps": [
+                    "Raw 28.375",
+                    "DEF 4: max(28.375-4, 28.375×0.10) = 24.375",
+                    "×1.06 variance = 25.8375",
+                    "round once = 26"
+                  ]
+                },
+                {
+                  "target": "mon.old_crown_catacombs_c1_l1_e1_3",
+                  "power": 28.375,
+                  "defense": 4,
+                  "post_def": 24.375,
+                  "variance": 0.93,
+                  "final": 23,
+                  "absorbed": 0,
+                  "hp_before": 26,
+                  "hp_after": 3,
+                  "steps": [
+                    "Raw 28.375",
+                    "DEF 4: max(28.375-4, 28.375×0.10) = 24.375",
+                    "×0.93 variance = 22.66875",
+                    "round once = 23"
+                  ]
+                }
+              ],
+              "pending_xp_added": 60
+            },
+            {
+              "round": 2,
+              "actor": "mon.old_crown_catacombs_c1_l1_e1_2",
+              "kind": "attack",
+              "target": "pc",
+              "opening": false,
+              "skill_name": "Bony strike",
+              "raw": 19,
+              "raw_text": "natural attack Raw = ATK 19",
+              "strikes": [
+                {
+                  "target": "pc",
+                  "power": 19,
+                  "defense": 6,
+                  "post_def": 13,
+                  "variance": 1.08,
+                  "final": 14,
+                  "absorbed": 0,
+                  "hp_before": 56,
+                  "hp_after": 42,
+                  "steps": [
+                    "Raw 19",
+                    "DEF 6: max(19-6, 19×0.10) = 13",
+                    "×1.08 variance = 14.04",
+                    "round once = 14"
+                  ]
+                }
+              ]
+            },
+            {
+              "round": 2,
+              "actor": "mon.old_crown_catacombs_c1_l1_e1_3",
+              "kind": "attack",
+              "target": "pc",
+              "opening": false,
+              "skill_name": "Bony strike",
+              "raw": 17,
+              "raw_text": "natural attack Raw = ATK 17",
+              "strikes": [
+                {
+                  "target": "pc",
+                  "power": 17,
+                  "defense": 6,
+                  "post_def": 11,
+                  "variance": 1.08,
+                  "final": 12,
+                  "absorbed": 0,
+                  "hp_before": 42,
+                  "hp_after": 30,
+                  "steps": [
+                    "Raw 17",
+                    "DEF 6: max(17-6, 17×0.10) = 11",
+                    "×1.08 variance = 11.88",
+                    "round once = 12"
+                  ]
+                }
+              ]
+            }
+          ],
+          "illegal": null,
+          "next": "Alaric's Turn (Round 3)",
+          "board": {
+            "round": 3,
+            "order": [
+              {
+                "id": "pc",
+                "init": 16
+              },
+              {
+                "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+                "init": 10
+              },
+              {
+                "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+                "init": 9
+              },
+              {
+                "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+                "init": 8
+              }
+            ],
+            "hp": [
+              {
+                "id": "pc",
+                "hp": 30,
+                "max": 100,
+                "state": null
+              },
+              {
+                "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+                "hp": 1,
+                "max": 54,
+                "state": null,
+                "band": "ENGAGED",
+                "cover": "none"
+              },
+              {
+                "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+                "hp": 3,
+                "max": 48,
+                "state": null,
+                "band": "ENGAGED",
+                "cover": "none"
+              },
+              {
+                "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+                "hp": 0,
+                "max": 30,
+                "state": "defeated",
+                "band": "ENGAGED",
+                "cover": "none"
+              }
+            ],
+            "labels": {
+              "mon.old_crown_catacombs_c1_l1_e1_1": "Restless Skeleton A",
+              "mon.old_crown_catacombs_c1_l1_e1_2": "Restless Skeleton B",
+              "mon.old_crown_catacombs_c1_l1_e1_3": "Restless Skeleton C"
+            },
+            "pc": {
+              "mp": 84,
+              "max_mp": 84,
+              "sta": 70,
+              "max_sta": 100,
+              "arrows": 0
+            }
+          },
+          "c": true
+        }
+      },
+      {
+        "hp": 30,
+        "sta": 60,
+        "outcome": {
+          "kind": "combat",
+          "started": null,
+          "records": [
+            {
+              "round": 3,
+              "actor": "pc",
+              "kind": "attack",
+              "target": "mon.old_crown_catacombs_c1_l1_e1_2",
+              "opening": false,
+              "cost": {
+                "resource": "sta",
+                "amount": 10,
+                "before": 70,
+                "after": 60
+              },
+              "skill": "rogue.fan_of_blades",
+              "skill_name": "Fan of Blades",
+              "area_band": "ENGAGED",
+              "raw": 28.375,
+              "raw_text": "6 + AGI 11×1.125 + ATK 10 = 28.375",
+              "strikes": [
+                {
+                  "target": "mon.old_crown_catacombs_c1_l1_e1_2",
+                  "power": 28.375,
+                  "defense": 4,
+                  "post_def": 24.375,
+                  "variance": 0.91,
+                  "final": 22,
+                  "absorbed": 0,
+                  "hp_before": 1,
+                  "hp_after": 0,
+                  "steps": [
+                    "Raw 28.375",
+                    "DEF 4: max(28.375-4, 28.375×0.10) = 24.375",
+                    "×0.91 variance = 22.18125",
+                    "round once = 22"
+                  ],
+                  "defeated": true
+                },
+                {
+                  "target": "mon.old_crown_catacombs_c1_l1_e1_3",
+                  "power": 28.375,
+                  "defense": 4,
+                  "post_def": 24.375,
+                  "variance": 1.05,
+                  "final": 26,
+                  "absorbed": 0,
+                  "hp_before": 3,
+                  "hp_after": 0,
+                  "steps": [
+                    "Raw 28.375",
+                    "DEF 4: max(28.375-4, 28.375×0.10) = 24.375",
+                    "×1.05 variance = 25.59375",
+                    "round once = 26"
+                  ],
+                  "defeated": true
+                }
+              ],
+              "pending_xp_added": 540
+            }
+          ],
+          "illegal": null,
+          "next": null,
+          "board": {
+            "round": 4,
+            "order": [
+              {
+                "id": "pc",
+                "init": 16
+              },
+              {
+                "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+                "init": 10
+              },
+              {
+                "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+                "init": 9
+              },
+              {
+                "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+                "init": 8
+              }
+            ],
+            "hp": [
+              {
+                "id": "pc",
+                "hp": 30,
+                "max": 100,
+                "state": null
+              },
+              {
+                "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+                "hp": 0,
+                "max": 54,
+                "state": "defeated",
+                "band": "ENGAGED",
+                "cover": "none"
+              },
+              {
+                "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+                "hp": 0,
+                "max": 48,
+                "state": "defeated",
+                "band": "ENGAGED",
+                "cover": "none"
+              },
+              {
+                "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+                "hp": 0,
+                "max": 30,
+                "state": "defeated",
+                "band": "ENGAGED",
+                "cover": "none"
+              }
+            ],
+            "labels": {
+              "mon.old_crown_catacombs_c1_l1_e1_1": "Restless Skeleton A",
+              "mon.old_crown_catacombs_c1_l1_e1_2": "Restless Skeleton B",
+              "mon.old_crown_catacombs_c1_l1_e1_3": "Restless Skeleton C"
+            },
+            "pc": {
+              "mp": 84,
+              "max_mp": 84,
+              "sta": 60,
+              "max_sta": 100,
+              "arrows": 0
+            }
+          },
+          "ended": {
+            "defeated": [
+              "mon.old_crown_catacombs_c1_l1_e1_1",
+              "mon.old_crown_catacombs_c1_l1_e1_2",
+              "mon.old_crown_catacombs_c1_l1_e1_3"
+            ],
+            "escaped": [],
+            "xp_awarded": 600,
+            "pc_dead": false,
+            "pc_escaped": false,
+            "pp": [
+              {
+                "skill": "rogue.fan_of_blades",
+                "gained": 18,
+                "from": {
+                  "prof": 1,
+                  "pp": 0
+                },
+                "to": {
+                  "prof": 1,
+                  "pp": 18
+                },
+                "need": 75
+              }
+            ],
+            "trial": {
+              "key": "trial:enc.t28",
+              "sure": false,
+              "roll": 53,
+              "chance": 40,
+              "passed": false
+            },
+            "noted": {
+              "skills": [
+                "rogue.fan_of_blades"
+              ]
+            }
+          },
+          "levelups": [
+            "Level 3",
+            "Level 4"
+          ],
+          "loot": [
+            "F-Rank Restless Skeleton Bone ×4",
+            "F-Rank Restless Skeleton Grave Dust ×1"
+          ],
+          "booked": {
+            "registration": false,
+            "grants": [
+              "F-Rank Restless Skeleton Bone",
+              "F-Rank Restless Skeleton Grave Dust"
+            ],
+            "turnIns": [],
+            "accepted": []
+          },
+          "c": true
+        }
+      }
+    ],
+    "final_hp": 30,
+    "encounter": null,
+    "validation": []
+  },
+  "item_identity": {
+    "kind": "read-only counterfactual; unchanged .154; corrected return reference, then only added existing ID to temporary request enum",
+    "old_exists": true,
+    "old_holder": {
+      "entity": "npc.hessa"
+    },
+    "old_id_in_catalog": false,
+    "original_reference_parse": {
+      "valid": false,
+      "errors": [
+        "$.deltas[2] (object.move): .object: matches none of anyOf $.deltas[2].object: invalid object ID \"obj.t169.common_f_rank_mail_shirt\"; copy an exact current CATALOG ID. Candidates: [\"obj.guild_plate\",\"obj.slip.clear_the_old_crown_catacombs_level_1\",\"obj.t72.bowl_of_stew_with_brown_bread\",\"obj.slip.dock_spiders_in_the_sluice_house\",\"obj.loot.marsh_viper.skin.f\",\"obj.loot.marsh_viper.fang.f\",\"item.simple_travelers_clothes\",\"item.obj.t85.fine_f_rank_longsword\",\"item.small_pouch\",\"item.starter_longsword_r2\",\"item.starter_heavy_armor\"]. Do not guess an encounter suffix or merge objects; select the actual object. For a genuinely new object created earlier in this reply, use the existing {\"new\":\"exact name\"} reference, never an invented obj.* ID. Catalog membership alone does not establish PC ownership or quantity."
+      ]
+    },
+    "extended_parse": {
+      "valid": true,
+      "errors": [],
+      "issues": []
+    },
+    "world": {
+      "holder": {
+        "entity": "pc"
+      },
+      "profile": {
+        "kind": "gear",
+        "base": "heavy_armor",
+        "title": "mail shirt",
+        "rank": "F",
+        "quality": "common",
+        "slot": "armor",
+        "family": null,
+        "atk": 0,
+        "matk": 0,
+        "def": 6,
+        "mdef": 2,
+        "value_cp": 64
+      },
+      "created": [],
+      "rejected": [],
+      "validation": []
+    }
+  }
+}

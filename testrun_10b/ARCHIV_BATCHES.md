@@ -81,3 +81,13 @@ Diese ZIP ist **byteidentisch zum Chatupload**, keine Neuverpackung. SHA-256: `a
 | [27: batch-20261103-103117Z](batch-20261103-103117Z/REVIEW.md) | [SOURCE_MANIFEST.json](batch-20261103-103117Z/SOURCE_MANIFEST.json), `originals/` | Drei vollständige Originalchats als GZIP (dekomprimierte Bytes unverändert), zehn ausgewählte inhaltlich unveränderte Completion-Records neu serialisiert/komprimiert; originale Batchmetadaten und Runner-Kurzbericht | Nein; 115.997.974-Byte-Chatupload mit SHA-256 dokumentiert. Kein vollständiges Archiv aller Server-/Providerlogs. |
 
 Dieses **Teilarchiv** reicht zum erneuten Falten sämtlicher gespeicherter Chatstände und zur Prüfung der hier dokumentierten Problem-Completions. Es ersetzt für andere Provider-/Serverfragen nicht die vollständige ZIP. Die bisherigen Originalarchive und Reviews bleiben unverändert.
+
+
+## Ergänzung 04.11.2026 – Batch28, Originalchatstände und gezielte Completions
+
+| Batch | Quellen | Umfang | Vollständige Original-ZIP in Git |
+|---|---|---|---|
+| [28: batch-20261103-171839Z](batch-20261103-171839Z/REVIEW.md) | [SOURCE_MANIFEST.json](batch-20261103-171839Z/SOURCE_MANIFEST.json), `originals/` | Drei vollständige Originalchats als GZIP (dekomprimierte Bytes unverändert), 37 ausgewählte inhaltlich unveränderte Completion-Records neu serialisiert/komprimiert; originale Batchmetadaten und Runner-Kurzbericht | Nein; 89.072.598-Byte-Chatupload, SHA-256 `7d2682bd6129f831f2891ef0a51edc21897f742bbb471ea9f5ca83ea4001d204`. |
+
+Teilarchiv für alle gespeicherten Chat-/Eventzustände und die ausgewählten Problem-Completions; keine vollständigen Server-/Providerlogs. Original-ZIP CRC-geprüft, Chatbytes und publizierte Quellen gehasht. [Review](batch-20261103-171839Z/REVIEW.md) und [Read-only-Gegenproben](batch-20261103-171839Z/PROBE_RESULTS.json) trennen Originalereignisse und kontrafaktische Verarbeitung. Keine Produktänderung.
+

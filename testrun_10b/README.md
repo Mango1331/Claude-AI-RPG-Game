@@ -1,6 +1,6 @@
 # Avereth – Originalruns und Reviews (10B)
 
-**Stand: 03.11.2026. Quellenindex, keine zweite Patchplanung.** Produkt/Abnahme/nächste Arbeit in [03](../03_AKTUELLER_PROJEKTSTAND.md), Fixketten/Commits in[06](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). Ausführliche Bewertungen bleiben unverändert im jeweiligen Runordner.
+**Stand: 04.11.2026. Quellenindex, keine zweite Patchplanung.** Produkt/Abnahme/nächste Arbeit in [03](../03_AKTUELLER_PROJEKTSTAND.md), Fixketten/Commits in[06](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). Ausführliche Bewertungen bleiben unverändert im jeweiligen Runordner.
 
 Bei Einzelruns folgt die ZIP-Spalte dem tatsächlich vorhandenen `main`-Dateibaum. Für Batches ist der [Archivindex](ARCHIV_BATCHES.md) maßgeblich. **„Nein“ heißt nicht unabhängig im nächsten Chat prüfbar:** Ein früher geprüfter Chatupload ersetzt keinen hier verfügbaren Originalexport. Niemals aus einem Review eine eigene Originalprüfung behaupten. Vollständige frühere Indextexte/Hashhinweise: [7994fa4](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/7994fa42b115f21b705c0b770e2b4e31fde67f77/testrun_10b/README.md).
 
@@ -43,6 +43,7 @@ W/M/R = Warrior/Mage/Rogue; Limit und manueller Stopp sind kein technischer Fehl
 
 | Batch / Originalreview | Build | Profile / Ende | Einordnung / späterer Fix |
 |---|---|---|---|
+| [28: batch-20261103-171839Z](batch-20261103-171839Z/REVIEW.md) | **.154** | **W421/L15/E; M25/L2 Tod; R37/L2 Tod** | 6.454 Events/858 Recordzustände formal gültig, 50 Transaktionen; 0 technische Endabbrüche, sechs sichere Fortsetzungen. Natürlicher Pricing-Repair positiv. P2: repariertes Hemd kopiert, weil alte ID im Ankunftskatalog fehlt; kein belegter Geld-/Statgewinn. Drei Originalchats und 37 ausgewählte Completions komprimiert archiviert; vollständige ZIP nur Chatupload. |
 | [27: batch-20261103-103117Z](batch-20261103-103117Z/REVIEW.md) | **.153** | **W356/L18/E; M176/L16/E; R88/L5 Modellstopp** | 8.481 Events/alle Recordzustände gültig; 63 Transaktionen, passende Wallets. Rogue: dreimal falsche Loot-ID trotz vorhandenem Katalog, Runner-Stallschutz beendet; korrigierte ID schließt 12-cp-Verkauf im Hostgegenversuch. Drei Originalchats und ausgewählte Completions komprimiert archiviert, vollständige ZIP nur Chatupload. |
 | [26: batch-20261103-015806Z](batch-20261103-015806Z/REVIEW.md) | **.152** | **W338/L15/E; M183/L15/E; R131/L10 Tod** | 0 technische Endabbrüche, 7 sichere Fortsetzungen; .152-Kartenverfall natürlich belegt. 8.685 Events geprüft; Warrior lokal ungültiges Inventar und Rüstungskopie trotz gültigem Endstate, M/R durchgehend validiert. Original-ZIP aus Chatupload geprüft, nicht in Git archiviert. |
 | [25: batch-20261102-154000Z](batch-20261102-154000Z/REVIEW.md) | **.151** | **W56/L6 Technikstopp; M169/L16 Tod; R309/L15/E fertig** | P1: freie Zahlkarte wandert bei Ankunft in Assistantrecord; Original-I110 über applyWorld/Fold reproduziert, keine Abbuchung. Mage/Rogue fehlerfrei gefaltet; 52 Transaktionen, natürliche Gear-Upgrades. ZIP aus Chatupload geprüft, nicht in Git archiviert. |
@@ -71,7 +72,7 @@ W/M/R = Warrior/Mage/Rogue; Limit und manueller Stopp sind kein technischer Fehl
 | [2: batch-20261027-073917Z](batch-20261027-073917Z/REVIEW.md) | .101 | Guild W150/L7, R150/L8; M99Tod; Explore W87/M123technisch | Nur5 bewertet, Run6 manuell ausgeschlossen |
 | [1: batch-20261027-030034Z](batch-20261027-030034Z/REVIEW.md) | .100 | 6gestartet; 5technische Stopps, 1manuell | Grundlage .101-Recovery |
 
-**Neuester unabhängiger Originalreview:** [Batch26/.152](batch-20261103-015806Z/REVIEW.md): drei Originalexporte, 8.685 Events, kein technischer Endabbruch; Warrior/Mage nehmen E an, Rogue stirbt regelgerecht. Lokaler Warrior-Objekt-/Templatealiasfehler reproduziert: Endvalidierung verdeckt zwischenzeitlich ungültiges Inventar und eine Rüstungskopie. Produkt unverändert; ZIP als Chatupload geprüft, nicht in Git archiviert. [Aktueller Stand](../03_AKTUELLER_PROJEKTSTAND.md).
+**Neuester unabhängiger Originalreview:** [Batch28/.154](batch-20261103-171839Z/REVIEW.md). Originalprüfung, technische Fortsetzbarkeit, begrenzter Identitätsfehler sowie Kampf-/Pacingbewertung im Runordner; [aktueller Stand](../03_AKTUELLER_PROJEKTSTAND.md).
 
 ## Balance und spätere Designs
 
@@ -80,4 +81,5 @@ W/M/R = Warrior/Mage/Rogue; Limit und manueller Stopp sind kein technischer Fehl
 ## Umgang mit neuen Runs
 
 Originaldateien/Reviews unverändert erhalten, ZIP/Integrität und Quellenverfügbarkeit ehrlich ausweisen. Für neue Runs genau eine kurze Indexzeile; Ursachen, Requests, Events, Gegenbewertungen, **Endgrund und technische Stopper-/Recovery-Einordnung** sowie spätere Umsetzung beim Run beziehungsweise in der Dev-Fachpatchnote. Keine API-Schlüssel archivieren. Runner-„completed“ bedeutet beendet, nicht Levelziel erreicht. Ein Mock-Smoke ist kein natürlicher GLM-Nachweis.
+
 

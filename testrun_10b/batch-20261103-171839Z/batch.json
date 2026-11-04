@@ -1,0 +1,112 @@
+{
+  "startedAt": "2026-11-03T17:18:40.001Z",
+  "status": "completed",
+  "git": "2482da2cbbd1",
+  "stub": false,
+  "maxHours": 24,
+  "runs": [
+    {
+      "index": 1,
+      "id": "guild-warrior",
+      "baseClass": "Warrior",
+      "focus": "guild",
+      "seed": 534856858,
+      "folder": "001-guild-warrior",
+      "status": "finished",
+      "end": {
+        "kind": "done",
+        "why": null
+      },
+      "recordedEnd": {
+        "kind": "done",
+        "why": null
+      },
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "runDir": "20261103-171840Z-current_test",
+      "build": "4.3.0-c.6.6.154",
+      "git": {
+        "commit": "2482da2cbbd1",
+        "branch": "claude/c-planner-prototype-2026-10-02-gpt-c666",
+        "dirty": []
+      },
+      "stub": false,
+      "inputs": 421,
+      "level": 15,
+      "actualClass": "warrior",
+      "profileUnchanged": true,
+      "secretHits": 0
+    },
+    {
+      "index": 2,
+      "id": "guild-mage",
+      "baseClass": "Mage",
+      "focus": "guild",
+      "seed": 534856859,
+      "folder": "002-guild-mage",
+      "status": "finished",
+      "end": {
+        "kind": "defeat",
+        "why": "turn 25: he died"
+      },
+      "recordedEnd": {
+        "kind": "defeat",
+        "why": "turn 25: he died"
+      },
+      "exit": {
+        "code": 2,
+        "signal": null
+      },
+      "runDir": "20261103-221451Z-current_test",
+      "build": "4.3.0-c.6.6.154",
+      "git": {
+        "commit": "2482da2cbbd1",
+        "branch": "claude/c-planner-prototype-2026-10-02-gpt-c666",
+        "dirty": []
+      },
+      "stub": false,
+      "inputs": 25,
+      "level": 2,
+      "actualClass": "mage",
+      "profileUnchanged": true,
+      "secretHits": 0
+    },
+    {
+      "index": 3,
+      "id": "guild-rogue",
+      "baseClass": "Rogue",
+      "focus": "guild",
+      "seed": 534856860,
+      "folder": "003-guild-rogue",
+      "status": "finished",
+      "end": {
+        "kind": "defeat",
+        "why": "turn 37: he died"
+      },
+      "recordedEnd": {
+        "kind": "defeat",
+        "why": "turn 37: he died"
+      },
+      "exit": {
+        "code": 2,
+        "signal": null
+      },
+      "runDir": "20261103-222753Z-current_test",
+      "build": "4.3.0-c.6.6.154",
+      "git": {
+        "commit": "2482da2cbbd1",
+        "branch": "claude/c-planner-prototype-2026-10-02-gpt-c666",
+        "dirty": []
+      },
+      "stub": false,
+      "inputs": 37,
+      "level": 2,
+      "actualClass": "rogue",
+      "profileUnchanged": true,
+      "secretHits": 0
+    }
+  ],
+  "endedAt": "2026-11-03T22:45:12.365Z"
+}

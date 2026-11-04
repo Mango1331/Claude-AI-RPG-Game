@@ -601,6 +601,10 @@ const HANDLERS = {
         if (lived?.refuse) return lived.refuse;
         ctx.auth.go = go;
         ctx.auth.gos.push(go);
+        if (c.sneak) {
+            go.sneak = true;
+            ctx.extra.push('SNEAKING TRAVEL — the GO and stealth approach are one action. Establish only the place actually reached and its actual occupants. Detection is PENDING: the engine checks Stealth there after arrival and Dungeon population. Do not decide discovery, guaranteed concealment, an Ambush bonus or an attack from this approach in advance. A blocked way remains blocked.');
+        }
         ctx.auth.timeCap = Math.max(ctx.auth.timeCap, cap);
         ctx.expectedKeys[String(c.seq)] = 'go';
         // he sets off while a quest's journey is ready with its people here: an arrival out of the settlement starts it

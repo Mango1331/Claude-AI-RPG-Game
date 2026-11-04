@@ -74,7 +74,7 @@ export const MECH_COMMANDS = [
     '- ability_world {skill, target, target_words, goal}: a skill used on a thing. skill as above; target: an id from OBJECTS | {"new": "<the thing>"}',
     '- move {dir, target}: dir "closer" | "away"; target: an id | null',
     '- flee {}: he tries to get away',
-    '- stealth {}: he hides or sneaks',
+    '- stealth {}: he hides or sneaks. Sneaking into/across a place is ONE movement: emit stealth and the ordinary go with his destination, linking go.needs to the stealth seq (or quote the SAME complete movement in both commands; either order is allowed). This binds the approach to that movement, unlike walking somewhere and independently hiding later. The engine checks Stealth after actual arrival and destination observers; do not replace the movement with hiding here. In combat the existing action restrictions still apply.',
     '- attempt {feature, aim, approach, stat, tool, possible}: he deals with an obstacle or danger of FEATURES (rule 10)',
     '- other {what}: an action of his that no command fits; what: a few of his words',
     '- clarify {about, question, options}: instead of acting; about "target" | "skill" | "action"; question: one short question to the player; options: ids or short texts',
@@ -748,6 +748,19 @@ export function mapPlan(commands, ctx, content, message, state) {
     // outside a fight a flight or a deed no command fits is story fiction: the narrator tells it as A's V4 turn does
     // (PLAYER ACTIONS / NOTHING TO BOOK); the record keeps it, so a session shows where it happened
     const mechMain = mains.filter((c) => fight || c.type !== 'flee');
+    // One travel action with a stealth approach, not a source-room hide followed by a dropped GO.
+    // This internal flag is not a new model field. Keep all normal GO/gate/arrival checks.
+    const sneaking = !fight && mechMain.length === 1 && mechMain[0].type === 'stealth' ? mechMain[0] : null;
+    const travel = story.filter(c => c.type === 'go');
+    const approach = sneaking && travel.length === 1 && (travel[0].needs === sneaking.seq
+        || (sneaking.quote && sneaking.quote === travel[0].quote));
+    if (approach) {
+        const go = { ...travel[0], sneak: true };
+        if (go.needs === sneaking.seq) delete go.needs;
+        for (const c of story.filter(c => c !== travel[0])) notes.push(`not taken with sneaking travel: ${said(c)}`);
+        for (const c of mech.filter(x => x.type === 'other' || x.type === 'attempt')) free.push(`${c.type}: ${said(c)}`);
+        return { route: 'v4', commands: [go], notes, free };
+    }
     // Patch 8.4.3: a flight outside a fight that says where it goes is a go there (retreatGo); one that does not stays
     // story fiction, and the engine books no place for it
     if (!fight) {

@@ -258,6 +258,8 @@ export function worldPanel(state, content, reply = {}) {
         lines.push(...changeLines(state, reply.state, content, reply.opened ? reply.events.slice(0, reply.opened.from) : reply.events));
         const check = reply.events.find((e) => e.t === 'check.recorded' && e.d.by === 'narrator');
         if (check) lines.push(sys(`CHECK — ${check.d.what}${check.d.stat ? ` (${check.d.stat})` : ''}: d100 ${check.d.roll} → ${check.d.success ? 'SUCCESS' : 'FAILURE'} (as the story judged it)`));
+        const arrivalStealth = reply.events.find(e => e.t === 'check.recorded' && e.d.by === 'engine' && e.d.what === 'arrival stealth');
+        if (arrivalStealth) lines.push(checkLine(arrivalStealth.d));
     }
     for (const x of reply.system || []) lines.push(sys(String(x).replace(/[<>`]/g, '')));
     if (reply.rejected?.length) lines.push(sys(`ENGINE REFUSED ${reply.rejected.length} reported change${reply.rejected.length > 1 ? 's' : ''} (${[...new Set(reply.rejected.map((r) => r.rule))].join(', ')}): see #audit or the event export`));

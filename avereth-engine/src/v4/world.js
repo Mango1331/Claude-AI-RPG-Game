@@ -12,6 +12,7 @@ import { privateQuestsOf, questVisible } from '../content.js';
 // opens exactly as in V3 (engine.js openCommitted). Places, time, objects, offers, coin, coercion and quests are V4
 // handlers. Nothing here can change what the player's commands resolved.
 import { resolveCommands } from './commands.js';
+import { stealthEvents } from '../checks.js';
 import { transferCargo, deliveryStatus, deliveryObjectives, confirmDelivery, additionalContainerReturn } from './delivery.js';
 import { Dice } from '../rng.js';
 import { applyEvent } from '../state.js';
@@ -224,6 +225,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const refusedArrival = (d) => { if (d?.type === 'arrive') { travel.push({ seq: d.seq ?? 0, ok: false, away: leavesHere(d.at) }); } };
     const outcome = s.last?.outcome || {};
     const auth = outcome.auth || {};
+    const stealthGo = auth.gos?.find(g => g.sneak);
     // Prototype C: the turn the planner read (a story turn: auth.c; a V3-routed one: the outcome's c)
     const cPath = !!(auth.c || outcome.c);
     const explicitTravel = cPath && rulesetOf(s) >= 2;
@@ -337,6 +339,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     let timeUsed = booked;
     const startAt = s.scene.at;
     let arrived = null;
+    let stealthAt = null; // actual voluntary arrival of this GO, never a forced relocation
     let arrivedHall = null;
     const arrivals = new Set();
     let freshPart = null; // Patch 8: the new part of a Living Dungeon this reply brought him into
@@ -429,7 +432,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     };
     // whom this reply establishes as not having noticed Alaric (aware: unaware), whatever step of it reports that: they do
     // not see him at an earlier step either (perceiveAll)
-    const seeing = () => ({ unaware: new Set((fw.accept || []).filter((d) => d?.type === 'aware' && d.level === 'unaware').flatMap((d) => resolveRef(s, content, d.who, { scope: d.scope ?? null, evidence: d.evidence ?? null, prose, groups, refs, single: mapRef }).ids).filter((x) => typeof x === 'string')) });
+    let stealthSettled = false;
+    const seeing = () => ({ unaware: new Set([
+        ...(!stealthSettled && stealthGo && stealthAt === s.scene.at ? s.scene.present : []),
+        ...(!stealthSettled ? fw.accept || [] : []).filter((d) => d?.type === 'aware' && d.level === 'unaware').flatMap((d) => resolveRef(s, content, d.who, { scope: d.scope ?? null, evidence: d.evidence ?? null, prose, groups, refs, single: mapRef }).ids).filter((x) => typeof x === 'string'),
+    ]) });
     // the World Envelope at this step (docs/ARCHITECTURE_GEN35.md §2.3): may this actor turn on Alaric of its own accord?
     const envelopeAllows = (id, d) => {
         if (typeof id !== 'string' || !s.entities[id] || !['npc', 'creature'].includes(s.entities[id].kind)) { grant('envelope.fight'); return true; } // the V3 rules refuse unknown attackers
@@ -914,6 +921,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 const party = companions(d.with, d);
                 perceiveAll(s, emit, seeing());
                 arriveThrough(at.id, party);
+                if (stealthGo) stealthAt = String(d.forced_by || '').trim() ? null : s.scene.at;
                 if (explicitTravel && s.places[at.id]?.kind === 'realm') {
                     const go = auth.gos?.at(-1);
                     if (go?.newName && !go.to && !go.journey && !go.intent) {
@@ -1663,6 +1671,20 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // Patch 8: what the reply's arrivals and deaths bring about in a Living Dungeon (a level cleared, its contracts)
     if (cPath) syncEvents(s, content, emit, { touch: [trueDungeonOf(s, s.scene.at)] });
     if (cPath) slipMarks(s, content, emit);
+    // Arrival resets visibility as always. Only now, after this room's complete population (including
+    // the Living Dungeon fallback), can the existing opposed Stealth check resolve this one GO.
+    if (stealthGo && stealthAt === s.scene.at && s.scene.at !== startAt && s.scene.at !== transit && !s.encounter) {
+        const r = stealthEvents(s, content, dice);
+        r.events.forEach(emit);
+        emit({ t: 'check.recorded', d: { ...r.check, by: 'engine', what: 'arrival stealth', at: s.scene.at, turn: s.turn, seq: stealthGo.seq } });
+        stealthSettled = true;
+        if (r.check.success) {
+            for (const p of [...s.pending_combat]) if (s.scene.present.includes(p.by) && s.scene.awareness[p.by] !== 'aware') {
+                emit({ t: 'combat.pending_cleared', d: { by: p.by } });
+            }
+        }
+        corrections.push(`ARRIVAL STEALTH — ${placeName(s, s.scene.at)}: ${r.check.success ? 'SUCCESS; use the engine concealment and observer awareness, not an earlier narrated discovery' : 'FAILURE; use the engine observer awareness. Detection alone is not an attack'}. No further movement or attack was chosen.`);
+    }
     perceiveAll(s, emit, seeing());
     selfIntro(s, emit);
     const ep = episode(s, msg);

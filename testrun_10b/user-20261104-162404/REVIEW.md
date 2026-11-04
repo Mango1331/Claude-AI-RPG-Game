@@ -40,7 +40,7 @@ Originalplanner: journey.continue (seq1) + stealth (seq2), **nicht** das von .15
 
 ### B. T17/I41–I42: LONG-Bewegung wird zu „closer“, Erzählung widerspricht Engine
 
-Eingabe: „i crouch down and walk into LONG distance before i Flame Lance at the Queen“. Queen zuvor MEDIUM. Planner erzeugt move closer zur Queen und Flame Lance. Engine eröffnet Ambush von der mechanischen Situation; Queen schließt MEDIUM → SHORT. Narrator schreibt hingegen, er habe sich in LONG positioniert, „well beyond reach“. Dies beweist **keine** allgemeine Maximalreichweite MEDIUM für Höhlen. Zu prüfen sind Semantik von „into LONG distance“, Distanzänderung/Bewegungsregel, offener Raum und Prosaabgleich; die gewünschte Abstandserhöhung wurde nicht wie beschrieben gebucht. **Taktisches Handlungs-/Darstellungsproblem, gezielter Testkandidat.** Ob räumliche Hindernisse eine Reichweitengrenze setzen sollen, ist eine **offene Designfrage** des Spielers, keine getroffene Festlegung.
+Eingabe: „i crouch down and walk into LONG distance before i Flame Lance at the Queen“. Queen zuvor MEDIUM. Planner erzeugt move closer zur Queen und Flame Lance. Engine eröffnet Ambush von der mechanischen Situation; Queen schließt MEDIUM → SHORT. Narrator schreibt hingegen, er habe sich in LONG positioniert, „well beyond reach“. Dies beweist **keine** allgemeine Maximalreichweite MEDIUM für Höhlen. Zu prüfen sind Semantik von „into LONG distance“, Distanzänderung/Bewegungsregel, offener Raum und Prosaabgleich; die gewünschte Abstandserhöhung wurde nicht wie beschrieben gebucht. **Taktisches Handlungs-/Darstellungsproblem, gezielter Testkandidat.** **Nutzerklärung nach dem Review (04.11.2026):** Der gewünschte Schritt auf LONG sollte *vor* Flame Lance Distanz zum Queen-Gegner schaffen und einen zusätzlichen Angriffs-/Annäherungszug ermöglichen. LONG soll in Höhlen **grundsätzlich möglich** bleiben, sofern die Situation räumlich plausibel ist; keine permanente Raumflächenvermessung, neue Geometriesimulation oder starre Höhlen-Obergrenze. Der Spieler bewertet den Fehler als **nicht gravierend**. Ein späterer begrenzter Semantikfix für `move into LONG distance` vs. `move closer` ist denkbar, aber **kein Sofortpatch**.
 
 ### C. Quest abgeschlossen, Brenna behauptet aktiv (T23 → T27)
 
@@ -76,16 +76,17 @@ Nach dem abgeschlossenen Glimmerdeep-Clear und noch nicht abgelaufenem Dungeonzy
 ## 5. Vorläufige fachliche Reihenfolge – keine Patchfreigabe
 
 1. **P1-Kandidat, Spieleraktion verloren:** T33 journey.continue + konditionales Stealth – aktuelle Story und Zustand trennen sich stark.
-2. **P1/P2-Kandidat, taktische Semantik:** gewollter LONG-Abstand → move closer und widersprechende Erzählung; Schwere und zulässige Bandbewegung nach Code-Gegenprüfung konkretisieren.
+2. **Niedrige Priorität, taktische Semantik:** Gewollter LONG-Abstand wurde als `move closer` interpretiert, obwohl vor dem Angriff ausdrücklich Abstand gewonnen werden sollte. Spieler hält dies für nicht gravierend; **kein komplexes Raumgrößen-/Bandmodell und kein Sofortpatch**. Eventuell später gezielte semantische Regression; bekannte konkrete Hindernisse bleiben relevant.
 3. **P2-Kandidaten:** vorhandener completed-Queststatus vom Narrator ignoriert; drei zusammengehörige Inn-Angebote nur teilweise verarbeitet; ggf. nicht passend verfügbare Dungeon-Clear-Wiederholung.
 4. **QoL- und Designreviews:** lesbareres Board, sichtbarer Dungeonfloor, Awareness auf Target-Karten, HUD-Deduplikation, eindeutige AoE-Bandauflösung, am Ort liegende Fundobjekte, wertvollerer Nicht-Kampf-Loot.
 5. **Offene Sozialdesign-Entscheidungen:** langfristige wichtige NPC-Beziehungen/Episoden, Selektion wichtiger NPCs und eventuell #NPC als bewusste Option; Daten- und Promptkosten nicht ungeprüft aufblasen.
 
 **Nicht behauptet:** .155 allgemein stabilitätsgescheitert, fehlende Objekterfassung als Ursache des Lootproblems, fehlender Questabschluss als Engine-Buchungsfehler, LONG generell in Höhlen unmöglich, XP generell zu hoch, eine zweite Zahlung am Inn, vollständige Git-Archivierung des 12-MB-Serverlogs, automatischer Auftrag zur Implementierung.
 
-## 6. Rückfragen (bis zur Nutzerantwort offen halten)
+## 6. Nachtrag und offene Rückfragen
 
-1. **LONG/Abstand:** Soll ein gewünschter Abstand von LONG **auch in Höhlen grundsätzlich erreichbar** sein, wenn Raumgröße/Sichtlinie es zulassen, oder wolltest du in der konkreten Queen-Kammer tatsächlich bewusst bei MEDIUM bleiben?
+**LONG/Abstand – vom Spieler am 04.11.2026 beantwortet:** LONG soll auch in größeren Innenräumen/Höhlen grundsätzlich erreichbar sein. Die beabsichtigte Handlung war Distanzgewinn vor dem Angriff, damit die Queen zum Annähern einen Zug benötigen könnte. Keine fortwährende Raumflächen-/Geometrieanalyse; angesichts der geringen Schwere aktuell nicht priorisieren. Dies beantwortet die frühere Frage, ohne einen Implementierungsauftrag auszulösen.
+
 2. **Loot-Auswahl:** Meinst du mit „oben in der UI“ eine ständig sichtbare Liste **aller am Ort verfügbaren aufnehmbaren Objekte** oder nur eine kompakte Auswahl, die nach einer Suche/Untersuchung erscheint? Hierzu noch keine Implementierungsfestlegung.
 3. **Wichtige NPCs:** Soll die Engine wichtige wiederkehrende NPCs automatisch priorisieren, während #NPC nur ein optionales manuelles Markieren ist, oder möchtest du gerade die Auswahl selbst kontrollieren? Die Zwischenlösung bleibt ein Vorschlag.
 4. **Explorationsloot:** Soll jeder relevante Dungeon/Banditenstützpunkt verlässlich etwas **wertvollen** Noncombat-Loot enthalten oder nur eine spürbare Fundchance? Keine Loot-Quote festgelegt.

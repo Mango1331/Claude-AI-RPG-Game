@@ -1,6 +1,12 @@
 # Avereth Engine – Patch 10B: technische Langlauf-Stabilisierung und begrenzte F-Pacing-Kalibrierung
 
-**Stand: 02.11.2026. 10B läuft noch; keine vorgezogene Freigabe der nächsten Roadmap.** Der aktuelle Produkt-, Test- und nächste Arbeitsstand steht ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md), verbindliche Spielregeln in [02](02_DESIGN_KANON.md), bewusst zurückgestellte Vorhaben in [04](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md), natürliche Originaldaten im [Runindex](testrun_10b/README.md). [Historische Indexfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/6142f24/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) und [ursprüngliches Journal §§0–32](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0ebf449/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) erhalten die Entstehungsgeschichte.
+**Stand: 04.11.2026. 10B als technischer Zwischenstand teilabgenommen; weitere Stabilität bleibt laufende Arbeit. Keine Endprodukt- oder pauschale Featurefreigabe.** Der aktuelle Produkt-, Test- und nächste Arbeitsstand steht ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md), verbindliche Spielregeln in [02](02_DESIGN_KANON.md), bewusst zurückgestellte Vorhaben in [04](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md), natürliche Originaldaten im [Runindex](testrun_10b/README.md). [Historische Indexfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/6142f24/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) und [ursprüngliches Journal §§0–32](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0ebf449/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) erhalten die Entstehungsgeschichte.
+
+## Teilabnahme 04.11.2026
+
+**Auf ausdrücklichen Nutzerauftrag:** Build .154 / `2482da2` ist für begleitete persönliche Spieltests teilabgenommen. Der bisherige Stabilisierungsblock endet als eigener Pflichtabschnitt; weitere technische Zuverlässigkeit, vollständige Balance und langfristige Welt-/NPC-Kontinuität bleiben zukünftige Arbeit. Seltene lokale fortsetzbare Fehler dürfen bestehen bleiben; schwere Geld-/Kampf-/Persistenzfehler und systematische Blockaden behalten Priorität.
+
+[03](03_AKTUELLER_PROJEKTSTAND.md#10b-teilabnahme--übergang-zu-persönlichen-spieltests) hält Grundlage und Restgrenzen fest. [07](07_ROADMAP_NACH_10B_ENTWURF.md) ist der fachlich gegengeprüfte Roadmap-Entwurf für die nächste Auswahl, keine Implementierungsfreigabe. Keine weiteren kostenintensiven Vollbatches allein zur Erfüllung der unten stehenden früheren Zahlenideen; diese bleiben unverbindlicher historischer Bewertungsrahmen, kein nachträglich behaupteter Zuverlässigkeitsnachweis.
 
 ## 10B: ursprüngliche Absicht und tatsächlich entstandener Schwerpunkt
 
@@ -17,7 +23,7 @@
 
 Die umfangreiche Produktgeschichte unten dokumentiert die vielen nötigen Fixes; sie ist **kein Auftrag**, jede seltene Textabweichung oder hypothetische Finanzkante weiter zu perfektionieren.
 
-## Aktuelle Zielsetzung: zuverlässige natürliche Kampagnen
+## Fortbestehendes Qualitätsziel: zuverlässige natürliche Kampagnen
 
 **Vorrang hat die Fortsetzbarkeit echter Runs über viele unterschiedliche Spielhandlungen.** Technisch korrekter Geld-/Inventar-/Quest-/Kampfzustand soll gespeichert und nachgeladen werden können; ein Modellfehler darf nicht routinemäßig eine lange Kampagne beenden. Bereits korrekt abgewehrte Eingaben sind kein Defekt, dürfen aber nicht dauerhaft in derselben unbehebbaren Ablehnungsschleife festhängen.
 
@@ -38,7 +44,7 @@ Technische Nachweise aus Node, Replay und echtem SillyTavern-Host mit Mockprovid
 
 ## Wann 10B endet und wir wieder eine Roadmap erstellen
 
-**10B wird nicht bei einer fest vorgegebenen Buildnummer, einer bestimmten Anzahl Runs oder automatisch bei Level 15 geschlossen.** Über mehrere aktuelle natürliche Batches auf nachweisbar demselben Build ist zu prüfen, ob eine **für den Nutzer akzeptable Quote** ohne größere technische Aussetzer erreicht wird – **insbesondere ohne technisch erzwungene Runabbrüche**. Den nötigen Grenzwert und die endgültige Freigabe legt der Nutzer anhand der tatsächlichen Ergebnisse fest. Die folgenden Zahlen sind ausdrücklich unverbindliche Diskussionsbeispiele, keine beschlossene Hürde oder automatische Abschlussgarantie.
+**Bewertungsrahmen vor der inzwischen beschlossenen Teilabnahme:** Keine Buildnummer, Runzahl oder Level15-Annahme löst automatisch eine Freigabe aus. Für einen späteren belastbaren Zuverlässigkeitsnachweis sind vergleichbare Runs desselben Builds nötig; die vorliegende Teilabnahme ist dagegen eine bewusste Zwischenproduktentscheidung anhand des tatsächlichen Gesamtverlaufs und der bekannten Restfehler. Die folgenden Zahlen wurden nicht als Pflichtschwellen beschlossen und durch den Phasenwechsel nicht nachträglich als erreicht erklärt.
 
 Für diese Entscheidung künftig je Batch knapp gegenüberstellen:
 
@@ -55,7 +61,8 @@ Für diese Entscheidung künftig je Batch knapp gegenüberstellen:
 | Perspektive | Denkbare Größenordnung | Aussage und Grenze |
 |---|---|---|
 | Störungsarmut / tolerierbare Vorfälle (A) | Beispielsweise **8–9/10 weitgehend störungsarme Runs** | Kleine lokale Fehler und sichere automatische Recovery dürfen vorkommen. Das ist eine Komfort-/Reibungsquote, keine Erlaubnis für Integritätsverluste oder Runstopper. |
-| Integrität (B) | **Ziel: keine mechanisch relevanten Integritätsverletzungen** | Betroffene Runs separat markieren, auch ohne Abbruch; keine bekannten systematischen Fehlbuchungen durch eine gute Quote überdecken. Seltene begrenzte Restfehler nach tatsächlicher Wirkung beurteilen. |\n| Abbruchfreiheit (C) | **Ziel 100 %** in einer kleinen aktuellen Serie; **98 %** als mögliche spätere Langzeitmarke | Zehn Runs erlauben nur Zehn-Prozent-Schritte: 98 % wären etwa 49/50, kein Nachweis aus 9/10. Bekannte wiederkehrende Stopper werden nicht durch die Quote legitimiert. |
+| Integrität (B) | **Ziel: keine mechanisch relevanten Integritätsverletzungen** | Betroffene Runs separat markieren, auch ohne Abbruch; keine bekannten systematischen Fehlbuchungen durch eine gute Quote überdecken. Seltene begrenzte Restfehler nach tatsächlicher Wirkung beurteilen. |
+| Abbruchfreiheit (C) | **Ziel 100 %** in einer kleinen aktuellen Serie; **98 %** als mögliche spätere Langzeitmarke | Zehn Runs erlauben nur Zehn-Prozent-Schritte: 98 % wären etwa 49/50, kein Nachweis aus 9/10. Bekannte wiederkehrende Stopper werden nicht durch die Quote legitimiert. |
 | Einzelne Handlungen | **95–98 % ohne technisch nötige erneute Spielereingabe** | Bezugsgröße sind handlungsbezogene Spielerinputs **einschließlich gescheiterter Versuche**, nicht nur erfolgreich abgeschlossene Engine-Turns. Automatische Repairs separat zählen; regelgerechte Ablehnungen sind keine Technikfehler. |
 | Langlaufabdeckung | Beispielsweise **mindestens drei Runs mit jeweils 150–200 Inputs**, alle drei Klassen in der Serie vertreten | Kurze Tode können technisch korrekt sein, ersetzen aber keine Langlaufprüfung. Länge und Ergebnisse zusätzlich je Klasse ansehen. |
 
@@ -63,9 +70,9 @@ Für diese Entscheidung künftig je Batch knapp gegenüberstellen:
 
 Manuelle Stopps und reguläre Tode bewerten nur den beobachteten Abschnitt, niemals eine nicht gespielte Fortsetzung; ein manueller Stopp *wegen* einer Technikschleife verbirgt deren Ursache nicht. Provider-/Hostausfälle bleiben in der Gesamtsicht sichtbar. **Geld-/Zustandskorruption oder ungesicherte Saves nicht durch eine gute Durchschnittsquote wegmitteln.** Zehn Runs sind eine pragmatische Beobachtungsserie, kein statistischer Zuverlässigkeitsnachweis. Kein Punkt ist allein ein automatischer Blocker oder eine Freigabe; endgültige Gewichtung und tolerierte Restrisiken bleiben Nutzerentscheidung.
 
-**Übergangskriterium:** Sobald die wiederholten aktuellen Naturtests insgesamt hinreichend stabil sind und keine wesentlichen serienmäßigen technischen Runstopper mehr zeigen, entscheiden wir ausdrücklich über das **Ende von 10B**. **Erst danach erarbeiten und priorisieren wir eine neue Roadmap** auf Basis des aktuellen Kanons, der offenen Ideen und der tatsächlich beobachteten Spielqualität. Sie wird nicht heute vorab als nächste Patchnummer oder als automatische Freigabe festgelegt.
+**Übergangsentscheidung inzwischen erfolgt:** 10B ist als technischer Zwischenstand teilabgenommen. Der [Roadmap-Entwurf](07_ROADMAP_NACH_10B_ENTWURF.md) dient der anschließenden Priorisierung; seine Einträge sind keine automatisch freigegebenen nächsten Patches. Qualitätsmessung und gezielte Stabilitätskorrekturen bleiben bestehen.
 
-Mögliche Roadmap-Themen sind späteres F-/E-Scaling und Content, Engine-Shops, Main/Minor, NPC-/Monster-Design, Weltentwicklung und weitere Spieler-QoL. Diese bleiben bis zu gesonderten Entscheidungen **offen**; sie sind keine zusätzlichen 10B-Abnahmepflichten und keine Einladung zu einem weiteren umfassenden Finanz-/Architektur-Audit. Ein neuer schwerer technischer Blocker kann selbstverständlich weiterhin innerhalb 10B korrigiert werden.
+Mögliche Roadmap-Themen sind späteres F-/E-Scaling und Content, Engine-Shops, Main/Minor, NPC-/Monster-Design, Weltentwicklung und weitere Spieler-QoL. Diese bleiben bis zu gesonderten Entscheidungen **offen**; sie sind keine zusätzlichen 10B-Abnahmepflichten und keine Einladung zu einem weiteren umfassenden Finanz-/Architektur-Audit. Ein neuer schwerer technischer Blocker wird selbstverständlich weiterhin gezielt korrigiert; er macht nicht automatisch sämtliche bereits abgenommenen Arbeiten wieder offen.
 
 ## Quellenwegweiser für bisherige 10B-Arbeit
 
@@ -99,6 +106,6 @@ Keine erneuten Patchdetails oder historischen Testzahlen in diesem Index; Implem
 
 ## Natürliche Originalbelege
 
-Natürliche Batches 1–22 und Gegenreviews sind im [Runindex](testrun_10b/README.md) verzeichnet; die älteren ZIPs im [Originalarchiv](testrun_10b/ARCHIV_BATCHES.md). [Batch20](testrun_10b/batch-20261031-140346Z/REVIEW.md) belegt nach .137 einen natürlichen Warrior-Langlauf, [Batch21](testrun_10b/batch-20261101-152756Z/REVIEW.md) auf .145 die konkreten Handels-/Board-Integrationsprobleme bei intakter Finanzbilanz. [Batch22](testrun_10b/batch-20261101-174704Z/REVIEW.md) samt [Originalarchiv](testrun_10b/batch-20261101-174704Z/ARCHIVE.md) begründet die folgenden Technik- und Designpatches. Keine Zweitauswertung hier; aktueller Handlungsbedarf in [03](03_AKTUELLER_PROJEKTSTAND.md).
+Natürliche Batches und Gegenreviews sind im [Runindex](testrun_10b/README.md) verzeichnet; die älteren ZIPs im [Originalarchiv](testrun_10b/ARCHIV_BATCHES.md). [Batch20](testrun_10b/batch-20261031-140346Z/REVIEW.md) belegt nach .137 einen natürlichen Warrior-Langlauf, [Batch21](testrun_10b/batch-20261101-152756Z/REVIEW.md) auf .145 die konkreten Handels-/Board-Integrationsprobleme bei intakter Finanzbilanz. [Batch22](testrun_10b/batch-20261101-174704Z/REVIEW.md) samt [Originalarchiv](testrun_10b/batch-20261101-174704Z/ARCHIVE.md) begründet die folgenden Technik- und Designpatches. Keine Zweitauswertung hier; aktueller Handlungsbedarf in [03](03_AKTUELLER_PROJEKTSTAND.md).
 
-**Pflege:** Jeder neue Naturbatch erhält seinen Originalreview und eine kurze Indexzeile. Die rollierende Zuverlässigkeitsbewertung und die nächste Aktion gehören nach 03, keine parallele zweite Quote in 06. Neue Fachquellen/Abschlüsse hier nur verlinken; die historische Patchkette nicht neu erzählen. 10B und die künftige Roadmap werden ausschließlich durch ausdrückliche Nutzerentscheidung abgeschlossen bzw. gestartet.
+**Pflege:** Jeder neue Naturbatch erhält seinen Originalreview und eine kurze Indexzeile. Die rollierende Zuverlässigkeitsbewertung und die nächste Aktion gehören nach 03, keine parallele zweite Quote in 06. Neue Fachquellen/Abschlüsse hier nur verlinken; die historische Patchkette nicht neu erzählen. Die dokumentierte 10B-Teilabnahme ersetzt keine Einzelentscheidung über Umfang und Freigabe künftiger Roadmap-Patches.

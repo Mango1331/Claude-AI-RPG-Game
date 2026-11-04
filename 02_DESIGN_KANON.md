@@ -1,6 +1,6 @@
 # Avereth Engine – verbindlicher Design-Kanon
 
-**Stand: 01.11.2026.** **[VERBINDLICH]** beschreibt Regeln und Ziele, **[GEPLANT]** einen noch nicht umgesetzten Beschluss, **[OFFEN]** eine mögliche spätere Idee. **Implementierungs- und Abnahmestand nur in [03](03_AKTUELLER_PROJEKTSTAND.md).** [Ausführliche historische Fassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/6142f24/02_DESIGN_KANON.md); neue Entscheidungen ändern diesen Kanon, technische Patchdetails gehören in Fachpatchnotes.
+**Stand: 04.11.2026.** **[VERBINDLICH]** beschreibt Regeln und Ziele, **[GEPLANT]** einen noch nicht umgesetzten Beschluss, **[OFFEN]** eine mögliche spätere Idee. **Implementierungs- und Abnahmestand nur in [03](03_AKTUELLER_PROJEKTSTAND.md).** [Ausführliche historische Fassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/6142f24/02_DESIGN_KANON.md); neue Entscheidungen ändern diesen Kanon, technische Patchdetails gehören in Fachpatchnotes.
 
 ## 0. Aktuelle Kompatibilitätsentscheidung
 
@@ -76,6 +76,9 @@ Dungeons sind gemeinsame persistente Weltorte (keine privaten MMO-Instanzen), mi
 Andere Abenteurer können dieselben Gegner/Ressourcen nutzen; fremde Siege geben keinen PC-Credit. Floor-Clear folgt den vorher festgelegten Bedingungen, nicht zwingend der Tötung aller Lebewesen. Gefahren dürfen tödlich sein, müssen aber nachvollziehbar werden. Sichere bekannte Rückwege können kompakt erzählt werden; keine kostenlosen universellen Teleports. Gewöhnliche Höhlen sind nicht automatisch System-Dungeons. [Patch-8-Grundlagen](03_PROJEKTSTAND_ARCHIV_BIS_20261024.md), [Slot-/Anwesenheitsdetails](patch_plans_10b/PATCH_RUN12_DUNGEON_GUILD_WORLD.md).
 
 ## 8. Welt, Lore und organische Klassen
+
+**[DESIGN ENTSCHIEDEN 04.11.2026 – noch nicht implementiert] PULSE:** Spontane Ereignischancen werden über geeignete reguläre erzählende Spielerzüge ausgelöst, **nicht** über verstrichene Ingame-Minuten oder ein Expositionshybridmodell. Pro geeignetem Zug höchstens eine Chance; reine Systemabfragen, aktive Kampfrunden und technische Wiederholungen (Repair/Reload/Swipe/Regenerate) erzeugen keine zusätzlichen Würfe. Ort und Tageszeit bleiben Kontext für plausible Inhalte; Ereignis bedeutet nicht automatisch Angriff, auch kein Ereignis ist zulässig. Lange Zeitsprünge erzeugen allein durch ihre Dauer keine zusätzlichen Chancen. Häufigkeit, Wiederholschutz und konkrete Umsetzung bleiben offen; [Roadmap W5](07_ROADMAP_NACH_10B_ENTWURF.md). Separate Rastunterbrechungen sind damit nicht freigegeben.
+
 
 Avereth ist High Fantasy ohne moderne Technik. Menschliche Großmächte: **Valedorn Crown, Caelreth, Duskreach**; Monsterreiche: **Ashen Scale Dominion, Verdant Fang Court**. Menschen sind die normale menschliche Zivilisation, keine automatische Einführung klassischer intelligenter Fantasyvölker. Monster können Tiere, intelligente Wesen oder Gesellschaften sein, nicht grundsätzlich Feinde. Adventurers' Guild ist transnational, aber kein Weltstaat; seltene S-Ranks lösen nicht jedes Problem.
 

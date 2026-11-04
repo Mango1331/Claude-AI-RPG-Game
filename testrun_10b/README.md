@@ -4,11 +4,13 @@
 
 Bei Einzelruns folgt die ZIP-Spalte dem tatsächlich vorhandenen `main`-Dateibaum. Für Batches ist der [Archivindex](ARCHIV_BATCHES.md) maßgeblich. **„Nein“ heißt nicht unabhängig im nächsten Chat prüfbar:** Ein früher geprüfter Chatupload ersetzt keinen hier verfügbaren Originalexport. Niemals aus einem Review eine eigene Originalprüfung behaupten. Vollständige frühere Indextexte/Hashhinweise: [7994fa4](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/7994fa42b115f21b705c0b770e2b4e31fde67f77/testrun_10b/README.md).
 
-## Rolle der Runs für den Abschluss von 10B
+## Rolle der Runs für Teilabnahme und weitere Stabilität
 
 **10B begann als Balance-/Pacingpatch, ist durch diese Langläufe aber vor allem zur technischen Stabilisierung geworden.** Die vielen früheren technischen Stopps waren der Grund für die umfangreichen Integrations-, Fail-soft-, Handels-, Persistenz- und Runnerkorrekturen. [Phasenziel und Bewertungsmaßstab](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md#wann-10b-endet-und-wir-wieder-eine-roadmap-erstellen); aktuelle Lage nur in [03](../03_AKTUELLER_PROJEKTSTAND.md).
 
-Für die spätere **akzeptable Quote** jedes neuen Batches Endgründe **aller tatsächlich gestarteten Profile** sauber unterscheiden: technisch gestoppt, mit erheblichem Aussetzer fortgesetzt, technisch störungsarm abgeschlossen, regulärer Tod, Limit oder manuell. Externe Provider-/Windows-Fehler gesondert markieren; sie beeinträchtigen zwar den Run, belegen aber nicht automatisch einen Enginefehler. Kurze Tode liefern wenig Langlaufabdeckung; substanzielle fortgesetzte Runs gesondert betrachten. Keine fixe Quote oder Roadmap aus einzelnen Resultaten ableiten. Zahlen/Originalbelege beim konkreten Review dokumentieren; der Index führt nur dorthin.
+**10B ist am 04.11.2026 auf .154 als technischer Zwischenstand teilabgenommen**; persönliche Spieltests folgen, weitere Zuverlässigkeit bleibt laufende Arbeit. Grundlage und Restgrenzen ausschließlich in [03](../03_AKTUELLER_PROJEKTSTAND.md#10b-teilabnahme--übergang-zu-persönlichen-spieltests). Keine neue Pflichtbatchserie und keine Endproduktfreigabe.
+
+Für die weitere Stabilitätsbeobachtung jedes neuen Batches Endgründe **aller tatsächlich gestarteten Profile** sauber unterscheiden: technisch gestoppt, mit erheblichem Aussetzer fortgesetzt, technisch störungsarm abgeschlossen, regulärer Tod, Limit oder manuell. Externe Provider-/Windows-Fehler gesondert markieren; sie beeinträchtigen zwar den Run, belegen aber nicht automatisch einen Enginefehler. Kurze Tode liefern wenig Langlaufabdeckung; substanzielle fortgesetzte Runs gesondert betrachten. Keine fixe Quote oder Roadmap aus einzelnen Resultaten ableiten. Zahlen/Originalbelege beim konkreten Review dokumentieren; der Index führt nur dorthin.
 
 ## Einzelruns
 

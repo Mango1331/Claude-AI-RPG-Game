@@ -1,0 +1,24 @@
+Userfeedback Spielgefühl:
+UI wieder ein wenig cleanen. Questboard hat so viel mehr Infos mittlerweile und ist schwer zu lesen. entweder mehr css oder weniger Infos wieder.
+
+Arcane Wave sollte bei "at them" erkennen das nur Gegner in medium sind und nirgends anders in Reichweite und dadurch funktionieren. (kein schlimmer fehler da die engine eh direkt sagt bitte target wählen und alle Targets anbietet nut QoL)
+
+Wenn ich einen raum "loote" will ich die erzählten gegenstände auch als engine gegenstände in der UI oben angezeigt bekmmen als Option ob ich sie loote oder liegen lasse. (ich meine keine corpses nach Combat sondern ne höhle erkunden nach loot zb)
+
+System clarify nachfragen sind sehr nützlich statt unnötige Narrator Tokens zu verschwenden
+
+Worlds HUD sollte immer anzeigen in welchen Level des Dungeons man ist damit man sicher weiß ob man die quest gerade erledigt oder was anderes betritt
+
+Der HUD der Targets sollte auch anzeigen ob sie Aware sind oder nicht ums bequemer zu machen zu sehen ob man einen ambush hat oder nicht
+
+hat mich nicht auf LONG ggehen lassen bei einer unaware Queen. macht erzählerisch sinn da es eine höhle war und somit MEdium asl max reange sinn macht aber weiß nicht ob es das in der wildniss einfach ignorieren würde
+
+Im Combat ist die target HUD bisschen doppelt. einmal on top wo auch die Targets ausserhalb des fights sind und dann unten ausklappbar wo es Charactersheet und Worlds sheet überschreibt during combat
+
+mehr natürlichen loot ausserhalb der Combat corpses. es ist ein dungeon und hat gar nix das selbe für spätere natürkliche hölen oder Banditen hideouts. (vllt nen wurf wie viel loot aber man sollte schon was finden)
+
+XP ist NICHT zu wenig als echter spieler Level 7 nach einer dungeon quest
+
+hat beim Inn in der ersten nacht nicht alle angebote erkannt nur 2 von 3 und dann gesagt ich soll nach den preis für alles drei genau fragen nochmal (hat die Story nicht kaputt gemacht und mit genauem nachfragen würde es wahrscheinlich funktionieren ist aber unschön als spieler
+
+Memory oder engine fehler. dungeon quest ist schon abgegeben brenna frägt am nächsten tag obn ich Ready bin es abzugeben. mit Erinnerung daran hat sie gewusst das es schon fertig ist. nehme also an ist NPC Memory aber nicht sicher. erinnert sich daran mich zum inn gesendet zu haben aber nicht an den Nebensatz mit ihren namen erwähnen. reicht an sich aber muss ausgeweitet werden. Beziehungen und Events oder so bei NPC die nicht random wandere oder gaurds sind müssen ausgebaut werden innerhalb von einer Nachricht hat Brenna keinen Kontext mehr und auch deren verhalten und Temperament und Persönlichkeit. nicht jeder NPC falls technisch schwer gerne über einen #NPC command wo ich entscheide welche NPC gespeichert werden als Zwischenlösung.

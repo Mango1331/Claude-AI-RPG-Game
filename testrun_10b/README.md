@@ -12,6 +12,10 @@ Bei Einzelruns folgt die ZIP-Spalte dem tatsächlich vorhandenen `main`-Dateibau
 
 Für die weitere Stabilitätsbeobachtung jedes neuen Batches Endgründe **aller tatsächlich gestarteten Profile** sauber unterscheiden: technisch gestoppt, mit erheblichem Aussetzer fortgesetzt, technisch störungsarm abgeschlossen, regulärer Tod, Limit oder manuell. Externe Provider-/Windows-Fehler gesondert markieren; sie beeinträchtigen zwar den Run, belegen aber nicht automatisch einen Enginefehler. Kurze Tode liefern wenig Langlaufabdeckung; substanzielle fortgesetzte Runs gesondert betrachten. Keine fixe Quote oder Roadmap aus einzelnen Resultaten ableiten. Zahlen/Originalbelege beim konkreten Review dokumentieren; der Index führt nur dorthin.
 
+## Persönliche User-Spieltests (keine Runner-Batches)
+
+- **[User-Testrun 01, 04.11.2026, Build .155](user-20261104-162404/REVIEW.md):** 37 Spielerbeiträge / 33 Enginezüge, 635 Events, Mage L1→L7, Glimmerdeep-L1-Auftrag abgeschlossen; Abschluss offener Ghoul-Auftrag mit Reise+Stealth-Problem. [Originalchat und Events](user-20261104-162404/SOURCE_MANIFEST.md), [vollständiges persönliches Feedback und Bewertung](user-20261104-162404/USER_FEEDBACK_REVIEW.md). Kein Produktpatch aus dem Review.
+
 ## Einzelruns
 
 | Run / Review | Build | Eingaben / Ergebnis | Original-ZIP auf main |

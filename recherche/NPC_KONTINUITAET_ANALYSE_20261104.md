@@ -398,3 +398,62 @@ Auftrags. Keine Produktdateien geändert, keine Tests ausgeführt.
 Die sechs in [§7](#7-offene-designentscheidungen-e) aufgelisteten Fragen sind **nicht beantwortet**. GPT bevorzugt vorläufig: automatische NPC-Priorisierung, optionales Pin erst nach Bedarf; bekannte Absprachen ggf. im `#npc`-Panel, keine geheimen Gefühlswerte; Persönlichkeit aus erzählten Belegen; volle NPC-Freiheit bei Nähe/Distanz; Alltagsdetails dürfen verblassen, noch wichtige Absprachen bleiben erreichbar; moderates Budgetplus nur nach Messung. **Das sind Empfehlungen, keine beschlossenen Designregeln.**
 
 **Dokumentenordnung:** Diese Datei hält die tatsächliche NPC-Analyse samt Gegenbewertung. Die übergeordnete Reihenfolge steht nur in [07](../07_ROADMAP_NACH_10B_ENTWURF.md), der aktuelle Produkt-/Freigabestatus nur in [03](../03_AKTUELLER_PROJEKTSTAND.md); keine separate doppelte NPC-Roadmap in 04 oder 06.
+
+
+## 10. Sol-Gegenreview auf .157 und nächste Datengrundlage (05.11.2026)
+
+**Status:** Analyse und Dokumentation, kein Produktpatch und keine neue Testausführung. Geprüft wurden die Roadmap und diese Analyse auf main `dfc6433` sowie die betroffenen Codepfade auf **.157 / `b31123f`**. Claudes ursprüngliche Untersuchung (§§0–8) und die GPT-Gegenbewertung (§9) bleiben unverändert erhalten. Die Logquoten **7/17** und **26/31** stammen aus Claudes Auswertung; Sol hat sie in diesem Gegenreview nicht unabhängig neu berechnet.
+
+### 10.1 Gesamturteil und bestätigte Grundlagen
+
+Die Richtung trägt: Vorhandene Erinnerungen, Identitäten, Wissensquellen und Threads zuerst zuverlässig für die aktuelle Erzählung bereitstellen. Eine neue Memorybank, ein permanenter Prüfer-LLM oder eine vollständige NPC-Simulation sind dafür nicht begründet.
+
+Am aktuellen Code bestätigt:
+- `buildContext()` hält Priorität 0 auch oberhalb des normalen Budgets; `ACTIVE SCENE` enthält dagegen sämtliche Anwesenden als einen gemeinsamen Block mit Priorität 1. Lange Pflichtabschnitte können deshalb die Karte des aktuellen Gesprächspartners vollständig verdrängen. Nur mehr Erinnerungen zu speichern behebt diesen Übergang nicht.
+- Speicherung, tatsächliche Auslieferung und Modellverwendung bleiben drei verschiedene Prüfungen. In der Brenna-Szene war laut Originalanalyse auch der jüngste Dialog im Chat sichtbar. Die fehlende Karte ist ein technischer Beitrag, aber kein Beweis, dass das Modell mit Karte sicher richtig reagiert hätte.
+- Die vorhandene Wissensbegrenzung und Eventpersistenz sollen erhalten bleiben. Fehlende technische Wissensbuchung darf ein tatsächlich erzähltes gemeinsames Erlebnis nicht rückwirkend aufheben.
+- Fehlende `attitude`-Deltas beweisen keinen notwendigen Sympathieanstieg. Eine Einladung darf abgelehnt werden; dennoch muss die nächste Antwort nachvollziehbar an das gerade geführte Gespräch anknüpfen.
+
+**Budgethygiene betrifft mehr als die Gildenliste.** Beispielsweise hängt der Priorität-0-Abschnitt `help` aktuell sämtliche gespeicherten Geldgeschenke an; aktive Quests bringen wiederkehrende Regeltexte mit. Die spätere Umsetzung sollte kontextrelevante Pflichtinformation von historischem Detail trennen, ohne Ledger, Questzustand oder Buchungsschutz zu verändern. Nicht einfach alle NPC-/Recall-Texte ebenfalls unbegrenzt zu Priorität 0 machen.
+
+### 10.2 Drei notwendige technische Präzisierungen
+
+**A. Freitext wird an zwei Übergängen als Referenz gelesen.**
+
+In [world.js, fact](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b31123ffb4d3f5c404d6add85449ea869ed415ee/avereth-engine/src/v4/world.js#L1162) geht `fact.o` durch `mapRef()`. Anschließend versucht der gemeinsame Adapter in [delta.js](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b31123ffb4d3f5c404d6add85449ea869ed415ee/avereth-engine/src/delta.js#L518) erneut `resolve(f.o)`.
+
+Der für Namenserweiterungen gedachte Resolver kann einen mehrwortigen Satz, der mit dem etablierten einteiligen Namen „Brenna“ beginnt, als erweiterten Personennamen auffassen. Eine Korrektur allein in World könnte deshalb im nachfolgenden Adapter wieder verloren gehen. **Codebestätigter Übergang; hier kein neuer Ausführungsnachweis.**
+
+Für E1: Freie Aussagen über beide Übergänge als Text erhalten; echte IDs, lokale Referenzen und eindeutige Personenbezüge weiterhin unterstützen. Keine globale Abschaltung des Resolvers und keine neue Prosa-Negativwortliste. Regressionen müssen den vollständigen Weg bis zum gespeicherten Fakt und legitime Namens-/Beziehungsreferenzen prüfen.
+
+**B. Haltung wirkt schon auf die Kampf-Seitenzuordnung.**
+
+[sideOf()](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b31123ffb4d3f5c404d6add85449ea869ed415ee/avereth-engine/src/v4/scene_handles.js#L185) ordnet einen NPC ohne vorrangige Kampf-/Bedrohungszuordnung ab `attitude >= 20` als `ally` ein. Das bedeutet nicht, dass er allein dadurch automatisch einem Kampf beitritt; es ist aber bereits mechanisch wirksame Information.
+
+Eine stärkere soziale Befüllung von `attitude` wäre deshalb keine reine Erinnerungsverbesserung. Sympathie, Vertrauen und tatsächliche Kampfverbundenheit müssen vor einer neuen Kalibrierung fachlich abgegrenzt werden. **E0/E1 sollte keine automatische Flirt-/Sympathiepunktevergabe aktivieren.** Erst Wiedererkennung und Kontinuität verbessern; soziale Zahlenregeln später mit den Kampfgegenfällen prüfen.
+
+**C. Erzählerdiagnose und normales Spielerwissen unterscheiden.**
+
+Die [NPC-Erzählerkarte](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b31123ffb4d3f5c404d6add85449ea869ed415ee/avereth-engine/src/context.js#L185) kann private Agenda und geheime Kenntnisse enthalten. Das vorhandene `#npc`-Panel zeigt dagegen Alarics Wissen.
+
+„So sieht der Erzähler die Person“ darf deshalb nicht ungefiltert Teil der normalen Spieleransicht werden. Bekannte gemeinsame Erlebnisse und Absprachen können dort erscheinen; vollständige Karten gehören gegebenenfalls in eine ausdrücklich gewählte Diagnoseansicht. E0 benötigt vor allem kompakte Metadaten zum tatsächlich verwendeten Kontextstand: Abschnitte, NPC-IDs, Budget und Tokenumfang. Keine vollständige Promptkopie in jedem Record und keine zweite Zustandswahrheit.
+
+### 10.3 Bewertung der Umsetzungsschnitte und Roadmap
+
+- **E0 und E1 als erstes zusammenhängendes NPC-Fachpaket:** Kontextdiagnose, begrenzte kompakte Gesprächspartnerkarte, Budgethygiene sowie die belegten Fakt-/Gildenwissensübergänge. Keine gesonderte Mikrobuildserie nur für Diagnosefelder. Gerade die World-/Adapter- und Ankunfts-/Wissensschnittstellen sind gemeinsam genutzt; die Einstufung „klein“ ersetzt keine Integrationsprüfung.
+- **Eine minimale Relevanzauswahl wird schon in E1/E2 gebraucht.** Aktueller Gesprächspartner und wenige für die Rückkehr relevante Personen müssen bestimmt werden. Eine umfangreiche Wichtigkeitsskala oder manuelles Pinning ist dafür noch keine Voraussetzung; ein weitergehendes Salienzsystem kann später folgen.
+- **Gildenwissen gezielt bereitstellen:** Bei legitimer Gildeninteraktion den kanonischen Auftragszustand verständlich zeigen. Die korrekte Beschränkung von `witnessEvents()` auf tatsächlich Wahrnehmende nicht aufweichen und später eintretenden NPCs nicht pauschal rückwirkendes Wissen geben.
+- **Persönlichkeitsanker früh und knapp, größere Beziehungsgeschichte später.** Rolle, Stimme, Agenda und Erinnerungen existieren bereits. Wenige belegte Merkmale können daran anschließen; kein fixes Persönlichkeitsprofil aus einer einzigen Reaktion erzwingen.
+- **Ein einfacher PULSE-Prototyp braucht nicht erst vollständige langfristige Beziehungen.** Spontane Weltbegegnungen und spätere Folgen individueller NPC-Agenden sind unterschiedliche Ausbaustufen. Empfehlung bleibt: stabile Grundkontinuität zuerst, dann bei Freigabe begrenzter Weltprototyp; die aufwendige Agenda-/Beziehungsanbindung später. Keine neue PULSE-Umsetzungsfreigabe durch diesen Review.
+
+**Etappenkennungen:** Claudes Originaltabelle in §6 reicht bis E6; die aktuelle Roadmap fasst Salienz und Beziehung unter E4 zusammen und nennt Eigenleben E5. Für den ersten Patch ist E0/E1 eindeutig. Spätere Aufträge sollen Fachthema und Umfang zusätzlich zur Nummer benennen; die historische Tabelle wird hier nicht still umnummeriert.
+
+### 10.4 Nächster persönlicher Test und Nutzerpriorität
+
+**Nutzerentscheidung 05.11.2026:** Jetzt folgt ein weiterer persönlicher User-Test für zusätzliche NPC-Daten. Sofern dabei keine relevanten technischen Fehler auftreten, soll der nächste Fachpatch der **erste NPC-Patch** sein. Stealth S2 ist dafür keine Vorbedingung. Der konkrete Patchschnitt wird mit den neuen Originaldaten abgeglichen; in diesem Dokumentationsschritt wird nichts implementiert. Aktueller Ablauf in [03](../03_AKTUELLER_PROJEKTSTAND.md), übergeordnete Reihenfolge in [07](../07_ROADMAP_NACH_10B_ENTWURF.md).
+
+Für die Auswertung sind, soweit im freien Spiel vorkommend, besonders nützlich: dasselbe Gespräch nach einer Zwischenhandlung fortsetzen; einen bekannten NPC später wiedersehen; eine tatsächlich etablierte Absprache wieder aufgreifen; nachvollziehen, was die Figur über Alaric wissen konnte. Das sind Beobachtungspunkte, keine vorgeschriebene Questfolge, kein Pflichtflirt und kein verpflichtendes NPC-Skript.
+
+Originalchat mit Records, Eventexport und möglichst der vorhandene Serverlog erlauben den Abgleich von gespeichertem Inhalt mit dem tatsächlichen Narrator-Request. Die neuen E0-Diagnosefelder existieren noch nicht und werden für diesen Test nicht vorausgesetzt.
+
+**Bewertungsmaßstab:** Wiedererkennung und glaubwürdige Fortsetzung einschließlich Distanz, Ablehnung und eigener Interessen. Kein garantierter positiver Beziehungsverlauf. Kleine fortsetzbare Erzählunstimmigkeiten allein rechtfertigen keine neue Technik-Mikrofixserie; wiederholte gültige Handlungsverluste, relevante Integritätsfehler oder technische Blockaden werden nach ihrer tatsächlichen Wirkung priorisiert.

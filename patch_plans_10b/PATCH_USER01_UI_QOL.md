@@ -164,12 +164,17 @@ Angrenzende Dateien: bestehende HUD-/Display-/10A-Tests, `patch_aoe116`, Combat-
 
 Für reine U1-/U2-Ansicht muss ein semantischer State-/Geld-/Quest-/RNG-Vergleich gleich bleiben. Text-/HTML-Fingerprints nicht pauschal erneuern; Änderungen ihrem jeweiligen Renderer zuordnen. U3 darf genau die beabsichtigte reale Ausführung gegenüber einer früheren Zielrückfrage ändern, nicht andere Kampfziele still ersetzen. Ein Mock-Host-Smoke ersetzt keinen persönlichen Spielbarkeitseindruck.
 
-## 9. Noch offene Entscheidungen
+## 9. Übernommene Entscheidungen
 
-1. **Board:** kompakte Karten mit aufklappbaren Details oder ausschließlich kompakter Plaintext? **Empfehlung: Karten plus Plaintextfallback**, Gefahrenkern sichtbar. Konkrete Farben/Abstände sind routinemäßige Umsetzung, keine neue Designfrage.
-2. **Bodenfunde:** reine Liste oder zusätzlich Textvorschlagsknöpfe? **Empfehlung: zuerst kompakte aufklappbare Liste**, natürliche TAKE-Eingabe; kein sofort buchender Button. Umfang und automatische Sichtbarkeit nach Suche damit ausdrücklich festlegen.
-3. **U3:** eindeutiges gültiges Band automatisch als Auswahl anerkennen? **Empfehlung: ja**, nur bei fehlender ausdrücklicher Zielwahl und unter den genannten Grenzen. Das ist eine kleine mechanische Freigabe, nicht Bestandteil eines reinen Layoutauftrags.
+1. **Board:** Kompakte Karten mit nativen aufklappbaren Details und Plaintextfallback. Gefahrenkern bleibt sichtbar.
+2. **Bodenfunde:** Kompakte Liste vorhandener erreichbarer Dinge, natürliche TAKE-Eingabe; keine Sofortbuchungsbuttons oder neue Lootgenerierung.
+3. **U3:** Genau ein mechanisch gültiges Gegnerband darf ohne ausdrückliche Zielwahl automatisch gewählt werden. Mehrdeutige oder ausdrücklich ungültige Ziele bleiben geschützt.
 
-Etagenkennung und Anzeige bereits bekannter Awareness sind fachlich schon Ziel dieses Planungsauftrags; dafür keine erneute Grundsatzentscheidung verlangen. Ihre Umsetzung benötigt wie das gesamte Paket noch die ausdrückliche Implementierungsfreigabe. „Nicht festgestellt“ bleibt die sichere Anzeigegrenze.
+Diese Entscheidungen sind mit dem Gegenfeedback angenommen und in U1–U3 umgesetzt; technische Produkt-/Abnahmelinks unten. Etage und Awareness verwenden vorhandene Daten, „nicht festgestellt“ bleibt eine sichere Anzeigegrenze.
 
 Keine Änderung an NPC-Memory/Beziehungen, Gasthaus-Finanzparsern, XP/Startwerten/PP, LONG-Raumgeometrie, Lootgenerierung, Dungeonreset/Questpublication oder allgemeiner Kampfarchitektur. Engine-Shops bleiben im [eigenen offenen Fachplan](FACHPLAN_ENGINE_SHOPS.md). Der vorliegende Plan ist kein Auftrag, diese Nebenbereiche gleichzeitig zu bearbeiten.
+
+
+## Umsetzung nach Gegenfeedback (05.11.2026)
+
+Das angenommene Gegenfeedback vom 04.11.2026 übernimmt Karten mit Details, eine reine Bodenfund-Liste und automatische Auswahl ausschließlich eines eindeutigen gültigen Gegnerbands. U1–U3 sind zusammen in .157 umgesetzt; Combat-Log und bestehender Snapshot-Filter erhalten. Keine Sofortbuchungsbuttons, neue Funde, NPC-/Finanzmechaniken oder Dungeonreset-Regeln. Produkt- und Abnahmelinks in [03](../03_AKTUELLER_PROJEKTSTAND.md).

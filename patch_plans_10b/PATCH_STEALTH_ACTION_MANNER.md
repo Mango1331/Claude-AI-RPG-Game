@@ -139,11 +139,16 @@ Angrenzend: Planner-/Agency-/Checks-, Feature/Search-, `patch7`/`patch8`-/Dungeo
 
 **Abgenommen ist das Fachpaket erst, wenn** kein gültiges Hauptvorhaben durch seinen Stealth-Zusatz verschwindet, nur passende reale Beobachter geprüft werden, alle Zugangs-/Combat-/Eigentumsgrenzen erhalten sind und die persistierten Ergebnisse bei Reload/Swipe gleich bleiben. Exotische Prosa ist kein Anlass für eine anschließende Wortlistenserie.
 
-## 9. Vor Implementierung zu entscheiden
+## 9. Entscheidungen nach angenommenem Gegenfeedback
 
-1. **Erster Umfang:** S1 allein oder S1+S2? **Empfehlung: S1 zuerst als vollständiges Bewegungs-Fachpaket**, S2 danach auf demselben Vertrag. Das schließt die reale Blockade, ohne zur Vorbedingung neue Diebstahl-/Geräuschregeln zu machen. Kein weiterer GO-vs.-Continue-Mikrofix.
-2. **Lokale Stealth-Niederlage in S2:** Darf eine zulässige Aufnahme/Suche erfolgt sein, aber bemerkt werden? **Empfehlung: ja.** Keine automatische Rücknahme/Angriffsfolge; ausdrückliche „nur unbemerkt“-Vorbehalte sicher klären.
+1. **Entschieden:** S1 zuerst als vollständiges Bewegungs-Fachpaket; S2 nach persönlichem Test auf demselben Vertrag. Das schließt die reale Blockade, ohne zur Vorbedingung neue Diebstahl-/Geräuschregeln zu machen. Kein weiterer GO-vs.-Continue-Mikrofix.
+2. **Für S2 fachlich übernommen, noch nicht umgesetzt:** Zulässige Aufnahme/Suche kann erfolgt sein und dennoch bemerkt werden. Keine automatische Rücknahme/Angriffsfolge; ausdrückliche „nur unbemerkt“-Vorbehalte sicher klären.
 
 Der gemeinsame Modifier und die nötige nachvollziehbare Protokollrevision sind technische Empfehlungen dieses Plans; dafür muss der Nutzer keine JSON-Syntax auswählen. Reise nur am Ziel heimlich versus insgesamt heimliche Etappe richtet sich nach seiner konkreten Handlung, nicht nach einer globalen Einstellung.
 
 Formeln, PP/LP, XP, Skillwerte, Wege-/Dungeonregeln und allgemeine Aktionsökonomie stehen nicht zur Änderung. Der [separate UI-/QoL-Plan](PATCH_USER01_UI_QOL.md) kann den bekannten Awarenesszustand darstellen, darf diese Mechanik aber nicht vorwegnehmen.
+
+
+## Umsetzung nach Gegenfeedback (05.11.2026)
+
+S1 ist nach dem angenommenen Gegenfeedback vom 04.11.2026 als .156 umgesetzt (GO, `journey.continue`, lokaler Ein-Band-Schritt). Ein gemeinsamer Modifier, keine neue Reise-/Wahrnehmungsmechanik. Mehrere Stealth-Reiseetappen werden zunächst geklärt; gewöhnliche Mehr-GO-Pläne bleiben. S2 wartet wie empfohlen auf den persönlichen Spieltest der Grundlage. Produkt- und Abnahmelinks in [03](../03_AKTUELLER_PROJEKTSTAND.md).

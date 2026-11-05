@@ -1,3 +1,4 @@
+import { board159Turns, board159Response, board159Smoke } from './board159_smoke.mjs';
 import { continuityTurns, continuitySmoke, continuityAnswer } from './continuity_smoke.mjs';
 // Live SillyTavern smoke for prototype C (docs/PROTOTYPE_C.md): the planner path in a real SillyTavern (tested with
 // 1.19.0), set up as tools/st_live/run_v4.mjs sets up Runtime V4 (card with the V4 contract, preset "Avereth Narrator V4",
@@ -67,7 +68,7 @@ const TURNS = [
 ];
 const turnOf = (text) => TURNS.find((t) => text.includes(`PLAYER MESSAGE:\n${t.player}`));
 const finance = financeTurns(plan);
-const allTurns = [...TURNS, ...finance, ...stealthTurns, ...uiTurns, ...continuityTurns];
+const allTurns = [...TURNS, ...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns];
 
 // ------------------------------------------------------------------------------------------------ setup (as run_v4.mjs)
 const contract = fs.readFileSync(path.join(ENGINE, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
@@ -127,11 +128,13 @@ const mock = http.createServer(async (req, res) => {
     // the planner: its own role in a fight, the interpreter's prompt with the planner's section outside one
     if (system.startsWith('You are the intent planner') || (system.startsWith('You are the command interpreter') && system.includes('Actions with skills, in fights and on things'))) {
         purpose = 'plan';
-        const t = turnOf(users) || [...finance, ...stealthTurns, ...uiTurns, ...continuityTurns].find(t => users.includes(`PLAYER MESSAGE:\n${t.player}`));
+        const t = turnOf(users) || [...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns].find(t => users.includes(`PLAYER MESSAGE:\n${t.player}`));
         text = JSON.stringify(t ? t.plan : { commands: [] });
     } else if (system.startsWith('You are the command interpreter')) {
         purpose = 'interpret';
         text = JSON.stringify({ commands: [] });
+    } else if (system.includes('Intro eligible body-plan ids')) {
+        purpose = 'board'; text = board159Response();
     } else if (system.startsWith('You read one reply')) {
         purpose = 'extract';
         const t = allTurns.find((x) => x.reply && users.includes(x.reply.slice(0, 60)));
@@ -436,10 +439,12 @@ try {
     }
     let continuityChecks=null;
     if (process.env.AVERETH_SMOKE_CONTINUITY === '1') { stealthProbeMode=true; continuityChecks=await continuitySmoke({page,send,idle,calls,driver:()=>driver,onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});}});stealthProbeMode=false; }
+    let board159Checks=null;
+    if(process.env.AVERETH_SMOKE_BOARD159 === '1'){stealthProbeMode=true;board159Checks=await board159Smoke({page,send,idle,calls,driver:()=>driver,onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});}});stealthProbeMode=false;}
     const status = await page.evaluate(() => document.getElementById('avereth_status')?.textContent || '');
     await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); });
     await page.waitForTimeout(800);
-    result = { toggle, greeting, afterCreation, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks };
+    result = { toggle, greeting, afterCreation, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks };
 } catch (error) {
     const screen = await page.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(-8000),
         chat: window.SillyTavern?.getContext?.()?.chat?.map(m => ({ user: m.is_user, system: m.is_system, text: m.mes?.slice(0, 120) })) })).catch(() => null);
@@ -463,6 +468,7 @@ const narr = normalCalls.filter((c) => c.purpose === 'narrator');
 const engineOf = (c) => String(c?.messages?.find((m) => String(m.content).startsWith('[AVERETH ENGINE'))?.content || '');
 const narratorFor = (key) => narr.filter((c) => c.lastUser.includes(TURNS.find((t) => t.key === key).player));
 const checks = {
+    ...Object.fromEntries(Object.entries(result.board159Checks || {}).map(([k,v])=>[`board159_${k}`,v])),
     ...Object.fromEntries(Object.entries(result.continuityChecks || {}).map(([k,v]) => [`continuity_${k}`,v])),
     ...Object.fromEntries(Object.entries(result.uiChecks || {}).map(([k,v]) => [`ui_${k}`,v])),
     ...(result.stealthChecks ? Object.fromEntries(Object.entries(result.stealthChecks).map(([k,v]) => [`stealth_${k}`, v])) : {}),

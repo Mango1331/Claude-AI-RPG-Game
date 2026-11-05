@@ -617,6 +617,21 @@ function habitatPlace(s, need, where) {
     return Object.values(s.places).filter(p => normText(p.name) === normText(where) && realmOf(s, p.id) === realm);
 }
 const introAnchor = a => !!a && a.hp <= 35 && a.atk <= 10;
+const introAnchors = content => [...content.anchors.values()].filter(introAnchor).map(a => a.id);
+/** Targeted repair guidance uses the same eligibility rule as the validator and generator. */
+export function boardRepairGuidance(answer, content, need) {
+    if (!need.c || !need.progression || need.rank !== 'Novice') return '';
+    const { value } = extractJsonObject(answer);
+    const candidates = (Array.isArray(value?.listings) ? value.listings : []).filter(l => l?.level === 1);
+    if (!candidates.length) return '';
+    const current = candidates.map(l => {
+        const anchor = content.anchors.get(l.habitat?.anchor);
+        const objective = Array.isArray(l.objectives) ? l.objectives.find(o => o?.verb === 'DEFEAT') : null;
+        return `${l.title}: anchor ${l.habitat?.anchor}, HP ${anchor?.hp ?? 'unknown'}, ATK ${anchor?.atk ?? 'unknown'}, qty ${objective?.qty ?? 'unknown'}, qtype ${l.qtype}, window ${l.habitat?.min_level}-${l.habitat?.max_level}`;
+    });
+    return `INTRO REPAIR: include one qty 1, level 1, qtype minor hunt with habitat min_level=max_level=1 and an ordinary anchor HP <=35, ATK <=10. Eligible anchor IDs: ${introAnchors(content).join(', ')}. Current level-1 candidates: ${current.join('; ')}. Choose a species that really fits an eligible anchor; never relabel an incompatible species or weaken its fixed stats. Preserve valid other notices and return the complete requested board.`;
+}
+
 function habitatWhy(s, content, need, l) {
     const h = l.habitat;
     if (!h) return 'habitat: a world hunt needs its population (species, anchor, min_level, max_level)';
@@ -772,7 +787,7 @@ export function boardRequest(s, content, need) {
         ...(progressive(s, need) ? [
             '- F WORLD PROGRESSION: The full board offers voluntary choices across F, never scaled to the player: one weak introductory level-1 hunt, at least one hunt at levels 4-7, and one at 8-14. Prefer separate 8-11 and 12-14 hunts when four outdoor notices fit. Keep the 4-hunt/1-clearance or 5-hunt distribution. Do not inflate group sizes for high levels.',
             '- For every non-Dungeon hunt add habitat:{species:"the actual creature kind",anchor:"one supported body-plan id",min_level:4,max_level:7}. Allowed fixed population windows: 1-1 (intro), 1-3, 4-7, 8-11, 12-14. The quest level lies inside that window. This describes a world population, NOT a change to existing creatures or a spawn instruction. Other listings use habitat:null.',
-            `- Intro eligible body-plan ids (ordinary level 1, calculated from Content): ${[...content.anchors.values()].filter(introAnchor).map(a => a.id).join(', ')}. Species names must still fit their body plan.`,
+            `- Intro eligible body-plan ids (ordinary level 1, calculated from Content): ${introAnchors(content).join(', ')}. Species names must still fit their body plan.`,
             `- Supported body-plan ids: ${[...content.anchors.keys()].join(', ')}. The DEFEAT objective where is the one canonical hunting-site label (no duplicate place field in habitat); use the same species/kind. A weak introduction has one ordinary level-1 animal/Monster, anchor HP <=35 and ATK <=10, no hidden group/elite/boss.`,
             '- A world hunt is for the grown animals of its population (habitat.life_stage "adult" or null). Only a notice whose DEFEAT objective names the young of the kind (pups, cubs, yearlings ...) is a hunt of the young: habitat.life_stage "young". The engine counts only members of the hunted population of that age within its level window.',
             '- Established populations below are binding. New sites and species names are welcome, but never rename, move or upscale a known population. Do not locate several incompatible populations at the same small site. Clearly warn of stronger groups and high-F work; availability never means safe for the reader.',

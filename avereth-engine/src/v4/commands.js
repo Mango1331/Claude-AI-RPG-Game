@@ -1377,7 +1377,7 @@ const HANDLERS = {
         const when = ahead ? ', when he reaches the Guild hall' : '';
         if (!listed.length) {
             ctx.boardShown = { branch, rank, failed: true };
-            return { status: 'resolved', reason: 'generator_failed', line: `READS the board${when} — BOARD: no new official contracts can be shown right now; invent none.` };
+            return { status: 'resolved', reason: 'generator_failed', line: `READS the board${when} — BOARD RESULT UNCONFIRMED (technical generation failure): no official notices were established by this read. This is not an empty board, closure, delivery schedule or waiting requirement in the world; invent none. The player may retry reading immediately, without waiting in-game.` };
         }
         if (!ahead) emit({ t: 'board.shown', d: { branch, rank, listings: listed.map((q) => q.id) } });
         else ctx.conditionals.push({ seq: c.seq, kind: 'board', condition: 'arrive_guild_hall', hall, branch, rank, listings: listed.map((q) => q.id) });

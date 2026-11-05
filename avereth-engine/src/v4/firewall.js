@@ -293,6 +293,17 @@ export function firewall(deltas, ctx = {}) {
             case 'fact': {
                 const p = words(d.p).replace(/\s+/g, '_');
                 const factText = `${words(d.s)} ${words(d.p)} ${words(d.o)}`;
+                // A technical generation failure establishes neither empty notices nor a posting deadline.
+                // Scope to this failed read and Guild availability; established schedules and other facts remain.
+                if (ctx.c && ctx.boardFailed && !ctx.establishedBoardFact?.(d)
+                    && (ctx.isGuildPlace?.(text(d.s)) || ctx.isGuildPerson?.(text(d.s)) || guildBoard(words(d.s)))
+                    && /\b(?:contracts?|quests?|board|posting|post schedule)\b/.test(factText)
+                    && /\b(?:time|schedule|arriv\w*|deliver\w*|midday|noon|wait\w*|empty|bare|available|unclaimed|taken|none)\b/.test(factText)) {
+                    no(d, 'board_availability', 'technical Board failure establishes no in-world availability or posting schedule',
+                        'The Board generation failed technically. No empty board, delivery time, closure or waiting requirement was established. A new board reading can retry immediately; preserve real established Guild facts.');
+                    continue;
+                }
+
                 // Engine interface state is not an NPC fact. Match the menu's machine heading, not prose about
                 // studying, remembering a class, or somebody's belief. The original erroneous delta used p=interface.
                 if (ctx.creationComplete && (p === 'character_creation' || p === 'creation_state'

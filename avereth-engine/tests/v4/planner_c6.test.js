@@ -153,7 +153,7 @@ test('4-5. the next day\'s first reading retires what nobody took and books five
     nextDay(g);
     g.boardFails = true;
     await say(g, '*i read the novice board*', [plan({ type: 'board.read', rank: null, quote: 'i read the novice board' })]);
-    assert.match(outcomeOf(g).actions[0], /^1\. READS the board — BOARD: no new official contracts can be shown right now; invent none\.$/);
+    assert.match(outcomeOf(g).actions[0], /^1\. READS the board — BOARD RESULT UNCONFIRMED \(technical generation failure\):/);
     assert.equal(listedOn(g.state()).length, 5, 'still listed (not retired), but not on the day\'s board');
 });
 
@@ -413,7 +413,7 @@ test('R1. a new day is booked whole: three valid of the five asked for, after th
     assert.ok(!r.events.some((e) => e.t === 'quest.created' || e.t === 'board.refreshed'), 'nothing booked');
     assert.ok(!r.events.some((e) => e.t === 'quest.status' && e.d.to === 'expired'), 'yesterday\'s board not retired');
     assert.match(r.events.find((e) => e.t === 'board.failed').d.error, /^3 valid listings of the 5 asked for; refused: "Escort the Salt Wagon"/);
-    assert.match(outcomeOf(g).actions[0], /^1\. READS the board — BOARD: no new official contracts can be shown right now; invent none\.$/);
+    assert.match(outcomeOf(g).actions[0], /^1\. READS the board — BOARD RESULT UNCONFIRMED \(technical generation failure\):/);
     let s = g.state();
     assert.deepEqual(listedOn(s), old, 'yesterday\'s five still listed');
     assert.equal(s.guild.boards['loc.redmarch|Novice'].day, 1, 'the board is still day 1\'s');
@@ -444,7 +444,7 @@ test('R2. the repair that brings all five books the new day; the first board of 
     await readOnly(f);
     assert.equal(boardCalls(f), 2);
     assert.ok(!Object.values(f.state().quests).some((q) => q.kind === 'guild_contract'));
-    assert.match(outcomeOf(f).actions[0], /^1\. READS the board — BOARD: no new official contracts can be shown right now; invent none\.$/);
+    assert.match(outcomeOf(f).actions[0], /^1\. READS the board — BOARD RESULT UNCONFIRMED \(technical generation failure\):/);
 });
 
 test('R3. the C Board generator asks no trophies of a hunt (proof [], the slip shows the outcome); A keeps its prompt and its partial board', async () => {

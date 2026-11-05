@@ -33,4 +33,4 @@
 
 **Erst** den P1-Level-2-Widerspruch anhand Code und Originalevents rekonstruieren. **Dann** P2-exit/search/geleitete Ortwechsel bewerten. Positive Tam-Erinnerung und mögliche Kontextbudget-Verluste getrennt mit Original-Requests belegen. **Danach** erst beurteilen, ob NPC E0/E1 fachlich beginnen kann. Der Spieler hat **keine** der offenen UX-/Balancefragen als Sofortimplementierung freigegeben.
 
-Sols während der unterbrochenen Arbeit gespeicherte Notizen stehen [als Original](originals/SOL_THINKING_NOTES.md); die finale unabhängige Sol-Prüfung steht noch aus.
+Sols während der unterbrochenen Arbeit gespeicherte Notizen stehen [als Original](originals/SOL_THINKING_NOTES.md); die abgeschlossene unabhängige Sol-Prüfung liegt nun in [§8 der bestehenden Review](REVIEW_CHATGPT.md#8-abgeschlossener-sol-gegenreview--originalfold-requests-und-ursachenprüfung) vor. Die obige Tabelle bleibt als GPT-Vorbewertung erhalten; insbesondere der frühere Floor-2-Beleg I28, die Requestausfälle und der natürliche U3-Pfad I21 werden im Nachtrag präzisiert.

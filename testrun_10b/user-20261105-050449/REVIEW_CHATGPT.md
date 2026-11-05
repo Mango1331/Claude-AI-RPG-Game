@@ -4,6 +4,8 @@
 
 **Indexkonvention:** I bezeichnet `i` im Eventexport, beginnend mit der ersten sichtbaren Assistenznachricht bei I0; die vorangestellte JSONL-Metadatenzeile zählt nicht. T bezeichnet `turn.begun`, **nicht** die Zahl der User- oder Assistant-Nachrichten. Alle Aussagen über .157 beziehen sich auf diesen Lauf, nicht auf eine allgemeine Bestehensquote.
 
+**Abgeschlossener Sol-Gegenreview:** Die ursprünglichen §§1–7 bleiben als GPT-Vorbewertung erhalten. Der [unabhängige Nachtrag §8](#8-abgeschlossener-sol-gegenreview--originalfold-requests-und-ursachenprüfung) liefert die zuvor offenen Fold-/Requestnachweise und korrigiert insbesondere den frühesten Floorfehler sowie die U3-Testeinordnung.
+
 ## 1. Quellen, Umfang und Nachweisgrenzen
 
 - Originalchat: **75 sichtbare Nachrichten**, davon **37 Spielereingaben** (einschließlich Mage-Erstellung, #assign und sonstiger Systeminteraktionen) und **38 Assistentenantworten**. **34** `turn.begun`, **32 angewandte Extraktionen** (davon **10 `repaired:true`**), **26 interpretierte Kommandogruppen** (davon **5 `json_repaired`**). Der Lauf endet manuell nach neuem Gildenboard, nicht an einem tödlichen oder technischen Abbruch.
@@ -109,3 +111,102 @@ Das Original ist [hier unverändert archiviert](originals/SOL_THINKING_NOTES.md)
 **Offene Testgrenzen:** Kein neuer natürlicher .157-Langlauf durch dieses Review, kein reproduzierter kompletter foldChat-Validator, keine Browser-Screenshots, keine unabhängige vollständige Logkosten-Neuberechnung. Für einen nächsten Sol-Review die vier Ursprungsdateien plus die vorläufigen Notizen verwenden, bei Ursachenbehauptungen Code und tatsächlichen Host-Request prüfen. Sol darf Bewertungen berichtigen; weder diese GPT-Review noch sein unvollendetes Thinking gilt als automatisch richtig.
 
 **Keine Produktänderung, keine Buildnummer, keine Patchfreigabe.**
+
+## 8. Abgeschlossener Sol-Gegenreview – Originalfold, Requests und Ursachenprüfung
+
+**05.11.2026 · unabhängig am Produktcode `.157 / b31123ffb4d3f5c404d6add85449ea869ed415ee` geprüft.** Dokumentationsbasis: `main / 80ffe2833d425e38808d56e834ba5a5d9771b350`. Die vorstehenden §§1–7 bleiben als ursprüngliche GPT-Bewertung erhalten. Dieser Nachtrag ersetzt deren offene Sol-Nachweisgrenzen und präzisiert einzelne Befunde; die unfertigen Thinking-Notizen sind nicht seine Beweisgrundlage. Leitfäden waren [User01](../user-20261104-162404/REVIEW.md) und der tatsächlich jüngste [Batch28](../batch-20261103-171839Z/REVIEW.md). Ausführliche Mess- und Gegenprobenergebnisse: [SOL_PROBE_RESULTS.json](SOL_PROBE_RESULTS.json).
+
+### 8.1 Tatsächlich neu geprüfte Nachweise
+
+| Prüfung | Eigenes Ergebnis und Grenze |
+|---|---|
+| Vier erneut gelieferte Originale | Alle Bytes/Hashes entsprechen dem Quellenmanifest. Die Uploadsuffixe `(2)`/`(3)` kennzeichnen hier keine inhaltlich neue Runfassung. Kein zweites Archiv derselben Originale angelegt. |
+| Chat gegen Eventexport | **69/69 Gruppen und 609 Events strukturell identisch**. |
+| Vollständiger Produkt-Fold | **Alle 75 Chatprefixe**, darunter **69 eventtragende Prefixe**, mit `src/host.js:foldChat()` und anschließend `validateState()` geprüft: **0 Foldfehler, 0 Failures, 0 Validatorbefunde**. |
+| Persistenzvergleich | JSON-serialisierter Chat neu gefaltet sowie alle Exportevents direkt mit `applyEvent()` gefaltet: gleicher Endzustand. Dies ist ein lokaler Persistenznachweis, kein neuer Windows-/ST-Speichertest. |
+| Erneute World-Ausführung | **32/32 originale angewandte Extractor-Antworten** auf ihrem jeweiligen Originalvorzustand mit `replyTurnV4()` erneut ausgeführt: gleiche persistierbaren Eventarrays und Folgezustände, jeweils gültig. Verglichen wurde nach JSON-Serialisierung, also ohne nicht speicherbare `undefined`-Eigenschaften; keine fachlichen Felder ausgeblendet. |
+| Tatsächliche Narrator-Requests | Alle **116 Requests und 116 Responses** aus dem vollständigen UTF-16-Serverlog als Daten rekonstruiert, ohne Logcode auszuführen. Alle **32 Narrator-Antworten** stimmen nach Rücknahme der Windows-Zeichenkodierungsverfälschung vollständig mit ihrem Chattext überein. |
+| Kontextrekonstruktion | Auf dem Originalprefix für jeden dieser 32 Züge `turnBlock()` mit Budget 1400, Rules-Budget 800 und deaktivierter zusätzlicher Engine-Lore erzeugt: **32/32 Engineblöcke exakt identisch** zum tatsächlich gesendeten Request. Die nachfolgenden Abschnitts-/Budgetbefunde sind damit keine bloße Rekonstruktionshypothese. |
+| Endzustand / Wallet | T34, Mage L7, **280 cp**; Registrierung −20, Quest +90, Getränke −4, Zimmer −5, Verkauf +169 bei Start 50 cp. Drei Siege über sieben Gegner, Level-1-Clear und einmalige Abgabe; kein technischer Terminalabbruch. |
+
+**Formal gültig bedeutet weiterhin nicht semantisch vollständig richtig.** Insbesondere passieren unzulässige Dungeonetagen und verlorene Such-/Bewegungsabsichten den allgemeinen Validator. Der Lauf endet fortsetzbar nach dem Board, enthält aber belegte Integrationsfehler; er ist weder ein fehlerfreier Langlauf noch ein technischer Totalausfall.
+
+### 8.2 P1 präzisiert: zwei verschiedene Floorfehler, erster Beleg bereits I28
+
+Die Hauptbewertung aus §3A trägt. Der technische Fehler beginnt jedoch **vor I45/I46**:
+
+1. **I28:** Ein `passage`-Delta mit `dir:"down"` erzeugt `...level_1_sloping_left_passage` bereits mit **mechanischem `level:2`**, obwohl die Living-Struktur ausschließlich `floors[1]` besitzt. Der Raumname behauptet weiterhin Level 1. Dieser Weg wird im tatsächlichen Run nicht genommen; der falsche Raum-/Etagenzustand ist dennoch schon gespeichert.
+2. **I45/I46:** Die natürliche Bitte um Level 2 wird nach leerem ersten Planneroutput auf das bekannte **Level-1-Ziel `...level_1_way_on_down`** abgebildet. Der Narrator geht darüber hinaus bis zur neuen „level 2 — long gallery“. Die Extraktion enthält Ankünfte, aber keinen passenden gerichteten Abstieg in diese Galerie. Der bestehende World-Pfad erreicht den neuen Raum über das autorisierte bekannte Zwischenziel; seine ungerichtete Verbindung ergibt über `levelVia()` **Level 1**. Der Name ist keine verbindliche Etagenklassifikation. Hier entsteht also der umgekehrte Fehler: Name 2, Mechanik 1.
+3. **I48:** Die Poolkammer wird ebenfalls als Level 1 gebucht. Die drei kleinen und der größere erzählte Käfer werden über **zwei Gruppen-Deltas** als `dungeon_foe` abgelehnt; die abhängige Awareness folgt als `creature_continuity`. Es fehlen vier erzählte Tiere in der Targetliste, nicht zwei einzelne Enginegegner. Zugleich legt die nächste `passage(dir:"down")` wieder einen weiteren Raum mit `level:2` an.
+
+**Ursache im aktuellen Code:** `world.js:passage()` übergibt bei einem neuen gerichteten Raum `levelVia()` an die Ortsanlage; `levelVia()` erhöht bei `down` den Index ohne Abgleich mit den kanonischen Living-Floors. `living.js:sealRefusal()` schützt eine vorhandene Vorgängeretagen-Sperre, prüft aber nicht generell die Existenz der Ziel-Etage. Auch der allgemeine Zustandsvalidator meldet die Abweichung nicht. Fehlende Passage-Richtung führt umgekehrt im Ankunftspfad zur Übernahme der bisherigen Etage. Ein HUD- oder reiner Namensfix würde diese beiden Fälle nicht lösen.
+
+**Kontrollierte Gegenprobe auf unverändertem Originalzustand nach I48:** Den schon bei I28 gespeicherten, offenen linken Level-2-Weg ausdrücklich als GO-Ziel gewählt und seine Ankunft strukturiert bestätigt. Der Produktcode autorisiert die Bewegung und erreicht den Raum mit **Floor 2**, **ohne Ablehnung**, bei weiterhin ausschließlich **einem** kanonischen/runseitigen Floor. `validateState()` bleibt grün. Das ist keine natürlich gespielte alternative Reise, belegt aber die fehlende fachliche Schranke auch unabhängig von einem bloß irreführenden Raumnamen. Ein zunächst betrachteter anderer Weg trägt eine echte Türbarriere; diese wurde für den Nachweis nicht entfernt oder umgangen.
+
+**Kontext als zusätzlicher Beitrag:** Der vollständige `dungeon`-Abschnitt fehlt in den tatsächlich gesendeten Requests vor I28, I46 und I48. Vor I48 wird allerdings im verbindlichen Aktionsblock ausdrücklich geliefert: Level 1 ist cleared und es sind keine neuen Gegner zu erfinden. Der Narrator ignoriert diese vorhandene Grenze trotzdem. Somit bestehen **Budget-/Informationslücke, Modellwiderspruch und unvollständige World-Validierung nebeneinander**. Mehr Tokens allein ersetzen die Etagenprüfung nicht.
+
+**Empfehlung:** Vor dem NPC-Produktpatch den fachlichen Dungeon-/Navigationsschnitt eingrenzen: kanonische Floor-Existenz, gerichtete Passage, GO-Ziel und tatsächliche Ankunft müssen zusammenpassen. Reale mehrstöckige Dungeons, gewöhnliche Gefällestrecken innerhalb einer Etage und freies Raum-Worldbuilding schützen. Keine neuen Etagen oder Gegner erzeugen, nur weil der Spieler danach fragt; den nicht erfüllbaren Wunsch plausibel behandeln. Keine Implementierung durch diesen Review freigegeben.
+
+### 8.3 Exit und Raumsuche: unterschiedliche Ursachen unabhängig reproduziert
+
+**Exit I49/I50 – Extraktionsverlust nach Recovery, keine belegte blockierte Passage.** Das GO zur Dungeonwurzel ist gültig autorisiert; der Narrator erzählt den Austritt und sogar die nicht eigens gewählte Rückreise bis zur Gilde. Im Serverlog ist Request **#73** leer und endet mit `length` nach 4000 Completion-Tokens. Repair **#74** liefert dann `expected.1.arrived:false` und lediglich 90 Minuten Zeit. Im endgültigen Report fehlt jede Ankunft; World hat hier keine vorhandene richtige Ankunft abgewiesen. Es folgen weder `scene.moved` noch ein entsprechendes `delta.rejected`.
+
+**Gegenprobe:** Auf demselben Originalvorzustand die tatsächliche Austrittsankunft an der autorisierten Dungeonwurzel gemeldet; 90 Minuten bleiben erhalten. Ankunft gelingt ohne Ablehnung, State gültig. Das ist kein Nachweis, dass GLM mit unverändertem Prompt zuverlässig anders antwortet. Es grenzt den ursprünglichen Fehler aber vom Navigations- und Dungeonfloor-Defekt ab. Eine spätere Korrektur darf weder Ankünfte allein aus `expected` erzwingen noch die unerbetene Weiterreise zur Gilde nachträglich autorisieren. Auch eine formal erfolgreiche Kurz-Recovery kann eine zentrale Handlung verlieren.
+
+**Search I43 – deterministischer Fokusfehler bestätigt.** Auf dem unveränderten Prefix beendet das originale strukturierte `activity.search` die Kammeruntersuchung als `looted already`. **Nur das Wort „loot“** aus `what` und Handlungszitat entfernt, denselben Kammer-/Geheimnisfokus beibehalten: Der bestehende Suchpfad führt eine PER-Probe aus, im Gegenfall d100 **72 / 53,85 %, Fehlschlag**. Eine echte Untersuchung der Queen-Überreste bleibt als Kontrolle korrekt `looted already` ohne Probe. Der Fehler liegt in `commands.js:activity()` beim breiten `LOOT_WORDS`-Vorabfilter, nicht in einem fehlenden Search-Angebot des Planners.
+
+Das Original erhält später 15 Minuten Narrationszeit; das ersetzt keinen zugehörigen Engine-Suchcheck. Ein enger Fix soll den gewählten Suchgegenstand erhalten und automatische Leichenbeute sowie Suchwiederholungsschutz bewahren. Er garantiert keinen Fund und benötigt keinen neuen Lootgenerator.
+
+### 8.4 NPC-Kontinuität: tatsächliche Lieferausfälle belegt, Tam bleibt Positivkontrolle
+
+Die bisher vorläufige Tam-Requestdiagnose ist jetzt einzeln nachgewiesen. Nummern zählen die Requests im vorliegenden Originalserverlog, einschließlich Repairs; Zeilen beziehen sich auf dessen UTF-16-dekodierten Text.
+
+| Narratorantwort | Request / Logzeile | Tatsächlich gelieferter Kontext / Bedeutung |
+|---|---|---|
+| I12 – Zusage entsteht | #16 / 4758 | Anwesender Clerk-Block und `RELEVANT` verworfen. Die Zusage steht aber im aktuellen Spielertext; dafür ist keine alte Erinnerung erforderlich. |
+| I14 – Questannahme | #19 / 5912 | Tam-Karte mit bedeutender Getränkeerinnerung geliefert. |
+| I54 – Abgabe und Drink-Recall | #79 / 26789 | Tam-Karte **und** `RELEVANT` mit ursprünglicher Zusage geliefert; Tam greift sie plausibel auf. |
+| I56 – Veteranentipps | #82 / 27877 | Karte und Recall geliefert. Die nachfolgende wertvolle Gesprächserinnerung wird trotzdem wegen des unautorisierten Nebenraumwechsels verworfen. |
+| I58 – Getränke/Brokerzusage | #86 / 29268 | Tam-Karte und Recall verworfen; der direkte bisherige Gesprächsverlauf steht weiterhin im Chatfenster. |
+| I60 – Ende des Gesprächs/Inn | #89 / 30361 | Der gemeinsame Block für Tam/Bess und der Recall fehlen erneut. |
+| I64 – Rückkehr zur Gilde | #97 / 33108 | Kein Budgetverlust des aktuellen NPC-Blocks: Alaric steht beim Request noch bei der Wirtin. Tam kommt nur über `KNOWN AT` mit Name/Rolle/Beschreibung vor, ohne volle Karte. Nicht mit den anderen Lieferausfällen vermischen. |
+| I68 – Brokervermittlung | #101 / 34448 | Tam-Karte und `RELEVANT` geliefert, einschließlich der gespeicherten Zusage, ihn kostenlos zum Broker zu führen. Tam greift sie auf. |
+| I70 / I72 – Preis und Verkauf | #105 / 35908; #109 / 37229 | Anwesendenblock und Recall verworfen. |
+| I74 – Board | #115 / 38770 | Tam/Marda-Block und Recall verworfen; der gesamte Engineblock hat geschätzt 2075 Tokens trotz nominell 1400. Priorität 0 und eigene Budgets erklären dies. |
+
+**Laufbezogene Messung:** `present` wird in **11 von 32** Narratorzügen verworfen; darunter **6 von 15** Zügen, bei denen vor Narration mindestens ein NPC anwesend ist. `RELEVANT` fällt in **24/32**, der jeweilige `dungeon`-Abschnitt in **21/32** weg. Diese Werte betreffen ausschließlich User02 und sind keine populationsweite Modell- oder Engineausfallquote. Gerade der verworfene Dungeonabschnitt erweitert den E0-Blick über NPC-Karten hinaus.
+
+**Bewertung gegenüber Brenna:** Tam widerlegt weder deren belegten Fehler noch die Budgetursache. Sein erfolgreicher Recall erfolgt bei I54 mit tatsächlich gelieferter Erinnerung; andere Gesprächsstellen verlieren dieselben strukturierten Hilfen. Zugleich fehlte bei Brenna auch mit sichtbarem kurzem Chatverlauf die angemessene Modellverwendung. Karte liefern, Inhalt speichern und ihn glaubwürdig verwenden bleiben getrennte Nachweise.
+
+Bei Tam gibt es eine hilfreiche positive Wissenskontrolle: Die Abgabe findet nach bestätigter Rückkehr bei bereits anwesendem Clerk statt. I53 bucht für ihn `knowledge.gained` zum `completed_contract` als `witnessed`. Dies trifft die ungünstige Ankunft-/Abgabe-Reihenfolge aus User01 gerade nicht und entkräftet sie deshalb nicht.
+
+**E0/E1 bleibt sinnvoll:** kompakte Metadaten des wirklich verwendeten Kontexts, relevante Karten unter begrenztem Budget, Kürzung wiederholter Pflichttexte sowie die nachgewiesenen Fakt-/Wissensübergänge. Die beim ersten Tipsgespräch wegen `no_go` verlorene bedeutsame Erinnerung kann ein besserer Abruf später nicht wiederherstellen. Keine automatische Sympathie, keine neue Memorybank; erzählte gemeinsame Erfahrungen dürfen durch die technische Ablehnung nicht nachträglich als nie geschehen behandelt werden. Die betroffene Persistenz-/Autorisierungslücke ist zu beheben.
+
+### 8.5 Korrekturen und zusätzliche Abgrenzungen gegenüber der GPT-Vorbewertung
+
+**U3 ist im natürlichen Lauf bereits teilweise positiv getroffen.** Bei **I21**, der zweiten Wave gegen B/C/D, liefert der natürliche Planner tatsächlich `target:null` ohne `targets`. Der gespeicherte Mapper nennt **`target_how:"unique area band"`** und wählt Beetle B als Anker. Auf dem Originalvorzustand erneut gemappt und ausgeführt: identisches vollständiges Kampfergebnis und einmalige **14 MP** Kosten. Die pauschale Lesart „U3 gar nicht natürlich geprüft“ aus §§5/7 ist deshalb zu korrigieren. Offen bleibt eine sprachlich völlig ziel-/bandlose Eingabe: Der Spieler hatte B/C/D im Text genannt. Ebenfalls weiter offen bleibt die vollständige natürliche Bodenfund→TAKE-Kette.
+
+**Frühstück ist kein belegter `BREAKfast`-Teilstringparserfehler.** Request **#95** liefert zunächst `activity(kind:"activity", what:"breakfast")`. Das Schema lehnt den unbekannten Aktivitätstyp ab; Repair **#96** macht daraus `kind:"rest"`. Erst darauf fragt die korrekte Rest-Validierung nach einer Dauer. Die zusätzliche GO-Aktion bleibt wirksam. Das ist ein semantischer Planner-/Repairfehler an einer gewöhnlichen Alltagshandlung; eine neue Wortliste oder ein Frühstückssystem ist daraus nicht begründet.
+
+**Begleitung: vorhandene Bewegung funktioniert, Autorisierung fehlt im Original.** I55 und I67 enthalten jeweils keine GO-Kommandos. Der `no_go`-Schutz und die Ablehnung der danach abhängigen Fakten sind folgerichtig. Eine kontrollierte explizite Follow-GO-Autorisierung verarbeitet mit der sonst unveränderten I56-Extraktion den Nebenraumwechsel und Tam korrekt. Die dort zusätzlich behauptete bereits gekaufte Runde bleibt mangels Kaufentscheidung als Erinnerung abgewiesen. Die Gegenprobe zeigt den bestehenden zulässigen Pfad, keine Lizenz für frei erfundene PC-Folgeaktionen. Ziel einer späteren Verbesserung wäre natürliche kohärente Gesprächs-/Bewegungssemantik, nicht zusätzliche Pflicht-Mikroschritte bei jedem Dialog.
+
+**Finanzen sind besser geschützt als allein durch den zufälligen `no_go`-Abbruch.** Beim tatsächlichen I68 bleiben 400/800 cp ungebucht. In einer isolierten Gegenprobe nur den unzulässigen Ortswechsel entfernt und die Person lokal eingeführt, Originalpreisworte und falsche cp-Zahlen aber beibehalten: Der bestehende `dealTerms()`-/Bid-Pfad erzeugt Angebote zu **40/80 cp**, protokolliert die gemeldeten 400/800 als korrigierte Werte und bucht ohne Annahme kein Geld. Die tatsächlichen **169 cp** aus I70/I71 bleiben die korrekt angenommene Endsumme trotz falscher erzählerischer Positionsrechnung. Kein neuer Finanzfix empfohlen.
+
+**Kampf/Spielgefühl getrennt:** Queen-Initiative **14** gegen PC **13**; nach First Strike handeln ihre Runde 1 (MEDIUM→SHORT) und Runde 2 (Schließen auf ENGAGED plus 23 Schaden) vor Alarics nächster Aktion. Das ist regelkonform. Wahrnehmung allein verpflichtet ein Wesen nicht zur Aggression; zu passive Feinde und wiederholte Spielereröffnungen bleiben eine sinnvolle gesonderte Gameplayfrage. Zwei ungestörte Dungeonrasten, schwacher Explorationsanreiz und die gewünschte Trankrelevanz sind ebenfalls belastbare Spielerbeobachtungen, aber noch keine Freigabe für neue Kampf-, Drop- oder Rastregeln.
+
+### 8.6 Kosten, Recovery, Grenzen und fachliche Konsequenz
+
+Die **116** protokollierten Modellcalls verteilen sich auf **38 Planner-/Interpreter-, 32 Narrator-, 43 Extractor- und 3 Boardcalls**, jeweils einschließlich Repairs. Sämtliche 32 Narratorantworten enden regulär mit `stop`; **10 andere Antworten sind leer bei `length`** (3 Planner, 6 Extractor, 1 Board) und werden im Ablauf aufgefangen. **10 von 32** angewandten Extraktionen tragen `repaired:true`; diese bedeuten **11 zusätzliche Extractor-Aufrufe**, weil ein Fall zwei Nachversuche hat. Das ist erfolgreicher technischer Weiterbetrieb, keine Quote semantisch verlustfreier Reparatur. I50 liefert den konkreten Gegenbeleg.
+
+Die selbst erneut summierten Providerwerte stimmen mit dem Hostlog-Audit überein: **1.445.034 Prompt- + 77.846 Completion-Tokens = 1.522.880 Tokens**, ausgewiesene Kosten **0,1397551 US-Dollar**. Keine neue Preisrecherche oder Abrechnungsprüfung. Für Kontextoptimierungen Inhalt/Promptumfang und Rollen getrennt messen; aus diesem Einzelrun weder pauschal Tokens erhöhen noch zusätzliche Modellprüfer ableiten.
+
+**Gesonderte Diagnosegrenze:** Der Testhelper aktiviert einen strengeren, im Produkt standardmäßig ausgeschalteten Ownership-Assert. Ein zusätzlicher Original-Replayversuch in diesem Modus stoppt bei **I8** mit `learn wrote entities (entity.updated), which it does not own and has no gate for`. Der normale Produktpfad und die oben genannten 32 JSON-/State-Vergleiche sind davon getrennt. Keine bestandene strenge Ownership-Abnahme behauptet; den Diagnosefall separat festgehalten, ohne Produktcode oder Schutzregeln für den Review zu ändern. Er ist kein beobachteter Laufabbruch und keine nachgewiesene Zustandskorruption.
+
+**Empfohlene nächste Reihenfolge:**
+
+1. **P1 Dungeon-/Navigationsintegrität konkretisieren:** Floorgrenze und Passage-/Ankunftszuordnung mit I28→I48 als Originalkette; keine bloße Anzeigeänderung und kein Ersatz der festen Population durch frei erzählte Targets.
+2. **P2 eng behandeln:** Kammer-/Leichen-Suchfokus und Exit-Extraktionsverlust reproduzierbar getrennt halten. Begleitete Szenen und deren abhängige Erinnerungen mit Autorisierung prüfen. Kein neuer allgemeiner Handels-/Weltumbau.
+3. **NPC E0/E1 anschließend als vorgesehenes Fachpaket:** Tam als Positivkontrolle, Brenna als Negativfall; zusätzlich verworfene Dungeon-/Szenenabschnitte und bereits vor dem Recall verlorene Episoden erfassen. Die Reihenfolge ändert sich wegen belegter Technikprobleme, nicht wegen einer widerlegten NPC-Richtung.
+4. **Spielerwünsche bewahren:** Board positiv; weniger doppelte Details, vorbereitende UI-Texte, aggressivere passende Gegner, Rastgefahr und interessanter Loot bleiben getrennte spätere Entscheidungen. Keine pauschale XP- oder First-Strike-Änderung.
+
+**Prüfumfang:** Originalfolds, vollständiger Request-/Antwortabgleich, Original-World-Reproduktionen, Codeprüfung und ausdrücklich kontrollierte Gegenproben. **Keine** neu geschriebene Regression, keine erneut ausgeführte Node-Vollsuite, kein 2235er-Baselinereplay, kein neuer ST-/Browser-Smoke und kein eigener natürlicher Modelllauf. Diese sind für den reinen Review nicht als durchgeführt auszugeben. Produktbranch unverändert auf `.157`; weder Implementierung noch zusätzliche Mechanik freigegeben.

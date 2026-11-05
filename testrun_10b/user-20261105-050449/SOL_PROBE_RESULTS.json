@@ -1,0 +1,2745 @@
+{
+  "review": "Sol independent counterreview, 2026-11-05",
+  "product_sha": "b31123ffb4d3f5c404d6add85449ea869ed415ee",
+  "documentation_base_sha": "80ffe2833d425e38808d56e834ba5a5d9771b350",
+  "sources": [
+    {
+      "uploaded_name": "Avereth Engine Test v4 - 2026-11-05@05h04m49s246ms(2).jsonl",
+      "bytes": 1036402,
+      "sha256": "4979fc7ee99a452fcdc9717092620253658fa429c310ac55bca516eb8d09e0da"
+    },
+    {
+      "uploaded_name": "avereth-events-Avereth Engine Test v4 - 2026-11-05@05h04m49s246ms(2).json",
+      "bytes": 354145,
+      "sha256": "b513cdd647f013cb33df318cee3a6b6caee8c6993c1cf8e42f4802df0f700459"
+    },
+    {
+      "uploaded_name": "user Feedback als 3 euinzelne Nachr(3).txt",
+      "bytes": 3681,
+      "sha256": "554e5e33ca073a53ce40e64b92de1e1c6d8527fd9f540882b585c55db5ba898a"
+    },
+    {
+      "uploaded_name": "ST_2026-11-05_05-04-34(2).txt",
+      "bytes": 14118044,
+      "sha256": "0be5ff18c075233a3d1c699fd175e2ee83ff34718ebfbb5bbb64959fc54aca6d"
+    }
+  ],
+  "method": {
+    "fold": "src/host.js:foldChat and src/validate.js:validateState for every original chat prefix",
+    "extractor_replay": "src/v4/turn.js:replyTurnV4 on each original prefix and recorded extraction.raw, including original msg/ms/repaired and combat chronicle",
+    "comparison": "JSON serializable events/states, no semantic field exclusions",
+    "request_reconstruction": "Node util.inspect objects parsed as data without eval; CP850-decoded UTF-8 mojibake reversed; all narrator reply strings matched in full",
+    "context_settings": {
+      "budget": 1400,
+      "rulesBudget": 800,
+      "recentTurns": 4,
+      "engineLore": false
+    },
+    "no_product_changes": true,
+    "no_new_live_model_calls": true,
+    "no_full_test_suite": true
+  },
+  "fold": {
+    "build": "4.3.0-c.6.6.157",
+    "product_sha": "b31123ffb4d3f5c404d6add85449ea869ed415ee",
+    "messages": 75,
+    "users": 37,
+    "event_groups": 69,
+    "events": 609,
+    "export_mismatches": [],
+    "checked_prefixes": 75,
+    "event_prefixes": 69,
+    "issues": [],
+    "flat_equals_host": true,
+    "json_reload_equals": true,
+    "turn": 34,
+    "level": 7,
+    "wallet": 280,
+    "ledger": [
+      {
+        "i": 9,
+        "id": "pc",
+        "value": 30,
+        "delta": -20,
+        "why": "Guild registration fee"
+      },
+      {
+        "i": 53,
+        "id": "pc",
+        "value": 120,
+        "delta": 90,
+        "why": "Guild payout: Clear Glimmerdeep Grotto Level 1"
+      },
+      {
+        "i": 59,
+        "id": "pc",
+        "value": 116,
+        "delta": -4,
+        "why": "2 two mugs of the dark ale"
+      },
+      {
+        "i": 61,
+        "id": "pc",
+        "value": 111,
+        "delta": -5,
+        "why": "room for the night, breakfast included"
+      },
+      {
+        "i": 71,
+        "id": "pc",
+        "value": 280,
+        "delta": 169,
+        "why": "sold F-Rank Glass Beetle Chitin Plate ×6, F-Rank Glass Beetle Venom Gland ×2, F-Rank Mineral Slime Gel ×3, F-Rank Mineral Slime Core ×1, F-Rank Crystal Beetle Queen Chitin Plate ×1"
+      }
+    ]
+  },
+  "log": {
+    "requests": 116,
+    "responses": 116,
+    "parse_errors": [],
+    "request_roles": {
+      "planner": 38,
+      "narrator": 32,
+      "extractor": 43,
+      "board": 3
+    },
+    "usage": {
+      "prompt_tokens": 1445034,
+      "completion_tokens": 77846,
+      "total_tokens": 1522880,
+      "cost": 0.1397551
+    }
+  },
+  "narrator_contexts": [
+    {
+      "request": 2,
+      "reply_i": 6,
+      "user_i": 5,
+      "line": 318,
+      "response_line": 850,
+      "engine_chars": 3020,
+      "present": true,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": false,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 84
+        },
+        {
+          "name": "pc",
+          "tokens": 59
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 9
+        },
+        {
+          "name": "settlement",
+          "tokens": 33
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 120
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "resolved",
+          "tokens": 176
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [],
+      "tokens_estimate": 703
+    },
+    {
+      "request": 7,
+      "reply_i": 8,
+      "user_i": 7,
+      "line": 1910,
+      "response_line": 2475,
+      "engine_chars": 6205,
+      "present": true,
+      "tam_card": true,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": false,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 89
+        },
+        {
+          "name": "pc",
+          "tokens": 59
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 93
+        },
+        {
+          "name": "settlement",
+          "tokens": 33
+        },
+        {
+          "name": "gear_market",
+          "tokens": 506
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 120
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "dungeon",
+          "tokens": 126
+        },
+        {
+          "name": "envelope",
+          "tokens": 39
+        },
+        {
+          "name": "resolved",
+          "tokens": 157
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [],
+      "tokens_estimate": 1444
+    },
+    {
+      "request": 11,
+      "reply_i": 10,
+      "user_i": 9,
+      "line": 3253,
+      "response_line": 3845,
+      "engine_chars": 4064,
+      "present": true,
+      "tam_card": true,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": true,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 89
+        },
+        {
+          "name": "pc",
+          "tokens": 65
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 126
+        },
+        {
+          "name": "settlement",
+          "tokens": 33
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 120
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "dungeon",
+          "tokens": 126
+        },
+        {
+          "name": "envelope",
+          "tokens": 40
+        },
+        {
+          "name": "resolved",
+          "tokens": 125
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [],
+      "tokens_estimate": 946
+    },
+    {
+      "request": 16,
+      "reply_i": 12,
+      "user_i": 11,
+      "line": 4758,
+      "response_line": 5380,
+      "engine_chars": 7710,
+      "present": false,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": true,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 89
+        },
+        {
+          "name": "pc",
+          "tokens": 65
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "gear_market",
+          "tokens": 554
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 213
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "envelope",
+          "tokens": 40
+        },
+        {
+          "name": "resolved",
+          "tokens": 609
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "present",
+        "settlement",
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1794
+    },
+    {
+      "request": 19,
+      "reply_i": 14,
+      "user_i": 13,
+      "line": 5912,
+      "response_line": 6481,
+      "engine_chars": 6444,
+      "present": true,
+      "tam_card": true,
+      "relevant": false,
+      "drink_in_engine": true,
+      "tam_name_in_engine": true,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 89
+        },
+        {
+          "name": "pc",
+          "tokens": 78
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 182
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 213
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "quests",
+          "tokens": 456
+        },
+        {
+          "name": "envelope",
+          "tokens": 40
+        },
+        {
+          "name": "resolved",
+          "tokens": 219
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "settlement",
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1499
+    },
+    {
+      "request": 22,
+      "reply_i": 16,
+      "user_i": 15,
+      "line": 7049,
+      "response_line": 7624,
+      "engine_chars": 6386,
+      "present": true,
+      "tam_card": true,
+      "relevant": false,
+      "drink_in_engine": true,
+      "tam_name_in_engine": true,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 89
+        },
+        {
+          "name": "pc",
+          "tokens": 78
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 182
+        },
+        {
+          "name": "settlement",
+          "tokens": 33
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 213
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "quests",
+          "tokens": 456
+        },
+        {
+          "name": "envelope",
+          "tokens": 40
+        },
+        {
+          "name": "resolved",
+          "tokens": 173
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1486
+    },
+    {
+      "request": 25,
+      "reply_i": 18,
+      "user_i": 17,
+      "line": 8131,
+      "response_line": 8670,
+      "engine_chars": 5098,
+      "present": true,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": false,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 79
+        },
+        {
+          "name": "pc",
+          "tokens": 53
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 9
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 131
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "quests",
+          "tokens": 456
+        },
+        {
+          "name": "resolved",
+          "tokens": 235
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1186
+    },
+    {
+      "request": 28,
+      "reply_i": 20,
+      "user_i": 19,
+      "line": 9189,
+      "response_line": 9729,
+      "engine_chars": 7376,
+      "present": false,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": false,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 101
+        },
+        {
+          "name": "pc",
+          "tokens": 77
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "combat",
+          "tokens": 187
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 131
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "facts",
+          "tokens": 39
+        },
+        {
+          "name": "quests",
+          "tokens": 456
+        },
+        {
+          "name": "chronicle",
+          "tokens": 66
+        },
+        {
+          "name": "resolved",
+          "tokens": 435
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "present",
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1716
+    },
+    {
+      "request": 31,
+      "reply_i": 22,
+      "user_i": 21,
+      "line": 10125,
+      "response_line": 10656,
+      "engine_chars": 6430,
+      "present": false,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": false,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 101
+        },
+        {
+          "name": "pc",
+          "tokens": 82
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 131
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "facts",
+          "tokens": 107
+        },
+        {
+          "name": "quests",
+          "tokens": 456
+        },
+        {
+          "name": "chronicle",
+          "tokens": 66
+        },
+        {
+          "name": "resolved",
+          "tokens": 331
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "present",
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1496
+    },
+    {
+      "request": 35,
+      "reply_i": 26,
+      "user_i": 25,
+      "line": 11474,
+      "response_line": 12008,
+      "engine_chars": 6071,
+      "present": true,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": false,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 101
+        },
+        {
+          "name": "pc",
+          "tokens": 98
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 125
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 131
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "facts",
+          "tokens": 107
+        },
+        {
+          "name": "quests",
+          "tokens": 456
+        },
+        {
+          "name": "resolved",
+          "tokens": 172
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1412
+    },
+    {
+      "request": 38,
+      "reply_i": 28,
+      "user_i": 27,
+      "line": 12520,
+      "response_line": 13048,
+      "engine_chars": 5945,
+      "present": false,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": false,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 101
+        },
+        {
+          "name": "pc",
+          "tokens": 57
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 131
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "facts",
+          "tokens": 107
+        },
+        {
+          "name": "quests",
+          "tokens": 456
+        },
+        {
+          "name": "resolved",
+          "tokens": 310
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "present",
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1383
+    },
+    {
+      "request": 41,
+      "reply_i": 30,
+      "user_i": 29,
+      "line": 13621,
+      "response_line": 14153,
+      "engine_chars": 6105,
+      "present": true,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": false,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 104
+        },
+        {
+          "name": "pc",
+          "tokens": 98
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 9
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 131
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "quests",
+          "tokens": 456
+        },
+        {
+          "name": "corrections",
+          "tokens": 69
+        },
+        {
+          "name": "resolved",
+          "tokens": 331
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1420
+    },
+    {
+      "request": 44,
+      "reply_i": 32,
+      "user_i": 31,
+      "line": 14678,
+      "response_line": 15217,
+      "engine_chars": 6755,
+      "present": false,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": false,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 104
+        },
+        {
+          "name": "pc",
+          "tokens": 79
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "combat",
+          "tokens": 129
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 131
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "facts",
+          "tokens": 39
+        },
+        {
+          "name": "quests",
+          "tokens": 456
+        },
+        {
+          "name": "corrections",
+          "tokens": 69
+        },
+        {
+          "name": "chronicle",
+          "tokens": 66
+        },
+        {
+          "name": "resolved",
+          "tokens": 277
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "present",
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1571
+    },
+    {
+      "request": 47,
+      "reply_i": 34,
+      "user_i": 33,
+      "line": 15607,
+      "response_line": 16141,
+      "engine_chars": 6339,
+      "present": true,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": false,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 103
+        },
+        {
+          "name": "pc",
+          "tokens": 79
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 84
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 131
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "facts",
+          "tokens": 62
+        },
+        {
+          "name": "quests",
+          "tokens": 456
+        },
+        {
+          "name": "chronicle",
+          "tokens": 70
+        },
+        {
+          "name": "resolved",
+          "tokens": 268
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1475
+    },
+    {
+      "request": 51,
+      "reply_i": 36,
+      "user_i": 35,
+      "line": 16982,
+      "response_line": 17516,
+      "engine_chars": 6024,
+      "present": false,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": false,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 103
+        },
+        {
+          "name": "pc",
+          "tokens": 109
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 131
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "facts",
+          "tokens": 62
+        },
+        {
+          "name": "quests",
+          "tokens": 456
+        },
+        {
+          "name": "resolved",
+          "tokens": 318
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "present",
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1401
+    },
+    {
+      "request": 55,
+      "reply_i": 38,
+      "user_i": 37,
+      "line": 18375,
+      "response_line": 18919,
+      "engine_chars": 6583,
+      "present": true,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": false,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 105
+        },
+        {
+          "name": "pc",
+          "tokens": 79
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 65
+        },
+        {
+          "name": "combat",
+          "tokens": 103
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 131
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "quests",
+          "tokens": 456
+        },
+        {
+          "name": "chronicle",
+          "tokens": 66
+        },
+        {
+          "name": "resolved",
+          "tokens": 304
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1531
+    },
+    {
+      "request": 58,
+      "reply_i": 40,
+      "user_i": 39,
+      "line": 19332,
+      "response_line": 19877,
+      "engine_chars": 6096,
+      "present": true,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": false,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 105
+        },
+        {
+          "name": "pc",
+          "tokens": 82
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 63
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 131
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "facts",
+          "tokens": 28
+        },
+        {
+          "name": "quests",
+          "tokens": 440
+        },
+        {
+          "name": "chronicle",
+          "tokens": 66
+        },
+        {
+          "name": "resolved",
+          "tokens": 281
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1418
+    },
+    {
+      "request": 61,
+      "reply_i": 44,
+      "user_i": 43,
+      "line": 20445,
+      "response_line": 21001,
+      "engine_chars": 5391,
+      "present": true,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": false,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 105
+        },
+        {
+          "name": "pc",
+          "tokens": 123
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 63
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 131
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "facts",
+          "tokens": 28
+        },
+        {
+          "name": "quests",
+          "tokens": 434
+        },
+        {
+          "name": "resolved",
+          "tokens": 149
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1254
+    },
+    {
+      "request": 65,
+      "reply_i": 46,
+      "user_i": 45,
+      "line": 21884,
+      "response_line": 22421,
+      "engine_chars": 5893,
+      "present": true,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": false,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 105
+        },
+        {
+          "name": "pc",
+          "tokens": 123
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 63
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 131
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "facts",
+          "tokens": 28
+        },
+        {
+          "name": "quests",
+          "tokens": 434
+        },
+        {
+          "name": "resolved",
+          "tokens": 266
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1371
+    },
+    {
+      "request": 69,
+      "reply_i": 48,
+      "user_i": 47,
+      "line": 23206,
+      "response_line": 23739,
+      "engine_chars": 6198,
+      "present": true,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": false,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 101
+        },
+        {
+          "name": "pc",
+          "tokens": 123
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 9
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 131
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "quests",
+          "tokens": 434
+        },
+        {
+          "name": "corrections",
+          "tokens": 122
+        },
+        {
+          "name": "resolved",
+          "tokens": 300
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1442
+    },
+    {
+      "request": 72,
+      "reply_i": 50,
+      "user_i": 49,
+      "line": 24280,
+      "response_line": 24818,
+      "engine_chars": 5906,
+      "present": true,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": false,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 97
+        },
+        {
+          "name": "pc",
+          "tokens": 55
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 9
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 131
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "features",
+          "tokens": 56
+        },
+        {
+          "name": "quests",
+          "tokens": 434
+        },
+        {
+          "name": "corrections",
+          "tokens": 134
+        },
+        {
+          "name": "resolved",
+          "tokens": 236
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1374
+    },
+    {
+      "request": 76,
+      "reply_i": 52,
+      "user_i": 51,
+      "line": 25689,
+      "response_line": 26236,
+      "engine_chars": 6204,
+      "present": true,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": true,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 97
+        },
+        {
+          "name": "pc",
+          "tokens": 55
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 9
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 131
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "features",
+          "tokens": 56
+        },
+        {
+          "name": "quests",
+          "tokens": 434
+        },
+        {
+          "name": "goals",
+          "tokens": 40
+        },
+        {
+          "name": "resolved",
+          "tokens": 399
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1443
+    },
+    {
+      "request": 79,
+      "reply_i": 54,
+      "user_i": 53,
+      "line": 26789,
+      "response_line": 27356,
+      "engine_chars": 6183,
+      "present": true,
+      "tam_card": true,
+      "relevant": true,
+      "drink_in_engine": true,
+      "tam_name_in_engine": true,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 89
+        },
+        {
+          "name": "pc",
+          "tokens": 55
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 192
+        },
+        {
+          "name": "settlement",
+          "tokens": 33
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 214
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "dungeon",
+          "tokens": 126
+        },
+        {
+          "name": "relevant",
+          "tokens": 327
+        },
+        {
+          "name": "envelope",
+          "tokens": 40
+        },
+        {
+          "name": "resolved",
+          "tokens": 139
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [],
+      "tokens_estimate": 1438
+    },
+    {
+      "request": 82,
+      "reply_i": 56,
+      "user_i": 55,
+      "line": 27877,
+      "response_line": 28441,
+      "engine_chars": 6315,
+      "present": true,
+      "tam_card": true,
+      "relevant": true,
+      "drink_in_engine": true,
+      "tam_name_in_engine": true,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 89
+        },
+        {
+          "name": "pc",
+          "tokens": 111
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 192
+        },
+        {
+          "name": "settlement",
+          "tokens": 33
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 214
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "dungeon",
+          "tokens": 126
+        },
+        {
+          "name": "relevant",
+          "tokens": 334
+        },
+        {
+          "name": "envelope",
+          "tokens": 40
+        },
+        {
+          "name": "resolved",
+          "tokens": 107
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [],
+      "tokens_estimate": 1469
+    },
+    {
+      "request": 86,
+      "reply_i": 58,
+      "user_i": 57,
+      "line": 29268,
+      "response_line": 29843,
+      "engine_chars": 6640,
+      "present": false,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": true,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 89
+        },
+        {
+          "name": "pc",
+          "tokens": 111
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "settlement",
+          "tokens": 33
+        },
+        {
+          "name": "gear_market",
+          "tokens": 554
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 214
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "dungeon",
+          "tokens": 126
+        },
+        {
+          "name": "envelope",
+          "tokens": 40
+        },
+        {
+          "name": "corrections",
+          "tokens": 47
+        },
+        {
+          "name": "resolved",
+          "tokens": 107
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "present",
+        "relevant"
+      ],
+      "tokens_estimate": 1545
+    },
+    {
+      "request": 89,
+      "reply_i": 60,
+      "user_i": 59,
+      "line": 30361,
+      "response_line": 30926,
+      "engine_chars": 6622,
+      "present": false,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": true,
+      "tam_name_in_engine": true,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 89
+        },
+        {
+          "name": "pc",
+          "tokens": 120
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "settlement",
+          "tokens": 32
+        },
+        {
+          "name": "gear_market",
+          "tokens": 554
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 214
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "envelope",
+          "tokens": 42
+        },
+        {
+          "name": "corrections",
+          "tokens": 80
+        },
+        {
+          "name": "resolved",
+          "tokens": 187
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "present",
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 1540
+    },
+    {
+      "request": 92,
+      "reply_i": 62,
+      "user_i": 61,
+      "line": 31469,
+      "response_line": 32041,
+      "engine_chars": 6734,
+      "present": true,
+      "tam_card": false,
+      "relevant": true,
+      "drink_in_engine": true,
+      "tam_name_in_engine": true,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 81
+        },
+        {
+          "name": "pc",
+          "tokens": 120
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 93
+        },
+        {
+          "name": "settlement",
+          "tokens": 34
+        },
+        {
+          "name": "npc_continuity",
+          "tokens": 82
+        },
+        {
+          "name": "named",
+          "tokens": 65
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 132
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "relevant",
+          "tokens": 327
+        },
+        {
+          "name": "envelope",
+          "tokens": 40
+        },
+        {
+          "name": "corrections",
+          "tokens": 175
+        },
+        {
+          "name": "resolved",
+          "tokens": 196
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [],
+      "tokens_estimate": 1567
+    },
+    {
+      "request": 97,
+      "reply_i": 64,
+      "user_i": 63,
+      "line": 33108,
+      "response_line": 33675,
+      "engine_chars": 6022,
+      "present": true,
+      "tam_card": false,
+      "relevant": true,
+      "drink_in_engine": true,
+      "tam_name_in_engine": true,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 81
+        },
+        {
+          "name": "pc",
+          "tokens": 120
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 93
+        },
+        {
+          "name": "settlement",
+          "tokens": 34
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 132
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "relevant",
+          "tokens": 337
+        },
+        {
+          "name": "envelope",
+          "tokens": 40
+        },
+        {
+          "name": "resolved",
+          "tokens": 341
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [],
+      "tokens_estimate": 1401
+    },
+    {
+      "request": 101,
+      "reply_i": 68,
+      "user_i": 67,
+      "line": 34448,
+      "response_line": 35026,
+      "engine_chars": 6287,
+      "present": true,
+      "tam_card": true,
+      "relevant": true,
+      "drink_in_engine": true,
+      "tam_name_in_engine": true,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 91
+        },
+        {
+          "name": "pc",
+          "tokens": 120
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "present",
+          "tokens": 192
+        },
+        {
+          "name": "settlement",
+          "tokens": 34
+        },
+        {
+          "name": "npc_continuity",
+          "tokens": 82
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 132
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "dungeon",
+          "tokens": 126
+        },
+        {
+          "name": "relevant",
+          "tokens": 316
+        },
+        {
+          "name": "envelope",
+          "tokens": 40
+        },
+        {
+          "name": "resolved",
+          "tokens": 107
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [],
+      "tokens_estimate": 1463
+    },
+    {
+      "request": 105,
+      "reply_i": 70,
+      "user_i": 69,
+      "line": 35908,
+      "response_line": 36469,
+      "engine_chars": 6688,
+      "present": false,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": true,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 91
+        },
+        {
+          "name": "pc",
+          "tokens": 120
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "settlement",
+          "tokens": 34
+        },
+        {
+          "name": "gear_market",
+          "tokens": 554
+        },
+        {
+          "name": "npc_continuity",
+          "tokens": 82
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 132
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "dungeon",
+          "tokens": 126
+        },
+        {
+          "name": "envelope",
+          "tokens": 40
+        },
+        {
+          "name": "corrections",
+          "tokens": 47
+        },
+        {
+          "name": "resolved",
+          "tokens": 107
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "present",
+        "relevant"
+      ],
+      "tokens_estimate": 1556
+    },
+    {
+      "request": 109,
+      "reply_i": 72,
+      "user_i": 71,
+      "line": 37229,
+      "response_line": 37772,
+      "engine_chars": 6483,
+      "present": false,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": true,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 91
+        },
+        {
+          "name": "pc",
+          "tokens": 78
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "settlement",
+          "tokens": 34
+        },
+        {
+          "name": "gear_market",
+          "tokens": 554
+        },
+        {
+          "name": "npc_continuity",
+          "tokens": 82
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 132
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "dungeon",
+          "tokens": 126
+        },
+        {
+          "name": "envelope",
+          "tokens": 42
+        },
+        {
+          "name": "resolved",
+          "tokens": 147
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "present",
+        "relevant"
+      ],
+      "tokens_estimate": 1508
+    },
+    {
+      "request": 115,
+      "reply_i": 74,
+      "user_i": 73,
+      "line": 38770,
+      "response_line": 39326,
+      "engine_chars": 8920,
+      "present": false,
+      "tam_card": false,
+      "relevant": false,
+      "drink_in_engine": false,
+      "tam_name_in_engine": true,
+      "full_response_match": true,
+      "reconstructed_exact": true,
+      "sections": [
+        {
+          "name": "header",
+          "tokens": 91
+        },
+        {
+          "name": "pc",
+          "tokens": 78
+        },
+        {
+          "name": "creation",
+          "tokens": 43
+        },
+        {
+          "name": "gear_market",
+          "tokens": 554
+        },
+        {
+          "name": "npc_continuity",
+          "tokens": 82
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 333
+        },
+        {
+          "name": "help",
+          "tokens": 106
+        },
+        {
+          "name": "envelope",
+          "tokens": 42
+        },
+        {
+          "name": "corrections",
+          "tokens": 50
+        },
+        {
+          "name": "resolved",
+          "tokens": 622
+        },
+        {
+          "name": "report",
+          "tokens": 74
+        }
+      ],
+      "dropped": [
+        "present",
+        "settlement",
+        "dungeon",
+        "relevant"
+      ],
+      "tokens_estimate": 2075
+    }
+  ],
+  "mechanical_probes": {
+    "product_sha": "b31123ffb4d3f5c404d6add85449ea869ed415ee",
+    "read_only": true,
+    "original_extraction_replay": [
+      {
+        "i": 6,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 8,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 10,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 12,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 14,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 16,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 18,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 20,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 22,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 26,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 28,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 30,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 32,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 34,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 36,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 38,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 40,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 44,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 46,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 48,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 50,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 52,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 54,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 56,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 58,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 60,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 62,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 64,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 68,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 70,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 72,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      },
+      {
+        "i": 74,
+        "events_exact": true,
+        "state_exact": true,
+        "validation": []
+      }
+    ],
+    "natural_u3": {
+      "i": 21,
+      "original_planner": [
+        {
+          "seq": 1,
+          "type": "use_skill",
+          "skill": "mage.arcane_wave",
+          "target": null,
+          "quote": "i Arcane Wave again at the Beetle B and C and D"
+        }
+      ],
+      "recorded_mapping": {
+        "kind": "attack",
+        "skill": "mage.arcane_wave",
+        "target": "mon.glimmerdeep_grotto_c1_l1_e1_2",
+        "target_how": "unique area band",
+        "move": null,
+        "move_target": null
+      },
+      "reproduced_mapping": {
+        "kind": "attack",
+        "skill": "mage.arcane_wave",
+        "target": "mon.glimmerdeep_grotto_c1_l1_e1_2",
+        "target_how": "unique area band",
+        "move": null,
+        "move_target": null
+      },
+      "outcome_matches": true,
+      "mp_used": 14,
+      "validation": [],
+      "limit": "Player text names B/C/D; a wholly target-free utterance is not tested."
+    },
+    "search_focus": {
+      "original": {
+        "resolutions": [
+          {
+            "seq": 1,
+            "type": "activity",
+            "status": "resolved",
+            "reason": "looted already",
+            "quote": "i investigate the chamber for any loot hidden things or other stuff"
+          }
+        ],
+        "checks": [],
+        "time": [],
+        "validation": []
+      },
+      "same_chamber_without_loot_word": {
+        "resolutions": [
+          {
+            "seq": 1,
+            "type": "activity",
+            "status": "authorized",
+            "cap": 120,
+            "quote": "I investigate the chamber for hidden things or other stuff"
+          }
+        ],
+        "checks": [
+          {
+            "what": "the chamber for hidden things or other stuff",
+            "stat": "PER",
+            "actor": 7,
+            "opposition": 6,
+            "chance": 53.85,
+            "roll": 72,
+            "success": false,
+            "claimed": false,
+            "by": "engine",
+            "seq": 1,
+            "search": true,
+            "at": "loc.glimmerdeep_grotto.glimmerdeep_grotto_level_1_crystal_knot_chamber",
+            "focus": [
+              "chamber",
+              "hidden",
+              "things",
+              "other",
+              "stuff"
+            ],
+            "found": null,
+            "sig": "link.3:v|link.4:v|link.5:v"
+          }
+        ],
+        "time": [],
+        "validation": []
+      },
+      "corpse_control": {
+        "resolutions": [
+          {
+            "seq": 1,
+            "type": "activity",
+            "status": "resolved",
+            "reason": "looted already",
+            "quote": "I loot the Queen remains"
+          }
+        ],
+        "checks": [],
+        "time": [],
+        "validation": []
+      }
+    },
+    "undefined_floor": {
+      "original_preexisting_room": "loc.glimmerdeep_grotto.glimmerdeep_grotto_level_1_sloping_left_passage",
+      "declared_floor": 2,
+      "canonical_floors": [
+        "1"
+      ],
+      "seal_refusal": null,
+      "go": [
+        {
+          "seq": 1,
+          "type": "go",
+          "status": "authorized",
+          "quote": "I take the known sloping left passage"
+        }
+      ],
+      "at_after": "loc.glimmerdeep_grotto.glimmerdeep_grotto_level_1_sloping_left_passage",
+      "floor_after": 2,
+      "rejected": [],
+      "validation": [],
+      "created_floor2_run": false
+    },
+    "exit": {
+      "original_go": [
+        {
+          "seq": 1,
+          "to": "loc.glimmerdeep_grotto",
+          "name": "Glimmerdeep Grotto",
+          "hall": false,
+          "newName": null
+        }
+      ],
+      "original_report": {
+        "scene": "realm.caelreth",
+        "expected": {
+          "1": {
+            "arrived": false,
+            "at": null,
+            "with": null
+          }
+        },
+        "deltas": [
+          {
+            "scene": null,
+            "seq": 1,
+            "type": "time",
+            "minutes": 90
+          }
+        ]
+      },
+      "original_at": "loc.glimmerdeep_grotto.pool_chamber_past_the_crystal_fall",
+      "changed_report": {
+        "scene": "loc.glimmerdeep_grotto",
+        "expected": {
+          "1": {
+            "arrived": true,
+            "at": "loc.glimmerdeep_grotto",
+            "with": null
+          }
+        },
+        "deltas": [
+          {
+            "seq": 1,
+            "type": "arrive",
+            "at": "loc.glimmerdeep_grotto",
+            "with": null,
+            "forced_by": null,
+            "scene": "loc.glimmerdeep_grotto"
+          },
+          {
+            "seq": 2,
+            "type": "time",
+            "minutes": 90,
+            "scene": null
+          }
+        ]
+      },
+      "changed_at": "loc.glimmerdeep_grotto",
+      "rejected": [],
+      "validation": []
+    },
+    "companion": {
+      "original_commands": [],
+      "original_rejections": [
+        {
+          "seq": 1,
+          "type": "arrive",
+          "rule": "no_go",
+          "why": "Alaric arrives somewhere only after his own travel/roaming action or an explicit external involuntary cause"
+        },
+        {
+          "seq": 2,
+          "type": "fact",
+          "rule": "scene_context",
+          "why": "ambiguous local scene after an unconfirmed arrival; here is not evidence"
+        },
+        {
+          "seq": 3,
+          "type": "fact",
+          "rule": "scene_context",
+          "why": "ambiguous local scene after an unconfirmed arrival; here is not evidence"
+        },
+        {
+          "seq": 4,
+          "type": "fact",
+          "rule": "scene_context",
+          "why": "ambiguous local scene after an unconfirmed arrival; here is not evidence"
+        },
+        {
+          "seq": 5,
+          "type": "memory",
+          "rule": "scene_context",
+          "why": "ambiguous local scene after an unconfirmed arrival; here is not evidence"
+        }
+      ],
+      "controlled_explicit_follow_command": {
+        "seq": 1,
+        "type": "go",
+        "to": {
+          "new": "Guild back room"
+        },
+        "quote": "I follow Tam into the back room"
+      },
+      "at_after": "loc.glassmere.guild_hall.guild_back_room",
+      "present_after": [
+        "pc",
+        "npc.npcguild_clerk"
+      ],
+      "rejected": [
+        {
+          "seq": 5,
+          "type": "memory",
+          "rule": "pc_decision",
+          "why": "a memory of his own act he did not choose (bought)"
+        }
+      ],
+      "meaningful_memory_saved": false,
+      "validation": []
+    },
+    "unbooked_currency_control": {
+      "change": "Only the rejected arrival/scene is removed; original 400/800 cp reports and quoted four/eight silver remain unchanged.",
+      "offers_created": [
+        {
+          "t": "offer.created",
+          "d": {
+            "offer": {
+              "id": "offer.t68.5",
+              "seller": "npc.marda",
+              "bid": true,
+              "at": "loc.glassmere.guild_hall",
+              "status": "open",
+              "canon": false,
+              "turn": 31,
+              "price_cp": 40,
+              "lines": [
+                {
+                  "id": "l1",
+                  "what": "F-Rank Mineral Slime Core",
+                  "kind": "goods",
+                  "service": null,
+                  "object": "obj.loot.mineral_slime.core.f",
+                  "qty": 1,
+                  "price_cp": null
+                }
+              ],
+              "terms": "firm",
+              "condition": null,
+              "reported_cp": 400,
+              "evidence": {
+                "source_reference": {
+                  "message": 68,
+                  "text_hash": "f951af5c"
+                },
+                "ranges": [
+                  {
+                    "start": 1175,
+                    "end": 1201
+                  },
+                  {
+                    "start": 1190,
+                    "end": 1201
+                  }
+                ],
+                "basis": "total",
+                "derived_cp": 40,
+                "reason": "literal"
+              }
+            }
+          }
+        },
+        {
+          "t": "offer.created",
+          "d": {
+            "offer": {
+              "id": "offer.t68.6",
+              "seller": "npc.marda",
+              "bid": true,
+              "at": "loc.glassmere.guild_hall",
+              "status": "open",
+              "canon": false,
+              "turn": 31,
+              "price_cp": 80,
+              "lines": [
+                {
+                  "id": "l1",
+                  "what": "F-Rank Crystal Beetle Queen Chitin Plate",
+                  "kind": "goods",
+                  "service": null,
+                  "object": "obj.loot.crystal_beetle_queen.chitin.f",
+                  "qty": 1,
+                  "price_cp": null
+                }
+              ],
+              "terms": "firm",
+              "condition": null,
+              "reported_cp": 800,
+              "evidence": {
+                "source_reference": {
+                  "message": 68,
+                  "text_hash": "f951af5c"
+                },
+                "ranges": [
+                  {
+                    "start": 1242,
+                    "end": 1301
+                  },
+                  {
+                    "start": 1281,
+                    "end": 1301
+                  }
+                ],
+                "basis": "total",
+                "derived_cp": 80,
+                "reason": "literal"
+              }
+            }
+          }
+        }
+      ],
+      "system": [],
+      "rejected": [],
+      "coin_events": [],
+      "validation": []
+    },
+    "strict_debug_ownership": {
+      "enabled_in_product": false,
+      "first_i": 8,
+      "error": "Decision Ownership: learn wrote entities (entity.updated), which it does not own and has no gate for",
+      "complete_strict_replay": false
+    }
+  }
+}

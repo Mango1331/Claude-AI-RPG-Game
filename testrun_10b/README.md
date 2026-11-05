@@ -14,6 +14,7 @@ Für die weitere Stabilitätsbeobachtung jedes neuen Batches Endgründe **aller 
 
 ## Persönliche User-Spieltests (keine Runner-Batches)
 
+- **[User-Testrun 02, 05.11.2026, Build .157](user-20261105-050449/REVIEW_CHATGPT.md):** 37 Spielereingaben / 34 Enginezüge / 609 Events, Mage L1→L7, Grotto-L1-Clear, Questerlös und Lootverkauf; P1 erzählte nicht existente Ebene 2, faktische Räume Level 1 und abgelehnte Gegner; weitere Exit-/Search-/NPC-Szenenwechselbefunde. [16 chronologische Originalfeedbackpunkte](user-20261105-050449/USER_FEEDBACK_REVIEW.md), [Quellenmanifest](user-20261105-050449/SOURCE_MANIFEST.md), [unterbrochene Sol-Vornotizen (nicht fertig reviewed)](user-20261105-050449/originals/SOL_THINKING_NOTES.md). **Vollständiger Serverlog 14 MB nicht auf Git; User-ZIP verfügbar.** Neue unabhängige Sol-Bewertung steht noch aus.
 - **[User-Testrun 01, 04.11.2026, Build .155](user-20261104-162404/REVIEW.md):** 37 Spielerbeiträge / 33 Enginezüge, 635 Events, Mage L1→L7, Glimmerdeep-L1-Auftrag abgeschlossen; Abschluss offener Ghoul-Auftrag mit Reise+Stealth-Problem. [Originalchat und Events](user-20261104-162404/SOURCE_MANIFEST.md), [vollständiges persönliches Feedback und Bewertung](user-20261104-162404/USER_FEEDBACK_REVIEW.md), [NPC-Ursachenanalyse mit Gegenbewertung](../recherche/NPC_KONTINUITAET_ANALYSE_20261104.md). Seitdem `.156`-Stealth-S1 auf dem Produktbranch implementiert, aber **nicht durch einen natürlichen `.156`-User-Run abgenommen**. [Aktueller Stand](../03_AKTUELLER_PROJEKTSTAND.md).
 
 ## Einzelruns

@@ -1,0 +1,34 @@
+User Feedback (selten bis gar kein technisches Feedback/Spiel und Balancegegfühl - Die Absätze sind in der regel chronologisch mit wann es mir am spiel auffällt und nicht wie wichtig es ist.)
+
+CSS ist viel leichter zu lesen beim Questboard. Die aufklappbaren "Contract Details" wirken unnötig sie sind Narrator Kontext den ich im Narrator text eh schon habe und die wichtigen Infos stehen im oberen teil der UI Quest (nicht für jetzt aber später kann man in der UI Buttons reinmachen bei den Questnamen? und das generiert automatisch den nächsten satz für mich einen generischen "i take that quest x and Register it at the front desk" das selbe währe interessant mit UI Shop wenn ich in einen Store gehe)
+
+auf 1-2 Nachrichten hat Clerk Tam den Kontext vom Drink (der Brenna fehler war damit Narrator fehler? oder tokenbudget?)
+
+Wenn enemies AWARE sind und "mindless" monster greifen sie mich nie zuerst an auch in gruppen was dazu führt das ich immer "first strike" habe (ist es technisch einfacher first strike wieder zu entfernen oder das die besser reagieren?)
+
+ich ruhe mich in dungeons aus also habe ich keinen grund für heiltränke usw da PULSE engine noch nicht implementiert ist wird mir nie was passieren egal welcher ort und Zeit
+
+Bei der Queen habe ich first strike bekommen aber dann hat sie trotzem 2 movement aktionen gehabt bevor ich wieder drann war (vergesse ich da eine mechanic?)
+
+Wieder loot oder versteckte sachen in gebieten wo es sinn macht (keine ahnung was technisch möglich ist aber falls schwer dann halt videospielmäßiger lootboc drop von elites und mini bossen mit rank und dann einem randomised reward im selben rank und mit minichance auf "höheres" seltenes bs zu skillstones usw)
+
+Die extra anzeige in der Worlds UI fürs dungeon level zeigt 1 aber direkt davor steht level 2 als ich gezielt ins 2. level gehen wollte. dann als ich deeper move werden die targets nicht mehr angezeigt und es steht wieder nur level 1 obwohl das schon cleared ist und ich nun in einer neuen ebene neue gegner sehe die aber nicht von der engine targets sind (nehme an Ortsfehler)
+
+
+Ortwechsel noch nicht ganz ohne fehler. nach 2 maligen erzählen das ich den dungeon exit nehme hats geklappt.
+
+clerk tam erinnert sich an den deal mit dem drink (nicht sicher ob temperament und persönlichkeit so gut übergeben werden)
+
+meta daten sind irgendwo natürlioch abzuleiten für Tam aber ein wenig zu spezifisch für meinen geschmack mit anzahl des lootes zb. es würde sinn machen wenn er weiß welcher loot der dungeon gibt aber nicht wie viel ich davon habe. low prio
+
+getränke wurden bestellt würde sich am natürlichsten anfühlen wenn sie gebracht werden und dann der preis gesagt wird (wurde gar kein preis genannt nehme an hat nicht registriert. gerne auch sonst als engine shop falls das technisch leichter ist)
+
+Gespräch mit Tam wirkt nun ein wenig unnatürlich da der direkte Kontext der letzten Nachricht vllt nicht dabei ist? aber er Kontext von der engine bekommt? keine Ahnung vllt bilde ich es mir auch ein
+
+Inn Übernachtung Price total ist wieder nicht erkannt. ich nehme nun einfach nur den raum weil ich nich nochmal extra nachfragen will wie teuer alles zusammen ist. Inn Besitzer nennt 3 einzel preise einmal raum essen und bath
+
+es versucht eine "rest" zu machen aus "BREAKfast" hält die Story aber nicht auf ist nur engine Nachricht 
+
+Smalltalk zum selling wird als "sell" aktion aufgefasst mit System clarify was ich verkaufen will. Tam sollte wissen was und aus dem Gespräch vom abend davor anbieten mich zum broker zu bringen
+
+nach dem clarify erfüllt Tam tatsächlich das versprechen korrekt

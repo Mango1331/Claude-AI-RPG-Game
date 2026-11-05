@@ -75,7 +75,7 @@ test('the first story message after creation goes to the narrator with the finis
     assert.match(text, /mode: story/);
     assert.match(text, /Alaric — Level 1 Warrior, Power Rank F \| HP 85\/85 \(unhurt\) MP 60\/60 STA 100\/100/);
     assert.match(text, /Equipped: Simple Traveler's Clothes, Starter Longsword, Starter Heavy Armor/);
-    assert.match(text, /CHARACTER CREATION is complete \(the System handled it; its menu at the start of the chat is closed\)/);
+    assert.match(text, /CHARACTER CREATION is complete.*never reopen class\/skill selection/);
     assert.doesNotMatch(text, /CHARACTER CREATION — STEP|character creation: nothing to report/);
     chat.push(ai('The road runs straight to the gate.\n<avereth>{"time":20,"place":"Ashbridge west gate"}</avereth>'));
     processReply(chat, chat.length - 1, content);

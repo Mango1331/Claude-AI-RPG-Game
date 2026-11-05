@@ -21,7 +21,7 @@ import { verifySavedChat } from './src/v4/continuation.js';
 import { createWorldJobs } from './src/v4/world_jobs.js';
 import { validateState } from './src/validate.js';
 import { newSeed } from './src/rng.js';
-import { parseSwaps, ENGINE_VERSION, NARRATOR_CONTRACT_REVISION } from './src/util.js';
+import { parseSwaps, hash32, ENGINE_VERSION, NARRATOR_CONTRACT_REVISION } from './src/util.js';
 import { migrateSettings, SETTINGS_REV } from './src/settings.js';
 
 const MODULE = 'avereth';
@@ -376,7 +376,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         }
         lastContext = r.context;
         setPrompt(r.context.text);
-        narrationStart = { chatId: c.getCurrentChatId(), user: c.chat.findLastIndex((m) => m.is_user), t: Date.now() };
+        narrationStart = { chatId: c.getCurrentChatId(), user: c.chat.findLastIndex((m) => m.is_user), t: Date.now(), inputHash: hash32(c.chat[c.chat.findLastIndex(m => m.is_user)]?.mes || ''), context: r.context.diagnostics, epoch: generationRequest, chat: c.chat };
         // prompt-only: retired tracker blocks out of the history, and only the last exchanges (the saved chat is untouched)
         lastProjection = projectPromptHistory(chat, { keepTurns: Number(s.historyTurns) || 0 });
         if (r.errors?.length) console.warn('[Avereth] fold errors', r.errors);
@@ -446,10 +446,11 @@ async function onMessageReceived(messageId) {
         const recover = settings().recoverReports && typeof c.generateRaw === 'function';
         // the greeting of a new chat arrives here too (SillyTavern: MESSAGE_RECEIVED 'first_message') and starts the campaign
         // Patch 8.2: the narrator's time, from the engine block handed over to the reply received (telemetry)
+        const snapshot = narrationStart;
         const started = narrationStart?.chatId === c.getCurrentChatId() && Number(messageId) > narrationStart.user ? narrationStart.t : null;
         narrationStart = null;
         if (!hasCampaign(chat)) settleGreeting(c); // the greeting of a new chat starts the campaign here (hotfix .137)
-        const r = processReplyAny(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers, recover, runtime: newRuntime(), planner: newPlanner(), narrationMs: started === null ? null : Date.now() - started });
+        const r = processReplyAny(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers, recover, runtime: newRuntime(), planner: newPlanner(), narrationMs: started === null ? null : Date.now() - started, narratorContext: started !== null && snapshot.chat === c.chat && snapshot.epoch === generationRequest && snapshot.inputHash === hash32(c.chat[snapshot.user]?.mes || '') ? snapshot.context : null });
         if (r.foldBlocked) { showFoldBlock(r.foldBlocked); renderDebug(); return; }
         if (!r.changed) return;
         rerender(c, Number(messageId));
@@ -665,7 +666,7 @@ function mountSettings() {
     const c = ctx();
     const ev = c.eventTypes || c.event_types;
     c.eventSource.on(ev.MESSAGE_RECEIVED, onMessageReceived);
-    c.eventSource.on(ev.GENERATION_ENDED, () => narratorRecovery.finish());
+    c.eventSource.on(ev.GENERATION_ENDED, () => { narratorRecovery.finish(); narrationStart = null; });
     c.eventSource.on(ev.CHAT_COMPLETION_SETTINGS_READY, data => {
         narratorRequest = null;
         const a = ctx(), u = a.chat.findLastIndex(m => m.is_user), user = a.chat[u], record = rec(user);
@@ -675,12 +676,13 @@ function mountSettings() {
         narratorRequest = { body: JSON.stringify(data), chat: a.chat, chatId: a.getCurrentChatId(), epoch: generationRequest,
             u, user, input: user.mes, record, length: a.chat.length };
     });
-    c.eventSource.on(ev.GENERATION_STOPPED, () => narratorRecovery.invalidate());
+    c.eventSource.on(ev.GENERATION_STOPPED, () => { narratorRecovery.invalidate(); narrationStart = null; });
     c.eventSource.on(ev.MESSAGE_EDITED, onMessageEdited);
     // state is always re-folded from the chat, so these events only refresh the status line; the interceptor sets
     // the engine block before every generation (normal, swipe, regenerate, continue)
     c.eventSource.on(ev.CHAT_CHANGED, () => {
         generationRequest++;
+        narrationStart = null;
         narratorRecovery.invalidate();
         worldJobs.invalidate();
         lastContext = null; lastProjection = null;
@@ -690,6 +692,7 @@ function mountSettings() {
     });
     for (const t of [ev.MESSAGE_DELETED, ev.MESSAGE_SWIPED]) c.eventSource.on(t, () => {
         generationRequest++;
+        narrationStart = null;
         narratorRecovery.invalidate();
         worldJobs.invalidate();
         renderDebug();

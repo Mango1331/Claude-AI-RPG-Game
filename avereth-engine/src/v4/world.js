@@ -1,3 +1,4 @@
+import { floorRefusal } from './dungeon.js';
 import { placeParent, placeIdentity, placeKey, samePlace, scopedPlaces } from './place_refs.js';
 import { sceneIssues, localSceneDelta } from './extract.js';
 import { privateQuestsOf, questVisible } from '../content.js';
@@ -22,7 +23,7 @@ import { trainingOfferWhy } from './growth.js';
 import { deriveCharacter } from '../derived.js';
 import { reportToEvents, makeResolver, isGroup, GROUP_WORDS } from '../delta.js';
 import { sceneHandle } from './scene_handles.js';
-import { truth, entityLabel, setFactEvents, statusOf, normPredicate } from '../knowledge.js';
+import { truth, entityLabel, setFactEvents, statusOf, normPredicate, knows } from '../knowledge.js';
 import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../engine.js';
 import { firewall, pcWound, pcActIn } from './firewall.js';
 import { stripOwned, wrongClaim, ownershipViolation, stateRegions, effectViolation } from './ownership.js';
@@ -46,7 +47,7 @@ import { anchorFor, speciesAnchor, templateFor, rulesetOf } from '../content.js'
 import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotMet, resolved, slotForNew, resolvedSlotNamed, slotEntityEvents, establishEvents, syncEvents, insideOf } from './living.js';
 import { unbookedDungeonThreat } from './run9_evidence.js';
 import { jobOf, paymentJob, recordJobWork } from './private_jobs.js';
-import { forcedRelocation, presenceInReply, narratedEvent } from './narration_evidence.js';
+import { forcedRelocation, presenceInReply, narratedEvent, guildParticipationEvidence } from './narration_evidence.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
 // delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
@@ -160,6 +161,8 @@ function resolvePlace(s, ref, emit, depth = 0, { c = false, reported = false } =
     // and nothing to tell them apart is a question, never a pick (src/v4/dungeon.js)
     const dun = ['interior', 'site'].includes(n.kind) ? dungeonOf(s, pid) : null;
     if (dun) {
+        const invalid = floorRefusal(s, dun, n.level, n.name);
+        if (invalid) return { error: invalid };
         if (n.parent === null || n.parent === undefined) pid = dun;
         const room = roomByName(s, dun, n, s.scene.at);
         if (room?.ambiguous) return { error: `more than one room "${String(n.name).slice(0, 60)}" in ${s.places[dun].name}: name it by its id` };
@@ -233,7 +236,24 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const place = (ref) => resolvePlace(s, ref, emit, 0, { c: cPath });
     // Patch 8 (13A): an arrival at a Dungeon's gate by any of its names (the ruined chapel above the Old Crown Catacombs)
     // is at the Dungeon itself, its way in: never a room of it, never a new place beside it
-    const arrivalPlace = (ref) => { const gate = cPath ? entranceOf(s, content, ref) : null; return gate ? { id: gate } : place(ref); };
+    const arrivalPlace = (ref) => {
+        const gate = cPath ? entranceOf(s, content, ref) : null;
+        if (gate) return { id: gate };
+        const n=ref?.new;
+        if (cPath && n && !placeIdentity(s,ref,content)) {
+            const parent=typeof n.parent === 'string' ? n.parent : s.scene.at;
+            const root=trueDungeonOf(s,parent);
+            if (root && s.dungeons?.[root]) {
+                const shown=fw.accept.find(d=>d.type === 'passage' && (d.to?.new?.name === n.name));
+                const goal=(auth.gos || []).map(g=>g.to).find(id=>id && id!==s.scene.at && trueDungeonOf(s,id)===root && wayBetween(s,s.scene.at,id).path);
+                const from=typeof shown?.from === 'string' ? shown.from : goal || s.scene.at;
+                const lv=levelVia(s,from,{a:from,dir:shown?.dir || null});
+                const invalid=floorRefusal(s,root,lv,n.name);
+                if (invalid) return { error: invalid };
+            }
+        }
+        return place(ref);
+    };
     const expected = answer.expected || {};
     const chronology = new Map(cPath && rulesetOf(s) >= 2 ? sceneIssues(answer, s.scene.at, s, content, explicitTravel).map(x => [answer.deltas[x.index], x.why]) : []);
     const sceneOf = d => cPath && rulesetOf(s) >= 2 ? d?.scene ?? answer.scene : null;
@@ -342,6 +362,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     let arrived = null;
     let stealthAt = null; // actual voluntary arrival of this GO, never a forced relocation
     let arrivedHall = null;
+    let sceneEpoch = 0;
+    const deskWitnesses = [];
     const arrivals = new Set();
     const arrivalManner = () => {
         const reached = g => (g.to && arrivals.has(g.to)) || (g.intent && s.intents[g.intent]?.status === 'done')
@@ -388,6 +410,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             .flatMap((x) => normText(x).split(/[^a-z0-9]+/));
         const named = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.status !== 'dead' && s.scene.present.includes(e.id) && own(e).includes(word));
         return named.length === 1 ? named[0].id : null;
+    };
+    const personalLabels = who => {
+        const name=s.entities[who]?.name;
+        if (!name) return personLabels(who);
+        const first=name.split(/\s+/)[0];
+        const unique=Object.values(s.entities).filter(e=>e.kind === 'npc' && e.name?.split(/\s+/)[0] === first).length === 1;
+        return unique ? [name,first] : [name];
     };
     const mapRef = (ref) => (typeof ref === 'string' ? idOf(ref) || ref : ref);
     // Build .107 (audit of .106: enter, position and aware brought any known living person into the scene, also one
@@ -1074,6 +1103,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 }
                 v3({ enter: [who] }, d);
                 if (s.scene.present.includes(who)) {
+                    if (s.entities[who]?.kind === 'npc' && hallOf(s,s.scene.at) && firewallContext(s,content).isGuildPerson(who)) {
+                        for (const w of deskWitnesses.filter(w=>w.epoch === sceneEpoch && w.at === s.scene.at)) {
+                            if (!knows(s,who,w.fact) && guildParticipationEvidence(prose, personalLabels(who), {payoutCp:w.cp,content})) {
+                                emit({t:'knowledge.gained',d:{who,about:w.fact,stance:'knows',source:'witnessed',turn:s.turn,minute:s.clock.minute}});
+                            }
+                        }
+                    }
                     if (s.entities[who]?.kind === 'npc' && s.entities[who].at !== s.scene.at)
                         emit({ t: 'entity.updated', d: { id: who, set: { at: s.scene.at } } });
                     for (const ref of [...blockedPeople]) if (idOf(ref) === who) blockedPeople.delete(ref);
@@ -1170,7 +1206,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     reject(d, /^mon\./i.test(subject) ? 'group_fact' : 'entity_fact', `fact subject ${subject} is not a known entity`);
                     break;
                 }
-                const object = mapRef(d.o);
+                const object = typeof d.o === 'string' ? makeResolver(s, refs, content)(d.o, { exact: true }) || d.o : d.o;
                 if (missingEntityRef(object)) {
                     reject(d, 'entity_fact', `fact object ${object} is not a known entity`);
                     break;
@@ -2069,6 +2105,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const from = s.scene.at;
         if (to === from || (!dungeonOf(s, from) && !dungeonOf(s, to))) return null;
         // Patch 8 (13B): a part he had not seen, reached beyond the room his GO named, is reached through that room
+        const invalid = cPath && to !== trueDungeonOf(s, to) && floorRefusal(s, trueDungeonOf(s, to), s.places[to]?.level);
+        if (invalid) { reject(d, 'passage', invalid); return invalid; }
         const via = throughGoal(to);
         if (via) return wayRefused(via, d, { forced });
         // Patch 8: a sealed level, and the gate of a Living Dungeon (who may enter, its fee, how many are inside)
@@ -2184,10 +2222,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const into = arrived && made(arrived) && (d.to === arrived || normText(d.to?.new?.name || d.to?.new || '') === normText(s.places[arrived]?.name || ''));
         const a0 = d.from === null || d.from === undefined ? { id: into ? s.scene.history?.at(-1) || startAt : s.scene.at } : place(d.from);
         if (a0.error) { reject(d, 'place', a0.error); return; }
-        markEvents(s, a0.id).forEach(emit);
         // a way up or down leads to a room of another level: a room of the same name there is another room
-        const lv = d.dir && d.to?.new && typeof d.to.new === 'object' && dungeonOf(s, a0.id) ? levelVia(s, a0.id, { a: a0.id, dir: d.dir }) : null;
-        const b0 = place(Number.isInteger(lv) ? { new: { ...d.to.new, level: lv } } : d.to);
+        const lv = d.dir && dungeonOf(s, a0.id) ? levelVia(s, a0.id, { a: a0.id, dir: d.dir }) : null;
+        const targetId = typeof d.to === 'string' ? d.to : null;
+        const targetLevel = targetId && targetId !== dungeonOf(s, a0.id) ? s.places[targetId]?.level : null;
+        const invalid = targetId === dungeonOf(s, a0.id) ? null : floorRefusal(s, dungeonOf(s, a0.id), lv ?? targetLevel, d.to?.new?.name || s.places[targetId]?.name);
+        if (invalid) { reject(d, 'passage', invalid); return; }
+        if (Number.isInteger(lv) && Number.isInteger(targetLevel) && targetLevel !== lv) { reject(d, 'passage', 'passage direction conflicts with the established target floor'); return; }
+        markEvents(s, a0.id).forEach(emit);
+        const b0 = place(Number.isInteger(lv) && d.to?.new && typeof d.to.new === 'object' ? { new: { ...d.to.new, level: lv } } : d.to);
         if (b0.error) { reject(d, 'place', b0.error); return; }
         markEvents(s, b0.id).forEach(emit);
         const dun = dungeonOf(s, a0.id) || dungeonOf(s, b0.id);
@@ -2270,6 +2313,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
 
     function arrive(id, party = []) {
         arrivals.add(id);
+        sceneEpoch++;
         const town = locationOf(s, id);
         const from = s.scene.at;
         // Patch 7: two rooms of a building or cave out in the wild that he walks between make it a dungeon (with the
@@ -2398,6 +2442,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     continue;
                 }
                 const r = q && q.status === 'active' ? completeContract(s, content, q, emit, { step: k.seq, c: cPath }) : { ok: false, reason: 'the contract is no longer active' };
+                if (r.ok) deskWitnesses.push({fact:`f.pc.completed.${q.id}`,at:s.scene.at,epoch:sceneEpoch,cp:q.payout_cp});
                 emit({ t: 'cmd.completed', d: { seq: k.seq, ok: r.ok, reason: r.reason ?? null } });
                 if (!r.ok) system.push(`TURN-IN REFUSED — ${q?.title || k.quest}: ${r.reason}`);
             }

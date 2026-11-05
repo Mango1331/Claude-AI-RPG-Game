@@ -4,6 +4,7 @@
 // offers are spoken), not negated, not hypothetical or planned, not a memory, a thought or hearsay. This is a narrow
 // literal check of the extractor's own quote, no reading of the story: a clause it cannot confirm is refused, and the
 // story goes on as the engine has it (the person not here, Alaric where he was).
+import { coinFromWords } from '../economy.js';
 import { normText } from '../util.js';
 
 // Build .108: contractions are read before the apostrophes go ("they'll haul him" is a plan). 'll is will, n't not;
@@ -176,4 +177,23 @@ export function presenceInReply(prose, evidence, labels) {
         }
     }
     return own;
+}
+
+/** Only a retry trigger, never authority to book travel. */
+export function movementEvidence(prose) {
+    return narrationOnly(prose).split(/[.!?\n|]+/).some(sentence =>
+        /\b(?:Alaric|he)\b/i.test(sentence) && /\b(?:walked|reached|entered|returned|stood|crossed|stepped|emerged)\b/i.test(sentence)
+        && narratedEvent(prose, sentence.trim()).ok);
+}
+/** An actual named participant handling a contract/payment, not mere co-presence. */
+export function guildParticipationEvidence(prose, labels, { payoutCp = null, content = null } = {}) {
+    return narrationOnly(prose).split(/[.!?\n|]+/).some(sentence => {
+        const text=flat(sentence);
+        return labels.filter(Boolean).some(label => {
+            const name=flat(label).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+            return new RegExp(`(?:^| )${name} (?:(?:had|then|carefully|slowly|quietly|deliberately) )*(?:paid|counted|pushed|slid|stamped|recorded|entered|took|accepted)\\b`).test(text);
+        })
+            && (/\b(?:contract|slip|ledger|payout|reward)\b/.test(text) || (content && payoutCp > 0 ? coinFromWords(sentence,content) === payoutCp : !content && /\b(?:copper|silver|gold)\b/.test(text)))
+            && narratedEvent(prose,sentence.trim()).ok;
+    });
 }

@@ -603,7 +603,7 @@ export function buildContext(state, content, opts = {}) {
     const sections = [];
     const add = (name, text, priority, own = false) => text && sections.push({ name, text, priority, own, tokens: estimateTokens(text) });
 
-    if (!privateQuestsOf(state)) add('help', 'FREE HELP — only Guild contracts are formal quests. NPCs may request help, offer paid work, make promises and react freely. Preserve requests, deeds, relationships and outcomes as ordinary world continuity; no private Quest acceptance, objectives, READY, turn-in, work certificate, automatic reward or Quest XP. A present NPC may voluntarily hand over a credible gift or payment now; promises/recounts are not new money. Already recorded handovers: ' + ((state.credits || []).filter(x => x.gift).map(x => `${x.gift.from}: ${x.cp} cp (${x.gift.why})`).join('; ') || 'none'), 0);
+    if (!privateQuestsOf(state)) add('help', 'FREE HELP — only Guild contracts are formal quests. NPCs may request help, offer paid work, make promises and react freely. Preserve requests, deeds, relationships and outcomes as ordinary world continuity; no private Quest acceptance, objectives, READY, turn-in, work certificate, automatic reward or Quest XP. A present NPC may voluntarily hand over a credible gift or payment now; promises/recounts are not new money. Already recorded handovers: ' + ((state.credits || []).filter(x => x.gift && (x.turn === state.turn || state.scene.present.includes(x.gift.from))).slice(-4).map(x => `${x.gift.from}: ${x.cp} cp (${x.gift.why})`).join('; ') || 'none'), 0);
     add('header', `[AVERETH ENGINE — authoritative game state, turn ${state.turn}. Numbers, rolls, positions and knowledge below are binding; narrate, never recalculate.]\n${formatClock(state.clock.minute)} | ${loc ? `${loc.name}${realm && (!v4 || normText(realm) !== normText(loc.name)) ? `, ${realm}` : ''}` : 'unknown location'}${placeSuffix} | mode: ${state.mode}${locStatus !== 'exists' && locStatus !== 'alive' ? ` | LOCATION STATUS: ${String(locStatus).toUpperCase()}` : ''}\nSetting: Western-fantasy medieval material culture with mana/high magic; letters and messengers for distance; no modern technology.`, 0);
     // what Alaric's line carries depends on the turn: items and coin only when trade, loot or items are in play
     const itemScan = `${input} ${lastReply}`;
@@ -615,14 +615,17 @@ export function buildContext(state, content, opts = {}) {
     }), 0);
     if (state.mode === 'creation') add('creation', `CHARACTER CREATION — STEP ${state.creation.step}/2 in progress. Story time is frozen.${state.creation.step === 1 ? ` Base Classes: ${[...content.classes.values()].map((c) => `${c.name} (${c.favored.join('/')})`).join(', ')}.` : ''}`, 0);
     // the System answered creation without the narrator: the first story reply must not reopen the greeting's menu
-    else if (state.creation?.turn != null && (v4 || state.turn === state.creation.turn + 1)) add('creation', 'CHARACTER CREATION is complete (the System handled it; its menu at the start of the chat is closed). Begin the story with the player\'s action; do not repeat a class or Skill choice.', 0);
+    else if (state.creation?.turn != null && (v4 || state.turn === state.creation.turn + 1)) add('creation', 'CHARACTER CREATION is complete. Continue the story; never reopen class/skill selection', 0);
 
     const queryText = `${input} ${lastReply}`;
     const focusWords = new Set(tokenize(queryText));
     const others = state.scene.present.filter((id) => id !== 'pc' && state.entities[id]);
     const presentHead = v4 ? 'ACTIVE SCENE — canonical handles (use these exact handles to distinguish or target actors; card knowledge is authoritative relevant recall, not an exhaustive mind dump):' : 'PRESENT (each NPC knows ONLY what its card lists):';
-    if (others.length) add('present', `${presentHead}\n${others.map((id) => npcCard(state, content, id, focusWords)).join('\n')}`, 1);
-    else if (state.mode !== 'creation') add('present', v4 ? 'ACTIVE SCENE: nobody besides Alaric.' : 'PRESENT: nobody besides Alaric.', 1);
+    const focusNpcIds = v4 && !state.encounter ? interlocutors(state, input, lastReply, opts.outcome || state.last?.outcome) : [];
+    if (focusNpcIds.length) add('npc_compact', 'CURRENT INTERLOCUTORS — preserve recognition/experience; invitations alone authorize no movement or purchases:\n' + focusNpcIds.map(id => compactNpcCard(state, content, id, focusWords)).join('\n'), 0);
+    const detailOthers = others;
+    if (detailOthers.length) add('present', `${presentHead}\n${detailOthers.map((id) => { const card=npcCard(state,content,id,focusWords); if (!focusNpcIds.includes(id)) return card; const rows=card.split('\n').filter(row=>/agenda:|keeps secret:|believes\/suspects:|established ties:/.test(row)); return rows.length ? `• [${id}] additional recall:\n${rows.join('\n')}` : ''; }).filter(Boolean).join('\n')}`, 1);
+    else if (state.mode !== 'creation' && !focusNpcIds.length) add('present', v4 ? 'ACTIVE SCENE: nobody besides Alaric.' : 'PRESENT: nobody besides Alaric.', 1);
     const continuity = v4 && state.mode !== 'creation' ? npcContinuity(state, queryText) : [];
     if (continuity.length) add('npc_continuity', `KNOWN PEOPLE — narrator continuity, not local presence or shared NPC knowledge. Preserve established history; a new predicament needs a new cause, never replay an old rescue. Use existing identities; fuller names do not create new people:\n${continuity.map(x => x.text).join('\n')}`, 0);
     const absent = state.mode === 'creation' ? [] : namedAbsent(state, normText(queryText));
@@ -632,7 +635,7 @@ export function buildContext(state, content, opts = {}) {
         const known = Object.values(state.quests || {}).filter(q => q.kind === 'guild_contract');
         const branch = settlementOf(state, state.scene.at);
         const official = [...known.filter(q => q.status === 'active' || (listedToday(state, q) && q.source?.branch === branch)),
-            ...known.filter(q => ['completed','expired','abandoned'].includes(q.status)).slice(-5)];
+            ...known.filter(q => ['completed','expired','abandoned'].includes(q.status) && (hallOf(state, state.scene.at) || mentioned(q.title, normText(input)))).slice(-3)];
         add('guild_authority', `OFFICIAL GUILD OFFERS — ENGINE AUTHORITY: Only listed contracts below are official selectable offers. Active/completed/expired contracts are not new offers. If none are listed, do not invent notices or claim another adventurer took them; invite a board reading. Private NPC jobs and rumours remain possible, clearly separate from official listings. Novice and Floor One are rank/depth labels, not promises of solo safety; describe only established risks, otherwise uncertainty.\n${official.map(q => `- ${q.id}: ${q.title} [${q.status}]`).join('\n') || '- No official listings established.'}`, 0);
     }
 
@@ -713,7 +716,7 @@ export function buildContext(state, content, opts = {}) {
             out?.path?.length > 2 ? `WAY OUT he knows: ${out.path.slice(1).map((id) => state.places[id]?.name || id).join(' › ')}` : '',
             // Patch 8: the engine's level of a Living Dungeon (src/v4/living.js)
             ...livingLines(state, content),
-        ].filter(Boolean).join('\n'), 1);
+        ].filter(Boolean).join('\n'), 0);
     }
     // review of Patch 7: the known Dungeons near the town he is in, only when they matter (at the Guild hall, or when
     // a Dungeon or one of them is spoken of): common knowledge here, as the Guild has them on record (final review: never
@@ -773,10 +776,15 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'world_area', 'world_populations', 'gear_market', 'price_contract', 'npc_continuity', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
+    const order = ['header', 'pc', 'creation', 'npc_compact', 'present', 'settlement', 'world_area', 'world_populations', 'gear_market', 'price_contract', 'npc_continuity', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
-    return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text) };
+    const describe = section => ({ name: section.name, tokens: section.tokens, own: section.own,
+        npcIds: Object.values(state.entities).filter(e => e.kind === 'npc' && section.text.includes(e.id)).map(e => e.id) });
+    return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text),
+        diagnostics: { v: 1, budget, rulesBudget: rulesCap, tokens: estimateTokens(text), budgetedTokens: used,
+            overflow: Math.max(0, used - budget), separateTokens: final.filter(x => x.own).reduce((n,x) => n+x.tokens,0), focusNpcIds,
+            delivered: final.map(describe), dropped: sections.filter(x => !kept.has(x)).map(describe) } };
 }
 
 /**
@@ -824,4 +832,26 @@ export function reportInstruction(content, keys = Object.keys(content.narrator.r
     const listed = Object.keys(all).filter((k) => keys.includes(k));
     // the last line before generation (Test 5 run: without the Megumin <Blocks> duty at the end, 6 of 9 replies had none)
     return `FACT REPORT: ${r.instruction}\n${listed.map((k) => `${k}: ${all[k]}`).join(' | ')}${listed.includes('new') && listed.includes('aware') ? `\nExample: ${r.example}` : ''}\nEnd EVERY reply with <avereth>{…}</avereth>, {} if nothing new.`;
+}
+
+/** Deterministic salience from this input and existing shared records, independent of present-array order. */
+function interlocutors(state, input, lastReply, outcome) {
+    const actionIds=new Set();
+    const scan=(value,depth=0)=>{ if(depth>5 || value==null) return; if(typeof value === 'string') { if(state.entities[value]?.kind === 'npc') actionIds.add(value); } else if(typeof value === 'object') Object.values(value).forEach(v=>scan(v,depth+1)); };
+    scan(outcome?.auth); scan(outcome?.resolutions);
+    const words = new Set(tokenize(input));
+    return state.scene.present.filter(id => state.entities[id]?.kind === 'npc' && statusOf(state,id) !== 'dead')
+        .map(id => {
+            const e=state.entities[id], moments=sharedMoments(state,id), last=moments.at(-1);
+            const named=mentioned(e.name || '', normText(input));
+            const recent=mentioned(e.name || '', normText(lastReply));
+            const hits=moments.slice(-3).reduce((n,m)=>n+tokenize(m.text).filter(w=>words.has(w)).length,0);
+            return {id,score:(named?1000:0)+(actionIds.has(id)?400:0)+(recent?50:0)+Math.min(30,hits), minute:last?.minute ?? -1};
+        }).filter(x=>x.score>0 || x.minute>=0 || state.scene.present.filter(id=>state.entities[id]?.kind === 'npc').length===1).sort((a,b)=>b.score-a.score || b.minute-a.minute || a.id.localeCompare(b.id)).slice(0,2).map(x=>x.id);
+}
+function compactNpcCard(state, content, id, focusWords) {
+    const rows=npcCard(state,content,id,focusWords).split('\n');
+    // Whole fields are selected before shortening: identity and shared memory cannot be displaced by appearance.
+    const cap=(text,n)=>text.length>n?text.slice(0,n-1)+'…':text;
+    return [cap(rows[0],170), ...['toward Alaric:', 'last meaningful:', 'also remembers:', 'knows:'].map(key=>rows.find(r=>r.trimStart().startsWith(key))).filter(Boolean).slice(0,3).map(r=>cap(r,170))].join('\n');
 }

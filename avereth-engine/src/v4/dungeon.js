@@ -406,3 +406,18 @@ export function mapText(s, d) {
     }
     return L.join('\n');
 }
+
+/** Explicit room labels are consistency constraints, never authority to extend a Dungeon. */
+export function namedLevel(name) {
+    const hits = [...String(name || '').matchAll(/\b(?:level|floor)\s+(\d+)\b/gi)].map(x => Number(x[1]));
+    return new Set(hits).size === 1 ? hits[0] : null;
+}
+export function floorRefusal(s, root, level, name = '') {
+    const x = s.dungeons?.[root];
+    if (!x) return null;
+    const named = namedLevel(name);
+    if (Number.isInteger(level) && named != null && level !== named)
+        return `room label level ${named} conflicts with its connected level ${level}`;
+    const n = level ?? named;
+    return n != null && !x.floors[n] ? `level ${n} does not exist in the canonical Dungeon ${x.name}` : null;
+}

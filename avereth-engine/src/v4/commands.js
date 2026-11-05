@@ -1,3 +1,4 @@
+import { floorRefusal, namedLevel } from './dungeon.js';
 import { privateQuestsOf, questVisible } from '../content.js';
 // Runtime V4: the command handlers (docs/RUNTIME_V4_PLAN.md §4.1, §4.4). The interpreter translated the player's story
 // message into typed commands (src/v4/interpret.js), the agency guard dropped what was no decision (src/v4/agency.js);
@@ -413,6 +414,8 @@ function dungeonGo(s, c) {
         const meant = knownRoomNamed(s, here, name);
         if (meant?.ambiguous) return { refuse: { status: 'clarify', reason: 'which way?', line: `CLARIFY — which way does he take: to ${meant.ambiguous.map((id) => placeName(s, id)).join(' or to ')}?` } };
         if (!meant) {
+            const invalid = floorRefusal(s, trueDungeonOf(s, here), namedLevel(name), name);
+            if (invalid) return { refuse: { status: 'refused', reason: invalid, line: `CANNOT GO — ${invalid}.` } };
             const want = keyOf(name);
             const side = (words) => [['left', 'right'], ['north', 'south'], ['east', 'west']].map(pair => pair.find(w => words.includes(w)));
             const way = (words) => words.some(w => /^(?:passage|corridor|tunnel|path|route|way|door|gate|archway|stair|stairs)$/.test(w));
@@ -433,6 +436,8 @@ function dungeonGo(s, c) {
         via = meant.link || null;
     }
     if (typeof to !== 'string' || !s.places[to] || to === here || (!dungeonOf(s, here) && !dungeonOf(s, to))) return {};
+    const invalid = to !== trueDungeonOf(s, to) && floorRefusal(s, trueDungeonOf(s, to), s.places[to]?.level);
+    if (invalid) return { refuse: { status: 'refused', reason: invalid, line: `CANNOT GO — ${invalid}.` } };
     if (isRoom(s, to) && !roomKnown(s, to)) return { refuse: { status: 'refused', reason: 'no known way', line: 'NO KNOWN WAY — he knows of no such place here; he stays where he is.' } };
     // the way he named: that way, barred or open
     if (via) {
@@ -681,7 +686,7 @@ const HANDLERS = {
         if (envx?.c && livingOf(s, s.scene.at) && namesGate(s, s.scene.at, `${c.what || ''} ${c.quote || ''}`)) ctx.engineLines.push(...gateCard(s, content, s.scene.at));
         // Prototype C (4.3.0-c.6.6.4): looting the foes of a fight he won is no search: the engine credited their loot at
         // the fight's end (src/v4/loot.js); no check, no time, nothing more on them (live 15.10.2026: a failed SEARCH)
-        const looted = envx?.c && c.kind === 'search' && LOOT_WORDS.test(`${c.what || ''} ${c.quote || ''}`) ? lootedHere(s) : [];
+        const looted = envx?.c && c.kind === 'search' && remainsSearch(s, c) ? lootedHere(s) : [];
         if (looted.length) return { status: 'resolved', reason: 'looted already', done: true, line: `LOOTED ALREADY — what ${looted.map((id) => who(s, id)).join(', ')} left was credited at the fight's end (the engine's automatic loot, in his pack); there is nothing more on the remains. No check, no time.` };
         // Prototype C (4.3.0-c.6.6.5): an ordinary shop or service of the settlement he is in is found, not searched for
         // (live 15.10.2026: "look for a store to sell the monster parts to" in Ashbridge by day was a failed PER check
@@ -1724,3 +1729,15 @@ export function boardOf(s, branch, rank) {
 }
 
 export { boardKey, contracts, heldBy };
+
+/** A loot word alone describes the desired find, not the thing being searched. */
+function remainsSearch(s, c) {
+    const focus = String(c.what || c.quote || '');
+    if (/\b(?:room|chamber|area|hidden|secret|concealed|wall|floor|ceiling)\b/i.test(focus)) return false;
+    if (/^(?:the\s+)?(?:loot|plunder)$/i.test(focus.trim())) return true;
+    if (/\b(?:corpse\w*|bodies|body|remains|carcass\w*)\b/i.test(focus)) return true;
+    return LOOT_WORDS.test(focus) && lootedHere(s).some(id => {
+        const e = s.entities[id];
+        return [e?.name, e?.species, e?.species?.split(' ').at(-1)].filter(Boolean).some(label => normText(focus).includes(normText(label)));
+    });
+}

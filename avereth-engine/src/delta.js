@@ -89,7 +89,7 @@ export function tolerantJson(text) {
  * Alaric's own full name ("Alaric Red") finds him, but never renames him.
  */
 export function makeResolver(state, newRefs, content = null, created = null) {
-    const resolve = (ref) => {
+    const resolve = (ref, { exact = false } = {}) => {
         if (ref === undefined || ref === null || typeof ref === 'object') return null;
         const r = normText(ref);
         if (newRefs.has(r)) return newRefs.get(r);
@@ -113,15 +113,19 @@ export function makeResolver(state, newRefs, content = null, created = null) {
             const local = here || (e.location && e.location === state.scene.location);
             const name = e.name ? normText(e.name) : null;
             if (name && (name === bare || name === spaced)) scored.push([e, here ? 3 : 2]);
-            else if (local && (e.descriptors || []).map(normText).some((d) => d === bare || d === spaced)) scored.push([e, here ? 2 : 1]);
+            else if (!exact && local && (e.descriptors || []).map(normText).some((d) => d === bare || d === spaced)) scored.push([e, here ? 2 : 1]);
         }
         scored.sort((a, b) => b[1] - a[1]);
-        if (scored.length) return scored[0][0].id;
+        if (scored.length) return exact && scored.length > 1 && scored[0][1] === scored[1][1] ? null : scored[0][0].id;
         if (content) {
             if (content.locations.has(ref) || content.factions.has(ref)) return ref;
             const loc = locationByName(content, ref);
             if (loc) return loc.id;
             for (const f of content.factions.values()) if (normText(f.name) === r) return f.id;
+        }
+        if (exact) {
+            const fresh = [...(created?.values() || [])].filter(e=>e.name && normText(e.name) === bare);
+            return fresh.length === 1 ? fresh[0].id : null;
         }
         const words = (idName || bare).split(' ').filter(Boolean);
         const fullName = (name) => words.length > 1 && name.length === 1 && name[0] === words[0] && (!!idName || /^[A-Z]/.test(String(ref).trim()));
@@ -515,7 +519,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '',
             else reject(f, `${pcName}'s name is the player's and stays as it is; a name he goes by is a fact of its own (p "alias"), and who learns his name goes in "learn"`);
             continue;
         }
-        const oRef = typeof f.o === 'string' ? resolve(f.o) : null;
+        const oRef = typeof f.o === 'string' ? resolve(f.o, { exact: true }) : null;
         const o = oRef && state.entities[oRef] ? oRef : String(f.o).slice(0, 200);
         const hard = FUNCTIONAL.has(p) ? truth(state, s, p).find((x) => x.hard && normText(x.o) !== normText(o)) : null;
         if (hard && hard.o === 'dead' && ent(s) && ent(s).kind !== 'location') { reject(f, `${s} is dead; revival needs an explicit resurrection mechanic (Core #14)`); continue; }

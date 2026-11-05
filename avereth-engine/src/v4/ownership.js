@@ -220,7 +220,7 @@ export const DELTA_WRITES = {
     'person.named': { writes: ['entities'] },
     // Patch 8: a creature of the encounter the engine placed ahead is that slot's individual (dungeons)
     'creature.new': { writes: ['entities', 'scene', 'facts'], gates: { combat: 'envelope.fight', dungeons: 'dungeon.slot' } },
-    enter: { writes: ['scene', 'entities'] },
+    enter: { writes: ['scene', 'entities', 'knowledge'] },
     leave: { writes: ['scene', 'entities', 'knowledge'] },
     position: { writes: ['scene', 'entities'] },
     aware: { writes: ['scene', 'entities'] },

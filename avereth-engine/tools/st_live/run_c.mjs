@@ -1,3 +1,4 @@
+import { continuityTurns, continuitySmoke, continuityAnswer } from './continuity_smoke.mjs';
 // Live SillyTavern smoke for prototype C (docs/PROTOTYPE_C.md): the planner path in a real SillyTavern (tested with
 // 1.19.0), set up as tools/st_live/run_v4.mjs sets up Runtime V4 (card with the V4 contract, preset "Avereth Narrator V4",
 // Lorebook v0.14, Chat Completion source "Custom" in front of a mock provider on port 5001, a dummy key in SillyTavern's
@@ -66,7 +67,7 @@ const TURNS = [
 ];
 const turnOf = (text) => TURNS.find((t) => text.includes(`PLAYER MESSAGE:\n${t.player}`));
 const finance = financeTurns(plan);
-const allTurns = [...TURNS, ...finance, ...stealthTurns, ...uiTurns];
+const allTurns = [...TURNS, ...finance, ...stealthTurns, ...uiTurns, ...continuityTurns];
 
 // ------------------------------------------------------------------------------------------------ setup (as run_v4.mjs)
 const contract = fs.readFileSync(path.join(ENGINE, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
@@ -126,7 +127,7 @@ const mock = http.createServer(async (req, res) => {
     // the planner: its own role in a fight, the interpreter's prompt with the planner's section outside one
     if (system.startsWith('You are the intent planner') || (system.startsWith('You are the command interpreter') && system.includes('Actions with skills, in fights and on things'))) {
         purpose = 'plan';
-        const t = turnOf(users) || [...finance, ...stealthTurns, ...uiTurns].find(t => users.includes(`PLAYER MESSAGE:\n${t.player}`));
+        const t = turnOf(users) || [...finance, ...stealthTurns, ...uiTurns, ...continuityTurns].find(t => users.includes(`PLAYER MESSAGE:\n${t.player}`));
         text = JSON.stringify(t ? t.plan : { commands: [] });
     } else if (system.startsWith('You are the command interpreter')) {
         purpose = 'interpret';
@@ -134,7 +135,7 @@ const mock = http.createServer(async (req, res) => {
     } else if (system.startsWith('You read one reply')) {
         purpose = 'extract';
         const t = allTurns.find((x) => x.reply && users.includes(x.reply.slice(0, 60)));
-        text = JSON.stringify({ scene: 'here', ...(t?.answer || { expected: {}, deltas: [] }) });
+        text = continuityAnswer(t) ?? JSON.stringify({ scene: 'here', ...(t?.answer || { expected: {}, deltas: [] }) });
         delay = 300;
     } else {
         const t = allTurns.find((x) => lastUser.includes(x.player));
@@ -433,10 +434,12 @@ try {
         uiChecks = await uiSmoke({ page, send, idle, out: HERE, onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); } });
         stealthProbeMode = false;
     }
+    let continuityChecks=null;
+    if (process.env.AVERETH_SMOKE_CONTINUITY === '1') { stealthProbeMode=true; continuityChecks=await continuitySmoke({page,send,idle,calls,driver:()=>driver,onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});}});stealthProbeMode=false; }
     const status = await page.evaluate(() => document.getElementById('avereth_status')?.textContent || '');
     await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); });
     await page.waitForTimeout(800);
-    result = { toggle, greeting, afterCreation, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks };
+    result = { toggle, greeting, afterCreation, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks };
 } catch (error) {
     const screen = await page.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(-8000),
         chat: window.SillyTavern?.getContext?.()?.chat?.map(m => ({ user: m.is_user, system: m.is_system, text: m.mes?.slice(0, 120) })) })).catch(() => null);
@@ -460,6 +463,7 @@ const narr = normalCalls.filter((c) => c.purpose === 'narrator');
 const engineOf = (c) => String(c?.messages?.find((m) => String(m.content).startsWith('[AVERETH ENGINE'))?.content || '');
 const narratorFor = (key) => narr.filter((c) => c.lastUser.includes(TURNS.find((t) => t.key === key).player));
 const checks = {
+    ...Object.fromEntries(Object.entries(result.continuityChecks || {}).map(([k,v]) => [`continuity_${k}`,v])),
     ...Object.fromEntries(Object.entries(result.uiChecks || {}).map(([k,v]) => [`ui_${k}`,v])),
     ...(result.stealthChecks ? Object.fromEntries(Object.entries(result.stealthChecks).map(([k,v]) => [`stealth_${k}`, v])) : {}),
     ...(result.saveRecoveryChecks ? Object.fromEntries(Object.entries(result.saveRecoveryChecks).map(([k, v]) => [`save_${k}`, v])) : {}),

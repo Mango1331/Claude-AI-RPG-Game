@@ -24,7 +24,7 @@
 // dice stream, so nothing else of a campaign changes); everything drawn is stored in an event, a replay or a swipe
 // re-applies it, and nothing is rolled again.
 import { clone, hash32, normText, slug } from '../util.js';
-import { trueDungeonOf, dungeonOf, rankText, guildRecord } from './dungeon.js';
+import { trueDungeonOf, dungeonOf, rankText, guildRecord, floorRefusal } from './dungeon.js';
 import { placeName, settlementOf, realmOf } from './domain.js';
 
 const DAY = 1440;
@@ -508,6 +508,8 @@ export function sealRefusal(s, to, level = null) {
     const x = livingOf(s, root);
     if (!x || to === root) return null;
     const floor = Number.isInteger(level) && level > 0 ? level : floorAt(s, to);
+    const invalid = floorRefusal(s, root, floor);
+    if (invalid) return invalid;
     const above = x.floors[floor - 1];
     if (!above?.sealed || x.run.floors[floor - 1]?.cleared) return null;
     // a room of that level he has already stood in was reached before the seal mattered (an old save): not cut off

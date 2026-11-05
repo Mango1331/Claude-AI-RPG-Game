@@ -1,3 +1,5 @@
+import { movementEvidence } from './narration_evidence.js';
+import { placeKey } from './place_refs.js';
 import { worldVocab } from './extract.js';
 // Runtime V4 on a chat transcript (docs/RUNTIME_V4_PLAN.md §3): the host side of a V4 campaign. The same message
 // records as V3 (src/host.js): the events of a player message on that message, the events of a reply on its swipe. The
@@ -779,7 +781,15 @@ export function processReplyAny(chat, id, content, opts = {}) {
     const msg = chat[id];
     if (!msg || msg.is_user || msg.is_system) return { changed: false };
     const r = rec(msg);
-    if (r && r.text_hash === hash32(msg.mes)) return { changed: false };
+    if (r && r.text_hash === hash32(msg.mes)) {
+        // A real regeneration may produce identical prose with a different Engine context.
+        // Refresh telemetry only; never repeat already committed world events.
+        if (opts.narratorContext) {
+            setRec(msg, { ...r, narration: { ...(r.narration || {}), ...(Number.isFinite(opts.narrationMs) ? { ms: opts.narrationMs } : {}), context: opts.narratorContext } });
+            return { changed: true };
+        }
+        return { changed: false };
+    }
     const u = lastUserIndex(chat, id);
     if (u < 0) return { changed: false };
     // .127: a reply after a broken record is neither cleaned, recorded (not even as a system answer), shown with a HUD of
@@ -797,7 +807,7 @@ export function processReplyAny(chat, id, content, opts = {}) {
     }
     const { state } = fold;
     // Patch 8.2: the narrator's time (index.js: engine block handed over → reply received), telemetry with the record
-    const narration = Number.isFinite(opts.narrationMs) ? { ms: opts.narrationMs } : null;
+    const narration = Number.isFinite(opts.narrationMs) || opts.narratorContext ? { ...(Number.isFinite(opts.narrationMs) ? { ms: opts.narrationMs } : {}), ...(opts.narratorContext ? { context: opts.narratorContext } : {}) } : null;
     // Patch 8.2 (live 21.10.2026 13:33, message 36: the narrator's 4,096 tokens went to its reasoning, the reply was
     // empty, and the extractor still read it for 17.6 s, 0 deltas, while the next turn waited for it): a reply without
     // story text has nothing to read. No extraction runs; the engine's results of the turn stand on the player's
@@ -878,6 +888,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
     let transportFailures = 0;
     let invalidAnswers = 0;
     let emptyAnswers = 0;
+    let movementReviewed = false;
     let messages = req.messages;
     let purpose = 'extract';
     let overrides = {};
@@ -898,6 +909,14 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
         } else {
             const p = parseExtraction(response.content, vocab, req.ids, req.expectedKeys,
                 { sceneRequired: req.sceneRequired, startScene: req.startScene, state: req.state, content, explicitArrivals: req.sceneRequired, reply: chat[id].mes });
+            if (p.valid && emptyAnswers && !movementReviewed && attempt < 2
+                && Object.entries(req.expectedKeys).some(([k,t]) => t === 'go' && p.value.expected?.[k]?.arrived === false)
+                && !p.value.deltas.some(d => d.type === 'arrive')
+                && p.value.scene && placeKey(req.state,p.value.scene,content) !== req.startScene
+                && movementEvidence(chat[id].mes)) {
+                movementReviewed = true;
+                p.issues = [...(p.issues || []), { why: 'Movement completeness: the reported scene differs from the starting scene, the reply narrates actual movement, but no arrival is reported. Recheck the ORIGINAL REPLY. Report only actual authorized arrivals in story order, or retain arrived:false if not reached; never infer arrival from the GO goal. Preserve independent valid deltas.' }];
+            }
             if (p.valid && (!parsed || ((p.issues?.length || 0) <= (parsed.issues?.length || 0)
                 && (p.complete || p.missing.length < parsed.missing.length)))) parsed = p;
             if (p.valid && p.complete && !p.issues?.length) break;
@@ -927,11 +946,11 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
 
     if (!isCurrent()) return { changed: false, cancelled: true };
     const hard = calls.some(x => x.error && (x.unclassified || ['unknown','cancelled','aborted'].includes(x.error_kind) || (x.error_kind === 'provider' && (x.provider_retryable === false || (x.provider_retryable !== true && x.status < 500 && ![408,429].includes(x.status))))));
-    return applyExtraction(chat, id, content, parsed, { hash: req.hash, ms, repaired, recovery, error, hud, calls, errorKind:hard ? 'provider' : 'model' });
+    return applyExtraction(chat, id, content, parsed, { hash: req.hash, ms, repaired, recovery, error, hud, calls, movementReviewed, errorKind:hard ? 'provider' : 'model' });
 }
 
 /** Commit an extractor result (or its failure) to reply id; refused when the reply changed or a later turn began. */
-export function applyExtraction(chat, id, content, parsed, { hash, ms = null, repaired = false, recovery = null, error = null, hud = 'closed', calls = [], errorKind = 'model' } = {}) {
+export function applyExtraction(chat, id, content, parsed, { hash, ms = null, repaired = false, recovery = null, error = null, hud = 'closed', calls = [], movementReviewed = false, errorKind = 'model' } = {}) {
     const msg = chat[id];
     const r = rec(msg);
     if (!msg || !r || r.extraction?.status !== 'pending' || r.text_hash !== hash || hash32(msg.mes) !== hash) return { changed: false };
@@ -950,11 +969,12 @@ export function applyExtraction(chat, id, content, parsed, { hash, ms = null, re
     }
     const res = replyTurnV4(state, content, parsed.value, { msg: id, prose: msg.mes, ms, repaired, chronicle: state.encounter || state.last?.outcome?.kind === 'combat' ? combatChronicle(chat.slice(0, id), messageEvents) : null });
     const corrections = [...res.corrections];
+    if (movementReviewed && !res.events.some(e=>e.t === 'scene.moved')) corrections.push(`Movement was rechecked after empty extraction; no arrival was confirmed. ${stillAt(state) || ''}`);
     if (!parsed.complete) corrections.push(`Your last reply left open what happened to: ${parsed.missing.map((k) => `action ${k}`).join(', ')}; the engine treats it as not done.`);
     const view = display(msg, content, state, res, hud);
     setRec(msg, {
         v: RECORD_V4, events: res.events, text_hash: hash, corrections,
-        extraction: { status: 'applied', version: EXTRACTOR_VERSION, ms, repaired, ...(recovery ? { recovery } : {}), deltas: (parsed.value.deltas || []).length, missing: parsed.missing.length ? parsed.missing : undefined, raw: parsed.value, ...(calls.length ? { llm: calls } : {}) },
+        extraction: { status: 'applied', version: EXTRACTOR_VERSION, ms, repaired, ...(movementReviewed ? { movement_reviewed: true } : {}), ...(recovery ? { recovery } : {}), deltas: (parsed.value.deltas || []).length, missing: parsed.missing.length ? parsed.missing : undefined, raw: parsed.value, ...(calls.length ? { llm: calls } : {}) },
         ...(r.narration ? { narration: r.narration } : {}),
         rejected: res.rejected.length ? res.rejected : undefined, system: res.system.length ? res.system : undefined, ...view,
     });

@@ -21,7 +21,7 @@ import { formatCoin } from '../economy.js';
 import { spendsStatPoints, assignHint } from '../commands.js';
 import { mentionedSkills } from '../intent.js';
 import { activeHostiles } from '../combat.js';
-import { attackTargetHere, sceneHandle, tacticalHere, areaCaught, approachedBy, burstAim, sideOf } from './scene_handles.js';
+import { attackTargetHere, sceneHandle, tacticalHere, areaCaught, approachedBy, burstAim, sideOf, uniqueAreaAim } from './scene_handles.js';
 import { routePlaces } from './catalog.js';
 import { itemEffectOf, rulesetOf, skillOf } from '../content.js';
 import { actionsOf, weaponAttackOf, weaponAttackNamed } from '../derived.js';
@@ -266,7 +266,7 @@ export function plannerSystem(vocab, { fight = false, privateQuests = true } = {
 function skillText(skill) {
     const area = (skill.effects || []).some((e) => e.kind === 'area');
     const bits = [skill.attack ? 'attack' : 'not an attack'];
-    if (skill.attack) bits.push(area ? (skill.effects.some(e => e.shape === 'target_band') ? 'area: name a target to choose ONE band within reach; opponents in that band after movement, plus explicit NPC targets; other bands unaffected' : 'area: opponents ENGAGED with Alaric; explicit NPC targets remain attackable') : 'single target');
+    if (skill.attack) bits.push(area ? (skill.effects.some(e => e.shape === 'target_band') ? 'area: name a target to choose ONE band within reach, or null only if exactly one visible reachable opposing band is unambiguous after declared movement; opponents in that band after movement, plus explicit NPC targets; other bands unaffected' : 'area: opponents ENGAGED with Alaric; explicit NPC targets remain attackable') : 'single target');
     if (skill.range?.band && skill.attack) bits.push(`reaches ${skill.range.band}`);
     if (!skill.attack) bits.push(...(skill.effects || []).map((e) => e.kind.replace(/_/g, ' ')));
     if (skill.cost?.amount) bits.push(`${skill.cost.amount} ${skill.cost.resource.toUpperCase()}`);
@@ -915,7 +915,10 @@ export function mapPlan(commands, ctx, content, message, state) {
     }
     if (!def.attack) return base(asAction(null, 'none'));
     const hostiles = ctx.opponents.map((o) => o.id);
-    if (area(def) && def.effects.some(e => e.shape === 'target_band')) return base({ kind: 'no_target', skill, ref: 'name a target in the band this area skill should strike' });
+    if (area(def) && def.effects.some(e => e.shape === 'target_band')) {
+        const aim = state && uniqueAreaAim(state, def, { move: dir, moveTarget: move?.target || null });
+        return base(aim ? asAction(aim, 'unique area band') : { kind: 'no_target', skill, ref: 'name a target in the band this area skill should strike' });
+    }
     if (area(def)) {
         const nominal = ctx.opponents.find((o) => o.engaged) || ctx.opponents[0];
         if (nominal) return base(asAction(nominal.id, 'area'));

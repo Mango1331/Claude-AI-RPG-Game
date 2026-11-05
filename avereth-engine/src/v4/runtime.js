@@ -21,7 +21,7 @@ import {
 import { playerTurn } from '../engine.js';
 import { loreKeys } from '../context.js';
 import { extractReport } from '../delta.js';
-import { renderHud } from '../hud.js';
+import { renderHud, boardView } from '../hud.js';
 import { worldPanel } from '../display.js';
 import { applyEvent } from '../state.js';
 import { hash32, clone, swapWords, stripTrackerBlocks } from '../util.js';
@@ -764,7 +764,7 @@ function historyKey(chat, end) {
 // ------------------------------------------------------------------------------------------------ after the reply
 function display(msg, content, before, reply, hud) {
     const panel = worldPanel(before, content, reply);
-    const view = renderHud(reply.state || before, content, hud);
+    const view = boardView(reply.state || before, content, before.last?.outcome?.board) + renderHud(reply.state || before, content, hud);
     showPanel(msg, panel, view, { playerFacing: true });
     return { panel: panel || undefined, hud: view || undefined };
 }

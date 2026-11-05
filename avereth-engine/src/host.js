@@ -472,10 +472,13 @@ export function playerFacingLines(panel) {
 }
 
 /** Render engine-owned display lines as a visually distinct System card without changing the stored panel text. */
-function displaySystemPanel(panel, { tactical = false, playerFacing = false } = {}) {
+function displaySystemPanel(panel, { tactical = false, playerFacing = false, boardLines = 0 } = {}) {
     let raw = playerFacing ? playerFacingLines(panel) : String(panel || '').split('\n').filter((x) => x.length);
     if (!raw.length) return '';
     const clean = (line) => line.startsWith('`') && line.endsWith('`') ? line.slice(1, -1) : line;
+    // The structured official board owns this snapshot; keep raw panel intact for audit/plaintext fallback.
+    const boardStart = boardLines ? raw.findIndex(line => clean(line).startsWith('SYSTEM — GUILD BOARD ·')) : -1;
+    if (boardStart >= 0) raw = raw.filter((_, i) => i < boardStart || i >= boardStart + boardLines);
     // During ACTIVE combat the tactical HUD below the narration owns the current snapshot. Keep the System card as the
     // action/log/refusal record instead of repeating the target table, HP, Range, resources and "Next" a second time.
     if (tactical) raw = raw.filter((line) => !/^(?:COMBAT TARGETS|HP:|Range:|Alaric: MP |Next:)/.test(clean(line)));
@@ -504,7 +507,7 @@ export function showPanel(msg, panel, hud = '', { playerFacing = false } = {}) {
     const r = rec(msg);
     if (panel || hud) {
         const tactical = String(hud || '').includes('avereth-combat-hud');
-        msg.extra.display_text = [panel ? displaySystemPanel(panel, { tactical, playerFacing }) : '', msg.mes, hud].filter(Boolean).join('\n\n');
+        msg.extra.display_text = [panel ? displaySystemPanel(panel, { tactical, playerFacing, boardLines: Number(/class="avereth-board" data-board-lines="(\d+)"/.exec(hud)?.[1] || 0) }) : '', msg.mes, hud].filter(Boolean).join('\n\n');
     }
     else if ((r?.panel || r?.hud) && typeof msg.extra.display_text === 'string') delete msg.extra.display_text;
 }

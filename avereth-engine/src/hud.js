@@ -19,7 +19,9 @@ import { targetLabel } from './combat.js';
 import { bandIndex, formatClock, itemLabel, normText, roundHalfUp } from './util.js';
 import { sceneHandle } from './v4/scene_handles.js';
 import { dungeonOf, trueDungeonOf, dungeonText, exitsFrom, exitText } from './v4/dungeon.js';
-import { hudRows as livingRows } from './v4/living.js';
+import { groundAccess } from './v4/features.js';
+import { hallOf, settlementOf } from './v4/domain.js';
+import { hudRows as livingRows, floorAt } from './v4/living.js';
 import { goalText } from './v4/guild.js';
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -35,6 +37,28 @@ function locationLabels(state, content) {
     const spot = String(state.scene.place || '').trim();
     const detail = spot && !parts.some((part) => normText(part) === normText(spot)) ? ` — ${spot}` : '';
     return { full: `${parts.join(', ')}${detail}`, brief: `${name}${detail}` };
+}
+
+/** Current canonical room mapping, including the established level-1 fallback. */
+function dungeonLevel(state) {
+    const root = trueDungeonOf(state, state.scene.at);
+    return root ? (floorAt(state, state.scene.at) === 0 ? 'Dungeon entrance' : `Dungeon level ${floorAt(state, state.scene.at)}`) : '';
+}
+const awareness = (s, id) => ['aware', 'unaware', 'suspicious'].includes(s.scene.awareness?.[id]) ? s.scene.awareness[id] : 'unknown';
+
+/** Official listings only, with their risk visible and descriptive detail collapsed. No board mutation. */
+export function renderBoardCards(state, content, board) {
+    if (!board?.listings?.length || board.failed) return '';
+    const quests = board.listings.map(id => state.quests[id]).filter(Boolean);
+    if (!quests.length) return '';
+    return `<section class="avereth-board" data-board-lines="${quests.length + 1}" aria-label="Official Guild board"><h4>Guild board · ${esc(board.rank)}</h4>${quests.map(q =>
+        `<article class="avereth-board-card"><header><strong>${esc(q.title)}</strong><span>${esc(q.rank || board.rank)} · quest level ${esc(q.level)} · reward: ${esc(formatCoin(q.payout_cp || 0, content))}</span></header><p>${esc(goalText(state, content, q, { board: true, danger: true }).replace(/^ — /, ''))}${q.clear && state.dungeons?.[q.clear.dungeon]?.run.floors[q.clear.floor]?.cleared ? ' · Level already cleared this cycle; a new contract needs a new qualifying clear after renewal (see Dungeon cycle).' : ''}</p><details><summary>Contract details</summary><div>${esc(q.rank || board.rank)} · quest level ${esc(q.level)} · client: ${esc(q.client || 'unspecified')}<br>${esc(q.task || q.desired_end_state || '')}<br>Contract: ${esc(q.id)}</div></details></article>`).join('')}</section>`;
+}
+
+/** Only show a requested board actually reached at its canonical branch. */
+export function boardView(state, content, board) {
+    const hall = hallOf(state, state.scene.at);
+    return hall && settlementOf(state, hall) === board?.branch ? renderBoardCards(state, content, board) : '';
 }
 
 function condition(hp, max) {
@@ -101,6 +125,7 @@ export function worldRows(state, content) {
     const real = trueDungeonOf(state, state.scene.at);
     const classed = real ? dungeonText(state, real) : null;
     if (classed) rows.push(['Dungeon', `${state.places[real].name} — ${classed.replace(/^a Dungeon: /, '')}`]);
+    if (real) rows.push(['Dungeon level', dungeonLevel(state)]);
     if (dungeonOf(state, state.scene.at)) rows.push(['Exits', list(exitsFrom(state, state.scene.at).map((e) => exitText(state, e, { ids: false })), 'none known yet (#map)')]);
     // Patch 8: a Living Dungeon's levels as he knows them, its cycle and how many are inside (src/v4/living.js)
     rows.push(...livingRows(state));
@@ -117,9 +142,11 @@ export function worldRows(state, content) {
         const band = dead ? null : c?.current?.band || state.scene.positions[id]?.band;
         const cover = c?.current?.cover || state.scene.positions[id]?.cover;
         const bits = [role, dead ? 'dead' : c ? `HP ${c.current.hp}/${c.fixed.max_hp}` : null, band ? `${band}${cover && cover !== 'none' ? `, ${cover} cover` : ''}` : null].filter(Boolean);
-        return `${label(id)}${bits.length ? ` (${bits.join(', ')})` : ''}`;
+        return `${label(id)}${bits.length ? ` (${bits.join(', ')})` : ''}${state.meta.runtime === 'v4' && !dead && (band || state.scene.awareness?.[id]) ? ` [awareness: ${awareness(state, id)}]` : ''}`;
     });
     rows.push(['Present', list(present, 'nobody besides Alaric')]);
+    const ground = Object.values(state.objects || {}).filter(o => groundAccess(state, o).ok);
+    if (ground.length) rows.push(['On the ground', ground.map(o => `${o.name}${o.qty > 1 ? ` ×${o.qty}` : ''}${o.unit ? ` ${o.unit}` : ''} ${ground.some(x => x !== o && x.name === o.name) ? ` (${o.id})` : ''}`).join(' · ') + ' — take by name; nothing collected automatically']);
     if (enc) {
         const current = enc.round === 0 ? 'starting' : `Round ${enc.round}, ${label(enc.current)} to act`;
         rows.push(['Combat', `${current} · Turn order ${enc.order.map(label).join(' › ')}`]);
@@ -196,20 +223,20 @@ function combatHud(state, content) {
         .filter((x) => x.side === 'hostile' && !x.current.defeated && !x.current.escaped && !x.current.surrendered)
         .sort((a, b) => bandIndex(a.current.band) - bandIndex(b.current.band) || name(a.id).localeCompare(name(b.id)));
     const range = (b) => `<span class="avereth-range avereth-range-${String(b || 'unknown').toLowerCase()}">${esc(b || '—')}</span>`;
-    const rows = foes.map((x) => `<div class="avereth-combat-row"><span class="avereth-combat-name">${esc(name(x.id))}</span><span class="avereth-combat-hp">${x.current.hp}/${x.fixed.max_hp}</span><span class="avereth-combat-range">${range(x.current.band)}</span><span class="avereth-combat-cover">${esc(x.current.cover && x.current.cover !== 'none' ? x.current.cover : '—')}</span></div>`).join('');
+    const rows = foes.map((x) => `<div class="avereth-combat-row"><span class="avereth-combat-name">${esc(name(x.id))}</span><span class="avereth-combat-hp">${x.current.hp}/${x.fixed.max_hp}</span><span class="avereth-combat-range">${range(x.current.band)}</span><span class="avereth-combat-cover">${esc(x.current.cover && x.current.cover !== 'none' ? x.current.cover : '—')}<small class="avereth-awareness">${esc(awareness(state, x.id))}</small></span></div>`).join('');
     // Patch 10A: non-hostile combatants already in Initiative also deserve a row.
     // This is presentation-only: it never creates an ally or changes the encounter.
     const othersInFight = Object.values(enc.combatants)
         .filter((x) => x.id !== 'pc' && x.side !== 'hostile' && !x.current.defeated && !x.current.escaped && !x.current.surrendered)
         .sort((a, b) => bandIndex(a.current.band) - bandIndex(b.current.band) || name(a.id).localeCompare(name(b.id)));
-    const otherRows = othersInFight.map((x) => `<div class="avereth-combat-row avereth-combat-other-row"><span class="avereth-combat-name">${esc(name(x.id))}</span><span class="avereth-combat-hp">${x.current.hp}/${x.fixed.max_hp}</span><span class="avereth-combat-range">${range(x.current.band)}</span><span class="avereth-combat-cover">${esc(x.current.cover && x.current.cover !== 'none' ? x.current.cover : '—')}</span></div>`).join('');
+    const otherRows = othersInFight.map((x) => `<div class="avereth-combat-row avereth-combat-other-row"><span class="avereth-combat-name">${esc(name(x.id))}</span><span class="avereth-combat-hp">${x.current.hp}/${x.fixed.max_hp}</span><span class="avereth-combat-range">${range(x.current.band)}</span><span class="avereth-combat-cover">${esc(x.current.cover && x.current.cover !== 'none' ? x.current.cover : '—')}<small class="avereth-awareness">${esc(awareness(state, x.id))}</small></span></div>`).join('');
     // Keep tactical context the player can already see even when those actors have not formally joined the encounter yet.
     // This is display-only: it never makes a bystander hostile or inserts them into Initiative.
     const visible = (state.scene?.present || []).filter((id) => id !== 'pc' && state.entities?.[id] && !enc.combatants[id] && statusOf(state, id) !== 'dead')
         .map((id) => ({ id, band: state.scene.positions?.[id]?.band || null, cover: state.scene.positions?.[id]?.cover || 'none' }))
         .filter((x) => x.band)
         .sort((a, b) => bandIndex(a.band) - bandIndex(b.band) || sceneHandle(state, content, a.id).localeCompare(sceneHandle(state, content, b.id)));
-    const visibleRows = visible.map((x) => `<div class="avereth-combat-row avereth-combat-visible-row"><span class="avereth-combat-name">${esc(sceneHandle(state, content, x.id))}</span><span class="avereth-combat-hp">—</span><span class="avereth-combat-range">${range(x.band)}</span><span class="avereth-combat-cover">${esc(x.cover && x.cover !== 'none' ? x.cover : '—')}</span></div>`).join('');
+    const visibleRows = visible.map((x) => `<div class="avereth-combat-row avereth-combat-visible-row"><span class="avereth-combat-name">${esc(sceneHandle(state, content, x.id))}</span><span class="avereth-combat-hp">—</span><span class="avereth-combat-range">${range(x.band)}</span><span class="avereth-combat-cover">${esc(x.cover && x.cover !== 'none' ? x.cover : '—')}<small class="avereth-awareness">${esc(awareness(state, x.id))}</small></span></div>`).join('');
     const order = enc.order.filter((id) => enc.combatants[id] && !enc.combatants[id].current.defeated && !enc.combatants[id].current.escaped && !enc.combatants[id].current.surrendered)
         .map((id) => id === enc.current ? `<strong>${esc(name(id))}</strong>` : esc(name(id))).join(' <span class="avereth-turn-arrow">›</span> ');
     // Patch 9A: every action he has in this fight (his Skills and his weapon's attack), by kind: attacks with reach and
@@ -229,9 +256,9 @@ function combatHud(state, content) {
     const current = enc.current === 'pc' ? "Alaric's turn" : `${name(enc.current)} to act`;
     const arrows = Object.values(pc.current.ammo || {}).reduce((a, n) => a + n, 0);
     const arrowText = arrows || state.entities.pc?.sheet?.equipment?.quiver ? ` · Arrows ${arrows}` : '';
-    return `<details class="avereth-hud avereth-combat-hud" open><summary>⚔ COMBAT · Round ${enc.round} · ${esc(current)}</summary><div class="avereth-combat-body">
+    return `<details class="avereth-hud avereth-combat-hud" open><summary>⚔ COMBAT · Round ${enc.round} · ${esc(current)}${dungeonLevel(state) ? ` · ${esc(dungeonLevel(state))}` : ''}</summary><div class="avereth-combat-body">
 <div class="avereth-combat-resources"><strong>Alaric</strong> · HP ${pc.current.hp}/${pc.fixed.max_hp} · MP ${pc.current.mp}/${pc.fixed.max_mp} · STA ${pc.current.sta}/${pc.fixed.max_sta}${arrowText}</div>
-<div class="avereth-combat-table"><div class="avereth-combat-row avereth-combat-head"><span>Target</span><span>HP</span><span>Range</span><span>Cover</span></div>${rows || '<div class="avereth-combat-empty">No active enemies</div>'}${otherRows ? `<div class="avereth-combat-subhead">Other combatants · not hostile</div>${otherRows}` : ''}${visibleRows ? `<div class="avereth-combat-subhead">Visible · not in the fight yet</div>${visibleRows}` : ''}</div>
+<div class="avereth-combat-table"><div class="avereth-combat-row avereth-combat-head"><span>Target</span><span>HP</span><span>Range</span><span>Cover / awareness</span></div>${rows || '<div class="avereth-combat-empty">No active enemies</div>'}${otherRows ? `<div class="avereth-combat-subhead">Other combatants · not hostile</div>${otherRows}` : ''}${visibleRows ? `<div class="avereth-combat-subhead">Visible · not in the fight yet</div>${visibleRows}` : ''}</div>
 <div class="avereth-combat-meta"><strong>Turn order</strong> · ${order}</div>
 <div class="avereth-combat-meta"><strong>Attack</strong> · ${attacks || '—'}</div>
 ${defenses ? `<div class="avereth-combat-meta"><strong>Defense</strong> · ${defenses}</div>\n` : ''}${utilities ? `<div class="avereth-combat-meta"><strong>Utility</strong> · ${utilities}</div>\n` : ''}</div></details>`;
@@ -251,7 +278,7 @@ export function renderHud(state, content, mode = 'closed') {
     const location = locationLabels(state, content);
     const others = state.scene.present.filter((id) => id !== 'pc' && state.entities[id] && statusOf(state, id) !== 'dead').length;
     const charSummary = `L${s.level} ${cls} · HP ${s.hp}/${dv.maxHp} · MP ${s.mp}/${dv.maxMp} · STA ${s.sta}/${dv.maxSta} · ${formatCoin(s.coin_cp, content)}`;
-    const worldSummary = `${formatClock(state.clock.minute).split(' (')[0]} · ${location.brief}${others ? ` · ${others} present` : ''}`;
+    const worldSummary = `${formatClock(state.clock.minute).split(' (')[0]} · ${location.brief}${dungeonLevel(state) ? ` · ${dungeonLevel(state)}` : ''}${others ? ` · ${others} present` : ''}`;
     return [
         panel(state.entities.pc.name || 'Alaric', charSummary, characterRows(state, content), open),
         panel('World', worldSummary, worldRows(state, content), open),

@@ -719,7 +719,11 @@ export function clearDone(s, q) {
     const since = (q.history || []).find((h) => h.status === 'active')?.turn ?? 0;
     const mine = (x?.clears || []).find((y) => y.floor === c.floor && y.credit === 'pc' && y.turn >= since);
     const name = x?.name || placeName(s, c.dungeon);
-    return { ok: !!mine, name, floor: c.floor, text: mine ? 'cleared by him' : x?.run.floors[c.floor]?.cleared ? 'cleared by others' : 'not cleared yet' };
+    const cleared = x?.run.floors[c.floor]?.cleared;
+    const credit = cleared?.credit ?? (x?.clears || []).findLast(y => y.floor === c.floor)?.credit;
+    const text = mine ? 'cleared by him' : !cleared ? 'not cleared yet' : credit === 'pc'
+        ? 'cleared by him before this contract; await Dungeon renewal and clear again' : 'cleared by others';
+    return { ok: !!mine, name, floor: c.floor, text };
 }
 
 // ------------------------------------------------------------------------------------------------ resources

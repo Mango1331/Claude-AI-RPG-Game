@@ -21,6 +21,7 @@ import { screenText } from './live/players.mjs';
 import { softExtractionFailure, turnFailure } from './live/evaluator.mjs';
 import { financeTurns, financeSmoke } from './finance_smoke.mjs';
 import { stealthTurns, stealthSmoke } from './stealth_smoke.mjs';
+import { uiTurns, uiSmoke } from './ui_smoke.mjs';
 
 const require = createRequire(import.meta.url);
 let chromium;
@@ -65,7 +66,7 @@ const TURNS = [
 ];
 const turnOf = (text) => TURNS.find((t) => text.includes(`PLAYER MESSAGE:\n${t.player}`));
 const finance = financeTurns(plan);
-const allTurns = [...TURNS, ...finance, ...stealthTurns];
+const allTurns = [...TURNS, ...finance, ...stealthTurns, ...uiTurns];
 
 // ------------------------------------------------------------------------------------------------ setup (as run_v4.mjs)
 const contract = fs.readFileSync(path.join(ENGINE, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
@@ -125,7 +126,7 @@ const mock = http.createServer(async (req, res) => {
     // the planner: its own role in a fight, the interpreter's prompt with the planner's section outside one
     if (system.startsWith('You are the intent planner') || (system.startsWith('You are the command interpreter') && system.includes('Actions with skills, in fights and on things'))) {
         purpose = 'plan';
-        const t = turnOf(users) || [...finance, ...stealthTurns].find(t => users.includes(`PLAYER MESSAGE:\n${t.player}`));
+        const t = turnOf(users) || [...finance, ...stealthTurns, ...uiTurns].find(t => users.includes(`PLAYER MESSAGE:\n${t.player}`));
         text = JSON.stringify(t ? t.plan : { commands: [] });
     } else if (system.startsWith('You are the command interpreter')) {
         purpose = 'interpret';
@@ -426,10 +427,16 @@ try {
             onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); } });
         stealthProbeMode = false;
     }
+    let uiChecks = null;
+    if (process.env.AVERETH_SMOKE_UI === '1') {
+        stealthProbeMode = true;
+        uiChecks = await uiSmoke({ page, send, idle, out: HERE, onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); } });
+        stealthProbeMode = false;
+    }
     const status = await page.evaluate(() => document.getElementById('avereth_status')?.textContent || '');
     await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); });
     await page.waitForTimeout(800);
-    result = { toggle, greeting, afterCreation, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks };
+    result = { toggle, greeting, afterCreation, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks };
 } catch (error) {
     const screen = await page.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(-8000),
         chat: window.SillyTavern?.getContext?.()?.chat?.map(m => ({ user: m.is_user, system: m.is_system, text: m.mes?.slice(0, 120) })) })).catch(() => null);
@@ -453,6 +460,7 @@ const narr = normalCalls.filter((c) => c.purpose === 'narrator');
 const engineOf = (c) => String(c?.messages?.find((m) => String(m.content).startsWith('[AVERETH ENGINE'))?.content || '');
 const narratorFor = (key) => narr.filter((c) => c.lastUser.includes(TURNS.find((t) => t.key === key).player));
 const checks = {
+    ...Object.fromEntries(Object.entries(result.uiChecks || {}).map(([k,v]) => [`ui_${k}`,v])),
     ...(result.stealthChecks ? Object.fromEntries(Object.entries(result.stealthChecks).map(([k,v]) => [`stealth_${k}`, v])) : {}),
     ...(result.saveRecoveryChecks ? Object.fromEntries(Object.entries(result.saveRecoveryChecks).map(([k, v]) => [`save_${k}`, v])) : {}),
     ...(result.financeChecks ? Object.fromEntries(Object.entries(result.financeChecks).map(([k, v]) => [`finance_${k}`, v])) : {}),

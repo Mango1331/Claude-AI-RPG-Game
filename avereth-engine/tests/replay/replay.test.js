@@ -248,8 +248,18 @@ test('.149 keeps previous hashes except its 64 individually justified skill-grow
 
 test('.150 retains all .149 fingerprints and adds only the reviewed dangling-place fact', () => {
     for (const [id, entry] of Object.entries(ACCEPTED149.cases)) assert.deepEqual(ACCEPTED.cases[id], entry, id);
-    const added = Object.keys(ACCEPTED.cases).filter(id => !ACCEPTED149.cases[id]);
+    const added = Object.keys(ACCEPTED.cases).filter(id => !ACCEPTED149.cases[id] && ACCEPTED.cases[id].category === 'fix150 place fact');
     assert.deepEqual(added, ['b19-warrior#354']);
     assert.equal(ACCEPTED.cases[added[0]].category, 'fix150 place fact');
     assert.ok(ACCEPTED.cases[added[0]].reason.startsWith(added[0] + ':'));
+});
+
+
+test('.157 adds only two original unique-band attacks and keeps all 479 earlier entries exactly', () => {
+    const added = Object.entries(ACCEPTED.cases).filter(([, e]) => e.category === 'design157 unique area band');
+    assert.deepEqual(added.map(([id]) => id).sort(), ['b17-rogue#183', 'b17-rogue#185']);
+    const previous = Object.fromEntries(Object.entries(ACCEPTED.cases).filter(([, e]) => e.category !== 'design157 unique area band'));
+    assert.equal(Object.keys(previous).length, 479);
+    assert.equal(recordFingerprint(previous), 'sha256:ffb9fd900eb8357cf1cb3a10e9f99ae81aa93ce0c6eb8e31a074645d146d231a');
+    for (const [id, entry] of added) { assert.ok(entry.reason.startsWith(id + ':')); assert.match(entry.fingerprint, /^sha256:[0-9a-f]{64}$/); }
 });

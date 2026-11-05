@@ -194,3 +194,22 @@ export function skillAreaTarget(actor, other, explicit = []) {
     return actor.id !== other.id && (explicit.includes(other.id)
         || (other.side !== 'neutral' && actor.side !== 'neutral' && (actor.side === 'hostile') !== (other.side === 'hostile')));
 }
+
+/** A missing band choice is redundant only when the visible, reachable opposing field has ONE band.
+ * Preview the already declared step; never choose movement, a neutral target or another explicit target. */
+export function uniqueAreaAim(state, skill, { move = null, moveTarget = null } = {}) {
+    const reach = BANDS.indexOf(skill?.range?.band);
+    if (reach < 0 || !skill?.effects?.some(e => e.kind === 'area' && e.shape === 'target_band')) return null;
+    if (moveTarget && !attackTargetHere(state, moveTarget)) return null;
+    const stepped = new Map(approachedBy(state, { move: move === 'closer' ? move : null, moveTarget }).map(x => [x.id, x.to]));
+    const candidates = [...new Set([...(state.scene?.present || []), ...Object.keys(state.encounter?.combatants || {})])].filter(id => {
+        const c = state.encounter?.combatants?.[id];
+        return attackTargetHere(state, id) && sideOf(state, id) === 'hostile' && !c?.current.surrendered
+            && !(state.scene.concealed || []).includes(id) && (c?.current.cover || state.scene.positions?.[id]?.cover) !== 'full';
+    }).map(id => {
+        let band = stepped.get(id) || bandOf(state, id);
+        if (state.encounter?.combatants?.[id] && move === 'closer' && (!moveTarget || moveTarget === id)) band = BANDS[Math.max(0, BANDS.indexOf(band) - 1)];
+        return { id, band };
+    }).filter(x => BANDS.indexOf(x.band) >= 0 && BANDS.indexOf(x.band) <= reach);
+    return new Set(candidates.map(x => x.band)).size === 1 ? candidates.map(x => x.id).sort()[0] : null;
+}

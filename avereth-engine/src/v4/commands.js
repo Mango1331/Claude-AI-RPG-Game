@@ -41,7 +41,7 @@ import { classOffer, classSelection, acceptClass } from './class_growth.js';
 import { tradeObject as objectOf, pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, rateUnits, offerAvailability, tradeTermsWhy, purchaseLines, samePurchaseRequest, purchaseDecisionMatches } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import { bookStealth } from '../checks.js';
-import { attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
+import { groundAccess, attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
 import { dungeonOf, trueDungeonOf, isRoom, roomKnown, wayBetween, knownRoomNamed, hiddenWayFinds, linkEvent, otherEnd, linksAt, blockerOf, goesFrom, firstStop } from './dungeon.js';
 import { livingOf, establishEvents, gateCheck, gateOfferEvents, gateOfferId, gateCard, namesGate, aheadEvents, insideOf, returnStone, sealRefusal, floorAt, gatherEvents } from './living.js';
 import {
@@ -825,10 +825,11 @@ const HANDLERS = {
             return { status: 'authorized', uncertain: true, line: `TAKES — ${o.name} from ${who(s, keeper)}, who keeps it for his contract: he takes it along unless ${who(s, keeper)} holds it back for a reason of their own (the story decides; if it stays with them, nothing that was to follow it happens).` };
         }
         if (keeper) return { status: 'refused', reason: 'someone holds it', line: `CANNOT TAKE — ${who(s, keeper)} holds ${o.name}; ${who(s, keeper)} would have to give it.` };
-        if (o.holder?.loc !== s.scene.at) return { status: 'refused', reason: 'it is not here', line: `CANNOT TAKE — ${o.name} is not here.` };
+        const access = groundAccess(s, o);
+        if (!access.ok && !access.shut) return { status: 'refused', reason: 'it is not here', line: `CANNOT TAKE — ${o.name} is not here.` };
         // Patch 7: a thing in a container that is still shut (the locked chest): opened first, by his attempt
-        const shut = o.in ? s.features?.[o.in] : o.in_name ? featureNamed(s, o.holder.loc, o.in_name) : null;
-        if (shut && shut.status === 'active' && shut.kind === 'obstacle') return { status: 'refused', reason: 'shut in', line: `CANNOT TAKE — ${o.name} is in ${shut.name} (${shut.id}), which is not open yet: he has to get it open first (an attempt).` };
+        const shut = access.shut;
+        if (shut) return { status: 'refused', reason: 'shut in', line: `CANNOT TAKE — ${o.name} is in ${shut.name} (${shut.id}), which is not open yet: he has to get it open first (an attempt).` };
         const part = c.qty && c.qty < (o.qty ?? 1) ? c.qty : null;
         emit({ t: 'object.moved', d: { id: o.id, to: { entity: 'pc' }, ...(part ? { qty: part, split: `${o.id}_${s.turn}` } : {}) } });
         return { status: 'resolved', line: `TAKES — ${o.name}${(part || o.qty) && (o.stack || (o.qty ?? 1) > 1 || o.unit) ? ` (${part || o.qty}${o.unit ? ` ${o.unit}` : ''})` : ''} along.` };

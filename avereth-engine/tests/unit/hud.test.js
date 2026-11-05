@@ -172,7 +172,7 @@ test('drift: a narrator that writes wrong coin, HP, STA, quest status or positio
 });
 
 
-test('active combat uses one open tactical HUD with fixed Target/HP/Range/Cover columns and attack reach', () => {
+test('active combat uses one open tactical HUD with fixed Target/HP/Range/Cover-Awareness columns and attack reach', () => {
     const g = new Game(content).ranger();
     g.reply({
         new: [
@@ -187,7 +187,7 @@ test('active combat uses one open tactical HUD with fixed Target/HP/Range/Cover 
     const html = renderHud(g.state, content, 'closed');
     assert.match(html, /avereth-combat-hud/);
     assert.match(html, /<summary>⚔ COMBAT · Round \d+ · /);
-    assert.match(html, /<span>Target<\/span><span>HP<\/span><span>Range<\/span><span>Cover<\/span>/);
+    assert.match(html, /<span>Target<\/span><span>HP<\/span><span>Range<\/span><span>Cover \/ awareness<\/span>/);
     assert.match(html, /Cellar Rat A/);
     assert.match(html, /Cellar Rat B/);
     assert.match(html, /avereth-range-(?:engaged|short|medium|long)/);

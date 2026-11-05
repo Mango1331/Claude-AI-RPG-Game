@@ -309,7 +309,7 @@ export class Driver {
             const chat = SillyTavern.getContext().chat;
             // SillyTavern prefixes the classes of a message's HTML with "custom-" (its sanitizer)
             const huds = (el) => [...el.querySelectorAll('.mes_text details.avereth-hud, .mes_text details.custom-avereth-hud')];
-            const panels = (el) => [...el.querySelectorAll('.mes_text .avereth-system-panel, .mes_text .custom-avereth-system-panel')];
+            const panels = (el) => [...el.querySelectorAll('.mes_text .avereth-system-panel, .mes_text .custom-avereth-system-panel, .mes_text .avereth-board, .mes_text .custom-avereth-board')];
             const textOf = (el) => {
                 let t = (el.querySelector('.mes_text')?.innerText || '');
                 // Strip one occurrence per rendered panel; identical prose stays.

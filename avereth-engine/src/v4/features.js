@@ -242,3 +242,11 @@ export function searchFinds(s, place, what) {
     const want = keyOf(what);
     return hidden.find((f) => keyOf(`${f.name} ${f.kind}`).some((w) => want.includes(w))) || hidden[0];
 }
+
+/** Same free-ground reachability for TAKE and the HUD; this never grants ownership or reveals contents. */
+export function groundAccess(s, o) {
+    if (o?.holder?.entity) return { ok: false, keeper: o.holder.entity };
+    if (!o || o.holder?.loc !== s.scene.at) return { ok: false };
+    const shut = o.in ? s.features?.[o.in] : o.in_name ? featureNamed(s, o.holder.loc, o.in_name) : null;
+    return shut?.status === 'active' && shut.kind === 'obstacle' ? { ok: false, shut } : { ok: true };
+}

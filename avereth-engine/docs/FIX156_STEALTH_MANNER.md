@@ -21,7 +21,7 @@ World prüft nach tatsächlicher Ankunft und Living-Dungeon-Materialisierung, vo
 - Originalhostkette mit aufgezeichnetem Altplan, tatsächlichem Repair, tatsächlicher Ankunft und Event-Fold. Getrennte kontrollierte Fälle für echte Zielbeobachter, Erfolg/Fehlschlag, Zwischenhalt, Zwangsverlagerung, blockierten Dungeonweg, lokale Bewegung, aktive Kämpfe, fehlende Reise, Reload/Swipe und keine geerbte Heimlichkeit.
 - Volle Node-Suite: 2754/2754.
 - Fingerprint-Replay: 2235 Fälle; 479 bestehende Abweichungen exakt bestätigt, 0 offen, 0 veraltet. Keine Listenänderung.
-- Echter isolierter ST-1.19-Standard-Smoke erweitert um User01, gespeicherten vollständigen Chat, Swipe/Reload und normalen Folgezug: siehe abschließende gemeinsame Abnahme in .157. Der erste Versuch hatte eine veraltete Smoke-Versionserwartung und eine nicht aufgeschlüsselte neue Save/Swipe-Prüfung; nach Korrektur der Versionsprüfung und Aufteilung der Diagnose alle Prüfungen grün, ohne Produkt-Workaround. Der frühere rote Versuch gilt nicht als bestandene Abnahme.
+- Echter isolierter ST-1.19-Standard-Smoke erweitert um User01, gespeicherten vollständigen Chat, Swipe/Reload und normalen Folgezug: **55/55**, 59 Modellaufrufe / 23 Extraktionen, 0 PageErrors; zusätzliche gemeinsame Standard-/Failsoft-Abnahme in .157. Der erste Versuch hatte eine veraltete Smoke-Versionserwartung und eine nicht aufgeschlüsselte neue Save/Swipe-Prüfung; nach Korrektur der Versionsprüfung und Aufteilung der Diagnose alle Prüfungen grün, ohne Produkt-Workaround. Der frühere rote Versuch gilt nicht als bestandene Abnahme.
 
 ## Geänderte Bereiche
 

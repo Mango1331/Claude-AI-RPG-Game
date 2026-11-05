@@ -15,9 +15,9 @@
 
 ## Einstieg und Quellen
 
-Im neuen Chat zuerst nur **01 und 03 vollständig** auf `main`; danach je nach Aufgabe relevant: 02 (Kanon), 07 (Roadmap), 04 (nicht priorisierte Ideen), 06 (historischer 10B-Fachindex), konkrete Fachpatchnote und betroffene Codepfade. Für NPC-Themen die [Code-/Loganalyse](recherche/NPC_KONTINUITAET_ANALYSE_20261104.md), für User01 die [Originale](testrun_10b/user-20261104-162404/README.md) heranziehen. Historische Reviews und Archive nur für belegte Fragen, keine Pflichtkomplettlektüre.
+Im neuen Chat zuerst nur **01 und 03 vollständig** auf `main`; danach je nach Aufgabe relevant: 02 (Kanon), 07 (Roadmap), 04 (Ideenarchiv/Suchindex), 06 (historischer 10B-Fachindex), konkrete Fachpatchnote und betroffene Codepfade. Für NPC-Themen die [Code-/Loganalyse](recherche/NPC_KONTINUITAET_ANALYSE_20261104.md), für aktuelle Technik-/Spielbefunde den [User02-Review mit abgeschlossenem Sol-Nachtrag §8](testrun_10b/user-20261105-050449/REVIEW_CHATGPT.md), für dessen Vorgeschichte [User01](testrun_10b/user-20261104-162404/README.md) heranziehen. Historische Reviews und Archive nur für belegte Fragen, keine Pflichtkomplettlektüre.
 
-**Vor technischen Behauptungen** Produktbranch/HEAD und betroffenen Code prüfen: `main` ist die Dokumentationsquelle, nicht automatisch der neueste Produktbuild. Nach Unterbrechung Änderungen seit dem letzten geprüften Commit ansehen; unveränderte Quellen nicht erneut lesen. Originalzip, vorhandene Completion-Requests, Engine-Events und Chat gemeinsam auswerten; schöne Prosa ist keine mechanische Buchung. Modellfehler, Enginefehler, Spielerbedienung, regelgerechten Tod und Infrastruktur unterscheiden. **Wiederholt blockierte mechanisch gültige Aktionen** (z. B. aus falscher NPC-Identität oder fehlender Inventarauflösung) sind Integrationsfehler; ein korrekt abgewiesener Vorgang, den der Narrator dennoch als erfolgreich erzählt, ist zunächst ein Modell-/Erzählfehler. Seltene lokale Erzählwidersprüche tolerieren, solange der autoritative Zustand korrekt und der Run fortsetzbar bleibt; wiederkehrende Handlungsschleifen nicht als harmlose Unschönheiten abtun.
+**Vor technischen Behauptungen** Produktbranch/HEAD und betroffenen Code prüfen: `main` ist die Dokumentationsquelle, nicht automatisch der neueste Produktbuild. Nach Unterbrechung Änderungen seit dem letzten geprüften Commit ansehen; unveränderte Quellen nicht erneut lesen. Originaldateien, vorhandene Completion-Requests, Engine-Events und Chat gemeinsam auswerten; schöne Prosa ist keine mechanische Buchung. Modellfehler, Enginefehler, Spielerbedienung, regelgerechten Tod und Infrastruktur unterscheiden. **Wiederholt blockierte mechanisch gültige Aktionen** (z. B. aus falscher NPC-Identität oder fehlender Inventarauflösung) sind Integrationsfehler; ein korrekt abgewiesener Vorgang, den der Narrator dennoch als erfolgreich erzählt, ist zunächst ein Modell-/Erzählfehler. Seltene lokale Erzählwidersprüche tolerieren, solange der autoritative Zustand korrekt und der Run fortsetzbar bleibt; wiederkehrende Handlungsschleifen nicht als harmlose Unschönheiten abtun.
 
 ## Effiziente Arbeits- und Testfolge
 
@@ -37,11 +37,11 @@ Kosten und Zeit an Aufgabe ausrichten: gezielte Dateisuche, zusammengehörige Ar
 | Zusammenarbeit/Tests | **01** (hier) |
 | Verbindlicher Design-Kanon | **02** |
 | Laufender Produkt-/Abnahmestand und nächste Schritte | **03** |
-| Bewusst offene Ideen (ohne Priorisierung) | **04** |
+| Ideenarchiv / unpriorisierte Kandidaten | **04** |
 | Fachquellen und Commitwegweiser 10B | **06** |
 | Reihenfolge langfristiger Featurekandidaten | **07** |
 | NPC-Kontinuität/Brenna-Ursachenbelege | [Fachanalyse](recherche/NPC_KONTINUITAET_ANALYSE_20261104.md) |
 | Technische Implementierung und rote/grüne Regressionen | Jeweilige Dev-Fachpatchnote und Produktcommit |
 | Natürlicher Livetest | Originalexport + `testrun_10b/<Run>/REVIEW.md`, Verweise im Runindex |
 
-In Übersichten **nur die jeweils maßgebliche Quelle verlinken**, keine vollständigen alten Patchberichte wiederholen. Historische Vorfassungen über festen Commitlink erhalten. 03 nur bei relevantem Statuswechsel aktualisieren, 02 nur bei Designentscheidung, 01 nur bei Prozessänderung. Keine erfundenen Abnahmeergebnisse oder automatischen Freigaben.
+In Übersichten **nur die jeweils maßgebliche Quelle verlinken**, keine vollständigen alten Patchberichte wiederholen. Historische Vorfassungen über festen Commitlink erhalten; alte Status-/Testketten auf kurze Quellenverweise kürzen. Originalreviews/-daten nicht bei jeder Statuspflege umschreiben. 03 nur bei relevantem Statuswechsel aktualisieren, 02 nur bei Designentscheidung, 01 nur bei Prozessänderung. Keine erfundenen Abnahmeergebnisse oder automatischen Freigaben.

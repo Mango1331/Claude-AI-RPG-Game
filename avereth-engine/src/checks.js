@@ -59,3 +59,11 @@ export function stealthEvents(state, content, dice, { mods = [] } = {}) {
     }
     return { events, check };
 }
+
+/** The existing opposed check, recorded once at the action's actual place/step. */
+export function bookStealth(state, content, dice, emit, detail) {
+    const r = stealthEvents(state, content, dice);
+    r.events.forEach(emit);
+    emit({ t: 'check.recorded', d: { ...r.check, by: 'engine', ...detail } });
+    return r;
+}

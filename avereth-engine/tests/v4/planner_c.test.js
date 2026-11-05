@@ -113,7 +113,7 @@ test('"I Fire Lance Barkscorpion B": A books a silent Basic Attack; the planner 
     assert.equal(step.skill, 'mage.flame_lance');
     assert.equal(step.target, B);
     assert.equal(g.state().entities.pc.sheet.mp, mp - 16, 'the engine booked the cost');
-    assert.equal(g.last().plan.version, 'plan-c0.1');
+    assert.equal(g.last().plan.version, 'plan-c0.2');
 });
 
 test('the safety catch: a planner that writes skill:null (Basic Attack) for "Fire Lance" or a typo gets a question, never a silent Basic Attack', async () => {

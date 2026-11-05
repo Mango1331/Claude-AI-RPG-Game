@@ -40,6 +40,7 @@ import { acceptSkill, declineSkill, developmentOffers, skillOffers } from './ski
 import { classOffer, classSelection, acceptClass } from './class_growth.js';
 import { tradeObject as objectOf, pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, rateUnits, offerAvailability, tradeTermsWhy, purchaseLines, samePurchaseRequest, purchaseDecisionMatches } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
+import { bookStealth } from '../checks.js';
 import { attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
 import { dungeonOf, trueDungeonOf, isRoom, roomKnown, wayBetween, knownRoomNamed, hiddenWayFinds, linkEvent, otherEnd, linksAt, blockerOf, goesFrom, firstStop } from './dungeon.js';
 import { livingOf, establishEvents, gateCheck, gateOfferEvents, gateOfferId, gateCard, namesGate, aheadEvents, insideOf, returnStone, sealRefusal, floorAt, gatherEvents } from './living.js';
@@ -497,6 +498,14 @@ function boardCard(s, content, rank, branch, listed) {
     ];
 }
 
+// A manner belongs to this authorized leg, never a separate hide at its departure point.
+function travelManner(c, go, ctx) {
+    if (!c.sneak && c.manner?.kind !== 'stealth') return;
+    if (c.sneak) go.sneak = true; // linked .155 plans keep their recorded form
+    if (c.manner) go.manner = { ...c.manner };
+    ctx.extra.push(`SNEAKING TRAVEL — movement and its approach are one action. ${c.manner?.scope === 'destination' ? 'Travel normally until the actual established destination is reached; no hiding or Detection roll at the source or an earlier interruption.' : 'The quiet approach applies to this actual leg, not to future journeys.'} Detection is PENDING: the engine checks against actual occupants after confirmed arrival and Dungeon population. A blocked way stays blocked. Do not invent discovery, guaranteed concealment, Ambush, further movement or an attack before the check.`);
+}
+
 const HANDLERS = {
     'journey.continue'(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT DEPART — not while the fight runs.' };
@@ -511,6 +520,7 @@ const HANDLERS = {
             const go = { seq: c.seq, to: goal.place || null, name, hall: !!goal.place && !!hallOf(s, goal.place), newName: goal.place ? null : name, intent: goal.id, ...companionOf(s, envx) };
             ctx.auth.go = go;
             ctx.auth.gos.push(go);
+            travelManner(c, go, ctx);
             ctx.auth.roam = true;
             ctx.auth.timeCap = Math.max(ctx.auth.timeCap, goal.place ? content.rules.time.travel_cap_min : content.rules.time.unknown_place_cap_min);
             ctx.expectedKeys[String(c.seq)] = 'go';
@@ -538,6 +548,7 @@ const HANDLERS = {
         const go = { seq: c.seq, to: null, name: `the established journey for "${ready.label}"`, hall: false, newName: 'the established journey', journey: ready.label, with: ready.companion ? [ready.companion] : [], ...(envx?.c ? { along: true } : {}) };
         ctx.auth.go = go;
         ctx.auth.gos.push(go);
+        travelManner(c, go, ctx);
         ctx.auth.roam = true;
         ctx.auth.timeCap = Math.max(ctx.auth.timeCap, content.rules.time.travel_cap_min);
         roadLine(s, content, c, ctx, go);
@@ -601,10 +612,7 @@ const HANDLERS = {
         if (lived?.refuse) return lived.refuse;
         ctx.auth.go = go;
         ctx.auth.gos.push(go);
-        if (c.sneak) {
-            go.sneak = true;
-            ctx.extra.push('SNEAKING TRAVEL — the GO and stealth approach are one action. Establish only the place actually reached and its actual occupants. Detection is PENDING: the engine checks Stealth there after arrival and Dungeon population. Do not decide discovery, guaranteed concealment, an Ambush bonus or an attack from this approach in advance. A blocked way remains blocked.');
-        }
+        travelManner(c, go, ctx);
         ctx.auth.timeCap = Math.max(ctx.auth.timeCap, cap);
         ctx.expectedKeys[String(c.seq)] = 'go';
         // he sets off while a quest's journey is ready with its people here: an arrival out of the settlement starts it
@@ -1468,12 +1476,17 @@ export const COMMAND_TYPES = Object.keys(HANDLERS);
  * he names or those he moves among (src/v4/scene_handles.js approachedBy). The engine sets the new distances; the story
  * tells the step and how they answer it.
  */
-function moveStep(s, content, c, ctx, emit) {
+function moveStep(s, content, c, ctx, emit, envx) {
     const moved = c.target === null || typeof c.target === 'string' ? approachedBy(s, { move: c.dir, moveTarget: c.target }) : [];
     if (!moved.length) return { status: 'resolved', line: `MOVES — ${c.dir === 'away' ? 'back' : 'closer'}: nobody here is nearer or farther for it; tell the step as it happens.` };
     for (const x of moved) emit({ t: 'scene.position', d: { id: x.id, band: x.to, cover: s.scene.positions[x.id]?.cover || 'none' } });
     const label = (id) => sceneHandle(s, content, id);
     ctx.engineLines?.push(`MOVED — ${moved.map((x) => `${label(x.id)} ${x.from} → ${x.to}`).join(' · ')}`);
+    if (c.manner?.kind === 'stealth' && !s.encounter && !s.pending_combat.length) {
+        const r = bookStealth(s, content, envx.dice, emit, { what: 'movement stealth', at: s.scene.at, turn: s.turn, seq: c.seq });
+        ctx.engineLines.push(`STEALTH — ${r.check.success ? 'SUCCESS' : 'FAILURE'}${r.check.automatic ? ' (no observers, automatic)' : ` · d100 ${r.check.roll} / ${r.check.chance}%`}; use the engine observer awareness. No attack or further step was chosen.`);
+        ctx.extra.push('LOCAL STEALTH — the existing one-band step and its Detection result are booked. Do not replace it with hiding in place, another movement or a guaranteed Ambush. Detection alone is not an attack.');
+    }
     return { status: 'resolved', line: `MOVES — one step ${c.dir === 'away' ? 'back from' : 'closer to'} ${moved.map((x) => `${label(x.id)} (${x.from} → ${x.to})`).join(', ')}: the engine's distances now; tell the step and how they answer it, and put no one nearer or farther than this.` };
 }
 

@@ -38,7 +38,7 @@ import { disciplineTags, skillAspects, DEFENSE } from '../skills.js';
 import { CORE_STATS } from '../passives.js';
 import { acceptanceWhy, rateUnits } from './trade.js';
 
-export const PLANNER_VERSION = 'plan-c0.1';
+export const PLANNER_VERSION = 'plan-c0.2';
 
 export const MECH_TYPES = ['use_skill', 'ability_world', 'move', 'flee', 'stealth', 'attempt', 'other', 'clarify'];
 
@@ -74,7 +74,7 @@ export const MECH_COMMANDS = [
     '- ability_world {skill, target, target_words, goal}: a skill used on a thing. skill as above; target: an id from OBJECTS | {"new": "<the thing>"}',
     '- move {dir, target}: dir "closer" | "away"; target: an id | null',
     '- flee {}: he tries to get away',
-    '- stealth {}: he hides or sneaks. Sneaking into/across a place is ONE movement: emit stealth and the ordinary go with his destination, linking go.needs to the stealth seq (or quote the SAME complete movement in both commands; either order is allowed). This binds the approach to that movement, unlike walking somewhere and independently hiding later. The engine checks Stealth after actual arrival and destination observers; do not replace the movement with hiding here. In combat the existing action restrictions still apply.',
+    '- stealth {}: he hides here as a standalone action. For a stealth approach to movement OUTSIDE combat, keep the actual go, journey.continue or local move and add optional manner:{kind:"stealth",scope:"action"|"destination"} to THAT command instead of a competing stealth command. action means this movement is quiet; destination means travel normally and sneak only when the established destination is actually reached (go/journey.continue only). Quotes include his words for the action and its approach. A later independent hide is still a separate action, not a movement modifier. The engine decides arrival and Detection against actual observers. This grants no extra step/attack, access, success or lasting stealth mode. Do not put manner on searches, takes, skills or other actions yet, or in combat.',
     '- attempt {feature, aim, approach, stat, tool, possible}: he deals with an obstacle or danger of FEATURES (rule 10)',
     '- other {what}: an action of his that no command fits; what: a few of his words',
     '- clarify {about, question, options}: instead of acting; about "target" | "skill" | "action"; question: one short question to the player; options: ids or short texts',
@@ -449,6 +449,7 @@ export function parsePlan(answer, vocab, ctx, message) {
     if (!Array.isArray(value.commands)) return { commands: null, errors: ['the answer must be {"commands": [...]} (an empty list when he takes no action)'] };
     const errors = [];
     const jobs = new Map();
+    const manners = new Map();
     const tradeErrors = [];
     let tradeNote = null;
     const story = new Map((vocab.commands || []).map((c) => [c.type, c]));
@@ -477,6 +478,15 @@ export function parsePlan(answer, vocab, ctx, message) {
         const at = `commands[${i}]${c && typeof c === 'object' && c.type ? ` (${c.type})` : ''}`;
         if (!c || typeof c !== 'object' || Array.isArray(c)) { errors.push(`${at}: must be an object`); continue; }
         const type = String(c.type ?? '');
+        if (c.manner !== undefined) {
+            const m = c.manner;
+            delete c.manner;
+            if (!m || typeof m !== 'object' || Array.isArray(m) || Object.keys(m).some(k => !['kind', 'scope'].includes(k))
+                || m.kind !== 'stealth' || !['action', 'destination'].includes(m.scope)
+                || !['go', 'journey.continue', 'move'].includes(type) || (type === 'move' && m.scope !== 'action') || ctx.fight)
+                errors.push(`${at}: manner supports only {kind:"stealth",scope:"action"|"destination"} on go/journey.continue, or scope action on a local move, outside combat; no extra hide, action or guaranteed success`);
+            else manners.set(c, m);
+        }
         if (c.job !== undefined) {
             const job = c.job; delete c.job;
             if (job != null) {
@@ -594,6 +604,13 @@ export function parsePlan(answer, vocab, ctx, message) {
     }
     errors.push(...amountErrors(value.commands, ctx.currency, ctx.catalog, message));
     for (const [c, job] of jobs) c.job = job;
+    for (const [c, manner] of manners) c.manner = manner;
+    if (manners.size && value.commands.some(c => ['use_skill', 'ability_world', 'flee'].includes(c?.type)))
+        errors.push('A quiet movement is not a free hide/move/attack or skill combination. Clarify the separate main action instead of dropping the movement or granting another action.');
+    if ([...manners.keys()].some(c => c.type !== 'move') && value.commands.filter(c => ['go', 'journey.continue'].includes(c?.type)).length > 1)
+        errors.push('A stealth approach resolves one actual travel leg at a time; clarify this multi-leg movement before acting. Ordinary multi-leg travel without manner is unchanged.');
+    if (value.commands.some(c => c?.type === 'stealth') && (manners.size || value.commands.some(c => c?.type === 'journey.continue')))
+        errors.push('A separate stealth competes with this travel. If it is a quiet approach, keep the travel command with manner and its scope; if an independent later hide was intended, clarify before acting. Never hide at the departure point instead of continuing.');
     if (errors.length) return { commands: null, errors: errors.slice(0, 8), tradeConflict: tradeErrors.length === errors.length && !ctx.fight, tradeNote };
     return { commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [], hints: financeHints(value.commands, ctx.currency, message) };
 }

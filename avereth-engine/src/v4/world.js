@@ -12,7 +12,7 @@ import { privateQuestsOf, questVisible } from '../content.js';
 // opens exactly as in V3 (engine.js openCommitted). Places, time, objects, offers, coin, coercion and quests are V4
 // handlers. Nothing here can change what the player's commands resolved.
 import { resolveCommands } from './commands.js';
-import { stealthEvents } from '../checks.js';
+import { bookStealth } from '../checks.js';
 import { transferCargo, deliveryStatus, deliveryObjectives, confirmDelivery, additionalContainerReturn } from './delivery.js';
 import { Dice } from '../rng.js';
 import { applyEvent } from '../state.js';
@@ -225,7 +225,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const refusedArrival = (d) => { if (d?.type === 'arrive') { travel.push({ seq: d.seq ?? 0, ok: false, away: leavesHere(d.at) }); } };
     const outcome = s.last?.outcome || {};
     const auth = outcome.auth || {};
-    const stealthGo = auth.gos?.find(g => g.sneak);
+    const stealthGos = (auth.gos || []).filter(g => g.sneak || g.manner?.kind === 'stealth');
+    let stealthGo = null;
     // Prototype C: the turn the planner read (a story turn: auth.c; a V3-routed one: the outcome's c)
     const cPath = !!(auth.c || outcome.c);
     const explicitTravel = cPath && rulesetOf(s) >= 2;
@@ -342,6 +343,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     let stealthAt = null; // actual voluntary arrival of this GO, never a forced relocation
     let arrivedHall = null;
     const arrivals = new Set();
+    const arrivalManner = () => {
+        const reached = g => (g.to && arrivals.has(g.to)) || (g.intent && s.intents[g.intent]?.status === 'done')
+            || (!g.to && g.newName && arrivals.has(placeIdentity(s, { new: { name: g.newName, kind: 'site' } })));
+        const all = auth.gos || [];
+        const lastReached = all.findLastIndex(reached);
+        return stealthGos.findLast(g => lastReached <= all.indexOf(g)
+            && (g.manner?.scope === 'destination' ? reached(g) : all.length === 1 || reached(g))) || null;
+    };
     let freshPart = null; // Patch 8: the new part of a Living Dungeon this reply brought him into
     const conditionals = (outcome.conditionals || []).map((c) => ({ ...c, done: false }));
     const idOf = (ref) => {
@@ -921,7 +930,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 const party = companions(d.with, d);
                 perceiveAll(s, emit, seeing());
                 arriveThrough(at.id, party);
-                if (stealthGo) stealthAt = String(d.forced_by || '').trim() ? null : s.scene.at;
+                stealthGo = String(d.forced_by || '').trim() ? null : arrivalManner();
+                stealthAt = stealthGo ? s.scene.at : null;
                 if (explicitTravel && s.places[at.id]?.kind === 'realm') {
                     const go = auth.gos?.at(-1);
                     if (go?.newName && !go.to && !go.journey && !go.intent) {
@@ -1674,9 +1684,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // Arrival resets visibility as always. Only now, after this room's complete population (including
     // the Living Dungeon fallback), can the existing opposed Stealth check resolve this one GO.
     if (stealthGo && stealthAt === s.scene.at && s.scene.at !== startAt && s.scene.at !== transit && !s.encounter) {
-        const r = stealthEvents(s, content, dice);
-        r.events.forEach(emit);
-        emit({ t: 'check.recorded', d: { ...r.check, by: 'engine', what: 'arrival stealth', at: s.scene.at, turn: s.turn, seq: stealthGo.seq } });
+        const r = bookStealth(s, content, dice, emit, { what: 'arrival stealth', at: s.scene.at, turn: s.turn, seq: stealthGo.seq });
         stealthSettled = true;
         if (r.check.success) {
             for (const p of [...s.pending_combat]) if (s.scene.present.includes(p.by) && s.scene.awareness[p.by] !== 'aware') {
@@ -1684,6 +1692,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             }
         }
         corrections.push(`ARRIVAL STEALTH — ${placeName(s, s.scene.at)}: ${r.check.success ? 'SUCCESS; use the engine concealment and observer awareness, not an earlier narrated discovery' : 'FAILURE; use the engine observer awareness. Detection alone is not an attack'}. No further movement or attack was chosen.`);
+    }
+    else if (stealthGos.some(g => g.manner?.scope === 'destination')) {
+        system.push(`DESTINATION STEALTH NOT RESOLVED — current location: ${placeName(s, s.scene.at)}. The voluntary target arrival was not confirmed; no destination Detection result or future stealth permission was granted.`);
     }
     perceiveAll(s, emit, seeing());
     selfIntro(s, emit);

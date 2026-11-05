@@ -1,6 +1,6 @@
 # Avereth – Originalruns und Reviews (10B)
 
-**Stand: 04.11.2026. Quellenindex, keine zweite Patchplanung.** Produkt/Abnahme/nächste Arbeit in [03](../03_AKTUELLER_PROJEKTSTAND.md), Fixketten/Commits in[06](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). Ausführliche Bewertungen bleiben unverändert im jeweiligen Runordner.
+**Stand: 05.11.2026. Quellenindex, keine zweite Patchplanung.** Produkt/Abnahme/nächste Arbeit in [03](../03_AKTUELLER_PROJEKTSTAND.md), Fixketten/Commits in[06](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). Ausführliche Bewertungen bleiben unverändert im jeweiligen Runordner.
 
 Bei Einzelruns folgt die ZIP-Spalte dem tatsächlich vorhandenen `main`-Dateibaum. Für Batches ist der [Archivindex](ARCHIV_BATCHES.md) maßgeblich. **„Nein“ heißt nicht unabhängig im nächsten Chat prüfbar:** Ein früher geprüfter Chatupload ersetzt keinen hier verfügbaren Originalexport. Niemals aus einem Review eine eigene Originalprüfung behaupten. Vollständige frühere Indextexte/Hashhinweise: [7994fa4](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/7994fa42b115f21b705c0b770e2b4e31fde67f77/testrun_10b/README.md).
 
@@ -14,7 +14,7 @@ Für die weitere Stabilitätsbeobachtung jedes neuen Batches Endgründe **aller 
 
 ## Persönliche User-Spieltests (keine Runner-Batches)
 
-- **[User-Testrun 01, 04.11.2026, Build .155](user-20261104-162404/REVIEW.md):** 37 Spielerbeiträge / 33 Enginezüge, 635 Events, Mage L1→L7, Glimmerdeep-L1-Auftrag abgeschlossen; Abschluss offener Ghoul-Auftrag mit Reise+Stealth-Problem. [Originalchat und Events](user-20261104-162404/SOURCE_MANIFEST.md), [vollständiges persönliches Feedback und Bewertung](user-20261104-162404/USER_FEEDBACK_REVIEW.md). Kein Produktpatch aus dem Review.
+- **[User-Testrun 01, 04.11.2026, Build .155](user-20261104-162404/REVIEW.md):** 37 Spielerbeiträge / 33 Enginezüge, 635 Events, Mage L1→L7, Glimmerdeep-L1-Auftrag abgeschlossen; Abschluss offener Ghoul-Auftrag mit Reise+Stealth-Problem. [Originalchat und Events](user-20261104-162404/SOURCE_MANIFEST.md), [vollständiges persönliches Feedback und Bewertung](user-20261104-162404/USER_FEEDBACK_REVIEW.md), [NPC-Ursachenanalyse mit Gegenbewertung](../recherche/NPC_KONTINUITAET_ANALYSE_20261104.md). Seitdem `.156`-Stealth-S1 auf dem Produktbranch implementiert, aber **nicht durch einen natürlichen `.156`-User-Run abgenommen**. [Aktueller Stand](../03_AKTUELLER_PROJEKTSTAND.md).
 
 ## Einzelruns
 

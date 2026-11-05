@@ -1,6 +1,6 @@
 # Avereth Engine – verbindlicher Design-Kanon
 
-**Stand: 04.11.2026.** **[VERBINDLICH]** beschreibt Regeln und Ziele, **[GEPLANT]** einen noch nicht umgesetzten Beschluss, **[OFFEN]** eine mögliche spätere Idee. **Implementierungs- und Abnahmestand nur in [03](03_AKTUELLER_PROJEKTSTAND.md).** [Ausführliche historische Fassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/6142f24/02_DESIGN_KANON.md); neue Entscheidungen ändern diesen Kanon, technische Patchdetails gehören in Fachpatchnotes.
+**Stand: 05.11.2026.** **[VERBINDLICH]** beschreibt Regeln und Ziele, **[GEPLANT]** einen noch nicht umgesetzten Beschluss, **[OFFEN]** eine mögliche spätere Idee. **Implementierungs- und Abnahmestand nur in [03](03_AKTUELLER_PROJEKTSTAND.md).** [Ausführliche historische Fassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/6142f24/02_DESIGN_KANON.md); neue Entscheidungen ändern diesen Kanon, technische Patchdetails gehören in Fachpatchnotes.
 
 ## 0. Aktuelle Kompatibilitätsentscheidung
 
@@ -18,7 +18,7 @@ Delivery/Escort bleiben ruhend **erhalten**, einschließlich echter Übergaben u
 - **Engine:** Zahlen, Kampf, Zeit, Orte, Ressourcen, Inventar, Geld, Quests, Fertigkeiten, Population und Zustand deterministisch prüfen und über Events buchen.
 - **Narrator:** freie, glaubwürdige Prosa, Dialoge und autonome lokale Weltreaktionen; bestätigte Mechanik, PC-Agency und belegtes Wissen respektieren.
 - **Extractor/Firewall:** erzählte Weltänderungen strukturiert und sicher übernehmen; keine freiwilligen PC-Entscheidungen nachträglich erfinden, keine fremde Engineautorität.
-- **NPC-Wissen:** nur Wahrgenommenes oder aus legitimer Quelle Erfahrenes. Ungesprochene PC-Ziele bleiben unbekannt.
+- **NPC-Wissen:** nur Wahrgenommenes oder aus legitimer Quelle Erfahrenes. Ungesprochene PC-Ziele bleiben unbekannt. Eine in der Geschichte **tatsächlich vom NPC erlebte** Übergabe, Begegnung oder Aussage bleibt Teil seiner etablierten Kenntnis, auch wenn eine separate technische Wissensbuchung fehlschlägt; Defizite dieser Buchung sind zu beheben, nicht als Weltretcon zu deuten.
 - **Integrität:** kein Spielzug aus defektem Event-Fold; kein stiller Doppelstart, keine doppelte Buchung bei Swipe/Reload/Regenerate. **[VERBINDLICH]** Mechanisch gültige Handlungen dürfen nicht dauerhaft an falscher Identität, Anwesenheitsauflösung oder Inventarrepräsentation scheitern. Seltene lokale Narrator-/LLM-Widersprüche zur korrekten Enginebuchung sind tolerierbar, solange sie keinen Zustand beschädigen und keine dauerhafte Spielschleife auslösen.
 
 **Ankunft und Reise:** Nur autorisierte, bestätigte und chronologisch gültige `arrive`-Deltas bewegen den PC. Kompakte Reisen samt realen Zwischenereignissen bleiben erlaubt; ein vorgeschlagener Zielort ist noch keine Ankunft. Kein eigenmächtiger Ortswechsel.
@@ -33,7 +33,7 @@ SillyTavern ist aktueller Host, aber kein notwendiger Teil der Spielwelt. Sprach
 
 **[VERBINDLICH]** Spieler bestimmt freiwillige Bewegung, Worte, Gedanken, Zustimmung, Questwahl, Angriffsziele, Skills und Beziehungen. Gewöhnliche Teilbewegungen einer bereits gewählten Handlung sind zulässig; neue freiwillige Ziele nicht. Äußere Kräfte dürfen kausal wirken. Kein Plot-Armor, erfundenes Fremdwissen oder Zurücksetzen etablierter Fakten.
 
-Narratorstil: **Englisch, dritte Person, Vergangenheit**; lebendige Wahrnehmung und Dialoge statt Prosa-Systemtracker. NPCs dürfen eigene Interessen haben, helfen, täuschen, ablehnen, kämpfen und sterben. Figuren, Orte, Fraktionen und Konsequenzen bleiben konsistent. Alaric Red ist eine Testfigur, keine Startpflicht.
+Narratorstil: **Englisch, dritte Person, Vergangenheit**; lebendige Wahrnehmung und Dialoge statt Prosa-Systemtracker. NPCs dürfen eigene Interessen haben, helfen, täuschen, ablehnen, kämpfen und sterben. Figuren, Orte, Fraktionen und Konsequenzen bleiben konsistent. **Direkt zuvor etablierte soziale Gespräche, persönliche Grenzen und erkennbare Bekanntheit dürfen nicht durch eine Zwischenaktion grundlos zurückgesetzt werden.** NPCs dürfen distanziert bleiben, eine Einladung ablehnen oder eine andere Stimmung haben; aus Flirt entsteht keine automatische Zuneigung und keine formale Quest. Alaric Red ist eine Testfigur, keine Startpflicht.
 
 ## 4. Allgemeines Pacing und Quality of Life
 
@@ -77,7 +77,7 @@ Andere Abenteurer können dieselben Gegner/Ressourcen nutzen; fremde Siege geben
 
 ## 8. Welt, Lore und organische Klassen
 
-**[DESIGN ENTSCHIEDEN 04.11.2026 – noch nicht implementiert] PULSE:** Spontane Ereignischancen werden über geeignete reguläre erzählende Spielerzüge ausgelöst, **nicht** über verstrichene Ingame-Minuten oder ein Expositionshybridmodell. Pro geeignetem Zug höchstens eine Chance; reine Systemabfragen, aktive Kampfrunden und technische Wiederholungen (Repair/Reload/Swipe/Regenerate) erzeugen keine zusätzlichen Würfe. Ort und Tageszeit bleiben Kontext für plausible Inhalte; Ereignis bedeutet nicht automatisch Angriff, auch kein Ereignis ist zulässig. Lange Zeitsprünge erzeugen allein durch ihre Dauer keine zusätzlichen Chancen. Häufigkeit, Wiederholschutz und konkrete Umsetzung bleiben offen; [Roadmap W5](07_ROADMAP_NACH_10B_ENTWURF.md). Separate Rastunterbrechungen sind damit nicht freigegeben.
+**[DESIGN ENTSCHIEDEN 04.11.2026 – noch nicht implementiert] PULSE:** Spontane Ereignischancen werden über geeignete reguläre erzählende Spielerzüge ausgelöst, **nicht** über verstrichene Ingame-Minuten oder ein Expositionshybridmodell. Pro geeignetem Zug höchstens eine Chance; reine Systemabfragen, aktive Kampfrunden und technische Wiederholungen (Repair/Reload/Swipe/Regenerate) erzeugen keine zusätzlichen Würfe. Ort und Tageszeit bleiben Kontext für plausible Inhalte; Ereignis bedeutet nicht automatisch Angriff, auch kein Ereignis ist zulässig. Lange Zeitsprünge erzeugen allein durch ihre Dauer keine zusätzlichen Chancen. Häufigkeit, Wiederholschutz und konkrete Umsetzung bleiben offen; [Roadmap W5](07_ROADMAP_NACH_10B_ENTWURF.md). Separate Rastunterbrechungen sind damit nicht freigegeben. **PULSE ist nach Beschluss das gemeinsame künftige Ereignis-/Encounter-Gate für Stadt, Wildnis und Reise; ROAD AHEAD ist dessen Reiseintegration, keine zweite unabhängige Begegnungsentscheidung.** Aktuell noch keine Featureimplementierung.
 
 
 Avereth ist High Fantasy ohne moderne Technik. Menschliche Großmächte: **Valedorn Crown, Caelreth, Duskreach**; Monsterreiche: **Ashen Scale Dominion, Verdant Fang Court**. Menschen sind die normale menschliche Zivilisation, keine automatische Einführung klassischer intelligenter Fantasyvölker. Monster können Tiere, intelligente Wesen oder Gesellschaften sein, nicht grundsätzlich Feinde. Adventurers' Guild ist transnational, aber kein Weltstaat; seltene S-Ranks lösen nicht jedes Problem.
@@ -101,7 +101,7 @@ Unter B-Rang höchstens **vier Passive-Slots insgesamt**, unabhängig von Qualit
 
 ## 9. UI und technische Komfortprinzipien
 
-Lesbare System-/Combat-Karten statt Narratortracker, vorhandene CSS/QoL behalten. Optionale Quick Actions, Engine-only-Board/Handel, sichere Rest-/Wait-Wege und zusätzliche AoE-Geometrie sind **[OFFEN]**, keine implizite Freigabe. [Ideenkatalog](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md).
+Lesbare System-/Combat-Karten statt Narratortracker, vorhandene CSS/QoL behalten. Bei anwesenden und aufnehmbaren Umgebungsobjekten, bekannter Dungeonetage und Awareness nur vorhandene Engine-Fakten anzeigen; Anzeige ist keine neue Buchung oder Spoilerquelle. [User01-QoL-Fachplan](patch_plans_10b/PATCH_USER01_UI_QOL.md) ist noch keine Implementierungsfreigabe. Optionale Quick Actions, Engine-only-Board/Handel, sichere Rest-/Wait-Wege und zusätzliche AoE-Geometrie sind **[OFFEN]**, keine implizite Freigabe. [Ideenkatalog](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md).
 
 ## 10. Explizit unerwünschte Auswüchse
 

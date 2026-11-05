@@ -362,3 +362,39 @@ Nicht behauptet:
 
 Für eine belastbare Quote dieselbe Rekonstruktion auf frühere Batch-Chats anwenden; das ist nicht Teil dieses
 Auftrags. Keine Produktdateien geändert, keine Tests ausgeführt.
+
+## 9. GPT-Gegenbewertung vom 05.11.2026 – nach Code-/Quellenabgleich
+
+**Status: fachliche Gegenbewertung, kein neuer Test, keine Produktänderung oder Implementierungsfreigabe.** Nachgelesen wurden die zentrale Kontext-Priorisierung in `src/context.js` (Produktbasis .155), die `npcCard()`-Verwendung, `src/v4/world.js` (`fact` / `mapRef`) sowie die im Originalchat erhaltenen Brenna-Szenen. Claudes exakte modellbezogene Logzuordnung, die Quoten **7/17** und **26/31** sowie die jeweilige Budget-Rekonstruktion stammen aus dieser Analyse und wurden von GPT **nicht unabhängig vollständig neu gerechnet**.
+
+### 9.1 Bestätigte Kernaussage und wichtige Präzisierung
+
+- **Der Kernbefund trägt:** Der `buildContext()`-Packer hält Priorität-0-Text fest und nimmt den gesamten `ACTIVE SCENE`-Block erst bei ausreichendem Restbudget (Priorität 1). Er kann dadurch ausgerechnet die Karte des anwesenden Gesprächspartners wegen Gilden-/Quest-/Aktionsumfang verwerfen. Bereits gespeicherte `memory.recorded`-Events beweisen nicht, dass der Erzähler den Inhalt bekam.
+- **I70 hat zwei getrennte Komponenten:** Die unmittelbar vorherige Flirtantwort war als Chattext noch sichtbar; die strukturierte Brenna-Karte samt „knows him by name“ und der bedeutenden Dinner-Erinnerung fehlte laut tatsächlichem Request. Der Erzähler behandelte sie dennoch wie eine flüchtige Bekanntschaft. **Weder vollständige Karte noch mehr Tokens garantieren allein** eine konsistente Modellantwort; genau deshalb ist die natürliche Brenna-Folge die Abnahme.
+- **I62 ist besonders sorgfältig zu formulieren:** Technisch fehlte Brennas formaler `knowledge`-Eintrag für die gebuchte Questabgabe, weil `scene.moved`/Anwesenheit und Abschlussfakt ungünstig aufeinanderfolgen. **Die erzählte Brenna persönlich hatte die 60 cp bereits ausbezahlt und darüber gesprochen.** Die fehlende Wissensbuchung darf diese etablierte gemeinsame Erfahrung nicht rückwirkend aufheben. Die Gilde kennt den abgeschlossenen Zustand, der Narrator erhielt ihn nur als schwachen unpersönlichen `[completed]`-Eintrag.
+- **Speicherpfad:** `fact.o` geht derzeit tatsächlich durch `mapRef()`; in den Original-Events stehen zwei auf dieselbe NPC-ID verkürzte Freitextwerte. Korrektur nur dort, wo `o` freie Aussage statt echte Referenz ist; niemals sämtliche legitimen Objekt-/Entity-Bezüge unkontrolliert in Text verwandeln.
+
+### 9.2 Bewertung von Tragweite und Risiko
+
+- **E0 (Diagnose) und E1 (Sofortkontinuität) sind die wertvollste erste Einheit**, fachlich getrennt planbar und gegen den konkreten User-Test prüfbar. Die 7/17- und 26/31-Werte charakterisieren **einen** natürlichen Lauf, keine allgemeine Ausfallquote über andere Konfigurationen. Ein Dialog kann zudem trotz vollständiger Karte misslingen.
+- **Geringer Featureumfang heißt nicht risikofrei:** Prioritäten, Budget, Personenidentifikation, Wissen bei Ortswechsel/Questturn-in und freie Faktobjekte sitzen an gemeinsam genutzten Schnittstellen. Regressionen für abwesende NPCs, unbekannte Namen, Geheimnisse, Conversation-/Quest-Context, normale World-Fakten und Replay/Swipe/Reload sind wichtiger als bloße Prompt-Stringtests.
+- **Budgethygiene vor pauschaler Erhöhung.** Die genannten zusätzlich etwa 100–400 Tokens sind eine plausible lokale Größenordnung, **keine belegte kostenlose oder allgemein vernachlässigbare Ausgabe**. Effekt auf Cache, Latenz, Sichtbarkeit anderer wichtiger Abschnitte und Rolle des Narrators vor/nach Eingriff messen. Keine zusätzliche Modellinstanz/zweite Memorybank ohne belegten Gewinn.
+- **Kein automatisches Romantiksystem:** Null `attitude`-Deltas zeigt fehlende Nutzung einer bestehenden Schicht, belegt aber **nicht**, dass der Flirt zwingend einen Zahlenanstieg oder romantische Bereitschaft auslösen müsste. Entscheidend ist die Fortsetzung der zuvor gezeigten persönlichen Reaktion – inklusive Ablehnung, Distanz und Eigeninteressen. Keine mechanische „Zuneigung durch Wiederholung“.
+- **Offene Verabredungen:** Eine persönlich wichtige Bitte wie „frag mich morgen nach Marda“ darf erzählerisch wieder aufgreifbar bleiben; daraus wird weder eine formale Privatquest noch eine automatische Verpflichtung des NPC. `promise`/`debt`-Threads nicht inflationär für jedes Höflichkeitswort erzeugen.
+
+### 9.3 Empfohlene eng abgegrenzte Umsetzungsetappen
+
+1. **E0 – Kontextdiagnose:** Für jeden tatsächlichen Narrator-Turn die gelieferten/verworfenen Abschnitte und wichtigen NPC-IDs nachvollziehbar machen, ohne Extra-LLM oder zusätzliche State-Wahrheit.
+2. **E1 – Aktuelle Person korrekt liefern:** Einen kompakten, situationsgebundenen Gesprächspartnerkontext trotz großer Quest-/Boardblöcke erhalten; mehrfach gesendete Pflichttexte reduzieren. Den nachgewiesenen Freitext-/Referenzfehler sowie den Gildenwissens-/Abgabe-Zeitpunkt gezielt absichern. **Tests:** Original I66→I71, alte Queue/World-Reihenfolge, Quellen- und Geheimsphärenschutz, natürliche GLM-Fortsetzung.
+3. **E2 – Wiederbegegnungen und offene Gesprächsfäden:** Bei autorisierter Rückkehr erinnerte Personen anzeigen, ohne sie deshalb als anwesend zu erzwingen. Wenige bedeutende Absprachen bleiben wiederaufgreifbar.
+4. **E3 – Knappes, belegtes Temperament / eigene Interessen:** Früher als große Beziehungsmechanik, aber nicht beliebig aus einem Erstkontakt festschreiben. Stil darf situationsabhängig sein.
+5. **E4 – Salienz und später Beziehungsgeschichte:** Automatische Wichtigkeitsauswahl als Standard; ein möglicher `#npc pin/unpin` ist neue, optionale Funktion, **nicht** mit dem vorhandenen `#npc <name>`-Infopanel verwechseln. Sichtbarkeit und Wirkung zuerst fachlich entscheiden.
+6. **E5 – Eigenleben / PULSE:** Erst nach konsistenten wiederkehrenden Figuren, Kenntnisquellen und glaubwürdigen Beziehungen. Keine Agentenroutine für jedes NPC pro Tick.
+
+**Abnahmeprinzip:** Nicht verlangen, dass Brenna einen Flirt ständig wiederholt oder eine Einladung annimmt. Nach „Flirt → Board lesen → bei ihr Quest registrieren“ muss sie aber denselben Alaric und die jüngste Gesprächssituation plausibel wiedererkennen. Nach der Rückkehr soll eine bereits selbst bearbeitete Gildenabgabe nicht ohne neue begründete Ursache als unbekannt gelten. Erfolgreiche technische Promptübergabe und natürliche Reaktion **getrennt** ausweisen.
+
+### 9.4 Noch beim Nutzer offen
+
+Die sechs in [§7](#7-offene-designentscheidungen-e) aufgelisteten Fragen sind **nicht beantwortet**. GPT bevorzugt vorläufig: automatische NPC-Priorisierung, optionales Pin erst nach Bedarf; bekannte Absprachen ggf. im `#npc`-Panel, keine geheimen Gefühlswerte; Persönlichkeit aus erzählten Belegen; volle NPC-Freiheit bei Nähe/Distanz; Alltagsdetails dürfen verblassen, noch wichtige Absprachen bleiben erreichbar; moderates Budgetplus nur nach Messung. **Das sind Empfehlungen, keine beschlossenen Designregeln.**
+
+**Dokumentenordnung:** Diese Datei hält die tatsächliche NPC-Analyse samt Gegenbewertung. Die übergeordnete Reihenfolge steht nur in [07](../07_ROADMAP_NACH_10B_ENTWURF.md), der aktuelle Produkt-/Freigabestatus nur in [03](../03_AKTUELLER_PROJEKTSTAND.md); keine separate doppelte NPC-Roadmap in 04 oder 06.

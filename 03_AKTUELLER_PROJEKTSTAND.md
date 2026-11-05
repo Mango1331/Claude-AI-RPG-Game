@@ -4,12 +4,13 @@
 
 ## Aktueller Produktbuild und verifizierbare Grenzen
 
-**Produktbranch:** `claude/c-planner-prototype-2026-10-02-gpt-c666` · **Build `4.3.0-c.6.6.158`** · [Commit `82c2e7e90bd8425d00ef2e8ab3a2dcb66b64adc6`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/82c2e7e90bd8425d00ef2e8ab3a2dcb66b64adc6). `main` führt die Dokumentation. Beim nächsten Einstieg beide Remote-HEADs erneut prüfen; neuere Arbeit nicht auf diese Referenz zurücksetzen.
+**Produktbranch:** `claude/c-planner-prototype-2026-10-02-gpt-c666` · **Build `4.3.0-c.6.6.159`** · [Commit `2089dccdb7fd3dc08c72c5737c6b111fb6512f56`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/2089dccdb7fd3dc08c72c5737c6b111fb6512f56). `main` führt die Dokumentation. Beim nächsten Einstieg beide Remote-HEADs erneut prüfen; neuere Arbeit nicht auf diese Referenz zurücksetzen.
 
 V4-C / Ruleset 2, SillyTavern-Extension ohne zusätzliche Runtime-Abhängigkeiten. Planner versteht Spielerabsichten, Engine berechnet und bucht, Narrator erzählt, Extractor/Firewall persistieren zulässige Weltfolgen. Autoritativer Zustand entsteht aus den Chatevents; Save/Reload, Swipe/Edit und Replay bleiben verbindlich.
 
 | Zuletzt umgesetzt | Maßgebliche Produktquelle |
 |---|---|
+| **.159 User03-Boardfix:** präzise Intro-Repairhinweise aus bestehender Ankerprüfung; technischer Boardausfall erzeugt keine neue Welt-Wartezeit | [Umsetzung und Abnahme](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/2089dccdb7fd3dc08c72c5737c6b111fb6512f56/avereth-engine/docs/FIX159_USER03_BOARD.md) |
 | **.158 User02-Technik + NPC E0/E1:** Floor-/Passage-/Ankunftsgrenzen, Raumsuche, begrenzte Exit-Recovery, angenommene Führung, Kontextdiagnose/-auslieferung, Faktobjekte und persönlicher Gildenzeuge | [Umsetzung und Abnahme](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/82c2e7e90bd8425d00ef2e8ab3a2dcb66b64adc6/avereth-engine/docs/FIX158_USER02_NPC_CONTINUITY.md) |
 | **.156 Stealth S1:** GO, vorbereitete Reisefortsetzung und lokale Ein-Band-Bewegung mit heimlicher Vorgehensweise; Detection gegen tatsächliche Beobachter am erreichten Ort | [S1-Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b31123ffb4d3f5c404d6add85449ea869ed415ee/avereth-engine/docs/FIX156_STEALTH_MANNER.md) |
 | **.157 UI/QoL U1–U3:** kompakte Boardkarten, permanente Dungeonetage, bekannte Awareness, freie erreichbare Bodenobjekte und automatische Ankerwahl für genau ein gültiges gegnerisches AoE-Band | [UI-/QoL-Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b31123ffb4d3f5c404d6add85449ea869ed415ee/avereth-engine/docs/FIX157_USER01_UI_QOL.md) |
@@ -20,7 +21,8 @@ Architektur A/B1/C/D, Living Dungeons und F→E-Klassenannahme sind ältere Prod
 
 | Nachweis | Ergebnis / Grenze |
 |---|---|
-| **Implementiererabnahme .158** | Node **2793/2793**, gezielte neue Suite **23/23** (erste Originalfälle auf sauberer .157: 6 rot/1 Kontrollfall grün). Replay **2235 Fälle, 515 exakt akzeptiert, 0 offen/veraltet**; gegenüber .157 ändern sich 41 einzeln begründete Datensätze ausschließlich bei Fakten/persönlichem Gildenwissen. Echter ST1.19-Host mit geskriptetem Provider: **Standard 70/70, Failsoft 76/76**, jeweils **0 PageErrors**. [Fachpatchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/82c2e7e90bd8425d00ef2e8ab3a2dcb66b64adc6/avereth-engine/docs/FIX158_USER02_NPC_CONTINUITY.md). Kein unabhängiger GPT-Gegenreview und keine natürliche .158-Modellabnahme. |
+| **Implementiererabnahme .159** | Node **2801/2801**, neue gezielte Suite **8/8** (auf .158: vier Fehlerfälle rot/zwei Gegenfälle grün). Replay **2235 Fälle, 517 exakt akzeptiert, 0 offen/veraltet**; gegenüber .158 ändern sich ausschließlich zwei Hinweistexte nach Boardfehlern. Alle 515 bisherigen Akzeptanzeinträge bleiben exakt erhalten. Echter ST1.19-Host mit geskriptetem Provider: **Standard 76/76, Failsoft 82/82**, jeweils **0 PageErrors**. [Fachpatchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/2089dccdb7fd3dc08c72c5737c6b111fb6512f56/avereth-engine/docs/FIX159_USER03_BOARD.md). Implementiererabnahme, kein unabhängiger Gegenreview oder natürlicher .159-Modellnachweis. |
+| **Kurzer natürlicher User03 auf .158** | Sechs Spielereingaben, 61 Events; beim Board beendet. Zwei echte Generierungsversuche mit je Repair scheitern am unzulässigen Intro-Boar; kein Teilboard gebucht. Mera in 3/3 Folgekontexten geliefert, nichts verworfen. Falsches `post_schedule` gespeichert; Grundlage für .159. Kein längerer NPC-Memory-Nachweis. Original-Antwortpaare/Quellhashes im Produktfixture der .159-Patchnote. |
 | **Natürlicher User02 auf .157** | **37 Userinputs, 34 Enginezüge, 609 Events**, Mage L1→L7, drei Siege, Level-1-Clear, Abgabe und Lootverkauf; manuell beendet, kein technischer Terminalabbruch. |
 | **Abgeschlossener Sol-Gegenreview** | 69/69 Exportgruppen identisch; alle **75 Chatprefixe** ohne Fold-/Validatorfehler; **32/32** originale Extraktionen mit gleichen persistierbaren Events/Zuständen reproduziert; **32/32 tatsächliche Narrator-Kontexte** exakt rekonstruiert. [Review §8](testrun_10b/user-20261105-050449/REVIEW_CHATGPT.md#8-abgeschlossener-sol-gegenreview--originalfold-requests-und-ursachenprüfung), [Mess-/Gegenprobendaten](testrun_10b/user-20261105-050449/SOL_PROBE_RESULTS.json). |
 | **Natürliche Teilnachweise** | Zwei S1-Sneak-GOs funktionieren, Board-CSS positiv. **U3 wird bei I21 tatsächlich mit Planner-`target:null` und `unique area band` ausgeführt.** Eine vollständig ziellose Sprachvariante, vollständige Bodenfund→TAKE-Kette sowie weitere S1-Reise-/Unterbrechungsfälle sind damit nicht umfassend abgenommen. |
@@ -42,11 +44,11 @@ Architektur A/B1/C/D, Living Dungeons und F→E-Klassenannahme sind ältere Prod
 
 ## Nächste fachliche Reihenfolge
 
-1. **Unabhängiger GPT-Diff-Gegenreview von .158** auf Lücken, unnötige Eingriffe und Integritätsrisiken. Die Implementiererabnahme ersetzt diesen nicht.
-2. Danach **persönlicher freier User-Run**: NPC-Kontinuität, angenommene Führung, Suche und Dungeonübergänge; anschließend längere Progression. Keine neue Pflicht-Vollbatchserie. E0 zeigt gelieferte/verlorene Engineabschnitte, garantiert keine natürliche Modellverwendung. Alte fehlerhafte Events/verworfene Erinnerungen werden nicht automatisch rekonstruiert.
+1. **Unabhängiger GPT-Diff-Gegenreview des aktuellen Produkts (.159 einschließlich .158)** auf Lücken, unnötige Eingriffe und Integritätsrisiken. Die Implementiererabnahme ersetzt diesen nicht.
+2. Danach **persönlicher freier User-Run**: zunächst Questboard, anschließend NPC-Kontinuität, angenommene Führung, Suche und Dungeonübergänge; anschließend längere Progression. Keine neue Pflicht-Vollbatchserie. E0 zeigt gelieferte/verlorene Engineabschnitte, garantiert keine natürliche Modellverwendung. Alte fehlerhafte Events/verworfene Erinnerungen werden nicht automatisch rekonstruiert.
 3. **Stealth S2, E2+ und PULSE** bleiben eigene offene Vorhaben nach [07](07_ROADMAP_NACH_10B_ENTWURF.md), keine Nebenfeatures von .158.
 
-**Freigabe:** Technikpaket + NPC E0/E1 ausdrücklich freigegeben und als .158 umgesetzt. Kein Auftrag für weitere Features. Nächster natürlicher User-Run nach unabhängigem Gegenreview.
+**Freigabe:** .158-Technik/NPC E0/E1 und enger .159-Boardfix ausdrücklich freigegeben und umgesetzt. Keine weiteren Features. Natürliche .159-Gegenprüfung bleibt offen; bereits gespeicherte falsche Zeitpläne werden nicht rückwirkend gelöscht.
 
 ## Abnahme und offene Grenzen
 

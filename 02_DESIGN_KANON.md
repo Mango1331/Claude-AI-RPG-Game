@@ -1,6 +1,6 @@
 # Avereth Engine – verbindlicher Design-Kanon
 
-**Stand: 05.11.2026 · redaktionell gestrafft, keine neuen Spielregeln.** **[VERBINDLICH]** bezeichnet geltende Regeln, **[GEPLANT]** einen noch nicht umgesetzten Beschluss, **[OFFEN]** eine unbeschlossene Option. Tatsächlicher Implementierungs-/Abnahmestand ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md), technische Detailquellen in [06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). [Ungekürzte Vorfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/55d20eaf65f521a25ea3e85cfa3390e215270683/02_DESIGN_KANON.md).
+**Stand: 07.11.2026 · redaktionell gestrafft, keine neuen Spielregeln.** **[VERBINDLICH]** bezeichnet geltende Regeln, **[GEPLANT]** einen noch nicht umgesetzten Beschluss, **[OFFEN]** eine unbeschlossene Option. Tatsächlicher Implementierungs-/Abnahmestand ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md), technische Detailquellen in [06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). [Ungekürzte Vorfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/55d20eaf65f521a25ea3e85cfa3390e215270683/02_DESIGN_KANON.md).
 
 ## 0. Aktuelle Kompatibilitätsentscheidung
 
@@ -49,7 +49,7 @@ Narration **Englisch, dritte Person, Vergangenheit**; Wahrnehmung/Dialog statt S
 
 **[VERBINDLICH]** Initiative, Reichweite, Deckung, Kosten, Treffer, Schaden, Tod und Flucht gehören der Engine. Keine heimliche Zielumdeutung oder Ressourcenabgabe für abgelehnte Handlungen. Zusammengehörige Feinde kämpfen gemeinsam, bleiben individuelle Gegner; neutrale/entfernte Wesen treten nicht automatisch bei. Kapitulation gibt kein Kill-/Defeat-XP. Stärke folgt Ort, Population, Rank und Profil, nie dynamisch dem PC-Level.
 
-- **Start:** STR/VIT/AGI/INT/PER/WIL jeweils Basis 7, +1 auf zwei klassentypische Favored Stats.
+- **Start:** Neue Kampagnen beginnen mit STR/VIT/AGI/INT/PER/WIL jeweils Basis 5, +1 auf zwei klassentypische Favored Stats. Bereits gespeicherte Starts behalten ihre Werte; keine rückwirkende Umstellung.
 - **Outdoor:** Levelspanne aus Gebiet/Vorfahr, individueller Vorgabe oder expliziter Population; keine PC-Skalierung oder Monstererzeugung beim Boardlesen.
 - **Jagdcredit:** tatsächliche Populationszugehörigkeit, `adult`/`young`, individuelle Stärke und tatsächlicher Sieg/erlaubte Flucht entscheiden. Ähnliche Namen genügen nicht; Dungeon-/Einzelziele bleiben getrennt.
 - **F-XP-Versuch:** Faktor 5 bei unveränderten Levelschwellen. Endgültige F-/E-Balance offen; kein automatischer Farmnerf.

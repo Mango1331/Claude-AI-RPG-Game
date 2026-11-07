@@ -2,6 +2,8 @@
 
 **Stand: 07.11.2026 · unabhängige technische Planung, keine Implementierungsfreigabe.** Geprüfte Remote-HEADs: Produkt `2089dccdb7fd3dc08c72c5737c6b111fb6512f56` / **4.3.0-c.6.6.159**, `main` `2beca00edfcf5da5f60f97f010130b28c1215069`. Keine Änderung an Produktcode, Contentwerten oder Kanon durch diesen Plan.
 
+**Umsetzungsstatus:** Nach Nutzerfreigabe als .160 implementiert und abgenommen; siehe §8. §§1–7 dokumentieren Planung und Gegenreview vor der Umsetzung.
+
 ## 1. Ergebnis, Quellen und Nachweisgrenzen
 
 Die drei Änderungen sind als ein begrenztes Gameplay-/QoL-Paket sinnvoll. **A ist eine kleine Contentänderung mit einer konkret erheblichen Balancewirkung. B braucht vor allem die Korrektur einer widersprüchlichen Narratoranweisung. C braucht zwei fachlich getrennte Ableitungen im bestehenden Kontextpfad; insbesondere C2 ist mehr als der Austausch eines Wortes.** Keine zusätzliche State-Wahrheit, Modellabfrage oder Architektur nötig.
@@ -222,3 +224,11 @@ Der in User04 belegte Fall mit tatsächlich gecleartem Floor 1 bleibt damit **po
 Die geplanten vier funktionalen Produktdateien bleiben ausreichend, sofern sich in der konkreten Umsetzung keine neue belegte Abhängigkeit zeigt. Keine zusätzliche Enginezustandsbank, kein neuer Modellcall, keine globale Budgeterhöhung. **Priorität-0-Kontext darf bei C nicht unbemerkt weiter anschwellen:** User04 hatte schon vor diesen Hinweisen in vielen Erzählzügen verpflichtenden Budgetüberlauf. Bei der Abnahme reale Blocklängen und optionale Drops prüfen, den Text knapp halten und keine umfangreiche Dungeonchronik in den geschützten `resolved`-Abschnitt verlagern.
 
 **GPT-Empfehlung:** Gemeinsame Umsetzung nach Nutzerfreigabe, mit dem einen C2-Hinweis bereits im Implementierungsauftrag. Die tödliche 5er-Gegenprobe ist transparent und bleibt akzeptierter Planungsbefund, **kein automatischer Anlass für einen Balancenerf**. Erst nach der tatsächlichen Umsetzung vollständige Node-/Replay- und passende ST-Host-Abnahme. Das Review selbst ändert keinen Produktcode und keine Spielregel.
+
+## 8. Umsetzung nach Nutzerfreigabe – .160 (07.11.2026)
+
+Die Gegenprüfung in §7 wurde bewertet und übernommen. Insbesondere begründet `sealRefusal() === null` allein keinen RELEASED-Hinweis: Der implementierte `guardianAccessLines()`-Pfad prüft zusätzlich die tatsächliche Guardian-Siegelregel, beide Etagen, den aktuellen Clear und eine bekannte begehbare Verbindung. Altbesuch, nie versiegelter Weg und Reset besitzen eigene Gegenfälle. Die übrigen Lösungen folgen dem begrenzten Plan; bestehende 7er-Starts bleiben erhalten, der tödliche 5er-Erstkampf wurde nicht durch Balanceänderungen ausgeglichen.
+
+**Produktcommit:** [`16e7358`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/16e73581d470581982e2bc0bd6ff3d4379099be1). Die [Fachpatchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/16e73581d470581982e2bc0bd6ff3d4379099be1/avereth-engine/docs/FIX160_USER04_GAMEPLAY_QOL.md) enthält die tatsächlichen Eingriffe, Regressionen, 38 einzeln nachgewiesenen Replayänderungen und die gemessenen Kontextgrößen. Abnahme: **24/24** gezielte und **2822/2822** vollständige Node-Tests; **2235** Replayfälle mit **517** exakten Akzeptanzen und **0 offen/veraltet**; echter ST1.19-Host **42/42 Standard, 47/47 Failsoft**, je **0 PageErrors**. Die fünf Kontextgegenproben erhöhen den geschätzten Umfang um 43–64 Tokens, ohne zusätzliche optionale Drops oder Budgeterhöhung. Keine natürliche Narrator-Befolgungsquote oder Kostenersparnis aus den geskripteten Smokes ableiten.
+
+Als Nächstes unabhängiger Produkt-Diff-Gegenreview und natürlicher User-Test. Kein neuer Gesamt- oder NPC-/PULSE-Auftrag aus dieser Umsetzung.

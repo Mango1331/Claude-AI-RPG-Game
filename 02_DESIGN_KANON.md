@@ -100,7 +100,7 @@ Skill-/Evolutionbedingungen stehen zusammen in §5. **F→E bei Level 15:** Powe
 
 ## 9. UI und technische Komfortprinzipien
 
-Lesbare System-/Combat-Karten statt Narratortracker; vorhandenes CSS/QoL erhalten. Bodenfunde, Dungeonetage und Awareness aus bestehenden bekannten Engine-Fakten projizieren; kein Autoloot, neue Buchung oder Spoiler. Boardkarten schaffen keine neuen Quests/Etagen/Gegner. Optionale Quick Actions, Engine-only-Board/Handel, sichere Rest-/Wait-Wege und zusätzliche AoE-Geometrie bleiben eigene offene Vorhaben; [Ideenarchiv](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md).
+Lesbare System-/Combat-Karten statt Narratortracker; vorhandenes CSS/QoL erhalten. Bodenfunde, Dungeonetage und Awareness aus bestehenden bekannten Engine-Fakten projizieren; kein Autoloot, neue Buchung oder Spoiler. Boardkarten schaffen keine neuen Quests/Etagen/Gegner. Seit .161 dürfen Quest- und Bodenfundkarten editierbare Spielersätze im normalen ST-Eingabefeld vorbereiten; kein automatisches Senden, keine Buchung oder Modellabfrage durch den Button. Annahme und TAKE bleiben im normalen Planner-/Enginepfad. Weitergehende Quick Actions, Engine-only-Board/Handel, sichere Rest-/Wait-Wege und zusätzliche AoE-Geometrie bleiben eigene offene Vorhaben; [Ideenarchiv](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md).
 
 ## 10. Explizit unerwünschte Auswüchse
 

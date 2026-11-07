@@ -14,6 +14,9 @@ export const pulse162Turns = [
         reply: 'He left the hall and took the east road out past the last hedgerows toward the peat cuttings.', answer: { scene: 'here', expected: {}, deltas: [] } },
     { key: 'pulse162hall', player: 'I look around the hall and listen to the room for a while.', plan: { commands: [] },
         reply: 'The hall murmured on: quills, low talk at the benches, the clerk sorting slips.', answer: { scene: 'here', expected: {}, deltas: [] } },
+    // .163 (review R1): User04 I79, the local hunt exploration along the Titan's tracks: the sought exception in the request
+    { key: 'pulse163sought', player: f.chat[79].mes, plan: { commands: commands(79) },
+        reply: 'He crouched and followed the broad prints along the flood line, boards giving under his weight.', answer: { scene: 'here', expected: {}, deltas: [] } },
     { key: 'pulse162ambush', player: 'I lean on the counter and wait for the clerk to look up.', plan: { commands: [] },
         reply: 'A stranger with a cudgel shoves through the door and attacks Alaric without a word.',
         answer: { scene: 'here', expected: {}, deltas: [
@@ -75,6 +78,10 @@ export async function pulse162Smoke({ page, send, idle, calls, driver, onReload,
     onReload(); await page.waitForTimeout(800);
     const reloaded = await snapshot();
     checks.reloadKeepsStreak = JSON.stringify(reloaded.pulse) === JSON.stringify(before) && !reloaded.errors.length;
+    // 3b. .163 (review R1): a sought contact the firewall allows is named in the narrator's envelope rule too
+    const sought = await turnOf('pulse163sought', 79);
+    checks.soughtRegistered = (sought.state.auth?.sought || []).length > 0;
+    checks.soughtExceptionInRequest = /Exception he sought himself: the [^.;]+ he is seeking/.test(sought.block) && /Nobody new in this reply|Someone new in this reply/.test(sought.block);
     // 4. an invented ambush by a newcomer in the hall (inside never has DANGER): refused, no fight, a correction
     const ambush = await turnOf('pulse162ambush', 65);
     checks.ambushRefused = ambush.state.rejected.includes('pulse') && !ambush.state.encounter && ambush.state.pending === 0;

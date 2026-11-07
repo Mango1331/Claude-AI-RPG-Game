@@ -77,10 +77,11 @@ const out = {};
 for (const length of [15, 60, 150]) for (const v of Object.keys(VARIANTS)) out[`${length}|${v}`] = run(v, { length, sessions: length > 100 ? 1500 : 4000 });
 
 // Split-wait farming: N one-minute waits vs one long wait, with and without the pause-block rule (one roll per pause)
-function farm(nMsgs, block) {
-  let rolls = 0, opens = 0; const f = VARIANTS.V2_rel20_cap2x; let n = 0;
-  for (let s = 1; s <= 2000; s++) { n = 0; for (let k = 0; k < nMsgs; k++) { if (block && k > 0) continue; rolls++; const p = f(BASE.street.day, n); if (roll(`${s}|${k}|farm`) < p) { opens++; n = 0; } else n++; } }
+function farm(nMsgs, block, variant = 'V3_rel15_cap175', frame = 'street') {
+  let rolls = 0, opens = 0; const f = VARIANTS[variant]; let n = 0;
+  for (let s = 1; s <= 2000; s++) { n = 0; for (let k = 0; k < nMsgs; k++) { if (block && k > 0) continue; rolls++; const p = f(BASE[frame].day, n); if (roll(`${s}|${k}|farm`) < p) { opens++; n = 0; } else n++; } }
   return { rolls_per_session: rolls / 2000, opens_per_session: +(opens / 2000).toFixed(3) };
 }
-out.farm = { one_long_wait: farm(1, true), ten_split_no_rule: farm(10, false), ten_split_pause_block: farm(10, true), thirty_split_no_rule: farm(30, false) };
+out.farm = { variant: 'V3_rel15_cap175', street: { one_long_wait: farm(1, true), ten_split_no_rule: farm(10, false), ten_split_pause_block: farm(10, true), thirty_split_no_rule: farm(30, false) },
+  camp: { one_long_rest: farm(1, true, 'V3_rel15_cap175', 'camp'), eight_split_no_rule: farm(8, false, 'V3_rel15_cap175', 'camp'), eight_split_pause_block: farm(8, true, 'V3_rel15_cap175', 'camp') } };
 console.log(JSON.stringify(out, null, 1));

@@ -1,6 +1,6 @@
 # PULSE W5/W6/W7 – Technischer Umsetzungsplan (Patchnotes vor Freigabe)
 
-**Stand: 07.11.2026 · Implementierungsplan, keine Implementierungsfreigabe.** Geprüfte Remote-HEADs: Produkt `16e7358` / **4.3.0-c.6.6.160**, `main` `019b864` (darin nach `f2124d6` nur der .160-Diff-Gegenreview, ohne PULSE-Bezug). Grundlage sind der bisherige [Fachplan §§0–10](FACHPLAN_W5_W6_PULSE.md), der GPT-Gegenreview §11 und die Nutzerentscheidungen §12 vom 07.11.2026, die Vorrang haben. Diese Datei ist ab jetzt der **einzige gültige Umsetzungsplan für PULSE**. Der alte Fachplan bleibt als Quellen- und Entscheidungsgeschichte erhalten; welche Annahmen daraus überholt sind, steht in §4. Am Produktcode, an `02`, `03` und `07` ändert dieser Plan nichts.
+**Stand: 07.11.2026 · Implementierungsplan, keine Implementierungsfreigabe.** Geprüfte Remote-HEADs: Produkt `16e7358` / **4.3.0-c.6.6.160**, `main` `6c307ef` (enthält GPT-Gegenreview §12 dieses Plans). Grundlage sind der bisherige [Fachplan §§0–10](FACHPLAN_W5_W6_PULSE.md), der GPT-Gegenreview §11 und die Nutzerentscheidungen §12 vom 07.11.2026, die Vorrang haben. Diese Datei ist ab jetzt der **einzige gültige Umsetzungsplan für PULSE**. Der alte Fachplan bleibt als Quellen- und Entscheidungsgeschichte erhalten; welche Annahmen daraus überholt sind, steht in §4. Am Produktcode, an `02`, `03` und `07` ändert dieser Plan nichts. **Überarbeitet am 07.11.2026 nach dem GPT-Gegenreview §12:** Die Auflagen A1, A2, C1 und B1 sowie die Hinweise aus §12.6 sind in §§0, 2, 5, 6, 7, 8 und 10 eingearbeitet; die Zuordnung steht in §13. Der Review selbst (§12) bleibt unverändert.
 
 ---
 
@@ -11,8 +11,9 @@
   1. Den Fehlwurfbonus relativ zur Grundchance rechnen (+15 % je Fehlwurf, Deckel 1,75×, absolut höchstens 60 %), nicht als feste +Δ Prozentpunkte. Ein absoluter Bonus macht sichere Innenräume von 6 % auf effektiv 17 % ereignisreich (Simulation §7).
   2. Tageszeit wirkt als Faktor, nicht als Summand.
   3. Eine Pause ergibt genau einen Wurf: Aufeinanderfolgende reine Rast- oder Wartezüge am selben Ort zählen als *ein* Pausenblock. Das verhindert das Farmen mit aufgeteiltem Warten, ohne ein Minutenmodell.
-  4. Rastunterbrechung nur, wenn die Rast der letzte Engine-Schritt der Nachricht ist. Sonst müsste die Engine spätere, schon gebuchte Handlungen zurücknehmen.
-  5. Neuankömmlinge greifen in **keinem** PULSE-gesteuerten Erzählzug an und nehmen nichts weg, außer innerhalb eines Gefahrenfensters (eine Gruppe) oder bei selbst gesuchtem Kontakt, der an Handlung und Ziel gebunden ist.
+  4. Rastunterbrechung entscheidet **vor** der Buchung der Rast. Wird unterbrochen, führt die Engine spätere Schritte derselben Nachricht gar nicht erst aus (ein weiterer Abbruchgrund in der bestehenden Befehlsschleife). Rast allein und Rast mit angehängter Folgehandlung sind dadurch gleich gefährlich; ein Rollback ist nicht nötig (§12.4, §13).
+  5. Neuankömmlinge greifen in **keinem** PULSE-gesteuerten Erzählzug an und nehmen nichts weg, außer innerhalb eines Gefahrenfensters (eine Gruppe) oder bei selbst gesuchtem Kontakt. Dieser wird nur aus **tatsächlich autorisierten bzw. erfolgreichen** Handlungen dieses Zugs abgeleitet und ist an deren Ziel gebunden (§12.3).
+  6. Eine anwesende Bedrohung (`held`) unterdrückt das Fenster **ohne Wurf**: kein Event, keine Änderung der Fehlwurfserie (§12.2).
 - **Neuer Messbefund (.160):** Mit .160 nachgebaute User04-Turnblöcke liegen schon heute bei 21 von 36 Zügen über dem Budget von 1400 Token, allein durch Pflichtabschnitte (Median 1448). In 33 von 36 Zügen fallen Abschnitte weg, darunter oft die NPC-Karten (`present`). Deshalb ersetzt PULSE die THE-ROAD-Zeile, statt sie zu ergänzen. Ruhige Züge bekommen keine eigene Zeile; die statische Regel steht im Envelope-Abschnitt, der ein eigenes Kontingent hat.
 - **Pakete:** **A** Kern, Reise und Grenzen (die einzige Voraussetzung für den ersten natürlichen Test, als Ganzes ausgeliefert), danach **C** Rast und Warten mit Unterbrechung (W7a) und **B** Dungeon-Rahmen (empfohlen in dieser Reihenfolge, §10.6), zuletzt **D** Auswertung und Parameter nach natürlichen Läufen. B und C sind voneinander unabhängig, nur die Dungeon-Rast in C setzt B voraus.
 
@@ -48,17 +49,17 @@
 ### C – PULSE im normalen Spiel, auch Quest, Dungeon und Rast: **übernommen, mit drei harten Grenzen**
 1. **DUNGEON AHEAD bleibt Autorität.** Ein GO in einen ungesehenen Teil, der DUNGEON AHEAD auslöst, ist in dieser Nachricht das Ereignis: kein PULSE-Wurf, Serie unverändert. Andere Dungeonzüge (untersuchen, suchen, zurückgehen, sprechen, rasten) sind geeignet. `danger` im Dungeon ist **kein neuer Gegner**, sondern bindet den nächsten ungetroffenen **Minion-Slot** dieser Ebene (`living.js:249 nextWaiting`) per bestehendem `dungeon.ahead` an seinen Raum. Guard und Boss wandern nie, und ohne freien Minion gibt es kein `danger`. Nicht-Slot-Gegner lehnt `world.js` schon heute ab (`dungeon_foe`).
 2. **Gebuchtes wird nicht zurückgenommen.** PULSE entscheidet vor der Buchung, die es beeinflusst (Rast), oder wirkt nur nach vorn (Szene, Reise). Kein Rollback und keine nachträgliche Reservierungslogik.
-3. **Selbst gesuchter Kontakt ist an Handlung und Ziel gebunden** (GPT §11.4). Die Ausnahme gilt nur für den Zug mit der Suchhandlung (`go.within`, Suche oder Spurensuche nach der Art einer etablierten Population, GO zu deren Habitat bzw. `q.hunt.at`) **und** nur für Kreaturen dieser Population bzw. der Vertragsart. Fremde Neuankömmlinge unterliegen weiter PULSE.
-- **Rast:** Sichere Unterkünfte (Innenraum einer Siedlung) werden nie durch Gefahr unterbrochen; dort sind nur friedliche Szenen beim Einschlafen oder Aufwachen möglich. Draußen, auf der Straße und im Dungeon ist eine Unterbrechung möglich (Paket C). Das ist der W7-Teil, den der Nutzer ausdrücklich will. Er braucht nur eine Erweiterung im Rast-Handler, keinen W7-Gesamtumbau.
-- **Kombinationen:** Pro Nachricht gibt es eine Exposition mit fester Priorität: erster autorisierter Reiseabschnitt > Pause (nur wenn sie der letzte Engine-Schritt ist) > Szene (§5.3).
+3. **Selbst gesuchter Kontakt ist an Handlung und Ziel gebunden** (GPT §11.4). Die Ausnahme gilt nur für den Zug mit der Suchhandlung (`go.within`, Suche oder Spurensuche nach der Art einer etablierten Population, GO zu deren Habitat bzw. `q.hunt.at`) **und** nur für Kreaturen dieser Population bzw. der Vertragsart. Maßgeblich ist nur eine Handlung, die die Engine in diesem Zug autorisiert hat (`ctx.resolutions`, bestätigte `auth.gos`) bzw. eine erfolgreiche Suche, nie die bloße Planner-Absicht (§12.3). Fremde Neuankömmlinge unterliegen weiter PULSE.
+- **Rast:** Sichere Unterkünfte (Innenraum einer Siedlung) werden nie durch Gefahr unterbrochen; dort sind nur friedliche Szenen beim Einschlafen oder Aufwachen möglich. Draußen und auf der Straße ist eine Unterbrechung mit Paket C möglich, im Dungeon erst mit Paket B (§12.6). Das ist der W7-Teil, den der Nutzer ausdrücklich will. Er braucht eine Erweiterung im Rast-Handler und einen zusätzlichen Abbruchgrund in der Befehlsschleife, keinen W7-Gesamtumbau.
+- **Kombinationen:** Pro Nachricht gibt es eine Exposition: die **erste in Planreihenfolge**, also der erste autorisierte Reiseabschnitt oder die erste gebuchte Pause, sonst die Szene am Ende (§5.3).
 
 ### D – Steigende Chance nach Fehlwürfen: **übernommen, mit relativem, gedeckeltem Bonus und einem globalen Zähler**
 - **Ein globaler Zähler**, weil es nur ein gemeinsames Fenster gibt. Getrennte Zähler je Umgebung würden mehrere Spannungsspeicher parallel aufbauen (z. B. Stadt hoch, Reise hoch), die sich beim Wechsel entladen. Sie wären schwerer nachzuvollziehen und widersprächen dem einen Fenster.
 - **Formel:** `p_eff = min(60, 1,75 · p_base, p_base · (1 + 0,15 · misses))`, mit `p_base = Basis[Rahmen] · Tageszeitfaktor`. Das ist eine Variante der Nutzerformel aus §12.2, bei der Tageszeit und Serie multiplikativ statt additiv wirken.
 - **Simulation (60 geeignete Züge pro Sitzung):** Die Rate steigt von 1,36 auf 1,82 offene Fenster je 10 Züge. Die längste Ruhephase sinkt im 95-%-Fall von 34 auf 24 Züge. Innenräume bleiben unter 8 %. Offene Fenster direkt hintereinander bleiben bei 0,17 wie ohne Serie. Ein absoluter Bonus (+5/Deckel 60) führt dagegen zu Innenräumen bei 17 % und Dreierclustern in 82 % statt 55 % der Sitzungen.
-- **Was die Serie bewegt:** Nur ein *durchgeführter, geschlossener* Wurf zählt +1; ein offenes Fenster setzt sie auf 0. Keine Änderung bei Kampf, Ausschluss, Systemabfrage, Planner-Fehler, identischer Wiederholung, Folgezug im selben Pausenblock, DUNGEON-AHEAD-Zug und Suchzug.
+- **Was die Serie bewegt:** Nur ein *tatsächlich durchgeführter* Wurf verändert sie: `roll ≥ p` → +1, `roll < p` → Fenster offen, Reset auf 0. Keine Änderung, weil gar nicht gewürfelt wird, bei: Kampf, **anwesender Bedrohung (`held`)**, Ausschluss, Systemabfrage, Planner-Fehler, identischer Wiederholung, Folgezug im selben Pausenblock, DUNGEON-AHEAD-Zug und validiertem Suchzug (§12.2).
 - **Mehrere Aktionen pro Nachricht:** ein Wurf, also höchstens +1.
-- **Spam:** Der Pausenblock bewirkt, dass „warte eine Minute“ ×10 einen Wurf ergibt, genau wie „warte zehn Minuten“ (Simulation: 10 aufgeteilte Wartezüge ohne Regel ergeben 1,46 statt 0,10 Ereignisse). Eine identische Eingabe direkt hintereinander zählt als technische Wiederholung (`state.inputs`). Verschiedene kurze Erzählzüge in der Stadt bleiben normale Züge mit niedriger Grundchance, die Serie ist gedeckelt.
+- **Spam:** Der Pausenblock bewirkt, dass „warte eine Minute“ ×10 einen Wurf ergibt, genau wie „warte zehn Minuten“ (Simulation mit V3: 10 aufgeteilte Wartezüge auf der Straße ergeben ohne Regel 1,35 statt 0,10 offene Fenster, 8 einstündige Lagerrasten 1,94 statt 0,20). Eine identische Eingabe direkt hintereinander zählt als technische Wiederholung (`state.inputs`). Verschiedene kurze Erzählzüge in der Stadt bleiben normale Züge mit niedriger Grundchance, die Serie ist gedeckelt.
 - **Offen, aber nicht erzählt:** Die Serie wird trotzdem zurückgesetzt, weil die Engine nur das geöffnete Fenster sicher kennt. Ein Reset erst bei *erzählt* hinge an der Heuristik des Extraktors und würde nach ignorierten Fenstern Ereignisstürme erzeugen (die Chance bliebe hoch, während das Modell die Fenster weiter liegen lässt). Stattdessen misst Paket A die Umsetzungsquote getrennt (§6, Paket A, Diagnose A5), und die offene Zeile ist verbindlich formuliert.
 
 ---
@@ -109,7 +110,8 @@ playerTurnV4 → resolveCommands(c:true)
   Handler:
     go / journey.continue → nach Autorisierung: pulseClaim(ctx, 'travel', {seq, go})      // erster autorisierter Abschnitt
     livingGo mit aheadEvents → ctx.pulse.dungeonAhead = true                                // Paket B
-    activity rest|sleep|wait (letzter Engine-Schritt) → vor Buchung: pulseClaim(ctx,'pause',{minutes,kind})  // Paket C
+    activity rest|sleep|wait mit gebuchten Minuten → vor Buchung: pulseClaim(ctx,'pause',{minutes,kind})     // erste Exposition; Unterbrechung Paket C
+    Befehlsschleife: Schritte nach einer unterbrochenen Pause → refused 'rest interrupted'                      // Paket C
   post:  pulseFinish(s, content, ctx, emit)  // Szene, falls nichts beansprucht; Event, Zeilen, auth.pulse
 outcome.recorded (auth.pulse über serializableAuth)
 reply → world.js: Firewall A3 liest s.last.outcome.auth.pulse; am Ende pulse.outcome (Diagnose)
@@ -128,7 +130,17 @@ reply → world.js: Firewall A3 liest s.last.outcome.auth.pulse; am Ende pulse.o
 Pausen nutzen den Rahmen ihres Orts: Lager draußen = `wild`, Unterkunft = `inside`, Dungeon = `dungeon`. Die Dauer der Pause verändert die Chance **nicht** (Kanon: keine Zusatzchance nur wegen langer Rast).
 
 ### 5.3 Exposition und Kombinationen
-Priorität: **(1) erster autorisierter Reiseabschnitt** (ein abgelehnter oder bedingter Abschnitt beansprucht nichts; GPT §11.7), **(2) Pause**, nur wenn `rest`/`sleep`/`wait` mit gebuchten Minuten der letzte Engine-Schritt der Nachricht ist und kein Abschnitt beansprucht wurde, **(3) Szene** am Ende. Folgt nach der Rast noch eine Handlung („rastet 3 h, nimmt die Schlüssel, geht weiter“, User04 I47), wird die Rast voll gebucht, und nur die Szene am Ende kann ein Fenster bekommen. Bei Reise plus Lager beansprucht der Abschnitt das Fenster, das Lager bleibt ohne eigene Unterbrechung.
+**Regel (nach §12.4 geändert):** Es beansprucht die **erste Exposition in Planreihenfolge**:
+- ein autorisierter Reiseabschnitt (ein abgelehnter oder bedingter Abschnitt beansprucht nichts; GPT §11.7), oder
+- eine Pause: `rest`/`sleep`/`wait` mit von der Engine gebuchten Minuten (`engineMinutes`), deren Handler die Buchung tatsächlich ausführen würde. Eine abgelehnte Rast („room not booked“, Klärungsfrage nach der Dauer, `arrival pending`) beansprucht nichts; bloße Erwähnungen von Ruhe im Text sind keine Pause.
+
+Gibt es keine von beiden, gilt die Szene am Ende.
+
+**Folgehandlungen nach einer unterbrochenen Pause** („rastet 3 h, nimmt die Schlüssel, geht weiter“, User04 I47) führt die Engine nicht aus. Die bestehende Befehlsschleife in `resolveCommands` bekommt dafür einen weiteren Abbruchgrund neben `afterTravel`/`unmet`: `{status:'refused', reason:'rest interrupted', line:'NOT DONE — … his rest was cut short before this; he decides again.'}`. Ein so abgelehnter Schritt kommt nicht in `happened`, darauf aufbauende `needs`-Schritte fallen nach der vorhandenen Logik mit. Nichts davon war gebucht, also ist kein Rollback nötig.
+
+**Bestehende Regeln greifen weiter:**
+- GO plus Rast: Ruleset 2 lehnt Aktivitäten nach **jedem** autorisierten GO derselben Nachricht schon heute ab (`afterTravel`, „arrival pending“), auch nach einem lokalen GO. Die Rast wird dort nicht gebucht und beansprucht nichts; Exposition ist der Reiseabschnitt bzw. bei lokalem GO die Szene.
+- Rast, dann Reise: Die Pause beansprucht das Fenster; ohne Unterbrechung läuft die Reise danach ohne eigenen Wurf.
 
 ### 5.4 Eignung und Ausschlüsse (`pulseBegin`)
 Ohne Wurf, Serie unverändert:
@@ -138,7 +150,8 @@ Ohne Wurf, Serie unverändert:
 - nur `board.read` oder lokales GO plus `board.read`
 - alle Befehle abgelehnt oder clarify ohne freie Handlung
 - Lernen
-- Suchzug (handlungsgebunden)
+- validierter Suchzug, wenn er die erste Exposition wäre (§5.8)
+- anwesende Bedrohung (`held`): Fenster unterdrückt, **kein Wurf** (§12.2)
 - DUNGEON-AHEAD-Zug
 - Folgezug im selben Pausenblock (gleicher Ort, voriger geeigneter Zug war eine Pause, kein Kampf dazwischen)
 - identische Eingabe direkt hintereinander (`state.inputs`)
@@ -163,11 +176,12 @@ Für alle Arten gilt:
 ```
 s.pulse = { v:1, misses:0, recent:[{turn,frame,kind}]≤4, pause:{at, turn, minute}|null }   // fehlt in alten Saves → Default
 event pulse.rolled { v:1, turn, exposure:'travel'|'pause'|'scene', frame, phase, base, misses_before, p, roll,
-                     open, kind|null, held:[ids], leg:seq|null, sought:[keys], interrupt?:{after_min, of_min},
+                     open, kind|null, leg:seq|null, interrupt?:{seq, after_min, of_min, cause},
                      wander?:{dungeon, floor, slot} }
+pulse.rolled wird NUR bei einem tatsächlichen Wurf emittiert (nie bei held, Ausschluss, Pausenfolgezug, Suchzug)
 reducer: misses = open ? 0 : misses+1; recent push bei open; pause = exposure==='pause' ? {at, turn, minute} : null
          'encounter.started' → pulse.pause = null (Pause endet mit Kampf)
-auth.pulse = { v:1, governs:true, eligible, reason?, exposure?, frame?, phase?, open?, kind?, sought?, interrupt? }
+auth.pulse = { v:1, governs:true, rolled, eligible, reason?('held'|'sought'|…), exposure?, frame?, phase?, open?, kind?, sought?, interrupt? }
 Schlüssel: r = hash32(`${seed}|${turn}|pulse`)%10000/100 · Art: …|pulse.kind · Unterbrechungsminute: …|pulse.at
 ```
 `governs:true` steht auf **jedem** Erzählzug im C-Pfad außerhalb des Kampfes, auch auf ausgeschlossenen Zügen. Die Firewall gilt daher auch dort, wo nicht gewürfelt wurde. Die Würfelfolge (`Dice`, `rng.n`) bleibt unberührt.
@@ -179,6 +193,16 @@ Schlüssel: r = hash32(`${seed}|${turn}|pulse`)%10000/100 · Art: …|pulse.kind
 - **Edit älterer Nachrichten:** Der Fold ignoriert den neuen Text.
 - **Löschen oder Verzweigen:** Der Fold berechnet die Serie aus der verbleibenden Kette neu.
 - **Planner-Fehler, leere Erzählung, Extraktionsfehler:** Entweder gibt es kein Event, oder es existiert bereits vor der Erzählung und wird bei Regenerate wiederverwendet.
+
+### 5.8 Selbst gesuchter Kontakt (nach §12.3)
+- **Quelle:** Die Handler registrieren `ctx.pulse.sought` erst, **nachdem** sie eine Handlung autorisiert bzw. eine Suche erfolgreich aufgelöst haben:
+  - GO mit `within` (lokale Jagderkundung) nach `ctx.auth.gos.push` → `{population: c.within}`
+  - GO zu einem Ort mit `population` bzw. zu `q.hunt.at` eines aktiven Jagdauftrags, nach Autorisierung → `{population}`
+  - `activity` `search` mit `check.success` und einem Fokus, der die Art einer Population der Abstammungskette nennt (`namesKind`) → `{population}`
+  - dieselbe erfolgreiche Suche nach der Art eines aktiven ATTACK/DEFEAT-Ziels ohne Population → `{contract: qid, kinds}`
+- Rohe Planner-Befehle, abgelehnte, bedingte oder geklärte Schritte und fehlgeschlagene Suchen registrieren nichts.
+- **Wirkung:** Bei Szenen- und Pausenexposition mit validierter Suchhandlung wird nicht gewürfelt (`reason:'sought'`; sein Aufsuchen ist das Ereignis). Ein **Reiseabschnitt behält seinen Wurf**, auch wenn sein Ziel das Jagdhabitat ist: Das Fenster gilt unterwegs, die Ausnahme nur für die Zielpopulation.
+- **Firewall:** Ausgenommen sind nur Neuankömmlinge, deren `population_at` (aus `creatureContract` dieser Antwort) einem registrierten Eintrag entspricht, bzw. unabhängige Kreaturen der registrierten Vertragsart. Personen sind nie ausgenommen. Alles Übrige, auch bei laufender Jagdquest, unterliegt PULSE.
 
 ---
 
@@ -201,28 +225,30 @@ Schlüssel: r = hash32(`${seed}|${turn}|pulse`)%10000/100 · Art: …|pulse.kind
 ```js
 // pulse.js
 export function pulseBegin(s, content, ordered, envx) {
-  const P = { v:1, governs:true, claimed:null, sought: pulseSought(s, content, ordered) };
-  P.reason = exclusion(s, content, ordered) // siehe §5.4; null = geeignet
+  const P = { v:1, governs:true, claimed:null, sought:[] };   // sought füllen erst die Handler (§5.8)
+  P.reason = exclusion(s, content, ordered) // §5.4 ohne held/sought; null = geeignet
   return P;
 }
 export function pulseClaim(s, content, ctx, emit, exposure, info = {}) {
   const P = ctx.pulse; if (P.claimed) return P.claimed;            // eine Entscheidung je Nachricht
-  if (P.reason) return (P.claimed = { open:false, excluded:true });
+  if (P.reason) return (P.claimed = { rolled:false, open:false, reason:P.reason });
+  if (P.sought.length && exposure !== 'travel') return (P.claimed = { rolled:false, open:false, reason:'sought' });
   const frame = pulseFrame(s, content, exposure, info), phase = pulsePhase(s, exposure, info);
   const held = heldThreats(s, info.go);                              // wie roadLine heute
+  if (held.length) return (P.claimed = { rolled:false, open:false, reason:'held', held, exposure, frame }); // §12.2: kein Wurf, kein Event
   const st = s.pulse || DEFAULT, R = content.rules.pulse;
   const base = R.base[frame][frame === 'dungeon' ? 'day' : phase];
   const p = Math.min(R.cap_abs, R.cap_mult * base, base * (1 + R.step * st.misses));
   const roll = parseInt(hash32(`${s.meta.seed}|${s.turn}|pulse`), 16) % 10000 / 100;
-  const open = !held.length && roll < p;
+  const open = roll < p;
   const kind = open ? pulseKind(s, content, frame, phase, exposure, st.recent) : null;
-  const d = { v:1, turn:s.turn, exposure, frame, phase, base, misses_before:st.misses, p, roll, open, kind, held, leg:info.seq ?? null, sought:P.sought };
+  const d = { v:1, rolled:true, turn:s.turn, exposure, frame, phase, base, misses_before:st.misses, p, roll, open, kind, leg:info.seq ?? null };
   emit({ t:'pulse.rolled', d });
   return (P.claimed = d);
 }
 export function pulseFinish(s, content, ctx, emit) {
   const d = ctx.pulse.claimed || pulseClaim(s, content, ctx, emit, 'scene');
-  ctx.auth.pulse = { v:1, governs:true, eligible: !ctx.pulse.reason, reason: ctx.pulse.reason, ...pick(d) };
+  ctx.auth.pulse = { v:1, governs:true, eligible: !ctx.pulse.reason, sought: ctx.pulse.sought, ...pick(d) };   // sought: nur validierte Einträge
   if (d.exposure === 'travel') ctx.auth.road = d.open && d.kind === 'danger' ? 'open' : 'quiet';
   ctx.extra.push(...pulseLines(s, content, d, ctx));                 // höchstens eine Zeile, Reise ersetzt THE ROAD
 }
@@ -231,7 +257,7 @@ export function pulseFinish(s, content, ctx, emit) {
 ```js
 const P = auth.pulse;
 if (P?.governs && bornHere.has(id) && !s.encounter && !trueDungeonInside) {
-  if (!soughtMatch(s, content, P.sought, id)) {                      // Population/Vertragsart dieses Suchzugs
+  if (!soughtMatch(s, content, P.sought, id)) {                      // nur validierte Einträge dieses Zugs (§5.8)
     const g = groupKey(s, id);                                       // entity.group oder 'persons'
     if (!(P.open && P.kind === 'danger' && (!hostile.size || hostile.has(g)))) { reject(d, 'pulse', …); correction(…); return false; }
     hostile.add(g);
@@ -264,6 +290,8 @@ if (P?.governs && bornHere.has(by)) { reject(d, 'pulse_take', …); correction('
    - *Unit* (reine Funktionen): Eignung je Ausschluss, Rahmen und Tageszeit (Grenzen 5:59/6:00/18:59/19:00/21:59/22:00), Formel und Deckel, Serie (+1/Reset/unverändert bei jedem Ausschluss), Art mit Wiederholungsschutz und Weltbeleg, Schlüssel unabhängig von Uhrzeit, Befehlsnummer und Text, Pausenblock, identische Wiederholung.
    - *Host* (Chat4): Mehrfach-GO ergibt ein Event; ein abgelehnter erster GO plus ein zweiter autorisierter GO beansprucht den zweiten; GO plus Board lokal: kein Wurf; Fernreise plus bedingtes Board: Reise; Aufbruch zum Dungeon-Tor: Reise; Kampf: kein Event; Kampfende: nächster Zug geeignet; Swipe, Regenerate, Reload und Edit gleich; Serie nach Reload gleich.
    - *Firewall-Gegenfälle* (GPT §11.4): (1) Suchzug mit erlaubtem Zielkontakt; (2) derselbe Ort, Gespräch, PULSE möglich; (3) Jagdauftrag und fremde Räuber im ruhigen Fenster: abgelehnt; (4) anwesende Gefahr reagiert nach Envelope; (5) zweite feindliche Gruppe im Gefahrenfenster abgelehnt; (6) Raub, Bußgeld oder Beschlagnahme durch Neuankömmling: Forderung statt Buchung; (7) bereits anwesende Wache beschlagnahmt nach unveränderter Regel; (8) ausgeschlossener Board-Zug mit erfundenem Angriff: abgelehnt.
+   - *A1 (`held`, §12.2):* fünf Dialogzüge neben einer anwesenden Bedrohung, zunächst ohne Kampf → kein `pulse.rolled`, `misses` unverändert; danach, ohne Bedrohung, die Basischance ohne angestauten Bonus; `roll ≥ p` +1, `roll < p` Reset, `held` ±0.
+   - *A2 (Suchausnahme, §12.3):* (1) abgelehntes Jagd-GO plus erfundener Räuber bzw. Zielkreatur → keine Ausnahme, `pulse` lehnt ab; (2) gültige gezielte erfolgreiche Suche → passender Populationskontakt erlaubt; (3) gleiche Stadt bzw. gleiches Habitat, gewöhnliches Gespräch → normales PULSE; (4) zwei Planner-Befehle, nur einer autorisiert → nur dessen Eintrag; (5) fehlgeschlagene Suche → keine Ausnahme; (6) DUNGEON AHEAD und anwesende Gegner nach unveränderten Slot- und Envelope-Regeln.
    - *Replay:* neue Kategorien `pulse_fields` (zusätzliches `auth.pulse`, die PULSE-Zeile anstelle von THE ROAD) und `pulse_roll` (geänderte Reiseentscheidung). `pulse_roll`-Fälle einzeln mit Beleg prüfen, keine Pauschalakzeptanz.
    - *ST-Host:* Reise offen und ruhig, Stadt-Straße abends, Wildnis nachts, `#status` und Kampf ohne Event, Reload.
 10. **Risiken und Gegenfälle:**
@@ -276,7 +304,7 @@ if (P?.governs && bornHere.has(by)) { reject(d, 'pulse_take', …); correction('
     - Alle obigen Tests grün, Vollsuite grün, Replay ohne unbegründete Abweichung, ST-Smokes ohne PageErrors.
     - In einer Probe über die User04-Records kein PULSE-Event in Kampf-, System-, Board- oder DUNGEON-AHEAD-Zügen.
     - Mehrfach-GO-Probe: 0 von 200 widersprüchliche Zeilen.
-    - Budgetprobe: Pflichtanteil auf Reisezügen nicht größer als vorher, auf offenen Szenenzügen höchstens +60 Token.
+    - Budgetprobe mit **echten Host-Requests** des neuen Builds (nicht nur Zeichen/4-Schätzung): gelieferte und weggefallene Abschnitte vor und nach PULSE, besonders `present` und `npc_continuity`. Pflichtanteil auf Reisezügen nicht größer als vorher, auf offenen Szenenzügen höchstens +60 Token. Nicht behaupten, die 1400-Token-Grenze sei eingehalten; die schon bestehenden Überläufe werden ausgewiesen, nicht verdeckt (§12.6).
     - **Erst danach natürlicher Testlauf.**
 
 ### Paket B – Dungeon-Rahmen (spielmechanische Erweiterung)
@@ -286,7 +314,14 @@ if (P?.governs && bornHere.has(by)) { reject(d, 'pulse_take', …); correction('
    - `commands.js` `livingGo` (`ctx.pulse.dungeonAhead = true`, wenn `aheadEvents` Zeilen liefert)
    - `living.js` (`wanderSlot(s, root, floor)` = `nextWaiting` nur für Rolle `minion`, nicht getroffen; `nextWaiting` dafür exportieren)
    - `rules.json`
-3. **Datenfluss:** Bei offenem `danger` gibt `pulseClaim` `wander` zurück, und `pulseFinish` gibt `dungeon.ahead { id, ahead:{turn, cycle, floor, slot, ref, wander:true} }` aus. `slotForNew` ordnet die Kreatur aus der Antwort wie bei DUNGEON AHEAD diesem Slot zu (`living.js:284`). `meeting` nur, wenn `x.inside` eine Kompanie auf seiner Ebene hat; ihr Name kommt aus dem Kompanie-Datensatz.
+3. **Datenfluss und Slot-Lebenszyklus (nach §12.5 präzisiert):**
+   - **Auswahl `wanderSlot(s, root, floor)`:** erster Slot in `run.floors[floor].slots` mit Rolle `minion`, `!slotMet`, `!resolved` (also auch nicht `taken` durch eine Kompanie), `entities.length === 0`; nur aktuelle Ebene und aktueller Zyklus (`x.cycle`). Guard und Boss nie. Gibt es keinen, entfällt `danger` (Gewicht wird verteilt).
+   - **Keine Überschreibung einer gültigen Referenz:** `dungeon.ahead` wird nur ausgegeben, wenn `x.ahead?.turn !== s.turn`. Da DUNGEON-AHEAD-Züge ohnehin keinen PULSE-Wurf bekommen (`ctx.pulse.dungeonAhead`), kann in derselben Nachricht kein `ahead`/`ahead.next` verloren gehen. Ein `x.ahead` früherer Züge ist wirkungslos, weil `slotForNew` und `catalogLines` nur `ahead.turn === s.turn` lesen (`living.js:284`, `:927`).
+   - **Eigener Zustandsübergang:** Das Event `dungeon.ahead { id, ahead:{turn, cycle, floor, slot, ref, wander:true} }` bindet nur den Slot für *diese* Antwort. **Getroffen** (`at`, `met_turn`, `entities`) wird der Slot ausschließlich über das bestehende `dungeon.slot` aus `slotEntityEvents`, wenn `slotForNew` eine gültige Kreatur der Antwort zuordnet. Erzählt die Antwort keine, bleibt der Slot ungetroffen und unverbraucht; das offene Fenster verbucht nichts unsichtbar.
+   - **Pace:** `dungeon.part` (`run.parts`) zählt nur neu betretene Teile und wird nicht verändert. `nextSlot` summiert die Pace aller Slots bis zum nächsten wartenden (`living.js:264`), auch des gewanderten. Die folgende DUNGEON-AHEAD-Begegnung wird also nicht vorgezogen; die Teile, in denen der gewanderte Minion gestanden hätte, bleiben ruhig. Die Begegnungsdichte der Ebene bleibt gleich, der Slot wird genau einmal verbraucht.
+   - **Reset:** `dungeon.reset` setzt `x.ahead = null` und erneuert die Ebenen. Ein Reset zwischen Wurf und Extraktion hebt die Bindung auf; dann gelten die bestehenden Regeln (kompatibler Minion des neuen Zyklus oder `dungeon_foe`), nie ein Gegner außerhalb der Slots.
+   - **Extraktor-Katalog:** `catalogLines(extractor)` bekommt für `wander` die Formulierung „when the reply shows X coming to him here“ statt „where he arrives“. Das ist dynamischer Katalogtext, keine Änderung am festen Extraktor-Prompt.
+   - `meeting` nur, wenn `x.inside` eine Kompanie auf seiner Ebene hat; ihr Name kommt aus dem Kompanie-Datensatz.
 4. **Schema:** `pulse.rolled.wander`; `dungeon.ahead` unverändert (zusätzliches Feld `wander` wird ignoriert bzw. nur diagnostisch gelesen).
 5. **Zeile:** `PULSE (the engine's; <floor>) — DANGER: <say(slot)> of this level comes to him here (the engine's encounter; nothing else).` Für `trace`/`strange`: `… no foe; the level's foes come only as the engine adds them.`
 6. **Alternativen:** eigener Wandergegner (verworfen: zweiter Spawner); Guard wandern lassen (verworfen: Siegel- und Ebenenlogik); nur Atmosphäre ohne `danger` (verworfen: Nutzerwunsch nach Folgen).
@@ -298,45 +333,71 @@ if (P?.governs && bornHere.has(by)) { reject(d, 'pulse_take', …); correction('
    - Host: DUNGEON-AHEAD-Zug ohne Event.
    - Host: Nicht-Slot-Gegner weiterhin `dungeon_foe`.
    - Host: ein Reset (`dungeon.reset`) zwischen den Zügen.
+   - B1 (§12.5): Wanderung vor dem fälligen `run.pace`-Teil, danach GO in den nächsten Abschnitt → keine zusätzliche Begegnung, gleiche Gesamtzahl; offenes `danger` ohne erzählte Kreatur → Slot unverbraucht, nächster Zug normal; Save/Reload und Swipe → identischer Slotzustand; Reset zwischen Wurf und Validierung; gewanderter Minion besiegt → `nextWaiting`, `nextSlot`, `clearEvents` und `defeatTally` ohne Verdopplung und ohne vorzeitige Ebenenräumung; Guard und Boss nie gewählt; Slot einer Kompanie (`taken`) nie gewählt.
    - Replay: unveränderte Dungeonverläufe.
    - ST: ein Dungeonlauf.
 10. **Risiken:** Der Dungeon wird schneller „geleert“, weil Minion-Slots früher getroffen werden. Dagegen: Gewicht 30 % von 15 % ≈ 4,5 % pro Zug. Prüfen, ob `clearEvents` und `defeatTally` für Kontrakte einen gewanderten Slot korrekt zählen.
-11. **Abnahme:** keine Kreatur außerhalb der Slots; Stufen gleich den Slotstufen; Guard und Boss unberührt; Replay der Dungeonfixtures unverändert.
+11. **Abnahme:** keine Kreatur außerhalb der Slots; Stufen gleich den Slotstufen; Guard und Boss unberührt; jeder Slot genau einmal verbraucht; Pace- und Räumungszählung wie ohne Wanderung; Replay der Dungeonfixtures unverändert. Erst mit B gilt Dungeon-Rast als voll unterstützt.
 
 ### Paket C – Rast und Warten mit Unterbrechung (W7a; spielmechanische Erweiterung mit Sicherheitsgrenze)
-1. **Ziel:** Eine Pause kann gefährlich unterbrochen werden, bevor Zeit und Erholung voll gebucht sind. **Abgrenzung:** nur wenn die Pause der letzte Engine-Schritt ist. Sichere Unterkunft nie durch `danger`/`trouble`. Keine nachträgliche Rücknahme, keine Mehrfachunterbrechung, kein Wachen- oder Schichtsystem.
-2. **Dateien:** `commands.js` `activity` (Zweig für die Ruhebuchung), `pulse.js` (`pauseSafety`, Unterbrechungsminute), `rules.json` (`pulse.pause`), `world.js` (keine neue Regel, `danger` wirkt über A3 bzw. über `wander` aus B).
+1. **Ziel:** Eine Pause kann gefährlich unterbrochen werden, bevor Zeit und Erholung voll gebucht sind. Dabei gleich sicher, ob die Rast allein steht oder eine Folgehandlung angehängt ist. **Abgrenzung:** Sichere Unterkunft nie durch `danger`/`trouble`. Keine nachträgliche Rücknahme, keine Mehrfachunterbrechung, kein Wachen- oder Schichtsystem. **Dungeoninneres bleibt in C ausdrücklich ohne Unterbrechung** (wie in A ausgeschlossen); Dungeon-Rast mit Folgen kommt erst mit B (§12.6).
+2. **Dateien:** `commands.js` `activity` (Zweig für die Ruhebuchung) und die Befehlsschleife von `resolveCommands` (ein zusätzlicher Abbruchgrund `rest interrupted`); `pulse.js` (`pauseSafety`, Unterbrechungsminute, Ursachentabelle); `rules.json` (`pulse.pause`); `host.js` `turnBlock` (einmalige Faktzeile im Folgezug, Muster `paidCardFacts`); `world.js` (keine neue Angriffsregel, `danger` wirkt über A3 bzw. über `wander` aus B).
 3. **Datenfluss:**
 ```js
-// activity: vor time.advanced / recoveryEvents
-if (pauseCandidate && booked) {
+// activity: vor time.advanced / recoveryEvents; nur wenn der Handler die Pause tatsächlich bucht
+if (booked && (RESTING.has(c.kind) || c.kind === 'wait')) {
   const d = pulseClaim(s, content, ctx, emit, 'pause', { minutes: booked, kind: c.kind, safety: pauseSafety(s, content) });
-  if (d.open && INTERRUPTS(d.kind, d.safety)) {                      // danger draußen/Dungeon; trouble nur Straße nachts
-    const m = clamp(15, booked - 15, Math.floor(hash(`${seed}|${turn}|pulse.at`) % booked));
-    booked = m; d.interrupt = { after_min: m, of_min: original };      // nur die geruhten Minuten
+  if (d.open && INTERRUPTS(d.kind, d.safety)) {                      // §C-Tabelle unten
+    if (booked >= R.pause.interrupt_min /* 30 */) {
+      const m = 15 + parseInt(hash32(`${seed}|${turn}|pulse.at`), 16) % (booked - 29);   // m ∈ [15, booked−15]
+      d.interrupt = { seq: c.seq, after_min: m, of_min: booked, cause: d.cause };
+      booked = m;                                                    // nur die geruhten Minuten
+      ctx.pulse.interruptedAt = c.seq;                               // spätere Schritte: Abbruchgrund in der Schleife
+    } else d.at_end = true;                                          // < 30 min: keine Teilunterbrechung, Ereignis nach der Pause
   }
 }
-// danach unverändert: time.advanced(booked), recoveryEvents(s, content, booked, kind)  (Erholung ist linear je Minute)
+// danach unverändert: time.advanced(booked), recoveryEvents(s, content, booked, kind)
+// Befehlsschleife (resolveCommands), neben afterTravel/unmet:
+//   ctx.pulse?.interruptedAt != null && c.seq > ctx.pulse.interruptedAt
+//     → { status:'refused', reason:'rest interrupted', line:'NOT DONE — … his rest was cut short before this; he decides again.' }
 ```
-   Da `recoveryEvents` linear je Minute rechnet (`commands.js:203`), ist die Teilbuchung exakt.
+   - `recoveryEvents` rechnet je Minute mit Abrundung und Deckelung (`commands.js:203`), daher ist die Teilbuchung exakt.
+   - **Kurze Pausen (§12.4 b):** Unter `interrupt_min` = 30 gebuchten Minuten gibt es keine Unterbrechung mitten in der Pause. Die Pause wird voll gebucht, und ein offenes Fenster wird als Ereignis **am Ende** der Pause erzählt. Für ≥ 30 Minuten liegt m sicher in [15, M−15]; `time.advanced` ist nie negativ und nie größer als gebucht. Ein Mitternachtswechsel ist unkritisch, weil die Uhr monoton weiterzählt und die Tageszeit nur per Modulo bestimmt wird.
+   - **Was unterbricht** (`INTERRUPTS`, Ursache von der Engine bestimmt, §12.4 c):
+
+     | Art | `exposed` (draußen) | `street` (Siedlung außen, nachts) | `safe` (Unterkunft) | Ursache (verbindlich) |
+     |---|---|---|---|---|
+     | `danger` | ja | – | nie | eine Gruppe von Kreaturen oder Menschen dieses Landes kommt heran (die Firewall erlaubt genau diese Gruppe) |
+     | `obstacle` | ja | – | nie | Wetter oder Gelände: Unwetter, Kälte, steigendes Wasser, Rauch |
+     | `strange` | ja | – | nie | ein unerklärliches Licht oder Geräusch ganz nah |
+     | `trouble` | – | ja | nie | jemand macht sich an seinen Sachen zu schaffen bzw. Streit dicht neben ihm (**keine Wegnahme**, A3) |
+     | übrige | nein | nein | nein | Ereignis vor dem Einschlafen bzw. beim Aufwachen |
 4. **Schema:** `pulse.rolled.interrupt`; `auth.pulse.interrupt`; keine neuen State-Felder.
-5. **Zeile:** `REST INTERRUPTED (the engine's) — after <m> of the <M> min he chose (booked: <m> min, recovery for those minutes only), <KIND> wakes him: … What he does is his decision.` Die Unterbrechung ist ein Engine-Fakt; die Ursache gestaltet das Modell im Rahmen der Art. Bei `wander` (B) ist es der Slot.
+5. **Zeilen:**
+   - `REST INTERRUPTED (the engine's) — at <HH:MM>, after <m> of the <M> min he chose (booked: <m> min, recovery for those minutes only): <CAUSE>. Tell this cause; what he does is his decision.` Unterbrechung **und** Ursachenklasse sind Engine-Fakten, das Modell gestaltet nur die Einzelheiten. Bei `wander` (B) ist die Ursache der Slot.
+   - **Folgezug (verbindlich, einmalig):** `turnBlock` ergänzt nach dem Muster `paidCardFacts` eine Faktzeile: `REST CUT SHORT (the engine's, last turn): at <HH:MM> after <m> of <M> min, <CAUSE>; recovery as booked.` (≈ 35 Token, nur nach tatsächlicher Unterbrechung).
+   - **Ursache mit Figur nicht erzählt:** Hat die Antwort bei `danger`/`trouble` keinen passenden Neuankömmling gebracht (`pulse.outcome`), kommt zusätzlich eine gezielte Korrektur aus dem Event: Ursache nachtragen, keinen neuen Kampf erfinden. Still früher aufwachen ohne Grund gibt es nicht.
 6. **Alternativen:**
    - Volle Buchung, dann Rücknahme: verworfen (widerspricht §12, erfordert Rollback).
    - Reservierung mit Commit nach Extraktion: verworfen. Die Entscheidung fällt ohnehin vor der Erzählung; eine Extraktionsabhängigkeit würde Buchungen von der Modellprosa abhängig machen.
-   - Unterbrechung auch bei nicht-letzter Rast: verworfen, weil spätere Schritte schon gebucht wären.
+   - Rast nur als letzter Schritt unterbrechen und sonst voll buchen (frühere Fassung): **verworfen nach §12.4 a**, weil ein angehängtes „und danach sehe ich mich um“ die Gefahr umginge. Ersetzt durch den Abbruchgrund für spätere Schritte; ein allgemeines Conditional-System ist nicht nötig, weil die Entscheidung fällt, bevor die späteren Handler laufen.
 7. **Kompatibilität:** Alte Rastbuchungen bleiben unverändert; neue nur mit `pulse.rolled`.
 8. **Abhängigkeit:** A; der Dungeonzweig zusätzlich B.
 9. **Tests:**
-   - Unit: Unterbrechungsminute in [15, M−15]; Erholung proportional; sichere Unterkunft → nie unterbrochen; Pause nicht letzter Schritt → volle Buchung.
+   - Unit: Dauer 1/5/15/20/29 min → keine Teilunterbrechung, Ereignis am Ende, volle Buchung; 30/31 min → m = 15 bzw. m ∈ {15, 16}; große Dauer → m ∈ [15, M−15]; Mitternachtswechsel; nie negatives oder zu hohes `time.advanced` bzw. zu hohe Erholung; sichere Unterkunft → nie unterbrochen.
+   - Kombinationen (§12.4): `rest` allein gegenüber `rest + look`/`rest + take + GO` mit gleichem Seed → gleiche Unterbrechung, Folgeschritte `rest interrupted`, nichts davon gebucht, darauf aufbauende `needs`-Schritte ebenfalls nicht; `go` (lokal) `+ rest` → Rast `arrival pending` (bestehende Regel), Szene beansprucht; Fern-GO `+ rest` → Reise beansprucht, Lager `arrival pending`; `rest + GO` → Pause beansprucht, GO bei Unterbrechung `rest interrupted`; abgelehnte Rast (Zimmer nicht gebucht, Dauer unklar) → keine Exposition.
+   - Faktzeile im Folgezug genau einmal; Korrektur bei fehlender Figur.
    - Host: Lager nachts, offenes `danger` → Teilbuchung, Gruppe darf angreifen, Kampf beginnt, nächster Zug Kampf.
    - Host: Gasthaus nachts, offenes `life` → volle Buchung, Szene beim Aufwachen.
    - Host: „warte 1 min“ ×10 → ein Wurf.
    - Host: Swipe und Reload → gleiche Minuten und gleiche Erholung.
    - Host: Dungeon-Rast mit `wander`.
    - ST: Lager- und Gasthausnacht.
-10. **Risiken:** Der Erzähler zeigt keinen Grund für das Aufwachen. Das ist harmlos: Die Unterbrechung bleibt gebucht und die Ursache offen. Spieler könnten Rasten zur Umgehung in „rast, dann X“ umformulieren; Folge ist nur, dass keine Unterbrechung möglich ist, also keine Chance gewonnen wird.
-11. **Abnahme:** In keinem Test gibt es Erholung über die gebuchten Minuten hinaus; Unterkünfte werden nie unterbrochen; Swipe, Reload und Edit sind gleich.
+10. **Risiken:**
+    - Der Erzähler zeigt die Ursache nicht. Gegenmittel: verbindliche Ursachenklasse in der Zeile, Faktzeile im Folgezug, gezielte Korrektur bei fehlender Figur (§12.4 c).
+    - Eine Folgehandlung entfällt nach der Unterbrechung; das ist sichtbar und gewollt, der Spieler entscheidet neu.
+    - „Rast, dann Reise“ verliert den eigenen Reisewurf (ein Fenster je Nachricht); das wird in D beobachtet.
+11. **Abnahme:** In keinem Test gibt es Erholung über die gebuchten Minuten hinaus; Unterkünfte werden nie unterbrochen; Rast allein und Rast mit angehängter abhängiger Handlung sind gleich gefährlich; keine Teilbuchung ohne verbindliche Ursache; kein Rollback gebuchter Events; Swipe, Reload und Edit sind gleich.
 
 ### Paket D – Auswertung und Parameter (spätere Optimierung)
 1. **Ziel:** Natürliche Läufe auswerten, die Werte nur in `rules.json` anpassen.
@@ -361,13 +422,15 @@ Sitzungsgenerator: Stadtsegmente (55 % innen), Reiseabschnitte, Wildnis, Dungeon
 
 Kurze Sitzungen (15 Züge): P(kein Fenster) V0 9,8 % → V3 2,7 %. Lange Sitzungen (150 Züge): Ruhe im 95-%-Fall V0 42 → V3 29.
 
-Aufgeteiltes Warten (Straße, Tag): ein langes Warten ergibt 1 Wurf und 0,10 Ereignisse; 10 aufgeteilte Wartezüge **ohne** Pausenblock 10 Würfe und 1,46 Ereignisse, 30 aufgeteilte 4,64 Ereignisse; **mit** Pausenblock 1 Wurf und 0,10 Ereignisse.
+Aufgeteiltes Warten, **mit V3 nachgerechnet** (§12.6; die erste Fassung hatte versehentlich V2 verwendet):
+- Straße, Tag: ein langes Warten 1 Wurf und 0,10 offene Fenster; 10 aufgeteilte Wartezüge ohne Pausenblock 10 Würfe und 1,35 Fenster, 30 aufgeteilte 4,29; mit Pausenblock 1 Wurf und 0,10.
+- Lager draußen, Tag: eine lange Rast 0,20; 8 einstündige Rasten ohne Pausenblock 1,94; mit Pausenblock 0,20.
 
 Lagerpausen: rund 11–12 % der Nächte draußen enthalten ein offenes `danger` (Anteil an allen Pausen 0,058, etwa die Hälfte davon draußen).
 
 Modellgrenzen: Der Wiederholungsschutz ist bei der Art nicht nachgebildet, und Dungeon (35) sowie Lager (+5 Punkte) sind mit leicht höherem `danger`-Anteil gerechnet als in §5.5. Die `danger`-Zahlen sind damit eher zu hoch. Spieler-Sitzungsprofile sind synthetisch und nicht aus Korpusdaten geschätzt.
 
-**Bewertung:** V3 senkt die langen Ruhephasen um etwa 30 %, ohne Innenräume nennenswert zu beleben und ohne Doppelfenster zu verstärken. Die Zahlen bleiben **Hypothesen für den ersten natürlichen Test**; wie viele Ereignisse tatsächlich erzählt werden, kann erst Paket D messen.
+**Bewertung:** V3 senkt die langen Ruhephasen um etwa 30 %, ohne Innenräume nennenswert zu beleben und ohne Doppelfenster zu verstärken. Offen bleibt GPTs Einwand (§12.6): rund 70 % der synthetischen 60-Zug-Sitzungen haben irgendwo drei offene Fenster in fünf Zügen (ohne Serie 55 %). Ob das lebendig oder aufdringlich wirkt, entscheidet erst der natürliche Test (D); eine Abklingzeit wird vorher nicht eingebaut. Die Zahlen bleiben **Hypothesen für den ersten natürlichen Test**; wie viele Ereignisse tatsächlich erzählt werden, kann erst Paket D messen.
 
 ---
 
@@ -386,6 +449,7 @@ Zeilenentwürfe (`estimateTokens`): THE ROAD heute 103; PULSE Reise mit `danger`
 2. Kein Text in ruhigen Zügen; die statische Regel steht im Envelope (eigenes Kontingent, zählt nicht gegen das Budget).
 3. Offene Szenenzüge +55, das betrifft etwa 10–25 % der geeigneten Züge.
 4. Der bestehende Budgetdruck (`present` fällt weg) ist **unabhängig von PULSE** und gehört nicht in diesen Plan. Hinweis an Sol bzw. E1: Wegfallende NPC-Karten in Dungeon- und Reisezügen.
+5. **Keine Aussage über Budgeteinhaltung** (§12.6): Kleine PULSE-Zeilen lösen die 21/36 geschützten Überläufe nicht. Abnahme A misst echte Host-Requests (gelieferte und weggefallene Abschnitte, besonders `present`/`npc_continuity`), ohne pauschale Budgeterhöhung.
 
 ---
 
@@ -415,7 +479,9 @@ Zeilenentwürfe (`estimateTokens`): THE ROAD heute 103; PULSE Reise mit `danger`
 3. **`danger` in der Stadt nachts:** 0 empfohlen bis D. Auch dann wäre nur eine Forderung möglich, keine Wegnahme.
 4. **Lernen** (`train`/`study`) bleibt ausgeschlossen (nicht in §12 verlangt). Soll es geeignet werden?
 5. **Neuankömmling-Bußgeld als Forderung statt Buchung** (A3): Das verzögert legitime Konsequenzen um einen Zug. Empfohlen; die Alternative wäre eine engere Autoritätsausnahme mit höherem Missbrauchsrisiko.
-6. **Paketreihenfolge B vor C oder umgekehrt:** Empfehlung C zuerst (größerer Spielerwunsch, Lager und Stadt ohne B möglich), danach B mit Dungeon-Rast.
+6. **Paketreihenfolge:** A → C → B → D, von GPT bestätigt (§12.6).
+7. **Abklingzeit bzw. Häufung** (3 offene Fenster in 5 Zügen bei rund 70 % der synthetischen Sitzungen): erst nach dem natürlichen Test entscheiden (D).
+8. **„Rast, dann Reise“** ohne eigenen Reisewurf: hinnehmen (ein Fenster je Nachricht) oder später eine zweite Exposition zulassen. Empfehlung: hinnehmen.
 
 ## 11. Reproduktion
 Produkt-Worktree auf `16e7358` (`<eng>` = deren `avereth-engine`).
@@ -496,3 +562,26 @@ Das ist **nicht per se falsch** (Wanderbegegnung darf gerade unerwartet sein), m
 **Jetzt freigabefähig nach gezielter Plan-Nachbesserung, nicht nach neuer Grundlagenanalyse.** Claude soll **A1 und A2** in den technischen Paket-A-Notizen konkret korrigieren; **C1** im Paket C und **B1** im Paket B so spezifizieren, dass vor einem späteren Auftrag keine offene Sicherheits-/Buchungsentscheidung übrig bleibt. Solange dies nicht geschieht, ist die allgemeine Architektur befürwortet, aber der Plan **nicht uneingeschränkt zur vollständigen Implementierung abgenommen**.
 
 **Keine Implementierung in diesem Review; Produkt bleibt `.160`.** Nach dem eng begrenzten Plan-Nachtrag kann Paket A separat freigegeben und vollständig getestet werden; für C/B gelten ihre eigenen Abnahmestufen. Bei der Prüfung der tatsächlichen Patch-Diffs darf die konkrete Codebasis begründete kleine Abweichungen vom Pseudocode erfordern, solange die vier Schutzanforderungen erfüllt bleiben.
+
+---
+
+## 13. Umsetzung des GPT-Gegenreviews §12 (Claude, 07.11.2026)
+
+Die vier Auflagen und die Hinweise aus §12.6 habe ich am Code von `.160` geprüft und **alle übernommen**. Bei C1 a nehme ich GPTs bevorzugte Option in einer einfacheren Form, als GPT erwartet hat: Die Unterbrechungsentscheidung fällt, bevor die späteren Handler laufen. Deshalb genügt ein zusätzlicher Abbruchgrund in der Befehlsschleife; ein Conditional-System für die Folgehandlungen ist nicht nötig.
+
+| Auflage | Befund im Code | Änderung im Plan |
+|---|---|---|
+| **A1** `held` ist kein Fehlwurf | Pseudocode hätte `pulse.rolled` mit `open:false` ausgegeben und `misses` erhöht | `held` → `{rolled:false, reason:'held'}`, kein Event, Serie ±0; `pulse.rolled` nur bei echtem Wurf (§0, §2 D, §5.4, §5.6, Pseudocode A, Tests A1) |
+| **A2** Suchausnahme nur aus validierten Handlungen | Suchmenge kam aus rohen Planner-Befehlen vor `HANDLERS` | Handler registrieren `ctx.pulse.sought` erst nach Autorisierung bzw. erfolgreicher Suche; die Ausnahme gilt nur für die registrierte Population bzw. Vertragsart; Personen nie (§5.8, Pseudocode A, Tests A2 (1)–(6)) |
+| **C1 a** Umgehung durch Folgehandlung | Die Befehlsschleife hat schon eine Kette von Abbruchgründen (`afterTravel`, `unmet`, `room`); Ruleset 2 lehnt Aktivitäten nach einem GO derselben Nachricht ohnehin ab | erste Exposition in Planreihenfolge; bei Unterbrechung werden spätere Schritte nicht ausgeführt (`rest interrupted`), `needs`-Schritte fallen mit; kein Rollback (§5.3, Paket C 2/3/6/9/11) |
+| **C1 b** kurze Pausen | `clamp(15, booked-15, …)` ist unter 30 Minuten widersprüchlich | Mindestdauer 30 für Teilunterbrechung, darunter Ereignis am Ende; m = 15 + hash % (M−29) ∈ [15, M−15]; Tests 1/5/15/20/29/30/31 und Mitternacht (Paket C 3/9) |
+| **C1 c** Unterbrechung ohne Grund | verbleibende Lücke im Entwurf | verbindliche Ursachenklasse je Art und Ort; einmalige Faktzeile im Folgezug; gezielte Korrektur, wenn eine Ursache mit Figur nicht erzählt wurde (Paket C 3/5/10) |
+| **B1** Wanderung, Pace und Slot-Lebenszyklus | `dungeon.ahead` setzt nur `x.ahead`; getroffen wird ein Slot erst über `dungeon.slot` aus einer zugeordneten Kreatur; `nextSlot` summiert die Pace aller Slots bis zum wartenden; `dungeon.reset` setzt `x.ahead = null` | Auswahlregel, kein Überschreiben eines gültigen `ahead` desselben Zugs, kein unsichtbarer Verbrauch, Pace unverändert, Reset-Verhalten, dynamische Katalogzeile für den Extraktor, Tests (Paket B 3/9/11) |
+| §12.6 Split-Wait mit V2 | zutreffend | mit V3 neu gerechnet: Straße 1,35 statt 0,10, Lager 1,94 statt 0,20; mit Pausenblock jeweils wie eine lange Pause (§7) |
+| §12.6 Budget | zutreffend | Abnahme mit echten Host-Requests, keine Aussage über Einhaltung der 1400 (§6 A 11, §8 5) |
+| §12.6 Häufung 3 in 5 | zutreffend | als offene Beobachtung für D, keine Abklingzeit vorab (§7, §10 7) |
+| §12.6 Dungeon in C | zutreffend | C unterbricht im Dungeon nicht; erst B (Paket C 1, B 11) |
+
+**Neue Nachweise:** nur die mit V3 neu gerechnete Split-Wait-Probe (`pulse_probes/pulse_v2_sim.mjs`, nachgerechnet gegen `16e7358`). Die Hauptsimulation ist unverändert (60 Züge V3: 1,82 je 10, 95-%-Ruhe 24, 3-in-5 0,699). Die übrigen Aussagen stammen aus Codelektüre von `.160` (`resolveCommands` Befehlsschleife ab `commands.js:1631`, `living.js` `applyLivingEvent` `:204`, `nextSlot` `:257`, `slotForNew` `:269`, `catalogLines` `:921`). Nichts implementiert, keine Testsuite, keine ST-Läufe.
+
+**Freigabestand aus meiner Sicht:** Die in §12.7 genannten offenen Sicherheits- und Buchungsentscheidungen von A, C und B sind damit im Plan festgelegt. Offen bleiben nur die Parameter- und Beobachtungsfragen in §10. Die Implementierungsfreigabe liegt beim Nutzer.

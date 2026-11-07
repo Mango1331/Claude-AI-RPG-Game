@@ -28,6 +28,7 @@ import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../
 import { firewall, pcWound, pcActIn } from './firewall.js';
 import { stripOwned, wrongClaim, ownershipViolation, stateRegions, effectViolation } from './ownership.js';
 import { mayOpenFight, mayTake, attackCommitted } from './envelope.js';
+import { soughtMatch } from './pulse.js';
 import {
     PLACE_PARENTS, HALL_NAME, lineage, guildDestination, hallOf, hallOfSettlement, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind, SERVICE_ROLE,
     progressKey, sameKinds, kindOf, populationAt, validEncounterLevels,
@@ -354,6 +355,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const hostileRefs = new Set(fw.accept.filter((d) => d.type === 'hostile').flatMap((d) => d.by || []).map((x) => normText(x)));
     const joinedByNew = new Set();
     const bornHere = new Set(); // the people and creatures this answer introduces (an ambush is the world's move)
+    // PULSE package A: this turn's window as the engine decided it (auth.pulse), and the one hostile group it allows
+    const pulse = auth.pulse || null;
+    const pulseHostile = new Set();
     const namedHere = new Set(); // Patch 4: the creatures an entry of this answer named (new, returning or named again)
     const cap = s.encounter ? content.rules.time.combat_cap_min : auth.timeCap ?? content.rules.time.default_cap_min;
     // Prototype C (auth.c): the minutes the engine already booked for this turn's activities count as used; the
@@ -481,9 +485,28 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // the World Envelope at this step (docs/ARCHITECTURE_GEN35.md §2.3): may this actor turn on Alaric of its own accord?
     const envelopeAllows = (id, d) => {
         if (typeof id !== 'string' || !s.entities[id] || !['npc', 'creature'].includes(s.entities[id].kind)) { grant('envelope.fight'); return true; } // the V3 rules refuse unknown attackers
-        // Patch 5: on a leg the engine gave as uneventful (commands.js roadLine), nobody the reply brings onto the road
-        // ambushes him; whoever was there before follows the envelope as ever
-        if (auth.road === 'quiet' && bornHere.has(id) && !s.encounter) {
+        // PULSE package A (src/v4/pulse.js, plan §6 A): in a turn PULSE governs, nobody the reply brings in turns on him
+        // unless the turn's window is open for DANGER (then one group) - on a leg as anywhere else. First the contact he
+        // actively sought this turn (an authorized GO or a successful search, §5.8), at the place he actually reached:
+        // it follows the envelope as ever, before any road or window rule. Whoever was there before is not touched.
+        if (pulse?.governs && bornHere.has(id) && !s.encounter) {
+            if (!soughtMatch(s, content, [...(pulse.sought || []), ...(pulse.hunts || [])], id)) {
+                const g = s.entities[id].group || (s.entities[id].kind === 'npc' ? 'people' : id);
+                if (!(pulse.open && pulse.kind === 'danger' && (!pulseHostile.size || pulseHostile.has(g)))) {
+                    const travel = pulse.exposure === 'travel';
+                    const why = pulse.open && pulse.kind === 'danger' ? 'only one hostile group was authorized' : travel ? 'this leg of the road was uneventful' : 'no new attacker was authorized in this scene';
+                    reject(d, travel ? 'road' : 'pulse', `${id} does not turn on Alaric: ${why}`);
+                    const correction = travel && !pulse.open
+                        ? `${entityLabel(s, id)} did not attack Alaric in the last reply: that leg of his journey was uneventful (no ambush or attack on it); no fight started. Whoever the story brought onto the road is there, nothing more.`
+                        : `${entityLabel(s, id)} did not attack Alaric in the last reply: ${why} (the engine's PULSE); no fight started. Whoever the story brought in is there, nothing more; a threat or a demand leaves his choice open.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    return false;
+                }
+                pulseHostile.add(g);
+            }
+        } else if (!pulse?.governs && auth.road === 'quiet' && bornHere.has(id) && !s.encounter) {
+            // Patch 5 (older campaigns, commands.js roadLine): on a leg the engine gave as uneventful nobody the reply
+            // brings onto the road ambushes him; whoever was there before follows the envelope as ever
             reject(d, 'road', `${id} does not turn on Alaric: this leg of the road was uneventful`);
             const correction = `${entityLabel(s, id)} did not attack Alaric in the last reply: that leg of his journey was uneventful (no ambush or attack on it); no fight started. Whoever the story brought onto the road is there, nothing more.`;
             if (!corrections.includes(correction)) corrections.push(correction);
@@ -1743,6 +1766,21 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const opened = openCommitted(s, content, dice, emit, { hold: false, c: cPath });
     if (opened) opened.from = fightFrom;
     if (cPath && !opened) openEquipmentStock(s, content, emit);
+    // PULSE package A (plan §6 A5): what this reply did with the turn's window, separate from the engine's decision.
+    // `narrated` is a heuristic (something new came into the world in an open window), not an engine truth
+    if (pulse?.governs) {
+        const created = events.filter((e) => e.t === 'entity.created').map((e) => e.d.entity);
+        const persisted = {
+            persons: created.filter((x) => x.kind === 'npc').length, creatures: created.filter((x) => x.kind === 'creature').length,
+            features: events.filter((e) => e.t === 'feature.set').length, objects: events.filter((e) => e.t === 'object.created').length,
+            places: events.filter((e) => e.t === 'place.created').length,
+            fight: !!opened || (s.pending_combat || []).length > 0,
+            rejected_pulse: rejected.filter((r) => ['pulse', 'pulse_take'].includes(r.rule) || (r.rule === 'road' && pulse.exposure === 'travel')).length,
+        };
+        const any = persisted.persons + persisted.creatures + persisted.features + persisted.objects + persisted.places > 0 || persisted.fight;
+        emit({ t: 'pulse.outcome', d: { v: 1, turn: s.turn, rolled: !!pulse.rolled, open: !!pulse.open, kind: pulse.kind ?? null,
+            narrated: pulse.open ? (any ? 'likely' : 'none') : null, heuristic: true, persisted } });
+    }
     return { events, rejected, corrections, system, opened, state: s, arrivedHall };
 
     // ---------------------------------------------------------------------------------------------- step helpers
@@ -2971,6 +3009,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const counterpart = openOffers(s).some((o) => o.seller === by) || events.some((e) => e.t === 'transaction.completed' && e.d.seller === by);
         if (counterpart) { reject(d, 'coerce', 'the other side of a sale or an open offer cannot coerce (a sale is never a confiscation)'); return; }
         if (!d.because) { reject(d, 'coerce', 'coercion needs a because'); return; }
+        // PULSE package A: someone this reply brought in takes nothing of his in the same reply (robbery, fine or
+        // confiscation): they demand it, he decides; an authority or robber already here keeps the envelope's rules
+        if (pulse?.governs && bornHere.has(by)) {
+            reject(d, 'pulse_take', `${by} is new in this reply: a ${d.kind} is demanded, not taken`);
+            const correction = `Nothing was taken from Alaric in the last reply: ${entityLabel(s, by)} only arrived then; the ${d.kind} is a demand he has not answered yet (his coin and things are as they were).`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+            return;
+        }
         // taking Alaric's coin or things is the engine's (money is hard state): who may take what is the World Envelope's
         // (src/v4/envelope.js): a fine or confiscation needs an authority, a robbery a hostile robber (or a fight)
         const may = mayTake(s, by, d.kind);

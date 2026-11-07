@@ -47,6 +47,8 @@ export const V4_EVENTS = new Set([
     'extract.applied', 'extract.failed', 'overreach.noted',
     // Patch 8: a Living Dungeon's structure, cycle and companies (src/v4/living.js)
     'dungeon.established', 'dungeon.ahead', 'dungeon.slot', 'dungeon.part', 'dungeon.cleared', 'dungeon.reset', 'dungeon.party', 'dungeon.booked', 'dungeon.pass', 'dungeon.resource',
+    // PULSE package A (src/v4/pulse.js): the one window of a turn, a pause block going on, the diagnosis of a reply
+    'pulse.rolled', 'pulse.pause', 'pulse.outcome',
 ]);
 
 /** The V4 part of an empty state (state.js emptyState). */
@@ -75,6 +77,18 @@ export function applyDomainEvent(state, e) {
     ensure(state);
     const d = e.d || {};
     switch (e.t) {
+        // PULSE package A (src/v4/pulse.js): the miss streak, the recent open kinds and the current pause block; created
+        // with the first real draw (a campaign without one has no state.pulse)
+        case 'pulse.rolled': case 'pulse.pause': {
+            const st = state.pulse || (state.pulse = { v: 1, misses: 0, recent: [], pause: null });
+            if (e.t === 'pulse.rolled') {
+                st.misses = d.open ? 0 : st.misses + 1;
+                if (d.open) st.recent = [...st.recent, { turn: d.turn, frame: d.frame, kind: d.kind }].slice(-4);
+                st.pause = d.exposure === 'pause' ? { at: d.at, turn: d.turn } : null;
+            } else st.pause = { at: d.at, turn: d.turn };
+            break;
+        }
+        case 'pulse.outcome': break; // the reply's diagnosis (src/v4/world.js); no state
         case 'place.created':
             if (state.places[d.place.id]) throw new Error(`place exists: ${d.place.id}`);
             state.places[d.place.id] = clone(d.place);

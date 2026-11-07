@@ -564,6 +564,30 @@
     "leg_event_pct": 35,
     "leg_event_note": "the share of travel legs beyond a settlement that may bring one concrete interruption (an encounter, an obstacle, a meeting) the story makes fit the land; the others are uneventful. Never a guaranteed fight, never what it is"
   },
+  "pulse": {
+    "src": "PULSE package A (patch_plans_10b/PULSE_W5_W7_TECHNISCHER_UMSETZUNGSPLAN.md §5, §6 A): one deterministic event window per suitable narrative turn of a ruleset-2 planner campaign. Provisional values for the first natural test, no world law",
+    "base": {
+      "travel": { "day": 35, "evening": 40, "night": 45 },
+      "wild": { "day": 20, "evening": 24, "night": 28 },
+      "street": { "day": 10, "evening": 12, "night": 8 },
+      "inside": { "day": 6, "evening": 8, "night": 3 }
+    },
+    "base_note": "chance in percent that the one window of a turn opens, by frame and the day part of settlement.js dayPart (day 6-19, evening 19-22, night 22-6); travel.day follows travel.leg_event_pct (the Patch 5 share)",
+    "step": 0.15,
+    "cap_mult": 1.75,
+    "cap_abs": 60,
+    "streak_note": "after each real closed roll the next chance rises: p = min(cap_abs, cap_mult * base, base * (1 + step * misses)); an open window resets misses to 0; turns without a roll (combat, held threats, exclusions, repeats, a pause block's later turns) leave it as it is",
+    "kinds": {
+      "travel": { "meeting": [30, 25, 15], "obstacle": [15, 15, 15], "trace": [20, 20, 15], "strange": [10, 10, 15], "danger": [25, 30, 40] },
+      "wild": { "meeting": [25, 20, 10], "obstacle": [10, 10, 10], "trace": [30, 25, 20], "strange": [15, 15, 20], "danger": [20, 30, 40] },
+      "street": { "meeting": [35, 35, 30], "life": [40, 35, 15], "trouble": [20, 25, 45], "trace": [5, 5, 10] },
+      "inside": { "meeting": [45, 45, 40], "life": [50, 45, 40], "trouble": [5, 10, 20] }
+    },
+    "kinds_note": "weights day/evening/night of the coarse kind of an open window; the last open kind weighs 0, the three before it half; danger weighs half where no population or area levels back it; a pause (package A) never draws danger, obstacle or trouble",
+    "recent": 4,
+    "force": null,
+    "force_note": "tests and scripted host smokes only: {open: true|false, kind?, when?} replaces the draw (when: only for a player message containing these words); never set in a product campaign"
+  },
   "combat": {
     "src": "Core #23, #24, #26-#28",
     "phases": [

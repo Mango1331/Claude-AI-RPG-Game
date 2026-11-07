@@ -18,6 +18,13 @@ import { parsePlan } from '../../src/v4/planner.js';
 import { Chat4 } from './harness.js';
 
 const content = await loadProductContent();
+
+/** PULSE package A (.162): an ambush by someone new needs the turn's one window open for DANGER (src/v4/pulse.js). */
+async function withDanger(fn) {
+    const was = content.rules.pulse.force;
+    content.rules.pulse.force = { open: true, kind: 'danger' };
+    try { return await fn(); } finally { content.rules.pulse.force = was; }
+}
 const GREETING = 'SYSTEM INITIALIZATION COMPLETE\n`Location: Public roadside verge outside Ashbridge, Duskreach`';
 
 async function campaign(cls = 'Mage', skills = 'Flame Lance + Arcane Wave') {
@@ -440,7 +447,7 @@ test('patch 6 (37): in a fight an attempt on a feature is not taken; the planner
     const plan = parsePlan(JSON.stringify({ commands: [{ seq: 1, ...attempt('feat.99', 'pass', { quote: 'climb' }) }] }), content.commandVocab,
         { catalog: buildCatalog(s, content, { c: true }), opponents: [], contentSkills: new Set(), currency: content.rules.currency }, 'climb');
     assert.match(plan.errors.join('\n'), /feature must be an id from FEATURES/);
-    await say(g, '*I wait*');
+    await withDanger(() => say(g, '*I wait*'));
     await g.reply('A wolf rushes him from the passage.', { expected: {}, deltas: [{ seq: 1, type: 'creature.new', ref: 'wolf', species: 'wolf', anchor: 'wolf', desc: ['grey'], count: 1, present: true, band: 'SHORT', stronger: null, threat: true, more: null }, { seq: 2, type: 'hostile', by: ['wolf'] }] });
     assert.ok(g.state().encounter);
     const stairs = featNamed(g.state(), /stairs/);

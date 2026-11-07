@@ -41,6 +41,7 @@ import { acceptSkill, declineSkill, developmentOffers, skillOffers } from './ski
 import { classOffer, classSelection, acceptClass } from './class_growth.js';
 import { tradeObject as objectOf, pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, rateUnits, offerAvailability, tradeTermsWhy, purchaseLines, samePurchaseRequest, purchaseDecisionMatches } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
+import { pulseBegin, pulseFinish, pulseLeg, pulsePause, pulseSought, goSought, searchSought } from './pulse.js';
 import { bookStealth } from '../checks.js';
 import { groundAccess, attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
 import { dungeonOf, trueDungeonOf, isRoom, roomKnown, wayBetween, knownRoomNamed, hiddenWayFinds, linkEvent, otherEnd, linksAt, blockerOf, goesFrom, firstStop } from './dungeon.js';
@@ -305,6 +306,15 @@ function roadLine(s, content, c, ctx, go) {
     else ctx.extra.push(`THE ROAD — this leg toward ${toward} is uneventful: no ambush, attack or obstacle meets him on it. Scenery, weather, far-off animals and harmless travellers are atmosphere; carry the travel forward until he arrives or the day's travel ends, and leave every choice about it to him.`);
 }
 
+/**
+ * PULSE package A (src/v4/pulse.js): in a ruleset-2 planner campaign an authorized leg is an exposure of the turn's one
+ * window (decided after all handlers, never per leg); older campaigns keep Patch 5's own roll (roadLine).
+ */
+function roadLeg(s, content, c, ctx, go) {
+    if (ctx.pulse) pulseLeg(ctx, c, go, s);
+    else roadLine(s, content, c, ctx, go);
+}
+
 // ------------------------------------------------------------------------------------------------ handlers
 // Each handler: (s, content, c, ctx, emit, env) -> {status, reason?, line?, extra?, cap?, condition?}
 const SELLING = /\b(?:sell\w*|sold)\b/i;
@@ -491,6 +501,7 @@ function livingGo(s, content, c, ctx, emit, { known, nav, envx }) {
     if (a) {
         a.events.forEach(emit);
         ctx.extra.push(...a.lines);
+        if (ctx.pulse) ctx.pulse.dungeonAhead = true; // DUNGEON AHEAD is this turn's encounter source: no PULSE window
     }
     return null;
 }
@@ -532,7 +543,7 @@ const HANDLERS = {
             setIntentEvents(s, { goal: goal.label, place: goal.place }).events.forEach(emit);
             const first = s.intents[goal.id]?.quote;
             const way = first && first !== c.quote ? ` He set off saying "${String(first).slice(0, 120)}": that is still his way.` : '';
-            roadLine(s, content, c, ctx, go);
+            roadLeg(s, content, c, ctx, go);
             return { status: 'authorized', line: `CONTINUES — ${goal.place ? `toward ${name}` : `on his way to find ${name}`}, his own goal "${goal.label}" (the story decides how far he gets and whether he arrives; it does not move him further than this message does).${way}` };
         }
         const ready = journeyReady(s, { c: !!envx?.c });
@@ -556,7 +567,7 @@ const HANDLERS = {
         travelManner(c, go, ctx);
         ctx.auth.roam = true;
         ctx.auth.timeCap = Math.max(ctx.auth.timeCap, content.rules.time.travel_cap_min);
-        roadLine(s, content, c, ctx, go);
+        roadLeg(s, content, c, ctx, go);
         return { status: 'authorized', line: `DEPARTS/CONTINUES — the already-established journey of "${ready.label}"${ready.companion ? ` with ${entityLabel(s, ready.companion)}` : ''}; carry routine travel forward in THIS reply until they reach the destination or a concrete event creates a real decision/stop. Scenery, harmless conversation and uneventful road are not reasons to stop and ask the player to say "continue" again.` };
     },
     go(s, content, c, ctx, emit, envx) {
@@ -631,8 +642,15 @@ const HANDLERS = {
         // charge of a journey under way goes with him; a step to a place nearby (up the scree above the ford) is his alone
         if (ctx.auth.journey || (known && (goSetsGoal(s, c.to) || (!sameSettlement(s, c.to, s.scene.at) && s.places[c.to]?.kind !== 'realm' && !!settlementOf(s, c.to))))) {
             if (!ctx.auth.journey) Object.assign(go, companionOf(s, envx));
-            roadLine(s, content, c, ctx, go);
+            roadLeg(s, content, c, ctx, go);
+        } else if (ctx.pulse && known && settlementOf(s, s.scene.at) && !sameSettlement(s, c.to, s.scene.at)
+            && !(trueDungeonOf(s, c.to) && trueDungeonOf(s, c.to) !== c.to)) {
+            // PULSE (plan §5.2): setting out from a settlement to a place outside it (a Dungeon's gate, a habitat) is a
+            // leg too, so the way there is never told as the town's scene; no companion rule of a journey with it
+            pulseLeg(ctx, c, go, s);
         }
+        // §5.8: what this authorized GO seeks (a local hunt exploration, a habitat, a hunt's place)
+        if (ctx.pulse) for (const x of goSought(s, go, c)) pulseSought(ctx, x);
         // Patch 6: a hidden hazard at the place he goes into springs as he enters it (src/v4/features.js), the engine's roll;
         // review of 32c7d2c: booked only where the reply's arrival there is confirmed (a conditional of the arrival)
         // Patch 7: and one across the way he takes there (the tripwire on that doorway); review of a5035f0: a walk
@@ -756,6 +774,8 @@ const HANDLERS = {
         const booked = envx?.c && c.kind !== 'search' ? engineMinutes(content, s, c) : null;
         if (find && !booked) return { status: 'resolved', cap, line: find.line };
         if (booked) {
+            // PULSE package A: a booked pause is an exposure of the turn's window (never cut short before package C)
+            pulsePause(ctx, c, booked, s);
             emit({ t: 'time.advanced', d: { minutes: booked, why: c.kind } });
             ctx.auth.booked_min = (ctx.auth.booked_min || 0) + booked;
             ctx.auth.timeCap = Math.max(ctx.auth.timeCap, ctx.auth.booked_min);
@@ -798,6 +818,8 @@ const HANDLERS = {
             };
             emit({ t: 'check.recorded', d: record });
             ctx.searchChecks.push(record);
+            // §5.8: only a search the engine resolved with success seeks a population or a contract's target
+            if (check.success && ctx.pulse) for (const x of searchSought(s, content, focus)) pulseSought(ctx, x);
             const result = way
                 ? `SUCCESS — he finds ${way.name || 'a hidden way'} (${way.id}), leading to ${placeName(s, otherEnd(way, place))}: tell plainly where it is and where it leads as far as he can see; he knows it now (going through it is his own decision)`
                 : found
@@ -1584,6 +1606,8 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
     ctx.engineLines = [];
     const ordered = [...commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0));
     ctx.env = { msg: envx.msg ?? s.turn, commands: ordered, text: envx.text || '' };
+    // PULSE package A: this turn's one event window (src/v4/pulse.js); null outside a ruleset-2 planner campaign
+    ctx.pulse = pulseBegin(s, content, ordered, envx);
     // Related commands are alternate descriptions of one trade, not independent coin/goods transfers.
     // Links exist for this invocation only. Each handler still checks presence, custody, price and funds.
     const trades = new Map();
@@ -1731,6 +1755,8 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
     // place; "#pay <id>" in between pays it (a status panel or another # command runs no story turn and keeps it open)
     if (envx.c) for (const d of (s.decisions || []).filter((x) => x.kind === 'payment' && x.state === 'needs_confirmation' && (x.turn < s.turn || x.at !== s.scene.at)))
         emit({ t: 'decision.closed', d: { id: d.id, status: 'expired' } });
+    pulseFinish(s, content, ctx, emit, ordered);
+    delete ctx.pulse;
     delete ctx.env;
     return ctx;
 }

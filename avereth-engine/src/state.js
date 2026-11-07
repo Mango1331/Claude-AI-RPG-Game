@@ -347,6 +347,7 @@ export function applyEvent(state, e) {
         case 'encounter.started':
             state.encounter = clone(d.encounter);
             state.mode = 'combat';
+            if (state.pulse) state.pulse.pause = null; // PULSE: a fight ends the pause block
             state.pending_intents = {}; // folded into the encounter's intents by the engine
             break;
         case 'encounter.updated': // full replacement after a resolution step (records carry the rolls)

@@ -25,6 +25,13 @@ import { Dice } from '../../src/rng.js';
 import { Chat4 } from './harness.js';
 
 const content = await loadProductContent();
+
+/** PULSE package A (.162): an ambush by someone new needs the turn's one window open for DANGER (src/v4/pulse.js). */
+async function withDanger(fn) {
+    const was = content.rules.pulse.force;
+    content.rules.pulse.force = { open: true, kind: 'danger' };
+    try { return await fn(); } finally { content.rules.pulse.force = was; }
+}
 const GREETING = 'SYSTEM INITIALIZATION COMPLETE\n`Location: Public roadside verge outside Ashbridge, Duskreach`';
 const REALM = 'realm.duskreach';
 
@@ -216,7 +223,7 @@ test('patch 7 (23): the abandoned watchtower: in, a locked armory, its blade tak
         assert.equal(contractReady(g.state(), content, g.state().quests['quest.crypt'], { c: true }).ok, false, 'entering is no clearing');
 
         // 13. 14. three rats; two die, one flees
-        await say(g, '*I stand ready*');
+        await withDanger(() => say(g, '*I stand ready*'));
         await g.reply('Three rats rear up and rush him.', { expected: {}, deltas: [
             { seq: 1, type: 'creature.new', ref: 'crypt rats', species: 'giant rat', anchor: 'rat', desc: ['crypt rats'], count: 3, present: true, band: 'SHORT', stronger: null, threat: null, more: false },
             { seq: 2, type: 'hostile', by: ['crypt rats'], scope: 'all' },

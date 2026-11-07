@@ -42,15 +42,15 @@ Die IDs bleiben Suchbegriffe, **keine starre Rangliste oder pauschale Baufolge**
 | **T4** | Spielerlebnis, Dialogfluss und QoL aus Originalfeedback beurteilen; kein permanentes Bewertungs-LLM. |
 | **W3** | Wiedererkennbare Stadtfiguren/typische Orte auf vorhandenen Identitäten; zuerst E0–E2. |
 | **W2** | Persönliche Episoden, Absprachen und Persönlichkeit nach E1 schrittweise vertiefen. |
-| **W5** | **PULSE:** ein gemeinsames nachrichtenbasiertes Ereignisfenster für Stadt, Wildnis und Reise. Auslöserprinzip beschlossen, Implementierung/Frequenz/Wiederholschutz offen. |
+| **W5** | **PULSE:** höchstens ein gemeinsamer deterministischer Wurf pro geeignetem Erzählzug auch bei Quest-/Dungeon-Erkundung außerhalb des Kampfes und grundsätzlich Rast/Warten. Gebiet **und Tageszeit** beeinflussen Chance/Art; nach Fehlwürfen erhöht sich die nächste Chance begrenzt. Umsetzung, Boni und Frequenz fachlich noch auszuarbeiten. [Nutzerentscheidungen §12](patch_plans_10b/FACHPLAN_W5_W6_PULSE.md#12-nutzerentscheidungen-vom-07112026--tageszeit-einsatzbereiche-und-ansteigende-chance-neuer-designauftrag-noch-keine-implementierung) |
 | **W6** | **ROAD AHEAD ist Reiseintegration von PULSE**, kein zweiter Encounterwurf. GO, Unterbrechung und Ankunft erhalten; heutiges Reise-Gate im freigegebenen Geltungsbereich ablösen. |
 | **W10** | Story Sifting: Hinweise aus tatsächlichen Events, keine neuen Weltfakten, PC-Aktionen oder automatischen Quests. Kann vor großen Uhren sinnvoll sein. |
 | **W4** | NPC-Eigeninitiative und eigene Ziele; vorhandene Agenda-/Thread-/Zeitmechanik erweitern, nicht jeden unsichtbaren NPC simulieren. |
 | **W8** | Wenige NPC-/Fraktionsuhren mit kleinen überprüfbaren Folgen, keine automatischen Geld-/XP-/Kampfergebnisse. |
 | **W9** | Gerüchte/Informationsverbreitung über legitime Quellen; Wissen, Vermutung und Geheimnisse trennen. |
-| **W7** | Gefährliche Rast-/Warteintervalle gesondert entscheiden; Unterbrechung **vor** voller Zeit-/Regenerationsbuchung. Sichere Unterkünfte bleiben sicher. |
+| **W7** | **Technische Rastunterbrechung als PULSE-Abhängigkeit:** Ein regulärer Rast-/Wartezug darf ein PULSE-Fenster erhalten; falls ein gefährliches Ereignis unterbricht, muss der Eingriff **vor** voller Zeit-/Regenerationsbuchung erfolgen. Sichere Unterkünfte bleiben sicher. Der genaue gemeinsame Zuschnitt ist im überarbeiteten Fachplan zu entscheiden. |
 
-**PULSE-Grenze:** höchstens eine Chance je geeignetem regulärem erzählendem Spielerzug; reine Systemansichten, aktive Kampfrunden, geblockte Eingaben und technische Wiederholungen erzeugen keine Zusatzwürfe. Kein Minuten-/Expositionshybrid. Ort/Tageszeit/Population beeinflussen plausible Chance und Ereignisart; friedliche Ereignisse oder kein Ereignis sind erlaubt. Lange Zeitsprünge allein erzeugen keine Zusatzchancen. Erst Stadt plus eine Wildnis-/Reisesituation, Rast und Agenda-/Uhrenanbindung später gesondert. [Verbindlicher Beschluss](02_DESIGN_KANON.md#8-welt-lore-und-organische-klassen), [Weltrecherche](recherche/AI_RPG_RECHERCHE_20261028.md).
+**PULSE-Grenze (aktualisierte Designentscheidung 07.11.):** höchstens ein Wurf je geeignetem erzählendem Spielerzug auch beim Questen, Dungeon-Erkunden außerhalb des Kampfes, Reisen, Wandern und grundsätzlich Rasten/Warten. Aktive Kämpfe pausieren PULSE; reine Systemansichten, geblockte Eingaben und technische Wiederholungen bleiben ohne Wurf. **Tageszeit und Umgebung beeinflussen die Chance und Ereignisart. Nach jedem verfehlten geeigneten Wurf steigt die nächste Chance; offenes Fenster setzt die Fehlwurfserie zurück.** Maximalwert, Ausnahmeschutz und gefahrloses Rasten sind technisch noch zu planen; kein zusätzlicher Wurf je verstrichene Minute oder mehrfaches GO. DUNGEON AHEAD und sichere Rastbuchung schützen; W7-Unterbrechungsmechanik nicht stillschweigend implementieren. Aktueller [Fachplan §12](patch_plans_10b/FACHPLAN_W5_W6_PULSE.md), [Kanon](02_DESIGN_KANON.md#8-welt-lore-und-organische-klassen).
 
 ### Handel, Tempo und Bedienung
 
@@ -95,7 +95,7 @@ User02s Wunsch nach aktiveren passenden Gegnern und nützlicheren Tränken ist e
 
 ## 4. Abhängigkeiten und Entscheidungsgrenzen
 
-Vorhandene Mechanik und originale Reproduktion gehen einer neuen Architektur voraus. Persönliche Langzeitbeziehungen sind keine Pflichtvorstufe eines kleinen PULSE-Prototyps; Rastunterbrechung ist wiederum kein kostenloser Teil davon. UI rendert bekannten Zustand, autorisiert keine Handlungen. Der Hessa-Objektfall aus Batch28 bleibt ein konkreter Kontextfehler, kein Crafting-/Finanz-Gesamtauftrag. Aktuelle Priorität und Freigabe nur in [03](03_AKTUELLER_PROJEKTSTAND.md).
+Vorhandene Mechanik und originale Reproduktion gehen einer neuen Architektur voraus. Persönliche Langzeitbeziehungen sind keine Pflichtvorstufe eines kleinen PULSE-Prototyps; die jetzt gewünschte Rast-/Warte-PULSE-Chance macht eine **saubere technische W7-Abgrenzung** erforderlich, eine gefährliche Unterbrechung ist kein kostenloser Nebeneffekt. UI rendert bekannten Zustand, autorisiert keine Handlungen. Der Hessa-Objektfall aus Batch28 bleibt ein konkreter Kontextfehler, kein Crafting-/Finanz-Gesamtauftrag. Aktuelle Priorität und Freigabe nur in [03](03_AKTUELLER_PROJEKTSTAND.md).
 
 ## 5. Historie und Quellen ohne zweite Dokumentation
 

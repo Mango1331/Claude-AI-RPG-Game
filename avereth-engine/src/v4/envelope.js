@@ -122,7 +122,7 @@ const TENDENCY_LINES = {
  * an animal's temperament is named as the tendency it is there.
  * @returns {string[]}
  */
-export function envelopeLines(state, content, { c = false } = {}) {
+export function envelopeLines(state, content, { c = false, pulse = null } = {}) {
     if (state.meta?.runtime !== 'v4' || state.mode === 'creation') return [];
     const env = reactionEnvelope(state, content, { c });
     if (env.fight) return [];
@@ -136,12 +136,16 @@ export function envelopeLines(state, content, { c = false } = {}) {
     if (fine.length || rob.length) {
         lines.push(`Only ${[fine.length ? `${fine.join(', ')} (a fine or confiscation)` : null, rob.length ? `${rob.join(', ')} (a robbery)` : null].filter(Boolean).join(' and ')} may take Alaric's coin or things.`);
     }
+    // PULSE package A (src/v4/pulse.js): the standing rule for everyone the reply brings in (no per-turn line when quiet)
+    if (pulse?.governs) lines.push(pulse.open && pulse.kind === 'danger'
+        ? 'Someone new in this reply attacks Alaric only as the ONE hostile group the PULSE line names; nobody new takes his coin or things in this reply (they may demand).'
+        : 'Nobody new in this reply attacks Alaric or takes his coin or things (they may threaten or demand; his answer is his own).');
     return lines;
 }
 
 /** The engine block's section, or ''. */
-export function envelopeBlock(state, content, { c = false } = {}) {
-    const lines = envelopeLines(state, content, { c });
+export function envelopeBlock(state, content, { c = false, pulse = null } = {}) {
+    const lines = envelopeLines(state, content, { c, pulse });
     return lines.length ? `WORLD ENVELOPE (causal limits for this reply; inside them the story is free):\n${lines.map((l) => `- ${l}`).join('\n')}` : '';
 }
 

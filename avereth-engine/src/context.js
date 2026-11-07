@@ -760,7 +760,7 @@ export function buildContext(state, content, opts = {}) {
     if (rulesTexts.length) add('rules', `RULES (situational):\n${rulesTexts.join('\n---\n')}`, 0, true);
     // Gen 3.5: the World Envelope (src/v4/envelope.js): the causal limits of this reply, nothing for a scene without them.
     // Its own allowance, like the rules and the output line: it displaces no retrieved section (memories, lore)
-    if (v4 && !opts.systemQuery && opts.envelope !== false) add('envelope', envelopeBlock(state, content, { c: !!(opts.outcome?.auth?.c || opts.outcome?.c) }), 0, true);
+    if (v4 && !opts.systemQuery && opts.envelope !== false) add('envelope', envelopeBlock(state, content, { c: !!(opts.outcome?.auth?.c || opts.outcome?.c), pulse: opts.outcome?.auth?.pulse || null }), 0, true);
     if (v4) add('chronicle', chronicleLine(opts.chronicle), 0, true);
     if (opts.corrections && opts.corrections.length) add('corrections', `CORRECTIONS (the previous reply conflicted with the engine; keep the engine's version):\n${opts.corrections.slice(0, 4).map((c) => `- ${String(c).slice(0, 400)}`).join('\n')}`, 0, true);
     if (opts.systemQuery) {

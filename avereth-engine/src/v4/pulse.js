@@ -13,7 +13,7 @@
 // Package A: a pause gets its window but is never cut short (package C); the inside of a Dungeon has none (package B:
 // DUNGEON AHEAD stays its only encounter source). No model call, no die of the fight's dice stream.
 import { hash32, normText } from '../util.js';
-import { lineage, placeName, settlementOf, namesKind, sameKinds } from './domain.js';
+import { lineage, placeName, settlementOf, namesKind, sameKinds, kindOf as kindWords } from './domain.js';
 import { rulesetOf } from '../content.js';
 import { dayPart, outdoorsInTown } from './settlement.js';
 import { trueDungeonOf } from './dungeon.js';
@@ -108,19 +108,33 @@ export function huntsHere(s) {
         .map((q) => ({ population: q.hunt.at, hunt: q.id }));
 }
 
+/**
+ * .163 (review of .162, R2): does a search's focus name this kind of creature? The engine's kind reading (namesKind:
+ * noun phrase, stems, the kind words of the content) or the kind's head noun as a whole stemmed word of the focus
+ * ("the next snapping turtle in the pond"). Never a part of a word ("broken boards" is no boar) and never a shared
+ * adjective ("wild herbs" names no wild boar). It decides a firewall exception, so it reads words, not letters.
+ */
+export function focusNames(content, focus, kind, anchor = null) {
+    const same = sameKinds(content);
+    const one = (w) => same?.get(w) || w;
+    const words = new Set([...kindWords(focus, { species: true }).words].map(one));
+    const head = kindWords(kind, { species: true }).head;
+    if (head && words.has(one(head))) return true;
+    // the body plan's own kind words of the content (a boar's "swine"), as whole words too
+    return (anchor?.kinds || []).some((k) => words.has(one(kindWords(k, { species: true }).head)));
+}
+
 /** What a successful search seeks: a population of this place (or above) its words name, a contract's target kind. */
 export function searchSought(s, content, focus) {
     const out = [];
-    const words = normText(focus);
-    if (!words) return out;
+    if (!normText(focus)) return out;
     for (const id of lineage(s, s.scene.at)) {
         const pop = s.places[id]?.population;
-        if (pop && (namesKind(focus, pop.species, content.anchors.get(pop.anchor), sameKinds(content)) || words.includes(normText(String(pop.species).split(/\s+/).at(-1))))) out.push({ population: id });
+        if (pop && focusNames(content, focus, pop.species, content.anchors.get(pop.anchor))) out.push({ population: id });
     }
     for (const q of Object.values(s.quests || {})) {
         if (q.status !== 'active' || (q.taker || 'pc') !== 'pc' || q.hunt) continue;
-        const named = (q.objectives || []).some((o) => KILL.has(o.verb) && normText(o.what).split(/\s+/).some((w) => w.length >= 4 && words.includes(w.replace(/s$/, ''))));
-        if (named) out.push({ contract: q.id });
+        if ((q.objectives || []).some((o) => KILL.has(o.verb) && o.what && focusNames(content, focus, o.what))) out.push({ contract: q.id });
     }
     return out;
 }

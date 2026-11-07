@@ -137,10 +137,41 @@ export function envelopeLines(state, content, { c = false, pulse = null } = {}) 
         lines.push(`Only ${[fine.length ? `${fine.join(', ')} (a fine or confiscation)` : null, rob.length ? `${rob.join(', ')} (a robbery)` : null].filter(Boolean).join(' and ')} may take Alaric's coin or things.`);
     }
     // PULSE package A (src/v4/pulse.js): the standing rule for everyone the reply brings in (no per-turn line when quiet)
-    if (pulse?.governs) lines.push(pulse.open && pulse.kind === 'danger'
-        ? 'Someone new in this reply attacks Alaric only as the ONE hostile group the PULSE line names; nobody new takes his coin or things in this reply (they may demand).'
-        : 'Nobody new in this reply attacks Alaric or takes his coin or things (they may threaten or demand; his answer is his own).');
+    if (pulse?.governs) {
+        const exception = soughtException(state, pulse);
+        lines.push((pulse.open && pulse.kind === 'danger'
+            ? 'Someone new in this reply attacks Alaric only as the ONE hostile group the PULSE line names; nobody new takes his coin or things in this reply (they may demand).'
+            : 'Nobody new in this reply attacks Alaric or takes his coin or things (they may threaten or demand; his answer is his own).') + exception);
+    }
     return lines;
+}
+
+/**
+ * .163 (review of .162, R1): the contact he sought this turn, as the world applier allows it (src/v4/world.js,
+ * pulse.js soughtMatch): only that population or contract target, only where he actually is (a leg's target only once
+ * he has arrived), never anyone else; nothing of his taken by them either. '' when he sought nothing.
+ */
+function soughtException(state, pulse) {
+    const travel = pulse.exposure === 'travel';
+    const parts = [];
+    const seeking = new Set((pulse.sought || []).map((x) => x.population).filter(Boolean));
+    for (const x of [...(pulse.sought || []), ...(pulse.hunts || [])]) {
+        if (x.hunt && seeking.has(x.population)) continue; // the same population: named once, as what he seeks now
+        if (x.population) {
+            const p = state.places?.[x.population];
+            if (!p?.population) continue;
+            const where = p.name || x.population;
+            const text = x.hunt
+                ? `the ${p.population.species} of his hunt in ${where}, while he is in their habitat`
+                : `the ${p.population.species} of ${where} he is seeking${travel ? `, only once he has actually reached ${where} (never on the way there)` : ', where he actually is'}`;
+            if (!parts.includes(text)) parts.push(text);
+        } else if (x.contract) {
+            const q = state.quests?.[x.contract];
+            const what = (q?.objectives || []).find((o) => o.what)?.what;
+            if (what) parts.push(`the ${what} of his contract "${q.title || q.id}" he is seeking, where he actually is`);
+        }
+    }
+    return parts.length ? ` Exception he sought himself: ${parts.join('; ')} may meet him and turn on him; they take nothing of his either.` : '';
 }
 
 /** The engine block's section, or ''. */

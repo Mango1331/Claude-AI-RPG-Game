@@ -115,6 +115,7 @@ export function eventKind(e, s = null) {
 export const AUDIT_EVENTS = new Set([
     'campaign.started', 'turn.begun', 'outcome.recorded', 'delta.rejected', 'report.missing', 'report.requested', 'check.recorded', 'note',
     'cmd.interpreted', 'cmd.resolved', 'cmd.completed', 'cmd.expired', 'extract.applied', 'extract.failed', 'overreach.noted',
+    'pulse.rolled', 'pulse.pause', 'pulse.outcome',
 ]);
 
 /**

@@ -299,3 +299,91 @@ ENG=<eng> node patch_plans_10b/pulse_probes/user04_frames.mjs testrun_10b/user-2
 ENG=<eng> node patch_plans_10b/pulse_probes/pulse_sim.mjs
 ```
 Ergebnisse dieses Laufs: §2.6, §2.7, §5. `pulse_sim.mjs` modelliert den Entwurf und ist kein Produktcode.
+
+
+---
+
+## 11. Unabhängiger GPT-Gegenreview – Architekturabnahme mit fachlichen Auflagen (07.11.2026)
+
+**Ergebnis:** Die Wahl einer **zentralen, deterministischen PULSE-Entscheidung pro geeignetem Erzählzug** wird bestätigt. W5/W6 ist für die nächsten Entwicklungsarbeiten fachlich richtig priorisiert, und die Integration des bisherigen ROAD-AHEAD-Gates ist plausibel. **Der Gesamtplan ist als Grundlage geeignet, P1 sollte jedoch nicht allein als fertig freigegebene PULSE-Grundfunktion ausgeliefert werden.** Drei konkrete Grenzfälle und der Integrationsnachweis sind vor einem natürlichen Usertest nachzuschärfen. Diese Gegenbewertung ändert keinen Produktcode und erteilt noch keine Implementierungsfreigabe.
+
+### 11.1 Unabhängig geprüfte Grundlage und Nachweisgrenze
+
+Geprüft wurden Claudes Fachplan §§0–10, alle **drei** eingecheckten Read-only-/Simulationsskripte und die auf `.159` maßgeblichen Codepfade `src/v4/commands.js` (`roadLine`, `resolveCommands`, GO, Board), `src/v4/turn.js`, `src/v4/world.js` (`bornHere`, `envelopeAllows`, `coerce`), `src/v4/envelope.js` (`mayOpenFight`, `mayTake`), `src/context.js` (Pflichtsektionen) sowie `content/rules.json`. Der vorherige User04-Originalreview ist bereits vorhanden.
+
+**Abgrenzung:** Die jetzt eingecheckten Probeskripte und die 2000-Seed-Simulation habe ich für diesen Review **nicht eigenständig in einem vollständigen .159-Checkout ausgeführt**. Die 80/200 Doppelentscheidungen, 121/200 Schlüsseländerungen, simulierten Häufigkeiten und User04-Rahmenzahlen sind daher Claudes protokollierte Messungen, **nicht** von mir unabhängig replizierte Laufresultate. Die Probe `pulse_probe.test.mjs` enthält weit überwiegend **Mess- und Ausgabecode**, nicht Assertions für alle berichteten Häufigkeiten: ihre Resultate dürfen nicht mit einer bereits bestandenen PULSE-Produktsuite gleichgesetzt werden.
+
+### 11.2 Architektur B2 und technischer Grundgedanke bestätigt
+
+- Die gegenwärtige `roadLine()`-Entscheidung hängt tatsächlich von **Seed, Turn, Uhrzeit und `c.seq`** ab und wird für mehrere GO-Schritte erneut getroffen. Claudes zentrale einmalige Entscheidung beseitigt das strukturelle Mehrfachwürfelproblem, ohne andere Würfelströme verschieben zu müssen.
+- Das bestehende `world.js` schützt mit `auth.road === 'quiet'` lediglich neue **Angreifer auf ruhigen Reiseabschnitten**, und nur sofern kein Kampf läuft. `envelope.js:mayOpenFight()` gestattet `newInAnswer` im Grundsatz; `coerce()` lässt unter seinen speziellen Rollen-/Beweisbedingungen auch echte Wegnahme durch den Erzähler zu. **Folgerung:** Eine zusätzliche kontextgebundene Grenze außerhalb von Reise ist sachlich nötig, nicht nur Dekoration.
+- Ein `pulse.window`-Event, schmale `auth.pulse`-Daten und das bestehende Event-Fold-Prinzip sind ein geeigneter Architekturweg: kein neuer Modellaufruf, keine zweite Spielweltwahrheit, kein Uhrzeit-λ-System.
+- Die grobe Ereignisart kann von der Engine vorgegeben werden, ohne konkrete NPC-Identität, Dialoge, versteckte Magie oder freie Ereignisfolgen als festes Drehbuch zu erzwingen.
+
+### 11.3 **Kritischer Auflagenpunkt 1: P1/P2 dürfen keine ungeschützte Zwischenfunktion erzeugen**
+
+P1 soll laut §4.12 bereits **offene friedliche Stadt-/Wildnisfenster** ausliefern; gleichzeitig bleibt die **Grenze gegen neue Angreifer/automatische Wegnahme außerhalb der Reise** bis P2 offen. Das ist im Code unmittelbar relevant: `mayOpenFight(..., {newInAnswer:true})` gibt zunächst `ok:true` zurück, und `world.js:coerce()` entscheidet über Rollen-/Belegkriterien, nicht über `pulse`.
+
+**Empfehlung:** P1 und P2 dürfen auf einem isolierten Arbeitsbranch aufeinanderfolgen; **erst gemeinsam** eine PULSE-Grundfunktion für natürliche Userläufe freigeben. Entweder:
+1. P1 als **rein technischen Zwischenstand** kennzeichnen, nicht für neue natürliche PULSE-Runs verwenden; P2 implementiert und testet die verbindlichen Grenzen vor der Abnahme, oder
+2. eine **minimale Basissperre** für neue eigeninitiierte Angriffe/Wegnahmen bereits mit dem erstmals aktivierten Stadt-/Wildnisfenster in P1 liefern und die komplizierte gesuchte-Kontakt-Abgrenzung in P2 verfeinern.
+
+Für beide Varianten gilt: Nicht als tatsächlich „friedlich“ geschütztes Fenster ausweisen, solange die entsprechende Firewallregel fehlt. Dies gilt auch für den **`trouble`-Fall** (Stadt ohne `danger`, aber mögliche Räuber-/Diebstahlszene). Eine bloße Narratorzeile, dass kein Geld genommen wird, ist keine mechanische Garantie.
+
+**Plausible Ausnahme präzise halten:** Bestehende Gewalt-/Kampfzustände und legitime **explizite Spielerhandlungen** dürfen nicht durch eine globale neue PULSE-Sperre annulliert werden. Bei `coerce()` die Semantik von `robbery`, `fine`, `confiscation`, vorbestehender Autorität und ausdrücklich autorisierten Interaktionen unterscheiden. „Neu in der Szene“ allein darf weder alle behördlichen/vereinbarten Übergaben erlauben noch jede legitime Konsequenz verbieten. Gegenfälle als Tests vorsehen.
+
+### 11.4 **Auflagenpunkt 2: selbst gesuchter Kontakt nicht pauschal auf Ortsniveau ausnehmen**
+
+§4.4 nennt als Ausschluss unter anderem **„Ziel oder Ort eines aktiven Jagdauftrags“**. Das wäre zu weit: Ein Spieler kann mehrere Nachrichten am selben Jagdort verbringen; dadurch fiele genau dort das gewünschte freie Weltgeschehen fort. Gleichzeitig könnte eine sehr allgemeine Ausnahme „Jagdauftrag vorhanden“ das neue Angriffs-Gate für **unzusammenhängende neue Figuren** öffnen.
+
+**Empfehlung:** Die Ausnahme an **die tatsächlich gewählte Handlungsabsicht und den belegten Zielkontakt** binden, z. B. konkrete `go.within`-Erkundung, ausdrückliche Suche/Annäherung an die etablierte Jagdpopulation und den passenden erfolgreichen Zielkontakt. **Nicht** jeden Turn am Ort einer angenommenen Jagdquest zu einer Ausnahme machen. Für weitere unabhängige Begegnungen gelten PULSE-Regeln weiterhin. Unterscheiden zwischen (a) Spieler sucht aktiv einen Gegner, (b) anwesender Gegner reagiert auf ihn, (c) Erzähler erfindet einen zusätzlichen fremden Überfall. Nur (c) muss dem ruhigen Fenster unterliegen; (a) und (b) benötigen ihre bisherigen Kampf-/Anwesenheitsregeln.
+
+Notwendige rote/positive Gegenfälle: (1) Hunt-/Suchzug erzeugt den erlaubten Zielkontakt; (2) derselbe Ort, unabhängiges Gespräch, PULSE bleibt möglich; (3) Jagdauftrag, aber neu erzählte **fremde** Räubergruppe im ruhigen Fenster wird nicht durch die Jagdausnahme autorisiert; (4) bereits anwesende Gefahr reagiert weiterhin nach dem bestehenden Envelope.
+
+### 11.5 **Auflagenpunkt 3: Board- und Reise-Rahmen anhand kombinierter Handlungen eindeutig definieren**
+
+§4.4 schließt **„nur `board.read`“** aus; §9 spricht pauschal von ausgeschlossenen **Board-Zügen**. Ein `GO + board.read` wie User04 I71 ist nach dem Wortlaut nicht zwingend ausgeschlossen, besonders bei einer kurzen innerstädtischen Bewegung. Es darf nicht zufällig zum PULSE-Aufhänger werden, der die bereits bedingte Hallankunft oder Sols neue Boarddarstellung stört.
+
+**Empfehlung:** Absicht explizit definieren und testen. Für den ersten Prototyp sind **reine Boardturns und kombinierte lokale GO+Board-Lesezüge**, deren Zweck die Gildenkarte ist, als Ganzes ausgeschlossen; falls ein späterer Reisezug ein Board erst **nach bestätigter Ankunft** liest, muss die Reisephase eigenständig und eindeutig autorisiert sein. Kein zweites weltfremdes Ereignis am Gildentresen nur, weil ein GO vor dem Boardlesen steht.
+
+**Daneben:** Ein GO aus der Stadt heraus zum Dungeon-Tor wird vom alten `roadLine()` nicht immer als normaler Reiseabschnitt registriert. Es darf dann **nicht allein aufgrund des Startortes irrtümlich als Stadt-PULSE** mitten auf der Strecke auftreten. Zwei saubere Varianten:
+- im ersten Prototyp diesen Grenzfall ausschließen und als echte Abdeckungsgrenze dokumentieren (Claudes §7-Empfehlung), oder
+- ihn anhand realer Abreise-/Zielinformationen bewusst zum Reiserahmen erklären und gegen die bestehenden GO-/DUNGEON-AHEAD-Grenzen testen.
+
+Kein rein textbasierter Ortsraten-Ersatz und kein „PULSE-Ankunft“ ohne bestätigtes `arrive`. **Meine Präferenz für den ersten Prototyp ist die enge Ausschlussvariante**, um den eigentlichen PULSE-Kern vor zusätzlichen Reise- und Dungeongrenzfixes prüfbar zu halten. Später kann W6 das decken.
+
+### 11.6 Ereignisfenster versus tatsächlich spielbares Ereignis
+
+Die Simulation berechnet **offene Fenster**, nicht erfolgreiche Begegnungen im natürlichen Spiel. User04s zwei bisherige offene Reiseabschnitte führten zu keiner Unterbrechung; das ist ein motivierender Befund, aber bei N=2 kein allgemeiner statistischer Nachweis der bisherigen Erzählerausfallquote.
+
+**Designempfehlung:** Das offene Fenster ist keine bloße Erlaubnis, beliebig folgenlos weiterzuschreiben. Die Instruktion soll ein **konkretes, wahrnehmbares, kausal zur Umgebung passendes Ereignis** verlangen, sofern der bestätigte Spielzustand es zulässt; sonst soll sie die Leerstelle ausdrücklich zulassen und niemals Weltfakten erfinden. Ein friedliches Ereignis braucht keine Kampf-, Geld- oder Questbuchung. Rein erzählerische Hintergrundfiguren bleiben als Stadtleben weiterhin möglich, ohne als „erfolgreiche PULSE-Auslösung“ gezählt zu werden.
+
+Die Instrumentierung in P3 muss deshalb mindestens **drei Stufen** getrennt zählen: `window_open`, **tatsächlich erzählte konkrete Situation** und **validiert persistierte Weltfolge (falls eine entstand)**. Es wäre irreführend, nur die Zahl neu angelegter Personen/Kreaturen als Erfolg zu verwenden: Ein beobachtetes Naturphänomen oder eine authentische Spur kann spielbar relevant sein, ohne eine neue Person zu erzeugen. Technisch ist eine solche Zählung möglicherweise nur heuristisch möglich; dann **nicht** als präzise Engine-Wahrheit darstellen. Die natürliche Run-Auswertung bleibt die Entscheidungsgrundlage.
+
+### 11.7 Kontext-/Kosten- und Replayhinweise
+
+- `resolved` ist im aktuellen `context.js` eine geschützte Priorität-0-Sektion. User04 überzog bereits vor dem PULSE-Plan in vielen Zügen das nominelle Budget. **Nach Sols C1/C2** mit *tatsächlich ausgegebenen* Turnblöcken messen: Pflicht- und optionale Abschnitte, Drops, Narrator-Eingabe und spätere Completion. Nicht allein die 90/25-Token-Zielwerte aus Zeichen/4 als Kostenbeweis verwenden.
+- Für **jeden geeigneten Zug** ein persistiertes Fenster-/Entscheidungsevent halten; die Menge und der Reducer müssen begrenzt bleiben. `auth.pulse` plus `pulse.window` ist dabei vertretbare diagnostische Redundanz, solange der Eventzustand nicht zu einer zweiten Autorität gegenüber dem Turn-Outcomes wird.
+- Bei mehreren GO-Schritten den **ersten tatsächlich autorisierten Reiseabschnitt** und das eine Fenster stabil festlegen. Ein abgelehnter/bedingter Schritt darf nicht eine spätere zulässige Handlung unbemerkt falsch klassifizieren; der vorhandene `ctx.resolutions`-Status ist dafür wichtiger als nur eine frühe Registrierung.
+- Eine identische Seed-/Turn-Hashzahl garantiert **denselben Zufallswert**, nicht zwangsläufig dasselbe `open`-Ergebnis bei absichtlich geänderter Rahmeneinstufung (Stadt → Reise). Solche Edits im Test nicht fälschlich als Nichtdeterminismus behandeln.
+- `pulse_probe.test.mjs` und `pulse_sim.mjs` sind ausgezeichnete **Planungsproben**, aber noch **keine** Implementierungs-Regressionen für das neue Produkt. Die endgültigen Assertions müssen zentrale Auswahl, Ausschlüsse, Rückwärtskompatibilität, Erstschlag, Raub und Multi-GO direkt gegen neuen Code abdecken.
+- **Keine Pflicht-Neukategorisierung historischer Replayfälle zu „akzeptiert“ ohne Einzelfallbeleg.** Der neue Würfelschlüssel ändert erwartbar einzelne Reiseausgaben; alte Events aus echten Saves und ihre Folds bleiben unberührt.
+
+### 11.8 Empfehlung zu den acht offenen Designfragen (§7)
+
+| Frage | GPT-Empfehlung für den ersten Prototyp |
+|---|---|
+| **1. „soll“ oder „darf“** | **Eine konkrete Situation soll auftreten**, wenn welt- und actionspezifisch plausibel; kein Ereignis erzwingen, das nur mit erfundener Mechanik möglich wäre. Bei fehlendem Fit kein falscher Stop. |
+| **2. Engine bestimmt Art** | **Ja, grob**: meeting/life/trouble/obstacle/trace/strange/danger. Ausgestaltung beim Modell; Buchungen weiterhin Engine/Firewall. |
+| **3. Gefahr in der Stadt** | Anfangs **kein spontaner neuer Erstschlag** auch nachts; `trouble` erlaubt Spannungen, Forderung oder versuchten Diebstahl **ohne automatische tatsächliche Wegnahme**. Nach natürlichem Run neu entscheiden. |
+| **4. Selbst gesuchter Kontakt** | **Handlungs- und zielgebundene Ausnahme**, nicht pauschal kompletter Jagdort oder alle neu eintreffenden Figuren; siehe §11.4. |
+| **5. Weg zum Dungeon** | Für P1 **ausnehmen**, wenn die bestehende ROAD-AHEAD-Klassifikation keine eindeutige echte Reise hergibt. Keine falsche Stadt-PULSE auf dem Auswärtsweg. Später gezielt W6 erweitern. |
+| **6. Kurzes Warten** | **W7**, vorerst unabhängig von Dauer ausgeschlossen, sofern der Zug primär `wait/rest/sleep` ist; nicht bloß nach Textsplit beurteilen. |
+| **7. Abklingzeit** | **Keine** feste Cooldown-Regel für die erste technische Grundversion, aber doppelte offene Fenster unmittelbar hintereinander und die subjektive Häufigkeit beobachten. Rückstands-/Mitleidszähler weiterhin nicht einführen. |
+| **8. Startwerte und Artgewichte** | **35 % Reise / 20 % Wildnis / 10 % Stadt vorläufig akzeptabel** als erste messbare Hypothese, keinesfalls feste Weltnorm. User04-artige 1,7 offene Fenster sind **nicht** 1,7 tatsächlich erlebte Ereignisse. Echte Frequenz erst mit natürlichem Spiel beurteilen. |
+
+### 11.9 Priorisierte nächste Umsetzung
+
+**Empfehlung:** Sols kleines User04-QoL-Paket zuerst abschließen. Danach W5/W6 auf einem eigenen **Produkt-Arbeitsbranch** beginnen und P1 mit mechanischen Tests umsetzen; P2 unmittelbar anschließend oder die minimale Firewall-Sperre schon in P1 vorziehen. **Erst die vollständig geschützte P1+P2-Baseline** gegen vollständige Node-Suite, Replay und echte ST-Smokes abnehmen; danach naturspielerisch PULSE-Intensität, Abwechslung und konkrete Wirkungen beurteilen. P3 bleibt iterativ und ohne vorzeitige starre Frequenzgesetzgebung.
+
+**Fazit:** Eine bessere Architekturalternative ist nicht erkennbar. **Es bestehen drei gezielte Ausführungsauflagen, aber kein Anlass, Claude einen neuen vollständigen PULSE-Audit zu geben.** Keine Produkt- oder Kanonänderung durch diesen Gegenreview; der Nutzer entscheidet über die Umsetzung.

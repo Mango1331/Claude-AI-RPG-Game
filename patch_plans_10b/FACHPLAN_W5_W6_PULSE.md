@@ -1,5 +1,7 @@
 # W5/W6 PULSE – Bestandsanalyse und implementierbarer Fachplan
 
+> **Status ab 07.11.2026 (Abend): Quellen- und Entscheidungsgeschichte, kein gültiger Umsetzungsplan mehr.** Der einzige gültige Umsetzungsplan ist [PULSE_W5_W7_TECHNISCHER_UMSETZUNGSPLAN.md](PULSE_W5_W7_TECHNISCHER_UMSETZUNGSPLAN.md). Überholt sind insbesondere die Ausschlüsse für Rast, Warten und Dungeon, der Verzicht auf eine Fehlwurfserie, Tageszeit nur als Plausibilität, die P1/P2/P3-Aufteilung und der Ausschluss des Wegs zum Dungeon (Liste dort §4). §§0–12 bleiben unverändert als Beleg erhalten.
+
 **Stand: 07.11.2026 · unabhängige Tiefenanalyse, keine Implementierungsfreigabe.** Geprüfte Remote-HEADs: Produkt `2089dcc` / **4.3.0-c.6.6.159**, `main` `00b887e` (Auftrag nannte `2beca00`; dazwischen nur Sols User04-QoL-Plan und dessen GPT-Gegenreview, siehe §9). Keine Änderung an Produktcode, Contentwerten, `02`, `03` oder `07`. Diese Datei und die drei Read-only-Proben unter [`pulse_probes/`](pulse_probes/) sind die einzigen Artefakte.
 
 ---

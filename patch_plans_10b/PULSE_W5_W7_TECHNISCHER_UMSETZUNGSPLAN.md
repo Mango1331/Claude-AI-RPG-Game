@@ -425,3 +425,74 @@ ENG=<eng> node patch_plans_10b/pulse_probes/budget160.mjs testrun_10b/user-20261
 ```bash
 ENG=<eng> node patch_plans_10b/pulse_probes/pulse_v2_sim.mjs
 ```
+
+---
+
+## 12. Unabhängiger GPT-Gegenreview – technische Planprüfung vor Freigabe (07.11.2026)
+
+**Urteil:** Die neue Architektur und die grobe Paketaufteilung A → C → B → D sind **fachlich überzeugend**. **Keine erneute Grundsatzanalyse notwendig.** Die Implementierung sollte aber **erst nach vier eng begrenzten Präzisierungen** der Pakete A/C/B freigegeben werden. PULSE wurde für diesen Gegenreview nicht implementiert; die Node-, Replay- und ST-Abnahmen wurden nicht ausgeführt.
+
+**Prüfgrundlage:** Vollständiger technischer Umsetzungsplan §§0–11, beide eingecheckten Read-only-/Simulationsskripte und einschlägige Produktquellen des aktuellen `.160` (`commands.js` `resolveCommands`, GO, `activity`, `recoveryEvents`; `living.js` `nextWaiting`, `nextSlot`, `aheadEvents`, `slotForNew`, `applyLivingEvent`; `state.js` Event-Fold/`encounter.started`; `world.js` neue Figuren/Envelope/`coerce`; `envelope.js` `mayOpenFight`). Die von Claude berichteten Simulationsergebnisse und 21/36-Kontextüberläufe sind in ihren Skripten methodisch nachvollziehbar, wurden aber in diesem GPT-Durchgang **nicht erneut in einem vollständigen Runtime-Checkout ausgeführt**. Das Skript `pulse_v2_sim.mjs` modelliert Fensteröffnungen, nicht erfolgreiche vom Narrator erzählte Szenen.
+
+### 12.1 Bestätigte Entscheidungen
+
+- **Ein deterministischer Wurf pro geeignetem Erzählzug** statt per GO-Handler, zusammen mit bestehendem Event-Fold, ist die richtige Grundarchitektur. Keine zweite ROAD-AHEAD-Chance und kein neuer Modellcall.
+- **Tageszeit als Faktor** auf die ortsgebundene Grundchance plus andere Ereignisgewichte ist besser als ein ortsunabhängiger absoluter Aufschlag. Die Tag-/Abend-/Nacht-Unterteilung aus dem Produkt zu übernehmen vermeidet eine neue Kalenderlogik. Dungeons unabhängig vom Tageslicht ist plausibel.
+- **Globale, gedeckelte relative Fehlwurfserie** ist eine sinnvolle erste Implementierung des Nutzerwunsches. Die Variante +15 % relativ je echter Fehlentscheidung, Deckel 1,75× und absolut 60 % ist **vorläufig akzeptabel**, nicht als endgültig balanciert bewiesen. Combat und nicht geeignete Züge sollen weder zusätzlichen Wurf noch Serienänderung auslösen.
+- **Paket A enthält Kern **und** zwingende Firewall-Grenzen.** Damit entfällt die vormals unsichere Trennung P1/P2. Die PULSE-Korrektur muss neue Angriffe und unbelegte Wegnahmen auch auf ausgeschlossenen C-Erzählzügen verhindern, ohne etablierte Kampf-/Kontrakt- und DUNGEON-AHEAD-Reaktionen zu beschädigen.
+- **Dungeon-Slots statt neuer Gegnerdatenbank** ist der richtige Ausgangspunkt, sofern die bestehenden Rollen und Pace-/Clear-Regeln tatsächlich weitergelten.
+- **Rastunterbrechung vor** Zeit- und Regenerationsbuchung statt Rollback ist architektonisch richtig. `recoveryEvents()` berechnet Ressourcen für genau die übergebenen Minuten; die Floor-Rundung und Ressourcendeckelung bleiben bei Teilbuchung erhalten. Dafür braucht es nicht zwingend eine zweite Zahlungs-/Reservierungslogik.
+- **Kontextbudget:** Den 103-Token-ROAD-Block zu ersetzen und bei ruhigen Zügen keine neue Zeile zu erzeugen ist sinnvoll. Pflichtkontextüberläufe von `.160` dürfen aber nicht durch eine pauschale Budgeterhöhung versteckt werden.
+
+### 12.2 **Auflage A1 – „vorhandene Bedrohung“ ist kein erfolgloser Ereigniswurf**
+
+Im aktuellen Pseudocode `pulseClaim()` wird bei `held.length > 0` zwar `open=false`, es wird jedoch weiterhin `pulse.rolled` emittiert und der vorgeschlagene Reducer zählt `misses+1`. **Damit wächst der Bonus in einem Zustand, in dem ein neues Ereignis ausdrücklich verboten ist**: Zum Beispiel kann Alaric mehrfach mit einer noch anwesenden Gefahr sprechen; anschließend trifft ihn ein künstlich aufgebauter hoher Bonus, obwohl keine der vorangegangenen Nachrichten eine echte PULSE-Chance hatte.
+
+**Erforderliche Korrektur:** `held` (genau wie bereits laufender Kampf) als **unterdrücktes Fenster ohne tatsächlichen Wurf und ohne Serienänderung** behandeln, nicht als misslungenen RNG-Wurf. Der diagnostische Record darf `reason:'held'` enthalten; die Zustandsreduktion darf nur auf einem echten `rolled:true` `misses` erhöhen bzw. zurücksetzen. Ebenfalls klar unterscheiden: `roll >= p` → echter Fehlwurf und +1; `roll < p` → eröffnet und Reset; `held`/gebockte Aktion/Safe-Stop → kein Wurf und keine Änderung. Tests mit wiederholten `held`-Dialogzügen, zunächst ohne Kampf, danach ohne künstlich angestaute Serienverstärkung.
+
+### 12.3 **Auflage A2 – Suchausnahme aus bestätigten und zielgebundenen Handlungen ableiten**
+
+`pulseBegin()` berechnet laut §6 A `P.sought` bereits aus **allen rohen, sortierten Planner-Befehlen**, also vor deren `HANDLERS`-Validierung. `pulseFinish` überträgt sie in `auth.pulse`, und der neue `envelopeAllows`-Pfad soll für `soughtMatch` Angriffe erlauben. **Das ist eine Autorisierungslücke**, falls ein `go.within`, Jagd-GO oder Suchbefehl im selben Turn tatsächlich verweigert oder nur zur Klärung gestellt wird. Rohes Planner-Intent ist noch keine autorisierte Begegnung.
+
+**Erforderliche Korrektur:** Ausnahmen **erst aus gültigen `ctx.resolutions`, bestätigten `auth.gos` und ggf. erfolgreich durchgeführten Such-/Erkundungshandlungen** ableiten; nicht aus Absichten allein. Beim Ausschluss des eigentlichen Suchzugs dieselbe *gültige* Handlungsbasis verwenden. Die Ausnahme bleibt auf **die konkrete bestehende Zielpopulation/Vertragsart und diesen Turn** begrenzt. Fremde Figuren werden auch bei laufender Jagdquest weiterhin nach PULSE gegatet. Negative Tests: (1) abgelehntes Jagd-GO + im Text erfundener Räuber/gesuchter Gegner: keine Ausnahmewirkung; (2) gültige gezielte Suche: passender Kontakt erlaubt; (3) gleiche Stadt/Habitat, gewöhnliches Gespräch: normales PULSE; (4) zwei Planner-Befehle, nur einer autorisiert; (5) DUNGEON-AHEAD- bzw. bestehende Gegner-Einführung weiterhin nach den vorhandenen Slot-/Envelope-Regeln.
+
+### 12.4 **Auflage C1 – Unterbrechung darf weder durch Folgeaktion umgangen noch bei kurzen Pausen ungültig werden**
+
+**(a) Letzter-Schritt-Regel:** §6 C formuliert „nur wenn die Rast der letzte Engine-Schritt ist“ und empfiehlt, bei `rest → späteres X` die Rast **immer voll zu buchen**. Damit lässt sich die Gefahr durch ein triviales angehängtes „und danach sehe ich mich um“ zuverlässig umgehen. Der Vorschlag ist zwar rollback-sicher, **unterläuft aber unmittelbar den beschlossenen Sinn gefährlicher Rast**.
+
+**Korrekturvorschlag:** Nicht pauschal die volle Rast als sicher buchen. Als bevorzugte Option `rest` vor der Buchung bewerten und **nachfolgende abhängige Handlungen bei einer möglichen Unterbrechung konditional zurückstellen**, statt sie im selben Record vorab endgültig auszuführen. Alternativ ein transparentes, engeres zulässiges Muster wählen (z. B. die kombinierte Handlung insgesamt nur bis zu dem gemeinsamen sicheren Buchungspunkt autorisieren), falls ein übergreifendes Conditional-System zu aufwendig wäre. Claude soll die geringste notwendige Integration in vorhandenes `c.needs`/Buchungsmodell nennen. Keine nachträgliche Rücknahme bereits gebuchter Ereignisse. Nicht jede zeitliche Erwähnung von Rest als echten `rest`-Befehl behandeln; nur legitim gebuchte Pausen.
+
+**(b) Sehr kurze Pausen:** Das Beispiel `clamp(15, booked-15, hash % booked)` hat bei `booked < 30` widersprüchliche Grenzen und bei einer einminütigen Wartezeit überhaupt keinen inneren ganzzahligen Unterbrechungszeitpunkt. Den Fall ausdrücklich definieren (z. B. kurze Wartezeit nicht *mitten darin* unterbrechen, sondern allenfalls ein äußerliches Ereignis vor/nach der Aktion; für echte Teilunterbrechung minimale Dauer verlangen). Test 1/5/15/20/29/30/31 Minuten und Mitternachtswechsel, ohne negative/zu hohe `time.advanced`- oder Recoverywerte.
+
+**(c) Unterbrechung ohne konkreten Grund:** Der Satz in §6 C „Erzähler zeigt keinen Grund für das Aufwachen. Das ist harmlos“ ist zu optimistisch. Mechanisch verlorene Rastzeit und geringere Erholung ohne verständlich erzählten Anlass wären ein **sichtbarer Buchungs-/Erzählwiderspruch**. Für jede Teilbuchung einen **mindestens kausal konkreten verbindlichen Unterbrechungsgrund** liefern bzw. bei missachtender Narration eine gezielte, auf dem Event aufbauende Korrektur. Die Ursache muss keinen frei erfundenen Kampf erzwingen; die Engine darf aber nicht still ein frühes Aufwachen ohne Grund buchen. Auch `go + rest`, `rest + look`, `rest + GO` und sichere Unterkünfte testen.
+
+**Abnahme:** Die **beiden** Varianten „Rast allein“ und „Rast mit nachfolgender, davon abhängiger harmloser Aktion“ dürfen nicht unterschiedlich sicher werden, bloß weil ein weiteres Kommando angehängt wurde. Kein Rollback nötig.
+
+### 12.5 **Auflage B1 – Wander-Minions und Dungeon-Pace/Slot-Lebenszyklus gemeinsam prüfen**
+
+`living.js:nextWaiting()` sucht den ersten noch nicht getroffenen Slot; `nextSlot()` prüft zusätzlich den Rhythmus `run.parts` gegen `run.pace`, bevor ein normaler Dungeon-Ahead-Begegnungszug fällig wird. Ein direktes PULSE-`wanderSlot` auf Basis von `nextWaiting` könnte den Minion **absichtlich früher** in den bestehenden Raum ziehen und durch `dungeon.ahead` auf diesen Slot binden, ohne den üblichen Pace-Zähler zu aktualisieren.
+
+Das ist **nicht per se falsch** (Wanderbegegnung darf gerade unerwartet sein), muss aber als eigener gültiger Zustandsübergang statt als bloße spätere `slotForNew`-Nebenwirkung spezifiziert werden:
+
+- Nur **freier, noch ungetroffener Minion derselben aktuellen Etage und desselben Dungeonzyklus**, keine bereits platzierte/taken/auf andere Kompanie gebuchte Gruppe; Guard und Boss bleiben stationär.
+- Das neue `dungeon.ahead` überschreibt das bisherige pro Dungeon flüchtig gespeicherte `x.ahead`; verhindern, dass dadurch eine andere bereits autorisierte Begegnungsreferenz derselben Nachricht oder ein vorgemerkter `ahead.next` verloren geht.
+- Die Slot-Daten müssen **auch bei anschließendem Reset, Swipe/Reload sowie bei nicht erzählter Begegnung** konsistent bleiben. Ein offenes Ereignisfenster darf einen Minion nicht unsichtbar als `met` oder `resolved` verbuchen, wenn kein gültiger Creature-Record zustande kommt.
+- Nach erfolgreichem Treffen/Kampf überprüfen, dass `nextWaiting`, `nextSlot`, `run.parts`, Clear-Bedingungen und `defeatTally` keine Verdopplung oder unverdiente Extra-Floor-Clears erzeugen.
+
+**Tests konkret:** PULSE-Wanderung vor dem fälligen normalen `run.pace`-Teil, danach GO in den nächsten Dungeonabschnitt; `ahead` des gleichen Zuges; unbesetzter PULSE-Encounter nach narrativem Ausfall; Wiederholung nach Save/Reload; Reset vor/zwischen PULSE und Validierung; Guard-/Boss-Grenze. Eine bestehende gewünschte frühe Minionbegegnung ist spielmechanisch zulässig, solange ihr Slot genau einmal konsumiert wird.
+
+### 12.6 Ergänzende Einordnung und Parameter
+
+- **Simulation:** Die relative +15-%-Variante V3 ist eine vertretbare **Startannahme**. Die 60-Zug-Simulation zeigt aber auch **ca. 70 % der synthetischen Sitzungen mit mindestens drei offenen Fenstern in fünf Zügen**; ob sich das „lebendig“ oder „zu aufdringlich“ anfühlt, bleibt offen. Die Werte messen **Fenster**, nicht tatsächlich erzählte Begegnungen. Ein Cooldown/garantierter Misserfolg wird vor dem ersten natürlichen Run nicht automatisch nötig.
+- **Methodischer Detailhinweis:** Die gesonderte Split-Wait-`farm()`-Probe verwendet im Skript ausdrücklich `VARIANTS.V2_rel20_cap2x`, **nicht die empfohlene V3-Variante**. Der strukturelle Spam-Effekt wird dadurch belegt; konkrete numerische Farmwerte dürfen nicht als V3-Messung bezeichnet werden. In einer nächsten Probe mit V3 wiederholen, falls für die Entscheidung relevant.
+- **Gemessener Kontextraum:** Nur zusätzliche PULSE-Zeilen klein zu halten hilft, löst die bereits **21/36 geschützten Budgetüberläufe** bei `.160` nicht. Vor der Implementierungsabnahme reale PULSE-Hostrequests prüfen, besonders `npc_continuity` und `present`, und nicht behaupten, die 1400-Tokenschranke sei dadurch eingehalten.
+- **Kampfpause:** Wie geplant keine Änderung an `misses` während `encounter` oder `pending_combat`, insbesondere kein impliziter Reset bei einem selbst initiierten Kampf. Ein offenes Fenster setzt `misses` bereits deterministisch zurück, selbst wenn es vom Narrator missachtet wird; narrativer Erfolg als gesonderte Heuristik kennzeichnen.
+- **Tag/Nacht, sichere Innenräume:** Werte der Tabellen §§5.2/5.5 und abs. Deckel 60 % für den ersten Test **vorläufig annehmbar**, kein neuer Zwangs-Balance-Audit. Keine spontanen Erstschläge in der Stadt in der ersten Version.
+- **Reise zum Dungeon:** Die Abweichung von meiner früheren konservativen Ausschlusspräferenz ist **fachlich akzeptabel**, **sofern** die neue Erkennung ein tatsächlich autorisiertes **außerörtliches GO** nutzt und DUNGEON-AHEAD am Tor nicht verdrängt. Ein gezielter kombinierter Reise-/Dungeoneintritt und lokaler Stadt-GO gehören in die Tests.
+- **Paketreihenfolge:** A → C (W7a außerhalb Dungeon) → B (Dungeonrahmen und Dungeonrast) → D ist sinnvoll. C darf dabei den Dungeonbereich ausdrücklich noch nicht als voll unterstützt ausgeben; B hängt das fehlende Slot-Rasten an.
+
+### 12.7 Entscheidungsempfehlung
+
+**Jetzt freigabefähig nach gezielter Plan-Nachbesserung, nicht nach neuer Grundlagenanalyse.** Claude soll **A1 und A2** in den technischen Paket-A-Notizen konkret korrigieren; **C1** im Paket C und **B1** im Paket B so spezifizieren, dass vor einem späteren Auftrag keine offene Sicherheits-/Buchungsentscheidung übrig bleibt. Solange dies nicht geschieht, ist die allgemeine Architektur befürwortet, aber der Plan **nicht uneingeschränkt zur vollständigen Implementierung abgenommen**.
+
+**Keine Implementierung in diesem Review; Produkt bleibt `.160`.** Nach dem eng begrenzten Plan-Nachtrag kann Paket A separat freigegeben und vollständig getestet werden; für C/B gelten ihre eigenen Abnahmestufen. Bei der Prüfung der tatsächlichen Patch-Diffs darf die konkrete Codebasis begründete kleine Abweichungen vom Pseudocode erfordern, solange die vier Schutzanforderungen erfüllt bleiben.

@@ -25,6 +25,8 @@ import { hudRows as livingRows, floorAt } from './v4/living.js';
 import { goalText } from './v4/guild.js';
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const attr = s => esc(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+const draftButton = (label, text) => `<button type="button" class="avereth-draft" data-avereth-draft="${attr(text)}" title="Prepare an editable message; nothing is sent">${esc(label)}</button>`;
 const list = (xs, none = '—') => (xs.length ? xs.join(' · ') : none);
 
 // Patch 10A: consistent, non-repeating location names in expanded and collapsed HUD.
@@ -51,8 +53,12 @@ export function renderBoardCards(state, content, board) {
     if (!board?.listings?.length || board.failed) return '';
     const quests = board.listings.map(id => state.quests[id]).filter(Boolean);
     if (!quests.length) return '';
-    return `<section class="avereth-board" data-board-lines="${quests.length + 1}" aria-label="Official Guild board"><h4>Guild board · ${esc(board.rank)}</h4>${quests.map(q =>
-        `<article class="avereth-board-card"><header><strong>${esc(q.title)}</strong><span>${esc(q.rank || board.rank)} · quest level ${esc(q.level)} · reward: ${esc(formatCoin(q.payout_cp || 0, content))}</span></header><p>${esc(goalText(state, content, q, { board: true, danger: true }).replace(/^ — /, ''))}${q.clear && state.dungeons?.[q.clear.dungeon]?.run.floors[q.clear.floor]?.cleared ? ' · Level already cleared this cycle; a new contract needs a new qualifying clear after renewal (see Dungeon cycle).' : ''}</p><details><summary>Contract details</summary><div>${esc(q.rank || board.rank)} · quest level ${esc(q.level)} · client: ${esc(q.client || 'unspecified')}<br>${esc(q.task || q.desired_end_state || '')}<br>Contract: ${esc(q.id)}</div></details></article>`).join('')}</section>`;
+    return `<section class="avereth-board" data-board-lines="${quests.length + 1}" aria-label="Official Guild board"><h4>Guild board · ${esc(board.rank)}</h4>${quests.map(q => {
+        const duplicate = quests.some(other => other.id !== q.id && normText(other.title) === normText(q.title));
+        const reference = duplicate ? ` (contract ${q.id})` : '';
+        const details = [q.task || q.desired_end_state, q.client ? `Client: ${q.client}` : '', duplicate ? `Contract: ${q.id}` : ''].filter(Boolean);
+        return `<article class="avereth-board-card"><header><strong>${esc(q.title)}</strong>${draftButton('Ask to accept…', `I would like to accept "${q.title}"${reference} at the guild desk.`)}</header><div class="avereth-board-meta">${esc(q.rank || board.rank)} · quest level ${esc(q.level)} · reward: ${esc(formatCoin(q.payout_cp || 0, content))}</div><p>${esc(goalText(state, content, q, { board: true, danger: true }).replace(/^ — /, ''))}${q.clear && state.dungeons?.[q.clear.dungeon]?.run.floors[q.clear.floor]?.cleared ? ' · Level already cleared this cycle; a new contract needs a new qualifying clear after renewal (see Dungeon cycle).' : ''}</p>${details.length ? `<details><summary>Contract details</summary><div>${details.map(esc).join('<br>')}</div></details>` : ''}</article>`;
+    }).join('')}</section>`;
 }
 
 /** Only show a requested board actually reached at its canonical branch. */
@@ -124,11 +130,13 @@ export function worldRows(state, content) {
     // review of Patch 7: a true Dungeon as he knows it (Rank, theme; nothing hidden from him)
     const real = trueDungeonOf(state, state.scene.at);
     const classed = real ? dungeonText(state, real) : null;
-    if (classed) rows.push(['Dungeon', `${state.places[real].name} — ${classed.replace(/^a Dungeon: /, '')}`]);
     if (real) rows.push(['Dungeon level', dungeonLevel(state)]);
+    const living = livingRows(state);
+    rows.push(...living.filter(([label]) => label === 'Dungeon cycle'));
+    if (classed) rows.push(['Dungeon', `${state.places[real].name} — ${classed.replace(/^a Dungeon: /, '')}`]);
     if (dungeonOf(state, state.scene.at)) rows.push(['Exits', list(exitsFrom(state, state.scene.at).map((e) => exitText(state, e, { ids: false })), 'none known yet (#map)')]);
     // Patch 8: a Living Dungeon's levels as he knows them, its cycle and how many are inside (src/v4/living.js)
-    rows.push(...livingRows(state));
+    rows.push(...living.filter(([label]) => label !== 'Dungeon cycle'));
     const enc = state.encounter;
     // in a fight everyone by the target label the combat panel shows (Cellar Rat A), else as the player knows them
     // Runtime V4 shows the stable scene handle before a fight (Wolf A); V3 as the player knows them
@@ -176,9 +184,19 @@ export function worldRows(state, content) {
     return rows;
 }
 
-function panel(title, summary, rows, open) {
+function panel(title, summary, rows, open, extra = '') {
     const body = rows.map(([k, v]) => `<b>${esc(k)}</b>: ${esc(v)}`).join('<br>');
-    return `<details class="avereth-hud"${open ? ' open' : ''}><summary>${esc(title)} — ${esc(summary)}</summary><div class="avereth-hud-body">${body}</div></details>`;
+    return `<details class="avereth-hud"${open ? ' open' : ''}><summary>${esc(title)} — ${esc(summary)}</summary><div class="avereth-hud-body">${body}${extra}</div></details>`;
+}
+
+function groundItems(state) {
+    const objects = Object.values(state.objects || {}).filter(o => groundAccess(state, o).ok);
+    if (!objects.length) return '';
+    return `<section class="avereth-ground"><b>On the ground</b><ul>${objects.map(o => {
+        const duplicate = objects.some(other => other.id !== o.id && normText(other.name) === normText(o.name));
+        const ref = duplicate ? ` (object ${o.id})` : '';
+        return `<li class="avereth-ground-item"><span>${esc(o.name)}${o.qty > 1 ? ` ×${o.qty}` : ''}${o.unit ? ` ${esc(o.unit)}` : ''}${duplicate ? ` (${esc(o.id)})` : ''}</span>${draftButton('Take…', `I take "${o.name}"${ref} from the ground.`)}</li>`;
+    }).join('')}</ul></section>`;
 }
 
 /** Patch 9A: a skill's kind in the combat HUD: it attacks; else a defense ("Defensive", also "Defensive / Utility"); else a utility. */
@@ -256,10 +274,12 @@ function combatHud(state, content) {
     const current = enc.current === 'pc' ? "Alaric's turn" : `${name(enc.current)} to act`;
     const arrows = Object.values(pc.current.ammo || {}).reduce((a, n) => a + n, 0);
     const arrowText = arrows || state.entities.pc?.sheet?.equipment?.quiver ? ` · Arrows ${arrows}` : '';
+    const firstStrike = enc.first_strike && !enc.ambush && state.last?.outcome?.started && state.last.outcome.records?.some(r => r.actor === 'pc' && r.kind === 'attack' && r.round === 0);
     return `<details class="avereth-hud avereth-combat-hud" open><summary>⚔ COMBAT · Round ${enc.round} · ${esc(current)}${dungeonLevel(state) ? ` · ${esc(dungeonLevel(state))}` : ''}</summary><div class="avereth-combat-body">
 <div class="avereth-combat-resources"><strong>Alaric</strong> · HP ${pc.current.hp}/${pc.fixed.max_hp} · MP ${pc.current.mp}/${pc.fixed.max_mp} · STA ${pc.current.sta}/${pc.fixed.max_sta}${arrowText}</div>
 <div class="avereth-combat-table"><div class="avereth-combat-row avereth-combat-head"><span>Target</span><span>HP</span><span>Range</span><span>Cover / awareness</span></div>${rows || '<div class="avereth-combat-empty">No active enemies</div>'}${otherRows ? `<div class="avereth-combat-subhead">Other combatants · not hostile</div>${otherRows}` : ''}${visibleRows ? `<div class="avereth-combat-subhead">Visible · not in the fight yet</div>${visibleRows}` : ''}</div>
 <div class="avereth-combat-meta"><strong>Turn order</strong> · ${order}</div>
+${firstStrike ? '<details class="avereth-combat-help"><summary>First Strike explained</summary>Your opening attack used your action of round 1. A faster opponent can act twice before your next action: once in round 1 and again early in round 2. A true ambush is a separate opening; awareness alone does not grant one.</details>' : ''}
 <div class="avereth-combat-meta"><strong>Attack</strong> · ${attacks || '—'}</div>
 ${defenses ? `<div class="avereth-combat-meta"><strong>Defense</strong> · ${defenses}</div>\n` : ''}${utilities ? `<div class="avereth-combat-meta"><strong>Utility</strong> · ${utilities}</div>\n` : ''}</div></details>`;
 }
@@ -281,6 +301,6 @@ export function renderHud(state, content, mode = 'closed') {
     const worldSummary = `${formatClock(state.clock.minute).split(' (')[0]} · ${location.brief}${dungeonLevel(state) ? ` · ${dungeonLevel(state)}` : ''}${others ? ` · ${others} present` : ''}`;
     return [
         panel(state.entities.pc.name || 'Alaric', charSummary, characterRows(state, content), open),
-        panel('World', worldSummary, worldRows(state, content), open),
+        panel('World', worldSummary, worldRows(state, content).filter(([label]) => label !== 'On the ground'), open, groundItems(state)),
     ].join('\n');
 }

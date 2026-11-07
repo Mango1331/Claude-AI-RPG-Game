@@ -686,7 +686,16 @@ const HANDLERS = {
         if (envx?.c && livingOf(s, s.scene.at) && namesGate(s, s.scene.at, `${c.what || ''} ${c.quote || ''}`)) ctx.engineLines.push(...gateCard(s, content, s.scene.at));
         // Prototype C (4.3.0-c.6.6.4): looting the foes of a fight he won is no search: the engine credited their loot at
         // the fight's end (src/v4/loot.js); no check, no time, nothing more on them (live 15.10.2026: a failed SEARCH)
-        const looted = envx?.c && c.kind === 'search' && remainsSearch(s, c) ? lootedHere(s) : [];
+        const credited = envx?.c && c.kind === 'search' ? lootedHere(s) : [];
+        if (credited.length) {
+            const parts = String(c.what || c.quote || '').split(/\s*(?:,|\band\b)\s*/i).map(x => x.trim()).filter(Boolean);
+            const remains = parts.filter(what => remainsSearch(s, { what })), surroundings = parts.filter(what => !remainsSearch(s, { what }));
+            if (remains.length && surroundings.length) {
+                c = { ...c, what: surroundings.join(' and ') };
+                ctx.extra.push('REMAINS ALREADY LOOTED — no additional corpse loot. The SEARCH applies only to the separately requested surroundings.');
+            }
+        }
+        const looted = credited.length && remainsSearch(s, c) ? credited : [];
         if (looted.length) return { status: 'resolved', reason: 'looted already', done: true, line: `LOOTED ALREADY — what ${looted.map((id) => who(s, id)).join(', ')} left was credited at the fight's end (the engine's automatic loot, in his pack); there is nothing more on the remains. No check, no time.` };
         // Prototype C (4.3.0-c.6.6.5): an ordinary shop or service of the settlement he is in is found, not searched for
         // (live 15.10.2026: "look for a store to sell the monster parts to" in Ashbridge by day was a failed PER check

@@ -23,6 +23,7 @@ import { validateState } from './src/validate.js';
 import { newSeed } from './src/rng.js';
 import { parseSwaps, hash32, ENGINE_VERSION, NARRATOR_CONTRACT_REVISION } from './src/util.js';
 import { migrateSettings, SETTINGS_REV } from './src/settings.js';
+import { installDraftActions } from './src/ui_actions.js';
 
 const MODULE = 'avereth';
 const PROMPT_KEY = 'avereth_engine';
@@ -665,6 +666,7 @@ function mountSettings() {
     }
     const c = ctx();
     const ev = c.eventTypes || c.event_types;
+    installDraftActions(document);
     c.eventSource.on(ev.MESSAGE_RECEIVED, onMessageReceived);
     c.eventSource.on(ev.GENERATION_ENDED, () => { narratorRecovery.finish(); narrationStart = null; });
     c.eventSource.on(ev.CHAT_COMPLETION_SETTINGS_READY, data => {

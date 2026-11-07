@@ -49,6 +49,8 @@ export const MECH_TYPES = ['use_skill', 'ability_world', 'move', 'flee', 'stealt
 export const PLANNER_ROLE = 'You are the intent planner of the Avereth engine. You read one PLAYER MESSAGE and write down the engine actions Alaric himself takes in it. The engine resolves them: it decides every outcome, roll, number and cost, and whether something works at all. You never decide or describe an outcome.';
 
 export const MECH_RULES = [
+    'Ordinary meals such as "I eat breakfast" are other deeds, not activity rest/sleep/wait and not kind activity. Eating alone grants no recovery. An independently chosen rest still needs its normal duration.',
+    'Accepting an offer of help with selling, arranging a broker visit or discussing a future sale is conversation, not an immediate sell or a question demanding sale quantities. Preserve only independently authorized movement. A present decision to sell particular goods still uses sell/offer.accept and genuinely missing transaction details may use clarify.',
     'Private jobs: an actual go, work/craft/search/gather/errand activity, other deed, attempt, give or use_skill may carry optional job: the exact PRIVATE JOBS id whose work Alaric explicitly undertakes. This links intent, not success. Omit job for mere acceptance, questions about terms, unrelated travel/shopping, resting, wishes or future plans. "I push the cart all the way to the market" is one go with job, not a required extra work input. "I accept and start pushing" can contain quest.accept plus that go. Actually giving requested information is an other deed with job; talking about terms is not. Never mark quest.accept itself as work.',
     'Actions with skills, in fights and on things (commands of the same list; the engine decides what is possible now and every outcome):',
     '1. Only Alaric\'s own deeds in this message. Not an action: a question ("Can I …?"), a wish, a thought, a plan or a condition for later ("if it moves, I\'ll …", "next time …"), a memory, ordinary dialogue or threats (except actually supplying requested private-job information), anything another character does. Such a message gets an empty list.',
@@ -482,6 +484,15 @@ export function parsePlan(answer, vocab, ctx, message) {
     for (const { c, i } of list) {
         const at = `commands[${i}]${c && typeof c === 'object' && c.type ? ` (${c.type})` : ''}`;
         if (!c || typeof c !== 'object' || Array.isArray(c)) { errors.push(`${at}: must be an object`); continue; }
+        // User02 I63: an unsupported generic activity was repaired into rest for "i eat breakfast".
+        // Only the player's explicit meal clause is normalized; actual rest/learning retains its own contract.
+        if (c.type === 'activity' && ['activity', 'rest'].includes(c.kind) && typeof c.quote === 'string' && inMessage(message, c.quote)
+            && /\b(?:eat|eating|have|having)\b[\s\S]*\b(?:breakfast|lunch|dinner|supper|meal)\b/i.test(c.quote)
+            && !/\b(?:rest|resting|relax|sleep|sleeping|nap|wait|waiting|camp|recover|train|study)\b/i.test(c.quote)) {
+            const { seq, quote, needs } = c;
+            for (const key of Object.keys(c)) delete c[key];
+            Object.assign(c, { seq, type: 'other', what: quote, quote, ...(needs !== undefined ? { needs } : {}) });
+        }
         const type = String(c.type ?? '');
         if (c.manner !== undefined) {
             const m = c.manner;
@@ -736,6 +747,16 @@ export function mapPlan(commands, ctx, content, message, state) {
     // steel" and the "continue" after it was dropped): a thing he holds, named where a skill would stand, is that thing
     // used, a story command among the others, never a skill
     commands = (commands || []).map((c) => heldUse(c, ctx) || c);
+    // An explicit destination band chooses direction, not a teleport or extra movement budget.
+    commands = commands.map(c => {
+        if (c.type !== 'move' || typeof c.target !== 'string' || !inMessage(message, c.quote || '')) return c;
+        const destination = /\b(?:to|into)\s+(?:the\s+)?(ENGAGED|SHORT|MEDIUM|LONG)\b/i.exec(c.quote || '');
+        const current = state?.encounter?.combatants?.[c.target]?.current?.band || state?.scene?.positions?.[c.target]?.band;
+        if (!destination || !current) return c;
+        const bands = ['ENGAGED', 'SHORT', 'MEDIUM', 'LONG'];
+        const from = bands.indexOf(current), to = bands.indexOf(destination[1].toUpperCase());
+        return from < 0 || to === from ? c : { ...c, dir: to > from ? 'away' : 'closer' };
+    });
     // Hotfix c.6.6.18 (live 20.10.2026: "*i say* Thornash *and throw the scroll at them*" used the scorchburst scroll up
     // and the story burned the beetles): a held thing with an offensive effect profile, used, is an attack made with it
     commands = commands.map((c) => itemAttack(c, content, state) || c);

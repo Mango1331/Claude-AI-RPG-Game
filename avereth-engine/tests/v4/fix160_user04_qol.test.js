@@ -62,7 +62,7 @@ test('160 confirmed arrival keeps five canonical cards and all their detail/risk
     const done = replyTurnV4(r.state, content, f.extractions[72], { msg: 72, prose: f.chat[72].mes });
     const html = boardView(done.state, content, r.outcome.board);
     assert.equal((html.match(/class="avereth-board-card"/g) || []).length, 5);
-    for (const id of r.outcome.board.listings) { const q = done.state.quests[id]; assert.ok(html.includes(q.title)); assert.ok(html.includes(q.id)); }
+    for (const id of r.outcome.board.listings) { const q = done.state.quests[id]; assert.ok(html.includes(q.title)); assert.ok(html.includes(q.task)); }
     assert.match(html, /Contract details/); assert.match(html, /reported minimum exceeds/);
     assert.equal(done.events.filter(e => e.t === 'board.shown').length, 1);
 });

@@ -142,6 +142,35 @@
 :is(.avereth-board-card, .custom-avereth-board-card) summary { cursor: pointer; }
 :is(.avereth-awareness, .custom-avereth-awareness) { display: block; font-size: .78em; opacity: .85; }
 @media (max-width: 540px) { :is(.avereth-combat-name, .custom-avereth-combat-name) { overflow-wrap: anywhere; } :is(.avereth-board-card, .custom-avereth-board-card) { padding: .5em; } }
+
+/* .161: scoped composer drafts and compact cards; ST may prefix rendered classes with custom-. */
+.mes_text :is(.avereth-draft, .custom-avereth-draft) {
+  color: inherit; background: rgba(127, 127, 127, .10); border: 1px solid var(--SmartThemeBorderColor, #777);
+  border-radius: .3em; padding: .25em .5em; font: inherit; font-size: .82em; line-height: 1.3;
+  cursor: pointer; white-space: normal; overflow-wrap: anywhere; max-width: 100%;
+}
+.mes_text :is(.avereth-draft, .custom-avereth-draft):hover { background: rgba(127, 127, 127, .22); }
+.mes_text :is(.avereth-draft, .custom-avereth-draft):focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.mes_text :is(.avereth-board-card, .custom-avereth-board-card) header { align-items: start; }
+.mes_text :is(.avereth-board-card, .custom-avereth-board-card) header strong { flex: 1 1 12em; min-width: 0; }
+.mes_text :is(.avereth-board-meta, .custom-avereth-board-meta) { font-size: .88em; margin-top: .3em; opacity: .9; }
+.mes_text :is(.avereth-board-card, .custom-avereth-board-card) details div { margin-top: .35em; line-height: 1.4; }
+.mes_text :is(.avereth-ground, .custom-avereth-ground) { margin-top: .4em; }
+.mes_text :is(.avereth-ground, .custom-avereth-ground) ul { padding: 0; margin: .25em 0 0; list-style: none; }
+.mes_text :is(.avereth-ground-item, .custom-avereth-ground-item) { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: .5em; padding: .2em 0; }
+.mes_text :is(.avereth-ground-item, .custom-avereth-ground-item) > span { overflow-wrap: anywhere; }
+.mes_text :is(.avereth-combat-help, .custom-avereth-combat-help) { font-size: .85em; line-height: 1.4; margin: .35em 0; }
+.mes_text :is(.avereth-combat-hud, .custom-avereth-combat-hud) { container-type: inline-size; container-name: avereth-combat; }
+.mes_text :is(.avereth-hud-body, .custom-avereth-hud-body),
+.mes_text :is(.avereth-system-line, .custom-avereth-system-line) { overflow-wrap: anywhere; }
+@container avereth-combat (max-width: 420px) {
+  .mes_text [class*="avereth-combat-head"] { display: none; }
+  .mes_text [class*="avereth-combat-row"] { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); }
+  .mes_text [class*="avereth-combat-name"] { grid-column: 1 / -1; overflow-wrap: anywhere; }
+  .mes_text [class*="avereth-combat-hp"]::before { content: "HP "; }
+  .mes_text [class*="avereth-combat-range"]::before { content: "Range "; }
+  .mes_text [class*="avereth-combat-cover"]::before { content: "Cover "; }
+}
 @media (max-width: 700px) {
   /* Range table cells fill their columns; inline skill badges leave room for their AoE label. */
   .mes_text [class*="avereth-skill-range"] [class*="avereth-range"] { width: auto; min-width: 4.2em; }

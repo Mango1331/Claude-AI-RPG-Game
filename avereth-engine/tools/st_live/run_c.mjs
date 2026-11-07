@@ -1,5 +1,6 @@
 import { board159Turns, board159Response, board159Smoke } from './board159_smoke.mjs';
 import { qol160Turns, qol160BoardAnswer, qol160Smoke } from './qol160_smoke.mjs';
+import { ui161Turns, ui161Smoke } from './ui161_smoke.mjs';
 import { continuityTurns, continuitySmoke, continuityAnswer } from './continuity_smoke.mjs';
 // Live SillyTavern smoke for prototype C (docs/PROTOTYPE_C.md): the planner path in a real SillyTavern (tested with
 // 1.19.0), set up as tools/st_live/run_v4.mjs sets up Runtime V4 (card with the V4 contract, preset "Avereth Narrator V4",
@@ -69,7 +70,7 @@ const TURNS = [
 ];
 const turnOf = (text) => TURNS.find((t) => text.includes(`PLAYER MESSAGE:\n${t.player}`));
 const finance = financeTurns(plan);
-const allTurns = [...TURNS, ...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns];
+const allTurns = [...TURNS, ...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns];
 
 // ------------------------------------------------------------------------------------------------ setup (as run_v4.mjs)
 const contract = fs.readFileSync(path.join(ENGINE, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
@@ -129,7 +130,7 @@ const mock = http.createServer(async (req, res) => {
     // the planner: its own role in a fight, the interpreter's prompt with the planner's section outside one
     if (system.startsWith('You are the intent planner') || (system.startsWith('You are the command interpreter') && system.includes('Actions with skills, in fights and on things'))) {
         purpose = 'plan';
-        const t = turnOf(users) || [...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns].find(t => users.includes(`PLAYER MESSAGE:\n${t.player}`));
+        const t = turnOf(users) || [...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns].find(t => users.includes(`PLAYER MESSAGE:\n${t.player}`));
         text = JSON.stringify(t ? t.plan : { commands: [] });
     } else if (system.startsWith('You are the command interpreter')) {
         purpose = 'interpret';
@@ -204,19 +205,23 @@ try {
     await page.waitForFunction(() => window.SillyTavern?.getContext?.()?.characters?.length > 0, null, { timeout: 60000 });
     await page.waitForTimeout(1500);
     await page.evaluate(() => document.querySelectorAll('dialog[open] .popup-button-ok, dialog[open] .popup-button-cancel').forEach((b) => b.click()));
+    // Let ST's automatic connection check settle before reconfiguring this persisted test profile.
+    await page.waitForLoadState('networkidle');
     await page.evaluate(() => {
-        $('#main_api').val('openai').trigger('change');
-        $('#chat_completion_source').val('custom').trigger('change');
-        $('#custom_api_url_text').val('http://127.0.0.1:5001/v1').trigger('input');
-        $('#custom_model_id').val('mock-narrator').trigger('input');
+        if ($('#main_api').val() !== 'openai') $('#main_api').val('openai').trigger('change');
+        if ($('#chat_completion_source').val() !== 'custom') $('#chat_completion_source').val('custom').trigger('change');
+        if ($('#custom_api_url_text').val() !== 'http://127.0.0.1:5001/v1') $('#custom_api_url_text').val('http://127.0.0.1:5001/v1').trigger('input');
+        if ($('#custom_model_id').val() !== 'mock-narrator') $('#custom_model_id').val('mock-narrator').trigger('input');
         SillyTavern.getContext().saveSettingsDebounced();
-        $('#api_button_openai').trigger('click');
     });
+    await page.waitForLoadState('networkidle');
+    await page.evaluate(() => { if (SillyTavern.getContext().onlineStatus === 'no_connection') $('#api_button_openai').trigger('click'); });
     await page.waitForFunction(() => SillyTavern.getContext().onlineStatus && SillyTavern.getContext().onlineStatus !== 'no_connection', null, { timeout: 30000 });
+    await page.waitForLoadState('networkidle');
     await page.evaluate((name) => {
         const opt = [...document.querySelectorAll('#settings_preset_openai option')].find((o) => o.textContent === name);
         if (!opt) throw new Error(`no Chat Completion preset "${name}"`);
-        $('#settings_preset_openai').val(opt.value).trigger('change');
+        if ($('#settings_preset_openai').val() !== opt.value) $('#settings_preset_openai').val(opt.value).trigger('change');
     }, PRESET);
     await page.waitForTimeout(1500);
     // Patch 7.2: the planner is on by default (V4-C, the product path); the panel shows it, nothing to switch
@@ -449,10 +454,12 @@ try {
     if(process.env.AVERETH_SMOKE_BOARD159 === '1'){stealthProbeMode=true;board159Checks=await board159Smoke({page,send,idle,calls,driver:()=>driver,onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});}});stealthProbeMode=false;}
     let qol160Checks = null;
     if (process.env.AVERETH_SMOKE_QOL160 === '1') { stealthProbeMode = true; qol160Checks = await qol160Smoke({ page, send, idle, calls, driver: () => driver, onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); }, out: HERE }); stealthProbeMode = false; }
+    let ui161Checks = null;
+    if (process.env.AVERETH_SMOKE_UI161 === '1') { stealthProbeMode = true; ui161Checks = await ui161Smoke({ page, send, idle, calls, driver: () => driver, onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); }, out: HERE }); stealthProbeMode = false; }
     const status = await page.evaluate(() => document.getElementById('avereth_status')?.textContent || '');
     await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); });
     await page.waitForTimeout(800);
-    result = { toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks };
+    result = { toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks };
 } catch (error) {
     const screen = await page.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(-8000),
         chat: window.SillyTavern?.getContext?.()?.chat?.map(m => ({ user: m.is_user, system: m.is_system, text: m.mes?.slice(0, 120) })) })).catch(() => null);
@@ -476,6 +483,7 @@ const narr = normalCalls.filter((c) => c.purpose === 'narrator');
 const engineOf = (c) => String(c?.messages?.find((m) => String(m.content).startsWith('[AVERETH ENGINE'))?.content || '');
 const narratorFor = (key) => narr.filter((c) => c.lastUser.includes(TURNS.find((t) => t.key === key).player));
 const checks = {
+    ...Object.fromEntries(Object.entries(result.ui161Checks || {}).map(([k, v]) => [`ui161_${k}`, v])),
     startStatsFive: result.startStatsFive,
     ...Object.fromEntries(Object.entries(result.qol160Checks || {}).map(([k, v]) => [`qol160_${k}`, v])),
     ...Object.fromEntries(Object.entries(result.board159Checks || {}).map(([k,v])=>[`board159_${k}`,v])),

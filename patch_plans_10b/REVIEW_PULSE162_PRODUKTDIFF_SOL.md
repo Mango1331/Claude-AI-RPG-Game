@@ -2,6 +2,8 @@
 
 **07.11.2026.** Geprüft: Produkt `0b45c28fb064bde3ad7dd41401b932e7901f2142`, Basis `.161` / `bd19a30fb60c0c05ea9ecf077dc25b1cb4094088`; zentraler Dokumentationsstand `19fc9f4285c21306678b2005336a859764298238`. Der Implementiererbericht ist Ausgangspunkt, kein automatisch übernommener Nachweis. Maßgebliche Planung: [PULSE-Plan §§5/5.8/6 A und §§12–16](PULSE_W5_W7_TECHNISCHER_UMSETZUNGSPLAN.md); [Produktpatchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0b45c28fb064bde3ad7dd41401b932e7901f2142/avereth-engine/docs/PULSE162_PACKAGE_A.md).
 
+**Nachprüfung .163:** Die ursprünglichen R1/R2-Gegenfälle sind korrigiert; ein P3-Resthinweis für generische Mehrzielverträge und die gezielten Nachweise stehen in [§6](#6-gegenreview-163).
+
 ## Ergebnis
 
 **Die Grundarchitektur ist passend und .161 vollständig enthalten. Zwei reproduzierte P2-Integrationslücken sollten vor dem natürlichen PULSE-Test eng korrigiert werden:** fehlende Suchausnahme im Erzählervertrag und zu breite Suchartenerkennung. Dafür braucht es weder neue Ereignismechanik noch Parameter-/Balanceänderungen. Produktcode wurde in diesem Gegenreview nicht geändert.
@@ -128,3 +130,67 @@ JS
 Ein gemeinsamer kleiner technischer Korrekturschnitt für R1/R2, ohne PULSE-Parameter, C/B/D, Balance oder NPC-Kontinuität anzufassen. Danach die neuen Gegenfälle und die reguläre Patchabnahme gemäß 01; keine vorgeschaltete neue Vollanalyse. Vor natürlicher Ereignisdichte-/Budgetbewertung sollte der Narrator denselben Suchvertrag sehen, den die Firewall tatsächlich durchsetzt.
 
 Keine neue Designentscheidung nötig, um diese beiden Abweichungen vom vorhandenen Vertrag zu beseitigen. Die historische Jagd-Habitat-Ausnahme selbst wird hier nicht zurückgenommen. Der Nutzer entscheidet über die Implementierungsfreigabe; dieser Commit enthält nur Review/Status.
+
+
+## 6. Gegenreview .163
+
+**07.11.2026 · Produkt `6339f81a66c2c9af727e760bde3c391234020049`, main `2c5d5e6887ed6a5388a893e095d3cf682076b153`.** Nur der Korrekturdiff gegen `.162` wurde erneut geprüft. Die ursprüngliche .162-Analyse und ihr Fehlerstand-Reproduktionscode oben bleiben historische Nachweise.
+
+**Ergebnis: Die beiden ursprünglichen, vollständig reproduzierten Gegenfälle R1/R2 sind korrigiert. Kein Stopper für den geplanten natürlichen PULSE-Test mit populationsbasierten Jagdaufträgen.** Ein kleiner P3-Resthinweis im generischen Mehrzielvertragszweig bleibt unten ausdrücklich offen; daraus wird keine neue Pflicht-Vollprüfung oder ein Umbau von Paket A abgeleitet.
+
+### 6.1 Bewertung der Umsetzung
+
+- **R2:** `focusNames()` verwendet die vorhandenen Wortstämme und `sameKinds` des Contents, aber eine gerichtete Prüfung auf das Arten-Kopfnomen bzw. deklarierte Artwörter. Der kleine eigene Matcher ist hier begründet: Die Gegenrichtung von `namesKind()` akzeptiert auch „the wild“ für „wild boar“. `species:true` verhindert zugleich, dass das Partizip in „snapping turtles“ den Artenkopf abschneidet. Der rohe Teilstring und das beliebige gemeinsame Adjektiv sind entfernt. Keine neue Synonym-/Terrainliste oder Suchmechanik.
+- **R1, Population/Habitat:** Die Ausnahme steht direkt neben dem allgemeinen Verbot im bestehenden Envelope. Gesuchte Population, Jagdhabitat und Reise/Ankunft werden konkret benannt; dieselbe Population als Suche und Jagd wird einmal genannt. Das Wegnahmeverbot bleibt erhalten. Die Firewall selbst wurde in .163 nicht geändert.
+- Der Eingriff bleibt auf `pulse.js` und `envelope.js` plus Metadaten/Tests/Replay/Smoke/Dokumentation beschränkt. Parameter, Würfelstrom, Erholung, .161-UI und C/B/D bleiben außerhalb. `.162` ist nachweislich Vorfahr des neuen Produktstands.
+
+### 6.2 Tatsächlich unabhängig ausgeführte Nachweise
+
+| Prüfung | Eigenes Ergebnis |
+|---|---|
+| Neue .163- und vorhandene Paket-A-Tests | **29/29**, 0 fehlgeschlagen/übersprungen (`pulse_a.test.js` + `pulse_a163.test.js`) |
+| Angepasste Originalgegenprobe aus diesem Review | `broken boards`: regulärer PULSE-Wurf, keine Suchausnahme, kein neuer Wildschweinkampf; `boar tracks`: Ausnahme im tatsächlichen `buildContext()`, passender Kampf weiterhin erlaubt. `wild herbs`: keine Vertragsregistrierung; `boar tracks`: Vertragsregistrierung erhalten. Aktive Jagd bei geschlossenem Fenster: Ausnahmetext und erlaubte Reaktion erhalten |
+| Akzeptanzdateien .162/.163 | Gleiche **1040 IDs**, **1034 Einträge vollständig identisch**, genau sechs Ersetzungen; jeweils das vollständige alte Akzeptanzobjekt als `previous_acceptance_162` erhalten |
+| Die sechs geänderten Originalfälle | Alle sechs gezielt durch `prepareGenerationAsync()` auf **beiden** Produktständen neu aufgelöst. Alle **zwölf** vollständigen Recordfingerprints entsprechen exakt ihrer jeweiligen Akzeptanzdatei. Nach Entfernung ausschließlich von `pulse.rolled`, `outcome.auth.pulse` und der gegebenenfalls alten Szenen-PULSE-Zeile sind die gesamten Records .162/.163 exakt gleich |
+| Erneut nicht ausgeführt | Vollsuite 2866, Vollreplay 2235, ST 78/83 und natürliche Modellläufe. Diese bleiben Implementiererabnahme bzw. noch ausstehender natürlicher Nachweis. Die neue ausgehende ST-Requestprüfung wurde im Werkzeugdiff geprüft, hier nicht erneut im Browser ausgeführt |
+
+Die sechs IDs sind **`b18-rogue#65`, `#71`, `#209`, `#243`, `#291`, `#295`**. Alle wechseln von einem normalen PULSE-Wurf zur registrierten Suche nach der Mühlteich-Population (`reason:'sought'`). Beispiel Original #65: `I search the darkening pond for the next snapping turtle and engage it when found.` Dies sind echte positive Schildkrötensuchen, keine nachträglich pauschal freigegebenen Fremdsuchen. Suchcheck, Kosten, Ressourcen, sonstige Events, Systemmeldungen, Ablehnungen und Korrekturen bleiben strukturell exakt gleich zur .162-Recordausgabe nach der beschriebenen eng begrenzten Entfernung der PULSE-Entscheidung.
+
+Ausgeführter gezielter Node-Befehl, im Verzeichnis `avereth-engine`:
+
+```sh
+node --test --test-reporter=tap tests/v4/pulse_a.test.js tests/v4/pulse_a163.test.js
+```
+
+Für die zwölf Original-Neuauflösungen wurde die bestehende Corpusquelle `loadRun('b18-rogue')` verwendet, pro Fall der unveränderte Originalpräfix bis zum jeweiligen Eingang kopiert und nur dessen eigener Record entfernt. Derselbe vorhandene `financeText()`-Adapter wie im Replayer liefert die gespeicherte Plannerantwort. Die Ausgabe wird mit `recordOutput()`/`recordFingerprint()` geprüft. Kein Modellaufruf und kein neu gefalteter hypothetischer Gesamtverlauf; keine anderen Fälle wurden für diesen Vergleich erneut gerechnet.
+
+### 6.3 P3-Resthinweis: generische Mehrzielverträge nennen das erste statt des erlaubten Ziels
+
+[`envelope.js` Z.168–171](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/6339f81a66c2c9af727e760bde3c391234020049/avereth-engine/src/v4/envelope.js#L168) nimmt im `x.contract`-Zweig schlicht das erste `objective.what`. Die Suchregistrierung und `soughtMatch()` prüfen dagegen die vorhandenen Angriffs-/Besiegensziele. Bei einem Vertrag mit beispielsweise `DELIVER sealed medicine parcel` vor `DEFEAT wild boar` wird eine richtige Ebersuche registriert und die Firewall erlaubt die Eberreaktion, während der Narrator die Ausnahme für **das versiegelte Medizinpaket** bekommt. Auch mehrere verschiedene Kampfziele werden so nicht vollständig projiziert.
+
+Kleine direkte Reproduktion im Verzeichnis `avereth-engine` (unabhängig ausgeführt):
+
+```sh
+node --input-type=module <<'JS'
+import {loadProductContent} from './tests/helpers.js';
+import {campaign} from './tests/v4/patch8_lib.js';
+import {envelopeLines} from './src/v4/envelope.js';
+import {searchSought,soughtMatch} from './src/v4/pulse.js';
+const c=await loadProductContent(), s=structuredClone((await campaign(c)).state());
+s.quests['q.mixed']={id:'q.mixed',status:'active',taker:'pc',title:'Help the farm',objectives:[
+  {verb:'DELIVER',what:'sealed medicine parcel',qty:1},
+  {verb:'DEFEAT',what:'wild boar',qty:1}]};
+s.entities['mon.boar']={id:'mon.boar',kind:'creature',species:'wild boar',anchor:'boar'};
+const sought=searchSought(s,c,'boar tracks');
+console.log({sought, allowed:soughtMatch(s,c,sought,'mon.boar'),
+  line:envelopeLines(s,c,{c:true,pulse:{governs:true,open:false,sought}}).find(x=>x.includes('Exception'))});
+JS
+```
+
+Beobachtet: `sought:[{contract:'q.mixed'}]`, `allowed:true`, Text `Exception he sought himself: the sealed medicine parcel … may meet him and turn on him`. Dies ist eine konkrete Textprojektion am Matcher-/Envelopepfad, **kein** behaupteter natürlicher Mehrzielquestfehler und kein zusätzlicher vollständiger ST-/Worldlauf.
+
+**Einstufung und kleinster Anschluss:** P3, enger Resthinweis im generischen Vertragspfad. Für diesen Zweig die tatsächlich von derselben gespeicherten Vertragsberechtigung gedeckten Kampfzielarten ausgeben, keine beliebige erste Liefer-/Sammelaufgabe. Keine neue Autorisierung, keine Zustandsfelder und kein Questumbau nötig. Populationen/aktive `q.hunt`-Habitate des geplanten natürlichen PULSE-Tests verwenden andere, korrekt geprüfte Zweige. Dafür ist kein weiterer Pflicht-Zwischenbuild begründet; den Hinweis bei einer passenden nächsten Änderung berücksichtigen.
+
+### 6.4 Anschluss
+
+Der nächste fachliche Schritt bleibt der natürliche PULSE-Test auf .163: konkrete Umsetzung offener Fenster, Ereignisdichte und legitime Jagdkontakte beobachten. Erst die Ergebnisse begründen Parameterfeinschliff oder Paket C. Keine weitere Vollreview- oder Batchschleife ohne neuen Befund.

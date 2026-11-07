@@ -42,7 +42,8 @@ const ACCEPTED146 = JSON.parse(fs.readFileSync(new URL('./accepted_f146_vs_126.j
 const ACCEPTED148 = JSON.parse(fs.readFileSync(new URL('./accepted_design148_vs_126.json', import.meta.url), 'utf8'));
 const ACCEPTED149 = JSON.parse(fs.readFileSync(new URL('./accepted_design149_vs_126.json', import.meta.url), 'utf8'));
 const ACCEPTED157 = JSON.parse(fs.readFileSync(new URL('./accepted_fix150_vs_126.json', import.meta.url), 'utf8'));
-const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_fix159_vs_126.json', import.meta.url), 'utf8'));
+const ACCEPTED159 = JSON.parse(fs.readFileSync(new URL('./accepted_fix159_vs_126.json', import.meta.url), 'utf8'));
+const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_fix160_vs_126.json', import.meta.url), 'utf8'));
 const F144 = ['finance 144 payment card', 'finance 144 contract fields', 'finance 144 acceptance hint', 'finance 144 price open', 'finance 144 unit limit', 'finance 144 acceptance', 'finance 144 own coin'];
 const SUB = { ...baseline, runs: Object.fromEntries(QUICK.map((l) => [l, baseline.runs[l]])) };
 let quick = null; // the four quick runs, replayed once for this file
@@ -52,7 +53,7 @@ test('A1/C: the four quick runs replay as on the start commit, from whole and va
     const { compared, diffs } = compareToBaseline(SUB, result);
     assert.equal(compared, QUICK.reduce((n, l) => n + Object.keys(baseline.runs[l].cases).length, 0));
     assert.deepEqual(diffs.map((d) => d.id).sort(), Object.keys(ACCEPTED.cases).filter((id) => QUICK.includes(id.split('#')[0])).sort());
-    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138','finance 142','finance 142 contract fields', 'batch21 integration 146', 'design148 danger', 'design148 area', 'design149 offensive growth', 'fix150 place fact', 'fix158 fact text', 'fix158 guild witness', 'fix159 board failure', ...F144].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F/integration differences are allowed');
+    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138','finance 142','finance 142 contract fields', 'batch21 integration 146', 'design148 danger', 'design148 area', 'design149 offensive growth', 'fix150 place fact', 'fix158 fact text', 'fix158 guild witness', 'fix159 board failure', 'fix160 board narration', ...F144].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F/integration differences are allowed');
     const { open, accepted, stale } = acceptedDiffs(diffs, ACCEPTED.cases, result);
     assert.deepEqual([open, stale, accepted.length], [[], [], diffs.length], 'every accepted record has exactly the fingerprinted output');
     for (const [label, run] of Object.entries(result.runs)) {
@@ -265,4 +266,20 @@ test('.157 adds only two original unique-band attacks and keeps all 479 earlier 
     assert.equal(Object.keys(previous).length, 479);
     assert.equal(recordFingerprint(previous), 'sha256:ffb9fd900eb8357cf1cb3a10e9f99ae81aa93ce0c6eb8e31a074645d146d231a');
     for (const [id, entry] of added) { assert.ok(entry.reason.startsWith(id + ':')); assert.match(entry.fingerprint, /^sha256:[0-9a-f]{64}$/); }
+});
+
+
+test('.160 preserves 479 exact .159 acceptances and supersedes only 38 Board narrator instructions', () => {
+    assert.deepEqual(Object.keys(ACCEPTED.cases).sort(), Object.keys(ACCEPTED159.cases).sort());
+    let changed = 0;
+    for (const [id, old] of Object.entries(ACCEPTED159.cases)) {
+        const now = ACCEPTED.cases[id];
+        if (now.category !== 'fix160 board narration') { assert.deepEqual(now, old, id); continue; }
+        changed++;
+        assert.deepEqual(now.previous_acceptance_159, old, id);
+        assert.ok(now.reason.startsWith(id + ':'));
+        assert.match(now.reason, /all other record fields are exactly the .159 output/);
+        assert.match(now.fingerprint, /^sha256:[0-9a-f]{64}$/);
+    }
+    assert.equal(changed, 38);
 });

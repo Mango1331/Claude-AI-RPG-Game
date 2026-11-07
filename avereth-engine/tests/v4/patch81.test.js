@@ -384,7 +384,7 @@ test('8.1 truth 2 (live #29): the combat step ends with STATE NOW — BINDING: A
     const enc = g.state().encounter;
     if (enc) {
         const a = enc.combatants[A];
-        assert.match(text, new RegExp(`STATE NOW — BINDING \\(end the reply so; no other foe\\): Glass Beetle A alive ${a.current.hp}/${a.fixed.max_hp} HP · Glass Beetle B DEAD \\(earlier\\) · Alaric \\d+/80 HP · fight goes on, Alaric's Turn\\.`));
+        assert.match(text, new RegExp(`STATE NOW — BINDING \\(end the reply so; no other foe\\): Glass Beetle A alive ${a.current.hp}/${a.fixed.max_hp} HP; aware of Alaric · Glass Beetle B DEAD \\(earlier\\) · Alaric \\d+/80 HP · fight goes on, Alaric's Turn\\.`));
     } else assert.match(text, /STATE NOW — BINDING .*Glass Beetle A DEAD · Glass Beetle B DEAD \(earlier\).*fight OVER/);
     assert.doesNotMatch(text, /Glass Beetle A \(the dog-sized beetles with glassy faceted sh\)/);
     assert.match(text, /Glass Beetle A \(a glass beetle\)/);

@@ -24,7 +24,7 @@
 // dice stream, so nothing else of a campaign changes); everything drawn is stored in an event, a replay or a swipe
 // re-applies it, and nothing is rolled again.
 import { clone, hash32, normText, slug } from '../util.js';
-import { trueDungeonOf, dungeonOf, rankText, guildRecord, floorRefusal } from './dungeon.js';
+import { trueDungeonOf, dungeonOf, rankText, guildRecord, floorRefusal, roomKnown, goesFrom, blockerOf } from './dungeon.js';
 import { placeName, settlementOf, realmOf } from './domain.js';
 
 const DAY = 1440;
@@ -515,6 +515,33 @@ export function sealRefusal(s, to, level = null) {
     // a room of that level he has already stood in was reached before the seal mattered (an old save): not cut off
     if (s.places[to]?.visited) return null;
     return `the way down to level ${floor} of ${x.name} is sealed until the guardian of level ${floor - 1} falls`;
+}
+
+/** Narrator-only current access for a known adjacent-floor way; never a move or a second seal rule. */
+export function guardianAccessLines(s, root, { floor = null } = {}) {
+    const x = livingOf(s, root);
+    if (!x || trueDungeonOf(s, root) !== root) return [];
+    const pairs = new Map();
+    for (const l of Object.values(s.links || {})) {
+        if (l.hidden || trueDungeonOf(s, l.a) !== root || trueDungeonOf(s, l.b) !== root) continue;
+        const a = floorAt(s, l.a), b = floorAt(s, l.b);
+        if (Math.abs(a - b) !== 1 || Math.min(a, b) < 1) continue;
+        const n = Math.min(a, b), from = a === n ? l.a : l.b, to = a === n ? l.b : l.a;
+        if ((floor !== null && n !== floor) || !goesFrom(l, from) || !roomKnown(s, from) || !roomKnown(s, to)) continue;
+        if (!x.floors[n]?.sealed || !x.floors[n + 1] || !x.run.floors[n] || !x.run.floors[n + 1]) continue;
+        const ways = pairs.get(n) || []; ways.push({ link: l, to }); pairs.set(n, ways);
+    }
+    // An outside question without a particular floor must have one unambiguous known transition.
+    if (floor === null && pairs.size !== 1) return [];
+    return [...pairs].flatMap(([n, ways]) => {
+        const cleared = !!x.run.floors[n].cleared;
+        const allowed = ways.filter(w => !sealRefusal(s, w.to));
+        // null from sealRefusal alone also covers old visits and never-sealed ways: not a released seal.
+        if (!cleared && allowed.length) return [];
+        if (cleared && !allowed.length) return [];
+        const obstacles = [...new Set((cleared ? allowed : ways).map(w => blockerOf(s, w.link)?.name).filter(Boolean))];
+        return [`DUNGEON ACCESS NOW — ${x.name}: floor ${n} -> ${n + 1} guardian seal ${cleared ? 'RELEASED this cycle; older sealed descriptions are history' : `SEALED until floor ${n}'s guardian falls`}. Access status only, no movement; not extra NPC knowledge.${obstacles.length ? ` Separate obstacle still blocks the way: ${obstacles.join(', ')}.` : ''}`];
+    });
 }
 
 // ------------------------------------------------------------------------------------------------ the cycle

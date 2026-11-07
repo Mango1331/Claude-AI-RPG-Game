@@ -487,7 +487,7 @@ test('c.6.2: the second reading of the day shows the same notices, not as new; t
     assert.match(outcomeOf(g).actions[0], /these official listings have JUST become available/);
     await read(g);
     const again = outcomeOf(g).actions[0];
-    assert.match(again, /^1\. READS the Novice board — BOARD \(show exactly these, invent no other official contract; .*these are the notices posted earlier today, the same as before, nothing new: do not call them new, fresh or just posted/);
+    assert.match(again, /^1\. READS the Novice board — BOARD \(System cards .*these are the notices posted earlier today, the same as before, nothing new: do not call them new, fresh or just posted/);
     assert.ok(!/JUST become available|first display|now become canonical/.test(again));
     for (const l of DAY1) assert.ok(again.includes(`**${l.title}**`), l.title);
     // A, planner off: every reading as before

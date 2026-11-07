@@ -20,7 +20,7 @@ import { threadCurrent } from './threads.js';
 import { goalLines } from './v4/intents.js';
 import { featuresAt, featureText } from './v4/features.js';
 import { dungeonOf, trueDungeonOf, dungeonText, nearDungeons, exitsFrom, exitText, roomLabel, wayBetween } from './v4/dungeon.js';
-import { contextLines as livingLines } from './v4/living.js';
+import { contextLines as livingLines, guardianAccessLines, floorAt as livingFloorAt } from './v4/living.js';
 import { settlementOf, realmOf, hallOf, listedToday, lineage } from './v4/domain.js';
 import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
 import { objectiveText, proofText as guildProofText, defeatTally, tallyText, readyText, proofMemory } from './v4/guild.js';
@@ -158,8 +158,9 @@ function npcCard(state, content, id, focusWords, { absent = false } = {}) {
     if (statusOf(state, id) === 'dead') return lines[0];
     const aware = absent ? null : state.scene.awareness[id];
     const unseen = !absent && state.scene.concealed.includes('pc');
+    const concealment = unseen ? (v4 && c && aware === 'aware' ? '; recorded concealment does not cancel this observer\'s combat awareness' : '; Alaric is currently UNSEEN') : '';
     if (e.kind === 'creature') {
-        lines.push(`  awareness of Alaric: ${aware || 'not established'}${unseen ? '; Alaric is currently UNSEEN' : ''}`);
+        lines.push(`  awareness of Alaric: ${aware || 'not established'}${concealment}`);
     } else {
         const rel = state.relations[`rel.${id}.attitude.pc`];
         const last = rel?.history?.at(-1);
@@ -167,7 +168,7 @@ function npcCard(state, content, id, focusWords, { absent = false } = {}) {
             && /\b(?:relationship|related|family|kin|parent|child|daughter|son|sibling|spouse|partner|friend|ally|serves|works_for|employer|member_of|affiliation)\b/i.test(String(f.p || '').replace(/_/g, ' '))).slice(-3);
         const ident = pcIdentityFor(state, id);
         const idText = ident.level === 'name' ? 'knows him by name' : ident.level === 'seen' ? 'has seen him, does NOT know his name' : 'has never seen him';
-        lines.push(`  toward Alaric: ${attitudeLabel(rel?.value)}${last?.why ? ` (last change: ${last.why})` : ''}; ${idText}${aware ? `; awareness: ${aware}` : ''}${unseen ? '; Alaric is currently UNSEEN by others' : ''}`);
+        lines.push(`  toward Alaric: ${attitudeLabel(rel?.value)}${last?.why ? ` (last change: ${last.why})` : ''}; ${idText}${aware ? `; awareness: ${aware}` : ''}${concealment}`);
         if (ties.length) lines.push(`  established ties: ${ties.map((f) => propText(state, f, content)).join('; ')}`);
         const moments = sharedMoments(state, id);
         const lastMoment = moments.at(-1);
@@ -300,12 +301,12 @@ function stateNow(state, content, outcome) {
     const before = (state.scene.present || []).filter((id) => !fought.has(id) && groups.has(state.entities[id]?.group) && state.entities[id].status === 'dead');
     const pc = b.hp.find((h) => h.id === 'pc');
     const bits = [
-        ...b.hp.filter((h) => h.id !== 'pc').map((h) => `${name(h.id)} ${fate(h)}`),
+        ...b.hp.filter((h) => h.id !== 'pc').map((h) => `${name(h.id)} ${fate(h)}${!h.state && state.scene.awareness[h.id] ? `; ${state.scene.awareness[h.id]} of Alaric` : ''}`),
         ...before.map((id) => `${sceneHandle(state, content, id)} DEAD (earlier)`),
         `Alaric ${pc?.state === 'defeated' ? 'DOWN' : `${pc?.hp}/${pc?.max} HP`}`,
         outcome.ended ? 'fight OVER' : 'fight goes on, Alaric\'s Turn',
     ];
-    return `STATE NOW — BINDING (end the reply so; no other foe): ${bits.join(' · ')}.`;
+    return `STATE NOW — BINDING (end the reply so; no other foe): ${bits.join(' · ')}.${b.hp.some(h => h.id !== 'pc' && !h.state && state.scene.awareness[h.id] === 'aware') ? ' Current combat awareness supersedes earlier arrival/entry stealth; not proof of exact visual contact or identity.' : ''}`;
 }
 
 /** Patch 9C-2b: how a learned Skill came to him (its source's kind). */
@@ -348,7 +349,7 @@ function outcomeLines(state, content, outcome, { v4 = false } = {}) {
             lines.push(`Alaric's declared attack is NOT possible: ${outcome.illegal}. No combat started; nothing was spent or rolled. It is still Alaric's decision.`);
             return lines.join('\n');
         }
-        if (outcome.started) lines.push(`${outcome.started.joined ? outcome.started.reason : `Combat starts (${outcome.started.reason})`}. Turn order: ${outcome.started.order}.`);
+        if (outcome.started) lines.push(`${outcome.started.joined ? outcome.started.reason : `Combat starts${outcome.c ? ' — ENTRY, BEFORE the attack' : ''} (${outcome.started.reason})`}. Turn order: ${outcome.started.order}.`);
         for (const r of outcome.records) lines.push(`- ${recordLine(state, r, (id) => fightLabel(state, id, outcome.board?.labels), outcome.c ? content : null)}`);
         // Prototype C (4.3.0-c.6.6.7): where everyone stands once these steps are done; a place they left is behind them
         const stand = outcome.c && outcome.records.length && outcome.board ? outcome.board.hp.filter((h) => h.id !== 'pc' && h.band && !h.state) : [];
@@ -726,6 +727,10 @@ export function buildContext(state, content, opts = {}) {
     if (near.length && (hallOf(state, state.scene.at) || /\bdungeons?\b/.test(scan) || near.some((id) => scan.includes(normText(state.places[id].name))))) {
         add('dungeon', `KNOWN DUNGEONS NEAR ${state.places[town].name.toUpperCase()} (common knowledge here; the Guild keeps records of them; the same places in every telling): ${near.map((id) => `${state.places[id].name} — ${dungeonText(state, id, { guild: true }).replace(/^a Dungeon: /, '')}${state.places[id].where ? `; ${state.places[id].where}` : ''}`).join(' · ')}`, 2);
     }
+    const namedDungeons = v4 ? Object.keys(state.dungeons || {}).filter(id => state.places[id]?.name && normText(input).includes(normText(state.places[id].name))) : [];
+    const dungeonQuestion = /\b(?:dungeons?|deeper|lower|floors?|levels?|guardians?|seals?)\b/i.test(input);
+    const accessRoot = dun || (namedDungeons.length === 1 ? namedDungeons[0] : !namedDungeons.length && dungeonQuestion && near.length === 1 ? near[0] : null);
+    const access = v4 && accessRoot ? guardianAccessLines(state, accessRoot, { floor: dun ? Math.max(1, livingFloorAt(state, state.scene.at)) : null }) : [];
     // relevant memories / facts / quests / threads
     const rel = retrieveRelevant(state, content, { input, lastReply, budget, pinnedIds: new Set(pinned.map((f) => f.id)), recentTurns: opts.recentTurns ?? DEFAULT_RECENT_TURNS, weights: opts.weights });
     if (rel.items.length) add('relevant', `RELEVANT (retrieved from the campaign record):\n${rel.items.map((s) => `- ${s.item.label}`).join('\n')}`, 2);
@@ -763,7 +768,7 @@ export function buildContext(state, content, opts = {}) {
     } else if (state.meta?.runtime === 'v4') {
         // Runtime V4: PLAYER ACTIONS (a story turn) or the V3 resolution (combat, stealth), then prose only
         const o = opts.outcome;
-        add('resolved', o ? (o.kind === 'v4' ? outcomeBlock(state, content, o) : `RESOLVED THIS TURN (binding):\n${outcomeBlock(state, content, o, { v4: true })}`) : '', 0);
+        add('resolved', [o ? (o.kind === 'v4' ? outcomeBlock(state, content, o) : `RESOLVED THIS TURN (binding):\n${outcomeBlock(state, content, o, { v4: true })}`) : '', ...access].filter(Boolean).join('\n'), 0);
         if (state.mode !== 'creation') add('report', V4_OUTPUT_LINE, 0, true);
     } else {
         add('resolved', opts.outcome ? `RESOLVED THIS TURN (binding):\n${outcomeBlock(state, content, opts.outcome)}` : '', 0);

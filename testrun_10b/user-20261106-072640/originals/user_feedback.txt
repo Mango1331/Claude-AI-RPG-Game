@@ -1,0 +1,21 @@
+Questboard Interaktionen brazchen den Narrator fast gar nicht. man kann ihn gerne die Stimmung drum rum erzählen lassen aber die auflistung der quests doppelt ist unnötig und würde Tokens sparen wenn weggelassen oder?
+
+First strike habe ich nun 2 mal erwähnt aber nicht sicher ob es in den Reviews aufgenommen wurde und einfach niedrigere prio hat ich bekomme immer first strike auch wenn der Narrator schon sagt in der runde davor sie gehen auf mich zu. entweder müssen wir Combat start besser formulieren und den unterschied ob ich als user überraschend vor initiative angreife oder ob die Gegner schon voll Aware sind und auf mich zu laufen. (also ist nichts riesiges aber ist halt eine cheat runde für jeden fight den ich führe wenn meine AGI niedriger ist... obwohl nicht ganz da wenn ich first strike habe höhere agi Gegner 2 mal angreifen können. vllt ist es doch balanced. bin ich unsicher insgesamt
+
+erste Passive die ich angeboten bekomme. hätte gerne bei der UI Nachricht auch die Begründung e.g. "because you won against 4 enemies higher Level and lived with under 20 percent hp" nun habe ich sie zur Auswahl aber sehe nicht wodurch (okay #passives zeigt es dann an. sollte reichen da die UI sagt man soll #passives nutzen zum akzeptieren)
+
+rest im dungeon immer noch ohne folgen (Sollte durch PULSE engine in zulunft geklärt werden)
+
+Der Bone den ich gegessen habe. es ist okay das nichts passiert ist die frage ist nichts passiert weil nichts ist oder weil wir solche offenen mechanics nicht haben? vielleicht wäre was passiert hätte ich den perceiption check succeeded
+
+auch dungeon Levels 2 sollten erst möglich sein nach besiegen des Floor bosses.
+
+Start stats sollen wieder geringer sein auf 5 (der Boss in einer F rank ebene soll von user den wir als Main Character ansehen schlagbar sein aber nicht als Level 4 in 2 angriffen. Welches Level hat der Boss? der sollte mindestens lvl 10 sein vllt müssen wir deren stats sonst erhöhen) dann wieder das lootbox Thema für bosse aus einem älteren user run schon als Feedback gegeben stärkere bosse können wir dann auch mehr überprüfen fürs Tatenbuch für bessere Klassen Entwicklungen zb. bos des selben ranks solo besiegt und bessere tatenstufen für 3 Level darunter 5 Level darunter 10 Level darunter usw.
+
+Die Quests sind im Moment viel besser als zu begin. mit einzelnen high Level f Gegnern auch statt immer nur cull low Level dinger. 
+
+Monster wirken schwach sobal man ein wenig Levels hat. Titan ist so viel langsamer als ich. frage ist ob das an seinem Monster "grundgerüst" liegt und wie schnellere "grundgerüste" im vergleich sind
+
+Nach Angriff sagt Narrator "didnt find him yet" aber Combat ist auf "Aware" Aware macht mehr sinn Narrator fehler ist tolerierbar aber vllt kann man ihn ohne große umbauen verhindern.
+
+wenig natürliche sachen. also enemies ausserhalb der quests. Encounter außerhalb der gesuchten in der Stadt. Loot und wunder und magie in der welt. hieouts Banditen. PULSE Engine sollte höhere Prio bekommen um die welt lebendiger zu machen. Balancing muss mit diesem test auch überdacht werden es ist zu einfach

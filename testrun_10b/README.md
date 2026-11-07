@@ -1,6 +1,6 @@
 # Avereth – Originalruns und Reviews
 
-**Stand: 05.11.2026 · Quellenindex, keine zweite Produkt-/Teststatusliste.** [Aktueller Stand 03](../03_AKTUELLER_PROJEKTSTAND.md) · [Fachquellen 06](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Arbeitsweise 01](../01_ARBEITSWEISE_CHATGPT_CLAUDE.md).
+**Stand: 07.11.2026 · Quellenindex, keine zweite Produkt-/Teststatusliste.** [Aktueller Stand 03](../03_AKTUELLER_PROJEKTSTAND.md) · [Fachquellen 06](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Arbeitsweise 01](../01_ARBEITSWEISE_CHATGPT_CLAUDE.md).
 
 10B ist auf .154 als technischer Zwischenstand für persönliche Spieltests teilabgenommen. Aktuell stehen freie persönliche Runs im Vordergrund; weitere Batches nur bei konkretem Erkenntnisbedarf. Ein Runner-`completed` ist nur ein Ende, weder Levelziel noch Integritätsnachweis. Keine gemeinsame Erfolgsquote aus unterschiedlichen Builds, kurzen Toden und langen fortgesetzten Läufen bilden.
 
@@ -8,10 +8,12 @@
 
 | Run | Umfang / Ende | Maßgebliche Quellen |
 |---|---|---|
+| **User04 · 06.11.2026 · .159** | 46 Inputs, 38 Enginezüge, 634 Events; Mage L1→L8, Floor-1-Clear/Abgabe, Titanjagd erfüllt; offener Abschluss I92 ohne bestätigten Technikstopp. | [Review mit allen Spielgefühlpunkten](user-20261106-072640/REVIEW.md), [Mess-/Gegenproben](user-20261106-072640/PROBE_RESULTS.json), [alle vier Originale inkl. komprimiertem ST-Log](user-20261106-072640/SOURCE_MANIFEST.md). |
+| **User03 · 05.11.2026 · .158** | Kurzer Boardfehlerlauf, sechs Spielereingaben; Ausgangsbeleg für .159. Kein eigener vollständiger Runordner auf main. | [Bisheriger Quellen-/Abnahmestand](../03_AKTUELLER_PROJEKTSTAND.md); Originalantwortpaare/Quellhashes im [Produktfixture der .159-Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/2089dccdb7fd3dc08c72c5737c6b111fb6512f56/avereth-engine/docs/FIX159_USER03_BOARD.md). |
 | **User02 · 05.11.2026 · .157** | 37 Inputs, 34 Enginezüge, 609 Events; Mage L1→L7, Dungeon-Clear/Abgabe/Verkauf, manuell beendet. Unabhängiger Sol-Gegenreview abgeschlossen. | [GPT-Review mit Sol-Nachtrag §8](user-20261105-050449/REVIEW_CHATGPT.md), [16 Feedbackpunkte](user-20261105-050449/USER_FEEDBACK_REVIEW.md), [Mess-/Gegenproben](user-20261105-050449/SOL_PROBE_RESULTS.json), [Originalmanifest](user-20261105-050449/SOURCE_MANIFEST.md). |
 | **User01 · 04.11.2026 · .155** | 37 Beiträge, 33 Enginezüge, 635 Events; Mage L1→L7. Offener/manueller Abschluss nach Reise-/Stealthproblem; Ursprung von UI- und Brenna-Befunden. | [Review](user-20261104-162404/REVIEW.md), [Feedback](user-20261104-162404/USER_FEEDBACK_REVIEW.md), [Originalmanifest](user-20261104-162404/SOURCE_MANIFEST.md), [vertiefte NPC-Analyse](../recherche/NPC_KONTINUITAET_ANALYSE_20261104.md). |
 
-Originalchat, Events und Spielerfeedback beider User-Runs sind auf `main` archiviert. Vollständige große Serverlogs liegen im Nutzerupload/separaten User-ZIP, **nicht im Git-Baum**; Hash und Verfügbarkeit beim jeweiligen Manifest prüfen. Unfertige Sol-Notizen in User02 sind als Original erhalten, das abgeschlossene Gegenreview steht in §8. Dessen technische Einzelbefunde und nächste Arbeit nicht hier duplizieren.
+Originalchat, Events und Spielerfeedback von User01/02 sind auf `main` archiviert; deren vollständige große Serverlogs liegen im Nutzerupload/separaten User-ZIP. **User04 archiviert alle vier Originale einschließlich des vollständigen Serverlogs verlustfrei komprimiert auf main.** User03 hat bislang die oben verlinkten Teilauszüge. Hash und Verfügbarkeit jeweils beim Manifest/der maßgeblichen Quelle prüfen. Unfertige Sol-Notizen in User02 sind als Original erhalten, das abgeschlossene Gegenreview steht in §8. Dessen technische Einzelbefunde und nächste Arbeit nicht hier duplizieren.
 
 ## Natürliche Batchläufe
 

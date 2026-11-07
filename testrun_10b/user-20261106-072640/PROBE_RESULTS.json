@@ -1,0 +1,6759 @@
+{
+  "read_only": true,
+  "review_date": "2026-11-07",
+  "main_base": "b654f0400d0172f8c565c16ea27996ffde78fddc",
+  "product_commit": "2089dccdb7fd3dc08c72c5737c6b111fb6512f56",
+  "build": "4.3.0-c.6.6.159",
+  "originals": [
+    {
+      "original_name": "Avereth Engine Test v4 - 2026-11-06@07h26m40s980ms.jsonl",
+      "bytes": 1244835,
+      "sha256": "e9ad13dd241751dcf62d5fbdb76718f929f7e08df4913d4e9a5ac5b373cb86d6",
+      "archive": "originals/chat.jsonl.gz",
+      "archive_bytes": 121214,
+      "archive_sha256": "2f74ad0ae30affbe34b6d33b32a3c0f0d2bb360a9a6348436a4759a97afb64ca",
+      "byte_exact": true
+    },
+    {
+      "original_name": "avereth-events-Avereth Engine Test v4 - 2026-11-06@07h26m40s980ms.json",
+      "bytes": 392858,
+      "sha256": "ceabc66fad26234f87d6b20bf0e8009aa627143a57e4affa4099827cb16bc514",
+      "archive": "originals/events.json.gz",
+      "archive_bytes": 46415,
+      "archive_sha256": "e91b72372756dcf0532d7e66b8ca051b694dd7e82ebbd62d9b30fb4668cd7fff",
+      "byte_exact": true
+    },
+    {
+      "original_name": "Userfeedback Spielgefühl(1).txt",
+      "bytes": 3156,
+      "sha256": "9b078b696e8190fa68733114181aea30a560ade44f19dc0b71237a430d1aed5f",
+      "archive": "originals/user_feedback.txt",
+      "archive_bytes": 3156,
+      "archive_sha256": "9b078b696e8190fa68733114181aea30a560ade44f19dc0b71237a430d1aed5f",
+      "byte_exact": true
+    },
+    {
+      "original_name": "ST_2026-11-06_07-26-13.txt",
+      "bytes": 14579616,
+      "sha256": "b2b30a4e43382d379e501491791aa30b2b99ac5d3a142dcdead0b383483ba086",
+      "archive": "originals/serverlog.txt.gz",
+      "archive_bytes": 2955419,
+      "archive_sha256": "237045aa5df6008b61364490f7787d21f765566d321b90f3d2663fec2fa807d5",
+      "byte_exact": true
+    }
+  ],
+  "fold": {
+    "messages": 93,
+    "users": 46,
+    "event_groups": 78,
+    "events": 634,
+    "export_mismatches": [],
+    "prefixes": 93,
+    "prefix_issues": [],
+    "flat_equals_host": true,
+    "json_reload_equals": true,
+    "turn": 38
+  },
+  "original_extraction_replay": [
+    {
+      "i": 6,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 8,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 10,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 12,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 14,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 16,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 18,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 20,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 22,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 24,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 28,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 32,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 34,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 36,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 38,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 42,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 44,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 46,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 48,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 50,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 52,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 60,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 62,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 64,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 66,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 68,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 70,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 72,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 74,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 76,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 78,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 80,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 82,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 84,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 86,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    },
+    {
+      "i": 92,
+      "events_exact": true,
+      "state_exact": true,
+      "validation": []
+    }
+  ],
+  "narrator_context_comparison": [
+    {
+      "i": 6,
+      "request": 2,
+      "request_line": 319,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 3204,
+      "reconstructed_chars": 3204
+    },
+    {
+      "i": 8,
+      "request": 5,
+      "request_line": 1367,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 6065,
+      "reconstructed_chars": 6065
+    },
+    {
+      "i": 10,
+      "request": 9,
+      "request_line": 2740,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 3803,
+      "reconstructed_chars": 3803
+    },
+    {
+      "i": 12,
+      "request": 14,
+      "request_line": 4076,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 6350,
+      "reconstructed_chars": 6350
+    },
+    {
+      "i": 14,
+      "request": 17,
+      "request_line": 5236,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 6275,
+      "reconstructed_chars": 6275
+    },
+    {
+      "i": 16,
+      "request": 20,
+      "request_line": 6329,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 6473,
+      "reconstructed_chars": 6473
+    },
+    {
+      "i": 18,
+      "request": 24,
+      "request_line": 7652,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 6748,
+      "reconstructed_chars": 6748
+    },
+    {
+      "i": 20,
+      "request": 27,
+      "request_line": 8720,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 8806,
+      "reconstructed_chars": 8806
+    },
+    {
+      "i": 22,
+      "request": 30,
+      "request_line": 9673,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 8039,
+      "reconstructed_chars": 8039
+    },
+    {
+      "i": 24,
+      "request": 34,
+      "request_line": 10670,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 8209,
+      "reconstructed_chars": 8209
+    },
+    {
+      "i": 28,
+      "request": 37,
+      "request_line": 11733,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 6965,
+      "reconstructed_chars": 6965
+    },
+    {
+      "i": 32,
+      "request": 40,
+      "request_line": 12782,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 6823,
+      "reconstructed_chars": 6823
+    },
+    {
+      "i": 34,
+      "request": 43,
+      "request_line": 13835,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 7484,
+      "reconstructed_chars": 7484
+    },
+    {
+      "i": 36,
+      "request": 47,
+      "request_line": 15140,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 7064,
+      "reconstructed_chars": 7064
+    },
+    {
+      "i": 38,
+      "request": 54,
+      "request_line": 17532,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 9016,
+      "reconstructed_chars": 9016
+    },
+    {
+      "i": 42,
+      "request": 58,
+      "request_line": 18870,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 7533,
+      "reconstructed_chars": 7533
+    },
+    {
+      "i": 44,
+      "request": 61,
+      "request_line": 19938,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 8170,
+      "reconstructed_chars": 8170
+    },
+    {
+      "i": 46,
+      "request": 64,
+      "request_line": 21003,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 6905,
+      "reconstructed_chars": 6905
+    },
+    {
+      "i": 48,
+      "request": 71,
+      "request_line": 23376,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 7597,
+      "reconstructed_chars": 7597
+    },
+    {
+      "i": 50,
+      "request": 74,
+      "request_line": 24450,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 7686,
+      "reconstructed_chars": 7686
+    },
+    {
+      "i": 52,
+      "request": 77,
+      "request_line": 25390,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 7420,
+      "reconstructed_chars": 7420
+    },
+    {
+      "i": 60,
+      "request": 80,
+      "request_line": 26456,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 6713,
+      "reconstructed_chars": 6713
+    },
+    {
+      "i": 62,
+      "request": 83,
+      "request_line": 27525,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 6959,
+      "reconstructed_chars": 6959
+    },
+    {
+      "i": 64,
+      "request": 86,
+      "request_line": 28584,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 6545,
+      "reconstructed_chars": 6545
+    },
+    {
+      "i": 66,
+      "request": 89,
+      "request_line": 29648,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 6002,
+      "reconstructed_chars": 6002
+    },
+    {
+      "i": 68,
+      "request": 92,
+      "request_line": 30749,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 5591,
+      "reconstructed_chars": 5591
+    },
+    {
+      "i": 70,
+      "request": 95,
+      "request_line": 31845,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 6078,
+      "reconstructed_chars": 6078
+    },
+    {
+      "i": 72,
+      "request": 99,
+      "request_line": 33030,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 6786,
+      "reconstructed_chars": 6786
+    },
+    {
+      "i": 74,
+      "request": 102,
+      "request_line": 34119,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 6588,
+      "reconstructed_chars": 6588
+    },
+    {
+      "i": 76,
+      "request": 105,
+      "request_line": 35210,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 6583,
+      "reconstructed_chars": 6583
+    },
+    {
+      "i": 78,
+      "request": 108,
+      "request_line": 36307,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 6146,
+      "reconstructed_chars": 6146
+    },
+    {
+      "i": 80,
+      "request": 111,
+      "request_line": 37389,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 5863,
+      "reconstructed_chars": 5863
+    },
+    {
+      "i": 82,
+      "request": 114,
+      "request_line": 38453,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 6213,
+      "reconstructed_chars": 6213
+    },
+    {
+      "i": 84,
+      "request": 117,
+      "request_line": 39392,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 5827,
+      "reconstructed_chars": 5827
+    },
+    {
+      "i": 86,
+      "request": 120,
+      "request_line": 40320,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 6513,
+      "reconstructed_chars": 6513
+    },
+    {
+      "i": 92,
+      "request": 123,
+      "request_line": 41375,
+      "block_exact": true,
+      "diagnostics_exact": true,
+      "block_chars": 5905,
+      "reconstructed_chars": 5905
+    }
+  ],
+  "e0_diagnostics": [
+    {
+      "i": 6,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 746,
+      "budgetedTokens": 672,
+      "overflow": 0,
+      "separateTokens": 74,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 86,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 59,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "present",
+          "tokens": 9,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "settlement",
+          "tokens": 33,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 120,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 239,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": []
+    },
+    {
+      "i": 8,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1411,
+      "budgetedTokens": 1299,
+      "overflow": 0,
+      "separateTokens": 113,
+      "focusNpcIds": [
+        "npc.npcguild_clerks"
+      ],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 91,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 59,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "npc_compact",
+          "tokens": 73,
+          "own": false,
+          "npcIds": [
+            "npc.npcguild_clerks"
+          ]
+        },
+        {
+          "name": "present",
+          "tokens": 40,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "settlement",
+          "tokens": 33,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "gear_market",
+          "tokens": 506,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 120,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 94,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "envelope",
+          "tokens": 39,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 157,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": []
+    },
+    {
+      "i": 10,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 885,
+      "budgetedTokens": 773,
+      "overflow": 0,
+      "separateTokens": 113,
+      "focusNpcIds": [
+        "npc.npcguild_clerks"
+      ],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 91,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 65,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "npc_compact",
+          "tokens": 79,
+          "own": false,
+          "npcIds": [
+            "npc.npcguild_clerks"
+          ]
+        },
+        {
+          "name": "present",
+          "tokens": 40,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "settlement",
+          "tokens": 33,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 120,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 94,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "envelope",
+          "tokens": 39,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 125,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": []
+    },
+    {
+      "i": 12,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1477,
+      "budgetedTokens": 1365,
+      "overflow": 0,
+      "separateTokens": 113,
+      "focusNpcIds": [
+        "npc.npcguild_clerks"
+      ],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 91,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 65,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "npc_compact",
+          "tokens": 79,
+          "own": false,
+          "npcIds": [
+            "npc.npcguild_clerks"
+          ]
+        },
+        {
+          "name": "present",
+          "tokens": 40,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "settlement",
+          "tokens": 33,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 204,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 94,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "envelope",
+          "tokens": 39,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 633,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": []
+    },
+    {
+      "i": 14,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1460,
+      "budgetedTokens": 1346,
+      "overflow": 0,
+      "separateTokens": 113,
+      "focusNpcIds": [
+        "npc.npcguild_clerks"
+      ],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 91,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 79,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "npc_compact",
+          "tokens": 97,
+          "own": false,
+          "npcIds": [
+            "npc.npcguild_clerks"
+          ]
+        },
+        {
+          "name": "present",
+          "tokens": 40,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "settlement",
+          "tokens": 33,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 204,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 456,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "envelope",
+          "tokens": 39,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 220,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "dungeon",
+          "tokens": 94,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 103,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 16,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1506,
+      "budgetedTokens": 1393,
+      "overflow": 0,
+      "separateTokens": 113,
+      "focusNpcIds": [
+        "npc.npcguild_clerks"
+      ],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 91,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 79,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "npc_compact",
+          "tokens": 97,
+          "own": false,
+          "npcIds": [
+            "npc.npcguild_clerks"
+          ]
+        },
+        {
+          "name": "present",
+          "tokens": 40,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "settlement",
+          "tokens": 33,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 204,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 94,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 456,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "envelope",
+          "tokens": 39,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 173,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "relevant",
+          "tokens": 185,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 18,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1570,
+      "budgetedTokens": 1440,
+      "overflow": 40,
+      "separateTokens": 129,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 81,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 53,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 134,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 329,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 456,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "corrections",
+          "tokens": 55,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 261,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 9,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 148,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 20,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 2048,
+      "budgetedTokens": 1841,
+      "overflow": 441,
+      "separateTokens": 207,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 93,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 103,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "combat",
+          "tokens": 175,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 134,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 308,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 456,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "corrections",
+          "tokens": 67,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "chronicle",
+          "tokens": 66,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 446,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 134,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 148,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 22,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1870,
+      "budgetedTokens": 1730,
+      "overflow": 330,
+      "separateTokens": 140,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 93,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 103,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "combat",
+          "tokens": 171,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 134,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "facts",
+          "tokens": 64,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 310,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 456,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "chronicle",
+          "tokens": 66,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 273,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 118,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 148,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 24,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1910,
+      "budgetedTokens": 1766,
+      "overflow": 366,
+      "separateTokens": 144,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 93,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 163,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 134,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "facts",
+          "tokens": 88,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 310,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 456,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "chronicle",
+          "tokens": 70,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 396,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 112,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 148,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 28,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1620,
+      "budgetedTokens": 1546,
+      "overflow": 146,
+      "separateTokens": 74,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 93,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 139,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 134,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "facts",
+          "tokens": 88,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 310,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 456,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 200,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 112,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 174,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 32,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1587,
+      "budgetedTokens": 1513,
+      "overflow": 113,
+      "separateTokens": 74,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 93,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 133,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 134,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "facts",
+          "tokens": 88,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 310,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 456,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 173,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 112,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 190,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 34,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1741,
+      "budgetedTokens": 1667,
+      "overflow": 267,
+      "separateTokens": 74,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 93,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 133,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 134,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "facts",
+          "tokens": 88,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 310,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 456,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 327,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 112,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 174,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 36,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1643,
+      "budgetedTokens": 1508,
+      "overflow": 108,
+      "separateTokens": 136,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 92,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 133,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 134,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 389,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 456,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "corrections",
+          "tokens": 62,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 178,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 9,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "features",
+          "tokens": 53,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 371,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 38,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 2097,
+      "budgetedTokens": 1944,
+      "overflow": 544,
+      "separateTokens": 154,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 92,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 133,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "gear_market",
+          "tokens": 506,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 134,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 389,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 456,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "corrections",
+          "tokens": 80,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 108,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 9,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "features",
+          "tokens": 53,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 368,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 42,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1752,
+      "budgetedTokens": 1679,
+      "overflow": 279,
+      "separateTokens": 74,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 92,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 133,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 134,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 389,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 456,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 349,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 9,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "features",
+          "tokens": 53,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 371,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 44,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1900,
+      "budgetedTokens": 1700,
+      "overflow": 300,
+      "separateTokens": 201,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 97,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 173,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 134,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "facts",
+          "tokens": 35,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 345,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 456,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "corrections",
+          "tokens": 61,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "chronicle",
+          "tokens": 66,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 334,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 65,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 362,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 46,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1606,
+      "budgetedTokens": 1531,
+      "overflow": 131,
+      "separateTokens": 74,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 97,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 150,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 134,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "facts",
+          "tokens": 35,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 345,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 456,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 188,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 65,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 372,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 48,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1767,
+      "budgetedTokens": 1694,
+      "overflow": 294,
+      "separateTokens": 74,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 97,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 156,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 134,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "facts",
+          "tokens": 35,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 345,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 456,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 345,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 65,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 365,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 50,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1788,
+      "budgetedTokens": 1649,
+      "overflow": 249,
+      "separateTokens": 140,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 95,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 114,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "combat",
+          "tokens": 104,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 134,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 343,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 456,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "chronicle",
+          "tokens": 66,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 277,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 64,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 327,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 52,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1726,
+      "budgetedTokens": 1586,
+      "overflow": 186,
+      "separateTokens": 140,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 95,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 117,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 134,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "facts",
+          "tokens": 28,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 372,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 441,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "chronicle",
+          "tokens": 66,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 273,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 62,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 331,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 60,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1562,
+      "budgetedTokens": 1488,
+      "overflow": 88,
+      "separateTokens": 74,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 95,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 161,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 134,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "facts",
+          "tokens": 28,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 339,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 434,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 171,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 62,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 313,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 62,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1619,
+      "budgetedTokens": 1545,
+      "overflow": 145,
+      "separateTokens": 74,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 95,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 161,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 134,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "facts",
+          "tokens": 28,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 339,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 434,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 228,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 62,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 323,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 64,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1523,
+      "budgetedTokens": 1448,
+      "overflow": 48,
+      "separateTokens": 74,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 83,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 161,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "world_area",
+          "tokens": 73,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 134,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 434,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 437,
+          "own": false,
+          "npcIds": [
+            "npc.npcguild_clerks"
+          ]
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 9,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "goals",
+          "tokens": 41,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 341,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 66,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1396,
+      "budgetedTokens": 1284,
+      "overflow": 0,
+      "separateTokens": 113,
+      "focusNpcIds": [
+        "npc.npcguild_clerks"
+      ],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 91,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 149,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "npc_compact",
+          "tokens": 97,
+          "own": false,
+          "npcIds": [
+            "npc.npcguild_clerks"
+          ]
+        },
+        {
+          "name": "present",
+          "tokens": 40,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "settlement",
+          "tokens": 33,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 205,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 94,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 342,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "envelope",
+          "tokens": 39,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 107,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": []
+    },
+    {
+      "i": 68,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1301,
+      "budgetedTokens": 1185,
+      "overflow": 0,
+      "separateTokens": 116,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 91,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 149,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "present",
+          "tokens": 168,
+          "own": false,
+          "npcIds": [
+            "npc.npcguild_clerks",
+            "npc.npcbench_crossbowman"
+          ]
+        },
+        {
+          "name": "settlement",
+          "tokens": 33,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "npc_continuity",
+          "tokens": 73,
+          "own": false,
+          "npcIds": [
+            "npc.harl_vess"
+          ]
+        },
+        {
+          "name": "named",
+          "tokens": 76,
+          "own": false,
+          "npcIds": [
+            "npc.harl_vess"
+          ]
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 205,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 94,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "envelope",
+          "tokens": 42,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 170,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "relevant",
+          "tokens": 343,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 70,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1414,
+      "budgetedTokens": 1162,
+      "overflow": 0,
+      "separateTokens": 252,
+      "focusNpcIds": [
+        "npc.npcoar_innkeeper"
+      ],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 82,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 151,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "npc_compact",
+          "tokens": 80,
+          "own": false,
+          "npcIds": [
+            "npc.npcoar_innkeeper"
+          ]
+        },
+        {
+          "name": "present",
+          "tokens": 40,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "settlement",
+          "tokens": 34,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 120,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 337,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "envelope",
+          "tokens": 40,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "corrections",
+          "tokens": 138,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 192,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": []
+    },
+    {
+      "i": 72,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1579,
+      "budgetedTokens": 1465,
+      "overflow": 65,
+      "separateTokens": 114,
+      "focusNpcIds": [
+        "npc.npcoar_innkeeper"
+      ],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 82,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 151,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "npc_compact",
+          "tokens": 80,
+          "own": false,
+          "npcIds": [
+            "npc.npcoar_innkeeper"
+          ]
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 205,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "envelope",
+          "tokens": 40,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 821,
+          "own": false,
+          "npcIds": [
+            "npc.npcguild_clerks",
+            "npc.npcbench_crossbowman"
+          ]
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 40,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "settlement",
+          "tokens": 34,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 340,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 74,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1533,
+      "budgetedTokens": 1418,
+      "overflow": 18,
+      "separateTokens": 115,
+      "focusNpcIds": [
+        "npc.npcnpcwiry_woman"
+      ],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 92,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 164,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "npc_compact",
+          "tokens": 100,
+          "own": false,
+          "npcIds": [
+            "npc.npcnpcwiry_woman"
+          ]
+        },
+        {
+          "name": "world_populations",
+          "tokens": 93,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 264,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 357,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "envelope",
+          "tokens": 41,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 222,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 40,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "settlement",
+          "tokens": 34,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 94,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 369,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 76,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1531,
+      "budgetedTokens": 1417,
+      "overflow": 17,
+      "separateTokens": 115,
+      "focusNpcIds": [
+        "npc.npcnpcwiry_woman"
+      ],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 92,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 90,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "npc_compact",
+          "tokens": 118,
+          "own": false,
+          "npcIds": [
+            "npc.npcnpcwiry_woman"
+          ]
+        },
+        {
+          "name": "world_populations",
+          "tokens": 93,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 264,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 357,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "envelope",
+          "tokens": 41,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 277,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "present",
+          "tokens": 40,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "settlement",
+          "tokens": 34,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "goals",
+          "tokens": 48,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "dungeon",
+          "tokens": 94,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "relevant",
+          "tokens": 365,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 78,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1430,
+      "budgetedTokens": 1315,
+      "overflow": 0,
+      "separateTokens": 114,
+      "focusNpcIds": [
+        "npc.npcpeat_cutter_woman"
+      ],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 82,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 164,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "npc_compact",
+          "tokens": 84,
+          "own": false,
+          "npcIds": [
+            "npc.npcpeat_cutter_woman"
+          ]
+        },
+        {
+          "name": "present",
+          "tokens": 40,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "world_populations",
+          "tokens": 93,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 132,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 357,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "envelope",
+          "tokens": 40,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 237,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "relevant",
+          "tokens": 366,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 80,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1364,
+      "budgetedTokens": 1290,
+      "overflow": 0,
+      "separateTokens": 74,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 84,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 90,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "present",
+          "tokens": 9,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "world_area",
+          "tokens": 73,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "world_populations",
+          "tokens": 93,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 132,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 357,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 326,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "relevant",
+          "tokens": 373,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 82,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1445,
+      "budgetedTokens": 1242,
+      "overflow": 0,
+      "separateTokens": 203,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 83,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 112,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "present",
+          "tokens": 80,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "combat",
+          "tokens": 111,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 132,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 357,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "corrections",
+          "tokens": 63,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "chronicle",
+          "tokens": 66,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 241,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "relevant",
+          "tokens": 366,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 84,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1356,
+      "budgetedTokens": 1216,
+      "overflow": 0,
+      "separateTokens": 140,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 83,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 112,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "present",
+          "tokens": 81,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "combat",
+          "tokens": 112,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 132,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 357,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "chronicle",
+          "tokens": 66,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 213,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "relevant",
+          "tokens": 370,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 86,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1515,
+      "budgetedTokens": 1369,
+      "overflow": 0,
+      "separateTokens": 144,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 82,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 119,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "present",
+          "tokens": 58,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "world_area",
+          "tokens": 73,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "world_populations",
+          "tokens": 93,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 132,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "facts",
+          "tokens": 35,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 375,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "chronicle",
+          "tokens": 70,
+          "own": true,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 276,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "relevant",
+          "tokens": 374,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    },
+    {
+      "i": 92,
+      "v": 1,
+      "budget": 1400,
+      "rulesBudget": 800,
+      "tokens": 1374,
+      "budgetedTokens": 1298,
+      "overflow": 0,
+      "separateTokens": 74,
+      "focusNpcIds": [],
+      "delivered": [
+        {
+          "name": "header",
+          "tokens": 82,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "pc",
+          "tokens": 174,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "creation",
+          "tokens": 20,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "present",
+          "tokens": 58,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "world_area",
+          "tokens": 73,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "world_populations",
+          "tokens": 93,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "guild_authority",
+          "tokens": 132,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "help",
+          "tokens": 106,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "facts",
+          "tokens": 35,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "quests",
+          "tokens": 369,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "resolved",
+          "tokens": 156,
+          "own": false,
+          "npcIds": []
+        },
+        {
+          "name": "report",
+          "tokens": 74,
+          "own": true,
+          "npcIds": []
+        }
+      ],
+      "dropped": [
+        {
+          "name": "relevant",
+          "tokens": 369,
+          "own": false,
+          "npcIds": []
+        }
+      ]
+    }
+  ],
+  "focused_probes": {
+    "hunt": {
+      "tally": [
+        {
+          "what": "marsh titan",
+          "qty": 1,
+          "done": 1,
+          "killed": 1,
+          "driven": 0
+        }
+      ],
+      "ready": {
+        "ok": true,
+        "mode": "engine_count",
+        "reason": null,
+        "consume": []
+      },
+      "text": "READY FOR TURN-IN: the listed proof is in hand (no fixed verification listed)",
+      "slip": [
+        {
+          "text": "READY — the Guild seal shows the contract fulfilled",
+          "by": "guild",
+          "turn": 37
+        }
+      ]
+    },
+    "search": {
+      "original": {
+        "resolutions": [
+          {
+            "seq": 1,
+            "type": "activity",
+            "status": "resolved",
+            "reason": "looted already",
+            "quote": "i walk tot he corpse and investigate the pool and lair of the Titan"
+          }
+        ],
+        "checks": [],
+        "time": [],
+        "validation": []
+      },
+      "area_only": {
+        "resolutions": [
+          {
+            "seq": 1,
+            "type": "activity",
+            "status": "authorized",
+            "cap": 120,
+            "quote": "I investigate the pool and lair of the Titan"
+          }
+        ],
+        "checks": [
+          {
+            "what": "the pool and lair of the Titan",
+            "stat": "PER",
+            "actor": 13,
+            "opposition": 6,
+            "chance": 68.42,
+            "roll": 74,
+            "success": false,
+            "claimed": false,
+            "by": "engine",
+            "seq": 1,
+            "search": true,
+            "at": "loc.pool_at_the_east_cut_den",
+            "focus": [
+              "pool",
+              "lair",
+              "titan"
+            ],
+            "found": null,
+            "sig": ""
+          }
+        ],
+        "time": [],
+        "validation": []
+      },
+      "corpse_only": {
+        "resolutions": [
+          {
+            "seq": 1,
+            "type": "activity",
+            "status": "resolved",
+            "reason": "looted already",
+            "quote": "I loot the Titan corpse"
+          }
+        ],
+        "checks": [],
+        "time": [],
+        "validation": []
+      }
+    },
+    "floors": {
+      "down": {
+        "id": "loc.old_crown_catacombs.sloping_worn_passage",
+        "name": "Sloping worn passage",
+        "kind": "interior",
+        "parent": "loc.old_crown_catacombs",
+        "realm": "realm.valedorn_crown",
+        "tags": [],
+        "by": "reply",
+        "created": {
+          "turn": 15,
+          "minute": 880
+        },
+        "level": 2
+      },
+      "refusal_before": "the way down to level 2 of Old Crown Catacombs is sealed until the guardian of level 1 falls",
+      "refusal_after": null,
+      "after_kill_clear": {
+        "ok": true,
+        "name": "Old Crown Catacombs",
+        "floor": 1,
+        "text": "cleared by him"
+      },
+      "visited_floors": [
+        0,
+        1
+      ],
+      "control_go_before": {
+        "kind": "v4",
+        "actions": [
+          "1. SEALED — the way down to level 2 of Old Crown Catacombs is sealed until the guardian of level 1 falls. He stays where he is."
+        ],
+        "extra": [],
+        "resolutions": [
+          {
+            "seq": 1,
+            "type": "go",
+            "status": "refused",
+            "reason": "sealed",
+            "quote": "I take the sloping worn passage down"
+          }
+        ],
+        "expected_keys": {},
+        "auth": {
+          "go": null,
+          "gos": [],
+          "roam": false,
+          "take": [],
+          "takeNames": {},
+          "gather": false,
+          "rest": false,
+          "timeCap": 120,
+          "c": true,
+          "booked_min": 0,
+          "recovered": false
+        },
+        "conditionals": [],
+        "booked": {
+          "registration": false,
+          "grants": [],
+          "turnIns": [],
+          "accepted": [],
+          "sellers": [],
+          "goods": []
+        },
+        "board": null,
+        "search_checks": [],
+        "check_die": null,
+        "interp_failed": false,
+        "dropped": []
+      }
+    },
+    "guild": {
+      "labels": [
+        "clerk",
+        "two clerks working the long counter at t",
+        "npc.guild_clerks",
+        "Two clerks working the long counter at the back of the Guild entrance hall"
+      ],
+      "original_evidence": false,
+      "missing_fact": true,
+      "original_delta_order": [
+        {
+          "seq": 1,
+          "type": "arrive"
+        },
+        {
+          "seq": 2,
+          "type": "enter",
+          "who": "npc.npcguild_clerks"
+        },
+        {
+          "seq": 3,
+          "type": "fact"
+        },
+        {
+          "seq": 4,
+          "type": "fact"
+        }
+      ],
+      "i72_entered": [
+        {
+          "id": "npc.npcnpcwiry_woman",
+          "band": "SHORT"
+        }
+      ],
+      "explicit_subject_control": {
+        "evidence": true,
+        "knowledge_events": [
+          {
+            "who": "npc.npcguild_clerks",
+            "about": "f.pc.completed.quest.clear_the_old_crown_catacombs_level_1",
+            "stance": "knows",
+            "source": "witnessed",
+            "turn": 26,
+            "minute": 1195
+          }
+        ],
+        "validation": []
+      }
+    },
+    "body_plans": [
+      {
+        "id": "armored_beast",
+        "level": 12,
+        "hp": 224,
+        "atk": 41,
+        "def": 18,
+        "mdef": 5,
+        "init": 8
+      },
+      {
+        "id": "skeleton",
+        "level": 12,
+        "hp": 96,
+        "atk": 34,
+        "def": 9,
+        "mdef": 2,
+        "init": 12
+      },
+      {
+        "id": "wolf",
+        "level": 12,
+        "hp": 74,
+        "atk": 31,
+        "def": 2,
+        "mdef": 2,
+        "init": 19
+      },
+      {
+        "id": "feline",
+        "level": 12,
+        "hp": 96,
+        "atk": 34,
+        "def": 2,
+        "mdef": 2,
+        "init": 20
+      }
+    ],
+    "relisted_clear": {
+      "q": "quest.clear_old_crown_catacombs_level_1",
+      "original_status": "listed",
+      "cycle_start": 565,
+      "reset_min": 4320,
+      "now": 2095,
+      "ready_while_listed": {
+        "ok": true,
+        "mode": "dungeon_clear",
+        "reason": null,
+        "consume": []
+      },
+      "control_accept": {
+        "ok": true
+      },
+      "ready_after_control_accept": {
+        "ok": false,
+        "mode": "not_cleared",
+        "reason": "Old Crown Catacombs, level 1: cleared by him before this contract; await Dungeon renewal and clear again; the Guild pays for the level cleared",
+        "consume": []
+      },
+      "note": "Read-only clone, no real acceptance or payout executed."
+    }
+  },
+  "actual_requests": [
+    {
+      "n": 1,
+      "req_line": 58,
+      "resp_line": 293,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 11858,
+        "completion_tokens": 75,
+        "total_tokens": 11933,
+        "cost": 0.0018162,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 2,
+      "req_line": 319,
+      "resp_line": 852,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        6
+      ],
+      "usage": {
+        "prompt_tokens": 10229,
+        "completion_tokens": 427,
+        "total_tokens": 10656,
+        "cost": 0.00174785,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 3,
+      "req_line": 890,
+      "resp_line": 1079,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 12938,
+        "completion_tokens": 316,
+        "total_tokens": 13254,
+        "cost": 0.0020987,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 4,
+      "req_line": 1105,
+      "resp_line": 1342,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 11904,
+        "completion_tokens": 22,
+        "total_tokens": 11926,
+        "cost": 0.00051632,
+        "cached_tokens": 10669,
+        "prompt_tokens_details": {
+          "cached_tokens": 10669
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 5,
+      "req_line": 1367,
+      "resp_line": 1945,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        8
+      ],
+      "usage": {
+        "prompt_tokens": 11993,
+        "completion_tokens": 314,
+        "total_tokens": 12307,
+        "cost": 0.00195595,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 6,
+      "req_line": 1985,
+      "resp_line": 2177,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 12441,
+        "completion_tokens": 269,
+        "total_tokens": 12710,
+        "cost": 0.00070417,
+        "cached_tokens": 10804,
+        "prompt_tokens_details": {
+          "cached_tokens": 10804
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 7,
+      "req_line": 2203,
+      "resp_line": 2442,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 11956,
+        "completion_tokens": 64,
+        "total_tokens": 12020,
+        "cost": 0.00054368,
+        "cached_tokens": 10681,
+        "prompt_tokens_details": {
+          "cached_tokens": 10681
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 8,
+      "req_line": 2468,
+      "resp_line": 2715,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 12077,
+        "completion_tokens": 59,
+        "total_tokens": 12136,
+        "cost": 0.00040633,
+        "cached_tokens": 11956,
+        "prompt_tokens_details": {
+          "cached_tokens": 11956
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 9,
+      "req_line": 2740,
+      "resp_line": 3346,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        10
+      ],
+      "usage": {
+        "prompt_tokens": 11703,
+        "completion_tokens": 431,
+        "total_tokens": 12134,
+        "cost": 0.00197095,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 10,
+      "req_line": 3386,
+      "resp_line": 3576,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 12467,
+        "completion_tokens": 41,
+        "total_tokens": 12508,
+        "cost": 0.00059503,
+        "cached_tokens": 10796,
+        "prompt_tokens_details": {
+          "cached_tokens": 10796
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 11,
+      "req_line": 3602,
+      "resp_line": 3839,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 11927,
+        "completion_tokens": 34,
+        "total_tokens": 11961,
+        "cost": 0.00052433,
+        "cached_tokens": 10681,
+        "prompt_tokens_details": {
+          "cached_tokens": 10681
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 12,
+      "req_line": 3864,
+      "resp_line": 3937,
+      "role": "board",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 2611,
+        "completion_tokens": 1184,
+        "total_tokens": 3795,
+        "cost": 0.00098365,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 13,
+      "req_line": 3965,
+      "resp_line": 4048,
+      "role": "board",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 3949,
+        "completion_tokens": 1188,
+        "total_tokens": 5137,
+        "cost": 0.00084783,
+        "cached_tokens": 2821,
+        "prompt_tokens_details": {
+          "cached_tokens": 2821
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 14,
+      "req_line": 4076,
+      "resp_line": 4708,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        12
+      ],
+      "usage": {
+        "prompt_tokens": 12572,
+        "completion_tokens": 476,
+        "total_tokens": 13048,
+        "cost": 0.0021238,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 15,
+      "req_line": 4748,
+      "resp_line": 4946,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 14514,
+        "completion_tokens": 54,
+        "total_tokens": 14568,
+        "cost": 0.00088926,
+        "cached_tokens": 10957,
+        "prompt_tokens_details": {
+          "cached_tokens": 10957
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 16,
+      "req_line": 4972,
+      "resp_line": 5211,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13211,
+        "completion_tokens": 52,
+        "total_tokens": 13263,
+        "cost": 0.00200765,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 17,
+      "req_line": 5236,
+      "resp_line": 5817,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        14
+      ],
+      "usage": {
+        "prompt_tokens": 12111,
+        "completion_tokens": 281,
+        "total_tokens": 12392,
+        "cost": 0.00195715,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 18,
+      "req_line": 5850,
+      "resp_line": 6037,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13945,
+        "completion_tokens": 326,
+        "total_tokens": 14271,
+        "cost": 0.00225475,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 19,
+      "req_line": 6063,
+      "resp_line": 6303,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13273,
+        "completion_tokens": 48,
+        "total_tokens": 13321,
+        "cost": 0.00073155,
+        "cached_tokens": 10695,
+        "prompt_tokens_details": {
+          "cached_tokens": 10695
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 20,
+      "req_line": 6329,
+      "resp_line": 6917,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        16
+      ],
+      "usage": {
+        "prompt_tokens": 12558,
+        "completion_tokens": 319,
+        "total_tokens": 12877,
+        "cost": 0.0020432,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 21,
+      "req_line": 6951,
+      "resp_line": 7138,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 14120,
+        "completion_tokens": 635,
+        "total_tokens": 14755,
+        "cost": 0.00112594,
+        "cached_tokens": 10913,
+        "prompt_tokens_details": {
+          "cached_tokens": 10913
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 22,
+      "req_line": 7166,
+      "resp_line": 7361,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 14630,
+        "completion_tokens": 501,
+        "total_tokens": 15131,
+        "cost": 0.00073656,
+        "cached_tokens": 14237,
+        "prompt_tokens_details": {
+          "cached_tokens": 14237
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 23,
+      "req_line": 7387,
+      "resp_line": 7627,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 12416,
+        "completion_tokens": 32,
+        "total_tokens": 12448,
+        "cost": 0.0018784,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 24,
+      "req_line": 7652,
+      "resp_line": 8198,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        18
+      ],
+      "usage": {
+        "prompt_tokens": 11776,
+        "completion_tokens": 332,
+        "total_tokens": 12108,
+        "cost": 0.0019324,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 25,
+      "req_line": 8232,
+      "resp_line": 8422,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13465,
+        "completion_tokens": 435,
+        "total_tokens": 13900,
+        "cost": 0.00223725,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 26,
+      "req_line": 8452,
+      "resp_line": 8694,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 12752,
+        "completion_tokens": 99,
+        "total_tokens": 12851,
+        "cost": 0.00067086,
+        "cached_tokens": 10762,
+        "prompt_tokens_details": {
+          "cached_tokens": 10762
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 27,
+      "req_line": 8720,
+      "resp_line": 9271,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        20
+      ],
+      "usage": {
+        "prompt_tokens": 11960,
+        "completion_tokens": 385,
+        "total_tokens": 12345,
+        "cost": 0.0019865,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 28,
+      "req_line": 9307,
+      "resp_line": 9499,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13504,
+        "completion_tokens": 286,
+        "total_tokens": 13790,
+        "cost": 0.00085268,
+        "cached_tokens": 10966,
+        "prompt_tokens_details": {
+          "cached_tokens": 10966
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 29,
+      "req_line": 9525,
+      "resp_line": 9647,
+      "role": "intent",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 5944,
+        "completion_tokens": 53,
+        "total_tokens": 5997,
+        "cost": 0.0009181,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 30,
+      "req_line": 9673,
+      "resp_line": 10214,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        22
+      ],
+      "usage": {
+        "prompt_tokens": 11634,
+        "completion_tokens": 413,
+        "total_tokens": 12047,
+        "cost": 0.0019516,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 31,
+      "req_line": 10248,
+      "resp_line": 10439,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13467,
+        "completion_tokens": 69,
+        "total_tokens": 13536,
+        "cost": 0.00073827,
+        "cached_tokens": 10969,
+        "prompt_tokens_details": {
+          "cached_tokens": 10969
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 32,
+      "req_line": 10465,
+      "resp_line": 10586,
+      "role": "intent",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 5801,
+        "completion_tokens": 48,
+        "total_tokens": 5849,
+        "cost": 0.00044271,
+        "cached_tokens": 3762,
+        "prompt_tokens_details": {
+          "cached_tokens": 3762
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 33,
+      "req_line": 10611,
+      "resp_line": 10645,
+      "role": "passive_naming",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 363,
+        "completion_tokens": 52,
+        "total_tokens": 415,
+        "cost": 8.045e-05,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 34,
+      "req_line": 10670,
+      "resp_line": 11203,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        24
+      ],
+      "usage": {
+        "prompt_tokens": 11636,
+        "completion_tokens": 494,
+        "total_tokens": 12130,
+        "cost": 0.00093304,
+        "cached_tokens": 8828,
+        "prompt_tokens_details": {
+          "cached_tokens": 8828
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 35,
+      "req_line": 11241,
+      "resp_line": 11436,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13711,
+        "completion_tokens": 377,
+        "total_tokens": 14088,
+        "cost": 0.00092971,
+        "cached_tokens": 10962,
+        "prompt_tokens_details": {
+          "cached_tokens": 10962
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 36,
+      "req_line": 11464,
+      "resp_line": 11708,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 12728,
+        "completion_tokens": 39,
+        "total_tokens": 12767,
+        "cost": 0.00063846,
+        "cached_tokens": 10752,
+        "prompt_tokens_details": {
+          "cached_tokens": 10752
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 37,
+      "req_line": 11733,
+      "resp_line": 12264,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        28
+      ],
+      "usage": {
+        "prompt_tokens": 11441,
+        "completion_tokens": 271,
+        "total_tokens": 11712,
+        "cost": 0.00079985,
+        "cached_tokens": 8765,
+        "prompt_tokens_details": {
+          "cached_tokens": 8765
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 38,
+      "req_line": 12298,
+      "resp_line": 12488,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13490,
+        "completion_tokens": 187,
+        "total_tokens": 13677,
+        "cost": 0.00079808,
+        "cached_tokens": 10991,
+        "prompt_tokens_details": {
+          "cached_tokens": 10991
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 39,
+      "req_line": 12514,
+      "resp_line": 12757,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 12713,
+        "completion_tokens": 63,
+        "total_tokens": 12776,
+        "cost": 0.00064785,
+        "cached_tokens": 10755,
+        "prompt_tokens_details": {
+          "cached_tokens": 10755
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 40,
+      "req_line": 12782,
+      "resp_line": 13308,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        32
+      ],
+      "usage": {
+        "prompt_tokens": 11315,
+        "completion_tokens": 440,
+        "total_tokens": 11755,
+        "cost": 0.00086713,
+        "cached_tokens": 8751,
+        "prompt_tokens_details": {
+          "cached_tokens": 8751
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 41,
+      "req_line": 13346,
+      "resp_line": 13540,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13687,
+        "completion_tokens": 176,
+        "total_tokens": 13863,
+        "cost": 0.00082273,
+        "cached_tokens": 10986,
+        "prompt_tokens_details": {
+          "cached_tokens": 10986
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 42,
+      "req_line": 13566,
+      "resp_line": 13809,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 12712,
+        "completion_tokens": 70,
+        "total_tokens": 12782,
+        "cost": 0.0006518,
+        "cached_tokens": 10750,
+        "prompt_tokens_details": {
+          "cached_tokens": 10750
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 43,
+      "req_line": 13835,
+      "resp_line": 14371,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        34
+      ],
+      "usage": {
+        "prompt_tokens": 11578,
+        "completion_tokens": 443,
+        "total_tokens": 12021,
+        "cost": 0.00091036,
+        "cached_tokens": 8732,
+        "prompt_tokens_details": {
+          "cached_tokens": 8732
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 44,
+      "req_line": 14411,
+      "resp_line": 14610,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13905,
+        "completion_tokens": 737,
+        "total_tokens": 14642,
+        "cost": 0.00114097,
+        "cached_tokens": 10944,
+        "prompt_tokens_details": {
+          "cached_tokens": 10944
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 45,
+      "req_line": 14636,
+      "resp_line": 14843,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 14571,
+        "completion_tokens": 613,
+        "total_tokens": 15184,
+        "cost": 0.00081083,
+        "cached_tokens": 14011,
+        "prompt_tokens_details": {
+          "cached_tokens": 14011
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 46,
+      "req_line": 14869,
+      "resp_line": 15114,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13015,
+        "completion_tokens": 59,
+        "total_tokens": 13074,
+        "cost": 0.00068875,
+        "cached_tokens": 10775,
+        "prompt_tokens_details": {
+          "cached_tokens": 10775
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 47,
+      "req_line": 15140,
+      "resp_line": 15677,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        36
+      ],
+      "usage": {
+        "prompt_tokens": 11438,
+        "completion_tokens": 270,
+        "total_tokens": 11708,
+        "cost": 0.00080322,
+        "cached_tokens": 8729,
+        "prompt_tokens_details": {
+          "cached_tokens": 8729
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 48,
+      "req_line": 15709,
+      "resp_line": 15897,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13741,
+        "completion_tokens": 357,
+        "total_tokens": 14098,
+        "cost": 0.00091809,
+        "cached_tokens": 11013,
+        "prompt_tokens_details": {
+          "cached_tokens": 11013
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 49,
+      "req_line": 15923,
+      "resp_line": 16168,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13019,
+        "completion_tokens": 152,
+        "total_tokens": 13171,
+        "cost": 0.00073645,
+        "cached_tokens": 10770,
+        "prompt_tokens_details": {
+          "cached_tokens": 10770
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 50,
+      "req_line": 16194,
+      "resp_line": 16447,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13139,
+        "completion_tokens": 81,
+        "total_tokens": 13220,
+        "cost": 0.00044967,
+        "cached_tokens": 13014,
+        "prompt_tokens_details": {
+          "cached_tokens": 13014
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 51,
+      "req_line": 16473,
+      "resp_line": 17011,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 11883,
+        "completion_tokens": 262,
+        "total_tokens": 12145,
+        "cost": 0.00085697,
+        "cached_tokens": 8804,
+        "prompt_tokens_details": {
+          "cached_tokens": 8804
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 52,
+      "req_line": 17045,
+      "resp_line": 17235,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13647,
+        "completion_tokens": 232,
+        "total_tokens": 13879,
+        "cost": 0.00084125,
+        "cached_tokens": 11015,
+        "prompt_tokens_details": {
+          "cached_tokens": 11015
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 53,
+      "req_line": 17261,
+      "resp_line": 17506,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13039,
+        "completion_tokens": 156,
+        "total_tokens": 13195,
+        "cost": 0.00074157,
+        "cached_tokens": 10769,
+        "prompt_tokens_details": {
+          "cached_tokens": 10769
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 54,
+      "req_line": 17532,
+      "resp_line": 18070,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        38
+      ],
+      "usage": {
+        "prompt_tokens": 11987,
+        "completion_tokens": 416,
+        "total_tokens": 12403,
+        "cost": 0.00081865,
+        "cached_tokens": 9895,
+        "prompt_tokens_details": {
+          "cached_tokens": 9895
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 55,
+      "req_line": 18108,
+      "resp_line": 18302,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13739,
+        "completion_tokens": 105,
+        "total_tokens": 13844,
+        "cost": 0.00079203,
+        "cached_tokens": 11011,
+        "prompt_tokens_details": {
+          "cached_tokens": 11011
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 56,
+      "req_line": 18328,
+      "resp_line": 18573,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13024,
+        "completion_tokens": 138,
+        "total_tokens": 13162,
+        "cost": 0.0020226,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 57,
+      "req_line": 18599,
+      "resp_line": 18844,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13024,
+        "completion_tokens": 98,
+        "total_tokens": 13122,
+        "cost": 0.00070936,
+        "cached_tokens": 10777,
+        "prompt_tokens_details": {
+          "cached_tokens": 10777
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 58,
+      "req_line": 18870,
+      "resp_line": 19411,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        42
+      ],
+      "usage": {
+        "prompt_tokens": 11464,
+        "completion_tokens": 389,
+        "total_tokens": 11853,
+        "cost": 0.00086518,
+        "cached_tokens": 8741,
+        "prompt_tokens_details": {
+          "cached_tokens": 8741
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 59,
+      "req_line": 19447,
+      "resp_line": 19642,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 14234,
+        "completion_tokens": 475,
+        "total_tokens": 14709,
+        "cost": 0.001052,
+        "cached_tokens": 11005,
+        "prompt_tokens_details": {
+          "cached_tokens": 11005
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 60,
+      "req_line": 19668,
+      "resp_line": 19913,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 12915,
+        "completion_tokens": 50,
+        "total_tokens": 12965,
+        "cost": 0.00066925,
+        "cached_tokens": 10775,
+        "prompt_tokens_details": {
+          "cached_tokens": 10775
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 61,
+      "req_line": 19938,
+      "resp_line": 20481,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        44
+      ],
+      "usage": {
+        "prompt_tokens": 11606,
+        "completion_tokens": 285,
+        "total_tokens": 11891,
+        "cost": 0.00082596,
+        "cached_tokens": 8812,
+        "prompt_tokens_details": {
+          "cached_tokens": 8812
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 62,
+      "req_line": 20515,
+      "resp_line": 20706,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13704,
+        "completion_tokens": 146,
+        "total_tokens": 13850,
+        "cost": 0.0008074,
+        "cached_tokens": 11010,
+        "prompt_tokens_details": {
+          "cached_tokens": 11010
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 63,
+      "req_line": 20732,
+      "resp_line": 20977,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 12965,
+        "completion_tokens": 46,
+        "total_tokens": 13011,
+        "cost": 0.00067319,
+        "cached_tokens": 10788,
+        "prompt_tokens_details": {
+          "cached_tokens": 10788
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 64,
+      "req_line": 21003,
+      "resp_line": 21536,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        46
+      ],
+      "usage": {
+        "prompt_tokens": 11285,
+        "completion_tokens": 358,
+        "total_tokens": 11643,
+        "cost": 0.00081875,
+        "cached_tokens": 8775,
+        "prompt_tokens_details": {
+          "cached_tokens": 8775
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 65,
+      "req_line": 21572,
+      "resp_line": 21764,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13782,
+        "completion_tokens": 255,
+        "total_tokens": 14037,
+        "cost": 0.0008718,
+        "cached_tokens": 11025,
+        "prompt_tokens_details": {
+          "cached_tokens": 11025
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 66,
+      "req_line": 21790,
+      "resp_line": 22035,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 12982,
+        "completion_tokens": 133,
+        "total_tokens": 13115,
+        "cost": 0.00071948,
+        "cached_tokens": 10786,
+        "prompt_tokens_details": {
+          "cached_tokens": 10786
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 67,
+      "req_line": 22061,
+      "resp_line": 22597,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 11512,
+        "completion_tokens": 531,
+        "total_tokens": 12043,
+        "cost": 0.00093822,
+        "cached_tokens": 8784,
+        "prompt_tokens_details": {
+          "cached_tokens": 8784
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 68,
+      "req_line": 22639,
+      "resp_line": 22842,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 14550,
+        "completion_tokens": 766,
+        "total_tokens": 15316,
+        "cost": 0.00124202,
+        "cached_tokens": 11029,
+        "prompt_tokens_details": {
+          "cached_tokens": 11029
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 69,
+      "req_line": 22868,
+      "resp_line": 23079,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 15362,
+        "completion_tokens": 708,
+        "total_tokens": 16070,
+        "cost": 0.00089718,
+        "cached_tokens": 14676,
+        "prompt_tokens_details": {
+          "cached_tokens": 14676
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 70,
+      "req_line": 23105,
+      "resp_line": 23350,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 12982,
+        "completion_tokens": 125,
+        "total_tokens": 13107,
+        "cost": 0.00071548,
+        "cached_tokens": 10786,
+        "prompt_tokens_details": {
+          "cached_tokens": 10786
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 71,
+      "req_line": 23376,
+      "resp_line": 23911,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        48
+      ],
+      "usage": {
+        "prompt_tokens": 11430,
+        "completion_tokens": 518,
+        "total_tokens": 11948,
+        "cost": 0.00081406,
+        "cached_tokens": 9662,
+        "prompt_tokens_details": {
+          "cached_tokens": 9662
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 72,
+      "req_line": 23951,
+      "resp_line": 24151,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 14478,
+        "completion_tokens": 739,
+        "total_tokens": 15217,
+        "cost": 0.00121544,
+        "cached_tokens": 11048,
+        "prompt_tokens_details": {
+          "cached_tokens": 11048
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 73,
+      "req_line": 24179,
+      "resp_line": 24425,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13065,
+        "completion_tokens": 48,
+        "total_tokens": 13113,
+        "cost": 0.00068763,
+        "cached_tokens": 10801,
+        "prompt_tokens_details": {
+          "cached_tokens": 10801
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 74,
+      "req_line": 24450,
+      "resp_line": 24990,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        50
+      ],
+      "usage": {
+        "prompt_tokens": 11607,
+        "completion_tokens": 296,
+        "total_tokens": 11903,
+        "cost": 0.00083161,
+        "cached_tokens": 8812,
+        "prompt_tokens_details": {
+          "cached_tokens": 8812
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 75,
+      "req_line": 25026,
+      "resp_line": 25218,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13806,
+        "completion_tokens": 212,
+        "total_tokens": 14018,
+        "cost": 0.0008545,
+        "cached_tokens": 11020,
+        "prompt_tokens_details": {
+          "cached_tokens": 11020
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 76,
+      "req_line": 25244,
+      "resp_line": 25365,
+      "role": "intent",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 6115,
+        "completion_tokens": 47,
+        "total_tokens": 6162,
+        "cost": 0.00094075,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 77,
+      "req_line": 25390,
+      "resp_line": 25929,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        52
+      ],
+      "usage": {
+        "prompt_tokens": 11538,
+        "completion_tokens": 360,
+        "total_tokens": 11898,
+        "cost": 0.00085446,
+        "cached_tokens": 8802,
+        "prompt_tokens_details": {
+          "cached_tokens": 8802
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 78,
+      "req_line": 25965,
+      "resp_line": 26158,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13907,
+        "completion_tokens": 403,
+        "total_tokens": 14310,
+        "cost": 0.00096371,
+        "cached_tokens": 11032,
+        "prompt_tokens_details": {
+          "cached_tokens": 11032
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 79,
+      "req_line": 26184,
+      "resp_line": 26430,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13046,
+        "completion_tokens": 47,
+        "total_tokens": 13093,
+        "cost": 0.00068512,
+        "cached_tokens": 10794,
+        "prompt_tokens_details": {
+          "cached_tokens": 10794
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 80,
+      "req_line": 26456,
+      "resp_line": 27003,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        60
+      ],
+      "usage": {
+        "prompt_tokens": 11521,
+        "completion_tokens": 316,
+        "total_tokens": 11837,
+        "cost": 0.00188615,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 81,
+      "req_line": 27037,
+      "resp_line": 27227,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13922,
+        "completion_tokens": 68,
+        "total_tokens": 13990,
+        "cost": 0.00079714,
+        "cached_tokens": 11043,
+        "prompt_tokens_details": {
+          "cached_tokens": 11043
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 82,
+      "req_line": 27253,
+      "resp_line": 27499,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13051,
+        "completion_tokens": 119,
+        "total_tokens": 13170,
+        "cost": 0.00072139,
+        "cached_tokens": 10798,
+        "prompt_tokens_details": {
+          "cached_tokens": 10798
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 83,
+      "req_line": 27525,
+      "resp_line": 28065,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        62
+      ],
+      "usage": {
+        "prompt_tokens": 11643,
+        "completion_tokens": 365,
+        "total_tokens": 12008,
+        "cost": 0.00192895,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 84,
+      "req_line": 28099,
+      "resp_line": 28291,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 14235,
+        "completion_tokens": 333,
+        "total_tokens": 14568,
+        "cost": 0.00097707,
+        "cached_tokens": 11039,
+        "prompt_tokens_details": {
+          "cached_tokens": 11039
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 85,
+      "req_line": 28317,
+      "resp_line": 28558,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 12714,
+        "completion_tokens": 103,
+        "total_tokens": 12817,
+        "cost": 0.0019586,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 86,
+      "req_line": 28584,
+      "resp_line": 29132,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        64
+      ],
+      "usage": {
+        "prompt_tokens": 11921,
+        "completion_tokens": 387,
+        "total_tokens": 12308,
+        "cost": 0.00198165,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 87,
+      "req_line": 29164,
+      "resp_line": 29354,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 14073,
+        "completion_tokens": 426,
+        "total_tokens": 14499,
+        "cost": 0.00100767,
+        "cached_tokens": 10969,
+        "prompt_tokens_details": {
+          "cached_tokens": 10969
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 88,
+      "req_line": 29380,
+      "resp_line": 29622,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13448,
+        "completion_tokens": 13,
+        "total_tokens": 13461,
+        "cost": 0.0020237,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 89,
+      "req_line": 29648,
+      "resp_line": 30225,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        66
+      ],
+      "usage": {
+        "prompt_tokens": 12281,
+        "completion_tokens": 435,
+        "total_tokens": 12716,
+        "cost": 0.00205965,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 90,
+      "req_line": 30259,
+      "resp_line": 30447,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 14115,
+        "completion_tokens": 491,
+        "total_tokens": 14606,
+        "cost": 0.00236275,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 91,
+      "req_line": 30481,
+      "resp_line": 30723,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13480,
+        "completion_tokens": 39,
+        "total_tokens": 13519,
+        "cost": 0.0007521,
+        "cached_tokens": 10745,
+        "prompt_tokens_details": {
+          "cached_tokens": 10745
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 92,
+      "req_line": 30749,
+      "resp_line": 31332,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        68
+      ],
+      "usage": {
+        "prompt_tokens": 12221,
+        "completion_tokens": 304,
+        "total_tokens": 12525,
+        "cost": 0.00198515,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 93,
+      "req_line": 31364,
+      "resp_line": 31550,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 14340,
+        "completion_tokens": 374,
+        "total_tokens": 14714,
+        "cost": 0.0010198,
+        "cached_tokens": 10985,
+        "prompt_tokens_details": {
+          "cached_tokens": 10985
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 94,
+      "req_line": 31576,
+      "resp_line": 31819,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 12720,
+        "completion_tokens": 111,
+        "total_tokens": 12831,
+        "cost": 0.00067086,
+        "cached_tokens": 10772,
+        "prompt_tokens_details": {
+          "cached_tokens": 10772
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 95,
+      "req_line": 31845,
+      "resp_line": 32416,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        70
+      ],
+      "usage": {
+        "prompt_tokens": 11992,
+        "completion_tokens": 341,
+        "total_tokens": 12333,
+        "cost": 0.0019693,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 96,
+      "req_line": 32450,
+      "resp_line": 32637,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13356,
+        "completion_tokens": 140,
+        "total_tokens": 13496,
+        "cost": 0.0007564,
+        "cached_tokens": 10975,
+        "prompt_tokens_details": {
+          "cached_tokens": 10975
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 97,
+      "req_line": 32663,
+      "resp_line": 32904,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 12571,
+        "completion_tokens": 61,
+        "total_tokens": 12632,
+        "cost": 0.00191615,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 98,
+      "req_line": 32930,
+      "resp_line": 33003,
+      "role": "board",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 2692,
+        "completion_tokens": 911,
+        "total_tokens": 3603,
+        "cost": 0.0008593,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 99,
+      "req_line": 33030,
+      "resp_line": 33573,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        72
+      ],
+      "usage": {
+        "prompt_tokens": 11461,
+        "completion_tokens": 828,
+        "total_tokens": 12289,
+        "cost": 0.00213315,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 100,
+      "req_line": 33618,
+      "resp_line": 33825,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 14900,
+        "completion_tokens": 429,
+        "total_tokens": 15329,
+        "cost": 0.0024495,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 101,
+      "req_line": 33851,
+      "resp_line": 34093,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13555,
+        "completion_tokens": 64,
+        "total_tokens": 13619,
+        "cost": 0.00206525,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 102,
+      "req_line": 34119,
+      "resp_line": 34693,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        74
+      ],
+      "usage": {
+        "prompt_tokens": 12477,
+        "completion_tokens": 338,
+        "total_tokens": 12815,
+        "cost": 0.00204055,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 103,
+      "req_line": 34727,
+      "resp_line": 34915,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 14365,
+        "completion_tokens": 202,
+        "total_tokens": 14567,
+        "cost": 0.00225575,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 104,
+      "req_line": 34941,
+      "resp_line": 35184,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13607,
+        "completion_tokens": 45,
+        "total_tokens": 13652,
+        "cost": 0.00077487,
+        "cached_tokens": 10739,
+        "prompt_tokens_details": {
+          "cached_tokens": 10739
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 105,
+      "req_line": 35210,
+      "resp_line": 35782,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        76
+      ],
+      "usage": {
+        "prompt_tokens": 12318,
+        "completion_tokens": 592,
+        "total_tokens": 12910,
+        "cost": 0.0021437,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 106,
+      "req_line": 35818,
+      "resp_line": 36011,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 14840,
+        "completion_tokens": 562,
+        "total_tokens": 15402,
+        "cost": 0.00118592,
+        "cached_tokens": 11009,
+        "prompt_tokens_details": {
+          "cached_tokens": 11009
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 107,
+      "req_line": 36037,
+      "resp_line": 36281,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13135,
+        "completion_tokens": 70,
+        "total_tokens": 13205,
+        "cost": 0.00200525,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 108,
+      "req_line": 36307,
+      "resp_line": 36866,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        78
+      ],
+      "usage": {
+        "prompt_tokens": 11863,
+        "completion_tokens": 531,
+        "total_tokens": 12394,
+        "cost": 0.00204495,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 109,
+      "req_line": 36902,
+      "resp_line": 37092,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 14278,
+        "completion_tokens": 464,
+        "total_tokens": 14742,
+        "cost": 0.0023737,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 110,
+      "req_line": 37118,
+      "resp_line": 37363,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13136,
+        "completion_tokens": 77,
+        "total_tokens": 13213,
+        "cost": 0.0020089,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 111,
+      "req_line": 37389,
+      "resp_line": 37926,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        80
+      ],
+      "usage": {
+        "prompt_tokens": 11253,
+        "completion_tokens": 422,
+        "total_tokens": 11675,
+        "cost": 0.00189895,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 112,
+      "req_line": 37960,
+      "resp_line": 38149,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 14218,
+        "completion_tokens": 696,
+        "total_tokens": 14914,
+        "cost": 0.0024807,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 113,
+      "req_line": 38181,
+      "resp_line": 38427,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13203,
+        "completion_tokens": 78,
+        "total_tokens": 13281,
+        "cost": 0.00072753,
+        "cached_tokens": 10766,
+        "prompt_tokens_details": {
+          "cached_tokens": 10766
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 114,
+      "req_line": 38453,
+      "resp_line": 38999,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        82
+      ],
+      "usage": {
+        "prompt_tokens": 11460,
+        "completion_tokens": 373,
+        "total_tokens": 11833,
+        "cost": 0.00085106,
+        "cached_tokens": 8787,
+        "prompt_tokens_details": {
+          "cached_tokens": 8787
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 115,
+      "req_line": 39033,
+      "resp_line": 39221,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13941,
+        "completion_tokens": 291,
+        "total_tokens": 14232,
+        "cost": 0.00091593,
+        "cached_tokens": 11006,
+        "prompt_tokens_details": {
+          "cached_tokens": 11006
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 116,
+      "req_line": 39247,
+      "resp_line": 39367,
+      "role": "intent",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 6241,
+        "completion_tokens": 43,
+        "total_tokens": 6284,
+        "cost": 0.00095765,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 117,
+      "req_line": 39392,
+      "resp_line": 39930,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        84
+      ],
+      "usage": {
+        "prompt_tokens": 11283,
+        "completion_tokens": 324,
+        "total_tokens": 11607,
+        "cost": 0.00080169,
+        "cached_tokens": 8773,
+        "prompt_tokens_details": {
+          "cached_tokens": 8773
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 118,
+      "req_line": 39960,
+      "resp_line": 40144,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13833,
+        "completion_tokens": 266,
+        "total_tokens": 14099,
+        "cost": 0.00088723,
+        "cached_tokens": 11006,
+        "prompt_tokens_details": {
+          "cached_tokens": 11006
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 119,
+      "req_line": 40173,
+      "resp_line": 40295,
+      "role": "intent",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 6266,
+        "completion_tokens": 39,
+        "total_tokens": 6305,
+        "cost": 0.0005058,
+        "cached_tokens": 3780,
+        "prompt_tokens_details": {
+          "cached_tokens": 3780
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 120,
+      "req_line": 40320,
+      "resp_line": 40850,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        86
+      ],
+      "usage": {
+        "prompt_tokens": 11171,
+        "completion_tokens": 355,
+        "total_tokens": 11526,
+        "cost": 0.00080243,
+        "cached_tokens": 8756,
+        "prompt_tokens_details": {
+          "cached_tokens": 8756
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 121,
+      "req_line": 40886,
+      "resp_line": 41077,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 14003,
+        "completion_tokens": 147,
+        "total_tokens": 14150,
+        "cost": 0.00085287,
+        "cached_tokens": 11009,
+        "prompt_tokens_details": {
+          "cached_tokens": 11009
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 122,
+      "req_line": 41103,
+      "resp_line": 41349,
+      "role": "planner",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 13241,
+        "completion_tokens": 92,
+        "total_tokens": 13333,
+        "cost": 0.00073975,
+        "cached_tokens": 10770,
+        "prompt_tokens_details": {
+          "cached_tokens": 10770
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 123,
+      "req_line": 41375,
+      "resp_line": 41903,
+      "role": "narrator",
+      "finish": "stop",
+      "I": [
+        92
+      ],
+      "usage": {
+        "prompt_tokens": 10989,
+        "completion_tokens": 506,
+        "total_tokens": 11495,
+        "cost": 0.00085543,
+        "cached_tokens": 8716,
+        "prompt_tokens_details": {
+          "cached_tokens": 8716
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    },
+    {
+      "n": 124,
+      "req_line": 41935,
+      "resp_line": 42121,
+      "role": "extractor",
+      "finish": "stop",
+      "I": [],
+      "usage": {
+        "prompt_tokens": 14088,
+        "completion_tokens": 304,
+        "total_tokens": 14392,
+        "cost": 0.00094232,
+        "cached_tokens": 11024,
+        "prompt_tokens_details": {
+          "cached_tokens": 11024
+        }
+      },
+      "model": "zai-org/GLM-5.3-Flash"
+    }
+  ],
+  "money_events": [
+    {
+      "i": 9,
+      "id": "pc",
+      "value": 30,
+      "delta": -20,
+      "why": "Guild registration fee"
+    },
+    {
+      "i": 64,
+      "id": "pc",
+      "value": 120,
+      "delta": 90,
+      "why": "Guild payout: Clear the Old Crown Catacombs, Level 1"
+    },
+    {
+      "i": 69,
+      "id": "pc",
+      "value": 112,
+      "delta": -8,
+      "why": "room for the night"
+    }
+  ],
+  "xp_events": [
+    {
+      "i": 23,
+      "id": "pc",
+      "xp": 720,
+      "amount": 720,
+      "reason": "Combat XP (Restless Skeleton B 240, Restless Skeleton C 180, Restless Skeleton A 300)"
+    },
+    {
+      "i": 43,
+      "id": "pc",
+      "xp": 360,
+      "amount": 240,
+      "reason": "Combat XP (Skeletal Gravekeeper A 240)"
+    },
+    {
+      "i": 51,
+      "id": "pc",
+      "xp": 990,
+      "amount": 630,
+      "reason": "Combat XP (Gallery Warden 630)"
+    },
+    {
+      "i": 64,
+      "id": "pc",
+      "xp": 540,
+      "amount": 450,
+      "reason": "Quest XP: Clear the Old Crown Catacombs, Level 1",
+      "quest": "quest.clear_the_old_crown_catacombs_level_1"
+    },
+    {
+      "i": 85,
+      "id": "pc",
+      "xp": 1790,
+      "amount": 1250,
+      "reason": "Combat XP (Marsh Titan A 1250)"
+    }
+  ],
+  "limits": [
+    "No product mutation, implementation or new natural model calls.",
+    "No full Node suite, historical 2235-case replay or ST host smoke re-executed.",
+    "JSON reload comparison is no physical Windows/ST save durability test.",
+    "124 request pairs include two narrator variants not retained in the final chat; these are not counted as final chat turns.",
+    "Product-default ownership mode; extra strict debug ownership assertion not enabled."
+  ],
+  "derived_end": {
+    "maxHp": 135,
+    "maxMp": 328,
+    "maxSta": 100,
+    "init": 21,
+    "baseDef": 2,
+    "baseMdef": 4,
+    "atk": 0,
+    "matk": 10,
+    "gearDef": 2,
+    "gearMdef": 3,
+    "rank": "F",
+    "def": 4,
+    "mdef": 7
+  },
+  "reproduction_script": {
+    "path": "READ_ONLY_PROBES.mjs",
+    "executed": true,
+    "exit_code": 0,
+    "scope": "Originalfold, extraction replay, focused mechanics; no full PowerShell parser."
+  }
+}

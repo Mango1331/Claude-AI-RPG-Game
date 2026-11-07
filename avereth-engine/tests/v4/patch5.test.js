@@ -74,10 +74,13 @@ const CONTINUE = { type: 'journey.continue', quote: 'I continue my journey' };
 const NOT_THERE = { 1: { arrived: false, at: null, with: null } };
 
 /** The share of road legs that may bring an interruption, for one test (rules.travel.leg_event_pct). */
+// PULSE package A (.162): the leg is the travel frame of the turn's one window; 0 and 100 force a quiet leg or one
+// whose window is open for DANGER (the only kind that lets new arrivals turn on him), as Patch 5's 0/100 did
 async function withRoad(pct, fn) {
-    const was = content.rules.travel.leg_event_pct;
+    const was = content.rules.travel.leg_event_pct, force = content.rules.pulse.force;
     content.rules.travel.leg_event_pct = pct;
-    try { return await fn(); } finally { content.rules.travel.leg_event_pct = was; }
+    content.rules.pulse.force = pct === 0 ? { open: false } : pct === 100 ? { open: true, kind: 'danger' } : null;
+    try { return await fn(); } finally { content.rules.travel.leg_event_pct = was; content.rules.pulse.force = force; }
 }
 
 /** He sets off for Blackgate and walks a day of road without getting there. */
@@ -196,7 +199,7 @@ test('patch 5 (5, C): a route is how he travels, never a destination; "I continu
 
 test('patch 5 (6): no journey while a fight runs; the towers in sight are no arrival; partial travel is not arriving', async () => {
     const g = await onTheRoad();
-    await roadFightStart(g);
+    await withRoad(100, () => roadFightStart(g));
     assert.ok(g.state().encounter);
     let r = await say(g, '*I run on toward Blackgate*', CONTINUE);
     assert.ok(g.state().encounter, 'the fight runs on');
@@ -257,7 +260,8 @@ test('patch 5 (9): a leg that may bring an interruption: three bandits step onto
         await say(g, '*I continue my journey*', CONTINUE);
         const o = outcome(g);
         assert.equal(o.auth.road, 'open');
-        assert.ok(o.extra.some((x) => /^THE ROAD — this leg toward Blackgate may \(not must\) bring ONE concrete interruption/.test(x)));
+        assert.ok(o.extra.some((x) => /^THE ROAD — PULSE \(the engine's; \w+\): on this leg toward Blackgate ONE concrete thing happens: DANGER/.test(x)), JSON.stringify(o.extra));
+        assert.equal(o.extra.filter((x) => x.startsWith('THE ROAD')).length, 1, 'one line for the leg, no second ROAD AHEAD line');
         const bandit = (ref, seq) => ({ seq, type: 'person.new', ref, name: null, role: 'bandit', desc: ['armed bandit'], present: true, relevant: true, threat: true, at: null, band: 'MEDIUM' });
         await g.reply('Three armed bandits step onto the road. "Toll," says the first.', { expected: NOT_THERE, deltas: [{ seq: 1, type: 'time', minutes: 90 }, bandit('first bandit', 2), bandit('second bandit', 3), bandit('third bandit', 4)] });
         const s = g.state();
@@ -332,14 +336,17 @@ test('patch 5 (14, 15): the road is no generator: no leg is sure to bring someth
         const t = clone(s);
         t.turn = turn;
         const emit = (e) => applyEvent(t, e);
-        draws.push(resolveCommands(t, content, [{ seq: 1, ...CONTINUE }], emit, { c: true }).auth.road);
+        const a = resolveCommands(t, content, [{ seq: 1, ...CONTINUE }], emit, { c: true }).auth;
+        draws.push(a.pulse.open ? 'open' : 'quiet');
+        // .162: only a window open for DANGER lets new arrivals turn on him on the leg (auth.road)
+        assert.equal(a.road, a.pulse.open && a.pulse.kind === 'danger' ? 'open' : 'quiet');
     }
     const open = draws.filter((x) => x === 'open').length;
-    assert.ok(open > 40 && open < 100, `${open} of 200 legs may bring something (rules: ${content.rules.travel.leg_event_pct}%)`);
+    assert.ok(open > 40 && open < 120, `${open} of 200 legs may bring something (rules: ${content.rules.travel.leg_event_pct}% by day, the miss streak)`);
     assert.ok(draws.slice(0, 20).includes('open') && draws.slice(0, 20).includes('quiet'), 'no fixed order');
     const again = clone(s);
     again.turn = 7;
-    assert.equal(resolveCommands(again, content, [{ seq: 1, ...CONTINUE }], (e) => applyEvent(again, e), { c: true }).auth.road, draws[6], 'a swipe or a replay draws the same');
+    assert.equal(resolveCommands(again, content, [{ seq: 1, ...CONTINUE }], (e) => applyEvent(again, e), { c: true }).auth.pulse.open ? 'open' : 'quiet', draws[6], 'a swipe or a replay draws the same');
     assert.deepEqual([...new Set(g.purposes.map((p) => p.replace(/[:.].*$/, '')))].sort(), ['extract', 'plan'], 'only the planner and the extractor are asked');
 });
 

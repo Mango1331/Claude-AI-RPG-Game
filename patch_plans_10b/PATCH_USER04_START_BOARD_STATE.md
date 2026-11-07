@@ -173,3 +173,52 @@ Ein geskripteter Provider beweist Host-/Kontext-/Darstellungsintegration, **nich
 Der größte Gameplayeffekt liegt bei A, der größte Kontextumfang innerhalb dieses kleinen Pakets bei C2. B und C senken eine konkrete Widerspruchswahrscheinlichkeit; sie garantieren kein fehlerfreies freies Sprachmodell. Keine XP-/Monster-/First-Strike-/Statprogressionsänderung, keine NPC-Witness-/Identitäts-/Presencekorrektur, keine gemischte Suche, Objektverbrauchs-/Questresetmechanik, PULSE oder Rastunterbrechung. Insbesondere keine Überlebensgarantie als verdeckte Nebenanforderung von Basis 5.
 
 **Nächster Schritt:** unabhängiger GPT-Gegenreview dieses Plans; danach entscheidet der Nutzer über den gemeinsamen Implementierungsauftrag. Zur Abwägung liegt jetzt ausdrücklich der reproduzierte tödliche 5er-Erstkampf vor. Keine zusätzliche Mechanikentscheidung ist für die gewählte enge Lösung erforderlich, solange dieser härtere Start gewollt bleibt.
+
+---
+
+## 7. Unabhängiger GPT-Gegenreview – Abnahme des Fachplans mit C2-Präzisierung (07.11.2026)
+
+**Urteil:** A, B und C1 sind mit der dokumentierten Abgrenzung **fachlich umsetzungsreif**; C2 ist **nach einer engen Präzisierung der Freigabeableitung umsetzungsreif**. Dies ist eine Planprüfung, keine Produktimplementierung und keine Nutzerfreigabe. Der bestehende Fachplan §§1–6 von Sol bleibt unverändert.
+
+**Unabhängige Prüfbasis:** Sols vollständiger Fachplan, das neue `READ_ONLY_QOL_PLAN_PROBES.mjs` einschließlich seiner tatsächlichen Assertions, und die für den Eingriff maßgeblichen Funktionen des festgehaltenen Produktcommits `2089dcc`: `startCampaign`, `selectClass`, `selectSkills`, `deriveCharacter`, `board.read`, `playerActionsBlock`, `npcCard`, `stateNow`, `buildContext`/Abschnittsprioritäten, `living.contextLines`, `sealRefusal`, `floorRefusal`, `roomKnown` und `visited`. Die User04-Originalereignisse waren bereits im unabhängigen Originalreview §11 betrachtet. **Das neue Node-Probeskript und die ST-Requests habe ich in dieser Reviewrunde nicht nochmals selbst in einer ausführbaren Produktcheckout-Umgebung laufen lassen**; ihre berichteten Messwerte und die 7er-Recordgleichheit sind insoweit Sols Testergebnis, dessen Implementierung und Assertion-Logik ich nachgeprüft habe.
+
+### 7.1 A – Basis 5: Empfehlung bestätigt, lethaler Einstiegsfall transparent
+
+Der tatsächliche Startpfad kopiert nur `content.start.pc.stats` nach `campaign.started`; gespeicherte Events behalten ihre Stats. Das allgemeine `rules.json.human_baseline = 5` ist **keine zweite PC-Startregel**. Der Sechs-Literale-Schnitt und die beschriebene Altcampaign-Regel sind technisch plausibel.
+
+Sols Gegenprobe ist in ihrem Aussageumfang richtig begrenzt: gleicher originaler Encounter L5/L4/L3, gleiche Spieleraktionen, geänderte Startwerte und daraus abgeleitete Ressourcen. **Basis 5 stirbt beim zweiten Angriffszug; Basis 7 reproduziert 17 Rest-HP.** Wesentlich ist auch die Initiativeverschiebung, nicht allein die Differenz von 10 HP. Das Skript prüft die echte 7er-Originalrecordgleichheit und die 5er-Abweichung über feste Assertions; es beweist **keine allgemeine Unspielbarkeit** von Basis 5 und auch nicht die Balance anderer Spielweisen.
+
+**Empfehlung bleibt: Basis 5 wie gewünscht für neue Kampagnen übernehmen**, ohne versteckten Gegnermalus, First-Strike-Umbau oder globale XP-/Schadenskorrektur. Die bewusste Härte des untersuchten Level-1-gegen-L5/L4/L3-Kampfs und die verständliche Gefahrenkommunikation im späteren natürlichen User-Test beobachten. Falls normales, als sicher dargestelltes Starterspiel ebenso tödlich ausfällt, ist das ein **separates** Balancepaket. Die geplanten Altstart- und vollständigen Creation-Regressionsfälle sind erforderlich.
+
+### 7.2 B – Board: konkrete Ursache bestätigt
+
+In `commands.js:HANDLERS['board.read']()` verlangt die derzeitige `line` ausdrücklich die **vollständige title-first-Auflistung** der kanonischen `rows`. `context.js:playerActionsBlock()` übernimmt diese als erzählerische Handlungsanweisung. Daher liegt keine reine Modelllaune vor; Sols Vorschlag, direkt diese Ursprungsanweisung zu korrigieren, ist präziser als ein zusätzlicher globaler Narratorvertrag.
+
+**Beibehalten:** Die fünf Questdaten bleiben der Narration als **Referenz** verfügbar, besonders bei bedingtem GO+Board-Read, dessen UI-Karten erst nach bestätigter Ankunft sichtbar werden. Die Enginekarten und die Questzustände bleiben die kanonische Ausgabe. **Abnehmen:** Eine gezielte spätere Frage nach einem einzelnen Auftrag oder ein echtes NPC-Gespräch darf weiterhin Details enthalten; nicht wahllos alle Questnamen aus der Prosa entfernen. Tokenersparnis nur für die tatsächlich gemessene Ausgabe beanspruchen, nicht automatisch für Eingabekontext oder Kosten.
+
+### 7.3 C1 – Awareness: aktuelle Beobachterlage gegenüber altem Ambush-Kontext priorisieren
+
+Die Unterscheidung ist fachlich notwendig: Die im alten Opening korrekt festgestellte Unkenntnis ermöglicht **diesen** Hinterhalt; danach ist der Titan mechanisch `aware`, während der globale `scene.concealed`-Marker nicht automatisch gelöscht wird. Awareness bedeutet nicht stets vollständigen visuellen Kontakt oder Namenskenntnis. Sols getrennte zeitliche Markierung und gegenwärtige `stateNow`-Angabe sind deshalb richtig.
+
+**Kleiner Prüfschwerpunkt für die Umsetzung:** `npcCard` liegt bei laufendem Kampf als ausführliches `present` in einer **prioritätsabhängigen** Sektion, während `combat` und `resolved` verpflichtend sind. Die entscheidende aktuelle Awareness darf **nicht allein** von einer möglicherweise ausgelassenen NPC-Karte abhängen. Der geplante Einbau in `stateNow()` erfüllt dies, wenn die tatsächliche Auslieferung im User04-Kontext mit Budgetdiagnose nachgewiesen wird. Keine pauschale Concealment-Löschung oder Sichtkontakt-Erfindung.
+
+### 7.4 C2 – konkrete notwendige Präzisierung von `sealRefusal()`
+
+**Einziger fachlicher Korrekturpunkt zum Fachplan:** Die Aussage, eine `sealRefusal(state, target) === null`-Entscheidung sei bereits ein Beleg, dass **das Guardian-Siegel gelöst** wurde, wäre zu weit. Der Code erlaubt `null` in mehreren fachlich unterschiedlichen Situationen:
+
+- `!above?.sealed`: Für die Verbindung existiert **gar keine** Guardian-Siegelregel.
+- `x.run.floors[floor - 1]?.cleared`: Die vorherige Etage ist tatsächlich freigegeben.
+- `s.places[to]?.visited`: Ein **vorher besuchter Raum** bleibt aus Kompatibilitätsgründen erreichbar, selbst wenn das aktuelle Siegel sonst blockieren würde.
+- Die Funktion gibt ebenfalls `null` zurück, wenn der Ort/die Dungeonstruktur nicht zugeordnet ist; die vorgeschlagene Relevanzprüfung muss solche Fälle bereits ausgeschlossen haben.
+
+**Anpassung vor der Implementierung:** Für den wörtlichen **RELEASED**-Hinweis mindestens explizit prüfen, dass (a) der konkrete Dungeon und seine zwei benachbarten Etagen existieren, (b) die obere Etage eine Guardian-Siegelregel `above.sealed` besitzt, (c) `x.run.floors[previous]?.cleared` im **aktuellen Cycle** tatsächlich gesetzt ist, (d) der konkrete bekannte Verbindungsweg ohne Spoiler referenziert werden darf und (e) `sealRefusal()` den Zugang nicht noch aus einem anderen Grund verweigert. `sealRefusal` bleibt die **maßgebliche Reise-/Blockadeprüfung**, aber nicht allein die semantische Begründung eines gelösten Guardian-Siegels.
+
+**Zusätzliche rote Gegenfälle:** (1) früher besuchter unterer Raum bei nicht geclearter oberer Etage: `sealRefusal() === null` ist möglich, aber **kein** „Guardian seal released“; (2) ein regulär offener, nie versiegelter Etagenübergang: kein Text über ein angeblich gefallenes Siegel; (3) Reset mit unveränderter `floors[1].sealed`-Spezifikation und zurückgesetztem `cleared`: Status ist wieder korrekt gesperrt, ohne alte Weltfakten zu löschen.
+
+Der in User04 belegte Fall mit tatsächlich gecleartem Floor 1 bleibt damit **positiv**: I52, I60 und I66 sollen die aktuelle Freigabe erfahren. Das gilt ausdrücklich auch beim späteren Gildengespräch außerhalb des Dungeons, ohne Clerk-Wissen zu erfinden oder Alaric still nach Floor 2 zu bewegen. Eine aktive separate Tür-/Featureblockade bleibt unverändert.
+
+### 7.5 Umsetzungshinweise und Freigabe
+
+Die geplanten vier funktionalen Produktdateien bleiben ausreichend, sofern sich in der konkreten Umsetzung keine neue belegte Abhängigkeit zeigt. Keine zusätzliche Enginezustandsbank, kein neuer Modellcall, keine globale Budgeterhöhung. **Priorität-0-Kontext darf bei C nicht unbemerkt weiter anschwellen:** User04 hatte schon vor diesen Hinweisen in vielen Erzählzügen verpflichtenden Budgetüberlauf. Bei der Abnahme reale Blocklängen und optionale Drops prüfen, den Text knapp halten und keine umfangreiche Dungeonchronik in den geschützten `resolved`-Abschnitt verlagern.
+
+**GPT-Empfehlung:** Gemeinsame Umsetzung nach Nutzerfreigabe, mit dem einen C2-Hinweis bereits im Implementierungsauftrag. Die tödliche 5er-Gegenprobe ist transparent und bleibt akzeptierter Planungsbefund, **kein automatischer Anlass für einen Balancenerf**. Erst nach der tatsächlichen Umsetzung vollständige Node-/Replay- und passende ST-Host-Abnahme. Das Review selbst ändert keinen Produktcode und keine Spielregel.

@@ -365,6 +365,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const booked = auth.c ? auth.booked_min || 0 : 0;
     let bookedLeft = booked;
     let timeUsed = booked;
+    // .165 (review of .164, P2): a pause the engine cut short (PULSE package C) stays cut short. The minutes of the
+    // planned pause after the cut are covered like the booked ones and never booked: a reply that tells the full rest
+    // books nothing more, the time of an independent step besides it still counts
+    const cutAway = auth.c && pulse?.interrupt && !pulse.interrupt.at_end ? Math.max(0, pulse.interrupt.of_min - pulse.interrupt.after_min) : 0;
+    let cutLeft = cutAway;
     const startAt = s.scene.at;
     let arrived = null;
     let stealthAt = null; // actual voluntary arrival of this GO, never a forced relocation
@@ -967,7 +972,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 if (inventedWorkTime) { reject(d, 'private_work', 'accepting a job does not authorize its narrated working time'); break; }
                 const covered = Math.min(bookedLeft, d.minutes);
                 bookedLeft -= covered;
-                const want = d.minutes - covered;
+                const lost = Math.min(cutLeft, d.minutes - covered);
+                cutLeft -= lost;
+                if (lost) reject(d, 'rest_cut', `${lost} min of the ${pulse.interrupt.of_min} min ${pulse.interrupt.kind} the engine cut short after ${pulse.interrupt.after_min} min are not booked`);
+                const want = d.minutes - covered - lost;
                 const room = Math.max(0, cap - timeUsed);
                 const m = Math.min(want, room);
                 if (m < want) reject(d, 'time_cap', `${d.minutes} min exceed what this turn allows (${cap} min${auth.go ? '' : ' without travel or an activity'}); ${m} applied`);

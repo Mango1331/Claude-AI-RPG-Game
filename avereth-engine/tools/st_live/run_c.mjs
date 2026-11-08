@@ -2,6 +2,7 @@ import { board159Turns, board159Response, board159Smoke } from './board159_smoke
 import { qol160Turns, qol160BoardAnswer, qol160Smoke } from './qol160_smoke.mjs';
 import { ui161Turns, ui161Smoke } from './ui161_smoke.mjs';
 import { pulse162Turns, pulse162Smoke } from './pulse162_smoke.mjs';
+import { pulse164Turns, pulse164Smoke, PULSE164_FORCE } from './pulse164_smoke.mjs';
 import { continuityTurns, continuitySmoke, continuityAnswer } from './continuity_smoke.mjs';
 // Live SillyTavern smoke for prototype C (docs/PROTOTYPE_C.md): the planner path in a real SillyTavern (tested with
 // 1.19.0), set up as tools/st_live/run_v4.mjs sets up Runtime V4 (card with the V4 contract, preset "Avereth Narrator V4",
@@ -71,7 +72,7 @@ const TURNS = [
 ];
 const turnOf = (text) => TURNS.find((t) => text.includes(`PLAYER MESSAGE:\n${t.player}`));
 const finance = financeTurns(plan);
-const allTurns = [...TURNS, ...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns];
+const allTurns = [...TURNS, ...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns, ...pulse164Turns];
 
 // ------------------------------------------------------------------------------------------------ setup (as run_v4.mjs)
 const contract = fs.readFileSync(path.join(ENGINE, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
@@ -104,7 +105,8 @@ for (const d of ['src', 'content', 'regex']) fs.cpSync(path.join(ENGINE, d), pat
 {
     const rulesFile = path.join(ext, 'content/rules.json');
     const rules = JSON.parse(fs.readFileSync(rulesFile, 'utf8'));
-    rules.pulse.force = { open: true, kind: 'danger', when: 'I climb down into the old burrow' };
+    // .164 (package C): the camps and the hall night of pulse164_smoke.mjs get a forced DANGER window of their own
+    rules.pulse.force = [{ open: true, kind: 'danger', when: 'I climb down into the old burrow' }, ...PULSE164_FORCE];
     fs.writeFileSync(rulesFile, JSON.stringify(rules, null, 2));
 }
 const settingsFile = path.join(USER, 'settings.json');
@@ -140,7 +142,7 @@ const mock = http.createServer(async (req, res) => {
     // the planner: its own role in a fight, the interpreter's prompt with the planner's section outside one
     if (system.startsWith('You are the intent planner') || (system.startsWith('You are the command interpreter') && system.includes('Actions with skills, in fights and on things'))) {
         purpose = 'plan';
-        const t = turnOf(users) || [...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns].find(t => users.includes(`PLAYER MESSAGE:\n${t.player}`));
+        const t = turnOf(users) || [...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns, ...pulse164Turns].find(t => users.includes(`PLAYER MESSAGE:\n${t.player}`));
         text = JSON.stringify(t ? t.plan : { commands: [] });
     } else if (system.startsWith('You are the command interpreter')) {
         purpose = 'interpret';
@@ -466,12 +468,14 @@ try {
     if (process.env.AVERETH_SMOKE_QOL160 === '1') { stealthProbeMode = true; qol160Checks = await qol160Smoke({ page, send, idle, calls, driver: () => driver, onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); }, out: HERE }); stealthProbeMode = false; }
     let pulse162Checks = null;
     if (process.env.AVERETH_SMOKE_PULSE162 === '1') { stealthProbeMode = true; pulse162Checks = await pulse162Smoke({ page, send, idle, calls, driver: () => driver, onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); }, out: HERE }); stealthProbeMode = false; }
+    let pulse164Checks = null;
+    if (process.env.AVERETH_SMOKE_PULSE164 === '1') { stealthProbeMode = true; pulse164Checks = await pulse164Smoke({ page, send, idle, calls, driver: () => driver, onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); }, out: HERE }); stealthProbeMode = false; }
     let ui161Checks = null;
     if (process.env.AVERETH_SMOKE_UI161 === '1') { stealthProbeMode = true; ui161Checks = await ui161Smoke({ page, send, idle, calls, driver: () => driver, onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); }, out: HERE }); stealthProbeMode = false; }
     const status = await page.evaluate(() => document.getElementById('avereth_status')?.textContent || '');
     await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); });
     await page.waitForTimeout(800);
-    result = { toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks };
+    result = { toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks };
 } catch (error) {
     const screen = await page.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(-8000),
         chat: window.SillyTavern?.getContext?.()?.chat?.map(m => ({ user: m.is_user, system: m.is_system, text: m.mes?.slice(0, 120) })) })).catch(() => null);
@@ -497,6 +501,7 @@ const narratorFor = (key) => narr.filter((c) => c.lastUser.includes(TURNS.find((
 const checks = {
     ...Object.fromEntries(Object.entries(result.ui161Checks || {}).map(([k, v]) => [`ui161_${k}`, v])),
     ...Object.fromEntries(Object.entries(result.pulse162Checks || {}).map(([k, v]) => [`pulse162_${k}`, v])),
+    ...Object.fromEntries(Object.entries(result.pulse164Checks || {}).map(([k, v]) => [`pulse164_${k}`, v])),
     startStatsFive: result.startStatsFive,
     ...Object.fromEntries(Object.entries(result.qol160Checks || {}).map(([k, v]) => [`qol160_${k}`, v])),
     ...Object.fromEntries(Object.entries(result.board159Checks || {}).map(([k,v])=>[`board159_${k}`,v])),

@@ -51,7 +51,9 @@ const ACCEPTED163 = JSON.parse(fs.readFileSync(new URL('./accepted_pulse163_vs_1
 // PULSE package C (.164): the pause turns' draw before their booking, their safety; two rest-then-hunt-GO turns draw
 const ACCEPTED164 = JSON.parse(fs.readFileSync(new URL('./accepted_pulse164_vs_126.json', import.meta.url), 'utf8'));
 // PULSE package B (.167): the window inside a Living Dungeon; five Glimmerdeep records of b17-rogue
-const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_pulse167_vs_126.json', import.meta.url), 'utf8'));
+const ACCEPTED167 = JSON.parse(fs.readFileSync(new URL('./accepted_pulse167_vs_126.json', import.meta.url), 'utf8'));
+// NPC E2-A (.169): known_at/desk in the player outcome; two group person.new refused as collective_person instead of ambient
+const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_e2a169_vs_126.json', import.meta.url), 'utf8'));
 const F144 = ['finance 144 payment card', 'finance 144 contract fields', 'finance 144 acceptance hint', 'finance 144 price open', 'finance 144 unit limit', 'finance 144 acceptance', 'finance 144 own coin'];
 const SUB = { ...baseline, runs: Object.fromEntries(QUICK.map((l) => [l, baseline.runs[l]])) };
 let quick = null; // the four quick runs, replayed once for this file
@@ -61,7 +63,7 @@ test('A1/C: the four quick runs replay as on the start commit, from whole and va
     const { compared, diffs } = compareToBaseline(SUB, result);
     assert.equal(compared, QUICK.reduce((n, l) => n + Object.keys(baseline.runs[l].cases).length, 0));
     assert.deepEqual(diffs.map((d) => d.id).sort(), Object.keys(ACCEPTED.cases).filter((id) => QUICK.includes(id.split('#')[0])).sort());
-    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138','finance 142','finance 142 contract fields', 'batch21 integration 146', 'design148 danger', 'design148 area', 'design149 offensive growth', 'fix150 place fact', 'fix158 fact text', 'fix158 guild witness', 'fix159 board failure', 'fix160 board narration', 'pulse162 window', 'pulse162 road', 'pulse163 sought', 'pulse164 pause order', 'pulse164 early claim', 'pulse167 dungeon window', 'pulse167 dungeon diagnosis', ...F144].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F/integration differences are allowed');
+    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138','finance 142','finance 142 contract fields', 'batch21 integration 146', 'design148 danger', 'design148 area', 'design149 offensive growth', 'fix150 place fact', 'fix158 fact text', 'fix158 guild witness', 'fix159 board failure', 'fix160 board narration', 'pulse162 window', 'pulse162 road', 'pulse163 sought', 'pulse164 pause order', 'pulse164 early claim', 'pulse167 dungeon window', 'pulse167 dungeon diagnosis', 'e2a169 outcome fields', 'e2a169 group person', ...F144].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F/integration differences are allowed');
     const { open, accepted, stale } = acceptedDiffs(diffs, ACCEPTED.cases, result);
     assert.deepEqual([open, stale, accepted.length], [[], [], diffs.length], 'every accepted record has exactly the fingerprinted output');
     for (const [label, run] of Object.entries(result.runs)) {
@@ -347,6 +349,7 @@ test('.164 keeps every .163 acceptance exactly except the pause records of packa
 });
 
 test('.167 keeps every .164/.166 acceptance exactly except five Glimmerdeep records of package B, each with its previous acceptance', () => {
+    const ACCEPTED = ACCEPTED167;
     assert.deepEqual(Object.keys(ACCEPTED.cases).sort(), Object.keys(ACCEPTED164.cases).sort());
     const changed = [];
     for (const [id, old] of Object.entries(ACCEPTED164.cases)) {
@@ -359,4 +362,20 @@ test('.167 keeps every .164/.166 acceptance exactly except five Glimmerdeep reco
     }
     assert.deepEqual(changed.sort(), ['b17-rogue#191 pulse167 dungeon diagnosis', 'b17-rogue#193 pulse167 dungeon window', 'b17-rogue#195 pulse167 dungeon diagnosis', 'b17-rogue#199 pulse167 dungeon diagnosis', 'b17-rogue#217 pulse167 dungeon diagnosis']);
     assert.deepEqual(ACCEPTED.returned, ACCEPTED164.returned);
+});
+
+test('.169 (NPC E2-A) keeps every .167 acceptance exactly except records that change only in known_at/desk or a group person\'s rule name, each with its .167 acceptance', () => {
+    const changed = { 'e2a169 outcome fields': [], 'e2a169 group person': [] };
+    for (const [id, old] of Object.entries(ACCEPTED167.cases)) {
+        const now = ACCEPTED.cases[id];
+        if (!now.category.startsWith('e2a169')) { assert.deepEqual(now, old, id); continue; }
+        changed[now.category].push(id);
+        assert.deepEqual(now.previous_acceptance_167, old, id);
+        assert.match(now.reason, /every other event, outcome field, rejection and correction is exactly the \.168 output/);
+    }
+    const added = Object.keys(ACCEPTED.cases).filter((id) => !ACCEPTED167.cases[id]);
+    assert.deepEqual(added, ['b17-warrior#10']);
+    assert.equal(ACCEPTED.cases['b17-warrior#10'].category, 'e2a169 group person');
+    assert.deepEqual([changed['e2a169 outcome fields'].length, changed['e2a169 group person'].sort()], [123, ['b17-rogue#14']]);
+    assert.deepEqual(ACCEPTED.returned, ACCEPTED167.returned);
 });

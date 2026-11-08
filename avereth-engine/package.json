@@ -17,7 +17,7 @@
     "live:st:check": "node tools/st_live/live/run_live.mjs --check",
     "live:st:selftest": "node tools/st_live/live/selftest.mjs",
     "sim:combat": "node tools/sim/combat.mjs",
-    "replay:check": "node tools/replay/replay.mjs --check tests/replay/baseline.json.gz --accepted tests/replay/accepted_pulse167_vs_126.json"
+    "replay:check": "node tools/replay/replay.mjs --check tests/replay/baseline.json.gz --accepted tests/replay/accepted_e2a169_vs_126.json"
   },
   "engines": {
     "node": ">=20"

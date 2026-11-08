@@ -253,6 +253,23 @@ function nextWaiting(s, run) {
     if (sl.role !== 'minion' && run.slots.slice(0, waiting).some((x) => x.role === 'minion' && !resolved(s, x))) return null;
     return { sl, waiting };
 }
+/**
+ * PULSE package B (plan §6 B, §12.5): the encounter of his level that may come to him where he is (a wandering minion):
+ * the first minion of this level and cycle nobody has met, not resolved, not taken by a company and with no creature
+ * of its own yet; never a guard or boss. Null where there is none (the window then brings no danger). Choosing it
+ * books nothing: only dungeon.ahead binds it for the reply, only dungeon.slot (a valid creature) meets it.
+ */
+export function wanderSlot(s, root, floor) {
+    const x = s.dungeons?.[root];
+    const run = x?.run?.floors?.[floor];
+    if (!run || floor < 1) return null;
+    return run.slots.find((sl) => sl.role === 'minion' && !slotMet(sl) && !resolved(s, sl) && !sl.taken && !sl.entities.length) || null;
+}
+/** The companies inside on this level now (PULSE package B: a meeting in the Dungeon is one of them). */
+export const companiesHere = (s, root, floor) => (s.dungeons?.[root] ? companiesOn(s, s.dungeons[root], floor) : []);
+/** How the story names a slot's encounter (DUNGEON AHEAD, PULSE). */
+export const slotSay = (sl) => `${sl.count > 1 ? `${sl.count} ${sl.species}${/s$/.test(sl.species) ? '' : 's'}` : sl.name ? `${titled(sl.name)} (${sl.species})` : `a ${sl.species}`}`;
+
 /** The next slot of a level the engine places ahead of him: its encounter, or a quiet part first (its pace). */
 export function nextSlot(s, d, floor) {
     const run = d.run.floors[floor];
@@ -333,7 +350,7 @@ export function aheadEvents(s, content, { into = false, root: dest = null, floor
     const here = s.scene.at === root || trueDungeonOf(s, s.scene.at) !== root ? 1 : floorAt(s, s.scene.at);
     const floor = Math.max(1, to || here);
     const lines = [];
-    const say = (sl) => `${sl.count > 1 ? `${sl.count} ${sl.species}${/s$/.test(sl.species) ? '' : 's'}` : sl.name ? `${titled(sl.name)} (${sl.species})` : `a ${sl.species}`}`;
+    const say = slotSay;
     const n = nextSlot(s, x, floor);
     let ahead = null;
     if (n && !n.quiet) {
@@ -927,7 +944,8 @@ export function catalogLines(s, { extractor = false } = {}) {
     if (extractor && x.ahead?.turn === s.turn) {
         for (const a of [x.ahead, x.ahead.next].filter(Boolean)) {
             const sl = x.run.floors[a.floor]?.slots.find((y) => y.id === a.slot);
-            if (sl && !slotMet(sl) && !resolved(s, sl)) L.push(`ENGINE ENCOUNTER (level ${a.floor}): when the reply shows ${sl.name ? titled(sl.name) : `the ${sl.species}${sl.count > 1 ? 's' : ''}`} where he arrives, report creature.new ref "${sl.ref}", species "${sl.species}", anchor "${sl.anchor}", count ${sl.count}`);
+            // PULSE package B: a wandering minion comes to him where he is, it is not met where he arrives
+            if (sl && !slotMet(sl) && !resolved(s, sl)) L.push(`ENGINE ENCOUNTER (level ${a.floor}): when the reply shows ${sl.name ? titled(sl.name) : `the ${sl.species}${sl.count > 1 ? 's' : ''}`} ${a.wander ? 'coming to him here' : 'where he arrives'}, report creature.new ref "${sl.ref}", species "${sl.species}", anchor "${sl.anchor}", count ${sl.count}`);
         }
     }
     for (const p of companiesOn(s, x, mine).filter((y) => y.npc)) L.push(`${p.npc} leads ${p.name} (inside on this level)`);

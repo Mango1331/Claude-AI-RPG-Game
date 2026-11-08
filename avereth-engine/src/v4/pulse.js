@@ -14,13 +14,19 @@
 // recovery are booked (pulseClaimPause); pulseFinish then keeps that decision and draws nothing. Out in the land a
 // danger, obstacle or strange window, in a settlement's street a trouble window cuts it short (from 30 booked minutes
 // on at a minute in [15, M-15], below that at its end) and stops the later steps of his message (resolveCommands:
-// 'rest interrupted'); a safe lodging is never cut short. The inside of a Dungeon has no window (package B: DUNGEON
-// AHEAD stays its only encounter source). No model call, no die of the fight's dice stream.
+// 'rest interrupted'); a safe lodging is never cut short.
+//
+// Package B (plan §6 B, §12.5): inside a true Living Dungeon the window has the frame dungeon. Its DANGER is only ever
+// a free minion slot of his level and cycle (living.js wanderSlot), bound for the reply by the existing dungeon.ahead
+// (wander: true) together with the draw; the slot is met only by a valid creature (dungeon.slot). A DUNGEON AHEAD turn
+// draws nothing, and a turn never holds a second reservation. The Dungeon's own firewall (dungeon_foe, its slots)
+// stays the only rule for its foes (governs: false). No model call, no die of the fight's dice stream.
 import { hash32, normText, formatClock } from '../util.js';
 import { lineage, placeName, settlementOf, namesKind, sameKinds, kindOf as kindWords } from './domain.js';
 import { rulesetOf } from '../content.js';
 import { dayPart, outdoorsInTown } from './settlement.js';
 import { trueDungeonOf } from './dungeon.js';
+import { livingOf, floorAt, wanderSlot, companiesHere, slotSay } from './living.js';
 import { sceneHandle } from './scene_handles.js';
 
 export const PULSE_VERSION = 1;
@@ -32,11 +38,13 @@ const KILL = new Set(['ATTACK', 'DEFEAT', 'KILL', 'HUNT', 'SLAY', 'CULL']);
 // Package C (plan §6 C table): what a pause's window may bring, by the safety of where he pauses, and which kinds cut
 // it short. Every other kind happens before he settles or as the pause ends; a safe lodging never draws a hostile kind
 const PAUSE_BARRED = {
+    dungeon: new Set(),
     safe: new Set(['danger', 'obstacle', 'trouble']),
     street: new Set(['danger', 'obstacle']),
     exposed: new Set(),
 };
 const INTERRUPTS = {
+    dungeon: new Set(['danger']), // package B: only the level's own encounter, bound to its slot, cuts a Dungeon rest short
     safe: new Set(),
     street: new Set(['trouble']),
     exposed: new Set(['danger', 'obstacle', 'strange']),
@@ -70,8 +78,9 @@ export function heldThreats(s, go = null) {
         && (s.entities[id].kind === 'creature' ? s.entities[id].threat !== false : (s.scene.threats || []).includes(id)));
 }
 
-/** The frame of a scene or pause where he stands: street, inside (a settlement) or wild (out in the land). */
+/** The frame of a scene or pause where he stands: dungeon (package B), street, inside (a settlement) or wild. */
 export function sceneFrame(s, content, at = s.scene.at) {
+    if (insideDungeon(s, at) && livingOf(s, trueDungeonOf(s, at))) return 'dungeon';
     if (settlementOf(s, at)) return outdoorsInTown(s, content, at) ? 'street' : 'inside';
     return 'wild';
 }
@@ -83,6 +92,7 @@ export function sceneFrame(s, content, at = s.scene.at) {
  */
 export function pauseSafety(s, content, at = s.scene.at) {
     const frame = sceneFrame(s, content, at);
+    if (frame === 'dungeon') return 'dungeon';
     if (frame === 'inside') return 'safe';
     if (frame === 'street') return 'street';
     return roofed(s, content, at) ? 'safe' : 'exposed';
@@ -108,7 +118,12 @@ export function pulseBegin(s, content, ordered, envx) {
     const inputs = s.inputs || [];
     const [prev, now] = [inputs.at(-2), inputs.at(-1)];
     if (s.encounter || (s.pending_combat || []).length) P.reason = 'combat';
-    else if (insideDungeon(s)) { P.reason = 'dungeon'; P.governs = false; } // package B; DUNGEON AHEAD and its foe rule govern
+    else if (insideDungeon(s)) {
+        // package B: a Living Dungeon's inside has its window (frame dungeon); its foe rule and DUNGEON AHEAD govern its foes
+        P.governs = false;
+        if (livingOf(s, trueDungeonOf(s, s.scene.at))) P.dungeon = trueDungeonOf(s, s.scene.at);
+        else P.reason = 'dungeon';
+    }
     else if (ordered.some((c) => c.type === 'activity' && LEARNING.has(c.kind))) P.reason = 'learning';
     else if (prev && now && prev.turn === now.turn - 1 && normText(prev.input) && normText(prev.input) === normText(now.input)) P.reason = 'repeat';
     return P;
@@ -151,7 +166,7 @@ export function pulseClaimPause(s, content, ctx, emit, c, minutes, ordered) {
     const after = atEnd ? minutes : edge + draw(s, 'pulse.at', minutes - 2 * edge + 1);
     // later: how many later steps of the message this cut stops (resolveCommands refuses them, 'rest interrupted')
     const later = (ordered || []).filter((x) => (x.seq ?? 0) > exposure.seq).length;
-    const cut = { seq: exposure.seq, kind: c.kind, after_min: after, of_min: minutes, at_end: atEnd, cause: d.kind, minute: s.clock.minute + after, later };
+    const cut = { seq: exposure.seq, kind: c.kind, after_min: after, of_min: minutes, at_end: atEnd, cause: d.kind, minute: s.clock.minute + after, later, ...(d.wander ? { who: d.wander.who, many: d.wander.many } : {}) };
     d.interrupt = cut;
     P.interruptedAt = exposure.seq;
     // the decision and its cut go into the record before the pause's time and recovery
@@ -267,12 +282,17 @@ function frameOf(s, content, exposure) {
 }
 
 /** The coarse kind of an open window: frame x day part weights, repetition, world evidence for danger. */
-function kindOf(s, content, frame, phase, exposure, recent) {
+function kindOf(s, content, frame, phase, exposure, recent, dz = null) {
     const R = content.rules.pulse;
     const i = PHASES.indexOf(phase);
     const w = Object.fromEntries(Object.entries(R.kinds[frame] || {}).map(([k, v]) => [k, v[i] ?? v[0]]));
     if (exposure.type === 'pause') for (const k of PAUSE_BARRED[exposure.safety] || PAUSE_BARRED.safe) delete w[k];
-    if (w.danger) {
+    // package B: in a Dungeon danger is a free minion slot of his level, a meeting a company inside on it; a share
+    // with nothing behind it falls away (the draw spreads it over the rest)
+    if (dz) {
+        if (!dz.slot) delete w.danger;
+        if (!dz.companies.length) delete w.meeting;
+    } else if (w.danger) {
         const line = lineage(s, s.scene.at);
         const backed = line.some((id) => s.places[id]?.population || Array.isArray(s.places[id]?.encounter_levels));
         if (!backed) w.danger = Math.floor(w.danger / 2);
@@ -286,6 +306,23 @@ function kindOf(s, content, frame, phase, exposure, recent) {
     let r = draw(s, 'pulse.kind', total);
     for (const [k, v] of entries) { if (r < v) return k; r -= v; }
     return entries.at(-1)[0];
+}
+
+/**
+ * Package B: what a Dungeon window can hold where he is: the level, the free minion slot that may come to him (none
+ * when this turn already holds an encounter reference) and the companies inside on his level.
+ */
+function dungeonWindow(s, root) {
+    const x = livingOf(s, root);
+    const floor = Math.max(1, floorAt(s, s.scene.at));
+    const bound = x?.ahead?.turn === s.turn; // a reference of this turn already: never a second one
+    return { root, floor, cycle: x?.cycle ?? null, slot: x && !bound ? wanderSlot(s, root, floor) : null, companies: companiesHere(s, root, floor) };
+}
+
+/** Package B: has this turn already reserved the Dungeon's encounter (a wandering minion)? Then no DUNGEON AHEAD. */
+export function aheadReserved(s, ctx, root) {
+    const x = livingOf(s, root);
+    return ctx.pulse?.reservedAhead === root || !!(x?.ahead?.wander && x.ahead.turn === s.turn);
 }
 
 /** The chance of this turn's window: base x the miss streak, capped (V3, plan §2 D). */
@@ -304,6 +341,13 @@ const KIND_TEXT = {
     danger: 'DANGER: ONE group of this land\'s people or creatures turns on him or bars his way with hostile intent; its strength is the land\'s (AREA LEVELS, populations), never his; nobody else joins it',
 };
 const FRAME_TEXT = { wild: 'out in the land', street: 'in the street', inside: 'indoors' };
+// package B: the kinds inside a Dungeon (danger is its wandering minion, a meeting one of the companies inside)
+const DUNGEON_TEXT = {
+    meeting: (d) => `OTHER ADVENTURERS: ${d.company || 'a company inside'} of this level cross his way (the engine's company; they do not attack him)`,
+    trace: () => 'a TRACE or FIND: tracks, remains, a sign of what lives on this level, a thing lying here; nothing is taken, followed or entered unless he chooses',
+    strange: () => 'something STRANGE: an odd light, sound, draught or old magic of this place; it has no effect on him unless he acts on it',
+};
+const wanderCause = (who, many) => `${who} of this level ${many ? 'come' : 'comes'} upon him (the engine's encounter; exactly these, nothing else)`;
 
 function toward(s, go) {
     return go?.to ? placeName(s, go.to) : go?.journey || go?.name || 'where he is going';
@@ -320,18 +364,24 @@ function lineFor(s, content, d, exposure, held, later) {
     }
     if (held.length) return `STILL HERE (PULSE) — ${held.map((id) => sceneHandle(s, content, id)).join(', ')}: the threat is still present; no new foe is brought into this scene while it is.`;
     if (!d?.open) return null;
-    const where = `${d.phase}, ${FRAME_TEXT[d.frame] || d.frame}`;
+    const dungeon = d.frame === 'dungeon';
+    const where = dungeon ? `level ${d.floor}` : `${d.phase}, ${FRAME_TEXT[d.frame] || d.frame}`;
+    const cause = (x) => (x.who ? wanderCause(x.who, x.many) : CAUSE_TEXT[x.cause]);
     if (exposure.type === 'pause' && d.interrupt) {
         const x = d.interrupt;
         const resting = x.kind !== 'wait';
         const wait = x.later ? ' his later steps of this message wait (NOT DONE), and' : '';
-        if (x.at_end) return `REST INTERRUPTED (the engine's; ${where}) — at the end of his ${x.of_min} min ${x.kind} (booked in full${resting ? ', with its recovery' : ''}), at ${formatClock(x.minute)}: ${CAUSE_TEXT[x.cause]}. Tell this cause as what meets him as his ${x.kind} ends;${wait} what he does now is his decision.`;
-        return `REST INTERRUPTED (the engine's; ${where}) — at ${formatClock(x.minute)}, after ${x.after_min} of the ${x.of_min} min he chose for his ${x.kind} (booked: ${x.after_min} min${resting ? ', recovery for those minutes only' : ''}): ${CAUSE_TEXT[x.cause]}. Tell this cause as what ends his ${x.kind}; he gets no more of it,${wait} what he does now is his decision.`;
+        if (x.at_end) return `REST INTERRUPTED (the engine's; ${where}) — at the end of his ${x.of_min} min ${x.kind} (booked in full${resting ? ', with its recovery' : ''}), at ${formatClock(x.minute)}: ${cause(x)}. Tell this cause as what meets him as his ${x.kind} ends;${wait} what he does now is his decision.`;
+        return `REST INTERRUPTED (the engine's; ${where}) — at ${formatClock(x.minute)}, after ${x.after_min} of the ${x.of_min} min he chose for his ${x.kind} (booked: ${x.after_min} min${resting ? ', recovery for those minutes only' : ''}): ${cause(x)}. Tell this cause as what ends his ${x.kind}; he gets no more of it,${wait} what he does now is his decision.`;
     }
+    const what = dungeon && DUNGEON_TEXT[d.kind] ? `${DUNGEON_TEXT[d.kind](d)}. No foe: the level's foes come only as the engine adds them` : KIND_TEXT[d.kind];
     if (exposure.type === 'pause') {
         const at = later ? ` (at the end of step ${exposure.pause.seq}, before his next steps)` : '';
-        return `PULSE (the engine's; ${where}) — before he settles or as his ${exposure.pause.kind} ends${at}, ONE thing happens that he notices: ${KIND_TEXT[d.kind]}. The ${exposure.pause.kind} itself is as booked.`;
+        return `PULSE (the engine's; ${where}) — before he settles or as his ${exposure.pause.kind} ends${at}, ONE thing happens that he notices: ${what}. The ${exposure.pause.kind} itself is as booked.`;
     }
+    // package B: the wandering minion comes to him here (not ahead where he arrives); the one encounter of this turn
+    if (dungeon && d.wander) return `PULSE (the engine's; ${where}) — DANGER: ${d.wander.who} of this level ${d.wander.many ? 'come' : 'comes'} to him here, where he is (the engine's encounter for this reply; exactly these, nothing else, and no other foe). What he does about it is his decision.`;
+    if (dungeon) return `PULSE (the engine's; ${where}) — ONE thing happens around him that he notices: ${what}. It moves him nowhere and binds him to nothing; what he does about it is his decision.`;
     return `PULSE (the engine's; ${where}) — ONE concrete thing happens around him that he notices: ${KIND_TEXT[d.kind]}. It takes nothing of his, moves him nowhere and binds him to nothing; what he does about it is his decision. If nothing of this kind can fit the scene, nothing happens.`;
 }
 
@@ -339,6 +389,8 @@ function lineFor(s, content, d, exposure, held, later) {
 function dynamicReason(s, ctx, ordered, exposure, early = false) {
     const P = ctx.pulse;
     if (P.dungeonAhead) return 'dungeon_ahead';
+    // a leg from inside a Dungeon (going up and out) keeps package A's rule: no window on it
+    if (P.dungeon && exposure.type === 'travel') return 'dungeon_leg';
     if (ctx.resolutions.some((r) => HARD_STOP.has(r.type) && r.status === 'pending')
         || (s.decisions || []).some((x) => x.kind === 'payment' && x.state === 'needs_confirmation' && x.turn === s.turn)) return 'hard_stop';
     const types = ordered.map((c) => c.type);
@@ -374,9 +426,17 @@ function settle(s, content, ctx, emit, ordered, exposure, early = false) {
         const forced = (Array.isArray(R.force) ? R.force : [R.force]).find((f) => f && typeof f.open === 'boolean' && (!f.when || input.includes(f.when))) || null;
         const open = forced ? forced.open : roll < p;
         const barred = exposure.type === 'pause' ? PAUSE_BARRED[exposure.safety] : null;
-        const kind = open ? (forced?.kind && !barred?.has(forced.kind) ? forced.kind : kindOf(s, content, frame, phase, exposure, st.recent || [])) : null;
+        const dz = frame === 'dungeon' ? dungeonWindow(s, P.dungeon) : null;
+        const available = (k) => !dz || (k === 'danger' ? !!dz.slot : k === 'meeting' ? dz.companies.length > 0 : true);
+        const kind = open ? (forced?.kind && !barred?.has(forced.kind) && available(forced.kind) ? forced.kind : kindOf(s, content, frame, phase, exposure, st.recent || [], dz)) : null;
         d = { v: PULSE_VERSION, turn: s.turn, at: s.scene.at, exposure: exposure.type, frame, phase, base: Math.round(base * 100) / 100, misses_before: st.misses, p, roll, open: open && !!kind, kind, leg: exposure.leg?.seq ?? null,
-            ...(exposure.type === 'pause' ? { safety: exposure.safety } : {}), ...(forced ? { forced: true } : {}) };
+            ...(exposure.type === 'pause' ? { safety: exposure.safety } : {}), ...(dz ? { floor: dz.floor } : {}), ...(forced ? { forced: true } : {}) };
+        // package B: an open danger in a Dungeon is its free minion slot, bound for this reply with the draw
+        if (d.open && d.kind === 'danger' && dz?.slot) {
+            d.wander = { dungeon: dz.root, cycle: dz.cycle, floor: dz.floor, slot: dz.slot.id, ref: dz.slot.ref, who: slotSay(dz.slot), many: dz.slot.count > 1 };
+            P.reservedAhead = dz.root;
+        }
+        if (d.open && d.kind === 'meeting' && dz) d.company = dz.companies[0].name;
     }
     // early: the event goes out once a pause's cut is known (pulseClaimPause adds d.interrupt)
     const out = { exposure, reason, held, d, emitted: false };
@@ -388,6 +448,9 @@ function emitDecision(s, emit, out) {
     if (out.emitted) return;
     out.emitted = true;
     if (out.d) emit({ t: 'pulse.rolled', d: out.d });
+    // package B: the wandering minion's reservation, the turn's one encounter reference (living.js slotForNew reads it)
+    const w = out.d?.wander;
+    if (w) emit({ t: 'dungeon.ahead', d: { id: w.dungeon, ahead: { turn: s.turn, cycle: w.cycle, floor: w.floor, slot: w.slot, ref: w.ref, wander: true } } });
     // a later turn of the same pause block keeps the block going (no draw, no streak change)
     else if (out.reason === 'pause_block') emit({ t: 'pulse.pause', d: { at: s.scene.at, turn: s.turn } });
 }
@@ -430,8 +493,9 @@ export function restCutFacts(events) {
     return (events || []).filter((e) => e?.t === 'pulse.rolled' && e.d?.interrupt).map((e) => {
         const x = e.d.interrupt;
         const stopped = x.later ? ' His later steps of that message were not done.' : '';
+        const short = x.who ? `${x.who} of this level came upon him` : CAUSE_SHORT[x.cause];
         return x.at_end
-            ? `REST ENDED BY AN EVENT (the engine's, last turn): his ${x.of_min} min ${x.kind} ran in full; at ${formatClock(x.minute)}, as it ended, ${CAUSE_SHORT[x.cause]}.${stopped}`
-            : `REST CUT SHORT (the engine's, last turn): at ${formatClock(x.minute)}, after ${x.after_min} of ${x.of_min} min of his ${x.kind}, ${CAUSE_SHORT[x.cause]}; time${x.kind === 'wait' ? '' : ' and recovery'} as booked (${x.after_min} min).${stopped}`;
+            ? `REST ENDED BY AN EVENT (the engine's, last turn): his ${x.of_min} min ${x.kind} ran in full; at ${formatClock(x.minute)}, as it ended, ${short}.${stopped}`
+            : `REST CUT SHORT (the engine's, last turn): at ${formatClock(x.minute)}, after ${x.after_min} of ${x.of_min} min of his ${x.kind}, ${short}; time${x.kind === 'wait' ? '' : ' and recovery'} as booked (${x.after_min} min).${stopped}`;
     });
 }

@@ -1781,14 +1781,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     if (opened) opened.from = fightFrom;
     if (cPath && !opened) openEquipmentStock(s, content, emit);
     // PULSE package A (plan §6 A5): what this reply did with the turn's window, separate from the engine's decision.
-    // `narrated` is a heuristic (something new came into the world in an open window), not an engine truth
-    if (pulse?.governs) {
+    // `narrated` is a heuristic (something new came into the world in an open window), not an engine truth. Package B:
+    // also for a Dungeon's window (its own foe rule governs there, so governs is false, yet the turn drew)
+    if (pulse?.governs || pulse?.rolled) {
         const created = events.filter((e) => e.t === 'entity.created').map((e) => e.d.entity);
         const persisted = {
             persons: created.filter((x) => x.kind === 'npc').length, creatures: created.filter((x) => x.kind === 'creature').length,
             features: events.filter((e) => e.t === 'feature.set').length, objects: events.filter((e) => e.t === 'object.created').length,
             places: events.filter((e) => e.t === 'place.created').length,
             fight: !!opened || (s.pending_combat || []).length > 0,
+            ...(pulse.frame === 'dungeon' ? { slots: events.filter((e) => e.t === 'dungeon.slot').length } : {}),
             rejected_pulse: rejected.filter((r) => ['pulse', 'pulse_take'].includes(r.rule) || (r.rule === 'road' && pulse.exposure === 'travel')).length,
         };
         const any = persisted.persons + persisted.creatures + persisted.features + persisted.objects + persisted.places > 0 || persisted.fight;
@@ -1797,9 +1799,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // package C (plan §6 C 5, §12.4 c): a pause the engine cut short for someone (danger, trouble) whom the reply did
         // not bring in: the next reply makes that cause plain, from the engine's event; no new attacker, no fight for it
         const x = pulse.interrupt;
-        if (x && ['danger', 'trouble'].includes(x.cause) && !persisted.persons && !persisted.creatures && !persisted.fight && !persisted.rejected_pulse) {
+        if (x && ['danger', 'trouble'].includes(x.cause) && !persisted.persons && !persisted.creatures && !persisted.fight && !persisted.rejected_pulse && !persisted.slots) {
             const booked = x.at_end ? `his ${x.of_min} min ${x.kind} ran in full` : `only ${x.after_min} of the ${x.of_min} min of his ${x.kind}${x.kind === 'wait' ? '' : ' and their recovery'} were booked`;
-            const correction = `REST INTERRUPTED (the engine's, last turn): the last reply did not show what ${x.at_end ? `met him as his ${x.kind} ended` : `cut his ${x.kind} short`} at ${formatClock(x.minute)}: ${CAUSE_SHORT[x.cause]}; ${booked}. Make that cause plain in this reply as what ${x.at_end ? 'met' : 'woke or stopped'} him (it may still be near or already gone); bring in no new attacker or fight for it.`;
+            const correction = `REST INTERRUPTED (the engine's, last turn): the last reply did not show what ${x.at_end ? `met him as his ${x.kind} ended` : `cut his ${x.kind} short`} at ${formatClock(x.minute)}: ${x.who ? `${x.who} of this level came upon him` : CAUSE_SHORT[x.cause]}; ${booked}. Make that cause plain in this reply as what ${x.at_end ? 'met' : 'woke or stopped'} him (it may still be near or already gone); bring in no new attacker or fight for it.`;
             if (!corrections.includes(correction)) corrections.push(correction);
         }
     }

@@ -570,7 +570,8 @@
       "travel": { "day": 35, "evening": 40, "night": 45 },
       "wild": { "day": 20, "evening": 24, "night": 28 },
       "street": { "day": 10, "evening": 12, "night": 8 },
-      "inside": { "day": 6, "evening": 8, "night": 3 }
+      "inside": { "day": 6, "evening": 8, "night": 3 },
+      "dungeon": { "day": 15, "evening": 15, "night": 15 }
     },
     "base_note": "chance in percent that the one window of a turn opens, by frame and the day part of settlement.js dayPart (day 6-19, evening 19-22, night 22-6); travel.day follows travel.leg_event_pct (the Patch 5 share)",
     "step": 0.15,
@@ -581,8 +582,10 @@
       "travel": { "meeting": [30, 25, 15], "obstacle": [15, 15, 15], "trace": [20, 20, 15], "strange": [10, 10, 15], "danger": [25, 30, 40] },
       "wild": { "meeting": [25, 20, 10], "obstacle": [10, 10, 10], "trace": [30, 25, 20], "strange": [15, 15, 20], "danger": [20, 30, 40] },
       "street": { "meeting": [35, 35, 30], "life": [40, 35, 15], "trouble": [20, 25, 45], "trace": [5, 5, 10] },
-      "inside": { "meeting": [45, 45, 40], "life": [50, 45, 40], "trouble": [5, 10, 20] }
+      "inside": { "meeting": [45, 45, 40], "life": [50, 45, 40], "trouble": [5, 10, 20] },
+      "dungeon": { "meeting": [10, 10, 10], "trace": [35, 35, 35], "strange": [25, 25, 25], "danger": [30, 30, 30] }
     },
+    "dungeon_note": "package B (plan §6 B): inside a true Living Dungeon, no day part; danger only as a free minion slot of his level and cycle (living.js wanderSlot), meeting only with a company inside on his level, else that share falls away; a DUNGEON AHEAD turn and a leg out draw nothing; in a Dungeon rest only danger cuts it short",
     "kinds_note": "weights day/evening/night of the coarse kind of an open window; the last open kind weighs 0, the three before it half; danger weighs half where no population or area levels back it; a pause in a safe lodging (any room of a settlement) never draws danger, obstacle or trouble, a pause in a street no danger or obstacle (package C)",
     "pause": {
       "interrupt_min": 30, "edge_min": 15,

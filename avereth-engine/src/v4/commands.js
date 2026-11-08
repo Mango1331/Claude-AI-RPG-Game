@@ -41,7 +41,7 @@ import { acceptSkill, declineSkill, developmentOffers, skillOffers } from './ski
 import { classOffer, classSelection, acceptClass } from './class_growth.js';
 import { tradeObject as objectOf, pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, rateUnits, offerAvailability, tradeTermsWhy, purchaseLines, samePurchaseRequest, purchaseDecisionMatches } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
-import { pulseBegin, pulseFinish, pulseLeg, pulseClaimPause, pulseSought, goSought, searchSought } from './pulse.js';
+import { pulseBegin, pulseFinish, pulseLeg, pulseClaimPause, pulseSought, goSought, searchSought, aheadReserved } from './pulse.js';
 import { bookStealth } from '../checks.js';
 import { groundAccess, attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
 import { dungeonOf, trueDungeonOf, isRoom, roomKnown, wayBetween, knownRoomNamed, hiddenWayFinds, linkEvent, otherEnd, linksAt, blockerOf, goesFrom, firstStop } from './dungeon.js';
@@ -498,7 +498,11 @@ function livingGo(s, content, c, ctx, emit, { known, nav, envx }) {
     // yet, or one he has only seen (the stair down he knows of)
     const fresh = known && c.to !== dest && !s.places[c.to]?.visited && trueDungeonOf(s, c.to) === dest;
     const into = (s.scene.at === dest || insideOf(s, dest)) && (!known || !!nav?.explore || fresh);
-    const a = into ? aheadEvents(s, content, { into: true, root: dest, floor: fresh ? floorAt(s, c.to) : null }) : null;
+    // PULSE package B: a turn holds one encounter reference; a wandering minion reserved earlier in it keeps it (in the
+    // normal flow unreachable: the danger that reserves it cut the pause short and stops this GO first)
+    const reserved = into && aheadReserved(s, ctx, dest);
+    if (reserved && ctx.pulse) ctx.pulse.invariant = 'second encounter reference refused';
+    const a = into && !reserved ? aheadEvents(s, content, { into: true, root: dest, floor: fresh ? floorAt(s, c.to) : null }) : null;
     if (a) {
         a.events.forEach(emit);
         ctx.extra.push(...a.lines);

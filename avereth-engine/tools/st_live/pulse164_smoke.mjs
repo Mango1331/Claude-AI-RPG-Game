@@ -22,6 +22,8 @@ export const pulse164Turns = [
         answer: { scene: 'here', expected: {}, deltas: [
             { seq: 1, type: 'person.new', ref: 'marsh bandits', name: null, role: 'bandit', desc: ['marsh bandit with a blade'], present: true, relevant: true, threat: true, at: null, band: 'SHORT' },
             { seq: 2, type: 'hostile', by: ['marsh bandits'], scope: 'all', evidence: 'draw blades and attack him' },
+            // .165 (review of .164, P2): the extractor reports the full planned night; the cut stands
+            { seq: 3, type: 'time', minutes: 480 },
         ] } },
     { key: 'pulse164quiet', player: 'I bed down by the flood line and sleep for eight hours.', plan: SLEEP('I bed down by the flood line and sleep for eight hours'),
         reply: 'He sleeps by the flood line and wakes stiff in the grey light.', swipe: 'He sleeps on through the cold hours by the water.', answer: { scene: 'here', expected: {}, deltas: [] } },
@@ -63,7 +65,9 @@ export async function pulse164Smoke({ page, send, idle, calls, driver, onReload,
             events: ev(user), rolled: ev(user).filter((e) => e.t === 'pulse.rolled').length,
             minutes: ev(user).filter((e) => e.t === 'time.advanced').reduce((a, e) => a + e.d.minutes, 0),
             gains: Object.fromEntries(ev(user).filter((e) => e.t === 'resource.changed' && e.d.id === 'pc').map((e) => [e.d.resource, e.d.value])),
-            corrections: reply?.corrections || [], extraction: reply?.extraction?.status, encounter: !!s.encounter, pending: (s.pending_combat || []).length };
+            corrections: reply?.corrections || [], extraction: reply?.extraction?.status,
+            replyMinutes: (reply?.events || []).filter((e) => e.t === 'time.advanced').reduce((a, e) => a + e.d.minutes, 0),
+            replyRejected: (reply?.events || []).filter((e) => e.t === 'delta.rejected').map((e) => e.d.rule), encounter: !!s.encounter, pending: (s.pending_combat || []).length };
     };
     const checks = {}, evidence = [];
     const play = async (key) => {
@@ -90,6 +94,9 @@ export async function pulse164Smoke({ page, send, idle, calls, driver, onReload,
     checks.campRequestCause = /CUT SHORT by the engine after \d+ of the 480 minutes/.test(camp.block) && /REST INTERRUPTED \(the engine's; [a-z]+, out in the land\) — at .*ONE group of this land's people or creatures comes upon him/.test(camp.block)
         && /what he does now is his decision/.test(camp.block) && /Someone new in this reply attacks Alaric only as the ONE hostile group/.test(camp.block);
     checks.campFightOpened = camp.state.encounter || camp.state.pending > 0;
+    // .165: the reply's time of the full night books none of the minutes the cut took away
+    checks.campReplyTimeNoRest = !!x && camp.state.replyMinutes === 0 && camp.state.replyRejected.includes('rest_cut')
+        && camp.state.state.clock.minute === camp.state.before.clock.minute + x.after_min;
     checks.campNoCorrection = !camp.state.corrections.some((c) => /did not show what/.test(c));
     // reload: the same minutes, the same recovery, the same clock and sheet from the stored events
     const beforeReload = { clock: camp.state.state.clock.minute, sheet: camp.state.state.entities.pc.sheet, pulse: camp.state.state.pulse };

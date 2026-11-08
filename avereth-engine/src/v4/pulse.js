@@ -124,8 +124,9 @@ export function pulseBegin(s, content, ordered, envx) {
         if (livingOf(s, trueDungeonOf(s, s.scene.at))) P.dungeon = trueDungeonOf(s, s.scene.at);
         else P.reason = 'dungeon';
     }
-    else if (ordered.some((c) => c.type === 'activity' && LEARNING.has(c.kind))) P.reason = 'learning';
-    else if (prev && now && prev.turn === now.turn - 1 && normText(prev.input) && normText(prev.input) === normText(now.input)) P.reason = 'repeat';
+    // .168 (review of .167, P2): the static exclusions of every frame, inside a Living Dungeon too
+    if (!P.reason && ordered.some((c) => c.type === 'activity' && LEARNING.has(c.kind))) P.reason = 'learning';
+    else if (!P.reason && prev && now && prev.turn === now.turn - 1 && normText(prev.input) && normText(prev.input) === normText(now.input)) P.reason = 'repeat';
     return P;
 }
 

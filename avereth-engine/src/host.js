@@ -15,6 +15,7 @@ import { renderHud } from './hud.js';
 import { hash32, clone, normText, swapWords, hasTrackerBlocks, stripTrackerBlocks, ENGINE_VERSION } from './util.js';
 
 import { combatChronicle } from './v4/combat_truth.js';
+import { restCutFacts } from './v4/pulse.js';
 
 export const KEY = 'avereth';
 export const RECORD_VERSION = 2;
@@ -234,9 +235,11 @@ export function turnBlock(chat, u, content, settings = {}) {
     // Build .144 (S1): a payment card paid by "#pay" between the last reply and this input ran no story turn; the reply
     // tells the handover as done (one line from the stored record, no extra model call)
     const paidCards = paidCardFacts(state, chat.slice(Math.max(p, 0) + 1, u).filter((m) => m.is_user && rec(m)?.command).flatMap((m) => messageEvents(m)));
+    // PULSE package C (plan §6 C 5): a pause the last story turn's window cut short, once, from that turn's own events
+    const restCut = p >= 0 ? restCutFacts(chat.slice(lastReplyIndex(chat, p) + 1, p).filter((m) => m.is_user && rec(m) && !rec(m).command).flatMap((m) => messageEvents(m))) : [];
     const context = turnContext(state, content, {
         input: chat[u].mes,
-        corrections: [...notExecuted, ...paidCards, ...(prev && !prev.system_answer ? prev.corrections || [] : [])],
+        corrections: [...notExecuted, ...paidCards, ...restCut, ...(prev && !prev.system_answer ? prev.corrections || [] : [])],
         lastReply: p >= 0 ? chat[p].mes : '',
         chronicle: state.meta?.runtime === 'v4' && (state.encounter || state.last?.outcome?.kind === 'combat') ? combatChronicle(chat.slice(0, u + 1), messageEvents) : null,
         budget: settings.budget,

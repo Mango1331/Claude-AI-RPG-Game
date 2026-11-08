@@ -17,7 +17,7 @@ import { bookStealth } from '../checks.js';
 import { transferCargo, deliveryStatus, deliveryObjectives, confirmDelivery, additionalContainerReturn } from './delivery.js';
 import { Dice } from '../rng.js';
 import { applyEvent } from '../state.js';
-import { clone, normText, slug, hash32 } from '../util.js';
+import { clone, normText, slug, hash32, formatClock } from '../util.js';
 import { coinFromWords, coinEvidence, coinMentions, numbersIn } from '../economy.js';
 import { trainingOfferWhy } from './growth.js';
 import { deriveCharacter } from '../derived.js';
@@ -28,7 +28,7 @@ import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../
 import { firewall, pcWound, pcActIn } from './firewall.js';
 import { stripOwned, wrongClaim, ownershipViolation, stateRegions, effectViolation } from './ownership.js';
 import { mayOpenFight, mayTake, attackCommitted } from './envelope.js';
-import { soughtMatch } from './pulse.js';
+import { soughtMatch, CAUSE_SHORT } from './pulse.js';
 import {
     PLACE_PARENTS, HALL_NAME, lineage, guildDestination, hallOf, hallOfSettlement, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind, SERVICE_ROLE,
     progressKey, sameKinds, kindOf, populationAt, validEncounterLevels,
@@ -1780,6 +1780,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const any = persisted.persons + persisted.creatures + persisted.features + persisted.objects + persisted.places > 0 || persisted.fight;
         emit({ t: 'pulse.outcome', d: { v: 1, turn: s.turn, rolled: !!pulse.rolled, open: !!pulse.open, kind: pulse.kind ?? null,
             narrated: pulse.open ? (any ? 'likely' : 'none') : null, heuristic: true, persisted } });
+        // package C (plan §6 C 5, §12.4 c): a pause the engine cut short for someone (danger, trouble) whom the reply did
+        // not bring in: the next reply makes that cause plain, from the engine's event; no new attacker, no fight for it
+        const x = pulse.interrupt;
+        if (x && ['danger', 'trouble'].includes(x.cause) && !persisted.persons && !persisted.creatures && !persisted.fight && !persisted.rejected_pulse) {
+            const booked = x.at_end ? `his ${x.of_min} min ${x.kind} ran in full` : `only ${x.after_min} of the ${x.of_min} min of his ${x.kind}${x.kind === 'wait' ? '' : ' and their recovery'} were booked`;
+            const correction = `REST INTERRUPTED (the engine's, last turn): the last reply did not show what ${x.at_end ? `met him as his ${x.kind} ended` : `cut his ${x.kind} short`} at ${formatClock(x.minute)}: ${CAUSE_SHORT[x.cause]}; ${booked}. Make that cause plain in this reply as what ${x.at_end ? 'met' : 'woke or stopped'} him (it may still be near or already gone); bring in no new attacker or fight for it.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+        }
     }
     return { events, rejected, corrections, system, opened, state: s, arrivedHall };
 

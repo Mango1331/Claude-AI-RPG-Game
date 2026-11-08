@@ -583,10 +583,16 @@
       "street": { "meeting": [35, 35, 30], "life": [40, 35, 15], "trouble": [20, 25, 45], "trace": [5, 5, 10] },
       "inside": { "meeting": [45, 45, 40], "life": [50, 45, 40], "trouble": [5, 10, 20] }
     },
-    "kinds_note": "weights day/evening/night of the coarse kind of an open window; the last open kind weighs 0, the three before it half; danger weighs half where no population or area levels back it; a pause (package A) never draws danger, obstacle or trouble",
+    "kinds_note": "weights day/evening/night of the coarse kind of an open window; the last open kind weighs 0, the three before it half; danger weighs half where no population or area levels back it; a pause in a safe lodging (any room of a settlement) never draws danger, obstacle or trouble, a pause in a street no danger or obstacle (package C)",
+    "pause": {
+      "interrupt_min": 30, "edge_min": 15,
+      "roofed_words": ["house", "home", "homestead", "farmstead", "cottage", "cabin", "hut", "shack", "lodge", "inn", "tavern", "alehouse", "hall", "mill", "chapel", "temple", "barn", "stable", "loft", "room", "chamber", "kitchen", "hearth", "cellar", "tower", "keep", "manor", "croft"],
+      "roofed_suffixes": ["house", "mill"]
+    },
+    "pause_note": "package C (plan §6 C): out in the land an open danger, obstacle or strange window, in a settlement's street an open trouble window cuts a booked rest, sleep or wait short; from interrupt_min booked minutes on after a deterministic minute m in [edge_min, M - edge_min] (only m and its recovery are booked), below that at its end (booked in full); either way the later steps of the message are not done. A safe lodging is never cut short: a room of a settlement, a lodging granted here, or out in the land a place under a roof (kind interior, or its name names a building by roofed_words/roofed_suffixes, whole words); only the safety reads this, the frame stays package A's. The inside of a Dungeon has no window (package B)",
     "recent": 4,
     "force": null,
-    "force_note": "tests and scripted host smokes only: {open: true|false, kind?, when?} replaces the draw (when: only for a player message containing these words); never set in a product campaign"
+    "force_note": "tests and scripted host smokes only: {open: true|false, kind?, when?} replaces the draw (when: only for a player message containing these words), or a list of such entries (the first that fits); never set in a product campaign"
   },
   "combat": {
     "src": "Core #23, #24, #26-#28",

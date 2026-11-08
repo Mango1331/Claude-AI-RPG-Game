@@ -10,9 +10,13 @@
 //                threats, the one draw (seed|turn, never the clock, the step number or his words), the kind, the
 //                narrator line and auth.pulse; one pulse.rolled event for a real draw only
 //
-// Package A: a pause gets its window but is never cut short (package C); the inside of a Dungeon has none (package B:
-// DUNGEON AHEAD stays its only encounter source). No model call, no die of the fight's dice stream.
-import { hash32, normText } from '../util.js';
+// Package C (W7a, plan §6 C): a pause that is the first exposure is decided in its own handler, before its time and
+// recovery are booked (pulseClaimPause); pulseFinish then keeps that decision and draws nothing. Out in the land a
+// danger, obstacle or strange window, in a settlement's street a trouble window cuts it short (from 30 booked minutes
+// on at a minute in [15, M-15], below that at its end) and stops the later steps of his message (resolveCommands:
+// 'rest interrupted'); a safe lodging is never cut short. The inside of a Dungeon has no window (package B: DUNGEON
+// AHEAD stays its only encounter source). No model call, no die of the fight's dice stream.
+import { hash32, normText, formatClock } from '../util.js';
 import { lineage, placeName, settlementOf, namesKind, sameKinds, kindOf as kindWords } from './domain.js';
 import { rulesetOf } from '../content.js';
 import { dayPart, outdoorsInTown } from './settlement.js';
@@ -25,8 +29,31 @@ const PAUSES = new Set(['rest', 'sleep', 'wait']);
 const LEARNING = new Set(['train', 'study']);
 const HARD_STOP = new Set(['buy', 'pay', 'guild.register', 'offer.accept']);
 const KILL = new Set(['ATTACK', 'DEFEAT', 'KILL', 'HUNT', 'SLAY', 'CULL']);
-// a pause of package A only brings what happens before he settles or as it ends
-const PAUSE_BARRED = new Set(['danger', 'obstacle', 'trouble']);
+// Package C (plan §6 C table): what a pause's window may bring, by the safety of where he pauses, and which kinds cut
+// it short. Every other kind happens before he settles or as the pause ends; a safe lodging never draws a hostile kind
+const PAUSE_BARRED = {
+    safe: new Set(['danger', 'obstacle', 'trouble']),
+    street: new Set(['danger', 'obstacle']),
+    exposed: new Set(),
+};
+const INTERRUPTS = {
+    safe: new Set(),
+    street: new Set(['trouble']),
+    exposed: new Set(['danger', 'obstacle', 'strange']),
+};
+// the engine's cause of a cut-short pause (binding; the story shapes only its details)
+const CAUSE_TEXT = {
+    danger: "ONE group of this land's people or creatures comes upon him with hostile intent (its strength is the land's, AREA LEVELS and populations, never his; nobody else joins it)",
+    obstacle: 'the weather or the ground turns against him: a storm, biting cold, rising water or smoke (no foe)',
+    strange: 'an unexplained light or sound very close to him (no effect on him unless he acts on it)',
+    trouble: 'someone is at his things or a quarrel breaks out right beside him (nobody takes anything of his or strikes first in this reply)',
+};
+export const CAUSE_SHORT = {
+    danger: "a hostile group of this land's people or creatures came upon him",
+    obstacle: 'the weather or the ground turned against him',
+    strange: 'an unexplained light or sound close by',
+    trouble: 'someone at his things or a quarrel right beside him',
+};
 
 const phaseAt = (minute) => dayPart({ clock: { minute } });
 const seedOf = (s) => s.meta?.seed ?? s.rng?.seed ?? 0;
@@ -49,10 +76,35 @@ export function sceneFrame(s, content, at = s.scene.at) {
     return 'wild';
 }
 
+/**
+ * The safety of a pause where he stands (plan §6 C): safe (a lodging: any room of a settlement, a lodging he was
+ * granted here, or a place under a roof out in the land), street (a settlement's street), exposed (out in the open).
+ * Only the pause's safety reads the roof; the frame, chance and kinds stay package A's (sceneFrame).
+ */
+export function pauseSafety(s, content, at = s.scene.at) {
+    const frame = sceneFrame(s, content, at);
+    if (frame === 'inside') return 'safe';
+    if (frame === 'street') return 'street';
+    return roofed(s, content, at) ? 'safe' : 'exposed';
+}
+
+/** Out in the land, is this place a roof over him (a house, a mill, a hall; a room; a lodging he was granted here)? */
+function roofed(s, content, at) {
+    const p = s.places[at];
+    if (!p) return false;
+    if ((s.services || []).some((x) => x.service === 'lodging' && x.at === at && s.clock.minute - (x.minute ?? 0) <= 1440)) return true;
+    if (p.kind === 'interior') return true;
+    const R = content.rules.pulse.pause || {};
+    const exact = new Set(R.roofed_words || []);
+    const suffix = R.roofed_suffixes || [];
+    return normText(p.name || '').split(/[^a-z]+/).filter(Boolean).map((w) => (w.length > 3 && w.endsWith('s') ? w.slice(0, -1) : w))
+        .some((w) => exact.has(w) || suffix.some((x) => w.length > x.length && w.endsWith(x)));
+}
+
 /** Before the handlers. Returns the turn's PULSE context (ctx.pulse), or null where PULSE does not run. */
 export function pulseBegin(s, content, ordered, envx) {
     if (!pulseCampaign(s, envx) || !content.rules.pulse) return null;
-    const P = { v: PULSE_VERSION, governs: true, reason: null, legs: [], pauses: [], sought: [], dungeonAhead: false };
+    const P = { v: PULSE_VERSION, governs: true, reason: null, legs: [], pauses: [], sought: [], dungeonAhead: false, claim: null, interruptedAt: null };
     const inputs = s.inputs || [];
     const [prev, now] = [inputs.at(-2), inputs.at(-1)];
     if (s.encounter || (s.pending_combat || []).length) P.reason = 'combat';
@@ -67,9 +119,44 @@ export function pulseLeg(ctx, c, go, s) {
     ctx.pulse?.legs.push({ seq: c.seq ?? 0, go, minute: s.clock.minute });
 }
 
-/** The activity handler booked a pause (rest, sleep, wait with the engine's minutes): before its time.advanced. */
+/** The activity handler books a pause (rest, sleep, wait with the engine's minutes): before its time.advanced. */
 export function pulsePause(ctx, c, minutes, s) {
     if (ctx.pulse && PAUSES.has(c.kind) && minutes > 0) ctx.pulse.pauses.push({ seq: c.seq ?? 0, kind: c.kind, minutes, start: s.clock.minute });
+}
+
+/**
+ * Package C (plan §6 C, §12.4, §14.2): the activity handler is about to book a pause of `minutes` (the engine's, only a
+ * pause it really books). When the pause is the first exposure of his message, the turn's one window is decided now,
+ * before time and recovery are booked; pulseFinish keeps this decision and draws nothing more. Returns the cut
+ * {seq, kind, after_min, of_min, at_end, cause, minute} when an open window cuts the pause short (the handler books
+ * after_min minutes and their recovery only; at_end: under rules.pulse.pause.interrupt_min the pause is booked in full
+ * and the event meets him as it ends), else null. Either way a cut stops the later steps of the message.
+ */
+export function pulseClaimPause(s, content, ctx, emit, c, minutes, ordered) {
+    const P = ctx.pulse;
+    if (!P || !PAUSES.has(c.kind) || !(minutes > 0)) return null;
+    pulsePause(ctx, c, minutes, s);
+    // a leg authorized earlier in the message is the first exposure (pulseFinish decides it); a second pause keeps the
+    // first one's decision
+    if (P.claim || P.legs.length) return null;
+    const exposure = { type: 'pause', seq: c.seq ?? 0, pause: P.pauses.at(-1) };
+    P.claim = settle(s, content, ctx, emit, ordered, exposure, true);
+    const d = P.claim.d;
+    if (!d?.open || !INTERRUPTS[d.safety]?.has(d.kind)) { emitDecision(s, emit, P.claim); return null; }
+    const R = content.rules.pulse.pause || {};
+    const least = R.interrupt_min ?? 30;
+    const edge = Math.min(R.edge_min ?? 15, Math.floor(least / 2));
+    const atEnd = minutes < least;
+    // m in [edge, M - edge] (30 min: 15; 31 min: 15 or 16), its own key: the clock and the step do not move it
+    const after = atEnd ? minutes : edge + draw(s, 'pulse.at', minutes - 2 * edge + 1);
+    // later: how many later steps of the message this cut stops (resolveCommands refuses them, 'rest interrupted')
+    const later = (ordered || []).filter((x) => (x.seq ?? 0) > exposure.seq).length;
+    const cut = { seq: exposure.seq, kind: c.kind, after_min: after, of_min: minutes, at_end: atEnd, cause: d.kind, minute: s.clock.minute + after, later };
+    d.interrupt = cut;
+    P.interruptedAt = exposure.seq;
+    // the decision and its cut go into the record before the pause's time and recovery
+    emitDecision(s, emit, P.claim);
+    return cut;
 }
 
 /**
@@ -184,7 +271,7 @@ function kindOf(s, content, frame, phase, exposure, recent) {
     const R = content.rules.pulse;
     const i = PHASES.indexOf(phase);
     const w = Object.fromEntries(Object.entries(R.kinds[frame] || {}).map(([k, v]) => [k, v[i] ?? v[0]]));
-    if (exposure.type === 'pause') for (const k of PAUSE_BARRED) delete w[k];
+    if (exposure.type === 'pause') for (const k of PAUSE_BARRED[exposure.safety] || PAUSE_BARRED.safe) delete w[k];
     if (w.danger) {
         const line = lineage(s, s.scene.at);
         const backed = line.some((id) => s.places[id]?.population || Array.isArray(s.places[id]?.encounter_levels));
@@ -234,6 +321,13 @@ function lineFor(s, content, d, exposure, held, later) {
     if (held.length) return `STILL HERE (PULSE) — ${held.map((id) => sceneHandle(s, content, id)).join(', ')}: the threat is still present; no new foe is brought into this scene while it is.`;
     if (!d?.open) return null;
     const where = `${d.phase}, ${FRAME_TEXT[d.frame] || d.frame}`;
+    if (exposure.type === 'pause' && d.interrupt) {
+        const x = d.interrupt;
+        const resting = x.kind !== 'wait';
+        const wait = x.later ? ' his later steps of this message wait (NOT DONE), and' : '';
+        if (x.at_end) return `REST INTERRUPTED (the engine's; ${where}) — at the end of his ${x.of_min} min ${x.kind} (booked in full${resting ? ', with its recovery' : ''}), at ${formatClock(x.minute)}: ${CAUSE_TEXT[x.cause]}. Tell this cause as what meets him as his ${x.kind} ends;${wait} what he does now is his decision.`;
+        return `REST INTERRUPTED (the engine's; ${where}) — at ${formatClock(x.minute)}, after ${x.after_min} of the ${x.of_min} min he chose for his ${x.kind} (booked: ${x.after_min} min${resting ? ', recovery for those minutes only' : ''}): ${CAUSE_TEXT[x.cause]}. Tell this cause as what ends his ${x.kind}; he gets no more of it,${wait} what he does now is his decision.`;
+    }
     if (exposure.type === 'pause') {
         const at = later ? ` (at the end of step ${exposure.pause.seq}, before his next steps)` : '';
         return `PULSE (the engine's; ${where}) — before he settles or as his ${exposure.pause.kind} ends${at}, ONE thing happens that he notices: ${KIND_TEXT[d.kind]}. The ${exposure.pause.kind} itself is as booked.`;
@@ -242,32 +336,30 @@ function lineFor(s, content, d, exposure, held, later) {
 }
 
 /** The dynamic exclusions after the handlers (the resolutions of this message). */
-function dynamicReason(s, ctx, ordered, exposure) {
+function dynamicReason(s, ctx, ordered, exposure, early = false) {
     const P = ctx.pulse;
     if (P.dungeonAhead) return 'dungeon_ahead';
     if (ctx.resolutions.some((r) => HARD_STOP.has(r.type) && r.status === 'pending')
         || (s.decisions || []).some((x) => x.kind === 'payment' && x.state === 'needs_confirmation' && x.turn === s.turn)) return 'hard_stop';
     const types = ordered.map((c) => c.type);
     if (types.includes('board.read') && types.every((t) => t === 'board.read' || t === 'go') && exposure.type !== 'travel') return 'board';
-    if (ordered.length && !ctx.resolutions.some((r) => !['refused', 'clarify'].includes(r.status))) return 'invalid';
+    // a pause claimed in its handler is booked: the message is not invalid (its own resolution follows)
+    if (!early && ordered.length && !ctx.resolutions.some((r) => !['refused', 'clarify'].includes(r.status))) return 'invalid';
     if (P.sought.length && exposure.type !== 'travel') return 'sought';
     const st = s.pulse;
     if (exposure.type === 'pause' && st?.pause && st.pause.at === s.scene.at && st.pause.turn === s.turn - 1) return 'pause_block';
     return null;
 }
 
-/** After the handlers: the one decision of this message, its event, its line and auth.pulse. */
-export function pulseFinish(s, content, ctx, emit, ordered) {
+/**
+ * The one decision for an exposure: the exclusions known now, held threats, the one draw, the kind, its event.
+ * early: claimed by a pause's handler before its booking (the later steps of the message are not resolved yet).
+ */
+function settle(s, content, ctx, emit, ordered, exposure, early = false) {
     const P = ctx.pulse;
-    if (!P) return;
     const R = content.rules.pulse;
-    // the first exposure in the order of his message: a leg the engine authorized or a pause it booked; else the scene
-    const firsts = [...P.legs.map((leg) => ({ type: 'travel', seq: leg.seq, leg })), ...P.pauses.map((pause) => ({ type: 'pause', seq: pause.seq, pause }))]
-        .sort((a, b) => a.seq - b.seq);
-    const exposure = firsts[0] || { type: 'scene' };
-    const hunts = huntsHere(s);
-    const auth = { v: PULSE_VERSION, governs: P.governs, rolled: false, exposure: exposure.type, ...(P.sought.length ? { sought: P.sought } : {}), ...(hunts.length ? { hunts } : {}) };
-    let reason = P.reason || dynamicReason(s, ctx, ordered, exposure);
+    if (exposure.type === 'pause') exposure.safety = pauseSafety(s, content);
+    let reason = P.reason || dynamicReason(s, ctx, ordered, exposure, early);
     const held = !reason ? heldThreats(s, exposure.leg?.go) : [];
     if (!reason && held.length) reason = 'held';
     let d = null;
@@ -277,18 +369,50 @@ export function pulseFinish(s, content, ctx, emit, ordered) {
         const p = Math.round(pulseChance(content, base, st.misses) * 100) / 100;
         const roll = draw(s, 'pulse', 10000) / 100;
         // tests and scripted host smokes only (rules.pulse.force, null in the product): replaces the draw, optionally only
-        // for a player message containing `when`
-        const forced = R.force && typeof R.force.open === 'boolean' && (!R.force.when || String(s.inputs?.at(-1)?.input || '').includes(R.force.when)) ? R.force : null;
+        // for a player message containing `when`; a list holds one such entry per message (the first that fits)
+        const input = String(s.inputs?.at(-1)?.input || '');
+        const forced = (Array.isArray(R.force) ? R.force : [R.force]).find((f) => f && typeof f.open === 'boolean' && (!f.when || input.includes(f.when))) || null;
         const open = forced ? forced.open : roll < p;
-        let kind = open ? (forced?.kind && (exposure.type !== 'pause' || !PAUSE_BARRED.has(forced.kind)) ? forced.kind : kindOf(s, content, frame, phase, exposure, st.recent || [])) : null;
-        d = { v: PULSE_VERSION, turn: s.turn, at: s.scene.at, exposure: exposure.type, frame, phase, base: Math.round(base * 100) / 100, misses_before: st.misses, p, roll, open: open && !!kind, kind, leg: exposure.leg?.seq ?? null, ...(forced ? { forced: true } : {}) };
-        Object.assign(auth, { rolled: true, eligible: true, frame, phase, p, roll, misses: d.misses_before, open: d.open, kind: d.kind });
-        emit({ t: 'pulse.rolled', d });
+        const barred = exposure.type === 'pause' ? PAUSE_BARRED[exposure.safety] : null;
+        const kind = open ? (forced?.kind && !barred?.has(forced.kind) ? forced.kind : kindOf(s, content, frame, phase, exposure, st.recent || [])) : null;
+        d = { v: PULSE_VERSION, turn: s.turn, at: s.scene.at, exposure: exposure.type, frame, phase, base: Math.round(base * 100) / 100, misses_before: st.misses, p, roll, open: open && !!kind, kind, leg: exposure.leg?.seq ?? null,
+            ...(exposure.type === 'pause' ? { safety: exposure.safety } : {}), ...(forced ? { forced: true } : {}) };
+    }
+    // early: the event goes out once a pause's cut is known (pulseClaimPause adds d.interrupt)
+    const out = { exposure, reason, held, d, emitted: false };
+    if (!early) emitDecision(s, emit, out);
+    return out;
+}
+
+function emitDecision(s, emit, out) {
+    if (out.emitted) return;
+    out.emitted = true;
+    if (out.d) emit({ t: 'pulse.rolled', d: out.d });
+    // a later turn of the same pause block keeps the block going (no draw, no streak change)
+    else if (out.reason === 'pause_block') emit({ t: 'pulse.pause', d: { at: s.scene.at, turn: s.turn } });
+}
+
+/** After the handlers: the one decision of this message, its event, its line and auth.pulse. */
+export function pulseFinish(s, content, ctx, emit, ordered) {
+    const P = ctx.pulse;
+    if (!P) return;
+    // a pause decided in its handler (package C) is this message's decision; else the first exposure in the order of
+    // his message: a leg the engine authorized or a pause it booked; else the scene
+    let out = P.claim;
+    if (!out) {
+        const firsts = [...P.legs.map((leg) => ({ type: 'travel', seq: leg.seq, leg })), ...P.pauses.map((pause) => ({ type: 'pause', seq: pause.seq, pause }))]
+            .sort((a, b) => a.seq - b.seq);
+        out = settle(s, content, ctx, emit, ordered, firsts[0] || { type: 'scene' });
+    }
+    const { exposure, reason, held, d } = out;
+    const hunts = huntsHere(s);
+    const auth = { v: PULSE_VERSION, governs: P.governs, rolled: false, exposure: exposure.type, ...(P.sought.length ? { sought: P.sought } : {}), ...(hunts.length ? { hunts } : {}) };
+    if (d) {
+        Object.assign(auth, { rolled: true, eligible: true, frame: d.frame, phase: d.phase, p: d.p, roll: d.roll, misses: d.misses_before, open: d.open, kind: d.kind,
+            ...(d.safety ? { safety: d.safety } : {}), ...(d.interrupt ? { interrupt: d.interrupt } : {}) });
     } else {
         Object.assign(auth, { eligible: false, reason });
         if (reason === 'held') auth.held = held;
-        // a later turn of the same pause block keeps the block going (no draw, no streak change)
-        if (reason === 'pause_block') emit({ t: 'pulse.pause', d: { at: s.scene.at, turn: s.turn } });
     }
     if (exposure.type === 'travel') ctx.auth.road = d?.open && d.kind === 'danger' ? 'open' : 'quiet';
     const later = exposure.type === 'pause' && ctx.resolutions.some((r) => r.seq > exposure.seq && !['refused', 'clarify'].includes(r.status));
@@ -296,4 +420,18 @@ export function pulseFinish(s, content, ctx, emit, ordered) {
     const line = lineFor(s, content, d, exposure, reason === 'held' ? held : [], later);
     if (line) ctx.extra.push(line);
     ctx.auth.pulse = auth;
+}
+
+/**
+ * Package C (plan §6 C 5): the binding fact of a pause the last turn's window cut short, for the next story turn once
+ * (host turnBlock, as paidCardFacts): from the stored pulse.rolled event, never from the reply.
+ */
+export function restCutFacts(events) {
+    return (events || []).filter((e) => e?.t === 'pulse.rolled' && e.d?.interrupt).map((e) => {
+        const x = e.d.interrupt;
+        const stopped = x.later ? ' His later steps of that message were not done.' : '';
+        return x.at_end
+            ? `REST ENDED BY AN EVENT (the engine's, last turn): his ${x.of_min} min ${x.kind} ran in full; at ${formatClock(x.minute)}, as it ended, ${CAUSE_SHORT[x.cause]}.${stopped}`
+            : `REST CUT SHORT (the engine's, last turn): at ${formatClock(x.minute)}, after ${x.after_min} of ${x.of_min} min of his ${x.kind}, ${CAUSE_SHORT[x.cause]}; time${x.kind === 'wait' ? '' : ' and recovery'} as booked (${x.after_min} min).${stopped}`;
+    });
 }

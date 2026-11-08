@@ -41,7 +41,7 @@ import { acceptSkill, declineSkill, developmentOffers, skillOffers } from './ski
 import { classOffer, classSelection, acceptClass } from './class_growth.js';
 import { tradeObject as objectOf, pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, rateUnits, offerAvailability, tradeTermsWhy, purchaseLines, samePurchaseRequest, purchaseDecisionMatches } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
-import { pulseBegin, pulseFinish, pulseLeg, pulsePause, pulseSought, goSought, searchSought } from './pulse.js';
+import { pulseBegin, pulseFinish, pulseLeg, pulseClaimPause, pulseSought, goSought, searchSought } from './pulse.js';
 import { bookStealth } from '../checks.js';
 import { groundAccess, attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
 import { dungeonOf, trueDungeonOf, isRoom, roomKnown, wayBetween, knownRoomNamed, hiddenWayFinds, linkEvent, otherEnd, linksAt, blockerOf, goesFrom, firstStop } from './dungeon.js';
@@ -56,6 +56,7 @@ const UNTIL = { done: 'until it is done', noon: 'until noon', evening: 'until ev
 const YIELDING = new Set(['gather', 'search', 'craft']);
 const ROAMING = new Set(['gather', 'search', 'errand']);
 const RESTING = new Set(['rest', 'sleep']);
+const PAUSE_KINDS = new Set(['rest', 'sleep', 'wait']); // PULSE: the pauses of a turn's window (src/v4/pulse.js)
 // 4.3.0-c.6.6.51: the steps that pay for something, and the words of a room or bed he takes to sleep in
 const PURCHASES = new Set(['offer.accept', 'buy', 'pay']);
 const ROOM_WORDS = /\b(?:rooms?|beds?|bunks?|cots?|berths?|lodgings?|quarters)\b/;
@@ -755,7 +756,12 @@ const HANDLERS = {
             return { status: 'resolved', cap: minutes, line: `${r.line} ${minutes} minutes pass; it is now ${formatClock(s.clock.minute)}. Narrate it at that length.` };
         }
         const t = content.rules.time;
-        const cap = c.until ? untilMinutes(content, s, c.until) : c.minutes ? Math.ceil(c.minutes * t.minutes_factor) : t.default_cap_min;
+        // PULSE package C (src/v4/pulse.js pulseClaimPause, plan §6 C): a pause the engine books is decided before its
+        // time and recovery: an open window that cuts it short books only the minutes he rested (and their recovery)
+        const pause = envx?.c && PAUSE_KINDS.has(c.kind) ? engineMinutes(content, s, c) : null;
+        const cut = pause && ctx.pulse ? pulseClaimPause(s, content, ctx, emit, c, pause, ctx.env.commands) : null;
+        const cap = cut && !cut.at_end ? Math.ceil(cut.after_min * t.minutes_factor)
+            : c.until ? untilMinutes(content, s, c.until) : c.minutes ? Math.ceil(c.minutes * t.minutes_factor) : t.default_cap_min;
         ctx.auth.timeCap = Math.max(ctx.auth.timeCap, cap);
         if (YIELDING.has(c.kind)) ctx.auth.gather = true;
         if (ROAMING.has(c.kind)) ctx.auth.roam = true;
@@ -771,15 +777,15 @@ const HANDLERS = {
             ctx.auth.gather = false;
             if (find.item) ctx.booked.grants.push(find.item);
         }
-        const booked = envx?.c && c.kind !== 'search' ? engineMinutes(content, s, c) : null;
+        const planned = envx?.c && c.kind !== 'search' ? engineMinutes(content, s, c) : null;
+        // package C: a pause cut short in the middle books the minutes before the cut, never more and never less than 15
+        const booked = cut && !cut.at_end ? cut.after_min : planned;
         if (find && !booked) return { status: 'resolved', cap, line: find.line };
         if (booked) {
-            // PULSE package A: a booked pause is an exposure of the turn's window (never cut short before package C)
-            pulsePause(ctx, c, booked, s);
             emit({ t: 'time.advanced', d: { minutes: booked, why: c.kind } });
             ctx.auth.booked_min = (ctx.auth.booked_min || 0) + booked;
             ctx.auth.timeCap = Math.max(ctx.auth.timeCap, ctx.auth.booked_min);
-            ctx.engineLines.push(`TIME — ${c.kind} ${span}: ${booked} min (now ${formatClock(s.clock.minute)})`);
+            ctx.engineLines.push(cut && !cut.at_end ? `TIME — ${c.kind} ${span}: cut short after ${booked} of ${planned} min (now ${formatClock(s.clock.minute)})` : `TIME — ${c.kind} ${span}: ${booked} min (now ${formatClock(s.clock.minute)})`);
             let rec = '';
             if (RESTING.has(c.kind)) {
                 const r = recoveryEvents(s, content, booked, c.kind);
@@ -790,6 +796,8 @@ const HANDLERS = {
                 rec = ` Recovery booked: ${r.text}; tell what came back as it came back, never that it did not.`;
             }
             if (find) return { status: 'resolved', cap, line: `${find.line} ${booked} minutes pass; it is now ${formatClock(s.clock.minute)}.` };
+            if (cut && !cut.at_end) return { status: 'resolved', cap, line: `${VERBS[c.kind] || String(c.kind).toUpperCase()} ${c.what ? `${c.what} ` : ''}${span} — CUT SHORT by the engine after ${booked} of the ${planned} minutes (REST INTERRUPTED below): it is now ${formatClock(s.clock.minute)}.${rec} Narrate the ${c.kind} up to that moment and what ends it; he does not get the rest of it.` };
+            if (cut) return { status: 'resolved', cap, line: `${VERBS[c.kind] || String(c.kind).toUpperCase()} ${c.what ? `${c.what} ` : ''}${span} — resolved by the engine: ${booked} minutes pass; it is now ${formatClock(s.clock.minute)}.${rec} Narrate it as done, at that length; as it ends comes what REST INTERRUPTED below names.` };
             return { status: 'resolved', cap, line: `${VERBS[c.kind] || String(c.kind).toUpperCase()} ${c.what ? `${c.what} ` : ''}${span} — resolved by the engine: ${booked} minutes pass; it is now ${formatClock(s.clock.minute)}.${rec} Narrate it as done, at that length; do not cut it short or add time.` };
         }
         if (c.kind === 'search' && envx?.dice) {
@@ -1705,9 +1713,12 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
             && !/\b(?:deal|accept|agreed|sold)\b/i.test(saleQuote) && !Number.isInteger(trade.command.min_cp) && !Number.isInteger(trade.command.agreed_cp);
         const afterTravel = envx.c && rulesetOf(s) >= 2 && ctx.auth.gos.length > 0
             && ['activity', 'attempt', 'take', 'use', 'buy', 'offer.accept', 'sell', 'pay', 'equip', 'unequip'].includes(c.type);
-        if (!afterTravel && !unmet && c.type === 'buy') expirePurchaseRequest(s, c, emit, trade?.offer.seller);
+        // PULSE package C (plan §5.3, §12.4 a, §14.2): what cut his pause short came before every later step of the
+        // message; none of them is booked (nothing to roll back), the steps that build on them fall with them
+        const cutShort = ctx.pulse?.interruptedAt != null && (c.seq ?? 0) > ctx.pulse.interruptedAt;
+        if (!cutShort && !afterTravel && !unmet && c.type === 'buy') expirePurchaseRequest(s, c, emit, trade?.offer.seller);
         let destinationBuy = null;
-        if (afterTravel && !unmet && c.type === 'buy') {
+        if (!cutShort && afterTravel && !unmet && c.type === 'buy') {
             const go = ctx.auth.gos.at(-1);
             // Existing destination or its explicit new name, never a portable unlimited permission.
             if ((go.to || go.newName) && (Number.isInteger(c.max_cp) || c.any_price)) {
@@ -1718,7 +1729,8 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
                 destinationBuy = { status: 'conditional', condition: 'arrive_and_price', line: `BUYS AT DESTINATION — ${c.what}, only after confirmed arrival and an unambiguous seller/offer within ${c.any_price ? 'his agreed price' : `${c.max_cp} cp`}. Otherwise only show the offer.` };
             }
         }
-        const r = destinationBuy || (afterTravel ? { status: 'refused', reason: 'arrival pending', line: `NOT DONE — ${quoted}: the earlier journey has not arrived yet. Perform this action after confirmed arrival; no local check, payment or activity time was booked.` }
+        const r = cutShort ? { status: 'refused', reason: 'rest interrupted', line: `NOT DONE — ${quoted}: what ended his pause in step ${ctx.pulse.interruptedAt} came first (REST INTERRUPTED); he decides again. Nothing of it was booked; do not tell it as done.` }
+            : destinationBuy || (afterTravel ? { status: 'refused', reason: 'arrival pending', line: `NOT DONE — ${quoted}: the earlier journey has not arrived yet. Perform this action after confirmed arrival; no local check, payment or activity time was booked.` }
             : waitingGive ? { status: 'refused', reason: 'handover still conditional', line: 'NOT DONE — the later journey waits for the handover at the first destination.' }
             : room ? { status: 'refused', reason: 'room not booked', line: `NOT DONE — ${quoted}: he would ${c.kind} in the room or bed of step ${room.seq}, and it is not his yet: ${roomWhy(ctx.resolutions.find((x) => x.seq === room.seq))}. He does not ${c.kind} in this reply; tell no ${c.kind === 'sleep' ? 'night' : 'rest'} in it.` }
             : unmet ? { status: 'refused', reason: `needs step ${need}`, line: `NOT DONE — ${quoted}: it was to follow step ${need}, which did not happen; it does not happen in this reply (someone else's help does not do it for him).` }

@@ -172,7 +172,7 @@ test('PULSE C3: a street pause is cut short only by trouble (nobody takes or str
     });
 });
 
-test('PULSE C3: no cut inside a Dungeon (package B), with a threat present (held) or in a fight: booked in full, no roll', async () => {
+test('PULSE C3: no cut inside a Dungeon without a living record (the package A exclusion; a Living Dungeon: tests/v4/pulse_b.test.js), with a threat present (held) or in a fight: booked in full, no roll', async () => {
     const s = await wild();
     await withForce(DANGER, () => {
         const d = clone(s);

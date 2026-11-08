@@ -19,6 +19,8 @@ Die Auswahl ist eine Empfehlung auf Basis des Reviews, keine selbst erteilte Pro
 
 **Maßgebliche Analyse:** [Brenna einschließlich GPT-/Sol-Gegenreviews §§9–10](recherche/NPC_KONTINUITAET_ANALYSE_20261104.md); zusätzliche Original-Requestnachweise für Tam und verlorene Episoden in User02 §8. Speicherung, akzeptierte Episode, tatsächliche Auslieferung und Modellverwendung getrennt nachweisen.
 
+**E2/E3 auf .168 (08.11.2026):** [Ist- und Ursachenanalyse](recherche/NPC_E2_E3_ISTANALYSE_20261108.md) · [Fachplan mit Paketen E2-A Integrität, E2-B Kontinuität, E3 Persönlichkeitsanker](patch_plans_10b/NPC_E2_E3_FACHPLAN.md). Die Etappenziele unten gelten unverändert; Umsetzung je Paket nur nach ausdrücklicher Freigabe.
+
 | Etappe | Fachziel / Abnahme |
 |---|---|
 | **E0 Diagnose** | Kompakte Metadaten der tatsächlich gelieferten/verworfenen Abschnitte, relevanten NPC-IDs und Budgetgrößen im Record; auch Dungeon-/Szenenkontext beachten. Kein zusätzlicher Modellcall, keine zweite State-Wahrheit oder vollständige Promptkopie pro Zug. |

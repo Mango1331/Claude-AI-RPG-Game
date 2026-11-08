@@ -285,6 +285,8 @@ test('PULSE B persistence: a renewal between the draw and the reply drops the re
 test('PULSE B: no window at the gate\'s own rules change; a Dungeon without a living record keeps package A\'s exclusion', async () => {
     const g = await gallery();
     const s = clone(g.state());
+    // the fight ended on the same skill twice (a technical repeat since .168): a new input for this check
+    s.inputs.at(-1).input = 'I look around the gallery';
     const P = pulseBegin(s, content, [LOOK], { c: true });
     assert.deepEqual([P.reason, P.governs, P.dungeon], [null, false, CATA]);
     const t = clone(s); delete t.dungeons[CATA];

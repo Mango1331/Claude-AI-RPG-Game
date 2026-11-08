@@ -84,7 +84,10 @@ function fieldSchema(spec, refs) {
 }
 
 const EXPECTED_SHAPES = {
-    go: (refs) => O({ arrived: B(), at: N(refs.place), with: N(A(S())) }),
+    // NPC E2-A: met (who of KNOWN AT the reply shows there, with its own words) and handled_by (the Guild person the
+    // reply shows handling a desk step) are checked by World; a missing or malformed one is null (never a repair)
+    go: (refs) => O({ arrived: B(), at: N(refs.place), with: N(A(S())), met: N(A(O({ who: S(), evidence: S() }))) }),
+    desk: () => O({ handled_by: N(O({ who: S(), evidence: S() })) }),
     activity: () => O({ minutes: I(0), done: B() }),
     take: () => O({ taken: B() }),
     buy: () => O({ priced: B(), taken_anyway: B() }),
@@ -391,6 +394,13 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     const exp = value && typeof value.expected === 'object' && value.expected ? value.expected : {};
     // who came along may be left out of an arrival answer, like a |null delta field
     for (const [k, t] of Object.entries(expectedKeys || {})) if (t === 'go' && exp[k] && typeof exp[k] === 'object' && exp[k].with === undefined) exp[k].with = null;
+    // NPC E2-A: met and handled_by are optional evidence, never a reason for a repair call: a missing or malformed one
+    // is null (a malformed item of met is left out), a desk step the answer leaves out is answered "no handler shown"
+    const pair = (x) => x && typeof x === 'object' && !Array.isArray(x) && typeof x.who === 'string' && typeof x.evidence === 'string' ? { who: x.who, evidence: x.evidence } : null;
+    for (const [k, t] of Object.entries(expectedKeys || {})) {
+        if (t === 'go' && exp[k] && typeof exp[k] === 'object') exp[k].met = Array.isArray(exp[k].met) && exp[k].met.map(pair).filter(Boolean).length ? exp[k].met.map(pair).filter(Boolean) : null;
+        if (t === 'desk') exp[k] = { handled_by: pair(exp[k]?.handled_by) };
+    }
     const missing = want.filter((k) => !exp[k] || typeof exp[k] !== 'object');
     // A missing expected answer may remain incomplete, but a schema-valid partial extraction is still useful state.
     const schema = deltaSchema(vocab, ids, Object.fromEntries(Object.entries(expectedKeys || {}).filter(([k]) => !missing.includes(k))));

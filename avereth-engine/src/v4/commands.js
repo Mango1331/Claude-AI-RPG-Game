@@ -72,6 +72,9 @@ export function newTurnContext(content) {
     return {
         auth: { go: null, gos: [], roam: false, take: [], gather: false, rest: false, timeCap: content.rules.time.default_cap_min, journey: null },
         conditionals: [], expectedKeys: {}, actions: [], extra: [], resolutions: [],
+        // NPC E2-A (docs/NPC_E2A_INTEGRITY.md): the people KNOWN AT offered for a GO step, and the Guild desk steps whose
+        // actual handler the extractor may name (expected.<seq>.handled_by); both only on the planner path
+        knownAt: {}, desk: {},
         booked: { registration: false, grants: [], turnIns: [], accepted: [], sellers: [], goods: [] },
         searchChecks: [],
         boardShown: null,
@@ -527,6 +530,17 @@ function travelManner(c, go, ctx) {
     ctx.extra.push(`SNEAKING TRAVEL — movement and its approach are one action. ${c.manner?.scope === 'destination' ? 'Travel normally until the actual established destination is reached; no hiding or Detection roll at the source or an earlier interruption.' : 'The quiet approach applies to this actual leg, not to future journeys.'} Detection is PENDING: the engine checks against actual occupants after confirmed arrival and Dungeon population. A blocked way stays blocked. Do not invent discovery, guaranteed concealment, Ambush, further movement or an attack before the check.`);
 }
 
+/**
+ * NPC E2-A (R2): a Guild contract step at the desk, done now (resolved) or on arrival (conditional). Its quest is kept
+ * for the reply, and the extractor names who handled it (expected.<seq>.handled_by); World gives that person the
+ * engine's own fact of the step as witnessed, only once the step actually happened and the reply shows the handling.
+ */
+function deskStep(s, c, ctx, envx, q, kind) {
+    if (!envx?.c || rulesetOf(s) < 2 || q?.kind !== 'guild_contract') return;
+    ctx.desk[String(c.seq)] = { quest: q.id, kind };
+    ctx.expectedKeys[String(c.seq)] = 'desk';
+}
+
 const HANDLERS = {
     'journey.continue'(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT DEPART — not while the fight runs.' };
@@ -676,6 +690,7 @@ const HANDLERS = {
         if (known && !ctx.auth.journey && goSetsGoal(s, c.to)) setIntentEvents(s, { goal: `reach ${name}`, place: c.to, quote: c.quote, why: 'he set off for it' }).events.forEach(emit);
         // Prototype C (4.3.0-c.6): the people he met there before are that place's people, not new ones
         const there = envx?.c && known && !ctx.extra.some((x) => x.startsWith(`KNOWN AT ${name} (`)) ? knownAt(s, content, c.to) : [];
+        if (there.length && rulesetOf(s) >= 2) ctx.knownAt[String(c.seq)] = there.map((p) => p.id);
         if (there.length) ctx.extra.push(`KNOWN AT ${name} (met there before; when the story shows the people of that place, they are these, not new ones; whoever works there is at work unless the story establishes otherwise): ${there.map((p) => `${p.label} (${p.id})`).join(' · ')}`);
         // Patch 8 (pacing): a way he chose is carried to its end, never stopped for what changes nothing
         const pace = envx?.c ? ' Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop.' : '';
@@ -1313,6 +1328,7 @@ const HANDLERS = {
                 const accepted = acceptContract(s, content, q, emit, { step: c.seq });
                 if (!accepted.ok) return { status: 'refused', reason: accepted.reason, line: `CANNOT ACCEPT — ${questLine(q)}: ${accepted.reason}.` };
             } else ctx.conditionals.push({ seq: c.seq, kind: 'accept', quest: q.id, condition: 'arrive_guild_hall', hall: there });
+            deskStep(s, c, ctx, envx, q, 'accept');
             ctx.booked.accepted.push(q.id);
             ctx.booked.grants.push('contract slip');
             // a hunt is proven by trophies of the kills at a Guild hall (live 30.09.2026 14:56: the clerk made a local
@@ -1349,6 +1365,7 @@ const HANDLERS = {
             const r = completeContract(s, content, q, emit, { step: c.seq, c: cc });
             if (!r.ok) return { status: 'refused', reason: r.reason, line: `TURNS IN — ${questLine(q)}: the desk refuses it, ${r.reason}.` };
             ctx.booked.turnIns.push(q.id);
+            deskStep(s, c, ctx, envx, q, 'turn_in');
             return { status: 'resolved', line: `TURNS IN — ${questLine(q)}: the world has established the contract outcome; the Guild accepts the turn-in and pays ${q.payout_cp} cp.${hands}` };
         }
         const go = hallAhead(ctx, c, !!envx?.c && rulesetOf(s) >= 2);
@@ -1357,6 +1374,7 @@ const HANDLERS = {
             const ready = contractReady(s, content, q, { c: cc });
             ctx.conditionals.push({ seq: c.seq, kind: 'turn_in', quest: q.id, condition: 'arrive_guild_hall', hall: go.guild_candidate ? null : go.to, ...(go.guild_candidate ? { guild_candidate: true, go_seq: go.seq } : {}) });
             ctx.booked.turnIns.push(q.id);
+            deskStep(s, c, ctx, envx, q, 'turn_in');
             return {
                 status: 'conditional', condition: 'arrive_guild_hall',
                 line: `TURNS IN, when he reaches the Guild hall — ${questLine(q)}: ${ready.ok ? `the achieved outcome is ready for desk acceptance; the Guild pays ${q.payout_cp} cp` : ready.mode === 'count_short' || (cc && ready.mode !== 'not_ready') ? `the desk will refuse it: ${ready.reason}` : 'the story has not yet established the contract outcome as achieved'}.${ready.ok ? hands : ''} If the reply does not reach the hall, nothing is turned in.${go.guild_candidate ? " This destination is not yet a recognized branch: only a narrated operating, staffed Guild desk can establish it. A sign or rumor cannot. Do not add further proof or payment requirements." : ""}`,

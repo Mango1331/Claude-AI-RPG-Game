@@ -548,6 +548,24 @@ export const listedToday = (state, q) => q.status === 'listed' && (q.source?.lis
 // until it matters
 export const SERVICE_ROLE = /\b(?:clerks?|registrars?|receptionists?|desk|innkeepers?|inn ?keepers?|barkeep(?:er)?s?|bartenders?|publicans?|tavern ?keepers?|shop ?keepers?|proprietors?|proprietress|quartermasters?|(?:black)?smiths?|armou?rers?|apothecar(?:y|ies)|herbalists?|healers?|ferry ?(?:man|men|woman)|stable ?masters?|stewards?|landlords?|landlad(?:y|ies)|chandlers?|merchants?|traders?)\b/i;
 
+// NPC E2-A (R3): a person.new is ONE person. A group the story shows ("two clerks working the long counter", "the
+// guards", "a pair of porters") is scene colour; when one of them acts, that one is a person of their own. Only the
+// words of the role and the description's start are read; creatures keep their own group rules.
+const GROUP_PEOPLE = /^(?:men|women|people|folk|crowd|crew|gang|band|staff|patrol|children|twins)$/;
+const PERSON_NOUN = /^(?:clerk|registrar|receptionist|innkeeper|keeper|barkeep|barkeeper|bartender|publican|shopkeeper|proprietor|quartermaster|smith|blacksmith|armorer|armourer|apothecar(?:y|ie)|herbalist|healer|ferryman|steward|landlord|landlady|chandler|merchant|trader|guard|soldier|adventurer|worker|villager|brother|sister|farmer|sailor|monk|priest|priestess|mercenar(?:y|ie)|hunter|labou?rer|apprentice|porter|servant|maid|warden|knight|bandit|thug|scholar|acolyte|novice|pilgrim|traveller|traveler|patron|customer|drinker|carter|fisherm[ae]n|stablehand|stableboy|cook|server|waiter|waitress|dockhand|clansm[ae]n)$/;
+const QUANTIFIED = /^(?:two|three|four|five|six|several|both|a few|a pair of|a couple of|a group of|a handful of|a crowd of|a knot of|a gang of|the two|the three|the four)\s+(?:[a-z-]+\s+){0,2}?([a-z-]+)\b/;
+const pluralPerson = (w) => !!w && (GROUP_PEOPLE.test(w) || (/s$/.test(w) && !/(?:ss|us)$/.test(w) && PERSON_NOUN.test(w.replace(/ies$/, 'y').replace(/(?:sh|ch|x)es$/, (m) => m.slice(0, -2)).replace(/s$/, ''))));
+export function collectivePerson(role, desc = [], name = null) {
+    const words = (x) => String(x || '').toLowerCase().replace(/[^a-z\s-]+/g, ' ').trim();
+    const head = (x) => { const w = words(x).split(/\s+/); const end = w.findIndex((y) => ['of', 'at', 'in', 'on', 'with', 'by', 'from', 'near', 'behind', 'beside', 'who', 'that'].includes(y)); return (end < 0 ? w : w.slice(0, end)).at(-1); };
+    if (pluralPerson(head(role)) || (name && pluralPerson(head(name)))) return true;
+    for (const x of [role, (desc || [])[0], name]) {
+        const m = QUANTIFIED.exec(words(x));
+        if (m && pluralPerson(m[1])) return true;
+    }
+    return false;
+}
+
 /** The branch's supported ranks (content may name them per place; else the proposed runtime defaults). */
 export function supportedRanks(state, content, settlement) {
     const p = state.places?.[settlement];

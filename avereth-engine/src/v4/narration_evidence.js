@@ -197,3 +197,178 @@ export function guildParticipationEvidence(prose, labels, { payoutCp = null, con
             && narratedEvent(prose,sentence.trim()).ok;
     });
 }
+
+// ------------------------------------------------------------------------------------------------ NPC E2-A
+// docs/NPC_E2A_INTEGRITY.md: who of the known people a reply shows present again (expected.go.met), and who of the
+// present Guild people a reply shows handling a contract step (expected.desk.handled_by). Both are the extractor's
+// claim plus its own quote; this module checks only the quote's words against the reply and the people's recorded
+// labels (no reading of the story, no model call). Anything it cannot tie to exactly one person is refused.
+
+const QUANTITY = new Map([['both', 2], ['two', 2], ['pair', 2], ['couple', 2], ['three', 3], ['four', 4], ['five', 5]]);
+const DETERMINER = new Set(['the', 'this', 'that', 'these', 'those']);
+const INDEFINITE = new Set(['a', 'an', 'another', 'some', 'any', 'one', 'other']);
+// people the story may name without a role of anyone here; the nearest one before a pronoun ends the search
+const GENERIC_PERSON = new Set(['man', 'woman', 'men', 'women', 'girl', 'boy', 'lad', 'lass', 'person', 'figure', 'stranger', 'someone',
+    'somebody', 'fellow', 'child', 'guard', 'guards', 'adventurer', 'adventurers', 'traveller', 'traveler', 'customer', 'patron', 'driver']);
+const PRONOUN = new Set(['he', 'she', 'they', 'him', 'her', 'them']);
+const PC_PRONOUN = new Set(['he', 'him', 'his', 'himself']);
+const PERSON_FILLER = new Set(['the', 'and', 'his', 'her', 'its', 'their', 'this', 'that', 'from', 'with', 'some', 'one', 'who', 'was', 'were',
+    'had', 'has', 'have', 'into', 'over', 'onto', 'at', 'of', 'on', 'in', 'by', 'for', 'a', 'an', 'man', 'woman', 'person']);
+// a person only shown in a picture, by a trace, or as away is not here (plan §8: a painted sign depicting the clerk)
+const DEPICTED = /\b(?:paint\w*|portrait\w*|picture\w*|statue\w*|carv\w*|drawing\w*|drawn|sketch\w*|images?|likeness\w*|depict\w*|mural\w*|tapestr\w*|engrav\w*|effig\w*|posters?)\b/;
+const TRACE = /\b(?:notes?|letters?|messages?|notices?|signs?|handwriting|writing|signature|names?|marks?)\b/;
+const AWAY = /\b(?:empty|vacant|absent|away|gone|missing|nowhere|abandoned|unattended|deserted)\b/;
+// a contract step's own handling at the desk, and what it handles
+const HANDLES = /^(?:paid|pays|counted|counts|pushed|slid|stamped|stamps|recorded|entered|took|takes|accepted|accepts|logged|logs|inked|inks|wrote|writes|signed|signs|handed|hands|blotted|filed|noted|marked|initialed|initialled|registered|weighed)$/;
+const DESK_OBJECT = /\b(?:contract|contracts|slip|slips|ledger|seal|roll|payout|reward|coins?|copper|silver|gold|posting|notice|tally|stamp)\b/;
+const stem = (w) => (w.length > 3 && w.endsWith('s') && !w.endsWith('ss') ? w.slice(0, -1) : w);
+const singular = (w) => (w.endsWith('men') ? `${w.slice(0, -3)}man` : w.endsWith('ies') ? `${w.slice(0, -3)}y` : /(?:ss|sh|ch|x)es$/.test(w) ? w.slice(0, -2) : w.endsWith('s') && !w.endsWith('ss') ? w.slice(0, -1) : w);
+
+/**
+ * A person as the evidence checks see them: names, their own short name words, the head of their role, and the words
+ * of their recorded look (traits, descriptors, appearance, the weapon they hold), and whether they are a group.
+ * @typedef {{id: string, names: string[], nameWords: string[], role: string|null, words: string[], group?: boolean}} PersonProfile
+ */
+export function personProfile({ id, names = [], nameWords = [], role = null, look = [], group = false }) {
+    const own = new Set([...names, ...nameWords].flatMap((n) => flat(n).split(' ')));
+    const head = role ? singular(flat(role).split(' ').filter(Boolean).at(-1) || '') : null;
+    const words = [...new Set(look.flatMap((x) => flat(x).split(' ')).filter((w) => w.length > 2 && !PERSON_FILLER.has(w) && !own.has(w) && singular(w) !== head).map(stem))];
+    return { id, names: names.map(flat).filter(Boolean), nameWords: nameWords.map(flat).filter((w) => w.length >= 3), role: head || null, words, group: !!group };
+}
+
+/**
+ * Which of the people the words name: a name, their role with a definite determiner (unique, or told apart by a
+ * word of their look: "the older clerk"), their role in the plural with its count ("both clerks": all of that role,
+ * or the one recorded group of it), or at least two words of their look and more than anyone else's.
+ * @param {string[]} w the clause's words (flat)
+ * @param {PersonProfile[]} people
+ * @returns {Set<string>} ids
+ */
+export function namedPeople(w, people) {
+    const hit = new Set();
+    const text = ` ${w.join(' ')} `;
+    for (const p of people) {
+        if (p.names.some((n) => n && text.includes(` ${n} `)) || p.nameWords.some((n) => w.includes(n))) hit.add(p.id);
+    }
+    for (let i = 0; i < w.length; i++) {
+        const t = w[i];
+        // singular role with a determiner before it (adjectives between allowed, never an indefinite one)
+        const sameRole = people.filter((p) => p.role && p.role === t);
+        if (sameRole.length) {
+            const lead = w.slice(Math.max(0, i - 4), i);
+            const det = lead.findLastIndex((x) => DETERMINER.has(x));
+            if (det >= 0 && !lead.slice(det).some((x) => INDEFINITE.has(x))) {
+                const between = lead.slice(det + 1).map(stem);
+                if (sameRole.length === 1 && !between.some((x) => people.some((o) => o !== sameRole[0] && o.role === t && o.words.includes(x)))) hit.add(sameRole[0].id);
+                else {
+                    const told = sameRole.filter((p) => between.some((x) => p.words.includes(x)));
+                    if (told.length === 1) hit.add(told[0].id);
+                }
+            }
+        }
+        // plural role with its count
+        const one = singular(t);
+        if (one !== t) {
+            const lead = w.slice(Math.max(0, i - 3), i);
+            const n = lead.map((x) => QUANTITY.get(x)).find(Boolean);
+            const ofRole = people.filter((p) => p.role === one);
+            const group = ofRole.filter((p) => p.group);
+            if (n && group.length === 1) hit.add(group[0].id);
+            else if (n && !group.length && ofRole.length === n) ofRole.forEach((p) => hit.add(p.id));
+        }
+    }
+    // words of their look: two or more, and strictly more than anyone else's
+    const ws = new Set(w.map(stem));
+    const score = people.map((p) => p.words.filter((x) => ws.has(x)).length);
+    const best = Math.max(0, ...score);
+    if (best >= 2 && score.filter((x) => x === best).length === 1) hit.add(people[score.indexOf(best)].id);
+    return hit;
+}
+
+/**
+ * expected.go.met (R1): the extractor's own quote is a narrated clause of the reply that shows this person
+ * themselves here now: named so that only they are meant, and not a picture, a trace, a memory, a plan or an empty place.
+ * @param {PersonProfile[]} people the people offered for the step and those present
+ * @returns {{ok: true} | {ok: false, why: string}}
+ */
+export function metEvidence(prose, evidence, id, people) {
+    const ev = narratedEvent(prose, evidence);
+    if (!ev.ok) return ev;
+    const w = ev.quote.filter((t) => t !== ',');
+    const text = w.join(' ');
+    if (DEPICTED.test(text)) return { ok: false, why: 'it shows a picture of them, not them' };
+    if (AWAY.test(text)) return { ok: false, why: 'it shows their place empty or them away' };
+    const named = namedPeople(w, people);
+    if (!named.has(id)) return { ok: false, why: 'the quoted words do not name them, or not them alone' };
+    // "a note from the clerk", "the clerk's name on the slate": a trace of them, not them
+    if (TRACE.test(text) && w.some((t, i) => ['from', 'by', 'of'].includes(t) && namedPeople(w.slice(i + 1, i + 5), people).has(id))) return { ok: false, why: 'it shows a trace of them, not them' };
+    return { ok: true };
+}
+
+/**
+ * expected.desk.handled_by (R2): the quote is a narrated act of handling a contract step (a handling word, a desk
+ * thing in its sentence) whose doer is this person: named before the act, or a pronoun that is not Alaric's whose
+ * nearest preceding person in the narration (at most eight sentences back) is this person alone.
+ * @param {PersonProfile[]} people the people present (the handler among them)
+ * @param {{self?: string[]}} opts Alaric's names
+ */
+export function deskHandlingEvidence(prose, evidence, id, people, { self = ['alaric'] } = {}) {
+    const ev = narratedEvent(prose, evidence);
+    if (!ev.ok) return ev;
+    const q = ev.quote;
+    const verb = q.findIndex((t) => HANDLES.test(t));
+    if (verb < 0) return { ok: false, why: 'the quote shows no handling of a contract step' };
+    if (!DESK_OBJECT.test([...q, ...ev.rest].join(' '))) return { ok: false, why: 'the quote handles nothing of the desk (slip, ledger, payout)' };
+    const pc = new Set(self.flatMap((x) => flat(x).split(' ')).filter((x) => x.length > 2));
+    const personWord = (t) => PRONOUN.has(t) || pc.has(t) || GENERIC_PERSON.has(t) || people.some((p) => p.role === singular(t) || p.nameWords.includes(t) || p.names.some((n) => n.split(' ').includes(t)));
+    const doer = (words, at) => {
+        for (let j = at; j >= 0; j--) if (words[j] !== ',' && personWord(words[j])) return j;
+        return -1;
+    };
+    const who = (words, j) => {
+        const t = words[j];
+        if (pc.has(t)) return 'pc';
+        // "the nearer clerk — a grey-haired woman with …": the noun of an apposition (a/an + description right after a
+        // named or described person) is that person
+        let k = j;
+        if (GENERIC_PERSON.has(t) && !people.some((p) => p.role === singular(t))) {
+            const a = words.slice(Math.max(0, j - 5), j).findLastIndex((x) => x === 'a' || x === 'an');
+            if (a >= 0) {
+                const ai = Math.max(0, j - 5) + a;
+                const between = words.slice(ai + 1, j);
+                const b = doer(words, ai - 1);
+                if (!between.some((x) => personWord(x) || x === ',') && b >= 0 && ai - b <= 2 && !PRONOUN.has(words[b]) && !GENERIC_PERSON.has(words[b])) k = b;
+            }
+        }
+        const named = namedPeople(words.slice(Math.max(0, k - 4), k + 1).filter((x) => x !== ','), people);
+        return named.size === 1 ? [...named][0] : null;
+    };
+    const j = doer(q, verb - 1);
+    if (j < 0) return { ok: false, why: 'the quote does not show who does it' };
+    let actor = null;
+    if (!PRONOUN.has(q[j])) actor = who(q, j);
+    else if (PC_PRONOUN.has(q[j])) return { ok: false, why: `"${q[j]}" is Alaric's pronoun: a clerk acting must be named` };
+    else if (q[j] === 'they' || q[j] === 'them') return { ok: false, why: 'a plural pronoun names no one handler' };
+    else {
+        // the nearest preceding person of the narration
+        const sentences = narrationOnly(prose).split(/[.!?…\n|]+/).map(tokens);
+        const s = sentences.findIndex((t) => locate(t, q.filter((x) => x !== ',')) || locate(t, q));
+        if (s < 0) return { ok: false, why: 'it is spoken, not narrated' };
+        const at = (locate(sentences[s], q) || locate(sentences[s], q.filter((x) => x !== ','))).i;
+        // back through the words before the pronoun, then up to eight narrated sentences: pronouns are passed over,
+        // the first person named or described ends the search
+        const lead = sentences[s].slice(0, at);
+        let found = null, seen = false;
+        for (const [k, t] of [[s, lead], ...sentences.slice(Math.max(0, s - 8), s).map((x, n) => [n, x]).reverse()]) {
+            const words = t.filter(Boolean);
+            let c = doer(words, words.length - 1);
+            while (c >= 0 && PRONOUN.has(words[c])) c = doer(words, c - 1);
+            if (c >= 0) { found = who(words, c); seen = true; break; }
+        }
+        if (!seen) return { ok: false, why: 'no one is named before the pronoun' };
+        actor = found;
+    }
+    if (actor === 'pc') return { ok: false, why: 'Alaric does it, not a clerk' };
+    if (actor !== id) return { ok: false, why: actor ? 'the quote shows someone else doing it' : 'the doer cannot be told apart' };
+    return { ok: true };
+}

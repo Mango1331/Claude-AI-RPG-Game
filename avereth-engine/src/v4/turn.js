@@ -103,6 +103,9 @@ export function playerTurnV4(state, content, text, { msg = null, commands = [], 
         search_checks: ctx.searchChecks, check_die: null, interp_failed: !!interp.failed,
         dropped: dropped.map((x) => ({ type: x.command?.type, rule: x.rule, quote: x.command?.quote ?? null })),
         ...(ctx.engineLines.length ? { engine_lines: ctx.engineLines } : {}),
+        // NPC E2-A: the people offered per GO step and the Guild desk steps (only when there are any)
+        ...(Object.keys(ctx.knownAt || {}).length ? { known_at: ctx.knownAt } : {}),
+        ...(Object.keys(ctx.desk || {}).length ? { desk: ctx.desk } : {}),
         ...(c && coinBooked(events).length ? { coin: coinBooked(events) } : {}),
     };
     emit({ t: 'outcome.recorded', d: { outcome, situations: [] } });

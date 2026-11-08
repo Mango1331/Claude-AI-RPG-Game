@@ -34,6 +34,8 @@ export const DEFAULT_RULES_BUDGET = 800;
 export const DEFAULT_RECENT_TURNS = 4; // turns still visible in the chat history are not retrieved again
 const IDENTITY_FACTS = new Set([PC_NAME_FACT, PC_LOOK_FACT]);
 const RECORD_PREDICATES = new Set(['occupation', 'appearance', 'voice', 'agenda']);
+// NPC E2-A (R5): a person's own account (docs/NPC_E2A_INTEGRITY.md)
+const SPEECH_PREDICATES = new Set(['says', 'said', 'remark', 'remarked', 'claims', 'claimed', 'reports', 'reported', 'mentions', 'mentioned', 'tells', 'told', 'rumor', 'rumour']);
 const MAX_EPISODES = 3; // the player's own words from before the history window: the most relevant three
 
 function attitudeLabel(v) {
@@ -436,7 +438,9 @@ function retrievalItems(state, content, pinnedIds, recentTurns) {
     // a person's record facts live on that person's card (shown when present or named), Alaric's Guild Rank in his line
     const onCard = (x) => (RECORD_PREDICATES.has(x.p) && state.entities[x.s]?.kind === 'npc') || (x.s === 'pc' && x.p === 'guild_rank');
     for (const f of currentFacts(state, (x) => x.visibility !== 'secret' && !IDENTITY_FACTS.has(x.id) && !pinnedIds.has(x.id) && !onCard(x))) {
-        const txt = propText(state, f, content);
+        // NPC E2-A (R5): what a person said is true as their saying, never as the world's state (the board stays the
+        // engine's): the line names them as its speaker
+        const txt = state.entities[f.s]?.kind === 'npc' && SPEECH_PREDICATES.has(f.p) ? `${entityLabel(state, f.s)} said (their claim, not engine state): ${String(f.o).replace(/^(?:says|said|claims|claimed|reports|reported|mentions|mentioned|tells|told)\s+/i, '')}` : propText(state, f, content);
         items.push({ kind: 'fact', text: txt, entities: [f.s, f.o].filter((x) => state.entities[x]), location: isLocationId(state, content, f.s) ? f.s : null, turn: f.since?.turn ?? 0, importance: f.importance ?? 0.5, label: `${f.hard ? 'HARD FACT: ' : ''}${txt}` });
     }
     for (const q of Object.values(state.quests).filter(q => questVisible(state, q))) {

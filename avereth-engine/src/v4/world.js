@@ -30,7 +30,7 @@ import { stripOwned, wrongClaim, ownershipViolation, stateRegions, effectViolati
 import { mayOpenFight, mayTake, attackCommitted } from './envelope.js';
 import { soughtMatch, CAUSE_SHORT } from './pulse.js';
 import {
-    PLACE_PARENTS, HALL_NAME, lineage, guildDestination, hallOf, hallOfSettlement, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind, SERVICE_ROLE,
+    PLACE_PARENTS, HALL_NAME, lineage, guildDestination, hallOf, hallOfSettlement, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind, SERVICE_ROLE, collectivePerson,
     progressKey, sameKinds, kindOf, populationAt, validEncounterLevels,
 } from './domain.js';
 import { creatureContract } from './population.js';
@@ -48,7 +48,7 @@ import { anchorFor, speciesAnchor, templateFor, rulesetOf } from '../content.js'
 import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotMet, resolved, slotForNew, resolvedSlotNamed, slotEntityEvents, establishEvents, syncEvents, insideOf } from './living.js';
 import { unbookedDungeonThreat } from './run9_evidence.js';
 import { jobOf, paymentJob, recordJobWork } from './private_jobs.js';
-import { forcedRelocation, presenceInReply, narratedEvent, guildParticipationEvidence } from './narration_evidence.js';
+import { forcedRelocation, presenceInReply, narratedEvent, guildParticipationEvidence, metEvidence, deskHandlingEvidence, personProfile } from './narration_evidence.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
 // delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
@@ -382,6 +382,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     let arrivedHall = null;
     let sceneEpoch = 0;
     const deskWitnesses = [];
+    const metDone = new Set(); // NPC E2-A: the GO steps whose met was decided
+    const metEntered = new Set(); // NPC E2-A: who a met of this reply brought in (an enter of them adds nothing)
     const arrivals = new Set();
     const arrivalManner = () => {
         const reached = g => (g.to && arrivals.has(g.to)) || (g.intent && s.intents[g.intent]?.status === 'done')
@@ -999,6 +1001,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 const party = companions(d.with, d);
                 perceiveAll(s, emit, seeing());
                 arriveThrough(at.id, party);
+                // NPC E2-A (R1): the known people this GO step's arrival shows here
+                if (explicitTravel) { const k = goStepAt(at.id, ref); if (k !== null) metArrivals(k); }
                 stealthGo = String(d.forced_by || '').trim() ? null : arrivalManner();
                 stealthAt = stealthGo ? s.scene.at : null;
                 if (explicitTravel && s.places[at.id]?.kind === 'realm') {
@@ -1023,6 +1027,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 break;
             }
             case 'person.new': {
+                // NPC E2-A (R3): one person per person.new; a group is scene colour until one of them acts
+                if (cPath && rulesetOf(s) >= 2 && collectivePerson(d.role, d.desc, d.name)) {
+                    blockedPeople.add(normText(d.ref || ''));
+                    reject(d, 'collective_person', 'a group of people is scene colour, not one person; when one of them acts, that one is a person.new of their own');
+                    break;
+                }
                 if (cPath && rulesetOf(s) >= 2) {
                     const name = normText(d.name || '');
                     const explicit = s.entities[d.ref]?.kind === 'npc' ? s.entities[d.ref] : null;
@@ -1131,6 +1141,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 break;
             case 'enter': {
                 const who = mapRef(d.who);
+                if (metEntered.has(who) && s.scene.present.includes(who)) break;
                 if (absentKnown(who)) {
                     const ev = presenceInReply(prose, d.evidence, personLabels(who));
                     if (!ev.ok) {
@@ -1141,19 +1152,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                         break;
                     }
                 }
-                v3({ enter: [who] }, d);
-                if (s.scene.present.includes(who)) {
-                    if (s.entities[who]?.kind === 'npc' && hallOf(s,s.scene.at) && firewallContext(s,content).isGuildPerson(who)) {
-                        for (const w of deskWitnesses.filter(w=>w.epoch === sceneEpoch && w.at === s.scene.at)) {
-                            if (!knows(s,who,w.fact) && guildParticipationEvidence(prose, personalLabels(who), {payoutCp:w.cp,content})) {
-                                emit({t:'knowledge.gained',d:{who,about:w.fact,stance:'knows',source:'witnessed',turn:s.turn,minute:s.clock.minute}});
-                            }
-                        }
-                    }
-                    if (s.entities[who]?.kind === 'npc' && s.entities[who].at !== s.scene.at)
-                        emit({ t: 'entity.updated', d: { id: who, set: { at: s.scene.at } } });
-                    for (const ref of [...blockedPeople]) if (idOf(ref) === who) blockedPeople.delete(ref);
-                }
+                enterKnown(who, d);
                 break;
             }
             case 'leave': {
@@ -1751,6 +1750,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // a trap of a place he did not get into does not spring (no expiry of his GO for it: the GO stands as it went)
     for (const c of conditionals.filter((x) => !x.done && x.kind !== 'spring')) emit({ t: 'cmd.expired', d: { seq: c.seq, reason: 'the condition did not happen in this reply' } });
 
+    // NPC E2-A: a met of a GO step that brought him nowhere enters no one; the desk steps' actual handlers
+    step = { kind: 'expected' };
+    if (explicitTravel) for (const [k, type] of Object.entries(outcome.expected_keys || {})) {
+        if (type !== 'go' || metDone.has(k) || !Array.isArray(expected[k]?.met)) continue;
+        for (const m of expected[k].met) reject({ seq: Number(k), type: 'expected', met: m }, 'met_without_arrival', `GO step ${k} did not bring him to its place in this reply`);
+    }
+    if (explicitTravel) deskHandlers();
+
     // 5. who noticed him, his introduction, his own record of the turn, a fight the reply committed to
     step = { kind: 'engine' };
     // Prototype C (4.3.0-c.6): his contract slips show what the engine holds of their contracts (READY, COMPLETED)
@@ -1942,11 +1949,107 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
      * Prototype C (4.3.0-c.6): the person in this role Alaric met at this place and left there (entity.at): the only one,
      * or of several the one the newcomer's description alone matches (the clerk "with spectacles"); else nobody
      */
+    /** A known person's entry into the scene (enter, and E2-A met): the V3 entry, the .158 desk witness, their place. */
+    function enterKnown(who, d) {
+        v3({ enter: [who] }, d);
+        if (s.scene.present.includes(who)) {
+            if (s.entities[who]?.kind === 'npc' && hallOf(s,s.scene.at) && firewallContext(s,content).isGuildPerson(who)) {
+                for (const w of deskWitnesses.filter(w=>w.epoch === sceneEpoch && w.at === s.scene.at)) {
+                    if (!knows(s,who,w.fact) && guildParticipationEvidence(prose, personalLabels(who), {payoutCp:w.cp,content})) {
+                        emit({t:'knowledge.gained',d:{who,about:w.fact,stance:'knows',source:'witnessed',turn:s.turn,minute:s.clock.minute}});
+                    }
+                }
+            }
+            if (s.entities[who]?.kind === 'npc' && s.entities[who].at !== s.scene.at)
+                emit({ t: 'entity.updated', d: { id: who, set: { at: s.scene.at } } });
+            for (const ref of [...blockedPeople]) if (idOf(ref) === who) blockedPeople.delete(ref);
+        }
+    }
+
+    /** NPC E2-A: a person as the evidence checks see them (src/v4/narration_evidence.js personProfile). */
+    function profileOf(id) {
+        const e = s.entities[id] || {};
+        const names = [e.name, e.known_name].filter((x) => typeof x === 'string' && x.trim());
+        const others = new Set(Object.values(s.entities).filter((x) => ['npc', 'pc'].includes(x.kind) && x.id !== id)
+            .flatMap((x) => [x.name, x.known_name].filter(Boolean).flatMap((n) => normText(n).split(' '))));
+        const nameWords = names.flatMap((n) => normText(n).split(' ')).filter((w) => w.length >= 3 && !others.has(w));
+        const occupation = truth(s, id, 'occupation')[0]?.o;
+        const role = occupation && !s.entities[occupation] ? occupation : e.descriptors?.[0] || e.role || null;
+        const look = [e.traits, ...(e.descriptors || []).slice(1).filter((x) => !/^(?:npc|person|creature)\./.test(x)), truth(s, id, 'appearance')[0]?.o, truth(s, id, 'armed')[0]?.o].filter((x) => typeof x === 'string');
+        return personProfile({ id, names, nameWords, role, look, group: isGroupPerson(e) });
+    }
+    /** A historical person entity that stands for a group ("Two clerks working the long counter"): kept, never extended. */
+    function isGroupPerson(e) {
+        return !!e && e.kind === 'npc' && collectivePerson(e.descriptors?.[0] || e.role || '', [e.traits, ...(e.descriptors || []).slice(1)].filter(Boolean), e.name || null);
+    }
+
+    /**
+     * NPC E2-A (R1): the known people the extractor says this reply shows at the place GO step k reached. Each needs
+     * the step's own arrival (he stands where the step went), an offered person (the player outcome's known_at[k]),
+     * alive and not here yet, and a narrated quote of the reply that shows exactly that person there now.
+     */
+    function metArrivals(k) {
+        metDone.add(k);
+        const list = Array.isArray(expected[k]?.met) ? expected[k].met : [];
+        if (!list.length) return;
+        const offered = outcome.known_at?.[k] || [];
+        const g = (auth.gos || []).find((x) => String(x.seq) === String(k));
+        const people = [...new Set([...offered, ...s.scene.present.filter((id) => s.entities[id]?.kind === 'npc')])].filter((id) => s.entities[id]).map(profileOf);
+        for (const m of list) {
+            const item = { seq: Number(k), type: 'expected', met: m };
+            const who = offered.includes(m?.who) ? m.who : idOf(m?.who);
+            if (expected[k]?.arrived !== true || !g?.to || s.scene.at !== g.to) { reject(item, 'met_without_arrival', `GO step ${k} did not bring him to its place in this reply`); continue; }
+            if (!who || !offered.includes(who) || s.entities[who]?.kind !== 'npc' || statusOf(s, who) === 'dead') { reject(item, 'met_not_known_here', `${m?.who} is not one of the people known at this place for step ${k}`); continue; }
+            if (s.scene.present.includes(who)) continue;
+            const ev = metEvidence(prose, m.evidence, who, people);
+            if (!ev.ok) { reject(item, 'met_evidence', `${who}: ${ev.why}`); continue; }
+            enterKnown(who, item);
+            if (s.scene.present.includes(who)) metEntered.add(who);
+        }
+    }
+    /** The GO step an actual arrival at this place answers (the first not yet met one, by its place). */
+    function goStepAt(id, ref) {
+        return Object.entries(outcome.expected_keys || {}).filter(([k, type]) => type === 'go' && !metDone.has(k)).map(([k]) => k)
+            .sort((a, b) => Number(a) - Number(b)).find((k) => {
+                const g = (auth.gos || []).find((x) => String(x.seq) === k);
+                return (g?.to && g.to === id) || (expected[k]?.at && samePlace(s, ref, expected[k].at, content));
+            }) ?? null;
+    }
+
+    /**
+     * NPC E2-A (R2): the Guild person the extractor says handled a desk step of the player's (outcome.desk) learns the
+     * engine's own fact of that step as witnessed: only when the step happened (resolved at the player's turn, or its
+     * conditional completed in this reply), the person is here, alive and of the Guild, and the reply shows them doing it.
+     */
+    function deskHandlers() {
+        for (const [k, type] of Object.entries(outcome.expected_keys || {})) {
+            const desk = type === 'desk' ? outcome.desk?.[k] : null;
+            const h = desk ? expected[k]?.handled_by : null;
+            if (!h || typeof h !== 'object') continue;
+            const item = { seq: Number(k), type: 'expected', handled_by: h };
+            const res = (outcome.resolutions || []).find((r) => String(r.seq) === String(k));
+            const done = res?.status === 'resolved' || (res?.status === 'conditional' && events.some((e) => e.t === 'cmd.completed' && String(e.d.seq) === String(k) && e.d.ok === true));
+            const fact = desk.kind === 'accept' ? `f.pc.accepted.${desk.quest}` : `f.pc.completed.${desk.quest}`;
+            if (!done || !s.facts[fact]) { reject(item, 'desk_handler', `step ${k} (${desk.kind} ${desk.quest}) did not happen`); continue; }
+            const who = idOf(h.who);
+            if (!who || s.entities[who]?.kind !== 'npc' || statusOf(s, who) === 'dead' || !s.scene.present.includes(who) || !hallOf(s, s.scene.at) || !firewallContext(s, content).isGuildPerson(who)) {
+                reject(item, 'desk_handler', `${h.who} is no Guild person present at the desk`);
+                continue;
+            }
+            const people = s.scene.present.filter((id) => s.entities[id]?.kind === 'npc').map(profileOf);
+            const ev = deskHandlingEvidence(prose, h.evidence, who, people, { self: [s.entities.pc?.name, 'Alaric'].filter(Boolean) });
+            if (!ev.ok) { reject(item, 'desk_handler', `${who}: ${ev.why}`); continue; }
+            if (!knows(s, who, fact)) emit({ t: 'knowledge.gained', d: { who, about: fact, stance: 'knows', source: 'witnessed', turn: s.turn, minute: s.clock.minute } });
+        }
+    }
+
     function keptHere(d) {
         const headOf = (x) => { const w = normText(x).split(' '); const end = w.findIndex((y) => RELATION_WORDS.has(y)); return (end < 0 ? w : w.slice(0, end)).at(-1); };
         const want = headOf(d.role);
         if (!want) return null;
+        // NPC E2-A (R4): never the person the answer says this one is not, never a historical group entity
         const kept = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.at === s.scene.at && !s.scene.present.includes(e.id) && statusOf(s, e.id) !== 'dead'
+            && !(cPath && rulesetOf(s) >= 2 && (e.id === d.distinct_from || isGroupPerson(e)))
             && [truth(s, e.id, 'occupation')[0]?.o, ...(e.descriptors || [])].filter(Boolean).some((x) => headOf(x) === want));
         if (kept.length < 2) return kept[0]?.id || null;
         const roleWords = new Set(normText(d.role).split(' '));

@@ -52,11 +52,12 @@
   ],
   "expected": {
     "go": {
-      "summary": "did he arrive, where, and who came with him; arrived is true only when the reply ends with him at the place (seeing it ahead or passing it is false); evaluate Alaric's final location at the END of this reply: when he enters the first interior or mouth tunnel of a Dungeon and remains there, mark arrived:true even if his deeper destination remains ahead, with at set to the actual interior as a known place or {new:{name,kind:'interior',parent:Dungeon id}}; arrived:false if he only sees inside, another actor crosses, the alleged crossing is quoted, hypothetical, in the past or interrupted, or Alaric returned outside. Passing a place without staying there is not arrival. A real intermediate stop can be arrive even while arrived:false for the end goal; seeing the end goal ahead alone is still false.",
+      "summary": "did he arrive, where, and who came with him; arrived is true only when the reply ends with him at the place (seeing it ahead or passing it is false); evaluate Alaric's final location at the END of this reply: when he enters the first interior or mouth tunnel of a Dungeon and remains there, mark arrived:true even if his deeper destination remains ahead, with at set to the actual interior as a known place or {new:{name,kind:'interior',parent:Dungeon id}}; arrived:false if he only sees inside, another actor crosses, the alleged crossing is quoted, hypothetical, in the past or interrupted, or Alaric returned outside. Passing a place without staying there is not arrival. A real intermediate stop can be arrive even while arrived:false for the end goal; seeing the end goal ahead alone is still false. met: for each person of KNOWN AT this reply shows present at the reached place now (speaking, working, sitting there), who (their id) and evidence (the reply's own narrated words that name or describe them there); not someone only remembered, expected, pictured, said to be away or referred to by a pronoun; null when none.",
       "shape": {
         "arrived": "true|false",
         "at": "place id, {\"new\": …} or null",
-        "with": "ids of the people who arrived with him, or null"
+        "with": "ids of the people who arrived with him, or null",
+        "met": "[{\"who\": id from KNOWN AT, \"evidence\": the reply's own narrated words that show that person there now}] or null"
       }
     },
     "activity": {
@@ -91,6 +92,12 @@
       "shape": {
         "sold": "true|false",
         "price_cp": "int or null"
+      }
+    },
+    "desk": {
+      "summary": "who at the Guild desk handled THIS contract step in the reply (took or stamped the slip, logged it, counted out the payout): handled_by is that person (an id, or the ref of a person.new of this answer) with evidence (the reply's own narrated words of that act, naming or describing them); null when the reply shows no one doing it",
+      "shape": {
+        "handled_by": "{\"who\": id or ref, \"evidence\": exact narrated words} or null"
       }
     }
   },
@@ -171,7 +178,7 @@
           "nullable": true
         }
       },
-      "summary": "a person the reply introduces; name only a proper name, else null; present: here with Alaric now; relevant:true for a person important to the current scene (hostage, client, opponent); threat:true ONLY for an actually established opponent or imminent threat, NEVER for a captive or neutral NPC; role: a plain word for what they are (bandit, guard, mage, merchant) when established; armed: the weapon they hold ready, else null; at: where they are if not here; distinct_from: existing person id only when this is explicitly a DIFFERENT person whose fuller name could otherwise extend that identity, else null"
+      "summary": "ONE individual person the reply introduces (a group such as \"two clerks\" or \"the guards\" is scene colour, never a person.new; when one member of it acts or speaks, that one is a person.new with their own description); name only a proper name, else null; present: here with Alaric now; relevant:true for a person important to the current scene (hostage, client, opponent); threat:true ONLY for an actually established opponent or imminent threat, NEVER for a captive or neutral NPC; role: a plain word for what they are (bandit, guard, mage, merchant) when established; armed: the weapon they hold ready, else null; at: where they are if not here; distinct_from: existing person id only when this is explicitly a DIFFERENT person whose fuller name could otherwise extend that identity, or a different person in the same role at this place (a second clerk at the counter), else null"
     },
     {
       "type": "person.named",

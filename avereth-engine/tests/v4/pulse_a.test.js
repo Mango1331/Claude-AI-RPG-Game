@@ -171,7 +171,7 @@ test('PULSE A4: a fight pauses PULSE (encounter, pending_combat); the streak wai
 });
 
 // ------------------------------------------------------------------------------------------------ pauses and repeats
-test('PULSE A: a pause gets the window (never danger, obstacle or trouble in package A); its block of further pauses rolls no more; split waiting farms nothing', async () => {
+test('PULSE A: a pause gets the window (in a safe lodging never danger, obstacle or trouble); its block of further pauses rolls no more; split waiting farms nothing', async () => {
     const g = await base();
     let s = clone(g.state());
     s.scene.at = REALM;
@@ -189,10 +189,12 @@ test('PULSE A: a pause gets the window (never danger, obstacle or trouble in pac
     const look = turn(s, [], { input: 'I look about' });
     const again = turn(look.s, [WAIT(5)], { input: 'I wait again' });
     assert.equal(again.pulse.rolled, true);
-    // an open window of a pause brings only what does not cut it short; the pause is booked in full
+    // an open window of a pause in a safe lodging brings only what does not cut it short; the pause is booked in full
+    // (.164, package C: out in the land a danger, obstacle or strange window may cut it short; tests/v4/pulse_c.test.js)
+    const hall = clone(look.s); hall.scene.at = HALL;
     await withForce({ open: true }, async () => {
         for (let n = 1; n <= 30; n++) {
-            const t = turn(look.s, [{ type: 'activity', kind: 'sleep', what: null, minutes: 480, until: null, quote: 'I sleep' }], { turnNo: look.s.turn + n });
+            const t = turn(hall, [{ type: 'activity', kind: 'sleep', what: null, minutes: 480, until: null, quote: 'I sleep' }], { turnNo: look.s.turn + n });
             assert.ok(!['danger', 'obstacle', 'trouble'].includes(t.pulse.kind), t.pulse.kind);
             assert.equal(t.events.filter((e) => e.t === 'time.advanced').reduce((a, e) => a + e.d.minutes, 0), 480);
         }

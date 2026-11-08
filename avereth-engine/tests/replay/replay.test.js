@@ -47,7 +47,9 @@ const ACCEPTED160 = JSON.parse(fs.readFileSync(new URL('./accepted_fix160_vs_126
 // PULSE package A (.162): every .160/.161 acceptance kept exactly or superseded only for the PULSE decision fields
 const ACCEPTED162 = JSON.parse(fs.readFileSync(new URL('./accepted_pulse162_vs_126.json', import.meta.url), 'utf8'));
 // .163 (review of .162 R2): six turtle searches now registered as sought contact, everything else as .162
-const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_pulse163_vs_126.json', import.meta.url), 'utf8'));
+const ACCEPTED163 = JSON.parse(fs.readFileSync(new URL('./accepted_pulse163_vs_126.json', import.meta.url), 'utf8'));
+// PULSE package C (.164): the pause turns' draw before their booking, their safety; two rest-then-hunt-GO turns draw
+const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_pulse164_vs_126.json', import.meta.url), 'utf8'));
 const F144 = ['finance 144 payment card', 'finance 144 contract fields', 'finance 144 acceptance hint', 'finance 144 price open', 'finance 144 unit limit', 'finance 144 acceptance', 'finance 144 own coin'];
 const SUB = { ...baseline, runs: Object.fromEntries(QUICK.map((l) => [l, baseline.runs[l]])) };
 let quick = null; // the four quick runs, replayed once for this file
@@ -57,7 +59,7 @@ test('A1/C: the four quick runs replay as on the start commit, from whole and va
     const { compared, diffs } = compareToBaseline(SUB, result);
     assert.equal(compared, QUICK.reduce((n, l) => n + Object.keys(baseline.runs[l].cases).length, 0));
     assert.deepEqual(diffs.map((d) => d.id).sort(), Object.keys(ACCEPTED.cases).filter((id) => QUICK.includes(id.split('#')[0])).sort());
-    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138','finance 142','finance 142 contract fields', 'batch21 integration 146', 'design148 danger', 'design148 area', 'design149 offensive growth', 'fix150 place fact', 'fix158 fact text', 'fix158 guild witness', 'fix159 board failure', 'fix160 board narration', 'pulse162 window', 'pulse162 road', 'pulse163 sought', ...F144].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F/integration differences are allowed');
+    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138','finance 142','finance 142 contract fields', 'batch21 integration 146', 'design148 danger', 'design148 area', 'design149 offensive growth', 'fix150 place fact', 'fix158 fact text', 'fix158 guild witness', 'fix159 board failure', 'fix160 board narration', 'pulse162 window', 'pulse162 road', 'pulse163 sought', 'pulse164 pause order', 'pulse164 early claim', ...F144].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F/integration differences are allowed');
     const { open, accepted, stale } = acceptedDiffs(diffs, ACCEPTED.cases, result);
     assert.deepEqual([open, stale, accepted.length], [[], [], diffs.length], 'every accepted record has exactly the fingerprinted output');
     for (const [label, run] of Object.entries(result.runs)) {
@@ -312,10 +314,10 @@ test('.162 (PULSE A) keeps every .160 acceptance exactly or supersedes it only f
 });
 
 test('.163 keeps every .162 acceptance exactly except six turtle searches now read as sought contact', () => {
-    assert.deepEqual(Object.keys(ACCEPTED.cases).sort(), Object.keys(ACCEPTED162.cases).sort());
+    assert.deepEqual(Object.keys(ACCEPTED163.cases).sort(), Object.keys(ACCEPTED162.cases).sort());
     const changed = [];
     for (const [id, old] of Object.entries(ACCEPTED162.cases)) {
-        const now = ACCEPTED.cases[id];
+        const now = ACCEPTED163.cases[id];
         if (now.category !== 'pulse163 sought') { assert.deepEqual(now, old, id); continue; }
         changed.push(id);
         assert.deepEqual(now.previous_acceptance_162, old, id);
@@ -323,4 +325,21 @@ test('.163 keeps every .162 acceptance exactly except six turtle searches now re
         assert.match(now.reason, /every other event, outcome field, rejection and correction is exactly the \.162 output/);
     }
     assert.deepEqual(changed.sort(), ['b18-rogue#209', 'b18-rogue#243', 'b18-rogue#291', 'b18-rogue#295', 'b18-rogue#65', 'b18-rogue#71']);
+});
+
+test('.164 keeps every .163 acceptance exactly except the pause records of package C, each with its .163 acceptance', () => {
+    assert.deepEqual(Object.keys(ACCEPTED.cases).sort(), Object.keys(ACCEPTED163.cases).sort());
+    const changed = { 'pulse164 pause order': [], 'pulse164 early claim': [] };
+    for (const [id, old] of Object.entries(ACCEPTED163.cases)) {
+        const now = ACCEPTED.cases[id];
+        if (!now.category.startsWith('pulse164')) { assert.deepEqual(now, old, id); continue; }
+        changed[now.category].push(id);
+        assert.deepEqual(now.previous_acceptance_163, old, id);
+        assert.ok(now.reason.startsWith(`${id}: package C `), id);
+        assert.match(now.reason, /every other event, outcome field, rejection and correction (is|are) exactly the \.163 output/);
+        assert.doesNotMatch(now.reason, /cut short after/, 'no corpus record is cut short');
+    }
+    assert.equal(changed['pulse164 pause order'].length, 26);
+    assert.deepEqual(changed['pulse164 early claim'].sort(), ['b16-rogue-sale#57', 'b18-warrior#391']);
+    assert.deepEqual(ACCEPTED.returned, ACCEPTED163.returned);
 });

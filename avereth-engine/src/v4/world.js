@@ -365,11 +365,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const booked = auth.c ? auth.booked_min || 0 : 0;
     let bookedLeft = booked;
     let timeUsed = booked;
-    // .165 (review of .164, P2): a pause the engine cut short (PULSE package C) stays cut short. The minutes of the
-    // planned pause after the cut are covered like the booked ones and never booked: a reply that tells the full rest
-    // books nothing more, the time of an independent step besides it still counts
-    const cutAway = auth.c && pulse?.interrupt && !pulse.interrupt.at_end ? Math.max(0, pulse.interrupt.of_min - pulse.interrupt.after_min) : 0;
-    let cutLeft = cutAway;
+    // .165/.166 (reviews of .164 and .165, P2): a pause the engine cut short (PULSE package C) stays cut short. Time the
+    // reply gives the pause beyond the cut is covered like the booked minutes and never booked. Which part of the
+    // reply's time is the pause's: alone in the message (no other step happened before it), everything beyond the
+    // booked minutes up to the planned length; with another step before it (its time is the story's), what the reply's
+    // own account of the pause (expected.<seq>.minutes, the extractor's per-action answer) claims beyond the cut;
+    // without that account the whole cut-away time, as for a pause alone
+    const pauseCut = auth.c && pulse?.interrupt && !pulse.interrupt.at_end ? pulse.interrupt : null;
+    const cutAway = pauseCut ? Math.max(0, pauseCut.of_min - pauseCut.after_min) : 0;
+    const besideCut = pauseCut && (outcome.resolutions || []).some((r) => r.seq < pauseCut.seq && !['refused', 'clarify', 'pending'].includes(r.status));
+    const pauseTold = pauseCut ? expected[String(pauseCut.seq)]?.minutes : null;
+    let cutLeft = besideCut && Number.isInteger(pauseTold) ? Math.min(cutAway, Math.max(0, pauseTold - pauseCut.after_min)) : cutAway;
     const startAt = s.scene.at;
     let arrived = null;
     let stealthAt = null; // actual voluntary arrival of this GO, never a forced relocation

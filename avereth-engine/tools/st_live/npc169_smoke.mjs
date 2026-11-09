@@ -70,7 +70,11 @@ export async function npc169Smoke({ page, send, idle, calls, onReload, out }) {
     checks.metKnownAt = JSON.stringify([...(a.st.outcome?.known_at?.['1'] || [])].sort()) === JSON.stringify([CLERKS, BOW].sort());
     checks.metEntered = ev(a.st, 'scene.entered').some((e) => e.d.id === BOW) && a.st.present.includes(BOW) && !a.st.present.includes(CLERKS);
     checks.metAsked = a.extract.length === 1 && /"met": \[\{"who": id from KNOWN AT/.test(allText(a.extract[0])) && /met: for each person of KNOWN AT this reply shows present/.test(allText(a.extract[0]));
-    checks.metNarratorKnownAtUnchanged = /^KNOWN AT Adventurers' Guild hall, Alderwatch \(met there before;/m.test(allText(a.narr)) && !/ARRIVING AT/.test(allText(a.narr));
+    // NPC E2-B (.172): the narrator reads both as arrival cards NOT YET SHOWN, its KNOWN AT line points to them; the
+    // extractor keeps the whole KNOWN AT line (this check replaces .169's metNarratorKnownAtUnchanged)
+    checks.metNarratorArrivalCards = /^ARRIVING AT Adventurers' Guild hall, Alderwatch — people known there; NOT YET SHOWN/m.test(allText(a.narr))
+        && /^KNOWN AT Adventurers' Guild hall, Alderwatch \(met there before;.*the people carded under ARRIVING AT$/m.test(allText(a.narr))
+        && allText(a.extract[0]).split('\n').some((l) => /KNOWN AT Adventurers' Guild hall, Alderwatch/.test(l) && l.includes(`(${CLERKS})`) && l.includes(`(${BOW})`));
     checks.metApplied = !a.st.errors.length && a.st.extraction === 'applied' && a.st.coin === a.before.coin;
     await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); await SillyTavern.getContext().reloadCurrentChat(); });
     onReload(); await page.waitForTimeout(800);

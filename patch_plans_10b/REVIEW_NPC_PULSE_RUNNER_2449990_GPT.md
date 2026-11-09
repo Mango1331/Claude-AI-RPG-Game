@@ -45,3 +45,43 @@ Git-Remote-HEADs beim Review: `main` [`94510e7`](https://github.com/Mango1331/Cl
 **Laut Sols Implementierungsbericht** (nicht erneut von GPT ausgeführt): sieben neue Regressionen grün; Runner-Suite **156/156**; vollständige Node-Suite **2984/2984**; ein echter ST1.19-Stub-Selbsttest mit zwei korrekt erstellten Profilen, Exporten, unverändertem Userprofil und sauberem Geheimnisscan. Beide Stub-Kampagnen endeten bewusst nach vier Eingaben und sind **keine natürliche Abnahme**. Ein kostenpflichtiger natürlicher Modellbatch wurde nicht gestartet.
 
 **Reviewurteil:** Der gewünschte Runner-/Guide-Umfang ist fertig; **noch keine Freigabe für den großen kostenpflichtigen NPC-/PULSE-Batch**, solange P2-A/B die Berichtszuverlässigkeit beeinträchtigen. Ein einzelner **enger Runner-only-Korrekturpatch** mit gezielten Vorher-/Nachher-Regressionsfällen genügt. Keine Engine-, Regel-, Balance-, E4/E5- oder PULSE-D-Änderung. Ein erneuter großer Architektur- oder Gesamtpatch ist weder begründet noch freigegeben.
+
+
+---
+
+## 7. Unabhängiger Nachreview des Sol-Korrekturpatches `2a8b54e` (09.11.2026)
+
+**Nachprüfurteil: P2-A in der geprüften Kartenmessung geschlossen; P2-B für regulär archivierte Läufe geschlossen.** Der Runner kann für einen **kurzen natürlichen Pilotlauf** eingesetzt werden. **Ein begrenzter P3-Randfehler bei gänzlich fehlendem Laufarchiv bleibt** und sollte vor der großen kostenpflichtigen Zweierserie im nächsten passenden Runner-Fix mitgenommen werden. Keine Engineänderung erforderlich.
+
+### 7.1 Version, Diff und Prüfgrenzen
+
+Produktbranch `2449990b74bb24c490dc7189d385ebc44f5d3827` → [`2a8b54e45a48ef525b69d62edb826fd3a2b77cbc`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/2a8b54e45a48ef525b69d62edb826fd3a2b77cbc): **ein Fast-Forward-Commit, null zurück**, Änderung nur an `npc_pulse.mjs`, `run_live.mjs`, `batch.mjs`, zwei neuen Regressionstests, einer bestehenden Testfixture und `docs/LIVE_RUNNER.md`. Engineversion und E2/E3/PULSE-Spielregeln bleiben `.174`; natürliche Modellantworten wurden noch nicht erhoben.
+
+**Selbständig geprüft:** Diff, vollständige neue Karten- und Fehlerpfadtests sowie die betroffenen tatsächlich gepushten Funktionen. Die aus dem Produktcode übernommenen aktuellen `engineBlock`/`cardLines`/`carried`/`anchorOn`/`agreementOn`-Funktionen wurden in einer isolierten Node-Gegenprobe mit **6/6** erwarteten Entscheidungen ausgeführt: voller Anker, gekappter Anker, fremde Karte, ältere Promptworte, volle Absprache und gekürzte Absprache. Zusätzlich die Batchabschlussprädikate gegen einen `no_result`-Fall isoliert ausgeführt. **Keine** erneute Gesamt-Node-Suite, kein vollständiger echter ST-Host und kein natürliches Providerexperiment durch GPT. Die von Sol berichteten vollständigen Tests stehen unten getrennt.
+
+### 7.2 P2-A: Karten-/Abrufmessung – geschlossen
+
+- `engineBlock()` nimmt den letzten mit `[AVERETH ENGINE — authoritative game state` beginnenden Block aus einem Erzählerrequest; frühere Nachrichten und `FACT REPORT REQUEST` zählen nicht. `cardLines()` bindet Kopf und Zusatzzeilen an die konkrete NPC-ID.
+- `carried()` verlangt den **gesamten** gespeicherten Feldwert und eine Feldgrenze; ein durch `…` abgeschnittener korrekter Präfix wird als **`partial`** und niemals als `full` eingestuft. Das trennt die E3-Budgetgrenze von tatsächlicher vollständiger Auslieferung. Auch persönliche offene Absprachen werden so abgeglichen; `settled` zählt nicht als offene Absprache.
+- Die Bewertung prüft die folgenden Narratorrequests weiter, bis der Wert vollständig ausgeliefert oder abgelöst bzw. erledigt ist. Bei fehlenden Requests bleibt `unknown`; die 28 Ziele und die Trennung von Beobachtung, Semantikreview und Regelverletzung bleiben.
+- Die neuen Tests enthalten Host-generierte Karrieren und konstruierte Request-Gegenfälle; eine freie Erzählerbefolgung ist damit **nicht** belegt.
+
+**Kein weiterer verpflichtender Befund im Kern von P2-A** aus dieser Nachprüfung.
+
+### 7.3 P2-B: Fehleranzeige – für archivierte Läufe geschlossen, P3-Randfall
+
+- `run_live.mjs` versieht `run.json.analysis` mit `ok:true` oder `ok:false` und Fehlertext. Ein Fehler erscheint prominent im Einzelbericht; Originalchat, Events und Completionexports werden weiterhin abgelegt. Dateischreibfehler setzen ebenfalls den Fehlstatus.
+- `batch.mjs` prüft bei vorhandenem Laufordner die Pflichtdateien und den Fehlstatus. Fehlt die Auswertung, zeigt die Batchzeile den Befund und der Abschluss lautet **`analysis_incomplete`**, nicht `completed`.
+- **Verbleibender P3-Gegenfall:** `readResult()` gibt bei fehlendem `run.json` `{end:{kind:'no_result'}}` **ohne `runDir`** zurück. `withoutAnalysis()` zählt nur `r.runDir && r.analysisOk === false`. Der NPC-Batch hat zwei Profile; sein Infrastruktur-Stopp greift erst nach **drei** aufeinanderfolgenden Fehlern. Daher ergibt ein normal archivierter erfolgreicher erster Lauf plus `no_result` beim zweiten **`completed`**, ebenso zwei `no_result`-Läufe. Diese Schlussfolgerung wurde mit den exakten Abschlussprädikaten isoliert in Node nachvollzogen. Die Einzelzeile meldet zwar `no_result`, aber die Gesamtmarkierung widerspricht der neuen Aussage „completed = beide mit Auswertung“. **Kein Daten-/Enginefehler und bei vollständigem Laufarchiv kein Messverlust.**
+
+**Enger Restfix bei nächster Runnerpflege:** `withoutAnalysis`/`analysisOk` auch auf gestartete, abgeschlossene `no_result`-Läufe anwenden; `pending` nach Abbruch nicht irrtümlich als fehlende Auswertung zählen. Ein negativer Batchtest `done + no_result` und `no_result + no_result` reicht. Keine neue Kontrollarchitektur und kein Spielcodepatch.
+
+### 7.4 Testergebnisse (Implementiererbericht, nicht neue GPT-Vollausführung)
+
+- Fünf neue Regressionen auf `2449990` laut Sol **5/5 rot an den Befunden**, nach Patch **5/5 grün**; Runner-Suite **161/161**, gesamte Node-Suite **2989/2989**.
+- Echter ST1.19-**Stub**-Zweierbatch: beide Profile mit `analysis.ok=true`, zwei Auswertungsdateien, verlinkten Berichten, unverändertem Profil und sauberem Geheimnisscan. Keine echten Modellantworten, kein natürlicher NPC-/PULSE-Nachweis.
+- Historischer `selftest.mjs` laut Sol weiterhin **49/51** mit denselben zwei bereits auf `.174` rot gebliebenen Levelguide-Prüfungen; getrennt von diesem Patch.
+
+### 7.5 Konsequenz
+
+**Empfehlung: zuerst einen begrenzten natürlichen Einzelpilotlauf** mit dem bestehenden Guide und etwa 25 Eingaben (bspw. `npm run live:st -- --guide npc_pulse_test --scenario npc-sociable --max-turns 25 --headed`). Der erwartete Endgrund ist dann `limit`, **nicht** eine bestandene 70-Zug-Abnahme. Zuerst die tatsächliche Auslieferung/Erfassung der NPC-/PULSE-Messpunkte und den Export prüfen. Die vollständige Zweierserie danach separat freigeben; den genannten P3-Auswertungsstatus-Randfall vorher oder bei passender Runnerpflege minimal korrigieren. Weder ein weiterer Enginepatch noch E4/E5 oder PULSE-D sind dadurch freigegeben.

@@ -12,7 +12,7 @@ import { foldChat } from '../../src/host.js';
 
 const f = JSON.parse(zlib.gunzipSync(fs.readFileSync(new URL('../../tests/v4/fixtures/user04_qol159.json.gz', import.meta.url))));
 const SEED = 71; // I0–I70: at the inn
-const HALL = 'loc.alderwatch.guild_hall', CLERKS = 'npc.npcguild_clerks';
+const HALL = 'loc.alderwatch.guild_hall', CLERKS = 'npc.npcguild_clerks', BOW = 'npc.npcbench_crossbowman';
 const INN = foldChat(structuredClone(f.chat), SEED).state.scene.at;
 const WORD = 'The clerk promised to put in a word for Alaric with the quartermaster';
 const arrive = (at) => ({ seq: 1, type: 'arrive', at, with: null, forced_by: null, scene: null });
@@ -22,6 +22,10 @@ export const npc172Turns = [
         reply: 'Alaric crossed into the Guild hall. The clerk at the long counter looked up, heard him out and promised to put in a word for him with the quartermaster.',
         answer: { scene: HALL, expected: { 1: { arrived: true, at: HALL, with: null, met: [{ who: CLERKS, evidence: 'The clerk at the long counter looked up' }] } },
             deltas: [arrive(HALL), { seq: 2, type: 'thread', id: null, text: WORD, kind: 'promise', status: 'open', resolution: null, who: ['pc', CLERKS], scene: null }] } },
+    // .173 (GPT review of .172, P2): the clerk's promise to the crossbowman in almost Alaric's words stays theirs
+    { key: 'npc173npc', player: '*I watch the clerk deal with the crossbowman*', plan: { commands: [] },
+        reply: 'The stocky crossbowman leaned on the long counter; the clerk promised to put in a word for him with the quartermaster as well.',
+        answer: { scene: 'here', expected: {}, deltas: [{ seq: 1, type: 'thread', id: null, text: 'The clerk promised to put in a word for the crossbowman with the quartermaster', kind: 'promise', status: 'open', resolution: null, who: [CLERKS, BOW], scene: null }] } },
     { key: 'npc172out', player: '*I head back to the inn for now*', plan: go(INN, 'I head back to the inn for now'),
         reply: 'Alaric walked back to the inn for now and took a seat by the hearth.',
         answer: { scene: INN, expected: { 1: { arrived: true, at: INN, with: null, met: null } }, deltas: [arrive(INN)] } },
@@ -66,6 +70,17 @@ export async function npc172Smoke({ page, send, idle, calls, onReload, out }) {
     const a = await play('npc172promise');
     checks.promiseBound = word(a.st).length === 1 && JSON.stringify(word(a.st)[0].who) === JSON.stringify(['pc', CLERKS]) && word(a.st)[0].status === 'open'
         && a.st.present.includes(CLERKS) && !a.st.errors.length && a.st.extraction === 'applied';
+    // 1b. .173: an agreement of the clerk with the crossbowman in almost the same words is its own thread; #npc shows
+    // Alaric's one agreement with her only
+    const n = await play('npc173npc');
+    const theirs = Object.values(n.st.threads).filter((t) => /for the crossbowman/.test(t.text));
+    await send('#npc clerk'); await idle();
+    const npcPanel = await page.evaluate(() => { const c = SillyTavern.getContext().chat; return String(c.at(-1)?.mes || ''); });
+    const open = ((l) => { const i = l.indexOf('Open between you:'); const out = []; for (let k = i + 1; i >= 0 && k < l.length && l[k].startsWith('- '); k++) out.push(l[k]); return out; })(npcPanel.split('\n'));
+    checks.npcAgreementSeparate = word(n.st).length === 1 && JSON.stringify(word(n.st)[0].who) === JSON.stringify(['pc', CLERKS])
+        && theirs.length === 1 && JSON.stringify(theirs[0].who) === JSON.stringify([CLERKS, BOW]) && !n.st.errors.length && n.st.extraction === 'applied';
+    checks.npcPanelOnlyHis = JSON.stringify(open) === JSON.stringify([`- ${WORD}`]);
+    evidence.push({ key: 'npc173panel', panel: npcPanel.split('\n').slice(0, 12) });
     // 2. back to the inn, then the return: her card NOT YET SHOWN with the agreement; KNOWN AT trimmed for the narrator only
     const b = await play('npc172out');
     // one arrival card (the innkeeper): the other slot stays with the clerk he leaves, with their agreement on it

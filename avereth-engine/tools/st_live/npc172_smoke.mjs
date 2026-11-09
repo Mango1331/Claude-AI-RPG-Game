@@ -15,6 +15,7 @@ const SEED = 71; // I0–I70: at the inn
 const HALL = 'loc.alderwatch.guild_hall', CLERKS = 'npc.npcguild_clerks', BOW = 'npc.npcbench_crossbowman';
 const INN = foldChat(structuredClone(f.chat), SEED).state.scene.at;
 const WORD = 'The clerk promised to put in a word for Alaric with the quartermaster';
+const MANNER = 'brisk with idlers, patient with newcomers'; // NPC E3 (.174): a lasting manner shown in a later encounter
 const arrive = (at) => ({ seq: 1, type: 'arrive', at, with: null, forced_by: null, scene: null });
 const go = (to, quote) => ({ commands: [{ seq: 1, type: 'go', to, quote, within: null }] });
 export const npc172Turns = [
@@ -32,10 +33,14 @@ export const npc172Turns = [
     { key: 'npc172back', player: '*I return to the Guild hall for the clerk*', plan: go(HALL, 'I return to the Guild hall for the clerk'),
         reply: 'Alaric returned to the Guild hall. The clerk at the long counter waved him over: the quartermaster had heard his name, as she had promised.',
         answer: { scene: HALL, expected: { 1: { arrived: true, at: HALL, with: null, met: [{ who: CLERKS, evidence: 'The clerk at the long counter waved him over' }] } },
-            deltas: [arrive(HALL), { seq: 2, type: 'thread', id: null, text: WORD, kind: 'promise', status: 'resolved', resolution: 'the clerk put in the word with the quartermaster', who: null, scene: null }] } },
+            deltas: [arrive(HALL), { seq: 3, type: 'fact', s: CLERKS, p: 'manner', o: MANNER, scene: null }, { seq: 2, type: 'thread', id: null, text: WORD, kind: 'promise', status: 'resolved', resolution: 'the clerk put in the word with the quartermaster', who: null, scene: null }] } },
     { key: 'npc172thanks', player: '*I thank the clerk for the word with the quartermaster*', plan: { commands: [] },
         reply: 'Alaric thanked the clerk; she shrugged it off with a small smile and went back to her ledger.',
-        answer: { scene: 'here', expected: {}, deltas: [] } },
+        answer: { scene: 'here', expected: {}, deltas: [{ seq: 1, type: 'fact', s: CLERKS, p: 'manner', o: 'furious tonight', scene: null }] } },
+    { key: 'npc174porter', player: '*I watch the porter who just came in*', plan: { commands: [] },
+        reply: 'A broad porter with a rope over his shoulder came in and spoke slowly to the clerk, every word weighed.',
+        answer: { scene: 'here', expected: {}, deltas: [{ seq: 1, type: 'person.new', ref: 'porter', name: null, role: 'porter', desc: ['broad porter with a rope over his shoulder'], armed: null, present: true, relevant: true, threat: false, at: HALL, band: 'SHORT', distinct_from: null, scene: null },
+            { seq: 2, type: 'fact', s: 'porter', p: 'voice', o: 'slow, every word weighed', scene: null }] } },
 ];
 const allText = (request) => (request?.messages || []).map((m) => String(m.content)).join('\n');
 
@@ -48,8 +53,9 @@ export async function npc172Smoke({ page, send, idle, calls, onReload, out }) {
         const { foldChat, rec } = await import('/scripts/extensions/third-party/avereth-engine/src/host.js');
         const chat = SillyTavern.getContext().chat, folded = foldChat(chat), s = folded.state;
         const r = chat.at(-1)?.is_user ? null : rec(chat.at(-1));
-        return { errors: folded.errors, present: s.scene.present, at: s.scene.at, threads: s.threads, coin: s.entities.pc.sheet.coin_cp,
-            replyEvents: (r?.events || []).map((e) => ({ t: e.t, d: ['thread.set', 'scene.entered'].includes(e.t) ? e.d : null })),
+        return { errors: folded.errors, present: s.scene.present, at: s.scene.at, threads: s.threads, coin: s.entities.pc.sheet.coin_cp, since: s.scene.since || null,
+            anchors: Object.values(s.facts).filter((f) => ['voice', 'manner', 'interest'].includes(f.p) && !f.until).map((f) => [f.s, f.p, f.o]),
+            replyEvents: (r?.events || []).map((e) => ({ t: e.t, d: ['thread.set', 'scene.entered', 'fact.asserted', 'delta.rejected'].includes(e.t) ? e.d : null })),
             context: r?.narration?.context || null, extraction: r?.extraction?.status || null };
     });
     const checks = {}, evidence = [];
@@ -99,15 +105,26 @@ export async function npc172Smoke({ page, send, idle, calls, onReload, out }) {
     await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); await SillyTavern.getContext().reloadCurrentChat(); });
     onReload(); await page.waitForTimeout(800);
     const re = await snapshot();
+    // NPC E3 (.174): the clerk's manner, shown in this later encounter, is her anchor; the presence span is derived
+    checks.anchorLaterEncounter = c.st.replyEvents.some((e) => e.t === 'fact.asserted' && e.d.fact.s === CLERKS && e.d.fact.p === 'manner' && e.d.fact.o === MANNER)
+        && c.st.since?.[CLERKS] > a.st.since?.[CLERKS];
+    checks.anchorSaveReload = !re.errors.length && JSON.stringify(re.since) === JSON.stringify(c.st.since) && JSON.stringify(re.anchors) === JSON.stringify(c.st.anchors);
     checks.saveReload = !re.errors.length && JSON.stringify(re.threads) === JSON.stringify(c.st.threads) && JSON.stringify(re.present) === JSON.stringify(c.st.present);
     // 5. a regenerated reply (swipe): one settlement with its parties, the same arrival card ids
     await page.evaluate(() => document.querySelector('#chat .last_mes .swipe_right')?.click()); await page.waitForTimeout(400); await idle();
     const sw = await snapshot();
+    checks.anchorRegenerateOnce = sw.replyEvents.filter((e) => e.t === 'fact.asserted' && e.d.fact.p === 'manner').length === 1 && JSON.stringify(sw.anchors) === JSON.stringify(c.st.anchors);
     checks.regenerateOneSettlement = !sw.errors.length && word(sw).length === 1 && word(sw)[0].status === 'resolved' && JSON.stringify(word(sw)[0].who) === JSON.stringify(['pc', CLERKS])
         && sw.replyEvents.filter((e) => e.t === 'thread.set').length === 1 && JSON.stringify(sw.context?.arrivalNpcIds || null) === JSON.stringify(c.st.context?.arrivalNpcIds || null);
     // 6. the next turn: her card says settled, nothing open between them
     const d = await play('npc172thanks');
     checks.settledCard = d.narr.some((l) => /between you: settled — The clerk promised to put in a word/.test(l)) && !d.narr.some((l) => /open between you:/.test(l)) && !d.st.errors.length;
+    // NPC E3: the card head shows the anchor; a mood is none; a new porter's voice at the first contact is none
+    checks.anchorOnCard = d.narr.some((l) => l.startsWith('• ') && l.includes(`[${CLERKS}]`) && l.includes(`manner: ${MANNER}`));
+    checks.anchorMoodRefused = d.st.replyEvents.some((e) => e.t === 'delta.rejected' && e.d.rule === 'anchor_mood') && JSON.stringify(d.st.anchors) === JSON.stringify(c.st.anchors);
+    const p = await play('npc174porter');
+    checks.anchorFirstContact = p.st.replyEvents.some((e) => e.t === 'delta.rejected' && e.d.rule === 'anchor_first_contact') && !p.st.anchors.some((x) => x[1] === 'voice' && /every word weighed/.test(x[2]))
+        && !p.st.errors.length && p.st.extraction === 'applied';
     fs.writeFileSync(path.join(out, 'npc172_requests.json'), JSON.stringify(evidence, null, 2));
     return checks;
 }

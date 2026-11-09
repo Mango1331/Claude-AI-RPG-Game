@@ -1,0 +1,861 @@
+{
+ "runId": "20261109-160250Z-npc_pulse_test",
+ "build": "4.3.0-c.6.6.174",
+ "git": {
+  "commit": "2a8b54e45a48",
+  "branch": "claude/c-planner-prototype-2026-10-02-gpt-c666",
+  "dirty": []
+ },
+ "scenario": {
+  "id": "npc-sociable",
+  "focus": "npc",
+  "baseClass": "Warrior"
+ },
+ "stub": false,
+ "seed": 158018991,
+ "fixture": null,
+ "fixtureReload": null,
+ "persona": "warm, curious and sociable: you seek out people, ask about their work and lives and follow up on it later; you readily offer help or ask capable people to come along, and accept a refusal gracefully; you still judge people by how they act and keep your guard up with anyone who threatens you",
+ "guide": {
+  "id": "npc_pulse_test",
+  "chain": [
+   "npc_pulse_test"
+  ],
+  "files": [
+   "tools\\st_live\\live\\guides\\npc_pulse_test.json"
+  ]
+ },
+ "end": {
+  "kind": "done",
+  "why": null
+ },
+ "analysis": {
+  "id": "npc_pulse",
+  "ok": true,
+  "files": [
+   "npc-pulse.json",
+   "npc-pulse.md"
+  ]
+ },
+ "timing": {
+  "totalMs": 4527837,
+  "stStartMs": 29642,
+  "setupMs": 44453,
+  "turns": 70,
+  "gameMs": 3920727,
+  "decideMs": 526933
+ },
+ "preflight": {
+  "endpoint": "http://127.0.0.1:5050/v1/models",
+  "reachable": true,
+  "status": 200,
+  "models": [
+   "Qwen/Qwen3.8-27B",
+   "zai-org/GLM-5.3-Flash",
+   "zai-org/GLM-5.3",
+   "deepseek-ai/DeepSeek-V4.1-Flash",
+   "deepseek-ai/DeepSeek-V4-Pro",
+   "moonshotai/Kimi-K2.6"
+  ],
+  "found": true,
+  "error": null
+ },
+ "route": {
+  "profile": {
+   "source": "custom",
+   "via": "custom_url",
+   "url": "http://127.0.0.1:5050/v1",
+   "model": "zai-org/GLM-5.3-Flash",
+   "key": "secrets.json api_key_custom"
+  },
+  "runner": {
+   "source": "custom",
+   "via": "custom_url",
+   "url": "http://127.0.0.1:5050/v1",
+   "model": "zai-org/GLM-5.3-Flash",
+   "key": "secrets.json api_key_custom"
+  },
+  "same": true,
+  "differences": [],
+  "reverseProxy": null,
+  "proxyPassword": false,
+  "proxyPresets": true
+ },
+ "player": {
+  "type": "llm",
+  "reasoning": {
+   "body": {
+    "reasoning_effort": "low",
+    "clear_thinking": true
+   },
+   "source": "profile",
+   "keys": [
+    "reasoning_effort",
+    "clear_thinking"
+   ],
+   "note": "as the game's own requests carry them (custom_include_body and the preset's reasoning_effort), same endpoint and model"
+  },
+  "probe": {
+   "ok": true,
+   "status": 200,
+   "finish": "stop",
+   "content": "OK",
+   "reasoningChars": 0,
+   "error": null
+  },
+  "dropped": null
+ },
+ "setup": {
+  "card": "Avereth Engine Test v4",
+  "greeting": "profile",
+  "world": "Avereth World Lore v0.14",
+  "preset": "Avereth Narrator V4",
+  "source": "custom",
+  "via": "custom_url",
+  "model": "zai-org/GLM-5.3-Flash",
+  "stream": false,
+  "host": "127.0.0.1:5050"
+ },
+ "conn": {
+  "mainApi": "openai",
+  "source": "custom",
+  "url": "http://127.0.0.1:5050/v1",
+  "model": "zai-org/GLM-5.3-Flash",
+  "stream": false,
+  "preset": "Avereth Narrator V4",
+  "connected": true,
+  "status": "Status check bypassed"
+ },
+ "chatId": "Avereth Live 20261109-160250Z-npc_pulse_test",
+ "safeContinuations": 2,
+ "turns": [
+  {
+   "turn": 1,
+   "text": "I choose Warrior.",
+   "decideMs": 2253,
+   "ok": true,
+   "ms": 2873,
+   "replyMs": 415,
+   "outcome": "engine",
+   "milestone": "creation_complete"
+  },
+  {
+   "turn": 2,
+   "text": "I pick Heavy Slash and Guard.",
+   "decideMs": 1560,
+   "ok": true,
+   "ms": 2759,
+   "replyMs": 298,
+   "outcome": "engine",
+   "milestone": "creation_complete"
+  },
+  {
+   "turn": 3,
+   "text": "I walk along the road into Ashbridge and look for the Adventurers' Guild.",
+   "decideMs": 19962,
+   "ok": true,
+   "ms": 81342,
+   "replyMs": 43258,
+   "outcome": "story",
+   "milestone": "guild_registered"
+  },
+  {
+   "turn": 4,
+   "text": "I approach the front desk and greet the clerk. \"Morning. I'm new in town — I'd like to register with the Guild as an adventurer.\"",
+   "decideMs": 14825,
+   "ok": true,
+   "ms": 84577,
+   "replyMs": 67583,
+   "outcome": "story",
+   "milestone": "guild_registered"
+  },
+  {
+   "turn": 5,
+   "text": "\"Yes, still want it.\" I put two silver on the desk and give her my name: Alaric.",
+   "decideMs": 1919,
+   "ok": true,
+   "ms": 64216,
+   "replyMs": 41958,
+   "outcome": "story",
+   "milestone": "guild_registered"
+  },
+  {
+   "turn": 6,
+   "text": "I walk to the contract board and read the notices pinned at the low rows.",
+   "decideMs": 3455,
+   "ok": true,
+   "ms": 65307,
+   "replyMs": 59679,
+   "outcome": "story",
+   "milestone": "guild_registered"
+  },
+  {
+   "turn": 7,
+   "text": "I take the Millpond Gnasher notice to the desk and show my Guild plate. \"I'd like to accept this one, please. The dog at Widow Hessa's millpond.\"",
+   "decideMs": 2231,
+   "ok": true,
+   "ms": 44016,
+   "replyMs": 22551,
+   "outcome": "story",
+   "milestone": "quest_completed"
+  },
+  {
+   "turn": 8,
+   "text": "\"Thanks. I'll be back with the slip.\" I head out of the Guild and follow the millrace path south toward Widow Hessa's millpond.",
+   "decideMs": 7077,
+   "ok": true,
+   "ms": 44832,
+   "replyMs": 22531,
+   "outcome": "story",
+   "milestone": "quest_completed"
+  },
+  {
+   "turn": 9,
+   "text": "I look for the farmhouse near the pasture and approach it to ask the farmer's leave to cross his field around the flood.",
+   "decideMs": 4320,
+   "ok": true,
+   "ms": 55782,
+   "replyMs": 27485,
+   "outcome": "story",
+   "milestone": "quest_completed"
+  },
+  {
+   "turn": 10,
+   "text": "I lift the twine latch, go through the gate, and follow the track toward the farmhouse with the chimney smoke.",
+   "decideMs": 6764,
+   "ok": true,
+   "ms": 65293,
+   "replyMs": 18018,
+   "outcome": "story",
+   "milestone": "quest_completed"
+  },
+  {
+   "turn": 11,
+   "text": "\"Right you are — the flood's over the path. I'm after a gnasher at Widow Hessa's millpond, Guild business. May I cross your pasture to get around the water? I'd be careful with your sheep.\"",
+   "decideMs": 9319,
+   "ok": true,
+   "ms": 64522,
+   "replyMs": 33250,
+   "outcome": "story",
+   "milestone": "quest_completed"
+  },
+  {
+   "turn": 12,
+   "text": "\"Thank you, Bren — I'll mind the latch. Good luck with the sheep.\" I head back down the track, through the gate, and follow it toward the millpond's south end to look for the gnasher in the reeds.",
+   "decideMs": 18275,
+   "ok": true,
+   "ms": 46747,
+   "replyMs": 30326,
+   "outcome": "story",
+   "milestone": "quest_completed"
+  },
+  {
+   "turn": 13,
+   "text": "I draw my sword and advance slowly along the wallowed path toward the reeds where the sound sits.",
+   "decideMs": 20228,
+   "ok": true,
+   "ms": 55692,
+   "replyMs": 31218,
+   "outcome": "story",
+   "milestone": "quest_completed"
+  },
+  {
+   "turn": 14,
+   "text": "I meet its charge with a Heavy Slash as it crosses the mud.",
+   "decideMs": 4514,
+   "ok": true,
+   "ms": 34988,
+   "replyMs": 20899,
+   "outcome": "story",
+   "milestone": "quest_completed"
+  },
+  {
+   "turn": 15,
+   "text": "I cross back through Bren's pasture and take the track toward the mill to tell Widow Hessa her gnasher is dead, then head for the Guild hall to turn in the slip.",
+   "decideMs": 4713,
+   "ok": true,
+   "ms": 73642,
+   "replyMs": 36936,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 16,
+   "text": "\"You're in luck, friend — the beast's dead. I killed it at the reed banks not half an hour past.\" I show him one of the fangs as proof. \"Name's Alaric Red. Who might you be, and where's all that hazel bound?\"",
+   "decideMs": 19482,
+   "ok": true,
+   "ms": 32160,
+   "replyMs": 18775,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 17,
+   "text": "\"Big as a calf, near enough — you can tell it as big as a barn and I'll only wince a little. I'll take that ride, Dodd, thank you.\" I climb into the cart bed. \"One stop first, though: Widow Hessa's mill is just there, and she sent for the Guild — I'd rather tell her the beast's dead myself than let her hear it from Tam.\"",
+   "decideMs": 7276,
+   "ok": true,
+   "ms": 74884,
+   "replyMs": 44175,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 18,
+   "text": "\"It's dead, mistress — killed at the reed banks not an hour past, and I've the fang to prove it. I'm sorry it took your gander first.\"",
+   "decideMs": 15075,
+   "ok": true,
+   "ms": 61386,
+   "replyMs": 50207,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 19,
+   "text": "I accept the bread and butter with a bow of my head. \"Thank you, mistress — I'll think kindly of this parish. Dodd's giving me a lift into Ashbridge, so I'll leave you to your peace.\" I climb back into the cart and ask Dodd to take us toward the city and the Guild hall.",
+   "decideMs": 4811,
+   "ok": true,
+   "ms": 50520,
+   "replyMs": 29925,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 20,
+   "text": "I step down from the cart, sword out, and put myself between the dogs and Dodd's horse. \"Get the cart turned slow, Dodd — I'll hold them here.\" I meet the lead dog's charge with a Heavy Slash.",
+   "decideMs": 2119,
+   "ok": true,
+   "ms": 55620,
+   "replyMs": 44699,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 21,
+   "text": "I finish the lead dog with a Basic Attack.",
+   "decideMs": 2070,
+   "ok": true,
+   "ms": 28301,
+   "replyMs": 15734,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 22,
+   "text": "#assign VIT 2 AGI 2 WIL 1",
+   "decideMs": 3555,
+   "ok": true,
+   "ms": 2766,
+   "replyMs": 309,
+   "outcome": "system",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 23,
+   "text": "I climb back onto the cart, pressing Dodd's rag to my thigh. \"On to Ashbridge, then — Guild hall first, bandage after, just as you say. Thank you for stopping back there, Dodd.\"",
+   "decideMs": 2866,
+   "ok": true,
+   "ms": 74143,
+   "replyMs": 58175,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 24,
+   "text": "I thank Dodd and climb down at the square, then walk to the green Guild doors and turn in the Millpond Gnasher contract.",
+   "decideMs": 2073,
+   "ok": true,
+   "ms": 22425,
+   "replyMs": 11985,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 25,
+   "text": "I pocket the coins and walk over to the board, reading the fresh listings.",
+   "decideMs": 3857,
+   "ok": true,
+   "ms": 26526,
+   "replyMs": 19064,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 26,
+   "text": "I ask the clerk to accept the Clear Mossback Warrens Level 1 contract, and check it shows ACTIVE before I leave.",
+   "decideMs": 5320,
+   "ok": true,
+   "ms": 28677,
+   "replyMs": 14096,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 27,
+   "text": "I take the slip and ask the clerk, \"Any Primer of Guard left? I'll take one at 80 coppers.\"",
+   "decideMs": 2654,
+   "ok": true,
+   "ms": 28701,
+   "replyMs": 16206,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 28,
+   "text": "I thank the clerk and head to the money changer on the market row to break a silver into coppers.",
+   "decideMs": 4084,
+   "ok": true,
+   "ms": 31653,
+   "replyMs": 19135,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 29,
+   "text": "\"I'll take it all — one silver for ninety-seven coppers,\" I say, and accept the trade.",
+   "decideMs": 2480,
+   "ok": true,
+   "ms": 48816,
+   "replyMs": 34726,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 30,
+   "text": "\"Ninety-five, then — done,\" I say, and hand over the silver for the coppers.",
+   "decideMs": 2745,
+   "ok": true,
+   "ms": 51650,
+   "replyMs": 27022,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 31,
+   "text": "I head back to the Guild hall and tell the clerk, \"Here's eighty coppers for the Primer of Guard,\" handing over the coin and taking the book if the trade goes through.",
+   "decideMs": 28887,
+   "ok": true,
+   "ms": 65792,
+   "replyMs": 60176,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 32,
+   "text": "#status",
+   "decideMs": 3873,
+   "ok": true,
+   "ms": 2780,
+   "replyMs": 317,
+   "outcome": "system",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 33,
+   "text": "I leave the money changer and walk back through the market crowd to the Guild hall, looking for the clerk with the brown-covered Primer.",
+   "decideMs": 23394,
+   "ok": true,
+   "ms": 38669,
+   "replyMs": 22719,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 34,
+   "text": "I nod to the clerk. \"Yes, the Primer — here's eighty coppers.\" I hand over the coin and take the book if the trade goes through.",
+   "decideMs": 3931,
+   "ok": true,
+   "ms": 149954,
+   "replyMs": 47712,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 35,
+   "text": "I offer her a feral dog pelt toward the price and ask if she'd take it, or whether I should sell it first.",
+   "decideMs": 18634,
+   "ok": true,
+   "ms": 44849,
+   "replyMs": 29395,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 36,
+   "text": "I head to tannery row, find Harl's shop with the stretched-hide sign, and ask what he'd pay for my feral dog pelt — and the millpond pelt, if he deals in those too.",
+   "decideMs": 8432,
+   "ok": true,
+   "ms": 58234,
+   "replyMs": 24637,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 37,
+   "text": "I smile and accept the loaves and dripping. \"Thank you — that's kind of you, and Tam's right to share. Was anyone hurt, or just the goose?\" Then, if the conversation allows, I walk on to Harl's tannery and ask what he'd pay for my feral dog pelt and the millpond pelt.",
+   "decideMs": 8652,
+   "ok": true,
+   "ms": 119678,
+   "replyMs": 100290,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 38,
+   "text": "\"Fourteen for the pair works — done,\" I say, and accept the coppers once Harl pays.",
+   "decideMs": 2138,
+   "ok": true,
+   "ms": 40060,
+   "replyMs": 37604,
+   "outcome": "soft_continued",
+   "softFailure": "sell seq 1: the price words \"Fourteen\" carry no single amount in his message (currency_missing); quote exactly his one price, or set price_evidence to null",
+   "unresolvedActions": null,
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 39,
+   "text": "\"Fourteen for the pair works — done,\" I say to Harl, and hold out my hand for the coppers.",
+   "decideMs": 8150,
+   "ok": true,
+   "ms": 194320,
+   "replyMs": 186294,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 40,
+   "text": "I take the fourteen coppers off the counter and hand Harl both hides.",
+   "decideMs": 2426,
+   "ok": true,
+   "ms": 28248,
+   "replyMs": 21509,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 41,
+   "text": "With the pelt money in hand, I head back to the shop with the Primer and buy it if I now have enough.",
+   "decideMs": 3980,
+   "ok": true,
+   "ms": 196699,
+   "replyMs": 177902,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 42,
+   "text": "I ask the shopkeeper to take the Primer out of the case so I can buy it.",
+   "decideMs": 2638,
+   "ok": true,
+   "ms": 23255,
+   "replyMs": 13656,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 43,
+   "text": "I thank the shopkeeper, tuck the wrapped Primer away, and head for the Guild hall to look over the Mossback Warrens contract before the day gets late.",
+   "decideMs": 7907,
+   "ok": true,
+   "ms": 47212,
+   "replyMs": 26005,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 44,
+   "text": "\"Thanks — the cairn with the red band, quarter mile before the well, track north. Got it. Before I go: Muller promised copper for the gnasher kill — any word on where I'd find him, or does he owe me still?\"",
+   "decideMs": 11604,
+   "ok": true,
+   "ms": 40460,
+   "replyMs": 20700,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 45,
+   "text": "I head to the Woolpack by the south gate and look for Muller to ask about the copper he promised me for the gnasher fangs.",
+   "decideMs": 22143,
+   "ok": true,
+   "ms": 51284,
+   "replyMs": 28942,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 46,
+   "text": "I walk over to Muller's bench by the hearth. \"Evening — you posted the gnasher cull this morning. Name's Alaric Red; I took the beast. You mentioned extra copper for the fangs, and I've still got them.\"",
+   "decideMs": 3089,
+   "ok": true,
+   "ms": 43785,
+   "replyMs": 29362,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 47,
+   "text": "I lay both gnasher fangs on the table in front of him. \"There you are — both whole. Have a look.\"",
+   "decideMs": 5030,
+   "ok": true,
+   "ms": 33929,
+   "replyMs": 21817,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 48,
+   "text": "I take the purse and count out the four copper, leaving the rest, and pocket my fangs' payment. \"Fair dealt, Muller. Beast won't trouble your ewes again.\"",
+   "decideMs": 3906,
+   "ok": true,
+   "ms": 23678,
+   "replyMs": 17061,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 49,
+   "text": "I pocket the copper and give Muller a nod. \"Thanks for the warning about the ford. The warrens I'm after lie west of the red-band cairn — any word on the road that way, or is it just the ford that's foul?\"",
+   "decideMs": 5499,
+   "ok": true,
+   "ms": 76227,
+   "replyMs": 38695,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 50,
+   "text": "I turn to the carter. \"Alone, aye — for now. Quiet roads and running shepherds are worth hearing more about. Which way were you headed when you passed the cairn, and are you going back that way soon?\"",
+   "decideMs": 5783,
+   "ok": true,
+   "ms": 70523,
+   "replyMs": 40577,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 51,
+   "text": "\"A seat at first light suits me — I'd rather walk that road dry-rested with company than rush it now. I'll have a look at the cairn's red band for you. Until then, I'm for a room and a meal here.\" I ask the serving woman if the Woolpack has a bed for the night and what it costs.",
+   "decideMs": 9322,
+   "ok": true,
+   "ms": 51400,
+   "replyMs": 34993,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 52,
+   "text": "\"I'll take the bed and the mutton supper — that's five copper, aye?\" I pay her the five copper and take the key.",
+   "decideMs": 10489,
+   "ok": true,
+   "ms": 87851,
+   "replyMs": 61273,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 53,
+   "text": "\"Five copper for bed and supper, then — I'll take it.\" I count out five copper and hand them to her, then take the key from the nail.",
+   "decideMs": 2853,
+   "ok": true,
+   "ms": 18998,
+   "replyMs": 16556,
+   "outcome": "engine",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 54,
+   "text": "\"Aye — three copper for the bed, and two more for the mutton supper, as you named it.\" I pay her three copper for the bed and two copper for the supper, then take the key from the nail.",
+   "decideMs": 12982,
+   "ok": true,
+   "ms": 18481,
+   "replyMs": 16032,
+   "outcome": "soft_continued",
+   "softFailure": "offer.accept seq 1: the price words \"three copper\" carry no single amount in his message (quote_not_found); quote exactly his one price, or set price_evidence to null",
+   "unresolvedActions": null,
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 55,
+   "text": "\"I'll take the bed for three copper, as you offered.\" I pay her the three copper for the bed and take the key from the nail.",
+   "decideMs": 3802,
+   "ok": true,
+   "ms": 235506,
+   "replyMs": 209514,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 56,
+   "text": "I settle by the hearth and ask the carter, \"That cairn's red band — weathered paint means travellers keep it fresh, aye? What should I look for if it's been left to fade?\"",
+   "decideMs": 12447,
+   "ok": true,
+   "ms": 52268,
+   "replyMs": 39740,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 57,
+   "text": "I wait for the supper bell, and when it rings I tell the serving woman, \"I'll take that mutton supper for two copper, as you said.\"",
+   "decideMs": 8345,
+   "ok": true,
+   "ms": 37780,
+   "replyMs": 17044,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 58,
+   "text": "I eat the stew and ask Muller, \"That copper the clerk mentioned you owed — I'd hear it from you. What happened at your millpond?\"",
+   "decideMs": 20468,
+   "ok": true,
+   "ms": 65378,
+   "replyMs": 34470,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 59,
+   "text": "\"You've said it plain enough, Muller — and I'm already bound for the warrens on a Guild contract. If I clear them, your carts come back. What I'd know is where along the millrace you've seen them, so I'm not walking in blind.\"",
+   "decideMs": 7144,
+   "ok": true,
+   "ms": 47952,
+   "replyMs": 31967,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 60,
+   "text": "I thank Muller for the sketch and the tracks advice, then tell him I'll take the carter's peat wagon at first light and see his road cleared. With that, I take myself up to the bed I paid for and sleep until morning.",
+   "decideMs": 4104,
+   "ok": true,
+   "ms": 48873,
+   "replyMs": 26952,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 61,
+   "text": "I eat the eggs and bread the serving woman has out, then head to the yard and greet the carter. \"Morning! Ready for that seat to the crossroads? I'll mind the cairn's red band on the way like you asked.\"",
+   "decideMs": 3153,
+   "ok": true,
+   "ms": 77688,
+   "replyMs": 32174,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 62,
+   "text": "I thank Torv and hop down at the cairn, then take Muller's road toward the mill, keeping an eye out for tracks and the flattened reed path along the overflow cut.",
+   "decideMs": 4593,
+   "ok": true,
+   "ms": 68321,
+   "replyMs": 23942,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 63,
+   "text": "\"Aye, that'll be me. Fetch your da — I'd hear how things stand at the warrens before I go out to the rocks.\"",
+   "decideMs": 2296,
+   "ok": true,
+   "ms": 50993,
+   "replyMs": 41395,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 64,
+   "text": "\"Point me to the Mossback rocks and that fence gap, and a hunk of your bread I'll take gladly. After that I'm out to the rocks while the sun's still high.\"",
+   "decideMs": 7109,
+   "ok": true,
+   "ms": 39522,
+   "replyMs": 15490,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 65,
+   "text": "I ready sword and shield-sense at the big warren mouth, then stoop in carefully, watching my footing on the mossy rock.",
+   "decideMs": 5919,
+   "ok": true,
+   "ms": 31521,
+   "replyMs": 19719,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 66,
+   "text": "I meet the nearest charging scout with a Heavy Slash.",
+   "decideMs": 9607,
+   "ok": true,
+   "ms": 46352,
+   "replyMs": 26566,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 67,
+   "text": "I advance on Goblin Scout A to close to ENGAGED, then Heavy Slash it.",
+   "decideMs": 4851,
+   "ok": true,
+   "ms": 60969,
+   "replyMs": 27983,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 68,
+   "text": "I finish Goblin Scout A with a Heavy Slash.",
+   "decideMs": 4091,
+   "ok": true,
+   "ms": 59912,
+   "replyMs": 53120,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 69,
+   "text": "I take a Basic Attack at Goblin Scout A to finish it off.",
+   "decideMs": 1760,
+   "ok": true,
+   "ms": 31864,
+   "replyMs": 11502,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  },
+  {
+   "turn": 70,
+   "text": "I Heavy Slash Goblin Scout B.",
+   "decideMs": 9620,
+   "ok": true,
+   "ms": 34646,
+   "replyMs": 26813,
+   "outcome": "story",
+   "milestone": "open_run_duration"
+  }
+ ],
+ "status": "Avereth Engine 4.3.0-c.6.6.174 | runtime v4 (LLM: custom endpoint) | turn 65 | mode combat | events 1076 | integrity: OK | last block ~1878 tokens | history: 121 older message(s) left out, 0 tracker block(s) removed | lore: World Info (Avereth World Lore v0.14) | narrator contract: current | last turn: engine 0.0 s (1 folds, 5 ms) · planner 2.0 s · narrator 24.4 s · extractor 4.9 s",
+ "toasts": [
+  {
+   "at": 1794240211898,
+   "kind": "info",
+   "text": "Rename ChatRenaming chat…",
+   "origin": "runner"
+  }
+ ],
+ "pageErrors": [],
+ "serverErrors": [
+  {
+   "at": 1794242809177,
+   "which": "err",
+   "line": "Generation failed AbortError: The operation was aborted."
+  }
+ ],
+ "notes": [
+  "Final saved-state integrity: OK (0 fold errors, 0 validation problems)."
+ ],
+ "protection": {
+  "unchanged": true
+ },
+ "secretHits": 0
+}

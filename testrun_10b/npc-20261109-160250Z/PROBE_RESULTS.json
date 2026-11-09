@@ -1,0 +1,179 @@
+{
+  "run": {
+    "id": "20261109-160250Z-npc_pulse_test",
+    "engine": "4.3.0-c.6.6.174",
+    "product_commit": "2a8b54e45a48",
+    "scenario": "npc-sociable",
+    "seed": 158018991,
+    "end": "done",
+    "note": "70-turn goal reached inside ongoing goblin fight"
+  },
+  "sources": {
+    "zip_bytes": 14298286,
+    "zip_sha256": "5bec029a12f418eea657b705e32e2f3555a9d00cea7a588e76f420e95c2a8449",
+    "tar_xz_bytes": 717732,
+    "tar_xz_sha256": "8a84430feb6557e82bbb1a86b7c4d1bb0007f715a002171a6dcc0c029fe2fe16",
+    "tar_git_blob": "cf5541f69f0276734e7294ec87656b000dfae210",
+    "original_files": 14,
+    "zip_crc_ok": 16
+  },
+  "independent": {
+    "event_groups_exported": 130,
+    "event_groups_exact_match": 130,
+    "events": 1076,
+    "copper_start": 50,
+    "copper_end": 55,
+    "copper_ledger": [
+      {
+        "turn": 5,
+        "delta": -20
+      },
+      {
+        "turn": 24,
+        "delta": 40
+      },
+      {
+        "turn": 40,
+        "delta": 14
+      },
+      {
+        "turn": 42,
+        "delta": -30
+      },
+      {
+        "turn": 48,
+        "delta": 4
+      },
+      {
+        "turn": 55,
+        "delta": -3
+      }
+    ],
+    "sum_end": 55
+  },
+  "runner_reported": {
+    "messages": 141,
+    "player_inputs": 70,
+    "system_messages": 12,
+    "integrity": {
+      "fold_errors": 0,
+      "validator_problems": 0
+    },
+    "game_calls": {
+      "plan": 83,
+      "extract": 75,
+      "narrator": 63,
+      "board": 2,
+      "total": 223
+    },
+    "llm_player_attempts": 81,
+    "llm_player_invalid_json_retries": 11,
+    "safe_continuations": 2,
+    "planner_repair_flags": 17,
+    "extractor_repair_flags": 12,
+    "planner_failure_flags": 2,
+    "runner_ms": 4527837
+  },
+  "npc_pulse_reported": {
+    "goals_observed": 17,
+    "goals_total": 28,
+    "goals_missing": [
+      "desk_handler",
+      "agreement_npc_only",
+      "agreement_unbound",
+      "anchor_stored",
+      "anchor_changed",
+      "anchor_refused_first_contact",
+      "anchor_refused_mood",
+      "anchor_on_card",
+      "pulse_dungeon",
+      "pulse_interrupt",
+      "pulse_wanderer"
+    ],
+    "persons_reported": 14,
+    "returns": 3,
+    "handled_by_accepted": 0,
+    "handled_by_attempted": 3,
+    "anchors_stored": 0,
+    "pulse_rolls": 44,
+    "pulse_open": 8,
+    "pulse_narrated_heuristic_likely": 7,
+    "pulse_narrated_heuristic_none": 1,
+    "pulse_dungeon_rolls": 0,
+    "pulse_rest_interruptions": 0,
+    "pulse_wanderers": 0
+  },
+  "verified_cases": [
+    {
+      "priority": "P2",
+      "case": "thread_reused_for_unrelated_debt",
+      "thread": "thread.t34.1",
+      "turns": [
+        36,
+        44,
+        58
+      ],
+      "first": "Gnasher private copper promise",
+      "later": "Muller owes Garvin Hesse forty silver for mill dam",
+      "new_who": [
+        "npc.muller",
+        "pc"
+      ]
+    },
+    {
+      "priority": "P2",
+      "case": "duplicate_primer",
+      "turns": [
+        41,
+        42,
+        43
+      ],
+      "existing_shop_id": "obj.t82.primer",
+      "new_purchase_id": "obj.t83.primer",
+      "one_purchase_cp": 30,
+      "result": "both objects at pc"
+    },
+    {
+      "priority": "P2 candidate",
+      "case": "duplicate_carter",
+      "turns": [
+        49,
+        50,
+        60,
+        61
+      ],
+      "npc_ids": [
+        "npc.npccarter_woolpack",
+        "npc.carter"
+      ],
+      "thread": "thread.t47.1",
+      "end_parties": [
+        "npc.npccarter_woolpack",
+        "pc",
+        "npc.carter"
+      ]
+    },
+    {
+      "priority": "P2/P3",
+      "case": "three_desk_handlers_rejected",
+      "turns": [
+        7,
+        24,
+        26
+      ],
+      "accepted": 0
+    },
+    {
+      "priority": "coverage",
+      "case": "E3_not_tested",
+      "anchors_stored": 0,
+      "anchor_absent_rejection_turn": 24
+    }
+  ],
+  "limitations": [
+    "No independent complete Node fold or ST re-execution",
+    "No personal user Spielgefühl-Feedback",
+    "PULSE narrated is a heuristic",
+    "No Productbranch edits"
+  ]
+}

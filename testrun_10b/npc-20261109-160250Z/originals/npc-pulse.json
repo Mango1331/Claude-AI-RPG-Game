@@ -1,0 +1,2200 @@
+{
+ "version": 2,
+ "e3Records": true,
+ "coverage": [
+  {
+   "id": "npc_first_meetings",
+   "what": "people met for the first time",
+   "count": 14,
+   "status": "observed"
+  },
+  {
+   "id": "npc_returns",
+   "what": "a known person present again in a later presence (E2-A)",
+   "count": 3,
+   "status": "observed"
+  },
+  {
+   "id": "npc_return_met",
+   "what": "a return the extractor reported as met and the engine took",
+   "count": 1,
+   "status": "observed"
+  },
+  {
+   "id": "npc_met_refused",
+   "what": "a reported presence the engine refused (met_*)",
+   "count": 5,
+   "status": "observed"
+  },
+  {
+   "id": "arrival_cards",
+   "what": "turns with an arrival card NOT YET SHOWN (E2-B R6)",
+   "count": 6,
+   "status": "observed"
+  },
+  {
+   "id": "desk_handler",
+   "what": "a Guild desk handler who learned his acceptance or turn-in (E2-A)",
+   "count": 0,
+   "status": "not covered"
+  },
+  {
+   "id": "multi_npc_scenes",
+   "what": "replies with two or more people present",
+   "count": 17,
+   "status": "observed"
+  },
+  {
+   "id": "shared_travel",
+   "what": "people who travelled along with him",
+   "count": 3,
+   "status": "observed"
+  },
+  {
+   "id": "agreement_personal",
+   "what": "agreements with Alaric as a party (E2-B R7)",
+   "count": 5,
+   "status": "observed"
+  },
+  {
+   "id": "agreement_taken_up",
+   "what": "an agreement updated or settled in a later turn",
+   "count": 4,
+   "status": "observed"
+  },
+  {
+   "id": "agreement_settled",
+   "what": "an agreement of his settled",
+   "count": 2,
+   "status": "observed"
+  },
+  {
+   "id": "agreement_npc_only",
+   "what": "agreements between other people only",
+   "count": 0,
+   "status": "not covered"
+  },
+  {
+   "id": "agreement_unbound",
+   "what": "promise/debt threads stored without parties",
+   "count": 0,
+   "status": "not covered"
+  },
+  {
+   "id": "agreement_on_card",
+   "what": "an open agreement shown whole on a later narrator card (partial: only cut by the card cap)",
+   "count": 1,
+   "status": "observed",
+   "partial": 2,
+   "unknown": 0
+  },
+  {
+   "id": "anchor_stored",
+   "what": "a personality anchor stored (E3 R10)",
+   "count": 0,
+   "status": "not covered"
+  },
+  {
+   "id": "anchor_changed",
+   "what": "an anchor changed in a later presence",
+   "count": 0,
+   "status": "not covered"
+  },
+  {
+   "id": "anchor_refused_first_contact",
+   "what": "a trait refused at a first contact",
+   "count": 0,
+   "status": "not covered"
+  },
+  {
+   "id": "anchor_refused_mood",
+   "what": "a mood refused as a trait",
+   "count": 0,
+   "status": "not covered"
+  },
+  {
+   "id": "anchor_on_card",
+   "what": "a stored anchor shown whole on a later narrator card (partial: only cut by the card cap)",
+   "count": 0,
+   "status": "not covered",
+   "partial": 0,
+   "unknown": 0
+  },
+  {
+   "id": "pulse_travel",
+   "what": "PULSE draws on the road",
+   "count": 9,
+   "status": "observed"
+  },
+  {
+   "id": "pulse_pause",
+   "what": "PULSE draws while resting or waiting",
+   "count": 1,
+   "status": "observed"
+  },
+  {
+   "id": "pulse_scene",
+   "what": "PULSE draws in a town or the wild",
+   "count": 34,
+   "status": "observed"
+  },
+  {
+   "id": "pulse_dungeon",
+   "what": "PULSE draws in a dungeon",
+   "count": 0,
+   "status": "not covered"
+  },
+  {
+   "id": "pulse_open",
+   "what": "open PULSE windows",
+   "count": 8,
+   "status": "observed"
+  },
+  {
+   "id": "pulse_interrupt",
+   "what": "a rest cut short by PULSE",
+   "count": 0,
+   "status": "not covered"
+  },
+  {
+   "id": "pulse_wanderer",
+   "what": "a dungeon wanderer bound by PULSE",
+   "count": 0,
+   "status": "not covered"
+  },
+  {
+   "id": "pulse_threat_refused",
+   "what": "a new threat the engine refused (pulse/road/envelope/dungeon rules)",
+   "count": 11,
+   "status": "observed"
+  },
+  {
+   "id": "quest_completed",
+   "what": "Guild contracts completed",
+   "count": 1,
+   "status": "observed"
+  }
+ ],
+ "violations": [],
+ "review": [
+  {
+   "kind": "new_world_content_in_closed_window",
+   "msg": 6,
+   "turn": 3,
+   "why": "closed window, yet 1 new person(s) (may be his own doing)",
+   "passage": "The road carried him in with cart traffic and morning walkers — a farmer with a wagon of cabbages, two women leading goats, a man in a smith's leather apron who nodded without interest. The walls of Ashbridge rose higher as the road bent, g…"
+  },
+  {
+   "kind": "new_world_content_in_closed_window",
+   "msg": 20,
+   "turn": 10,
+   "why": "closed window, yet 1 new person(s) (may be his own doing)",
+   "passage": "The twine came loose with a stiff twist, and the gate swung on a hinge that needed oil. He left it as he'd found it, loop re-set, and took the track between the hedgerows. The walk was plain and dry. A crow left the elm as he came under it …"
+  },
+  {
+   "kind": "new_world_content_in_closed_window",
+   "msg": 22,
+   "turn": 11,
+   "why": "closed window, yet 1 new person(s) (may be his own doing)",
+   "passage": "\"Gnasher.\" The farmer said the word the way a man repeats something he'd already guessed. He looked past Alaric, down the track toward the water hidden behind the hedge, and his thumb worked along the door edge. \"Aye, cross. Keep to the tra…"
+  },
+  {
+   "kind": "new_world_content_in_closed_window",
+   "msg": 56,
+   "turn": 28,
+   "why": "closed window, yet 1 new person(s) (may be his own doing)",
+   "passage": "The Guild hall's door swung shut behind him on the noise of the street. Market row ran two streets over, and the way there took him past a cooper's yard where a man was burning the inside of a fresh barrel, the smell of scorched oak driftin…"
+  },
+  {
+   "kind": "new_world_content_in_closed_window",
+   "msg": 74,
+   "turn": 37,
+   "why": "closed window, yet 1 new person(s) (may be his own doing)",
+   "passage": "\"Only the goose,\" the woman said, and Tam nodded solemnly as if he'd been the goose's sole mourner. \"It got the bird and scared the wits out of the miller's dog, that's all. Nobody bled but you.\" She lifted the loaves out of the basket, wra…"
+  },
+  {
+   "kind": "new_world_content_in_closed_window",
+   "msg": 82,
+   "turn": 41,
+   "why": "closed window, yet 1 new person(s) (may be his own doing)",
+   "passage": "The tannery row gave way to busier streets, and Alaric walked back through the late-afternoon traffic of Ashbridge — a woman hauling a basket of wet washing, two boys chasing a rolling hoop, the clatter of a cooper's mallet somewhere behind…"
+  },
+  {
+   "kind": "new_world_content_in_closed_window",
+   "msg": 90,
+   "turn": 45,
+   "why": "closed window, yet 2 new person(s) (may be his own doing)",
+   "passage": "The Woolpack sat where the south gate road bent, a low timbered front with a hanging sign of a wool bale, its windows already glowing. Inside it was warm and loud — smoke, spilled ale, a dozen market-day voices — and a serving woman threade…"
+  },
+  {
+   "kind": "open_window_not_narrated",
+   "msg": 92,
+   "turn": 46,
+   "why": "an open life window the reply did not visibly use (engine heuristic)",
+   "passage": "Muller looked up slow, and it took him a moment to place the words. Then his face folded into a scowl and he set the spoon down in the bowl with a clack. \"Took it, did you. Well. Somebody had to.\" He wiped his mouth with the back of his han…"
+  },
+  {
+   "kind": "new_world_content_in_closed_window",
+   "msg": 120,
+   "turn": 60,
+   "why": "closed window, yet 1 new person(s) (may be his own doing)",
+   "passage": "Muller nodded slowly at the sketch and the tracks advice, and at the promise of the peat wagon he said, \"First light, then. I'll say a word for you to Hesse's man if it comes to that — a man who clears goblin ground has friends in this city…"
+  }
+ ],
+ "npc": {
+  "people": [
+   {
+    "id": "npc.npcashbridge_clerk",
+    "name": null,
+    "label": "clerk",
+    "msg": 6,
+    "turn": 3,
+    "spans": 4,
+    "returns": 3,
+    "anchors": 0
+   },
+   {
+    "id": "npc.npcfarmer",
+    "name": null,
+    "label": "farmer",
+    "msg": 20,
+    "turn": 10,
+    "spans": 1,
+    "returns": 0,
+    "anchors": 0
+   },
+   {
+    "id": "npc.widow_hessa",
+    "name": "Widow Hessa",
+    "label": "Widow Hessa",
+    "msg": 22,
+    "turn": 11,
+    "spans": 1,
+    "returns": 0,
+    "anchors": 0
+   },
+   {
+    "id": "npc.npccarter_hazel",
+    "name": null,
+    "label": "carter",
+    "msg": 30,
+    "turn": 15,
+    "spans": 4,
+    "returns": 0,
+    "anchors": 0
+   },
+   {
+    "id": "npc.npcmoneychanger",
+    "name": null,
+    "label": "merchant",
+    "msg": 56,
+    "turn": 28,
+    "spans": 1,
+    "returns": 0,
+    "anchors": 0
+   },
+   {
+    "id": "npc.npctannery_row_woman",
+    "name": null,
+    "label": "villager",
+    "msg": 72,
+    "turn": 36,
+    "spans": 1,
+    "returns": 0,
+    "anchors": 0
+   },
+   {
+    "id": "npc.tam",
+    "name": "Tam",
+    "label": "Tam",
+    "msg": 72,
+    "turn": 36,
+    "spans": 1,
+    "returns": 0,
+    "anchors": 0
+   },
+   {
+    "id": "npc.harl",
+    "name": "Harl",
+    "label": "Harl",
+    "msg": 74,
+    "turn": 37,
+    "spans": 1,
+    "returns": 0,
+    "anchors": 0
+   },
+   {
+    "id": "npc.npcshopkeeper_primer",
+    "name": null,
+    "label": "shopkeeper",
+    "msg": 82,
+    "turn": 41,
+    "spans": 1,
+    "returns": 0,
+    "anchors": 0
+   },
+   {
+    "id": "npc.muller",
+    "name": "Muller",
+    "label": "Muller",
+    "msg": 90,
+    "turn": 45,
+    "spans": 1,
+    "returns": 0,
+    "anchors": 0
+   },
+   {
+    "id": "npc.npcwoolpack_serving_woman",
+    "name": null,
+    "label": "serving woman",
+    "msg": 90,
+    "turn": 45,
+    "spans": 1,
+    "returns": 0,
+    "anchors": 0
+   },
+   {
+    "id": "npc.npccarter_woolpack",
+    "name": null,
+    "label": "carter",
+    "msg": 98,
+    "turn": 49,
+    "spans": 1,
+    "returns": 0,
+    "anchors": 0
+   },
+   {
+    "id": "npc.carter",
+    "name": null,
+    "label": "carter",
+    "msg": 120,
+    "turn": 60,
+    "spans": 0,
+    "returns": 0,
+    "anchors": 0
+   },
+   {
+    "id": "npc.npcmiller_boy",
+    "name": null,
+    "label": "miller's boy",
+    "msg": 124,
+    "turn": 62,
+    "spans": 1,
+    "returns": 0,
+    "anchors": 0
+   }
+  ],
+  "returns": [
+   {
+    "msg": 52,
+    "turn": 26,
+    "who": "npc.npcashbridge_clerk",
+    "label": "clerk",
+    "path": "enter_or_other",
+    "passage": "The clerk looked up from her ledger as Alaric came back. \"Which one?\" She listened, nodded once, and pulled a fresh slip across the desk. Quill scratching, she filled in the lines — *Clear Mossback Warrens, Level 1, one hundred eighty coppe…"
+   },
+   {
+    "msg": 66,
+    "turn": 33,
+    "who": "npc.npcashbridge_clerk",
+    "label": "clerk",
+    "path": "enter_or_other",
+    "passage": "The market gave him up slowly — a cart of wet wool, two women arguing over the price of eels, a boy running between legs with a tray of meat pies — and then the crowd thinned and the Guild hall's door stood open ahead, letting out the smell…"
+   },
+   {
+    "msg": 86,
+    "turn": 43,
+    "who": "npc.npcashbridge_clerk",
+    "label": "clerk",
+    "path": "met",
+    "passage": "The wrapped Primer went into the pouch beside its twin, and the walk back took him up through the market streets as the light began to lean. A fishmonger was hosing down her slabs, water running the gutter; a lamplighter made his early roun…"
+   }
+  ],
+  "companions": [
+   {
+    "msg": 34,
+    "turn": 17,
+    "who": [
+     "npc.npccarter_hazel"
+    ],
+    "from": "realm.duskreach.the_reed_banks_of_the_ashbridge_millpond",
+    "to": "loc.widow_hessas_mill"
+   },
+   {
+    "msg": 38,
+    "turn": 19,
+    "who": [
+     "npc.npccarter_hazel"
+    ],
+    "from": "loc.widow_hessas_mill",
+    "to": "loc.the_hedged_cart_road_to_ashbridge"
+   },
+   {
+    "msg": 46,
+    "turn": 23,
+    "who": [
+     "npc.npccarter_hazel"
+    ],
+    "from": "loc.the_hedged_cart_road_to_ashbridge",
+    "to": "loc.ashbridge"
+   }
+  ],
+  "arrivals": [
+   {
+    "msg": 24,
+    "turn": 12,
+    "carded": [
+     "npc.widow_hessa"
+    ],
+    "shown": [],
+    "offered": {
+     "1": [
+      "npc.widow_hessa"
+     ]
+    }
+   },
+   {
+    "msg": 30,
+    "turn": 15,
+    "carded": [
+     "npc.npcashbridge_clerk"
+    ],
+    "shown": [],
+    "offered": {
+     "3": [
+      "npc.npcashbridge_clerk"
+     ]
+    }
+   },
+   {
+    "msg": 48,
+    "turn": 24,
+    "carded": [
+     "npc.npcashbridge_clerk"
+    ],
+    "shown": [],
+    "offered": {
+     "1": [
+      "npc.npcashbridge_clerk"
+     ]
+    }
+   },
+   {
+    "msg": 66,
+    "turn": 33,
+    "carded": [
+     "npc.npcashbridge_clerk"
+    ],
+    "shown": [
+     "npc.npcashbridge_clerk"
+    ],
+    "offered": {
+     "1": [
+      "npc.npcashbridge_clerk"
+     ]
+    }
+   },
+   {
+    "msg": 86,
+    "turn": 43,
+    "carded": [
+     "npc.npcashbridge_clerk"
+    ],
+    "shown": [
+     "npc.npcashbridge_clerk"
+    ],
+    "offered": {
+     "2": [
+      "npc.npcashbridge_clerk"
+     ]
+    }
+   },
+   {
+    "msg": 122,
+    "turn": 61,
+    "carded": [
+     "npc.carter"
+    ],
+    "shown": [],
+    "offered": {
+     "1": [
+      "npc.carter"
+     ]
+    }
+   }
+  ],
+  "desk": [
+   {
+    "msg": 14,
+    "turn": 7,
+    "who": "npc.npcashbridge_clerk",
+    "accepted": false,
+    "refused": "npc.npcashbridge_clerk: no one is named before the pronoun"
+   },
+   {
+    "msg": 48,
+    "turn": 24,
+    "who": "npc.npcashbridge_clerk",
+    "accepted": false,
+    "refused": "npc.npcashbridge_clerk is no Guild person present at the desk"
+   },
+   {
+    "msg": 52,
+    "turn": 26,
+    "who": "npc.guild_clerk",
+    "accepted": false,
+    "refused": "npc.npcashbridge_clerk: it is spoken, not narrated"
+   }
+  ],
+  "agreements": [
+   {
+    "id": "thread.t11.1",
+    "kind": "promise",
+    "text": "Widow Hessa at the mill sent for the Guild about the gnasher; she is half blind and easily startled at her door",
+    "opened": {
+     "msg": 22,
+     "turn": 11
+    },
+    "course": [
+     {
+      "msg": 22,
+      "turn": 11,
+      "status": "open",
+      "who": [
+       "npc.widow_hessa"
+      ]
+     },
+     {
+      "msg": 34,
+      "turn": 17,
+      "status": "open",
+      "who": [
+       "npc.widow_hessa",
+       "pc"
+      ]
+     }
+    ],
+    "who": [
+     "npc.widow_hessa",
+     "pc"
+    ],
+    "status": "open",
+    "onCard": {
+     "status": "none",
+     "fullAt": null,
+     "partialAt": null,
+     "checked": 54,
+     "missing": 0,
+     "inPrompt": false,
+     "msg": 36,
+     "turn": 18
+    },
+    "takenUp": true
+   },
+   {
+    "id": "thread.t16.1",
+    "kind": "promise",
+    "text": "Wat Dodd offers Alaric a free ride to Ashbridge in his cart, going that way as far as the city",
+    "opened": {
+     "msg": 32,
+     "turn": 16
+    },
+    "course": [
+     {
+      "msg": 32,
+      "turn": 16,
+      "status": "open",
+      "who": [
+       "npc.npccarter_hazel",
+       "pc"
+      ]
+     },
+     {
+      "msg": 42,
+      "turn": 21,
+      "status": "open",
+      "who": [
+       "npc.npccarter_hazel",
+       "pc"
+      ]
+     },
+     {
+      "msg": 46,
+      "turn": 23,
+      "status": "resolved",
+      "who": [
+       "npc.npccarter_hazel",
+       "pc"
+      ],
+      "resolution": "Dodd delivered him to Ashbridge as promised and pointed out the Guild hall."
+     }
+    ],
+    "who": [
+     "npc.npccarter_hazel",
+     "pc"
+    ],
+    "status": "resolved",
+    "onCard": {
+     "status": "full",
+     "fullAt": 17,
+     "partialAt": null,
+     "checked": 1,
+     "missing": 0,
+     "inPrompt": true,
+     "msg": 34,
+     "turn": 17
+    },
+    "takenUp": true
+   },
+   {
+    "id": "thread.t34.1",
+    "kind": "debt",
+    "text": "Muller said he'd put copper in for whoever cleared the millpond gnasher, but hearing the beast tore Alaric's arm he went off to his sister's instead — the promised copper is unclaimed",
+    "opened": {
+     "msg": 72,
+     "turn": 36
+    },
+    "course": [
+     {
+      "msg": 72,
+      "turn": 36,
+      "status": "open",
+      "who": null
+     },
+     {
+      "msg": 88,
+      "turn": 44,
+      "status": "open",
+      "who": null
+     },
+     {
+      "msg": 116,
+      "turn": 58,
+      "status": "open",
+      "who": [
+       "npc.muller",
+       "pc"
+      ]
+     }
+    ],
+    "who": [
+     "npc.muller",
+     "pc"
+    ],
+    "status": "open",
+    "onCard": {
+     "status": "none",
+     "fullAt": null,
+     "partialAt": null,
+     "checked": 31,
+     "missing": 0,
+     "inPrompt": false,
+     "msg": 92,
+     "turn": 46
+    },
+    "takenUp": true
+   },
+   {
+    "id": "thread.t47.1",
+    "kind": "promise",
+    "text": "The carter offers Alaric a free seat on the peat wagon as far as the crossroads, leaving at first light tomorrow, and asks him to look at the cairn's red band on the way — weathered paint would mean t",
+    "opened": {
+     "msg": 100,
+     "turn": 50
+    },
+    "course": [
+     {
+      "msg": 100,
+      "turn": 50,
+      "status": "open",
+      "who": [
+       "npc.npccarter_woolpack",
+       "pc"
+      ]
+     },
+     {
+      "msg": 122,
+      "turn": 61,
+      "status": "resolved",
+      "who": [
+       "npc.npccarter_woolpack",
+       "pc",
+       "npc.carter"
+      ],
+      "resolution": "Torv took Alaric on the peat wagon to the crossroads cairn and halted there."
+     }
+    ],
+    "who": [
+     "npc.npccarter_woolpack",
+     "pc",
+     "npc.carter"
+    ],
+    "status": "resolved",
+    "onCard": {
+     "status": "partial",
+     "fullAt": null,
+     "partialAt": 51,
+     "checked": 9,
+     "missing": 0,
+     "inPrompt": false,
+     "msg": 102,
+     "turn": 51
+    },
+    "takenUp": true
+   },
+   {
+    "id": "thread.t55.1",
+    "kind": "promise",
+    "text": "Muller promises to say a word for Alaric to Hesse's man if it comes to that — a man who clears goblin ground has friends in this city.",
+    "opened": {
+     "msg": 120,
+     "turn": 60
+    },
+    "course": [
+     {
+      "msg": 120,
+      "turn": 60,
+      "status": "open",
+      "who": [
+       "npc.muller",
+       "pc"
+      ]
+     }
+    ],
+    "who": [
+     "npc.muller",
+     "pc"
+    ],
+    "status": "open",
+    "onCard": {
+     "status": "partial",
+     "fullAt": null,
+     "partialAt": 61,
+     "checked": 10,
+     "missing": 0,
+     "inPrompt": false,
+     "msg": 122,
+     "turn": 61
+    },
+    "takenUp": false
+   }
+  ],
+  "anchors": [],
+  "multiNpcReplies": 17,
+  "maxNpcPresent": 3,
+  "refusals": {
+   "npc": [
+    {
+     "msg": 14,
+     "turn": 7,
+     "rule": "desk_handler",
+     "who": null,
+     "reason": "npc.npcashbridge_clerk: no one is named before the pronoun",
+     "passage": "\"The millpond job.\" She took the notice, glanced at the plate he set beside it, and matched the fresh-punched number to the ledger. \"Good. Somebody should.\" She dipped the quill, entered it against his name, and stamped a slip of stiff pape…"
+    },
+    {
+     "msg": 20,
+     "turn": 10,
+     "rule": "ambient",
+     "who": "npc.farm_elder",
+     "reason": "scene colour: an unnamed person nothing else of the reply deals with is not kept; the story brings them back when they matter",
+     "passage": "The twine came loose with a stiff twist, and the gate swung on a hinge that needed oil. He left it as he'd found it, loop re-set, and took the track between the hedgerows. The walk was plain and dry. A crow left the elm as he came under it …"
+    },
+    {
+     "msg": 34,
+     "turn": 17,
+     "rule": "met_not_known_here",
+     "who": "npc.widow_hessa",
+     "reason": "npc.widow_hessa is not one of the people known at this place for step 1",
+     "passage": "…rom the pond!\" A shape moved behind the mill's small window, then the door, and the widow came out onto her step wiping floury hands on an apron — a broad, square woman, gray hair pinned back hard, eyes going first to the cart, then to the …"
+    },
+    {
+     "msg": 34,
+     "turn": 17,
+     "rule": "met_without_arrival",
+     "who": "npc.widow_hessa",
+     "reason": "GO step 2 did not bring him to its place in this reply",
+     "passage": "…rom the pond!\" A shape moved behind the mill's small window, then the door, and the widow came out onto her step wiping floury hands on an apron — a broad, square woman, gray hair pinned back hard, eyes going first to the cart, then to the …"
+    },
+    {
+     "msg": 48,
+     "turn": 24,
+     "rule": "met_evidence",
+     "who": "npc.npcashbridge_clerk",
+     "reason": "npc.npcashbridge_clerk: its words are not in the reply",
+     "passage": "Dodd was gone past the well with a wave of the whip hand before Alaric reached the steps, where two adventurers in scuffed mail made room for him without looking up from a dice game. Inside, the hall smelled of tallow and old paper. Late-af…"
+    },
+    {
+     "msg": 48,
+     "turn": 24,
+     "rule": "desk_handler",
+     "who": null,
+     "reason": "npc.npcashbridge_clerk is no Guild person present at the desk",
+     "passage": "Dodd was gone past the well with a wave of the whip hand before Alaric reached the steps, where two adventurers in scuffed mail made room for him without looking up from a dice game. Inside, the hall smelled of tallow and old paper. Late-af…"
+    },
+    {
+     "msg": 52,
+     "turn": 26,
+     "rule": "desk_handler",
+     "who": null,
+     "reason": "npc.npcashbridge_clerk: it is spoken, not narrated",
+     "passage": "The clerk looked up from her ledger as Alaric came back. \"Which one?\" She listened, nodded once, and pulled a fresh slip across the desk. Quill scratching, she filled in the lines — *Clear Mossback Warrens, Level 1, one hundred eighty coppe…"
+    },
+    {
+     "msg": 66,
+     "turn": 33,
+     "rule": "met_evidence",
+     "who": "npc.npcashbridge_clerk",
+     "reason": "npc.npcashbridge_clerk: its words are not in the reply",
+     "passage": "The market gave him up slowly — a cart of wet wool, two women arguing over the price of eels, a boy running between legs with a tray of meat pies — and then the crowd thinned and the Guild hall's door stood open ahead, letting out the smell…"
+    },
+    {
+     "msg": 122,
+     "turn": 61,
+     "rule": "met_without_arrival",
+     "who": "npc.carter",
+     "reason": "GO step 1 did not bring him to its place in this reply",
+     "passage": "The carter straightened up from the wheel he'd been testing, wiping his hands on his thighs. He was a lean, weathered man with a straw hat pushed back and knuckles like knots in rope. \"Seat's yours if your backside can stand peat dust for a…"
+    },
+    {
+     "msg": 126,
+     "turn": 63,
+     "rule": "npc_presence",
+     "who": "npc.muller",
+     "reason": "npc.muller is a known person elsewhere; the reply does not narrate their arrival here: the quoted clause does not name them",
+     "passage": "The boy set the bucket down, crossed the plank to the far bank at a run, and vanished up the path toward the millhouse. Alaric waited by the ford, the race chattering past, the smell of wet stone and ground grain drifting on the light wind.…"
+    },
+    {
+     "msg": 126,
+     "turn": 63,
+     "rule": "npc_continuity",
+     "who": [
+      "npc.muller"
+     ],
+     "reason": "dependent claim about a rejected person reintroduction",
+     "passage": "The boy set the bucket down, crossed the plank to the far bank at a run, and vanished up the path toward the millhouse. Alaric waited by the ford, the race chattering past, the smell of wet stone and ground grain drifting on the light wind.…"
+    },
+    {
+     "msg": 126,
+     "turn": 63,
+     "rule": "npc_continuity",
+     "who": null,
+     "reason": "dependent claim about a rejected person reintroduction",
+     "passage": "The boy set the bucket down, crossed the plank to the far bank at a run, and vanished up the path toward the millhouse. Alaric waited by the ford, the race chattering past, the smell of wet stone and ground grain drifting on the light wind.…"
+    },
+    {
+     "msg": 128,
+     "turn": 64,
+     "rule": "npc_presence",
+     "who": "npc.muller",
+     "reason": "npc.muller is a known person elsewhere; the reply does not narrate their arrival here: the quoted clause does not name them",
+     "passage": "The boy went at a run, and this time the miller himself came back down — or the big man came out of the millhouse doorway behind him, bread already wrapped in a cloth, so it seemed the boy had only shouted through the door. Either way, the …"
+    },
+    {
+     "msg": 128,
+     "turn": 64,
+     "rule": "npc_continuity",
+     "who": null,
+     "reason": "dependent claim about a rejected person reintroduction",
+     "passage": "The boy went at a run, and this time the miller himself came back down — or the big man came out of the millhouse doorway behind him, bread already wrapped in a cloth, so it seemed the boy had only shouted through the door. Either way, the …"
+    }
+   ],
+   "anchor": [
+    {
+     "msg": 48,
+     "turn": 24,
+     "rule": "anchor_absent",
+     "who": "npc.npcashbridge_clerk",
+     "p": "manner",
+     "o": "brisk and unsentimental at the desk, coins counted with a click, back to her ledger without ceremony",
+     "reason": "manner of npc.npcashbridge_clerk: a lasting trait is shown only by someone here",
+     "passage": "Dodd was gone past the well with a wave of the whip hand before Alaric reached the steps, where two adventurers in scuffed mail made room for him without looking up from a dice game. Inside, the hall smelled of tallow and old paper. Late-af…"
+    }
+   ],
+   "thread": []
+  }
+ },
+ "pulse": {
+  "draws": 44,
+  "open": 8,
+  "byExposure": {
+   "scene/inside": {
+    "rolled": 26,
+    "open": 3,
+    "kinds": {
+     "life": 2,
+     "meeting": 1
+    },
+    "narrated": {
+     "likely": 2,
+     "none": 1
+    },
+    "persisted": {
+     "persons": 4,
+     "creatures": 0,
+     "features": 0,
+     "objects": 1,
+     "places": 9,
+     "fights": 0,
+     "slots": 0
+    }
+   },
+   "travel/travel": {
+    "rolled": 9,
+    "open": 4,
+    "kinds": {
+     "obstacle": 1,
+     "meeting": 2,
+     "danger": 1
+    },
+    "narrated": {
+     "likely": 4,
+     "none": 0
+    },
+    "persisted": {
+     "persons": 7,
+     "creatures": 4,
+     "features": 1,
+     "objects": 0,
+     "places": 3,
+     "fights": 0,
+     "slots": 0
+    }
+   },
+   "scene/wild": {
+    "rolled": 7,
+    "open": 1,
+    "kinds": {
+     "meeting": 1
+    },
+    "narrated": {
+     "likely": 1,
+     "none": 0
+    },
+    "persisted": {
+     "persons": 2,
+     "creatures": 0,
+     "features": 0,
+     "objects": 2,
+     "places": 3,
+     "fights": 0,
+     "slots": 0
+    }
+   },
+   "scene/street": {
+    "rolled": 1,
+    "open": 0,
+    "kinds": {},
+    "narrated": {
+     "likely": 0,
+     "none": 0
+    },
+    "persisted": {
+     "persons": 0,
+     "creatures": 0,
+     "features": 0,
+     "objects": 0,
+     "places": 0,
+     "fights": 0,
+     "slots": 0
+    }
+   },
+   "pause/inside": {
+    "rolled": 1,
+    "open": 0,
+    "kinds": {},
+    "narrated": {
+     "likely": 0,
+     "none": 0
+    },
+    "persisted": {
+     "persons": 1,
+     "creatures": 0,
+     "features": 0,
+     "objects": 0,
+     "places": 1,
+     "fights": 0,
+     "slots": 0
+    }
+   }
+  },
+  "pauseBlockTurns": 0,
+  "restInterruptedCorrections": 0,
+  "repeats": [],
+  "refusals": [
+   {
+    "msg": 26,
+    "turn": 13,
+    "rule": "attack_commitment",
+    "reason": "mon.creaturegnasher: no immediate attack established in this reply",
+    "passage": "Steel came out with a soft scrape, and the reeds took the sound and gave back nothing. He went slow, boot by boot along the wallowed path, mud sucking at each step. The tracks stayed fresh underfoot — the mud still held water in their print…"
+   },
+   {
+    "msg": 26,
+    "turn": 13,
+    "rule": "attack_commitment",
+    "reason": "mon.creaturegnasher: no immediate attack established in this reply",
+    "passage": "Steel came out with a soft scrape, and the reeds took the sound and gave back nothing. He went slow, boot by boot along the wallowed path, mud sucking at each step. The tracks stayed fresh underfoot — the mud still held water in their print…"
+   },
+   {
+    "msg": 38,
+    "turn": 19,
+    "rule": "attack_commitment",
+    "reason": "mon.creaturelead_feral_dog: no immediate attack established in this reply",
+    "passage": "Widow Hessa watched them off from her step, floury hand raised once, and the last Alaric saw of the mill was the goose going back to its beans like nothing in the world had changed. Dodd clicked his tongue and the cart took the track at an …"
+   },
+   {
+    "msg": 38,
+    "turn": 19,
+    "rule": "road",
+    "reason": "mon.groupferal_dogs_flankers_1 does not turn on Alaric: only one hostile group was authorized",
+    "passage": "Widow Hessa watched them off from her step, floury hand raised once, and the last Alaric saw of the mill was the goose going back to its beans like nothing in the world had changed. Dodd clicked his tongue and the cart took the track at an …"
+   },
+   {
+    "msg": 38,
+    "turn": 19,
+    "rule": "road",
+    "reason": "mon.groupferal_dogs_flankers_2 does not turn on Alaric: only one hostile group was authorized",
+    "passage": "Widow Hessa watched them off from her step, floury hand raised once, and the last Alaric saw of the mill was the goose going back to its beans like nothing in the world had changed. Dodd clicked his tongue and the cart took the track at an …"
+   },
+   {
+    "msg": 130,
+    "turn": 65,
+    "rule": "pulse",
+    "reason": "mon.mossback_warrens_c1_l1_e1_1 does not turn on Alaric: no new attacker was authorized in this scene",
+    "passage": "The big mouth took him at a stoop, shoulders brushing earth on both sides. Cool air moved against his face from below, damp and sour, and the light fell off fast — two steps and the sun was a grey patch at his back. Underfoot the moss gave …"
+   },
+   {
+    "msg": 130,
+    "turn": 65,
+    "rule": "pulse",
+    "reason": "mon.mossback_warrens_c1_l1_e1_2 does not turn on Alaric: no new attacker was authorized in this scene",
+    "passage": "The big mouth took him at a stoop, shoulders brushing earth on both sides. Cool air moved against his face from below, damp and sour, and the light fell off fast — two steps and the sun was a grey patch at his back. Underfoot the moss gave …"
+   },
+   {
+    "msg": 130,
+    "turn": 65,
+    "rule": "pulse",
+    "reason": "mon.mossback_warrens_c1_l1_e1_3 does not turn on Alaric: no new attacker was authorized in this scene",
+    "passage": "The big mouth took him at a stoop, shoulders brushing earth on both sides. Cool air moved against his face from below, damp and sour, and the light fell off fast — two steps and the sun was a grey patch at his back. Underfoot the moss gave …"
+   },
+   {
+    "msg": 130,
+    "turn": 65,
+    "rule": "pulse",
+    "reason": "mon.mossback_warrens_c1_l1_e1_1 does not turn on Alaric: no new attacker was authorized in this scene",
+    "passage": "The big mouth took him at a stoop, shoulders brushing earth on both sides. Cool air moved against his face from below, damp and sour, and the light fell off fast — two steps and the sun was a grey patch at his back. Underfoot the moss gave …"
+   },
+   {
+    "msg": 130,
+    "turn": 65,
+    "rule": "pulse",
+    "reason": "mon.mossback_warrens_c1_l1_e1_2 does not turn on Alaric: no new attacker was authorized in this scene",
+    "passage": "The big mouth took him at a stoop, shoulders brushing earth on both sides. Cool air moved against his face from below, damp and sour, and the light fell off fast — two steps and the sun was a grey patch at his back. Underfoot the moss gave …"
+   },
+   {
+    "msg": 130,
+    "turn": 65,
+    "rule": "pulse",
+    "reason": "mon.mossback_warrens_c1_l1_e1_3 does not turn on Alaric: no new attacker was authorized in this scene",
+    "passage": "The big mouth took him at a stoop, shoulders brushing earth on both sides. Cool air moved against his face from below, damp and sour, and the light fell off fast — two steps and the sun was a grey patch at his back. Underfoot the moss gave …"
+   }
+  ],
+  "density": {
+   "perTenInputs": 1.1,
+   "perEightHours": 1.8,
+   "minutes": 2085,
+   "inputs": 70
+  },
+  "windows": [
+   {
+    "msg": 5,
+    "turn": 3,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 6,
+    "roll": 32.06,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.verge",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 1,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 9,
+    "turn": 5,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 6.9,
+    "roll": 37.32,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.guild_hall",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 13,
+    "turn": 7,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 7.8,
+    "roll": 68.66,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.guild_hall",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 15,
+    "turn": 8,
+    "exposure": "travel",
+    "frame": "travel",
+    "phase": "day",
+    "p": 50.75,
+    "roll": 47.27,
+    "open": true,
+    "kind": "obstacle",
+    "at": "loc.ashbridge.guild_hall",
+    "outcome": {
+     "narrated": "likely",
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 1,
+      "objects": 0,
+      "places": 1,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 17,
+    "turn": 9,
+    "exposure": "scene",
+    "frame": "wild",
+    "phase": "day",
+    "p": 20,
+    "roll": 59.68,
+    "open": false,
+    "kind": null,
+    "at": "loc.flooded_stretch_of_the_millrace_path",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 2,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 19,
+    "turn": 10,
+    "exposure": "travel",
+    "frame": "travel",
+    "phase": "day",
+    "p": 40.25,
+    "roll": 69.9,
+    "open": false,
+    "kind": null,
+    "at": "loc.the_pasture_gate",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 1,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 21,
+    "turn": 11,
+    "exposure": "scene",
+    "frame": "wild",
+    "phase": "day",
+    "p": 26,
+    "roll": 45.09,
+    "open": false,
+    "kind": null,
+    "at": "loc.the_farm_by_the_chimney_smoke",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 1,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 1,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 23,
+    "turn": 12,
+    "exposure": "travel",
+    "frame": "travel",
+    "phase": "day",
+    "p": 50.75,
+    "roll": 62.88,
+    "open": false,
+    "kind": null,
+    "at": "loc.the_farm_by_the_chimney_smoke",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 29,
+    "turn": 15,
+    "exposure": "travel",
+    "frame": "travel",
+    "phase": "day",
+    "p": 56,
+    "roll": 42.49,
+    "open": true,
+    "kind": "meeting",
+    "at": "loc.the_reed_stand_at_the_millpond_bend",
+    "outcome": {
+     "narrated": "likely",
+     "persisted": {
+      "persons": 1,
+      "creatures": 1,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 31,
+    "turn": 16,
+    "exposure": "scene",
+    "frame": "wild",
+    "phase": "day",
+    "p": 20,
+    "roll": 66.04,
+    "open": false,
+    "kind": null,
+    "at": "realm.duskreach.the_reed_banks_of_the_ashbridge_millpond",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 33,
+    "turn": 17,
+    "exposure": "travel",
+    "frame": "travel",
+    "phase": "day",
+    "p": 40.25,
+    "roll": 59.07,
+    "open": false,
+    "kind": null,
+    "at": "realm.duskreach.the_reed_banks_of_the_ashbridge_millpond",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 35,
+    "turn": 18,
+    "exposure": "scene",
+    "frame": "wild",
+    "phase": "day",
+    "p": 26,
+    "roll": 62.3,
+    "open": false,
+    "kind": null,
+    "at": "loc.widow_hessas_mill",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 2,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 37,
+    "turn": 19,
+    "exposure": "travel",
+    "frame": "travel",
+    "phase": "day",
+    "p": 50.75,
+    "roll": 11.25,
+    "open": true,
+    "kind": "danger",
+    "at": "loc.widow_hessas_mill",
+    "outcome": {
+     "narrated": "likely",
+     "persisted": {
+      "persons": 0,
+      "creatures": 3,
+      "features": 0,
+      "objects": 0,
+      "places": 1,
+      "fight": false,
+      "rejected_pulse": 2
+     }
+    }
+   },
+   {
+    "msg": 47,
+    "turn": 24,
+    "exposure": "scene",
+    "frame": "street",
+    "phase": "day",
+    "p": 10,
+    "roll": 86.32,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 51,
+    "turn": 26,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 6.9,
+    "roll": 24.5,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.guild_hall",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 55,
+    "turn": 28,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 7.8,
+    "roll": 68.84,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.guild_hall",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 1,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 1,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 61,
+    "turn": 31,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 8.7,
+    "roll": 75.6,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.money_changers_stall_on_market_row",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 65,
+    "turn": 33,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 9.6,
+    "roll": 58.23,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.money_changers_stall_on_market_row",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 69,
+    "turn": 35,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 10.5,
+    "roll": 80.69,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.guild_hall",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 1,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 71,
+    "turn": 36,
+    "exposure": "travel",
+    "frame": "travel",
+    "phase": "day",
+    "p": 60,
+    "roll": 17.96,
+    "open": true,
+    "kind": "meeting",
+    "at": "loc.ashbridge.guild_hall",
+    "outcome": {
+     "narrated": "likely",
+     "persisted": {
+      "persons": 2,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 1,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 73,
+    "turn": 37,
+    "exposure": "travel",
+    "frame": "travel",
+    "phase": "day",
+    "p": 35,
+    "roll": 38.35,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.tannery_row",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 1,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 77,
+    "turn": 39,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 6.9,
+    "roll": 15.86,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.harls_tannery",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 79,
+    "turn": 40,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 7.8,
+    "roll": 28.01,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.harls_tannery",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 81,
+    "turn": 41,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 8.7,
+    "roll": 13.28,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.harls_tannery",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 1,
+      "creatures": 0,
+      "features": 0,
+      "objects": 1,
+      "places": 1,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 83,
+    "turn": 42,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 9.6,
+    "roll": 74.95,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.bookshop_with_the_primer",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 85,
+    "turn": 43,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 10.5,
+    "roll": 63.19,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.bookshop_with_the_primer",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 2,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 87,
+    "turn": 44,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 10.5,
+    "roll": 88.24,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.guild_hall",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 2,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 89,
+    "turn": 45,
+    "exposure": "travel",
+    "frame": "travel",
+    "phase": "day",
+    "p": 60,
+    "roll": 85.65,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.guild_hall",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 2,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 91,
+    "turn": 46,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 10.5,
+    "roll": 3.42,
+    "open": true,
+    "kind": "life",
+    "at": "loc.ashbridge.the_woolpack",
+    "outcome": {
+     "narrated": "none",
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 93,
+    "turn": 47,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 6,
+    "roll": 16.27,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.the_woolpack",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 95,
+    "turn": 48,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 6.9,
+    "roll": 90.92,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.the_woolpack",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 97,
+    "turn": 49,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 7.8,
+    "roll": 4.01,
+    "open": true,
+    "kind": "meeting",
+    "at": "loc.ashbridge.the_woolpack",
+    "outcome": {
+     "narrated": "likely",
+     "persisted": {
+      "persons": 1,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 99,
+    "turn": 50,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 6,
+    "roll": 75.54,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.the_woolpack",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 101,
+    "turn": 51,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 6.9,
+    "roll": 85.83,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.the_woolpack",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 109,
+    "turn": 55,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 7.8,
+    "roll": 69.14,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.the_woolpack",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 111,
+    "turn": 56,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 8.7,
+    "roll": 28.33,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.the_woolpack",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 113,
+    "turn": 57,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 9.6,
+    "roll": 13.48,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.the_woolpack",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 115,
+    "turn": 58,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 10.5,
+    "roll": 32.59,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.the_woolpack",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 117,
+    "turn": 59,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 10.5,
+    "roll": 94.78,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.the_woolpack",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 119,
+    "turn": 60,
+    "exposure": "pause",
+    "frame": "inside",
+    "phase": "night",
+    "p": 5.25,
+    "roll": 56.53,
+    "open": false,
+    "kind": null,
+    "at": "loc.ashbridge.the_woolpack",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 1,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 1,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 121,
+    "turn": 61,
+    "exposure": "scene",
+    "frame": "inside",
+    "phase": "day",
+    "p": 10.5,
+    "roll": 3.92,
+    "open": true,
+    "kind": "life",
+    "at": "loc.ashbridge.the_woolpack",
+    "outcome": {
+     "narrated": "likely",
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 2,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 123,
+    "turn": 62,
+    "exposure": "scene",
+    "frame": "wild",
+    "phase": "day",
+    "p": 20,
+    "roll": 11.99,
+    "open": true,
+    "kind": "meeting",
+    "at": "loc.crossroads_cairn_on_the_south_road",
+    "outcome": {
+     "narrated": "likely",
+     "persisted": {
+      "persons": 1,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 125,
+    "turn": 63,
+    "exposure": "scene",
+    "frame": "wild",
+    "phase": "day",
+    "p": 20,
+    "roll": 58.82,
+    "open": false,
+    "kind": null,
+    "at": "loc.mullers_millpond_farm",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "msg": 127,
+    "turn": 64,
+    "exposure": "scene",
+    "frame": "wild",
+    "phase": "day",
+    "p": 23,
+    "roll": 37.85,
+    "open": false,
+    "kind": null,
+    "at": "loc.mullers_millpond_farm",
+    "outcome": {
+     "narrated": null,
+     "persisted": {
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   }
+  ]
+ },
+ "integration": {
+  "extraction": {
+   "none": 1,
+   "applied": 63
+  },
+  "foldErrors": 0,
+  "quests": {
+   "active": 1,
+   "completed": 1
+  },
+  "rejectedByRule": {
+   "engine_owned_fact": 6,
+   "guild_canon": 2,
+   "desk_handler": 3,
+   "ambient": 1,
+   "attack_commitment": 3,
+   "met_not_known_here": 1,
+   "met_without_arrival": 2,
+   "road": 2,
+   "world_rule": 6,
+   "met_evidence": 2,
+   "anchor_absent": 1,
+   "offer": 6,
+   "pc_inventory": 1,
+   "scene_context": 1,
+   "npc_presence": 2,
+   "npc_continuity": 3,
+   "object": 1,
+   "group_unclear": 2,
+   "pulse": 6
+  }
+ }
+}

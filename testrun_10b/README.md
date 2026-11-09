@@ -1,6 +1,6 @@
 # Avereth – Originalruns und Reviews
 
-**Stand: 07.11.2026 · Quellenindex, keine zweite Produkt-/Teststatusliste.** [Aktueller Stand 03](../03_AKTUELLER_PROJEKTSTAND.md) · [Fachquellen 06](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Arbeitsweise 01](../01_ARBEITSWEISE_CHATGPT_CLAUDE.md).
+**Stand: 09.11.2026 · Quellenindex, keine zweite Produkt-/Teststatusliste.** [Aktueller Stand 03](../03_AKTUELLER_PROJEKTSTAND.md) · [Fachquellen 06](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Arbeitsweise 01](../01_ARBEITSWEISE_CHATGPT_CLAUDE.md).
 
 10B ist auf .154 als technischer Zwischenstand für persönliche Spieltests teilabgenommen. Aktuell stehen freie persönliche Runs im Vordergrund; weitere Batches nur bei konkretem Erkenntnisbedarf. Ein Runner-`completed` ist nur ein Ende, weder Levelziel noch Integritätsnachweis. Keine gemeinsame Erfolgsquote aus unterschiedlichen Builds, kurzen Toden und langen fortgesetzten Läufen bilden.
 
@@ -14,6 +14,14 @@
 | **User01 · 04.11.2026 · .155** | 37 Beiträge, 33 Enginezüge, 635 Events; Mage L1→L7. Offener/manueller Abschluss nach Reise-/Stealthproblem; Ursprung von UI- und Brenna-Befunden. | [Review](user-20261104-162404/REVIEW.md), [Feedback](user-20261104-162404/USER_FEEDBACK_REVIEW.md), [Originalmanifest](user-20261104-162404/SOURCE_MANIFEST.md), [vertiefte NPC-Analyse](../recherche/NPC_KONTINUITAET_ANALYSE_20261104.md). |
 
 Originalchat, Events und Spielerfeedback von User01/02 sind auf `main` archiviert; deren vollständige große Serverlogs liegen im Nutzerupload/separaten User-ZIP. **User04 archiviert alle vier Originale einschließlich des vollständigen Serverlogs verlustfrei komprimiert auf main.** User03 hat bislang die oben verlinkten Teilauszüge. Hash und Verfügbarkeit jeweils beim Manifest/der maßgeblichen Quelle prüfen. Unfertige Sol-Notizen in User02 sind als Original erhalten, das abgeschlossene Gegenreview steht in §8. Dessen technische Einzelbefunde und nächste Arbeit nicht hier duplizieren.
+
+## Gezielte natürliche NPC-/PULSE-Live-Runner-Tests
+
+| Run | Umfang / Ende | Maßgebliche Quellen |
+|---|---|---|
+| **NPC/PULSE Pilot 01 · 09.11.2026 · .174** | Echter LLM-Spieler `npc-sociable`/Warrior: **70 Inputs, 1.076 Events**, `done` beim Dauerziel mitten im offenen Dungeon-Kampf. **17/28 Beobachtungsziele**, 8 offene PULSE-Fenster; E3-Anker 0. Unabhängig festgestellt: fremdweitergeführter Schuldthread, doppelt erzeugter Primer, doppelter Carter als Parteienkandidat. | [Unabhängiger Review](npc-20261109-160250Z/REVIEW.md) · [vollständiges lossless Quellenarchiv und SHA-256-Manifest](npc-20261109-160250Z/SOURCE_MANIFEST.md) · [Gegenmessungen](npc-20261109-160250Z/PROBE_RESULTS.json) |
+
+**Abgrenzung:** Kein historischer Dreier-Guild-Batch und kein persönlicher User-Spieltest mit spontanem Humanfeedback; der Nutzer startete einen natürlichen **Einzellauf mit LLM-Testspieler**. `done` steht für die erfüllte 70-Input-Schranke, nicht für Dungeon-/E3-Abnahme.
 
 ## Natürliche Batchläufe
 

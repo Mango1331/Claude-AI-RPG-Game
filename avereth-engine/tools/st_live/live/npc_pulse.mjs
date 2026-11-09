@@ -19,7 +19,7 @@ import { foldChat, rec } from '../../../src/host.js';
 import { normText } from '../../../src/util.js';
 import { readChatJsonl } from './export.mjs';
 
-export const NPC_PULSE_VERSION = 1;
+export const NPC_PULSE_VERSION = 2; // 2: card deliveries measured per current engine block (full/partial/none/unknown)
 const ANCHORS = new Set(['voice', 'manner', 'interest']);
 // rules of the engine that guard who is present or who may turn on Alaric (PULSE A/C/B and the Living Dungeon)
 const PULSE_RULES = new Set(['pulse', 'road', 'pulse_take', 'envelope', 'dungeon_foe', 'dungeon_foe_thread', 'dungeon_presence', 'dungeon_slot', 'population', 'creature_continuity', 'attack_commitment', 'rest_cut']);
@@ -27,7 +27,51 @@ const NPC_RULE = /^(?:met_|desk_handler$|collective_person$|npc_|ambient$)/;
 const LIST = 12; // entries per list in the Markdown report (the JSON keeps all)
 
 const textOf = (c) => (typeof c === 'string' ? c : Array.isArray(c) ? c.map((x) => (typeof x === 'string' ? x : x?.text || '')).join('\n') : '');
-const requestText = (req) => (Array.isArray(req?.messages) ? req.messages.map((m) => textOf(m.content)).join('\n') : '');
+// P2-A (review of 2449990 §3): what a narrator request showed is read from its current engine block only, the last
+// message that starts with the game state header (src/context.js); older chat, earlier sections and the engine's own
+// bookkeeping requests (FACT REPORT REQUEST …) never count
+const ENGINE_BLOCK = /^\[AVERETH ENGINE — authoritative game state\b/;
+const engineBlock = (req) => (Array.isArray(req?.messages) ? req.messages.map((m) => textOf(m.content)).filter((t) => ENGINE_BLOCK.test(t.trimStart())).at(-1) ?? null : null);
+const flat = (t) => String(t ?? '').replace(/\s+/g, ' ').trim();
+/** The lines of one person's cards in an engine block: each "• … [id] …" line with the indented rows under it. */
+function cardLines(block, id) {
+    const out = [];
+    let on = false;
+    for (const line of String(block).split('\n')) {
+        if (line.startsWith('• ')) on = line.split(' — ')[0].includes(`[${id}]`);
+        else if (!line.startsWith('  ')) on = false;
+        if (on) out.push(flat(line));
+    }
+    return out;
+}
+/**
+ * How a card line carries a stored value after its label: "full" when the whole value stands there and ends with the
+ * field ("; " or the line's end), "partial" when the card's cap cut it ("<a proper prefix of the value>…" ends the field),
+ * else null. A longer different value that merely starts with it is no delivery. list: the row joins several values
+ * with "; " (open between you: A; B).
+ */
+function carried(line, label, value, { list = false, after = null } = {}) {
+    const v = flat(value);
+    if (!v) return null;
+    let best = null;
+    for (let at = line.indexOf(label); at >= 0; at = line.indexOf(label, at + 1)) {
+        if (after && !after.test(line.slice(0, at))) continue;
+        const rest = line.slice(at + label.length);
+        const starts = [0];
+        if (list) for (let k = rest.indexOf('; '); k >= 0; k = rest.indexOf('; ', k + 1)) starts.push(k + 2);
+        for (const s0 of starts) {
+            const r = rest.slice(s0);
+            if (r.startsWith(v) && (r.length === v.length || r[v.length] === ';')) return 'full';
+            // the cap's "…" ends the line, or the field before a label the cap keeps (an arrival card's "; NOT YET SHOWN")
+            const k = r.indexOf('…');
+            if (k > 0 && k < v.length && (k === r.length - 1 || r[k + 1] === ';') && flat(r.slice(0, k)) && v.startsWith(r.slice(0, k))) best = 'partial';
+        }
+    }
+    return best;
+}
+const anchorOn = (lines, a) => lines.reduce((b, l) => (b === 'full' ? b : carried(l, `${a.p}: `, a.o, { after: /(?:^|; )$/ }) || b), null);
+// the compact attitude row (…; between you: X) and the detail row (open between you: X; Y); never a settled row
+const agreementOn = (lines, a) => lines.reduce((b, l) => (b === 'full' ? b : carried(l, 'between you: ', a.text, { list: /^open between you: /.test(l), after: /(?:^open |; )$/ }) || b), null);
 const shares = (m, x) => (m.who || []).includes(x) || (m.witnesses || []).includes(x);
 const npcsIn = (s) => (s.scene?.present || []).filter((id) => s.entities?.[id]?.kind === 'npc');
 const nameOf = (s, id) => s.entities?.[id]?.name || s.entities?.[id]?.known_name || null;
@@ -183,30 +227,52 @@ export function npcPulseAnalysis(chat, { calls = [] } = {}) {
         }
     }
 
-    // what the narrator was shown later: each stored anchor, and each open agreement of Alaric's, on a later card
-    for (const a of anchors) {
-        for (let j = a.msg + 1; j < n; j++) {
+    // what the narrator was shown later (P2-A): each stored anchor, and each open agreement of Alaric's, on that person's
+    // card in the current engine block of every later narrator request, until the first whole delivery. A turn the
+    // person was present for without a saved request leaves it unknown, unless a whole delivery was found.
+    const story = new Map(); // turn → the current engine block of its (last) narrator request
+    for (const c of calls) {
+        if (c?.role !== 'narrator') continue;
+        const b = engineBlock(c.request);
+        if (b != null) story.set(c.turn, b);
+    }
+    const replyOf = (turn) => { for (let j = n - 1; j >= 0; j--) if (userTurn[j] === turn && !chat[j].is_user && !chat[j].is_system && rec(chat[j])) return j; return null; };
+    function delivery({ who, from, to, due, on }) {
+        const expected = [];
+        for (let j = 0; j < n; j++) {
             const m = chat[j];
-            if (m.is_user || m.is_system || !rec(m)) continue;
-            if (!(states[j].scene?.present || []).includes(a.who)) continue;
-            const call = narratorCall(userTurn[j]);
-            const head = `${a.p}: ${String(a.o).slice(0, 24)}`;
-            a.later = { msg: j, turn: userTurn[j], inPrompt: call ? requestText(call.request).includes(head) : 'unknown', passage: excerpt(m.mes, nameOf(states[j], a.who)) };
-            review.push({ kind: 'anchor_use', msg: j, turn: userTurn[j], who: a.who, why: `stored ${a.p} "${a.o}" (turn ${a.turn}); narrator card ${a.later.inPrompt === 'unknown' ? 'not checked (no requests)' : a.later.inPrompt ? 'showed it' : 'did NOT show it'}: does the story fit it?`, passage: a.later.passage });
-            break;
+            if (userTurn[j] <= from || userTurn[j] > to || m.is_user || m.is_system || !rec(m)) continue;
+            if ((states[j].scene?.present || []).some((x) => who.includes(x)) && due(states[j]) && !expected.includes(userTurn[j])) expected.push(userTurn[j]);
         }
+        const turns = [...new Set([...expected, ...[...story.keys()].filter((t) => t > from && t <= to)])].sort((x, y) => x - y);
+        const d = { status: null, fullAt: null, partialAt: null, checked: 0, missing: 0 };
+        for (const t of turns) {
+            const b = story.get(t);
+            if (b == null) { if (expected.includes(t)) d.missing += 1; continue; }
+            d.checked += 1;
+            const r = who.reduce((x, id) => (x === 'full' ? x : on(cardLines(b, id)) || x), null);
+            if (r === 'full') { d.fullAt = t; break; }
+            if (r === 'partial' && d.partialAt == null) d.partialAt = t;
+        }
+        d.status = d.fullAt != null ? 'full' : d.partialAt != null ? 'partial' : d.missing ? 'unknown' : expected.length ? 'none' : null;
+        if (!d.status) return null; // never present again and never on a card: nothing to measure
+        const j = replyOf(d.fullAt ?? d.partialAt ?? expected[0]) ?? replyOf(expected[0]);
+        // inPrompt (2449990's field): true only for a whole delivery
+        return { ...d, inPrompt: d.status === 'unknown' ? 'unknown' : d.status === 'full', msg: j, turn: j == null ? null : userTurn[j] };
+    }
+    const SHOWN = { full: 'showed it whole', partial: 'showed it only cut by the card cap', none: 'did NOT show it', unknown: 'not checked (requests missing)' };
+    for (const a of anchors) {
+        const next = anchors.find((x) => x.msg > a.msg && x.who === a.who && x.p === a.p);
+        a.later = delivery({ who: [a.who], from: a.turn, to: next ? next.turn : Infinity, due: () => true, on: (lines) => anchorOn(lines, a) });
+        if (!a.later || a.later.msg == null) continue;
+        const m = chat[a.later.msg];
+        a.later.passage = excerpt(m.mes, nameOf(states[a.later.msg], a.who));
+        review.push({ kind: 'anchor_use', msg: a.later.msg, turn: a.later.turn, who: a.who, why: `stored ${a.p} "${a.o}" (turn ${a.turn}); narrator card ${SHOWN[a.later.status]}${a.later.status === 'full' ? ` (turn ${a.later.fullAt})` : a.later.status === 'partial' ? ` (turn ${a.later.partialAt})` : ''}: does the story fit it?`, passage: a.later.passage });
     }
     const personal = Object.values(agreements).filter((a) => (a.who || []).includes('pc'));
     for (const a of personal) {
-        const npcs = a.who.filter((x) => x !== 'pc');
-        for (let j = a.opened.msg + 1; j < n; j++) {
-            const m = chat[j];
-            if (m.is_user || m.is_system || !rec(m)) continue;
-            if (states[j].threads?.[a.id]?.status !== 'open' || !npcs.some((x) => (states[j].scene?.present || []).includes(x))) continue;
-            const call = narratorCall(userTurn[j]);
-            a.onCard = { msg: j, turn: userTurn[j], inPrompt: call ? requestText(call.request).includes(`between you: ${a.text.slice(0, 30)}`) : 'unknown' };
-            break;
-        }
+        const closed = a.course.find((c) => c.status !== 'open');
+        a.onCard = delivery({ who: a.who.filter((x) => x !== 'pc'), from: a.opened.turn, to: closed ? closed.turn : Infinity, due: (s) => s.threads?.[a.id]?.status === 'open', on: (lines) => agreementOn(lines, a) });
         a.takenUp = a.course.some((c) => c.turn > a.opened.turn);
     }
 
@@ -231,7 +297,7 @@ export function npcPulseAnalysis(chat, { calls = [] } = {}) {
     const rules = {};
     for (const m of chat) for (const e of (rec(m)?.events || []).filter((x) => x.t === 'delta.rejected')) rules[e.d.rule || '?'] = (rules[e.d.rule || '?'] || 0) + 1;
 
-    const covered = (id, what, value) => ({ id, what, count: value, status: value > 0 ? 'observed' : 'not covered' });
+    const covered = (id, what, value, more = {}) => ({ id, what, count: value, status: value > 0 ? 'observed' : 'not covered', ...more });
     const coverage = [
         covered('npc_first_meetings', 'people met for the first time', Object.keys(people).length),
         covered('npc_returns', 'a known person present again in a later presence (E2-A)', returns.length),
@@ -246,12 +312,12 @@ export function npcPulseAnalysis(chat, { calls = [] } = {}) {
         covered('agreement_settled', 'an agreement of his settled', count(personal, (a) => a.status === 'resolved')),
         covered('agreement_npc_only', 'agreements between other people only', count(Object.values(agreements), (a) => a.who && !a.who.includes('pc'))),
         covered('agreement_unbound', 'promise/debt threads stored without parties', count(Object.values(agreements), (a) => !a.who)),
-        covered('agreement_on_card', 'an open agreement shown on a later narrator card', count(personal, (a) => a.onCard?.inPrompt === true)),
+        covered('agreement_on_card', 'an open agreement shown whole on a later narrator card (partial: only cut by the card cap)', count(personal, (a) => a.onCard?.status === 'full'), { partial: count(personal, (a) => a.onCard?.status === 'partial'), unknown: count(personal, (a) => a.onCard?.status === 'unknown') }),
         covered('anchor_stored', 'a personality anchor stored (E3 R10)', anchors.length),
         covered('anchor_changed', 'an anchor changed in a later presence', count(anchors, (a) => a.replaced)),
         covered('anchor_refused_first_contact', 'a trait refused at a first contact', count(refusals.anchor, (x) => x.rule === 'anchor_first_contact')),
         covered('anchor_refused_mood', 'a mood refused as a trait', count(refusals.anchor, (x) => x.rule === 'anchor_mood')),
-        covered('anchor_on_card', 'a stored anchor shown on a later narrator card', count(anchors, (a) => a.later?.inPrompt === true)),
+        covered('anchor_on_card', 'a stored anchor shown whole on a later narrator card (partial: only cut by the card cap)', count(anchors, (a) => a.later?.status === 'full'), { partial: count(anchors, (a) => a.later?.status === 'partial'), unknown: count(anchors, (a) => a.later?.status === 'unknown') }),
         covered('pulse_travel', 'PULSE draws on the road', count(windows, (w) => w.exposure === 'travel')),
         covered('pulse_pause', 'PULSE draws while resting or waiting', count(windows, (w) => w.exposure === 'pause')),
         covered('pulse_scene', 'PULSE draws in a town or the wild', count(windows, (w) => w.exposure === 'scene' && w.frame !== 'dungeon')),
@@ -276,12 +342,14 @@ export function npcPulseAnalysis(chat, { calls = [] } = {}) {
 }
 
 const cell = (v) => String(v ?? '–').replace(/\|/g, '/').replace(/\s+/g, ' ');
+const shownCell = (d) => (!d ? '–' : d.status === 'full' ? `voll (Zug ${d.fullAt})` : d.status === 'partial' ? `gekürzt (Zug ${d.partialAt})` : d.status === 'unknown' ? '?' : 'nein');
+const countCell = (c) => `${c.count}${c.partial ? ` (+${c.partial} nur gekürzt)` : ''}${c.unknown ? ` (${c.unknown} ?)` : ''}`;
 /** The Markdown report of an analysis. */
 export function npcPulseMarkdown(a, { runId = null } = {}) {
     const L = [`# NPC/PULSE-Auswertung${runId ? ` – ${runId}` : ''}`, ''];
     L.push('> Automatisch aus den gespeicherten Chatrecords, Events und Requests, ohne Modellaufruf. Regelverletzungen nur, wo die Records sie sicher tragen; semantische Zweifelsfälle stehen mit Originalstelle unter „Zum Review“. Nicht erreichte Testziele sind **fehlende Abdeckung**, weder bestanden noch fehlgeschlagen.', '');
     if (!a.e3Records) L.push('> Hinweis: Die Records enthalten keine Anwesenheitsspannen (`scene.since`, ab .174); die E3-Prüfungen der Anker entfallen.', '');
-    L.push('## Abdeckung', '', '| Testziel | Bedeutung | Anzahl | Status |', '|---|---|---:|---|', ...a.coverage.map((c) => `| ${c.id} | ${c.what} | ${c.count} | ${c.status === 'observed' ? 'beobachtet' : '**nicht abgedeckt**'} |`), '');
+    L.push('## Abdeckung', '', '| Testziel | Bedeutung | Anzahl | Status |', '|---|---|---:|---|', ...a.coverage.map((c) => `| ${c.id} | ${c.what} | ${countCell(c)} | ${c.status === 'observed' ? 'beobachtet' : '**nicht abgedeckt**'} |`), '');
     L.push('## Regelverletzungen (automatisch, belastbar)', '');
     L.push(...(a.violations.length ? a.violations.slice(0, LIST * 2).map((v) => `- **${v.kind}**${v.turn != null ? ` (Zug ${v.turn}, Nachricht ${v.msg})` : ''}: ${cell(v.why)}${v.passage ? ` — „${cell(v.passage)}“` : ''}`) : ['Keine gefunden.']), '');
     const N = a.npc;
@@ -289,9 +357,9 @@ export function npcPulseMarkdown(a, { runId = null } = {}) {
     if (N.people.length) L.push('| Person | erster Zug | Spannen | Rückkehr | Anker |', '|---|---:|---:|---:|---:|', ...N.people.slice(0, LIST * 2).map((p) => `| ${cell(p.label)} (${p.id}) | ${p.turn} | ${p.spans} | ${p.returns} | ${p.anchors} |`), '');
     if (N.returns.length) L.push('**Wiederbegegnungen**', '', ...N.returns.slice(0, LIST).map((r) => `- Zug ${r.turn}: ${cell(r.label)} — ${r.path === 'met' ? 'per `met` belegt' : 'Eintritt ohne `met`'} — „${cell(r.passage)}“`), '');
     if (N.agreements.length) L.push('**Absprachen**', '', '| Thread | Art | Parteien | eröffnet | Verlauf | später aufgegriffen | auf späterer Karte |', '|---|---|---|---:|---|---|---|',
-        ...N.agreements.slice(0, LIST).map((x) => `| ${cell(x.text).slice(0, 90)} | ${x.kind} | ${cell((x.who || ['ohne']).join(', '))} | ${x.opened.turn} | ${x.course.map((c) => `${c.turn}:${c.status}`).join(' → ')} | ${x.takenUp ? 'ja' : x.who?.includes('pc') ? 'nein' : '–'} | ${x.onCard ? (x.onCard.inPrompt === 'unknown' ? '?' : x.onCard.inPrompt ? 'ja' : 'nein') : '–'} |`), '');
+        ...N.agreements.slice(0, LIST).map((x) => `| ${cell(x.text).slice(0, 90)} | ${x.kind} | ${cell((x.who || ['ohne']).join(', '))} | ${x.opened.turn} | ${x.course.map((c) => `${c.turn}:${c.status}`).join(' → ')} | ${x.takenUp ? 'ja' : x.who?.includes('pc') ? 'nein' : '–'} | ${shownCell(x.onCard)} |`), '');
     if (N.anchors.length) L.push('**Persönlichkeitsanker**', '', '| Zug | Person | Merkmal | Wert | ersetzt | spätere Karte |', '|---:|---|---|---|---|---|',
-        ...N.anchors.slice(0, LIST).map((x) => `| ${x.turn} | ${cell(x.label)} | ${x.p} | ${cell(x.o)} | ${x.replaced ? 'ja' : 'nein'} | ${x.later ? (x.later.inPrompt === 'unknown' ? '?' : x.later.inPrompt ? 'ja' : 'nein') : '–'} |`), '');
+        ...N.anchors.slice(0, LIST).map((x) => `| ${x.turn} | ${cell(x.label)} | ${x.p} | ${cell(x.o)} | ${x.replaced ? 'ja' : 'nein'} | ${shownCell(x.later)} |`), '');
     const ar = [...N.refusals.anchor, ...N.refusals.npc, ...N.refusals.thread];
     if (ar.length) L.push('**Abgelehnte NPC-Meldungen** (Regel: Anzahl)', '', [...new Set(ar.map((x) => x.rule || 'ambiguous_thread'))].map((k) => `${k}: ${ar.filter((x) => (x.rule || 'ambiguous_thread') === k).length}`).join(' · '), '');
     const P = a.pulse;
@@ -319,6 +387,33 @@ export function npcPulseSection(a) {
         `Abgedeckt: ${a.coverage.length - missing.length}/${a.coverage.length} Testziele; **nicht abgedeckt:** ${missing.join(', ') || '–'}.`,
         `Regelverletzungen (automatisch): ${a.violations.length}${a.violations.length ? ` (${[...new Set(a.violations.map((v) => v.kind))].join(', ')})` : ''}. Zum Review: ${a.review.length} Stellen.`,
         'Details, Tabellen und Originalstellen: [npc-pulse.md](npc-pulse.md), vollständig in npc-pulse.json.', ''].join('\n');
+}
+
+export const NPC_PULSE_FILES = ['npc-pulse.json', 'npc-pulse.md'];
+/**
+ * The evaluation step of a run whose guide asks for it (P2-B, review of 2449990 §4): the files to write and the status
+ * run.json keeps. A failure writes no npc-pulse file (no file may pretend a result) and is recorded with its error; the
+ * run's original exports are not touched here.
+ */
+export function npcPulseExports({ messages, calls = [], runId = null, analyse = npcPulseAnalysis }) {
+    try {
+        const analysis = analyse(messages, { calls });
+        const files = [[NPC_PULSE_FILES[0], JSON.stringify(analysis, null, 1), 'die NPC-/PULSE-Auswertung (Abdeckung, Beobachtungen, Regelverletzungen, Review-Stellen)'],
+            [NPC_PULSE_FILES[1], npcPulseMarkdown(analysis, { runId }), 'die NPC-/PULSE-Auswertung als Bericht']];
+        return { ok: true, analysis, files, status: { id: 'npc_pulse', ok: true, files: [...NPC_PULSE_FILES] } };
+    } catch (e) {
+        return npcPulseFailed(e);
+    }
+}
+export const npcPulseFailed = (e) => ({ ok: false, analysis: null, files: [], status: { id: 'npc_pulse', ok: false, error: String(e?.message || e).slice(0, 300) } });
+
+/** The run's report.md with its evaluation: the short section, or, when it failed, a notice right under the title. */
+export function withAnalysisReport(report, x) {
+    if (!x) return report;
+    if (x.ok) return report + npcPulseSection(x.analysis);
+    const [title, ...rest] = String(report).split('\n');
+    const notice = `> **NPC/PULSE-AUSWERTUNG FEHLGESCHLAGEN: ${cell(x.status?.error || 'unbekannter Fehler')}** — npc-pulse.json/.md fehlen; die Originalexporte (chat.jsonl, avereth-events.json, chat-completions.jsonl) sind vollständig. Nachträglich: \`npm run live:st:npc-eval -- <Laufordner>\`.`;
+    return [title, '', notice, ...rest].join('\n');
 }
 
 /** The rows of chat-completions.jsonl as the analysis reads them. */

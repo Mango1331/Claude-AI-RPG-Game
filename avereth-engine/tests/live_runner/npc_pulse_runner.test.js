@@ -86,6 +86,7 @@ test('batch --mode npc: two sequential runs (npc-sociable, npc-wary) with the ba
         fs.writeFileSync(path.join(dir, 'evaluation.json'), JSON.stringify({ character: { class: s.baseClass.toLowerCase() }, progression: null }));
         fs.writeFileSync(path.join(dir, 'report.md'), '# synthetic');
         fs.writeFileSync(path.join(dir, 'npc-pulse.md'), '# synthetic npc-pulse');
+        fs.writeFileSync(path.join(dir, 'npc-pulse.json'), '{}'); // a run writes both evaluation files (P2-B)
         return { code: 0 };
     } });
     assert.deepEqual(seen, [['npc-sociable', 7, 'npc_pulse_test'], ['npc-wary', 8, 'npc_pulse_test']]);

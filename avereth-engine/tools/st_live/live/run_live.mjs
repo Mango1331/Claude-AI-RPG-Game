@@ -33,7 +33,7 @@ import { parseCalls } from './calls.mjs';
 import { readChatJsonl, eventsLog, jsonl, secretScan } from './export.mjs';
 import { buildReport } from './report.mjs';
 import { startStub, STUB_MODEL } from './stub_provider.mjs';
-import { npcPulseAnalysis, npcPulseMarkdown, npcPulseSection } from './npc_pulse.mjs';
+import { npcPulseExports, npcPulseFailed, withAnalysisReport } from './npc_pulse.mjs';
 
 export const CONFIG_FILE = path.join(ENGINE, 'tools', 'st_live', 'live.config.json');
 
@@ -502,18 +502,19 @@ export async function run(o) {
         end = finalCheck.end;
         const ev = evaluate(messages, { guide });
         put('evaluation.json', JSON.stringify({ end, integrity: finalCheck.integrity, ...ev }, null, 1), 'die Auswertung (Etappen, Kämpfe, Quests, Auffälligkeiten)');
-        // the targeted NPC/PULSE run (guides/npc_pulse_test.json): its own evaluation from the saved records and requests
+        // the targeted NPC/PULSE run (guides/npc_pulse_test.json): its own evaluation from the saved records and requests;
+        // a failure (P2-B) is kept in run.json (analysis) and under the report's title, the exports above stay as they are
         let npcPulse = null;
         if (guide.analysis === 'npc_pulse') {
-            try {
-                npcPulse = npcPulseAnalysis(messages, { calls: calls.map((c) => ({ role: c.role, turn: c.turn, request: c.full?.request })) });
-                put('npc-pulse.json', JSON.stringify(npcPulse, null, 1), 'die NPC-/PULSE-Auswertung (Abdeckung, Beobachtungen, Regelverletzungen, Review-Stellen)');
-                put('npc-pulse.md', npcPulseMarkdown(npcPulse, { runId }), 'die NPC-/PULSE-Auswertung als Bericht');
-            } catch (e) { log(`NPC/PULSE evaluation failed: ${e.message}`); }
+            npcPulse = npcPulseExports({ messages, calls: calls.map((c) => ({ role: c.role, turn: c.turn, request: c.full?.request })), runId });
+            for (const [name, data, what] of npcPulse.files) {
+                try { put(name, data, what); } catch (e) { npcPulse = npcPulseFailed(new Error(`${name} not written: ${e.message}`)); break; }
+            }
+            if (!npcPulse.ok) log(`NPC/PULSE EVALUATION FAILED: ${npcPulse.status.error} (the exports are kept; afterwards: npm run live:st:npc-eval -- ${runDir})`);
         }
         const driverNotes = [...(driver?.setupNotes || []), ...callErrors.slice(0, 5).map((e) => `server log: ${e}`)];
         driverNotes.push(`Final saved-state integrity: ${finalCheck.integrity.ok ? 'OK' : 'FAILED'} (${finalCheck.integrity.foldErrors.length} fold errors, ${finalCheck.integrity.problems.length} validation problems).`);
-        put('run.json', JSON.stringify({ runId, build: buildOf(), git: gitInfo(), scenario: guide.scenario || null, stub: !!stub, seed, fixture: o.fixture || null, fixtureReload, persona, guide: { id: guide.id, chain: guide.chain, files: guide.files.map((f) => path.relative(ENGINE, f)) }, end, timing, preflight: preflightResult, route: imp.route, player: { type: o.player.type, ...playerSetup }, setup, conn, chatId: opened?.chatId || null, safeContinuations: turnsLog.filter(t=>t.outcome === 'soft_continued').length, turns: turnsLog.map(({ decision, ...t }) => ({ ...t, milestone: decision?.milestone || null })), status: statusLine, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [], notes: driverNotes, stubCalls: stub ? stub.calls : undefined }, null, 1), 'Ablauf des Laufs: Züge, Zeiten, Hinweise, Seitenfehler, Statuszeile');
+        put('run.json', JSON.stringify({ runId, build: buildOf(), git: gitInfo(), scenario: guide.scenario || null, stub: !!stub, seed, fixture: o.fixture || null, fixtureReload, persona, guide: { id: guide.id, chain: guide.chain, files: guide.files.map((f) => path.relative(ENGINE, f)) }, end, analysis: npcPulse?.status, timing, preflight: preflightResult, route: imp.route, player: { type: o.player.type, ...playerSetup }, setup, conn, chatId: opened?.chatId || null, safeContinuations: turnsLog.filter(t=>t.outcome === 'soft_continued').length, turns: turnsLog.map(({ decision, ...t }) => ({ ...t, milestone: decision?.milestone || null })), status: statusLine, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [], notes: driverNotes, stubCalls: stub ? stub.calls : undefined }, null, 1), 'Ablauf des Laufs: Züge, Zeiten, Hinweise, Seitenfehler, Statuszeile');
         put('import.json', JSON.stringify({ ...imp, preset: { ...imp.preset, text: undefined, sha256: imp.preset.text ? sha256(Buffer.from(imp.preset.text)) : null } }, null, 1), 'was aus dem Profil übernommen wurde (ohne Schlüssel)');
 
         const changedRead = changedSince(imp.read);
@@ -529,7 +530,7 @@ export async function run(o) {
             protection, scan, files: [...files, ['report.md', 'dieser Bericht'], ['screens/', 'Bildschirmfotos (Ende, Probleme)']], startedAt, endedAt, instanceKept: o.keepProfile ? inst.root : null,
             chatId: opened?.chatId, seed, fixture: o.fixture || null, fixtureReload, slow, timing, preflight: preflightResult, keyEnv: o.keyEnv, playerSetup, playerMaxTokens: o.player.maxTokens, worldSame: imp.world ? imp.world.sha256 === sha256(fs.readFileSync(WORLD_FILE)) : null,
         });
-        put('report.md', report + (npcPulse ? npcPulseSection(npcPulse) : ''), 'dieser Bericht');
+        put('report.md', withAnalysisReport(report, npcPulse), 'dieser Bericht');
         const again = secretScan(runDir, secrets, g);
         scan.hits.push(...again.hits);
         const metaFile = path.join(runDir, 'run.json');
@@ -537,9 +538,9 @@ export async function run(o) {
         g.write(metaFile, JSON.stringify({ ...metadata, protection: { unchanged: protection.unchanged }, secretHits: scan.hits.length }, null, 1));
         if (scan.hits.length) log(`SECRET SCAN: ${scan.hits.length} hit(s) blanked (${scan.hits.map((h) => h.file).join(', ')})`);
         log(`time: ${Math.round(timing.totalMs / 60000)} min in all, ${timing.turns} turns, ${timing.turns ? `${Math.round((timing.gameMs + timing.decideMs) / timing.turns / 1000)} s per turn (game ${Math.round(timing.gameMs / Math.max(1, timing.turns) / 1000)} s, player ${Math.round(timing.decideMs / Math.max(1, timing.turns) / 1000)} s)` : 'no turn'}`);
-        log(`result: ${end.kind}${end.why ? ` (${end.why})` : ''}; milestones ${ev.milestones.filter((m) => m.required && m.reached).length}/${ev.milestones.filter((m) => m.required).length}; profile unchanged: ${protection.unchanged}; secret scan: ${scan.hits.length ? 'HITS' : 'clean'}`);
+        log(`result: ${end.kind}${end.why ? ` (${end.why})` : ''}; milestones ${ev.milestones.filter((m) => m.required && m.reached).length}/${ev.milestones.filter((m) => m.required).length}; profile unchanged: ${protection.unchanged}; secret scan: ${scan.hits.length ? 'HITS' : 'clean'}${npcPulse ? `; NPC/PULSE evaluation: ${npcPulse.ok ? 'written' : `FAILED (${npcPulse.status.error})`}` : ''}`);
         log(`run folder: ${runDir}`);
-        return { runDir, end, ev, protection, scan, calls, stub, inst, playerLog, turnsLog };
+        return { runDir, end, ev, protection, scan, calls, stub, inst, playerLog, turnsLog, analysis: npcPulse?.status || null };
     } finally {
         if (!o.keepProfile) { try { removeInstance(inst); } catch (e) { log(`could not remove the isolated instance ${inst.root}: ${e.message}`); } }
     }

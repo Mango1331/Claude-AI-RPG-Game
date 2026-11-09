@@ -9,15 +9,17 @@ import { Guard, stamp } from './lib.mjs';
 import { loadGuide } from './guide.mjs';
 import { SCENARIOS, NPC_SCENARIOS, scenarioGuide } from './scenarios.mjs';
 import { CREDENTIAL_PATTERNS } from './export.mjs';
+import { NPC_PULSE_FILES } from './npc_pulse.mjs';
 
 const RUNNER = fileURLToPath(new URL('./run_live.mjs', import.meta.url));
 const INFRA = new Set(['harness', 'ui', 'missing', 'no_result', 'process_error', 'scenario_metadata_mismatch']);
 const BATCH_SCENARIOS = SCENARIOS.filter(s => s.focus === 'guild');
 // Batch modes: the historical Guild series (default, unchanged) and the targeted NPC/PULSE series (two independent runs
-// of guides/npc_pulse_test.json with their own class, style and seed: the batch seed and the next one).
+// of guides/npc_pulse_test.json with their own class, style and seed: the batch seed and the next one). analysis: the
+// evaluation every run of the mode owes (P2-B): a run without it is marked, and the batch ends analysis_incomplete.
 export const BATCH_MODES = {
     guild: { profiles: BATCH_SCENARIOS, guide: 'current_test', seedOf: (seed, s) => (seed + SCENARIOS.indexOf(s)) % 0x80000000 },
-    npc: { profiles: NPC_SCENARIOS, guide: 'npc_pulse_test', seedOf: (seed, _s, i) => (seed + i) % 0x80000000,
+    npc: { profiles: NPC_SCENARIOS, guide: 'npc_pulse_test', seedOf: (seed, _s, i) => (seed + i) % 0x80000000, analysis: { id: 'npc_pulse', files: NPC_PULSE_FILES },
         title: (n) => `# Avereth – ${n} natürliche NPC-/PULSE-Testläufe`,
         meaning: (n) => `Serie abgeschlossen bedeutet, dass die ${n} Läufe beendet sind; es bedeutet keine bestandene NPC- oder PULSE-Abnahme. Die Auswertung je Lauf steht in seiner npc-pulse.md (Beobachtungen, Prüffälle, fehlende Abdeckung).` },
 };
@@ -75,17 +77,26 @@ function readResult(parent, job, exit) {
             recordedEnd: r.end, exit, runDir: dirs[0].name, seed: r.seed, build: r.build, git: r.git, stub: r.stub === true,
             inputs: r.turns?.length || 0, level: ev.progression?.currentLevel ?? null, actualClass: ev.character?.class ?? null,
             profileUnchanged: r.protection?.unchanged ?? null, secretHits: r.secretHits ?? null,
+            ...(r.analysis ? { analysis: r.analysis } : {}),
         };
     } catch { return { end: { kind: 'no_result', why: 'run metadata could not be read' }, exit }; }
 }
 
 const cell = v => String(v ?? '–').replace(/[|\r\n]/g, ' ');
+/** Whether an archived run has the evaluation its mode owes: run.json does not record a failure, and its files exist. */
+function analysisOk(dir, r, want) {
+    if (r.analysis && (r.analysis.id !== want.id || r.analysis.ok === false)) return false;
+    return want.files.every((f) => fs.existsSync(path.join(dir, f)));
+}
+const withoutAnalysis = (batch) => batch.runs.filter((r) => r.runDir && r.analysisOk === false);
 function persist(g, root, batch) {
     const temp = path.join(root, 'batch.json.tmp');
     g.write(temp, JSON.stringify(batch, null, 2));
     fs.renameSync(g.check(temp), g.check(path.join(root, 'batch.json')));
     const mode = BATCH_MODES[batch.mode || 'guild'];
-    const npc = (r) => r.runDir && fs.existsSync(path.join(root, r.folder, r.runDir, 'npc-pulse.md')) ? ` · [npc-pulse.md](${r.folder}/${r.runDir}/npc-pulse.md)` : '';
+    const npc = (r) => (mode.analysis && r.runDir && r.analysisOk === false ? ` · **${r.analysis?.ok === false ? `Auswertung fehlgeschlagen: ${cell(r.analysis.error)}` : 'Auswertung fehlt'}**` : '')
+        + (r.runDir && fs.existsSync(path.join(root, r.folder, r.runDir, 'npc-pulse.md')) ? ` · [npc-pulse.md](${r.folder}/${r.runDir}/npc-pulse.md)` : '');
+    const missing = mode.analysis ? withoutAnalysis(batch) : [];
     g.write(path.join(root, 'report.md'), [
         mode.title ? mode.title(batch.runs.length) : `# Avereth – ${batch.runs.length} natürliche Testkampagnen`, '',
         ...(batch.stub ? ['> STUB-SELBSTTEST mit Mockprovider, kein natürlicher Livetest.', ''] : []),
@@ -93,6 +104,7 @@ function persist(g, root, batch) {
         '| Nr. | Profil | Seed | Eingaben | Level | Ende | Originalbericht |', '|---|---|---:|---:|---:|---|---|',
         ...batch.runs.map(r => `| ${r.index} | ${r.id} | ${r.seed} | ${r.inputs ?? '–'} | ${r.level ?? '–'} | ${cell(r.end?.kind || r.status)} | ${r.runDir ? `[report.md](${r.folder}/${r.runDir}/report.md)${npc(r)}` : '–'} |`), '',
         ...batch.runs.filter(r => r.end?.kind === 'no_result').map(r => `- ${r.id}: ${cell(r.end.why)}`), '',
+        ...(missing.length ? [`**Achtung: ${missing.length} von ${batch.runs.filter((r) => r.runDir).length} Läufen ohne gültige NPC-/PULSE-Auswertung** (${missing.map((r) => r.id).join(', ')}): npc-pulse.json/.md fehlen oder die Auswertung ist fehlgeschlagen. Die Originalexporte dieser Läufe sind erhalten; nachträglich: \`npm run live:st:npc-eval -- <Laufordner>\`.`, ''] : []),
     ].join('\n'));
 }
 
@@ -123,13 +135,14 @@ export async function runBatch({ root, args = [], seed = Math.floor(Math.random(
             console.log(`\nBatch ${job.index}/${batch.runs.length}: ${job.id}, seed ${job.seed}`);
             const exit = await launch([...args, '--scenario', job.id, '--seed', String(job.seed), '--runs', parent], { signal: ctl.signal, secrets });
             Object.assign(job, readResult(parent, job, exit), { status: 'finished' });
+            if (m.analysis && job.runDir) job.analysisOk = analysisOk(path.join(parent, job.runDir), job, m.analysis);
             if (job.profileUnchanged === false || job.secretHits > 0) { batch.status = 'export_safety_stop'; persist(g, root, batch); break; }
             infra = INFRA.has(job.end.kind) ? infra + 1 : 0;
             persist(g, root, batch);
             if (infra >= 3) { batch.status = 'infrastructure_stop'; break; }
         }
         if (ctl.signal.aborted) batch.status = ctl.signal.reason;
-        else if (batch.status === 'running') batch.status = 'completed';
+        else if (batch.status === 'running') batch.status = m.analysis && withoutAnalysis(batch).length ? 'analysis_incomplete' : 'completed';
         return batch;
     } finally {
         clearTimeout(timer); signal?.removeEventListener('abort', cancel);

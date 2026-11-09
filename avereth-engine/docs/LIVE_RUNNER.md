@@ -87,8 +87,8 @@ Der Batch startet **nacheinander zwei neue Level-1-Kampagnen** mit dem Leitfaden
   - Optionale Etappen: `guild_registered`, `quest_completed`, `inside_dungeon` (nur „wenn es in Reichweite kommt“).
   - Tod, Blocker und Grenzen bleiben eigene Endgründe.
 - **Spielerprompt:** gemeinsame Konventionen, `GEAR CHECK` offener Läufe, Brief, Stil. Etwa 9 270 Zeichen, rund 740 mehr als ein Guild-Profil; das sind die sozialen Verhaltensregeln. Das Antwortbeispiel nennt die eigene Etappe (`exampleMilestone`); alle anderen Leitfäden behalten ihren Prompt unverändert.
-- **Ablage:** `npc-batch-<Zeitstempel>/001-npc-sociable/<Run-ID>/` und `002-npc-wary/…`, jeweils mit den bisherigen Exporten plus `npc-pulse.json` und `npc-pulse.md` (§7a). `report.md` je Lauf erhält einen kurzen Abschnitt „NPC/PULSE-Auswertung“. Die Batchübersicht verlinkt beide Auswertungen.
-- **Bedeutung:** „Batch completed“ heißt: zwei beendete Läufe, **keine** bestandene NPC- oder PULSE-Abnahme.
+- **Ablage:** `npc-batch-<Zeitstempel>/001-npc-sociable/<Run-ID>/` und `002-npc-wary/…`, jeweils mit den bisherigen Exporten plus `npc-pulse.json` und `npc-pulse.md` (§7a). `report.md` je Lauf erhält einen kurzen Abschnitt „NPC/PULSE-Auswertung“. Die Batchübersicht verlinkt beide Auswertungen. Fehlt eine Auswertung oder ist sie fehlgeschlagen, steht das im Lauf- und Batchbericht (Korrektur unten).
+- **Bedeutung:** „Batch completed“ heißt: zwei beendete Läufe, beide mit Auswertung, **keine** bestandene NPC- oder PULSE-Abnahme. `analysis_incomplete`: alle Läufe beendet, mindestens einer ohne gültige Auswertung.
 - **Kosten:** Je Eingabe ein Spieleraufruf sowie Planner, Erzähler und Extractor des Spiels (plus Reparaturen). Bei bis zu 80 Eingaben je Lauf sind das grob 600–700 kostenpflichtige Aufrufe für beide Läufe. Die Auswertung selbst ruft kein Modell auf.
 
 Weitere Aufrufe:
@@ -114,6 +114,79 @@ npm run live:st:npc-eval -- <Laufordner>
 - Das ist **kein natürlicher Modelltest** und keine NPC-/PULSE-Abnahme.
 - **Stub nebenbei repariert** (betrifft nur den Selbsttest): Die Klassenvorgabe wird wieder erkannt (Brief „Base class …;“). Die Skills übernimmt der Stub-Spieler aus dem Beispiel des echten Erstellungsmenüs, weil „Quick Slash“ kein Rogue-Starter mehr ist.
 - **Vorbestehend, auch auf unverändertem `.174`:** `selftest.mjs` meldet 49/51. Seine Level-Guide-Probe `selftest_level_cap` erstellt per Skript „Flame Lance + Blink“, während `current_test` die AoE-Starterfähigkeit verlangt; sie endet als `scenario_mismatch`. Nicht Teil dieser Änderung.
+
+### Runner-Korrektur vom 09.11.2026: Kartenmessung und Auswertungsfehler (P2 aus dem Review von `2449990`)
+
+Behebt die beiden P2-Befunde aus [`patch_plans_10b/REVIEW_NPC_PULSE_RUNNER_2449990_GPT.md`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/patch_plans_10b/REVIEW_NPC_PULSE_RUNNER_2449990_GPT.md) §§3–4.
+- Geändert: nur `npc_pulse.mjs`, `run_live.mjs`, `batch.mjs` und Tests.
+- Unverändert: Engine (`.174`), Leitfäden, Spielregeln und die 28 Testziele.
+- Kein Modellaufruf.
+
+**P2-A: Kartenmessung (`anchor_on_card`, `agreement_on_card`)**
+- **Nur der aktuelle Engineblock** jedes Erzählerrequests zählt: die letzte Nachricht, die mit `[AVERETH ENGINE — authoritative game state` beginnt. Nicht gezählt werden:
+  - älterer Chat und andere Promptabschnitte;
+  - die Buchhaltungsrequests der Engine (`FACT REPORT REQUEST` …), die `calls.mjs` ebenfalls als `narrator` führt.
+- **Nur die Karte dieser Person:** die Zeile `• … [<id>] …` und ihre eingerückten Zeilen.
+- **Der ganze gespeicherte Wert in seinem Feld:**
+  - Anker: `; <Merkmal>: <Wert>`, danach `;` oder das Zeilenende.
+  - Absprache: `between you: <Text>` in der Haltungszeile oder `open between you: A; B` in der Detailkarte, nie `settled`.
+  - Es gibt keinen 24-/30-Zeichen-Präfixvergleich mehr. Ein längerer, anderer Wert, der nur mit dem gespeicherten beginnt, gilt nicht als Lieferung.
+- **Gekürzt ist nicht geliefert:** Ein von der 170-Zeichen-Kappe angeschnittener Wert (`<Anfang>…`, auch vor `; NOT YET SHOWN`) zählt als `partial`. Ein ganz verdrängter Wert zählt als `none`.
+- **Alle späteren Requests bis zur ersten vollen Lieferung:**
+  - Anker: bis zum nächsten Wert desselben Merkmals.
+  - Absprachen: solange sie offen sind.
+  - Je Zug zählt der letzte Erzählerrequest.
+- **Status** (`later` beim Anker, `onCard` bei der Absprache):
+  - `full` mit `fullAt`;
+  - `partial` mit `partialAt`;
+  - `none`: alle Züge mit der Person geprüft, nie gezeigt;
+  - `unknown`: für einen solchen Zug fehlt der Request, und es gab keine volle Lieferung;
+  - `null`: keine spätere Anwesenheit und keine Karte.
+  - `inPrompt` bleibt zur Kompatibilität und ist nur bei `full` wahr.
+- **Abdeckung:** `*_on_card` zählt nur volle Lieferungen. `partial` und `unknown` stehen als Zusatzfelder am Eintrag, die Liste der Testziele bleibt gleich.
+- **Markdown:** „voll (Zug N)“, „gekürzt (Zug N)“, „nein“ oder „?“; Abdeckungszahl etwa „1 (+1 nur gekürzt)“.
+- `NPC_PULSE_VERSION` ist jetzt 2.
+
+**P2-B: Auswertungsfehler**
+- **Lauf:**
+  - `run.json.analysis` hält das Ergebnis: `{id: 'npc_pulse', ok: true, files: […]}` oder `{id: 'npc_pulse', ok: false, error}`.
+  - Bei einem Fehler entsteht keine `npc-pulse`-Datei; ein Schreibfehler dieser Dateien zählt ebenfalls als Fehlschlag.
+  - `report.md` trägt unter dem Titel **„NPC/PULSE-AUSWERTUNG FEHLGESCHLAGEN: …“** mit dem Hinweis auf `npm run live:st:npc-eval -- <Laufordner>`; die Ergebniszeile im Log nennt den Fehler.
+  - Exporte, Geheimnis-Scan und Exitcode des Laufs bleiben unverändert.
+- **Batch `--mode npc`:**
+  - `analysisOk` je Lauf: `npc-pulse.json` und `.md` vorhanden, und `run.json` meldet keinen Fehlschlag. Ein Lauf ohne `analysis`-Feld, wie `2449990` ihn bei einem Fehler hinterließ, fällt über die fehlenden Dateien auf.
+  - Die Tabelle zeigt **„Auswertung fehlgeschlagen: …“** bzw. **„Auswertung fehlt“**, dazu die Zeile „Achtung: N von M Läufen ohne gültige NPC-/PULSE-Auswertung“.
+  - Der Batch endet dann `analysis_incomplete` statt `completed`, mit Exitcode 2.
+  - Der Guild-Batch bleibt unverändert.
+
+**Abnahme**
+- **Rot gegen unverändertes `2449990`: 5/5** (`tests/live_runner/npc_pulse_cards.test.js`, `npc_pulse_failure.test.js`), jeweils `[anchor_on_card, agreement_on_card]` bzw. Batchstatus:
+
+  | Fall | Erwartet | `2449990` |
+  |---|---|---|
+  | gekappte Karte | `[1, 0]` | `[2, 1]` |
+  | ältere Promptworte | `[0, 0]` | `[1, 1]` |
+  | spätere volle Karte | `[3, 1]` | `[0, 0]` |
+  | Batch mit fehlgeschlagener/fehlender Auswertung | `analysis_incomplete` | `completed` |
+
+  Den Laufschritt mit Fehlerprotokoll gibt es auf `2449990` nicht: dort wurde der Fehler nur geloggt.
+- **Grün: 5/5.**
+- **Herkunft der Testdaten:**
+  - Die Kartenfälle laufen auf einer echten Hostkarriere: Hessa mit einer langen Absprache und drei Ankern, die echten Erzählerblöcke dieser Züge. Kompaktkarte: `voice` ganz, `manner` angeschnitten, `interest` verdrängt; die Absprache in der Haltungszeile gekürzt.
+  - Konstruiert sind die Requests der Gegenfälle: ältere Abschnitte, Buchhaltungsrequest, verspätete volle Karte, längerer Wert, fremde Karte, keine Requests.
+- **Angepasst:** Der synthetische Batchlauf in `npc_pulse_runner.test.js` schreibt wie ein echter Lauf auch `npc-pulse.json`. Die Assertions sind unverändert.
+- **Suiten:** Runner **161/161**, vollständige Node-Suite **2989/2989**.
+- **Neuauswertung** von Kopien der beiden ST1.19-Stub-Läufe vom 09.11.2026: je Erzählerrequest genau ein erkannter Engineblock; übrige Abdeckung, Verletzungen und Review gleich. Die Stub-Läufe enthalten keine Anker oder Absprachen.
+- **Echter ST1.19-Stub-Batch** `--mode npc --stub` (Seeds 11/12, Mockprovider) mit dem korrigierten Runner:
+  - Beide Läufe mit `run.json.analysis` `{id: 'npc_pulse', ok: true, …}`, `npc-pulse.json`/`.md` in Version 2 und Abschnitt im Laufbericht.
+  - Batch `completed`, Profil unverändert, Geheimnis-Scan sauber.
+  - Den Fehlerpfad eines echten Laufs deckt nur die Regression ab; im Runner gibt es keine Fehlerinjektion.
+- `selftest.mjs` weiter **49/51** mit denselben zwei vorbestehenden `levelGuide*`-Prüfungen (siehe oben).
+- Kein natürlicher Modelllauf; das ist keine NPC-/PULSE-Abnahme.
+
+**Grenzen**
+- Die Messung folgt dem Kartenformat von `src/context.js` (Id in Klammern, Feldsyntax, Kappenzeichen `…`). Ändert sich das Format, muss die Auswertung mitziehen.
+- Ob die Erzählung einen gelieferten Anker oder eine Absprache inhaltlich nutzt, bleibt eine Frage für den Review.
 
 ## 1. Aufbau
 
@@ -431,8 +504,8 @@ Läuft am Laufende automatisch für Leitfäden mit `"analysis": "npc_pulse"` ode
 
 **Abdeckung (28 Testziele):**
 - **NPC:** `npc_first_meetings`, `npc_returns` (spätere Anwesenheitsspanne, ab `.174` über `scene.since`), `npc_return_met` (`met` in der Rohantwort, nicht abgelehnt), `npc_met_refused`, `arrival_cards` (`arrivalNpcIds` im Erzählerkontext), `desk_handler` (`handled_by` und Wissenseintrag), `multi_npc_scenes`, `shared_travel` (Anwesende vor und nach einem Ortswechsel mit Reset).
-- **Absprachen:** `agreement_personal` (`who` enthält `pc`), `agreement_taken_up` (später aktualisiert oder erledigt), `agreement_settled`, `agreement_npc_only`, `agreement_unbound`, `agreement_on_card` (auf späterer Erzählerkarte, aus dem Request).
-- **Anker:** `anchor_stored`, `anchor_changed`, `anchor_refused_first_contact`, `anchor_refused_mood`, `anchor_on_card` (`<Merkmal>: <Wert>` in einem späteren Erzählerrequest, solange die Person anwesend ist).
+- **Absprachen:** `agreement_personal` (`who` enthält `pc`), `agreement_taken_up` (später aktualisiert oder erledigt), `agreement_settled`, `agreement_npc_only`, `agreement_unbound`, `agreement_on_card` (ganz auf der Karte der Person im aktuellen Engineblock eines späteren Erzählerrequests; gekürzt/unbekannt als Zusatzzahl).
+- **Anker:** `anchor_stored`, `anchor_changed`, `anchor_refused_first_contact`, `anchor_refused_mood`, `anchor_on_card` (der ganze Wert `; <Merkmal>: <Wert>` auf ihrer Karte im aktuellen Engineblock eines späteren Erzählerrequests, bis zum nächsten Wert des Merkmals; gekürzt/unbekannt als Zusatzzahl; Korrektur vom 09.11.2026).
 - **PULSE:** `pulse_travel`, `pulse_pause`, `pulse_scene`, `pulse_dungeon`, `pulse_open`, `pulse_interrupt`, `pulse_wanderer`, `pulse_threat_refused` (Ablehnungen nach `pulse`, `road`, `pulse_take`, `envelope`, `dungeon_*`, `population`, `creature_continuity`, `attack_commitment`, `rest_cut`).
 - **Gilde:** `quest_completed`.
 
@@ -450,7 +523,7 @@ Läuft am Laufende automatisch für Leitfäden mit `"analysis": "npc_pulse"` ode
 - `new_world_content_in_closed_window`: neue Person, Kreatur oder Kampf bei geschlossenem Fenster; kann eigenes Handeln sein.
 - `arrival_named_not_present`: Person der Ankunftskarte in der Erzählung genannt, aber nicht eingetreten.
 - `possible_duplicate_person`: gleicher Name zweimal angelegt.
-- `anchor_use`: gespeicherter Anker und die nächste Szene mit der Person; ob er auf der Karte stand, und die Frage, ob die Erzählung zu ihm passt.
+- `anchor_use`: gespeicherter Anker und die Szene seiner Lieferung (sonst die nächste mit der Person); ob er ganz, gekürzt oder nicht auf der Karte stand, und die Frage, ob die Erzählung zu ihm passt.
 
 **Weitere Kennzahlen:**
 - PULSE je Exposition/Rahmen: Würfe, offen, Arten, „erzählt“ (likely/none aus `pulse.outcome`), gespeicherte Weltfolgen, Pausen-Folgezüge, Rast-Unterbrechungen, gleiche Art innerhalb von drei Zügen, offene Fenster je 10 Eingaben und je 8 Spielstunden.
@@ -460,7 +533,8 @@ Läuft am Laufende automatisch für Leitfäden mit `"analysis": "npc_pulse"` ode
 - „erzählt“ ist die Heuristik der Engine (`pulse.outcome.narrated`).
 - Die Namensprüfung erfasst nur benannte Personen.
 - Ob die Erzählung einen Anker oder eine Absprache inhaltlich trifft, entscheidet der Review, nicht die Auswertung.
-- Ohne `chat-completions.jsonl` stehen die Kartenprüfungen auf „?“.
+- Ohne `chat-completions.jsonl` (oder ohne den Request eines Zugs mit der Person, solange keine volle Lieferung gefunden ist) stehen die Kartenprüfungen auf „?“.
+- **Auswertungsfehler:** `run.json.analysis.ok: false`, Hinweis unter dem Titel von `report.md`, keine `npc-pulse`-Datei; im Batch „Auswertung fehlgeschlagen/fehlt“ und Status `analysis_incomplete`. Die Exporte bleiben; `npm run live:st:npc-eval -- <Laufordner>` wertet nachträglich aus.
 
 ## 8. Exporte
 

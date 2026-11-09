@@ -312,13 +312,13 @@ Nicht identifizierend: Pronomen allein, unbestimmte Nennung („a clerk“), Meh
 
 ## 13. Offene Designentscheidungen
 
-Die Empfehlungen sind **vorläufig** und gelten nur als Entwurf. Punkte mit **(S)** sind neue soziale Spielregeln; sie brauchen deine ausdrückliche Entscheidung vor der Umsetzung des betroffenen Pakets.
+Die als **entschieden** gekennzeichneten sozialen Regeln wurden vom Nutzer bestätigt; andere Empfehlungen bleiben Entwurf. Punkte mit **(S)** benötigen vor Umsetzung des jeweiligen Pakets eine ausdrückliche Nutzerentscheidung.
 
 | # | Frage | Vorläufige Empfehlung | Paket |
 |---|---|---|---|
 | D1 **(S)** | Zeigt `#npc` offene Absprachen mit Alaric? | **Entschieden (Nutzerfreigabe E2-B, 09.11.2026):** ja, nur offene persönliche Absprachen mit `who ⊇ {pc, id}`; keine NPC↔NPC-, geheimen/privaten, nicht etablierten oder erledigten Absprachen als „offen“ | E2-B (.172) |
-| D2 **(S)** | Persönlichkeit nur aus gezeigtem Verhalten, nie aus Spielerbehauptung? | ja | E3 |
-| D3 **(S)** | Anker frühestens aus späterer Begegnung (Nachweis `meeting`-Erinnerung vor aktueller Spanne)? | ja; die Alternative „sofort beim ersten Beleg“ wäre eine bewusste andere Regel und kein „ab zweiter Szene“ | E3 |
+| D2 **(S)** | Persönlichkeit nur aus gezeigtem Verhalten, nie aus Spielerbehauptung? | **Entschieden (Nutzer, 09.11.2026):** nur tatsächlich gezeigte eigene Worte oder Handlungen der Figur; keine Zuschreibung des Spielers und keine erfundene Biografie. Situative Stimmung bleibt situativ. | E3 |
+| D3 **(S)** | Anker frühestens aus späterer Begegnung (Nachweis `meeting`-Erinnerung vor aktueller Spanne)? | **Entschieden (Nutzer, 09.11.2026):** ja; frühere gemeinsame Erinnerung muss vor der aktuellen Anwesenheitsspanne liegen (`m.turn < scene.since[id]`). Weitere Züge derselben durchgehenden Spanne sind weiterhin dieselbe Begegnung; Name oder Absprache zählen nicht als Ersatz. | E3 |
 | D4 **(S)** | Wie lange bleibt eine eingelöste Absprache auf der Karte? | **Entschieden (09.11.2026):** als `settled between you`, bis eine jüngere bedeutsame gemeinsame Erinnerung mit der Person existiert; erledigt bleibt erledigt (kein Wiederöffnen, keine Verlängerung, Historie bleibt); die alte Versprechens-Erinnerung erscheint nicht als offene Pflicht | E2-B (.172) |
 | D5 | Historische Sammelpersonen | keine Migration; nutzbar, nie Ziel von `keptHere` | E2-A |
 | D6 **(S)** | Zählt ein ausdrücklich aufgeschobenes Angebot mit Bedingung (Brenna-Dinner) als Absprache? | **Entschieden (09.11.2026):** ja, als `promise` mit Parteien = Absprache, **erneut zu fragen**; nie Annahme, gebuchtes Essen, sichere Zustimmung oder automatische Sympathie. Unbeantwortete Einladung, Höflichkeit, abgelehntes Angebot: kein Absprache-Thread | E2-B (.172) |
@@ -328,15 +328,15 @@ Die Empfehlungen sind **vorläufig** und gelten nur als Entwurf. Punkte mit **(S
 | D10 | Soziale Erinnerungen einer abgelehnten, nicht angeforderten Szenenverlagerung (Tam I56) | beibehalten wie .158; kein E2-Punkt | — |
 | D11 | Gilt das Überreichen der Gildenplakette als Engine-Besitz (B4-Fall I10)? | am bestehenden Besitzmuster entscheiden; keine neue Besitzkategorie | E2-B |
 | D12 | Soll der bestehende unbelegte `enter`-Pfad für am Ort Gelassene später verschärft werden? | in E2-A nein; nach natürlichem Test anhand gezählter Fehleintritte entscheiden | nach E2-A |
-| D13 **(S)** | Genügt eine Beobachtung in einer späteren Begegnung, oder braucht ein Anker Bestätigung in zwei Begegnungen? | eine Beobachtung genügt; Bestätigung bräuchte einen Zwischenstand und ist erst bei Messbefund sinnvoll | E3 |
+| D13 **(S)** | Genügt eine Beobachtung in einer späteren Begegnung, oder braucht ein Anker Bestätigung in zwei Begegnungen? | **Entschieden (Nutzer, 09.11.2026):** eine klare, belegte Beobachtung in der späteren Begegnung genügt, ohne zusätzliche Bestätigungsstufe. Anker dürfen sich durch weitere belegte Erfahrungen entwickeln; Ersatz höchstens einmal je Prädikat und späterer Anwesenheitsspanne (R10). | E3 |
 
 ---
 
 ## 14. Freigabegrenze
 
-**Stand 09.11.2026.** E2-A (.169–.171) und E2-B (.172–.173) sind umgesetzt und technisch gegengeprüft. D1, D4 und D6 sind in §13 als entschieden dokumentiert. [E2-A-Kontrollreview](REVIEW_NPC_E2A171_PRODUKTDIFF_GPT.md) · [E2-B-Kontrollreview](REVIEW_NPC_E2B173_PRODUKTDIFF_GPT.md) · [Aktueller Produktstand](../03_AKTUELLER_PROJEKTSTAND.md).
+**Stand 09.11.2026.** E2-A (.169–.171) und E2-B (.172–.173) sind umgesetzt und technisch gegengeprüft. D1, D2, D3, D4, D6 und D13 sind in §13 als entschieden dokumentiert. [E2-A-Kontrollreview](REVIEW_NPC_E2A171_PRODUKTDIFF_GPT.md) · [E2-B-Kontrollreview](REVIEW_NPC_E2B173_PRODUKTDIFF_GPT.md) · [Aktueller Produktstand](../03_AKTUELLER_PROJEKTSTAND.md).
 
-**E3 ist vorbereitet.** Die Empfehlungen zu D2, D3 und D13 in §13 warten auf die Nutzerentscheidung. Die Implementierung braucht eine eigene ausdrückliche Freigabe. Nach der Entscheidung gelten der vereinbarte R10-Umfang, die Testmatrix C1–C6, die Budgetmessung nach §9 sowie Produktpatchnote, Suite, Replay und ST-Smokes. Natürliche Modellbefolgung bleibt ein eigener Nachweis.
+**E3 ist im Design entschieden, aber noch nicht implementiert.** D2, D3 und D13 sind bestätigt; die Implementierung braucht weiterhin einen eigenen ausdrücklich freigegebenen Auftrag. Nach der Entscheidung gelten der vereinbarte R10-Umfang, die Testmatrix C1–C6, die Budgetmessung nach §9 sowie Produktpatchnote, Suite, Replay und ST-Smokes. Natürliche Modellbefolgung bleibt ein eigener Nachweis.
 
 Der gemessene Tam-Fall mit erledigter Absprache (+47 geschätzte Tokens gegenüber .171) ist ein zusätzlicher Messpunkt für die E3-Kontextarbeit. Abruf und Parteienbindung bei einer späteren Verdichtung mitprüfen. [Budgetbefund aus dem .173-Kontrollreview §4](REVIEW_NPC_E2B173_PRODUKTDIFF_GPT.md#4-replay-testdaten-und-kosten).
 

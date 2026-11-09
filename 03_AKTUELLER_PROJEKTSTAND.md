@@ -6,9 +6,9 @@
 
 V4-C / Ruleset 2 läuft als SillyTavern-Extension. Der Planner versteht Spielerabsichten, die Engine entscheidet und bucht, der Narrator erzählt und der Extractor übernimmt zulässige Weltfolgen über die Firewall. Der autoritative Zustand ergibt sich aus den Chatevents. Save/Reload, Swipe/Edit und Replay gehören zur technischen Abnahme.
 
-## Nächste Entscheidungen
+## Nächste Schritte
 
-**E2-A und E2-B sind technisch abgeschlossen. NPC E3 ist der nächste geplante Entwicklungsschritt.** Der überprüfte Fachplan beschreibt wenige dauerhafte, entwicklungsfähige Persönlichkeitsanker für Stimme, Verhalten und Interessen. Verbindlich offen sind D2 (gezeigtes eigenes Verhalten als Beleg), D3 (frühestens eine spätere Begegnung) und D13 (eine klare Beobachtung in dieser späteren Begegnung). Die bejahenden Vorschläge sind Empfehlungen. Nutzerentscheidungen in §13 festhalten und E3 anschließend separat zur Implementierung freigeben. [Fachplan E2/E3 §§2, 4, 9, 12–14](patch_plans_10b/NPC_E2_E3_FACHPLAN.md).
+**E2-A und E2-B sind technisch abgeschlossen. NPC E3 ist im Design entschieden, aber noch nicht implementiert.** Der Nutzer hat D2 (eigene gezeigte Worte/Handlungen, keine Stimmung), D3 (frühestens spätere belegte Begegnung; dieselbe Anwesenheitsspanne zählt als eine Begegnung) und D13 (eine klare Beobachtung genügt, spätere belegte Entwicklung möglich) am 09.11.2026 bestätigt. Die Regeln stehen in §13 und im Kanon; für die Codeumsetzung ist ein eigener ausdrücklich freigegebener Auftrag erforderlich. [Fachplan E2/E3 §§2, 4, 9, 12–14](patch_plans_10b/NPC_E2_E3_FACHPLAN.md).
 
 **Natürliche NPC- und PULSE-Tests sind der nächste praktische Nachweis.** Der Nutzer kann User04 fortsetzen, die Titanquest abgeben und bekannte Personen wiedersehen. Für E2 zählen persönliche Wiederanwesenheit, richtiger Bearbeiter, Abruf und Erledigung einer Absprache sowie freie Extractor- und Narratorbefolgung. Für PULSE zählen tatsächlich erzählte Fenster, Jagdkontakte, Rastunterbrechung, Dungeonwanderer und Ereignisdichte. Paket D wertet natürliche Daten aus und bleibt ein eigener Schritt. [User04-Review](testrun_10b/user-20261106-072640/REVIEW.md) · [E2/E3-Abnahmeszenarien](patch_plans_10b/NPC_E2_E3_FACHPLAN.md#12-testmatrix-rotgrün-und-host-abnahme) · [PULSE-Fachplan](patch_plans_10b/PULSE_W5_W7_TECHNISCHER_UMSETZUNGSPLAN.md).
 

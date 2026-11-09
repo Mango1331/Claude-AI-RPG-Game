@@ -6,8 +6,8 @@
 
 | Strang | Nächster Schritt |
 |---|---|
-| **NPC E3** | Nach technisch abgeschlossenem E2-A/E2-B die sozialen Entscheidungen D2, D3 und D13 treffen. E3 als eigenes Paket nach Nutzerfreigabe umsetzen. [Fachplan §13](patch_plans_10b/NPC_E2_E3_FACHPLAN.md#13-offene-designentscheidungen) |
-| **Natürliche NPC- und PULSE-Tests** | E2-Kontinuität, das freie Modellverhalten und PULSE A, C und B im persönlichen Spiel beobachten. Paket D dient anschließend der Auswertung und Feinjustierung. [Aktueller Stand und Nachweise](03_AKTUELLER_PROJEKTSTAND.md) |
+| **NPC E3 / natürliche Qualität** | E3 ist mit `.174` technisch abgeschlossen und gegengeprüft. Jetzt freie NPC-Ankerbildung, Erzählverwendung und Kappung langer Charaktermerkmale anhand persönlicher Runs messen; keine automatische E4/E5-Freigabe. [E3-Gegenreview](patch_plans_10b/REVIEW_NPC_E3_174_PRODUKTDIFF_GPT.md) |
+| **Natürliche NPC- und PULSE-Tests** | E2/E3-Kontinuität und Anker, das freie Modellverhalten sowie PULSE A, C und B im persönlichen Spiel beobachten. Paket D dient anschließend der Auswertung und Feinjustierung. [Aktueller Stand und Nachweise](03_AKTUELLER_PROJEKTSTAND.md) |
 | **Stealth S2** | Heimliche lokale Search/TAKE auf S1 aufbauen. Auswahl und Freigabe sind separat. [Fachplan](patch_plans_10b/PATCH_STEALTH_ACTION_MANNER.md) |
 
 S1, U1–U3 und der User02-Technikschnitt sind umgesetzt. Der ausgewertete User02-Run bleibt ein Originalbeleg für die früheren Integrationsfälle. [User02 einschließlich Sol-Nachtrag §8](testrun_10b/user-20261105-050449/REVIEW_CHATGPT.md).
@@ -16,14 +16,14 @@ S1, U1–U3 und der User02-Technikschnitt sind umgesetzt. Der ausgewertete User0
 
 **Maßgebliche Analyse:** [Brenna einschließlich GPT-/Sol-Gegenreviews §§9–10](recherche/NPC_KONTINUITAET_ANALYSE_20261104.md); zusätzliche Original-Requestnachweise für Tam und verlorene Episoden in User02 §8. Speicherung, akzeptierte Episode, tatsächliche Auslieferung und Modellverwendung getrennt nachweisen.
 
-**Planbasis war .168 am 08.11.2026.** E0/E1 sind seit .158 umgesetzt. E2-A (.169–.171) und E2-B (.172–.173) sind technisch abgeschlossen. Die E3-Regeln sind im Fachplan vorbereitet und die Nutzerentscheidungen stehen aus. [Ist- und Ursachenanalyse](recherche/NPC_E2_E3_ISTANALYSE_20261108.md) · [Fachplan](patch_plans_10b/NPC_E2_E3_FACHPLAN.md) · [Aktueller Stand](03_AKTUELLER_PROJEKTSTAND.md).
+**Planbasis war .168 am 08.11.2026.** E0/E1 sind seit .158 umgesetzt. E2-A (.169–.171), E2-B (.172–.173) und E3 (.174) sind technisch abgeschlossen. D2/D3/D13 sind entschieden; der natürliche Spielnachweis zu E3 steht aus. [Ist- und Ursachenanalyse](recherche/NPC_E2_E3_ISTANALYSE_20261108.md) · [Fachplan](patch_plans_10b/NPC_E2_E3_FACHPLAN.md) · [Aktueller Stand](03_AKTUELLER_PROJEKTSTAND.md).
 
 | Etappe | Fachziel / Abnahme |
 |---|---|
 | **E0 Diagnose** | Kompakte Metadaten der tatsächlich gelieferten/verworfenen Abschnitte, relevanten NPC-IDs und Budgetgrößen im Record; auch Dungeon-/Szenenkontext beachten. Kein zusätzlicher Modellcall, keine zweite State-Wahrheit oder vollständige Promptkopie pro Zug. |
 | **E1 Sofortkontinuität** | Relevanten Gesprächspartner kompakt und unter Budgetgrenzen liefern, wiederholte Pflichttexte begrenzen, Freitext über **World und Delta** erhalten sowie Gildenwissens-/Abgabeübergänge korrigieren. Brenna-Kette „Gespräch → Board → derselbe NPC“ und Tam als Positivkontrolle natürlich prüfen. |
 | **E2 Wiederbegegnungen/Absprachen · technisch abgeschlossen** | Relevante bekannte Figuren bei autorisierter Rückkehr erinnern, ohne Anwesenheit zu erfinden; wichtige offene Gesprächsfäden wiederaufgreifbar halten, keine formalen Privatquests. |
-| **E3 Persönlichkeitsanker · Design offen** | Wenige belegte Merkmale zu Stimme, Temperament und Interessen; situationsabhängig, keine dauerhafte Biografie aus einer einzelnen Reaktion. |
+| **E3 Persönlichkeitsanker · technisch abgeschlossen (.174)** | Stimme, Verhalten und Interessen als wenige entwicklungsfähige Anker erst aus späterer belegter Begegnung; Stimmung bleibt situativ. Freie Extractor-/Erzählerverwendung und Kontextauslieferung natürlich prüfen. |
 | **E4 Salienz/Beziehungsentwicklung** | Automatische Wichtigkeitsauswahl und später begründeter Beziehungsverlauf. Größere Verdichtung erst bei Bedarf; optionales Pinning separat entscheiden. |
 | **E5 Eigenleben/PULSE-Anbindung** | Relevante eigene Agenden mit kleinen plausiblen Folgen verbinden; keine NPC-Agenten pro Tick oder Vollsimulation von Tagesplänen. |
 

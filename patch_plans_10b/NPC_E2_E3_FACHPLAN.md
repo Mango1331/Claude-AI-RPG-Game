@@ -334,11 +334,11 @@ Die als **entschieden** gekennzeichneten sozialen Regeln wurden vom Nutzer best�
 
 ## 14. Freigabegrenze
 
-**Stand 09.11.2026.** E2-A (.169–.171) und E2-B (.172–.173) sind umgesetzt und technisch gegengeprüft. D1, D2, D3, D4, D6 und D13 sind in §13 als entschieden dokumentiert. [E2-A-Kontrollreview](REVIEW_NPC_E2A171_PRODUKTDIFF_GPT.md) · [E2-B-Kontrollreview](REVIEW_NPC_E2B173_PRODUKTDIFF_GPT.md) · [Aktueller Produktstand](../03_AKTUELLER_PROJEKTSTAND.md).
+**Stand 09.11.2026.** E2-A (.169–.171), E2-B (.172–.173) und E3 (.174) sind umgesetzt und technisch gegengeprüft. D1, D2, D3, D4, D6 und D13 sind in §13 als entschieden dokumentiert. [E2-A-Kontrollreview](REVIEW_NPC_E2A171_PRODUKTDIFF_GPT.md) · [E2-B-Kontrollreview](REVIEW_NPC_E2B173_PRODUKTDIFF_GPT.md) · [E3-Kontrollreview](REVIEW_NPC_E3_174_PRODUKTDIFF_GPT.md) · [Aktueller Produktstand](../03_AKTUELLER_PROJEKTSTAND.md).
 
-**E3 ist im Design entschieden, aber noch nicht implementiert.** D2, D3 und D13 sind bestätigt; die Implementierung braucht weiterhin einen eigenen ausdrücklich freigegebenen Auftrag. Nach der Entscheidung gelten der vereinbarte R10-Umfang, die Testmatrix C1–C6, die Budgetmessung nach §9 sowie Produktpatchnote, Suite, Replay und ST-Smokes. Natürliche Modellbefolgung bleibt ein eigener Nachweis.
+**E3 wurde nach ausdrücklicher Nutzerfreigabe als `.174` implementiert; der unabhängige Diff-Review fand keinen verpflichtenden P2-Stopp.** R10, C1–C6, Budgetmessung, Produktpatchnote, Node-/Replay- und ST-Smokes sind dokumentiert. Die tatsächliche Belegqualität freier Extractorantworten und die Sichtbarkeit mehrerer langer Anker im Kompaktkopf bleiben P3-Naturtestthemen, keine zusätzliche automatische Implementierungsfreigabe.
 
-Der gemessene Tam-Fall mit erledigter Absprache (+47 geschätzte Tokens gegenüber .171) ist ein zusätzlicher Messpunkt für die E3-Kontextarbeit. Abruf und Parteienbindung bei einer späteren Verdichtung mitprüfen. [Budgetbefund aus dem .173-Kontrollreview §4](REVIEW_NPC_E2B173_PRODUKTDIFF_GPT.md#4-replay-testdaten-und-kosten).
+Der gemessene Tam-Fall mit erledigter Absprache (+47 geschätzte Tokens gegenüber .171) blieb auf `.174` unverändert und ist weiterhin ein P3-Messpunkt für eine später separat zu entscheidende Kontextverdichtung. Abruf und Parteienbindung erhalten. [Budgetbefund aus dem .173-Kontrollreview §4](REVIEW_NPC_E2B173_PRODUKTDIFF_GPT.md#4-replay-testdaten-und-kosten).
 
 E4/E5, PULSE D, Stealth S2, Kampf und Wirtschaft bleiben eigene Pakete und Entscheidungen.
 

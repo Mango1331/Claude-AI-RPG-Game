@@ -23,6 +23,10 @@ export const npc169Turns = [
     { key: 'npc170left', player: '*I walk over to the Guild hall once more*', plan: { commands: [{ seq: 1, type: 'go', to: HALL, quote: 'I walk over to the Guild hall once more', within: null }] },
         reply: 'He walked into the Guild hall. The clerk had left the Guild hall before Alaric arrived. At the benches the stocky man with the crossbow sat over fresh maps again.',
         answer: { scene: HALL, expected: { 1: { arrived: true, at: HALL, with: null, met: [{ who: CLERKS, evidence: 'The clerk had left the Guild hall before Alaric arrived' }, { who: BOW, evidence: 'the stocky man with the crossbow sat over fresh maps again' }] } }, deltas: [arrive] } },
+    // .171 (GPT review of .170 §3): shown at the counter, then gone before he came; the quote is only the first half
+    { key: 'npc171stoodleft', player: '*I go to the Guild hall one more time*', plan: { commands: [{ seq: 1, type: 'go', to: HALL, quote: 'I go to the Guild hall one more time', within: null }] },
+        reply: 'He walked into the Guild hall. The clerk stood behind the counter and left before Alaric arrived. At the benches the stocky man with the crossbow sat over fresh maps again.',
+        answer: { scene: HALL, expected: { 1: { arrived: true, at: HALL, with: null, met: [{ who: CLERKS, evidence: 'The clerk stood behind the counter' }, { who: BOW, evidence: 'the stocky man with the crossbow sat over fresh maps again' }] } }, deltas: [arrive] } },
     { key: 'npc169accept', player: f.chat[73].mes, plan: { commands: cmds(73) }, reply: f.chat[74].mes,
         answer: { scene: HALL, expected: { 1: { handled_by: { who: 'older_clerk', evidence: 'The older clerk took it, read the client line, then looked up at Alaric over the top of the slip' } } }, deltas: [older] } },
     { key: 'npc169turnin', player: f.chat[63].mes, plan: { commands: cmds(63) }, reply: f.chat[64].mes,
@@ -77,6 +81,11 @@ export async function npc169Smoke({ page, send, idle, calls, onReload, out }) {
     checks.leftNotEntered = !ev(l.st, 'scene.entered').some((e) => e.d.id === CLERKS) && !l.st.present.includes(CLERKS)
         && ev(l.st, 'delta.rejected').some((e) => e.d.rule === 'met_evidence' && e.d.item?.met?.who === CLERKS);
     checks.leftOtherMet = ev(l.st, 'scene.entered').some((e) => e.d.id === BOW) && !l.st.errors.length && l.st.extraction === 'applied' && l.extract.length === 1;
+    // 1c. .171: the clerk shown, then gone before he came (short quote) stays out; the crossbowman is met
+    const sl = await play('npc171stoodleft', 71);
+    checks.stoodLeftNotEntered = !ev(sl.st, 'scene.entered').some((e) => e.d.id === CLERKS) && !sl.st.present.includes(CLERKS)
+        && ev(sl.st, 'delta.rejected').some((e) => e.d.rule === 'met_evidence' && e.d.item?.met?.who === CLERKS);
+    checks.stoodLeftOtherMet = ev(sl.st, 'scene.entered').some((e) => e.d.id === BOW) && !sl.st.errors.length && sl.st.extraction === 'applied' && sl.extract.length === 1;
     // 2. I73/I74: the older clerk is a new person who knows the acceptance; the wiry woman stays the bystander
     const b = await play('npc169accept', 73);
     const made = ev(b.st, 'entity.created').map((e) => e.d).find((e) => /older man/.test(e.traits || ''));

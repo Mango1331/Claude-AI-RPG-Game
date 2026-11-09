@@ -153,17 +153,25 @@ export function applyEvent(state, e) {
                 if (state.scene.relevant) state.scene.relevant = [];
                 if (state.scene.threats) state.scene.threats = [];
                 state.scene.concealed = [];
+                // NPC E3 (R10): every presence span ends with the reset (companions begin a new one where they arrive)
+                if (state.scene.since) state.scene.since = {};
             }
             for (const id of state.scene.present) if (state.entities[id]) state.entities[id].location = state.scene.location;
             break;
         }
         case 'scene.entered':
-            if (!state.scene.present.includes(d.id)) state.scene.present.push(d.id);
+            if (!state.scene.present.includes(d.id)) {
+                state.scene.present.push(d.id);
+                // NPC E3 (R10): the turn this person's current presence began, derived from the events (no event of its
+                // own; old saves get it by folding); Runtime V4 only, the V3 path keeps its keys
+                if (state.meta?.runtime === 'v4' && d.id !== 'pc') (state.scene.since ||= {})[d.id] = state.turn;
+            }
             if (d.band) state.scene.positions[d.id] = { band: d.band, cover: d.cover || 'none' };
             if (state.entities[d.id]) state.entities[d.id].location = state.scene.location;
             break;
         case 'scene.left':
             state.scene.present = state.scene.present.filter((x) => x !== d.id);
+            if (state.scene.since) delete state.scene.since[d.id];
             if (state.scene.relevant) state.scene.relevant = state.scene.relevant.filter((x) => x !== d.id);
             if (state.scene.threats) state.scene.threats = state.scene.threats.filter((x) => x !== d.id);
             delete state.scene.positions[d.id];

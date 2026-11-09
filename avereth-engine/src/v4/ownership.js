@@ -172,7 +172,7 @@ export function stateRegions(s) {
         skills: j([s.skill_defs, s.passive_defs]),
         'pc.location': j([s.scene?.location, s.scene?.place, s.scene?.at, location, at]),
         entities: j([Object.entries(s.entities || {}).filter(([id]) => id !== 'pc'), pcRest]),
-        scene: j([s.scene?.present, s.scene?.positions, s.scene?.awareness, s.scene?.concealed, s.scene?.relevant, s.scene?.threats]),
+        scene: j([s.scene?.present, s.scene?.positions, s.scene?.awareness, s.scene?.concealed, s.scene?.relevant, s.scene?.threats, s.scene?.since]),
         combat: j([s.encounter, s.pending_combat, s.pending_intents, s.mode]),
         'quest.delivery': j(contracts.map(q => [q.id, q.deliveries || []])),
         'quest.status': j(contracts.map((q) => [q.id, q.status, q.history])),

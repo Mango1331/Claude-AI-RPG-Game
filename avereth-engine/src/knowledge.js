@@ -19,11 +19,22 @@ const PRED_SYNONYMS = {
     looks: 'appearance', look: 'appearance', speech: 'voice', speaks: 'voice', manner_of_speech: 'voice', role: 'occupation',
     job: 'occupation', profession: 'occupation', guild_standing: 'guild_rank', guild_rank_of: 'guild_rank',
 };
+// NPC E3 (R10): a person's lasting manner and interest. Applied by World to a person's reported traits only (src/v4/
+// world.js), never to every predicate: a wolf's "demeanor" in a fight stays that fight's moment
+const ANCHOR_SYNONYMS = {
+    temperament: 'manner', demeanor: 'manner', demeanour: 'manner', personality: 'manner', disposition: 'manner',
+    interests: 'interest', hobby: 'interest', cares_about: 'interest', passion: 'interest',
+};
+/** NPC E3: the anchor predicate (voice, manner, interest) a person's reported predicate names, or null. */
+export function anchorPredicate(p) {
+    const k = normPredicate(p);
+    return ['voice', 'manner', 'interest'].includes(k) ? k : ANCHOR_SYNONYMS[k] || null;
+}
 // An NPC's minimal persistent record (Runtime V3, docs/REVIEW_V3.md 4.2) is built from ordinary facts: occupation (role),
 // appearance and voice (stable cues for a returning NPC) and agenda (what the NPC is working toward while it lasts;
 // o "none" ends it). All four hold one current value, so a new report replaces the old one.
 // guild_rank (Novice..Legend, only for registered members) and weather (of a location) are shown in the player HUD.
-export const FUNCTIONAL = new Set(['status', 'location', 'residence', 'ruler', 'leader', 'owner', 'allegiance', 'occupation', 'name', 'title', 'price', 'danger', 'appearance', 'voice', 'agenda', 'guild_rank', 'weather']);
+export const FUNCTIONAL = new Set(['status', 'location', 'residence', 'ruler', 'leader', 'owner', 'allegiance', 'occupation', 'name', 'title', 'price', 'danger', 'appearance', 'voice', 'manner', 'interest', 'agenda', 'guild_rank', 'weather']);
 // A memory is meaningful (it enters an NPC's record and is recalled later) from this importance on; routine moments
 // ("Kest nodded", a first sighting, the player's own words) stay in the log but never become NPC canon.
 export const MEANINGFUL_IMPORTANCE = 6;

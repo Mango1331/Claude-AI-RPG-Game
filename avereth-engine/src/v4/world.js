@@ -23,7 +23,7 @@ import { trainingOfferWhy } from './growth.js';
 import { deriveCharacter } from '../derived.js';
 import { reportToEvents, makeResolver, isGroup, GROUP_WORDS } from '../delta.js';
 import { sceneHandle } from './scene_handles.js';
-import { truth, entityLabel, setFactEvents, statusOf, normPredicate, knows } from '../knowledge.js';
+import { truth, entityLabel, setFactEvents, statusOf, normPredicate, knows, anchorPredicate } from '../knowledge.js';
 import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../engine.js';
 import { firewall, pcWound, pcActIn } from './firewall.js';
 import { stripOwned, wrongClaim, ownershipViolation, stateRegions, effectViolation } from './ownership.js';
@@ -196,6 +196,39 @@ function locationOf(s, id) {
  * @param {{msg?: number|null, prose?: string}} opts msg: the reply's chat index (ids); prose: the reply's text
  * @returns {{events, rejected, corrections, system, opened, state, arrivedHall}}
  */
+/**
+ * NPC E3 (R10, decisions D2/D3/D13): why a reported voice, manner or interest of a person is no lasting anchor, or null.
+ * Only of someone here now, whom Alaric met before this presence began (a shared memory of a turn before
+ * scene.since[id]: the first sighting suffices; a name, an importance or an agreement does not); a short trait (at most
+ * 80 characters) not about Alaric and owning nothing of the engine's; never a mood without a habit word ("furious
+ * tonight", "angry"; "always short with drunks" is a trait); one value per trait and reply, and a set anchor changes at
+ * most once in each later presence span. The same value again changes nothing and is never refused.
+ */
+const ANCHOR_PREDICATES = new Set(['voice', 'manner', 'interest']);
+const ANCHOR_SITUATION = /\b(?:right now|for now|now|today|tonight|this (?:morning|afternoon|evening|night)|at the moment|currently|just then|after the fight|since the attack)\b/i;
+const ANCHOR_HABIT = /\b(?:always|usually|habitually|tends? to|never|every time|as ever)\b/i;
+const ANCHOR_STATES = new Set(['angry', 'furious', 'upset', 'scared', 'afraid', 'tired', 'exhausted', 'drunk', 'grieving', 'crying', 'wounded', 'relieved', 'nervous']);
+const ANCHOR_FILLER = new Set(['very', 'quite', 'a', 'bit', 'little', 'visibly', 'clearly', 'obviously', 'still', 'so', 'rather', 'and', 'or', 'but', 'somewhat', 'deeply', 'badly', 'slightly', 'really', 'too', 'extremely']);
+function anchorRefusal(s, id, p, value, anchored) {
+    const v = String(value).trim();
+    const current = truth(s, id, p)[0] || null;
+    if (current && normText(current.o) === normText(v)) return null;
+    if (!s.scene.present.includes(id)) return { rule: 'anchor_absent', why: `${p} of ${id}: a lasting trait is shown only by someone here` };
+    const since = s.scene.since?.[id];
+    const shares = (m, x) => (m.who || []).includes(x) || (m.witnesses || []).includes(x);
+    if (since == null || !s.memories.some((m) => (m.turn ?? Infinity) < since && shares(m, id) && shares(m, 'pc')))
+        return { rule: 'anchor_first_contact', why: `${p} of ${id}: a lasting trait only from a later encounter (nothing shared with Alaric before this presence began)` };
+    const pcWords = String(s.entities.pc?.name || 'Alaric').split(/\s+/).filter((w) => w.length >= 3).map((w) => w.toLowerCase());
+    const words = normText(v).split(/[^a-z0-9']+/).filter(Boolean);
+    if (v.length > 80 || /\{pc\}|\bpc\b/i.test(v) || words.some((w) => pcWords.includes(w) || w === 'alaric') || stripOwned(v, { store: 'note' }).owned.length)
+        return { rule: 'anchor_value', why: `${p} of ${id}: a short trait of the person (at most 80 characters, not about Alaric, nothing of the engine's)` };
+    const pureState = words.length > 0 && words.every((w) => ANCHOR_STATES.has(w) || ANCHOR_FILLER.has(w)) && words.some((w) => ANCHOR_STATES.has(w));
+    if (!ANCHOR_HABIT.test(v) && (ANCHOR_SITUATION.test(v) || pureState)) return { rule: 'anchor_mood', why: `${p} of ${id}: "${v}" is this moment's mood, not a lasting trait` };
+    if (anchored.has(`${id}|${p}`)) return { rule: 'anchor_scope', why: `${p} of ${id}: one value per trait and reply` };
+    if (current && (current.since?.turn ?? -1) >= since) return { rule: 'anchor_scope', why: `${p} of ${id}: already set in this presence; it changes at most once in a later one` };
+    return null;
+}
+
 export function applyWorld(state, content, answer, { msg = null, prose = '', chronicle = null } = {}) {
     answer = scopedPlaces(answer, state);
     const s = clone(state);
@@ -237,6 +270,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // Prototype C: the turn the planner read (a story turn: auth.c; a V3-routed one: the outcome's c)
     const cPath = !!(auth.c || outcome.c);
     const explicitTravel = cPath && rulesetOf(s) >= 2;
+    const anchored = new Set(); // NPC E3: the anchors this answer set (one per person and trait)
     const place = (ref) => resolvePlace(s, ref, emit, 0, { c: cPath });
     // Patch 8 (13A): an arrival at a Dungeon's gate by any of its names (the ruined chapel above the Old Crown Catacombs)
     // is at the Dungeon itself, its way in: never a room of it, never a new place beside it
@@ -1250,6 +1284,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     reject(d, 'entity_fact', `fact object ${object} is not a known entity`);
                     break;
                 }
+                // NPC E3 (R10): a person's voice, manner or interest is a lasting anchor only from a later encounter; a
+                // fighter's "demeanor" while the fight runs stays the fight's moment (below), never a synonym of an anchor
+                const named = normPredicate(d.p);
+                const fighting = !!s.encounter?.combatants?.[subject];
+                const anchorP = explicitTravel && s.entities[subject]?.kind === 'npc' && typeof object === 'string'
+                    ? (ANCHOR_PREDICATES.has(named) ? named : !fighting ? anchorPredicate(d.p) : null) : null;
+                if (anchorP) {
+                    const no = anchorRefusal(s, subject, anchorP, object, anchored);
+                    if (no) { reject(d, no.rule, no.why); break; }
+                    anchored.add(`${subject}|${anchorP}`);
+                }
                 const enc = s.encounter;
                 const combatant = !!enc && typeof subject === 'string' && subject !== 'pc' && !!enc.combatants?.[subject];
                 // "the wolves", "the last wolf", "wolf pack": no one entity, but the kind of the opponents still fighting
@@ -1258,7 +1303,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 const scoped = (combatant || fighters) && FIGHT_MOMENT.test(normPredicate(d.p)) && !LASTING_MARK.test(String(d.o ?? ''));
                 // Patch 3: a wound of Alaric's lives while he is hurt; at full health it is healed (a scar is no wound)
                 const hurt = !scoped && pcWound(d) ? { hurt: deriveCharacter(s.entities.pc.sheet, content).maxHp } : null;
-                v3({ facts: [{ s: subject, p: d.p, o: object, ...(scoped ? { scope: { fight: enc.id } } : hurt ? { scope: hurt } : {}) }] }, d);
+                v3({ facts: [{ s: subject, p: anchorP || d.p, o: object, ...(scoped ? { scope: { fight: enc.id } } : hurt ? { scope: hurt } : {}) }] }, d);
                 break;
             }
             case 'learn': {

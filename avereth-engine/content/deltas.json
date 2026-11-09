@@ -305,7 +305,7 @@
           "type": "string"
         }
       },
-      "summary": "a lasting world fact (not about what Alaric holds, pays or has decided)"
+      "summary": "a lasting world fact (not about what Alaric holds, pays or has decided). voice/manner/interest of a person: only a lasting trait this reply SHOWS in their own words or conduct, which you would expect again next week; never this moment's mood, never Alaric's view of them, never invented backstory; a new value only when the reply shows a different lasting trait"
     },
     {
       "type": "learn",

@@ -33,7 +33,7 @@ export const DEFAULT_BUDGET = 1400;
 export const DEFAULT_RULES_BUDGET = 800;
 export const DEFAULT_RECENT_TURNS = 4; // turns still visible in the chat history are not retrieved again
 const IDENTITY_FACTS = new Set([PC_NAME_FACT, PC_LOOK_FACT]);
-const RECORD_PREDICATES = new Set(['occupation', 'appearance', 'voice', 'agenda']);
+const RECORD_PREDICATES = new Set(['occupation', 'appearance', 'voice', 'manner', 'interest', 'agenda']);
 // NPC E2-A (R5): a person's own account (docs/NPC_E2A_INTEGRITY.md)
 const SPEECH_PREDICATES = new Set(['says', 'said', 'remark', 'remarked', 'claims', 'claimed', 'reports', 'reported', 'mentions', 'mentioned', 'tells', 'told', 'rumor', 'rumour']);
 const MAX_EPISODES = 3; // the player's own words from before the history window: the most relevant three
@@ -128,7 +128,7 @@ export function npcCues(state, content, id) {
     const e = state.entities[id];
     const fact = (p) => truth(state, id, p).map((f) => f.o).find((o) => normText(o) !== 'none') || null;
     const tpl = e.template && e.template !== 'commoner' ? (content.templates.get(e.template)?.label || e.template).toLowerCase() : null;
-    return { role: fact('occupation') || tpl, look: [e.traits, fact('appearance')].filter(Boolean).join('; '), voice: fact('voice'), agenda: fact('agenda') };
+    return { role: fact('occupation') || tpl, look: [e.traits, fact('appearance')].filter(Boolean).join('; '), voice: fact('voice'), manner: fact('manner'), interest: fact('interest'), agenda: fact('agenda') };
 }
 
 /** Meaningful moments (importance >= 6) an NPC shared with Alaric, oldest first: the same threshold retrieval uses. */
@@ -190,7 +190,10 @@ function npcCard(state, content, id, focusWords, { absent = false } = {}) {
     const cover = c ? c.current.cover : pos?.cover;
     const v4 = state.meta?.runtime === 'v4';
     const display = c ? fightName(state, id) : v4 ? `${sceneHandle(state, content, id)} [${id}]` : entityLabel(state, id);
-    lines.push(`• ${display} — ${kind}${look ? `; ${look}` : ''}${cues?.voice ? `; voice: ${cues.voice}` : ''}${hp ? `; ${hp}` : ''}${band ? `; ${band}${cover && cover !== 'none' ? `, ${cover} cover` : ''}` : ''}${absent ? '; NOT PRESENT' : ''}`);
+    // NPC E3 (R10): in V4 the anchors stand before the introduction's look, so the 170-character cap cuts the look
+    // first; the V3 card keeps its order (look, voice)
+    const anchors = v4 && cues ? ['voice', 'manner', 'interest'].filter((k) => cues[k]).map((k) => `; ${k}: ${cues[k]}`).join('') : '';
+    lines.push(`• ${display} — ${kind}${anchors}${look ? `; ${look}` : ''}${!v4 && cues?.voice ? `; voice: ${cues.voice}` : ''}${hp ? `; ${hp}` : ''}${band ? `; ${band}${cover && cover !== 'none' ? `, ${cover} cover` : ''}` : ''}${absent ? '; NOT PRESENT' : ''}`);
     if (statusOf(state, id) === 'dead') return lines[0];
     const aware = absent ? null : state.scene.awareness[id];
     const unseen = !absent && state.scene.concealed.includes('pc');
@@ -488,7 +491,8 @@ function retrievalItems(state, content, pinnedIds, recentTurns) {
         items.push({ kind: m.kind === 'episode' ? 'episode' : 'memory', text, entities: [...(m.who || []), ...(m.about || [])], location: m.location, turn: m.turn, importance: (m.importance || 5) / 10, label: `[${day(m.minute)}] ${text}` });
     }
     // a person's record facts live on that person's card (shown when present or named), Alaric's Guild Rank in his line
-    const onCard = (x) => (RECORD_PREDICATES.has(x.p) && state.entities[x.s]?.kind === 'npc') || (x.s === 'pc' && x.p === 'guild_rank');
+    // NPC E3: manner and interest are on the card in V4 only
+    const onCard = (x) => (RECORD_PREDICATES.has(x.p) && state.entities[x.s]?.kind === 'npc' && (state.meta?.runtime === 'v4' || !['manner', 'interest'].includes(x.p))) || (x.s === 'pc' && x.p === 'guild_rank');
     for (const f of currentFacts(state, (x) => x.visibility !== 'secret' && !IDENTITY_FACTS.has(x.id) && !pinnedIds.has(x.id) && !onCard(x))) {
         // NPC E2-A (R5): what a person said is true as their saying, never as the world's state (the board stays the
         // engine's): the line names them as its speaker

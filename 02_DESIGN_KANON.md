@@ -1,6 +1,6 @@
 # Avereth Engine – verbindlicher Design-Kanon
 
-**Stand: 07.11.2026 · redaktionell gestrafft, keine neuen Spielregeln.** **[VERBINDLICH]** bezeichnet geltende Regeln, **[GEPLANT]** einen noch nicht umgesetzten Beschluss, **[OFFEN]** eine unbeschlossene Option. Tatsächlicher Implementierungs-/Abnahmestand ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md), technische Detailquellen in [06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). [Ungekürzte Vorfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/55d20eaf65f521a25ea3e85cfa3390e215270683/02_DESIGN_KANON.md).
+**Stand 09.11.2026 · geltende Spielregeln mit NPC E2.** **[VERBINDLICH]** bezeichnet geltende Regeln, **[GEPLANT]** einen noch nicht umgesetzten Beschluss, **[OFFEN]** eine unbeschlossene Option. Tatsächlicher Implementierungs-/Abnahmestand ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md), technische Detailquellen in [06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). [Ungekürzte Vorfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/55d20eaf65f521a25ea3e85cfa3390e215270683/02_DESIGN_KANON.md).
 
 ## 0. Aktuelle Kompatibilitätsentscheidung
 
@@ -36,6 +36,10 @@ SillyTavern ist aktueller Host, kein notwendiger Teil der Spielwelt; Sprachmodel
 **[VERBINDLICH]** Der Spieler entscheidet freiwillige Bewegung, Worte, Gedanken, Zustimmung, Questwahl, Angriffsziele, Skills und Beziehungen. Gewöhnliche Teilbewegungen einer gewählten Handlung sind zulässig, neue freiwillige Ziele nicht. Äußere Kräfte dürfen kausal wirken. Kein Plot-Armor, erfundenes Fremdwissen oder Zurücksetzen etablierter Fakten.
 
 Narration **Englisch, dritte Person, Vergangenheit**; Wahrnehmung/Dialog statt Systemtracker. NPCs haben eigene Interessen, dürfen helfen, täuschen, ablehnen, kämpfen und sterben. Direkt zuvor etablierte soziale Gespräche, Grenzen und Bekanntheit dürfen durch eine Zwischenaktion nicht grundlos zurückgesetzt werden. Stimmung und Distanz dürfen sich plausibel unterscheiden; Flirt erzeugt keine automatische Zuneigung oder formale Quest. Alaric Red ist eine Testfigur, keine Startpflicht.
+
+**[VERBINDLICH] NPC-Wiederbegegnungen.** Eine Ankunftskarte erinnert an eine bekannte Figur mit Bezug zum Zielort. Die Engine führt `met` als persönliche Wiederanwesenheit, wenn der bestätigte Ankunftsschritt und die erzählte Begegnung zusammenpassen. Die Rolle des Gildenbearbeiters und sein persönliches Bearbeitungswissen gehören der belegten Person. Sprecher und Identität bleiben an die jeweilige Figur gebunden. [E2-A](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/93acd574409bff44c39bd7bc203e526fc76da262/avereth-engine/docs/NPC_E2A_INTEGRITY.md) · [Kontrollreview zur Zeitfolge](patch_plans_10b/REVIEW_NPC_E2A171_PRODUKTDIFF_GPT.md).
+
+**[VERBINDLICH] Persönliche Absprachen.** Absprachen und Schulden bleiben an ihre Art und gespeicherten Parteien gebunden. Die Engine ordnet eine Meldung ohne ID zu, wenn die bekannte Art und die gemeldeten Parteien passen und die Zuordnung eindeutig ist. `#npc` zeigt offene Absprachen zwischen der jeweiligen Figur und Alaric. Die Erzählerkarte kann eine eingelöste Absprache als `settled between you` zeigen, bis eine jüngere bedeutsame gemeinsame Erinnerung vorliegt. Der Erledigungsstatus bleibt bestehen. Eine gemeinsam vereinbarte Rückfrage zu einem aufgeschobenen bedingten Angebot begründet ausschließlich diese Rückfrage. [Entscheidungen D1, D4 und D6](patch_plans_10b/NPC_E2_E3_FACHPLAN.md#13-offene-designentscheidungen) · [Threadzuordnung `.173`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/dec75907ce970927722b6acf6608bdfa6b20256e/avereth-engine/docs/NPC_E2B173_THREAD_MATCH.md).
 
 ## 4. Allgemeines Pacing und Quality of Life
 

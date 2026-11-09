@@ -1,6 +1,6 @@
 # NPC E2/E3 – implementierungsreifer Fachplan
 
-**Stand: 08.11.2026, überarbeitet nach dem [GPT-Fachplan-Gegenreview](REVIEW_NPC_E2_E3_FACHPLAN_GPT_20261108.md) · Plan, keine Freigabe.** Grundlage ist die [Ist- und Ursachenanalyse auf .168](../recherche/NPC_E2_E3_ISTANALYSE_20261108.md) (Befunde F1–F10, Beleglage [B]/[C]/[H]/[E]). Produktbuild `4.3.0-c.6.6.168` ([`8c7ee1f`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/8c7ee1f55f3d4c052d2baacb3790919e2396c980)) bleibt unverändert. Die [historische NPC-Analyse](../recherche/NPC_KONTINUITAET_ANALYSE_20261104.md) mit allen GPT-/Sol-Reviews bleibt Entscheidungsgeschichte. Etappennamen folgen [07 §2](../07_ROADMAP_NACH_10B_ENTWURF.md#2-npc-kontinuität--neue-fachliche-reihenfolge), nicht der alten E4–E6-Zählung. Was sich durch den Review geändert hat, steht in §15.
+**Planbasis 08.11.2026 auf .168.** Die Ist-Analyse und die Gegenreviews dokumentieren die Ausgangslage. Die aktuelle Freigabegrenze steht in §14. Die Etappennamen folgen der heutigen Roadmap. Die Änderungen nach dem Planreview stehen in §§15–16. [Ist- und Ursachenanalyse](../recherche/NPC_E2_E3_ISTANALYSE_20261108.md) · [GPT-Fachplan-Gegenreview](REVIEW_NPC_E2_E3_FACHPLAN_GPT_20261108.md) · [NPC-Etappen](../07_ROADMAP_NACH_10B_ENTWURF.md#2-npc-kontinuität--neue-fachliche-reihenfolge) · [Historische NPC-Analyse](../recherche/NPC_KONTINUITAET_ANALYSE_20261104.md).
 
 Drei getrennt baubare und abnehmbare Pakete: **E2-A Integrität**, **E2-B Kontinuität**, **E3 Persönlichkeitsanker**. Architekturvariante A und die Folge E2-A → E2-B → E3 bleiben.
 
@@ -334,11 +334,13 @@ Die Empfehlungen sind **vorläufig** und gelten nur als Entwurf. Punkte mit **(S
 
 ## 14. Freigabegrenze
 
-- **Mit diesem Dokument ist nichts freigegeben.** Produktcode, Tests, Replayakzeptanzen und Build .168 bleiben unverändert.
-- Nächster Schritt laut Review: gezielter Gegencheck dieses Nachtrags, danach ein separater E2-A-Implementierungsauftrag.
-- Jedes Paket (E2-A, E2-B, E3) braucht eine **eigene ausdrückliche Freigabe**, die betroffenen **(S)**-Entscheidungen aus §13 und endet mit eigenem Build, Patchnote, Rot/Grün-Nachweis, Suite, kategorisiertem Replay, ST-Smokes, Budgetmessung nach §9 und Stopp.
-- Ein Paket darf die Grenzen der anderen nicht vorziehen; Abweichungen vom Plan werden in der Patchnote begründet.
-- Nicht Teil von E2/E3: Beziehungsverlauf, Salienzskala, Pinning, NPC-Eigenleben, PULSE D, Stealth S2, Kampf, Wirtschaft.
+**Stand 09.11.2026.** E2-A (.169–.171) und E2-B (.172–.173) sind umgesetzt und technisch gegengeprüft. D1, D4 und D6 sind in §13 als entschieden dokumentiert. [E2-A-Kontrollreview](REVIEW_NPC_E2A171_PRODUKTDIFF_GPT.md) · [E2-B-Kontrollreview](REVIEW_NPC_E2B173_PRODUKTDIFF_GPT.md) · [Aktueller Produktstand](../03_AKTUELLER_PROJEKTSTAND.md).
+
+**E3 ist vorbereitet.** Die Empfehlungen zu D2, D3 und D13 in §13 warten auf die Nutzerentscheidung. Die Implementierung braucht eine eigene ausdrückliche Freigabe. Nach der Entscheidung gelten der vereinbarte R10-Umfang, die Testmatrix C1–C6, die Budgetmessung nach §9 sowie Produktpatchnote, Suite, Replay und ST-Smokes. Natürliche Modellbefolgung bleibt ein eigener Nachweis.
+
+Der gemessene Tam-Fall mit erledigter Absprache (+47 geschätzte Tokens gegenüber .171) ist ein zusätzlicher Messpunkt für die E3-Kontextarbeit. Abruf und Parteienbindung bei einer späteren Verdichtung mitprüfen. [Budgetbefund aus dem .173-Kontrollreview §4](REVIEW_NPC_E2B173_PRODUKTDIFF_GPT.md#4-replay-testdaten-und-kosten).
+
+E4/E5, PULSE D, Stealth S2, Kampf und Wirtschaft bleiben eigene Pakete und Entscheidungen.
 
 ---
 

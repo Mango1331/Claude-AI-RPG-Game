@@ -1,12 +1,12 @@
 # Avereth Engine – Ideenarchiv und offene Kandidaten
 
-**Stand: 05.11.2026 · nicht priorisiert, keine Freigabe und kein zweiter Produktstatus.** [Aktueller Stand 03](03_AKTUELLER_PROJEKTSTAND.md) · [Reihenfolge/Abhängigkeiten 07](07_ROADMAP_NACH_10B_ENTWURF.md) · [verbindlicher Kanon 02](02_DESIGN_KANON.md).
+**Stand 09.11.2026 · nicht priorisierte Ideen und offene Kandidaten.** [Aktueller Stand 03](03_AKTUELLER_PROJEKTSTAND.md) · [Reihenfolge/Abhängigkeiten 07](07_ROADMAP_NACH_10B_ENTWURF.md) · [verbindlicher Kanon 02](02_DESIGN_KANON.md).
 
 Die früheren umfangreichen Entwürfe bleiben über [die letzte vollständige Suchfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/55d20eaf65f521a25ea3e85cfa3390e215270683/04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md), [33-Themen-Archiv](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/834fcd33de0f5043becf981bb16d675a6cdf0f73/07_ROADMAP_NACH_10B_ENTWURF.md) und [141-Punkte-Sammlung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0ebf449/04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md) erreichbar. Erledigte S1-/UI-Arbeit wird hier nicht erneut als Kandidat geführt; Quellen in [06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md).
 
 ## Spieltempo, Bedienung und Spielerfeedback
 
-- **UI/Quick Replies:** weniger doppelte Contract Details; später editierbare Formulierungsvorschläge für Questannahme/Shopinteraktion. Kein Autosenden, keine stille Buchung, keine neue Pflichtmenüführung. [User02-Feedback](testrun_10b/user-20261105-050449/USER_FEEDBACK_REVIEW.md).
+- **UI/Quick Replies.** .161 hat kompaktere Contract Details und editierbare Quest-/TAKE-Entwürfe geliefert. Shoptexte, weitere Komfortentwürfe und Journal/Karte bleiben Kandidaten. Entwürfe bleiben zur Bearbeitung im Eingabefeld. [User02-Feedback](testrun_10b/user-20261105-050449/USER_FEEDBACK_REVIEW.md) · [Produktstand](03_AKTUELLER_PROJEKTSTAND.md).
 - **Explorationsbeute:** interessante orts-/risikogebundene Funde außerhalb von Leichen; eventuell besondere Elite-/Minibossbeute oder seltene Stones. Fundchance, Wert, Rangverteilung und Garantien offen. Bereits vorhandene Bodenobjekte anzeigen, zulässige Raumsuche ausführen und neue Beute generieren sind getrennte Themen.
 - **Engine-only-Komfort:** bekannte Boards/Offerten, sichere Rest-/Wait-/Reiseansichten und Quick Replies vereinfachen, ohne gültige Weltaktionen zu verlieren. [Fachplan](patch_plans_10b/PATCH_ENGINE_BOARD_AND_TRADE_OFFERS.md).
 - **Weitere Stealth-Handlungen:** lokale Search/TAKE nach [S2-Fachplan](patch_plans_10b/PATCH_STEALTH_ACTION_MANNER.md); andere Aktionen nur bei Bedarf. Kein freier Angriff, Diebstahlrecht oder dauerhafter Schleichmodus.
@@ -22,7 +22,7 @@ Die aktuelle NPC-Etappenfolge steht ausschließlich in [07 §2](07_ROADMAP_NACH_
 
 Später offen: belegte Persönlichkeit, wichtige gemeinsame Episoden, Absprachen, nachvollziehbare Beziehungen und Salienz. `#npc <name>` existiert als Infoansicht; Pinning wäre neu. Keine automatische Romantik/Sympathie und keine geheimen Erzählerkarten im Spielerpanel.
 
-**PULSEs nachrichtenbasiertes gemeinsames Gate ist beschlossen**, Frequenz/Umsetzung bleiben offen; ROAD AHEAD ist dessen Reiseanbindung. Später eigene Agenden, Story-Hinweise, Gerüchte und Fraktionsuhren, ohne Agent pro NPC. Gefährliche Rast/Wartezeit ist eine eigene Frage: Unterbrechung vor voller Zeit/Regeneration, sichere Unterkünfte risikofrei, kein Umgehen durch gesplittete Rasten. [Weltrecherche](recherche/AI_RPG_RECHERCHE_20261028.md).
+**PULSE A, C und B sind umgesetzt.** Paket D wertet die natürliche Ereignisdichte und die Parameter aus. Eigene Agenden, Story-Hinweise, Gerüchte und Fraktionsuhren bleiben spätere Weltideen. [Stand und Nachweise](03_AKTUELLER_PROJEKTSTAND.md) · [Weltrecherche](recherche/AI_RPG_RECHERCHE_20261028.md).
 
 ## Kampf, Quests und Progression
 

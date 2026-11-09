@@ -291,7 +291,7 @@ export function namedPeople(w, people) {
  * @param {PersonProfile[]} people the people offered for the step and those present
  * @returns {{ok: true} | {ok: false, why: string}}
  */
-export function metEvidence(prose, evidence, id, people) {
+export function metEvidence(prose, evidence, id, people, { here = [], elsewhere = [] } = {}) {
     const ev = narratedEvent(prose, evidence);
     if (!ev.ok) return ev;
     const w = ev.quote.filter((t) => t !== ',');
@@ -302,7 +302,78 @@ export function metEvidence(prose, evidence, id, people) {
     if (!named.has(id)) return { ok: false, why: 'the quoted words do not name them, or not them alone' };
     // "a note from the clerk", "the clerk's name on the slate": a trace of them, not them
     if (TRACE.test(text) && w.some((t, i) => ['from', 'by', 'of'].includes(t) && namedPeople(w.slice(i + 1, i + 5), people).has(id))) return { ok: false, why: 'it shows a trace of them, not them' };
-    return { ok: true };
+    // .170 (GPT review of .169 §2): naming them is not showing them here. "The clerk had left the Guild hall before
+    // Alaric arrived" names the one clerk and is narrated: only a mention of them that is shown present now counts
+    return presentHere(ev.quote, id, people, { here, elsewhere });
+}
+
+// .170: what shows a named person present in the scene now. The quote's own words around the mention: the person does
+// something of the scene in the story's past (stood, sat, waved, was sorting, was behind the counter), or Alaric sees
+// them or the place has them (saw the clerk, had both clerks at work). Anything else is no presence: a departure or any
+// other act not read here (left, went, departed), a pluperfect (had left, had stood: before now), a look back
+// (yesterday, earlier, before), another place (the other town, a known place elsewhere), a search or an expectation.
+const HERE_DOES = new Set(['stood', 'sat', 'waited', 'worked', 'leaned', 'leant', 'looked', 'glanced', 'watched', 'waved', 'nodded', 'smiled', 'grinned',
+    'frowned', 'laughed', 'said', 'spoke', 'called', 'asked', 'answered', 'replied', 'greeted', 'wrote', 'counted', 'sorted', 'stacked', 'tallied',
+    'stamped', 'weighed', 'kept', 'held', 'raised', 'lifted', 'set', 'laid', 'pushed', 'slid', 'handed', 'took', 'turned', 'rose', 'stirred', 'shifted',
+    'sighed', 'grunted', 'muttered', 'shrugged', 'read', 'marked', 'polished', 'wiped', 'dried', 'served', 'poured', 'cleaned', 'tended', 'manned',
+    'stayed', 'remained', 'lingered', 'sipped', 'drank', 'ate', 'studied', 'bent', 'peered', 'squinted', 'straightened', 'paused', 'gestured',
+    'pointed', 'beckoned', 'coughed', 'talked', 'argued', 'chatted', 'scratched', 'tapped', 'listened', 'inked', 'logged', 'checked', 'tidied',
+    'arranged', 'folded', 'blinked', 'yawned', 'hummed', 'mended', 'played']);
+const HERE_DOING = new Set([...HERE_DOES].map((x) => x.replace(/(?:ed|t)$/, '')).flatMap((x) => [`${x}ing`, `${x}ting`, `${x.replace(/e$/, '')}ing`])
+    .concat(['standing', 'sitting', 'waiting', 'working', 'writing', 'reading', 'drinking', 'eating', 'holding', 'keeping', 'serving', 'talking', 'chatting']));
+const SEES = new Set(['saw', 'found', 'spotted', 'noticed', 'met', 'greeted', 'joined', 'recognised', 'recognized', 'faced', 'approached']);
+const HAS = new Set(['had', 'held']);
+const COPULA = new Set(['was', 'were']);
+const LOCATIVE = new Set(['in', 'at', 'inside', 'on', 'near', 'by', 'behind', 'beside', 'over', 'under', 'across', 'within', 'among', 'outside', 'there', 'here', 'back']);
+const CLAUSE_END = new Set([',', 'and', 'but', 'while', 'as', 'when', 'until', 'who', 'which', 'whose', 'though', 'although']);
+const LOOK_BACK = /^(?:yesterday|earlier|ago|previously|formerly|before|once)$/;
+const ELSEWHERE = /^(?:other|another|elsewhere|home|away|outside|abroad)$/;
+const SETTLEMENT = /^(?:town|city|village|market|marketplace|street|streets|road|square|harbou?r|docks?|gate|fields?|farm|tavern|inn|temple|camp|quarter)$/;
+const LINGER = /^(?:still|again|also|now|just|then|already|alone|quietly|patiently)$|ly$/;
+
+function presentHere(q, id, people, { here = [], elsewhere = [] } = {}) {
+    const hereWords = new Set(here.flatMap((x) => flat(x).split(' ')));
+    const away = elsewhere.map((x) => flat(x).replace(/^the /, '')).filter((x) => x.length >= 4 && !here.some((h) => flat(h).replace(/^the /, '') === x));
+    // the smallest stretches of the quote that name them (positions in the token list with clause marks)
+    const pos = q.map((t, i) => (t === ',' ? -1 : i)).filter((i) => i >= 0);
+    const spans = [];
+    for (let len = 1; len <= 7; len++) for (let a = 0; a + len <= pos.length; a++) {
+        const sl = pos.slice(a, a + len);
+        if (spans.some(([x, y]) => x >= sl[0] && y <= sl.at(-1))) continue;
+        if (namedPeople(sl.map((i) => q[i]), people).has(id)) spans.push([sl[0], sl.at(-1)]);
+    }
+    const clauseEnd = (from) => { let k = from; while (k < q.length && !CLAUSE_END.has(q[k])) k++; return k; };
+    const clauseStart = (from) => { let k = from; while (k > 0 && q[k - 1] !== ',') k--; return k; };
+    // the place words of the predicate's clause: here, or somewhere else
+    const elsewhereIn = (from, to) => {
+        const part = q.slice(from, to);
+        const text = ` ${part.join(' ')} `;
+        if (part.some((t) => ELSEWHERE.test(t))) return true;
+        if (part.some((t, i) => LOCATIVE.has(t) && part.slice(i + 1).some((x) => SETTLEMENT.test(x) && !hereWords.has(x)))) return true;
+        return away.some((n) => text.includes(` ${n} `));
+    };
+    let why = 'it does not show them here now';
+    for (const [a, b] of spans) {
+        let p = null;
+        // the person does it: the act right after their name (adverbs, and a "with …" of their look, between)
+        let j = b + 1;
+        while (j < q.length && LINGER.test(q[j])) j++;
+        if (q[j] === 'with') { let k = j + 1; while (k < q.length && k <= j + 4 && !HERE_DOES.has(q[k]) && !COPULA.has(q[k]) && !CLAUSE_END.has(q[k])) k++; j = k; }
+        if (HERE_DOES.has(q[j])) p = j;
+        else if (COPULA.has(q[j]) && (HERE_DOING.has(q[j + 1]) || LOCATIVE.has(q[j + 1]))) p = j + 1;
+        else if (['had', 'has', 'have'].includes(q[j])) { why = 'it tells what they had done before, not them here now'; continue; }
+        // or they are seen, or the place has them (with where: "had both clerks at work")
+        if (p === null) {
+            const v = q[a - 1];
+            if (SEES.has(v) || (HAS.has(v) && LOCATIVE.has(q[b + 1]))) p = b + 1;
+        }
+        if (p === null) continue;
+        const end = clauseEnd(p), start = clauseStart(a);
+        if (q.slice(start, end).some((t) => LOOK_BACK.test(t))) { why = 'it looks back, not at them here now'; continue; }
+        if (elsewhereIn(p, end)) { why = 'it shows them somewhere else'; continue; }
+        return { ok: true };
+    }
+    return { ok: false, why };
 }
 
 /**

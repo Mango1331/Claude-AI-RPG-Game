@@ -1995,13 +1995,18 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const offered = outcome.known_at?.[k] || [];
         const g = (auth.gos || []).find((x) => String(x.seq) === String(k));
         const people = [...new Set([...offered, ...s.scene.present.filter((id) => s.entities[id]?.kind === 'npc')])].filter((id) => s.entities[id]).map(profileOf);
+        // .170: the reached place and what holds it or lies in it are here; every other known place is elsewhere
+        const up = new Set(lineage(s, s.scene.at));
+        const inside = (id) => lineage(s, id).includes(s.scene.at);
+        const where = { here: [...up].map((id) => s.places[id]?.name).filter(Boolean),
+            elsewhere: Object.values(s.places).filter((pl) => pl?.name && !up.has(pl.id) && !inside(pl.id)).map((pl) => pl.name) };
         for (const m of list) {
             const item = { seq: Number(k), type: 'expected', met: m };
             const who = offered.includes(m?.who) ? m.who : idOf(m?.who);
             if (expected[k]?.arrived !== true || !g?.to || s.scene.at !== g.to) { reject(item, 'met_without_arrival', `GO step ${k} did not bring him to its place in this reply`); continue; }
             if (!who || !offered.includes(who) || s.entities[who]?.kind !== 'npc' || statusOf(s, who) === 'dead') { reject(item, 'met_not_known_here', `${m?.who} is not one of the people known at this place for step ${k}`); continue; }
             if (s.scene.present.includes(who)) continue;
-            const ev = metEvidence(prose, m.evidence, who, people);
+            const ev = metEvidence(prose, m.evidence, who, people, where);
             if (!ev.ok) { reject(item, 'met_evidence', `${who}: ${ev.why}`); continue; }
             enterKnown(who, item);
             if (s.scene.present.includes(who)) metEntered.add(who);

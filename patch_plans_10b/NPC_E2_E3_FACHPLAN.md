@@ -316,12 +316,12 @@ Die Empfehlungen sind **vorläufig** und gelten nur als Entwurf. Punkte mit **(S
 
 | # | Frage | Vorläufige Empfehlung | Paket |
 |---|---|---|---|
-| D1 **(S)** | Zeigt `#npc` offene Absprachen mit Alaric? | ja, nur bei `who ⊇ {pc, id}` | E2-B |
+| D1 **(S)** | Zeigt `#npc` offene Absprachen mit Alaric? | **Entschieden (Nutzerfreigabe E2-B, 09.11.2026):** ja, nur offene persönliche Absprachen mit `who ⊇ {pc, id}`; keine NPC↔NPC-, geheimen/privaten, nicht etablierten oder erledigten Absprachen als „offen“ | E2-B (.172) |
 | D2 **(S)** | Persönlichkeit nur aus gezeigtem Verhalten, nie aus Spielerbehauptung? | ja | E3 |
 | D3 **(S)** | Anker frühestens aus späterer Begegnung (Nachweis `meeting`-Erinnerung vor aktueller Spanne)? | ja; die Alternative „sofort beim ersten Beleg“ wäre eine bewusste andere Regel und kein „ab zweiter Szene“ | E3 |
-| D4 **(S)** | Wie lange bleibt eine eingelöste Absprache auf der Karte? | bis eine jüngere bedeutsame Erinnerung mit der Person existiert | E2-B |
+| D4 **(S)** | Wie lange bleibt eine eingelöste Absprache auf der Karte? | **Entschieden (09.11.2026):** als `settled between you`, bis eine jüngere bedeutsame gemeinsame Erinnerung mit der Person existiert; erledigt bleibt erledigt (kein Wiederöffnen, keine Verlängerung, Historie bleibt); die alte Versprechens-Erinnerung erscheint nicht als offene Pflicht | E2-B (.172) |
 | D5 | Historische Sammelpersonen | keine Migration; nutzbar, nie Ziel von `keptHere` | E2-A |
-| D6 **(S)** | Zählt ein ausdrücklich aufgeschobenes Angebot mit Bedingung (Brenna-Dinner) als Absprache? | ja, als `promise` mit Parteien; ohne Bedingung nur Erinnerung | E2-B |
+| D6 **(S)** | Zählt ein ausdrücklich aufgeschobenes Angebot mit Bedingung (Brenna-Dinner) als Absprache? | **Entschieden (09.11.2026):** ja, als `promise` mit Parteien = Absprache, **erneut zu fragen**; nie Annahme, gebuchtes Essen, sichere Zustimmung oder automatische Sympathie. Unbeantwortete Einladung, Höflichkeit, abgelehntes Angebot: kein Absprache-Thread | E2-B (.172) |
 | D7 | `#npc pin` | außerhalb E2/E3 (E4) | — |
 | D8 | Budgeterhöhung | nein | alle |
 | D9 **(S)** | Behält ein anwesender Bystander das Annahmewissen (wiry woman I73)? | ja, sie war anwesend und aufmerksam; nur der Bearbeiter kommt hinzu | E2-A |

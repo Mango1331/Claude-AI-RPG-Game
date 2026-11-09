@@ -2006,7 +2006,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             if (expected[k]?.arrived !== true || !g?.to || s.scene.at !== g.to) { reject(item, 'met_without_arrival', `GO step ${k} did not bring him to its place in this reply`); continue; }
             if (!who || !offered.includes(who) || s.entities[who]?.kind !== 'npc' || statusOf(s, who) === 'dead') { reject(item, 'met_not_known_here', `${m?.who} is not one of the people known at this place for step ${k}`); continue; }
             if (s.scene.present.includes(who)) continue;
-            const ev = metEvidence(prose, m.evidence, who, people, where);
+            const ev = metEvidence(prose, m.evidence, who, people, { ...where, self: [s.entities.pc?.name, 'Alaric'].filter(Boolean) });
             if (!ev.ok) { reject(item, 'met_evidence', `${who}: ${ev.why}`); continue; }
             enterKnown(who, item);
             if (s.scene.present.includes(who)) metEntered.add(who);

@@ -291,7 +291,7 @@ export function namedPeople(w, people) {
  * @param {PersonProfile[]} people the people offered for the step and those present
  * @returns {{ok: true} | {ok: false, why: string}}
  */
-export function metEvidence(prose, evidence, id, people, { here = [], elsewhere = [] } = {}) {
+export function metEvidence(prose, evidence, id, people, { here = [], elsewhere = [], self = ['alaric'] } = {}) {
     const ev = narratedEvent(prose, evidence);
     if (!ev.ok) return ev;
     const w = ev.quote.filter((t) => t !== ',');
@@ -304,7 +304,12 @@ export function metEvidence(prose, evidence, id, people, { here = [], elsewhere 
     if (TRACE.test(text) && w.some((t, i) => ['from', 'by', 'of'].includes(t) && namedPeople(w.slice(i + 1, i + 5), people).has(id))) return { ok: false, why: 'it shows a trace of them, not them' };
     // .170 (GPT review of .169 §2): naming them is not showing them here. "The clerk had left the Guild hall before
     // Alaric arrived" names the one clerk and is narrated: only a mention of them that is shown present now counts
-    return presentHere(ev.quote, id, people, { here, elsewhere });
+    const shown = presentHere(ev.quote, id, people, { here, elsewhere });
+    if (!shown.ok) return shown;
+    // .171 (GPT review of .170 §3): what the reply goes on to tell of them decides too: "The clerk stood behind the
+    // counter and left before Alaric arrived" (or a quote of its first half only) shows them gone when he came
+    const gone = leftBeforeHim(prose, ev.quote, shown.at, id, people, { self });
+    return gone ? { ok: false, why: gone } : { ok: true };
 }
 
 // .170: what shows a named person present in the scene now. The quote's own words around the mention: the person does
@@ -371,9 +376,80 @@ function presentHere(q, id, people, { here = [], elsewhere = [] } = {}) {
         const end = clauseEnd(p), start = clauseStart(a);
         if (q.slice(start, end).some((t) => LOOK_BACK.test(t))) { why = 'it looks back, not at them here now'; continue; }
         if (elsewhereIn(p, end)) { why = 'it shows them somewhere else'; continue; }
-        return { ok: true };
+        return { ok: true, at: p };
     }
     return { ok: false, why };
+}
+
+// .171: a person shown here who, as the same sentence goes on, leaves (its own subject carried on: "…and left", ", then
+// went home"), or of whom a later sentence of the reply says they had gone before Alaric came, was not there when he
+// came. A return told after the departure ("came back", "returned") undoes it; someone else leaving, a thing left
+// behind ("left the ledger open") and a departure later in the scene (no "before he came") do not count.
+const DEPARTS_TO = /^(?:away|out|off|home)$/;
+const LEFT_PLACE = /^(?:hall|room|building|house|inn|tavern|office|counter|desk|place|town|city|village|guild|shop|booth|stall|premises)$/;
+const OBJECT_PRONOUN = new Set(['him', 'her', 'them']);
+const SUBJECT_PRONOUN = new Set(['he', 'she', 'they']);
+function departsAt(w, i) {
+    const t = w[i];
+    if (t === 'departed' || t === 'gone') return true;
+    if (t === 'left') {
+        const next = w[i + 1];
+        if (['the', 'a', 'an', 'his', 'her', 'its', 'their', 'some'].includes(next)) return w.slice(i + 2, i + 5).some((x) => LEFT_PLACE.test(x));
+        return true;
+    }
+    if (['went', 'headed', 'walked', 'stepped', 'slipped', 'hurried', 'set', 'wandered', 'drifted'].includes(t)) return w.slice(i + 1, i + 3).some((x) => DEPARTS_TO.test(x));
+    return false;
+}
+const returnsAt = (w, i) => w[i] === 'returned' || w[i] === 'reappeared' || (['came', 'was', 'were', 'stepped', 'walked', 'hurried', 'got'].includes(w[i]) && w[i + 1] === 'back');
+// "before Alaric arrived", "before he came in", "by the time he got there", a pluperfect "had left/gone/departed"
+function beforeHim(w, i, pc) {
+    if (w[i - 1] === 'had' || (w[i - 2] === 'had' && /ly$|^(?:already|long|just)$/.test(w[i - 1]))) return true;
+    const rest = w.slice(i + 1);
+    return rest.some((x, k) => (x === 'before' || (x === 'time' && rest[k - 1] === 'the' && rest[k - 2] === 'by')) && rest.slice(k + 1, k + 4).some((y) => pc.has(y) || y === 'he' || y === 'his'));
+}
+
+function leftBeforeHim(prose, q, at, id, people, { self = ['alaric'] } = {}) {
+    const pc = new Set(self.flatMap((x) => flat(x).split(' ')).filter((x) => x.length > 2));
+    const sentences = narrationOnly(prose).split(/[.!?\u2026\n|]+/).map(tokens);
+    const qq = q.filter((x) => x !== ',');
+    const s = sentences.findIndex((x) => locate(x, qq));
+    if (s < 0) return null;
+    const start = locate(sentences[s], qq).i;
+    const pre = locate(sentences[s].slice(start), q.slice(0, at + 1).filter((x) => x !== ','));
+    const same = sentences[s].slice(start + (pre ? pre.end : 0));
+    const personAt = (w, i) => {
+        const x = w[i];
+        if (SUBJECT_PRONOUN.has(x) || OBJECT_PRONOUN.has(x)) return 'pronoun';
+        if (pc.has(x)) return 'pc';
+        if (GENERIC_PERSON.has(x) || people.some((p) => p.role === singular(x) || p.nameWords.includes(x) || p.names.some((n) => n.split(' ').includes(x)))) {
+            const named = namedPeople(w.slice(Math.max(0, i - 4), i + 1).filter((y) => y !== ','), people);
+            return named.size === 1 ? [...named][0] : 'other';
+        }
+        return null;
+    };
+    // the same sentence: the subject of the shown presence goes on until another person takes over
+    let ours = true, gone = false, last = id;
+    for (let i = 0; i < same.length; i++) {
+        const who = personAt(same, i);
+        if (who === 'pronoun') { if (SUBJECT_PRONOUN.has(same[i])) ours = last === id; }
+        else if (who) { ours = who === id; last = who; }
+        if (ours && departsAt(same, i)) gone = true;
+        else if (ours && returnsAt(same, i)) gone = false;
+    }
+    // the later sentences of the reply: a departure of theirs only counts as told before he came
+    for (const w of sentences.slice(s + 1)) {
+        let subject = null;
+        for (let i = 0; i < w.length; i++) {
+            if (CLAUSE_END.has(w[i])) subject = null;
+            const who = personAt(w, i);
+            if (who === 'pronoun') { if (SUBJECT_PRONOUN.has(w[i]) && subject === null) subject = last; }
+            else if (who) { if (subject === null) subject = who; last = who; }
+            if (subject !== id) continue;
+            if (departsAt(w, i) && beforeHim(w, i, pc)) gone = true;
+            else if (returnsAt(w, i)) gone = false;
+        }
+    }
+    return gone ? 'the reply goes on to tell that they left before he came' : null;
 }
 
 /**

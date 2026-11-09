@@ -33,26 +33,31 @@ function overlap(a, b) {
 }
 
 /**
- * The open thread a report without an id means: the same words, or a rewording that shares most of its words and its
- * kind. Null when none is clearly that matter (two candidates are no match).
+ * The open thread a report without an id means: the same words, or a rewording that shares most of its words, and in
+ * either case its kind (or one of the two kinds unknown). Null when none is clearly that matter.
+ * .173 (GPT review of .172, P2): the parties must fit as well, and exactly one thread may fit:
+ * - a report with parties fits a thread whose parties include every reported one (all of them, or a part when World
+ *   left Alaric out because nobody of it is here); a thread of other parties never fits because one person is in both
+ *   ("Tam and Bess" is no "Alaric and Tam"), so a new party joins a thread only by its id; a thread without parties
+ *   (older than E2-B) fits only by its exact words;
+ * - a report without parties fits any thread by its exact words, by a rewording only a thread without parties;
+ * - two threads fitting by their exact words are ambiguous (`ambiguous`: their ids): none is taken.
  */
-export function matchThread(state, text, kind = null, who = null) {
+export function findThread(state, text, kind = null, who = null) {
     const t = normText(text);
-    const open = Object.values(state.threads).filter((x) => x.status === 'open');
-    // NPC E2-B (R7): a report naming its parties is only ever a thread of theirs; an old thread without parties is
-    // theirs only by its exact words (two people promising alike keep two threads)
-    const npcs = (who || []).filter((x) => x !== 'pc');
-    if (npcs.length) {
-        const theirs = open.filter((x) => (x.who || []).some((p) => npcs.includes(p)));
-        const exact = theirs.find((x) => normText(x.text) === t) || open.find((x) => !x.who && normText(x.text) === t);
-        if (exact) return exact;
-        const near = theirs.filter((x) => (!kind || !x.kind || x.kind === kind) && overlap(x.text, text) >= 0.6);
-        return near.length === 1 ? near[0] : null;
-    }
-    const same = open.find((x) => normText(x.text) === t);
-    if (same) return same;
-    const close = open.filter((x) => (!kind || !x.kind || x.kind === kind) && overlap(x.text, text) >= 0.6);
-    return close.length === 1 ? close[0] : null;
+    const parties = Array.isArray(who) && who.some((x) => x !== 'pc') ? [...new Set(who)] : null;
+    const open = Object.values(state.threads).filter((x) => x.status === 'open' && (!kind || !x.kind || x.kind === kind));
+    const fits = (x) => !parties || !x.who || parties.every((p) => x.who.includes(p));
+    const exact = open.filter((x) => normText(x.text) === t && fits(x));
+    if (exact.length > 1) return { thread: null, ambiguous: exact.map((x) => x.id) };
+    if (exact.length === 1) return { thread: exact[0] };
+    const near = open.filter((x) => (parties ? !!x.who : !x.who) && fits(x) && overlap(x.text, text) >= 0.6);
+    return { thread: near.length === 1 ? near[0] : null };
+}
+
+/** The thread findThread names, or null (also when it is ambiguous). */
+export function matchThread(state, text, kind = null, who = null) {
+    return findThread(state, text, kind, who).thread;
 }
 
 /** The area a place belongs to: its settlement, else its outermost place below the realm (a wild area). */
@@ -117,7 +122,12 @@ export function threadEvents(state, th, { at, src, place = null }) {
     if (th.id) {
         cur = threadById(state, th.id);
         if (!cur) return { events: [], reject: `unknown thread ${th.id}` };
-    } else cur = matchThread(state, th.text, th.kind || null, th.who || null);
+    } else {
+        const found = findThread(state, th.text, th.kind || null, th.who || null);
+        // .173: several threads of these words fit: none is updated or settled by chance
+        if (found.ambiguous) return { events: [], reject: `ambiguous thread: ${found.ambiguous.length} open threads fit these words (${found.ambiguous.join(', ')}); give its id` };
+        cur = found.thread;
+    }
     if (!cur && status === 'resolved') return { events: [], reject: 'cannot resolve an unknown thread' };
     if (cur && cur.status === 'resolved' && status === 'resolved') return { events: [] };
     const id = cur?.id || newThreadId(state);

@@ -1,0 +1,51 @@
+{
+  "id": "npc_pulse_test",
+  "title": "Natural adventurer life — people, agreements, personalities and a living world (NPC E2/E3, PULSE A/C/B)",
+  "analysis": "npc_pulse",
+  "exampleMilestone": "open_run_duration",
+  "openRun": {
+    "minTurns": 70
+  },
+  "brief": "Start a genuine Level-1 campaign and live an ordinary adventurer's career. Guild contracts are your backbone: register, choose achievable contracts from the actual board, do them and turn them in, and talk naturally with Guild staff and other adventurers. Bring the world's people into your play: get to know them, talk about their work and lives; when you meet someone again, greet them as someone you know and take up what you talked about, agreed or went through together, without re-asking things for the sake of it. Keep your promises; ask about promises made to you when it fits. When it makes sense, travel with someone, offer help or ask a capable person to join a contract; a party forms only if they credibly agree, and it is neither required nor a guaranteed success. React to new people and encounters on your own: friendly, curious, careful, suspicious or hostile as their conduct and your interests suggest. Negotiating, refusing, walking away and fighting are all real options; not everyone is your friend, not every conflict needs a fight, and people may say no. Explore towns, roads and the wild, and a dungeon if a contract or rumour leads there and you feel ready; rest, sleep at night and deal with what happens on the way. Let relationships grow on their own; never force them by repeating a conversation. You decide only your own actions and words: never what others say, feel or decide, what you will meet, find or achieve, and never ask the story for an event. No forced fights, scripted routes or invented accomplishments; trust the System results.",
+  "milestones": [
+    {
+      "id": "creation_complete",
+      "goal": "Create a genuine Level-1 character through the ordinary creation menu; choose your own two starter skills.",
+      "maxTurns": 8
+    },
+    {
+      "id": "guild_registered",
+      "goal": "Find the Adventurers' Guild and register as a member when you want to take contracts.",
+      "required": false
+    },
+    {
+      "id": "quest_completed",
+      "goal": "Finish a Guild contract you chose and turn it in at a Guild hall.",
+      "required": false
+    },
+    {
+      "id": "inside_dungeon",
+      "goal": "If a contract or a rumour leads you to a dungeon and you feel ready, go in and explore its first level.",
+      "required": false
+    },
+    {
+      "id": "open_run_duration",
+      "goal": "Keep living this adventurer's life — contracts, people, travel, rest and whatever comes — for the whole run (about 70 inputs); there is no level target."
+    }
+  ],
+  "focus": [
+    "Whether people you met before recognise you and remember what you talked about, agreed or went through together; notice it, do not test it with repeated questions.",
+    "Whether people keep their own character and goals, also when they disagree with you.",
+    "Whether roads, towns, the wild and your rests feel alive and fit place and time; react to it, never ask for events.",
+    "Contradictions between story, System panels and HUD (who is present, what was agreed, where you are, what you hold)."
+  ],
+  "limits": {
+    "maxTurns": 80,
+    "maxMinutes": 480,
+    "sameFailure": 3
+  },
+  "personas": [
+    "warm, curious and sociable: you seek out people, ask about their work and lives and follow up on it later; you readily offer help or ask capable people to come along, and accept a refusal gracefully; you still judge people by how they act and keep your guard up with anyone who threatens you",
+    "wary and pragmatic: polite but guarded with strangers, you ask questions before you trust, haggle, decline offers that seem off, keep the promises you make and expect the same; you work with people who prove reliable, avoid or stand up to those who do not, and prefer scouting to needless fights"
+  ]
+}

@@ -42,8 +42,10 @@ export async function startStub({ port = 0, key = null, delayMs = 50 } = {}) {
         else if (role === 'player') {
             let d = PLAYER_SCRIPT[playerTurn] || { message: '', stop: true, stop_reason: 'done', milestone: null, intent: null };
             // Explicit batch-profile plumbing tests still create through the ordinary menus, never a fixture.
-            const cls = /Base class for this run: (Warrior|Mage|Rogue)\./.exec(String(msgs[0]?.content || ''))?.[1];
-            if (cls && playerTurn < 2) d = { ...d, message: playerTurn === 0 ? cls : { Warrior: 'Heavy Slash + Guard', Mage: 'Arcane Bolt + Blink', Rogue: 'Quick Slash + Evasive Step' }[cls] };
+            const cls = /Base class for this run: (Warrior|Mage|Rogue)[.;]/.exec(String(msgs[0]?.content || ''))?.[1];
+            // the skills: the example the real creation menu on the screen names (the content's own pool), else a fixed pair
+            const shown = /for example "([^"\n]+ \+ [^"\n]+)"/.exec(lastUser)?.[1];
+            if (cls && playerTurn < 2) d = { ...d, message: playerTurn === 0 ? cls : shown || { Warrior: 'Heavy Slash + Guard', Mage: 'Arcane Bolt + Blink', Rogue: 'Razor Cut + Piercing Thrust' }[cls] };
             playerTurn += 1;
             text = `Here is my move:\n\`\`\`json\n${JSON.stringify({ stop: false, stop_reason: null, observations: '', ...d })}\n\`\`\``;
         } else if (empty) {

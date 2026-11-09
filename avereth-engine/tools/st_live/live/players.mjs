@@ -138,7 +138,8 @@ export function playerSystemPrompt(guide, { username, persona }) {
         '',
         'DECIDE QUICKLY: read the newest message and the HUD, take the next step toward your milestone, answer. Do not plan far ahead or weigh many options.',
         'Example only: choose your own action and current milestone. Notes: intent is one sentence; observations are new oddities or contradictions, at most two short sentences; "" when nothing new; no thoughts, no repetition.',
-        '{"message":"I offer the merchant two wolf pelts and ask his price.","milestone":"open_run_level","intent":"Sell surplus loot","stop":false,"stop_reason":null,"observations":""}',
+        // the example's milestone: the guide's own (exampleMilestone), else the historical one every other guide keeps
+        `{"message":"I offer the merchant two wolf pelts and ask his price.","milestone":"${guide.exampleMilestone || 'open_run_level'}","intent":"Sell surplus loot","stop":false,"stop_reason":null,"observations":""}`,
     ].filter((x) => x !== '').join('\n');
 }
 

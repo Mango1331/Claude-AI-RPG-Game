@@ -58,6 +58,63 @@ Auch ohne vollständigen Run-Export enthalten `batch.json` und der Serienbericht
 
 Vier neue Regressionen waren auf dem unveränderten `.100`-Runner rot und sind nachher grün: Prozessstart mit Pipes/Weiterleitung, früher Fehler mit begrenzter und bereinigter Diagnose, tatsächlicher ENOENT-Startfehler und der originale Windows-Exitcode ohne Spielbericht. Batchtests **14/14**, vollständige Node-Suite **1.936/1.936**. Echter **ST1.19-Stub-Batch unter Linux 9/9**, jeweils zwei normale Erstellungseingaben: alle geforderten Klassen, eigene Exporte, keine PageErrors, Profiländerungen oder Geheimnistreffer. Alle endeten korrekt am bewusst gesetzten Zweieingaben-Limit; keine natürliche GLM- oder Level-15-Abnahme. Die echte Windows-Ursache und der Erfolg auf dem betroffenen Rechner bleiben bis zur dortigen Gegenprobe offen; Linux-Tests ersetzen diese Abnahme nicht. Engine-Build bleibt `.100`; nur Runner, Runner-Tests und dieser Leitfaden geändert. Startbefehle und Spieleranweisungen bleiben unverändert.
 
+## Gezielter NPC-/PULSE-Batch (zwei natürliche Läufe, Build `.174`)
+
+Prüft NPC E2-A/E2-B (Wiederbegegnung, Identität, Anwesenheit, persönliches Wissen, Gildenbearbeiter, Absprachen), NPC E3 (Persönlichkeitsanker) und PULSE A/C/B (Ereignisfenster auf Reise, in Stadt und Wildnis, bei Rast und im Dungeon). Grundlage sind natürliches Spiel und eine Auswertung der gespeicherten Daten. Engine, Regeln und der Guild-Batch bleiben unverändert.
+
+```powershell
+npm run live:st:npc -- --headed
+```
+
+Der Batch startet **nacheinander zwei neue Level-1-Kampagnen** mit dem Leitfaden `npc_pulse_test`:
+
+| Nr. | Profil | Klasse | Spielstil | Seed |
+|---|---|---|---|---|
+| 1 | `npc-sociable` | Warrior | herzlich, neugierig, gesellig; sucht Gespräche und Begleitung, nimmt ein Nein an, bleibt bei Bedrohung wachsam | Batchseed |
+| 2 | `npc-wary` | Rogue | höflich, aber vorsichtig; fragt nach, verhandelt, lehnt Zweifelhaftes ab, hält Zusagen, erkundet lieber als zu kämpfen | Batchseed + 1 |
+
+- **Spielerverhalten** (Leitfaden `tools/st_live/live/guides/npc_pulse_test.json`):
+  - Gildenverträge sind der rote Faden; Gespräche mit Gildenpersonal und Abenteurern ergeben sich dabei.
+  - Menschen kennenlernen und bekannte Personen später als Bekannte ansprechen. Gespräche, Absprachen und Erlebnisse aufgreifen, ohne sie künstlich zu wiederholen.
+  - Gemeinsam reisen, Hilfe anbieten oder um Begleitung bitten, wo es passt. Eine Party entsteht nur bei glaubwürdiger Zustimmung; sie ist weder Pflicht noch automatisch erfolgreich.
+  - Freundlich, neugierig, vorsichtig, misstrauisch oder feindselig reagieren; Verhandeln, Ablehnen, Rückzug und Kampf sind gleichwertige Optionen.
+  - Städte, Straßen, Wildnis und gegebenenfalls einen Dungeon erkunden; rasten und übernachten.
+  - Der Spieler bestimmt nur seine eigenen Handlungen und Worte. Er nimmt keine NPC-Reaktionen, Begegnungen, Erfolge oder Ereignisse vorweg und bittet die Erzählung um kein Ereignis.
+  - Keine vorgegebenen Dialoge, Personen, Questreihenfolgen, erzwungenen Zufallsereignisse oder Kämpfe.
+- **Umfang:**
+  - `openRun.minTurns: 70`: Die Pflichtetappe `open_run_duration` ist nach 70 echten Eingaben erreicht, dann endet der Lauf als `done`. Sicherheitsgrenze 80 Eingaben oder 480 Minuten; kein Levelziel.
+  - Pflichtetappen: `creation_complete` und `open_run_duration`.
+  - Optionale Etappen: `guild_registered`, `quest_completed`, `inside_dungeon` (nur „wenn es in Reichweite kommt“).
+  - Tod, Blocker und Grenzen bleiben eigene Endgründe.
+- **Spielerprompt:** gemeinsame Konventionen, `GEAR CHECK` offener Läufe, Brief, Stil. Etwa 9 270 Zeichen, rund 740 mehr als ein Guild-Profil; das sind die sozialen Verhaltensregeln. Das Antwortbeispiel nennt die eigene Etappe (`exampleMilestone`); alle anderen Leitfäden behalten ihren Prompt unverändert.
+- **Ablage:** `npc-batch-<Zeitstempel>/001-npc-sociable/<Run-ID>/` und `002-npc-wary/…`, jeweils mit den bisherigen Exporten plus `npc-pulse.json` und `npc-pulse.md` (§7a). `report.md` je Lauf erhält einen kurzen Abschnitt „NPC/PULSE-Auswertung“. Die Batchübersicht verlinkt beide Auswertungen.
+- **Bedeutung:** „Batch completed“ heißt: zwei beendete Läufe, **keine** bestandene NPC- oder PULSE-Abnahme.
+- **Kosten:** Je Eingabe ein Spieleraufruf sowie Planner, Erzähler und Extractor des Spiels (plus Reparaturen). Bei bis zu 80 Eingaben je Lauf sind das grob 600–700 kostenpflichtige Aufrufe für beide Läufe. Die Auswertung selbst ruft kein Modell auf.
+
+Weitere Aufrufe:
+
+```powershell
+npm run live:st:npc -- --list
+npm run live:st:npc -- --check
+npm run live:st:npc -- --seed 7 --max-hours 8
+npm run live:st -- --guide npc_pulse_test --scenario npc-wary
+npm run live:st:npc-eval -- <Laufordner>
+```
+
+- `--seed 7` startet die Profile mit 7 und 8. Ohne Seed wird eine neue Folge gewählt; ein Seed garantiert keinen identischen Modellverlauf.
+- `--list` braucht keine SillyTavern-Installation.
+- Der Einzellauf ohne `--scenario` wählt einen der beiden Stile per Seed und lässt die Klassenwahl frei.
+- `live:st:npc-eval` wertet einen vorhandenen Laufordner (`chat.jsonl`, `chat-completions.jsonl`) neu aus und schreibt `npc-pulse.json`/`.md` in diesen Ordner.
+- Der Guild-Batch (`npm run live:st:batch`, Profile, Seeds 7/8/9, Bericht) und `current_test` sind unverändert. Die NPC-Profile gibt es nur mit `npc_pulse_test`, die Guild-Profile nur mit den bisherigen Leitfäden.
+
+**Technische Abnahme 09.11.2026 (Runner-Änderung, Engine `.174` unverändert):**
+- 7 neue Regressionen (`tests/live_runner/npc_pulse_runner.test.js`): Leitfaden und Profile, Spielerprompt, Batchsteuerung, Auswertung einer echten Host-Karriere, belastbare Invarianten an absichtlich beschädigten Record-Kopien, PULSE mit erzwungenem Testfenster, Auswertung eines Laufordners.
+- Runner-Suite **156/156**, vollständige Node-Suite **2984/2984**.
+- Echter **ST1.19-Stub-Selbsttest** `--mode npc --stub` (Seeds 11/12): beide Profile mit von der Engine bestätigter Klasse (Warrior, Rogue) über die normalen Erstellungsmenüs, Exporte inklusive `npc-pulse.json`/`.md`, Abschnitt im Laufbericht, Links im Batchbericht, Profil unverändert, Geheimnis-Scan sauber. Beide enden wie vorgesehen `incomplete`, weil der Stub-Spieler nach vier Eingaben „done“ meldet.
+- Das ist **kein natürlicher Modelltest** und keine NPC-/PULSE-Abnahme.
+- **Stub nebenbei repariert** (betrifft nur den Selbsttest): Die Klassenvorgabe wird wieder erkannt (Brief „Base class …;“). Die Skills übernimmt der Stub-Spieler aus dem Beispiel des echten Erstellungsmenüs, weil „Quick Slash“ kein Rogue-Starter mehr ist.
+- **Vorbestehend, auch auf unverändertem `.174`:** `selftest.mjs` meldet 49/51. Seine Level-Guide-Probe `selftest_level_cap` erstellt per Skript „Flame Lance + Blink“, während `current_test` die AoE-Starterfähigkeit verlangt; sie endet als `scenario_mismatch`. Nicht Teil dieser Änderung.
+
 ## 1. Aufbau
 
 | Teil | Datei | Aufgabe |
@@ -356,6 +413,54 @@ Gruppenmitglieder, die draußen bleiben, obwohl er nicht verborgen war, meldet s
 - Board fehlgeschlagen;
 - `finish_reason` ≠ `stop`;
 - System-Panels (CLARIFY, NOT TAKEN, REFUSED, BLOCKED, FAILED) und zurückgewiesene Deltas je Regel.
+
+## 7a. NPC-/PULSE-Auswertung (`npc_pulse.mjs`, Leitfaden `npc_pulse_test`)
+
+Läuft am Laufende automatisch für Leitfäden mit `"analysis": "npc_pulse"` oder nachträglich mit `npm run live:st:npc-eval -- <Laufordner>`.
+- **Quellen:** nur gespeicherte Daten. Das sind der Chat mit den Engine-Records (Events, Erzählerkontext-Diagnose `narration.context`, rohe Extractorantwort) und, falls vorhanden, die Requests aus `chat-completions.jsonl`.
+- **Kein Modellaufruf**, keine Record-Änderung, keine Bewertung durch ein LLM.
+- **Ergebnisse:** `npc-pulse.json` (vollständig), `npc-pulse.md` (kompakt, Listen auf 12 Einträge gekürzt) und ein Kurzabschnitt in `report.md`.
+
+**Drei Arten von Ergebnissen:**
+
+| Art | Inhalt | Urteil |
+|---|---|---|
+| Beobachtungen/Abdeckung | was tatsächlich vorkam, gezählt aus Events | Zahl > 0 = „beobachtet“, sonst **„nicht abgedeckt“**; fehlende Abdeckung ist weder bestanden noch fehlgeschlagen |
+| Regelverletzungen | nur Invarianten, die die Records sicher tragen | automatisch |
+| Zum Review | semantische Zweifelsfälle mit Originalstelle aus der Erzählung | kein Urteil; Material für den unabhängigen Review |
+
+**Abdeckung (28 Testziele):**
+- **NPC:** `npc_first_meetings`, `npc_returns` (spätere Anwesenheitsspanne, ab `.174` über `scene.since`), `npc_return_met` (`met` in der Rohantwort, nicht abgelehnt), `npc_met_refused`, `arrival_cards` (`arrivalNpcIds` im Erzählerkontext), `desk_handler` (`handled_by` und Wissenseintrag), `multi_npc_scenes`, `shared_travel` (Anwesende vor und nach einem Ortswechsel mit Reset).
+- **Absprachen:** `agreement_personal` (`who` enthält `pc`), `agreement_taken_up` (später aktualisiert oder erledigt), `agreement_settled`, `agreement_npc_only`, `agreement_unbound`, `agreement_on_card` (auf späterer Erzählerkarte, aus dem Request).
+- **Anker:** `anchor_stored`, `anchor_changed`, `anchor_refused_first_contact`, `anchor_refused_mood`, `anchor_on_card` (`<Merkmal>: <Wert>` in einem späteren Erzählerrequest, solange die Person anwesend ist).
+- **PULSE:** `pulse_travel`, `pulse_pause`, `pulse_scene`, `pulse_dungeon`, `pulse_open`, `pulse_interrupt`, `pulse_wanderer`, `pulse_threat_refused` (Ablehnungen nach `pulse`, `road`, `pulse_take`, `envelope`, `dungeon_*`, `population`, `creature_continuity`, `attack_commitment`, `rest_cut`).
+- **Gilde:** `quest_completed`.
+
+**Regelverletzungen (automatisch):**
+- `anchor_without_earlier_encounter`: Anker ohne gemeinsame Erinnerung vor `scene.since`.
+- `anchor_changed_twice_in_presence`: Merkmal zweimal in einer Spanne gesetzt.
+- `agreement_pc_without_presence`: Alaric als Partei, während keine andere Partei anwesend war.
+- `pulse_two_decisions_one_message`: zwei PULSE-Entscheidungen für eine Spielernachricht.
+- `pulse_forced_in_natural_run`: `forced`-Wurf in einem natürlichen Lauf.
+- `fold_error`: Foldfehler.
+- Ohne `scene.since` in den Records (vor `.174`) entfallen die Ankerprüfungen; der Bericht sagt das.
+
+**Zum Review (mit Originalstelle):**
+- `open_window_not_narrated`: offenes Fenster, laut Engine-Heuristik nichts erzählt.
+- `new_world_content_in_closed_window`: neue Person, Kreatur oder Kampf bei geschlossenem Fenster; kann eigenes Handeln sein.
+- `arrival_named_not_present`: Person der Ankunftskarte in der Erzählung genannt, aber nicht eingetreten.
+- `possible_duplicate_person`: gleicher Name zweimal angelegt.
+- `anchor_use`: gespeicherter Anker und die nächste Szene mit der Person; ob er auf der Karte stand, und die Frage, ob die Erzählung zu ihm passt.
+
+**Weitere Kennzahlen:**
+- PULSE je Exposition/Rahmen: Würfe, offen, Arten, „erzählt“ (likely/none aus `pulse.outcome`), gespeicherte Weltfolgen, Pausen-Folgezüge, Rast-Unterbrechungen, gleiche Art innerhalb von drei Zügen, offene Fenster je 10 Eingaben und je 8 Spielstunden.
+- Extraktionsstatus, Foldfehler, Verträge, abgelehnte Deltas je Regel.
+
+**Grenzen:**
+- „erzählt“ ist die Heuristik der Engine (`pulse.outcome.narrated`).
+- Die Namensprüfung erfasst nur benannte Personen.
+- Ob die Erzählung einen Anker oder eine Absprache inhaltlich trifft, entscheidet der Review, nicht die Auswertung.
+- Ohne `chat-completions.jsonl` stehen die Kartenprüfungen auf „?“.
 
 ## 8. Exporte
 

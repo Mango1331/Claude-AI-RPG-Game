@@ -7,12 +7,20 @@ import { options, runsDirFor, gitInfo, check } from './run_live.mjs';
 import { importProfile } from './import_profile.mjs';
 import { Guard, stamp } from './lib.mjs';
 import { loadGuide } from './guide.mjs';
-import { SCENARIOS, scenarioGuide } from './scenarios.mjs';
+import { SCENARIOS, NPC_SCENARIOS, scenarioGuide } from './scenarios.mjs';
 import { CREDENTIAL_PATTERNS } from './export.mjs';
 
 const RUNNER = fileURLToPath(new URL('./run_live.mjs', import.meta.url));
 const INFRA = new Set(['harness', 'ui', 'missing', 'no_result', 'process_error', 'scenario_metadata_mismatch']);
 const BATCH_SCENARIOS = SCENARIOS.filter(s => s.focus === 'guild');
+// Batch modes: the historical Guild series (default, unchanged) and the targeted NPC/PULSE series (two independent runs
+// of guides/npc_pulse_test.json with their own class, style and seed: the batch seed and the next one).
+export const BATCH_MODES = {
+    guild: { profiles: BATCH_SCENARIOS, guide: 'current_test', seedOf: (seed, s) => (seed + SCENARIOS.indexOf(s)) % 0x80000000 },
+    npc: { profiles: NPC_SCENARIOS, guide: 'npc_pulse_test', seedOf: (seed, _s, i) => (seed + i) % 0x80000000,
+        title: (n) => `# Avereth – ${n} natürliche NPC-/PULSE-Testläufe`,
+        meaning: (n) => `Serie abgeschlossen bedeutet, dass die ${n} Läufe beendet sind; es bedeutet keine bestandene NPC- oder PULSE-Abnahme. Die Auswertung je Lauf steht in seiner npc-pulse.md (Beobachtungen, Prüffälle, fehlende Abdeckung).` },
+};
 
 /** IPC permits graceful Ctrl+C on Windows too; child.kill(SIGINT) would terminate there without export. */
 export function launchRun(args, { signal, entry = RUNNER, secrets = [], spawnImpl = spawn, stdout = process.stdout, stderr = process.stderr } = {}) {
@@ -76,25 +84,29 @@ function persist(g, root, batch) {
     const temp = path.join(root, 'batch.json.tmp');
     g.write(temp, JSON.stringify(batch, null, 2));
     fs.renameSync(g.check(temp), g.check(path.join(root, 'batch.json')));
+    const mode = BATCH_MODES[batch.mode || 'guild'];
+    const npc = (r) => r.runDir && fs.existsSync(path.join(root, r.folder, r.runDir, 'npc-pulse.md')) ? ` · [npc-pulse.md](${r.folder}/${r.runDir}/npc-pulse.md)` : '';
     g.write(path.join(root, 'report.md'), [
-        `# Avereth – ${batch.runs.length} natürliche Testkampagnen`, '',
+        mode.title ? mode.title(batch.runs.length) : `# Avereth – ${batch.runs.length} natürliche Testkampagnen`, '',
         ...(batch.stub ? ['> STUB-SELBSTTEST mit Mockprovider, kein natürlicher Livetest.', ''] : []),
-        `Status: **${batch.status}**. Serie abgeschlossen bedeutet, dass die Läufe beendet sind; es bedeutet nicht ${batch.runs.length} bestandene Level-15-Abnahmen.`, '',
+        `Status: **${batch.status}**. ${mode.meaning ? mode.meaning(batch.runs.length) : `Serie abgeschlossen bedeutet, dass die Läufe beendet sind; es bedeutet nicht ${batch.runs.length} bestandene Level-15-Abnahmen.`}`, '',
         '| Nr. | Profil | Seed | Eingaben | Level | Ende | Originalbericht |', '|---|---|---:|---:|---:|---|---|',
-        ...batch.runs.map(r => `| ${r.index} | ${r.id} | ${r.seed} | ${r.inputs ?? '–'} | ${r.level ?? '–'} | ${cell(r.end?.kind || r.status)} | ${r.runDir ? `[report.md](${r.folder}/${r.runDir}/report.md)` : '–'} |`), '',
+        ...batch.runs.map(r => `| ${r.index} | ${r.id} | ${r.seed} | ${r.inputs ?? '–'} | ${r.level ?? '–'} | ${cell(r.end?.kind || r.status)} | ${r.runDir ? `[report.md](${r.folder}/${r.runDir}/report.md)${npc(r)}` : '–'} |`), '',
         ...batch.runs.filter(r => r.end?.kind === 'no_result').map(r => `- ${r.id}: ${cell(r.end.why)}`), '',
     ].join('\n'));
 }
 
-export async function runBatch({ root, args = [], seed = Math.floor(Math.random() * 2 ** 31), maxHours = 24, forbidden = [], secrets = [] }, { launch = launchRun, signal, revision = () => gitInfo()?.commit } = {}) {
+export async function runBatch({ root, args = [], seed = Math.floor(Math.random() * 2 ** 31), maxHours = 24, forbidden = [], secrets = [], mode = 'guild' }, { launch = launchRun, signal, revision = () => gitInfo()?.commit } = {}) {
+    const m = BATCH_MODES[mode];
+    if (!m) throw new Error(`unknown batch mode ${mode} (modes: ${Object.keys(BATCH_MODES).join(', ')})`);
     if (!Number.isFinite(maxHours) || maxHours <= 0) throw new Error('--max-hours must be positive');
     if (!Number.isInteger(seed) || seed < 0 || seed > 0x7fffffff) throw new Error('batch seed must be an integer from 0 to 2147483647');
     const g = new Guard([root], { forbidden });
     if (fs.existsSync(root)) throw new Error(`batch folder already exists: ${root}`);
     g.mkdir(root);
     const startRevision = revision();
-    // Keep the historical Guild seed assignment: Warrior, Mage, Rogue.
-    const batch = { startedAt: new Date().toISOString(), status: 'running', git: startRevision, stub: args.includes('--stub'), maxHours, runs: BATCH_SCENARIOS.map((s, i) => ({ index: i + 1, id: s.id, baseClass: s.baseClass, focus: s.focus, seed: (seed + SCENARIOS.indexOf(s)) % 0x80000000, folder: `${String(i + 1).padStart(3, '0')}-${s.id}`, status: 'pending' })) };
+    // Keep the historical Guild seed assignment: Warrior, Mage, Rogue (mode guild).
+    const batch = { startedAt: new Date().toISOString(), status: 'running', git: startRevision, stub: args.includes('--stub'), maxHours, ...(mode !== 'guild' ? { mode } : {}), runs: m.profiles.map((s, i) => ({ index: i + 1, id: s.id, baseClass: s.baseClass, focus: s.focus, seed: m.seedOf(seed, s, i), folder: `${String(i + 1).padStart(3, '0')}-${s.id}`, status: 'pending' })) };
     const ctl = new AbortController();
     const cancel = () => ctl.abort('interrupted');
     signal?.addEventListener('abort', cancel, { once: true });
@@ -126,20 +138,29 @@ export async function runBatch({ root, args = [], seed = Math.floor(Math.random(
     }
 }
 
+/** The batch's own options out of the command line: --mode and --max-hours; the rest goes to every run. */
+export function batchArgs(argv) {
+    const own = new Set(['--mode', '--max-hours']);
+    const value = (k) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : null; };
+    const mode = value('--mode') || 'guild';
+    if (!BATCH_MODES[mode]) throw new Error(`unknown batch mode ${mode} (modes: ${Object.keys(BATCH_MODES).join(', ')})`);
+    const maxHours = value('--max-hours') == null ? 24 : Number(value('--max-hours'));
+    const args = argv.filter((_v, i) => !own.has(argv[i]) && !own.has(argv[i - 1]));
+    if (!args.includes('--guide')) args.push('--guide', BATCH_MODES[mode].guide);
+    return { mode, maxHours, args };
+}
+
 async function main() {
     const argv = process.argv.slice(2);
-    if (argv.includes('--list')) { console.log(BATCH_SCENARIOS.map((s, i) => `${i + 1}. ${s.id}`).join('\n')); return; }
-    const j = argv.indexOf('--max-hours');
-    const maxHours = j < 0 ? 24 : Number(argv[j + 1]);
-    const args = argv.filter((_v, i) => j < 0 || (i !== j && i !== j + 1));
-    if (!args.includes('--guide')) args.push('--guide', 'current_test');
+    const { mode, maxHours, args } = batchArgs(argv);
+    if (argv.includes('--list')) { console.log(BATCH_MODES[mode].profiles.map((s, i) => `${i + 1}. ${s.id}`).join('\n')); return; }
     const o = options(args);
     if (o.fixture || o.scenario || o.player.type !== 'llm' || o.inspect) throw new Error('batch requires the LLM player, a natural guide, no fixture or individual scenario');
-    scenarioGuide(loadGuide(o.guide), SCENARIOS[0].id);
+    scenarioGuide(loadGuide(o.guide), BATCH_MODES[mode].profiles[0].id);
     if (o.check) { process.exitCode = await check(o); return; }
     if (!Number.isFinite(maxHours) || maxHours <= 0) throw new Error('--max-hours must be positive');
     const imp = importProfile({ stDir: o.stDir, user: o.stUser, card: o.card, preset: o.preset, dataRoot: o.stData });
-    const base = runsDirFor(o, imp), name = `batch-${stamp()}`;
+    const base = runsDirFor(o, imp), name = `${mode === 'guild' ? '' : `${mode}-`}batch-${stamp()}`;
     let root = path.join(base, name);
     for (let n = 2; fs.existsSync(root); n++) root = path.join(base, `${name}-${n}`);
     // Per-run destinations/seeds below override config defaults. Remove their CLI occurrences first.
@@ -148,7 +169,7 @@ async function main() {
     process.on('SIGINT', stop); process.on('SIGTERM', stop);
     try {
         const secrets = [process.env[o.keyEnv], o.player.keyEnv && process.env[o.player.keyEnv]].filter(Boolean);
-        const result = await runBatch({ root, args: pass, seed: o.seed ?? undefined, maxHours, forbidden: [imp.st.dir, imp.st.dataRoot], secrets }, { signal: ctl.signal });
+        const result = await runBatch({ root, args: pass, seed: o.seed ?? undefined, maxHours, forbidden: [imp.st.dir, imp.st.dataRoot], secrets, mode }, { signal: ctl.signal });
         console.log(`Batch ${result.status}: ${root}`);
         process.exitCode = result.status === 'completed' ? 0 : 2;
     } finally { process.off('SIGINT', stop); process.off('SIGTERM', stop); }

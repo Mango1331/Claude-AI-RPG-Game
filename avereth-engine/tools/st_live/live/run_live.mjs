@@ -33,6 +33,7 @@ import { parseCalls } from './calls.mjs';
 import { readChatJsonl, eventsLog, jsonl, secretScan } from './export.mjs';
 import { buildReport } from './report.mjs';
 import { startStub, STUB_MODEL } from './stub_provider.mjs';
+import { npcPulseAnalysis, npcPulseMarkdown, npcPulseSection } from './npc_pulse.mjs';
 
 export const CONFIG_FILE = path.join(ENGINE, 'tools', 'st_live', 'live.config.json');
 
@@ -501,6 +502,15 @@ export async function run(o) {
         end = finalCheck.end;
         const ev = evaluate(messages, { guide });
         put('evaluation.json', JSON.stringify({ end, integrity: finalCheck.integrity, ...ev }, null, 1), 'die Auswertung (Etappen, Kämpfe, Quests, Auffälligkeiten)');
+        // the targeted NPC/PULSE run (guides/npc_pulse_test.json): its own evaluation from the saved records and requests
+        let npcPulse = null;
+        if (guide.analysis === 'npc_pulse') {
+            try {
+                npcPulse = npcPulseAnalysis(messages, { calls: calls.map((c) => ({ role: c.role, turn: c.turn, request: c.full?.request })) });
+                put('npc-pulse.json', JSON.stringify(npcPulse, null, 1), 'die NPC-/PULSE-Auswertung (Abdeckung, Beobachtungen, Regelverletzungen, Review-Stellen)');
+                put('npc-pulse.md', npcPulseMarkdown(npcPulse, { runId }), 'die NPC-/PULSE-Auswertung als Bericht');
+            } catch (e) { log(`NPC/PULSE evaluation failed: ${e.message}`); }
+        }
         const driverNotes = [...(driver?.setupNotes || []), ...callErrors.slice(0, 5).map((e) => `server log: ${e}`)];
         driverNotes.push(`Final saved-state integrity: ${finalCheck.integrity.ok ? 'OK' : 'FAILED'} (${finalCheck.integrity.foldErrors.length} fold errors, ${finalCheck.integrity.problems.length} validation problems).`);
         put('run.json', JSON.stringify({ runId, build: buildOf(), git: gitInfo(), scenario: guide.scenario || null, stub: !!stub, seed, fixture: o.fixture || null, fixtureReload, persona, guide: { id: guide.id, chain: guide.chain, files: guide.files.map((f) => path.relative(ENGINE, f)) }, end, timing, preflight: preflightResult, route: imp.route, player: { type: o.player.type, ...playerSetup }, setup, conn, chatId: opened?.chatId || null, safeContinuations: turnsLog.filter(t=>t.outcome === 'soft_continued').length, turns: turnsLog.map(({ decision, ...t }) => ({ ...t, milestone: decision?.milestone || null })), status: statusLine, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [], notes: driverNotes, stubCalls: stub ? stub.calls : undefined }, null, 1), 'Ablauf des Laufs: Züge, Zeiten, Hinweise, Seitenfehler, Statuszeile');
@@ -519,7 +529,7 @@ export async function run(o) {
             protection, scan, files: [...files, ['report.md', 'dieser Bericht'], ['screens/', 'Bildschirmfotos (Ende, Probleme)']], startedAt, endedAt, instanceKept: o.keepProfile ? inst.root : null,
             chatId: opened?.chatId, seed, fixture: o.fixture || null, fixtureReload, slow, timing, preflight: preflightResult, keyEnv: o.keyEnv, playerSetup, playerMaxTokens: o.player.maxTokens, worldSame: imp.world ? imp.world.sha256 === sha256(fs.readFileSync(WORLD_FILE)) : null,
         });
-        put('report.md', report, 'dieser Bericht');
+        put('report.md', report + (npcPulse ? npcPulseSection(npcPulse) : ''), 'dieser Bericht');
         const again = secretScan(runDir, secrets, g);
         scan.hits.push(...again.hits);
         const metaFile = path.join(runDir, 'run.json');

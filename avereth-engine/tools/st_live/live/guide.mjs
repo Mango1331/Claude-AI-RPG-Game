@@ -13,6 +13,7 @@ import { CHECKS } from './evaluator.mjs';
 
 export const GUIDES = path.join(LIVE, 'guides');
 export const DEFAULT_LIMITS = { maxTurns: 80, maxMinutes: 240, sameFailure: 3 };
+export const ANALYSES = ['npc_pulse'];
 
 export function listGuides(dir = GUIDES) {
     return fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)) : [];
@@ -38,6 +39,9 @@ export function guideErrors(g) {
         if (!CHECKS[m.check || m.id]) errors.push(`milestone ${m.id}: no evaluator check "${m.check || m.id}" (checks: ${Object.keys(CHECKS).join(', ')})`);
     }
     if (!(g.milestones || []).some((m) => m.required !== false)) errors.push('no required milestone (a run would never be done)');
+    // an evaluation of its own for the run folder (npc_pulse.mjs for guides/npc_pulse_test.json)
+    if (g.analysis != null && !ANALYSES.includes(g.analysis)) errors.push(`analysis "${g.analysis}" unknown (analyses: ${ANALYSES.join(', ')})`);
+    if (g.analysis === 'npc_pulse' && !g.openRun) errors.push('the npc_pulse analysis needs a natural open-run guide');
     if (g.openRun) {
         const levelGoal = g.openRun.targetLevel != null;
         if (levelGoal && g.openRun.minTurns != null) errors.push('open-run needs exactly one completion goal: targetLevel or minTurns');

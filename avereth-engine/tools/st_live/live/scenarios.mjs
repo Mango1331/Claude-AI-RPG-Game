@@ -5,17 +5,38 @@ const FOCUS = {
     explore: 'Make journeys and discoveries your main occupation: travel between cities, villages and wilderness regions, investigate landmarks and rumors, meet people and follow discoveries. Prepare sensibly, then move on rather than remaining in the starting town. Choose suitable wild-monster fights along the way when worthwhile; avoid or withdraw from threats beyond your abilities. Earn your living outside the Guild through selling loot, paid work, trading or other credible local opportunities. Guild registration and contracts are not your progression route; do not join or check boards as a routine first step. Incidental help and suitable Dungeons remain welcome when naturally encountered. Choose your own destinations and income sources; never force a journey, fight or success.',
 };
 export const SCENARIOS = Object.entries(FOCUS).flatMap(([focus, goal]) => CLASSES.map(baseClass => ({ id: `${focus}-${baseClass.toLowerCase()}`, focus, baseClass, goal })));
+// The targeted NPC/PULSE batch (guides/npc_pulse_test.json, batch.mjs --mode npc): two independent natural runs with
+// their own class and playing style. Only the run's base class and style are set; people, contracts, routes, words and
+// encounters stay the player's and the game's. Separate from SCENARIOS so the Guild batch's seeds stay as they were.
+export const NPC_SCENARIOS = [
+    { id: 'npc-sociable', focus: 'npc', baseClass: 'Warrior', style: 'warm, curious and sociable: you seek out people, ask about their work and lives and follow up on it later; you readily offer help or ask capable people to come along, and accept a refusal gracefully; you still judge people by how they act and keep your guard up with anyone who threatens you' },
+    { id: 'npc-wary', focus: 'npc', baseClass: 'Rogue', style: 'wary and pragmatic: polite but guarded with strangers, you ask questions before you trust, haggle, decline offers that seem off, keep the promises you make and expect the same; you work with people who prove reliable, avoid or stand up to those who do not, and prefer scouting to needless fights' },
+];
+const ALL_SCENARIOS = [...SCENARIOS, ...NPC_SCENARIOS];
 
 export function scenarioById(id) {
-    const s = SCENARIOS.find(s => s.id === id);
-    if (!s) throw new Error(`Unknown scenario ${id}; choose ${SCENARIOS.map(s => s.id).join(', ')}`);
+    const s = ALL_SCENARIOS.find(s => s.id === id);
+    if (!s) throw new Error(`Unknown scenario ${id}; choose ${ALL_SCENARIOS.map(s => s.id).join(', ')}`);
     return s;
+}
+
+/** An NPC/PULSE profile on its own guide: the guide's brief and goals, the run's base class and one playing style. */
+function npcScenarioGuide(guide, s) {
+    if (guide.analysis !== 'npc_pulse') throw new Error(`Scenario ${s.id} belongs to the npc_pulse guide (npc_pulse_test), not ${guide.id}`);
+    return {
+        ...guide, scenario: { id: s.id, focus: s.focus, baseClass: s.baseClass },
+        brief: `${guide.brief} Base class for this run: ${s.baseClass}; select it through the normal creation menu and choose your own two starter skills.`,
+        milestones: guide.milestones.map(m => m.id === 'creation_complete' ? { ...m, goal: `Create a genuine Level-1 ${s.baseClass} through the ordinary creation menu; choose your own two starter skills.` } : m),
+        personas: [s.style],
+    };
 }
 
 export function scenarioGuide(guide, id) {
     if (!id) return guide;
     const s = scenarioById(id);
     if (!guide.openRun || guide.fixture) throw new Error('Scenarios require a natural open-run guide, without a fixture');
+    if (s.focus === 'npc') return npcScenarioGuide(guide, s);
+    if (guide.analysis === 'npc_pulse') throw new Error(`The npc_pulse guide takes only its own profiles (${NPC_SCENARIOS.map((x) => x.id).join(', ')})`);
     const aoe = guide.starterAoe?.[s.baseClass.toLowerCase()];
     const loadout = aoe ? `One of the two starter skills MUST be ${aoe}; choose the other freely. Use AoE only when tactically useful; do not force fights or ignore friendly fire.` : 'choose your own two starter skills';
     return {

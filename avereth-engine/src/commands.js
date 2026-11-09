@@ -333,10 +333,14 @@ function npc(state, content, arg) {
     const rows = knowledgeOf(state, 'pc', [e.id]).map((r) => `- ${propText(state, r, content)}${r.stance !== 'knows' ? ` (${r.stance})` : ''}${r.outdated ? ' (outdated)' : ''}`);
     const mems = memoriesOf(state, 'pc').filter((m) => (m.who || []).includes(e.id) || (m.witnesses || []).includes(e.id)).slice(-5)
         .map((m) => `- [${formatClock(m.minute).split(' (')[0]}] ${memoryText(state, m, 'pc')}`);
+    // NPC E2-B (D1): the open agreements of Alaric and this person (promise/debt threads with both as parties); one
+    // between NPCs, a settled one or one without parties is none of his here
+    const agreed = Object.values(state.threads || {}).filter((x) => x.status === 'open' && ['promise', 'debt'].includes(x.kind)
+        && (x.who || []).includes('pc') && (x.who || []).includes(e.id)).map((x) => `- ${x.text}`);
     const st = statusOf(state, e.id);
     // only as much of a name as the story has said (delta.js known_name)
     return [`[SYSTEM // NPC] ${playerLabel(state, e.id)}`, `Known as: ${[e.known_name ?? e.name, ...(e.descriptors || [])].filter(Boolean).join(', ')}${st === 'dead' ? ' | DEAD' : ''}${state.scene.present.includes(e.id) ? ' | present' : ''}`,
-        rows.length ? `Alaric knows:\n${rows.join('\n')}` : 'Alaric knows nothing beyond what he has seen.', mems.length ? `Shared moments:\n${mems.join('\n')}` : ''].filter(Boolean).join('\n');
+        rows.length ? `Alaric knows:\n${rows.join('\n')}` : 'Alaric knows nothing beyond what he has seen.', agreed.length ? `Open between you:\n${agreed.join('\n')}` : '', mems.length ? `Shared moments:\n${mems.join('\n')}` : ''].filter(Boolean).join('\n');
 }
 
 function log(state, content, arg) {

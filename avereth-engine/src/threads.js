@@ -36,9 +36,19 @@ function overlap(a, b) {
  * The open thread a report without an id means: the same words, or a rewording that shares most of its words and its
  * kind. Null when none is clearly that matter (two candidates are no match).
  */
-export function matchThread(state, text, kind = null) {
+export function matchThread(state, text, kind = null, who = null) {
     const t = normText(text);
     const open = Object.values(state.threads).filter((x) => x.status === 'open');
+    // NPC E2-B (R7): a report naming its parties is only ever a thread of theirs; an old thread without parties is
+    // theirs only by its exact words (two people promising alike keep two threads)
+    const npcs = (who || []).filter((x) => x !== 'pc');
+    if (npcs.length) {
+        const theirs = open.filter((x) => (x.who || []).some((p) => npcs.includes(p)));
+        const exact = theirs.find((x) => normText(x.text) === t) || open.find((x) => !x.who && normText(x.text) === t);
+        if (exact) return exact;
+        const near = theirs.filter((x) => (!kind || !x.kind || x.kind === kind) && overlap(x.text, text) >= 0.6);
+        return near.length === 1 ? near[0] : null;
+    }
     const same = open.find((x) => normText(x.text) === t);
     if (same) return same;
     const close = open.filter((x) => (!kind || !x.kind || x.kind === kind) && overlap(x.text, text) >= 0.6);
@@ -107,16 +117,21 @@ export function threadEvents(state, th, { at, src, place = null }) {
     if (th.id) {
         cur = threadById(state, th.id);
         if (!cur) return { events: [], reject: `unknown thread ${th.id}` };
-    } else cur = matchThread(state, th.text, th.kind || null);
+    } else cur = matchThread(state, th.text, th.kind || null, th.who || null);
     if (!cur && status === 'resolved') return { events: [], reject: 'cannot resolve an unknown thread' };
     if (cur && cur.status === 'resolved' && status === 'resolved') return { events: [] };
     const id = cur?.id || newThreadId(state);
     // a resolution keeps the matter's words and adds how it ended; an update may say it better
     const text = status === 'resolved' && cur ? cur.text : String(th.text).slice(0, 200);
+    // NPC E2-B (R7): the parties of an agreement stay with it: an update adds parties, never drops one; a resolution
+    // keeps them; a thread without parties gets them by its id or its exact words only (matchThread)
+    const parties = Array.isArray(th.who) && th.who.length ? th.who : null;
+    const who = cur?.who ? [...new Set([...cur.who, ...(parties || [])])].slice(0, 3) : parties ? [...new Set(parties)].slice(0, 3) : null;
     const thread = {
         id, text, kind: cur?.kind || th.kind || 'mystery', status, since: cur?.since || at, updated: at, source: cur?.source || src,
         at: cur?.at ?? place ?? null,
         ...(status === 'resolved' ? { resolution: String(th.resolution || th.text).slice(0, 200) } : {}),
+        ...(who ? { who } : {}),
     };
     return { events: [{ t: 'thread.set', d: { thread } }], accepted: `thread ${status}: ${text}` };
 }

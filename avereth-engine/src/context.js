@@ -136,6 +136,40 @@ export function sharedMoments(state, id) {
     return memoriesOf(state, id).filter((m) => isMeaningful(m) && ((m.who || []).includes('pc') || (m.witnesses || []).includes('pc')));
 }
 
+const newestFirst = (a, b) => (b.updated?.turn ?? 0) - (a.updated?.turn ?? 0) || (b.updated?.minute ?? 0) - (a.updated?.minute ?? 0) || String(b.id).localeCompare(String(a.id));
+
+/**
+ * NPC E2-B (R7/R8, D1/D4): the personal agreements of Alaric and this person – promise/debt threads whose parties hold
+ * both. open: the open ones, newest first (at most two). settled: the latest settled one while no meaningful shared
+ * memory is newer than its settlement (D4: it stays settled and leaves the card then, it never reopens). resolved: all
+ * settled ones (an older memory of their promise is marked as settled since).
+ */
+export function agreementsWith(state, id) {
+    const mine = Object.values(state.threads || {}).filter((t) => ['promise', 'debt'].includes(t.kind) && (t.who || []).includes('pc') && (t.who || []).includes(id));
+    if (!mine.length) return { open: [], settled: null, resolved: [] };
+    const open = mine.filter((t) => t.status === 'open').sort(newestFirst).slice(0, 2);
+    const resolved = mine.filter((t) => t.status === 'resolved').sort(newestFirst);
+    const lastMoment = sharedMoments(state, id).at(-1);
+    const settled = resolved[0] && !((lastMoment?.turn ?? -1) > (resolved[0].updated?.turn ?? -1)) ? resolved[0] : null;
+    return { open, settled, resolved };
+}
+
+/** NPC E2-B (D4): a memory older than a settled agreement it is about (three shared words besides the names). */
+function settledSince(state, id, m, resolved) {
+    if (!resolved.length) return false;
+    const names = new Set(tokenize(`${state.entities[id]?.name || ''} ${state.entities.pc?.name || 'Alaric'} pc`));
+    const words = new Set(tokenize(m.text).filter((w) => !names.has(w)));
+    return resolved.some((t) => (m.turn ?? -1) <= (t.updated?.turn ?? -1)
+        && new Set(tokenize(t.text).filter((w) => words.has(w))).size >= 3);
+}
+
+/** NPC E2-B (R8): the agreement of the compact card's first row: the newest open one, else the settled one (D4). */
+function agreementText(between) {
+    if (between.open.length) return between.open[0].text;
+    if (between.settled) return `settled — ${between.settled.text}${between.settled.resolution && normText(between.settled.resolution) !== normText(between.settled.text) ? ` (${between.settled.resolution})` : ''}`;
+    return null;
+}
+
 /**
  * One NPC as the narrator sees it: its established cues, stance toward Alaric, last meaningful moment with him, what
  * it knows and believes (ONLY its own knowledge rows: knowledge boundaries by construction), agenda and secrets.
@@ -172,9 +206,15 @@ function npcCard(state, content, id, focusWords, { absent = false } = {}) {
         const idText = ident.level === 'name' ? 'knows him by name' : ident.level === 'seen' ? 'has seen him, does NOT know his name' : 'has never seen him';
         lines.push(`  toward Alaric: ${attitudeLabel(rel?.value)}${last?.why ? ` (last change: ${last.why})` : ''}; ${idText}${aware ? `; awareness: ${aware}` : ''}${concealment}`);
         if (ties.length) lines.push(`  established ties: ${ties.map((f) => propText(state, f, content)).join('; ')}`);
+        // NPC E2-B (R8, D4): what Alaric and this person agreed between them, open or settled
+        const between = v4 ? agreementsWith(state, id) : { open: [], settled: null, resolved: [] };
+        if (between.open.length) lines.push(`  open between you: ${between.open.map((t) => t.text).join('; ')}`);
+        if (between.settled) lines.push(`  settled between you: ${agreementText({ open: [], settled: between.settled }).replace(/^settled — /, '')}`);
+        // the mark stands in the date, where no cap of the line can cut it
+        const since = (m) => (settledSince(state, id, m, between.resolved) ? '; settled since' : '');
         const moments = sharedMoments(state, id);
         const lastMoment = moments.at(-1);
-        if (lastMoment) lines.push(`  last meaningful: [${day(lastMoment.minute)}] ${memoryText(state, lastMoment, id)}`);
+        if (lastMoment) lines.push(`  last meaningful: [${day(lastMoment.minute)}${since(lastMoment)}] ${memoryText(state, lastMoment, id)}`);
         const subjects = absent ? ['pc'] : ['pc', ...state.scene.present, state.scene.location];
         const rows = knowledgeOf(state, id).filter((r) => !IDENTITY_FACTS.has(r.about) && r.visibility !== 'secret'
             && (subjects.includes(r.s) || subjects.includes(r.o) || (!absent && tokenize(propText(state, r, content)).some((w) => focusWords.has(w)))));
@@ -184,7 +224,7 @@ function npcCard(state, content, id, focusWords, { absent = false } = {}) {
         if (believed.length) lines.push(`  believes/suspects: ${believed.join('; ')}`);
         // other meaningful moments that matter to this turn's words (never routine ones: "Kest nodded" is not canon)
         const also = memoriesOf(state, id).filter((m) => isMeaningful(m) && m !== lastMoment && tokenize(m.text).some((w) => focusWords.has(w))).slice(-2);
-        if (also.length && !absent) lines.push(`  also remembers: ${also.map((m) => `[${day(m.minute)}] ${memoryText(state, m, id)}`).join(' | ')}`);
+        if (also.length && !absent) lines.push(`  also remembers: ${also.map((m) => `[${day(m.minute)}${since(m)}] ${memoryText(state, m, id)}`).join(' | ')}`);
         if (cues.agenda) lines.push(`  agenda: ${cues.agenda}`);
         const secrets = knowledgeOf(state, id).filter((r) => r.is_fact && !r.outdated && r.visibility === 'secret' && r.s !== 'pc');
         if (secrets.length) lines.push(`  keeps secret: ${secrets.map((r) => `${propText(state, r, content)} [${r.source}]`).join('; ')} (reveals it only for its own reasons)`);
@@ -274,9 +314,9 @@ export function recordLine(state, r, name = (id) => fightLabel(state, id), conte
 export const V4_OUTPUT_LINE = 'OUTPUT: write only the story. No <avereth> block, no fact report, no tags, no tracker, sheet or status block: the engine reads the reply afterwards. Threats, demands and raised weapons leave negotiation open. Real NPC attacks and ambushes remain possible: stop at their immediate commitment, without inventing damage.';
 
 /** The engine's instructions to the narrator for a V4 story turn. Search/combat checks are engine-owned; ordinary fiction is narrated plausibly and then stored. */
-export function playerActionsBlock(outcome) {
+export function playerActionsBlock(outcome, { carded = null } = {}) {
     const lines = ['PLAYER ACTIONS (the engine resolved Alaric\'s message; narrate exactly these, in this order; he decides nothing else):', ...(outcome.actions || [])];
-    for (const x of outcome.extra || []) lines.push(x);
+    for (const x of outcome.extra || []) lines.push(carded ? knownAtUncarded(x, carded) : x);
     if ((outcome.resolutions || []).some((r) => (r.type === 'buy' || r.type === 'pay') && r.status === 'pending')) {
         lines.push('PENDING TRADE IS A HARD STOP: state the seller\'s actual price and stop BEFORE any payment, delivery, drinking, eating or other action that depends on the unaccepted purchase. A later player turn can explicitly accept the offer, at which point the engine debits coin and grants the goods/service. An unrelated independent action is unaffected.');
     }
@@ -341,9 +381,21 @@ function outcomeBlock(state, content, outcome, opts = {}) {
     return [block, ...classOffered, ...classBooked, ...notes, ...learned, ...inert, ...offers, ...gained, ...notYet, ...skillOffered, ...skillBooked].filter(Boolean).join('\n');
 }
 
-function outcomeLines(state, content, outcome, { v4 = false } = {}) {
+/**
+ * NPC E2-B (R6): the KNOWN AT line of the narrator lists only the people without an arrival card (the extractor reads
+ * the whole line from outcome.extra); with every one carded it points to the cards.
+ */
+function knownAtUncarded(line, { name, ids }) {
+    const mark = 'establishes otherwise): ';
+    if (!line.startsWith(`KNOWN AT ${name} (`) || !line.includes(mark)) return line;
+    const at = line.indexOf(mark) + mark.length;
+    const rest = line.slice(at).split(' · ').filter((x) => !ids.some((id) => x.endsWith(`(${id})`)));
+    return `${line.slice(0, at)}${rest.length ? rest.join(' · ') : 'the people carded under ARRIVING AT'}`;
+}
+
+function outcomeLines(state, content, outcome, { v4 = false, carded = null } = {}) {
     if (!outcome) return '';
-    if (outcome.kind === 'v4') return playerActionsBlock(outcome);
+    if (outcome.kind === 'v4') return playerActionsBlock(outcome, { carded });
     const lines = [];
     const report = (text) => (v4 ? '' : text); // V4 campaigns: no fact report, the extractor reads the reply
     if (outcome.kind === 'combat') {
@@ -452,8 +504,10 @@ function retrievalItems(state, content, pinnedIds, recentTurns) {
     // turn's words are about it (low importance: the lexical match has to carry it)
     for (const t of Object.values(state.threads)) {
         const place = t.at && (isLocationId(state, content, t.at) || state.places?.[t.at]) ? t.at : null;
-        if (threadCurrent(state, t)) items.push({ kind: 'thread', text: t.text, entities: [], location: place, turn: t.updated?.turn ?? 0, importance: 0.7, label: `Open thread (${t.kind}): ${t.text}` });
-        else items.push({ kind: 'thread', text: `${t.text} ${t.resolution || ''}`, entities: [], location: null, turn: t.updated?.turn ?? 0, importance: 0.2, label: t.status === 'resolved' ? `Resolved thread (${t.kind}): ${t.text} — ${t.resolution || 'settled'}` : `Earlier sign (${t.kind}, no longer current): ${t.text}` });
+        // NPC E2-B: an agreement is about its parties (retrieval by person)
+        const parties = (t.who || []).filter((x) => x !== 'pc');
+        if (threadCurrent(state, t)) items.push({ kind: 'thread', text: t.text, entities: parties, location: place, turn: t.updated?.turn ?? 0, importance: 0.7, label: `Open thread (${t.kind}): ${t.text}` });
+        else items.push({ kind: 'thread', text: `${t.text} ${t.resolution || ''}`, entities: parties, location: null, turn: t.updated?.turn ?? 0, importance: 0.2, label: t.status === 'resolved' ? `Resolved thread (${t.kind}): ${t.text} — ${t.resolution || 'settled'}` : `Earlier sign (${t.kind}, no longer current): ${t.text}` });
     }
     return mergeIdentical(items);
 }
@@ -626,10 +680,23 @@ export function buildContext(state, content, opts = {}) {
     const focusWords = new Set(tokenize(queryText));
     const others = state.scene.present.filter((id) => id !== 'pc' && state.entities[id]);
     const presentHead = v4 ? 'ACTIVE SCENE — canonical handles (use these exact handles to distinguish or target actors; card knowledge is authoritative relevant recall, not an exhaustive mind dump):' : 'PRESENT (each NPC knows ONLY what its card lists):';
-    const focusNpcIds = v4 && !state.encounter ? interlocutors(state, input, lastReply, opts.outcome || state.last?.outcome) : [];
-    if (focusNpcIds.length) add('npc_compact', 'CURRENT INTERLOCUTORS — preserve recognition/experience; invitations alone authorize no movement or purchases:\n' + focusNpcIds.map(id => compactNpcCard(state, content, id, focusWords)).join('\n'), 0);
+    const scored = v4 && !state.encounter ? interlocutorScores(state, input, lastReply, opts.outcome || state.last?.outcome) : [];
+    let focusNpcIds = scored.slice(0, 2).map((x) => x.id);
+    // NPC E2-B (R6): the people known where an authorized GO of this turn goes: their cards fill the slots nobody he
+    // addressed or acts with before leaving holds (interlocutor score >= 400), two in all; a slot no arrival card takes
+    // stays with the next interlocutor here. NOT YET SHOWN, never present
+    const arrival = v4 && !state.encounter && state.mode !== 'creation' && !opts.systemQuery ? arrivalPeople(state, opts.outcome, input) : null;
+    let arrivalIds = [];
+    if (arrival) {
+        const keep = scored.filter((x) => x.score >= 400).slice(0, 2).map((x) => x.id);
+        arrivalIds = arrival.ids.slice(0, 2 - keep.length);
+        if (arrivalIds.length) focusNpcIds = [...keep, ...scored.map((x) => x.id).filter((id) => !keep.includes(id))].slice(0, 2 - arrivalIds.length);
+    }
+    const compactCards = new Map(focusNpcIds.map((id) => [id, compactNpcCard(state, content, id, focusWords)]));
+    if (focusNpcIds.length) add('npc_compact', 'CURRENT INTERLOCUTORS — preserve recognition/experience; invitations alone authorize no movement or purchases:\n' + focusNpcIds.map((id) => compactCards.get(id)).join('\n'), 0);
+    if (arrivalIds.length) add('npc_arrival', `ARRIVING AT ${arrival.name} — people known there; NOT YET SHOWN: present only if the story shows them there\n${arrivalIds.map((id) => compactNpcCard(state, content, id, focusWords, { arriving: true })).join('\n')}`, 0);
     const detailOthers = others;
-    if (detailOthers.length) add('present', `${presentHead}\n${detailOthers.map((id) => { const card=npcCard(state,content,id,focusWords); if (!focusNpcIds.includes(id)) return card; const rows=card.split('\n').filter(row=>/agenda:|keeps secret:|believes\/suspects:|established ties:/.test(row)); return rows.length ? `• [${id}] additional recall:\n${rows.join('\n')}` : ''; }).filter(Boolean).join('\n')}`, 1);
+    if (detailOthers.length) add('present', `${presentHead}\n${detailOthers.map((id) => { const card=npcCard(state,content,id,focusWords); if (!focusNpcIds.includes(id)) return card; const rows=card.split('\n').filter(row=>/agenda:|keeps secret:|believes\/suspects:|established ties:/.test(row) || (/^ {2}(?:open|settled) between you:/.test(row) && !compactCards.get(id).includes('; between you: '))); return rows.length ? `• [${id}] additional recall:\n${rows.join('\n')}` : ''; }).filter(Boolean).join('\n')}`, 1);
     else if (state.mode !== 'creation' && !focusNpcIds.length) add('present', v4 ? 'ACTIVE SCENE: nobody besides Alaric.' : 'PRESENT: nobody besides Alaric.', 1);
     const continuity = v4 && state.mode !== 'creation' ? npcContinuity(state, queryText) : [];
     if (continuity.length) add('npc_continuity', `KNOWN PEOPLE — narrator continuity, not local presence or shared NPC knowledge. Preserve established history; a new predicament needs a new cause, never replay an old rescue. Use existing identities; fuller names do not create new people:\n${continuity.map(x => x.text).join('\n')}`, 0);
@@ -772,7 +839,7 @@ export function buildContext(state, content, opts = {}) {
     } else if (state.meta?.runtime === 'v4') {
         // Runtime V4: PLAYER ACTIONS (a story turn) or the V3 resolution (combat, stealth), then prose only
         const o = opts.outcome;
-        add('resolved', [o ? (o.kind === 'v4' ? outcomeBlock(state, content, o) : `RESOLVED THIS TURN (binding):\n${outcomeBlock(state, content, o, { v4: true })}`) : '', ...access].filter(Boolean).join('\n'), 0);
+        add('resolved', [o ? (o.kind === 'v4' ? outcomeBlock(state, content, o, { carded: arrivalIds.length ? { name: arrival.name, ids: arrivalIds } : null }) : `RESOLVED THIS TURN (binding):\n${outcomeBlock(state, content, o, { v4: true })}`) : '', ...access].filter(Boolean).join('\n'), 0);
         if (state.mode !== 'creation') add('report', V4_OUTPUT_LINE, 0, true);
     } else {
         add('resolved', opts.outcome ? `RESOLVED THIS TURN (binding):\n${outcomeBlock(state, content, opts.outcome)}` : '', 0);
@@ -785,7 +852,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'pc', 'creation', 'npc_compact', 'present', 'settlement', 'world_area', 'world_populations', 'gear_market', 'price_contract', 'npc_continuity', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
+    const order = ['header', 'pc', 'creation', 'npc_compact', 'npc_arrival', 'present', 'settlement', 'world_area', 'world_populations', 'gear_market', 'price_contract', 'npc_continuity', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     const describe = section => ({ name: section.name, tokens: section.tokens, own: section.own,
@@ -793,6 +860,7 @@ export function buildContext(state, content, opts = {}) {
     return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text),
         diagnostics: { v: 1, budget, rulesBudget: rulesCap, tokens: estimateTokens(text), budgetedTokens: used,
             overflow: Math.max(0, used - budget), separateTokens: final.filter(x => x.own).reduce((n,x) => n+x.tokens,0), focusNpcIds,
+            ...(arrivalIds.length ? { arrivalNpcIds: arrivalIds } : {}),
             delivered: final.map(describe), dropped: sections.filter(x => !kept.has(x)).map(describe) } };
 }
 
@@ -844,7 +912,7 @@ export function reportInstruction(content, keys = Object.keys(content.narrator.r
 }
 
 /** Deterministic salience from this input and existing shared records, independent of present-array order. */
-function interlocutors(state, input, lastReply, outcome) {
+function interlocutorScores(state, input, lastReply, outcome) {
     const actionIds=new Set();
     const scan=(value,depth=0)=>{ if(depth>5 || value==null) return; if(typeof value === 'string') { if(state.entities[value]?.kind === 'npc') actionIds.add(value); } else if(typeof value === 'object') Object.values(value).forEach(v=>scan(v,depth+1)); };
     scan(outcome?.auth); scan(outcome?.resolutions);
@@ -856,11 +924,44 @@ function interlocutors(state, input, lastReply, outcome) {
             const recent=mentioned(e.name || '', normText(lastReply));
             const hits=moments.slice(-3).reduce((n,m)=>n+tokenize(m.text).filter(w=>words.has(w)).length,0);
             return {id,score:(named?1000:0)+(actionIds.has(id)?400:0)+(recent?50:0)+Math.min(30,hits), minute:last?.minute ?? -1};
-        }).filter(x=>x.score>0 || x.minute>=0 || state.scene.present.filter(id=>state.entities[id]?.kind === 'npc').length===1).sort((a,b)=>b.score-a.score || b.minute-a.minute || a.id.localeCompare(b.id)).slice(0,2).map(x=>x.id);
+        }).filter(x=>x.score>0 || x.minute>=0 || state.scene.present.filter(id=>state.entities[id]?.kind === 'npc').length===1).sort((a,b)=>b.score-a.score || b.minute-a.minute || a.id.localeCompare(b.id));
 }
-function compactNpcCard(state, content, id, focusWords) {
-    const rows=npcCard(state,content,id,focusWords).split('\n');
+/**
+ * NPC E2-B (R6): the people known at the place the turn's last GO goes to, when that GO is authorized and no GO of the
+ * turn stops on the way: only outcome.known_at[seq] (never a person not offered there), alive and not here; ranked
+ * named in his message > open agreement with Alaric > meaningful shared memory > latest meeting, ties by id.
+ */
+export function arrivalPeople(state, outcome, input = '') {
+    if (outcome?.kind !== 'v4' || !outcome.known_at) return null;
+    const last = (outcome.resolutions || []).filter((r) => r.type === 'go').at(-1);
+    const gos = outcome.auth?.gos || [];
+    if (!last || last.status !== 'authorized' || gos.some((g) => g.stop)) return null;
+    const step = gos.find((g) => g.seq === last.seq);
+    const offered = outcome.known_at[String(last.seq)] || [];
+    if (!step?.name || !offered.length) return null;
+    const words = normText(input);
+    const rank = (id) => {
+        const e = state.entities[id];
+        const met = memoriesOf(state, id).filter((m) => (m.who || []).includes('pc') || (m.witnesses || []).includes('pc'));
+        return [mentioned(e.name || '', words) ? 1 : 0, agreementsWith(state, id).open.length ? 1 : 0, sharedMoments(state, id).length ? 1 : 0, met.at(-1)?.minute ?? -1];
+    };
+    const ids = offered.filter((id) => state.entities[id]?.kind === 'npc' && statusOf(state, id) !== 'dead' && !state.scene.present.includes(id))
+        .map((id) => ({ id, r: rank(id) }))
+        .sort((a, b) => a.r.reduce((d, x, i) => d || b.r[i] - x, 0) || a.id.localeCompare(b.id)).map((x) => x.id);
+    return ids.length ? { place: step.to, name: step.name, ids } : null;
+}
+function compactNpcCard(state, content, id, focusWords, { arriving = false } = {}) {
+    const rows=npcCard(state,content,id,focusWords,{ absent: arriving }).split('\n');
     // Whole fields are selected before shortening: identity and shared memory cannot be displaced by appearance.
     const cap=(text,n)=>text.length>n?text.slice(0,n-1)+'…':text;
-    return [cap(rows[0],170), ...['toward Alaric:', 'last meaningful:', 'also remembers:', 'knows:'].map(key=>rows.find(r=>r.trimStart().startsWith(key))).filter(Boolean).slice(0,3).map(r=>cap(r,170))].join('\n');
+    // NPC E2-B (R6): an arrival card is NOT YET SHOWN (the label survives the cap)
+    const head = arriving ? `${cap(rows[0].replace(/; NOT PRESENT$/, ''), 170 - '; NOT YET SHOWN'.length)}; NOT YET SHOWN` : cap(rows[0], 170);
+    const find = (key) => rows.find((r) => r.trimStart().startsWith(key));
+    // NPC E2-B (R8): the agreement with Alaric rides on the attitude row (shortened first, left out below 40 characters;
+    // the detail card keeps it); the two other fields are the first of last meaningful → knows → also remembers
+    let toward = find('toward Alaric:');
+    const agreed = toward && state.entities[id]?.kind === 'npc' ? agreementText(agreementsWith(state, id)) : null;
+    const room = toward ? 170 - toward.length - '; between you: '.length : 0;
+    if (agreed && room >= 40) toward = `${toward}; between you: ${cap(agreed, room)}`;
+    return [head, ...[toward, ...['last meaningful:', 'knows:', 'also remembers:'].map(find).filter(Boolean).slice(0, 2)].filter(Boolean).map((r) => cap(r, 170))].join('\n');
 }

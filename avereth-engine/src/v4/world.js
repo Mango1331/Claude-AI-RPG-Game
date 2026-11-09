@@ -1312,7 +1312,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     reject(d, 'engine_owned_combat', `a thread of deaths the engine has not booked (${[...text.refused, ...resolution.refused].map((x) => x.why).join('; ')})`);
                     break;
                 }
-                v3({ threads: [{ id: d.id || null, text: text.text, kind: d.kind, status: d.status, resolution: resolution.text || null }] }, d);
+                // NPC E2-B (R7): an agreement's parties – living people of the record (or of this answer) and Alaric,
+                // who is one only face to face (one of the people present); without a person it stays unbound
+                let who = null;
+                if (cPath && rulesetOf(s) >= 2 && ['promise', 'debt'].includes(d.kind) && Array.isArray(d.who) && d.who.length) {
+                    const ids = [...new Set(d.who.map((x) => (x === 'pc' ? 'pc' : mapRef(x))))]
+                        .filter((x) => x === 'pc' || (s.entities[x]?.kind === 'npc' && statusOf(s, x) !== 'dead'));
+                    const npcs = ids.filter((x) => x !== 'pc');
+                    const faceToFace = npcs.some((x) => s.scene.present.includes(x));
+                    if (npcs.length) who = ids.filter((x) => x !== 'pc' || faceToFace).slice(0, 3);
+                }
+                v3({ threads: [{ id: d.id || null, text: text.text, kind: d.kind, status: d.status, resolution: resolution.text || null, ...(who ? { who } : {}) }] }, d);
                 break;
             }
             case 'guild.branch': {

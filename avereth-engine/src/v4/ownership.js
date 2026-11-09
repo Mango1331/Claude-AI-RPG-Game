@@ -383,13 +383,82 @@ export function detailRevisesMechanics(detail, q) {
  */
 export function stripOwned(text, { store = 'note', quest = null, extra = null } = {}) {
     const clauses = clausesOf(text);
-    const owned = clauses.filter((c) => ownedClause(c, { store }) !== null);
+    const ownedWhole = clauses.filter((c) => ownedClause(c, { store }) !== null);
+    // NPC E2-B (R9): in a memory a clause the engine owns loses only its engine part ("Tam stamped the contract active
+    // and wished Alaric luck: '…'" keeps the farewell); every part is checked again like any clause
+    const parts = store === 'memory' ? ownedWhole.map((c) => socialParts(c, { store, extra })) : [];
+    const owned = store === 'memory' ? parts.flatMap((p) => p.owned) : ownedWhole;
     const altered = quest ? clauses.filter((c) => detailRevisesMechanics(c, quest)) : [];
-    const other = extra ? clauses.filter((c) => !owned.includes(c) && !altered.includes(c) && extra(c)) : [];
-    const kept = clauses.filter((c) => !owned.includes(c) && !altered.includes(c) && !other.includes(c));
+    const other = [...(extra ? clauses.filter((c) => !ownedWhole.includes(c) && !altered.includes(c) && extra(c)) : []), ...parts.flatMap((p) => p.other)];
+    const kept = clauses.flatMap((c) => {
+        if (altered.includes(c)) return [];
+        const i = ownedWhole.indexOf(c);
+        if (i >= 0) return store === 'memory' ? parts[i].kept : [];
+        return extra && extra(c) ? [] : [c];
+    });
     return {
         kept, owned, altered, other,
-        kinds: [...new Set(owned.map((c) => ownedClause(c, { store })))],
-        claims: owned.map(claimedStatus).filter(Boolean),
+        // what the engine owns and claims is read from the whole clause (a part alone can miss it: "slip READY")
+        kinds: [...new Set(ownedWhole.map((c) => ownedClause(c, { store })))],
+        claims: ownedWhole.map(claimedStatus).filter(Boolean),
     };
+}
+
+// NPC E2-B (R9): the coordinated parts of one clause, split outside quoted speech before a second predicate only
+// (", and wished …", " and then told …", ", and Bess laughed …"; never inside "the fisherwoman and the fishers"); a
+// later part without its own subject takes the clause's ("Tam Ostler"). A part is kept only if it is a sentence of its
+// own (not "to ask …", "noting …", nor "he …" cut off from whom it means), names nothing of the engine's domain
+// (contract, slip, seal, READY, plate, rank, register, ledger, board, bounty, coin, pay, XP), is no engine claim
+// and no refused act of his (extra: World's pc_decision check), and is a moment of its own: direct speech, or at least
+// six words.
+const VERB_LIKE = /^(?:[a-z]+ed|took|gave|said|told|paid|made|held|kept|put|set|sent|left|stood|sat|wrote|read|brought|bought|sold|met|led|won|lost|saw|found|shook|spoke|swore|rode|ran|came|went|got|let|threw|drew|knew|wished|thanked|laughed|smiled|nodded|grinned|promised|warned|asked|added)$/;
+const PRONOUN = /^(?:he|she|they|it|we|i|you)$/i;
+const ENGINE_WORDS = /\b(?:contracts?|quests?|bount(?:y|ies)|slips?|seal(?:s|ed)?|stamp(?:s|ed)?|ready|plates?|ranks?|novice|register(?:s|ed)?|ledgers?|board|deposits?|payouts?|rewards?|pay|pays|paid|coins?|coppers?|silvers?|golds?|cp|sp|gp|xp|experience)\b/i;
+const bare = (w) => String(w || '').replace(/[^A-Za-z]/g, '');
+/** The words after a split point open a second predicate: a verb (shared subject) or a name/pronoun with its verb. */
+function predicateStart(rest) {
+    const w = rest.split(/\s+/).slice(0, 4).map(bare);
+    if (VERB_LIKE.test(w[0])) return 'verb';
+    if (w[0] && (PRONOUN.test(w[0]) || /^[A-Z]/.test(w[0])) && w.slice(1).some((x) => VERB_LIKE.test(x))) return PRONOUN.test(w[0]) ? 'pronoun' : 'subject';
+    return null;
+}
+function coordinated(clause) {
+    const out = [];
+    let cur = '', quote = null;
+    const s = String(clause);
+    for (let i = 0; i < s.length; i++) {
+        const ch = s[i], prev = s[i - 1] ?? ' ';
+        if (quote) {
+            cur += ch;
+            if ((quote === '"' && ch === '"') || (quote === '“' && ch === '”') || (quote === "'" && ch === "'" && !/[A-Za-z]/.test(s[i + 1] ?? ' '))) quote = null;
+            continue;
+        }
+        if (ch === '"' || ch === '“' || (ch === "'" && /[\s(—–:,]/.test(prev))) { quote = ch; cur += ch; continue; }
+        const m = /^(?:,\s*and\s+then\s+|,\s*and\s+|,\s*then\s+|\s+and\s+then\s+|\s+and\s+|\s+then\s+)/.exec(s.slice(i));
+        if (m && cur.trim() && predicateStart(s.slice(i + m[0].length))) { out.push(cur.trim()); cur = ''; i += m[0].length - 1; continue; }
+        cur += ch;
+    }
+    if (cur.trim()) out.push(cur.trim());
+    return out;
+}
+function socialParts(clause, { store, extra }) {
+    const pieces = coordinated(clause);
+    if (pieces.length < 2) return { kept: [], owned: [clause], other: [] };
+    const words = pieces[0].split(/\s+/);
+    const v = words.findIndex((w, k) => k > 0 && VERB_LIKE.test(bare(w)) && w === w.toLowerCase());
+    const subject = v > 0 ? words.slice(0, v).join(' ') : null;
+    const kept = [], owned = [], other = [];
+    for (const [k, p] of pieces.entries()) {
+        const start = k ? predicateStart(p) : 'subject';
+        // a part cut off from its subject (no subject to lend, or a pronoun now meaning someone else) is not a moment
+        if (start === 'pronoun' || (start === 'verb' && !subject)) { owned.push(p); continue; }
+        const own = start === 'verb' ? `${subject} ${p}` : p;
+        // a part is judged without the rest of its clause, so any engine word of its own keeps it out
+        if (ownedClause(own, { store }) !== null || ENGINE_WORDS.test(own) || ENGINE_STATUS.test(own) || ENGINE_MONEY.test(own) || HARD_MONEY.test(own) || MONEY_AMOUNT.test(own)) { owned.push(own); continue; }
+        if (extra && extra(own)) { other.push(own); continue; }
+        const moment = /["“']/.test(p) || p.split(/\s+/).filter(Boolean).length >= 6;
+        const text = own.replace(/[\s,;:—–-]+$/, '');
+        if (moment) kept.push(/[.!?'"”]$/.test(text) ? text : `${text}.`);
+    }
+    return { kept, owned: owned.length ? owned : [clause], other };
 }

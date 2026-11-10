@@ -274,10 +274,11 @@ const sameGear = (a, b) => a?.kind === 'gear' && b?.kind === 'gear' && a.base ==
  * appearance), enough units, the same equipment profile if either is equipment, and no other open line naming it. Two
  * candidates, too few units or another variant leave the line unlinked (the purchase then creates its goods as before).
  */
-export function displayedWare(s, line, { seller, at }) {
+export function displayedWare(s, line, { seller, at, taken = null }) {
     if (!line || line.kind !== 'goods') return null;
     const names = [line.what, line.appearance].filter((x) => typeof x === 'string' && x.trim()).map(normText);
-    const linked = new Set(Object.values(s.offers || {}).filter((o) => o.status === 'open').flatMap((o) => (o.lines || []).map((l) => l.object)).filter(Boolean));
+    // .178 (GPT review §3.2, P3): taken: what an earlier line of the same new offer already names
+    const linked = new Set([...Object.values(s.offers || {}).filter((o) => o.status === 'open').flatMap((o) => (o.lines || []).map((l) => l.object)), ...(taken || [])].filter(Boolean));
     const fit = Object.values(s.objects || {}).filter((o) => physical(s, o, { seller, at }) && names.includes(normText(o.name || '')) && !linked.has(o.id));
     if (fit.length !== 1) return null;
     const o = fit[0];
@@ -287,22 +288,30 @@ export function displayedWare(s, line, { seller, at }) {
     return o.id;
 }
 /**
- * D5 (.175): the open offer of someone else that a thing lying here or held by its seller is the ware of (or null):
- * named by a line (K2), or of the same name as a goods line of a seller's open offer at the place where it lies. His
- * own things, what he has paid for and anything no open offer names stay free to take as before.
+ * D5 (.175): the offer of someone else that a thing lying here or held by its seller is the ware of (or null): named
+ * by a line (K2), or of the same name as a goods line of the seller's offer at the place where it lies. His own things,
+ * what he has paid for and anything no offer names stay free to take.
+ * .178 (GPT review §3.2): a closed offer leaves the wares on display (lying in the shop) the seller's: one of two equal
+ * quills bought, the rest of a stack he bought part of. open says whether accepting this offer still buys it. What the
+ * seller hands over after it closed is his to give (a gift, .48); what was his and lies where he laid it (had_pc) is
+ * his own, beside an offer of the same name too.
  */
 export function wareOnSale(s, o) {
-    if (!o || o.holder?.entity === 'pc') return null;
+    if (!o || o.holder?.entity === 'pc' || (o.had_pc && o.holder?.loc)) return null;
+    let found = null;
     for (const offer of Object.values(s.offers || {})) {
-        if (offer.status !== 'open' || offer.bid || !offer.seller || offer.seller === 'pc') continue;
+        if (offer.bid || !offer.seller || offer.seller === 'pc') continue;
+        const open = offer.status === 'open';
+        if (found && (found.open || !open)) continue;
         for (const line of offer.lines || []) {
             if (line.kind !== 'goods') continue;
-            if (line.object === o.id) return { offer, line };
-            const where = (o.holder?.loc && o.holder.loc === offer.at) || o.holder?.entity === offer.seller;
-            if (!line.object && where && [line.what, line.appearance].filter(Boolean).map(normText).includes(normText(o.name || ''))) return { offer, line };
+            const lying = !!o.holder?.loc && o.holder.loc === offer.at;
+            const where = lying || (open && o.holder?.entity === offer.seller);
+            const linked = line.object === o.id && (open || !!o.holder?.loc);
+            if (linked || (!line.object && where && [line.what, line.appearance].filter(Boolean).map(normText).includes(normText(o.name || '')))) { found = { offer, line, open }; break; }
         }
     }
-    return null;
+    return found;
 }
 
 /**

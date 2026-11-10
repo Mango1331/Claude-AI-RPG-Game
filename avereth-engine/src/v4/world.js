@@ -2814,7 +2814,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (to.entity === 'pc' && o.holder?.loc && !(auth.take || []).length) { reject(d, 'pc_inventory', 'what lies here becomes his only by his own take'); return; }
         // D5 (.175): a ware on open sale becomes his by buying it, never by a take or a story move
         const onSale = to.entity === 'pc' ? wareOnSale(s, o) : null;
-        if (onSale) { reject(d, 'for_sale', `${o.name} is ${entityLabel(s, onSale.offer.seller)}'s ware for sale (${onSale.offer.id}); it becomes his by buying it`); return; }
+        if (onSale) { reject(d, 'for_sale', `${o.name} is ${entityLabel(s, onSale.offer.seller)}'s ware for sale (${onSale.offer.id}${onSale.open ? '' : `, ${onSale.offer.status}`}); it becomes his by buying it`); return; }
         const box = o.in ? s.features?.[o.in] : o.in_name && o.holder?.loc ? featureNamed(s, o.holder.loc, o.in_name) : null;
         if (to.entity === 'pc' && box?.status === 'active' && box.kind === 'obstacle') { reject(d, 'shut_in', `it lies in ${box.name} (${box.id}), which is not open yet`); return; }
         const part = d.qty && d.qty < (o.qty ?? 1) ? d.qty : null;
@@ -3057,7 +3057,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (same.length && same.every((o) => lines.every((l) => o.lines.some((x) => sameArticle(l,x) && x.price_cp === l.price_cp && (x.qty ?? 1) === (l.qty ?? 1) && (x.terms ?? 'firm') === (l.terms ?? 'firm'))))) return;
         for (const o of same) if (lines.some((l) => (l.terms ?? 'firm') !== 'unverified' && o.lines.some((x) => sameArticle(l, x)))) emit({ t: 'offer.closed', d: { id: o.id, status: 'repriced' } });
         // K2 (.175): a line for a thing the story already shows here or in the seller's hands names that object
-        for (const l of lines) { const shown = displayedWare(s, l, { seller, at: s.scene.at }); if (shown) l.object = shown; }
+        const taken = new Set(); // .178 (P3): one displayed thing is named by one line of the offer
+        for (const l of lines) { const shown = displayedWare(s, l, { seller, at: s.scene.at, taken }); if (shown) { l.object = shown; taken.add(shown); } }
         const id = `offer.t${tag}.${Object.keys(s.offers).length + 1}`;
         emit({ t: 'offer.created', d: { offer: { id, seller, at: s.scene.at, status: 'open', canon: false, turn: s.turn, lines } } });
         // a purchase Alaric agreed to in advance, within his limit (buy with max_cp or any_price), in the number he named

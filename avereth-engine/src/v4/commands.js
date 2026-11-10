@@ -893,9 +893,10 @@ const HANDLERS = {
         // Patch 7: a thing in a container that is still shut (the locked chest): opened first, by his attempt
         const shut = access.shut;
         if (shut) return { status: 'refused', reason: 'shut in', line: `CANNOT TAKE — ${o.name} is in ${shut.name} (${shut.id}), which is not open yet: he has to get it open first (an attempt).` };
-        // D5 (.175): ware on open sale (the Primer in the case) is bought, not taken; a deliberate theft is no part of TAKE
+        // D5 (.175): ware on sale (the Primer in the case) is bought, not taken; a deliberate theft is no part of TAKE. .178:
+        // also after its offer closed (the other quill on display), then by a new offer of the seller
         const sale = wareOnSale(s, o);
-        if (sale) return { status: 'refused', reason: 'for sale', line: `CANNOT TAKE — ${o.name} is ${who(s, sale.offer.seller)}'s ware for sale${Number.isInteger(sale.line.price_cp) ? ` (${cpText(sale.line.price_cp, content)})` : ''}; it becomes his by buying it (accepting the offer), not by taking it.` };
+        if (sale) return { status: 'refused', reason: 'for sale', line: `CANNOT TAKE — ${o.name} is ${who(s, sale.offer.seller)}'s ware for sale${Number.isInteger(sale.line.price_cp) ? ` (${cpText(sale.line.price_cp, content)})` : ''}; it becomes his by buying it (${sale.open ? 'accepting the offer' : `a new offer from ${who(s, sale.offer.seller)}`}), not by taking it.` };
         const part = c.qty && c.qty < (o.qty ?? 1) ? c.qty : null;
         emit({ t: 'object.moved', d: { id: o.id, to: { entity: 'pc' }, ...(part ? { qty: part, split: `${o.id}_${s.turn}` } : {}) } });
         return { status: 'resolved', line: `TAKES — ${o.name}${(part || o.qty) && (o.stack || (o.qty ?? 1) > 1 || o.unit) ? ` (${part || o.qty}${o.unit ? ` ${o.unit}` : ''})` : ''} along.` };

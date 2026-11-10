@@ -111,6 +111,14 @@ export function threadById(state, id) {
     return state.threads[key] || state.threads[`thread.${key}`] || (key.startsWith('thread.') ? state.threads[key.slice(7)] : null) || null;
 }
 
+const AGREEMENTS = new Set(['promise', 'debt']);
+/** Does the text name this person (their name, known name or role word)? */
+function namedIn(state, id, text) {
+    const e = state.entities?.[id];
+    const words = ` ${normText(text)} `;
+    return [e?.name, e?.known_name, e?.descriptors?.[0]].filter((x) => typeof x === 'string' && x.trim()).some((x) => words.includes(` ${normText(x)} `));
+}
+
 /**
  * The events for one reported thread {id?, text, kind, status, resolution?}, or a reason it cannot apply.
  * @returns {{events: object[], accepted?: string, reject?: string}}
@@ -129,10 +137,26 @@ export function threadEvents(state, th, { at, src, place = null }) {
         cur = found.thread;
     }
     if (!cur && status === 'resolved') return { events: [], reject: 'cannot resolve an unknown thread' };
+    // K5 / D1 (pilot 01 B3/B4, .177): an agreement keeps what it was agreed as. Its id reports it, never another matter:
+    // a report naming someone else as its party is none of it (T58: Muller's debt to Hesse under the id of his promised
+    // copper; T61: a second carter id); its settlement needs one of its own people here or named in the report (its id
+    // and a copy of its parties are no proof). What cannot be told apart deterministically (another matter of the same
+    // people) stays the extractor's.
+    const agreement = cur && AGREEMENTS.has(cur.kind);
+    if (agreement && th.id) {
+        const stored = (cur.who || []).filter((x) => x !== 'pc');
+        const reported = (Array.isArray(th.who) ? th.who : []).filter((x) => x !== 'pc');
+        const others = reported.filter((x) => !stored.includes(x));
+        if (stored.length && others.length) return { events: [], reject: `thread identity: ${cur.id} is the agreement of ${stored.join(', ')}; a report naming ${others.join(', ')} is another matter (a new thread, id null)` };
+        if (status === 'resolved' && stored.length && !stored.some((x) => (state.scene?.present || []).includes(x) || namedIn(state, x, `${th.text || ''} ${th.resolution || ''}`))) {
+            return { events: [], reject: `thread identity: ${cur.id} is settled only with one of its parties (${stored.join(', ')}) here or named` };
+        }
+    }
     if (cur && cur.status === 'resolved' && status === 'resolved') return { events: [] };
     const id = cur?.id || newThreadId(state);
-    // a resolution keeps the matter's words and adds how it ended; an update may say it better
-    const text = status === 'resolved' && cur ? cur.text : String(th.text).slice(0, 200);
+    // a resolution keeps the matter's words and adds how it ended; an update may say it better, an agreement's never
+    // (D1: its words are what was agreed; a later report's wording is not taken over)
+    const text = (status === 'resolved' || agreement) && cur ? cur.text : String(th.text).slice(0, 200);
     // NPC E2-B (R7): the parties of an agreement stay with it: an update adds parties, never drops one; a resolution
     // keeps them; a thread without parties gets them by its id or its exact words only (matchThread)
     const parties = Array.isArray(th.who) && th.who.length ? th.who : null;

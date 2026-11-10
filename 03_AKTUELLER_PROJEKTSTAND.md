@@ -1,6 +1,6 @@
 # Avereth Engine – aktueller Produkt- und Arbeitsstand
 
-**Stand 09.11.2026.** Diese Seite führt den aktuellen Build, die Nachweise und die nächsten Entscheidungen. [Arbeitsweise 01](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Kanon 02](02_DESIGN_KANON.md) · [Roadmap 07](07_ROADMAP_NACH_10B_ENTWURF.md) · [Fachindex 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Originalruns](testrun_10b/README.md).
+**Stand 10.11.2026.** Diese Seite führt den aktuellen Build, die Nachweise und die nächsten Entscheidungen. [Arbeitsweise 01](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Kanon 02](02_DESIGN_KANON.md) · [Roadmap 07](07_ROADMAP_NACH_10B_ENTWURF.md) · [Fachindex 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Originalruns](testrun_10b/README.md).
 
 **Produktbuild `4.3.0-c.6.6.174` auf `claude/c-planner-prototype-2026-10-02-gpt-c666`.** Aktueller Remote-HEAD am 09.11.: `2a8b54e45a48ef525b69d62edb826fd3a2b77cbc` (Runner-Korrektur, Engine weiterhin `.174`). `main` führt die Projektdokumentation. Beim Einstieg beide Remote-HEADs prüfen. [Enginecommit `.174`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/f9b3e79759386ebd715a046c196edcfbfa977544) · [Runnerkorrektur](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/2a8b54e45a48ef525b69d62edb826fd3a2b77cbc).
 
@@ -9,6 +9,20 @@ V4-C / Ruleset 2 läuft als SillyTavern-Extension. Der Planner versteht Spielera
 ## Neuer natürlicher Test: NPC/PULSE Pilot 01
 
 **09.11.2026 – 70 echte LLM-Spielereingaben, Build `.174` / Runner `2a8b54e`.** Der unabhängige Originalreview des natürlichen `npc-sociable`-Warrior-Laufs bestätigt 130/130 identische Eventexportgruppen, formal valides Endstate, 8 geöffnete PULSE-Fenster und 17/28 beobachtete Testziele. **NPC E3: keine gespeicherten Anker, deshalb nicht abgenommen.** Im echten Modellspiel traten zwei P2-Befunde auf: eine bestehende Thread-ID wurde mit einer anderen Schuld überschrieben und für einen einmal bezahlten Primer entstanden zwei Objekt-IDs. Der zweite Fuhrmann erhält doppelte NPC-Identität (P2-Prüfkandidat); Gildenbearbeiter `handled_by` 0/3 angenommen. [Vollständiger unabhängiger Review](testrun_10b/npc-20261109-160250Z/REVIEW.md) · [Archiv/Hashes](testrun_10b/npc-20261109-160250Z/SOURCE_MANIFEST.md). **Nächstes Vorgehen:** enge Ursachenprüfungen statt pauschalem Generalpatch oder sofortigem weiteren Standardbatch. Die vorherige Pilotvorbereitung unten ist mit diesem Run erfüllt; PULSE D, E4/E5 und Balance bleiben getrennt.
+
+**Unabhängiger Gegenreview (Claude, 10.11.2026):** bestätigt Thread-, Primer- und Fuhrmannbefund, verortet ihre Ursachen im Code und ergänzt zwei übersehene P2-Fehler.
+- **Dungeoneintritt T65:** Die PULSE-Sperre verwirft die Slotgegner, die die Engine selbst per DUNGEON AHEAD gebucht hat. Das widerspricht dem PULSE-Fachplan; GPT hatte den Fall als Schutzbeispiel gewertet.
+- **Kontextbudget:** `gear_market` wird durch beiläufige Wörter („armor“) mit Priorität 0 ausgelöst und verdrängt NPC-Detailkarten (`present` in 27 von 63 Zügen) und den Abruf (`relevant` in 60 von 63).
+
+Dazu kommen:
+- an Satzgrenzen verworfene `met`/`handled_by`-Evidenzen; sie lösen die T24-Kette und 0/3 Bearbeiter aus;
+- die nie erledigte, bezahlte Muller-Zusage;
+- der vom Erzähler erfundene Wechselkurs nach einem Ergebnistext ohne Börse;
+- ein ungebuchtes Abendessen, das in den Finanzbereich gehört.
+
+Widerlegt sind die Lesart zum `life`-Fenster T46 (es ist erzählt) und die Zuordnung des zweiten Primers zur Extraktion (es war ein Planner-`take`).
+
+Der Fachplan schlägt sieben enge Patches K1–K7 und ein P3-Kleinpaket in fester Reihenfolge vor, mit Rot-Grün-Fällen aus den Pilot-Originalen, Replay und ST1.19. Offen sind sechs Designentscheidungen D-1 bis D-6, darunter fester Absprachetext, Bearbeiterwortschatz und Wiedererkennung über offene Absprachen. Noch nicht freigegeben. [Gegenreview](testrun_10b/npc-20261109-160250Z/GEGENREVIEW_CLAUDE.md) · [Fachplan](testrun_10b/npc-20261109-160250Z/FACHPLAN_PILOT01_KORREKTUREN.md).
 
 ## Nächste Schritte
 

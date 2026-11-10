@@ -16,6 +16,9 @@
 //   .178 GPT review R2: the bookshop with a second Primer on display (T41–T42 from I81): the purchase is not linked to
 //        either, the Primer in the case stays the shopkeeper's after the offer closed: his take is refused, one Primer
 //        for 30 cp, the same after save/reload.
+//   .179 GPT review of .178 (D5 provenance): Alaric sells his tin whistle to the shopkeeper by his bid; the shopkeeper
+//        shelves it and offers it; Alaric's take of it is refused (it was his once, it is the shopkeeper's ware now);
+//        +4 cp once, the same after save/reload.
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
@@ -48,6 +51,18 @@ export const pilot01Turns = [
     { key: 'p178take', player: '*I lift the other Primer out of the case as well*', plan: { commands: [{ seq: 1, type: 'take', object: 'obj.t82.primer', qty: 1, quote: 'I lift the other Primer out of the case' }] },
         reply: 'The shopkeeper laid a hand on the case. "That one\'s still for sale, friend."', answer: { scene: 'here', expected: {}, deltas: [] } },
 ];
+const WHISTLE = { t: 'object.created', d: { object: { id: 'obj.test.whistle', name: 'tin whistle', kind: 'item', stack: false, qty: 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: 30, how: 'story' } } } };
+const whistleLine = { what: 'tin whistle', kind: 'goods', service: null, qty: 1, price_cp: 6, said: 'Six copper', effect: null, teaches: null, equipment: false, base: null, quality: null, phase: 'firm', condition: null, pricing: { basis: 'total', quote: 'Six copper', currency_quote: 'copper' } };
+pilot01Turns.push(
+    { key: 'p179show', player: '*I show the shopkeeper my tin whistle*', plan: { commands: [] },
+        reply: 'The shopkeeper turned the whistle over in his fingers. "Four copper for it."',
+        answer: { scene: 'here', expected: {}, deltas: [{ scene: null, seq: 1, type: 'bid', buyer: 'npc.npcshopkeeper_primer', lines: [{ object: 'obj.test.whistle', qty: 1 }], price_cp: 4, said: 'Four copper for it', phase: 'firm', condition: null, pricing: { basis: 'total', quote: 'Four copper for it' } }] } },
+    { key: 'p179sell', player: '*I sell him the whistle*', plan: { commands: [{ seq: 1, type: 'sell', object: 'obj.test.whistle', to: 'npc.npcshopkeeper_primer', min_cp: null, quote: 'I sell him the whistle' }] },
+        reply: 'He set the whistle on the shelf by the window. "Six copper, if anyone wants a tune."',
+        answer: { scene: 'here', expected: {}, deltas: [{ scene: null, seq: 1, type: 'object.move', object: 'obj.test.whistle', qty: null, to: 'loc.ashbridge.bookshop_with_the_primer' }, { scene: null, seq: 2, type: 'offer', seller: 'npc.npcshopkeeper_primer', lines: [whistleLine] }] } },
+    { key: 'p179take', player: '*I take the whistle back off the shelf*', plan: { commands: [{ seq: 1, type: 'take', object: 'obj.test.whistle', qty: 1, quote: 'I take the whistle back off the shelf' }] },
+        reply: 'The shopkeeper cleared his throat. "That one is mine now, friend. Six copper."', answer: { scene: 'here', expected: {}, deltas: [] } },
+);
 const SECOND_PRIMER = { t: 'object.created', d: { object: { id: 'obj.test.primer_b', name: 'Primer', kind: 'item', stack: false, qty: 1, unit: null, use: 'tool', holder: { loc: 'loc.ashbridge.bookshop_with_the_primer' }, marks: [], for_quests: [], source: { turn: 40, how: 'story' } } } };
 const SCOUTS = ['mon.mossback_warrens_c1_l1_e1_1', 'mon.mossback_warrens_c1_l1_e1_2', 'mon.mossback_warrens_c1_l1_e1_3'];
 
@@ -73,7 +88,8 @@ export async function pilot01Smoke({ page, send, idle, calls, onReload, out }) {
             clerkKnows: Object.keys(s.knowledge?.['npc.npcashbridge_clerk'] || {}),
             threads: Object.fromEntries(Object.entries(s.threads || {}).map(([k, t]) => [k, { text: t.text, status: t.status, who: t.who || null }])),
             carterNames: Object.values(s.facts || {}).filter((f) => f.s === 'npc.npccarter_hazel' && f.p === 'name').map((f) => f.o),
-            hessa: Object.values(s.entities).find((e) => e.name === 'Widow Hessa')?.descriptors || null };
+            hessa: Object.values(s.entities).find((e) => e.name === 'Widow Hessa')?.descriptors || null,
+            whistle: s.objects['obj.test.whistle']?.holder || null };
     });
     const checks = {}, evidence = [];
     const play = async (key) => {
@@ -154,6 +170,19 @@ export async function pilot01Smoke({ page, send, idle, calls, onReload, out }) {
     onReload(); await page.waitForTimeout(800);
     const re2 = await snapshot();
     checks.r2SaveReload = !re2.errors.length && re2.primers.length === 1 && re2.primerAt?.loc === 'loc.ashbridge.bookshop_with_the_primer' && re2.coin === shop2.coin - 30;
+    // .179 D5 provenance: sold, shelved and offered by the shopkeeper, the whistle is bought, not taken back
+    await seed(81, (prefix) => prefix[80].extra.avereth.events.push(structuredClone(WHISTLE)));
+    await play('p175shop'); // T41: into the bookshop, where the shopkeeper is
+    const show = await play('p179show');
+    const sold = await play('p179sell');
+    const back = await play('p179take');
+    checks.d5SoldWareNotTakenBack = sold.coin === show.coin + 4 && JSON.stringify(sold.whistle) === JSON.stringify({ loc: 'loc.ashbridge.bookshop_with_the_primer' })
+        && back.userResolved.some(([t, st, why]) => t === 'take' && st === 'refused' && /for sale/.test(why || ''))
+        && JSON.stringify(back.whistle) === JSON.stringify({ loc: 'loc.ashbridge.bookshop_with_the_primer' }) && back.coin === show.coin + 4 && !back.errors.length;
+    await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); await SillyTavern.getContext().reloadCurrentChat(); });
+    onReload(); await page.waitForTimeout(800);
+    const re3 = await snapshot();
+    checks.d5SoldWareSaveReload = !re3.errors.length && JSON.stringify(re3.whistle) === JSON.stringify({ loc: 'loc.ashbridge.bookshop_with_the_primer' }) && re3.coin === show.coin + 4;
     fs.writeFileSync(path.join(out, 'pilot01_smoke.json'), JSON.stringify(evidence, null, 2));
     return checks;
 }

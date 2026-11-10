@@ -48,7 +48,9 @@ Der Fachplan schlägt sieben enge Patches K1–K7 und ein P3-Kleinpaket in feste
 - Die D1-Grenze „gleiche Parteien, andere Sache“ bleibt offen.
 - [Patchnote `.178`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/c2ef94df9a0e95a8c5ee67ccf6167dfcfe591d3e/avereth-engine/docs/PILOT01_178_REVIEW_FIXES.md)
 
-**Nächster Schritt:** kurzer unabhängiger Diff-Nachreview `.178`, danach neuer natürlicher Lauf. D3 (Abruf `relevant` 2/65) gesondert nach Kontextmessung entscheiden. Keine Architektur- oder Balanceänderung.
+**Unabhängiger GPT-Nachreview `.178` (10.11.2026):** Die zuvor beanstandeten R1-/R2-/P3-Fälle sind gezielt geschlossen. Neuer enger P2-D5-Restfall aus einer eigenen Code-Gegenprobe: Nach regulärem Verkauf und erneuter Ausstellung beim Händler kann die historische Markierung `had_pc` den Ladenschutz fälschlich ausschalten. Kein natürlicher Nachweis und kein NPC-/PULSE-Defekt. [Vollständiger Nachreview](testrun_10b/npc-20261109-160250Z/REVIEW_178_PRODUKTDIFF_GPT.md).
+
+**Nächster Schritt:** Optional ein minimaler Besitzwechsel-/D5-Fix mit Gegenfall vor uneingeschränkter Handelsfreigabe; ein natürlicher NPC-/PULSE-Lauf auf `.178` ist auch mit dieser getrennt dokumentierten Randgrenze möglich. D3 (Abruf `relevant` 2/65) nur nach weiterer gezielter Kontextmessung entscheiden. Keine Architektur- oder Balanceänderung.
 
 ## Nächste Schritte
 

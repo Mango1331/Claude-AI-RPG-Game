@@ -39,7 +39,7 @@ import { jobAction, jobOf } from './private_jobs.js';
 import { acceptPassive, declinePassive } from './passive_growth.js';
 import { acceptSkill, declineSkill, developmentOffers, skillOffers } from './skill_growth.js';
 import { classOffer, classSelection, acceptClass } from './class_growth.js';
-import { tradeObject as objectOf, pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, rateUnits, offerAvailability, tradeTermsWhy, purchaseLines, samePurchaseRequest, purchaseDecisionMatches, wareOnSale } from './trade.js';
+import { tradeObject as objectOf, pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, rateUnits, offerAvailability, tradeTermsWhy, purchaseLines, samePurchaseRequest, purchaseDecisionMatches, wareOnSale, shortfallText } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import { pulseBegin, pulseFinish, pulseLeg, pulseClaimPause, pulseSought, goSought, searchSought, aheadReserved } from './pulse.js';
 import { bookStealth } from '../checks.js';
@@ -1223,7 +1223,8 @@ const HANDLERS = {
         const price = pick.cp;
         const booked = bookPurchase(s, emit, { offer: o, picks: pick.picks, cp: price, objectId: (what) => `obj.t${env(ctx).msg}.${slug(what)}`, content, consent: c });
         if (booked.error) {
-            const why = booked.error === 'above his price limit' ? `${picksText(pick.picks)} costs ${cpText(price, content)}, more than the ${c.max_cp} cp he allows` : booked.error;
+            const why = booked.error === 'above his price limit' ? `${picksText(pick.picks)} costs ${cpText(price, content)}, more than the ${c.max_cp} cp he allows`
+                : booked.error === 'not enough coin' ? `${picksText(pick.picks)}: ${shortfallText(price, s.entities.pc.sheet.coin_cp, content)}` : booked.error;
             return { status: 'refused', reason: booked.error, line: `NOT BOUGHT — ${why}. Nothing changes hands.` };
         }
         const reg = pick.picks.some((p) => p.line.service === 'guild_registration');

@@ -15,7 +15,7 @@ import { normText } from '../util.js';
 import { hallOf } from './domain.js';
 import { rulesetOf } from '../content.js';
 import { trainingOfferWhy } from './growth.js';
-import { numbersIn } from '../economy.js';
+import { numbersIn, formatCoin } from '../economy.js';
 
 const flat = text => normText(text || '').replace(/[^a-z0-9]+/g, ' ').trim();
 const contains = (text, part) => !!flat(part) && ` ${flat(text)} `.includes(` ${flat(part)} `);
@@ -303,6 +303,18 @@ export function wareOnSale(s, o) {
         }
     }
     return null;
+}
+
+/**
+ * K7 (pilot 01 B9, .176): what a purchase he cannot pay for tells the story: the price, his purse, what is missing, and
+ * the coin canon (rules.currency: one purse, 10 copper = 1 silver): no changing of coin is needed, and none makes up the
+ * difference (T27: the narrator invented "I don't break silver here" and a changer's rate of 97 copper to the silver).
+ */
+export function shortfallText(price, coin, content = null) {
+    const c = (cp) => `${cp} cp${cp >= 10 && content ? ` (${formatCoin(cp, content)})` : ''}`;
+    const u = content?.rules?.currency;
+    const canon = u ? ` (1 silver = ${u.copper_per_silver} copper, 1 gold = ${u.copper_per_silver * u.silver_per_gold} copper)` : '';
+    return `${c(price)} needed; he has ${c(coin)}, ${c(Math.max(0, price - coin))} short. Silver and copper are one purse${canon}: no coin needs changing, and changing coin makes up nothing`;
 }
 
 export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = null, consent = null }) {

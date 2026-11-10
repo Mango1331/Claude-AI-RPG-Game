@@ -35,7 +35,7 @@ import {
 } from './domain.js';
 import { creatureContract } from './population.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
-import { tradeObject, pickLines, bookPurchase, bookSale, saleUnits, unitsText, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines, offerAvailability, rateUnits, displayedWare, wareOnSale } from './trade.js';
+import { tradeObject, pickLines, bookPurchase, bookSale, saleUnits, unitsText, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines, offerAvailability, rateUnits, displayedWare, wareOnSale, shortfallText } from './trade.js';
 import { findQuote, priceEvidence, openConditionNear, moneyLiteral } from './finance_evidence.js';
 import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
 import { reachedEvents, setIntentEvents } from './intents.js';
@@ -2850,6 +2850,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 if (pick && !why) {
                     why = bookPurchase(s, emit, { offer: match.o, picks: pick.picks, cp: pick.cp, content, consent: dec,
                         objectId: name => uniqueObjectId(s, tag, name) }).error || null;
+                    if (why === 'not enough coin') why = shortfallText(pick.cp, s.entities.pc.sheet.coin_cp, content);
                     if (!why) {
                         for (const p of pick.picks) bought.push({ what: p.line.what, units: p.units, seller: match.o.seller, left: p.units });
                         counterparts.add(match.o.seller);
@@ -3059,10 +3060,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const what = pick.picks.map((p) => unitsText(p.line.what, p.units)).join(', ');
             const coin = s.entities.pc.sheet.coin_cp;
             if ((!dec.any_price && !Number.isInteger(dec.max_cp)) || (Number.isInteger(dec.max_cp) && price > dec.max_cp)) { system.push(`NOT BOUGHT — ${what}: ${price} cp is above his limit of ${dec.max_cp} cp`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'too_expensive' } }); continue; }
-            if (coin < price) { system.push(`NOT BOUGHT — ${price} cp needed, he has ${coin} cp`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'no_coin' } }); continue; }
+            if (coin < price) { system.push(`NOT BOUGHT — ${what}: ${shortfallText(price, coin, content)}`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'no_coin' } }); continue; }
             grant('player.buy');
             const booked = bookPurchase(s, emit, { offer: o, picks: pick.picks, cp: price, objectId: (name) => uniqueObjectId(s, tag, name), content, consent: dec });
-            if (booked.error) { system.push(`NOT BOUGHT — ${booked.error}`); continue; }
+            if (booked.error) { system.push(`NOT BOUGHT — ${booked.error === 'not enough coin' ? `${what}: ${shortfallText(price, s.entities.pc.sheet.coin_cp, content)}` : booked.error}`); continue; }
             for (const p of pick.picks.filter((x) => x.line.kind === 'goods')) bought.push({ what: p.line.what, units: p.units, seller, left: p.units });
             counterparts.add(seller);
             emit({ t: 'decision.closed', d: { id: dec.id, status: 'accepted' } });

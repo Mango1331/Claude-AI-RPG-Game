@@ -2,7 +2,7 @@
 
 **Stand 10.11.2026.** Diese Seite führt den aktuellen Build, die Nachweise und die nächsten Entscheidungen. [Arbeitsweise 01](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Kanon 02](02_DESIGN_KANON.md) · [Roadmap 07](07_ROADMAP_NACH_10B_ENTWURF.md) · [Fachindex 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Originalruns](testrun_10b/README.md).
 
-**Produktbuild `4.3.0-c.6.6.174` auf `claude/c-planner-prototype-2026-10-02-gpt-c666`.** Aktueller Remote-HEAD am 09.11.: `2a8b54e45a48ef525b69d62edb826fd3a2b77cbc` (Runner-Korrektur, Engine weiterhin `.174`). `main` führt die Projektdokumentation. Beim Einstieg beide Remote-HEADs prüfen. [Enginecommit `.174`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/f9b3e79759386ebd715a046c196edcfbfa977544) · [Runnerkorrektur](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/2a8b54e45a48ef525b69d62edb826fd3a2b77cbc).
+**Produktbuild `4.3.0-c.6.6.177` auf `claude/c-planner-prototype-2026-10-02-gpt-c666`.** Aktueller Remote-HEAD am 10.11.: `3658fbcf61356d798c0f975804e66e8e5263a169` (Pilot-01-Korrekturen K1–K8 als `.175`–`.177`; Runner unverändert seit `2a8b54e`). `main` führt die Projektdokumentation. Beim Einstieg beide Remote-HEADs prüfen. [Build `.177`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/3658fbcf61356d798c0f975804e66e8e5263a169) · [Git-Vergleich `.174` → `.177`](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/2a8b54e45a48ef525b69d62edb826fd3a2b77cbc...3658fbcf61356d798c0f975804e66e8e5263a169).
 
 V4-C / Ruleset 2 läuft als SillyTavern-Extension. Der Planner versteht Spielerabsichten, die Engine entscheidet und bucht, der Narrator erzählt und der Extractor übernimmt zulässige Weltfolgen über die Firewall. Der autoritative Zustand ergibt sich aus den Chatevents. Save/Reload, Swipe/Edit und Replay gehören zur technischen Abnahme.
 
@@ -23,6 +23,22 @@ Dazu kommen:
 Widerlegt sind die Lesart zum `life`-Fenster T46 (es ist erzählt) und die Zuordnung des zweiten Primers zur Extraktion (es war ein Planner-`take`).
 
 Der Fachplan schlägt sieben enge Patches K1–K7 und ein P3-Kleinpaket in fester Reihenfolge vor, mit Rot-Grün-Fällen aus den Pilot-Originalen, Replay und ST1.19. Offen sind sechs Designentscheidungen D-1 bis D-6, darunter fester Absprachetext, Bearbeiterwortschatz und Wiedererkennung über offene Absprachen. Noch nicht freigegeben. [Gegenreview](testrun_10b/npc-20261109-160250Z/GEGENREVIEW_CLAUDE.md) · [Fachplan](testrun_10b/npc-20261109-160250Z/FACHPLAN_PILOT01_KORREKTUREN.md).
+
+**Umsetzung der Korrekturen (10.11.2026, Claude, Builds `.175`–`.177`).** Der Implementierungsauftrag hat die Entscheidungen D1–D6 getroffen. Die Korrekturen K1–K8 laufen in drei Builds mit getrennten Commits. Jeder Build hat seine Pilot-Originalfälle rot gegen den Vorstand und grün danach, eigene Gegenfälle, Vollsuite, Replay 2235 und ST1.19 Standard/Failsoft mit geskriptetem Provider. Kein natürlicher Lauf, kein Modellaufruf; B10 (Abendessen) bleibt außerhalb.
+
+| Build | Inhalt | Abnahme |
+|---|---|---|
+| **`.175`** | **K1:** Slotgegner beim Dungeoneintritt ohne PULSE-Sperre; ihr Angriff durchläuft weiter `attack_commitment`. **K2:** Gekaufte, ausgestellte Ware wechselt den Besitzer, auch als Teilmenge. **D5:** Ware im offenen Angebot wird nicht per `take` genommen | rot 3/5 und 3/7, `npm test` 3001/3001, Replay 0 geändert, ST 158/0 und 163/0 · [Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0f6af79778878d56c8927b738dc4d22bb3dce9d6/avereth-engine/docs/PILOT01_175_DUNGEON_PURCHASE.md) |
+| **`.176`** | **K3:** `gear_market` nur bei Gerätehandel in diesem Zug; der Erstkontakt beim Schmied ohne Angebot behält ihn. **K4/D2:** `met`/`handled_by` aus einem wörtlichen Teil eines zusammengesetzten Zitats; `checked`/`pressed`/`sealed`/`pulled` nur mit Schalterding. **K7:** Fehlbetrag mit Börse und Münzkanon im Ergebnistext | rot 2/5, 6/7, 1/2; 3015/3015; Replay 0 geändert; ST 162/0 und 167/0. **Kontext Pilot:** Katalog 19 → 4 Züge, Überlauf 27 → 18, `present` 25 → 30, `relevant` unverändert 2/65, Ø 1689 → 1590 Token. Keine Reserve (D3) · [Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/596da8a30f479228b8af658de0349668b72da87f/avereth-engine/docs/PILOT01_176_CONTEXT_EVIDENCE.md) |
+| **`.177`** | **K5a:** Extractorvorgabe für dieselbe Absprache, Berichte und Erledigung im Handel. **D1:** Absprachen behalten ihren Text; ein Bericht mit fremder Partei und eine Erledigung allein per ID werden abgelehnt, ohne `latest`. **K6a:** Szenenkorrektur mit dem Endort. **D4/D6:** nur Vorgaben (bekannte Person per Rolle, Rudel als eine Gruppe). **K8:** Alarics Name ist kein NPC-Name; Rolle „null“ ist keine | rot 8/10, 5/7; Threadsuites 25/25; 3033/3033; Replay 14 Fälle geändert (K8-1 7, K6a 7), einzeln akzeptiert, 0 offen; ST 168/0 und 173/0; Extractor-Systemprompt +200 Token · [Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/3658fbcf61356d798c0f975804e66e8e5263a169/avereth-engine/docs/PILOT01_177_AGREEMENTS_SCENE.md) |
+
+**Bekannte Grenzen:**
+- Eine andere Sache derselben Parteien unter alter ID ist deterministisch nicht erkennbar. Hier wirkt nur K5a.
+- Eine erfüllte Absprache, die unter einer doppelten Personen-ID gemeldet wird, bleibt offen (Typ T61).
+- `relevant` fällt nach K3 weiterhin meist aus; Hauptlast sind `quests`, `resolved` und `guild_authority`.
+- Die natürliche Wirkung von K5a, K6b, D6 und K7 ist noch offen.
+
+**Nächster Schritt:** der unabhängige Produktdiff-Gegenreview `.175`–`.177` durch GPT.
 
 ## Nächste Schritte
 

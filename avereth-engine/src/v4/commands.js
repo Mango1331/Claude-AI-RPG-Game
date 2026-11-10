@@ -39,7 +39,7 @@ import { jobAction, jobOf } from './private_jobs.js';
 import { acceptPassive, declinePassive } from './passive_growth.js';
 import { acceptSkill, declineSkill, developmentOffers, skillOffers } from './skill_growth.js';
 import { classOffer, classSelection, acceptClass } from './class_growth.js';
-import { tradeObject as objectOf, pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, rateUnits, offerAvailability, tradeTermsWhy, purchaseLines, samePurchaseRequest, purchaseDecisionMatches } from './trade.js';
+import { tradeObject as objectOf, pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, rateUnits, offerAvailability, tradeTermsWhy, purchaseLines, samePurchaseRequest, purchaseDecisionMatches, wareOnSale } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import { pulseBegin, pulseFinish, pulseLeg, pulseClaimPause, pulseSought, goSought, searchSought, aheadReserved } from './pulse.js';
 import { bookStealth } from '../checks.js';
@@ -893,6 +893,9 @@ const HANDLERS = {
         // Patch 7: a thing in a container that is still shut (the locked chest): opened first, by his attempt
         const shut = access.shut;
         if (shut) return { status: 'refused', reason: 'shut in', line: `CANNOT TAKE — ${o.name} is in ${shut.name} (${shut.id}), which is not open yet: he has to get it open first (an attempt).` };
+        // D5 (.175): ware on open sale (the Primer in the case) is bought, not taken; a deliberate theft is no part of TAKE
+        const sale = wareOnSale(s, o);
+        if (sale) return { status: 'refused', reason: 'for sale', line: `CANNOT TAKE — ${o.name} is ${who(s, sale.offer.seller)}'s ware for sale${Number.isInteger(sale.line.price_cp) ? ` (${cpText(sale.line.price_cp, content)})` : ''}; it becomes his by buying it (accepting the offer), not by taking it.` };
         const part = c.qty && c.qty < (o.qty ?? 1) ? c.qty : null;
         emit({ t: 'object.moved', d: { id: o.id, to: { entity: 'pc' }, ...(part ? { qty: part, split: `${o.id}_${s.turn}` } : {}) } });
         return { status: 'resolved', line: `TAKES — ${o.name}${(part || o.qty) && (o.stack || (o.qty ?? 1) > 1 || o.unit) ? ` (${part || o.qty}${o.unit ? ` ${o.unit}` : ''})` : ''} along.` };

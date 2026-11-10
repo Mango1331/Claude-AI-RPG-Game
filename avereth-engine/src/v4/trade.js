@@ -263,6 +263,48 @@ export function purchaseDecisionMatches(d, offer, picks) {
  * @param {{offer: object, picks: object[], cp: number, objectId: (name: string) => string, content?: object}} p objectId:
  *   the id of a goods object Alaric receives; content: the goods' behaviour (Patch 3, src/v4/items.js)
  */
+// K2 (pilot 01 B5, .175): goods the story shows before they are sold (the Primer in the case by the window) are a
+// physical object of the place or of the seller. An offer line for exactly that thing names it (lines[].object), and
+// buying it moves that object (or the bought part of its stack) to him instead of creating a second one.
+const physical = (s, o, { seller, at }) => !!o && o.holder?.entity !== 'pc' && !(o.for_quests || []).length
+    && ((seller && o.holder?.entity === seller) || (at && o.holder?.loc === at));
+const sameGear = (a, b) => a?.kind === 'gear' && b?.kind === 'gear' && a.base === b.base && a.quality === b.quality && (a.slot ?? null) === (b.slot ?? null);
+/**
+ * The one object of the place or the seller that an offered goods line is (or null): the same name (the line's or its
+ * appearance), enough units, the same equipment profile if either is equipment, and no other open line naming it. Two
+ * candidates, too few units or another variant leave the line unlinked (the purchase then creates its goods as before).
+ */
+export function displayedWare(s, line, { seller, at }) {
+    if (!line || line.kind !== 'goods') return null;
+    const names = [line.what, line.appearance].filter((x) => typeof x === 'string' && x.trim()).map(normText);
+    const linked = new Set(Object.values(s.offers || {}).filter((o) => o.status === 'open').flatMap((o) => (o.lines || []).map((l) => l.object)).filter(Boolean));
+    const fit = Object.values(s.objects || {}).filter((o) => physical(s, o, { seller, at }) && names.includes(normText(o.name || '')) && !linked.has(o.id));
+    if (fit.length !== 1) return null;
+    const o = fit[0];
+    if ((o.qty ?? 1) < (line.qty ?? 1)) return null;
+    const gear = line.profile?.kind === 'gear' || o.profile?.kind === 'gear';
+    if (gear && !sameGear(line.profile, o.profile)) return null;
+    return o.id;
+}
+/**
+ * D5 (.175): the open offer of someone else that a thing lying here or held by its seller is the ware of (or null):
+ * named by a line (K2), or of the same name as a goods line of a seller's open offer at the place where it lies. His
+ * own things, what he has paid for and anything no open offer names stay free to take as before.
+ */
+export function wareOnSale(s, o) {
+    if (!o || o.holder?.entity === 'pc') return null;
+    for (const offer of Object.values(s.offers || {})) {
+        if (offer.status !== 'open' || offer.bid || !offer.seller || offer.seller === 'pc') continue;
+        for (const line of offer.lines || []) {
+            if (line.kind !== 'goods') continue;
+            if (line.object === o.id) return { offer, line };
+            const where = (o.holder?.loc && o.holder.loc === offer.at) || o.holder?.entity === offer.seller;
+            if (!line.object && where && [line.what, line.appearance].filter(Boolean).map(normText).includes(normText(o.name || ''))) return { offer, line };
+        }
+    }
+    return null;
+}
+
 export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = null, consent = null }) {
     const live = s.offers[offer.id];
     const unavailable = offerAvailability(s, live);
@@ -287,6 +329,15 @@ export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = nu
     emit({ t: 'transaction.completed', d: { offer: offer.id, lines: picks.map((p) => p.line.id), ...(counted ? { units: picks.map((p) => p.units) } : {}), cp, seller: offer.seller } });
     emit({ t: 'coin.changed', d: { id: 'pc', value: coin - cp, delta: -cp, why: picksText(picks) } });
     for (const p of picks.filter((x) => x.line.kind === 'goods')) {
+        // K2: the thing shown is the thing sold (all of it, or the bought units split off its stack); nothing is created
+        const shown = p.line.object ? s.objects[p.line.object] : null;
+        if (shown && physical(s, shown, { seller: offer.seller, at: offer.at }) && (shown.qty ?? 1) >= p.units) {
+            const part = p.units < (shown.qty ?? 1);
+            let split = null;
+            if (part) { split = `${shown.id}_${s.turn}`; for (let n = 2; s.objects[split]; n++) split = `${shown.id}_${s.turn}_${n}`; }
+            emit({ t: 'object.moved', d: { id: shown.id, to: { entity: 'pc' }, ...(part ? { qty: p.units, split } : {}) } });
+            continue;
+        }
         // Patch 7.1: exactly the variant offered: the line's profile, fixed when the offer was made (never rolled again)
         const traits = content ? itemTraits(content, { name: p.line.what, kind: 'item' }, s.clock.minute, p.line.profile ?? (p.line.profile === null ? null : undefined)) : {};
         // Explicit ordinary merchandise never acquires combat values later from its name.

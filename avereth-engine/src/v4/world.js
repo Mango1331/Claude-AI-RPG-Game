@@ -35,7 +35,7 @@ import {
 } from './domain.js';
 import { creatureContract } from './population.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
-import { tradeObject, pickLines, bookPurchase, bookSale, saleUnits, unitsText, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines, offerAvailability, rateUnits } from './trade.js';
+import { tradeObject, pickLines, bookPurchase, bookSale, saleUnits, unitsText, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines, offerAvailability, rateUnits, displayedWare, wareOnSale } from './trade.js';
 import { findQuote, priceEvidence, openConditionNear, moneyLiteral } from './finance_evidence.js';
 import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
 import { reachedEvents, setIntentEvents } from './intents.js';
@@ -389,6 +389,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const hostileRefs = new Set(fw.accept.filter((d) => d.type === 'hostile').flatMap((d) => d.by || []).map((x) => normText(x)));
     const joinedByNew = new Set();
     const bornHere = new Set(); // the people and creatures this answer introduces (an ambush is the world's move)
+    // K1 (pilot 01 B1): the creatures this answer bound to the slot DUNGEON AHEAD reserved for THIS turn (living.js
+    // slotForNew, x.ahead.turn): the Dungeon's own foes, governed by its slot and envelope rules, not by PULSE's refusal
+    // of new attackers (PULSE plan C.1, A2 (6)). A slot bound in an earlier turn or any other newcomer is not among them.
+    const aheadBorn = new Set();
+    const aheadSlot = (hit) => {
+        const x = hit ? livingOf(s, hit.root) : null;
+        const a = x?.ahead;
+        return !!a && a.turn === s.turn && a.cycle === x.cycle && [a, a.next].some((y) => y && y.floor === hit.floor && y.slot === hit.slot?.id);
+    };
     // PULSE package A: this turn's window as the engine decided it (auth.pulse), and the one hostile group it allows
     const pulse = auth.pulse || null;
     const pulseHostile = new Set();
@@ -536,7 +545,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // unless the turn's window is open for DANGER (then one group) - on a leg as anywhere else. First the contact he
         // actively sought this turn (an authorized GO or a successful search, §5.8), at the place he actually reached:
         // it follows the envelope as ever, before any road or window rule. Whoever was there before is not touched.
-        if (pulse?.governs && bornHere.has(id) && !s.encounter) {
+        if (pulse?.governs && bornHere.has(id) && !s.encounter && !aheadBorn.has(id)) {
             if (!soughtMatch(s, content, [...(pulse.sought || []), ...(pulse.hunts || [])], id)) {
                 const g = s.entities[id].group || (s.entities[id].kind === 'npc' ? 'people' : id);
                 if (!(pulse.open && pulse.kind === 'danger' && (!pulseHostile.size || pulseHostile.has(g)))) {
@@ -870,7 +879,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (cPath && kind === 'creature' && d.threat === false) for (const id of created) emit({ t: 'entity.updated', d: { id, set: { threat: false } } });
         // Gameplay visibility: once an actual creature is visibly present, lock its deterministic profile immediately.
         // This gives the player a canonical target handle + HP + Range before deciding whether to attack; Initiative still waits for Combat START.
-        if (hit && created.length) { grant('dungeon.slot'); for (const e of slotEntityEvents(s, content, hit, created, d.present === false ? null : s.scene.at)) emit(e); }
+        if (hit && created.length) {
+            grant('dungeon.slot');
+            for (const e of slotEntityEvents(s, content, hit, created, d.present === false ? null : s.scene.at)) emit(e);
+            if (d.present !== false && aheadSlot(hit)) for (const id of created) aheadBorn.add(id);
+        }
         if (kind === 'creature' && d.present !== false) for (const id of ids) materialise(s, content, dice, emit, id);
         for (const id of ids) namedHere.add(id);
         return ids;
@@ -2769,6 +2782,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             return;
         }
         if (to.entity === 'pc' && o.holder?.loc && !(auth.take || []).length) { reject(d, 'pc_inventory', 'what lies here becomes his only by his own take'); return; }
+        // D5 (.175): a ware on open sale becomes his by buying it, never by a take or a story move
+        const onSale = to.entity === 'pc' ? wareOnSale(s, o) : null;
+        if (onSale) { reject(d, 'for_sale', `${o.name} is ${entityLabel(s, onSale.offer.seller)}'s ware for sale (${onSale.offer.id}); it becomes his by buying it`); return; }
         const box = o.in ? s.features?.[o.in] : o.in_name && o.holder?.loc ? featureNamed(s, o.holder.loc, o.in_name) : null;
         if (to.entity === 'pc' && box?.status === 'active' && box.kind === 'obstacle') { reject(d, 'shut_in', `it lies in ${box.name} (${box.id}), which is not open yet`); return; }
         const part = d.qty && d.qty < (o.qty ?? 1) ? d.qty : null;
@@ -3009,6 +3025,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const same = openOffers(s).filter((o) => !o.bid && !o.canon && o.seller === seller && o.lines.some((x) => lines.some((l) => sameArticle(l,x))));
         if (same.length && same.every((o) => lines.every((l) => o.lines.some((x) => sameArticle(l,x) && x.price_cp === l.price_cp && (x.qty ?? 1) === (l.qty ?? 1) && (x.terms ?? 'firm') === (l.terms ?? 'firm'))))) return;
         for (const o of same) if (lines.some((l) => (l.terms ?? 'firm') !== 'unverified' && o.lines.some((x) => sameArticle(l, x)))) emit({ t: 'offer.closed', d: { id: o.id, status: 'repriced' } });
+        // K2 (.175): a line for a thing the story already shows here or in the seller's hands names that object
+        for (const l of lines) { const shown = displayedWare(s, l, { seller, at: s.scene.at }); if (shown) l.object = shown; }
         const id = `offer.t${tag}.${Object.keys(s.offers).length + 1}`;
         emit({ t: 'offer.created', d: { offer: { id, seller, at: s.scene.at, status: 'open', canon: false, turn: s.turn, lines } } });
         // a purchase Alaric agreed to in advance, within his limit (buy with max_cp or any_price), in the number he named

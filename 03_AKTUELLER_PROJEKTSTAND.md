@@ -38,7 +38,9 @@ Der Fachplan schlägt sieben enge Patches K1–K7 und ein P3-Kleinpaket in feste
 - `relevant` fällt nach K3 weiterhin meist aus; Hauptlast sind `quests`, `resolved` und `guild_authority`.
 - Die natürliche Wirkung von K5a, K6b, D6 und K7 ist noch offen.
 
-**Nächster Schritt:** der unabhängige Produktdiff-Gegenreview `.175`–`.177` durch GPT.
+**Unabhängiger GPT-Produktdiff-Gegenreview (10.11.2026):** Die vereinbarten Kernkorrekturen sind überwiegend schlüssig. Zwei **eng begrenzte P2-Restfälle** wurden durch eigene Code-Gegenproben gefunden: generische Berufsbezeichnung kann eine fremde Thread-Erledigung legitimieren; bei mehrdeutiger ausgestellter Ware entfällt nach Abschluss des Angebots der TAKE-Schutz. Ein P3-Fall bindet dasselbe Objekt zweimal innerhalb einer neuen Angebotsliste. Replay-Akzeptanzdateien unabhängig verglichen: exakt 14 Änderungen in K8/K6a. Kein neuer vollständiger Node-/ST-/Modelllauf durch GPT. [Vollständiger Produktdiff-Review](testrun_10b/npc-20261109-160250Z/REVIEW_175_177_PRODUKTDIFF_GPT.md).
+
+**Nächster Schritt:** enger P2-Restfix mit negativen und positiven Regressionen gegen `.177` und erneutem gezielten Diff-Review; danach neuer natürlicher Lauf. D3 (Abruf `relevant` 2/65) gesondert nach Kontextmessung entscheiden. Keine Architektur- oder Balanceänderung.
 
 ## Nächste Schritte
 

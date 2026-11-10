@@ -220,6 +220,7 @@ const TRACE = /\b(?:notes?|letters?|messages?|notices?|signs?|handwriting|writin
 const AWAY = /\b(?:empty|vacant|absent|away|gone|missing|nowhere|abandoned|unattended|deserted)\b/;
 // a contract step's own handling at the desk, and what it handles
 const HANDLES = /^(?:paid|pays|counted|counts|pushed|slid|stamped|stamps|recorded|entered|took|takes|accepted|accepts|logged|logs|inked|inks|wrote|writes|signed|signs|handed|hands|blotted|filed|noted|marked|initialed|initialled|registered|weighed)$/;
+const HANDLES_WITH_OBJECT = /^(?:checked|checks|pressed|presses|sealed|seals|pulled|pulls)$/;
 const DESK_OBJECT = /\b(?:contract|contracts|slip|slips|ledger|seal|roll|payout|reward|coins?|copper|silver|gold|posting|notice|tally|stamp)\b/;
 const stem = (w) => (w.length > 3 && w.endsWith('s') && !w.endsWith('ss') ? w.slice(0, -1) : w);
 const singular = (w) => (w.endsWith('men') ? `${w.slice(0, -3)}man` : w.endsWith('ies') ? `${w.slice(0, -3)}y` : /(?:ss|sh|ch|x)es$/.test(w) ? w.slice(0, -2) : w.endsWith('s') && !w.endsWith('ss') ? w.slice(0, -1) : w);
@@ -286,12 +287,44 @@ export function namedPeople(w, people) {
 }
 
 /**
+ * K4 (pilot 01 B8, .176): the literal places of the reply an extractor quote is made of, when it joins several ("…",
+ * "...", or a quote running over a sentence end, its dialogue included). Each part keeps the reply's own words;
+ * quotation marks at its ends go (the reply's narration decides what is spoken). Parts under three words are none.
+ */
+export function evidenceParts(evidence) {
+    return String(evidence || '').split(/\s*(?:\.{3}|\u2026)\s*|(?<=[.!?]["\u201d\u2019]?)\s+/)
+        .map((x) => x.replace(/^[\s"\u201c\u201d'\u2018\u2019]+|[\s"\u201c\u201d'\u2018\u2019]+$/g, '').trim())
+        .filter((x) => tokens(x).filter((t) => t !== ',').length >= 3);
+}
+/**
+ * The check of the whole quote first, unchanged; only when it fails and the quote joins several places of the reply,
+ * each part on its own with the same check against the original prose (its sentence, framing, negation, plan, memory,
+ * hearsay, identity and presence rules included). One part that passes is the evidence; none: the first part's reason.
+ */
+function partwise(check, prose, evidence, ...rest) {
+    const whole = check(prose, evidence, ...rest);
+    if (whole.ok) return whole;
+    const parts = evidenceParts(evidence);
+    if (parts.length < 2) return whole;
+    let first = null;
+    for (const p of parts) {
+        const r = check(prose, p, ...rest);
+        if (r.ok) return { ...r, part: p };
+        first ||= r;
+    }
+    return { ok: false, why: `the quote joins several places of the reply and none is evidence on its own (${first?.why || whole.why})` };
+}
+
+/**
  * expected.go.met (R1): the extractor's own quote is a narrated clause of the reply that shows this person
  * themselves here now: named so that only they are meant, and not a picture, a trace, a memory, a plan or an empty place.
  * @param {PersonProfile[]} people the people offered for the step and those present
  * @returns {{ok: true} | {ok: false, why: string}}
  */
-export function metEvidence(prose, evidence, id, people, { here = [], elsewhere = [], self = ['alaric'] } = {}) {
+export function metEvidence(prose, evidence, id, people, opts = {}) {
+    return partwise(metEvidenceOne, prose, evidence, id, people, opts);
+}
+function metEvidenceOne(prose, evidence, id, people, { here = [], elsewhere = [], self = ['alaric'] } = {}) {
     const ev = narratedEvent(prose, evidence);
     if (!ev.ok) return ev;
     const w = ev.quote.filter((t) => t !== ',');
@@ -459,11 +492,17 @@ function leftBeforeHim(prose, q, at, id, people, { self = ['alaric'] } = {}) {
  * @param {PersonProfile[]} people the people present (the handler among them)
  * @param {{self?: string[]}} opts Alaric's names
  */
-export function deskHandlingEvidence(prose, evidence, id, people, { self = ['alaric'] } = {}) {
+export function deskHandlingEvidence(prose, evidence, id, people, opts = {}) {
+    return partwise(deskHandlingOne, prose, evidence, id, people, opts);
+}
+function deskHandlingOne(prose, evidence, id, people, { self = ['alaric'] } = {}) {
     const ev = narratedEvent(prose, evidence);
     if (!ev.ok) return ev;
     const q = ev.quote;
-    const verb = q.findIndex((t) => HANDLES.test(t));
+    // D2 (pilot 01, .176): checked/pressed/sealed/pulled handle a step only with the desk thing itself in their own
+    // clause ("checked it against a ledger", "pressed the Guild's seal", "pulled a fresh slip"); a tray is none
+    const deskNear = (i) => { for (let k = i + 1; k < Math.min(q.length, i + 7) && q[k] !== ','; k++) if (DESK_OBJECT.test(q[k])) return true; return false; };
+    const verb = q.findIndex((t, i) => HANDLES.test(t) || (HANDLES_WITH_OBJECT.test(t) && deskNear(i)));
     if (verb < 0) return { ok: false, why: 'the quote shows no handling of a contract step' };
     if (!DESK_OBJECT.test([...q, ...ev.rest].join(' '))) return { ok: false, why: 'the quote handles nothing of the desk (slip, ledger, payout)' };
     const pc = new Set(self.flatMap((x) => flat(x).split(' ')).filter((x) => x.length > 2));
@@ -508,8 +547,10 @@ export function deskHandlingEvidence(prose, evidence, id, people, { self = ['ala
         let found = null, seen = false;
         for (const [k, t] of [[s, lead], ...sentences.slice(Math.max(0, s - 8), s).map((x, n) => [n, x]).reverse()]) {
             const words = t.filter(Boolean);
+            // K4 (.176): "she"/"her" is never Alaric (his pronoun is he/him): his name is passed over like a pronoun
+            const notHim = q[j] === 'she' || q[j] === 'her';
             let c = doer(words, words.length - 1);
-            while (c >= 0 && PRONOUN.has(words[c])) c = doer(words, c - 1);
+            while (c >= 0 && (PRONOUN.has(words[c]) || (notHim && pc.has(words[c])))) c = doer(words, c - 1);
             if (c >= 0) { found = who(words, c); seen = true; break; }
         }
         if (!seen) return { ok: false, why: 'no one is named before the pronoun' };

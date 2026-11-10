@@ -2,7 +2,7 @@
 
 **Stand 10.11.2026.** Diese Seite führt den aktuellen Build, die Nachweise und die nächsten Entscheidungen. [Arbeitsweise 01](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Kanon 02](02_DESIGN_KANON.md) · [Roadmap 07](07_ROADMAP_NACH_10B_ENTWURF.md) · [Fachindex 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Originalruns](testrun_10b/README.md).
 
-**Produktbuild `4.3.0-c.6.6.178` auf `claude/c-planner-prototype-2026-10-02-gpt-c666`.** Aktueller Remote-HEAD am 10.11.: `c2ef94df9a0e95a8c5ee67ccf6167dfcfe591d3e` (Pilot-01-Korrekturen K1–K8 als `.175`–`.177`, Restkorrekturen aus dem Produktdiff-Review als `.178`; Runner unverändert seit `2a8b54e`). `main` führt die Projektdokumentation. Beim Einstieg beide Remote-HEADs prüfen. [Build `.178`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c2ef94df9a0e95a8c5ee67ccf6167dfcfe591d3e) · [Git-Vergleich `.177` → `.178`](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/3658fbcf61356d798c0f975804e66e8e5263a169...c2ef94df9a0e95a8c5ee67ccf6167dfcfe591d3e) · [Git-Vergleich `.174` → `.178`](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/2a8b54e45a48ef525b69d62edb826fd3a2b77cbc...c2ef94df9a0e95a8c5ee67ccf6167dfcfe591d3e).
+**Produktbuild `4.3.0-c.6.6.179` auf `claude/c-planner-prototype-2026-10-02-gpt-c666`.** Aktueller Remote-HEAD am 10.11.: `59f868eaf3c4ed7942ddc42ba3d180fab44a72cd` (Pilot-01-Korrekturen K1–K8 als `.175`–`.177`, Review-Restkorrekturen `.178`, D5-Herkunft `.179`; Runner unverändert seit `2a8b54e`). `main` führt die Projektdokumentation. Beim Einstieg beide Remote-HEADs prüfen. [Build `.179`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/59f868eaf3c4ed7942ddc42ba3d180fab44a72cd) · [Git-Vergleich `.178` → `.179`](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/c2ef94df9a0e95a8c5ee67ccf6167dfcfe591d3e...59f868eaf3c4ed7942ddc42ba3d180fab44a72cd) · [Git-Vergleich `.174` → `.179`](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/2a8b54e45a48ef525b69d62edb826fd3a2b77cbc...59f868eaf3c4ed7942ddc42ba3d180fab44a72cd).
 
 V4-C / Ruleset 2 läuft als SillyTavern-Extension. Der Planner versteht Spielerabsichten, die Engine entscheidet und bucht, der Narrator erzählt und der Extractor übernimmt zulässige Weltfolgen über die Firewall. Der autoritative Zustand ergibt sich aus den Chatevents. Save/Reload, Swipe/Edit und Replay gehören zur technischen Abnahme.
 
@@ -50,7 +50,24 @@ Der Fachplan schlägt sieben enge Patches K1–K7 und ein P3-Kleinpaket in feste
 
 **Unabhängiger GPT-Nachreview `.178` (10.11.2026):** Die zuvor beanstandeten R1-/R2-/P3-Fälle sind gezielt geschlossen. Neuer enger P2-D5-Restfall aus einer eigenen Code-Gegenprobe: Nach regulärem Verkauf und erneuter Ausstellung beim Händler kann die historische Markierung `had_pc` den Ladenschutz fälschlich ausschalten. Kein natürlicher Nachweis und kein NPC-/PULSE-Defekt. [Vollständiger Nachreview](testrun_10b/npc-20261109-160250Z/REVIEW_178_PRODUKTDIFF_GPT.md).
 
-**Nächster Schritt:** Optional ein minimaler Besitzwechsel-/D5-Fix mit Gegenfall vor uneingeschränkter Handelsfreigabe; ein natürlicher NPC-/PULSE-Lauf auf `.178` ist auch mit dieser getrennt dokumentierten Randgrenze möglich. D3 (Abruf `relevant` 2/65) nur nach weiterer gezielter Kontextmessung entscheiden. Keine Architektur- oder Balanceänderung.
+**D5-Herkunft `.179` (10.11.2026, Claude):**
+- „Seine, wo er sie ablegte“ hängt jetzt an seiner **letzten** Bewegung (`laid_by_pc`, im Reducer abgeleitet), nicht mehr an „war jemals seins“ (`had_pc`).
+- Eine Pfeife, die er dem Händler verkauft hat und die dieser ins Regal legt und anbietet, ist Händlerware: `take` abgelehnt, auch nach abgelehntem Angebot.
+- Selbst Abgelegtes bleibt frei, ebenso Abgelegtes aus dem Gepäck. Letzteres war auf `.178` vorbestehend gesperrt.
+- Geschenke des Händlers bleiben erlaubt.
+- **Abnahme:** rot 3/5 gegen `.178`, grün 5/5; `npm test` 3050/3050; Replay 0 geändert (1057/1057 akzeptiert); ST 172/0 und 177/0 mit neuem Verkaufs-Smoke.
+- [Patchnote `.179`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/59f868eaf3c4ed7942ddc42ba3d180fab44a72cd/avereth-engine/docs/PILOT01_179_D5_PROVENANCE.md)
+
+**D3-Kontextanalyse (10.11.2026, Claude, nur Messung):**
+- Priorität 0 belegt im Mittel 1320 von 1400 Token und überschreitet das Budget allein in 18 von 65 Zügen; größter Posten ist `quests` (Ø 385).
+- `relevant` (Ø 310 Token) ist größer als der freie Rest (Ø 195) und kommt nur ganz oder gar nicht.
+- **Priorität 1:** wirkungslos. **Priorität 0:** verdrängt `present` (30 → 4 Züge) und treibt 59 Züge über das Budget.
+- **Teillieferung im heute ungenutzten Rest:** 27 Züge statt 2 mit Abruf, davon 18 Sozialzüge, ohne Budgetüberschreitung.
+- 23 % der Einträge sind Spielerzitate oder K8-Altlasten.
+- **Empfehlung:** keine Budget- oder Prioritätsänderung; als nächster kleiner Schritt Teillieferung plus Abruf-Entrümpelung. `quests` verdichten braucht eine Designentscheidung.
+- [D3-Analyse](testrun_10b/npc-20261109-160250Z/D3_KONTEXTANALYSE_RELEVANT.md)
+
+**Nächster Schritt:** kurzer unabhängiger Diff-Nachreview `.179`; danach natürlicher NPC-/PULSE-Lauf. D3: Entscheidung über Teillieferung/Entrümpelung (A+D) bzw. `quests`-Verdichtung (B) anhand der Analyse. Keine Architektur- oder Balanceänderung.
 
 ## Nächste Schritte
 

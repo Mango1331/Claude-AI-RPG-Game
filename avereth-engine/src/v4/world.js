@@ -229,8 +229,17 @@ function anchorRefusal(s, id, p, value, anchored) {
     return null;
 }
 
+// K8 (pilot 01 B12, .177): a person's role the extractor wrote as the word "null" ("none", "n/a") is no role (T11: Widow
+// Hessa's occupation and first descriptor "null")
+const NO_ROLE = /^\s*(?:null|none|undefined|n\/a)?\s*$/i;
+const roleless = (d) => d?.type === 'person.new' && typeof d.role === 'string' && NO_ROLE.test(d.role);
+function noRoleWords(answer) {
+    if (!Array.isArray(answer?.deltas) || !answer.deltas.some(roleless)) return answer;
+    return { ...answer, deltas: answer.deltas.map((d) => (roleless(d) ? { ...d, role: null } : d)) };
+}
+
 export function applyWorld(state, content, answer, { msg = null, prose = '', chronicle = null } = {}) {
-    answer = scopedPlaces(answer, state);
+    answer = noRoleWords(scopedPlaces(answer, state));
     const s = clone(state);
     const dice = Dice.from(s);
     const events = [];
@@ -344,6 +353,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (!pendingSteps.has(d) && !rejected.some(x => x.seq === d.seq && x.type === d.type)) acceptedSteps.add(String(d.seq));
     };
     let refusedScene = false;
+    let sceneUnreached = null; // K6a: the first refused step of a scene not reached (its place then)
     const sceneMatches = ref => ref === 'here' || samePlace(s, ref, s.scene.at, content);
     const readied = []; // the contracts this reply made READY (their open deliveries are told after the deltas)
     corrections.push(...fw.corrections);
@@ -621,6 +631,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // a ref the V3 rules resolve to a creature that is not here (dead, or left elsewhere)
     const takenRef = (ref) => { const id = makeResolver(s, new Map(), content)(ref); return !!id && s.entities[id]?.kind === 'creature'; };
     const absentRef = (ref) => { const id = makeResolver(s, new Map(), content)(ref); return !!id && s.entities[id]?.kind === 'creature' && !s.scene.present.includes(id); };
+    // K8 (pilot 01 B11, .177): a name fact of a person whose value is Alaric's own name (T16: learn with the carter as
+    // its subject, "name = Alaric Red") is a mixed-up subject, never their name
+    const pcNameOnNpc = (subject, p, o) => {
+        if (typeof subject !== 'string' || subject === 'pc' || s.entities[subject]?.kind !== 'npc' || typeof o !== 'string') return false;
+        if (!/^(?:name|named|known[ _]?name|true[ _]?name|full[ _]?name)$/i.test(String(p || '').trim())) return false;
+        const value = ` ${normText(o)} `;
+        const pcName = String(s.entities.pc?.name || '').trim();
+        return [pcName, pcName.split(/\s+/)[0]].filter((n) => n.length >= 3).some((n) => value.includes(` ${normText(n)} `));
+    };
     const newEntity = (d, kind, { slot = null } = {}) => {
         // Patch 8 (src/v4/living.js): a creature of an encounter the engine placed ahead is that encounter, its slot of
         // this cycle (its ref, else its kind where he went on); one of a slot already resolved (the boss he killed) is
@@ -1011,8 +1030,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             && !['time', 'arrive', 'overreach', 'place.reported', 'dungeon', 'guild.branch'].includes(d.type) && !sceneMatches(origin)) {
             refusedScene = true;
             reject(d, 'scene_context', 'the narrative setting is not the location reached at this step');
-            const correction = `Alaric remains at ${placeName(s, s.scene.at)}. The other scene was not reached: its people, objects and quest outcomes were not booked here. Continue from the canonical location; do not invent a completed journey.`;
-            if (!corrections.includes(correction)) corrections.push(correction);
+            // K6a (pilot 01 B7, .177): the correction names where he is at the end of this reply (written once, below),
+            // not where he stood at this step: a later arrival of the same reply moved him (T61 → T62 "remains at the
+            // Woolpack" beside a header at the crossroads)
+            if (!sceneUnreached) sceneUnreached = { at: s.scene.at, index: corrections.length };
             continue;
         }
         if (cPath && rulesetOf(s) >= 2 && ['quest.ready', 'quest.progress', 'quest.close'].includes(d.type)
@@ -1287,6 +1308,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 // such known moment-to-moment predicates, and never a lasting mark ("lost two fingers", a scar): anything
                 // else said during a fight keeps its lifetime, as everything said outside one (review of 4.2.0)
                 const subject = mapRef(d.s);
+                if (pcNameOnNpc(subject, d.p, d.o)) { reject(d, 'identity_subject', `"${String(d.o).slice(0, 40)}" is Alaric's name, not ${entityLabel(s, subject)}'s`); break; }
                 // An encounter/group reference is not an individual Entity (Run 9).
                 if (missingEntityRef(subject)) {
                     reject(d, /^mon\./i.test(subject) ? 'group_fact' : 'entity_fact', `fact subject ${subject} is not a known entity`);
@@ -1326,6 +1348,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     reject(d, 'entity_fact', 'learning cannot reference an unknown NPC or creature');
                     break;
                 }
+                if (pcNameOnNpc(subject, d.p, d.o)) { reject(d, 'identity_subject', `"${String(d.o).slice(0, 40)}" is Alaric's name, not ${entityLabel(s, subject)}'s: what someone learns of him is about pc`); break; }
                 v3({ learn: [{ who, s: subject, p: d.p, o: typeof d.o === 'string' ? d.o : String(d.o), how: d.how }] }, d);
                 break;
             }
@@ -1879,6 +1902,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const correction = `REST INTERRUPTED (the engine's, last turn): the last reply did not show what ${x.at_end ? `met him as his ${x.kind} ended` : `cut his ${x.kind} short`} at ${formatClock(x.minute)}: ${x.who ? `${x.who} of this level came upon him` : CAUSE_SHORT[x.cause]}; ${booked}. Make that cause plain in this reply as what ${x.at_end ? 'met' : 'woke or stopped'} him (it may still be near or already gone); bring in no new attacker or fight for it.`;
             if (!corrections.includes(correction)) corrections.push(correction);
         }
+    }
+    if (sceneUnreached) {
+        const now = placeName(s, s.scene.at);
+        const correction = s.scene.at === sceneUnreached.at
+            ? `Alaric remains at ${now}. The other scene was not reached: its people, objects and quest outcomes were not booked here. Continue from the canonical location; do not invent a completed journey.`
+            : `Part of the last reply took place in a scene the engine did not book: its people, objects and quest outcomes there were not recorded. Alaric is at ${now}; continue from there.`;
+        if (!corrections.includes(correction)) corrections.splice(Math.min(sceneUnreached.index, corrections.length), 0, correction);
     }
     return { events, rejected, corrections, system, opened, state: s, arrivedHall };
 

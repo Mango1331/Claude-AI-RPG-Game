@@ -2,7 +2,7 @@
 
 **Stand 10.11.2026.** Diese Seite führt den aktuellen Build, die Nachweise und die nächsten Entscheidungen. [Arbeitsweise 01](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Kanon 02](02_DESIGN_KANON.md) · [Roadmap 07](07_ROADMAP_NACH_10B_ENTWURF.md) · [Fachindex 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Originalruns](testrun_10b/README.md).
 
-**Produktbuild `4.3.0-c.6.6.177` auf `claude/c-planner-prototype-2026-10-02-gpt-c666`.** Aktueller Remote-HEAD am 10.11.: `3658fbcf61356d798c0f975804e66e8e5263a169` (Pilot-01-Korrekturen K1–K8 als `.175`–`.177`; Runner unverändert seit `2a8b54e`). `main` führt die Projektdokumentation. Beim Einstieg beide Remote-HEADs prüfen. [Build `.177`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/3658fbcf61356d798c0f975804e66e8e5263a169) · [Git-Vergleich `.174` → `.177`](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/2a8b54e45a48ef525b69d62edb826fd3a2b77cbc...3658fbcf61356d798c0f975804e66e8e5263a169).
+**Produktbuild `4.3.0-c.6.6.178` auf `claude/c-planner-prototype-2026-10-02-gpt-c666`.** Aktueller Remote-HEAD am 10.11.: `c2ef94df9a0e95a8c5ee67ccf6167dfcfe591d3e` (Pilot-01-Korrekturen K1–K8 als `.175`–`.177`, Restkorrekturen aus dem Produktdiff-Review als `.178`; Runner unverändert seit `2a8b54e`). `main` führt die Projektdokumentation. Beim Einstieg beide Remote-HEADs prüfen. [Build `.178`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c2ef94df9a0e95a8c5ee67ccf6167dfcfe591d3e) · [Git-Vergleich `.177` → `.178`](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/3658fbcf61356d798c0f975804e66e8e5263a169...c2ef94df9a0e95a8c5ee67ccf6167dfcfe591d3e) · [Git-Vergleich `.174` → `.178`](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/2a8b54e45a48ef525b69d62edb826fd3a2b77cbc...c2ef94df9a0e95a8c5ee67ccf6167dfcfe591d3e).
 
 V4-C / Ruleset 2 läuft als SillyTavern-Extension. Der Planner versteht Spielerabsichten, die Engine entscheidet und bucht, der Narrator erzählt und der Extractor übernimmt zulässige Weltfolgen über die Firewall. Der autoritative Zustand ergibt sich aus den Chatevents. Save/Reload, Swipe/Edit und Replay gehören zur technischen Abnahme.
 
@@ -40,7 +40,15 @@ Der Fachplan schlägt sieben enge Patches K1–K7 und ein P3-Kleinpaket in feste
 
 **Unabhängiger GPT-Produktdiff-Gegenreview (10.11.2026):** Die vereinbarten Kernkorrekturen sind überwiegend schlüssig. Zwei **eng begrenzte P2-Restfälle** wurden durch eigene Code-Gegenproben gefunden: generische Berufsbezeichnung kann eine fremde Thread-Erledigung legitimieren; bei mehrdeutiger ausgestellter Ware entfällt nach Abschluss des Angebots der TAKE-Schutz. Ein P3-Fall bindet dasselbe Objekt zweimal innerhalb einer neuen Angebotsliste. Replay-Akzeptanzdateien unabhängig verglichen: exakt 14 Änderungen in K8/K6a. Kein neuer vollständiger Node-/ST-/Modelllauf durch GPT. [Vollständiger Produktdiff-Review](testrun_10b/npc-20261109-160250Z/REVIEW_175_177_PRODUKTDIFF_GPT.md).
 
-**Nächster Schritt:** enger P2-Restfix mit negativen und positiven Regressionen gegen `.177` und erneutem gezielten Diff-Review; danach neuer natürlicher Lauf. D3 (Abruf `relevant` 2/65) gesondert nach Kontextmessung entscheiden. Keine Architektur- oder Balanceänderung.
+**Restkorrekturen `.178` (10.11.2026, Claude):**
+- **P2-R1:** Eine abwesende Partei gilt nur durch Namen, bekannten Namen oder ein Rollenwort als genannt, das ihr allein gehört. „the clerk“ bei zwei Schreibern oder „the other clerk Bess“ erledigt keine fremde Zusage mehr.
+- **P2-R2:** Ausgestellte Ware, die im Laden liegt, bleibt nach Angebotsende die des Händlers. Was er danach aus der Hand gibt, ist ein Geschenk. Was Alaric gehörte und dort ablegte, ist seins, auch neben einem offenen Angebot. Das korrigiert zugleich eine vorbestehende D5-Blockade.
+- **P3:** Eine ausgestellte Sache für höchstens eine Zeile desselben Angebots.
+- **Abnahme:** rot 7/12 gegen `.177`, grün 12/12; betroffene Suites 185/185; `npm test` 3045/3045; Replay 0 geändert (1057/1057 akzeptiert); ST 170/0 und 175/0 mit neuem Buchladen-Smoke.
+- Die D1-Grenze „gleiche Parteien, andere Sache“ bleibt offen.
+- [Patchnote `.178`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/c2ef94df9a0e95a8c5ee67ccf6167dfcfe591d3e/avereth-engine/docs/PILOT01_178_REVIEW_FIXES.md)
+
+**Nächster Schritt:** kurzer unabhängiger Diff-Nachreview `.178`, danach neuer natürlicher Lauf. D3 (Abruf `relevant` 2/65) gesondert nach Kontextmessung entscheiden. Keine Architektur- oder Balanceänderung.
 
 ## Nächste Schritte
 

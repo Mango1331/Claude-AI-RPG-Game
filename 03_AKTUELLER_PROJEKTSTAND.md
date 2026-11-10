@@ -67,7 +67,9 @@ Der Fachplan schlägt sieben enge Patches K1–K7 und ein P3-Kleinpaket in feste
 - **Empfehlung:** keine Budget- oder Prioritätsänderung; als nächster kleiner Schritt Teillieferung plus Abruf-Entrümpelung. `quests` verdichten braucht eine Designentscheidung.
 - [D3-Analyse](testrun_10b/npc-20261109-160250Z/D3_KONTEXTANALYSE_RELEVANT.md)
 
-**Nächster Schritt:** kurzer unabhängiger Diff-Nachreview `.179`; danach natürlicher NPC-/PULSE-Lauf. D3: Entscheidung über Teillieferung/Entrümpelung (A+D) bzw. `quests`-Verdichtung (B) anhand der Analyse. Keine Architektur- oder Balanceänderung.
+**Unabhängiger GPT-Nachreview `.179` (10.11.2026):** D5-Provenienz nach gezieltem Codeabgleich und fünf isolierten JavaScript-Gegenprüfungen im vereinbarten Umfang geschlossen; kein neuer verpflichtender P2-Befund. Die D3-Ursache (Ganz-oder-gar-nicht-Abruf nach P0/P1) ist durch Codeprüfung bestätigt, Sols 65-Zug-Messung nicht erneut vollständig von GPT ausgeführt. Teillieferung im ungenutzten Platz ist eine eigene kleine Option; **Spielerzitate nicht pauschal streichen**, historische K8-Falschfakten gesondert behandeln. [GPT-Review `.179` + D3](testrun_10b/npc-20261109-160250Z/REVIEW_179_UND_D3_GPT.md).
+
+**Nächster Schritt:** natürliche NPC-/PULSE-Prüfung des zweiten Profils auf `.179`; D3-Auslieferung als separat zu entscheidende Kontextoptimierung, keine Prioritäts-/Budgeterhöhung oder vorschnelle `quests`-Kürzung. Kein weiterer D5-Pflichtpatch.
 
 ## Nächste Schritte
 

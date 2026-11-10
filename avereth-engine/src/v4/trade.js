@@ -125,7 +125,7 @@ export function acceptanceWhy(c, offer, party, currency = null, units = null) {
  * and how they were found do not make them different goods. Different qualities or units never share a rate because
  * their names agree.
  */
-const STACK_BOOKKEEPING = new Set(['id', 'qty', 'holder', 'source', 'marks', 'for_quests', 'had_pc', 'in_name']);
+const STACK_BOOKKEEPING = new Set(['id', 'qty', 'holder', 'source', 'marks', 'for_quests', 'had_pc', 'laid_by_pc', 'in_name']);
 export function sameGoods(a, b) {
     if (!a || !b) return false;
     const keys = new Set([...Object.keys(a), ...Object.keys(b)].filter((k) => !STACK_BOOKKEEPING.has(k)));
@@ -266,7 +266,7 @@ export function purchaseDecisionMatches(d, offer, picks) {
 // K2 (pilot 01 B5, .175): goods the story shows before they are sold (the Primer in the case by the window) are a
 // physical object of the place or of the seller. An offer line for exactly that thing names it (lines[].object), and
 // buying it moves that object (or the bought part of its stack) to him instead of creating a second one.
-const physical = (s, o, { seller, at }) => !!o && o.holder?.entity !== 'pc' && !(o.for_quests || []).length
+const physical = (s, o, { seller, at }) => !!o && o.holder?.entity !== 'pc' && !o.laid_by_pc && !(o.for_quests || []).length
     && ((seller && o.holder?.entity === seller) || (at && o.holder?.loc === at));
 const sameGear = (a, b) => a?.kind === 'gear' && b?.kind === 'gear' && a.base === b.base && a.quality === b.quality && (a.slot ?? null) === (b.slot ?? null);
 /**
@@ -293,11 +293,13 @@ export function displayedWare(s, line, { seller, at, taken = null }) {
  * what he has paid for and anything no offer names stay free to take.
  * .178 (GPT review §3.2): a closed offer leaves the wares on display (lying in the shop) the seller's: one of two equal
  * quills bought, the rest of a stack he bought part of. open says whether accepting this offer still buys it. What the
- * seller hands over after it closed is his to give (a gift, .48); what was his and lies where he laid it (had_pc) is
- * his own, beside an offer of the same name too.
+ * seller hands over after it closed is his to give (a gift, .48); what is his and lies where he laid it is his own,
+ * beside an offer of the same name too.
+ * .179 (GPT review of .178 §3.4): "where he laid it" is laid_by_pc, his own last move (src/v4/domain.js), not had_pc:
+ * a thing he sold the shopkeeper, who laid it out and offers it, was his once and is the shopkeeper's ware now.
  */
 export function wareOnSale(s, o) {
-    if (!o || o.holder?.entity === 'pc' || (o.had_pc && o.holder?.loc)) return null;
+    if (!o || o.holder?.entity === 'pc' || (o.laid_by_pc && o.holder?.loc)) return null;
     let found = null;
     for (const offer of Object.values(s.offers || {})) {
         if (offer.bid || !offer.seller || offer.seller === 'pc') continue;

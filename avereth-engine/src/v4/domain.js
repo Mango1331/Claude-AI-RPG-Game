@@ -116,20 +116,31 @@ export function applyDomainEvent(state, e) {
         case 'object.created':
             if (state.objects[d.object.id]) throw new Error(`object exists: ${d.object.id}`);
             state.objects[d.object.id] = { marks: [], for_quests: [], ...clone(d.object) };
+            // .179 (D5): what he dropped from his pack lies where he laid it
+            if (d.object.source?.how === 'dropped' && d.object.holder?.loc) state.objects[d.object.id].laid_by_pc = true;
+            else delete state.objects[d.object.id].laid_by_pc;
             mirror(state, d.object.id);
             break;
         case 'object.moved': {
             const o = state.objects[d.id];
             if (!o) throw new Error(`unknown object ${d.id}`);
+            // .179 (GPT review of .178 §3.4, D5): laid_by_pc says the last move was his own laying it down (out of his
+            // hands to a place); any other move clears it (the shopkeeper who shelves what he sold him). had_pc stays
+            // what it was: ever his
+            const laid = o.holder?.entity === 'pc' && !!d.to?.loc;
             if (d.split && d.qty && d.qty < (o.qty ?? 1)) {
                 // part of a stack changes hands: the part becomes its own object
                 state.objects[d.split] = { ...clone(o), id: d.split, qty: d.qty, holder: clone(d.to), ...(o.holder?.entity === 'pc' ? { had_pc: true } : {}) };
+                if (laid) state.objects[d.split].laid_by_pc = true;
+                else delete state.objects[d.split].laid_by_pc;
                 o.qty -= d.qty;
                 mirror(state, d.split);
             } else {
                 // Patch 8: what was ever his stays his to find where he left it (a Dungeon's reset never clears it away)
                 if (o.holder?.entity === 'pc') o.had_pc = true;
                 o.holder = clone(d.to);
+                if (laid) o.laid_by_pc = true;
+                else delete o.laid_by_pc;
             }
             if (d.delivery_origin) {
                 for (const id of [d.id, d.split].filter(Boolean)) Object.assign(state.objects[id], { delivery_origin: d.delivery_origin, delivery_capacity: d.delivery_capacity });

@@ -13,6 +13,9 @@
 //        ride under a second id T61 (from I121) settles nothing of thread.t47.1; K6a: the T61 correction names the
 //        crossroads, not the Woolpack, and reaches the next narrator block (T62); K8: T16 (from I31) books no
 //        "name = Alaric Red" of the carter; T11 (from I21) gives Widow Hessa no descriptor "null".
+//   .178 GPT review R2: the bookshop with a second Primer on display (T41–T42 from I81): the purchase is not linked to
+//        either, the Primer in the case stays the shopkeeper's after the offer closed: his take is refused, one Primer
+//        for 30 cp, the same after save/reload.
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
@@ -42,13 +45,17 @@ export const pilot01Turns = [
     turn('p177cairn', 123, 124),
     turn('p177name', 31, 32),
     turn('p177hessa', 21, 22),
+    { key: 'p178take', player: '*I lift the other Primer out of the case as well*', plan: { commands: [{ seq: 1, type: 'take', object: 'obj.t82.primer', qty: 1, quote: 'I lift the other Primer out of the case' }] },
+        reply: 'The shopkeeper laid a hand on the case. "That one\'s still for sale, friend."', answer: { scene: 'here', expected: {}, deltas: [] } },
 ];
+const SECOND_PRIMER = { t: 'object.created', d: { object: { id: 'obj.test.primer_b', name: 'Primer', kind: 'item', stack: false, qty: 1, unit: null, use: 'tool', holder: { loc: 'loc.ashbridge.bookshop_with_the_primer' }, marks: [], for_quests: [], source: { turn: 40, how: 'story' } } } };
 const SCOUTS = ['mon.mossback_warrens_c1_l1_e1_1', 'mon.mossback_warrens_c1_l1_e1_2', 'mon.mossback_warrens_c1_l1_e1_3'];
 
 export async function pilot01Smoke({ page, send, idle, calls, onReload, out }) {
-    const seed = async (n) => {
-        await page.evaluate(async (prefix) => { const c = SillyTavern.getContext(); c.chat.splice(0, c.chat.length, ...prefix); await c.saveChat(); await c.reloadCurrentChat(); },
-            structuredClone(pilot.slice(0, n).map((m) => ({ name: m.is_user ? 'Alaric' : 'Avereth', ...m }))));
+    const seed = async (n, mutate = null) => {
+        const prefix = structuredClone(pilot.slice(0, n).map((m) => ({ name: m.is_user ? 'Alaric' : 'Avereth', ...m })));
+        if (mutate) mutate(prefix);
+        await page.evaluate(async (prefix) => { const c = SillyTavern.getContext(); c.chat.splice(0, c.chat.length, ...prefix); await c.saveChat(); await c.reloadCurrentChat(); }, prefix);
         onReload();
         await page.waitForTimeout(600);
     };
@@ -135,6 +142,18 @@ export async function pilot01Smoke({ page, send, idle, calls, onReload, out }) {
     await seed(21);
     const hessa = await play('p177hessa');
     checks.k8NoNullRole = Array.isArray(hessa.hessa) && !hessa.hessa.includes('null') && !hessa.errors.length;
+    // .178 R2: a second Primer on display; after the purchase the one in the case is still bought, not taken
+    await seed(81, (prefix) => prefix[80].extra.avereth.events.push(structuredClone(SECOND_PRIMER)));
+    const shop2 = await play('p175shop');
+    const buy2 = await play('p175buy');
+    const take2 = await play('p178take');
+    checks.r2DisplayStaysOnSale = take2.userResolved.some(([t, st, why]) => t === 'take' && st === 'refused' && /for sale/.test(why || ''))
+        && buy2.primers.length === 1 && take2.primers.length === 1 && !take2.primers.includes('obj.t82.primer') && take2.primerAt?.loc === 'loc.ashbridge.bookshop_with_the_primer'
+        && take2.coin === shop2.coin - 30 && !take2.errors.length;
+    await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); await SillyTavern.getContext().reloadCurrentChat(); });
+    onReload(); await page.waitForTimeout(800);
+    const re2 = await snapshot();
+    checks.r2SaveReload = !re2.errors.length && re2.primers.length === 1 && re2.primerAt?.loc === 'loc.ashbridge.bookshop_with_the_primer' && re2.coin === shop2.coin - 30;
     fs.writeFileSync(path.join(out, 'pilot01_smoke.json'), JSON.stringify(evidence, null, 2));
     return checks;
 }

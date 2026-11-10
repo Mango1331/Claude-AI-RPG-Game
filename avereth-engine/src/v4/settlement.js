@@ -68,6 +68,15 @@ function whereIs(state, e) {
     return last ? Object.values(state.places || {}).find((p) => normText(p.name) === normText(last.place))?.id || null : null;
 }
 
+// K3 (pilot 01 B2, .176): the trades that sell equipment or ordinary wares (smith, leather, arcane, general) and the
+// shop words of rules.settlements: a person whose role or a place whose name they name is a seller or a shop
+const GEAR_TRADES = ['smith', 'leather', 'arcane', 'general'];
+export function tradeVenueRe(content) {
+    const c = cfg(content);
+    if (!c) return null;
+    return wordsRe([...c.trades.filter((tr) => GEAR_TRADES.includes(tr.key)).map((tr) => tr.words), c.shop_words].join('|'));
+}
+
 /** The trades a want names ("a store to sell the monster parts to" → monster parts); all of them when it names none. */
 export function tradesWanted(content, text) {
     const t = normText(text);

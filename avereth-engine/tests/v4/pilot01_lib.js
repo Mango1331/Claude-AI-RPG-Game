@@ -28,8 +28,8 @@ export async function replyCase(content, i, { answer = null, chat = null } = {})
 export async function playerCase(content, i, { answers = null, chat = null } = {}) {
     const c = chat || upTo(i);
     const queue = [...(answers || pilot[i].extra.avereth.plan?.raw || [])];
-    await prepareGenerationAsync(c, content, { type: 'normal', settings: {}, llm: async () => (queue.length ? queue.shift() : '{}') });
-    return { chat: c, r: rec(c[i]) };
+    const res = await prepareGenerationAsync(c, content, { type: 'normal', settings: {}, llm: async () => (queue.length ? queue.shift() : '{}') });
+    return { chat: c, r: rec(c[i]), res };
 }
 /**
  * Reprocess the original messages from..to in order on one chat (each with its original model answers, or the given

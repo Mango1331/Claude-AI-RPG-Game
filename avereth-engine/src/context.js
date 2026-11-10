@@ -26,7 +26,7 @@ import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } 
 import { objectiveText, proofText as guildProofText, defeatTally, tallyText, readyText, proofMemory } from './v4/guild.js';
 import { envelopeBlock } from './v4/envelope.js';
 import { sceneHandle } from './v4/scene_handles.js';
-import { settlementLife } from './v4/settlement.js';
+import { settlementLife, tradeVenueRe } from './v4/settlement.js';
 import { profileOf, sourceText, gearText, gearMarketText } from './v4/items.js';
 
 export const DEFAULT_BUDGET = 1400;
@@ -736,9 +736,23 @@ export function buildContext(state, content, opts = {}) {
         if (populations.length) add('world_populations', `ESTABLISHED WORLD POPULATIONS — fixed independently of Alaric; do not rescale, rename or replace them to make a contract easy. New individuals there use this supported kind, not unrelated weak wildlife. No mandatory attack or automatic spawn.\n${populations.map(p => `${p.name}: ${p.population.species}, body-plan ${p.population.anchor}, individual levels ${p.population.levels.join('-')}; count and risk follow the actual encounter/contract, not his level.`).join('\n')}`, 0);
     }
 
+    // K3 (pilot 01 B2, .176): the equipment rules (priority 0) come where equipment is traded THIS turn: a present
+    // seller's open equipment offer; or his own message speaks of buying or selling gear (never the last reply's
+    // "armor" or "shield-sense") at a seller or a shop: a present person whose role a gear trade or the shop words of
+    // rules.settlements name, or one with an open offer here, or the place he is at or goes to by such a name; or his
+    // trade this turn (buy, sell, accepting an offer) together with such words. The first talk with a smith before any
+    // offer exists is such a turn.
+    const gearOfferHere = Object.values(state.offers || {}).some(o => o.status === 'open' && !o.bid && state.scene.present.includes(o.seller) && o.lines.some(l => l.profile?.kind === 'gear'));
+    const gearWords = /\b(?:shop|buy|sell|merchant|smith|blacksmith|gear|equipment|armou?r|weapon|shield)\b/i.test(input || '');
+    const venueRe = gearWords ? tradeVenueRe(content) : null;
+    const roles = (id) => [state.entities[id]?.name, truth(state, id, 'occupation')[0]?.o, state.entities[id]?.role, ...(state.entities[id]?.descriptors || [])].filter((x) => typeof x === 'string');
+    const sellerHere = gearWords && state.scene.present.some((id) => state.entities[id]?.kind === 'npc'
+        && (Object.values(state.offers || {}).some((o) => o.status === 'open' && !o.bid && o.seller === id) || (venueRe && roles(id).some((t) => venueRe.test(normText(t))))));
+    const shopPlace = gearWords && venueRe && [state.scene.at, ...(opts.outcome?.auth?.gos || []).map((g) => g.to)].filter(Boolean)
+        .some((id) => venueRe.test(normText(state.places?.[id]?.name || '')));
+    const tradeTurn = gearWords && (opts.outcome?.resolutions || []).some((r) => ['buy', 'sell', 'offer.accept'].includes(r.type));
     if (v4 && rulesetOf(state) >= 2 && !state.encounter && (opts.outcome?.auth?.c || opts.outcome?.c)
-        && (/\b(?:shop|buy|sell|merchant|smith|blacksmith|gear|equipment|armou?r|weapon|shield)\b/i.test(itemScan)
-            || Object.values(state.offers || {}).some(o => o.status === 'open' && !o.bid && state.scene.present.includes(o.seller) && o.lines.some(l => l.profile?.kind === 'gear')))) {
+        && (gearOfferHere || sellerHere || shopPlace || tradeTurn)) {
         const offers = Object.values(state.offers || {}).filter(o => o.status === 'open' && !o.bid && state.scene.present.includes(o.seller))
             .flatMap(o => o.lines.filter(l => l.kind === 'goods').map(l => `${l.what}: ${gearText(l.profile) || 'ordinary merchandise'}`)).slice(0, 8);
         add('gear_market', `${gearMarketText(content, true)}${offers.length ? `\nRECORDED GOODS: ${offers.join('; ')}` : ''}`, 0);

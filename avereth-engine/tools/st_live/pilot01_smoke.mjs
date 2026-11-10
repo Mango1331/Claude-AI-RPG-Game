@@ -9,6 +9,10 @@
 //   .176 K3: the cart road T19 (from I36): the narrator's block has no GEAR MARKET; K4: the Guild turn-in T24 (from I46):
 //        the clerk's return by her joined quote, her handling teaches her his completion; K7: the Primer of Guard T27
 //        (from I52): the refusal tells the narrator 80 cp needed, 70 cp in his purse, 10 cp short, one purse.
+//   .177 K5: Muller's debt to Hesse under the id of his promised copper T58 (from I115) leaves its words; the carter's
+//        ride under a second id T61 (from I121) settles nothing of thread.t47.1; K6a: the T61 correction names the
+//        crossroads, not the Woolpack, and reaches the next narrator block (T62); K8: T16 (from I31) books no
+//        "name = Alaric Red" of the carter; T11 (from I21) gives Widow Hessa no descriptor "null".
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
@@ -33,6 +37,11 @@ export const pilot01Turns = [
     turn('p176road', 37, 38),
     turn('p176turnin', 47, 48),
     turn('p176short', 53, 54),
+    turn('p177debt', 115, 116),
+    turn('p177carter', 121, 122),
+    turn('p177cairn', 123, 124),
+    turn('p177name', 31, 32),
+    turn('p177hessa', 21, 22),
 ];
 const SCOUTS = ['mon.mossback_warrens_c1_l1_e1_1', 'mon.mossback_warrens_c1_l1_e1_2', 'mon.mossback_warrens_c1_l1_e1_3'];
 
@@ -54,7 +63,10 @@ export async function pilot01Smoke({ page, send, idle, calls, onReload, out }) {
             replyRejected: (r?.events || []).filter((e) => e.t === 'delta.rejected').map((e) => e.d.rule), corrections: r?.corrections || [],
             userResolved: (rec(user)?.events || []).filter((e) => e.t === 'cmd.resolved').map((e) => [e.d.type, e.d.status, e.d.reason || null]),
             userEvents: (rec(user)?.events || []).map((e) => e.t), extraction: r?.extraction?.status || null,
-            clerkKnows: Object.keys(s.knowledge?.['npc.npcashbridge_clerk'] || {}) };
+            clerkKnows: Object.keys(s.knowledge?.['npc.npcashbridge_clerk'] || {}),
+            threads: Object.fromEntries(Object.entries(s.threads || {}).map(([k, t]) => [k, { text: t.text, status: t.status, who: t.who || null }])),
+            carterNames: Object.values(s.facts || {}).filter((f) => f.s === 'npc.npccarter_hazel' && f.p === 'name').map((f) => f.o),
+            hessa: Object.values(s.entities).find((e) => e.name === 'Widow Hessa')?.descriptors || null };
     });
     const checks = {}, evidence = [];
     const play = async (key) => {
@@ -100,6 +112,29 @@ export async function pilot01Smoke({ page, send, idle, calls, onReload, out }) {
     const sh = await play('p176short');
     const shortNarr = calls.slice(n).filter((c) => c.purpose === 'narrator').map((c) => (c.messages || []).map((m) => String(m.content)).join('\n')).join('\n');
     checks.k7ShortfallToNarrator = /80 cp \(8 Silver\) needed; he has 70 cp \(7 Silver\), 10 cp \(1 Silver\) short/.test(shortNarr) && /no coin needs changing/.test(shortNarr) && sh.coin === 70;
+    // .177 K5: the agreement keeps its words; a second carter id settles nothing of it
+    await seed(115);
+    const copper = (await snapshot()).threads['thread.t34.1'];
+    const debt = await play('p177debt');
+    checks.k5CopperKeepsWords = !!copper && debt.threads['thread.t34.1']?.text === copper.text && !/Hesse/.test(debt.threads['thread.t34.1'].text) && !debt.errors.length;
+    await seed(121);
+    const carter = await play('p177carter');
+    const ride = carter.threads['thread.t47.1'];
+    checks.k5NoSettlementBySecondId = ride?.status === 'open' && JSON.stringify(ride.who) === JSON.stringify(['npc.npccarter_woolpack', 'pc']);
+    // .177 K6a: the correction names the place he reached, and the next narrator block carries it
+    checks.k6aCorrectionAtCairn = carter.at === 'loc.crossroads_cairn_on_the_south_road' && !carter.corrections.some((c) => /remains at the Woolpack/.test(c))
+        && carter.corrections.some((c) => /Alaric is at crossroads cairn on the south road; continue from there/.test(c));
+    n = calls.length;
+    const cairn = await play('p177cairn');
+    const cairnNarr = calls.slice(n).filter((c) => c.purpose === 'narrator').map((c) => (c.messages || []).map((m) => String(m.content)).join('\n')).join('\n');
+    checks.k6aNarratorToldCairn = /Alaric is at crossroads cairn on the south road; continue from there/.test(cairnNarr) && !/remains at the Woolpack/.test(cairnNarr) && !cairn.errors.length;
+    // .177 K8: no carter named "Alaric Red"; no role "null"
+    await seed(31);
+    const name = await play('p177name');
+    checks.k8NoPcNameOnCarter = name.replyRejected.includes('identity_subject') && name.carterNames.length === 0 && !name.errors.length;
+    await seed(21);
+    const hessa = await play('p177hessa');
+    checks.k8NoNullRole = Array.isArray(hessa.hessa) && !hessa.hessa.includes('null') && !hessa.errors.length;
     fs.writeFileSync(path.join(out, 'pilot01_smoke.json'), JSON.stringify(evidence, null, 2));
     return checks;
 }

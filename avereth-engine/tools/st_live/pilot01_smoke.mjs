@@ -6,6 +6,9 @@
 //        reply narrates, their fight opens.
 //   .175 K2/D5: the bookshop T41–T43 (from I80): the Primer on sale cannot be taken; bought, it is the one from the case;
 //        "tucked away" adds nothing; one Primer, 30 cp once, the same after save/reload.
+//   .176 K3: the cart road T19 (from I36): the narrator's block has no GEAR MARKET; K4: the Guild turn-in T24 (from I46):
+//        the clerk's return by her joined quote, her handling teaches her his completion; K7: the Primer of Guard T27
+//        (from I52): the refusal tells the narrator 80 cp needed, 70 cp in his purse, 10 cp short, one purse.
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
@@ -27,6 +30,9 @@ export const pilot01Turns = [
         reply: 'The shopkeeper cleared his throat and tapped the case. "That one is for sale, friend."', answer: { scene: 'here', expected: {}, deltas: [] } },
     turn('p175buy', 83, 84),
     turn('p175tuck', 85, 86),
+    turn('p176road', 37, 38),
+    turn('p176turnin', 47, 48),
+    turn('p176short', 53, 54),
 ];
 const SCOUTS = ['mon.mossback_warrens_c1_l1_e1_1', 'mon.mossback_warrens_c1_l1_e1_2', 'mon.mossback_warrens_c1_l1_e1_3'];
 
@@ -47,7 +53,8 @@ export async function pilot01Smoke({ page, send, idle, calls, onReload, out }) {
             primerAt: s.objects['obj.t82.primer']?.holder || null, slots: Object.fromEntries(Object.entries(s.entities).filter(([, e]) => e.slot).map(([id, e]) => [id, e.slot.id])),
             replyRejected: (r?.events || []).filter((e) => e.t === 'delta.rejected').map((e) => e.d.rule), corrections: r?.corrections || [],
             userResolved: (rec(user)?.events || []).filter((e) => e.t === 'cmd.resolved').map((e) => [e.d.type, e.d.status, e.d.reason || null]),
-            userEvents: (rec(user)?.events || []).map((e) => e.t), extraction: r?.extraction?.status || null };
+            userEvents: (rec(user)?.events || []).map((e) => e.t), extraction: r?.extraction?.status || null,
+            clerkKnows: Object.keys(s.knowledge?.['npc.npcashbridge_clerk'] || {}) };
     });
     const checks = {}, evidence = [];
     const play = async (key) => {
@@ -76,6 +83,23 @@ export async function pilot01Smoke({ page, send, idle, calls, onReload, out }) {
     onReload(); await page.waitForTimeout(800);
     const re = await snapshot();
     checks.k2SaveReload = !re.errors.length && JSON.stringify(re.primers) === JSON.stringify(['obj.t82.primer']) && re.coin === before - 30;
+    // .176 K3: no equipment catalog on the cart road
+    await seed(37);
+    let n = calls.length;
+    const road = await play('p176road');
+    const roadNarr = calls.slice(n).filter((c) => c.purpose === 'narrator').map((c) => (c.messages || []).map((m) => String(m.content)).join('\n')).join('\n');
+    checks.k3NoCatalogOnRoad = roadNarr.includes('[AVERETH ENGINE') && !roadNarr.includes('GEAR MARKET') && !road.errors.length;
+    // .176 K4: the clerk's return at the turn-in and her handling of it
+    await seed(47);
+    const ti = await play('p176turnin');
+    checks.k4ClerkReturns = ti.present.includes('npc.npcashbridge_clerk') && !ti.replyRejected.includes('met_evidence') && !ti.replyRejected.includes('desk_handler');
+    checks.k4HandlerKnows = ti.clerkKnows.includes('f.pc.completed.quest.cull_the_millpond_gnasher');
+    // .176 K7: the refusal names the purse, the price, what is missing and the one purse
+    await seed(53);
+    n = calls.length;
+    const sh = await play('p176short');
+    const shortNarr = calls.slice(n).filter((c) => c.purpose === 'narrator').map((c) => (c.messages || []).map((m) => String(m.content)).join('\n')).join('\n');
+    checks.k7ShortfallToNarrator = /80 cp \(8 Silver\) needed; he has 70 cp \(7 Silver\), 10 cp \(1 Silver\) short/.test(shortNarr) && /no coin needs changing/.test(shortNarr) && sh.coin === 70;
     fs.writeFileSync(path.join(out, 'pilot01_smoke.json'), JSON.stringify(evidence, null, 2));
     return checks;
 }

@@ -55,7 +55,9 @@ const ACCEPTED167 = JSON.parse(fs.readFileSync(new URL('./accepted_pulse167_vs_1
 // NPC E2-A (.169): known_at/desk in the player outcome; two group person.new refused as collective_person instead of ambient
 const ACCEPTED169 = JSON.parse(fs.readFileSync(new URL('./accepted_e2a169_vs_126.json', import.meta.url), 'utf8'));
 // NPC E2-B (.172): the null echo of thread.who in rejected thread items; one memory keeping its social part (R9)
-const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_e2b172_vs_126.json', import.meta.url), 'utf8'));
+const ACCEPTED172 = JSON.parse(fs.readFileSync(new URL('./accepted_e2b172_vs_126.json', import.meta.url), 'utf8'));
+// Pilot 01 block C (.177): an NPC's "name = Alaric (Red)" refused (K8-1); the scene correction with the final place (K6a)
+const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_pilot177_vs_126.json', import.meta.url), 'utf8'));
 const F144 = ['finance 144 payment card', 'finance 144 contract fields', 'finance 144 acceptance hint', 'finance 144 price open', 'finance 144 unit limit', 'finance 144 acceptance', 'finance 144 own coin'];
 const SUB = { ...baseline, runs: Object.fromEntries(QUICK.map((l) => [l, baseline.runs[l]])) };
 let quick = null; // the four quick runs, replayed once for this file
@@ -65,7 +67,7 @@ test('A1/C: the four quick runs replay as on the start commit, from whole and va
     const { compared, diffs } = compareToBaseline(SUB, result);
     assert.equal(compared, QUICK.reduce((n, l) => n + Object.keys(baseline.runs[l].cases).length, 0));
     assert.deepEqual(diffs.map((d) => d.id).sort(), Object.keys(ACCEPTED.cases).filter((id) => QUICK.includes(id.split('#')[0])).sort());
-    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138','finance 142','finance 142 contract fields', 'batch21 integration 146', 'design148 danger', 'design148 area', 'design149 offensive growth', 'fix150 place fact', 'fix158 fact text', 'fix158 guild witness', 'fix159 board failure', 'fix160 board narration', 'pulse162 window', 'pulse162 road', 'pulse163 sought', 'pulse164 pause order', 'pulse164 early claim', 'pulse167 dungeon window', 'pulse167 dungeon diagnosis', 'e2a169 outcome fields', 'e2a169 group person', 'e2b172 thread who field', 'e2b172 memory social rest', ...F144].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F/integration differences are allowed');
+    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138','finance 142','finance 142 contract fields', 'batch21 integration 146', 'design148 danger', 'design148 area', 'design149 offensive growth', 'fix150 place fact', 'fix158 fact text', 'fix158 guild witness', 'fix159 board failure', 'fix160 board narration', 'pulse162 window', 'pulse162 road', 'pulse163 sought', 'pulse164 pause order', 'pulse164 early claim', 'pulse167 dungeon window', 'pulse167 dungeon diagnosis', 'e2a169 outcome fields', 'e2a169 group person', 'e2b172 thread who field', 'e2b172 memory social rest', 'pilot177 npc name subject', 'pilot177 scene correction place', ...F144].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F/integration differences are allowed');
     const { open, accepted, stale } = acceptedDiffs(diffs, ACCEPTED.cases, result);
     assert.deepEqual([open, stale, accepted.length], [[], [], diffs.length], 'every accepted record has exactly the fingerprinted output');
     for (const [label, run] of Object.entries(result.runs)) {
@@ -384,6 +386,7 @@ test('.169 (NPC E2-A) keeps every .167 acceptance exactly except records that ch
 });
 
 test('.172 (NPC E2-B) keeps every .169 acceptance exactly except records that change only in the null echo of thread.who or keep one social memory rest, each with its .169 acceptance', () => {
+    const ACCEPTED = ACCEPTED172;
     const changed = { 'e2b172 thread who field': [], 'e2b172 memory social rest': [] };
     for (const [id, old] of Object.entries(ACCEPTED169.cases)) {
         const now = ACCEPTED.cases[id];
@@ -401,4 +404,26 @@ test('.172 (NPC E2-B) keeps every .169 acceptance exactly except records that ch
     assert.deepEqual(changed['e2b172 thread who field'].sort(), ['b17-rogue#84', 'b17-warrior#42', 'b19-warrior#294', 'b19-warrior#316']);
     assert.equal(changed['e2b172 memory social rest'].length, 0);
     assert.deepEqual(ACCEPTED.returned, ACCEPTED169.returned);
+});
+
+test('.177 (pilot 01 block C) keeps every .172 acceptance exactly except 14 records: an NPC\'s "name = Alaric (Red)" refused (K8-1) or the scene correction with the final place (K6a), each with its .172 acceptance', () => {
+    const K8 = 'pilot177 npc name subject', K6 = 'pilot177 scene correction place';
+    const changed = { [K8]: [], [K6]: [] };
+    for (const [id, old] of Object.entries(ACCEPTED172.cases)) {
+        const now = ACCEPTED.cases[id];
+        if (!now.category.startsWith('pilot177')) { assert.deepEqual(now, old, id); continue; }
+        assert.deepEqual(now.previous_acceptance_172, { category: old.category, fingerprint: old.fingerprint }, id);
+    }
+    for (const [id, now] of Object.entries(ACCEPTED.cases)) if (now.category.startsWith('pilot177')) {
+        changed[now.category].push(id);
+        assert.ok(now.reason.startsWith(`${id}: ${now.category === K8 ? 'K8-1' : 'K6a'}: `), id);
+        assert.match(now.reason, now.category === K8 ? /identity_subject|is Alaric's name/ : /becomes "Part of the last reply took place in a scene the engine did not book/, id);
+        assert.match(now.reason, /every other event, outcome field.* is exactly the \.176 output/, id);
+    }
+    assert.deepEqual(changed[K8].sort(), ['b17-rogue#10', 'b17-warrior#10', 'b17-warrior#18', 'b18-rogue#10', 'b18-rogue#380', 'b18-warrior#8', 'b19-mage#12']);
+    assert.deepEqual(changed[K6].sort(), ['b17-warrior#270', 'b17-warrior#30', 'b17-warrior#64', 'b18-warrior#158', 'b19-mage#18', 'b19-mage#98', 'b19-warrior#252']);
+    const added = Object.keys(ACCEPTED.cases).filter((id) => !ACCEPTED172.cases[id]).sort();
+    assert.deepEqual(added, ['b17-rogue#10', 'b17-warrior#270', 'b17-warrior#30', 'b17-warrior#64', 'b18-rogue#380', 'b19-mage#12', 'b19-mage#18', 'b19-mage#98', 'b19-warrior#252']);
+    assert.deepEqual(ACCEPTED.returned, ACCEPTED172.returned);
+    assert.equal(ACCEPTED.engine, '4.3.0-c.6.6.177');
 });

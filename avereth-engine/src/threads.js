@@ -112,11 +112,22 @@ export function threadById(state, id) {
 }
 
 const AGREEMENTS = new Set(['promise', 'debt']);
-/** Does the text name this person (their name, known name or role word)? */
+/**
+ * Does the text name this person? Their name or known name does; their role word (first descriptor) only when it is
+ * theirs alone: no other living person of the record has it, and the text names no other person by name (.178, GPT
+ * review §3.1: "the clerk" of two clerks, or "the other clerk Bess", is not the absent clerk).
+ */
 function namedIn(state, id, text) {
     const e = state.entities?.[id];
     const words = ` ${normText(text)} `;
-    return [e?.name, e?.known_name, e?.descriptors?.[0]].filter((x) => typeof x === 'string' && x.trim()).some((x) => words.includes(` ${normText(x)} `));
+    const said = (x) => typeof x === 'string' && !!x.trim() && words.includes(` ${normText(x)} `);
+    if ([e?.name, e?.known_name].some(said)) return true;
+    const role = e?.descriptors?.[0];
+    if (!said(role)) return false;
+    const r = ` ${normText(role)} `;
+    const others = Object.values(state.entities || {}).filter((x) => x.id !== id && x.kind === 'npc' && x.status !== 'dead');
+    const sameRole = (x) => [x.descriptors?.[0], x.role].some((d) => typeof d === 'string' && !!d.trim() && (` ${normText(d)} `.includes(r) || r.includes(` ${normText(d)} `)));
+    return !others.some((x) => sameRole(x) || [x.name, x.known_name].some(said));
 }
 
 /**

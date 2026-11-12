@@ -17,6 +17,8 @@
 | **[D]** | aus gespeicherten Originaldaten gezählt (nur gelesen; Zahlen stammen vom jeweiligen Ursprungsbuild) |
 | **[P]** | plausibler Schluss, nicht reproduziert |
 
+**Nachtrag:** [§13](#13-nachtrag-v4--preisbelege-und-planner-reparaturen) prüft die Maßnahme V4 gesondert und korrigiert sie.
+
 **Nicht gemacht:** kein Test, kein Replay, kein Fold mit der Engine, kein Modellaufruf, keine Produktänderung. Die Zählungen sind einfache Auswertungen der archivierten JSON-Dateien. Sie umfassen drei Läufe und ersetzen keine Korpusmessung.
 
 ---
@@ -387,6 +389,8 @@ Aufwand: **S** unter einem Tag, **M** ein zusammenhängender Fachpatch, **L** me
 
 ### V4 – Reparaturaufrufe nur dort, wo sie etwas entscheiden
 
+> **Korrigiert durch den [Nachtrag §13](#13-nachtrag-v4--preisbelege-und-planner-reparaturen).** Die Regel „gleicher Preis“ ist in der hier beschriebenen, unbedingten Form nicht sicher, und die Aussage „keine Schutzregel wird gelockert“ ist widerlegt. Maßgeblich sind Umfang und Bedingungen aus §13.6.
+
 **Was:**
 - **Planner, gleicher Preis:** Nennt ein `offer.accept` (oder ein `sell` auf ein offenes Gebot) als `agreed_cp` genau den gespeicherten Preis, wird der Preisbeleg nicht geprüft. Nach `.144` gilt ohnehin der gespeicherte Preis; der Beleg kann das Ergebnis nicht ändern.
 - **Planner, mehrfaches Zitat:** Steht das Zitat mehrfach in der Nachricht und nennt jede Fundstelle denselben Betrag, gilt es als gefunden.
@@ -456,7 +460,7 @@ Aufwand: **S** unter einem Tag, **M** ein zusammenhängender Fachpatch, **L** me
 | | Maßnahme | Begründung |
 |---|---|---|
 | 1 | **Natürlicher Lauf auf `.179` vor jedem weiteren Mikropatch** | `.175`–`.179` sind fünf Builds ohne natürlichen Nachweis; drei davon gehen auf konstruierte Gegenproben zurück (U6) |
-| 2 | **V4 – Reparaturaufrufe nur dort, wo sie etwas entscheiden** | kleiner Eingriff mit direkt gemessenem Effekt auf Kosten und Wartezeit in Handelszügen; lockert keine Regel |
+| 2 | **V4 – Reparaturaufrufe nur dort, wo sie etwas entscheiden**, im Umfang von [§13.6](#136-sicherer-änderungsumfang) | kleiner Eingriff; rettet im Pilot zwei verlorene Spielerzüge und spart drei Reparaturaufrufe; nur mit den dort genannten Bedingungen ohne Schutzverlust |
 | 3 | **V8, Teil Guard-Bilanz** | ohne sie bleibt jede Guard-Verschärfung unbewertet; kostet nur Reviewzeit |
 
 ### Sinnvoll
@@ -518,3 +522,142 @@ Damit 10B stabil bleibt, ohne neue Sonderfallketten aufzubauen, schlage ich sech
 - **Nicht untersucht:** Kampfengine (`combat.js`), Skill- und Passivwachstum, Gildenboard-Generator, UI, Runner. NPC E0–E3 und PULSE A–C nur an ihren Schnittstellen zu den Ketten C, D und E.
 - **Aufwandsangaben** sind Schätzungen aus dem gelesenen Code, keine Planung.
 - **Keine Freigabe.** Jede Maßnahme in §9 braucht einen eigenen Auftrag; V1 und V2 zusätzlich eine Designentscheidung.
+
+---
+
+## 13. Nachtrag V4 – Preisbelege und Planner-Reparaturen
+
+**12.11.2026 · Claude · nur lesende Analyse.** Gegenstand ist ausschließlich die Kette Preisbeleg → Planner-Reparatur auf `.179` (`59f868e`) mit den Originalfällen T38–T40, T48 und T52–T55 des Pilot 01. Quellen: `planner.js`, `interpret.js`, `finance_evidence.js`, `trade.js`, `commands.js`, `runtime.js` sowie `chat.jsonl` und `chat-completions.jsonl` des Piloten. Die Gegenbeispiele in §13.5 sind aus dem Code abgeleitet, nicht ausgeführt.
+
+**Urteil: eingeschränktes GO.** Drei eng begrenzte Änderungen sind ohne Schutzverlust möglich. Die ursprüngliche V4-Fassung (§9) ist in zwei Punkten zu weit und in dieser Form ein NO-GO.
+
+### 13.1 Ablauf im Code [C]
+
+| Stufe | Stelle | Was mit Zahl und Beleg geschieht |
+|---|---|---|
+| Planprüfung | `parsePlan`, `planner.js:560` | `acceptanceWhy` vergleicht `agreed_cp` **ungeprüft** mit dem gespeicherten Gesamtpreis. Abweichung ist ein Handelsfehler und führt zur Rückfrage |
+| Belegprüfung | `amountErrors`, `interpret.js:216`–`242`, aufgerufen in `planner.js:621` | nur wenn Zahl **und** `price_evidence` gesetzt sind: `playerPrice`. Geprüft mit anderem Betrag oder nicht geprüft ergibt einen Fehler (`:239`, `:240`). Ausnahme: Einheitspreis-Gründe laufen ohne Fehler weiter (`:238`) |
+| Hinweis | `financeHints`, `interpret.js:250` | Zahl ohne Beleg bei Geldwörtern in der Nachricht: ein Hinweis, eine Reparatur, sonst gilt der erste Plan (`runtime.js:303`) |
+| Reparatur | `planMessage`, `runtime.js:241` | genau eine. Bleibt danach ein Fehler, ist der Plan gescheitert (`runtime.js:322`) und der Zug endet mit „NOT EXECUTED“ (`runtime.js:678`) |
+| Zitatsuche | `playerPrice`, `finance_evidence.js:292`–`294` → `findQuote` `:37` → `moneyLiteral` `:79` | einmal gefunden gilt; mehrfach gefunden ist „ambiguous“ |
+| Handler `offer.accept` | `commands.js:1181` | `tradeTermsWhy`; `unitOnly` (nutzt den Beleg); `acceptanceWhy` mit **ungeprüftem** `agreed_cp` (`trade.js:114`–`116`); gebucht wird immer `pick.cp`, der gespeicherte Preis |
+| Handler `buy` / `sell` | `commands.js:1124`, `1149` | passendes Angebot oder Gebot: weiter an `offer.accept`, Limit ungeprüft und nur sperrend (`trade.js:117`, `118`, `343`). Ohne Angebot: `provenNumber` (`commands.js:1134`, `1170`), nur ein geprüfter Beleg gibt Vorabzustimmung |
+| Zielkauf nach `go` | `commands.js:1751`–`1754` | `max_cp` **ungeprüft** in die Kaufentscheidung; `world.js:3064`–`3093` kauft danach innerhalb dieses Limits |
+
+### 13.2 Was der Beleg je Pfad entscheidet [C]
+
+| Zahl und Pfad | Wirkung der Zahl | Entscheidet der Beleg? |
+|---|---|---|
+| `offer.accept.agreed_cp` | sperrend bei Abweichung; hebt die Rabattsperre auf, wenn gleich (`trade.js:114`); Einheitspreis-Rückfrage | **nein** für die Buchung. Der Handler nutzt die Zahl ungeprüft. Der Beleg wirkt nur über `amountErrors` (Reparatur) und `unitOnly` |
+| `buy.max_cp`, `sell.min_cp` gegen ein gespeichertes Angebot oder Gebot | nur sperrend | nein |
+| `buy.max_cp`, `sell.min_cp` ohne Angebot, am Ort | Vorabzustimmung | **ja**, über `provenNumber` |
+| `buy.max_cp` nach einem `go` (Zielkauf) | Vorabzustimmung | nein: die Zahl wird ungeprüft übernommen. Heute fängt das nur die Planprüfung ab |
+
+Folgerung: Für `offer.accept` gibt es **keinen deterministischen Schutz durch den Beleg**. Nach der einen Reparatur bucht die Engine auch mit ungeprüftem `agreed_cp`. Der gespeicherte Record von T40 zeigt genau das: `agreed_cp: 14`, `price_evidence: null`, gebucht 14 cp [D].
+
+### 13.3 Die Originalfälle [D]
+
+| Zug | Erster Plan | Prüfergebnis | Was geschah | Einordnung |
+|---|---|---|---|---|
+| **T38** | zwei `sell`, eines mit `min_cp: 14` und Zitat „Fourteen for the pair“; kein Gebot gespeichert | `currency_missing`; Reparatur zitiert „Fourteen“, wieder `currency_missing` | **NOT EXECUTED**, ganzer Zug verloren | Reparatur ohne Schutzwert: `provenNumber` hätte die Zahl ohnehin als unbelegt behandelt („WANTS TO SELL“) |
+| **T39** | zwei `sell`, `min_cp` 4 und 10 mit Händlerworten | `quote_not_found`; Reparatur setzt Zahl und Beleg auf `null` | zweimal `pending`, `no_price` | redundant: dasselbe Ergebnis wie ohne Reparatur. Die Reparatur hat zusätzlich die Limits gelöscht |
+| **T40** | `offer.accept`, `agreed_cp: 14` = Gebot 14, Zitat in Händlerworten | `quote_not_found`; Reparatur setzt nur den Beleg auf `null` | gebucht 14 cp | redundant |
+| **T48** | `offer.accept`, `agreed_cp: 4` = Angebot 4, Zitat „Four copper, the pair“ | `quote_not_found`; Reparatur zitiert „the four copper“ | gebucht 4 cp | redundant |
+| **T52** | `pay`, `amount_cp: 2` zu den Worten „five copper“ | `contradicted` | Reparatur korrigiert auf 5; Zahlung offen | **notwendig**: echter Planfehler |
+| **T53** | `offer.accept`, `agreed_cp: 5` gegen Angebot 3 | Preiskonflikt aus `acceptanceWhy`, kein Belegfehler | Rückfrage „standing offer is 3 Copper … you named 5“ | **notwendig**: der Spieler nennt einen anderen Betrag |
+| **T54** | `offer.accept`, `agreed_cp: 3` = Angebot 3, Zitat „three copper for the bed“; dazu `pay` 2 cp | Zitat steht zweimal: gemeldet als `quote_not_found`; Reparatur zitiert „three copper“, steht ebenfalls zweimal | **NOT EXECUTED**: Bett, Schlüssel und Zahlung verloren | schädlich: richtiger Plan, wörtliches Zitat, Zug verworfen |
+| **T55** | `offer.accept`, `agreed_cp: 3`, Zitat „three copper“ | steht zweimal: `quote_not_found`; Reparatur setzt Zahl und Beleg auf `null` | gebucht 3 cp | redundant; die Reparatur entfernt eine richtige Angabe |
+
+Von den elf Preis- und Geldreparaturen des Piloten waren fünf begründet (T29 und T30 mit widersprüchlichem oder unvollständigem Betrag, T52, T53, T57 als Hinweis für ein belegtes Limit). Sechs prüften Angaben, die das Ergebnis nicht ändern konnten; zwei davon kosteten den ganzen Spielerzug.
+
+### 13.4 Drei Befunde im Code
+
+**B-1 – Die Toleranz für wiederholte Geldwörter greift bei Spielerpreisen nicht [C].** `moneyLiteral` nimmt seit `.143` ein mehrfach vorkommendes Zitat an, wenn jede Fundstelle denselben Betrag liest (`finance_evidence.js:84`–`89`). `playerPrice` übergibt aber das Ergebnis von `findQuote` als `within` (`:294`). Bei mehreren Fundstellen hat dieses Objekt keine Grenzen, und `findQuote` liefert dafür `missing` (`:38`). Der Zweig aus `:84` wird nie erreicht; gemeldet wird `quote_not_found` für ein Zitat, das wörtlich dasteht. Für Händlerpreise aus der Erzählung greift die Toleranz, für Spielerpreise nicht. Das erklärt T54 und T55.
+
+**B-2 – Nach der Reparatur gibt es nur Annahme oder Zugverlust [C].** Bleibt ein Belegfehler bestehen, verwirft `planMessage` den ganzen Plan, auch unabhängige Schritte (T54: Schlüssel nehmen). Für `buy` und `sell` ohne Angebot ist das unnötig: `provenNumber` behandelt eine nicht belegte Zahl bereits sicher als nicht gesetzt. Zudem lädt der Reparaturtext („or set price_evidence to null“) dazu ein, die Zahl mitzulöschen (T39, T55). Bei einem Mindestpreis gegen ein offenes Gebot würde das eine **sperrende** Grenze entfernen.
+
+**B-3 – Zwei Stellen nutzen eine ungeprüfte Zahl erlaubend [C].**
+- **Zielkauf:** `commands.js:1751`–`1754` übernimmt `max_cp` ohne `provenNumber`. Der direkte `buy` am Ort (`:1134`) und der Weg über `pay` (`:1107`–`1109`) verlangen den geprüften Beleg. Mit `price_evidence: null` und einer Nachricht ohne Münzwort („for at most thirty“) entsteht auch kein Hinweis, und das Limit gilt am Ziel ungeprüft.
+- **Rabattsperre:** `trade.js:114` hebt die Sperre auf, sobald `agreed_cp` dem Angebotspreis gleicht, belegt oder nicht.
+
+Beides besteht unabhängig von V4. Es bestimmt aber, was V4 nicht anfassen darf.
+
+### 13.5 Prüfung der Annahme „V4 lockert keine Schutzregel“
+
+**Widerlegt für die Fassung aus §9.** Die Regel „bei `agreed_cp` gleich dem gespeicherten Preis wird der Beleg nicht geprüft“ lässt diese Gegenbeispiele zu:
+
+| | Fall | Heute | Mit unbedingter Gleichpreis-Regel |
+|---|---|---|---|
+| **G1** | Spieler: „Five copper …, I'll take it“; Plan: `agreed_cp: 3` = Angebot 3, Zitat „five copper“ | Beleg geprüft mit 5 ≠ 3: Fehler (`interpret.js:239`), Reparatur, dann meist Preiskonflikt und Rückfrage | Buchung zu 3 cp ohne Rückfrage. **Echter Schutzverlust** |
+| **G2** | Spieler: „I'll give you ten for it“; Plan: `agreed_cp: 14` = Angebot 14, Zitat in Händlerworten | `quote_not_found`, eine Reparatur als zweite Chance; nullt das Modell nur den Beleg, wird auch heute zu 14 gebucht | sofortige Buchung zu 14 cp. Die zweite Chance entfällt |
+| **G3** | Rabattwunsch („knock two off and it's a deal“), Plan mit `agreed_cp` gleich Angebot | Reparatur als zweite Chance; danach hebt die ungeprüfte Zahl die Rabattsperre auf (B-3) | Sperre sofort aufgehoben |
+| **G4** | Stückpreis für mehrere Einheiten | kein Fehler in der Planprüfung, `unitOnly` fragt im Handler nach | unverändert, **solange das Belegfeld erhalten bleibt**. Eine „Normalisierung auf `null`“ würde die Rückfrage abschalten |
+| **G5** | `buy` mit nicht belegbarem `max_cp` nach einem `go` | Planfehler, Reparatur oder Zugverlust | bei lokalem Durchlassen: Vorabzustimmung am Ziel mit ungeprüftem Limit (B-3) |
+| **G6** | Spieler verlangt „fifteen for the pair“, offenes Gebot 14, `sell` mit `min_cp: 15`, kein Münzwort | Fehler, Reparatur | bei lokaler Normalisierung auf `null`: Verkauf zu 14. Bleibt die Zahl stehen, sperrt `trade.js:118` korrekt |
+
+**Nicht gefährdet** sind dagegen:
+- **Ausdrücklich niedrigeres Limit:** `max_cp` unter dem Angebotspreis sperrt ungeprüft in `acceptanceWhy` und `bookPurchase`.
+- **Mehrere Angebote:** Die Auswahl trifft der Planner über die Angebots-ID; der Beleg prüft sie auch heute nicht. Nennt der Spieler einen Betrag, der zu einem anderen Angebot gehört, greift die Zahlenbedingung aus §13.6.
+- **Teilmengen:** Der Vergleichswert stammt aus `pickLines` für genau die gewählten Zeilen und Mengen.
+- **Offene oder bedingte Preise:** `tradeTermsWhy` sperrt vor jeder Preisprüfung.
+- **Zitat mit verschiedenen Beträgen:** bleibt `several_amounts` und damit ein Fehler.
+
+Die zweite V4-Regel aus §9 (mehrfaches Zitat mit gleichem Betrag gilt als gefunden) hält der Prüfung stand. Die dritte (`null`-Felder im Extractor) liegt außerhalb dieses Nachtrags.
+
+### 13.6 Sicherer Änderungsumfang
+
+**S1 – Mehrfachzitat mit gleichem Betrag gilt als belegt.** `playerPrice` wendet bei mehreren Fundstellen die vorhandene Regel aus `moneyLiteral` an: jede Fundstelle wird gelesen, alle müssen geprüft sein und denselben Betrag ergeben. Verschiedene Beträge bleiben ein Fehler.
+- Umfang: wenige Zeilen in `finance_evidence.js`. Keine neue Regel; die `.143`-Regel gilt dann auch für Spielerpreise.
+- Wirkung im Pilot: T55 ohne Reparatur; T54 wird nach seiner einen Reparatur ausgeführt.
+
+**S2 – Gleichpreis-Ausnahme, eng.** `amountErrors` meldet für `offer.accept` keinen Belegfehler, wenn **alle** Bedingungen gelten:
+1. Das Angebot ist offen und bindend; `agreed_cp` ist exakt der Gesamtpreis, den `acceptanceWhy` für die gewählten Zeilen und Mengen berechnet.
+2. Der Beleg hat `basis: total` und ist lediglich **nicht auffindbar** (`quote_not_found`, mehrdeutig, `currency_missing`, `no_amount`). Geprüft mit anderem Betrag, widersprüchlich, unvollständig oder ein Einheitspreis-Grund bleiben wie heute.
+3. Die Spielernachricht nennt keinen anderen Betrag: Jede Münzsumme und jede bloße Zahl darin entspricht diesem Gesamtpreis, oder sie enthält keine Zahl.
+4. Die ganze Nachricht enthält kein Rabattmuster aus `trade.js:113`.
+
+Der Befehl bleibt unverändert; Zahl und Belegfeld werden **nicht** auf `null` gesetzt. Der Handler arbeitet danach exakt wie heute nach einer erfolgreichen Reparatur.
+- Wirkung im Pilot: T40 und T48 ohne Reparatur. T54 erfüllt Bedingung 3 nicht („two“) und bleibt beim heutigen Weg.
+- Bedingung 3 schließt G1 und G2 aus, Bedingung 4 G3, das unveränderte Feld G4.
+
+**S3 – Kein Zugverlust durch einen nicht auffindbaren Beleg bei `buy` und `sell`.** Bleibt nach der einen Reparatur ausschließlich ein Fehler der Klasse „nicht auffindbar“ an `max_cp` oder `min_cp`, wird der Plan unverändert angenommen. `provenNumber` behandelt die Zahl als nicht belegt, sperrende Vergleiche behalten sie.
+- **Voraussetzung:** Der Zielkauf (`commands.js:1751`–`1754`) verwendet `provenNumber` wie der direkte `buy`. Ohne diese Korrektur ist S3 für `buy` ein NO-GO (G5).
+- Wirkung im Pilot: T38 wird ausgeführt und führt einen Zug früher zum Gebot.
+- `offer.accept` fällt nur unter S3, wenn zugleich die Bedingungen von S2 gelten.
+
+**Nicht Teil des sicheren Umfangs:**
+- den Beleg generell überspringen, sobald `agreed_cp` dem Angebotspreis gleicht (G1, G2, G3);
+- Zahl oder Beleg lokal auf `null` setzen (G4, G6);
+- die Reparatur für „nicht auffindbar“ bei `buy`/`sell` ganz auslassen. Sie kann ein gültiges Zitat nachliefern und damit ein belegtes Limit; das spart dann einen Spielerzug. Erst nach Messung entscheiden;
+- Änderungen an widersprüchlichen oder unvollständigen Beträgen, an Preiskonflikten (T53), am Hinweis für fehlende Belege (T57), an `pay` (T52) und an `unitOnly`.
+
+### 13.7 Wirkung und Risiken
+
+| | Heute (Pilot) | Mit S1–S3 (aus dem Code abgeleitet, nicht ausgeführt) |
+|---|---|---|
+| Reparaturaufrufe in den acht Fällen | 8 | 5 (T40, T48 und T55 entfallen) |
+| Verlorene Spielerzüge | 2 (T38, T54) | 0 |
+| Begründete Reparaturen (T52, T53) | 2 | 2, unverändert |
+
+Die Schätzung aus §9 („4, vermutlich 6 Reparaturen“) ist damit auf **drei** zu korrigieren. Der größere Gewinn sind die zwei geretteten Züge.
+
+**Risiken:**
+- **S1:** Zwei gleichlautende Beträge können zu verschiedenen Vorgängen gehören. Der Betrag ist dann derselbe; das Zuordnungsrisiko besteht bei einer einzelnen Fundstelle genauso.
+- **S2:** Bedingung 3 hängt an der Zahlenerkennung (`coinEvidence`, `numberRuns`). Ein Betrag in einer Form, die sie nicht liest, würde die Ausnahme fälschlich zulassen. Deshalb gilt sie nur bei exaktem Gleichstand mit dem gespeicherten Preis, und gebucht wird nie mehr als dieser.
+- **S3:** Mehr Ergebnisse „Preis offen“ statt Planfehler. Der Erzähler erhält eine verständliche Zeile statt „NOT EXECUTED“; ein Kauf oder Verkauf entsteht daraus nie.
+- **Gemeinsam:** Der Record enthält dann einen nicht belegten Beleg. Diagnose und Runner sollten das als eigenen Zustand zeigen, nicht als geprüft.
+
+**Abnahmehinweis für einen späteren Auftrag:** Die ersten Planner-Antworten von T38, T40, T48, T54 und T55 liegen im Archiv und eignen sich als Rot/Grün-Fälle. G1 bis G6 gehören als Gegenfälle dazu; G5 muss vor S3 rot sein.
+
+### 13.8 Empfehlung
+
+| Teil | Urteil |
+|---|---|
+| **S1** Mehrfachzitat mit gleichem Betrag | **GO** |
+| **S2** Gleichpreis-Ausnahme mit den vier Bedingungen | **GO**, nur vollständig |
+| **S3** kein Zugverlust bei `buy`/`sell` | **GO nur zusammen mit** `provenNumber` im Zielkauf |
+| V4 in der Fassung aus §9 (Beleg überspringen, sobald der Preis gleich ist) | **NO-GO** |
+| Lokale Normalisierung auf `null`; Reparatur ganz auslassen | **NO-GO** |
+
+**Gesamt: eingeschränktes GO.** B-3 (ungeprüftes Limit im Zielkauf, Rabattsperre mit unbelegter Zahl) ist ein eigener kleiner Befund außerhalb von V4. Der Zielkauf-Teil ist Voraussetzung für S3; die Rabattsperre braucht eine Designentscheidung, ob eine unbelegte Zahl sie aufheben darf.
+

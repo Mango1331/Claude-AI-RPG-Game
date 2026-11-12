@@ -1,5 +1,5 @@
 // The targeted NPC/PULSE batch of the live runner (guides/npc_pulse_test.json, scenarios NPC_SCENARIOS, batch.mjs
-// --mode npc, npc_pulse.mjs): the guide and its two profiles, the player's prompt, the batch control beside the
+// --mode npc, npc_pulse.mjs): the guide and its three profiles, the player's prompt, the batch control beside the
 // unchanged Guild series, and the evaluation of saved records. The evaluation is checked on chats the real engine
 // produced through the host path (scripted planner/extractor answers, a forced PULSE draw only where a test needs an
 // open window) and on deliberately broken copies of their records; none of this is a natural model test.
@@ -36,7 +36,7 @@ test('npc_pulse_test: a natural open run of about 70 inputs (cap 80), creation a
     assert.deepEqual([g.openRun.minTurns, g.openRun.targetLevel, g.limits.maxTurns], [70, undefined, 80]);
     assert.deepEqual(g.milestones.filter((m) => m.required !== false).map((m) => m.id), ['creation_complete', 'open_run_duration']);
     assert.ok(!g.fixture && !g.scripted?.length);
-    assert.equal(g.personas.length, 2);
+    assert.equal(g.personas.length, 3);
     // goals, never prescribed lines, people, contract order or events
     assert.ok(!/["“]/.test(g.brief), 'no prescribed dialogue');
     assert.ok(!/\b(?:Tam|Brenna|Marda|Bess|Glassmere|Alderwatch)\b/.test(g.brief), 'no prescribed people or places');
@@ -47,9 +47,11 @@ test('npc_pulse_test: a natural open run of about 70 inputs (cap 80), creation a
     assert.match(guideErrors({ ...g, analysis: 'x' }).join(' '), /analysis "x" unknown/);
 });
 
-test('NPC profiles: two runs with their own class and style; the six Guild/explore profiles and their seed order stay as they were', () => {
+test('NPC profiles: three distinct classes and playing styles; existing Guild/explore scenarios and seeds stay unchanged', () => {
     assert.deepEqual(SCENARIOS.map((s) => s.id), ['guild-warrior', 'guild-mage', 'guild-rogue', 'explore-warrior', 'explore-mage', 'explore-rogue']);
-    assert.deepEqual(NPC_SCENARIOS.map((s) => [s.id, s.baseClass]), [['npc-sociable', 'Warrior'], ['npc-wary', 'Rogue']]);
+    assert.deepEqual(NPC_SCENARIOS.map((s) => [s.id, s.baseClass]), [['npc-sociable', 'Warrior'], ['npc-wary', 'Rogue'], ['npc-inquisitive', 'Mage']]);
+    assert.equal(new Set(NPC_SCENARIOS.map((s) => s.style)).size, 3, 'each player has a distinct personality');
+    assert.equal(new Set(NPC_SCENARIOS.map((s) => s.baseClass)).size, 3, 'all three base classes are covered');
     const guide = loadGuide('npc_pulse_test');
     const prompts = NPC_SCENARIOS.map((s) => { const g = scenarioGuide(guide, s.id); return { s, g, p: playerSystemPrompt(g, { username: 'Alaric', persona: g.personas[0] }) }; });
     for (const { s, g, p } of prompts) {
@@ -60,7 +62,7 @@ test('NPC profiles: two runs with their own class and style; the six Guild/explo
         assert.match(p, /"milestone":"open_run_duration"/);
         assert.match(g.milestones[0].goal, new RegExp(`Level-1 ${s.baseClass}`));
     }
-    assert.notEqual(prompts[0].p, prompts[1].p);
+    assert.equal(new Set(prompts.map((x) => x.p)).size, 3, 'each NPC player receives its own persona in the prompt');
     // the Guild scenario on current_test is untouched; the profiles do not cross
     const guild = scenarioGuide(loadGuide('current_test'), 'guild-warrior');
     assert.match(guild.brief, /Continue to Engine-confirmed Level 15/);
@@ -69,7 +71,7 @@ test('NPC profiles: two runs with their own class and style; the six Guild/explo
 });
 
 // --------------------------------------------------------------------------------------------------- batch control
-test('batch --mode npc: two sequential runs (npc-sociable, npc-wary) with the batch seed and the next, the npc guide; the default stays the Guild series', async (t) => {
+test('batch --mode npc: three sequential runs (sociable, wary, inquisitive), seeds +0/+1/+2, separate evaluation; Guild batch unchanged', async (t) => {
     const npc = batchArgs(['--mode', 'npc', '--headed']); // main() strips --seed and --runs before the runs get their own
     assert.deepEqual([npc.mode, npc.maxHours, arg(npc.args, '--guide'), npc.args.includes('--mode')], ['npc', 24, 'npc_pulse_test', false]);
     const guild = batchArgs(['--max-hours', '12']);
@@ -89,15 +91,16 @@ test('batch --mode npc: two sequential runs (npc-sociable, npc-wary) with the ba
         fs.writeFileSync(path.join(dir, 'npc-pulse.json'), '{}'); // a run writes both evaluation files (P2-B)
         return { code: 0 };
     } });
-    assert.deepEqual(seen, [['npc-sociable', 7, 'npc_pulse_test'], ['npc-wary', 8, 'npc_pulse_test']]);
-    assert.deepEqual([result.status, result.mode, result.runs.map((r) => r.end.kind)], ['completed', 'npc', ['done', 'done']]);
+    assert.deepEqual(seen, [['npc-sociable', 7, 'npc_pulse_test'], ['npc-wary', 8, 'npc_pulse_test'], ['npc-inquisitive', 9, 'npc_pulse_test']]);
+    assert.deepEqual([result.status, result.mode, result.runs.map((r) => r.end.kind)], ['completed', 'npc', ['done', 'done', 'done']]);
     const report = fs.readFileSync(path.join(root, 'report.md'), 'utf8');
-    assert.match(report, /2 natürliche NPC-\/PULSE-Testläufe/);
+    assert.match(report, /3 natürliche NPC-\/PULSE-Testläufe/);
     assert.match(report, /keine bestandene NPC- oder PULSE-Abnahme/);
     assert.match(report, /\[npc-pulse\.md\]\(001-npc-sociable\/run-npc_pulse_test\/npc-pulse\.md\)/);
+    assert.match(report, /\[npc-pulse\.md\]\(003-npc-inquisitive\/run-npc_pulse_test\/npc-pulse\.md\)/);
     assert.deepEqual(BATCH_MODES.guild.profiles.map((s) => s.id), ['guild-warrior', 'guild-mage', 'guild-rogue']);
     // the listing needs no SillyTavern
-    assert.equal(execFileSync(process.execPath, [BATCH, '--mode', 'npc', '--list']).toString().trim(), '1. npc-sociable\n2. npc-wary');
+    assert.equal(execFileSync(process.execPath, [BATCH, '--mode', 'npc', '--list']).toString().trim(), '1. npc-sociable\n2. npc-wary\n3. npc-inquisitive');
     assert.equal(execFileSync(process.execPath, [BATCH, '--list']).toString().trim(), '1. guild-warrior\n2. guild-mage\n3. guild-rogue');
 });
 

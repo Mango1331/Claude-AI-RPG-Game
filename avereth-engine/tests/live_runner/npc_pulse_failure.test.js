@@ -33,15 +33,16 @@ function archive(args, analysis) {
 test('P2-B: a batch run without a valid npc_pulse evaluation is marked in the batch report, and the batch is not "completed"', async (t) => {
     for (const [second, mark] of [['failed', /Auswertung fehlgeschlagen: boom in the evaluation/], ['absent', /Auswertung fehlt/]]) {
         const root = path.join(temporary(t), 'npc-batch');
-        const kinds = ['ok', second];
+        const kinds = ['ok', second, 'ok'];
         const result = await runBatch({ root, args: batchArgs(['--mode', 'npc']).args, seed: 3, maxHours: 1, mode: 'npc' }, { revision: () => 'fixed', launch: async (args) => { archive(args, kinds.shift()); return { code: 0 }; } });
         assert.equal(result.status, 'analysis_incomplete', second);
-        assert.deepEqual(result.runs.map((r) => r.analysisOk), [true, false]);
+        assert.deepEqual(result.runs.map((r) => r.analysisOk), [true, false, true]);
         const report = fs.readFileSync(path.join(root, 'report.md'), 'utf8');
         assert.match(report, mark);
-        assert.match(report, /1 von 2 Läufen ohne gültige NPC-\/PULSE-Auswertung/);
+        assert.match(report, /1 von 3 Läufen ohne gültige NPC-\/PULSE-Auswertung/);
         assert.match(report, /\[npc-pulse\.md\]\(001-npc-sociable\//, 'the evaluated run keeps its link');
         assert.ok(fs.existsSync(path.join(root, '002-npc-wary', 'run-npc_pulse_test', 'chat.jsonl')), 'the exports stay');
+        assert.ok(fs.existsSync(path.join(root, '003-npc-inquisitive', 'run-npc_pulse_test', 'npc-pulse.md')), 'an isolated third run still exports its own analysis');
     }
     // all evaluated: completed as before
     const root = path.join(temporary(t), 'npc-batch');

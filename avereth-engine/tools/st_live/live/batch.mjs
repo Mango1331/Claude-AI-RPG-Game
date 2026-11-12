@@ -14,8 +14,8 @@ import { NPC_PULSE_FILES } from './npc_pulse.mjs';
 const RUNNER = fileURLToPath(new URL('./run_live.mjs', import.meta.url));
 const INFRA = new Set(['harness', 'ui', 'missing', 'no_result', 'process_error', 'scenario_metadata_mismatch']);
 const BATCH_SCENARIOS = SCENARIOS.filter(s => s.focus === 'guild');
-// Batch modes: the historical Guild series (default, unchanged) and the targeted NPC/PULSE series (two independent runs
-// of guides/npc_pulse_test.json with their own class, style and seed: the batch seed and the next one). analysis: the
+// Batch modes: the historical Guild series (default, unchanged) and the targeted NPC/PULSE series (three independent runs
+// of guides/npc_pulse_test.json, one per class/style, with seeds: batch seed, +1 and +2). analysis: the
 // evaluation every run of the mode owes (P2-B): a run without it is marked, and the batch ends analysis_incomplete.
 export const BATCH_MODES = {
     guild: { profiles: BATCH_SCENARIOS, guide: 'current_test', seedOf: (seed, s) => (seed + SCENARIOS.indexOf(s)) % 0x80000000 },

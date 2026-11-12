@@ -5,12 +5,13 @@ const FOCUS = {
     explore: 'Make journeys and discoveries your main occupation: travel between cities, villages and wilderness regions, investigate landmarks and rumors, meet people and follow discoveries. Prepare sensibly, then move on rather than remaining in the starting town. Choose suitable wild-monster fights along the way when worthwhile; avoid or withdraw from threats beyond your abilities. Earn your living outside the Guild through selling loot, paid work, trading or other credible local opportunities. Guild registration and contracts are not your progression route; do not join or check boards as a routine first step. Incidental help and suitable Dungeons remain welcome when naturally encountered. Choose your own destinations and income sources; never force a journey, fight or success.',
 };
 export const SCENARIOS = Object.entries(FOCUS).flatMap(([focus, goal]) => CLASSES.map(baseClass => ({ id: `${focus}-${baseClass.toLowerCase()}`, focus, baseClass, goal })));
-// The targeted NPC/PULSE batch (guides/npc_pulse_test.json, batch.mjs --mode npc): two independent natural runs with
+// The targeted NPC/PULSE batch (guides/npc_pulse_test.json, batch.mjs --mode npc): three independent natural runs with
 // their own class and playing style. Only the run's base class and style are set; people, contracts, routes, words and
 // encounters stay the player's and the game's. Separate from SCENARIOS so the Guild batch's seeds stay as they were.
 export const NPC_SCENARIOS = [
     { id: 'npc-sociable', focus: 'npc', baseClass: 'Warrior', style: 'warm, curious and sociable: you seek out people, ask about their work and lives and follow up on it later; you readily offer help or ask capable people to come along, and accept a refusal gracefully; you still judge people by how they act and keep your guard up with anyone who threatens you' },
     { id: 'npc-wary', focus: 'npc', baseClass: 'Rogue', style: 'wary and pragmatic: polite but guarded with strangers, you ask questions before you trust, haggle, decline offers that seem off, keep the promises you make and expect the same; you work with people who prove reliable, avoid or stand up to those who do not, and prefer scouting to needless fights' },
+    { id: 'npc-inquisitive', focus: 'npc', baseClass: 'Mage', style: 'inquisitive, observant and independently minded: as a Mage you seek to understand unfamiliar places, old stories and the people who know them. Ask concrete questions, distinguish a rumour from what you personally saw, and return to a previous contact when a new lead gives you a real reason. Prefer exploration, thoughtful preparation and creative problem-solving over needless violence, but take worthwhile risks and suitable Guild work when they fit your priorities. Never force a discovery or make the world agree with you.' },
 ];
 const ALL_SCENARIOS = [...SCENARIOS, ...NPC_SCENARIOS];
 

@@ -58,54 +58,46 @@ Auch ohne vollständigen Run-Export enthalten `batch.json` und der Serienbericht
 
 Vier neue Regressionen waren auf dem unveränderten `.100`-Runner rot und sind nachher grün: Prozessstart mit Pipes/Weiterleitung, früher Fehler mit begrenzter und bereinigter Diagnose, tatsächlicher ENOENT-Startfehler und der originale Windows-Exitcode ohne Spielbericht. Batchtests **14/14**, vollständige Node-Suite **1.936/1.936**. Echter **ST1.19-Stub-Batch unter Linux 9/9**, jeweils zwei normale Erstellungseingaben: alle geforderten Klassen, eigene Exporte, keine PageErrors, Profiländerungen oder Geheimnistreffer. Alle endeten korrekt am bewusst gesetzten Zweieingaben-Limit; keine natürliche GLM- oder Level-15-Abnahme. Die echte Windows-Ursache und der Erfolg auf dem betroffenen Rechner bleiben bis zur dortigen Gegenprobe offen; Linux-Tests ersetzen diese Abnahme nicht. Engine-Build bleibt `.100`; nur Runner, Runner-Tests und dieser Leitfaden geändert. Startbefehle und Spieleranweisungen bleiben unverändert.
 
-## Gezielter NPC-/PULSE-Batch (zwei natürliche Läufe, Build `.174`)
+## Gezielter NPC-/PULSE-Batch (drei natürliche LLM-Spieler, Runner-Erweiterung 12.11.2026)
 
-Prüft NPC E2-A/E2-B (Wiederbegegnung, Identität, Anwesenheit, persönliches Wissen, Gildenbearbeiter, Absprachen), NPC E3 (Persönlichkeitsanker) und PULSE A/C/B (Ereignisfenster auf Reise, in Stadt und Wildnis, bei Rast und im Dungeon). Grundlage sind natürliches Spiel und eine Auswertung der gespeicherten Daten. Engine, Regeln und der Guild-Batch bleiben unverändert.
-
-```powershell
-npm run live:st:npc -- --headed
-```
-
-Der Batch startet **nacheinander zwei neue Level-1-Kampagnen** mit dem Leitfaden `npc_pulse_test`:
-
-| Nr. | Profil | Klasse | Spielstil | Seed |
-|---|---|---|---|---|
-| 1 | `npc-sociable` | Warrior | herzlich, neugierig, gesellig; sucht Gespräche und Begleitung, nimmt ein Nein an, bleibt bei Bedrohung wachsam | Batchseed |
-| 2 | `npc-wary` | Rogue | höflich, aber vorsichtig; fragt nach, verhandelt, lehnt Zweifelhaftes ab, hält Zusagen, erkundet lieber als zu kämpfen | Batchseed + 1 |
-
-- **Spielerverhalten** (Leitfaden `tools/st_live/live/guides/npc_pulse_test.json`):
-  - Gildenverträge sind der rote Faden; Gespräche mit Gildenpersonal und Abenteurern ergeben sich dabei.
-  - Menschen kennenlernen und bekannte Personen später als Bekannte ansprechen. Gespräche, Absprachen und Erlebnisse aufgreifen, ohne sie künstlich zu wiederholen.
-  - Gemeinsam reisen, Hilfe anbieten oder um Begleitung bitten, wo es passt. Eine Party entsteht nur bei glaubwürdiger Zustimmung; sie ist weder Pflicht noch automatisch erfolgreich.
-  - Freundlich, neugierig, vorsichtig, misstrauisch oder feindselig reagieren; Verhandeln, Ablehnen, Rückzug und Kampf sind gleichwertige Optionen.
-  - Städte, Straßen, Wildnis und gegebenenfalls einen Dungeon erkunden; rasten und übernachten.
-  - Der Spieler bestimmt nur seine eigenen Handlungen und Worte. Er nimmt keine NPC-Reaktionen, Begegnungen, Erfolge oder Ereignisse vorweg und bittet die Erzählung um kein Ereignis.
-  - Keine vorgegebenen Dialoge, Personen, Questreihenfolgen, erzwungenen Zufallsereignisse oder Kämpfe.
-- **Umfang:**
-  - `openRun.minTurns: 70`: Die Pflichtetappe `open_run_duration` ist nach 70 echten Eingaben erreicht, dann endet der Lauf als `done`. Sicherheitsgrenze 80 Eingaben oder 480 Minuten; kein Levelziel.
-  - Pflichtetappen: `creation_complete` und `open_run_duration`.
-  - Optionale Etappen: `guild_registered`, `quest_completed`, `inside_dungeon` (nur „wenn es in Reichweite kommt“).
-  - Tod, Blocker und Grenzen bleiben eigene Endgründe.
-- **Spielerprompt:** gemeinsame Konventionen, `GEAR CHECK` offener Läufe, Brief, Stil. Etwa 9 270 Zeichen, rund 740 mehr als ein Guild-Profil; das sind die sozialen Verhaltensregeln. Das Antwortbeispiel nennt die eigene Etappe (`exampleMilestone`); alle anderen Leitfäden behalten ihren Prompt unverändert.
-- **Ablage:** `npc-batch-<Zeitstempel>/001-npc-sociable/<Run-ID>/` und `002-npc-wary/…`, jeweils mit den bisherigen Exporten plus `npc-pulse.json` und `npc-pulse.md` (§7a). `report.md` je Lauf erhält einen kurzen Abschnitt „NPC/PULSE-Auswertung“. Die Batchübersicht verlinkt beide Auswertungen. Fehlt eine Auswertung oder ist sie fehlgeschlagen, steht das im Lauf- und Batchbericht (Korrektur unten).
-- **Bedeutung:** „Batch completed“ heißt: zwei beendete Läufe, beide mit Auswertung, **keine** bestandene NPC- oder PULSE-Abnahme. `analysis_incomplete`: alle Läufe beendet, mindestens einer ohne gültige Auswertung.
-- **Kosten:** Je Eingabe ein Spieleraufruf sowie Planner, Erzähler und Extractor des Spiels (plus Reparaturen). Bei bis zu 80 Eingaben je Lauf sind das grob 600–700 kostenpflichtige Aufrufe für beide Läufe. Die Auswertung selbst ruft kein Modell auf.
-
-Weitere Aufrufe:
+Drei unabhängige Level-1-Kampagnen im **gleichen unveränderten** NPC-/PULSE-Leitfaden prüfen NPC E2-A/E2-B (Wiedererkennen, Wissen, persönliche Zusagen), E3 (später belegte Charaktermerkmale) und PULSE A/C/B (freie Ereignisse, Rast, Reisen, Dungeon). Die Spieler sehen **nur Chat/HUD/System** und eigene Spielnotizen, **keinen** verborgenen Enginezustand; es gibt keine vorgegebenen NPCs, Dialoge, Questfolgen, Würfelergebnisse oder garantierten Begegnungen.
 
 ```powershell
 npm run live:st:npc -- --list
+npm run live:st:npc -- --headed
+```
+
+| Reihenfolge | Eigenständiges Profil | Klasse | Persönlichkeit und typische freie Entscheidungen | Seeds ab 7 |
+|---|---|---|---|---|
+| 1 | `npc-sociable` | Warrior | **Herzlich und kontaktfreudig:** fragt Menschen nach ihrem Leben, hilft, knüpft Bindungen, reist gegebenenfalls in Gesellschaft; nimmt ein Nein an und bleibt bei Gefahr vorsichtig | 7 |
+| 2 | `npc-wary` | Rogue | **Vorsichtig und pragmatisch:** prüft Aussagen, verlangt glaubwürdige Gründe für Vertrauen, verhandelt, lehnt ab, kundschaftet aus und meidet unnötige Kämpfe | 8 |
+| 3 | `npc-inquisitive` | Mage | **Neugierig und eigenständig:** erforscht Orte, fragt nach Hintergrund und Gerüchten, trennt Wissen von Behauptungen, greift frühere Kontakte bei passenden neuen Hinweisen auf | 9 |
+
+**Vergleichbarkeit:** Die beiden älteren Profile behalten **ihren ursprünglichen Wortlaut** (Pilot 01 nutzte `npc-sociable` auf `.174`). Neu ist ausschließlich das dritte Profil; das gemeinsame `npc_pulse_test`-Briefing, sämtliche Meilensteine, Bewertungskriterien und die Standard-Guild-/Explore-Batches bleiben gleich. Drei unterschiedliche Persönlichkeiten liefern zusätzliche **natürliche Gelegenheiten**, aber garantieren keine E3-Anker, NPC-Wiederbegegnungen, PULSE-Wanderer oder abgeschlossenen Quests.
+
+**Durchführung:** `npm run live:st:npc` führt nacheinander `npc-sociable`, `npc-wary`, `npc-inquisitive` aus, mit **eigenem** Seed (Basis, Basis+1, Basis+2), eigener Kampagne, Charaktererstellung, Chat-/Event-/Request-Exporten und `npc-pulse.json`/`npc-pulse.md`. Der ganze Batch zählt standardmäßig höchstens 24 Stunden; pro Profil mindestens 70 Eingaben als Dauerziel, maximal 80 Eingaben bzw. 480 Minuten. Frühere Tode, echte Blockaden oder Abbrüche sind eigene Endgründe. Fehlende Auswertungen werden im Batch als `analysis_incomplete` sichtbar, nicht als Erfolg gezählt.
+
+**Einzellauf** (nur einer der drei Stile, nicht der Dreierbatch):
+
+```powershell
+npm run live:st -- --guide npc_pulse_test --scenario npc-inquisitive --headed
+npm run live:st -- --guide npc_pulse_test --scenario npc-wary --headed
+```
+
+**Weitere Aufrufe:**
+
+```powershell
 npm run live:st:npc -- --check
 npm run live:st:npc -- --seed 7 --max-hours 8
-npm run live:st -- --guide npc_pulse_test --scenario npc-wary
 npm run live:st:npc-eval -- <Laufordner>
 ```
 
-- `--seed 7` startet die Profile mit 7 und 8. Ohne Seed wird eine neue Folge gewählt; ein Seed garantiert keinen identischen Modellverlauf.
-- `--list` braucht keine SillyTavern-Installation.
-- Der Einzellauf ohne `--scenario` wählt einen der beiden Stile per Seed und lässt die Klassenwahl frei.
-- `live:st:npc-eval` wertet einen vorhandenen Laufordner (`chat.jsonl`, `chat-completions.jsonl`) neu aus und schreibt `npc-pulse.json`/`.md` in diesen Ordner.
-- Der Guild-Batch (`npm run live:st:batch`, Profile, Seeds 7/8/9, Bericht) und `current_test` sind unverändert. Die NPC-Profile gibt es nur mit `npc_pulse_test`, die Guild-Profile nur mit den bisherigen Leitfäden.
+- `--seed 7` bedeutet `7/8/9`. Gleicher Seed garantiert **keinen identischen** LLM-Verlauf.
+- `--list` und die Prüfung der Guide-/Profilnamen benötigen keine laufende SillyTavern-Instanz.
+- Ohne `--scenario` wählt der Einzellauf weiterhin einen Stil des Leitfadens über den Seed; jetzt stehen drei zur Verfügung, aber ohne feste Klassenwahl.
+- Umfang und API-Kosten steigen bei vollständigem Dreierbatch gegenüber dem früheren Zweierbatch um **ein weiteres Profil**; Spielerentscheidungen verursachen zusätzliche Modellaufrufe getrennt von Planner, Narrator und Extractor. Die echte Nutzung ist im Laufbericht zu messen, nicht vorab als Erfolg oder feste Tokenzahl auszugeben.
+- **Auswertung:** `completed` bezeichnet nur beendete Kampagnen mit vorhandenem Analyseexport, **keine bestandene NPC-/PULSE-Abnahme**. Echte Prompt-/Antwort- und Eventbelege sind für einen unabhängigen Review weiterhin nötig.
+- **Historischer Nachweis:** Die unten dokumentierte technische Runner-Abnahme vom 09.11.2026 betrifft den **damaligen Zweierbatch** auf `.174` und ist kein neuer Testnachweis für die Dreier-Erweiterung.
 
 **Technische Abnahme 09.11.2026 (Runner-Änderung, Engine `.174` unverändert):**
 - 7 neue Regressionen (`tests/live_runner/npc_pulse_runner.test.js`): Leitfaden und Profile, Spielerprompt, Batchsteuerung, Auswertung einer echten Host-Karriere, belastbare Invarianten an absichtlich beschädigten Record-Kopien, PULSE mit erzwungenem Testfenster, Auswertung eines Laufordners.

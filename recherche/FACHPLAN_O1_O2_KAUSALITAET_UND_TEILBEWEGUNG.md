@@ -377,3 +377,84 @@ Beide zuerst im natürlichen Lauf auf `.179` zählen.
 - O2 als echte Bewegung in den Kindort.
 
 **Bestätigt:** Die Kaskade ist kein Fehler, sondern die Folge falsch-negativer Ortswechsel-Ablehnungen. Deren Ursachen gehören in Planner und O4, nicht in die Szenenprüfung.
+
+
+---
+
+## 9. Unabhängiger GPT-Gegenreview des Opus-Fachplans O1/O2
+
+**12.11.2026 · ausschließlich Code-/Design-Gegenprüfung; keine Implementierung, keine Tests, keine neue Kanonentscheidung.**
+
+**Basis:** Opus-Fachplan §§0–8 auf `main` bei `0765b07bf21a1725704ce1b014696d0756918fce`; Produktbuild `.179` bei `59f868eaf3c4ed7942ddc42ba3d180fab44a72cd`. Maßgebliche Grundlagen: [Opus-Gegenreview und GPT-Nachtrag §12](ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md), [Fable-Audit mit GPT-Gegenreview](ARCHITEKTUR_AUDIT_10B_FABLE.md), [Design-Kanon](../02_DESIGN_KANON.md).
+
+**Eigene Codeprüfung:** `src/v4/extract.js` (`localSceneDelta`, `sceneIssues`, `parseExtraction`), `place_refs.js` (`placeKey`/`scopedPlaces`), `world.js` (beide `scene_context`-Bedingungen, `fact`, `thread`, `person.named`, `quest.detail`, gleichörtiges `arrive`, Firewall-Kontext), `firewall.js` (`no_go`), `domain.js` (`service.granted`) und `dungeon.js` (`complexOf`). **Nicht eigenständig neu gezählt:** Opus' Originalarchiv-Auswertungen (Pilot/Batch 28); die Zahlen und Fallklassifikationen stammen von Opus. **Keine** Node-Suite, Replay, ST-Host-Tests, Simulation oder Modellläufe ausgeführt.
+
+### 9.1 Gesamturteil
+
+**Opus' Selbstkorrektur ist fachlich richtig.** Die vorher vorgeschlagene pauschale Freistellung von `fact`, `thread`, `person.named` und `quest.detail` aus der Szenenprüfung ist zurückgezogen. Dies ist ein wesentlicher Sicherheitsgewinn: Eine ortsneutral speicherbare Aussage kann kausal aus einer **nicht erreichten** Szene stammen. Dagegen ist die Unterscheidung zwischen
+1. **vor einer erzählten Ankunft tatsächlich verorteten Meldungen** ohne eigenes `scene`-Feld und
+2. **nach einer verweigerten Ankunft** aus dem unerreichten Ort berichteten Folgen
+im Code sachlich begründet.
+
+**Neue Priorität:** O1-B1 ist eine **kleine mögliche Reparaturoptimierung**, keine große Architekturvereinfachung; O2-stay eine **lokale Darstellungskonvention**, kein genereller Reise-/Zimmer-Fix. Beide haben einen eng begrenzten belegten Nutzen. Keine weitere Architektur- oder Mikropatch-Schleife nötig, bevor der natürliche Lauf auf `.179` ausgewertet wurde.
+
+| Option | Unabhängige GPT-Einstufung | Tragender Punkt |
+|---|---|---|
+| O1 alte Typliste, O1-C | **NO-GO bestätigt** | Kausalität darf nicht durch vermeintlich „ortsneutrale“ Typen übergangen werden. |
+| **O1-B1** | **Eingeschränktes GO als Fachpatch-Kandidat** | `seq`-gestützte Voranordnung kann Reparaturen vermeiden, sofern Kette und Ort **tatsächlich** schlüssig sind. |
+| O1-B2 | **Weitere natürliche Evidenz nötig** | Personen/Objekte können bei falscher `seq`-Ordnung an falschen Orten entstehen. |
+| **O2-stay** | **Noch nicht als allgemeine Designregel freigeben** | Es verhindert eine Ortsbuchung, bildet aber ein privates Zimmer auf dieselbe physische Szene wie Gasthaus und Gäste ab. |
+| O2-alt, O2-move | **NO-GO für den vorgelegten Umfang** | Alte Regel ohne aktuellen Handlungsbezug; echte Zimmerbewegung braucht folgerichtiges Rückkehr-/Raummodell. |
+| Status quo | **Weiter zulässig** | Wenn Kosten/Nutzen nach `.179` zu gering, besteht kein Änderungszwang. |
+
+### 9.2 O1-B1 – Im Code nachvollziehbar, aber die Schlüssigkeitsprüfung ist das eigentliche Sicherheitskriterium
+
+**Positiv bestätigt:**
+- `sceneIssues` betrachtet lokale Meldungen vor der späteren Ankunft und fordert mit seiner `chronology`-Regel eine eigene Szenenangabe; dadurch entstehen Reparaturanfragen.
+- `scopedPlaces` wird sowohl im Extractorparser als auch zu Beginn von `applyWorld` angewendet. Eine reine, **idempotente** Normalisierung nach demselben Muster ist als Entwurfsrichtung plausibel.
+- `world.js` enthält **zwei** voneinander unabhängige Szenenprüfungen: die `localSceneDelta`-/Chronologie-/Reisebedingung und zusätzlich den Vergleich `origin != null && !sceneMatches(origin)`. O1-B1 lässt beide bestehen und fügt vor ihnen bei geeignetem Beleg die bisher fehlende Stelle ein. **Dies ist deutlich sicherer** als die alte Freistellung.
+- Die nach Opus archivierten sechs erfolgreichen Reparaturen belegten offenbar nur das explizite Szenenlabel, das die beobachtete Reihenfolge bereits nahelegt. Der Fall „Torv“ illustriert sogar einen möglichen Informationsverlust **durch** die zusätzliche Modellreparatur.
+
+**Nicht übergehen:**
+1. **`seq` ist ein Bericht des Extractors, kein unabhängiger Beweis der Erzählerchronologie.** Opus dokumentiert selbst eine falsche Reihenfolge in Batch 28 rec233. Ein Voranordnen nach `seq` kann deshalb einen falschen, aber syntaktisch schlüssigen `fact`- oder `thread`-Bericht persistieren. Der behauptete Satz „O1-B öffnet kein neues Loch“ ist als **absolute Sicherheitseigenschaft zu stark**; korrekt ist: Es gibt in den untersuchten erfolgreichen Reparaturen *keinen Beleg einer zusätzlichen Fehlzuordnung*. Ein positiver/negativer Gegenfall mit fehlnummerierter Aussage aus einem **nicht erreichten** Zielort gehört in die Testmatrix.
+2. **`answer.scene` und `here` sind derzeit gerade für die letzte Szene der Antwort definiert.** Opus' Regel „`here` vor der ersten Ankunft = Startort“ ist daher eine **gezielte Änderung der Extractor-Konvention**, nicht lediglich eine neutrale Auflösung eines fehlenden Feldes. Die neue Interpretation braucht einen eindeutigen Vertrag, bevor beide Seiten gleich normalisieren. Wo `here` eine andere semantische Verwendung hat, unverändert reparieren statt raten.
+3. **Die Konsistenzkette muss mit echten Orten verglichen werden, nicht mit bloß gleich klingenden Referenzen.** Der bestehende `placeKey` löst bekannte Orte und `{new:{...}}`-Referenzen soweit möglich auf; Dungeoneingänge, implizite Eltern und `scopedPlaces` können die Identität verändern. Die neue Normalisierung muss **vor** beiden Prüfschritten gleich arbeiten und bei unklarem Ort abbrechen (Status quo).
+4. **Keine Heilung der Kaskade nach einer abgelehnten Ankunft.** Dort ist die Ablehnung kausal richtig, solange die Meldung tatsächlich aus der nicht erreichten Szene stammt. Kein stilles „backdating“ oder freies Umsortieren der `seq`-Werte, nur Ausfüllen von `scene` bei **klarer** Reihenfolge.
+5. **Keine unnötige Unschärfe an Mehrfachankünften.** Die im Fachplan angegebene Regel, wonach jede `expected.arrived:true` ein passendes `arrive` hat, ist als *notwendige* Vertragsbedingung sinnvoll. Zusätzlich muss die behauptete Schlussszene dem **letzten** gemeldeten Ankunftsort entsprechen; nur bereits eindeutige Reihenfolgen auflösen. Ausdrückliche Ortsfelder niemals überschreiben.
+
+**Empfohlener enger Umfang:** O1-B1 nur für die vier spezifizierten Typen, nur `scene:null`/fehlerfrei definierte Vor-Ankunft-`here`, nur bei schlüssiger `answer.scene`/`arrive`-/`expected`-Kette. Parser und World teilen **dieselbe reine Logik**. Keine Änderung an `firewall.js`, `localSceneDelta`, `sceneIssues`, `blockedPeople` oder den eigentlichen Szenen-/Quest-Guards. Die Option O1-B2 ausdrücklich offen lassen.
+
+**Regressionen präzisieren:** Zusätzlich zu P1–P7 und N1–N11 eine **falsch nummerierte Meldung aus einer unerreichten Zielszene vor `arrive`** und eine **explizit abweichende Zwischen-/Schlussszene**. Die erste soll keine stillschweigende Quellenerfindung erlauben; falls der vorhandene Vertrag ihre Erkennung nicht ermöglicht, ist diese **Grenze explizit zu akzeptieren und zu dokumentieren**, statt eine neue Semantik-/Quellen-Engine zu bauen. `here`-Fälle separat von `null`-Fällen abnehmen.
+
+**Wirkung:** Opus sagt für Pilot 01 **drei von vier** Chronologie-Reparaturen weniger und Torv-Name gerettet voraus. Dies ist **eine Prognose aus Originalnachrichten, keine von GPT ausgeführte neue Modell-/Hostabnahme**. Selbst bei bestätigter Ersparnis bleibt O1-B1 eine zielgenaue Optimierung, nicht ein notwendiger Umbau.
+
+### 9.3 O2-stay – Mechanisch einfach, aber nicht automatisch ein stimmiger privater Zimmerort
+
+**Positiv:** Die alte `lodgedHere`-/`roomOfHere`-Ausnahme wird durch `rulesetOf(s) < 2` in aktuellen Kampagnen deaktiviert. Der Firewall-Fall `arrive` verlangt ohne `auth.go`/`auth.roam` sonst eine belegte äußere Ursache. Ein Zimmer als **nicht buchungswirksame Unterkulisse** des Gasthauses könnte die beiden Batch-28-Fälle ohne zusätzliche Bewegung nachträglich erzählbar machen.
+
+**Drei Design-/Codegrenzen:**
+1. **Der aktuelle Ort ist zugleich ein Präsenz-/Interaktionsraum.** Wird die Zimmerreferenz auf den Gasthaus-Ort normalisiert, bleiben Figuren im selben `scene.present`-Kontext, obwohl Alaric im privaten Zimmer schlafen soll. `enter`/`leave`, Gespräch, Stealth, Suche und spätere Angebote könnten weiter so behandelt werden, als stünde er am Tresen. Auch abgelegte Gegenstände liegen dann am Gasthaus statt wirklich im Zimmer. Opus erwähnt diese Konsequenzen, gewichtet ihre mögliche spätere Auswirkung aber niedrig. **Eine gemeinsame kanonische Orts-ID bedeutet mehr als eine reine Anzeigeänderung.**
+2. **Nicht jede Zimmerbuchung erlaubt eine Bewegung.** Die neue Bedingung „`service.granted` in diesem Zug“ kann auftreten, ohne dass Alaric die Treppe hinaufgehen wollte. Für O2-stay ist das nur dann akzeptabel, wenn die Engine klar kommuniziert, dass **kein eigener Zimmerraum als Zustand entsteht**, und der Erzähler weder zusätzliche freiwillige Reise noch ungewählte Interaktionen behauptet. Ein Raum-/Objektzugang darf durch diese Normalisierung nicht neu autorisiert werden.
+3. **Der Testfall `R8` der Opus-Tabelle ist falsch als unveränderte grüne Negativkontrolle eingeordnet.** Ein `arrive` an den **aktuellen** Ort wird in `firewall.js` vor `world.js` mit `no_go` verworfen, solange kein GO/Roam/äußeres Ereignis vorliegt. Erst O2-stay will diesen Firewall-Fall ausdrücklich zulassen. **R8 ist somit eine erwartete Verhaltensänderung (vorher rot, danach grün)**, keine bereits vor dem Patch grüne Kontrolle. Gleichfalls können die unveränderten Positivfälle `Q3` (Folgemorgen) und `Q4` (Pilot ohne `arrive`) **nicht** pauschal „rot gegen `.179`“ sein, obwohl die Abnahmezeile dies für Q1–Q5 verlangt.
+
+**Bewertung:** Das Modell „privates Zimmer ist nur eine narrative Unterkulisse des Gasthauses“ kann eine legitime bewusste *Abstraktion* sein, wenn der Nutzer **keine eigene Raum-/Präsenzmechanik für gewöhnliche Gasthäuser** wünscht. Diese Entscheidung muss klar als **Verzicht auf mechanisch eigenständige Zimmer** dokumentiert sein. Sie löst nicht generell das Problem unbelegter Teilbewegungen. Bei nur zwei belegten Fällen aus drei Läufen ist die Einführung jetzt **nicht zwingend**, und ein begrenzter Prompt-/Korrekturhinweis könnte billiger sein als eine dauerhafte Sondernormalisierung. Ohne bewusste Entscheidung über Privatheit/Präsenz **kein Implementierungs-GO**.
+
+**O2-Testmatrix bereinigen:** R8 unter neue Positivfälle; Q3/Q4 als unveränderte Regressionen; getrennte Gegenfälle „Zimmer als Unterkulisse“ versus „eigenes physisches Lager-/Präsenzobjekt“, NPCs im Schankraum, Objektablage und nicht autorisiertes Betreten gesperrter Nebenräume. Nicht einen neuen Sonderfall nur deshalb implementieren, weil er einen historischen Screenshot glättet.
+
+### 9.4 Priorität, Alternativen und die drei Nutzerentscheidungen
+
+**O1-B1:** **Eingeschränktes GO für eine spätere gezielte Implementierung**, wenn die frischen Daten den Reparaturnutzen bestätigen oder der Pilotfall Torv als bedeutsam bewertet wird. Sicherheitsvoraussetzung: eindeutige Kette, unveränderte beide World-Prüfungen, falsches `seq` als dokumentierte Grenze. Kein neuer Zustandsbegriff, kein neues Quellensystem.
+
+**O1-B2:** **Vorerst nicht umsetzen.** Personen-, Objekt- und Angebotsmeldung braucht stärkere Ortsbelege. Nach natürlichen Reparaturläufen neu bewerten.
+
+**O2-stay:** **Designfrage, kein notwendiger Fix.** Die Entscheidung ist nicht nur „ein gebuchtes Zimmer zählt zum Gasthaus“, sondern: *Soll ein gewöhnliches Gästezimmer überhaupt einen eigenständigen mechanischen Ort mit eigener Anwesenheit und abgelegten Dingen darstellen?* Wenn **nein**, ist O2-stay als enge Darstellungskonvention möglich. Wenn **ja**, darf das Unterkulissen-Modell nicht still eingeführt werden; dann wäre echte Raumbewegung mit folgerichtiger Rückkehr zu planen, derzeit mit geringem Nutzen.
+
+| Offene Frage aus Opus §8 | GPT-Empfehlung |
+|---|---|
+| **E-1: O1-B1 nach natürlichem Lauf umsetzen?** | **Tendenziell ja**, falls weiterhin ≥1 relevante Chronologie-Reparatur oder verlorener Fakten-/Namensbeleg entsteht; ansonsten Status quo. Keine Freigabe heute erforderlich. |
+| **E-2: Zimmer als Teil des Gasthauses (O2-stay)?** | **Nur nach Designentscheidung über Raumgranularität und NPC-/Objekt-Präsenz.** Standardmäßig **zurückstellen**, statt beiläufig eine neue Weltabstraktion einzuführen. |
+| **E-3: O1-B2 erst nach Messung?** | **Ja.** Auf dem aktuellen Nachweisstand kein pauschales Ausweiten auf `person.new`, `enter`, `object.move` oder Handel. |
+
+**Was stattdessen vorrangig bleibt:** Ein natürlicher Lauf auf dem unveränderten Build `.179` mit *Ursprungs- statt bloßer Ablehnungszählung*, unabhängiger Beachtung von fehlendem GO in der Plannerantwort, geführter Arbeit/Begleitung (O4), NPC E2/E3, PULSE sowie den tatsächlich reparaturbedürftigen Preisbelegen. **V4-Preis-/Planner-Fachpatch** und gezielte Korpuspflege sind durch die bisherigen Reviews besser begründet als eine sofortige O2-Sonderregel.
+
+**Abschluss:** Der Opus-Fachplan ist als Analyse wertvoll, gerade weil er seine zunächst zu optimistische O1-Bewertung nach echter Fallprüfung zurücknimmt. Der kleinste tragfähige Ansatz ist die **vorsichtige O1-B1-Normalisierung**, nicht das Lockerlassen der Szenen-Guards. **O2-stay ist nur dann sinnvoll, wenn die Vereinfachung gewöhnlicher Gasthauszimmer auf einen gemeinsamen mechanischen Ort ausdrücklich gewollt ist.** Produktbranch und Kanon bleiben unverändert; keine Umsetzung autorisiert.

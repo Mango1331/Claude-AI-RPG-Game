@@ -308,3 +308,83 @@ profile.gear = { weapon: { name, attack, family, slot, atk, matk, from } | null,
 | **A2-B** (Pakete A2-1 bis A2-3) | **eingeschränktes GO**, nach D1–D5 |
 | A2-4 | **eingeschränktes GO**, nach D8 |
 | A2-A, A2-C, A2-D | **NO-GO** |
+
+
+---
+
+## 8. Unabhängiger GPT-Gegenreview des A1/A2-Fachplans
+
+**12.11.2026 · nur Code-/Designprüfung, keine Tests, keine Simulation, keine Produkt- oder Kanonänderung.** Vorliegender Opus-Fachplan §§0–7 auf `main`; Produktbasis `.179` (`59f868eaf3c4ed7942ddc42ba3d180fab44a72cd`). Zusätzlich [Monsterdesign-Analyse mit GPT-§10](../recherche/MONSTERDESIGN_ANALYSE_20261028.md) und [Kanon 02](../02_DESIGN_KANON.md). Unabhängig nachgelesen: `src/v4/loot.js`, `src/v4/world.js`, `src/engine.js`, `src/combat.js`, `src/delta.js`, `src/v4/living.js`, `src/v4/extract.js`, `src/content.js` sowie `content/monsters.json` und `content/deltas.json`. Opus' Originalarchivzählungen wurden nicht unabhängig wiederholt; keine Laufzeittests oder Modellläufe.
+
+### 8.1 Gesamturteil
+
+**Die Codeursachen sind überwiegend bestätigt.** Insbesondere:
+- `lootEvents` verwendet den **Ankerangriff** als angeblich anatomischen Beleg. Daher erfüllt `arthropod` mit Standardattacke „Bite/Sting“ allein schon den Gift-`only_if`-Ausdruck. Analoge Geweihprobleme sind bei „Kick/Antler“ zu erwarten, sofern ein Geweihfilter diesen Text liest.
+- Einzelne Materialien (`deer.antler`, `ogre.tusk`, `slime.core`) haben keine Belegbedingung; humanoide Waffenbeute entsteht bisher separat vom Kampfprofil mittels Quote.
+- `src/v4/world.js` gibt bei `creature.new` nur kurze `desc`-Einträge an `src/delta.js` weiter, und `delta.js` kürzt jeden auf 40 Zeichen. Anders als bei `person.new` wird bei Kreaturen in diesem World-Pfad kein langes `traits`-Feld mitgegeben; dadurch gehen potenziell anatomisch wichtige Beschreibungen verloren.
+- `materialise` legt ein vorhandenes Kreaturenprofil einmalig fest; `creatureCombatant` und die tatsächliche Creature-Attacke lesen den gespeicherten `profile.attack`. Dieser bereits vorhandene Pfad eignet sich **technisch** als Quelle einer stabilen Angriffsdarstellung.
+
+**Empfehlung: A1 als enger Fachpatch nach Präzisierung; A2 nur nach vier verbindlichen Vertragsentscheidungen und Tests.** Der Fachplan ist noch **keine** Implementierungsfreigabe. Besonders wichtig: Ausrüstung darf weder erst rückwirkend beim Tod erfunden noch zwischen Engine-Ankündigung, Erzählung und späterer Extraktion widersprüchlich festgelegt werden.
+
+### 8.2 A1 – Korrektur der Wortbedingungen und Stapelidentität
+
+**A1-a: Positive Artwörter haben derzeit keinen Vorrang für eine ausdrücklich verneinte Anatomie.** Opus' `only_if`-Vorschlag für Horn enthält u. a. `goats?`. Damit würde `species:"hornless goat"` **trotz** `hornless` Hornbeute erhalten: Der Regex trifft auf das Wort `goat`. Ebenso löst `"doe without antlers"` mit dem Muster `antlers?` eine Geweihchance aus. `only_if` ist heute eine **reine Positivprüfung**, kein positiver/negativer Merkmalsbeleg mit Widerspruchsauflösung. Der Test `N6: hornless goat → kein Horn` ist damit **rot nach der vorgeschlagenen Änderung**, obwohl er im Fachplan als grüner Gegenfall geplant ist. Auch der bloße Hinweis, `hornless` und `antlerless` seien wegen Wortgrenzen ausgeschlossen, genügt nicht: das zugleich vorhandene Artwort kann weiterhin positiv treffen.
+
+**Auflage vor A1-GO:** Explizite individuelle Abwesenheit bzw. Verlust des Organs muss einen allgemeinen Art-Default **überstimmen**. Die dafür gewählte Lösung muss eng sein, etwa wenige präzise Negativbedingungen bei genau den betroffenen Spezialorganen, **nicht** ein wachsender universeller Satzsemantikparser. Negative Gegenfälle zusätzlich `"deer without antlers"`, `"dehorned goat"`, `"tuskless ogre"` und positive kontrastierende `"rare antlered doe"`. Wenn der automatische Wortbeleg nicht sicher genug ist, unbekannte Spezialanatomie konservativ ohne Organ belassen. `only_if` kann als vorhandener positiver Mechanismus beibehalten werden; ihre Sicherheitsgarantie muss jedoch eingeschränkt formuliert werden.
+
+**A1-b: Das Bereinigen des Artnamens verändert Beuteidentität, nicht nur die Anzeige.** In `loot.js` ermittelt `speciesName` nicht nur den sichtbaren Beutenamen, sondern sein Ergebnis wird über `slug(species)` Teil des **Stackkeys** `obj.loot.<species>.<material>.<rank>`. Würde `"feral dog of the millpond"` zu `"Feral Dog"` gekürzt, könnten regionale Arten/Varianten zusammenfallen, die bislang unterschiedliche Materialstapel und Provenienz hatten. Das beeinflusst auch Quests/Weiterverkauf und bereits gehaltene Stacks möglicherweise indirekt. **Keine allgemeine Suffixkürzung als rein kosmetischen Fix durchführen.** Bevorzugt einen stabilen, unveränderten Material-/Art-Identitätsschlüssel getrennt vom lesbaren Anzeigenamen; alternativ die Namenskorrektur zunächst aus A1 herausnehmen. Regression: zwei unterschiedliche `"… of the …"`-Arten mit demselben Material und Rang, alter und neuer Stapel, Save/Reload, etwaige Quest-/Handelsidentität.
+
+**A1-c: `traits` aus `desc` ist sinnvoll**, muss aber ausschließlich die schon wirklich gemeldete Beschreibung bewahren und zugleich die bisherigen kurzen `descriptors` für Identität/Anwesenheit unangetastet lassen. Nicht aus jeder Erwähnung von Alarics Ausrüstung oder einer neben dem Tier liegenden Waffe einen anatomischen Besitzbeleg konstruieren. Testen, dass lange Negativmerkmale und positive Merkmale beide noch nach Persistenz sichtbar sind. Hase/Kaninchen → `rat` ist ein vertretbarer *Body-Plan*-Default, aber kein neues Art-System und keine Garantie für biologisch perfektes Kleinwildloot.
+
+**D6 – Schleimkern:** Nur mineralische, kristalline bzw. ausdrücklich kerntragende Wesen als Spezialfall ist plausibel. Ob ein Kern für andere Schleimarten bewusst als garantierter Grundbestandteil gedacht war, bleibt eine **Content-/Designentscheidung**, nicht aus dem Code entscheidbar. Neue Hornmaterialien und weniger Geweih/Gift ändern Beute und Wirtschaft zumindest kleinräumig; „balance-neutral“ ist hierfür zu stark.
+
+### 8.3 A2 – Zeitpunkt der Bewaffnung: ein echtes Autoritätsproblem
+
+**A2-a: Einzelner `armed`-Wert für eine ganze Gruppe ist nicht ausreichend.** `creature.new` hat `count`, und `world.newEntity` baut daraus **mehrere individuelle Entitäten**. Opus' Originalbeispiel Z60 spricht von zwei Goblins mit Kurzspeeren bei **drei** Slotgoblins. Würde man `creature.new.armed:"short spear"` schlicht an alle drei kopieren, bekäme das dritte Wesen einen unbelegten Speer. Dass die Engine für die *Default*-Ausrüstung je individueller ID/Slotposition einen Hash verwendet, behebt diese Unschärfe bei einer **gemeldeten Ausnahme** gerade nicht.
+
+**Auflage:** Für homogene Gruppen kann eine gemeinsame `armed`-Angabe gelten, wenn die Erzählung wirklich **alle** betrifft. Gemischte Gruppen benötigen entweder eindeutig getrennte individuelle Berichte/Referenzen oder verbleiben bei der vorher festgelegten individuellen Ausstattung; keine stillschweigende Gruppenverteilung. Die Felder dürfen nur **kanonisch belegten** Besitz festlegen. Der bestehende `newEntity`-/`slotForNew`-Pfad muss Gruppen- und Bestandsidentität weiterhin korrekt erhalten.
+
+**A2-b: `DUNGEON AHEAD` liegt zeitlich vor `creature.new`.** `living.js aheadEvents` nennt bereits im **Spielerzug** einen Dungeon-Slot; die individuelle `creature.new` und `materialise`-Auflösung finden erst bei Übernahme der **nachfolgenden Erzählung** statt. Die optionale D8-Ausgabe einer bereits „verbindlichen“ Waffe für jedes Slotmitglied kann also nicht gleichzeitig:
+- vom vorab gewählten Standard-Loadout ausgehen **und**
+- einer erst nach der Erzählung extrahierten `armed`-Ausnahme Vorrang geben,
+ohne einen Widerspruch zu riskieren.
+
+**Saubere Varianten:** (1) D8 vorerst **nicht** umsetzen; Ausrüstung wird bei der ersten tatsächlich gebuchten Erscheinung festgelegt und danach angezeigt. Oder (2) die Standardausrüstung wird bereits vor der Erzählung aus eindeutigem Slot-/Mitgliedschlüssel **autorisiert und als verbindliche Vorgabe** geliefert; ein späteres anderslautendes `armed` darf den zuvor festgelegten Besitz dann **nicht** überschreiben. Diese Frage ist vor A2-4 zu entscheiden. „Aus demselben Hash vorher berechnen“ reicht nicht, wenn der Extractor nachher eine andere Waffe wählen kann.
+
+**A2-c: `profile.gear` ist nicht dasselbe wie ein physisches `object` mit Holder.** Ein Ausrüstungseintrag im unveränderlichen Kreaturenprofil kann als **gesperrter, noch nicht transferierbarer Ausrüstungssnapshot** dienen. Die geplante Lootbuchung erzeugt erst beim Tod ein bewegliches Objekt. Dafür muss der Vertrag ausdrücklich sagen: Bis dahin kann ein solcher Gegenstand **nicht** über gewöhnliches `object.move`, Geschenk, Entwaffnen oder `take` seinen Besitzer wechseln. Andernfalls wäre `profile.gear` eine zweite Wahrheit neben den echten Objekt-Holdern, und die ursprüngliche Forderung „Besitz/Einsatz/Beute aus einer Quelle“ gerade nicht erfüllt. Wenn diese Übergaben jetzt gebraucht werden, wäre A2 größer als behauptet.
+
+**A2-d: Legacy-Lootdaten nicht versehentlich löschen.** Opus' §3.2 Nr. 1 ersetzt das bisherige `spec.gear` in `monsters.json` durch `loadout`. Opus' D5 verlangt zugleich, dass **Altprofile ohne `profile.gear` ihre alte Zufallsquote behalten**. Das funktioniert nicht, wenn die Datenquelle `spec.gear` entfernt wurde. **Die Originaltabellen für Altprofile erhalten** (oder eine nachweisbar identische, explizite Legacyabbildung vorsehen), solange die D5-Rückfallregel gilt. Nur neue Profile beziehen Beute aus `profile.gear`. Regression mit einem echten älteren `entity.updated.profile` ohne `gear` und den unveränderten alten Wahrscheinlichkeiten.
+
+**Weiterhin offen:** Der Wechsel von „Natural/unarmed strike“ zu „Crude spear“ bei unveränderten `ATK`-/Range-/Schadenswerten ist als **Darstellungsänderung** vertretbar, solange der tatsächliche Angriff damit plausibel bleibt. Die Creature-Kampfzeile lautet momentan noch `natural attack Raw = ATK`, auch wenn der Angriff einen Waffennamen erhält; diese Beschriftung müsste entsprechend konsistent werden, ohne eine neue Kampf-/Waffenskala einzuführen. Ein Fokus oder Bogen, der nur getragen wird, darf im Ergebnistext nicht als mechanisch eingesetzter Fernangriff erscheinen.
+
+### 8.4 Abnahme, Prioritäten und Entscheidungsempfehlung
+
+**Neue zwingende Gegenfälle vor Implementierungsfreigabe:**
+
+| Fall | Erwartung |
+|---|---|
+| A1: „hornless goat“, „doe without antlers“, „tuskless ogre“ | Keine widerlegte Spezialbeute trotz passendem Artwort |
+| A1: zwei unterschiedliche Arten „… of the …“ | Keine unbeabsichtigte Stapel-/Identitätsfusion durch gekürzte Beutenamen |
+| A1: positives Merkmal erst nach Zeichen 40 | Korrekte anatomische Belegprüfung nach tatsächlicher Speicherung, bisherige Identitätsfelder unverändert |
+| A2: 3 Slotgoblins, nur 2 ausdrücklich mit Speer | Kein frei erfundener dritter Speer |
+| A2: vorangekündigtes Default-Messer, spätere Erzählung Speer | Entweder keine bindende Vorankündigung (D8 aus) oder die spätere Meldung kann den vorgegebenen Besitz nicht umschreiben |
+| A2: Altprofil ohne `gear` | Alte Lootquelle und ihre Quoten erhalten, wenn D5=Legacy gewählt wird |
+| A2: bewaffnetes Wesen, Waffe nicht eingesetzt; nach Tod verwertbar/unverwertbar | Profilbesitz, Angriffseinsatz und Lootausgabe getrennt, keine rückwirkend erfundene Waffe |
+| A2: beweglicher Gegenstand vor dem Tod | Keine zweite Besitzwahrheit oder unerlaubter kostenloser `object.move`-Transfer |
+
+**Entscheidungen D1–D9, zusammenfassend:**
+- **D1/D3/D4:** Kleine Standardlisten, Ankerwerte und explizite Verwertbarkeit sind *brauchbare Anfangsdefaults*, aber Modell-/Kampf-/Wirtschaftsvergleich ist vor „gleichwertiger Beute“ erforderlich; die vorgeschlagenen 6:3:1 und 0,55 sind **Designzahlen**, keine gemessenen Optima.
+- **D2:** Ein nur getragener Bogen/Fokus erzeugt **keine** neue Reichweite oder Magieattacke. Gut; solche Unterschiede nicht mit falsch beschrifteten Angriffen verschleiern.
+- **D5:** Bestehende Profile/Replay schützen; gleichzeitig Legacy-Lootdaten tatsächlich erhalten.
+- **D6:** Schleimkern nur mit anatomischem/Artbeleg ist eine optionale bewusste Contententscheidung.
+- **D7:** Guard/Boss nicht automatisch besser ausrüsten; keine dynamische PC-Skalierung.
+- **D8:** **Zunächst nein** zur verbindlichen Waffenankündigung, solange `armed` aus der nachfolgenden Erzählung Vorrang erhalten soll. Sonst Vertragsentscheidung treffen und negative Gegenfälle ergänzen.
+- **D9:** Vorgeschlagene Positivmuster **nur mit korrekter Priorität individueller negativer Merkmale** verwenden.
+
+**GPT-Gesamturteil:**
+1. **A1: eingeschränktes GO** – die eigentliche Korrektur ist klein und erwünscht, aber §3.1/§5.1 müssen explizite Negativmerkmale und die Stapelidentität schützen. Die Option einer neuen allgemeinen Anatomie-Engine ist nicht nötig.
+2. **A2-1 bis A2-3: eingeschränktes GO erst nach Präzisierung** von Einzel-/Gruppenbewaffnung, Festlegungszeitpunkt, Snapshot gegenüber echtem Objekt sowie Legacy-Daten. Diese Punkte sind überprüfbare Vertragsgrenzen, kein Anlass für einen allgemeinen Monsterarchitektur-Neubau.
+3. **A2-4: jetzt zurückstellen** – ohne vorherige Bindung der Ausrüstung wäre eine Waffenankündigung vor der Erzählung nicht verlässlich.
+4. **Natürlicher NPC-/PULSE-Lauf auf unverändertem .179 bleibt vorrangiger Abnahmenachweis**; eine spätere Monsterimplementierung kann in getrenntem Produktcheckout vorbereitet werden und sollte den lokalen Teststand nicht unbemerkt ändern.
+
+**Fazit:** Opus hat den richtigen Codepfad gewählt, aber „nur ein Profilfeld“ reicht für A2 nicht, solange Gruppen, Ankündigung, späterer Extraktorbericht und echte Besitzobjekte verschiedene Autoritätszeitpunkte haben. **A1 behutsam korrigieren, A2 fachlich eng entscheiden und dann zusammenhängend implementieren – kein weiterer Generalreview.**

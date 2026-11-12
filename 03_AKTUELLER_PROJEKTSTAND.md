@@ -7,11 +7,12 @@
 | | Bestätigter Stand |
 |---|---|
 | **Produkt** | `4.3.0-c.6.6.179` · [`59f868eaf3c4ed7942ddc42ba3d180fab44a72cd`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/59f868eaf3c4ed7942ddc42ba3d180fab44a72cd) |
-| **Produktbranch** | `claude/c-planner-prototype-2026-10-02-gpt-c666` |
+| **Produktbranch** | `claude/c-planner-prototype-2026-10-02-gpt-c666`, Remote-HEAD [`bd02cd6`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/bd02cd627776b9fa2e701a7815226a45002cd262) (Runner-only; Spielengine unverändert) |
 | **Dokumentation** | `main` – aktuellen HEAD vor neuer Bearbeitung abfragen |
 | **Architektur** | SillyTavern-Extension V4-C / Ruleset 2; Planner → deterministische Buchung → Narrator → Extractor/Firewall; autoritatives Eventlog |
 | **Letzte berichtete Produktabnahme** | `.179`: 3050/3050 Node-Tests; Replay gegenüber bestehender akzeptierter Baseline ohne neue Änderungen; ST1.19 mit geskriptetem Provider 172/172 Standard und 177/177 Failsoft, **laut Implementiererpatchnote**, kein unabhängiger neuer Lauf dieser Dokumentationspflege |
 | **Letzter natürlicher NPC-/PULSE-Lauf** | [Pilot 01](testrun_10b/npc-20261109-160250Z/REVIEW.md), **70 Eingaben auf `.174`**, nicht auf `.179` |
+| **Aktueller NPC-/PULSE-Runner** | [Drei voneinander getrennte LLM-Spieler](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/bd02cd627776b9fa2e701a7815226a45002cd262/avereth-engine/docs/NPC_PULSE_3_PERSONAS_RUNNER.md): `npc-sociable` (Warrior), `npc-wary` (Rogue), `npc-inquisitive` (Mage). **Runner geändert; Node-/ST-/LLM-Abnahme dieser Erweiterung noch nicht ausgeführt** |
 
 **Wichtige Nachweisgrenze:** Nach dem Pilot sind die Korrekturen `.175–.179` implementiert und technisch regressionsgeprüft. **Ihre Wirkung im freien Spiel mit `.179` ist noch nicht natürlich gemessen.** Kein Dokumentationsreview ändert den Produktstand.
 
@@ -34,7 +35,7 @@
 
 ## Unmittelbare nächste Arbeit – bewusst getrennt
 
-1. **Natürlicher NPC-/PULSE-Run auf unverändertem `.179`**: `met`/`handled_by`, E3-Gelegenheiten/Kandidaten/Kartenverwendung, bezahlte bzw. erledigte Threads, Personenidentität, Ereignisdichte/Dungeon/Rast, Guard-Ursprünge vs. Folgekaskaden und subjektives Spielgefühl auswerten. [Opus-NPC-Audit mit GPT-§9](recherche/NPC_E2_E3_KONTINUITAETSAUDIT_OPUS55.md). **Noch nicht erfolgt.**
+1. **Natürlicher NPC-/PULSE-Dreierbatch auf unveränderter Spielengine `.179`** (Runner-HEAD `bd02cd6`; drei unabhängige Kampagnen, jeweils ca. 70 LLM-Eingaben): `met`/`handled_by`, E3-Gelegenheiten/Kandidaten/Kartenverwendung, bezahlte bzw. erledigte Threads, Personenidentität, Ereignisdichte/Dungeon/Rast, Guard-Ursprünge vs. Folgekaskaden und subjektives Spielgefühl auswerten. [Opus-NPC-Audit mit GPT-§9](recherche/NPC_E2_E3_KONTINUITAETSAUDIT_OPUS55.md). **Noch nicht erfolgt.**
 2. **Preis-/Planner-Korrektur als getrenntes gebündeltes Paket prüfen/umsetzen:** mehrfach gleiche Betragsbelege, ungeprüfte `max_cp` beim Zielkauf, Rabatt-Autorität, Belegreparaturen und `finish=length`-Budgetprobleme. **Codebelegt, bisher nur empfohlen**, nicht implementiert. [Fable §13 + GPT §14](recherche/ARCHITEKTUR_AUDIT_10B_FABLE.md) · [Opus §5 + GPT §12](recherche/ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md).
 3. **NPC-/Kontext-Kandidaten nach Lauf:** D3-Teillieferung von `relevant` (nicht pauschal Spielerzitate löschen); E3-V-1 (80-Zeichen-Grenze und echter Eligibility-Hinweis im Extractor); O1-B1 (nur schlüssige Szenenreihenfolge). **O1-Whitelist, O1-B2 und O2-stay nicht freigegeben**. [D3-Messung](testrun_10b/npc-20261109-160250Z/D3_KONTEXTANALYSE_RELEVANT.md) · [O1/O2-Fachplan einschließlich GPT-§9](recherche/FACHPLAN_O1_O2_KAUSALITAET_UND_TEILBEWEGUNG.md).
 4. **Noch geplante Features:** Monster A1 (Anatomie) und A2 (Bewaffnung) mit Opus-Mini-Gegenreview §9, Combat K1 Main/Minor, Stealth S2. **Kein Produktcode dafür auf `.179` geändert.** [Monsterfachplan](patch_plans_10b/FACHPLAN_MONSTER_ANATOMIE_LOOT_A1_A2.md) · [Main/Minor](patch_plans_10b/PATCH_COMBAT_MAIN_MINOR_ACTIONS.md) · [Roadmap 07](07_ROADMAP_NACH_10B_ENTWURF.md).

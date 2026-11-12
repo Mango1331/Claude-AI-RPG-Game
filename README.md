@@ -4,9 +4,9 @@
 
 ## In 60 Sekunden zum Arbeitsstand
 
-- **Produkt:** SillyTavern-Erweiterung Avereth V4-C / Ruleset 2. Letzter hier bestätigter Produktstand: **`4.3.0-c.6.6.179`**, Commit [`59f868e`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/59f868eaf3c4ed7942ddc42ba3d180fab44a72cd). **Produktbranch:** `claude/c-planner-prototype-2026-10-02-gpt-c666`.
+- **Spielengine:** SillyTavern-Erweiterung Avereth V4-C / Ruleset 2; unveränderte Spielmechanik in **`4.3.0-c.6.6.179`**, letzter Gameplay-Commit [`59f868e`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/59f868eaf3c4ed7942ddc42ba3d180fab44a72cd). **Entwicklungsbranch:** `claude/c-planner-prototype-2026-10-02-gpt-c666`; neuer HEAD [`bd02cd6`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/bd02cd627776b9fa2e701a7815226a45002cd262) enthält **nur den dreiteiligen NPC-/PULSE-Test-Runner**, keine neue Engine-Version.
 - **Dokumentation:** `main`. Beim neuen Auftrag **beide Remote-HEADs erneut prüfen**; diese Angaben sind ein belegter Snapshot, keine Zusage für künftige Aktualität.
-- **Bisher letzter freier NPC-/PULSE-Pilot:** [Pilot 01 auf `.174`](testrun_10b/npc-20261109-160250Z/REVIEW.md); dessen Korrekturen bis `.179` sind technisch getestet, **noch nicht durch einen natürlichen Lauf auf `.179` abgenommen**.
+- **Bisher letzter freier NPC-/PULSE-Pilot:** [Pilot 01 auf `.174`](testrun_10b/npc-20261109-160250Z/REVIEW.md). Ein neuer [Dreierbatch mit geselligem Warrior, vorsichtigem Rogue und wissbegierigem Mage](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/bd02cd627776b9fa2e701a7815226a45002cd262/avereth-engine/docs/NPC_PULSE_3_PERSONAS_RUNNER.md) ist vorbereitet, aber **noch nicht natürlich ausgeführt**. Korrekturen bis `.179` bleiben ohne freie Nachabnahme.
 
 ## Nur diese Dateien zuerst lesen
 

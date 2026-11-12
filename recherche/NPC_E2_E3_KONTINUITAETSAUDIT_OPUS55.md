@@ -285,3 +285,68 @@ Alle Fragen lassen sich mit derselben lesenden Auswertung beantworten wie in die
 **Meine Empfehlung:** den Lauf auf unverändertem `.179` durchführen, wie es die bisherige Reihenfolge vorsieht, und dabei F3 anhand der Spannen ausdrücklich auswerten. Zeigt er erneut zulässige Spannen ohne gemeldete Anker, ist V-1 der belegte, kleinste nächste Schritt. Wer E3 schon in diesem Lauf bewerten will, sollte V-1 vorher entscheiden. Das ist eine Nutzerentscheidung, kein technischer Zwang.
 
 **Nicht vor dem Lauf:** V-2 (D3), V-3, O1-B1. Neue Heuristiken oder Gedächtnisstrukturen auch danach nur bei konkretem Befund.
+
+---
+
+## 9. Unabhängiger GPT-Gegenreview
+
+**12.11.2026 · Nur unabhängiger Code- und Fachreview, keine Tests, keine Implementierung oder Kanonänderung.**
+
+**Prüfgrundlage:** Opus-Audit §§0–8 dieser Datei; [Pilot-01-Review](../testrun_10b/npc-20261109-160250Z/REVIEW.md), [Gegenreview](../testrun_10b/npc-20261109-160250Z/GEGENREVIEW_CLAUDE.md), [D3-Kontextanalyse](../testrun_10b/npc-20261109-160250Z/D3_KONTEXTANALYSE_RELEVANT.md), [NPC-Fachplan](../patch_plans_10b/NPC_E2_E3_FACHPLAN.md), [Patchnote .176](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/59f868eaf3c4ed7942ddc42ba3d180fab44a72cd/avereth-engine/docs/PILOT01_176_CONTEXT_EVIDENCE.md).
+
+**Eigenständig am Produktcode .179 geprüft:** `src/v4/world.js` (`anchorRefusal`, `metArrivals`, `deskHandlers`, `fact`, `thread`), `src/knowledge.js` (Ankerprädikate, bedeutsame Erinnerungen, `npcContinuity`), `src/context.js` (Kompakt-/Ankunftskarten, `relevant`, P0), `src/engine.js` (erste Begegnung), `src/state.js` (Präsenzspanne), `src/v4/interpret.js` und `content/deltas.json` (Extractor-Vertrag) sowie `src/threads.js` (Parteien/IDs). Opus' Zahlen aus dem ursprünglichen Pilot auf `.174` wurden **nicht unabhängig erneut aus allen Originalantworten gezählt**. Keine Node-, Replay-, ST-, Modell- oder Fold-Ausführung.
+
+### 9.1 Gesamturteil
+
+**Opus' Hauptdiagnose ist überzeugend:** Der Informationsweg von erzählter Begegnung zu gespeichertem NPC-Merkmal und späterer Wiederverwendung ist durch mehrere voneinander getrennte Filter begrenzt. Der Befund „keine E3-Anker“ ist **kein Beleg eines fehlerhaften Ankerreducers**. Er ist aber bei vorhandenen späteren Begegnungen und wiedererkennbarer erzählter Eigenart **ein ernst zu nehmender Wirksamkeitsbefund für Extraktion und Vertrag**.
+
+Die vorhandenen Guards zu tatsächlicher Anwesenheit, Erst-/Wiederbegegnung, individueller Identität und Absprachen sollten **nicht pauschal gelockert** werden. Ein neuer generischer NPC-Speicher, automatisches Erinnern sämtlicher Schalterhandlungen und globale NPC-Identitätsfusion sind nicht begründet.
+
+### 9.2 E3: Berechtigung, Bericht und Auslieferung auseinanderhalten
+
+1. **Berechtigung:** `anchorRefusal` verlangt tatsächliche Präsenz sowie eine frühere gemeinsame Erinnerung mit Alaric, deren `turn` **vor** dem `scene.since` der laufenden Präsenzspanne liegt. Die automatische Erinnerung `first saw {pc}` aus `perceiveAll` hat Wichtigkeit **4**: Sie genügt für diese Berechtigung, obwohl sie die Wichtigkeitsschwelle **6** für einen bedeutsamen Kartenmoment nicht erreicht. Das ist konsistent, nicht widersprüchlich.
+2. **Bericht:** E3 erfordert einen tatsächlich gemeldeten passenden `fact`-Eintrag, also z. B. `voice`, `manner` oder `interest`. Die Engine erfindet Anker nicht aus sonstiger Prosa. Die einzige Ankerbeschreibung in `content/deltas.json` nennt die Validatorgrenze von **maximal 80 Zeichen nicht**. Auch der `PRESENT`-Katalog signalisiert eine zulässige spätere Begegnung derzeit nicht. Opus' 14 berechtigte Pilotzüge und nur ein Kandidat sind aus dem historischen Originalmaterial gezählte Indizien für die Vertragslücke, keine neue `.179`-Messung.
+3. **Konkret bestätigter Fall:** Die Produktpatchnote zu `.176` dokumentiert, dass der einzige damalige Ankerkandidat nach erfolgreicher Präsenzkorrektur statt `anchor_absent` wegen **100 statt maximal 80 Zeichen** als `anchor_value` scheitert. Den Wert einfach automatisch abzuschneiden wäre keine gute Lösung: Bei Persönlichkeit zählen Bedeutung und Textbeleg.
+4. **Auslieferung:** `npc_compact` und `npc_arrival` haben Priorität 0; die Anker erscheinen vor dem Aussehen im Kartenkopf. **Aber:** Der Kopf ist auf **170 Zeichen** begrenzt. Drei Merkmale mit je 80 Zeichen passen nicht unbedingt hinein. Für weitere Anwesende kann die ausführliche P1-Karte aus Budgetgründen fehlen. Die spätere Verwendung durch den Erzähler muss daher mit tatsächlichem Prompt und Antwort separat gemessen werden.
+
+**V-1 (kleine Extractor-Vertragskorrektur): eingeschränkt sinnvoll.** Der Vertrag sollte die 80-Zeichen-Grenze nennen. Ein dynamischer Hinweis „spätere Begegnung, Merkmal zulässig“ darf nur dann gesetzt werden, wenn die Engine die **wirkliche R10-Voraussetzung** kennt (jetzt anwesend und gemeinsame Erinnerung vor `scene.since`); ein bloßes „bekannte Person“ wäre zu ungenau. Eine solche Markierung ist ein Katalog-/Prompt-Eingriff, **keine neue Berechtigung, keine automatische Eigenschaft und keine Änderung des Ankerreducers**. Gegenfälle: Stimmung statt Gewohnheit, erste Begegnung, abwesender NPC, Aussage nur durch Alaric, zu langes Merkmal.
+
+### 9.3 NPC-Aussagen, Wissen, Karten und D3
+
+Opus' zentrale Unterscheidung ist korrekt: Ein gespeicherter Weltfakt ist **nicht automatisch das Wissen des NPC** und auch **nicht automatisch seine bedeutsame episodische Erinnerung**. `npcCard` zeigt spezifische Kenntnis-/Erinnerungszeilen und Absprachen; der Abruf `relevant` enthält darüber hinaus freie Fakten. Das dient den Wissensgrenzen.
+
+**Präzisierung:** „Freie NPC-Aussagen erscheinen nur in `relevant`“ ist als pauschaler Satz zu stark. **Harte** etablierte Fakten zu anwesenden oder benannten Subjekten können über den separaten P0-Abschnitt `facts` kommen; als echte gemeinsame `memory` dokumentierte Aussagen können über Karten/`npcContinuity` wieder erscheinen. Für die **konkret von Opus ausgewerteten gewöhnlichen freien Aussagen** gilt der Kritikpunkt jedoch: Ohne zusätzliche `memory`-/`learn`-Buchung hängen sie weitgehend an vergangenem Chat und `relevant`.
+
+Die D3-Teilauslieferung ist deshalb **eine plausible Verbesserung, keine garantierte Wiederherstellung jeder fehlenden Aussage**. Sie liefert nur die nach Rang und Restbudget passenden ersten Einträge. Vorher/Nachher muss am selben Pilotkorpus insbesondere bei konkreten Rückkehrzügen und später natürlich geprüft werden. Spielerzitate nicht pauschal entfernen: Eine früher gesprochene Zusage kann gerade die wichtige NPC-Kontinuität tragen.
+
+Die historisch eingefrorene Karte der Schreiberin ist belegt; `.176` K4 hat die ursprünglichen Evidenz- und Schalterverb-Fälle gezielt behoben (Sol meldet Regressionen/Host-Smokes). Ob dieselbe Buchung bei **neuen freien Formulierungen** gelingt, ist noch offen. Aus bloßer Anwesenheit sollte kein automatisches `handled_by` werden: Ein Schalterbearbeiter ist nicht jeder Umstehende.
+
+### 9.4 Parteilose Absprachen und falsche Müllerreferenz
+
+Die Codewarnung ist begründet: `world.js` lässt den PC als `thread.who` bei `promise`/`debt` nur eintragen, wenn ein NPC-Partner anwesend ist. `threadEvents` erlaubt bei einer späteren Meldung mit derselben ID zusätzliche Parteien; der Schutz gegen eine **fremde Partei** greift nur, wenn zuvor schon andere NPC-Parteien gespeichert waren. Ein parteiloser Thread kann daher später persönliche Parteien erhalten, und eine offene „between you“-Zeile wäre dann möglich. **Aber:** Ob die konkrete Kupferzusage von Muller bei Verarbeitung des alten Pilotmaterials auf `.179` tatsächlich so im Karteikontext steht, bleibt eine **Prognose**, kein neu ausgeführter Replay- oder ST-Nachweis. Nicht automatisch einen weiteren Settlement- oder Identitätsmechanismus hinzufügen.
+
+Der Müller am Hof ist nach Opus' Textabgleich **nicht** Muller: Der Erzähler lässt ihn ausdrücklich von Muller als Drittem sprechen. Die Ablehnung der fälschlichen `enter npc.muller`-Referenz war daher richtig. Die verloren gegangenen Folgeinformationen sind primär ein Extractor-Identitätsfehler, **kein Argument zur Lockerung des Präsenzguards**.
+
+### 9.5 Entscheidung vor dem nächsten natürlichen Lauf
+
+**GPT-Empfehlung:** Den vereinbarten natürlichen NPC-/PULSE-Lauf **zunächst auf unverändertem `.179`** durchführen. Das ist der klarste Nachweis für die Wirkung der Korrekturbuilds `.175` bis `.179`. Für E3 gilt dann ausdrücklich: keine Anker heißt **nicht bestanden und nicht widerlegt**, sondern die Berichts- und Gelegenheitskette muss separat beurteilt werden.
+
+Wer in *diesem* nächsten Run unbedingt die **E3-Extraktionsverbesserung** messen will, kann alternativ V-1 vorher als **eigenständigen, versionierten Mini-Patch** freigeben. Dann testet der natürliche Lauf jedoch eine neue Version und nicht mehr den unveränderten Stand `.179`. Bei E3-Vertragsänderung nicht gleichzeitig D3, Präsenz- und Absprachenregeln verändern; sonst bleibt die Ursache eines Erfolgs unklar.
+
+**Für die Run-Auswertung getrennt festhalten:**
+
+| Ebene | Nachweis |
+|---|---|
+| E2 Rückkehr | tatsächliches `met`/`enter`, `met_evidence`-Ablehnungen, korrekter NPC und tatsächliche Präsenz |
+| E2 Schalter | wirklich bearbeitete Schritte, `handled_by`-Beleg und `knowledge.gained` beim richtigen NPC |
+| E2 Absprachen | `thread.set`-Partei, Text, offen/erledigt, Beleg von Zahlung/Erfüllung; keine nur behauptete Erledigung |
+| E3 Gelegenheit | frühere gemeinsame Erinnerung und spätere getrennte Präsenzspanne |
+| E3 Bericht | gemeldete `fact`-Kandidaten, Synonyme und `anchor_*`-Ablehnungen |
+| E3 Persistenz | angenommener Fakt nach Save/Reload unverändert |
+| E3 Auslieferung | konkreter `npc_compact`-/`npc_arrival`-Kartenkopf und tatsächliche Verwendung im Narrator |
+| D3 | konkrete zurückgelieferte Einträge je Rückkehrzug, nicht nur 2/65-Quote |
+| PULSE | Fenster, echte Zwischenereignisse, Rast und Dungeon separat; NPC-Messung ersetzt keinen PULSE-Review |
+
+**Wenn zulässige spätere Begegnungen erneut ohne Ankerkandidaten bleiben:** V-1 als kleinsten nächsten Fachpatch priorisieren; erst bei nachweislich gespeicherten, aber **nicht angezeigten/verwendeten** Ankern die Karten-/Kontextseite verändern. Wenn Schalterwissen und Threads im aktuellen freien Spiel korrekt sind, keine vorsorglichen zusätzlichen Guards.
+
+**Abschluss:** Der stärkste neue Befund ist eine **unterinformierte Extraktion von E3-Merkmalen trotz existierender Engine-Berechtigungsprüfung**. Die Architektur des NPC-Gedächtnisses bleibt als Grundlage tragfähig; neue Architekturmodule sind nach der vorliegenden Evidenz nicht gerechtfertigt.

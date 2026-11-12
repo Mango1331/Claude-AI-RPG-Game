@@ -9,6 +9,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { loadProductContent } from '../helpers.js';
 import { campaign, say, GO } from '../v4/patch8_lib.js';
 import { rec } from '../../src/host.js';
@@ -20,7 +21,9 @@ import { playerSystemPrompt } from '../../tools/st_live/live/players.mjs';
 import { npcPulseAnalysis, npcPulseMarkdown, npcPulseSection, analyseRunFolder, callsOf } from '../../tools/st_live/live/npc_pulse.mjs';
 
 const content = await loadProductContent();
-const BATCH = new URL('../../tools/st_live/live/batch.mjs', import.meta.url).pathname;
+// URL.pathname is /C:/... on Windows, which Node can resolve as C:\\C:\\... .
+// Convert the file URL to a native path before invoking the batch as a subprocess.
+const BATCH = fileURLToPath(new URL('../../tools/st_live/live/batch.mjs', import.meta.url));
 function temporary(t) {
     const p = fs.mkdtempSync(path.join(os.tmpdir(), 'avereth-npc-batch-'));
     t.after(() => fs.rmSync(p, { recursive: true, force: true }));

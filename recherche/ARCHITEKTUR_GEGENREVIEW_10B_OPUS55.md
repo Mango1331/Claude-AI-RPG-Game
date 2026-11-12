@@ -717,3 +717,102 @@ Paket A darf vor N1 laufen, wenn der Lauf ohnehin erst später möglich ist. Es 
 - **Übernommen:** Fables Zählungen zum Codewachstum (§2.1) und die Klassifikation der elf Preisreparaturen (§13.3). Stichprobenhaft bestätigt habe ich T38–T40, T48 und T54–T55 über die Codepfade, nicht jede Anfrage einzeln.
 - **Nicht untersucht:** Kampfengine im Detail, Wachstum, Board, UI, Runner.
 - **Keine Freigabe.** Jede Maßnahme braucht einen eigenen Auftrag; K-A und K-B zusätzlich eine Kanonentscheidung.
+
+
+---
+
+## 12. Unabhängiger GPT-Nachreview der Opus-5.5-Analyse
+
+**12.11.2026 · eigenständiger Gegenreview; nur Dokumentation, keine Implementierung und keine Kanonentscheidung.**
+
+**Prüfstand:** Opus-Dokument `7ac6a370be5fa7dd27ea331328fab53421214282` auf `main`; Produktbranch `claude/c-planner-prototype-2026-10-02-gpt-c666` auf `59f868eaf3c4ed7942ddc42ba3d180fab44a72cd` (`.179`). Dieser Abschnitt ergänzt **die unveränderten Opus-§§0–11** und bezieht sich auf Fables §§1–13 sowie GPTs vorausgegangenen §14 in [dem Fable-Audit](ARCHITEKTUR_AUDIT_10B_FABLE.md), [Kanon 02](../02_DESIGN_KANON.md) und [Arbeitsweise 01](../01_ARBEITSWEISE_CHATGPT_CLAUDE.md).
+
+**Unabhängig am Produktcode kontrolliert:** `src/v4/pulse.js` (`pulseBegin`/`dynamicReason`/`pulseFinish`), `commands.js` (GO, `afterTravel`, Zimmer-/Handels-/Zielkaufpfade), `world.js` (`sceneIssues`-Anwendung, `scene_context`, `fact`/`thread`/`person.named`/`quest.detail`, `envelopeAllows`), `extract.js` (`localSceneDelta`/`sceneIssues`), `firewall.js` (`no_go`), `dungeon.js` (`complexOf`), `finance_evidence.js`/`interpret.js`/`planner.js`/`trade.js`/`runtime.js` (Belege, Reparaturen, Ausgabebudget). **Nicht unabhängig neu ausgeführt:** Opus' Python-Zählung der Originalarchive, Node-/Replay-/ST-Tests oder Modellläufe. Seine historischen Quoten werden hier als **von Opus gezählte Daten** und nicht als eigene GPT-Zählung bezeichnet.
+
+### 12.1 Gesamturteil und wesentliche Korrektur der bisherigen GPT-Priorisierung
+
+**Opus' Gegenreview ist eine inhaltliche Verbesserung gegenüber der ursprünglichen Fable/GPT-Priorisierung.** Seine eigene Analyse der tatsächlichen Ankunfts- und `scene_context`-Fälle ist genau die zuvor fehlende Prüfung. Auf ihrer Grundlage **nehme ich meine frühere Einstufung von V1 als höchstrangiger Architekturentscheidung zurück**: Die enge vorab gebuchte Ankunft bringt in den drei analysierten historischen Läufen nach Opus wesentlich weniger unmittelbaren Gewinn, als Fables 11/11-Zahl vermuten ließ.
+
+Die nachgemeldeten Größen – **77/96 `scene_context`-Ablehnungen in Zügen ohne GO**, **1/2 `arrival pending` im Pilot** und **ca. 2–3/25 in Batch 28** durch enges V1 unmittelbar lösbare Fälle – sind **Opus' Originaldatenzählungen**. Sie sind angesichts der vorhandenen Codepfade plausibel, in dieser GPT-Prüfung aber nicht unabhängig nachgezählt. **Keine dieser Zahlen belegt für sich eine falsche Ablehnung.** Eine verweigerte Ankunft kann vollkommen korrekt sein; davon abhängige spätere Meldungen aus der unerreichten Szene können korrekt verworfen werden.
+
+**V1 jetzt zurückzustellen ist deshalb sinnvoll.** Die Aussage „V1 entfernt keinen bestehenden Pfad“ gilt für die **enge Fable-Variante ohne weitere strukturelle Zusammenführung**: Unbekannte Ziele, Stealth, Gate-/Dungeon- und unterbrochene Reisewege brauchen die bisherigen Pfade weiterhin. Das ist eine starke *Netto-Wartbarkeits-Einwendung*, aber **kein Beweis**, dass jede denkbare künftig gemeinsame Ankunfts-API wertlos wäre. Auf neue natürliche Daten oder einen echten Ersatz alter Pfade könnte V1 erneut geprüft werden. **Kanonänderungen bleiben ausdrücklich möglich, wenn der Nutzen dann belegt wird.**
+
+Weitere Ergebnisse, denen GPT nach Codekontrolle zustimmt:
+- **Straßenregel lebt.** Bei einem aus dem Living Dungeon ausgehenden Reiseleg kann `pulseBegin` `governs:false` setzen; `dynamicReason` ergibt `dungeon_leg`, und `pulseFinish` setzt bei Reise ohne offenes Gefahrenfenster `auth.road='quiet'`. Der `else if (!pulse?.governs && auth.road === 'quiet' …)`-Zweig in `world.js` bleibt dann erreichbar. Fables pauschaler „toter Pfad“ war falsch.
+- **V2 trennt Berechtigung vom Vollzug.** `mayOpenFight`/PULSE/DUNGEON AHEAD autorisieren eine Konstellation, aber erst `attackCommitted` belegt einen **ausgeführten** Angriff. Die Verbprüfung nicht allein wegen der Slotbindung löschen. Ein Anlauf-/Drohungssatz ist nicht automatisch ein vollzogener Erstschlag.
+- **V4's konkrete Codefehler bestehen.** `playerPrice` gibt bei mehrfachen Zitaten ein `within` ohne eindeutige Grenzen weiter; `amountErrors` kann reparaturpflichtig scheitern; `destinationBuy` übernimmt `max_cp` ungeprüft; `acceptanceWhy` lässt eine unbelegte gleiche Zahl ein Rabattmuster aufheben. Die normale Planner-Erstantwort erhält derzeit 2000 Ausgabetokens, die leere Wiederherstellung 4000.
+
+### 12.2 Ein erheblicher Einwand gegen Opus' O1/K-A: „ortsneutraler Typ“ heißt nicht „ortsunabhängige Ursache“
+
+**O1 ist die wichtigste neue Architekturidee von Opus – aber in der vorgeschlagenen pauschalen Fassung derzeit nicht freigabereif.**
+
+Opus will `fact`, `thread`, `person.named` und `quest.detail` aus der chronologischen/örtlichen Prüfung entfernen. Dass diese Meldungsarten keine physische Ortsbewegung *buchen*, ist richtig. Daraus folgt **nicht**, dass die **im Bericht behauptete Handlung oder Information** unabhängig von einer abgelehnten Ankunft tatsächlich stattgefunden hat.
+
+**Codebelegte Schutzgrenze:**
+- `src/v4/extract.js` definiert `localSceneDelta` derzeit nach Meldungsart und verlangt für sie je nach Ankunftsfolge ein eindeutiges früheres Szenenlabel. Eine Ausnahme von diesen vier Arten würde die vorbereitende `sceneIssues`-Prüfung aufheben.
+- In `src/v4/world.js` gibt es **zwei verschiedene Stellen**, die dafür relevant sind: die erste Bedingung mit `localSceneDelta(d)` für Chronologie/fehlgeschlagene Reise und **daneben** die Prüfung `origin != null && !sceneMatches(origin)` ohne `localSceneDelta`. Ein alleiniger Eingriff in `localSceneDelta` beseitigt die zweite Prüfung **nicht**. Sie einfach ebenfalls global aufzuweichen, beseitigt aber einen echten Kausalitätsschutz.
+- `case 'fact'` bucht einen Fakteneintrag, wenn Identität/Ownership und weitere Regeln stimmen; der Bericht muss nicht schon durch eine belegte lokale Begegnung legitimiert sein. `case 'thread'` kann eine persönliche Zusage/Schuld erstellen oder aktualisieren; `threadEvents` schützt Parteien/IDs, **nicht** die Erzählursache einer unautorisierten Ortsänderung. `case 'person.named'` kann einen bereits bekannten NPC dauerhaft umbenennen. `case 'quest.detail'` speichert notfalls Zeitplan und Notiz. Alle vier können somit **Fakten aus einer Szene perpetuieren, die die Engine gerade als nicht erreicht bewertet hat**.
+
+**Konkrete negative Szenarien, vor Umsetzung als Gegenfälle zu prüfen:**
+1. Alaric bleibt am Gasthaus; der Narrator versetzt ihn ohne GO zur Mühle, lässt ihn dort mit Muller eine neue Schuld vereinbaren, die er anschließend als `thread` meldet. `arrive` wird mit `no_go` abgelehnt. Eine pauschale O1-Ausnahme dürfte **die dort nie geschlossene Schuld nicht als bestehende Absprache verbuchen**.
+2. Ein bekannter namenloser NPC wird nur in der unerreichten Szene als „Bess“ vorgestellt. Ein freigestelltes `person.named` könnte den dauerhaften Namen trotzdem übernehmen, obwohl die Begegnung nicht stattfand.
+3. Eine Questnotiz legt eine neue Route/Frist fest, die ausschließlich während einer nicht erreichten Begegnung mit dem Auftraggeber genannt wurde. Ein `quest.detail` ohne Orts-/Quellbeleg könnte dadurch falsche Vertragsinformationen fortschreiben.
+4. **Positiver Gegenfall:** Eine Person am **wirklich erreichten Ausgangsort** berichtet über ein entferntes Ereignis; es wird als `fact`/`thread` aufgenommen, obwohl ein anderer, späterer und nicht erreichter Ortswechsel im selben Erzählertext scheitert. Ein solcher *unabhängiger* Bericht soll erhalten bleiben, mit korrekter Quellen-/Chronologiebindung.
+
+Opus beruft sich auf Kanon §2 („ein tatsächlich gemeinsam erlebter Vorgang bleibt etabliert“). **Das Wort „tatsächlich“ ist entscheidend:** Ein Vorgang, dessen einziges Fundament eine *nicht autorisierte* Ortsverlegung ist, wurde im kanonischen Spiel **nicht gemeinsam erlebt**. Die bestehende Integritätsregel darf nicht versehentlich dadurch umgekehrt werden.
+
+**GPT-Empfehlung zu E1/K-A:** **Eingeschränktes GO nur für einen kausal belegten Sonderfall**, **kein pauschales GO für die vier Typen**. Erst alle tatsächlich **unabhängigen** Ortsneutralfälle von den aus einer unerreichten Szene **abhängigen** Meldungen trennen. Dazu Originalfälle aus Batch 28 und die vier Pilot-Chronologiereparaturen konkret einzeln einstufen. Benötigt wird eine nachprüfbare Herkunfts-/Abhängigkeitsregel (etwa Quelle im erreichten Ausgangsort, belegter Fernbericht oder klarer Schritt **vor** der verweigerten Ankunft), nicht nur eine Whitelist von vier Typnamen. Wenn diese Regel zu teuer/komplex wird, lieber die bestehenden Prüfungen und präzisere Extractor-Szenenlabels beibehalten.
+
+### 12.3 O2/K-B: Gute QoL-Idee, aber eine Topologieprüfung ist keine Spielerzustimmung
+
+Opus begrenzt O2 auf Zielorte innerhalb desselben Gebäudes/Anwesens ohne Kampf, Dungeon, Stealth oder gesperrten Weg. Das ist **viel sicherer** als eine generelle siedlungsinterne Freigabe. Dennoch kann `complexOf` in `src/v4/dungeon.js` lediglich die Zugehörigkeit zu einer Kette von `site`-/`interior`-Orten feststellen; es belegt **keine freiwillige Spielerentscheidung**, in einen anderen Raum zu gehen.
+
+**Risiko:** Der Spieler bestellt am Tresen ein Getränk, der Narrator verlegt ihn unbeauftragt in ein angrenzendes privates Zimmer oder in einen Hof; eine automatisch akzeptierte `arrive`-Meldung könnte dadurch Spielerhoheit verletzen, obwohl der Ort topologisch „im selben Gebäude“ liegt. Ein bekannter Zimmerweg ist außerdem nicht zwingend frei zugänglich.
+
+**Besserer Prüfmaßstab:** Die begrenzte Teilbewegung muss **aus dem vom Spieler autorisierten Vorgang folgen**, etwa „Ich nehme das gebuchte Zimmer und gehe hinauf“ oder eine notwendige, gewöhnliche Teilausführung einer ausdrücklich gewählten Handlung. Eine frühere Buchung oder plausible räumliche Nähe **allein** autorisiert keine neue Bewegung. Offene Zutritts-/Tür-/Stealth-/NPC-Hindernisse bleiben. Aus einem bloßen „Ich nehme das Zimmer“ ergibt sich nicht zwangsläufig, dass der Spieler bereits hineinlief; die Spielregel kann dies als kleine, erwartbare Teilhandlung zulassen, **wenn der Nutzer dies als gewünschtes QoL-Verhalten entscheidet**.
+
+**GPT-Empfehlung zu E2/K-B:** **Grundsätzlich JA für Gebäude/Anwesen, nicht ganze Siedlung; aber nur bei nachweisbarem Handlungsbezug**. Eine allumfassende Kind-/Eltern-/Geschwister-Ausnahme ohne Bezug zur Eingabe ist **NO-GO**. Dass die frühere Ausnahme in `.99` bewusst deaktiviert wurde, muss bei den Gegenfällen berücksichtigt werden.
+
+### 12.4 V4, Planner und Preise: Opus überzeugt – die Sicherheitsbedingungen bleiben wichtig
+
+**Positiv bestätigt:**
+- Die Inkonsistenz zwischen `findQuote`/`playerPrice` und der bereits vorhandenen Toleranz in `moneyLiteral` ist eine **enge, codebelegte Fehlerursache**. **P1a/S1** verdient einen kleinen Fachpatch mit Originalfällen und negativen Mehrfachpreis-/Mehrfachaktionsfällen.
+- `commands.js` eröffnet bei `buy` nach `go` eine aufgeschobene Kaufentscheidung mit einer unbewiesenen ganzzahligen `max_cp`. Das widerspricht dem Prinzip aus den direkten Kaufpfaden. **P1b** sollte den gleichen `provenNumber`-Vertrag benutzen; `any_price` und ein vorhandenes explizites Limit müssen gleichzeitig bindend bleiben.
+- `trade.js acceptanceWhy` kann die Rabatt-/Gegenangebotsgrenze über den ungeprüften Vergleich `agreed_cp === total` aufheben. **P1c** sollte dies nur bei **belegter Akzeptanz** zulassen und keine zusätzliche universelle `#pay`-Bestätigung für normale Käufe einführen.
+- Der `amountErrors`-Unterschied zwischen „Beleg fehlt“ und „Beleg angegeben, nicht auffindbar“ ist tatsächlich streng und kann bis zum `NOT EXECUTED` führen. **P1e/S3'** als Hinweis-/Soft-Fall ist sinnvoll **nach** allen erlaubenden Vorabzustimmungspfaden, nicht als globale Nullsetzung. Falscher Betrag, unvollständige Summe, Stückpreis, mehrdeutiges Gegenangebot und echte Preisgrenzen bleiben harte Kontrollen.
+
+**Zwei Grenzen von Opus' Empfehlung:**
+1. **Gleicher Betrag ≠ gleiche Handlung.** Zwei wörtliche „three copper“-Fundstellen können zu **verschiedenen Verkäufern, Nebenleistungen oder Zahlungen** gehören. Schon ein einzelnes korrekt zitiertes Wort beweist nicht automatisch die Zustimmung zu einem bestimmten `offer.accept`; mehrfach gleiche Zahlen verschärfen das Zuordnungsrisiko. **P1a** muss daher außer gleicher Summe auch den vorhandenen Aktions-/Artikel-/Empfänger-Scope und `quote`-Vertrag erhalten; nicht pauschal jede gleich hohe Fundstelle als Autorisierung interpretieren.
+2. **P1f ist noch kein nachgewiesener Kostengewinn.** Die Opus-Zählung von vier ersten `finish=length`-Antworten bei 2000 Tokens ist ein wichtiger Befund. Eine pauschale Erhöhung aller ersten Planner-Ausgaben kann aber **die Tokenkosten der übrigen Aufrufe** vergrößern und garantiert keine JSON-Ausgabe, wenn ein Modell mehr Reasoning ausfüllt. Bevor dauerhaft auf 4000 erhöht wird: kontrollierter Vorher-/Nachhervergleich der **tatsächlichen Ausgabetokens, Reparaturquote, Latenz, Gesamtkosten und Ergebnisgültigkeit**; falls verfügbar eine begrenzte Reasoning-Einstellung als Alternative. Bevorzugt die kleinste wirksame Einstellung, nicht ein pauschales Maximum.
+
+**Zu Opus' Wirkungsprognose** „16 auf etwa 9 Reparaturen und 2 verlorene Züge zurück“: Fable hat seine erste optimistische Schätzung in §13 bereits stark reduziert. Die vier Budgetausfälle sind historisch beobachtet, aber ihre vollständige Vermeidung durch eine größere Erstantwort ist **nicht gemessen**. T54 hatte mehrere Befehle; deren vollständige Ausführung hängt weiter an normalen Mechanik-/Zustimmungsgrenzen. Die Prognose darf daher nicht als Abnahmeziel garantiert werden.
+
+**Empfehlung zum Preis-/Planner-Paket:** Enges **GO für P1a und die offenkundigen Autoritätslücken P1b/P1c** nach gezieltem Rot/Grün; **eingeschränktes GO für P1d/P1e** unter §13-Bedingungen und fehlendem Zulassungsverlust; **Mess-/Konfigurationsentscheidung** für P1f; **noch kein GO** für befehlsweise Teilannahme P1g. Gegenfälle müssen insbesondere G1–G6, B-5, mehrfache gleiche Beträge für verschiedene Handlungen, Rabatt trotz formell gleicher Zahl, `any_price + max_cp` sowie Zielkauf nach nicht bestätigter Ankunft enthalten.
+
+### 12.5 V1, V2 und die langfristige Strukturentscheidung
+
+**V1:** Auf Basis von Opus' enger Datenanalyse jetzt **zurückstellen**. Eine spätere, wirklich vereinheitlichte Reise-/Ankunftslösung ist nicht grundsätzlich ausgeschlossen. Entscheidend bleibt, dass sie den alten Aufschub- und Chronologieapparat **messbar ersetzt**, statt nur vorab gebuchte Stadtwege dazuzustellen. **Das bisherige GPT-Urteil „V1 vorrangig“ wird damit revidiert.**
+
+**V2:** Die im Code erreichbare Straßenregel beibehalten. „DUNGEON AHEAD“ belegt die **Gegneridentität/-anwesenheit**, nicht automatisch die tatsächliche Entscheidung zum Angriff. Eine positive Quellen-Diagnose kann nützlich sein, aber den `attackCommitted`-Schutz gegen bloße Drohungen nicht entfernen. Ob die Engine später eine besondere Eröffnungslage für selbst gebuchte Gefahren entscheiden soll, ist eine eigene, zunächst datengestützte Designfrage.
+
+**Wartbarkeit:** Die Grundthese von Fable und Opus bleibt richtig: Kein neuer WorldTxn, keine vollständige `applyWorld`-Neuaufteilung und keine allgemeine Umstellung auf `owner` oder NPC-ID-Merging ohne konkreten Integritätsvorteil. Die alte Replay-Basis ist ein Sicherheitsbeleg, nicht Müll. Den Korpus um echte NPC-/PULSE-/Handels- und Batch-28-Ortsfälle erweitern, ohne die ursprüngliche Fingerprintkette ersatzlos zu überschreiben. Bei Altpfadabbau erst die tatsächliche Laufzeit-Erreichbarkeit prüfen (die Straßenregel widerlegt eine rein textbasierte „Legacy“-Liste).
+
+### 12.6 Bewertung der sechs Nutzerentscheidungen E1–E6
+
+| Entscheidung aus Opus §10.3 | GPT-Empfehlung | Begründung / sichere Grenze |
+|---|---|---|
+| **E1: K-A/O1, `fact`/`thread`/`person.named`/`quest.detail` ohne Szenenbindung** | **Eingeschränktes GO, nicht pauschal** | Ortsneutraler Datentyp ≠ kausal unabhängiger Bericht. Nur eindeutig vor einer verweigerten Reise belegte oder legitim fernübermittelte Informationen übernehmen; unverifiziertes Geschehen im unerreichten Ziel bleibt abgelehnt. |
+| **E2: K-B/O2, Teilbewegung ohne GO** | **Ja, nur Gebäude/Anwesen und nur als belegte Teilhandlung** | Räumliche Nähe und zugänglicher Weg reichen ohne Spielerentscheidung nicht. Kein Freibrief für beliebige Nebenräume oder die ganze Siedlung. |
+| **E3: Rabattaufhebung** | **Ja, nur nach belegter Zustimmung zum gespeicherten Preis** | Ungeprüftes `agreed_cp` darf einen echten Rabattwunsch nicht überschreiben; normale Kaufbestätigung genügt, keine neue universelle Zahlungskarte. |
+| **E4: Planner-Ausgabebudget/Reasoning** | **Erst Messvergleich, dann kleinste wirksame Änderung** | Vier Leerausgaben sind ein realer Befund; pauschal größere Tokenlimits können Kosten erhöhen. Reasoning-Cap prüfen, wenn unterstützt, sonst moderat erhöhen und evaluieren. |
+| **E5: V1 zurückstellen** | **Ja** | Opus' Daten widerlegen die angenommene große Wirkung der engen Fable-Variante; ohne echte Altpfadersetzung kein guter Architekturtradeoff. |
+| **E6: Paket A (Preis) vor oder nach natürlichem Lauf** | **Natürlichen Run auf unverändertem `.179` zuerst**, wenn zeitnah durchführbar | Nur so wird die Wirkung `.175`–`.179` erstmals frei modellgestützt geprüft. Anschließend Preis-/Planner-Paket mit getrenntem Vorher-/Nachher. Enger Sicherheits-Hotfix bei nachweisbarer Fehlbuchung darf die Reihenfolge ausnahmsweise ändern. |
+
+### 12.7 Priorisierter Folgeschritt, ohne neue Mikroreview-Schleife
+
+1. **Jetzt:** Ein natürlicher NPC-/PULSE-Lauf auf festgehaltenem `.179`, mit **Guard-Bilanz nach Ursache und Folgewirkung**. K-A/O1-Eignung nicht nur nach Delta-Typ zählen, sondern jede abgelehnte Ankunft und ihr tatsächliches Szenengeschehen nachträglich beurteilen.
+2. **Danach:** Ein gebündeltes, sicherheitsgeprüftes Preis-/Planner-Paket mit P1a–P1e sowie einer kontrollierten Budget-/Reasoning-Konfigurationsprobe. Nicht unbemerkt die Zustimmungs- oder `any_price`-Semantik ändern.
+3. **O1/O2:** Zwei begrenzte Designentscheidungen **erst nach negativen und positiven Originalfall-Gegenproben**. Kein unqualifiziertes „GO für alle vier Datentypen“. O2 bei Gelegenheit als klar nachweisbare Teilhandlung verbessern, nicht als automatische Siedlungsnavigation.
+4. **Pflege:** V7-aktuelle Korpusabdeckung, D3-Teillieferung ohne pauschale Spielerzitatlöschung und V6-Altpfadabbau nur nach Nutzungskarte. V2/V3/V5 nur bei neuen konkreten Integrationsbefunden.
+
+**Schluss:** Opus hat die bisherige Architekturpriorisierung sinnvoll korrigiert. **Seine pauschale O1-Freistellung ist jedoch der wichtigste noch unbewiesene Designvorschlag.** Gerade bei einem System, dessen Stärke persistente NPC-Beziehungen und verlässliche Ereignisfolgen sein sollen, darf eine nicht erreichte Szene nicht durch die Hintertür als dauerhafte persönliche Absprache, NPC-Namensgebung oder Questwahrheit zurückkehren. **Keine Implementierung auf Grundlage dieses Gegenreviews freigegeben.**

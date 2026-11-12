@@ -388,3 +388,75 @@ ohne einen Widerspruch zu riskieren.
 4. **Natürlicher NPC-/PULSE-Lauf auf unverändertem .179 bleibt vorrangiger Abnahmenachweis**; eine spätere Monsterimplementierung kann in getrenntem Produktcheckout vorbereitet werden und sollte den lokalen Teststand nicht unbemerkt ändern.
 
 **Fazit:** Opus hat den richtigen Codepfad gewählt, aber „nur ein Profilfeld“ reicht für A2 nicht, solange Gruppen, Ankündigung, späterer Extraktorbericht und echte Besitzobjekte verschiedene Autoritätszeitpunkte haben. **A1 behutsam korrigieren, A2 fachlich eng entscheiden und dann zusammenhängend implementieren – kein weiterer Generalreview.**
+
+---
+
+## 9. Opus-Mini-Gegenreview zu GPT §8
+
+**12.11.2026 · Opus 5.5 · nur lesende Codeprüfung gegen `59f868e` (`.179`, weiterhin HEAD des Produktbranches).** Geprüft wurden GPTs Einwände, nicht der ganze Plan. Der einzige ausgeführte Code war eine isolierte Regex-Probe der vorhandenen Muster außerhalb des Produkts; es gab keine Tests, keine Simulation und keine Produktänderung.
+
+### 9.1 Einordnung der GPT-Einwände
+
+| # | Einwand (§8) | Codebefund | Einordnung |
+|---|---|---|---|
+| A1-a | Ein Artwort setzt eine verneinte Anatomie außer Kraft („hornless goat“) | `loot.js:74` prüft nur positiv. Die Probe zeigt: „hornless goat“, „goat without horns“ und „dehorned goat“ treffen alle `goats?`; „without horns“ trifft sogar `horns?`. **Der Fehler steckt schon in `.179`:** Das Giftmuster der Schlange trifft „non-venomous grass snake“ und „grass snake, not poisonous“. Mein Testfall N6 wäre rot | **Bestätigt**, aber **enger lösen** (§9.2 K1) |
+| A1-b | Die Kürzung in `speciesName` ändert Identität und Stapelung | Richtig ist: Der Stapelschlüssel ist `obj.loot.<slug(species)>.<material>.<rank>` (`loot.js:76`, `:112`). Er hängt also am gekürzten Artnamen. **Allerdings verschmilzt schon die heutige Regel** (letzte drei Wörter) jede Art auf „… of the millpond“ zu einem Stapel „Of The Millpond“. Die Korrektur trennt diese Fehlfusion auf. Dass „feral dog of the millpond“ und „feral dog of the marsh“ danach einen Stapel „Feral Dog Fang“ bilden, entspricht der dokumentierten Stapelregel (`loot.js:10`). Ein bereits gehaltener Altstapel bleibt getrennt bestehen: im Inventar unschön, aber kein Integritätsfehler. `for_quests` ist bei Beute leer, und der Handel bewertet nach `value_cp` je Objekt | **Teilweise richtig.** Die Kürzung ist eine Identitätsänderung und muss so benannt und getestet werden. Ein **getrennter Art- und Anzeigeschlüssel ist überdimensioniert** |
+| A1-c | `traits` nur aus der gemeldeten Beschreibung bilden, `descriptors` unverändert lassen | Entspricht §3.1 Nr. 8 | **Bestätigt, keine Änderung nötig** |
+| D6 / Balance | Nennt den Plan die Änderung „balance-neutral“? | §4 nennt sie bereits eine „kleine Wirtschaftsänderung“ | **Unbegründet** |
+| A2-a | Eine gemeinsame `armed`-Angabe gilt für die ganze Gruppe | `newEntity` legt aus einem Bericht `count` Einzelwesen an. Ein Slot bindet **genau einen** Bericht (`living.js:286–313`: `sl.count === d.count`, danach ist der Slot nicht mehr `free`). Eine gemischte Slotgruppe lässt sich deshalb **nicht** auf zwei Berichte verteilen. Eine Liste je Mitglied wäre ein neuer Mechanismus | **Bestätigt**, aber **enger lösen:** eine Vertragsregel statt neuer Mechanik (K3) |
+| A2-b | DUNGEON AHEAD (Spielerzug) liegt vor `creature.new` (Erzählung) | Richtig. Mein Plan kombiniert „gemeldete Ausnahme hat Vorrang“ mit D8 = ja, und beides widerspricht sich | **Bestätigt:** ein Widerspruch im Plan, kein Codefehler. Auflösung durch D8 = zunächst nein (K4) |
+| A2-c | `profile.gear` als zweite Besitzwahrheit | Objekte können eine beliebige Entität als Halter haben (`world.js:2734–2741`), auch eine Kreatur. Das gilt heute ebenso für Personen, deren Kampfwaffe ein Blattwert ist (`engine.js:258`, `loot.js:85–92`) und kein Objekt. Es gibt keinen Mechanismus zum Entwaffnen von Kampfteilnehmern. `profile.gear` übernimmt also das **vorhandene Personenmuster** und erzeugt keine neue Wahrheitsklasse | **Teilweise richtig:** Es braucht einen Vertragssatz, aber keine Transfermechanik (K5) |
+| A2-d | Die Legacy-Regel funktioniert nicht, wenn `spec.gear` ersetzt wird | Richtig: §3.2 Nr. 1 und D5 widersprechen sich | **Bestätigt:** echte Korrektur (K6) |
+| A2-Rest | Die Kampfzeile heißt weiter „natural attack Raw = ATK“ | `combat.js:593`. Der Text steht in Replay-Fixtures | **Teilweise richtig:** Ändern ja, aber nur für bewaffnete Profile (K7) |
+| §8.4 | 6:3:1 und 0,55 sind Designzahlen | Richtig; der Plan hat sie nie als gemessen ausgegeben | **Designentscheidung** |
+
+### 9.2 Nötige Korrekturen am Fachplan
+
+- **K1 – Verneinung (A1).** Ein optionales Datenfeld `unless` je Spezialmaterial, geprüft vor `only_if`, mit **einer** Codezeile in `loot.js` neben `:74`. Kein Satzparser und keine allgemeine Negationslogik. Das Feld ist eng gefasst und gehört nur zu den Spezialorganen:
+  - Geweih: `antlerless|(?:no|without|lost|missing|broken)\s+(?:\w+\s+){0,2}antlers?`
+  - Horn: `hornless|dehorned|polled|(?:no|without|lost|missing|broken)\s+(?:\w+\s+){0,2}horns?`
+  - Hauer: `tuskless|(?:no|without|lost|missing|broken)\s+(?:\w+\s+){0,2}tusks?`
+  - Gift: `non-?venomous|non-?poisonous|harmless|(?:not|no|without)\s+(?:\w+\s+){0,2}(?:venom\w*|poison\w*)`
+
+  Damit gilt: Eine individuelle Verneinung schlägt das Artwort. Der Schlangenfehler aus `.179` wird mitbehoben. Neue Gegenfälle: „non-venomous grass snake“, „doe without antlers“, „tuskless ogre“, „dehorned goat“; positiver Kontrast „rare antlered doe“. Restrisiko: Eine ungewöhnlich formulierte Verneinung kann durchrutschen. Das wird hingenommen.
+- **K2 – Beutename (A1).** §3.1 Nr. 9 bleibt, wird aber als **Identitätsänderung** geführt. Regressionen:
+  - Zwei „… of the …“-Arten verschiedener Anker bilden getrennte Stapel.
+  - Gleiche Art in verschiedenen Regionen bildet einen Stapel.
+  - Ein Altstapel bleibt unverändert erhalten.
+  - Bleibt nach dem Abtrennen nichts übrig („of the deep“), gilt die alte Regel.
+- **K3 – Gruppen (A2).** Vertragsregel für `creature.new.armed`: Das Feld gilt nur, wenn die Antwort die Waffe für **jedes** Wesen des Berichts zeigt, sonst ist es `null`. Für jedes Mitglied gilt dann die Standardausstattung über seinen eigenen Schlüssel. Es gibt keine Verteilung und keine Liste je Mitglied. Pilot Z60 (zwei von drei mit Speer) ergibt also `null`: Die Ausrüstung kommt aus der Standardliste, und Erzähler sowie Karte sehen sie ab dem nächsten Zug. Ein Restwiderspruch zur Erzählung bleibt möglich, **aber keine erfundene Beute**.
+- **K4 – Zeitpunkt (A2).** D8 wird auf **„zunächst nein“** gesetzt, A2-4 zurückgestellt. Für Slotgegner wird der Besitz wie für alle anderen beim Materialisieren nach der Erzählung festgelegt (`world.js:723`); eine Ankündigung vorher gibt es nicht. Eine spätere A2-4 müsste den Besitz von Slotmitgliedern vor der Erzählung **verbindlich** machen und `armed` für sie ignorieren. Das ist eine eigene Entscheidung.
+- **K5 – Besitzvertrag (A2).** Ergänzung in §2.3: `profile.gear` ist kein Objekt und lässt sich vor dem Tod weder geben noch nehmen; es wird erst als Beute zum Objekt, wie die Blattwaffe einer Person. Dazu kommt eine Extractorzeile: Die Waffe, die eine Kreatur trägt, wird über `armed` gemeldet, **nicht** als `object.new` mit der Kreatur als Halter.
+- **K6 – Legacy (A2).** §3.2 Nr. 1 wird geändert: `gear` **bleibt unverändert** als Legacy-Tabelle, und `loadout` kommt als neuer Schlüssel daneben. In `loot.js` gilt:
+  - `prof.gear` vorhanden → `loadout`-Weg;
+  - `prof.gear` fehlt und der Anker ist humanoid → alte `gear`-Quote wie in `.179`.
+
+  Erhalten bleiben müssen `gear` (Name, `chance`, `atk`, `slot`) und `purse_cp`. Entfallen kann nichts, solange D5 = Legacy gilt. Bei D5 = „keine Waffe“ könnte `gear` entfallen. GPTs geforderter Schutz ist **ein** Regressionstest mit einem echten Altprofil ohne `gear`; mehr Mechanik ist nicht nötig. Für den Replay-Korpus ändert die Regel nichts: Dort wird neu materialisiert, also entsteht `profile.gear`, und die Abweichungen werden wie geplant einzeln freigegeben. Sie schützt **laufende Spielstände** mit bereits festgelegten Kreaturen.
+- **K7 – Kampfzeile (A2).** Bei einem Profil mit Nahkampfwaffe wird `raw_text` zu `"<Waffe> Raw = ATK n"`. Ohne Waffe bleibt der Text unverändert, damit die Fixtures stabil bleiben. Ein nur getragener Fokus oder Bogen ändert weder `attack.name` noch `raw_text`.
+
+### 9.3 Umsetzungsreife
+
+- **A1: umsetzungsreif mit K1 und K2 → GO.** Voraussetzung ist D6, sonst bleibt der Schleimkern unverändert.
+- **A2-1 bis A2-3: umsetzungsreif mit K3 und K5–K7 → eingeschränktes GO.** Voraussetzung sind die Entscheidungen in §9.4. GPTs Vorbehalt „erst nach Tests“ betrifft die Abnahme, nicht die Planung. Die Rot- und Grünfälle aus §5 und §8.4 gelten mit den Ergänzungen aus K1–K3.
+- **A2-4: zurückgestellt** (K4).
+
+Insgesamt hatte ich die nötige Komplexität bei Gruppen und Slots **unterschätzt, nicht überschätzt**. GPT schätzt sie dagegen höher ein, als der Code verlangt: Zwei Vertragssätze und eine Legacy-Abzweigung genügen, ein neues Besitz- oder Gruppenmodell ist nicht nötig.
+
+### 9.4 Offene Nutzerentscheidungen
+
+1. **Standardausstattung und Verwertbarkeit** (D1/D4): Startwerte Goblin Messer 6, Speer 3, keine 1, Verwertbarkeit ≈ 0,55; Oger Keule 0,7; Schamane Fokus 0,4. Sie gelten als Designzahlen, die nach einem Lauf nachgestellt werden.
+2. **Altprofile** (D5): alte Quote behalten (empfohlen) oder keine Waffenbeute.
+3. **Schleimkern** (D6): nur mit Beleg (empfohlen) oder unverändert.
+4. **Gemischte Gruppen** (K3): Annahme der Regel „gilt für alle oder `null`“ mit dem bewusst hingenommenen Restwiderspruch zur Erzählung.
+
+D2, D3, D7 und D9 bleiben wie empfohlen; D8 ist durch K4 entschieden.
+
+### 9.5 Empfohlene Patchaufteilung
+
+| Patch | Inhalt | Begründung |
+|---|---|---|
+| **1 – A1** | §3.1 mit K1/K2 | allein lauffähig; behebt auch den Schlangenfehler aus `.179`; kleine Replay-Wirkung |
+| **2 – A2** | A2-1 bis A2-3 mit K3, K5–K7 in **einem** Build | Profil, Kampfzeile, Beute und Extractorfeld gehören zusammen; getrennt entstünde eine Zwischenlage mit Beute aus dem Profil, aber ohne Ausnahmen |
+| später | A2-4 nur nach eigener Entscheidung zur Verbindlichkeit von Slots | – |
+
+Beide Patches setzen auf `.179` auf und werden in einem eigenen Checkout vorbereitet. Ein natürlicher NPC- und PULSE-Lauf auf unverändertem `.179` hat, wie GPT §8.4 sagt, Vorrang; die Monsterpatches dürfen ihn nicht verändern.

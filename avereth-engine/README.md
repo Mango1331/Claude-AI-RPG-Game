@@ -1,3 +1,5 @@
+> **HISTORISCHER V3-README-STAND AUF `main`:** Die folgende Anleitung beschreibt eine ältere Engine-Generation (`v3.1.7`), **nicht** den aktuellen Produktbranch V4-C / Ruleset 2. Für neue Chats und den derzeitigen Produktstand zuerst die [Projektstartseite](../README.md), [Arbeitsweise](../01_ARBEITSWEISE_CHATGPT_CLAUDE.md) und [Projektstatus](../03_AKTUELLER_PROJEKTSTAND.md) lesen; Installations-/Spielanweisungen gegen den tatsächlichen aktuellen Produktbranch prüfen. Das historische Dokument wird als Quelle bewahrt, nicht laufend zum zweiten Produkt-README umgeschrieben.
+
 # Avereth Engine (v3.1.7)
 
 Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extension**. Sie besitzt Regeln, Würfel, Kampagnenzustand und Figurenwissen. Das Sprachmodell erzählt.

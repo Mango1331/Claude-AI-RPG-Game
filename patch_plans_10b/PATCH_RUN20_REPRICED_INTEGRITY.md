@@ -1,9 +1,0 @@
-# Run20 – Angebotsstatus repriced, abgeschlossen
-
-**Fix in .97.** `repriced` ist ein gültiger terminaler Angebotsstatus. Nur `open` ist annehmbar; ersetzte Offerten werden nicht erneut bezahlt/angezeigt. Unbekannte Status bleiben Integritätsfehler. Historische Handelsereignisse werden nicht umgeschrieben.
-
-Kein Preis-/Balancepatch und kein offener Statusumbau.
-
-Gemeinsamer Produktbeleg der drei Run20-Korrekturen: [b51a6f1](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b51a6f1d44415a00a71162bcec0b0c0b46349ac3), [technische Patchnote samt Tests](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b51a6f1d44415a00a71162bcec0b0c0b46349ac3/avereth-engine/docs/PATCH_RUN20_TECHNICAL.md).
-
-[Ursprüngliche Analyse und vollständiger Plan am Commit7994fa4](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/7994fa42b115f21b705c0b770e2b4e31fde67f77/patch_plans_10b/PATCH_RUN20_REPRICED_INTEGRITY.md). Aktueller Produkt-/Abnahmestand nur in [03](../03_AKTUELLER_PROJEKTSTAND.md).

@@ -1,50 +1,40 @@
-# Avereth Engine – 10B-Fachindex und historische Entscheidungen
+# Avereth Engine – 10B-Fachquellenindex
 
-**Stand: 05.11.2026.** Quellenwegweiser, keine zweite laufende Status- oder Testliste. [Aktueller Stand 03](03_AKTUELLER_PROJEKTSTAND.md) · [Kanon 02](02_DESIGN_KANON.md) · [Roadmap 07](07_ROADMAP_NACH_10B_ENTWURF.md) · [Originalruns](testrun_10b/README.md).
+**Stand 12.11.2026.** **Links statt zweiter Patch-, Test- oder Statuschronik.** [Startseite](README.md) · [aktueller Stand 03](03_AKTUELLER_PROJEKTSTAND.md) · [Roadmap 07](07_ROADMAP_NACH_10B_ENTWURF.md) · [Originalruns](testrun_10b/README.md).
 
-## Teilabnahme 04.11.2026
+## Aktuelle entscheidungsrelevante Fachquellen
 
-10B begann als Balance-/Pacingarbeit und wurde durch natürliche Langläufe hauptsächlich zur technischen Integrations- und Persistenzstabilisierung. **.154 / `2482da2` ist auf Nutzerentscheidung als Zwischenstand für persönliche Spieltests teilabgenommen.** Daraus folgt keine Endprodukt-, Balance- oder automatische Featurefreigabe. Weitere Zuverlässigkeit bleibt laufende Arbeit; zusätzliche große Batchserien sind keine Pflicht.
-
-Alte Schwellenideen und deren Diskussion werden nicht erneut als Entscheidungsgate verwendet. [Ungekürzter Stand vor dieser Straffung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/55d20eaf65f521a25ea3e85cfa3390e215270683/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md), [ursprüngliches Journal §§0–32](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0ebf449/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). Historische Zahlen bleiben Originalbefunde, keine heute neu gemessenen Quoten.
-
-## Fortbestehendes Qualitätsziel: zuverlässige natürliche Kampagnen
-
-| Befundklasse | Bewertungsmaßstab |
+| Thema | Maßgebliche Primärdokumente und Abgrenzung |
 |---|---|
-| **A – fortsetzbar, Integrität erhalten** | Sichere Recovery oder lokaler Erzählfehler kann tolerierbar sein; Häufung, verlorene Handlungen und Zusatzschritte bewerten. |
-| **B – fortsetzbar, Integrität verletzt** | Falsche Geld-/Waren-/Quest-/Kampf-/Worldbuchung ist trotz laufendem Prozess kein intakter Erfolg. Schwere und Fortwirkung entscheiden. |
-| **C – technisch blockiert/abgebrochen** | Terminaler Host-/Save-/Modellfehler oder unauflösbare Handlungsschleife; auch ein deshalb manueller Stopp zählt als technische Blockade. |
+| **Architektur 10B – Fable/GPT/Opus** | [Fable-Audit §§1–13, GPT-Gegenreview §14](recherche/ARCHITEKTUR_AUDIT_10B_FABLE.md) · [Opus-Prüfung §§0–11 und GPT-Gegenreview §12](recherche/ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md). **V1 derzeit zurückgestellt**, keine pauschale Angriffs-/Szenenlockerung. |
+| **Ortschronologie O1/O2** | [Opus-Fachplan §§0–8 und GPT-Gegenreview §9](recherche/FACHPLAN_O1_O2_KAUSALITAET_UND_TEILBEWEGUNG.md). O1-B1 als enge Option, O1-Whitelist ausdrücklich NO-GO; O2-stay Designentscheidung, nicht Implementierung. |
+| **Preis-/Planner-Belege V4** | [Fable §13 + GPT §14](recherche/ARCHITEKTUR_AUDIT_10B_FABLE.md) · [Opus §5 + GPT §12](recherche/ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md). P1a–P1f **nicht implementiert**; vorhandene Finanzregeln bleiben. |
+| **NPC E2/E3 – Diagnose und Roadmap** | [E2/E3-Iststand](recherche/NPC_E2_E3_ISTANALYSE_20261108.md) · [verbindlicher E2/E3-Fachplan](patch_plans_10b/NPC_E2_E3_FACHPLAN.md) · [Opus-Kontinuitätsaudit mit GPT-§9](recherche/NPC_E2_E3_KONTINUITAETSAUDIT_OPUS55.md). Vertragshinweis E3 V-1 und `relevant`-Teillieferung D3 offen. |
+| **NPC-Kontinuitätsursprünge** | [Brenna-/Tam-Analyse mit Gegenreviews](recherche/NPC_KONTINUITAET_ANALYSE_20261104.md) · [User02-Sol-Nachtrag](testrun_10b/user-20261105-050449/REVIEW_CHATGPT.md) · [Pilot-01-Korrekturen](testrun_10b/npc-20261109-160250Z/FACHPLAN_PILOT01_KORREKTUREN.md). |
+| **NPC-/PULSE-Pilot, D3** | [Originalreview Pilot 01](testrun_10b/npc-20261109-160250Z/REVIEW.md), [Quellenmanifest](testrun_10b/npc-20261109-160250Z/SOURCE_MANIFEST.md) · [D3-Kontextanalyse](testrun_10b/npc-20261109-160250Z/D3_KONTEXTANALYSE_RELEVANT.md) · [Review zum Produktstand `.179`](testrun_10b/npc-20261109-160250Z/REVIEW_179_UND_D3_GPT.md). Pilot war auf `.174`, kein natürlicher `.179`-Beweis. |
+| **Monsterkörper/Beute A1/A2** | [Opus-Fachplan, GPT-Gegenreview §8 und Opus-Mini-Gegenreview §9](patch_plans_10b/FACHPLAN_MONSTER_ANATOMIE_LOOT_A1_A2.md) · [Monsterdesign-Analyse, GPT-§10](recherche/MONSTERDESIGN_ANALYSE_20261028.md). **A1 zur Umsetzung empfohlen; A2 nur nach Entscheidungen**, kein Produktpatch. |
+| **K1 Main/Minor im Kampf** | [Technischer Fachplan](patch_plans_10b/PATCH_COMBAT_MAIN_MINOR_ACTIONS.md) basiert auf `.104`: **vor Umsetzung Codeabgleich mit `.179`**. Nicht implementiert. |
+| **Stealth S2** | [S1/S2-Fachplan](patch_plans_10b/PATCH_STEALTH_ACTION_MANNER.md); S1 umgesetzt, lokale heimliche Search-/TAKE-Handlungen noch getrennt geplant. |
+| **PULSE A/B/C, D** | [Technischer PULSE-Fachplan](patch_plans_10b/PULSE_W5_W7_TECHNISCHER_UMSETZUNGSPLAN.md) · [Paket A Review](patch_plans_10b/REVIEW_PULSE163_GPT.md) · [Paket C Review](patch_plans_10b/REVIEW_PULSE166_PRODUKTDIFF_GPT.md) · [Paket B Review](patch_plans_10b/REVIEW_PULSE168_PRODUKTDIFF_GPT.md). A/B/C technisch umgesetzt, D erst nach natürlichen Daten. |
+| **Engine-Shops, Board und Handel** | [Shop-Alternativfachplan](patch_plans_10b/FACHPLAN_ENGINE_SHOPS.md) · [Board-/Offerten-Vorschlag](patch_plans_10b/PATCH_ENGINE_BOARD_AND_TRADE_OFFERS.md) · [Finanzvereinfachung](patch_plans_10b/PATCH_FINANCE_SIMPLIFICATION.md). Nicht als bereits aktives Shopframework behandeln. |
+| **Flucht/Chase** | [Historischer C0–C3-Fachplan](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b31123ffb4d3f5c404d6add85449ea869ed415ee/avereth-engine/docs/PATCH10B_CHASE_ESCAPE_PACING_CANDIDATE.md); vorhandenen Chase-Endpfad zuerst natürlich prüfen. |
+| **Balance/Scaling und Entwicklung** | [F-/E-Entwurf](testrun_10b/ENTWURF_F_RANG_PROGRESSION_UND_E_UEBERGANG.md) · [frühe Balancebelege](testrun_10b/BALANCE_ERSTEINDRUECKE_XP_STARTWERTE_20261026.md). Keine pauschalen Buffs oder stille neue Ranggrenzen. |
 
-B und C können gemeinsam vorliegen. Regelgerechter Tod, reguläres Limit oder freier manueller Stopp sind für sich keine Technikfehler; kurze Tode liefern wenig Langlaufabdeckung. Engine-, Modell-, Provider-/Windows- und Runnerursachen trennen. Ein grüner Validator beweist keine semantisch richtige Handlung, ein `completed`-Runnerstatus keinen erreichten Levelmeilenstein. Prüfablauf und Evidenzarten ausschließlich in [01](01_ARBEITSWEISE_CHATGPT_CLAUDE.md).
+## Historisch abgeschlossene technische Ketten – eine Quelle je Thema
 
-## Fachpläne und Quellenwegweiser 10B
-
-| Fachgebiet | Maßgebliche Detailquelle |
+| Thema | Produkt-/historische Quelle |
 |---|---|
-| Architektur A/B1/C/D, Population/Alter und Handelsautorität | [Konsolidierter Architekturplan](patch_plans_10b/PATCH_ARCHITEKTUR_126_KONSOLIDIERT.md). A/B1/C/D sind Produktgrundlagen; B2/E-Historikbereinigung nur nach konkretem Auftrag. |
-| Start-/Makro-, Host- und Failsoft-Fixkette | [Historischer Fachindex](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/55d20eaf65f521a25ea3e85cfa3390e215270683/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md#produktgeschichte--nur-commitwegweiser), [Failsoft-Fachplan](patch_plans_10b/PATCH_FAILSOFT_AND_BATCH4.md). |
-| Freie Zahlungen und verbindliche Endpreise | [Finanzvereinfachung](patch_plans_10b/PATCH_FINANCE_SIMPLIFICATION.md), [.144 Umsetzung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b31123ffb4d3f5c404d6add85449ea869ed415ee/avereth-engine/docs/FIX144_FINANCE_SIMPLIFICATION.md), [.145 Persistenz](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b31123ffb4d3f5c404d6add85449ea869ed415ee/avereth-engine/docs/FIX145_PAYMENT_PERSISTENCE.md). |
-| Handels-/Boardintegration und Save-/Kaufauswahl | [.146](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b31123ffb4d3f5c404d6add85449ea869ed415ee/avereth-engine/docs/FIX146_BATCH21_TRADE_BOARD.md), [.147](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b31123ffb4d3f5c404d6add85449ea869ed415ee/avereth-engine/docs/FIX147_BATCH22_SAVE_SELECTION.md). Ein späterer Engine-Shop ist ein eigener Entwurf. |
-| Kampf-QoL und organische Skillentwicklung | [.148 AoE/Seitenschutz](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b31123ffb4d3f5c404d6add85449ea869ed415ee/avereth-engine/docs/DESIGN148_COMBAT_QOL.md), [.149 Skillwachstum](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b31123ffb4d3f5c404d6add85449ea869ed415ee/avereth-engine/docs/DESIGN149_SKILL_GROWTH.md), [Designgrundlage](patch_plans_10b/DESIGN_BATCH22_COMBAT_PROGRESS_SHOPS.md). |
-| Stealth als Vorgehensweise | [S1/S2-Fachplan](patch_plans_10b/PATCH_STEALTH_ACTION_MANNER.md), [.155](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b31123ffb4d3f5c404d6add85449ea869ed415ee/avereth-engine/docs/FIX155_STEALTH_MOVEMENT.md), [.156](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b31123ffb4d3f5c404d6add85449ea869ed415ee/avereth-engine/docs/FIX156_STEALTH_MANNER.md). Produkt-/Naturtestgrenzen in 03. |
-| User01-UI und Band-AoE | [U1–U3-Fachplan](patch_plans_10b/PATCH_USER01_UI_QOL.md), [.157 Umsetzung/Abnahme](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b31123ffb4d3f5c404d6add85449ea869ed415ee/avereth-engine/docs/FIX157_USER01_UI_QOL.md). |
-| **.159 User03-Boardfix** | [Repair- und Verfügbarkeitskorrektur samt Implementiererabnahme](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/2089dccdb7fd3dc08c72c5737c6b111fb6512f56/avereth-engine/docs/FIX159_USER03_BOARD.md). Introgrenzen und Zahl der Generatorversuche unverändert. |
-| **.158 User02-Technik + NPC E0/E1** | [Produktpatchnote und Implementiererabnahme](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/82c2e7e90bd8425d00ef2e8ab3a2dcb66b64adc6/avereth-engine/docs/FIX158_USER02_NPC_CONTINUITY.md). Unabhängiger Gegenreview und längere natürliche Kontinuitätsabnahme stehen aus; der kurze User03 liefert erste positive Auslieferungsdaten. |
-| NPC-/PULSE-Live-Runner (`2449990`/`2a8b54e`) | [Unabhängiger Kontrollreview und Nachreview des Auswerterfixes §7](patch_plans_10b/REVIEW_NPC_PULSE_RUNNER_2449990_GPT.md). Natürlicher Pilotlauf vorbereitet; seltener P3-Statusrandfall bei fehlendem Laufarchiv offen. Spielengine bleibt `.174`. |
-| NPC E2-A / E2-B / E3 – neue Fachpakete | [Fachplan und Entscheidungen](patch_plans_10b/NPC_E2_E3_FACHPLAN.md), [E2-B `.173`-Kontrollreview](patch_plans_10b/REVIEW_NPC_E2B173_PRODUKTDIFF_GPT.md), [E3 `.174`-Kontrollreview](patch_plans_10b/REVIEW_NPC_E3_174_PRODUKTDIFF_GPT.md). Produktpatchnotes und Testzahlen im jeweiligen Review; aktueller Stand nur in 03. |
-| NPC-Kontext, freie Fakten und Gildenwissen | [Brenna-Ursachenanalyse einschließlich GPT-/Sol-Gegenreviews §§9–10](recherche/NPC_KONTINUITAET_ANALYSE_20261104.md); [User02-Sol-Nachtrag §8](testrun_10b/user-20261105-050449/REVIEW_CHATGPT.md#8-abgeschlossener-sol-gegenreview--originalfold-requests-und-ursachenprüfung) ergänzt tatsächliche Tam-Requestnachweise. |
-| Dungeon-/Floorgrenze, Exit und Raumsuche | [User02-Originalreview und Gegenproben](testrun_10b/user-20261105-050449/REVIEW_CHATGPT.md#8-abgeschlossener-sol-gegenreview--originalfold-requests-und-ursachenprüfung), [Messdaten](testrun_10b/user-20261105-050449/SOL_PROBE_RESULTS.json). Ausgangsbefund für .158. |
-| Bekannte NPC-verwahrte Gegenstände im Ankunftskatalog | [Batch28 §3](testrun_10b/batch-20261103-171839Z/REVIEW.md#3-rüstungsidentität-153-übergabe-funktioniert-rückgabe-verliert-den-objektkontext), [Gegenproben](testrun_10b/batch-20261103-171839Z/PROBE_RESULTS.json). |
-| Kampf-Flucht/Chase | [Vorhandene Mechanik und C0/C1–C3-Abgrenzung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b31123ffb4d3f5c404d6add85449ea869ed415ee/avereth-engine/docs/PATCH10B_CHASE_ESCAPE_PACING_CANDIDATE.md). Kein neues Chase-System beschlossen. |
-| Main/Minor und spätere Erweiterungen | [Main/Minor-Fachplan](patch_plans_10b/PATCH_COMBAT_MAIN_MINOR_ACTIONS.md), [Roadmap 07](07_ROADMAP_NACH_10B_ENTWURF.md), [Ideenarchiv 04](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md). |
+| Architektur `.126`/Population/Angebotsschutz | [Konsolidierter Altplan](patch_plans_10b/PATCH_ARCHITEKTUR_126_KONSOLIDIERT.md); nur historische Grundlage, neuer Architekturstand oben |
+| Fehlertoleranz `.105–.110` | [Abgeschlossener Failsoft-Wegweiser](patch_plans_10b/PATCH_FAILSOFT_AND_BATCH4.md) |
+| Run20 `.97` – Extractor, Gildenstadt, `repriced` | **Eine** [gemeinsame Produktpatchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b51a6f1d44415a00a71162bcec0b0c0b46349ac3/avereth-engine/docs/PATCH_RUN20_TECHNICAL.md), statt dreier Kurzwegweiser |
+| Historische Run11/Run12-Integrationen | [Run11](patch_plans_10b/PATCH_RUN11_DELIVERY_AND_FACTS.md) · [Run12](patch_plans_10b/PATCH_RUN12_DUNGEON_GUILD_WORLD.md). Abgeschlossen, keine Freigabe ruhender Delivery-/Escortangebote |
+| Handelsautorität / Geld / Zahlungen | [Finanzvereinfachung](patch_plans_10b/PATCH_FINANCE_SIMPLIFICATION.md) · [`.144`-Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b31123ffb4d3f5c404d6add85449ea869ed415ee/avereth-engine/docs/FIX144_FINANCE_SIMPLIFICATION.md) |
+| Frühe UI-/Dungeon-/Skill-Korrekturen | [User01-QoL-Fachplan](patch_plans_10b/PATCH_USER01_UI_QOL.md) · [technische `.157`-Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b31123ffb4d3f5c404d6add85449ea869ed415ee/avereth-engine/docs/FIX157_USER01_UI_QOL.md) · [`.158`-Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/82c2e7e90bd8425d00ef2e8ab3a2dcb66b64adc6/avereth-engine/docs/FIX158_USER02_NPC_CONTINUITY.md) |
+| NPC-Implementierung `.169–.179` | [E2/E3-Fachplan](patch_plans_10b/NPC_E2_E3_FACHPLAN.md) · [`.173` Review](patch_plans_10b/REVIEW_NPC_E2B173_PRODUKTDIFF_GPT.md) · [`.174` Review](patch_plans_10b/REVIEW_NPC_E3_174_PRODUKTDIFF_GPT.md) · [`.175–.177` Review](testrun_10b/npc-20261109-160250Z/REVIEW_175_177_PRODUKTDIFF_GPT.md) · [`.179` Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/59f868eaf3c4ed7942ddc42ba3d180fab44a72cd/avereth-engine/docs/PILOT01_179_D5_PROVENANCE.md) |
+| Frühere Patches/Tests bis `.157` | [Fixierter historischer 10B-Index](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/55d20eaf65f521a25ea3e85cfa3390e215270683/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md); originale Detailberichte dort und auf dem Produktbranch |
 
-## Produktgeschichte – nur Commitwegweiser
+## Originale, Prüfnachweise und Archiv
 
-Abgeschlossene Patchketten und alte Testzahlen werden hier nicht erneut ausgeschrieben. [Fixierter Index bis .157](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/55d20eaf65f521a25ea3e85cfa3390e215270683/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md#produktgeschichte--nur-commitwegweiser) führt zu jedem Fachabschluss; die jeweilige Produktpatchnote beschreibt Implementierung, Regressionen und damalige Abnahme. Ältere Branchversuche in [05](05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md), Stand bis 24.10. in [03-Archiv](03_PROJEKTSTAND_ARCHIV_BIS_20261024.md).
+[Runindex](testrun_10b/README.md) · [Batch-/ZIP-Originalmanifest](testrun_10b/ARCHIV_BATCHES.md) · [historischer Stand bis 24.10.](03_PROJEKTSTAND_ARCHIV_BIS_20261024.md) · [Branchsicherungsvermerk](05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md). Historische Originalreviews, Commitpatchnotes und Regressionsbelege werden **nicht in 03/06 kopiert**; ihre Zeilen und Ergebnisse bleiben bei der Quelle.
 
-## Natürliche Originalbelege
-
-Aktuelle Einstiegspunkte: [User02/.157](testrun_10b/user-20261105-050449/REVIEW_CHATGPT.md), [User01/.155](testrun_10b/user-20261104-162404/REVIEW.md) und [Batch28/.154](testrun_10b/batch-20261103-171839Z/REVIEW.md). Sämtliche weiteren Zuordnungen im [Runindex](testrun_10b/README.md); Originalarchive im [Archivindex](testrun_10b/ARCHIV_BATCHES.md). Keine zweite vollständige Runchronik hier.
-
-**Pflege:** Neue Fachquellen hier verlinken; Tests und Umsetzung in Produktpatchnotes, Originalbewertungen beim Run, laufenden Status nur in 03 pflegen. Eine neue Review ändert weder Produktcode noch Freigabestatus.
+**Pflege:** Laufender Build nur in 03; Prioritäten in 07; geltender Kanon in 02. Diese Datei enthält **keine** eigene Implementierungsgenehmigung.

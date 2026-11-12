@@ -1,47 +1,47 @@
-# Avereth Engine – Zusammenarbeit und Arbeitsweise
+# Avereth Engine – Arbeitsweise und Freigaben
 
-**Stand: 05.11.2026.** Dauerhafte Arbeitsregeln, **keine** Patch-, Test- oder Statushistorie. **Aktueller Stand in [03](03_AKTUELLER_PROJEKTSTAND.md), Designentscheidungen in [02](02_DESIGN_KANON.md).**
+**Stand 12.11.2026.** Dauerhafte Prozessregeln, **keine zweite Status-/Patchchronik**. [Startseite](README.md) · [Aktueller Stand 03](03_AKTUELLER_PROJEKTSTAND.md) · [Design-Kanon 02](02_DESIGN_KANON.md).
 
-## Projekt, Rollen und Freigaben
+## Zuständigkeiten
 
-**LLM versteht und erzählt wie ein GM; die deterministische JS-Engine prüft, berechnet und persistiert wie ein Spiel.** Spielerfreiheit, glaubwürdige Konsequenzen und sinnvolles Tempo vor Simulationsbürokratie.
+- **Nutzer:** entscheidet Spielgefühl, Kanon, Prioritäten und Freigaben; führt persönliche SillyTavern-Tests und ggf. lokale LLM-Batches durch, liefert Originaldaten und ungefiltertes Spielerfeedback.
+- **ChatGPT/Codex:** unabhängige Code-/Design-/Run-Gegenprüfungen, präzise Aufträge; implementiert nur, wenn dies ausdrücklich verlangt ist.
+- **Claude/Sol/Opus:** beauftragte Implementierung oder unabhängige technische Analysen. Frühere Modellaussagen sind keine automatisch richtigen Entscheidungen.
+- **Engine und LLM:** Planner interpretiert, JS-Engine autorisiert/bucht, Narrator erzählt, Extractor/Firewall übernimmt legitime Weltfolgen. Spielspaß, Spielerhoheit und persistente Konsistenz vor Vollsimulation.
 
-- **Nutzer:** Design, Priorität und Freigabe; führt natürliche SillyTavern-Spieltests und bei Bedarf automatisierte Batches lokal durch und liefert Originalarchive/Feedback.
-- **ChatGPT/Codex:** unabhängiger Code-, Git-, Design- und Run-Gegenreview; schreibt konkrete Patchaufträge und kann auf ausdrücklichen Auftrag selbst implementieren.
-- **Claude/Sol:** implementiert oder prüft unabhängig entsprechend dem jeweiligen Auftrag.
-- **Größere riskante Architektur-/Designänderung:** gezielten unabhängigen Gegenreview einplanen. Ein klarer Hotfix braucht keine vorsorgliche zusätzliche Auditphase.
+**Ein Fachplan, Review oder Dokumentationscommit ist keine Produktfreigabe.** Bereits beschlossener Kanon bleibt maßgeblich, ist aber bei ausdrücklicher Nutzerentscheidung bewusst änderbar. Keine weiteren P2-Sonderregeln ohne konkreten Integritätsnachweis; keine neuen Mechaniken/Balanceänderungen als Nebenprojekt. Fachlich zusammenhängende Patches bündeln, keine künstlichen Mikropatch-Serien.
 
-**Review, Patchplan, ZIP und Empfehlung sind keine Implementierungsfreigabe.** Innerhalb eines ausdrücklich freigegebenen Auftrags eigenständig arbeiten, aber nicht unbemerkt neue Mechanik, Balance, Testszenarien oder Architektur als Nebenprojekt beginnen. Vorhandene Funktionen bevorzugen. Zusammenhängende Fachkorrekturen nicht unnötig in Mikroreleases zerlegen.
+## Einstieg eines neuen Chats
 
-## Einstieg und Quellen
+1. Auf `main` **README, 01 und 03** lesen. Die tatsächlichen Remote-HEADs von `main` (Dokumentation) und `claude/c-planner-prototype-2026-10-02-gpt-c666` (Produkt) ermitteln.
+2. Aufgabe eingrenzen: **02** bei verbindlichen Spielregeln, **07** bei noch geplanten Features, **06** als Fachquellenindex. Originalarchive und technische Patchnotes nur zum konkreten Fall lesen.
+3. Codebehauptungen am **aktuellen Produkt-HEAD** kontrollieren, nicht an alten Plan-Zeilennummern. Nach Kontextwechsel den letzten Produktdiff prüfen; identische Quellen nicht unnötig neu auslesen.
+4. Dokumente klar als **aktuell / geplant / historischer Befund / nicht freigegeben** markieren. Ein altes Modellprotokoll ersetzt keinen neuen natürlichen Run.
 
-Im neuen Chat zuerst nur **01 und 03 vollständig** auf `main`; danach je nach Aufgabe relevant: 02 (Kanon), 07 (Roadmap), 04 (Ideenarchiv/Suchindex), 06 (historischer 10B-Fachindex), konkrete Fachpatchnote und betroffene Codepfade. Für NPC-Themen die [Code-/Loganalyse](recherche/NPC_KONTINUITAET_ANALYSE_20261104.md), für aktuelle Technik-/Spielbefunde den [User02-Review mit abgeschlossenem Sol-Nachtrag §8](testrun_10b/user-20261105-050449/REVIEW_CHATGPT.md), für dessen Vorgeschichte [User01](testrun_10b/user-20261104-162404/README.md) heranziehen. Historische Reviews und Archive nur für belegte Fragen, keine Pflichtkomplettlektüre.
+## Arbeits- und Testfolge
 
-**Vor technischen Behauptungen** Produktbranch/HEAD und betroffenen Code prüfen: `main` ist die Dokumentationsquelle, nicht automatisch der neueste Produktbuild. Nach Unterbrechung Änderungen seit dem letzten geprüften Commit ansehen; unveränderte Quellen nicht erneut lesen. Originaldateien, vorhandene Completion-Requests, Engine-Events und Chat gemeinsam auswerten; schöne Prosa ist keine mechanische Buchung. Modellfehler, Enginefehler, Spielerbedienung, regelgerechten Tod und Infrastruktur unterscheiden. **Wiederholt blockierte mechanisch gültige Aktionen** (z. B. aus falscher NPC-Identität oder fehlender Inventarauflösung) sind Integrationsfehler; ein korrekt abgewiesener Vorgang, den der Narrator dennoch als erfolgreich erzählt, ist zunächst ein Modell-/Erzählfehler. Seltene lokale Erzählwidersprüche tolerieren, solange der autoritative Zustand korrekt und der Run fortsetzbar bleibt; wiederkehrende Handlungsschleifen nicht als harmlose Unschönheiten abtun.
+1. Bei einem Fehler den kleinsten belastbaren Originalfall suchen: Spielertext, tatsächlich gelieferter Modellrequest, Modellantwort, Hostlog, Events, gefalteter Zustand und UI-Verhalten unterscheiden. Erzählt heißt nicht gebucht.
+2. Gezielt **Rot gegen Ausgangsbuild, Grün nach Korrektur**; echte Gegenbeispiele prüfen. Ein korrekt abgelehnter Spielerbefehl ist nicht automatisch ein Enginefehler, ein selbsttätig erfundener Erfolg aber auch kein gültiger Spielzug. NPC-Identitäts-/Orts-/Geld-/Kampf-/Questintegrität schützen.
+3. Engen Host-/Startfehler früh im **echten ST-Makro-/Hostpfad** testen, bevor umfangreiche Folgeprüfungen laufen. Dann angrenzende Tests, vollständiges `npm test`, Replay/Fingerprint-Einzelfreigaben und bei Host-/Vertragsänderungen echten ST-Standard-/Failsoft-Smoke.
+4. **Natürliche Modellläufe** sind eine eigene Evidenzklasse. Geskriptete Smokes/Replay/Codeprüfung beweisen nicht NPC-Spielqualität oder PULSE-Pacing. Runende, Tod, manuellen Stopp, Provider-/Windowsfehler und Integritätsverletzung sauber trennen.
+5. Nach Implementierung gezielter unabhängiger **Produktdiff-Gegenreview**. Weitere Analysen nur bei einem belegten offenen Befund; keine endlose Review-Schleife.
 
-## Effiziente Arbeits- und Testfolge
+**Parallelbetrieb:** Ein bereits lokal gestarteter Batch bleibt auf seinem eingefrorenen Checkout; Entwickler dürfen in einem **getrennten Checkout** arbeiten und pushen. Nutzerumgebung nicht durch Pull/Deploy ungefragt umstellen. Eventlog, Save/Reload, Swipe/Edit und Regenerate der aktiven Ruleset-2-Kampagnen absichern; historische Originale nicht umschreiben.
 
-1. **Ursache belegen:** kleinen Originalfall reproduzieren, betroffene Host-/Event-/Persistenzpfade prüfen; Regression gegen Basis erst rot, danach grün, soweit möglich.
-2. **Bei engem Integrations-/Start-Hotfix den realen Fehler früh prüfen:** minimal korrigieren, **kurzen echten ST-Hostlauf mit dem Originaleingang** bis zur ersten erfolgreichen Aktion durchführen. Nicht erst stundenlang sämtliche historischen Testmatrizen abarbeiten. Bei C/D-Mechanikpatches fachlich passende Integrationsketten wählen.
-3. **Abschließend pro freigegebenem Codepatch** angrenzende Tests, aktuelle vollständige Node-Suite, Replay/Fingerprintprüfung und bei relevanten Host-/Protokolländerungen echten ST-Standard-/Failsoft-Smoke. Ein statischer Mock-Smoke ersetzt keinen Makro-Starttest und keinen natürlichen Batch; Node-, Host-, Replay- und Modell-Livenachweis getrennt benennen.
-4. **Ehrlich berichten:** nur tatsächlich ausgeführte Tests und echte Ergebnisse nennen, Implementiererberichte von unabhängig geprüften Daten trennen. Nach Implementierung unabhängiger **Diff-Gegenreview**, keine wiederholte Prüfkette ohne neuen Befund.
+## Dokumentationspflege
 
-Alte Kampagnen begrenzen die neue V4-C-/Ruleset-2-Entwicklung nicht. Historische Originalbelege unangetastet lassen, alte Zahlen und Legacy-Runtime nicht aus Prinzip weiter unterstützen. Event-/Geld-/Questintegrität, Swipe, Reload und Replay **für aktuelle Kampagnen** erhalten. Laufende Batches nie unbemerkt aktualisieren.
-
-Kosten und Zeit an Aufgabe ausrichten: gezielte Dateisuche, zusammengehörige Arbeit bündeln, bei reiner Dokumentationspflege Inhalts-/Diff-/Linkprüfung statt Node/ST; keine neuen Berichtsdateien allein für eine Statuskorrektur. Nutzer erhält eine kompakte Entscheidung mit tatsächlichem Commit und den offenen Punkten. Deutsch, du-Form; angeforderte Patchtexte direkt kopierbar. Keine Schlüssel/Zugangsdaten in Chat/Commit/Exports.
-
-## Maßgebliche Dokumentationsorte
-
-| Inhalt | Ein Ort |
+| Einziger Pflegeort | Inhalt |
 |---|---|
-| Zusammenarbeit/Tests | **01** (hier) |
-| Verbindlicher Design-Kanon | **02** |
-| Laufender Produkt-/Abnahmestand und nächste Schritte | **03** |
-| Ideenarchiv / unpriorisierte Kandidaten | **04** |
-| Fachquellen und Commitwegweiser 10B | **06** |
-| Reihenfolge langfristiger Featurekandidaten | **07** |
-| NPC-Kontinuität/Brenna-Ursachenbelege | [Fachanalyse](recherche/NPC_KONTINUITAET_ANALYSE_20261104.md) |
-| Technische Implementierung und rote/grüne Regressionen | Jeweilige Dev-Fachpatchnote und Produktcommit |
-| Natürlicher Livetest | Originalexport + `testrun_10b/<Run>/REVIEW.md`, Verweise im Runindex |
+| **02** | Verbindliche Spiel-/Kanonentscheidungen, ausdrückliche geplante Regeländerungen |
+| **03** | Letzter **verifizierter** Produktbuild, neue natürliche Ergebnisse, unmittelbare Prioritäten, offene Entscheidungen |
+| **07** | Featurefamilien, Reihenfolge, Abhängigkeiten, aufgeschobene Optionen |
+| **04** | Neue Ideen ohne beschlossene Roadmap-Priorität |
+| **06** | Links zu Fachplänen, unabhängigen Architektur-/NPC-/PULSE-Prüfungen und Produktnachweisen |
+| **Pro-Run-Ordner** | Originalreview, Quellenmanifest, Gameplayfeedback, gezielte Folgeprüfungen |
+| **Produktbranch / `avereth-engine/docs`** | Tatsächlicher Codepatch, technische Patchnote, Tests und Kompatibilitätsaussagen |
 
-In Übersichten **nur die jeweils maßgebliche Quelle verlinken**, keine vollständigen alten Patchberichte wiederholen. Historische Vorfassungen über festen Commitlink erhalten; alte Status-/Testketten auf kurze Quellenverweise kürzen. Originalreviews/-daten nicht bei jeder Statuspflege umschreiben. 03 nur bei relevantem Statuswechsel aktualisieren, 02 nur bei Designentscheidung, 01 nur bei Prozessänderung. Keine erfundenen Abnahmeergebnisse oder automatischen Freigaben.
+Bei einer reinen Dokumentationspflege **keine Node-/ST-Tests vortäuschen oder als notwendig erklären**: Inhaltsvergleich, Diff-, Link-, Referenz- und Git-HEAD-Prüfung reichen. Originalreviews, Historie und spezifische Fachpläne nicht blind kürzen; in Übersichten alte Detailketten nur verlinken. Bei Änderungen mindestens Dateiliste, Art der Änderung, Commit, neue/alte HEADs und Grenzen berichten. Keine Tokens/Schlüssel/Zugangsdaten in Chat, Repo oder Originalarchive aufnehmen.
+
+## Historie und Quellen
+
+[Historischer Branchvermerk 05](05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md) · [10B-Fachindex 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Original-Runindex](testrun_10b/README.md) · [historische 01-Vorfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/ec0969b816249211bc71b3c53b10eb1faf11716a/01_ARBEITSWEISE_CHATGPT_CLAUDE.md).

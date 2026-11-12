@@ -1,105 +1,50 @@
 # Avereth Engine – aktueller Produkt- und Arbeitsstand
 
-**Stand 10.11.2026.** Diese Seite führt den aktuellen Build, die Nachweise und die nächsten Entscheidungen. [Arbeitsweise 01](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Kanon 02](02_DESIGN_KANON.md) · [Roadmap 07](07_ROADMAP_NACH_10B_ENTWURF.md) · [Fachindex 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Originalruns](testrun_10b/README.md).
+**Letzte verifizierte Abfrage: 12.11.2026.** **Dies ist die einzige laufende Statusquelle** – keine Patchchronik. [Startseite](README.md) · [Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Kanon](02_DESIGN_KANON.md) · [Roadmap](07_ROADMAP_NACH_10B_ENTWURF.md) · [Fachindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md).
 
-**Produktbuild `4.3.0-c.6.6.179` auf `claude/c-planner-prototype-2026-10-02-gpt-c666`.** Aktueller Remote-HEAD am 10.11.: `59f868eaf3c4ed7942ddc42ba3d180fab44a72cd` (Pilot-01-Korrekturen K1–K8 als `.175`–`.177`, Review-Restkorrekturen `.178`, D5-Herkunft `.179`; Runner unverändert seit `2a8b54e`). `main` führt die Projektdokumentation. Beim Einstieg beide Remote-HEADs prüfen. [Build `.179`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/59f868eaf3c4ed7942ddc42ba3d180fab44a72cd) · [Git-Vergleich `.178` → `.179`](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/c2ef94df9a0e95a8c5ee67ccf6167dfcfe591d3e...59f868eaf3c4ed7942ddc42ba3d180fab44a72cd) · [Git-Vergleich `.174` → `.179`](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/2a8b54e45a48ef525b69d62edb826fd3a2b77cbc...59f868eaf3c4ed7942ddc42ba3d180fab44a72cd).
+## Produkt und letzte technische Abnahme
 
-V4-C / Ruleset 2 läuft als SillyTavern-Extension. Der Planner versteht Spielerabsichten, die Engine entscheidet und bucht, der Narrator erzählt und der Extractor übernimmt zulässige Weltfolgen über die Firewall. Der autoritative Zustand ergibt sich aus den Chatevents. Save/Reload, Swipe/Edit und Replay gehören zur technischen Abnahme.
-
-## Neuer natürlicher Test: NPC/PULSE Pilot 01
-
-**09.11.2026 – 70 echte LLM-Spielereingaben, Build `.174` / Runner `2a8b54e`.** Der unabhängige Originalreview des natürlichen `npc-sociable`-Warrior-Laufs bestätigt 130/130 identische Eventexportgruppen, formal valides Endstate, 8 geöffnete PULSE-Fenster und 17/28 beobachtete Testziele. **NPC E3: keine gespeicherten Anker, deshalb nicht abgenommen.** Im echten Modellspiel traten zwei P2-Befunde auf: eine bestehende Thread-ID wurde mit einer anderen Schuld überschrieben und für einen einmal bezahlten Primer entstanden zwei Objekt-IDs. Der zweite Fuhrmann erhält doppelte NPC-Identität (P2-Prüfkandidat); Gildenbearbeiter `handled_by` 0/3 angenommen. [Vollständiger unabhängiger Review](testrun_10b/npc-20261109-160250Z/REVIEW.md) · [Archiv/Hashes](testrun_10b/npc-20261109-160250Z/SOURCE_MANIFEST.md). **Nächstes Vorgehen:** enge Ursachenprüfungen statt pauschalem Generalpatch oder sofortigem weiteren Standardbatch. Die vorherige Pilotvorbereitung unten ist mit diesem Run erfüllt; PULSE D, E4/E5 und Balance bleiben getrennt.
-
-**Unabhängiger Gegenreview (Claude, 10.11.2026):** bestätigt Thread-, Primer- und Fuhrmannbefund, verortet ihre Ursachen im Code und ergänzt zwei übersehene P2-Fehler.
-- **Dungeoneintritt T65:** Die PULSE-Sperre verwirft die Slotgegner, die die Engine selbst per DUNGEON AHEAD gebucht hat. Das widerspricht dem PULSE-Fachplan; GPT hatte den Fall als Schutzbeispiel gewertet.
-- **Kontextbudget:** `gear_market` wird durch beiläufige Wörter („armor“) mit Priorität 0 ausgelöst und verdrängt NPC-Detailkarten (`present` in 27 von 63 Zügen) und den Abruf (`relevant` in 60 von 63).
-
-Dazu kommen:
-- an Satzgrenzen verworfene `met`/`handled_by`-Evidenzen; sie lösen die T24-Kette und 0/3 Bearbeiter aus;
-- die nie erledigte, bezahlte Muller-Zusage;
-- der vom Erzähler erfundene Wechselkurs nach einem Ergebnistext ohne Börse;
-- ein ungebuchtes Abendessen, das in den Finanzbereich gehört.
-
-Widerlegt sind die Lesart zum `life`-Fenster T46 (es ist erzählt) und die Zuordnung des zweiten Primers zur Extraktion (es war ein Planner-`take`).
-
-Der Fachplan schlägt sieben enge Patches K1–K7 und ein P3-Kleinpaket in fester Reihenfolge vor, mit Rot-Grün-Fällen aus den Pilot-Originalen, Replay und ST1.19. Offen sind sechs Designentscheidungen D-1 bis D-6, darunter fester Absprachetext, Bearbeiterwortschatz und Wiedererkennung über offene Absprachen. Noch nicht freigegeben. [Gegenreview](testrun_10b/npc-20261109-160250Z/GEGENREVIEW_CLAUDE.md) · [Fachplan](testrun_10b/npc-20261109-160250Z/FACHPLAN_PILOT01_KORREKTUREN.md).
-
-**Umsetzung der Korrekturen (10.11.2026, Claude, Builds `.175`–`.177`).** Der Implementierungsauftrag hat die Entscheidungen D1–D6 getroffen. Die Korrekturen K1–K8 laufen in drei Builds mit getrennten Commits. Jeder Build hat seine Pilot-Originalfälle rot gegen den Vorstand und grün danach, eigene Gegenfälle, Vollsuite, Replay 2235 und ST1.19 Standard/Failsoft mit geskriptetem Provider. Kein natürlicher Lauf, kein Modellaufruf; B10 (Abendessen) bleibt außerhalb.
-
-| Build | Inhalt | Abnahme |
-|---|---|---|
-| **`.175`** | **K1:** Slotgegner beim Dungeoneintritt ohne PULSE-Sperre; ihr Angriff durchläuft weiter `attack_commitment`. **K2:** Gekaufte, ausgestellte Ware wechselt den Besitzer, auch als Teilmenge. **D5:** Ware im offenen Angebot wird nicht per `take` genommen | rot 3/5 und 3/7, `npm test` 3001/3001, Replay 0 geändert, ST 158/0 und 163/0 · [Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0f6af79778878d56c8927b738dc4d22bb3dce9d6/avereth-engine/docs/PILOT01_175_DUNGEON_PURCHASE.md) |
-| **`.176`** | **K3:** `gear_market` nur bei Gerätehandel in diesem Zug; der Erstkontakt beim Schmied ohne Angebot behält ihn. **K4/D2:** `met`/`handled_by` aus einem wörtlichen Teil eines zusammengesetzten Zitats; `checked`/`pressed`/`sealed`/`pulled` nur mit Schalterding. **K7:** Fehlbetrag mit Börse und Münzkanon im Ergebnistext | rot 2/5, 6/7, 1/2; 3015/3015; Replay 0 geändert; ST 162/0 und 167/0. **Kontext Pilot:** Katalog 19 → 4 Züge, Überlauf 27 → 18, `present` 25 → 30, `relevant` unverändert 2/65, Ø 1689 → 1590 Token. Keine Reserve (D3) · [Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/596da8a30f479228b8af658de0349668b72da87f/avereth-engine/docs/PILOT01_176_CONTEXT_EVIDENCE.md) |
-| **`.177`** | **K5a:** Extractorvorgabe für dieselbe Absprache, Berichte und Erledigung im Handel. **D1:** Absprachen behalten ihren Text; ein Bericht mit fremder Partei und eine Erledigung allein per ID werden abgelehnt, ohne `latest`. **K6a:** Szenenkorrektur mit dem Endort. **D4/D6:** nur Vorgaben (bekannte Person per Rolle, Rudel als eine Gruppe). **K8:** Alarics Name ist kein NPC-Name; Rolle „null“ ist keine | rot 8/10, 5/7; Threadsuites 25/25; 3033/3033; Replay 14 Fälle geändert (K8-1 7, K6a 7), einzeln akzeptiert, 0 offen; ST 168/0 und 173/0; Extractor-Systemprompt +200 Token · [Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/3658fbcf61356d798c0f975804e66e8e5263a169/avereth-engine/docs/PILOT01_177_AGREEMENTS_SCENE.md) |
-
-**Bekannte Grenzen:**
-- Eine andere Sache derselben Parteien unter alter ID ist deterministisch nicht erkennbar. Hier wirkt nur K5a.
-- Eine erfüllte Absprache, die unter einer doppelten Personen-ID gemeldet wird, bleibt offen (Typ T61).
-- `relevant` fällt nach K3 weiterhin meist aus; Hauptlast sind `quests`, `resolved` und `guild_authority`.
-- Die natürliche Wirkung von K5a, K6b, D6 und K7 ist noch offen.
-
-**Unabhängiger GPT-Produktdiff-Gegenreview (10.11.2026):** Die vereinbarten Kernkorrekturen sind überwiegend schlüssig. Zwei **eng begrenzte P2-Restfälle** wurden durch eigene Code-Gegenproben gefunden: generische Berufsbezeichnung kann eine fremde Thread-Erledigung legitimieren; bei mehrdeutiger ausgestellter Ware entfällt nach Abschluss des Angebots der TAKE-Schutz. Ein P3-Fall bindet dasselbe Objekt zweimal innerhalb einer neuen Angebotsliste. Replay-Akzeptanzdateien unabhängig verglichen: exakt 14 Änderungen in K8/K6a. Kein neuer vollständiger Node-/ST-/Modelllauf durch GPT. [Vollständiger Produktdiff-Review](testrun_10b/npc-20261109-160250Z/REVIEW_175_177_PRODUKTDIFF_GPT.md).
-
-**Restkorrekturen `.178` (10.11.2026, Claude):**
-- **P2-R1:** Eine abwesende Partei gilt nur durch Namen, bekannten Namen oder ein Rollenwort als genannt, das ihr allein gehört. „the clerk“ bei zwei Schreibern oder „the other clerk Bess“ erledigt keine fremde Zusage mehr.
-- **P2-R2:** Ausgestellte Ware, die im Laden liegt, bleibt nach Angebotsende die des Händlers. Was er danach aus der Hand gibt, ist ein Geschenk. Was Alaric gehörte und dort ablegte, ist seins, auch neben einem offenen Angebot. Das korrigiert zugleich eine vorbestehende D5-Blockade.
-- **P3:** Eine ausgestellte Sache für höchstens eine Zeile desselben Angebots.
-- **Abnahme:** rot 7/12 gegen `.177`, grün 12/12; betroffene Suites 185/185; `npm test` 3045/3045; Replay 0 geändert (1057/1057 akzeptiert); ST 170/0 und 175/0 mit neuem Buchladen-Smoke.
-- Die D1-Grenze „gleiche Parteien, andere Sache“ bleibt offen.
-- [Patchnote `.178`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/c2ef94df9a0e95a8c5ee67ccf6167dfcfe591d3e/avereth-engine/docs/PILOT01_178_REVIEW_FIXES.md)
-
-**Unabhängiger GPT-Nachreview `.178` (10.11.2026):** Die zuvor beanstandeten R1-/R2-/P3-Fälle sind gezielt geschlossen. Neuer enger P2-D5-Restfall aus einer eigenen Code-Gegenprobe: Nach regulärem Verkauf und erneuter Ausstellung beim Händler kann die historische Markierung `had_pc` den Ladenschutz fälschlich ausschalten. Kein natürlicher Nachweis und kein NPC-/PULSE-Defekt. [Vollständiger Nachreview](testrun_10b/npc-20261109-160250Z/REVIEW_178_PRODUKTDIFF_GPT.md).
-
-**D5-Herkunft `.179` (10.11.2026, Claude):**
-- „Seine, wo er sie ablegte“ hängt jetzt an seiner **letzten** Bewegung (`laid_by_pc`, im Reducer abgeleitet), nicht mehr an „war jemals seins“ (`had_pc`).
-- Eine Pfeife, die er dem Händler verkauft hat und die dieser ins Regal legt und anbietet, ist Händlerware: `take` abgelehnt, auch nach abgelehntem Angebot.
-- Selbst Abgelegtes bleibt frei, ebenso Abgelegtes aus dem Gepäck. Letzteres war auf `.178` vorbestehend gesperrt.
-- Geschenke des Händlers bleiben erlaubt.
-- **Abnahme:** rot 3/5 gegen `.178`, grün 5/5; `npm test` 3050/3050; Replay 0 geändert (1057/1057 akzeptiert); ST 172/0 und 177/0 mit neuem Verkaufs-Smoke.
-- [Patchnote `.179`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/59f868eaf3c4ed7942ddc42ba3d180fab44a72cd/avereth-engine/docs/PILOT01_179_D5_PROVENANCE.md)
-
-**D3-Kontextanalyse (10.11.2026, Claude, nur Messung):**
-- Priorität 0 belegt im Mittel 1320 von 1400 Token und überschreitet das Budget allein in 18 von 65 Zügen; größter Posten ist `quests` (Ø 385).
-- `relevant` (Ø 310 Token) ist größer als der freie Rest (Ø 195) und kommt nur ganz oder gar nicht.
-- **Priorität 1:** wirkungslos. **Priorität 0:** verdrängt `present` (30 → 4 Züge) und treibt 59 Züge über das Budget.
-- **Teillieferung im heute ungenutzten Rest:** 27 Züge statt 2 mit Abruf, davon 18 Sozialzüge, ohne Budgetüberschreitung.
-- 23 % der Einträge sind Spielerzitate oder K8-Altlasten.
-- **Empfehlung:** keine Budget- oder Prioritätsänderung; als nächster kleiner Schritt Teillieferung plus Abruf-Entrümpelung. `quests` verdichten braucht eine Designentscheidung.
-- [D3-Analyse](testrun_10b/npc-20261109-160250Z/D3_KONTEXTANALYSE_RELEVANT.md)
-
-**Unabhängiger GPT-Nachreview `.179` (10.11.2026):** D5-Provenienz nach gezieltem Codeabgleich und fünf isolierten JavaScript-Gegenprüfungen im vereinbarten Umfang geschlossen; kein neuer verpflichtender P2-Befund. Die D3-Ursache (Ganz-oder-gar-nicht-Abruf nach P0/P1) ist durch Codeprüfung bestätigt, Sols 65-Zug-Messung nicht erneut vollständig von GPT ausgeführt. Teillieferung im ungenutzten Platz ist eine eigene kleine Option; **Spielerzitate nicht pauschal streichen**, historische K8-Falschfakten gesondert behandeln. [GPT-Review `.179` + D3](testrun_10b/npc-20261109-160250Z/REVIEW_179_UND_D3_GPT.md).
-
-**Nächster Schritt:** natürliche NPC-/PULSE-Prüfung des zweiten Profils auf `.179`; D3-Auslieferung als separat zu entscheidende Kontextoptimierung, keine Prioritäts-/Budgeterhöhung oder vorschnelle `quests`-Kürzung. Kein weiterer D5-Pflichtpatch.
-
-## Nächste Schritte
-
-**E2-A, E2-B und NPC E3 sind technisch abgeschlossen.** E3 wurde nach den bestätigten D2/D3/D13 als `.174` umgesetzt und im unabhängigen Produktdiff-Gegenreview ohne verpflichtenden P2-Stopp geprüft. `scene.since` trennt spätere belegte Begegnungen; `voice`/`manner`/`interest` bleiben kurze, veränderbare Anker. Die Qualität freier Narrator-/Extractorantworten und die Sichtbarkeit aller Anker bei stark gekürzter Kompaktkarte sind **noch natürlich zu testen**, kein Beweis aus geskripteten Smokes. [E3-Kontrollreview](patch_plans_10b/REVIEW_NPC_E3_174_PRODUKTDIFF_GPT.md) · [E3-Plan §13](patch_plans_10b/NPC_E2_E3_FACHPLAN.md#13-offene-designentscheidungen). [Fachplan E2/E3 §§2, 4, 9, 12–14](patch_plans_10b/NPC_E2_E3_FACHPLAN.md).
-
-**Natürliche NPC- und PULSE-Tests sind der nächste praktische Nachweis.** Der neue Runner-Modus `live:st:npc` (`2449990`, Korrektur `2a8b54e`) bereitet zwei unabhängige freie LLM-Spieler-Läufe vor. Der Nachreview bestätigt die P2-Korrektur der Kartenmessung und Fehlerkennzeichnung bei regulär archivierten Läufen. **Empfohlen: zuerst ein kurzer natürlicher Einzelpilotlauf** statt unmittelbar der vollständigen Zweierserie; bei gänzlich fehlendem `run.json` bleibt eine P3-Ungenauigkeit der Batch-Gesamtmarkierung `completed` (§7.3). [Unabhängiger Runner-Gegenreview samt Nachprüfung](patch_plans_10b/REVIEW_NPC_PULSE_RUNNER_2449990_GPT.md#7-unabhängiger-nachreview-des-sol-korrekturpatches-2a8b54e-09112026). Der Nutzer kann User04 fortsetzen, die Titanquest abgeben und bekannte Personen wiedersehen. Für E2 zählen persönliche Wiederanwesenheit, richtiger Bearbeiter, Abruf und Erledigung einer Absprache; für E3 gezeigte Dauermerkmale statt Stimmung, erlaubte Entwicklung sowie tatsächliche Karten-/Erzählerverwendung. Für PULSE zählen tatsächlich erzählte Fenster, Jagdkontakte, Rastunterbrechung, Dungeonwanderer und Ereignisdichte. Paket D wertet natürliche Daten aus und bleibt ein eigener Schritt. [User04-Review](testrun_10b/user-20261106-072640/REVIEW.md) · [E2/E3-Abnahmeszenarien](patch_plans_10b/NPC_E2_E3_FACHPLAN.md#12-testmatrix-rotgrün-und-host-abnahme) · [PULSE-Fachplan](patch_plans_10b/PULSE_W5_W7_TECHNISCHER_UMSETZUNGSPLAN.md).
-
-## Technisch umgesetzter Umfang
-
-| Bereich | Stand | Maßgebliche Quellen |
-|---|---|---|
-| **NPC E0/E1** | Seit `.158` erste kompakte NPC-Auslieferung, Diagnose und begrenzte Sofortkontinuität. | [Patchnote `.158`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/82c2e7e90bd8425d00ef2e8ab3a2dcb66b64adc6/avereth-engine/docs/FIX158_USER02_NPC_CONTINUITY.md) |
-| **NPC E2-A** | `.169`–`.171` schützen erzählte Wiederanwesenheit (`met`), Gildenbearbeiter (`handled_by`), individuelle Identität und Sprecherbindung. Der Kontrollreview `.171` bestätigt die reparierten Präsenz- und Zeitfolgefälle. | [Paketpatchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/93acd574409bff44c39bd7bc203e526fc76da262/avereth-engine/docs/NPC_E2A_INTEGRITY.md) · [GPT-Kontrollreview `.171`](patch_plans_10b/REVIEW_NPC_E2A171_PRODUKTDIFF_GPT.md) |
-| **NPC E2-B** | `.172` liefert Ankunftskarten, personenbezogene Absprachen und begrenzte Kompaktkarten. D1, D4 und D6 sind entschieden und umgesetzt. `.173` korrigiert die Zuordnung nach Art, Parteien und Eindeutigkeit. Der Kontrollreview schließt den R7-P2-Befund. | [Paketpatchnote `.172`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/a3c906fc4692a95025ba494b00b93fcd7ae2eaa5/avereth-engine/docs/NPC_E2B_CONTINUITY.md) · [Patchnote `.173`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/dec75907ce970927722b6acf6608bdfa6b20256e/avereth-engine/docs/NPC_E2B173_THREAD_MATCH.md) · [GPT-Kontrollreview `.173`](patch_plans_10b/REVIEW_NPC_E2B173_PRODUKTDIFF_GPT.md) |
-| **NPC E3** | `.174` ergänzt aus Events abgeleitete Anwesenheitsspannen, belegte spätere Erstaufnahme und begrenzte Änderungen der Anker `voice`/`manner`/`interest` sowie V4-Kartenkopf. R10- und Kompatibilitätsregressionen sind implementiert; technische Gegenprüfung ohne verpflichtenden P2-Stopp, natürliche Modellverwendung offen. | [Produktpatchnote `.174`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/f9b3e79759386ebd715a046c196edcfbfa977544/avereth-engine/docs/NPC_E3_PERSONALITY_ANCHORS.md) · [GPT-Kontrollreview `.174`](patch_plans_10b/REVIEW_NPC_E3_174_PRODUKTDIFF_GPT.md) |
-| **PULSE A, C und B** | A ab `.162` mit Suchkorrektur `.163`. C ab `.164` mit korrigierter Rastzeitzuordnung bis `.166`. B ab `.167` mit Lern- und Wiederholungsausschlüssen `.168`. Die technischen Kontrollreviews sind abgeschlossen. Paket D bleibt bis zur natürlichen Auswertung offen. | [Nachprüfung A `.163`](patch_plans_10b/REVIEW_PULSE162_PRODUKTDIFF_SOL.md#6-gegenreview-163) · [Kontrollreview C `.166`](patch_plans_10b/REVIEW_PULSE166_PRODUKTDIFF_GPT.md) · [Kontrollreview B `.168`](patch_plans_10b/REVIEW_PULSE168_PRODUKTDIFF_GPT.md) |
-| **Natürlicher NPC-/PULSE-Test-Runner** | `2449990` ergänzt zwei NPC-Profile, 70-Eingaben-Guide und 28 beobachtungsbasierte Kennzahlen. `2a8b54e` korrigiert Kartenmessung und Auswertungsfehler für archivierte Läufe; Sol meldet 161/161 Runner-, 2989/2989 Node-Tests und grünen ST1.19-Stub-Zweierbatch. Kein natürlicher Providerlauf. Nachreview: Pilotlauf möglich; P3-Statusrandfall `no_result` offen, Engine `.174` unverändert. | [Runneranleitung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/2a8b54e45a48ef525b69d62edb826fd3a2b77cbc/avereth-engine/docs/LIVE_RUNNER.md#gezielter-npc-pulse-batch-zwei-natürliche-läufe-build-174) · [Gegenreview](patch_plans_10b/REVIEW_NPC_PULSE_RUNNER_2449990_GPT.md) |
-| **Spielstart und QoL** | Seit `.160` Basisattribute 5 bei neuen Starts, kanonische Boardkarten und aktuelle Awareness-/Siegelhinweise. `.161` ergänzt Entwurfsbuttons, übersichtliche Karten, First-Strike-Hilfe sowie gezielte Alltags- und Suchkorrekturen. | [Patchnote `.160`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/16e73581d470581982e2bc0bd6ff3d4379099be1/avereth-engine/docs/FIX160_USER04_GAMEPLAY_QOL.md) · [GPT-Gegenreview `.161`](patch_plans_10b/REVIEW_FIX161_USER_QOL_GPT.md) |
-
-## Nachweise und Grenzen
-
-| Nachweis | Ergebnis |
+| | Bestätigter Stand |
 |---|---|
-| **Git-Abgleich `.173` → `.174`** | Zwei Produktcommits ohne Fremdänderungen. Die E3-Kernänderungen liegen in `state.js`, `world.js`, `knowledge.js`, `context.js`, `ownership.js` und der Extractor-Summary. Der Replay-Akzeptanzblob `d8d13c3b046ca5738c538a143992bbd344fc78ec` ist auf `.173` und `.174` identisch. [Git-Vergleich](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/dec75907ce970927722b6acf6608bdfa6b20256e...f9b3e79759386ebd715a046c196edcfbfa977544) |
-| **Implementiererabnahme `.174`** | E3 C1–C6 7/7 grün (6/7 auf `.173` rot), Vollsuite 2977/2977. Replay laut Claude 2235 Fälle, 0 Änderungen gegenüber `.173`, 1048/1048 akzeptiert, 0 offen. ST1.19 mit geskriptetem Provider 151/151 Standard und 156/156 Failsoft. [Produktpatchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/f9b3e79759386ebd715a046c196edcfbfa977544/avereth-engine/docs/NPC_E3_PERSONALITY_ANCHORS.md) |
-| **Unabhängige technische Nachweise** | GPT prüfte den tatsächlichen `.174`-Diff, 14 isolierte R10-Entscheidungsfälle mit kontrollierten Stubs, den identischen Replay-Akzeptanzblob und eine Dreifach-Anker-Kappungsprobe. Keine eigene vollständige Node-, Replay- oder ST-Ausführung; kein verpflichtender P2-Stopp. [Kontrollreview `.174`](patch_plans_10b/REVIEW_NPC_E3_174_PRODUKTDIFF_GPT.md) |
-| **Letzter archivierter persönlicher Run** | User04 auf `.159` mit 46 Eingaben, 38 Enginezügen und 634 Events. Mage L1→L8, Floor-1-Clear mit Abgabe und erfüllte Titanjagd. Der Run endet offen nach I92. Freie E2- und PULSE-Befolgung ist auf `main` noch nicht durch einen aktuellen natürlichen Run belegt. [User04-Originale und Review](testrun_10b/user-20261106-072640/REVIEW.md) |
+| **Produkt** | `4.3.0-c.6.6.179` · [`59f868eaf3c4ed7942ddc42ba3d180fab44a72cd`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/59f868eaf3c4ed7942ddc42ba3d180fab44a72cd) |
+| **Produktbranch** | `claude/c-planner-prototype-2026-10-02-gpt-c666` |
+| **Dokumentation** | `main` – aktuellen HEAD vor neuer Bearbeitung abfragen |
+| **Architektur** | SillyTavern-Extension V4-C / Ruleset 2; Planner → deterministische Buchung → Narrator → Extractor/Firewall; autoritatives Eventlog |
+| **Letzte berichtete Produktabnahme** | `.179`: 3050/3050 Node-Tests; Replay gegenüber bestehender akzeptierter Baseline ohne neue Änderungen; ST1.19 mit geskriptetem Provider 172/172 Standard und 177/177 Failsoft, **laut Implementiererpatchnote**, kein unabhängiger neuer Lauf dieser Dokumentationspflege |
+| **Letzter natürlicher NPC-/PULSE-Lauf** | [Pilot 01](testrun_10b/npc-20261109-160250Z/REVIEW.md), **70 Eingaben auf `.174`**, nicht auf `.179` |
 
-**Offener P3-Kontextmesspunkt.** Im synthetischen Tam-Fall mit erledigter Absprache stieg der interne Kontextschätzer von 1437 auf 1484 Tokens gegenüber `.171`, davon +26 für die Karte und +21 für `relevant`. `.174` verändert diesen Wert laut Messung nicht. Neue E3-P3-Beobachtung: Der 170-Zeichen-Kopf kann bei drei langen Ankern den späteren Anker und das Aussehen für fokussierte NPCs aus der Auslieferung abschneiden; gespeicherte Fakten bleiben. Erst natürliche Daten sollen einen Verdichtungsauftrag begründen. Weitere natürliche Beobachtungspunkte sind konservative Rückkehrbelege und unvollständig gemeldete Threadparteien. [GPT-Kontrollreview `.173` §4](patch_plans_10b/REVIEW_NPC_E2B173_PRODUKTDIFF_GPT.md#4-replay-testdaten-und-kosten) · [GPT-Kontrollreview `.171`](patch_plans_10b/REVIEW_NPC_E2A171_PRODUKTDIFF_GPT.md).
+**Wichtige Nachweisgrenze:** Nach dem Pilot sind die Korrekturen `.175–.179` implementiert und technisch regressionsgeprüft. **Ihre Wirkung im freien Spiel mit `.179` ist noch nicht natürlich gemessen.** Kein Dokumentationsreview ändert den Produktstand.
 
-**Weitere getrennte Vorhaben.** Stealth S2, E4/E5, PULSE D und Balance bleiben eigene Entscheidungen. Die `.161`-Verkaufshilfe braucht natürliche Beobachtung. Verbrauch des Knochenobjekts, das Clearanceangebot vor Reset und der Hessa-Objektfall bleiben belegte Einzelthemen. Der P3-Hinweis zu generischen Mehrzielverträgen steht in der `.163`-Nachprüfung. [Roadmap](07_ROADMAP_NACH_10B_ENTWURF.md) · [User04-Befunde](testrun_10b/user-20261106-072640/REVIEW.md) · [Batch28](testrun_10b/batch-20261103-171839Z/REVIEW.md) · [PULSE `.163` §6.3](patch_plans_10b/REVIEW_PULSE162_PRODUKTDIFF_SOL.md#63-p3-resthinweis-generische-mehrzielverträge-nennen-das-erste-statt-des-erlaubten-ziels).
+## Was technisch bereits umgesetzt ist
 
-**Einordnung der Historie.** `.154` war die technische 10B-Teilabnahme für persönliche Spieltests. Die ausführliche Patch-, Review- und Abnahmefolge bis `.173` bleibt in der fixierten Vorfassung auffindbar. Neue Arbeit stützt sich auf aktuelle Originalfälle und die jeweils verlinkte Fachquelle. [Bisherige Status- und Abnahmehistorie](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/ba143d8d495e756b552597def922fe762ae089f3/03_AKTUELLER_PROJEKTSTAND.md) · [Fachindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md).
+| Bereich | Status; technische Details nur an der Quelle |
+|---|---|
+| **NPC E0/E1** | `.158`: kompakte NPC-Kontexte, Diagnose, Sofortkontinuität. [Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/82c2e7e90bd8425d00ef2e8ab3a2dcb66b64adc6/avereth-engine/docs/FIX158_USER02_NPC_CONTINUITY.md) |
+| **NPC E2-A / E2-B** | `.169–.173`: Wiederanwesenheit/Schalterbelege, Ankunftskarten, persönliche Threads, eindeutige Zuordnung. [Fachplan](patch_plans_10b/NPC_E2_E3_FACHPLAN.md) und [`.173`-Gegenreview](patch_plans_10b/REVIEW_NPC_E2B173_PRODUKTDIFF_GPT.md) |
+| **NPC E3** | `.174`: `voice/manner/interest` erst aus belegter späterer Begegnung, `scene.since`, Grenzen und Karten. **0 akzeptierte Anker im alten natürlichen Pilot**. [E3-Review](patch_plans_10b/REVIEW_NPC_E3_174_PRODUKTDIFF_GPT.md) |
+| **PULSE A/C/B** | `.162–.168`: gemeinsames Fenster, ROAD AHEAD, Rastunterbrechung und Dungeonwanderungen. **Paket D nur Analyse nach freiem Lauf.** [PULSE-Fachplan](patch_plans_10b/PULSE_W5_W7_TECHNISCHER_UMSETZUNGSPLAN.md) |
+| **Gameplay/QoL** | `.155–.161`: Stealth S1, spielbare Board- und Dungeonanzeigen, Starter-/Userfixes, editierbare Eingabeentwürfe; **Stealth S2 noch geplant**. [Stealth-Fachplan](patch_plans_10b/PATCH_STEALTH_ACTION_MANNER.md) |
+| **Pilot-01-Korrekturen** | `.175` Dungeon-Slot/Handelsware; `.176` Kontext-/`met`-/Schalterevidenz und Börseninfo; `.177` Threads und Szenen; `.178` Identität/Ausstellung; `.179` korrekte Eigentumsherkunft `laid_by_pc`. [Produktpatchnotes/Einzelreviews](testrun_10b/npc-20261109-160250Z/REVIEW_179_UND_D3_GPT.md) · [`.179` Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/59f868eaf3c4ed7942ddc42ba3d180fab44a72cd/avereth-engine/docs/PILOT01_179_D5_PROVENANCE.md) |
+
+## Was der letzte natürliche Lauf gezeigt hat
+
+**Pilot 01 / `.174`:** 70 echte LLM-Eingaben, 8 offene PULSE-Fenster, 17/28 Beobachtungsziele; E3-Anker 0; Schalterbelege, NPC-Duplikate, falsche Thread-Zuordnung, Primer-/Händlerbesitz und Kontextauslieferung waren natürliche Problemfelder. Die **Korrekturen sind nicht automatisch ein neuer freier Erfolgsnachweis**. [Originalreview](testrun_10b/npc-20261109-160250Z/REVIEW.md) · [Originalarchiv/Hashes](testrun_10b/npc-20261109-160250Z/SOURCE_MANIFEST.md) · [Korrekturreviews](testrun_10b/npc-20261109-160250Z/REVIEW_175_177_PRODUKTDIFF_GPT.md).
+
+**Zuletzt archivierter persönlicher Run:** [User04 auf `.159`](testrun_10b/user-20261106-072640/REVIEW.md), 46 Eingaben, 38 Enginezüge, Level 1→8, Dungeon-Clear/Abgabe, offener Abschluss. Andere Runs im [Runindex](testrun_10b/README.md), **nicht** als zweite Teststatistik hier.
+
+## Unmittelbare nächste Arbeit – bewusst getrennt
+
+1. **Natürlicher NPC-/PULSE-Run auf unverändertem `.179`**: `met`/`handled_by`, E3-Gelegenheiten/Kandidaten/Kartenverwendung, bezahlte bzw. erledigte Threads, Personenidentität, Ereignisdichte/Dungeon/Rast, Guard-Ursprünge vs. Folgekaskaden und subjektives Spielgefühl auswerten. [Opus-NPC-Audit mit GPT-§9](recherche/NPC_E2_E3_KONTINUITAETSAUDIT_OPUS55.md). **Noch nicht erfolgt.**
+2. **Preis-/Planner-Korrektur als getrenntes gebündeltes Paket prüfen/umsetzen:** mehrfach gleiche Betragsbelege, ungeprüfte `max_cp` beim Zielkauf, Rabatt-Autorität, Belegreparaturen und `finish=length`-Budgetprobleme. **Codebelegt, bisher nur empfohlen**, nicht implementiert. [Fable §13 + GPT §14](recherche/ARCHITEKTUR_AUDIT_10B_FABLE.md) · [Opus §5 + GPT §12](recherche/ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md).
+3. **NPC-/Kontext-Kandidaten nach Lauf:** D3-Teillieferung von `relevant` (nicht pauschal Spielerzitate löschen); E3-V-1 (80-Zeichen-Grenze und echter Eligibility-Hinweis im Extractor); O1-B1 (nur schlüssige Szenenreihenfolge). **O1-Whitelist, O1-B2 und O2-stay nicht freigegeben**. [D3-Messung](testrun_10b/npc-20261109-160250Z/D3_KONTEXTANALYSE_RELEVANT.md) · [O1/O2-Fachplan einschließlich GPT-§9](recherche/FACHPLAN_O1_O2_KAUSALITAET_UND_TEILBEWEGUNG.md).
+4. **Noch geplante Features:** Monster A1 (Anatomie) und A2 (Bewaffnung) mit Opus-Mini-Gegenreview §9, Combat K1 Main/Minor, Stealth S2. **Kein Produktcode dafür auf `.179` geändert.** [Monsterfachplan](patch_plans_10b/FACHPLAN_MONSTER_ANATOMIE_LOOT_A1_A2.md) · [Main/Minor](patch_plans_10b/PATCH_COMBAT_MAIN_MINOR_ACTIONS.md) · [Roadmap 07](07_ROADMAP_NACH_10B_ENTWURF.md).
+
+**Offene Monster-Designentscheidungen vor A2-Implementierung:** Startgewichte/Verwertbarkeit, Altprofil-Lootquote, Schleimkern nur mit Beleg, gemischte Gruppen („für alle oder Standard“) – bisher Empfehlungen, keine selbstvollziehende Freigabe. A2-Waffen in DUNGEON AHEAD **zurückgestellt**. E4/E5, PULSE D, Engine-Shops, Bossphasen und größere Balancefragen bleiben ebenfalls getrennte spätere Entscheidungen.
+
+## Architekturentscheidungen und Grenzen
+
+Fables Architekturdiagnose ist durch [Opus und unabhängigen GPT-Gegenreview](recherche/ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md) differenziert worden. **Vorab gebuchte Ankunft V1 derzeit nicht empfohlen**: geringe belegte Entlastung, alte Pfade würden nicht entfallen. **Angriffsautorisierung und tatsächlich ausgeführter Angriff getrennt halten**; Dungeon-Slotanwesenheit ist kein automatischer Erstschlag. Keine reflexartige Entfernung der erreichbaren Straßenregel. **O1-B1** ist nur eine enge alternative Normalisierung vor einer Ankunft, nicht die Freigabe ortsneutraler Ereignisse nach einer nicht erreichten Szene. Originalfallbezogene Tests statt weiterer großer Generalreviews.
+
+## Historische Detailquellen
+
+Die bis zum heutigen Schnitt sehr lange frühere 03-Fassung mit **allen Builds `.175–.179`, technischen Zahlen, P2-/P3-Gegenreviews und offenen Pilotfällen** bleibt [im Git-Snapshot vor dieser Konsolidierung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/ec0969b816249211bc71b3c53b10eb1faf11716a/03_AKTUELLER_PROJEKTSTAND.md) vollständig erhalten. Für genaue damalige Testzahlen/Fixtures die jeweiligen Produktpatchnotes und [Fachindex 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) lesen. Alle Quellenarchive bleiben unverändert. **Kein neuer Test durch diese Dokumentationspflege.**

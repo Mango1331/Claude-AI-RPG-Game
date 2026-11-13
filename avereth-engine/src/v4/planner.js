@@ -30,7 +30,7 @@ import { settlementOf, placeName, lineage } from './domain.js';
 import { dungeonOf, roomKnown } from './dungeon.js';
 import { extractJsonObject } from './json.js';
 import { validate } from './schema.js';
-import { interpreterSystem, vocabularyText, catalogText, interpreterSchema, PLAIN_FORMAT, repairMessage, amountErrors, softMoney, financeHints } from './interpret.js';
+import { interpreterSystem, vocabularyText, catalogText, interpreterSchema, PLAIN_FORMAT, amountErrors, softMoney, financeHints } from './interpret.js';
 import { anchorQuote } from './agency.js';
 import { openGoals, goalText } from './growth.js';
 import { composerFunctions } from '../skill_composer.js';
@@ -371,7 +371,7 @@ export function plannerRequest(vocab, ctx, text, { recent = '', previous = null,
     const system = plannerSystem(vocab, { fight: ctx.fight, privateQuests: ctx.privateQuests });
     const user = plannerUser(ctx, text, { recent });
     const messages = [{ role: 'system', content: system }, { role: 'user', content: user }];
-    if (previous !== null && errors) messages.push({ role: 'assistant', content: String(previous) }, { role: 'user', content: repairMessage(errors) });
+    if (previous !== null && errors) messages.push({ role: 'assistant', content: String(previous) }, { role: 'user', content: planRepairMessage(errors) });
     return { system, user, messages };
 }
 
@@ -446,14 +446,28 @@ export function priceConflictNote(offer, standing, named, currency) {
     return `${offer.seller ? `${String(offer.seller).split(',')[0]}'s` : 'The'} standing ${kind} is ${coin(standing)}${goods ? ` for ${goods}` : ''}; you named ${coin(named)}. Nothing changed hands. Accept the standing ${kind} at its price, have it corrected, or deal with someone else?`;
 }
 
+// Build .180 (P2-3): the form the planner must answer in, named in every repair of a plan
+const PLAN_FORMAT = 'one JSON object {"commands":[...]}, never a bare array; {"commands":[]} only when he takes no mechanical action in this message';
+const PLAN_FORMAT_ERROR = `the answer must be ${PLAN_FORMAT}`;
+const bareEmptyArray = (answer) => /^\[\s*\]$/.test(String(answer ?? '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim()
+    .replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/i, '$1').trim());
+
+/** The follow-up message of the planner's one repair: the errors, the form of the answer and a fresh look at his intent. */
+export function planRepairMessage(errors) {
+    return `Your answer was not valid: ${errors.slice(0, 8).join('; ')}. Answer again with only the corrected JSON object: ${PLAN_FORMAT}. Read the PLAYER MESSAGE again: every mechanical action he takes in this message is planned as its command. Nothing else.`;
+}
+
 /**
  * Read and check a planner answer.
  * @returns {{commands: object[]|null, errors: string[]}} commands in the planner's order (seq), or the error lines
  */
 export function parsePlan(answer, vocab, ctx, message) {
-    const { value, error } = extractJsonObject(answer);
-    if (!value) return { commands: null, errors: [error || 'no JSON object'] };
-    if (!Array.isArray(value.commands)) return { commands: null, errors: ['the answer must be {"commands": [...]} (an empty list when he takes no action)'] };
+    // Build .180 (P2-3, batch 12./13.11.2026 Mage T24, T46–T48): an answer that is nothing but an empty JSON array is the
+    // empty command list {"commands":[]}: no action of his is booked, nothing is made of it. Only the whole answer (a
+    // <think> block or a code fence around it aside) counts; a non-empty array, or an array beside prose, stays invalid.
+    const { value, error } = bareEmptyArray(answer) ? { value: { commands: [] }, error: null } : extractJsonObject(answer);
+    if (!value) return { commands: null, errors: [error === 'report is not a JSON object' ? PLAN_FORMAT_ERROR : error || 'no JSON object'] };
+    if (!Array.isArray(value.commands)) return { commands: null, errors: [PLAN_FORMAT_ERROR] };
     const errors = [];
     const jobs = new Map();
     const manners = new Map();

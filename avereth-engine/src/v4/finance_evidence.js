@@ -256,36 +256,58 @@ export function payArgument(message, c, { content, present = [] } = {}) {
         const will = new RegExp(String.raw`(?:^|[^a-z'])(?:pay|pays|paying|repay|repays|settle\s+up|settle\s+(?:the|my)\s+(?:bill|debt|tab|account))\b(?!\s+(?:me|us|up|attention|heed|a\s+visit|respects?|mind|homage|no\s+mind)\b)`, 'i').test(actText);
         return { state: EVIDENCE.MISSING, act: claimsMoney(actText) ? 'claim' : will ? 'will' : 'unclear', cp: null, reason: 'no_money_argument' };
     }
-    const m = findQuote(raw, money.quote, within) ;
-    const at = within ? m : { state: 'missing' };
-    if (at.state !== 'found') return { state: EVIDENCE.MISSING, act: claimsMoney(actText) ? 'claim' : 'unclear', cp: null, reason: at.state === 'ambiguous' ? 'money_ambiguous' : 'money_not_found' };
-    const sentence = sentenceOf(raw, at.start, at.end);
-    const lit = moneyLiteral(raw, money.quote, { content, currencyQuote: money.currency_quote ?? null, within: sentence });
-    // the act around the money: from the clause start (last , ; — before the verb is allowed) to the clause end
-    const before = raw.slice(sentence.start, at.start).toLowerCase().replace(/[‘’]/g, "'");
-    const after = raw.slice(at.end, sentence.end).toLowerCase();
-    const clauseAfter = after.split(/[,;—–]/)[0];
-    const act = `${before} ${raw.slice(at.start, at.end)} ${clauseAfter}`;
-    // coin laid down for the other side: "I put two silver on the counter", "slide the coins across the desk"
-    const laid = new RegExp(String.raw`${LEAD}(?:put|puts|putting|place|places|placing|lay|lays|laying|set|sets|setting|push|pushes|pushing|slide|slides|sliding)\s+${DET}$`, 'i').test(before)
-        && /^\s*(?:down\s+)?(?:on|onto|across|over)\s+(?:the|his|her|their)\s+(?:counter|desk|table|bar|board|ledger|tray)\b/.test(after);
-    let kind = CORE.test(before) || HANDING.test(before) || laid ? 'outgoing' : 'unclear';
-    // Positive argument boundary, not a blacklist of goods/material names.
-    if (!/^\s*(?:(?:coins?|pieces?|fee|payment)\b\s*)?(?:$|[,;.!?—–*]|(?:to|for|toward|towards|on|onto|across|over|as|and|then|i|we)\b)/i.test(after)) kind = 'unclear';
-    // into his own purse, or coin someone gave him: not his outgoing coin
-    if (kind === 'outgoing' && (/^\s*(?:back\s+)?(?:in|into|to)\s+(?:my|myself|his own|her own)\b/.test(after) || /^\s*(?:that\s+|which\s+)?(?:he|she|they|you)\s+(?:gave|paid|handed)\s+(?:me|us)\b/.test(after))) kind = 'unclear';
-    if (claimsMoney(act) && kind !== 'outgoing') kind = 'claim';
-    if (c?.recipient_quote) {
-        const r = findQuote(raw, c.recipient_quote, sentence);
-        const words = r.state === 'found' ? label(raw.slice(r.start, r.end)) : null;
-        if (!words || (payee.length && !payee.some((n) => words.includes(n) || n.includes(words)) && !/^(?:him|her|them|you)$/.test(words))) kind = kind === 'claim' ? 'claim' : 'other';
+    // Build .180 (P2-1, batch 12./13.11.2026 Warrior T5): the same money words more than once inside the act this
+    // command quotes ("I slide two silver across the counter. "Here's the two silver …"") are that coin only if every
+    // place reads the same amount and none of them asks for his own money or pays someone else; the coin is then paid
+    // once (one command, one amount), never once per place. Different amounts, or any place of a claim or of another
+    // payee, stay ambiguous as before.
+    const m = findQuote(raw, money.quote, within);
+    if (m.state === 'found') return moneyAct(m);
+    if (m.state === 'ambiguous') {
+        const each = m.hits.map(moneyAct);
+        const one = each.every((r) => Number.isInteger(r.cp) && r.cp === each[0].cp && r.state === each[0].state);
+        if (one && each[0].state === EVIDENCE.CONTRADICTED) return each.find((r) => r.act === 'other') || each[0];
+        if (one && each[0].state === EVIDENCE.VERIFIED && !each.some((r) => r.act === 'claim' || r.act === 'other'))
+            return { ...each[0], act: each.some((r) => r.act === 'outgoing') ? 'outgoing' : 'unclear', places: each.map((r) => r.source) };
     }
-    // the act pays someone else who is present and named, not the payee
-    const actLow = act.toLowerCase();
-    if (kind === 'outgoing' && others.some((n) => new RegExp(`\\b${escape(n)}\\b`).test(actLow)) && !payee.some((n) => new RegExp(`\\b${escape(n)}\\b`).test(actLow))) kind = 'other';
-    if (lit.state !== EVIDENCE.VERIFIED) return { state: lit.state, act: kind, cp: null, reason: lit.reason };
-    if (Number.isInteger(c?.amount_cp) && lit.cp !== c.amount_cp) return { state: EVIDENCE.CONTRADICTED, act: kind === 'outgoing' ? 'other' : kind, cp: lit.cp, reason: 'amount_differs' };
-    return { state: EVIDENCE.VERIFIED, act: kind, cp: lit.cp, reason: lit.reason, source: { start: at.start, end: at.end } };
+    return { state: EVIDENCE.MISSING, act: claimsMoney(actText) ? 'claim' : 'unclear', cp: null, reason: m.state === 'ambiguous' ? 'money_ambiguous' : 'money_not_found' };
+
+    function moneyAct(at) {
+        const sentence = sentenceOf(raw, at.start, at.end);
+        const lit = moneyLiteral(raw, money.quote, { content, currencyQuote: money.currency_quote ?? null, within: sentence });
+        // the act around the money: from the clause start (last , ; — before the verb is allowed) to the clause end
+        const before = raw.slice(sentence.start, at.start).toLowerCase().replace(/[‘’]/g, "'");
+        const after = raw.slice(at.end, sentence.end).toLowerCase();
+        const clauseAfter = after.split(/[,;—–]/)[0];
+        const act = `${before} ${raw.slice(at.start, at.end)} ${clauseAfter}`;
+        // coin laid down for the other side: "I put two silver on the counter", "slide the coins across the desk"; since
+        // .180 (P2-1, batch 12./13.11.2026 Rogue T5) also coin counted out and laid down there in the same clause: "I count
+        // out two silver and slide them across the counter", "count out two silver onto the desk"
+        const SURFACE = String.raw`(?:down\s+)?(?:on|onto|across|over)\s+(?:the|his|her|their)\s+(?:counter|desk|table|bar|board|ledger|tray)\b`;
+        const layBefore = new RegExp(String.raw`${LEAD}(?:put|puts|putting|place|places|placing|lay|lays|laying|set|sets|setting|push|pushes|pushing|slide|slides|sliding)\s+${DET}$`, 'i').test(before);
+        // his own counting, never someone he asks to count ("I ask her to count out …")
+        const countBefore = new RegExp(String.raw`(?:^|["“*(]|\b(?:i|we|then|and)\s)\s*(?:(?:'ll|will|now|then|just|quickly|carefully|slowly)\s+)*(?:count|counts|counting)\s+out\s+${DET}$`, 'i').test(before);
+        const onSurface = new RegExp(String.raw`^\s*${SURFACE}`).test(after);
+        const thenLaid = new RegExp(String.raw`^\s*,?\s*(?:and\s+(?:then\s+)?|then\s+)(?:put|puts|place|places|lay|lays|set|sets|push|pushes|slide|slides)\s+(?:them|it)\s+${SURFACE}`).test(after);
+        const laid = ((layBefore || countBefore) && onSurface) || (countBefore && thenLaid);
+        let kind = CORE.test(before) || HANDING.test(before) || laid ? 'outgoing' : 'unclear';
+        // Positive argument boundary, not a blacklist of goods/material names.
+        if (!/^\s*(?:(?:coins?|pieces?|fee|payment)\b\s*)?(?:$|[,;.!?—–*]|(?:to|for|toward|towards|on|onto|across|over|as|and|then|i|we)\b)/i.test(after)) kind = 'unclear';
+        // into his own purse, or coin someone gave him: not his outgoing coin
+        if (kind === 'outgoing' && (/^\s*(?:back\s+)?(?:in|into|to)\s+(?:my|myself|his own|her own)\b/.test(after) || /^\s*(?:that\s+|which\s+)?(?:he|she|they|you)\s+(?:gave|paid|handed)\s+(?:me|us)\b/.test(after))) kind = 'unclear';
+        if (claimsMoney(act) && kind !== 'outgoing') kind = 'claim';
+        if (c?.recipient_quote) {
+            const r = findQuote(raw, c.recipient_quote, sentence);
+            const words = r.state === 'found' ? label(raw.slice(r.start, r.end)) : null;
+            if (!words || (payee.length && !payee.some((n) => words.includes(n) || n.includes(words)) && !/^(?:him|her|them|you)$/.test(words))) kind = kind === 'claim' ? 'claim' : 'other';
+        }
+        // the act pays someone else who is present and named, not the payee
+        const actLow = act.toLowerCase();
+        if (kind === 'outgoing' && others.some((n) => new RegExp(`\\b${escape(n)}\\b`).test(actLow)) && !payee.some((n) => new RegExp(`\\b${escape(n)}\\b`).test(actLow))) kind = 'other';
+        if (lit.state !== EVIDENCE.VERIFIED) return { state: lit.state, act: kind, cp: null, reason: lit.reason };
+        if (Number.isInteger(c?.amount_cp) && lit.cp !== c.amount_cp) return { state: EVIDENCE.CONTRADICTED, act: kind === 'outgoing' ? 'other' : kind, cp: lit.cp, reason: 'amount_differs' };
+        return { state: EVIDENCE.VERIFIED, act: kind, cp: lit.cp, reason: lit.reason, source: { start: at.start, end: at.end } };
+    }
 }
 
 /** A player's own price words for a limit or an agreed price (§4.1): total or unit × the selected units. */

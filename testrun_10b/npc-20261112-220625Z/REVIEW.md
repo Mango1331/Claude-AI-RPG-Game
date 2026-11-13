@@ -318,3 +318,32 @@ Ein Parser, der `[]` zu `{"commands":[]}` normalisiert, kann den **Format- und R
 - **E3 V-1:** Nach zwei neuen `anchor_value`-Refusals und insgesamt 0 E3-Ankern sinnvoll; enge Extractor-Präzisierung statt Firewall-Lockerung.
 
 **Priorisierung nach Gegencheck:** (1) P2-1 Registrierung und begrenzte P2-3-Format-/Recoverykorrektur, (2) P2-2 autorisierter PULSE-Reisehalt, (3) P2-4 Statuskorrektur und klein gefasste P2-5-Formfälle, (4) E3-V-1. **Bearbeiterlogik P3-7 erst nach korrigierter Messung und den zwei echten Bedingt-Abgabe-Fällen.** Kein weiterer Gesamt-Audit, keine neue Dokumentationsdatei und kein neuer Produktbuild durch diesen Gegencheck.
+
+---
+
+## §10 – Unabhängiger GPT-Produktdiff-Kontrollreview: Build `.181` (P2-2 PULSE-Reisehalt)
+
+**13.11.2026 · Review des auf GitHub gepushten Produktdiffs [`b83b59b`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b83b59bbd6f7738ec5070a76337b539fb4b9ae00), Build-/Patchnote-Commit [`b9e07be`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b9e07be1f9cbe2f2d6dff387e10587f78817eefb).** Grundlage ist der reale Code- und Testdiff gegenüber `.180`, nicht nur die Implementierermeldung. Kein neuer eigener Node-/Replay-/ST-Test; der Produktbranch wurde durch diesen Review nicht verändert. Der ursprüngliche Dreierbatch war auf `.179`; **kein natürlicher Nachtest von `.181`**.
+
+### 10.1 Prüfurteil: gezielter Patch fachlich positiv, ST-Gate offen
+
+**P2-2 korrekt und bewusst eng eingegrenzt implementiert.** Der frühere Ruleset-1-Transit bleibt unverändert; die `.101`-Schutzentscheidung gegen Bewegung allein durch Zeit, `arrived=false` oder fehlendes `arrive` bleibt grundsätzlich gültig. Die neue Ausnahme wird nur erwogen, wenn `explicitTravel` (Ruleset 2), ein im Spielerzug gespeichertes **offenes PULSE-Fenster mit `exposure:'travel'`** und mindestens ein autorisiertes `auth.gos` vorliegen. Eine Antwort mit einem `arrive`-Delta – auch einem später abgelehnten – oder eine gemeldete Zielankunft führt **nicht** in diesen Ersatzpfad; ebenso wenig ein laufender Kampf oder bereits erreichter/ungeeigneter Regionsort.
+
+Bei einem tatsächlich von der Engine angeordneten Halt ohne gültige gemeldete Zwischenankunft führt `src/v4/world.js` den Spieler auf das **vorhandene Realm des Ausgangsorts**, nicht ans Reiseziel. Der Code nutzt die bestehenden `arrive()`- und `companions()`-Prüfungen, trägt das Reise-Label `On the way to …` ein und setzt die bestehende `transit`-Markierung. Damit werden weder Dungeonzugang noch Populations-/Killcredit, automatische Zielankunft, Mindest-Reisezeit oder der Questabschluss verschenkt.
+
+**Erzählreihenfolge:** Lokale Deltas, die ausdrücklich den Ausgangsort als `scene` nennen, können dort vor dem Halt gebucht werden; vor der ersten anderen lokalen Meldung wird der Zwischenhalt gebucht, sonst erst nach der Delta-Schleife. Der nachträgliche Stop liegt noch vor der `expected`-/Liefer-/Abgabeverarbeitung. Das verhindert die naive Regression, bei der das Geschenk aus dem ursprünglichen `.101`-Test nachträglich von der Gildenhalle auf die Straße gerät.
+
+### 10.2 Unabhängiger Test-/Diffabgleich
+
+- Der eigentliche Produktcode ändert **nur `src/v4/world.js`** (plus `realmOf`-Import). Keine Änderungen an `deltas.json`, PULSE-Wahrscheinlichkeiten, NPC- oder Questautorität.
+- Die neue Regression `tests/v4/fix181_pulse_road_stop.test.js` umfasst **13 Fälle** mit Mage T44, Rogue T32/T36, Warrior T27, Begleitern, Weiter-/Rückreise, Questpopulationen, Save/Fold und der lokalen Ereignisreihenfolge. Originale Spielzüge wurden **anhand des Reviews rekonstruiert**, nicht aus Original-ZIP bytegenau wiederabgespielt. Die Tests sind nicht mit einem natürlichen LLM-Run zu verwechseln.
+- Ein Bestandstest `patch_batch101_world.test.js` wurde bewusst geändert, weil sein Fixture auf dem aktuellen Stand selbst ein offenes Reise-PULSE-Fenster erzeugte. Er prüft die alte `.101`-Regel jetzt bei **geschlossenem** Fenster. Der korrespondierende **offene** Fall aus demselben Fixture ist im neuen Test separat enthalten. Das ist nachvollziehbar, kein belegtes Verbergen einer Regression.
+- Laut Implementierer: **9/13 neue Fälle auf `.180` rot**, 13/13 auf `.181` grün, angrenzend 505/505, `npm test` 3085/3085, Replay 2235 ohne Abweichung, voller Korpus 1057/1057 akzeptiert. **Von GPT nicht unabhängig ausgeführt.**
+- Der Replay-Korpus hat **keine ursprünglichen PULSE-Outcomes**; die 0 Abweichungen **bestätigen den neuen Ausnahmepfad nicht**, sondern nur das Ausbleiben anderer beobachteter Änderungen. Opus weist diese Grenze ausdrücklich aus.
+- **ST1.19 Standard/Failsoft ist offen**: Kein isolierter Teststand in der Implementierungsumgebung. Der vorhandene `run_c.mjs` arbeitet destruktiv mit `data/default-user`; ihn **nicht** an die produktiv genutzten persönlichen ST-Daten anschließen. Späterer Smoke nur mit separater Installation/Datenwurzel.
+
+### 10.3 Verbleibende Grenzen und Entscheidung
+
+**Kein verpflichtender Produktkorrekturpatch aus diesem Diff nachgewiesen.** Bekannte, bewusst konservative Grenzen bleiben: Ein explizit gemeldetes, aber abgelehntes `arrive` verhindert einen Ersatzhalt; falsch ausdrücklich dem Ausgangsort zugeordnete Meldungen bleiben dort; bei Zwischenhalt ohne erzählte Zeit wird keine Mindest-Reisezeit künstlich gebucht. Ein offenes Reisefenster ohne irgendeine lokale Meldung bucht den angeordneten Halt am Ende. Diese Fälle sollten bei neuen natürlichen Läufen beobachtet werden, begründen im vorliegenden Material aber keine pauschale Autoritätslockerung.
+
+**Empfehlung:** `.181` für die **weitere Entwicklung** akzeptieren, technische Freigabe **unter Vorbehalt des isolierten ST-Smokes**. Nächster fachlich getrennter Patch: **P2-4 fehlerhafte Queststatus-Korrektur nach bedingter Abgabe** und **P2-5 nur eindeutig bedeutungsneutrale Extractor-Formfehler** (Fable §8, GPT §9); danach **E3-V-1**. Keine neue Fable-Gesamtanalyse und vorerst kein weiterer voller natürlicher Dreierbatch, bevor die bekannten Blockaden bearbeitet sind.

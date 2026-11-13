@@ -2920,7 +2920,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     && o.status === 'open' && o.at === dec.at && o.at === s.scene.at && (!dec.seller || dec.seller === o.seller))
                     .map(o => ({ o, lines: purchaseLines(dec.what, o.lines) })).filter(x => x.lines.length);
                 const match = matches.length === 1 ? matches[0] : null;
-                let why = match ? offerAvailability(s, match.o) : 'no single valid canonical offer at the reached shop';
+                // .185 (Z1.3; natural batch 13.11.2026: every failed conditional purchase read "no single valid canonical
+                // offer at the reached shop", the reason of the Guild's manuals): the reason of this purchase
+                const shop = Object.values(s.offers).some(o => o.canon && o.stock === 'manuals' && o.at === dec.at);
+                const refusedOffer = rejected.find(x => x.type === 'offer');
+                let why = match ? offerAvailability(s, match.o) : shop ? 'no single valid canonical offer at the reached shop'
+                    : refusedOffer ? `the seller's price was not recorded (${String(refusedOffer.why).slice(0, 100)})`
+                        : 'the seller named no binding total in coin for it in this reply (one total, for example "four copper for the stew and bread")';
                 const pick = match && !why ? pickLines(match.o, match.lines.map(l => l.id), dec.qty ?? null) : null;
                 if (pick) why = pick.error || (pick.clarify ? 'the quantity or goods need clarification' : null);
                 if (pick && !why) {
@@ -3145,7 +3151,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             counterparts.add(seller);
             emit({ t: 'decision.closed', d: { id: dec.id, status: 'accepted' } });
             emit({ t: 'cmd.completed', d: { seq: dec.seq, ok: true } });
+            boughtAfter(what, price, seller);
         }
+    }
+
+    // .185 (Z2; GPT E-1): a purchase he agreed to in advance is booked here, after the reply; the player sees it at once,
+    // the next reply knows it is done (the narrator showed no hand-over in this one)
+    function boughtAfter(what, price, seller) {
+        system.push(`BOUGHT — ${what} for ${price} cp from ${entityLabel(s, seller)} (booked after the reply, within the price he had agreed to)`);
+        const fact = `BOUGHT AFTER THE LAST REPLY — Alaric paid ${entityLabel(s, seller)} ${price} cp for ${what} (the engine booked it after that reply, within the price he had agreed to): it is done. Show the hand-over now if the last reply did not; he pays nothing more for it and does not buy it again.`;
+        if (!corrections.includes(fact)) corrections.push(fact);
     }
 
     /**

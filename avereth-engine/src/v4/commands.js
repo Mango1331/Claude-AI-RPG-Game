@@ -1100,7 +1100,14 @@ const HANDLERS = {
             || (c.for && (s.decisions.some(d => d.kind === 'purchase' && d.at === s.scene.at && (!d.seller || d.seller === c.to) && paymentFor(c, [{what:d.what}]))
                 || Object.values(s.offers).some(o => !o.canon && !o.bid && o.seller === c.to && o.at === s.scene.at && paymentFor(c, o.lines)))));
         if (purchase) {
-            if (!will) return { status: 'pending', line: 'NOT PAID — confirm the purchase with the seller; no free payment was proposed.' };
+            // .185 (Z1.3; natural batch 13.11.2026, Rogue T42/T43: "I count seven copper into her palm" read "confirm the
+            // purchase with the seller" after an explicit payment): say what his words lack; the rule itself is unchanged
+            if (!will) {
+                const lack = ev.state !== 'verified' ? 'his own words do not carry this amount of money'
+                    : ev.act === 'other' ? 'his words give this money to someone else or name another amount'
+                        : 'his words name the money but the engine finds no hand-over of it to the seller now ("I pay her", "I give him", "I count it out onto the counter")';
+                return { status: 'pending', reason: 'payment not recognised', line: `NOT PAID — ${c.for || 'the purchase'}: ${lack}. Nothing changed hands and no payment card was made. A purchase is booked when the seller names one total in coin for exactly it and he agrees, or when he accepts an open offer.` };
+            }
             if (!present(s, c.to)) return { status: 'refused', reason: 'nobody to pay', line: 'CANNOT BUY — the seller is not here; nothing was paid.' };
             if (!c.for) return { status: 'clarify', reason: 'purchase purpose missing', line: 'NOT PAID — which offered goods or service is this payment for? Nothing changes hands.' };
             // Build .142: the coin his own words hand over for it is his limit; an amount they do not carry is none
@@ -1138,7 +1145,11 @@ const HANDLERS = {
         if (limit || c.any_price) {
             const rule = limit ? `if the price is at most ${max} cp` : 'at any price';
             return {
-                status: 'conditional', condition: 'priced_within', line: `BUYS — ${c.what} ${rule}: when the seller names the price, he pays it and takes it${limit ? '; above it he declines' : ''}.`,
+                // .185 (Z2, E-1; natural batch 13.11.2026, Rogue T39 and Mage T24: "he pays it and takes it" had the coin
+                // change hands before anything was booked, and nothing was): the seller names one total, the engine
+                // books it after the reply (src/v4/world.js offerLines) and the next reply shows the hand-over
+                status: 'conditional', condition: 'priced_within', line: `BUYS — ${c.what} ${rule}: the seller may name ONE total in coin for exactly it ("four copper for the stew and bread"); no coin and nothing of it changes hands in this reply. The engine books the purchase after the reply when that total is ${limit ? 'within his limit' : 'named'}; the next reply shows the hand-over${limit ? '; above the limit he declines' : ''}.`,
+                extra: [`OPEN DECISION — Alaric has agreed in advance to buy ${c.what} ${rule}, but has NOT paid: let the seller say the one total in coin, then stop; narrate no coin and no ${c.what} handed over in this reply.`],
             };
         }
         return {

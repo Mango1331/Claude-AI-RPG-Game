@@ -266,3 +266,55 @@ Die ersten drei Größen stehen schon in den Records. Der Runner meldet sie bish
 - **Eventgruppenvergleich und Fold:** von mir nicht wiederholt; die Aussagen in §2 dazu übernehme ich ungeprüft.
 
 **Keine Produktänderung durch diesen Abschnitt.**
+
+
+---
+
+## §9 – GPT-Kurzgegencheck zu Fable §8: Bearbeiterwissen, Planner-Array und Freigabegrenzen
+
+**13.11.2026 · ergänzender, eng begrenzter Abgleich mit den originalen `chat.jsonl`-Events aus dem Nutzerupload und dem Produktcode `.179`.** GPT §§1–7 und Fable §8 bleiben unverändert; keine neuen Live-/Node-/Replayläufe, kein Produktpatch. Diese Notiz korrigiert **zwei** für eine Implementierungsentscheidung wesentliche Schlussfolgerungen aus §8, ohne Fables bestätigte P2-Analyse zu relativieren.
+
+### 9.1 `handled_by`: Die Null-Metrik ist nicht gleich null personenbezogenem Wissen
+
+Die automatische `npc-pulse`-Auswertung zählt nur `knowledge.gained`-Events **des nachfolgenden Erzähler-/Extractor-Records**. Bereits **im autoritativen Spielerzug** gebuchte Wissensereignisse für den angenommenen Gildenauftrag werden dabei übersehen.
+
+**Unabhängig im Original-`chat.jsonl` bestätigt:**
+
+| Lauf/Zug | Bereits im Spielerzug verbuchtes Wissen | Späterer `handled_by`-Befund |
+|---|---|---|
+| Warrior **T26** | `knowledge.gained` für `npc.npcguild_clerk` über `f.pc.accepted.quest.fang_in_the_hen_runs` | Extractor-Beleg abgelehnt; der Clerk **wusste den Vertrag bereits** |
+| Rogue **T35** | `knowledge.gained` für `npc.npcguild_clerk` über `f.pc.accepted.quest.cull_the_feral_tomcat_of_millbrook` | Extractor-Beleg abgelehnt; der Clerk **wusste den Vertrag bereits** |
+| Mage **T9** | `knowledge.gained` für `npc.npcguild_clerk_ashbridge` über `f.pc.accepted.quest.a_snake_by_the_millrace` | Extractor-Beleg abgelehnt; **keine fehlende Wissensbuchung** |
+| Mage **T43** | `knowledge.gained` für `npc.npcguild_clerk_ashbridge` über `f.pc.accepted.quest.clear_mossback_warrens_level_1_2` | Kein `desk_handler`-Reject und kein **zweites** Ereignis im Erzählerrecord, **weil Wissen bereits vorhanden** |
+
+Das ist eine konkrete Auflösung der offenen Frage aus Fable §8.6 zu **Mage T43**: **Im früheren Spielerrecord existiert das angeblich fehlende Event.** Den Zähler `desk_handler=0` darf man deshalb **nur** als „keine zusätzliche, durch die nachgelagerte `handled_by`-Meldung erfasste Wissensbuchung“ lesen, nicht als „die Gildenpersonen wissen nichts“. Genau dies erklärt, warum das Vorliegen mehrerer `desk_handler`-Refusals nicht zwingend ein verfehltes E2-Ziel belegt. Der Evaluator verdient eine **kleine eigene Korrektur** oder eine präzisere Benennung.
+
+Die beiden wirklich interessanten Restfälle sind die **bedingt nach Ankunft gebuchten Abgaben Warrior T57 und Mage T40**: Deren Spielerzüge können den Bearbeiter am Zielort noch nicht sicher kennen. Hier ist die nachträgliche, **eindeutig erzählte** Bearbeitung wertvoll. Ob eine Korrektur des Beleg-Extraktors oder des `deskHandlingEvidence`-Prüfers nötig ist, muss an genau diesen Originaltexten geprüft werden.
+
+**Designurteil zu Fables P3-7:** **NO-GO in der vorgeschlagenen Pauschalform** „einzige anwesende Gildenperson gilt ohne Verbprüfung automatisch als Bearbeiterin“. Diese Person könnte bloß anwesend sein. Besser den bestehenden autoritativen Erstbuchungsweg korrekt messen und beim echten Reise-/Abgabefall kurz und eindeutig belegte Desk-Handlungen anerkennen; bei mehreren möglichen Personen weiter vorsichtig sein. **Keine allgemeine Aufhebung des E2-A-R2-Belegschutzes.**
+
+### 9.2 `[]`: syntaktische Korrektur ja, fehlende Handlungsinterpretation nicht verdecken
+
+Der rohe Mage-Originalchat bestätigt die wiederholten nackten Plannerantworten `[]` und den anschließenden Abbruch; der Code `src/v4/planner.js` erwartet `{"commands":[...]}`. **Ein streng begrenzter Format-Fix für eine tatsächlich leere Befehlsliste ist technisch plausibel.**
+
+Aber Fables §8.2/§8.4 ist in der Aussage „alle `[]`-Antworten sind inhaltlich richtig“ **zu weitgehend**:
+
+- **Mage T24:** konditionales Kampfgespräch mit Hessa, keine ausgeführte Aktion – `[]` inhaltlich plausibel.
+- **Mage T45–T47:** Fragen, Angebot, verabredete zukünftige Bewegung – `{"commands":[]}` kann plausibel sein.
+- **Mage T48:** Der Spieler sagt ausdrücklich **„Done — I go in first now, and draw the big one.“** Das ist **nicht eindeutig nur ein Gespräch**, sondern enthält einen aktuellen Eintritts-/Bewegungswunsch. Die Planner-Begründung nennt ihn trotzdem nur ein Abkommen und liefert wieder `[]`.
+
+Ein Parser, der `[]` zu `{"commands":[]}` normalisiert, kann den **Format- und Runner-Abbruch** beheben, nicht zwangsläufig die **richtige Ausführung von T48**. Ein breiter Fallback für **beliebige** Arrays mit Befehlsobjekten ist hierfür nicht bewiesen nötig. Die Reparaturanweisung muss die korrekte Objektform und die Prüfung der tatsächlichen Spielerabsicht nennen. Regressionen separat: (a) reine Sprachhandlung, (b) jetzt ausgeführtes GO, (c) ungültige Arrayeinträge, (d) wirklich leere Providerantwort. **Kein stiller GO aus unautorisiertem Prosa- oder Arrayinhalt.**
+
+### 9.3 Zwei Nutzerentscheidungen – fachliche Empfehlung
+
+**P2-2 – von PULSE verbindlich angeordneter Zwischenhalt:** **ENGES GO / Zustimmung empfohlen.** In `src/v4/pulse.js` fordert der offene Reise-PULSE-Text ausdrücklich einen **realen Halt vor dem Ziel**; in `src/v4/world.js` bleibt der frühere Transitpfad für Ruleset 2 durch `!explicitTravel` deaktiviert. Ein Engine-gebuchter, eindeutig an **autorisierte Reise + tatsächlich geöffnetes Reise-PULSE-Fenster + fehlende gültige explizite Zwischenankunft** gebundener Straßen-/Regionshalt ist konsistent mit der vorhandenen Engineautorität. Das ist **keine** Wiederfreigabe impliziter Bewegung für beliebige fehlgeschlagene `go`- oder `arrived=false`-Züge. Bedingungen: vor lokalen `person.new`/`creature.new`-Deltas buchen, Ziel und Fortsetzungsabsicht erhalten, Mitreisende/Anwesenheit korrekt behandeln, explizite echte Zwischenorte vorziehen, Dungeon-/Quest-/Save-/Replay-Gegenfälle prüfen. **Nicht** automatisch das endgültige GO-Ziel erreichen.
+
+**P3-7 – einzelner Gildenbearbeiter ohne Handlungsbeleg:** **NEIN zur pauschalen Lockerung.** §9.1 zeigt, dass das häufig bereits gebuchte Wissen von der Auswertung schlicht nicht erfasst wird. Zuerst das Messinstrument bzw. seine Beschreibung korrigieren und nur bedingte nachträgliche Abgaben mit klarer Erzählung nachbessern. NPC-Wissen nicht aus bloßer Einsamkeit im Gildenraum erfinden.
+
+**Zusätzliche technische Grenzen für die ersten Patches:**
+- **P2-1 Registrierung:** Positive Eigenhandlung und Zustimmung zur **bekannten verbindlichen Gildengebühr** dürfen auf das bestehende Angebot gemappt werden. Ein bloßes `guild.register` ohne klare Zahlungszustimmung darf keine frei erfundene oder unbemerkte Geldbuchung autorisieren; B15-Tipps/Fremdzwecke und falsche Geldbeträge als Gegenfälle erhalten.
+- **P2-4 Statuskorrektur:** Bei tatsächlich in derselben Antwort gebuchter Abgabe die überholte Korrektur auf den **finalen Eventzustand** abstimmen; keine berechtigte Korrektur aus anderen Fällen pauschal unterdrücken.
+- **P2-5 Formheilung:** Nur wirklich bedeutungsneutrale Normalisierungen; fehlende `seq`, Ortsreihenfolge und Abhängigkeiten nicht blind autoerraten. Die 28-%-Refusalquote enthält **auch legitime Integritätssperren**, kein allgemeines Reduktionsziel.
+- **E3 V-1:** Nach zwei neuen `anchor_value`-Refusals und insgesamt 0 E3-Ankern sinnvoll; enge Extractor-Präzisierung statt Firewall-Lockerung.
+
+**Priorisierung nach Gegencheck:** (1) P2-1 Registrierung und begrenzte P2-3-Format-/Recoverykorrektur, (2) P2-2 autorisierter PULSE-Reisehalt, (3) P2-4 Statuskorrektur und klein gefasste P2-5-Formfälle, (4) E3-V-1. **Bearbeiterlogik P3-7 erst nach korrigierter Messung und den zwei echten Bedingt-Abgabe-Fällen.** Kein weiterer Gesamt-Audit, keine neue Dokumentationsdatei und kein neuer Produktbuild durch diesen Gegencheck.

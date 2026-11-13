@@ -23,7 +23,7 @@ import { trainingOfferWhy } from './growth.js';
 import { deriveCharacter } from '../derived.js';
 import { reportToEvents, makeResolver, isGroup, GROUP_WORDS } from '../delta.js';
 import { sceneHandle } from './scene_handles.js';
-import { truth, entityLabel, setFactEvents, statusOf, normPredicate, knows, anchorPredicate } from '../knowledge.js';
+import { truth, entityLabel, setFactEvents, statusOf, normPredicate, knows, anchorPredicate, sharedBefore } from '../knowledge.js';
 import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../engine.js';
 import { firewall, pcWound, pcActIn } from './firewall.js';
 import { stripOwned, wrongClaim, ownershipViolation, stateRegions, effectViolation } from './ownership.js';
@@ -215,8 +215,7 @@ function anchorRefusal(s, id, p, value, anchored) {
     if (current && normText(current.o) === normText(v)) return null;
     if (!s.scene.present.includes(id)) return { rule: 'anchor_absent', why: `${p} of ${id}: a lasting trait is shown only by someone here` };
     const since = s.scene.since?.[id];
-    const shares = (m, x) => (m.who || []).includes(x) || (m.witnesses || []).includes(x);
-    if (since == null || !s.memories.some((m) => (m.turn ?? Infinity) < since && shares(m, id) && shares(m, 'pc')))
+    if (!sharedBefore(s, id))
         return { rule: 'anchor_first_contact', why: `${p} of ${id}: a lasting trait only from a later encounter (nothing shared with Alaric before this presence began)` };
     const pcWords = String(s.entities.pc?.name || 'Alaric').split(/\s+/).filter((w) => w.length >= 3).map((w) => w.toLowerCase());
     const words = normText(v).split(/[^a-z0-9']+/).filter(Boolean);

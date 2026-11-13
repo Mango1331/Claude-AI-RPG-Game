@@ -5,7 +5,7 @@ import { privateQuestsOf, questVisible } from '../content.js';
 // decisions. It has the shape of tests/eval/scenes.json, the scenes P0/S1 measured the interpreter on, and it lists
 // only ids: every reference in an answer is one of them or {new: …}. guardContext() gives the agency guard
 // (src/v4/agency.js) the same view.
-import { truth, entityLabel, statusOf, npcContinuity } from '../knowledge.js';
+import { truth, entityLabel, statusOf, npcContinuity, sharedBefore } from '../knowledge.js';
 import { deriveCharacter } from '../derived.js';
 import { formatClock, normText } from '../util.js';
 import { sceneHandle } from './scene_handles.js';
@@ -392,9 +392,15 @@ export function extractorCatalog(state, content, opts = {}) {
     // spent all 2,500 tokens wondering whether "the second beetle" was a newcomer): the dead of the last turns here
     const dead = (state.scene.present || []).filter((id) => ['creature', 'npc'].includes(state.entities[id]?.kind) && statusOf(state, id) === 'dead'
         && (truth(state, id, 'status')[0]?.since?.turn ?? -1) >= state.turn - 3);
+    // Build .183 (NPC E3-V-1): the people present now who shared a moment with Alaric before this presence began (the
+    // engine's own R10 test, knowledge.sharedBefore): only for them a lasting trait this reply shows is kept. The line is
+    // the extractor's alone (the planner's catalog is unchanged); it grants nothing: the world applier checks every fact
+    const later = opts.c && rulesetOf(state) >= 2 ? (state.scene.present || []).filter((id) => state.entities[id]?.kind === 'npc'
+        && statusOf(state, id) !== 'dead' && sharedBefore(state, id)) : [];
+    const laterText = later.length ? `\nLATER ENCOUNTER (present now, met Alaric before this visit): ${later.map((id) => `${id} [${sceneHandle(state, content, id)}]`).join(' · ')}. Only for them a lasting voice, manner or interest this reply SHOWS may be reported as a fact (p voice/manner/interest, o at most 80 characters: their habit, not this moment's mood); for anyone else present it is not kept now.` : '';
     const deadText = dead.length ? `\nRECENT DEAD (here, killed in the engine's fights; never a creature.new, never alive, never fleeing): ${dead.map((id) => `${id} [${sceneHandle(state, content, id)}] (${personLabel(state, content, id)})`).join(' · ')}` : '';
     return {
-        text: catalogText(c) + `\nPLACE ANCESTRY: ${[c.here, ...c.places].map(x => state.places[x.id]).filter(Boolean).map(p => `${p.id} [${p.kind}, parent:${p.parent || 'none'}${p.encounter_levels ? `, area levels ${p.encounter_levels.join('–')}` : ''}${p.population ? `, population:${p.population.species}, ${p.population.anchor}, levels ${p.population.levels.join('-')}` : ''}]`).join(' · ')}` + deadText + threadText + `\nKNOWN PERSON CONTINUITY (not present; use enter for an actual return, person.named for a fuller name):\n${npcContinuity(state, opts.input || '').map(x => x.text).join('\n') || 'none relevant'}` + (!privateQuestsOf(state) ? `\nFREE HELP: only Guild contracts are formal quests. NPC help, agreements and thanks are ordinary world interactions.\nRECENT COIN HANDOVERS (sales/payouts/gifts already credited; use repeat_of for recounts):\n${(state.credits || []).map(x => `${x.id || x.gift?.id || 'historical credit'}: ${x.from || x.gift?.from || 'engine'}, ${x.cp} cp, ${x.gift?.why || x.for || x.quest || 'engine payment'}${x.gift?.said ? `; ${x.gift.said}` : ''}`).join('\n') || 'none'}` : ''),
+        text: catalogText(c) + laterText + `\nPLACE ANCESTRY: ${[c.here, ...c.places].map(x => state.places[x.id]).filter(Boolean).map(p => `${p.id} [${p.kind}, parent:${p.parent || 'none'}${p.encounter_levels ? `, area levels ${p.encounter_levels.join('–')}` : ''}${p.population ? `, population:${p.population.species}, ${p.population.anchor}, levels ${p.population.levels.join('-')}` : ''}]`).join(' · ')}` + deadText + threadText + `\nKNOWN PERSON CONTINUITY (not present; use enter for an actual return, person.named for a fuller name):\n${npcContinuity(state, opts.input || '').map(x => x.text).join('\n') || 'none relevant'}` + (!privateQuestsOf(state) ? `\nFREE HELP: only Guild contracts are formal quests. NPC help, agreements and thanks are ordinary world interactions.\nRECENT COIN HANDOVERS (sales/payouts/gifts already credited; use repeat_of for recounts):\n${(state.credits || []).map(x => `${x.id || x.gift?.id || 'historical credit'}: ${x.from || x.gift?.from || 'engine'}, ${x.cp} cp, ${x.gift?.why || x.for || x.quest || 'engine payment'}${x.gift?.said ? `; ${x.gift.said}` : ''}`).join('\n') || 'none'}` : ''),
         places: [...new Set([c.here.id, ...c.places.map((p) => p.id)].filter(Boolean))],
         quests: [...new Set([...c.quests, ...c.board, ...c.completed, ...(c.known || [])].map((q) => q.id))],
         objects: c.objects.map((o) => o.id),

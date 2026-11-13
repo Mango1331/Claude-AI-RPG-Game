@@ -25,6 +25,17 @@ const ANCHOR_SYNONYMS = {
     temperament: 'manner', demeanor: 'manner', demeanour: 'manner', personality: 'manner', disposition: 'manner',
     interests: 'interest', hobby: 'interest', cares_about: 'interest', passion: 'interest',
 };
+/**
+ * NPC E3 (R10): has this person shared a moment with Alaric before their current presence began (scene.since)? Only
+ * then is what they show now a later encounter, the one a lasting trait is kept from (src/v4/world.js anchorRefusal).
+ * Build .183 (E3-V-1): the same test marks them for the extractor (src/v4/catalog.js extractorCatalog); it grants
+ * nothing by itself. Presence is checked by the caller.
+ */
+export function sharedBefore(state, id) {
+    const since = state.scene.since?.[id];
+    const shares = (m, x) => (m.who || []).includes(x) || (m.witnesses || []).includes(x);
+    return since != null && (state.memories || []).some((m) => (m.turn ?? Infinity) < since && shares(m, id) && shares(m, 'pc'));
+}
 /** NPC E3: the anchor predicate (voice, manner, interest) a person's reported predicate names, or null. */
 export function anchorPredicate(p) {
     const k = normPredicate(p);

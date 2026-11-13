@@ -14,12 +14,15 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
+import { assertSandbox } from './sandbox.mjs';
 const require = createRequire(import.meta.url);
 let chromium;
 try { ({ chromium } = require('playwright')); } catch { ({ chromium } = require(path.join(require('node:child_process').execSync('npm root -g').toString().trim(), 'playwright'))); }
 
 const ST = process.env.AVERETH_ST_DIR;
-if (!ST) throw new Error('set AVERETH_ST_DIR to a SillyTavern checkout');
+// the smokes write into data/default-user and delete test chats: only in a marked Avereth sandbox, never a personal
+// SillyTavern (tools/st_live/sandbox.mjs; npm run smoke:st:isolated makes and runs one)
+assertSandbox(ST);
 const PRESET = process.env.AVERETH_ST_PRESET || 'Default';
 // the connection's Additional Parameters (Custom source) of Test 5: GLM's reasoning settings travel there, since
 // SillyTavern forwards the preset's reasoning effort to a Custom endpoint only for OpenAI and KoboldCpp models

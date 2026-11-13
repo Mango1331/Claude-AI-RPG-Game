@@ -7,8 +7,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
+import { assertSandbox } from './sandbox.mjs';
 const ST = process.env.AVERETH_ST_DIR;
-if (!ST) throw new Error('set AVERETH_ST_DIR to a SillyTavern checkout');
+// the smokes write into data/default-user and delete test chats: only in a marked Avereth sandbox, never a personal
+// SillyTavern (tools/st_live/sandbox.mjs; npm run smoke:st:isolated makes and runs one)
+assertSandbox(ST);
 const ENGINE = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 const USER = path.join(ST, 'data/default-user');
 const narrator = JSON.parse(fs.readFileSync(path.join(ENGINE, 'content/narrator.json'), 'utf8'));

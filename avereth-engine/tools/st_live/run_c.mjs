@@ -32,13 +32,16 @@ import { softExtractionFailure, turnFailure } from './live/evaluator.mjs';
 import { financeTurns, financeSmoke } from './finance_smoke.mjs';
 import { stealthTurns, stealthSmoke } from './stealth_smoke.mjs';
 import { uiTurns, uiSmoke } from './ui_smoke.mjs';
+import { assertSandbox } from './sandbox.mjs';
 
 const require = createRequire(import.meta.url);
 let chromium;
 try { ({ chromium } = require('playwright')); } catch { ({ chromium } = require(path.join(require('node:child_process').execSync('npm root -g').toString().trim(), 'playwright'))); }
 
 const ST = process.env.AVERETH_ST_DIR;
-if (!ST) throw new Error('set AVERETH_ST_DIR to a SillyTavern checkout');
+// the smokes write into data/default-user and delete test chats: only in a marked Avereth sandbox, never a personal
+// SillyTavern (tools/st_live/sandbox.mjs; npm run smoke:st:isolated makes and runs one)
+assertSandbox(ST);
 const ENGINE = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 const USER = path.join(ST, 'data/default-user');
 const HERE = process.env.AVERETH_ST_OUT || path.join(ST, 'avereth_live_smoke_c');

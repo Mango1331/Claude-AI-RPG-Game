@@ -52,6 +52,20 @@ export const V4_EVENTS = new Set([
 ]);
 
 /** The V4 part of an empty state (state.js emptyState). */
+/**
+ * .186: the one open offer line of this seller here a granted service was sold under (its service and its words), not
+ * yet given to an earlier service; null when there is none or more than one.
+ */
+function soldUnder(state, d) {
+    if (typeof d.offer === 'string' && typeof d.line === 'string') return { offer: d.offer, line: d.line };
+    if (!d.by || typeof d.what !== 'string') return null;
+    const taken = new Set((state.services || []).filter((x) => x.offer).map((x) => `${x.offer}|${x.line}`));
+    const hits = Object.values(state.offers || {}).filter((o) => o.status === 'open' && !o.bid && o.seller === d.by && (!o.at || !d.at || o.at === d.at))
+        .flatMap((o) => (o.lines || []).filter((l) => l.kind === 'service' && (l.service || 'other') === d.service && l.what === d.what && !taken.has(`${o.id}|${l.id}`))
+            .map((l) => ({ offer: o.id, line: l.id })));
+    return hits.length === 1 ? hits[0] : null;
+}
+
 export function emptyDomains() {
     return { places: {}, objects: {}, offers: {}, guild: { membership: null, boards: {} }, decisions: [], services: [], intents: {}, features: {}, links: {} };
 }
@@ -182,9 +196,14 @@ export function applyDomainEvent(state, e) {
         case 'offer.closed':
             if (state.offers[d.id]) state.offers[d.id].status = d.status;
             break;
-        case 'service.granted':
-            state.services = [...(state.services || []), { ...(d.id ? { id: d.id } : {}), service: d.service, by: d.by ?? null, at: d.at ?? null, turn: d.turn ?? state.turn, minute: state.clock.minute }].slice(-10);
+        case 'service.granted': {
+            // .186 (GPT review of .185, R1): the offer and line the service was sold under, so that PAID HERE names its own
+            // price and words; fixed here from the event as it is (a purchase grants before it closes its offer), the same
+            // on every fold of an old chat; none where the fold cannot tell it apart
+            const sold = soldUnder(state, d);
+            state.services = [...(state.services || []), { ...(d.id ? { id: d.id } : {}), service: d.service, by: d.by ?? null, at: d.at ?? null, turn: d.turn ?? state.turn, minute: state.clock.minute, ...(sold || {}) }].slice(-10);
             break;
+        }
         case 'quest.created':
             state.quests[d.quest.id] = clone(d.quest);
             break;

@@ -333,18 +333,18 @@ const MORE_NIGHTS = /\b(?:another|second|extra|one more|next|further) (?:night|n
 
 /**
  * .185 (Z1.2; natural batch 13.11.2026, Rogue T39–T43): the beds the engine booked at this place in the last 24 hours
- * (the window PULSE reads a lodging by, src/v4/pulse.js), each with its own evidence: the service it granted and the
- * accepted offer of the same seller here that sold it (what, price). A service without such an offer is not named.
- * @returns {{by: string, what: string, cp: number|null, minute: number|null, offer: string}[]}
+ * (the window PULSE reads a lodging by, src/v4/pulse.js): the service the engine granted, with what and price of the
+ * offer line it was sold under where the fold fixed that line (.186), else null for both.
+ * @returns {{by: string, what: string|null, cp: number|null, minute: number|null, offer: string|null, line: string|null}[]}
  */
 export function paidLodging(s, at = s.scene?.at) {
     const now = s.clock?.minute ?? 0;
-    const lodging = (l) => l.kind === 'service' && l.service === 'lodging';
     return (s.services || []).filter((x) => x.service === 'lodging' && x.by && x.at === at && now - (x.minute ?? 0) <= 1440).map((x) => {
-        const offer = Object.values(s.offers || {}).filter((o) => o.status === 'accepted' && !o.bid && o.seller === x.by && o.at === at && (o.lines || []).some(lodging)).at(-1);
-        const line = offer?.lines.find(lodging);
-        return line ? { by: x.by, what: line.what, cp: Number.isInteger(line.price_cp) ? line.price_cp : null, minute: x.minute ?? null, offer: offer.id } : null;
-    }).filter(Boolean);
+        // .186 (GPT review of .185, R1): the service's own offer line (src/v4/domain.js), never the seller's last offer;
+        // without it the bed is named as paid, with no price and no words of its own
+        const line = x.offer && x.line ? (s.offers?.[x.offer]?.lines || []).find((l) => l.id === x.line) : null;
+        return { by: x.by, what: line?.what ?? null, cp: Number.isInteger(line?.price_cp) ? line.price_cp : null, minute: x.minute ?? null, offer: line ? x.offer : null, line: line ? x.line : null };
+    });
 }
 
 /**
@@ -361,7 +361,7 @@ export function paidAgainWhy(s, offer, picks) {
     const several = picks.length > 1 || /\b(?:and|with|plus)\b|,|&/.test(normText(bed.line.what || ''));
     if (!several) return null;
     const was = paid.at(-1);
-    return `${was.what} is paid already (${was.cp !== null ? `${was.cp} cp, ` : ''}booked by the engine): this purchase of ${picksText(picks)} takes it in again, so nothing was booked and nothing was taken off; the seller names one total in coin for what is still unpaid`;
+    return `${was.what || 'a bed here'} is paid already (${was.cp !== null ? `${was.cp} cp, ` : ''}booked by the engine): this purchase of ${picksText(picks)} takes it in again, so nothing was booked and nothing was taken off; the seller names one total in coin for what is still unpaid`;
 }
 
 export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = null, consent = null }) {

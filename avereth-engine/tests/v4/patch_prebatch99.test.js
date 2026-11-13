@@ -189,9 +189,14 @@ test('99 canonical manuals are hidden from the Planner while their bound seller 
 });
 test('99 re-opened canonical stock can be bought again with fresh consent', () => {
     const s = offerState();
+    // .186: the fixture's own reply bought this very lot (room and supper), and its room is paid for 24 hours; a lot
+    // that takes in a paid bed again is clarified (.185 E-3, src/v4/trade.js paidAgainWhy – .185 missed it here only
+    // because it looked for an "accepted" offer, and this one is forced open). The re-purchases are checked a day later
+    s.clock.minute += 1441;
     let r = command(s, [accept]);
     assert.equal(events(r, 'transaction.completed').length, 1);
     r.state.offers[accept.offer].status = 'open';
+    r.state.clock.minute += 1441;
     r = command(r.state, [accept]);
     assert.equal(events(r, 'transaction.completed').length, 1);
 });

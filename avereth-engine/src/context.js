@@ -726,7 +726,7 @@ export function buildContext(state, content, opts = {}) {
     // .185 (Z1.2; natural batch 13.11.2026, Rogue T40–T43: the innkeeper asked four times for the room paid in T39):
     // what the engine booked here that stays paid
     const paid = v4 && (opts.outcome?.c || opts.outcome?.auth?.c) && state.mode !== 'creation' ? paidLodging(state) : [];
-    if (paid.length) add('paid_here', `PAID HERE (booked by the engine): ${paid.map((p) => `${p.what}${p.cp !== null ? `, ${p.cp} cp` : ''} to ${anyLabel(state, content, p.by)}`).join(' · ')}. Settled: nobody asks for it, quotes it or charges it again; a price named now is for something else.`, 0, true);
+    if (paid.length) add('paid_here', `PAID HERE (booked by the engine): ${paid.map((p) => `${p.what || 'a bed here'}${p.cp !== null ? `, ${p.cp} cp` : ''} to ${anyLabel(state, content, p.by)}`).join(' · ')}. Settled: nobody asks for it, quotes it or charges it again; a price named now is for something else.`, 0, true);
 
     // Prototype C (4.3.0-c.6.6.5): the settlement around Alaric lives (crowd by time of day, everyday trades by size)
     if (v4 && !state.encounter && (opts.outcome?.auth?.c || opts.outcome?.c)) add('settlement', settlementLife(state, content), 1);

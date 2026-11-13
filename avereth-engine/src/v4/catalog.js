@@ -215,7 +215,7 @@ export function openDecisionTexts(state) {
 
 /** .185 (Z1.2; Rogue T40–T42: nobody knew the room was paid; the innkeeper asked for it four times, the planner bought it again). */
 export function paidHereTexts(state, content) {
-    return paidLodging(state).map((p) => `${p.what}${p.cp !== null ? `, ${p.cp} cp` : ''} to ${sceneHandle(state, content, p.by) || p.by} (${p.by}): paid, booked by the engine; not owed, quoted or charged again`);
+    return paidLodging(state).map((p) => `${p.what || 'a bed here'}${p.cp !== null ? `, ${p.cp} cp` : ''} to ${sceneHandle(state, content, p.by) || p.by} (${p.by}): paid, booked by the engine; not owed, quoted or charged again`);
 }
 
 const TRAVEL_WORDS = /\b(?:escort|journey|travel|road|cart|wagon|caravan|ship|boat|ferry|ride|guide|lead|depart|leave|deliver|destination|route|waystation)\b/i;

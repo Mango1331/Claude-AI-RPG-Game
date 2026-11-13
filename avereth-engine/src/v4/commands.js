@@ -1148,8 +1148,8 @@ const HANDLERS = {
                 // .185 (Z2, E-1; natural batch 13.11.2026, Rogue T39 and Mage T24: "he pays it and takes it" had the coin
                 // change hands before anything was booked, and nothing was): the seller names one total, the engine
                 // books it after the reply (src/v4/world.js offerLines) and the next reply shows the hand-over
-                status: 'conditional', condition: 'priced_within', line: `BUYS — ${c.what} ${rule}: the seller may name ONE total in coin for exactly it ("four copper for the stew and bread"); no coin and nothing of it changes hands in this reply. The engine books the purchase after the reply when that total is ${limit ? 'within his limit' : 'named'}; the next reply shows the hand-over${limit ? '; above the limit he declines' : ''}.`,
-                extra: [`OPEN DECISION — Alaric has agreed in advance to buy ${c.what} ${rule}, but has NOT paid: let the seller say the one total in coin, then stop; narrate no coin and no ${c.what} handed over in this reply.`],
+                status: 'conditional', condition: 'priced_within', line: `BUYS — ${c.what} ${rule}: the seller may name ONE total for exactly it, with its coin word ("four copper", never a bare "four"); no coin and nothing of it changes hands in this reply. The engine books the purchase after the reply when that total is ${limit ? 'within his limit' : 'named'}; the next reply shows the hand-over${limit ? '; above the limit he declines' : ''}.`,
+                extra: [`OPEN DECISION — Alaric has agreed in advance to buy ${c.what} ${rule}, but has NOT paid: let the seller say the one total with its coin word, then stop; in this reply no coin changes hands and nothing of it is handed over.`],
             };
         }
         return {

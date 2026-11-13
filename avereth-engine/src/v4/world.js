@@ -2926,7 +2926,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 const refusedOffer = rejected.find(x => x.type === 'offer');
                 let why = match ? offerAvailability(s, match.o) : shop ? 'no single valid canonical offer at the reached shop'
                     : refusedOffer ? `the seller's price was not recorded (${String(refusedOffer.why).slice(0, 100)})`
-                        : 'the seller named no binding total in coin for it in this reply (one total, for example "four copper for the stew and bread")';
+                        : 'the seller named no binding total for it in this reply (one total with its coin word, such as "four copper")';
                 const pick = match && !why ? pickLines(match.o, match.lines.map(l => l.id), dec.qty ?? null) : null;
                 if (pick) why = pick.error || (pick.clarify ? 'the quantity or goods need clarification' : null);
                 if (pick && !why) {

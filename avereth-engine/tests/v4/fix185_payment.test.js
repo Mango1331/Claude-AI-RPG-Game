@@ -85,8 +85,8 @@ test('.185 Z2 Rogue T39 / Mage T24: a conditional purchase lets the seller name 
     await say(g, msg, BUY('a bowl of stew and bread', 4, msg, 'four copper'));
     const lines = linesOf(g);
     assert.doesNotMatch(lines, /he pays it and takes it/);
-    assert.match(lines, /BUYS — a bowl of stew and bread if the price is at most 4 cp: the seller may name ONE total in coin for exactly it \("four copper for the stew and bread"\); no coin and nothing of it changes hands in this reply\. The engine books the purchase after the reply when that total is within his limit; the next reply shows the hand-over; above the limit he declines\./);
-    assert.match(lines, /OPEN DECISION — Alaric has agreed in advance to buy a bowl of stew and bread if the price is at most 4 cp, but has NOT paid: let the seller say the one total in coin, then stop; narrate no coin and no a bowl of stew and bread handed over in this reply\./);
+    assert.match(lines, /BUYS — a bowl of stew and bread if the price is at most 4 cp: the seller may name ONE total for exactly it, with its coin word \("four copper", never a bare "four"\); no coin and nothing of it changes hands in this reply\. The engine books the purchase after the reply when that total is within his limit; the next reply shows the hand-over; above the limit he declines\./);
+    assert.match(lines, /OPEN DECISION — Alaric has agreed in advance to buy a bowl of stew and bread if the price is at most 4 cp, but has NOT paid: let the seller say the one total with its coin word, then stop; in this reply no coin changes hands and nothing of it is handed over\./);
 });
 
 test('.185 Z2: a total within the limit is booked after the reply as before; the panel shows it at once, the next narrator block knows it is done', async () => {
@@ -114,7 +114,7 @@ test('.185 Z2/Z1.3 against: above the limit nothing is booked; no total named gi
     const h = await inn();
     await say(h, msg, BUY('a bowl of stew and bread', 4, msg, 'four copper'));
     await h.reply('Wren nods toward the pot.', { expected: { 1: { priced: false, taken_anyway: false } }, deltas: [] });
-    assert.match(panel(h), /NOT BOUGHT — a bowl of stew and bread: the seller named no binding total in coin for it in this reply \(one total, for example "four copper for the stew and bread"\)/);
+    assert.match(panel(h), /NOT BOUGHT — a bowl of stew and bread: the seller named no binding total for it in this reply \(one total with its coin word, such as "four copper"\)/);
     assert.doesNotMatch(panel(h), /no single valid canonical offer/);
 });
 

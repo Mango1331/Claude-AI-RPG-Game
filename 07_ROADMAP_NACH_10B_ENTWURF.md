@@ -6,9 +6,9 @@
 
 | Etappe | Bereits gesichert / verbleibende Entscheidung |
 |---|---|
-| **Natürliche NPC-/PULSE-Qualität** | [Drei echte LLM-Kampagnen 70/70/48 auf `.179`](testrun_10b/npc-20261112-220625Z/REVIEW.md): E3 **0 Anker**, P2-Orts-/Reiseunterbrechungsdrift, Mage-Planerformat-Blocker. **Korrekturen P2-1–P2-5 in `.180–.182` umgesetzt** (Registrierung/Planner, PULSE-Reisehalt, Queststatus-Korrektur, neutrale Extractor-Formen). **Offen:** isolierter ST-Smoke und gezielte natürliche Wiederholungsprobe; noch keine natürliche E3-/PULSE-D-Vollfreigabe. |
+| **Natürliche NPC-/PULSE-Qualität** | [Drei echte LLM-Kampagnen 70/70/48 auf `.179`](testrun_10b/npc-20261112-220625Z/REVIEW.md): E3 **0 Anker**, P2-Orts-/Reiseunterbrechungsdrift, Mage-Planerformat-Blocker. **Korrekturen P2-1–P2-5 in `.180–.182` umgesetzt** (Registrierung/Planner, PULSE-Reisehalt, Queststatus-Korrektur, neutrale Extractor-Formen). **Offen:** isolierter ST-Smoke und gezielte natürliche Wiederholungsprobe auf `.183` (mit E3-V-1); noch keine natürliche E3-/PULSE-D-Vollfreigabe. |
 | **Preis-/Planner-Belege V4** | Codebefunde mit Schutzauflagen P1a–P1f: [Architekturaudit §13](recherche/ARCHITEKTUR_AUDIT_10B_FABLE.md) · [Opus/GPT](recherche/ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md). Noch kein Patch |
-| **Kontext und E3-Extraktion** | **E3-V-1 ist die nächste direkte Implementierung** (Extractorvertrag: 80-Zeichen-Validatorgrenze, eindeutige spätere Präsenz). `relevant`-Teillieferung D3 erst nach klarer Nachweistrennung; kein neues NPC-Speichersystem |
+| **Kontext und E3-Extraktion** | **E3-V-1 umgesetzt in `.183`** (Extractorvertrag: 80-Zeichen-Grenze, `LATER ENCOUNTER`-Hinweis nach der R10-Prüfung); natürliche Wirkung offen. `relevant`-Teillieferung D3 erst nach klarer Nachweistrennung; kein neues NPC-Speichersystem |
 | **Ortschronologie O1-B1** | Kleine schlüssige `seq`-Normalisierung als möglicher Fachpatch; O1-Whitelist und V1-Frühankunft nicht empfehlen. [Fachplan einschließlich Gegenreviews](recherche/FACHPLAN_O1_O2_KAUSALITAET_UND_TEILBEWEGUNG.md). O2-stay nur nach Raumgranularitätsentscheidung |
 | **K2 Monster A1/A2** | [Technischer Fachplan mit Opus/GPT §§8–9](patch_plans_10b/FACHPLAN_MONSTER_ANATOMIE_LOOT_A1_A2.md). A1 fachlich bereit als Empfehlung; A2 abhängig von Loadouts, Verwertbarkeit, Altprofilen, gemischten Gruppen. Waffen in `DUNGEON AHEAD` vorerst zurückgestellt |
 | **K1 Main/Minor** | Designbeschlossen, aber nicht implementiert; [umfangreicher Fachplan auf `.104`](patch_plans_10b/PATCH_COMBAT_MAIN_MINOR_ACTIONS.md), vor Codearbeit auf aktuellen Produkt-HEAD abgleichen |
@@ -22,7 +22,7 @@ Keine der aktuellen Empfehlungen ändert ohne ausdrücklichen Auftrag den Kanon 
 |---|---|
 | **E0/E1** – Diagnose/Sofortkontinuität | In `.158` umgesetzt. |
 | **E2-A/B** – Präsenz, Schalterwissen, Absprachen | In `.169–.173` umgesetzt, Pilotkorrekturen bis `.179`; natürliche Nachmessung offen. |
-| **E3** – veränderbare `voice/manner/interest` | In `.174` umgesetzt, aber Pilot `.174` speicherte **0 Anker**; natürliche Nutzung offen. [Audit](recherche/NPC_E2_E3_KONTINUITAETSAUDIT_OPUS55.md) |
+| **E3** – veränderbare `voice/manner/interest` | In `.174` umgesetzt; Pilot `.174` und Dreierbatch `.179` speicherten **0 Anker**. Extractor-Vertragshinweis V-1 in `.183`; natürliche Nutzung offen. [Audit](recherche/NPC_E2_E3_KONTINUITAETSAUDIT_OPUS55.md) |
 | **E4** – automatische Salienz, Beziehung | Noch keine Umsetzungsfreigabe. Erst nach realen E2/E3-Daten; optionale Pins getrennt. |
 | **E5** – begrenzte Eigeninitiative/PULSE-Verbindung | Noch keine Umsetzung. Agenden mit kleinen glaubwürdigen Konsequenzen, keine NPC-Tick-Agenten. |
 | **PULSE A/C/B** | Implementiert `.162–.168`. ROAD AHEAD nutzt das gemeinsame Fenster, Rast und Dungeonwanderungen sind integriert. [Fachplan](patch_plans_10b/PULSE_W5_W7_TECHNISCHER_UMSETZUNGSPLAN.md) |

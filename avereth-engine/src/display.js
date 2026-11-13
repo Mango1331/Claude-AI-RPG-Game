@@ -212,6 +212,24 @@ function commandLines(o) {
 }
 
 /**
+ * .185 (Z1.1; natural batch 13.11.2026, Rogue T40/T41: the card dec.pay.t38.1 stood only in the narrator's lines, the
+ * player never saw "#pay"): every payment card still open where he is, with payee, purpose, amount, wallet and the
+ * command that pays exactly it. Read from the state the panel shows (a paid, replaced or lapsed card is no longer in
+ * it); the card's rules and #pay are unchanged.
+ */
+function paymentCardLines(s, content) {
+    const t = (x) => String(x).replace(/[<>`]/g, '');
+    const coin = s.entities?.pc?.sheet?.coin_cp ?? 0;
+    return (s.decisions || []).filter((d) => d.kind === 'payment' && d.route === 'free' && d.state === 'needs_confirmation'
+        && Number.isInteger(d.amount_cp) && d.amount_cp > 0 && d.turn === s.turn && d.at === s.scene?.at)
+        .map((d) => {
+            const after = coin - d.amount_cp;
+            const payee = s.entities[d.seller] ? playerLabel(s, d.seller) : d.seller;
+            return sys(`PAYMENT CARD — NOT PAID: ${d.amount_cp} cp${d.amount_cp >= 10 ? ` (${formatCoin(d.amount_cp, content)})` : ''} to ${t(payee)}${d.what && d.what !== 'a payment' ? ` for ${t(d.what).slice(0, 80)}` : ''} · wallet ${coin} cp → ${after < 0 ? 'not enough coin' : `${after} cp`} · to pay exactly this, send on its own: #pay ${t(d.id)}`);
+        });
+}
+
+/**
  * The System block of a reply in a V4 campaign: the commands of the turn (or the V3 resolution of a fight or a check),
  * then what the reply changed once the extractor has read it, what the engine refused, a fight the reply opened.
  * reply: {pending} while the extractor reads, {failed} when it could not, else the world result (src/v4/world.js).
@@ -248,7 +266,7 @@ export function worldPanel(state, content, reply = {}) {
             lines.push(sys(`ACTIVE SCENE — ${sceneHandle(reply.state, content, id)}${hp} · ${pos.band}${pos.cover && pos.cover !== 'none' ? ` · ${pos.cover} cover` : ''}`));
         }
     }
-    if (o?.kind === 'v4') lines.push(...commandLines(o));
+    if (o?.kind === 'v4') lines.push(...commandLines(o), ...paymentCardLines(reply.state || state, content));
     else if (o?.kind === 'combat') lines.push(...combatLines(state, content, o));
     else if (o?.kind === 'check' && o.check) lines.push(checkLine(o.check));
     else if (o?.kind === 'note' && o.notice) lines.push(sys(o.notice));

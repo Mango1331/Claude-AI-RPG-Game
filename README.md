@@ -6,7 +6,7 @@
 
 - **Spielengine:** SillyTavern-Erweiterung Avereth V4-C / Ruleset 2; unveränderte Spielmechanik in **`4.3.0-c.6.6.179`**, letzter Gameplay-Commit [`59f868e`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/59f868eaf3c4ed7942ddc42ba3d180fab44a72cd). **Entwicklungsbranch:** `claude/c-planner-prototype-2026-10-02-gpt-c666`; neuer HEAD [`bd02cd6`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/bd02cd627776b9fa2e701a7815226a45002cd262) enthält **nur den dreiteiligen NPC-/PULSE-Test-Runner**, keine neue Engine-Version.
 - **Dokumentation:** `main`. Beim neuen Auftrag **beide Remote-HEADs erneut prüfen**; diese Angaben sind ein belegter Snapshot, keine Zusage für künftige Aktualität.
-- **Bisher letzter freier NPC-/PULSE-Pilot:** [Pilot 01 auf `.174`](testrun_10b/npc-20261109-160250Z/REVIEW.md). Ein neuer [Dreierbatch mit geselligem Warrior, vorsichtigem Rogue und wissbegierigem Mage](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/bd02cd627776b9fa2e701a7815226a45002cd262/avereth-engine/docs/NPC_PULSE_3_PERSONAS_RUNNER.md) ist vorbereitet, aber **noch nicht natürlich ausgeführt**. Korrekturen bis `.179` bleiben ohne freie Nachabnahme.
+- **Letzter natürlicher NPC-/PULSE-Test:** [Dreierbatch auf `.179`](testrun_10b/npc-20261112-220625Z/REVIEW.md) (70/70/48 Eingaben; dritter Mage-Lauf bricht ab; **0 E3-Anker**, P2-Orts-/Questdrift). [Pilot 01 auf `.174`](testrun_10b/npc-20261109-160250Z/REVIEW.md) bleibt historische Vergleichsquelle. Runner mit drei Profilen [`bd02cd6`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/bd02cd627776b9fa2e701a7815226a45002cd262); Spielengine noch `.179`.
 
 ## Nur diese Dateien zuerst lesen
 
@@ -24,7 +24,7 @@
 
 ## Jetzt wichtig: entwickelt ≠ getestet ≠ freigegeben
 
-1. **Vor dem nächsten Featurepatch:** natürlicher NPC-/PULSE-Lauf auf unverändertem `.179`, Auswertung von E2-Wiederbegegnung, `handled_by`, E3-Ankern, Threads und PULSE-Dichte.
+1. **Zuerst konkrete P2-Nacharbeit aus dem natürlichen `.179`-Dreierbatch:** [Orts-/Reiseunterbrechungsdrift und Mage-Planerabbruch](testrun_10b/npc-20261112-220625Z/REVIEW.md) mit Originalfällen T36–T47 / T44–T48 prüfen. Nicht erneut allgemein analysieren.
 2. **Konkrete offene Integrationsoptionen:** Preis-/Planner-Absicherung P1a–P1f, D3-Teilauslieferung von `relevant`, E3-Vertragshinweis V-1 und begrenzte O1-B1-Szenennormalisierung. **Analysiert, nicht implementiert.**
 3. **Geplante Spielelemente:** Monster-A1/A2-Fachplan mit Opus/GPT-Gegenreviews, Combat Main/Minor (K1) und Stealth S2. **Keine Umsetzungsfreigabe durch das bloße Vorliegen eines Plans.**
 4. **Spätere Optionen:** NPC E4/E5, PULSE D erst aus Naturläufen, weitere Monsterökologie, Shops, Questvielfalt und Scaling. Siehe 07.

@@ -6,7 +6,7 @@
 
 | Etappe | Bereits gesichert / verbleibende Entscheidung |
 |---|---|
-| **Natürliche NPC-/PULSE-Qualität auf `.179`** | E2/E3 und PULSE A/B/C technisch umgesetzt; **freie Nachprüfung der letzten Korrekturen `.175–.179` fehlt**. [Pilot und Messfragen](recherche/NPC_E2_E3_KONTINUITAETSAUDIT_OPUS55.md) |
+| **Natürliche NPC-/PULSE-Qualität auf `.179`** | [Drei echte LLM-Kampagnen 70/70/48](testrun_10b/npc-20261112-220625Z/REVIEW.md) vorhanden: E3 **0 Anker**, P2-Orts-/Reiseunterbrechungsdrift, Mage-Planerformat-Blocker. **Nächste Arbeit: konkrete Korrektur und gezielte Wiederholungsprobe**, noch keine natürliche E3-/PULSE-D-Vollfreigabe. |
 | **Preis-/Planner-Belege V4** | Codebefunde mit Schutzauflagen P1a–P1f: [Architekturaudit §13](recherche/ARCHITEKTUR_AUDIT_10B_FABLE.md) · [Opus/GPT](recherche/ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md). Noch kein Patch |
 | **Kontext und E3-Extraktion** | `relevant`-Teillieferung D3, enger E3-V-1-Hinweis (80-Zeichen-Validatorgrenze, echte spätere Präsenz), erst nach klarer Nachweistrennung; kein neues NPC-Speichersystem |
 | **Ortschronologie O1-B1** | Kleine schlüssige `seq`-Normalisierung als möglicher Fachpatch; O1-Whitelist und V1-Frühankunft nicht empfehlen. [Fachplan einschließlich Gegenreviews](recherche/FACHPLAN_O1_O2_KAUSALITAET_UND_TEILBEWEGUNG.md). O2-stay nur nach Raumgranularitätsentscheidung |

@@ -59,7 +59,9 @@ const ACCEPTED172 = JSON.parse(fs.readFileSync(new URL('./accepted_e2b172_vs_126
 // Pilot 01 block C (.177): an NPC's "name = Alaric (Red)" refused (K8-1); the scene correction with the final place (K6a)
 const ACCEPTED177 = JSON.parse(fs.readFileSync(new URL('./accepted_pilot177_vs_126.json', import.meta.url), 'utf8'));
 // Batch 12./13.11. (.182): the status correction of a contract turned in this reply (P2-4); a form without meaning (P2-5)
-const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_batch182_vs_126.json', import.meta.url), 'utf8'));
+const ACCEPTED182 = JSON.parse(fs.readFileSync(new URL('./accepted_batch182_vs_126.json', import.meta.url), 'utf8'));
+// Monster A1 (.184): a creature's whole description as its look; no arthropod venom from the anchor attack alone
+const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_monster184_vs_126.json', import.meta.url), 'utf8'));
 const F144 = ['finance 144 payment card', 'finance 144 contract fields', 'finance 144 acceptance hint', 'finance 144 price open', 'finance 144 unit limit', 'finance 144 acceptance', 'finance 144 own coin'];
 const SUB = { ...baseline, runs: Object.fromEntries(QUICK.map((l) => [l, baseline.runs[l]])) };
 let quick = null; // the four quick runs, replayed once for this file
@@ -69,7 +71,7 @@ test('A1/C: the four quick runs replay as on the start commit, from whole and va
     const { compared, diffs } = compareToBaseline(SUB, result);
     assert.equal(compared, QUICK.reduce((n, l) => n + Object.keys(baseline.runs[l].cases).length, 0));
     assert.deepEqual(diffs.map((d) => d.id).sort(), Object.keys(ACCEPTED.cases).filter((id) => QUICK.includes(id.split('#')[0])).sort());
-    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138','finance 142','finance 142 contract fields', 'batch21 integration 146', 'design148 danger', 'design148 area', 'design149 offensive growth', 'fix150 place fact', 'fix158 fact text', 'fix158 guild witness', 'fix159 board failure', 'fix160 board narration', 'pulse162 window', 'pulse162 road', 'pulse163 sought', 'pulse164 pause order', 'pulse164 early claim', 'pulse167 dungeon window', 'pulse167 dungeon diagnosis', 'e2a169 outcome fields', 'e2a169 group person', 'e2b172 thread who field', 'e2b172 memory social rest', 'pilot177 npc name subject', 'pilot177 scene correction place', 'batch182 status correction final', 'batch182 extractor form', ...F144].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F/integration differences are allowed');
+    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138','finance 142','finance 142 contract fields', 'batch21 integration 146', 'design148 danger', 'design148 area', 'design149 offensive growth', 'fix150 place fact', 'fix158 fact text', 'fix158 guild witness', 'fix159 board failure', 'fix160 board narration', 'pulse162 window', 'pulse162 road', 'pulse163 sought', 'pulse164 pause order', 'pulse164 early claim', 'pulse167 dungeon window', 'pulse167 dungeon diagnosis', 'e2a169 outcome fields', 'e2a169 group person', 'e2b172 thread who field', 'e2b172 memory social rest', 'pilot177 npc name subject', 'pilot177 scene correction place', 'batch182 status correction final', 'batch182 extractor form', 'monster184 creature look', 'monster184 no venom from the anchor attack', ...F144].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F/integration differences are allowed');
     const { open, accepted, stale } = acceptedDiffs(diffs, ACCEPTED.cases, result);
     assert.deepEqual([open, stale, accepted.length], [[], [], diffs.length], 'every accepted record has exactly the fingerprinted output');
     for (const [label, run] of Object.entries(result.runs)) {
@@ -432,6 +434,7 @@ test('.177 (pilot 01 block C) keeps every .172 acceptance exactly except 14 reco
 });
 
 test('.182 (batch 12./13.11. P2-4, P2-5) keeps every .177 acceptance exactly except 18 records: the status correction of a contract turned in this reply, or a form without meaning read without a repair, each with its .177 acceptance', () => {
+    const ACCEPTED = ACCEPTED182;
     const P4 = 'batch182 status correction final', P5 = 'batch182 extractor form';
     const changed = { [P4]: [], [P5]: [] };
     for (const [id, old] of Object.entries(ACCEPTED177.cases)) {
@@ -452,4 +455,26 @@ test('.182 (batch 12./13.11. P2-4, P2-5) keeps every .177 acceptance exactly exc
     assert.deepEqual(added, ['b17-mage#138', 'b17-rogue#156', 'b17-rogue#22', 'b17-warrior#114', 'b17-warrior#158', 'b17-warrior#214', 'b17-warrior#328', 'b18-rogue#26', 'b18-warrior#314', 'b19-mage#36', 'b19-warrior#310']);
     assert.deepEqual(ACCEPTED.returned, ACCEPTED177.returned);
     assert.equal(ACCEPTED.engine, '4.3.0-c.6.6.182');
+});
+
+test('.184 (Monster A1) keeps every .182 acceptance exactly except 123 records: a creature\'s whole description as its look, or no arthropod venom gland from the anchor attack alone, each with its .182 acceptance', () => {
+    const LOOK = 'monster184 creature look', VENOM = 'monster184 no venom from the anchor attack';
+    const changed = { [LOOK]: [], [VENOM]: [] };
+    for (const [id, old] of Object.entries(ACCEPTED182.cases)) {
+        const now = ACCEPTED.cases[id];
+        if (!now.category.startsWith('monster184')) { assert.deepEqual(now, old, id); continue; }
+        assert.deepEqual(now.previous_acceptance_182, { category: old.category, fingerprint: old.fingerprint }, id);
+    }
+    for (const [id, now] of Object.entries(ACCEPTED.cases)) if (now.category.startsWith('monster184')) {
+        changed[now.category].push(id);
+        assert.ok(now.reason.startsWith(`${id}: Monster A1`), id);
+        if (now.category === LOOK) assert.match(now.reason, /created with traits = the reported description .*stripped of that field the record is exactly the \.183 output/, id);
+        else assert.match(now.reason, /no longer looted: the arthropod's kind, name and description carry no venom word, only its anchor attack "Bite\/Sting" did; stripped of that loot and of its creatures' traits the record is exactly the \.183 output/, id);
+    }
+    assert.equal(changed[LOOK].length, 114);
+    assert.deepEqual(changed[VENOM].sort(), ['b17-rogue#135', 'b17-rogue#147', 'b17-rogue#183', 'b17-rogue#185', 'b17-rogue#187', 'b17-rogue#257', 'b17-rogue#263', 'b17-rogue#65', 'b17-rogue#85']);
+    const added = Object.keys(ACCEPTED.cases).filter((id) => !ACCEPTED182.cases[id]).sort();
+    assert.deepEqual(added, ['b17-rogue#147', 'b17-rogue#187', 'b17-rogue#257', 'b17-rogue#263', 'b17-rogue#65', 'b17-rogue#85']);
+    assert.deepEqual(ACCEPTED.returned, ACCEPTED182.returned);
+    assert.equal(ACCEPTED.engine, '4.3.0-c.6.6.184');
 });

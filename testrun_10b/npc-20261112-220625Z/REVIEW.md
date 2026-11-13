@@ -347,3 +347,41 @@ Bei einem tatsächlich von der Engine angeordneten Halt ohne gültige gemeldete 
 **Kein verpflichtender Produktkorrekturpatch aus diesem Diff nachgewiesen.** Bekannte, bewusst konservative Grenzen bleiben: Ein explizit gemeldetes, aber abgelehntes `arrive` verhindert einen Ersatzhalt; falsch ausdrücklich dem Ausgangsort zugeordnete Meldungen bleiben dort; bei Zwischenhalt ohne erzählte Zeit wird keine Mindest-Reisezeit künstlich gebucht. Ein offenes Reisefenster ohne irgendeine lokale Meldung bucht den angeordneten Halt am Ende. Diese Fälle sollten bei neuen natürlichen Läufen beobachtet werden, begründen im vorliegenden Material aber keine pauschale Autoritätslockerung.
 
 **Empfehlung:** `.181` für die **weitere Entwicklung** akzeptieren, technische Freigabe **unter Vorbehalt des isolierten ST-Smokes**. Nächster fachlich getrennter Patch: **P2-4 fehlerhafte Queststatus-Korrektur nach bedingter Abgabe** und **P2-5 nur eindeutig bedeutungsneutrale Extractor-Formfehler** (Fable §8, GPT §9); danach **E3-V-1**. Keine neue Fable-Gesamtanalyse und vorerst kein weiterer voller natürlicher Dreierbatch, bevor die bekannten Blockaden bearbeitet sind.
+
+---
+
+## §11 – GPT-Kontrollreview Build `.182` (P2-4/P2-5) mit unabhängiger Original-ZIP-Gegenprüfung
+
+**13.11.2026.** Geprüft wurden die tatsächlichen GitHub-Produktdiffs [`767e4e3`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/767e4e3) und [`7a3d5be`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/7a3d5be) sowie die zusätzliche Test-/Patchnote-Ergänzung [`49694db`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/49694db3a225155d0d5b6612c00be49e70d783c7). Anders als beim Implementierer lagen GPT in dieser Sitzung **die ursprünglichen 40,5 MB des Dreierbatch-ZIP** vor. Dessen SHA-256 `d17680a3581ab5034842b8a3c6c9aaa76ac79eb13d6262c53496f8e776df6d7d` und die drei `chat.jsonl`-Hashes stimmen mit [SOURCE_MANIFEST.md](SOURCE_MANIFEST.md) überein. Gezielte Roh-Extractorantworten und `chat.jsonl` wurden gesichtet; **kein eigener vollständiger Node-/Replay-/ST-Lauf**.
+
+### 11.1 Fachliche Prüfung der Änderungen
+
+**P2-4 – GO.** Die in `src/v4/world.js` ergänzte Korrektur greift nur auf Quest-IDs mit einem **in genau dieser Antwort gebuchten `quest.status`-Event** zu. Sie ersetzt eine veraltete `statusCorrection`-Aussage über einen früheren Status durch den finalen Status, ohne Quest- oder Zahlungsereignisse neu zu buchen. Die ergänzten Tests prüfen gleichzeitig bedingte Abgabe, bedingte Annahme, einen unveränderten dritten Vertrag, erfolglose Abgabe sowie deterministischen Host-Record und Fold. Die **elf** korrigierten Replay-Records betreffen nach Opus' Einzelvergleich Statuskorrekturtexte, nicht die Ereignisse. Kein konkreter Pflichtkorrekturfall im Diff festgestellt.
+
+**P2-5 – GO, bewusst begrenzt.** `src/v4/extract.js` normiert nur einfache `string[]`-Darstellungen, nicht verwendete `evidence`-Strings für ungeeignete Delta-Typen, `null` für schon vorhandene Default-Listen und eindeutig lesbare `seq`-Formen. Die fehlende `seq` einer `time`-Meldung wird nur bei einer einzigen Lücke und monotonen übrigen Sequenzen ergänzt. **Bedeutungstragende Angaben** (`aware`, Ort, fehlende Pflichtfelder, unklare Referenzen) bleiben fehlerhaft. Die bewusst **nicht umgesetzte Delta-Teilannahme** ist angesichts der sonst nicht gebuchten Ankunft und der abhängigen Orts-/Personenereignisse richtig; sie wäre eine eigene Semantikänderung mit anderem Abnahmebedarf.
+
+Laut Opus wurden **14/14 neue Regressionen**, **533/533 angrenzende Tests**, **3100/3100 vollständige Node-Tests** und **2235 Replays mit 18 einzeln akzeptierten Änderungen** ausgeführt. Die endgültige Patchnote dokumentiert elf P2-4- und sieben P2-5-Replayfälle. **Diese Testzahlen wurden von GPT nicht erneut ausgeführt.** Der reale ST1.19-Standard-/Failsoft-Smoke in einer isolierten Installation ist seit `.180` weiter ausstehend.
+
+### 11.2 Neu: die sieben ursprünglich gescheiterten Extractorantworten tatsächlich gelesen
+
+Die `chat-completions.jsonl`-Originale präzisieren die im §8/der `.182`-Patchnote mangels ZIP offen gebliebenen Ursachen:
+
+| Originalzug | Rohe Erst-/Reparaturantwort | Aussage für `.182` |
+|---|---|---|
+| **Rogue T38** | Erstantwort `{}`; Reparatur `{"deltas":[{"type":"time","minutes":5}]}`: die `time` hat keine `seq` | Die neue `softSeq` kann die eindeutige fehlende `seq` ergänzen. Ein vollständiger Replay **dieses Originalzugs auf `.182` wurde nicht ausgeführt**. |
+| **Rogue T63** | Erstantwort `{"deltas":[{"delta":{"time":2}}]}`; Reparatur `{"scene":"loc.millbrook_guild_hall","deltas":[{"type":"time","time":2}],"expected":{}}` | **Nicht durch `.182` gelöst:** Neben `seq` fehlen auch `minutes`; der Wert steht in der **falschen Eigenschaft `time`**. Ein alleiniger `seq`-Default hilft nicht. |
+| **Rogue T51** | Erstantwort ist nur eine flache `{"arrived":true,"at":...}`-Struktur ohne `expected`/`deltas`; Reparatur meldet fünf unter `deltas` verschachtelte Objekte ohne `type` | **Nicht durch `.182` gelöst:** falsche Struktur der Gesamtantwort, nicht eine bedeutungsneutrale Feldform. Die berichtete verlorene Ankunft bleibt ein echter Reparaturqualitätsfall. |
+| **Mage T20** | Nach einer leeren `finish_reason=length`-Antwort folgen Reparaturen mit `obj.new` statt `object.new`, verschachtelten Objektfeldern, falschen Ankunftsschlüsseln und fehlenden `seq` | **Nicht durch `.182` gelöst:** mehrere strukturelle und semantische Fehler, nicht gefahrlos automatisch heilbar. |
+| **Mage T21** | `{"seq":1,"object.new":{...}}` ohne `type`; Reparatur benutzt zwar `type:"object.new"`, lässt aber unter anderem `kind` und `qty` weg | **Nicht durch `.182` gelöst:** fehlender Pflichtinhalt, kein harmloser String-/Listenfehler. |
+| **Mage T3** | Reparatur mit `person.new.aware:null` und zusätzlicher eigener `aware`-Meldung | **Absichtlich nicht gelöst:** `aware` zu löschen würde Wahrnehmungs-/Stealth-Verhalten verändern. |
+| **Warrior T56** | `place.reported.place` hat die Form `{"new":{"name":"Guild waystation near Kettleby","kind":"site","parent":"realm.duskreach"},"ref":null}`; Reparatur ändert `site` zu `interior`, behält aber die ungültige Referenzform | **Nicht durch `.182` gelöst:** die genaue Orts- und Referenzstruktur ist nicht mit einem sicheren allgemeinen Default korrigierbar. |
+
+**Präzisierung gegenüber der bisherigen Patchnote:** Dort werden Rogue **T38 und T63 zusammen** als fehlende-`seq`-Fälle geführt, die bei eindeutiger Position behoben seien. Die Originale zeigen: **T63 enthält zusätzlich `time` statt `minutes` und bleibt deshalb ungültig.** Für T38 ist die neue Normalisierung einschlägig, aber ohne neu ausgeführtes Original-Replay nicht als vollständig durchgelaufener Fix zu behaupten.
+
+Diese Funde sprechen **nicht** für eine nachträgliche generelle Formheilung oder Delta-Teilannahme. Die übrigen Fehler benötigen, falls sie erneut auftreten, höchstens einen **eigenen kleinen Auftrag zur Extractor-Reparaturanweisung/Formatverlässlichkeit** mit exakten Rohantworten – keinen vorsorglichen neuen Welt-/Schema-Fallback.
+
+### 11.3 Entscheidung und nächster Schritt
+
+**Für weitere Entwicklung GO für Build `.182`; kein verpflichtender Hotfix aus dem kontrollierten Produktdiff.** Der gezielte Originalabgleich erweitert die bekannten Restfälle, stellt aber die eng begrenzte Korrektur nicht infrage. **Volle technische Freigabe bleibt bis zum isolierten ST-Smoke offen.** Die natürlich beobachteten `.179`-Probleme sind unter `.180–.182` noch nicht erneut durch einen echten Dreierbatch abgenommen.
+
+**Als Nächstes NPC E3-V-1** (Extractorvertrag: maximal 80 Zeichen sowie eindeutige Folgebesuchsberechtigung) umsetzen und separat regressionsprüfen. `handled_by`-Evaluatormetrik aus §9.1 weiterhin nicht als Beweis „kein Gildenwissen“ behandeln. Anschließend ST-Abnahme und einen neuen, unveränderten natürlichen Dreierbatch; erst neue Belege sollten über zusätzliche Extractor-Recovery-Patches entscheiden.

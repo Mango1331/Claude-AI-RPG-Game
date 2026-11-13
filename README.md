@@ -4,9 +4,9 @@
 
 ## In 60 Sekunden zum Arbeitsstand
 
-- **Spielengine:** SillyTavern-Erweiterung Avereth V4-C / Ruleset 2, nun **`4.3.0-c.6.6.181`**; Entwicklungsbranch `claude/c-planner-prototype-2026-10-02-gpt-c666`, letzter geprüfter HEAD [`b9e07be`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b9e07be1f9cbe2f2d6dff387e10587f78817eefb). `.180` korrigiert Registrierung/Planner-`[]`, `.181` autorisiert den engen PULSE-Reisehalt. **Noch kein natürlicher Nachtest auf `.181` und isolierter ST-Smoke ausstehend.** [Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b9e07be1f9cbe2f2d6dff387e10587f78817eefb/avereth-engine/docs/BATCH1112_181_PULSE_ROAD_STOP.md).
+- **Spielengine:** Avereth V4-C / Ruleset 2, aktueller **Build `4.3.0-c.6.6.182`**, Produktbranch `claude/c-planner-prototype-2026-10-02-gpt-c666` auf [`49694db`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/49694db3a225155d0d5b6612c00be49e70d783c7). `.180`: Registrierung/Planner; `.181`: PULSE-Reisehalt; `.182`: Queststatus-Korrektur und eng begrenzte Extractor-Formstabilität. [Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/49694db3a225155d0d5b6612c00be49e70d783c7/avereth-engine/docs/BATCH1112_182_QUEST_STATUS_FORMS.md) · [unabhängiger Code- und Originalreview §11](testrun_10b/npc-20261112-220625Z/REVIEW.md). **Kein natürlicher Nachtest auf `.182`; isolierter ST1.19-Smoke seit `.180` offen.**
 - **Dokumentation:** `main`. Beim neuen Auftrag **beide Remote-HEADs erneut prüfen**; diese Angaben sind ein belegter Snapshot, keine Zusage für künftige Aktualität.
-- **Letzter natürlicher NPC-/PULSE-Test:** [Dreierbatch auf `.179`](testrun_10b/npc-20261112-220625Z/REVIEW.md) (70/70/48 Eingaben; dritter Mage-Lauf bricht ab; **0 E3-Anker**, P2-Orts-/Questdrift). [Pilot 01 auf `.174`](testrun_10b/npc-20261109-160250Z/REVIEW.md) bleibt historische Vergleichsquelle. Runner mit drei Profilen [`bd02cd6`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/bd02cd627776b9fa2e701a7815226a45002cd262); die Fehlerbehebung ist auf `.180/.181` implementiert, ihre natürliche Wirkung noch nicht abgenommen.
+- **Letzter natürlicher NPC-/PULSE-Test:** [Dreierbatch auf `.179`](testrun_10b/npc-20261112-220625Z/REVIEW.md) (70/70/48 Eingaben; dritter Mage-Lauf bricht ab; **0 E3-Anker**, P2-Orts-/Questdrift). [Pilot 01 auf `.174`](testrun_10b/npc-20261109-160250Z/REVIEW.md) bleibt historische Vergleichsquelle. Runner mit drei Profilen [`bd02cd6`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/bd02cd627776b9fa2e701a7815226a45002cd262); die Korrekturen `.180–.182` sind umgesetzt, ihre Wirkung im natürlichen Spiel noch nicht erneut überprüft.
 
 ## Nur diese Dateien zuerst lesen
 
@@ -24,7 +24,7 @@
 
 ## Jetzt wichtig: entwickelt ≠ getestet ≠ freigegeben
 
-1. **P2-Nacharbeit läuft:** Registrierung und Planner-Format `.180` sowie enger PULSE-Straßenhalt `.181` sind umgesetzt. [Unabhängiger `.181`-Kontrollreview §10](testrun_10b/npc-20261112-220625Z/REVIEW.md). **Als Nächstes P2-4 Queststatus-Korrektur und P2-5 eng begrenzte Extractor-Formheilung**, anschließend E3-V-1; isolierter ST-Smoke bleibt für technische Freigabe offen.
+1. **P2-1 bis P2-5 aus dem Dreierbatch soweit freigegeben umgesetzt auf `.180–.182`** (P2-5 nur bedeutungsneutral; keine Delta-Teilannahme). [Aktueller unabhängiger Review §11](testrun_10b/npc-20261112-220625Z/REVIEW.md) mit tatsächlich geprüften Original-Extractorantworten. **Als Nächstes NPC E3-V-1** (80-Zeichen-Grenze und Folgepräsenz), danach isolierter ST-Smoke und natürliche Nachprüfung. Kein weiterer allgemeiner Fachplan nötig.
 2. **Konkrete offene Integrationsoptionen:** Preis-/Planner-Absicherung P1a–P1f, D3-Teilauslieferung von `relevant`, E3-Vertragshinweis V-1 und begrenzte O1-B1-Szenennormalisierung. **Analysiert, nicht implementiert.**
 3. **Geplante Spielelemente:** Monster-A1/A2-Fachplan mit Opus/GPT-Gegenreviews, Combat Main/Minor (K1) und Stealth S2. **Keine Umsetzungsfreigabe durch das bloße Vorliegen eines Plans.**
 4. **Spätere Optionen:** NPC E4/E5, PULSE D erst aus Naturläufen, weitere Monsterökologie, Shops, Questvielfalt und Scaling. Siehe 07.

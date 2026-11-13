@@ -57,7 +57,9 @@ const ACCEPTED169 = JSON.parse(fs.readFileSync(new URL('./accepted_e2a169_vs_126
 // NPC E2-B (.172): the null echo of thread.who in rejected thread items; one memory keeping its social part (R9)
 const ACCEPTED172 = JSON.parse(fs.readFileSync(new URL('./accepted_e2b172_vs_126.json', import.meta.url), 'utf8'));
 // Pilot 01 block C (.177): an NPC's "name = Alaric (Red)" refused (K8-1); the scene correction with the final place (K6a)
-const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_pilot177_vs_126.json', import.meta.url), 'utf8'));
+const ACCEPTED177 = JSON.parse(fs.readFileSync(new URL('./accepted_pilot177_vs_126.json', import.meta.url), 'utf8'));
+// Batch 12./13.11. (.182): the status correction of a contract turned in this reply (P2-4); a form without meaning (P2-5)
+const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_batch182_vs_126.json', import.meta.url), 'utf8'));
 const F144 = ['finance 144 payment card', 'finance 144 contract fields', 'finance 144 acceptance hint', 'finance 144 price open', 'finance 144 unit limit', 'finance 144 acceptance', 'finance 144 own coin'];
 const SUB = { ...baseline, runs: Object.fromEntries(QUICK.map((l) => [l, baseline.runs[l]])) };
 let quick = null; // the four quick runs, replayed once for this file
@@ -67,7 +69,7 @@ test('A1/C: the four quick runs replay as on the start commit, from whole and va
     const { compared, diffs } = compareToBaseline(SUB, result);
     assert.equal(compared, QUICK.reduce((n, l) => n + Object.keys(baseline.runs[l].cases).length, 0));
     assert.deepEqual(diffs.map((d) => d.id).sort(), Object.keys(ACCEPTED.cases).filter((id) => QUICK.includes(id.split('#')[0])).sort());
-    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138','finance 142','finance 142 contract fields', 'batch21 integration 146', 'design148 danger', 'design148 area', 'design149 offensive growth', 'fix150 place fact', 'fix158 fact text', 'fix158 guild witness', 'fix159 board failure', 'fix160 board narration', 'pulse162 window', 'pulse162 road', 'pulse163 sought', 'pulse164 pause order', 'pulse164 early claim', 'pulse167 dungeon window', 'pulse167 dungeon diagnosis', 'e2a169 outcome fields', 'e2a169 group person', 'e2b172 thread who field', 'e2b172 memory social rest', 'pilot177 npc name subject', 'pilot177 scene correction place', ...F144].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F/integration differences are allowed');
+    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138','finance 142','finance 142 contract fields', 'batch21 integration 146', 'design148 danger', 'design148 area', 'design149 offensive growth', 'fix150 place fact', 'fix158 fact text', 'fix158 guild witness', 'fix159 board failure', 'fix160 board narration', 'pulse162 window', 'pulse162 road', 'pulse163 sought', 'pulse164 pause order', 'pulse164 early claim', 'pulse167 dungeon window', 'pulse167 dungeon diagnosis', 'e2a169 outcome fields', 'e2a169 group person', 'e2b172 thread who field', 'e2b172 memory social rest', 'pilot177 npc name subject', 'pilot177 scene correction place', 'batch182 status correction final', 'batch182 extractor form', ...F144].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F/integration differences are allowed');
     const { open, accepted, stale } = acceptedDiffs(diffs, ACCEPTED.cases, result);
     assert.deepEqual([open, stale, accepted.length], [[], [], diffs.length], 'every accepted record has exactly the fingerprinted output');
     for (const [label, run] of Object.entries(result.runs)) {
@@ -407,6 +409,7 @@ test('.172 (NPC E2-B) keeps every .169 acceptance exactly except records that ch
 });
 
 test('.177 (pilot 01 block C) keeps every .172 acceptance exactly except 14 records: an NPC\'s "name = Alaric (Red)" refused (K8-1) or the scene correction with the final place (K6a), each with its .172 acceptance', () => {
+    const ACCEPTED = ACCEPTED177;
     const K8 = 'pilot177 npc name subject', K6 = 'pilot177 scene correction place';
     const changed = { [K8]: [], [K6]: [] };
     for (const [id, old] of Object.entries(ACCEPTED172.cases)) {
@@ -426,4 +429,27 @@ test('.177 (pilot 01 block C) keeps every .172 acceptance exactly except 14 reco
     assert.deepEqual(added, ['b17-rogue#10', 'b17-warrior#270', 'b17-warrior#30', 'b17-warrior#64', 'b18-rogue#380', 'b19-mage#12', 'b19-mage#18', 'b19-mage#98', 'b19-warrior#252']);
     assert.deepEqual(ACCEPTED.returned, ACCEPTED172.returned);
     assert.equal(ACCEPTED.engine, '4.3.0-c.6.6.177');
+});
+
+test('.182 (batch 12./13.11. P2-4, P2-5) keeps every .177 acceptance exactly except 18 records: the status correction of a contract turned in this reply, or a form without meaning read without a repair, each with its .177 acceptance', () => {
+    const P4 = 'batch182 status correction final', P5 = 'batch182 extractor form';
+    const changed = { [P4]: [], [P5]: [] };
+    for (const [id, old] of Object.entries(ACCEPTED177.cases)) {
+        const now = ACCEPTED.cases[id];
+        if (!now.category.startsWith('batch182')) { assert.deepEqual(now, old, id); continue; }
+        assert.deepEqual(now.previous_acceptance_177, { category: old.category, fingerprint: old.fingerprint }, id);
+    }
+    for (const [id, now] of Object.entries(ACCEPTED.cases)) if (now.category.startsWith('batch182')) {
+        changed[now.category].push(id);
+        assert.ok(now.reason.startsWith(`${id}: ${now.category === P4 ? 'P2-4' : 'P2-5'}: `), id);
+        if (now.category === P4) assert.match(now.reason, /is ACTIVE: accepted, not yet turned in, nothing paid.* becomes .*is COMPLETED: turned in and paid once/, id);
+        else assert.match(now.reason, /no repair call, unused_answers 1, extract\.applied repaired false/, id);
+        assert.match(now.reason, /every (?:other )?event, outcome field, rejection and (?:other )?correction is exactly the \.181 output/i, id);
+    }
+    assert.deepEqual(changed[P4].sort(), ['b17-mage#138', 'b17-rogue#156', 'b17-rogue#22', 'b17-warrior#114', 'b17-warrior#158', 'b17-warrior#214', 'b18-rogue#26', 'b18-warrior#314', 'b19-mage#36', 'b19-rogue#32', 'b19-warrior#310']);
+    assert.deepEqual(changed[P5].sort(), ['b17-mage#172', 'b17-mage#34', 'b17-rogue#106', 'b17-warrior#328', 'b18-mage#40', 'b18-rogue#52', 'b19-warrior#218']);
+    const added = Object.keys(ACCEPTED.cases).filter((id) => !ACCEPTED177.cases[id]).sort();
+    assert.deepEqual(added, ['b17-mage#138', 'b17-rogue#156', 'b17-rogue#22', 'b17-warrior#114', 'b17-warrior#158', 'b17-warrior#214', 'b17-warrior#328', 'b18-rogue#26', 'b18-warrior#314', 'b19-mage#36', 'b19-warrior#310']);
+    assert.deepEqual(ACCEPTED.returned, ACCEPTED177.returned);
+    assert.equal(ACCEPTED.engine, '4.3.0-c.6.6.182');
 });

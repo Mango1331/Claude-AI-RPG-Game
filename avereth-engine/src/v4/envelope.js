@@ -80,7 +80,10 @@ function roleText(state, id) {
  * @returns {{ok: boolean, why?: string}}
  */
 export function mayTake(state, by, kind) {
-    const role = roleText(state, by);
+    // .185 (Monster A1 review R1): an authority or an outlaw is a person's role; a creature's words ("bred as a guard",
+    // "kept by a thief") name no office and no robber (its full look is read since .184). A creature still takes what
+    // a fight with him gives it (below), as before
+    const role = state.entities[by]?.kind === 'npc' ? roleText(state, by) : '';
     if ((kind === 'confiscation' || kind === 'fine') && !AUTHORITY_ROLE.test(role)) return { ok: false, why: `${kind} needs an authority (a guard, an official)` };
     // in a fight: only one who fights against him there (review of 4.2.0: any running fight let the merchant rob him)
     const fighting = state.encounter?.combatants?.[by]?.side === 'hostile';

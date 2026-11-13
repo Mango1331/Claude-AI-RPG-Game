@@ -1692,6 +1692,14 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
         const to = typeof shown[0].to === 'string' && present(s, shown[0].to) ? who(s, shown[0].to) : null;
         ctx.extra.push(`SHOWS — he lays out${things.length ? ` ${things.join(', ')}` : ' his things'} for ${to || 'them'} to look at: they stay his. ${to ? `${to[0].toUpperCase()}${to.slice(1)}` : 'They'} may handle, weigh and price them; nothing changes hands until he himself sells or gives them in a later message.`);
     }
+    // .185 (natural batch 13.11.2026, Mage T22/T27: the dropped acceptance was told as stamped, logged and ACTIVE): a
+    // contract acceptance the agency guard dropped is no acceptance, and the narrator is told so before he writes
+    for (const x of (envx.dropped || []).filter((d) => d.command?.type === 'quest.accept')) {
+        const q = pickQuest(s, x.command.quest, ['listed']).q;
+        if (!q || q.kind !== 'guild_contract') continue;
+        const why = { question: 'it reads as a question', plan: 'it plans it for later', negation: 'he declines it', retrospective: 'it recalls an earlier deed' }[x.rule] || 'it is no acceptance now';
+        ctx.extra.push(`NOT ACCEPTED — "${String(x.command.quote || q.title).slice(0, 80)}": ${why}. "${q.title}" stays LISTED on the Guild board: nothing is stamped, logged or handed to him, it is not his and not active. Answer what he asks; he takes the contract only by plainly saying he accepts it.`);
+    }
     const lines = new Map();
     const happened = new Set();
     const uncertain = new Set();

@@ -106,6 +106,8 @@ const RETRO_ANCHOR = /\b(?:ago|yesterday|earlier|already|previously|used to|the 
 const CAME_FROM = /\b(?:came|come) (?:here |over |in |down |up )?from\b/;
 const FUTURE_ANCHOR = /\b(?:tomorrow|later|next (?:morning|day|week|month|time)|some other time|another time|some ?day|in a few days|the day after)\b/;
 const FUTURE_MODAL = "(?:will|'ll|ll|ill|shall|going to|gonna|plan to|intend to|want to)";
+// .185: a deed only weighed ("whether I should", "I might", "thinking about") – a question joined to it by "and" keeps it one
+const HEDGE = /\b(?:if|whether|might|maybe|perhaps|consider\w*|thinking|wonder\w*|should i|not sure|unsure)\b/;
 const PURPOSE = /\b(?:so (?:that )?(?:i|we) (?:can|could|may|might)|in order to|to be able to|(?:i'm|im|i am) here to)\b/;
 // an inverted auxiliary opens a question ("Could I take …", "did the clerk already log …"), a wh-word with an auxiliary too
 const QUESTION_START = /^(?:(?:could|can|may|might|should|shall|would|will|do|does|did|is|are|am|was|were|have|has)\s+(?:i|we|you|he|she|they|it|the|my|your|his|her|their|this|that)\b|(?:what|where|which|who|why)\s+(?:is|are|was|were|do|does|did|can|could|would|should|will)\b|how (?:much|many|long|far|do|does|can|could|would|should|is|are)\b)/;
@@ -140,9 +142,18 @@ function sentences(message) {
     for (let i = 0; i <= src.length; i++) {
         const ch = src[i];
         // A question after a dash does not turn an independent preceding deed into a question.
+        // .185 (natural batch 13.11.2026, Mage T22: "I'd like to accept the Mossback Warrens Level 1 contract — and what
+        // can you tell me about the mossbacks …?" dropped the acceptance as a question): nor does one the dash joins
+        // with "and", "but", "also" or "so", when the deed before it is no weighing ("I wonder whether I should accept
+        // it — and what does it pay?" stays one question)
+        const after = () => {
+            const rest = flat(src.slice(i + 1));
+            const bare = rest.replace(/^(?:and also|and|but|also|so),?\s+/, '');
+            return bare === rest || !HEDGE.test(flat(src.slice(start, i))) ? bare : rest;
+        };
         const end = i === src.length || '.!?*"\n'.includes(ch)
             || (ch === '-' && /^(?:i|we)\b/.test(flat(src.slice(start, i)))
-                && (QUESTION_START.test(flat(src.slice(i + 1))) || /^(?:what|where|who|how)'s\b/.test(flat(src.slice(i + 1)))));
+                && (QUESTION_START.test(after()) || /^(?:what|where|who|how)'s\b/.test(after())));
         if (!end) continue;
         const raw = src.slice(start, ch === '?' || ch === '!' || ch === '.' ? i + 1 : i);
         const text = flat(raw);

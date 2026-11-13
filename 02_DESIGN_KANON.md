@@ -1,6 +1,6 @@
 # Avereth Engine – verbindlicher Design-Kanon
 
-**Stand 13.11.2026 · geltende Spielregeln mit NPC E3 und dem PULSE-Reisehalt (`.181`).** **[VERBINDLICH]** bezeichnet geltende Regeln, **[GEPLANT]** einen noch nicht umgesetzten Beschluss, **[OFFEN]** eine unbeschlossene Option. Tatsächlicher Implementierungs-/Abnahmestand ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md), technische Detailquellen in [06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). [Ungekürzte Vorfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/55d20eaf65f521a25ea3e85cfa3390e215270683/02_DESIGN_KANON.md).
+**Stand 13.11.2026 · geltende Spielregeln mit NPC E3, dem PULSE-Reisehalt (`.181`) und Monster A1 (`.184`).** **[VERBINDLICH]** bezeichnet geltende Regeln, **[GEPLANT]** einen noch nicht umgesetzten Beschluss, **[OFFEN]** eine unbeschlossene Option. Tatsächlicher Implementierungs-/Abnahmestand ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md), technische Detailquellen in [06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). [Ungekürzte Vorfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/55d20eaf65f521a25ea3e85cfa3390e215270683/02_DESIGN_KANON.md).
 
 ## 0. Aktuelle Kompatibilitätsentscheidung
 
@@ -48,6 +48,7 @@ Narration **Englisch, dritte Person, Vergangenheit**; Wahrnehmung/Dialog statt S
 - Gewähltes Ziel über belanglose Reise-/Suchschritte verfolgen, bis etwas Relevantes passiert oder eine echte Entscheidung entsteht; keine Pflicht-Continues.
 - Ziel bleibt Autorisierungsgrenze: Wald betreten erlaubt nicht automatisch Höhleneintritt. Suche soll konkreten Erkenntnisgewinn haben.
 - Automatisches Loot nach echtem Sieg, keine Trophäenpflicht als Jagdbeweis, keine Traglast-/Packverwaltung.
+- **[VERBINDLICH seit .184] Monster A1 – Beute aus belegter Anatomie:** Ein Spezialorgan (Geweih, Horn, Hauer, Gift, Schleimkern) gibt es nur, wenn Art, Name oder Beschreibung der Kreatur es zeigen, und nie, wenn ihre eigenen Worte es verneinen („hornless goat“, „doe without antlers“, „non-venomous snake“). Der Angriff ihres Körperplans ist kein Beleg. Ohne passendes Wort gibt es nur den Grundertrag des Körperplans. Schleimkern nur mit Beleg (D6). [Fachplan](patch_plans_10b/FACHPLAN_MONSTER_ANATOMIE_LOOT_A1_A2.md) · [Patchnote .184](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/efcad4c02f4d2a47ab5f777d6cf6581979e36e4e/avereth-engine/docs/MONSTER_A1_184.md).
 - Pouch als Komfortinventar; bewusst ausgerüstete/getragene Gegenstände bleiben physisch.
 - Keine künstlichen Unterschriften, Rückgaben oder Beweisabgaben; echte Lieferung/Reparatur behält erforderliche Übergabe/Abnahme.
 

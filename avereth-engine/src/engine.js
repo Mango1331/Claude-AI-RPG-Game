@@ -29,9 +29,9 @@ import { parseCoin } from './economy.js';
 import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, roundHalfUp, ENGINE_VERSION } from './util.js';
 import { seedPlaces, lineage, populationAt, encounterArea, namesYoung } from './v4/domain.js';
 import { rankAt, dungeonOf, trueDungeonOf } from './v4/dungeon.js';
-import { syncEvents, levelSpan } from './v4/living.js';
+import { syncEvents, levelSpan, livingOf } from './v4/living.js';
 import { attackTargetHere, tacticalHere, areaCaught, areaBand, approachedBy, sideOf, burstCaught, skillAreaTarget } from './v4/scene_handles.js';
-import { lootEvents } from './v4/loot.js';
+import { lootEvents, speciesName } from './v4/loot.js';
 import { groupJoiners } from './v4/group_combat.js';
 import { featureEvent } from './v4/features.js';
 
@@ -402,7 +402,14 @@ export function materialise(s, content, dice, emit, id) {
         const band = span || populationLevels || areaLevels;
         const level = e.level || (band ? dice.int(band[0], band[1], 'creature level') : lo && hi ? dice.int(lo.min, hi.max, 'creature level') : chooseCreatureLevel(area, content, dice));
         const belongs = !stated && population && level >= population.population.levels[0] && level <= population.population.levels[1];
-        emit({ t: 'entity.updated', d: { id, set: { ...(population ? { anchor: anchor.id } : {}), profile: scaleCreature(anchor, level, e.type || 'normal', content, e.variation || null), ...(belongs ? { population_at: population.id } : {}), ...(dungeonOf(s, at) && !e.met_at ? { met_at: at } : {}) } } });
+        const profile = scaleCreature(anchor, level, e.type || 'normal', content, e.variation || null);
+        // Monster A2 (.186): a humanoid's weapon, fixed with its profile; a melee weapon names its attack (values unchanged)
+        const gear = creatureGear(s, content, e, anchor);
+        if (gear) {
+            profile.gear = gear;
+            if (gear.weapon?.attack) profile.attack = { ...profile.attack, name: gear.weapon.attack, weapon: true };
+        }
+        emit({ t: 'entity.updated', d: { id, set: { ...(population ? { anchor: anchor.id } : {}), profile, ...(belongs ? { population_at: population.id } : {}), ...(dungeonOf(s, at) && !e.met_at ? { met_at: at } : {}) } } });
         return;
     }
     const words = [...(e.descriptors || []), e.traits || ''].join(' ');
@@ -494,6 +501,57 @@ function rulesetTwoPerson(s, content, e, words) {
         for (const i of carried) for (const [item, qty] of Object.entries(i?.contains || {})) sheet.inventory[item] = (sheet.inventory[item] || 0) + qty;
     }
     return sheet;
+}
+
+/**
+ * Monster A2 (.186, patch_plans_10b/FACHPLAN_MONSTER_ANATOMIE_LOOT_A1_A2.md §2.3, §3.2, K3–K7; D1–D5, D7): the weapon a
+ * humanoid creature carries, fixed once when its profile is (materialise), so fight, cards and loot read one thing.
+ *  1. the weapon its creation report states (entity.armed, creature.new armed): a weapon word of a family names it,
+ *     "unarmed"/"bare hands" is none; words that name no weapon are no statement;
+ *  2. else its anchor's loadout (content/monsters.json loot.anchors.<anchor>.loadout), drawn by weight with hash32 – no
+ *     die of the fight – from its own key: its place in its Dungeon slot, else its id; a guardian or boss the same (D7);
+ *  3. no humanoid anchor (no loadout): null, the profile as before.
+ * Values are the anchor's (D3): a stated weapon takes those of its anchor's weapon of the same family, else its best.
+ * A melee weapon names the attack; a focus or a bow changes no attack (D2). It is no object before the death (K5).
+ * @returns {{weapon: {name, item, attack, family, slot, atk, matk, from}|null, source: 'stated'|'default'|'none'}|null}
+ */
+const MELEE_FAMILIES = new Set(['melee', 'heavy_melee', 'precision']);
+export function creatureGear(s, content, e, anchor) {
+    const spec = content.monsters?.loot?.anchors?.[anchor.id];
+    const options = spec?.loadout?.options;
+    if (!spec?.humanoid || !Array.isArray(options) || !options.length) return null;
+    const species = speciesName(e, anchor);
+    const armed = typeof e.armed === 'string' ? e.armed.trim() : '';
+    const family = armed ? weaponFamily(content, armed) : null;
+    if (family === 'unarmed') return { weapon: null, source: 'stated' };
+    if (family) {
+        const own = options.filter((o) => o.name && o.slot === 'weapon');
+        const scale = own.find((o) => o.family === family) || own.slice().sort((a, b) => (b.atk || 0) - (a.atk || 0))[0] || { atk: 0, matk: 0 };
+        const name = weaponWord(content, armed);
+        const melee = MELEE_FAMILIES.has(family);
+        return { weapon: { name, item: `${species} ${name.split(/\s+/).map((w) => w[0].toUpperCase() + w.slice(1)).join(' ')}`, attack: melee ? name : null,
+            family, slot: 'weapon', atk: scale.atk || 0, matk: scale.matk || 0, from: armed.slice(0, 80) }, source: 'stated' };
+    }
+    const slot = e.slot ? (() => {
+        const sl = livingOf(s, e.slot.dungeon)?.run?.floors?.[e.slot.floor]?.slots?.find((x) => x.id === e.slot.id);
+        const at = sl?.entities?.indexOf(e.id) ?? -1;
+        return `${e.slot.dungeon}|${e.slot.cycle}|${e.slot.floor}|${e.slot.id}|${at >= 0 ? at : e.id}`;
+    })() : null;
+    const total = options.reduce((n, o) => n + (o.w || 0), 0);
+    let r = total > 0 ? parseInt(hash32(`${slot || e.id}|loadout`), 16) % total : 0;
+    const o = options.find((x) => (r -= x.w || 0) < 0) || options[0];
+    if (!o.name) return { weapon: null, source: 'none' };
+    return { weapon: { name: o.attack || o.name.replace('{species} ', '').replace(/\s*\{species\}\s*/, ' ').trim(), item: o.name.replace('{species}', species),
+        attack: o.attack && MELEE_FAMILIES.has(o.family) ? o.attack : null, family: o.family || 'melee', slot: o.slot || 'weapon', atk: o.atk || 0, matk: o.matk || 0, from: 'loadout' }, source: 'default' };
+}
+
+/** A weapon's short name from words: its weapon word with the word before it ("short spear", "steel longsword"). */
+function weaponWord(content, text) {
+    const words = normText(text).split(/[^a-z-]+/).filter(Boolean);
+    const kinds = [...(content.gear?.instances?.gear_kinds || []).filter((k) => k.slot === 'weapon').flatMap((k) => k.words), ...Object.entries(content.npc.weapon_words).filter(([f]) => f !== 'unarmed').flatMap(([, w]) => w)];
+    const at = words.findIndex((w) => kinds.includes(w));
+    const name = at < 0 ? normText(text).slice(0, 40) : [at > 0 && !WEAPON_STOP.has(words[at - 1]) ? words[at - 1] : null, words[at]].filter(Boolean).join(' ');
+    return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
 /** Patch 9A.1: the weapon a person holds ready by their armed fact, as a sheet weapon {name, family, atk, matk}, or null. */

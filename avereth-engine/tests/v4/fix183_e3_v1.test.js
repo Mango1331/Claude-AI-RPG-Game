@@ -46,7 +46,7 @@ test('.183 E3-V-1 contract: the fact description names the 80-character limit an
     assert.match(fact.summary, /never this moment's mood, never Alaric's view of them/, 'the earlier rules stay');
     const system = extractorSystem(content.deltaVocab);
     assert.match(system, /at most 80 characters/);
-    assert.equal(content.deltaVocab.version, 'delta-1.14', 'a precision of the text, no new contract version');
+    assert.ok(['delta-1.14', 'delta-1.15'].includes(content.deltaVocab.version), 'a precision of the text, no new contract version (delta-1.15 is .186: creature.new armed)');
 });
 
 // ------------------------------------------------------------------------------------------------ the mark

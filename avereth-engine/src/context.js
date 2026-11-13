@@ -172,6 +172,17 @@ function agreementText(between) {
 }
 
 /**
+ * Monster A2 (.186, plan §3.2 Nr. 7): what a humanoid creature carries, as its profile fixed it (nothing for a profile
+ * fixed before A2 or another kind). A focus or bow it only carries is no attack (D2).
+ */
+function creatureGearText(e) {
+    const g = e?.profile?.gear;
+    if (!g) return '';
+    if (!g.weapon) return '; unarmed';
+    return g.weapon.attack ? `; armed: ${String(g.weapon.name).toLowerCase()}` : `; carries ${String(g.weapon.item || g.weapon.name)} (no attack of its own)`;
+}
+
+/**
  * One NPC as the narrator sees it: its established cues, stance toward Alaric, last meaningful moment with him, what
  * it knows and believes (ONLY its own knowledge rows: knowledge boundaries by construction), agenda and secrets.
  * absent = named this turn but not in the scene: continuity only (no position, awareness or combat intent).
@@ -181,7 +192,7 @@ function npcCard(state, content, id, focusWords, { absent = false } = {}) {
     const lines = [];
     const cues = e.kind === 'creature' ? null : npcCues(state, content, id);
     const kind = e.kind === 'creature'
-        ? `creature (${e.species || content.anchors.get(e.anchor)?.name || 'unknown'})`
+        ? `creature (${e.species || content.anchors.get(e.anchor)?.name || 'unknown'})${creatureGearText(e)}`
         : `person${cues.role ? `, ${cues.role}` : ''}`;
     const look = cues ? cues.look : e.traits;
     const pos = absent ? null : state.scene.positions[id];
@@ -256,7 +267,7 @@ export function combatBlock(state, content = null) {
         const fx = c.current.effects.length ? `; effects: ${c.current.effects.map((x) => x.name).join(', ')}` : '';
         // Prototype C (4.3.0-c.6.6.6, review): who in the fight is no foe of his (caught in it, or at his side)
         const side = c.side === 'ally' ? '; ON ALARIC\'S SIDE (no foe)' : c.side === 'neutral' ? '; NEUTRAL (no foe, caught in the fight)' : '';
-        lines.push(`  ${fightName(state, c.id)}: L${c.fixed.level} ${c.fixed.rank} ${c.model === 'creature' ? c.fixed.body_plan : 'core-stat'}; ${st}${side}; locked DefeatXP ${c.fixed.defeat_xp ?? '-'}${fx}`);
+        lines.push(`  ${fightName(state, c.id)}: L${c.fixed.level} ${c.fixed.rank} ${c.model === 'creature' ? c.fixed.body_plan : 'core-stat'}${creatureGearText(state.entities[c.id])}; ${st}${side}; locked DefeatXP ${c.fixed.defeat_xp ?? '-'}${fx}`);
     }
     // Patch 4 (live 18.10.2026: the pack mates of the one wolf in the fight stood, paced and growled around it): who is
     // here but not in the fight makes no attack and deals no damage; a story that has them attack brings them in

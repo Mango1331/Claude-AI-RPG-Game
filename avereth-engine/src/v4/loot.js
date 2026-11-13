@@ -30,7 +30,7 @@ const titled = (t) => String(t || '').split(/\s+/).filter(Boolean).map((w) => w[
  * the same kind from two places is one stack, two kinds "of the millpond" are two; a stack held from before keeps its
  * id. With nothing left before "of the" ("of the deep") the old rule stands.
  */
-function speciesName(e, anchor) {
+export function speciesName(e, anchor) {
     const kind = String(e.species || anchor?.name?.split('/')[0] || 'creature');
     const own = kind.replace(/\s+of\s+the\s+.*$/i, '');
     const words = (own.replace(/[^A-Za-z' -]/g, ' ').trim() ? own : kind).replace(/[^A-Za-z' -]/g, ' ').trim().split(/\s+/);
@@ -89,7 +89,14 @@ export function lootEvents(s, content, enc) {
             }
             if (spec && !Array.isArray(spec) && spec.humanoid) {
                 if (spec.purse_cp) coin += draw(`${seed}|purse`, spec.purse_cp);
-                for (const g of spec.gear || []) {
+                // Monster A2 (.186, plan §2.3, K6/D5): a profile fixed with its weapon (profile.gear) leaves that weapon when it
+                // is still worth taking (salvage, D4), else a broken one and no object; whether it was used does not matter.
+                // A profile fixed before A2 (no gear) keeps the old chance of its anchor's gear table
+                if (prof.gear) {
+                    const w = prof.gear.weapon;
+                    if (w && chance(`${seed}|gear|salvage`, spec.loadout?.salvage ?? 1)) items.push({ name: `${rank}-Rank ${w.item}`, rank, slot: w.slot || 'weapon', atk: w.atk || 0, matk: w.matk || 0, def: 0, family: w.family, from: c.id });
+                    else if (w) lines.push(`${w.item} — broken, nothing worth taking`);
+                } else for (const g of spec.gear || []) {
                     if (!chance(`${seed}|gear|${g.name}`, g.chance ?? 1)) continue;
                     items.push({ name: `${rank}-Rank ${g.name.replace('{species}', species)}`, rank, slot: g.slot, atk: g.atk || 0, def: g.def || 0, from: c.id });
                 }
@@ -151,7 +158,7 @@ export function lootEvents(s, content, enc) {
 
 /** Patch 7.1: a looted piece of gear keeps the values it was fought with: its profile, its use as equipment. */
 function gearTraits(content, g) {
-    const p = { kind: 'gear', base: null, title: null, rank: g.rank || 'F', quality: 'common', slot: g.slot, family: g.slot === 'weapon' ? weaponFamily(content, g.name) || 'melee' : null, atk: g.atk || 0, matk: g.matk || 0, def: g.def || 0, mdef: g.mdef || 0 };
+    const p = { kind: 'gear', base: null, title: null, rank: g.rank || 'F', quality: 'common', slot: g.slot, family: g.slot === 'weapon' ? g.family || weaponFamily(content, g.name) || 'melee' : null, atk: g.atk || 0, matk: g.matk || 0, def: g.def || 0, mdef: g.mdef || 0 };
     return { use: 'equipment', profile: { ...p, value_cp: itemValue(content, p) } };
 }
 

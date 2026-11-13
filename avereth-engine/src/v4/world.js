@@ -892,6 +892,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // the individual variation of Content #7, fixed with its profile (live run 30.09.2026 22:41: the big boar had the
         // numbers of a common one); the name it goes by decides nothing
         if (kind === 'creature' && d.stronger === true) for (const id of created) emit({ t: 'entity.updated', d: { id, set: { variation: 'strong' } } });
+        // Monster A2 (.186, K3): the weapon this report states for a humanoid creature – the whole report's, it holds only
+        // when the reply shows it for every one of them (the contract); its profile takes it when it is fixed below
+        // (src/engine.js creatureGear). Another kind's weapon words are ignored (no loadout)
+        const armed = kind === 'creature' && typeof d.armed === 'string' && d.armed.trim() ? d.armed.trim().slice(0, 80) : null;
+        if (armed) for (const id of created) if (content.monsters?.loot?.anchors?.[s.entities[id]?.anchor]?.humanoid) emit({ t: 'entity.updated', d: { id, set: { armed } } });
         // Prototype C (4.3.0-c.6.6.2): a creature the story shows as no foe (the packhorse, a goat, a pet) is no part of the
         // field an area attack is thrown into; a deliberate attack on it still makes it the target (scene_handles.js)
         if (cPath && kind === 'creature' && d.threat === false) for (const id of created) emit({ t: 'entity.updated', d: { id, set: { threat: false } } });

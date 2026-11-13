@@ -178,7 +178,7 @@ test('.144 S2: agreeing without the sum binds nothing; agreeing with the sum sai
 
 test('.144 S2 extractor contract delta-1.14: pricing is a total or unknown; an old unit price of one unit is its total, else unknown without a repair', async () => {
     const { parseExtraction, worldVocab } = await import('../../src/v4/extract.js');
-    assert.equal(content.deltaVocab.version, 'delta-1.14');
+    assert.ok(['delta-1.14', 'delta-1.15'].includes(content.deltaVocab.version), 'delta-1.14, or delta-1.15 (.186: creature.new armed, pricing unchanged)');
     const s = PLATES.state;
     const ids = { places: Object.keys(s.places), quests: Object.keys(s.quests || {}), objects: Object.keys(s.objects || {}) };
     const bid = { ...clone(PLATES.raw.deltas.find((d) => d.type === 'bid')), lines: [{ object: ENC40, qty: 14 }], price_cp: 56, phase: 'firm', condition: null, said: 'Four copper the plate', pricing: UNIT('Four copper') };

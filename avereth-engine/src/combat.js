@@ -590,7 +590,8 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
     if (moved) { record.move = { bands: 1, from: band, to: b }; actor.current.band = b; actor.current.cover = 'none'; }
     record.skill_name = actor.fixed.attack.name;
     record.raw = actor.fixed.atk;
-    record.raw_text = `natural attack Raw = ATK ${actor.fixed.atk}`;
+    // Monster A2 (.186, K7): a humanoid's melee weapon names its attack (the anchor's values); without one as before
+    record.raw_text = actor.fixed.attack.weapon ? `${actor.fixed.attack.name} Raw = ATK ${actor.fixed.atk}` : `natural attack Raw = ATK ${actor.fixed.atk}`;
     const attack = { damage_type: actor.fixed.attack.damage_type };
     record.strikes = [resolveStrike(ctx, actor, target, attack, { raw: actor.fixed.atk, ambush: !!extra.opening })];
     for (const s of record.strikes) if (s.defeated) onDefeat(ctx, enc.combatants[s.target], record);

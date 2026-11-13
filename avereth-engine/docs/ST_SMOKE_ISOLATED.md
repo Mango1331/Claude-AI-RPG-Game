@@ -60,6 +60,17 @@ Exitcode: 0 alle Smokes OK, 1 ein Smoke fehlgeschlagen, 2 `--check` nicht bereit
 - Ohne Netz und ohne vorhandene Sandbox: Abbruch in `preflight` (Netzprüfung) bzw. `install`, mit Logpfad. Eine schon installierte Sandbox braucht kein Netz.
 - Ohne Chromium oder Systembibliotheken: Abbruch in `browser` mit dem Befehl zur Abhilfe; es wird kein bestandener Smoke berichtet.
 
-## Belegter Lauf
+## Belegter Lauf (13.11.2026)
 
-Build `.186`, frischer Checkout ohne vorherige ST-Installation, Node 22, Chromium aus der Umgebung: siehe Abschlussbericht im Commit; die Zahlen stehen im jeweiligen `report.md`.
+Build `.186`, frischer Checkout (`249ac93`) ohne vorherige ST-Installation, Node 22.23.4, Chromium 153 aus der Umgebung:
+
+| Prüfung | Ergebnis |
+|---|---|
+| Aufbau | Klon ST 1.19.0, Commit geprüft, `npm ci` (829 Pakete, ~11 s), Erststart legt `data/default-user` an |
+| Standard (echter ST-Hostpfad) | **OK 224/224**, 0 PageErrors, 482 s |
+| Failsoft | **OK 229/229**, 0 PageErrors, 485 s |
+| Wiederholter Start (`--mode base`) | ohne Neuaufbau, **OK 25/25** in 39 s |
+| Belegter Port 5001 | Abbruch in `preflight`, nichts beendet, keine Ausgabe angelegt |
+| Persönliches ST, fremder Sandbox-Pfad, Bereinigung | `tests/unit/st_sandbox.test.js` 5/5: alle fünf Smoke-Skripte verweigern ein unmarkiertes ST, ohne eine Datei zu ändern; `--clean` verweigert einen fremden Ordner |
+
+Nicht praktisch ausgelöst: fehlendes Netz, fehlendes Chromium und ein ST-Startfehler; diese Pfade sind als Meldungen implementiert, aber hier nicht provoziert worden.

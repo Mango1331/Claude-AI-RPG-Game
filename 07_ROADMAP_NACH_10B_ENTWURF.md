@@ -1,14 +1,14 @@
 # Avereth Engine – Roadmap nach 10B
 
-**Stand 12.11.2026 · bewertete Entwicklungsoptionen, keine zweite Statuschronik.** [Start](README.md) · [aktuelle Abnahme 03](03_AKTUELLER_PROJEKTSTAND.md) · [verbindliche Regeln 02](02_DESIGN_KANON.md) · [Fachquellen 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). Alle historischen Kennungen bleiben auffindbar, **keine automatische Rangfolge oder Freigabe**.
+**Stand 13.11.2026 · bewertete Entwicklungsoptionen, keine zweite Statuschronik.** [Start](README.md) · [aktuelle Abnahme 03](03_AKTUELLER_PROJEKTSTAND.md) · [verbindliche Regeln 02](02_DESIGN_KANON.md) · [Fachquellen 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). Alle historischen Kennungen bleiben auffindbar, **keine automatische Rangfolge oder Freigabe**.
 
 ## 1. Nächste fachliche Etappen
 
 | Etappe | Bereits gesichert / verbleibende Entscheidung |
 |---|---|
-| **Natürliche NPC-/PULSE-Qualität auf `.179`** | [Drei echte LLM-Kampagnen 70/70/48](testrun_10b/npc-20261112-220625Z/REVIEW.md) vorhanden: E3 **0 Anker**, P2-Orts-/Reiseunterbrechungsdrift, Mage-Planerformat-Blocker. **Nächste Arbeit: konkrete Korrektur und gezielte Wiederholungsprobe**, noch keine natürliche E3-/PULSE-D-Vollfreigabe. |
+| **Natürliche NPC-/PULSE-Qualität** | [Drei echte LLM-Kampagnen 70/70/48 auf `.179`](testrun_10b/npc-20261112-220625Z/REVIEW.md): E3 **0 Anker**, P2-Orts-/Reiseunterbrechungsdrift, Mage-Planerformat-Blocker. **Korrekturen P2-1–P2-5 in `.180–.182` umgesetzt** (Registrierung/Planner, PULSE-Reisehalt, Queststatus-Korrektur, neutrale Extractor-Formen). **Offen:** isolierter ST-Smoke und gezielte natürliche Wiederholungsprobe; noch keine natürliche E3-/PULSE-D-Vollfreigabe. |
 | **Preis-/Planner-Belege V4** | Codebefunde mit Schutzauflagen P1a–P1f: [Architekturaudit §13](recherche/ARCHITEKTUR_AUDIT_10B_FABLE.md) · [Opus/GPT](recherche/ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md). Noch kein Patch |
-| **Kontext und E3-Extraktion** | `relevant`-Teillieferung D3, enger E3-V-1-Hinweis (80-Zeichen-Validatorgrenze, echte spätere Präsenz), erst nach klarer Nachweistrennung; kein neues NPC-Speichersystem |
+| **Kontext und E3-Extraktion** | **E3-V-1 ist die nächste direkte Implementierung** (Extractorvertrag: 80-Zeichen-Validatorgrenze, eindeutige spätere Präsenz). `relevant`-Teillieferung D3 erst nach klarer Nachweistrennung; kein neues NPC-Speichersystem |
 | **Ortschronologie O1-B1** | Kleine schlüssige `seq`-Normalisierung als möglicher Fachpatch; O1-Whitelist und V1-Frühankunft nicht empfehlen. [Fachplan einschließlich Gegenreviews](recherche/FACHPLAN_O1_O2_KAUSALITAET_UND_TEILBEWEGUNG.md). O2-stay nur nach Raumgranularitätsentscheidung |
 | **K2 Monster A1/A2** | [Technischer Fachplan mit Opus/GPT §§8–9](patch_plans_10b/FACHPLAN_MONSTER_ANATOMIE_LOOT_A1_A2.md). A1 fachlich bereit als Empfehlung; A2 abhängig von Loadouts, Verwertbarkeit, Altprofilen, gemischten Gruppen. Waffen in `DUNGEON AHEAD` vorerst zurückgestellt |
 | **K1 Main/Minor** | Designbeschlossen, aber nicht implementiert; [umfangreicher Fachplan auf `.104`](patch_plans_10b/PATCH_COMBAT_MAIN_MINOR_ACTIONS.md), vor Codearbeit auf aktuellen Produkt-HEAD abgleichen |

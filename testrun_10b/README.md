@@ -1,8 +1,8 @@
 # Avereth – Originalruns und Reviews
 
-**Stand: 09.11.2026 · Quellenindex, keine zweite Produkt-/Teststatusliste.** [Aktueller Stand 03](../03_AKTUELLER_PROJEKTSTAND.md) · [Fachquellen 06](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Arbeitsweise 01](../01_ARBEITSWEISE_CHATGPT_CLAUDE.md).
+**Stand: 13.11.2026 · Quellenindex, keine zweite Produkt-/Teststatusliste.** [Aktueller Stand 03](../03_AKTUELLER_PROJEKTSTAND.md) · [Fachquellen 06](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Arbeitsweise 01](../01_ARBEITSWEISE_CHATGPT_CLAUDE.md).
 
-10B ist auf .154 als technischer Zwischenstand für persönliche Spieltests teilabgenommen. Aktuell stehen freie persönliche Runs im Vordergrund; weitere Batches nur bei konkretem Erkenntnisbedarf. Ein Runner-`completed` ist nur ein Ende, weder Levelziel noch Integritätsnachweis. Keine gemeinsame Erfolgsquote aus unterschiedlichen Builds, kurzen Toden und langen fortgesetzten Läufen bilden.
+Der aktuelle Produkt- und Abnahmestand steht ausschließlich in [03](../03_AKTUELLER_PROJEKTSTAND.md) (derzeit `.182`, natürlich zuletzt auf `.179` geprüft). Freie persönliche Runs und gezielte natürliche NPC-/PULSE-Läufe nur bei konkretem Erkenntnisbedarf; historisch war 10B auf `.154` als technischer Zwischenstand für persönliche Spieltests teilabgenommen. Ein Runner-`completed` ist nur ein Ende, weder Levelziel noch Integritätsnachweis. Keine gemeinsame Erfolgsquote aus unterschiedlichen Builds, kurzen Toden und langen fortgesetzten Läufen bilden.
 
 ## Persönliche User-Spieltests (keine Runner-Batches)
 

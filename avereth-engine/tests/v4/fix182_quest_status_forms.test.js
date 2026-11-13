@@ -7,7 +7,7 @@
 //         on person.new (Mage T3) is NOT among them: it decides a later stealth check, so it stays the repair's.
 // The batch ZIP is not in the repository (SOURCE_MANIFEST.md): P2-4 runs on the original User04 turn I63/I64 (GO +
 // conditional turn-in, its original prose) with a synthetic status claim of the kind Mage T40 had; P2-5 on the forms
-// the review names and the corpus b16–b19 shows (nine first answers repaired for exactly these).
+// the review names and the corpus b16–b19 shows (eight first answers repaired for exactly these).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -17,7 +17,10 @@ import { foldChat, rec } from '../../src/host.js';
 import { playerTurnV4, replyTurnV4 } from '../../src/v4/turn.js';
 import { parseExtraction } from '../../src/v4/extract.js';
 import { extractorCatalog } from '../../src/v4/catalog.js';
-import { campaign, say, walk } from './patch8_lib.js';
+import { campaign, say } from './patch8_lib.js';
+import { Chat4 } from './harness.js';
+import { validateState } from '../../src/validate.js';
+import { applyWorld } from '../../src/v4/world.js';
 
 const content = await loadProductContent();
 
@@ -180,4 +183,79 @@ test('.182 P2-5 against (host, Mage T3 kind): person.new with aware, answered so
         { scene: AHALL, expected: GO1, deltas: [{ seq: 1, type: 'arrive', at: AHALL, forced_by: null, with: null }, { seq: 2, ...CLERK, aware: 'aware' }] });
     assert.equal(r.record.extraction.status, 'failed');
     assert.equal(g.state().scene.at, from);
+});
+
+// ------------------------------------------------------------------------------------------------ Patch 3, full brief
+// The mandatory cases of the complete Patch 3 brief beyond the ones above: several contracts changing in one reply,
+// Save/Reload and determinism on the host path, linked deltas behind an invalid one (no partial acceptance), no
+// authority gained by a normalized form, and the place of what is booked.
+const STALKER = 'quest.break_the_ashfen_stalker';
+const LISTED = (id) => `"${title(id)}" is still LISTED on the Guild board: Alaric has not accepted it and nothing is logged for him (the engine's state; the story does not change it).`;
+
+test('.182 P2-4 several contracts in one reply: a turn-in and an acceptance on arrival both tell their final status; a third, untouched, keeps its own', () => {
+    const s = before(63);
+    const cs = [...cmds(63), { seq: 3, type: 'quest.accept', quest: VIPER, quote: 'and take the Millrace Viper', needs: 1 }];
+    const p = playerTurnV4(s, content, `${f.chat[63].mes} And I take the Millrace Viper.`, { msg: 63, c: true, commands: cs, board: f.board });
+    const r = replyTurnV4(structuredClone(p.state), content, { scene: HALL, expected: { 1: { arrived: true, at: HALL, with: null, met: null } }, deltas: [
+        ARRIVE, ENTER, PAID(3, CATA), { ...PAID(4, VIPER), o: 'accepted and active' }, { ...PAID(5, STALKER), o: 'completed and paid' }] }, { prose: f.chat[64].mes, msg: 64 });
+    assert.deepEqual([r.state.quests[CATA].status, r.state.quests[VIPER].status, r.state.quests[STALKER].status], ['completed', 'active', 'listed']);
+    assert.deepEqual(coins(r), [90], 'one payout');
+    assert.deepEqual(r.events.filter((e) => e.t === 'quest.status').map((e) => `${e.d.id} ${e.d.from}>${e.d.to}`).sort(), [`${CATA} active>completed`, `${VIPER} listed>active`].sort());
+    // the firewall saw CATA ACTIVE and VIPER LISTED; both changed, both are told as they end; STALKER did not change
+    assert.deepEqual(r.corrections.filter((c) => /\(the engine's state; the story does not change it\)/.test(c)).sort(), [COMPLETED(CATA), ACTIVE(VIPER), LISTED(STALKER)].sort(), JSON.stringify(r.corrections));
+});
+
+test('.182 P2-4 host path: the reply record holds the final correction; a reload folds the same valid state; the same reply again gives the same record', async () => {
+    const run = async () => {
+        const g = new Chat4(content);
+        g.chat = f.chat.slice(0, 64).map((m) => structuredClone(m));
+        return { g, r: await g.reply(f.chat[64].mes, { scene: HALL, expected: { 1: { arrived: true, at: HALL, with: null, met: null } }, deltas: [ARRIVE, ENTER, PAID()] }) };
+    };
+    const { g, r } = await run();
+    assert.equal(r.record.extraction.status, 'applied', JSON.stringify(r.record.extraction));
+    assert.equal(g.state().quests[CATA].status, 'completed');
+    assert.ok(r.record.corrections.includes(COMPLETED(CATA)), JSON.stringify(r.record.corrections));
+    assert.ok(!r.record.corrections.includes(ACTIVE(CATA)));
+    assert.equal(r.record.events.filter((e) => e.t === 'coin.changed' && e.d.delta === 90).length, 1);
+    const folded = foldChat(structuredClone(g.chat)).state;
+    assert.deepEqual(folded, g.state());
+    assert.deepEqual(validateState(folded, content), []);
+    const again = (await run()).r.record;
+    const strip = (x) => JSON.parse(JSON.stringify(x, (k, v) => (k === 'ms' ? undefined : v)));
+    assert.deepEqual(strip(again.events), strip(r.record.events));
+    assert.deepEqual(again.corrections, r.record.corrections);
+});
+
+test('.182 P2-5 no partial acceptance (deferred): an arrive of the wrong form with a person after it, answered so twice, books neither; dropping only the arrive would put the person at the place he left', async () => {
+    const shorthand = { seq: 1, type: 'arrive', at: { new: 'the back room' }, forced_by: null, with: null };
+    const bad = { scene: AHALL, expected: GO1, deltas: [shorthand, { seq: 2, ...CLERK }] };
+    assert.ok(parse(bad).errors.some((e) => /deltas\[0\]/.test(e)), 'the place form is not repaired by the engine');
+    const g = await campaign(content, { greeting: ASHBRIDGE });
+    const from = g.state().scene.at;
+    await say(g, '*I walk into the Guild hall*', { type: 'go', to: AHALL, quote: 'I walk into the Guild hall' });
+    const people = Object.keys(g.state().entities).length;
+    const r = await g.reply('He steps into the back room of the Guild hall, where a clerk with ink-stained cuffs looks up.', bad);
+    assert.equal(r.record.extraction.status, 'failed');
+    assert.equal(g.state().scene.at, from);
+    assert.equal(Object.keys(g.state().entities).length, people, 'nobody booked');
+    // why the whole answer stays refused: without its arrive, the same person.new is booked where he set out from
+    const s = structuredClone(g.state());
+    const partial = applyWorld(s, content, { scene: 'here', expected: { 1: { arrived: false, at: null, with: null } }, deltas: [{ seq: 2, ...CLERK }] }, { msg: 99, prose: 'A clerk looks up.' });
+    const clerk = partial.events.find((e) => e.t === 'entity.created')?.d.entity.id;
+    assert.ok(clerk && partial.state.scene.present.includes(clerk) && partial.state.scene.at === from, 'a dropped arrive would place him at the verge');
+});
+
+test('.182 P2-5 no authority by normalizing: a companion named as one string is still checked; a time without seq is still capped; booked people stand where he arrived', async () => {
+    const g = await campaign(content, { greeting: ASHBRIDGE });
+    await say(g, '*I walk into the Guild hall*', { type: 'go', to: AHALL, quote: 'I walk into the Guild hall' });
+    const r = await g.reply('He walks into the Guild hall with Bren, and a clerk looks up; he waits a long while.', { scene: AHALL, expected: { 1: { arrived: true, at: AHALL, with: null } }, deltas: [
+        { seq: 1, type: 'arrive', at: AHALL, forced_by: null, with: 'Bren' }, { seq: 2, ...CLERK }, { type: 'time', minutes: 900 }] });
+    assert.equal(r.record.extraction.status, 'applied', JSON.stringify(r.record.extraction));
+    const s = g.state();
+    assert.equal(s.scene.at, AHALL);
+    assert.ok(r.record.rejected.some((x) => x.rule === 'world_rule' && /arrive\.with: unknown person Bren/.test(x.why)), JSON.stringify(r.record.rejected));
+    assert.ok(!Object.values(s.entities).some((e) => e.name === 'Bren'), 'nobody made of the companion string');
+    assert.ok(r.record.rejected.some((x) => x.rule === 'time_cap'), 'the cap holds for the normalized time');
+    const clerk = r.record.events.find((e) => e.t === 'entity.created')?.d.entity.id;
+    assert.ok(clerk && s.scene.present.includes(clerk), 'the clerk is at the hall he reached');
 });

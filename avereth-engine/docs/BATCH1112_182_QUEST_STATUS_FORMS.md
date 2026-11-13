@@ -89,17 +89,43 @@ In jedem dieser Fälle hat die Modellreparatur genau diese Form korrigiert. In 7
 - **`time` ohne `seq` ohne eindeutigen Platz:** keine freie Nummer, andere Meldungen ohne `seq` oder nicht steigende Reihenfolge.
 - **Ein Ort als `{"new": "name"}`:** `kind` und `parent` tragen Bedeutung; das ist eventuell Warrior T56, ohne Original nicht prüfbar.
 
-**Nicht umgesetzt:** Fables Vorschlag „bleibt eine Meldung ungültig, nur diese ablehnen“ (Teilannahme). Er ändert den Ganz-oder-gar-nicht-Vertrag der Extraktion und gehört nicht zu den freigegebenen Formkorrekturen. Mage T20/T21 und Rogue T51 sind ohne Originalbelege nicht prüfbar; ob sie unter eine der Formen fallen, ist offen.
+### Die sieben verworfenen Extraktionen des Batches
+
+| Fall | Ursache laut Fable §8.3 C | Ergebnis `.182` |
+|---|---|---|
+| Rogue T38, T63 | `time` ohne `seq` | **behoben**, wenn der Platz eindeutig ist (alle anderen `seq` ganzzahlig und steigend, Nummer frei); sonst wie bisher Reparatur |
+| Mage T3 | überzähliges `aware` an `person.new` | **bewusst nicht** normalisiert (siehe oben), bleibt Reparaturfall |
+| Warrior T56 | Form einer Ortsreferenz | genaue Form ohne Original nicht bestimmbar. Ortsformen tragen Bedeutung (`kind`, `parent`, Identität) und werden nicht automatisch geändert; bleibt Reparaturfall |
+| Mage T20, T21, Rogue T51 | im Review nicht benannt (T51: verlorene Ankunft) | ohne Originalbelege nicht prüfbar; offen |
+
+### Teilannahme (Fable §8.4 P2-5): geprüft und zurückgestellt
+
+Fables Vorschlag lautet: „Bleibt eine Meldung ungültig, nur diese ablehnen; ihre abhängigen Meldungen fängt die vorhandene Sperre.“ Das ist mit den bestehenden Regeln nicht nachweislich sicher.
+
+1. **Ein ungültiges `arrive` verschiebt Folgemeldungen.** Die `scene_context`-Sperre nach einer abgelehnten Ankunft (`travel … ok: false`) setzt eine Meldung voraus, die die Welt selbst ablehnt. Eine schon im Schema verworfene Meldung erreicht die Welt nicht.
+   - Ohne das `arrive` wird jede lokale Meldung mit `scene: here` am Abreiseort gebucht.
+   - Das ist genau die Fehlerklasse von P2-2 (`.181`).
+   - Der Test „no partial acceptance“ zeigt es: Dieselbe `person.new`-Meldung landet ohne ihr `arrive` am Straßenrand vor Ashbridge.
+2. **Bezüge zwischen Meldungen** laufen über `ref`, Gruppen-Refs und `depends_on`. Die vorhandenen Sperren (`blockedPeople`, `blockedCreatures`, `quest_dependency`) greifen nur bei Meldungen, die die Welt kennt und ablehnt.
+   - Eine im Schema verworfene `person.new` hinterlässt keinen gesperrten Ref.
+   - Spätere `hostile`/`aware`/`intent` könnten dann über den Resolver eine andere anwesende Person treffen.
+3. **Fehlende Reihenfolge:** Eine ungültige Meldung ohne lesbare `seq` hat keinen Platz in der Erzählreihenfolge, gegen den Folgemeldungen geprüft werden könnten.
+4. **Atomicity:** Die Firewall prüft alle Meldungen einer Antwort zusammen (Vorprüfung). Eine Teilannahme müsste die verworfenen als abgelehnte Meldungen mit allen Folgesperren in diese Prüfung zurückführen. Das ist eine eigene Änderung der Extraktionssemantik mit eigenem Abnahmebedarf, keine Formkorrektur.
+
+Teilannahme bleibt deshalb **ausdrücklich zurückgestellt**. Eine ungültige Antwort geht wie bisher in die eine begrenzte Reparatur und scheitert danach sichtbar und vollständig.
 
 ## 3. Abnahme
 
 | Prüfung | Ergebnis |
 |---|---|
-| Neue Regressionen | `tests/v4/fix182_quest_status_forms.test.js`: **10/10** |
-| Rot gegen `.181` | **7 von 10 rot** (Produktdateien auf `.181`, Tests unverändert): P2-4 (bedingte Abgabe mit Zahlungsbehauptung; Notiz vor der Ankunft; anderer Vertrag daneben), P2-5 (neutrale Formen gültig; `time` ohne `seq`; Hostpfad „desc als String“ zweimal: auf `.181` „WORLD NOT RECORDED“, Ankunft verloren; Hostpfad Rogue T38) |
-| Reine Gegenfälle, auf beiden Ständen grün | Abgabe findet nicht statt: ACTIVE-Korrektur bleibt, nichts bezahlt · bedeutungstragende Formen bleiben Fehler (`aware` jeder Wert, `remote`, `evidence` als Zahl, `role`/`count: null`, doppelte `seq`, leerer String, `{"new": "name"}`) · Hostpfad Mage T3 (`aware` zweimal): sichtbar gescheitert, nichts gebucht |
+| Neue Regressionen | `tests/v4/fix182_quest_status_forms.test.js`: **14/14** |
+| Rot gegen `.181` | **10 von 14 rot** (Produktdateien auf `.181`, Tests unverändert): <br>– P2-4: bedingte Abgabe mit Zahlungsbehauptung; Notiz vor der Ankunft; anderer Vertrag daneben; **zwei Verträge ändern sich in derselben Antwort** (Abgabe und Annahme bei Ankunft, ein dritter unverändert); **Hostpfad mit Reload und Wiederholung** <br>– P2-5: neutrale Formen gültig; `time` ohne `seq`; Hostpfad „desc als String“ zweimal (auf `.181` „WORLD NOT RECORDED“, Ankunft verloren); Hostpfad Rogue T38; **keine Autorität durch Normalisierung** |
+| Reine Gegenfälle, auf beiden Ständen grün | Abgabe findet nicht statt: ACTIVE-Korrektur bleibt, nichts bezahlt · bedeutungstragende Formen bleiben Fehler (`aware` jeder Wert, `remote`, `evidence` als Zahl, `role`/`count: null`, doppelte `seq`, leerer String, `{"new": "name"}`) · Hostpfad Mage T3 (`aware` zweimal): sichtbar gescheitert, nichts gebucht · keine Teilannahme: ein `arrive` falscher Form samt nachfolgender Person bucht weder Ankunft noch Person |
+| Schutzbedingungen | Ein Begleiter als String (`with: "Bren"`) wird zur Liste und weiter von `companions()` geprüft (`arrive.with: unknown person Bren`, niemand erzeugt). `time` ohne `seq` bleibt der Zeitobergrenze unterworfen (`time_cap`). Personen nach der Ankunft stehen am erreichten Ort. Gültige Antworten: Im Replay ändert sich kein Record mit gültiger Erstantwort (die 7 P2-5-Änderungen sind sämtlich zuvor ungültige Erstantworten). |
+| Save/Reload, Determinismus | Hostpfad User04 I64: Der Record trägt die Endkorrektur; `foldChat` ergibt denselben gültigen Zustand; dieselbe Antwort ein zweites Mal ergibt dieselben Events und Korrekturen |
 | P2-4 Originalfixture | User04 I63/I64 (`go` + bedingte Abgabe, Originalprosa): genau eine Abgabe, eine Auszahlung von 90 cp, eine erfolgreiche Ausführung (`cmd.completed`); die Firewall lehnt die freie Zahlungsbehauptung weiter ab |
-| `npm test` | **3096/3096** (`.181`: 3085) |
+| Angrenzende Suites | Guild, Extractor/Recovery, World, PULSE, Failsoft, NPC E2: **533/533** |
+| `npm test` | **3100/3100** (`.181`: 3085) |
 | Replay gegen `.181` | **2235 Fälle, 18 geändert**, jeder einzeln geprüft (unten) |
 | Voller Korpuscheck | `accepted_batch182_vs_126.json`: 1068 abweichend, alle mit exaktem Fingerprint akzeptiert, 0 offen, 0 veraltet. Die 1050 übrigen `.177`-Einträge sind byte-gleich; der Schutztest in `replay.test.js` prüft das. |
 | ST1.19 Standard/Failsoft | **nicht ausgeführt:** keine isolierte SillyTavern-Installation in der Umgebung (wie `.180`/`.181`). `run_c.mjs` lief nicht, auch nicht gegen Benutzerdaten. **Der Smoke steht vor einer Freigabe aus.** |

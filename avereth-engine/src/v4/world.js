@@ -1943,6 +1943,20 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             : `Part of the last reply took place in a scene the engine did not book: its people, objects and quest outcomes there were not recorded. Alaric is at ${now}; continue from there.`;
         if (!corrections.includes(correction)) corrections.splice(Math.min(sceneUnreached.index, corrections.length), 0, correction);
     }
+    // Build .182 (P2-4, batch 12./13.11.2026 Mage T40 → T42): a status correction states the contract as it was when
+    // it was written (the firewall reads every report before any is applied; a quest note at its own step). A contract
+    // whose status this very reply changed (a turn-in booked on arrival, a give-up at the desk) is told as it now is:
+    // its correction of an earlier status is replaced by the one of its final status, never "ACTIVE … nothing paid"
+    // beside a booked payout. A correction of a contract whose status did not change stays as it is.
+    for (const id of new Set(events.filter((e) => e.t === 'quest.status').map((e) => e.d.id))) {
+        const q = s.quests[id];
+        if (!q) continue;
+        const now = statusCorrection(q);
+        const stale = new Set(events.filter((e) => e.t === 'quest.status' && e.d.id === id && e.d.from !== q.status)
+            .map((e) => statusCorrection({ ...q, status: e.d.from })));
+        for (let i = 0; i < corrections.length; i++) if (stale.has(corrections[i])) corrections[i] = corrections.indexOf(now) >= 0 && corrections.indexOf(now) !== i ? null : now;
+        for (let i = corrections.length - 1; i >= 0; i--) if (corrections[i] === null) corrections.splice(i, 1);
+    }
     return { events, rejected, corrections, system, opened, state: s, arrivedHall };
 
     // ---------------------------------------------------------------------------------------------- step helpers

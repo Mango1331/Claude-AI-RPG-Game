@@ -297,9 +297,56 @@ function normalizeSoftFields(value, vocab) {
         if (d.type === 'offer' && Array.isArray(x.lines)) x.lines = x.lines.map((l) => (l && typeof l === 'object' ? { ...l, ...(l.said === undefined ? { said: null } : {}), ...(l.effect === undefined ? { effect: null } : {}), teaches: softTeaches(l.teaches), equipment: l.equipment ?? null, base:l.base ?? null, quality:l.quality ?? null } : l));
         // Patch 9C-2b: the fields of a teaches the reply does not state are null
         if (d.type === 'object.new') x.teaches = softTeaches(x.teaches);
+        formOnly(x, spec);
         return x;
     }) : value.deltas;
+    if (Array.isArray(deltas)) softSeq(deltas);
     return { scene: null, ...value, expected: value.expected && typeof value.expected === 'object' ? value.expected : {}, deltas };
+}
+
+/**
+ * Build .182 (P2-5, batch 12./13.11.2026 Rogue T38/T63): form that carries no meaning, read as the model's own
+ * repair writes it, so that one such slip loses neither the whole answer nor a repair call. In the replay corpus
+ * (b16–b19) eight first answers had one of these (desc as one string, leave with evidence), each was repaired to the
+ * list or without the field, and in most the repaired delta was otherwise the same. Anything that could mean something
+ * stays an error for the existing repair:
+ * an extra aware on person.new or creature.new in any value (the repair writes it as an aware delta, and whether an
+ * observer is "aware" or has no entry decides a later stealth check: checks.js), any other extra field, null in a field
+ * that needs a value, a place given as {"new": "name"}.
+ */
+function formOnly(x, spec) {
+    const fields = spec.fields || {};
+    // a string[] field given as its one string is that one-element list ('string[] is always a JSON array')
+    for (const [k, f] of Object.entries(fields)) if (f.array === 'string' && typeof x[k] === 'string' && x[k].trim()) x[k] = [x[k]];
+    // the reply's words for a delta type that reads none (world and firewall read evidence only where it is a field)
+    if (!('evidence' in fields) && Object.hasOwn(x, 'evidence') && (x.evidence === null || typeof x.evidence === 'string')) delete x.evidence;
+    // an empty description or witness list said as null is the default an omitted one already gets
+    if ((x.type === 'person.new' || x.type === 'creature.new') && x.desc === null) x.desc = [];
+    if (x.type === 'memory' && x.who === null) x.who = [];
+}
+
+/**
+ * Build .182 (P2-5): a seq written as its digits ("3") is that number when no other delta has it. A time delta without
+ * seq (Rogue T38/T63) takes the next free number after the delta before it only where its place in story order is
+ * beyond doubt: every other delta has an integer seq, they rise in the order written, and the number is free before the
+ * next one ([1, 2, time, 4] → 3). With no free number ([1, 2, time, 3]) or any other delta without seq, nothing is
+ * guessed: the existing repair asks for it.
+ */
+function softSeq(deltas) {
+    const objects = deltas.filter((d) => d && typeof d === 'object');
+    for (const d of objects) {
+        if (typeof d.seq !== 'string' || !/^\s*\d+\s*$/.test(d.seq)) continue;
+        const n = Number(d.seq);
+        if (n >= 1 && !objects.some((y) => y !== d && (y.seq === n || String(y.seq).trim() === String(n)))) d.seq = n;
+    }
+    const missing = objects.filter((d) => d.seq === undefined);
+    if (missing.length !== 1 || missing[0].type !== 'time') return;
+    const others = objects.filter((d) => d !== missing[0]);
+    if (!others.every((d) => Number.isInteger(d.seq)) || others.some((d, i) => i > 0 && d.seq <= others[i - 1].seq)) return;
+    const i = objects.indexOf(missing[0]);
+    const before = objects.slice(0, i).at(-1)?.seq ?? 0;
+    const after = objects.slice(i + 1)[0]?.seq ?? Infinity;
+    if (before + 1 < after) missing[0].seq = before + 1;
 }
 
 /** Build .138: a coin.gift that is the price of things Alaric sells now, with no bid of that buyer in the same answer. */

@@ -32,6 +32,17 @@ const GUILD_NAME = /\bguild\b/i;
 // an official at a Guild desk (only where the context says it is one: a clerk at a harbour office is not the Guild)
 const DESK_ROLE = /\b(?:clerk|registrar|receptionist|desk|board)\b/i;
 const GUILD_CANON_ITEM = /\b(?:regist\w*|member\w*|plate|badge|medallion|licen[cs]e|fee|rank|contract|slip)\b/i;
+// .185 (natural batch 13.11.2026, Mage T23: "Bunk room's got three free. One copper …" for "a bunk for traveling
+// members" was refused as a Guild fee): a bed or a meal the Guild hall sells is an ordinary offer; "members" alone in
+// its words names no canon. Registration, plate, badge, licence, fee, rank and contract papers stay the engine's,
+// also on a line the report calls lodging or a meal, and so does a line that names no bed or meal at all
+const GUILD_CANON_DOC = /\b(?:regist\w*|plate|badge|medallion|licen[cs]e|fee|rank|contract|slip)\b/i;
+const BED_OR_MEAL = /\b(?:rooms?|beds?|bunks?|cots?|berths?|lodgings?|quarters|meals?|stew|bread|soup|porridge|supper|breakfast|dinner|food)\b/i;
+const guildCanonLine = (l, text) => {
+    const what = text(l.what);
+    if (l.kind === 'service' && ['lodging', 'meal'].includes(l.service) && BED_OR_MEAL.test(what)) return GUILD_CANON_DOC.test(what);
+    return GUILD_CANON_ITEM.test(what);
+};
 const CONTRACT_DOC = /\b(?:slip|tag|contract|chit|docket|writ|paper|ticket)\b/i;
 const PAYOUT_WHY = /\b(?:reward|bounty|payout|pay(?:ment)?\s+for|contract|quest|job|fee for the)\b/i;
 // handing a contract in: "turn it in", "hand in", or bringing/delivering/reporting something to the Guild or its desk
@@ -194,7 +205,7 @@ export function firewall(deltas, ctx = {}) {
     for (const d of list) {
         switch (d?.type) {
             case 'offer': {
-                if (guildy(d.seller) && (d.lines || []).some((l) => GUILD_CANON_ITEM.test(text(l.what)))) {
+                if (guildy(d.seller) && (d.lines || []).some((l) => guildCanonLine(l, text))) {
                     no(d, 'guild_canon_price', 'the Guild\'s fees and documents are the engine\'s canon, not an ordinary offer');
                     continue;
                 }

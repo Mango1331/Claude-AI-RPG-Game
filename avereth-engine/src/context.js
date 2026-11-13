@@ -26,6 +26,7 @@ import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } 
 import { objectiveText, proofText as guildProofText, defeatTally, tallyText, readyText, proofMemory } from './v4/guild.js';
 import { envelopeBlock } from './v4/envelope.js';
 import { sceneHandle } from './v4/scene_handles.js';
+import { paidLodging } from './v4/trade.js';
 import { settlementLife, tradeVenueRe } from './v4/settlement.js';
 import { profileOf, sourceText, gearText, gearMarketText } from './v4/items.js';
 
@@ -722,6 +723,11 @@ export function buildContext(state, content, opts = {}) {
         || (state.decisions || []).some((d) => (d.kind === 'purchase' || d.kind === 'sale') && (!d.at || d.at === state.scene.at));
     if (v4 && trading && state.mode !== 'creation') add('price_contract', 'PRICES — a price binds only as ONE total in coin for exactly the goods or service named ("fifty-six copper for these fourteen plates", "two silver for the room tonight"). A price per piece, several part prices or a usual rate are talk until the trader states that total. Whoever agrees to a price says the total again, also when Alaric proposed it ("Sixty copper it is, for all fourteen plates."); a bare "Done." binds nothing. An appraisal, approval or later delivery keeps a price open until a new total is stated.', 0, true);
 
+    // .185 (Z1.2; natural batch 13.11.2026, Rogue T40–T43: the innkeeper asked four times for the room paid in T39):
+    // what the engine booked here that stays paid
+    const paid = v4 && (opts.outcome?.c || opts.outcome?.auth?.c) && state.mode !== 'creation' ? paidLodging(state) : [];
+    if (paid.length) add('paid_here', `PAID HERE (booked by the engine): ${paid.map((p) => `${p.what}${p.cp !== null ? `, ${p.cp} cp` : ''} to ${anyLabel(state, content, p.by)}`).join(' · ')}. Settled: nobody asks for it, quotes it or charges it again; a price named now is for something else.`, 0, true);
+
     // Prototype C (4.3.0-c.6.6.5): the settlement around Alaric lives (crowd by time of day, everyday trades by size)
     if (v4 && !state.encounter && (opts.outcome?.auth?.c || opts.outcome?.c)) add('settlement', settlementLife(state, content), 1);
 
@@ -870,7 +876,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'pc', 'creation', 'npc_compact', 'npc_arrival', 'present', 'settlement', 'world_area', 'world_populations', 'gear_market', 'price_contract', 'npc_continuity', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
+    const order = ['header', 'pc', 'creation', 'npc_compact', 'npc_arrival', 'present', 'settlement', 'world_area', 'world_populations', 'gear_market', 'price_contract', 'paid_here', 'npc_continuity', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     const describe = section => ({ name: section.name, tokens: section.tokens, own: section.own,

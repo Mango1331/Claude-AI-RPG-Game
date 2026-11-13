@@ -328,6 +328,42 @@ export function shortfallText(price, coin, content = null) {
     return `${c(price)} needed; he has ${c(coin)}, ${c(Math.max(0, price - coin))} short. Silver and copper are one purse${canon}: no coin needs changing, and changing coin makes up nothing`;
 }
 
+const LODGING_WORDS = /\b(?:rooms?|beds?|bunks?|cots?|berths?|lodgings?|quarters)\b/;
+const MORE_NIGHTS = /\b(?:another|second|extra|one more|next|further) (?:night|nights)\b|\btomorrow night\b|\b(?:two|three|four|five|several) nights\b/;
+
+/**
+ * .185 (Z1.2; natural batch 13.11.2026, Rogue T39–T43): the beds the engine booked at this place in the last 24 hours
+ * (the window PULSE reads a lodging by, src/v4/pulse.js), each with its own evidence: the service it granted and the
+ * accepted offer of the same seller here that sold it (what, price). A service without such an offer is not named.
+ * @returns {{by: string, what: string, cp: number|null, minute: number|null, offer: string}[]}
+ */
+export function paidLodging(s, at = s.scene?.at) {
+    const now = s.clock?.minute ?? 0;
+    const lodging = (l) => l.kind === 'service' && l.service === 'lodging';
+    return (s.services || []).filter((x) => x.service === 'lodging' && x.by && x.at === at && now - (x.minute ?? 0) <= 1440).map((x) => {
+        const offer = Object.values(s.offers || {}).filter((o) => o.status === 'accepted' && !o.bid && o.seller === x.by && o.at === at && (o.lines || []).some(lodging)).at(-1);
+        const line = offer?.lines.find(lodging);
+        return line ? { by: x.by, what: line.what, cp: Number.isInteger(line.price_cp) ? line.price_cp : null, minute: x.minute ?? null, offer: offer.id } : null;
+    }).filter(Boolean);
+}
+
+/**
+ * .185 (GPT Gegenreview E-3, multi-position purchase): a purchase of several things from the seller of a bed he paid
+ * here (paidLodging) that takes in that bed again is not booked – neither charged twice nor cut down to the rest by the
+ * engine's arithmetic; the seller names one total for what is still unpaid. A bed bought on its own stays a purchase
+ * (another night may be meant).
+ */
+export function paidAgainWhy(s, offer, picks) {
+    const paid = paidLodging(s).filter((p) => p.by === offer.seller);
+    if (!paid.length) return null;
+    const bed = picks.find((p) => (p.line.kind === 'service' && p.line.service === 'lodging') || LODGING_WORDS.test(normText(p.line.what || '')));
+    if (!bed || MORE_NIGHTS.test(normText(bed.line.what || ''))) return null;
+    const several = picks.length > 1 || /\b(?:and|with|plus)\b|,|&/.test(normText(bed.line.what || ''));
+    if (!several) return null;
+    const was = paid.at(-1);
+    return `${was.what} is paid already (${was.cp !== null ? `${was.cp} cp, ` : ''}booked by the engine): this purchase of ${picksText(picks)} takes it in again, so nothing was booked and nothing was taken off; the seller names one total in coin for what is still unpaid`;
+}
+
 export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = null, consent = null }) {
     const live = s.offers[offer.id];
     const unavailable = offerAvailability(s, live);
@@ -346,6 +382,8 @@ export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = nu
         const why = picks.map(p => trainingOfferWhy(s, content, offer.seller, p.line)).find(Boolean);
         if (why) return { error: why };
     }
+    const again = paidAgainWhy(s, offer, picks);
+    if (again) return { error: again, clarify: true };
     const coin = s.entities.pc.sheet.coin_cp;
     if (!Number.isInteger(cp) || cp < 0 || coin < cp) return { error: 'not enough coin' };
     const counted = picks.some((p) => p.units !== (Number(p.line.qty) || 1));

@@ -1,4 +1,4 @@
-import { offerAvailability } from './trade.js';
+import { offerAvailability, paidLodging } from './trade.js';
 import { privateQuestsOf, questVisible } from '../content.js';
 // Runtime V4: the CATALOG (docs/RUNTIME_V4_PLAN.md §4.2) the interpreter and the extractor read, built from the state:
 // where Alaric is, who is present, the places, quests, Guild board, offers and objects he may refer to, the open
@@ -213,6 +213,11 @@ export function openDecisionTexts(state) {
     });
 }
 
+/** .185 (Z1.2; Rogue T40–T42: nobody knew the room was paid; the innkeeper asked for it four times, the planner bought it again). */
+export function paidHereTexts(state, content) {
+    return paidLodging(state).map((p) => `${p.what}${p.cp !== null ? `, ${p.cp} cp` : ''} to ${sceneHandle(state, content, p.by) || p.by} (${p.by}): paid, booked by the engine; not owed, quoted or charged again`);
+}
+
 const TRAVEL_WORDS = /\b(?:escort|journey|travel|road|cart|wagon|caravan|ship|boat|ferry|ride|guide|lead|depart|leave|deliver|destination|route|waystation)\b/i;
 // Prototype C (4.3.0-c.6): a journey comes from the work itself, an escort or a delivery (a private job: escort, deliver,
 // guide or accompany), never from road words in its notes (live 04.10.2026 16:35: the warden's directions to the boar
@@ -345,6 +350,8 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         // Patch 8: the level of a Living Dungeon he is on; the extractor also the encounter the engine placed (src/v4/living.js)
         dungeon: c ? livingLines(state, { extractor: hiddenFeatures }) : [],
         open: openDecisionTexts(state),
+        // .185 (Z1.2): what the engine booked here that stays paid (a bed for the night), for the planner and the extractor
+        paid: c ? paidHereTexts(state, content) : [],
         // Patch 9C-2c: the developments offered to him (not his yet) and the Passives he holds (src/v4/passive_growth.js);
         // the planner's alone (the extractor's catalog shows the hidden things instead, and no Passive is a delta)
         ...(hiddenFeatures ? {} : passiveCatalog(state, content)),

@@ -1237,6 +1237,7 @@ const HANDLERS = {
         if (booked.error) {
             const why = booked.error === 'above his price limit' ? `${picksText(pick.picks)} costs ${cpText(price, content)}, more than the ${c.max_cp} cp he allows`
                 : booked.error === 'not enough coin' ? `${picksText(pick.picks)}: ${shortfallText(price, s.entities.pc.sheet.coin_cp, content)}` : booked.error;
+            if (booked.clarify) return { status: 'clarify', reason: 'paid already', line: `CLARIFY — NOT BOUGHT: ${why}. Nothing changes hands.` };
             return { status: 'refused', reason: booked.error, line: `NOT BOUGHT — ${why}. Nothing changes hands.` };
         }
         const reg = pick.picks.some((p) => p.line.service === 'guild_registration');

@@ -3146,7 +3146,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             if (coin < price) { system.push(`NOT BOUGHT — ${what}: ${shortfallText(price, coin, content)}`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'no_coin' } }); continue; }
             grant('player.buy');
             const booked = bookPurchase(s, emit, { offer: o, picks: pick.picks, cp: price, objectId: (name) => uniqueObjectId(s, tag, name), content, consent: dec });
-            if (booked.error) { system.push(`NOT BOUGHT — ${booked.error === 'not enough coin' ? `${what}: ${shortfallText(price, s.entities.pc.sheet.coin_cp, content)}` : booked.error}`); continue; }
+            if (booked.error) {
+                system.push(`NOT BOUGHT — ${booked.error === 'not enough coin' ? `${what}: ${shortfallText(price, s.entities.pc.sheet.coin_cp, content)}` : booked.error}`);
+                if (booked.clarify && !corrections.includes(`NOT BOUGHT — ${booked.error}.`)) corrections.push(`NOT BOUGHT — ${booked.error}.`);
+                continue;
+            }
             for (const p of pick.picks.filter((x) => x.line.kind === 'goods')) bought.push({ what: p.line.what, units: p.units, seller, left: p.units });
             counterparts.add(seller);
             emit({ t: 'decision.closed', d: { id: dec.id, status: 'accepted' } });

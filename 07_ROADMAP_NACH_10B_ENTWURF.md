@@ -10,7 +10,7 @@
 | **Preis-/Planner-Belege V4** | Codebefunde mit Schutzauflagen P1a–P1f: [Architekturaudit §13](recherche/ARCHITEKTUR_AUDIT_10B_FABLE.md) · [Opus/GPT](recherche/ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md). Noch kein Patch |
 | **Kontext und E3-Extraktion** | **E3-V-1 umgesetzt in `.183`** (Extractorvertrag: 80-Zeichen-Grenze, `LATER ENCOUNTER`-Hinweis nach der R10-Prüfung); natürliche Wirkung offen. `relevant`-Teillieferung D3 erst nach klarer Nachweistrennung; kein neues NPC-Speichersystem |
 | **Ortschronologie O1-B1** | Kleine schlüssige `seq`-Normalisierung als möglicher Fachpatch; O1-Whitelist und V1-Frühankunft nicht empfehlen. [Fachplan einschließlich Gegenreviews](recherche/FACHPLAN_O1_O2_KAUSALITAET_UND_TEILBEWEGUNG.md). O2-stay nur nach Raumgranularitätsentscheidung |
-| **K2 Monster A1/A2** | [Technischer Fachplan mit Opus/GPT §§8–9](patch_plans_10b/FACHPLAN_MONSTER_ANATOMIE_LOOT_A1_A2.md). **A1 umgesetzt in `.184`** (mit K1/K2, D6/D9; Randfall R1 in `.185` geschlossen); A2 ist der nächste separate Schritt, A2 abhängig von Loadouts, Verwertbarkeit, Altprofilen, gemischten Gruppen. Waffen in `DUNGEON AHEAD` vorerst zurückgestellt |
+| **K2 Monster A1/A2** | [Technischer Fachplan mit Opus/GPT §§8–9](patch_plans_10b/FACHPLAN_MONSTER_ANATOMIE_LOOT_A1_A2.md). **A1 umgesetzt in `.184`** (mit K1/K2, D6/D9; Randfall R1 in `.185` geschlossen); **A2-1 bis A2-3 umgesetzt in `.186`** (konservative Pilotwerte D1–D5, D7; K3–K7). Waffen in `DUNGEON AHEAD` (A2-4) vorerst zurückgestellt |
 | **K1 Main/Minor** | Designbeschlossen, aber nicht implementiert; [umfangreicher Fachplan auf `.104`](patch_plans_10b/PATCH_COMBAT_MAIN_MINOR_ACTIONS.md), vor Codearbeit auf aktuellen Produkt-HEAD abgleichen |
 | **Stealth S2** | S1 ist implementiert; lokale heimliche Search/TAKE zusätzlich nach [S1/S2-Fachplan](patch_plans_10b/PATCH_STEALTH_ACTION_MANNER.md) auswählen und umsetzen |
 
@@ -89,7 +89,7 @@ Diese Kennungen sind Such-/Diskussionshilfen. Der ausführliche alte [33-Kandida
 
 - **Natürliche E2/E3-/PULSE-Qualität** vor E4/E5 und PULSE D; technische Regressionen sind dafür kein vollständiger Ersatz.
 - **Kampf-K1** vor breiten Boss-/Summon-/Spezialaktiven, sofern deren Aktionsökonomie tatsächlich davon abhängt; kein prinzipielles Verbot isolierter kleiner Technikprototypen.
-- **Monster A1/A2** unabhängig vom NPC-Test planbar; A2 verlangt die im Fachplan aufgeführten Designentscheidungen und Replay-/Legacy-Gegenproben.
+- **Monster A1/A2** umgesetzt (`.184`/`.186`); offen nur A2-4 und die Nachjustierung der Designzahlen nach einem natürlichen Lauf.
 - **Preisbelege und Spielerhoheit** vor Komfort-Shortcuts; nicht durch neue UI-Aktionen umgehen.
 - **Quelle und Einzelfall** statt vorsorglicher Großrefactors. Originalbelege im [Runindex](testrun_10b/README.md), weitere offene Brainstormings in [04](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md).
 

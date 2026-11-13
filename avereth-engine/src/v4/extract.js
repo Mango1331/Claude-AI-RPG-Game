@@ -219,6 +219,50 @@ export function extractorUser({ catalog, actions, player = null, expectedKeys, v
     ].join('\n');
 }
 
+/**
+ * .185 (natural batch 13.11.2026, Rogue T41–T43: three answers in a row lost the envelope – expected answers "1"/"2"
+ * at the top level, a delta without type and seq, own field names "price", "unit", "phase" on an offer – and the
+ * repair named only the first eight violations): the one repair also gives the form it asks for, built from this
+ * turn's expected keys, and per delta the fields it misses, the ones its type does not have and the ones it has.
+ * Nothing is read differently: the schema and the number of repairs are unchanged.
+ */
+export function repairForm(vocab, expectedKeys, errors) {
+    const shape = (t) => {
+        const e = vocab.expected?.[t];
+        return e ? `{${Object.entries(e.shape).map(([f, v]) => `"${f}": ${v}`).join(', ')}}` : '{"done": true|false}';
+    };
+    const keys = Object.entries(expectedKeys || {});
+    const form = `{"scene": <place-ref or "here">, "expected": {${keys.map(([k, t]) => `"${k}": ${shape(t)}`).join(', ')}}, "deltas": [{"seq": 1, "type": "<one listed delta type>", <only that type's fields>}]}`;
+    const notes = [];
+    const top = errors.map((e) => /^\$: unexpected property "([^"]+)"/.exec(e)?.[1]).filter(Boolean);
+    const misplaced = top.filter((k) => keys.some(([x]) => x === k));
+    if (misplaced.length) notes.push(`${misplaced.map((k) => `"${k}"`).join(', ')} ${misplaced.length > 1 ? 'are answers' : 'is an answer'} of "expected": put ${misplaced.length > 1 ? 'them' : 'it'} inside "expected", never at the top level`);
+    const other = top.filter((k) => !misplaced.includes(k));
+    if (other.length) notes.push(`the top level has only "scene", "expected" and "deltas" (not ${other.map((k) => `"${k}"`).join(', ')})`);
+    for (const [k, type] of keys) {
+        const miss = errors.map((e) => e.startsWith(`$.expected.${k}:`) && /missing required "([^"]+)"/.exec(e)?.[1]).filter(Boolean);
+        const extra = errors.map((e) => e.startsWith(`$.expected.${k}:`) && /unexpected property "([^"]+)"/.exec(e)?.[1]).filter(Boolean);
+        if (miss.length || extra.length) notes.push(`expected "${k}" (${type}) is ${shape(type)}${extra.length ? `, without ${extra.map((f) => `"${f}"`).join(', ')}` : ''}`);
+    }
+    const specs = new Map((vocab.deltas || []).map((d) => [d.type, d]));
+    const byDelta = new Map();
+    for (const e of errors) {
+        const m = /^\$\.deltas\[(\d+)\](?: \(([^)]+)\))?:\s*:?\s*(.*)$/.exec(e);
+        if (!m) continue;
+        const d = byDelta.get(m[1]) || { type: m[2] || null, missing: [], unknown: [], typeless: false };
+        const miss = /missing required "([^"]+)"/.exec(m[3]), extra = /unexpected property "([^"]+)"/.exec(m[3]);
+        if (miss) d.missing.push(miss[1]); else if (extra) d.unknown.push(extra[1]); else if (/needs a "type"/.test(m[3])) d.typeless = true;
+        byDelta.set(m[1], d);
+    }
+    for (const [i, d] of byDelta) {
+        const spec = d.type && specs.get(d.type);
+        if (d.typeless) { notes.push(`deltas[${i}] needs "seq" and "type" (one of the listed delta types), its fields beside them`); continue; }
+        if (!spec || (!d.missing.length && !d.unknown.length)) continue;
+        notes.push(`deltas[${i}] (${d.type})${d.missing.length ? ` lacks ${d.missing.map((f) => `"${f}"`).join(', ')}` : ''}${d.missing.length && d.unknown.length ? ';' : ''}${d.unknown.length ? ` has no field ${d.unknown.map((f) => `"${f}"`).join(', ')}` : ''}; the fields of ${d.type}: "seq", "type", ${Object.keys(spec.fields || {}).map((f) => `"${f}"`).join(', ')}`);
+    }
+    return ` Required form: ${form}.${notes.length ? ` To correct: ${notes.join('; ')}.` : ''} Keep what was valid; invent no field and no event.`;
+}
+
 /** The messages of an extractor call, and of its one repair (the invalid answer and the errors appended). */
 export function extractorRequest(vocab, { catalog, actions, player = null, expectedKeys, reply, startScene = null }, { previous = null, errors = null } = {}) {
     const system = `${extractorSystem(vocab)}\n\n${EXTRACT_PLAIN_FORMAT}`;
@@ -229,7 +273,7 @@ export function extractorRequest(vocab, { catalog, actions, player = null, expec
     if (previous !== null && errors && !String(previous).trim()) {
         messages.push({ role: 'user', content: 'Your previous answer was empty: it ran out of room before the JSON. Answer now with the JSON object alone, at once and short: report only what the reply plainly establishes, include every required expected key and all actual movements with chronological arrive deltas and their scenes. A GO goal alone proves no arrival. Leave out uncertain claims; empty deltas are valid only when the reply establishes no changes. Do not deliberate.' });
     } else if (previous !== null && errors) {
-        messages.push({ role: 'assistant', content: String(previous) }, { role: 'user', content: `Your answer was not valid: ${errors.slice(0, 8).join('; ')}. Answer again with only the corrected JSON object, nothing else.` });
+        messages.push({ role: 'assistant', content: String(previous) }, { role: 'user', content: `Your answer was not valid: ${errors.slice(0, 8).join('; ')}. Answer again with only the corrected JSON object, nothing else.${repairForm(vocab, expectedKeys, errors)}` });
         if (errors.some(e => /Place reference|\.(?:at|scene):/.test(e))) messages.at(-1).content += ' Place references must be a known id or {"new":{"name":"exact name","kind":"interior","parent":"known id or full new-parent object"}}. Preserve already valid scene and expected fields. Correct only invalid references and actual story chronology; never invent travel.';
         if (startScene && errors.some(e => /\.scene\b/.test(e))) messages.at(-1).content += ` Engine starting scene: ${JSON.stringify(startScene)}. Annotate earlier deltas with their actual scene before the later arrival (including any actual intermediate stop); the final scene is not retroactive. Preserve valid expected answers and independent deltas. Never invent or reorder arrivals to bypass the error.`;
     }

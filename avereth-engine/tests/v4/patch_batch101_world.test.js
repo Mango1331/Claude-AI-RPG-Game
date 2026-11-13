@@ -41,7 +41,14 @@ for (const refKind of ['id', 'new', 'reordered']) test(`101 World: canonical ${r
     assert.deepEqual(replay, r.state);
 });
 test('101 World: elapsed travel time alone does not move the party before a local gift', () => {
-    const s = go(base(), 'loc.glassmere'), at = s.scene.at;
+    // .181 (P2-2): this fixture's own PULSE draw opens a travel window ("strange"), whose road stop is the engine's;
+    // .101's rule (time alone moves nobody) is checked with the window closed. The open window with this very gift:
+    // tests/v4/fix181_pulse_road_stop.test.js
+    const was = content.rules.pulse.force;
+    content.rules.pulse.force = { open: false };
+    let s;
+    try { s = go(base(), 'loc.glassmere'); } finally { content.rules.pulse.force = was; }
+    const at = s.scene.at;
     const a = { scene: at, expected: { 1: { arrived: false, at: null, with: [] } }, deltas: [
         { seq: 1, type: 'object.new', name: 'Fresh travel apple', kind: 'item', qty: 1, holder: 'npc.npclodging_clerk', scene: at },
         { seq: 2, type: 'object.move', object: { new: 'Fresh travel apple' }, to: 'pc', qty: 1, scene: at },

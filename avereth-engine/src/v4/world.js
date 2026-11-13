@@ -31,7 +31,7 @@ import { mayOpenFight, mayTake, attackCommitted } from './envelope.js';
 import { soughtMatch, CAUSE_SHORT } from './pulse.js';
 import {
     PLACE_PARENTS, HALL_NAME, lineage, guildDestination, hallOf, hallOfSettlement, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind, SERVICE_ROLE, collectivePerson,
-    progressKey, sameKinds, kindOf, populationAt, validEncounterLevels,
+    progressKey, sameKinds, kindOf, populationAt, validEncounterLevels, realmOf,
 } from './domain.js';
 import { creatureContract } from './population.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
@@ -983,9 +983,39 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             }
         }
     }
+    // Build .181 (P2-2, batch 12./13.11.2026 Rogue T32/T36, Mage T44): the one stop the engine itself orders on a
+    // ruleset-2 journey. .101 moves him only at an explicit arrive, and a missing arrive alone still moves nobody. But
+    // an OPEN PULSE window on a leg he was authorized to take tells the story "It is a real stop short of <there>"
+    // (pulse.js lineFor): when the reply then reports no arrive at all and no arrival of any GO, he is on the road of
+    // the land he set out in (its realm, the existing place an explicit report would name). The stop is booked in story
+    // order: what the reply puts expressly at the place he set out from happened before he left; the first local step
+    // of anywhere else (here, the road) is on the road, so whom he meets there is met there and not at the hall he
+    // left; with no such step, at the end of the deltas. Who travels with him comes along (the GO's journey charge, the
+    // extractor's expected.<seq>.with), the rest stays where it was. Never his destination: no arrival, no travel time,
+    // no goal, delivery or turn-in at the stop (transit). A closed window, a scene or pause window, no authorized GO, a
+    // fight, a reported arrive or a start on the realm's road itself keep .180's handling.
+    const stopRoad = explicitTravel && pulse?.exposure === 'travel' && pulse.open === true && (auth.gos || []).length
+        && !(answer.deltas || []).some((d) => d?.type === 'arrive') && !arrivesAnyway ? realmOf(s, startAt) : null;
+    let roadStop = !!stopRoad && stopRoad !== startAt && s.places[stopRoad]?.kind === 'realm' && !auth.gos.some((g) => g.to === stopRoad);
+    const atStart = (d) => { const at = d.scene ?? answer.scene; return at != null && at !== 'here' && samePlace(s, at, startAt, content); };
+    const bookRoadStop = () => {
+        roadStop = false;
+        if (s.encounter || s.scene.at !== startAt) return;
+        const previousStep = step;
+        step = { kind: 'engine' };
+        const destination = auth.gos.at(-1);
+        const said = auth.gos.flatMap((g) => (Array.isArray(expected[String(g.seq)]?.with) ? expected[String(g.seq)].with : []));
+        const party = companions(said, { seq: destination.seq ?? 0, type: 'expected' });
+        perceiveAll(s, emit, seeing());
+        arrive(stopRoad, party);
+        transit = stopRoad;
+        emit({ t: 'scene.moved', d: { place: `On the way to ${destination.journey || destination.name || destination.newName || 'the destination'}` } });
+        step = previousStep;
+    };
 
     for (const d of [...fw.accept].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0))) {
         const nextScene = d.scene ?? answer.scene;
+        if (roadStop && localSceneDelta(d) && !atStart(d)) bookRoadStop();
         if (implicitArrivals.length && d.type !== 'arrive' && nextScene != null && nextScene !== 'here') {
             const next = implicitArrivals[0];
             const ref = next?.e.at || (auth.gos || []).find(g => String(g.seq) === String(next?.k))?.to;
@@ -1660,6 +1690,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (r.kind === 'on' && s.features[r.id] && !s.features[r.id].on && target !== r.id) emit(featureEvent({ ...s.features[r.id], on: target }));
         if (r.kind === 'way' && s.links[r.id] && !s.links[r.id].feature) emit(linkEvent({ ...s.links[r.id], feature: target }));
     }
+
+    // .181 (P2-2): the engine's road stop of a reply whose every local step was at the place he set out from
+    if (roadStop) bookRoadStop();
 
     // Resolve delayed acquisition before checking this reply's delivery claims.
     while (implicitArrivals.length) applyExpected();

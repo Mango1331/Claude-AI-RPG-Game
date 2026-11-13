@@ -10,7 +10,7 @@ import { privateQuestsOf } from '../content.js';
 // valid answer decides the domain/authority firewall (src/v4/firewall.js), not this module.
 import { O, S, B, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
-import { saleOfferLines } from './trade.js';
+import { saleOfferLines, purchaseLines } from './trade.js';
 import { normText } from '../util.js';
 import { findQuote, openConditionNear } from './finance_evidence.js';
 import { creatureContract } from './population.js';
@@ -592,6 +592,17 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
             const known = state.entities[d.ref] || (exact.length === 1 ? exact[0] : null);
             if (known?.kind === 'npc' && !state.scene.present.includes(known.id) && known.at !== stepAt && entered.get(known.id) !== stepAt)
                 semanticIssues.push({index:i, seq:d.seq, why:`$.deltas[${i}]: ${known.id} is known, last at ${known.at || 'an unknown place'}; preserve identity/history. Report an actual newly established local arrival as enter, otherwise present:false. Do not repeat an old predicament or infer presence merely from the PC’s arrival.`});
+        }
+    }
+    // .185 (Z3.1; natural batch 13.11.2026, Rogue T38: "four copper the pair" answered priced: true with no offer, the
+    // stew could never be bought; Mage T24 the same for the bunk): a buy answered as priced, with no offer in the answer
+    // and none open here for it, asks the one bounded repair for the seller's offer – or priced false. Nothing is made up
+    if (state && Array.isArray(value?.deltas) && !value.deltas.some((d) => d?.type === 'offer')) {
+        for (const [k, t] of Object.entries(expectedKeys || {})) {
+            if (t !== 'buy' || value.expected?.[k]?.priced !== true) continue;
+            const dec = (state.decisions || []).find((x) => x.kind === 'purchase' && String(x.seq) === String(k) && x.turn === state.turn);
+            if (!dec || Object.values(state.offers || {}).some((o) => o.status === 'open' && !o.bid && o.at === state.scene?.at && purchaseLines(dec.what, o.lines || []).length)) continue;
+            semanticIssues.push({ index: -1, seq: Number(k), why: `expected.${k}.priced is true, but no offer reports that price: if this reply has the seller name one binding total in coin for ${String(dec.what).slice(0, 60)}, report that offer (seller, lines with price_cp, said and pricing in the reply's own words); otherwise priced is false. Never make up an offer or a price` });
         }
     }
     // Schema errors must describe the supported link, never guess which object an invented id meant.

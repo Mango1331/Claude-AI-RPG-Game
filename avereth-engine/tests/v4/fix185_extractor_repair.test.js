@@ -61,13 +61,13 @@ async function buying(answers) {
     };
     await say(g, 'I buy a loaf of bread from the baker.', { type: 'buy', what: 'a loaf of bread', from: null, max_cp: null, any_price: false, qty: null, quote: 'I buy a loaf of bread from the baker.' });
     assert.deepEqual(g.state().last.outcome.expected_keys, { 1: 'buy' });
-    const r = await g.reply('The baker wipes his hands. "Two copper the loaf," he says.');
+    const r = await g.reply('The baker wipes his hands and says nothing of a price yet.');
     return { g, r, asked };
 }
 
 test('.185 host path: the repair after a T41-form answer carries the form; the corrected answer is applied (one repair)', async () => {
-    const bad = JSON.stringify({ 1: { bought: false, priced: true }, deltas: [{ type: 'offer', seller: 'baker', price: 2, unit: 'cp' }] });
-    const good = JSON.stringify({ scene: 'here', expected: { 1: { priced: true, taken_anyway: false } }, deltas: [] });
+    const bad = JSON.stringify({ 1: { bought: false, priced: false }, deltas: [{ type: 'offer', seller: 'baker', price: 2, unit: 'cp' }] });
+    const good = JSON.stringify({ scene: 'here', expected: { 1: { priced: false, taken_anyway: false } }, deltas: [] });
     const { r, asked } = await buying([bad, good]);
     assert.deepEqual(asked.map((x) => x.purpose), ['extract', 'extract_repair']);
     const repair = asked[1].messages.at(-1).content;
@@ -77,7 +77,7 @@ test('.185 host path: the repair after a T41-form answer carries the form; the c
 });
 
 test('.185 host path against: a valid first answer asks no repair; two broken answers stay a failure (no third call)', async () => {
-    const good = JSON.stringify({ scene: 'here', expected: { 1: { priced: true, taken_anyway: false } }, deltas: [] });
+    const good = JSON.stringify({ scene: 'here', expected: { 1: { priced: false, taken_anyway: false } }, deltas: [] });
     const ok = await buying([good]);
     assert.deepEqual(ok.asked.map((x) => x.purpose), ['extract']);
     const bad = JSON.stringify({ 1: { bought: false }, deltas: [{ offer: { seller: 'baker' } }] });

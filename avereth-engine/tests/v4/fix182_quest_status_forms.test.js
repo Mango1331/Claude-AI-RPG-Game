@@ -116,7 +116,7 @@ test('.182 P2-5 forms without meaning are valid: a one-string desc, evidence on 
     assert.ok(!('evidence' in p.value.deltas[3]));
 });
 
-test('.182 P2-5 Rogue T38/T63: a time without seq takes the free number at its written place; nothing is guessed otherwise', () => {
+test('.182 P2-5 Rogue T38: a time without seq takes the free number at its written place; nothing is guessed otherwise', () => {
     const t = { type: 'time', minutes: 30 };
     const ok = parse({ ...answer({ seq: 2, ...CLERK }), deltas: [{ seq: 1, type: 'arrive', at: AHALL, forced_by: null, with: null }, { seq: 2, ...CLERK }, t, { seq: 4, type: 'leave', who: 'clerk' }] });
     assert.deepEqual(ok.errors, []);

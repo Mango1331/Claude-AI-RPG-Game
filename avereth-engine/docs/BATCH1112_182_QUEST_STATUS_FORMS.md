@@ -63,7 +63,7 @@ Die Batch-ZIP liegt nicht im Repository. Deshalb habe ich die 1103 natürlichen 
 
 In jedem dieser Fälle hat die Modellreparatur genau diese Form korrigiert. In 7 Fällen war die reparierte Meldung sonst identisch.
 
-**Nicht belegt:** fehlende oder textförmige `seq`. Diese Fälle stammen nur aus dem Batch-Review (Rogue T38/T63).
+**Nicht belegt:** fehlende oder textförmige `seq`. Dieser Fall stammt nur aus dem Batch-Review (Rogue T38; zu T63 siehe die Korrektur unten).
 
 **`null` mit Bedeutung:** `person.new.role` und `fact.o` kamen als `null` vor. Dort trägt `null` Bedeutung; diese Fälle bleiben unberührt.
 
@@ -75,7 +75,7 @@ In jedem dieser Fälle hat die Modellreparatur genau diese Form korrigiert. In 7
 | `evidence` an einem Typ ohne `evidence`-Feld (`leave` u. a.) | entfernt | `world.js` und Firewall lesen `evidence` nur dort, wo es Feld ist (`whoOf` nur bei `position`, `aware`, `intent`, `hostile`) |
 | `desc: null` bei `person.new`/`creature.new`, `who: null` bei `memory` | → `[]` | derselbe Default, den ein ausgelassenes Feld schon bekommt |
 | `seq` als Ziffernfolge (`"3"`) | → Zahl, wenn keine andere Meldung diese `seq` hat | die Zahl steht da; nichts wird geraten |
-| `time` ohne `seq` (Rogue T38/T63) | → nächste freie Nummer nach der vorigen Meldung | **nur** wenn alle anderen Meldungen eine ganzzahlige `seq` haben, diese in Schreibreihenfolge steigen und die Nummer vor der nächsten frei ist (`[1, 2, time, 4]` → 3) |
+| `time` ohne `seq` (Rogue T38) | → nächste freie Nummer nach der vorigen Meldung | **nur** wenn alle anderen Meldungen eine ganzzahlige `seq` haben, diese in Schreibreihenfolge steigen und die Nummer vor der nächsten frei ist (`[1, 2, time, 4]` → 3) |
 
 **Bewusst nicht normalisiert** (bleibt Fehler für die bestehende eine Reparatur):
 
@@ -87,16 +87,23 @@ In jedem dieser Fälle hat die Modellreparatur genau diese Form korrigiert. In 7
 - **`null` in einem Feld, das einen Wert braucht** (`role`, `count`).
 - **`seq` als Text,** wenn eine andere Meldung diese Zahl schon hat.
 - **`time` ohne `seq` ohne eindeutigen Platz:** keine freie Nummer, andere Meldungen ohne `seq` oder nicht steigende Reihenfolge.
-- **Ein Ort als `{"new": "name"}`:** `kind` und `parent` tragen Bedeutung; das ist eventuell Warrior T56, ohne Original nicht prüfbar.
+- **Ortsreferenzen in falscher Form** (`{"new": "name"}`; Warrior T56: `{"new": {…}, "ref": null}`, siehe unten): `kind`, `parent` und Identität tragen Bedeutung.
 
 ### Die sieben verworfenen Extraktionen des Batches
 
-| Fall | Ursache laut Fable §8.3 C | Ergebnis `.182` |
+**Korrigiert am 13.11.2026 nach [GPT-Review §11.2](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/testrun_10b/npc-20261112-220625Z/REVIEW.md).** GPT lagen die Original-Extractorantworten aus der Batch-ZIP vor. Die erste Fassung dieser Tabelle führte Rogue T63 zusammen mit T38 als behoben und Warrior T56, Mage T20/T21 und Rogue T51 als nicht bestimmbar; das war ohne Originale geraten bzw. falsch.
+
+| Fall | Originalantwort (GPT §11.2) | Ergebnis `.182` |
 |---|---|---|
-| Rogue T38, T63 | `time` ohne `seq` | **behoben**, wenn der Platz eindeutig ist (alle anderen `seq` ganzzahlig und steigend, Nummer frei); sonst wie bisher Reparatur |
-| Mage T3 | überzähliges `aware` an `person.new` | **bewusst nicht** normalisiert (siehe oben), bleibt Reparaturfall |
-| Warrior T56 | Form einer Ortsreferenz | genaue Form ohne Original nicht bestimmbar. Ortsformen tragen Bedeutung (`kind`, `parent`, Identität) und werden nicht automatisch geändert; bleibt Reparaturfall |
-| Mage T20, T21, Rogue T51 | im Review nicht benannt (T51: verlorene Ankunft) | ohne Originalbelege nicht prüfbar; offen |
+| Rogue T38 | Erstantwort `{}`; Reparatur `{"deltas":[{"type":"time","minutes":5}]}`, `time` ohne `seq` | **einschlägig:** Diese Reparaturantwort ist auf `.182` gültig (`softSeq` setzt `seq` 1; mit `parseExtraction` nachgeprüft). Der Originalzug selbst wurde nicht neu abgespielt. |
+| Rogue T63 | Reparatur `{"deltas":[{"type":"time","time":2}]}`: Wert in der falschen Eigenschaft `time`, `minutes` fehlt | **nicht gelöst:** bleibt ungültig (`missing required "minutes"`, `unexpected property "time"`); ein Feld umzudeuten ist keine neutrale Formkorrektur |
+| Mage T3 | Reparatur mit `person.new.aware: null` und eigener `aware`-Meldung | **bewusst nicht** normalisiert (siehe oben), bleibt Reparaturfall |
+| Warrior T56 | `place.reported.place` als `{"new":{…},"ref":null}`; die Reparatur behält die ungültige Referenzform | **nicht gelöst:** Ortsreferenzen tragen Bedeutung; kein sicherer allgemeiner Default |
+| Rogue T51 | Erstantwort eine flache `{"arrived":true,"at":…}`-Struktur ohne `expected`/`deltas`; Reparatur mit verschachtelten Objekten ohne `type` | **nicht gelöst:** falsche Gesamtstruktur, keine Feldform |
+| Mage T20 | `obj.new` statt `object.new`, verschachtelte Felder, falsche Ankunftsschlüssel, fehlende `seq` | **nicht gelöst:** mehrere strukturelle und semantische Fehler |
+| Mage T21 | Meldung ohne `type`; Reparatur ohne `kind`/`qty` | **nicht gelöst:** fehlender Pflichtinhalt |
+
+Diese Restfälle sprechen nicht für eine weitere Schema-Autoreparatur. Treten sie erneut auf, ist höchstens ein eigener kleiner Auftrag zur Reparaturanweisung des Extractors mit den exakten Rohantworten angebracht (GPT §11.2).
 
 ### Teilannahme (Fable §8.4 P2-5): geprüft und zurückgestellt
 

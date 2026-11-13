@@ -23,9 +23,17 @@ function draw(key, [min, max]) {
 }
 const chance = (key, p) => (roll(key) % 1000) < Math.round(p * 1000);
 const titled = (t) => String(t || '').split(/\s+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(' ');
-/** The species a material is named after: the creature's own kind, at most its last three words ("Road Beast"). */
+/**
+ * The species a material is named after: the creature's own kind, at most its last three words ("Road Beast").
+ * Build .184 (Monster A1, plan §3.1 Nr. 9 / K2): a place it is "of" is no part of its kind ("feral dog of the millpond"
+ * is a Feral Dog, not "Of The Millpond"). This is an identity change of its stack (obj.loot.<species>.<material>.<rank>):
+ * the same kind from two places is one stack, two kinds "of the millpond" are two; a stack held from before keeps its
+ * id. With nothing left before "of the" ("of the deep") the old rule stands.
+ */
 function speciesName(e, anchor) {
-    const words = String(e.species || anchor?.name?.split('/')[0] || 'creature').replace(/[^A-Za-z' -]/g, ' ').trim().split(/\s+/);
+    const kind = String(e.species || anchor?.name?.split('/')[0] || 'creature');
+    const own = kind.replace(/\s+of\s+the\s+.*$/i, '');
+    const words = (own.replace(/[^A-Za-z' -]/g, ' ').trim() ? own : kind).replace(/[^A-Za-z' -]/g, ' ').trim().split(/\s+/);
     return titled(words.slice(-3).join(' '));
 }
 const valueOf = (base, rank, factor) => Math.max(1, Math.round((base || 1) * factor ** Math.max(0, ORDER.indexOf(rank))));
@@ -68,9 +76,13 @@ export function lootEvents(s, content, enc) {
             const spec = table.anchors?.[anchorId];
             const species = speciesName(e, anchor);
             const materials = Array.isArray(spec) ? spec : spec?.materials || [];
-            // 4.3.0-c.6.6.5: a special organ only from a creature whose own kind, description or attack shows it
-            const traits = normText([e.species, e.name, ...(e.descriptors || []), e.traits, prof.attack?.name].filter(Boolean).join(' '));
+            // 4.3.0-c.6.6.5: a special organ only from a creature whose own kind or description shows it. Build .184
+            // (Monster A1, plan §3.1 Nr. 7, K1): its anchor's attack is no evidence of this creature (arthropod "Bite/Sting"
+            // made every beetle venomous); its full reported description (traits) is; and its own words denying the organ
+            // ("hornless goat", "doe without antlers", "non-venomous grass snake") win over its kind's word (unless)
+            const traits = normText([e.species, e.name, ...(e.descriptors || []), e.traits].filter(Boolean).join(' '));
             for (const m of materials) {
+                if (m.unless && new RegExp(`\\b(?:${m.unless})\\b`, 'i').test(traits)) continue;
                 if (m.only_if && !new RegExp(`\\b(?:${m.only_if})\\b`, 'i').test(traits)) continue;
                 const name = `${rank}-Rank ${m.name.replace('{species}', species)}`;
                 add(`${slug(species)}.${slug(m.key)}`, { name, rank, level, material: m.key, species, anchor: anchorId, value_cp: valueOf(m.value_cp, rank, factor) }, draw(`${seed}|${m.key}`, m.qty));

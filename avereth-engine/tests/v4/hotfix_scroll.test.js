@@ -239,7 +239,10 @@ test('hotfix scroll 3b: a burst that fells what it strikes ends the fight throug
     assert.equal(r.events.filter((e) => e.t === 'xp.changed').reduce((a, e) => a + e.d.amount, 0), o.ended.xp_awarded, 'the fight\'s XP, once');
     assert.ok(s.entities.pc.sheet.level > 1 || s.entities.pc.sheet.xp === xp + o.ended.xp_awarded);
     assert.ok(o.loot?.length, 'the engine\'s loot of the fight');
-    assert.ok(r.events.some((e) => e.t === 'object.created' && e.d.object.source?.how === 'loot'));
+    // .184 (Monster A1, N4): the only new object here was a venom gland the beetles' anchor attack "Bite/Sting" made; the
+    // chitin plates join the stack Alaric already holds (object.added). Loot is booked either way
+    assert.ok(r.events.some((e) => (e.t === 'object.created' && e.d.object.source?.how === 'loot') || (e.t === 'object.added' && /^obj\.loot\./.test(e.d.id))));
+    assert.ok(!o.loot.some((l) => /Venom Gland/.test(l)), 'no venom from the anchor attack');
     assert.equal(s.entities[BEETLE(1)].status, 'alive', 'the one it did not strike lives on');
     assert.equal(r.events.filter((e) => e.t === 'object.consumed').length, 1);
 });

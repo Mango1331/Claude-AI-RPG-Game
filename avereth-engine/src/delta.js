@@ -386,7 +386,11 @@ export function reportToEvents(report, state, content, { msg = null, prose = '',
         const id = uniqueId(state, kind === 'npc' ? 'npc' : 'mon', n.name || n.ref, taken);
         // Runtime V4 says explicitly when the story gave no name (person.new name:null): no name is read from the ref
         const name = n.anonymous ? null : n.name ? String(n.name).slice(0, 60) : kind === 'npc' ? nameFromRef(n, prose) : null;
-        const entity = { id, kind, name, descriptors: desc, traits: n.traits ? String(n.traits).slice(0, 240) : '', status: 'alive', location: state.scene.location, created: at, source: src, card: {} };
+        // Build .184 (Monster A1, plan §3.1 Nr. 8): a creature keeps its whole reported description as its look (240
+        // characters, as a person's traits), so a body part told after the 40 characters of a descriptor ("…, a heavy rack
+        // of antlers") is still its own; the short descriptors stay as they are for its identity
+        const look = n.traits ? String(n.traits) : kind === 'creature' && Array.isArray(n.desc) ? n.desc.filter((x) => typeof x === 'string' && x.trim()).join(', ') : '';
+        const entity = { id, kind, name, descriptors: desc, traits: look ? look.slice(0, 240) : '', status: 'alive', location: state.scene.location, created: at, source: src, card: {} };
         // Test 5 run: "Sergeant Hobb" and "Wick" came in "new" a reply before the story said their names (Testrun 2:
         // "Bram" was said five turns before "Fenn"); the player's views (combat target labels, HUD) show only the
         // part said so far, or the look (knowledge.js playerLabel). Only a person's proper name: a creature's "name"

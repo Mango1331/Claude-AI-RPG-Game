@@ -64,7 +64,9 @@ const ACCEPTED182 = JSON.parse(fs.readFileSync(new URL('./accepted_batch182_vs_1
 const ACCEPTED184 = JSON.parse(fs.readFileSync(new URL('./accepted_monster184_vs_126.json', import.meta.url), 'utf8'));
 // Stabilization (.185): the conditional purchase line, the reasons of an unbooked purchase, the repair of priced:true
 // without an offer, a purchase booked after the reply shown
-const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_stab185_vs_126.json', import.meta.url), 'utf8'));
+const ACCEPTED185 = JSON.parse(fs.readFileSync(new URL('./accepted_stab185_vs_126.json', import.meta.url), 'utf8'));
+// Monster A2 (.186): a humanoid creature fixed with its weapon; a refused creature.new echoing armed: null
+const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_monster186_vs_126.json', import.meta.url), 'utf8'));
 const F144 = ['finance 144 payment card', 'finance 144 contract fields', 'finance 144 acceptance hint', 'finance 144 price open', 'finance 144 unit limit', 'finance 144 acceptance', 'finance 144 own coin'];
 const SUB = { ...baseline, runs: Object.fromEntries(QUICK.map((l) => [l, baseline.runs[l]])) };
 let quick = null; // the four quick runs, replayed once for this file
@@ -74,7 +76,7 @@ test('A1/C: the four quick runs replay as on the start commit, from whole and va
     const { compared, diffs } = compareToBaseline(SUB, result);
     assert.equal(compared, QUICK.reduce((n, l) => n + Object.keys(baseline.runs[l].cases).length, 0));
     assert.deepEqual(diffs.map((d) => d.id).sort(), Object.keys(ACCEPTED.cases).filter((id) => QUICK.includes(id.split('#')[0])).sort());
-    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138','finance 142','finance 142 contract fields', 'batch21 integration 146', 'design148 danger', 'design148 area', 'design149 offensive growth', 'fix150 place fact', 'fix158 fact text', 'fix158 guild witness', 'fix159 board failure', 'fix160 board narration', 'pulse162 window', 'pulse162 road', 'pulse163 sought', 'pulse164 pause order', 'pulse164 early claim', 'pulse167 dungeon window', 'pulse167 dungeon diagnosis', 'e2a169 outcome fields', 'e2a169 group person', 'e2b172 thread who field', 'e2b172 memory social rest', 'pilot177 npc name subject', 'pilot177 scene correction place', 'batch182 status correction final', 'batch182 extractor form', 'monster184 creature look', 'monster184 no venom from the anchor attack', 'stab185 conditional purchase line', 'stab185 purchase reason', 'stab185 priced repair', 'stab185 bought after reply', ...F144].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F/integration differences are allowed');
+    assert.ok(diffs.every((d) => ['representation','D offer contract','finance 138','finance 142','finance 142 contract fields', 'batch21 integration 146', 'design148 danger', 'design148 area', 'design149 offensive growth', 'fix150 place fact', 'fix158 fact text', 'fix158 guild witness', 'fix159 board failure', 'fix160 board narration', 'pulse162 window', 'pulse162 road', 'pulse163 sought', 'pulse164 pause order', 'pulse164 early claim', 'pulse167 dungeon window', 'pulse167 dungeon diagnosis', 'e2a169 outcome fields', 'e2a169 group person', 'e2b172 thread who field', 'e2b172 memory social rest', 'pilot177 npc name subject', 'pilot177 scene correction place', 'batch182 status correction final', 'batch182 extractor form', 'monster184 creature look', 'monster184 no venom from the anchor attack', 'stab185 conditional purchase line', 'stab185 purchase reason', 'stab185 priced repair', 'stab185 bought after reply', 'monster186 humanoid loadout', 'monster186 armed field', ...F144].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F/integration differences are allowed');
     const { open, accepted, stale } = acceptedDiffs(diffs, ACCEPTED.cases, result);
     assert.deepEqual([open, stale, accepted.length], [[], [], diffs.length], 'every accepted record has exactly the fingerprinted output');
     for (const [label, run] of Object.entries(result.runs)) {
@@ -488,17 +490,37 @@ test('.185 (stabilization) keeps every .184 acceptance exactly except 11 records
         'stab185 priced repair': ['b17-warrior#270'], 'stab185 bought after reply': ['b19-mage#142'] };
     const changed = Object.fromEntries(Object.keys(CATS).map((k) => [k, []]));
     for (const [id, old] of Object.entries(ACCEPTED184.cases)) {
-        const now = ACCEPTED.cases[id];
+        const now = ACCEPTED185.cases[id];
         if (!now.category.startsWith('stab185')) { assert.deepEqual(now, old, id); continue; }
         assert.deepEqual(now.previous_acceptance_184, { category: old.category, fingerprint: old.fingerprint }, id);
     }
-    for (const [id, now] of Object.entries(ACCEPTED.cases)) if (now.category.startsWith('stab185')) {
+    for (const [id, now] of Object.entries(ACCEPTED185.cases)) if (now.category.startsWith('stab185')) {
         changed[now.category].push(id);
         assert.match(now.reason, new RegExp(`^${id.replace(/[#.-]/g, '\\$&')}: Build \\.185: .*; checked field by field against the \\.184 output: only the fields of this category differ\\.$`), id);
         assert.match(now.fingerprint, /^sha256:[0-9a-f]{64}$/, id);
     }
     for (const k of Object.keys(CATS)) assert.deepEqual(changed[k].sort(), CATS[k], k);
-    assert.deepEqual(Object.keys(ACCEPTED.cases).filter((id) => !ACCEPTED184.cases[id]).sort(), ['b16-rogue-sale#80', 'b17-warrior#66', 'b18-warrior#234']);
-    assert.deepEqual(ACCEPTED.returned, ACCEPTED184.returned);
-    assert.equal(ACCEPTED.engine, '4.3.0-c.6.6.185');
+    assert.deepEqual(Object.keys(ACCEPTED185.cases).filter((id) => !ACCEPTED184.cases[id]).sort(), ['b16-rogue-sale#80', 'b17-warrior#66', 'b18-warrior#234']);
+    assert.deepEqual(ACCEPTED185.returned, ACCEPTED184.returned);
+    assert.equal(ACCEPTED185.engine, '4.3.0-c.6.6.185');
+});
+
+test('.186 (PAID HERE, Monster A2) keeps every .185 acceptance exactly except 9 records, each with its .185 acceptance', () => {
+    const CATS = { 'monster186 humanoid loadout': ['b17-mage#150', 'b17-mage#172', 'b17-mage#186'],
+        'monster186 armed field': ['b17-rogue#200', 'b17-warrior#42', 'b18-warrior#202', 'b18-warrior#294', 'b18-warrior#334', 'b19-warrior#294'] };
+    const changed = Object.fromEntries(Object.keys(CATS).map((k) => [k, []]));
+    for (const [id, old] of Object.entries(ACCEPTED185.cases)) {
+        const now = ACCEPTED.cases[id];
+        if (!now.category.startsWith('monster186')) { assert.deepEqual(now, old, id); continue; }
+        assert.deepEqual(now.previous_acceptance_185, { category: old.category, fingerprint: old.fingerprint }, id);
+    }
+    for (const [id, now] of Object.entries(ACCEPTED.cases)) if (now.category.startsWith('monster186')) {
+        changed[now.category].push(id);
+        assert.ok(now.reason.startsWith(`${id}: Build .186: `) && now.reason.endsWith('stripped of the fields of this category the record is exactly the .185 output.'), id);
+        assert.match(now.fingerprint, /^sha256:[0-9a-f]{64}$/, id);
+    }
+    for (const k of Object.keys(CATS)) assert.deepEqual(changed[k].sort(), CATS[k], k);
+    assert.deepEqual(Object.keys(ACCEPTED.cases).filter((id) => !ACCEPTED185.cases[id]), []);
+    assert.deepEqual(ACCEPTED.returned, ACCEPTED185.returned);
+    assert.equal(ACCEPTED.engine, '4.3.0-c.6.6.186');
 });

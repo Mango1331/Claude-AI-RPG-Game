@@ -107,7 +107,8 @@ Angrenzende Planner-, Extractor- und Recovery-Tests: 282/282.
 | Replay gegen `.186` (eigener Baseline-Lauf aus `1382491`) | **2235 Fälle, 19 geändert**, alle feldweise geprüft: nur die `no_go`-Korrektur nennt ihre Orte. P1 und P1f ändern keinen Korpusfall |
 | Korpuscheck | `accepted_travel187_vs_126.json`: 1088/1088 mit Fingerprint (8 neu akzeptiert mit ihrer `.186`-Akzeptanz, 11 neu), Schutztest in `replay.test.js` |
 | Save/Reload, Fold | in den Host-Regressionen aller drei Etappen; Korpus ohne Fold- und Validierungsfehler |
-| ST1.19 Standard/Failsoft | siehe Abschlussbericht; Sandbox-Werkzeug unverändert seit `24d2aa9` |
+| ST1.19 isoliert (`npm run smoke:st:check` → ready, dann `npm run smoke:st:isolated`) | ST 1.19.0 (`7e8663c`), Node 22.23.4, Chromium 153, Engine `4.3.0-c.6.6.187` in der markierten Sandbox. Smoke-Checkout `92593fd` mit genau den Dateien des Buildcommits `5b4d493` als uncommittete Änderungen. **Standard OK 224/224**, **Failsoft OK 229/229**, je **0 PageErrors** (485 s / 486 s). Mockprovider: belegt den Hostpfad, nicht das natürliche Modellverhalten |
+| ST-Sandbox | `tools/st_live/` und `st_sandbox.test.js` unverändert seit Guard-Hotfix `24d2aa9`; Guardtests 8/8 |
 
 ## Grenzen
 

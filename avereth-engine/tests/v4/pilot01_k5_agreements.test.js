@@ -9,7 +9,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadProductContent } from '../helpers.js';
 import { foldChat } from '../../src/host.js';
-import { pilot, upTo, replyCase, chainCase, events, rejected, valid } from './pilot01_lib.js';
+import { pilot, upTo, replyCase, chainCase, events, rejected, valid, withRide } from './pilot01_lib.js';
 
 const content = await loadProductContent();
 const before = (i) => foldChat(upTo(i).slice(0, i)).state;
@@ -58,7 +58,7 @@ test('K5 D1: a report under the id naming another person as its party is another
 });
 
 test('K5 original T61: the carter under a second id settles nothing of the agreement with the Woolpack carter', async () => {
-    const { chat, r } = await replyCase(content, 122);
+    const { chat, r } = await replyCase(content, 122, { chat: withRide(upTo(122)) });
     assert.equal(identity(r).length, 1);
     assert.match(identity(r)[0].d.reason, /thread\.t47\.1 is the agreement of npc\.npccarter_woolpack; a report naming npc\.carter/);
     const t = valid(chat, content).threads['thread.t47.1'];

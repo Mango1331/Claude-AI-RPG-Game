@@ -156,7 +156,8 @@ test('8.3 floor 3 (Glimmerdeep, a part beside its gate): a way from the gate wit
     assert.ok(s.dungeons[GROTTO].run.floors[1].slots.some((sl) => sl.id === first.slot.id), 'one of level 1\'s');
     // every way from a gate into its Dungeon reaches level 1, beside it, down or up
     for (const dir of [null, 'down', 'up']) assert.equal(levelVia(s, GROTTO, { a: GROTTO, dir }), 1, String(dir));
-    assert.equal(levelVia(s, outer.id, { a: outer.id, dir: 'down' }), 2, 'one down from level 1 is level 2');
+    // .190 B1 (R-B6): Glimmerdeep has one level: a way down is a slope of level 1, never a level 2 that does not exist
+    assert.equal(levelVia(s, outer.id, { a: outer.id, dir: 'down' }), 1, 'no level 2 in a one-level Dungeon');
     assert.equal(levelVia(s, outer.id, { a: outer.id, dir: null }), 1);
 });
 

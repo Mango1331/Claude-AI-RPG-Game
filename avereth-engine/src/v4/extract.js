@@ -1,4 +1,5 @@
-import { placeKey, scopedPlaces } from './place_refs.js';
+import { placeKey } from './place_refs.js';
+import { newPlaceScope } from './movement.js';
 import { privateQuestsOf } from '../content.js';
 // Runtime V4: the world-delta extractor (docs/RUNTIME_V4_PLAN.md §5, D2 = A). After every story reply a separate call
 // reads the reply and reports, as typed deltas in story order, what it established in the world; the engine answers
@@ -479,7 +480,7 @@ function fieldRepairHint(error, d, i, ids = {}, spec) {
 export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequired = false, startScene = null, state = null, content = null, explicitArrivals = sceneRequired, reply = null } = {}) {
     const parsed = extractJsonObject(answer);
     const { error, raw } = parsed;
-    const value = state ? scopedPlaces(normalizeSoftFields(parsed.value, vocab), state) : normalizeSoftFields(parsed.value, vocab);
+    const value = state ? newPlaceScope(normalizeSoftFields(parsed.value, vocab), state) : normalizeSoftFields(parsed.value, vocab);
     const want = Object.keys(expectedKeys || {});
     if (!value) return { value: null, valid: false, complete: false, errors: [error || 'no JSON object'], missing: want, raw: false };
     const exp = value && typeof value.expected === 'object' && value.expected ? value.expected : {};

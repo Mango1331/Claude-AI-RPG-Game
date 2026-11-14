@@ -9,7 +9,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadProductContent } from '../helpers.js';
 import { foldChat } from '../../src/host.js';
-import { pilot, upTo, replyCase, events, rejected, valid } from './pilot01_lib.js';
+import { pilot, upTo, replyCase, events, rejected, valid, withRide } from './pilot01_lib.js';
 
 const content = await loadProductContent();
 const only = (i, seqs) => {
@@ -20,11 +20,18 @@ const only = (i, seqs) => {
 const facts = (s, id, p) => Object.values(s.facts || {}).filter((f) => f.s === id && (!p || f.p === p));
 
 test('K6a original T61: after the arrival at the crossroads the correction no longer says he remains at the Woolpack', async () => {
-    const { chat, r } = await replyCase(content, 122);
+    const { chat, r } = await replyCase(content, 122, { chat: withRide(upTo(122)) });
     assert.ok(rejected(r, 'scene_context').length >= 1, 'the yard scene is still refused');
     assert.equal(valid(chat, content).scene.at, 'loc.crossroads_cairn_on_the_south_road');
     assert.ok(!r.corrections.some((c) => /remains at the Woolpack/.test(c)), r.corrections.join(' | '));
     assert.ok(r.corrections.some((c) => /took place in a scene the engine did not book: its people, objects and quest outcomes there were not recorded\. Alaric is at crossroads cairn on the south road; continue from there\./.test(c)));
+});
+
+test('.190 A2/D2 original T61: going to the yard and asking the carter for his seat is no ride; the crossroads stay unreached', async () => {
+    const { chat, r } = await replyCase(content, 122);
+    assert.equal(valid(chat, content).scene.at, 'loc.ashbridge.the_woolpack');
+    assert.ok(r.rejected.some((x) => x.type === 'arrive' && x.rule === 'passage' && /not where his step goes \(the Woolpack yard\)/.test(x.why)));
+    assert.ok(!Object.values(valid(chat, content).places).some((p) => p.name === 'crossroads cairn on the south road'), 'no place made by the refused arrival');
 });
 
 test('K6a counter: a refused scene without a later arrival keeps the old correction, once', async () => {

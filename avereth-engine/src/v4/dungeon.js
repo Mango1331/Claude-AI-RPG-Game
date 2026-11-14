@@ -360,7 +360,12 @@ export function levelVia(s, from, l) {
     const base = s.places[from]?.level ?? (dungeonOf(s, from) === from || !dungeonOf(s, from) ? 1 : null);
     if (!Number.isInteger(base)) return null;
     const dir = l ? dirFrom(l, from) : null;
-    return dir === 'down' ? base + 1 : dir === 'up' ? base - 1 : base;
+    const lv = dir === 'down' ? base + 1 : dir === 'up' ? base - 1 : base;
+    // .190 (B1): in a Living Dungeon a way down leads to a deeper level only where the Dungeon has one; else it is a
+    // slope of this level (Glimmerdeep has one level: "the floor slopes down" stays level 1). A sealed level stays
+    // sealed (living.js sealRefusal), a level the name gives that does not exist stays refused (floorRefusal)
+    const x = s.dungeons?.[trueDungeonOf(s, from)];
+    return x?.floors && !x.floors[lv] ? base : lv;
 }
 
 /**

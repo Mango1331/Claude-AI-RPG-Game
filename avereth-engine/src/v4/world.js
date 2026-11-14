@@ -1,6 +1,7 @@
 import { floorRefusal } from './dungeon.js';
-import { placeParent, placeIdentity, placeKey, samePlace, scopedPlaces } from './place_refs.js';
+import { placeParent, placeIdentity, placeKey, samePlace } from './place_refs.js';
 import { resolvePlaceRef, usualPersonNamed } from './place_book.js';
+import { allowedArrival, stepsOf, newPlaceScope } from './movement.js';
 import { sceneIssues, localSceneDelta } from './extract.js';
 import { privateQuestsOf, questVisible } from '../content.js';
 // Runtime V4: applying the extractor's world deltas (docs/RUNTIME_V4_PLAN.md §5.2). After the narrator's reply the
@@ -246,7 +247,7 @@ function noRoleWords(answer) {
 }
 
 export function applyWorld(state, content, answer, { msg = null, prose = '', chronicle = null } = {}) {
-    answer = noRoleWords(scopedPlaces(answer, state));
+    answer = noRoleWords(newPlaceScope(answer, state));
     const s = clone(state);
     const dice = Dice.from(s);
     const events = [];
@@ -300,19 +301,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const known = resolvePlaceRef(s, { new: { name: ref.new.name } }, { from: s.scene.at });
             if (known.existing && (auth.gos || []).some((g) => g.to === known.existing)) return { id: known.existing };
         }
-        const n=ref?.new;
-        if (cPath && n && !placeIdentity(s,ref,content)) {
-            const parent=typeof n.parent === 'string' ? n.parent : s.scene.at;
-            const root=trueDungeonOf(s,parent);
-            if (root && s.dungeons?.[root]) {
-                const shown=fw.accept.find(d=>d.type === 'passage' && (d.to?.new?.name === n.name));
-                const goal=(auth.gos || []).map(g=>g.to).find(id=>id && id!==s.scene.at && trueDungeonOf(s,id)===root && wayBetween(s,s.scene.at,id).path);
-                const from=typeof shown?.from === 'string' ? shown.from : goal || s.scene.at;
-                const lv=levelVia(s,from,{a:from,dir:shown?.dir || null});
-                const invalid=floorRefusal(s,root,lv,n.name);
-                if (invalid) return { error: invalid };
-            }
-        }
+        // .190 (B1): no level of its own from the reply's words here; a new room's level is the topology's (levelVia
+        // with the Dungeon's levels), a level its name gives that does not exist is refused where it is made
         return place(ref);
     };
     const expected = answer.expected || {};
@@ -1119,10 +1109,41 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 if (s.encounter) { reject(d, 'combat', 'no travel while combat is ACTIVE'); refusedArrival(d); break; }
                 const ref = explicitTravel ? d.at : reportedTarget(s, auth, expected, d.at, null, sceneOf(d)) || onward(d.at);
                 const away = leavesHere(ref);
-                const at = viaStop(arrivalPlace(ref));
-                if (at.error) { reject(d, 'place', at.error); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
+                // .190 (A2): a place this report would make is made only once the arrival is allowed (no orphans)
+                const mark = events.length;
+                const unmake = () => {
+                    const made = events.slice(mark);
+                    if (!made.length || !made.every((e) => e.t === 'place.created')) return;
+                    events.length = mark;
+                    for (const e of made) delete s.places[e.d.place.id];
+                };
+                let at = viaStop(arrivalPlace(ref));
+                if (at.error) { unmake(); reject(d, 'place', at.error); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
                 if (at.id === s.scene.at && !(explicitTravel && s.places[at.id]?.kind === 'realm' && auth.gos?.length)) { travel.push({ seq: d.seq, ok: true }); break; }
-                if (wayRefused(at.id, d, { forced: !!String(d.forced_by || '').trim() && !unprovenForced.has(d) })) { travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
+                const forcedHere = !!String(d.forced_by || '').trim() && !unprovenForced.has(d);
+                // .190 (A2): the movement proof – the place his step may end at, decided by the GO, not by the reply
+                if (explicitTravel) {
+                    const fresh = events.slice(mark).some((e) => e.t === 'place.created' && e.d.place.id === at.id);
+                    const steps = stepsOf(s, auth.gos);
+                    const no = allowedArrival(s, steps, at.id, { fresh, forced: forcedHere, reached: (k) => expected[String(k)]?.arrived === true });
+                    // past the gate of a step that ends at it: he did reach the gate (the way in is his next step)
+                    const gate = no?.gate && s.places[no.gate] && s.scene.at !== no.gate ? no.gate : null;
+                    if (gate) {
+                        unmake();
+                        reject(d, 'passage', no.why);
+                        const fix = `Alaric is at ${placeName(s, gate)}: ${no.why}; he did not go in.`;
+                        if (!corrections.includes(fix)) corrections.push(fix);
+                        at = { id: gate };
+                    } else if (no) {
+                        unmake();
+                        reject(d, 'passage', no.why);
+                        const fix = `Alaric is still in ${placeName(s, s.scene.at)}: ${no.why}; he did not get there.`;
+                        if (!corrections.includes(fix)) corrections.push(fix);
+                        travel.push({ seq: d.seq ?? 0, ok: false, away });
+                        break;
+                    }
+                }
+                if (wayRefused(at.id, d, { forced: forcedHere })) { unmake(); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
                 const party = companions(d.with, d);
                 perceiveAll(s, emit, seeing());
                 arriveThrough(at.id, party);
@@ -2475,9 +2496,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const exploring = (auth.gos || []).some((g) => !g.to);
         const unseen = events.some((e) => e.t === 'place.created' && e.d.place.id === to)
             || (exploring && !roomKnown(s, to) && !linksAt(s, to, { hidden: true }).length && !visited(s, to));
-        // a room of another dungeon only where he set out for that dungeon (no jump from one ruin into another's room)
+        // a room of another dungeon only where he set out for that dungeon (no jump from one ruin into another's room);
+        // .190: under ruleset 2 the movement proof decides this before the way (movement.js allowedArrival)
         const dTo = dungeonOf(s, to);
-        const elsewhere = !!dTo && dTo !== to && dTo !== dungeonOf(s, from) && !forced && !(auth.gos || []).some(g => {
+        const elsewhere = !explicitTravel && !!dTo && dTo !== to && dTo !== dungeonOf(s, from) && !forced && !(auth.gos || []).some(g => {
             const destination = g.to || (g.newName && placeIdentity(s, { new: { name: g.newName, kind: 'site' } }));
             return destination && dungeonOf(s, destination) === dTo;
         });

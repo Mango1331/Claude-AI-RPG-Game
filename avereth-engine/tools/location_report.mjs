@@ -12,7 +12,8 @@
 //               arrival refused by an engine rule although the GO was authorized, extraction failed
 //   unauthorized an arrival the reply told with no GO of the turn (no_go)
 //   episodes    consecutive replies with a refused arrival (a lower bound of a narrative location contradiction)
-//   orphans     places created in a reply whose arrival was refused and never stood in later
+//   orphans     places created in a reply whose arrival was refused and never stood in later (a place known by
+//               report is knowledge, not an orphan)
 //   duplicates  place pairs in the final places of one realm whose name begins with the other's (strict prefix rule),
 //               and NPC pairs whose name ends with the other's name (Ostrek / Meister Ostrek)
 //   lost        refused deltas by type in replies with a primary location refusal (candidates, not judged lost)
@@ -95,7 +96,8 @@ export function analyzeRun(records, calls = null) {
         if (primary) for (const e of refused.filter((x) => !PRIMARY.has(x.d.rule))) out.lost[e.d.item?.type || '?'] = (out.lost[e.d.item?.type || '?'] || 0) + 1;
         if (arrivalRefused) {
             run++;
-            for (const e of r.events.filter((x) => x.t === 'place.created')) created.push({ i: r.i, id: e.d.place.id, kind: e.d.place.kind });
+            // a place known by report (place.reported) is knowledge, not a refused arrival's place (.190 stage 2)
+            for (const e of r.events.filter((x) => x.t === 'place.created' && x.d.place.known !== 'reported')) created.push({ i: r.i, id: e.d.place.id, kind: e.d.place.kind });
             const kinds = r.events.filter((x) => ['entity.created', 'offer.created', 'object.created'].includes(x.t)).map((x) => x.t);
             for (const t of kinds) out.suspicious[t] = (out.suspicious[t] || 0) + 1;
         } else if (r.events.some((e) => e.t === 'extract.applied' || e.t === 'extract.failed') && run) { out.episodes.push(run); run = 0; }

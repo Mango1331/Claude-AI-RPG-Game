@@ -16,6 +16,16 @@ export function upTo(i) {
     delete chat[i].extra.avereth;
     return chat;
 }
+/**
+ * .190 (A2, D2): T61's player turn as an explicit ride ("I ride with the carter to the crossroads"): the original plan
+ * had only the GO to the yard, and a question to the carter moves nobody, so the reply's arrival at the crossroads
+ * cairn is not his step. Tests of what follows that arrival (K5, K6a) give the turn the step they presuppose.
+ */
+export function withRide(chat, i = 121) {
+    const o = chat[i].extra.avereth.events.find((e) => e.t === 'outcome.recorded').d.outcome;
+    o.auth.gos.push({ seq: 2, to: null, name: 'the crossroads cairn on the south road', hall: false, newName: 'the crossroads cairn on the south road' });
+    return chat;
+}
 /** Reprocess the narrator reply i with an extractor answer (default: the original final answer). */
 export async function replyCase(content, i, { answer = null, chat = null } = {}) {
     const c = chat || upTo(i);

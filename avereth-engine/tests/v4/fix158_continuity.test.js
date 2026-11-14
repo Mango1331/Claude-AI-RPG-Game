@@ -138,7 +138,11 @@ test('158 unlabeled downward arrival cannot leave a phantom room before passage 
  const text='I go down';const go=playerTurnV4(s,content,text,{c:true,commands:[{seq:1,type:'go',to:{new:name},quote:text}]});
  const raw={scene:at,expected:{1:{arrived:true,at,with:null}},deltas:[{seq:1,type:'arrive',at,with:null,forced_by:null,scene:at},{seq:2,type:'passage',from:null,to:at,dir:'down',name:'Stair',hidden:false,one_way:false,feature:null,scene:s.scene.at}]};
  const r=replyTurnV4(go.state,content,raw,{prose:'He walked down the stair to the lower landing.'});
- assert.equal(r.state.scene.at,s.scene.at);assert.ok(!Object.values(r.state.places).some(p=>p.name===name));
+ // .190 B1 (R-B6): Glimmerdeep has one level: the way down is a slope of level 1, his GO into a part not seen yet
+ // reaches it; never a level 2, never a room left behind that he does not stand in
+ assert.ok(!Object.values(r.state.places).some(p=>p.level===2&&!s.places[p.id]),'no new level-2 room');
+ const made=Object.values(r.state.places).filter(p=>p.name===name);
+ assert.ok(made.every(p=>p.level===1&&p.id===r.state.scene.at),'no phantom room');
 });
 test('158 compact NPC and critical Dungeon information both survive a constrained budget',()=>{
  const s=before(43);s.scene.present.push('npc.test');s.entities['npc.test']={id:'npc.test',kind:'npc',name:'Brenna',status:'alive',descriptors:['clerk'],at:s.scene.at};

@@ -13,7 +13,8 @@ import {gearContract} from './contract_d.mjs';
 // archive and the recorded answers stay unchanged; the conversion runs on the copy handed to the engine
 // (tools/replay/replay.mjs) and on scripted test answers (tests/v4/harness.js).
 import { extractJsonObject } from '../../src/v4/json.js';
-import { placeKey, scopedPlaces } from '../../src/v4/place_refs.js';
+import { placeKey } from '../../src/v4/place_refs.js';
+import { newPlaceScope } from '../../src/v4/movement.js';
 import { populationAt, namesYoung } from '../../src/v4/domain.js';
 import { trueDungeonOf } from '../../src/v4/dungeon.js';
 
@@ -35,8 +36,8 @@ export function contractValue(value, state, content, { prose = null } = {}) {
     if (hasFinanceContract(content.deltaVocab)) value = financeAnswer(value, state, content, { prose });
     const v = gearVocab(content.deltaVocab) ? gearContract(value, content) : structuredClone(value);
     // places are read as the engine reads them: a new local place inside a player-authorized hunting site is the
-    // site's (scopedPlaces, applied by the parser and World before anything else)
-    const scoped = scopedPlaces(structuredClone(v), state).deltas;
+    // site's (the step's scope, movement.js newPlaceScope, applied by the parser and World before anything else)
+    const scoped = newPlaceScope(structuredClone(v), state).deltas;
     let stepAt = state.scene?.at || null;
     const ordered = v.deltas.map((d, i) => ({ d, place: scoped[i] })).filter((x) => x.d && typeof x.d === 'object').sort((a, b) => (a.d.seq ?? 0) - (b.d.seq ?? 0));
     for (const { d, place } of ordered) {

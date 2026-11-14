@@ -128,12 +128,12 @@ test('scope does not fabricate an unconfirmed arrival or relocate a known creatu
     assert.equal(r.events.some(e => e.t === 'entity.created' && e.d.entity.kind === 'creature'), false);
 });
 test('explicit independent parent is never silently reassigned by local scope', async () => {
-    const { scopedPlaces } = await import('../../src/v4/place_refs.js');
+    const { newPlaceScope } = await import('../../src/v4/movement.js');
     const f = fixture.habitats[0], habitat = f.state.quests[f.quest].hunt.at;
     const turn = playerTurnV4(f.state, c, f.input, { c: true, commands: [{ ...f.command, within: habitat }] });
     const answer = structuredClone(f.answer);
     answer.scene.new.parent = 'loc.ashbridge.guild_hall';
-    assert.equal(scopedPlaces(answer, turn.state).scene.new.parent, 'loc.ashbridge.guild_hall');
+    assert.equal(newPlaceScope(answer, turn.state).scene.new.parent, 'loc.ashbridge.guild_hall');
     assert.deepEqual(f.answer, fixture.habitats[0].answer);
 });
 test('selected products that are explicitly excluded are refused; excluding another product is allowed', () => {

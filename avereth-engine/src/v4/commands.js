@@ -32,6 +32,7 @@ import { journeyReady, knownAt, personLabel } from './catalog.js';
 import { continueOptions, setIntentEvents, endIntentEvents, activeIntents, goSetsGoal } from './intents.js';
 import { knownByName } from './known.js';
 import { resolvePlaceRef } from './place_book.js';
+import { stepFields, GATE_WORDS } from './movement.js';
 import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf, restoreEffect, namedSource, equipmentSlotKnown, offerCard } from './items.js';
 import { itemEffectOf, rulesetOf } from '../content.js';
 import { learningActivity, stoneActivation } from './growth.js';
@@ -554,6 +555,7 @@ const HANDLERS = {
             // way he chose (a route is how he travels, never a destination)
             const name = goal.place ? placeName(s, goal.place) : goal.seek;
             const go = { seq: c.seq, to: goal.place || null, name, hall: !!goal.place && !!hallOf(s, goal.place), newName: goal.place ? null : name, intent: goal.id, ...companionOf(s, envx) };
+            if (envx?.c && rulesetOf(s) >= 2) Object.assign(go, stepFields(s, go));
             ctx.auth.go = go;
             ctx.auth.gos.push(go);
             travelManner(c, go, ctx);
@@ -582,6 +584,7 @@ const HANDLERS = {
         if (q?.status === 'active' && !q.journey) emit({ t: 'quest.journey', d: { id: q.id, at: s.scene.at } });
         // 4.3.0-c.6.6.2: its companion travels with him, also where the road has not reached its end yet (world.js)
         const go = { seq: c.seq, to: null, name: `the established journey for "${ready.label}"`, hall: false, newName: 'the established journey', journey: ready.label, with: ready.companion ? [ready.companion] : [], ...(envx?.c ? { along: true } : {}) };
+        if (envx?.c && rulesetOf(s) >= 2) Object.assign(go, stepFields(s, go));
         ctx.auth.go = go;
         ctx.auth.gos.push(go);
         travelManner(c, go, ctx);
@@ -592,6 +595,7 @@ const HANDLERS = {
     },
     go(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT GO — not while the fight runs.' };
+        const wordsFor = typeof c.to?.new === 'string' ? c.to.new : ''; // his words for the place, before any resolution
         const guildTown = envx?.c && rulesetOf(s) >= 2 && guildJourney(s, c);
         if (guildTown) c = { ...c, to: { new: `Guild hall in ${s.places[guildTown].name}` } };
         let guildCandidate = false;
@@ -636,6 +640,17 @@ const HANDLERS = {
         if (sought) c = { ...c, to: { new: sought } };
         const known = typeof c.to === 'string';
         if (known && !s.places[c.to]) return { status: 'refused', reason: 'unknown place', line: 'CANNOT GO — no such place is known.' };
+        // .190 (A2): back to where he set out from, after a step of this message elsewhere, is a leg of its own (".. then
+        // return to the inn"): its arrival is his step's, never one the story is free to tell
+        if (known && c.to === s.scene.at && envx?.c && rulesetOf(s) >= 2 && ctx.auth.gos.some((g) => (g.seq ?? 0) < (c.seq ?? 0) && g.to !== c.to)) {
+            const name = placeName(s, c.to);
+            const back = { seq: c.seq, to: c.to, name, hall: !!hallOf(s, c.to), newName: null, back: true };
+            Object.assign(back, stepFields(s, back));
+            ctx.auth.gos.push(back);
+            ctx.expectedKeys[String(c.seq)] = 'go';
+            ctx.auth.timeCap = Math.max(ctx.auth.timeCap, ctx.auth.gos.some((g) => g.to && !sameSettlement(s, g.to, c.to)) ? content.rules.time.travel_cap_min : content.rules.time.default_cap_min);
+            return { status: 'authorized', line: `RETURNS — to ${name} after the steps before (the story decides whether he gets back).` };
+        }
         if (known && c.to === s.scene.at) return { status: 'refused', reason: 'already here', done: true, line: `NOTHING TO DO — he is already at ${placeName(s, c.to)}.` };
         if (c.within != null && (!envx?.c || rulesetOf(s) < 2 || known || !s.places[c.within]?.population || !lineage(s, s.scene.at).includes(c.within)))
             return { status: 'refused', reason: 'invalid local habitat scope', line: 'CANNOT GO — local exploration needs the current habitat; choose a normal destination to leave it.' };
@@ -655,6 +670,12 @@ const HANDLERS = {
         // the engine places what that part holds before the story tells it
         const lived = envx?.c ? livingGo(s, content, c, ctx, emit, { known, nav, envx }) : null;
         if (lived?.refuse) return lived.refuse;
+        // .190 (A2): the step as decided once: its kind, the Dungeon it goes into, the scope of a new place of it; a
+        // step whose words name a Dungeon's way in ends at its gate
+        if (envx?.c && rulesetOf(s) >= 2) {
+            if (known && s.places[c.to]?.dungeon?.real && GATE_WORDS.test(`${wordsFor} ${c.quote || ''}`)) go.way_in = true;
+            Object.assign(go, stepFields(s, go));
+        }
         ctx.auth.go = go;
         ctx.auth.gos.push(go);
         travelManner(c, go, ctx);

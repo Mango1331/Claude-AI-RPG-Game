@@ -80,7 +80,10 @@ test('Run19 Hall aliases preserve real interiors; an unstaffed new hall has no b
   assert.equal(r.events.some(e=>e.t==='place.created'&&e.d.place.name===name),false,name);
  }
  assert.equal(hallOf(s,'loc.asterhall.guild_hall'),'loc.asterhall.guild_hall');assert.equal(hallOf(s,'loc.asterhall'),null);
- const x=f.cases[75],r=applyWorld(before(x.i+1),content,x.answer,{msg:x.i+1,prose:x.prose});assert.equal(r.events.some(e=>e.t==='coin.changed'&&e.d.delta===90),false);assert.equal(hallOf(r.state,r.state.scene.at),null);assert.equal(r.state.places[r.state.scene.at].parent,'loc.marrowbridge');
+ const x=f.cases[75],r=applyWorld(before(x.i+1),content,x.answer,{msg:x.i+1,prose:x.prose});assert.equal(r.events.some(e=>e.t==='coin.changed'&&e.d.delta===90),false);assert.equal(hallOf(r.state,r.state.scene.at),null);
+ // .190 (A2, scope is no destination): his step goes to Asterhall's hall; a "Marrowbridge Guild hall" told as reached is
+ // not where it goes: he stays in Marrowbridge, and no such hall is made
+ assert.equal(r.state.scene.at,'loc.marrowbridge');assert.ok(!Object.values(r.state.places).some(p=>p.name==='Marrowbridge Guild hall'));
 });
 
 test('Run19 pure trade conflict survives malformed repair as a side-effect-free clarification',async()=>{

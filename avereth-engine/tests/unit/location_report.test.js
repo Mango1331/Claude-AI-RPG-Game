@@ -15,7 +15,7 @@ test('location report: primary refusals and their cascade are counted apart; aut
         user(1, ...goAuth()), reply(2, { t: 'scene.moved', d: { at: 'loc.b' } }),
         user(3, ...goAuth({ new: 'the cellar' })), reply(4, rej('passage', 'arrive'), rej('scene_context'), rej('scene_context')),
         user(5, ...goAuth()), reply(6),
-        user(7), reply(8, rej('no_go', 'arrive'), rej('scene_context'), { t: 'place.created', d: { place: { id: 'loc.x', kind: 'site' } } }),
+        user(7), reply(8, rej('no_go', 'arrive'), rej('scene_context'), { t: 'place.created', d: { place: { id: 'loc.x', kind: 'site' } } }, { t: 'place.created', d: { place: { id: 'loc.told', kind: 'site', known: 'reported' } } }),
         user(9), reply(10, rej('offer')),
     ]);
     assert.equal(r.primary, 2);
@@ -25,7 +25,7 @@ test('location report: primary refusals and their cascade are counted apart; aut
     assert.deepEqual(r.go.by_target, { id: 2, new: 1 });
     assert.equal(r.unauthorized_arrivals, 1);
     assert.deepEqual(r.episodes, [1, 1], 'two separate replies with a refused arrival');
-    assert.deepEqual(r.orphans.map((o) => o.id), ['loc.x'], 'created in a refused reply, never stood in');
+    assert.deepEqual(r.orphans.map((o) => o.id), ['loc.x'], 'created in a refused reply, never stood in; a reported place is knowledge');
     assert.equal(r.lost.fact, 3);
 });
 

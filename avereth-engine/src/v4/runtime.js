@@ -210,6 +210,8 @@ async function ask(llm, messages, purpose, overrides = {}) {
 }
 
 // ------------------------------------------------------------------------------------------------ interpreter
+export const PLAN_RAN_OUT = 'Your previous answer was empty: it ran out of room before the JSON. Answer the PLAYER MESSAGE now with the JSON object alone, at once and short: {"commands":[...]} with every mechanical action he takes in this message, {"commands":[]} only when he takes none. Do not deliberate; no prose.';
+
 /** The interpreter call with its one repair (plan §3.4). */
 export async function interpretMessage(llm, content, catalog, text) {
     const vocab = content.commandVocab;
@@ -269,7 +271,13 @@ export async function planMessage(llm, content, ctx, text, { recent = '', isCurr
     let tradeNote = p.tradeConflict ? p.tradeNote || null : null;
     if (!p.commands) {
         if (!isCurrent()) return { commands: null, failed: true, error: 'stale request', ms, repaired: false, raw, calls };
-        const rep = plannerRequest(vocab, ctx, text, { recent, previous: first.content, errors: p.errors });
+        // .187 (P1f; natural batch 14.11.2026: 16 of 192 first plans were empty at the 2000-token cap, the budget spent on
+        // reasoning; prompt size does not tell them apart): an answer that ran out of room before any JSON is told so,
+        // not that its JSON was invalid, and asked for the short object at once – the same retry as the extractor's for
+        // an empty answer. Same call, same budget; the bounded recovery below is unchanged
+        const ranOut = !String(first.content).trim() && first.call?.finish === 'length';
+        const rep = ranOut ? { messages: [...plannerRequest(vocab, ctx, text, { recent }).messages, { role: 'user', content: PLAN_RAN_OUT }] }
+            : plannerRequest(vocab, ctx, text, { recent, previous: first.content, errors: p.errors });
         const second = await ask(llm, rep.messages, 'plan_repair');
         ms += second.ms;
         calls.push(second.call);

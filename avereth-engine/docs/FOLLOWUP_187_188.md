@@ -55,7 +55,7 @@ Der Schritt bleibt dann Erzählung (`NOTHING TO BOOK`). Wie er geht („staying 
 | `fix187_*` | 20/20 (2 neu, beide rot auf `.187`) |
 | `npm test` | **3190/3190** |
 | Replay | unverändert gegenüber der `.187`-Akzeptanz: 2235 Fälle, 1088/1088 akzeptiert, keine neue Abweichung (kein Korpusfall enthält einen angeheuerten Jäger oder einen ortsfesten Rückweg) |
-| ST1.19 isoliert | siehe Nachtrag unten |
+| ST1.19 isoliert (`smoke:st:check` → ready, `smoke:st:isolated`) | ST 1.19.0 (`7e8663c`), Engine `4.3.0-c.6.6.188`. Checkout `1266272` mit genau der Versionsänderung des Buildcommits `823fd6f`. **Standard OK 224/224, Failsoft OK 229/229, je 0 PageErrors**. Mockprovider; Sandbox-Werkzeug unverändert seit `24d2aa9` |
 
 ## Grenzen
 

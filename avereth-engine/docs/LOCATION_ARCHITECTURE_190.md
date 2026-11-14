@@ -303,3 +303,56 @@ room or level of it". The passage vocabulary text and planner rule 7c are adjust
 **Lines:** `src` + `content` +159 / −31, plus `sections.js` (120 lines). This stage adds a mechanic, so it is net
 positive. The room graph of true Living Dungeons (`wayBetween`, `levelVia`, the passage branch) stays only for legacy
 saves and for back/out over the engine's own links.
+
+## Stage 4 – Planner contract, band moves, partial moves, N1, N4
+
+**4A planner contract** (rule 7d, text only):
+- **Setting off now is `go`:** a present-tense announcement of his own movement ("I'm heading back to the Guild hall"),
+  a call to set off together ("Let's go to …"; "Let's walk the lines" is go plus the activity), a deed at another
+  place he names ("I go check the traps"), following someone to a place he names ("I follow her to the hall", D2).
+- **No movement:** questions ("Shall we go ask him now?"), proposals with a question mark, "whenever she is ready",
+  "later", wishes, someone else's offer or agreement.
+- **Fights:** before a fight, stepping toward or back is `move`; getting away from a fight is `flee`; afterwards,
+  going somewhere is `go`.
+- No `proposed` type was needed: a question still gets the empty plan and the existing STAY guidance.
+
+**4B band moves and the way back:**
+- `move` stays the band step toward or away from someone here, in a fight and before one (`.186` #113 unchanged).
+- A `move` that moves him relative to nobody outside a fight, or a `flee` with no fight, now gets the planner's one
+  bounded hint repair (`ineffectiveMoves`). The existing hint path is used: at most `plan` + `plan_repair`, never a
+  fourth model round. The first plan stands if the repair brings nothing.
+- **Removed:** `retreatGo`, `BACK_WAY`, `STAYS` and the `wayBack` branch of `mapPlan`. The engine reads no way back out
+  of his words any more.
+- Tests moved to the repair contract (`sayRepaired` helper): `fix187_way_back` and `patch843` retreat 2/4/5.
+- **`within` stays as it is.** A replacement needs a new planner contract for habitat parts plus migration of 92 corpus
+  steps. Its habitat integrity is checked in the movement proof (stage 2), as the counter-review demands.
+
+**4C partial moves (D3).** The room exception of ruleset 1 (`lodgedHere`/`roomOfHere`) now applies, bounded, to
+ruleset 2. Without a GO an arrival is allowed only when all of these hold:
+- he paid for lodging there this turn, or holds lodging there and rests or sleeps;
+- the arrival is at a room, bed or berth (the lodging's own words) of the same building;
+- no fight, no true Dungeon, no blocked way.
+
+Never allowed this way: a private office of the same inn, a back room after buying bread, another house, the street,
+a trader or a person he looked for.
+
+**4D N1 (engine block head):**
+- `WHERE — <place> (<town>).`, plus: the last reply's places that were not reached ("what it told there did not
+  happen").
+- `TRAVEL THIS TURN —` the authorized steps, or "none chosen: he stays … unless something in the world moves him".
+- `NOT HERE —` known people his message speaks of who are elsewhere.
+- The location sentences it replaces ("Alaric is still in …", the STAY sentence) are no longer repeated in the
+  CORRECTIONS. The records keep them unchanged, so the replay is not affected.
+
+**4E N4.** `projectPromptHistory` adds one line to a reply whose arrival was refused, in the prompt copy only:
+`[ENGINE: in this reply Alaric did not reach …; he stayed where he was / got only as far as the engine booked. What it
+told there was not booked; everything else stands as the engine booked it.]`. The saved chat, swipes and the player's
+view are untouched, and the line annuls nothing else of the reply.
+
+**4F N2** stays as in stage 1.
+
+**Tests:** `tests/v4/location190_stage4.test.js` (5), the rewritten `.187` and `8.4.3` way-back cases, and the
+existing room-exception guard (`.99` private office). `npm test`: 3222/3222.
+
+**Replay:** neither corpus changes. No recorded turn has an ineffective move, and the head and the history line are
+prompt-only.

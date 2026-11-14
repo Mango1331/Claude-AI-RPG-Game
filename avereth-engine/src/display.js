@@ -1,7 +1,7 @@
 import { encounterArea, placeName } from './v4/domain.js';
 import { trueDungeonOf } from './v4/dungeon.js';
 import { offerAvailability } from './v4/trade.js';
-const NOT_ARRIVED_RULES = new Set(['no_go', 'passage', 'place', 'combat']);
+export const NOT_ARRIVED_RULES = new Set(['no_go', 'passage', 'place', 'combat']);
 // What the player sees of the mechanics: a System block at the top of a reply, rendered from the engine's own records,
 // so the numbers on screen are exactly the numbers that were rolled and applied (Initiative, Turn order, every roll,
 // HP before - damage = HP after, everyone's HP and distance, Alaric's resources, checks, and what the reply changed:

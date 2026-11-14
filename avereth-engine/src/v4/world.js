@@ -121,8 +121,22 @@ export function firewallContext(s, content, chronicle = null, excludedFoes = [])
         heldByPc: (ref) => s.objects?.[ref]?.holder?.entity === 'pc' || (typeof ref === 'string' && ref.startsWith('item.') && !!s.entities.pc.sheet.inventory[ref.slice(5)]),
         // Prototype C (4.3.0-c.6.6.3): what he set out to hand over where he went in this turn (commands.js give)
         // Historical Rule-1 lodging semantics only; current campaigns require an authorized room move.
-        lodgedHere: rulesetOf(s) < 2 && (s.services || []).some(x => x.service === 'lodging' && x.at === s.scene.at && s.clock.minute - (x.minute ?? 0) <= 1440),
-        roomOfHere: ref => ref?.new ? ref.new.parent === s.scene.at && (!ref.new.kind || ['interior', 'room', 'site'].includes(ref.new.kind)) : typeof ref === 'string' && s.places[ref]?.parent === s.scene.at,
+        // .190 (stage 4C, D3): a step within the same building that his own action of this turn takes (the room he paid
+        // for now, or his lodging here when he goes to rest or sleep) needs no GO; buying bread is no way into the back
+        // room, and nearness never moves him. Ruleset 1 keeps its room exception as it was
+        lodgedHere: rulesetOf(s) < 2 ? (s.services || []).some(x => x.service === 'lodging' && x.at === s.scene.at && s.clock.minute - (x.minute ?? 0) <= 1440)
+            : !s.encounter && !trueDungeonOf(s, s.scene.at) && (s.services || []).some(x => x.service === 'lodging' && lineage(s, s.scene.at).includes(x.at)
+                && (x.turn === s.turn || (o.auth?.rest && s.clock.minute - (x.minute ?? 0) <= 1440))),
+        roomOfHere: ref => {
+            if (rulesetOf(s) < 2) return ref?.new ? ref.new.parent === s.scene.at && (!ref.new.kind || ['interior', 'room', 'site'].includes(ref.new.kind)) : typeof ref === 'string' && s.places[ref]?.parent === s.scene.at;
+            // the room or bed he paid for, inside the building he is in (its complex): never another room of it (a private
+            // office), another house, the street or a new travel target
+            const home = complexOf(s, s.scene.at);
+            if (!home || settlementOf(s, home) === home) return false;
+            const parent = ref?.new ? (ref.new.parent == null ? s.scene.at : typeof ref.new.parent === 'string' ? ref.new.parent : null) : null;
+            if (ref?.new) return ref.new.kind === 'interior' && LODGING_WORDS.test(normText(ref.new.name || '')) && !!parent && !!s.places[parent] && complexOf(s, parent) === home;
+            return typeof ref === 'string' && s.places[ref]?.kind === 'interior' && LODGING_WORDS.test(normText(s.places[ref].name || '')) && complexOf(s, ref) === home && !dungeonOf(s, ref);
+        },
         handingOver: (ref) => (o.conditionals || []).some((k) => k.kind === 'give' && (k.object === ref || normText(s.objects?.[k.object]?.name || '') === normText(ref))),
         isGuildContractRef: (ref) => {
             if (typeof ref !== 'string') return false;
@@ -239,6 +253,8 @@ function anchorRefusal(s, id, p, value, anchored) {
 }
 
 // K8 (pilot 01 B12, .177): a person's role the extractor wrote as the word "null" ("none", "n/a") is no role (T11: Widow
+// .190 (D3): the words of a room or bed he can pay for (commands.js ROOM_WORDS)
+const LODGING_WORDS = /\b(?:rooms?|beds?|bunks?|cots?|berths?|lodgings?|quarters)\b/;
 // Hessa's occupation and first descriptor "null")
 const NO_ROLE = /^\s*(?:null|none|undefined|n\/a)?\s*$/i;
 const roleless = (d) => d?.type === 'person.new' && typeof d.role === 'string' && NO_ROLE.test(d.role);

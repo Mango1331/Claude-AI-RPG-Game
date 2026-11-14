@@ -64,6 +64,22 @@ export async function say(g, text, ...commands) {
     if (r.action === 'panels') g.chat.push({ mes: r.panels.join('\n\n'), is_user: false, is_system: true, extra: { avereth_panel: true } });
     return r;
 }
+/**
+ * .190 (4B): a player message whose first plan gets the planner's one bounded repair (an ineffective move or a flight
+ * with no fight: src/v4/planner.js ineffectiveMoves); `repaired` is the planner's second answer. Returns the result and
+ * the repair request the engine sent.
+ */
+export async function sayRepaired(g, text, first, repaired) {
+    g.chat.push({ mes: text, is_user: true, is_system: false, extra: {} });
+    const own = (q) => (q && text.includes(q) ? q : text.replace(/\*/g, '').trim());
+    const plan = (cs) => { const p = JSON.stringify({ commands: cs.map((c, i) => ({ seq: i + 1, ...c, quote: own(c.quote) })) }); return g.contract !== false && hasFinanceContract(g.content.deltaVocab) ? financeText(p, 'plan', null, g.content) : p; };
+    const asked = [];
+    const answers = [plan(first), ...(repaired ? [plan(repaired)] : [])];
+    const llm = async (req) => { if (req.purpose.startsWith('plan')) { asked.push(req); return answers.shift() ?? null; } return g.llm(req); };
+    const r = await prepareGenerationAsync(g.chat, g.content, { type: 'normal', settings: { planner: true }, llm });
+    if (r.action === 'panels') g.chat.push({ mes: r.panels.join('\n\n'), is_user: false, is_system: true, extra: { avereth_panel: true } });
+    return { r, repair: asked.find((x) => x.purpose === 'plan_repair') || null };
+}
 export const lastUser = (g) => rec(g.chat.findLast((m) => m.is_user));
 export const outcomeOf = (g) => lastUser(g)?.events?.findLast((e) => e.t === 'outcome.recorded')?.d.outcome;
 export const linesOf = (g) => [...(outcomeOf(g)?.actions || []), ...(outcomeOf(g)?.extra || [])].join('\n');

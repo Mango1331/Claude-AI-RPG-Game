@@ -17,7 +17,8 @@ import { mapPlan } from '../../src/v4/planner.js';
 import { buildCatalog } from '../../src/v4/catalog.js';
 import { validateState } from '../../src/validate.js';
 import { Chat4 } from './harness.js';
-import { say, outcomeOf, linesOf } from './patch8_lib.js';
+import { say, sayRepaired, outcomeOf, linesOf } from './patch8_lib.js';
+import { ineffectiveMoves } from '../../src/v4/planner.js';
 
 const content = await loadProductContent();
 const fx = JSON.parse(zlib.gunzipSync(fs.readFileSync(new URL('./fixtures/batch186_warrior_drift.json.gz', import.meta.url))));
@@ -36,17 +37,19 @@ function chatAt(n) {
 /** The original refused extractor deltas of a reply (they are in its record's delta.rejected items). */
 const refusedOf = (i) => rec(fx.chat[i]).events.filter((e) => e.t === 'delta.rejected').map((e) => e.d.item).filter((d) => d && d.type !== 'expected');
 
-test('.187 P2 #117 (original state and planner answer): the step back from Goblin A, already at LONG, is the way back to Mossback Warrens (.186: story fiction)', () => {
+test('.187 P2 #117 (original state and planner answer) .190 4B: the step back from Goblin A, already at LONG, moves him relative to nobody: the engine reads no way back out of his words, it asks the planner once', () => {
     const s = at(117);
     assert.equal(s.scene.positions[A].band, 'LONG', 'nobody to step back from');
+    assert.deepEqual(ineffectiveMoves(s, { fight: false }, [{ seq: 1, ...M117 }]), ['move seq 1: this step moves him relative to nobody here (no fight, no one it brings him nearer to or farther from); if he goes somewhere, answer with go (back the way he came: RECENT ROUTE, or a known place), else leave this command out']);
     const r = plan(117, [M117]);
-    assert.deepEqual(r.commands.map((c) => [c.type, c.to]), [['go', 'loc.mossback_warrens']]);
-    assert.deepEqual(r.free, []);
+    assert.deepEqual(r.commands, [], 'no GO from his words');
+    assert.equal(r.free.length, 1);
 });
 
-test('.187 P2 #117 host path: the turn books GOES back to Mossback Warrens, not NOTHING TO BOOK; the original arrival there is then accepted', async () => {
+test('.187 P2 #117 host path .190 4B: the planner\'s one repair answers go back to Mossback Warrens; the turn books GOES there, and the original arrival is then accepted', async () => {
     const g = chatAt(117);
-    await say(g, fx.chat[117].mes, M117);
+    const { repair } = await sayRepaired(g, fx.chat[117].mes, [M117], [{ type: 'go', to: 'loc.mossback_warrens', quote: Q117 }]);
+    assert.ok(repair && JSON.stringify(repair.messages).includes('moves him relative to nobody here'));
     assert.match(linesOf(g), /GOES — to Mossback Warrens/);
     assert.doesNotMatch(linesOf(g), /NOTHING TO BOOK/);
     const arrive = refusedOf(118).find((d) => d.type === 'arrive');
@@ -57,16 +60,20 @@ test('.187 P2 #117 host path: the turn books GOES back to Mossback Warrens, not 
     const again = foldChat(structuredClone(g.chat)).state;
     assert.deepEqual(again, g.state());
     assert.deepEqual(validateState(again, content), []);
+    // a repair that keeps the step books nothing: story fiction, as .186
+    const h = chatAt(117);
+    await sayRepaired(h, fx.chat[117].mes, [M117], [M117]);
+    assert.match(linesOf(h), /NOTHING TO BOOK/);
 });
 
-test('.187 P2 against: a step that moves him (#113, SHORT → MEDIUM) stays the tactical step; a step back without the way stays fiction; in a fight nothing changes', () => {
-    const s113 = plan(113, [{ type: 'move', dir: 'away', target: null, quote: 'I raise my sword between us and back slowly up the track, away from the hut, giving ground without ever turning my back on their spears.' }]);
+test('.187 P2 against: a step that moves him (#113, SHORT → MEDIUM) stays the tactical step, no repair; in a fight nothing changes; his own GO stays the one GO', () => {
+    const q113 = 'I raise my sword between us and back slowly up the track, away from the hut, giving ground without ever turning my back on their spears.';
+    const s113 = plan(113, [{ type: 'move', dir: 'away', target: null, quote: q113 }]);
     assert.deepEqual(s113.commands.map((c) => [c.type, c.dir]), [['move', 'away']], '#113 original');
-    const bare = plan(117, [{ type: 'move', dir: 'away', target: A, quote: 'I keep backing up' }]);
-    assert.deepEqual(bare.commands, [], 'no way named: nothing booked');
-    assert.equal(bare.free.length, 1);
+    assert.deepEqual(ineffectiveMoves(at(113), { fight: false }, [{ seq: 1, type: 'move', dir: 'away', target: null, quote: q113 }]), [], 'a step the scene has: no repair');
+    assert.deepEqual(ineffectiveMoves(at(117), { fight: true }, [{ seq: 1, ...M117 }]), [], 'a fight keeps its own rules');
     const fight = plan(117, [M117], true);
-    assert.ok(!(fight.commands || []).some((c) => c.type === 'go'), 'a fight keeps its own rules');
+    assert.ok(!(fight.commands || []).some((c) => c.type === 'go'));
     const withGo = plan(117, [M117, { type: 'go', to: 'loc.charcoal_burners_hut_at_the_second_bend', quote: 'toward the gate palisade' }]);
     assert.deepEqual(withGo.commands.filter((c) => c.type === 'go').map((c) => c.to), ['loc.charcoal_burners_hut_at_the_second_bend'], 'his own GO stays the one GO');
 });
@@ -99,7 +106,7 @@ test('.187 P2 #121 (original): the authorized GO to a new watch-house under the 
     assert.ok((r.record.rejected || []).some((x) => x.rule === 'place' && /an? interior cannot lie in Duskreach/.test(x.why)), JSON.stringify(r.record.rejected));
     // the same GO after the way back reached Mossback Warrens: the watch-house is a room of a site
     const h = chatAt(117);
-    await say(h, fx.chat[117].mes, M117);
+    await sayRepaired(h, fx.chat[117].mes, [M117], [{ type: 'go', to: 'loc.mossback_warrens', quote: Q117 }]);
     await h.reply(fx.chat[118].mes, { expected: { 1: { arrived: true, at: 'loc.mossback_warrens', with: null } }, deltas: [{ ...refusedOf(118).find((d) => d.type === 'arrive'), seq: 1 }] });
     await say(h, 'I follow the keeper\'s direction to the watch-house.', { type: 'go', to: { new: 'the watch-house' }, within: null, quote: 'I follow the keeper\'s direction to the watch-house' });
     const room = { new: { name: 'watch-house by the gate', kind: 'interior', parent: 'loc.mossback_warrens' } };
@@ -114,21 +121,15 @@ test('.187 P2 #121 (original): the authorized GO to a new watch-house under the 
 // ------------------------------------------------------------------------------------- .187 follow-up (review 14.11.)
 // A step back said to stay where he is ("holding my ground", "a few paces", "without leaving the bend") is no journey,
 // even when it names the track: it stays the story's step; the way back needs the way and no stay.
-test('.187 P2 follow-up: a step back up the track that says he stays is no way back (#117 state)', () => {
+test('.187 P2 follow-up .190 4B: whether a step back with "staying" words is a way back is the planner\'s reading, never an engine word list (#117 state)', () => {
     for (const q of [
         'I back up the track a few paces, holding my ground here at the bend',
         'I take two steps back along the path, staying where I am with my sword raised',
-        'I keep backing up the dark track but do not leave the bend, eyes on the tallest goblin',
-        // the review's probes (patch_plans_10b/REVIEW_BATCH187_DREI_ETAPPEN_PRODUKTDIFF_GPT.md §3.4)
         'I back up the road a single step and hold my position',
-        'I back slowly up the road three paces without leaving the clearing',
-        'I back up the path while staying at this ambush spot',
+        'I back out the way I came, staying close to the wall',
     ]) {
         const r = plan(117, [{ ...M117, quote: q }]);
-        assert.ok(!(r.commands || []).some((c) => c.type === 'go'), q);
-        assert.equal(r.free.length, 1, q);
+        assert.ok(!(r.commands || []).some((c) => c.type === 'go'), `the engine books no way back: ${q}`);
+        assert.equal(ineffectiveMoves(at(117), { fight: false }, [{ seq: 1, ...M117, quote: q }]).length, 1, `the planner is asked: ${q}`);
     }
-    assert.deepEqual(plan(117, [M117]).commands.map((c) => [c.type, c.to]), [['go', 'loc.mossback_warrens']], '#117 original unchanged');
-    for (const q of ['I back up the track, staying low and quiet, toward the gate', 'I back out the way I came, staying close to the wall'])
-        assert.deepEqual(plan(117, [{ ...M117, quote: q }]).commands.map((c) => [c.type, c.to]), [['go', 'loc.mossback_warrens']], `how he goes is no stay: ${q}`);
 });

@@ -65,6 +65,7 @@ export const MECH_RULES = [
     '7b-route. A present route choice addressed to a guide ("Up the rocks on the left — we look first") is go when RECENT shows that guide just asked which way to proceed. Copy the known destination id; companions and route wording never become a new destination. A hypothetical route, a question or somebody else choosing remains no go.',
     '7b. Clear present acceptance of a specific offered guidance by a PRESENT person is go to its established destination, including an adjacent room. Use the offer only to resolve his words, never as permission by itself. A drink promise, showing goods, polite assent unrelated to departure, an invitation alone or a future plan grants no movement or purchase. An unclear destination stays open; never invent one.',
     '7c. In a dungeon (EXITS listed): going through a way is go with the id of the room it leads to, also when he names the door, stair or passage ("I take the stair down"); "back" or "the previous room" is the room he came from (RECENT ROUTE); a known room further on is go with its id (the engine checks the way). Going on into a part nobody has shown yet, or down where an EXITS line offers it, is go {"new": "<his words>"}. Opening or forcing what blocks a way is attempt on its FEATURES id; looking for another way is activity search.',
+    '7d. Setting off now is go: an announcement of his own movement in the present ("I\'m heading back to the Guild hall", "I head out"), a call to set off together now ("Let\'s go to …", "We head out to …"; "Let\'s walk the lines" is go plus the activity), a deed at another place he names ("I go check the traps" is go plus the activity), following someone to a place he names ("I follow her to the hall" is go there). No movement: a question ("Shall we go ask him now?"), a proposal ending in a question mark, "whenever she is ready", "later", a wish or a plan, someone else\'s offer or agreement alone. Before a fight, stepping toward or back from someone here is move; getting away from a fight is flee; once he is out of it, going somewhere is go.',
     '8-trade. buy.max_cp and sell.min_cp are TOTAL limits for the selected quantity. Convert an explicit unit rate times qty; quote that item’s exact original price clause separately. Never sum prices of unrelated items. Select only positions bought and paid for now. A bed paid now and breakfast taken/paid tomorrow are separate transactions: accept only the bed now. Copy the payment clause as its quote. For separate current item prices, keep each price with its item; do not replace them with an invented total. A later meal is not prepaid merely because he mentions it.',
     '8. Several actions in one message: one command each, in his order. One trade is one buy/sell/offer.accept, including payment and goods: do not add a pay or give for it. Appraisal (check it and pay what it is worth) is sell with no agreed price, not a free give or acceptance of a provisional bid. A requested discount is a counteroffer, not acceptance of the old price. Never substitute an open offer of another party. Something he does that no command fits: other.',
     '8a. A present decision to turn in for the night, spend the night sleeping, or go to bed is activity sleep (until morning when he means overnight). Buying a room is separate and does not itself book sleep. Merely finding/asking for a bed, mentioning a purpose to rest, or saying "I wake at dawn" is not an unperformed sleep action. Never infer sleep from narrator prose; the engine checks lodging and recovery.',
@@ -728,42 +729,18 @@ function clarifyPanel(question, options, waiting = []) {
 }
 
 /**
- * Turn the validated commands into the engine's input. Nothing is replaced: a value the engine cannot take becomes a
- * question, a refusal the engine already knows (unknown skill, no such target) or a visible "not taken" note.
- * @returns {{route: 'v3', intent: object} | {route: 'v4', commands: object[]} | {route: 'panel', panel: string}} plus notes
+ * .190 (stage 4B, plan C4): a step outside a fight that moves him relative to nobody here, or a flight with no fight to
+ * flee: the planner is asked once more what he does (the bounded hint repair, src/v4/runtime.js planMessage); the
+ * engine reads no way back out of his words. Returns the hints (empty when every move is a step the scene has).
  */
-// Patch 8.4.3 (live 22.10.2026 09:00, turn 20: "I back away quietly between the columns and slip back through the cleft,
-// away from the queen" came as flee outside a fight: story fiction, the narrator told the walk out, the engine kept him
-// in the Queen's Crystal Bowl): outside a fight, a flight that says where it goes is a go there, on the ordinary way of
-// go with all its checks. The place: a known one he names (every word of its name, the Dungeon's "of …" aside), else,
-// when he says he goes back ("back through", "back out", "the way I came"), the room he came from. A flight that says
-// neither, or names a place he does not know ("back to …"), gets no place
-// .187 (Warrior #117 on .186: "I keep backing up the dark track toward the gate palisade"): a back along the way he came
-// by track, road or path ("backing up the track", "back slowly up the road") says the way too
-const BACK_WAY = /\b(?:back\s+(?:out|through|the way|into|past|down|up|along)|back(?:s|ed|ing)?\s+(?:\w+\s+)?(?:up|down|along|out along)\s+the\s+(?:\w+\s+)?(?:track|road|path|trail|lane|way)|the way (?:i|he) came|where (?:i|he) came from|retrac(?:e|es|ing) (?:my|his) steps)\b/i;
-const placeWords = (name) => normText(String(name || '').replace(/\s+of\s+.*$/i, '').replace(/,.*$/, '')).split(/[^a-z0-9']+/).filter((w) => w.length > 2 && w !== 'the');
-export function retreatGo(state, c) {
-    const here = state?.scene?.at;
-    const quote = String(c?.quote || '');
-    if (!here || !quote) return null;
-    const said = ` ${normText(quote).replace(/[^a-z0-9']+/g, ' ')} `;
-    const route = (state.scene.history || []).slice(-12);
-    const d = dungeonOf(state, here);
-    const rooms = d ? Object.keys(state.places || {}).filter((id) => dungeonOf(state, id) === d && roomKnown(state, id)) : [];
-    const named = [...new Set([...route, ...rooms])].filter((id) => id !== here && state.places?.[id]).filter((id) => {
-        const w = placeWords(state.places[id].name || placeName(state, id));
-        return w.length > 0 && w.every((x) => said.includes(` ${x} `));
-    });
-    if (named.length === 1) return { seq: c.seq, type: 'go', to: named[0], quote: c.quote };
-    if (named.length > 1 || /\bback to\b/i.test(quote) || !BACK_WAY.test(quote)) return null;
-    const from = [...route].reverse().find((id) => id !== here && state.places?.[id]);
-    return from ? { seq: c.seq, type: 'go', to: from, quote: c.quote } : null;
+export function ineffectiveMoves(state, ctx, commands) {
+    if (!state || ctx?.fight) return [];
+    const stepped = (c) => (c.target === null || c.target === undefined || typeof c.target === 'string') && approachedBy(state, { move: c.dir, moveTarget: c.target ?? null }).length > 0;
+    return (commands || []).flatMap((c) => c.type === 'move' && !stepped(c)
+        ? [`move seq ${c.seq}: this step moves him relative to nobody here (no fight, no one it brings him nearer to or farther from); if he goes somewhere, answer with go (back the way he came: RECENT ROUTE, or a known place), else leave this command out`]
+        : c.type === 'flee' ? [`flee seq ${c.seq}: there is no fight to flee; if he goes somewhere, answer with go (back the way he came: RECENT ROUTE, or a known place), else leave this command out`] : []);
 }
 
-const travelOf = (story) => story.some((c) => c.type === 'go');
-// .187 follow-up (review 14.11.): a step back that says he stays ("holding my ground", "a few paces", "staying where I
-// am", "not leaving the bend") is no journey, whatever way it names; it stays the story's step
-const STAYS = /\b(?:stay(?:s|ing)?\s+(?:here|put|where|in\s+place|(?:at|by|on)\s+(?:the|this|that))|hold(?:s|ing)?\s+(?:my|his|the)\s+(?:ground|place|position|post)|stand(?:s|ing)?\s+(?:my|his)\s+ground|keep(?:s|ing)?\s+(?:my|his)\s+(?:ground|place|post|position)|where\s+(?:i|he)\s+(?:am|is|stand|stands)|without\s+leaving|(?:do|does|did)\s*(?:not|n't)\s+leave|not\s+leaving|(?:a|one|two|three|a\s+few|a\s+couple\s+of|few|a\s+single|single|only\s+one|just\s+one)\s+(?:paces?|steps?|strides?|yards?))/i;
 export function mapPlan(commands, ctx, content, message, state) {
     // Patch 3 (live 18.10.2026: "I use the flint and steel to make a small light" became the unknown skill "flint and
     // steel" and the "continue" after it was dropped): a thing he holds, named where a skill would stand, is that thing
@@ -826,26 +803,18 @@ export function mapPlan(commands, ctx, content, message, state) {
         for (const c of mech.filter(x => x.type === 'other' || x.type === 'attempt')) free.push(`${c.type}: ${said(c)}`);
         return { route: 'v4', commands: [go], notes, free };
     }
-    // Patch 8.4.3: a flight outside a fight that says where it goes is a go there (retreatGo); one that does not stays
-    // story fiction, and the engine books no place for it
-    if (!fight) {
-        for (const c of mech.filter((x) => x.type === 'flee')) {
-            const back = retreatGo(state, c);
-            if (back) story.push(back); else free.push(`${c.type}: ${said(c)}`);
-        }
-    }
+    // Patch 8.4.3 / .190 (4B): a flight outside a fight stays story fiction; where he goes is the planner's go (its one
+    // repair asked: ineffectiveMoves), never a way back the engine reads out of his words
+    if (!fight) for (const c of mech.filter((x) => x.type === 'flee')) free.push(`${c.type}: ${said(c)}`);
     if (!fight && !mechMain.length) {
         // 4.3.0-c.6.6.6: a step toward (or back from) the creatures or people of the scene is the engine's to set, one per
         // message; one that brings him nearer to no one, or toward something that is no one here ({new: "the well"}),
         // stays story fiction
         const stepped = (c) => !!state && (c.target === null || typeof c.target === 'string') && approachedBy(state, { move: c.dir, moveTarget: c.target }).length > 0;
         const steps = moves.filter(stepped);
-        // .187 (P2, Warrior #117 on .186): a step back from someone already as far as a scene goes moves him nowhere in
-        // the scene; when his words say the way back (retreatGo, as for a flight), it is that way back, the one GO of the
-        // message. A step that does move him stays the tactical step, never a journey
-        const wayBack = !travelOf(story) && moves.length && !steps.length ? moves.filter((x) => x.dir === 'away' && !STAYS.test(String(x.quote || ''))).map((x) => retreatGo(state, x)).find(Boolean) : null;
-        if (wayBack) story.push(wayBack);
-        for (const c of moves.filter((x) => !stepped(x) && !(wayBack && x.seq === wayBack.seq))) free.push(`move: ${said(c)}`);
+        // .190 (4B): a step that moves him relative to nobody stays story fiction (the planner's repair was asked whether
+        // he goes somewhere: ineffectiveMoves); a step that does move him stays the tactical step, never a journey
+        for (const c of moves.filter((x) => !stepped(x))) free.push(`move: ${said(c)}`);
         for (const c of steps.slice(1)) notes.push(`not taken this turn (one move per turn): ${said(c)}`);
         story.push(...steps.slice(0, 1));
         // Prototype C (4.3.0-c.6): his own deed no command fits is a step of the message, in its place among the others

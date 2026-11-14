@@ -12,9 +12,9 @@ import { loadProductContent, ROOT } from '../helpers.js';
 import { foldChat, rec } from '../../src/host.js';
 import { applyEvent } from '../../src/state.js';
 import { syncEvents, occupancy, hudRows } from '../../src/v4/living.js';
-import { MECH_RULES, MECH_EXAMPLES, mapPlan, retreatGo } from '../../src/v4/planner.js';
+import { MECH_RULES, MECH_EXAMPLES, mapPlan, ineffectiveMoves } from '../../src/v4/planner.js';
 import { Chat4 } from './harness.js';
-import { say, linesOf, inject, campaign, walk, delve, living, GO } from './patch8_lib.js';
+import { say, sayRepaired, linesOf, inject, campaign, walk, delve, living, GO } from './patch8_lib.js';
 
 const content = await loadProductContent();
 const fx = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests/v4/live_1022e.json'), 'utf8'));
@@ -87,12 +87,13 @@ test('8.4.3 retreat 1 (live #39): the getaway as the planner now reads it, go to
     assert.equal(foldChat(g.chat, g.chat.length).state.scene.at, SECOND, 'the replay agrees');
 });
 
-test('8.4.3 retreat 2 (live #39 as live, flee): the getaway "back through" is a go to the room he came from (the Third Gallery), on the ordinary way; the queen stays behind', async () => {
+test('8.4.3 retreat 2 (live #39 as live, flee) .190 4B: a flight with no fight gets the planner\'s one repair; its go back to the Third Gallery is the step, on the ordinary way; the queen stays behind', async () => {
     const g = live(39);
     assert.deepEqual(rec(fx.messages[39]).ir.acts.map((a) => a.act), ['flee'], 'what the live planner gave');
-    assert.deepEqual(retreatGo(g.state(), { seq: 1, type: 'flee', quote: RETREAT }), { seq: 1, type: 'go', to: THIRD, quote: RETREAT });
-    await say(g, RETREAT, { type: 'flee', quote: RETREAT });
-    assert.deepEqual(acts(g), [['flee', null]], 'the planner\'s command, as recorded');
+    assert.deepEqual(ineffectiveMoves(g.state(), { fight: false }, [{ seq: 1, type: 'flee', quote: RETREAT }]), ['flee seq 1: there is no fight to flee; if he goes somewhere, answer with go (back the way he came: RECENT ROUTE, or a known place), else leave this command out']);
+    const { repair } = await sayRepaired(g, RETREAT, [{ type: 'flee', quote: RETREAT }], [{ type: 'go', to: THIRD, quote: RETREAT }]);
+    assert.ok(repair && JSON.stringify(repair.messages).includes('there is no fight to flee'), 'the one repair asked');
+    assert.deepEqual(acts(g), [['go', THIRD]], 'the planner\'s repaired command');
     assert.deepEqual(resolved(g), [['go', 'authorized']], 'the step the engine took');
     assert.match(linesOf(g), /^1\. GOES — to Third Gallery of Glimmerdeep/m);
     assert.doesNotMatch(linesOf(g), /NOTHING TO BOOK/);
@@ -113,11 +114,9 @@ test('8.4.3 retreat 3: the same words in the fight with the queen (live #49) sta
 });
 
 test('8.4.3 retreat 4: a getaway that names no place, or one he does not know ("back to …"), gets no place: no go, and an arrival the story tells is refused', async () => {
-    const s = foldChat(fx.messages, 39).state;
-    for (const quote of ['I run from here as fast as I can!', 'I slip back to the Fourth Grotto before she sees me', 'I flee', 'I back away from her slowly']) assert.equal(retreatGo(s, { seq: 1, type: 'flee', quote }), null, quote);
-    assert.deepEqual(retreatGo(s, { seq: 1, type: 'flee', quote: 'I slip away back to the Second Chamber' }), { seq: 1, type: 'go', to: SECOND, quote: 'I slip away back to the Second Chamber' }, 'a known room he names');
+    // .190 (4B): the engine reads no place out of his words; the planner's repair keeps the flee (no place named)
     const g = live(39);
-    await say(g, 'I run from here as fast as I can!', { type: 'flee', quote: 'I run from here as fast as I can!' });
+    await sayRepaired(g, 'I run from here as fast as I can!', [{ type: 'flee', quote: 'I run from here as fast as I can!' }], [{ type: 'flee', quote: 'I run from here as fast as I can!' }]);
     assert.deepEqual(acts(g), [['flee', null]]);
     assert.ok(!resolved(g).some(([t]) => t === 'go'));
     assert.match(linesOf(g), /NOTHING TO BOOK/, 'unchanged: story fiction');
@@ -133,7 +132,8 @@ test('8.4.3 retreat 5: the way back barred by an obstacle: the go is refused by 
         { t: 'feature.set', d: { feature: { id: 'feat.test_slab', kind: 'obstacle', status: 'active', name: 'a fallen crystal slab', at: BOWL, difficulty: 'hard', hidden: false, since: { turn: 19, minute: 815 } } } },
         { t: 'link.set', d: { link: { ...link, feature: 'feat.test_slab' } } },
     ]);
-    await say(g, RETREAT, { type: 'flee', quote: RETREAT });
+    // .190 (4B): the planner's repair gives the go back; the barred way refuses it
+    await sayRepaired(g, RETREAT, [{ type: 'flee', quote: RETREAT }], [{ type: 'go', to: THIRD, quote: RETREAT }]);
     assert.equal(resolved(g)[0][0], 'go');
     assert.notEqual(resolved(g)[0][1], 'authorized');
     assert.match(linesOf(g), /fallen crystal slab/);

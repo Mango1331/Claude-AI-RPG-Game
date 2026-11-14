@@ -10,7 +10,7 @@ import { applyEvent, emptyState } from './state.js';
 import { startCampaign, playerTurn, narratorReply, turnContext } from './engine.js';
 import { loreKeys, reportKeys } from './context.js';
 import { extractReport, tolerantJson } from './delta.js';
-import { turnPanel } from './display.js';
+import { turnPanel, NOT_ARRIVED_RULES } from './display.js';
 import { renderHud } from './hud.js';
 import { hash32, clone, normText, swapWords, hasTrackerBlocks, stripTrackerBlocks, ENGINE_VERSION } from './util.js';
 
@@ -240,6 +240,8 @@ export function turnBlock(chat, u, content, settings = {}) {
     const context = turnContext(state, content, {
         input: chat[u].mes,
         corrections: [...notExecuted, ...paidCards, ...restCut, ...(prev && !prev.system_answer ? prev.corrections || [] : [])],
+        // .190 (N1): what the last reply put him at that he never reached (its refused arrivals), for the WHERE header
+        notReached: prev && !prev.system_answer ? (prev.rejected || []).filter((x) => x.type === 'arrive' && NOT_ARRIVED_RULES.has(x.rule)).map((x) => x.to).filter(Boolean) : [],
         lastReply: p >= 0 ? chat[p].mes : '',
         chronicle: state.meta?.runtime === 'v4' && (state.encounter || state.last?.outcome?.kind === 'combat') ? combatChronicle(chat.slice(0, u + 1), messageEvents) : null,
         budget: settings.budget,
@@ -565,11 +567,15 @@ export function onEdited(chat, id, content) {
  */
 export function projectPromptHistory(messages, { keepTurns = 4 } = {}) {
     let stripped = 0;
+    let marked = 0;
     for (let i = 0; i < messages.length; i++) {
         const m = messages[i];
-        if (!m || m.is_user || typeof m.mes !== 'string' || !hasTrackerBlocks(m.mes)) continue;
-        messages[i] = { ...m, mes: stripTrackerBlocks(m.mes) };
-        stripped += 1;
+        if (!m || m.is_user || typeof m.mes !== 'string') continue;
+        // .190 (stage 4E, N4): a reply whose arrival the engine refused carries one line of what was not booked, in
+        // this prompt copy only (the saved chat, swipes and the player's view stay as they are)
+        const mark = historyMark(rec(m));
+        if (hasTrackerBlocks(m.mes)) { messages[i] = { ...m, mes: stripTrackerBlocks(m.mes) }; stripped += 1; }
+        if (mark) { messages[i] = { ...messages[i], mes: `${messages[i].mes}\n\n${mark}` }; marked += 1; }
     }
     let removed = 0;
     if (keepTurns > 0) {
@@ -579,5 +585,19 @@ export function projectPromptHistory(messages, { keepTurns = 4 } = {}) {
             messages.splice(0, removed);
         }
     }
-    return { removed, stripped };
+    return { removed, stripped, marked };
+}
+
+/**
+ * .190 (N4): the engine line a reply carries in the prompt history when its arrival was refused: the places it did not
+ * reach and who was not met there; everything else of the reply stands as the engine booked it. Null otherwise.
+ */
+export function historyMark(r) {
+    const refused = (r?.rejected || []).filter((x) => x.type === 'arrive' && NOT_ARRIVED_RULES.has(x.rule));
+    if (!refused.length) return null;
+    const words = (to) => (typeof to === 'string' ? to.replace(/^(?:loc|realm)\./, '').replace(/[._]/g, ' ') : to?.name || null);
+    const places = [...new Set(refused.map((x) => words(x.to)).filter(Boolean))];
+    const unmet = (r.rejected || []).filter((x) => /^met_/.test(x.rule || '')).length;
+    const moved = (r.events || []).some((e) => e.t === 'scene.moved' && e.d?.at);
+    return `[ENGINE: in this reply Alaric did not reach ${places.length ? places.join(', ') : 'the place it told'}; ${moved ? 'he got only as far as the engine booked' : 'he stayed where he was'}${unmet ? ', and nobody there was met' : ''}. What it told there was not booked; everything else stands as the engine booked it.]`;
 }

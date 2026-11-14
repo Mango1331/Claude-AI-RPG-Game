@@ -45,7 +45,7 @@ import { skillDrafts, offerSkills, skillEvidence } from './skill_growth.js';
 import { classDrafts, offerClass } from './class_growth.js';
 import { developmentFeats } from './feats.js';
 import { classForgeRequest, parseClassForge } from './forge.js';
-import { PLANNER_VERSION, MECH_TYPES, planContext, withContentSkills, plannerRequest, parsePlan, mapPlan, recentText, announcedAbandon } from './planner.js';
+import { PLANNER_VERSION, MECH_TYPES, planContext, withContentSkills, plannerRequest, parsePlan, mapPlan, recentText, announcedAbandon, ineffectiveMoves } from './planner.js';
 import { crowdCount, personWords, bystanderEvents } from './settlement.js';
 import { combatChronicle, chronicleLine } from './combat_truth.js';
 import { skillOf, rulesetOf } from '../content.js';
@@ -240,7 +240,7 @@ export async function interpretMessage(llm, content, catalog, text) {
 
 // ------------------------------------------------------------------------------------------------ planner (prototype C)
 /** Prototype C (src/v4/planner.js): the planner call with its one repair, as the interpreter's. */
-export async function planMessage(llm, content, ctx, text, { recent = '', isCurrent = () => true } = {}) {
+export async function planMessage(llm, content, ctx, text, { recent = '', isCurrent = () => true, moveHints = null } = {}) {
     const vocab = content.commandVocab;
     const req = plannerRequest(vocab, ctx, text, { recent });
     const first = await ask(llm, req.messages, 'plan');
@@ -308,6 +308,8 @@ export async function planMessage(llm, content, ctx, text, { recent = '', isCurr
     }
     // Build .142 (§4.4): a valid plan that leaves a named price or coin without its evidence gets the same one repair as
     // a hint; the first valid plan stands if the repair brings none (no further call)
+    // .190 (4B): and a move that moves him relative to nobody (ineffectiveMoves) gets the same one repair
+    if (p.commands && !repaired && moveHints) { const mh = moveHints(p.commands); if (mh.length) p = { ...p, hints: [...(p.hints || []), ...mh] }; }
     if (p.commands && p.hints?.length && !repaired) {
         if (!isCurrent()) return { commands: null, failed: true, error: 'stale request', ms, repaired, raw, calls };
         const rep = plannerRequest(vocab, ctx, text, { recent, previous: first.content, errors: p.hints });
@@ -342,7 +344,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const catalog = buildCatalog(before, content, { known: true, c: true });
     const ctx = withContentSkills(planContext(before, content, catalog), content, before);
     const reuse = previous?.plan && previous.interp?.commands ? { commands: previous.interp.commands, failed: false, error: null, ms: 0, repaired: !!previous.interp.repaired, raw: previous.plan.raw || [], calls: previous.plan.llm, recovery: previous.plan.recovery || null } : null;
-    const pl = reuse || await planMessage(llm, content, ctx, msg.mes, { recent, isCurrent });
+    const pl = reuse || await planMessage(llm, content, ctx, msg.mes, { recent, isCurrent, moveHints: (commands) => ineffectiveMoves(before, ctx, commands) });
     const plan = {
         version: PLANNER_VERSION, mode: ctx.fight ? 'fight' : 'story', ms: pl.ms, repaired: pl.repaired, failed: pl.failed,
         ...(pl.error ? { error: pl.error } : {}), raw: pl.raw, ...(pl.calls?.length ? { llm: pl.calls } : {}),

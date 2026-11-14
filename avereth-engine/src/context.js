@@ -22,7 +22,7 @@ import { featuresAt, featureText } from './v4/features.js';
 import { dungeonOf, trueDungeonOf, dungeonText, nearDungeons, exitsFrom, exitText, roomLabel, wayBetween } from './v4/dungeon.js';
 import { sectionExits } from './v4/sections.js';
 import { contextLines as livingLines, guardianAccessLines, floorAt as livingFloorAt } from './v4/living.js';
-import { settlementOf, realmOf, hallOf, listedToday, lineage } from './v4/domain.js';
+import { settlementOf, realmOf, hallOf, listedToday, lineage, placeName } from './v4/domain.js';
 import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
 import { objectiveText, proofText as guildProofText, defeatTally, tallyText, readyText, proofMemory } from './v4/guild.js';
 import { envelopeBlock } from './v4/envelope.js';
@@ -870,7 +870,13 @@ export function buildContext(state, content, opts = {}) {
     // Its own allowance, like the rules and the output line: it displaces no retrieved section (memories, lore)
     if (v4 && !opts.systemQuery && opts.envelope !== false) add('envelope', envelopeBlock(state, content, { c: !!(opts.outcome?.auth?.c || opts.outcome?.c), pulse: opts.outcome?.auth?.pulse || null }), 0, true);
     if (v4) add('chronicle', chronicleLine(opts.chronicle), 0, true);
-    if (opts.corrections && opts.corrections.length) add('corrections', `CORRECTIONS (the previous reply conflicted with the engine; keep the engine's version):\n${opts.corrections.slice(0, 4).map((c) => `- ${String(c).slice(0, 400)}`).join('\n')}`, 0, true);
+    // .190 (N1): where he is, which travel this turn has and who he speaks of that is not here, at the head of the block;
+    // the location sentences of the corrections it replaces are not repeated at their end
+    const where = v4 && state.scene?.at && state.mode !== 'creation' ? whereLines(state, input, opts) : null;
+    if (where) add('where', where, 0, true);
+    const located = /^(?:Alaric is still (?:in|at)\b|Alaric is at\b|Alaric remains at\b|Alaric did not voluntarily travel\b)/;
+    const fixes = (opts.corrections || []).filter((c) => !where || !located.test(String(c)));
+    if (fixes.length) add('corrections', `CORRECTIONS (the previous reply conflicted with the engine; keep the engine's version):\n${fixes.slice(0, 4).map((c) => `- ${String(c).slice(0, 400)}`).join('\n')}`, 0, true);
     if (opts.systemQuery) {
         add('resolved', `SYSTEM QUERY (#system): ${opts.systemQuery}\nAnswer ONLY as the System (neutral, private, computer-like): no narration, no NPC reactions, story time and combat stay frozen. Use the state above, Core rules and player-known content; show formulas and arithmetic when useful; say INSUFFICIENT INFORMATION when data is missing. Never reveal hidden NPC data.`, 0);
     } else if (state.meta?.runtime === 'v4') {
@@ -889,7 +895,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'pc', 'creation', 'npc_compact', 'npc_arrival', 'present', 'settlement', 'world_area', 'world_populations', 'gear_market', 'price_contract', 'paid_here', 'npc_continuity', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
+    const order = ['header', 'where', 'pc', 'creation', 'npc_compact', 'npc_arrival', 'present', 'settlement', 'world_area', 'world_populations', 'gear_market', 'price_contract', 'paid_here', 'npc_continuity', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     const describe = section => ({ name: section.name, tokens: section.tokens, own: section.own,
@@ -1001,4 +1007,24 @@ function compactNpcCard(state, content, id, focusWords, { arriving = false } = {
     const room = toward ? 170 - toward.length - '; between you: '.length : 0;
     if (agreed && room >= 40) toward = `${toward}; between you: ${cap(agreed, room)}`;
     return [head, ...[toward, ...['last meaningful:', 'knows:', 'also remembers:'].map(find).filter(Boolean).slice(0, 2)].filter(Boolean).map((r) => cap(r, 170))].join('\n');
+}
+
+/**
+ * .190 (stage 4D, N1): WHERE (his place and the places the last reply told that he never reached), TRAVEL THIS TURN (the
+ * steps the engine authorized, or none), NOT HERE (known people his message speaks to or of who are elsewhere).
+ */
+function whereLines(state, input, opts) {
+    const here = placeName(state, state.scene.at);
+    const town = state.scene.location && state.places?.[state.scene.location]?.name;
+    const said = (to) => (typeof to === 'string' ? (state.places?.[to] ? placeName(state, to) : null) : to?.name || null);
+    const missed = [...new Set((opts.notReached || []).map(said).filter((n) => n && n !== here))];
+    const steps = (opts.outcome?.actions || []).map((a) => String(a).replace(/^\d+\.\s*/, '')).filter((a) => /^(?:GOES|CONTINUES|RETURNS|DEPARTS)\b/.test(a)).map((a) => a.split(' (')[0]);
+    const words = ` ${normText(input || '').replace(/[^a-z0-9' ]+/g, ' ')} `;
+    const absent = Object.values(state.entities || {}).filter((e) => e.kind === 'npc' && e.name && e.status !== 'dead' && !state.scene.present.includes(e.id)
+        && normText(e.name).split(' ').filter((w) => w.length >= 4).some((w) => words.includes(` ${w} `))).slice(0, 3);
+    return [
+        `WHERE — ${here}${town && town !== here ? ` (${town})` : ''}.${missed.length ? ` The last reply's ${missed.join(', ')} ${missed.length > 1 ? 'were' : 'was'} not reached: what it told there did not happen.` : ''}`,
+        `TRAVEL THIS TURN — ${steps.length ? steps.join('; ') : `none chosen: he stays at ${here} unless something in the world moves him`}.`,
+        absent.length ? `NOT HERE — ${absent.map((e) => `${e.name}${e.at && state.places?.[e.at] ? ` (${placeName(state, e.at)})` : ''}`).join(', ')}: he speaks of them from where he is; they answer only if the story brings them here.` : '',
+    ].filter(Boolean).join('\n');
 }

@@ -117,3 +117,34 @@ test('.187 P1 paidWorkLine: both signs make work; the deed alone is unclear; a b
     assert.equal(paidWorkLine({ kind: 'goods', service: null, what: 'kill the gander for the village' }), null, 'goods are never work');
     assert.equal(paidWorkLine({ kind: 'service', service: 'lodging', what: 'clear a bed for the village guest' }), null, 'only service other');
 });
+
+// ------------------------------------------------------------------------------------- .187 follow-up (review 14.11.)
+// A hunter he hires does the deed himself and is paid by Alaric: "for my trouble", "my wages", "I'll track it down for
+// him" name the seller as the one who works. Such a line is a service he may buy (asked unless his words hire it), never
+// work Alaric would do. The village's hunt for Alaric (Rogue #116) stays work.
+test('.187 P1 follow-up: a hunter Alaric hires is a service he buys when his words hire it – never refused as his own work', async () => {
+    for (const [what, said] of [
+        ['track down and kill the wolf that took your goat', '"Twelve copper for my trouble, and I\'ll have it skinned by dusk."'],
+        ['hunt the boar in the beech wood', '"My wages are twelve copper, paid before I go."'],
+        ['kill the beast troubling his camp for him', '"Twelve copper and I\'ll kill it for you myself."'],
+    ]) {
+        const g = await village([LINE(what, 12, said)], `He goes to the well. A hunter is there. ${said}`);
+        const o = open(g)[0];
+        assert.ok(o, `${what}: stored as an offer`);
+        assert.equal(paidWorkLine(o.lines[0]), 'unclear', what);
+        const before = coin(g);
+        await say(g, 'I hire you, twelve copper.', { type: 'offer.accept', offer: o.id, lines: ['l1'], qty: null, party_words: null, agreed_cp: 12, price_evidence: { basis: 'total', quote: 'twelve copper', currency_quote: 'copper' }, quote: 'I hire you, twelve copper.' });
+        assert.equal(coin(g), before - 12, `${what}: bought`);
+        assert.doesNotMatch(linesOf(g), /NOT BOUGHT/);
+        reloaded(g);
+    }
+    const h = await village([LINE('track down and kill the wolf that took your goat', 12, '"Twelve copper for my trouble."')], 'He goes to the well. A hunter is there. "Twelve copper for my trouble."');
+    const hb = coin(h);
+    await say(h, 'Agreed, twelve copper.', { type: 'offer.accept', offer: open(h)[0].id, lines: ['l1'], qty: null, party_words: null, agreed_cp: 12, price_evidence: { basis: 'total', quote: 'twelve copper', currency_quote: 'copper' }, quote: 'Agreed, twelve copper.' });
+    assert.equal(coin(h), hb, 'without his hiring words it is asked, not booked');
+    assert.equal(lastUser(h).command?.panels?.[0]?.startsWith('[SYSTEM // CLARIFY]'), true);
+    const t = (what, said = null) => paidWorkLine({ kind: 'service', service: 'other', what, said });
+    assert.equal(t("kill the gander on the west road, for the village; the bird's remains stay Alaric's"), 'work', 'Rogue #116 unchanged');
+    assert.equal(t('hunt the wolf that takes our sheep', '"I\'ll pay you ten copper for it."'), 'work', 'he is paid: his work');
+    assert.equal(t('clear the rats for me', '"We\'ll pay you four copper."'), 'work');
+});

@@ -209,12 +209,22 @@ export const unitsText = (what, units) => (units > 1 ? `${units} ${what}` : what
  * 'work' with both; 'unclear' with the deed alone (a rat-catcher's "clear the cellar" may be bought); else null.
  */
 const DEED = /^(?:to\s+)?(?:kill(?:ing)?|slay(?:ing)?|hunt(?:ing)?(?:\s+down)?|clear(?:ing)?|cull(?:ing)?|drive\s+(?:off|out|away)|driving\s+(?:off|out|away)|deal(?:ing)?\s+with|get(?:ting)?\s+rid\s+of|rid(?:ding)?\s+\w+\s+of|exterminat\w*|put(?:ting)?\s+down|destroy(?:ing)?|track(?:ing)?\s+down|take\s+care\s+of|deal\s+with)\b/;
-const FOR_THEM = /\bfor\s+(?:the\s+(?:village|town|hamlet|farm|farmers|folk|people|street|lane|neighbou?rs|parish|mill|weirs?|guild)|us|our\b|me\b|him\b|her\b|them\b|my\b)|\b(?:bounty|reward|wages?|coin between neighbou?rs|we(?:'ll| will| would|'d) pay|pay(?:s|ing)? (?:you|alaric|him))\b|\balaric(?:'s)?\s+(?:kills?|hunts?|clears?|does|will|gets|keeps)\b|\bstays?\s+alaric's\b/;
+// who is paid and whose side it is for: the seller's side pays Alaric (bounty, reward, "we'll pay you", "Alaric kills …",
+// the spoils "stay Alaric's") – his work, whoever else is named; the deed done for the seller's side ("for the
+// village", "for us", "for me") – his work unless the seller names himself as the one who does it and is paid for it
+// (.187 follow-up, a hunter he hires: "for my trouble", "my wages", "I'll track it down", "myself"): a service he may
+// buy, so 'unclear' (asked unless his words hire it). "for him/her/them" says no side and no longer decides.
+const ALARIC_PAID = /\b(?:bounty|reward|your wages|coin between neighbou?rs|we(?:'ll| will| would|'d) pay|pay(?:s|ing)? (?:you|alaric)\b)|\balaric(?:'s)?\s+(?:kills?|hunts?|clears?|does|will|gets|keeps)\b|\bstays?\s+alaric's\b/;
+const FOR_SIDE = /\bfor\s+(?:the\s+(?:village|town|hamlet|farm|farmers|folk|people|street|lane|neighbou?rs|parish|mill|weirs?|guild)|us|our\b|me\b|my\b)/;
+const HIRED = /\b(?:for my (?:trouble|fee|time|pains|work|labou?r|services?)|my (?:fee|wages?|price|rate|charge)|hire me|i(?:'ll| will| can| could|'d| would)?\s+(?:\w+\s+){0,2}(?:kill|slay|hunt|track|clear|cull|drive|deal|get rid|put down|take care|destroy)\w*|myself)\b/;
 export function paidWorkLine(line) {
     if (!line || line.kind !== 'service' || (line.service && line.service !== 'other')) return null;
     const what = normText(line.what || '');
     if (!DEED.test(what)) return null;
-    return FOR_THEM.test(`${what} ${normText(line.said || '')}`) ? 'work' : 'unclear';
+    const all = `${what} ${normText(line.said || '')}`;
+    if (ALARIC_PAID.test(all)) return 'work';
+    if (HIRED.test(normText(line.said || ''))) return 'unclear';
+    return FOR_SIDE.test(all) ? 'work' : 'unclear';
 }
 
 export const picksText = (picks) => picks.map((p) => unitsText(p.line.what, p.units)).join(', ');

@@ -326,7 +326,9 @@ export function planContext(state, content, catalog) {
     }
     const basic = content.classes.get(sheet.class)?.basic_attack || null;
     const weapon = sheet.class ? weaponAttackOf(sheet, content, rulesetOf(state))?.skill.id || null : null;
-    const allowedPlaces = new Set([catalog.here?.id, ...(catalog.places || []).map(p => p.id)]);
+    // .190 (place book): the route he walked is his to name back, whether or not the catalog shows it this turn: every
+    // place the planner may name (the catalog's valid places, the same set its schema accepts)
+    const allowedPlaces = new Set([catalog.here?.id, ...(catalog.places || []).map(p => p.id), ...(catalog.valid_places || [])]);
     const route = routePlaces(state).filter(p => allowedPlaces.has(p.id));
     // Patch 9C-1: his open learning goals and what a learning activity may name (src/v4/growth.js)
     const learning = rulesetOf(state) >= 2 ? openGoals(state).map((g) => ({ id: g.id, text: goalText(g) })) : [];

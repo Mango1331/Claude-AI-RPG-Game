@@ -1,5 +1,6 @@
 import { floorRefusal } from './dungeon.js';
 import { placeParent, placeIdentity, placeKey, samePlace, scopedPlaces } from './place_refs.js';
+import { resolvePlaceRef, usualPersonNamed } from './place_book.js';
 import { sceneIssues, localSceneDelta } from './extract.js';
 import { privateQuestsOf, questVisible } from '../content.js';
 // Runtime V4: applying the extractor's world deltas (docs/RUNTIME_V4_PLAN.md §5.2). After the narrator's reply the
@@ -153,6 +154,13 @@ function resolvePlace(s, ref, emit, depth = 0, { c = false, reported = false } =
     if (hall?.id || hall?.error) return hall;
     const parent = n.parent === null || n.parent === undefined ? { id: s.scene.at } : resolvePlace(s, n.parent, emit, depth + 1, { c, reported });
     if (parent.error) return parent;
+    // .190 (place book): a place he knows, under its own name or a closer one, is that place wherever the reply hangs it
+    // ("the Tannery Rows behind the Ashbridge tanneries" under Ashbridge is the visited site in the realm, .188 Rogue
+    // #76/#82); two of them are a question. Rooms keep their own parent (two cellars of two houses are two rooms)
+    if (c && ['site', 'settlement', 'wilderness'].includes(n.kind)) {
+        const known = resolvePlaceRef(s, { new: { name: n.name, kind: n.kind } }, { from: parent.id });
+        if (known.ambiguous) return { error: `more than one known place "${String(n.name).slice(0, 60)}": ${known.ambiguous.join(', ')}; name it by its id` };
+    }
     let pid = parent.id;
     // a kind that cannot lie in its parent climbs to the first ancestor where it can (a hamlet named inside a site of
     // the town lies in the realm or region, not in the site). Prototype C (4.3.0-c.6): the wild has insides too, a den,
@@ -265,7 +273,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const corrections = [];
     const system = [];
     const reject = (d, rule, why) => {
-        rejected.push({ seq: d?.seq ?? 0, type: d?.type ?? 'expected', rule, why });
+        // .190 (N2): a refused arrival keeps where the reply claimed he got to, for the player's NOT ARRIVED line
+        const to = d?.type === 'arrive' ? (typeof d.at === 'string' ? d.at : d.at?.new?.name ? { name: String(d.at.new.name).slice(0, 80) } : null) : null;
+        rejected.push({ seq: d?.seq ?? 0, type: d?.type ?? 'expected', rule, why, ...(to ? { to } : {}) });
         emit({ t: 'delta.rejected', d: { item: d, rule, reason: why } });
     };
     // the arrivals of this reply in story order, applied or refused (an escort's readiness, quest.ready below)
@@ -285,6 +295,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const arrivalPlace = (ref) => {
         const gate = cPath ? entranceOf(s, content, ref) : null;
         if (gate) return { id: gate };
+        // .190 (place book): the known place this turn's GO set off for, told with other words, is that place
+        if (cPath && ref?.new?.name) {
+            const known = resolvePlaceRef(s, { new: { name: ref.new.name } }, { from: s.scene.at });
+            if (known.existing && (auth.gos || []).some((g) => g.to === known.existing)) return { id: known.existing };
+        }
         const n=ref?.new;
         if (cPath && n && !placeIdentity(s,ref,content)) {
             const parent=typeof n.parent === 'string' ? n.parent : s.scene.at;
@@ -1214,6 +1229,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                         const p = place(d.at);
                         if (!p.error) where = p.id;
                     }
+                    // .190 place book: the known person of that place by a shorter name stays who he is
+                    const usual = cPath && d.name && where ? usualPersonNamed(s, String(d.name), where) : null;
+                    if (usual) { refs.set(normText(d.ref), usual); refs.set(normText(d.name), usual); break; }
                     const id = uniqueEntityId(s, d.name || d.role || d.ref);
                     bornHere.add(id);
                     const descriptors = [...new Set([...(d.role ? [d.role] : []), ...(d.desc || []), d.ref].map((x) => String(x).toLowerCase().slice(0, 40)))];

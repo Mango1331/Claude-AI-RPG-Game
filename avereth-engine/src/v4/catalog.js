@@ -1,4 +1,5 @@
 import { offerAvailability, paidLodging } from './trade.js';
+import { knownPlace, knownPlaceIds } from './place_book.js';
 import { privateQuestsOf, questVisible } from '../content.js';
 // Runtime V4: the CATALOG (docs/RUNTIME_V4_PLAN.md §4.2) the interpreter and the extractor read, built from the state:
 // where Alaric is, who is present, the places, quests, Guild board, offers and objects he may refer to, the open
@@ -46,8 +47,17 @@ export function personLabel(state, content, id) {
  * at the Guild desk, a new "Guild desk clerk" was invented and stored beside the two clerks he had met there)
  */
 export function knownAt(state, content, place) {
-    return Object.values(state.entities).filter((e) => e.kind === 'npc' && e.at === place && !state.scene.present.includes(e.id) && statusOf(state, e.id) !== 'dead')
-        .slice(-4).map((e) => ({ id: e.id, label: personLabel(state, content, e.id) }));
+    // .190 (place book, .188 Rogue #82): the people of the place and of its known parts (Meister Ostrek in the rendering
+    // shed of the Tannery Rows) – continuity of who they are, never their presence: a part's person is named with it
+    const parts = new Set(Object.values(state.places || {}).filter((p) => p.parent === place && knownPlace(state, p.id)).map((p) => p.id));
+    const people = Object.values(state.entities).filter((e) => e.kind === 'npc' && (e.at === place || parts.has(e.at)) && !state.scene.present.includes(e.id) && statusOf(state, e.id) !== 'dead');
+    // the place's own people first (as before: its four latest), then the named people of its parts
+    const own = people.filter((e) => e.at === place).slice(-4);
+    // of the parts' people, those Alaric shared a moment with come first (the Tannery Rows' Meister Ostrek before
+    // two rope-walk hands only seen once), at most three
+    const parted = people.filter((e) => e.at !== place && e.name);
+    const theirs = [...parted.filter((e) => sharedBefore(state, e.id)), ...parted.filter((e) => !sharedBefore(state, e.id))].slice(0, 3);
+    return [...own, ...theirs].map((e) => ({ id: e.id, label: e.at === place ? personLabel(state, content, e.id) : `${personLabel(state, content, e.id)}, usually in ${state.places[e.at]?.name || e.at}` }));
 }
 
 function settlementName(state, id) {
@@ -333,6 +343,8 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         alaric: alaricLine(state, content),
         present,
         places: catalogPlaces(state, extraPlaces, { hidden: hiddenFeatures }),
+        // .190 (place book): what a model may name, apart from what the catalog shows (the shown places are a ranked part)
+        ...(c ? { valid_places: knownPlaceIds(state) } : {}),
         quests,
         goals,
         journey_ready,
@@ -408,7 +420,9 @@ export function extractorCatalog(state, content, opts = {}) {
     const deadText = dead.length ? `\nRECENT DEAD (here, killed in the engine's fights; never a creature.new, never alive, never fleeing): ${dead.map((id) => `${id} [${sceneHandle(state, content, id)}] (${personLabel(state, content, id)})`).join(' · ')}` : '';
     return {
         text: catalogText(c) + laterText + `\nPLACE ANCESTRY: ${[c.here, ...c.places].map(x => state.places[x.id]).filter(Boolean).map(p => `${p.id} [${p.kind}, parent:${p.parent || 'none'}${p.encounter_levels ? `, area levels ${p.encounter_levels.join('–')}` : ''}${p.population ? `, population:${p.population.species}, ${p.population.anchor}, levels ${p.population.levels.join('-')}` : ''}]`).join(' · ')}` + deadText + threadText + `\nKNOWN PERSON CONTINUITY (not present; use enter for an actual return, person.named for a fuller name):\n${npcContinuity(state, opts.input || '').map(x => x.text).join('\n') || 'none relevant'}` + (!privateQuestsOf(state) ? `\nFREE HELP: only Guild contracts are formal quests. NPC help, agreements and thanks are ordinary world interactions.\nRECENT COIN HANDOVERS (sales/payouts/gifts already credited; use repeat_of for recounts):\n${(state.credits || []).map(x => `${x.id || x.gift?.id || 'historical credit'}: ${x.from || x.gift?.from || 'engine'}, ${x.cp} cp, ${x.gift?.why || x.for || x.quest || 'engine payment'}${x.gift?.said ? `; ${x.gift.said}` : ''}`).join('\n') || 'none'}` : ''),
-        places: [...new Set([c.here.id, ...c.places.map((p) => p.id)].filter(Boolean))],
+        // .190 (place book): every place Alaric knows is a valid reference (the CATALOG above only ranks what is shown);
+        // a visited hunting site of a completed contract the QUESTS line names stays valid (.188 Rogue #80)
+        places: [...new Set([c.here.id, ...c.places.map((p) => p.id), ...(c.valid_places || [])].filter(Boolean))],
         quests: [...new Set([...c.quests, ...c.board, ...c.completed, ...(c.known || [])].map((q) => q.id))],
         objects: c.objects.map((o) => o.id),
         catalog: c,

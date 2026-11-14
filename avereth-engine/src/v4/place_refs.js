@@ -4,6 +4,7 @@ import { PLACE_PARENTS, guildDestination, settlementOf, lineage } from './domain
 import { dungeonOf, trueDungeonOf, roomByName } from './dungeon.js';
 import { knownByName } from './known.js';
 import { entranceOf } from './living.js';
+import { resolvePlaceRef } from './place_book.js';
 
 export function placeParent(s, kind, id, c = false) {
     // A named part of an established habitat keeps that population's ancestry.
@@ -38,6 +39,12 @@ export function placeIdentity(s, ref, content, { c = true, reported = false, dep
     const realm = s.places[parent]?.realm ?? null;
     const known = knownByName(s, n.name, realm, { reportedOnly: !reported });
     if (known) return known.id;
+    // .190 (place book): a place he knows under its own or a closer name is that place wherever the report hangs it
+    // (one identity for arrivals, scenes and new places; rooms keep their parent: two cellars are two rooms)
+    if (c && ['site', 'settlement', 'wilderness'].includes(n.kind)) {
+        const book = resolvePlaceRef(s, { new: { name: n.name, kind: n.kind } }, { from: parent });
+        if (book.existing) return book.existing;
+    }
     const label = normText(n.name).replace(/^the /, '');
     const aliases = Object.values(s.places).filter(p => p.realm === realm && (p.known === 'reported' || p.dungeon?.real) && normText(p.name).replace(/^the /, '') === label);
     return aliases.length === 1 ? aliases[0].id : null;

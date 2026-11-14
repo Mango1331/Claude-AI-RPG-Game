@@ -1,6 +1,7 @@
-import { encounterArea } from './v4/domain.js';
+import { encounterArea, placeName } from './v4/domain.js';
 import { trueDungeonOf } from './v4/dungeon.js';
 import { offerAvailability } from './v4/trade.js';
+const NOT_ARRIVED_RULES = new Set(['no_go', 'passage', 'place', 'combat']);
 // What the player sees of the mechanics: a System block at the top of a reply, rendered from the engine's own records,
 // so the numbers on screen are exactly the numbers that were rolled and applied (Initiative, Turn order, every roll,
 // HP before - damage = HP after, everyone's HP and distance, Alaric's resources, checks, and what the reply changed:
@@ -281,6 +282,14 @@ export function worldPanel(state, content, reply = {}) {
     }
     for (const x of reply.system || []) lines.push(sys(String(x).replace(/[<>`]/g, '')));
     if (reply.rejected?.length) lines.push(sys(`ENGINE REFUSED ${reply.rejected.length} reported change${reply.rejected.length > 1 ? 's' : ''} (${[...new Set(reply.rejected.map((r) => r.rule))].join(', ')}): see #audit or the event export`));
+    // .190 (N2): the player sees in plain words that a told arrival did not happen (the ENGINE REFUSED line above is
+    // bookkeeping and stays out of his panel): where Alaric is, and the place the reply claimed
+    const notArrived = (reply.rejected || []).find((r) => r.type === 'arrive' && NOT_ARRIVED_RULES.has(r.rule));
+    if (notArrived && reply.state) {
+        const s = reply.state;
+        const claimed = typeof notArrived.to === 'string' ? (s.places?.[notArrived.to] ? placeName(s, notArrived.to) : null) : notArrived.to?.name || null;
+        lines.push(sys(`NOT ARRIVED — Alaric remains at ${placeName(s, s.scene.at)}; ${claimed ? `${claimed} was not reached` : 'the place the story told was not reached'}.`));
+    }
     if (reply.opened && reply.state) lines.push(...openedLines(reply.state, content, reply.opened));
     // Patch 8.1 (§4): the reply that brings him to a Living Dungeon's gate shows its System card (once, on arrival)
     const at = reply.state && reply.events?.findLast((e) => e.t === 'scene.moved')?.d.at;

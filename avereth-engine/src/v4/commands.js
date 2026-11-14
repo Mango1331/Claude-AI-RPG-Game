@@ -31,6 +31,7 @@ import { shopSearch, findTrades } from './settlement.js';
 import { journeyReady, knownAt, personLabel } from './catalog.js';
 import { continueOptions, setIntentEvents, endIntentEvents, activeIntents, goSetsGoal } from './intents.js';
 import { knownByName } from './known.js';
+import { resolvePlaceRef } from './place_book.js';
 import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf, restoreEffect, namedSource, equipmentSlotKnown, offerCard } from './items.js';
 import { itemEffectOf, rulesetOf } from '../content.js';
 import { learningActivity, stoneActivation } from './growth.js';
@@ -614,6 +615,15 @@ const HANDLERS = {
         if (envx?.c && rulesetOf(s) >= 2 && typeof c.to?.new === 'string') {
             const p = knownByName(s, c.to.new, s.places[s.scene.at]?.realm || s.scene.location, { reportedOnly: false });
             if (p) c = { ...c, to: p.id };
+        }
+        // .190 (place book): his words for a place he knows are that place – a closer name of it inside this settlement
+        // ("the tannery rows" → the Tannery Rows behind the Ashbridge tanneries) or a known Dungeon's way in ("the Grotto
+        // mouth" → its gate, not yet inside it); two such places are a question, never a new third one. Inside a
+        // Dungeon {new} is the way on into a part not seen yet (dungeonGo), a habitat's own part stays its within step
+        if (envx?.c && rulesetOf(s) >= 2 && typeof c.to?.new === 'string' && c.within == null && !dungeonOf(s, s.scene.at)) {
+            const r = resolvePlaceRef(s, c.to, { from: s.scene.at });
+            if (r.existing && r.existing !== s.scene.at) c = { ...c, to: r.existing };
+            else if (r.ambiguous) return { status: 'clarify', reason: 'which place', line: `CLARIFY — which place does he mean: ${r.ambiguous.map((id) => placeName(s, id)).join(' or ')}?` };
         }
         // Patch 8: at a Dungeon's gate, going "in" (the Dungeon he stands at) is the step past the gate into its first part
         if (envx?.c && typeof c.to === 'string' && c.to === s.scene.at && s.places[c.to]?.dungeon?.real) c = { ...c, to: { new: `the way into ${placeName(s, c.to)}` } };

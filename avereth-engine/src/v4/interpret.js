@@ -156,7 +156,7 @@ export function interpreterUser(catalog, text) {
 export function catalogIds(catalog) {
     const ids = (list) => (list || []).map((x) => x.id);
     return {
-        place: [...new Set([catalog.here?.id, ...ids(catalog.places)].filter(Boolean))],
+        place: [...new Set([catalog.here?.id, ...ids(catalog.places), ...(catalog.valid_places || [])].filter(Boolean))],
         person: ids(catalog.present),
         object: ids(catalog.objects),
         quest: [...new Set([...ids(catalog.quests), ...ids(catalog.board), ...ids(catalog.completed), ...ids(catalog.known)])],

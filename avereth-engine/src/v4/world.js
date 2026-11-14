@@ -355,7 +355,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     let sceneUnreached = null; // K6a: the first refused step of a scene not reached (its place then)
     const sceneMatches = ref => ref === 'here' || samePlace(s, ref, s.scene.at, content);
     const readied = []; // the contracts this reply made READY (their open deliveries are told after the deltas)
-    corrections.push(...fw.corrections);
+    // .187 (P2; natural batch 14.11.2026, Warrior #117–#121 on .186: the narrator kept Alaric at the gate the engine had
+    // refused, twice, past "he remains where he was"): the stay is said with its places – where he is, and the place
+    // the reply put him that he never reached, with whoever is there
+    const STAY = 'Alaric did not voluntarily travel in the last reply, and no external event moved him; he remains where he was.';
+    const refusedAt = fw.reject.filter((x) => x.rule === 'no_go').map((x) => x.delta?.at).find(Boolean);
+    const refusedName = typeof refusedAt === 'string' ? (s.places[refusedAt] ? placeName(s, refusedAt) : null) : refusedAt?.new?.name ? String(refusedAt.new.name).slice(0, 60) : null;
+    corrections.push(...fw.corrections.map((c) => (c === STAY ? `${STAY} He is still at ${placeName(s, s.scene.at)}${refusedName && refusedName !== placeName(s, s.scene.at) ? `; he has not reached ${refusedName}, and nobody of ${refusedName} is with him or speaks to him there` : ''}. The next reply continues at ${placeName(s, s.scene.at)}, whatever the last one told; he gets anywhere else only by going there himself.` : c)));
     // the other side of a trade the engine books this turn: a sale's buyer, a seller he paid exactly (coin.gift below)
     const counterparts = new Set([...(outcome.booked?.sellers || []), ...s.decisions.filter((x) => x.kind === 'sale' && x.turn === s.turn).map((x) => x.seller || '*')]);
     // Build .142: the money ranges of gifts booked in this reply (one handover pays once)

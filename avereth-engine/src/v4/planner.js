@@ -736,7 +736,9 @@ function clarifyPanel(question, options, waiting = []) {
 // go with all its checks. The place: a known one he names (every word of its name, the Dungeon's "of …" aside), else,
 // when he says he goes back ("back through", "back out", "the way I came"), the room he came from. A flight that says
 // neither, or names a place he does not know ("back to …"), gets no place
-const BACK_WAY = /\b(?:back\s+(?:out|through|the way|into|past|down|up|along)|the way (?:i|he) came|where (?:i|he) came from|retrac(?:e|es|ing) (?:my|his) steps)\b/i;
+// .187 (Warrior #117 on .186: "I keep backing up the dark track toward the gate palisade"): a back along the way he came
+// by track, road or path ("backing up the track", "back slowly up the road") says the way too
+const BACK_WAY = /\b(?:back\s+(?:out|through|the way|into|past|down|up|along)|back(?:s|ed|ing)?\s+(?:\w+\s+)?(?:up|down|along|out along)\s+the\s+(?:\w+\s+)?(?:track|road|path|trail|lane|way)|the way (?:i|he) came|where (?:i|he) came from|retrac(?:e|es|ing) (?:my|his) steps)\b/i;
 const placeWords = (name) => normText(String(name || '').replace(/\s+of\s+.*$/i, '').replace(/,.*$/, '')).split(/[^a-z0-9']+/).filter((w) => w.length > 2 && w !== 'the');
 export function retreatGo(state, c) {
     const here = state?.scene?.at;
@@ -756,6 +758,7 @@ export function retreatGo(state, c) {
     return from ? { seq: c.seq, type: 'go', to: from, quote: c.quote } : null;
 }
 
+const travelOf = (story) => story.some((c) => c.type === 'go');
 export function mapPlan(commands, ctx, content, message, state) {
     // Patch 3 (live 18.10.2026: "I use the flint and steel to make a small light" became the unknown skill "flint and
     // steel" and the "continue" after it was dropped): a thing he holds, named where a skill would stand, is that thing
@@ -832,7 +835,12 @@ export function mapPlan(commands, ctx, content, message, state) {
         // stays story fiction
         const stepped = (c) => !!state && (c.target === null || typeof c.target === 'string') && approachedBy(state, { move: c.dir, moveTarget: c.target }).length > 0;
         const steps = moves.filter(stepped);
-        for (const c of moves.filter((x) => !stepped(x))) free.push(`move: ${said(c)}`);
+        // .187 (P2, Warrior #117 on .186): a step back from someone already as far as a scene goes moves him nowhere in
+        // the scene; when his words say the way back (retreatGo, as for a flight), it is that way back, the one GO of the
+        // message. A step that does move him stays the tactical step, never a journey
+        const wayBack = !travelOf(story) && moves.length && !steps.length ? moves.filter((x) => x.dir === 'away').map((x) => retreatGo(state, x)).find(Boolean) : null;
+        if (wayBack) story.push(wayBack);
+        for (const c of moves.filter((x) => !stepped(x) && !(wayBack && x.seq === wayBack.seq))) free.push(`move: ${said(c)}`);
         for (const c of steps.slice(1)) notes.push(`not taken this turn (one move per turn): ${said(c)}`);
         story.push(...steps.slice(0, 1));
         // Prototype C (4.3.0-c.6): his own deed no command fits is a step of the message, in its place among the others

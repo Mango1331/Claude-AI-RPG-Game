@@ -199,6 +199,24 @@ export function pickLines(offer, lineIds = null, units = null) {
 
 /** "water flask", "3 water flask": what a purchase or sale is of, for the lines and the coin's reason. */
 export const unitsText = (what, units) => (units > 1 ? `${units} ${what}` : what);
+/**
+ * Build .187 (P1; natural batch 14.11.2026, Rogue #116/#117: "kill the gander on the west road, for the village" was
+ * stored as the cooper's offer and its acceptance cost Alaric 14 cp): is this service line work Alaric would do for
+ * the other side (they would pay him), not a service he buys? Two signs together, never one alone:
+ *  - the deed: the line names a task of removing a threat or pest (kill, hunt, clear, cull, drive off, get rid of …);
+ *  - its direction: it is done for the seller's side (for the village, for us, for me …), the reply calls the coin a
+ *    bounty or reward, or the line names Alaric as the one who does it or keeps the spoils.
+ * 'work' with both; 'unclear' with the deed alone (a rat-catcher's "clear the cellar" may be bought); else null.
+ */
+const DEED = /^(?:to\s+)?(?:kill(?:ing)?|slay(?:ing)?|hunt(?:ing)?(?:\s+down)?|clear(?:ing)?|cull(?:ing)?|drive\s+(?:off|out|away)|driving\s+(?:off|out|away)|deal(?:ing)?\s+with|get(?:ting)?\s+rid\s+of|rid(?:ding)?\s+\w+\s+of|exterminat\w*|put(?:ting)?\s+down|destroy(?:ing)?|track(?:ing)?\s+down|take\s+care\s+of|deal\s+with)\b/;
+const FOR_THEM = /\bfor\s+(?:the\s+(?:village|town|hamlet|farm|farmers|folk|people|street|lane|neighbou?rs|parish|mill|weirs?|guild)|us|our\b|me\b|him\b|her\b|them\b|my\b)|\b(?:bounty|reward|wages?|coin between neighbou?rs|we(?:'ll| will| would|'d) pay|pay(?:s|ing)? (?:you|alaric|him))\b|\balaric(?:'s)?\s+(?:kills?|hunts?|clears?|does|will|gets|keeps)\b|\bstays?\s+alaric's\b/;
+export function paidWorkLine(line) {
+    if (!line || line.kind !== 'service' || (line.service && line.service !== 'other')) return null;
+    const what = normText(line.what || '');
+    if (!DEED.test(what)) return null;
+    return FOR_THEM.test(`${what} ${normText(line.said || '')}`) ? 'work' : 'unclear';
+}
+
 export const picksText = (picks) => picks.map((p) => unitsText(p.line.what, p.units)).join(', ');
 
 /** Current availability, shared by views, catalog and the final purchase boundary. */

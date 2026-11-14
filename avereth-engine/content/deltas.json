@@ -461,7 +461,7 @@
           "array": "offer_line"
         }
       },
-      "summary": "someone names prices for what THEY would sell to Alaric or do for him (he would pay); lines: what, kind (goods|service), service (lodging, bath, laundry, meal, healing, training, other or null), qty: how many units the price is for (1 for a price per piece, 3 for \"three for nine copper\"), price_cp: the price of those qty units together, said: the reply's words for that price. Never for things Alaric holds: a price for his things is a bid Each line also carries phase, condition and pricing as a bid does (pricing: the one total of the line in the reply's words, else unknown)."
+      "summary": "someone names prices for what THEY would sell to Alaric or do for him (he would pay); never work ALARIC is to do for them or for others (a hunt, clearing a pest or a danger, a fight) for coin they would pay him: that is a fact, thread or promise, and coin.gift only when the coin is handed over to him; lines: what, kind (goods|service), service (lodging, bath, laundry, meal, healing, training, other or null), qty: how many units the price is for (1 for a price per piece, 3 for \"three for nine copper\"), price_cp: the price of those qty units together, said: the reply's words for that price. Never for things Alaric holds: a price for his things is a bid Each line also carries phase, condition and pricing as a bid does (pricing: the one total of the line in the reply's words, else unknown)."
     },
     {
       "type": "bid",

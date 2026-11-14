@@ -39,7 +39,7 @@ import { jobAction, jobOf } from './private_jobs.js';
 import { acceptPassive, declinePassive } from './passive_growth.js';
 import { acceptSkill, declineSkill, developmentOffers, skillOffers } from './skill_growth.js';
 import { classOffer, classSelection, acceptClass } from './class_growth.js';
-import { tradeObject as objectOf, pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, rateUnits, offerAvailability, tradeTermsWhy, purchaseLines, samePurchaseRequest, purchaseDecisionMatches, wareOnSale, shortfallText } from './trade.js';
+import { paidWorkLine, tradeObject as objectOf, pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, rateUnits, offerAvailability, tradeTermsWhy, purchaseLines, samePurchaseRequest, purchaseDecisionMatches, wareOnSale, shortfallText } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import { pulseBegin, pulseFinish, pulseLeg, pulseClaimPause, pulseSought, goSought, searchSought, aheadReserved } from './pulse.js';
 import { bookStealth } from '../checks.js';
@@ -1206,8 +1206,16 @@ const HANDLERS = {
         }
         if (o.bid) return acceptBid(s, content, c, ctx, emit, o);
         const employeeQuote = /\b(?:I(?:'ll| will)? (?:work|guard|watch|keep)|my (?:wage|pay)|hire me)\b/i.test(c.quote || '');
+        // .187 (P1, Rogue #117 on .186: "I accept the fourteen coppers" paid the cooper for Alaric's own hunt): a line
+        // that is work Alaric does for the seller's side is never bought; a task alone (no direction) is asked about
+        // unless his own words buy or hire it
+        const chosen = (c.lines?.length ? o.lines.filter((l) => c.lines.includes(l.id)) : o.lines);
+        const paidWork = chosen.filter((l) => paidWorkLine(l) === 'work');
+        if (!o.canon && !o.bid && paidWork.length) {
+            return { status: 'refused', reason: 'work is not a purchase', line: `NOT BOUGHT — ${paidWork.map((l) => l.what).join('; ')}: this is work Alaric would do for ${who(s, o.seller)}, who would pay him; accepting it pays nobody and no coin changes hands now. His pay is booked when it is handed over to him.` };
+        }
         const ambiguousWork = o.lines.some(l => l.kind === 'service' && l.service === 'other'
-            && /\b(?:keeping|guarding|watching|working|shift)\b/i.test(l.what))
+            && (/\b(?:keeping|guarding|watching|working|shift)\b/i.test(l.what) || paidWorkLine(l) === 'unclear'))
             && !/\b(?:buy|purchase|hire|pay|rent)\b/i.test(c.quote || '');
         if (!o.canon && (employeeQuote || ambiguousWork) && o.lines.some(l => l.kind === 'service')) {
             return { status: 'clarify', reason: 'work is not a purchase', line: `CLARIFY — is the NPC hiring Alaric, or is Alaric buying the NPC’s service? ${privateQuestsOf(s) ? 'Record employer-paid work as a private job.' : 'Record the NPC request and terms as ordinary world facts.'} No money was charged.` };

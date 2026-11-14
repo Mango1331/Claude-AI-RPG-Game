@@ -35,7 +35,7 @@ import {
 } from './domain.js';
 import { creatureContract } from './population.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
-import { tradeObject, pickLines, bookPurchase, bookSale, saleUnits, unitsText, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines, offerAvailability, rateUnits, displayedWare, wareOnSale, shortfallText } from './trade.js';
+import { paidWorkLine, tradeObject, pickLines, bookPurchase, bookSale, saleUnits, unitsText, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines, offerAvailability, rateUnits, displayedWare, wareOnSale, shortfallText } from './trade.js';
 import { findQuote, priceEvidence, openConditionNear, moneyLiteral } from './finance_evidence.js';
 import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
 import { reachedEvents, setIntentEvents } from './intents.js';
@@ -2990,10 +2990,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // Use the existing private quest path; completion/payment still need their normal world evidence.
         const provider = /\bI(?:'ll| will) (?:guard|watch|protect|work)\b/i.test(prose);
         const employee = !provider && /\b(?:you (?:keep|stand|guard|watch|work)|I (?:want|need) (?:eyes|you)|you(?:'re| are) worth more|(?:pay|hire) you)\b/i.test(prose);
-        const work = employee ? d.lines.filter(l => l.kind === 'service' && l.service === 'other'
-            && /\b(?:keep(?:ing)?|guard(?:ing)?|watch(?:ing)?|work(?:ing)?|shift)\b/i.test(l.what)) : [];
+        // .187 (P1): a task Alaric is to do for the seller's side, paid by them (src/v4/trade.js paidWorkLine), is no
+        // service he buys, whatever the rest of the reply says
+        const work = d.lines.filter(l => (employee && l.kind === 'service' && l.service === 'other'
+            && /\b(?:keep(?:ing)?|guard(?:ing)?|watch(?:ing)?|work(?:ing)?|shift)\b/i.test(l.what)) || paidWorkLine(l) === 'work');
         if (work.length && !privateQuestsOf(s)) {
             reject({ ...d, lines: work }, 'work_not_purchase', 'the NPC offers work to Alaric, not a service he buys; record the request/terms as facts');
+            const correction = `${entityLabel(s, seller)} offers Alaric pay for work (${work.map((l) => String(l.what).slice(0, 60)).join('; ')}); it is nothing he buys, and accepting it costs him nothing. His pay changes hands only when it is handed over to him.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
         }
         for (const l of privateQuestsOf(s) ? work : []) {
             const title = String(l.what).slice(0, 80);

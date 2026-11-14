@@ -360,8 +360,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // the reply put him that he never reached, with whoever is there
     const STAY = 'Alaric did not voluntarily travel in the last reply, and no external event moved him; he remains where he was.';
     const refusedAt = fw.reject.filter((x) => x.rule === 'no_go').map((x) => x.delta?.at).find(Boolean);
-    const refusedName = typeof refusedAt === 'string' ? (s.places[refusedAt] ? placeName(s, refusedAt) : null) : refusedAt?.new?.name ? String(refusedAt.new.name).slice(0, 60) : null;
-    corrections.push(...fw.corrections.map((c) => (c === STAY ? `${STAY} He is still at ${placeName(s, s.scene.at)}${refusedName && refusedName !== placeName(s, s.scene.at) ? `; he has not reached ${refusedName}, and nobody of ${refusedName} is with him or speaks to him there` : ''}. The next reply continues at ${placeName(s, s.scene.at)}, whatever the last one told; he gets anywhere else only by going there himself.` : c)));
+    // a place he is in already (the town around the hall he stands in) is no place he failed to reach
+    const nested = typeof refusedAt === 'string' && s.places[refusedAt] && lineage(s, s.scene.at).includes(refusedAt);
+    const refusedName = nested ? null : typeof refusedAt === 'string' ? (s.places[refusedAt] ? placeName(s, refusedAt) : null) : refusedAt?.new?.name ? String(refusedAt.new.name).slice(0, 60) : null;
+    corrections.push(...fw.corrections.map((c) => (c === STAY ? `${STAY} He is still at ${placeName(s, s.scene.at)}${refusedName && refusedName !== placeName(s, s.scene.at) ? `; he has not reached ${refusedName}, and what the last reply had happen to him there did not happen` : ''}. The next reply continues at ${placeName(s, s.scene.at)}, whatever the last one told; he gets anywhere else only by going there himself.` : c)));
     // the other side of a trade the engine books this turn: a sale's buyer, a seller he paid exactly (coin.gift below)
     const counterparts = new Set([...(outcome.booked?.sellers || []), ...s.decisions.filter((x) => x.kind === 'sale' && x.turn === s.turn).map((x) => x.seller || '*')]);
     // Build .142: the money ranges of gifts booked in this reply (one handover pays once)

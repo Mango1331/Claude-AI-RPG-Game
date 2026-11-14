@@ -85,7 +85,7 @@ test('.187 P2 #119 (original): an arrival the story tells without a GO stays ref
     const rules = (r.record.rejected || []).map((x) => x.rule);
     assert.ok(rules.includes('no_go') && rules.includes('scene_context'), rules.join(','));
     const stay = (r.record.corrections || []).find((c) => c.startsWith('Alaric did not voluntarily travel'));
-    assert.match(stay, /He is still at [^;]+; he has not reached charcoal-burner's hut at the second bend, and nobody of charcoal-burner's hut at the second bend is with him or speaks to him there\. The next reply continues at /);
+    assert.match(stay, /He is still at [^;]+; he has not reached charcoal-burner's hut at the second bend, and what the last reply had happen to him there did not happen\. The next reply continues at /);
 });
 
 test('.187 P2 #121 (original): the authorized GO to a new watch-house under the realm stays refused (an interior needs a site); under a reached site it is accepted', async () => {

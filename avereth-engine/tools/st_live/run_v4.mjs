@@ -21,7 +21,7 @@ import { loadContent } from '../../tests/helpers.js';
 import { generatorListing } from '../../tests/v4/harness.js';
 import { V4_OUTPUT_LINE } from '../../src/context.js';
 import { slug } from '../../src/util.js';
-import { assertSandbox } from './sandbox.mjs';
+import { assertSandbox, outputDir } from './sandbox.mjs';
 
 const require = createRequire(import.meta.url);
 let chromium;
@@ -33,7 +33,7 @@ const ST = process.env.AVERETH_ST_DIR;
 assertSandbox(ST);
 const ENGINE = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 const USER = path.join(ST, 'data/default-user');
-const HERE = process.env.AVERETH_ST_OUT || path.join(ST, 'avereth_live_smoke_v4');
+const HERE = outputDir(ST, process.env.AVERETH_ST_OUT, path.join(ST, 'avereth_live_smoke_v4')); // inside the sandbox only
 fs.mkdirSync(HERE, { recursive: true });
 const CARD = 'Avereth V4';
 const WORLD = 'Avereth World Lore v0.14';

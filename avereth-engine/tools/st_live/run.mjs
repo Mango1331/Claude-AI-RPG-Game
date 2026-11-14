@@ -14,7 +14,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
-import { assertSandbox } from './sandbox.mjs';
+import { assertSandbox, outputDir } from './sandbox.mjs';
 const require = createRequire(import.meta.url);
 let chromium;
 try { ({ chromium } = require('playwright')); } catch { ({ chromium } = require(path.join(require('node:child_process').execSync('npm root -g').toString().trim(), 'playwright'))); }
@@ -30,7 +30,7 @@ const INCLUDE_BODY = PRESET === 'Default' ? '' : 'clear_thinking: true\nreasonin
 const presetFile = JSON.parse(fs.readFileSync(path.join(ST, 'data/default-user/OpenAI Settings', `${PRESET}.json`), 'utf8'));
 const presetText = (id) => presetFile.prompts.find((p) => p.identifier === id)?.content ?? '';
 const ENGINE = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
-const HERE = process.env.AVERETH_ST_OUT || path.join(ST, 'avereth_live_smoke');
+const HERE = outputDir(ST, process.env.AVERETH_ST_OUT, path.join(ST, 'avereth_live_smoke')); // inside the sandbox only
 fs.mkdirSync(HERE, { recursive: true });
 const LOG = path.join(HERE, 'requests.jsonl');
 fs.writeFileSync(LOG, '');

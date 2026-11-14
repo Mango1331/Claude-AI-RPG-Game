@@ -14,7 +14,7 @@ import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { ENGINE_VERSION } from '../../src/util.js';
-import { ST_VERSION, ST_COMMIT, ST_REPO, ST_NODE_MAJOR, PORTS, PLAYWRIGHT_VERSION, ST_SUBDIR, SandboxError, sandboxRoot, markRoot, readMarker, removableRoot, lockHolder } from './sandbox.mjs';
+import { ST_VERSION, ST_COMMIT, ST_REPO, ST_NODE_MAJOR, PORTS, PLAYWRIGHT_VERSION, ST_SUBDIR, SandboxError, sandboxRoot, markRoot, readMarker, removableRoot, acquireLock, assertContained } from './sandbox.mjs';
 
 const HERE = path.dirname(new URL(import.meta.url).pathname);
 const ENGINE = path.resolve(HERE, '..', '..');
@@ -171,10 +171,10 @@ function writeReport(root, outDir, report) {
 
 // ------------------------------------------------------------------------------------------------ main
 async function main() {
-    const root = sandboxRoot(undefined, REPO);
+    const root = sandboxRoot();
     if (flag('--clean')) {
         if (!fs.existsSync(root)) { log(`nothing to clean: ${root} does not exist`); return 0; }
-        const r = removableRoot(root, REPO);
+        const r = removableRoot(root);
         fs.rmSync(r, { recursive: true, force: true });
         log(`removed the sandbox ${r}`);
         return 0;
@@ -184,7 +184,7 @@ async function main() {
         for (const x of items) log(`${x.ok ? 'ok  ' : 'MISSING'} ${x.name}: ${x.detail}${x.ok || !x.fix ? '' : ` → ${x.fix}`}`);
         const installed = fs.existsSync(path.join(root, ST_SUBDIR, 'node_modules'));
         const stop = blocking(items, installed);
-        log(stop.length ? `not ready: ${stop.map((x) => x.name).join(', ')}` : 'ready: npm run smoke:st:isolated');
+        log(stop.length ? `not ready: ${stop.map((x) => x.name).join(', ')}` : `ready to set up and run: npm run smoke:st:isolated${items.some((x) => ['playwright', 'chromium'].includes(x.name) && !x.ok) ? ' (it installs the missing browser parts first)' : ''}`);
         return stop.length ? 2 : 0;
     }
     const modes = (opt('--mode', 'both') === 'both' ? ['standard', 'failsoft'] : [opt('--mode')]);
@@ -194,9 +194,8 @@ async function main() {
     const stop = blocking(items, installedBefore);
     if (stop.length) throw new SandboxError('preflight', stop.map((x) => `${x.name}: ${x.detail}${x.fix ? ` → ${x.fix}` : ''}`).join('; '));
     markRoot(root);
-    const holder = lockHolder(root);
-    if (holder) throw new SandboxError('preflight', `another smoke run (pid ${holder}) uses ${root}`);
-    fs.writeFileSync(path.join(root, '.lock'), String(process.pid));
+    assertContained(root);
+    const release = acquireLock(root);
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');
     const outDir = path.join(root, 'out', stamp);
     fs.mkdirSync(outDir, { recursive: true });
@@ -208,14 +207,18 @@ async function main() {
         runs: [], open: ['natural model behaviour (the mock provider answers scripted plans and reports)', 'personal SillyTavern profiles (never used)', 'other SillyTavern versions than ' + ST_VERSION] };
     let code = 0;
     try {
+        assertContained(root);
         const st = installSillyTavern(root, setupLog);
+        assertContained(root);
         await initSillyTavern(st, setupLog);
+        assertContained(root);
         const nodePath = ensureBrowser(root, setupLog);
         const launch = await launchProbe(nodePath);
         if (launch) throw new SandboxError('browser', `Chromium does not start: ${launch} → system libraries: "npx playwright install-deps chromium" (root), see ${setupLog}`);
         try { const pw = playwright(nodePath); const b = await pw.chromium.launch(); report.chromium = b.version(); await b.close(); } catch { /* reported above */ }
         for (const m of modes) {
             for (const [what, port] of Object.entries(PORTS)) if (!(await portFree(port))) throw new SandboxError('preflight', `port ${port} (${what}) became busy; nothing was stopped`);
+            assertContained(root);
             const r = smoke(st, nodePath, m, outDir);
             report.runs.push(r);
             log(`${m}: ${r.ok ? 'OK' : 'FAILED'} ${r.passed}/${r.checks}${r.failed.length ? ` (failed: ${r.failed.join(', ')})` : ''}${r.error ? ` – ${r.error}` : ''} – ${r.log}`);
@@ -227,7 +230,7 @@ async function main() {
     } finally {
         report.finished = new Date().toISOString();
         const file = writeReport(root, outDir, report);
-        try { fs.rmSync(path.join(root, '.lock'), { force: true }); } catch { /* ours */ }
+        release();
         log(`report: ${file} (and report.md)`);
         if (report.error) log(`STOPPED at ${report.error.stage}: ${report.error.message}`);
     }

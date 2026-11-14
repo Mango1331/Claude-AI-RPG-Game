@@ -32,7 +32,7 @@ import { softExtractionFailure, turnFailure } from './live/evaluator.mjs';
 import { financeTurns, financeSmoke } from './finance_smoke.mjs';
 import { stealthTurns, stealthSmoke } from './stealth_smoke.mjs';
 import { uiTurns, uiSmoke } from './ui_smoke.mjs';
-import { assertSandbox } from './sandbox.mjs';
+import { assertSandbox, outputDir } from './sandbox.mjs';
 
 const require = createRequire(import.meta.url);
 let chromium;
@@ -44,7 +44,7 @@ const ST = process.env.AVERETH_ST_DIR;
 assertSandbox(ST);
 const ENGINE = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 const USER = path.join(ST, 'data/default-user');
-const HERE = process.env.AVERETH_ST_OUT || path.join(ST, 'avereth_live_smoke_c');
+const HERE = outputDir(ST, process.env.AVERETH_ST_OUT, path.join(ST, 'avereth_live_smoke_c')); // inside the sandbox only
 fs.mkdirSync(HERE, { recursive: true });
 const CARD = 'Avereth V4';
 const WORLD = 'Avereth World Lore v0.14';

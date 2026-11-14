@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { assertSandbox, sandboxRoot, markRoot, readMarker, removableRoot, lockHolder, MARKER, ST_SUBDIR } from '../../tools/st_live/sandbox.mjs';
+import { assertSandbox, sandboxRoot, markRoot, readMarker, removableRoot, lockHolder, acquireLock, assertContained, outputDir, MARKER, ST_SUBDIR } from '../../tools/st_live/sandbox.mjs';
 
 const ENGINE = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'avereth-sbx-test-'));
@@ -94,4 +94,68 @@ test('ST sandbox: smoke:st:clean refuses a foreign AVERETH_ST_SANDBOX and remove
     const ok = spawnSync(process.execPath, [path.join(ENGINE, 'tools/st_live/isolated.mjs'), '--clean'], { env: { ...process.env, AVERETH_ST_SANDBOX: root }, encoding: 'utf8', timeout: 60000 });
     assert.equal(ok.status, 0, ok.stderr);
     assert.ok(!fs.existsSync(root));
+});
+
+// ------------------------------------------------------------------------------------------------ GPT review 14.11.2026
+test('ST sandbox S1: the lock is taken atomically – a second run stops before any change; a stale lock is taken over once; clean waits', () => {
+    const root = tmp();
+    markRoot(root);
+    const release = acquireLock(root);
+    assert.equal(fs.readFileSync(path.join(root, '.lock'), 'utf8'), String(process.pid));
+    assert.throws(() => acquireLock(root), /another smoke run \(pid \d+\) holds/);
+    assert.throws(() => removableRoot(root), /a smoke run holds it/);
+    // a second process started at the same time: exactly one of both holds the lock
+    const child = spawnSync(process.execPath, ['--input-type=module', '-e', `import { acquireLock } from ${JSON.stringify(path.join(ENGINE, 'tools/st_live/sandbox.mjs'))}; try { acquireLock(${JSON.stringify(root)}); console.log('took'); } catch (e) { console.log('refused'); }`], { encoding: 'utf8' });
+    assert.equal(child.stdout.trim(), 'refused');
+    release();
+    assert.ok(!fs.existsSync(path.join(root, '.lock')));
+    fs.writeFileSync(path.join(root, '.lock'), '999999999');
+    const again = acquireLock(root);
+    assert.equal(fs.readFileSync(path.join(root, '.lock'), 'utf8'), String(process.pid), 'a stale lock is replaced');
+    again();
+    fs.writeFileSync(path.join(root, '.lock'), '');
+    assert.throws(() => acquireLock(root), /holds/, 'a lock just created by another run counts as held');
+});
+
+test('ST sandbox S2: a SillyTavern or data/default-user linked out of the sandbox stops the guard, the setup and the clean before any write', () => {
+    const outside = personal();
+    const before = snapshot(path.dirname(outside));
+    const a = tmp();
+    markRoot(a);
+    fs.symlinkSync(outside, path.join(a, ST_SUBDIR));
+    assert.throws(() => assertSandbox(path.join(a, ST_SUBDIR)), /not the SillyTavern of an Avereth sandbox/);
+    assert.throws(() => assertContained(a), /leads out of the sandbox/);
+    const b = tmp();
+    markRoot(b);
+    fs.mkdirSync(path.join(b, ST_SUBDIR, 'data'), { recursive: true });
+    fs.symlinkSync(path.join(outside, 'data', 'default-user'), path.join(b, ST_SUBDIR, 'data', 'default-user'));
+    assert.throws(() => assertSandbox(path.join(b, ST_SUBDIR)), /data\/default-user: it leads out of the sandbox/);
+    const r = spawnSync(process.execPath, [path.join(ENGINE, 'tools/st_live/run_c.mjs')], { env: { ...process.env, AVERETH_ST_DIR: path.join(b, ST_SUBDIR) }, encoding: 'utf8', timeout: 60000 });
+    assert.notEqual(r.status, 0);
+    assert.match(r.stderr, /leads out of the sandbox/);
+    const iso = spawnSync(process.execPath, [path.join(ENGINE, 'tools/st_live/isolated.mjs'), '--clean'], { env: { ...process.env, AVERETH_ST_SANDBOX: b }, encoding: 'utf8', timeout: 60000 });
+    assert.equal(iso.status, 3);
+    assert.match(iso.stderr, /leads out of the sandbox/);
+    assert.deepEqual(snapshot(path.dirname(outside)), before, 'the linked personal data are unchanged');
+    assert.ok(fs.existsSync(b), 'nothing removed');
+});
+
+test('ST sandbox S3: no sandbox inside the repository; results only inside the sandbox', () => {
+    const inRepo = path.join(ENGINE, 'tmp-sandbox-test-never-created');
+    assert.throws(() => sandboxRoot(inRepo), /inside the repository/);
+    assert.ok(!fs.existsSync(inRepo));
+    const root = tmp();
+    markRoot(root);
+    const st = path.join(root, ST_SUBDIR);
+    fs.mkdirSync(st);
+    assert.equal(outputDir(st, undefined, path.join(st, 'avereth_live_smoke_c')), path.join(fs.realpathSync(st), 'avereth_live_smoke_c'));
+    assert.equal(outputDir(st, path.join(root, 'out', 'x', 'standard')), path.join(fs.realpathSync(root), 'out', 'x', 'standard'));
+    const elsewhere = tmp();
+    assert.throws(() => outputDir(st, path.join(elsewhere, 'results')), /results are written only inside the sandbox/);
+    fs.symlinkSync(elsewhere, path.join(root, 'linked'));
+    assert.throws(() => outputDir(st, path.join(root, 'linked', 'results')), /only inside the sandbox/);
+    const r = spawnSync(process.execPath, [path.join(ENGINE, 'tools/st_live/run_c.mjs')], { env: { ...process.env, AVERETH_ST_DIR: st, AVERETH_ST_OUT: path.join(elsewhere, 'results') }, encoding: 'utf8', timeout: 60000 });
+    assert.notEqual(r.status, 0);
+    assert.match(r.stderr, /refusing AVERETH_ST_OUT=/);
+    assert.deepEqual(fs.readdirSync(elsewhere), [], 'nothing written outside');
 });

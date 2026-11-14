@@ -20,7 +20,7 @@ import { foldChat, rec, messageEvents } from '../../src/host.js';
 import { validateState } from '../../src/validate.js';
 import { Driver } from './live/driver.mjs';
 import { startRecordProblem } from './live/evaluator.mjs';
-import { assertSandbox } from './sandbox.mjs';
+import { assertSandbox, outputDir } from './sandbox.mjs';
 
 const require = createRequire(import.meta.url);
 let chromium;
@@ -32,7 +32,7 @@ const ST = process.env.AVERETH_ST_DIR;
 assertSandbox(ST);
 const ENGINE = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 const USER = path.join(ST, 'data/default-user');
-const HERE = process.env.AVERETH_ST_OUT || path.join(ST, 'avereth_greeting_start');
+const HERE = outputDir(ST, process.env.AVERETH_ST_OUT, path.join(ST, 'avereth_greeting_start')); // inside the sandbox only
 const CHATS = Number(process.env.AVERETH_GREETING_CHATS || 3);
 fs.mkdirSync(HERE, { recursive: true });
 const CARD = 'Avereth Macro Greeting';

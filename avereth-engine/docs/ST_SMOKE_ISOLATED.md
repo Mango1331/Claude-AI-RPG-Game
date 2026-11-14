@@ -26,7 +26,7 @@ Die Engine ist immer der aktuelle Checkout: `run_c.mjs` kopiert `index.js`, `src
 
 ## Ablauf
 
-1. **Prüfung** (wie `smoke:st:check`): ein fehlender Baustein beendet den Lauf mit Meldung und Abhilfe (Exitcode 3). Ein belegter Port wird gemeldet, **kein Prozess wird beendet**.
+1. **Prüfung** (wie `smoke:st:check`; „ready“ heißt bereit zum Aufbau – fehlendes Playwright/Chromium installiert der Lauf): ein fehlender Baustein beendet den Lauf mit Meldung und Abhilfe (Exitcode 3). Ein belegter Port wird gemeldet, **kein Prozess wird beendet**.
 2. **Sandbox:** Standard `<tmp>/avereth-st-sandbox` mit Markierungsdatei `.avereth-st-sandbox.json`, darunter `SillyTavern/` (geklont, Commit geprüft, `npm ci`).
 3. **Erststart:** ST einmal auf Port 8123 gestartet, bis `data/default-user` angelegt ist, dann nur dieser eigene Kindprozess beendet.
 4. **Browser:** Chromium-Startprobe; fehlen Systembibliotheken, Meldung mit `npx playwright install-deps chromium` (root).
@@ -52,6 +52,7 @@ Exitcode: 0 alle Smokes OK, 1 ein Smoke fehlgeschlagen, 2 `--check` nicht bereit
 - Alle ST-Smoke-Skripte (`run_c`, `run_v4`, `run`, `setup`, `run_greeting`) prüfen vor jedem Dateizugriff `assertSandbox`: `AVERETH_ST_DIR` muss `<root>/SillyTavern` eines markierten Sandbox-Roots sein. Ein persönliches ST (ohne Markierung) wird abgelehnt, auch bei direktem Aufruf.
 - Ein Sandbox-Root wird nur angenommen, wenn er neu, leer oder bereits markiert ist; nie das Dateisystem-Root, das Home-Verzeichnis, ein Verzeichnis oberhalb des Repositorys oder eine ST-Installation selbst.
 - Gelöscht wird nur innerhalb des markierten Roots (Testchats durch `run_c.mjs`, `smoke:st:clean` den ganzen Root) und nie, solange ein Lauf ihn hält (`.lock` mit lebender PID).
+- **Nachtrag 14.11.2026 ([GPT-Gegenreview](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/recherche/REVIEW_ST_SMOKE_SANDBOX_2026-11-14_GPT.md) S1–S3):** die Sperre wird atomar erzeugt (`wx`; ein zweiter gleichzeitiger Lauf endet vor jeder Änderung, eine verwaiste Sperre wird einmal übernommen); jeder geschriebene Pfad der Sandbox (`SillyTavern`, `data/default-user` und seine beschriebenen Unterordner, `node_modules`, `tools`, `out`) muss real in der Sandbox liegen – ein Symlink hinaus stoppt Setup, Smoke und Bereinigung vor dem ersten Schreibzugriff; eine Sandbox innerhalb des Repositorys wird abgelehnt; `AVERETH_ST_OUT` direkter Skriptaufrufe muss in der Sandbox liegen.
 - Fremde Prozesse werden nie beendet; belegte Ports stoppen den Lauf. Ein parallel laufender natürlicher Batch mit eigener ST-Installation bleibt unberührt, solange er nicht dieselben Ports 8123/5001 belegt; tut er das, verweigert der Smoke den Start.
 - Nur ein Dummy-Schlüssel steht in der Sandbox-`secrets.json`; nichts aus der Sandbox gehört in Git.
 
@@ -71,6 +72,8 @@ Build `.186`, frischer Checkout (`249ac93`) ohne vorherige ST-Installation, Node
 | Failsoft | **OK 229/229**, 0 PageErrors, 485 s |
 | Wiederholter Start (`--mode base`) | ohne Neuaufbau, **OK 25/25** in 39 s |
 | Belegter Port 5001 | Abbruch in `preflight`, nichts beendet, keine Ausgabe angelegt |
-| Persönliches ST, fremder Sandbox-Pfad, Bereinigung | `tests/unit/st_sandbox.test.js` 5/5: alle fünf Smoke-Skripte verweigern ein unmarkiertes ST, ohne eine Datei zu ändern; `--clean` verweigert einen fremden Ordner |
+| Persönliches ST, fremder Sandbox-Pfad, Bereinigung | `tests/unit/st_sandbox.test.js` 5/5 (seit 14.11. mit S1–S3: 8/8): alle fünf Smoke-Skripte verweigern ein unmarkiertes ST, ohne eine Datei zu ändern; `--clean` verweigert einen fremden Ordner |
 
 Nicht praktisch ausgelöst: fehlendes Netz, fehlendes Chromium und ein ST-Startfehler; diese Pfade sind als Meldungen implementiert, aber hier nicht provoziert worden.
+
+Nach dem Schutznachtrag S1–S3 (14.11.2026): gezielte Tests 8/8, Unit-Suite 197/197, Basis-Smoke im echten Hostpfad **OK 25/25**; Standard und Failsoft wurden dafür nicht erneut ausgeführt (nur Guards geändert).

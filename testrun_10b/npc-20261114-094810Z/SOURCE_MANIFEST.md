@@ -27,7 +27,7 @@ Die relative Basis pro Persona ist `00X-<persona>/<Zeitstempel>-npc_pulse_test/`
 
 ## Unabhängige Konsistenzprüfung
 
-| Persona | Chat-Nachrichten (einschließlich Begrüßung) | Eventgruppen | Einzelereignisse | Exportgruppen byte-/strukturidentisch mit `chat.jsonl`-Recordevents |
+| Persona | Chat-Nachrichten (einschließlich Begrüßung) | Eventgruppen | Einzelereignisse | Exportgruppen strukturell identisch mit `chat.jsonl`-Recordevents |
 |---|---:|---:|---:|---|
 | Warrior | 141 | 113 | 873 | 113/113 |
 | Rogue | 141 | 123 | 1.059 | 123/123 |

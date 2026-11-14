@@ -759,6 +759,9 @@ export function retreatGo(state, c) {
 }
 
 const travelOf = (story) => story.some((c) => c.type === 'go');
+// .187 follow-up (review 14.11.): a step back that says he stays ("holding my ground", "a few paces", "staying where I
+// am", "not leaving the bend") is no journey, whatever way it names; it stays the story's step
+const STAYS = /\b(?:stay(?:s|ing)?\s+(?:here|put|where|in\s+place|at\s+the|by\s+the|on\s+the)|hold(?:s|ing)?\s+(?:my|his|the)\s+ground|stand(?:s|ing)?\s+(?:my|his)\s+ground|keep(?:s|ing)?\s+(?:my|his)\s+(?:ground|place|post|position)|where\s+(?:i|he)\s+(?:am|is|stand|stands)|without\s+leaving|(?:do|does|did)\s*(?:not|n't)\s+leave|not\s+leaving|(?:a|one|two|three|a\s+few|a\s+couple\s+of|few)\s+(?:paces?|steps?|strides?|yards?))/i;
 export function mapPlan(commands, ctx, content, message, state) {
     // Patch 3 (live 18.10.2026: "I use the flint and steel to make a small light" became the unknown skill "flint and
     // steel" and the "continue" after it was dropped): a thing he holds, named where a skill would stand, is that thing
@@ -838,7 +841,7 @@ export function mapPlan(commands, ctx, content, message, state) {
         // .187 (P2, Warrior #117 on .186): a step back from someone already as far as a scene goes moves him nowhere in
         // the scene; when his words say the way back (retreatGo, as for a flight), it is that way back, the one GO of the
         // message. A step that does move him stays the tactical step, never a journey
-        const wayBack = !travelOf(story) && moves.length && !steps.length ? moves.filter((x) => x.dir === 'away').map((x) => retreatGo(state, x)).find(Boolean) : null;
+        const wayBack = !travelOf(story) && moves.length && !steps.length ? moves.filter((x) => x.dir === 'away' && !STAYS.test(String(x.quote || ''))).map((x) => retreatGo(state, x)).find(Boolean) : null;
         if (wayBack) story.push(wayBack);
         for (const c of moves.filter((x) => !stepped(x) && !(wayBack && x.seq === wayBack.seq))) free.push(`move: ${said(c)}`);
         for (const c of steps.slice(1)) notes.push(`not taken this turn (one move per turn): ${said(c)}`);

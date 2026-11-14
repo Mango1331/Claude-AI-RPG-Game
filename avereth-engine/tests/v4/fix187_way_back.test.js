@@ -106,3 +106,21 @@ test('.187 P2 #121 (original): the authorized GO to a new watch-house under the 
     await h.reply('He goes into the watch-house by the gate.', { expected: { 1: { arrived: true, at: room, with: null } }, deltas: [{ seq: 1, type: 'arrive', at: room, forced_by: null, with: null }] });
     assert.equal(h.state().places[h.state().scene.at]?.parent, 'loc.mossback_warrens');
 });
+
+// ------------------------------------------------------------------------------------- .187 follow-up (review 14.11.)
+// A step back said to stay where he is ("holding my ground", "a few paces", "without leaving the bend") is no journey,
+// even when it names the track: it stays the story's step; the way back needs the way and no stay.
+test('.187 P2 follow-up: a step back up the track that says he stays is no way back (#117 state)', () => {
+    for (const q of [
+        'I back up the track a few paces, holding my ground here at the bend',
+        'I take two steps back along the path, staying where I am with my sword raised',
+        'I keep backing up the dark track but do not leave the bend, eyes on the tallest goblin',
+    ]) {
+        const r = plan(117, [{ ...M117, quote: q }]);
+        assert.ok(!(r.commands || []).some((c) => c.type === 'go'), q);
+        assert.equal(r.free.length, 1, q);
+    }
+    assert.deepEqual(plan(117, [M117]).commands.map((c) => [c.type, c.to]), [['go', 'loc.mossback_warrens']], '#117 original unchanged');
+    for (const q of ['I back up the track, staying low and quiet, toward the gate', 'I back out the way I came, staying close to the wall'])
+        assert.deepEqual(plan(117, [{ ...M117, quote: q }]).commands.map((c) => [c.type, c.to]), [['go', 'loc.mossback_warrens']], `how he goes is no stay: ${q}`);
+});

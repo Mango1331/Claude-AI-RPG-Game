@@ -1,8 +1,8 @@
-# Build 4.3.0-c.6.6.188 – zwei Negativregressionen zu `.187`
+# Builds 4.3.0-c.6.6.188 und .189 – zwei Negativregressionen zu `.187`
 
 **Basis:** `.187` (Build `5b4d493`, Patchnote [BATCH186_FIXES_187.md](BATCH186_FIXES_187.md)).
 
-**Anlass:** Unabhängiger Review von `.187` am 14.11.2026. Er fand keinen Grund für einen neuen Architektur- oder Paymentpatch, empfahl aber vor dem nächsten natürlichen Lauf zwei gezielte Negativregressionen:
+**Anlass:** [Unabhängiger GPT-Tiefenreview von `.187`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/patch_plans_10b/REVIEW_BATCH187_DREI_ETAPPEN_PRODUKTDIFF_GPT.md) am 14.11.2026 (R1/R2). Er fand keinen Grund für einen neuen Architektur- oder Paymentpatch, empfahl aber vor dem nächsten natürlichen Lauf zwei gezielte Negativregressionen:
 - den angeheuerten NPC-Jäger,
 - den ausdrücklich ortsfesten Rückwärtsschritt.
 
@@ -48,14 +48,33 @@ Der Schritt bleibt dann Erzählung (`NOTHING TO BOOK`). Wie er geht („staying 
 - Drei ortsfeste Varianten: kein GO, eine Erzählzeile.
 - Original #117 und zwei Gegenfälle („staying low and quiet“, „staying close to the wall“) bleiben GO nach Mossback Warrens.
 
+## 3 – `.189`: die Proben des Reviews selbst (`e67afbe`)
+
+Nach dem Build `.188` wurden die wörtlichen Proben aus §3.3 und §3.4 des Reviews nachgetestet. Drei davon fielen noch durch:
+- „kill the rats for the village“ mit „Pay me five copper and I'll do it“ blieb Arbeit, weil „pay me“ und „I'll do it“ noch nicht als Zeichen galten, dass der Anbieter selbst bezahlt arbeitet.
+- „a single step and hold my position“ führte noch zum Rückweg.
+- „staying at this ambush spot“ führte noch zum Rückweg.
+
+**Ergänzt:**
+- Bei `HIRED`: „pay me“, „I'll/I will do it“.
+- Bei den Bleibe-Zeichen: „hold my position/place/post“, „stay at/by/on this/that“, „a single / only one / just one step“.
+
+**Tests:** in den beiden Nachkorrekturtests ergänzt.
+- Rattenfänger als Hostfall: gekauft bei „I hire you“.
+- Tabelle: `unclear`.
+- Drei Review-Formulierungen: kein GO.
+
+Weil sich der Code gegenüber `.188` geändert hat, ist das ein eigener Build `.189`.
+
 ## Abnahme
 
 | Prüfung | Ergebnis |
 |---|---|
-| `fix187_*` | 20/20 (2 neu, beide rot auf `.187`) |
-| `npm test` | **3190/3190** |
+| `fix187_*` | 20/20 (2 neue Tests, beide rot auf `.187`; Review-Proben in `.189` ergänzt) |
+| `npm test` | **3190/3190** (`.188` und `.189`) |
 | Replay | unverändert gegenüber der `.187`-Akzeptanz: 2235 Fälle, 1088/1088 akzeptiert, keine neue Abweichung (kein Korpusfall enthält einen angeheuerten Jäger oder einen ortsfesten Rückweg) |
-| ST1.19 isoliert (`smoke:st:check` → ready, `smoke:st:isolated`) | ST 1.19.0 (`7e8663c`), Engine `4.3.0-c.6.6.188`. Checkout `1266272` mit genau der Versionsänderung des Buildcommits `823fd6f`. **Standard OK 224/224, Failsoft OK 229/229, je 0 PageErrors**. Mockprovider; Sandbox-Werkzeug unverändert seit `24d2aa9` |
+| ST1.19 isoliert `.189` | ST189 |
+| ST1.19 isoliert `.188` (`smoke:st:check` → ready, `smoke:st:isolated`) | ST 1.19.0 (`7e8663c`), Engine `4.3.0-c.6.6.188`. Checkout `1266272` mit genau der Versionsänderung des Buildcommits `823fd6f`. **Standard OK 224/224, Failsoft OK 229/229, je 0 PageErrors**. Mockprovider; Sandbox-Werkzeug unverändert seit `24d2aa9` |
 
 ## Grenzen
 

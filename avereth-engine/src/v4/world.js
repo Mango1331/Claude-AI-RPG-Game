@@ -1,7 +1,8 @@
-import { floorRefusal } from './dungeon.js';
+import { floorRefusal, namedLevel, goesFrom, otherEnd } from './dungeon.js';
 import { placeParent, placeIdentity, placeKey, samePlace } from './place_refs.js';
 import { resolvePlaceRef, usualPersonNamed } from './place_book.js';
 import { allowedArrival, stepsOf, newPlaceScope } from './movement.js';
+import { sectionsOf, sectionId } from './sections.js';
 import { sceneIssues, localSceneDelta } from './extract.js';
 import { privateQuestsOf, questVisible } from '../content.js';
 // Runtime V4: applying the extractor's world deltas (docs/RUNTIME_V4_PLAN.md §5.2). After the narrator's reply the
@@ -289,6 +290,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // Prototype C: the turn the planner read (a story turn: auth.c; a V3-routed one: the outcome's c)
     const cPath = !!(auth.c || outcome.c);
     const explicitTravel = cPath && rulesetOf(s) >= 2;
+    // .190: a reply to steps the GO handler decided before .190 (no stored step fields) keeps the Dungeon rules of then
+    // (story-made rooms and ways; an existing campaign's regenerated reply is read as it was planned)
+    const oldSteps = (auth.gos || []).length > 0 && !(auth.gos || []).some((g) => g.mode);
     const anchored = new Set(); // NPC E3: the anchors this answer set (one per person and trait)
     const place = (ref) => resolvePlace(s, ref, emit, 0, { c: cPath });
     // Patch 8 (13A): an arrival at a Dungeon's gate by any of its names (the ruined chapel above the Old Crown Catacombs)
@@ -1113,11 +1117,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 const mark = events.length;
                 const unmake = () => {
                     const made = events.slice(mark);
-                    if (!made.length || !made.every((e) => e.t === 'place.created')) return;
+                    if (!made.length || !made.every((e) => e.t === 'place.created' || e.t === 'link.set')) return;
                     events.length = mark;
-                    for (const e of made) delete s.places[e.d.place.id];
+                    for (const e of made) if (e.t === 'place.created') delete s.places[e.d.place.id]; else delete s.links[e.d.link.id];
                 };
-                let at = viaStop(arrivalPlace(ref));
+                // .190 (B5): in a Living Dungeon the part he reaches is the section his step previewed (made now, named by
+                // this report); a room the story makes there is none
+                const part = explicitTravel ? sectionArrival(ref) : null;
+                if (part?.refuse) { reject(d, 'passage', part.refuse); const fix = `Alaric is still in ${placeName(s, s.scene.at)}: ${part.refuse}.`; if (!corrections.includes(fix)) corrections.push(fix); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
+                let at = part?.id ? { id: part.id } : viaStop(arrivalPlace(ref));
                 if (at.error) { unmake(); reject(d, 'place', at.error); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
                 if (at.id === s.scene.at && !(explicitTravel && s.places[at.id]?.kind === 'realm' && auth.gos?.length)) { travel.push({ seq: d.seq, ok: true }); break; }
                 const forcedHere = !!String(d.forced_by || '').trim() && !unprovenForced.has(d);
@@ -1507,6 +1515,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 break;
             }
             case 'place.reported': {
+                // .190 (B5): the parts of a Living Dungeon are the engine's sections; a part told of is no place
+                const told = livingPartTold(d.place);
+                if (told) { reject(d, 'dungeon_way', told); break; }
                 // Patch 2: a place someone tells of, a map shows or a rumour names: a known place by report, not a
                 // place in the world as the story has shown it (src/v4/known.js)
                 const r = reportPlace(s, d, emit, { by: d.by ? idOf(d.by) || null : null, place: (ref) => resolvePlace(s, ref, emit, 0, { c: cPath, reported: true }) });
@@ -2472,7 +2483,19 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
 
     function wayRefused(to, d, { forced = false } = {}) {
         const from = s.scene.at;
-        if (to === from || (!dungeonOf(s, from) && !dungeonOf(s, to))) return null;
+        if (to === from) return null;
+        if (!dungeonOf(s, from) && !dungeonOf(s, to)) {
+            // .190 (D1b): in a building no longer explored room by room, only what blocks every way he knows into a room
+            // keeps him out (a locked armory); a way nobody showed is no refusal
+            const ways = linksAt(s, to).filter((l) => goesFrom(l, otherEnd(l, to)));
+            const bar = ways.length && ways.every((l) => blockerOf(s, l)) ? blockerOf(s, ways[0]) : null;
+            if (!bar || forced) return null;
+            const why = `the way to ${placeName(s, to)} is barred by ${bar.name} (${bar.id}), which he has not got past`;
+            reject(d, 'passage', why);
+            const fix = `Alaric is still in ${placeName(s, from)}: ${why}; he did not get there.`;
+            if (!corrections.includes(fix)) corrections.push(fix);
+            return why;
+        }
         // Patch 8 (13B): a part he had not seen, reached beyond the room his GO named, is reached through that room
         const invalid = cPath && to !== trueDungeonOf(s, to) && floorRefusal(s, trueDungeonOf(s, to), s.places[to]?.level);
         if (invalid) { reject(d, 'passage', invalid); return invalid; }
@@ -2525,6 +2548,60 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (!cPath || visited(s, to) || linksAt(s, to, { hidden: true }).length || !dungeonOf(s, to)) return null;
         const goal = (auth.gos || []).map((g) => g.to).find((x) => x && x !== to && x !== s.scene.at && dungeonOf(s, x) === dungeonOf(s, to) && dungeonOf(s, x) !== x && s.places[x]);
         return goal && wayBetween(s, s.scene.at, goal).path ? goal : null;
+    }
+    /** .190 (B5): the section this turn's step previews (sections.js), made at his confirmed arrival; {refuse} for a room
+     * the story makes in a Living Dungeon; null where the arrival is no arrival in a Living Dungeon */
+    function sectionArrival(ref) {
+        if (oldSteps) return null;
+        // the step's preview he goes on from here (a second step of the message goes on from the first one's part)
+        const previews = (auth.gos || []).map((g) => g.section).filter(Boolean);
+        let p = previews.find((x) => x.from === s.scene.at && !s.places[x.id]) || previews.find((x) => !s.places[x.id]) || previews.at(-1) || null;
+        const n = ref && typeof ref === 'object' && ref.new && typeof ref.new === 'object' ? ref.new : null;
+        const parent = n ? (typeof n.parent === 'string' && s.places[n.parent] ? n.parent : n.parent == null ? s.scene.at : null) : null;
+        const root = p?.root || (parent ? trueDungeonOf(s, parent) : null);
+        if (!livingOf(s, root)) return null;
+        const inside = n && ['interior', 'site'].includes(n.kind) && parent && trueDungeonOf(s, parent) === root;
+        if (!p && inside && trueDungeonOf(s, s.scene.at) !== root) {
+            // from outside: a step to the Dungeon by its name goes in through its gate (the gate check is the way's) into
+            // its first part; a step that names the gate ends there, and no step for it is a room elsewhere (movement.js)
+            const step = stepsOf(s, auth.gos).find((g) => g.enter?.root === root);
+            if (!step || step.enter.gate || roomByName(s, root, n, s.scene.at)) return null;
+            const first = sectionsOf(s, root, 1)[0];
+            if (first) return { id: first };
+            p = { id: sectionId(root, 1, 1), root, level: 1, k: 1, from: root, down: false, name: 'part 1 of level 1' };
+        }
+        if (p && (ref === p.id || inside)) {
+            if (!s.places[p.id]) {
+                const told = n?.name ? String(n.name).trim().slice(0, 80) : '';
+                // named once by this report; a name that says another level is not the engine's part
+                const named = namedLevel(told);
+                const name = told && (named == null || named === p.level) ? told : p.name;
+                emit({ t: 'place.created', d: { place: { id: p.id, name, kind: 'interior', parent: p.root, realm: s.places[p.root]?.realm ?? null, tags: [], by: 'dungeon', level: p.level, section: p.k, created: { turn: s.turn, minute: s.clock.minute } } } });
+                emit(linkEvent(newLink(s, { a: p.from, b: p.id, how: 'dungeon', by: 'dungeon', both: true, dir: p.down ? 'down' : null, name: p.down ? 'the way down' : null })));
+            }
+            return { id: p.id };
+        }
+        // a part he knows that his step goes to, told in other words: that part (named once, never renamed)
+        if (inside && !p) {
+            if (roomByName(s, root, n, s.scene.at)) return null;
+            const known = stepsOf(s, auth.gos).map((g) => g.to).find((id) => id && id !== root && s.places[id] && trueDungeonOf(s, id) === root);
+            if (known) return { id: known };
+        }
+        // at the gate, not going in: a place told as the Dungeon's is the gate he stands at (its watch-house, its yard)
+        if (inside && s.scene.at === root) {
+            system.push(`AT THE GATE — ${String(n.name).slice(0, 60)} is at the gate of ${s.places[root].name}: he is there; its parts are reached only by going in.`);
+            return { id: root };
+        }
+        if (inside) return { refuse: `${n.name} is no part of ${s.places[root].name}: its parts are the engine's, reached by going on, back, down or out` };
+        return null;
+    }
+    /** .190 (B5): why a place told of is no place: a part of a Living Dungeon, or null. */
+    function livingPartTold(ref) {
+        const n = ref?.new && typeof ref.new === 'object' ? ref.new : null;
+        if (!explicitTravel || oldSteps || !n || !['interior', 'site'].includes(n.kind)) return null;
+        const parent = typeof n.parent === 'string' && s.places[n.parent] ? n.parent : n.parent == null ? s.scene.at : null;
+        const root = parent ? trueDungeonOf(s, parent) : null;
+        return livingOf(s, root) && parent ? `the parts of ${s.places[root].name} are the engine's sections, reached by going on; one told of is no place` : null;
     }
     /** Patch 8: the passage of this answer into a room of this name (its way and direction), or null. */
     function passageInto(id) {
@@ -2587,6 +2664,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
      * same way. What the story may not do: find a hidden way (his search does) or open a barred one (his attempt does).
      */
     function passage(d) {
+        // .190 (B5): the ways of a Living Dungeon are the engine's (on, back, down, out along its sections)
+        if (explicitTravel && !oldSteps) {
+            const root = [s.scene.at, typeof d.to === 'string' ? d.to : null, typeof d.from === 'string' ? d.from : null].map((x) => x && s.places[x] ? trueDungeonOf(s, x) : null).find((r) => livingOf(s, r));
+            if (root) { reject(d, 'dungeon_way', `the engine keeps the ways of ${s.places[root].name}: he goes on, back, down or out along its parts, never by a way the story tells`); return; }
+        }
         // Patch 8: a way into the room this reply already brought him to (the stair he went down) starts where he was
         const made = (id) => events.some((e) => e.t === 'place.created' && e.d.place.id === id);
         const into = arrived && made(arrived) && (d.to === arrived || normText(d.to?.new?.name || d.to?.new || '') === normText(s.places[arrived]?.name || ''));
@@ -2599,15 +2681,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const invalid = targetId === dungeonOf(s, a0.id) ? null : floorRefusal(s, dungeonOf(s, a0.id), lv ?? targetLevel, d.to?.new?.name || s.places[targetId]?.name);
         if (invalid) { reject(d, 'passage', invalid); return; }
         if (Number.isInteger(lv) && Number.isInteger(targetLevel) && targetLevel !== lv) { reject(d, 'passage', 'passage direction conflicts with the established target floor'); return; }
-        markEvents(s, a0.id).forEach(emit);
+        // .190 (D1b): a way the story shows in a building no longer makes it a place explored room by room; the way is
+        // kept with what blocks it (a locked door keeps him out), an unknown way is no refusal there
         const b0 = place(Number.isInteger(lv) && d.to?.new && typeof d.to.new === 'object' ? { new: { ...d.to.new, level: lv } } : d.to);
         if (b0.error) { reject(d, 'place', b0.error); return; }
-        markEvents(s, b0.id).forEach(emit);
         const dun = dungeonOf(s, a0.id) || dungeonOf(s, b0.id);
-        if (!dun) { reject(d, 'world_rule', 'a passage joins the rooms of a building, cave or ruin'); return; }
+        const building = !dun && complexOf(s, a0.id) && complexOf(s, a0.id) === complexOf(s, b0.id) && !settlementOf(s, complexOf(s, a0.id)) ? complexOf(s, a0.id) : null;
+        if (!dun && !building) { reject(d, 'world_rule', 'a passage joins the rooms of a building, cave or ruin'); return; }
         // from outside, a way in starts at the dungeon itself
-        const a = dungeonOf(s, a0.id) === dun ? a0.id : dun;
-        const b = dungeonOf(s, b0.id) === dun ? b0.id : dun;
+        const a = !dun || dungeonOf(s, a0.id) === dun ? a0.id : dun;
+        const b = !dun || dungeonOf(s, b0.id) === dun ? b0.id : dun;
         if (a === b) { reject(d, 'world_rule', 'a passage joins two different places'); return; }
         const feature = d.feature ? wayFeature(d.feature, [a, b]) : null;
         // review of a5035f0: the way of that name between them, not any way (an iron door and a shaft are two)
@@ -2624,7 +2707,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         emit(linkEvent(l));
         if (d.feature && !feature) pendingRefs.push({ kind: 'way', id: l.id, at: [a, b], name: String(d.feature), seq: d.seq });
         // the room it leads to lies on the level the way leads to
-        if (b !== dun && !Number.isInteger(s.places[b].level)) {
+        if (dun && b !== dun && !Number.isInteger(s.places[b].level)) {
             const level = levelVia(s, a, l);
             if (Number.isInteger(level)) emit({ t: 'place.updated', d: { id: b, set: { level } } });
         }
@@ -2686,10 +2769,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         sceneEpoch++;
         const town = locationOf(s, id);
         const from = s.scene.at;
-        // Patch 7: two rooms of a building or cave out in the wild that he walks between make it a dungeon (with the
-        // ways he walked in it); and whether he knew a way here before he took it (else the way he took is kept)
-        if (cPath && !dungeonOf(s, from) && !dungeonOf(s, id) && s.places[from]?.kind === 'interior' && s.places[id]?.kind === 'interior'
-            && complexOf(s, from) && complexOf(s, from) === complexOf(s, id) && !settlementOf(s, complexOf(s, from))) markEvents(s, from).forEach(emit);
+        // Patch 7: whether he knew a way here before he took it (else the way he took is kept). .190 (D1b): walking
+        // between two rooms of a building no longer makes it a place explored room by room (only an older save's stays)
         const dun = dungeonOf(s, id);
         const knownWay = dun || dungeonOf(s, from) ? !!wayBetween(s, from, id).path : true;
         // whoever does not come along stays at the place he leaves (entity.at): "the driver" there is that driver again.

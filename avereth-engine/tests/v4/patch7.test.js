@@ -23,6 +23,8 @@ import { materialise } from '../../src/engine.js';
 import { applyEvent } from '../../src/state.js';
 import { Dice } from '../../src/rng.js';
 import { Chat4 } from './harness.js';
+import { inject, hero, delve, fightAll, WARRENS } from './patch8_lib.js';
+import { sectionExits } from '../../src/v4/sections.js';
 
 const content = await loadProductContent();
 
@@ -93,8 +95,20 @@ async function watchtower(g = null) {
         prose: 'The old watchtower: broken doors, an entrance hall beyond.',
         deltas: [way(room('Entrance hall'), { name: 'broken doors' })],
     });
+    legacyRooms(g, g.state().scene.at);
     return g;
 }
+/**
+ * .190 (D1b): a building no longer becomes a place explored room by room by being walked or by a way the story shows;
+ * an older save's building that did (rooms: true before .190) keeps its ways – these suites play such a building.
+ */
+function legacyRooms(g, id) {
+    const s = g.state();
+    const rooms = Object.values(s.places).filter((p) => p.id !== id && p.kind === 'interior' && !Number.isInteger(p.level) && lineageOf(s, p.id).includes(id));
+    inject(g, [...(s.places[id].rooms ? [] : [{ t: 'place.updated', d: { id, set: { rooms: true } } }]),
+        ...rooms.map((p) => ({ t: 'place.updated', d: { id: p.id, set: { level: 1 } } }))]);
+}
+const lineageOf = (s, id) => { const out = []; for (let c = id, i = 0; c && s.places[c] && i < 16; c = s.places[c].parent, i++) out.push(c); return out; };
 
 // ------------------------------------------------------------------------------------------------ the abandoned watchtower
 test('patch 7 (23): the abandoned watchtower: in, a locked armory, its blade taken, down a crumbling stair, a hidden plate, three rats, a hidden side chamber, a crawlway back, out, and back again later; every room, way and change holds', async () => {
@@ -363,6 +377,8 @@ test('patch 7 (3, 21): two ruins, a guard room in each: two rooms; the other rui
     await g.reply('Out, along the road, to a ruined keep.', { expected: { 1: { arrived: true, at: { new: { name: 'Ruined keep', kind: 'site', parent: REALM } }, with: null } }, deltas: [way(room('Gatehouse'), { name: 'gate arch' })] });
     s = g.state();
     const keep = s.scene.at;
+    legacyRooms(g, keep);
+    s = g.state();
     assert.notEqual(keep, tower);
     await walk(g, idOf(s, 'Gatehouse'), { text: '*I go into the gatehouse*', prose: 'The gatehouse; a guard room beside it.', deltas: [way(room('Guard room'), { name: 'low door' })] });
     s = g.state();
@@ -954,10 +970,18 @@ async function warrens() {
     const g = await campaign();
     // Patch 8: the Warrens' gate lets only registered Guild members in (lore.json living.gate.requires): he is one
     rec(g.chat.findLast((m) => m.extra?.avereth?.events)).events.push({ t: 'guild.registered', d: { rank: 'Novice', branch: 'loc.ashbridge', power_rank: 'F' } });
-    await walk(g, 'loc.mossback_warrens', { text: '*I go to the Mossback Warrens*', prose: 'The moss-grown hill; a tunnel mouth.', deltas: [way(room('Upper tunnels'), { name: 'tunnel mouth' })] });
-    const upper = idOf(g.state(), 'Upper tunnels');
-    await walk(g, upper, { text: '*I go into the tunnels*', prose: 'The upper tunnels; a ramp goes down to the burrows.', deltas: [way(room('Lower burrows'), { name: 'ramp down', dir: 'down' })] });
-    return { g, upper, lower: idOf(g.state(), 'Lower burrows') };
+    hero(g);
+    await walk(g, 'loc.mossback_warrens', { text: '*I go to the Mossback Warrens*', prose: 'The moss-grown hill; a tunnel mouth.' });
+    // .190 (B5): the Warrens' parts are the engine's sections; the way down is at the end of level 1's track
+    await delve(g, 'Upper tunnels', { root: WARRENS });
+    await fightAll(g);
+    const upper = g.state().scene.at;
+    for (let i = 2; sectionExits(g.state()).some((x) => x.startsWith('on:')) && i < 8; i++) { await delve(g, `Tunnel ${i}`, { root: WARRENS }); await fightAll(g); }
+    await delve(g, 'Lower burrows', { root: WARRENS, text: '*I go down the ramp*' });
+    await fightAll(g);
+    const lower = g.state().scene.at;
+    await walk(g, upper, { text: '*I go back up to the upper tunnels*', prose: 'The upper tunnels.' });
+    return { g, upper, lower };
 }
 
 test('patch 7 final 1, 2, 4: a new goblin of the Warrens\' F-Rank level gets a level of the F band, one of its E-Rank level one of the E band; locked once, the same when he comes back', async () => {

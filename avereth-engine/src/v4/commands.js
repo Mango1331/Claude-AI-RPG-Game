@@ -33,6 +33,7 @@ import { continueOptions, setIntentEvents, endIntentEvents, activeIntents, goSet
 import { knownByName } from './known.js';
 import { resolvePlaceRef } from './place_book.js';
 import { stepFields, GATE_WORDS } from './movement.js';
+import { sectionStep, positionOf, ENTER, sectionsOf, afterPreview } from './sections.js';
 import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf, restoreEffect, namedSource, equipmentSlotKnown, offerCard } from './items.js';
 import { itemEffectOf, rulesetOf } from '../content.js';
 import { learningActivity, stoneActivation } from './growth.js';
@@ -474,7 +475,7 @@ function dungeonGo(s, c) {
  * passes going from its gate (or from outside) into its parts, and the engine's encounter ahead of a GO into a part he
  * has not seen. Returns {refuse} when the gate turns him back (or asks its fee first), else null.
  */
-function livingGo(s, content, c, ctx, emit, { known, nav, envx }) {
+function livingGo(s, content, c, ctx, emit, { known, nav, envx, section = null }) {
     const here = trueDungeonOf(s, s.scene.at);
     const dest = known ? trueDungeonOf(s, c.to) : here;
     if (!dest) return null;
@@ -502,12 +503,19 @@ function livingGo(s, content, c, ctx, emit, { known, nav, envx }) {
     // the engine's encounter ahead: a GO into a part he has not stood in (from the gate or inside): one nobody showed
     // yet, or one he has only seen (the stair down he knows of)
     const fresh = known && c.to !== dest && !s.places[c.to]?.visited && trueDungeonOf(s, c.to) === dest;
-    const into = (s.scene.at === dest || insideOf(s, dest)) && (!known || !!nav?.explore || fresh);
+    // .190 (B5): on along the track into a section he knows (a new cycle's encounter is met where it always is)
+    const to = known ? positionOf(s, c.to) : null;
+    const from = positionOf(s, s.scene.at);
+    const forward = !!(to && from && to.root === dest && (to.level > from.level || (to.level === from.level && to.k > from.k)));
+    const into = (s.scene.at === dest || insideOf(s, dest)) && (!known || !!nav?.explore || fresh || forward);
     // PULSE package B: a turn holds one encounter reference; a wandering minion reserved earlier in it keeps it (in the
     // normal flow unreachable: the danger that reserves it cut the pause short and stops this GO first)
     const reserved = into && aheadReserved(s, ctx, dest);
     if (reserved && ctx.pulse) ctx.pulse.invariant = 'second encounter reference refused';
-    const a = into && !reserved ? aheadEvents(s, content, { into: true, root: dest, floor: fresh ? floorAt(s, c.to) : null }) : null;
+    // an older save's level of story-made rooms keeps placing the next waiting encounter in the next new part
+    const pure = (level) => !sectionsOf(s, dest, level).some((id) => !Number.isInteger(s.places[id].section));
+    const at = section && pure(section.level) ? { level: section.level, k: section.k } : forward && pure(to.level) ? to : null;
+    const a = into && !reserved ? aheadEvents(s, content, { into: true, root: dest, floor: at ? at.level : section ? section.level : fresh || forward ? floorAt(s, c.to) : null, section: at ? at.k : null }) : null;
     if (a) {
         a.events.forEach(emit);
         ctx.extra.push(...a.lines);
@@ -631,8 +639,27 @@ const HANDLERS = {
         }
         // Patch 8: at a Dungeon's gate, going "in" (the Dungeon he stands at) is the step past the gate into its first part
         if (envx?.c && typeof c.to === 'string' && c.to === s.scene.at && s.places[c.to]?.dungeon?.real) c = { ...c, to: { new: `the way into ${placeName(s, c.to)}` } };
+        // .190 (B5, src/v4/sections.js): in a Living Dungeon a part he has not seen is the engine's next section of the
+        // level's track (previewed now, made only by the confirmed arrival); a part he knows by his words for it first
+        let section = null;
+        // at its gate only going in is a step into it (the keeper's watch-house by the gate is the gate)
+        if (envx?.c && rulesetOf(s) >= 2 && typeof c.to?.new === 'string' && livingOf(s, trueDungeonOf(s, s.scene.at))
+            && (s.scene.at !== trueDungeonOf(s, s.scene.at) || ENTER.test(normText(`${c.to.new} ${c.quote || ''}`)))) {
+            const named = dungeonGo(s, c);
+            if (named.refuse) return named.refuse;
+            if (!named.to) {
+                // a second step of this message goes on from the part the step before it previews (nothing is booked
+                // before the story: the preview only names which part comes next)
+                const prior = ctx.auth.gos.map((g) => g.section).filter(Boolean).at(-1);
+                const st = sectionStep(prior ? afterPreview(s, prior) : s, c.to.new);
+                if (st?.refuse) return { status: 'refused', reason: st.refuse, line: `CANNOT GO — ${st.refuse}. He stays where he is.` };
+                if (st?.to && st.to !== s.scene.at) c = { ...c, to: st.to };
+                else if (st?.to) return { status: 'refused', reason: 'already here', done: true, line: `NOTHING TO DO — he is already at ${placeName(s, st.to)}.` };
+                else if (st?.preview) section = st.preview;
+            }
+        }
         // Patch 7: in a dungeon he goes by the ways he knows (src/v4/dungeon.js)
-        const nav = envx?.c ? dungeonGo(s, c) : {};
+        const nav = envx?.c && !section ? dungeonGo(s, c) : {};
         if (nav.refuse) return nav.refuse;
         if (nav.to) c = { ...c, to: nav.to };
         // a room he knows of, no way to it: he goes on to find one (reached only by a way the story shows him)
@@ -654,7 +681,7 @@ const HANDLERS = {
         if (known && c.to === s.scene.at) return { status: 'refused', reason: 'already here', done: true, line: `NOTHING TO DO — he is already at ${placeName(s, c.to)}.` };
         if (c.within != null && (!envx?.c || rulesetOf(s) < 2 || known || !s.places[c.within]?.population || !lineage(s, s.scene.at).includes(c.within)))
             return { status: 'refused', reason: 'invalid local habitat scope', line: 'CANNOT GO — local exploration needs the current habitat; choose a normal destination to leave it.' };
-        const name = known ? placeName(s, c.to) : String(c.to?.new || 'somewhere');
+        const name = known ? placeName(s, c.to) : section ? section.name : String(c.to?.new || 'somewhere');
         const t = content.rules.time;
         const inside = known && !!dungeonOf(s, s.scene.at) && dungeonOf(s, s.scene.at) === dungeonOf(s, c.to);
         const cap = !known ? t.unknown_place_cap_min : inside || sameSettlement(s, c.to, s.scene.at) ? t.default_cap_min : t.travel_cap_min;
@@ -668,12 +695,13 @@ const HANDLERS = {
         // Patch 8 (src/v4/living.js): a true Dungeon is established at its first contact; passing its gate is checked
         // (who may enter, its fee only with his consent, how many are inside); and going on into a part he has not seen,
         // the engine places what that part holds before the story tells it
-        const lived = envx?.c ? livingGo(s, content, c, ctx, emit, { known, nav, envx }) : null;
+        const lived = envx?.c ? livingGo(s, content, c, ctx, emit, { known, nav, envx, section }) : null;
         if (lived?.refuse) return lived.refuse;
         // .190 (A2): the step as decided once: its kind, the Dungeon it goes into, the scope of a new place of it; a
         // step whose words name a Dungeon's way in ends at its gate
         if (envx?.c && rulesetOf(s) >= 2) {
             if (known && s.places[c.to]?.dungeon?.real && GATE_WORDS.test(`${wordsFor} ${c.quote || ''}`)) go.way_in = true;
+            if (section) go.section = section;
             Object.assign(go, stepFields(s, go));
         }
         ctx.auth.go = go;
@@ -725,6 +753,7 @@ const HANDLERS = {
         if (there.length) ctx.extra.push(`KNOWN AT ${name} (met there before; when the story shows the people of that place, they are these, not new ones; whoever works there is at work unless the story establishes otherwise): ${there.map((p) => `${p.label} (${p.id})`).join(' · ')}`);
         // Patch 8 (pacing): a way he chose is carried to its end, never stopped for what changes nothing
         const pace = envx?.c ? ' Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop.' : '';
+        if (section) return { status: 'authorized', line: `GOES — on into ${section.down ? `level ${section.level} of ${placeName(s, section.root)}, down the way at the end of level ${section.level - 1}` : `part ${section.k} of level ${section.level} of ${placeName(s, section.root)}`} (the engine's next part: the story names and shapes it; it tells no other room, passage, stair or level).${pace}` };
         if (sought) return { status: 'authorized', line: `GOES — on to find a way to ${sought}: he knows of it, not of a way there; he gets there only by a way the story shows him find (a stair, a door, a passage), never straight.${pace}` };
         return { status: 'authorized', line: `GOES — to ${name} (the story decides whether and where he arrives).${pace}` };
     },

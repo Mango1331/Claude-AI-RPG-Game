@@ -151,6 +151,12 @@ function floorRun(floor, n, cycle, key, root) {
     return { parts: 0, pace, slots, cleared: null };
 }
 
+/** .190 (B5): a level's quiet parts before each encounter, fixed for the Dungeon (its first cycle's draw), or null. */
+export function trackPace(x, n) {
+    const f = x?.floors?.[n];
+    return f ? floorRun(f, Number(n), 1, x.seed, x.id).pace : null;
+}
+
 /**
  * The events that establish a true Dungeon once, at its first relevant contact (he is at it or in it, or sets off for
  * it). Its own content entry (lore.json dungeons[].living) where there is one, else drawn from its classification
@@ -270,13 +276,21 @@ export const companiesHere = (s, root, floor) => (s.dungeons?.[root] ? companies
 /** How the story names a slot's encounter (DUNGEON AHEAD, PULSE). */
 export const slotSay = (sl) => `${sl.count > 1 ? `${sl.count} ${sl.species}${/s$/.test(sl.species) ? '' : 's'}` : sl.name ? `${titled(sl.name)} (${sl.species})` : `a ${sl.species}`}`;
 
-/** The next slot of a level the engine places ahead of him: its encounter, or a quiet part first (its pace). */
-export function nextSlot(s, d, floor) {
+/**
+ * The next slot of a level the engine places ahead of him: its encounter, or a quiet part first (its pace). .190 (B5):
+ * going into section k of the track, the encounter is the one whose section k is (the same section every cycle)
+ */
+export function nextSlot(s, d, floor, section = null) {
     const run = d.run.floors[floor];
     if (!run) return null;
     const w = nextWaiting(s, run);
     if (!w) return null;
     const { sl, waiting } = w;
+    if (Number.isInteger(section)) {
+        const pace = trackPace(d, floor);
+        const at = pace.slice(0, waiting + 1).reduce((n, q) => n + q + 1, 0);
+        return section >= at ? sl : { quiet: true, slot: sl };
+    }
     // the quiet parts before it (pace): the k-th new part of the level holds it (what others dealt with takes no part)
     const due = run.pace.slice(0, waiting + 1).reduce((n, q, j) => n + (run.slots[j].taken ? 0 : q + 1), 0);
     return run.parts + 1 >= due ? sl : { quiet: true, slot: sl };
@@ -343,7 +357,7 @@ export function slotEntityEvents(s, content, hit, ids, at) {
  * encounter, a quiet part, or nothing left), stored (dungeon.ahead) and told. Back through rooms he knows holds nothing new.
  * @returns {{events: object[], lines: string[]}|null}
  */
-export function aheadEvents(s, content, { into = false, root: dest = null, floor: to = null } = {}) {
+export function aheadEvents(s, content, { into = false, root: dest = null, floor: to = null, section = null } = {}) {
     const root = dest || trueDungeonOf(s, s.scene.at);
     const x = livingOf(s, root);
     if (!x || !into) return null;
@@ -351,7 +365,7 @@ export function aheadEvents(s, content, { into = false, root: dest = null, floor
     const floor = Math.max(1, to || here);
     const lines = [];
     const say = slotSay;
-    const n = nextSlot(s, x, floor);
+    const n = nextSlot(s, x, floor, section);
     let ahead = null;
     if (n && !n.quiet) {
         ahead = { turn: s.turn, cycle: x.cycle, floor, slot: n.id, ref: n.ref };
@@ -364,7 +378,7 @@ export function aheadEvents(s, content, { into = false, root: dest = null, floor
         lines.push(`DUNGEON AHEAD (the engine's) — level ${floor} holds nothing more that stands against him this cycle${x.run.floors[floor].cleared ? ' (cleared)' : ''}; what he finds there is quiet. Invent no new guardian or boss.`);
     }
     // the way down: its next level's first encounter, when the way to it is open
-    const below = x.run.floors[floor + 1];
+    const below = Number.isInteger(section) ? null : x.run.floors[floor + 1];
     const open = below && (!x.floors[floor]?.sealed || x.run.floors[floor]?.cleared);
     if (below && open) {
         const m = nextSlot(s, x, floor + 1);

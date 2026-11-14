@@ -21,6 +21,7 @@ import { spoiled, profileOf, sourceText, gearText, gearMarketText } from './item
 import { continueOptions, goalLines } from './intents.js';
 import { featuresAt, featureText } from './features.js';
 import { dungeonOf, trueDungeonOf, roomKnown, exitsFrom, exitText, dungeonText, nearDungeons } from './dungeon.js';
+import { sectionExits } from './sections.js';
 import { catalogLines as livingLines } from './living.js';
 import { currentThreads } from '../threads.js';
 import { rulesetOf } from '../content.js';
@@ -358,7 +359,8 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         // Patch 6: the obstacles and hazards of this place; hidden ones only for the extractor (it names them by id)
         features: featuresAt(state, at, { hidden: hiddenFeatures }).map((f) => ({ id: f.id, name: f.name, text: `${featureText(f)}${f.hidden ? ' — HIDDEN: Alaric has not found it' : ''}` })),
         // Patch 7: the ways from here (src/v4/dungeon.js); hidden ones only for the extractor
-        exits: exitsFrom(state, at, { hidden: hiddenFeatures }).map((e) => ({ id: e.link.id, to: e.to, text: exitText(state, e) })),
+        exits: [...exitsFrom(state, at, { hidden: hiddenFeatures }).map((e) => ({ id: e.link.id, to: e.to, text: exitText(state, e) })),
+            ...sectionExits(state, at).map((text) => ({ id: null, to: null, text }))],
         // Patch 8: the level of a Living Dungeon he is on; the extractor also the encounter the engine placed (src/v4/living.js)
         dungeon: c ? livingLines(state, { extractor: hiddenFeatures }) : [],
         open: openDecisionTexts(state),

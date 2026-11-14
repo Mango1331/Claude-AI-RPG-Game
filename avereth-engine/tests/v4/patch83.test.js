@@ -105,13 +105,13 @@ test('8.3 floor 2 (Old Crown, played): gate → stair down → level 1 with leve
     const span = s.dungeons[CATA].floors[1].spans.minion;
     for (const id of foes) assert.ok(s.entities[id].profile.level >= span[0] && s.entities[id].profile.level <= span[1], 'a foe of level 1\'s window');
     await fightAll(g);
-    // the stair down from level 1 before level 1 is cleared: level 2, sealed
+    // .190 (B5, D1c): the way down is at the end of level 1, not here; a stair the story tells is no way
     await say(g, '*I take the stair down*', GO({ new: 'the stair down' }, 'I take the stair down'));
+    assert.match(linesOf(g), /there is no way down here: the way down to level 2 of Old Crown Catacombs is at the end of level 1/);
     await g.reply('He goes down the stair into the deep ossuary.', { expected: { 1: { arrived: true, at: newRoom('Deep ossuary'), with: null } }, deltas: [way(newRoom('Deep ossuary'), { dir: 'down', name: 'stair down' })] });
     s = g.state();
-    assert.equal(s.scene.at, upper, 'the seal holds');
-    const deep = Object.values(s.places).find((p) => p.name === 'Deep ossuary');
-    assert.equal(deep.level, 2);
+    assert.equal(s.scene.at, upper, 'he stays');
+    assert.ok(!Object.values(s.places).some((p) => p.name === 'Deep ossuary'), 'no room the story made');
     // level 1 cleared by him
     await clearLevel(g, 1);
     const x = living(g);
@@ -127,13 +127,18 @@ test('8.3 floor 2 (Old Crown, played): gate → stair down → level 1 with leve
     assert.equal(s.scene.at, upper);
     assert.equal(s.places[upper].level, 1);
     assert.ok(at1);
-    // the stair to level 2 is open now
-    await say(g, '*I take the stair down to the deep ossuary*', GO(deep.id, 'I take the stair down to the deep ossuary'));
+    // the way down is open now, at the end of level 1 where he cleared it: back there along the parts he knows, then down
+    await say(g, '*I walk back to the warden\'s hall*', GO(at1, 'I walk back to the warden\'s hall'));
+    await g.reply('He walks back through the galleries.', { expected: { 1: { arrived: true, at: at1, with: null } }, deltas: [] });
+    assert.equal(g.state().scene.at, at1);
+    await say(g, '*I take the stair down to the deep ossuary*', GO({ new: 'the stair down to the deep ossuary' }, 'I take the stair down to the deep ossuary'));
     assert.equal(ahead(g).floor, 2);
-    await g.reply('He goes down into the deep ossuary.', { expected: { 1: { arrived: true, at: deep.id, with: null } }, deltas: [] });
+    await g.reply('He goes down into the deep ossuary.', { expected: { 1: { arrived: true, at: newRoom('Deep ossuary'), with: null } }, deltas: [] });
     s = g.state();
-    assert.equal(s.scene.at, deep.id);
-    assert.equal(floorAt(s, deep.id), 2);
+    const deep = s.scene.at;
+    assert.equal(deep, `${CATA}.l2_s1`);
+    assert.equal(s.places[deep].name, 'Deep ossuary');
+    assert.equal(floorAt(s, deep), 2);
 });
 
 test('8.3 floor 3 (Glimmerdeep, a part beside its gate): a way from the gate without a stair reaches level 1, and so does a way up; the encounter there is level 1\'s', async () => {

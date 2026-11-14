@@ -1,6 +1,7 @@
 // Patch 8 (Living Dungeons, docs/PATCH8_LIVING_DUNGEONS.md): the ten end-to-end scenarios of the order, played through
 // the product's host path (planner on, scripted planner and extractor answers; src/v4/living.js does the rest).
 import test from 'node:test';
+import { sectionStep, trackOf } from '../../src/v4/sections.js';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -70,14 +71,18 @@ test('patch 8 (1): Old Crown Catacombs from gate to boss: level 1 by its encount
     assert.equal(s.entities[s.dungeons[CATA].run.floors[1].slots.at(-1).entities[0]].profile.type, 'elite', 'the guardian is an elite');
     // the level shows cleared, and the narrator shows it in the world
     assert.match(rows(g).Levels, /level 1 \(F\): CLEARED this cycle \(by him\)/);
-    // the way down: shown, then taken; level 2 by the seal that broke
+    // the way down: .190 (B5, D1c) the engine's, at the end of level 1's track, open now the seal broke; a stair the
+    // story tells is none
     await say(g, '*I look around*');
-    await g.reply('Behind the warden\'s alcove a stair goes down.', { expected: {}, deltas: [way(room('Lower Ossuary'), { name: 'stair down', dir: 'down' })] });
-    const lower = Object.values(g.state().places).find((p) => p.name === 'Lower Ossuary').id;
-    await say(g, '*I go down the stair*', GO(lower, 'I go down the stair'));
+    const told = await g.reply('Behind the warden\'s alcove a stair goes down.', { expected: {}, deltas: [way(room('Lower Ossuary'), { name: 'stair down', dir: 'down' })] });
+    assert.ok(told.record.events.some((e) => e.t === 'delta.rejected' && e.d.rule === 'dungeon_way'));
+    await say(g, '*I go down the stair*', GO({ new: 'down the stair' }, 'I go down the stair'));
+    assert.match(linesOf(g), /GOES — on into level 2 of Old Crown Catacombs, down the way at the end of level 1/);
     const a = ahead(g);
     assert.equal(a.floor, 2);
-    await g.reply('A ghoul turns in the ossuary.', { expected: { 1: { arrived: true, at: lower, with: null } }, deltas: [slotDelta(a.slot)] });
+    await g.reply('A ghoul turns in the ossuary.', { expected: { 1: { arrived: true, at: room('Lower Ossuary'), with: null } }, deltas: [slotDelta(a.slot)] });
+    const lower = Object.values(g.state().places).find((p) => p.name === 'Lower Ossuary').id;
+    assert.equal(lower, `${CATA}.l2_s1`, 'the engine\'s first section of level 2, named by the story');
     assert.equal(g.state().scene.at, lower);
     assert.equal(g.state().places[lower].level, 2);
     await fightAll(g);
@@ -319,6 +324,11 @@ test('patch 8 (8): a swipe of a reply that meets the engine\'s encounter, and th
     await walk(g, CATA, { text: '*I go to the Old Crown Catacombs*', prose: 'The chapel.' });
     days(g, 1);
     await say(g, '*I go in*', GO({ new: 'the first gallery' }, 'I go in'));
+    // .190 (B5, R-B10): an encounter a company took leaves its section quiet; he goes on until the engine places one
+    for (let i = 1; !ahead(g)?.slot && i < 5; i++) {
+        await g.reply('A quiet part.', { expected: { 1: { arrived: true, at: { new: { name: `Quiet part ${i}`, kind: 'interior', parent: CATA } }, with: null } }, deltas: [] });
+        await say(g, '*I go on*', GO({ new: 'on' }, 'I go on'));
+    }
     const a = ahead(g);
     const answer = { expected: { 1: { arrived: true, at: { new: { name: 'First gallery', kind: 'interior', parent: CATA } }, with: null } }, deltas: [slotDelta(a.slot)] };
     const one = await g.reply('He goes in; bones stir.', answer);
@@ -484,44 +494,33 @@ test('patch 8 (companies): a company inside on his level is one set of people: i
     assert.equal(Object.values(g.state().entities).filter((e) => e.party === p.id).length, 1, 'never a second leader');
 });
 
-test('patch 8 (13B, one reply): a stair down and the arrival below it in the same answer: the new room lies on the next level, and a sealed stair holds; the engine\'s encounter is there even where the story leaves it out', async () => {
+test('patch 8 (13B) .190 B5: the way down is the engine\'s, at the end of level 1 and behind its seal; a stair the story tells is none; the first part below lies on level 2', async () => {
     const g = await campaign(content);
     hero(g);
     await walk(g, CATA, { text: '*I go to the Old Crown Catacombs*', prose: 'The chapel.' });
     await delve(g, 'Upper gallery');
     await fightAll(g);
     const upper = g.state().scene.at;
-    // sealed: level 1 is not cleared
+    assert.equal(upper, `${CATA}.l1_s1`);
+    // not at the end of level 1: no way down here (D1c)
     await say(g, '*I take the stair down*', GO({ new: 'the stair down' }, 'I take the stair down'));
-    const down = { expected: { 1: { arrived: true, at: { new: { name: 'Deep ossuary', kind: 'interior', parent: CATA } }, with: null } }, deltas: [way({ new: { name: 'Deep ossuary', kind: 'interior', parent: CATA } }, { dir: 'down', name: 'stair down' })] };
-    const r = await g.reply('He goes down the stair into the deep ossuary.', down);
-    assert.equal(g.state().scene.at, upper, 'the seal holds');
-    assert.ok(r.record.events.some((e) => e.t === 'delta.rejected' && /sealed until the guardian of level 1 falls/.test(e.d.reason)));
-    // the refused answer still showed the stair (the way is known now, on level 2); with level 1 cleared it is open
-    const deep = Object.values(g.state().places).find((p) => p.name === 'Deep ossuary');
-    assert.equal(deep.level, 2);
-    assert.ok(!deep.visited, 'not entered');
-    inject(g, [{ t: 'dungeon.cleared', d: { id: CATA, cycle: living(g).cycle, floor: 1, credit: 'pc', pc: 3, others: 0, total: 3, turn: g.state().turn, minute: g.state().clock.minute } }]);
-    await say(g, '*I take the stair down*', GO({ new: 'the stair down' }, 'I take the stair down'));
-    assert.equal(ahead(g).floor, 2, 'the engine places level 2\'s first encounter ahead');
-    await g.reply('He goes down the stair into the deep ossuary.', { expected: { 1: { arrived: true, at: deep.id, with: null } }, deltas: [] });
-    const s = g.state();
-    assert.equal(s.scene.at, deep.id);
-    assert.equal(s.places[s.scene.at].level, 2);
-    // a new room shown below in the same answer as the arrival lies on the next level too (13B in one reply)
-    const fresh = await campaign(content);
-    hero(fresh);
-    await walk(fresh, CATA, { text: '*I go*', prose: 'The chapel.' });
-    await delve(fresh, 'Upper gallery');
-    await fightAll(fresh);
-    inject(fresh, [{ t: 'dungeon.cleared', d: { id: CATA, cycle: living(fresh).cycle, floor: 1, credit: 'pc', pc: 3, others: 0, total: 3, turn: fresh.state().turn, minute: fresh.state().clock.minute } }]);
-    await say(fresh, '*I take the stair down*', GO({ new: 'the stair down' }, 'I take the stair down'));
-    await fresh.reply('He goes down the stair into the lower ossuary.', { expected: { 1: { arrived: true, at: { new: { name: 'Lower ossuary', kind: 'interior', parent: CATA } }, with: null } }, deltas: [way({ new: { name: 'Lower ossuary', kind: 'interior', parent: CATA } }, { dir: 'down', name: 'stair down' })] });
-    assert.equal(fresh.state().places[fresh.state().scene.at].name, 'Lower ossuary');
-    assert.equal(fresh.state().places[fresh.state().scene.at].level, 2);
-    // the story left the engine's encounter out: it is there all the same, and the next reply is told
-    const placed = s.dungeons[CATA].run.floors[2].slots[0];
-    assert.equal(placed.at, s.scene.at);
-    assert.ok(placed.entities.every((id) => s.scene.present.includes(id)));
-    assert.ok(rec(g.chat.at(-1)).corrections.some((c) => /ENGINE ENCOUNTER/.test(c)));
+    assert.match(linesOf(g), /there is no way down here: the way down to level 2 of Old Crown Catacombs is at the end of level 1/);
+    // a stair and a room below the story tells are none: refused, nothing made
+    const r = await g.reply('He finds a stair down into a deep ossuary.', { expected: {}, deltas: [way({ new: { name: 'Deep ossuary', kind: 'interior', parent: CATA } }, { dir: 'down', name: 'stair down' })] });
+    assert.ok(r.record.events.some((e) => e.t === 'delta.rejected' && e.d.rule === 'dungeon_way'));
+    assert.ok(!Object.values(g.state().places).some((p) => p.name === 'Deep ossuary'));
+    // the end of the track, its guardian standing: sealed
+    const track = trackOf(living(g), 1);
+    const end = structuredClone(g.state());
+    for (let k = 2; k <= track.length; k++) end.places[`${CATA}.l1_s${k}`] = { id: `${CATA}.l1_s${k}`, name: `Part ${k}`, kind: 'interior', parent: CATA, level: 1, section: k, visited: { turn: end.turn, minute: 0 }, tags: [] };
+    end.scene.at = `${CATA}.l1_s${track.length}`;
+    assert.match(sectionStep(end, 'down').refuse, /sealed until the guardian of level 1 falls/);
+    // open once the guardian fell: the engine's first part of level 2, made only by the arrival
+    end.dungeons[CATA].run.floors[1].cleared = { turn: end.turn, minute: 0, credit: 'pc' };
+    const below = sectionStep(end, 'down').preview;
+    assert.deepEqual([below.id, below.level, below.k, below.down], [`${CATA}.l2_s1`, 2, 1, true]);
+    assert.ok(!end.places[below.id], 'previewed, not made');
+    // a Dungeon of one level has nothing below its last part
+    end.dungeons[CATA] = { ...end.dungeons[CATA], floors: { 1: end.dungeons[CATA].floors[1] } };
+    assert.equal(sectionStep(end, 'down').refuse, 'Old Crown Catacombs has no level below level 1');
 });

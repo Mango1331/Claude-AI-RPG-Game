@@ -103,8 +103,12 @@ test('.187 P2 #121 (original): the authorized GO to a new watch-house under the 
     await h.reply(fx.chat[118].mes, { expected: { 1: { arrived: true, at: 'loc.mossback_warrens', with: null } }, deltas: [{ ...refusedOf(118).find((d) => d.type === 'arrive'), seq: 1 }] });
     await say(h, 'I follow the keeper\'s direction to the watch-house.', { type: 'go', to: { new: 'the watch-house' }, within: null, quote: 'I follow the keeper\'s direction to the watch-house' });
     const room = { new: { name: 'watch-house by the gate', kind: 'interior', parent: 'loc.mossback_warrens' } };
-    await h.reply('He goes into the watch-house by the gate.', { expected: { 1: { arrived: true, at: room, with: null } }, deltas: [{ seq: 1, type: 'arrive', at: room, forced_by: null, with: null }] });
-    assert.equal(h.state().places[h.state().scene.at]?.parent, 'loc.mossback_warrens');
+    const there = await h.reply('He goes into the watch-house by the gate.', { expected: { 1: { arrived: true, at: room, with: null } }, deltas: [{ seq: 1, type: 'arrive', at: room, forced_by: null, with: null }] });
+    // .190 (B5): a Living Dungeon's interiors are its engine sections, reached by going in; the keeper's watch-house
+    // by the gate is the gate he stands at – no room of the Dungeon is made for it
+    assert.equal(h.state().scene.at, 'loc.mossback_warrens');
+    assert.ok(!Object.values(h.state().places).some((p) => p.name === 'watch-house by the gate'));
+    assert.ok((there.record.system || []).some((x) => /AT THE GATE — watch-house by the gate is at the gate of Mossback Warrens/.test(x)));
 });
 
 // ------------------------------------------------------------------------------------- .187 follow-up (review 14.11.)

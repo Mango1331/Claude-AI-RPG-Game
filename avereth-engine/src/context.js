@@ -20,6 +20,7 @@ import { threadCurrent } from './threads.js';
 import { goalLines } from './v4/intents.js';
 import { featuresAt, featureText } from './v4/features.js';
 import { dungeonOf, trueDungeonOf, dungeonText, nearDungeons, exitsFrom, exitText, roomLabel, wayBetween } from './v4/dungeon.js';
+import { sectionExits } from './v4/sections.js';
 import { contextLines as livingLines, guardianAccessLines, floorAt as livingFloorAt } from './v4/living.js';
 import { settlementOf, realmOf, hallOf, listedToday, lineage } from './v4/domain.js';
 import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
@@ -812,7 +813,8 @@ export function buildContext(state, content, opts = {}) {
     const dun = v4 ? dungeonOf(state, state.scene.at) : null;
     if (dun) {
         const ways = exitsFrom(state, state.scene.at, { hidden: true });
-        const seen = ways.filter((e) => !e.hidden).map((e) => exitText(state, e, { ids: false }));
+        // .190 (B5): and in a Living Dungeon the engine's way on, down or the end of the level (src/v4/sections.js)
+        const seen = [...ways.filter((e) => !e.hidden).map((e) => exitText(state, e, { ids: false })), ...sectionExits(state, state.scene.at)];
         const hid = ways.filter((e) => e.hidden).map((e) => exitText(state, e, { ids: false }));
         const out = state.scene.at !== dun ? wayBetween(state, state.scene.at, dun) : null;
         const real = trueDungeonOf(state, state.scene.at);

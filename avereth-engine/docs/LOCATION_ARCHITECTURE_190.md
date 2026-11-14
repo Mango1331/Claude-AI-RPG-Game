@@ -209,3 +209,97 @@ identical (checked), and no reply record changes. They are accepted as `location
 
 **Lines:** `src` + `tools` +76 / −63. The new module is 120 lines; `scopedPlaces`, `elsewhere` and the pre-check are
 removed.
+
+## Stage 3 – Living Dungeons as linear sections (B5, D1a–D1d) and buildings without room graphs (D1b)
+
+**Sections** (`src/v4/sections.js`). A true Living Dungeon is a fixed, finite, linear run of engine sections per
+level.
+
+| | |
+|---|---|
+| id | `root.lN_sK`, the same on every visit, swipe and reload |
+| place | `places[id]` with `{kind: 'interior', parent: root, level: N, section: K, by: 'dungeon'}` |
+| way | a link from the part before it (`by: 'dungeon'`, `dir: 'down'` for the first part of a deeper level) |
+
+- **Track:** a level has as many sections as its encounters and their quiet parts, using the pace of its first cycle,
+  which is fixed for the Dungeon (`trackPace`).
+- **Encounters:** every cycle's encounter is met in the same section; `nextSlot` works by section position.
+- **D1c:** the way down is at the level's last section, behind the seal where there is one.
+- **D1d:** nothing after the track ("nothing further on level N … no level below").
+- **D1a:** no side chambers, no loops.
+
+**Preview / commit:**
+- The GO handler previews the next section (`go.section`: id, level, k, from, down). The line reads `GOES — on into part
+  K of level N of X (the engine's next part …)`, followed by DUNGEON AHEAD. Nothing is made.
+- Only the confirmed arrival makes it: `place.created` plus its link, named by this report. A name that states another
+  level is replaced by "part K of level N".
+- A later report in other words is that same section; it is never renamed (naming contract on the existing
+  `place.created`; there is no `place.named`).
+- A refused arrival rolls the section and its link back.
+- A second step of the same message goes on from the first one's preview (`afterPreview`; nothing is booked before
+  the story).
+
+**Moves inside a Living Dungeon:**
+
+| move | rule |
+|---|---|
+| on | the next section of the track |
+| back | the part this section was made from |
+| out | the gate |
+| up | from the first part of a deeper level, back up |
+| down | only at the end of the level: before it "there is no way down here: … at the end of level N (part L)", sealed "until the guardian … falls", none in a one-level Dungeon |
+| at the gate | only words of going in start the step; a place told as the Dungeon's while he stays at the gate (the keeper's watch-house) is the gate: `AT THE GATE — …`, nothing made |
+
+The EXITS for planner and narrator add "on: part K+1", "down to level N+1" or "nothing further".
+
+**Refused in a Living Dungeon (`dungeon_way`):**
+- a passage the story tells;
+- a room or level the story tells (an arrival without a preview);
+- a part told of (`place.reported`).
+
+Extractor contract: "report the part he reached as arrive {new} with the name the story gives it, never a passage,
+room or level of it". The passage vocabulary text and planner rule 7c are adjusted.
+
+**Migration (protect existing campaigns, nothing rewritten):**
+- A reply to steps the GO handler decided before .190 (no stored step fields) keeps the Dungeon rules of then. Example:
+  pilot 01 T65; a regenerated reply of an existing campaign is read as it was planned.
+- An older save's story-made rooms of a level stay as they are and are its first sections (in visit order). "On" from
+  any of them leads to the first engine section after them.
+- Where such rooms already fill the track, it extends by one section for every encounter of the cycle not met in one
+  of them. This keeps the level playable to its guardian (natural `.150` Warrior).
+- A level with such rooms keeps placing the next waiting encounter in the next new part. Fixed positions only apply to
+  levels of engine sections; otherwise `.188` Mage #111 would have got a quiet part before the Queen.
+
+**Buildings outside true Dungeons (D1b):**
+- Walking between two rooms or a way the story shows no longer marks a building `rooms: true`.
+- The way is kept with what blocks it: a locked way keeps him out (`wayRefused`: every known way in blocked).
+- A way nobody showed is no refusal.
+- Buildings an older save already marked keep their ways (legacy). The Patch 7 suites play such a building
+  (`legacyRooms` in `patch7.test.js`).
+
+**Acceptance** (`tests/v4/location190_sections.test.js`, 7 tests) and the adapted suites:
+- preview/commit with swipe and fold;
+- `.186` Mage / Glimmerdeep one level: end of track, no way down, story-made cave, stair and reported gallery refused,
+  no level 2;
+- `.188` Mage: the Queen in her section, the last of level 1;
+- Mossback: two levels, the way down at the end of level 1, back up and out;
+- reset and revisit: same sections, encounters in place, the slain stay dead, no rename;
+- other adventurers: a taken encounter leaves its section quiet, the track does not move;
+- D1b: the mill with its locked loft and an open back room;
+- Patch 8 (1) full Catacombs run with the engine's way down after the guardian;
+- Patch 8 (8) swipe/fold;
+- 13B as the B5 way down with the seal;
+- Patch 8.3 floor 2;
+- `fix150` natural return;
+- `.187` P2 #121 watch-house at the gate.
+
+**Replay:** the corpus is unchanged (its one Living Dungeon run consists of pre-.190 steps, read by the legacy path).
+
+**Natural corpus** (`.186`/`.188` focus windows) against stage 2:
+- `.186` Warrior #63 and `.188` Mage #19/#111/#125: the GO lines name the engine's part.
+- `.188` Mage #111's two steps preview parts 3 and 4, with the Queen ahead as in `.189`.
+- `.186` Warrior #63 no longer announces level 2 from part 1.
+
+**Lines:** `src` + `content` +159 / −31, plus `sections.js` (120 lines). This stage adds a mechanic, so it is net
+positive. The room graph of true Living Dungeons (`wayBetween`, `levelVia`, the passage branch) stays only for legacy
+saves and for back/out over the engine's own links.

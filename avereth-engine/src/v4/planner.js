@@ -761,7 +761,7 @@ export function retreatGo(state, c) {
 const travelOf = (story) => story.some((c) => c.type === 'go');
 // .187 follow-up (review 14.11.): a step back that says he stays ("holding my ground", "a few paces", "staying where I
 // am", "not leaving the bend") is no journey, whatever way it names; it stays the story's step
-const STAYS = /\b(?:stay(?:s|ing)?\s+(?:here|put|where|in\s+place|at\s+the|by\s+the|on\s+the)|hold(?:s|ing)?\s+(?:my|his|the)\s+ground|stand(?:s|ing)?\s+(?:my|his)\s+ground|keep(?:s|ing)?\s+(?:my|his)\s+(?:ground|place|post|position)|where\s+(?:i|he)\s+(?:am|is|stand|stands)|without\s+leaving|(?:do|does|did)\s*(?:not|n't)\s+leave|not\s+leaving|(?:a|one|two|three|a\s+few|a\s+couple\s+of|few)\s+(?:paces?|steps?|strides?|yards?))/i;
+const STAYS = /\b(?:stay(?:s|ing)?\s+(?:here|put|where|in\s+place|(?:at|by|on)\s+(?:the|this|that))|hold(?:s|ing)?\s+(?:my|his|the)\s+(?:ground|place|position|post)|stand(?:s|ing)?\s+(?:my|his)\s+ground|keep(?:s|ing)?\s+(?:my|his)\s+(?:ground|place|post|position)|where\s+(?:i|he)\s+(?:am|is|stand|stands)|without\s+leaving|(?:do|does|did)\s*(?:not|n't)\s+leave|not\s+leaving|(?:a|one|two|three|a\s+few|a\s+couple\s+of|few|a\s+single|single|only\s+one|just\s+one)\s+(?:paces?|steps?|strides?|yards?))/i;
 export function mapPlan(commands, ctx, content, message, state) {
     // Patch 3 (live 18.10.2026: "I use the flint and steel to make a small light" became the unknown skill "flint and
     // steel" and the "continue" after it was dropped): a thing he holds, named where a skill would stand, is that thing

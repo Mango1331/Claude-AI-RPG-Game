@@ -127,6 +127,7 @@ test('.187 P1 follow-up: a hunter Alaric hires is a service he buys when his wor
         ['track down and kill the wolf that took your goat', '"Twelve copper for my trouble, and I\'ll have it skinned by dusk."'],
         ['hunt the boar in the beech wood', '"My wages are twelve copper, paid before I go."'],
         ['kill the beast troubling his camp for him', '"Twelve copper and I\'ll kill it for you myself."'],
+        ['kill the rats for the village', '"I am the town pest controller. Pay me twelve copper and I\'ll do it."'],
     ]) {
         const g = await village([LINE(what, 12, said)], `He goes to the well. A hunter is there. ${said}`);
         const o = open(g)[0];
@@ -144,6 +145,8 @@ test('.187 P1 follow-up: a hunter Alaric hires is a service he buys when his wor
     assert.equal(coin(h), hb, 'without his hiring words it is asked, not booked');
     assert.equal(lastUser(h).command?.panels?.[0]?.startsWith('[SYSTEM // CLARIFY]'), true);
     const t = (what, said = null) => paidWorkLine({ kind: 'service', service: 'other', what, said });
+    // the review's probe (§3.3): a pest controller sells his own work, "for the village" names only who benefits
+    assert.equal(t('kill the rats for the village', "Pay me five copper and I'll do it"), 'unclear');
     assert.equal(t("kill the gander on the west road, for the village; the bird's remains stay Alaric's"), 'work', 'Rogue #116 unchanged');
     assert.equal(t('hunt the wolf that takes our sheep', '"I\'ll pay you ten copper for it."'), 'work', 'he is paid: his work');
     assert.equal(t('clear the rats for me', '"We\'ll pay you four copper."'), 'work');

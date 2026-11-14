@@ -115,6 +115,10 @@ test('.187 P2 follow-up: a step back up the track that says he stays is no way b
         'I back up the track a few paces, holding my ground here at the bend',
         'I take two steps back along the path, staying where I am with my sword raised',
         'I keep backing up the dark track but do not leave the bend, eyes on the tallest goblin',
+        // the review's probes (patch_plans_10b/REVIEW_BATCH187_DREI_ETAPPEN_PRODUKTDIFF_GPT.md §3.4)
+        'I back up the road a single step and hold my position',
+        'I back slowly up the road three paces without leaving the clearing',
+        'I back up the path while staying at this ambush spot',
     ]) {
         const r = plan(117, [{ ...M117, quote: q }]);
         assert.ok(!(r.commands || []).some((c) => c.type === 'go'), q);

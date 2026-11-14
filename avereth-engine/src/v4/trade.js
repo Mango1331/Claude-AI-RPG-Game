@@ -216,7 +216,7 @@ const DEED = /^(?:to\s+)?(?:kill(?:ing)?|slay(?:ing)?|hunt(?:ing)?(?:\s+down)?|c
 // buy, so 'unclear' (asked unless his words hire it). "for him/her/them" says no side and no longer decides.
 const ALARIC_PAID = /\b(?:bounty|reward|your wages|coin between neighbou?rs|we(?:'ll| will| would|'d) pay|pay(?:s|ing)? (?:you|alaric)\b)|\balaric(?:'s)?\s+(?:kills?|hunts?|clears?|does|will|gets|keeps)\b|\bstays?\s+alaric's\b/;
 const FOR_SIDE = /\bfor\s+(?:the\s+(?:village|town|hamlet|farm|farmers|folk|people|street|lane|neighbou?rs|parish|mill|weirs?|guild)|us|our\b|me\b|my\b)/;
-const HIRED = /\b(?:for my (?:trouble|fee|time|pains|work|labou?r|services?)|my (?:fee|wages?|price|rate|charge)|hire me|i(?:'ll| will| can| could|'d| would)?\s+(?:\w+\s+){0,2}(?:kill|slay|hunt|track|clear|cull|drive|deal|get rid|put down|take care|destroy)\w*|myself)\b/;
+const HIRED = /\b(?:for my (?:trouble|fee|time|pains|work|labou?r|services?)|my (?:fee|wages?|price|rate|charge)|hire me|pay me\b|i(?:'ll| will)\s+do\s+it|i(?:'ll| will| can| could|'d| would)?\s+(?:\w+\s+){0,2}(?:kill|slay|hunt|track|clear|cull|drive|deal|get rid|put down|take care|destroy)\w*|myself)\b/;
 export function paidWorkLine(line) {
     if (!line || line.kind !== 'service' || (line.service && line.service !== 'other')) return null;
     const what = normText(line.what || '');

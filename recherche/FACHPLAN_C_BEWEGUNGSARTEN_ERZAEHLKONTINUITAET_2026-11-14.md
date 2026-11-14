@@ -2,7 +2,7 @@
 
 **14.11.2026 · Claude · Etappe 3 von 3, mit Gesamtabgleich (§8). Keine Implementierung, keine Designfreigabe.**
 
-**Prüfstand:** `4438241` (`.189`). **Baut auf:**
+**Prüfstand:** `4438241` (`.189`). **Selbstprüfung vom 14.11.:** C4 korrigiert (`move` bleibt Bandschritt auch vor einem Kampf), C1-b korrigiert (neuer Plannertyp nötig, `plan.notes` ist Engine-Ausgabe), N4-Hostweg im Code bestätigt, Gesamtabgleich angepasst (§8). **Baut auf:**
 - [Fachplan A](FACHPLAN_A_ORTSBUCH_BEWEGUNGSPLAN_2026-11-14.md) (Ortsbuch, Bewegungsnachweis) und [Fachplan B](FACHPLAN_B_DUNGEONRAUM_ARCHITEKTUR_2026-11-14.md) (Dungeon B6),
 - [Grundanalyse](ORT_REISE_UMGEBUNG_ARCHITEKTUR_GRUNDANALYSE_2026-11-14.md), [GPT-Gegenreview](ORT_REISE_UMGEBUNG_GPT_GEGENREVIEW_2026-11-14.md) §3.5 und §5,
 - [O1/O2](FACHPLAN_O1_O2_KAUSALITAET_UND_TEILBEWEGUNG.md), [Opus 5.5](ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md) §2.3.
@@ -16,11 +16,11 @@ Nachweisgrade wie in Fachplan A.
 | **C1** Streng explizite Reisen, besserer Plannervertrag und klare Rückmeldung | **empfohlen als Grundlage** |
 | **C2** Bedingte NPC-Begleitung | **nur eng**: eine ausdrückliche Zusage, mitzugehen, sobald die Person aufbricht. Fragen und Vorschläge bleiben Dialog. Optional, geringe Häufigkeit |
 | **C3** Implizite Teilbewegung | **nur Stufe a** (innerhalb derselben Stätte: Raum ↔ Halle, Zimmer); **nicht** zu Händlern, Gesuchtem oder Gegenübern im Ort |
-| **C4** Vereinfachtes Bewegungsmodell | **Teile übernommen**: `move` nur im Kampf, `within` in `go` aufgelöst, Rückweg über die Route statt Wortlisten |
+| **C4** Vereinfachtes Bewegungsmodell | **Teile übernommen**: `move` nur für Bandschritte gegenüber Anwesenden, ein wirkungsloser `move` außerhalb des Kampfes wird eine Plannerreparatur statt einer Wortdeutung; `within` geht in `go` auf; Rückweg über die Route |
 | **C5** Erzählerführung und Rückführung | **empfohlen**: Ortskopf (N1), sichtbarer Spielerhinweis (N2), **neu: Verlaufsmarkierung** (N4). Automatische Neuerzeugung (N3) **nicht** |
 
 **Kernbefund:**
-- **Der Planner ist nicht das Hauptproblem.** Mitgehen funktioniert schon heute in 17 von 27 Nachrichten mit Begleitwörtern über ein normales GO (Regel 7b).
+- **Der Planner ist nicht das Hauptproblem.** Mitgehen funktioniert schon heute in 17 von 27 Nachrichten mit Begleitwörtern über ein normales GO (Regel 7b). Das ist eine Näherung über Begleitwörter, keine Einzelprüfung aller Nachrichten.
 - **Was die Drift trägt:** der Erzähler, der aus Fragen, Suchen und Gesprächen Reisen macht, und der Verlauf, in dem seine falsche Szene stehen bleibt.
 - **Was fehlt:** Ein menschlicher Spieler erfährt heute **gar nicht**, dass eine erzählte Ankunft nicht stattfand. `playerFacingLines` (`host.js:459`) filtert „ENGINE REFUSED …“ aus dem sichtbaren Panel.
 
@@ -33,7 +33,7 @@ Ein klarer zusätzlicher Spielerbefehl („ich gehe mit ihr“) kostet in den Da
 | Element | Stelle | Wirkung |
 |---|---|---|
 | **Regel 1** | `planner.js:56` | Fragen, Wünsche, Pläne, Bedingungen für später, Dialog: keine Handlung |
-| **Regel 7** | `planner.js:62` | außerhalb des Kampfes ist Weggehen `go`, auch wenn er es Rückzug nennt; `move` nur im Kampf; Suche ist `activity search` |
+| **Regel 7** | `planner.js:62` | außerhalb des Kampfes ist Weggehen `go`, auch wenn er es Rückzug nennt; `move` für Schritte „during a fight“; Suche ist `activity search`. **In der Praxis** bucht `mapPlan` `move` auch außerhalb eines aktiven Kampfes als Bandschritt gegenüber anwesenden Kreaturen (`.186` #113: SHORT → MEDIUM vor den Speeren, Test `fix187_way_back`) |
 | **Regel 7a / 7c** | `planner.js:63`, `67` | „back“, „return“ über `RECENT ROUTE`; Dungeonwege über `EXITS` |
 | **Regel 7b / 7b-route** | `planner.js:65–66` | klare Annahme einer angebotenen Führung durch eine anwesende Person ist `go`; eine Wegwahl gegenüber einem Führer ist `go`; eine bloße Einladung oder ein künftiger Plan ist nichts |
 | **`mapPlan`** | `planner.js:770–850` | wirkungsloser `move` außerhalb des Kampfes wird Fiktion; seit `.187`: Rückweg aus Wortlaut (`retreatGo`, `BACK_WAY` 741, `STAYS` 764) |
@@ -109,7 +109,7 @@ Spielernachrichten mit Begleit- oder Folgewörtern („follow“, „lead the wa
 - Fragen, Vorschläge mit Fragezeichen, „whenever …“ und „later“ bleiben **keine** Handlung.
 - Die Regeln kommen mit Beispielen und Gegenbeispielen in die Plannerregeln; abgesichert wird über Regressionen am Planner-Mock und an Originalnachrichten, nicht über Code.
 
-**C1-b Ehrliche Antwortgrenze:** Bucht der Planner kein GO, obwohl die Nachricht eine Bewegung **erwägt**, gibt er das als Hinweisfeld zurück, nicht als Befehl, etwa `notes: [{ kind: 'proposed_travel', place, quote }]`. Der Planner liefert `notes` bereits (`plan.notes`). Der Erzähler erhält dann: „He only asked or proposed to go to … The reply may let them answer and get ready; it ends before anyone sets off. He decides in his next message.“
+**C1-b Ehrliche Antwortgrenze:** Bucht der Planner kein GO, obwohl die Nachricht eine Bewegung **erwägt**, gibt er das als mechanikfreien Eintrag zurück, nicht als Buchung, etwa `{"type": "proposed", "what": "travel", "to": …, "quote": …}`. **Korrektur:** Ein solches Feld gibt es noch nicht. `plan.notes` sind Notizen der Engine aus `mapPlan` (`planner.js:804–902`, „not taken …“), keine Planner-Ausgabe. C1-b braucht also einen **neuen** Plannertyp ohne Wirkung; er ist klein, aber eine Vertragserweiterung. Der Erzähler erhält dann: „He only asked or proposed to go to … The reply may let them answer and get ready; it ends before anyone sets off. He decides in his next message.“
 - Das stützt sich auf das Sprachverständnis des Planners, nicht auf eine Wortliste der Engine.
 
 **C1-c Spielerinformation (N2):** Bei abgelehnter Ankunft erscheint im **sichtbaren** Panel: `NOT ARRIVED — Alaric is still at Dagny's blue-door house; he has not gone to the reeve's hall.`
@@ -178,7 +178,8 @@ Spielernachrichten mit Begleit- oder Folgewörtern („follow“, „lead the wa
 ### C4 – Vereinfachtes Bewegungsmodell
 
 **Inhalt:**
-- **`move` nur noch im Kampf.** Ein `move` außerhalb des Kampfes ist ein Schemafehler mit **einer** Plannerreparatur („outside a fight: go back via RECENT ROUTE, go to a place, or no command“). Damit wird die Entscheidung des LLM verbindlich, statt dass die Engine einen Wortlaut deutet.
+- **`move` bleibt der Bandschritt gegenüber Anwesenden**, im Kampf und davor (`.186` #113). **Korrektur:** In der ersten Fassung stand „nur im Kampf“; das hätte gültige Annäherungs- und Rückzugsschritte vor einem Kampf verboten.
+- **Ein wirkungsloser `move` außerhalb eines Kampfes** (niemand, gegenüber dem sich das Band ändern könnte; `.186` #117) löst **eine Plannerreparatur** aus: „this step moves him relative to nobody; if he goes somewhere, answer with go (back via RECENT ROUTE or a place), else no command“. Heute deutet die Engine den Wortlaut (`.187`–`.189`). Damit entscheidet das LLM die Bedeutung, und die Engine prüft nur die Wirkung.
   - **Entfällt:** `retreatGo` mit `BACK_WAY` und `STAYS` (`planner.js:741–764`) und der `wayBack`-Zweig in `mapPlan`.
   - **Bleibt:** „back“ über `RECENT ROUTE`. Mit Fachplan A ist die Route ungefiltert und das Ziel im Ortsbuch aufgelöst.
 - **`within` entfällt** als eigene Art. Ein GO `{new}` im aktuellen Habitat erhält über den Umfang des Ortsbuchs (Fachplan A) sein Habitat als Eltern. Die Fehlerklasse `invalid local habitat scope` verschwindet (Korpus 10×).
@@ -189,7 +190,7 @@ Spielernachrichten mit Begleit- oder Folgewörtern („follow“, „lead the wa
 - `.188` Mage #109 ✓.
 
 **Kosten:**
-- Eine Plannerreparatur, wenn ein `move` außerhalb des Kampfes kommt. In `.186`/`.188` waren das 1–2 Fälle; heute kostet jede Planner-Reparatur ~12k Prompt-Tokens [D].
+- Eine Plannerreparatur bei einem wirkungslosen `move` außerhalb des Kampfes. In `.186`/`.188` war das 1 Fall; heute kostet jede Planner-Reparatur ~12k Prompt-Tokens [D].
 - Im Gegenzug fallen Code und Wortlisten weg.
 
 **Bewertung:** **übernehmen.** Die Teile sind klein und belegt.
@@ -214,9 +215,9 @@ NOT HERE — Werrin (reeve's hall, not reached).
 - **Ansatz:** Der Erzähler sieht im nächsten Request seine vorige Antwort wörtlich. Die Engine hängt dieser Assistant-Nachricht **nur im Modellrequest** eine Zeile an: `[ENGINE: in this reply Alaric did not reach the reeve's hall; he remained at Dagny's house. Werrin was not met.]`
 - **Was unverändert bleibt:** Im Chat ändert sich nichts. Der Spieler sieht N2, Eventlog und Fold bleiben unberührt.
 - **Wirkung:** setzt genau an G5 an (falsche Szene im Verlauf).
-- **Wie:** Der Host baut den Erzählerrequest schon heute (Engineblock, Verlaufsfilter); die Markierung nutzt die vorhandenen `corrections` des Records.
+- **Wie (geprüft [C]):** Der Interceptor bearbeitet schon heute eine **Promptkopie** des Verlaufs. `projectPromptHistory` (`host.js:556–583`, aufgerufen `index.js:382`) entfernt alte Trackerblöcke und kürzt den Verlauf; gespeicherter Chat, Swipes und Spieleransicht bleiben unberührt. Die Markierung ist dort eine weitere Projektion aus den gespeicherten `corrections` des Records.
 - **Kosten:** ~40–80 Tokens je betroffenem Zug [S].
-- **Risiko:** Der Host-Pfad, über den ST den Verlauf zusammensetzt, ist vor der Umsetzung zu prüfen. Liefert ST die Assistant-Nachricht unverändert, braucht es den vorhandenen Prompt-Hook der Extension.
+- **Risiko:** gering im Host (vorhandener Weg). Offen ist nur die Modellwirkung: ob der Erzähler die Markierung gegen eine widersprechende Spielernachricht befolgt [P].
 
 **N3 – automatische Neuerzeugung:** **nicht empfohlen.**
 - **Datenlage:** Mit N1 und N4 liegt die Wiederholung (K7) ohnehin an der Wurzel an. In den Daten beginnt der Erzähler schon heute am richtigen Ort (#112).
@@ -232,7 +233,7 @@ NOT HERE — Werrin (reeve's hall, not reached).
 | Fälle `.186`/`.188` (16 ohne GO + 4 Wiederholungen) | K3: 1–2, K4: Antwortgrenze | K4: 1 | 1 (+ Batch 28: 2) | 2 | K3: 1 | K7: 4 (Ziel), Spielerinfo alle | K7 |
 | Spielerhoheit | voll | Zusage im Zitat nötig | unverändert (kein neuer Ort) | gefährdet | voll | voll | voll |
 | Neue Wortlisten | keine (LLM-Regeln) | keine | keine | Gefahr | **minus** zwei Listen | keine | – |
-| Neue Zustände und Bedingungen | `notes`-Art | 1 Bedingungsart | 1 Firewallbedingung (ersetzt eine) | mehrere | – | Kopf aus vorhandenen Daten | Rücknahmelogik |
+| Neue Zustände und Bedingungen | ein wirkungsloser Plannertyp `proposed` | 1 Bedingungsart | 1 Firewallbedingung (ersetzt eine) | mehrere | – | Kopf aus vorhandenen Daten | Rücknahmelogik |
 | Tokens | +0,1–0,3k Plannerregeln | +wenig | 0 | – | −Regeln, +1 seltene Reparatur | Kopf ~0,2k, N4 ~0,05k je Fall | +1 Erzähler +1 Extractor je Fall |
 | Latenz | 0 | 0 | 0 | – | seltene Reparatur ~2–4 s | 0 | +10–20 s je Fall |
 | Kanon | nein | §2 Ergänzung | §3 umgesetzt, Bestätigung | §3/§2 | nein | nein | Hostdesign |
@@ -244,7 +245,7 @@ NOT HERE — Werrin (reeve's hall, not reached).
 | Wie viel implizite Bewegung hilft wirklich? | Innerhalb der Stätte (C3-a) spürbar und sicher. Darüber hinaus rettet sie in den Daten 2 Fälle und kostet die Klarheit, die das FINDS-Design bewusst gewählt hat |
 | Wann gefährdet sie die Spielerhoheit? | Sobald ein Gegenüber, ein Gesuchtes oder die Zustimmung einer NPC einen Weg ersetzt, den der Spieler nicht gewählt hat |
 | Ist ein zusätzlicher Befehl störender als die Erkennung? | Nein, bei rund 1 Zug je 100 Eingaben und klarer Rückmeldung (N2) |
-| Wie neue Wortlisten vermeiden? | Bedeutung erkennt der Planner (Regeln mit Beispielen); die Engine prüft nur Struktur (Schema: `move` nur im Kampf). Die Rückweg-Wortlisten entfallen |
+| Wie neue Wortlisten vermeiden? | Bedeutung erkennt der Planner (Regeln mit Beispielen); die Engine prüft nur Wirkung (ein `move`, der niemanden betrifft, geht als Reparatur an den Planner zurück). Die Rückweg-Wortlisten entfallen |
 | Wie die Wiederholung verhindern? | N4 nimmt der falschen Szene die Autorität im Verlauf, N1 nennt abwesende Personen, die der Spieler anspricht |
 | Wie den Spieler informieren? | Eine sichtbare Zeile „NOT ARRIVED — …“ (heute herausgefiltert) |
 | Braucht es automatische Antwortkorrektur? | Nein, nicht vor einer Messung nach N1+N4 und den Fachplänen A/B |
@@ -265,7 +266,7 @@ NOT HERE — Werrin (reeve's hall, not reached).
 
 | Heute | Ersatz |
 |---|---|
-| `retreatGo`, `BACK_WAY`, `STAYS`, `wayBack`-Zweig (`planner.js:741–850`, Teile) | `move` nur im Kampf (Schema), „back“ über `RECENT ROUTE` |
+| `retreatGo`, `BACK_WAY`, `STAYS`, `wayBack`-Zweig (`planner.js:741–850`, Teile) | Plannerreparatur bei wirkungslosem `move`, „back“ über `RECENT ROUTE` |
 | `within` und `invalid local habitat scope` (`commands.js:630–642`) | GO mit Habitatumfang (Fachplan A) |
 | `lodgedHere`, `roomOfHere` (`world.js:121`, `firewall.js:411`) | C3-a als eine Bedingung |
 | Stay-Korrektursätze in `world.js` (`.187`), Kürzung auf 400 Zeichen | N1-Kopf |
@@ -289,7 +290,7 @@ NOT HERE — Werrin (reeve's hall, not reached).
 | R-C5 | `.188` Rogue #121 Hinterzimmer → Halle (C3-a) | Ankunft ohne GO angenommen |
 | R-C6 | Gegenfall C3-a: Ankunft im Nachbarhaus, auf der Straße, im Dungeon | `no_go` |
 | R-C7 | `.186` Rogue #97 Händlersuche | FINDS; die Erzählung führt ihn in die Schmiede → `no_go`; N2-Zeile sichtbar |
-| R-C8 | `.186` Warrior #117 `move away` außerhalb des Kampfes (C4) | Planner-Reparatur → `go` zurück; im Kampf bleibt `move` |
+| R-C8 | `.186` Warrior #117 `move away` gegenüber Goblin A auf LONG (C4) | Planner-Reparatur → `go` zurück; `.186` #113 (SHORT → MEDIUM vor dem Kampf) bleibt Bandschritt; im Kampf bleibt `move` |
 | R-C9 | `.187`/`.189`-Rückwegfälle (#117 Original, „holding my ground“, „a single step“) | dasselbe Ergebnis wie `.189`, ohne Wortlisten |
 | R-C10 | `.188` Mage #109 lokale Erkundung | GO mit Habitatumfang, keine Ablehnung |
 | R-C11 | Warrior #110 → #111/#112 (N1/N4) | Request #112 enthält Kopf und Verlaufsmarkierung; „NOT HERE — Werrin“ |
@@ -335,7 +336,7 @@ NOT HERE — Werrin (reeve's hall, not reached).
 | Keine Teilbewegung zu Händlern, Gesuchtem, Gegenübern | ein Satz mehr („I go to her shop“) | keine stillen Reisen, klare Spielerhoheit, Engine-Ankündigung FINDS bleibt glaubwürdig |
 | Fragen sind keine Reise | ein Zug mehr bei „Shall we go?“ | keine Reise, die der Spieler nur erwogen hat |
 | Keine automatische Neuerzeugung | die falsche Antwort bleibt sichtbar (mit N2-Hinweis) | keine Rücknahmelogik, keine verdeckten Doppelbuchungen, keine Wartezeit |
-| `move` nur im Kampf | gelegentliche Plannerreparatur | zwei Wortlisten weniger, eine Fehlerklasse weniger |
+| wirkungsloser `move` als Reparatur statt Wortdeutung | gelegentliche Plannerreparatur | zwei Wortlisten weniger, eine Fehlerklasse weniger |
 
 ---
 
@@ -350,6 +351,11 @@ NOT HERE — Werrin (reeve's hall, not reached).
 | B ↔ C | B5-Verzicht (keine Räume außerhalb von Dungeons) und C3-a (Nebenraum ohne GO) passen zusammen: Außerhalb von Dungeons gibt es keine Wege mehr, nur die Stättengrenze. **Kompatibel** |
 
 **Revision gegenüber Etappe 1:** A4 (Ankunft als Schrittantwort) wird **wichtiger**, weil B und C2 dieselbe Antwortform nutzen. A4 bleibt zweite Stufe, ist aber Voraussetzung für C2. Ohne A4 entfällt C2.
+
+**Revision nach Selbstprüfung:**
+- Der Auflöser aus A ist enger als zuerst geplant: nur „beginnt mit“, nicht „enthält“. Sein Beitrag gegen Duplikate ist damit klein. Der größere Hebel bleibt, das Ziel beim GO aufzulösen und in `KNOWN AT` die Kinderorte zu zeigen.
+- `move` bleibt in C4 als Bandschritt vor einem Kampf erhalten.
+- Die Kompatibilität der drei Pläne ändert sich dadurch nicht.
 
 ### 8.2 Doppelte Zuständigkeiten
 
@@ -415,7 +421,7 @@ NOT HERE — Werrin (reeve's hall, not reached).
 | Kennzahl | heute (`.186`/`.188`) | Erwartung | Beleg durch |
 |---|---|---|---|
 | Ankünfte, die die Engine nach eigener Autorisierung ablehnt | 10 (je nach Lesart 7–10; GPT §4.1) | 0 bei Ziel-, Ebenen- und Raumgründen | Regressionen, Replay, natürlicher Dungeonlauf |
-| Verwaiste Orte, doppelte Orte und NPCs | 6 / 1 / 1 | 0 | Messwerkzeug über natürliche Läufe |
+| Verwaiste Orte, doppelte Orte und NPCs | 6 / 1 / 1 | verwaist 0; Duplikate 0 für die Originalfälle, allgemein weniger [P]: Die enge Präfixregel aus Fachplan A trifft in 65 natürlichen GOs genau einen Fall; Duplikate mit ganz anderem Namen bleiben möglich | Messwerkzeug über natürliche Läufe |
 | Ankünfte ohne GO je 100 Eingaben | ≈ 4–5 | ≤ 2 [P] | natürlicher Lauf |
 | Wiederholte unerreichte Szenen | 4 | 0–1 [P] | natürlicher Lauf |
 | Ortsbezogene Extractor-Reparaturen | 16 von 24 (FOCUS `.188`) | etwa halbiert [S] | Budgetwerkzeug |

@@ -2,6 +2,8 @@
 
 **14.11.2026 · Claude · Architekturstudie, ergebnisoffen, keine Implementierung.**
 
+> **Nachtrag nach Selbstprüfung (14.11.2026):** Einzelne Zahlen und Empfehlungen wurden durch den [GPT-Gegenreview](ORT_REISE_UMGEBUNG_GPT_GEGENREVIEW_2026-11-14.md) und die Fachpläne [A](FACHPLAN_A_ORTSBUCH_BEWEGUNGSPLAN_2026-11-14.md), [B](FACHPLAN_B_DUNGEONRAUM_ARCHITEKTUR_2026-11-14.md) und [C](FACHPLAN_C_BEWEGUNGSARTEN_ERZAEHLKONTINUITAET_2026-11-14.md) präzisiert oder ersetzt. Die Stellen sind im Text markiert; die Übersicht steht in [§12](#12-nachtrag-korrekturen-nach-selbstprüfung).
+
 **Prüfstand:** Produktbranch `claude/c-planner-prototype-2026-10-02-gpt-c666`, Build `4.3.0-c.6.6.189`, HEAD `4438241`. Zeilenangaben beziehen sich auf `avereth-engine/` bei diesem Stand. Dokumentation auf `main` bei `cb5b842`.
 
 **Nachweisgrade:**
@@ -119,7 +121,7 @@ Aufbau des Narrator-Requests Warrior Turn 56 (`.188`, n172):
 - **Verlauf:** fünf Spieler- und Erzählerzüge **wörtlich**, darunter die falsche Szene von #110.
 - **Engineblock:** 6,3k, erst danach. Die Korrektur ist **ein** Spiegelstrich direkt vor `PLAYER ACTIONS`.
 
-Der Spieler bekam im Panel nur: `ENGINE REFUSED 6 reported changes (no_go, scene_context): see #audit`.
+Die Spieler-LLM des Runners sah im Rohpanel nur `ENGINE REFUSED 6 reported changes (no_go, scene_context): see #audit`. **Korrektur:** Ein menschlicher Spieler sieht in SillyTavern nicht einmal das. `playerFacingLines` (`host.js:453–475`) filtert genau diese Zeile aus dem sichtbaren Panel; nur das HUD nennt den Ort.
 
 ---
 
@@ -134,6 +136,7 @@ Der Spieler bekam im Panel nur: `ENGINE REFUSED 6 reported changes (no_go, scene
 | davon **Ortsprimär** (`no_go`, `passage`, `place`, `area`, `road`, `shut_in`, `dungeon_presence`) | 11 | 16 | 19 |
 | davon **Ortsfolge** (`scene_context`, `met_without_arrival`, `met_not_known_here`) | 50 | 79 | 79 |
 | **Ortsanteil an allen Ablehnungen** | **40 %** | **48 %** | 18 % |
+| davon Folgeablehnungen (Kaskade) | 50 von 61 | 79 von 95 | 79 von 98 |
 | Antworten mit Ortsablehnung | 17 (10 %) | 34 (17 %) | 35 (3 %) |
 
 Der Korpus beruht auf älteren Personas und Verträgen mit wenig NPC-Begleitung. Die natürlichen Läufe der aktuellen Personas zeigen den heutigen Stand.
@@ -147,7 +150,7 @@ Der Korpus beruht auf älteren Personas und Verträgen mit wenig NPC-Begleitung.
 | keine Ankunft gemeldet (Halt oder Erzählung blieb) | 5 | 5 | 10 |
 | **Ankunft von der Engine selbst abgelehnt** (`passage`, `place`) | 6 | 4 | **10 (7 %)** |
 | Extraktion gescheitert | 1 | 1 | 2 |
-| GO zu bekannter ID / zu `{new}` | 35 / 25 | 41 / 34 | **76 / 59 (44 % neue Orte)** |
+| GO zu bekannter ID / zu `{new}` / mit `within` / `journey.continue` (korrigiert) | 35 / 24 / 1 / 1 | 41 / 28 / 6 / 8 | **76 / 52 / 7 / 9**: neue Ziele 52 von 135 GOs (39 %), mit `within` 59 |
 
 **Folgerung:** Der Normalfall „autorisiert und angekommen“ funktioniert. Eine Vorabbuchung bekannter Ziele würde vor allem die 85 % beschleunigen, die heute schon gelingen. Das Problem sitzt in den Rändern.
 
@@ -313,7 +316,7 @@ Alle Varianten behalten `no_go`, das Eventlog, PULSE und die Dungeonautorität. 
 
 | | Wirkung |
 |---|---|
-| **Gelöst** (Daten `.186`/`.188`) | K1 vollständig (10), Rogue #80 und #82 (Identität), K6 teilweise (eine Planerwartung ohne Zusatzschlüssel); Chronologie-Reparaturen deutlich weniger [S: ein Großteil der 11 von 24] |
+| **Gelöst** (Daten `.186`/`.188`) | K1 wird **einheitlich entschieden** (10; nicht jede wird zur erlaubten Ankunft, siehe §12), Rogue #80 und #82 (Identität), K6 teilweise (eine Planerwartung ohne Zusatzschlüssel); Chronologie-Reparaturen deutlich weniger [S: ein Großteil der 11 von 24] |
 | **Nicht gelöst** | K2–K5, K7 |
 | **Neue Risiken** | ein falscher Plan ist jetzt **einheitlich** falsch (vorher fing eine zweite Prüfung manches ab); das Ortsbuch braucht eine gute Mehrdeutigkeitsregel; Migrationsfälle mit alten Orten unter falschen Eltern |
 | **Spielgefühl** | unverändert frei; weniger verlorene Szenen |
@@ -400,7 +403,7 @@ Alle Varianten behalten `no_go`, das Eventlog, PULSE und die Dungeonautorität. 
 
 ### Erzählrückführung N (mit jeder Variante)
 
-- **N1 – Szenenkopf statt Korrektursatz.** Der Engineblock beginnt mit einem festen Kopf, zum Beispiel `WHERE: Dagny's blue-door house. This reply begins and ends here unless PLAYER ACTIONS say GOES. Not here: Werrin (at reeve's hall).`
+- **N1 – Szenenkopf statt Korrektursatz.** Der Engineblock beginnt mit einem festen Kopf, zum Beispiel `WHERE: Dagny's blue-door house. … Not here: Werrin (at reeve's hall).` (**Präzisiert:** keine absolute Formel „begins and ends here“, weil PULSE-Halt und äußere Kräfte die Endszene ändern dürfen; Fassung in Fachplan C §3 C5)
   - Die Korrekturen zu Ort und Anwesenheit gehen darin auf.
   - **Abwesende Personen**, die die Spielernachricht anspricht, nennt der Kopf ausdrücklich.
   - Keine Kanonänderung. Aufwand S.
@@ -454,7 +457,7 @@ Alle Varianten behalten `no_go`, das Eventlog, PULSE und die Dungeonautorität. 
 | Katalog als Gültigkeitsgrenze, Jagdort-Sonderregel, Routefilter auf Katalog | A1 | `extract.js:39–44` (Enum), `catalog.js:110–112`, `planner.js:330` |
 | `scopedPlaces` | A2 | `place_refs.js:60–92` |
 | Zweite Topologie für geplante Bewegungen | A2 | `world.js:2455–2475` |
-| Szenenpflicht für ortsneutrale Meldungen, Chronologie-Reparaturen | A3 | `extract.js:419` ff., `world.js:1066`, `1074` |
+| Szenenpflicht je Meldung, Chronologie-Reparaturen (**präzisiert:** Szene aus der bestätigten Ankunftsposition; Inhalte eines unerreichten Ortes bleiben gesperrt, keine Freistellung „ortsneutraler“ Typen) | A3 / Fachplan A, A4 | `extract.js:419` ff.; `world.js:1066`, `1074` bleiben als Schutz |
 | Altpfade | A4 | `world.js:121`, `firewall.js:411`; `implicitArrivals` |
 | Rückweg-Wortlisten | B | `planner.js:741–764`, Teile von `mapPlan` |
 | Erkundung über `{new}`, „a stair“-Zeile, Raum- und Durchgangsmeldungen im Dungeon, `roomByName`, `levelVia` aus Erzählung | C | `commands.js:464`, `625–626`, `697`; `dungeon.js:324`, `358`; `world.js:2420–2570` (Dungeonteil); Vertrag `passage` (1,1k Zeichen) |
@@ -503,9 +506,9 @@ Alle Varianten behalten `no_go`, das Eventlog, PULSE und die Dungeonautorität. 
 
 | # | Frage | Empfehlung | Gewinn | Verlust |
 |---|---|---|---|---|
-| **D1** | Erzeugt die Engine das Raumnetz eines Living Dungeons (Räume, Ausgänge, Ebenen), während der Erzähler nur beschreibt und benennt? | **ja** | Dungeons zuverlässig spielbar, Boss erreichbar | erzählte Grundrissüberraschungen; verborgene Ausgänge nur, wo das Netz sie hat |
-| **D2** | Wird „jetzt gemeinsam gehen“ (Vorschlag oder Einladung, die NPC führt) zu einer **bedingten** Bewegung, die mit erzählter Zustimmung wirksam wird? | **ja**, nur mit „jetzt“ oder sofortigem Aufbruch, nie bei „später“ oder Hypothesen | Begleitung ohne Extrazug, weniger Drift | ein Vorschlag ist nicht mehr folgenlos |
-| **D3** | Wird die Teilbewegung einer gewählten Handlung (Kanon §3) als eigene Bewegungsart umgesetzt, begrenzt auf dieselbe Siedlung bzw. Stätte und ein genanntes Gegenüber? | **ja** | Handel und Suche fließen; ersetzt die Zimmerfrage | Grenze muss streng bleiben |
+| **D1** | Erzeugt die Engine das Raumnetz eines Living Dungeons (Räume, Ausgänge, Ebenen), während der Erzähler nur beschreibt und benennt? | **ja**, aber **beim Betreten** statt vorab (ersetzt durch Fachplan B, Variante B6) | Dungeons zuverlässig spielbar, Boss erreichbar | erzählte Grundrissüberraschungen; verborgene Ausgänge nur, wo das Netz sie hat |
+| **D2** | Wird „jetzt gemeinsam gehen“ (Vorschlag oder Einladung, die NPC führt) zu einer **bedingten** Bewegung, die mit erzählter Zustimmung wirksam wird? | **zurückgezogen:** Fragen und Vorschläge bleiben Dialog; nur eine ausdrückliche Mitgehzusage kommt infrage, und auch die nur optional (Fachplan C, C2) | Begleitung ohne Extrazug, weniger Drift | ein Vorschlag ist nicht mehr folgenlos |
+| **D3** | Wird die Teilbewegung einer gewählten Handlung (Kanon §3) als eigene Bewegungsart umgesetzt, begrenzt auf dieselbe Siedlung bzw. Stätte und ein genanntes Gegenüber? | **eingeschränkt:** nur innerhalb derselben Stätte, nicht zu Gegenübern oder Gesuchtem im Ort (Fachplan C, C3-a) | Handel und Suche fließen; ersetzt die Zimmerfrage | Grenze muss streng bleiben |
 | **D4** | Darf der Host eine Antwort mit unautorisierter Ankunft einmal automatisch neu erzeugen? | **erst messen** | keine falsche Szene im Verlauf | sichtbarer Ersatz, Latenz |
 | **D5** | Innenräume außerhalb von Dungeons nur erzählerisch? | **nein, jetzt nicht** | – | Raumgenauigkeit |
 | **D6** | Ankunft vor der Erzählung für alle Reisen (D)? | **nein** | – | Erzählfreiheit, hoher Umbau |
@@ -525,5 +528,26 @@ Für A, N1 und N2 ist keine Designentscheidung nötig.
 - **`arrive()` als Closure** über `applyWorld`: Der Aufwand von S2 kann höher ausfallen. Der Schattenmodus ist deshalb Pflicht.
 - **Andere Modelle:** Die Messung gilt für GLM-5.3-Flash. Ein stärkeres Modell würde K3–K5 vermutlich senken, K1 nicht [P].
 - **`.189`:** ist in keinem natürlichen Lauf geprüft. Seine Wortregeln (R1/R2) würden in A+B teilweise entfallen.
+
+---
+
+## 12. Nachtrag: Korrekturen nach Selbstprüfung
+
+| Stelle | Ursprüngliche Aussage | Korrektur | Quelle |
+|---|---|---|---|
+| §1.1, §5 G1 | „Niemand besitzt den Ort“ | Das gefaltete Eventlog **ist** die Autorität über den tatsächlichen Ort. Es fehlt eine **gemeinsame Definition** der gültigen Ortsreferenzen, der erlaubten Bewegungsversuche und ihrer Ankunftsprüfung | GPT §1 |
+| §2.5 | Spieler sah „ENGINE REFUSED …“ | Nur die Runner-LLM sah es; ein menschlicher Spieler sieht keinen Hinweis (`playerFacingLines` filtert) | Code `host.js:459` |
+| §3.1 | 40–48 % Ortsanteil | überwiegend Folgeablehnungen (50/61, 79/95); unabhängige Primärfehler sind 11 bzw. 16 | GPT §4.1 |
+| §3.2 | 76/59 GOs, 44 % neue Orte | 76 ID, 52 `{new}`, 7 `within`, 9 `journey.continue`; neue Ziele 39 % von 135 GOs | Fachplan A §0 |
+| §3.3 K1 | „Engine widerspricht sich selbst“ (10) | breite Klasse „Widerspruch am Bewegungs- und Ankunftsvertrag“. Eng belegt sind: die Ebenenregel gegen die eigene Ansage (`.188` Mage #96; #92/#100 hängen an derselben Ansage ohne gemeldeten Weg), die Zielauflösung (`.186` Mage 5×) und die Raumregel außerhalb von Dungeons (`.188` Rogue #62). `.186` Warrior #122 ist eine **regelgerechte** Hierarchieablehnung einer falschen Extractormeldung | GPT §4.1 |
+| §7 A | „K1 vollständig gelöst“ | A entscheidet diese Fälle einheitlich und früh; nicht jede wird zur erlaubten Ankunft | GPT §4.1 |
+| §7 A1 | eine gültige Ortsmenge = alle bekannten Orte | ein Bestand, **vier Sichten** (existiert, bekannt, beworben, erreichbar); Auflöser mit `existing`/`ambiguous`/`new`/`invalid` | GPT §3.1, Fachplan A §4.1 |
+| §7 A2 | Ankunft gilt, „wenn sie dem Plan entspricht“ | Autorisierung ist kein Ankunftsversprechen; der Nachweis nennt zulässige Ergebnisse, die Ankunft bleibt eine bestätigte Meldung | GPT §3.2, Fachplan A §4.2 |
+| §7 A3 | Szenenpflicht für ortsneutrale Meldungen entfällt | ersetzt durch „Szene aus der Ankunftsposition“; Inhalte unerreichter Orte bleiben gesperrt | GPT §3.3, Fachplan A A4 |
+| §7 C / D1 | Raumnetz je Ebene beim Etablieren | Netz **beim Betreten** (B6: Hauptgang mit Seitenräumen) | GPT §3.4, Fachplan B |
+| §7 B / D2 | „Shall we go now?“ als bedingte Reise | Fragen bleiben Dialog; nur eine ausdrückliche Mitgehzusage, optional | GPT §3.5, Fachplan C C2 |
+| §7 B / D3 | Teilbewegung in derselben Siedlung | nur innerhalb derselben Stätte | GPT §3.5, Fachplan C C3 |
+| §7 N1 | „begins and ends here“ | aus Plan und Outcome abgeleiteter Kopf ohne absolute Endformel | GPT §5, Fachplan C C5 |
+| §7 N | – | neu: **N4 Verlaufsmarkierung** im Modellrequest statt Neuerzeugung | Fachplan C C5 |
 
 **Keine Produktänderung durch diese Analyse.**

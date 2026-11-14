@@ -2,7 +2,7 @@
 
 **14.11.2026 · Claude · Etappe 1 von 3, keine Implementierung, keine Designfreigabe.**
 
-**Prüfstand:** Produktbranch bei `4438241` (`.189`); `main` bei `6f18156`. Zeilenangaben gelten für `avereth-engine/` bei `4438241`.
+**Prüfstand:** Produktbranch bei `4438241` (`.189`); `main` bei `6f18156`. **Selbstprüfung vom 14.11.:** Auflöserregel nach einer Probe über alle 65 natürlichen GO `{new}` verschärft (§2.1, §4.1), Grenze der Ankunftsposition (A4), Altpfade und Testdateien (§4.5), Messgrößen (A-S0). Zeilenangaben gelten für `avereth-engine/` bei `4438241`.
 
 **Grundlagen:**
 - [Grundanalyse](ORT_REISE_UMGEBUNG_ARCHITEKTUR_GRUNDANALYSE_2026-11-14.md) und [GPT-Gegenreview](ORT_REISE_UMGEBUNG_GPT_GEGENREVIEW_2026-11-14.md).
@@ -91,12 +91,16 @@ Dazu laufen in `world.js` neun `!explicitTravel`- und 16 `cPath`-Verzweigungen f
 | **`.186` Mage #64–#76** | Bei jeder abgelehnten Ankunft blieb der neue Raum **trotzdem angelegt**: 5 verwaiste Räume in Glimmerdeep, nie betreten, in einem gemeinsam genutzten persistenten Dungeon. Ursache: `resolvePlace` legt vor `wayRefused` an |
 | **`.188` Rogue #61/#62**, GO zur berichteten Stätte `loc.the_lime_pits_sluice` | `dungeonOf` liefert für sie die Tannery Rows: Das Viertel trägt `rooms: true`, weil Alaric zwei Innenräume betreten hat (Patch-7-Regel „Räume in der Wildnis machen ein Gebäude raumweise“). Die Stätte gilt als Raum ohne Weg; die autorisierte Ankunft wurde abgelehnt |
 | **`.186` Warrior #121/#122** | GO zu einem neuen Wachhaus; der Extractor meldet `interior` unter dem Reich, `resolvePlace` lehnt ab („a interior cannot lie in Duskreach“). Eine zulässige Lesart (Stätte unter dem Reich, `placeParent` mit `c`) wurde nicht gewählt, weil die Art aus der Meldung stammt |
+| **Auflöserprobe über alle 65 GO `{new}` der beiden Batches** (Zustand vor dem GO, Umfang = Siedlung samt Kindern plus Stätten im Reich) | Mit der Regel „exakt, beginnt mit oder **enthält**“ gibt es 5 eindeutige Treffer, davon **nur 1 richtig** (Tannery Rows). Die vier falschen: „Brannic Vell's smokehouse“ → „the eel carts and docks **behind** Brannic Vell's smokehouse“; „the Saltmarsh causeway“ → „the broken toll arch **on** the Saltmarsh causeway“; „the Ashbridge city gate“ → „Ashbridge“; „the Glassmere academy … gatehouse“ → „Glassmere“. Mit „exakt oder **beginnt mit**“ und ohne Siedlung ↔ eigene Stätte bleibt nur der richtige Treffer, 64 GOs bleiben neu [R] |
 | **Gleichnamige Orte in allen sechs Endzuständen** | 0 Paare mit gleichem Namen im selben Reich (ohne Gildenhallen). 4 Paare, bei denen ein Name den anderen als Präfix enthält: zwei echte Duplikate (Tannery Rows; vielleicht die Seilerbahn), **zwei verschiedene Orte** (Stadt ↔ ihr Tor, Glassmere ↔ Akademie-Torhaus). **Ein Namensabgleich ohne Umfang würde verschiedene Orte zusammenlegen** |
 
 ### 2.2 Folgerungen
 
 1. **Ein großer Teil der Fehler entsteht beim GO, nicht bei der Ankunft.** Hätte der GO-Handler „the tannery rows“ und „the Grotto mouth“ im **erreichbaren Umfang** eindeutig einem bekannten Ort zugeordnet, wären zwei Episoden nicht entstanden: `.188` #80–#86 und `.186` Mage #63–#82.
-2. **Namensabgleich braucht einen Umfang und einen Mehrdeutigkeitsausgang.** Ein Präfix ohne Umfang erzeugt in den vorhandenen Daten so viele falsche wie richtige Treffer.
+2. **Namensabgleich braucht einen Umfang, eine enge Regel und einen Mehrdeutigkeitsausgang.**
+   - Ein Präfix ohne Umfang erzeugt in den vorhandenen Daten so viele falsche wie richtige Treffer.
+   - „Enthält“ trifft Orte, die den gesuchten nur als **Bezugspunkt** nennen („behind …“, „on …“): 2 von 2 Treffern dieser Art waren falsch.
+   - Zulässig ist nur „beginnt mit“ (der bekannte Name ist eine nähere Bestimmung des gesuchten), dazu der Ausschluss Siedlung ↔ eigene Stätte.
 3. **Ort anlegen und Ankunft prüfen gehören in eine Reihenfolge:** erst prüfen, dann anlegen.
 4. **Die Raumregel außerhalb echter Dungeons** gehört in Fachplan B. Fachplan A muss sie nur dort verwenden, wo sie gilt.
 
@@ -189,6 +193,7 @@ Erzähler, Extractor und World prüfen gegen den Plan.
 - **Szene aus der Position:** Meldungen vor der Ankunftsposition gehören zum Ausgangsort, danach zum Ziel. Die Pflicht, jeder Meldung eine Szene beizugeben, entfällt für GO-Züge.
   - Der Schutz für Inhalte eines **unerreichten** Ortes bleibt: Ohne bestätigte Ankunft gelten Meldungen „nach“ dem Aufbruch weiter als unbelegt (`scene_context`).
   - Das ist **nicht** die Freistellung „ortsneutraler“ Typen, die der O1/O2-Gegenreview verworfen hat.
+  - **Grenze (GPT §3.3):** Die Position ist selbst eine Modellmeldung, kein unabhängiger Chronologiebeweis. Fehlt sie oder widerspricht sie den Meldungen (eine Begegnung „vor“ der Ankunft mit einer Person des Ziels), gilt die heutige strenge Regel: ortsgebundene Typen ohne eindeutige Szene werden abgelehnt. Für `person.new`, `offer`, `object.new` und `creature.new` bleibt der strengere Ortsbeleg.
 - **Neue Orte ohne Bewegung:** als `place.reported` mit Namen, Art und Umfang aus dem aktuellen Ort, nicht mit frei gewählten Eltern.
 
 **Wirkung auf die Proben:**
@@ -248,7 +253,9 @@ Erzähler, Extractor und World prüfen gegen den Plan.
 2. **Gildenhalle** (`guildDestination`, unverändert).
 3. **Dungeon-Gate:** Name oder **Kopfwort** („Grotto“, „Warrens“) eines bekannten Dungeons im Umfang → `existing(gate)`. Mehrere Treffer → `ambiguous`.
 4. **Im Umfang:** exakter normierter Name unter den bekannten Orten des Umfangs. Der Umfang ist die aktuelle Stätte und Siedlung samt Kindern; bei einem GO zusätzlich das Reich und die Route.
-5. **Im Umfang, Kopfwort:** genau ein bekannter Ort, dessen normierter Name mit dem gesuchten beginnt oder ihn enthält → `existing`; mehrere → `ambiguous`.
+5. **Im Umfang, Präfix:** genau ein bekannter Ort, dessen normierter Name mit dem gesuchten **beginnt**, gefolgt von einer näheren Bestimmung („tannery rows“ → „tannery rows behind the Ashbridge tanneries“) → `existing`; mehrere → `ambiguous`.
+   - **Nicht** „enthält“: Ein Name, der den gesuchten nur als Bezugspunkt nennt, ist ein anderer Ort (Probe §2.1).
+   - Gesuchter Name mindestens zwei bedeutungstragende Wörter oder 5 Zeichen.
    - Nie über Siedlungsgrenzen hinweg.
    - Nie Siedlung gegen eigene Stätte, also kein Treffer von „Ashbridge“ auf „Ashbridge city gate“.
 6. **Berichtet im Reich** (heutiges `knownByName`, berichtete Orte).
@@ -259,8 +266,9 @@ Erzähler, Extractor und World prüfen gegen den Plan.
 - **Extractor-Meldung:** eine Ablehnung mit Kandidaten in der Reparaturform.
 
 **Für die Gegenprobe §2.1:**
-- Stufe 5 trifft im Rogue-Zustand #81 genau „the Tannery Rows behind …“. „Ashbridge“ ↔ „Ashbridge city gate“ ist durch die Siedlungsregel ausgeschlossen. „Glassmere“ ↔ „Academy gatehouse“ ebenso.
+- **Geprüft [R]:** Über alle 65 natürlichen GO `{new}` liefert die Präfixregel genau einen Treffer, Tannery Rows im Rogue-Zustand #81, und keinen falschen. „Ashbridge“ ↔ „Ashbridge city gate“ und „Glassmere“ ↔ „Academy gatehouse“ schließt die Siedlungsregel aus.
 - „the Grotto mouth“ trifft in Stufe 3 genau `loc.glimmerdeep_grotto`.
+- **Wirkung ist klein:** In zwei Batches gab es einen echten Treffer. Der größere Hebel für Duplikate bleibt, dass die Engine einen Ort **beim GO** auflöst und `KNOWN AT` die Kinderorte zeigt (§4.4).
 - Ob Stufe 5 in größeren Läufen falsch zusammenlegt, ist **vor der Umsetzung im Korpus zu zählen** (§6, R-A7).
 
 ### 4.2 Der Bewegungsnachweis (Datenvertrag)
@@ -314,7 +322,7 @@ step = {
 | Anlegen | vor der Prüfung (verwaiste Orte) | nach der Prüfung |
 | Ankunftsmeldung (A4) | `arrive`-Delta **und** `expected.arrived`, Abgleich `arrival_evidence` und `sceneIssues` | eine Antwort je Schritt mit Position |
 | Szene je Meldung (A4) | Pflicht bei jedem Ortswechsel, Reparatur | aus der Ankunftsposition |
-| Altpfade (V6) | 9 `!explicitTravel`-Zweige, `lodgedHere`, `implicitArrivals`, `laterLegs`, Ruleset-1-Erwartungsankünfte | entfernt (vorher in `campaignSupport` bestätigt: nicht mehr ladbar) |
+| Altpfade (V6) | 9 `!explicitTravel`-Zweige, `lodgedHere`, `implicitArrivals`, `laterLegs`, Ruleset-1-Erwartungsankünfte | entfernt. `campaignSupport` lehnt solche Kampagnen ab, und der Replay-Korpus spielt nur Pfad C mit Ruleset 2 (alle zehn Läufe geprüft) [R]. **Aber:** 13 Testdateien bauen noch Zustände mit `ruleset: 1`, `c: false` oder `runtime: 'v3'`; sie sind mitzuentfernen oder umzustellen |
 
 **Bleibt unverzichtbar:**
 - `no_go` (keine Teleports),
@@ -371,7 +379,7 @@ step = {
 
 | # | Fall |
 |---|---|
-| R-A7 | verschiedene Orte mit Präfixnamen (Stadt ↔ Tor, Glassmere ↔ Torhaus, „cellar“ in zwei Häusern) bleiben getrennt; mehrdeutig → Rückfrage |
+| R-A7 | verschiedene Orte mit ähnlichen Namen bleiben getrennt: Stadt ↔ Tor, Glassmere ↔ Torhaus, „Brannic Vell's smokehouse“ ↔ „the eel carts … behind Brannic Vell's smokehouse“, „the Saltmarsh causeway“ ↔ „the broken toll arch on the Saltmarsh causeway“, „cellar“ in zwei Häusern. Mehrdeutig → Rückfrage |
 | R-A8 | verborgener, ungefundener Dungeonraum ist weder Planner-Ziel noch Extractor-Referenz |
 | R-A9 | Ankunft ohne GO → `no_go`, Kaskade wie heute |
 | R-A10 | GO zu bekanntem Ort, Erzählung kommt nicht an → keine Bewegung |
@@ -390,7 +398,7 @@ step = {
 
 | Stufe | Inhalt | Abnahme |
 |---|---|---|
-| A-S0 | Messwerkzeug „Ortsvorfälle“: abgelehnte Ankünfte nach Klasse, verwaiste Orte, Duplikatkandidaten nach Umfang und Präfix, Ankünfte je Schrittart | reproduziert die Zahlen dieser Pläne für `.186`/`.188` |
+| A-S0 | Messwerkzeug „Ortsvorfälle“: abgelehnte Ankünfte nach Klasse, verwaiste Orte, Duplikatkandidaten nach Umfang und Präfix, Ankünfte je Schrittart. **Dazu (GPT §4.2):** Tokens und Latenz (p50/p95) **je erfolgreichem Spielzug**, terminale Extraktionen, Dauer jeder Widerspruchsepisode und **neu zugelassene** Meldungen (falsch Angenommenes zählt so viel wie falsch Abgelehntes) | reproduziert die Zahlen dieser Pläne für `.186`/`.188` |
 | A-S1 | Auflöser und Sicht „bekannt“; Schema und Route daran; Sonderregeln entfernen | R-A1, R-A2 (ohne Nachweis: nur Planner-Seite), R-A7, R-A8; Korpus: Abweichungen nur bei vorher abgelehnten gültigen IDs |
 | A-S2 | Bewegungsnachweis im **Schattenmodus**: berechnen, protokollieren, mit der heutigen Prüfung vergleichen | Liste aller Abweichungen im Korpus, jede begründet |
 | A-S3 | Umschalten; `scopedPlaces`, `elsewhere`/`unseen`, `arrivalPlace`-Vorprüfung, Altpfade entfernen; Anlegen nach Prüfung | R-A3–R-A5, R-A9–R-A18; Nettozeilen negativ |

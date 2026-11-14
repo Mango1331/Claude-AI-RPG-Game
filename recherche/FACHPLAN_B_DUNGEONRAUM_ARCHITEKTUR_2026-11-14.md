@@ -2,7 +2,7 @@
 
 **14.11.2026 · Claude · Etappe 2 von 3, keine Implementierung, keine Designfreigabe.**
 
-**Prüfstand:** `4438241` (`.189`). **Baut auf:** [Fachplan A](FACHPLAN_A_ORTSBUCH_BEWEGUNGSPLAN_2026-11-14.md) (Ortsbuch, Bewegungsnachweis), [Grundanalyse](ORT_REISE_UMGEBUNG_ARCHITEKTUR_GRUNDANALYSE_2026-11-14.md), [GPT-Gegenreview](ORT_REISE_UMGEBUNG_GPT_GEGENREVIEW_2026-11-14.md) §3.4, Kanon §7/§10. Nachweisgrade wie in Fachplan A.
+**Prüfstand:** `4438241` (`.189`). **Selbstprüfung vom 14.11.:** Treppenlage auf unversiegelten Ebenen und Ende des Hauptgangs ergänzt (§3 B6, §5.5, R-B4/R-B4a). **Baut auf:** [Fachplan A](FACHPLAN_A_ORTSBUCH_BEWEGUNGSPLAN_2026-11-14.md) (Ortsbuch, Bewegungsnachweis), [Grundanalyse](ORT_REISE_UMGEBUNG_ARCHITEKTUR_GRUNDANALYSE_2026-11-14.md), [GPT-Gegenreview](ORT_REISE_UMGEBUNG_GPT_GEGENREVIEW_2026-11-14.md) §3.4, Kanon §7/§10. Nachweisgrade wie in Fachplan A.
 
 ## 0. Ergebnis
 
@@ -150,7 +150,11 @@ Weitere Dungeons kann das Spiel aus seiner Klassifikation entdecken.
 
 **Inhalt:** die Spur aus B5 als **Hauptgang**, dazu die Graphteile, die die Erkundung tragen, alles **von der Engine beim Betreten** erzeugt:
 - **Hauptgang:** Teil 1 … n je Ebene. „Weiter“ führt vom zuletzt erreichten Teil des Hauptgangs zum nächsten, „zurück“ über bekannte Wege. Slots liegen nach Pace auf dem Hauptgang, wie heute.
-- **Treppe:** Der Teil, in dem die Spur einen Abstieg erlaubt, erhält einen Ausgang „down“: wenn eine tiefere Ebene existiert, nach dem Wächter oder bei unversiegelter Ebene. Nur dort entsteht Ebene+1. **Es gibt keinen Ausgang zu einer nicht existierenden Ebene.**
+- **Treppe:** Es gibt sie nur, wenn eine tiefere Ebene existiert. **Es gibt keinen Ausgang zu einer nicht existierenden Ebene.** Wo sie liegt:
+  - **Versiegelte Ebene:** im Teil des Wächters; offen, sobald er besiegt ist (`sealRefusal` wie heute).
+  - **Unversiegelte Ebene:** in einem deterministisch gewählten Teil des Hauptgangs (Seed, Zyklus 1). Heute kann Alaric dort **jederzeit** absteigen, sobald die Erzählung eine Treppe zeigt (`aheadEvents`: `open = !sealed || cleared`). Unter B6 erst ab diesem Teil. Das ist eine **Spieländerung**; die Lage des Treppenteils ist eine Designzahl (D1c).
+  - Die Treppe bleibt über Zyklen an derselben Stelle, weil Räume persistent sind.
+- **Ende des Hauptgangs:** Der Hauptgang einer Ebene hat so viele Teile, wie Slots und ruhige Teile (`pace`) vorgeben. Danach erzeugt „weiter“ höchstens eine kleine feste Zahl weiterer ruhiger Teile (Designzahl D1d, Vorschlag 1–2), dann ist der Gang zu Ende („nothing further on this level“). So kann es keinen endlosen Gang geben, und der Erzähler erfindet keinen weiteren Raum.
 - **Seitenräume:** Beim Erzeugen eines Teils legt ein Seed-Wurf fest, ob er einen Seitenausgang hat (offen oder verborgen) zu einer Kammer ohne Weiterweg: Fundort, Ressource, gelegentlich ein freier Diener. Das ergibt einen **Baum**: keine Schleifen, kein Platzhalter mit unbekanntem Ziel.
 - **Berichtete Räume** im Dungeon werden **kein neuer Ort**, sondern ein **Name für einen kommenden Teil**. „The deep gallery“ heißt dann „der Teil, in dem die Queen steht“ oder „der nächste Teil“. Das ist eine Notiz am Dungeon, kein Ort.
 - **Erzähler:** gibt dem erzeugten Teil seinen Namen (`place.named` beim ersten Betreten) und gestaltet ihn frei. Er darf Hindernisse, Gefahren und Gegenstände **in** einem Teil oder **an** einem vorhandenen Ausgang melden; die Typen `feature` mit `on` und `object.new` gibt es schon.
@@ -294,6 +298,7 @@ Berichte                       dungeons[root].notes: [{name, of: 'next'|'slot:<i
 
 **Verlust:**
 - Schleifen, zweite Wege und erzählte Geheimgänge ohne Engine-Ausgang.
+- Auf unversiegelten Ebenen kein Abstieg mehr vor dem Treppenteil (D1c).
 - Der Grundriss ist frei beschrieben, mechanisch aber ein Baum.
 
 **Einschätzung:** Für eine Videospielstruktur (Kanon §7) und die beobachtete Nutzung (eine Gabelung in zwei Batches) ist das angemessen [P]. Ob Spieler Schleifen vermissen, zeigt nur ein natürlicher Lauf.
@@ -301,7 +306,11 @@ Berichte                       dungeons[root].notes: [{name, of: 'next'|'slot:<i
 ### 5.5 Kanon und Entscheidung
 
 - **D1 (Grundanalyse):** „Die Engine erzeugt Räume, Ausgänge und Ebenen eines Living Dungeons beim Betreten; der Erzähler beschreibt und benennt.“ Das präzisiert §7 (Engine besitzt Slots und Struktur). Es ist **kein** universelles Raumschema, weil Seitenkammern und Pace je Dungeon variieren, und kein Drehbuch (§10).
-- **Neue Designzahl:** die Seitenkammer-Chance. Ein Vorschlag wäre 25–35 % je Hauptgangteil, ein Drittel davon verborgen; das ist zu entscheiden.
+- **Neue Designzahlen:**
+  - **Seitenkammer-Chance:** Vorschlag 25–35 % je Hauptgangteil, ein Drittel davon verborgen.
+  - **D1c Treppenlage** auf unversiegelten Ebenen: Vorschlag ein Teil im mittleren Drittel des Hauptgangs. Heute ist ein Abstieg jederzeit möglich, unter B6 erst ab diesem Teil.
+  - **D1d ruhige Teile nach dem Hauptgang:** Vorschlag 1–2.
+  - Alle drei sind zu entscheiden.
 - **Außerhalb echter Dungeons** ist Raum-für-Raum-Navigation keine Mechanik mehr. Das ist eine eigene Bestätigung: Patch-7-Fälle wie der verschlossene Waffenraum im Wachturm werden zu Hindernissen im Raum, nicht auf einem Weg.
 
 ### 5.6 Risiken
@@ -321,7 +330,8 @@ Berichte                       dungeons[root].notes: [{name, of: 'next'|'slot:<i
 | R-B1 | `.188` Mage #89–#100 am Original | Bericht „deep gallery“ → Notiz; GO → Teil auf Ebene 1 mit Queen; kein `TARGET NEEDED` |
 | R-B2 | `.186` Mage #63–#82 (mit A) | Gate, dann Teile 1…k; keine Ablehnung; keine verwaisten Räume |
 | R-B3 | `.188` Rogue #61/#62 | Tannery Rows ohne Raumregel; Ankunft an der Stätte |
-| R-B4 | Mossback: Ebene 1 bis Wächter, dann Treppe, Ebene 2, Boss | Treppe nur nach Wächter; Ebene 2 existiert; Rückweg nach oben |
+| R-B4 | Mossback (Ebene 1 unversiegelt): Treppe am festgelegten Teil, Ebene 2, Boss; Rückweg nach oben | Treppe erst ab ihrem Teil, dann jederzeit; Ebene 2 existiert; kein Abstieg vor dem Treppenteil |
+| R-B4a | Ende des Hauptgangs | nach den ruhigen Zusatzteilen kein weiterer Teil; erzählter weiterer Raum abgelehnt |
 | R-B5 | Catacombs: versiegelte Ebene 1 | kein Abstieg vor dem Wächter; Notiz „down“ ohne Ort |
 | R-B6 | Glimmerdeep: „down“ ohne tiefere Ebene | keine Ebene 2; ein Gefälle bleibt Ebene 1 |
 | R-B7 | Rückweg durch einen Teil mit Falle am Ausgang | Falle löst einmal aus (Patch 7 review A3) |

@@ -160,6 +160,10 @@ export function batchArgs(argv) {
     const maxHours = value('--max-hours') == null ? 24 : Number(value('--max-hours'));
     const args = argv.filter((_v, i) => !own.has(argv[i]) && !own.has(argv[i - 1]));
     if (!args.includes('--guide')) args.push('--guide', BATCH_MODES[mode].guide);
+    // Chat-tier courtesy pacing: pause five seconds after each LLM-player decision, before ST
+    // starts the next game turn. One default for all natural batch modes; --read-pause-ms overrides it.
+    // Single runs stay unpaced unless the flag is supplied. This cannot prevent subscription quotas.
+    if (!args.includes('--read-pause-ms')) args.push('--read-pause-ms', '5000');
     return { mode, maxHours, args };
 }
 

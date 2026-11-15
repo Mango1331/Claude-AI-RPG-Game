@@ -121,12 +121,13 @@ export function firewallContext(s, content, chronicle = null, excludedFoes = [])
         heldByPc: (ref) => s.objects?.[ref]?.holder?.entity === 'pc' || (typeof ref === 'string' && ref.startsWith('item.') && !!s.entities.pc.sheet.inventory[ref.slice(5)]),
         // Prototype C (4.3.0-c.6.6.3): what he set out to hand over where he went in this turn (commands.js give)
         // Historical Rule-1 lodging semantics only; current campaigns require an authorized room move.
-        // .190 (stage 4C, D3): a step within the same building that his own action of this turn takes (the room he paid
-        // for now, or his lodging here when he goes to rest or sleep) needs no GO; buying bread is no way into the back
-        // room, and nearness never moves him. Ruleset 1 keeps its room exception as it was
+        // .190 (stage 4C, D3): a step within the same building that his own action of this turn necessarily takes – he
+        // goes to rest or sleep in the room he holds there (paid now or for this night) – needs no GO; paying for a bed
+        // is not yet going to it, buying bread is no way into the back room, and nearness never moves him. Ruleset 1
+        // keeps its room exception as it was
         lodgedHere: rulesetOf(s) < 2 ? (s.services || []).some(x => x.service === 'lodging' && x.at === s.scene.at && s.clock.minute - (x.minute ?? 0) <= 1440)
-            : !s.encounter && !trueDungeonOf(s, s.scene.at) && (s.services || []).some(x => x.service === 'lodging' && lineage(s, s.scene.at).includes(x.at)
-                && (x.turn === s.turn || (o.auth?.rest && s.clock.minute - (x.minute ?? 0) <= 1440))),
+            : !s.encounter && !trueDungeonOf(s, s.scene.at) && !!o.auth?.rest && (s.services || []).some(x => x.service === 'lodging' && lineage(s, s.scene.at).includes(x.at)
+                && (x.turn === s.turn || s.clock.minute - (x.minute ?? 0) <= 1440)),
         roomOfHere: ref => {
             if (rulesetOf(s) < 2) return ref?.new ? ref.new.parent === s.scene.at && (!ref.new.kind || ['interior', 'room', 'site'].includes(ref.new.kind)) : typeof ref === 'string' && s.places[ref]?.parent === s.scene.at;
             // the room or bed he paid for, inside the building he is in (its complex): never another room of it (a private

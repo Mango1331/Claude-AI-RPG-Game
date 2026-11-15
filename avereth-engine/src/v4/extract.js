@@ -483,6 +483,13 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     const value = state ? newPlaceScope(normalizeSoftFields(parsed.value, vocab), state) : normalizeSoftFields(parsed.value, vocab);
     const want = Object.keys(expectedKeys || {});
     if (!value) return { value: null, valid: false, complete: false, errors: [error || 'no JSON object'], missing: want, raw: false };
+    // .190 (stage 5): an expected key nobody asked for (no step of this turn has it) is left out, empty or not: it never
+    // spoils the report and never stands for a step or an arrival
+    if (value && value.expected && typeof value.expected === 'object' && !Array.isArray(value.expected)) {
+        const asked = new Set(Object.keys(expectedKeys || {}));
+        const unasked = Object.keys(value.expected).filter((k) => !asked.has(k));
+        if (unasked.length) value.expected = Object.fromEntries(Object.entries(value.expected).filter(([k]) => asked.has(k)));
+    }
     const exp = value && typeof value.expected === 'object' && value.expected ? value.expected : {};
     // who came along may be left out of an arrival answer, like a |null delta field
     for (const [k, t] of Object.entries(expectedKeys || {})) if (t === 'go' && exp[k] && typeof exp[k] === 'object' && exp[k].with === undefined) exp[k].with = null;

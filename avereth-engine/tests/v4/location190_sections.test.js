@@ -54,8 +54,10 @@ test('.190 B5 .186 Mage: Glimmerdeep has one level: its track ends, nothing furt
     assert.deepEqual(sectionExits(s), ['nothing further: the end of level 1']);
     await say(g, '*I go on deeper*', GO({ new: 'deeper' }, 'I go on deeper'));
     assert.match(linesOf(g), /nothing further on level 1 of Glimmerdeep Grotto: this is the end of its way and it has no level below/);
-    await say(g, '*I go down the slope*', GO({ new: 'down the slope' }, 'I go down the slope'));
+    await say(g, '*I take the stairs down*', GO({ new: 'the stairs down' }, 'I take the stairs down'));
     assert.match(linesOf(g), /Glimmerdeep Grotto has no level below level 1/);
+    // a slope down is a way on (B1, R-B6): at the end of the track, nothing further
+    assert.match(sectionStep(g.state(), 'down the sloping passage').refuse, /nothing further on level 1 of Glimmerdeep Grotto/);
     // the story's crystal cave and its stair: refused, nothing made, he stays
     const r = await g.reply('He finds a crystal cave below and a stair.', { expected: {}, deltas: [{ seq: 1, type: 'arrive', at: room('Crystal cave'), forced_by: null, with: null }, way(room('Crystal cave'), { dir: 'down', name: 'stair' }, 2),
         { seq: 3, type: 'place.reported', place: { new: { name: 'Deep gallery', kind: 'interior', parent: GROTTO } }, by: null, how: 'told', where: 'below' }] });

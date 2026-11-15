@@ -356,3 +356,41 @@ existing room-exception guard (`.99` private office). `npm test`: 3222/3222.
 
 **Replay:** neither corpus changes. No recorded turn has an ineffective move, and the head and the history line are
 prompt-only.
+
+## Stage 5 – A4 (unified arrival per step): evaluated, not switched; what was done instead
+
+**Done (safe parts):**
+- **An unasked `expected` key no longer spoils a report.** Before, one key nobody asked for (even an empty one)
+  made the whole answer invalid (`$.expected: unexpected property`), forcing a repair round or losing the report.
+  Now it is left out before validation. It never stands for a step and never authorizes travel. Regression:
+  `location190_stage4.test.js` (an unasked `arrived:true` moves nobody, the rest of the report stands). In the
+  corpus, 4 replies now keep their first answer without a repair call (`b18-rogue#10/#176/#238`, `b19-mage#96`, same
+  events).
+- **Slope rule tightened (found in the full replay, B1/R-B6):** "down the sloping passage" or "deeper down the
+  gallery" is the way on. Only stair or level words ("stairs", "descend", "the level below") ask for a level down.
+  Cases: `b17-rogue#191/#199` in one-level Glimmerdeep used to be refused by stage 3 ("no level below").
+- **D3 tightened (found in the full replay):** paying for a bed is not yet going to it. Without a GO, only rest or
+  sleep booked this turn takes him into the room he holds there. `b18-rogue#90` "pay … then go up and sleep" is
+  booked. `b19-warrior#80/#208` (paid only, the story walked him up) stay refused as before.
+
+**A4 itself: not switched (D4: only if equally safe). Blockers:**
+1. **Evidence.** Today the `arrive` delta is the explicit arrival claim, and the World checks it against the step.
+   Under A4 `expected.<seq>.reached` would be the only claim. For "`arrived:true` without evidence never suffices" to
+   hold, it would need an evidence quote checked against the prose, as `met` has. That is a new contract (schema and
+   prompt) whose model compliance can only be measured in a natural run: every answer in the replay corpus and in the
+   natural batches is in the old form.
+2. **Story order.** An arrival's position among the local deltas is today its `arrive` seq. A4 needs a position
+   field, one more thing a model can get wrong. The scene check (`scene_context`) depends on it.
+3. **Migration.** Every record holds `arrive` deltas, so both forms would have to be read side by side (a second
+   path, against the goal of fewer paths).
+
+The groundwork A4 needs is in place: the stored step contract with one check, N1/N2/N4, and harmless unasked keys.
+A4 is worth one model probe in the next natural batch. Canon §2 stays as it is, because A4 was not done.
+
+**Replay** over all 2235 cases (not only the four quick runs of `npm test`): stages 3–5 change 10 records. Each is
+accepted with its own reason and fingerprint (`location190-s345 …`): the B5 GO lines (`b17-rogue#177/#191/#199`),
+D1b (`b17-rogue#132`, `b17-warrior#274`), the unasked keys (4), and D3 (`b18-rogue#90`). The list now holds 1092
+accepted records, 0 open, 0 stale.
+
+Two tests used an unasked key only to provoke a schema error (`patch_batch10_followup` retry tests); they now use a
+real one (an unknown delta type).

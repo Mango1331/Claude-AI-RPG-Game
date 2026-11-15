@@ -3,7 +3,7 @@
  "baseline_sha": "b8d2af4b76cd0bc52ac178b8c500e5733878ecee",
  "baseline_engine": "4.3.0-c.6.6.126",
  "engine": "4.3.0-c.6.6.189",
- "note": "Location architecture .190 vs .126 (stage 1: place book and NOT ARRIVED; stage 2: movement proof): every .187 entry unchanged unless listed with its previous acceptance; see docs/LOCATION_ARCHITECTURE_190.md.",
+ "note": "Location architecture .190 vs .126 (stages 1-5: place book, NOT ARRIVED, movement proof, B5 sections, D1b, D3, unasked expected keys): every .187 entry unchanged unless listed with its previous acceptance; see docs/LOCATION_ARCHITECTURE_190.md.",
  "categories": {
   "representation": "population contract recorded, no mechanical consequence: entity.updated {life_stage, population_at} at creation (population_at no longer set on the profile event), quest.hunt.age on hunt contracts, converted population/life_stage fields inside an already rejected creature.new",
   "rejection reason": "a claim already refused in .126 (aware of an unknown creature) is now refused by the creature reference lock (creature_continuity)",
@@ -56,7 +56,10 @@
   "location190-s1 outcome": "location190-s1: outcome",
   "location190-s1 events": "location190-s1: events",
   "location190-s1 rejected+events+corrections": "location190-s1: rejected+events+corrections",
-  "location190-s2 outcome": "location190-s2: outcome"
+  "location190-s2 outcome": "location190-s2: outcome",
+  "location190-s345 events": "location190-s345: events",
+  "location190-s345 outcome": "location190-s345: outcome",
+  "location190-s345 rejected+events+corrections": "location190-s345: rejected+events+corrections"
  },
  "returned": {
   "b17-warrior#73": {
@@ -1651,13 +1654,13 @@
    "fingerprint": "sha256:cecbb29feab262bae3ce5a9eefdb95a5cf29f71402dfee453878a1cc63b6a0e9"
   },
   "b17-rogue#132": {
-   "category": "monster184 creature look",
-   "reason": "b17-rogue#132: Monster A1: 2 creatures created with traits = the reported description (checked: each starts with its first descriptor, at most 240 characters); stripped of that field the record is exactly the .183 output.",
-   "fingerprint": "sha256:206570a5e4905646425f7dc5f748e21702becd4900909a9759bf4c5ace4de839",
-   "previous_acceptance_182": {
-    "category": "representation",
-    "fingerprint": "sha256:970f442da8b0aff5cfe844704b1048d16f8dd3dcc8fef43b68d8f488e2091bfb"
-   }
+   "category": "location190-s345 events",
+   "reason": "b17-rogue#132: stage 3 (D1b): a way the story shows out in the hollow no longer makes it a place explored room by room (no rooms marking, no levels); the den chamber stays a room of the hollow (its id under the hollow)",
+   "previous_acceptance_189": {
+    "category": "monster184 creature look",
+    "fingerprint": "sha256:206570a5e4905646425f7dc5f748e21702becd4900909a9759bf4c5ace4de839"
+   },
+   "fingerprint": "sha256:dd3e444567c629ce4ca243be1a5d405ebe6b0ddb0390ddacb1dbb33b615fed58"
   },
   "b17-rogue#133": {
    "category": "design149 offensive growth",
@@ -1858,13 +1861,13 @@
    "fingerprint": "sha256:a0fd2c96abfd54d8759af4f9a66066a9fba4fbfc9b84a69d8eb8d0d25255c9c8"
   },
   "b17-rogue#177": {
-   "category": "location190-s2 outcome",
-   "reason": "b17-rogue#177: only the GO turn's outcome.recorded changes: every authorized step now stores the movement proof's fields decided at authorization (mode, enter, scope; meant for words of a known place), src/v4/movement.js stepFields; with these fields removed the record is identical to stage 1 (verified for all 317 GO turns); no reply record of the corpus changes",
+   "category": "location190-s345 outcome",
+   "reason": "b17-rogue#177: stage 3 (B5): the GO into Glimmerdeep from its gate is the engine's next section; its line names it (part 1 of level 1); same events otherwise",
    "previous_acceptance_189": {
-    "category": "pulse162 window",
-    "fingerprint": "sha256:1aa7bb67c80d590684b707059c829cc0844fca9c80c883d3e1afead85d2192f3"
+    "category": "location190-s2 outcome",
+    "fingerprint": "sha256:6547c6577030cbb4588ca9f87388022c2111bad743b81af3cba91953e65286dd"
    },
-   "fingerprint": "sha256:6547c6577030cbb4588ca9f87388022c2111bad743b81af3cba91953e65286dd"
+   "fingerprint": "sha256:342037bc303a52c9a298f7185b316a4aae22cba5ef6c108ecc85386777eb3ee4"
   },
   "b17-rogue#178": {
    "category": "monster184 creature look",
@@ -1894,13 +1897,13 @@
    }
   },
   "b17-rogue#191": {
-   "category": "location190-s2 outcome",
-   "reason": "b17-rogue#191: only the GO turn's outcome.recorded changes: every authorized step now stores the movement proof's fields decided at authorization (mode, enter, scope; meant for words of a known place), src/v4/movement.js stepFields; with these fields removed the record is identical to stage 1 (verified for all 317 GO turns); no reply record of the corpus changes",
+   "category": "location190-s345 outcome",
+   "reason": "b17-rogue#191: stage 3 (B5, B1/R-B6): 'down the sloping passage' in a one-level Dungeon is the way on: the GO names the engine's next section (part 2 of level 1)",
    "previous_acceptance_189": {
-    "category": "pulse167 dungeon diagnosis",
-    "fingerprint": "sha256:43318186c492d0dc2b7639ac1affffd41fac5d16bda7dc9497aa6e2396cea874"
+    "category": "location190-s2 outcome",
+    "fingerprint": "sha256:fd1986c6a8d2ca5cf5200091ed930113175c8c9f95935b9e12cbe23c70186178"
    },
-   "fingerprint": "sha256:fd1986c6a8d2ca5cf5200091ed930113175c8c9f95935b9e12cbe23c70186178"
+   "fingerprint": "sha256:7e5d5d66f2c36cfc793a25436ab04cd4106d4a23d7cf09e70dee454e5a5125de"
   },
   "b17-rogue#193": {
    "category": "pulse167 dungeon window",
@@ -1931,13 +1934,13 @@
    }
   },
   "b17-rogue#199": {
-   "category": "location190-s2 outcome",
-   "reason": "b17-rogue#199: only the GO turn's outcome.recorded changes: every authorized step now stores the movement proof's fields decided at authorization (mode, enter, scope; meant for words of a known place), src/v4/movement.js stepFields; with these fields removed the record is identical to stage 1 (verified for all 317 GO turns); no reply record of the corpus changes",
+   "category": "location190-s345 outcome",
+   "reason": "b17-rogue#199: stage 3 (B5, B1/R-B6): 'deeper down the narrowing gallery' is the way on: the GO names the engine's next section; no level below is announced",
    "previous_acceptance_189": {
-    "category": "pulse167 dungeon diagnosis",
-    "fingerprint": "sha256:683f45f80b707024cd455a59f73962b47bec54f6afe267e189d925d03a9bbc7c"
+    "category": "location190-s2 outcome",
+    "fingerprint": "sha256:64d3ac8d53fa877d2d644d282c61d4fbe2f3395064bc4dfa3c191dc68a4bc2fb"
    },
-   "fingerprint": "sha256:64d3ac8d53fa877d2d644d282c61d4fbe2f3395064bc4dfa3c191dc68a4bc2fb"
+   "fingerprint": "sha256:b58085a424ed32f4ac183345c89d9aec6ad72f0a6c97e4204836e8ac0b190830"
   },
   "b17-rogue#200": {
    "category": "monster186 armed field",
@@ -3262,13 +3265,13 @@
    "fingerprint": "sha256:3255d5d8badc7bed5282676037943604aa0fe4eb5d435e629fd943dea2a69010"
   },
   "b17-warrior#274": {
-   "category": "monster184 creature look",
-   "reason": "b17-warrior#274: Monster A1: 3 creatures created with traits = the reported description (checked: each starts with its first descriptor, at most 240 characters); stripped of that field the record is exactly the .183 output.",
-   "fingerprint": "sha256:253e782cef64d9370e576b18ba381049da8dc421877a20e59479bfa4715178cd",
-   "previous_acceptance_182": {
-    "category": "representation",
-    "fingerprint": "sha256:94ef7b812ee2b21950b009c679306a436927d14211b4260710d75a964f31cd32"
-   }
+   "category": "location190-s345 events",
+   "reason": "b17-warrior#274: stage 3 (D1b): the wolf den under the slab stays a room of the hollow; the hollow is not marked as explored room by room",
+   "previous_acceptance_189": {
+    "category": "monster184 creature look",
+    "fingerprint": "sha256:253e782cef64d9370e576b18ba381049da8dc421877a20e59479bfa4715178cd"
+   },
+   "fingerprint": "sha256:dd6a864999b09d87861bab0c8830e31a8dbcd429e423f189f6e41a358044be42"
   },
   "b17-warrior#283": {
    "category": "location190-s2 outcome",
@@ -3615,13 +3618,13 @@
    }
   },
   "b18-rogue#10": {
-   "category": "pilot177 npc name subject",
-   "reason": "b18-rogue#10: K8-1: learn seq 3 \"Alaric Red\" is Alaric's name, not the clerk's: what someone learns of him is about pc; the mixed-up name fact (or claim) and its knowledge are not booked, the later fact ids of the record shift by one, extract.applied counts one more rejection; every other event, outcome field, rejection and correction is exactly the .176 output.",
-   "fingerprint": "sha256:78020d6c28c242e4a79c3cdbe71ae6f4c2175b460fbac32dadd25e36823cf771",
-   "previous_acceptance_172": {
-    "category": "fix158 fact text",
-    "fingerprint": "sha256:d9a28887bad8580750e546c62dea78bcf912ded0094c8c28fd47134ef3db0d79"
-   }
+   "category": "location190-s345 events",
+   "reason": "b18-rogue#10: stage 5: the extractor's first answer carried an expected key nobody asked for; it is left out instead of spoiling the answer, so no repair call is needed (same events, extract.applied repaired:false)",
+   "previous_acceptance_189": {
+    "category": "pilot177 npc name subject",
+    "fingerprint": "sha256:78020d6c28c242e4a79c3cdbe71ae6f4c2175b460fbac32dadd25e36823cf771"
+   },
+   "fingerprint": "sha256:bbe357ad8bd68ac93ff019c93cbf8b4bc2c63c613fdc19e6df93bdaaec212855"
   },
   "b18-rogue#11": {
    "category": "e2a169 outcome fields",
@@ -8625,13 +8628,13 @@
    "fingerprint": "sha256:9b0dab6a74c64ee4334bf38d34cbdbcc464703cac1e39dc5789236e2bca8929e"
   },
   "b18-rogue#90": {
-   "category": "location190-s1 rejected-to",
-   "reason": "b18-rogue#90: only the record's rejected list changes: a refused arrival keeps its claimed destination ('to') for the player's NOT ARRIVED line; same rule, same reason, same events",
-   "previous_acceptance_187": {
-    "category": "travel187 stay correction places",
-    "fingerprint": "sha256:c62533cb85f6a55c9c117a71ef5e55c463f5eee1e3d2d0742712335eb5fd282d"
+   "category": "location190-s345 rejected+events+corrections",
+   "reason": "b18-rogue#90: stage 4C (D3): 'I pay the innkeeper two copper for the small room, then go up and sleep until morning': the sleep he booked in the room he paid for takes him into it without a GO; the arrival and the sleep are booked there (was no_go)",
+   "previous_acceptance_189": {
+    "category": "location190-s1 rejected-to",
+    "fingerprint": "sha256:c5fad99d22fe3f6c5c7f0bff42bd116a05f41d87455375c98dffbdbfe932864f"
    },
-   "fingerprint": "sha256:c5fad99d22fe3f6c5c7f0bff42bd116a05f41d87455375c98dffbdbfe932864f"
+   "fingerprint": "sha256:8ed143819351752bac82ca23212e6f87276d875ad35c69442a8b010228243ca2"
   },
   "b18-warrior#30": {
    "category": "location190-s1 rejected-to",
@@ -8908,6 +8911,21 @@
    "category": "location190-s1 rejected+events+corrections",
    "reason": "b18-warrior#180: consequence of the valid known GO target: the arrival is booked at the known place instead of a second new place of another name; no duplicate place is created",
    "fingerprint": "sha256:774e7ad9f2e480976001a737ee66bbf25cbbb8c4d2a4a23f436e0c04a20d361e"
+  },
+  "b18-rogue#176": {
+   "category": "location190-s345 events",
+   "reason": "b18-rogue#176: stage 5: unasked expected key left out; the first answer stands, no repair call (same events)",
+   "fingerprint": "sha256:c1b29bcf1502736ca841d355ac64d04ba871060d33686c15e00c27b8b0983f00"
+  },
+  "b18-rogue#238": {
+   "category": "location190-s345 events",
+   "reason": "b18-rogue#238: stage 5: unasked expected key left out; the first answer stands, no repair call (same events)",
+   "fingerprint": "sha256:ed5cbcd1207d56368d3ab463d1515188e9ba7fe059dc062062b842c6168c8128"
+  },
+  "b19-mage#96": {
+   "category": "location190-s345 events",
+   "reason": "b19-mage#96: stage 5: unasked expected key left out; the first answer stands, no repair call (same events)",
+   "fingerprint": "sha256:0cbc99323fe692d1a278fc9190130f7a75157e7bf832734cd45ad4859c5836e0"
   }
  }
 }

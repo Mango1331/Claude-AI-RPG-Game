@@ -522,5 +522,6 @@ test('patch 8 (13B) .190 B5: the way down is the engine\'s, at the end of level 
     assert.ok(!end.places[below.id], 'previewed, not made');
     // a Dungeon of one level has nothing below its last part
     end.dungeons[CATA] = { ...end.dungeons[CATA], floors: { 1: end.dungeons[CATA].floors[1] } };
-    assert.equal(sectionStep(end, 'down').refuse, 'Old Crown Catacombs has no level below level 1');
+    assert.equal(sectionStep(end, 'the stair down').refuse, 'Old Crown Catacombs has no level below level 1');
+    assert.equal(sectionStep(end, 'down the sloping passage').refuse, 'nothing further on level 1 of Old Crown Catacombs: this is the end of its way and it has no level below', 'a slope is a way on (B1)');
 });

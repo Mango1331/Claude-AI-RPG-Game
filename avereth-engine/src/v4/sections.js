@@ -68,7 +68,8 @@ export function positionOf(s, id) {
 const BACK = /\b(?:back|previous|retrace|the way i came|where i came from)\b/;
 const OUT = /\b(?:out|outside|exit|leave|surface|daylight|the gate|the entrance)\b/;
 const UP = /\b(?:up|upstairs|ascend|climb up|level above)\b/;
-const DOWN = /\b(?:down|downstairs|descend|stair|stairs|stairway|lower level|next level)\b/;
+// a way down a level by its own words (a stair, the level below); "down the sloping passage" is a way on (B1, R-B6)
+const DOWN = /\b(?:downstairs|descend|descends|descending|stair|stairs|stairway|staircase|lower level|next level|level below|deeper level)\b/;
 
 /**
  * Where his words take him from here in a Living Dungeon: {to} a section he has, {preview} the next one (made only by

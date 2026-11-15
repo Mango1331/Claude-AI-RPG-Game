@@ -93,7 +93,7 @@ test('schema error then ST200 transient error uses the third existing extractor 
     let calls = 0;
     await runExtraction(g.chat, id, c, async () => {
         calls++;
-        if (calls === 1) return '{"scene":"here","expected":{"99":true},"deltas":[]}';
+        if (calls === 1) return '{"scene":"here","expected":{},"deltas":[{"seq":1,"type":"made.up"}]}';
         if (calls === 2) throw Object.assign(Error('HTTP 200: Internal Server Error'), { code: 'LLM_PROVIDER', status: 200, retryable: true });
         return '{"scene":"here","expected":{},"deltas":[]}';
     });
@@ -181,7 +181,7 @@ test('transient exhaustion keeps the existing call limit and safe world continua
     let calls = 0;
     await runExtraction(g.chat, id, c, async () => {
         calls++;
-        if (calls === 1) return '{"scene":"here","expected":{"99":true},"deltas":[]}';
+        if (calls === 1) return '{"scene":"here","expected":{},"deltas":[{"seq":1,"type":"made.up"}]}';
         throw recovery.providerResponseError(200, { error: { message: 'Internal Server Error' } });
     });
     assert.equal(calls, 3);

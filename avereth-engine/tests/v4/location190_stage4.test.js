@@ -33,24 +33,27 @@ test('.190 4B: an ineffective move outside a fight costs one repair at most, nev
     assert.deepEqual(lastUser(g).plan.llm.map((c) => c.purpose), ['plan', 'plan_repair'], 'two planner calls, no third');
 });
 
-test('.190 4C (D3): the room he paid for this turn is reached without a GO; buying bread opens no back room; another house stays out of reach', async () => {
+test('.190 4C (D3): the room he holds is reached without a GO when he goes to sleep or rest there; paying alone, buying bread or a private room moves him nowhere', async () => {
     const g = await mage();
     await walk(g, 'loc.ashbridge', { text: '*i walk to ashbridge*', prose: 'Ashbridge.' });
     await walk(g, { new: 'the Sow\'s Rest' }, { text: '*I go into the Sow\'s Rest*', at: { new: { name: 'the Sow\'s Rest', kind: 'site', parent: 'loc.ashbridge' } }, prose: 'The inn.' });
     const inn = g.state().scene.at;
-    const lodged = async (text, at, lodging) => {
-        await say(g, text);
+    const lodged = async (text, at, lodging, rest = true) => {
+        await say(g, text, ...(rest ? [{ type: 'activity', kind: 'sleep', minutes: 480, quote: text.replace(/\*/g, '') }] : []));
         if (lodging) inject(g, [{ t: 'service.granted', d: { service: 'lodging', by: null, at: inn, turn: g.state().turn } }]);
         return g.reply('He goes up.', { expected: {}, deltas: [{ seq: 1, type: 'arrive', at, forced_by: null, with: null }] });
     };
     // bread bought: no way into the back room
-    let r = await lodged('*I buy a loaf of bread*', { new: { name: 'back room', kind: 'interior', parent: null } }, false);
+    let r = await lodged('*I buy a loaf of bread*', { new: { name: 'back room', kind: 'interior', parent: null } }, false, false);
     assert.equal(g.state().scene.at, inn);
     assert.ok(r.record.rejected.some((x) => x.rule === 'no_go'));
     // the paid room, not a private office of the inn
-    r = await lodged('*I take my paid room and go upstairs*', { new: { name: 'private office', kind: 'interior', parent: null } }, true);
+    // paying for a bed is not yet going to it (b19-warrior#80 of the corpus)
+    r = await lodged('*I pay for a bed*', { new: { name: 'small room upstairs', kind: 'interior', parent: null } }, true, false);
+    assert.equal(g.state().scene.at, inn, 'paid, not gone');
+    r = await lodged('*I go up to my paid room and sleep for eight hours*', { new: { name: 'private office', kind: 'interior', parent: null } }, true);
     assert.equal(g.state().scene.at, inn, 'no free access to a private area');
-    r = await lodged('*I take my paid room and go upstairs*', { new: { name: 'small room upstairs', kind: 'interior', parent: null } }, true);
+    r = await lodged('*I go up to my paid room and sleep for eight hours*', { new: { name: 'small room upstairs', kind: 'interior', parent: null } }, true);
     assert.equal(g.state().places[g.state().scene.at].name, 'small room upstairs');
     assert.equal(g.state().places[g.state().scene.at].parent, inn);
 });
@@ -82,4 +85,17 @@ test('.190 4E (N4): a reply whose arrival was refused carries one engine line in
     assert.match(copy.at(-1).mes, /\[ENGINE: in this reply Alaric did not reach the smithy by the well; he stayed where he was\. What it told there was not booked; everything else stands as the engine booked it\.\]$/);
     assert.equal(JSON.stringify(g.chat), saved, 'the saved chat is untouched');
     assert.equal(historyMark(rec(g.chat.findLast((m) => !m.is_user && rec(m) && !(rec(m).rejected || []).length))), null, 'a reply without a refused arrival carries nothing');
+});
+
+test('.190 stage 5: an expected key nobody asked for, empty or claiming an arrival, spoils no report and moves nobody', async () => {
+    const g = await mage();
+    await walk(g, 'loc.ashbridge', { text: '*i walk to ashbridge*', prose: 'Ashbridge.' });
+    await say(g, '*I look at the river*');
+    const r = await g.reply('The river runs brown and fast under the bridge.', { expected: { 7: { arrived: true, at: 'loc.ashbridge.guild_hall', with: null }, 8: {} }, deltas: [
+        { seq: 1, type: 'time', minutes: 10 },
+        { seq: 2, type: 'arrive', at: 'loc.ashbridge.guild_hall', forced_by: null, with: null }] });
+    assert.equal(r.record.extraction.status, 'applied', JSON.stringify(r.record.extraction));
+    assert.equal(g.state().scene.at, 'loc.ashbridge', 'no step, no arrival');
+    assert.ok(r.record.rejected.some((x) => x.type === 'arrive' && x.rule === 'no_go'));
+    assert.ok(r.record.events.some((e) => e.t === 'time.advanced'), 'the rest of the report stands');
 });

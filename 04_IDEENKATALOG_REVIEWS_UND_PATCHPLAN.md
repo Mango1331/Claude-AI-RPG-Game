@@ -6,7 +6,7 @@
 
 | Richtung | Weiter zu klären |
 |---|---|
-| **Erkundung und Beute außerhalb von Kämpfen** | Wenige orts-/risikogebundene seltene Funde, Elite-/Minibossmaterial und Stones; keine automatische Verdopplung von `search`-, Dungeon- oder Kampfloot |
+| **Erkundung und Beute außerhalb von Kämpfen** | Wenige orts-/risikogebundene seltene Funde, Elite-/Minibossmaterial und Stones; keine automatische Verdopplung von `search`-, Dungeon- oder Kampfloot. Kampfbeute besonderer Gegner (Elite/Guardian/Endboss): [Fachplan Bossloot V1](patch_plans_10b/FACHPLAN_BOSSLOOT_BESONDERE_BELOHNUNGEN.md), Entscheidungen U1–U11 offen |
 | **Journal/Karte/Quick Replies** | Zusätzliche editierbare Hilfen jenseits der seit `.161` umgesetzten Quest-/TAKE-Entwürfe; keine Buchung oder Modellanfrage durch UI-Klick |
 | **Engine-only-Komfort** | Bekannte Board-/Offertenansichten sowie sichere Rest-/Wait-/Reiseschritte, ohne neue Preisautorität oder Teleport. [Entwurf](patch_plans_10b/PATCH_ENGINE_BOARD_AND_TRADE_OFFERS.md) |
 | **Monster und lebendige Welt** | Spätere Sapienz, situative Flucht, glaubwürdige Monsterkulturen, kleine Populationen, Fähigkeiten/Bossphasen **als getrennte Features**. [Monsterdesign](recherche/MONSTERDESIGN_ANALYSE_20261028.md) |

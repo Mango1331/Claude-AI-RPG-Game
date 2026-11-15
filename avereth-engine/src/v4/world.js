@@ -276,6 +276,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const s = clone(state);
     const dice = Dice.from(s);
     const events = [];
+    // .199: identity creation is not arrival. Keep these observations local to this reply.
+    const knownAbsentAtStart = new Set(Object.values(state.entities).filter((e) => e.kind === 'npc' && !state.scene.present.includes(e.id)).map((e) => e.id));
+    const boundAtStart = new Set([...Object.keys(state.encounter?.combatants || {}), ...(state.pending_combat || []).map((p) => p.by)]);
+    const reenteredNpcs = new Set(), pulseArrivedNpcs = new Set();
     // the step whose events these are (Decision Ownership: an extractor delta writes only what its type may write)
     let step = { kind: 'engine' };
     // a gate the current delta passed (src/v4/ownership.js): only then may it reach the engine-owned kind behind it
@@ -288,10 +292,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const why = ownershipViolation(step, e, s);
             if (why) throw new Error(`Decision Ownership: ${why}`);
         }
+        const entering = e.t === 'scene.entered' && knownAbsentAtStart.has(e.d.id) && !s.scene.present.includes(e.d.id);
         applyEvent(s, e);
         if (checked) {
             const why = effectViolation(step, e, before, stateRegions(s));
             if (why) throw new Error(`Decision Ownership: ${why}`);
+        }
+        if (entering && s.scene.present.includes(e.d.id) && statusOf(s, e.d.id) !== 'dead') {
+            reenteredNpcs.add(e.d.id);
+            if (!boundAtStart.has(e.d.id)) pulseArrivedNpcs.add(e.d.id);
         }
         events.push(e);
     };
@@ -598,7 +607,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // unless the turn's window is open for DANGER (then one group) - on a leg as anywhere else. First the contact he
         // actively sought this turn (an authorized GO or a successful search, §5.8), at the place he actually reached:
         // it follows the envelope as ever, before any road or window rule. Whoever was there before is not touched.
-        if (pulse?.governs && bornHere.has(id) && !s.encounter && !aheadBorn.has(id)) {
+        if (pulse?.governs && (bornHere.has(id) || pulseArrivedNpcs.has(id)) && !s.encounter && !aheadBorn.has(id)) {
             if (!soughtMatch(s, content, [...(pulse.sought || []), ...(pulse.hunts || [])], id)) {
                 const g = s.entities[id].group || (s.entities[id].kind === 'npc' ? 'people' : id);
                 if (!(pulse.open && pulse.kind === 'danger' && (!pulseHostile.size || pulseHostile.has(g)))) {
@@ -2009,11 +2018,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     if (opened) opened.from = fightFrom;
     if (cPath && !opened) openEquipmentStock(s, content, emit);
     // PULSE package A (plan §6 A5): what this reply did with the turn's window, separate from the engine's decision.
-    // `narrated` is a heuristic (something new came into the world in an open window), not an engine truth. Package B:
+    // `narrated` is a booking-signal heuristic, not evidence of narrative quality or PULSE causality. Package B:
     // also for a Dungeon's window (its own foe rule governs there, so governs is false, yet the turn drew)
     if (pulse?.governs || pulse?.rolled) {
         const created = events.filter((e) => e.t === 'entity.created').map((e) => e.d.entity);
         const persisted = {
+            threads: events.filter((e) => e.t === 'thread.set').length, npc_reentries: reenteredNpcs.size,
             persons: created.filter((x) => x.kind === 'npc').length, creatures: created.filter((x) => x.kind === 'creature').length,
             features: events.filter((e) => e.t === 'feature.set').length, objects: events.filter((e) => e.t === 'object.created').length,
             places: events.filter((e) => e.t === 'place.created').length,
@@ -2021,8 +2031,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             ...(pulse.frame === 'dungeon' ? { slots: events.filter((e) => e.t === 'dungeon.slot').length } : {}),
             rejected_pulse: rejected.filter((r) => ['pulse', 'pulse_take'].includes(r.rule) || (r.rule === 'road' && pulse.exposure === 'travel')).length,
         };
-        const any = persisted.persons + persisted.creatures + persisted.features + persisted.objects + persisted.places > 0 || persisted.fight;
-        emit({ t: 'pulse.outcome', d: { v: 1, turn: s.turn, rolled: !!pulse.rolled, open: !!pulse.open, kind: pulse.kind ?? null,
+        const any = persisted.persons + persisted.creatures + persisted.features + persisted.objects + persisted.places + persisted.threads + persisted.npc_reentries > 0 || persisted.fight;
+        emit({ t: 'pulse.outcome', d: { v: 2, turn: s.turn, rolled: !!pulse.rolled, open: !!pulse.open, kind: pulse.kind ?? null,
             narrated: pulse.open ? (any ? 'likely' : 'none') : null, heuristic: true, persisted } });
         // package C (plan §6 C 5, §12.4 c): a pause the engine cut short for someone (danger, trouble) whom the reply did
         // not bring in: the next reply makes that cause plain, from the engine's event; no new attacker, no fight for it
@@ -3526,7 +3536,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (!d.because) { reject(d, 'coerce', 'coercion needs a because'); return; }
         // PULSE package A: someone this reply brought in takes nothing of his in the same reply (robbery, fine or
         // confiscation): they demand it, he decides; an authority or robber already here keeps the envelope's rules
-        if (pulse?.governs && bornHere.has(by)) {
+        if (pulse?.governs && (bornHere.has(by) || pulseArrivedNpcs.has(by))) {
             reject(d, 'pulse_take', `${by} is new in this reply: a ${d.kind} is demanded, not taken`);
             const correction = `Nothing was taken from Alaric in the last reply: ${entityLabel(s, by)} only arrived then; the ${d.kind} is a demand he has not answered yet (his coin and things are as they were).`;
             if (!corrections.includes(correction)) corrections.push(correction);

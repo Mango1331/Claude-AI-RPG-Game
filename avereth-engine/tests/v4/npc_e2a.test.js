@@ -46,7 +46,9 @@ test('E2-A A1: User04 I72 – the narrated crossbowman is met (original answer +
     // the id tags of later V3 calls of the same reply move by one (the met is one more call): compared without them
     const norm = (e) => JSON.stringify(e).replace(/(\.d\d+)_\d+/g, '$1');
     const extra = r.events.filter((e) => !plain.events.some((x) => norm(x) === norm(e)));
-    assert.ok(extra.every((e) => ['scene.entered', 'entity.updated', 'knowledge.gained', 'memory.recorded', 'extract.applied'].includes(e.t)), extra.map((e) => e.t).join(','));
+    assert.ok(extra.every((e) => ['scene.entered', 'entity.updated', 'knowledge.gained', 'memory.recorded', 'extract.applied', 'pulse.outcome'].includes(e.t)), extra.map((e) => e.t).join(','));
+    assert.equal(r.events.find(e => e.t === 'pulse.outcome').d.persisted.npc_reentries, 1);
+    assert.equal(plain.events.find(e => e.t === 'pulse.outcome').d.persisted.npc_reentries, 0);
     assert.equal(r.state.entities.pc.sheet.coin, plain.state.entities.pc.sheet.coin);
 });
 test('E2-A A1c: "both clerks at work" brings the historical group entity, unchanged (no migration)', () => {

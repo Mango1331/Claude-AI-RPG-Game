@@ -89,6 +89,8 @@ export async function pilot01Smoke({ page, send, idle, calls, onReload, out }) {
             threads: Object.fromEntries(Object.entries(s.threads || {}).map(([k, t]) => [k, { text: t.text, status: t.status, who: t.who || null }])),
             carterNames: Object.values(s.facts || {}).filter((f) => f.s === 'npc.npccarter_hazel' && f.p === 'name').map((f) => f.o),
             hessa: Object.values(s.entities).find((e) => e.name === 'Widow Hessa')?.descriptors || null,
+            // .190 (N2): what the player sees of the last two messages in ST's own chat view
+            visible: [...document.querySelectorAll('#chat .mes')].slice(-2).map((m) => m.innerText).join('\n'),
             whistle: s.objects['obj.test.whistle']?.holder || null };
     });
     const checks = {}, evidence = [];
@@ -144,13 +146,14 @@ export async function pilot01Smoke({ page, send, idle, calls, onReload, out }) {
     const carter = await play('p177carter');
     const ride = carter.threads['thread.t47.1'];
     checks.k5NoSettlementBySecondId = ride?.status === 'open' && JSON.stringify(ride.who) === JSON.stringify(['npc.npccarter_woolpack', 'pc']);
-    // .177 K6a: the correction names the place he reached, and the next narrator block carries it
-    checks.k6aCorrectionAtCairn = carter.at === 'loc.crossroads_cairn_on_the_south_road' && !carter.corrections.some((c) => /remains at the Woolpack/.test(c))
-        && carter.corrections.some((c) => /Alaric is at crossroads cairn on the south road; continue from there/.test(c));
+    // .190 (A2, D2): going to the yard and asking the carter for his seat is no ride: the crossroads stay unreached; the
+    // player sees it in ST's own view (N2), and the next narrator block opens with where he is and what he did not reach
+    checks.d2RideNotBooked = carter.at !== 'loc.crossroads_cairn_on_the_south_road' && carter.replyRejected.includes('passage');
+    checks.n2NotArrivedVisibleInST = /NOT ARRIVED — Alaric remains at [^\n]*; crossroads cairn on the south road was not reached\./.test(carter.visible) && !/ENGINE REFUSED/.test(carter.visible);
     n = calls.length;
     const cairn = await play('p177cairn');
     const cairnNarr = calls.slice(n).filter((c) => c.purpose === 'narrator').map((c) => (c.messages || []).map((m) => String(m.content)).join('\n')).join('\n');
-    checks.k6aNarratorToldCairn = /Alaric is at crossroads cairn on the south road; continue from there/.test(cairnNarr) && !/remains at the Woolpack/.test(cairnNarr) && !cairn.errors.length;
+    checks.n1WhereHeadsNarrator = /WHERE — [^\n]*The last reply's crossroads cairn on the south road was not reached/.test(cairnNarr) && /\[ENGINE: in this reply Alaric did not reach crossroads cairn on the south road/.test(cairnNarr) && !cairn.errors.length;
     // .177 K8: no carter named "Alaric Red"; no role "null"
     await seed(31);
     const name = await play('p177name');

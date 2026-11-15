@@ -111,7 +111,7 @@ function rulesetTwoSheet(template, overrides, content) {
     const stats = { ...content.rules.human_baseline };
     delete stats.src;
     const basis = cls ? cls.favored : template.stat_basis || [];
-    for (const f of basis) stats[f] += level; // +1 at Level 1 and +1 on each later Level
+    for (const f of basis) stats[f] += 1; // one-time start bonus; later levels receive only the distributed free points
     const priority = template.priority || template.priority_by_class?.[cls?.id] || ['STR', 'VIT', 'AGI'];
     const free = distributeFreePoints(priority, (level - 1) * content.rules.progression.free_points_per_level);
     for (const [k, v] of Object.entries(free)) stats[k] += v;
@@ -149,7 +149,7 @@ export function humanSheet(template, overrides, content) {
     const level = overrides.level || template.level.default;
     const stats = { ...content.rules.human_baseline };
     delete stats.src;
-    for (const f of cls.favored) stats[f] += level; // +1 at Level 1 and +1 on each later Level
+    for (const f of cls.favored) stats[f] += 1; // one-time start bonus; later levels receive only the distributed free points
     const priority = template.priority || template.priority_by_class?.[cls.id] || ['STR', 'VIT', 'AGI'];
     const free = distributeFreePoints(priority, (level - 1) * content.rules.progression.free_points_per_level);
     for (const [k, v] of Object.entries(free)) stats[k] += v;

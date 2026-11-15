@@ -14,6 +14,7 @@ import { makeClassFixture, CLASS_FIXTURES } from './class_fixture.mjs';
 // Options (also in tools/st_live/live.config.json, see live.config.example.json): --st <SillyTavern dir> --user
 // <handle> --card <name> --preset profile|repo --guide <id|file> --player llm|scripted --seed <n> --max-turns <n>
 // --headed --browser auto|chromium|msedge|chrome --port <n> --runs <dir> --keep-profile --st-data <data root>
+// --read-pause-ms <0..60000> (natural batch defaults to 5000; single runs default to 0)
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -48,7 +49,7 @@ export const DEFAULT_RUNS = path.join(ENGINE, 'tools', 'st_live', 'runs');
 export const STUB_KEY = 'stub-key-not-a-real-key-0000';
 export const DEFAULTS = {
     stDir: null, stUser: 'default-user', stData: null, card: null, preset: 'profile', port: 8123, browser: 'auto', headless: true,
-    keyEnv: 'AVERETH_LIVE_API_KEY', guide: 'guild_dungeon_loop', seed: null, maxTurns: null, turnTimeoutSec: 900, runsDir: null, keepProfile: false,
+    keyEnv: 'AVERETH_LIVE_API_KEY', guide: 'guild_dungeon_loop', seed: null, maxTurns: null, turnTimeoutSec: 900, runsDir: null, keepProfile: false, readPauseMs: 0,
     player: { type: 'llm', url: null, model: null, keyEnv: null, temperature: 0.8, maxTokens: 3000, reasoning: 'profile', extraBody: null },
 };
 
@@ -84,6 +85,10 @@ export function options(argv = process.argv.slice(2), env = process.env) {
     o.maxTurnsExplicit = arg('--max-turns') !== null;
     if (o.maxTurnsExplicit) o.maxTurns = Number(arg('--max-turns'));
     if (arg('--port')) o.port = Number(arg('--port'));
+    const pauseIndex = argv.indexOf('--read-pause-ms');
+    if (pauseIndex >= 0) o.readPauseMs = Number(argv[pauseIndex + 1]);
+    if (!Number.isInteger(o.readPauseMs) || o.readPauseMs < 0 || o.readPauseMs > 60000)
+        throw new Error('--read-pause-ms must be an integer from 0 to 60000');
     if (flag('--headed')) o.headless = false;
     if (flag('--keep-profile')) o.keepProfile = true;
     o.stub = flag('--stub');
@@ -91,6 +96,17 @@ export function options(argv = process.argv.slice(2), env = process.env) {
     o.inspect = flag('--inspect');
     o.ping = flag('--ping');
     return o;
+}
+
+/**
+ * A human-sized pause after the LLM player decides and before the game handles its message.
+ * Batch-only by default. It does not slow the Planner/Narrator/Extractor requests inside one ST turn.
+ * Inject wait/stopped for quick regression tests without real sleeping.
+ */
+export async function pauseAfterPlayer(o, { wait = ms => new Promise(resolve => setTimeout(resolve, ms)), stopped = () => false } = {}) {
+    if (stopped()) return false;
+    if (o.player?.type === 'llm' && !o.stub && o.readPauseMs > 0) await wait(o.readPauseMs);
+    return !stopped();
 }
 
 /** Where the run folders go: tools/st_live/runs, unless that lies in the SillyTavern installation (the extension cloned there). */
@@ -315,6 +331,7 @@ export async function run(o) {
                 temperature: o.player.temperature, maxTokens: o.player.maxTokens, body: playerSetup.reasoning?.body, extraBody: o.player.extraBody, record: (e) => playerLog.push({ at: new Date().toISOString(), ...e }),
             });
         if (o.player.type === 'llm' && !(o.player.url || imp.route.runner.url)) throw new Error('the LLM player needs an OpenAI-compatible URL: player.url in live.config.json');
+        if (o.player.type === 'llm' && !o.stub && o.readPauseMs) log(`LLM player reading pause: ${o.readPauseMs} ms before each game turn (batch default; no pause within ST roles)`);
         const maxTurns = guide.limits.maxTurns;
         const t0 = Date.now();
         let since = 0;
@@ -339,6 +356,12 @@ export async function run(o) {
                 if (!d.harness && d.stop_reason === 'done') end = doneEnd(evaluate(await driver.chat(), { guide }));
                 else end = { kind: d.harness ? 'harness' : 'player_stop', why: d.stop_reason };
                 log(`player stops: ${d.stop_reason}`);
+                break;
+            }
+            // The LLM player has decided; leave a short reading pause before SillyTavern starts its
+            // Planner/Narrator/Extractor chain. No effect on manual play, scripted runs or stubs.
+            if (!(await pauseAfterPlayer(o, { stopped: () => !!interrupted || !!o.stopRequested?.() }))) {
+                end = { kind: 'harness', why: `interrupted before sending turn ${turn} (reading pause)` };
                 break;
             }
             log(`turn ${turn}: ${clip(d.message, 100)}`);

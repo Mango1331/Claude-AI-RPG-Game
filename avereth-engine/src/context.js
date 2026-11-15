@@ -188,7 +188,7 @@ function creatureGearText(e) {
  * it knows and believes (ONLY its own knowledge rows: knowledge boundaries by construction), agenda and secrets.
  * absent = named this turn but not in the scene: continuity only (no position, awareness or combat intent).
  */
-function npcCard(state, content, id, focusWords, { absent = false } = {}) {
+function npcCard(state, content, id, focusWords, { absent = false, compact = false } = {}) {
     const e = state.entities[id];
     const lines = [];
     const cues = e.kind === 'creature' ? null : npcCues(state, content, id);
@@ -203,10 +203,13 @@ function npcCard(state, content, id, focusWords, { absent = false } = {}) {
     const cover = c ? c.current.cover : pos?.cover;
     const v4 = state.meta?.runtime === 'v4';
     const display = c ? fightName(state, id) : v4 ? `${sceneHandle(state, content, id)} [${id}]` : entityLabel(state, id);
-    // NPC E3 (R10): in V4 the anchors stand before the introduction's look, so the 170-character cap cuts the look
-    // first; the V3 card keeps its order (look, voice)
-    const anchors = v4 && cues ? ['voice', 'manner', 'interest'].filter((k) => cues[k]).map((k) => `; ${k}: ${cues[k]}`).join('') : '';
-    lines.push(`• ${display} — ${kind}${anchors}${look ? `; ${look}` : ''}${!v4 && cues?.voice ? `; voice: ${cues.voice}` : ''}${hp ? `; ${hp}` : ''}${band ? `; ${band}${cover && cover !== 'none' ? `, ${cover} cover` : ''}` : ''}${absent ? '; NOT PRESENT' : ''}`);
+    // NPC E3 (R10/B1): V4 detail cards keep anchors before the look; compact heads select whole fields below.
+    // The V3 card keeps its order (look, voice).
+    const fields = v4 && cues ? ['voice', 'manner', 'interest'].filter((k) => cues[k]).map((k) => ({ key: k, value: cues[k] })) : [];
+    const identity = `• ${display} — ${kind}`;
+    const tail = `${look ? `; ${look}` : ''}${!v4 && cues?.voice ? `; voice: ${cues.voice}` : ''}${hp ? `; ${hp}` : ''}${band ? `; ${band}${cover && cover !== 'none' ? `, ${cover} cover` : ''}` : ''}`;
+    lines.push(compact ? compactNpcHead(identity, fields, tail, focusWords, absent)
+        : `${identity}${fields.map(({ key, value }) => `; ${key}: ${value}`).join('')}${tail}${absent ? '; NOT PRESENT' : ''}`);
     if (statusOf(state, id) === 'dead') return lines[0];
     const aware = absent ? null : state.scene.awareness[id];
     const unseen = !absent && state.scene.concealed.includes('pc');
@@ -994,12 +997,32 @@ export function arrivalPeople(state, outcome, input = '') {
         .sort((a, b) => a.r.reduce((d, x, i) => d || b.r[i] - x, 0) || a.id.localeCompare(b.id)).map((x) => x.id);
     return ids.length ? { place: step.to, name: step.name, ids } : null;
 }
+/** .200 (B1): only a compact head selects whole E3 fields; detail cards keep their complete, original order. */
+function compactNpcHead(identity, fields, tail, focusWords, arriving) {
+    const suffix = arriving ? '; NOT YET SHOWN' : '';
+    const limit = 170 - suffix.length;
+    const cap = text => text.length > limit ? text.slice(0, limit - 1) + '…' : text;
+    const formatted = fields.map(({ key, value }) => ({ value, text: `; ${key}: ${value}` }));
+    const all = identity + formatted.map(f => f.text).join('');
+    // Keep the historical identity cap; never shorten an identity to make room for an E3 field.
+    if (identity.length >= limit) return cap(all + tail) + suffix;
+    let head = all;
+    if (all.length > limit) {
+        const scored = formatted.map((f, index) => ({ ...f, index,
+            hits: new Set(tokenize(f.value).filter(w => focusWords.has(w))).size }));
+        scored.sort((a, b) => b.hits - a.hits || a.index - b.index);
+        head = identity;
+        for (const f of scored) if (head.length + f.text.length <= limit) head += f.text;
+    }
+    // An exactly fitting field must not lose its last character to the appearance's ellipsis.
+    return (head.length === limit ? head : cap(head + tail)) + suffix;
+}
+
 function compactNpcCard(state, content, id, focusWords, { arriving = false } = {}) {
-    const rows=npcCard(state,content,id,focusWords,{ absent: arriving }).split('\n');
+    const rows=npcCard(state,content,id,focusWords,{ absent: arriving, compact: true }).split('\n');
     // Whole fields are selected before shortening: identity and shared memory cannot be displaced by appearance.
     const cap=(text,n)=>text.length>n?text.slice(0,n-1)+'…':text;
-    // NPC E2-B (R6): an arrival card is NOT YET SHOWN (the label survives the cap)
-    const head = arriving ? `${cap(rows[0].replace(/; NOT PRESENT$/, ''), 170 - '; NOT YET SHOWN'.length)}; NOT YET SHOWN` : cap(rows[0], 170);
+    const head = rows[0];
     const find = (key) => rows.find((r) => r.trimStart().startsWith(key));
     // NPC E2-B (R8): the agreement with Alaric rides on the attitude row (shortened first, left out below 40 characters;
     // the detail card keeps it); the two other fields are the first of last meaningful → knows → also remembers

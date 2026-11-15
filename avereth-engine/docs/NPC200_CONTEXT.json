@@ -1,0 +1,2555 @@
+{
+  "baseline": "67300bc73b972e23f762041b5b92ffc772f8ad7d",
+  "build": "4.3.0-c.6.6.200",
+  "note": "Original states and explicitly synthetic transport copies defined in tests/v4/npc_e3_compact_lib.js. Token values are the existing estimateTokens, not provider measurements.",
+  "cases": {
+    "birds": {
+      "cards": {
+        "npc.wat": {
+          "before": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "interest"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        },
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "focusAfter": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7364,
+          "estimateTokens": 1713,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7364,
+          "estimateTokens": 1713
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": false
+    },
+    "cuffs": {
+      "cards": {
+        "npc.wat": {
+          "before": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "manner"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        },
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "focusAfter": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7364,
+          "estimateTokens": 1713,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7364,
+          "estimateTokens": 1713
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": false
+    },
+    "no_hits": {
+      "cards": {
+        "npc.wat": {
+          "before": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        },
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "focusAfter": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7364,
+          "estimateTokens": 1713,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7364,
+          "estimateTokens": 1713
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": false
+    },
+    "tie": {
+      "cards": {
+        "npc.wat": {
+          "before": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        },
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "focusAfter": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7364,
+          "estimateTokens": 1713,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7364,
+          "estimateTokens": 1713
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": false
+    },
+    "empty_focus": {
+      "cards": {
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 420,
+            "estimateTokens": 98,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 420,
+            "estimateTokens": 98,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful"
+          ]
+        },
+        "npc.wat": {
+          "before": {
+            "headChars": 170,
+            "chars": 489,
+            "estimateTokens": 114,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 489,
+            "estimateTokens": 114,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.npcmillpond_farmer",
+        "npc.wat"
+      ],
+      "focusAfter": [
+        "npc.npcmillpond_farmer",
+        "npc.wat"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7022,
+          "estimateTokens": 1634,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7022,
+          "estimateTokens": 1634
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": false
+    },
+    "last_reply": {
+      "cards": {
+        "npc.wat": {
+          "before": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "interest"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        },
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "focusAfter": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7364,
+          "estimateTokens": 1713,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7364,
+          "estimateTokens": 1713
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": false
+    },
+    "all_fit": {
+      "cards": {
+        "npc.wat": {
+          "before": {
+            "headChars": 161,
+            "chars": 651,
+            "estimateTokens": 152,
+            "completeE3": [
+              "voice",
+              "manner",
+              "interest"
+            ]
+          },
+          "after": {
+            "headChars": 161,
+            "chars": 651,
+            "estimateTokens": 152,
+            "completeE3": [
+              "voice",
+              "manner",
+              "interest"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        },
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "focusAfter": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7355,
+          "estimateTokens": 1711,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7355,
+          "estimateTokens": 1711
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": true
+    },
+    "skip_long": {
+      "cards": {
+        "npc.wat": {
+          "before": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        },
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "focusAfter": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7364,
+          "estimateTokens": 1713,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7364,
+          "estimateTokens": 1713
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": false
+    },
+    "none_fit": {
+      "cards": {
+        "npc.wat": {
+          "before": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": []
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": []
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        },
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "focusAfter": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7364,
+          "estimateTokens": 1713,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7364,
+          "estimateTokens": 1713
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": false
+    },
+    "long_identity": {
+      "cards": {
+        "npc.wat": {
+          "before": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": []
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": []
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        },
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "focusAfter": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7556,
+          "estimateTokens": 1758,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7556,
+          "estimateTokens": 1758
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": true
+    },
+    "long_id": {
+      "cards": {
+        "npc.wat_of_the_old_millpond_weather_gate": {
+          "before": {
+            "headChars": 170,
+            "chars": 231,
+            "estimateTokens": 54,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 231,
+            "estimateTokens": 54,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.wat_of_the_old_millpond_weather_gate"
+      ],
+      "focusAfter": [
+        "npc.wat_of_the_old_millpond_weather_gate"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7095,
+          "estimateTokens": 1650,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "present",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "named",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7095,
+          "estimateTokens": 1650
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": false
+    },
+    "negation": {
+      "cards": {
+        "npc.wat": {
+          "before": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "voice",
+              "manner"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "voice",
+              "manner"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        },
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "focusAfter": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7364,
+          "estimateTokens": 1713,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7364,
+          "estimateTokens": 1713
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": false
+    },
+    "no_anchors": {
+      "cards": {
+        "npc.wat": {
+          "before": {
+            "headChars": 117,
+            "chars": 607,
+            "estimateTokens": 142,
+            "completeE3": []
+          },
+          "after": {
+            "headChars": 117,
+            "chars": 607,
+            "estimateTokens": 142,
+            "completeE3": []
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        },
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "focusAfter": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7311,
+          "estimateTokens": 1701,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7311,
+          "estimateTokens": 1701
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": true
+    },
+    "wat_original": {
+      "cards": {
+        "npc.wat": {
+          "before": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        },
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "focusAfter": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7364,
+          "estimateTokens": 1713,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7364,
+          "estimateTokens": 1713
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": true
+    },
+    "hedwin_original": {
+      "cards": {
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 491,
+            "estimateTokens": 115,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 491,
+            "estimateTokens": 115,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "knows"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.npcmillpond_farmer"
+      ],
+      "focusAfter": [
+        "npc.npcmillpond_farmer"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7060,
+          "estimateTokens": 1642,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "present",
+            "world_populations",
+            "guild_authority",
+            "help",
+            "facts",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7060,
+          "estimateTokens": 1642
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": true
+    },
+    "marren_original": {
+      "cards": {
+        "npc.marren": {
+          "before": {
+            "headChars": 170,
+            "chars": 420,
+            "estimateTokens": 98,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 420,
+            "estimateTokens": 98,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful"
+          ]
+        },
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 420,
+            "estimateTokens": 98,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 420,
+            "estimateTokens": 98,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.marren"
+      ],
+      "focusAfter": [
+        "npc.marren"
+      ],
+      "arrivalBefore": [
+        "npc.npcmillpond_farmer"
+      ],
+      "arrivalAfter": [
+        "npc.npcmillpond_farmer"
+      ],
+      "context": {
+        "before": {
+          "chars": 7316,
+          "estimateTokens": 1702,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "npc_arrival",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7316,
+          "estimateTokens": 1702
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": true
+    },
+    "replaced": {
+      "cards": {
+        "npc.wat": {
+          "before": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "voice",
+              "interest"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        },
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "focusAfter": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7364,
+          "estimateTokens": 1713,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7364,
+          "estimateTokens": 1713
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": false
+    },
+    "arrival": {
+      "cards": {
+        "npc.wat": {
+          "before": {
+            "headChars": 170,
+            "chars": 489,
+            "estimateTokens": 114,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 489,
+            "estimateTokens": 114,
+            "completeE3": [
+              "interest"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful"
+          ]
+        }
+      },
+      "focusBefore": [],
+      "focusAfter": [],
+      "arrivalBefore": [
+        "npc.wat"
+      ],
+      "arrivalAfter": [
+        "npc.wat"
+      ],
+      "context": {
+        "before": {
+          "chars": 6606,
+          "estimateTokens": 1537,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_arrival",
+            "present",
+            "world_populations",
+            "npc_continuity",
+            "named",
+            "help",
+            "quests",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 6606,
+          "estimateTokens": 1537
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": false
+    },
+    "mixed_slots": {
+      "cards": {
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        },
+        "npc.wat": {
+          "before": {
+            "headChars": 170,
+            "chars": 489,
+            "estimateTokens": 114,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 489,
+            "estimateTokens": 114,
+            "completeE3": [
+              "interest"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.npcmillpond_farmer"
+      ],
+      "focusAfter": [
+        "npc.npcmillpond_farmer"
+      ],
+      "arrivalBefore": [
+        "npc.wat"
+      ],
+      "arrivalAfter": [
+        "npc.wat"
+      ],
+      "context": {
+        "before": {
+          "chars": 6503,
+          "estimateTokens": 1513,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "npc_arrival",
+            "present",
+            "world_populations",
+            "npc_continuity",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "named",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 6503,
+          "estimateTokens": 1513
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": false
+    },
+    "two_current": {
+      "cards": {
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        },
+        "npc.wat": {
+          "before": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.npcmillpond_farmer",
+        "npc.wat"
+      ],
+      "focusAfter": [
+        "npc.npcmillpond_farmer",
+        "npc.wat"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7364,
+          "estimateTokens": 1713,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7364,
+          "estimateTokens": 1713
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": false
+    },
+    "brenna": {
+      "cards": {
+        "npc.npcglassmere_clerk": {
+          "before": {
+            "headChars": 170,
+            "chars": 619,
+            "estimateTokens": 144,
+            "completeE3": [
+              "manner"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 619,
+            "estimateTokens": 144,
+            "completeE3": [
+              "manner"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "knows"
+          ]
+        },
+        "npc.npchearth_fighter": {
+          "before": {
+            "headChars": 118,
+            "chars": 447,
+            "estimateTokens": 104,
+            "completeE3": []
+          },
+          "after": {
+            "headChars": 118,
+            "chars": 447,
+            "estimateTokens": 104,
+            "completeE3": []
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "knows"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.npcglassmere_clerk",
+        "npc.npchearth_fighter"
+      ],
+      "focusAfter": [
+        "npc.npcglassmere_clerk",
+        "npc.npchearth_fighter"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7374,
+          "estimateTokens": 1715,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "guild_authority",
+            "help",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "settlement",
+            "dungeon",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7374,
+          "estimateTokens": 1715
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": true
+    },
+    "agreement_fallback": {
+      "cards": {
+        "npc.npcglassmere_clerk": {
+          "before": {
+            "headChars": 170,
+            "chars": 598,
+            "estimateTokens": 140,
+            "completeE3": [
+              "manner"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 598,
+            "estimateTokens": 140,
+            "completeE3": [
+              "manner"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "knows"
+          ]
+        },
+        "npc.npchearth_fighter": {
+          "before": {
+            "headChars": 118,
+            "chars": 447,
+            "estimateTokens": 104,
+            "completeE3": []
+          },
+          "after": {
+            "headChars": 118,
+            "chars": 447,
+            "estimateTokens": 104,
+            "completeE3": []
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "knows"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.npcglassmere_clerk",
+        "npc.npchearth_fighter"
+      ],
+      "focusAfter": [
+        "npc.npcglassmere_clerk",
+        "npc.npchearth_fighter"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 13858,
+          "estimateTokens": 3223,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "present",
+            "settlement",
+            "guild_authority",
+            "help",
+            "dungeon",
+            "relevant",
+            "lore",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": []
+        },
+        "after": {
+          "chars": 13858,
+          "estimateTokens": 3223
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": true
+    },
+    "clerk_original": {
+      "cards": {
+        "npc.npcguild_clerk": {
+          "before": {
+            "headChars": 170,
+            "chars": 512,
+            "estimateTokens": 120,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 512,
+            "estimateTokens": 120,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "knows"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.npcguild_clerk"
+      ],
+      "focusAfter": [
+        "npc.npcguild_clerk"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 6837,
+          "estimateTokens": 1590,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "present",
+            "settlement",
+            "guild_authority",
+            "help",
+            "features",
+            "dungeon",
+            "relevant",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 6837,
+          "estimateTokens": 1590
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": true
+    },
+    "routine": {
+      "cards": {
+        "npc.wat": {
+          "before": {
+            "headChars": 170,
+            "chars": 318,
+            "estimateTokens": 74,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 318,
+            "estimateTokens": 74,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.wat"
+      ],
+      "focusAfter": [
+        "npc.wat"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 6736,
+          "estimateTokens": 1567,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "present",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 6736,
+          "estimateTokens": 1567
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": false
+    },
+    "private": {
+      "cards": {
+        "npc.wat": {
+          "before": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "interest"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        },
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "focusAfter": [
+        "npc.wat",
+        "npc.npcmillpond_farmer"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7364,
+          "estimateTokens": 1713,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7364,
+          "estimateTokens": 1713
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": false
+    },
+    "absent": {
+      "cards": {},
+      "focusBefore": [],
+      "focusAfter": [],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 6510,
+          "estimateTokens": 1514,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "present",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "named",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 6510,
+          "estimateTokens": 1514
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": true
+    },
+    "legacy": {
+      "cards": {},
+      "focusBefore": [],
+      "focusAfter": [],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 8446,
+          "estimateTokens": 1965,
+          "kept": [
+            "header",
+            "pc",
+            "present",
+            "help",
+            "relevant",
+            "lore",
+            "resolved",
+            "report"
+          ],
+          "dropped": []
+        },
+        "after": {
+          "chars": 8446,
+          "estimateTokens": 1965
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": true
+    },
+    "system": {
+      "cards": {
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 420,
+            "estimateTokens": 98,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 420,
+            "estimateTokens": 98,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful"
+          ]
+        },
+        "npc.wat": {
+          "before": {
+            "headChars": 170,
+            "chars": 489,
+            "estimateTokens": 114,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 489,
+            "estimateTokens": 114,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.npcmillpond_farmer",
+        "npc.wat"
+      ],
+      "focusAfter": [
+        "npc.npcmillpond_farmer",
+        "npc.wat"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7257,
+          "estimateTokens": 1688,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "present",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "rules",
+            "resolved"
+          ],
+          "dropped": [
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 7257,
+          "estimateTokens": 1688
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": false
+    },
+    "combat": {
+      "cards": {},
+      "focusBefore": [],
+      "focusAfter": [],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 6145,
+          "estimateTokens": 1430,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "combat",
+            "guild_authority",
+            "help",
+            "quests",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "relevant",
+            "lore"
+          ]
+        },
+        "after": {
+          "chars": 6145,
+          "estimateTokens": 1430
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": true
+    },
+    "tight_budget": {
+      "cards": {
+        "npc.npcmillpond_farmer": {
+          "before": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 591,
+            "estimateTokens": 138,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        },
+        "npc.wat": {
+          "before": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "voice"
+            ]
+          },
+          "after": {
+            "headChars": 170,
+            "chars": 660,
+            "estimateTokens": 154,
+            "completeE3": [
+              "interest"
+            ]
+          },
+          "bodyUnchanged": true,
+          "bodyFields": [
+            "toward Alaric",
+            "last meaningful",
+            "also remembers"
+          ]
+        }
+      },
+      "focusBefore": [
+        "npc.npcmillpond_farmer",
+        "npc.wat"
+      ],
+      "focusAfter": [
+        "npc.npcmillpond_farmer",
+        "npc.wat"
+      ],
+      "arrivalBefore": [],
+      "arrivalAfter": [],
+      "context": {
+        "before": {
+          "chars": 7364,
+          "estimateTokens": 1713,
+          "kept": [
+            "header",
+            "where",
+            "pc",
+            "creation",
+            "npc_compact",
+            "world_populations",
+            "npc_continuity",
+            "guild_authority",
+            "help",
+            "quests",
+            "envelope",
+            "resolved",
+            "report"
+          ],
+          "dropped": [
+            "present",
+            "relevant"
+          ]
+        },
+        "after": {
+          "chars": 7364,
+          "estimateTokens": 1713
+        },
+        "addedSections": [],
+        "removedSections": [],
+        "sameSectionOrderAndDrops": true
+      },
+      "fullContextUnchanged": false
+    }
+  }
+}

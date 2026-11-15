@@ -1,6 +1,8 @@
 # Fachplan – Bossloot und besondere Gegnerbelohnungen
 
-**Stand 15.11.2026 · Entscheidungsvorlage, keine Implementierung.** Produktbasis: `.192` (`e7dac41`, Branch `claude/c-planner-prototype-2026-10-02-gpt-c666`).
+**Stand 15.11.2026 · ursprüngliche Entscheidungsvorlage, keine Implementierung.** Produktbasis: `.192` (`e7dac41`, Branch `claude/c-planner-prototype-2026-10-02-gpt-c666`).
+
+> **U1–U11 entschieden:** Maßgeblich für eine V1-Implementierung sind die [anschließende GPT-Gegenprüfung und die dort festgelegten Designentscheidungen](GEGENREVIEW_BOSSLOOT_GPT_ENTSCHEIDUNGEN_2026-11-15.md). Die Tabellen/Empfehlungen in diesem ursprünglichen Fachplan bleiben als Ausgangsvorschlag erhalten und sind **nicht unverändert freigegeben**.
 
 **Ziel:** Ein außergewöhnlicher Kampf (Elite, Dungeon-Guardian, Dungeon-Endboss) soll eine erkennbar außergewöhnliche Belohnung ermöglichen. Das geschieht ohne neue Loot- oder Inventararchitektur, ohne Modellaufruf und ohne Umgehung der F→E-Progression.
 

@@ -1,28 +1,31 @@
 # Avereth Engine – Roadmap nach 10B
 
-**Stand 13.11.2026 · bewertete Entwicklungsoptionen, keine zweite Statuschronik.** [Start](README.md) · [aktuelle Abnahme 03](03_AKTUELLER_PROJEKTSTAND.md) · [verbindliche Regeln 02](02_DESIGN_KANON.md) · [Fachquellen 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). Alle historischen Kennungen bleiben auffindbar, **keine automatische Rangfolge oder Freigabe**.
+**Stand 15.11.2026 · bewertete Entwicklungsoptionen, keine zweite Statuschronik.** [Start](README.md) · [aktuelle Abnahme 03](03_AKTUELLER_PROJEKTSTAND.md) · [verbindliche Regeln 02](02_DESIGN_KANON.md) · [Fachquellen 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). Alle historischen Kennungen bleiben auffindbar, **keine automatische Rangfolge oder Freigabe**.
 
 ## 1. Nächste fachliche Etappen
 
-| Etappe | Bereits gesichert / verbleibende Entscheidung |
+| Etappe | Stand / verbleibende Entscheidung |
 |---|---|
-| **Natürliche NPC-/PULSE-Qualität** | [Drei echte LLM-Kampagnen 70/70/48 auf `.179`](testrun_10b/npc-20261112-220625Z/REVIEW.md): E3 **0 Anker**, P2-Orts-/Reiseunterbrechungsdrift, Mage-Planerformat-Blocker. **Korrekturen P2-1–P2-5 in `.180–.182` umgesetzt** (Registrierung/Planner, PULSE-Reisehalt, Queststatus-Korrektur, neutrale Extractor-Formen). **Offen:** isolierter ST-Smoke und gezielte natürliche Wiederholungsprobe auf `.183` (mit E3-V-1); noch keine natürliche E3-/PULSE-D-Vollfreigabe. |
-| **Preis-/Planner-Belege V4** | Codebefunde mit Schutzauflagen P1a–P1f: [Architekturaudit §13](recherche/ARCHITEKTUR_AUDIT_10B_FABLE.md) · [Opus/GPT](recherche/ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md). Aus P1f nur die enge Planner-Behandlung leerer `length`-Antworten in `.187` ([Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/bd52d2f9a002c62e321634ae1e8894fefd3918f6/avereth-engine/docs/BATCH186_FIXES_187.md), Messung, Limits unverändert); übrige Punkte noch ohne Patch |
-| **Kontext und E3-Extraktion** | **E3-V-1 umgesetzt in `.183`** (Extractorvertrag: 80-Zeichen-Grenze, `LATER ENCOUNTER`-Hinweis nach der R10-Prüfung); natürliche Wirkung offen. `relevant`-Teillieferung D3 erst nach klarer Nachweistrennung; kein neues NPC-Speichersystem |
-| **Ortschronologie O1-B1** | Kleine schlüssige `seq`-Normalisierung als möglicher Fachpatch; O1-Whitelist und V1-Frühankunft nicht empfehlen. [Fachplan einschließlich Gegenreviews](recherche/FACHPLAN_O1_O2_KAUSALITAET_UND_TEILBEWEGUNG.md). O2-stay nur nach Raumgranularitätsentscheidung |
-| **K2 Monster A1/A2** | [Technischer Fachplan mit Opus/GPT §§8–9](patch_plans_10b/FACHPLAN_MONSTER_ANATOMIE_LOOT_A1_A2.md). **A1 umgesetzt in `.184`** (mit K1/K2, D6/D9; Randfall R1 in `.185` geschlossen); **A2-1 bis A2-3 umgesetzt in `.186`** (konservative Pilotwerte D1–D5, D7; K3–K7). Waffen in `DUNGEON AHEAD` (A2-4) vorerst zurückgestellt |
-| **K1 Main/Minor** | Designbeschlossen, aber nicht implementiert; [umfangreicher Fachplan auf `.104`](patch_plans_10b/PATCH_COMBAT_MAIN_MINOR_ACTIONS.md), vor Codearbeit auf aktuellen Produkt-HEAD abgleichen |
-| **Stealth S2** | S1 ist implementiert; lokale heimliche Search/TAKE zusätzlich nach [S1/S2-Fachplan](patch_plans_10b/PATCH_STEALTH_ACTION_MANNER.md) auswählen und umsetzen |
+| **Persönlicher User-Test `.192`** | Nächster Erkenntnisschritt ([GPT-Kontrollreview .192](patch_plans_10b/REVIEW_BUILD192_GPT_KONTROLLPRUEFUNG.md)). Schwerpunkte: B5-Ebenenwechsel und Boss, Stadt- gegen Außenjagd, NPC-Wiedersehen, Kampfgefühl. Kein Automatik-Vollbatch nur wegen `.192` |
+| **Bossloot V1** | **Entschieden (U1–U11), nicht umgesetzt** ([Entscheidungen](patch_plans_10b/GEGENREVIEW_BOSSLOOT_GPT_ENTSCHEIDUNGEN_2026-11-15.md) · [Fachplan](patch_plans_10b/FACHPLAN_BOSSLOOT_BESONDERE_BELOHNUNGEN.md)). Eigener kleiner Produktpatch im bestehenden Lootpfad |
+| **Kampf: Angriff mit Annäherung** | [Kampffachplan .192](patch_plans_10b/FACHPLAN_KAMPF_BEWEGUNG_ANGRIFF_192.md): Variante A (offene Reichweitenentscheidung, keine Buchung) als kleiner UX-Schritt möglich. B (Teilbewegung außerhalb des Kampfes) nach Designentscheidung. C/D (Konter, Teilbewegung im Kampf) erst mit K1 |
+| **Rang-/Qualitätskalibrierung der Ausrüstung** | Neu belegt: F exceptional 22 > E exceptional 20 (Bossloot-Plan §1.4). Vor breiterem E+-Loot ein eigener Fachvergleich; keine Nebenänderung |
+| **Orte/Reisen/Dungeons** | `.190–.192` umgesetzt, Bewegungsautorität natürlich bestätigt. Offen: natürliche B5-Ebenenwechsel und Boss, Elternszenen-Verluste (Schutz bleibt), Witwe-Hesse-Falsch-Negativ |
+| **Natürliche NPC-/PULSE-Qualität** | `.191`-Batch nur Warrior vollständig. Rogue/Mage nach Provider-Guthaben neu; E3 seit `.183` natürlich belegt, E4/E5 und PULSE D erst danach |
+| **Preis-/Planner-Belege V4** | P1a–P1e codebelegt, nicht umgesetzt ([Architekturaudit §13](recherche/ARCHITEKTUR_AUDIT_10B_FABLE.md) · [Opus/GPT](recherche/ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md)); aus P1f nur die enge Planner-Behandlung in `.187` |
+| **K1 Main/Minor** | Designbeschlossen, nicht implementiert; [Fachplan auf `.104`](patch_plans_10b/PATCH_COMBAT_MAIN_MINOR_ACTIONS.md) vor Codearbeit auf den aktuellen HEAD abgleichen |
+| **Stealth S2** | S1 implementiert; heimliche Search/TAKE nach [S1/S2-Fachplan](patch_plans_10b/PATCH_STEALTH_ACTION_MANNER.md) |
+| **Erkundungsloot, Tatenbuch, Bossstärke, Basis-/Statprogression** | Eigene spätere Entscheidungen (User-Feedback 04.–06.11.); mit Bossloot kompatibel, nicht gemeinsam umsetzen |
 
-Keine der aktuellen Empfehlungen ändert ohne ausdrücklichen Auftrag den Kanon oder Produktcode. Ein natürlicher NPC-/PULSE-Lauf ist für dessen *Pacing* nötig, blockiert aber keine unabhängige Entwicklerarbeit in getrenntem Checkout.
+Keine dieser Empfehlungen ändert ohne ausdrücklichen Auftrag Kanon oder Produktcode. Ein natürlicher Lauf ist für *Pacing* und Spielgefühl nötig, blockiert aber keine Entwicklerarbeit in einem getrennten Checkout.
 
 ## 2. NPC- und PULSE-Reihenfolge
 
 | Phase | Technischer Stand / nächste inhaltliche Grenze |
 |---|---|
 | **E0/E1** – Diagnose/Sofortkontinuität | In `.158` umgesetzt. |
-| **E2-A/B** – Präsenz, Schalterwissen, Absprachen | In `.169–.173` umgesetzt, Pilotkorrekturen bis `.179`; natürliche Nachmessung offen. |
-| **E3** – veränderbare `voice/manner/interest` | In `.174` umgesetzt; Pilot `.174` und Dreierbatch `.179` speicherten **0 Anker**. Extractor-Vertragshinweis V-1 in `.183`; natürliche Nutzung offen. [Audit](recherche/NPC_E2_E3_KONTINUITAETSAUDIT_OPUS55.md) |
+| **E2-A/B** – Präsenz, Schalterwissen, Absprachen | In `.169–.173` umgesetzt, Pilotkorrekturen bis `.179`; `met` am erreichten Ort seit `.192`. Belegprüfung kennt Ankunftsverben nicht (Falsch-Negativ, beobachten). |
+| **E3** – veränderbare `voice/manner/interest` | In `.174` umgesetzt, V-1 in `.183`; natürlich belegt seit `.183` (9 Anker), Ankeränderung kaum abgedeckt. [Audit](recherche/NPC_E2_E3_KONTINUITAETSAUDIT_OPUS55.md) |
 | **E4** – automatische Salienz, Beziehung | Noch keine Umsetzungsfreigabe. Erst nach realen E2/E3-Daten; optionale Pins getrennt. |
 | **E5** – begrenzte Eigeninitiative/PULSE-Verbindung | Noch keine Umsetzung. Agenden mit kleinen glaubwürdigen Konsequenzen, keine NPC-Tick-Agenten. |
 | **PULSE A/C/B** | Implementiert `.162–.168`. ROAD AHEAD nutzt das gemeinsame Fenster, Rast und Dungeonwanderungen sind integriert. [Fachplan](patch_plans_10b/PULSE_W5_W7_TECHNISCHER_UMSETZUNGSPLAN.md) |
@@ -64,13 +67,13 @@ Diese Kennungen sind Such-/Diskussionshilfen. Der ausführliche alte [33-Kandida
 | ID | Weiteres Ziel |
 |---|---|
 | **K1** | Main/Minor designbeschlossen, technisch offen; [Fachplan](patch_plans_10b/PATCH_COMBAT_MAIN_MINOR_ACTIONS.md). |
-| **K2** | Glaubwürdige Anatomie und Bewaffnung/Beute A1/A2; [aktueller Fachplan](patch_plans_10b/FACHPLAN_MONSTER_ANATOMIE_LOOT_A1_A2.md). |
+| **K2** | Anatomie und Bewaffnung/Beute A1/A2 umgesetzt ([Fachplan](patch_plans_10b/FACHPLAN_MONSTER_ANATOMIE_LOOT_A1_A2.md)); **Bossloot V1 entschieden** ([U1–U11](patch_plans_10b/GEGENREVIEW_BOSSLOOT_GPT_ENTSCHEIDUNGEN_2026-11-15.md)). |
 | **K3** | Sapienz, Population, Lage-/Fluchtverhalten getrennt; keine pauschale Aggressivität. |
 | **K4** | Später einzelne ausführbare Signaturfähigkeiten/Resistenzen/Bosse; Main/Minor nur wo Aktionsökonomie betroffen. [Designanalyse](recherche/MONSTERDESIGN_ANALYSE_20261028.md). |
 | **K5** | World-Skills (Licht, Barriere, Umwelt) mit belegten Effects. |
 | **K6** | Summons/Begleiter erst nach Kosten-/Präsenz-/Aktionsautorität. |
 | **K7** | Mehrband-AoE/Geometrie nur bei konkretem Bedarf; bestehende Band-AoE nicht neu bauen. |
-| **K8** | F→E-/Wirtschafts-/Skillbalance aus repräsentativen Spielen, kein pauschaler Buff oder XP-Farmnerf. |
+| **K8** | F→E-/Wirtschafts-/Skillbalance aus repräsentativen Spielen, kein pauschaler Buff oder XP-Farmnerf; dazu die Rang-/Qualitätskalibrierung der Ausrüstung. |
 | **K9** | Spätere Ränge E→D bis S; offene B+-Budgetregeln, keine Pflichtskillbäume. |
 
 ### Quests, Abenteuer und technische Pflege
@@ -89,7 +92,7 @@ Diese Kennungen sind Such-/Diskussionshilfen. Der ausführliche alte [33-Kandida
 
 - **Natürliche E2/E3-/PULSE-Qualität** vor E4/E5 und PULSE D; technische Regressionen sind dafür kein vollständiger Ersatz.
 - **Kampf-K1** vor breiten Boss-/Summon-/Spezialaktiven, sofern deren Aktionsökonomie tatsächlich davon abhängt; kein prinzipielles Verbot isolierter kleiner Technikprototypen.
-- **Monster A1/A2** umgesetzt (`.184`/`.186`); offen nur A2-4 und die Nachjustierung der Designzahlen nach einem natürlichen Lauf.
+- **Monster A1/A2** umgesetzt (`.184`/`.186`); offen nur A2-4 und die Nachjustierung der Designzahlen. **Bossloot V1** nur mit den U1–U11-Pflichtpunkten.
 - **Preisbelege und Spielerhoheit** vor Komfort-Shortcuts; nicht durch neue UI-Aktionen umgehen.
 - **Quelle und Einzelfall** statt vorsorglicher Großrefactors. Originalbelege im [Runindex](testrun_10b/README.md), weitere offene Brainstormings in [04](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md).
 

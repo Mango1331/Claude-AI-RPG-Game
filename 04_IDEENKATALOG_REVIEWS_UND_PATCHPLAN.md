@@ -1,12 +1,12 @@
 # Avereth Engine – unpriorisierter Ideenspeicher
 
-**Stand 12.11.2026.** Hier stehen **nur offene, nicht bereits als umsetzungsreifer Fachplan priorisierte Ideen**. Keine zweite Roadmap. [Prioritäten 07](07_ROADMAP_NACH_10B_ENTWURF.md) · [aktueller Stand 03](03_AKTUELLER_PROJEKTSTAND.md) · [Fachquellen 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md).
+**Stand 15.11.2026.** Hier stehen **nur offene, nicht bereits als umsetzungsreifer Fachplan priorisierte Ideen**. Keine zweite Roadmap. [Prioritäten 07](07_ROADMAP_NACH_10B_ENTWURF.md) · [aktueller Stand 03](03_AKTUELLER_PROJEKTSTAND.md) · [Fachquellen 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md).
 
 ## Noch ohne eigene Umsetzungsauswahl
 
 | Richtung | Weiter zu klären |
 |---|---|
-| **Erkundung und Beute außerhalb von Kämpfen** | Wenige orts-/risikogebundene seltene Funde, Elite-/Minibossmaterial und Stones; keine automatische Verdopplung von `search`-, Dungeon- oder Kampfloot. Kampfbeute besonderer Gegner (Elite/Guardian/Endboss): [Fachplan Bossloot V1](patch_plans_10b/FACHPLAN_BOSSLOOT_BESONDERE_BELOHNUNGEN.md), Entscheidungen U1–U11 offen |
+| **Erkundung und Beute außerhalb von Kämpfen** | Wenige orts-/risikogebundene seltene Funde, Elite-/Minibossmaterial und Stones; keine automatische Verdopplung von `search`-, Dungeon- oder Kampfloot. Kampfbeute besonderer Gegner ist kein Ideenpunkt mehr: Bossloot V1 entschieden ([U1–U11](patch_plans_10b/GEGENREVIEW_BOSSLOOT_GPT_ENTSCHEIDUNGEN_2026-11-15.md)), Status in 07 |
 | **Journal/Karte/Quick Replies** | Zusätzliche editierbare Hilfen jenseits der seit `.161` umgesetzten Quest-/TAKE-Entwürfe; keine Buchung oder Modellanfrage durch UI-Klick |
 | **Engine-only-Komfort** | Bekannte Board-/Offertenansichten sowie sichere Rest-/Wait-/Reiseschritte, ohne neue Preisautorität oder Teleport. [Entwurf](patch_plans_10b/PATCH_ENGINE_BOARD_AND_TRADE_OFFERS.md) |
 | **Monster und lebendige Welt** | Spätere Sapienz, situative Flucht, glaubwürdige Monsterkulturen, kleine Populationen, Fähigkeiten/Bossphasen **als getrennte Features**. [Monsterdesign](recherche/MONSTERDESIGN_ANALYSE_20261028.md) |
@@ -14,7 +14,7 @@
 | **Spieltempo/Performance** | Reale Prompt-/Cache-/Repair-/Rollenzeit und Kosten je ausführbarer Handlung messen, bevor ein größerer Runtime-Umbau beschlossen wird |
 | **Neue Quest-/Abenteuerfamilien** | Delivery/Escort nur gezielt reaktivieren; Kill-Doppelzählung vermeiden; mehr Dungeonvielfalt ohne festes Drei-Kampf-Skript |
 
-**Nicht hier als unerledigte Idee wiederholen:** NPC E0–E3, PULSE A/B/C, Stealth S1, UI U1–U3 und alle erledigten 10B-Fixes sind implementiert (Stand: [03](03_AKTUELLER_PROJEKTSTAND.md)). Main/Minor K1, Monster A1/A2, Stealth S2, Shops und die konkrete NPC-/Kontextarbeit besitzen eigene Fachpläne; ihr Status/ihre Abhängigkeiten stehen in [07](07_ROADMAP_NACH_10B_ENTWURF.md).
+**Nicht hier als unerledigte Idee wiederholen:** NPC E0–E3, PULSE A/B/C, Orte/Reisen/Dungeons `.190–.192`, Stealth S1, UI U1–U3 und alle erledigten 10B-Fixes sind implementiert (Stand: [03](03_AKTUELLER_PROJEKTSTAND.md)). Main/Minor K1, Monster A1/A2, Bossloot V1, Angriff mit Annäherung, Stealth S2, Shops und die konkrete NPC-/Kontextarbeit besitzen eigene Fachpläne; ihr Status/ihre Abhängigkeiten stehen in [07](07_ROADMAP_NACH_10B_ENTWURF.md).
 
 ## Historische große Ideenkataloge
 

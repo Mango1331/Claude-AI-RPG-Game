@@ -1,38 +1,74 @@
 # Avereth Engine – Projektstart und Einstieg für neue Chats
 
-**Stand: 13.11.2026.** Dieses README ist der **erste Einstieg** auf `main`, keine zusätzliche Roadmap oder technische Patchchronik.
+**Stand: 15.11.2026.** Dieses README ist der **erste Einstieg** auf `main`, keine Roadmap und keine Patchchronik. Buildgeschichte und Abnahmen stehen nur in [03](03_AKTUELLER_PROJEKTSTAND.md).
 
 ## In 60 Sekunden zum Arbeitsstand
 
-- **Spielengine:** Avereth V4-C / Ruleset 2, aktueller **Build `4.3.0-c.6.6.189`**, Produktbranch `claude/c-planner-prototype-2026-10-02-gpt-c666` auf [`4438241`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/44382419d2539f2a398f9c7df5139571c12d6d73). `.180`: Registrierung/Planner; `.181`: PULSE-Reisehalt; `.182`: Queststatus-Korrektur und eng begrenzte Extractor-Formstabilität ([Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/999b423a7b983c6483ecb0a02066fb0406066bf6/avereth-engine/docs/BATCH1112_182_QUEST_STATUS_FORMS.md), [Review §11](testrun_10b/npc-20261112-220625Z/REVIEW.md)); **`.183`: NPC E3-V-1** (80-Zeichen-Grenze und `LATER ENCOUNTER`-Hinweis im Extractorvertrag, [Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/86465eb2a75e6b2b661e3e72d8ce3b7248f9ac5a/avereth-engine/docs/NPC_E3_V1_183.md)); **`.184`: Monster A1** (Spezialorgane nur mit Beleg und ohne eigene Verneinung, Horn, volle Kreaturbeschreibung, [Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/efcad4c02f4d2a47ab5f777d6cf6581979e36e4e/avereth-engine/docs/MONSTER_A1_184.md)). **`.185`: Stabilisierung nach dem Dreierbatch** (sichtbare `#pay`-Karte, bedingter Kauf ohne ungebuchte Übergabe, `PAID HERE` und Mehrpositionsklärung, Gildenkoje, Questannahme T22, Extractor-Reparaturgerüst, R1; [Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/d556580347432a45b8cb47c8c82b34a4e6ea8764/avereth-engine/docs/STABILIZATION_185.md); nur geskriptet geprüft). **`.186`: `PAID HERE` ordnet jedes Bett seinem eigenen Angebot zu; Monster A2** (humanoide Monster tragen eine beim Materialisieren festgelegte Waffe für Kampf, Anzeige und Beute; [Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/13824919a85042184d7ced2fc2ca783bf6cf7103/avereth-engine/docs/PAID_HERE_MONSTER_A2_186.md); nur geskriptet geprüft). **`.187`: Korrekturen nach dem `.186`-Dreierbatch** (Arbeit ist kein Kauf, Rückweg und benannte Ortskorrektur, Planner-Längenabbruch; [Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/bd52d2f9a002c62e321634ae1e8894fefd3918f6/avereth-engine/docs/BATCH186_FIXES_187.md); nur geskriptet geprüft, ST1.19-Mock-Smoke 224/224 und 229/229). **`.188`/`.189`: angeheuerter Jäger und ortsfester Rückwärtsschritt** nachkorrigiert ([Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/44382419d2539f2a398f9c7df5139571c12d6d73/avereth-engine/docs/FOLLOWUP_187_189.md); nur geskriptet geprüft). **Natürlicher NPC-/PULSE-Dreierbatch auf `.183` jetzt [unabhängig ausgewertet](testrun_10b/npc-20261113-135417Z/REVIEW.md): 9 E3-Anker, Rogue-Extractorstopp und Mage-Dungeon-Tod. `.184`–`.186` waren nicht Teil dieses Tests; der natürliche Dreierbatch auf `.186` ist [ausgewertet](testrun_10b/npc-20261114-094810Z/REVIEW.md).**
-- **Dokumentation:** `main`. Beim neuen Auftrag **beide Remote-HEADs erneut prüfen**; diese Angaben sind ein belegter Snapshot, keine Zusage für künftige Aktualität.
-- **Letzter natürlicher NPC-/PULSE-Test:** [Dreierbatch auf `.183`](testrun_10b/npc-20261113-135417Z/REVIEW.md), **70/43/39 Eingaben, 9 E3-Anker (6/2/1), eine Ankeränderung**. Rogue stoppt technisch nach drei Extraktorfehlern; Mage stirbt im Dungeon. Neuer Originalfall Mage T22/T27: falsche erzählte Questannahme, nicht gebucht. [Vorgänger auf `.179`](testrun_10b/npc-20261112-220625Z/REVIEW.md): 0 Anker und P2-Ortsdrift. [Pilot `.174`](testrun_10b/npc-20261109-160250Z/REVIEW.md) historisch. **Keine vollständige E3-/PULSE-Abnahme.**
+- **Was es ist:** eine SillyTavern-Extension für ein LLM-gestütztes Fantasy-RPG (V4-C / Ruleset 2).
+  - Ein **Planner** versteht die Spielereingabe.
+  - Eine **deterministische JS-Engine** prüft und bucht Zahlen, Orte, Kampf, Geld, Quests und Fähigkeiten als Events.
+  - Der **Narrator** erzählt.
+  - Ein **Extractor** mit Firewall übernimmt nur zulässige Weltfolgen.
+  - Das Eventlog ist die einzige Wahrheit.
+- **Produkt:** Build **`4.3.0-c.6.6.192`** auf `claude/c-planner-prototype-2026-10-02-gpt-c666`, Remote-HEAD [`e7dac41`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/e7dac41).
+  - `.190`: Umbau von Orten, Reisen und Dungeons (Ortsbuch, Bewegungsnachweis, B5-Dungeonabschnitte).
+  - `.191`: Korrekturen aus dem Gesamt-Kontrollreview.
+  - `.192`: Korrekturen aus dem natürlichen Batch vom 15.11.
+- **Letzte Abnahme `.192`:** 3250/3250 Node-Tests, voller Replay 2235 Fälle (0 offen), isolierter ST1.19-Smoke 225/225 und 230/230. GPT-Kontrollreview: **GO für einen persönlichen User-Test**. Noch kein natürlicher Zug auf `.192`.
+- **Letzter natürlicher Lauf:** [Batch auf `.191`](testrun_10b/npc-20261115-103140Z/REVIEW_GPT.md), nur Warrior vollständig; Rogue und Mage scheiterten am Provider-Guthaben. Die Bewegungsautorität ist natürlich bestätigt.
+- **Als Nächstes:**
+  - persönlicher User-Test auf `.192`;
+  - Bossloot V1 umsetzen (entschieden, nicht gebaut);
+  - optional die kleine Kampf-UX-Variante A.
+  - Details in [03](03_AKTUELLER_PROJEKTSTAND.md).
+- **Dokumentation:** nur auf `main`. Beide Remote-HEADs bei jedem neuen Auftrag erneut prüfen; die Angaben hier sind ein belegter Snapshot.
 
 ## Nur diese Dateien zuerst lesen
 
 | Datei | Eine einzige Zuständigkeit |
 |---|---|
-| [01 – Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) | Rollen, Freigaben, unabhängige Reviews, Test-/Commitregeln |
-| [02 – Design-Kanon](02_DESIGN_KANON.md) | **Verbindliche** Regeln und ausdrücklich geplante Entscheidungen; nicht durch einen Analysevorschlag ersetzen |
-| [03 – Aktueller Projektstand](03_AKTUELLER_PROJEKTSTAND.md) | **Einzige laufende Quelle** für Produktbuild, nachgewiesene Qualität, unmittelbare Aufgaben, Risiken |
-| [07 – Roadmap](07_ROADMAP_NACH_10B_ENTWURF.md) | Langfristige und optionale Features mit Abhängigkeiten, nicht die aktuelle Buildhistorie |
-| [06 – Fachquellenindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) | Links zu maßgeblichen Fachplänen, Architekturprüfungen und Reviews |
-| [04 – Ideenspeicher](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md) | Unpriorisierte Ideen, **keine** still freigegebenen Features |
-| [Test- und Originalindex](testrun_10b/README.md) | Originaldaten, Runreviews, Quellenlage |
+| [01 – Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) | Rollen, Freigaben, Reviews, Test- und Commitregeln |
+| [02 – Design-Kanon](02_DESIGN_KANON.md) | **Verbindliche** Spielregeln und ausdrücklich geplante Entscheidungen |
+| [03 – Aktueller Projektstand](03_AKTUELLER_PROJEKTSTAND.md) | **Einzige laufende Quelle** für Build, Abnahme, nächste Aufgaben, Risiken |
+| [07 – Roadmap](07_ROADMAP_NACH_10B_ENTWURF.md) | Etappen, Featurefamilien, Abhängigkeiten |
+| [06 – Fachquellenindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) | Links zu Fachplänen, Architekturprüfungen und Reviews |
+| [04 – Ideenspeicher](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md) | Unpriorisierte Ideen, **keine** Freigaben |
+| [Runindex](testrun_10b/README.md) | Originaldaten, Run-Reviews, Quellenlage |
 
-**Leseprinzip:** Für einen neuen Chat zunächst **README + 01 + 03**, dann **02** für Regelentscheidungen bzw. **07 + genau den relevanten Fachplan** für geplante Funktionen. Nicht alle ~200 historischen Reviews einlesen. Fachquellen stehen in 06; das historische V3-README unter `avereth-engine/` ist **kein** aktueller V4-C-Produktstand auf `main`.
+**Leseprinzip:**
+- Für einen neuen Chat zuerst **README + 01 + 03** lesen.
+- Danach **02** für Regelfragen bzw. **07 + genau den relevanten Fachplan** aus 06 für geplante Funktionen.
+- Nicht alle historischen Reviews einlesen.
+- Das V3-README unter `avereth-engine/` ist **nicht** der aktuelle Produktstand.
 
-## Jetzt wichtig: entwickelt ≠ getestet ≠ freigegeben
+## Entwickelt ≠ getestet ≠ freigegeben
 
-1. **P2-1 bis P2-5 auf `.180–.182` korrigiert, E3-V-1 in `.183` umgesetzt; neuer natürlicher Dreierbatch geprüft.** Nächster Schritt ist der **gezielte unabhängige Gegenreview der konkreten `.183`-Blockaden** (Rogue T39–T43, Mage T22/T27 und T24) sowie der Qualität der 9 Anker; [Review und Gegenreview-Auftrag](testrun_10b/npc-20261113-135417Z/REVIEW.md). Kein weiteres allgemeines Audit. Isolierter ST-Standard-/Failsoft-Smoke bleibt getrennt offen.
-2. **Konkrete offene Integrationsoptionen:** Preis-/Planner-Absicherung P1a–P1f, D3-Teilauslieferung von `relevant` und begrenzte O1-B1-Szenennormalisierung. **Analysiert, nicht implementiert.**
-3. **Geplante Spielelemente:** Monster A1 (`.184`, R1 in `.185`) und **A2-1 bis A2-3** (`.186`, Bewaffnung) sind umgesetzt; A2-4 (Waffen in DUNGEON AHEAD) bleibt zurückgestellt. Combat Main/Minor (K1) und Stealth S2 geplant. **Keine Umsetzungsfreigabe durch das bloße Vorliegen eines Plans.**
-4. **Spätere Optionen:** NPC E4/E5, PULSE D erst aus Naturläufen, weitere Monsterökologie, Shops, Questvielfalt und Scaling. Siehe 07.
+- **Implementiert und abgenommen:** siehe 03, Tabelle „Was technisch umgesetzt ist“.
+- **Entschieden, nicht umgesetzt:** Bossloot V1 ([U1–U11](patch_plans_10b/GEGENREVIEW_BOSSLOOT_GPT_ENTSCHEIDUNGEN_2026-11-15.md)), K1 Main/Minor, Stealth S2.
+- **Entscheidungsvorlagen:** [Kampf: Angriff mit Annäherung](patch_plans_10b/FACHPLAN_KAMPF_BEWEGUNG_ANGRIFF_192.md), Preis-/Planner-Belege P1a–P1e, Rang-/Qualitätskalibrierung der Ausrüstung.
+- **Nur natürlich prüfbar:** Spielgefühl, NPC-Qualität, PULSE-Pacing. Geskriptete Tests, Replay und Smokes beweisen das nicht.
 
-## Kopierbarer Startauftrag für einen neuen Entwicklungs-/Reviewchat
+## Kopierbarer Startauftrag für einen neuen GPT-Chat
 
-> Arbeite am Projekt Avereth Engine, Repository `Mango1331/Claude-AI-RPG-Game`. Lies auf `main` zuerst `README.md`, `01_ARBEITSWEISE_CHATGPT_CLAUDE.md` und `03_AKTUELLER_PROJEKTSTAND.md`. Prüfe die aktuellen Remote-HEADs von `main` und `claude/c-planner-prototype-2026-10-02-gpt-c666`. Lies danach **nur die für meinen Auftrag relevanten** Regeln (02), Roadmap (07), Fachpläne/Reviews (06) und echten Code. Unterscheide implementiert, simuliert/getestet, natürlich beobachtet, vorgeschlagen und ausdrücklich freigegeben. Ändere den Produktcode nur auf konkreten Auftrag; für Dokumentation nur `main`. Vermeide neue allgemeine Reviews, doppelte Statuslisten und unnötige Mikropatches. Berichte im Chat kompakt mit tatsächlichen Commit-/Testnachweisen.
+> Du arbeitest als unabhängiger Reviewer und Planungspartner am Projekt **Avereth Engine**, Repository `Mango1331/Claude-AI-RPG-Game`.
+>
+> 1. **Einlesen, in dieser Reihenfolge:** auf `main` `README.md`, `01_ARBEITSWEISE_CHATGPT_CLAUDE.md` und `03_AKTUELLER_PROJEKTSTAND.md`.
+> 2. **HEADs prüfen:** die aktuellen Remote-HEADs von `main` (Dokumentation) und `claude/c-planner-prototype-2026-10-02-gpt-c666` (Produkt). Weichen sie von 03 ab, sag das zuerst und prüfe den neuen Diff.
+> 3. **Zum Auftrag passend lesen:** `02_DESIGN_KANON.md` für Spielregeln, `07_ROADMAP_NACH_10B_ENTWURF.md` für Etappen, über `06_PATCH10B_MASTERPLAN_UND_REVIEWS.md` genau den relevanten Fachplan und den echten Produktcode am aktuellen HEAD. Alte Zeilennummern aus Plänen nicht übernehmen.
+> 4. **Evidenzklassen trennen:** implementiert, geskriptet getestet (Node/Replay/Smoke), natürlich beobachtet (LLM-Batch oder persönlicher Test), vorgeschlagen, ausdrücklich entschieden. Behaupte keine Testzahlen, die du nicht selbst ausgeführt hast; zitiere sie als Angabe des Implementierers.
+> 5. **Grenzen:**
+>    - Den Produktcode änderst du nur auf ausdrücklichen Auftrag. Dokumentation gehört auf `main`.
+>    - Ein Fachplan oder Review ist keine Freigabe; Kanonänderungen entscheidet der Nutzer.
+>    - Keine neuen allgemeinen Architektur-Reviews, keine doppelten Statuslisten, keine Mikropatch-Serien, keine natürlichen API-Läufe ohne Auftrag.
+>    - Originaldaten in `testrun_10b/` nie umschreiben.
+> 6. **Aktueller Kontext:**
+>    - Build `.192` mit GO für einen persönlichen User-Test; Beobachtungspunkte in 03.
+>    - Bossloot V1 ist entschieden (U1–U11), aber nicht umgesetzt.
+>    - Der Provider-Tarif begrenzt automatisierte Batches; Rogue und Mage des `.191`-Batches stehen aus.
+> 7. **Antwortform:** kompakt auf Deutsch, mit Befund → Beleg (Datei/Commit/Originalfall) → Bewertung (bestätigt/widerlegt/präzisiert/offen) → Empfehlung. Am Ende stehen geänderte Dateien, Commit und offene Nutzerentscheidungen.
 
 ## Archiv und Bestandsschutz
 
-Die langen Originalreviews in `testrun_10b/`, unabhängig geprüften Analysen in `recherche/` und einzelnen Produktpatchnotes sind **Quellen**, keine zweite aktive Dokumentation. Sie werden nicht überschrieben, nur um Übersichten zu kürzen. Ältere zentrale Statusfassungen bleiben [über einen festen Git-Commit](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/ec0969b816249211bc71b3c53b10eb1faf11716a/03_AKTUELLER_PROJEKTSTAND.md) erreichbar. Keine Behauptung über durch diesen Dokumentationsstand neu ausgeführte Node-, Replay- oder Modelltests.
+- **Quellen, keine aktive Dokumentation:** die langen Originalreviews in `testrun_10b/`, die geprüften Analysen in `recherche/` und die Produktpatchnotes. Sie werden nicht überschrieben, nur um Übersichten zu kürzen.
+- **Ältere zentrale Fassungen** bleiben über feste Commits erreichbar: [README vor der Bereinigung vom 15.11.](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/af7c77eea7df3a81e0a961dc80f0ba2f81e131c9/README.md) und [03 vor der Bereinigung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/af7c77eea7df3a81e0a961dc80f0ba2f81e131c9/03_AKTUELLER_PROJEKTSTAND.md).
+- **Kein neuer Test durch diese Dokumentationspflege.**

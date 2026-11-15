@@ -1,12 +1,12 @@
 # Avereth Engine – Arbeitsweise und Freigaben
 
-**Stand 13.11.2026.** Dauerhafte Prozessregeln, **keine zweite Status-/Patchchronik**. [Startseite](README.md) · [Aktueller Stand 03](03_AKTUELLER_PROJEKTSTAND.md) · [Design-Kanon 02](02_DESIGN_KANON.md).
+**Stand 15.11.2026.** Dauerhafte Prozessregeln, **keine zweite Status-/Patchchronik**. [Startseite](README.md) · [Aktueller Stand 03](03_AKTUELLER_PROJEKTSTAND.md) · [Design-Kanon 02](02_DESIGN_KANON.md).
 
 ## Zuständigkeiten
 
 - **Nutzer:** entscheidet Spielgefühl, Kanon, Prioritäten und Freigaben; führt persönliche SillyTavern-Tests und ggf. lokale LLM-Batches durch, liefert Originaldaten und ungefiltertes Spielerfeedback.
-- **ChatGPT/Codex:** unabhängige Code-/Design-/Run-Gegenprüfungen, präzise Aufträge; implementiert nur, wenn dies ausdrücklich verlangt ist.
-- **Claude/Sol/Opus:** beauftragte Implementierung oder unabhängige technische Analysen. Frühere Modellaussagen sind keine automatisch richtigen Entscheidungen.
+- **ChatGPT/Codex:** unabhängige Code-/Design-/Run-Gegenprüfungen, Designentscheidungsvorlagen, präzise Aufträge; implementiert nur, wenn dies ausdrücklich verlangt ist. Eigene Testzahlen nur, wenn selbst ausgeführt; sonst als Implementiererangabe kennzeichnen. Startauftrag für einen neuen Chat: [README](README.md#kopierbarer-startauftrag-für-einen-neuen-gpt-chat).
+- **Claude/Sol/Opus:** beauftragte Implementierung oder unabhängige technische Analysen, Originalfall-Reproduktionen (lokaler Replay-Nachlauf aus aufgezeichneten Modellantworten, `tools/replay/build_corpus.mjs`). Frühere Modellaussagen sind keine automatisch richtigen Entscheidungen.
 - **Engine und LLM:** Planner interpretiert, JS-Engine autorisiert/bucht, Narrator erzählt, Extractor/Firewall übernimmt legitime Weltfolgen. Spielspaß, Spielerhoheit und persistente Konsistenz vor Vollsimulation.
 
 **Ein Fachplan, Review oder Dokumentationscommit ist keine Produktfreigabe.** Bereits beschlossener Kanon bleibt maßgeblich, ist aber bei ausdrücklicher Nutzerentscheidung bewusst änderbar. Keine weiteren P2-Sonderregeln ohne konkreten Integritätsnachweis; keine neuen Mechaniken/Balanceänderungen als Nebenprojekt. Fachlich zusammenhängende Patches bündeln, keine künstlichen Mikropatch-Serien.

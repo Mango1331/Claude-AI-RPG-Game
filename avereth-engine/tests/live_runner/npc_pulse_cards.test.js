@@ -59,28 +59,44 @@ async function hessa() {
 const block = (turn, lines) => `[AVERETH ENGINE — authoritative game state, turn ${turn}. Numbers, rolls, positions and knowledge below are binding; narrate, never recalculate.]\n${lines.join('\n')}`;
 const anchor = (a, p) => a.npc.anchors.find((x) => x.p === p);
 
-test('P2-A: a card cut by the 170-character cap delivers its anchor and agreement only partly; a value it cut away entirely is not delivered', async () => {
+test('P2-A/.200: whole selected anchors count as delivered, omitted manner does not; the capped agreement stays partial', async () => {
     const { g, id, calls } = await hessa();
-    // the real compact card of the next turns: voice whole, manner cut by the cap, interest gone; the promise cut on the
-    // attitude row (it is longer than the row's room)
+    // .200 selects the whole relevant interest plus voice, skipping manner. The unchanged attitude row still cuts
+    // this promise (it is longer than the row's room).
     const block = calls.at(-2).request.messages[1].content.split('\n');
     const at = block.findIndex((l) => l.startsWith('• ') && l.includes(`[${id}]`));
     const head = block[at];
     const card = [head, ...block.slice(at + 1).filter((l, k, xs) => xs.slice(0, k + 1).every((y) => y.startsWith('  ')))];
-    assert.ok(head.length <= 170 && head.endsWith('…') && head.includes(`voice: ${VOICE};`) && !head.includes(MANNER) && !head.includes('interest:'), head);
+    assert.ok(head.length <= 170 && head.endsWith('…') && head.includes(`voice: ${VOICE};`) && head.includes(`interest: ${INTEREST};`) && !head.includes('manner:'), head);
     assert.ok(card.some((l) => l.includes('; between you: Hessa promised') && l.endsWith('…')) && !card.some((l) => l.includes(PROMISE)), card.join('\n'));
     const a = npcPulseAnalysis(g.chat, { calls });
     const cov = (k) => a.coverage.find((c) => c.id === k);
-    assert.deepEqual([cov('anchor_on_card').count, cov('agreement_on_card').count], [1, 0], 'only the whole voice was delivered');
+    assert.deepEqual([cov('anchor_on_card').count, cov('agreement_on_card').count], [2, 0], 'whole voice and interest were delivered');
     assert.equal(anchor(a, 'voice').later.status, 'full');
-    assert.equal(anchor(a, 'manner').later.status, 'partial', 'a cut value is no whole delivery');
-    assert.equal(anchor(a, 'interest').later.status, 'none');
-    assert.equal(cov('anchor_on_card').partial, 1);
+    assert.equal(anchor(a, 'manner').later.status, 'none', 'omitted is not partial delivery');
+    assert.equal(anchor(a, 'interest').later.status, 'full');
+    assert.equal(cov('anchor_on_card').partial, 0);
     const agreement = a.npc.agreements.find((x) => x.text === PROMISE);
     assert.equal(agreement.onCard.status, 'partial');
     assert.equal(cov('agreement_on_card').partial, 1);
     const md = npcPulseMarkdown(a);
     assert.match(md, /gekürzt \(Zug \d+\)/);
+});
+
+test('P2-A historical heads: a cut anchor is still partial; an entirely omitted value is not delivered', async () => {
+    const { g, id, calls } = await hessa();
+    // Reconstruct only the former head format in copied diagnostic requests. Do not weaken historical evaluation.
+    const oldHead = (`• Hessa [${id}] — person, clerk; voice: ${VOICE}; manner: ${MANNER}; interest: ${INTEREST}`).slice(0, 169) + '…';
+    const historical = structuredClone(calls);
+    for (const call of historical) for (const message of call.request.messages) {
+        message.content = message.content.split('\n').map(row => row.startsWith(`• Hessa [${id}]`) && row.includes('; voice:') ? oldHead : row).join('\n');
+    }
+    const a = npcPulseAnalysis(g.chat, { calls: historical });
+    assert.equal(anchor(a, 'voice').later.status, 'full');
+    assert.equal(anchor(a, 'manner').later.status, 'partial');
+    assert.equal(anchor(a, 'interest').later.status, 'none');
+    const cov = a.coverage.find(c => c.id === 'anchor_on_card');
+    assert.deepEqual([cov.count, cov.partial], [1, 1]);
 });
 
 test('P2-A: an older prompt section with the words is no delivery; only the current engine block counts', async () => {

@@ -29,13 +29,13 @@ test('new PC has five in every base stat; normal class bonus and full creation r
         assert.equal(sheet.level, 1); assert.equal(sheet.free_points, 0); assert.equal(sheet.xp, 0);
     }
 });
-test('level-up retains normal XP threshold, five free points, favored growth and no refill', () => {
+test('level-up retains normal XP threshold, five free points, no automatic growth and no refill', () => {
     const { s, add } = hero('mage'), sheet = s.entities.pc.sheet, before = structuredClone(sheet);
     sheet.hp -= 3; sheet.mp -= 4; sheet.sta -= 5;
     const resources = [sheet.hp, sheet.mp, sheet.sta];
     add(awardXp(sheet, 125, content, 'regression'));
     assert.equal(sheet.level, 2); assert.equal(sheet.xp, 25); assert.equal(sheet.free_points, 5);
-    for (const k of content.rules.stats) assert.equal(sheet.stats[k], before.stats[k] + (['INT', 'WIL'].includes(k) ? 1 : 0));
+    for (const k of content.rules.stats) assert.equal(sheet.stats[k], before.stats[k]);
     assert.deepEqual([sheet.hp, sheet.mp, sheet.sta], resources);
     add(assignStat(sheet, 'VIT', 2, content).events);
     assert.equal(sheet.stats.VIT, before.stats.VIT + 2); assert.equal(sheet.free_points, 3);

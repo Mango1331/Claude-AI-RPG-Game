@@ -43,7 +43,7 @@ export function awardXp(sheet, amount, content, reason, who = 'pc') {
         events.push({
             t: 'level.up', d: {
                 id: who, level, xp_after: xp, free_points: content.rules.progression.free_points_per_level,
-                favored: cls ? cls.favored : [], rank: rankOf(level, content),
+                favored: content.rules.progression.favored_growth_per_level > 0 && cls ? cls.favored : [], rank: rankOf(level, content),
             },
         });
     }

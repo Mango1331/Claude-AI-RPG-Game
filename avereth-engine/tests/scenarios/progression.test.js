@@ -10,7 +10,7 @@ import { validateState } from '../../src/validate.js';
 
 const content = await loadContent();
 
-test('35 hunts: XP, Levels, free points, favored growth and resources stay consistent; the log reproduces the state', () => {
+test('35 hunts: XP, Levels, free points, unchanged favored stats and resources stay consistent; the log reproduces the state', () => {
     const g = new Game(content, { seed: 20260923 }).ranger();
     let defeatedXp = 0;
     let fights = 0;
@@ -41,8 +41,8 @@ test('35 hunts: XP, Levels, free points, favored growth and resources stay consi
     assert.equal(spent + s.xp, totalXp, 'Level and XP account for every point earned');
     assert.ok(s.level >= 3, `reached Level ${s.level}`);
     assert.equal(s.free_points, (s.level - 1) * 5);
-    assert.equal(s.stats.AGI, 6 + s.level - 1);
-    assert.equal(s.stats.PER, 6 + s.level - 1);
+    assert.equal(s.stats.AGI, 6);
+    assert.equal(s.stats.PER, 6);
     assert.equal(deriveCharacter(s, content).maxHp, 50 + s.level * 5 + 25);
     assert.equal(g.log.filter((e) => e.t === 'encounter.started').length, 35);
     assert.deepEqual(g.refold(), g.state, 'fold(event log) === live state');

@@ -69,8 +69,8 @@ test('command panels are computed from state (no LLM) and #assign is the only st
     assert.match(r.panels[0], /NOT APPLIED — 14 points asked, only \d+ free Stat Points available\. Nothing was assigned/);
     r = runCommands(g.state, content, '#assign PER 3 AGI 2 #status');
     assert.equal(r.events.length, 2);
-    assert.match(r.panels[1], /PER 10/); // 6 + 1 (Level 2 favored) + 3
-    assert.equal(g.state.entities.pc.sheet.stats.PER, 7, 'runCommands does not mutate the input state');
+    assert.match(r.panels[1], /PER 9/); // initial 6 + 3 assigned, no automatic Level-2 bonus
+    assert.equal(g.state.entities.pc.sheet.stats.PER, 6, 'runCommands does not mutate the input state');
     assert.match(runCommands(g.state, content, '#frobnicate').panels[0], /Unknown command/);
 });
 

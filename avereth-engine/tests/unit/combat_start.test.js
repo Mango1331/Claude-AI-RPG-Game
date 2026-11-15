@@ -35,10 +35,11 @@ test('NPC > NPC > Alaric: both act with the reply, the fight stops at his Turn, 
     assert.match(panel, /`— Round 1 —`\n`Brigand A[^`]*: [^`]*→ Alaric`\n[^\n]*\n`Bandit A[^`]*: [^`]*→ Alaric`/);
     assert.match(panel, /`Next: Alaric's Turn \(Round 1\)`/);
     const t = g.input(`*I Heavy Slash ${label(g, 'npc.bandit')}*`);
-    // the narrator hears every step since its last reply; the fight's log holds each Turn once (the bandits hit hard:
-    // Round 2 kills him)
+    // The narrator hears every step since its last reply; each Turn occurs once. With .197's five-point NPC
+    // growth the level-2 bandits leave him at 6 HP, waiting for his second Turn (previously they killed him).
     const all = ['1:npc.brigand', '1:npc.bandit', '1:pc', '2:npc.brigand', '2:npc.bandit'];
-    assert.deepEqual([steps(t.outcome.records), t.outcome.shown, t.outcome.ended?.pc_dead], [all, 2, true]);
+    assert.deepEqual([steps(t.outcome.records), t.outcome.shown, t.outcome.ended?.pc_dead], [all, 2, undefined]);
+    assert.deepEqual([g.state.entities.pc.sheet.hp, g.state.encounter.round, g.state.encounter.current], [6, 2, 'pc']);
     assert.deepEqual(steps(t.events.findLast((e) => e.t === 'encounter.updated').d.encounter.log), all);
     assert.match(turnPanel(g.state, content), /^`— Round 1 —`\n`Alaric: Heavy Slash → Bandit A/, 'the panel shows only what is new');
 });

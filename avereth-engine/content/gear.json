@@ -674,6 +674,14 @@
       "superior": 18,
       "exceptional": 22
     },
+    "f_shield_fine_def": 5,
+    "e_weapon_values": {
+      "crude": 7,
+      "common": 11,
+      "fine": 15,
+      "superior": 19,
+      "exceptional": 23
+    },
     "f_weapon_prices": {
       "fine": 140,
       "superior": 260,

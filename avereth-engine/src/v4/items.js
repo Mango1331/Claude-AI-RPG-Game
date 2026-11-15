@@ -245,7 +245,10 @@ export function itemProfile(content, { name, kind = 'item', effect = null, teach
         return Math.max(1, Math.round((lo + q.at * (hi - lo)) * rankFactor(content, r)));
     };
     const vals = Object.fromEntries(Object.entries(g.values).map(([k, key]) => [k,
-        balance && r === 'F' && g.slot === 'weapon' ? (content.gear.instances.f_weapon_values?.[q.tier] ?? stat(key)) : stat(key)]));
+        r === 'E' && g.slot === 'weapon' ? (content.gear.instances.e_weapon_values?.[q.tier] ?? stat(key))
+            : balance && r === 'F' && g.slot === 'weapon' ? (content.gear.instances.f_weapon_values?.[q.tier] ?? stat(key)) : stat(key)]));
+    // .198: one physical defense step from common to fine; other shield qualities/ranks keep the reference curve.
+    if (r === 'F' && g.id === 'shield' && q.tier === 'fine') vals.def = content.gear.instances.f_shield_fine_def ?? vals.def;
     const family = g.family === 'by_words' ? weaponFamily(content, name) || 'melee' : g.family;
     const p = { kind: 'gear', base: g.id, title: null, rank: r, quality: q.tier, ...(balance && r === 'F' && g.slot === 'weapon' ? { balance: 114 } : {}), slot: g.slot, family, atk: vals.atk || 0, matk: vals.matk || 0, def: vals.def || 0, mdef: vals.mdef || 0 };
     return { ...p, value_cp: valueOf(content, p) };

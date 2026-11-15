@@ -3,7 +3,7 @@
   "_derivation": [
     "Lore #1: most humans receive a Base Class around adulthood -> an adult human NPC is a core-stat character with a Base Class.",
     "Lore #3: most people remain F/E -> default Levels 1-3 (F-rank).",
-    "Content #0 + Core #3: Human baseline 5/5/5/5/5/5, class favored +1/+1 at Level 1 and on each later Level, +5 free Stat Points per later Level.",
+    "Content #0 + Core #3: Human baseline 5/5/5/5/5/5, class favored +1/+1 once at Level 1, +5 distributed Stat Points per later Level (no automatic favored growth).",
     "Core #2: MaxHP = 50 + Level*5 + VIT*5, MaxSTA 100, Init = AGI + floor(PER/2), Base DEF/MDEF = floor(VIT/4)/floor(WIL/4).",
     "Content #9: F-rank gear references (Martial Weapon ATK 4-10, Light Armor DEF 2-4 / MDEF 2-5, ...).",
     "Basic Attack: the Base Class Basic Attack (Content #1-#5). If the NPC's weapon does not fit that attack (e.g. a Ranger fighting with a hand-axe), the engine uses the Basic Attack whose weapon family matches (weapon_family_basic below) — PROPOSED rule."

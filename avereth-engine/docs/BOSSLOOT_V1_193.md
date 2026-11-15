@@ -1,4 +1,4 @@
-# Bossloot V1 – Build 4.3.0-c.6.6.193
+# Bossloot V1 – Build .193 mit U10-Nachtrag .194
 
 Produktbasis: `e7dac41764486a93917b8d8aadc34377c6464869` (.192),
 `claude/c-planner-prototype-2026-10-02-gpt-c666`.
@@ -39,7 +39,7 @@ garantierten Verkaufspreise. Keine Passive Stones, keine frei erfundenen Effekte
   unverändert; Sonderwürfe lesen Seed und Slot-/Encounter-/Gegneridentität und
   verändern den RNG-Zähler nicht.
 - Bestehende `object.created`-Events und der vorhandene `entity.updated {looted}`-
-  Marker sind die Wahrheit. An diesem Marker wird `reward:{tier,first,cycle}`
+  Marker sind die Wahrheit. An diesem Marker wird `reward:{tier,first,solo,cycle}`
   ergänzt; es gibt keine zweite Inventar- oder Siegverwaltung.
 - Erstbezwingung: Dungeon+Ebene+Rolle, aus früheren PC-Lootmarkern. Ältere Siege
   ohne Reward-Metadatum zählen; ein Zykluswechsel erneuert die Garantie nicht.
@@ -81,7 +81,46 @@ Reward-Metadaten und -Präsentation sowie der neuen Grantnamen wieder den exakte
 .192-Record: drei Chitinplatten, Return Stone, Kampf, XP/Level-up, RNG und
 Dungeon-Clear sind unverändert. Keine pauschale Neuberechnung alter Fingerprints.
 
-## Abnahme
+## U10-Nachtrag – Build 4.3.0-c.6.6.194
+
+Ausgangscommit dieses Nachtrags ist `a6a9ad68c1368de66487d9406c7c19dcd16d33d0`
+auf `codex/bossloot-v1` (PR #15). Der unabhängige Review bestätigte den V1-Kern;
+der historische U10-Beleg `solo` fehlte noch in den Reward-Metadaten.
+
+`solo` wird ausschließlich aus `enc.combatants` abgeleitet: kein weiterer
+Teilnehmer mit Seite `ally` oder `pc` bedeutet `true`, andernfalls `false`.
+Auch ein inzwischen besiegter, geflohener oder kapitulierter Verbündeter zählt
+als Teilnehmer dieses Kampfes. Neutrale, Gegner und Personen, die nur in der
+Szene oder Erzählung vorkommen, begründen keine verbündete Kampfbeteiligung.
+
+Der Boolean wird am vorhandenen historischen `entity.updated`-Reward-Marker
+und in `outcome.rewards` gespeichert. Er wird nicht für Würfe, Beuteauswahl,
+XP, Kampfregeln oder eine Tatenbuchmechanik verwendet. Historische .193-Records
+werden nicht nachträglich umgeschrieben oder aus ihrer Prosa ergänzt.
+
+Vier neue gezielte Regressionen prüfen Solo-Persistenz, NPC-/Kreaturenverbündete
+auf beiden Seitenbezeichnungen einschließlich ausgeschiedener Teilnehmer,
+negative Prosa-/Begleiter-/Neutral-/Gegnerfälle und identische übrige
+Lootausgaben/RNG über Elite-, Guardian- und Bossfälle.
+
+Replay-Nachtrag: ausschließlich `b17-rogue#213` erhält einen neuen Fingerprint.
+Der Vergleich gegen `a6a9ad6` belegt genau zwei zusätzliche Felder `solo:true`
+(Entity-Reward und Outcome-Reward). Entfernen dieser beiden Booleans ergibt
+den exakten bisherigen Record; alle übrigen Fingerprints bleiben unverändert.
+
+Selbst ausgeführte Abnahme des Nachtrags am 15.11.2026:
+
+| Prüfung | Ergebnis .194 |
+|---|---|
+| Gezielte Bossloot-/U10-Suite | **25/25**, 0 fehlgeschlagen/übersprungen |
+| Vollständiges `npm test` | **3275/3275**, 0 fehlgeschlagen/übersprungen |
+| Vollständiger Replay | **2235 Fälle**, 1094 exakt akzeptierte Abweichungen gegen .126, **0 offen, 0 veraltet** |
+
+Die vier neuen U10-Proben wurden vor der Korrektur rot und danach grün ausgeführt.
+Für diesen Nachtrag wurden auf ausdrücklichen Auftrag weder ST-Smokes noch
+natürliche Modellläufe ausgeführt; die folgenden ST-Zahlen gelten nur für .193.
+
+## Abnahme des ursprünglichen Builds .193
 
 Selbst ausgeführt am 15.11.2026 auf dem anschließend unverändert committeten
 Produktcode (Node 24.22.1, SillyTavern 1.19.0 `7e8663c`, Chromium 151.0.7922.34):

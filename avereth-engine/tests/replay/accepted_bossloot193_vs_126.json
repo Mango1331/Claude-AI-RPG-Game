@@ -2,8 +2,8 @@
  "format": "avereth-replay-accepted-2",
  "baseline_sha": "b8d2af4b76cd0bc52ac178b8c500e5733878ecee",
  "baseline_engine": "4.3.0-c.6.6.126",
- "engine": "4.3.0-c.6.6.193",
- "note": "Build .193: four individually compared records versus .192; all other accepted fingerprints retained unchanged. See docs/BOSSLOOT_V1_193.md.",
+ "engine": "4.3.0-c.6.6.194",
+ "note": "Build .193: four individually compared records versus .192; all other accepted fingerprints retained unchanged. See docs/BOSSLOOT_V1_193.md. U10 .194: only b17-rogue#213 updated versus a6a9ad6 for two historical solo:true fields; all other fingerprints unchanged.",
  "categories": {
   "representation": "population contract recorded, no mechanical consequence: entity.updated {life_stage, population_at} at creation (population_at no longer set on the profile event), quest.hunt.age on hunt contracts, converted population/life_stage fields inside an already rejected creature.new",
   "rejection reason": "a claim already refused in .126 (aware of an unknown creature) is now refused by the creature reference lock (creature_continuity)",
@@ -1966,14 +1966,15 @@
   },
   "b17-rogue#213": {
    "category": "bossloot193 reward",
-   "fingerprint": "sha256:f402b45193e134f4d1043daec821a41f37c3de66be69dcf3f6bf0c8be8a5ba1e",
-   "reason": "193 Bossloot U1–U11: first Glimmer Queen/Crystal Beetle Queen victory gives superior F-Rank shortbow (ATK 18, guide 252 cp) plus inert F-Rank Glimmer Queen Trophy (guide 60 cp), persistent first-boss reward metadata, separate HUD/narrator reward lines and actual grantNames. Original Return Stone and three chitin plates, combat, XP, level-up, dungeon clear, RNG and every other event are unchanged.",
+   "fingerprint": "sha256:014b7d1b38a1447591918891140b3704b01dbc944d8dc2e63af1e836753d7d86",
+   "reason": "193 Bossloot U1–U11: first Glimmer Queen/Crystal Beetle Queen victory gives superior F-Rank shortbow (ATK 18, guide 252 cp) plus inert F-Rank Glimmer Queen Trophy (guide 60 cp), persistent first-boss reward metadata, separate HUD/narrator reward lines and actual grantNames. Original Return Stone and three chitin plates, combat, XP, level-up, dungeon clear, RNG and every other event are unchanged. U10 follow-up .194: only solo:true added to the historical entity reward marker and outcome.rewards; stripping those two booleans restores the exact a6a9ad6 record. No loot, chance, XP, combat or RNG change.",
    "previous_192": {
     "category": "design149 offensive growth",
     "fingerprint": "sha256:7b2bf40efcb8d3d785e888c822f6036fbc6ebee461f55a1506c3fc43cec9ede2",
     "supersedes_148": "sha256:89ad4770469564b0a79a9864476de347a150a893ad6702d99948b6f2c820c63b",
     "reason": "b17-rogue#213: PP before [], after [rogue.fan_of_blades +18 P1/54]. No new pattern is invented. Actual recorded attacks, coin/transactions, created/transferred goods, XP, level-ups and quest completions are identical to .148."
-   }
+   },
+   "previous_193_fingerprint": "sha256:f402b45193e134f4d1043daec821a41f37c3de66be69dcf3f6bf0c8be8a5ba1e"
   },
   "b17-rogue#217": {
    "category": "location190-s2 outcome",

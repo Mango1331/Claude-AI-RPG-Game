@@ -85,7 +85,9 @@ export function specialReward(s, content, enc, e, seen) {
     if (tier === 'boss' && first) object(`${rank}-Rank ${e.name || e.species} Trophy`, 'resource', null, 1, cfg.boss_trophy_cp * 3 ** ['F','E','D','C','B','A','S'].indexOf(rank));
     if (e.slot) seen.add(roleKey(e));
     const objects = chosen.filter(o => !s.objects?.[o.id]);
-    const meta = {tier, first, ...(e.slot ? {cycle: e.slot.cycle} : {})};
+    // U10: historical participation, not prose or survivors only. Neutral bystanders are not allies.
+    const solo = !Object.values(enc.combatants).some(c => c.id !== 'pc' && (c.side === 'ally' || c.side === 'pc'));
+    const meta = {tier, first, solo, ...(e.slot ? {cycle: e.slot.cycle} : {})};
     return { meta, objects, events: objects.map(object => ({t: 'object.created', d: {object}})),
         lines: objects.length ? [`SPECIAL REWARD — ${e.name || e.species} (${tier}${e.slot ? ` · level ${e.slot.floor}` : ''} · ${first ? 'first defeat' : 'repeat'})`, ...objects.map(o => rewardDescription(s, content, o))] : [] };
 }

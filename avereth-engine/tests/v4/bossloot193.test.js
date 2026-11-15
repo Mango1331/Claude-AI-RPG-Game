@@ -125,6 +125,53 @@ test('193: NPC ally participation does not reduce a guaranteed reward',()=>{
     assert.equal(lootEvents(s,content,enc).rewards[0].first,true);
     assert.equal(specials(lootEvents(s,content,enc)).length,2);
 });
+test('U10: solo is true for the PC plus enemies and persists on the historical reward marker', () => {
+    for (const role of ['guard', 'boss', null]) {
+        const {s,enc}=battle(role);
+        const r=lootEvents(s,content,enc);
+        assert.equal(r.rewards[0].solo,true);
+        for (const e of r.events) applyEvent(s,e);
+        assert.equal(s.entities.foe.reward.solo,true);
+        assert.equal(JSON.parse(JSON.stringify(s)).entities.foe.reward.solo,true);
+    }
+});
+test('U10: every booked NPC/creature ally counts, even after defeat, escape or surrender', () => {
+    for (const side of ['ally','pc']) for (const kind of ['npc','creature']) {
+        for (const current of [{hp:10},{hp:0,defeated:true},{hp:10,escaped:true},{hp:10,surrendered:true}]) {
+            const {s,enc}=battle('boss');
+            s.entities.helper={id:'helper',kind,status:'alive',name:'Helper'};
+            enc.combatants.helper={id:'helper',side,current};
+            const r=lootEvents(s,content,enc);
+            assert.equal(r.rewards[0].solo,false,JSON.stringify({side,kind,current}));
+            assert.equal(r.events.find(e=>e.t==='entity.updated'&&e.d.id==='foe').d.set.reward.solo,false);
+        }
+    }
+});
+test('U10: prose, scene companions, neutrals and hostiles do not invent an allied combat participant', () => {
+    const {s,enc}=battle('boss');
+    s.entities.helper={id:'helper',kind:'npc',name:'ally',status:'alive'};
+    s.scene.present.push('helper');
+    s.last={input:'My allies did all the fighting.',outcome:{narration:'Alaric fought with an army.'}};
+    enc.combatants.bystander={id:'bystander',side:'neutral',current:{hp:10}};
+    enc.combatants.hostile={id:'hostile',side:'hostile',current:{hp:10}};
+    assert.equal(lootEvents(s,content,enc).rewards[0].solo,true);
+    enc.combatants.helper={id:'helper',side:'ally',current:{hp:10}};
+    s.last.input='I fought entirely alone.';
+    assert.equal(lootEvents(s,content,enc).rewards[0].solo,false);
+});
+test('U10: solo is historical data only; allied participation changes no drops, draws or other outcome fields', () => {
+    const stripSolo=r=>JSON.parse(JSON.stringify(r),(key,value)=>key==='solo'?undefined:value);
+    for (const role of ['guard','boss',null]) for (let seed=0;seed<50;seed++) {
+        const {s,enc}=battle(role,seed), before=structuredClone(s);
+        const solo=lootEvents(s,content,enc);
+        enc.combatants.helper={id:'helper',side:'ally',current:{hp:10}};
+        const group=lootEvents(s,content,enc);
+        assert.equal(solo.rewards[0].solo,true);
+        assert.equal(group.rewards[0].solo,false);
+        assert.deepEqual(stripSolo(group),stripSolo(solo));
+        assert.deepEqual(s,before,'metadata and hash draws do not mutate state or RNG');
+    }
+});
 test('193: generated equipment really equips and ranked gear refuses without consumption',()=>{
     for(const rank of ['F','E']) {
         const {s,enc}=battle(); s.entities.foe.profile.rank=rank;

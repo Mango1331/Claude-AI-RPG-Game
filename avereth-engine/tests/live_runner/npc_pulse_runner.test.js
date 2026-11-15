@@ -232,6 +232,23 @@ test('evaluation of PULSE: draws by exposure, open windows and what the reply di
     assert.equal(a.coverage.find((c) => c.id === 'pulse_open').status, 'observed');
     assert.ok(Object.keys(a.pulse.byExposure).length >= 1);
     assert.equal(a.pulse.density.inputs, g.chat.filter((m) => m.is_user).length);
+    // A19: absent historical fields mean not measured, not measured zero.
+    const old = structuredClone(g.chat);
+    for (const m of old) for (const e of rec(m)?.events || []) if (e.t === 'pulse.outcome') {
+        e.d.v = 1; delete e.d.persisted.threads; delete e.d.persisted.npc_reentries;
+    }
+    const historical = npcPulseAnalysis(old);
+    for (const x of Object.values(historical.pulse.byExposure)) {
+        assert.equal(x.persisted.threads, null); assert.equal(x.coverage.threads, 0);
+    }
+    assert.match(npcPulseMarkdown(historical), /nicht erfasst/);
+    const mixed = structuredClone(old);
+    const event = mixed.flatMap(m => rec(m)?.events || []).find(e => e.t === 'pulse.outcome');
+    Object.assign(event.d, {v: 2}); Object.assign(event.d.persisted, {threads: 2, npc_reentries: 1});
+    const evaluated = npcPulseAnalysis(mixed);
+    assert.equal(Object.values(evaluated.pulse.byExposure).reduce((n,x)=>n+x.coverage.threads,0),1);
+    assert.equal(Object.values(evaluated.pulse.byExposure).reduce((n,x)=>n+(x.persisted.threads||0),0),2);
+
 });
 
 test('evaluation of a run folder (chat.jsonl, chat-completions.jsonl): npc-pulse.json and npc-pulse.md written next to them', async (t) => {

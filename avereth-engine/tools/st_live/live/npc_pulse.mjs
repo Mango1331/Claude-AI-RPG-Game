@@ -220,8 +220,8 @@ export function npcPulseAnalysis(chat, { calls = [] } = {}) {
         for (const e of ev.filter((x) => x.t === 'pulse.outcome')) {
             const w = windows.filter((x) => x.msg === lastUser?.i).at(-1);
             const o = e.d;
-            if (w) w.outcome = { narrated: o.narrated ?? null, persisted: o.persisted || null };
-            if (o.open && o.narrated === 'none') review.push({ kind: 'open_window_not_narrated', msg: i, turn, why: `an open ${o.kind} window the reply did not visibly use (engine heuristic)`, passage: excerpt(prose) });
+            if (w) w.outcome = { version: o.v ?? 1, narrated: o.narrated ?? null, persisted: o.persisted || null };
+            if (o.open && o.narrated === 'none') review.push({ kind: 'open_window_not_narrated', msg: i, turn, why: `an open ${o.kind} window with no captured booking signal; manual review required (not an assessment of narration)`, passage: excerpt(prose) });
             const p = o.persisted || {};
             if (o.rolled && !o.open && (p.creatures || p.persons || p.fight)) review.push({ kind: 'new_world_content_in_closed_window', msg: i, turn, why: `closed window, yet ${[p.persons && `${p.persons} new person(s)`, p.creatures && `${p.creatures} new creature(s)`, p.fight && 'a fight'].filter(Boolean).join(', ')} (may be his own doing)`, passage: excerpt(prose) });
         }
@@ -282,12 +282,18 @@ export function npcPulseAnalysis(chat, { calls = [] } = {}) {
     const byExposure = {};
     for (const w of windows) {
         const k = `${w.exposure}/${w.frame}`;
-        const x = byExposure[k] ||= { rolled: 0, open: 0, kinds: {}, narrated: { likely: 0, none: 0 }, persisted: { persons: 0, creatures: 0, features: 0, objects: 0, places: 0, fights: 0, slots: 0 } };
+        const x = byExposure[k] ||= { rolled: 0, open: 0, kinds: {}, narrated: { likely: 0, none: 0 }, persisted: { persons: 0, creatures: 0, features: 0, objects: 0, places: 0, fights: 0, slots: 0, threads: null, npc_reentries: null }, coverage: { threads: 0, npc_reentries: 0 } };
         x.rolled += 1;
         if (w.open) { x.open += 1; x.kinds[w.kind] = (x.kinds[w.kind] || 0) + 1; }
         if (w.outcome?.narrated) x.narrated[w.outcome.narrated] = (x.narrated[w.outcome.narrated] || 0) + 1;
         const p = w.outcome?.persisted || {};
         for (const k2 of ['persons', 'creatures', 'features', 'objects', 'places', 'slots']) x.persisted[k2] += p[k2] || 0;
+        for (const key of ['threads', 'npc_reentries']) {
+            if (w.outcome?.version >= 2 && Number.isFinite(p[key])) {
+                x.persisted[key] = (x.persisted[key] ?? 0) + p[key];
+                x.coverage[key]++;
+            }
+        }
         if (p.fight) x.persisted.fights += 1;
     }
     const open = windows.filter((w) => w.open);
@@ -364,8 +370,8 @@ export function npcPulseMarkdown(a, { runId = null } = {}) {
     if (ar.length) L.push('**Abgelehnte NPC-Meldungen** (Regel: Anzahl)', '', [...new Set(ar.map((x) => x.rule || 'ambiguous_thread'))].map((k) => `${k}: ${ar.filter((x) => (x.rule || 'ambiguous_thread') === k).length}`).join(' · '), '');
     const P = a.pulse;
     L.push('## PULSE', '', `Entscheidungen: ${P.draws} · offen: ${P.open} · offene je 10 Eingaben: ${P.density.perTenInputs ?? '–'} · je 8 Spielstunden: ${P.density.perEightHours ?? '–'} · Pausen-Folgezüge: ${P.pauseBlockTurns} · Rast-Unterbrechungen (Korrektur): ${P.restInterruptedCorrections} · gleiche Art kurz hintereinander: ${P.repeats.length}`, '');
-    if (Object.keys(P.byExposure).length) L.push('| Exposition/Rahmen | Würfe | offen | Arten | erzählt (likely/none) | Weltfolgen |', '|---|---:|---:|---|---|---|',
-        ...Object.entries(P.byExposure).map(([k, x]) => `| ${k} | ${x.rolled} | ${x.open} | ${cell(Object.entries(x.kinds).map(([a2, b]) => `${a2} ${b}`).join(', ') || '–')} | ${x.narrated.likely}/${x.narrated.none} | ${cell(Object.entries(x.persisted).filter(([, v]) => v).map(([a2, b]) => `${a2} ${b}`).join(', ') || '–')} |`), '');
+    if (Object.keys(P.byExposure).length) L.push('| Exposition/Rahmen | Würfe | offen | Arten | Buchungssignal (likely/none; Heuristik) | Weltfolgen / v2-Abdeckung |', '|---|---:|---:|---|---|---|',
+        ...Object.entries(P.byExposure).map(([k, x]) => `| ${k} | ${x.rolled} | ${x.open} | ${cell(Object.entries(x.kinds).map(([a2, b]) => `${a2} ${b}`).join(', ') || '–')} | ${x.narrated.likely}/${x.narrated.none} | ${cell(Object.entries(x.persisted).filter(([key, v]) => !['threads', 'npc_reentries'].includes(key) && v).map(([a2, b]) => `${a2} ${b}`).concat(['threads', 'npc_reentries'].map(key => `${key}: ${x.persisted[key] ?? 'nicht erfasst'} (${x.coverage[key]}/${x.rolled} Antworten erfasst)`)).join(', ') || '–')} |`), '');
     if (P.refusals.length) L.push('**Abgelehnte neue Bedrohungen** (Regel: Anzahl)', '', [...new Set(P.refusals.map((x) => x.rule))].map((k) => `${k}: ${P.refusals.filter((x) => x.rule === k).length}`).join(' · '), '');
     const I = a.integration;
     L.push('## Integration', '', `Extraktion: ${Object.entries(I.extraction).map(([k, v]) => `${k} ${v}`).join(', ') || '–'} · Foldfehler: ${I.foldErrors} · Verträge aktiv/abgeschlossen: ${I.quests.active}/${I.quests.completed}`, '',

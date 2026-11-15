@@ -147,7 +147,8 @@ test('P3 R T13 original: the met of a GO with words for its target is judged at 
     const r = await reply191('r191', 26);
     assert.equal(r.state().scene.at, 'loc.ashbridge.widow_hesses_house');
     const met = (r.record.rejected || []).filter((x) => x.type === 'expected');
-    assert.deepEqual(met.map((x) => x.rule), ['met_evidence'], 'the quote "came down … to meet him" is judged by the unchanged evidence rule');
+    assert.deepEqual(met, [], '.199 accepts the original local doorstep greeting');
+    assert.ok(r.state().scene.present.includes('npc.widow_hesse'));
     assert.ok(!met.some((x) => x.rule === 'met_without_arrival'));
 });
 

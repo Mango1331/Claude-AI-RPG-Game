@@ -337,7 +337,7 @@ function metEvidenceOne(prose, evidence, id, people, { here = [], elsewhere = []
     if (TRACE.test(text) && w.some((t, i) => ['from', 'by', 'of'].includes(t) && namedPeople(w.slice(i + 1, i + 5), people).has(id))) return { ok: false, why: 'it shows a trace of them, not them' };
     // .170 (GPT review of .169 §2): naming them is not showing them here. "The clerk had left the Guild hall before
     // Alaric arrived" names the one clerk and is narrated: only a mention of them that is shown present now counts
-    const shown = presentHere(ev.quote, id, people, { here, elsewhere });
+    const shown = presentHere(ev.quote, id, people, { here, elsewhere, self });
     if (!shown.ok) return shown;
     // .171 (GPT review of .170 §3): what the reply goes on to tell of them decides too: "The clerk stood behind the
     // counter and left before Alaric arrived" (or a quote of its first half only) shows them gone when he came
@@ -369,7 +369,7 @@ const ELSEWHERE = /^(?:other|another|elsewhere|home|away|outside|abroad)$/;
 const SETTLEMENT = /^(?:town|city|village|market|marketplace|street|streets|road|square|harbou?r|docks?|gate|fields?|farm|tavern|inn|temple|camp|quarter)$/;
 const LINGER = /^(?:still|again|also|now|just|then|already|alone|quietly|patiently)$|ly$/;
 
-function presentHere(q, id, people, { here = [], elsewhere = [] } = {}) {
+function presentHere(q, id, people, { here = [], elsewhere = [], self = ['alaric'] } = {}) {
     const hereWords = new Set(here.flatMap((x) => flat(x).split(' ')));
     const away = elsewhere.map((x) => flat(x).replace(/^the /, '')).filter((x) => x.length >= 4 && !here.some((h) => flat(h).replace(/^the /, '') === x));
     // the smallest stretches of the quote that name them (positions in the token list with clause marks)
@@ -397,7 +397,10 @@ function presentHere(q, id, people, { here = [], elsewhere = [] } = {}) {
         let j = b + 1;
         while (j < q.length && LINGER.test(q[j])) j++;
         if (q[j] === 'with') { let k = j + 1; while (k < q.length && k <= j + 4 && !HERE_DOES.has(q[k]) && !COPULA.has(q[k]) && !CLAUSE_END.has(q[k])) k++; j = k; }
-        if (HERE_DOES.has(q[j])) p = j;
+        // .199: a local doorstep greeting, not an unrestricted travel verb.
+        const arrival = q.slice(j, clauseEnd(j)).join(' ').match(/^came down (?:(?:one|a|the) step|the steps) of (?:her|his|their|the) (?:stoop|doorstep) to meet (.+)$/);
+        const meetsPc = arrival && ['him', ...self.map(flat)].includes(arrival[1]);
+        if (HERE_DOES.has(q[j]) || meetsPc) p = j;
         else if (COPULA.has(q[j]) && (HERE_DOING.has(q[j + 1]) || LOCATIVE.has(q[j + 1]))) p = j + 1;
         else if (['had', 'has', 'have'].includes(q[j])) { why = 'it tells what they had done before, not them here now'; continue; }
         // or they are seen, or the place has them (with where: "had both clerks at work")

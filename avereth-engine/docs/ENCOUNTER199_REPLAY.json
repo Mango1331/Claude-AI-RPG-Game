@@ -1,0 +1,3228 @@
+{
+  "base": "b1fd7860982fe16b53c1ded5d70fde3346220eb1",
+  "engine": "4.3.0-c.6.6.199",
+  "note": "Per-record .191 audit; not an acceptance override. Standard 2235-case corpus is byte-equivalent after existing normalization to .198.",
+  "cases": [
+    {
+      "id": "r191#6",
+      "old_fingerprint": "sha256:8068997d6f45702fd2982e997435f2028c853132766a07da53701594f7fb0d60",
+      "new_fingerprint": "sha256:d8988ebc06ab3ae8dc78fb31cd874570700179846258e0023ab33b14fd2edead",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 3,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 3,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "r191#8",
+      "old_fingerprint": "sha256:d8333fcdda9eff423d236d6fe9b8a708d645535f7d4db8fe524a408835a67245",
+      "new_fingerprint": "sha256:b75ff77c534295073599bcc39847ce055d7dfd2dfa3f0db6db3887a40c6293d9",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 4,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 1,
+          "creatures": 0,
+          "features": 1,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 4,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 1,
+          "creatures": 0,
+          "features": 1,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "r191#10",
+      "old_fingerprint": "sha256:7f1c4f6c5d593c5d3c0ea38123e3a488b197cb09b54132f8dea44bc7fbb57e50",
+      "new_fingerprint": "sha256:093a8a20c35a36523f03436383e68cf6a602d5c430490c11751a3f2a121fc817",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 5,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 5,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "r191#12",
+      "old_fingerprint": "sha256:9266822872b5234baf2a4da5ac366513600fb4278b7af1d3324d5b74194311f2",
+      "new_fingerprint": "sha256:ba49e2f16478a717539fb3a74f648905e0fa548272dde96eab3b3dc02ba5745a",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 6,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 6,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "r191#14",
+      "old_fingerprint": "sha256:e5403c6bff39da12adb8c2748268450d445f95dff4a17cbd3fcbe87c88cc9408",
+      "new_fingerprint": "sha256:774699f0856af511483364498f0277a5cd205b576b49093ee84b68a6dedb78de",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 7,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 7,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "r191#16",
+      "old_fingerprint": "sha256:fa68101f037030e0f09e0f9b9b650a49bd26e126291045c4cc87f8975088f747",
+      "new_fingerprint": "sha256:945f913eb6bf11ac30cea7fd7e4999de37e754db0edb2cce284a3834c56021d2",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 8,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 8,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "r191#18",
+      "old_fingerprint": "sha256:3a5e315f5915b59822183323aa01195f2a7f64607d7c140dd844bcf6aacb3398",
+      "new_fingerprint": "sha256:772ece3d704e443f8802c3480104d566fd1e5ced99cab1433021cdcb257ffda8",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 9,
+        "rolled": true,
+        "open": true,
+        "kind": "obstacle",
+        "narrated": "likely",
+        "heuristic": true,
+        "persisted": {
+          "persons": 2,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 9,
+        "rolled": true,
+        "open": true,
+        "kind": "obstacle",
+        "narrated": "likely",
+        "heuristic": true,
+        "persisted": {
+          "threads": 1,
+          "npc_reentries": 0,
+          "persons": 2,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "r191#20",
+      "old_fingerprint": "sha256:38b2bc86efa5a7d4ffc7e7cdbbbd03980f3e8d3841ddc065af34afb4a9a92a81",
+      "new_fingerprint": "sha256:3298c2ce56bcbe8e87cead9dac7297263927b143d1d45ad7462e306c85121b6e",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 10,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 2,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 10,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 2,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 2,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "r191#22",
+      "old_fingerprint": "sha256:d4b9e24c51996270ffe228bac1f796924a9ae825663dd1919d1c076f2bb33444",
+      "new_fingerprint": "sha256:1d3db4650b761b84acdcb961b22a874935602acc0f528cef44ad99c85a7e1640",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 11,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 11,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "r191#24",
+      "old_fingerprint": "sha256:19d9b82a9ccc5d83294205a8de32b3a8af06f20ff4a1042bc25d3ceabaa0606e",
+      "new_fingerprint": "sha256:e4e62a12e68584c3a12e249a5621eec248b2fcb2f5ed48378ecbc467f4601d63",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 12,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 2,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 12,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 1,
+          "npc_reentries": 0,
+          "persons": 2,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "r191#26",
+      "old_fingerprint": "sha256:0d1c7a4c312738ed008977fe73916ba1633301a119ee3ccc1ee9457eed1b3314",
+      "new_fingerprint": "sha256:e97d0cac907fdca4268d198911125977ed15361e41aa47786b8b71a7ffe273fa",
+      "classification": "presence",
+      "reason": "Original local doorstep greeting now establishes Widow Hesse: entry and at; memory witnesses include her; episode about/importance reflects presence; V3 call suffixes shift; met_evidence rejection removed. No financial/combat/XP change.",
+      "previous": {
+        "v": 1,
+        "turn": 13,
+        "rolled": true,
+        "open": true,
+        "kind": "meeting",
+        "narrated": "none",
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 13,
+        "rolled": true,
+        "open": true,
+        "kind": "meeting",
+        "narrated": "none",
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "removed": [
+        {
+          "t": "delta.rejected",
+          "d": {
+            "item": {
+              "seq": 1,
+              "type": "expected",
+              "met": {
+                "who": "npc.widow_hesse",
+                "evidence": "The widow came down one step of her stoop to meet him"
+              }
+            },
+            "rule": "met_evidence",
+            "reason": "npc.widow_hesse: it does not show them here now"
+          }
+        },
+        {
+          "t": "fact.asserted",
+          "d": {
+            "fact": {
+              "id": "f.t13.m26.d4.1",
+              "s": "npc.widow_hesse",
+              "p": "occupation",
+              "o": "records flood times in a ledger book",
+              "since": {
+                "turn": 13,
+                "minute": 600
+              },
+              "until": null,
+              "visibility": "public",
+              "importance": 0.5,
+              "hard": false,
+              "source": {
+                "kind": "narration",
+                "msg": 26,
+                "because": null
+              }
+            }
+          }
+        },
+        {
+          "t": "memory.recorded",
+          "d": {
+            "memory": {
+              "id": "m.t13.m26.d5_2.1",
+              "turn": 13,
+              "minute": 600,
+              "text": "Widow Hesse showed {pc} her flood ledger and asked whether one man was the whole of the Guild's answer to nine floods.",
+              "who": [
+                "npc.widow_hesse"
+              ],
+              "witnesses": [
+                "pc"
+              ],
+              "seen": [
+                "pc"
+              ],
+              "location": "loc.ashbridge",
+              "place": "Widow Hesse's house",
+              "importance": 6,
+              "kind": "narrated",
+              "msg": 26
+            }
+          }
+        },
+        {
+          "t": "memory.recorded",
+          "d": {
+            "memory": {
+              "id": "m.t13.m26.ep",
+              "turn": 13,
+              "minute": 615,
+              "text": "Widow Hesse's house: {pc}: \"I go to the blue door and greet Widow Hesse: \"Morning, ma'am. Guild business about the serpent. The wives say you keep the flood times — could I see your ledger\"",
+              "who": [
+                "pc"
+              ],
+              "about": [],
+              "witnesses": [
+                "pc"
+              ],
+              "seen": [
+                "pc"
+              ],
+              "location": "loc.ashbridge",
+              "place": "Widow Hesse's house",
+              "importance": 2,
+              "kind": "episode",
+              "msg": 26
+            }
+          }
+        },
+        {
+          "t": "pulse.outcome",
+          "d": {
+            "v": 1,
+            "turn": 13,
+            "rolled": true,
+            "open": true,
+            "kind": "meeting",
+            "narrated": "none",
+            "heuristic": true,
+            "persisted": {
+              "persons": 0,
+              "creatures": 0,
+              "features": 0,
+              "objects": 0,
+              "places": 0,
+              "fight": false,
+              "rejected_pulse": 0
+            }
+          }
+        },
+        {
+          "t": "extract.applied",
+          "d": {
+            "source": "extractor",
+            "repaired": false,
+            "deltas": 5,
+            "rejected": 1
+          }
+        }
+      ],
+      "added": [
+        {
+          "t": "scene.entered",
+          "d": {
+            "id": "npc.widow_hesse",
+            "band": null
+          }
+        },
+        {
+          "t": "entity.updated",
+          "d": {
+            "id": "npc.widow_hesse",
+            "set": {
+              "at": "loc.ashbridge.widow_hesses_house"
+            }
+          }
+        },
+        {
+          "t": "fact.asserted",
+          "d": {
+            "fact": {
+              "id": "f.t13.m26.d4_2.1",
+              "s": "npc.widow_hesse",
+              "p": "occupation",
+              "o": "records flood times in a ledger book",
+              "since": {
+                "turn": 13,
+                "minute": 600
+              },
+              "until": null,
+              "visibility": "public",
+              "importance": 0.5,
+              "hard": false,
+              "source": {
+                "kind": "narration",
+                "msg": 26,
+                "because": null
+              }
+            }
+          }
+        },
+        {
+          "t": "memory.recorded",
+          "d": {
+            "memory": {
+              "id": "m.t13.m26.d5_3.1",
+              "turn": 13,
+              "minute": 600,
+              "text": "Widow Hesse showed {pc} her flood ledger and asked whether one man was the whole of the Guild's answer to nine floods.",
+              "who": [
+                "npc.widow_hesse"
+              ],
+              "witnesses": [
+                "pc",
+                "npc.widow_hesse"
+              ],
+              "seen": [
+                "pc",
+                "npc.widow_hesse"
+              ],
+              "location": "loc.ashbridge",
+              "place": "Widow Hesse's house",
+              "importance": 6,
+              "kind": "narrated",
+              "msg": 26
+            }
+          }
+        },
+        {
+          "t": "memory.recorded",
+          "d": {
+            "memory": {
+              "id": "m.t13.m26.ep",
+              "turn": 13,
+              "minute": 615,
+              "text": "Widow Hesse's house: {pc}: \"I go to the blue door and greet Widow Hesse: \"Morning, ma'am. Guild business about the serpent. The wives say you keep the flood times — could I see your ledger\"",
+              "who": [
+                "pc"
+              ],
+              "about": [
+                "npc.widow_hesse"
+              ],
+              "witnesses": [
+                "pc"
+              ],
+              "seen": [
+                "pc"
+              ],
+              "location": "loc.ashbridge",
+              "place": "Widow Hesse's house",
+              "importance": 3,
+              "kind": "episode",
+              "msg": 26
+            }
+          }
+        },
+        {
+          "t": "pulse.outcome",
+          "d": {
+            "v": 2,
+            "turn": 13,
+            "rolled": true,
+            "open": true,
+            "kind": "meeting",
+            "narrated": "none",
+            "heuristic": true,
+            "persisted": {
+              "threads": 0,
+              "npc_reentries": 0,
+              "persons": 0,
+              "creatures": 0,
+              "features": 0,
+              "objects": 0,
+              "places": 0,
+              "fight": false,
+              "rejected_pulse": 0
+            }
+          }
+        },
+        {
+          "t": "extract.applied",
+          "d": {
+            "source": "extractor",
+            "repaired": false,
+            "deltas": 5,
+            "rejected": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "r191#28",
+      "old_fingerprint": "sha256:3454b8017ba991a4f9eabc0c491335b3595065d683721390dadd33b75a9a0103",
+      "new_fingerprint": "sha256:9100497bd5650d492ac7b43196553cb0235b1279726cefc182f3fbecd0cfb636",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 14,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 14,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "r191#30",
+      "old_fingerprint": "sha256:2d2f9788ad41533421ac391c4e78b650403825d418a7aeffec3a18db6c6c44f5",
+      "new_fingerprint": "sha256:dc2aaa9d3c8fd35ea6aac58eed569e3f2315975cd55cc49888caf3a8d74d1460",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 15,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 1,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 15,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 1,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "r191#36",
+      "old_fingerprint": "sha256:96042b1c21475f5087ba60f28f568005ef4429395c70f33b012329087280ca75",
+      "new_fingerprint": "sha256:fe0e760be99601876cd07457373d7d88b6fdf857bb9ef96593eb693c5da91293",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 18,
+        "rolled": true,
+        "open": true,
+        "kind": "danger",
+        "narrated": "none",
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 18,
+        "rolled": true,
+        "open": true,
+        "kind": "danger",
+        "narrated": "none",
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "r191#38",
+      "old_fingerprint": "sha256:8918377cbd4613c15c35e0fa858f470955b7106790cbefb1866d7940c84edb52",
+      "new_fingerprint": "sha256:2aec40103e934bc599863987034e47f46318e165077c6fec582ec642e70530b3",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 19,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 3,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 19,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 2,
+          "npc_reentries": 0,
+          "persons": 3,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "r191#40",
+      "old_fingerprint": "sha256:5cb6d1d9095a7d74fc7c3ee3a50acb5e5cba4d01db70f9dbe01ead70f28e16fd",
+      "new_fingerprint": "sha256:2b77ab51ff0d9597602405493d26b91239d29e8de11eff203b45670bf0f65e79",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 20,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 20,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 1,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "r191#42",
+      "old_fingerprint": "sha256:528ff66b63946dfd205db5cb71d6c0a6c36e181d7306e18dc23c8c524ca336ac",
+      "new_fingerprint": "sha256:ba88b16c5df564081b6a31bf8da1358562e6a633b10cc611ae81364ea1cfdb94",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 21,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 21,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 1,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#6",
+      "old_fingerprint": "sha256:f1c9750c3d97ba3fc925cc4d129305034030aefecadb97f7731a7dd03836b00f",
+      "new_fingerprint": "sha256:41c1a629e43bff4ca5302f777d09731cb72dea566b5650fdb2f321b8851e8daf",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 3,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 3,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#8",
+      "old_fingerprint": "sha256:94e908f6508b30883aaf7b05c635751b57f47e7fc2205d3ba2d6397f64d716ff",
+      "new_fingerprint": "sha256:37821fbd7c73ca93e195c6d80aa749465a6432a22be95e34cfba11b0ff35fb4f",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 4,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 4,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#10",
+      "old_fingerprint": "sha256:9f2b95fea1862cad38705183d7e4d354fc499cd186b1c07edb68a9d07d1360e2",
+      "new_fingerprint": "sha256:3c76a38a90c645714b474a1df353272dc6d71481fc8b9ffa86ce6e397dd32374",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 5,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 5,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#12",
+      "old_fingerprint": "sha256:580d178ed20193eaf628178b628b27ddf13a8c1c905f6f42beeb72b13e474cc0",
+      "new_fingerprint": "sha256:f43783ca14fd9ac1c3e3b1b35c844001b8782201fa31c4c6b89ca520bdd091c1",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 6,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 6,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#14",
+      "old_fingerprint": "sha256:0f912a2c3d2a1591703f8ab395de6d4c2604c7e7792f355118fabc43bcc72947",
+      "new_fingerprint": "sha256:6b2b50b7ffb713c7fe1e7203226c4cf12986cf3c28ec09050bbad572cc5070ca",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 7,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 7,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#16",
+      "old_fingerprint": "sha256:6319228a1dd73fd9135b34942937aa99bd4a3fb0405d5a1c8522f1f8bb8b4a83",
+      "new_fingerprint": "sha256:68eab9d784a31b62f0b32498ce7aafbcdf9c5e45bd5974883a03128ce73afbc3",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 8,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 8,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 1,
+          "npc_reentries": 0,
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#18",
+      "old_fingerprint": "sha256:aeb8a26d8bd4e86f8d8d3377fa54c427f7da72ee8c6d4c2aee3a30a46bee6d6c",
+      "new_fingerprint": "sha256:712ebb41d1d28f2df971519f4d2bc2d48e8da72b9a8b599c3c0d5cdb016f6c89",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 9,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 9,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#20",
+      "old_fingerprint": "sha256:15c96f04f4dcda5931227219c6fad752ed87503b69164422516389d9ec77a2c6",
+      "new_fingerprint": "sha256:3d2506bdd531bb71fe9bc2eaec0a7ac357e1f3d67244bb60fb70561b520924e8",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 10,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 10,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#22",
+      "old_fingerprint": "sha256:bda1d2617bab7538a2212946cafdbef7f652b2641490dc1ce9e99fde6e71e6a1",
+      "new_fingerprint": "sha256:0f3224a8662809450c8d79c2dc9b171a5b01d0698592b6762c666db53e118a07",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 11,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 11,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#24",
+      "old_fingerprint": "sha256:07af49efd6c01a0a28ca2868272b607639c5cdb5164d6b0dfdc470849da9d6a0",
+      "new_fingerprint": "sha256:1a0f8432b086a8096bc98533695667e0dda3b3483e76875373ec2029c3deb809",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 12,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 12,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#26",
+      "old_fingerprint": "sha256:97fbf688e7aca0607700d193a5174c2c7f1b5a3813095ea54014ee7685754aa1",
+      "new_fingerprint": "sha256:99455540b593cf47e287e74e6afe3f4f9dfe50a55d5ce44d8eb7eafaa29cc54e",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 13,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 1,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 13,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 1,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#32",
+      "old_fingerprint": "sha256:d3f351032330d8962d8b98b6d5cd8a24edbf05e3359400c39cf179c8dd62987a",
+      "new_fingerprint": "sha256:d86694dff01ccc130e6a79af09d9eb8687afd6691259283343de92f212fe5c7d",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 16,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 16,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#34",
+      "old_fingerprint": "sha256:d22b5fa6c66e32ca5590950e4397e27fc9bca9cd29997148bee2b7a9bc2e4e6e",
+      "new_fingerprint": "sha256:1731b8474e8c889f0ab5fc19a186921e2c1a7d8ce4e6096df44a82f95aea8520",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 17,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 1,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 17,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 1,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#36",
+      "old_fingerprint": "sha256:acffff467e8e1ebaf8166314f6db2aafb3475bceffd043ba9b857d13bd9c8331",
+      "new_fingerprint": "sha256:80ad954e69622e9e345d052beb7960410f4664f0b82d0ba1a1488db6abf0aa6f",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 18,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 18,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#38",
+      "old_fingerprint": "sha256:c0de0a4ebc41757709b3de92748237ff646d505d396aba15a801743a5ef3e365",
+      "new_fingerprint": "sha256:f425c7070c955c78923bac067d36043dc7cc7dbd6a97e185e04e24237bd431c5",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 19,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 19,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#40",
+      "old_fingerprint": "sha256:efaafdf93a26b438fb756076f962fae9f718b495b6a6569cc06a4a34d8a4914b",
+      "new_fingerprint": "sha256:b7ff84f5a6d1cb417411da09e0b77cb67d951a9e1096a78590851a6d685c136f",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 20,
+        "rolled": true,
+        "open": true,
+        "kind": "trace",
+        "narrated": "none",
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 20,
+        "rolled": true,
+        "open": true,
+        "kind": "trace",
+        "narrated": "none",
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#42",
+      "old_fingerprint": "sha256:6f970c822e2bdba0bb58d74e4b7c21add3b2d9a9f5340f1f5e87939e80d67a75",
+      "new_fingerprint": "sha256:14393956561978a453609b627889e946851799dc761e3ceece428b1aad1bf8fe",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 21,
+        "rolled": true,
+        "open": true,
+        "kind": "strange",
+        "narrated": "none",
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 21,
+        "rolled": true,
+        "open": true,
+        "kind": "strange",
+        "narrated": "likely",
+        "heuristic": true,
+        "persisted": {
+          "threads": 1,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#44",
+      "old_fingerprint": "sha256:76c64c8a3eef02d2eecba7fc4f6bf527d65147a9e379fbd675f8694f2f898813",
+      "new_fingerprint": "sha256:7ed01a5800cc3b3abffbc273c32c6a2e9ac6eaca8c4e23a3d6b4900e53710ffb",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 22,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 22,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 1,
+          "npc_reentries": 0,
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#46",
+      "old_fingerprint": "sha256:c8c50f0508df5e0122f136f556f515733f29be381777adc06ad24205db6707e9",
+      "new_fingerprint": "sha256:035b317a9736c8e846adb76db3102982c9abeab45d8419a75ca28ccb4a12ba4f",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 23,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 1,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 23,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 1,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#48",
+      "old_fingerprint": "sha256:7f1135a6b7fb0e016da8e12f25eeb655ca2bc225fab529532183c8f0fa65d428",
+      "new_fingerprint": "sha256:3550b69eb5cd3a60e41286761730990838cc5d34fa27bc484464164c13ded744",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 24,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 2,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 24,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 2,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#50",
+      "old_fingerprint": "sha256:d0d61baff6cbff94cb1211e35f05d68b53d678a00b569c57ad0cc882c4c92a32",
+      "new_fingerprint": "sha256:41df2d7d663201e3cf892ce2e1c33eed541b55ec1c35286f1bf34e7a6f2b1a50",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 25,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 25,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#52",
+      "old_fingerprint": "sha256:b69d76855992baf6717148ee49c63509a53a1e20f1c43d0d73e35f6672ab2bf6",
+      "new_fingerprint": "sha256:b787e37e21b768b1cc5175bd4ecc97cf693bdec2c3c781322d4d7006cf2d5002",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 26,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 26,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#54",
+      "old_fingerprint": "sha256:2bb9b0cd02c70469d4b4593557501506a4cdc37cae244cc0a90342dbe4614d6c",
+      "new_fingerprint": "sha256:9f37f3059ce85d6bdd41587e5d77631b6d070cb01b00af432f3eda5525b26d5f",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 27,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 27,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#56",
+      "old_fingerprint": "sha256:f31a8c99b880b6a0576575e1abefc7d2e8c323a5f6841cf949db4a818f4bf780",
+      "new_fingerprint": "sha256:a83a6150336e671d41eca624192dfb560f65eb37e0c137a2b70eaa2768ea6426",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 28,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 28,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#58",
+      "old_fingerprint": "sha256:f7c018fb0da168fd1c462e30f8bad48808ab6d9b0f4c16f1f0301739dbfc7690",
+      "new_fingerprint": "sha256:ece8f3f80bec0e6d8bda4c497ce124acbb867dc2321a76c689a6e673cdd51fda",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 29,
+        "rolled": true,
+        "open": true,
+        "kind": "danger",
+        "narrated": "likely",
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 3,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 2
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 29,
+        "rolled": true,
+        "open": true,
+        "kind": "danger",
+        "narrated": "likely",
+        "heuristic": true,
+        "persisted": {
+          "threads": 1,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 3,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 2
+        }
+      }
+    },
+    {
+      "id": "w191#76",
+      "old_fingerprint": "sha256:fa146e6f35f858fda121104915de5f58cf10b09e1e8ee62ff09e48230bd34a6f",
+      "new_fingerprint": "sha256:c8603164718c2b4e989aedd6a334e543c95a07b7ce88ea313a9ecfebcccb6d48",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 37,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 1,
+          "creatures": 1,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 37,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 1,
+          "creatures": 1,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#78",
+      "old_fingerprint": "sha256:ac88b331961606cbcb31aaa101a080fe4e7ae1ac8c44ad2f690b299471bce245",
+      "new_fingerprint": "sha256:e37e017aafccd51e05d40870b0104376ea999304614bc401942588d8e8ce838a",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 38,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 38,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 1,
+          "npc_reentries": 1,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#80",
+      "old_fingerprint": "sha256:630fcabf9ba9b6b5e1a3ee8896972a2d5d9ad675994400ea4a1a62fee66a385d",
+      "new_fingerprint": "sha256:8be0da36924f4a1e6473cfc149dffd64a9e0a213b8680cc031146936a7a3265b",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 39,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 39,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 1,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#82",
+      "old_fingerprint": "sha256:2626919680ca2fa0814d708e2348bc67234e2e5f6fb538d2155142e2ac04f78e",
+      "new_fingerprint": "sha256:85706dfa9b59a5b625ec20c00f2ba5a20a85d7e424e464092a008908221eff72",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 40,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 40,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#84",
+      "old_fingerprint": "sha256:d1d113998951f39ad78896023ae04c8398f78a7cbfe9aac9736fa34528e25bb6",
+      "new_fingerprint": "sha256:df15b865b9fd32ff235a07a4912e2e10f10bde2947c805fc1a37342cfe786497",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 41,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 1,
+          "features": 0,
+          "objects": 0,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 41,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 1,
+          "features": 0,
+          "objects": 0,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#90",
+      "old_fingerprint": "sha256:ba2115ee7a55ac00d3104f4bce7e4d11d2ebee162d4c6f633f84934fa38d2b4c",
+      "new_fingerprint": "sha256:9906699cf1f57f92e30ecb6c5ddf244022749a84fa318f69bc2fbb4cc1c54416",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 44,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 44,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 1,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#92",
+      "old_fingerprint": "sha256:cee6dd6e85d06e2e089cf32ec79ddd6aded8727101a6216df763be4f29dae91a",
+      "new_fingerprint": "sha256:5f757e9350f2325b5ff4dce74bd4425f11645f8c9f5121de0883943773764365",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 45,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 45,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 1,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#94",
+      "old_fingerprint": "sha256:e6e03c0b555cb700a1c40a62e5a974a27263b4c1629b5d0e21ea0e121c083ed7",
+      "new_fingerprint": "sha256:13d420d2bba7cbaffac8bcfec078504be13d6ab8c0c6ba265069555e91b6b6d2",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 46,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 46,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#96",
+      "old_fingerprint": "sha256:14f321789ad7568293d6aa5cd6173bb9a93967a84b38e2bce748711537b0106f",
+      "new_fingerprint": "sha256:f8202419ae0736e9c828b9014f5b1d9850a9591966fea39db48b4b8368031dcb",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 47,
+        "rolled": true,
+        "open": true,
+        "kind": "trace",
+        "narrated": "none",
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 47,
+        "rolled": true,
+        "open": true,
+        "kind": "trace",
+        "narrated": "likely",
+        "heuristic": true,
+        "persisted": {
+          "threads": 1,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#98",
+      "old_fingerprint": "sha256:ab6e446c439514762f8d942f98b32bbd1da52367081e9b7fa423a272ec8c1b61",
+      "new_fingerprint": "sha256:fe2f1d1f36df5d042debab6c7cca72519f4bc71d16668f25672e70c27c93f5b3",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 48,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 48,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 1,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#100",
+      "old_fingerprint": "sha256:f0afc05acb16d8fe7cca82d92501ee568ba02032c316fcd8ef72cf58dd1b0c42",
+      "new_fingerprint": "sha256:acff6052dff1f9bfe98a4ee9be6e1cfe67270263b217553d3c4eb4d218a9a1da",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 49,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 49,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 1,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#102",
+      "old_fingerprint": "sha256:b0897736072b2a723feda75ddda20f7e502ae9635683709e3e952b772895395d",
+      "new_fingerprint": "sha256:d1b9782563f940aae3d51435e25c1bb25557ef37299919d2333f507886611b00",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 50,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 50,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 1,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#104",
+      "old_fingerprint": "sha256:91a2906602e7cf877cdb5c79a84e2b95dcf1a9635ae9744092f84be8c2b623f6",
+      "new_fingerprint": "sha256:1c5cbad9e57e885976eb1a4cdea4233775757f90c037134a78253ba6c773b750",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 51,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 51,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#106",
+      "old_fingerprint": "sha256:f3997795b7f14d140a774c9a24d7acd5f461aa3d2fb0a99310cbb3b1fca981f9",
+      "new_fingerprint": "sha256:a6a1c5bf26df79688f88444b3fd86890e16192c4d83e84d4b84249537d6ac73f",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 52,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 52,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#108",
+      "old_fingerprint": "sha256:8fa7bd8d08d94d6b1ddc3584301e22e1ba45562dd6d575d911bd3bdd0f9890e3",
+      "new_fingerprint": "sha256:f986abca8544b2c74e0308fdd7ffea65b0e63ed32f96086ebca0b4b1622c4fc8",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 53,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 2,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 53,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 2,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#110",
+      "old_fingerprint": "sha256:438059525a051d772e636f3f8d1a798cd9251eb02104a307c2f4d259a454697f",
+      "new_fingerprint": "sha256:16d9f80f5ad006da95f4599d9446a88b822bbefca0843173e80b70f22c1d0997",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 54,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 54,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#112",
+      "old_fingerprint": "sha256:9f3e3e1cdba1f2e92a07c1f9b615dadf47ccf3478f24ce8da5028486b050f4d0",
+      "new_fingerprint": "sha256:0973044e42218a8054f163d7767ddd7c42000fd1a7e75ca6c07dc24679915a50",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 55,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 55,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 1,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#114",
+      "old_fingerprint": "sha256:b175b6a87350734468727b2e5d167d13e0a66a377946cceb875363a9018fec50",
+      "new_fingerprint": "sha256:2542fe9183457638ec61d68f24bd650e38a075410af1743bbd28552c13aa3553",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 56,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 56,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#116",
+      "old_fingerprint": "sha256:9c1008148e03bd6f0a7d746dbd880afe684fcc62391eb167e2868315e1292ef4",
+      "new_fingerprint": "sha256:c065c1d47e6cd732e6c3b7bdaeb6a66bbe9cc93fb1b03e6da09a0efc26231e49",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 57,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 1,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 57,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 1,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#118",
+      "old_fingerprint": "sha256:9ac7f697ab0576661cd00e7670c5628f716411633f339b4e4aba90540a3820b9",
+      "new_fingerprint": "sha256:1be19cd915c7c8daf24b18c5f48a5a05bf9175651c785ffb4912f6ca45765625",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 58,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 58,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#120",
+      "old_fingerprint": "sha256:c78f75315ff7e5a9a404cbaf016b6d4b8f1e8a68c590197ba14fc94af64ad760",
+      "new_fingerprint": "sha256:86d1b1d7008b3c569219594a1f7cadffa7557dcd24c862e5a5db170977188c93",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 59,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 59,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#122",
+      "old_fingerprint": "sha256:ace989b549afd629a789d89e91e55a4b78a52434ca069c810f91030c8e2ecaa2",
+      "new_fingerprint": "sha256:101b34ac8ae57344df2c394c6c8669bc0f01218d5cfc55a0f0a5588902cee886",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 60,
+        "rolled": true,
+        "open": true,
+        "kind": "strange",
+        "narrated": "likely",
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 60,
+        "rolled": true,
+        "open": true,
+        "kind": "strange",
+        "narrated": "likely",
+        "heuristic": true,
+        "persisted": {
+          "threads": 1,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#124",
+      "old_fingerprint": "sha256:41d09cdd1127382a4be818a97796673bda2ac0d8d2c6116706b104a834de03d7",
+      "new_fingerprint": "sha256:4b8cb326135b321efe5f626c53c7b9aa97f0bf91d80ec430c797257fc447237c",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 61,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 61,
+        "rolled": true,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 1,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 0,
+          "features": 0,
+          "objects": 0,
+          "places": 0,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    },
+    {
+      "id": "w191#126",
+      "old_fingerprint": "sha256:a325452e34e566fc5967d19642afda3933e6401e7b1b6d77978851ff1cf9627d",
+      "new_fingerprint": "sha256:2f073834518adbaf17f35eaec718037888e50d22051cfc5d1e580ce042925937",
+      "classification": "diagnostic_only",
+      "reason": "Only pulse.outcome v2; accepted thread events and known NPC reentries recorded. Any likely/none change is a booking heuristic, not narration quality.",
+      "previous": {
+        "v": 1,
+        "turn": 62,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "persons": 0,
+          "creatures": 2,
+          "features": 0,
+          "objects": 0,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      },
+      "current": {
+        "v": 2,
+        "turn": 62,
+        "rolled": false,
+        "open": false,
+        "kind": null,
+        "narrated": null,
+        "heuristic": true,
+        "persisted": {
+          "threads": 0,
+          "npc_reentries": 0,
+          "persons": 0,
+          "creatures": 2,
+          "features": 0,
+          "objects": 0,
+          "places": 1,
+          "fight": false,
+          "rejected_pulse": 0
+        }
+      }
+    }
+  ]
+}

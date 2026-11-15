@@ -2,7 +2,7 @@
  "format": "avereth-replay-accepted-2",
  "baseline_sha": "b8d2af4b76cd0bc52ac178b8c500e5733878ecee",
  "baseline_engine": "4.3.0-c.6.6.126",
- "engine": "4.3.0-c.6.6.190",
+ "engine": "4.3.0-c.6.6.192",
  "note": "Location architecture .190 vs .126 (stages 1-5 and the control review G1-G4): every .187 entry unchanged unless listed with its previous acceptance; see docs/LOCATION_ARCHITECTURE_190.md.",
  "categories": {
   "representation": "population contract recorded, no mechanical consequence: entity.updated {life_stage, population_at} at creation (population_at no longer set on the profile event), quest.hunt.age on hunt contracts, converted population/life_stage fields inside an already rejected creature.new",
@@ -60,7 +60,8 @@
   "location190-s345 events": "location190-s345: events",
   "location190-s345 outcome": "location190-s345: outcome",
   "location190-s345 rejected+events+corrections": "location190-s345: rejected+events+corrections",
-  "review190 rejected+events+corrections": "review190: rejected+events+corrections"
+  "review190 rejected+events+corrections": "review190: rejected+events+corrections",
+  "batch191 town hunt site": "a Guild hunt site given as \"<site>, <the Guild's town>\" lies in that town (.192)"
  },
  "returned": {
   "b17-warrior#73": {
@@ -74,13 +75,13 @@
  },
  "cases": {
   "b16-rogue-sale#5": {
-   "category": "location190-s2 outcome",
-   "reason": "b16-rogue-sale#5: only the GO turn's outcome.recorded changes: every authorized step now stores the movement proof's fields decided at authorization (mode, enter, scope; meant for words of a known place), src/v4/movement.js stepFields; with these fields removed the record is identical to stage 1 (verified for all 317 GO turns); no reply record of the corpus changes",
-   "previous_acceptance_189": {
-    "category": "pulse162 window",
-    "fingerprint": "sha256:6589261bcb48b6c066cd396ca009735df7cb6af95acdbe4e9716a5803149ae7b"
+   "category": "batch191 town hunt site",
+   "reason": "b16-rogue-sale#5: the Guild board lists \"the tanner's outflow ditch below Tanners' Row, Glassmere\"; a hunt site in the address form of the Guild's own town is now a place of that town (loc.glassmere.the_tanners_outflow_ditch_below_tanners_row, parent loc.glassmere) and its contract hunts there; the other three sites (the Weir Crossing shallows on the Glassmere stream, the gorse breaks above the Coldwell Terraces, the reed beds of Hollowfen, south of Glassmere) stay in realm.caelreth as before (src/v4/guild.js townSite; natural batch on .191, Rogue T7, main: testrun_10b/npc-20261115-103140Z/GEGENREVIEW_OPUS.md). Nothing else of the record changes (15 events, same order)",
+   "previous_acceptance_190": {
+    "category": "location190-s2 outcome",
+    "fingerprint": "sha256:5bbf586f4aef5b66bfd97683ff684c68016720f2bb0e3e88499117f5466987f5"
    },
-   "fingerprint": "sha256:5bbf586f4aef5b66bfd97683ff684c68016720f2bb0e3e88499117f5466987f5"
+   "fingerprint": "sha256:a93b61d2e16688ee3e9200875e9e8de7ceb5b8a359293137c40255396cb096ba"
   },
   "b16-rogue-sale#7": {
    "category": "pulse162 window",

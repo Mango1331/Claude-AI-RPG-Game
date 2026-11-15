@@ -612,6 +612,21 @@ export function listingSchema(content) {
 const progressive = (s, need) => need.c && need.progression && need.rank === 'Novice';
 
 /** Identity is local to the branch's land; an ambiguous or already incompatible place is never overwritten. */
+/**
+ * Natural batch on .191: is a hunt site's label a place inside the Guild's town? Only its address form – the site, a
+ * comma, the town's own name and nothing after it ("Millrace Row culvert, Ashbridge") – with no word that puts the site
+ * outside, around or on the way to the town (no direction, road, track, field or wood: "the north road culvert,
+ * Ashbridge" stays out in the realm). Returns {site} or null.
+ */
+const OUT_OF_TOWN = /\b(?:outside|beyond|near|nearby|around|past|off|east|west|north|south|eastern|western|northern|southern|road|roads|track|tracks|trail|path|paths|lane to|bridge to|ford|fields?|meadows?|pastures?|woods?|forest|wood|hills?|moor|fen|marsh|heath|farms?|hamlet|village|camp|camps|quarry|mine|cave|caves|gully|valley|river|lake|shore|coast)\b/i;
+function townSite(s, branch, where) {
+    const town = s.places?.[branch];
+    if (!town || town.kind !== 'settlement' || !town.name) return null;
+    const m = String(where || '').trim().match(/^(.+?),\s*(?:the\s+)?(.+)$/i);
+    if (!m || normText(m[2]).replace(/^the /, '') !== normText(town.name).replace(/^the /, '')) return null;
+    const site = m[1].trim();
+    return site && !OUT_OF_TOWN.test(site) && normText(site) !== normText(town.name) ? { site } : null;
+}
 function habitatPlace(s, need, where) {
     const realm = realmOf(s, need.branch);
     return Object.values(s.places).filter(p => normText(p.name) === normText(where) && realmOf(s, p.id) === realm);
@@ -1144,8 +1159,13 @@ export function bookBoard(s, content, need, listings, emit) {
             let p = habitatPlace(s, need, where)[0];
             const population = { anchor: h.anchor, species: h.species.trim(), levels: [h.min_level, h.max_level] };
             if (!p) {
-                const parent = realmOf(s, need.branch) || need.branch;
-                let pid = `${parent}.${slug(where)}`;
+                // natural batch on .191 (Rogue T7–T20, main: testrun_10b/npc-20261115-103140Z/GEGENREVIEW_OPUS.md): a
+                // site the notice gives as a place of the Guild's own town ("Millrace Row culvert, Ashbridge") lies in
+                // that town; every other hunt site (the old quarry track east of Ashbridge, Windmill Gully) stays out
+                // in the realm, as before
+                const town = townSite(s, need.branch, where);
+                const parent = town ? need.branch : realmOf(s, need.branch) || need.branch;
+                let pid = `${parent}.${slug(town ? town.site : where)}`;
                 for (let i = 2; s.places[pid]; i++) pid = `${parent}.${slug(where)}_${i}`;
                 p = { id: pid, name: where, kind: 'site', parent, realm: realmOf(s, need.branch), tags: [], known: 'reported', reports: [], by: 'guild', created: { turn: s.turn, minute: s.clock.minute }, population };
                 emit({ t: 'place.created', d: { place: p } });

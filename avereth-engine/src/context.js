@@ -1024,7 +1024,7 @@ function whereLines(state, input, opts) {
         && normText(e.name).split(' ').filter((w) => w.length >= 4).some((w) => words.includes(` ${w} `))).slice(0, 3);
     return [
         `WHERE — ${here}${town && town !== here ? ` (${town})` : ''}.${missed.length ? ` The last reply's ${missed.join(', ')} ${missed.length > 1 ? 'were' : 'was'} not reached: what it told there did not happen.` : ''}`,
-        `TRAVEL THIS TURN — ${steps.length ? steps.join('; ') : `none chosen: he stays at ${here} unless something in the world moves him`}.`,
+        `TRAVEL THIS TURN — ${steps.length ? steps.join('; ') : `none chosen: he stays at ${here}. An invitation he accepts, someone leading the way or going ahead, or his own agreement moves him nowhere; only a force he cannot refuse, told as it happens (carried, dragged, swept away), moves him without his own going`}.`,
         absent.length ? `NOT HERE — ${absent.map((e) => `${e.name}${e.at && state.places?.[e.at] ? ` (${placeName(state, e.at)})` : ''}`).join(', ')}: he speaks of them from where he is; they answer only if the story brings them here.` : '',
     ].filter(Boolean).join('\n');
 }

@@ -8,7 +8,7 @@ import { turnBlock, foldChat, rec } from '../../src/host.js';
 import { extractionRequest } from '../../src/v4/runtime.js';
 import { applyEvent } from '../../src/state.js';
 import { playerTurn } from '../../src/engine.js';
-import { slotForNew, sealRefusal } from '../../src/v4/living.js';
+import { slotForNew, sealRefusal, trackPace } from '../../src/v4/living.js';
 import { campaign, say, walk, delve, hero, living, CATA } from './patch8_lib.js';
 
 const content = await loadProductContent();
@@ -105,11 +105,19 @@ async function dungeon() {
     return g;
 }
 const creative = { seq: 1, type: 'creature.new', ref: 'cr.patched_greater_skeleton', species: 'patched greater skeleton', anchor: 'skeleton', desc: ['extra vertebrae and a crutchblade; a patrolling guardian', 'a ring of old keys'], count: 1, present: true, band: 'MEDIUM', stronger: true, threat: null, more: null };
-test('3A: Run 8 shape: free Warden binds despite earlier living Gravekeeper, with locked slot power', async () => {
+test('3A: Run 8 shape: free Warden binds despite earlier living Gravekeeper, with locked slot power (in its own section of the track, .192)', async () => {
     const g = await dungeon();
     const s = g.state(); const x = living(g); s.dungeons[CATA] = x;
     x.ahead = null;
     const slots = x.run.floors[1].slots;
+    // natural batch on .191 (Warrior T70): B5 keeps every encounter in its own section; a creative appearance binds
+    // only there. In the first gallery the Warden (a later section's guardian) binds nothing
+    const guardAt = trackPace(x, 1).slice(0, slots.findIndex((a) => a.role === 'guard') + 1).reduce((n, q) => n + q + 1, 0);
+    assert.ok(guardAt > 1);
+    assert.equal(slotForNew(s, content, creative, s.scene.at), null, 'not in section 1');
+    const own = `${CATA}.l1_s${guardAt}`;
+    s.places[own] = { ...s.places[s.scene.at], id: own, name: 'Warden test section', section: guardAt };
+    s.scene.at = own;
     for (const sl of slots.filter((a) => a.role === 'minion')) {
         sl.entities = [`mon.${sl.id}`];
         s.entities[sl.entities[0]] = { id: sl.entities[0], kind: 'creature', species: sl.species, anchor: sl.anchor, status: sl === slots[0] ? 'dead' : 'alive', at: s.scene.at, location: s.scene.location };

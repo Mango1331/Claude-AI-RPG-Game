@@ -321,7 +321,12 @@ export function slotForNew(s, content, d, arrivedAt, prose = '') {
     // Occupied slots (even elsewhere), other floors/cycles, and larger/smaller groups are never repurposed.
     if (d.present !== true || d.more === true || d.threat === false || ahead.some((a) => a.floor === floor && free.some((sl) => sl.id === a.slot))) return null;
     const guardScene = /\b(?:warden|guardian|guard(?:s|ing)?|patrol\w*|circuit|sentinel)\b/i.test([d.ref, d.species, ...(d.desc || []), prose].join(' '));
-    const compatible = free.filter((sl) => sl.anchor === d.anchor && sl.count === (d.count ?? 1) && (sl.role === 'minion' || (sl.role === 'guard' && guardScene)));
+    // natural batch on .191 (Warrior T70): in a section of the track (B5) only the encounter of this section, never one
+    // that waits in a later part of the level
+    const section = s.places[arrivedAt || s.scene.at]?.section;
+    const pace = Number.isInteger(section) ? trackPace(x, floor) : null;
+    const ownSection = (sl) => !pace || pace.slice(0, slots.indexOf(sl) + 1).reduce((n, q) => n + q + 1, 0) === section;
+    const compatible = free.filter((sl) => sl.anchor === d.anchor && sl.count === (d.count ?? 1) && (sl.role === 'minion' || (sl.role === 'guard' && guardScene)) && ownSection(sl));
     const named = compatible.find((sl) => normText(d.ref) === normText(sl.ref) || (sl.name && normText(d.ref) === normText(sl.name)));
     if (named) return hit(named);
     if (compatible.length === 1) return hit(compatible[0]);
@@ -939,7 +944,12 @@ export function contextLines(s, content = null) {
     if (here.length) L.push(`OTHER ADVENTURERS ${mine === 0 ? 'at the gate' : `on level ${mine}`} now (the engine's; if the story brings them in, they are these people): ${here.map((p) => `${p.name}, ${p.size} strong, led by ${p.leader} (${p.npc}; ${p.affiliation})`).join(' · ')}.`);
     const f = x.run.floors[Math.max(1, mine)];
     if (f) {
-        L.push(`LEVEL ${Math.max(1, mine)} (the engine's, cycle ${x.cycle}): ${floorText(s, x, Math.max(1, mine), { all: true })}. The story may give a visible foe a creative appearance within one uniquely matching free slot of this level (same body plan and count), even before an earlier encounter is resolved; its slot fixes Level, power and loot. Otherwise only the engine adds foes, guardian and boss; no extra key or delivery condition opens its seal; a foe it marks defeated stays so until the Dungeon renews; never bring a slain guardian or boss back.`);
+        // natural batch on .191 (Warrior T70, main: testrun_10b/npc-20261115-103140Z/GEGENREVIEW_OPUS.md): the card
+        // offered any free slot of the level "even before an earlier encounter is resolved", in a fight too, which the
+        // engine then refused (a fight takes no newcomer; B5 keeps every encounter in its own part of the level). A
+        // creative appearance is the one the engine placed for this reply (DUNGEON AHEAD or PULSE), never in a fight
+        const placed = !s.encounter && x.ahead?.turn === s.turn && x.ahead.cycle === x.cycle;
+        L.push(`LEVEL ${Math.max(1, mine)} (the engine's, cycle ${x.cycle}): ${floorText(s, x, Math.max(1, mine), { all: true })}. ${placed ? `The engine's encounter of this reply (its ${x.ahead.wander ? 'PULSE' : 'DUNGEON AHEAD'} line) may take a creative appearance of the same body plan and count; its slot fixes Level, power and loot. ` : ''}Only the engine adds foes, guardian and boss: a foe is here only when the engine has put it here (${placed ? 'that encounter, or ' : ''}one he has already met); the level's other encounters wait in their own parts of it, and no sound or sign of them brings one here${s.encounter ? '; no newcomer joins the fight' : ''}. No extra key or delivery condition opens its seal; a foe it marks defeated stays so until the Dungeon renews; never bring a slain guardian or boss back.`);
         if (f.cleared?.turn === s.turn && f.cleared.credit === 'pc') L.push(`LEVEL ${Math.max(1, mine)} CLEARED NOW — show it in the world: ${x.floors[Math.max(1, mine)].manifest}.`);
         const taken = f.slots.filter((sl) => sl.taken && !sl.told);
         if (taken.length) L.push(`SIGNS OF OTHERS — ${taken.map((sl) => `${sl.name ? titled(sl.name) : `the ${sl.species}s`} of this level ${sl.count > 1 ? 'were' : 'was'} already dealt with by ${(x.parties.find((p) => p.id === sl.taken.party) || {}).name || 'another company'} earlier`).join('; ')}: remains, scorch marks, tracks; nothing of it is his.`);

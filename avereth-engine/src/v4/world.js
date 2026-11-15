@@ -49,7 +49,8 @@ import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
 import { anchorFor, speciesAnchor, templateFor, rulesetOf } from '../content.js';
 import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotMet, resolved, slotForNew, resolvedSlotNamed, slotEntityEvents, establishEvents, syncEvents, insideOf } from './living.js';
-import { unbookedDungeonThreat } from './run9_evidence.js';
+import { refusedCreatureInThread, unbookedDungeonThreat } from './run9_evidence.js';
+import { knownAt } from './catalog.js';
 import { jobOf, paymentJob, recordJobWork } from './private_jobs.js';
 import { forcedRelocation, presenceInReply, narratedEvent, guildParticipationEvidence, metEvidence, deskHandlingEvidence, personProfile } from './narration_evidence.js';
 
@@ -80,6 +81,12 @@ const SIGN_OFF = /\b(?:sign(?:s|ed|ing)?|signature|countersign\w*|inspect\w*|con
 const REQUIRE = /\b(?:must|required?|requires|need(?:s|ed)?|before|until|unless|only|once)\b/i;
 
 /** The firewall's view of the state after the player's turn (src/v4/firewall.js FirewallContext). */
+/** Natural batch on .191: the kind of a refused creature.new (its species, body plan and count) for the thread guard. */
+const refusedKind = (d) => ({ species: d?.species || null, anchor: d?.anchor || null, count: Number.isInteger(d?.count) ? d.count : 1 });
+/** The creatures the engine holds in this scene: present now, or slain here (the thread guard must not mistake them). */
+const sceneCreatures = (s) => Object.values(s.entities || {}).filter((e) => e.kind === 'creature' && (s.scene.present.includes(e.id) || (e.at || e.location) === s.scene.at))
+    .map((e) => ({ species: e.species || null, anchor: e.anchor || e.profile?.anchor || null }));
+
 export function firewallContext(s, content, chronicle = null, excludedFoes = []) {
     const o = s.last?.outcome || {};
     const guildish = (id) => {
@@ -400,7 +407,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // Package C (.132): the refs of a creature.new this reply could not book (and its numbered members): a later hostile,
     // position, aware, intent or fact under such a ref is refused, never resolved to another creature already here
     const blockedCreatures = new Set();
+    // natural batch on .191 (Warrior T70): what each refused creature.new was, for a thread that would keep it here
+    const refusedCreatures = fw.reject.filter((x) => x.delta?.type === 'creature.new').map((x) => refusedKind(x.delta));
     const blockCreature = (d) => {
+        refusedCreatures.push(refusedKind(d));
         const ref = normText(d?.ref || '');
         if (!ref) return;
         blockedCreatures.add(ref);
@@ -1173,7 +1183,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 perceiveAll(s, emit, seeing());
                 arriveThrough(at.id, party);
                 // NPC E2-A (R1): the known people this GO step's arrival shows here
-                if (explicitTravel) { const k = goStepAt(at.id, ref); if (k !== null) metArrivals(k); }
+                if (explicitTravel) { const k = goStepAt(at.id, ref); if (k !== null) metArrivals(k, at.id); }
                 stealthGo = String(d.forced_by || '').trim() ? null : arrivalManner();
                 stealthAt = stealthGo ? s.scene.at : null;
                 if (explicitTravel && s.places[at.id]?.kind === 'realm') {
@@ -1483,6 +1493,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 break;
             }
             case 'thread': {
+                // natural batch on .191 (Warrior T70, main: testrun_10b/npc-20261115-103140Z/GEGENREVIEW_OPUS.md): a
+                // thread of any kind that keeps a creature this reply could not book here or acting now ("… as the
+                // two spear-goblins advanced") is refused; an update so refused leaves the thread as it was (the
+                // hooting it told before). Sounds, traces, reports and creatures the engine booked stay.
+                if (d.status !== 'resolved' && d.kind !== 'rumor' && refusedCreatureInThread(d.text, refusedCreatures, sceneCreatures(s))) {
+                    reject(d, 'creature_continuity', 'a thread keeping a creature this reply could not book as here or acting now');
+                    break;
+                }
                 // A refused Dungeon foe must not persist as an objective threat in Here.
                 if (d.kind === 'threat' && d.status !== 'resolved' && unbookedDungeonThreat(d.text, excludedFoes)) {
                     reject(d, 'dungeon_foe_thread', 'unbooked Dungeon creatures cannot be stored as a current threat');
@@ -2212,12 +2230,18 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
      * the step's own arrival (he stands where the step went), an offered person (the player outcome's known_at[k]),
      * alive and not here yet, and a narrated quote of the reply that shows exactly that person there now.
      */
-    function metArrivals(k) {
+    function metArrivals(k, reached = null) {
         metDone.add(k);
         const list = Array.isArray(expected[k]?.met) ? expected[k].met : [];
         if (!list.length) return;
-        const offered = outcome.known_at?.[k] || [];
         const g = (auth.gos || []).find((x) => String(x.seq) === String(k));
+        // natural batch on .191 (Rogue T13, main: testrun_10b/npc-20261115-103140Z/GEGENREVIEW_OPUS.md): a step with
+        // words for its target ({new: "Widow Hesse at the blue door"}) has no place id; the place it reached is the
+        // one this arrival answers (goStepAt), and its known people are those known there and the one person the
+        // step's own words name. A step to a known place keeps the people the player turn offered for it
+        const place = g?.to || reached;
+        const worded = !g?.to && !!reached;
+        const offered = worded ? [...new Set([...knownAt(s, content, reached).map((p) => p.id), ...namedByStep(g, reached)])] : outcome.known_at?.[k] || [];
         const people = [...new Set([...offered, ...s.scene.present.filter((id) => s.entities[id]?.kind === 'npc')])].filter((id) => s.entities[id]).map(profileOf);
         // .170: the reached place and what holds it or lies in it are here; every other known place is elsewhere
         const up = new Set(lineage(s, s.scene.at));
@@ -2227,7 +2251,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         for (const m of list) {
             const item = { seq: Number(k), type: 'expected', met: m };
             const who = offered.includes(m?.who) ? m.who : idOf(m?.who);
-            if (expected[k]?.arrived !== true || !g?.to || s.scene.at !== g.to) { reject(item, 'met_without_arrival', `GO step ${k} did not bring him to its place in this reply`); continue; }
+            if (expected[k]?.arrived !== true || !place || s.scene.at !== place) { reject(item, 'met_without_arrival', `GO step ${k} did not bring him to its place in this reply`); continue; }
+            // someone who came along with him (arrive.with) is here already: nothing to meet
+            if (worded && who && s.scene.present.includes(who)) continue;
             if (!who || !offered.includes(who) || s.entities[who]?.kind !== 'npc' || statusOf(s, who) === 'dead') { reject(item, 'met_not_known_here', `${m?.who} is not one of the people known at this place for step ${k}`); continue; }
             if (s.scene.present.includes(who)) continue;
             const ev = metEvidence(prose, m.evidence, who, people, { ...where, self: [s.entities.pc?.name, 'Alaric'].filter(Boolean) });
@@ -2235,6 +2261,20 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             enterKnown(who, item);
             if (s.scene.present.includes(who)) metEntered.add(who);
         }
+    }
+    /**
+     * The one known person a GO step's own words for its target name ("Widow Hesse at the blue door"), when the place
+     * the step reached lies in the town (or the land) where that person was last: else none
+     */
+    function namedByStep(g, reached) {
+        const words = ` ${normText(g?.newName || g?.name || '')} `;
+        if (words.trim().length < 3) return [];
+        const hits = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.name && statusOf(s, e.id) !== 'dead'
+            && normText(e.name).length > 2 && words.includes(` ${normText(e.name)} `));
+        if (hits.length !== 1) return [];
+        const last = hits[0].at || hits[0].location;
+        const near = last && s.places[last] && (settlementOf(s, last) ? settlementOf(s, last) === settlementOf(s, reached) : realmOf(s, last) === realmOf(s, reached));
+        return near ? [hits[0].id] : [];
     }
     /** The GO step an actual arrival at this place answers (the first not yet met one, by its place). */
     function goStepAt(id, ref) {

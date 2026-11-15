@@ -1,3 +1,4 @@
+import { bossloot193Turns, bossloot193Smoke } from './bossloot193_smoke.mjs';
 import { board159Turns, board159Response, board159Smoke } from './board159_smoke.mjs';
 import { qol160Turns, qol160BoardAnswer, qol160Smoke } from './qol160_smoke.mjs';
 import { ui161Turns, ui161Smoke } from './ui161_smoke.mjs';
@@ -79,7 +80,7 @@ const TURNS = [
 ];
 const turnOf = (text) => TURNS.find((t) => text.includes(`PLAYER MESSAGE:\n${t.player}`));
 const finance = financeTurns(plan);
-const allTurns = [...TURNS, ...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns, ...pulse164Turns, ...pulse167Turns, ...npc169Turns, ...npc172Turns, ...pilot01Turns];
+const allTurns = [...TURNS, ...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns, ...pulse164Turns, ...pulse167Turns, ...npc169Turns, ...npc172Turns, ...pilot01Turns, ...bossloot193Turns];
 
 // ------------------------------------------------------------------------------------------------ setup (as run_v4.mjs)
 const contract = fs.readFileSync(path.join(ENGINE, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
@@ -149,7 +150,7 @@ const mock = http.createServer(async (req, res) => {
     // the planner: its own role in a fight, the interpreter's prompt with the planner's section outside one
     if (system.startsWith('You are the intent planner') || (system.startsWith('You are the command interpreter') && system.includes('Actions with skills, in fights and on things'))) {
         purpose = 'plan';
-        const t = turnOf(users) || [...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns, ...pulse164Turns, ...pulse167Turns, ...npc169Turns, ...npc172Turns, ...pilot01Turns].find(t => users.includes(`PLAYER MESSAGE:\n${t.player}`));
+        const t = turnOf(users) || [...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns, ...pulse164Turns, ...pulse167Turns, ...npc169Turns, ...npc172Turns, ...pilot01Turns, ...bossloot193Turns].find(t => users.includes(`PLAYER MESSAGE:\n${t.player}`));
         text = JSON.stringify(t ? t.plan : { commands: [] });
     } else if (system.startsWith('You are the command interpreter')) {
         purpose = 'interpret';
@@ -486,10 +487,12 @@ try {
     if (process.env.AVERETH_SMOKE_PULSE164 === '1') { stealthProbeMode = true; pulse164Checks = await pulse164Smoke({ page, send, idle, calls, driver: () => driver, onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); }, out: HERE }); stealthProbeMode = false; }
     let ui161Checks = null;
     if (process.env.AVERETH_SMOKE_UI161 === '1') { stealthProbeMode = true; ui161Checks = await ui161Smoke({ page, send, idle, calls, driver: () => driver, onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); }, out: HERE }); stealthProbeMode = false; }
+    let bossloot193Checks = null;
+    if (process.env.AVERETH_SMOKE_PILOT01 === '1') { stealthProbeMode = true; bossloot193Checks = await bossloot193Smoke({page,send,calls,onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});},out:HERE}); stealthProbeMode = false; }
     const status = await page.evaluate(() => document.getElementById('avereth_status')?.textContent || '');
     await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); });
     await page.waitForTimeout(800);
-    result = { toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
+    result = { bossloot193Checks, toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
 } catch (error) {
     const screen = await page.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(-8000),
         chat: window.SillyTavern?.getContext?.()?.chat?.map(m => ({ user: m.is_user, system: m.is_system, text: m.mes?.slice(0, 120) })) })).catch(() => null);
@@ -520,6 +523,7 @@ const checks = {
     ...Object.fromEntries(Object.entries(result.npc169Checks || {}).map(([k, v]) => [`npc169_${k}`, v])),
     ...Object.fromEntries(Object.entries(result.npc172Checks || {}).map(([k, v]) => [`npc172_${k}`, v])),
     ...Object.fromEntries(Object.entries(result.pilot01Checks || {}).map(([k, v]) => [`pilot01_${k}`, v])),
+    ...Object.fromEntries(Object.entries(result.bossloot193Checks || {}).map(([k,v]) => [`bossloot193_${k}`,v])),
     startStatsFive: result.startStatsFive,
     ...Object.fromEntries(Object.entries(result.qol160Checks || {}).map(([k, v]) => [`qol160_${k}`, v])),
     ...Object.fromEntries(Object.entries(result.board159Checks || {}).map(([k,v])=>[`board159_${k}`,v])),

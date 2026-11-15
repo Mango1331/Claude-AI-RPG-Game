@@ -675,7 +675,8 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
         // Prototype C (4.3.0-c.6.6.4): with the engine's loot credited, the hand-collect rule of Core #20 does not apply
         if (!done.loot) situations.push('loot');
         // what the engine credited is booked: the story's object.new for the same pelt is no second one (firewall granted)
-        if (done.loot) Object.assign(outcome, { loot: done.loot, booked: { registration: false, grants: done.loot.map((l) => l.replace(/ ×\d+$/, '')), turnIns: [], accepted: [] } });
+        if (done.rewardLines?.length) Object.assign(outcome, {rewardLines: done.rewardLines, rewards: done.rewards});
+        if (done.loot || done.rewardLines?.length) Object.assign(outcome, { loot: done.loot || [], booked: { registration: false, grants: done.grantNames, turnIns: [], accepted: [] } });
     } else {
         outcome.next = done.next;
     }
@@ -798,6 +799,8 @@ function persistCombat(s, content, emit, enc, records, isNew, { c: cPath = false
             const loot = lootEvents(s, content, enc);
             loot.events.forEach(emit);
             if (loot.lines.length) out.loot = loot.lines;
+            out.grantNames = loot.grantNames;
+            if (loot.rewardLines?.length) { out.rewardLines = loot.rewardLines; out.rewards = loot.rewards; }
         }
         out.ended = end.summary;
     } else {
@@ -972,7 +975,7 @@ export function openCommitted(s, content, dice, emit, { hold = false, c = false 
             const res = runCombat({ enc, content, dice, state: s, c }, null);
             enc.preface = res.records;
             const done = persistCombat(s, content, emit, enc, res.records, true, { c });
-            return { kind: 'started', ids, board: done.board, records: res.records, ...(done.ended ? { ended: done.ended, levelups: done.levelups, ...(done.loot ? { loot: done.loot } : {}) } : {}) };
+            return { kind: 'started', ids, board: done.board, records: res.records, ...(done.ended ? { ended: done.ended, levelups: done.levelups, ...(done.loot ? { loot: done.loot } : {}), ...(done.rewardLines?.length ? {rewardLines: done.rewardLines, rewards: done.rewards} : {}) } : {}) };
         }
         emit({ t: 'encounter.started', d: { encounter: enc } });
     } else {

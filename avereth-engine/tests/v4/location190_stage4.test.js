@@ -33,27 +33,26 @@ test('.190 4B: an ineffective move outside a fight costs one repair at most, nev
     assert.deepEqual(lastUser(g).plan.llm.map((c) => c.purpose), ['plan', 'plan_repair'], 'two planner calls, no third');
 });
 
-test('.190 4C (D3): the room he holds is reached without a GO when he goes to sleep or rest there; paying alone, buying bread or a private room moves him nowhere', async () => {
+test('.190 4C (D3, after the control review G3): without his go nothing moves him into a room – not bread, not a paid bed, not a booked sleep; with his go he reaches the room he names', async () => {
     const g = await mage();
     await walk(g, 'loc.ashbridge', { text: '*i walk to ashbridge*', prose: 'Ashbridge.' });
     await walk(g, { new: 'the Sow\'s Rest' }, { text: '*I go into the Sow\'s Rest*', at: { new: { name: 'the Sow\'s Rest', kind: 'site', parent: 'loc.ashbridge' } }, prose: 'The inn.' });
     const inn = g.state().scene.at;
-    const lodged = async (text, at, lodging, rest = true) => {
-        await say(g, text, ...(rest ? [{ type: 'activity', kind: 'sleep', minutes: 480, quote: text.replace(/\*/g, '') }] : []));
-        if (lodging) inject(g, [{ t: 'service.granted', d: { service: 'lodging', by: null, at: inn, turn: g.state().turn } }]);
-        return g.reply('He goes up.', { expected: {}, deltas: [{ seq: 1, type: 'arrive', at, forced_by: null, with: null }] });
-    };
-    // bread bought: no way into the back room
-    let r = await lodged('*I buy a loaf of bread*', { new: { name: 'back room', kind: 'interior', parent: null } }, false, false);
+    inject(g, [{ t: 'service.granted', d: { service: 'lodging', by: null, at: inn, turn: g.state().turn } }]);
+    const told = (at) => ({ expected: {}, deltas: [{ seq: 1, type: 'arrive', at, forced_by: null, with: null }] });
+    const upstairs = { new: { name: 'small room upstairs', kind: 'interior', parent: null } };
+    await say(g, '*I buy a loaf of bread*');
+    let r = await g.reply('He goes into the back room.', told({ new: { name: 'back room', kind: 'interior', parent: null } }));
     assert.equal(g.state().scene.at, inn);
     assert.ok(r.record.rejected.some((x) => x.rule === 'no_go'));
-    // the paid room, not a private office of the inn
-    // paying for a bed is not yet going to it (b19-warrior#80 of the corpus)
-    r = await lodged('*I pay for a bed*', { new: { name: 'small room upstairs', kind: 'interior', parent: null } }, true, false);
+    await say(g, '*I pay for a bed*');
+    await g.reply('He goes up.', told(upstairs));
     assert.equal(g.state().scene.at, inn, 'paid, not gone');
-    r = await lodged('*I go up to my paid room and sleep for eight hours*', { new: { name: 'private office', kind: 'interior', parent: null } }, true);
-    assert.equal(g.state().scene.at, inn, 'no free access to a private area');
-    r = await lodged('*I go up to my paid room and sleep for eight hours*', { new: { name: 'small room upstairs', kind: 'interior', parent: null } }, true);
+    await say(g, '*I sleep for eight hours*', { type: 'activity', kind: 'sleep', minutes: 480, quote: 'I sleep for eight hours' });
+    await g.reply('He goes up and sleeps.', told(upstairs));
+    assert.equal(g.state().scene.at, inn, 'a booked sleep is no go (G3)');
+    await say(g, '*I go up to my paid room*', { type: 'go', to: { new: 'my paid room upstairs' }, quote: 'I go up to my paid room' });
+    await g.reply('He goes up.', { expected: { 1: { arrived: true, at: upstairs, with: null } }, deltas: [{ seq: 1, type: 'arrive', at: upstairs, forced_by: null, with: null }] });
     assert.equal(g.state().places[g.state().scene.at].name, 'small room upstairs');
     assert.equal(g.state().places[g.state().scene.at].parent, inn);
 });

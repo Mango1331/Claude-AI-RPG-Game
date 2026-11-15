@@ -121,13 +121,13 @@ export function firewallContext(s, content, chronicle = null, excludedFoes = [])
         heldByPc: (ref) => s.objects?.[ref]?.holder?.entity === 'pc' || (typeof ref === 'string' && ref.startsWith('item.') && !!s.entities.pc.sheet.inventory[ref.slice(5)]),
         // Prototype C (4.3.0-c.6.6.3): what he set out to hand over where he went in this turn (commands.js give)
         // Historical Rule-1 lodging semantics only; current campaigns require an authorized room move.
-        // .190 (stage 4C, D3): a step within the same building that his own action of this turn necessarily takes – he
-        // goes to rest or sleep in the room he holds there (paid now or for this night) – needs no GO; paying for a bed
-        // is not yet going to it, buying bread is no way into the back room, and nearness never moves him. Ruleset 1
-        // keeps its room exception as it was
+        // .190 (D3): a step within the same building is his go; paying for a bed is not going to it, buying bread is no
+        // way into the back room, nearness never moves him. Ruleset 1 keeps its room exception as it was
         lodgedHere: rulesetOf(s) < 2 ? (s.services || []).some(x => x.service === 'lodging' && x.at === s.scene.at && s.clock.minute - (x.minute ?? 0) <= 1440)
-            : !s.encounter && !trueDungeonOf(s, s.scene.at) && !!o.auth?.rest && (s.services || []).some(x => x.service === 'lodging' && lineage(s, s.scene.at).includes(x.at)
-                && (x.turn === s.turn || s.clock.minute - (x.minute ?? 0) <= 1440)),
+            // review of .190 (G3): a rest booked and a room held do not say he goes there ("I rest downstairs; I stay
+            // here"); the engine cannot tell it from his words without a word list, so under ruleset 2 going to his room
+            // is his go (planner rule 7e), never an exception of the firewall
+            : false,
         roomOfHere: ref => {
             if (rulesetOf(s) < 2) return ref?.new ? ref.new.parent === s.scene.at && (!ref.new.kind || ['interior', 'room', 'site'].includes(ref.new.kind)) : typeof ref === 'string' && s.places[ref]?.parent === s.scene.at;
             // the room or bed he paid for, inside the building he is in (its complex): never another room of it (a private
@@ -2502,10 +2502,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const from = s.scene.at;
         if (to === from) return null;
         if (!dungeonOf(s, from) && !dungeonOf(s, to)) {
-            // .190 (D1b): in a building no longer explored room by room, only what blocks every way he knows into a room
-            // keeps him out (a locked armory); a way nobody showed is no refusal
+            // .190 (D1b): in a building no longer explored room by room, a way nobody showed is no refusal; a room a
+            // known way into which is blocked is reached only by an open way from where he is (review of .190, G2: an
+            // open hatch from a storeroom he cannot get into does not undo the locked door from here)
             const ways = linksAt(s, to).filter((l) => goesFrom(l, otherEnd(l, to)));
-            const bar = ways.length && ways.every((l) => blockerOf(s, l)) ? blockerOf(s, ways[0]) : null;
+            const blocked = ways.filter((l) => blockerOf(s, l));
+            const bar = blocked.length && !openWay(from, to) ? blockerOf(s, blocked[0]) : null;
             if (!bar || forced) return null;
             const why = `the way to ${placeName(s, to)} is barred by ${bar.name} (${bar.id}), which he has not got past`;
             reject(d, 'passage', why);
@@ -2553,6 +2555,22 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const fix = `Alaric is still in ${placeName(s, from)}: ${why}; he did not get there.`;
         if (!corrections.includes(fix)) corrections.push(fix);
         return why;
+    }
+
+    /** .190 (G2): an open way he knows from here to there, through known rooms (no blocker on any of its ways). */
+    function openWay(from, to) {
+        const seen = new Set([from]);
+        const queue = [from];
+        while (queue.length && seen.size < 64) {
+            const cur = queue.shift();
+            for (const l of linksAt(s, cur)) {
+                if (!goesFrom(l, cur) || blockerOf(s, l)) continue;
+                const next = otherEnd(l, cur);
+                if (next === to) return true;
+                if (!seen.has(next)) { seen.add(next); queue.push(next); }
+            }
+        }
+        return false;
     }
 
     /**

@@ -93,7 +93,7 @@ test('.190 B5 Mossback: two levels; the way down is at the end of level 1 (unsea
     const length = trackOf(living(g, WARRENS), 1).length;
     for (let i = 1; i <= length; i++) { await delve(g, `Tunnel ${i}`, { root: WARRENS }); await fightAll(g); }
     assert.ok(sectionExits(g.state()).some((x) => /^down to level 2/.test(x)));
-    await delve(g, 'Lower burrows', { root: WARRENS, text: '*I go down*' });
+    await delve(g, 'Lower burrows', { root: WARRENS, text: '*I go down*', words: 'down' });
     const lower = g.state().scene.at;
     assert.equal(lower, `${WARRENS}.l2_s1`);
     assert.equal(g.state().places[lower].name, 'Lower burrows');

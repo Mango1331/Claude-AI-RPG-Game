@@ -107,8 +107,8 @@ export function ahead(g, root = CATA) {
 /** The creature.new of the engine's encounter as the extractor reports it from the catalog. */
 export const slotDelta = (sl, seq = 2) => ({ seq, type: 'creature.new', ref: sl.ref, species: sl.species, anchor: sl.anchor, desc: [sl.species], count: sl.count, present: true, band: 'MEDIUM', cluster: null, stronger: null, threat: true, more: null });
 /** He goes on into a new part of the Dungeon; the story shows the engine's encounter there, if one was placed. */
-export async function delve(g, name, { root = CATA, parent = root, text = '*I go on deeper*', bring = true, extra = [] } = {}) {
-    await say(g, text, GO({ new: 'deeper' }, text.replace(/\*/g, '')));
+export async function delve(g, name, { root = CATA, parent = root, text = '*I go on deeper*', words = 'deeper', bring = true, extra = [] } = {}) {
+    await say(g, text, GO({ new: words }, text.replace(/\*/g, '')));
     const a = ahead(g, root);
     const sl = a && a.turn === g.state().turn ? a.slot : null;
     const deltas = [...(sl && bring ? [slotDelta(sl)] : []), ...extra];

@@ -421,6 +421,23 @@ function barred(f, toward) {
  * where a hidden trap waits (firstStop), so the trap is never stepped over.
  * @returns {{refuse?: object, to?: string, route?: object, explore?: string, stop?: string}}
  */
+/**
+ * Review of .190 (G3b): the active obstacle where he is that stands in the way to the place his words name, outside a
+ * dungeon (the dungeon's own check is dungeonGo's): an obstacle that names a way (a door, a gate, a hatch) whose other
+ * words all name that place ("locked office door" → the back office), or null. A way word alone never identifies it.
+ */
+const WAY_WORDS = new Set(['locked', 'barred', 'bolted', 'sealed', 'closed', 'shut', 'chained', 'heavy', 'iron', 'wooden', 'oak', 'stout', 'door', 'doors', 'gate', 'gates', 'hatch', 'grate', 'grille', 'portcullis', 'trapdoor', 'entrance', 'way']);
+function blockingHere(s, name) {
+    const place = keyOf(name);
+    if (!place.length) return null;
+    return featuresAt(s, s.scene.at).find((x) => {
+        if (x.kind !== 'obstacle' || x.status !== 'active') return false;
+        const words = keyOf(x.name);
+        const core = words.filter((w) => !WAY_WORDS.has(w));
+        return words.some((w) => WAY_WORDS.has(w)) && core.length > 0 && core.every((w) => place.includes(w));
+    }) || null;
+}
+
 function dungeonGo(s, c) {
     const here = s.scene.at;
     let to = c.to;
@@ -653,6 +670,7 @@ const HANDLERS = {
                 const prior = ctx.auth.gos.map((g) => g.section).filter(Boolean).at(-1);
                 const st = sectionStep(prior ? afterPreview(s, prior) : s, c.to.new);
                 if (st?.refuse) return { status: 'refused', reason: st.refuse, line: `CANNOT GO — ${st.refuse}. He stays where he is.` };
+                if (st?.clarify) return { status: 'clarify', reason: 'which way', line: `CLARIFY — ${st.clarify}` };
                 if (st?.to && st.to !== s.scene.at) c = { ...c, to: st.to };
                 else if (st?.to) return { status: 'refused', reason: 'already here', done: true, line: `NOTHING TO DO — he is already at ${placeName(s, st.to)}.` };
                 else if (st?.preview) section = st.preview;
@@ -667,6 +685,15 @@ const HANDLERS = {
         if (sought) c = { ...c, to: { new: sought } };
         const known = typeof c.to === 'string';
         if (known && !s.places[c.to]) return { status: 'refused', reason: 'unknown place', line: 'CANNOT GO — no such place is known.' };
+        // review of .190 (G4): a place whose report proved false is no destination
+        if (known && s.places[c.to].known === 'false') return { status: 'refused', reason: 'report proved false', line: `CANNOT GO — the report of ${placeName(s, c.to)} proved false; he knows no such place to go to.` };
+        // review of .190 (G3b): outside a dungeon, an obstacle here that stands in the way to where he goes (a locked
+        // office door) keeps him out until he gets past it, as in a dungeon (dungeonGo)
+        // (where known ways into the place are recorded, they decide, with an open way round: world.js wayRefused)
+        if (envx?.c && rulesetOf(s) >= 2 && !dungeonOf(s, s.scene.at) && !(known && linksAt(s, c.to).length)) {
+            const f = blockingHere(s, known ? placeName(s, c.to) : String(c.to?.new || ''));
+            if (f) return barred(f, known ? placeName(s, c.to) : String(c.to?.new || 'there'));
+        }
         // .190 (A2): back to where he set out from, after a step of this message elsewhere, is a leg of its own (".. then
         // return to the inn"): its arrival is his step's, never one the story is free to tell
         if (known && c.to === s.scene.at && envx?.c && rulesetOf(s) >= 2 && ctx.auth.gos.some((g) => (g.seq ?? 0) < (c.seq ?? 0) && g.to !== c.to)) {

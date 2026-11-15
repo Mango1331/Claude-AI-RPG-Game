@@ -66,7 +66,14 @@ export function positionOf(s, id) {
 }
 
 const BACK = /\b(?:back|previous|retrace|the way i came|where i came from)\b/;
-const OUT = /\b(?:out|outside|exit|leave|surface|daylight|the gate|the entrance)\b/;
+// leaving the Dungeon: the way out to its gate, said as such (review of .190, G1: "step out into the next hall" is no way
+// out of it); words for leaving count only together with the Dungeon itself
+const OUT_TO = /\b(?:the gate|the entrance|the surface|daylight|outside)\b/;
+const LEAVE = /\b(?:leave|leaves|leaving|exit|exits|out of|get out|go out|climb out|head out)\b/;
+const leaving = (s, root, w) => OUT_TO.test(w) || (LEAVE.test(w) && (/\b(?:dungeon|depths)\b/.test(w)
+    || normText(s.places[root]?.name || '').split(/[^a-z0-9']+/).filter((x) => x.length > 3).some((x) => new RegExp(`\\b${x}\\b`).test(w))));
+// going down at the end of a level: said as down (a stair, the level below, "down"); "on" or "deeper" is not (G1)
+const DOWN_HERE = /\bdown\b/;
 const UP = /\b(?:up|upstairs|ascend|climb up|level above)\b/;
 // a way down a level by its own words (a stair, the level below); "down the sloping passage" is a way on (B1, R-B6)
 const DOWN = /\b(?:downstairs|descend|descends|descending|stair|stairs|stairway|staircase|lower level|next level|level below|deeper level)\b/;
@@ -98,8 +105,10 @@ export function sectionStep(s, words) {
     const mine = s.places[here]?.section;
     // the way he came: the part (or gate) this section was made from; an older save's rooms keep their own ways
     const back = Number.isInteger(mine) ? Object.values(s.links || {}).find((l) => l.by === 'dungeon' && l.b === here)?.a || null : null;
-    if (OUT.test(w)) return { to: root };
+    if (leaving(s, root, w)) return { to: root };
     if (BACK.test(w) || (UP.test(w) && mine === 1 && level > 1)) return back ? { to: back } : null;
+    // up where there is no way up (not the first part of a deeper level): no move, never on (G1)
+    if (UP.test(w)) return { clarify: `there is no way up from here: the way up${level > 1 ? ` to level ${level - 1} is at part 1 of level ${level}` : ' is the way out to the gate'}; does he go on, or back?` };
     const length = trackLength(s, root, level);
     // the next part: after his own section k, k + 1; from an older save's room, the first section after those rooms
     const k = Number.isInteger(mine) ? mine : legacy(level);
@@ -108,9 +117,12 @@ export function sectionStep(s, words) {
     const next = ownAt(level, k + 1);
     if (next) return { to: next };
     if (k < length) return preview(level, k + 1, here);
-    // the end of the level's track: the way down, where there is a level below (D1c)
+    // the end of the level's track: the way down, where there is a level below (D1c), only when he says he goes down
+    // (review of .190, G1: going on is no descent); else he is asked, nothing moves
     if (!x.floors[level + 1]) return { refuse: `nothing further on level ${level} of ${x.name}: this is the end of its way${level > 1 ? '' : ' and it has no level below'}` };
-    if (x.floors[level].sealed && !x.run.floors[level]?.cleared) return { refuse: `the way down to level ${level + 1} of ${x.name} is sealed until the guardian of level ${level} falls` };
+    const sealed = x.floors[level].sealed && !x.run.floors[level]?.cleared;
+    if (!DOWN.test(w) && !DOWN_HERE.test(w)) return { clarify: `this is the end of level ${level} of ${x.name}: nothing further on this level; the way down to level ${level + 1} is here${sealed ? `, sealed until the guardian of level ${level} falls` : ''}. Does he go down, or back?` };
+    if (sealed) return { refuse: `the way down to level ${level + 1} of ${x.name} is sealed until the guardian of level ${level} falls` };
     const below = sectionsOf(s, root, level + 1)[0];
     return below ? { to: below } : preview(level + 1, legacy(level + 1) + 1, last(level) === here ? here : here, true);
 }

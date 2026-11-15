@@ -8,7 +8,7 @@
 // step would allow: its target, a stop on its known way, a place on the way there (the road, the town before its hall),
 // and – for a step to a place not known yet – the one new place that becomes it, inside the step's scope. A scope is
 // never a destination: another place of the same town or realm is not reached because it lies there.
-import { lineage, sameSettlement } from './domain.js';
+import { lineage, sameSettlement, settlementOf, realmOf } from './domain.js';
 import { dungeonOf, trueDungeonOf, isRoom } from './dungeon.js';
 import { placeIdentity } from './place_refs.js';
 
@@ -116,9 +116,10 @@ export function allowedArrival(s, steps, to, { fresh = false, forced = false, re
             if (s.places[target].kind === 'settlement' && up(to).includes(target) && p.kind !== 'interior') return null;
             if (fresh && up(to).includes(target)) return null;
             if (fresh && p.kind === 'settlement' && label(s.places[target].name).startsWith(`${label(p.name)} `)) return null;
-            // a stop short of it the report gives as such (the target not reached: .181 P2-2); a scope is no destination:
-            // "reached" with him put at another place of the same town or realm is not reaching it
-            if (!reached(g.seq)) return null;
+            // a stop short of it the report gives as such (the target not reached: .181 P2-2), on the way there: in the
+            // town he is in or the target's, or out in the land between (control review of .190, R5: never a stop in a
+            // third town); a scope is no destination: "reached" at another place of the same town or realm is not
+            if (!reached(g.seq) && onTheWay(s, here, target, to)) return null;
             continue;
         }
         // a step to a place not known yet: the one new place it establishes inside its scope, or the known place the
@@ -129,4 +130,11 @@ export function allowedArrival(s, steps, to, { fresh = false, forced = false, re
     return { why: `${p.name} is not where his step goes (${steps.map((g) => (g.to ? s.places[g.to]?.name || g.to : g.newName || g.name || 'his way')).join(', ')})` };
 }
 const label = (t) => norm(t).replace(/^the /, '');
+/** Is `to` on the way from here to the target: in either's town, or out in either's realm (never inside a third town)? */
+function onTheWay(s, here, target, to) {
+    const town = settlementOf(s, to);
+    if (town) return town === settlementOf(s, here) || town === settlementOf(s, target);
+    const realm = realmOf(s, to);
+    return !!realm && (realm === realmOf(s, here) || realm === realmOf(s, target));
+}
 

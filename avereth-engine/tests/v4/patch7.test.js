@@ -977,7 +977,7 @@ async function warrens() {
     await fightAll(g);
     const upper = g.state().scene.at;
     for (let i = 2; sectionExits(g.state()).some((x) => x.startsWith('on:')) && i < 8; i++) { await delve(g, `Tunnel ${i}`, { root: WARRENS }); await fightAll(g); }
-    await delve(g, 'Lower burrows', { root: WARRENS, text: '*I go down the ramp*' });
+    await delve(g, 'Lower burrows', { root: WARRENS, text: '*I go down the ramp*', words: 'down the ramp' });
     await fightAll(g);
     const lower = g.state().scene.at;
     await walk(g, upper, { text: '*I go back up to the upper tunnels*', prose: 'The upper tunnels.' });

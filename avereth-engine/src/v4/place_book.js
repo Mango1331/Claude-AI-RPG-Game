@@ -21,6 +21,8 @@ const significant = (l) => l.split(' ').filter((w) => w.length > 2 && !['the', '
 export function knownPlace(s, id) {
     const p = s.places?.[id];
     if (!p) return false;
+    // review of .190 (G4): a place whose report proved false is no place he knows (the report stays a memory)
+    if (p.known === 'false') return false;
     if (isRoom(s, id)) return roomKnown(s, id);
     return true;
 }

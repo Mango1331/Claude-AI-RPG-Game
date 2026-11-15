@@ -2,8 +2,8 @@
  "format": "avereth-replay-accepted-2",
  "baseline_sha": "b8d2af4b76cd0bc52ac178b8c500e5733878ecee",
  "baseline_engine": "4.3.0-c.6.6.126",
- "engine": "4.3.0-c.6.6.189",
- "note": "Location architecture .190 vs .126 (stages 1-5: place book, NOT ARRIVED, movement proof, B5 sections, D1b, D3, unasked expected keys): every .187 entry unchanged unless listed with its previous acceptance; see docs/LOCATION_ARCHITECTURE_190.md.",
+ "engine": "4.3.0-c.6.6.190",
+ "note": "Location architecture .190 vs .126 (stages 1-5 and the control review G1-G4): every .187 entry unchanged unless listed with its previous acceptance; see docs/LOCATION_ARCHITECTURE_190.md.",
  "categories": {
   "representation": "population contract recorded, no mechanical consequence: entity.updated {life_stage, population_at} at creation (population_at no longer set on the profile event), quest.hunt.age on hunt contracts, converted population/life_stage fields inside an already rejected creature.new",
   "rejection reason": "a claim already refused in .126 (aware of an unknown creature) is now refused by the creature reference lock (creature_continuity)",
@@ -59,7 +59,8 @@
   "location190-s2 outcome": "location190-s2: outcome",
   "location190-s345 events": "location190-s345: events",
   "location190-s345 outcome": "location190-s345: outcome",
-  "location190-s345 rejected+events+corrections": "location190-s345: rejected+events+corrections"
+  "location190-s345 rejected+events+corrections": "location190-s345: rejected+events+corrections",
+  "review190 rejected+events+corrections": "review190: rejected+events+corrections"
  },
  "returned": {
   "b17-warrior#73": {
@@ -8628,13 +8629,13 @@
    "fingerprint": "sha256:9b0dab6a74c64ee4334bf38d34cbdbcc464703cac1e39dc5789236e2bca8929e"
   },
   "b18-rogue#90": {
-   "category": "location190-s345 rejected+events+corrections",
-   "reason": "b18-rogue#90: stage 4C (D3): 'I pay the innkeeper two copper for the small room, then go up and sleep until morning': the sleep he booked in the room he paid for takes him into it without a GO; the arrival and the sleep are booked there (was no_go)",
+   "category": "review190 rejected+events+corrections",
+   "reason": "b18-rogue#90: control review of .190 (G3): the implicit ruleset-2 room move (rest or sleep booked plus a room held) is withdrawn – a booked sleep does not say he goes to the room ('I rest downstairs; I stay here'); going there is his go (planner rule 7e). 'I pay … then go up and sleep' with a plan without a go: the arrival in the small room is refused again (no_go), as in .189; the sleep stays booked",
    "previous_acceptance_189": {
-    "category": "location190-s1 rejected-to",
-    "fingerprint": "sha256:c5fad99d22fe3f6c5c7f0bff42bd116a05f41d87455375c98dffbdbfe932864f"
+    "category": "location190-s345 rejected+events+corrections",
+    "fingerprint": "sha256:8ed143819351752bac82ca23212e6f87276d875ad35c69442a8b010228243ca2"
    },
-   "fingerprint": "sha256:8ed143819351752bac82ca23212e6f87276d875ad35c69442a8b010228243ca2"
+   "fingerprint": "sha256:c5fad99d22fe3f6c5c7f0bff42bd116a05f41d87455375c98dffbdbfe932864f"
   },
   "b18-warrior#30": {
    "category": "location190-s1 rejected-to",

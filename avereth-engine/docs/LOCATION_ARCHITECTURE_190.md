@@ -394,3 +394,22 @@ accepted records, 0 open, 0 stale.
 
 Two tests used an unasked key only to provoke a schema error (`patch_batch10_followup` retry tests); they now use a
 real one (an unknown delta type).
+
+## Control review and `.191`
+
+The control review (GPT G1–G4 plus the own finding R5) found these boundary cases confirmed on `.190`:
+- the level end;
+- a building blocker reached by a way from elsewhere;
+- D3 room agency;
+- disproved reports counting as known;
+- stops in a third town.
+
+They are corrected narrowly in `.191`; see [FOLLOWUP_190_191.md](FOLLOWUP_190_191.md) and
+`tests/v4/review190_negative.test.js`. Changes against the stages above:
+- **G1:** at the end of a level, only "down" or stair/level words go down, otherwise CLARIFY. "up" with no way up asks
+  instead of moving. Only an explicit leaving leads out to the gate.
+- **G2:** a blocked way into a building room needs an open path from where he is (`openWay`).
+- **G3:** the ruleset-2 room exception of stage 4C is withdrawn. Going to his room is his go (planner rule 7e).
+- **G3b:** where no ways are recorded, an obstacle here that names the place blocks a GO.
+- **G4:** a disproved place is not known.
+- **R5:** a stop short of a known target lies on the way.

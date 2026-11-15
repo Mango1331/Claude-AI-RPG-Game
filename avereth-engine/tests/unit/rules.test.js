@@ -391,7 +391,7 @@ test('DefeatXP: Level*base_per_level × rank-gap × type, locked against the PC 
     assert.equal(defeatXp(10, 'normal', 'C', content), Math.round(10 * B * 0.25)); // F vs C: gap -3 -> x0.25
 });
 
-test('Level-up WHILE loop with carry-over, +5 free points and favored +1/+1 per Level, no refill (Core #3)', () => {
+test('Level-up WHILE loop with carry-over, +5 free points and no automatic favored growth, no refill (Core #3)', () => {
     const g = newRanger();
     const s = g.state.entities.pc.sheet;
     const events = awardXp(s, 350, content, 'test');
@@ -401,8 +401,8 @@ test('Level-up WHILE loop with carry-over, +5 free points and favored +1/+1 per 
     assert.equal(after.level, 3);
     assert.equal(after.xp, 50); // 350 - 100 - 200
     assert.equal(after.free_points, 10);
-    assert.equal(after.stats.AGI, 8);
-    assert.equal(after.stats.PER, 8);
+    assert.equal(after.stats.AGI, 6);
+    assert.equal(after.stats.PER, 6);
     assert.equal(after.hp, 80, 'current HP is not refilled');
     assert.equal(deriveCharacter(after, content).maxHp, 90);
 });

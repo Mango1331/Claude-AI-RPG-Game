@@ -9,7 +9,7 @@
         "STR",
         "VIT"
       ],
-      "growth_text": "Automatic Class Growth: apply once at initial Level-1 Class selection, then on each later Level gained: STR +1 and VIT +1.",
+      "growth_text": "Initial Class selection only: STR +1 and VIT +1. Later growth: 5 free Stat Points per Level; no automatic attribute growth. Favored assignment remains STR / VIT.",
       "basic_attack": "warrior.basic_attack",
       "skill_pool": [
         "warrior.heavy_slash",
@@ -28,7 +28,7 @@
         "INT",
         "WIL"
       ],
-      "growth_text": "Automatic Class Growth: apply once at initial Level-1 Class selection, then on each later Level gained: INT +1 and WIL +1.",
+      "growth_text": "Initial Class selection only: INT +1 and WIL +1. Later growth: 5 free Stat Points per Level; no automatic attribute growth. Favored assignment remains INT / WIL.",
       "basic_attack": "mage.basic_attack",
       "skill_pool": [
         "mage.arcane_bolt",
@@ -47,7 +47,7 @@
         "VIT",
         "WIL"
       ],
-      "growth_text": "Automatic Class Growth: apply once at initial Level-1 Class selection, then on each later Level gained: VIT +1 and WIL +1.",
+      "growth_text": "Initial Class selection only: VIT +1 and WIL +1. Later growth: 5 free Stat Points per Level; no automatic attribute growth. Favored assignment remains VIT / WIL.",
       "basic_attack": "guardian.basic_attack",
       "skill_pool": [
         "guardian.shield_strike",
@@ -66,7 +66,7 @@
         "STR",
         "AGI"
       ],
-      "growth_text": "Automatic Class Growth: apply once at initial Level-1 Class selection, then on each later Level gained: STR +1 and AGI +1.",
+      "growth_text": "Initial Class selection only: STR +1 and AGI +1. Later growth: 5 free Stat Points per Level; no automatic attribute growth. Favored assignment remains STR / AGI.",
       "basic_attack": "duelist.basic_attack",
       "skill_pool": [
         "duelist.precision_thrust",
@@ -85,7 +85,7 @@
         "AGI",
         "PER"
       ],
-      "growth_text": "Automatic Class Growth: apply once at initial Level-1 Class selection, then on each later Level gained: AGI +1 and PER +1.",
+      "growth_text": "Initial Class selection only: AGI +1 and PER +1. Later growth: 5 free Stat Points per Level; no automatic attribute growth. Favored assignment remains AGI / PER.",
       "basic_attack": "ranger.basic_attack",
       "skill_pool": [
         "ranger.aimed_shot",
@@ -104,7 +104,7 @@
         "AGI",
         "PER"
       ],
-      "growth_text": "Automatic Class Growth: apply once at initial Level-1 Class selection, then on each later Level gained: AGI +1 and PER +1.",
+      "growth_text": "Initial Class selection only: AGI +1 and PER +1. Later growth: 5 free Stat Points per Level; no automatic attribute growth. Favored assignment remains AGI / PER.",
       "basic_attack": "rogue.basic_attack",
       "skill_pool": [
         "rogue.razor_cut",

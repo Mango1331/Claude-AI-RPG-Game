@@ -61,7 +61,7 @@ test('every numeric rule constant is stated in the verbatim Core text it came fr
     has('core.2', `Base DEF = floor(VIT/${r.derived.base_def_divisor})`);
     has('core.2', `Base MDEF = floor(WIL/${r.derived.base_mdef_divisor})`);
     has('core.3', `XP_TO_NEXT = Current Level × ${r.progression.xp_to_next_per_level}`);
-    has('core.3', `grant ${r.progression.free_points_per_level} free Stat Points`);
+    has('core.3', `grant exactly ${r.progression.free_points_per_level} free Stat Points`);
     has('core.3', 'Level-up does not refill');
     // Combat V3 (docs/REVIEW_V3.md): no Hit Chance, no Crit Chance, Partial Cover -25% damage, Ambush Crit ×1.50
     assert.equal(r.hit, undefined);

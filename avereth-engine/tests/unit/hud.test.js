@@ -57,7 +57,7 @@ test('Character HUD: every value comes from the state and changes the moment the
     c = char(g);
     assert.equal(c.Level, '2 Ranger · Power Rank F · Guild Rank Novice');
     assert.equal(c.Resources, 'HP 80/85 (lightly wounded) · MP 60/60 · STA 100/100 · XP 20/200'); // Level-up does not refill (Core #3)
-    assert.equal(c.Stats, 'STR 5 · VIT 5 · AGI 7 · INT 5 · PER 7 · WIL 5 · Free Stat Points 5');
+    assert.equal(c.Stats, 'STR 5 · VIT 5 · AGI 6 · INT 5 · PER 6 · WIL 5 · Free Stat Points 5');
 });
 
 test('Guild Rank is institutional: a report may set a Guild Rank, never one above what the Power Rank allows', () => {

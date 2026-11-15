@@ -1,6 +1,6 @@
 # Avereth Engine – verbindlicher Design-Kanon
 
-**Stand 13.11.2026 · geltende Spielregeln mit NPC E3, dem PULSE-Reisehalt (`.181`), Monster A1/A2 (`.184`/`.186`) und der Kauf-/Zahlungsstabilisierung (`.185`).** **[VERBINDLICH]** bezeichnet geltende Regeln, **[GEPLANT]** einen noch nicht umgesetzten Beschluss, **[OFFEN]** eine unbeschlossene Option. Tatsächlicher Implementierungs-/Abnahmestand ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md), technische Detailquellen in [06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). [Ungekürzte Vorfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/55d20eaf65f521a25ea3e85cfa3390e215270683/02_DESIGN_KANON.md).
+**Stand 15.11.2026 · geltende Spielregeln mit NPC E3, dem PULSE-Reisehalt (`.181`), Monster A1/A2 (`.184`/`.186`), der Kauf-/Zahlungsstabilisierung (`.185`) und dem Orts-/Reise-/Dungeonumbau (`.190`).** **[VERBINDLICH]** bezeichnet geltende Regeln, **[GEPLANT]** einen noch nicht umgesetzten Beschluss, **[OFFEN]** eine unbeschlossene Option. Tatsächlicher Implementierungs-/Abnahmestand ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md), technische Detailquellen in [06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). [Ungekürzte Vorfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/55d20eaf65f521a25ea3e85cfa3390e215270683/02_DESIGN_KANON.md).
 
 ## 0. Aktuelle Kompatibilitätsentscheidung
 
@@ -22,6 +22,22 @@ Delivery/Escort bleiben ruhend erhalten, einschließlich echter Übergaben und f
 - **Integrität:** kein autoritativer Spielzug auf defektem Fold, kein stiller Doppelstart oder Doppelbuchung. Mechanisch gültige Handlungen dürfen nicht dauerhaft an falscher Identität, Anwesenheits- oder Inventarauflösung scheitern. Seltene fortsetzbare Erzählwidersprüche bei korrektem Zustand sind tolerierbar, dauerhafte Blockaden nicht.
 
 **Ankunft/Reise:** Nur autorisierte, bestätigte und chronologisch gültige `arrive`-Deltas bewegen den PC. Kompakte Reisen mit realen Zwischenereignissen sind erlaubt; vorgeschlagenes Ziel oder erzählte Ankunft allein ist keine Buchung. **[VERBINDLICH seit .181] Einzige Ausnahme – von PULSE angeordneter Reisehalt:** Öffnet PULSE auf einer autorisierten Reiseetappe ein Fenster (der Erzähler erhält „It is a real stop short of …“) und meldet die Antwort weder ein `arrive` noch die Ankunft eines GO, führt die Engine den PC auf der Straße des Reichs, in dem er aufgebrochen ist („On the way to …“). Gebucht wird vor der ersten lokalen Meldung, die nicht ausdrücklich am Abreiseort spielt. Nie das Ziel: am Halt keine Ankunft, Reisezeit-Untergrenze, Zielerreichung, Lieferung oder Abgabe; Mitreisende nur über die geprüften Begleiter, alle anderen bleiben, wo sie waren. Ein gemeldeter Zwischenort hat Vorrang. Geschlossenes, Szenen- oder Pausenfenster, kein GO oder ein laufender Kampf ändern nichts: Ein fehlendes `arrive` allein bewegt weiterhin niemanden. [Patchnote .181](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b9e07be1f9cbe2f2d6dff387e10587f78817eefb/avereth-engine/docs/BATCH1112_181_PULSE_ROAD_STOP.md).
+
+**[VERBINDLICH seit .190] Bewegungsnachweis und Ortsbuch** ([Patchnote .190](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/9635f722e8fb843ae65a7b271cfd3b73241e98b3/avereth-engine/docs/BUILD_190_LOCATION.md), [Technik](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/9635f722e8fb843ae65a7b271cfd3b73241e98b3/avereth-engine/docs/LOCATION_ARCHITECTURE_190.md)):
+- **Ortsbuch:** Ein bekannter Ort ist eine gültige Referenz, auch unbeworben. Andere Worte für ihn führen nur über den eigenen Namen, einen engeren Namen mit Ortsangabe in derselben Siedlung oder den Eingang eines bekannten Dungeons zu ihm. Zwei Kandidaten ergeben eine Rückfrage, nie einen dritten Ort. Eine Siedlung ist nie ihre eigene Stätte.
+- **Bewegungsnachweis:** Der GO-Schritt legt einmal fest, wohin eine Ankunft zulässig ist: Ziel, Halt auf dem bekannten Weg, Ort auf dem Weg dorthin, ein gemeldeter Halt kurz vor dem Ziel oder bei einem neuen Ziel der eine neue Ort im Umfang.
+  - **Umfang ist kein Ziel:** „Erreicht“ an einem anderen Ort derselben Stadt oder desselben Reichs ist nicht erreicht.
+  - **Tor ist nicht innen:** Ein Schritt, dessen Worte den Eingang eines Dungeons nennen, endet am Tor.
+  - Eine lokale Jagderkundung bleibt im Habitat.
+  - Ein gemeldeter Ort entsteht erst mit der zulässigen Ankunft.
+- **Teilbewegung ohne GO (D3):** nur in das Zimmer, das Alaric im selben Gebäude hält, und nur wenn er in diesem Zug dort schläft oder ruht. Bezahlen, Nähe, Händler- oder Personensuche bewegen ihn nie.
+- **Bedingtes Mitgehen gibt es nicht (D2):** „Ich folge ihr zur Halle“ ist GO. Fragen und die Zustimmung einer NPC bewegen niemanden.
+- **Abgelehnte Ankunft:**
+  - Der Spieler sieht `NOT ARRIVED — …`.
+  - Der Erzähler erhält im Kopf des Engineblocks `WHERE / TRAVEL THIS TURN / NOT HERE`.
+  - Im Modellverlauf, nur in der Promptkopie, trägt die Antwort eine Engine-Zeile.
+  - Keine automatische Neuerzeugung (D5), keine Ankunft vor der Erzählung (D6).
+- **Die Ankunftsregel oben bleibt unverändert:** Eine vereinheitlichte Ankunftsantwort je Schritt (A4) ist nicht umgesetzt (D4).
 
 **Stealth als Vorgehensweise:** Zusammenhängende schleichende Bewegung verdrängt ihr Vorhaben nicht. GO, vorbereitete Reisefortsetzung und lokaler Ein-Band-Schritt nutzen bestehende Weg-/Ankunfts-/Wahrnehmungsregeln. Detection am tatsächlich erreichten relevanten Ort gegen tatsächliche Beobachter, bei Dungeonankunft nach Population. Zielgebundenes Anschleichen gilt weder für frühere Zwischenhalte noch spätere unabhängige Züge. Kein garantierter Erfolg, freier Angriff, Tür-/Combat-Bypass oder dauerhafter Stealthmodus. Suche/Aufnahme gesondert nach [S1/S2-Fachplan](patch_plans_10b/PATCH_STEALTH_ACTION_MANNER.md).
 
@@ -85,6 +101,15 @@ Narration **Englisch, dritte Person, Vergangenheit**; Wahrnehmung/Dialog statt S
 Dungeons sind gemeinsame persistente Weltorte, keine privaten MMO-Instanzen. Gate, Etagen, Kapazität, Gegnerpopulation, Ressourcen, Bosse/Guardians und spielzeitgebundener Reset gehören zur verbindlichen Struktur. Stärke folgt Dungeon/Etage, nicht PC-Level. Engine besitzt Slotidentität, Anwesenheit, Kampf, Clear, Loot und Reset; Narrator gestaltet innerhalb dieser Fakten. Keine Pflichtfolge dreier Kämpfe oder universelle Raumstruktur.
 
 Andere Abenteurer können dieselben Gegner/Ressourcen nutzen; fremde Siege geben keinen PC-Credit. Clear folgt vorher festgelegten Bedingungen, nicht zwingend der Tötung aller Lebewesen. Gefahren dürfen tödlich sein, müssen nachvollziehbar werden. Sichere bekannte Rückwege dürfen kompakt erzählt werden, keine universellen Teleports. Gewöhnliche Höhlen sind nicht automatisch System-Dungeons. [Fachgrundlagen](patch_plans_10b/PATCH_RUN12_DUNGEON_GUILD_WORLD.md).
+
+**[VERBINDLICH seit .190] Living Dungeons als Abschnittsfolge (D1 = B5)** ([Patchnote .190](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/9635f722e8fb843ae65a7b271cfd3b73241e98b3/avereth-engine/docs/BUILD_190_LOCATION.md)):
+- **Abschnitte:** Jede Ebene ist eine feste, endliche, lineare Folge von Abschnitten der Engine, so viele wie ihre Begegnungen und deren ruhige Teile. Die Länge variiert je Dungeon und Ebene. Ein Abschnitt entsteht mit der bestätigten Ankunft, wird von der Erzählung einmal benannt und bleibt derselbe Ort bei jedem Besuch.
+- **Begegnungen:** Sie liegen in jedem Zyklus im selben Abschnitt.
+- **Ebenen:** Der Weg hinab liegt am Ende der Ebene (D1c), hinter dem Siegel, falls es eines gibt. Hinter der Spur kommt nichts (D1d). Ein Gefälle ist ein Weg weiter, keine neue Ebene.
+- **Keine Abzweige:** keine Seitenkammern (D1a), keine Schleifen.
+- **Erzählung:** Räume, Gänge, Treppen und Ebenen aus der Erzählung werden abgelehnt.
+- **Außerhalb echter Dungeons (D1b):** keine automatische Raumnavigation. Räume, versperrte Bereiche, Personen und Gegenstände bleiben, ein versperrter Weg hält Alaric draußen.
+- **Ältere Spielstände:** Ihre erzählten Räume bleiben erhalten und zählen als erste Abschnitte; Events werden nicht umgeschrieben.
 
 ## 8. Welt, Lore und organische Klassen
 

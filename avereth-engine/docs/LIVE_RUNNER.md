@@ -14,6 +14,20 @@ npm run live:st:batch -- --headed
 
 Der Batch startet **nacheinander drei neue Level-1-Kampagnen**: Guild-Warrior, Guild-Mage und Guild-Rogue.
 
+### Chat-Tarif: kurze Lesepause im natürlichen Batch
+
+**Standardmäßig 5 Sekunden Pause** nach der Entscheidung des LLM-Spielers und **vor dem Senden seiner Nachricht an SillyTavern** – für die Guild- und NPC-Batches gleichermaßen. Das verteilt Spieler- und Engine-Aufrufe etwas stärker über die Zeit. Die Spielzeit im Eventlog ändert sich nicht; eine unterbrochene oder abgebrochene Aufgabe sendet nach der Pause keine zusätzliche Nachricht.
+
+Die Pause ist konfigurierbar, etwa:
+
+```powershell
+npm run live:st:npc -- --headed                       # Standard: 5 s
+npm run live:st:npc -- --headed --read-pause-ms 8000   # 8 s
+npm run live:st:npc -- --headed --read-pause-ms 0      # Pause abschalten
+```
+
+Nur **natürliche LLM-Batches** bekommen die 5 Sekunden automatisch; normale Einzelruns, echte Handspielzüge und Stub-/Skript-Selbsttests bleiben unverändert. `--read-pause-ms` ist als Runner-Option zwischen 0 und 60.000 ms zulässig. Die Pause drosselt **nicht** die nachfolgenden SillyTavern-Rollenaufrufe `plan → narrator → extract` innerhalb desselben Spielzugs; sie garantiert deshalb weder die Einhaltung aller Provider-Ratenlimits noch Schutz vor Monatskontingenten. Pro 70 Eingaben verlängert die Standardeinstellung einen Lauf theoretisch um rund 350 Sekunden.
+
 | Schwerpunkt | Klassen |
 |---|---|
 | Offizielle Gildenquests als Hauptbeschäftigung | Warrior, Mage, Rogue |

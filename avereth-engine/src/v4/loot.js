@@ -13,6 +13,7 @@ import { hash32, slug, normText } from '../util.js';
 import { rankOf } from '../derived.js';
 import { weaponFamily } from '../content.js';
 import { valueOf as itemValue } from './items.js';
+import { specialReward } from './special_rewards.js';
 
 const ORDER = ['F', 'E', 'D', 'C', 'B', 'A', 'S'];
 /** A draw in [min, max] fixed by the fight, the foe and what is drawn. */
@@ -52,6 +53,7 @@ export function lootEvents(s, content, enc) {
     const factor = table.rank_value_factor || 3;
     const events = [];
     const lines = [];
+    const rewards = [], rewardLines = [], seen = new Set();
     const stacks = new Map(); // stack key -> {id, name, qty, ...} gathered over all foes of this fight
     const add = (key, item, qty) => {
         if (qty <= 0) return;
@@ -125,7 +127,13 @@ export function lootEvents(s, content, enc) {
                 lines.push(stone.name);
             }
         }
-        events.push({ t: 'entity.updated', d: { id: c.id, set: { looted: enc.id } } });
+        const reward = specialReward(s, content, enc, e, seen);
+        if (reward) {
+            events.push(...reward.events);
+            rewards.push({foe: c.id, ...reward.meta, objects: reward.objects.map(o => o.id)});
+            rewardLines.push(...reward.lines);
+        }
+        events.push({ t: 'entity.updated', d: { id: c.id, set: { looted: enc.id, ...(reward ? {reward: reward.meta} : {}) } } });
     }
     for (const [k, m] of stacks) {
         const base = `obj.loot.${k}`;
@@ -153,7 +161,11 @@ export function lootEvents(s, content, enc) {
         lines.push(`${coin} cp`);
     }
     for (const e of events.filter((x) => x.t === 'item.changed')) lines.push(`${content.items.get(e.d.item)?.name || e.d.item} ×${e.d.qty}`);
-    return { events, lines };
+    // Names come from actual inventory writes, never headers, comparisons, broken gear or coin text.
+    const grantNames = [...new Set(events.flatMap(e => e.t === 'object.created' ? [e.d.object.name]
+        : e.t === 'object.added' ? [s.objects[e.d.id].name]
+        : e.t === 'item.changed' ? [content.items.get(e.d.item)?.name || e.d.item] : []))];
+    return { events, lines, grantNames, rewards, rewardLines };
 }
 
 /** Patch 7.1: a looted piece of gear keeps the values it was fought with: its profile, its use as equipment. */

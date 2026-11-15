@@ -330,7 +330,7 @@ function openedLines(state, content, op) {
     } else out.push(sys(`COMBAT — ${who} ${op.ids.length > 1 ? 'join' : 'joins'} the fight (Initiative ${op.ids.map((id) => b.order.find((x) => x.id === id)?.init).join(', ')}) → Turn order: ${order}`));
     // the Turns before Alaric's first one, then the targets and positions as he meets them
     out.push(...roundLines(name, op.records || []), ...targetsLine(b), ...boardLines(state, b));
-    if (op.ended) out.push(...endLines(state, content, name, op.ended, op.levelups));
+    if (op.ended) out.push(...endLines(state, content, name, op.ended, op.levelups, op.loot, op.rewardLines));
     else if (!b.first) out.push(sys(`Next: ${name('pc')}'s Turn (Round ${b.round})`));
     else {
         const pre = b.first.ambush ? `${name(b.first.ambush)}'s Opening Action (Ambush), then ` : '';
@@ -433,7 +433,7 @@ function combatLines(state, content, o) {
     const changed = (o.started && !o.started.previewed) || o.started?.joined || records.some((r) => r.escaped || r.kind === 'surrender' || (r.strikes || []).some((x) => x.defeated));
     if (b && !o.ended && changed) out.push(...targetsLine(b));
     if (b) out.push(...boardLines(state, b));
-    if (o.ended) out.push(...endLines(state, content, name, o.ended, o.levelups, o.loot));
+    if (o.ended) out.push(...endLines(state, content, name, o.ended, o.levelups, o.loot, o.rewardLines));
     else if (o.next) {
         out.push(sys(`Next: ${o.next}`));
         if (state.encounter?.current === 'pc') out.push(...optionsLine(state, content));
@@ -455,7 +455,7 @@ function roundLines(name, records) {
     return out;
 }
 
-function endLines(state, content, name, e, levelups = [], loot = null) {
+function endLines(state, content, name, e, levelups = [], loot = null, rewardLines = []) {
     const fates = [...e.defeated.map((id) => `${name(id)} defeated`), ...e.escaped.filter((id) => id !== 'pc').map((id) => `${name(id)} escaped`)];
     if (e.pc_dead) fates.push(`${name('pc')} is dead`);
     if (e.pc_escaped) fates.push(`${name('pc')} escaped`);
@@ -467,7 +467,7 @@ function endLines(state, content, name, e, levelups = [], loot = null) {
     const pp = (e.pp || []).map((p) => sys(progressText({ ...p, name: skillOf(content, p.skill, state)?.name || p.skill })));
     // Patch 9C-1: the Learning Progress the fight gave a learning goal (src/v4/growth.js)
     const lp = (e.lp || []).map((l) => sys(`LEARNING +${l.lp} LP ${l.goal} → ${l.total}/${l.need}${l.total >= l.need ? ' (complete)' : ''}`));
-    return [sys(`COMBAT END${fates.length ? ` — ${fates.join(', ')}` : ''}${xp}`), ...got, ...pp, ...lp, ...levelups.map((lv) => sys(`LEVEL UP → ${lv} (+5 free Stat Points) · spend them with #assign <STAT> <n>, e.g. #assign INT 3 WIL 2`))];
+    return [sys(`COMBAT END${fates.length ? ` — ${fates.join(', ')}` : ''}${xp}`), ...got, ...rewardLines.map(sys), ...pp, ...lp, ...levelups.map((lv) => sys(`LEVEL UP → ${lv} (+5 free Stat Points) · spend them with #assign <STAT> <n>, e.g. #assign INT 3 WIL 2`))];
 }
 
 /** Patch 9B-1: one Skill's Proficiency Progress: "+18 PP Razor Cut → P1 18/75", a promotion named. */

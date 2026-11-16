@@ -6,7 +6,7 @@ import { installDraftActions } from './src/ui_actions.js';
 import { configure, content, foldChat } from './gm/engine.js';
 import { VERSION, copy, digest } from './gm/util.js';
 import { FileStore, Journal } from './gm/storage.js';
-import { Scheduler } from './gm/scheduler.js';
+import { Scheduler, requestDiagnostics } from './gm/scheduler.js';
 import { Host, Publication, sameTranscript } from './gm/host.js';
 import { DynamicGM } from './gm/runtime.js';
 import { createTransport } from './gm/transport.js';
@@ -18,7 +18,7 @@ const meta = () => context().chatMetadata?.averethGMAlpha;
 const active = () => !!meta();
 const card = () => context().characters?.[context().characterId]?.data?.extensions?.avereth_gm_alpha === 1;
 const relevant = () => active() || card();
-function status(text) { const el=document.querySelector('#gm-alpha-status'); if(el)el.textContent=text; const d=document.querySelector('#gm-alpha-diagnostics');if(d&&scheduler){const l=scheduler.ledger.read();d.textContent=JSON.stringify({physicalRequests:(l.closedRequests||0)+Object.values(l.leases).filter(x=>x.status!=='not_dispatched').length,requests:[...(l.diagnostics||[]),...Object.values(l.leases).map(x=>x.diagnostic||{id:x.id,status:x.status,sentAt:x.sentAt})].slice(-20)},null,2);} }
+function status(text) { const el=document.querySelector('#gm-alpha-status'); if(el)el.textContent=text; const d=document.querySelector('#gm-alpha-diagnostics');if(d&&scheduler){const l=scheduler.ledger.read();d.textContent=JSON.stringify({physicalRequests:(l.closedRequests||0)+Object.values(l.leases).filter(x=>x.status!=='not_dispatched').length,requests:requestDiagnostics(l).slice(-20)},null,2);} }
 function failed(error) { lastError=error.message; status(`Angehalten: ${error.message}`); console.warn('[Avereth GM Alpha]',error.message); }
 function compatible() {
     if (!navigator.locks) throw Error('Web Locks unavailable: use localhost or HTTPS in a current browser');

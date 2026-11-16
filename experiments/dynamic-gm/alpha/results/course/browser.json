@@ -1,0 +1,643 @@
+{
+  "checks": [
+    {
+      "name": "Importable Chat Completion preset through actual ST file import",
+      "pass": true,
+      "requests": 0
+    },
+    {
+      "name": "Installed extension: real imported card, creation, HUD, #status, native send capture; zero model calls",
+      "pass": true,
+      "requests": 0
+    },
+    {
+      "name": "Normal NPC talk + memory, confirmed DOM, reload and recall without original dialogue",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Travel known_move via two actual ST backend requests",
+      "pass": true,
+      "requests": 2
+    },
+    {
+      "name": "Travel forest200 via two actual ST backend requests",
+      "pass": true,
+      "requests": 2
+    },
+    {
+      "name": "Not reached: actual arrival remains original place",
+      "pass": true,
+      "requests": 2
+    },
+    {
+      "name": "Compound take then needs-go; NPC retains key=false",
+      "pass": true,
+      "requests": 2
+    },
+    {
+      "name": "Compound take then needs-go; NPC retains key=true",
+      "pass": true,
+      "requests": 2
+    },
+    {
+      "name": "NPC gift + genuine continuation, one transfer, new promise, reload no duplicates",
+      "pass": true,
+      "requests": 2
+    },
+    {
+      "name": "Stop during pending request: no early story; late receipt permits explicit resume",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Chat save failure http cannot publish; receipt resumes",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Chat save failure silent cannot publish; receipt resumes",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Chat switch during model request never writes/displays in another chat",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "ST masks 429: one request, unknown capacity blocks, explicit confirmed retry only",
+      "pass": true,
+      "requests": 2
+    },
+    {
+      "name": "Malformed JSON cannot advance state or appear as narration",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Swipe / regenerate refused by actual controls and interceptor",
+      "pass": true,
+      "requests": 0
+    },
+    {
+      "name": "Unbudgeted Text Completion is refused before dispatch",
+      "pass": true,
+      "requests": 0
+    },
+    {
+      "name": "Combat: recorded w191 #65 Heavy Slash resolved by .200 engine; receipt cannot reroll",
+      "pass": true,
+      "requests": 2
+    },
+    {
+      "name": "Local timeout with unknown remote holds 4 units; late completion needs explicit resume",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Reload after world commit before host save: durable ST file recovery, no model repeat",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Journal save fails before commit: no visible world; acknowledged answer reused",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Same-origin second tab cannot execute while first owns global Web Lock",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Course: original guild input \u2192 promise \u2192 gift/use \u2192 return without original dialogue",
+      "pass": true,
+      "requests": 12
+    },
+    {
+      "name": "Course: bad world corrected once; rejected draft never published",
+      "pass": true,
+      "requests": 2
+    },
+    {
+      "name": "Course: #system uses one private answer, not the internal context",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Known semantic gap: omitted promise and invented consent still pass free prose (NOT a protection success)",
+      "pass": true,
+      "requests": 1
+    }
+  ],
+  "course": [
+    {
+      "name": "guild",
+      "origin": "Alpha-2 failed personal run: original input and first GO response (SHA256 88473ff644d59a292042d412a93f64dd746ca39f56d9642f3e4e9f699872ba3c)",
+      "input": "*i walk into the city ahead of me and make my way over to the adventurers guild*",
+      "physicalRequests": 2,
+      "fullPromptCharacters": [
+        62810,
+        47480
+      ],
+      "diagnostics": [
+        {
+          "id": "ec7f7973-cd71-4712-867c-b242bade068b:1:8ed163a5-2cc4-4dcc-abf9-2b09b9a664bc:gm:1:attempt:1",
+          "phase": "gm:1",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 16069,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 20677,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "complete_json",
+          "durationMs": 17
+        },
+        {
+          "id": "719afc21-55a8-4d6f-99aa-ac5c44992534:1:86b068cf-2504-47c2-a286-b9302988d372:gm:0:attempt:1",
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 19707,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 24315,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "rejected_complete",
+          "error": "Ung\u00fcltige strukturierte JSON-Antwort (ggf. Reasoning im Content); keine automatische Reparatur",
+          "durationMs": 23
+        }
+      ]
+    },
+    {
+      "name": "promise",
+      "origin": "User 02, 05.11.2026 original user row 56; adapted preceding scene, no invented completed purchase",
+      "input": "no worries the drink is on me. ill only expect a few good tips and tricks from a veteran guild worker. haha *i say laughing*",
+      "physicalRequests": 1,
+      "fullPromptCharacters": [
+        64527
+      ],
+      "diagnostics": [
+        {
+          "id": "719afc21-55a8-4d6f-99aa-ac5c44992534:1:86b068cf-2504-47c2-a286-b9302988d372:gm:0:attempt:1",
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 19707,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 24315,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "rejected_complete",
+          "error": "Ung\u00fcltige strukturierte JSON-Antwort (ggf. Reasoning im Content); keine automatische Reparatur",
+          "durationMs": 23
+        }
+      ]
+    },
+    {
+      "name": "gift",
+      "origin": "Synthetic NPC initiative / existing consumable control",
+      "input": "Do you have a healing potion you could spare?",
+      "physicalRequests": 1,
+      "fullPromptCharacters": [
+        65274
+      ],
+      "diagnostics": [
+        {
+          "id": "719afc21-55a8-4d6f-99aa-ac5c44992534:1:86b068cf-2504-47c2-a286-b9302988d372:gm:0:attempt:1",
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 19707,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 24315,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "rejected_complete",
+          "error": "Ung\u00fcltige strukturierte JSON-Antwort (ggf. Reasoning im Content); keine automatische Reparatur",
+          "durationMs": 23
+        }
+      ]
+    },
+    {
+      "name": "use",
+      "origin": "Synthetic supported mechanical action, including canonical-reference alias",
+      "input": "I drink the healing potion.",
+      "physicalRequests": 2,
+      "fullPromptCharacters": [
+        63707,
+        46834
+      ],
+      "diagnostics": [
+        {
+          "id": "ec7f7973-cd71-4712-867c-b242bade068b:1:8ed163a5-2cc4-4dcc-abf9-2b09b9a664bc:gm:1:attempt:1",
+          "phase": "gm:1",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 16069,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 20677,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "complete_json",
+          "durationMs": 17
+        },
+        {
+          "id": "719afc21-55a8-4d6f-99aa-ac5c44992534:1:86b068cf-2504-47c2-a286-b9302988d372:gm:0:attempt:1",
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 19707,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 24315,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "rejected_complete",
+          "error": "Ung\u00fcltige strukturierte JSON-Antwort (ggf. Reasoning im Content); keine automatische Reparatur",
+          "durationMs": 23
+        }
+      ]
+    },
+    {
+      "name": "leave",
+      "origin": "Synthetic known movement",
+      "input": "I go outside into Alderwatch.",
+      "physicalRequests": 2,
+      "fullPromptCharacters": [
+        63426,
+        47761
+      ],
+      "diagnostics": [
+        {
+          "id": "ec7f7973-cd71-4712-867c-b242bade068b:1:8ed163a5-2cc4-4dcc-abf9-2b09b9a664bc:gm:1:attempt:1",
+          "phase": "gm:1",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 16069,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 20677,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "complete_json",
+          "durationMs": 17
+        },
+        {
+          "id": "719afc21-55a8-4d6f-99aa-ac5c44992534:1:86b068cf-2504-47c2-a286-b9302988d372:gm:0:attempt:1",
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 19707,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 24315,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "rejected_complete",
+          "error": "Ung\u00fcltige strukturierte JSON-Antwort (ggf. Reasoning im Content); keine automatische Reparatur",
+          "durationMs": 23
+        }
+      ]
+    },
+    {
+      "name": "streets",
+      "origin": "Synthetic ordinary observation; no mechanical success",
+      "input": "I look at the streets.",
+      "physicalRequests": 1,
+      "fullPromptCharacters": [
+        62413
+      ],
+      "diagnostics": [
+        {
+          "id": "719afc21-55a8-4d6f-99aa-ac5c44992534:1:86b068cf-2504-47c2-a286-b9302988d372:gm:0:attempt:1",
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 19707,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 24315,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "rejected_complete",
+          "error": "Ung\u00fcltige strukturierte JSON-Antwort (ggf. Reasoning im Content); keine automatische Reparatur",
+          "durationMs": 23
+        }
+      ]
+    },
+    {
+      "name": "return",
+      "origin": "Synthetic return to an established place and person",
+      "input": "I return to the Guild hall.",
+      "physicalRequests": 2,
+      "fullPromptCharacters": [
+        61751,
+        48072
+      ],
+      "diagnostics": [
+        {
+          "id": "ec7f7973-cd71-4712-867c-b242bade068b:1:8ed163a5-2cc4-4dcc-abf9-2b09b9a664bc:gm:1:attempt:1",
+          "phase": "gm:1",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 16069,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 20677,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "complete_json",
+          "durationMs": 17
+        },
+        {
+          "id": "719afc21-55a8-4d6f-99aa-ac5c44992534:1:86b068cf-2504-47c2-a286-b9302988d372:gm:0:attempt:1",
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 19707,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 24315,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "rejected_complete",
+          "error": "Ung\u00fcltige strukturierte JSON-Antwort (ggf. Reasoning im Content); keine automatische Reparatur",
+          "durationMs": 23
+        }
+      ]
+    },
+    {
+      "name": "recall",
+      "origin": "Synthetic recall probe; original promise prose has fallen outside the last six messages",
+      "input": "What did you want to show me?",
+      "physicalRequests": 1,
+      "fullPromptCharacters": [
+        63563
+      ],
+      "diagnostics": [
+        {
+          "id": "719afc21-55a8-4d6f-99aa-ac5c44992534:1:86b068cf-2504-47c2-a286-b9302988d372:gm:0:attempt:1",
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 19707,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 24315,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "rejected_complete",
+          "error": "Ung\u00fcltige strukturierte JSON-Antwort (ggf. Reasoning im Content); keine automatische Reparatur",
+          "durationMs": 23
+        }
+      ]
+    }
+  ],
+  "pageErrors": [],
+  "physicalMockRequests": 42,
+  "browser": "156.0.8078.79",
+  "nativeFeatherless": "unbudgeted Text Completion rejected before dispatch",
+  "allOtherTransport": "actual ST backend -> loopback mock",
+  "trace": [
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+  ],
+  "diagnosticNote": "Complete host regression before the chronological UI diagnostic fix: the course[].diagnostics values below are STALE, not measurements of those course requests. Correct wire-matched diagnostics are in browser-course.json. All host/state assertions remain valid."
+}

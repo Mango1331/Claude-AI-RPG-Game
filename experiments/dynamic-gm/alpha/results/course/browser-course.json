@@ -1,0 +1,537 @@
+{
+  "checks": [
+    {
+      "name": "Importable Chat Completion preset through actual ST file import",
+      "pass": true,
+      "requests": 0
+    },
+    {
+      "name": "Installed extension: real imported card, creation, HUD, #status, native send capture; zero model calls",
+      "pass": true,
+      "requests": 0
+    },
+    {
+      "name": "Course: original guild input → promise → gift/use → return without original dialogue",
+      "pass": true,
+      "requests": 12
+    },
+    {
+      "name": "Course: bad world corrected once; rejected draft never published",
+      "pass": true,
+      "requests": 2
+    },
+    {
+      "name": "Course: #system uses one private answer, not the internal context",
+      "pass": true,
+      "requests": 1
+    }
+  ],
+  "course": [
+    {
+      "name": "guild",
+      "origin": "Alpha-2 failed personal run: original input and first GO response (SHA256 88473ff644d59a292042d412a93f64dd746ca39f56d9642f3e4e9f699872ba3c)",
+      "input": "*i walk into the city ahead of me and make my way over to the adventurers guild*",
+      "physicalRequests": 2,
+      "fullPromptCharacters": [
+        62810,
+        47480
+      ],
+      "diagnostics": [
+        {
+          "id": "8be56cfb-d2f6-42f3-b4f3-ebb5aeffee8e:1:ddfad4a8-4e4b-4f07-afe3-a13106858e52:gm:0:attempt:1",
+          "startedAt": 1794868284220,
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 14187,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 18795,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "complete_json",
+          "durationMs": 57
+        },
+        {
+          "id": "8be56cfb-d2f6-42f3-b4f3-ebb5aeffee8e:1:ddfad4a8-4e4b-4f07-afe3-a13106858e52:gm:1:attempt:1",
+          "startedAt": 1794868284770,
+          "phase": "gm:1",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 10749,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 15357,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "complete_json",
+          "durationMs": 25
+        }
+      ]
+    },
+    {
+      "name": "promise",
+      "origin": "User 02, 05.11.2026 original user row 56; adapted preceding scene, no invented completed purchase",
+      "input": "no worries the drink is on me. ill only expect a few good tips and tricks from a veteran guild worker. haha *i say laughing*",
+      "physicalRequests": 1,
+      "fullPromptCharacters": [
+        64527
+      ],
+      "diagnostics": [
+        {
+          "id": "8be56cfb-d2f6-42f3-b4f3-ebb5aeffee8e:2:cc8a4d4a-ce2c-4291-8da0-a3233a2f4314:gm:0:attempt:1",
+          "startedAt": 1794868285867,
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 14612,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 19220,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "complete_json",
+          "durationMs": 19
+        }
+      ]
+    },
+    {
+      "name": "gift",
+      "origin": "Synthetic NPC initiative / existing consumable control",
+      "input": "Do you have a healing potion you could spare?",
+      "physicalRequests": 1,
+      "fullPromptCharacters": [
+        65274
+      ],
+      "diagnostics": [
+        {
+          "id": "8be56cfb-d2f6-42f3-b4f3-ebb5aeffee8e:3:a840ee89-ff45-4ae2-89ab-9cb4599f3f89:gm:0:attempt:1",
+          "startedAt": 1794868286925,
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 14809,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 19417,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "complete_json",
+          "durationMs": 19
+        }
+      ]
+    },
+    {
+      "name": "use",
+      "origin": "Synthetic supported mechanical action, including canonical-reference alias",
+      "input": "I drink the healing potion.",
+      "physicalRequests": 2,
+      "fullPromptCharacters": [
+        63707,
+        46834
+      ],
+      "diagnostics": [
+        {
+          "id": "8be56cfb-d2f6-42f3-b4f3-ebb5aeffee8e:4:b061ca9b-e07e-45c8-b6db-46da5e423889:gm:0:attempt:1",
+          "startedAt": 1794868287995,
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 14376,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 18984,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "complete_json",
+          "durationMs": 19
+        },
+        {
+          "id": "8be56cfb-d2f6-42f3-b4f3-ebb5aeffee8e:4:b061ca9b-e07e-45c8-b6db-46da5e423889:gm:1:attempt:1",
+          "startedAt": 1794868288653,
+          "phase": "gm:1",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 10563,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 15171,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "complete_json",
+          "durationMs": 17
+        }
+      ]
+    },
+    {
+      "name": "leave",
+      "origin": "Synthetic known movement",
+      "input": "I go outside into Alderwatch.",
+      "physicalRequests": 2,
+      "fullPromptCharacters": [
+        63426,
+        47761
+      ],
+      "diagnostics": [
+        {
+          "id": "8be56cfb-d2f6-42f3-b4f3-ebb5aeffee8e:5:b67c1902-1928-4cc6-8d88-0e389df1e35e:gm:0:attempt:1",
+          "startedAt": 1794868289650,
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 14307,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 18915,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "complete_json",
+          "durationMs": 18
+        },
+        {
+          "id": "8be56cfb-d2f6-42f3-b4f3-ebb5aeffee8e:5:b67c1902-1928-4cc6-8d88-0e389df1e35e:gm:1:attempt:1",
+          "startedAt": 1794868290087,
+          "phase": "gm:1",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 10777,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 15385,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "complete_json",
+          "durationMs": 14
+        }
+      ]
+    },
+    {
+      "name": "streets",
+      "origin": "Synthetic ordinary observation; no mechanical success",
+      "input": "I look at the streets.",
+      "physicalRequests": 1,
+      "fullPromptCharacters": [
+        62413
+      ],
+      "diagnostics": [
+        {
+          "id": "8be56cfb-d2f6-42f3-b4f3-ebb5aeffee8e:6:d170142e-a4cc-47e2-b89a-eca95879f89f:gm:0:attempt:1",
+          "startedAt": 1794868291177,
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 14046,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 18654,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "complete_json",
+          "durationMs": 15
+        }
+      ]
+    },
+    {
+      "name": "return",
+      "origin": "Synthetic return to an established place and person",
+      "input": "I return to the Guild hall.",
+      "physicalRequests": 2,
+      "fullPromptCharacters": [
+        61751,
+        48072
+      ],
+      "diagnostics": [
+        {
+          "id": "8be56cfb-d2f6-42f3-b4f3-ebb5aeffee8e:7:ae452744-95be-4fbd-a410-db297dc050d5:gm:0:attempt:1",
+          "startedAt": 1794868292629,
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 13890,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 18498,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "complete_json",
+          "durationMs": 34
+        },
+        {
+          "id": "8be56cfb-d2f6-42f3-b4f3-ebb5aeffee8e:7:ae452744-95be-4fbd-a410-db297dc050d5:gm:1:attempt:1",
+          "startedAt": 1794868293300,
+          "phase": "gm:1",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 10865,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 15473,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "complete_json",
+          "durationMs": 17
+        }
+      ]
+    },
+    {
+      "name": "recall",
+      "origin": "Synthetic recall probe; original promise prose has fallen outside the last six messages",
+      "input": "What did you want to show me?",
+      "physicalRequests": 1,
+      "fullPromptCharacters": [
+        63563
+      ],
+      "diagnostics": [
+        {
+          "id": "8be56cfb-d2f6-42f3-b4f3-ebb5aeffee8e:8:343b58f5-4aa6-47f5-ace3-5949919e371e:gm:0:attempt:1",
+          "startedAt": 1794868294761,
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 100,
+          "completionTokens": 20,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 14363,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 18971,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "complete_json",
+          "durationMs": 102
+        }
+      ]
+    }
+  ],
+  "pageErrors": [],
+  "physicalMockRequests": 15,
+  "browser": "156.0.8078.79",
+  "nativeFeatherless": "unbudgeted Text Completion rejected before dispatch",
+  "allOtherTransport": "actual ST backend -> loopback mock",
+  "trace": []
+}

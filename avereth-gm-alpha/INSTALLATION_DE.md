@@ -2,6 +2,8 @@
 
 Testversion **4.3.0-gm.alpha.2**, mechanischer Kern unverändert **.200**. Für einen **neuen Testchat**, nicht für laufende Kampagnen. Keine automatische Migration. Im Spiel werden nur SillyTavern und dessen bereits eingerichtete Modellverbindung benötigt. Keine Codex-, Playwright- oder zusätzliche Node-Anwendung, kein zusätzlicher API-Key.
 
+**Kurskorrektur-Kandidat vom 16.11.2026:** Der aktuelle Repositoryordner enthält den begrenzten Durchstich Gildenreise → NPC-Gedächtnis → Gegenstandsgebrauch → Wiedersehen. Nur für die gesondert freizugebende kurze natürliche Probe; keine breite neue Alpha-Auslieferung. Das ältere `releases/Avereth-GM-Alpha-2.zip` enthält diesen Nachtrag nicht. Zum gezielten Aktualisieren den vollständigen aktuellen Ordner `avereth-gm-alpha/` aus dem Kurskorrekturcommit verwenden und danach einen **neuen** Testchat beginnen. Bericht und Testanleitung liegen im Repository unter `experiments/dynamic-gm/KURSKORREKTUR_SPIELBOGEN_2026-11-16.md` und `NATUERLICHER_SPIELBOGEN_KANDIDAT_2026-11-16.md`.
+
 ## Installation
 
 1. SillyTavern schließen und die eigene ST-Datenwurzel sichern. Das Alpha-Paket enthält **keine** Einstellungen oder Zugangsdaten; keine eigenen Dateien durch Testdaten ersetzen.
@@ -32,7 +34,7 @@ Testversion **4.3.0-gm.alpha.2**, mechanischer Kern unverändert **.200**. Für 
 4. Danach frei spielen. **GM senden**, der normale Sendepfeil und Enter benutzen im GM-Chat denselben gesicherten GM-Pfad. Shift+Enter fügt eine neue Zeile ein. Während der Generierung bleibt die Erzählung unsichtbar; erst bestätigte Weltpersistenz und Chat-Read-back geben sie frei.
 5. HUD: **Charakter und Welt im GM-Panel** sowie unter bestätigten Antworten. Die Daten stammen aus Engineevents. Systembefehle wie `#help`, `#status`, `#inventory`, `#skills` und die bestehenden Enginebefehle über dasselbe Eingabefeld senden. HUD-Aktionsbuttons bereiten nur eine editierbare Eingabe vor.
 
-Für Alpha 1 **eine ST-Sitzung / ein Browserprofil** und keine parallele externe Provideranfrage benutzen. Die Alpha serialisiert ihre eigenen Anfragen über alle Alpha-Chats und gleichoriginige Tabs. Andere Geräte, Browserprofile, fremde Extensions und externe Anbieter-Sessions kann sie nicht global sperren. Automatisch generierende Extensions im Testchat deaktivieren. Keine Gruppen-Chats.
+Für diesen Teststand **eine ST-Sitzung / ein Browserprofil** und keine parallele externe Provideranfrage benutzen. Die Alpha serialisiert ihre eigenen Anfragen über alle Alpha-Chats und gleichoriginige Tabs. Andere Geräte, Browserprofile, fremde Extensions und externe Anbieter-Sessions kann sie nicht global sperren. Automatisch generierende Extensions im Testchat deaktivieren. Keine Gruppen-Chats.
 
 ## Stop, Fehler und Wiederaufnahme
 
@@ -40,6 +42,7 @@ Für Alpha 1 **eine ST-Sitzung / ein Browserprofil** und keine parallele externe
 - Nach Fehler oder Reload zuerst den **ursprünglichen Chat** öffnen, dann **Wiederaufnehmen**. Bereits erhaltene Antworten, berechnete Mechanik und bestätigte Saves werden wiederverwendet. Ein anderer Chat, eine kopierte Kampagne oder extern veränderter Text wird zurückgewiesen.
 - Nach lokalem Timeout bleibt die Kapazität gesperrt. Eine noch ankommende bestätigte Antwort kann sie freigeben. Nach Browserverlust kann der Remoteabschluss offen bleiben. **Remoteabschluss bestätigen…** nur verwenden, wenn die Anfrage beim Anbieter wirklich beendet ist; bloßes Warten oder Drücken von Stop ist kein Beleg. Anschließend separat wiederaufnehmen. Höchstens zwei ausdrücklich gestartete Versuche derselben Anfrage; keine automatische Retryserie.
 - Ein unveröffentlichter, noch nicht committeter Zug mit bestätigtem Remoteabschluss kann über **Offenen Zug verwerfen** verworfen werden. Seine Eingabe kehrt ins Textfeld zurück. Einen bereits committeten Zug nicht verwerfen: Wiederaufnahme veröffentlicht dessen gespeicherten Abschluss.
+- Ein fachlich ungültiger GM-Vorschlag erhält höchstens einen gezielten automatischen Korrekturrequest. Bereits vorbereitete Effekte werden dabei wiederverwendet. Ist auch die Korrektur ungültig, hält der Zug sichtbar an; Resume wiederholt ihn nicht endlos. Dann Fehler prüfen und gegebenenfalls den unveröffentlichten Zug verwerfen. Transport-/Save-/Hostfehler lösen keine solche Modellkorrektur aus.
 - **Swipe, Regenerate, Continue, Edit und Löschen** im Alpha-Chat sind vorerst gesperrt. Keine alternativen Geschichten über eine bereits bestätigte Welt legen. Fremde Extensions können ST intern dennoch mutieren; der nächste Alpha-Schritt erkennt abweichenden Text/Ereignisstand und hält an.
 
 ## Speicherung und Rückkehr zu .200
@@ -52,7 +55,7 @@ Siehe [LIMITATIONS.md](LIMITATIONS.md) und den [Browser-Abnahmebericht](abnahme/
 
 ## Kontext und Diagnose in Alpha 2
 
-Ein mitgelieferter lokaler GLM-Tokenizer zählt alle System-/Usernachrichten einschließlich Schemas, Memory, Toolergebnissen und Chattemplate. Es gilt Input + 4096 Ausgabe (auch Reasoning) + 512 Reserve ≤ 32768. Keine Schätzung aus Zeichen/4, keine Provideranfrage zum Zählen. Das gebündelte WASM/Tokenizerartefakt wird einmal lokal geladen; das Paket ist dadurch größer. Bei Überlauf hält die Alpha vor Dispatch an, ohne Memory zu kürzen. Aktuelle große Kampagnen können deshalb einen kontrollierten Halt erreichen; Schemaverdichtung folgt separat. Ein anderer Featherless-Servingstand kann abweichen; lokale Zählung und gemeldete Provider-Usage sind getrennt.
+Ein mitgelieferter lokaler GLM-Tokenizer zählt alle System-/Usernachrichten einschließlich Schemas, Memory, Toolergebnissen und Chattemplate. Es gilt Input + 4096 Ausgabe (auch Reasoning) + 512 Reserve ≤ 32768. Keine Schätzung aus Zeichen/4, keine Provideranfrage zum Zählen. Das gebündelte WASM/Tokenizerartefakt wird einmal lokal geladen; das Paket ist dadurch größer. Bei Überlauf hält die Alpha vor Dispatch an, ohne Memory zu kürzen. Der Kurskorrektur-Kandidat teilt wiederholte Schemadefinitionen verlustfrei; große Kampagnen können trotzdem einen kontrollierten Halt erreichen. Ein anderer Featherless-Servingstand kann abweichen; lokale Zählung und gemeldete Provider-Usage sind getrennt.
 
 Unter „Wiederherstellung und Hilfe → Requestdiagnose“ stehen die letzten verfügbaren Requestdaten, Phase, Modell, Dauer, Abschlussgrund und Tokenwerte. Fehlende Werte sind `null`, keine berechneten Providertokenzahlen. Gespeichert werden bis zu 100 abgeschlossene Diagnosen; die Oberfläche zeigt die jüngsten 20. Kein Reasoningtext, keine Auth-Header oder Schlüssel. „Show thoughts aus“ schaltet GLM-Reasoning nicht ab. Fehlerhüllen können von ST verändert werden; insbesondere ein maskierter 429 bleibt konservativ „Remoteabschluss unbekannt“.
 

@@ -1,5 +1,7 @@
 # Dynamischer GM – isolierter Werkzeugvertrag
 
+**Aktueller Arbeitsstand: begrenzte Kurskorrektur nach Alpha 2.** [Implementierung und Abnahme des Spielbogens](KURSKORREKTUR_SPIELBOGEN_2026-11-16.md), [vorbereitete natürliche Probe](NATUERLICHER_SPIELBOGEN_KANDIDAT_2026-11-16.md). Der Alpha-Adapter liegt unter `alpha/`, das daraus gebaute Testverzeichnis unter `avereth-gm-alpha/`. Keine neue breite Alpha-Freigabe und keine natürlichen Aufrufe in diesem Nachtrag. Die folgenden Abschnitte dokumentieren auch frühere Prototypstufen; deren ursprüngliche Dateien bleiben als Vergleich erhalten.
+
 Aktiver Branch ausschließlich `experiment/dynamic-gm-model`. Produktbasis bleibt `.200` / `0cd1480`; dieser Nachtrag baut auf `c7622605419855233a305b9c1c5c2b039c28ddf8` auf. Keine Produktintegration, kein natürlicher Modelllauf. Die [Rollenentscheidung auf main](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/recherche/ARCHITEKTUR_NEUBEWERTUNG_LLM_SPIELLEITER_ENGINE_2026-11-16.md) bleibt Grundlage.
 
 Vom Repositoryroot (Node 24):

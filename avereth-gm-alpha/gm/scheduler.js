@@ -1,5 +1,11 @@
 import { digest, copy } from './util.js';
 
+export function requestDiagnostics(ledger) {
+    return [...(ledger.diagnostics||[]),...Object.values(ledger.leases||{}).map(l=>
+        l.diagnostic?{...l.diagnostic,startedAt:l.diagnostic.startedAt||l.sentAt}:{id:l.id,status:l.status,startedAt:l.sentAt})]
+        .sort((a,b)=>(a.startedAt||0)-(b.startedAt||0));
+}
+
 // One global lease ledger for ALL Alpha chats in this ST profile. Caller holds the
 // Web Lock for the complete execution, including all domain/tool continuations.
 export class Scheduler {

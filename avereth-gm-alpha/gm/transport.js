@@ -19,7 +19,7 @@ export function createTransport(context, status = () => {}) {
     };
     const transport=async ({id='direct',messages,prepared,diagnose=async()=>{}}) => {
         const p=prepared || await prepare({messages}),start=Date.now();
-        const info={id,phase:id.includes(':engine:')?id.split(':engine:')[1].split(':attempt:')[0]:id.includes(':gm:')?'gm:'+id.split(':gm:')[1].split(':attempt:')[0]:'direct',model:MODEL,dispatched:true,parameters:{temperature:p.body.temperature,top_p:p.body.top_p,max_tokens:p.body.max_tokens,stream:false,n:1,chat_template_kwargs:{reasoning_effort:'low',clear_thinking:true}},finishReason:null,promptTokens:null,completionTokens:null,reasoningTokens:null,separateReasoning:false,budget:p.budget};
+        const info={id,startedAt:start,phase:id.includes(':engine:')?id.split(':engine:')[1].split(':attempt:')[0]:id.includes(':gm:')?'gm:'+id.split(':gm:')[1].split(':attempt:')[0]:'direct',model:MODEL,dispatched:true,parameters:{temperature:p.body.temperature,top_p:p.body.top_p,max_tokens:p.body.max_tokens,stream:false,n:1,chat_template_kwargs:{reasoning_effort:'low',clear_thinking:true}},finishReason:null,promptTokens:null,completionTokens:null,reasoningTokens:null,separateReasoning:false,budget:p.budget};
         status('Modellanfrage · GLM Low · Ausgabe zurückgehalten');
         try {
             const response=await fetch('/api/backends/chat-completions/generate',{method:'POST',headers:context().getRequestHeaders(),body:JSON.stringify(p.body)});

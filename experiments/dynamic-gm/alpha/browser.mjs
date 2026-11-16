@@ -1,7 +1,8 @@
 import fs from 'node:fs';import http from 'node:http';import assert from 'node:assert/strict';import {createRequire} from 'node:module';import zlib from 'node:zlib';import {createHash} from 'node:crypto';import {fileURLToPath} from 'node:url';
 import {fixtures} from '../../architecture201/fixtures.mjs';import {foldChat,rec} from '../../architecture201/engine.mjs';
+import {courseBase,courseSteps,potion} from './course-fixtures.mjs';
 const {chromium}=createRequire(import.meta.url)('playwright');
-const root='/workspace/avereth-setup/gm-alpha2-host',out=new URL('./results/',import.meta.url);fs.mkdirSync(out,{recursive:true});
+const root='/workspace/avereth-setup/gm-alpha2-host',out=new URL(process.env.GM_COURSE_CHECK?'./results/course/':'./results/',import.meta.url);fs.mkdirSync(out,{recursive:true});
 let answers=[],mode='ok',calls=0,release=null;const wire=[];
 async function respond(body,res) {
  calls++;wire.push({model:body.model,stream:body.stream,messages:body.messages,prompt:body.prompt});
@@ -12,7 +13,7 @@ async function respond(body,res) {
 }
 const mock=http.createServer(async(req,res)=>{let b='';for await(const x of req)b+=x;if(req.url.includes('completions'))await respond(JSON.parse(b),res);else{res.setHeader('Content-Type','application/json');res.end(JSON.stringify({data:[{id:'zai-org/GLM-5.3-Flash'}]}));}});await new Promise(r=>mock.listen(5143,'127.0.0.1',r));
 const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']}),browserContext=await browser.newContext(),page=await browserContext.newPage();page.setDefaultTimeout(20000);
-const errors=[],checks=[],trace=[];let avatar;
+const errors=[],checks=[],trace=[],course=[];let avatar;
 page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')trace.push(m.text());});
 await page.route('**/*',r=>{const u=new URL(r.request().url());if(!['127.0.0.1','localhost'].includes(u.hostname)&&u.protocol!=='data:')return r.abort();return r.continue();});
 await page.route('**/api/backends/text-completions/status',r=>r.fulfill({status:200,contentType:'application/json',body:'{"result":"mock-featherless"}'}));
@@ -35,7 +36,7 @@ async function setup(x) {
 }
 async function send(x,list){answers=structuredClone(list);const before=calls;await page.evaluate(input=>AverethGMAlpha.send(input),x.input);return calls-before;}
 async function state(){return page.evaluate(()=>AverethGMAlpha.state());}
-async function check(name,fn){const before=calls;try{await fn();checks.push({name,pass:true,requests:calls-before});console.log('PASS',name);}catch(e){checks.push({name,pass:false,requests:calls-before,error:e.stack});console.log('FAIL',name,e.message);await page.screenshot({path:new URL(`failure-${checks.length}.png`,out).pathname});mode='ok';release?.();release=null;}}
+async function check(name,fn){if(process.env.GM_COURSE_ONLY&&!/^(Course:|Importable|Installed)/.test(name))return;const before=calls;try{await fn();checks.push({name,pass:true,requests:calls-before});console.log('PASS',name);}catch(e){checks.push({name,pass:false,requests:calls-before,error:e.stack});console.log('FAIL',name,e.message);await page.screenshot({path:new URL(`failure-${checks.length}.png`,out).pathname});mode='ok';release?.();release=null;}}
 try{
  await page.goto('http://127.0.0.1:8139/',{waitUntil:'networkidle'});
  await page.waitForTimeout(1000);await page.evaluate(()=>{const n=document.querySelector('dialog[open] input[type=text]');if(n){n.value='Alaric';n.dispatchEvent(new Event('input',{bubbles:true}));}document.querySelectorAll('dialog[open] .popup-button-ok').forEach(b=>b.click());});await ready();
@@ -155,6 +156,38 @@ try{
   const second=await page.context().newPage();await second.goto('http://127.0.0.1:8139/',{waitUntil:'networkidle'});
   const got=await second.evaluate(()=>navigator.locks.request('avereth-gm-alpha-global',{ifAvailable:true},lock=>!!lock));assert.equal(got,false);await second.close();mode='ok';release();release=null;await pending;
  });
+ if(process.env.GM_COURSE_CHECK) {
+ await check('Course: original guild input → promise → gift/use → return without original dialogue',async()=>{
+  await setup({base:courseBase()});
+  for(const step of courseSteps()) {
+   const before=await state(),offset=wire.length;
+   const count=await send(step,step.answers(before));
+   const after=await state();
+   const sent=wire.slice(offset);
+   const diagnostics=await page.evaluate(n=>JSON.parse(document.querySelector('#gm-alpha-diagnostics').textContent).requests.slice(-n),count);
+   const budgets=await page.evaluate(async messages=>{const {measureBudget}=await import('/scripts/extensions/third-party/avereth-gm-alpha/gm/budget.js');return Promise.all(messages.map(m=>measureBudget(m)));},sent.map(x=>x.messages));
+   assert.deepEqual(diagnostics.map(d=>d.budget.localInputTokens),budgets.map(b=>b.localInputTokens),'UI diagnostics must belong to these wire requests, not older failed attempts');
+   course.push({name:step.name,origin:step.origin,input:step.input,physicalRequests:count,fullPromptCharacters:sent.map(x=>JSON.stringify(x.messages).length),diagnostics});
+   if(step.name==='use'){assert.ok(after.entities.pc.sheet.hp>before.entities.pc.sheet.hp);assert.ok(!potion(after));}
+   if(step.name==='recall'){
+    const p=JSON.parse(sent[0].messages[1].content);assert.ok(p.recentDialogue.every(m=>!m.text.includes('Next time you return')));assert.match(p.engineContext,/safer path/);
+    assert.equal(Object.values(after.threads).find(t=>t.text.includes('safer path')).status,'resolved');
+   }
+  }
+  assert.deepEqual(course.map(x=>x.physicalRequests),[2,1,1,2,2,1,2,1]);
+  const saved=await state(),name=await page.evaluate(()=>SillyTavern.getContext().chatId);await page.reload({waitUntil:'networkidle'});await ready();await select();await page.evaluate(n=>SillyTavern.getContext().openCharacterChat(n),name);assert.deepEqual(await state(),saved);
+ });
+ await check('Course: bad world corrected once; rejected draft never published',async()=>{
+  const x=f('npc_promise');await setup(x);const a=structuredClone(finish(x));a.world.scene='unknown.place';a.narration='REJECTED DRAFT';
+  assert.equal(await send(x,[a,finish(x)]),2);assert.doesNotMatch(await page.locator('#chat').innerText(),/REJECTED DRAFT/);
+  assert.equal((await page.evaluate(()=>AverethGMAlpha.inspect())).journal.world.revision,1);
+ });
+ await check('Course: #system uses one private answer, not the internal context',async()=>{
+  await setup({base:courseBase()});const before=await state();
+  assert.equal(await send({input:'#system Explain Basic Attack.'},[{op:'answer',text:'SYSTEM ANSWER: Basic Attack follows the supplied weapon and class formula.'}]),1);
+  assert.match(await page.locator('#chat').innerText(),/SYSTEM ANSWER/);const after=await state();assert.deepEqual(after.rng,before.rng);assert.deepEqual(after.clock,before.clock);
+ });
+ }
  await check('Known semantic gap: omitted promise and invented consent still pass free prose (NOT a protection success)',async()=>{
   const x=f('npc_promise');await setup(x);x.narration='Wat promised to bring a silver bell tomorrow. Alaric agreed to pay for it.';x.world.deltas=[];
   await send(x,[finish(x)]);assert.match(await page.locator('#chat').innerText(),/silver bell/);assert.ok(!Object.values((await state()).threads).some(t=>t.text.includes('silver bell')));
@@ -162,4 +195,4 @@ try{
  await page.screenshot({path:new URL('alpha-installed.png',out).pathname,fullPage:true});
  fs.writeFileSync(root+'/restart-checkpoint.json',JSON.stringify({avatar,chatId:await page.evaluate(()=>SillyTavern.getContext().chatId),stateHash:createHash('sha256').update(JSON.stringify(await state())).digest('hex')}));
 }catch(e){checks.push({name:'setup',pass:false,error:e.stack});console.log('SETUP FAIL',e.stack);await page.screenshot({path:new URL('setup-failure.png',out).pathname});}
-finally{fs.writeFileSync(new URL('browser.json',out),JSON.stringify({checks,pageErrors:errors,physicalMockRequests:calls,browser:browser.version(),nativeFeatherless:'unbudgeted Text Completion rejected before dispatch',allOtherTransport:'actual ST backend -> loopback mock',trace},null,2));await browser.close();mock.close();console.log(JSON.stringify({pass:checks.filter(x=>x.pass).length,total:checks.length,pageErrors:errors}));if(checks.some(x=>!x.pass)||errors.length)process.exitCode=1;}
+finally{fs.writeFileSync(new URL(process.env.GM_COURSE_ONLY?'browser-course.json':'browser.json',out),JSON.stringify({checks,course,pageErrors:errors,physicalMockRequests:calls,browser:browser.version(),nativeFeatherless:'unbudgeted Text Completion rejected before dispatch',allOtherTransport:'actual ST backend -> loopback mock',trace},null,2));await browser.close();mock.close();console.log(JSON.stringify({pass:checks.filter(x=>x.pass).length,total:checks.length,pageErrors:errors}));if(checks.some(x=>!x.pass)||errors.length)process.exitCode=1;}

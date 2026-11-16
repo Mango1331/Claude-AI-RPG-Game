@@ -81,6 +81,8 @@ test('missing potion use and typed invented consent are blocked',async()=>{
  const x=fixture('npc_promise'),last=x.base.findLast(m=>m.extra?.avereth?.events),at=foldChat(x.base).state.scene.at;
  last.extra.avereth.events.push({t:'object.created',d:{object:{id:'obj.potion',name:'healing potion',kind:'item',qty:1,holder:{entity:'pc'},effect:'heal',marks:[]}}});
  x.input='I drink the healing potion.';const h=await harness(x);
- await assert.rejects(h.g.run('t',script([{op:'finish',narration:'Wat smiled.',world:{scene:at,expected:{},deltas:[]}}])),/unresolved player action/);
- const y=fixture('npc_promise'),z=await harness(y);await assert.rejects(z.g.run('t',script([{...finish(y),speech:[{id:'consent',speaker:'pc',text:'I agree.',to:['npc.wat']}]}])),/unauthorized PC/);
+ const omitted={op:'finish',narration:'Wat smiled.',world:{scene:at,expected:{},deltas:[]}};
+ await assert.rejects(h.g.run('t',script([omitted,omitted])),/unresolved player action/);
+ const y=fixture('npc_promise'),z=await harness(y),consent={...finish(y),speech:[{id:'consent',speaker:'pc',text:'I agree.',to:['npc.wat']}]};
+ await assert.rejects(z.g.run('t',script([consent,consent])),/unauthorized PC/);
 });

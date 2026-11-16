@@ -8,7 +8,7 @@ fs.mkdirSync(out,{recursive:true});
 for(const dir of ['src','content'])fs.cpSync(path.join(engine,dir),path.join(out,dir),{recursive:true});
 fs.mkdirSync(path.join(out,'gm'),{recursive:true});
 fs.cpSync(path.join(source,'tokenizer'),path.join(out,'tokenizer'),{recursive:true});
-for(const name of ['util.js','storage.js','scheduler.js','engine.js','runtime.js','transport.js','host.js','budget.js','request-policy.js'])fs.copyFileSync(path.join(source,name),path.join(out,'gm',name));
+for(const name of ['util.js','storage.js','scheduler.js','engine.js','runtime.js','transport.js','host.js','budget.js','request-policy.js','interface.js','player.js'])fs.copyFileSync(path.join(source,name),path.join(out,'gm',name));
 let contract=fs.readFileSync(path.join(root,'experiments/dynamic-gm/contract.mjs'),'utf8')
  .replaceAll('../../avereth-engine/src/','../src/').replaceAll('../architecture201/journal.mjs','./util.js').replaceAll('../architecture201/engine.mjs','./engine.js');
 fs.writeFileSync(path.join(out,'gm/contract.js'),contract);

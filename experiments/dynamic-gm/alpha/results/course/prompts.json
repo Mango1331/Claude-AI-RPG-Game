@@ -1,0 +1,213 @@
+{
+  "note": "Synthetic model answers; exact local GLM counts, not provider usage/latency or natural quality. Baseline is first prompt only: its actual recorded GO fails there.",
+  "baselineCommit": "815461e",
+  "firstGuildPrompt": {
+    "baseline": {
+      "characters": 28603,
+      "localInputTokens": 5959,
+      "outputReserve": 4096,
+      "templateReserve": 512,
+      "context": 32768,
+      "total": 10567,
+      "method": "pinned GLM tokenizer/template; not provider usage"
+    },
+    "candidate": {
+      "characters": 62810,
+      "localInputTokens": 14187,
+      "outputReserve": 4096,
+      "templateReserve": 512,
+      "context": 32768,
+      "total": 18795,
+      "method": "pinned GLM tokenizer/template; not provider usage"
+    },
+    "candidateWithoutSchemaFactoring": {
+      "characters": 108747,
+      "localInputTokens": 25451,
+      "outputReserve": 4096,
+      "templateReserve": 512,
+      "context": 32768,
+      "total": 30059,
+      "method": "pinned GLM tokenizer/template; not provider usage"
+    }
+  },
+  "steps": [
+    {
+      "name": "guild",
+      "requests": [
+        {
+          "id": "guild:gm:0:attempt:1",
+          "characters": 62810,
+          "localInputTokens": 14187,
+          "outputReserve": 4096,
+          "templateReserve": 512,
+          "context": 32768,
+          "total": 18795,
+          "method": "pinned GLM tokenizer/template; not provider usage"
+        },
+        {
+          "id": "guild:gm:1:attempt:1",
+          "characters": 47480,
+          "localInputTokens": 10749,
+          "outputReserve": 4096,
+          "templateReserve": 512,
+          "context": 32768,
+          "total": 15357,
+          "method": "pinned GLM tokenizer/template; not provider usage"
+        }
+      ],
+      "revision": 1,
+      "scene": "loc.alderwatch.guild_hall"
+    },
+    {
+      "name": "promise",
+      "requests": [
+        {
+          "id": "promise:gm:0:attempt:1",
+          "characters": 64527,
+          "localInputTokens": 14612,
+          "outputReserve": 4096,
+          "templateReserve": 512,
+          "context": 32768,
+          "total": 19220,
+          "method": "pinned GLM tokenizer/template; not provider usage"
+        }
+      ],
+      "revision": 2,
+      "scene": "loc.alderwatch.guild_hall"
+    },
+    {
+      "name": "gift",
+      "requests": [
+        {
+          "id": "gift:gm:0:attempt:1",
+          "characters": 65274,
+          "localInputTokens": 14809,
+          "outputReserve": 4096,
+          "templateReserve": 512,
+          "context": 32768,
+          "total": 19417,
+          "method": "pinned GLM tokenizer/template; not provider usage"
+        }
+      ],
+      "revision": 3,
+      "scene": "loc.alderwatch.guild_hall"
+    },
+    {
+      "name": "use",
+      "requests": [
+        {
+          "id": "use:gm:0:attempt:1",
+          "characters": 63707,
+          "localInputTokens": 14376,
+          "outputReserve": 4096,
+          "templateReserve": 512,
+          "context": 32768,
+          "total": 18984,
+          "method": "pinned GLM tokenizer/template; not provider usage"
+        },
+        {
+          "id": "use:gm:1:attempt:1",
+          "characters": 46834,
+          "localInputTokens": 10563,
+          "outputReserve": 4096,
+          "templateReserve": 512,
+          "context": 32768,
+          "total": 15171,
+          "method": "pinned GLM tokenizer/template; not provider usage"
+        }
+      ],
+      "revision": 4,
+      "scene": "loc.alderwatch.guild_hall"
+    },
+    {
+      "name": "leave",
+      "requests": [
+        {
+          "id": "leave:gm:0:attempt:1",
+          "characters": 63426,
+          "localInputTokens": 14307,
+          "outputReserve": 4096,
+          "templateReserve": 512,
+          "context": 32768,
+          "total": 18915,
+          "method": "pinned GLM tokenizer/template; not provider usage"
+        },
+        {
+          "id": "leave:gm:1:attempt:1",
+          "characters": 47761,
+          "localInputTokens": 10777,
+          "outputReserve": 4096,
+          "templateReserve": 512,
+          "context": 32768,
+          "total": 15385,
+          "method": "pinned GLM tokenizer/template; not provider usage"
+        }
+      ],
+      "revision": 5,
+      "scene": "loc.alderwatch"
+    },
+    {
+      "name": "streets",
+      "requests": [
+        {
+          "id": "streets:gm:0:attempt:1",
+          "characters": 62413,
+          "localInputTokens": 14046,
+          "outputReserve": 4096,
+          "templateReserve": 512,
+          "context": 32768,
+          "total": 18654,
+          "method": "pinned GLM tokenizer/template; not provider usage"
+        }
+      ],
+      "revision": 6,
+      "scene": "loc.alderwatch"
+    },
+    {
+      "name": "return",
+      "requests": [
+        {
+          "id": "return:gm:0:attempt:1",
+          "characters": 61751,
+          "localInputTokens": 13890,
+          "outputReserve": 4096,
+          "templateReserve": 512,
+          "context": 32768,
+          "total": 18498,
+          "method": "pinned GLM tokenizer/template; not provider usage"
+        },
+        {
+          "id": "return:gm:1:attempt:1",
+          "characters": 48072,
+          "localInputTokens": 10865,
+          "outputReserve": 4096,
+          "templateReserve": 512,
+          "context": 32768,
+          "total": 15473,
+          "method": "pinned GLM tokenizer/template; not provider usage"
+        }
+      ],
+      "revision": 7,
+      "scene": "loc.alderwatch.guild_hall"
+    },
+    {
+      "name": "recall",
+      "requests": [
+        {
+          "id": "recall:gm:0:attempt:1",
+          "characters": 63563,
+          "localInputTokens": 14363,
+          "outputReserve": 4096,
+          "templateReserve": 512,
+          "context": 32768,
+          "total": 18971,
+          "method": "pinned GLM tokenizer/template; not provider usage"
+        }
+      ],
+      "revision": 8,
+      "scene": "loc.alderwatch.guild_hall"
+    }
+  ],
+  "totalRequests": 12,
+  "totalLocalInputTokens": 157544
+}

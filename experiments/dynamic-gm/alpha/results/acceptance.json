@@ -1,0 +1,23 @@
+{
+  "version": "4.3.0-gm.alpha.1",
+  "node": {
+    "passed": 11,
+    "failed": 0
+  },
+  "browser": {
+    "technical_cases_passed": 21,
+    "semantic_counterexamples_confirmed": 1,
+    "harness_failure": "Preset local URL path used %20; fixed and separately verified",
+    "preset_import_checks_passed": 2,
+    "server_restart_checks_passed": 1,
+    "pageErrors": 0,
+    "mock_provider_http_requests": 27,
+    "intercepted_native_featherless_requests": 1,
+    "native_ui_workflow_passed": true,
+    "technical_successful_checks_total": 25
+  },
+  "natural_provider_requests": 0,
+  "technical_acceptance": "passed with recorded separate preset recheck",
+  "natural_quality": "not tested",
+  "product_200_changes": false
+}

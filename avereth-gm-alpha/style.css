@@ -1,0 +1,184 @@
+.avereth-settings .avereth-row { display: flex; gap: 0.5em; align-items: center; margin: 0.25em 0; }
+.avereth-settings input[type="number"] { width: 6em; }
+.avereth-settings textarea { width: 100%; min-height: 12em; font-family: monospace; font-size: 0.8em; }
+.avereth-settings .avereth-status { font-family: monospace; font-size: 0.85em; white-space: pre-wrap; }
+/* Runtime V3 player HUD under each reply (src/hud.js): rendered from the engine state, display only. SillyTavern
+   prefixes classes inside messages with "custom-" (DOMPurify hook), so both spellings are styled. */
+.mes_text details.avereth-hud, .mes_text details.custom-avereth-hud { margin: 0.35em 0 0; border: 1px solid var(--SmartThemeBorderColor, #555); border-radius: 6px; padding: 0.2em 0.6em; font-size: 0.85em; opacity: 0.9; }
+.mes_text details.avereth-hud summary, .mes_text details.custom-avereth-hud summary { cursor: pointer; font-family: monospace; }
+.mes_text .avereth-hud-body, .mes_text .custom-avereth-hud-body { font-family: monospace; line-height: 1.45; padding: 0.3em 0 0.2em; }
+
+
+/* Engine-owned System output above narration. Keep it visually separate from prose without the old row of
+   individual inline-code boxes. SillyTavern may prefix message classes with "custom-"; substring selectors cover both. */
+.mes_text [class*="avereth-system-panel"] {
+  margin: 0 0 0.7em;
+  border: 1px solid var(--SmartThemeBorderColor, #555);
+  border-left-width: 3px;
+  border-radius: 7px;
+  padding: 0.45em 0.6em;
+  background: var(--SmartThemeBlurTintColor, rgba(0,0,0,0.28));
+  font-family: monospace;
+  font-size: 0.88em;
+  line-height: 1.35;
+}
+.mes_text [class*="avereth-system-line"] {
+  display: block;
+  padding: 0.12em 0;
+  overflow-wrap: anywhere;
+}
+.mes_text [class*="avereth-system-heading"] { font-weight: 700; padding-top: 0.28em; }
+.mes_text [class*="avereth-system-warning"] {
+  font-weight: 700;
+  border-left: 2px solid var(--SmartThemeQuoteColor, currentColor);
+  padding-left: 0.5em;
+  margin: 0.18em 0;
+}
+.mes_text [class*="avereth-system-state"] { font-weight: 600; }
+.mes_text [class*="avereth-system-info"] { opacity: 0.92; }
+
+/* Active combat replaces the two generic folded HUDs with one always-open tactical view. */
+.mes_text details[class*="avereth-combat-hud"] {
+  margin-top: 0.55em;
+  opacity: 1;
+}
+.mes_text details[class*="avereth-combat-hud"] > summary {
+  font-weight: 700;
+  padding: 0.15em 0;
+}
+.mes_text [class*="avereth-combat-body"] {
+  font-family: monospace;
+  padding: 0.45em 0 0.2em;
+}
+.mes_text [class*="avereth-combat-resources"],
+.mes_text [class*="avereth-combat-meta"] {
+  padding: 0.28em 0;
+  overflow-wrap: anywhere;
+}
+.mes_text [class*="avereth-combat-table"] {
+  margin: 0.35em 0;
+  border-top: 1px solid var(--SmartThemeBorderColor, #555);
+  border-bottom: 1px solid var(--SmartThemeBorderColor, #555);
+}
+.mes_text [class*="avereth-combat-row"] {
+  display: grid;
+  grid-template-columns: minmax(10em, 2fr) minmax(4.8em, 0.65fr) minmax(6em, 0.75fr) minmax(4.8em, 0.65fr);
+  gap: 0.6em;
+  align-items: center;
+  padding: 0.28em 0.15em;
+  border-top: 1px solid color-mix(in srgb, var(--SmartThemeBorderColor, #555) 45%, transparent);
+}
+.mes_text [class*="avereth-combat-row"]:first-child { border-top: 0; }
+.mes_text [class*="avereth-combat-head"] {
+  font-weight: 700;
+  opacity: 0.78;
+}
+.mes_text [class*="avereth-combat-name"] { font-weight: 700; }
+.mes_text [class*="avereth-combat-subhead"] {
+  padding: 0.35em 0.15em 0.2em;
+  border-top: 1px solid var(--SmartThemeBorderColor, #555);
+  font-weight: 700;
+  opacity: 0.72;
+  font-size: 0.92em;
+}
+.mes_text [class*="avereth-combat-visible-row"] {
+  opacity: 0.86;
+}
+.mes_text [class*="avereth-range"] {
+  display: inline-block;
+  min-width: 5.2em;
+  text-align: center;
+  border: 1px solid var(--SmartThemeBorderColor, #666);
+  border-radius: 999px;
+  padding: 0.02em 0.42em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.mes_text [class*="avereth-range-engaged"] {
+  border-width: 2px;
+  text-decoration: underline;
+  text-underline-offset: 0.14em;
+}
+.mes_text [class*="avereth-skill-range"] { white-space: nowrap; }
+.mes_text [class*="avereth-turn-arrow"] { opacity: 0.65; padding: 0 0.12em; }
+.mes_text [class*="avereth-combat-empty"] { padding: 0.45em 0.15em; opacity: 0.75; }
+
+@media (max-width: 700px) {
+  .mes_text [class*="avereth-combat-row"] {
+    grid-template-columns: minmax(0, 1.65fr) 4.4em 5.6em 4.4em;
+    gap: 0.35em;
+    font-size: 0.94em;
+  }
+  .mes_text [class*="avereth-range"] { min-width: 0; width: 100%; box-sizing: border-box; }
+}
+
+
+/* Patch 10A: readable combat cards on narrow chat panes. The System-message CSS is unchanged. */
+.mes_text [class*="avereth-combat-other-row"] { opacity: 0.9; }
+@media (max-width: 480px) {
+  .mes_text [class*="avereth-combat-row"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.24em 0.45em;
+    padding: 0.4em 0.15em;
+  }
+  .mes_text [class*="avereth-combat-head"] { display: none; }
+  .mes_text [class*="avereth-combat-name"] { grid-column: 1 / -1; overflow-wrap: anywhere; }
+  .mes_text [class*="avereth-combat-hp"]::before { content: "HP "; font-size: 0.86em; opacity: 0.8; }
+  .mes_text [class*="avereth-combat-range"]::before { content: "Range "; display: block; font-size: 0.86em; opacity: 0.8; }
+  .mes_text [class*="avereth-combat-cover"]::before { content: "Cover "; display: block; font-size: 0.86em; opacity: 0.8; }
+}
+.mes_text [class*="avereth-skill-unusable"] { opacity: 0.55; }
+.mes_text [class*="avereth-skill-cost"] { opacity: 0.8; white-space: nowrap; }
+.mes_text [class*="avereth-skill-short"] { font-style: italic; white-space: nowrap; }
+
+/* User01 QoL: native details, no click handlers or hidden state. */
+:is(.avereth-board, .custom-avereth-board) { margin: .7em 0; }
+:is(.avereth-board, .custom-avereth-board) h4 { margin: .25em 0; }
+:is(.avereth-board-card, .custom-avereth-board-card) { border: 1px solid var(--SmartThemeBorderColor, #777); border-radius: .4em; padding: .65em; margin: .5em 0; overflow-wrap: anywhere; }
+:is(.avereth-board-card, .custom-avereth-board-card) header { display: flex; justify-content: space-between; gap: .5em; flex-wrap: wrap; }
+:is(.avereth-board-card, .custom-avereth-board-card) header span { font-size: .9em; }
+:is(.avereth-board-card, .custom-avereth-board-card) p { font-size: .9em; margin: .4em 0; }
+:is(.avereth-board-card, .custom-avereth-board-card) details { font-size: .85em; }
+:is(.avereth-board-card, .custom-avereth-board-card) summary { cursor: pointer; }
+:is(.avereth-awareness, .custom-avereth-awareness) { display: block; font-size: .78em; opacity: .85; }
+@media (max-width: 540px) { :is(.avereth-combat-name, .custom-avereth-combat-name) { overflow-wrap: anywhere; } :is(.avereth-board-card, .custom-avereth-board-card) { padding: .5em; } }
+
+/* .161: scoped composer drafts and compact cards; ST may prefix rendered classes with custom-. */
+.mes_text :is(.avereth-draft, .custom-avereth-draft) {
+  color: inherit; background: rgba(127, 127, 127, .10); border: 1px solid var(--SmartThemeBorderColor, #777);
+  border-radius: .3em; padding: .25em .5em; font: inherit; font-size: .82em; line-height: 1.3;
+  cursor: pointer; white-space: normal; overflow-wrap: anywhere; max-width: 100%;
+}
+.mes_text :is(.avereth-draft, .custom-avereth-draft):hover { background: rgba(127, 127, 127, .22); }
+.mes_text :is(.avereth-draft, .custom-avereth-draft):focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.mes_text :is(.avereth-board-card, .custom-avereth-board-card) header { align-items: start; }
+.mes_text :is(.avereth-board-card, .custom-avereth-board-card) header strong { flex: 1 1 12em; min-width: 0; }
+.mes_text :is(.avereth-board-meta, .custom-avereth-board-meta) { font-size: .88em; margin-top: .3em; opacity: .9; }
+.mes_text :is(.avereth-board-card, .custom-avereth-board-card) details div { margin-top: .35em; line-height: 1.4; }
+.mes_text :is(.avereth-ground, .custom-avereth-ground) { margin-top: .4em; }
+.mes_text :is(.avereth-ground, .custom-avereth-ground) ul { padding: 0; margin: .25em 0 0; list-style: none; }
+.mes_text :is(.avereth-ground-item, .custom-avereth-ground-item) { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: .5em; padding: .2em 0; }
+.mes_text :is(.avereth-ground-item, .custom-avereth-ground-item) > span { overflow-wrap: anywhere; }
+.mes_text :is(.avereth-combat-help, .custom-avereth-combat-help) { font-size: .85em; line-height: 1.4; margin: .35em 0; }
+.mes_text :is(.avereth-combat-hud, .custom-avereth-combat-hud) { container-type: inline-size; container-name: avereth-combat; }
+.mes_text :is(.avereth-hud-body, .custom-avereth-hud-body),
+.mes_text :is(.avereth-system-line, .custom-avereth-system-line) { overflow-wrap: anywhere; }
+@container avereth-combat (max-width: 420px) {
+  .mes_text [class*="avereth-combat-head"] { display: none; }
+  .mes_text [class*="avereth-combat-row"] { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); }
+  .mes_text [class*="avereth-combat-name"] { grid-column: 1 / -1; overflow-wrap: anywhere; }
+  .mes_text [class*="avereth-combat-hp"]::before { content: "HP "; }
+  .mes_text [class*="avereth-combat-range"]::before { content: "Range "; }
+  .mes_text [class*="avereth-combat-cover"]::before { content: "Cover "; }
+}
+@media (max-width: 700px) {
+  /* Range table cells fill their columns; inline skill badges leave room for their AoE label. */
+  .mes_text [class*="avereth-skill-range"] [class*="avereth-range"] { width: auto; min-width: 4.2em; }
+}
+
+#gm-alpha-panel { margin: 4px 10px; padding: 8px; border: 1px solid #71856c; border-radius: 8px; background: var(--SmartThemeBlurTintColor, #222); font-size: .9em; }
+#gm-alpha-panel summary { cursor: pointer; font-weight: bold; }
+.gm-alpha-buttons { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+#gm-alpha-panel button { padding: 4px 9px; border-radius: 5px; color: inherit; background: var(--SmartThemeBlurTintColor, #333); border: 1px solid #888; cursor: pointer; }
+#gm-alpha-status { white-space: pre-wrap; overflow-wrap: anywhere; }
+#gm-alpha-panel a { margin-left: 8px; }

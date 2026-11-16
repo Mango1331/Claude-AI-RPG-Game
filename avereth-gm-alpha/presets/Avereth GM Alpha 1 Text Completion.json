@@ -1,0 +1,12 @@
+{
+  "temp": 0.8,
+  "top_p": 0.95,
+  "top_k": 40,
+  "min_p": 0,
+  "rep_pen": 1.05,
+  "freq_pen": 0,
+  "presence_pen": 0,
+  "do_sample": true,
+  "streaming": false,
+  "seed": -1
+}

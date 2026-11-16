@@ -1,0 +1,1059 @@
+// Engine facade — the whole API a host (SillyTavern extension, tests, CLI) needs:
+//
+//   startCampaign(content, {seed, firstMessage})      -> events            (stored with the first message)
+//   playerTurn(state, content, input, {msg})          -> {events, outcome, command, state}   (stored with the user message)
+//   turnContext(state, content, {...})                -> {text, sections, tokens}           (injected into the prompt)
+//   narratorReply(state, content, replyText, {msg})   -> {events, clean, corrections, ...}  (stored with the reply)
+//
+// State is never stored: it is fold(events) over the chat. Every roll is drawn from the counter-based Dice, so
+// re-running a turn from the same state (swipe/regenerate) yields the same results — dice are never rerolled.
+import { Dice, newSeed } from './rng.js';
+import { applyEvent, fold } from './state.js';
+import { anchorFor, templateFor, locationByName, weaponFamily, startPlace, itemEffectOf, rulesetOf, rulesetDef, npcTemplate, skillOf } from './content.js';
+import { checkProgress, restoration, defineSkill } from './skills.js';
+import { signatureSkill } from './skill_composer.js';
+import { skillCostAmount, passiveTotals, effectiveStats } from './passives.js';
+import { rankRefusal, itemProfile } from './v4/items.js';
+import { deriveCharacter, actionsOf } from './derived.js';
+import { selectClass, selectSkills } from './creation.js';
+import { scaleCreature, chooseCreatureLevel, humanSheet } from './npcgen.js';
+import { initEncounter, addCombatant, runCombat, endEncounterEvents, terminal } from './combat.js';
+import { parseIntent } from './intent.js';
+import { runCommands, creationPanel } from './commands.js';
+import { stealthEvents, resolveCheck } from './checks.js';
+import { extractReport, reportToEvents, isGroupCreature } from './delta.js';
+import { truth, knows, perceivers, entityLabel, playerLabel, setFactEvents, PC_NAME_FACT, PC_LOOK_FACT } from './knowledge.js';
+import { buildContext } from './context.js';
+import { targetQuestion } from './display.js';
+import { parseCoin } from './economy.js';
+import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, roundHalfUp, ENGINE_VERSION } from './util.js';
+import { seedPlaces, lineage, populationAt, encounterArea, namesYoung } from './v4/domain.js';
+import { rankAt, dungeonOf, trueDungeonOf } from './v4/dungeon.js';
+import { syncEvents, levelSpan, livingOf } from './v4/living.js';
+import { attackTargetHere, tacticalHere, areaCaught, areaBand, approachedBy, sideOf, burstCaught, skillAreaTarget } from './v4/scene_handles.js';
+import { lootEvents, speciesName } from './v4/loot.js';
+import { groupJoiners } from './v4/group_combat.js';
+import { featureEvent } from './v4/features.js';
+
+const GROUP_RE = /\b(?:everyone|everybody|all of you|you all|the (?:group|room|crowd|table|company)|(?:to|at|toward|towards) them)\b/i;
+const SELF_INTRO_RE = /\b(?:(?:my )?name(?:'s| is)|i am|i'?m|call me|they call me)\s+alaric\b/i; // "Name is Alaric" (Test 5 run 2)
+const HOLD_RE = /\b(?:i\s+)?(?:wait|hold (?:my )?(?:position|ground|fire)|do nothing|pass (?:my )?turn|end (?:my )?turn|stay put)\b/i;
+const TRADE_RE = /\b(?:buy|buys|bought|sell|sells|sold|pay|pays|paid|price|cost|costs|haggle|coin|coins|copper|silver|gold)\b/i;
+
+// ------------------------------------------------------------------------------------------------ campaign start
+/**
+ * Initial campaign events from content/campaign_start.json and the First Message's location line. runtime 'v4' starts
+ * a Runtime V4 campaign (docs/RUNTIME_V4_PLAN.md): the same start, plus the place tree and the start node.
+ */
+export function startCampaign(content, { seed = newSeed(), firstMessage = '', runtime = 'v3', planner, ruleset = content.start.ruleset || 1 } = {}) {
+    const st = content.start;
+    const m = /Location:\s*[^\n`]*?\boutside\s+([A-Z][\w' -]*?)\s*,\s*([A-Z][\w' -]*)/.exec(String(firstMessage));
+    let loc = m ? locationByName(content, m[1].trim()) : null;
+    if (!loc) loc = content.locations.get(st.start_locations[(seed >>> 0) % st.start_locations.length]);
+    const p = st.pc;
+    const sheet = {
+        level: p.level, class: p.class, stats: { ...p.stats }, skills: {}, equipment: { ...p.equipment },
+        inventory: { ...p.inventory }, coin_cp: p.coin_cp, xp: p.xp, free_points: p.free_points,
+    };
+    const dv = deriveCharacter(sheet, content);
+    Object.assign(sheet, { hp: dv.maxHp, mp: dv.maxMp, sta: dv.maxSta });
+    const at = { turn: 0, minute: st.start_scene.clock_minutes };
+    const pc = { id: 'pc', kind: 'pc', name: p.name, race: p.race, age: p.age, origin: p.origin, descriptors: p.descriptors.map((d) => d.toLowerCase()), status: 'alive', location: loc.id, sheet };
+    const facts = [
+        { id: PC_NAME_FACT, s: 'pc', p: 'name', o: p.name, visibility: 'public' },
+        { id: PC_LOOK_FACT, s: 'pc', p: 'appearance', o: p.public_facts.join('; '), visibility: 'public' },
+        ...st.initial_facts.map((f) => ({ id: `f.pc.${f.p}`, s: f.s, p: f.p, o: f.o, visibility: f.visibility })),
+    ].map((f) => ({ ...f, since: at, until: null, importance: 0.9, hard: false, source: { kind: 'campaign_start' } }));
+    const knowledge = facts.map((f) => ({ who: 'pc', about: f.id, stance: 'knows', source: 'self', ...at }));
+    const v4 = runtime === 'v4' ? seedPlaces(content, loc, startPlace(content, loc)) : null;
+    return [{
+        t: 'campaign.started',
+        d: {
+            seed: seed >>> 0, minute: at.minute, entities: [pc], location: loc.id, place: startPlace(content, loc),
+            facts, knowledge, campaign: content.manifest.id, content_version: content.manifest.version, engine_version: ENGINE_VERSION,
+            // Patch 9A: the rules this campaign plays by, for good (src/content.js rulesetOf)
+            ruleset,
+            // .83: free NPC help in new campaigns; historical start events keep their original policy.
+            private_quests: false,
+            // Patch 7.2: a V4 campaign keeps the path it started on (c: the semantic planner, the product path; a: the
+            // interpreter of Runtime V4-A), whatever the setting says later (src/v4/runtime.js campaignPath)
+            ...(v4 ? { runtime: 'v4', ...(typeof planner === 'boolean' ? { path: planner ? 'c' : 'a' } : {}), places: v4.places, at: v4.at } : {}),
+        },
+    }];
+}
+
+// ------------------------------------------------------------------------------------------------ player turn
+/**
+ * Resolve the player's message. Deterministic for a given (state, input).
+ * @returns {{events, outcome, command: null|{panels, llm}, intent, situations, state}}
+ */
+export function playerTurn(state, content, input, { msg = null, intent: parsed = null, c = false } = {}) {
+    if (!state.meta.started) throw new Error('campaign not started');
+    const s = clone(state);
+    const dice = Dice.from(s);
+    const events = [];
+    const emit = (e) => {
+        if (dice.n !== s.rng.n) e.rng_to = dice.n;
+        applyEvent(s, e);
+        events.push(e);
+    };
+    const text = String(input ?? '');
+    // the act the message's Intent IR read (src/ir.js), else read here: the same parse of the same state
+    let intent = parsed || parseIntent(text, s, content);
+    if (c && intent.kind === 'attack' && !attackTargetHere(s, intent.target)) intent = {
+        kind: 'no_target', skill: intent.skill, ref: entityLabel(s, intent.target), dead: s.entities[intent.target]?.status === 'dead',
+    };
+    if (intent.kind === 'command') {
+        const r = runCommands(s, content, text);
+        for (const e of r.events) emit(e);
+        return { events, outcome: null, command: { panels: r.panels, llm: r.llm }, intent, situations: [], state: s };
+    }
+    // in a fight, an attack whose target is unclear is the engine's question, not a story turn: nothing resolves, is
+    // rolled or spent, and the narrator is not called (live run 25.09. 01:31: "which target? Brede or Osney" went to
+    // the narrator as a story turn). The System panel lists the targets by label; the fight waits for the choice.
+    // Runtime V4 asks the same before a fight: the scene handles (Wolf A) are what the player targets (V3 unchanged)
+    if ((s.encounter || s.meta?.runtime === 'v4') && s.entities.pc.status !== 'dead' && (intent.kind === 'ambiguous_target' || intent.kind === 'no_target')) {
+        return { events, outcome: null, command: { panels: [targetQuestion(s, content, intent)], llm: null }, intent, situations: [], state: s };
+    }
+    emit({ t: 'turn.begun', d: { turn: s.turn + 1, input_hash: hash32(text), input: text.slice(0, 240) } });
+    const situations = [];
+    let outcome;
+    const creation = s.mode === 'creation' && s.entities.pc.status !== 'dead';
+    if (s.entities.pc.status === 'dead') {
+        outcome = { kind: 'note', text: 'Alaric is dead (0 HP). The campaign has ended; nothing further is resolved. (Swipe/delete messages to revise the last turn.)' };
+    } else if (creation) {
+        outcome = creationTurn(s, content, intent, emit);
+    } else {
+        outcome = storyTurn(s, content, text, intent, dice, emit, situations, c);
+    }
+    // prototype C (src/v4/planner.js): the parts of the player's message the engine did not take this turn stay visible
+    if (intent.plan_notes?.length && outcome) outcome = { ...outcome, plan_notes: intent.plan_notes };
+    // prototype C: a V3-routed turn the planner read; its fights and its reply's world applier know it (4.3.0-c.4)
+    if (c && outcome) outcome = { ...outcome, c: true };
+    if (TRADE_RE.test(text) && s.mode !== 'creation') situations.push('trade');
+    // Patch 8: a level of a Living Dungeon its fight cleared, and what follows (src/v4/living.js)
+    if (c && s.meta?.runtime === 'v4') syncEvents(s, content, emit);
+    emit({ t: 'outcome.recorded', d: { outcome, situations } });
+    // character creation is a menu: the engine answers it with a System panel, the narrator is not called
+    const command = creation ? { panels: [creationPanel(s, content, outcome)], llm: null } : null;
+    return { events, outcome, command, intent, situations, state: s };
+}
+
+function creationTurn(s, content, intent, emit) {
+    if (intent.kind === 'creation.class') {
+        const r = selectClass(s, content, intent.class);
+        if (r.errors) return { kind: 'creation.invalid', reason: r.errors.join(' ') };
+        r.events.forEach(emit);
+        return r.outcome;
+    }
+    if (intent.kind === 'creation.skills') {
+        const r = selectSkills(s, content, intent.skills);
+        if (r.errors) return { kind: 'creation.invalid', reason: r.errors.join(' '), recognized: intent.skills };
+        r.events.forEach(emit);
+        return r.outcome;
+    }
+    return { kind: 'creation.invalid', reason: intent.reason || 'not a creation choice' };
+}
+
+function storyTurn(s, content, text, intent, dice, emit, situations, c = false) {
+    const pcAction = pcActionOf(s, content, intent, text);
+    // Hotfix c.6.6.18: a thrown burst (an offensive item) strikes whom the engine fixes now, from where they stand;
+    // Patch 7.1: only an item of his Power-Rank (or one whose own profile allows him) is activated at all
+    if (pcAction?.kind === 'attack' && pcAction.item) {
+        const fx = itemEffectOf(content, s.objects?.[pcAction.item]);
+        const no = fx ? rankRefusal(content, s.entities.pc.sheet.level, fx.profile || { kind: 'attack', title: fx.name, rank: fx.rank, requires_rank: fx.requires_rank }) : null;
+        if (no) return { kind: 'note', text: `${no}. Nothing was used up, spent or rolled; nothing burns and nothing is struck.`, notice: `${fx.name}: Rank too high for him (nothing used up, nothing rolled)` };
+        pcAction.burst = burstOf(s, content, pcAction);
+    }
+    // 1) an NPC commitment reported last turn resolves first; player input cannot erase it (Core #23 PENDING)
+    const committed = (s.pending_combat || []).map((p) => p.by).filter((by) => s.entities[by] && s.entities[by].status !== 'dead' && s.scene.present.includes(by));
+    if ((s.pending_combat || []).length) emit({ t: 'combat.pending_cleared', d: {} });
+    if (committed.length) {
+        return combatTurn(s, content, dice, emit, { trigger: { actor: committed[0], target: 'pc' }, committed, pcAction, c }, situations);
+    }
+    // 2) combat: an ACTIVE encounter continues (Turns before Alaric's resolve even when his own declaration needs a
+    // target first: Testrun 3 dropped "the nearest one" silently); a declared attack starts one
+    if (s.encounter) return combatTurn(s, content, dice, emit, { pcAction, c }, situations);
+    if (pcAction?.note) return { kind: 'note', text: pcAction.note, notice: pcAction.notice };
+    if (pcAction?.kind === 'attack') {
+        // Prototype C (4.3.0-c.6.6): an area attack before a fight opens it with the visible field it is thrown into
+        const eligible = c ? new Set(tacticalHere(s, { friendly: false })) : new Set();
+        // 4.3.0-c.6.6.5: the people of a crowd it is thrown into (src/v4/runtime.js crowdIntent) are in it too
+        const field = c && Array.isArray(pcAction.field) ? pcAction.field.filter((id) => eligible.has(id) || (pcAction.crowd && s.scene.present.includes(id))) : [];
+        // Ordinary skills recruit only opponents or deliberate targets in reach; thrown items keep physical areas.
+        const caught = c ? caughtBy(s, content, pcAction) : [];
+        const committed = uniq([...field, ...caught]);
+        const sides = c && areaSkill(content, pcAction.skill, s) ? Object.fromEntries([pcAction.target, ...committed].filter(Boolean).map((id) => [id, sideOf(s, id)])) : null;
+        const item = pcAction.item ? { item: pcAction.item, burst: pcAction.burst } : {};
+        return combatTurn(s, content, dice, emit, { trigger: { actor: 'pc', target: pcAction.target, skill: pcAction.skill, move: pcAction.move, move_target: pcAction.move_target, ...(pcAction.crowd ? { field: pcAction.field, crowd: true } : {}), ...item }, committed, sides, pcAction: null, c }, situations);
+    }
+    if (pcAction?.kind === 'engage') return engagementTurn(s, content, dice, emit, pcAction.targets, { c });
+    // 3) declared stealth: opposed check (or automatic with nobody around)
+    // prototype C: a known skill used on a thing, outside a fight (in a fight runCombat resolves it as Alaric's action)
+    if (pcAction?.kind === 'ability_world') return worldUse(s, content, pcAction, dice, emit);
+    // Patch 9B-2: a heal or a restore on himself outside a fight is the engine's, as in one (src/skills.js restoration)
+    if (pcAction?.kind === 'skill' && restorative(s, content, pcAction.skill)) return selfRestore(s, content, pcAction, emit);
+    if (c && pcAction?.kind === 'skill' && skillOf(content, pcAction.skill, s)?.effects?.some(e =>
+        ['temp_def', 'temp_mdef', 'barrier', 'incoming_damage_reduction', 'damage_reduction_next', 'next_attack_buff'].includes(e.kind))) {
+        return {
+            kind: 'note',
+            text: `${skillOf(content, pcAction.skill, s)?.name || pcAction.skill}: NOT EXECUTED — this non-restorative Skill is resolved in combat only. No cost or defensive effect was applied; do not narrate it as active.`,
+            notice: 'Skill not executed outside combat (nothing spent, no effect)',
+        };
+    }
+    if (intent.kind === 'stealth') {
+        const r = stealthEvents(s, content, dice);
+        r.events.forEach(emit);
+        situations.push('stealth');
+        return { kind: 'check', check: r.check };
+    }
+    // 4) ordinary story turn: one pre-committed CHECK DIE the narrator may use for a Core #7 check
+    return { kind: 'narrative', check_die: dice.d100('check die'), flags: intent.flags || {} };
+}
+
+const restorative = (s, content, id) => !!skillOf(content, id, s)?.effects?.some((e) => e.kind === 'heal' || e.kind === 'restore');
+
+/**
+ * Patch 9B-2: a learned heal or restore used on himself outside a fight: its cost, then what it restores, booked by the
+ * same rule as in a fight; refused at no cost when he does not know it, cannot pay it or has nothing to restore.
+ */
+function selfRestore(s, content, act, emit) {
+    const sheet = s.entities.pc.sheet;
+    const skill = skillOf(content, act.skill, s);
+    const known = sheet.skills[skill.id];
+    const nothing = (why) => ({ kind: 'note', text: `${why}. Nothing was spent or restored.`, notice: `${why} (nothing spent, nothing restored)` });
+    if (!known) return nothing(`Alaric does not know ${skill.name}`);
+    const amount = skillCostAmount(content, skill, known.prof, passiveTotals(sheet, content).cost, true);
+    const res = skill.cost?.resource;
+    if (amount && Number(sheet[res] || 0) < amount) return nothing(`Alaric lacks ${res.toUpperCase()} for ${skill.name} (${sheet[res] || 0} < ${amount})`);
+    const dv = deriveCharacter(sheet, content);
+    const who = (pools) => ({ stats: effectiveStats(sheet, content), pools, max: { hp: dv.maxHp, mp: dv.maxMp, sta: dv.maxSta } });
+    const pools = { hp: sheet.hp, mp: sheet.mp, sta: sheet.sta };
+    const ahead = restoration(content, skill, known.prof, rulesetOf(s), who(pools), amount);
+    if (ahead.full) return nothing(`Alaric is at full ${ahead.resource.toUpperCase()}: ${skill.name} has nothing to restore`);
+    if (amount) {
+        pools[res] -= amount;
+        emit({ t: 'resource.changed', d: { id: 'pc', resource: res, value: pools[res], why: skill.name } });
+    }
+    const r = restoration(content, skill, known.prof, rulesetOf(s), who(pools), amount);
+    emit({ t: 'resource.changed', d: { id: 'pc', resource: r.resource, value: r.after, why: skill.name } });
+    const text = `Alaric uses ${skill.name} on himself: ${amount ? `${res.toUpperCase()} -${amount}, ` : ''}${r.resource.toUpperCase()} +${r.after - r.before} (${r.before} -> ${r.after}/${r.max}). The engine booked it; narrate exactly this, nothing more.`;
+    return { kind: 'note', text, notice: `${skill.name}: ${r.resource.toUpperCase()} +${r.after - r.before} (${r.before} -> ${r.after}/${r.max})` };
+}
+
+/**
+ * Prototype C (src/v4/planner.js): a known skill used on a thing outside a fight. The engine books the skill's cost (and
+ * arrows) and draws the pre-committed CHECK DIE of an ordinary story turn; it resolves no effect on any creature and no
+ * lasting change by itself (the narrator tells the attempt, the extractor reads the world as after any story turn).
+ */
+function worldUse(s, content, act, dice, emit) {
+    const sheet = s.entities.pc.sheet;
+    const skill = skillOf(content, act.skill, s);
+    const known = actionsOf(sheet, content, rulesetOf(s), s)[skill?.id]; // Patch 9A: a weapon attack too
+    if (!skill || !known) return { kind: 'note', text: `Alaric does not know ${skill?.name || act.skill}. Nothing was spent or rolled.`, notice: `Alaric does not know ${skill?.name || act.skill} (nothing spent, nothing rolled)` };
+    const amount = skillCostAmount(content, skill, known.prof, passiveTotals(sheet, content).cost, true); // Patch 9B-2: his Passives too
+    const res = skill.cost?.resource;
+    if (amount && Number(sheet[res] || 0) < amount) return { kind: 'note', text: `Alaric lacks ${res.toUpperCase()} for ${skill.name} (${sheet[res] || 0} < ${amount}). Nothing was spent or rolled.`, notice: `${skill.name}: not enough ${res.toUpperCase()} (${sheet[res] || 0} < ${amount}; nothing spent, nothing rolled)` };
+    // arrows as in a fight (src/combat.js): only a bow shoots them, only what he carries
+    const weapon = Object.values(sheet.equipment || {}).map((r) => (typeof r === 'string' ? content.items.get(r) : r)).find((it) => it && it.slot === 'weapon');
+    const shoots = !!skill.ammo && weapon?.family === 'bow';
+    const arrows = shoots ? Number(sheet.inventory?.[skill.ammo.item] || 0) : 0;
+    if (shoots && arrows < skill.ammo.qty) return { kind: 'note', text: `Alaric has ${arrows} arrow(s); ${skill.name} needs ${skill.ammo.qty}. Nothing was spent or rolled.`, notice: `${skill.name}: not enough arrows (nothing spent, nothing rolled)` };
+    // Patch 6: a skill on an obstacle or hazard of this place (src/v4/features.js) is the engine's check, not the story's
+    // die: the skill's own stat against the feature's difficulty, fixed before; one already made harmless or destroyed
+    // is nothing to do again (nothing spent, nothing gained)
+    const f = act.target_id && s.features?.[act.target_id]?.at === s.scene.at && !s.features[act.target_id].hidden ? s.features[act.target_id] : null;
+    if (f && ['disabled', 'destroyed'].includes(f.status)) return { kind: 'note', text: `${f.name} is ${f.status === 'destroyed' ? 'destroyed' : 'harmless'} already: ${skill.name} has nothing left to do there. Nothing was spent or rolled.`, notice: `${f.name}: already ${f.status === 'destroyed' ? 'destroyed' : 'made harmless'} (nothing spent, nothing rolled)` };
+    const cost = amount ? { resource: res, amount, before: sheet[res], after: sheet[res] - amount } : null;
+    if (cost) emit({ t: 'resource.changed', d: { id: 'pc', resource: res, value: cost.after, why: `${skill.name} on ${act.target_text}` } });
+    if (shoots) emit({ t: 'item.changed', d: { id: 'pc', item: skill.ammo.item, qty: -skill.ammo.qty, why: skill.name } });
+    let feature = null;
+    if (f) {
+        const scaling = [...(skill.attack?.scaling || [])].sort((a, b) => (b.coef ?? 0) - (a.coef ?? 0));
+        const stat = scaling[0]?.stat || (skill.attack?.damage_type === 'magical' ? 'INT' : 'STR');
+        const difficulty = f.difficulty || 'moderate';
+        const opp = content.rules.checks?.difficulty_scores?.[difficulty] ?? 6;
+        let success;
+        let text;
+        if (difficulty === 'trivial' || difficulty === 'impossible') {
+            success = difficulty === 'trivial';
+            text = `${difficulty}: no roll`;
+        } else {
+            const r = resolveCheck(dice, { label: `${skill.name} on ${f.name}`, actor: effectiveStats(sheet, content)?.[stat] ?? 5, opposition: opp });
+            emit({ t: 'check.recorded', d: { what: `${skill.name} on ${f.name}`.slice(0, 80), stat, actor: r.actor_score, opposition: r.opposition, chance: r.chance, roll: r.roll, success: r.success, claimed: r.success, by: 'engine', feature: f.id, aim: 'skill', difficulty } });
+            success = r.success;
+            text = `${stat} ${r.actor_score} vs ${difficulty.replace('_', ' ')} ${r.opposition}: ${r.chance}% (d100 ${r.roll}) → ${r.success ? 'SUCCESS' : 'FAILURE'}`;
+            // Patch 9B-1: a learned Skill used in a check of real difficulty on a thing is Proficiency Progress, once per
+            // Skill and thing, success or failure (ruleset 2; a weapon's attack is no learned Skill)
+            if (!known.weapon) checkProgress(s, content, skill.id, f.id).forEach(emit);
+        }
+        if (success) emit(featureEvent({ ...f, status: 'disabled', history: [...(f.history || []), { turn: s.turn, minute: s.clock.minute, what: `made harmless: ${skill.name}` }] }));
+        feature = { id: f.id, name: f.name, success, text };
+    }
+    return {
+        kind: 'ability_world', skill: skill.id, skill_name: skill.name, target_text: act.target_text, target_id: act.target_id || null, goal: act.goal || null,
+        cost, ammo: shoots ? { item: skill.ammo.item, used: skill.ammo.qty } : null, ...(feature ? { feature } : { check_die: dice.d100('check die') }),
+    };
+}
+
+/** Map the parsed intent to a combat action, or a note when the declared action cannot be resolved. */
+function pcActionOf(s, content, intent, text) {
+    const name = (id) => entityLabel(s, id);
+    switch (intent.kind) {
+        case 'engage': return { kind: 'engage', targets: intent.targets || [] };
+        case 'attack':
+            // a group the story holds as one creature ("cellar rats") is never fought as one: the story shows its animals
+            // first, as it would for a group that attacks (live run 27.09. 01:19)
+            if (isGroupCreature(content, s.entities[intent.target]) && !s.encounter?.combatants[intent.target]) return {
+                note: `Alaric attacks ${name(intent.target)}, a group the game holds as one creature: nothing was spent or rolled. Show its animals: each one that fights as its own "new" entry, their refs in "combat". Alaric acts on his next Turn.`,
+                notice: `Alaric's attack: ${playerLabel(s, intent.target)} is a group; the story shows its animals first (nothing spent, nothing rolled)`,
+            };
+            return { kind: 'attack', skill: intent.skill, target: intent.target, move: intent.move, move_target: intent.move_target, ...(intent.field ? { field: intent.field } : {}), ...(intent.crowd ? { crowd: true } : {}), ...(intent.item ? { item: intent.item } : {}) };
+        case 'skill': return { kind: 'skill', skill: intent.skill, dir: intent.dir, target: intent.target };
+        // Patch 7.2: a restorative drunk in a fight, his main action (src/combat.js itemAction)
+        case 'item': return s.encounter || (s.pending_combat || []).length ? { kind: 'item', item: intent.item, move: intent.move || null, move_target: intent.move_target ?? null } : { note: 'A potion is drunk outside a fight as a story command; nothing was used up here.', notice: 'Not in a fight (nothing used up)' };
+        case 'move': return { kind: 'move', dir: intent.dir, target: intent.target };
+        case 'flee': return { kind: 'flee' };
+        // prototype C (src/v4/planner.js): a declared wait in a fight (the same hold as A's HOLD_RE below), a known skill
+        // used on a thing
+        case 'hold': return s.encounter ? { kind: 'hold' } : null;
+        case 'ability_world': return { kind: 'ability_world', skill: intent.skill, target_text: intent.target_text, target_id: intent.target_id || null, goal: intent.goal || null };
+        case 'ambiguous_target': return {
+            note: `Alaric's attack needs a target: ${intent.candidates.map(name).join(' or ')}. Nothing was spent or rolled for it; stop at his decision and let the player name one (Core #23: never choose among several targets for him).`,
+            notice: `Alaric: which target? ${intent.candidates.map((id) => playerLabel(s, id)).join(' or ')} (nothing spent, nothing rolled)`,
+        };
+        case 'unknown_skill': return { note: `Alaric does not know ${intent.name}. Nothing was spent or rolled.`, notice: `Alaric does not know ${intent.name} (nothing spent, nothing rolled)` };
+        case 'no_target': return intent.dead
+            ? { note: `Alaric's attack needs a target: ${intent.ref} is already dead. Nothing was spent or rolled, and no one else was attacked in its place; stop at his decision and let the player name a living one.`, notice: `${intent.ref} is already dead: nothing attacked (nothing spent, nothing rolled)` }
+            : intent.ref
+            ? { note: `Alaric's attack needs a target: "${intent.ref}" is no one in this fight. Nothing was spent or rolled; stop at his decision and let the player name one.`, notice: `Alaric's attack needs a target: "${intent.ref}" is not in the fight (nothing spent, nothing rolled)` }
+            : { note: 'There is no valid target for an attack here. Nothing was spent or rolled.', notice: 'No valid target here (nothing spent, nothing rolled)' };
+        default:
+            if (s.encounter && HOLD_RE.test(text)) return { kind: 'hold' };
+            return null;
+    }
+}
+
+// ------------------------------------------------------------------------------------------------ combat
+/**
+ * Who fights: only actual commitment — the target Alaric attacks, and every NPC/creature the narrator reported as
+ * committing to an attack. Bystanders are never combatants because of attitude or kinship; if they join later, the
+ * narrator reports their commitment and they are inserted into the fixed Turn Order. Patch 8.1: on the planner path a
+ * present member of an established hostile group is no bystander (src/v4/group_combat.js groupJoiners).
+ */
+function combatants(s, leadId, committed = []) {
+    return uniq([leadId, ...committed]).filter((id) => s.entities[id] && s.entities[id].status !== 'dead');
+}
+
+/** Start a confrontation because Alaric explicitly committed to fight, but do not spend, move or attack for him. */
+function engagementTurn(s, content, dice, emit, targets = [], { c = false } = {}) {
+    let ids = uniq(targets).filter((id) => id !== 'pc' && s.scene.present.includes(id) && s.entities[id]?.status !== 'dead');
+    if (!ids.length) return { kind: 'note', text: 'Alaric is ready to fight, but there is no concrete opposing actor the engine can put into an encounter yet.' };
+    // Patch 8.1: the hostile group he squares up to stands with them (an open confrontation: no one is unaware of it)
+    const mates = groupJoiners(s, content, ids, { c });
+    ids = uniq([...ids, ...mates.now, ...mates.later]);
+    for (const id of ids) materialise(s, content, dice, emit, id);
+    const enc = initEncounter(s, content, dice, { actor: 'pc', target: ids[0], engage: true }, ids.map((id) => ({ id, side: 'hostile' })), `enc.t${s.turn}`, { c });
+    Object.assign(enc.intents, s.pending_intents || {});
+    emit({ t: 'encounter.started', d: { encounter: enc } });
+    for (const id of ids) if (s.scene.awareness[id] !== 'aware') emit({ t: 'scene.awareness', d: { id, level: 'aware' } });
+    const named = (id) => enc.combatants[id]?.label || entityLabel(s, id);
+    return {
+        kind: 'combat',
+        started: { reason: enc.ambush_reason, order: enc.order.map(named).join(' > '), ambush: false, engagement: true },
+        records: [], illegal: null, next: "Alaric's Turn (Round 1)", board: combatBoard(enc),
+    };
+}
+
+/** Give an NPC/creature its locked combat profile once (Content #7 anchors / proposed human templates). */
+const FAMILY_CLASS = { bow: 'ranger', focus: 'mage', precision: 'duelist', heavy_melee: 'guardian', melee: 'warrior' };
+
+export function materialise(s, content, dice, emit, id) {
+    const e = s.entities[id];
+    if (e.sheet || e.profile) return;
+    if (e.kind === 'creature') {
+        // final review of Patch 7: in a true Dungeon, a level of the band of the Rank established where it is met (that
+        // level's, else the Dungeon's own), drawn once; its own level, an ordinary ruin or the open land as before.
+        // Never Alaric's level
+        const at = e.met_at || e.left?.at || e.at || s.scene.at;
+        const local = lineage(s, at).map(p => truth(s, p, 'danger')[0]?.o).find(Boolean);
+        const area = local || truth(s, s.scene.location, 'danger')[0]?.o
+            || (lineage(s, at).some(p => s.places[p].kind === 'wilderness') ? 'wilderness' : 'unknown');
+        // Package C (.132): a creature of the planner path carries its validated membership (population_at) and life
+        // stage from its creation; an adult takes its population's window, a young one never the adults' window. An
+        // older record's creature (no life stage) keeps the earlier reading by name, room-by-room navigation (a den
+        // inside a hunting site) being no true Dungeon population
+        const stated = !!e.life_stage;
+        const population = stated ? (e.population_at && s.places[e.population_at]?.population ? s.places[e.population_at] : null)
+            : !trueDungeonOf(s, at) ? populationAt(s, at, e, content, { matchAnchor: false }) : null;
+        const young = stated ? e.life_stage === 'young' : namesYoung(content, `${e.species || ''} ${e.name || ''}`);
+        // a young one takes its population's window only where the population itself is one of young animals
+        const populationLevels = population && (!young || namesYoung(content, population.population.species)) ? population.population.levels : null;
+        const anchor = content.anchors.get(population?.population.anchor || e.anchor) || anchorFor(content, [e.species, ...(e.descriptors || [])].join(' '));
+        if (!anchor) throw new Error(`creature ${id} has no valid body-plan anchor`);
+        const areaLevels = !young && !trueDungeonOf(s, at) && e.threat !== false ? encounterArea(s, at)?.encounter_levels : null;
+        const rank = !e.level ? rankAt(s, at) : null;
+        const lo = rank && content.rules.ranks.bands.find((b) => b.rank === rank.min);
+        const hi = rank && content.rules.ranks.bands.find((b) => b.rank === rank.max);
+        // Patch 8: in a Living Dungeon, an ordinary foe of a level is drawn from that level's own window (its Rank band's
+        // lower part, fixed when the Dungeon was established: src/v4/living.js), never across the whole band
+        const span = !e.level && rank ? levelSpan(s, at) : null;
+        // Species identity alone does not assign adult habitat levels to an explicitly young individual.
+        const band = span || populationLevels || areaLevels;
+        const level = e.level || (band ? dice.int(band[0], band[1], 'creature level') : lo && hi ? dice.int(lo.min, hi.max, 'creature level') : chooseCreatureLevel(area, content, dice));
+        const belongs = !stated && population && level >= population.population.levels[0] && level <= population.population.levels[1];
+        const profile = scaleCreature(anchor, level, e.type || 'normal', content, e.variation || null);
+        // Monster A2 (.186): a humanoid's weapon, fixed with its profile; a melee weapon names its attack (values unchanged)
+        const gear = creatureGear(s, content, e, anchor);
+        if (gear) {
+            profile.gear = gear;
+            if (gear.weapon?.attack) profile.attack = { ...profile.attack, name: gear.weapon.attack, weapon: true };
+        }
+        emit({ t: 'entity.updated', d: { id, set: { ...(population ? { anchor: anchor.id } : {}), profile, ...(belongs ? { population_at: population.id } : {}), ...(dungeonOf(s, at) && !e.met_at ? { met_at: at } : {}) } } });
+        return;
+    }
+    const words = [...(e.descriptors || []), e.traits || ''].join(' ');
+    // Patch 9A: a campaign of ruleset 2 builds its people by its own templates; a legacy campaign exactly as before
+    if (rulesetOf(s) >= 2) {
+        const sheet = rulesetTwoPerson(s, content, e, words);
+        // 9C completion (src/skill_composer.js signatureSkill): a trained person of npc_signature_level Levels or more has
+        // one technique of their own, defined before the sheet is set (and so before any fight snapshot), fixed with it:
+        // a later meeting reads the sheet and composes nothing (a trial of an area attack books it on its copy only)
+        const min = content.rules.growth?.development?.npc_signature_level ?? 5;
+        if (sheet.training === 'trained' && (sheet.level || 1) >= min) {
+            const def = signatureSkill(s, content, e, sheet);
+            const d = def ? defineSkill(s, content, def) : null;
+            if (d && !d.errors.length) {
+                d.events.forEach(emit);
+                sheet.skills[def.id] = { prof: 1, pp: 0 };
+                sheet.generated.signature = def.id;
+            }
+        }
+        emit({ t: 'entity.sheet_set', d: { id, sheet } });
+        return;
+    }
+    let tpl = content.templates.get(e.template) || templateFor(content, words) || content.templates.get('commoner');
+    const overrides = {};
+    if (e.level) overrides.level = e.level;
+    if (tpl.gear_from_starter_kit) {
+        // an adventurer's Class follows what the narration shows: a named weapon, else a class word ("archer" = ranger)
+        const byWord = normText(words).split(' ').map((w) => (w === 'archer' ? 'ranger' : w)).find((w) => content.classes.has(w));
+        const cls = content.classes.get(e.class) || content.classes.get(FAMILY_CLASS[weaponFamily(content, words)]) || content.classes.get(byWord) || content.classes.get('warrior');
+        const kit = content.kits[cls.id].map((i) => content.items.get(i));
+        const w = kit.find((i) => i.slot === 'weapon');
+        const a = kit.find((i) => i.slot === 'armor');
+        overrides.class = cls.id;
+        overrides.weapon = { name: w.name, family: w.family, atk: w.atk || 0, matk: w.matk || 0 };
+        overrides.armor = a ? { name: a.name, def: a.def || 0, mdef: a.mdef || 0 } : null;
+        tpl = { ...tpl, skills: cls.skill_pool.slice(0, 2) };
+    }
+    const sheet = humanSheet(tpl, overrides, content);
+    sheet.generated.temperament = tpl.temperament;
+    // kit containers (quiver) fill the inventory: an NPC archer carries real, finite arrows like Alaric
+    if (tpl.gear_from_starter_kit) for (const i of content.kits[overrides.class].map((x) => content.items.get(x))) for (const [item, qty] of Object.entries(i?.contains || {})) sheet.inventory[item] = (sheet.inventory[item] || 0) + qty;
+    emit({ t: 'entity.sheet_set', d: { id, sheet } });
+}
+
+/**
+ * Patch 9A (ruleset 2): a person's combat sheet when it is first needed, fixed then in entity.sheet_set (a later meeting
+ * reads it, never builds another). The template by the same id as ever (npc_templates.json ruleset_2); its Level by the
+ * engine (an established one, else the template's), never a number of the story. An adventurer's class: one
+ * established (e.class), else a class word of theirs, else the style of the weapon they are shown with (a bow: rogue or
+ * warrior), else by the campaign seed; the class's starter kit, a bow and quiver for an archer. Weapons decide no class.
+ */
+function rulesetTwoPerson(s, content, e, words) {
+    // Patch 9A.1: the template of their established role: the one fixed at their creation, else (a person created as
+    // a commoner) the role the story has established for them since (their occupation fact) or their words now
+    const stored = e.template && e.template !== 'commoner' ? npcTemplate(content, 2, e.template) : null;
+    const role = truth(s, e.id, 'occupation')[0]?.o || '';
+    const tpl = stored || templateFor(content, role, 2) || templateFor(content, words, 2) || npcTemplate(content, 2, 'commoner');
+    const key = `${s.rng.seed}|${e.id}`;
+    const overrides = { key };
+    if (e.level) overrides.level = e.level;
+    if (content.classes.get(e.class) && rulesetDef(content, 2).classes.includes(e.class)) Object.assign(overrides, { class: e.class, established: true });
+    let bow = false;
+    if (tpl.gear_from_starter_kit) {
+        const t = normText(words);
+        const has = (w) => new RegExp(`(^|[^a-z])${normText(w)}($|[^a-z])`).test(t);
+        bow = (tpl.bow_words || []).some(has);
+        if (!overrides.class) {
+            const byWord = Object.entries(tpl.class_words || {}).find(([, ws]) => ws.some(has))?.[0];
+            const style = tpl.style_classes?.[bow ? 'bow' : weaponFamily(content, words)] || rulesetDef(content, 2).classes;
+            overrides.class = byWord || style[parseInt(hash32(`${key}|class`), 16) % style.length];
+        }
+        const kit = content.kits[overrides.class].map((i) => content.items.get(i));
+        const w = bow ? content.items.get('starter_shortbow') : kit.find((i) => i.slot === 'weapon');
+        const a = kit.find((i) => i.slot === 'armor');
+        overrides.weapon = { name: w.name, family: w.family, atk: w.atk || 0, matk: w.matk || 0 };
+        overrides.armor = a ? { name: a.name, def: a.def || 0, mdef: a.mdef || 0 } : null;
+    }
+    // Patch 9A.1: the weapon the story shows them holding ready (their armed fact: person.new armed, a later fact),
+    // with the values of its kind (src/v4/items.js itemProfile: gear references, its quality words), in place of the
+    // template's or the kit's; it gives no class and no Skill. One only mentioned, stored or worked on is no armed fact
+    const held = heldWeapon(s, content, e.id);
+    if (held) overrides.weapon = held;
+    const sheet = humanSheet(tpl, overrides, content);
+    sheet.generated.temperament = tpl.temperament;
+    if (held) sheet.generated.weapon = 'established';
+    // kit containers (quiver) fill the inventory: an NPC archer carries real, finite arrows like Alaric
+    if (tpl.gear_from_starter_kit) {
+        const carried = [...content.kits[overrides.class], ...(bow ? ['starter_quiver'] : [])].map((x) => content.items.get(x));
+        for (const i of carried) for (const [item, qty] of Object.entries(i?.contains || {})) sheet.inventory[item] = (sheet.inventory[item] || 0) + qty;
+    }
+    return sheet;
+}
+
+/**
+ * Monster A2 (.186, patch_plans_10b/FACHPLAN_MONSTER_ANATOMIE_LOOT_A1_A2.md §2.3, §3.2, K3–K7; D1–D5, D7): the weapon a
+ * humanoid creature carries, fixed once when its profile is (materialise), so fight, cards and loot read one thing.
+ *  1. the weapon its creation report states (entity.armed, creature.new armed): a weapon word of a family names it,
+ *     "unarmed"/"bare hands" is none; words that name no weapon are no statement;
+ *  2. else its anchor's loadout (content/monsters.json loot.anchors.<anchor>.loadout), drawn by weight with hash32 – no
+ *     die of the fight – from its own key: its place in its Dungeon slot, else its id; a guardian or boss the same (D7);
+ *  3. no humanoid anchor (no loadout): null, the profile as before.
+ * Values are the anchor's (D3): a stated weapon takes those of its anchor's weapon of the same family, else its best.
+ * A melee weapon names the attack; a focus or a bow changes no attack (D2). It is no object before the death (K5).
+ * @returns {{weapon: {name, item, attack, family, slot, atk, matk, from}|null, source: 'stated'|'default'|'none'}|null}
+ */
+const MELEE_FAMILIES = new Set(['melee', 'heavy_melee', 'precision']);
+export function creatureGear(s, content, e, anchor) {
+    const spec = content.monsters?.loot?.anchors?.[anchor.id];
+    const options = spec?.loadout?.options;
+    if (!spec?.humanoid || !Array.isArray(options) || !options.length) return null;
+    const species = speciesName(e, anchor);
+    const armed = typeof e.armed === 'string' ? e.armed.trim() : '';
+    const family = armed ? weaponFamily(content, armed) : null;
+    if (family === 'unarmed') return { weapon: null, source: 'stated' };
+    if (family) {
+        const own = options.filter((o) => o.name && o.slot === 'weapon');
+        const scale = own.find((o) => o.family === family) || own.slice().sort((a, b) => (b.atk || 0) - (a.atk || 0))[0] || { atk: 0, matk: 0 };
+        const name = weaponWord(content, armed);
+        const melee = MELEE_FAMILIES.has(family);
+        return { weapon: { name, item: `${species} ${name.split(/\s+/).map((w) => w[0].toUpperCase() + w.slice(1)).join(' ')}`, attack: melee ? name : null,
+            family, slot: 'weapon', atk: scale.atk || 0, matk: scale.matk || 0, from: armed.slice(0, 80) }, source: 'stated' };
+    }
+    const slot = e.slot ? (() => {
+        const sl = livingOf(s, e.slot.dungeon)?.run?.floors?.[e.slot.floor]?.slots?.find((x) => x.id === e.slot.id);
+        const at = sl?.entities?.indexOf(e.id) ?? -1;
+        return `${e.slot.dungeon}|${e.slot.cycle}|${e.slot.floor}|${e.slot.id}|${at >= 0 ? at : e.id}`;
+    })() : null;
+    const total = options.reduce((n, o) => n + (o.w || 0), 0);
+    let r = total > 0 ? parseInt(hash32(`${slot || e.id}|loadout`), 16) % total : 0;
+    const o = options.find((x) => (r -= x.w || 0) < 0) || options[0];
+    if (!o.name) return { weapon: null, source: 'none' };
+    return { weapon: { name: o.attack || o.name.replace('{species} ', '').replace(/\s*\{species\}\s*/, ' ').trim(), item: o.name.replace('{species}', species),
+        attack: o.attack && MELEE_FAMILIES.has(o.family) ? o.attack : null, family: o.family || 'melee', slot: o.slot || 'weapon', atk: o.atk || 0, matk: o.matk || 0, from: 'loadout' }, source: 'default' };
+}
+
+/** A weapon's short name from words: its weapon word with the word before it ("short spear", "steel longsword"). */
+function weaponWord(content, text) {
+    const words = normText(text).split(/[^a-z-]+/).filter(Boolean);
+    const kinds = [...(content.gear?.instances?.gear_kinds || []).filter((k) => k.slot === 'weapon').flatMap((k) => k.words), ...Object.entries(content.npc.weapon_words).filter(([f]) => f !== 'unarmed').flatMap(([, w]) => w)];
+    const at = words.findIndex((w) => kinds.includes(w));
+    const name = at < 0 ? normText(text).slice(0, 40) : [at > 0 && !WEAPON_STOP.has(words[at - 1]) ? words[at - 1] : null, words[at]].filter(Boolean).join(' ');
+    return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+/** Patch 9A.1: the weapon a person holds ready by their armed fact, as a sheet weapon {name, family, atk, matk}, or null. */
+const WEAPON_STOP = new Set(['a', 'an', 'the', 'his', 'her', 'their', 'its', 'has', 'have', 'drawn', 'draws', 'drew', 'holds', 'holding', 'held', 'with', 'out', 'in', 'hand', 'of']);
+function heldWeapon(s, content, id) {
+    // the latest of them (a knife drawn, then a sword taken up)
+    const text = truth(s, id, 'armed').sort((a, b) => (a.since?.turn ?? 0) - (b.since?.turn ?? 0) || (a.since?.minute ?? 0) - (b.since?.minute ?? 0)).at(-1)?.o;
+    const p = text ? itemProfile(content, { name: text }) : null;
+    if (p?.kind !== 'gear' || p.slot !== 'weapon') return null;
+    // its name: the weapon word of the text with the word before it ("short sword", "belt knife")
+    const words = normText(text).split(/[^a-z-]+/).filter(Boolean);
+    const kinds = (content.gear?.instances?.gear_kinds || []).filter((k) => k.slot === 'weapon').flatMap((k) => k.words);
+    const at = words.findIndex((w) => kinds.includes(w));
+    const name = at < 0 ? text : [at > 0 && !WEAPON_STOP.has(words[at - 1]) ? words[at - 1] : null, words[at]].filter(Boolean).join(' ');
+    return { name: name.charAt(0).toUpperCase() + name.slice(1), family: p.family, atk: p.atk || 0, matk: p.matk || 0 };
+}
+
+/**
+ * One combat step for this player message: start (PC attack or pending NPC commitment), let a new attacker join,
+ * run NPC Turns until Alaric's Turn / terminal state, and emit every resulting state change as events.
+ */
+function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared = null, committed = [], sides = null, c = false }, situations) {
+    const pcAction = declared?.kind ? declared : null;
+    let started = null;
+    let enc;
+    // the fight's own names: every combatant by its target label (Cellar Rat A), others as the engine names them
+    const named = (id) => enc?.combatants[id]?.label || entityLabel(s, id);
+    // Patch 8.1: the members of a hostile group who enter only once the fight goes on past its opening (unaware of him)
+    let alerted = [];
+    if (!s.encounter) {
+        const lead = trigger.actor === 'pc' ? trigger.target : trigger.actor;
+        const group = groupJoiners(s, content, combatants(s, lead, committed), { c, pcAttacks: trigger.actor === 'pc' });
+        alerted = group.later;
+        const ids = uniq([...combatants(s, lead, committed), ...group.now]);
+        // legality first: an attack that is impossible from the start begins nothing and costs nothing (Core #24)
+        if (trigger.actor === 'pc') {
+            const trial = clone(s);
+            const tdice = new Dice(dice.seed, dice.n);
+            for (const id of ids) materialise(trial, content, tdice, (e) => applyEvent(trial, e), id);
+            const tenc = initEncounter(trial, content, tdice, trigger, ids.map((id) => ({ id, side: sides?.[id] || 'hostile' })), 'trial', { c });
+            const tr = runCombat({ enc: tenc, content, dice: tdice, state: trial, c }, null);
+            if (tr.stopped === 'illegal' && !tr.records.length) return { kind: 'combat', records: [], illegal: tr.illegal, not_started: true };
+        }
+        for (const id of ids) materialise(s, content, dice, emit, id);
+        enc = initEncounter(s, content, dice, trigger, ids.map((id) => ({ id, side: sides?.[id] || 'hostile' })), `enc.t${s.turn}`, { c });
+        Object.assign(enc.intents, s.pending_intents || {});
+        started = { reason: enc.ambush_reason, order: enc.order.map(named).join(' > '), ambush: enc.ambush };
+    } else {
+        enc = clone(s.encounter);
+        // opened by the reply that reported the commitment (see openCommitted): the player already saw Initiative,
+        // Turn order and the Turns before Alaric's (enc.preface); the narrator hears of the start and of those Turns
+        // here. Round 0: a fight fixed without them (older chats, attackers still unidentified) starts Round 1 now.
+        if (enc.round === 0 || enc.preface) started = { reason: enc.ambush_reason, order: enc.order.map(named).join(' > '), ambush: enc.ambush, previewed: true };
+        const joiners = committed.filter((id) => !enc.combatants[id]);
+        for (const id of joiners) {
+            materialise(s, content, dice, emit, id);
+            addCombatant(enc, s, content, id, 'hostile', 'attack', { c });
+        }
+        if (joiners.length) started = { reason: `${joiners.map(named).join(', ')} ${joiners.length > 1 ? 'join' : 'joins'} the fight`, order: enc.order.map(named).join(' > '), joined: joiners };
+        const fresh = pcAction?.kind === 'attack' && pcAction.target && !enc.combatants[pcAction.target] ? pcAction.target : null;
+        if (fresh) {
+            materialise(s, content, dice, emit, pcAction.target);
+            addCombatant(enc, s, content, pcAction.target, c && areaSkill(content, pcAction.skill, s) ? sideOf(s, pcAction.target) : 'hostile', null, { c });
+        }
+        // A legal ordinary area recruits only opponents or explicitly attacked actors in its band;
+        // physical thrown bursts retain their separate bystander recruitment.
+        const caught = c && pcAction?.kind === 'attack' ? caughtBy(s, content, pcAction).filter(id => !enc.combatants[id]) : [];
+        if (caught.length && areaLegal(s, content, dice, enc, caught, pcAction, c)) {
+            for (const id of caught) {
+                materialise(s, content, dice, emit, id);
+                addCombatant(enc, s, content, id, sideOf(s, id), null, { c });
+            }
+            const skill = skillOf(content, pcAction.skill, s)?.name || 'the attack';
+            started = { ...(started || {}), reason: `${caught.map(named).join(', ')} ${caught.length > 1 ? 'are' : 'is'} caught in ${skill} and ${caught.length > 1 ? 'join' : 'joins'} the fight`, order: enc.order.map(named).join(' > '), joined: [...(started?.joined || []), ...caught] };
+        }
+        // Patch 8.1: one who enters the fight now (he attacks one outside it, an attacker joins, his area attack catches
+        // one) brings in the rest of its hostile group, each once; a group already in the fight made its choice when it
+        // entered (two wolves rushed him, two hung back: Patch 5), striking one of the fighters drags no one in
+        const leads = [...joiners, ...(fresh ? [fresh] : []), ...caught].filter((id) => enc.combatants[id]);
+        const group = groupJoiners(s, content, leads, { c, pcAttacks: !!fresh || caught.length > 0, exclude: Object.keys(enc.combatants) });
+        alerted = group.later;
+        for (const id of group.now) {
+            materialise(s, content, dice, emit, id);
+            addCombatant(enc, s, content, id, 'hostile', null, { c });
+        }
+        if (group.now.length) started = { ...(started || {}), reason: `${[started?.reason, `${group.now.map(named).join(', ')} ${group.now.length > 1 ? 'join' : 'joins'} the fight with ${group.now.length > 1 ? 'their' : 'its'} group`].filter(Boolean).join('; ')}`, order: enc.order.map(named).join(' > '), joined: [...(started?.joined || []), ...group.now] };
+    }
+    const res = runCombat({ enc, content, dice, state: s, c }, pcAction);
+    // Patch 8.1: those of the group who were unaware of him enter once the fight goes on past its opening (never one
+    // that ended it); they take their place in the fixed Turn order from here, no Turn is replayed for them
+    const late = res.illegal || res.stopped === 'terminal' ? [] : alerted.filter((id) => !enc.combatants[id] && s.entities[id]?.status !== 'dead');
+    for (const id of late) {
+        materialise(s, content, dice, emit, id);
+        addCombatant(enc, s, content, id, 'hostile', null, { c });
+    }
+    if (late.length) started = { ...(started || {}), reason: `${[started?.reason, `${late.map(named).join(', ')} ${late.length > 1 ? 'join' : 'joins'} the fight, alerted by it`].filter(Boolean).join('; ')}`, order: enc.order.map(named).join(' > '), joined: [...(started?.joined || []), ...late] };
+    // Hotfix c.6.6.18: the offensive item his resolved attack used is used up, once; a refused one stays his
+    const thrown = res.illegal ? null : res.records.find((r) => r.actor === 'pc' && r.item);
+    if (thrown) usedUp(s, content, emit, thrown);
+    // Prototype C (4.3.0-c.6.6.6, live 18.10.2026: "I walk in range of Feral Hound B and C and D" moved him nearer to no
+    // one: B, C and D were not in the fight): his step brings him nearer to those outside the fight he moves among too
+    // (src/v4/scene_handles.js approachedBy); their distances are the engine's then, not the story's
+    if (c && !res.illegal) {
+        const act = pcAction || (trigger?.actor === 'pc' ? trigger : null);
+        const mine = res.records.find((r) => r.actor === 'pc' && (r.kind === 'move' || r.move || r.after_move));
+        const step = !mine || !act ? null : mine.kind === 'move' ? { move: mine.dir, moveTarget: act.target ?? null }
+            : mine.move ? { move: 'closer', moveTarget: act.move_target ?? null } : { move: 'away', moveTarget: null };
+        for (const x of step ? approachedBy(s, step).filter((x) => !enc.combatants[x.id]) : []) emit({ t: 'scene.position', d: { id: x.id, band: x.to, cover: s.scene.positions[x.id]?.cover || 'none' } });
+    }
+    if (enc.log.length > 20) enc.log = enc.log.slice(-20);
+    // the Turns resolved when the reply opened the fight come first for the narrator; the panel showed them already
+    const preface = enc.preface || [];
+    delete enc.preface;
+    const outcome = { kind: 'combat', started, records: [...preface, ...res.records], ...(preface.length ? { shown: preface.length } : {}), illegal: res.illegal || null, next: null };
+    if (declared?.note) Object.assign(outcome, { note: declared.note, notice: declared.notice });
+    const done = persistCombat(s, content, emit, enc, res.records, !!started && !s.encounter, { c });
+    outcome.board = done.board;
+    if (done.ended) {
+        outcome.ended = done.ended;
+        outcome.levelups = done.levelups;
+        // Prototype C (4.3.0-c.6.6.4): with the engine's loot credited, the hand-collect rule of Core #20 does not apply
+        if (!done.loot) situations.push('loot');
+        // what the engine credited is booked: the story's object.new for the same pelt is no second one (firewall granted)
+        if (done.rewardLines?.length) Object.assign(outcome, {rewardLines: done.rewardLines, rewards: done.rewards});
+        if (done.loot || done.rewardLines?.length) Object.assign(outcome, { loot: done.loot || [], booked: { registration: false, grants: done.grantNames, turnIns: [], accepted: [] } });
+    } else {
+        outcome.next = done.next;
+    }
+    return outcome;
+}
+
+/** Hotfix c.6.6.18: the item a resolved attack was made with is used up (one use of it; the rest stays his). */
+function usedUp(s, content, emit, record) {
+    const o = s.objects?.[record.item];
+    if (!o || o.holder?.entity !== 'pc') return;
+    const left = (o.qty ?? 1) - 1;
+    emit({ t: 'object.consumed', d: { id: o.id, by: 'pc', ...(left > 0 ? { qty: 1 } : {}) } });
+    record.item_name = o.name;
+    record.used_up = left > 0 ? `one used, ${left} left` : 'used up';
+}
+
+/** An area attack's skill (Arcane Burst: effects kind "area"). */
+const areaSkill = (content, id, s = null) => !!skillOf(content, id, s)?.effects?.some((e) => e.kind === 'area');
+
+/**
+ * Prototype C (4.3.0-c.6.6.6): who Alaric's area attack catches outside the fight (src/v4/scene_handles.js areaCaught),
+ * eligible opponents/explicit targets with combat profiles in the selected band after his declared step.
+ */
+function caughtBy(s, content, act) {
+    // Hotfix c.6.6.18: a thrown burst catches whom it was fixed to strike (burstOf), those outside the fight with them
+    if (act.item) return (act.burst || []).filter((id) => id !== act.target && !s.encounter?.combatants?.[id]);
+    if (!areaSkill(content, act.skill, s)) return [];
+    const skill = skillOf(content, act.skill, s);
+    const bandArea = skill.effects.some(e => e.kind === 'area' && e.shape === 'target_band');
+    const band = areaBand(skill, s.encounter?.combatants?.[act.target]?.current.band ?? s.scene.positions?.[act.target]?.band);
+    return areaCaught(s, { move: act.move, moveTarget: act.move_target ?? null, band, visible: bandArea, ...(bandArea ? { target: act.target } : {}) }).filter((id) => {
+        const e = s.entities[id];
+        const explicit = [act.target, ...(act.crowd ? act.field || [] : [])];
+        return skillAreaTarget({ id: 'pc', side: 'pc' }, { id, side: sideOf(s, id) }, explicit)
+            && !!(e.sheet || e.profile || e.kind === 'npc' || content.anchors.get(e.anchor) || anchorFor(content, [e.species, ...(e.descriptors || [])].join(' ')));
+    });
+}
+
+/**
+ * Hotfix c.6.6.18, Patch 7.1: whom a thrown burst of an offensive item strikes: the one it is thrown at and everyone in
+ * its knot (src/v4/scene_handles.js burstCaught), however many, each one the engine can give a combat profile.
+ */
+function burstOf(s, content, act) {
+    const item = itemEffectOf(content, s.objects?.[act.item]) || skillOf(content, act.skill, s);
+    if (!item?.effects?.some((e) => e.kind === 'area' && e.shape === 'burst')) return [];
+    return burstCaught(s, act.target).filter((id) => {
+        const e = s.entities[id];
+        return !!(e.sheet || e.profile || e.kind === 'npc' || content.anchors.get(e.anchor) || anchorFor(content, [e.species, ...(e.descriptors || [])].join(' ')));
+    });
+}
+
+/** Would the area attack be legal with those it catches in the fight (a trial on copies; nothing is emitted)? */
+function areaLegal(s, content, dice, enc, caught, act, c) {
+    const trial = clone(s);
+    const tdice = new Dice(dice.seed, dice.n);
+    const tenc = clone(enc);
+    for (const id of caught) {
+        materialise(trial, content, tdice, (e) => applyEvent(trial, e), id);
+        addCombatant(tenc, trial, content, id, sideOf(trial, id), null, { c });
+    }
+    return runCombat({ enc: tenc, content, dice: tdice, state: trial, c }, act).stopped !== 'illegal';
+}
+
+/**
+ * Persist a combat step (combatTurn, and the Turns before Alaric's first one when a reply opens a fight): the
+ * encounter snapshot, awareness, Alaric's resources, ammunition, deaths as world truth and, when the fight is over,
+ * its end (XP, the survivors' condition, the fight's memory).
+ * @returns {{board: object, ended: object|null, levelups: string[], next: string|null}}
+ */
+function persistCombat(s, content, emit, enc, records, isNew, { c: cPath = false } = {}) {
+    emit({ t: isNew ? 'encounter.started' : 'encounter.updated', d: { encounter: enc } });
+    for (const id of Object.keys(enc.combatants)) if (id !== 'pc' && s.scene.awareness[id] !== 'aware') emit({ t: 'scene.awareness', d: { id, level: 'aware' } });
+    // mirror the PC's resources and every sheet-bearer's ammunition into the sheet (the snapshot stays authoritative for NPCs)
+    const pcC = enc.combatants.pc;
+    for (const r of ['hp', 'mp', 'sta']) if (pcC.current[r] !== s.entities.pc.sheet[r]) emit({ t: 'resource.changed', d: { id: 'pc', resource: r, value: pcC.current[r] } });
+    for (const r of records) if (r.ammo && s.entities[r.actor]?.sheet) emit({ t: 'item.changed', d: { id: r.actor, item: r.ammo.item, qty: -r.ammo.used, why: r.skill_name } });
+    // deaths are world truth (hard facts) witnessed by everyone present who noticed the fight (not the unaware)
+    for (const c of Object.values(enc.combatants)) {
+        if (c.current.hp === 0 && s.entities[c.id].status !== 'dead') {
+            emit({ t: 'entity.status', d: { id: c.id, status: 'dead' } });
+            setFactEvents(s, { id: `f.${c.id}.status.t${s.turn}`, s: c.id, p: 'status', o: 'dead', hard: true, importance: 0.9, source: { kind: 'engine', encounter: enc.id } }).forEach(emit);
+            const deathFact = truth(s, c.id, 'status')[0];
+            for (const w of perceivers(s)) if (w !== c.id && deathFact && s.scene.awareness[w] !== 'unaware') emit({ t: 'knowledge.gained', d: { who: w, about: deathFact.id, stance: 'knows', source: 'witnessed', turn: s.turn, minute: s.clock.minute } });
+        }
+    }
+    const out = { board: combatBoard(enc), ended: null, levelups: [], next: null, loot: null };
+    if (terminal(enc)) {
+        const end = endEncounterEvents(s, content, enc);
+        out.levelups = end.events.filter((e) => e.t === 'level.up').map((e) => `Level ${e.d.level}`);
+        end.events.forEach(emit);
+        // write the survivors' condition back to their persistent profiles/sheets and positions
+        for (const c of Object.values(enc.combatants)) {
+            if (c.id === 'pc' || s.entities[c.id].status === 'dead') continue;
+            const e = s.entities[c.id];
+            if (e.sheet) for (const r of ['hp', 'mp', 'sta']) { if (c.current[r] !== undefined && c.current[r] !== e.sheet[r]) emit({ t: 'resource.changed', d: { id: c.id, resource: r, value: c.current[r] } }); }
+            else if (e.profile && c.current.hp !== e.profile.hp) emit({ t: 'entity.updated', d: { id: c.id, set: { profile: { ...e.profile, hp: c.current.hp } } } });
+            // Prototype C (4.3.0-c.6.6): when Alaric got away, the foes he left behind are out of his scene too
+            if (c.current.escaped || (cPath && enc.combatants.pc.current.escaped && c.side === 'hostile' && s.scene.present.includes(c.id))) {
+                emit({ t: 'scene.left', d: { id: c.id } });
+                // 4.3.0-c.6.6.6: one that fled the fight itself is driven off, as the engine saw it (src/v4/guild.js defeatTally)
+                if (cPath && c.current.escaped) emit({ t: 'entity.updated', d: { id: c.id, set: { fled: { turn: s.turn, encounter: enc.id } } } });
+                // Patch 5 (review): where it got away, or where he got away from it, is where it may be met again
+                // (src/v4/world.js nearby)
+                if (s.entities[c.id]?.kind === 'creature') emit({ t: 'entity.updated', d: { id: c.id, set: { left: { at: s.scene.at, minute: s.clock.minute, turn: s.turn, leg: false } } } });
+            } else if (s.scene.present.includes(c.id)) emit({ t: 'scene.position', d: { id: c.id, band: c.current.band, cover: c.current.cover } });
+            if (c.current.surrendered) emit({ t: 'entity.updated', d: { id: c.id, set: { surrendered_to: 'pc' } } });
+        }
+        // Patch 4 (Prototype C): who fought him, and who watched the fight from the scene, stays aware of him for a while
+        // (rules.combat.wary_min): a story that soon after has them lose track of him sets up no Ambush (src/v4/world.js aware)
+        if (cPath) {
+            const wary = { turn: s.turn, minute: s.clock.minute, encounter: enc.id };
+            // Patch 5: one the story never marked is no less a witness than one marked aware (the two wolves that hung back
+            // on the road); only one the story keeps unaware of him missed it
+            const watched = s.scene.present.filter((id) => id !== 'pc' && !enc.combatants[id] && s.entities[id] && ['npc', 'creature'].includes(s.entities[id].kind) && s.scene.awareness[id] !== 'unaware');
+            for (const id of [...Object.keys(enc.combatants).filter((id) => id !== 'pc'), ...watched]) if (s.entities[id]?.status !== 'dead') emit({ t: 'entity.updated', d: { id, set: { wary: wary } } });
+        }
+        emit({ t: 'memory.recorded', d: { memory: fightMemory(s, content, enc, end.summary) } });
+        // Prototype C (4.3.0-c.6.6.4): what the foes killed in a fight he won leave is his at once (src/v4/loot.js)
+        if (cPath) {
+            const loot = lootEvents(s, content, enc);
+            loot.events.forEach(emit);
+            if (loot.lines.length) out.loot = loot.lines;
+            out.grantNames = loot.grantNames;
+            if (loot.rewardLines?.length) { out.rewardLines = loot.rewardLines; out.rewards = loot.rewards; }
+        }
+        out.ended = end.summary;
+    } else {
+        out.next = `Alaric's Turn (Round ${enc.round})`;
+    }
+    return out;
+}
+
+/**
+ * What the player is shown after this combat step (src/display.js): Initiative and Turn order, everyone's HP and
+ * Range Band to Alaric, Alaric's resources, who acts next.
+ */
+function combatBoard(enc) {
+    const pc = enc.combatants.pc;
+    return {
+        round: enc.round,
+        order: enc.order.map((id) => ({ id, init: enc.combatants[id].fixed.init })),
+        hp: enc.order.map((id) => {
+            const c = enc.combatants[id];
+            return {
+                id, hp: c.current.hp, max: c.fixed.max_hp, state: c.current.hp === 0 ? 'defeated' : c.current.escaped ? 'fled' : c.current.surrendered ? 'surrendered' : null,
+                ...(id === 'pc' ? {} : { band: c.current.band, cover: c.current.cover }),
+            };
+        }),
+        // before Round 1: who acts before Alaric (an Ambush Opening Action comes first)
+        ...(enc.round === 0 ? { first: { ambush: enc.ambush ? enc.trigger.actor : null, before: enc.order.slice(0, enc.order.indexOf('pc')) } } : {}),
+        // the target labels, in the order the combatants entered (display.js: COMBAT TARGETS, HP and Range lines)
+        labels: Object.fromEntries(Object.values(enc.combatants).filter((c) => c.label).map((c) => [c.id, c.label])),
+        pc: { mp: pc.current.mp, max_mp: pc.fixed.max_mp, sta: pc.current.sta, max_sta: pc.fixed.max_sta, arrows: Object.values(pc.current.ammo || {}).reduce((a, n) => a + n, 0) },
+    };
+}
+
+function fightMemory(s, content, enc, summary) {
+    const foes = Object.values(enc.combatants).filter((c) => c.id !== 'pc');
+    const fate = (c) => (s.entities[c.id].status === 'dead' ? 'killed' : c.current.escaped ? 'fled' : c.current.surrendered ? 'surrendered' : 'survived');
+    const skills = uniq(enc.log.filter((r) => r.actor === 'pc' && r.skill_name).map((r) => r.skill_name));
+    const text = `Fight at ${s.scene.place || entityLabel(s, s.scene.location)}: {pc}${skills.length ? ` (${skills.join(', ')})` : ''} vs ${foes.map((c) => `${entityLabel(s, c.id)} — ${fate(c)}`).join('; ')}${summary.pc_dead ? '; {pc} died' : ''}.`;
+    const witnesses = uniq([...perceivers(s).filter((id) => s.scene.awareness[id] !== 'unaware'), ...foes.filter((c) => s.entities[c.id].status !== 'dead').map((c) => c.id)]);
+    return {
+        id: `m.${enc.id}`, turn: s.turn, minute: s.clock.minute, text, who: ['pc', ...foes.map((c) => c.id)], witnesses,
+        seen: s.scene.concealed.includes('pc') ? ['pc'] : witnesses.slice(), location: s.scene.location, place: s.scene.place,
+        importance: 7, kind: 'combat',
+    };
+}
+
+// ------------------------------------------------------------------------------------------------ narrator reply
+/**
+ * Validate the narrator's reply: fact report -> events, perception (who has now seen Alaric), an episodic trace of
+ * the turn, and drift detection (numbers in the reply that contradict the engine -> corrections). Runtime V3: tracker
+ * blocks the presentation layer still writes (<World_State>, <Character_Sheet>, <New_NPC>, <NPC_Update>) are removed
+ * (stripTrackers) and never become state: the engine owns that state and renders the player's HUD.
+ */
+export function narratorReply(state, content, replyText, { msg = null, stripTrackers = true } = {}) {
+    const s = clone(state);
+    const events = [];
+    const dice = Dice.from(s);
+    const emit = (e) => {
+        if (dice.n !== s.rng.n) e.rng_to = dice.n;
+        applyEvent(s, e);
+        events.push(e);
+    };
+    const { clean: raw, report, error } = extractReport(replyText);
+    const trackers = hasTrackerBlocks(raw);
+    const clean = stripTrackers ? stripTrackerBlocks(raw) : raw;
+    const res = reportToEvents(report, s, content, { msg, prose: clean });
+    res.events.forEach(emit);
+    for (const r of res.rejected) emit({ t: 'delta.rejected', d: r });
+    if (!report && s.meta.started) emit({ t: 'report.missing', d: { error } });
+    if (s.mode !== 'creation' && s.meta.started && !String(s.last.outcome?.kind || '').startsWith('creation')) {
+        perceiveAll(s, emit);
+        selfIntro(s, emit);
+        const ep = episode(s, msg);
+        if (ep) emit({ t: 'memory.recorded', d: { memory: ep } });
+    }
+    const fightFrom = events.length;
+    const opened = openCommitted(s, content, dice, emit, { hold: !!res.unidentified?.length });
+    if (opened) opened.from = fightFrom; // the reply's own changes are the events before (display.js)
+    const corrections = [...res.corrections, ...trackerDrift(s, content, clean), ...combatSpeech(state, clean)];
+    // named without tag syntax: a tag in the prompt would only invite the model to write it again
+    if (trackers && stripTrackers) corrections.push('Your last reply wrote tracker blocks (world state, character sheet, NPC dossier or update): they are retired and were removed. The engine keeps that state and shows the player its HUD; write only the story and the fact report.');
+    for (const r of res.rejected) corrections.push(`Rejected from your fact report: ${r.reason}.`);
+    if (!report) corrections.push(`Your previous reply had no valid <avereth> fact report (${error}). Write it right after the story text; this reply's report may also record the player's decisions from that turn (hand-overs, coin, quests), {} if nothing.`);
+    // attackers the report committed that the engine could not tell apart (delta.js): host.js asks for them separately
+    const attackers = res.unidentified?.length ? res.unidentified : null;
+    // the city reached from the start without a spot in it (delta.js): host.js asks for the spot and who is there
+    return { events, clean, report, accepted: res.accepted, rejected: res.rejected, corrections, report_error: report ? null : error, attackers, unplaced: res.unplaced || null, opened, state: s };
+}
+
+/**
+ * Perception: an NPC that can see Alaric now knows his appearance and remembers the first sight of him. Runtime V4
+ * calls it at every step that changes who is with him (src/v4/world.js), V3 at the end of the reply.
+ */
+export function perceiveAll(s, emit, { unaware = null } = {}) {
+    for (const id of perceivers(s)) {
+        if (id === 'pc' || s.entities[id].kind !== 'npc' || s.scene.concealed.includes('pc') || knows(s, id, PC_LOOK_FACT)) continue;
+        // 4.3.0-c.6.6: seeing him (this knowledge, his look) and the fight's awareness (scene.awareness, Ambush) are two
+        // things. Someone with him who has not been established as unaware has seen him (c.6.2); an Ambush still needs
+        // an established "unaware" (src/combat.js initEncounter). unaware: whom the same reply establishes as unaware in
+        // a later step (src/v4/world.js), so the order of its deltas does not decide it
+        if (s.scene.awareness[id] === 'unaware' || unaware?.has(id)) continue;
+        emit({ t: 'knowledge.gained', d: { who: id, about: PC_LOOK_FACT, stance: 'knows', source: 'witnessed', turn: s.turn, minute: s.clock.minute } });
+        emit({ t: 'memory.recorded', d: { memory: {
+            id: `m.t${s.turn}.seen.${id}`, turn: s.turn, minute: s.clock.minute, text: `first saw {pc} at ${s.scene.place || entityLabel(s, s.scene.location)}`,
+            who: [id, 'pc'], witnesses: [id], seen: [id], location: s.scene.location, place: s.scene.place, importance: 4, kind: 'meeting',
+        } } });
+    }
+}
+
+/**
+ * Speech: introducing himself by name tells every NPC present at the end of the turn (including people the reply just
+ * introduced) that can see him — knowledge by perception, not by the narrator's say-so.
+ */
+export function selfIntro(s, emit) {
+    if (!SELF_INTRO_RE.test(s.last.input || '') || s.scene.concealed.includes('pc')) return;
+    // only those he speaks to hear his name: NPCs named in the message, or the only NPC who notices him
+    const listeners = perceivers(s).filter((id) => id !== 'pc' && s.entities[id].kind === 'npc' && s.scene.awareness[id] !== 'unaware');
+    const addressed = listeners.filter((id) => [s.entities[id].name, ...(s.entities[id].descriptors || [])].filter(Boolean).some((n) => new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(s.last.input)));
+    const toAll = GROUP_RE.test(s.last.input) || listeners.length === 1;
+    for (const id of addressed.length ? addressed : toAll ? listeners : []) {
+        if (knows(s, id, PC_NAME_FACT)) continue;
+        emit({ t: 'knowledge.gained', d: { who: id, about: PC_NAME_FACT, stance: 'knows', source: 'told:pc', turn: s.turn, minute: s.clock.minute } });
+    }
+}
+
+/**
+ * Combat silence (the player after Testrun 4: NPC talk during a fight is only noise): a reply to a Round that leaves
+ * the fight running must carry no dialogue; if it does, the next engine block says so. Only the story part counts,
+ * not the tracker blocks after it (NPC dossiers quote sample lines).
+ */
+function combatSpeech(state, clean) {
+    if (!state.encounter) return [];
+    const story = String(clean).split(/<(?:Blocks|World_State|Character_Sheet|New_NPC|NPC_Update)\b/)[0];
+    // Alaric's own words, as the player declared them ("fuck *i curse*"), are the player's, not the narrator's
+    const said = normText(state.last?.input || '');
+    const lines = (story.match(/"[^"\n]{2,}"|“[^”\n]{2,}”/g) || []).filter((q) => !(said && normText(q) && said.includes(normText(q))));
+    if (!lines.length) return [];
+    const first = lines[0].slice(1, -1).trim();
+    return [`Combat silence broken: ${lines.length} spoken line${lines.length > 1 ? 's' : ''} in your last reply (e.g. "${first.length > 40 ? `${first.slice(0, 37)}...` : first}"). While combat is ACTIVE nobody talks.`];
+}
+
+/**
+ * An NPC/creature committed to attack Alaric in this reply: fix the encounter right away — profiles, Initiative,
+ * Turn order (Core #26 initialization; Core #23 AUTONOMOUS NPC START) — and resolve every Turn before Alaric's first
+ * one (an Ambush Opening Action included; the trigger action on its actor's Turn, Core #24), so the player sees what
+ * already happened and everyone's HP before declaring anything (live run 26.09. 23:09: the rats' first bites waited
+ * for his declaration). Alaric's own Turn is never played for him: runCombat stops there. The narrator hears of the
+ * start and of these Turns with the next combat step (enc.preface). While the reply named attackers the engine could
+ * not identify yet (hold), the fight is only fixed: its combatants are not settled, Round 1 runs with the next player
+ * message. A commitment during an ACTIVE encounter joins the fixed Turn order.
+ * @returns {null|{kind: 'started'|'joined', ids: string[], board: object, records?: object[], ended?: object, levelups?: string[]}}
+ */
+export function openCommitted(s, content, dice, emit, { hold = false, c = false } = {}) {
+    if (s.mode === 'creation' || s.entities.pc?.status === 'dead' || !(s.pending_combat || []).length) return null;
+    const committed = s.pending_combat.map((p) => p.by).filter((by) => s.entities[by] && s.entities[by].status !== 'dead' && s.scene.present.includes(by));
+    if (!committed.length) return null;
+    emit({ t: 'combat.pending_cleared', d: {} });
+    let enc;
+    let ids;
+    if (!s.encounter) {
+        // Patch 8.1: an attacker's hostile group attacks with it (those unaware of him are none of them: he is not hidden
+        // from one that attacks him, and its pack hears it)
+        const group = groupJoiners(s, content, committed, { c });
+        ids = uniq([...combatants(s, committed[0], committed), ...group.now, ...group.later]);
+        for (const id of ids) materialise(s, content, dice, emit, id);
+        enc = initEncounter(s, content, dice, { actor: committed[0], target: 'pc' }, ids.map((id) => ({ id, side: 'hostile' })), `enc.t${s.turn}r`, { c });
+        // Prototype C (4.3.0-c.4): every attacker the reply committed attacks on its own turn, its hostility the intent
+        // the story established (A arms only the first); an intent the reply gave it instead still decides
+        if (c) for (const id of ids) enc.intents[id] = enc.intents[id] || 'attack';
+        Object.assign(enc.intents, s.pending_intents || {});
+        if (!hold) {
+            // 4.3.0-c.6.6: the planner path's NPC rules hold in a fight the reply opened too (c was not passed here)
+            const res = runCombat({ enc, content, dice, state: s, c }, null);
+            enc.preface = res.records;
+            const done = persistCombat(s, content, emit, enc, res.records, true, { c });
+            return { kind: 'started', ids, board: done.board, records: res.records, ...(done.ended ? { ended: done.ended, levelups: done.levelups, ...(done.loot ? { loot: done.loot } : {}), ...(done.rewardLines?.length ? {rewardLines: done.rewardLines, rewards: done.rewards} : {}) } : {}) };
+        }
+        emit({ t: 'encounter.started', d: { encounter: enc } });
+    } else {
+        enc = clone(s.encounter);
+        ids = committed.filter((id) => !enc.combatants[id]);
+        if (!ids.length) return null;
+        const group = groupJoiners(s, content, ids, { c, exclude: Object.keys(enc.combatants) });
+        ids = uniq([...ids, ...group.now, ...group.later]);
+        for (const id of ids) {
+            materialise(s, content, dice, emit, id);
+            addCombatant(enc, s, content, id, 'hostile', 'attack', { c });
+        }
+        emit({ t: 'encounter.updated', d: { encounter: enc } });
+    }
+    for (const id of ids) if (s.scene.awareness[id] !== 'aware') emit({ t: 'scene.awareness', d: { id, level: 'aware' } });
+    return { kind: enc.round === 0 ? 'started' : 'joined', ids, board: combatBoard(enc) };
+}
+
+/**
+ * Verbatim trace of the player's action (research: verbatim text beats extracted artifacts). It is Alaric's own
+ * record only — the player's words describe intentions NPCs did not perceive; NPC memories come from narration
+ * reports, first sight and fights. The people present are kept in `about` so retrieval can find the episode.
+ */
+export function episode(s, msg) {
+    const input = s.last.input;
+    if (!input || s.encounter || s.last.outcome?.kind === 'combat') return null;
+    const others = s.scene.present.filter((id) => id !== 'pc' && s.entities[id] && s.entities[id].status !== 'dead');
+    return {
+        id: `m.t${s.turn}${msg !== null ? `.m${msg}` : ''}.ep`, turn: s.turn, minute: s.clock.minute,
+        text: `${s.scene.place || entityLabel(s, s.scene.location)}: {pc}: "${input.replace(/\s+/g, ' ').slice(0, 160)}"`,
+        who: ['pc'], about: others, witnesses: ['pc'], seen: ['pc'], location: s.scene.location,
+        place: s.scene.place, importance: others.length ? 3 : 2, kind: 'episode', msg,
+    };
+}
+
+/** Numbers about Alaric in the reply that contradict the engine (Testrun-v1: "Init 8", missing Coin, arrow drift). */
+export function trackerDrift(s, content, text) {
+    const out = [];
+    const pc = s.entities.pc;
+    if (!pc?.sheet) return out;
+    const sh = pc.sheet;
+    const dv = deriveCharacter(sh, content);
+    const others = s.scene.present.filter((id) => id !== 'pc').flatMap((id) => [s.entities[id]?.name, ...(s.entities[id]?.descriptors || [])]).filter(Boolean).map(normText);
+    const lines = String(text).split(/\n/).filter((l) => !others.some((o) => normText(l).includes(o)));
+    const seen = new Set();
+    const flag = (field, shown, value, why = '') => {
+        if (seen.has(field) || Number(shown) === value) return;
+        seen.add(field);
+        out.push(`Tracker drift: ${field} shown as ${shown}, engine value is ${value}${why}. Use the engine value.`);
+    };
+    for (const l of lines) {
+        let m;
+        if ((m = /\bInit(?:iative)?\s*[:=]?\s*(\d+)/i.exec(l))) flag('Initiative', m[1], dv.init, ` (floor(1.5 × AGI ${sh.stats.AGI}))`);
+        if ((m = /\bHP\s*[:=]?\s*(\d+)\s*\/\s*(\d+)/i.exec(l)) && Number(m[2]) === dv.maxHp) flag('HP', m[1], sh.hp);
+        if ((m = /\bSTA\s*[:=]?\s*(\d+)\s*\/\s*(\d+)/i.exec(l)) && Number(m[2]) === dv.maxSta) flag('STA', m[1], sh.sta);
+        if ((m = /\bMP\s*[:=]?\s*(\d+)\s*\/\s*(\d+)/i.exec(l)) && Number(m[2]) === dv.maxMp) flag('MP', m[1], sh.mp);
+        if ((m = /\bXP\s*[:=]?\s*(\d+)\s*\/\s*(\d+)/i.exec(l))) flag('XP', m[1], sh.xp);
+        if (sh.inventory.standard_arrow !== undefined && ((m = /\b(\d+)\s+(?:Standard\s+)?Arrows?\b/i.exec(l)) || (m = /\bArrows?\s*[:=(]\s*(\d+)/i.exec(l)))) flag('Arrows', m[1], sh.inventory.standard_arrow);
+        if ((m = /\bCoin\s*[:=]\s*([^|\n]+)/i.exec(l))) {
+            const cp = parseCoin(m[1], content);
+            if (cp !== null && cp !== sh.coin_cp) flag('Coin (Copper)', cp, sh.coin_cp);
+        }
+    }
+    return out;
+}
+
+// ------------------------------------------------------------------------------------------------ context
+/**
+ * The prompt block for the upcoming generation. outcome defaults to the one recorded for this turn.
+ * opts: {input, corrections, budget, lastReply, systemQuery}
+ */
+export function turnContext(state, content, opts = {}) {
+    const outcome = opts.outcome !== undefined ? opts.outcome : state.last.outcome;
+    const situations = opts.situations || state.last.situations || [];
+    return buildContext(state, content, { ...opts, outcome, situations });
+}
+
+/** Fold a list of per-message event arrays into the campaign state. */
+export function foldChat(eventLists) {
+    return fold(eventLists.flat());
+}

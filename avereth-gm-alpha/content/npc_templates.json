@@ -1,0 +1,166 @@
+{
+  "_status": "PROPOSED content (new in v2). Fills the gap exposed by Testrun-v1: no rule defined how a human NPC combatant is built, so the model improvised a trapper profile (\"Level 2, HP maybe ~60 ... let's just make him HP 70\"). Everything here is derived from existing canon; only default Levels, free-point emphasis and concrete gear values inside the Content #9 F-rank reference ranges are new choices and should be confirmed by the author.",
+  "_derivation": [
+    "Lore #1: most humans receive a Base Class around adulthood -> an adult human NPC is a core-stat character with a Base Class.",
+    "Lore #3: most people remain F/E -> default Levels 1-3 (F-rank).",
+    "Content #0 + Core #3: Human baseline 5/5/5/5/5/5, class favored +1/+1 once at Level 1, +5 distributed Stat Points per later Level (no automatic favored growth).",
+    "Core #2: MaxHP = 50 + Level*5 + VIT*5, MaxSTA 100, Init = AGI + floor(PER/2), Base DEF/MDEF = floor(VIT/4)/floor(WIL/4).",
+    "Content #9: F-rank gear references (Martial Weapon ATK 4-10, Light Armor DEF 2-4 / MDEF 2-5, ...).",
+    "Basic Attack: the Base Class Basic Attack (Content #1-#5). If the NPC's weapon does not fit that attack (e.g. a Ranger fighting with a hand-axe), the engine uses the Basic Attack whose weapon family matches (weapon_family_basic below) — PROPOSED rule."
+  ],
+  "free_point_rule": "Per Level gained after 1: distribute 5 free points in priority order 2/2/1 over the first three stats of 'priority'.",
+  "weapon_family_basic": {
+    "melee": "warrior.basic_attack",
+    "heavy_melee": "guardian.basic_attack",
+    "precision": "duelist.basic_attack",
+    "bow": "ranger.basic_attack",
+    "focus": "mage.basic_attack",
+    "unarmed": "warrior.basic_attack"
+  },
+  "weapon_words": {
+    "melee": ["axe", "hand-axe", "hatchet", "sword", "longsword", "club", "cudgel", "spear", "pitchfork", "hammer", "machete", "knife", "tool", "billhook", "sickle"],
+    "heavy_melee": ["mace", "flail", "maul"],
+    "precision": ["rapier", "dagger", "stiletto", "short blade", "shortsword"],
+    "bow": ["bow", "shortbow", "longbow", "hunting bow"],
+    "focus": ["staff", "wand", "focus", "orb"],
+    "unarmed": ["fists", "unarmed", "bare hands"]
+  },
+  "templates": [
+    {
+      "id": "commoner", "label": "Commoner / townsfolk",
+      "descriptors": ["commoner", "townsfolk", "villager", "farmer", "peasant", "merchant", "trader", "servant", "shopkeeper", "innkeeper", "barmaid", "boy", "girl", "woman", "man", "traveler", "pilgrim", "carter", "shepherd", "goatherd"],
+      "class": "warrior", "level": {"default": 1, "min": 1, "max": 3},
+      "priority": ["VIT", "STR", "AGI"],
+      "weapon": {"name": "Improvised tool", "family": "unarmed", "atk": 0},
+      "armor": null, "skills": [], "temperament": "skittish"
+    },
+    {
+      "id": "laborer", "label": "Laborer / woodsman",
+      "descriptors": ["woodsman", "woodcutter", "charcoal burner", "laborer", "miner", "dockhand", "smith", "blacksmith", "porter", "farmhand"],
+      "class": "warrior", "level": {"default": 2, "min": 1, "max": 4},
+      "priority": ["STR", "VIT", "AGI"],
+      "weapon": {"name": "Hand-axe", "family": "melee", "atk": 5},
+      "armor": null, "skills": [], "temperament": "cautious"
+    },
+    {
+      "id": "hunter", "label": "Hunter / trapper",
+      "descriptors": ["hunter", "trapper", "forester", "poacher", "tracker", "gamekeeper"],
+      "class": "ranger", "level": {"default": 2, "min": 1, "max": 5},
+      "priority": ["AGI", "PER", "VIT"],
+      "weapon": {"name": "Hand-axe", "family": "melee", "atk": 5},
+      "armor": null, "skills": [], "temperament": "cautious"
+    },
+    {
+      "id": "guard", "label": "Guard / watchman / soldier",
+      "descriptors": ["guard", "town guard", "gate guard", "watchman", "sentry", "soldier", "militia", "patrol", "guardsman"],
+      "class": "warrior", "level": {"default": 3, "min": 2, "max": 8},
+      "priority": ["STR", "VIT", "AGI"],
+      "weapon": {"name": "Guard's sword", "family": "melee", "atk": 6},
+      "armor": {"name": "Guard's light armor", "def": 3, "mdef": 2},
+      "skills": ["warrior.heavy_slash", "warrior.guard"], "temperament": "aggressive"
+    },
+    {
+      "id": "bandit", "label": "Bandit / brigand",
+      "descriptors": ["bandit", "brigand", "highwayman", "robber", "thug", "cutthroat", "raider", "outlaw"],
+      "class": "duelist", "level": {"default": 2, "min": 1, "max": 6},
+      "priority": ["STR", "AGI", "VIT"],
+      "weapon": {"name": "Short blade", "family": "precision", "atk": 5},
+      "armor": {"name": "Worn light armor", "def": 2, "mdef": 2},
+      "skills": ["duelist.precision_thrust"], "temperament": "aggressive"
+    },
+    {
+      "id": "hedge_mage", "label": "Hedge mage / apprentice / scholar",
+      "descriptors": ["mage", "apprentice", "scholar", "hedge mage", "wizard", "sorcerer", "arcanist"],
+      "class": "mage", "level": {"default": 2, "min": 1, "max": 6},
+      "priority": ["INT", "WIL", "PER"],
+      "weapon": {"name": "Wooden staff", "family": "focus", "matk": 5},
+      "armor": {"name": "Robes", "def": 2, "mdef": 3},
+      "skills": ["mage.arcane_bolt"], "temperament": "cautious"
+    },
+    {
+      "id": "adventurer", "label": "Adventurer (by Base Class)",
+      "descriptors": ["adventurer", "adventuress", "mercenary", "sellsword", "archer", "bowman", "ranger", "swordsman"],
+      "class": null, "level": {"default": 3, "min": 1, "max": 14},
+      "priority_by_class": {"warrior": ["STR", "VIT", "AGI"], "mage": ["INT", "WIL", "PER"], "guardian": ["VIT", "WIL", "STR"], "duelist": ["STR", "AGI", "PER"], "ranger": ["AGI", "PER", "VIT"]},
+      "gear_from_starter_kit": true,
+      "skills_rule": "first two Offensive/Defensive entries of the class skill pool",
+      "temperament": "cautious"
+    }
+  ],
+  "ruleset_2": {
+    "_note": "Patch 9A: the templates of a campaign started under ruleset 2 (content/campaign_start.json); a legacy campaign keeps 'templates' above unchanged. Same ids, labels and temperaments, so a person is the same template under either rules; the descriptors are those of the legacy set and a few more of the same roles (Patch 9A.1: footpad, road agent ...), matched in the plural too (src/content.js templateFor). A person's class (a lore fact, possibly unknown) and their combat training are separate: 'untrained' gets no starter Skills (the class Basic Attack only when a class is established, else the plain attack of what they hold), 'trained' gets the class Basic Attack and exactly two starter Skills of the class pool chosen by starter_roles (attack / defense / utility; equal choices by the campaign seed and the person's id, fixed in entity.sheet_set). stat_basis: the favored stats used internally for a person without an established class (never told as their class). Weapons do not decide classes: a bow gives anyone its Bow Shot (classes.json weapon_attacks).",
+    "templates": [
+      {
+        "id": "commoner", "label": "Commoner / townsfolk",
+        "descriptors": ["commoner", "townsfolk", "villager", "farmer", "peasant", "merchant", "trader", "servant", "shopkeeper", "innkeeper", "barmaid", "boy", "girl", "woman", "man", "traveler", "pilgrim", "carter", "shepherd", "goatherd"],
+        "class": null, "training": "untrained", "stat_basis": ["VIT", "STR"], "level": {"default": 1, "min": 1, "max": 3},
+        "priority": ["VIT", "STR", "AGI"],
+        "weapon": {"name": "Improvised tool", "family": "unarmed", "atk": 0},
+        "armor": null, "temperament": "skittish"
+      },
+      {
+        "id": "laborer", "label": "Laborer / woodsman",
+        "descriptors": ["woodsman", "woodcutter", "charcoal burner", "laborer", "miner", "dockhand", "smith", "blacksmith", "porter", "farmhand"],
+        "class": null, "training": "untrained", "stat_basis": ["STR", "VIT"], "level": {"default": 2, "min": 1, "max": 4},
+        "priority": ["STR", "VIT", "AGI"],
+        "weapon": {"name": "Hand-axe", "family": "melee", "atk": 5},
+        "armor": null, "temperament": "cautious"
+      },
+      {
+        "id": "hunter", "label": "Hunter / trapper",
+        "descriptors": ["hunter", "trapper", "forester", "poacher", "tracker", "gamekeeper"],
+        "class": "rogue", "training": "untrained", "level": {"default": 2, "min": 1, "max": 5},
+        "priority": ["AGI", "PER", "VIT"],
+        "weapon": {"name": "Hunting bow", "family": "bow", "atk": 5},
+        "inventory": {"standard_arrow": 12},
+        "armor": null, "temperament": "cautious"
+      },
+      {
+        "id": "guard", "label": "Guard / watchman / soldier",
+        "descriptors": ["guard", "town guard", "gate guard", "watchman", "sentry", "soldier", "militia", "patrol", "guardsman"],
+        "class": "warrior", "training": "trained", "starter_roles": ["attack", "defense"], "level": {"default": 3, "min": 2, "max": 8},
+        "priority": ["STR", "VIT", "AGI"],
+        "weapon": {"name": "Guard's sword", "family": "melee", "atk": 6},
+        "armor": {"name": "Guard's light armor", "def": 3, "mdef": 2},
+        "temperament": "aggressive"
+      },
+      {
+        "id": "bandit", "label": "Bandit / brigand",
+        "descriptors": ["bandit", "brigand", "highwayman", "robber", "thug", "cutthroat", "raider", "outlaw", "footpad", "road agent", "highway robber", "waylayer", "marauder", "mugger"],
+        "class": "rogue", "training": "trained", "starter_roles": ["attack", "utility"], "level": {"default": 2, "min": 1, "max": 6},
+        "priority": ["AGI", "STR", "VIT"],
+        "weapon": {"name": "Short blade", "family": "precision", "atk": 5},
+        "armor": {"name": "Worn light armor", "def": 2, "mdef": 2},
+        "temperament": "aggressive"
+      },
+      {
+        "id": "hedge_mage", "label": "Hedge mage / apprentice / scholar",
+        "descriptors": ["mage", "apprentice", "scholar", "hedge mage", "wizard", "sorcerer", "arcanist"],
+        "class": "mage", "training": "trained", "starter_roles": ["attack", "defense"], "level": {"default": 2, "min": 1, "max": 6},
+        "priority": ["INT", "WIL", "PER"],
+        "weapon": {"name": "Wooden staff", "family": "focus", "matk": 5},
+        "armor": {"name": "Robes", "def": 2, "mdef": 3},
+        "temperament": "cautious"
+      },
+      {
+        "id": "adventurer", "label": "Adventurer (by Base Class)",
+        "descriptors": ["adventurer", "adventuress", "mercenary", "sellsword", "archer", "bowman", "ranger", "swordsman"],
+        "class": null, "training": "trained", "level": {"default": 3, "min": 1, "max": 14},
+        "priority_by_class": {"warrior": ["STR", "VIT", "AGI"], "mage": ["INT", "WIL", "PER"], "rogue": ["AGI", "PER", "VIT"]},
+        "starter_roles_by_class": {"warrior": ["attack", "defense"], "mage": ["attack", "defense"], "rogue": ["attack", "utility"]},
+        "class_words": {"warrior": ["warrior", "swordsman", "swordswoman", "fighter", "knight", "mercenary", "sellsword"], "mage": ["mage", "wizard", "sorcerer", "sorceress", "arcanist", "spellcaster"], "rogue": ["rogue", "thief", "scout", "cutpurse", "skirmisher"]},
+        "style_classes": {"melee": ["warrior"], "heavy_melee": ["warrior"], "precision": ["rogue"], "focus": ["mage"], "bow": ["rogue", "warrior"]},
+        "bow_words": ["archer", "bowman", "bowwoman", "ranger", "bow", "shortbow", "longbow", "hunting bow"],
+        "gear_from_starter_kit": true,
+        "skills_rule": "class: an established class, else a class word of the person, else the style of the weapon they are shown with (a bow: rogue or warrior), else by the seed among the three; the class's starter kit, a bow (with a quiver) for an archer; two starter Skills by starter_roles_by_class",
+        "temperament": "cautious"
+      }
+    ]
+  },
+  "temperaments": {
+    "aggressive": "closes in and attacks; retreats only at <=15% HP if sapient; beasts fight on",
+    "cautious": "attacks when it can reach; a melee-only NPC shot from range takes cover or closes in; retreats at <=35% HP",
+    "skittish": "flees once threatened or hurt; attacks only when cornered (ENGAGED with no retreat)",
+    "defensive": "holds position, attacks only targets that are ENGAGED, otherwise keeps cover"
+  }
+}

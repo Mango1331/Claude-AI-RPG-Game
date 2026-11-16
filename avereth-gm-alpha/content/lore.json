@@ -1,0 +1,718 @@
+{
+  "_source": "Lore v0.8, revised with Lorebook v0.14 (five great powers, overland play, Dungeons with optional structured progression) + First Message start locations.",
+  "entries": [
+    {
+      "id": "lore.world_foundations",
+      "title": "[LORE] Avereth World Foundations",
+      "kind": "topic",
+      "text": "AVERETH\nAvereth is the continent this campaign is played on: a settled heartland of roads, rivers, forests, hills and wild country, with coasts only at its far edges; play is overland. Civilizations, species, religions and dynasties have risen and vanished over a long history; some ancient beings remember eras ordinary people know only as myth.\n\nTone is high fantasy with contrast: safe cities, trade, families and festivals coexist with dangerous wilderness, Dungeons, political violence and old powers. The setting is not uniformly grim.\n\nCurrent campaign scope defines three human kingdoms, two monster realms, the neutral Adventurers' Guild and independent high-rank actors. Minor lordships, free towns and further powers may exist but remain undefined until play needs them.\nHuman and monster states are not unified blocs and may trade, ally, feud or fight across species lines.\n\nMaterial baseline: Western-fantasy medieval society alongside mana and high magic; modern/industrial technology is not assumed.",
+      "keys": [
+        "Avereth",
+        "Avereth continent",
+        "human kingdoms",
+        "monster realms"
+      ],
+      "entities": [],
+      "importance": 0.9,
+      "baseline": true,
+      "source": "Lore v0.8 #0"
+    },
+    {
+      "id": "lore.rank_class_knowledge",
+      "title": "[LORE] Rank, Class, and Public Knowledge",
+      "kind": "topic",
+      "text": "PUBLIC POWER KNOWLEDGE\nOrdinary society broadly understands Level, Rank, Class, Skills, Skill Proficiency and Evolution.\nExact Levels require measurement (commonly Guild/temple methods); exact Core Stat numbers are not normally visible.\n\nMost humans receive a Base Class around adulthood. Class reflects affinity rather than an absolute Skill prohibition.\nRank corresponds socially to Evolution stage: F Base, E first evolution, D second, C third, B Half-Divine, A higher Transcendent, S Full-Divine.\nStandard evolution concepts are known; rare conditions are valuable secrets often held by powerful families, temples or institutions.\n",
+      "keys": [
+        "rank system",
+        "Rank",
+        "Half-Divine",
+        "Full Divine",
+        "public knowledge"
+      ],
+      "entities": [],
+      "importance": 0.5,
+      "baseline": false,
+      "source": "Lore v0.8 #1"
+    },
+    {
+      "id": "lore.mana_learning",
+      "title": "[LORE] Mana, Skill Learning, and Education",
+      "kind": "topic",
+      "text": "MANA / LEARNING\nMana is a normal part of Avereth and can support minor everyday uses as well as combat magic.\nOrdinary formal Skills are most commonly learned from teachers or Skill Stones; experimentation alone is not the normal path for most people.\n\nSchools and specialist academies exist. Nobles, wealthy families, militaries, temples, Adventurer families and scholarship students have better access to elite training.\nAvereth does not normally use cultivation-style Sects; great houses, royal lines, temples, military lineages and old magical families fill similar institutional niches and often guard teachers, Skill Stones, rare Evolution knowledge, Gear and records.\n",
+      "keys": [
+        "mana",
+        "Skill Stone",
+        "academy",
+        "magic education",
+        "teacher"
+      ],
+      "entities": [],
+      "importance": 0.5,
+      "baseline": false,
+      "source": "Lore v0.8 #2"
+    },
+    {
+      "id": "lore.lifespan_power",
+      "title": "[LORE] Lifespan and Social Power",
+      "kind": "topic",
+      "text": "EVOLUTION / LIFESPAN\nEvolution improves health and longevity as well as power. Broad natural lifespans:\nF ~100-120y; E ~150-180y; D ~250-350y; C ~500-700y; B ~2,000-3,000y; A ~10,000-20,000y; S 100,000y+.\nThese are tendencies, not protection from violence or exceptional causes.\n\nSOCIAL POWER\nMost people remain F/E. D-ranks are respected specialists/local elites; C-ranks are major regional figures; B-ranks often occupy senior institutional roles. A-ranks are rare strategic figures; S-ranks are kingdom-level deterrents.\nWealth strongly affects training access below the highest ranks, but cannot indefinitely substitute for personal power.\nExact high-rank populations are uncertain because independents and hidden individuals exist.\n",
+      "keys": [
+        "lifespan",
+        "rank distribution",
+        "social power",
+        "A-rank",
+        "S-rank",
+        "B-rank"
+      ],
+      "entities": [],
+      "importance": 0.5,
+      "baseline": false,
+      "source": "Lore v0.8 #3"
+    },
+    {
+      "id": "lore.adventurers_guild",
+      "title": "[LORE] Adventurers' Guild and Jurisdiction",
+      "kind": "topic",
+      "text": "ADVENTURERS' GUILD\nA neutral transnational Guild operates across recognized human kingdoms and has limited formal contact with monster realms.\nIt handles registration, Level/Rank certification, quests, monster/Dungeon information, rewards, material brokerage, frontier support and high-rank mediation.\nIts strength is network, legitimacy, information and economic reach; it does not casually command every powerful Adventurer.\n\nJURISDICTION BOUNDARY\nThe Guild does NOT replace local rulers, civil authorities, courts, town/city guards, militaries, property law or ordinary criminal law.\nIts authority comes from contracts, certification, information networks, negotiated privileges and the willingness of states/communities to recognize its functions.\nLocal law and Guild rules may overlap, cooperate or conflict depending on established circumstances.\n",
+      "keys": [
+        "Adventurers' Guild",
+        "Guild",
+        "Guild authority",
+        "Guild jurisdiction",
+        "Guild registration",
+        "Guild quest"
+      ],
+      "entities": [
+        "fac.adventurers_guild"
+      ],
+      "importance": 0.5,
+      "baseline": false,
+      "source": "Lore v0.8 #4"
+    },
+    {
+      "id": "lore.guild_contracts",
+      "title": "[LORE] Guild contracts",
+      "kind": "topic",
+      "text": "GUILD CONTRACTS\nA Guild contract is posted, taken and closed at the Guild: the client deposits the posted reward with it and need not appear. Clients, witnesses and local authorities inform, give access and confirm proof (a signature, a seal, trophies); they neither complete the contract nor pay it. Alaric turns it in himself at the front desk of any Guild branch (every human city and capital has one), which checks the proof and pays the posted reward; reaching the city or finishing the work turns nothing in, and only the turn-in makes it a completed Guild Quest. A contract posts one fixed Guild payout; anything variable or per unit is the client's separate bonus. Registration and other Guild procedures are not contracts; work agreed directly with a person is private and settled between them.",
+      "keys": [
+        "Guild quest",
+        "Guild contract",
+        "quest reward",
+        "turn in",
+        "turn the quest in",
+        "front desk",
+        "bounty"
+      ],
+      "entities": [
+        "fac.adventurers_guild"
+      ],
+      "importance": 0.5,
+      "baseline": false,
+      "source": "Live run 27.09.2026 04:11 (Guild contract lifecycle); lorebook v0.12 uid 34"
+    },
+    {
+      "id": "lore.monster_ecology",
+      "title": "[LORE] Monster Ecology and Fauna",
+      "kind": "topic",
+      "text": "MONSTER ECOLOGY / FAUNA\nOn Avereth, native non-sapient fauna are part of the Monster ecology.\nA wolf, deer, horse, boar, bear, bird or other familiar animal-shaped creature is mechanically a Monster with Level and Rank even when peaceful, domesticated or ecologically ordinary.\n\"Animal\" remains normal everyday language for body type/ecology; it does not indicate a separate non-Monster rules category.\n\nMonster classification is mechanical/ecological, NOT a synonym for hostility.\nOrdinary domesticated F-rank fauna may fill the same everyday roles as livestock, mounts, hunting animals and pets where appropriate.\n\nMonsters are natural populations, not temporary game spawns.\nThey reproduce, compete, migrate, establish territories/social structures, are hunted or domesticated, and may evolve through Ranks.\nMost ordinary fauna around settled regions are F-rank. Higher-Rank evolved specimens become progressively rarer and more dangerous.\n\nSapience is separate from Monster classification.\nMany Monsters are non-sapient fauna; others can speak, organize societies, rule territory and conduct diplomacy.\n\nElite = an explicitly exceptional individual/encounter type.\nBoss = a practical label for an exceptional Dungeon-centered or encounter-defining threat, not necessarily a separate species.\n",
+      "keys": [
+        "monster ecology",
+        "fauna",
+        "animal",
+        "animals",
+        "domesticated monster",
+        "wild monster",
+        "beast"
+      ],
+      "entities": [],
+      "importance": 0.5,
+      "baseline": false,
+      "source": "Lore v0.8 #5"
+    },
+    {
+      "id": "lore.geopolitics",
+      "title": "[LORE] Continental Geopolitics and High-Rank Deterrence",
+      "kind": "topic",
+      "text": "CURRENT GREAT-POWER MAP\nHuman kingdoms: Valedorn Crown, Caelreth, Duskreach.\nMonster realms: Ashen Scale Dominion, Verdant Fang Court.\nAdditional states may exist; borders, minor lordships, free towns, noble holdings and most history stay open until needed.\n\nThere is no permanent human-vs-monster bloc. Trade, rivalry, border conflict, non-aggression and temporary alliances all occur.\n\nHIGH-RANK DETERRENCE\nS-ranks are strategic actors, not routine battlefield units. Direct clashes risk catastrophic collateral damage and escalation, so they usually act through deterrence, diplomacy, representatives or only truly strategic intervention.\nB/A-ranks handle much of the practical high-level conflict. A powerful ruler does not intervene merely because an unrelated lower-rank member of the same species/faction was killed.",
+      "keys": [
+        "geopolitics",
+        "high-rank deterrence",
+        "diplomacy",
+        "S-rank deterrence"
+      ],
+      "entities": [],
+      "importance": 0.5,
+      "baseline": false,
+      "source": "Lore v0.8 #6"
+    },
+    {
+      "id": "realm.valedorn_crown",
+      "title": "[REALM] Human Kingdom — Valedorn Crown",
+      "kind": "realm",
+      "text": "VALEDORN CROWN\n\nPosition: central Avereth.\nCapital: Crownheart.\nStatus: strongest human kingdom.\nPublic S-ranks: 3.\n\nIdentity:\nValedorn is the political and commercial heart of the human kingdoms and hosts the most influential royal court on the continent.\nIt possesses deep noble lineages, a broad administration, old military institutions, busy roads and river trade, merchant houses and one of the largest Adventurers' Guild headquarters.\nIts great temples and healer orders are the most renowned in Avereth; most known soul-return specialists train or serve there. Temples hold real influence, but the kingdom is not a theocracy.\n\nIts strength comes less from a single specialty than from having almost everything at a high level: wealth, population, administration, military organization, magic, faith, diplomacy, and several Full-Divine protectors whose deterrence its allies rely on.\n\nValedorn is powerful but not automatically dominant; coalitions and internal rivalries can still constrain it.",
+      "keys": [
+        "Valedorn",
+        "Crownheart"
+      ],
+      "entities": [
+        "realm.valedorn_crown"
+      ],
+      "importance": 0.5,
+      "baseline": false,
+      "source": "Lore v0.8 #7"
+    },
+    {
+      "id": "realm.caelreth",
+      "title": "[REALM] Human Kingdom — Caelreth",
+      "kind": "realm",
+      "text": "CAELRETH\n\nPosition: western Avereth.\nCapital: Asterhall.\nStatus: top-tier human kingdom.\nPublic S-ranks: 2.\n\nIdentity:\nCaelreth is the magical research and training center of the human kingdoms.\nIt is known for magical colleges and academies, Skill-Stone study and trade, enchantment research, ritual theory, archives and old mage families.\n\nCaelreth's nobles heavily protect rare Evolution knowledge.\nIts cities contain unusually dense populations of professional mages and high-rank researchers.\n\nIts western reaches border the Verdant Fang Court; relations are cautious but often scholarly and commercial rather than purely hostile.",
+      "keys": [
+        "Caelreth",
+        "Asterhall"
+      ],
+      "entities": [
+        "realm.caelreth"
+      ],
+      "importance": 0.5,
+      "baseline": false,
+      "source": "Lore v0.8 #8"
+    },
+    {
+      "id": "realm.duskreach",
+      "title": "[REALM] Human Kingdom — Duskreach",
+      "kind": "realm",
+      "text": "DUSKREACH\n\nPosition: southeastern marches.\nCapital: Blackgate.\nStatus: regional human kingdom.\nPublic S-ranks: none.\n\nIdentity:\nDuskreach is the hard frontier of the human kingdoms, where Monsters in forest, moor and hill are a daily fact. Monster hunting, mercenary companies, garrisons, Guild contracts and the trade in Monster materials sustain it.\nIt has strong B- and A-rank military figures but no known Full-Divine protector.\n\nIt survives through fortifications, alliances with stronger neighbors (Valedorn above all), Guild support and careful diplomacy. Its eastern marches face the Ashen Scale Dominion; border incidents happen, but both sides avoid a war that could draw S-ranks in.\n\nIts rulers are acutely aware that wealth and armies cannot fully substitute for an S-rank at the kingdom level.",
+      "keys": [
+        "Duskreach",
+        "Blackgate"
+      ],
+      "entities": [
+        "realm.duskreach"
+      ],
+      "importance": 0.5,
+      "baseline": false,
+      "source": "Lore v0.8 #12"
+    },
+    {
+      "id": "realm.ashen_scale_dominion",
+      "title": "[REALM] Monster Realm — Ashen Scale Dominion",
+      "kind": "realm",
+      "text": "ASHEN SCALE DOMINION\n\nPosition: volcanic eastern highlands.\nSeat of power: the Cinder Throne.\nStatus: strongest recognized monster realm.\nPublic S-ranks: 3.\n\nIdentity:\nThe Dominion is ruled by ancient draconic and scaled bloodlines alongside other fire- and mountain-adapted monster species.\n\nIts oldest rulers think in centuries rather than years.\nStrength, bloodline, territory, oath, and personal authority matter more than human-style bureaucracy.\n\nThe Dominion is Duskreach's most dangerous neighbor.\nNeither side seeks a war large enough to force direct S-rank confrontation.\n",
+      "keys": [
+        "Ashen Scale Dominion",
+        "Cinder Throne"
+      ],
+      "entities": [
+        "realm.ashen_scale_dominion"
+      ],
+      "importance": 0.5,
+      "baseline": false,
+      "source": "Lore v0.8 #13"
+    },
+    {
+      "id": "realm.verdant_fang_court",
+      "title": "[REALM] Monster Realm — Verdant Fang Court",
+      "kind": "realm",
+      "text": "VERDANT FANG COURT\n\nPosition: ancient western forests.\nSeat of power: Thornheart.\nStatus: top-tier monster realm.\nPublic S-ranks: 2.\n\nIdentity:\nThe Court is a loose but ancient polity of powerful beast lineages, transformed predators, forest spirits, and other intelligent woodland species.\n\nIt is called a Court because status is negotiated through territory, lineage, favors, challenges, and old pacts rather than a human-style crown.\n\nIts relations with Caelreth include trade, magical research, territorial disputes, and occasional cooperation against shared threats.\n",
+      "keys": [
+        "Verdant Fang Court",
+        "Thornheart"
+      ],
+      "entities": [
+        "realm.verdant_fang_court"
+      ],
+      "importance": 0.5,
+      "baseline": false,
+      "source": "Lore v0.8 #14"
+    },
+    {
+      "id": "lore.currency",
+      "title": "[LORE] Currency and Everyday Economy",
+      "kind": "topic",
+      "text": "CURRENCY / EVERYDAY ECONOMY\nCommon currency: 10 Copper = 1 Silver; 10 Silver = 1 Gold.\nCoins are whole units; the current standard has no fractional Copper.\n\nLegal trade may include Skill Stones, Gear, magical tools, monster/Dungeon materials, healing, transport, training, maps and information.\nPrices are intentionally local/contextual rather than fixed in Lore.\n",
+      "keys": [
+        "currency",
+        "Copper",
+        "Silver",
+        "Gold",
+        "coin",
+        "coins",
+        "price",
+        "prices",
+        "economy",
+        "trade"
+      ],
+      "entities": [],
+      "importance": 0.5,
+      "baseline": false,
+      "source": "Lore v0.8 #15"
+    },
+    {
+      "id": "lore.dungeons",
+      "title": "[LORE] Natural Dungeons",
+      "kind": "topic",
+      "text": "DUNGEONS\nDungeons are physical, persistent places in Avereth, arising from concentrated mana, natural phenomena, ancient civilizations or other traceable causes. They can contain unusual environments, rare materials, Skill Stones and exceptional Monsters.\nDungeons are fairly common and unevenly spread. Around larger towns and settled regions there are often known Dungeons that people work; how many differs from region to region. Low-Rank Dungeons are common, high-Rank ones much rarer; a mighty Dungeon is a political and military asset.\nKnown Dungeons may be held by noble houses, local or royal rulers, the Adventurers' Guild, academies of magic, temples, trading houses or other established bodies, for licences, material rights, training, entry fees or exclusive expeditions. The Guild brokers Dungeon work, keeps records of known Dungeons and may hold access rights of its own, but it does not own every Dungeon; its jurisdiction stays as established. A fee is paid only when Alaric agrees to pay it.\nEvery Dungeon has a danger Rank of its own, F to S on the Power Rank bands, or a range of Ranks across its levels (Goblin Warrens F–D: scouts on the first level, warriors and shamans on the second, a champion on the third). Danger often rises with depth, but not always. A Dungeon never adapts to Alaric's Level, Power Rank or Guild Rank: a weak adventurer can find a deadly Dungeon, a strong one a harmless one. An unknown Rank stays unknown until established.\nA true Dungeon has a recognizable theme and dominant ecology (goblin warrens, undead catacombs, a spider nest, crystal caverns, a construct vault, a dragon sanctum); not every creature in it is of one kind, and a species alone does not fix a Rank. A theme is a world identity, not a spawn table, and does not change without cause.\nSome have a magically structured progression: successive levels with their own Monster populations, guardians and bosses, valuable materials and special loot; their Monsters and resources can return over time, access can be restricted, other adventurers enter on their own, and rare return stones can carry a bearer back out. They are shared world locations, not temporary instances for Alaric. Many of them show a gate manifestation or magic display at their way in that tells how many are inside and how many it admits at once, the Ranks of the levels known to it, and when the Dungeon next renews; its form differs from Dungeon to Dungeon (a sigil-stone that glows, a ring of runes in the rock, words of light over an arch). People in Avereth know such displays; not every natural Dungeon has one.\nOrdinary caves, catacombs, ruins and tunnels are explorable places, not Dungeons, unless play establishes one. Exact rules, layouts, timings, capacities, ownership and local history remain open until established.",
+      "keys": [
+        "Dungeon",
+        "Dungeon Rank",
+        "Dungeon clearance",
+        "Dungeon ecology",
+        "Dungeon materials",
+        "Dungeons",
+        "Glimmerdeep Grotto",
+        "Mossback Warrens",
+        "Old Crown Catacombs",
+        "Skill Stone",
+        "natural Dungeon"
+      ],
+      "entities": [],
+      "importance": 0.5,
+      "baseline": false,
+      "source": "Lore v0.8 #16"
+    },
+    {
+      "id": "lore.death_resurrection",
+      "title": "[LORE] Death and Resurrection",
+      "kind": "topic",
+      "text": "DEATH / RESURRECTION\nDeath is socially real.\nPowerful temples or specialists can sometimes perform rare, extremely expensive soul-return rituals through high magic.\nResurrection is not routine medical care and ordinary people cannot assume access to it.\nExact limits, prices, eligibility and formulas remain undefined until relevant.\n",
+      "keys": [
+        "death",
+        "resurrection",
+        "soul-return",
+        "revival",
+        "resurrection ritual"
+      ],
+      "entities": [],
+      "importance": 0.5,
+      "baseline": false,
+      "source": "Lore v0.8 #17"
+    },
+    {
+      "id": "lore.material_culture",
+      "title": "[LORE] Medieval Material Culture, Communication, and Travel",
+      "kind": "topic",
+      "text": "MATERIAL CULTURE\nAvereth uses a Western-fantasy medieval material baseline alongside mana and high magic.\nOrdinary life relies on handcraft, smithing, mills, farms, carts, horses, river boats, fortified settlements, markets, written records and similar pre-industrial institutions.\nMana and high magic can accomplish things mundane medieval technology cannot, but this has NOT created a modern or industrial technological society.\n\nDo not assume modern/industrial infrastructure or devices such as electrical grids, telephones, computers, engines, railways, mass industrial manufacturing or firearms unless later canon explicitly establishes an exception.\n\nCOMMUNICATION\nOrdinary people communicate at distance through letters, messengers, couriers and travelers.\nMagical long-distance communication is possible through sufficiently powerful magic, institutions or artifacts, but it is uncommon and not universal everyday infrastructure available to ordinary people on demand.\n\nTRAVEL\nOrdinary travel is overland by foot, mount and wagon/carriage, and by river boat or ferry where rivers allow; sea voyages exist only where a coast is established.\nLong-distance travel takes meaningful in-world time; do not compress cities or kingdoms together merely for narrative convenience.\nTeleportation or comparable magical transport may exist when explicitly established, but is never assumed to be ordinary public transportation.\n",
+      "keys": [
+        "technology",
+        "medieval",
+        "communication",
+        "letter",
+        "letters",
+        "messenger",
+        "courier",
+        "travel",
+        "horse",
+        "wagon",
+        "ship",
+        "teleport",
+        "telephone",
+        "firearm"
+      ],
+      "entities": [],
+      "importance": 0.9,
+      "baseline": true,
+      "source": "Lore v0.8 #18"
+    }
+  ],
+  "locations": [
+    {
+      "id": "loc.alderwatch",
+      "name": "Alderwatch",
+      "kind": "city",
+      "realm": "realm.valedorn_crown",
+      "source": "First Message v0.4 (start location pick list)",
+      "facts": [
+        "Alderwatch is a walled city in Valedorn Crown; the campaign may start on the public roadside verge outside it."
+      ]
+    },
+    {
+      "id": "loc.glassmere",
+      "name": "Glassmere",
+      "kind": "city",
+      "realm": "realm.caelreth",
+      "source": "First Message v0.4 (start location pick list)",
+      "facts": [
+        "Glassmere is a walled city in Caelreth; the campaign may start on the public roadside verge outside it."
+      ]
+    },
+    {
+      "id": "loc.ashbridge",
+      "name": "Ashbridge",
+      "kind": "city",
+      "realm": "realm.duskreach",
+      "source": "First Message v0.4 (start location pick list)",
+      "facts": [
+        "Ashbridge is a walled city in Duskreach; the campaign may start on the public roadside verge outside it."
+      ]
+    },
+    {
+      "id": "loc.crownheart",
+      "name": "Crownheart",
+      "kind": "capital",
+      "realm": "realm.valedorn_crown",
+      "source": "Lore v0.8 realm entry"
+    },
+    {
+      "id": "loc.asterhall",
+      "name": "Asterhall",
+      "kind": "capital",
+      "realm": "realm.caelreth",
+      "source": "Lore v0.8 realm entry"
+    },
+    {
+      "id": "loc.blackgate",
+      "name": "Blackgate",
+      "kind": "capital",
+      "realm": "realm.duskreach",
+      "source": "Lore v0.8 realm entry"
+    },
+    {
+      "id": "loc.cinder_throne",
+      "name": "Cinder Throne",
+      "kind": "seat",
+      "realm": "realm.ashen_scale_dominion",
+      "source": "Lore v0.8 realm entry"
+    },
+    {
+      "id": "loc.thornheart",
+      "name": "Thornheart",
+      "kind": "seat",
+      "realm": "realm.verdant_fang_court",
+      "source": "Lore v0.8 realm entry"
+    }
+  ],
+  "factions": [
+    {
+      "id": "fac.adventurers_guild",
+      "name": "Adventurers' Guild",
+      "kind": "guild",
+      "lore": "lore.adventurers_guild"
+    },
+    {
+      "id": "realm.valedorn_crown",
+      "name": "Valedorn Crown",
+      "kind": "realm"
+    },
+    {
+      "id": "realm.caelreth",
+      "name": "Caelreth",
+      "kind": "realm"
+    },
+    {
+      "id": "realm.duskreach",
+      "name": "Duskreach",
+      "kind": "realm"
+    },
+    {
+      "id": "realm.ashen_scale_dominion",
+      "name": "Ashen Scale Dominion",
+      "kind": "realm"
+    },
+    {
+      "id": "realm.verdant_fang_court",
+      "name": "Verdant Fang Court",
+      "kind": "realm"
+    }
+  ],
+  "dungeons": [
+    {
+      "id": "loc.mossback_warrens",
+      "name": "Mossback Warrens",
+      "near": "loc.ashbridge",
+      "where": "a moss-grown hill half a day's walk east of Ashbridge, off the old quarry track",
+      "theme": "goblin warrens: tunnels dug into a mossy hill, crude palisades, goblin scouts and warriors, a shaman deeper down",
+      "rank": {
+        "min": "F",
+        "max": "E"
+      },
+      "levels": {
+        "1": {
+          "min": "F",
+          "max": "F"
+        },
+        "2": {
+          "min": "E",
+          "max": "E"
+        }
+      },
+      "control": "the Adventurers' Guild of Ashbridge keeps its entry ledger under a charter of the Duskreach crown",
+      "source": "Patch 7 review: the novice Dungeon near the start city Ashbridge",
+      "living": {
+        "gate": {
+          "names": [
+            "warren mouth",
+            "palisade gate",
+            "palisade",
+            "mossy hill"
+          ],
+          "text": "the palisaded mouth of the warrens in the hillside",
+          "requires": "guild",
+          "fee_cp": 0,
+          "keeper": "the Guild's ledger-keeper at the palisade"
+        },
+        "capacity": 8,
+        "reset_days": 3,
+        "parties": 2,
+        "floors": {
+          "1": {
+            "slots": [
+              {
+                "id": "scouts",
+                "role": "minion",
+                "species": [
+                  "goblin scout",
+                  "goblin lookout"
+                ],
+                "anchor": "goblin",
+                "count": [
+                  2,
+                  3
+                ]
+              },
+              {
+                "id": "warband",
+                "role": "minion",
+                "species": [
+                  "goblin warrior",
+                  "goblin spearman"
+                ],
+                "anchor": "goblin",
+                "count": [
+                  2,
+                  3
+                ]
+              },
+              {
+                "id": "chief",
+                "role": "guard",
+                "name": "the Palisade Chief",
+                "species": "goblin chief",
+                "anchor": "goblin"
+              }
+            ],
+            "manifest": "the war-drum deeper in the tunnels falls silent and the crude barricade before the lower tunnels stands unmanned",
+            "sealed": false
+          },
+          "2": {
+            "slots": [
+              {
+                "id": "guards",
+                "role": "minion",
+                "species": [
+                  "goblin warrior",
+                  "goblin brute"
+                ],
+                "anchor": "goblin",
+                "count": [
+                  2,
+                  3
+                ]
+              },
+              {
+                "id": "shaman",
+                "role": "boss",
+                "name": "the Moss Shaman",
+                "species": "goblin shaman",
+                "anchor": "goblin_shaman"
+              }
+            ],
+            "manifest": "the green fire in the shaman's hollow gutters out and the warrens go quiet"
+          }
+        }
+      }
+    },
+    {
+      "id": "loc.glimmerdeep_grotto",
+      "name": "Glimmerdeep Grotto",
+      "near": "loc.glassmere",
+      "where": "a cleft in the hills a morning's walk north of Glassmere, where the stream runs out of the rock",
+      "theme": "crystal caverns: glittering grottos of mana-fed crystal, crystal beetles and mineral slimes",
+      "rank": {
+        "min": "F",
+        "max": "F"
+      },
+      "levels": {
+        "1": {
+          "min": "F",
+          "max": "F"
+        }
+      },
+      "control": "a Glassmere academy of magic holds the cleft and lets registered adventurers cull its outer grottos; what they kill and the free crystal there is theirs, the deep galleries the academy's",
+      "source": "Patch 7 review: the novice Dungeon near the start city Glassmere",
+      "living": {
+        "gate": {
+          "names": [
+            "cleft",
+            "rock cleft",
+            "stream cleft",
+            "academy gate"
+          ],
+          "text": "the cleft where the stream runs out of the rock, under the academy's watch",
+          "requires": "guild",
+          "fee_cp": 10,
+          "keeper": "the academy's gate-warden",
+          "contract_free": true
+        },
+        "capacity": 6,
+        "reset_days": 3,
+        "parties": 2,
+        "floors": {
+          "1": {
+            "slots": [
+              {
+                "id": "beetles",
+                "role": "minion",
+                "species": [
+                  "crystal beetle",
+                  "glass beetle"
+                ],
+                "anchor": "arthropod",
+                "count": [
+                  2,
+                  4
+                ]
+              },
+              {
+                "id": "slimes",
+                "role": "minion",
+                "species": [
+                  "mineral slime",
+                  "quartz ooze"
+                ],
+                "anchor": "slime",
+                "count": [
+                  1,
+                  2
+                ]
+              },
+              {
+                "id": "queen",
+                "role": "boss",
+                "name": "the Glimmer Queen",
+                "species": "crystal beetle queen",
+                "anchor": "arthropod"
+              }
+            ],
+            "manifest": "the hum in the crystal walls fades and the grotto's light settles to a still, even glow"
+          }
+        },
+        "resources": [
+          {
+            "id": "vein",
+            "floor": 1,
+            "name": "glimmer crystal vein",
+            "item": "Glimmer Crystal Shard",
+            "qty": 3,
+            "value_cp": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "loc.old_crown_catacombs",
+      "name": "Old Crown Catacombs",
+      "near": "loc.alderwatch",
+      "where": "beneath a ruined chapel an hour's ride west of Alderwatch",
+      "theme": "undead catacombs: burial galleries, restless skeletons, ghouls deeper down",
+      "rank": {
+        "min": "F",
+        "max": "E"
+      },
+      "levels": {
+        "1": {
+          "min": "F",
+          "max": "F"
+        },
+        "2": {
+          "min": "E",
+          "max": "E"
+        }
+      },
+      "control": "the temple wardens of Alderwatch, who ask the Guild to keep the upper galleries culled",
+      "source": "Patch 7 review: the novice Dungeon near the start city Alderwatch",
+      "living": {
+        "gate": {
+          "names": [
+            "ruined chapel",
+            "chapel stair",
+            "chapel yard",
+            "chapel lodge"
+          ],
+          "text": "the stair beneath the ruined chapel, watched by the temple wardens",
+          "requires": null,
+          "fee_cp": 0,
+          "keeper": "the temple wardens"
+        },
+        "capacity": 6,
+        "reset_days": 3,
+        "parties": 2,
+        "floors": {
+          "1": {
+            "slots": [
+              {
+                "id": "bones",
+                "role": "minion",
+                "species": [
+                  "restless skeleton",
+                  "risen bones"
+                ],
+                "anchor": "skeleton",
+                "count": [
+                  2,
+                  3
+                ]
+              },
+              {
+                "id": "gallery",
+                "role": "minion",
+                "species": [
+                  "restless skeleton",
+                  "skeletal gravekeeper"
+                ],
+                "anchor": "skeleton",
+                "count": [
+                  1,
+                  2
+                ]
+              },
+              {
+                "id": "warden",
+                "role": "guard",
+                "name": "the Gallery Warden",
+                "species": "armoured skeleton",
+                "anchor": "skeleton"
+              }
+            ],
+            "manifest": "the pale grave-light in the seal over the lower stair gutters out, and the seal's chalk lines crack",
+            "sealed": true
+          },
+          "2": {
+            "slots": [
+              {
+                "id": "ghouls",
+                "role": "minion",
+                "species": [
+                  "ghoul",
+                  "ghast"
+                ],
+                "anchor": "ghoul",
+                "count": [
+                  1,
+                  2
+                ]
+              },
+              {
+                "id": "lord",
+                "role": "boss",
+                "name": "the Ossuary Lord",
+                "species": "ghoul lord",
+                "anchor": "ghoul"
+              }
+            ],
+            "manifest": "the charnel stink thins and the lower galleries fall still"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "checks": [
+    {
+      "name": "Importable Chat Completion preset through actual ST file import",
+      "pass": false,
+      "requests": 0,
+      "error": "Error: ENOENT: no such file or directory, stat '/workspace/avereth-dynamic/avereth-gm-alpha/presets/Avereth%20GM%20Alpha%201.json'\n    at async Object.stat (node:internal/fs/promises:1750:18)\n    at async resolvePathsAndDirectoryForInputFiles (/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright-core/lib/coreBundle.js:60325:18)\n    at async convertInputFiles (/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright-core/lib/coreBundle.js:60344:42)\n    at async _Frame.setInputFiles (/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright-core/lib/coreBundle.js:60197:27)\n    at async _Page.setInputFiles (/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright-core/lib/coreBundle.js:61552:16)\n    at async file:///workspace/avereth-dynamic/experiments/dynamic-gm/alpha/browser.mjs:47:90\n    at async check (file:///workspace/avereth-dynamic/experiments/dynamic-gm/alpha/browser.mjs:38:54)\n    at async file:///workspace/avereth-dynamic/experiments/dynamic-gm/alpha/browser.mjs:47:2"
+    },
+    {
+      "name": "Installed extension: real imported card, creation, HUD, #status, native send capture; zero model calls",
+      "pass": true,
+      "requests": 0
+    },
+    {
+      "name": "Normal NPC talk + memory, confirmed DOM, reload and recall without original dialogue",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Travel known_move via two actual ST backend requests",
+      "pass": true,
+      "requests": 2
+    },
+    {
+      "name": "Travel forest200 via two actual ST backend requests",
+      "pass": true,
+      "requests": 2
+    },
+    {
+      "name": "Not reached: actual arrival remains original place",
+      "pass": true,
+      "requests": 2
+    },
+    {
+      "name": "Compound take then needs-go; NPC retains key=false",
+      "pass": true,
+      "requests": 2
+    },
+    {
+      "name": "Compound take then needs-go; NPC retains key=true",
+      "pass": true,
+      "requests": 2
+    },
+    {
+      "name": "NPC gift + genuine continuation, one transfer, new promise, reload no duplicates",
+      "pass": true,
+      "requests": 2
+    },
+    {
+      "name": "Stop during pending request: no early story; late receipt permits explicit resume",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Chat save failure http cannot publish; receipt resumes",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Chat save failure silent cannot publish; receipt resumes",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Chat switch during model request never writes/displays in another chat",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "ST masks 429: one request, unknown capacity blocks, explicit confirmed retry only",
+      "pass": true,
+      "requests": 2
+    },
+    {
+      "name": "Malformed JSON cannot advance state or appear as narration",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Swipe / regenerate refused by actual controls and interceptor",
+      "pass": true,
+      "requests": 0
+    },
+    {
+      "name": "Native Featherless frontend parameters use existing connection; backend intercepted with scripted answer",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Combat: recorded w191 #65 Heavy Slash resolved by .200 engine; receipt cannot reroll",
+      "pass": true,
+      "requests": 2
+    },
+    {
+      "name": "Local timeout with unknown remote holds 4 units; late completion needs explicit resume",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Reload after world commit before host save: durable ST file recovery, no model repeat",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Journal save fails before commit: no visible world; acknowledged answer reused",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Same-origin second tab cannot execute while first owns global Web Lock",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Known semantic gap: omitted promise and invented consent still pass free prose (NOT a protection success)",
+      "pass": true,
+      "requests": 1
+    }
+  ],
+  "pageErrors": [],
+  "physicalMockRequests": 28,
+  "browser": "156.0.8078.79",
+  "nativeFeatherless": "ST frontend exercised, backend mocked before any external call",
+  "allOtherTransport": "actual ST backend -> loopback mock",
+  "trace": [
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+  ]
+}

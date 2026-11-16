@@ -1,0 +1,1407 @@
+// Combat engine: Core #10-#12 (legality, damage, range), #13 (effects), #21 (ammo), #23-#28 (gate, turns, ambush,
+// XP, START/ACTIVE/END loops). Combat V3 (docs/REVIEW_V3.md): a legal attack connects — no Hit roll, no random
+// Crit, no PER in combat math; only a true Ambush Opening Action crits (×1.5, every strike, PC and creatures alike).
+// The only roll left in an attack is the damage variance. Every step is written into the encounter snapshot (the
+// FIXED+CURRENT snapshot that Testrun-v1 lost), so the next turn copies it instead of re-guessing.
+import { opensViolence } from './policy.js';
+import { actorTraits } from './v4/envelope.js';
+import { deriveCharacter, rawPower, rawPowerText, actionsOf } from './derived.js';
+import { defeatXp, awardXp, strengthOf } from './progression.js';
+import { scaleCreature } from './npcgen.js';
+import { lookOf } from './knowledge.js';
+import { bandIndex, bandName, clone, num, roundHalfUp } from './util.js';
+import { sceneHandle, areaBand, skillAreaTarget } from './v4/scene_handles.js';
+import { itemEffectOf, rulesetOf, skillOf as resolveSkill } from './content.js';
+import { effectValue, flatEffectValue, noteUse, fightProgress, restoration } from './skills.js';
+import { fightGrowth } from './v4/growth.js';
+import { trialEvidence } from './v4/passive_growth.js';
+import { developmentEvents } from './v4/skill_growth.js';
+import { noteContribution, fightFeats } from './v4/feats.js';
+import { passiveSnapshot, skillCostAmount, combatPassive, effectiveStats } from './passives.js';
+import { rankRefusal, restoreOf, restoreEffect } from './v4/items.js';
+
+const PROF = (content, level) => content.rules.proficiency.levels[String(level || 1)];
+const label = (e) => e.name || (e.descriptors && e.descriptors[0] ? `the ${e.descriptors[0]}` : e.id);
+
+// ------------------------------------------------------------------------------------------ combatant snapshots
+export function characterCombatant(state, id, content, side) {
+    const e = state.entities[id];
+    const s = e.sheet;
+    const dv = deriveCharacter(s, content);
+    // Patch 9B-2: his Passives as the fight sees them (lasting ones are in dv already; resistances, cost reductions and
+    // the combat Passives with their conditions); none, no field: a snapshot without Passives is the one of before
+    const passive = passiveSnapshot(s, content);
+    return {
+        id, name: label(e), side, model: 'character',
+        fixed: {
+            level: s.level, rank: dv.rank, class: s.class, ...(s.evolution ? { evolution: { id:s.evolution.id, name:s.evolution.name, rank:s.evolution.rank, quality:s.evolution.quality } } : {}), stats: { ...effectiveStats(s, content) }, max_hp: dv.maxHp, max_mp: dv.maxMp,
+            max_sta: dv.maxSta, atk: dv.atk, matk: dv.matk, def: dv.def, mdef: dv.mdef, init: dv.init, type: 'normal',
+            // Patch 9A: his learned Skills and the plain attack of the weapon he holds (src/derived.js actionsOf)
+            actions: actionsOf(s, content, rulesetOf(state), state),
+            weapon_family: (Object.values(s.equipment || {}).map((r) => (typeof r === 'string' ? content.items.get(r) : r))
+                .find((it) => it && it.slot === 'weapon') || {}).family || null,
+            temperament: e.card?.temperament || s.generated?.temperament || null,
+            sapient: true,
+            ...(passive ? { passive } : {}),
+        },
+        current: { hp: s.hp, mp: s.mp, sta: s.sta, ammo: ammoOf(s, content), band: null, cover: 'none', effects: [], defeated: false, escaped: false, surrendered: false },
+    };
+}
+
+/** Carried ammunition (from the sheet's inventory): every archer, PC or NPC, shoots only what it carries. */
+function ammoOf(sheet, content) {
+    const out = {};
+    for (const [item, qty] of Object.entries(sheet.inventory || {})) if (content.items.get(item)?.slot === 'ammo') out[item] = qty;
+    return out;
+}
+
+/**
+ * A hostile's locked Defeat XP (Core #25): its Level, type and the rank gap, and for a creature how much stronger its
+ * own numbers are than the standard of its Level and type (src/progression.js strengthOf; a standard creature: its
+ * Level's XP exactly).
+ */
+function hostileXp(c, state, content, pcRank) {
+    const anchor = c.model === 'creature' ? content.anchors.get(state.entities[c.id]?.profile?.anchor) : null;
+    const ref = content.rules.xp.strength?.reference;
+    const reference = anchor && ref ? scaleCreature({ id: 'xp_reference', name: 'reference', ...ref }, c.fixed.level, c.fixed.type, content) : null;
+    const strength = anchor ? strengthOf(c.fixed, scaleCreature(anchor, c.fixed.level, c.fixed.type, content), content, reference) : 1;
+    return defeatXp(c.fixed.level, c.fixed.type, pcRank, content, strength);
+}
+
+/** Opponents are on different sides of the hostile line (future allies/summons stay on Alaric's side). */
+export function isOpponent(a, b) {
+    return a.id !== b.id && (a.side === 'hostile') !== (b.side === 'hostile');
+}
+
+export function creatureCombatant(state, id) {
+    const e = state.entities[id];
+    const p = e.profile;
+    return {
+        id, name: label(e), side: 'hostile', model: 'creature',
+        fixed: {
+            level: p.level, rank: p.rank, type: p.type, body_plan: p.body_plan, max_hp: p.max_hp, atk: p.atk, def: p.def,
+            mdef: p.mdef, init: p.init, attack: p.attack, temperament: p.temperament,
+            sapient: false, ...(p.variation ? { variation: p.variation } : {}),
+        },
+        current: { hp: p.hp ?? p.max_hp, band: null, cover: 'none', effects: [], defeated: false, escaped: false, surrendered: false },
+    };
+}
+
+export function combatantOf(state, id, content, side) {
+    const e = state.entities[id];
+    if (e.sheet) return characterCombatant(state, id, content, side);
+    // a creature keeps the side it enters with (a bystander caught in an area attack, Prototype C), hostile by default
+    if (e.profile) return { ...creatureCombatant(state, id), ...(side && side !== 'hostile' ? { side } : {}) };
+    throw new Error(`no combat profile for ${id}`);
+}
+
+// Ordinary skills spare non-targeted allies/neutrals. Thrown bursts retain their physical friendly fire.
+const areaVictim = (ctx, actor, c, explicit = [], physical = false) => alive(c) && (ctx.c
+    ? physical ? c.id !== actor.id : skillAreaTarget(actor, c, explicit) && (!c.current.surrendered || explicit.includes(c.id))
+    : isOpponent(actor, c) && !c.current.surrendered);
+
+export function activeHostiles(enc) {
+    return Object.values(enc.combatants).filter((c) => c.side === 'hostile' && !c.current.defeated && !c.current.escaped && !c.current.surrendered);
+}
+
+// ------------------------------------------------------------------------------------------ target labels
+// The names the player targets with (live run 25.09. 01:31: "at the first one" among rats the engine did not tell
+// apart). A combatant gets its label when it enters the encounter and keeps it: Cellar Rat B stays B after A falls,
+// a latecomer takes the next free letter. A name the player knows stays the label (Brede); an unnamed opponent, or
+// one whose name the story has not said yet (known_name ''), gets its look plus a letter (Cellar Rat A, Gate
+// Sergeant A), so the list never tells the player a name. Labels live in the encounter snapshot only: they end with
+// the fight and never become world facts or memories.
+const titleCase = (s) => s.replace(/(^|[\s-])(\p{Ll})/gu, (_, a, b) => a + b.toUpperCase());
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+/** [base, lettered]: the known name as it is, else the plain look ("cellar_rat_2" -> Cellar Rat), always lettered. */
+function targetBase(e, state, content, id, cPath = false) {
+    const name = e.known_name ?? e.name; // only as much of a name as the story has said
+    if (name) return [titleCase(String(name).replace(/^the\s+/i, '').trim()), false];
+    // Runtime V4 already exposed a stable scene handle before the fight. Keep it verbatim so Footpad B never
+    // becomes Footpad A merely because A stayed out of this particular encounter.
+    if (state.meta?.runtime === 'v4') return [sceneHandle(state, content, id, { c: cPath }), false];
+    const look = lookOf(e) || e.species || (e.kind === 'creature' ? 'creature' : 'stranger');
+    return [titleCase(String(look).replace(/^(?:the|a|an)\s+/i, '')), true];
+}
+
+function assignLabels(enc, state, content, ids, { c = false } = {}) {
+    const groups = new Map();
+    for (const id of ids) {
+        const [base, lettered] = targetBase(state.entities[id], state, content, id, c);
+        if (!groups.has(base)) groups.set(base, { lettered, ids: [] });
+        const g = groups.get(base);
+        g.lettered ||= lettered;
+        g.ids.push(id);
+    }
+    for (const [base, g] of groups) {
+        // letters already given under this base, dead or alive (a plain "Brede" counts as A)
+        const used = Object.values(enc.combatants).filter((c) => c.label && !g.ids.includes(c.id))
+            .map((c) => (c.label === base ? 0 : c.label.startsWith(`${base} `) ? LETTERS.indexOf(c.label.slice(base.length + 1)) : -1)).filter((n) => n >= 0);
+        let next = used.length ? Math.max(...used) + 1 : 0;
+        for (const id of g.ids) {
+            const c = enc.combatants[id];
+            c.label = !g.lettered && g.ids.length === 1 && !used.length ? base : `${base} ${LETTERS[next] || next + 1}`;
+            c.name = c.label; // the fight's own lines (not possible: ..., XP reasons) use it too
+            next += 1;
+        }
+    }
+}
+
+/** The label of a combatant in the current fight, else how the engine names the entity. */
+export function targetLabel(state, id, fallback = (x) => x) {
+    return state.encounter?.combatants?.[id]?.label || fallback(id);
+}
+
+/** The opponents the player can target now, in the order they entered: [{id, label, band, cover}]. */
+export function combatTargets(enc) {
+    return activeHostiles(enc).map((c) => ({ id: c.id, label: c.label || c.name, band: c.current.band, cover: c.current.cover }));
+}
+
+export function alive(c) {
+    return !c.current.defeated && !c.current.escaped;
+}
+
+// ------------------------------------------------------------------------------------------ encounter start
+/**
+ * Start an encounter (Core #26). trigger = {actor, action, target}.
+ * participants: [{id, side}] (the PC is added automatically).
+ */
+export function initEncounter(state, content, dice, trigger, participants, encId, { c = false } = {}) {
+    const combatants = { pc: combatantOf(state, 'pc', content, 'pc') };
+    for (const p of participants) {
+        if (p.id === 'pc') continue;
+        combatants[p.id] = combatantOf(state, p.id, content, p.side || 'hostile');
+        const pos = state.scene.positions[p.id] || { band: 'MEDIUM', cover: 'none' };
+        combatants[p.id].current.band = pos.band;
+        combatants[p.id].current.cover = pos.cover || 'none';
+    }
+    const pcRank = combatants.pc.fixed.rank;
+    for (const c of Object.values(combatants)) {
+        if (c.side === 'hostile') c.fixed.defeat_xp = hostileXp(c, state, content, pcRank);
+    }
+    const enc = {
+        id: encId, phase: 'ACTIVE', round: 0, order: [], turn_index: -1, current: null, combatants,
+        pc_rank: pcRank, pending_xp: 0, defeated: [], escaped: [], trigger: clone(trigger), log: [], opening: null,
+        started: { turn: state.turn, minute: state.clock.minute }, intents: {},
+    };
+    assignLabels(enc, state, content, Object.keys(combatants).filter((id) => id !== 'pc'), { c });
+    // Ambush (Core #24): only a genuinely unaware target grants an Opening Action. Awareness is engine state (set by a
+    // stealth check or an established narration report), never a posture the narrator invents at commitment time.
+    if (trigger.engage) {
+        enc.ambush = false;
+        enc.ambush_reason = 'Alaric openly commits to the confrontation; no attack has been made and no Ambush Opening Action is granted.';
+    } else if (trigger.actor === 'pc') {
+        const awareness = state.scene.awareness[trigger.target] || 'unknown';
+        enc.ambush = !!combatants[trigger.target] && awareness === 'unaware';
+        enc.ambush_reason = `target awareness: ${awareness}${enc.ambush ? ' -> true Ambush (Opening Action: guaranteed Critical Hit ×1.5)' : " -> no Ambush; the trigger action waits for Alaric's Turn"}`;
+    } else {
+        // an NPC/creature ambushes Alaric only if it was concealed from him when it committed
+        enc.ambush = state.scene.concealed.includes(trigger.actor);
+        enc.ambush_reason = enc.ambush ? `${combatants[trigger.actor].name} attacked from concealment -> true Ambush (Opening Action: guaranteed Critical Hit ×1.5)` : `${combatants[trigger.actor].name} attacks openly; its trigger action waits for its Turn`;
+        if (!enc.ambush) enc.intents[trigger.actor] = 'attack';
+    }
+    // Prototype C (4.3.0-c.6.6.7, live 18.10.2026: "*i arcane burst*" among four aware hounds waited for Alaric's place in
+    // the Turn order; C and D closed from SHORT first and the burst struck four instead of the two in reach): an open
+    // attack that starts the fight, his or an attacker's, is resolved first, without any Ambush bonus, as its maker's
+    // action of Round 1 (runCombat). An Ambush keeps its Opening Action; an open commitment to fight (engage) is no attack
+    if (c && !trigger.engage && !enc.ambush && (trigger.actor === 'pc' ? !!combatants[trigger.target] : !!combatants[trigger.actor])) {
+        enc.first_strike = true;
+        enc.ambush_reason = trigger.actor === 'pc'
+            ? `target awareness: ${state.scene.awareness[trigger.target] || 'unknown'} -> no Ambush; his declared attack opens the fight first (First Strike: no Ambush bonus; it is his action of Round 1)`
+            : `${combatants[trigger.actor].name} attacks openly; its attack opens the fight first (First Strike: no Ambush bonus; its action of Round 1)`;
+    }
+    enc.order = initiativeOrder(enc, dice);
+    return enc;
+}
+
+/** A new combatant joins an ACTIVE encounter (e.g. a narrated attacker). Inserted into the fixed order by Initiative. */
+export function addCombatant(enc, state, content, id, side, intent = 'attack', { c: cPath = false } = {}) {
+    const c = combatantOf(state, id, content, side);
+    const pos = state.scene.positions[id] || { band: 'MEDIUM', cover: 'none' };
+    c.current.band = pos.band;
+    c.current.cover = pos.cover || 'none';
+    if (side === 'hostile') c.fixed.defeat_xp = hostileXp(c, state, content, enc.pc_rank);
+    enc.combatants[id] = c;
+    assignLabels(enc, state, content, [id], { c: cPath });
+    // insert after all combatants with higher or equal Initiative (existing ties keep their locked order)
+    let idx = enc.order.findIndex((x) => enc.combatants[x].fixed.init < c.fixed.init);
+    if (idx < 0) idx = enc.order.length;
+    enc.order.splice(idx, 0, id);
+    if (idx <= enc.turn_index) enc.turn_index += 1;
+    if (intent) enc.intents[id] = intent;
+    return c;
+}
+
+export function initiativeOrder(enc, dice) {
+    const list = Object.values(enc.combatants).filter(alive);
+    list.sort((a, b) => b.fixed.init - a.fixed.init);
+    // Core #24 (V3) ties: resolved once without bias (PER no longer breaks them) and locked in the order
+    const unbiased = (group) => {
+        const pool = group.map((c) => c.id);
+        const out = [];
+        while (pool.length > 1) {
+            const pick = dice.pick(pool, 'initiative tie');
+            out.push(pick);
+            pool.splice(pool.indexOf(pick), 1);
+        }
+        return [...out, ...pool];
+    };
+    const runs = (arr, key) => {
+        const out = [];
+        for (let i = 0; i < arr.length;) {
+            let j = i;
+            while (j + 1 < arr.length && key(arr[j + 1]) === key(arr[i])) j += 1;
+            out.push(arr.slice(i, j + 1));
+            i = j + 1;
+        }
+        return out;
+    };
+    const order = [];
+    for (const group of runs(list, (c) => c.fixed.init)) {
+        if (group.length === 1) order.push(group[0].id);
+        else order.push(...unbiased(group));
+    }
+    return order;
+}
+
+// ------------------------------------------------------------------------------------------ helpers
+function effectsOf(c, kind) {
+    return c.current.effects.filter((e) => e.kind === kind);
+}
+
+function tempDefense(c, magical) {
+    let v = 0;
+    for (const e of c.current.effects) {
+        if (!magical && e.kind === 'temp_def') v += e.value;
+        if (magical && e.kind === 'temp_mdef') v += e.value;
+    }
+    return v;
+}
+
+/** Range Band between two combatants. Bands are tracked relative to the PC (Core #12: only mechanically relevant
+ * pairs); two NPCs are approximated by the difference of their PC-relative bands. */
+function distance(enc, a, b) {
+    if (a === 'pc') return enc.combatants[b].current.band;
+    if (b === 'pc') return enc.combatants[a].current.band;
+    return bandName(Math.abs(bandIndex(enc.combatants[a].current.band) - bandIndex(enc.combatants[b].current.band)));
+}
+
+function setDistance(enc, a, b, band) {
+    if (a === 'pc') enc.combatants[b].current.band = band;
+    else if (b === 'pc') enc.combatants[a].current.band = band;
+    else enc.combatants[a].current.band = band;
+}
+
+// Patch 9B-1: the content's Skills and the campaign's own (src/content.js skillOf)
+function skillOf(content, id, state = null) {
+    const s = resolveSkill(content, id, state);
+    if (!s) throw new Error(`unknown skill ${id}`);
+    return s;
+}
+
+/** Patch 9B-2: what a combatant's combat Passives give now (src/passives.js combatPassive): their conditions on this fight. */
+function passiveNow(ctx, c) {
+    const engagedFoe = (me) => Object.values(ctx.enc.combatants).some((o) => isOpponent(me, o) && alive(o) && !o.current.surrendered && distance(ctx.enc, me.id, o.id) === 'ENGAGED');
+    return combatPassive(ctx.content, c, engagedFoe);
+}
+
+function rangeReaches(listedBand, targetBand) {
+    return bandIndex(targetBand) <= bandIndex(listedBand);
+}
+
+// ------------------------------------------------------------------------------------------ attack resolution
+/**
+ * Incoming-damage reduction of a defensive effect in percent (Deflect 25, Quickstep 20, ...). An encounter snapshot
+ * saved before Combat V3 may still hold the old Hit penalty: it keeps the same strength (20pp -> 25%, 15pp -> 20%).
+ */
+function reductionPct(e) {
+    if (e.kind === 'incoming_damage_reduction') return e.pct || 0;
+    if (e.kind === 'incoming_hit_penalty') return Math.round((e.pp * 4) / 3 / 5) * 5;
+    return 0;
+}
+
+/**
+ * One strike of a legal attack (Core #10/#11, Combat V3): it connects, nothing is rolled but the damage variance.
+ * Only a true Ambush Opening Action crits (guaranteed ×1.5 on every strike). Partial Cover (-25% unless the attack
+ * ignores it) and defensive reductions are Final Damage modifiers (Core #11 step 11), applied after the Crit.
+ */
+/**
+ * 4.3.0-c.6.6.54 (live 23.10.2026 21:44: Heavy Slash on a goblin ENGAGED with him lost a quarter of its damage to a
+ * partial cover the story had given it): a partial cover of the place keeps an attack off only across a distance;
+ * between fighters ENGAGED with each other nothing of the place stands. The one rule of the strike (resolveStrike) and of
+ * its preview (damagePreview); band is the distance between attacker and target as the attack strikes.
+ */
+export const partialCoverAt = (target, band) => target.current.cover === 'partial' && band !== 'ENGAGED';
+
+function resolveStrike(ctx, attacker, target, attack, opts) {
+    const { dice, content } = ctx;
+    const rec = { target: target.id };
+    const magical = attack.damage_type === 'magical';
+    // Core #11 order: Raw -> Proficiency Power (step 3) -> other attacker buffs (step 4) -> Defense -> Variance -> Crit
+    // -> Final Damage modifiers -> round once
+    let power = opts.raw;
+    const steps = [`Raw ${num(power)}`];
+    if (opts.profPower && opts.profPower !== 1) { power = num(power * opts.profPower); steps.push(`×${opts.profPower} Proficiency = ${power}`); }
+    if (opts.buffPowerPct) { power = num(power * (1 + opts.buffPowerPct / 100)); steps.push(`+${opts.buffPowerPct}% prepared = ${power}`); }
+    // Patch 9B-2: a combat Passive of the target whose condition holds now adds its DEF/MDEF; its resistances below
+    const guard = target.fixed.passive ? passiveNow(ctx, target) : null;
+    const defense = (magical ? target.fixed.mdef : target.fixed.def) + tempDefense(target, magical) + (guard ? guard.stat[magical ? 'MDEF' : 'DEF'] : 0);
+    const postDef = num(Math.max(power - defense, power * content.rules.damage.defense_floor_share));
+    steps.push(`${magical ? 'MDEF' : 'DEF'} ${defense}: max(${power}-${defense}, ${power}×0.10) = ${postDef}`);
+    const variance = dice.variance(`variance ${attacker.id}->${target.id}`); // variance is per target and strike
+    let dmg = num(postDef * variance);
+    steps.push(`×${variance} variance = ${dmg}`);
+    if (opts.ambush) {
+        const m = content.rules.crit.multiplier;
+        rec.crit = { ambush: true, multiplier: m };
+        dmg = num(dmg * m);
+        steps.push(`×${m} Ambush Crit = ${dmg}`);
+    }
+    if (partialCoverAt(target, distance(ctx.enc, attacker.id, target.id))) {
+        if (attack.ignores_partial_cover) {
+            rec.cover = 'ignored';
+            steps.push('Partial Cover ignored');
+        } else {
+            const pct = content.rules.cover.partial_damage_reduction_pct;
+            rec.cover = `-${pct}%`;
+            dmg = num(dmg * (1 - pct / 100));
+            steps.push(`Partial Cover -${pct}% = ${dmg}`);
+        }
+    }
+    for (const e of target.current.effects) {
+        const pct = reductionPct(e);
+        if (!pct) continue;
+        dmg = num(dmg * (1 - pct / 100));
+        rec.reduced = (rec.reduced || []).concat(`${e.name || 'defence'} -${pct}%`);
+        steps.push(`${e.name || 'defensive effect'} -${pct}% = ${dmg}`);
+    }
+    const endure = effectsOf(target, 'damage_reduction_next')[0];
+    if (endure && dmg > 0) {
+        dmg = num(dmg * (1 - endure.pct / 100));
+        steps.push(`Endure -${endure.pct}% = ${dmg}`);
+        target.current.effects = target.current.effects.filter((e) => e !== endure);
+    }
+    const resist = guard ? guard.resist[magical ? 'magical' : 'physical'] : 0;
+    if (resist) {
+        dmg = num(dmg * (1 - resist / 100));
+        rec.resisted = resist;
+        steps.push(`${magical ? 'magical' : 'physical'} resistance -${resist}% = ${dmg}`);
+    }
+    let final = Math.max(1, roundHalfUp(dmg));
+    steps.push(`round once = ${final}`);
+    // BARRIER then HP
+    let absorbed = 0;
+    for (const b of effectsOf(target, 'barrier')) {
+        const take = Math.min(b.hp, final - absorbed);
+        b.hp -= take;
+        absorbed += take;
+        if (b.hp <= 0) target.current.effects = target.current.effects.filter((e) => e !== b);
+        if (absorbed >= final) break;
+    }
+    if (absorbed) steps.push(`Barrier absorbs ${absorbed}`);
+    const hpBefore = target.current.hp;
+    target.current.hp = Math.max(0, hpBefore - (final - absorbed));
+    noteContribution(ctx, attacker, target, hpBefore - target.current.hp);
+    Object.assign(rec, { power, defense, post_def: postDef, variance, final, absorbed, hp_before: hpBefore, hp_after: target.current.hp, steps });
+    if (target.current.hp === 0) {
+        target.current.defeated = true;
+        rec.defeated = true;
+    }
+    return rec;
+}
+
+function onDefeat(ctx, target, record) {
+    const enc = ctx.enc;
+    // livetest 21.10.2026: one that surrendered gave no XP; struck down after it, it gives its XP, once (xp_counted)
+    const afterSurrender = target.current.surrendered && !target.current.xp_counted;
+    if (!enc.defeated.includes(target.id) || afterSurrender) {
+        if (!enc.defeated.includes(target.id)) enc.defeated.push(target.id);
+        if (target.side === 'hostile' && typeof target.fixed.defeat_xp === 'number') {
+            if (afterSurrender) target.current.xp_counted = true;
+            enc.pending_xp += target.fixed.defeat_xp;
+            // Prototype C (4.3.0-c.6.6.6): an area attack may defeat several at once; the record shows all they add
+            record.pending_xp_added = (ctx.c ? record.pending_xp_added || 0 : 0) + target.fixed.defeat_xp;
+        }
+    }
+}
+
+/** Resolve an attack action by a character (skill) or creature (natural attack). Returns a record or {illegal}. */
+export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
+    const { enc, content, state } = ctx;
+    const actor = enc.combatants[actorId];
+    const target = enc.combatants[targetId];
+    const record = { round: enc.round, actor: actorId, kind: 'attack', target: targetId, opening: !!extra.opening };
+    if (!target || !alive(target)) return { illegal: `target ${targetId} is not an active combatant` };
+    // For an area attack targetId is only the routing/nominal target. Its personal full cover must not veto an AoE
+    // that may actually strike different ENGAGED foes.
+    // Patch 7.1: an attack item acts by its own snapshot (its power, reach, area), not by the standard profile of its kind
+    const thing = extra.item ? state?.objects?.[extra.item] : null;
+    const charSkill = actor.model === 'character' ? (thing && itemEffectOf(content, thing)?.attack ? itemEffectOf(content, thing) : skillOf(content, skillId, state)) : null;
+    const charArea = !!charSkill?.effects?.some((e) => e.kind === 'area');
+    // Hotfix c.6.6.18: a thrown burst (an offensive item) lands where it is thrown: the one it is thrown at must be seen
+    const bandArea = charSkill?.effects?.some(e => e.kind === 'area' && e.shape === 'target_band');
+    const burst = charSkill?.effects?.find((e) => e.kind === 'area' && e.shape === 'burst') || null;
+    if (target.current.cover === 'full' && (!charArea || burst || bandArea)) return { illegal: `${target.name} is behind full cover (no line of sight)` };
+    // ---- character attack (Skill)
+    if (actor.model === 'character') {
+        const skill = charSkill;
+        // Hotfix c.6.6.18: an offensive item is his action because he holds it (the engine checked that), not a skill he
+        // knows; it has no proficiency of his
+        const byItem = !!(skill.item && extra.item);
+        if (!byItem && !actor.fixed.actions[skill.id]) return { illegal: `${actor.name} does not know ${skill.name}` };
+        // Patch 7.1: and only up to his own Power-Rank (or the Rank the item itself names as its requirement)
+        const ranked = byItem ? rankRefusal(content, actor.fixed.level, skill.profile || { kind: 'attack', title: skill.name, rank: skill.rank, requires_rank: skill.requires_rank }) : null;
+        if (ranked) return { illegal: ranked };
+        if (!skill.attack) return { illegal: `${skill.name} is not an attack` };
+        const prof = PROF(content, byItem ? 1 : actor.fixed.actions[skill.id].prof);
+        // range + movement (only the declared/written movement; Core #12, #24 PC ACTION SCOPE)
+        const isArea = charArea && !burst;
+        const bandBefore = distance(enc, actorId, targetId);
+        let band = bandBefore;
+        let moved = 0;
+        // A movement command has its own focus. Old/V3 callers did not carry it, so they keep the attack target as
+        // their focus; Prototype C explicitly carries null for "move closer to the group / into the middle".
+        const moveTarget = extra.moveTarget === undefined ? targetId : extra.moveTarget;
+        const groupMove = actorId === 'pc' && isArea && !bandArea && extra.move === 'closer' && moveTarget === null;
+        // declared "close in" = the normal one-band move; EXTRA-BAND skills (Charge/Lunge/Shield Charge) add their
+        // written extra band and may combine with the normal move (Content: "may combine with the normal one-band
+        // Turn movement"), so declaring the skill authorises both.
+        const allowed = (extra.move === 'closer' || skill.range.extra_band || extra.autoNormalMove ? 1 : 0) + (skill.range.extra_band ? 1 : 0);
+        // Prototype C (4.3.0-c.6.6.6, review): an area attack's reach is who stands ENGAGED with him (below), not where its
+        // nominal target stands: a hound at SHORT does not veto a burst that reaches the companion at his side
+        if (!groupMove && !(ctx.c && isArea && !bandArea)) {
+            while (!rangeReaches(skill.range.band, band) && moved < allowed && bandIndex(band) > 0) {
+                band = bandName(bandIndex(band) - 1);
+                moved += 1;
+            }
+            if (skill.range.extra_band && band !== 'ENGAGED') return { illegal: `${skill.name} must end ENGAGED; ${target.name} is too far (${bandBefore})` };
+            if (!rangeReaches(skill.range.band, band)) {
+                return { illegal: `${target.name} is at ${bandBefore}; ${skill.name} reaches ${skill.range.band} at most and no declared movement brings it into range` };
+            }
+        }
+        // Area legality is evaluated at the position the declared one-band move would actually create. This is only a
+        // preview here: movement is committed below together with the otherwise legal action.
+        const plannedBand = (c) => {
+            const before = distance(enc, actorId, c.id);
+            if (actorId !== 'pc' || extra.move !== 'closer') return before;
+            if (moveTarget !== null && c.id !== moveTarget) return before;
+            return bandName(bandIndex(before) - 1);
+        };
+        const selectedBand = areaBand(skill, plannedBand(target));
+        const explicit = [targetId, ...(extra.crowd ? extra.field || [] : [])];
+        const plannedAreaTargets = isArea ? Object.values(enc.combatants)
+            .filter((c) => areaVictim(ctx, actor, c, explicit) && (!bandArea || c.current.cover !== 'full') && plannedBand(c) === selectedBand)
+            .map((c) => c.id) : [];
+        if (isArea && !plannedAreaTargets.length) return { illegal: bandArea ? `${skill.name} needs a valid target in ${selectedBand || "a chosen band"} after the declared movement` : `${skill.name} needs a valid target ENGAGED with ${actor.name} after the declared movement` };
+        // resources (after legality of target/range, before RNG): Cost + Ammo committed together (Core #21)
+        const cost = skillCostAmount(content, skill, byItem ? 1 : actor.fixed.actions[skill.id].prof, actor.fixed.passive?.cost, true);
+        if (skill.cost && actor.current[skill.cost.resource] < cost) {
+            return { illegal: `${actor.name} lacks ${skill.cost.resource.toUpperCase()} for ${skill.name} (${actor.current[skill.cost.resource]} < ${cost})` };
+        }
+        let ammoUsed = 0;
+        if (skill.ammo && actor.fixed.weapon_family === 'bow') {
+            const have = actor.current.ammo?.[skill.ammo.item] || 0;
+            if (have < skill.ammo.qty) return { illegal: `${actor.name} has ${have} arrow(s); ${skill.name} needs ${skill.ammo.qty}` };
+            ammoUsed = skill.ammo.qty;
+        }
+        // commit movement + costs
+        if (groupMove) {
+            const change = repositionPc(enc, 'pc', -1, null);
+            record.move = { bands: 1, dir: 'closer', change };
+        } else if (isArea && actorId === 'pc' && extra.move === 'closer' && moveTarget && enc.combatants[moveTarget] && plannedBand(enc.combatants[moveTarget]) !== distance(enc, actorId, moveTarget)) {
+            const change = repositionPc(enc, 'pc', -1, moveTarget);
+            record.move = { bands: 1, dir: 'closer', change };
+        } else if (moved) {
+            record.move = { bands: moved, from: bandBefore, to: band };
+            setDistance(enc, actorId, targetId, band);
+            if (actorId !== 'pc') actor.current.cover = 'none'; // leaving a position leaves its cover
+        }
+        if (cost) {
+            record.cost = { resource: skill.cost.resource, amount: cost, before: actor.current[skill.cost.resource] };
+            actor.current[skill.cost.resource] -= cost;
+            record.cost.after = actor.current[skill.cost.resource];
+        }
+        if (ammoUsed) {
+            record.ammo = { item: skill.ammo.item, used: ammoUsed };
+            actor.current.ammo[skill.ammo.item] -= ammoUsed;
+        }
+        // prepared-attack buffs (Feint / Focus Aim) are consumed by this attack
+        let buffPowerPct = 0;
+        const isRanged = skill.range.band !== 'ENGAGED';
+        for (const b of effectsOf(actor, 'next_attack_buff')) {
+            if (b.scope === 'ranged' && !isRanged) continue;
+            buffPowerPct += b.power_pct;
+            actor.current.effects = actor.current.effects.filter((e) => e !== b);
+            record.consumed = (record.consumed || []).concat(b.name);
+        }
+        record.skill = skill.id;
+        record.skill_name = skill.name;
+        if (byItem) record.item = extra.item;
+        // Patch 9B-2: a combat Passive whose condition holds now adds its ATK/MATK to the attack's
+        const edge = actor.fixed.passive ? passiveNow(ctx, actor) : null;
+        const power = { atk: actor.fixed.atk + (edge?.stat.ATK || 0), matk: actor.fixed.matk + (edge?.stat.MATK || 0) };
+        if (edge && (edge.stat.ATK || edge.stat.MATK)) record.passive = edge.names;
+        const raw = rawPower(skill, actor.fixed.stats, power);
+        if (isArea) record.area_band = selectedBand;
+        record.raw = raw;
+        record.raw_text = rawPowerText(skill, actor.fixed.stats, power);
+        const opts = { raw, profPower: prof.power, buffPowerPct, ambush: !!extra.opening };
+        record.strikes = [];
+        if (burst) {
+            // Hotfix c.6.6.18, Patch 7.1: a thrown burst strikes the one it is thrown at and those the engine fixed with it
+            // (its knot: src/engine.js burstOf, however many), each with its own pipeline; no one else
+            const ids = uniqIds([targetId, ...(extra.burst || [])]).filter((id) => enc.combatants[id] && areaVictim(ctx, actor, enc.combatants[id], [], true));
+            for (const tid of ids) record.strikes.push(resolveStrike(ctx, actor, enc.combatants[tid], skill.attack, opts));
+        } else if (isArea) {
+            // Area: every valid target in the resolved band is hit, each with its own damage pipeline.
+            const areaTargets = Object.values(enc.combatants)
+                .filter((c) => areaVictim(ctx, actor, c, explicit) && (!bandArea || c.current.cover !== 'full') && distance(enc, actorId, c.id) === areaBand(skill, distance(enc, actorId, targetId)))
+                .map((c) => c.id);
+            for (const tid of areaTargets) record.strikes.push(resolveStrike(ctx, actor, enc.combatants[tid], skill.attack, opts));
+        } else {
+            for (let i = 0; i < (skill.strikes || 1); i++) {
+                if (!alive(target)) break; // stop resolving strikes once the target is dead (Core #12)
+                record.strikes.push(resolveStrike(ctx, actor, target, skill.attack, opts));
+            }
+        }
+        for (const s of record.strikes) if (s.defeated) onDefeat(ctx, enc.combatants[s.target], record);
+        // post-attack effects (Guarded Thrust)
+        for (const eff of skill.effects) {
+            if (eff.kind === 'post_attack_temp_def') addEffect(actor, { kind: 'temp_def', value: postAttackDef(content, state, eff, actor, skill), source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
+        }
+        // a declared step back ("I kite backwards and Power Shot", Testrun 4) is the Turn's normal one-band move (Core
+        // #12/#24: one move + one Main Action, either order); taken after the attack, so the attack keeps its range
+        if (extra.move === 'away' && actorId === 'pc' && !moved) {
+            const change = repositionPc(enc, 'pc', 1, null);
+            if (change) record.after_move = { dir: 'away', change };
+        }
+        return record;
+    }
+    // ---- creature natural attack
+    const band = actor.current.band;
+    let b = band;
+    let moved = 0;
+    if (!rangeReaches(actor.fixed.attack.range, b) && extra.move === 'closer' && bandIndex(b) > 0) {
+        b = bandName(bandIndex(b) - 1);
+        moved = 1;
+    }
+    if (!rangeReaches(actor.fixed.attack.range, b)) return { illegal: `${actor.name} cannot reach Alaric from ${band}` };
+    if (moved) { record.move = { bands: 1, from: band, to: b }; actor.current.band = b; actor.current.cover = 'none'; }
+    record.skill_name = actor.fixed.attack.name;
+    record.raw = actor.fixed.atk;
+    // Monster A2 (.186, K7): a humanoid's melee weapon names its attack (the anchor's values); without one as before
+    record.raw_text = actor.fixed.attack.weapon ? `${actor.fixed.attack.name} Raw = ATK ${actor.fixed.atk}` : `natural attack Raw = ATK ${actor.fixed.atk}`;
+    const attack = { damage_type: actor.fixed.attack.damage_type };
+    record.strikes = [resolveStrike(ctx, actor, target, attack, { raw: actor.fixed.atk, ambush: !!extra.opening })];
+    for (const s of record.strikes) if (s.defeated) onDefeat(ctx, enc.combatants[s.target], record);
+    return record;
+}
+
+const uniqIds = (ids) => [...new Set(ids)];
+
+/** Patch 9B-1: the DEF an attack leaves him (Guarded Cut), by the Proficiency he locked for this fight. */
+function postAttackDef(content, state, eff, actor, skill) {
+    return flatEffectValue(content, eff.flat, actor.fixed.actions[skill.id]?.prof, rulesetOf(state));
+}
+
+function addEffect(c, eff) {
+    // same named effect does not stack magnitude (Core #13): replace, keep the stronger value
+    const same = c.current.effects.find((e) => e.kind === eff.kind && e.name === eff.name);
+    if (same) {
+        Object.assign(same, eff, { value: Math.max(same.value || 0, eff.value || 0) });
+        return;
+    }
+    c.current.effects.push(eff);
+}
+
+/** Defensive/utility Skills (Guard, Deflect, Wards, Brace, Bulwark, Endure, Evasive Step, Quickstep, Blink, Feint, Focus Aim). */
+export function skillAction(ctx, actorId, skillId, extra = {}) {
+    const { enc, content } = ctx;
+    const actor = enc.combatants[actorId];
+    const skill = skillOf(content, skillId, ctx.state);
+    if (actor.model !== 'character' || !actor.fixed.actions[skill.id]) return { illegal: `${actor.name} does not know ${skill.name}` };
+    const cost = skillCostAmount(content, skill, actor.fixed.actions[skill.id].prof, actor.fixed.passive?.cost, true);
+    if (skill.cost && actor.current[skill.cost.resource] < cost) return { illegal: `${actor.name} lacks ${skill.cost.resource.toUpperCase()} for ${skill.name}` };
+    // Patch 9B-2: a heal or a restore with nothing to restore is refused before anything is paid
+    const who = () => ({ stats: actor.fixed.stats, pools: { hp: actor.current.hp, mp: actor.current.mp, sta: actor.current.sta }, max: { hp: actor.fixed.max_hp, mp: actor.fixed.max_mp, sta: actor.fixed.max_sta } });
+    const ahead = restoration(content, skill, actor.fixed.actions[skill.id].prof, rulesetOf(ctx.state), who(), cost);
+    if (ahead?.full) return { illegal: `${actor.name} is at full ${ahead.resource.toUpperCase()}: ${skill.name} has nothing to restore` };
+    const record = { round: enc.round, actor: actorId, kind: 'skill', skill: skill.id, skill_name: skill.name, effects: [] };
+    if (cost) {
+        record.cost = { resource: skill.cost.resource, amount: cost, before: actor.current[skill.cost.resource] };
+        actor.current[skill.cost.resource] -= cost;
+        record.cost.after = actor.current[skill.cost.resource];
+    }
+    const st = actor.fixed.stats;
+    // Patch 9B-1: a numeric non-damage effect grows with the Proficiency he locked for this fight (src/skills.js effectValue;
+    // ruleset 2 only)
+    const level = actor.fixed.actions[skill.id].prof;
+    const ruleset = rulesetOf(ctx.state);
+    for (const eff of skill.effects) {
+        if (eff.kind === 'temp_def' || eff.kind === 'temp_mdef') {
+            const v = effectValue(content, eff, st, level, ruleset);
+            addEffect(actor, { kind: eff.kind, value: v, source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
+            record.effects.push(`${eff.kind === 'temp_def' ? 'DEF' : 'MDEF'} +${v} until the start of ${actor.name}'s next turn`);
+        } else if (eff.kind === 'incoming_damage_reduction') {
+            addEffect(actor, { kind: 'incoming_damage_reduction', pct: eff.pct, source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
+            record.effects.push(`incoming damage -${eff.pct}% until the start of ${actor.name}'s next turn`);
+        } else if (eff.kind === 'barrier') {
+            const v = effectValue(content, eff, st, level, ruleset);
+            addEffect(actor, { kind: 'barrier', hp: v, value: v, source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
+            record.effects.push(`Barrier ${v} HP (until destroyed or the start of ${actor.name}'s next turn)`);
+        } else if (eff.kind === 'damage_reduction_next') {
+            addEffect(actor, { kind: 'damage_reduction_next', pct: eff.pct, source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
+            record.effects.push(`next positive damage taken -${eff.pct}%`);
+        } else if (eff.kind === 'next_attack_buff') {
+            addEffect(actor, { kind: 'next_attack_buff', power_pct: eff.power_pct, scope: eff.scope, source: actorId, expires: 'end_of_source_next_turn', name: skill.name, round: enc.round });
+            record.effects.push(`next ${eff.scope === 'ranged' ? 'ranged ' : ''}attack +${eff.power_pct}% Modified Power`);
+        } else if (eff.kind === 'heal' || eff.kind === 'restore') {
+            // Patch 9B-2: after the cost, by the same rule as outside a fight (src/skills.js restoration)
+            const r = restoration(content, skill, level, ruleset, who(), cost);
+            actor.current[r.resource] = r.after;
+            record.restore = { resource: r.resource, amount: r.after - r.before, before: r.before, after: r.after };
+            record.effects.push(`${r.resource.toUpperCase()} +${r.after - r.before} (${r.before} -> ${r.after}/${r.max})`);
+        } else if (eff.kind === 'reposition') {
+            const dir = extra.dir === 'closer' ? -1 : 1;
+            record.reposition = repositionPc(enc, actorId, dir, extra.target);
+            record.effects.push(`repositions ${record.reposition}`);
+        }
+    }
+    return record;
+}
+
+/**
+ * Prototype C (src/v4/planner.js): a known skill used on a thing during a fight. It is Alaric's action for the Turn:
+ * the skill's cost (and arrows) are booked and a CHECK DIE is drawn for the narrator's Core #7 judgement of the attempt;
+ * the engine resolves no damage and no effect on any combatant from it.
+ */
+export function worldAction(ctx, actorId, act) {
+    const { enc, content } = ctx;
+    const actor = enc.combatants[actorId];
+    const skill = skillOf(content, act.skill, ctx.state);
+    if (!skill || actor.model !== 'character' || !actor.fixed.actions[skill.id]) return { illegal: `${actor.name} does not know ${skill?.name || act.skill}` };
+    const cost = skillCostAmount(content, skill, actor.fixed.actions[skill.id].prof, actor.fixed.passive?.cost, true);
+    if (skill.cost && actor.current[skill.cost.resource] < cost) return { illegal: `${actor.name} lacks ${skill.cost.resource.toUpperCase()} for ${skill.name} (${actor.current[skill.cost.resource]} < ${cost})` };
+    let ammoUsed = 0;
+    if (skill.ammo && actor.fixed.weapon_family === 'bow') {
+        const have = actor.current.ammo?.[skill.ammo.item] || 0;
+        if (have < skill.ammo.qty) return { illegal: `${actor.name} has ${have} arrow(s); ${skill.name} needs ${skill.ammo.qty}` };
+        ammoUsed = skill.ammo.qty;
+    }
+    const record = { round: enc.round, actor: actorId, kind: 'ability_world', skill: skill.id, skill_name: skill.name, target_text: act.target_text || 'something', goal: act.goal || null };
+    if (cost) {
+        record.cost = { resource: skill.cost.resource, amount: cost, before: actor.current[skill.cost.resource] };
+        actor.current[skill.cost.resource] -= cost;
+        record.cost.after = actor.current[skill.cost.resource];
+    }
+    if (ammoUsed) {
+        record.ammo = { item: skill.ammo.item, used: ammoUsed };
+        actor.current.ammo[skill.ammo.item] -= ammoUsed;
+    }
+    record.check_die = ctx.dice.d100('check die');
+    return record;
+}
+
+function repositionPc(enc, actorId, dir, focusId) {
+    // PC reposition shifts every hostile's band relative to the PC one step (away = +1, closer = -1)
+    if (actorId !== 'pc') {
+        const c = enc.combatants[actorId];
+        const before = c.current.band;
+        c.current.band = bandName(bandIndex(before) + dir);
+        return `${before} -> ${c.current.band}`;
+    }
+    const moved = [];
+    for (const c of Object.values(enc.combatants)) {
+        if (c.id === 'pc' || !alive(c) || (focusId && c.id !== focusId)) continue;
+        const before = c.current.band;
+        c.current.band = bandName(bandIndex(before) + dir); // Alaric moved: the others keep their own cover
+        if (c.current.band !== before) moved.push(`${c.name} ${before} -> ${c.current.band}`);
+    }
+    return moved.join('; ');
+}
+
+/**
+ * Patch 7.2: a restorative drunk in a fight (a healing potion, a mana potion, a stamina tonic): Alaric's main action of
+ * his Turn, as a skill would be. Its own amount (the item's profile), never above his maximum; with the one step a Turn
+ * allows before it. Illegal, at no cost (nothing moved, drunk or used up), when he does not hold it, it is no
+ * restorative the engine knows, or it would do nothing. The item is used up by the caller once it is resolved
+ * (src/engine.js usedUp), as an attack item is.
+ */
+export function itemAction(ctx, actorId, act) {
+    const { enc, content, state } = ctx;
+    const actor = enc.combatants[actorId];
+    const o = state?.objects?.[act.item];
+    if (!o || o.holder?.entity !== actorId) return { illegal: `${actor.name} does not hold ${o ? o.name : 'that'}` };
+    const p = restoreOf(content, o);
+    if (!p) return { illegal: `${o.name} is no restorative the engine knows` };
+    const x = restoreEffect(content, p, { level: actor.fixed.level, current: actor.current, max: { hp: actor.fixed.max_hp, mp: actor.fixed.max_mp, sta: actor.fixed.max_sta } });
+    if (x.refused) return { illegal: `${o.name}: ${x.refused}; nothing was drunk or used up` };
+    const step = act.move ? moveAction(ctx, actorId, act.move, act.move_target) : null;
+    actor.current[x.resource] = x.after;
+    return { round: enc.round, actor: actorId, kind: 'item', item: o.id, item_name: o.name, restore: { resource: x.resource, amount: x.amount, of: p.amount, before: x.before, after: x.after, max: x.max }, ...(step ? { step: step.change } : {}) };
+}
+
+export function moveAction(ctx, actorId, dir, focusId) {
+    const { enc } = ctx;
+    const record = { round: enc.round, actor: actorId, kind: 'move', dir };
+    if (actorId === 'pc') {
+        record.change = repositionPc(enc, 'pc', dir === 'closer' ? -1 : 1, focusId);
+        return record;
+    }
+    const c = enc.combatants[actorId];
+    const before = c.current.band;
+    if (dir === 'away' && before === 'LONG') {
+        c.current.escaped = true;
+        enc.escaped.push(c.id);
+        record.escaped = true;
+        record.change = `${before} -> out of range (escaped)`;
+        return record;
+    }
+    c.current.band = bandName(bandIndex(before) + (dir === 'closer' ? -1 : 1));
+    c.current.cover = 'none'; // leaving a position leaves its cover
+    record.change = `${before} -> ${c.current.band}`;
+    return record;
+}
+
+/**
+ * Alaric's attack options against one opponent with the damage each would deal right now (the same Raw, Proficiency,
+ * prepared-attack bonus, DEF, cover and defensive effects as resolveStrike; the range is the damage variance), so
+ * the player can choose knowingly. Nothing is rolled. Attacks that cannot be used now (range after one move, cost,
+ * arrows) are left out.
+ * @returns {{skill, name, min, max, strikes, cover: null|'ignored'|'applies'}[]}
+ */
+export function damagePreview(enc, content, targetId, state = null) {
+    const pc = enc?.combatants?.pc;
+    const target = enc?.combatants?.[targetId];
+    if (!pc || !target || !alive(target) || target.current.cover === 'full') return [];
+    const out = [];
+    const d = content.rules.damage;
+    for (const [sid, known] of Object.entries(pc.fixed.actions || {})) {
+        const skill = resolveSkill(content, sid, state);
+        if (!skill?.attack || skill.effects?.some((e) => e.kind === 'area')) continue;
+        const band = target.current.band;
+        const reach = rangeReaches(skill.range.band, band) || (bandIndex(band) > 0 && rangeReaches(skill.range.band, bandName(bandIndex(band) - 1)));
+        const prof = PROF(content, known.prof);
+        const cost = skillCostAmount(content, skill, known.prof, pc.fixed.passive?.cost, true);
+        const arrows = skill.ammo && pc.fixed.weapon_family === 'bow' ? (pc.current.ammo?.[skill.ammo.item] || 0) >= skill.ammo.qty : true;
+        if (!reach || (skill.cost && pc.current[skill.cost.resource] < cost) || !arrows) continue;
+        const isRanged = skill.range.band !== 'ENGAGED';
+        const magical = skill.attack.damage_type === 'magical';
+        // review of 9B-2: the same steps, in the same order and with the same roundings, as attackAction and
+        // resolveStrike: his combat Passives where he would strike from (one band closer when it needs the step), the
+        // target's, its resistance; the variance at its two ends
+        const ctx = { enc, content, state };
+        const struckAt = rangeReaches(skill.range.band, band) ? band : bandName(bandIndex(band) - 1);
+        target.current.band = struckAt;
+        const edge = pc.fixed.passive ? passiveNow(ctx, pc) : null;
+        const guard = target.fixed.passive ? passiveNow(ctx, target) : null;
+        target.current.band = band;
+        let power = rawPower(skill, pc.fixed.stats, { atk: pc.fixed.atk + (edge?.stat.ATK || 0), matk: pc.fixed.matk + (edge?.stat.MATK || 0) });
+        if (prof.power && prof.power !== 1) power = num(power * prof.power);
+        const buff = effectsOf(pc, 'next_attack_buff').filter((b) => b.scope !== 'ranged' || isRanged).reduce((a, b) => a + b.power_pct, 0);
+        if (buff) power = num(power * (1 + buff / 100));
+        const defense = (magical ? target.fixed.mdef : target.fixed.def) + tempDefense(target, magical) + (guard ? guard.stat[magical ? 'MDEF' : 'DEF'] : 0);
+        const postDef = num(Math.max(power - defense, power * d.defense_floor_share));
+        let cover = null;
+        if (partialCoverAt(target, struckAt)) cover = skill.attack.ignores_partial_cover ? 'ignored' : 'applies';
+        const resist = guard ? guard.resist[magical ? 'magical' : 'physical'] : 0;
+        const endure = effectsOf(target, 'damage_reduction_next')[0];
+        const final = (variance) => {
+            let dmg = num(postDef * variance);
+            if (cover === 'applies') dmg = num(dmg * (1 - content.rules.cover.partial_damage_reduction_pct / 100));
+            for (const e of target.current.effects) {
+                const pct = reductionPct(e);
+                if (pct) dmg = num(dmg * (1 - pct / 100));
+            }
+            if (endure && dmg > 0) dmg = num(dmg * (1 - endure.pct / 100));
+            if (resist) dmg = num(dmg * (1 - resist / 100));
+            return Math.max(1, roundHalfUp(dmg));
+        };
+        const min = final(d.variance_min);
+        const max = final(d.variance_max);
+        out.push({ skill: sid, name: skill.name, min, max, strikes: skill.strikes || 1, cover });
+    }
+    return out;
+}
+
+// ------------------------------------------------------------------------------------------ NPC policy
+const PASSIVE_INTENTS = new Set(['hold', 'parley', 'take_cover']);
+
+/** Deterministic NPC decision (Core #27 NPC DECISION LOCK: decided from the NPC's own state/temperament first). */
+export function npcDecide(ctx, npcId) {
+    const { enc } = ctx;
+    const me = enc.combatants[npcId];
+    const pc = enc.combatants.pc;
+    const hpPct = me.current.hp / me.fixed.max_hp;
+    const band = me.current.band;
+    // 4.3.0-c.6.6.24 (livetest 21.10.2026: restless skeletons on the rat body plan, "skittish", retreated and were chased
+    // round after round): on the planner path no personality category decides; the legacy paths keep theirs
+    const temper = ctx.c ? null : me.fixed.temperament || (me.fixed.sapient ? 'cautious' : 'aggressive');
+    let intent = enc.intents[npcId];
+    const reach = me.model === 'creature' ? me.fixed.attack.range : npcReach(ctx, me);
+    const inRange = bandIndex(band) <= bandIndex(reach);
+    // a strike on it (every legal V3 strike lands; records from before Combat V3 carry a Hit roll)
+    const wasHit = enc.log.some((r) => r.actor !== npcId && (r.strikes || []).some((s) => s.target === npcId && (!s.hit || s.hit.success)));
+    const attackOn = (r) => r.actor !== npcId && r.kind === 'attack' && (r.target === npcId || (r.strikes || []).some((s) => s.target === npcId));
+    if (!alive(pc) || pc.current.hp <= 0) return { kind: 'hold', why: 'no living opponent' };
+    // Core #27: the NPC decides from its own state. Being attacked since its last Turn outweighs a narrated passive
+    // intent (hold / parley / take cover): Testrun 2 froze a trapper for three rounds under fire because the narrator
+    // kept echoing the engine's "holds" as his next intent.
+    const ownLast = enc.log.map((r) => r.actor).lastIndexOf(npcId);
+    if (PASSIVE_INTENTS.has(intent) && enc.log.slice(ownLast + 1).some(attackOn)) {
+        delete enc.intents[npcId];
+        intent = undefined;
+    }
+    // Temperament is a bias, not a command. A sapient NPC that is not hostile toward Alaric and has not been
+    // harmed does not open with violence merely because of a label such as "skittish". It may seek cover or hold.
+    const attitude = ctx.state?.relations?.[`rel.${npcId}.attitude.pc`]?.value ?? 0;
+    const harmed = me.current.hp < me.fixed.max_hp || wasHit || enc.log.some(attackOn);
+    // on the planner path by what is established, not a temperament: harm, hostility toward him, an outlaw's role, or the
+    // fight its own (it opened it); a person none of that holds for does not open with violence (no guard by label)
+    const outlaw = () => !!ctx.state?.entities?.[npcId] && !!actorTraits(ctx.state, ctx.content, npcId, { c: true }).hostileRole;
+    const holdsBack = ctx.c
+        ? enc.trigger?.actor !== npcId && !opensViolence({ sapient: true, attitude, harmed, hostileRole: outlaw() }).ok
+        : !opensViolence({ sapient: true, temperament: temper, attitude, harmed }).ok;
+    if (!intent && me.fixed.sapient && holdsBack) {
+        return me.current.cover === 'none' && band !== 'ENGAGED' ? { kind: 'cover', why: 'not hostile, not yet harmed: seeks cover' } : { kind: 'hold', why: 'not hostile, not yet harmed' };
+    }
+    // Patch 4 (Prototype C): one that fled on its own last Turn goes on fleeing until it is out of the fight (live:
+    // a wolf that broke for the trees turned at LONG and came back, its flight one step long); held in melee or
+    // caught, it fights (npcAct), and a new intent of the story's still counts
+    if (ctx.c && !intent && fleeing(enc, npcId)) return { kind: 'flee', why: 'keeps fleeing' };
+    if (intent) {
+        delete enc.intents[npcId];
+        if (intent === 'surrender') return { kind: 'surrender', why: 'narrated intent' };
+        if (intent === 'flee') return { kind: 'flee', why: 'narrated intent' };
+        if (intent === 'take_cover') return { kind: 'cover', why: 'narrated intent' };
+        if (intent === 'hold' || intent === 'parley') return { kind: 'hold', why: `narrated intent (${intent})` };
+        if (intent === 'attack') return inRange ? { kind: 'attack' } : { kind: 'close_and_attack' };
+    }
+    if (ctx.c) {
+        // the fight as it stands: in reach it strikes, out of reach it closes in; one that can only strike in melee and is
+        // shot at from range takes cover once (a person); flight and surrender come from the story's intent (above),
+        // never from a label
+        if (inRange) return { kind: 'attack' };
+        const lastShot = [...enc.log].reverse().find((r) => r.actor === 'pc' && r.kind === 'attack');
+        const shot = lastShot && (lastShot.strikes || []).some((k) => k.target === npcId);
+        if (me.fixed.sapient && shot && me.current.cover === 'none') return { kind: 'cover', why: 'shot from range, out of its reach: takes cover' };
+        return { kind: 'close_and_attack' };
+    }
+    if (temper === 'skittish') {
+        // Prototype C: skittish biases positioning; it does not itself mean "leave the encounter". An explicit narrated
+        // flee intent still does that above. Otherwise a threatened skittish actor may RETREAT one band, while escape
+        // from LONG needs a stronger independent reason such as being badly wounded.
+        if (ctx.c) {
+            if (band === 'ENGAGED') return { kind: 'attack', why: 'cornered' };
+            const threatened = enc.log.slice(ownLast + 1).some(attackOn) || (ownLast < 0 && enc.trigger?.actor === 'pc');
+            if (!threatened) return me.current.cover === 'none' ? { kind: 'cover', why: 'skittish, wary: seeks cover' } : { kind: 'hold', why: 'skittish, wary' };
+            if (band === 'SHORT' || band === 'MEDIUM') return { kind: 'retreat', why: 'skittish, threatened: gains distance' };
+            if (band === 'LONG' && hpPct <= 0.20) return { kind: 'flee', why: 'badly wounded and skittish (<=20% HP)' };
+            return me.current.cover === 'none' ? { kind: 'cover', why: 'skittish at LONG: holds distance in cover' } : { kind: 'hold', why: 'skittish at LONG: holds distance' };
+        }
+        if (wasHit || band === 'ENGAGED') return band === 'ENGAGED' && !wasHit ? { kind: 'attack', why: 'cornered' } : { kind: 'flee', why: 'skittish, threatened' };
+        return { kind: 'flee', why: 'skittish' };
+    }
+    if (temper === 'aggressive') {
+        if (me.fixed.sapient && hpPct <= 0.15) return { kind: 'flee', why: 'badly wounded (<=15% HP)' };
+        return inRange ? { kind: 'attack' } : { kind: 'close_and_attack' };
+    }
+    if (temper === 'defensive') {
+        if (band === 'ENGAGED') return { kind: 'attack' };
+        // Prototype C (4.3.0-c.6.6.5, live 15.10.2026: the strong mudwyrm held in its cover three Turns while a Flame
+        // Lance struck it each Turn, 84 -> 0 HP, and never answered): cover that did not keep the strikes off is no
+        // defence; struck again in it, a defensive creature closes to defend itself, or flees when badly hurt
+        if (ctx.c && me.current.cover !== 'none' && ownLast >= 0 && enc.log.slice(ownLast + 1).some(attackOn)) {
+            return hpPct <= 0.25 ? { kind: 'flee', why: 'defensive, badly hurt in useless cover (<=25% HP)' } : { kind: 'close_and_attack', why: 'defensive, struck in its cover: closes to defend itself' };
+        }
+        return me.current.cover === 'none' ? { kind: 'cover', why: 'defensive' } : { kind: 'hold', why: 'defensive, in cover' };
+    }
+    // cautious
+    if (hpPct <= 0.35) return { kind: 'flee', why: 'wounded (<=35% HP)' };
+    if (inRange) return { kind: 'attack' };
+    const lastPc = [...enc.log].reverse().find((r) => r.actor === 'pc' && r.kind === 'attack');
+    const shotFromRange = lastPc && (lastPc.strikes || []).some((s) => s.target === npcId) && band !== 'ENGAGED';
+    if (shotFromRange && me.current.cover === 'none') return { kind: 'cover', why: 'melee-only, shot from range' };
+    return { kind: 'close_and_attack' };
+}
+
+const hasAmmo = (me, s) => (me.current.ammo?.[s.ammo.item] || 0) >= s.ammo.qty;
+
+function npcReach(ctx, me) {
+    if (me.model !== 'character') return 'ENGAGED';
+    let best = 'ENGAGED';
+    for (const sid of Object.keys(me.fixed.actions)) {
+        const s = resolveSkill(ctx.content, sid, ctx.state);
+        if (s && s.attack && s.range && !s.range.extra_band && bandIndex(s.range.band) > bandIndex(best)) {
+            if (s.ammo && (me.fixed.weapon_family !== 'bow' || !hasAmmo(me, s))) continue;
+            best = s.range.band;
+        }
+    }
+    return best;
+}
+
+function npcAttackSkill(ctx, me) {
+    // the NPC's best legal attack: prefer the known attack with highest raw that reaches
+    const band = me.current.band;
+    let best = null;
+    for (const sid of Object.keys(me.fixed.actions)) {
+        const s = resolveSkill(ctx.content, sid, ctx.state);
+        if (!s || !s.attack) continue;
+        if (s.ammo && (me.fixed.weapon_family !== 'bow' || !hasAmmo(me, s))) continue;
+        // review of 9B-2: the cost its execution books (its Proficiency, its Passives' reductions)
+        const cost = skillCostAmount(ctx.content, s, me.fixed.actions[s.id].prof, me.fixed.passive?.cost, true);
+        if (s.cost && me.current[s.cost.resource] < cost) continue;
+        const reach = s.range.extra_band ? 'SHORT' : s.range.band;
+        if (bandIndex(band) > bandIndex(reach) + 1) continue;
+        const raw = rawPower(s, me.fixed.stats, { atk: me.fixed.atk, matk: me.fixed.matk });
+        if (!best || raw > best.raw) best = { id: s.id, raw };
+    }
+    return best ? best.id : null;
+}
+
+/**
+ * Prototype C (4.3.0-c.6.6.6, review): the Turn of someone in the fight who is not Alaric's foe (a bystander his area
+ * attack caught, a companion at his side). Where they stood makes no one his enemy: unstruck, they keep out of it. A
+ * companion he struck stays on his side and steps back out of reach. Anyone else he struck answers by their own nature,
+ * as any combatant decides (npcDecide: temperament, wounds, reach): one that would fight him turns on him and is his
+ * foe from then on; one that would flee, back off or take cover does that and stays no party to the fight. A turn
+ * the story narrates (intent attack, src/v4/world.js hostile) turns them too.
+ * @returns {{turned: string, decision?: object} | object} {turned} when they now fight him, else the record of the Turn
+ */
+function asideTurn(ctx, npcId) {
+    const { enc } = ctx;
+    const me = enc.combatants[npcId];
+    // 4.3.0-c.6.6.7: a strike since its own last Turn; an old one was answered then
+    const ownLast = enc.log.findLastIndex((r) => r.actor === npcId);
+    const struck = enc.log.slice(ownLast + 1).findLast((r) => r.actor === 'pc' && (r.strikes || []).some((k) => k.target === npcId));
+    const turnOn = (why, decision) => {
+        me.side = 'hostile';
+        me.fixed.defeat_xp = hostileXp(me, ctx.state, ctx.content, enc.pc_rank);
+        return { turned: why, ...(decision ? { decision } : {}) };
+    };
+    if (enc.intents[npcId] === 'attack') return turnOn('as the story has it');
+    const who = me.side === 'ally' ? 'on Alaric\'s side' : 'no foe of his';
+    if (struck && me.side !== 'ally') {
+        const side = me.side;
+        me.side = 'hostile';
+        const decision = npcDecide(ctx, npcId);
+        me.side = side;
+        // 4.3.0-c.6.6.7: only one its nature lets open violence (src/policy.js: a skittish animal flees what hurt it)
+        const attitude = ctx.state?.relations?.[`rel.${npcId}.attitude.pc`]?.value ?? 0;
+        // 4.3.0-c.6.6.24: by what is established, not a temperament: a person struck by him may fight back; a creature
+        // the story showed as no foe (threat: false, the packhorse) backs away; any other creature struck answers
+        const may = me.fixed.sapient ? opensViolence({ sapient: true, attitude, harmed: true, band: me.current.band }).ok : ctx.state?.entities?.[npcId]?.threat !== false;
+        if (may && (decision.kind === 'attack' || decision.kind === 'close_and_attack')) return turnOn(`struck by his ${struck.skill_name || 'attack'}`, decision);
+        if (!['surrender', 'hold', 'attack', 'close_and_attack'].includes(decision.kind)) return { ...npcAct(ctx, npcId, decision), why: `${who}, struck by his ${struck.skill_name || 'attack'}: ${decision.why || decision.kind}` };
+    }
+    if (struck && me.current.band !== 'LONG') return { ...moveAction(ctx, npcId, 'away'), kind: 'move', dir: 'away', why: `${who}, struck by his ${struck.skill_name || 'attack'}: steps back out of reach` };
+    return { round: enc.round, actor: npcId, kind: 'hold', why: `${who}: keeps out of the fight` };
+}
+
+function npcTurn(ctx, npcId) {
+    const me = ctx.enc.combatants[npcId];
+    if (ctx.c && me.side !== 'hostile') {
+        const aside = asideTurn(ctx, npcId);
+        if (!aside.turned) return aside;
+        return { ...npcAct(ctx, npcId, aside.decision), turned: aside.turned };
+    }
+    return npcAct(ctx, npcId);
+}
+
+function npcAct(ctx, npcId, decided = null) {
+    const { enc } = ctx;
+    const me = enc.combatants[npcId];
+    let decision = decided || npcDecide(ctx, npcId);
+    // Prototype C (4.3.0-c.6.6): caught after a chase, it does not run again in this fight; it fights back
+    if (ctx.c && me.current.caught && (decision.kind === 'flee' || decision.kind === 'retreat')) decision = { kind: 'attack', why: 'caught: cornered' };
+    if (decision.kind === 'surrender') {
+        me.current.surrendered = true;
+        // livetest 21.10.2026: a surrender ends its part in the fight but is no defeat: no XP (a kill later gives it, once)
+        if (!enc.defeated.includes(npcId)) enc.defeated.push(npcId);
+        return { round: enc.round, actor: npcId, kind: 'surrender', why: decision.why, pending_xp_added: 0 };
+    }
+    if (decision.kind === 'flee') return { ...moveAction(ctx, npcId, 'away'), why: decision.why, ...(ctx.c ? { fleeing: true } : {}) };
+    if (decision.kind === 'retreat') return { ...moveAction(ctx, npcId, 'away'), kind: 'move', dir: 'away', why: decision.why };
+    if (decision.kind === 'cover') {
+        const before = me.current.cover;
+        let change = '';
+        if (me.current.band !== 'LONG' && before === 'none') change = `${moveAction(ctx, npcId, 'away').change}, `;
+        me.current.cover = 'partial';
+        return { round: enc.round, actor: npcId, kind: 'cover', why: decision.why, change: `${change}cover ${before} -> partial` };
+    }
+    if (decision.kind === 'hold') return { round: enc.round, actor: npcId, kind: 'hold', why: decision.why };
+    // attack (optionally after one band of movement)
+    const move = decision.kind === 'close_and_attack' ? 'closer' : null;
+    if (me.model === 'creature') {
+        const r = attackAction(ctx, npcId, 'pc', null, { move });
+        if (r.illegal) {
+            if (move) return { ...moveAction(ctx, npcId, 'closer'), why: 'closing distance' };
+            return { round: enc.round, actor: npcId, kind: 'hold', why: r.illegal };
+        }
+        return r;
+    }
+    // Patch 9B-2 (ruleset 2): a trained person uses a defense or a feint it knows when the fight calls for it
+    const tactic = npcTactic(ctx, me, decision);
+    if (tactic) {
+        const t = skillAction(ctx, npcId, tactic.skill, { dir: 'away' });
+        if (!t.illegal) {
+            me.current.tactics = (me.current.tactics || 0) + 1;
+            return { ...t, why: tactic.why };
+        }
+    }
+    let sid = npcAttackSkill(ctx, me);
+    if (!sid) return move ? { ...moveAction(ctx, npcId, 'closer'), why: 'closing distance (no attack reaches)' } : { round: enc.round, actor: npcId, kind: 'hold', why: 'no usable attack' };
+    const r = attackAction(ctx, npcId, 'pc', sid, { move, autoNormalMove: true });
+    if (r.illegal) {
+        if (move) return { ...moveAction(ctx, npcId, 'closer'), why: 'closing distance' };
+        return { round: enc.round, actor: npcId, kind: 'hold', why: r.illegal };
+    }
+    return r;
+}
+
+const GUARDS = { temp_def: 'physical', temp_mdef: 'magical', barrier: 'any', incoming_damage_reduction: 'any', damage_reduction_next: 'any' };
+const NPC_TACTICS_PER_FIGHT = 3;
+
+/**
+ * Patch 9B-2: a defense or a feint a trained person (an NPC with a character sheet) uses instead of its attack, or null
+ * (then it attacks as before). Ruleset 2 only, and only when it would attack anyway (flight, cover, holding and
+ * surrender are decided as before). From the fight's snapshot alone, deterministic:
+ *  - a defense when it is under concrete threat: struck since its own last Turn by a foe still in the fight, down to
+ *    75% of its HP or less, with no protection of its own on it; one that guards against what struck it (a DEF bonus
+ *    against a physical blow, an MDEF bonus against magic, a Barrier or a damage reduction against either);
+ *  - a feint when it was not struck, its foe is in its reach, it can pay the feint and then its best attack, and the
+ *    foe's defense makes a prepared blow the better one (DEF at least 65% of its attack's power: then a feint and one
+ *    blow do more than two blows);
+ *  - never two such actions in a row, never more than three in one fight; one it cannot pay is none.
+ */
+export function npcTactic(ctx, me, decision) {
+    const { enc, content } = ctx;
+    if (rulesetOf(ctx.state) < 2 || me.model !== 'character' || !['attack', 'close_and_attack'].includes(decision.kind)) return null;
+    if ((me.current.tactics || 0) >= NPC_TACTICS_PER_FIGHT) return null;
+    const ownLast = enc.log.findLastIndex((r) => r.actor === me.id);
+    if (ownLast >= 0 && enc.log[ownLast].kind === 'skill') return null;
+    const known = Object.keys(me.fixed.actions).map((sid) => resolveSkill(content, sid, ctx.state)).filter((s) => s && !s.attack && !s.item);
+    const payable = (s, spent = 0) => !s.cost || me.current[s.cost.resource] - spent >= skillCostAmount(content, s, me.fixed.actions[s.id].prof, me.fixed.passive?.cost, true);
+    // 9D: existing self-heals/restores are executable; choose only a concrete recovery, at most the existing tactics cap.
+    for (const skill of known.filter((k) => payable(k))) {
+        const paid = skillCostAmount(content, skill, me.fixed.actions[skill.id].prof, me.fixed.passive?.cost, true);
+        const r = restoration(content, skill, me.fixed.actions[skill.id].prof, rulesetOf(ctx.state), { stats: me.fixed.stats, pools: me.current, max: { hp: me.fixed.max_hp, mp: me.fixed.max_mp, sta: me.fixed.max_sta } }, paid);
+        if (!r || r.full || r.after <= r.before) continue;
+        if (r.resource === 'hp' && me.current.hp <= 0.5 * me.fixed.max_hp) return { skill: skill.id, why: 'hurt to half HP or less: restores HP with a known Skill' };
+        if (r.resource !== 'hp' && Object.keys(me.fixed.actions).some((id) => {
+            const a = resolveSkill(content, id, ctx.state);
+            if (!a?.attack || a.cost?.resource !== r.resource) return false;
+            const cost = skillCostAmount(content, a, me.fixed.actions[id].prof, me.fixed.passive?.cost, true);
+            return me.current[r.resource] < cost && r.after >= cost;
+        })) return { skill: skill.id, why: 'a known restore makes an otherwise unaffordable attack payable' };
+    }
+    const blows = enc.log.slice(ownLast + 1).filter((r) => r.kind === 'attack' && enc.combatants[r.actor] && isOpponent(me, enc.combatants[r.actor]) && (r.strikes || []).some((k) => k.target === me.id));
+    if (blows.length) {
+        const by = enc.combatants[blows.at(-1).actor];
+        const kind = attackType(ctx, blows.at(-1));
+        const guarded = me.current.effects.some((e) => GUARDS[e.kind]);
+        if (!alive(by) || guarded || me.current.hp > 0.75 * me.fixed.max_hp) return null;
+        const fits = (s) => s.effects.some((e) => GUARDS[e.kind] === 'any' || GUARDS[e.kind] === kind);
+        // review of .52: their own technique (a defensive signature) first, when it fits and they can pay it; else as before
+        const guard = known.find((s) => s.origin?.kind === 'signature' && fits(s) && payable(s)) || known.find((s) => fits(s) && payable(s));
+        if (guard) return { skill: guard.id, why: `struck by ${by.name} and hurt (${me.current.hp}/${me.fixed.max_hp} HP): guards with ${guard.name}` };
+        return null;
+    }
+    if (decision.kind !== 'attack') return null;
+    const feint = known.find((s) => s.effects.some((e) => e.kind === 'next_attack_buff' && e.scope === 'attack') && payable(s));
+    if (!feint || me.current.effects.some((e) => e.kind === 'next_attack_buff')) return null;
+    const sid = npcAttackSkill(ctx, me);
+    const blow = sid ? resolveSkill(content, sid, ctx.state) : null;
+    if (!blow || blow.range.band !== 'ENGAGED' || me.current.band !== 'ENGAGED') return null;
+    const spent = feint.cost ? skillCostAmount(content, feint, me.fixed.actions[feint.id].prof, me.fixed.passive?.cost, true) : 0;
+    const then = blow.cost ? skillCostAmount(content, blow, me.fixed.actions[blow.id].prof, me.fixed.passive?.cost, true) : 0;
+    if (blow.cost && (blow.cost.resource === feint.cost?.resource ? me.current[blow.cost.resource] - spent : me.current[blow.cost.resource]) < then) return null;
+    const pc = enc.combatants.pc;
+    const magical = blow.attack.damage_type === 'magical';
+    const defense = (magical ? pc.fixed.mdef : pc.fixed.def) + tempDefense(pc, magical);
+    const power = rawPower(blow, me.fixed.stats, { atk: me.fixed.atk, matk: me.fixed.matk });
+    if (defense < 0.65 * power) return null;
+    return { skill: feint.id, why: `${pc.name}'s guard (${magical ? 'MDEF' : 'DEF'} ${defense}) blunts a plain blow: feints first` };
+}
+
+/** The damage type of a record's attack (a skill's, or a creature's natural attack). */
+function attackType(ctx, r) {
+    const actor = ctx.enc.combatants[r.actor];
+    if (actor?.model === 'creature') return actor.fixed.attack?.damage_type === 'magical' ? 'magical' : 'physical';
+    return resolveSkill(ctx.content, r.skill, ctx.state)?.attack?.damage_type === 'magical' ? 'magical' : 'physical';
+}
+
+// ------------------------------------------------------------------------------------------ turn loop
+function startTurn(enc, actorId) {
+    // effects anchored to the start of their source's next Turn expire now (Core #13)
+    for (const c of Object.values(enc.combatants)) {
+        c.current.effects = c.current.effects.filter((e) => !(e.source === actorId && e.expires === 'start_of_source_next_turn' && e.round < enc.round_marker));
+    }
+}
+
+function endTurn(enc, actorId) {
+    for (const c of Object.values(enc.combatants)) {
+        c.current.effects = c.current.effects.filter((e) => !(e.source === actorId && e.expires === 'end_of_source_next_turn' && e.round < enc.round_marker - 0.5));
+    }
+}
+
+/**
+ * Prototype C (4.3.0-c.6.6.7): who in the fight is no foe of his, alive, and struck by him since their own last Turn: their
+ * answer to the strike is still due when the fight would end (runCombat). One answer per strike; an old one is answered.
+ */
+function reactionsDue(enc) {
+    const pc = enc.combatants.pc;
+    if (pc.current.defeated || pc.current.escaped) return [];
+    return enc.order.filter((id) => {
+        const c = enc.combatants[id];
+        if (id === 'pc' || c.side === 'hostile' || !alive(c) || c.current.surrendered) return false;
+        const hit = enc.log.findLastIndex((r) => r.actor === 'pc' && (r.strikes || []).some((k) => k.target === id));
+        return hit >= 0 && enc.log.findLastIndex((r) => r.actor === id) < hit;
+    });
+}
+
+function terminal(enc) {
+    const pc = enc.combatants.pc;
+    // Prototype C (4.3.0-c.6.6.6, review): an attack of his that opens a fight among no foes (an area attack among
+    // bystanders) is resolved before the fight can be over
+    const opening = enc.trigger?.actor === 'pc' && !enc.trigger.engage && !enc.trigger_done;
+    return (activeHostiles(enc).length === 0 && !opening) || pc.current.defeated || pc.current.escaped;
+}
+
+function advance(enc) {
+    const order = enc.order.filter((id) => alive(enc.combatants[id]) && !enc.combatants[id].current.surrendered);
+    if (!order.length) return;
+    let idx = enc.turn_index;
+    for (let k = 0; k < enc.order.length + 1; k++) {
+        idx += 1;
+        if (idx >= enc.order.length) { idx = 0; enc.round += 1; }
+        const id = enc.order[idx];
+        const c = enc.combatants[id];
+        if (alive(c) && !c.current.surrendered) break;
+    }
+    enc.turn_index = idx;
+    enc.current = enc.order[idx];
+    enc.round_marker = enc.round + idx / 100; // monotonic turn marker for effect expiry
+}
+
+/**
+ * Run the combat loop for one player message.
+ * pcAction: {kind:'attack', skill, target, move} | {kind:'skill', skill, dir, target} | {kind:'move', dir, target}
+ *           | {kind:'flee'} | {kind:'hold'} | null (no mechanical action declared)
+ * Returns {enc, records, stopped: 'pc_turn'|'terminal'|'illegal', illegal?}
+ */
+/**
+ * Prototype C (4.3.0-c.6.6): one roll decides a break-away, never a band-by-band flee-and-chase loop. The runner's
+ * Initiative against the fastest of those it runs from; each further one holding it costs 10. Bounded to 15-85.
+ */
+function escapeRoll(ctx, runner, from) {
+    const best = Math.max(...from.map((c) => c.fixed.init ?? 0));
+    const chance = Math.max(15, Math.min(85, 50 + 5 * ((runner.fixed.init ?? 0) - best) - 10 * (from.length - 1)));
+    const roll = ctx.dice.d100('escape');
+    return { chance, roll, ok: roll <= chance };
+}
+
+/** Alaric flees (Prototype C): nobody ENGAGED with him, he is gone; held in melee, one escape roll; failed, he stays. */
+function pcFlee(ctx) {
+    const { enc } = ctx;
+    const pc = enc.combatants.pc;
+    const held = activeHostiles(enc).filter((c) => c.current.band === 'ENGAGED');
+    const record = { round: enc.round, actor: 'pc', kind: 'flee' };
+    if (!held.length) {
+        pc.current.escaped = true;
+        return { ...record, escaped: true, why: 'nobody ENGAGED with him: he gets away' };
+    }
+    const r = escapeRoll(ctx, pc, held);
+    record.escape = r;
+    if (r.ok) {
+        pc.current.escaped = true;
+        return { ...record, escaped: true, why: `breaks away from melee (escape d100 ${r.roll} <= ${r.chance})` };
+    }
+    return { ...record, escaped: false, why: `held in melee: he does not get away (escape d100 ${r.roll} > ${r.chance})` };
+}
+
+/** Who fled on its own last Turn (Prototype C), not one that only gave ground (retreat). */
+function fleeing(enc, id) {
+    const c = enc.combatants[id];
+    if (!c || !alive(c) || c.current.band === 'ENGAGED') return false;
+    const own = enc.log.filter((r) => r.actor === id).at(-1);
+    return !!own?.fleeing;
+}
+
+/** "I chase him" after a fleeing foe (Prototype C): one roll, caught (ENGAGED, cornered) or gone. */
+function chase(ctx, id) {
+    const { enc } = ctx;
+    const t = enc.combatants[id];
+    const before = t.current.band;
+    const r = escapeRoll(ctx, t, [enc.combatants.pc]);
+    const record = { round: enc.round, actor: 'pc', kind: 'move', dir: 'closer', target: id, chase: true, escape: r };
+    if (r.ok) {
+        t.current.escaped = true;
+        enc.escaped.push(id);
+        return { ...record, caught: false, change: `${t.name} ${before} -> out of range (escaped)`, why: `the chase fails: it gets away (escape d100 ${r.roll} <= ${r.chance})` };
+    }
+    t.current.band = 'ENGAGED';
+    t.current.cover = 'none';
+    t.current.caught = true;
+    return { ...record, caught: true, change: `${t.name} ${before} -> ENGAGED`, why: `caught: it cannot run again (escape d100 ${r.roll} > ${r.chance})` };
+}
+
+export function runCombat(ctx, pcAction) {
+    const { enc } = ctx;
+    const records = [];
+    // Patch 9B-1: every record also tells what it shows of his use of a Skill (src/skills.js noteUse; ruleset 2)
+    const push = (r) => { enc.log.push(r); records.push(r); noteUse(ctx, r); };
+    // snapshots saved before carried ammunition was tracked per combatant: take it from the sheet once
+    for (const c of Object.values(enc.combatants)) if (c.model === 'character' && !c.current.ammo) c.current.ammo = ammoOf(ctx.state?.entities[c.id]?.sheet || {}, ctx.content);
+    let pcActed = false;
+    // Opening Action (true Ambush) before Round 1
+    if (enc.round === 0 && enc.ambush && !enc.opening) {
+        const t = enc.trigger;
+        let r;
+        if (t.actor === 'pc') {
+            r = attackAction(ctx, 'pc', t.target, t.skill, { opening: true, move: t.move, moveTarget: t.move_target, item: t.item, burst: t.burst, field: t.field, crowd: t.crowd });
+            if (r.illegal) return { enc, records, stopped: 'illegal', illegal: r.illegal };
+            pcActed = true;
+        } else {
+            const me = enc.combatants[t.actor];
+            const sid = me.model === 'creature' ? null : npcAttackSkill(ctx, me);
+            // a character with no attack that reaches Alaric from where it hides cannot open (it used to crash here)
+            r = me.model !== 'creature' && !sid ? { illegal: `${me.name} has no attack that reaches ${enc.combatants.pc.name} from ${me.current.band}` }
+                : attackAction(ctx, t.actor, 'pc', sid, { opening: true, move: 'closer', autoNormalMove: true });
+            if (r.illegal) r = { round: 0, actor: t.actor, kind: 'hold', why: `ambush attack impossible: ${r.illegal}` };
+        }
+        r.note = 'Opening Action (true Ambush: every strike is a Critical Hit ×1.5)';
+        enc.opening = true;
+        enc.trigger_done = true;
+        push(r);
+    }
+    // Prototype C (4.3.0-c.6.6.7): First Strike, an open attack that starts the fight (initEncounter), before Round 1.
+    // It is its maker's action of Round 1: that place in the Turn order is passed over once (enc.spent)
+    if (ctx.c && enc.round === 0 && enc.first_strike && !enc.opening && !enc.trigger_done) {
+        const t = enc.trigger;
+        let r;
+        if (t.actor === 'pc') {
+            r = attackAction(ctx, 'pc', t.target, t.skill, { move: t.move, moveTarget: t.move_target, item: t.item, burst: t.burst, field: t.field, crowd: t.crowd });
+            if (r.illegal) return { enc, records, stopped: 'illegal', illegal: r.illegal };
+            pcActed = true;
+        } else {
+            const me = enc.combatants[t.actor];
+            const sid = me.model === 'creature' ? null : npcAttackSkill(ctx, me);
+            r = me.model !== 'creature' && !sid ? { illegal: 'no attack reaches' } : attackAction(ctx, t.actor, 'pc', sid, { move: 'closer', autoNormalMove: true });
+            // out of reach even after its step: no First Strike, it attacks on its own Turn as before; made, the attack
+            // is the one its intent announced (npcDecide uses an intent once)
+            if (r.illegal) r = null;
+            else delete enc.intents[t.actor];
+        }
+        enc.opening = true;
+        enc.trigger_done = true;
+        if (r) {
+            r.first_strike = true;
+            r.note = 'First Strike (an open attack that opens the fight: no Ambush bonus; its maker\'s action of Round 1)';
+            enc.spent = { ...(enc.spent || {}), [t.actor]: 1 };
+            push(r);
+        }
+    }
+    if (enc.round === 0) { enc.round = 1; enc.turn_index = -1; advance(enc); if (enc.round > 1) enc.round = 1; }
+    let guard = 0;
+    while (guard++ < 200) {
+        if (terminal(enc)) {
+            // Prototype C (4.3.0-c.6.6.7): someone who is no foe of his, struck since their last Turn, answers the strike
+            // before the fight ends (asideTurn); that answer is their action of this Round. A turn on him goes on fighting
+            const due = ctx.c ? reactionsDue(enc) : [];
+            if (!due.length) break;
+            for (const id of due) {
+                startTurn(enc, id);
+                push({ ...npcTurn(ctx, id), reaction: true });
+                endTurn(enc, id);
+                if (enc.order.indexOf(id) >= enc.turn_index) enc.spent = { ...(enc.spent || {}), [id]: enc.round };
+            }
+            continue;
+        }
+        const actorId = enc.current;
+        // a place in the Turn order already used this Round (a First Strike, an answer to a strike) is passed over once
+        if (enc.spent?.[actorId] !== undefined) {
+            const round = enc.spent[actorId];
+            delete enc.spent[actorId];
+            if (round === enc.round) { advance(enc); continue; }
+        }
+        startTurn(enc, actorId);
+        if (actorId === 'pc') {
+            if (pcActed) return { enc, records, stopped: 'pc_turn' };
+            const act = pcAction || (enc.trigger && enc.trigger.actor === 'pc' && !enc.trigger_done ? { kind: 'attack', skill: enc.trigger.skill, target: enc.trigger.target, move: enc.trigger.move, move_target: enc.trigger.move_target, item: enc.trigger.item, burst: enc.trigger.burst, field: enc.trigger.field, crowd: enc.trigger.crowd } : null);
+            if (enc.trigger && enc.trigger.actor === 'pc') enc.trigger_done = true;
+            if (!act) return { enc, records, stopped: 'pc_turn' };
+            let r;
+            if (act.kind === 'attack') r = attackAction(ctx, 'pc', act.target, act.skill, { move: act.move, moveTarget: act.move_target, item: act.item, burst: act.burst, field: act.field, crowd: act.crowd });
+            else if (act.kind === 'skill') r = skillAction(ctx, 'pc', act.skill, { dir: act.dir, target: act.target });
+            else if (act.kind === 'move') r = ctx.c && act.dir === 'closer' && fleeing(enc, act.target) ? chase(ctx, act.target) : moveAction(ctx, 'pc', act.dir, act.target);
+            else if (act.kind === 'ability_world') r = worldAction(ctx, 'pc', act);
+            else if (act.kind === 'item') r = itemAction(ctx, 'pc', act);
+            else if (act.kind === 'flee' && ctx.c) r = pcFlee(ctx);
+            else if (act.kind === 'flee') {
+                const far = Object.values(enc.combatants).filter((c) => c.side === 'hostile' && alive(c)).every((c) => c.current.band === 'LONG');
+                if (far) { enc.combatants.pc.current.escaped = true; r = { round: enc.round, actor: 'pc', kind: 'flee', escaped: true }; }
+                else r = { ...moveAction(ctx, 'pc', 'away'), kind: 'flee' };
+            } else r = { round: enc.round, actor: 'pc', kind: 'hold', why: 'no combat action declared' };
+            if (r.illegal) return { enc, records, stopped: 'illegal', illegal: r.illegal };
+            push(r);
+            pcActed = true;
+            endTurn(enc, 'pc');
+            advance(enc);
+            continue;
+        }
+        const r = npcTurn(ctx, actorId);
+        push(r);
+        endTurn(enc, actorId);
+        advance(enc);
+    }
+    return { enc, records, stopped: terminal(enc) ? 'terminal' : 'pc_turn' };
+}
+
+/** Terminal Combat End (Core #28): award locked Pending XP once, Level-up loop, persist. */
+export function endEncounterEvents(state, content, enc) {
+    const events = [];
+    const pc = enc.combatants.pc;
+    const xp = pc.current.defeated ? 0 : enc.pending_xp;
+    const summary = {
+        defeated: enc.defeated.filter((id) => id !== 'pc'), escaped: enc.escaped.slice(), xp_awarded: xp,
+        pc_dead: pc.current.defeated, pc_escaped: !!pc.current.escaped,
+    };
+    if (xp > 0) {
+        const sheet = { ...state.entities.pc.sheet };
+        const earned = enc.defeated.filter((id) => !enc.combatants[id].current.surrendered || enc.combatants[id].current.xp_counted);
+        events.push(...awardXp(sheet, xp, content, `Combat XP (${earned.map((id) => `${enc.combatants[id].name} ${enc.combatants[id].fixed.defeat_xp}`).join(', ')})`));
+    }
+    // Patch 9B-1: the Proficiency Progress of the Skills he used meaningfully in it, now that it is over (ruleset 2)
+    const progress = fightProgress(state, content, enc);
+    if (progress.length) summary.pp = progress.map((e) => ({ skill: e.d.skill, gained: e.d.gained, from: e.d.from, to: e.d.to, need: e.d.need }));
+    events.push(...progress);
+    // Patch 9C-1: the Learning Progress of a goal whose disciplines he fought with (src/v4/growth.js), on the same path
+    // for every fight that ends (a fight a reply opened too)
+    const learning = fightGrowth(state, content, enc);
+    if (learning.length) summary.lp = learning.map((e) => ({ goal: e.d.goal, lp: e.d.lp, total: e.d.total, need: e.d.need }));
+    events.push(...learning);
+    // Patch 9C-2c: an outstanding fight he survived and won leaves the evidence of a development (src/v4/passive_growth.js);
+    // what comes of it is offered at his next turn outside a fight, never inside this one
+    const trial = trialEvidence(state, content, enc);
+    if (trial.length) summary.trial = { key: trial[0].d.evidence.key, sure: trial[0].d.evidence.sure, ...(trial[0].d.evidence.roll ? { roll: trial[0].d.evidence.roll, chance: trial[0].d.evidence.chance } : {}), passed: trial[0].d.evidence.status !== 'failed' };
+    events.push(...trial);
+    // 9C completion: what his Skills showed in a fight that was a real challenge, and the developments it makes possible
+    // (src/v4/skill_growth.js); offered at his next turn outside a fight
+    const developmentState = clone(state);
+    for (const e of progress) developmentState.entities.pc.sheet.skills[e.d.skill] = {
+        ...developmentState.entities.pc.sheet.skills[e.d.skill], ...e.d.to,
+    };
+    const developed = developmentEvents(developmentState, content, enc);
+    const noted = developed.find((e) => e.t === 'growth.noted');
+    if (noted) summary.noted = { skills: Object.keys(noted.d.marks), ...(noted.d.pairs ? { pairs: noted.d.pairs } : {}) };
+    const found = developed.filter((e) => e.t === 'growth.evidence').map((e) => e.d.evidence.key);
+    if (found.length) summary.developments = found;
+    events.push(...developed);
+    events.push(...fightFeats(state, content, enc));
+    events.push({ t: 'encounter.ended', d: { id: enc.id, summary } });
+    return { events, summary };
+}
+
+export { terminal };

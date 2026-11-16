@@ -1,0 +1,327 @@
+// Patch 9B-2 (docs/PATCH9B2_PASSIVES_EFFECTS_NPC_DEFENSE.md): dynamic Passives. A Passive is no action: it acts for
+// good (scope "always": derived values, Skill costs, resistances) or in a fight only (scope "combat"), there under a
+// condition the engine checks on the fight's state when it matters (src/combat.js). Like a dynamic Skill (src/skills.js)
+// a definition belongs to one campaign (state.passive_defs, booked by passive.defined) and is fixed once booked; it
+// gives it to no one: passive.gained does, and copies the fixed definition into the sheet (sheet.passives), so the
+// derived values read the sheet alone (src/derived.js deriveCharacter) and a snapshot, a reload or a replay computes
+// the same numbers from it, never twice. Only the engine books them (src/v4/ownership.js); ruleset 2 only.
+//
+// Patch 9C-2c (docs/PATCH9C2C_PASSIVE_ACQUISITION.md): a Passive has a quality (ordinary, rare, legendary; not its
+// Rank) whose provisional budget bounds it, and one total per bonus caps all Passives of a person together; a person
+// holds at most four (rules.json passive_design.slots). A Passive leaves a sheet only by passive.lost, in the one
+// exchange the engine books for a new rare or legendary Passive; its definition stays, and so does its history on the
+// sheet. core_stat_bonus raises a core stat for every rule that reads it (effectiveStats), never the stat he assigned.
+import { rulesetOf } from './content.js';
+import { disciplineTags } from './skills.js';
+import { normText, num, roundHalfUp } from './util.js';
+
+const TOP_KEYS = new Set(['id', 'name', 'description', 'flavor', 'origin', 'rank', 'quality', 'scope', 'condition', 'effects']);
+const STATS = ['ATK', 'MATK', 'DEF', 'MDEF'];
+export const CORE_STATS = ['STR', 'VIT', 'AGI', 'INT', 'PER', 'WIL'];
+const POOLS = ['hp', 'mp', 'sta'];
+const CONDITIONS = { hp_at_most_pct: { pct: [25, 50] }, foe_engaged: {} };
+// what each effect kind takes, and the scopes it may have (a maximum or a cost changes for good, never inside a fight)
+const EFFECTS = {
+    // Patch 9C-2c: a core stat for good (never inside a fight only: the fight's snapshot reads it once)
+    core_stat_bonus: { scopes: ['always'], fields: { stat: CORE_STATS, value: 'per' } },
+    stat_bonus: { scopes: ['always', 'combat'], fields: { stat: STATS, value: 'per' } },
+    max_bonus: { scopes: ['always'], fields: { resource: POOLS, value: 'per' } },
+    cost_reduction: { scopes: ['always'], fields: { resource: ['sta', 'mp'], tag: 'tag', pct: 'per' } },
+    resist: { scopes: ['always', 'combat'], fields: { damage_type: ['physical', 'magical'], pct: 'per' } },
+};
+
+const UNRATED = { per: { stat_bonus: 2, max_bonus: 10, cost_reduction: 10, resist: 10 }, effects: [1, 2] };
+/** The bounds of rules.json passive_design: per quality, in total over all Passives of one person, the slots. */
+export function passiveRules(content) {
+    const r = content.rules.passive_design || {};
+    return {
+        qualities: r.qualities || ['ordinary', 'rare', 'legendary'],
+        per: r.per || {}, effects: r.effects || {}, unrated: r.unrated || UNRATED,
+        total: { core_stat_bonus: 6, stat_bonus: 10, max_bonus: 80, cost_reduction: 30, resist: 30, ...(r.total || {}) },
+        slots: r.slots ?? 4,
+    };
+}
+
+/** Patch 9C-2c: the budget of a quality ({per, effects: [min, max]}); a Passive without one keeps the 9B-2 bounds. */
+export function qualityBudget(content, quality) {
+    const r = passiveRules(content);
+    if (!quality) return r.unrated;
+    return r.per[quality] ? { per: r.per[quality], effects: r.effects[quality] || [1, 1] } : null;
+}
+
+/** Patch 9C-2c: how many Passives a person may hold at once (four below B-Rank; no more from B on yet). */
+export const passiveSlots = (content) => passiveRules(content).slots;
+export const QUALITY_TEXT = { ordinary: 'Ordinary', rare: 'Rare', legendary: 'Legendary' };
+
+const isInt = (v) => Number.isInteger(v);
+const plain = (v, max) => typeof v === 'string' && v.trim().length > 0 && v.length <= max && !/[<>{}`$\\]/.test(v);
+const keyOf = (x) => `${x.kind}:${x.stat || x.resource || x.damage_type}:${x.tag || ''}`;
+
+/** Patch 9B-2: the errors of a proposed dynamic Passive (empty: valid). Closed like a Skill's; F-rank only. */
+export function passiveDefErrors(def, content, state = null) {
+    const e = [];
+    if (!def || typeof def !== 'object' || Array.isArray(def)) return ['a Passive definition is an object'];
+    for (const k of Object.keys(def)) if (!TOP_KEYS.has(k)) e.push(`unknown field ${k}`);
+    if (typeof def.id !== 'string' || !/^dyn\.passive_[a-z][a-z0-9_]{2,40}$/.test(def.id)) e.push('id: "dyn.passive_" and a lower-case name');
+    else if (state?.passive_defs?.[def.id] || state?.skill_defs?.[def.id] || content.skills.has(def.id)) e.push(`id ${def.id} exists`);
+    if (!plain(def.name, 40) || !/^[A-Za-z][A-Za-z' -]{1,39}$/.test(def.name)) e.push('name: 2-40 letters');
+    else if (Object.values(state?.passive_defs || {}).some((p) => normText(p.name) === normText(def.name))) e.push(`name ${def.name} is the name of a Passive that exists`);
+    if (!plain(def.description, 300)) e.push('description: up to 300 characters');
+    // Patch 9C-2c: the Forge's look of it, words only (no numbers: it is never an effect)
+    if (def.flavor !== undefined && (!plain(def.flavor, 160) || /\d/.test(def.flavor))) e.push('flavor: up to 160 characters, no digits');
+    if (!def.origin || typeof def.origin !== 'object' || !plain(def.origin.kind, 40) || Object.keys(def.origin).some((k) => !['kind', 'note'].includes(k)) || (def.origin.note !== undefined && !plain(def.origin.note, 200))) e.push('origin: {kind, note?}');
+    if (def.rank !== 'F') e.push(`rank ${def.rank}: only F-rank Passives have calibrated bounds yet`);
+    const budget = qualityBudget(content, def.quality);
+    if (def.quality !== undefined && !budget) e.push(`quality: one of ${passiveRules(content).qualities.join(', ')}`);
+    e.push(...effectErrors(def, content, budget));
+    return e;
+}
+
+/** Shared closed effect primitives; a class supplies its own rank budget, never pretends to be an F Passive. */
+export function effectErrors(def, content, budget) {
+    const e = [];
+    if (!['always', 'combat'].includes(def.scope)) e.push('scope: always or combat');
+    const c = def.condition ?? null;
+    if (c !== null) {
+        const spec = CONDITIONS[c?.kind];
+        if (!spec) e.push(`condition: one of ${Object.keys(CONDITIONS).join(', ')}`);
+        else {
+            for (const k of Object.keys(c)) if (k !== 'kind' && !(k in spec)) e.push(`condition ${c.kind}: unknown field ${k}`);
+            for (const [k, [lo, hi]] of Object.entries(spec)) if (!isInt(c[k]) || c[k] < lo || c[k] > hi) e.push(`condition ${c.kind}.${k}: ${lo}-${hi}`);
+        }
+        if (def.scope !== 'combat') e.push('condition: only with scope combat (it is checked in a fight)');
+    }
+    const per = budget?.per || {};
+    const [fewest, most] = budget?.effects || [1, 2];
+    const tags = disciplineTags(content);
+    if (!Array.isArray(def.effects) || def.effects.length < fewest || def.effects.length > most) e.push(`effects: ${fewest}-${most}${def.quality ? ` for a ${def.quality} Passive` : ''}`);
+    for (const [i, x] of (Array.isArray(def.effects) ? def.effects : []).entries()) {
+        const spec = EFFECTS[x?.kind];
+        if (!spec) { e.push(`effects[${i}]: kind ${x?.kind} is not supported`); continue; }
+        for (const k of Object.keys(x)) if (k !== 'kind' && !(k in spec.fields)) e.push(`effects[${i}] ${x.kind}: unknown field ${k}`);
+        for (const [k, rule] of Object.entries(spec.fields)) {
+            const v = x[k];
+            if (rule === 'per') {
+                if (!per[x.kind]) e.push(`effects[${i}] ${x.kind}: only on a Passive of a quality that allows it`);
+                else if (!isInt(v) || v < 1 || v > per[x.kind]) e.push(`effects[${i}] ${x.kind}.${k}: 1-${per[x.kind]}`);
+            }
+            else if (rule === 'tag') { if (v !== undefined && !tags.includes(v)) e.push(`effects[${i}] ${x.kind}.tag: one of ${tags.join(', ')}`); }
+            else if (!rule.includes(v)) e.push(`effects[${i}] ${x.kind}.${k}: one of ${rule.join(', ')}`);
+        }
+        if (def.scope && !spec.scopes.includes(def.scope)) e.push(`effects[${i}] ${x.kind}: only with scope ${spec.scopes.join(' or ')}`);
+    }
+    if (Array.isArray(def.effects) && new Set(def.effects.map((x) => keyOf(x || {}))).size !== def.effects.length) e.push('effects: each the same bonus once');
+    return e;
+}
+
+/** Patch 9B-2: define a dynamic Passive for this campaign (ruleset 2): one passive.defined event or only errors. */
+export function definePassive(state, content, def) {
+    if (rulesetOf(state) < 2) return { events: [], errors: ['dynamic Passives belong to the three-class rules (ruleset 2)'] };
+    const errors = passiveDefErrors(def, content, state);
+    if (errors.length) return { events: [], errors };
+    const passive = {
+        id: def.id, name: def.name, description: def.description, ...(def.flavor ? { flavor: def.flavor } : {}), origin: { ...def.origin }, rank: def.rank, ...(def.quality ? { quality: def.quality } : {}), dynamic: true,
+        scope: def.scope, condition: def.condition ? { ...def.condition } : null, effects: def.effects.map((x) => ({ ...x })),
+    };
+    return { events: [{ t: 'passive.defined', d: { passive } }], errors: [], passive };
+}
+
+/**
+ * Patch 9B-2: give a defined Passive to a character who does not have it yet: passive.gained (the authorised step).
+ * Patch 9C-2c: only into a free slot (four at most), and never one he held and gave up (it is no longer his to take).
+ */
+export function gainPassive(state, content, who, passiveId, why = null) {
+    const sheet = state.entities?.[who]?.sheet;
+    if (rulesetOf(state) < 2) return { events: [], errors: ['dynamic Passives belong to the three-class rules (ruleset 2)'] };
+    if (!sheet) return { events: [], errors: [`${who} has no character sheet`] };
+    const p = state.passive_defs?.[passiveId];
+    if (!p) return { events: [], errors: [`no Passive ${passiveId}`] };
+    if (sheet.passives?.[passiveId]) return { events: [], errors: [`${who} has ${p.name} already`] };
+    if ((sheet.passive_history || []).some((h) => h.id === passiveId)) return { events: [], errors: [`${who} gave up ${p.name} for good`] };
+    const slots = passiveSlots(content);
+    if (passivesOf(sheet).length >= slots) return { events: [], errors: [`${who} holds ${slots} Passives already (${slots}/${slots}): no free slot`] };
+    return { events: [{ t: 'passive.gained', d: { id: who, passive: passiveId, ...(why ? { why } : {}) } }], errors: [] };
+}
+
+/**
+ * Patch 9C-2c: a Passive a person gives up for good, in the exchange for a new one (src/v4/passive_growth.js books
+ * both together): passive.lost. Its effects end; its definition and its record on the sheet's history stay.
+ */
+export function losePassive(state, who, passiveId, why, replacedBy = null) {
+    const sheet = state.entities?.[who]?.sheet;
+    if (!sheet?.passives?.[passiveId]) return { events: [], errors: [`${who} holds no Passive ${passiveId}`] };
+    return { events: [{ t: 'passive.lost', d: { id: who, passive: passiveId, why, ...(replacedBy ? { replaced_by: replacedBy } : {}) } }], errors: [] };
+}
+
+/** The Passives of a sheet, in the order gained. */
+export const passivesOf = (sheet) => Object.values(sheet?.passives || {});
+
+/** 9D: exactly one active class trait shares effect totals, never Passive slots or ownership. */
+export const effectSources = (sheet) => [...passivesOf(sheet), ...(sheet?.evolution?.trait ? [{ ...sheet.evolution.trait, name: sheet.evolution.name, id: sheet.evolution.id }] : [])];
+
+const capped = (sum, cap) => Math.min(sum, cap);
+
+/**
+ * Patch 9B-2: the Passives' lasting bonuses of a sheet (scope always), summed and capped in total per bonus
+ * (passive_design.total): stat {ATK, MATK, DEF, MDEF}, max {hp, mp, sta}, resist {physical, magical}, and the cost
+ * reductions as they stand ([{resource, tag, pct}], capped where a Skill's cost is reckoned: costReductionPct).
+ */
+export function passiveTotals(sheet, content) {
+    const total = passiveRules(content).total;
+    const out = { core: Object.fromEntries(CORE_STATS.map((k) => [k, 0])), stat: { ATK: 0, MATK: 0, DEF: 0, MDEF: 0 }, max: { hp: 0, mp: 0, sta: 0 }, resist: { physical: 0, magical: 0 }, cost: [] };
+    for (const p of effectSources(sheet)) {
+        if (p.scope !== 'always') continue;
+        for (const x of p.effects) {
+            if (x.kind === 'core_stat_bonus') out.core[x.stat] += x.value;
+            else if (x.kind === 'stat_bonus') out.stat[x.stat] += x.value;
+            else if (x.kind === 'max_bonus') out.max[x.resource] += x.value;
+            else if (x.kind === 'resist') out.resist[x.damage_type] += x.pct;
+            else if (x.kind === 'cost_reduction') out.cost.push({ resource: x.resource, tag: x.tag || null, pct: x.pct, name: p.name });
+        }
+    }
+    for (const k of CORE_STATS) out.core[k] = capped(out.core[k], total.core_stat_bonus);
+    for (const k of STATS) out.stat[k] = capped(out.stat[k], total.stat_bonus);
+    for (const k of POOLS) out.max[k] = capped(out.max[k], total.max_bonus);
+    for (const k of ['physical', 'magical']) out.resist[k] = capped(out.resist[k], total.resist);
+    return out;
+}
+
+/**
+ * Patch 9C-2c: the core stats every rule reads: the ones he assigned (sheet.stats, never changed by a Passive) plus his
+ * Passives' core_stat_bonus, capped in total. The derived values, a fight's snapshot, Skill scaling, effects, checks.
+ */
+export function effectiveStats(sheet, content) {
+    const base = sheet?.stats || {};
+    if (!sheet?.passives && !sheet?.evolution) return base;
+    const core = passiveTotals(sheet, content).core;
+    if (!CORE_STATS.some((k) => core[k])) return base;
+    return Object.fromEntries(Object.entries(base).map(([k, v]) => [k, v + (core[k] || 0)]));
+}
+
+/** "INT 8 (6 +2)" where a Passive raises a stat, else "INT 6": the stats line of #status, the HUD and the context. */
+export function statsText(sheet, content, sep = ' | ') {
+    const eff = effectiveStats(sheet, content);
+    return CORE_STATS.map((k) => `${k} ${eff[k]}${eff[k] !== sheet.stats[k] ? ` (${sheet.stats[k]} +${eff[k] - sheet.stats[k]})` : ''}`).join(sep);
+}
+
+/**
+ * Patch 9C-2c: what a new Passive would actually add to a sheet (optionally after giving up one it holds): per effect,
+ * the effective gain within the totals (a combat bonus against what the lasting ones leave of its total). A Passive
+ * whose every effect would add nothing is no development: it is not offered (a legendary Passive is never a no-op).
+ */
+export function passiveGain(sheet, content, def, without = null) {
+    const rest = Object.fromEntries(Object.entries(sheet?.passives || {}).filter(([id]) => id !== without));
+    const before = passiveTotals({ ...sheet, passives: rest }, content);
+    const after = passiveTotals({ ...sheet, passives: { ...rest, [def.id]: def } }, content);
+    const total = passiveRules(content).total;
+    const combat = { stat: { ATK: 0, MATK: 0, DEF: 0, MDEF: 0 }, resist: { physical: 0, magical: 0 } };
+    for (const p of effectSources({ ...sheet, passives: rest }).filter((x) => x.scope === 'combat')) for (const f of p.effects) {
+        if (f.kind === 'stat_bonus') combat.stat[f.stat] += f.value;
+        else if (f.kind === 'resist') combat.resist[f.damage_type] += f.pct;
+    }
+    return def.effects.map((x) => {
+        if (def.scope === 'combat') {
+            if (x.kind === 'stat_bonus') return Math.max(0, Math.min(x.value, total.stat_bonus - before.stat[x.stat] - combat.stat[x.stat]));
+            if (x.kind === 'resist') return Math.max(0, Math.min(x.pct, total.resist - before.resist[x.damage_type] - combat.resist[x.damage_type]));
+            return 0;
+        }
+        if (x.kind === 'core_stat_bonus') return after.core[x.stat] - before.core[x.stat];
+        if (x.kind === 'stat_bonus') return after.stat[x.stat] - before.stat[x.stat];
+        if (x.kind === 'max_bonus') return after.max[x.resource] - before.max[x.resource];
+        if (x.kind === 'resist') return after.resist[x.damage_type] - before.resist[x.damage_type];
+        // 4.3.0-c.6.6.50 (review of 9C-2c): a cost reduction counts as a Skill's cost does (costReductionPct): every
+        // reduction of its resource, general and of its tags together, capped once; its gain is the most any Skill of
+        // that resource gets from it (one without tags, one of each discipline)
+        const probes = [[], ...disciplineTags(content).map((t) => [t])].map((tags) => ({ cost: { resource: x.resource }, tags }));
+        return Math.max(0, ...probes.map((k) => costReductionPct(content, after.cost, k) - costReductionPct(content, before.cost, k)));
+    });
+}
+
+/**
+ * Patch 9B-2: the percent a Skill's cost is lowered by his Passives: every reduction of its resource, all of them or
+ * those of one of its tags, summed once and capped (passive_design.total.cost_reduction).
+ */
+export function costReductionPct(content, mods, skill) {
+    if (!skill?.cost || !mods?.length) return 0;
+    const sum = mods.filter((m) => m.resource === skill.cost.resource && (!m.tag || (skill.tags || []).includes(m.tag))).reduce((a, m) => a + m.pct, 0);
+    return capped(sum, passiveRules(content).total.cost_reduction);
+}
+
+/** The combat snapshot's view of his Passives (src/combat.js characterCombatant), or null without any. */
+export function passiveSnapshot(sheet, content) {
+    const list = effectSources(sheet);
+    if (!list.length) return null;
+    const t = passiveTotals(sheet, content);
+    return {
+        always: t.stat, resist: t.resist, cost: t.cost,
+        combat: list.filter((p) => p.scope === 'combat').map((p) => ({ name: p.name, condition: p.condition, effects: p.effects })),
+    };
+}
+
+/**
+ * Patch 9B-2: does a combat Passive's condition hold for this combatant now (its own HP, a foe ENGAGED with it)?
+ * @param {(c: object) => boolean} engagedFoe whether an active opponent stands ENGAGED with it
+ */
+export function conditionHolds(condition, c, engagedFoe) {
+    if (!condition) return true;
+    if (condition.kind === 'hp_at_most_pct') return c.current.hp * 100 <= condition.pct * c.fixed.max_hp;
+    if (condition.kind === 'foe_engaged') return engagedFoe(c);
+    return false;
+}
+
+/**
+ * Patch 9B-2: what a combatant's combat Passives give now, on top of the lasting ones, within the same total caps:
+ * {stat: {ATK, MATK, DEF, MDEF}, resist: {physical, magical}, names}. Nothing for a snapshot without Passives.
+ */
+export function combatPassive(content, c, engagedFoe) {
+    const p = c.fixed.passive;
+    const out = { stat: { ATK: 0, MATK: 0, DEF: 0, MDEF: 0 }, resist: { physical: 0, magical: 0 }, names: [] };
+    if (!p) return out;
+    const total = passiveRules(content).total;
+    for (const x of p.combat || []) {
+        if (!conditionHolds(x.condition, c, engagedFoe)) continue;
+        out.names.push(x.name);
+        for (const f of x.effects) {
+            if (f.kind === 'stat_bonus') out.stat[f.stat] += f.value;
+            else if (f.kind === 'resist') out.resist[f.damage_type] += f.pct;
+        }
+    }
+    for (const k of STATS) out.stat[k] = Math.max(0, capped(out.stat[k], total.stat_bonus - (p.always?.[k] || 0)));
+    for (const k of ['physical', 'magical']) out.resist[k] = capped((p.resist?.[k] || 0) + out.resist[k], total.resist);
+    return out;
+}
+
+/** When a Passive acts: "always", "in a fight at 50% HP or less", "in a fight with a foe ENGAGED". */
+export const passiveWhen = (p) => (p.condition ? (p.condition.kind === 'hp_at_most_pct' ? `in a fight at ${p.condition.pct}% HP or less` : 'in a fight with a foe ENGAGED') : p.scope === 'combat' ? 'in a fight' : 'always');
+
+/** A Passive in a few words for #class and the panels: "Iron Hide (always): DEF +2, Max HP +10". */
+export function passiveText(p) {
+    return `${p.name}${p.quality ? ` [${QUALITY_TEXT[p.quality]}]` : ''} (${passiveWhen(p)}): ${passiveEffects(p)}`;
+}
+
+/** What a Passive gives: "DEF +2, Max HP +10". */
+export function passiveEffects(p) {
+    return p.effects.map((x) => {
+        if (x.kind === 'core_stat_bonus') return `${x.stat} +${x.value}`;
+        if (x.kind === 'stat_bonus') return `${x.stat} +${x.value}`;
+        if (x.kind === 'max_bonus') return `Max ${x.resource.toUpperCase()} +${x.value}`;
+        if (x.kind === 'cost_reduction') return `${x.tag ? `${x.tag} ` : ''}${x.resource.toUpperCase()} costs -${x.pct}%`;
+        return `${x.damage_type} damage taken -${x.pct}%`;
+    }).join(', ');
+}
+
+/**
+ * Patch 9B-2: what a Skill costs at a Proficiency with these cost reductions of his Passives: the written cost, the
+ * Proficiency's cost factor and the reduction applied together and rounded once (half up). Without reductions exactly
+ * the cost of before.
+ */
+export function skillCostAmount(content, skill, prof, mods = null, meaningfulMastery = false) {
+    if (!skill?.cost) return 0;
+    const f = content.rules.proficiency.levels[String(prof || 1)]?.cost ?? 1;
+    const pct = costReductionPct(content, mods, skill);
+    const amount = pct ? roundHalfUp(num(skill.cost.amount * f * (1 - pct / 100))) : roundHalfUp(skill.cost.amount * f);
+    // Mastery must not disappear at a half-point boundary (Bolt P2: 9.5 rounded back to 10).
+    // Preserve percentage reductions and one final rounding; only compensate a completely lost mastery discount.
+    const unmastered = roundHalfUp(skill.cost.amount * (1 - pct / 100));
+    return meaningfulMastery && f < 1 && unmastered > 1 && amount >= unmastered ? unmastered - 1 : amount;
+}

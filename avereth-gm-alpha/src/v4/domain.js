@@ -1,0 +1,641 @@
+// Runtime V4: the domains the engine owns (docs/RUNTIME_V4_PLAN.md §6): the place tree, objects, offers, the quest
+// aggregate, the Guild and the open decisions. This module holds their reducers (state.js applyEvent hands every V4
+// event here) and the queries the command handlers, the world applier, the catalog and the views share.
+//
+// The model follows the P0/S3 prototype (tools/p0/s3_prototype.mjs), which replayed the V12 gold 36/36; here it is an
+// event-sourced part of the product state: every change is an event on a chat message, the state is their fold.
+//
+//   places     id -> {id, name, kind, sub, parent, realm, tags[], by}      kind: realm|region|wilderness|settlement|
+//                                                                       district|site|interior; seeded Guild halls are engine
+//                                                                       nodes "<settlement>.guild_hall" (tag guild_hall)
+//   objects    id -> {id, name, kind, stack, qty, unit, holder, marks[], for_quests[], source}
+//              holder: {entity: id} | {loc: place id} | {consumed: by}; what Alaric holds is mirrored into his sheet's
+//              inventory (a derived view, so the V3 views and commands show it)
+//   offers     id -> {id, seller, at, status: open|accepted|declined|expired, canon, lines[{id, what, kind, service, qty,
+//              price_cp}], turn}
+//   quests     the shared quest map; V4 quests carry kind guild_contract|private and the fields of plan §6.3
+//   guild      {membership: {rank, since, branch} | null, boards: {"<branch>|<rank>": {branch, rank, day, listings[]}}}
+//   decisions  [{id, kind: registration|purchase|payment|sale, what, offer, seller, at, turn, max_cp, any_price, priced}]
+//   credits    [{id, cp, at, day, turn, from, for, offer, quest, gift?}] last six receipts; derived from transactions
+//   features   id -> an obstacle or hazard of a place (Patch 6, src/v4/features.js)
+//   links      id -> a way between two rooms of a dungeon (Patch 7, src/v4/dungeon.js)
+import { clone, normText, hash32 } from '../util.js';
+import { applyLivingEvent } from './living.js';
+
+export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
+/** Which parent a place may have (plan §6.1). */
+export const PLACE_PARENTS = {
+    realm: [],
+    region: ['realm', 'region'],
+    wilderness: ['realm', 'region', 'wilderness'],
+    settlement: ['realm', 'region', 'wilderness'],
+    district: ['settlement'],
+    site: ['settlement', 'district', 'region', 'wilderness', 'site'],
+    interior: ['site', 'district', 'settlement', 'interior'],
+};
+export const HALL_NAME = "Adventurers' Guild hall";
+
+export const V4_EVENTS = new Set([
+    'place.created', 'place.updated', 'intent.set', 'feature.set', 'link.set',
+    'object.created', 'object.moved', 'object.marked', 'object.consumed', 'object.added',
+    'offer.created', 'offer.closed', 'transaction.completed', 'service.granted',
+    'quest.delivered', 'quest.created', 'quest.status', 'quest.detailed', 'quest.progressed', 'quest.ready', 'quest.journey', 'proof.checked',
+    'board.refreshed', 'board.failed', 'board.shown',
+    'guild.registered', 'guild.promoted',
+    'decision.opened', 'decision.closed',
+    'cmd.interpreted', 'cmd.resolved', 'cmd.completed', 'cmd.expired',
+    'extract.applied', 'extract.failed', 'overreach.noted',
+    // Patch 8: a Living Dungeon's structure, cycle and companies (src/v4/living.js)
+    'dungeon.established', 'dungeon.ahead', 'dungeon.slot', 'dungeon.part', 'dungeon.cleared', 'dungeon.reset', 'dungeon.party', 'dungeon.booked', 'dungeon.pass', 'dungeon.resource',
+    // PULSE package A (src/v4/pulse.js): the one window of a turn, a pause block going on, the diagnosis of a reply
+    'pulse.rolled', 'pulse.pause', 'pulse.outcome',
+]);
+
+/** The V4 part of an empty state (state.js emptyState). */
+/**
+ * .186: the one open offer line of this seller here a granted service was sold under (its service and its words), not
+ * yet given to an earlier service; null when there is none or more than one.
+ */
+function soldUnder(state, d) {
+    if (typeof d.offer === 'string' && typeof d.line === 'string') return { offer: d.offer, line: d.line };
+    if (!d.by || typeof d.what !== 'string') return null;
+    const taken = new Set((state.services || []).filter((x) => x.offer).map((x) => `${x.offer}|${x.line}`));
+    const hits = Object.values(state.offers || {}).filter((o) => o.status === 'open' && !o.bid && o.seller === d.by && (!o.at || !d.at || o.at === d.at))
+        .flatMap((o) => (o.lines || []).filter((l) => l.kind === 'service' && (l.service || 'other') === d.service && l.what === d.what && !taken.has(`${o.id}|${l.id}`))
+            .map((l) => ({ offer: o.id, line: l.id })));
+    return hits.length === 1 ? hits[0] : null;
+}
+
+export function emptyDomains() {
+    return { places: {}, objects: {}, offers: {}, guild: { membership: null, boards: {} }, decisions: [], services: [], intents: {}, features: {}, links: {} };
+}
+
+function ensure(state) {
+    for (const [k, v] of Object.entries(emptyDomains())) if (state[k] === undefined) state[k] = v;
+}
+
+/** Alaric's sheet inventory mirrors the objects he holds (objects never collide with template ids: "obj.…"). */
+function mirror(state, id) {
+    const o = state.objects[id];
+    const sheet = state.entities.pc?.sheet;
+    if (!o || !sheet) return;
+    if (o.holder?.entity === 'pc' && (o.qty ?? 1) > 0) {
+        sheet.inventory[id] = o.qty ?? 1;
+        if (!state.item_names) state.item_names = {};
+        state.item_names[id] = o.unit ? `${o.name} (${o.unit})` : o.name;
+    } else delete sheet.inventory[id];
+}
+
+/** Apply one V4 event in place (called by state.js applyEvent). */
+export function applyDomainEvent(state, e) {
+    ensure(state);
+    const d = e.d || {};
+    switch (e.t) {
+        // PULSE package A (src/v4/pulse.js): the miss streak, the recent open kinds and the current pause block; created
+        // with the first real draw (a campaign without one has no state.pulse)
+        case 'pulse.rolled': case 'pulse.pause': {
+            const st = state.pulse || (state.pulse = { v: 1, misses: 0, recent: [], pause: null });
+            if (e.t === 'pulse.rolled') {
+                st.misses = d.open ? 0 : st.misses + 1;
+                if (d.open) st.recent = [...st.recent, { turn: d.turn, frame: d.frame, kind: d.kind }].slice(-4);
+                st.pause = d.exposure === 'pause' ? { at: d.at, turn: d.turn } : null;
+            } else st.pause = { at: d.at, turn: d.turn };
+            break;
+        }
+        case 'pulse.outcome': break; // the reply's diagnosis (src/v4/world.js); no state
+        case 'place.created':
+            if (state.places[d.place.id]) throw new Error(`place exists: ${d.place.id}`);
+            state.places[d.place.id] = clone(d.place);
+            break;
+        // Patch 2: what Alaric knows of a place (src/v4/known.js): a report added, seen, or proved false
+        case 'place.updated': {
+            const p = state.places[d.id];
+            if (!p) throw new Error(`unknown place ${d.id}`);
+            Object.assign(p, clone(d.set || {}));
+            if (d.report) p.reports = [...(p.reports || []), clone(d.report)];
+            break;
+        }
+        // Patch 2: one of Alaric's goals (src/v4/intents.js), whole
+        case 'intent.set':
+            state.intents[d.intent.id] = clone(d.intent);
+            break;
+        // Patch 6: an obstacle or hazard of a place (src/v4/features.js), whole
+        case 'feature.set':
+            state.features[d.feature.id] = clone(d.feature);
+            break;
+        // Patch 7: a way between two rooms of a dungeon (src/v4/dungeon.js), whole
+        case 'link.set':
+            state.links[d.link.id] = clone(d.link);
+            break;
+        case 'object.created':
+            if (state.objects[d.object.id]) throw new Error(`object exists: ${d.object.id}`);
+            state.objects[d.object.id] = { marks: [], for_quests: [], ...clone(d.object) };
+            // .179 (D5): what he dropped from his pack lies where he laid it
+            if (d.object.source?.how === 'dropped' && d.object.holder?.loc) state.objects[d.object.id].laid_by_pc = true;
+            else delete state.objects[d.object.id].laid_by_pc;
+            mirror(state, d.object.id);
+            break;
+        case 'object.moved': {
+            const o = state.objects[d.id];
+            if (!o) throw new Error(`unknown object ${d.id}`);
+            // .179 (GPT review of .178 §3.4, D5): laid_by_pc says the last move was his own laying it down (out of his
+            // hands to a place); any other move clears it (the shopkeeper who shelves what he sold him). had_pc stays
+            // what it was: ever his
+            const laid = o.holder?.entity === 'pc' && !!d.to?.loc;
+            if (d.split && d.qty && d.qty < (o.qty ?? 1)) {
+                // part of a stack changes hands: the part becomes its own object
+                state.objects[d.split] = { ...clone(o), id: d.split, qty: d.qty, holder: clone(d.to), ...(o.holder?.entity === 'pc' ? { had_pc: true } : {}) };
+                if (laid) state.objects[d.split].laid_by_pc = true;
+                else delete state.objects[d.split].laid_by_pc;
+                o.qty -= d.qty;
+                mirror(state, d.split);
+            } else {
+                // Patch 8: what was ever his stays his to find where he left it (a Dungeon's reset never clears it away)
+                if (o.holder?.entity === 'pc') o.had_pc = true;
+                o.holder = clone(d.to);
+                if (laid) o.laid_by_pc = true;
+                else delete o.laid_by_pc;
+            }
+            if (d.delivery_origin) {
+                for (const id of [d.id, d.split].filter(Boolean)) Object.assign(state.objects[id], { delivery_origin: d.delivery_origin, delivery_capacity: d.delivery_capacity });
+            }
+            mirror(state, d.id);
+            break;
+        }
+        case 'object.marked': {
+            const o = state.objects[d.id];
+            if (!o) throw new Error(`unknown object ${d.id}`);
+            o.marks = [...(o.marks || []), { text: d.mark, by: d.by ?? null, turn: d.turn ?? state.turn }];
+            break;
+        }
+        // Prototype C (4.3.0-c.6.6.4): more of the same stack (loot of the same material and Rank)
+        case 'object.added': {
+            const o = state.objects[d.id];
+            if (!o) throw new Error(`unknown object ${d.id}`);
+            // Real new units enlarge this batch. Moving existing units back never passes through object.added.
+            if (o.delivery_origin && (d.qty ?? 1) > 0) {
+                const capacities = Object.values(state.objects).filter(x => x.delivery_origin === o.delivery_origin)
+                    .map(x => x.delivery_capacity || 0);
+                o.delivery_capacity = Math.max(o.delivery_capacity || o.qty || 1, ...capacities) + (d.qty ?? 1);
+            }
+            o.qty = (o.qty ?? 1) + (d.qty ?? 1);
+            mirror(state, d.id);
+            break;
+        }
+        case 'object.consumed': {
+            const o = state.objects[d.id];
+            if (!o) throw new Error(`unknown object ${d.id}`);
+            if (d.qty && d.qty < (o.qty ?? 1)) o.qty -= d.qty;
+            else o.holder = { consumed: d.by || 'used' };
+            mirror(state, d.id);
+            break;
+        }
+        case 'offer.created':
+            state.offers[d.offer.id] = clone(d.offer);
+            break;
+        case 'offer.closed':
+            if (state.offers[d.id]) state.offers[d.id].status = d.status;
+            break;
+        case 'service.granted': {
+            // .186 (GPT review of .185, R1): the offer and line the service was sold under, so that PAID HERE names its own
+            // price and words; fixed here from the event as it is (a purchase grants before it closes its offer), the same
+            // on every fold of an old chat; none where the fold cannot tell it apart
+            const sold = soldUnder(state, d);
+            state.services = [...(state.services || []), { ...(d.id ? { id: d.id } : {}), service: d.service, by: d.by ?? null, at: d.at ?? null, turn: d.turn ?? state.turn, minute: state.clock.minute, ...(sold || {}) }].slice(-10);
+            break;
+        }
+        case 'quest.created':
+            state.quests[d.quest.id] = clone(d.quest);
+            break;
+        case 'quest.status': {
+            const q = state.quests[d.id];
+            if (!q) throw new Error(`unknown quest ${d.id}`);
+            q.status = d.to;
+            if (d.taker !== undefined) q.taker = d.taker;
+            q.history = [...(q.history || []), { turn: state.turn, minute: state.clock.minute, status: d.to, ...(d.at ? { at: d.at } : {}), ...(d.step ? { step: d.step } : {}), ...(d.by ? { by: d.by } : {}) }];
+            // 4.3.0-c.6.6.5: a Guild contract turned in is filed at the desk with its slip; the slip leaves his pack (also
+            // for contracts completed before this build: their stored completion files them on replay, nothing else
+            // changes). Accepted, READY or refused contracts keep theirs; so does the Guild plate
+            if (d.to === 'completed' && q.kind === 'guild_contract') {
+                const slip = state.objects[`obj.slip.${q.id.replace(/^quest\./, '')}`];
+                if (slip?.holder?.entity === 'pc') {
+                    slip.holder = { consumed: 'guild' };
+                    mirror(state, slip.id);
+                }
+            }
+            break;
+        }
+        case 'quest.detailed': {
+            const q = state.quests[d.id];
+            if (!q) throw new Error(`unknown quest ${d.id}`);
+            q.details = [...(q.details || []), { note: d.note, schedule: d.schedule ?? null, turn: state.turn }];
+            q.notes = [...(q.notes || []), d.note].slice(-6);
+            if (d.schedule) q.schedule = { ...(q.schedule || {}), starts_at: d.schedule };
+            break;
+        }
+        case 'quest.delivered': {
+            const q = state.quests[d.id];
+            if (!q || q.status !== 'active') break;
+            q.deliveries ||= [];
+            if (!q.deliveries.some(r => r.key === d.receipt.key)) q.deliveries.push(clone(d.receipt));
+            break;
+        }
+        case 'quest.progressed': {
+            const q = state.quests[d.id];
+            if (!q) throw new Error(`unknown quest ${d.id}`);
+            // Only the engine's verified action path supplies work, never a world progress delta.
+            if (q.kind === 'private' && d.work) { q.work = clone(d.work); break; }
+            // Prototype C (4.3.0-c.6.6.6, live 18.10.2026: "DEFEAT 4 hounds …: open" stored twice): one entry per
+            // objective, the latest word on it; the same news again changes nothing. A keeps its list as it was
+            const cTurn = state.last?.outcome?.c === true || state.last?.outcome?.auth?.c === true;
+            if (!cTurn) {
+                q.progress = [...(q.progress || []), { objective: d.objective, status: d.status, turn: state.turn }];
+                q.notes = [...(q.notes || []), `${d.objective}: ${d.status}`].slice(-6);
+                break;
+            }
+            const key = progressKey(q, d.objective);
+            const at = (q.progress || []).findIndex((p) => progressKey(q, p.objective) === key);
+            if (at >= 0 && q.progress[at].status === d.status) break;
+            const entry = { objective: d.objective, status: d.status, turn: state.turn };
+            q.progress = at >= 0 ? [...q.progress.slice(0, at), ...q.progress.slice(at + 1), entry] : [...(q.progress || []), entry];
+            q.notes = [...(q.notes || []).filter((n) => !(at >= 0 && progressKey(q, String(n).replace(/: [^:]*$/, '')) === key)), `${d.objective}: ${d.status}`].slice(-6);
+            break;
+        }
+        case 'quest.ready': {
+            const q = state.quests[d.id];
+            if (!q) throw new Error(`unknown quest ${d.id}`);
+            q.ready = true;
+            q.ready_note = d.note || null;
+            // how the story reached the outcome with fewer kills than a DEFEAT objective names (src/v4/guild.js contractReady)
+            if (d.alternative) q.ready_alternative = String(d.alternative);
+            q.notes = [...(q.notes || []), `Outcome achieved: ${d.note || q.desired_end_state || 'ready for turn-in'}`].slice(-6);
+            break;
+        }
+        case 'quest.journey': {
+            // the quest's journey has actually begun: Alaric set off on it (src/v4/catalog.js journeyReady)
+            const q = state.quests[d.id];
+            if (!q) throw new Error(`unknown quest ${d.id}`);
+            q.journey = { since: state.turn, from: d.at ?? null };
+            break;
+        }
+        case 'board.refreshed':
+            state.guild.boards[d.key] = { branch: d.branch, rank: d.rank, day: d.day, listings: [...d.listings] };
+            break;
+        case 'guild.registered':
+            state.guild.membership = { rank: d.rank, since: { turn: state.turn, minute: state.clock.minute }, branch: d.branch ?? null };
+            break;
+        case 'guild.promoted':
+            if (state.guild.membership) state.guild.membership.rank = d.rank;
+            break;
+        case 'decision.opened':
+            state.decisions = [...state.decisions.filter((x) => x.id !== d.decision.id), clone(d.decision)];
+            break;
+        case 'decision.closed':
+            // Build .144 (S1): "#pay <id>" closes exactly the card it saw (payee, amount, route). If an edited earlier
+            // message changed or removed that card, the stored payment no longer applies: the fold stops (foldBlock)
+            // instead of booking the old coin against a different card
+            if (d.expect) {
+                const open = state.decisions.find((x) => x.id === d.id);
+                if (!open || open.kind !== 'payment' || open.state !== 'needs_confirmation' || JSON.stringify(cardSnapshot(open)) !== JSON.stringify(cardSnapshot(d.expect)))
+                    throw new Error(`payment card ${d.id} is no longer the one that was paid`);
+                if (open.turn !== state.turn || open.at !== state.scene.at || !state.scene.present.includes(open.seller) || state.entities[open.seller]?.status === 'dead')
+                    throw new Error(`payment card ${d.id} is no longer payable here`);
+            }
+            state.decisions = state.decisions.filter((x) => x.id !== d.id);
+            break;
+        case 'transaction.completed':
+            if (d.job && state.quests[d.job]?.kind === 'private' && !state.quests[d.job].payment) {
+                state.quests[d.job].payment = { cp: d.cp, by: d.from, turn: state.turn, minute: state.clock.minute };
+            }
+            // the engine's own credits to Alaric (a Guild payout, a sale), by place and day: coin the story then shows
+            // him pick up there that day is this coin, not new coin (src/v4/world.js coin.gift). His payments are audit.
+            if (d.to === 'pc') state.credits = [...(state.credits || []), {
+                id: d.gift?.id || `credit.${state.turn}.${hash32(JSON.stringify(d))}`,
+                cp: d.cp, at: d.at ?? state.scene?.at ?? null, day: today(state), turn: state.turn,
+                from: d.from ?? null, for: d.for ?? null, offer: d.offer ?? null, quest: d.quest ?? null,
+                ...(d.gift ? { gift: { ...clone(d.gift), from: d.from } } : {}),
+            }].slice(-6);
+            break;
+        // audit only: the record of what was interpreted, resolved, applied or refused
+        case 'proof.checked':
+        case 'board.failed':
+        case 'board.shown':
+        case 'cmd.interpreted':
+        case 'cmd.resolved':
+        case 'cmd.completed':
+        case 'cmd.expired':
+        case 'extract.applied':
+            break;
+        // Patch 10A.3: these were previously throwaway audit-only events, leaving #audit
+        // empty despite a failed world report or a narrator-invented player commitment.
+        // They do not change the canonical world, only the latest turn's diagnostic record.
+        case 'extract.failed':
+            state.last.extract_error = String(d.error || 'unknown').slice(0, 200);
+            break;
+        case 'overreach.noted':
+            state.last.overreach = [...(state.last.overreach || []), {
+                kind: String(d.kind || 'action').slice(0, 80),
+                what: String(d.what || '').slice(0, 160),
+            }].slice(-12);
+            break;
+        default:
+            if (e.t.startsWith('dungeon.')) { applyLivingEvent(state, e); break; }
+            throw new Error(`unknown V4 event type: ${e.t}`);
+    }
+}
+
+// ------------------------------------------------------------------------------------------------ queries: places
+export const isV4 = (state) => state.meta?.runtime === 'v4';
+
+/** The node and its ancestors, nearest first. */
+export function lineage(state, id) {
+    const out = [];
+    let cur = id;
+    for (let i = 0; cur && state.places?.[cur] && i < 16; i++) {
+        out.push(cur);
+        cur = state.places[cur].parent;
+    }
+    return out;
+}
+
+/** A population fixed at a small hunting site; other species there keep their own world context. No spawning. */
+export function populationAt(state, at, entity, content, { matchAnchor = true } = {}) {
+    // Species labels are noun phrases: "snapping" modifies "turtle", not an objective's action clause.
+    // Ignore established individual suffixes, never replace the species with a shared adjective such as "giant".
+    const same = sameKinds(content);
+    const qualifiers = new Set([...(content.monsters.kind_words?.individual || []), ...(content.monsters.kind_words?.young || [])].map(stem));
+    const head = text => {
+        const words = [...kindOf(text, { species: true }).phrase];
+        while (words.length > 1 && qualifiers.has(words.at(-1))) words.pop();
+        const h = words.at(-1); return same?.get(h) || h;
+    };
+    const species = head(entity.species || '');
+    return lineage(state, at).map(id => state.places[id]).find(p => p.population
+        && (!matchAnchor || p.population.anchor === (entity.anchor || entity.profile?.anchor))
+        && species && head(p.population.species) === species) || null;
+}
+
+/** Fixed F-world windows; one content definition for new habitats and area classifications. */
+export const validEncounterLevels = (content, levels) => Array.isArray(levels) && levels.length === 2
+    && (content.monsters.encounter_windows || [[1,1],[1,3],[4,7],[8,11],[12,14]])
+        .some(([lo, hi]) => levels[0] === lo && levels[1] === hi);
+
+/** The nearest explicit area profile; a population is more specific and is read separately. */
+export const encounterArea = (state, at) => lineage(state, at).map(id => state.places[id])
+    .find(p => Array.isArray(p.encounter_levels)) || null;
+
+export const pathNames = (state, id) => lineage(state, id).map((x) => state.places[x].name);
+
+/** "Veyrhold › Redmarch › Adventurers' Guild hall": root first, as the catalog and the engine block write it. */
+export function placePath(state, id) {
+    const names = pathNames(state, id).reverse();
+    return names.length ? names.join(' › ') : String(id || 'unknown');
+}
+
+export const settlementOf = (state, id) => lineage(state, id).find((x) => state.places[x].kind === 'settlement') || null;
+export const realmOf = (state, id) => lineage(state, id).find((x) => state.places[x].kind === 'realm') || null;
+/** The Guild hall node that contains a place (the hall itself or anything below it), or null. */
+export const hallOf = (state, id) => lineage(state, id).find((x) => (state.places[x].tags || []).includes('guild_hall')) || null;
+/** A GO encoded as the town may explicitly target its Guild hall; it still authorizes no arrival by itself. */
+export function guildJourney(state, go) {
+    return state.places?.[go.to]?.kind === 'settlement'
+        && /\b(?:to|for|towards?|into)\s+(?:the\s+)?(?:adventurers['’]?\s+)?guild(?:\s+(?:hall|house|office|branch|desk|counter))?\b/i.test(go.quote || '')
+        ? go.to : null;
+}
+/** A Guild destination, not an independent place using the Guild as a landmark. */
+export function guildDestination(state, text, fallback = null, { allowNew = false } = {}) {
+    const words = String(text || '').trim().replace(/^(?:the|a|an)\s+/i, '');
+    const m = words.match(allowNew
+        ? /^(.*?)\bguild(?:\s+(?:hall|house|office|lodge|building|branch|desk|counter|reception|room)){0,3}(?:\s+(?:in|at|of)\s+(.+))?$/i
+        : /^(.*?)\bguild(?:\s+(?:hall|house|office|lodge|building|branch|desk|counter|reception))?(?:\s+(?:desk|counter))?(?:\s+(?:in|at|of)\s+(.+))?$/i);
+    if (!m) return null;
+    const prefix = m[1].trim().replace(/^adventurers['’]?$/i, '');
+    if (prefix && !Object.values(state.places || {}).some(p => p.kind === 'settlement' && normText(p.name) === normText(prefix.replace(/['’]s$/, '')))
+        && (!allowNew || /\b(?:near|beside|opposite|behind|from|by|inn|shop|road)\b/i.test(prefix))) return null;
+    const qualifier = (m[2] || prefix).replace(/['’]s\s*$/i, '').trim();
+    const towns = Object.values(state.places || {}).filter(p => p.kind === 'settlement' && normText(p.name) === normText(qualifier));
+    if (allowNew) {
+        // Resolve existing premises before interpreting their descriptive prefix as a new settlement.
+        // Articles and possessives do not change an institution's identity; ambiguous names select nothing.
+        const key = name => normText(name || '').replace(/^(?:the|a|an)\s+/, '').replace(/['’]s(?=\s|$)/g, '');
+        const halls = [...new Set(Object.values(state.places || {}).filter(p => key(p.name) === key(words)
+            && (qualifier ? towns.length !== 1 || settlementOf(state, p.id) === towns[0].id : settlementOf(state, p.id) === fallback))
+            .map(p => hallOf(state, p.id)).filter(Boolean))];
+        if (halls.length === 1) return { id: halls[0] };
+    }
+    if (qualifier && towns.length !== 1) return allowNew && !towns.length ? { candidate: true, settlement: qualifier } : { error: 'the named Guild settlement is not uniquely known' };
+    const town = qualifier ? towns[0].id : fallback;
+    const id = town && hallOfSettlement(state, town);
+    return id ? { id } : allowNew ? { candidate: true, settlement: town || null } : { error: 'Guild halls are engine nodes; there is no branch in this settlement' };
+}
+
+/** One functional branch per settlement: a seeded node or an established existing premises. */
+export function hallOfSettlement(state, settlement) {
+    const id = `${settlement}.guild_hall`;
+    if (state.places?.[id] && (state.places[id].tags || []).includes('guild_hall')) return id;
+    return Object.values(state.places || {}).find(p => (p.tags || []).includes('guild_hall') && settlementOf(state, p.id) === settlement)?.id || null;
+}
+export const childrenOf = (state, id) => Object.values(state.places || {}).filter((p) => p.parent === id).map((p) => p.id);
+
+/** A place's short name for PLAYER ACTIONS: "Adventurers' Guild hall, Redmarch", "reedbeds". */
+export function placeName(state, id) {
+    const p = state.places?.[id];
+    if (!p) return String(id || 'somewhere');
+    if ((p.tags || []).includes('guild_hall')) {
+        const town = settlementOf(state, id);
+        return town ? `${p.name}, ${state.places[town].name}` : p.name;
+    }
+    return p.name;
+}
+
+const COIN_WORDS = new Set(['coin', 'coins', 'copper', 'coppers', 'silver', 'silvers', 'gold', 'golds', 'cp', 'piece', 'pieces', 'money', 'reward', 'payout', 'payment', 'quest', 'guild']);
+const COIN_AMOUNT = /^(?:the|my|his|her|their|our|some|a|an|of|handful|few|several|pile|stack|\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred)$/;
+
+/**
+ * Loose coin ("the copper", "90 copper", "a pile of coins", "the reward"), not a thing that holds coin ("a coin
+ * purse"): coin is his purse's number (sheet.coin_cp), never an inventory object (live 30.09.2026: "take the copper"
+ * after the Guild payout became a second, phantom "copper" in his inventory).
+ */
+export function isLooseCoin(name) {
+    // the coin itself, not whose it was or where it lies ("the bandit's coins", "the silver on the counter")
+    const phrase = normText(name || '').replace(/^.*\b[a-z]+'s?\s+/, '').split(/\s+(?:in|on|from|at|inside|under|behind|beneath|off)\s+/)[0];
+    const w = phrase.split(/\s+/).filter((x) => x && !COIN_AMOUNT.test(x));
+    return w.length > 0 && w.every((x) => COIN_WORDS.has(x)) && w.some((x) => !['quest', 'guild'].includes(x));
+}
+
+/** Local = the same settlement (plan §6.1); else a journey. */
+export function sameSettlement(state, a, b) {
+    const sa = settlementOf(state, a);
+    return !!sa && sa === settlementOf(state, b);
+}
+
+// ------------------------------------------------------------------------------------------------ queries: creature kinds
+/** A noun's stem, the same for its singular and plural ("wolves"/"wolf", "ponies"/"pony", "horses"/"horse"). */
+const stem = (w) => String(w).replace(/ves$/, 'f').replace(/ies$/, 'y').replace(/(?<!s)s$/, '').replace(/e$/, '');
+const PLACE_WORDS = new Set(['in', 'at', 'on', 'near', 'from', 'within', 'inside', 'around', 'along', 'by', 'under', 'beyond', 'across', 'behind', 'over', 'through', 'to', 'for', 'that', 'which', 'who', 'with']);
+const DETERMINERS = new Set(['the', 'a', 'an', 'some', 'those', 'these', 'its', 'their', 'his', 'her']);
+/**
+ * The creature a text names: the stems of all its words, of its noun phrase (up to a place, a clause or a participle:
+ * "the rats in the cellar", "the wolves harrying the sheep", not "the stirring dead") and of its last word.
+ */
+export function kindOf(text, { species = false } = {}) {
+    const tokens = normText(text).replace(/[^a-z\s-]+/g, ' ').split(/\s+/).filter(Boolean);
+    const cut = tokens.findIndex((w, i) => PLACE_WORDS.has(w) || (!species && i > 0 && w.length >= 6 && w.endsWith('ing') && !w.includes('-') && !DETERMINERS.has(tokens[i - 1])));
+    const words = (list) => list.flatMap((w) => w.split('-')).filter(Boolean).map(stem);
+    const phrase = words(cut < 0 ? tokens : tokens.slice(0, cut));
+    return { words: new Set(words(tokens)), phrase: new Set(phrase), head: phrase.at(-1) || null };
+}
+
+/** The complete species name, using the existing noun stems; a shared head/body plan alone is not identity. */
+export function sameSpecies(a, b) {
+    const x = kindOf(a, { species: true }).words, y = kindOf(b, { species: true }).words;
+    return x.size > 0 && x.size === y.size && [...x].every(word => y.has(word));
+}
+
+/**
+ * Does a hunting objective ("the vermin in the cellar", "wild goats") name this creature kind? By the kind the text
+ * names, never by the body plan alone (review of 4.1.0: the deer plan's alias "goat" made sheep wild-goat targets):
+ * the species names the objective's creature or the objective the species' ("giant rats" ~ "rats", "swarm of rats"
+ * ~ "rats"), or the objective names the body plan's whole kind (content monsters.json "kinds": vermin for rats).
+ */
+export function namesKind(what, species, anchor, same = null) {
+    const one = (w) => (w && same?.get(w)) || w;
+    const all = (set) => (same ? new Set([...set].map(one)) : set);
+    const t = kindOf(what);
+    const g = kindOf(species || '');
+    const kinds = new Set((anchor?.kinds || []).map(stem));
+    return (!!g.head && all(t.phrase).has(one(g.head))) || (!!t.head && all(g.words).has(one(t.head))) || [...t.phrase].some((w) => kinds.has(w));
+}
+
+/**
+ * Which of a quest's objectives a progress note is about (4.3.0-c.6.6.6): the objective whose verb and object it
+ * names ("DEFEAT 4 hounds feral dogs of the pack at …" is o2), else the note's own words. Progress is kept per key.
+ */
+export function progressKey(q, text) {
+    const t = normText(text);
+    const hit = (q.objectives || []).filter((o) => o.what && t.startsWith(normText(o.verb || '')) && t.includes(normText(o.what)));
+    return hit.length === 1 ? `objective:${hit[0].id ?? hit[0].what}` : t;
+}
+
+// Prototype C (4.3.0-c.6.6.6): the words content monsters.json kind_words holds as one kind ("dog" and "hound"), each
+// stem to the first of its set, and the words for the young of a kind (pups, cubs, a brood)
+const kindWords = new WeakMap();
+function kindWordsOf(content) {
+    if (!kindWords.has(content)) {
+        const k = content?.monsters?.kind_words || {};
+        kindWords.set(content, {
+            same: new Map((k.same || []).flatMap((set) => set.map((w) => [stem(w), stem(set[0])]))),
+            young: new Set((k.young || []).map(stem)),
+        });
+    }
+    return kindWords.get(content);
+}
+/** The content's map of kind words to one kind, for namesKind (null without content kind_words). */
+export const sameKinds = (content) => (kindWordsOf(content).same.size ? kindWordsOf(content).same : null);
+/** Does a text name the young of a kind ("feral hound pups", "the mudwyrm brood")? */
+export const namesYoung = (content, text) => [...kindOf(text || '').words].some((w) => kindWordsOf(content).young.has(w));
+
+// the NPC templates' words for a person that name no role (content npc_templates.json: commoner): they sit in monster
+// names ("the wolf-man", "a man-eating tiger") and say nothing about whom a contract is against
+const GENERIC_PERSON = new Set(['man', 'woman', 'boy', 'girl']);
+const personRoles = new WeakMap();
+/**
+ * The kinds of people a text names: the NPC templates of the role words of its noun phrase (content npc_templates.json
+ * descriptors: "raiders" and "brigands" are both bandits; guard, soldier, mercenary, poacher …); an owner is no target
+ * ("the miner's cave troll", "Rook's wolves"). Review of 4.1.3: "FIND bandits" + "DEFEAT bandits" is no hunt.
+ */
+export function peopleNamed(text, content) {
+    if (!personRoles.has(content)) personRoles.set(content, new Map((content.templateDescriptors || []).map(([d, id]) => [stem(d.split(' ').at(-1)), id])));
+    const roles = personRoles.get(content);
+    const { phrase } = kindOf(normText(text).replace(/\b[a-z]+'s?(?=\s|$)/g, ' '));
+    return new Set([...phrase].filter((w) => !GENERIC_PERSON.has(w) && roles.has(w)).map((w) => roles.get(w)));
+}
+export const namesPeople = (text, content) => peopleNamed(text, content).size > 0;
+
+// ------------------------------------------------------------------------------------------------ queries: things
+export const heldBy = (state, who) => Object.values(state.objects || {}).filter((o) => o.holder?.entity === who);
+export const lyingAt = (state, at) => Object.values(state.objects || {}).filter((o) => o.holder?.loc === at);
+export const openOffers = (state) => Object.values(state.offers || {}).filter((o) => o.status === 'open');
+export const contracts = (state) => Object.values(state.quests || {}).filter((q) => q.kind === 'guild_contract');
+export const membership = (state) => state.guild?.membership || null;
+export const today = (state) => Math.floor((state.clock?.minute ?? 0) / 1440) + 1;
+export const boardKey = (branch, rank) => `${branch}|${rank}`;
+
+/** The listed contracts of a branch's board for one rank. */
+export function listingsOf(state, branch, rank) {
+    const b = state.guild?.boards?.[boardKey(branch, rank)];
+    return (b?.listings || []).map((id) => state.quests[id]).filter((q) => q && q.status === 'listed');
+}
+
+/**
+ * Prototype C (4.3.0-c.6): Alaric's board is the day's: a notice posted on an earlier day came down when the day
+ * changed, whether or not a reading of the board has retired it yet (src/v4/commands.js board.read)
+ */
+export const listedToday = (state, q) => q.status === 'listed' && (q.source?.listed?.day ?? today(state)) === today(state);
+
+// Prototype C (4.3.0-c.6): the people a place keeps for a service (the Guild desk, a shop, an inn, a smithy): the same
+// person there when Alaric comes back (src/v4/world.js person.new); anyone else a reply only mentions is scene colour
+// until it matters
+export const SERVICE_ROLE = /\b(?:clerks?|registrars?|receptionists?|desk|innkeepers?|inn ?keepers?|barkeep(?:er)?s?|bartenders?|publicans?|tavern ?keepers?|shop ?keepers?|proprietors?|proprietress|quartermasters?|(?:black)?smiths?|armou?rers?|apothecar(?:y|ies)|herbalists?|healers?|ferry ?(?:man|men|woman)|stable ?masters?|stewards?|landlords?|landlad(?:y|ies)|chandlers?|merchants?|traders?)\b/i;
+
+// NPC E2-A (R3): a person.new is ONE person. A group the story shows ("two clerks working the long counter", "the
+// guards", "a pair of porters") is scene colour; when one of them acts, that one is a person of their own. Only the
+// words of the role and the description's start are read; creatures keep their own group rules.
+const GROUP_PEOPLE = /^(?:men|women|people|folk|crowd|crew|gang|band|staff|patrol|children|twins)$/;
+const PERSON_NOUN = /^(?:clerk|registrar|receptionist|innkeeper|keeper|barkeep|barkeeper|bartender|publican|shopkeeper|proprietor|quartermaster|smith|blacksmith|armorer|armourer|apothecar(?:y|ie)|herbalist|healer|ferryman|steward|landlord|landlady|chandler|merchant|trader|guard|soldier|adventurer|worker|villager|brother|sister|farmer|sailor|monk|priest|priestess|mercenar(?:y|ie)|hunter|labou?rer|apprentice|porter|servant|maid|warden|knight|bandit|thug|scholar|acolyte|novice|pilgrim|traveller|traveler|patron|customer|drinker|carter|fisherm[ae]n|stablehand|stableboy|cook|server|waiter|waitress|dockhand|clansm[ae]n)$/;
+const QUANTIFIED = /^(?:two|three|four|five|six|several|both|a few|a pair of|a couple of|a group of|a handful of|a crowd of|a knot of|a gang of|the two|the three|the four)\s+(?:[a-z-]+\s+){0,2}?([a-z-]+)\b/;
+const pluralPerson = (w) => !!w && (GROUP_PEOPLE.test(w) || (/s$/.test(w) && !/(?:ss|us)$/.test(w) && PERSON_NOUN.test(w.replace(/ies$/, 'y').replace(/(?:sh|ch|x)es$/, (m) => m.slice(0, -2)).replace(/s$/, ''))));
+export function collectivePerson(role, desc = [], name = null) {
+    const words = (x) => String(x || '').toLowerCase().replace(/[^a-z\s-]+/g, ' ').trim();
+    const head = (x) => { const w = words(x).split(/\s+/); const end = w.findIndex((y) => ['of', 'at', 'in', 'on', 'with', 'by', 'from', 'near', 'behind', 'beside', 'who', 'that'].includes(y)); return (end < 0 ? w : w.slice(0, end)).at(-1); };
+    if (pluralPerson(head(role)) || (name && pluralPerson(head(name)))) return true;
+    for (const x of [role, (desc || [])[0], name]) {
+        const m = QUANTIFIED.exec(words(x));
+        if (m && pluralPerson(m[1])) return true;
+    }
+    return false;
+}
+
+/** The branch's supported ranks (content may name them per place; else the proposed runtime defaults). */
+export function supportedRanks(state, content, settlement) {
+    const p = state.places?.[settlement];
+    if (Array.isArray(p?.supported_ranks)) return p.supported_ranks;
+    return content.rules.guild.supported_ranks?.[p?.sub] || ['Novice'];
+}
+
+// ------------------------------------------------------------------------------------------------ campaign start
+/**
+ * The place tree a V4 campaign starts with (plan §6.1): every realm, every settlement of the content (lore.json) under
+ * its realm, the engine's fixed Guild hall node in each settlement with a branch (rules.guild.branch_kinds), and the
+ * spot the campaign begins at, outside its city. Deterministic: the same content gives the same tree.
+ */
+export function seedPlaces(content, loc, startName) {
+    const places = [];
+    const branch = content.rules.guild?.branch_kinds || [];
+    for (const f of content.factions.values()) {
+        if (f.kind === 'realm') places.push({ id: f.id, name: f.name, kind: 'realm', parent: null, realm: f.id, tags: [], by: 'content' });
+    }
+    for (const l of content.locations.values()) {
+        places.push({ id: l.id, name: l.name, kind: 'settlement', sub: l.kind, parent: l.realm || null, realm: l.realm || null, tags: [], by: 'content' });
+        if (branch.includes(l.kind)) places.push({ id: `${l.id}.guild_hall`, name: HALL_NAME, kind: 'site', parent: l.id, realm: l.realm || null, tags: ['guild_hall'], by: 'engine' });
+    }
+    // review of Patch 7: the content's known Dungeons, out in the land near their settlement: explored room by room, and
+    // classified by the world from the start (theme, Rank, levels, who holds access), the same place in every telling
+    for (const x of content.dungeons?.values() || []) {
+        const near = content.locations.get(x.near);
+        if (!near) continue;
+        places.push({ id: x.id, name: x.name, kind: 'site', parent: near.realm || null, realm: near.realm || null, tags: [], by: 'content', near: x.near, where: x.where || null,
+            rooms: true, dungeon: { real: true, theme: x.theme || null, rank: x.rank || null, levels: x.levels || {}, control: x.control || null, hidden: [], heard: [],
+                // a public Dungeon: all of it is on the Guild's record
+                guild: [...(x.theme ? ['theme'] : []), ...(x.rank ? ['rank'] : []), ...Object.keys(x.levels || {}).map((n) => `level:${n}`), ...(x.control ? ['control'] : [])] } });
+    }
+    const at = `${loc.id}.verge`;
+    places.push({ id: at, name: startName, kind: 'site', parent: loc.id, realm: loc.realm || null, tags: [], by: 'content' });
+    return { places, at };
+}
+
+// Build .144 (S1): the snapshot of a payment card that "#pay" stores and the fold compares (src/v4/native_pay.js)
+export function cardSnapshot(d) {
+    return { route: d.route ?? null, seller: d.seller ?? null, amount_cp: d.amount_cp ?? null, at: d.at ?? null, what: d.what ?? null,
+        source: d.source ? { message: d.source.message ?? null, seq: d.source.seq ?? null, input_hash: d.source.input_hash ?? null } : null };
+}

@@ -1,0 +1,1235 @@
+{
+  "_source": "Content v1.13 #7 (anchors, scaling, level selection) + #8 (Elite/Boss)",
+  "anchors": [
+    {
+      "id": "rat",
+      "name": "Rat / small vermin",
+      "hp": 16,
+      "atk": 6,
+      "def": 0,
+      "mdef": 0,
+      "init": 10,
+      "attack": "Bite",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [],
+      "aliases": [
+        "rat",
+        "rats",
+        "vermin",
+        "mouse",
+        "mice",
+        "rodent",
+        "hare",
+        "hares",
+        "rabbit",
+        "rabbits"
+      ],
+      "temperament": "skittish",
+      "source_line": "16 / 6 / 0 / 0 / 10 | Bite | Physical | ENGAGED",
+      "kinds": [
+        "vermin",
+        "rodent"
+      ]
+    },
+    {
+      "id": "wolf",
+      "name": "Wolf / canid",
+      "hp": 23,
+      "atk": 9,
+      "def": 0,
+      "mdef": 0,
+      "init": 12,
+      "attack": "Bite",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [],
+      "aliases": [
+        "wolf",
+        "wolves",
+        "canid",
+        "dog",
+        "dogs",
+        "hound",
+        "hounds",
+        "jackal",
+        "coyote",
+        "fox"
+      ],
+      "temperament": "aggressive",
+      "source_line": "23 / 9 / 0 / 0 / 12 | Bite | Physical | ENGAGED"
+    },
+    {
+      "id": "boar",
+      "name": "Boar / wild pig",
+      "hp": 41,
+      "atk": 11,
+      "def": 2,
+      "mdef": 0,
+      "init": 7,
+      "attack": "Gore",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [],
+      "aliases": [
+        "boar",
+        "boars",
+        "wild pig",
+        "pig",
+        "hog",
+        "swine"
+      ],
+      "temperament": "aggressive",
+      "source_line": "41 / 11 / 2 / 0 / 7 | Gore | Physical | ENGAGED"
+    },
+    {
+      "id": "deer",
+      "name": "Deer / elk / light hoofed",
+      "hp": 27,
+      "atk": 7,
+      "def": 0,
+      "mdef": 0,
+      "init": 14,
+      "attack": "Kick/Antler",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [],
+      "aliases": [
+        "deer",
+        "elk",
+        "stag",
+        "doe",
+        "roe",
+        "antelope",
+        "goat"
+      ],
+      "temperament": "skittish",
+      "source_line": "27 / 7 / 0 / 0 / 14 | Kick/Antler | Physical | ENGAGED"
+    },
+    {
+      "id": "horse",
+      "name": "Horse / large grazer",
+      "hp": 38,
+      "atk": 8,
+      "def": 1,
+      "mdef": 0,
+      "init": 12,
+      "attack": "Kick",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [],
+      "aliases": [
+        "horse",
+        "horses",
+        "pony",
+        "mule",
+        "donkey",
+        "ox",
+        "cow",
+        "cattle",
+        "bull"
+      ],
+      "temperament": "skittish",
+      "source_line": "38 / 8 / 1 / 0 / 12 | Kick | Physical | ENGAGED"
+    },
+    {
+      "id": "bear",
+      "name": "Bear-like",
+      "hp": 63,
+      "atk": 14,
+      "def": 2,
+      "mdef": 1,
+      "init": 5,
+      "attack": "Claw/Bite",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [],
+      "aliases": [
+        "bear",
+        "bears"
+      ],
+      "temperament": "aggressive",
+      "source_line": "63 / 14 / 2 / 1 / 5 | Claw/Bite | Physical | ENGAGED"
+    },
+    {
+      "id": "feline",
+      "name": "Feline predator",
+      "hp": 30,
+      "atk": 10,
+      "def": 0,
+      "mdef": 0,
+      "init": 13,
+      "attack": "Claw/Bite",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [],
+      "aliases": [
+        "cat",
+        "wildcat",
+        "lynx",
+        "panther",
+        "leopard",
+        "lion",
+        "tiger",
+        "feline"
+      ],
+      "temperament": "aggressive",
+      "source_line": "30 / 10 / 0 / 0 / 13 | Claw/Bite | Physical | ENGAGED"
+    },
+    {
+      "id": "serpent",
+      "name": "Serpent / snake-like",
+      "hp": 20,
+      "atk": 8,
+      "def": 0,
+      "mdef": 1,
+      "init": 11,
+      "attack": "Bite",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [],
+      "aliases": [
+        "snake",
+        "serpent",
+        "viper",
+        "adder"
+      ],
+      "temperament": "defensive",
+      "source_line": "20 / 8 / 0 / 1 / 11 | Bite | Physical | ENGAGED"
+    },
+    {
+      "id": "raptor",
+      "name": "Raptor / predatory bird",
+      "hp": 18,
+      "atk": 7,
+      "def": 0,
+      "mdef": 0,
+      "init": 15,
+      "attack": "Talons/Beak",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [
+        "Flight is ecological access/positioning; it does not grant extra Range-Band movement unless an explicit capability says so."
+      ],
+      "aliases": [
+        "hawk",
+        "eagle",
+        "falcon",
+        "owl",
+        "raptor",
+        "crow",
+        "raven"
+      ],
+      "temperament": "skittish",
+      "source_line": "18 / 7 / 0 / 0 / 15 | Talons/Beak | Physical | ENGAGED",
+      "kinds": [
+        "bird"
+      ]
+    },
+    {
+      "id": "arthropod",
+      "name": "Arthropod / insectoid",
+      "hp": 24,
+      "atk": 8,
+      "def": 2,
+      "mdef": 0,
+      "init": 8,
+      "attack": "Bite/Sting",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [],
+      "aliases": [
+        "spider",
+        "scorpion",
+        "beetle",
+        "centipede",
+        "insect",
+        "ant",
+        "wasp"
+      ],
+      "temperament": "aggressive",
+      "source_line": "24 / 8 / 2 / 0 / 8 | Bite/Sting | Physical | ENGAGED"
+    },
+    {
+      "id": "aquatic",
+      "name": "Aquatic predator",
+      "hp": 36,
+      "atk": 11,
+      "def": 1,
+      "mdef": 0,
+      "init": 10,
+      "attack": "Bite",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [
+        "This body-plan assumes functional movement in water. Do not invent a hidden numeric movement penalty/bonus from terrain; use only established environmental or explicit mechanics."
+      ],
+      "aliases": [
+        "pike",
+        "shark",
+        "eel",
+        "crocodile",
+        "alligator"
+      ],
+      "temperament": "aggressive",
+      "source_line": "36 / 11 / 1 / 0 / 10 | Bite | Physical | ENGAGED"
+    },
+    {
+      "id": "goblin",
+      "name": "Goblin-like",
+      "hp": 45,
+      "atk": 11,
+      "def": 1,
+      "mdef": 1,
+      "init": 8,
+      "attack": "Natural/unarmed strike",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [
+        "If a real individual visibly carries Gear, authored Gear may replace/modify the attack normally."
+      ],
+      "aliases": [
+        "goblin",
+        "goblins",
+        "kobold"
+      ],
+      "temperament": "cautious",
+      "source_line": "45 / 11 / 1 / 1 / 8 | Natural/unarmed strike | Physical | ENGAGED"
+    },
+    {
+      "id": "ogre",
+      "name": "Ogre-like",
+      "hp": 90,
+      "atk": 18,
+      "def": 2,
+      "mdef": 0,
+      "init": 3,
+      "attack": "Slam",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [],
+      "aliases": [
+        "ogre",
+        "ogres",
+        "troll"
+      ],
+      "temperament": "aggressive",
+      "source_line": "90 / 18 / 2 / 0 / 3 | Slam | Physical | ENGAGED"
+    },
+    {
+      "id": "armored_beast",
+      "name": "Armored Beast",
+      "hp": 70,
+      "atk": 12,
+      "def": 5,
+      "mdef": 1,
+      "init": 5,
+      "attack": "Body strike/Bite",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [],
+      "aliases": [
+        "armored beast",
+        "armadillo",
+        "tortoise",
+        "turtle"
+      ],
+      "temperament": "defensive",
+      "source_line": "70 / 12 / 5 / 1 / 5 | Body strike/Bite | Physical | ENGAGED"
+    },
+    {
+      "id": "spirit",
+      "name": "Spirit",
+      "hp": 40,
+      "atk": 14,
+      "def": 0,
+      "mdef": 5,
+      "init": 10,
+      "attack": "Magical discharge",
+      "damage_type": "magical",
+      "range": "MEDIUM",
+      "notes": [],
+      "aliases": [
+        "spirit",
+        "wisp",
+        "ghost"
+      ],
+      "temperament": "aggressive",
+      "source_line": "40 / 14 / 0 / 5 / 10 | Magical discharge | Magical | MEDIUM"
+    },
+    {
+      "id": "skeleton",
+      "name": "Skeleton / animated bones",
+      "hp": 30,
+      "atk": 10,
+      "def": 2,
+      "mdef": 0,
+      "init": 8,
+      "attack": "Bony strike",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [
+        "Engine addition (4.3.0-c.6.6.24, livetest 21.10.2026): Content #7 lists no body plan for animated dead, and the restless skeletons of a catacomb were fought as rats (Bite, rat numbers, pelt and tail). A man-sized frame of bones: tougher than vermin, slower than a wolf, no flesh to bleed or skin; it strikes with bony hands or whatever rusted blade it still holds."
+      ],
+      "aliases": [
+        "skeleton",
+        "skeletons",
+        "skeletal",
+        "animated bones",
+        "bone warrior",
+        "bone walker"
+      ],
+      "source_line": "30 / 10 / 2 / 0 / 8 | Bony strike | Physical | ENGAGED (engine addition, not in Content #7)",
+      "kinds": [
+        "undead"
+      ]
+    },
+    {
+      "id": "ghoul",
+      "name": "Ghoul / flesh-eating undead",
+      "hp": 40,
+      "atk": 12,
+      "def": 1,
+      "mdef": 0,
+      "init": 10,
+      "attack": "Rending claws",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [
+        "Engine addition (Patch 8, livetest 21.10.2026 02:22): the ghoul of the Old Crown Catacombs was fought on the skeleton body plan (Bony strike, bones and grave dust). A gaunt dead thing of flesh: tougher and quicker than animated bones, it tears with long claws and teeth."
+      ],
+      "aliases": [
+        "ghoul",
+        "ghouls",
+        "ghast",
+        "ghasts",
+        "flesh eater",
+        "corpse eater"
+      ],
+      "source_line": "40 / 12 / 1 / 0 / 10 | Rending claws | Physical | ENGAGED (engine addition, not in Content #7)",
+      "kinds": [
+        "undead"
+      ]
+    },
+    {
+      "id": "slime",
+      "name": "Slime / ooze",
+      "hp": 36,
+      "atk": 8,
+      "def": 3,
+      "mdef": 0,
+      "init": 4,
+      "attack": "Corroding touch",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [
+        "Engine addition (Patch 8, content audit of the seed Dungeons): the mineral slimes of Glimmerdeep Grotto had no body plan. A slow mass of jelly or mineral sludge: hard to cut apart, slow to act, it dissolves what it touches."
+      ],
+      "aliases": [
+        "slime",
+        "slimes",
+        "ooze",
+        "oozes",
+        "jelly",
+        "mineral slime"
+      ],
+      "source_line": "36 / 8 / 3 / 0 / 4 | Corroding touch | Physical | ENGAGED (engine addition, not in Content #7)"
+    },
+    {
+      "id": "goblin_shaman",
+      "name": "Goblin caster",
+      "hp": 36,
+      "atk": 12,
+      "def": 0,
+      "mdef": 3,
+      "init": 9,
+      "attack": "Hex bolt",
+      "damage_type": "magical",
+      "range": "MEDIUM",
+      "notes": [
+        "Engine addition (Patch 8, content audit of the seed Dungeons): the shaman deeper in Mossback Warrens was a plain goblin. A goblin who throws hexes: frailer than its warriors, it strikes from range with magic."
+      ],
+      "aliases": [
+        "goblin shaman",
+        "goblin shamans",
+        "goblin mystic",
+        "goblin hexer",
+        "kobold shaman"
+      ],
+      "source_line": "36 / 12 / 0 / 3 / 9 | Hex bolt | Magical | MEDIUM (engine addition, not in Content #7)"
+    }
+  ],
+  "kind_words": {
+    "_doc": "Prototype C (4.3.0-c.6.6.6): how a contract's DEFEAT objective names the creatures it counts (src/v4/domain.js namesKind, src/v4/guild.js defeatTally). same: words that name one kind of creature (live 18.10.2026: 'feral dogs of the pack' and the species 'feral hound' are the same animals; the body plan alone never decides, see namesKind). young: the young of a kind; they count toward an objective only when it names them itself ('cull the brood', 'the wolf cubs'), never as extra grown ones. individual: non-taxonomic age/sex suffixes ignored only by population species matching; no stat or age system.",
+    "same": [
+      ["dog", "hound", "cur", "mutt", "mongrel"],
+      ["boar", "hog", "swine", "pig"],
+      ["snake", "serpent", "viper", "adder"],
+      ["crow", "raven"],
+      ["goblin", "gob"]
+    ],
+    "young": ["pup", "puppy", "puppies", "cub", "whelp", "kit", "kitten", "foal", "calf", "calves", "fawn", "chick", "hatchling", "fledgling", "nestling", "larva", "larvae", "grub", "piglet", "lamb", "eaglet", "owlet", "spiderling", "brood", "litter", "spawn", "egg", "baby", "babies", "infant", "juvenile", "yearling"],
+    "individual": ["adult", "male", "female", "sow"]
+  },
+  "scaling": {
+    "hp": {
+      "coef": 0.2
+    },
+    "atk": {
+      "coef": 0.22
+    },
+    "def": {
+      "coef": 0.2,
+      "offset": 1
+    },
+    "mdef": {
+      "coef": 0.2,
+      "offset": 1
+    },
+    "init": {
+      "coef": 0.05
+    },
+    "text": "LEVEL SCALING\nLet g = Level - 1.\n\nHP = round(HP1 × (1 + 0.20g))\nATK = round(ATK1 × (1 + 0.22g))\nDEF = max(0, round((DEF1 + 1) × (1 + 0.20g) - 1))\nMDEF = max(0, round((MDEF1 + 1) × (1 + 0.20g) - 1))\nInit = round(Init1 × (1 + 0.05g))\n"
+  },
+  "level_selection": [
+    {
+      "context": "settled",
+      "desc": "settled road/farm/town outskirts",
+      "min": 1,
+      "max": 1
+    },
+    {
+      "context": "wilderness",
+      "desc": "ordinary nearby wilderness",
+      "min": 1,
+      "max": 3
+    },
+    {
+      "context": "deep_wilderness",
+      "desc": "explicitly remote/deep dangerous wilderness",
+      "min": 4,
+      "max": 7
+    },
+    {
+      "context": "hunting_territory",
+      "desc": "explicitly established dangerous F-rank hunting/Quest territory (its range)",
+      "min": 1,
+      "max": 14
+    },
+    {
+      "context": "unknown",
+      "desc": "area danger not established",
+      "min": 1,
+      "max": 1
+    }
+  ],
+  "variation": {
+    "hp_atk_pct": 20,
+    "def_mdef": 1,
+    "init": 2,
+    "rule": "only when established body condition/size reasonably supports it; fix once"
+  },
+  "elite": {
+    "hp": 1.75,
+    "atk": 1.15,
+    "def": 1.1,
+    "mdef": 1.1,
+    "init": 2
+  },
+  "boss": {
+    "hp": 2.5,
+    "atk": 1.3,
+    "def": 1.2,
+    "mdef": 1.2,
+    "init": 3
+  },
+  "elite_boss_text": "ELITE / BOSS MONSTER DESIGN\nElite and Boss are encounter types layered onto a valid fixed Monster profile; they are not separate species databases.\n\nDESIGNATION LOCK\nDo not infer Elite/Boss from mere size, scars, age, aggression, reputation-flavored prose or because a fight should be dramatic.\nElite/Boss status must be explicitly authored, established by a Quest/area/encounter premise, or intentionally generated as the encounter type before Combat resolution.\n\nDEFAULT MODIFIERS after normal Level scaling and individual variation:\nElite: HP ×1.75; ATK ×1.15; DEF/MDEF ×1.10; Init +2.\nBoss: HP ×2.50; ATK ×1.30; DEF/MDEF ×1.20; Init +3.\nRound final direct stats and fix them.\n\nAn Elite may gain one explicit defining species-fitting Trait/attack/reaction.\nA Boss may gain several coherent mechanics tied to species, environment, Dungeon role or established history.\nDo not add abilities merely to counter the player.\n\nAll such mechanics must be explicit in the fixed profile before first use.\nAt B-rank and above, an exceptional Monster may receive a Domain when established; use Core Domain rules.\n\nRecoverable materials depend on actual species/body state and are never auto-collected.",
+  "fauna_text": "AVERETH MONSTER FAUNA\nAll native non-sapient fauna on the continent of Avereth are mechanically Monsters.\n\"Animal\", \"beast\", \"wolf\", \"deer\", \"horse\", \"boar\", etc. describe ecology/body plan, NOT a separate non-Monster rules category.\nWild, domestic, docile and hostile fauna all have Level/Rank and use Monster mechanics.\nDomestication or peaceful behavior does not turn a creature into a Human-stat character.\n\nDIRECT-STAT MONSTER MODEL\nGeneric Monsters use only:\nLevel | Rank | HP | ATK | DEF | MDEF | Initiative | Attack Type | Attack Range Band.\n\nThey do NOT use STR/VIT/AGI/INT/PER/WIL, MP, STA, Character Crit, Classes, Skill Proficiency, a Movement stat or Gear unless an explicit authored profile specifically grants those systems.\n\nGeneric natural attack:\n- Raw Power = ATK\n- a legal attack connects (no Hit roll)\n- Crit:none\n- no MP/STA cost\n- Physical, Range ENGAGED unless the body-plan line says otherwise.\n\nGeneric Monsters use Core's universal normal one-band movement. Extra movement exists only when an explicit authored Skill/Trait says so.\n\nRANK BANDS\nF 1-14 | E 15-29 | D 30-44 | C 45-59 | B 60-74 | A 75-89 | S 90-104.\nThe same direct-stat formulas continue across Ranks; do not build separate numeric databases for E/D/C/B/A/S.\nMost ordinary settled-region fauna are F-rank. Higher-Rank fauna are increasingly rare evolved Monsters, not a different mechanical species.\n\nF1 BODY-PLAN ANCHORS\nFormat: HP / ATK / DEF / MDEF / Init | default natural attack\n\nRat / small vermin:\n16 / 6 / 0 / 0 / 10 | Bite | Physical | ENGAGED\n\nWolf / canid:\n23 / 9 / 0 / 0 / 12 | Bite | Physical | ENGAGED\n\nBoar / wild pig:\n41 / 11 / 2 / 0 / 7 | Gore | Physical | ENGAGED\n\nDeer / elk / light hoofed:\n27 / 7 / 0 / 0 / 14 | Kick/Antler | Physical | ENGAGED\n\nHorse / large grazer:\n38 / 8 / 1 / 0 / 12 | Kick | Physical | ENGAGED\n\nBear-like:\n63 / 14 / 2 / 1 / 5 | Claw/Bite | Physical | ENGAGED\n\nFeline predator:\n30 / 10 / 0 / 0 / 13 | Claw/Bite | Physical | ENGAGED\n\nSerpent / snake-like:\n20 / 8 / 0 / 1 / 11 | Bite | Physical | ENGAGED\n\nRaptor / predatory bird:\n18 / 7 / 0 / 0 / 15 | Talons/Beak | Physical | ENGAGED\nFlight is ecological access/positioning; it does not grant extra Range-Band movement unless an explicit capability says so.\n\nArthropod / insectoid:\n24 / 8 / 2 / 0 / 8 | Bite/Sting | Physical | ENGAGED\n\nAquatic predator:\n36 / 11 / 1 / 0 / 10 | Bite | Physical | ENGAGED\nThis body-plan assumes functional movement in water. Do not invent a hidden numeric movement penalty/bonus from terrain; use only established environmental or explicit mechanics.\n\nGoblin-like:\n45 / 11 / 1 / 1 / 8 | Natural/unarmed strike | Physical | ENGAGED\nIf a real individual visibly carries Gear, authored Gear may replace/modify the attack normally.\n\nOgre-like:\n90 / 18 / 2 / 0 / 3 | Slam | Physical | ENGAGED\n\nArmored Beast:\n70 / 12 / 5 / 1 / 5 | Body strike/Bite | Physical | ENGAGED\n\nSpirit:\n40 / 14 / 0 / 5 / 10 | Magical discharge | Magical | MEDIUM\n\nLEVEL SCALING\nLet g = Level - 1.\n\nHP = round(HP1 × (1 + 0.20g))\nATK = round(ATK1 × (1 + 0.22g))\nDEF = max(0, round((DEF1 + 1) × (1 + 0.20g) - 1))\nMDEF = max(0, round((MDEF1 + 1) × (1 + 0.20g) - 1))\nInit = round(Init1 × (1 + 0.05g))\n\nRank is determined by Level band after scaling.\nDo not apply an additional hidden Rank multiplier on top of these formulas.\n\nF-RANK ENCOUNTER LEVEL SELECTION\nUse an already-authored/Quest/area Level when one exists.\nIf a natural encounter is generated without an established Level:\n- settled road/farm/town outskirts: Level 1;\n- ordinary nearby wilderness: F1-F3;\n- explicitly remote/deep dangerous wilderness: F4-F7;\n- explicitly established dangerous F-rank hunting/Quest territory: use its established range, never above F14.\nIf the area's danger is not established, use F1.\n\nChoose/roll inside an allowed band without using appearance as the reason.\nLarge size, scars, old age, aggression, calmness, unusual coloration or \"looks dangerous\" never independently raise Level.\n\nINDIVIDUAL VARIATION\nAfter Level scaling, ordinary individuals may vary:\n- HP/ATK roughly ±20%;\n- DEF/MDEF ±1;\n- Initiative ±2;\nonly when established body condition/size reasonably supports it.\n\nVariation changes the individual, not its Level/Rank.\nFix all values once instantiated.\n\nNO FREE TRAITS\nNormal generic Monsters receive no invented Skills, Traits, resource pools, Crit, enrages, wound phases, combo attacks, armor passives, movement exceptions or status mechanics merely from narration.\nA scarred boar is still the Boar profile unless an explicit authored Elite/Boss/special profile says otherwise.\n\nHIGHER-RANK EVOLUTION — FEW RULES, NOT DATABASES\nDirect stats continue the same formulas through E-S.\nAt a real Rank evolution, an authored or narratively established Monster MAY gain a species-fitting evolved capability; it is not automatic.\nUse restraint:\n- E/D: normally at most one defining evolved capability at a time unless explicitly authored;\n- C/A: additional coherent capabilities may emerge through established evolution/history;\n- B+: a Domain becomes possible under Core rules when established;\n- S: remains exceptional and setting-significant.\nNever generate abilities specifically to counter Alaric.\n\nUNLISTED SPECIES\nUse the nearest ecological/body-plan F1 anchor, then Level scaling and bounded individual variation.\nFix the resulting direct-stat profile for the encounter.\n\nPROFILE INSTANTIATION TIMING\nTracks, spoor, sounds and other evidence of an unseen creature do not require a combat profile. Once an actual creature is visibly established in the active scene and becomes targetable, the System display of its HP/Range is a real mechanical interaction: instantiate and fix its Monster profile immediately, before the player decides whether to attack.\nCombat START still waits for an actual attack or hostile commitment; merely seeing the creature does not roll Initiative or begin combat.\nOnce instantiated, copy the locked profile forward; never reroll Level/variation each round.\n\nOUTDOOR AREA PROFILES\nWorld areas can establish a fixed typical level window: 1-1, 1-3, 4-7, 8-11 or 12-14. Choose by established geography/ecology, never by the player level. Nearby managed land is usually low; remote wilderness can be higher, but no distance formula applies. When a newly reached outdoor region is clearly characterized, establish its typical danger and keep it consistent. Specific local populations override area defaults. Existing individuals never change. Dungeon slots remain authoritative. Harmless background fauna and people do not automatically take the area’s typical hostile encounter levels. Rumours do not fix an area.\n",
+  "loot": {
+    "special": {
+      "tiers": {
+        "elite": {
+          "first": {
+            "chance": 0.25,
+            "types": {
+              "gear": 50,
+              "potions": 30,
+              "material": 20
+            },
+            "quality": {
+              "fine": 90,
+              "superior": 10
+            },
+            "stone": 0
+          },
+          "repeat": {
+            "chance": 0.25,
+            "types": {
+              "gear": 50,
+              "potions": 30,
+              "material": 20
+            },
+            "quality": {
+              "fine": 90,
+              "superior": 10
+            },
+            "stone": 0
+          }
+        },
+        "guardian": {
+          "first": {
+            "chance": 1,
+            "types": {
+              "gear": 65,
+              "potions": 20,
+              "material": 15
+            },
+            "quality": {
+              "fine": 50,
+              "superior": 48,
+              "exceptional": 2
+            },
+            "stone": 0.02
+          },
+          "repeat": {
+            "chance": 0.35,
+            "types": {
+              "gear": 65,
+              "potions": 20,
+              "material": 15
+            },
+            "quality": {
+              "fine": 75,
+              "superior": 25
+            },
+            "stone": 0.01
+          }
+        },
+        "boss": {
+          "first": {
+            "chance": 1,
+            "types": {
+              "gear": 100
+            },
+            "quality": {
+              "superior": 90,
+              "exceptional": 10
+            },
+            "stone": 0.06
+          },
+          "repeat": {
+            "chance": 0.6,
+            "types": {
+              "gear": 70,
+              "potions": 30
+            },
+            "quality": {
+              "fine": 60,
+              "superior": 37,
+              "exceptional": 3
+            },
+            "stone": 0.03
+          }
+        }
+      },
+      "class_chance": 0.7,
+      "class_pool": {
+        "warrior": [
+          "sword",
+          "axe",
+          "mace",
+          "spear",
+          "chainmail",
+          "breastplate",
+          "shield"
+        ],
+        "mage": [
+          "staff",
+          "sceptre",
+          "orb",
+          "robes"
+        ],
+        "rogue": [
+          "dagger",
+          "rapier",
+          "shortbow",
+          "leathers",
+          "gambeson"
+        ]
+      },
+      "theme_pool": {
+        "default": [
+          "sword",
+          "shield",
+          "leathers"
+        ],
+        "skeleton": [
+          "sword",
+          "spear",
+          "chainmail",
+          "shield"
+        ],
+        "spirit": [
+          "staff",
+          "orb",
+          "robes"
+        ],
+        "goblin_shaman": [
+          "staff",
+          "sceptre",
+          "robes"
+        ],
+        "goblin": [
+          "dagger",
+          "spear",
+          "leathers"
+        ],
+        "ogre": [
+          "mace",
+          "axe",
+          "shield"
+        ],
+        "arthropod": [
+          "spear",
+          "shield",
+          "plate_armor"
+        ],
+        "slime": [
+          "orb",
+          "robes"
+        ],
+        "wolf": [
+          "dagger",
+          "leathers"
+        ],
+        "bear": [
+          "axe",
+          "chainmail"
+        ]
+      },
+      "stone_fn_by_anchor": {
+        "default": [
+          "strike",
+          "guard"
+        ],
+        "skeleton": [
+          "guard",
+          "strike"
+        ],
+        "armored_beast": [
+          "guard",
+          "strike"
+        ],
+        "bear": [
+          "guard",
+          "strike"
+        ],
+        "boar": [
+          "guard",
+          "strike"
+        ],
+        "arthropod": [
+          "guard",
+          "strike"
+        ],
+        "ghoul": [
+          "strike"
+        ],
+        "wolf": [
+          "strike"
+        ],
+        "feline": [
+          "strike"
+        ],
+        "raptor": [
+          "strike"
+        ],
+        "serpent": [
+          "strike"
+        ],
+        "goblin": [
+          "strike"
+        ],
+        "ogre": [
+          "strike"
+        ],
+        "spirit": [
+          "bolt",
+          "ward"
+        ],
+        "goblin_shaman": [
+          "bolt",
+          "ward"
+        ],
+        "slime": [
+          "ward",
+          "mend"
+        ],
+        "aquatic": [
+          "ward",
+          "mend"
+        ]
+      },
+      "potions": {
+        "mage": {
+          "Healing Potion": 25,
+          "Mana Potion": 50,
+          "Stamina Tonic": 25
+        },
+        "other": {
+          "Healing Potion": 1,
+          "Mana Potion": 1,
+          "Stamina Tonic": 1
+        }
+      },
+      "material_cp": 25,
+      "boss_trophy_cp": 60
+    },
+    "_rule": "Prototype C (4.3.0-c.6.6.4): what the engine credits Alaric at the end of a fight he won, from each foe killed in it (never one that fled, surrendered or survived). Materials follow the body plan (anchor) and carry the creature's Power Rank as data; {species} is the creature's own in-world kind. qty [min, max] is drawn deterministically per fight and foe; min 0 means it may yield none. value_cp is the F-Rank guide value per piece; each Rank above F multiplies it by rank_value_factor. Ordinary creatures carry no coin; humanoid ones (purse_cp) carry a little, and people what their sheet and station say. 4.3.0-c.6.6.5: a material with only_if comes only from a creature whose own kind, description or attack shows it (venom from a venomous one, live 15.10.2026: venom sacs from mudwyrms the story never showed as venomous). 4.3.0-c.6.6.184 (Monster A1): a special organ (antler, horn, tusk, venom, slime core) comes only from a creature whose own kind, name or description shows it (only_if), and never from one whose own words deny it (unless: \"hornless goat\", \"doe without antlers\", \"non-venomous snake\"); its anchor's attack is no evidence (\"Bite/Sting\" is no venom, \"Kick/Antler\" no antler). A kind no word fits gives the base yield of its body plan only. 4.3.0-c.6.6.186 (Monster A2): a humanoid creature's weapon is fixed once, with its profile (profile.gear): the weapon its creation report states (armed), else one of its anchor's loadout, drawn by weight from its own key (its Dungeon slot place, else its id); 'unarmed' is none. A melee weapon names its attack; a focus or bow changes no attack (D2). Its values are the anchor's (D3), whatever the words. At its death the weapon is loot when the salvage draw succeeds, else it is broken. gear stays the chance of a profile fixed before A2 (no profile.gear, D5/K6). Guardians and bosses take the same loadout (D7). Before its death the weapon is no object nobody gives or takes (K5).",
+    "rank_value_factor": 3,
+    "anchors": {
+      "rat": [
+        {
+          "key": "pelt",
+          "name": "{species} Pelt",
+          "qty": [
+            0,
+            1
+          ],
+          "value_cp": 1
+        },
+        {
+          "key": "tail",
+          "name": "{species} Tail",
+          "qty": [
+            1,
+            1
+          ],
+          "value_cp": 1
+        }
+      ],
+      "wolf": [
+        {
+          "key": "pelt",
+          "name": "{species} Pelt",
+          "qty": [
+            1,
+            1
+          ],
+          "value_cp": 8
+        },
+        {
+          "key": "fang",
+          "name": "{species} Fang",
+          "qty": [
+            1,
+            3
+          ],
+          "value_cp": 2
+        }
+      ],
+      "boar": [
+        {
+          "key": "hide",
+          "name": "{species} Hide",
+          "qty": [
+            1,
+            1
+          ],
+          "value_cp": 8
+        },
+        {
+          "key": "tusk",
+          "name": "{species} Tusk",
+          "qty": [
+            1,
+            2
+          ],
+          "value_cp": 3
+        }
+      ],
+      "deer": [
+        {
+          "key": "hide",
+          "name": "{species} Hide",
+          "qty": [
+            1,
+            1
+          ],
+          "value_cp": 6
+        },
+        {
+          "key": "antler",
+          "name": "{species} Antler",
+          "only_if": "antlers?|antlered|stags?|harts?|elks?|moose|reindeer|caribou|wapiti|roebucks?",
+          "unless": "antlerless|(?:no|without|lost|missing|broken)\\s+(?:\\w+\\s+){0,2}antlers?",
+          "qty": [
+            0,
+            2
+          ],
+          "value_cp": 3
+        },
+        {
+          "key": "horn",
+          "name": "{species} Horn",
+          "only_if": "horns?|horned|goats?|ibex(?:es)?|rams?|antelopes?|chamois|gazelles?",
+          "unless": "hornless|dehorned|polled|(?:no|without|lost|missing|broken)\\s+(?:\\w+\\s+){0,2}horns?",
+          "qty": [
+            0,
+            2
+          ],
+          "value_cp": 3
+        }
+      ],
+      "horse": [
+        {
+          "key": "hide",
+          "name": "{species} Hide",
+          "qty": [
+            1,
+            1
+          ],
+          "value_cp": 6
+        },
+        {
+          "key": "horn",
+          "name": "{species} Horn",
+          "only_if": "horns?|horned|ox|oxen|bulls?|cows?|cattle|aurochs|bison|buffalo(?:es)?|yaks?",
+          "unless": "hornless|dehorned|polled|(?:no|without|lost|missing|broken)\\s+(?:\\w+\\s+){0,2}horns?",
+          "qty": [
+            0,
+            2
+          ],
+          "value_cp": 3
+        }
+      ],
+      "bear": [
+        {
+          "key": "pelt",
+          "name": "{species} Pelt",
+          "qty": [
+            1,
+            1
+          ],
+          "value_cp": 15
+        },
+        {
+          "key": "claw",
+          "name": "{species} Claw",
+          "qty": [
+            2,
+            4
+          ],
+          "value_cp": 3
+        }
+      ],
+      "feline": [
+        {
+          "key": "pelt",
+          "name": "{species} Pelt",
+          "qty": [
+            1,
+            1
+          ],
+          "value_cp": 12
+        },
+        {
+          "key": "claw",
+          "name": "{species} Claw",
+          "qty": [
+            1,
+            3
+          ],
+          "value_cp": 2
+        },
+        {
+          "key": "fang",
+          "name": "{species} Fang",
+          "qty": [
+            0,
+            2
+          ],
+          "value_cp": 2
+        }
+      ],
+      "serpent": [
+        {
+          "key": "skin",
+          "name": "{species} Skin",
+          "qty": [
+            1,
+            1
+          ],
+          "value_cp": 6
+        },
+        {
+          "key": "fang",
+          "name": "{species} Fang",
+          "qty": [
+            1,
+            2
+          ],
+          "value_cp": 2
+        },
+        {
+          "key": "venom",
+          "name": "{species} Venom Sac",
+          "only_if": "venom\\w*|poison\\w*|toxi\\w*|viper|adder|asp|cobra|mamba|krait|spitt\\w*",
+          "unless": "non[- ]?venomous|non[- ]?poisonous|harmless|(?:not|no|without)\\s+(?:\\w+\\s+){0,2}(?:venom\\w*|poison\\w*)",
+          "qty": [
+            0,
+            1
+          ],
+          "value_cp": 5
+        }
+      ],
+      "raptor": [
+        {
+          "key": "feather",
+          "name": "{species} Feather",
+          "qty": [
+            2,
+            5
+          ],
+          "value_cp": 1
+        },
+        {
+          "key": "talon",
+          "name": "{species} Talon",
+          "qty": [
+            1,
+            2
+          ],
+          "value_cp": 2
+        }
+      ],
+      "arthropod": [
+        {
+          "key": "chitin",
+          "name": "{species} Chitin Plate",
+          "qty": [
+            1,
+            3
+          ],
+          "value_cp": 3
+        },
+        {
+          "key": "venom",
+          "name": "{species} Venom Gland",
+          "only_if": "venom\\w*|poison\\w*|toxi\\w*|sting\\w*|spiders?|scorpions?|wasps?|hornets?|bees?|centipedes?",
+          "unless": "non[- ]?venomous|non[- ]?poisonous|harmless|(?:not|no|without)\\s+(?:\\w+\\s+){0,2}(?:venom\\w*|poison\\w*)",
+          "qty": [
+            0,
+            1
+          ],
+          "value_cp": 5
+        }
+      ],
+      "aquatic": [
+        {
+          "key": "scale",
+          "name": "{species} Scale",
+          "qty": [
+            2,
+            5
+          ],
+          "value_cp": 1
+        },
+        {
+          "key": "tooth",
+          "name": "{species} Tooth",
+          "qty": [
+            1,
+            3
+          ],
+          "value_cp": 2
+        }
+      ],
+      "armored_beast": [
+        {
+          "key": "scale",
+          "name": "{species} Scale Plate",
+          "qty": [
+            1,
+            3
+          ],
+          "value_cp": 4
+        },
+        {
+          "key": "claw",
+          "name": "{species} Claw",
+          "qty": [
+            0,
+            2
+          ],
+          "value_cp": 2
+        }
+      ],
+      "spirit": [
+        {
+          "key": "essence",
+          "name": "{species} Essence",
+          "qty": [
+            0,
+            1
+          ],
+          "value_cp": 10
+        }
+      ],
+      "skeleton": [
+        {
+          "key": "bone",
+          "name": "{species} Bone",
+          "qty": [
+            1,
+            2
+          ],
+          "value_cp": 1
+        },
+        {
+          "key": "dust",
+          "name": "{species} Grave Dust",
+          "qty": [
+            0,
+            1
+          ],
+          "value_cp": 2
+        }
+      ],
+      "ghoul": [
+        {
+          "key": "claw",
+          "name": "{species} Claw",
+          "qty": [
+            0,
+            2
+          ],
+          "value_cp": 2
+        },
+        {
+          "key": "dust",
+          "name": "{species} Grave Dust",
+          "qty": [
+            0,
+            1
+          ],
+          "value_cp": 2
+        }
+      ],
+      "slime": [
+        {
+          "key": "gel",
+          "name": "{species} Gel",
+          "qty": [
+            1,
+            2
+          ],
+          "value_cp": 2
+        },
+        {
+          "key": "core",
+          "name": "{species} Core",
+          "only_if": "cores?|crystal\\w*|mineral|nucleus|gem\\w*",
+          "unless": "coreless|(?:no|without|lost|missing)\\s+(?:\\w+\\s+){0,2}cores?",
+          "qty": [
+            0,
+            1
+          ],
+          "value_cp": 6
+        }
+      ],
+      "goblin_shaman": {
+        "humanoid": true,
+        "purse_cp": [
+          1,
+          6
+        ],
+        "gear": [
+          {
+            "name": "Crude {species} Fetish",
+            "slot": "weapon",
+            "chance": 0.4,
+            "atk": 1
+          }
+        ],
+        "loadout": { "options": [ { "name": "Crude {species} Fetish", "attack": null, "family": "focus", "slot": "weapon", "atk": 1, "w": 1 } ], "salvage": 0.4 }
+      },
+      "goblin": {
+        "humanoid": true,
+        "purse_cp": [
+          0,
+          4
+        ],
+        "gear": [
+          {
+            "name": "Crude {species} Knife",
+            "slot": "weapon",
+            "chance": 0.5,
+            "atk": 2
+          }
+        ],
+        "loadout": { "options": [ { "name": "Crude {species} Knife", "attack": "Crude knife", "family": "melee", "slot": "weapon", "atk": 2, "w": 6 }, { "name": "Crude {species} Spear", "attack": "Crude spear", "family": "melee", "slot": "weapon", "atk": 2, "w": 3 }, { "name": null, "w": 1 } ], "salvage": 0.55 }
+      },
+      "ogre": {
+        "humanoid": true,
+        "purse_cp": [
+          0,
+          12
+        ],
+        "materials": [
+          {
+            "key": "tusk",
+            "name": "{species} Tusk",
+            "only_if": "tusks?|tusked",
+            "unless": "tuskless|(?:no|without|lost|missing|broken)\\s+(?:\\w+\\s+){0,2}tusks?",
+            "qty": [
+              0,
+              2
+            ],
+            "value_cp": 6
+          }
+        ],
+        "gear": [
+          {
+            "name": "{species} Club",
+            "slot": "weapon",
+            "chance": 0.7,
+            "atk": 4
+          }
+        ],
+        "loadout": { "options": [ { "name": "{species} Club", "attack": "Club", "family": "melee", "slot": "weapon", "atk": 4, "w": 1 } ], "salvage": 0.7 }
+      }
+    },
+    "purse_cp_by_template": {
+      "commoner": [
+        0,
+        6
+      ],
+      "laborer": [
+        0,
+        8
+      ],
+      "hunter": [
+        0,
+        10
+      ],
+      "guard": [
+        3,
+        15
+      ],
+      "bandit": [
+        0,
+        12
+      ],
+      "hedge_mage": [
+        2,
+        20
+      ],
+      "adventurer": [
+        5,
+        30
+      ]
+    }
+  },
+  "encounter_windows": [[1, 1], [1, 3], [4, 7], [8, 11], [12, 14]]
+}

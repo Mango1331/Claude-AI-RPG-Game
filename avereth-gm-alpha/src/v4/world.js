@@ -1,0 +1,3660 @@
+import { floorRefusal, namedLevel, goesFrom, otherEnd } from './dungeon.js';
+import { placeParent, placeIdentity, placeKey, samePlace } from './place_refs.js';
+import { resolvePlaceRef, usualPersonNamed } from './place_book.js';
+import { allowedArrival, stepsOf, newPlaceScope } from './movement.js';
+import { sectionsOf, sectionId } from './sections.js';
+import { sceneIssues, localSceneDelta } from './extract.js';
+import { privateQuestsOf, questVisible } from '../content.js';
+// Runtime V4: applying the extractor's world deltas (docs/RUNTIME_V4_PLAN.md §5.2). After the narrator's reply the
+// extractor reported, in story order, what the reply established (src/v4/extract.js); the domain/authority firewall
+// removed what the story may not decide (src/v4/firewall.js). Here the engine applies the rest step by step, each delta
+// checked against the state at its step, and fires what waited for the reply (a turn-in on arrival at a Guild hall).
+//
+// World deltas without a V4 domain (people, creatures, scene, facts, knowledge, attitudes, memories, threads, combat
+// commitments, intents) go through the V3 rules of src/delta.js as one-item reports: the same resolver, the same entity
+// creation (names, templates, body-plan anchors), the same witness and fact rules, the same combat commitments; a fight
+// opens exactly as in V3 (engine.js openCommitted). Places, time, objects, offers, coin, coercion and quests are V4
+// handlers. Nothing here can change what the player's commands resolved.
+import { resolveCommands } from './commands.js';
+import { bookStealth } from '../checks.js';
+import { transferCargo, deliveryStatus, deliveryObjectives, confirmDelivery, additionalContainerReturn } from './delivery.js';
+import { Dice } from '../rng.js';
+import { applyEvent } from '../state.js';
+import { clone, normText, slug, hash32, formatClock } from '../util.js';
+import { coinFromWords, coinEvidence, coinMentions, numbersIn } from '../economy.js';
+import { trainingOfferWhy } from './growth.js';
+import { deriveCharacter } from '../derived.js';
+import { reportToEvents, makeResolver, isGroup, GROUP_WORDS } from '../delta.js';
+import { sceneHandle } from './scene_handles.js';
+import { truth, entityLabel, setFactEvents, statusOf, normPredicate, knows, anchorPredicate, sharedBefore } from '../knowledge.js';
+import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../engine.js';
+import { firewall, pcWound, pcActIn } from './firewall.js';
+import { stripOwned, wrongClaim, ownershipViolation, stateRegions, effectViolation } from './ownership.js';
+import { mayOpenFight, mayTake, attackCommitted } from './envelope.js';
+import { soughtMatch, CAUSE_SHORT } from './pulse.js';
+import {
+    PLACE_PARENTS, HALL_NAME, lineage, guildDestination, hallOf, hallOfSettlement, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind, SERVICE_ROLE, collectivePerson,
+    progressKey, sameKinds, kindOf, populationAt, validEncounterLevels, realmOf,
+} from './domain.js';
+import { creatureContract } from './population.js';
+import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
+import { paidWorkLine, tradeObject, pickLines, bookPurchase, bookSale, saleUnits, unitsText, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines, offerAvailability, rateUnits, displayedWare, wareOnSale, shortfallText } from './trade.js';
+import { findQuote, priceEvidence, openConditionNear, moneyLiteral } from './finance_evidence.js';
+import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
+import { reachedEvents, setIntentEvents } from './intents.js';
+import { featureNamed, featureEvent, applySpring } from './features.js';
+import { complexOf, dungeonOf, trueDungeonOf, classified, rankText, linkBetween, sameWay, linksAt, wayBetween, roomByName, roomKnown, markEvents, newLink, linkEvent, levelVia, blockerOf, visited } from './dungeon.js';
+import { itemTraits, useOf, itemProfile, priceAudit, gearRetailPrice, gearOfferProfile, gearOfferName, gearOfferWhy, openEquipmentStock } from './items.js';
+import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity.js';
+import { combatTruth, stripFalseDeaths } from './combat_truth.js';
+import { anchorFor, speciesAnchor, templateFor, rulesetOf } from '../content.js';
+import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotMet, resolved, slotForNew, resolvedSlotNamed, slotEntityEvents, establishEvents, syncEvents, insideOf } from './living.js';
+import { refusedCreatureInThread, unbookedDungeonThreat } from './run9_evidence.js';
+import { knownAt } from './catalog.js';
+import { jobOf, paymentJob, recordJobWork } from './private_jobs.js';
+import { forcedRelocation, presenceInReply, narratedEvent, guildParticipationEvidence, metEvidence, deskHandlingEvidence, personProfile } from './narration_evidence.js';
+
+// Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
+// delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
+// the predicates of a fight's moment (selective persistence: they end with the fight) and the words of a lasting mark
+const FIGHT_MOMENT = /^(?:behaviou?r|demeanou?r|position|posture|stance|gait|movement|motion|action|activity|last_attack|attack(?:ing)?|tactics?|mood|focus|wounded|bleeding|breathing|stamina|fatigue)$/;
+// Patch 3: the commands that make one of Alaric's own acts (a fact "pc ate …" after his own use is no news, no overreach)
+const ACT_COMMANDS = {
+    '^(?:ate|eat|drank|drink|drunk|consum|used)': ['use'],
+    '^(?:bought|buy|purchas|spent|paid)': ['buy', 'offer.accept', 'pay'],
+    '^(?:sold|sell|traded|trade)': ['sell', 'offer.accept'],
+    '^(?:dropped|drop|discard|left|abandon)': ['drop'],
+    '^(?:gave|give)': ['give'],
+    '^(?:hunt|caught|catch|gather|forag|picked|loot|butcher|skinn|cook|roast|craft|kill|slew)': ['activity', 'take', 'use'],
+};
+const LASTING_MARK = /\b(?:lost|loses|missing|severed|scar\w*|maimed|crippled|blinded|permanent\w*|tattoo\w*|brand\w*)\b/i;
+
+let OWNERSHIP_ASSERT = false;
+export function assertOwnership(on = true) { OWNERSHIP_ASSERT = !!on; }
+
+// the kind a story handle starts with ("npc.drossell_shopkeeper"), never a name
+const HANDLE_PREFIX = new Set(['npc', 'person', 'creature', 'mon']);
+// the words that end a person's name or role in a description ("clerk at the Walk", "steward of the weirs")
+const RELATION_WORDS = new Set(['of', 'at', 'in', 'on', 'with', 'by', 'from', 'near', 'behind', 'beside', 'to', 'for', 'who', 'that']);
+// a local sign-off made a condition ("must inspect and sign before payment", "will sign once …")
+const SIGN_OFF = /\b(?:sign(?:s|ed|ing)?|signature|countersign\w*|inspect\w*|confirm\w*|vouch\w*|witness\w*|verif\w*)\b/i;
+const REQUIRE = /\b(?:must|required?|requires|need(?:s|ed)?|before|until|unless|only|once)\b/i;
+
+/** The firewall's view of the state after the player's turn (src/v4/firewall.js FirewallContext). */
+/** Natural batch on .191: the kind of a refused creature.new (its species, body plan and count) for the thread guard. */
+const refusedKind = (d) => ({ species: d?.species || null, anchor: d?.anchor || null, count: Number.isInteger(d?.count) ? d.count : 1 });
+/** The creatures the engine holds in this scene: present now, or slain here (the thread guard must not mistake them). */
+const sceneCreatures = (s) => Object.values(s.entities || {}).filter((e) => e.kind === 'creature' && (s.scene.present.includes(e.id) || (e.at || e.location) === s.scene.at))
+    .map((e) => ({ species: e.species || null, anchor: e.anchor || e.profile?.anchor || null }));
+
+export function firewallContext(s, content, chronicle = null, excludedFoes = []) {
+    const o = s.last?.outcome || {};
+    const guildish = (id) => {
+        const e = s.entities[id];
+        if (!e) return false;
+        const role = [truth(s, id, 'occupation')[0]?.o, e.traits, ...(e.descriptors || [])].filter(Boolean).join(' ');
+        return /\bguild\b/i.test(role) || (!!hallOf(s, e.at || s.scene.at) && s.scene.present.includes(id) && /\b(?:clerk|registrar|receptionist|desk)\b/i.test(role));
+    };
+    const names = new Map();
+    for (const e of Object.values(s.entities)) if (e.name) names.set(normText(e.name), e.id);
+    const auth = o.auth || {};
+    return {
+        c: !!(auth.c || o.c), // Prototype C: the turn the planner read
+        // Patch 3: the engine's mechanical state the story may not overwrite (src/v4/firewall.js)
+        lifeOf: (ref) => {
+            const id = s.entities[ref] ? ref : names.get(normText(ref));
+            const e = id && id !== 'pc' ? s.entities[id] : null;
+            return e && (e.profile || s.encounter?.combatants?.[id]) ? (e.status === 'dead' ? 'dead' : 'alive') : null;
+        },
+        labelOf: (ref) => (s.entities[ref] ? entityLabel(s, ref) : null),
+        // Patch 7.2C: a death of a fight the engine has not booked (src/v4/combat_truth.js)
+        combatClaim: combatTruth(s, content, chronicle, excludedFoes),
+        // Hotfix 7.2.1: his Guild standing (a fact claiming a registration the engine has not booked is refused)
+        pcRegistered: !!s.guild?.membership,
+        creationComplete: s.mode !== 'creation' && s.creation?.step === 3,
+        pcHurt: (s.entities.pc?.sheet?.hp ?? 0) < deriveCharacter(s.entities.pc.sheet, content).maxHp,
+        actedOn: (p) => {
+            const done = new Set((o.resolutions || []).filter((r) => !['refused', 'clarify'].includes(r.status)).map((r) => r.type));
+            return Object.entries(ACT_COMMANDS).some(([re, types]) => new RegExp(re).test(p) && types.some((t) => done.has(t)));
+        },
+        isGuildPerson: (ref) => guildish(ref) || guildish(names.get(normText(ref))),
+        inGuildHall: !!hallOf(s, s.scene.at),
+        boardFailed: o.board?.failed === true,
+        isGuildPlace: ref => typeof ref === 'string' && !!s.places[ref] && !!hallOf(s, ref),
+        establishedBoardFact: d => truth(s, d.s, normPredicate(d.p)).some(f=>normText(String(f.o)) === normText(String(d.o))),
+        contracts: contracts(s).map((q) => ({ id: q.id, title: q.title, payout_cp: q.payout_cp ?? null, client: q.client || null, status: q.status })),
+        booked: o.booked || { registration: false, grants: [], turnIns: [], accepted: [] },
+        auth: { go: !!(auth.gos || []).length || !!auth.go, roam: !!auth.roam, take: !!(auth.take || []).length, gather: !!auth.gather, forced: false },
+        heldByPc: (ref) => s.objects?.[ref]?.holder?.entity === 'pc' || (typeof ref === 'string' && ref.startsWith('item.') && !!s.entities.pc.sheet.inventory[ref.slice(5)]),
+        // Prototype C (4.3.0-c.6.6.3): what he set out to hand over where he went in this turn (commands.js give)
+        // Historical Rule-1 lodging semantics only; current campaigns require an authorized room move.
+        // .190 (D3): a step within the same building is his go; paying for a bed is not going to it, buying bread is no
+        // way into the back room, nearness never moves him. Ruleset 1 keeps its room exception as it was
+        lodgedHere: rulesetOf(s) < 2 ? (s.services || []).some(x => x.service === 'lodging' && x.at === s.scene.at && s.clock.minute - (x.minute ?? 0) <= 1440)
+            // review of .190 (G3): a rest booked and a room held do not say he goes there ("I rest downstairs; I stay
+            // here"); the engine cannot tell it from his words without a word list, so under ruleset 2 going to his room
+            // is his go (planner rule 7e), never an exception of the firewall
+            : false,
+        roomOfHere: ref => {
+            if (rulesetOf(s) < 2) return ref?.new ? ref.new.parent === s.scene.at && (!ref.new.kind || ['interior', 'room', 'site'].includes(ref.new.kind)) : typeof ref === 'string' && s.places[ref]?.parent === s.scene.at;
+            // the room or bed he paid for, inside the building he is in (its complex): never another room of it (a private
+            // office), another house, the street or a new travel target
+            const home = complexOf(s, s.scene.at);
+            if (!home || settlementOf(s, home) === home) return false;
+            const parent = ref?.new ? (ref.new.parent == null ? s.scene.at : typeof ref.new.parent === 'string' ? ref.new.parent : null) : null;
+            if (ref?.new) return ref.new.kind === 'interior' && LODGING_WORDS.test(normText(ref.new.name || '')) && !!parent && !!s.places[parent] && complexOf(s, parent) === home;
+            return typeof ref === 'string' && s.places[ref]?.kind === 'interior' && LODGING_WORDS.test(normText(s.places[ref].name || '')) && complexOf(s, ref) === home && !dungeonOf(s, ref);
+        },
+        handingOver: (ref) => (o.conditionals || []).some((k) => k.kind === 'give' && (k.object === ref || normText(s.objects?.[k.object]?.name || '') === normText(ref))),
+        isGuildContractRef: (ref) => {
+            if (typeof ref !== 'string') return false;
+            const q = s.quests?.[ref] || Object.values(s.quests || {}).find((x) => x.kind === 'guild_contract' && normText(x.title) === normText(ref));
+            return q?.kind === 'guild_contract';
+        },
+        guildContractForObject: (ref) => {
+            if (typeof ref !== 'string') return null;
+            let o = s.objects?.[ref] || Object.values(s.objects || {}).find((x) => normText(x.name) === normText(ref));
+            if (!o) {
+                const active = contracts(s).filter((q) => q.status === 'active');
+                if (active.length === 1 && /\b(?:guild\s+)?contract\s+slip\b/i.test(ref)) return active[0];
+                return null;
+            }
+            return (o.for_quests || []).map((id) => s.quests?.[id]).find((q) => q?.kind === 'guild_contract') || null;
+        },
+        // the Guild's canon for the corrections of refused Guild facts (guild_canon)
+        canon: { feeCp: content.rules.guild.registration_fee_cp, guildRanks: content.rules.guild.ranks, powerRanks: content.rules.ranks.order },
+    };
+}
+
+// ------------------------------------------------------------------------------------------------ places
+/** Resolve a place ref; {new: {name, kind, parent}} creates it (the same name under the same parent is the same place). */
+function resolvePlace(s, ref, emit, depth = 0, { c = false, reported = false } = {}) {
+    if (typeof ref === 'string') return s.places[ref] ? { id: ref } : { error: `unknown place ${ref}` };
+    const n = ref?.new;
+    if (!n || typeof n !== 'object' || !n.name) return { error: 'a place needs an id or {new: {name, kind, parent}}' };
+    if (depth > 1) return { error: 'at most one level of new parents' };
+    const town = typeof n.parent === 'string' ? settlementOf(s, n.parent) : settlementOf(s, s.scene.at);
+    const hall = guildDestination(s, n.name, town, { allowNew: c && rulesetOf(s) >= 2 });
+    if (hall?.id || hall?.error) return hall;
+    const parent = n.parent === null || n.parent === undefined ? { id: s.scene.at } : resolvePlace(s, n.parent, emit, depth + 1, { c, reported });
+    if (parent.error) return parent;
+    // .190 (place book): a place he knows, under its own name or a closer one, is that place wherever the reply hangs it
+    // ("the Tannery Rows behind the Ashbridge tanneries" under Ashbridge is the visited site in the realm, .188 Rogue
+    // #76/#82); two of them are a question. Rooms keep their own parent (two cellars of two houses are two rooms)
+    if (c && ['site', 'settlement', 'wilderness'].includes(n.kind)) {
+        const known = resolvePlaceRef(s, { new: { name: n.name, kind: n.kind } }, { from: parent.id });
+        if (known.ambiguous) return { error: `more than one known place "${String(n.name).slice(0, 60)}": ${known.ambiguous.join(', ')}; name it by its id` };
+    }
+    let pid = parent.id;
+    // a kind that cannot lie in its parent climbs to the first ancestor where it can (a hamlet named inside a site of
+    // the town lies in the realm or region, not in the site). Prototype C (4.3.0-c.6): the wild has insides too, a den,
+    // a cave, a chamber (live 04.10.2026 16:35: "Boar den chamber" refused in the Root-Hollow)
+    // (4.3.0-c.6.6) and a site out in the open (a waystation on the road, a ford) lies in the realm itself
+    pid = placeParent(s, n.kind, pid, c);
+    if (!pid) return { error: `a ${n.kind} cannot lie in ${placeName(s, parent.id)}` };
+    // Patch 7: a room of a dungeon lies in the dungeon, not in the room he stood in when the story named it, and is
+    // known there by its name (and level): the same name in another dungeon is another room; two rooms of that name
+    // and nothing to tell them apart is a question, never a pick (src/v4/dungeon.js)
+    const dun = ['interior', 'site'].includes(n.kind) ? dungeonOf(s, pid) : null;
+    if (dun) {
+        const invalid = floorRefusal(s, dun, n.level, n.name);
+        if (invalid) return { error: invalid };
+        if (n.parent === null || n.parent === undefined) pid = dun;
+        const room = roomByName(s, dun, n, s.scene.at);
+        if (room?.ambiguous) return { error: `more than one room "${String(n.name).slice(0, 60)}" in ${s.places[dun].name}: name it by its id` };
+        if (room) return { id: room.id };
+    }
+    const same = placeIdentity(s, { new: { ...n, parent: pid } }, null, { c, reported });
+    if (same) return { id: same };
+    let id = `${pid.startsWith('loc.') ? pid : 'loc'}.${slug(n.name) || 'place'}`;
+    for (let k = 2; s.places[id]; k++) id = `${pid.startsWith('loc.') ? pid : 'loc'}.${slug(n.name)}_${k}`;
+    const p = s.places[pid];
+    emit({ t: 'place.created', d: { place: { id, name: String(n.name).slice(0, 80), kind: n.kind, parent: pid, realm: p?.realm ?? null, tags: [], by: 'reply', created: { turn: s.turn, minute: s.clock.minute }, ...(reported ? { known: 'reported', reports: [] } : {}), ...(dun && Number.isInteger(n.level) ? { level: n.level } : {}) } } });
+    return { id };
+}
+
+const p0 = (s, pid) => s.places[pid]?.realm ?? null;
+
+/** The content or V4 settlement a node belongs to: the scene's "location" for the V3 views (HUD, lore, facts). */
+function locationOf(s, id) {
+    return settlementOf(s, id) || s.places[id]?.realm || s.scene.location;
+}
+
+// ------------------------------------------------------------------------------------------------ apply
+/**
+ * Apply one valid extractor answer to the state after the player's turn.
+ * @param {object} state state after the player's turn (its outcome carries auth, expected keys and conditionals)
+ * @param {{expected: object, deltas: object[]}} answer schema-valid extractor answer
+ * @param {{msg?: number|null, prose?: string}} opts msg: the reply's chat index (ids); prose: the reply's text
+ * @returns {{events, rejected, corrections, system, opened, state, arrivedHall}}
+ */
+/**
+ * NPC E3 (R10, decisions D2/D3/D13): why a reported voice, manner or interest of a person is no lasting anchor, or null.
+ * Only of someone here now, whom Alaric met before this presence began (a shared memory of a turn before
+ * scene.since[id]: the first sighting suffices; a name, an importance or an agreement does not); a short trait (at most
+ * 80 characters) not about Alaric and owning nothing of the engine's; never a mood without a habit word ("furious
+ * tonight", "angry"; "always short with drunks" is a trait); one value per trait and reply, and a set anchor changes at
+ * most once in each later presence span. The same value again changes nothing and is never refused.
+ */
+const ANCHOR_PREDICATES = new Set(['voice', 'manner', 'interest']);
+const ANCHOR_SITUATION = /\b(?:right now|for now|now|today|tonight|this (?:morning|afternoon|evening|night)|at the moment|currently|just then|after the fight|since the attack)\b/i;
+const ANCHOR_HABIT = /\b(?:always|usually|habitually|tends? to|never|every time|as ever)\b/i;
+const ANCHOR_STATES = new Set(['angry', 'furious', 'upset', 'scared', 'afraid', 'tired', 'exhausted', 'drunk', 'grieving', 'crying', 'wounded', 'relieved', 'nervous']);
+const ANCHOR_FILLER = new Set(['very', 'quite', 'a', 'bit', 'little', 'visibly', 'clearly', 'obviously', 'still', 'so', 'rather', 'and', 'or', 'but', 'somewhat', 'deeply', 'badly', 'slightly', 'really', 'too', 'extremely']);
+function anchorRefusal(s, id, p, value, anchored) {
+    const v = String(value).trim();
+    const current = truth(s, id, p)[0] || null;
+    if (current && normText(current.o) === normText(v)) return null;
+    if (!s.scene.present.includes(id)) return { rule: 'anchor_absent', why: `${p} of ${id}: a lasting trait is shown only by someone here` };
+    const since = s.scene.since?.[id];
+    if (!sharedBefore(s, id))
+        return { rule: 'anchor_first_contact', why: `${p} of ${id}: a lasting trait only from a later encounter (nothing shared with Alaric before this presence began)` };
+    const pcWords = String(s.entities.pc?.name || 'Alaric').split(/\s+/).filter((w) => w.length >= 3).map((w) => w.toLowerCase());
+    const words = normText(v).split(/[^a-z0-9']+/).filter(Boolean);
+    if (v.length > 80 || /\{pc\}|\bpc\b/i.test(v) || words.some((w) => pcWords.includes(w) || w === 'alaric') || stripOwned(v, { store: 'note' }).owned.length)
+        return { rule: 'anchor_value', why: `${p} of ${id}: a short trait of the person (at most 80 characters, not about Alaric, nothing of the engine's)` };
+    const pureState = words.length > 0 && words.every((w) => ANCHOR_STATES.has(w) || ANCHOR_FILLER.has(w)) && words.some((w) => ANCHOR_STATES.has(w));
+    if (!ANCHOR_HABIT.test(v) && (ANCHOR_SITUATION.test(v) || pureState)) return { rule: 'anchor_mood', why: `${p} of ${id}: "${v}" is this moment's mood, not a lasting trait` };
+    if (anchored.has(`${id}|${p}`)) return { rule: 'anchor_scope', why: `${p} of ${id}: one value per trait and reply` };
+    if (current && (current.since?.turn ?? -1) >= since) return { rule: 'anchor_scope', why: `${p} of ${id}: already set in this presence; it changes at most once in a later one` };
+    return null;
+}
+
+// K8 (pilot 01 B12, .177): a person's role the extractor wrote as the word "null" ("none", "n/a") is no role (T11: Widow
+// .190 (D3): the words of a room or bed he can pay for (commands.js ROOM_WORDS)
+const LODGING_WORDS = /\b(?:rooms?|beds?|bunks?|cots?|berths?|lodgings?|quarters)\b/;
+// Hessa's occupation and first descriptor "null")
+const NO_ROLE = /^\s*(?:null|none|undefined|n\/a)?\s*$/i;
+const roleless = (d) => d?.type === 'person.new' && typeof d.role === 'string' && NO_ROLE.test(d.role);
+function noRoleWords(answer) {
+    if (!Array.isArray(answer?.deltas) || !answer.deltas.some(roleless)) return answer;
+    return { ...answer, deltas: answer.deltas.map((d) => (roleless(d) ? { ...d, role: null } : d)) };
+}
+
+export function applyWorld(state, content, answer, { msg = null, prose = '', chronicle = null } = {}) {
+    answer = noRoleWords(newPlaceScope(answer, state));
+    const s = clone(state);
+    const dice = Dice.from(s);
+    const events = [];
+    // .199: identity creation is not arrival. Keep these observations local to this reply.
+    const knownAbsentAtStart = new Set(Object.values(state.entities).filter((e) => e.kind === 'npc' && !state.scene.present.includes(e.id)).map((e) => e.id));
+    const boundAtStart = new Set([...Object.keys(state.encounter?.combatants || {}), ...(state.pending_combat || []).map((p) => p.by)]);
+    const reenteredNpcs = new Set(), pulseArrivedNpcs = new Set();
+    // the step whose events these are (Decision Ownership: an extractor delta writes only what its type may write)
+    let step = { kind: 'engine' };
+    // a gate the current delta passed (src/v4/ownership.js): only then may it reach the engine-owned kind behind it
+    const grant = (gate) => step.granted?.add(gate);
+    const emit = (e) => {
+        if (dice.n !== s.rng.n) e.rng_to = dice.n;
+        const checked = OWNERSHIP_ASSERT && step.kind === 'delta';
+        const before = checked ? stateRegions(s) : null;
+        if (OWNERSHIP_ASSERT) {
+            const why = ownershipViolation(step, e, s);
+            if (why) throw new Error(`Decision Ownership: ${why}`);
+        }
+        const entering = e.t === 'scene.entered' && knownAbsentAtStart.has(e.d.id) && !s.scene.present.includes(e.d.id);
+        applyEvent(s, e);
+        if (checked) {
+            const why = effectViolation(step, e, before, stateRegions(s));
+            if (why) throw new Error(`Decision Ownership: ${why}`);
+        }
+        if (entering && s.scene.present.includes(e.d.id) && statusOf(s, e.d.id) !== 'dead') {
+            reenteredNpcs.add(e.d.id);
+            if (!boundAtStart.has(e.d.id)) pulseArrivedNpcs.add(e.d.id);
+        }
+        events.push(e);
+    };
+    const rejected = [];
+    const corrections = [];
+    const system = [];
+    const reject = (d, rule, why) => {
+        // .190 (N2): a refused arrival keeps where the reply claimed he got to, for the player's NOT ARRIVED line
+        const to = d?.type === 'arrive' ? (typeof d.at === 'string' ? d.at : d.at?.new?.name ? { name: String(d.at.new.name).slice(0, 80) } : null) : null;
+        rejected.push({ seq: d?.seq ?? 0, type: d?.type ?? 'expected', rule, why, ...(to ? { to } : {}) });
+        emit({ t: 'delta.rejected', d: { item: d, rule, reason: why } });
+    };
+    // the arrivals of this reply in story order, applied or refused (an escort's readiness, quest.ready below)
+    const travel = [];
+    const refusedArrival = (d) => { if (d?.type === 'arrive') { travel.push({ seq: d.seq ?? 0, ok: false, away: leavesHere(d.at) }); } };
+    const outcome = s.last?.outcome || {};
+    const auth = outcome.auth || {};
+    const stealthGos = (auth.gos || []).filter(g => g.sneak || g.manner?.kind === 'stealth');
+    let stealthGo = null;
+    // Prototype C: the turn the planner read (a story turn: auth.c; a V3-routed one: the outcome's c)
+    const cPath = !!(auth.c || outcome.c);
+    const explicitTravel = cPath && rulesetOf(s) >= 2;
+    // .190: a reply to steps the GO handler decided before .190 (no stored step fields) keeps the Dungeon rules of then
+    // (story-made rooms and ways; an existing campaign's regenerated reply is read as it was planned)
+    const oldSteps = (auth.gos || []).length > 0 && !(auth.gos || []).some((g) => g.mode);
+    const anchored = new Set(); // NPC E3: the anchors this answer set (one per person and trait)
+    const place = (ref) => resolvePlace(s, ref, emit, 0, { c: cPath });
+    // Patch 8 (13A): an arrival at a Dungeon's gate by any of its names (the ruined chapel above the Old Crown Catacombs)
+    // is at the Dungeon itself, its way in: never a room of it, never a new place beside it
+    const arrivalPlace = (ref) => {
+        const gate = cPath ? entranceOf(s, content, ref) : null;
+        if (gate) return { id: gate };
+        // .190 (place book): the known place this turn's GO set off for, told with other words, is that place
+        if (cPath && ref?.new?.name) {
+            const known = resolvePlaceRef(s, { new: { name: ref.new.name } }, { from: s.scene.at });
+            if (known.existing && (auth.gos || []).some((g) => g.to === known.existing)) return { id: known.existing };
+        }
+        // .190 (B1): no level of its own from the reply's words here; a new room's level is the topology's (levelVia
+        // with the Dungeon's levels), a level its name gives that does not exist is refused where it is made
+        return place(ref);
+    };
+    const expected = answer.expected || {};
+    const chronology = new Map(cPath && rulesetOf(s) >= 2 ? sceneIssues(answer, s.scene.at, s, content, explicitTravel).map(x => [answer.deltas[x.index], x.why]) : []);
+    const sceneOf = d => cPath && rulesetOf(s) >= 2 ? d?.scene ?? answer.scene : null;
+    const tag = msg !== null && msg !== undefined ? msg : s.turn;
+
+    // Preserve the historical Rule-1 first-contact exception; Rule 2 checks every reached Dungeon.
+    const livingBefore = new Set(Object.keys(s.dungeons || {}));
+    // Establish the Dungeon already reached; arrivals later in this reply are handled before their creatures below.
+    if (cPath) syncEvents(s, content, emit);
+
+    // 1. authority first: what the story may not decide is never applied
+    const excludedFoes = [];
+    // Build .107 (audit of .106: any non-empty forced_by moved Alaric without a GO): an involuntary relocation stands
+    // only on a narrated clause of the reply that shows it happening (src/v4/narration_evidence.js); else the arrive
+    // has no cause and the firewall's GO rule applies to it. The extractor's delta itself stays as it reported it.
+    const unprovenForced = new Map();
+    // Build .108: it moves Alaric himself, and a destination the sentence tells is the arrival's place (its own name; an
+    // enclosing place only when that is all the story names): the places' recorded names, no reading of the story
+    const placeNames = (ref) => {
+        let id = typeof ref === 'string' ? (ref === 'here' ? s.scene.at : ref) : typeof ref?.new?.parent === 'string' ? ref.new.parent : null;
+        const target = typeof ref === 'string' ? [s.places[id]?.name] : [ref?.new?.name];
+        if (typeof ref === 'string') id = s.places[id]?.parent;
+        const above = [];
+        for (let i = 0; id && s.places[id] && i < 6; i++, id = s.places[id].parent) above.push(s.places[id].name);
+        return { target: target.filter(Boolean), above: above.filter(Boolean) };
+    };
+    if (cPath) for (const d of Array.isArray(answer.deltas) ? answer.deltas : []) {
+        if (d?.type !== 'arrive' || !String(d.forced_by || '').trim()) continue;
+        const ev = forcedRelocation(prose, d.forced_by, { self: [s.entities.pc?.name, 'Alaric'].filter(Boolean), ...placeNames(d.at) });
+        if (!ev.ok) unprovenForced.set(d, ev.why);
+    }
+    const fw = firewall(answer.deltas, { ...firewallContext(s, content, chronicle, excludedFoes), unprovenForced });
+    const privateMode = cPath && rulesetOf(s) >= 2 && privateQuestsOf(s);
+    const acceptanceOnly = privateMode && outcome.resolutions?.length > 0 && outcome.resolutions.every(r => r.type === 'quest.accept');
+    const inventedWorkTime = acceptanceOnly && fw.accept.some(d => d.type === 'quest.close' && d.status === 'completed'
+        && jobOf(s, d.quest) && !jobOf(s, d.quest).work);
+    for (const x of fw.reject) { reject(x.delta, x.rule, x.why); refusedArrival(x.delta); }
+    // Prototype C (4.3.0-c.6.6.3): what of Alaric's the story moved to someone else without his hand-over (quest.ready below)
+    const refusedMoves = new Set(fw.reject.filter((x) => x.rule === 'pc_inventory' && x.delta?.type === 'object.move').map((x) => objectRef(x.delta.object)?.id).filter(Boolean));
+    const acceptedSteps = new Set();
+    const pendingSteps = new Set(); // queued is not yet accepted evidence
+    const settlements = []; // existing delayed quest checks and wages, plus their dependent claims
+    let blockedJobs = new Set();
+    const pendingSeq = seq => [...pendingSteps].some(d => String(d.seq) === String(seq));
+    const deferSettlement = (d, finish, job = null) => {
+        pendingSteps.add(d);
+        settlements.push({ d, finish, job });
+    };
+    const acceptStep = d => {
+        if (!pendingSteps.has(d) && !rejected.some(x => x.seq === d.seq && x.type === d.type)) acceptedSteps.add(String(d.seq));
+    };
+    let refusedScene = false;
+    let sceneUnreached = null; // K6a: the first refused step of a scene not reached (its place then)
+    const sceneMatches = ref => ref === 'here' || samePlace(s, ref, s.scene.at, content);
+    const readied = []; // the contracts this reply made READY (their open deliveries are told after the deltas)
+    // .187 (P2; natural batch 14.11.2026, Warrior #117–#121 on .186: the narrator kept Alaric at the gate the engine had
+    // refused, twice, past "he remains where he was"): the stay is said with its places – where he is, and the place
+    // the reply put him that he never reached, with whoever is there
+    const STAY = 'Alaric did not voluntarily travel in the last reply, and no external event moved him; he remains where he was.';
+    const refusedAt = fw.reject.filter((x) => x.rule === 'no_go').map((x) => x.delta?.at).find(Boolean);
+    // a place he is in already (the town around the hall he stands in) is no place he failed to reach
+    const nested = typeof refusedAt === 'string' && s.places[refusedAt] && lineage(s, s.scene.at).includes(refusedAt);
+    const refusedName = nested ? null : typeof refusedAt === 'string' ? (s.places[refusedAt] ? placeName(s, refusedAt) : null) : refusedAt?.new?.name ? String(refusedAt.new.name).slice(0, 60) : null;
+    corrections.push(...fw.corrections.map((c) => (c === STAY ? `${STAY} He is still at ${placeName(s, s.scene.at)}${refusedName && refusedName !== placeName(s, s.scene.at) ? `; he has not reached ${refusedName}, and what the last reply had happen to him there did not happen` : ''}. The next reply continues at ${placeName(s, s.scene.at)}, whatever the last one told; he gets anywhere else only by going there himself.` : c)));
+    // the other side of a trade the engine books this turn: a sale's buyer, a seller he paid exactly (coin.gift below)
+    const counterparts = new Set([...(outcome.booked?.sellers || []), ...s.decisions.filter((x) => x.kind === 'sale' && x.turn === s.turn).map((x) => x.seller || '*')]);
+    // Build .142: the money ranges of gifts booked in this reply (one handover pays once)
+    const giftRanges = [];
+
+    // 2. world deltas in story order, each against the state at its step
+    const blockedPeople = new Set(); // only a rejected person.new and its dependent claims in this reply
+    // Package C (.132): the refs of a creature.new this reply could not book (and its numbered members): a later hostile,
+    // position, aware, intent or fact under such a ref is refused, never resolved to another creature already here
+    const blockedCreatures = new Set();
+    // natural batch on .191 (Warrior T70): what each refused creature.new was, for a thread that would keep it here
+    const refusedCreatures = fw.reject.filter((x) => x.delta?.type === 'creature.new').map((x) => refusedKind(x.delta));
+    const blockCreature = (d) => {
+        refusedCreatures.push(refusedKind(d));
+        const ref = normText(d?.ref || '');
+        if (!ref) return;
+        blockedCreatures.add(ref);
+        for (let i = 1; i <= Math.min(12, d.count || 1); i++) blockedCreatures.add(`${ref} ${i}`);
+    };
+    const refs = new Map(); // a delta's ref -> the entity it names (person.new, creature.new of this answer)
+    const groups = new Map(); // a creature.new ref with count > 1 -> its individual ids
+    const objectsNew = new Map(); // name -> object id, for object.move {new: name} of this answer
+    // 4.3.0-c.6.6.48 (live 23.10.2026: the stone the shopkeeper pressed into his hand and the stone the purchase booked
+    // were two stones, the bought one without its profile): goods a purchase of this turn booked are the purchase's,
+    // with the offer's profile, in exactly the units paid. The story's hand-over of the same goods by that seller, in
+    // that number, is that purchase and no second thing; a gift, another thing, a part of them or a unit beyond the
+    // paid ones stands as the story has it. Purchases: the one his command booked (offer.accept) and the ones his
+    // decision books on an offer of this answer (offer below); a hand-over told before that offer waits for it
+    const bought = cPath ? (outcome.booked?.goods || []).map((g) => ({ ...g, left: g.units })) : [];
+    const boughtNames = new Set(); // a refused object.new's name: its object.move {new: name} goes with it
+    const deferred = []; // the hand-overs waiting for the offer of this answer that his purchase decision may take
+    const purchaseOf = (name, from, units) => bought.find((g) => g.left > 0 && g.seller === from && g.left === units && sameGoods(name, g.what)) || null;
+    const awaitsPurchase = (name, from, units, seq) => cPath
+        && s.decisions.some((x) => x.kind === 'purchase' && (x.max_cp !== null || x.any_price) && x.at === s.scene.at && (!x.seller || x.seller === from) && sameWant(x.what, name))
+        && fw.accept.some((y) => y.type === 'offer' && (y.seq ?? 0) > (seq ?? 0) && idOf(y.seller) === from
+            && (y.lines || []).some((l) => (l.kind ?? 'goods') === 'goods' && sameGoods(name, l.what) && (Number(l.qty) || 1) === units));
+    const handedBought = (d, g) => {
+        g.left = 0;
+        reject(d, 'engine_booked', `the purchase of ${g.what} from ${entityLabel(s, g.seller)} handed it to him already, with the offer's profile`);
+    };
+    // Patch 7: a feature this answer names (a hazard's on, the obstacle in a way) before reporting it
+    const pendingRefs = [];
+    const hostileRefs = new Set(fw.accept.filter((d) => d.type === 'hostile').flatMap((d) => d.by || []).map((x) => normText(x)));
+    const joinedByNew = new Set();
+    const bornHere = new Set(); // the people and creatures this answer introduces (an ambush is the world's move)
+    // K1 (pilot 01 B1): the creatures this answer bound to the slot DUNGEON AHEAD reserved for THIS turn (living.js
+    // slotForNew, x.ahead.turn): the Dungeon's own foes, governed by its slot and envelope rules, not by PULSE's refusal
+    // of new attackers (PULSE plan C.1, A2 (6)). A slot bound in an earlier turn or any other newcomer is not among them.
+    const aheadBorn = new Set();
+    const aheadSlot = (hit) => {
+        const x = hit ? livingOf(s, hit.root) : null;
+        const a = x?.ahead;
+        return !!a && a.turn === s.turn && a.cycle === x.cycle && [a, a.next].some((y) => y && y.floor === hit.floor && y.slot === hit.slot?.id);
+    };
+    // PULSE package A: this turn's window as the engine decided it (auth.pulse), and the one hostile group it allows
+    const pulse = auth.pulse || null;
+    const pulseHostile = new Set();
+    const namedHere = new Set(); // Patch 4: the creatures an entry of this answer named (new, returning or named again)
+    const cap = s.encounter ? content.rules.time.combat_cap_min : auth.timeCap ?? content.rules.time.default_cap_min;
+    // Prototype C (auth.c): the minutes the engine already booked for this turn's activities count as used; the
+    // extractor's time for the same span is not booked again (its minutes cover the booked ones first)
+    const booked = auth.c ? auth.booked_min || 0 : 0;
+    let bookedLeft = booked;
+    let timeUsed = booked;
+    // .165/.166 (reviews of .164 and .165, P2): a pause the engine cut short (PULSE package C) stays cut short. Time the
+    // reply gives the pause beyond the cut is covered like the booked minutes and never booked. Which part of the
+    // reply's time is the pause's: alone in the message (no other step happened before it), everything beyond the
+    // booked minutes up to the planned length; with another step before it (its time is the story's), what the reply's
+    // own account of the pause (expected.<seq>.minutes, the extractor's per-action answer) claims beyond the cut;
+    // without that account the whole cut-away time, as for a pause alone
+    const pauseCut = auth.c && pulse?.interrupt && !pulse.interrupt.at_end ? pulse.interrupt : null;
+    const cutAway = pauseCut ? Math.max(0, pauseCut.of_min - pauseCut.after_min) : 0;
+    const besideCut = pauseCut && (outcome.resolutions || []).some((r) => r.seq < pauseCut.seq && !['refused', 'clarify', 'pending'].includes(r.status));
+    const pauseTold = pauseCut ? expected[String(pauseCut.seq)]?.minutes : null;
+    let cutLeft = besideCut && Number.isInteger(pauseTold) ? Math.min(cutAway, Math.max(0, pauseTold - pauseCut.after_min)) : cutAway;
+    const startAt = s.scene.at;
+    let arrived = null;
+    let stealthAt = null; // actual voluntary arrival of this GO, never a forced relocation
+    let arrivedHall = null;
+    let sceneEpoch = 0;
+    const deskWitnesses = [];
+    const metDone = new Set(); // NPC E2-A: the GO steps whose met was decided
+    const metEntered = new Set(); // NPC E2-A: who a met of this reply brought in (an enter of them adds nothing)
+    const arrivals = new Set();
+    const arrivalManner = () => {
+        const reached = g => (g.to && arrivals.has(g.to)) || (g.intent && s.intents[g.intent]?.status === 'done')
+            || (!g.to && g.newName && arrivals.has(placeIdentity(s, { new: { name: g.newName, kind: 'site' } })));
+        const all = auth.gos || [];
+        const lastReached = all.findLastIndex(reached);
+        return stealthGos.findLast(g => lastReached <= all.indexOf(g)
+            && (g.manner?.scope === 'destination' ? reached(g) : all.length === 1 || reached(g))) || null;
+    };
+    let freshPart = null; // Patch 8: the new part of a Living Dungeon this reply brought him into
+    const conditionals = (outcome.conditionals || []).map((c) => ({ ...c, done: false }));
+    const idOf = (ref) => {
+        if (ref === null || ref === undefined || typeof ref !== 'string') return null;
+        const k = normText(ref);
+        if (refs.has(k)) return refs.get(k);
+        if (s.entities[ref]) return ref;
+        const hit = makeResolver(s, new Map(), content)(ref);
+        if (hit) return hit;
+        // a ref in the vocabulary's own form for a known person ("person.aldsa_corren" for Aldsa, live 30.09.2026)
+        const bare = ref.replace(/^(?:person|npc|creature|mon)\./i, '');
+        const named = bare !== ref ? makeResolver(s, new Map(), content)(bare) : null;
+        if (named && named !== 'pc') return named;
+        // "the same clerk", "the clerk": the one person here (or met at this place) whose role names that word. Only a
+        // short reference is a person; a description ("a squat former tollhouse at the landward end of the Walk") is
+        // text, never the clerk whose role ends "at the Walk" (live 30.09.2026 14:56)
+        const short = k.replace(/^(?:the |a |an )?(?:same |other |first |second )?/, '').split(' ').filter(Boolean);
+        if (!short.length || short.length > 3 || short.some((w) => RELATION_WORDS.has(w))) return null;
+        const last = short.at(-1);
+        if (last.length < 3) return null;
+        const head = (x) => { const w = normText(x).split(' '); const end = w.findIndex((y) => RELATION_WORDS.has(y)); return (end < 0 ? w : w.slice(0, end)).at(-1); };
+        const local = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.status !== 'dead' && (s.scene.present.includes(e.id) || (e.location === s.scene.location && (!e.at || e.at === s.scene.at)))
+            && [...(e.descriptors || []), truth(s, e.id, 'occupation')[0]?.o].filter(Boolean).some((x) => head(x) === last));
+        if (local.length === 1) return local[0].id;
+        return ownNamed(ref);
+    };
+    // 4.3.0-c.6.6.48 (live 23.10.2026: the shopkeeper met without a name, stored by the story's handle
+    // "npc.drossell_shopkeeper", sold nothing as "Drossell" and was then made a second person of that name): a proper
+    // name is the one person here whose own identity holds it as a word, their name or the handle the story gave them;
+    // never the only merchant or the only person here by default, and with two such people no one
+    const ownNamed = (ref) => {
+        const word = typeof ref === 'string' ? normText(ref.trim()) : '';
+        if (!cPath || !/^[a-z][a-z'\u2019-]{2,}$/.test(word) || HANDLE_PREFIX.has(word)) return null;
+        const own = (e) => [e.name, ...(e.descriptors || []).filter((x) => /^[a-z0-9_.]+$/.test(x) && /[._]/.test(x))].filter(Boolean)
+            .flatMap((x) => normText(x).split(/[^a-z0-9]+/));
+        const named = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.status !== 'dead' && s.scene.present.includes(e.id) && own(e).includes(word));
+        return named.length === 1 ? named[0].id : null;
+    };
+    const personalLabels = who => {
+        const name=s.entities[who]?.name;
+        if (!name) return personLabels(who);
+        const first=name.split(/\s+/)[0];
+        const unique=Object.values(s.entities).filter(e=>e.kind === 'npc' && e.name?.split(/\s+/)[0] === first).length === 1;
+        return unique ? [name,first] : [name];
+    };
+    const mapRef = (ref) => (typeof ref === 'string' ? idOf(ref) || ref : ref);
+    // Build .107 (audit of .106: enter, position and aware brought any known living person into the scene, also one
+    // last seen in another town): a known person who is neither here nor recorded at this place arrives only by enter
+    // with a narrated clause of the reply; NPCs travel on their own, so no distance rule. Creatures keep their rules
+    // (a returning beast, reinforcements); Ruleset 1 and V3 are unchanged.
+    const absentKnown = (id) => cPath && rulesetOf(s) >= 2 && id !== 'pc' && s.entities[id]?.kind === 'npc'
+        && !s.scene.present.includes(id) && s.entities[id].at !== s.scene.at && statusOf(s, id) !== 'dead';
+    const personLabels = (id) => {
+        const e = s.entities[id] || {};
+        const names = [e.name, e.known_name].filter(x => typeof x === 'string' && x.trim());
+        // As in makeResolver, one word of a known name can identify its owner. Arrival evidence must also be
+        // unambiguous among absent people: never borrow the shared "Marla" of two different known persons.
+        const others = new Set(Object.values(s.entities).filter(x => ['npc', 'pc'].includes(x.kind) && x.id !== id)
+            .flatMap(x => [x.name, x.known_name].filter(Boolean).flatMap(name => normText(name).split(' '))));
+        const short = names.flatMap(name => normText(name).split(' ')).filter(word => word.length >= 3 && !others.has(word));
+        return [...names, ...short, truth(s, id, 'occupation')[0]?.o, e.role, ...(e.descriptors || [])].filter((x) => typeof x === 'string' && x.trim());
+    };
+    const notBroughtIn = (d, ids) => {
+        const away = ids.filter(absentKnown);
+        if (away.length) reject({ ...d, who: away.length === ids.length ? d.who : away }, 'npc_presence', `${away.join(', ')} ${away.length > 1 ? 'are' : 'is'} not in the scene; ${d.type} describes someone present (an arrival is enter with the reply's words for it)`);
+        return ids.filter((id) => !away.includes(id));
+    };
+    // Concrete entity handles must resolve to real entities; ordinary narrative
+    // phrases remain free text. A rejected person.named must not leave a ghost fact.
+    const missingEntityRef = ref => typeof ref === 'string' && (/^(?:npc|mon)\./i.test(ref) ? !s.entities[ref]
+        : /^loc\.[\w.]+$/i.test(ref) && !s.places[ref] && !content.locations.has(ref));
+    // Patch 4 (live 18.10.2026: "the two survivors ... calling the rest of the pack in"): a group the story names as a
+    // whole, by its ref or as a plural kind or collective; Patch 7.2B: resolved in src/v4/identity.js, which also says
+    // whether the delta means all of it (scope)
+    const members = (ref) => groupMembers(s, content, ref, { groups, refs });
+    const groupWords = (ref) => groupWordsOf(s, content, ref, { refs });
+    // Patch 7.2B: whom a delta's reference means, with the cardinality the delta gives a group's ref (scope): one entity,
+    // every member of one group (scope all), or no one the engine can tell apart (a group's ref without scope all, "three
+    // of the twelve"). Unclear is rejected with its reason; the caller decides whether the narrator hears of it
+    const whoOf = (d, ref) => {
+        const r = resolveRef(s, content, ref, { scope: d.scope ?? null, evidence: d.evidence ?? null, prose, groups, refs, single: mapRef });
+        if (r.kind === 'unclear') reject({ ...d, ref }, 'group_unclear', r.why);
+        return r;
+    };
+    // Patch 7.2C: a story store (memory, thread, quest note) keeps no death of a fight the engine has not booked as the
+    // world's truth: those clauses go, the rest stays, the narrator hears the engine's count once
+    const trueDeaths = (text) => {
+        const cut = stripFalseDeaths(combatTruth(s, content, chronicle, excludedFoes), text);
+        for (const x of cut.refused) if (!corrections.includes(x.correction)) corrections.push(x.correction);
+        return cut;
+    };
+    const unbooked = (ref, why) => {
+        const correction = `The attack of "${String(ref).slice(0, 60)}" in the last reply was not booked: ${why}. Only those the engine has fighting attack and deal damage; name each attacker by its handle, or show the whole group attacking together.`;
+        if (!corrections.includes(correction)) corrections.push(correction);
+    };
+    // whom this reply establishes as not having noticed Alaric (aware: unaware), whatever step of it reports that: they do
+    // not see him at an earlier step either (perceiveAll)
+    let stealthSettled = false;
+    const seeing = () => ({ unaware: new Set([
+        ...(!stealthSettled && stealthGo && stealthAt === s.scene.at ? s.scene.present : []),
+        ...(!stealthSettled ? fw.accept || [] : []).filter((d) => d?.type === 'aware' && d.level === 'unaware').flatMap((d) => resolveRef(s, content, d.who, { scope: d.scope ?? null, evidence: d.evidence ?? null, prose, groups, refs, single: mapRef }).ids).filter((x) => typeof x === 'string'),
+    ]) });
+    // the World Envelope at this step (docs/ARCHITECTURE_GEN35.md §2.3): may this actor turn on Alaric of its own accord?
+    const envelopeAllows = (id, d) => {
+        if (typeof id !== 'string' || !s.entities[id] || !['npc', 'creature'].includes(s.entities[id].kind)) { grant('envelope.fight'); return true; } // the V3 rules refuse unknown attackers
+        // PULSE package A (src/v4/pulse.js, plan §6 A): in a turn PULSE governs, nobody the reply brings in turns on him
+        // unless the turn's window is open for DANGER (then one group) - on a leg as anywhere else. First the contact he
+        // actively sought this turn (an authorized GO or a successful search, §5.8), at the place he actually reached:
+        // it follows the envelope as ever, before any road or window rule. Whoever was there before is not touched.
+        if (pulse?.governs && (bornHere.has(id) || pulseArrivedNpcs.has(id)) && !s.encounter && !aheadBorn.has(id)) {
+            if (!soughtMatch(s, content, [...(pulse.sought || []), ...(pulse.hunts || [])], id)) {
+                const g = s.entities[id].group || (s.entities[id].kind === 'npc' ? 'people' : id);
+                if (!(pulse.open && pulse.kind === 'danger' && (!pulseHostile.size || pulseHostile.has(g)))) {
+                    const travel = pulse.exposure === 'travel';
+                    const why = pulse.open && pulse.kind === 'danger' ? 'only one hostile group was authorized' : travel ? 'this leg of the road was uneventful' : 'no new attacker was authorized in this scene';
+                    reject(d, travel ? 'road' : 'pulse', `${id} does not turn on Alaric: ${why}`);
+                    const correction = travel && !pulse.open
+                        ? `${entityLabel(s, id)} did not attack Alaric in the last reply: that leg of his journey was uneventful (no ambush or attack on it); no fight started. Whoever the story brought onto the road is there, nothing more.`
+                        : `${entityLabel(s, id)} did not attack Alaric in the last reply: ${why} (the engine's PULSE); no fight started. Whoever the story brought in is there, nothing more; a threat or a demand leaves his choice open.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    return false;
+                }
+                pulseHostile.add(g);
+            }
+        } else if (!pulse?.governs && auth.road === 'quiet' && bornHere.has(id) && !s.encounter) {
+            // Patch 5 (older campaigns, commands.js roadLine): on a leg the engine gave as uneventful nobody the reply
+            // brings onto the road ambushes him; whoever was there before follows the envelope as ever
+            reject(d, 'road', `${id} does not turn on Alaric: this leg of the road was uneventful`);
+            const correction = `${entityLabel(s, id)} did not attack Alaric in the last reply: that leg of his journey was uneventful (no ambush or attack on it); no fight started. Whoever the story brought onto the road is there, nothing more.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+            return false;
+        }
+        const v = mayOpenFight(s, content, id, { newInAnswer: bornHere.has(id), c: cPath });
+        if (v.ok) {
+            const actor = s.entities[id];
+            const aliases = [actor.name, sceneHandle(s, content, id), ...[...refs].filter(([, who]) => who === id).map(([ref]) => ref)];
+            if (!actor.name || actor.kind === 'creature') {
+                const anchor = content.anchors.get(actor.anchor || actor.profile?.anchor);
+                aliases.push(actor.species, actor.descriptors?.[0], ...(anchor?.aliases || []));
+                const kind = actor.species?.split(/\s+/).at(-1);
+                if (kind) aliases.push(kind, `${kind}s`);
+                for (const desc of actor.descriptors || []) if (/^[a-z]+(?:_[a-z]+)+$/i.test(desc)) aliases.push(desc.replace(/_/g, ' '), desc.split('_').at(-1));
+                if (actor.group) aliases.push(actor.group.split(/[._\s]/).at(-1));
+                for (const [ref, ids] of groups) if (ids.includes(id)) aliases.push(ref.replace(/^[a-z]+\./, '').replace(/_/g, ' '));
+                // A collective noun still goes through the existing group identity/scope gate first.
+                if (actor.group) aliases.push(...GROUP_WORDS);
+            }
+            const otherActors = s.scene.present.filter((who) => who !== id && who !== 'pc').flatMap((who) => [s.entities[who]?.name, sceneHandle(s, content, who)]).filter(Boolean);
+            if (!attackCommitted(prose, d.evidence, aliases, otherActors)) {
+                reject(d, 'attack_commitment', `${id}: no immediate attack established in this reply`);
+                const correction = `${entityLabel(s, id)} has not committed an attack. Threats, demands and raised weapons leave negotiation and Alaric's next choice open; no First Strike or damage was booked.`;
+                if (!corrections.includes(correction)) corrections.push(correction);
+                return false;
+            }
+            grant('envelope.fight'); return true;
+        }
+        const label = entityLabel(s, id);
+        reject(d, 'envelope', `${id} does not turn on Alaric: ${v.why}`);
+        const correction = `${label} did not turn on Alaric in the last reply (${v.why}); no fight started. ${v.rule === 'provoked_only' ? 'Only a cause the story establishes first (an insult, a threat, harm) turns them against him.' : 'An animal like this one attacks only when cornered or within reach.'}`;
+        if (!corrections.includes(correction)) corrections.push(correction);
+        return false;
+    };
+    let calls = 0;
+    const v3 = (report, d) => {
+        calls += 1;
+        const r = reportToEvents(report, s, content, { msg, prose, idTag: `d${d?.seq ?? 0}${calls > 1 ? `_${calls}` : ''}` });
+        r.events.forEach(emit);
+        for (const x of r.rejected) reject(d, 'world_rule', x.reason);
+        return r;
+    };
+    // Is a group the target of an active ATTACK/DEFEAT objective? By the kind the objective names, never by the body
+    // plan alone (review of 4.1.0: the deer plan's alias "goat" made a flock of sheep the targets of a wild-goat job):
+    // the group's species names the objective's creature or the objective names the group's ("giant rats" ~ "rats",
+    // "swarm of rats" ~ "rats"), or the objective names the body plan's whole kind ("the vermin in the cellar": rats).
+    const hunted = (d, anchor) => Object.values(s.quests).filter((q) => q.status === 'active')
+        .flatMap((q) => (q.objectives || []).filter((o) => o.verb === 'ATTACK' || o.verb === 'DEFEAT'))
+        .some((o) => namesKind(o.what, d.species, anchor, cPath ? sameKinds(content) : null));
+    // Patch 5: a living creature he left at this very place a short while ago (entity.left; the wary span of Patch 4), or,
+    // on the open road, in this very reply (the stretch he just walked on from); anywhere else it is gone from his way
+    const nearby = (e) => e.kind === 'creature' && statusOf(s, e.id) !== 'dead' && !s.scene.present.includes(e.id) && !!e.left && e.left.at === s.scene.at
+        && (e.left.leg ? e.left.turn === s.turn : s.clock.minute - (e.left.minute ?? 0) <= (content.rules.combat?.wary_min ?? 360));
+    const kindOk = (d) => !!String(d.name || d.feature || '').trim() && ['obstacle', 'hazard'].includes(d.kind);
+    // a ref the V3 rules resolve to a creature that is not here (dead, or left elsewhere)
+    const takenRef = (ref) => { const id = makeResolver(s, new Map(), content)(ref); return !!id && s.entities[id]?.kind === 'creature'; };
+    const absentRef = (ref) => { const id = makeResolver(s, new Map(), content)(ref); return !!id && s.entities[id]?.kind === 'creature' && !s.scene.present.includes(id); };
+    // K8 (pilot 01 B11, .177): a name fact of a person whose value is Alaric's own name (T16: learn with the carter as
+    // its subject, "name = Alaric Red") is a mixed-up subject, never their name
+    const pcNameOnNpc = (subject, p, o) => {
+        if (typeof subject !== 'string' || subject === 'pc' || s.entities[subject]?.kind !== 'npc' || typeof o !== 'string') return false;
+        if (!/^(?:name|named|known[ _]?name|true[ _]?name|full[ _]?name)$/i.test(String(p || '').trim())) return false;
+        const value = ` ${normText(o)} `;
+        const pcName = String(s.entities.pc?.name || '').trim();
+        return [pcName, pcName.split(/\s+/)[0]].filter((n) => n.length >= 3).some((n) => value.includes(` ${normText(n)} `));
+    };
+    const newEntity = (d, kind, { slot = null } = {}) => {
+        // Patch 8 (src/v4/living.js): a creature of an encounter the engine placed ahead is that encounter, its slot of
+        // this cycle (its ref, else its kind where he went on); one of a slot already resolved (the boss he killed) is
+        // not brought back by the story
+        // 4.3.0-c.6.6.24 (livetest 21.10.2026: "restless skeleton" on the rat body plan, Bite and pelts): a species the
+        // content names by one of its body plan's own words ("skeleton") is that body plan, whatever anchor came with it,
+        // unless the given anchor's words name the species too
+        // Package C (.132): on the planner path every new creature states its population (or independent) and its life
+        // stage; World validates them at the place of the event (a remote sighting: the place its scene names, else
+        // none) by the parser's rule, after the one repair the parser could ask for. A creature whose statement is
+        // still invalid is not booked, and neither is anything said under its ref later in this reply
+        let contract = null;
+        if (kind === 'creature' && cPath && rulesetOf(s) >= 2) {
+            const named = d.scene != null && d.scene !== 'here' ? placeKey(s, d.scene, content) : null;
+            const at = d.present === false ? (s.places[named] ? named : null) : s.scene.at;
+            contract = creatureContract(s, content, at, d);
+            if (contract.why) {
+                reject(d, 'population', contract.why);
+                blockCreature(d);
+                const fix = `The ${d.species || d.ref} of the last reply ${(d.count || 1) > 1 ? 'were' : 'was'} not booked: the engine could not tell which population ${(d.count || 1) > 1 ? 'they belong' : 'it belongs'} to or how old ${(d.count || 1) > 1 ? 'they are' : 'it is'}. Nothing of ${(d.count || 1) > 1 ? 'them' : 'it'} acts, attacks or can be fought until the story establishes ${(d.count || 1) > 1 ? 'them' : 'it'} again.`;
+                if (!corrections.includes(fix)) corrections.push(fix);
+                return [];
+            }
+            const anchor = contract.anchor ? content.anchors.get(contract.anchor) : speciesAnchor(content, d.species, d.anchor);
+            if (anchor) d = { ...d, anchor: anchor.id };
+        } else if (kind === 'creature' && d.species) {
+            const population = !trueDungeonOf(s, s.scene.at) && d.present !== false
+                ? populationAt(s, s.scene.at, d, content, { matchAnchor: false }) : null;
+            const anchor = population ? content.anchors.get(population.population.anchor) : speciesAnchor(content, d.species, d.anchor);
+            if (anchor) d = { ...d, anchor: anchor.id };
+        } else if (kind === 'creature' && d.species) {
+            const named = anchorFor(content, d.species);
+            const given = content.anchors.get(d.anchor);
+            // Patch 8: the more specific name decides ("goblin shaman" is the caster, not the goblin its words also name)
+            const said = (a) => Math.max(0, ...a.aliases.filter((x) => anchorFor({ anchorAliases: [[normText(x), a.id]], anchors: content.anchors }, d.species)).map((x) => normText(x).length));
+            const fits = given && named && said(given) >= said(named);
+            if (named && named.id !== d.anchor && !fits) d = { ...d, anchor: named.id };
+        }
+        let hit = slot;
+        if (cPath && kind === 'creature' && !hit) {
+            // An earlier arrival/classification in this reply may have reached a fresh Dungeon.
+            // Fix its population before slot matching or combat materialisation, including at its gate.
+            const dungeon = trueDungeonOf(s, s.scene.at);
+            if (rulesetOf(s) >= 2 && dungeon && !livingOf(s, dungeon)) {
+                const previousStep = step;
+                step = { kind: 'engine' };
+                for (const e of establishEvents(s, content, dungeon)) emit(e);
+                step = previousStep;
+            }
+            const dead = resolvedSlotNamed(s, d);
+            if (dead) {
+                reject(d, 'dungeon_slot', `${dead.slot.name || dead.slot.species} of this cycle is already defeated; it stays so until the Dungeon renews`);
+                blockCreature(d);
+                const fix = `${dead.slot.name ? dead.slot.name : `The ${dead.slot.species}s`} of level ${dead.floor} ${dead.slot.count > 1 ? 'are' : 'is'} defeated (the engine's); nothing takes ${dead.slot.count > 1 ? 'their' : 'its'} place until the Dungeon renews.`;
+                if (!corrections.includes(fix)) corrections.push(fix);
+                return [];
+            }
+            hit = slotForNew(s, content, d, s.scene.at, prose);
+            if (hit?.existing) {
+                const ids = hit.slot.entities.filter((id) => s.entities[id]?.status !== 'dead');
+                if (d.present === false) {
+                    for (const id of ids) namedHere.add(id);
+                    if (ids.length) refs.set(normText(d.ref), ids[0]);
+                    if (ids.length > 1) groups.set(normText(d.ref), ids);
+                    return ids;
+                }
+                const here = ids.filter((id) => {
+                    if (s.scene.present.includes(id)) return true; // an explicit enter/arrival already moved it
+                    const e = s.entities[id];
+                    const at = e.left?.at || e.at || hit.slot.at;
+                    if (at && at !== s.scene.at) {
+                        reject(d, 'dungeon_presence', `${id} remains at ${at || 'its last known room'}; a story reference alone does not move it`);
+                        const fix = `${entityLabel(s, id)} was not brought into this room. It remains at its last booked location unless an actual entrance or arrival establishes its movement.`;
+                        if (!corrections.includes(fix)) corrections.push(fix);
+                        return false;
+                    }
+                    emit({ t: 'scene.entered', d: { id, band: d.band || 'MEDIUM' } });
+                    return true;
+                });
+                if (here.length) {
+                    if (!hit.slot.at) { grant('dungeon.slot'); for (const e of slotEntityEvents(s, content, hit, ids, s.scene.at)) emit(e); }
+                    for (const id of here) materialise(s, content, dice, emit, id);
+                    refs.set(normText(d.ref), here[0]);
+                    if (here.length > 1) groups.set(normText(d.ref), here);
+                }
+                return here;
+            }
+            // Patch 8.4.1 (live 22.10.2026 05:43, turn 16: a search's SUCCESS on level 1 of the Old Crown Catacombs, a
+            // "robed waiting thing" the reply brought that was no encounter of the level; its fight gave 13 XP and level
+            // 2): inside a Living Dungeon only the engine adds the foes (its encounters, placed ahead and filled here). A
+            // creature the reply brings there that fills none is no foe of the world: no entity, so no fight, no XP, no
+            // loot and no progress. One the story shows as no foe (threat: false: a bat, rats in the dust) stays a
+            // creature as before, and so does every creature outside a Living Dungeon.
+            const root = !hit && d.threat !== false ? trueDungeonOf(s, s.scene.at) : null;
+            // 4.3.0-c.6.6.53 (live 23.10.2026 20:56: the entry not read, three goblins of the Mossback Warrens the next
+            // reply brought before its gate were booked at Level 5, outside its encounters): at its root too, a creature
+            // of the Dungeon's own kinds (its slots' anchors and species) is none of the world's; any other stays
+            if (root && (rulesetOf(s) >= 2 || livingBefore.has(root)) && livingOf(s, root) && (insideOf(s, root) || (s.scene.at === root && dungeonKind(livingOf(s, root), d)))) {
+                const name = s.places[root]?.name || root;
+                excludedFoes.push({ ref: d.ref, species: d.species, count: d.count });
+                reject(d, 'dungeon_foe', `only the engine adds the foes of ${name}: ${d.species || d.ref} is no encounter of this level`);
+                blockCreature(d);
+                const fix = `The ${d.species || d.ref} of the last reply is no foe here: in ${name} only the engine adds foes (its DUNGEON lines). It is not there as one: nothing of it acts, attacks or can be fought. Its imagined keys add no gate requirement; use the existing Dungeon seal and booked objects.`;
+                if (!corrections.includes(fix)) corrections.push(fix);
+                return [];
+            }
+        }
+        if (hit) d = { ...d, ref: hit.slot.ref, species: hit.slot.species, anchor: hit.slot.anchor, count: hit.slot.count, stronger: null, more: true };
+        // A large group of skittish animals (their body-plan's temperament: a flock, a herd, a flight of birds) that nobody
+        // set on Alaric is the scene's background, one fact, not a dozen combat profiles (live 30.09.2026: twelve penned
+        // sheep). A pack of aggressive, defensive or cautious creatures stays individual, whatever its size, and so do
+        // the animals an active contract is to attack or defeat (the rats of a cellar job); one animal singled out later
+        // is a creature.new of its own.
+        const anchor = kind === 'creature' ? content.anchors.get(d.anchor) : null;
+        // 4.3.0-c.6.6.24: on the planner path a background group is one the reply shows as no foe (threat: false), not one
+        // of a "skittish" body plan
+        const background = cPath ? d.threat === false : anchor?.temperament === 'skittish';
+        if (background && d.count > 4 && !hunted(d, anchor) && !s.encounter && !hostileRefs.has(normText(d.ref))) {
+            setFactEvents(s, { s: s.scene.at, p: 'background_fauna', o: `${d.count} ${d.species}`, source: { kind: 'narration', msg }, importance: 0.3 }).forEach(emit);
+            return [];
+        }
+        // One animal of a kind that left this area alive, and no other of its kind: the story shows it coming back, not
+        // a second one (live 30.09.2026 14:56: the big bog strider withdrew into the reeds and returned as "Bog
+        // Strider D" while the first stayed alive in the state). Two or more such animals stay a question for the story.
+        // Patch 5 (review of c.6.6.13): "this area" is the very place it was left at (entity.left), never the settlement or
+        // realm it shares with another place (the wolf of one cave is not the wolf of the next cave in Duskreach); at a
+        // place of its own it is still there later (Patch 4: the quarry wolf after hours), on the open road only nearby
+        const leftHere = (e) => e.kind === 'creature' && statusOf(s, e.id) !== 'dead' && !s.scene.present.includes(e.id) && e.left?.at === s.scene.at
+            && (s.places[s.scene.at]?.kind === 'realm' ? nearby(e) : true);
+        // Patch 6 (the Patch 5 edge): "another one" (more true) is never the one he left here
+        if (kind === 'creature' && (d.count || 1) === 1 && d.present !== false && d.more !== true) {
+            const same = Object.values(s.entities).filter((e) => leftHere(e)
+                && normText(e.species || '') === normText(d.species || '') && (e.anchor || e.profile?.anchor) === d.anchor);
+            // a stronger one than the ordinary one that left, whose numbers are fixed, is another individual (review of
+            // 4.1.5: the returning path skipped the variation); one not yet fixed is this one, shown stronger now
+            const other = same.length === 1 && d.stronger === true && same[0].variation !== 'strong' && !!same[0].profile;
+            if (same.length === 1 && !other) {
+                emit({ t: 'scene.entered', d: { id: same[0].id, band: d.band || 'MEDIUM' } });
+                refs.set(normText(d.ref), same[0].id);
+                if (d.stronger === true && same[0].variation !== 'strong') emit({ t: 'entity.updated', d: { id: same[0].id, set: { variation: 'strong' } } });
+                if (!same[0].profile) materialise(s, content, dice, emit, same[0].id);
+                namedHere.add(same[0].id);
+                return [same[0].id];
+            }
+        }
+        const before = new Set(Object.keys(s.entities));
+        const entries = [];
+        const count = kind === 'creature' ? Math.max(1, Math.min(12, d.count || 1)) : 1;
+        // Patch 4 (live 18.10.2026: the quarry wolves, named again as a group of four, would have been four more): the
+        // creatures of this kind already here are the ones the reply names again, the same individuals with their HP,
+        // places and letters; only those beyond them are new. One that joins a running fight (hostile in this reply)
+        // is a new one, and so is a stronger individual among ordinary ones, and so are those another entry of this same
+        // reply introduced (the strider by the mound and the two flankers of one reply are three, live 30.09.2026)
+        const anchorOf = (e) => e.anchor || e.profile?.anchor;
+        const here = kind === 'creature' && d.present !== false && !(s.encounter && hostileRefs.has(normText(d.ref)))
+            ? s.scene.present.filter((id) => {
+                const e = s.entities[id];
+                // the same kind by the same name: "a big boar" among wild boars is another animal (4.1.5)
+                return e?.kind === 'creature' && !namedHere.has(id) && statusOf(s, id) !== 'dead' && anchorOf(e) === d.anchor && normText(e.species || '') === normText(d.species || '');
+            }) : [];
+        // review of c.6.6.12: which of them the reply means is the extractor's to say, never the engine's guess by kind. A
+        // group here is named by its ref (the catalog's "group ..."): with more false or null those are that group named
+        // again (only the ones beyond them are new), with more true they are newcomers who join it. Under any other ref:
+        // more true is a group of their own; more false is those here only when they are one group (two packs of wolves:
+        // which?); null is unclear. Unclear: nothing is merged, picked or doubled, the story is told
+        const own = here.filter((id) => s.entities[id].group === normText(d.ref));
+        const sets = new Set(here.map((id) => s.entities[id].group || id));
+        const unclear = here.length && !own.length && (d.more === false ? sets.size > 1 : d.more !== true);
+        if (unclear) {
+            const which = d.more === false ? 'which of the groups here they are' : 'whether they are those already here or others';
+            reject(d, 'group_unclear', `${count} ${d.species}: the reply does not say ${which} (a group's ref, or more)`);
+            blockCreature(d);
+            const correction = `The engine holds ${here.map((id) => sceneHandle(s, content, id)).join(', ')} here; the ${count > 1 ? `${count} ` : ''}${d.species} of the last reply ${count > 1 ? 'were' : 'was'} not added: it could not tell ${which}. If others came, the story shows them arriving; if not, it names those here.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+            return [];
+        }
+        // Patch 5: none of this kind here, but a group of it he left at this very place a short while ago (nearby): the
+        // story showing that kind here again means them, hurt as they were, never unhurt copies; only those beyond them
+        // are new. Fewer than they are, or two groups of them: which is the story's to say, nothing is picked
+        const back = kind === 'creature' && !here.length && d.present !== false && d.more !== true && !(s.encounter && hostileRefs.has(normText(d.ref)))
+            ? Object.values(s.entities).filter((e) => nearby(e) && anchorOf(e) === d.anchor && normText(e.species || '') === normText(d.species || '')).map((e) => e.id) : [];
+        if (back.length && (count < back.length || new Set(back.map((id) => s.entities[id].group || id)).size > 1)) {
+            reject(d, 'group_unclear', `${count} ${d.species}: ${back.length} of this kind were left here a short while ago; the reply does not say which`);
+            blockCreature(d);
+            const correction = `${back.map((id) => sceneHandle(s, content, id)).join(', ')} ${back.length > 1 ? 'were' : 'was'} left here a short while ago; the ${count > 1 ? `${count} ` : ''}${d.species} of the last reply ${count > 1 ? 'were' : 'was'} not added: the engine could not tell which of them ${count > 1 ? 'they are' : 'it is'}. If the story shows them again, it shows all of them; if others came, they are others.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+            return [];
+        }
+        const pool = own.length ? (d.more === true ? [] : own) : here.length ? (d.more === false ? here : []) : back;
+        const again = d.stronger === true && !pool.some((id) => s.entities[id].variation === 'strong') ? [] : pool.slice(0, count);
+        for (const id of again.filter((x) => !s.scene.present.includes(x))) emit({ t: 'scene.entered', d: { id, band: d.band || 'MEDIUM' } });
+        for (let i = again.length + 1; i <= count; i++) {
+            // a newcomer to a group here is one animal of it, numbered after its members ("cre.quarry_pack 5"), never the
+            // group's own ref (that would be the whole pack held as one creature, src/delta.js isGroupCreature)
+            let ref = own.length ? `${d.ref} ${own.length + i - again.length}` : count > 1 ? `${d.ref} ${i}` : d.ref;
+            // Patch 5: a newcomer's ref is its own, never one an earlier creature of that name had (a dead wolf of the
+            // last pack, one left far behind): the V3 rules would take it for that one, and the newcomer would be lost
+            // Patch 7.2B (live Glimmerdeep: the twelfth beetle of a swarm of eleven living, one dead, was numbered 12, the ref
+            // of beetle L, and taken for it): a ref the engine numbers for a newcomer names no creature that exists at all
+            const numbered = own.length > 0 || count > 1;
+            for (let n = count + 1; kind === 'creature' && n < count + 64 && (entries.some((x) => normText(x.ref) === normText(ref)) || (numbered ? takenRef(ref) : absentRef(ref))); n++) ref = `${d.ref} ${n}`;
+            entries.push(kind === 'npc'
+                ? { ref, kind: 'npc', name: d.name || undefined, anonymous: !d.name, desc: [...(d.role ? [d.role] : []), ...(d.desc || [])], traits: (d.desc || []).join(', '), band: d.band || undefined }
+                : { ref, present: d.present !== false, kind: 'creature', name: undefined, species: d.species, anchor: d.anchor, desc: d.desc || [], band: d.band || undefined });
+        }
+        const joins = kind === 'creature' && d.present !== false && s.encounter && hostileRefs.has(normText(d.ref));
+        if (joins) grant('envelope.fight'); // introduced by this reply: an ambush or a reinforcement is the world's move
+        const r = entries.length ? v3({ new: entries, ...(joins ? { combat: entries.map((e) => ({ by: e.ref })) } : {}) }, d) : { events: [], accepted: [] };
+        if (joins) joinedByNew.add(normText(d.ref));
+        const created = r.events.filter((e) => e.t === 'entity.created').map((e) => e.d.entity.id).filter((id) => !before.has(id));
+        if (d.present !== false) for (const id of created) bornHere.add(id);
+        const known = r.accepted.map((a) => /^known (\S+) \(not duplicated\)$/.exec(a)?.[1]).filter(Boolean);
+        const ids = [...again, ...created, ...known];
+        // Package C: the validated membership and life stage, fixed with the individual and independent of its level
+        if (contract) for (const id of created) emit({ t: 'entity.updated', d: { id, set: { life_stage: contract.life_stage || 'adult', ...(contract.population ? { population_at: contract.population } : {}) } } });
+        // the members of a group keep its name (the ref the story gave them), so a later "the quarry pack" means them; one
+        // that joins those already here joins their group (review of c.6.6.12: the fifth wolf under the ref "wolves" is
+        // of the quarry pack); a group of others never takes the name of a group already here
+        // a newcomer named under a group's ref joins that group (the fifth wolf of "cre.quarry_pack", count 1, more true)
+        const joined = own.length ? [normText(d.ref)] : [...new Set(again.map((id) => s.entities[id].group).filter(Boolean))];
+        const taken = new Set(Object.values(s.entities).map((e) => e.group).filter(Boolean));
+        let name = normText(d.ref);
+        // Patch 5: nor the name of a group met before elsewhere (the dead pack of the last stretch of road)
+        if (d.more === true || !joined.length) for (let n = 2; taken.has(name); n++) name = `${normText(d.ref)} ${n}`;
+        const group = joined.length === 1 ? joined[0] : name;
+        if (count > 1 || joined.length === 1) for (const id of [...again.filter((x) => !s.entities[x].group), ...created]) emit({ t: 'entity.updated', d: { id, set: { group } } });
+        // final review of Patch 7.1: the knot they stand in only when the reply shows them packed close (cluster); a group
+        // brought in together is one group, not one knot (src/v4/scene_handles.js clusterOf); "apart" is none (src/delta.js)
+        const knot = typeof d.cluster === 'string' && d.cluster.trim() ? d.cluster : null;
+        if (knot) {
+            const placed = ids.filter((id) => s.scene.present.includes(id) && s.scene.positions?.[id] && !s.encounter?.combatants?.[id]);
+            if (placed.length) v3({ position: placed.map((who) => ({ who, band: s.scene.positions[who].band, cover: s.scene.positions[who].cover || undefined, cluster: knot })) }, d);
+        }
+        // the group's ref in this reply (a hostile after it) is the whole group here, its newcomers with it
+        if (own.length) groups.set(normText(d.ref), s.scene.present.filter((id) => s.entities[id]?.group === group && statusOf(s, id) !== 'dead'));
+        if (ids.length) refs.set(normText(d.ref), ids[0]);
+        // Scene relevance is ephemeral; an important person is not automatically an enemy.
+        // The NPC identity persists, but relevance and explicit threat expire when the scene ends.
+        if (cPath && kind === 'npc' && d.present !== false && d.relevant === true) {
+            for (const id of ids) emit({ t: 'scene.tactical', d: { id, relevant: true, threat: d.threat === true } });
+        }
+        if (d.name && ids.length) refs.set(normText(d.name), ids[0]);
+        if (count > 1 && !own.length) groups.set(normText(d.ref), ids);
+        // who the person is shows on their card (occupation), as text: the V3 fact rule would read "Guild clerk" as a
+        // reference to the clerk himself
+        if (kind === 'npc' && d.role && created.length && !truth(s, created[0], 'occupation').length) occupation(created[0], d.role);
+        // Patch 9A.1: the weapon a new person holds ready (person.new armed), as their fact; their sheet takes it when it is
+        // first built (src/engine.js rulesetTwoPerson). A legacy campaign keeps no such fact
+        if (kind === 'npc' && created.length) armedFact(created[0], d.armed);
+        // an individual the story establishes as bigger or stronger than ordinary ones of its kind (creature.new stronger):
+        // the individual variation of Content #7, fixed with its profile (live run 30.09.2026 22:41: the big boar had the
+        // numbers of a common one); the name it goes by decides nothing
+        if (kind === 'creature' && d.stronger === true) for (const id of created) emit({ t: 'entity.updated', d: { id, set: { variation: 'strong' } } });
+        // Monster A2 (.186, K3): the weapon this report states for a humanoid creature – the whole report's, it holds only
+        // when the reply shows it for every one of them (the contract); its profile takes it when it is fixed below
+        // (src/engine.js creatureGear). Another kind's weapon words are ignored (no loadout)
+        const armed = kind === 'creature' && typeof d.armed === 'string' && d.armed.trim() ? d.armed.trim().slice(0, 80) : null;
+        if (armed) for (const id of created) if (content.monsters?.loot?.anchors?.[s.entities[id]?.anchor]?.humanoid) emit({ t: 'entity.updated', d: { id, set: { armed } } });
+        // Prototype C (4.3.0-c.6.6.2): a creature the story shows as no foe (the packhorse, a goat, a pet) is no part of the
+        // field an area attack is thrown into; a deliberate attack on it still makes it the target (scene_handles.js)
+        if (cPath && kind === 'creature' && d.threat === false) for (const id of created) emit({ t: 'entity.updated', d: { id, set: { threat: false } } });
+        // Gameplay visibility: once an actual creature is visibly present, lock its deterministic profile immediately.
+        // This gives the player a canonical target handle + HP + Range before deciding whether to attack; Initiative still waits for Combat START.
+        if (hit && created.length) {
+            grant('dungeon.slot');
+            for (const e of slotEntityEvents(s, content, hit, created, d.present === false ? null : s.scene.at)) emit(e);
+            if (d.present !== false && aheadSlot(hit)) for (const id of created) aheadBorn.add(id);
+        }
+        if (kind === 'creature' && d.present !== false) for (const id of ids) materialise(s, content, dice, emit, id);
+        for (const id of ids) namedHere.add(id);
+        return ids;
+    };
+
+    // New C reports move only through explicit arrive deltas.
+    // Historical non-C/Ruleset-1 reports retain their previous Expected interpretation.
+    const explicitArrival = fw.accept.some((d) => d.type === 'arrive');
+    const implicitArrivals = [];
+    if (!explicitTravel && !explicitArrival && !s.encounter) {
+        let onWay = false; // review of Hotfix 7.2.1: after a leg he reached, one he did not reach ends the way
+        for (const [k, type] of Object.entries(outcome.expected_keys || {}).sort((a, b) => Number(a[0]) - Number(b[0]))) {
+            if (type !== 'go') continue;
+            const e = expected[k];
+            if (!e || e.arrived !== true) { if (onWay) break; continue; }
+            onWay = true;
+            implicitArrivals.push({k, e});
+        }
+    }
+    const applyExpected = () => {
+        const next = implicitArrivals.shift();
+        if (!next) return;
+        const previousStep = step;
+        step = { kind: 'engine' };
+        const { k, e } = next;
+        const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
+        const at = viaStop(arrivalPlace(reportedTarget(s, auth, expected, e.at, k, sceneOf()) || e.at || go?.to || null));
+        if (!at.error && at.id !== s.scene.at && !wayRefused(at.id, { seq: Number(k), type: 'expected' })) {
+            const party = companions(e.with, { seq: Number(k), type: 'expected' });
+            perceiveAll(s, emit, seeing());
+            arriveThrough(at.id, party);
+            travel.push({ seq: 0, ok: true });
+        }
+        step = previousStep;
+    };
+    const hasEarlierScene = !explicitArrival && (answer.deltas || []).some(d => localSceneDelta(d) && d.scene != null && sceneMatches(d.scene));
+    if (!hasEarlierScene) while (implicitArrivals.length) applyExpected();
+
+    // Prototype C: an unfinished GO can take hours without reaching where it was going: the extractor rightly reports no
+    // arrival at a lighthouse only seen from the road, yet Alaric is no longer in the Guild hall he set off from (live
+    // 10.10.2026). 4.3.0-c.6.6.2: where he is instead is the smallest existing place that holds the way: the realm's
+    // road when he set off for a known place outside his settlement, on an established journey or for hours toward
+    // somewhere new; his settlement, out of the building, when he spent the time looking for something in it ("look for
+    // an inn"). Whoever travels with him (the story's answer, the journey's companion) comes along; no waypoint is made.
+    // 4.3.0-c.6.6.3: decided from the answer before its deltas, so whom he meets on the road is met on the road, not
+    // remembered at the shop he left (live 11.10.2026: the Reed Flats boy "first saw him at Chandler's Row")
+    const narrated = fw.accept.filter((d) => d.type === 'time').reduce((n, d) => n + (Number(d.minutes) || 0), 0);
+    const roadMinutes = Math.min(Math.max(0, narrated - booked), Math.max(0, cap - booked));
+    const arrivesAnyway = explicitArrival || Object.entries(outcome.expected_keys || {}).some(([k, type]) => type === 'go' && expected[k]?.arrived === true);
+    let transit = null;
+    // Patch 7: inside a dungeon he is where he was until the story has him arrive somewhere (no road to put him on)
+    if (!explicitTravel && cPath && !arrivesAnyway && !s.encounter && !dungeonOf(s, startAt) && auth.timeCap > content.rules.time.default_cap_min
+        && roadMinutes >= content.rules.time.engine_clock.go_min_elsewhere
+        && (auth.gos || []).length > 0 && s.scene.at === startAt) {
+        const destination = (auth.gos || []).at(-1);
+        const home = settlementOf(s, startAt);
+        const realm = s.places[startAt]?.realm || s.places[s.scene.location]?.realm;
+        const far = destination.to ? !sameSettlement(s, startAt, destination.to)
+            : !!destination.journey || !home || roadMinutes > content.rules.time.default_cap_min;
+        const via = far ? (s.places[realm]?.kind === 'realm' ? realm : null) : destination.to ? null : home;
+        // Patch 5: a further leg on the road he is already on moves on as well (diagnosis of Patch 5: the two wolves he
+        // left standing, and the two he killed, were still around him four hours of walking later); whoever travels with
+        // him comes along, the rest stays where it was
+        const further = far && via === startAt && s.places[startAt]?.kind === 'realm';
+        if (via && (via !== startAt || further)) {
+            const said = expected[String(destination.seq)]?.with;
+            const party = [...new Set([...(destination.with || []), ...(Array.isArray(said) ? said.map(idOf) : [])])]
+                .filter((id) => id && id !== 'pc' && s.scene.present.includes(id) && s.entities[id]?.status !== 'dead');
+            perceiveAll(s, emit, seeing());
+            arrive(via, party);
+            transit = via;
+            if (far) emit({ t: 'scene.moved', d: { place: `On the way to ${destination.journey || destination.name || destination.newName || 'the destination'}` } });
+            // Patch 5: he set off for somewhere new and unnamed and is out on the road without having found it: what he
+            // went to find is his goal now, a journey he can go on with (src/v4/intents.js seek), never a place yet
+            if (far && destination.newName && !destination.to && !destination.journey && !destination.intent) {
+                const quote = (outcome.resolutions || []).find((r) => r.seq === destination.seq)?.quote || null;
+                setIntentEvents(s, { goal: `find ${destination.newName}`, seek: destination.newName, quote, why: 'he set off to find it' }).events.forEach(emit);
+            }
+        }
+    }
+    // Build .181 (P2-2, batch 12./13.11.2026 Rogue T32/T36, Mage T44): the one stop the engine itself orders on a
+    // ruleset-2 journey. .101 moves him only at an explicit arrive, and a missing arrive alone still moves nobody. But
+    // an OPEN PULSE window on a leg he was authorized to take tells the story "It is a real stop short of <there>"
+    // (pulse.js lineFor): when the reply then reports no arrive at all and no arrival of any GO, he is on the road of
+    // the land he set out in (its realm, the existing place an explicit report would name). The stop is booked in story
+    // order: what the reply puts expressly at the place he set out from happened before he left; the first local step
+    // of anywhere else (here, the road) is on the road, so whom he meets there is met there and not at the hall he
+    // left; with no such step, at the end of the deltas. Who travels with him comes along (the GO's journey charge, the
+    // extractor's expected.<seq>.with), the rest stays where it was. Never his destination: no arrival, no travel time,
+    // no goal, delivery or turn-in at the stop (transit). A closed window, a scene or pause window, no authorized GO, a
+    // fight, a reported arrive or a start on the realm's road itself keep .180's handling.
+    const stopRoad = explicitTravel && pulse?.exposure === 'travel' && pulse.open === true && (auth.gos || []).length
+        && !(answer.deltas || []).some((d) => d?.type === 'arrive') && !arrivesAnyway ? realmOf(s, startAt) : null;
+    let roadStop = !!stopRoad && stopRoad !== startAt && s.places[stopRoad]?.kind === 'realm' && !auth.gos.some((g) => g.to === stopRoad);
+    const atStart = (d) => { const at = d.scene ?? answer.scene; return at != null && at !== 'here' && samePlace(s, at, startAt, content); };
+    const bookRoadStop = () => {
+        roadStop = false;
+        if (s.encounter || s.scene.at !== startAt) return;
+        const previousStep = step;
+        step = { kind: 'engine' };
+        const destination = auth.gos.at(-1);
+        const said = auth.gos.flatMap((g) => (Array.isArray(expected[String(g.seq)]?.with) ? expected[String(g.seq)].with : []));
+        const party = companions(said, { seq: destination.seq ?? 0, type: 'expected' });
+        perceiveAll(s, emit, seeing());
+        arrive(stopRoad, party);
+        transit = stopRoad;
+        emit({ t: 'scene.moved', d: { place: `On the way to ${destination.journey || destination.name || destination.newName || 'the destination'}` } });
+        step = previousStep;
+    };
+
+    for (const d of [...fw.accept].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0))) {
+        const nextScene = d.scene ?? answer.scene;
+        if (roadStop && localSceneDelta(d) && !atStart(d)) bookRoadStop();
+        if (implicitArrivals.length && d.type !== 'arrive' && nextScene != null && nextScene !== 'here') {
+            const next = implicitArrivals[0];
+            const ref = next?.e.at || (auth.gos || []).find(g => String(g.seq) === String(next?.k))?.to;
+            if (next && JSON.stringify(ref) === JSON.stringify(nextScene)) applyExpected();
+        }
+        step = { kind: 'delta', type: d.type, seq: d.seq ?? 0, granted: new Set() };
+        // Authority is checked again at the actual story step: earlier deltas may have changed its context.
+        const stepFw = firewall([d], { ...firewallContext(s, content, chronicle, excludedFoes), unprovenForced });
+        if (!stepFw.accept.length) {
+            for (const x of stepFw.reject) { reject(x.delta, x.rule, x.why); refusedArrival(x.delta); if (x.delta?.type === 'creature.new') blockCreature(x.delta); }
+            for (const x of stepFw.corrections) if (!corrections.includes(x)) corrections.push(x);
+            continue;
+        }
+        const claim = ['quest.detail', 'quest.progress', 'quest.ready', 'quest.close'].includes(d.type) ? questRef(d.quest) : null;
+        if (!privateQuestsOf(s) && (d.type === 'quest.offer' || (claim && !questVisible(s, claim)))) {
+            reject(d, 'private_quests_disabled', 'NPC help uses ordinary facts, threads and memories; only Guild contracts are formal quests');
+            continue;
+        }
+        const people = [d.s, d.who, d.from, d.by, d.holder].flat().filter(x => typeof x === 'string');
+        // Build .107: a story line naming a present person is that person's (a refused name of theirs blocks no memory)
+        const blockedStory = ['memory', 'thread'].includes(d.type) && [...blockedPeople].some(ref => {
+            const id = idOf(ref);
+            const name = s.entities[id]?.name;
+            return name && !s.scene.present.includes(id) && (` ${normText(d.text || '')} `).includes(` ${normText(name)} `);
+        });
+        if (d.type !== 'creature.new' && people.some(x => blockedCreatures.has(normText(x)))) {
+            reject(d, 'creature_continuity', 'dependent claim about a creature this reply could not book');
+            continue;
+        }
+        if (d.type !== 'enter' && d.type !== 'person.new' && (blockedStory || people.some(x => blockedPeople.has(normText(x)) || blockedPeople.has(normText(idOf(x) || ''))))) {
+            reject(d, 'npc_continuity', 'dependent claim about a rejected person reintroduction');
+            continue;
+        }
+        if (cPath && rulesetOf(s) >= 2 && localSceneDelta(d) && (chronology.has(d) || ((travel.filter(x => x.seq < d.seq).sort((a, b) => a.seq - b.seq).at(-1)?.ok === false) && (d.scene == null || d.scene === 'here')))) {
+            refusedScene = true;
+            reject(d, 'scene_context', chronology.get(d) || 'ambiguous local scene after an unconfirmed arrival; here is not evidence');
+            continue;
+        }
+        const origin = sceneOf(d);
+        const remote = ['person.new', 'creature.new'].includes(d.type) && d.present === false;
+        if (cPath && rulesetOf(s) >= 2 && origin != null && !remote
+            && !['time', 'arrive', 'overreach', 'place.reported', 'dungeon', 'guild.branch'].includes(d.type) && !sceneMatches(origin)) {
+            refusedScene = true;
+            reject(d, 'scene_context', 'the narrative setting is not the location reached at this step');
+            // K6a (pilot 01 B7, .177): the correction names where he is at the end of this reply (written once, below),
+            // not where he stood at this step: a later arrival of the same reply moved him (T61 → T62 "remains at the
+            // Woolpack" beside a header at the crossroads)
+            if (!sceneUnreached) sceneUnreached = { at: s.scene.at, index: corrections.length };
+            continue;
+        }
+        if (cPath && rulesetOf(s) >= 2 && ['quest.ready', 'quest.progress', 'quest.close'].includes(d.type)
+            && ((refusedScene && !d.depends_on?.length) || d.depends_on?.some(seq => (!acceptedSteps.has(String(seq)) && !pendingSeq(seq))
+                || Number(seq) >= d.seq || answer.deltas.filter(source => String(source.seq) === String(seq)).length !== 1))) {
+            reject(d, 'quest_dependency', 'a cited supporting step was not accepted before this quest claim');
+            continue;
+        }
+        const atBefore = s.scene.at;
+        switch (d.type) {
+            case 'time': {
+                if (inventedWorkTime) { reject(d, 'private_work', 'accepting a job does not authorize its narrated working time'); break; }
+                const covered = Math.min(bookedLeft, d.minutes);
+                bookedLeft -= covered;
+                const lost = Math.min(cutLeft, d.minutes - covered);
+                cutLeft -= lost;
+                if (lost) reject(d, 'rest_cut', `${lost} min of the ${pulse.interrupt.of_min} min ${pulse.interrupt.kind} the engine cut short after ${pulse.interrupt.after_min} min are not booked`);
+                const want = d.minutes - covered - lost;
+                const room = Math.max(0, cap - timeUsed);
+                const m = Math.min(want, room);
+                if (m < want) reject(d, 'time_cap', `${d.minutes} min exceed what this turn allows (${cap} min${auth.go ? '' : ' without travel or an activity'}); ${m} applied`);
+                if (m > 0) { emit({ t: 'time.advanced', d: { minutes: m, why: 'narration' } }); timeUsed += m; }
+                break;
+            }
+            case 'arrive': {
+                if (s.encounter) { reject(d, 'combat', 'no travel while combat is ACTIVE'); refusedArrival(d); break; }
+                const ref = explicitTravel ? d.at : reportedTarget(s, auth, expected, d.at, null, sceneOf(d)) || onward(d.at);
+                const away = leavesHere(ref);
+                // .190 (A2): a place this report would make is made only once the arrival is allowed (no orphans)
+                const mark = events.length;
+                const unmake = () => {
+                    const made = events.slice(mark);
+                    if (!made.length || !made.every((e) => e.t === 'place.created' || e.t === 'link.set')) return;
+                    events.length = mark;
+                    for (const e of made) if (e.t === 'place.created') delete s.places[e.d.place.id]; else delete s.links[e.d.link.id];
+                };
+                // .190 (B5): in a Living Dungeon the part he reaches is the section his step previewed (made now, named by
+                // this report); a room the story makes there is none
+                const part = explicitTravel ? sectionArrival(ref) : null;
+                if (part?.refuse) { reject(d, 'passage', part.refuse); const fix = `Alaric is still in ${placeName(s, s.scene.at)}: ${part.refuse}.`; if (!corrections.includes(fix)) corrections.push(fix); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
+                let at = part?.id ? { id: part.id } : viaStop(arrivalPlace(ref));
+                if (at.error) { unmake(); reject(d, 'place', at.error); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
+                if (at.id === s.scene.at && !(explicitTravel && s.places[at.id]?.kind === 'realm' && auth.gos?.length)) { travel.push({ seq: d.seq, ok: true }); break; }
+                const forcedHere = !!String(d.forced_by || '').trim() && !unprovenForced.has(d);
+                // .190 (A2): the movement proof – the place his step may end at, decided by the GO, not by the reply
+                if (explicitTravel) {
+                    const fresh = events.slice(mark).some((e) => e.t === 'place.created' && e.d.place.id === at.id);
+                    const steps = stepsOf(s, auth.gos);
+                    const no = allowedArrival(s, steps, at.id, { fresh, forced: forcedHere, reached: (k) => expected[String(k)]?.arrived === true });
+                    // past the gate of a step that ends at it: he did reach the gate (the way in is his next step)
+                    const gate = no?.gate && s.places[no.gate] && s.scene.at !== no.gate ? no.gate : null;
+                    if (gate) {
+                        unmake();
+                        reject(d, 'passage', no.why);
+                        const fix = `Alaric is at ${placeName(s, gate)}: ${no.why}; he did not go in.`;
+                        if (!corrections.includes(fix)) corrections.push(fix);
+                        at = { id: gate };
+                    } else if (no) {
+                        unmake();
+                        reject(d, 'passage', no.why);
+                        const fix = `Alaric is still in ${placeName(s, s.scene.at)}: ${no.why}; he did not get there.`;
+                        if (!corrections.includes(fix)) corrections.push(fix);
+                        travel.push({ seq: d.seq ?? 0, ok: false, away });
+                        break;
+                    }
+                }
+                if (wayRefused(at.id, d, { forced: forcedHere })) { unmake(); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
+                const party = companions(d.with, d);
+                perceiveAll(s, emit, seeing());
+                arriveThrough(at.id, party);
+                // NPC E2-A (R1): the known people this GO step's arrival shows here
+                if (explicitTravel) { const k = goStepAt(at.id, ref); if (k !== null) metArrivals(k, at.id); }
+                stealthGo = String(d.forced_by || '').trim() ? null : arrivalManner();
+                stealthAt = stealthGo ? s.scene.at : null;
+                if (explicitTravel && s.places[at.id]?.kind === 'realm') {
+                    const go = auth.gos?.at(-1);
+                    if (go?.newName && !go.to && !go.journey && !go.intent) {
+                        const quote = (outcome.resolutions || []).find(r => r.seq === go.seq)?.quote || null;
+                        grant('player.goal');
+                        setIntentEvents(s, { goal: `find ${go.newName}`, seek: go.newName, quote, why: 'he set off to find it' }).events.forEach(emit);
+                    }
+                }
+                // Historical non-C/Ruleset-1 reports retain their Expected follow-up legs.
+                if (!explicitTravel) {
+                    for (const k of laterLegs(at.id)) {
+                        const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
+                        const next = viaStop(arrivalPlace(reportedTarget(s, auth, expected, expected[k].at, k, sceneOf()) || expected[k].at || go?.to || null));
+                        if (next.error || next.id === s.scene.at || wayRefused(next.id, { seq: k, type: 'expected' })) break;
+                        perceiveAll(s, emit, seeing());
+                        arriveThrough(next.id, party);
+                    }
+                }
+                travel.push({ seq: d.seq ?? 0, ok: true });
+                break;
+            }
+            case 'person.new': {
+                // NPC E2-A (R3): one person per person.new; a group is scene colour until one of them acts
+                if (cPath && rulesetOf(s) >= 2 && collectivePerson(d.role, d.desc, d.name)) {
+                    blockedPeople.add(normText(d.ref || ''));
+                    reject(d, 'collective_person', 'a group of people is scene colour, not one person; when one of them acts, that one is a person.new of their own');
+                    break;
+                }
+                if (cPath && rulesetOf(s) >= 2) {
+                    const name = normText(d.name || '');
+                    const explicit = s.entities[d.ref]?.kind === 'npc' ? s.entities[d.ref] : null;
+                    const exact = Object.values(s.entities).filter(e => e.kind === 'npc' && name && normText(e.name || '') === name);
+                    const known = explicit || (exact.length === 1 ? exact[0] : null);
+                    const extensions = Object.values(s.entities).filter(e => e.kind === 'npc' && e.name
+                        && name.startsWith(`${normText(e.name)} `));
+                    const distinct = extensions.length === 1 && d.distinct_from === extensions[0].id;
+                    // Build .107: only the refused reference is blocked, and the known person only while absent (a
+                    // refused reintroduction must not make them here); a present person keeps their own claims of this reply
+                    const here = (id) => !!s.entities[id] && s.scene.present.includes(id);
+                    const refusePerson = (rule, why, ids = []) => {
+                        for (const ref of [d.ref, d.name, ...ids].filter((x) => x && !here(x))) blockedPeople.add(normText(ref));
+                        reject(d, rule, why);
+                        corrections.push(`${why}. Preserve the known person's recorded history. A fuller name uses person.named; an actual new return uses enter, without requiring Alaric to travel. Do not repeat an already resolved predicament.`);
+                    };
+                    if (!known && extensions.length && !distinct) {
+                        refusePerson('npc_identity', `The name ${d.name} may extend an existing identity; establish the same person with person.named or explicitly distinguish the newcomer with distinct_from`, extensions.map(e => e.id));
+                        break;
+                    }
+                    if (known) {
+                        if (d.name && name !== normText(known.name || '')) {
+                            refusePerson('npc_identity', `${known.id} already exists; use person.named for a controlled name expansion`, [known.id]);
+                            break;
+                        }
+                        refs.set(normText(d.ref), known.id);
+                        if (d.present !== false && !s.scene.present.includes(known.id)) {
+                            if (known.at === s.scene.at && statusOf(s, known.id) !== 'dead')
+                                v3({ enter: [known.id] }, d);
+                            else refusePerson('npc_continuity', `${known.id} is a known absent person, not a new introduction`, [known.id]);
+                        }
+                        break;
+                    }
+                }
+
+                // Prototype C (4.3.0-c.6): a place's service people stay who they are (live 04.10.2026 16:35: back at
+                // the Guild desk, a third "Guild desk clerk" was stored): an unnamed newcomer in the role of the one
+                // person Alaric left at this place in it is that person. Anyone else unnamed whom nothing else of this
+                // answer deals with is scene colour (a gate guard, a mailed man at the board), kept until it matters
+                if (cPath && !d.name) {
+                    if (SERVICE_ROLE.test(String(d.role || ''))) {
+                        const same = d.present !== false ? keptHere(d) : null;
+                        if (same) {
+                            emit({ t: 'scene.entered', d: { id: same, band: d.band || 'SHORT' } });
+                            refs.set(normText(d.ref), same);
+                            break;
+                        }
+                    } else if (!d.relevant && !(answer.deltas || []).some((x) => x && x.seq !== d.seq && JSON.stringify(x).includes(String(d.ref)))) {
+                        reject(d, 'ambient', 'scene colour: an unnamed person nothing else of the reply deals with is not kept; the story brings them back when they matter');
+                        break;
+                    }
+                }
+                // 4.3.0-c.6.6.48: the one person here known without a name whose handle holds this name is that person,
+                // now named (as person.named), never a second one of that name
+                const unnamed = cPath && d.name && d.present !== false ? ownNamed(String(d.name)) : null;
+                if (unnamed && !s.entities[unnamed].name) {
+                    const name = String(d.name).trim().slice(0, 60);
+                    emit({ t: 'entity.updated', d: { id: unnamed, set: { name, known_name: name } } });
+                    refs.set(normText(d.ref), unnamed);
+                    refs.set(normText(name), unnamed);
+                    break;
+                }
+                if (d.present === false) {
+                    // someone the reply mentions who is elsewhere: exists, not here, not met (P0/S3 E3, Ossler)
+                    const known = idOf(d.name || d.ref);
+                    if (known && s.entities[known]) { refs.set(normText(d.ref), known); break; }
+                    let where = null;
+                    if (d.at) {
+                        const p = place(d.at);
+                        if (!p.error) where = p.id;
+                    }
+                    // .190 place book: the known person of that place by a shorter name stays who he is
+                    const usual = cPath && d.name && where ? usualPersonNamed(s, String(d.name), where) : null;
+                    if (usual) { refs.set(normText(d.ref), usual); refs.set(normText(d.name), usual); break; }
+                    const id = uniqueEntityId(s, d.name || d.role || d.ref);
+                    bornHere.add(id);
+                    const descriptors = [...new Set([...(d.role ? [d.role] : []), ...(d.desc || []), d.ref].map((x) => String(x).toLowerCase().slice(0, 40)))];
+                    const traits = (d.desc || []).join(', ').slice(0, 240);
+                    // Patch 9A review: under ruleset 2 a person established elsewhere gets the template of their role as
+                    // anyone met here does (a bandit, a hedge mage), fixed now; a legacy campaign keeps 'commoner'
+                    const template = rulesetOf(s) >= 2 ? templateFor(content, [...descriptors, traits].join(' '), rulesetOf(s))?.id || 'commoner' : 'commoner';
+                    emit({ t: 'entity.created', d: { entity: { id, kind: 'npc', name: d.name ? String(d.name).slice(0, 60) : null, descriptors, traits, status: 'alive', location: where ? locationOf(s, where) : s.scene.location, at: where, created: { turn: s.turn, minute: s.clock.minute }, source: { kind: 'narration', msg }, card: {}, template } } });
+                    refs.set(normText(d.ref), id);
+                    if (d.name) refs.set(normText(d.name), id);
+                    if (d.role) occupation(id, d.role);
+                    armedFact(id, d.armed);
+                    break;
+                }
+                newEntity(d, 'npc');
+                break;
+            }
+            case 'person.named': {
+                // a person known without a name whom the story now names (live 30.09.2026: the anonymous wool cart
+                // driver became a second person "Dren"): the same entity, now with its name
+                const id = idOf(d.who);
+                const e = id && id !== 'pc' ? s.entities[id] : null;
+                const name = String(d.name || '').trim().slice(0, 60);
+                if (!e || e.kind !== 'npc' || !name) { reject(d, 'world_rule', 'person.named: no such known person'); break; }
+                if (e.name && normText(e.name) !== normText(name) && !normText(name).startsWith(`${normText(e.name)} `)) {
+                    reject(d, 'world_rule', `${id} is already named ${e.name}`);
+                    break;
+                }
+                if (normText(e.name || '') !== normText(name)) emit({ t: 'entity.updated', d: { id, set: { name, known_name: name, descriptors: [name.toLowerCase()] } } });
+                refs.set(normText(name), id);
+                break;
+            }
+            case 'creature.new':
+                newEntity(d, 'creature');
+                break;
+            case 'enter': {
+                const who = mapRef(d.who);
+                if (metEntered.has(who) && s.scene.present.includes(who)) break;
+                if (absentKnown(who)) {
+                    const ev = presenceInReply(prose, d.evidence, personLabels(who));
+                    if (!ev.ok) {
+                        blockedPeople.add(normText(who));
+                        reject(d, 'npc_presence', `${who} is a known person elsewhere; the reply does not narrate their arrival here: ${ev.why}`);
+                        const correction = `${entityLabel(s, who)} was not booked as present: the last reply did not establish their arrival here. They may arrive when the story shows it; until then they are not in the scene.`;
+                        if (!corrections.includes(correction)) corrections.push(correction);
+                        break;
+                    }
+                }
+                enterKnown(who, d);
+                break;
+            }
+            case 'leave': {
+                const who = mapRef(d.who);
+                perceiveAll(s, emit, seeing());
+                v3({ leave: [who] }, d);
+                // who walks off is not waiting at this place when Alaric comes back
+                if (s.entities[who]?.at && !s.scene.present.includes(who)) emit({ t: 'entity.updated', d: { id: who, set: { at: null } } });
+                // Patch 5: a creature that goes off stays in the area it left for a while (newEntity: the same one again)
+                if (s.entities[who]?.kind === 'creature' && !s.scene.present.includes(who)) emit({ t: 'entity.updated', d: { id: who, set: { left: { at: s.scene.at, minute: s.clock.minute, turn: s.turn, leg: false } } } });
+                break;
+            }
+            case 'position': {
+                // Patch 5 (the Patch 4 gap): a group's ref moves each living member of it here, as aware, intent and
+                // hostile do ("the east pair closes in"), never only the first; one creature's own ref moves that one
+                // Patch 7.2B: a group's ref moves all of it only with scope all
+                const r = whoOf(d, d.who);
+                if (r.kind === 'unclear') break;
+                const ids = notBroughtIn(d, r.ids);
+                if (!ids.length) break;
+                v3({ position: ids.map((who) => ({ who, band: d.band, cover: d.cover || undefined, ...(d.cluster ? { cluster: d.cluster } : {}) })) }, d);
+                break;
+            }
+            case 'aware':
+                // 4.3.0-c.6.6: a group's ref (creature.new count > 1) means each of them (live 07.10.2026: "kobold_small_a"
+                // unaware reached only the first of the two small kobolds); its own Ambush awareness, not perception's
+                // Patch 4: one that fought him (or watched his fight) a short while ago has not lost track of him because the
+                // story says so: no Ambush from it (rules.combat.wary_min); his own stealth check is the engine's way
+                const whos = notBroughtIn(d, whoOf(d, d.who).ids); // Patch 7.2B: a group only with scope all
+                if (!whos.length) break;
+                const wary = d.level === 'unaware' ? whos.filter((who) => { const w = s.entities[who]?.wary; return !!w && s.clock.minute - (w.minute ?? 0) < (content.rules.combat?.wary_min ?? 360); }) : [];
+                if (wary.length) {
+                    reject({ ...d, who: wary.length === whos.length ? d.who : wary }, 'engine_owned', `${wary.map((x) => entityLabel(s, x)).join(', ')} fought Alaric or watched his fight a short while ago and is still aware of him`);
+                    const correction = `${wary.map((x) => entityLabel(s, x)).join(', ')} did not lose track of Alaric: ${wary.length > 1 ? 'they' : 'it'} fought him or watched his fight a short while ago and ${wary.length > 1 ? 'are' : 'is'} still aware of him. Only his own stealth catches ${wary.length > 1 ? 'them' : 'it'} unaware.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                }
+                const left = whos.filter((who) => !wary.includes(who));
+                if (left.length) v3({ aware: left.map((who) => ({ who, level: d.level })) }, d);
+                break;
+            case 'intent': {
+                // an intent to attack him is the same decision as turning on him: the World Envelope's (outside a fight);
+                // Patch 4: a group's intent is each member's ("the wolves break and run")
+                // Patch 7.2B: a group only with scope all; an attack of a group the engine cannot tell apart is not booked
+                const r = whoOf(d, d.who);
+                if (r.kind === 'unclear' && d.intent === 'attack') unbooked(d.who, r.why);
+                const whos = r.ids.filter((who) => !(d.intent === 'attack' && !s.encounter && !envelopeAllows(who, d)));
+                if (!whos.length) break;
+                grant('narrated_intent');
+                v3({ intent: whos.map((who) => ({ who, intent: d.intent })) }, d);
+                break;
+            }
+            case 'hostile': {
+                // Patch 4: a group named as a whole is each member here, except one this reply shows doing something else
+                // (fleeing, holding back, giving up: its own intent); presence or kinship alone commits no one
+                // Patch 7.2B: a group's ref commits all of it only with scope all (src/v4/identity.js); one beetle's lunge
+                // under the swarm's ref commits no swarm, and an attack of some of them the engine cannot tell apart
+                // ("three of the twelve") commits none, the narrator hears why
+                const other = new Set(fw.accept.filter((x) => x.type === 'intent' && x.intent !== 'attack').flatMap((x) => resolveRef(s, content, x.who, { scope: x.scope ?? null, evidence: x.evidence ?? null, prose, groups, refs, single: mapRef }).ids));
+                const by = (d.by || []).flatMap((x) => {
+                    const r = whoOf(d, x);
+                    if (r.kind === 'unclear') { if (!joinedByNew.has(normText(x))) unbooked(x, r.why); return []; }
+                    return r.kind === 'all' ? r.ids.filter((id) => !other.has(id)) : r.ids;
+                }).filter((x) => !joinedByNew.has(normText(x)));
+                // who turns on Alaric: inside the World Envelope at this step (an attitude the reply lowered before is
+                // a cause); outside it nobody attacks, the next engine block says why
+                const left = by.filter((x) => !(typeof x === 'string' && s.encounter?.combatants?.[x])).filter((x) => envelopeAllows(x, d));
+                if (left.length) {
+                    const r = v3({ combat: left.map((x) => ({ by: x })) }, d);
+                    // Patch 4: an attack the engine could not give to anyone ("two wolves" of four): the story must not go on
+                    // as if they fight; only the combatants of the engine block do
+                    for (const x of left.filter((y) => typeof y === 'string' && !s.entities[y] && r.rejected.length)) {
+                        const correction = `The attack of "${String(x).slice(0, 60)}" in the last reply was not booked: the engine cannot tell which of those here attack. Only those the engine has fighting attack and deal damage; name each attacker by its handle when the story has them attack.`;
+                        if (!corrections.includes(correction)) corrections.push(correction);
+                    }
+                }
+                // Prototype C (4.3.0-c.6.6.6, review): one already in the fight but no foe of his (caught in his area
+                // attack, at his side) whom the story turns on him fights him from its next Turn (src/combat.js asideTurn)
+                const turning = cPath ? by.filter((x) => typeof x === 'string' && x !== 'pc' && s.encounter?.combatants?.[x] && s.encounter.combatants[x].side !== 'hostile').filter((x) => envelopeAllows(x, d)) : [];
+                if (turning.length) v3({ intent: turning.map((who) => ({ who, intent: 'attack' })) }, d);
+                break;
+            }
+            case 'fact': {
+                // selective persistence (Gen 3.5): what the story says about the fighters while the fight runs (how they
+                // move, what they do, a fresh wound) describes state the fight owns; it lives as long as that fight. Only
+                // such known moment-to-moment predicates, and never a lasting mark ("lost two fingers", a scar): anything
+                // else said during a fight keeps its lifetime, as everything said outside one (review of 4.2.0)
+                const subject = mapRef(d.s);
+                if (pcNameOnNpc(subject, d.p, d.o)) { reject(d, 'identity_subject', `"${String(d.o).slice(0, 40)}" is Alaric's name, not ${entityLabel(s, subject)}'s`); break; }
+                // An encounter/group reference is not an individual Entity (Run 9).
+                if (missingEntityRef(subject)) {
+                    reject(d, /^mon\./i.test(subject) ? 'group_fact' : 'entity_fact', `fact subject ${subject} is not a known entity`);
+                    break;
+                }
+                const object = typeof d.o === 'string' ? makeResolver(s, refs, content)(d.o, { exact: true }) || d.o : d.o;
+                if (missingEntityRef(object)) {
+                    reject(d, 'entity_fact', `fact object ${object} is not a known entity`);
+                    break;
+                }
+                // NPC E3 (R10): a person's voice, manner or interest is a lasting anchor only from a later encounter; a
+                // fighter's "demeanor" while the fight runs stays the fight's moment (below), never a synonym of an anchor
+                const named = normPredicate(d.p);
+                const fighting = !!s.encounter?.combatants?.[subject];
+                const anchorP = explicitTravel && s.entities[subject]?.kind === 'npc' && typeof object === 'string'
+                    ? (ANCHOR_PREDICATES.has(named) ? named : !fighting ? anchorPredicate(d.p) : null) : null;
+                if (anchorP) {
+                    const no = anchorRefusal(s, subject, anchorP, object, anchored);
+                    if (no) { reject(d, no.rule, no.why); break; }
+                    anchored.add(`${subject}|${anchorP}`);
+                }
+                const enc = s.encounter;
+                const combatant = !!enc && typeof subject === 'string' && subject !== 'pc' && !!enc.combatants?.[subject];
+                // "the wolves", "the last wolf", "wolf pack": no one entity, but the kind of the opponents still fighting
+                const fighters = !!enc && typeof subject === 'string' && !s.entities[subject] && Object.values(enc.combatants).some((c) => c.id !== 'pc' && c.side === 'hostile'
+                    && !c.current.defeated && namesKind(String(d.s), s.entities[c.id]?.species, content.anchors.get(s.entities[c.id]?.anchor || s.entities[c.id]?.profile?.anchor)));
+                const scoped = (combatant || fighters) && FIGHT_MOMENT.test(normPredicate(d.p)) && !LASTING_MARK.test(String(d.o ?? ''));
+                // Patch 3: a wound of Alaric's lives while he is hurt; at full health it is healed (a scar is no wound)
+                const hurt = !scoped && pcWound(d) ? { hurt: deriveCharacter(s.entities.pc.sheet, content).maxHp } : null;
+                v3({ facts: [{ s: subject, p: anchorP || d.p, o: object, ...(scoped ? { scope: { fight: enc.id } } : hurt ? { scope: hurt } : {}) }] }, d);
+                break;
+            }
+            case 'learn': {
+                // who/s may be concrete references; o is literal proposition text.
+                const who = mapRef(d.who), subject = mapRef(d.s);
+                if (missingEntityRef(who) || missingEntityRef(subject)) {
+                    reject(d, 'entity_fact', 'learning cannot reference an unknown NPC or creature');
+                    break;
+                }
+                if (pcNameOnNpc(subject, d.p, d.o)) { reject(d, 'identity_subject', `"${String(d.o).slice(0, 40)}" is Alaric's name, not ${entityLabel(s, subject)}'s: what someone learns of him is about pc`); break; }
+                v3({ learn: [{ who, s: subject, p: d.p, o: typeof d.o === 'string' ? d.o : String(d.o), how: d.how }] }, d);
+                break;
+            }
+            case 'attitude':
+                v3({ attitude: [{ who: mapRef(d.who), delta: d.delta, why: d.why }] }, d);
+                break;
+            case 'memory': {
+                // a memory keeps the moment, never the engine's state as a second truth (Decision Ownership): a clause
+                // that states a contract's status, a payout, Quest XP, Guild rank or membership goes; the rest stays
+                // Patch 3 (review): nor an act of his he did not choose (the fact firewall's pc_decision, in a memory's words:
+                // "Alaric hunted and roasted wood pigeons" on a road he only travelled); what he did stays
+                const fw = firewallContext(s, content, chronicle, excludedFoes);
+                // "He" opening a later clause of a memory about Alaric is Alaric
+                const actOf = (c) => pcActIn(/^\s*alaric\b/i.test(d.text) ? c.replace(/^\s*he\b/i, 'Alaric') : c);
+                const invented = (c) => { const act = actOf(c); return !!act && !fw.actedOn(act); };
+                const deaths = trueDeaths(d.text);
+                if (deaths.refused.length && !deaths.text) { reject(d, 'engine_owned_combat', `a memory of deaths the engine has not booked (${deaths.refused.map((x) => x.why).join('; ')})`); break; }
+                const cut = stripOwned(deaths.text, { store: 'memory', extra: invented });
+                const acts = cut.other.map(actOf);
+                if (acts.length) {
+                    const correction = `Alaric did not ${[...new Set(acts)].join(' or ')} anything in the last reply: hunting, eating, buying, using up or leaving behind his things is his decision, and he did not make it. His food, coin and things are as the engine has them.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                }
+                if (!cut.kept.length) { reject(d, acts.length ? 'pc_decision' : 'engine_owned_memory', acts.length ? `a memory of his own act he did not choose (${acts.join(', ')})` : `a memory keeps the moment; ${cut.kinds.join(', ')} is the engine's state, recorded by the engine`); break; }
+                v3({ memory: [{ text: cut.owned.length || cut.other.length || deaths.refused.length ? cut.kept.join(' ') : d.text, who: (d.who || []).map(mapRef), imp: d.imp }] }, d);
+                break;
+            }
+            case 'thread': {
+                // natural batch on .191 (Warrior T70, main: testrun_10b/npc-20261115-103140Z/GEGENREVIEW_OPUS.md): a
+                // thread of any kind that keeps a creature this reply could not book here or acting now ("… as the
+                // two spear-goblins advanced") is refused; an update so refused leaves the thread as it was (the
+                // hooting it told before). Sounds, traces, reports and creatures the engine booked stay.
+                if (d.status !== 'resolved' && d.kind !== 'rumor' && refusedCreatureInThread(d.text, refusedCreatures, sceneCreatures(s))) {
+                    reject(d, 'creature_continuity', 'a thread keeping a creature this reply could not book as here or acting now');
+                    break;
+                }
+                // A refused Dungeon foe must not persist as an objective threat in Here.
+                if (d.kind === 'threat' && d.status !== 'resolved' && unbookedDungeonThreat(d.text, excludedFoes)) {
+                    reject(d, 'dungeon_foe_thread', 'unbooked Dungeon creatures cannot be stored as a current threat');
+                    const fix = 'The described Dungeon creatures were not booked as present foes. A reported sighting is not a current attackable encounter.';
+                    if (!corrections.includes(fix)) corrections.push(fix);
+                    break;
+                }
+                // Patch 2: an id from the catalog's THREADS updates or resolves that thread (src/threads.js)
+                // Patch 7.2C: no death the engine has not booked, in its text or its resolution; a rumour is someone's claim
+                const rumour = d.kind === 'rumor';
+                const text = rumour ? { text: d.text, refused: [] } : trueDeaths(d.text);
+                const resolution = rumour || !d.resolution ? { text: d.resolution || null, refused: [] } : trueDeaths(d.resolution);
+                if ((text.refused.length && !text.text) || (resolution.refused.length && !resolution.text && d.status === 'resolved')) {
+                    reject(d, 'engine_owned_combat', `a thread of deaths the engine has not booked (${[...text.refused, ...resolution.refused].map((x) => x.why).join('; ')})`);
+                    break;
+                }
+                // NPC E2-B (R7): an agreement's parties – living people of the record (or of this answer) and Alaric,
+                // who is one only face to face (one of the people present); without a person it stays unbound
+                let who = null;
+                if (cPath && rulesetOf(s) >= 2 && ['promise', 'debt'].includes(d.kind) && Array.isArray(d.who) && d.who.length) {
+                    const ids = [...new Set(d.who.map((x) => (x === 'pc' ? 'pc' : mapRef(x))))]
+                        .filter((x) => x === 'pc' || (s.entities[x]?.kind === 'npc' && statusOf(s, x) !== 'dead'));
+                    const npcs = ids.filter((x) => x !== 'pc');
+                    const faceToFace = npcs.some((x) => s.scene.present.includes(x));
+                    if (npcs.length) who = ids.filter((x) => x !== 'pc' || faceToFace).slice(0, 3);
+                }
+                v3({ threads: [{ id: d.id || null, text: text.text, kind: d.kind, status: d.status, resolution: resolution.text || null, ...(who ? { who } : {}) }] }, d);
+                break;
+            }
+            case 'guild.branch': {
+                // World establishes a staffed institution; its desk mechanics remain engine-owned.
+                const proof = narratedEvent(prose, d.evidence);
+                const staffed = /\b(?:clerk|registrar|receptionist|staffed|operating)\b/i.test(d.evidence || '');
+                if (!cPath || rulesetOf(s) < 2 || !proof.ok || !staffed) {
+                    reject(d, 'guild_branch', proof.why || 'an operating staffed Guild branch must be established in the narration');
+                    break;
+                }
+                const at = resolvePlace(s, d.place, emit, 0, { c: true, reported: true });
+                const town = !at.error && settlementOf(s, at.id);
+                const place = s.places[at.id];
+                if (!town || !['site', 'interior'].includes(place?.kind) || dungeonOf(s, at.id)
+                    || !/\bguild\b/i.test(`${place.name} ${d.evidence}`)) {
+                    reject(d, 'guild_branch', at.error || 'a branch needs an identified Guild premises in a canonical settlement');
+                    break;
+                }
+                establishBranch(at.id);
+                break;
+            }
+            case 'place.reported': {
+                // .190 (B5): the parts of a Living Dungeon are the engine's sections; a part told of is no place
+                const told = livingPartTold(d.place);
+                if (told) { reject(d, 'dungeon_way', told); break; }
+                // Patch 2: a place someone tells of, a map shows or a rumour names: a known place by report, not a
+                // place in the world as the story has shown it (src/v4/known.js)
+                const r = reportPlace(s, d, emit, { by: d.by ? idOf(d.by) || null : null, place: (ref) => resolvePlace(s, ref, emit, 0, { c: cPath, reported: true }) });
+                if (r.error) reject(d, 'place', r.error);
+                break;
+            }
+            case 'feature': {
+                // Patch 6 (src/v4/features.js): an obstacle or danger of the place where he is; named again it is the same
+                // one (no copy). What it takes, how hard and whether it hurts is fixed when the story establishes it; what
+                // Alaric achieves on it (got past, made harmless, found) is the engine's; the world itself may destroy it
+                const here = s.scene.at;
+                const known = (typeof d.feature === 'string' && s.features?.[d.feature]?.at === here ? s.features[d.feature] : null)
+                    || featureNamed(s, here, d.feature) || featureNamed(s, here, d.name);
+                if (known) {
+                    if (d.status === 'destroyed' && known.status !== 'destroyed') { emit(featureEvent({ ...known, status: 'destroyed', history: [...(known.history || []), { turn: s.turn, minute: s.clock.minute, what: 'destroyed (the story)' }] })); break; }
+                    const fixed = ['kind', 'trigger', 'stat', 'difficulty', 'harm'].filter((k) => d[k] != null && d[k] !== known[k]);
+                    if (known.hidden && d.hidden === false) fixed.push('hidden');
+                    if (fixed.length) reject(d, 'engine_owned', `${known.id}: ${fixed.join(', ')} of a known feature stay as established (found, passed and made harmless only by the engine)`);
+                    break;
+                }
+                if (!kindOk(d)) { reject(d, 'world_rule', 'a feature needs a name and a kind'); break; }
+                const id = `feat.${Object.keys(s.features || {}).length + 1}`;
+                const harm = d.harm || (d.kind === 'hazard' ? 'hp' : null);
+                // review of 32c7d2c: a hidden hazard that is part of a feature here (the needle in that chest's lock)
+                const on = d.kind === 'hazard' && d.on ? ((typeof d.on === 'string' && s.features?.[d.on]?.at === here ? s.features[d.on] : null) || featureNamed(s, here, d.on))?.id || null : null;
+                // Patch 7 (open point of the Patch 6 review): the feature it is part of may come later in this report
+                if (d.kind === 'hazard' && d.on && !on) pendingRefs.push({ kind: 'on', id, at: here, name: String(d.on) });
+                emit(featureEvent({
+                    id, at: here, name: String(d.name || d.feature).slice(0, 80), kind: d.kind, hidden: d.hidden === true,
+                    status: d.status === 'destroyed' ? 'destroyed' : 'active', trigger: d.kind === 'hazard' ? d.trigger || 'touch' : d.trigger || null,
+                    stat: d.stat || null, difficulty: d.difficulty || 'moderate', harm, on,
+                    since: { turn: s.turn, minute: s.clock.minute }, found: d.hidden === true ? null : { turn: s.turn, minute: s.clock.minute, how: 'seen' },
+                    history: [{ turn: s.turn, minute: s.clock.minute, what: 'established' }], by: 'reply',
+                }));
+                break;
+            }
+            case 'passage':
+                passage(d);
+                break;
+            case 'area':
+                areaClass(d);
+                break;
+            case 'dungeon':
+                dungeonClass(d);
+                break;
+            case 'recover': {
+                const who = idOf(d.who) || 'pc';
+                const serviced = (s.services || []).some((x) => x.turn === s.turn && ['lodging', 'healing', 'meal'].includes(x.service));
+                if (who === 'pc' && !auth.rest && !serviced) { reject(d, 'recover', 'Alaric recovers only while resting or sleeping, or with lodging or healing he paid for'); break; }
+                // Prototype C: his natural recovery for the rest or sleep is the engine's, booked with the turn
+                if (who === 'pc' && auth.c && auth.recovered) { reject(d, 'engine_recovery', 'the engine already booked his recovery for the rest or sleep'); break; }
+                const amounts = {};
+                if (d.hp) amounts.hp = d.hp;
+                if (d.sta) amounts.sta = d.sta;
+                if (who === 'pc') grant('player.rest');
+                if (Object.keys(amounts).length) v3({ recover: [{ who, ...amounts, why: who === 'pc' ? (serviced ? 'lodging or healing' : 'rest') : 'rest' }] }, d);
+                break;
+            }
+            case 'object.new':
+                // coin is a number, never a thing: Alaric's in his purse, anyone else's in the story; coin he gains is
+                // coin.gift (a phantom "copper" after the Guild payout, live 30.09.2026)
+                if (isLooseCoin(d.name)) {
+                    reject(d, 'currency_wallet', 'loose coin is no object: Alaric\'s coin is his purse total, and coin he gains in the story is coin.gift');
+                    break;
+                }
+                objectNew(d);
+                break;
+            case 'object.move':
+                objectMove(d);
+                break;
+            case 'object.mark': {
+                const o = objectRef(d.object);
+                if (!o) { reject(d, 'object', 'unknown object'); break; }
+                emit({ t: 'object.marked', d: { id: o.id, mark: String(d.mark).slice(0, 120), by: idOf(d.by) || String(d.by || '').slice(0, 60) || null, turn: s.turn } });
+                break;
+            }
+            case 'offer':
+                offer(d);
+                break;
+            case 'bid':
+                bid(d);
+                break;
+            case 'coin.gift': {
+                const from = idOf(d.from);
+                const free = !privateQuestsOf(s);
+                if (free) { giftFree(d, from); break; }
+                const quote = normText(d.said || '').replace(/[^a-z0-9]+/g, ' ').trim();
+                const amount = free ? coinEvidence(d.said, content) : null;
+                const giftId = `gift.${tag}.${hash32(`${from || d.from}|${quote}`)}`;
+                if (free && (d.repeat_of != null || (s.credits || []).some(c => c.gift?.id === giftId))) {
+                    reject(d, 'coin_already_received', 'an existing handover or its recount never creates another payment');
+                    break;
+                }
+                if (free && (!quote || !normText(prose).replace(/[^a-z0-9]+/g, ' ').includes(quote)
+                    || amount.cp === null || !amount.complete
+                    || /\b(?:promis(?:e|es|ed)\s+to\s+|(?:will|would|could|might)\s+|(?:i|he|she|they)['’]ll\s+)(?:give|pay|hand|pass|put|transfer)\b|\b(?:already|previously)\s+(?:gave|paid|handed|passed|put|transferred)\b/i.test(d.said))) {
+                    reject(d, 'coin_evidence', 'a gift needs a quoted current handover with an explicit currency amount; promises, recounts and invented quotes do not pay');
+                    break;
+                }
+                if (from === 'pc') { reject(d, 'coin', 'Alaric does not gift himself coin'); break; }
+                const refusal = coinRefusal(d, from);
+                if (refusal) {
+                    reject(d, refusal.rule, refusal.why);
+                    const correction = `Alaric's purse did not change: the ${d.cp} cp from ${String(d.from).slice(0, 60)} in the last reply were not booked (${refusal.fix}).`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    break;
+                }
+                const coin = s.entities.pc.sheet.coin_cp;
+                const cp = free ? amount.cp : evidenced(d.cp, d.said, d);
+                if (free && cp !== d.cp) emit({ t: 'note', d: { kind: 'amount.corrected', seq: d.seq, type: d.type, reported_cp: d.cp, said: d.said, cp } });
+                if (cp === null) {
+                    reject(d, 'coin', `${d.cp} cp is no sum the reply names`);
+                    const correction = `Alaric's purse did not change: the ${d.cp} cp from ${String(d.from).slice(0, 60)} in the last reply were not booked (the reply names no such sum).`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    break;
+                }
+                const wage = privateMode ? paymentJob(s, d, from, fw.accept.filter(x => x.type === 'quest.close' && x.status === 'completed').map(x => x.quest)) : null;
+                if (wage) { deferSettlement(d, () => finishPayment(d, wage, from, cp), wage.job?.id); break; }
+                grant('envelope.give');
+                emit({ t: 'coin.changed', d: { id: 'pc', value: coin + cp, delta: cp, why: `${from ? entityLabel(s, from) : d.from}: ${String(d.why || 'a gift').slice(0, 80)}` } });
+                if (free) emit({ t: 'transaction.completed', d: { to: 'pc', from: from || String(d.from), cp, at: s.scene.at, gift: { id: giftId, said: String(d.said).slice(0, 300), why: String(d.why || 'a gift').slice(0, 120) } } });
+                break;
+            }
+            case 'coerce':
+                coerce(d);
+                break;
+            case 'quest.offer':
+                questOffer(d);
+                break;
+            case 'quest.detail': {
+                const q = questRef(d.quest);
+                if (!q) { reject(d, 'quest', 'unknown quest'); break; }
+                // A Guild contract's note keeps the story, not the engine's state: a clause that states its status,
+                // payout, XP or rank is dropped (live run 30.09.2026 22:41: "Contract registered and active; payout
+                // 60 cp" while it was still on the board), and a status the contract is not in is corrected. So is a
+                // clause that changes the mechanics (another payout, a payment withheld, the fee); the firewall refuses
+                // such a note when it keeps no story. A hunt is proven by the trophies of its kills at a Guild hall: a
+                // local inspection or signature the story makes a condition is no part of it (live 30.09.2026 14:56:
+                // "the steward must inspect and sign before payment"). The rest of the note (route, contacts, what was
+                // seen) stays.
+                // Patch 7.2C: a quest note keeps no death the engine has not booked either
+                const deaths = trueDeaths(String(d.note));
+                if (deaths.refused.length && !deaths.text) { reject(d, 'engine_owned_combat', `a quest note of deaths the engine has not booked (${deaths.refused.map((x) => x.why).join('; ')})`); break; }
+                let note = deaths.text;
+                if (q.kind === 'guild_contract') {
+                    // the one free-text rule of the Decision Ownership (src/v4/ownership.js), with the hunt's sign-off
+                    const hunt = isHunt(q, content);
+                    const delivery = cPath && rulesetOf(s) >= 2 && deliveryObjectives(q).length > 0;
+                    const cut = stripOwned(note, { store: 'note', quest: q, extra: clause =>
+                        (hunt && SIGN_OFF.test(clause) && REQUIRE.test(clause))
+                        || (delivery && additionalContainerReturn(q, clause)) });
+                    if (cut.claims.some((c) => wrongClaim(c, q)) && !corrections.includes(statusCorrection(q))) corrections.push(statusCorrection(q));
+                    if (hunt && cut.other.length) {
+                        // Prototype C (4.3.0-c.6): its contract slip shows the outcome; trophies are loot
+                        const correction = cPath ? `"${q.title}" is a hunt contract: the Guild pays it at a Guild hall once its contract slip shows the outcome READY; no local inspection, witness, signature or trophy is required.`
+                            : `"${q.title}" is a hunt contract: the Guild pays it on the trophies of the kills brought to a Guild hall; no local inspection, witness or signature is required.`;
+                        if (!corrections.includes(correction)) corrections.push(correction);
+                    }
+                    if (delivery && cut.other.length) {
+                        corrections.push(`"${q.title}": the original delivery destination and terms are unchanged. No additional return duty was booked.`);
+                    }
+                    if (!cut.kept.length) { reject(d, cut.other.length || cut.altered.length ? 'guild_quest_detail' : 'engine_owned_detail', 'a Guild contract note keeps the story; its status, payout, XP, rank and (for a hunt) the proof are the engine\'s'); break; }
+                    note = cut.kept.join(' ');
+                }
+                emit({ t: 'quest.detailed', d: { id: q.id, note: note.slice(0, 200), schedule: d.schedule ? String(d.schedule).slice(0, 80) : null } });
+                break;
+            }
+            case 'quest.progress':
+            case 'quest.ready':
+            case 'quest.close':
+                if (cPath && rulesetOf(s) >= 2 && d.depends_on?.some(pendingSeq)) deferSettlement(d, () => questClaim(d, true));
+                else questClaim(d);
+                break;
+            case 'listing.gone': {
+                // The same reply in which the player reads an official board is not allowed to retroactively take
+                // away its just-published choices. On Prototype C the current-day board stays Alaric's stable choice set;
+                // background adventurers do not get a second chance to consume one on a later reply either.
+                if ((outcome.board?.listings || []).some((id) => id === (typeof d.listing === 'string' ? d.listing : questRef(d.listing)?.id))) {
+                    reject(d, 'board_first_display', 'a listing just presented as available cannot vanish retroactively during the same board-reading reply');
+                    const title = questRef(d.listing)?.title || String(d.listing?.new || d.listing);
+                    const correction = cPath
+                        ? `The newly displayed Guild listing "${title}" remains AVAILABLE to Alaric for this Guild day; background adventurers do not consume one of his five daily choices.`
+                        : `The newly displayed Guild listing "${title}" remains AVAILABLE. The previous reply's claim that it had just been taken was not booked; only a later established event may remove it.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    break;
+                }
+                const q = questRef(d.listing);
+                // Prototype C (4.3.0-c.5): nor the contract the engine takes for him at the hall this reply brings him to
+                if (q && (outcome.conditionals || []).some((k) => k.kind === 'accept' && k.quest === q.id)) {
+                    reject(d, 'engine_booked', 'the contract he takes on his arrival in this reply is the engine\'s to book');
+                    const correction = `Nobody else took the Guild contract "${q.title}" in the last reply: the engine books it for Alaric when he reaches its Guild hall, else it stays on the board.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    break;
+                }
+                if (!q || q.status !== 'listed') { reject(d, 'quest', 'no such listing on the board'); break; }
+                const key = Object.keys(s.guild.boards).find((k) => s.guild.boards[k].listings.includes(q.id));
+                // Prototype C daily board is the player's stable set of choices. Ambient adventurers may exist in the
+                // fiction, but they do not consume one of Alaric's remaining same-day listings. Explicit withdrawal or
+                // expiry is a different world event and remains possible.
+                if (cPath && d.why === 'taken_by_other' && key && s.guild.boards[key].day === today(s)) {
+                    reject(d, 'board_stable_player', 'another adventurer does not consume Alaric\'s stable same-day Guild listing');
+                    const correction = `The Guild listing "${q.title}" remains AVAILABLE to Alaric for this Guild day; another adventurer taking work in the background does not remove one of his five daily choices.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    break;
+                }
+                grant('world.taken');
+                emit({ t: 'quest.status', d: { id: q.id, from: 'listed', to: d.why, by: 'world' } });
+                if (key) emit({ t: 'board.refreshed', d: { key, ...s.guild.boards[key], listings: s.guild.boards[key].listings.filter((x) => x !== q.id) } });
+                break;
+            }
+            case 'overreach':
+                overreach(d.kind, d.what);
+                break;
+            default:
+                reject(d, 'unknown', `the engine has no handler for ${d.type}`);
+        }
+        acceptStep(d);
+        if (acceptedSteps.has(String(d.seq)) && ['arrive', 'enter', 'person.new'].includes(d.type)) settleCanonicalPurchases();
+        if (acceptedSteps.has(String(d.seq)) && d.type === 'arrive' && s.scene.at !== atBefore) refusedScene = false;
+    }
+    // a hand-over whose offer never came to be (refused) stands as the story told it
+    settleDeferred();
+
+    // Patch 7 (the open point of the Patch 6 review): a feature that a hazard is part of (on), that stands in a way or
+    // holds a thing, named before the same report established it: found now by its name where it was named, once,
+    // whatever the order of the report (no second chest, the trap stays hidden); a thing's container by its name
+    // when he reaches for it (in_name: commands.js take)
+    for (const r of pendingRefs) {
+        step = { kind: 'delta', type: r.kind === 'on' ? 'feature' : 'passage', seq: r.seq ?? 0, granted: new Set() };
+        const target = wayFeature(r.name, r.at);
+        if (!target) continue;
+        if (r.kind === 'on' && s.features[r.id] && !s.features[r.id].on && target !== r.id) emit(featureEvent({ ...s.features[r.id], on: target }));
+        if (r.kind === 'way' && s.links[r.id] && !s.links[r.id].feature) emit(linkEvent({ ...s.links[r.id], feature: target }));
+    }
+
+    // .181 (P2-2): the engine's road stop of a reply whose every local step was at the place he set out from
+    if (roadStop) bookRoadStop();
+
+    // Resolve delayed acquisition before checking this reply's delivery claims.
+    while (implicitArrivals.length) applyExpected();
+
+    // 3. what the extractor answered about the player's commands
+    step = { kind: 'expected' };
+    for (const [k, type] of Object.entries(outcome.expected_keys || {})) {
+        const e = expected[k];
+        if (!e) continue;
+        if (explicitTravel && type === 'go' && e.arrived === true && !answer.deltas.some(d => d.type === 'arrive' && samePlace(s, d.at, e.at, content))) {
+            reject({ seq: Number(k), type: 'expected' }, 'arrival_evidence', 'reported arrival has no corresponding arrive delta; movement was not booked');
+            corrections.push('An arrival was reported without its arrive event. Use the confirmed location; no implicit travel was booked.');
+        }
+        if (!explicitTravel && type === 'go' && e.arrived === true && !arrived && !s.encounter) {
+            // the arrival the story showed without an arrive delta: where the answer says, else where he set off to
+            const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
+            const at = viaStop(arrivalPlace(reportedTarget(s, auth, expected, e.at, k, sceneOf()) || e.at || go?.to || null));
+            if (!at.error && at.id !== s.scene.at && !wayRefused(at.id, { seq: Number(k), type: 'expected' })) {
+                const party = companions(e.with, { seq: Number(k), type: 'expected' });
+                perceiveAll(s, emit, seeing());
+                arriveThrough(at.id, party);
+            }
+        }
+        if (type === 'activity' && !timeUsed && Number.isInteger(e.minutes) && e.minutes > 0) {
+            const m = Math.min(e.minutes, Math.max(0, cap - timeUsed));
+            if (m > 0) { emit({ t: 'time.advanced', d: { minutes: m, why: 'activity' } }); timeUsed += m; }
+        }
+        if (type === 'take' && e.taken === true && !events.some((x) => x.t === 'object.created' && x.d.object.holder?.entity === 'pc') && !events.some((x) => x.t === 'object.moved' && x.d.to?.entity === 'pc')) {
+            const name = (auth.takeNames || {})[k];
+            if (name && !isLooseCoin(name)) emit({ t: 'object.created', d: { object: { id: uniqueObjectId(s, tag, name), name, kind: 'item', stack: false, qty: 1, unit: null, ...itemTraits(content, { name, balance: true }, s.clock.minute), holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'taken' } } } });
+        }
+        if ((type === 'buy' || type === 'pay') && e.taken_anyway === true) overreach(type === 'buy' ? 'purchase' : 'payment', `the reply had Alaric ${type === 'buy' ? 'take or use what he had not bought' : 'pay'} although he had not agreed`);
+        if ((type === 'buy' || type === 'pay') && e.priced === true) {
+            for (const dec of s.decisions.filter((x) => x.seq === Number(k) && x.turn === s.turn && !x.priced)) emit({ t: 'decision.opened', d: { decision: { ...dec, priced: true } } });
+        }
+        if (type === 'sell' && !explicitTravel) sale(k, e);
+        if (type === 'sell' && explicitTravel && e.sold && !events.some(x => x.t === 'transaction.completed' && x.d.to === 'pc')) {
+            reject({ seq: Number(k), type: 'expected' }, 'sale_evidence', 'a sale summary cannot pay without an accepted matching bid');
+        }
+    }
+
+    // Patch 5: a goal with no place (seek) is done where the extractor reports the GO for it arrived: the place the story
+    // had him find. A place only named or seen on the way is no arrival
+    if (arrived && arrived !== transit) {
+        for (const g of auth.gos || []) {
+            if (expected[String(g.seq)]?.arrived !== true) continue;
+            const i = Object.values(s.intents || {}).find((x) => x.status === 'active' && x.seek && !x.place && (x.id === g.intent || (!g.to && normText(x.seek) === normText(g.newName || ''))));
+            if (i) emit({ t: 'intent.set', d: { intent: { ...i, place: arrived, status: 'done', updated: { turn: s.turn, minute: s.clock.minute }, why: `he found it: ${placeName(s, arrived)}` } } });
+        }
+    }
+
+    // Prototype C: a real journey to another place takes time; without the story's own minutes a small fixed one
+    // (rules.time.engine_clock), never 0. Only the minutes beyond the booked activities count as travel.
+    // 4.3.0-c.6.6.2: the long one only where the way crosses a settlement's bounds (into or out of a town, from one to
+    // another); a short move within the wilds (the next bend of a wolf trail) is local like one within a town
+    if (auth.c && arrived && arrived !== startAt && arrived !== transit) {
+        const t = content.rules.time.engine_clock;
+        const floor = settlementOf(s, startAt) === settlementOf(s, arrived) ? t.go_min_same_settlement : t.go_min_elsewhere;
+        const travelled = timeUsed - booked;
+        if (travelled < floor) { emit({ t: 'time.advanced', d: { minutes: floor - travelled, why: 'travel' } }); timeUsed += floor - travelled; }
+    }
+
+    function giveReceiver(k) {
+        if (k.to) return k.to;
+        const label = normText(k.toName || '').replace(/^the /, '');
+        if (!label) return null;
+        const matches = s.scene.present.filter(id => {
+            const e = s.entities[id];
+            return e?.kind === 'npc' && [e.name, e.known_name, e.descriptors?.[0], truth(s,id,'occupation')[0]?.o]
+                .some(x => x && normText(x).replace(/^the /, '') === label);
+        });
+        return matches.length === 1 ? matches[0] : null;
+    }
+    // Patch 8: he went on into a new part of a Living Dungeon where the engine placed its encounter ahead, and the story
+    // did not bring it: it is there all the same (the next reply shows it); the level's progress never rests on wording
+    const placed = freshPart && livingOf(s, trueDungeonOf(s, freshPart))?.ahead;
+    if (placed && placed.turn === s.turn && !s.encounter) {
+        const x = livingOf(s, trueDungeonOf(s, freshPart));
+        const a = [placed, placed.next].filter(Boolean).find((y) => y.floor === floorAt(s, freshPart));
+        const sl = a && x.run.floors[a.floor]?.slots.find((y) => y.id === a.slot);
+        if (sl && !slotMet(sl) && !resolved(s, sl) && !sl.entities.some(id => namedHere.has(id))) {
+            step = { kind: 'engine' };
+            const ids = newEntity({ seq: 0, type: 'creature.new', ref: sl.ref, species: sl.species, anchor: sl.anchor, desc: [], count: sl.count, present: true, band: 'MEDIUM', more: true }, 'creature', { slot: sl.entities.length ? null : { root: x.id, floor: a.floor, slot: sl } });
+            if (ids.length) corrections.push(`ENGINE ENCOUNTER — ${sl.name ? sl.name : `${sl.count} ${sl.species}${sl.count > 1 ? 's' : ''}`} ${sl.count > 1 ? 'are' : 'is'} here in ${placeName(s, freshPart)} (the engine placed ${sl.count > 1 ? 'them' : 'it'} for this part of level ${a.floor}): the next reply shows ${sl.count > 1 ? 'them' : 'it'} at once.`);
+        }
+    }
+
+    if (explicitTravel) {
+        step = { kind: 'engine' };
+        for (const { dec, why } of settleCanonicalPurchases()) {
+            const notice = `NOT BOUGHT — ${dec.what}: ${why}. No purchase was booked; establish a present seller and valid offer within the accepted price/funds, then repeat the purchase.`;
+            system.push(notice); corrections.push(notice);
+        }
+        for (const dec of s.decisions.filter(x => ['purchase', 'sale'].includes(x.kind)))
+            emit({ t: 'decision.closed', d: { id: dec.id, status: 'expired' } });
+    }
+
+    // 4. what waited for the reply and did not happen
+    step = { kind: 'conditional' };
+    // Patch 3: what he uses of a thing he took in this very reply (commands.js use, condition 'taken'): the thing the
+    // story let him take, in the amount he uses; a tool stays his. Nothing taken, nothing used
+    for (const k of conditionals.filter((x) => !x.done && x.kind === 'use')) {
+        const got = events.filter((e) => (e.t === 'object.created' && e.d.object.holder?.entity === 'pc') || (e.t === 'object.moved' && e.d.to?.entity === 'pc'))
+            .map((e) => s.objects[e.t === 'object.created' ? e.d.object.id : e.d.split || e.d.id])
+            .filter((o) => o && o.holder?.entity === 'pc' && sameWant(k.name, o.name));
+        const o = got.at(-1);
+        if (!o) continue;
+        k.done = true;
+        if (['food', 'consumable'].includes(useOf(content, o))) {
+            const n = Math.min(k.qty || 1, o.qty ?? 1);
+            emit({ t: 'object.consumed', d: { id: o.id, by: 'pc', ...(n < (o.qty ?? 1) ? { qty: n } : {}) } });
+        }
+        emit({ t: 'cmd.completed', d: { seq: k.seq, ok: true, reason: null } });
+    }
+    // Settle private work only after this reply's actual arrivals and conditional actions.
+    // Completion and wage order in the extractor answer cannot change the result.
+    step = { kind: 'engine' };
+    blockedJobs = privateMode ? recordJobWork(s, emit, outcome, expected, events) : new Set();
+    // Sources settle before dependants. Wages still wait for this reply's private close,
+    // even when the extractor reported the payment first. Every queued item runs at most once.
+    const waiting = settlements.sort((a, b) => a.d.seq - b.d.seq);
+    while (waiting.length) {
+        const before = waiting.length;
+        for (const entry of [...waiting]) {
+            const { d, finish, job } = entry;
+            if (d.depends_on?.some(pendingSeq)) continue;
+            if (job && waiting.some(x => x.d.type === 'quest.close' && x.d.status === 'completed' && questRef(x.d.quest)?.id === job)) continue;
+            pendingSteps.delete(d);
+            step = { kind: 'delta', type: d.type, seq: d.seq, granted: new Set() };
+            if (d.depends_on?.some(seq => !acceptedSteps.has(String(seq)))) reject(d, 'quest_dependency', 'a cited supporting step failed its final validation');
+            else finish();
+            acceptStep(d);
+            waiting.splice(waiting.indexOf(entry), 1);
+        }
+        if (waiting.length === before) {
+            // Only an unresolvable dependency remains (for example, work closed on proof of its own wages).
+            for (const { d } of waiting.splice(0)) {
+                step = { kind: 'delta', type: d.type, seq: d.seq, granted: new Set() };
+                pendingSteps.delete(d);
+                reject(d, 'quest_dependency', 'the supporting steps cannot be confirmed independently');
+            }
+        }
+    }
+    step = { kind: 'engine' };
+    // The ordinary, accepted local place + present staff data also establish a branch. The optional
+    // guild.branch delta remains useful for remote premises; omitting it cannot break a real local visit.
+    if (cPath && rulesetOf(s) >= 2 && !hallOf(s, s.scene.at)) {
+        const premises = lineage(s, s.scene.at).find(id => ['site', 'interior'].includes(s.places[id].kind)
+            && /\bguild\b.*\b(?:hall|house|office|branch|desk|counter|reception)\b/i.test(s.places[id].name || ''));
+        const staffed = s.scene.present.some(id => {
+            const e = s.entities[id], occupation = truth(s, id, 'occupation')[0]?.o;
+            // V3 introductions keep the structured role as their first descriptor. Older occupation
+            // deltas sometimes resolved "clerk" to that NPC's own id instead of a literal profession.
+            const role = occupation && !s.entities[occupation] ? occupation : e?.descriptors?.[0];
+            return e?.kind === 'npc' && statusOf(s, id) !== 'dead' && (!e.at || e.at === s.scene.at)
+                && /^(?:(?:adventurers['’]?\s+)?guild\s+)?(?:clerk|registrar|receptionist)$/i.test(String(role || '').trim());
+        });
+        const shown = staffed && String(prose).split(/[.!?\n]+/).some(sentence => /\b(?:clerk|registrar|receptionist)\b/i.test(sentence)
+            && !/\bno\s+(?:\w+[ -]){0,2}(?:clerk|registrar|receptionist)\b/i.test(sentence)
+            && narratedEvent(prose, sentence.trim()).ok);
+        if (premises && shown && settlementOf(s, premises) && !dungeonOf(s, premises)) establishBranch(premises);
+    }
+    for (const id of readied) {
+        const r = contractReady(s, content, s.quests[id], { c: true });
+        const correction = `"${s.quests[id].title}" is NOT READY for turn-in yet: ${r.reason}. Its goal and recipient stay as they are: it is done when he hands it over there (no new recipient, address or condition).`;
+        if (r.mode === 'not_delivered' && !corrections.includes(correction)) corrections.push(correction);
+    }
+
+    step = { kind: 'conditional' };
+    // Deferred READY/proof checks now settled: retry only the player's still-current desk handover.
+    for (const k of conditionals.filter(x => !x.done && x.kind === 'turn_in' && hallOf(s, s.scene.at) && (
+        x.guild_candidate ? arrivals.has(s.scene.at) && candidateHallReached(x) : hallOf(s, s.scene.at) === x.hall))) {
+        const q = s.quests[k.quest];
+        const r = q?.status === 'active' ? completeContract(s, content, q, emit, { step: k.seq, c: cPath }) : { ok: false, reason: 'the contract is no longer active' };
+        k.done = true;
+        emit({ t: 'cmd.completed', d: { seq: k.seq, ok: r.ok, reason: r.reason ?? null } });
+        if (!r.ok) system.push(`TURN-IN REFUSED — ${q?.title || k.quest}: ${r.reason}`);
+    }
+    // a trap of a place he did not get into does not spring (no expiry of his GO for it: the GO stands as it went)
+    for (const c of conditionals.filter((x) => !x.done && x.kind !== 'spring')) emit({ t: 'cmd.expired', d: { seq: c.seq, reason: 'the condition did not happen in this reply' } });
+
+    // NPC E2-A: a met of a GO step that brought him nowhere enters no one; the desk steps' actual handlers
+    step = { kind: 'expected' };
+    if (explicitTravel) for (const [k, type] of Object.entries(outcome.expected_keys || {})) {
+        if (type !== 'go' || metDone.has(k) || !Array.isArray(expected[k]?.met)) continue;
+        for (const m of expected[k].met) reject({ seq: Number(k), type: 'expected', met: m }, 'met_without_arrival', `GO step ${k} did not bring him to its place in this reply`);
+    }
+    if (explicitTravel) deskHandlers();
+
+    // 5. who noticed him, his introduction, his own record of the turn, a fight the reply committed to
+    step = { kind: 'engine' };
+    // Prototype C (4.3.0-c.6): his contract slips show what the engine holds of their contracts (READY, COMPLETED)
+    // Patch 8: what the reply's arrivals and deaths bring about in a Living Dungeon (a level cleared, its contracts)
+    if (cPath) syncEvents(s, content, emit, { touch: [trueDungeonOf(s, s.scene.at)] });
+    if (cPath) slipMarks(s, content, emit);
+    // Arrival resets visibility as always. Only now, after this room's complete population (including
+    // the Living Dungeon fallback), can the existing opposed Stealth check resolve this one GO.
+    if (stealthGo && stealthAt === s.scene.at && s.scene.at !== startAt && s.scene.at !== transit && !s.encounter) {
+        const r = bookStealth(s, content, dice, emit, { what: 'arrival stealth', at: s.scene.at, turn: s.turn, seq: stealthGo.seq });
+        stealthSettled = true;
+        if (r.check.success) {
+            for (const p of [...s.pending_combat]) if (s.scene.present.includes(p.by) && s.scene.awareness[p.by] !== 'aware') {
+                emit({ t: 'combat.pending_cleared', d: { by: p.by } });
+            }
+        }
+        corrections.push(`ARRIVAL STEALTH — ${placeName(s, s.scene.at)}: ${r.check.success ? 'SUCCESS; use the engine concealment and observer awareness, not an earlier narrated discovery' : 'FAILURE; use the engine observer awareness. Detection alone is not an attack'}. No further movement or attack was chosen.`);
+    }
+    else if (stealthGos.some(g => g.manner?.scope === 'destination')) {
+        system.push(`DESTINATION STEALTH NOT RESOLVED — current location: ${placeName(s, s.scene.at)}. The voluntary target arrival was not confirmed; no destination Detection result or future stealth permission was granted.`);
+    }
+    perceiveAll(s, emit, seeing());
+    selfIntro(s, emit);
+    const ep = episode(s, msg);
+    if (ep) emit({ t: 'memory.recorded', d: { memory: ep } });
+    const fightFrom = events.length;
+    const opened = openCommitted(s, content, dice, emit, { hold: false, c: cPath });
+    if (opened) opened.from = fightFrom;
+    if (cPath && !opened) openEquipmentStock(s, content, emit);
+    // PULSE package A (plan §6 A5): what this reply did with the turn's window, separate from the engine's decision.
+    // `narrated` is a booking-signal heuristic, not evidence of narrative quality or PULSE causality. Package B:
+    // also for a Dungeon's window (its own foe rule governs there, so governs is false, yet the turn drew)
+    if (pulse?.governs || pulse?.rolled) {
+        const created = events.filter((e) => e.t === 'entity.created').map((e) => e.d.entity);
+        const persisted = {
+            threads: events.filter((e) => e.t === 'thread.set').length, npc_reentries: reenteredNpcs.size,
+            persons: created.filter((x) => x.kind === 'npc').length, creatures: created.filter((x) => x.kind === 'creature').length,
+            features: events.filter((e) => e.t === 'feature.set').length, objects: events.filter((e) => e.t === 'object.created').length,
+            places: events.filter((e) => e.t === 'place.created').length,
+            fight: !!opened || (s.pending_combat || []).length > 0,
+            ...(pulse.frame === 'dungeon' ? { slots: events.filter((e) => e.t === 'dungeon.slot').length } : {}),
+            rejected_pulse: rejected.filter((r) => ['pulse', 'pulse_take'].includes(r.rule) || (r.rule === 'road' && pulse.exposure === 'travel')).length,
+        };
+        const any = persisted.persons + persisted.creatures + persisted.features + persisted.objects + persisted.places + persisted.threads + persisted.npc_reentries > 0 || persisted.fight;
+        emit({ t: 'pulse.outcome', d: { v: 2, turn: s.turn, rolled: !!pulse.rolled, open: !!pulse.open, kind: pulse.kind ?? null,
+            narrated: pulse.open ? (any ? 'likely' : 'none') : null, heuristic: true, persisted } });
+        // package C (plan §6 C 5, §12.4 c): a pause the engine cut short for someone (danger, trouble) whom the reply did
+        // not bring in: the next reply makes that cause plain, from the engine's event; no new attacker, no fight for it
+        const x = pulse.interrupt;
+        if (x && ['danger', 'trouble'].includes(x.cause) && !persisted.persons && !persisted.creatures && !persisted.fight && !persisted.rejected_pulse && !persisted.slots) {
+            const booked = x.at_end ? `his ${x.of_min} min ${x.kind} ran in full` : `only ${x.after_min} of the ${x.of_min} min of his ${x.kind}${x.kind === 'wait' ? '' : ' and their recovery'} were booked`;
+            const correction = `REST INTERRUPTED (the engine's, last turn): the last reply did not show what ${x.at_end ? `met him as his ${x.kind} ended` : `cut his ${x.kind} short`} at ${formatClock(x.minute)}: ${x.who ? `${x.who} of this level came upon him` : CAUSE_SHORT[x.cause]}; ${booked}. Make that cause plain in this reply as what ${x.at_end ? 'met' : 'woke or stopped'} him (it may still be near or already gone); bring in no new attacker or fight for it.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+        }
+    }
+    if (sceneUnreached) {
+        const now = placeName(s, s.scene.at);
+        const correction = s.scene.at === sceneUnreached.at
+            ? `Alaric remains at ${now}. The other scene was not reached: its people, objects and quest outcomes were not booked here. Continue from the canonical location; do not invent a completed journey.`
+            : `Part of the last reply took place in a scene the engine did not book: its people, objects and quest outcomes there were not recorded. Alaric is at ${now}; continue from there.`;
+        if (!corrections.includes(correction)) corrections.splice(Math.min(sceneUnreached.index, corrections.length), 0, correction);
+    }
+    // Build .182 (P2-4, batch 12./13.11.2026 Mage T40 → T42): a status correction states the contract as it was when
+    // it was written (the firewall reads every report before any is applied; a quest note at its own step). A contract
+    // whose status this very reply changed (a turn-in booked on arrival, a give-up at the desk) is told as it now is:
+    // its correction of an earlier status is replaced by the one of its final status, never "ACTIVE … nothing paid"
+    // beside a booked payout. A correction of a contract whose status did not change stays as it is.
+    for (const id of new Set(events.filter((e) => e.t === 'quest.status').map((e) => e.d.id))) {
+        const q = s.quests[id];
+        if (!q) continue;
+        const now = statusCorrection(q);
+        const stale = new Set(events.filter((e) => e.t === 'quest.status' && e.d.id === id && e.d.from !== q.status)
+            .map((e) => statusCorrection({ ...q, status: e.d.from })));
+        for (let i = 0; i < corrections.length; i++) if (stale.has(corrections[i])) corrections[i] = corrections.indexOf(now) >= 0 && corrections.indexOf(now) !== i ? null : now;
+        for (let i = corrections.length - 1; i >= 0; i--) if (corrections[i] === null) corrections.splice(i, 1);
+    }
+    return { events, rejected, corrections, system, opened, state: s, arrivedHall };
+
+    // ---------------------------------------------------------------------------------------------- step helpers
+    function questClaim(d, settling = false) {
+        switch (d.type) {
+            case 'quest.progress': {
+                const q = questRef(d.quest);
+                if (!q) { reject(d, 'quest', 'unknown quest'); break; }
+                // Patch 7.2C: progress that counts deaths the engine has not booked is no progress
+                const deaths = trueDeaths(String(d.objective));
+                if (deaths.refused.length) { reject(d, 'engine_owned_combat', `quest progress of deaths the engine has not booked (${deaths.refused.map((x) => x.why).join('; ')})`); break; }
+                // Prototype C (4.3.0-c.6.6.6): the same word on the same objective again is no news (one entry each)
+                const said = String(d.objective).slice(0, 160);
+                if (cPath && (q.progress || []).some((p) => progressKey(q, p.objective) === progressKey(q, said) && p.status === d.status)) break;
+                emit({ t: 'quest.progressed', d: { id: q.id, objective: said, status: d.status } });
+                break;
+            }
+            case 'quest.ready': {
+                const q = questRef(d.quest);
+                if (!settling && cPath && rulesetOf(s) >= 2 && q?.kind === 'guild_contract' && deliveryObjectives(q).length) deferSettlement(d, () => questClaim(d, true));
+                else finishReady(d);
+                break;
+            }
+            case 'quest.close': {
+                const q = questRef(d.quest);
+                if (!q) { reject(d, 'quest', 'unknown quest'); break; }
+                if (q.status !== 'active' && q.status !== 'offered') { reject(d, 'quest', `the quest is ${q.status}`); break; }
+                if (q.kind === 'private' && d.status === 'completed' && q.giver && idOf(d.by) !== q.giver) { reject(d, 'quest', 'private work is closed by its giver'); break; }
+                if (privateMode && q.kind === 'private' && d.status === 'completed') {
+                    if (!settling) deferSettlement(d, () => questClaim(d, true));
+                    else if (!q.work || blockedJobs.has(q.id)) {
+                        reject(d, 'private_work', 'no successful player-authorized work is recorded for this job');
+                        corrections.push(`"${q.title}" is still ${q.status}: acceptance or progress text is no performed work. Only the player's actual job actions count; do not invent a journey, working time, completion or wages.`);
+                    } else emit({ t: 'quest.status', d: { id: q.id, from: q.status, to: 'completed', by: idOf(d.by) } });
+                    break;
+                }
+                if (d.status === 'failed') grant('world.failed');
+                emit({ t: 'quest.status', d: { id: q.id, from: q.status, to: d.status, by: idOf(d.by) || null } });
+                break;
+            }
+        }
+    }
+
+    function finishPayment(d, { job: q, error }, from, cp) {
+        const why = error || (!q.work || q.status !== 'completed' || blockedJobs.has(q.id) ? 'job is not completed through authorized work'
+            : q.payment ? 'the agreed wages were already paid'
+            : q.giver && from !== q.giver ? 'only this job\'s giver pays its wages'
+            : q.payout_cp != null && q.payout_cp !== cp ? 'payment differs from the agreed job reward' : null);
+        if (why) { reject(d, 'private_payment', why); corrections.push(`No private-job wages were booked: ${why}. Independent genuine gifts remain possible; never rename unpaid wages as a gift.`); return; }
+        grant('envelope.give');
+        emit({ t: 'coin.changed', d: { id: 'pc', value: s.entities.pc.sheet.coin_cp + cp, delta: cp, why: `Private job: ${q.title}` } });
+        emit({ t: 'transaction.completed', d: { to: 'pc', from, cp, job: q.id, for: q.title, at: s.scene.at } });
+    }
+
+    // All READY paths converge here after delayed acquisitions.
+    function finishReady(d) {
+        const q = questRef(d.quest);
+        if (cPath && rulesetOf(s) >= 2 && q?.kind === 'guild_contract' && deliveryObjectives(q).length && deliveryStatus(q, s)) {
+            const previousStep = step;
+            step = { kind: 'engine' };
+            const action = (outcome.resolutions || []).find(r => r.type === 'other' && r.status === 'resolved' && r.quote && String(s.last?.input || '').includes(r.quote));
+            if (action) confirmDelivery(s, q, emit, action.quote, action.seq);
+            step = previousStep;
+        }
+        if (cPath && rulesetOf(s) >= 2 && q?.kind === 'guild_contract' && deliveryObjectives(q).length && deliveryStatus(q, s)) {
+            reject(d, 'quest_delivery', deliveryStatus(q, s).reason);
+            const held = owedObjects(s,q);
+            corrections.push(`"${q.title}" is NOT READY for turn-in yet: ${held.length ? `he still carries ${held.map(o=>o.name).join(', ')}; ` : ''}${deliveryStatus(q, s).reason}`);
+            return;
+        }
+        if (!q) { reject(d, 'quest', 'unknown quest'); return; }
+        if (q.status !== 'active') { reject(d, 'quest', `the quest is ${q.status}`); return; }
+        // the readiness note is story memory too: the contract's status, payout, XP or rank stay the engine's
+        const ownNote = q.kind === 'guild_contract' && d.note ? stripOwned(d.note, { store: 'note', quest: q }).kept.join(' ') : d.note;
+        const claimed = String(ownNote || q.desired_end_state || '');
+        // an escort or delivery is ready where it arrives: a reply whose journey the engine refused has not
+        // taken it there (live 30.09.2026: Millbrook refused, the escort "ready" in the same reply). What
+        // counts is the story before this claim: a refused journey away with no arrival applied before it.
+        // A refused step inside the place he is in (the factor leads him into her wool hall) or a refused move
+        // after an applied arrival (review of 4.1.0) does not undo where the engine has him.
+        const before = travel.filter((t) => t.seq < (d.seq ?? 0));
+        if (before.some((t) => !t.ok && t.away) && !before.some((t) => t.ok) && (q.objectives || []).some((o) => ['ESCORT', 'DELIVER'].includes(o.verb))) {
+            reject(d, 'quest_dependency', 'the escort/delivery destination was not canonically reached in this reply; readiness cannot depend on the refused arrival');
+            const correction = `"${q.title}" is still IN PROGRESS: the destination arrival in the previous reply was not authorized or booked, so the Guild Quest is not ready to turn in yet.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+            return;
+        }
+        // a count the engine keeps is not the story's to settle: fewer defeated than the objective names is ready
+        // only when the story says how the outcome was reached otherwise (alternative); trophies are no count
+        const short = q.kind === 'guild_contract' ? countShort(s, content, q) : [];
+        const alternative = String(d.alternative || '').trim();
+        if (short.length && (!alternative || q.count_rule)) {
+            reject(d, 'quest_count', `the engine counts ${tallyText(short)} defeated; trophies or a claimed number do not make the count`);
+            const correction = `"${q.title}" is still IN PROGRESS: the engine counts ${tallyText(short)} defeated. ${q.count_rule ? 'This fixed hunt requires its published engine count; narrative alternatives do not complete it.' : 'It is ready only when the story establishes that the outcome was reached otherwise (the rest driven off for good, the colony broken).'}`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+            return;
+        }
+        // Prototype C (4.3.0-c.6.6.4): an escort is done by travelling with the charge, not by waiting where it
+        // arrives (live 15.10.2026: Alaric walked to the quarry gate alone, the pay wagon came in, READY and paid).
+        // Its journey (quest.journey: he set off or arrived with them) shows it; another arrangement the client
+        // agreed to is the claim's alternative. Any number of fights, or none
+        if (cPath && q.kind === 'guild_contract' && !q.journey && !String(d.alternative || '').trim() && (q.objectives || []).some((o) => o.verb === 'ESCORT')) {
+            reject(d, 'quest_escort', 'an escort is done by travelling with the charge; the engine has no journey with them');
+            const correction = `"${q.title}" is still IN PROGRESS: an escort is done by travelling with the escorted party along the way, and Alaric has not travelled with them. Their safe arrival without him is not his escort. The contract and its goal stay as they are.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+            return;
+        }
+        // Patch 5: nor is it done on the open road between (a washed-out bridge "as good as there"): the charge
+        // arrives where the journey leads, and the arrival must happen
+        if (cPath && q.kind === 'guild_contract' && s.places[s.scene.at]?.kind === 'realm' && !String(d.alternative || '').trim() && (q.objectives || []).some((o) => o.verb === 'ESCORT')) {
+            reject(d, 'quest_escort', 'the escort is still on the road; it is done where the charge arrives');
+            const correction = `"${q.title}" is still IN PROGRESS: Alaric and his charge are still on the road, not where the escort leads. It is done when the story has them arrive there together.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+            return;
+        }
+        // Prototype C (4.3.0-c.6.6.3): an outcome that rests on a hand-over this very reply could not book (Alaric
+        // still holds the basket the story put into Sister Maren's hands, live 11.10.2026) is no outcome: no READY
+        // beside the thing in his hands. The real hand-over later is the delivery, and its reply the outcome
+        if (cPath && q.kind === 'guild_contract') {
+            const refused = owedObjects(s, q).filter((o) => refusedMoves.has(o.id));
+            if (refused.length) {
+                reject(d, 'quest_delivery', `the hand-over of ${refused.map((o) => o.name).join(', ')} in this reply was not booked; Alaric still holds it`);
+                const correction = `"${q.title}" is still IN PROGRESS: the hand-over of ${refused.map((o) => o.name).join(' and ')} in the last reply did not happen in the engine's state; Alaric still holds it. The contract, its goal and its recipient stay exactly as they were: do not invent a new recipient, address or condition to explain it. It is delivered when Alaric hands it over.`;
+                if (!corrections.includes(correction)) corrections.push(correction);
+                return;
+            }
+            readied.push(q.id);
+        }
+        // the alternative is kept with the contract: the turn-in accepts the short count on it (guild.js contractReady)
+        emit({ t: 'quest.ready', d: { id: q.id, note: `${claimed}${short.length ? ` — ${alternative}` : ''}`.slice(0, 220), ...(short.length ? { alternative: alternative.slice(0, 200) } : {}) } });
+        return;
+    }
+
+    /**
+     * Prototype C (4.3.0-c.6): the person in this role Alaric met at this place and left there (entity.at): the only one,
+     * or of several the one the newcomer's description alone matches (the clerk "with spectacles"); else nobody
+     */
+    /** A known person's entry into the scene (enter, and E2-A met): the V3 entry, the .158 desk witness, their place. */
+    function enterKnown(who, d) {
+        v3({ enter: [who] }, d);
+        if (s.scene.present.includes(who)) {
+            if (s.entities[who]?.kind === 'npc' && hallOf(s,s.scene.at) && firewallContext(s,content).isGuildPerson(who)) {
+                for (const w of deskWitnesses.filter(w=>w.epoch === sceneEpoch && w.at === s.scene.at)) {
+                    if (!knows(s,who,w.fact) && guildParticipationEvidence(prose, personalLabels(who), {payoutCp:w.cp,content})) {
+                        emit({t:'knowledge.gained',d:{who,about:w.fact,stance:'knows',source:'witnessed',turn:s.turn,minute:s.clock.minute}});
+                    }
+                }
+            }
+            if (s.entities[who]?.kind === 'npc' && s.entities[who].at !== s.scene.at)
+                emit({ t: 'entity.updated', d: { id: who, set: { at: s.scene.at } } });
+            for (const ref of [...blockedPeople]) if (idOf(ref) === who) blockedPeople.delete(ref);
+        }
+    }
+
+    /** NPC E2-A: a person as the evidence checks see them (src/v4/narration_evidence.js personProfile). */
+    function profileOf(id) {
+        const e = s.entities[id] || {};
+        const names = [e.name, e.known_name].filter((x) => typeof x === 'string' && x.trim());
+        const others = new Set(Object.values(s.entities).filter((x) => ['npc', 'pc'].includes(x.kind) && x.id !== id)
+            .flatMap((x) => [x.name, x.known_name].filter(Boolean).flatMap((n) => normText(n).split(' '))));
+        const nameWords = names.flatMap((n) => normText(n).split(' ')).filter((w) => w.length >= 3 && !others.has(w));
+        const occupation = truth(s, id, 'occupation')[0]?.o;
+        const role = occupation && !s.entities[occupation] ? occupation : e.descriptors?.[0] || e.role || null;
+        const look = [e.traits, ...(e.descriptors || []).slice(1).filter((x) => !/^(?:npc|person|creature)\./.test(x)), truth(s, id, 'appearance')[0]?.o, truth(s, id, 'armed')[0]?.o].filter((x) => typeof x === 'string');
+        return personProfile({ id, names, nameWords, role, look, group: isGroupPerson(e) });
+    }
+    /** A historical person entity that stands for a group ("Two clerks working the long counter"): kept, never extended. */
+    function isGroupPerson(e) {
+        return !!e && e.kind === 'npc' && collectivePerson(e.descriptors?.[0] || e.role || '', [e.traits, ...(e.descriptors || []).slice(1)].filter(Boolean), e.name || null);
+    }
+
+    /**
+     * NPC E2-A (R1): the known people the extractor says this reply shows at the place GO step k reached. Each needs
+     * the step's own arrival (he stands where the step went), an offered person (the player outcome's known_at[k]),
+     * alive and not here yet, and a narrated quote of the reply that shows exactly that person there now.
+     */
+    function metArrivals(k, reached = null) {
+        metDone.add(k);
+        const list = Array.isArray(expected[k]?.met) ? expected[k].met : [];
+        if (!list.length) return;
+        const g = (auth.gos || []).find((x) => String(x.seq) === String(k));
+        // natural batch on .191 (Rogue T13, main: testrun_10b/npc-20261115-103140Z/GEGENREVIEW_OPUS.md): a step with
+        // words for its target ({new: "Widow Hesse at the blue door"}) has no place id; the place it reached is the
+        // one this arrival answers (goStepAt), and its known people are those known there and the one person the
+        // step's own words name. A step to a known place keeps the people the player turn offered for it
+        const place = g?.to || reached;
+        const worded = !g?.to && !!reached;
+        const offered = worded ? [...new Set([...knownAt(s, content, reached).map((p) => p.id), ...namedByStep(g, reached)])] : outcome.known_at?.[k] || [];
+        const people = [...new Set([...offered, ...s.scene.present.filter((id) => s.entities[id]?.kind === 'npc')])].filter((id) => s.entities[id]).map(profileOf);
+        // .170: the reached place and what holds it or lies in it are here; every other known place is elsewhere
+        const up = new Set(lineage(s, s.scene.at));
+        const inside = (id) => lineage(s, id).includes(s.scene.at);
+        const where = { here: [...up].map((id) => s.places[id]?.name).filter(Boolean),
+            elsewhere: Object.values(s.places).filter((pl) => pl?.name && !up.has(pl.id) && !inside(pl.id)).map((pl) => pl.name) };
+        for (const m of list) {
+            const item = { seq: Number(k), type: 'expected', met: m };
+            const who = offered.includes(m?.who) ? m.who : idOf(m?.who);
+            if (expected[k]?.arrived !== true || !place || s.scene.at !== place) { reject(item, 'met_without_arrival', `GO step ${k} did not bring him to its place in this reply`); continue; }
+            // someone who came along with him (arrive.with) is here already: nothing to meet
+            if (worded && who && s.scene.present.includes(who)) continue;
+            if (!who || !offered.includes(who) || s.entities[who]?.kind !== 'npc' || statusOf(s, who) === 'dead') { reject(item, 'met_not_known_here', `${m?.who} is not one of the people known at this place for step ${k}`); continue; }
+            if (s.scene.present.includes(who)) continue;
+            const ev = metEvidence(prose, m.evidence, who, people, { ...where, self: [s.entities.pc?.name, 'Alaric'].filter(Boolean) });
+            if (!ev.ok) { reject(item, 'met_evidence', `${who}: ${ev.why}`); continue; }
+            enterKnown(who, item);
+            if (s.scene.present.includes(who)) metEntered.add(who);
+        }
+    }
+    /**
+     * The one known person a GO step's own words for its target name ("Widow Hesse at the blue door"), when the place
+     * the step reached lies in the town (or the land) where that person was last: else none
+     */
+    function namedByStep(g, reached) {
+        const words = ` ${normText(g?.newName || g?.name || '')} `;
+        if (words.trim().length < 3) return [];
+        const hits = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.name && statusOf(s, e.id) !== 'dead'
+            && normText(e.name).length > 2 && words.includes(` ${normText(e.name)} `));
+        if (hits.length !== 1) return [];
+        const last = hits[0].at || hits[0].location;
+        const near = last && s.places[last] && (settlementOf(s, last) ? settlementOf(s, last) === settlementOf(s, reached) : realmOf(s, last) === realmOf(s, reached));
+        return near ? [hits[0].id] : [];
+    }
+    /** The GO step an actual arrival at this place answers (the first not yet met one, by its place). */
+    function goStepAt(id, ref) {
+        return Object.entries(outcome.expected_keys || {}).filter(([k, type]) => type === 'go' && !metDone.has(k)).map(([k]) => k)
+            .sort((a, b) => Number(a) - Number(b)).find((k) => {
+                const g = (auth.gos || []).find((x) => String(x.seq) === k);
+                return (g?.to && g.to === id) || (expected[k]?.at && samePlace(s, ref, expected[k].at, content));
+            }) ?? null;
+    }
+
+    /**
+     * NPC E2-A (R2): the Guild person the extractor says handled a desk step of the player's (outcome.desk) learns the
+     * engine's own fact of that step as witnessed: only when the step happened (resolved at the player's turn, or its
+     * conditional completed in this reply), the person is here, alive and of the Guild, and the reply shows them doing it.
+     */
+    function deskHandlers() {
+        for (const [k, type] of Object.entries(outcome.expected_keys || {})) {
+            const desk = type === 'desk' ? outcome.desk?.[k] : null;
+            const h = desk ? expected[k]?.handled_by : null;
+            if (!h || typeof h !== 'object') continue;
+            const item = { seq: Number(k), type: 'expected', handled_by: h };
+            const res = (outcome.resolutions || []).find((r) => String(r.seq) === String(k));
+            const done = res?.status === 'resolved' || (res?.status === 'conditional' && events.some((e) => e.t === 'cmd.completed' && String(e.d.seq) === String(k) && e.d.ok === true));
+            const fact = desk.kind === 'accept' ? `f.pc.accepted.${desk.quest}` : `f.pc.completed.${desk.quest}`;
+            if (!done || !s.facts[fact]) { reject(item, 'desk_handler', `step ${k} (${desk.kind} ${desk.quest}) did not happen`); continue; }
+            const who = idOf(h.who);
+            if (!who || s.entities[who]?.kind !== 'npc' || statusOf(s, who) === 'dead' || !s.scene.present.includes(who) || !hallOf(s, s.scene.at) || !firewallContext(s, content).isGuildPerson(who)) {
+                reject(item, 'desk_handler', `${h.who} is no Guild person present at the desk`);
+                continue;
+            }
+            const people = s.scene.present.filter((id) => s.entities[id]?.kind === 'npc').map(profileOf);
+            const ev = deskHandlingEvidence(prose, h.evidence, who, people, { self: [s.entities.pc?.name, 'Alaric'].filter(Boolean) });
+            if (!ev.ok) { reject(item, 'desk_handler', `${who}: ${ev.why}`); continue; }
+            if (!knows(s, who, fact)) emit({ t: 'knowledge.gained', d: { who, about: fact, stance: 'knows', source: 'witnessed', turn: s.turn, minute: s.clock.minute } });
+        }
+    }
+
+    function keptHere(d) {
+        const headOf = (x) => { const w = normText(x).split(' '); const end = w.findIndex((y) => RELATION_WORDS.has(y)); return (end < 0 ? w : w.slice(0, end)).at(-1); };
+        const want = headOf(d.role);
+        if (!want) return null;
+        // NPC E2-A (R4): never the person the answer says this one is not, never a historical group entity
+        const kept = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.at === s.scene.at && !s.scene.present.includes(e.id) && statusOf(s, e.id) !== 'dead'
+            && !(cPath && rulesetOf(s) >= 2 && (e.id === d.distinct_from || isGroupPerson(e)))
+            && [truth(s, e.id, 'occupation')[0]?.o, ...(e.descriptors || [])].filter(Boolean).some((x) => headOf(x) === want));
+        if (kept.length < 2) return kept[0]?.id || null;
+        const roleWords = new Set(normText(d.role).split(' '));
+        const words = (x) => new Set(normText(x).split(/[^a-z]+/).filter((w) => w.length > 3 && !roleWords.has(w)));
+        const told = words((d.desc || []).join(' '));
+        const score = kept.map((e) => [...words([e.traits, ...(e.descriptors || [])].join(' '))].filter((w) => told.has(w)).length);
+        const best = Math.max(...score);
+        return best > 0 && score.filter((x) => x === best).length === 1 ? kept[score.indexOf(best)].id : null;
+    }
+
+    function occupation(id, role) {
+        setFactEvents(s, { s: id, p: 'occupation', o: String(role).slice(0, 80), source: { kind: 'narration', msg }, importance: 0.5 }).forEach(emit);
+    }
+
+    /** Patch 9A.1 (ruleset 2): the weapon a person holds ready, as the reply shows it (person.new armed). */
+    function armedFact(id, armed) {
+        if (rulesetOf(s) < 2 || typeof armed !== 'string' || !armed.trim()) return;
+        setFactEvents(s, { s: id, p: 'armed', o: armed.trim().slice(0, 80), source: { kind: 'narration', msg }, importance: 0.5 }).forEach(emit);
+    }
+
+    /** The people an arrival brings along (arrive.with, an expected go's with): known, alive, here before the move. */
+    function companions(list, d) {
+        // Patch 5: the charge of a quest journey he travels on (the GO's with, along: the journey is under way) arrives
+        // with him unless the story parted them; a GO that only might start it (still in town) takes no one along
+        const out = (auth.gos || []).filter((g) => g.along).flatMap((g) => g.with || []).filter((id) => s.scene.present.includes(id) && statusOf(s, id) !== 'dead');
+        for (const ref of Array.isArray(list) ? list : []) {
+            const id = idOf(ref);
+            const e = id && id !== 'pc' ? s.entities[id] : null;
+            if (!e || !['npc', 'creature'].includes(e.kind) || e.status === 'dead') { reject(d, 'world_rule', `arrive.with: unknown person ${String(ref).slice(0, 40)}`); continue; }
+            if (!s.scene.present.includes(id)) { reject(d, 'world_rule', `arrive.with: ${id} was not with Alaric`); continue; }
+            if (!out.includes(id)) out.push(id);
+        }
+        return [...new Set(out)];
+    }
+
+    /**
+     * 4.3.0-c.6.6: a new place he reaches after this reply has taken him out of the settlement it began in does not lie
+     * in that settlement (live 07.10.2026: "arrive Thornwick", then "arrive Thornwick chapel infirmary" in a chapel the
+     * extractor parented to Ashbridge, the town he had left). Its stated parent there becomes where he is now. Prototype C.
+     */
+    function onward(ref) {
+        const from = settlementOf(s, startAt);
+        const now = settlementOf(s, s.scene.at);
+        if (!cPath || !from || now === from || !ref || typeof ref !== 'object') return ref;
+        const fix = (r) => {
+            const n = r?.new;
+            if (!n || typeof n !== 'object' || ['realm', 'region', 'wilderness', 'settlement'].includes(n.kind)) return r;
+            if (n.parent && typeof n.parent === 'object') return { new: { ...n, parent: fix(n.parent) } };
+            if (typeof n.parent === 'string' && s.places[n.parent] && settlementOf(s, n.parent) === from) return { new: { ...n, parent: now || s.scene.at } };
+            return r;
+        };
+        return fix(ref);
+    }
+
+    /**
+     * Would an arrival take Alaric away from where he is: out of his settlement, or, outside one, away from his place?
+     * A new site or room with no parent, or with a parent here, is a step inside (the story's "she led him into the
+     * wool hall"); a new settlement, region or wilderness is always away.
+     */
+    function leavesHere(ref) {
+        const here = settlementOf(s, s.scene.at) || s.scene.at;
+        const inside = (id) => typeof id === 'string' && !!s.places[id] && (settlementOf(s, id) || id) === here;
+        if (typeof ref === 'string') return !inside(ref);
+        const n = ref?.new;
+        if (!n || typeof n !== 'object') return true;
+        if (!['district', 'site', 'interior'].includes(n.kind)) return true;
+        if (n.parent === null || n.parent === undefined) return false;
+        return typeof n.parent === 'string' ? !inside(n.parent) : leavesHere(n.parent);
+    }
+
+    /**
+     * Why coin the story gives Alaric is not his (review of 4.1.0), or null. Coin is hard state; three questions decide:
+     * who hands it over, whether he took it himself, whether the engine has booked it already.
+     *   - a living person here may give him coin of their own will; the other side of a trade the engine books this
+     *     turn does not (a sale's price and a purchase's change are the engine's numbers)
+     *   - coin from anywhere else (a dead man's purse, a chest, a counter) he takes: it is his only by his own TAKE the
+     *     reply carried out, or a search or gathering, in PLAYER ACTIONS
+     *   - and never when it is the coin the engine credited him at this place today (a Guild payout, a sale): the
+     *     story counting it out on the counter and him pocketing it is the same coin
+     */
+    /**
+     * Build .142 (finance consolidation §4.3, §7): a coin gift on the free path pays only an actual handover now
+     * (phase transferred) that is its own economic event (relation independent), with the complete amount in the words
+     * the report assigns (money), from a giver who is here (or coin he takes himself). Proceeds or change of a trade
+     * are paid by the trade (relation trade_settlement); a recount (repeat_of, recount) never pays again; a promise
+     * pays nothing; the same handover reported twice in this reply pays once. A trade partner may still give a
+     * separate thanks.
+     */
+    function giftFree(d, from) {
+        const money = d.money && typeof d.money === 'object' ? d.money : null;
+        // the money words are looked for first where the report's own words of this handover stand (said), as for a
+        // bid or offer line: "three silver" told twice for two handovers is each one's own
+        const saidAt = typeof d.said === 'string' ? findQuote(prose, d.said) : { state: 'missing' };
+        const within = saidAt.state === 'found' ? saidAt : null;
+        const literal = (w) => moneyLiteral(prose, money.quote, { content, currencyQuote: money.currency_quote ?? null, within: w });
+        const near = money && within ? literal(within) : null;
+        const ev = near || { state: 'missing', reason: 'no_action_anchor', source: null };
+        const at = ev.source?.ranges?.[0] || null;
+        // the record identity of a gift stays its reported handover (said), as before: the same money words or the same
+        // amount from the same giver alone are no repetition (§7.2)
+        const giftId = `gift.${tag}.${hash32(`${from || d.from}|${normText(d.said || money?.quote || '').replace(/[^a-z0-9]+/g, ' ').trim()}`)}`;
+        const refuse = (rule, why, fix) => {
+            reject(d, rule, why);
+            const correction = `Alaric's purse did not change: the ${d.cp} cp from ${String(d.from).slice(0, 60)} in the last reply were not booked (${fix}).`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+        };
+        if (d.repeat_of != null || d.relation === 'recount' || (s.credits || []).some(c => c.gift?.id === giftId))
+            return refuse('coin_already_received', 'an existing handover or its recount never creates another payment', 'it recounts a handover already booked');
+        if (d.phase !== 'transferred')
+            return refuse('coin_phase', d.phase === 'promised' ? 'a promised or offered payment is no handover now' : 'the report does not say that coin changed hands now', 'no coin changed hands now');
+        if (d.relation === 'trade_settlement')
+            return refuse('engine_booked', 'proceeds or change of a trade come only through the trade itself (its accepted bid or offer), never as a gift', 'proceeds of a trade are paid only through its accepted bid or offer');
+        if (d.relation !== 'independent')
+            return refuse('coin_relation', 'the report does not say whether this coin is a gift or part of a trade', 'it is not known what this coin is for');
+        if (ev.state !== 'verified' || /\b(?:promis(?:e|es|ed)\s+to\s+|(?:will|would|could|might)\s+|(?:i|he|she|they)['’]ll\s+)(?:give|pay|hand|pass|put|transfer)\b|\b(?:already|previously)\s+(?:gave|paid|handed|passed|put|transferred)\b/i.test(`${d.said || ''} ${money?.quote || ''}`))
+            return refuse('coin_evidence', ev.state === 'incomplete' ? 'the handed-over amount is not complete in the reply' : 'a gift needs the exact words of a current handover with its full amount; promises, recounts and invented quotes do not pay', 'the reply does not show this amount handed over now');
+        if (from === 'pc') { reject(d, 'coin', 'Alaric does not gift himself coin'); return; }
+        if (at && giftRanges.some(r => r.start < at.end && at.start < r.end)) return refuse('coin_already_received', 'the same handover is reported twice in this reply', 'it is the same handover as another report');
+        const refusal = coinRefusal(d, from);
+        if (refusal) return refuse(refusal.rule, refusal.why, refusal.fix);
+        const cp = ev.cp;
+        if (cp !== d.cp) emit({ t: 'note', d: { kind: 'amount.corrected', seq: d.seq, type: d.type, reported_cp: d.cp, said: String(money.quote).slice(0, 60), cp } });
+        if (at) giftRanges.push(at);
+        grant('envelope.give');
+        const coin = s.entities.pc.sheet.coin_cp;
+        emit({ t: 'coin.changed', d: { id: 'pc', value: coin + cp, delta: cp, why: `${from ? entityLabel(s, from) : d.from}: ${String(d.why || 'a gift').slice(0, 80)}` } });
+        emit({ t: 'transaction.completed', d: { to: 'pc', from: from || String(d.from), cp, at: s.scene.at, gift: { id: giftId, said: String(money.quote).slice(0, 300), why: String(d.why || 'a gift').slice(0, 120) } } });
+    }
+
+    function coinRefusal(d, from) {
+        const giver = from ? s.entities[from] : null;
+        // Preserve the transaction's purpose across turns: pocketing a paid sale is no second payment.
+        // A distinct gift/thanks/bonus is allowed, even from the same buyer for the same amount.
+        const purpose = keyWords(d.why || '');
+        const extra = /\b(?:another|additional|extra|bonus|gift|tip|thanks|thank\w*)\b/i.test(d.said || '');
+        // Build .142 (§7.2, "vorhandene credits … und den zugeordneten Quellvorgang verwenden"; "widersprüchliche Angaben
+        // werden … abgewiesen"): a gift whose own why names it the payment for goods this giver's sale here already
+        // credited is that sale again, whatever relation the report gives it – unless the words make it an explicitly
+        // separate extra. The trade partner alone (counterparts) stays a rule of the legacy private path only.
+        const legacy = privateQuestsOf(s);
+        const paidSale = !extra && /\b(?:payment|sale|price|proceeds|sold)\b/i.test(d.why || '')
+            && (s.credits || []).find(c => !c.gift && c.from === from && c.for && c.at === s.scene.at
+                && keyWords(c.for).filter(w => purpose.includes(w)).length >= Math.min(2, keyWords(c.for).length));
+        // Build .138 (batch 20 T32: "these sale proceeds are already in his purse" for a shard that was never sold): the
+        // refusal names the sale the engine actually credited, and claims no payment for anything else
+        if (paidSale) return { rule: 'engine_booked', why: `sale proceeds come only through an accepted bid; the sale credited here (${String(paidSale.for).slice(0, 80)}, ${paidSale.cp} cp) is not paid again`, fix: `only the sale of ${String(paidSale.for).slice(0, 80)} was credited (${paidSale.cp} cp); a recount is not another handover, and anything else is not sold until its bid is accepted` };
+        // Build .142 (§4.3 "Quell-, Transaktions-… prüfungen bleiben nötig"; batch 20 T26): coin whose own why names it the
+        // payment for goods Alaric still holds is the price of a sale that did not happen – whatever relation the report
+        // gives it; the sale pays only through its accepted bid, the goods stay his
+        const unsold = !extra && /\b(?:payment|sale|price|proceeds|sold)\b/i.test(d.why || '') && from && s.entities[from]?.kind === 'npc'
+            && Object.values(s.objects || {}).find((o) => o.holder?.entity === 'pc' && keyWords(o.name).length
+                && keyWords(o.name).filter((w) => purpose.includes(w)).length >= Math.min(2, keyWords(o.name).length));
+        if (unsold) return { rule: 'engine_booked', why: `coin for ${String(unsold.name).slice(0, 80)}, which Alaric still holds, is the price of a sale: it pays only through an accepted bid`, fix: `${String(unsold.name).slice(0, 80)} was not sold and stays his; a sale pays only when Alaric accepts a matching bid` };
+        if (giver?.kind === 'npc' && statusOf(s, from) !== 'dead' && s.scene.present.includes(from)) {
+            // … and does not say a trade was booked when only an offer or an open sale exists this turn
+            if (legacy && (counterparts.has(from) || counterparts.has('*'))) {
+                const booked = events.some((e) => e.t === 'transaction.completed' && [e.d.from, e.d.to, e.d.seller].includes(from));
+                return booked ? { rule: 'engine_booked', why: 'the other side of a trade the engine booked this turn does not give him coin', fix: 'the engine booked that trade at its price' }
+                    : { rule: 'engine_booked', why: 'the other side of a trade in this reply does not give him coin; a sale pays only through its accepted bid', fix: 'nothing was sold or paid: a sale pays only when Alaric accepts a matching bid' };
+            }
+            return null;
+        }
+        const took = Object.entries(outcome.expected_keys || {}).some(([k, t]) => t === 'take' && expected[k]?.taken === true)
+            || (outcome.resolutions || []).some((r) => r.type === 'take' && r.status === 'resolved') || !!auth.gather;
+        if (!took) return { rule: 'pc_inventory', why: 'coin nobody here hands him is his only by his own TAKE or search in PLAYER ACTIONS', fix: 'Alaric took no coin himself' };
+        if ((s.credits || []).some((c) => !c.gift && c.at === s.scene.at && c.day === today(s))) return { rule: 'engine_booked', why: 'the coin the engine paid him here today is already in his purse', fix: 'that coin is what the engine paid him here, already counted in his purse' };
+        return null;
+    }
+
+    /**
+     * Prototype C (4.3.0-c.6.6.6, live 18.10.2026: "I walk into the dark looking for the pups" made the den a room of
+     * the alleys, and the four pups the scene held were gone from it: "PRESENT: nobody besides Alaric", his Arcane
+     * Burst had no one to hit). A step into a part of the place he is in, back out of it or into the next part of the
+     * same place, toward creatures of the scene: those his GO names (their kind or name) are there with him. The story's
+     * arrive.with brings anyone else; nobody else is moved into another room.
+     */
+    function soughtHere(id, party) {
+        const from = s.scene.at;
+        const local = !!from && !!s.places[id] && (s.places[id].parent === from || s.places[from]?.parent === id
+            || (!!s.places[id].parent && s.places[id].parent === s.places[from]?.parent));
+        if (!local) return [];
+        const said = [...(auth.gos || []).map((g) => g.newName || g.name || ''), ...(outcome.resolutions || []).filter((r) => r.type === 'go').map((r) => r.quote || '')].join(' ');
+        const words = kindOf(said).words;
+        const named = (e) => [e.species, e.name, e.known_name].filter(Boolean).some((t) => { const h = kindOf(t).head; return !!h && h.length >= 3 && words.has(h); });
+        return s.scene.present.filter((who) => who !== 'pc' && !party.includes(who) && s.entities[who]?.kind === 'creature' && statusOf(s, who) !== 'dead' && named(s.entities[who]))
+            .map((who) => ({ id: who, awareness: s.scene.awareness?.[who] || null, relevant: (s.scene.relevant || []).includes(who), threat: (s.scene.threats || []).includes(who) }));
+    }
+
+    /**
+     * Patch 7: an arrival in or out of a dungeon goes by a way he knows and can take (src/v4/dungeon.js), whichever
+     * path books it (the arrive delta, an expected go). A part he has not seen (new in this reply, or never joined to
+     * any way) he reaches by going on from where he is; one carried or dropped through a way next to him (forced) is
+     * there. Refused: the reason (rejected, told as a correction), and he stays where he was.
+     */
+    /**
+     * Review of a5035f0: a walk the GO stopped short (a hidden trap on the way back: commands.js dungeonGo) ends where
+     * it stops, also when the story tells it on to the far end.
+     */
+    /** Hotfix 7.2.1: the GO legs after the one that reached `id`, each reported arrived, in order; none when no leg names it. */
+    function laterLegs(id) {
+        const all = Object.entries(outcome.expected_keys || {}).filter(([, type]) => type === 'go').map(([k]) => Number(k)).sort((a, b) => a - b);
+        const to = (k) => [expected[k]?.at, (auth.gos || []).find((g) => String(g.seq) === String(k))?.to];
+        const reached = all.filter((k) => expected[k]?.arrived === true && to(k).includes(id));
+        if (!reached.length) return [];
+        // the way goes leg by leg: one not reached ends it, whatever a later leg reports
+        const out = [];
+        for (const k of all.filter((x) => x > Math.max(...reached))) {
+            if (expected[k]?.arrived !== true) break;
+            out.push(k);
+        }
+        return out;
+    }
+
+    function viaStop(at) {
+        const stop = (auth.gos || []).map((g) => g.stop).find(Boolean);
+        if (at.error || !stop || at.id === stop || s.scene.at === stop) return at;
+        return wayBetween(s, s.scene.at, at.id).path?.includes(stop) ? { id: stop } : at;
+    }
+
+    function wayRefused(to, d, { forced = false } = {}) {
+        const from = s.scene.at;
+        if (to === from) return null;
+        if (!dungeonOf(s, from) && !dungeonOf(s, to)) {
+            // .190 (D1b): in a building no longer explored room by room, a way nobody showed is no refusal; a room a
+            // known way into which is blocked is reached only by an open way from where he is (review of .190, G2: an
+            // open hatch from a storeroom he cannot get into does not undo the locked door from here)
+            const ways = linksAt(s, to).filter((l) => goesFrom(l, otherEnd(l, to)));
+            const blocked = ways.filter((l) => blockerOf(s, l));
+            const bar = blocked.length && !openWay(from, to) ? blockerOf(s, blocked[0]) : null;
+            if (!bar || forced) return null;
+            const why = `the way to ${placeName(s, to)} is barred by ${bar.name} (${bar.id}), which he has not got past`;
+            reject(d, 'passage', why);
+            const fix = `Alaric is still in ${placeName(s, from)}: ${why}; he did not get there.`;
+            if (!corrections.includes(fix)) corrections.push(fix);
+            return why;
+        }
+        // Patch 8 (13B): a part he had not seen, reached beyond the room his GO named, is reached through that room
+        const invalid = cPath && to !== trueDungeonOf(s, to) && floorRefusal(s, trueDungeonOf(s, to), s.places[to]?.level);
+        if (invalid) { reject(d, 'passage', invalid); return invalid; }
+        const via = throughGoal(to);
+        if (via) return wayRefused(via, d, { forced });
+        // Patch 8: a sealed level, and the gate of a Living Dungeon (who may enter, its fee, how many are inside)
+        // a new room the answer shows below (its passage down) lies on the level that way leads to
+        const shown = cPath && !Number.isInteger(s.places[to]?.level) ? passageInto(to) : null;
+        const lv = shown && dungeonOf(s, from) ? levelVia(s, from, { a: from, dir: shown.dir }) : null;
+        const barred = cPath ? sealRefusal(s, to, lv) || gateRefusal(to) : null;
+        if (barred) {
+            reject(d, 'passage', barred);
+            const fix = `Alaric is still in ${placeName(s, from)}: ${barred}; he did not get there.`;
+            if (!corrections.includes(fix)) corrections.push(fix);
+            return barred;
+        }
+        const direct = linkBetween(s, from, to);
+        // a part he has not seen: new in this reply, or a place nobody showed him (no way, not known, not stood in)
+        // that his GO into the unknown found; a room he knows of (by report too) is reached only by a way (review of
+        // a5035f0)
+        const exploring = (auth.gos || []).some((g) => !g.to);
+        const unseen = events.some((e) => e.t === 'place.created' && e.d.place.id === to)
+            || (exploring && !roomKnown(s, to) && !linksAt(s, to, { hidden: true }).length && !visited(s, to));
+        // a room of another dungeon only where he set out for that dungeon (no jump from one ruin into another's room);
+        // .190: under ruleset 2 the movement proof decides this before the way (movement.js allowedArrival)
+        const dTo = dungeonOf(s, to);
+        const elsewhere = !explicitTravel && !!dTo && dTo !== to && dTo !== dungeonOf(s, from) && !forced && !(auth.gos || []).some(g => {
+            const destination = g.to || (g.newName && placeIdentity(s, { new: { name: g.newName, kind: 'site' } }));
+            return destination && dungeonOf(s, destination) === dTo;
+        });
+        const w = elsewhere ? { none: true } : (unseen && !direct) || (forced && direct) ? { path: [] } : wayBetween(s, from, to);
+        if (w.path || w.danger) return null;
+        const why = w.blocked
+            ? `the way to ${placeName(s, to)} is barred by ${w.blocked.feature.name} (${w.blocked.feature.id}), which he has not got past`
+            : elsewhere ? `${placeName(s, to)} lies in ${s.places[dTo].name}, where he did not set out for`
+                : `he knows no open way from ${placeName(s, from)} to ${placeName(s, to)}`;
+        reject(d, 'passage', why);
+        const fix = `Alaric is still in ${placeName(s, from)}: ${why}; he did not get there.`;
+        if (!corrections.includes(fix)) corrections.push(fix);
+        return why;
+    }
+
+    /** .190 (G2): an open way he knows from here to there, through known rooms (no blocker on any of its ways). */
+    function openWay(from, to) {
+        const seen = new Set([from]);
+        const queue = [from];
+        while (queue.length && seen.size < 64) {
+            const cur = queue.shift();
+            for (const l of linksAt(s, cur)) {
+                if (!goesFrom(l, cur) || blockerOf(s, l)) continue;
+                const next = otherEnd(l, cur);
+                if (next === to) return true;
+                if (!seen.has(next)) { seen.add(next); queue.push(next); }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Patch 8 (13B, live 21.10.2026 02:22: "I walk down the stairs" to the stairway room of level 2, and the story went on
+     * into a new corridor beyond it; the corridor was joined to the Bier Chamber of level 1 and inherited its level):
+     * a part he had not seen, reached in a reply whose GO named a room he knows (and can reach), lies beyond that room:
+     * the walk goes through it. Null when there is no such room.
+     */
+    function throughGoal(to) {
+        if (!cPath || visited(s, to) || linksAt(s, to, { hidden: true }).length || !dungeonOf(s, to)) return null;
+        const goal = (auth.gos || []).map((g) => g.to).find((x) => x && x !== to && x !== s.scene.at && dungeonOf(s, x) === dungeonOf(s, to) && dungeonOf(s, x) !== x && s.places[x]);
+        return goal && wayBetween(s, s.scene.at, goal).path ? goal : null;
+    }
+    /** .190 (B5): the section this turn's step previews (sections.js), made at his confirmed arrival; {refuse} for a room
+     * the story makes in a Living Dungeon; null where the arrival is no arrival in a Living Dungeon */
+    function sectionArrival(ref) {
+        if (oldSteps) return null;
+        // the step's preview he goes on from here (a second step of the message goes on from the first one's part)
+        const previews = (auth.gos || []).map((g) => g.section).filter(Boolean);
+        let p = previews.find((x) => x.from === s.scene.at && !s.places[x.id]) || previews.find((x) => !s.places[x.id]) || previews.at(-1) || null;
+        const n = ref && typeof ref === 'object' && ref.new && typeof ref.new === 'object' ? ref.new : null;
+        const parent = n ? (typeof n.parent === 'string' && s.places[n.parent] ? n.parent : n.parent == null ? s.scene.at : null) : null;
+        const root = p?.root || (parent ? trueDungeonOf(s, parent) : null);
+        if (!livingOf(s, root)) return null;
+        const inside = n && ['interior', 'site'].includes(n.kind) && parent && trueDungeonOf(s, parent) === root;
+        if (!p && inside && trueDungeonOf(s, s.scene.at) !== root) {
+            // from outside: a step to the Dungeon by its name goes in through its gate (the gate check is the way's) into
+            // its first part; a step that names the gate ends there, and no step for it is a room elsewhere (movement.js)
+            const step = stepsOf(s, auth.gos).find((g) => g.enter?.root === root);
+            if (!step || step.enter.gate || roomByName(s, root, n, s.scene.at)) return null;
+            const first = sectionsOf(s, root, 1)[0];
+            if (first) return { id: first };
+            p = { id: sectionId(root, 1, 1), root, level: 1, k: 1, from: root, down: false, name: 'part 1 of level 1' };
+        }
+        if (p && (ref === p.id || inside)) {
+            if (!s.places[p.id]) {
+                const told = n?.name ? String(n.name).trim().slice(0, 80) : '';
+                // named once by this report; a name that says another level is not the engine's part
+                const named = namedLevel(told);
+                const name = told && (named == null || named === p.level) ? told : p.name;
+                emit({ t: 'place.created', d: { place: { id: p.id, name, kind: 'interior', parent: p.root, realm: s.places[p.root]?.realm ?? null, tags: [], by: 'dungeon', level: p.level, section: p.k, created: { turn: s.turn, minute: s.clock.minute } } } });
+                emit(linkEvent(newLink(s, { a: p.from, b: p.id, how: 'dungeon', by: 'dungeon', both: true, dir: p.down ? 'down' : null, name: p.down ? 'the way down' : null })));
+            }
+            return { id: p.id };
+        }
+        // a part he knows that his step goes to, told in other words: that part (named once, never renamed)
+        if (inside && !p) {
+            if (roomByName(s, root, n, s.scene.at)) return null;
+            const known = stepsOf(s, auth.gos).map((g) => g.to).find((id) => id && id !== root && s.places[id] && trueDungeonOf(s, id) === root);
+            if (known) return { id: known };
+        }
+        // at the gate, not going in: a place told as the Dungeon's is the gate he stands at (its watch-house, its yard)
+        if (inside && s.scene.at === root) {
+            system.push(`AT THE GATE — ${String(n.name).slice(0, 60)} is at the gate of ${s.places[root].name}: he is there; its parts are reached only by going in.`);
+            return { id: root };
+        }
+        if (inside) return { refuse: `${n.name} is no part of ${s.places[root].name}: its parts are the engine's, reached by going on, back, down or out` };
+        return null;
+    }
+    /** .190 (B5): why a place told of is no place: a part of a Living Dungeon, or null. */
+    function livingPartTold(ref) {
+        const n = ref?.new && typeof ref.new === 'object' ? ref.new : null;
+        if (!explicitTravel || oldSteps || !n || !['interior', 'site'].includes(n.kind)) return null;
+        const parent = typeof n.parent === 'string' && s.places[n.parent] ? n.parent : n.parent == null ? s.scene.at : null;
+        const root = parent ? trueDungeonOf(s, parent) : null;
+        return livingOf(s, root) && parent ? `the parts of ${s.places[root].name} are the engine's sections, reached by going on; one told of is no place` : null;
+    }
+    /** Patch 8: the passage of this answer into a room of this name (its way and direction), or null. */
+    function passageInto(id) {
+        const name = normText(s.places[id]?.name || '');
+        return fw.accept.find((d) => d.type === 'passage' && d.dir && (d.to === id || normText(d.to?.new?.name || d.to?.new || '') === name)) || null;
+    }
+    function candidateHallReached(k) {
+        const go = (auth.gos || []).find(g => g.seq === k.go_seq && g.guild_candidate);
+        if (!go) return false;
+        const hall = hallOf(s, s.scene.at);
+        const town = settlementOf(s, hall);
+        // A confirmed known premises supplies the canonical identity even when its descriptive town
+        // prefix was not a complete settlement name. A conflicting canonical town id still refuses.
+        if (s.places[go.guild_settlement]?.kind === 'settlement' && go.guild_settlement !== town) return false;
+        const destination = guildDestination(s, go.newName || go.name, town, { allowNew: true });
+        if (destination?.id) return hallOf(s, destination.id) === hall;
+        if (go.guild_settlement && go.guild_settlement !== town
+            && normText(go.guild_settlement) !== normText(s.places[town]?.name || '')) return false;
+        const target = go.to || placeIdentity(s, expected[String(go.seq)]?.at, content, { c: true });
+        if (target) return hallOf(s, target) === hall;
+        return guildDestination(s, go.newName || go.name, town, { allowNew: true })?.id === hall;
+    }
+
+    /** Both explicit branch evidence and accepted local staff use the same persistent place identity. */
+    function establishBranch(id) {
+        const place = s.places[id], hall = hallOfSettlement(s, settlementOf(s, id));
+        if (hall && hall !== id && !lineage(s, id).includes(hall) && !lineage(s, hall).includes(id)) {
+            emit({ t: 'place.updated', d: { id, set: { parent: hall, kind: 'interior' } } });
+        } else if (!hall) {
+            emit({ t: 'place.updated', d: { id, set: { tags: [...new Set([...(place.tags || []), 'guild_hall'])] } } });
+            system.push(`GUILD BRANCH ESTABLISHED — ${placeName(s, id)}. Contract services use the existing Guild rules; no contract or payment is created by establishing this branch.`);
+        }
+        if (hallOf(s, s.scene.at)) arrivedHall = hallOf(s, s.scene.at);
+    }
+
+    function arriveThrough(id, party) {
+        const via = throughGoal(id);
+        if (via) arrive(via, party);
+        arrive(id, party);
+    }
+    /** Patch 8: why the gate of a Living Dungeon turns him back on a step from its gate (or from outside) into its parts. */
+    function gateRefusal(to) {
+        const root = trueDungeonOf(s, to);
+        if (!root || to === root || insideOf(s, root) || !livingOf(s, root)) return null;
+        const g = gateCheck(s, content, root);
+        return g?.refuse || (g?.fee ? `${g.keeper} has not let him past the gate: the entry fee (${g.fee} cp) is not paid` : null);
+    }
+
+    /** Patch 7: the feature a way, a hazard or a thing names (its id or its name), at these places. */
+    function wayFeature(ref, at) {
+        const places = [].concat(at);
+        if (typeof ref === 'string' && s.features?.[ref] && places.some((p) => s.features[ref].at === p || linksAt(s, p, { hidden: true }).some((l) => l.feature === ref))) return ref;
+        for (const p of places) { const f = featureNamed(s, p, ref); if (f) return f.id; }
+        return null;
+    }
+
+    /**
+     * Patch 7: a way between two rooms of a dungeon as the story shows it (src/v4/dungeon.js). It makes the place a
+     * dungeon (its building or cave), the room it leads to a room of it, and keeps the way once: named again it is the
+     * same way. What the story may not do: find a hidden way (his search does) or open a barred one (his attempt does).
+     */
+    function passage(d) {
+        // .190 (B5): the ways of a Living Dungeon are the engine's (on, back, down, out along its sections)
+        if (explicitTravel && !oldSteps) {
+            const root = [s.scene.at, typeof d.to === 'string' ? d.to : null, typeof d.from === 'string' ? d.from : null].map((x) => x && s.places[x] ? trueDungeonOf(s, x) : null).find((r) => livingOf(s, r));
+            if (root) { reject(d, 'dungeon_way', `the engine keeps the ways of ${s.places[root].name}: he goes on, back, down or out along its parts, never by a way the story tells`); return; }
+        }
+        // Patch 8: a way into the room this reply already brought him to (the stair he went down) starts where he was
+        const made = (id) => events.some((e) => e.t === 'place.created' && e.d.place.id === id);
+        const into = arrived && made(arrived) && (d.to === arrived || normText(d.to?.new?.name || d.to?.new || '') === normText(s.places[arrived]?.name || ''));
+        const a0 = d.from === null || d.from === undefined ? { id: into ? s.scene.history?.at(-1) || startAt : s.scene.at } : place(d.from);
+        if (a0.error) { reject(d, 'place', a0.error); return; }
+        // a way up or down leads to a room of another level: a room of the same name there is another room
+        const lv = d.dir && dungeonOf(s, a0.id) ? levelVia(s, a0.id, { a: a0.id, dir: d.dir }) : null;
+        const targetId = typeof d.to === 'string' ? d.to : null;
+        const targetLevel = targetId && targetId !== dungeonOf(s, a0.id) ? s.places[targetId]?.level : null;
+        const invalid = targetId === dungeonOf(s, a0.id) ? null : floorRefusal(s, dungeonOf(s, a0.id), lv ?? targetLevel, d.to?.new?.name || s.places[targetId]?.name);
+        if (invalid) { reject(d, 'passage', invalid); return; }
+        if (Number.isInteger(lv) && Number.isInteger(targetLevel) && targetLevel !== lv) { reject(d, 'passage', 'passage direction conflicts with the established target floor'); return; }
+        // .190 (D1b): a way the story shows in a building no longer makes it a place explored room by room; the way is
+        // kept with what blocks it (a locked door keeps him out), an unknown way is no refusal there
+        const b0 = place(Number.isInteger(lv) && d.to?.new && typeof d.to.new === 'object' ? { new: { ...d.to.new, level: lv } } : d.to);
+        if (b0.error) { reject(d, 'place', b0.error); return; }
+        const dun = dungeonOf(s, a0.id) || dungeonOf(s, b0.id);
+        const building = !dun && complexOf(s, a0.id) && complexOf(s, a0.id) === complexOf(s, b0.id) && !settlementOf(s, complexOf(s, a0.id)) ? complexOf(s, a0.id) : null;
+        if (!dun && !building) { reject(d, 'world_rule', 'a passage joins the rooms of a building, cave or ruin'); return; }
+        // from outside, a way in starts at the dungeon itself
+        const a = !dun || dungeonOf(s, a0.id) === dun ? a0.id : dun;
+        const b = !dun || dungeonOf(s, b0.id) === dun ? b0.id : dun;
+        if (a === b) { reject(d, 'world_rule', 'a passage joins two different places'); return; }
+        const feature = d.feature ? wayFeature(d.feature, [a, b]) : null;
+        // review of a5035f0: the way of that name between them, not any way (an iron door and a shaft are two)
+        const known = sameWay(s, a, b, d.name);
+        if (known) {
+            if (known.hidden && d.hidden === false) reject(d, 'engine_owned', `${known.id}: a hidden way is found by his search, not by the story`);
+            // a new obstacle in a way that was open (rubble falls, a portcullis drops); the one that stands stays
+            const set = { ...(feature && feature !== known.feature && !blockerOf(s, known) ? { feature } : {}), ...(!known.name && d.name ? { name: String(d.name).slice(0, 60) } : {}) };
+            if (Object.keys(set).length) emit(linkEvent({ ...known, ...set }));
+            if (d.feature && !feature && !known.feature) pendingRefs.push({ kind: 'way', id: known.id, at: [a, b], name: String(d.feature), seq: d.seq });
+            return;
+        }
+        const l = newLink(s, { a, b, name: d.name, both: d.one_way !== true, hidden: d.hidden === true, feature, dir: d.dir || null });
+        emit(linkEvent(l));
+        if (d.feature && !feature) pendingRefs.push({ kind: 'way', id: l.id, at: [a, b], name: String(d.feature), seq: d.seq });
+        // the room it leads to lies on the level the way leads to
+        if (dun && b !== dun && !Number.isInteger(s.places[b].level)) {
+            const level = levelVia(s, a, l);
+            if (Number.isInteger(level)) emit({ t: 'place.updated', d: { id: b, set: { level } } });
+        }
+    }
+
+    /** Classification fixes world defaults, never arrival, population replacement or existing creatures. */
+    function areaClass(d) {
+        const levels = [d.min_level, d.max_level];
+        if (rulesetOf(s) < 2 || !validEncounterLevels(content, levels)
+            || !['seen', 'guild'].includes(d.how) || !d.evidence?.trim() || !prose.includes(d.evidence)) {
+            reject(d, 'area', 'a fixed F area needs a supported level window and the reply’s actual seen/Guild evidence'); return;
+        }
+        const at = d.place == null ? { id: s.scene.at } : place(d.place);
+        const p = s.places[at.id];
+        if (!p || !['region', 'wilderness', 'site'].includes(p.kind) || trueDungeonOf(s, at.id)
+            || (d.how === 'seen' && !lineage(s, s.scene.at).includes(at.id))
+            || (d.how === 'guild' && !normText(d.evidence).includes(normText(p.name).replace(/^the /, '')))) {
+            reject(d, 'area', 'classify an outdoor area actually reached, or established by Guild knowledge; never a town or true Dungeon'); return;
+        }
+        if (p.encounter_levels && p.encounter_levels.some((v, i) => v !== levels[i])) {
+            reject(d, 'world_canon', `${p.name} keeps its established area levels ${p.encounter_levels.join('–')}`); return;
+        }
+        if (!p.encounter_levels) emit({ t: 'place.updated', d: { id: at.id, set: { encounter_levels: levels } } });
+    }
+
+    /**
+     * Review of a5035f0: a true Dungeon as the story establishes it or someone tells of it (src/v4/dungeon.js
+     * classified): theme, Rank range, a level's Rank, who controls access. Its building or cave (or the place itself out
+     * in the wilds); never a settlement or a land. What the world established stays: a later other value is refused and
+     * told; a rumour is kept as a rumour. It is also explored room by room (rooms).
+     */
+    function dungeonClass(d) {
+        // An unparented new room cannot make its unrelated starting building a Dungeon. The confirmed GO scope
+        // above supplies a known Dungeon parent; a genuinely new Dungeon needs its own explicit place/root.
+        if (d.place?.new?.kind === 'interior' && d.place.new.parent == null && !trueDungeonOf(s, s.scene.at)) {
+            reject(d, 'place', 'a new Dungeon room needs its Dungeon parent; the current building is not its implied root');
+            return;
+        }
+        const at = d.place === null || d.place === undefined ? { id: s.scene.at } : place(d.place);
+        if (at.error) { reject(d, 'place', at.error); return; }
+        const root = trueDungeonOf(s, at.id) || complexOf(s, at.id) || (['wilderness', 'site', 'interior'].includes(s.places[at.id]?.kind) ? at.id : null);
+        if (!root) { reject(d, 'world_rule', 'a Dungeon is a cave, ruin or site of its own, not a settlement or a land'); return; }
+        const order = content.rules.ranks.order;
+        const [lo, hi] = [d.rank_min || d.rank_max, d.rank_max || d.rank_min].sort((a, b) => order.indexOf(a) - order.indexOf(b));
+        const r = classified(s.places[root].dungeon, { theme: d.theme, rank: lo ? { min: lo, max: hi } : null, level: d.level, control: d.control, how: d.how }, s.turn, s.places[root].by);
+        if (r.conflicts.length) {
+            const c = s.places[root].dungeon;
+            const was = r.conflicts.map((k) => (k === 'rank' ? `Rank ${rankText(c.rank)}` : k.startsWith('level:') ? `level ${k.slice(6)} Rank ${rankText(c.levels[k.slice(6)])}` : `${k} "${c[k]}"`)).join(', ');
+            reject(d, 'world_canon', `${s.places[root].name}: ${was} as established; a Dungeon does not change with the telling`);
+            const fix = `${s.places[root].name} stays as established: ${was}.`;
+            if (!corrections.includes(fix)) corrections.push(fix);
+        }
+        if (d.how !== 'rumor') markEvents(s, root).forEach(emit);
+        if (JSON.stringify(r.next) !== JSON.stringify(s.places[root].dungeon || null)) emit({ t: 'place.updated', d: { id: root, set: { dungeon: r.next } } });
+    }
+
+    function arrive(id, party = []) {
+        arrivals.add(id);
+        sceneEpoch++;
+        const town = locationOf(s, id);
+        const from = s.scene.at;
+        // Patch 7: whether he knew a way here before he took it (else the way he took is kept). .190 (D1b): walking
+        // between two rooms of a building no longer makes it a place explored room by room (only an older save's stays)
+        const dun = dungeonOf(s, id);
+        const knownWay = dun || dungeonOf(s, from) ? !!wayBetween(s, from, id).path : true;
+        // whoever does not come along stays at the place he leaves (entity.at): "the driver" there is that driver again.
+        // They are not put back into the scene when he returns: only the story knows whether they are still there (the
+        // replay of 30.09.2026 would have had Aldsa waiting at the ford while she was in Millbrook); it brings them in.
+        for (const who of s.scene.present) {
+            const e = s.entities[who];
+            if (who === 'pc' || party.includes(who) || e?.status === 'dead') continue;
+            // Patch 5: a living creature he leaves behind stays where it was (entity.left): the story may show the same
+            // ones again there, never unhurt copies of them (newEntity)
+            if (e?.kind === 'creature') emit({ t: 'entity.updated', d: { id: who, set: { left: { at: from, minute: s.clock.minute, turn: s.turn, leg: id === from } } } });
+            if (e?.kind !== 'npc' || e.at === from) continue;
+            emit({ t: 'entity.updated', d: { id: who, set: { at: from } } });
+        }
+        // one that went off on this stretch of road before (leave) stays behind on it as well
+        if (id === from) {
+            for (const e of Object.values(s.entities).filter((x) => x.kind === 'creature' && x.left?.at === from && !x.left.leg && !s.scene.present.includes(x.id))) {
+                emit({ t: 'entity.updated', d: { id: e.id, set: { left: { ...e.left, turn: s.turn, leg: true } } } });
+            }
+        }
+        const near = cPath ? soughtHere(id, party) : [];
+        const fresh = cPath && !!livingOf(s, trueDungeonOf(s, id)) && id !== trueDungeonOf(s, id) && !visited(s, id);
+        emit({ t: 'scene.moved', d: { at: id, location: town, place: dun && dun !== id ? `${s.places[dun].name} › ${s.places[id].name}` : placeName(s, id), reset_present: true, ...(cPath ? { track_history: true } : {}) } });
+        // Patch 7: in a dungeon, the way he took (found by walking it), the room's level, and that he has stood there
+        if (dun) {
+            const a = dungeonOf(s, from) === dun ? from : dun;
+            let way = linkBetween(s, a, id);
+            // Patch 8 (13B): the way this very answer shows into the new room (a stair down) is the way he took
+            const shown = passageInto(id);
+            if (!knownWay && a !== id && !way) { way = newLink(s, { a, b: id, how: 'walked', by: 'walked', dir: shown?.dir || null, name: shown?.name || null }); emit(linkEvent(way)); }
+            else if (!knownWay && way?.hidden) emit(linkEvent({ ...way, hidden: false, found: { turn: s.turn, minute: s.clock.minute, how: 'walked' } }));
+            const level = id !== dun && way && !Number.isInteger(s.places[id].level) ? levelVia(s, a, way) : null;
+            if (!s.places[id].visited || Number.isInteger(level)) emit({ t: 'place.updated', d: { id, set: { ...(s.places[id].visited ? {} : { visited: { turn: s.turn, minute: s.clock.minute } }), ...(Number.isInteger(level) ? { level } : {}) } } });
+        }
+        // Patch 8: a part of a Living Dungeon he had not stood in counts toward its level's progress (src/v4/living.js)
+        if (fresh) {
+            const root = trueDungeonOf(s, id);
+            grant('dungeon.part');
+            emit({ t: 'dungeon.part', d: { id: root, cycle: s.dungeons[root].cycle, floor: floorAt(s, id), at: id } });
+            freshPart = id;
+        }
+        // who travelled with him arrives with him
+        for (const who of party) emit({ t: 'scene.entered', d: { id: who, band: 'SHORT' } });
+        // and the creatures he went to in a part of the place he was in are there with him, as he knew them
+        for (const n of near) {
+            emit({ t: 'scene.entered', d: { id: n.id, band: 'SHORT' } });
+            if (n.awareness) emit({ t: 'scene.awareness', d: { id: n.id, level: n.awareness } });
+            if (n.relevant || n.threat) emit({ t: 'scene.tactical', d: { id: n.id, relevant: n.relevant, threat: n.threat } });
+        }
+        arrived = id;
+        // Patch 2: a place known only by report is seen now (it, and a reported place it lies in); a goal of his that
+        // this place reaches is done (src/v4/intents.js). Nothing else of the report becomes true by it
+        for (const e of visitEvents(s, id)) emit(e);
+        const reached = reachedEvents(s, id);
+        if (reached.length) grant('player.goal');
+        for (const e of reached) emit(e);
+        // he set off on a quest's journey (a GO while its people were with him) and has left the settlement: it has begun
+        const trip = auth.journey && s.quests[auth.journey];
+        if (trip?.status === 'active' && !trip.journey && settlementOf(s, from) !== settlementOf(s, id)) emit({ t: 'quest.journey', d: { id: trip.id, at: from } });
+        // Prototype C (4.3.0-c.6.6.4): he arrives somewhere with the charge of an escort he took: he is escorting them
+        if (cPath && party.length) {
+            for (const q of Object.values(s.quests).filter((x) => x.status === 'active' && x.taker === 'pc' && !x.journey && (x.objectives || []).some((o) => o.verb === 'ESCORT'))) {
+                const what = (q.objectives || []).filter((o) => o.verb === 'ESCORT').map((o) => normText(o.what || '')).join(' ');
+                const charge = party.some((id) => [s.entities[id]?.name, truth(s, id, 'occupation')[0]?.o, ...(s.entities[id]?.descriptors || [])].filter(Boolean).map(normText).some((x) => x.length >= 4 && (what.includes(x) || x.split(' ').some((w) => w.length >= 5 && what.includes(w)))));
+                if (charge) emit({ t: 'quest.journey', d: { id: q.id, at: from } });
+            }
+        }
+        // a decision belongs to the place it was opened at: leaving it closes it; one opened in this very turn goes
+        // with him ("look for an inn to sleep": the room is bought where he arrives)
+        for (const dec of s.decisions.filter((x) => x.at && x.at !== id && x.kind !== 'registration')) {
+            // S1 cards belong to their player source and original place, even when opened in this turn.
+            // Never reopen one in the arrival's Assistant record or carry its payee to the destination.
+            if (dec.kind === 'payment' && dec.route === 'free') emit({ t: 'decision.closed', d: { id: dec.id, status: 'expired' } });
+            else if ((!explicitTravel || !['purchase', 'sale'].includes(dec.kind)) && dec.turn === s.turn) emit({ t: 'decision.opened', d: { decision: { ...dec, at: id } } });
+            else if (explicitTravel && dec.turn === s.turn && dec.destination && (dec.destination.to === id || (!dec.destination.to && normText(dec.destination.name) === normText(s.places[id]?.name || '')))) emit({ t: 'decision.opened', d: { decision: { ...dec, at: id } } });
+            else if (explicitTravel && dec.destination && dec.turn === s.turn) continue;
+            else emit({ t: 'decision.closed', d: { id: dec.id, status: 'expired' } });
+        }
+        // Patch 6 (review of 32c7d2c): the hidden trap his GO rolled for springs now that he is in (src/v4/features.js)
+        for (const k of conditionals.filter((x) => !x.done && x.kind === 'spring' && x.at === id)) {
+            k.done = true;
+            grant('conditional');
+            applySpring(s, content, emit, k);
+        }
+        for (const dec of s.decisions.filter(x => explicitTravel && x.kind === 'purchase' && x.turn === s.turn && !x.at && x.destination?.name)) {
+            if (normText(dec.destination.name) === normText(s.places[id]?.name || '')) emit({ t: 'decision.opened', d: { decision: { ...dec, at: id } } });
+        }
+        const hall = hallOf(s, id);
+        if (hall) {
+            arrivedHall = hall;
+            for (const k of conditionals.filter((x) => !x.done && x.condition === 'arrive_guild_hall')) {
+                // Prototype C (4.3.0-c.5): a contract taken or a board read at its own hall waits for that hall
+                if (k.guild_candidate || (k.hall && k.hall !== hall)) continue;
+                const q = s.quests[k.quest];
+                if (k.kind === 'turn_in' && q?.status === 'active' && !contractReady(s, content, q, { c: cPath }).ok) continue;
+                k.done = true;
+                grant('conditional');
+                if (k.kind === 'accept') {
+                    const accepted = q?.status === 'listed' ? acceptContract(s, content, q, emit, { step: k.seq })
+                        : { ok: false, reason: 'the contract is no longer on the board' };
+                    const { ok, reason } = accepted;
+                    emit({ t: 'cmd.completed', d: { seq: k.seq, ok, reason: ok ? null : reason } });
+                    if (!ok) {
+                        const why = q?.status === 'listed' ? reason : 'it is no longer on the board';
+                        system.push(`NOT ACCEPTED — ${q?.title || k.quest}: ${why}`);
+                        corrections.push(`"${q?.title || k.quest}" was not taken: ${why}; he holds no slip for it.`);
+                    }
+                    continue;
+                }
+                if (k.kind === 'board') {
+                    emit({ t: 'board.shown', d: { branch: k.branch, rank: k.rank, listings: k.listings } });
+                    emit({ t: 'cmd.completed', d: { seq: k.seq, ok: true, reason: null } });
+                    continue;
+                }
+                if (k.kind === 'abandon') {
+                    // Prototype C: the contract he gives up at the desk; its slip goes back, nothing is paid
+                    const ok = q?.status === 'active';
+                    if (ok) abandonContract(s, q, emit, { step: k.seq, desk: true });
+                    emit({ t: 'cmd.completed', d: { seq: k.seq, ok, reason: ok ? null : 'the contract is no longer active' } });
+                    continue;
+                }
+                const r = q && q.status === 'active' ? completeContract(s, content, q, emit, { step: k.seq, c: cPath }) : { ok: false, reason: 'the contract is no longer active' };
+                if (r.ok) deskWitnesses.push({fact:`f.pc.completed.${q.id}`,at:s.scene.at,epoch:sceneEpoch,cp:q.payout_cp});
+                emit({ t: 'cmd.completed', d: { seq: k.seq, ok: r.ok, reason: r.reason ?? null } });
+                if (!r.ok) system.push(`TURN-IN REFUSED — ${q?.title || k.quest}: ${r.reason}`);
+            }
+        }
+    }
+
+    function objectRef(ref) {
+        if (typeof ref === 'string') return s.objects[ref] || null;
+        if (ref && typeof ref.new === 'string') {
+            const id = objectsNew.get(normText(ref.new));
+            if (objectsNew.has(normText(ref.new))) return id ? s.objects[id] : null;
+            const here = Object.values(s.objects).filter((o) => normText(o.name) === normText(ref.new) && (o.holder?.loc === s.scene.at || s.scene.present.includes(o.holder?.entity)));
+            return here.length === 1 ? here[0] : null;
+        }
+        return null;
+    }
+
+    function holderOf(h) {
+        const t = String(h ?? '').trim();
+        if (!t || normText(t) === 'here') return { loc: s.scene.at };
+        if (s.places[t]) return { loc: t };
+        const id = idOf(t);
+        if (id === 'pc') return { entity: 'pc' };
+        if (id && s.entities[id]) return { entity: id };
+        return null;
+    }
+
+    function objectNew(d, settling = false) {
+        const holder = holderOf(d.holder);
+        if (!holder) { reject(d, 'object', `unknown holder ${String(d.holder).slice(0, 40)}`); return; }
+        if (holder.entity && holder.entity !== 'pc') {
+            const units = Number.isInteger(d.qty) && d.qty > 0 ? d.qty : 1;
+            const g = purchaseOf(d.name, holder.entity, units);
+            if (g) { boughtNames.add(normText(d.name)); handedBought(d, g); return; }
+            if (!settling && awaitsPurchase(d.name, holder.entity, units, d.seq)) { pendingSteps.add(d); deferred.push(d); return; }
+        }
+        const q = d.for_quest ? questRef(d.for_quest) : null;
+        // Patch 7: what lies in a container that is still shut (the locked chest) is not in his hands before it opens
+        const box = d.in ? wayFeature(d.in, s.scene.at) : null;
+        if (holder.entity === 'pc' && box && s.features[box].status === 'active' && s.features[box].kind === 'obstacle') { reject(d, 'shut_in', `it lies in ${s.features[box].name} (${box}), which is not open yet`); return; }
+        const id = uniqueObjectId(s, tag, d.name);
+        if (holder.entity === 'pc' && ((auth.take || []).length || auth.gather)) grant('player.take');
+        emit({ t: 'object.created', d: { object: { id, name: String(d.name).slice(0, 80), kind: d.kind, stack: d.kind === 'resource', qty: d.qty ?? 1, unit: d.unit || null, ...itemTraits(content, { ...d, balance: true }, s.clock.minute), holder, marks: [], for_quests: q ? [q.id] : [], ...(box ? { in: box } : d.in && holder.loc ? { in_name: String(d.in).slice(0, 80) } : {}), source: { turn: s.turn, how: holder.entity === 'pc' ? (((auth.take || []).length || auth.gather) ? 'taken' : 'world_gift') : 'story' } } } });
+        const key = normText(d.name);
+        objectsNew.set(key, objectsNew.has(key) ? null : id); // duplicate labels are ambiguous, never last-wins
+    }
+
+    function objectMove(d, settling = false) {
+        const fresh = typeof d.object?.new === 'string' ? normText(d.object.new) : null;
+        if (fresh && objectsNew.has(fresh) && !objectsNew.get(fresh)) { reject(d, 'object', 'ambiguous new object name; distinguish the objects'); return; }
+        if (fresh && !objectsNew.has(fresh)) {
+            if (boughtNames.has(fresh)) { reject(d, 'engine_booked', 'the purchase handed it to him already'); return; }
+            if (!settling && deferred.some((x) => x.type === 'object.new' && normText(x.name) === fresh)) { pendingSteps.add(d); deferred.push(d); return; }
+        }
+        const o = objectRef(d.object);
+        const to = holderOf(d.to);
+        if (!to) { reject(d, 'object', `unknown receiver ${String(d.to).slice(0, 40)}`); return; }
+        if (!o && cPath && rulesetOf(s) >= 2) {
+            const k = conditionals.find(x => !x.done && x.kind === 'give' && x.template && x.object === d.object);
+            if (k && arrived && arrived !== transit && (!k.at || k.at === s.scene.at)
+                && to.entity && giveReceiver(k) === to.entity && s.scene.present.includes(to.entity)) {
+                grant('player.give');
+                const done = resolveCommands(s, content, [{ seq: k.seq, type: 'give', object: k.object, qty: k.qty, to: to.entity }], emit, { c: true, msg });
+                if (done.resolutions[0]?.status === 'resolved') {
+                    k.done = true;
+                    emit({ t: 'cmd.completed', d: { seq: k.seq, ok: true, reason: null } });
+                }
+                return;
+            }
+        }
+        if (!o) { reject(d, 'object', 'unknown object'); return; }
+        if (to.entity === 'pc' && o.holder?.entity && o.holder.entity !== 'pc') {
+            const units = d.qty && d.qty < (o.qty ?? 1) ? d.qty : (o.qty ?? 1);
+            const g = purchaseOf(o.name, o.holder.entity, units);
+            if (g) { handedBought(d, g); return; }
+            if (!settling && awaitsPurchase(o.name, o.holder.entity, units, d.seq)) { pendingSteps.add(d); deferred.push(d); return; }
+        }
+        if (cPath && rulesetOf(s) >= 2 && to.entity === 'pc') {
+            const giver = o.holder?.entity;
+            if (giver === 'pc') { reject(d, 'engine_booked', 'Alaric already holds this object'); return; }
+            if (giver && s.entities[giver]?.kind === 'npc' && (!s.scene.present.includes(giver)
+                || blockedPeople.has(normText(giver)) || blockedPeople.has(normText(s.entities[giver].name || '')))) {
+                reject(d, 'npc_presence', 'an NPC handover needs the giver present at this story step; use enter for an actual arrival');
+                return;
+            }
+        }
+        // Prototype C (4.3.0-c.6.6.3): the hand-over he set out to make where he went (commands.js give): booked as the story
+        // has it change hands, into someone's hands there
+        const handOver = o.holder?.entity === 'pc' && conditionals.find((k) => !k.done && k.kind === 'give' && k.object === o.id);
+        if (handOver) {
+            if (!to.entity || to.entity === 'pc' || !s.scene.present.includes(to.entity) || (handOver.to && handOver.to !== to.entity) || (handOver.toName && giveReceiver(handOver) !== to.entity) || (handOver.at && handOver.at !== s.scene.at) || (rulesetOf(s) >= 2 && (!arrived || arrived === transit))) { reject(d, 'pc_inventory', 'he hands it over only to the one he went to, there'); return; }
+            handOver.done = true;
+            grant('player.give');
+            transferCargo(s, content, emit, o, to, handOver.qty, handOver.seq);
+            emit({ t: 'cmd.completed', d: { seq: handOver.seq, ok: true, reason: null } });
+            return;
+        }
+        if (to.entity === 'pc' && o.holder?.loc && !(auth.take || []).length) { reject(d, 'pc_inventory', 'what lies here becomes his only by his own take'); return; }
+        // D5 (.175): a ware on open sale becomes his by buying it, never by a take or a story move
+        const onSale = to.entity === 'pc' ? wareOnSale(s, o) : null;
+        if (onSale) { reject(d, 'for_sale', `${o.name} is ${entityLabel(s, onSale.offer.seller)}'s ware for sale (${onSale.offer.id}${onSale.open ? '' : `, ${onSale.offer.status}`}); it becomes his by buying it`); return; }
+        const box = o.in ? s.features?.[o.in] : o.in_name && o.holder?.loc ? featureNamed(s, o.holder.loc, o.in_name) : null;
+        if (to.entity === 'pc' && box?.status === 'active' && box.kind === 'obstacle') { reject(d, 'shut_in', `it lies in ${box.name} (${box.id}), which is not open yet`); return; }
+        const part = d.qty && d.qty < (o.qty ?? 1) ? d.qty : null;
+        // to him: from where it lies, by his own take; from someone's hands, their gift (the firewall's rules)
+        if (to.entity === 'pc') grant(o.holder?.loc ? 'player.take' : 'envelope.give');
+        emit({ t: 'object.moved', d: { id: o.id, to, ...(part ? { qty: part, split: `${o.id}_${tag}` } : {}) } });
+        if (fresh && !part) objectsNew.delete(fresh); // this declaration was resolved; a later same-name gift is independent
+    }
+
+    /**
+     * Patch 3: the amount the story says is the amount (live 18.10.2026: "two silver" reported as 200 cp). The engine
+     * reads the words the extractor copied from the reply (said) itself; where they name another sum than the number,
+     * the words win and the audit keeps both. Words that are not in the reply are no evidence: then, as without words,
+     * the reply's own sums decide (review of c.6.6.11: "nine gold" that the reply never said legitimised 7 cp):
+     * - the number is one the reply says (as coin or as a bare number: "two for the bath") -> it stands;
+     * - it is exactly one coin unit off the only such sum (200 for "two silver") -> that sum;
+     * - the reply names sums, none of them this one -> no evidence: null, nothing is booked or offered at it;
+     * - the reply names no sum at all ("presses a few coins into his hand") -> the extractor's number stands: the story
+     *   left the amount to the engine's reading, and the booking event keeps it.
+     */
+    // Legacy paths only (Build .142): private-quest campaigns (wages, rewards) and the pre-planner path. On the planner
+    // path trade prices and gifts are read by finance_evidence against the model's assigned words, never by this ladder.
+    function evidenced(cp, said, d) {
+        if (typeof said === 'string' && said.trim()) {
+            const flatSaid = normText(said).replace(/[^a-z0-9]+/g, ' ').trim();
+            const inReply = !prose || normText(prose).replace(/[^a-z0-9]+/g, ' ').includes(flatSaid);
+            const v = inReply ? coinFromWords(said, content) : null;
+            if (v !== null) {
+                if (v !== cp) emit({ t: 'note', d: { kind: 'amount.corrected', seq: d?.seq ?? 0, type: d?.type ?? null, reported_cp: cp, said: String(said).slice(0, 60), cp: v } });
+                return v;
+            }
+            if (!inReply) emit({ t: 'note', d: { kind: 'amount.unproven', seq: d?.seq ?? 0, type: d?.type ?? null, reported_cp: cp, said: String(said).slice(0, 60), why: 'the words are not in the reply' } });
+        }
+        if (!prose || !Number.isInteger(cp)) return cp;
+        const stated = coinMentions(prose, content);
+        if (stated.includes(cp) || numbersIn(prose).has(cp) || !stated.length) return cp;
+        const u = content.rules.currency;
+        const factors = [u.copper_per_silver, u.copper_per_silver * u.silver_per_gold];
+        const near = [...new Set(stated.filter((v) => factors.some((f) => v * f === cp || cp * f === v)))];
+        if (near.length !== 1) return null;
+        emit({ t: 'note', d: { kind: 'amount.corrected', seq: d?.seq ?? 0, type: d?.type ?? null, reported_cp: cp, said: null, cp: near[0], why: 'one coin unit off the amount the reply states' } });
+        return near[0];
+    }
+
+    /** Fulfil current consent against known stock at the chronological shop visit, not from priced:true. */
+    function settleCanonicalPurchases() {
+        const missing = [];
+        if (!explicitTravel || !cPath || rulesetOf(s) < 2) return missing;
+        const was = step;
+        step = { kind: 'conditional' };
+        try {
+            for (const dec of s.decisions.filter(x => x.kind === 'purchase' && x.turn === s.turn)) {
+                if (!Number.isInteger(dec.max_cp) && !dec.any_price) {
+                    missing.push({ dec, why: 'no agreed price or price limit' }); continue;
+                }
+                const matches = Object.values(s.offers).filter(o => o.canon && o.stock === 'manuals'
+                    && o.status === 'open' && o.at === dec.at && o.at === s.scene.at && (!dec.seller || dec.seller === o.seller))
+                    .map(o => ({ o, lines: purchaseLines(dec.what, o.lines) })).filter(x => x.lines.length);
+                const match = matches.length === 1 ? matches[0] : null;
+                // .185 (Z1.3; natural batch 13.11.2026: every failed conditional purchase read "no single valid canonical
+                // offer at the reached shop", the reason of the Guild's manuals): the reason of this purchase
+                const shop = Object.values(s.offers).some(o => o.canon && o.stock === 'manuals' && o.at === dec.at);
+                const refusedOffer = rejected.find(x => x.type === 'offer');
+                let why = match ? offerAvailability(s, match.o) : shop ? 'no single valid canonical offer at the reached shop'
+                    : refusedOffer ? `the seller's price was not recorded (${String(refusedOffer.why).slice(0, 100)})`
+                        : 'the seller named no binding total for it in this reply (one total with its coin word, such as "four copper")';
+                const pick = match && !why ? pickLines(match.o, match.lines.map(l => l.id), dec.qty ?? null) : null;
+                if (pick) why = pick.error || (pick.clarify ? 'the quantity or goods need clarification' : null);
+                if (pick && !why) {
+                    why = bookPurchase(s, emit, { offer: match.o, picks: pick.picks, cp: pick.cp, content, consent: dec,
+                        objectId: name => uniqueObjectId(s, tag, name) }).error || null;
+                    if (why === 'not enough coin') why = shortfallText(pick.cp, s.entities.pc.sheet.coin_cp, content);
+                    if (!why) {
+                        for (const p of pick.picks) bought.push({ what: p.line.what, units: p.units, seller: match.o.seller, left: p.units });
+                        counterparts.add(match.o.seller);
+                        emit({ t: 'decision.closed', d: { id: dec.id, status: 'accepted' } });
+                        emit({ t: 'cmd.completed', d: { seq: dec.seq, ok: true } });
+                        continue;
+                    }
+                }
+                missing.push({ dec, why });
+            }
+        } finally { step = was; }
+        return missing;
+    }
+
+    /** An offer, and then the hand-overs that waited for it: refused when its purchase booked them, else as told. */
+    function offer(d) {
+        offerLines(d);
+        settleDeferred();
+    }
+
+    function settleDeferred() {
+        const was = step;
+        for (const x of deferred.splice(0)) {
+            step = { kind: 'delta', type: x.type, seq: x.seq ?? 0, granted: new Set() };
+            pendingSteps.delete(x);
+            if (x.type === 'object.new') objectNew(x, true);
+            else objectMove(x, true);
+            acceptStep(x);
+        }
+        step = was;
+    }
+
+    function offerLines(d) {
+        const seller = idOf(d.seller);
+        if (!seller || seller === 'pc' || !s.scene.present.includes(seller)) { reject(d, 'offer', `the seller ${String(d.seller).slice(0, 40)} is not present`); return; }
+        // Patch 8.1 (live 21.10.2026 10:17: the watchman's own "entry, 10 cp" was paid and no pass followed): at a Living
+        // Dungeon's gate, entry is sold only by the gate's own fee, the engine's; his other wares (a torch) stand
+        const gateRoot = cPath ? trueDungeonOf(s, s.scene.at) : null;
+        const entry = gateRoot && livingOf(s, gateRoot) && !insideOf(s, gateRoot) ? d.lines.filter((l) => entryLine(s, gateRoot, l)) : [];
+        if (entry.length) {
+            reject({ ...d, lines: entry }, 'gate_fee', `entry to ${placeName(s, gateRoot)} is the gate's own (the engine's), never an offer of the story`);
+            const g = gateState(s, content, gateRoot) || {};
+            const terms = g.fee ? `its fee is ${g.fee} cp, the gate's own offer (${gateOfferId(gateRoot)})` : g.waived ? `its fee is waived for his contract "${g.waived.title}"` : g.pass ? 'he has paid it already' : 'it asks no fee';
+            const correction = `Entry to ${placeName(s, gateRoot)} is fixed by the engine at its gate: ${terms}. No one sells another entry or names another price for it; the entry offered in the last reply was not recorded.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+            if (entry.length === d.lines.length) return;
+            d = { ...d, lines: d.lines.filter((l) => !entry.includes(l)) };
+        }
+        // A service price is not permission to reverse an employer's wage into a purchase.
+        // Use the existing private quest path; completion/payment still need their normal world evidence.
+        const provider = /\bI(?:'ll| will) (?:guard|watch|protect|work)\b/i.test(prose);
+        const employee = !provider && /\b(?:you (?:keep|stand|guard|watch|work)|I (?:want|need) (?:eyes|you)|you(?:'re| are) worth more|(?:pay|hire) you)\b/i.test(prose);
+        // .187 (P1): a task Alaric is to do for the seller's side, paid by them (src/v4/trade.js paidWorkLine), is no
+        // service he buys, whatever the rest of the reply says
+        const work = d.lines.filter(l => (employee && l.kind === 'service' && l.service === 'other'
+            && /\b(?:keep(?:ing)?|guard(?:ing)?|watch(?:ing)?|work(?:ing)?|shift)\b/i.test(l.what)) || paidWorkLine(l) === 'work');
+        if (work.length && !privateQuestsOf(s)) {
+            reject({ ...d, lines: work }, 'work_not_purchase', 'the NPC offers work to Alaric, not a service he buys; record the request/terms as facts');
+            const correction = `${entityLabel(s, seller)} offers Alaric pay for work (${work.map((l) => String(l.what).slice(0, 60)).join('; ')}); it is nothing he buys, and accepting it costs him nothing. His pay changes hands only when it is handed over to him.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+        }
+        for (const l of privateQuestsOf(s) ? work : []) {
+            const title = String(l.what).slice(0, 80);
+            if (!Object.values(s.quests).some(q => q.kind === 'private' && q.giver === seller && q.title === title && ['offered','active'].includes(q.status))) {
+                questOffer({ giver: seller, title, reward_cp: evidenced(l.price_cp, l.said, d), objectives: [l.what], proof: [] });
+            }
+        }
+        d = { ...d, lines: d.lines.filter(l => !work.includes(l)) };
+        if (!d.lines.length) return;
+        if (cPath && rulesetOf(s) >= 2) {
+            const unsupported = d.lines.filter(l => trainingOfferWhy(s, content, seller, l));
+            for (const line of unsupported) {
+                const why = trainingOfferWhy(s, content, seller, line);
+                reject({ ...d, lines: [line] }, 'training_offer', why);
+                system.push(`NOT OFFERED — ${line.what}: ${why}. No payment or progress is booked.`);
+                corrections.push(`No executable training offer was recorded for ${line.what}: ${why}. Only engine-booked learning is gained.`);
+            }
+            d = { ...d, lines: d.lines.filter(l => !unsupported.includes(l)) };
+            if (!d.lines.length) return;
+            const advice = d.lines.filter(l => offerAdvice(l.kind === 'service' ? l.what : '', l.said, entityLabel(s, seller), l.kind === 'service' ? Object.values(s.places) : [], s.scene.at, prose));
+            if (advice.length) reject({ ...d, lines: advice }, 'offer', 'third-party advice is not this speaker’s binding offer; keep it as information');
+            d = { ...d, lines: d.lines.filter(l => !advice.includes(l)) };
+            if (!d.lines.length) return;
+        }
+        const reversed = cPath && rulesetOf(s) >= 2 ? saleOfferLines(s, seller, d.lines) : [];
+        if (reversed.length) {
+            reject({ ...d, lines: reversed }, 'trade_direction', 'this is a current sale-only exchange; report a buyer’s bid, not a PC purchase offer');
+            corrections.push('No purchase was offered for the PC’s sale goods. Quote the buyer’s price as a bid against the held object ids. Nothing has changed hands.');
+            d = { ...d, lines: d.lines.filter(l => !reversed.includes(l)) };
+            if (!d.lines.length) return;
+        }
+        const sameArticle = (a,b) => a.profile?.kind === 'gear' || b.profile?.kind === 'gear'
+            ? normText(a.what) === normText(b.what)
+            : sameWant(a.what,b.what) && sameWant(b.what,a.what);
+        // Build .142 (§3.3, §6.1): every line carries its terms (dealTerms) on the planner path; the price of a line is
+        // the one its own words carry, never a coin amount found elsewhere in the reply. A line whose figures disagree,
+        // or whose words carry no price at all, is not recorded (the story is told so); a line with a price that does
+        // not bind (conditional, or unconfirmed) is recorded as information that cannot be bought.
+        const terms = true;
+        const quoted = (l) => { const at = typeof l.said === 'string' ? findQuote(prose, l.said) : { state: 'missing' };
+            const q = priceEvidence(l.pricing, { source: prose, content, units: l.qty ?? 1, reported: l.price_cp, within: at.state === 'found' ? at : null, goods: [l.what], ownCurrency: true });
+            return q.state === 'verified' ? q.cp : null; };
+        const priced = d.lines.map(l => {
+            const named = l.kind === 'goods' ? itemProfile(content, {name:l.what, balance:true, effect:l.effect, teaches:l.teaches}) : null;
+            const regular = l.kind === 'goods' && l.equipment !== false && (l.base != null || l.equipment === true || (named?.kind === 'gear' && named.rank === 'F')) && (!named?.rank || named.rank === 'F');
+            if (regular) {
+                const said = terms ? quoted(l) : evidenced(l.price_cp, l.said, d);
+                const existing = openOffers(s).filter(o=>!o.bid && o.seller===seller).flatMap(o=>o.lines).find(x=>normText(l.what) === normText(x.what) && (x.qty??1)===(l.qty??1) && x.price_cp===said);
+                if(existing) return {...existing,engine_price:true};
+                const profile = gearOfferProfile(content,l);
+                if (!profile) { reject({...d,lines:[l]}, 'gear_offer', 'regular equipment requires a supported base and quality'); return null; }
+                const price_cp = gearRetailPrice(content,profile) * (l.qty ?? 1);
+                // the engine's price needs no words; whether the seller offers it now still does
+                const t = terms ? dealTerms(l, { units: l.qty ?? 1, reported: l.price_cp, enginePrice: price_cp }) : null;
+                return {...l, what:gearOfferName(profile), appearance:l.what, profile, price_cp, engine_price:true, price_changed: said !== price_cp,
+                    ...(t ? { terms: t.terms, condition: t.condition, evidence: t.evidence, why: t.why } : {})};
+            }
+            if (!terms) return {...l,raw_line:l,raw_price:l.price_cp,price_cp:evidenced(l.price_cp,l.said,d)};
+            const t = dealTerms(l, { units: l.qty ?? 1, reported: l.price_cp, note: { seq: d.seq, type: d.type } });
+            if (t.contradicted) return { ...l, raw_line: l, raw_price: l.price_cp, price_cp: null, why: t.why };
+            return { ...l, raw_line: l, raw_price: l.price_cp, price_cp: t.price, terms: t.terms, condition: t.condition, evidence: t.evidence, why: t.why };
+        }).filter(Boolean);
+        // a price the reply does not carry is not offered (review of c.6.6.11); the seller's other lines stand
+        const unproven = priced.filter(l => l.price_cp === null && Number.isInteger(l.raw_price));
+        if (unproven.length) {
+            reject({ ...d, lines: unproven.map(l=>l.raw_line) }, 'offer', 'a price the reply does not name');
+            const correction = `No price was recorded for ${unproven.map((l) => `${String(l.what).slice(0, 40)}${l.why ? ` (${l.why})` : ''}`).join(', ')}: the last reply does not carry such a price. A price stands only as the story names it.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+            // Build .144 (S2): a firm price is one total for exactly the goods; say plainly what is missing
+            priceOpen(entityLabel(s, seller), unproven.map((l) => unitsText(l.what, l.qty ?? 1)).join(', '), 'sell');
+        }
+        for (const l of priced.filter(l => !unproven.includes(l) && l.terms && l.terms !== 'firm')) {
+            system.push(`NOT A BINDING OFFER — ${l.what}${Number.isInteger(l.price_cp) ? ` (${l.price_cp} cp)` : ''}: ${l.why}. It cannot be bought yet.`);
+            const correction = `${entityLabel(s, seller)}'s price for ${String(l.what).slice(0, 60)} is not binding: ${l.why}. Nothing was bought; a purchase needs a binding offer and Alaric's acceptance.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+        }
+        // Patch 7.1: what the extractor reports of a line is its words, kind, amount and price; the goods' own values are
+        // the engine's, fixed now with the offer. Ordinary F-balance gear also gets its retail price here;
+        // historical and other goods keep flexible prices with an advisory audit.
+        const correctedPrices = new Set();
+        const lines = priced.filter((l) => !unproven.includes(l)).map((l, i) => {
+            const line = { id: `l${i + 1}`, what: l.what, ...(l.engine_price ? {base:l.base,quality:l.quality,appearance:l.appearance} : {}), kind: l.kind, service: l.service ?? null, qty: l.qty ?? 1, price_cp: l.price_cp, ...(l.said !== undefined ? { said: l.said } : {}),
+                ...(l.terms ? { terms: l.terms, condition: l.condition ?? null, evidence: l.evidence, ...(Number.isInteger(l.raw_price) && l.raw_price !== l.price_cp ? { reported_cp: l.raw_price } : {}) } : {}) };
+            // Patch 7.2: a restorative's kind as the extractor gave it (effect), checked by itemProfile (a consumable at all)
+            // Patch 9C-2b: a Skill Stone or a manual by what the reply says it teaches (fixed with the line)
+            let profile = l.profile || (line.kind === 'goods' ? itemProfile(content, { name: line.what, balance: true, effect: l.effect ?? null, teaches: l.teaches ?? null }) : null);
+            if (cPath && rulesetOf(s) >= 2 && line.kind === 'goods') {
+                const why = l.engine_price ? null : gearOfferWhy(content, l, profile);
+                if (why) {
+                    reject({ ...d, lines: [l] }, 'gear_offer', why);
+                    system.push(`NOT OFFERED AS EQUIPMENT — ${line.what}: ${why}. No coin was spent.`);
+                    corrections.push(`${line.what} was not recorded as combat equipment: ${why}. Offer a supported weapon, armor or offhand item; decoration has no combat stats.`);
+                    return null;
+                }
+                if (l.equipment === false && profile?.kind === 'gear') profile = null;
+                line.equipment = profile?.kind === 'gear';
+                if (!profile) return { ...line, profile: null };
+            }
+            if (!profile) return line;
+            const retail = cPath ? gearRetailPrice(content, profile) : null;
+            // Repeating an existing bargain never silently reprices that stored contract.
+            const existing = openOffers(s).filter(o => !o.bid && o.seller === seller).flatMap(o => o.lines)
+                .find(x => sameArticle(line,x)
+                    && x.price_cp === line.price_cp && (x.qty ?? 1) === line.qty);
+            if (l.price_changed || (Number.isInteger(retail) && !existing && line.price_cp !== retail * line.qty)) {
+                correctedPrices.add(line.id);
+                line.price_cp = retail * line.qty;
+                system.push(`PRICE CONFIRMED — ${line.what}: ${line.price_cp} cp for ${line.qty}. The engine price is binding; purchase requires matching consent and a sufficient explicit total limit, or acceptance of this offer.`);
+            }
+            const audit = priceAudit(content, profile, line.price_cp, line.qty);
+            return { ...line, profile, ...(audit ? { audit } : {}) };
+        }).filter(Boolean);
+        if (!lines.length) return;
+        // the seller's latest price for the same thing stands: an open offer of theirs for it closes (one price at a
+        // time, as for a buyer's bid); an unchanged one stays and is not offered twice
+        // Build .142: the same terms are part of "the same price"; an unconfirmed new report never closes a standing offer
+        const same = openOffers(s).filter((o) => !o.bid && !o.canon && o.seller === seller && o.lines.some((x) => lines.some((l) => sameArticle(l,x))));
+        if (same.length && same.every((o) => lines.every((l) => o.lines.some((x) => sameArticle(l,x) && x.price_cp === l.price_cp && (x.qty ?? 1) === (l.qty ?? 1) && (x.terms ?? 'firm') === (l.terms ?? 'firm'))))) return;
+        for (const o of same) if (lines.some((l) => (l.terms ?? 'firm') !== 'unverified' && o.lines.some((x) => sameArticle(l, x)))) emit({ t: 'offer.closed', d: { id: o.id, status: 'repriced' } });
+        // K2 (.175): a line for a thing the story already shows here or in the seller's hands names that object
+        const taken = new Set(); // .178 (P3): one displayed thing is named by one line of the offer
+        for (const l of lines) { const shown = displayedWare(s, l, { seller, at: s.scene.at, taken }); if (shown) { l.object = shown; taken.add(shown); } }
+        const id = `offer.t${tag}.${Object.keys(s.offers).length + 1}`;
+        emit({ t: 'offer.created', d: { offer: { id, seller, at: s.scene.at, status: 'open', canon: false, turn: s.turn, lines } } });
+        // a purchase Alaric agreed to in advance, within his limit (buy with max_cp or any_price), in the number he named
+        const requests = s.decisions.filter((x) => (!explicitTravel || x.turn === s.turn) && x.kind === 'purchase' && (x.max_cp !== null || x.any_price) && x.at === s.scene.at && (!x.seller || x.seller === seller)).sort((a, b) => b.turn - a.turn || (b.seq || 0) - (a.seq || 0));
+        const handled = [];
+        for (const dec of requests) {
+            if (handled.some(d => samePurchaseRequest(dec, d, seller))) {
+                emit({ t: 'decision.closed', d: { id: dec.id, status: 'expired' } });
+                continue;
+            }
+            handled.push(dec);
+            const o = s.offers[id];
+            if (!dec.seller) {
+                const candidates = fw.accept.filter(x => x.type === 'offer' && x.lines?.some(l => purchaseLines(dec.what, [l]).length));
+                if (new Set(candidates.map(x => String(x.seller))).size > 1) continue;
+            }
+            if (o.status !== 'open') continue;
+            // Build .142: his consent in advance buys only what binds (a firm line); his limit makes nothing binding
+            const binding = o.lines.filter((l) => (l.terms ?? 'firm') === 'firm');
+            const lines = cPath && rulesetOf(s) >= 2 ? purchaseLines(dec.what, binding) : wantedLines(dec.what, o.lines);
+            if (!lines.length) continue;
+            const pick = pickLines(o, lines.map((l) => l.id), dec.qty ?? null);
+            if (pick.clarify || pick.error) { system.push(`NOT BOUGHT — ${pick.error || `which of ${pick.clarify.join(' or ')} he wants ${dec.qty} of is open`}`); continue; }
+            if (pick.picks.some(p => correctedPrices.has(p.line.id)) && !Number.isInteger(dec.max_cp)) {
+                system.push('NOT BOUGHT — the gear price was corrected. Review the displayed offer and accept it explicitly.');
+                emit({ t: 'decision.closed', d: { id: dec.id, status: 'expired' } });
+                continue;
+            }
+            const price = pick.cp;
+            const what = pick.picks.map((p) => unitsText(p.line.what, p.units)).join(', ');
+            const coin = s.entities.pc.sheet.coin_cp;
+            if ((!dec.any_price && !Number.isInteger(dec.max_cp)) || (Number.isInteger(dec.max_cp) && price > dec.max_cp)) { system.push(`NOT BOUGHT — ${what}: ${price} cp is above his limit of ${dec.max_cp} cp`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'too_expensive' } }); continue; }
+            if (coin < price) { system.push(`NOT BOUGHT — ${what}: ${shortfallText(price, coin, content)}`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'no_coin' } }); continue; }
+            grant('player.buy');
+            const booked = bookPurchase(s, emit, { offer: o, picks: pick.picks, cp: price, objectId: (name) => uniqueObjectId(s, tag, name), content, consent: dec });
+            if (booked.error) {
+                system.push(`NOT BOUGHT — ${booked.error === 'not enough coin' ? `${what}: ${shortfallText(price, s.entities.pc.sheet.coin_cp, content)}` : booked.error}`);
+                if (booked.clarify && !corrections.includes(`NOT BOUGHT — ${booked.error}.`)) corrections.push(`NOT BOUGHT — ${booked.error}.`);
+                continue;
+            }
+            for (const p of pick.picks.filter((x) => x.line.kind === 'goods')) bought.push({ what: p.line.what, units: p.units, seller, left: p.units });
+            counterparts.add(seller);
+            emit({ t: 'decision.closed', d: { id: dec.id, status: 'accepted' } });
+            emit({ t: 'cmd.completed', d: { seq: dec.seq, ok: true } });
+            boughtAfter(what, price, seller);
+        }
+    }
+
+    // .185 (Z2; GPT E-1): a purchase he agreed to in advance is booked here, after the reply; the player sees it at once,
+    // the next reply knows it is done (the narrator showed no hand-over in this one)
+    function boughtAfter(what, price, seller) {
+        system.push(`BOUGHT — ${what} for ${price} cp from ${entityLabel(s, seller)} (booked after the reply, within the price he had agreed to)`);
+        const fact = `BOUGHT AFTER THE LAST REPLY — Alaric paid ${entityLabel(s, seller)} ${price} cp for ${what} (the engine booked it after that reply, within the price he had agreed to): it is done. Show the hand-over now if the last reply did not; he pays nothing more for it and does not buy it again.`;
+        if (!corrections.includes(fact)) corrections.push(fact);
+    }
+
+    /**
+     * Prototype C (4.3.0-c.6.6.5): someone names what they would pay Alaric for things he holds (live 15.10.2026: "eight
+     * silver for the lot" became an offer to SELL him his own parts). The bid names his things by id and the units of
+     * each, and one price for all of them; nothing changes hands until his own acceptance (commands.js offer.accept).
+     * A changed bid replaces an overlapping lot; independent goods keep their bids.
+     */
+    /**
+     * Build .142 (finance consolidation §3, §4.2, §6.1): what binds of a reported price. The model says whether the
+     * other side makes a binding offer now (phase firm), names an open condition (conditional, condition) or is
+     * unclear, and which words carry the price (pricing). The engine checks only those words (finance_evidence) and a
+     * strong open-condition word next to them, which can only take the binding away. Result: firm (binding, with its
+     * price), conditional (information with its condition), unverified (information; the report or its words do not
+     * carry a binding price) or contradicted (the assigned figures disagree: not stored). A gear line's price is the
+     * engine's own (enginePrice) and needs no words; its binding still needs the report and the words around it.
+     */
+    /**
+     * Build .144 (S2, plan §6): a price the engine cannot record is no dead end. The player sees what is missing (the
+     * one total for exactly these goods); the narrator is told that whoever means to deal names that total – a price
+     * per piece, part prices or "done" without the sum bind nothing. No automatic price, no repair call.
+     */
+    function priceOpen(party, goods, side) {
+        const line = `PRICE OPEN — ${party} for ${goods}: no binding total was named. Nothing was ${side === 'buy' ? 'sold' : 'bought'}; ask for the total price of exactly these goods.`;
+        if (!system.includes(line)) system.push(line);
+        const correction = `PRICE CONTRACT: ${party} named no binding total for ${goods}. If ${party} means to ${side} them, ${party} says one total in coin for exactly these goods (for example "fifty-six copper for the fourteen plates"); a price per piece, part prices or agreeing without saying the sum bind nothing.`;
+        if (!corrections.includes(correction)) corrections.push(correction);
+    }
+    function dealTerms(x, { units = 1, lines = null, reported = null, enginePrice = null, goods = [], note = null } = {}) {
+        const phase = ['firm', 'conditional', 'unclear'].includes(x.phase) ? x.phase : 'unclear';
+        const condition = typeof x.condition === 'string' && x.condition.trim() ? x.condition.trim().slice(0, 160) : null;
+        const saidAt = typeof x.said === 'string' ? findQuote(prose, x.said) : { state: 'missing' };
+        const within = saidAt.state === 'found' ? saidAt : null;
+        const ev = Number.isInteger(enginePrice)
+            ? { state: 'verified', cp: enginePrice, reason: 'engine_price', source: null }
+            : priceEvidence(x.pricing, { source: prose, content, units, lines, reported, within, goods: [...goods, x.what].filter(Boolean), ownCurrency: true });
+        const anchor = within || ev.source?.ranges?.[0] || null;
+        const marker = anchor ? openConditionNear(prose, anchor.start, anchor.end) : null;
+        const evidence = { source_reference: { message: msg, text_hash: hash32(prose) }, ranges: [...(within ? [{ start: within.start, end: within.end }] : []), ...(ev.source?.ranges || [])].slice(0, 4),
+            basis: Number.isInteger(enginePrice) ? 'engine' : x.pricing?.basis ?? 'unknown', derived_cp: ev.state === 'verified' ? ev.cp : null, reason: ev.reason ?? null };
+        if (ev.state === 'contradicted') return { contradicted: true, why: `the price words do not add up (${ev.reason})`, evidence };
+        // §3.1/§3.3: a report that converted its own coin words wrongly ("two silver, ten copper" reported as 25; "2 silver"
+        // as 200) is corrected to the words as before (amount.corrected); a plain copper sum that differs from the number is
+        // no conversion – the words were given another role (his till, another article): no price
+        const converts = (q) => /\b(?:silver|silvers|gold|golds)\b/i.test(String(q ?? '')) || (x.pricing?.positions || []).some((p) => /\b(?:silver|gold)/i.test(String(p?.quote ?? '')));
+        if (ev.state === 'verified' && ev.reported_mismatch && Number.isInteger(reported) && ![10, 100].some((k) => ev.cp * k === reported || reported * k === ev.cp) && !converts(x.pricing?.quote))
+            return { contradicted: true, why: `the reported ${reported} cp is not what its price words carry (${ev.cp} cp)`, evidence };
+        if (ev.state === 'verified' && ev.reported_mismatch && note)
+            emit({ t: 'note', d: { kind: 'amount.corrected', seq: note.seq ?? 0, type: note.type ?? null, reported_cp: reported, said: String(x.pricing?.quote ?? '').slice(0, 60), cp: ev.cp } });
+        const price = ev.state === 'verified' ? ev.cp : null;
+        if (phase === 'conditional' || condition) return { terms: 'conditional', price, condition: condition || 'a condition the reply names', evidence, why: `it is conditional: ${condition || 'an open condition'}` };
+        if (phase === 'firm' && price !== null && !marker) return { terms: 'firm', price, condition: null, evidence, why: null };
+        const why = phase !== 'firm' ? 'the report does not say that this offer binds now'
+            : price === null ? `the reply's words do not carry this price (${ev.reason})` : `the reply names an open condition ("${marker}")`;
+        return { terms: 'unverified', price, condition: null, evidence, why };
+    }
+
+    /**
+     * Prototype C (4.3.0-c.6.6.5): someone names what they would pay Alaric for things he holds (live 15.10.2026: "eight
+     * silver for the lot" became an offer to SELL him his own parts). The bid names his things by id and the units of
+     * each, and one price for all of them; nothing changes hands until his own acceptance (commands.js offer.accept).
+     * Build .142: the bid stores its terms (dealTerms); only a firm bid can be accepted or sold under his consent in
+     * advance. A firm or conditional new bid replaces an overlapping lot; an unverified report never closes a firm one.
+     */
+    function bid(d) {
+        const buyer = idOf(d.buyer);
+        if (!buyer || buyer === 'pc' || !s.scene.present.includes(buyer)) { reject(d, 'offer', `the buyer ${String(d.buyer).slice(0, 40)} is not present`); return; }
+        if (cPath && rulesetOf(s) >= 2 && offerAdvice('', d.said, entityLabel(s, buyer), [], s.scene.at, prose)) {
+            reject(d, 'offer', 'third-party price advice is not this speaker’s bid'); return;
+        }
+        const lines = [];
+        const given = [];
+        for (const l of d.lines || []) {
+            const o = typeof l.object === 'string' ? tradeObject(s, content, l.object) : objectRef(l.object);
+            if (!o || o.holder?.entity !== 'pc') { reject(d, 'offer', `a bid is for things Alaric holds (${JSON.stringify(l.object).slice(0, 60)} is not his)`); return; }
+            const have = lines.find((x) => x.object === o.id);
+            const units = Number.isInteger(l.qty) && l.qty > 0 ? l.qty : (o.qty ?? 1);
+            given.push({ qty: units });
+            let qty = (have?.qty || 0) + units;
+            if (!explicitTravel) qty = Math.min(qty, o.qty ?? 1);
+            if (qty > (o.qty ?? 1)) { reject(d, 'offer', 'the bid exceeds the held quantity'); return; }
+            if (have) have.qty = qty;
+            else lines.push({ id: `l${lines.length + 1}`, what: o.name, kind: 'goods', service: null, object: o.id, qty, price_cp: null });
+        }
+        if (!lines.length || !Number.isInteger(d.price_cp)) { reject(d, 'offer', 'a bid names his things and one price'); return; }
+        // Build .138: stacks of the same goods share the unit rate; each line keeps its own object and units
+        const t = dealTerms(d, { units: rateUnits(lines, (id) => tradeObject(s, content, id)), lines: given, reported: d.price_cp, goods: lines.map(l => l.what) });
+        const goods = lines.map(l => unitsText(l.what, l.qty)).join(', ');
+        if (t.contradicted) {
+            reject(d, 'offer', `the bid of ${d.price_cp} cp is not recorded: ${t.why}`);
+            corrections.push(`No bid was recorded for ${goods}: ${t.why}. Nothing was sold; Alaric still holds them and his coin is unchanged.`);
+            return;
+        }
+        if (t.price === null) {
+            reject(d, 'offer', `${d.price_cp} cp is no sum the reply carries (${t.evidence.reason})`);
+            corrections.push(`No bid was recorded for ${goods}: the last reply's words do not carry the price ${d.price_cp} cp. Nothing was sold; Alaric still holds them and his coin is unchanged.`);
+            priceOpen(entityLabel(s, buyer), goods, 'buy');
+            return;
+        }
+        if (t.price !== d.price_cp) emit({ t: 'note', d: { kind: 'amount.corrected', seq: d.seq ?? 0, type: 'bid', reported_cp: d.price_cp, said: String(d.said ?? '').slice(0, 60), cp: t.price } });
+        // A changed binding price replaces the entire overlapping lot, never an unrelated bid.
+        if (t.terms !== 'unverified') for (const old of openOffers(s).filter(x => x.bid && x.seller === buyer
+            && x.lines.some(l => lines.some(n => n.object === l.object)))) emit({ t: 'offer.closed', d: { id: old.id, status: 'expired' } });
+        const id = `offer.t${tag}.${Object.keys(s.offers).length + 1}`;
+        emit({ t: 'offer.created', d: { offer: { id, seller: buyer, bid: true, at: s.scene.at, status: 'open', canon: false, turn: s.turn, price_cp: t.price, lines,
+            terms: t.terms, condition: t.condition, ...(t.price !== d.price_cp ? { reported_cp: d.price_cp } : {}), evidence: t.evidence } } });
+        counterparts.add(buyer);
+        if (t.terms !== 'firm') {
+            system.push(`NOT A BINDING BID — ${entityLabel(s, buyer)} for ${goods} (${t.price} cp): ${t.why}. Nothing was sold.`);
+            corrections.push(`${entityLabel(s, buyer)}'s bid for ${goods} is not binding: ${t.why}. Nothing was sold; Alaric still holds the goods and his coin is unchanged. A sale needs a binding price from the buyer and Alaric's acceptance.`);
+            return;
+        }
+        if (explicitTravel) {
+            const price = t.price;
+            const consents = lines.map(l => s.decisions.find(x => x.kind === 'sale' && x.turn === s.turn && x.at === s.scene.at
+                && (!x.seller || x.seller === buyer) && x.object === l.object && x.qty === l.qty && Number.isInteger(x.min_cp)));
+            const ambiguous = fw.accept.filter(x => x.type === 'bid' && x.lines?.some(l => lines.some(y => y.object === l.object)));
+            if (consents.some(x => !x) || (consents.some(x => !x.seller) && new Set(ambiguous.map(x => String(x.buyer))).size > 1)
+                || price < consents.reduce((sum, x) => sum + x.min_cp, 0)) return;
+            grant('player.sell');
+            const result = bookSale(s, emit, { offer: s.offers[id], buyer, cp: price, what: goods,
+                items: lines.map(l => ({ ref: l.object, units: l.qty, splitId: `${l.object}_${tag}_${d.seq}` })) });
+            if (result.error) { reject(d, 'sale', result.error); return; }
+            emit({ t: 'offer.closed', d: { id, status: 'accepted' } });
+            for (const dec of consents) {
+                emit({ t: 'decision.closed', d: { id: dec.id, status: 'sold' } });
+                emit({ t: 'cmd.completed', d: { seq: dec.seq, ok: true } });
+            }
+        }
+    }
+
+    function coerce(d) {
+        const by = idOf(d.by);
+        if (!by || by === 'pc' || !s.scene.present.includes(by)) {
+            reject(d, 'coerce', 'the one who takes it is not here');
+            // 4.3.0-c.6.6.5 (live 15.10.2026: "the south gate took its usual toll of one copper", booked by nobody): the
+            // story must not go on as if it was paid
+            if (d.coin_cp) {
+                const correction = `Alaric's purse did not change: the ${d.coin_cp} cp ${d.kind} of ${String(d.by).slice(0, 60)} in the last reply was not paid (nobody who could take it was there). Do not refer to it as paid; a toll or fee is paid only when the engine books it.`;
+                if (!corrections.includes(correction)) corrections.push(correction);
+            }
+            return;
+        }
+        const counterpart = openOffers(s).some((o) => o.seller === by) || events.some((e) => e.t === 'transaction.completed' && e.d.seller === by);
+        if (counterpart) { reject(d, 'coerce', 'the other side of a sale or an open offer cannot coerce (a sale is never a confiscation)'); return; }
+        if (!d.because) { reject(d, 'coerce', 'coercion needs a because'); return; }
+        // PULSE package A: someone this reply brought in takes nothing of his in the same reply (robbery, fine or
+        // confiscation): they demand it, he decides; an authority or robber already here keeps the envelope's rules
+        if (pulse?.governs && (bornHere.has(by) || pulseArrivedNpcs.has(by))) {
+            reject(d, 'pulse_take', `${by} is new in this reply: a ${d.kind} is demanded, not taken`);
+            const correction = `Nothing was taken from Alaric in the last reply: ${entityLabel(s, by)} only arrived then; the ${d.kind} is a demand he has not answered yet (his coin and things are as they were).`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+            return;
+        }
+        // taking Alaric's coin or things is the engine's (money is hard state): who may take what is the World Envelope's
+        // (src/v4/envelope.js): a fine or confiscation needs an authority, a robbery a hostile robber (or a fight)
+        const may = mayTake(s, by, d.kind);
+        if (!may.ok) { reject(d, 'coerce', may.why); return; }
+        grant('envelope.take');
+        const sheet = s.entities.pc.sheet;
+        if (d.coin_cp) {
+            const cp = Math.min(d.coin_cp, sheet.coin_cp);
+            if (cp > 0) emit({ t: 'coin.changed', d: { id: 'pc', value: sheet.coin_cp - cp, delta: -cp, why: `${d.kind} by ${entityLabel(s, by)}: ${String(d.because).slice(0, 80)}` } });
+        }
+        if (d.object) {
+            const o = objectRef(d.object) || heldBy(s, 'pc').find((x) => normText(x.name).includes(normText(d.object)));
+            if (o && o.holder?.entity === 'pc') emit({ t: 'object.moved', d: { id: o.id, to: { entity: by } } });
+        }
+        system.push(`${d.kind.toUpperCase()} — ${entityLabel(s, by)}: ${String(d.because).slice(0, 120)}`);
+    }
+
+    function questRef(ref) {
+        if (typeof ref === 'string') return s.quests[ref] || null;
+        if (ref && typeof ref.new === 'string') return Object.values(s.quests).find((q) => normText(q.title) === normText(ref.new)) || null;
+        return null;
+    }
+
+    function questOffer(d) {
+        if (!privateQuestsOf(s)) { reject(d, 'private_quests_disabled', 'record the NPC request as ordinary world facts, not a formal quest'); return; }
+        const titleAt = normText(prose).indexOf(normText(d.title));
+        const around = titleAt < 0 ? '' : prose.slice(Math.max(0, titleAt - 100), titleAt + String(d.title).length + 30);
+        if (cPath && /\b(?:official guild|guild contract|on the (?:guild )?board|board listing)\b/i.test(around)) {
+            overreach('guild_listing', d.title); return;
+        }
+        const giver = idOf(d.giver);
+        let id = `quest.${slug(d.title) || 'job'}`;
+        for (let k = 2; s.quests[id]; k++) id = `quest.${slug(d.title)}_${k}`;
+        emit({ t: 'quest.created', d: { quest: {
+            id, title: String(d.title).slice(0, 80), kind: 'private', giver: giver && giver !== 'pc' ? giver : null, client: null, rank: null,
+            payout_cp: d.reward_cp ?? null, reward: d.reward_cp !== null && d.reward_cp !== undefined ? `${d.reward_cp} cp` : null,
+            objectives: (d.objectives || []).map((o, i) => ({ id: `o${i + 1}`, what: String(o).slice(0, 160), status: 'open' })),
+            proof: (d.proof || []).map((p, i) => ({ id: `p${i + 1}`, kind: 'note', what: String(p).slice(0, 120) })),
+            status: 'offered', taker: null, history: [{ turn: s.turn, minute: s.clock.minute, status: 'offered' }], details: [], notes: [], schedule: { starts_at: null, deadline: null },
+            source: { giver: giver || null, turn: s.turn },
+        } } });
+    }
+
+    function overreach(kind, what) {
+        emit({ t: 'overreach.noted', d: { kind, what: String(what).slice(0, 160) } });
+        system.push(`NOT APPLIED — ${String(what).slice(0, 160)} (Alaric had not decided that)`);
+        const c = kind === 'guild_listing'
+            ? 'Official Guild contracts come only from the board the engine shows; the contract the last reply showed does not exist.'
+            : `Your last reply had Alaric decide something he had not decided (${String(what).slice(0, 120)}); it did not happen. Alaric decides only what PLAYER ACTIONS list.`;
+        if (!corrections.includes(c)) corrections.push(c);
+    }
+
+    function sale(k, e) {
+        const dec = s.decisions.find((x) => x.kind === 'sale' && String(x.seq) === String(k) && x.turn === s.turn);
+        if (!dec) return;
+        if (e.sold !== true) return;
+        const price = Number.isInteger(e.price_cp) ? e.price_cp : null;
+        if (dec.min_cp === null || dec.min_cp === undefined || price === null || price < dec.min_cp) {
+            overreach('other', `the reply sold ${dec.what}${price !== null ? ` for ${price} cp` : ''} although Alaric had not agreed to that price`);
+            return;
+        }
+        const buyer = dec.seller || null;
+        // exactly the units he offered, as far as they are still his at this step; the rest of a stack stays his
+        const n = saleUnits(s, dec.object, dec.qty ?? null);
+        if (n.error) {
+            system.push(`NOT SOLD — ${dec.what}: ${n.error}`);
+            emit({ t: 'decision.closed', d: { id: dec.id, status: 'not_held' } });
+            return;
+        }
+        const booked = bookSale(s, emit, { ref: dec.object, units: n.units, buyer, cp: price, what: unitsText(dec.what, n.units), splitId: `${dec.object}_${tag}` });
+        if (booked.error) { system.push(`NOT SOLD — ${dec.what}: ${booked.error}`); return; }
+        emit({ t: 'decision.closed', d: { id: dec.id, status: 'sold' } });
+        emit({ t: 'cmd.completed', d: { seq: dec.seq, ok: true } });
+    }
+}
+
+const FILLER = new Set(['the', 'and', 'for', 'with', 'some', 'any', 'one', 'his', 'her', 'its', 'our', 'your', 'this', 'that', 'what', 'from', 'into']);
+/** The words that name a want or an offer's line ("a bed for the night" ~ "bed in the Guild dormitory"). */
+export const keyWords = (t) => normText(t).split(/[^a-z0-9]+/).map((w) => w.replace(/s$/, '')).filter((w) => w.length >= 3 && !FILLER.has(w));
+export const sameWant = (want, what) => { const k = keyWords(what); return keyWords(want).some((w) => k.includes(w)); };
+/** The same goods: one name's key words are all the other's ("Lesser Spark Stone" ~ "Lesser Spark Stone (minor …)"). */
+export const sameGoods = (a, b) => { const x = keyWords(a); const y = keyWords(b); return x.length > 0 && y.length > 0 && (x.every((w) => y.includes(w)) || y.every((w) => x.includes(w))); };
+/**
+ * 4.3.0-c.6.6.48 (live 23.10.2026: "Lesser Spark Stone" shares "stone" with every stone of the cabinet): the lines a want
+ * means, those that are exactly those goods where any are, else every line sharing a word with it (as before)
+ */
+export const wantedLines = (want, lines) => { const near = lines.filter((l) => sameWant(want, l.what)); const exact = near.filter((l) => sameGoods(want, l.what)); return exact.length ? exact : near; };
+
+function uniqueEntityId(s, base) {
+    let id = `npc.${slug(base) || 'unnamed'}`;
+    for (let n = 2; s.entities[id]; n++) id = `npc.${slug(base) || 'unnamed'}_${n}`;
+    return id;
+}
+
+/** "obj.t<reply index>.<name>" (the P0/S3 ids: obj.t16.marshmint), unique. */
+function uniqueObjectId(s, tag, name) {
+    let id = `obj.t${tag}.${slug(name) || 'thing'}`;
+    for (let n = 2; s.objects[id]; n++) id = `obj.t${tag}.${slug(name)}_${n}`;
+    return id;
+}
+
+/** A missing extractor answer: nothing of the reply was recorded (plan §3.4); the audit and the next block say so. */
+export function extractionFailedEvents(error, ms = null) {
+    return [{ t: 'extract.failed', d: { error: String(error || 'unknown').slice(0, 200), ms } }];
+}
+
+export { HALL_NAME, REGISTRATION_OFFER, membership, deriveCharacter };
+
+/** 4.3.0-c.6.6.53: is a creature the reply brings one of the kinds a Living Dungeon's levels hold (anchor or species)? */
+function dungeonKind(living, d) {
+    const words = (x) => (Array.isArray(x) ? x : [x]).filter(Boolean).map((w) => String(w).toLowerCase());
+    const slots = Object.values(living.floors || {}).flatMap((f) => f.slots || []);
+    const anchors = new Set(slots.flatMap((x) => words(x.anchor)));
+    const species = new Set(slots.flatMap((x) => words(x.species)));
+    return anchors.has(String(d.anchor || '').toLowerCase()) || species.has(String(d.species || '').toLowerCase());
+}

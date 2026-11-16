@@ -1,0 +1,691 @@
+{
+  "_source": "Numeric rule constants transcribed from Core v1.21 (entry numbers in 'src'); the engine code implements the procedures. tests/unit/rules_consistency.test.js asserts that every constant still appears in the verbatim Core text (content/rules_text.json).",
+  "stats": [
+    "STR",
+    "VIT",
+    "AGI",
+    "INT",
+    "PER",
+    "WIL"
+  ],
+  "human_baseline": {
+    "STR": 5,
+    "VIT": 5,
+    "AGI": 5,
+    "INT": 5,
+    "PER": 5,
+    "WIL": 5,
+    "src": "Content #0"
+  },
+  "derived": {
+    "src": "Core #2",
+    "max_hp": {
+      "base": 50,
+      "per_level": 5,
+      "per_vit": 5
+    },
+    "max_mp": {
+      "per_int": 8,
+      "per_wil": 4
+    },
+    "max_sta_human": 100,
+    "init": {
+      "agi_factor": 1.5,
+      "floor": true
+    },
+    "base_def_divisor": 4,
+    "base_mdef_divisor": 4
+  },
+  "progression": {
+    "src": "Core #3, Content #0",
+    "xp_to_next_per_level": 100,
+    "free_points_per_level": 5,
+    "favored_growth_per_level": 0,
+    "refill_on_level_up": false
+  },
+  "ranks": {
+    "src": "Content #7 (Rank bands), Content #10 (milestones)",
+    "bands": [
+      {
+        "rank": "F",
+        "min": 1,
+        "max": 14
+      },
+      {
+        "rank": "E",
+        "min": 15,
+        "max": 29
+      },
+      {
+        "rank": "D",
+        "min": 30,
+        "max": 44
+      },
+      {
+        "rank": "C",
+        "min": 45,
+        "max": 59
+      },
+      {
+        "rank": "B",
+        "min": 60,
+        "max": 74
+      },
+      {
+        "rank": "A",
+        "min": 75,
+        "max": 89
+      },
+      {
+        "rank": "S",
+        "min": 90,
+        "max": 104
+      }
+    ],
+    "order": [
+      "F",
+      "E",
+      "D",
+      "C",
+      "B",
+      "A",
+      "S"
+    ]
+  },
+  "crit": {
+    "src": "Core #11, #24 (V3)",
+    "multiplier": 1.5,
+    "only": "true_ambush_opening_action"
+  },
+  "damage": {
+    "src": "Core #11",
+    "defense_floor_share": 0.1,
+    "variance_min": 0.9,
+    "variance_max": 1.1,
+    "resistance_factor": 0.5,
+    "tactical_power_pct": [
+      10,
+      20,
+      35
+    ]
+  },
+  "proficiency": {
+    "src": "Core #5",
+    "levels": {
+      "1": {
+        "cost": 1,
+        "power": 1,
+        "effect": 1
+      },
+      "2": {
+        "cost": 0.95,
+        "power": 1,
+        "effect": 1
+      },
+      "3": {
+        "cost": 0.95,
+        "power": 1.05,
+        "effect": 1.05
+      },
+      "4": {
+        "cost": 0.925,
+        "power": 1.15,
+        "effect": 1.1
+      },
+      "5": {
+        "cost": 0.9,
+        "power": 1.2,
+        "effect": 1.15
+      }
+    },
+    "effect_note": "Patch 9B-1: the factor of a numeric non-damage effect (DEF/MDEF bonus, Barrier HP), the total of its level, applied once and rounded half up; never ranges, strikes, durations or percentages",
+    "cost_rounding_note": "New F-progression campaigns (.96): percentage reductions are combined and rounded half up once. If mastery would otherwise save nothing on an effective P1 cost above 1, save one resource point instead. No new reduction below an effective cost of 1; no Power or PP changes. Historical campaigns keep the old calculation.",
+    "promotion_progress_note": "PP of one promotion by the Skill's Complexity (C1, C2, C3), the same for every promotion up to P5",
+    "promotion_progress": {
+      "1": 75,
+      "2": 100,
+      "3": 150
+    },
+    "award": {
+      "note": "Patch 9B-1: base PP per Skill and qualifying fight, at most once per Skill and fight, times his single highest Class Affinity for its tags, rounded half up; booked when the fight is over. A fight qualifies when a foe at most levels_below Levels below him took part and a foe attacked him (defensive/utility uses retain this gate; offensive F skills use actual struck targets within offensive_f_levels_below and victory, including instant kills)",
+      "base_pp": 12,
+      "challenge": {
+        "levels_below": 2,
+        "offensive_f_levels_below": 4,
+        "foe_attack": true
+      }
+    },
+    "learning_progress": {
+      "1": 100,
+      "2": 200,
+      "3": 300
+    }
+  },
+  "passive_design": {
+    "src": "Patch 9B-2: the bounds of a dynamic Passive (src/passives.js); Patch 9C-2c (docs/PATCH9C2C_PASSIVE_ACQUISITION.md): three qualities (ordinary, rare, legendary; independent of the F-S Rank) with their own provisional budget per Passive, and one total per bonus over all Passives of a person whatever their quality (stacking: the same bonus sums, up to the total). Provisional numbers, balanced in 10B",
+    "qualities": ["ordinary", "rare", "legendary"],
+    "per": {
+      "ordinary": { "core_stat_bonus": 2, "stat_bonus": 2, "max_bonus": 10, "cost_reduction": 5, "resist": 5 },
+      "rare": { "core_stat_bonus": 3, "stat_bonus": 4, "max_bonus": 25, "cost_reduction": 10, "resist": 10 },
+      "legendary": { "core_stat_bonus": 4, "stat_bonus": 6, "max_bonus": 50, "cost_reduction": 15, "resist": 15 }
+    },
+    "effects": { "ordinary": [1, 1], "rare": [1, 2], "legendary": [1, 3] },
+    "unrated_note": "a Passive defined before 9C-2c carries no quality: it keeps the F-rank bounds of 9B-2 (no core stats, one or two effects); the totals are the shared ones",
+    "unrated": { "per": { "stat_bonus": 2, "max_bonus": 10, "cost_reduction": 10, "resist": 10 }, "effects": [1, 2] },
+    "total": {
+      "core_stat_bonus": 6,
+      "stat_bonus": 10,
+      "max_bonus": 80,
+      "cost_reduction": 30,
+      "resist": 30
+    },
+    "slots": 4,
+    "slots_note": "Passives a person holds at once below B-Rank, of every quality together; from B-Rank on no further slots until a later design allows them (the same four)"
+  },
+  "skill_design": {
+    "src": "content.6.r2 F-rank calibration (offensive Skill at P1, by Complexity); Patch 9B-1 validates a dynamic Skill against it (src/skills.js)",
+    "aspects_note": "Review of 9B-1: the thematic aspects a dynamic Skill may carry besides its affinity tags; metadata only, no mechanical effect",
+    "aspects": [
+      "Fire",
+      "Ice",
+      "Lightning",
+      "Water",
+      "Earth",
+      "Wind",
+      "Shadow",
+      "Light",
+      "Poison",
+      "Nature",
+      "Blood",
+      "Sound"
+    ],
+    "f_rank": {
+      "1": {
+        "base": 12,
+        "coef": 1.9,
+        "cost": [
+          5,
+          10
+        ]
+      },
+      "2": {
+        "base": 16,
+        "coef": 2.4,
+        "cost": [
+          8,
+          16
+        ]
+      },
+      "3": {
+        "base": 18,
+        "coef": 2.6,
+        "cost": [
+          12,
+          22
+        ]
+      }
+    },
+    "e_rank_note": "9C completion (docs/PATCH9C_COMPLETION.md): the first Rank above F, provisional (balanced in 10B): its attack calibration by Complexity (most of the growth in Base Power, the coefficients close to F) and effect_scale on the Barrier and heal bounds of its Complexity; a Skill of Rank E is learned only from Rank E (Level 15) on, and no path of the game composes one by itself yet. D-S have no bounds: refused",
+    "e_rank": {
+      "1": { "base": 18, "coef": 2.0, "cost": [8, 14] },
+      "2": { "base": 24, "coef": 2.5, "cost": [12, 22] },
+      "3": { "base": 27, "coef": 2.7, "cost": [16, 30] },
+      "effect_scale": 1.5
+    }
+  },
+  "f_balance": {"promotion_progress": {"1": 50, "2": 75, "3": 100}, "lp_day_cap": {"teacher": 60, "self": 40}, "guild_manual_cp": 80},
+  "growth": {
+    "guild_manual_cp": 120,
+    "src": "Patch 9C-1 (docs/PATCH9C1_SKILL_ACQUISITION_TRAINING.md): provisional numbers of Skill acquisition and training under ruleset 2 (src/v4/growth.js); Learning Progress needed is proficiency.learning_progress by Complexity",
+    "max_active": 3,
+    "lp_per_hour": {
+      "teacher": 20,
+      "self": 10
+    },
+    "lp_day_cap": {
+      "teacher": 40,
+      "self": 20
+    },
+    "lp_note": "per learning target and game day: the day's teacher minutes at the teacher rate plus the day's own-practice minutes at the self rate (each capped), the sum capped at the teacher cap, times his single highest Class Affinity for the target's tags, rounded down; what the day already gave is subtracted, so sessions split over a day never add more than the day's claim",
+    "sources": {
+    "src": "Patch 9C-2b (docs/PATCH9C2B_STONES_MATERIALS.md): what makes a thing a source of a technique (src/v4/items.js skillSource). A thing is one only when its words name the kind (stone_words, manual_words; a manual also as a document) AND the story or the offer established what it teaches (the extractor's teaches); its profile is fixed then. value_cp: the guideline price an audit compares offers with (never a refusal)",
+    "stone_words": ["skill stone", "skill-stone", "skillstone", "technique stone"],
+    "stone_objects": ["stone", "stones"],
+    "passive_stone_words": ["passive stone", "passive skill stone", "passive-stone", "passive stones"],
+    "passive_stone_note": "Patch 9C-2c: a Passive Stone is a legendary treasure whose power only the engine establishes (src/v4/passive_growth.js engineEvidence); a thing the story or an offer calls one is never a source of a technique, and using it gives nothing",
+    "stone_objects_note": "4.3.0-c.6.6.48 (live 23.10.2026: the offered \"Lesser Spark Stone\" with its established teaches was no source): a stone the story or the offer established as teaching a technique (teaches.source stone) is a Skill Stone by any name that calls it a stone; without teaches no stone is one, whatever its name",
+    "manual_words": ["manual", "primer", "treatise", "grimoire", "spellbook", "spell book", "handbook", "codex", "training book", "technique book", "lesson book", "instruction book"],
+    "value_cp": {"stone": 400, "manual": 120}
+  },
+  "fight_lp": 12,
+    "fight_note": "a fight that qualifies for Proficiency Progress (proficiency.award.challenge) in which he used a Skill sharing a tag with an open learning goal: once per fight, to the oldest such goal, times his affinity, rounded down",
+    "train_pp": {
+      "pp": 12,
+      "min_minutes": 60
+    },
+    "train_note": "practising a Skill he knows: once per Skill and game day when that day's practice of it reaches min_minutes, pp times his affinity rounded half up (as proficiency.award)",
+    "passive": {
+      "src": "Patch 9C-2c (docs/PATCH9C2C_PASSIVE_ACQUISITION.md): provisional numbers of the Passives a person develops (src/v4/passive_growth.js), balanced in 10B",
+      "ordinary_need": 200,
+      "ordinary_note": "an Ordinary Passive goal: a core stat he trains on his own (activity train/study with learn: STR, VIT, AGI, INT, PER or WIL), Learning Progress at the own-practice rate and its day cap (no teacher, no fight, no affinity), complete at ordinary_need; then an offer, never the Passive itself",
+      "trial": { "level_gap": 5, "low_pct": 25, "start_pct": 50, "near": { "level_gap": 3, "low_pct": 35, "chance_pct": 40 } },
+      "trial_note": "a fight he won alive against a foe that struck him, at least level_gap Levels above him, after it drove him from start_pct of his HP or more down to low_pct or less, using a Skill of his own: a Rare candidate for sure; a near case (near.*) once by a die of its own, kept with the evidence",
+      "trial_similar_note": "9C completion: a fight like one that already gave such evidence (the same kinds of foes beaten, in the same Dungeon or realm) gives none again, whatever became of the first (offered, declined, its die failed); another kind of foe or another place can",
+      "deeds": { "checks": 3, "days": 2 },
+      "deeds_note": "9C completion: Ordinary evidence from what he did, not from training: this many successful checks of the same core stat the engine itself rolled (check.recorded by the engine, never trivial), each on another feature (a thing made harmless, a hidden thing a search found, a hazard avoided), over at least this many game days; a feature counts once, and the checks of one evidence never count for another"
+    },
+    "development": {
+      "src": "9C completion (docs/PATCH9C_COMPLETION.md): how a Skill develops from how he fights (src/v4/skill_growth.js), provisional numbers balanced in 10B",
+      "evolution_fights": 2,
+      "breakthrough_fights": 3,
+      "keep_fights": 8,
+      "max_offers": 3,
+      "npc_signature_level": 5,
+      "note": "a qualifying fight (proficiency.award.challenge) notes the patterns of each Skill he used (the engine's records: two or more foes ENGAGED with him as it struck, a Range Band closed with it, a foe in partial cover, a MEDIUM attack at its full reach, a foe's strike before his next turn, a defense that still let damage through) and the Skills he used one after the other. Evolution: a Skill at P5 that showed one pattern in evolution_fights qualifying fights, before or after P5 (after the last evolution: its successor's own fights) is offered its successor (Complexity +1, the step of that pattern, Rank and Proficiency kept); breakthrough: a pattern of his Basic Attack, or two Skills used one after the other, in breakthrough_fights qualifying fights offer a new technique beside them. Fights of one evidence never count for another of the same Skill. At most max_offers developments (Passives and Skills) are open at a time, one evolution per Skill; the rest waits. A trained person of the world of at least npc_signature_level Levels has one technique of their own (one of their starter Skills developed one step, never an area or multi-strike one), fixed with their sheet"
+    }
+  },
+  "composer": {
+    "src": "Patch 9C-1: the deterministic Skill composer (src/skill_composer.js): a supported main function, discipline tags and aspects make one C1 F-rank definition; its numbers sit inside skill_design.f_rank and the effect bounds of src/skills.js (provisional)",
+    "functions": {
+      "strike": {
+        "category": "Offensive",
+        "tags": [
+          "Martial",
+          "Precision",
+          "Mobility"
+        ],
+        "attack": {
+          "base": 10,
+          "coef": 1.5,
+          "band": "ENGAGED"
+        },
+        "cost": 6,
+        "noun": "Strike",
+        "text": "a close strike"
+      },
+      "bolt": {
+        "category": "Offensive",
+        "tags": [
+          "Arcane",
+          "Control"
+        ],
+        "attack": {
+          "base": 10,
+          "coef": 1.5,
+          "band": "MEDIUM"
+        },
+        "cost": 7,
+        "noun": "Bolt",
+        "text": "a bolt of force at MEDIUM range"
+      },
+      "guard": {
+        "category": "Defensive",
+        "tags": [
+          "Defense",
+          "Martial"
+        ],
+        "effect": {
+          "kind": "temp_def",
+          "base": 4,
+          "coef": 0.5,
+          "floor": true,
+          "until": "own_next_turn"
+        },
+        "cost": 5,
+        "noun": "Guard",
+        "text": "a braced guard that raises his DEF until his next turn"
+      },
+      "ward": {
+        "category": "Defensive",
+        "tags": [
+          "Arcane",
+          "Control",
+          "Defense"
+        ],
+        "effect": {
+          "kind": "barrier",
+          "base": 5,
+          "coef": 1.2,
+          "floor": true,
+          "until": "destroyed_or_own_next_turn"
+        },
+        "cost": 6,
+        "noun": "Ward",
+        "text": "a barrier that takes damage for him until his next turn"
+      },
+      "mend": {
+        "category": "Utility",
+        "tags": [
+          "Control",
+          "Arcane",
+          "Defense"
+        ],
+        "effect": {
+          "kind": "heal",
+          "base": 6,
+          "coef": 0.8,
+          "floor": true
+        },
+        "cost": 7,
+        "noun": "Mend",
+        "text": "a mending that restores some of his HP"
+      }
+    },
+    "stat_by_tag": {
+      "Martial": "STR",
+      "Precision": "AGI",
+      "Mobility": "AGI",
+      "Defense": "VIT",
+      "Arcane": "INT",
+      "Control": "WIL"
+    },
+    "effect_stats": {
+      "temp_def": [
+        "VIT",
+        "WIL"
+      ],
+      "barrier": [
+        "WIL",
+        "INT"
+      ],
+      "heal": [
+        "VIT",
+        "WIL",
+        "INT"
+      ]
+    },
+    "magical_tags": [
+      "Arcane",
+      "Control"
+    ],
+    "tag_words": {
+      "Martial": "Iron",
+      "Precision": "Keen",
+      "Mobility": "Swift",
+      "Defense": "Steady",
+      "Arcane": "Runic",
+      "Control": "Binding"
+    },
+    "aspect_words": {
+      "Fire": "Ember",
+      "Ice": "Frost",
+      "Lightning": "Storm",
+      "Water": "Tide",
+      "Earth": "Stone",
+      "Wind": "Gale",
+      "Shadow": "Shade",
+      "Light": "Dawn",
+      "Poison": "Venom",
+      "Nature": "Thorn",
+      "Blood": "Crimson",
+      "Sound": "Echo"
+    }
+  },
+  "xp": {
+    "src": "Core #25",
+    "base_per_level": 12,
+    "reward_multiplier": 5,
+    "rank_gap": {
+      "0": 1,
+      "1": 2,
+      "2": 4,
+      "3": 8,
+      "-2": 0.25,
+      "-1": 0.5
+    },
+    "target_type": {
+      "normal": 1,
+      "elite": 1.5,
+      "boss": 2.5
+    },
+    "quest_base_per_level": 15,
+    "quest_type": {
+      "minor": 1.5,
+      "standard": 2,
+      "dangerous": 3,
+      "major": 5
+    },
+    "strength": {
+      "_rule": "4.3.0-c.6.6.5 (live 15.10.2026): a creature's Defeat XP also weighs how much stronger its own numbers are than an ordinary creature of the same Level and type (this reference, scaled like any creature): durability (HP raised by its average DEF/MDEF at defense_weight per point) times ATK, over the reference's, square-rooted and capped at max. Ordinary fauna (rat, wolf, boar, deer, horse, serpent ...) stay at their Level's XP; heavy body plans and strong individuals give more; never less than before.",
+      "reference": { "hp": 40, "atk": 11, "def": 1, "mdef": 0, "init": 8 },
+      "defense_weight": 0.1,
+      "max": 2.5
+    }
+  },
+  "settlements": {
+    "_rule": "4.3.0-c.6.6.5 (live 15.10.2026: the Ashbridge Market District at midday felt like an empty stage, and finding a buyer for monster parts took a failed SEARCH and an hour). A settlement's size (its content sub: capital, seat, city; a settlement the story created is a village until the content says otherwise) decides how busy its streets are by time of day and which everyday trades it has. The crowd is ambient: scene colour, never stored as people; someone becomes a person when they matter (spoken to, acting, trading, in danger, attacked). The trades are functions, not a fixed list of named shops: an ordinary trade of the settlement is found without a check by day (signs, open fronts, asking around); the story names and places the shop when Alaric goes there, and a shop already established stays the one he knows.",
+    "size_of": { "capital": "city", "seat": "city", "city": "city", "town": "town", "village": "village", "hamlet": "village" },
+    "default_size": "village",
+    "sizes": ["village", "town", "city"],
+    "outdoor_kinds": ["settlement", "district"],
+    "crowd": {
+      "city": { "day": "crowded: residents and stallholders, customers haggling, carts and porters, a draught animal or a herd driven through, craftsmen at open fronts, now and then folk of other peoples", "evening": "thinning: the last customers and stallholders packing up, lamplighters, people heading home or to the taverns", "night": "near empty: a watch patrol, a late drinker, shuttered fronts" },
+      "town": { "day": "busy: townsfolk at their errands, a few stalls and carts, craftsmen at work", "evening": "quiet: people heading home, a tavern's noise", "night": "empty but for a watchman" },
+      "village": { "day": "a few villagers at their work, children and animals", "evening": "quiet doorsteps and a lit window or two", "night": "dark and still" }
+    },
+    "bystanders": { "city": { "day": 3, "evening": 1, "night": 0 }, "town": { "day": 2, "evening": 1, "night": 0 }, "village": { "day": 1, "evening": 0, "night": 0 } },
+    "trades": [
+      { "key": "monster_parts", "name": "hunter's exchange / monster-parts buyer (buys hides, pelts, fangs, claws, scales, venom, chitin)", "min": "town", "words": "monster|parts?|hides?|pelts?|skins?|fangs?|claws?|tusks?|horns?|antlers?|scales?|venom|chitin|feathers?|talons?|trophy|trophies|furrier|tanner|hunter'?s exchange|carcass" },
+      { "key": "smith", "name": "blacksmith / armorer", "min": "village", "words": "smith|smithy|blacksmith|armou?rer|weapons?|armou?r|blades?|swords?|forge|repairs?" },
+      { "key": "general", "name": "general store (rope, lamps, rations, travel gear)", "min": "village", "words": "general|supplies|provisions|rations?|rope|lamps?|torch(?:es)?|travel gear|goods" },
+      { "key": "apothecary", "name": "apothecary / alchemist (remedies, potions, herbs; buys venom and herbs)", "min": "town", "words": "apothecar\\w*|alchemist|potions?|remed(?:y|ies)|herbs?|herbalist|medicine|salves?|tonics?" },
+      { "key": "arcane", "name": "arcane supplies (reagents, focus items)", "min": "city", "words": "arcane|magic(?:al)? (?:shop|supplies|goods|wares)|mage'?s|reagents?|wands?|scrolls?|enchant\\w*" },
+      { "key": "leather", "name": "leatherworker / tailor (clothes, packs, leather gear)", "min": "town", "words": "leather\\w*|tailor|clothes|clothing|cloth|packs?|boots?|cloaks?" },
+      { "key": "inn", "name": "inns and taverns (meals, rooms)", "min": "village", "words": "inn|tavern|taproom|room|bed|meal|food|drink|ale|lodging" },
+      { "key": "stables", "name": "stables (horses, mules, carts)", "min": "town", "words": "stables?|horses?|mules?|ponies|pony|carts?|wagons?" },
+      { "key": "market", "name": "food and market stalls", "min": "village", "words": "market|stalls?|bread|baker|butcher|fish\\w*|fruit|vegetables?|cheese|meat" }
+    ],
+    "shop_words": "shops?|stores?|merchants?|traders?|dealers?|buyers?|vendors?|stalls?|someone (?:who|to) (?:buys?|sells?)|(?:a )?place to (?:sell|buy|eat|sleep|stay)|where (?:to|i can|he can) (?:sell|buy)",
+    "hidden_words": "secret|hidden|black market|fence|smuggl\\w*|illegal|stolen|contraband|underground|thieves|forbidden|outlaw"
+  },
+  "range": {
+    "src": "Core #12",
+    "bands": [
+      "ENGAGED",
+      "SHORT",
+      "MEDIUM",
+      "LONG"
+    ],
+    "max_normal_shift": 1
+  },
+  "checks": {
+    "src": "Core #7, #8",
+    "modifier_pct": {
+      "minor": 10,
+      "strong": 20,
+      "extreme": 35
+    },
+    "difficulty_scores": {
+      "_note": "PROPOSED helper scale (not in Core): named Difficulty Scores for Difficulty Checks; Core #7 only requires a fixed Difficulty Score.",
+      "easy": 3,
+      "moderate": 6,
+      "hard": 10,
+      "very_hard": 15,
+      "status": "proposed"
+    },
+    "creature_detection": {
+      "value": 5,
+      "status": "proposed",
+      "_note": "PROPOSED: direct-stat creatures have no PER; their Detection Score for Core #8 Stealth vs Detection defaults to the Human baseline PER 5 unless Content gives the species a detection value."
+    },
+    "stealth": {
+      "actor": "AGI",
+      "opposition": "PER",
+      "src": "Core #8"
+    }
+  },
+  "currency": {
+    "src": "Core #22, Lore #15",
+    "copper_per_silver": 10,
+    "silver_per_gold": 10
+  },
+  "guild": {
+    "src": "Lorebook v0.12 GUILD — Contract lifecycle (live run 27.09.2026 04:11)",
+    "contract": "A Guild contract (a quest with a Guild Quest Rank) is taken at the Guild and completed only when the player turns it in (his message says so: by name, or unnamed when it is the one active contract) in a city or capital with a Guild branch; the Guild accepts a turn-in once the story has credibly achieved the contract's desired outcome; posted proof is expected verification/world guidance, not an exclusive token checklist. The engine then pays the posted reward, one fixed payout, and Quest XP. Local clients inform, give access and confirm proof; they neither complete nor pay it. Work without a Quest Rank is private and settles directly (Quest XP, no Guild credit). The Guild registration is a procedure, not a contract.",
+    "branch_kinds": ["city", "capital"],
+    "registration_fee_cp": 20,
+    "registration_fee_src": "Canon decision 27.09.2026: 2 silver = 20 cp at every branch (docs/RUNTIME_V4_PLAN.md §6.4)",
+    "ranks": ["Novice", "Proven", "Veteran", "Elite", "Master", "Grandmaster", "Legend"],
+    "rank_levels": { "Novice": [1, 14], "Proven": [15, 29], "Veteran": [30, 44], "Elite": [45, 59], "Master": [60, 74], "Grandmaster": [75, 89], "Legend": [90, 104] },
+    "rank_power": { "Novice": "F", "Proven": "E", "Veteran": "D", "Elite": "C", "Master": "B", "Grandmaster": "A", "Legend": "S" },
+    "promotion_contracts": 5,
+    "drive_off": { "_doc": "Prototype C (4.3.0-c.6.6.6): a contract whose desired outcome or title allows the targets to be driven off (one of the verbs with off/away/out after it, or one of the words alone) counts each one the engine saw flee a fight with Alaric (escaped) as driven off; one the story only lets walk out of the scene is not (src/v4/guild.js defeatTally).", "verbs": "drive|driven|drove|driving|chase|chased|chasing|scare|scared|frighten|frightened|run|ran|send|sent", "after": "off|away|out", "alone": "clear|cleared|clearing|rout|routed|disperse|dispersed|banish|banished" },
+    "supported_ranks": { "_status": "proposed (plan D10): runtime defaults for branches without their own list", "city": ["Novice", "Proven", "Veteran"], "capital": ["Novice", "Proven", "Veteran", "Elite"] },
+    "board": { "_status": "proposed (plan §6.4, D9, D11)", "size": 5, "taken_by_others_pct_per_day": 0, "payout_guide_cp": { "Novice": [10, 200], "Proven": [100, 600], "Veteran": [300, 1500], "Elite": [800, 4000] } }
+  },
+  "time": {
+    "src": "Runtime V4 time caps per reply (docs/RUNTIME_V4_PLAN.md §6.7); runtime defaults, no world law",
+    "default_cap_min": 120,
+    "unknown_place_cap_min": 720,
+    "travel_cap_min": 10080,
+    "minutes_factor": 1.25,
+    "done_min": 720,
+    "combat_cap_min": 10,
+    "until": { "noon": 720, "evening": 1080, "end_of_day": 1200, "night": 1320, "dawn": 360, "morning": 480 },
+    "engine_clock": {
+      "src": "Prototype C only (setting 'planner'; docs/PROTOTYPE_C.md §11): engine-owned time. Provisional values, no balance",
+      "go_min_same_settlement": 15,
+      "go_min_elsewhere": 60
+    }
+  },
+  "recovery": {
+    "src": "Prototype C only (docs/PROTOTYPE_C.md §11): natural recovery while resting or sleeping, the same basis for both: per hour of booked rest or sleep, in % of the maximum, rounded down, never above the maximum. Provisional values, no balance",
+    "per_hour_pct": { "hp": 10, "mp": 15, "sta": 25 }
+  },
+  "exploration": {
+    "src": "Patch 6 (docs/PROTOTYPE_C.md): obstacles and hazards of a place (src/v4/features.js). Provisional values, no balance",
+    "harm": { "easy": 4, "moderate": 8, "hard": 14, "very_hard": 20 },
+    "harm_note": "what a hazard (or an obstacle that can hurt) costs Alaric when an engine check against it fails or a hidden one catches him, by the feature's difficulty; HP never below 1 by a hazard of a place, STA never below 0",
+    "tool_eases": 1,
+    "tool_note": "a tool he holds and uses for an attempt makes it this many difficulty steps easier"
+  },
+  "travel": {
+    "src": "Patch 5 (docs/PROTOTYPE_C.md): travel legs on the planner path. Provisional values, no world law",
+    "leg_event_pct": 35,
+    "leg_event_note": "the share of travel legs beyond a settlement that may bring one concrete interruption (an encounter, an obstacle, a meeting) the story makes fit the land; the others are uneventful. Never a guaranteed fight, never what it is"
+  },
+  "pulse": {
+    "src": "PULSE package A (patch_plans_10b/PULSE_W5_W7_TECHNISCHER_UMSETZUNGSPLAN.md §5, §6 A): one deterministic event window per suitable narrative turn of a ruleset-2 planner campaign. Provisional values for the first natural test, no world law",
+    "base": {
+      "travel": { "day": 35, "evening": 40, "night": 45 },
+      "wild": { "day": 20, "evening": 24, "night": 28 },
+      "street": { "day": 10, "evening": 12, "night": 8 },
+      "inside": { "day": 6, "evening": 8, "night": 3 },
+      "dungeon": { "day": 15, "evening": 15, "night": 15 }
+    },
+    "base_note": "chance in percent that the one window of a turn opens, by frame and the day part of settlement.js dayPart (day 6-19, evening 19-22, night 22-6); travel.day follows travel.leg_event_pct (the Patch 5 share)",
+    "step": 0.15,
+    "cap_mult": 1.75,
+    "cap_abs": 60,
+    "streak_note": "after each real closed roll the next chance rises: p = min(cap_abs, cap_mult * base, base * (1 + step * misses)); an open window resets misses to 0; turns without a roll (combat, held threats, exclusions, repeats, a pause block's later turns) leave it as it is",
+    "kinds": {
+      "travel": { "meeting": [30, 25, 15], "obstacle": [15, 15, 15], "trace": [20, 20, 15], "strange": [10, 10, 15], "danger": [25, 30, 40] },
+      "wild": { "meeting": [25, 20, 10], "obstacle": [10, 10, 10], "trace": [30, 25, 20], "strange": [15, 15, 20], "danger": [20, 30, 40] },
+      "street": { "meeting": [35, 35, 30], "life": [40, 35, 15], "trouble": [20, 25, 45], "trace": [5, 5, 10] },
+      "inside": { "meeting": [45, 45, 40], "life": [50, 45, 40], "trouble": [5, 10, 20] },
+      "dungeon": { "meeting": [10, 10, 10], "trace": [35, 35, 35], "strange": [25, 25, 25], "danger": [30, 30, 30] }
+    },
+    "dungeon_note": "package B (plan §6 B): inside a true Living Dungeon, no day part; danger only as a free minion slot of his level and cycle (living.js wanderSlot), meeting only with a company inside on his level, else that share falls away; a DUNGEON AHEAD turn and a leg out draw nothing; in a Dungeon rest only danger cuts it short",
+    "kinds_note": "weights day/evening/night of the coarse kind of an open window; the last open kind weighs 0, the three before it half; danger weighs half where no population or area levels back it; a pause in a safe lodging (any room of a settlement) never draws danger, obstacle or trouble, a pause in a street no danger or obstacle (package C)",
+    "pause": {
+      "interrupt_min": 30, "edge_min": 15,
+      "roofed_words": ["house", "home", "homestead", "farmstead", "cottage", "cabin", "hut", "shack", "lodge", "inn", "tavern", "alehouse", "hall", "mill", "chapel", "temple", "barn", "stable", "loft", "room", "chamber", "kitchen", "hearth", "cellar", "tower", "keep", "manor", "croft"],
+      "roofed_suffixes": ["house", "mill"]
+    },
+    "pause_note": "package C (plan §6 C): out in the land an open danger, obstacle or strange window, in a settlement's street an open trouble window cuts a booked rest, sleep or wait short; from interrupt_min booked minutes on after a deterministic minute m in [edge_min, M - edge_min] (only m and its recovery are booked), below that at its end (booked in full); either way the later steps of the message are not done. A safe lodging is never cut short: a room of a settlement, a lodging granted here, or out in the land a place under a roof (kind interior, or its name names a building by roofed_words/roofed_suffixes, whole words); only the safety reads this, the frame stays package A's. The inside of a Dungeon has no window (package B)",
+    "recent": 4,
+    "force": null,
+    "force_note": "tests and scripted host smokes only: {open: true|false, kind?, when?} replaces the draw (when: only for a player message containing these words), or a list of such entries (the first that fits); never set in a product campaign"
+  },
+  "combat": {
+    "src": "Core #23, #24, #26-#28",
+    "phases": [
+      "INACTIVE",
+      "PENDING",
+      "ACTIVE",
+      "TERMINAL"
+    ],
+    "no_in_combat_regeneration": true,
+    "wary_min": 360,
+    "wary_note": "Patch 4: a creature or person that fought Alaric, or watched his fight from the scene, stays aware of him this long; a story that says it lost track of him sooner sets no Ambush (only his own stealth check does)",
+    "death_at_zero_hp": true
+  },
+  "cover": {
+    "src": "Core #12 (V3)",
+    "full": "illegal",
+    "partial_damage_reduction_pct": 25
+  },
+  "items": {
+    "src": "Patch 3 (4.3.0-c.6.6.11): how a thing behaves when Alaric uses it (src/v4/items.js); runtime defaults, no world law",
+    "note": "A thing is a tool (used, not used up) unless its name says it is food or used up when used. Food counts in portions (one portion is one meal) and keeps for a while, preserved food longer. Gear with a slot is equipment. Whole words of the thing's name decide.",
+    "food": "meat|steak|haunch|joint|rabbit|hare|venison|fish|trout|eel|eggs?|bread|loaf|loaves|cheese|apples?|berries|fruit|nuts|stew|soup|porridge|pie|sausages?|bacon|ham|jerky|rations?|hardtack|biscuits?|meal|food|provisions|honey|mushrooms?|vegetables?|onions?|turnips?|carrots?|potatoes?",
+    "preserved": "jerky|dried|salted|smoked|hardtack|biscuits?|rations?|cheese|honey|nuts|pickled|cured",
+    "consumable": "potions?|tonics?|elixirs?|draughts?|salves?|ointments?|poultices?|bandages?|antidotes?|tinctures?|oil|torch|torches|candles?|arrows?|bolts?|herbs?|powder|scrolls?|vials?|bombs?|kindling|tinder|firewood",
+    "keeps_min": { "fresh": 2880, "preserved": 20160 }
+  },
+  "living": {
+    "src": "Patch 8 (Living Dungeons, src/v4/living.js, docs/PATCH8_LIVING_DUNGEONS.md): what a true Dungeon gets when it is first established, where its own content entry (lore.json dungeons[].living) says nothing. Fixed into the campaign's events at its establishment; a later change here never changes an established Dungeon. Provisional values, no balance",
+    "role_spans": { "minion": [0, 0.3], "guard": [0.25, 0.5], "boss": [0.35, 0.6] },
+    "role_spans_note": "the level window of each encounter role on a level of a Dungeon, as parts of that level's Rank band (F: 1-14 gives minion 1-5, guard 4-8, boss 5-9); never outside the band, never Alaric's level",
+    "role_type": { "minion": "normal", "guard": "elite", "boss": "boss" },
+    "capacity_by_rank": { "F": 8, "E": 8, "D": 6, "C": 6, "B": 5, "A": 4, "S": 4 },
+    "reset_days_by_rank": { "F": 3, "E": 4, "D": 5, "C": 6, "B": 7, "A": 7, "S": 7 },
+    "parties": 2,
+    "party": { "visit_pct": 35, "enter_min": [420, 840], "stay_min": [150, 330], "floor_min": 70, "size": [2, 4] },
+    "party_names": ["the Grey Pennants", "Kettle's Company", "the Lantern Five", "the Low Road Brothers", "the Three Oaks Company", "the Ashen Hands", "the Millward Blades", "the Wren Company"],
+    "leader_names": ["Brannoc", "Ysolde Marr", "Tamsin Reed", "Old Harl", "Mira Fenwick", "Corvin Ash", "Edda Lusk", "Rook Tallow"],
+    "affiliations": ["a Guild-registered company", "a Guild-registered company", "hired blades of a local house", "a crew of independent delvers"],
+    "return_stone": { "name": "Return Stone", "value_cp": 60, "guard": 0.25, "boss": 0.6, "text": "a palm-sized grey stone etched with a gate rune; crushed in the hand inside a Dungeon, it carries its holder back to that Dungeon's gate" },
+    "boss_titles": ["Warden", "Matriarch", "Old One", "Tyrant", "Overseer", "Hollow King"],
+    "guard_titles": ["Warden", "Sentinel", "Brute", "Chief"],
+    "pace": [0, 1],
+    "pace_note": "the quiet parts (no engine encounter) a level may have before each of its encounters, drawn per cycle from this list: a level is never an endless string of empty rooms, and never a fixed number of rooms"
+  },
+  "class_growth": {
+    "level": 15,
+    "personal_share": 0.5,
+    "giant_gap": 5,
+    "outnumbered": 5,
+    "survival": {
+      "gap": 3,
+      "start_pct": 50,
+      "low_pct": 35
+    },
+    "rare": {
+      "feats": 3,
+      "contexts": 2,
+      "per_context": 2
+    },
+    "legacy": {
+      "normal": 1,
+      "rare": 2,
+      "legendary": 4
+    },
+    "budgets": {
+      "normal": {
+        "effects": [
+          1,
+          2
+        ],
+        "per": {
+          "stat_bonus": 4,
+          "max_bonus": 20,
+          "cost_reduction": 8,
+          "resist": 8
+        }
+      },
+      "rare": {
+        "effects": [
+          1,
+          3
+        ],
+        "per": {
+          "stat_bonus": 6,
+          "max_bonus": 35,
+          "cost_reduction": 15,
+          "resist": 15
+        }
+      }
+    }
+  }
+}

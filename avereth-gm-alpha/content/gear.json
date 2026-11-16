@@ -1,0 +1,691 @@
+{
+  "_source": "Content v1.13 #9 (references) + #11 (starter kits)",
+  "references_text": "GEAR MODEL\nGear has a Rank and fixed item-instance values. Normal Gear directly contributes ATK/MATK/DEF/MDEF; it does not alter Core Stats unless an exceptional item explicitly says so.\n\nF-RANK REFERENCE\nMartial Weapon ATK 4-10\nArcane Focus MATK 4-10\nLight Armor DEF 2-4, MDEF 2-5\nHeavy Armor DEF 5-8, MDEF 1-3\nShield/secondary defensive slot DEF 3-5, MDEF 2-4\n\nHIGHER-RANK GENERATION\nLet RankIndex R: F=0, E=1, D=2, C=3, B=4, A=5, S=6.\nFor ordinary higher-Rank Gear, start from an appropriate F reference/item and use:\nRanked combat value ≈ round(F value × (1 + 0.75R)).\nChoose/fix the actual item value once. Exceptional named/enchanted artifacts may deviate through explicit effects instead of a universal rarity ladder.\n\nTypical slots:\nWarrior weapon + heavy armor; Mage focus + light armor; Guardian weapon + heavy armor + shield; Duelist weapon + light armor; Ranger weapon + light armor.\nGeneric monsters do not use Gear unless the individual actually carries/equips it.\n",
+  "f_rank_reference": {
+    "martial_weapon_atk": [
+      4,
+      10
+    ],
+    "arcane_focus_matk": [
+      4,
+      10
+    ],
+    "light_armor_def": [
+      2,
+      4
+    ],
+    "light_armor_mdef": [
+      2,
+      5
+    ],
+    "heavy_armor_def": [
+      5,
+      8
+    ],
+    "heavy_armor_mdef": [
+      1,
+      3
+    ],
+    "shield_def": [
+      3,
+      5
+    ],
+    "shield_mdef": [
+      2,
+      4
+    ]
+  },
+  "rank_scaling": {
+    "per_rank_index": 0.75,
+    "rank_index": {
+      "F": 0,
+      "E": 1,
+      "D": 2,
+      "C": 3,
+      "B": 4,
+      "A": 5,
+      "S": 6
+    }
+  },
+  "items": {
+    "starter_longsword": {
+      "id": "starter_longsword",
+      "name": "Starter Longsword",
+      "rank": "F",
+      "source_line": "Starter Longsword [F]: ATK 6",
+      "atk": 6,
+      "slot": "weapon",
+      "family": "melee"
+    },
+    "starter_heavy_armor": {
+      "id": "starter_heavy_armor",
+      "name": "Starter Heavy Armor",
+      "rank": "F",
+      "source_line": "Starter Heavy Armor [F]: DEF 6, MDEF 2",
+      "def": 6,
+      "mdef": 2,
+      "slot": "armor",
+      "family": "heavy_armor"
+    },
+    "starter_arcane_staff": {
+      "id": "starter_arcane_staff",
+      "name": "Starter Arcane Staff",
+      "rank": "F",
+      "source_line": "Starter Arcane Staff [F]: MATK 6",
+      "matk": 6,
+      "slot": "weapon",
+      "family": "focus"
+    },
+    "starter_light_robes": {
+      "id": "starter_light_robes",
+      "name": "Starter Light Robes",
+      "rank": "F",
+      "source_line": "Starter Light Robes [F]: DEF 2, MDEF 3",
+      "def": 2,
+      "mdef": 3,
+      "slot": "armor",
+      "family": "light_armor"
+    },
+    "starter_mace": {
+      "id": "starter_mace",
+      "name": "Starter Mace",
+      "rank": "F",
+      "source_line": "Starter Mace [F]: ATK 5",
+      "atk": 5,
+      "slot": "weapon",
+      "family": "melee"
+    },
+    "starter_shield": {
+      "id": "starter_shield",
+      "name": "Starter Shield",
+      "rank": "F",
+      "source_line": "Starter Shield [F]: DEF 3, MDEF 2",
+      "def": 3,
+      "mdef": 2,
+      "slot": "offhand",
+      "family": "shield"
+    },
+    "starter_rapier": {
+      "id": "starter_rapier",
+      "name": "Starter Rapier",
+      "rank": "F",
+      "source_line": "Starter Rapier [F]: ATK 6",
+      "atk": 6,
+      "slot": "weapon",
+      "family": "melee"
+    },
+    "starter_light_armor": {
+      "id": "starter_light_armor",
+      "name": "Starter Light Armor",
+      "rank": "F",
+      "source_line": "Starter Light Armor [F]: DEF 2, MDEF 3",
+      "def": 2,
+      "mdef": 3,
+      "slot": "armor",
+      "family": "light_armor"
+    },
+    "starter_shortbow": {
+      "id": "starter_shortbow",
+      "name": "Starter Shortbow",
+      "rank": "F",
+      "source_line": "Starter Shortbow [F]: ATK 6",
+      "atk": 6,
+      "slot": "weapon",
+      "family": "bow"
+    },
+    "starter_quiver": {
+      "id": "starter_quiver",
+      "name": "Starter Quiver",
+      "rank": null,
+      "source_line": "Starter Quiver [unranked]: contains 20 Standard Arrows",
+      "slot": "quiver",
+      "contains": {
+        "standard_arrow": 20
+      }
+    },
+    "standard_arrow": {
+      "id": "standard_arrow",
+      "name": "Standard Arrow",
+      "rank": null,
+      "slot": "ammo",
+      "stackable": true,
+      "note": "Ordinary physical ammunition; no bonus damage or other modifier (Content #11, Core #21)."
+    },
+    "simple_travelers_clothes": {
+      "id": "simple_travelers_clothes",
+      "name": "Simple Traveler's Clothes",
+      "rank": null,
+      "slot": "clothing",
+      "note": "unranked; no combat values"
+    },
+    "small_pouch": {
+      "id": "small_pouch",
+      "name": "Small Pouch",
+      "rank": null,
+      "slot": "container"
+    },
+    "starter_dagger": {
+      "id": "starter_dagger",
+      "name": "Starter Dagger",
+      "rank": "F",
+      "source_line": "Starter Dagger [F]: ATK 6",
+      "atk": 6,
+      "slot": "weapon",
+      "family": "precision"
+    },
+    "starter_longsword_r2": {
+      "id": "starter_longsword_r2",
+      "name": "Starter Longsword",
+      "rank": "F",
+      "source_line": "Starter Longsword [F]: ATK 10",
+      "atk": 10,
+      "slot": "weapon",
+      "family": "melee",
+      "note": "4.3.0-c.6.6.53: the provisional starting weapon of ruleset 2 (live 23.10.2026); legacy campaigns and the people of the world keep Starter Longsword ATK 6"
+    },
+    "starter_arcane_staff_r2": {
+      "id": "starter_arcane_staff_r2",
+      "name": "Starter Arcane Staff",
+      "rank": "F",
+      "source_line": "Starter Arcane Staff [F]: MATK 10",
+      "matk": 10,
+      "slot": "weapon",
+      "family": "focus",
+      "note": "4.3.0-c.6.6.53: the provisional starting weapon of ruleset 2; legacy campaigns and the people of the world keep MATK 6"
+    },
+    "starter_dagger_r2": {
+      "id": "starter_dagger_r2",
+      "name": "Starter Dagger",
+      "rank": "F",
+      "source_line": "Starter Dagger [F]: ATK 10",
+      "atk": 10,
+      "slot": "weapon",
+      "family": "precision",
+      "note": "4.3.0-c.6.6.53: the provisional starting weapon of ruleset 2; the people of the world keep ATK 6"
+    }
+  },
+  "starter_kits": {
+    "warrior": [
+      "starter_longsword",
+      "starter_heavy_armor"
+    ],
+    "mage": [
+      "starter_arcane_staff",
+      "starter_light_robes"
+    ],
+    "guardian": [
+      "starter_mace",
+      "starter_heavy_armor",
+      "starter_shield"
+    ],
+    "duelist": [
+      "starter_rapier",
+      "starter_light_armor"
+    ],
+    "ranger": [
+      "starter_shortbow",
+      "starter_light_armor",
+      "starter_quiver"
+    ],
+    "rogue": [
+      "starter_dagger",
+      "starter_light_armor"
+    ]
+  },
+  "ruleset_kits": {
+    "_note": "4.3.0-c.6.6.53 (live 23.10.2026: two Level-1 Warriors died in their first Dungeon fights): the kit Alaric is given at creation under ruleset 2, in place of starter_kits; a provisional start help until the balancing of 10B. starter_kits stays the kit of legacy campaigns and of the people of the world (gear_from_starter_kit); a campaign keeps the kit it was given (its items by id).",
+    "2": {
+      "warrior": ["starter_longsword_r2", "starter_heavy_armor"],
+      "mage": ["starter_arcane_staff_r2", "starter_light_robes"],
+      "rogue": ["starter_dagger_r2", "starter_light_armor"]
+    }
+  },
+  "bootstrap": {
+    "items": [
+      "simple_travelers_clothes",
+      "small_pouch"
+    ],
+    "coin_cp": 50
+  },
+  "kits_text": "TRANSMIGRATION STARTER KITS — ONE-TIME CAMPAIGN INITIALIZATION\n\nWhen System Character Creation is completed by selecting one Base Class and exactly 2 Base Skills, the System grants exactly one matching F-rank starter kit.\nThis is a one-time bootstrap benefit, not a repeatable Shop or Skill.\n\nAll listed values are fixed item-instance values.\n\nWARRIOR:\n- Starter Longsword [F]: ATK 6\n- Starter Heavy Armor [F]: DEF 6, MDEF 2\n\nMAGE:\n- Starter Arcane Staff [F]: MATK 6\n- Starter Light Robes [F]: DEF 2, MDEF 3\n\nGUARDIAN:\n- Starter Mace [F]: ATK 5\n- Starter Heavy Armor [F]: DEF 6, MDEF 2\n- Starter Shield [F]: DEF 3, MDEF 2\n\nDUELIST:\n- Starter Rapier [F]: ATK 6\n- Starter Light Armor [F]: DEF 2, MDEF 3\n\nRANGER:\n- Starter Shortbow [F]: ATK 6\n- Starter Light Armor [F]: DEF 2, MDEF 3\n- Starter Quiver [unranked]: contains 20 Standard Arrows\n- Standard Arrows are ordinary physical ammunition and grant no bonus damage or other modifier.\n\nROGUE (Patch 9A):\n- Starter Dagger [F]: ATK 6\n- Starter Light Armor [F]: DEF 2, MDEF 3\n\nA new campaign (Patch 9A) offers Warrior, Mage and Rogue; Guardian, Duelist and Ranger kits stay for the campaigns that started with them.\nA new campaign (4.3.0-c.6.6.53, provisional until balancing) gives a stronger starting weapon: Starter Longsword [F]: ATK 10, Starter Arcane Staff [F]: MATK 10, Starter Dagger [F]: ATK 10; its armor as above.\n\nCOMMON BOOTSTRAP ITEMS:\nBefore Class selection, the player has:\n- Simple Traveler's Clothes [unranked; no combat values]\n- Small Pouch [unranked]\n- 5 Silver\n\nCREATION-COMPLETION EFFECT:\nAfter the Class is chosen and exactly 2 Base Skills from that Class are chosen:\n1. apply the Class's one-time Level-1 Favored-Stat growth if not already applied;\n2. grant/preserve the selected Class's Basic Attack at Proficiency 1, Progress 0, plus the 2 selected Base Skills at Proficiency 1, Progress 0;\n3. materialize and equip the matching starter kit;\n4. preserve Simple Traveler's Clothes as ordinary clothing unless the player later discards/replaces them;\n5. mark the one-time starter kit as claimed.\n\nNo later Class Evolution or Class change grants another starter kit unless an explicit future rule says so.\n",
+  "item_effects": {
+    "_note": "Patch 7.1 (4.3.0-c.6.6.19): offensive consumables the engine resolves (a scroll thrown is an attack through the combat pipeline, never a story effect). Each entry is the standard profile of its kind, shaped like a skill (src/combat.js attackAction) with item: true; match names the words (all of them) of a thing's name that make it this kind. A concrete scroll keeps its own snapshot (object.profile, fixed when it is offered, bought, looted or established): its power is the standard power times its quality, never its user's stats, level or Power-Rank nor the foe's. requires_rank (optional) lowers or raises the Power-Rank needed to use it; without it, the item's own Rank.",
+    "effects": [
+      {
+        "id": "item.scorchburst",
+        "name": "Scorchburst scroll",
+        "item": true,
+        "item_kind": "scroll",
+        "match": [
+          "scorchburst",
+          "scroll"
+        ],
+        "uses": 1,
+        "class": null,
+        "basic": false,
+        "category": "Offensive",
+        "rank": "F",
+        "complexity": null,
+        "tags": [
+          "item",
+          "scroll"
+        ],
+        "type_text": "Magical / Area / Fire (thrown scroll)",
+        "cost": null,
+        "ammo": null,
+        "range": {
+          "band": "SHORT",
+          "extra_band": false,
+          "area": "burst"
+        },
+        "attack": {
+          "base": 32,
+          "scaling": [],
+          "uses": null,
+          "share": 0,
+          "damage_type": "magical"
+        },
+        "strikes": 1,
+        "effects": [
+          {
+            "kind": "area",
+            "shape": "burst",
+            "size": "cluster",
+            "shared_rolls": true
+          }
+        ],
+        "effect_text": "thrown up to SHORT; the burst strikes the creature it is thrown at and everyone standing in the same close knot with it (the cluster the story established, at the same distance from him), however many they are, each with its own damage roll; someone standing alone is struck alone. No additional status effect. The scroll is used up.",
+        "source_text": "Scorchburst Scroll, first circle [Offensive item, F-Rank]\nType: Magical / Area / Fire\nBase Power: 32 (the scroll's own, fixed for a common one: about one and a half casts of an F-Rank area spell at the start of the band, Arcane Burst at INT 6 / MATK 6 = 21.5, and below an F single-target lance, Flame Lance 36.25; a crude, fine, superior or exceptional scroll scales it by its quality)\nRange: SHORT (thrown)\nArea: a burst about a stride and a half across where it lands: the creature it is thrown at and everyone in the same close knot with it, no limit on their number\nUses: 1 (used up when it is resolved)"
+      },
+      {
+        "id": "item.healing_potion",
+        "name": "Healing potion",
+        "item": true,
+        "item_kind": "potion",
+        "match": [],
+        "match_any": [
+          [
+            "healing",
+            "potion"
+          ],
+          [
+            "health",
+            "potion"
+          ],
+          [
+            "healing",
+            "draught"
+          ],
+          [
+            "healing",
+            "tonic"
+          ],
+          [
+            "healing",
+            "elixir"
+          ]
+        ],
+        "effect": "heal",
+        "uses": 1,
+        "class": null,
+        "basic": false,
+        "category": "Restorative",
+        "rank": "F",
+        "complexity": null,
+        "tags": [
+          "item",
+          "consumable",
+          "restorative"
+        ],
+        "type_text": "Restorative / HP (drunk)",
+        "cost": null,
+        "ammo": null,
+        "range": null,
+        "attack": null,
+        "strikes": 0,
+        "effects": [],
+        "restore": {
+          "resource": "hp",
+          "amount": 30
+        },
+        "effect_text": "drunk: restores 30 HP (common F; quality and Rank scale it), never above his maximum; in a fight it is his main action",
+        "source_text": "Patch 7.2 (4.3.0-c.6.6.21): an ordinary F-Rank restorative. The amount is the standard of its kind, scaled by the item's quality and Rank when it is established (object.profile) and never set by the story. Core [POWER] Injuries, Healing, and Recovery: consumables are an explicit source of recovery in a fight; no overhealing; ordinary healing never affects the dead or removes a status."
+      },
+      {
+        "id": "item.mana_potion",
+        "name": "Mana potion",
+        "item": true,
+        "item_kind": "potion",
+        "match": [],
+        "match_any": [
+          [
+            "mana",
+            "potion"
+          ],
+          [
+            "mana",
+            "draught"
+          ],
+          [
+            "mana",
+            "tonic"
+          ],
+          [
+            "mana",
+            "elixir"
+          ]
+        ],
+        "effect": "restore_mp",
+        "uses": 1,
+        "class": null,
+        "basic": false,
+        "category": "Restorative",
+        "rank": "F",
+        "complexity": null,
+        "tags": [
+          "item",
+          "consumable",
+          "restorative"
+        ],
+        "type_text": "Restorative / MP (drunk)",
+        "cost": null,
+        "ammo": null,
+        "range": null,
+        "attack": null,
+        "strikes": 0,
+        "effects": [],
+        "restore": {
+          "resource": "mp",
+          "amount": 25
+        },
+        "effect_text": "drunk: restores 25 MP (common F; quality and Rank scale it), never above his maximum; in a fight it is his main action",
+        "source_text": "Patch 7.2 (4.3.0-c.6.6.21): an ordinary F-Rank restorative. The amount is the standard of its kind, scaled by the item's quality and Rank when it is established (object.profile) and never set by the story. Core [POWER] Injuries, Healing, and Recovery: consumables are an explicit source of recovery in a fight; no overhealing; ordinary healing never affects the dead or removes a status."
+      },
+      {
+        "id": "item.stamina_tonic",
+        "name": "Stamina tonic",
+        "item": true,
+        "item_kind": "potion",
+        "match": [],
+        "match_any": [
+          [
+            "stamina",
+            "tonic"
+          ],
+          [
+            "stamina",
+            "potion"
+          ],
+          [
+            "stamina",
+            "draught"
+          ],
+          [
+            "stamina",
+            "elixir"
+          ]
+        ],
+        "effect": "restore_sta",
+        "uses": 1,
+        "class": null,
+        "basic": false,
+        "category": "Restorative",
+        "rank": "F",
+        "complexity": null,
+        "tags": [
+          "item",
+          "consumable",
+          "restorative"
+        ],
+        "type_text": "Restorative / STA (drunk)",
+        "cost": null,
+        "ammo": null,
+        "range": null,
+        "attack": null,
+        "strikes": 0,
+        "effects": [],
+        "restore": {
+          "resource": "sta",
+          "amount": 30
+        },
+        "effect_text": "drunk: restores 30 STA (common F; quality and Rank scale it), never above his maximum; in a fight it is his main action",
+        "source_text": "Patch 7.2 (4.3.0-c.6.6.21): an ordinary F-Rank restorative. The amount is the standard of its kind, scaled by the item's quality and Rank when it is established (object.profile) and never set by the story. Core [POWER] Injuries, Healing, and Recovery: consumables are an explicit source of recovery in a fight; no overhealing; ordinary healing never affects the dead or removes a status."
+      }
+    ]
+  },
+  "instances": {
+    "_note": "Patch 7.1 (4.3.0-c.6.6.19): a concrete item's own values, fixed once when it is established (an offer line, a purchase, loot, the story) and kept on the object as its profile; a later change of this file changes no item that exists. Ranks are bands, not fixed strengths: within one Rank an item's quality (the words of its name) places it in the reference range of its kind (f_rank_reference) or above it for exceptional pieces, and higher Ranks scale it as HIGHER-RANK GENERATION says. Guidelines for ordinary items; an item the story establishes with an explicit Rank keeps it.",
+    "quality": [
+      {
+        "tier": "crude",
+        "words": [
+          "crude",
+          "rusty",
+          "rusted",
+          "cracked",
+          "battered",
+          "shoddy",
+          "makeshift",
+          "cheap",
+          "worn",
+          "dented",
+          "chipped",
+          "faded"
+        ],
+        "at": 0.0,
+        "power": 0.75
+      },
+      {
+        "tier": "common",
+        "words": [],
+        "at": 0.35,
+        "power": 1.0
+      },
+      {
+        "tier": "fine",
+        "words": [
+          "fine",
+          "good",
+          "quality",
+          "well made",
+          "well-made",
+          "sturdy",
+          "polished",
+          "balanced",
+          "reinforced",
+          "potent"
+        ],
+        "at": 0.7,
+        "power": 1.25
+      },
+      {
+        "tier": "superior",
+        "words": [
+          "superior",
+          "masterwork",
+          "master made",
+          "master-made",
+          "excellent",
+          "exquisite",
+          "high quality",
+          "high-quality",
+          "greater"
+        ],
+        "at": 1.0,
+        "power": 1.5
+      },
+      {
+        "tier": "exceptional",
+        "words": [
+          "enchanted",
+          "runed",
+          "rune-etched",
+          "rare",
+          "exceptional",
+          "blessed",
+          "legendary",
+          "ancient"
+        ],
+        "at": 1.25,
+        "power": 1.85
+      }
+    ],
+    "gear_kinds": [
+      {
+        "id": "arcane_focus",
+        "slot": "weapon",
+        "family": "focus",
+        "words": [
+          "staff",
+          "wand",
+          "focus",
+          "orb",
+          "rod",
+          "sceptre",
+          "scepter"
+        ],
+        "values": {
+          "matk": "arcane_focus_matk"
+        }
+      },
+      {
+        "id": "shield",
+        "slot": "offhand",
+        "family": null,
+        "words": [
+          "shield",
+          "buckler",
+          "kite shield",
+          "tower shield"
+        ],
+        "values": {
+          "def": "shield_def",
+          "mdef": "shield_mdef"
+        }
+      },
+      {
+        "id": "heavy_armor",
+        "slot": "armor",
+        "family": null,
+        "words": [
+          "plate armor",
+          "plate armour",
+          "breastplate",
+          "chainmail",
+          "chain mail",
+          "mail shirt",
+          "hauberk",
+          "brigandine",
+          "scale armor",
+          "scale mail",
+          "heavy armor",
+          "cuirass"
+        ],
+        "values": {
+          "def": "heavy_armor_def",
+          "mdef": "heavy_armor_mdef"
+        }
+      },
+      {
+        "id": "light_armor",
+        "slot": "armor",
+        "family": null,
+        "words": [
+          "robes",
+          "robe",
+          "leathers",
+          "leather armor",
+          "light armor",
+          "gambeson",
+          "jerkin",
+          "padded armor"
+        ],
+        "values": {
+          "def": "light_armor_def",
+          "mdef": "light_armor_mdef"
+        }
+      },
+      {
+        "id": "martial_weapon",
+        "slot": "weapon",
+        "family": "by_words",
+        "words": [
+          "sword",
+          "longsword",
+          "shortsword",
+          "broadsword",
+          "greatsword",
+          "sabre",
+          "saber",
+          "axe",
+          "hand-axe",
+          "hatchet",
+          "battleaxe",
+          "mace",
+          "flail",
+          "maul",
+          "hammer",
+          "warhammer",
+          "spear",
+          "halberd",
+          "glaive",
+          "rapier",
+          "dagger",
+          "stiletto",
+          "knife",
+          "bow",
+          "shortbow",
+          "longbow",
+          "club",
+          "cudgel"
+        ],
+        "values": {
+          "atk": "martial_weapon_atk"
+        }
+      }
+    ],
+    "value": {
+      "_note": "Price guidelines in copper for the plausibility check of offers (an audit, never a fixed price: merchants differ, a rare or useful thing may cost more). value = points x cp per point x Rank factor (1 + 0.75R)^2, area attacks x area_factor, x uses; a stronger variant of the same kind is worth more.",
+      "gear_cp_per_point": 8,
+      "attack_cp_per_power": 0.6,
+      "area_factor": 1.5,
+      "plausible": [
+        0.5,
+        2.0
+      ],
+      "restore_cp_per_point": {
+        "hp": 0.8,
+        "mp": 0.8,
+        "sta": 0.5
+      },
+      "_restore_note": "Patch 7.2: a restorative's guideline is the points it restores × the rate of its resource × the Rank factor (a common F Healing potion, 30 HP: 24 cp; Mana potion, 25 MP: 20 cp; Stamina tonic, 30 STA: 15 cp). A first guideline, not the balance of potions, which a later patch sets.",
+      "gear_quality_factor": {
+        "crude": 1,
+        "common": 1,
+        "fine": 1.25,
+        "superior": 1.75,
+        "exceptional": 2.5
+      }
+    },
+    "f_weapon_values": {
+      "crude": 6,
+      "common": 10,
+      "fine": 14,
+      "superior": 18,
+      "exceptional": 22
+    },
+    "f_shield_fine_def": 5,
+    "e_weapon_values": {
+      "crude": 7,
+      "common": 11,
+      "fine": 15,
+      "superior": 19,
+      "exceptional": 23
+    },
+    "f_weapon_prices": {
+      "fine": 140,
+      "superior": 260,
+      "exceptional": 480
+    }
+  }
+}

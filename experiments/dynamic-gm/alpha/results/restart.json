@@ -1,0 +1,7 @@
+{
+  "pass": true,
+  "serverRestart": "ST server stopped and restarted with same isolated data root",
+  "requests": 0,
+  "pageErrors": [],
+  "stateHash": "34b522b5d3851c0acf8573cf25c0e2068f3e268b7c32e2cf40497f4092aeb9e3"
+}

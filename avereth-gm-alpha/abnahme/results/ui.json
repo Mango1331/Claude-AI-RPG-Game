@@ -1,0 +1,13 @@
+{
+  "pass": true,
+  "workflow": [
+    "real Start button",
+    "native Send button -> class",
+    "Enter -> skills",
+    "GM send -> #status",
+    "engine HUD",
+    "native Continue refused"
+  ],
+  "requests": 0,
+  "pageErrors": []
+}

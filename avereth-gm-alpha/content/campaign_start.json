@@ -1,0 +1,49 @@
+{
+  "_source": "First Message v0.4 + Content #0/#11 + System #12 (New Campaign and Character Creation). The engine creates the initial state from this file; the start city is read from the First Message line 'Location: Public roadside verge outside <City>, <Realm>' (it is chosen by the {{pick}} macro). Lorebook v0.14: the start cities are Alderwatch, Glassmere and Ashbridge.",
+  "ruleset": 2,
+  "rulesets": {
+    "_note": "Patch 9A: the rules a campaign plays by are fixed when it starts (campaign.started ruleset). A campaign started before Patch 9A has none and keeps ruleset 1 for good: its Base Classes, its NPC templates (npc_templates.json legacy), its weapon attacks and its texts. A change of the content never moves a running campaign onto other rules.",
+    "1": {"name": "legacy (before Patch 9A)", "classes": ["warrior", "mage", "guardian", "duelist", "ranger"], "weapon_attacks": false},
+    "2": {"name": "Patch 9A: three starting classes", "classes": ["warrior", "mage", "rogue"], "weapon_attacks": true, "starter_aoe_pools": {"warrior": ["warrior.heavy_slash", "warrior.guard", "warrior.cleave", "warrior.quick_slash", "warrior.charge", "warrior.deflect"], "mage": ["mage.arcane_bolt", "mage.arcane_ward", "mage.flame_lance", "mage.arcane_wave", "mage.blink", "mage.focused_ward"], "rogue": ["rogue.razor_cut", "rogue.piercing_thrust", "rogue.long_lunge", "rogue.evasive_step", "rogue.fan_of_blades", "rogue.guarded_cut"]}}
+  },
+  "pc": {
+    "id": "pc",
+    "name": "Alaric",
+    "kind": "pc",
+    "race": "Human",
+    "age": 18,
+    "origin": "Earth",
+    "level": 1,
+    "stats": {"STR": 5, "VIT": 5, "AGI": 5, "INT": 5, "PER": 5, "WIL": 5},
+    "class": null,
+    "skills": {},
+    "equipment": {"clothing": "simple_travelers_clothes"},
+    "inventory": {"small_pouch": 1},
+    "coin_cp": 50,
+    "xp": 0,
+    "free_points": 0,
+    "descriptors": ["Alaric", "stranger", "traveler"],
+    "public_facts": ["Human, about eighteen", "wears simple traveler's clothes"]
+  },
+  "start_locations": ["loc.alderwatch", "loc.glassmere", "loc.ashbridge"],
+  "start_scene": {
+    "place": "public roadside verge outside the city",
+    "clock_minutes": 540,
+    "clock_note": "Day 1, 09:00 is a neutral default; the First Message states no hour. The narrator may propose the time of day in the first story turn."
+  },
+  "creation": {
+    "step": 1,
+    "choose_skills": 2,
+    "labels": {
+      "step1": "CHARACTER CREATION — STEP 1/2",
+      "step2": "CHARACTER CREATION — STEP 2/2",
+      "class_selected": "CLASS SELECTED",
+      "select_skills": "Select exactly 2 Skills",
+      "complete": "CHARACTER CREATION COMPLETE"
+    }
+  },
+  "initial_facts": [
+    {"s": "pc", "p": "origin", "o": "Earth (transmigrated; memories intact)", "visibility": "secret", "known_by": ["pc"]},
+    {"s": "pc", "p": "arrival_witnesses", "o": "none", "visibility": "secret", "known_by": ["pc"]}
+  ]
+}

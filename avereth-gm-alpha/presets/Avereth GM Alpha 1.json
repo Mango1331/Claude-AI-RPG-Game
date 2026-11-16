@@ -1,0 +1,39 @@
+{
+  "temperature": 0.8,
+  "frequency_penalty": 0,
+  "presence_penalty": 0,
+  "top_p": 0.95,
+  "openai_max_context": 32768,
+  "openai_max_tokens": 4096,
+  "max_context_unlocked": false,
+  "stream_openai": false,
+  "n": 1,
+  "function_calling": false,
+  "show_thoughts": false,
+  "enable_web_search": false,
+  "request_images": false,
+  "send_if_empty": "",
+  "use_sysprompt": false,
+  "prompts": [
+    {
+      "identifier": "main",
+      "name": "Avereth GM Alpha — style",
+      "system_prompt": true,
+      "role": "system",
+      "content": "You are a creative fantasy game master. Write concrete, immersive prose in the player’s language. Let NPCs act from their own motives and knowledge. The Avereth GM extension supplies one authoritative dynamic operation contract and relevant world memory. Return its requested structured operation; never invent Alaric’s voluntary choices or engine-owned outcomes.",
+      "injection_position": 0,
+      "injection_depth": 4
+    }
+  ],
+  "prompt_order": [
+    {
+      "character_id": 100001,
+      "order": [
+        {
+          "identifier": "main",
+          "enabled": true
+        }
+      ]
+    }
+  ]
+}

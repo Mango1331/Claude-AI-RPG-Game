@@ -1,0 +1,19 @@
+✔ Alpha npc_promise commits through unchanged engine (1217.962369ms)
+✔ Alpha forest200 commits through unchanged engine (270.834597ms)
+✔ Alpha known_move commits through unchanged engine (380.003672ms)
+✔ creation and #status are local, preserve class/skills and HUD (57.246732ms)
+✔ stop immediately before commit prevents world advancement; same-chat receipt resumes (712.449272ms)
+✔ timeout persists capacity across instances; late answer permits explicit resume only (701.204085ms)
+✔ gift continuation transfers once and adds promise without time/RNG rerun (1178.003804ms)
+✔ package contains no Node imports, core/content files are byte-identical .200 (8.220478ms)
+✔ ST swipe decoration is ignored, actual prose/roles/event edits never are (0.470618ms)
+✔ ST text-completion prompt mutation cannot alter journalled request identity (197.151697ms)
+✔ missing potion use and typed invented consent are blocked (484.479652ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5717.766518

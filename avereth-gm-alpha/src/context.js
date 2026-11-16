@@ -1,0 +1,1054 @@
+import { privateQuestsOf, questVisible, starterPool } from './content.js';
+import { chronicleLine } from './v4/combat_truth.js';
+// Context Builder: turns the campaign state into the smallest high-signal prompt block for this turn
+// ("smallest possible set of high-signal tokens", Anthropic context engineering). Sections are prioritised and
+// packed under a token budget; the most important section (RESOLVED) is placed last, closest to generation
+// (Lost-in-the-Middle). NPC cards contain ONLY that NPC's own knowledge -> knowledge boundaries by construction.
+import { deriveCharacter, weaponAttackOf } from './derived.js';
+import { formatCoin } from './economy.js';
+import { rulesetOf, rulesTextFor, skillOf } from './content.js';
+import { passivesOf, passiveText, statsText } from './passives.js';
+import { passiveOffers } from './v4/passive_growth.js';
+import { skillOffers } from './v4/skill_growth.js';
+import { className, classText, classOffer } from './v4/class_growth.js';
+import {
+    knowledgeOf, memoriesOf, memoryText, entityLabel, anyLabel, propText, currentFacts, statusOf, pcIdentityFor, truth, lookOf,
+    isMeaningful, PC_NAME_FACT, PC_LOOK_FACT, npcContinuity,
+} from './knowledge.js';
+import { rank, pack, Bm25 } from './retrieval.js';
+import { threadCurrent } from './threads.js';
+import { goalLines } from './v4/intents.js';
+import { featuresAt, featureText } from './v4/features.js';
+import { dungeonOf, trueDungeonOf, dungeonText, nearDungeons, exitsFrom, exitText, roomLabel, wayBetween } from './v4/dungeon.js';
+import { sectionExits } from './v4/sections.js';
+import { contextLines as livingLines, guardianAccessLines, floorAt as livingFloorAt } from './v4/living.js';
+import { settlementOf, realmOf, hallOf, listedToday, lineage, placeName } from './v4/domain.js';
+import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
+import { objectiveText, proofText as guildProofText, defeatTally, tallyText, readyText, proofMemory } from './v4/guild.js';
+import { envelopeBlock } from './v4/envelope.js';
+import { sceneHandle } from './v4/scene_handles.js';
+import { paidLodging } from './v4/trade.js';
+import { settlementLife, tradeVenueRe } from './v4/settlement.js';
+import { profileOf, sourceText, gearText, gearMarketText } from './v4/items.js';
+
+export const DEFAULT_BUDGET = 1400;
+export const DEFAULT_RULES_BUDGET = 800;
+export const DEFAULT_RECENT_TURNS = 4; // turns still visible in the chat history are not retrieved again
+const IDENTITY_FACTS = new Set([PC_NAME_FACT, PC_LOOK_FACT]);
+const RECORD_PREDICATES = new Set(['occupation', 'appearance', 'voice', 'manner', 'interest', 'agenda']);
+// NPC E2-A (R5): a person's own account (docs/NPC_E2A_INTEGRITY.md)
+const SPEECH_PREDICATES = new Set(['says', 'said', 'remark', 'remarked', 'claims', 'claimed', 'reports', 'reported', 'mentions', 'mentioned', 'tells', 'told', 'rumor', 'rumour']);
+const MAX_EPISODES = 3; // the player's own words from before the history window: the most relevant three
+
+function attitudeLabel(v) {
+    if (v === undefined || v === null) return 'no established attitude';
+    if (v <= -60) return `hostile (${v})`;
+    if (v <= -20) return `wary/unfriendly (${v})`;
+    if (v < 20) return `neutral (${v >= 0 ? '+' : ''}${v})`;
+    if (v < 60) return `friendly (+${v})`;
+    return `trusting (+${v})`;
+}
+
+// in a fight the narrator names every combatant by the player's target label ("Cellar Rat B": the player writes
+// "Quick Slash on Cellar Rat B"); the combat block and the card add who that is ("Trapper A (the trapper)"), with a
+// name the story has not said yet marked as such
+const fightLabel = (state, id, labels = null) => labels?.[id] || state.encounter?.combatants?.[id]?.label || entityLabel(state, id);
+function fightName(state, id) {
+    const label = state.encounter?.combatants?.[id]?.label;
+    const e = state.entities[id];
+    // Patch 8.1 (§8): one of a group whose look is the group's own ("dog-sized beetles with glassy faceted sh") goes by
+    // its kind alone, never by the shared, cut plural (the label tells them apart)
+    const shared = !!e?.group && !e.name && Object.values(state.entities).some((x) => x.id !== id && x.group === e.group && normText(x.descriptors?.[0] || '') === normText(e.descriptors?.[0] || ''));
+    const natural = shared ? (e.species ? `a ${e.species}` : label) : !e?.name && lookOf(e || {}) ? `the ${lookOf(e)}` : entityLabel(state, id); // "the rat", never the ref "rat_a"
+    if (!label || normText(label) === normText(natural)) return label || natural;
+    const known = state.entities[id]?.known_name;
+    return `${label} (${natural}${known === '' ? '; the story has not said this name yet' : known ? `; the story has said only "${known}"` : ''})`;
+}
+
+function conditionLabel(hp, max) {
+    const r = hp / max;
+    if (hp <= 0) return 'dead';
+    if (r >= 0.99) return 'unhurt';
+    if (r >= 0.7) return 'lightly wounded';
+    if (r >= 0.4) return 'wounded';
+    if (r >= 0.15) return 'badly wounded';
+    return 'near death';
+}
+
+function day(minute) {
+    return formatClock(minute).split(' (')[0];
+}
+
+const ITEM_RE = /\b(?:give|gives|hand|hands|show|shows|take|takes|buy|buys|sell|sells|pay|pays|paid|coin|coins|money|purse|pouch|bag|pack|inventory|item|items|carry|carries|drop|drops|pick up|loot|trade|price|cost)\b/i;
+
+/**
+ * Alaric as the narrator needs him this turn (Context Projector, Runtime V3): who he is and how he looks, his
+ * resources and the stats a Core #7 check may use, visible gear. Combat adds ATK/DEF/Initiative and Skills; trade,
+ * loot or talk of items adds what he carries and his coin. The player sees everything in the HUD instead.
+ * opts: {combat, items}
+ */
+export function pcLine(state, content, { combat = !!state.encounter, items = true, skills = combat } = {}) {
+    const e = state.entities.pc;
+    const s = e.sheet;
+    const dv = deriveCharacter(s, content);
+    // Patch 9A review: a campaign of the three-class rules says so after his class (the lorebook's class entries tell
+    // the two rulesets apart by it); a legacy campaign's line is as it was
+    const cls = `${s.class ? className(s, content) : 'no Class yet'}${rulesetOf(state) >= 2 ? ' (three-class rules)' : ''}`;
+    const guild = truth(state, 'pc', 'guild_rank')[0]?.o;
+    const skillList = Object.entries(s.skills).map(([id, v]) => `${skillOf(content, id, state)?.name || id} P${v.prof}`);
+    const weapon = weaponAttackOf(s, content, rulesetOf(state)); // Patch 9A: his weapon's own attack, no learned Skill
+    if (weapon) skillList.push(`${weapon.skill.name} (attack of his ${weapon.weapon.name}, no learned Skill)`);
+    const arrows = s.inventory.standard_arrow;
+    // Patch 9C-2b: a Skill Stone or a manual says what it holds or teaches (learning from it is the engine's)
+    const inv = Object.entries(s.inventory).filter(([k]) => k !== 'standard_arrow').map(([k, q]) => { const src = sourceText(profileOf(content, state.objects?.[k])); return `${itemLabel(state, content, k)}${q > 1 ? ` ×${q}` : ''}${src ? ` (${src})` : ''}`; });
+    const equip = Object.values(s.equipment).map((r) => (typeof r === 'string' ? content.items.get(r)?.name || r : r.name));
+    const lines = [
+        `${e.name} — Level ${s.level} ${cls}, Power Rank ${dv.rank}${guild ? `, Guild ${guild}` : ''} | HP ${s.hp}/${dv.maxHp} (${conditionLabel(s.hp, dv.maxHp)}) MP ${s.mp}/${dv.maxMp} STA ${s.sta}/${dv.maxSta}${s.free_points ? ` | Free Stat Points ${s.free_points}` : ''}${e.status === 'dead' ? ' | DEAD' : ''}`,
+        `${statsText(s, content, ' ')}${combat ? ` | ATK ${dv.atk} MATK ${dv.matk} DEF ${dv.def} MDEF ${dv.mdef} | Init ${dv.init}` : ''} | Equipped: ${joinList(equip)}${arrows !== undefined ? ` | Arrows ${arrows}` : ''}`,
+    ];
+    if (skills) lines.push(`Skills: ${joinList(skillList)}`);
+    // Patch 9B-2: his Passives, what they do (the numbers above already hold the lasting ones)
+    if (passivesOf(s).length) lines.push(`Passives (the engine's; never narrate one he does not have): ${passivesOf(s).map(passiveText).join('; ')}`);
+    const classChoice = classOffer(state);
+    if (classChoice) lines.push(`Class options offered, NOT his (he alone chooses one): ${classChoice.options.map((o) => o.name).join(' or ')}`);
+    if (s.evolution) lines.push(`Active class trait (engine booked; shared caps): ${classText(s.evolution)}`);
+    // Patch 9C-2c: a development offered to him is no Passive of his
+    const offered = passiveOffers(state);
+    if (offered.length) lines.push(`Offered to him, NOT his (he decides; tell no change in him from it): ${offered.map((d) => passiveText(d.passive)).join('; ')}`);
+    // 9C completion: nor is a Skill offered to him
+    const skillsOffered = skillOffers(state);
+    if (skillsOffered.length) lines.push(`Skills offered to him, NOT his (he decides; he cannot use them): ${skillsOffered.map((d) => `${d.skill.name}${d.replaces ? ` (would replace ${d.replaces_name})` : ''}`).join('; ')}`);
+    if (items) lines.push(`Carried: ${joinList(inv)} | Coin ${formatCoin(s.coin_cp, content)}`);
+    return lines.join('\n');
+}
+
+/**
+ * The established cues of a person (Runtime V3 minimal NPC record, docs/REVIEW_V3.md 4.2): role, look, voice and
+ * current agenda — only what play established (facts and the introduction's traits), never an invented biography.
+ */
+export function npcCues(state, content, id) {
+    const e = state.entities[id];
+    const fact = (p) => truth(state, id, p).map((f) => f.o).find((o) => normText(o) !== 'none') || null;
+    const tpl = e.template && e.template !== 'commoner' ? (content.templates.get(e.template)?.label || e.template).toLowerCase() : null;
+    return { role: fact('occupation') || tpl, look: [e.traits, fact('appearance')].filter(Boolean).join('; '), voice: fact('voice'), manner: fact('manner'), interest: fact('interest'), agenda: fact('agenda') };
+}
+
+/** Meaningful moments (importance >= 6) an NPC shared with Alaric, oldest first: the same threshold retrieval uses. */
+export function sharedMoments(state, id) {
+    return memoriesOf(state, id).filter((m) => isMeaningful(m) && ((m.who || []).includes('pc') || (m.witnesses || []).includes('pc')));
+}
+
+const newestFirst = (a, b) => (b.updated?.turn ?? 0) - (a.updated?.turn ?? 0) || (b.updated?.minute ?? 0) - (a.updated?.minute ?? 0) || String(b.id).localeCompare(String(a.id));
+
+/**
+ * NPC E2-B (R7/R8, D1/D4): the personal agreements of Alaric and this person – promise/debt threads whose parties hold
+ * both. open: the open ones, newest first (at most two). settled: the latest settled one while no meaningful shared
+ * memory is newer than its settlement (D4: it stays settled and leaves the card then, it never reopens). resolved: all
+ * settled ones (an older memory of their promise is marked as settled since).
+ */
+export function agreementsWith(state, id) {
+    const mine = Object.values(state.threads || {}).filter((t) => ['promise', 'debt'].includes(t.kind) && (t.who || []).includes('pc') && (t.who || []).includes(id));
+    if (!mine.length) return { open: [], settled: null, resolved: [] };
+    const open = mine.filter((t) => t.status === 'open').sort(newestFirst).slice(0, 2);
+    const resolved = mine.filter((t) => t.status === 'resolved').sort(newestFirst);
+    const lastMoment = sharedMoments(state, id).at(-1);
+    const settled = resolved[0] && !((lastMoment?.turn ?? -1) > (resolved[0].updated?.turn ?? -1)) ? resolved[0] : null;
+    return { open, settled, resolved };
+}
+
+/** NPC E2-B (D4): a memory older than a settled agreement it is about (three shared words besides the names). */
+function settledSince(state, id, m, resolved) {
+    if (!resolved.length) return false;
+    const names = new Set(tokenize(`${state.entities[id]?.name || ''} ${state.entities.pc?.name || 'Alaric'} pc`));
+    const words = new Set(tokenize(m.text).filter((w) => !names.has(w)));
+    return resolved.some((t) => (m.turn ?? -1) <= (t.updated?.turn ?? -1)
+        && new Set(tokenize(t.text).filter((w) => words.has(w))).size >= 3);
+}
+
+/** NPC E2-B (R8): the agreement of the compact card's first row: the newest open one, else the settled one (D4). */
+function agreementText(between) {
+    if (between.open.length) return between.open[0].text;
+    if (between.settled) return `settled — ${between.settled.text}${between.settled.resolution && normText(between.settled.resolution) !== normText(between.settled.text) ? ` (${between.settled.resolution})` : ''}`;
+    return null;
+}
+
+/**
+ * Monster A2 (.186, plan §3.2 Nr. 7): what a humanoid creature carries, as its profile fixed it (nothing for a profile
+ * fixed before A2 or another kind). A focus or bow it only carries is no attack (D2).
+ */
+function creatureGearText(e) {
+    const g = e?.profile?.gear;
+    if (!g) return '';
+    if (!g.weapon) return '; unarmed';
+    return g.weapon.attack ? `; armed: ${String(g.weapon.name).toLowerCase()}` : `; carries ${String(g.weapon.item || g.weapon.name)} (no attack of its own)`;
+}
+
+/**
+ * One NPC as the narrator sees it: its established cues, stance toward Alaric, last meaningful moment with him, what
+ * it knows and believes (ONLY its own knowledge rows: knowledge boundaries by construction), agenda and secrets.
+ * absent = named this turn but not in the scene: continuity only (no position, awareness or combat intent).
+ */
+function npcCard(state, content, id, focusWords, { absent = false, compact = false } = {}) {
+    const e = state.entities[id];
+    const lines = [];
+    const cues = e.kind === 'creature' ? null : npcCues(state, content, id);
+    const kind = e.kind === 'creature'
+        ? `creature (${e.species || content.anchors.get(e.anchor)?.name || 'unknown'})${creatureGearText(e)}`
+        : `person${cues.role ? `, ${cues.role}` : ''}`;
+    const look = cues ? cues.look : e.traits;
+    const pos = absent ? null : state.scene.positions[id];
+    const c = !absent && state.encounter && state.encounter.combatants[id];
+    const hp = c ? `${conditionLabel(c.current.hp, c.fixed.max_hp)} (HP ${c.current.hp}/${c.fixed.max_hp})` : statusOf(state, id) === 'dead' ? 'dead' : '';
+    const band = c ? c.current.band : pos?.band;
+    const cover = c ? c.current.cover : pos?.cover;
+    const v4 = state.meta?.runtime === 'v4';
+    const display = c ? fightName(state, id) : v4 ? `${sceneHandle(state, content, id)} [${id}]` : entityLabel(state, id);
+    // NPC E3 (R10/B1): V4 detail cards keep anchors before the look; compact heads select whole fields below.
+    // The V3 card keeps its order (look, voice).
+    const fields = v4 && cues ? ['voice', 'manner', 'interest'].filter((k) => cues[k]).map((k) => ({ key: k, value: cues[k] })) : [];
+    const identity = `• ${display} — ${kind}`;
+    const tail = `${look ? `; ${look}` : ''}${!v4 && cues?.voice ? `; voice: ${cues.voice}` : ''}${hp ? `; ${hp}` : ''}${band ? `; ${band}${cover && cover !== 'none' ? `, ${cover} cover` : ''}` : ''}`;
+    lines.push(compact ? compactNpcHead(identity, fields, tail, focusWords, absent)
+        : `${identity}${fields.map(({ key, value }) => `; ${key}: ${value}`).join('')}${tail}${absent ? '; NOT PRESENT' : ''}`);
+    if (statusOf(state, id) === 'dead') return lines[0];
+    const aware = absent ? null : state.scene.awareness[id];
+    const unseen = !absent && state.scene.concealed.includes('pc');
+    const concealment = unseen ? (v4 && c && aware === 'aware' ? '; recorded concealment does not cancel this observer\'s combat awareness' : '; Alaric is currently UNSEEN') : '';
+    if (e.kind === 'creature') {
+        lines.push(`  awareness of Alaric: ${aware || 'not established'}${concealment}`);
+    } else {
+        const rel = state.relations[`rel.${id}.attitude.pc`];
+        const last = rel?.history?.at(-1);
+        const ties = !v4 ? [] : currentFacts(state, (f) => f.s === id && f.visibility !== 'secret'
+            && /\b(?:relationship|related|family|kin|parent|child|daughter|son|sibling|spouse|partner|friend|ally|serves|works_for|employer|member_of|affiliation)\b/i.test(String(f.p || '').replace(/_/g, ' '))).slice(-3);
+        const ident = pcIdentityFor(state, id);
+        const idText = ident.level === 'name' ? 'knows him by name' : ident.level === 'seen' ? 'has seen him, does NOT know his name' : 'has never seen him';
+        lines.push(`  toward Alaric: ${attitudeLabel(rel?.value)}${last?.why ? ` (last change: ${last.why})` : ''}; ${idText}${aware ? `; awareness: ${aware}` : ''}${concealment}`);
+        if (ties.length) lines.push(`  established ties: ${ties.map((f) => propText(state, f, content)).join('; ')}`);
+        // NPC E2-B (R8, D4): what Alaric and this person agreed between them, open or settled
+        const between = v4 ? agreementsWith(state, id) : { open: [], settled: null, resolved: [] };
+        if (between.open.length) lines.push(`  open between you: ${between.open.map((t) => t.text).join('; ')}`);
+        if (between.settled) lines.push(`  settled between you: ${agreementText({ open: [], settled: between.settled }).replace(/^settled — /, '')}`);
+        // the mark stands in the date, where no cap of the line can cut it
+        const since = (m) => (settledSince(state, id, m, between.resolved) ? '; settled since' : '');
+        const moments = sharedMoments(state, id);
+        const lastMoment = moments.at(-1);
+        if (lastMoment) lines.push(`  last meaningful: [${day(lastMoment.minute)}${since(lastMoment)}] ${memoryText(state, lastMoment, id)}`);
+        const subjects = absent ? ['pc'] : ['pc', ...state.scene.present, state.scene.location];
+        const rows = knowledgeOf(state, id).filter((r) => !IDENTITY_FACTS.has(r.about) && r.visibility !== 'secret'
+            && (subjects.includes(r.s) || subjects.includes(r.o) || (!absent && tokenize(propText(state, r, content)).some((w) => focusWords.has(w)))));
+        const known = rows.filter((r) => r.stance === 'knows').slice(absent ? -3 : -5).map((r) => `${propText(state, r, content)}${r.outdated ? ' (OUTDATED: the world changed since)' : ''} [${r.source}]`);
+        const believed = rows.filter((r) => r.stance !== 'knows').slice(-3).map((r) => `${propText(state, r, content)} [${r.stance}${r.true === false ? ' — actually FALSE' : ''}]`);
+        if (known.length) lines.push(`  knows: ${known.join('; ')}`);
+        if (believed.length) lines.push(`  believes/suspects: ${believed.join('; ')}`);
+        // other meaningful moments that matter to this turn's words (never routine ones: "Kest nodded" is not canon)
+        const also = memoriesOf(state, id).filter((m) => isMeaningful(m) && m !== lastMoment && tokenize(m.text).some((w) => focusWords.has(w))).slice(-2);
+        if (also.length && !absent) lines.push(`  also remembers: ${also.map((m) => `[${day(m.minute)}${since(m)}] ${memoryText(state, m, id)}`).join(' | ')}`);
+        if (cues.agenda) lines.push(`  agenda: ${cues.agenda}`);
+        const secrets = knowledgeOf(state, id).filter((r) => r.is_fact && !r.outdated && r.visibility === 'secret' && r.s !== 'pc');
+        if (secrets.length) lines.push(`  keeps secret: ${secrets.map((r) => `${propText(state, r, content)} [${r.source}]`).join('; ')} (reveals it only for its own reasons)`);
+    }
+    const intent = !absent && (state.encounter?.intents?.[id] || state.pending_intents?.[id]);
+    if (intent) lines.push(`  declared intent for its next turn: ${intent}`);
+    return lines.join('\n');
+}
+
+/** Known people named in the player's message or the last reply who are not in the scene (continuity, at most 3). */
+function namedAbsent(state, scan) {
+    return Object.values(state.entities)
+        .filter((e) => e.kind === 'npc' && e.name && !state.scene.present.includes(e.id) && mentioned(e.name, scan))
+        .slice(0, 3).map((e) => e.id);
+}
+
+export function combatBlock(state, content = null) {
+    const enc = state.encounter;
+    if (!enc) return '';
+    const order = enc.order.map((id) => fightLabel(state, id)).join(' > ');
+    const lines = [enc.round === 0 ? `COMBAT STARTING — Turn order fixed: ${order}; Round 1 resolves with the next player message` : `COMBAT ACTIVE — Round ${enc.round}; current actor: ${fightLabel(state, enc.current)}; Turn order: ${order}`];
+    for (const c of Object.values(enc.combatants)) {
+        if (c.id === 'pc') continue;
+        const st = c.current.defeated ? 'DEFEATED' : c.current.escaped ? 'ESCAPED' : c.current.surrendered ? 'SURRENDERED' : `HP ${c.current.hp}/${c.fixed.max_hp}, ${c.current.band}${c.current.cover !== 'none' ? `, ${c.current.cover} cover` : ''}`;
+        const fx = c.current.effects.length ? `; effects: ${c.current.effects.map((x) => x.name).join(', ')}` : '';
+        // Prototype C (4.3.0-c.6.6.6, review): who in the fight is no foe of his (caught in it, or at his side)
+        const side = c.side === 'ally' ? '; ON ALARIC\'S SIDE (no foe)' : c.side === 'neutral' ? '; NEUTRAL (no foe, caught in the fight)' : '';
+        lines.push(`  ${fightName(state, c.id)}: L${c.fixed.level} ${c.fixed.rank} ${c.model === 'creature' ? c.fixed.body_plan : 'core-stat'}${creatureGearText(state.entities[c.id])}; ${st}${side}; locked DefeatXP ${c.fixed.defeat_xp ?? '-'}${fx}`);
+    }
+    // Patch 4 (live 18.10.2026: the pack mates of the one wolf in the fight stood, paced and growled around it): who is
+    // here but not in the fight makes no attack and deals no damage; a story that has them attack brings them in
+    const outside = content && state.meta?.runtime === 'v4' ? state.scene.present.filter((id) => id !== 'pc' && !enc.combatants[id] && state.entities[id]?.kind === 'creature' && state.entities[id].status !== 'dead') : [];
+    if (outside.length) lines.push(`  Here but NOT in the fight: ${outside.map((id) => `${sceneHandle(state, content, id)}${state.scene.positions[id]?.band ? ` (${state.scene.positions[id].band})` : ''}`).join(', ')}: no attack and no damage from them this turn; they join only on their own Turns after the story has them attack.`);
+    const pcfx = enc.combatants.pc.current.effects;
+    if (pcfx.length) lines.push(`  Alaric effects: ${pcfx.map((x) => x.name).join(', ')}`);
+    lines.push(`  Pending Combat XP: ${enc.pending_xp} (awarded only when the fight ends)`);
+    // Testrun 3: bystanders kept up a running commentary during the rat fight; Testrun 4: allowed "one short call"
+    // from someone with a stake, the malthouse owner counted his losses aloud every round. The player: no talking
+    // in a fight. A line is mechanics only when a combatant surrenders or parleys (its engine intent).
+    const bystanders = state.scene.present.filter((id) => id !== 'pc' && !enc.combatants[id] && state.entities[id]?.kind === 'npc' && state.entities[id].status !== 'dead');
+    lines.push(`  Combat silence: nobody talks while the fight runs — neither combatants nor ${bystanders.length ? `${bystanders.map((id) => entityLabel(state, id)).join(', ')} (not fighting)` : 'onlookers'}; show sounds, wordless cries, movement and faces. Only a combatant whose intent is surrender or parley may say one short line.`);
+    return lines.join('\n');
+}
+
+/** One line per resolved step, with rolls, so the narration can follow exactly (and the player can audit). */
+export function recordLine(state, r, name = (id) => fightLabel(state, id), content = null) {
+    // Prototype C (4.3.0-c.6.6.6, review): someone who was no foe of his and now fights him, and why
+    const who = `${name(r.actor)}${r.turned ? ` (turns on Alaric, ${r.turned})` : ''}`;
+    if (r.kind === 'attack') {
+        const parts = [];
+        // Prototype C (4.3.0-c.6.6.7, live: Hounds C and D closed SHORT -> ENGAGED before biting and were still told in
+        // the den): a step before the attack is told first, in its order, with where it ends
+        const before = content && r.move?.from && r.move?.to ? ` first moves ${r.move.from} -> ${r.move.to} (now ${r.move.to}), then` : '';
+        if (r.move && !before) parts.push(`moves ${r.move.from} -> ${r.move.to}`);
+        // 4.3.0-c.6.6.5 (live 15.10.2026: the Mage's Basic Attack, a magical bolt at MEDIUM, was told as a staff blow after
+        // walking around the roots): what kind of attack it is and that a ranged one leaves him where he stands
+        const sk = r.actor === 'pc' && content ? skillOf(content, r.skill, state) : null;
+        const ranged = sk && (sk.range?.band !== 'ENGAGED' || sk.attack?.damage_type === 'magical');
+        if (sk?.type_text && ranged && !r.move) parts.push(`${sk.type_text}: from where he stands, no step and no melee blow`);
+        const head = `${who}:${before} ${r.skill_name}${r.opening ? ' (AMBUSH Opening Action)' : ''}${r.first_strike ? ' (FIRST STRIKE: opens the fight before the Turn order; no Ambush bonus)' : ''} -> ${name(r.strikes?.[0]?.target || r.target)}`;
+        if (r.cost) parts.push(`${r.cost.resource.toUpperCase()} ${r.cost.before}->${r.cost.after}`);
+        if (r.ammo) parts.push(`${r.ammo.used} arrow${r.ammo.used > 1 ? 's' : ''} fired`);
+        // Hotfix c.6.6.18: an offensive item, thrown: its one use is spent, and its burst strikes these and no one else
+        if (r.item) parts.push(`${r.item_name || 'the item'} ${r.used_up || 'used up'}; its burst strikes exactly the ${(r.strikes || []).length} below, no one else is hit or burned`);
+        if (r.after_move) parts.push(`then steps back: ${r.after_move.change}`);
+        const strikes = (r.strikes || []).map((s, i) => {
+            const pre = r.strikes.length > 1 ? `strike ${i + 1}: ` : '';
+            if (s.hit && !s.hit.success) return `${pre}MISS (hit ${s.hit.chance}%, d100 ${s.hit.roll})`; // pre-V3 record
+            const crit = s.crit?.ambush ? ' (AMBUSH CRITICAL HIT)' : '';
+            const cover = s.cover === 'ignored' ? ', through cover' : s.cover ? ', cover softened it' : '';
+            return `${pre}lands${crit}${cover}: ${s.final} damage${s.absorbed ? ` (${s.absorbed} absorbed)` : ''} -> ${name(s.target)} HP ${s.hp_before}->${s.hp_after}${s.defeated ? ' DEFEATED (dead)' : ''}`;
+        });
+        return `${head}${parts.length ? ` [${parts.join('; ')}]` : ''}: ${strikes.join('; ')}${r.pending_xp_added ? ` (Pending XP +${r.pending_xp_added})` : ''}`;
+    }
+    if (r.kind === 'skill') return `${who}: ${r.skill_name} [${r.cost ? `${r.cost.resource.toUpperCase()} ${r.cost.before}->${r.cost.after}` : 'no cost'}]: ${r.effects.join('; ')}`;
+    // Patch 7.2: a restorative drunk as his main action of the Turn: exactly this much, nothing else
+    if (r.kind === 'item' && r.restore) return `${who}: ${r.step ? `moves (${r.step}), then ` : ''}drinks ${r.item_name} (his main action this Turn; ${r.used_up || 'used up'}): ${r.restore.resource.toUpperCase()} ${r.restore.before}->${r.restore.after} (+${r.restore.amount}${r.restore.amount < r.restore.of ? `, the rest lost at his maximum ${r.restore.max}` : ''}); no other effect`;
+    if (r.kind === 'move' || r.kind === 'flee') return `${who}: ${r.kind === 'flee' ? 'flees' : `moves ${r.dir}`} (${r.change || ''})${r.escaped ? ' — ESCAPED' : ''}${r.why ? ` — ${r.why}` : ''}`;
+    if (r.kind === 'cover') return `${who}: takes cover (${r.change})${r.why ? ` — ${r.why}` : ''}`;
+    if (r.kind === 'surrender') return `${who}: SURRENDERS${r.pending_xp_added ? ` (Pending XP +${r.pending_xp_added})` : ''}`;
+    if (r.kind === 'hold') return `${who}: holds (${r.why || 'no action'})`;
+    if (r.kind === 'ability_world') return `${who}: ${r.skill_name} on ${r.target_text}${r.goal ? ` (his aim: ${r.goal})` : ''} [${r.cost ? `${r.cost.resource.toUpperCase()} ${r.cost.before}->${r.cost.after}` : 'no cost'}${r.ammo ? `; ${r.ammo.used} arrow${r.ammo.used > 1 ? 's' : ''}` : ''}]: an attempt on a thing, his action this Turn. CHECK DIE d100 = ${r.check_die}: use it for a Core #7 check only if the result is uncertain AND consequential. The engine resolves NO damage and no effect on any combatant from it: narrate none`;
+    return `${who}: ${r.kind}`;
+}
+
+/** Runtime V4: the narrator writes only prose; the engine reads the reply afterwards (src/v4/extract.js). */
+export const V4_OUTPUT_LINE = 'OUTPUT: write only the story. No <avereth> block, no fact report, no tags, no tracker, sheet or status block: the engine reads the reply afterwards. Threats, demands and raised weapons leave negotiation open. Real NPC attacks and ambushes remain possible: stop at their immediate commitment, without inventing damage.';
+
+/** The engine's instructions to the narrator for a V4 story turn. Search/combat checks are engine-owned; ordinary fiction is narrated plausibly and then stored. */
+export function playerActionsBlock(outcome, { carded = null } = {}) {
+    const lines = ['PLAYER ACTIONS (the engine resolved Alaric\'s message; narrate exactly these, in this order; he decides nothing else):', ...(outcome.actions || [])];
+    for (const x of outcome.extra || []) lines.push(carded ? knownAtUncarded(x, carded) : x);
+    if ((outcome.resolutions || []).some((r) => (r.type === 'buy' || r.type === 'pay') && r.status === 'pending')) {
+        lines.push('PENDING TRADE IS A HARD STOP: state the seller\'s actual price and stop BEFORE any payment, delivery, drinking, eating or other action that depends on the unaccepted purchase. A later player turn can explicitly accept the offer, at which point the engine debits coin and grants the goods/service. An unrelated independent action is unaffected.');
+    }
+    // Patch 3 (live 18.10.2026: on the road Alaric "hunted a pair of wood pigeons, roasted and ate them"): where time
+    // passes or he travels, the story fills the road, never his choices about his own things
+    const passing = (outcome.auth?.gos || []).length || (outcome.resolutions || []).some((r) => r.type === 'activity' && r.status !== 'refused');
+    if (passing) lines.push('HIS THINGS change only by PLAYER ACTIONS: on the road or in camp he hunts, eats, buys, uses up or leaves nothing he did not choose here.');
+    if (outcome.search_checks?.length) lines.push('SEARCH RESOLUTION is already rolled and binding in PLAYER ACTIONS above. Do not reroll it, replace it with another check, or turn a concrete result into another vague teaser.');
+    if (!outcome.search_checks?.length) lines.push('ORDINARY WORLD FICTION: resolve non-combat physical/social uncertainty plausibly from established fiction; do not invent rolls. Combat, Stealth and explicit SEARCH are the engine-owned mechanical exceptions.');
+    return lines.join('\n');
+}
+
+/**
+ * Patch 8.1 (§8): STATE NOW — BINDING, after a combat step on the planner path: each fighter of this fight alive (HP) or
+ * dead, fled or surrendered; the dead of their groups here from before; Alaric; whether the fight goes on. Only what the
+ * engine holds, so a reply cannot end with a foe dead that lives, or a second one that is not there.
+ */
+function stateNow(state, content, outcome) {
+    const b = outcome.board;
+    const name = (id) => fightLabel(state, id, b.labels);
+    const fate = (h) => (h.state === 'defeated' ? 'DEAD' : h.state === 'fled' ? 'FLED' : h.state === 'surrendered' ? 'SURRENDERED' : `alive ${h.hp}/${h.max} HP`);
+    const fought = new Set(b.hp.map((h) => h.id));
+    const groups = new Set(b.hp.map((h) => state.entities[h.id]?.group).filter(Boolean));
+    const before = (state.scene.present || []).filter((id) => !fought.has(id) && groups.has(state.entities[id]?.group) && state.entities[id].status === 'dead');
+    const pc = b.hp.find((h) => h.id === 'pc');
+    const bits = [
+        ...b.hp.filter((h) => h.id !== 'pc').map((h) => `${name(h.id)} ${fate(h)}${!h.state && state.scene.awareness[h.id] ? `; ${state.scene.awareness[h.id]} of Alaric` : ''}`),
+        ...before.map((id) => `${sceneHandle(state, content, id)} DEAD (earlier)`),
+        `Alaric ${pc?.state === 'defeated' ? 'DOWN' : `${pc?.hp}/${pc?.max} HP`}`,
+        outcome.ended ? 'fight OVER' : 'fight goes on, Alaric\'s Turn',
+    ];
+    return `STATE NOW — BINDING (end the reply so; no other foe): ${bits.join(' · ')}.${b.hp.some(h => h.id !== 'pc' && !h.state && state.scene.awareness[h.id] === 'aware') ? ' Current combat awareness supersedes earlier arrival/entry stealth; not proof of exact visual contact or identity.' : ''}`;
+}
+
+/** Patch 9C-2b: how a learned Skill came to him (its source's kind). */
+export const fromWord = (l) => (l.source === 'stone' ? 'drawn from' : l.source === 'material' ? 'studied from' : 'learned from');
+
+function outcomeBlock(state, content, outcome, opts = {}) {
+    const block = outcomeLines(state, content, outcome, opts);
+    // prototype C (src/v4/planner.js): what of the player's message the engine did not take this turn
+    const notes = (outcome?.plan_notes || []).map((n) => `- NOT TAKEN THIS TURN (it does not happen; do not narrate it as done): ${n}`);
+    // Patch 9C-1: a Skill the engine booked as learned in this turn (src/v4/growth.js); the only new Skill there is
+    const learned = (outcome?.learned || []).map((l) => {
+        const sk = skillOf(content, l.skill, state);
+        return `NEW SKILL — booked by the engine in this turn: Alaric now knows ${l.name} (${l.category}; ${l.technique}), ${fromWord(l)} ${l.teacher}. Show the moment it takes hold in a sentence or two; its numbers are the engine's. No other new Skill, Passive, Skill evolution or class change.${sk ? `\n${skillSummary(sk)}` : ''}`;
+    });
+    // Patch 9C-2b: a Skill Stone whose activation the engine could not book: it stays whole, nothing is learned
+    const inert = (outcome?.learn_failed || []).filter((f) => f.object).map((f) => `NOT LEARNED — ${f.name}: ${f.errors.join('; ')}. The stone stays whole and his; he learns nothing from it now. Tell no new Skill.`);
+    // Review of 9C-2b (R2): study complete, its manual not in his hands: no Skill yet, the progress is kept
+    inert.push(...(outcome?.learn_failed || []).filter((f) => f.source === 'material' && f.notice).map((f) => `NOT LEARNED YET — ${f.technique} from ${f.name}: ${f.errors.join('; ')}. His Learning Progress stays (${f.lp}/${f.need}); he knows no new Skill yet. Tell no new Skill.`));
+    // Patch 9C-2c (src/v4/passive_growth.js): a development the engine offers him now, and a Passive it booked for him
+    const offers = (outcome?.passive_offers || []).map((o) => `POSSIBLE PASSIVE — the engine offers Alaric a development, NOT his yet: ${o.text} (${o.why}). He alone accepts or declines it in a later message; tell at most a stirring sense of it, no change in him, no new power, and never that he accepted it.`);
+    const gained = (outcome?.booked?.passives || []).map((g) => `NEW PASSIVE — booked by the engine in this turn: ${g.text}${g.replaced ? `; ${g.replaced} is given up for good, its effects end` : ''} (Passive slots ${g.slots}). Show it settling in him in a sentence or two; its numbers are the engine's. No other new Passive, Skill or change.`);
+    const notYet = (outcome?.learn_failed || []).filter((f) => f.source === 'practice' && f.notice).map((f) => `NO PASSIVE YET — his training of ${f.technique} is complete, but ${f.errors.join('; ')}; nothing is offered, nothing about him changes.`);
+    // 9C completion (src/v4/skill_growth.js): a Skill development the engine offers him now, and one it booked
+    const skillOffered = (outcome?.skill_offers || []).map((o) => `POSSIBLE SKILL — the engine offers Alaric a development, NOT his yet: ${o.text}${o.replaces ? ` It would replace ${o.replaces}.` : ''} (${o.why}). He alone accepts or declines it in a later message; tell at most a sense that his way of fighting could change, no new power, and never that he accepted it or used it.`);
+    const skillBooked = (outcome?.booked?.skills || []).map((g) => (g.replaced
+        ? `EVOLVED SKILL — booked by the engine in this turn: ${g.replaced} has become ${g.text} ${g.replaced} is his no longer. Show the change in a sentence or two; its numbers are the engine's. No other new Skill or change.`
+        : `NEW SKILL — booked by the engine in this turn: ${g.text} Show it coming to him in a sentence or two; its numbers are the engine's. No other new Skill or change.`));
+    const classOffered = (outcome?.class_offers || []).map((o) => `POSSIBLE CLASS — ${o.text}. One of the alternative class options, NOT his yet. He alone chooses in a later message.`);
+    const classBooked = (outcome?.booked?.classes || []).map((o) => `CLASS EVOLVED — booked by the engine: ${o.text}. Exactly this class and its one trait are his; the class itself grants no additional Skill, Passive or Domain.`);
+    return [block, ...classOffered, ...classBooked, ...notes, ...learned, ...inert, ...offers, ...gained, ...notYet, ...skillOffered, ...skillBooked].filter(Boolean).join('\n');
+}
+
+/**
+ * NPC E2-B (R6): the KNOWN AT line of the narrator lists only the people without an arrival card (the extractor reads
+ * the whole line from outcome.extra); with every one carded it points to the cards.
+ */
+function knownAtUncarded(line, { name, ids }) {
+    const mark = 'establishes otherwise): ';
+    if (!line.startsWith(`KNOWN AT ${name} (`) || !line.includes(mark)) return line;
+    const at = line.indexOf(mark) + mark.length;
+    const rest = line.slice(at).split(' · ').filter((x) => !ids.some((id) => x.endsWith(`(${id})`)));
+    return `${line.slice(0, at)}${rest.length ? rest.join(' · ') : 'the people carded under ARRIVING AT'}`;
+}
+
+function outcomeLines(state, content, outcome, { v4 = false, carded = null } = {}) {
+    if (!outcome) return '';
+    if (outcome.kind === 'v4') return playerActionsBlock(outcome, { carded });
+    const lines = [];
+    const report = (text) => (v4 ? '' : text); // V4 campaigns: no fact report, the extractor reads the reply
+    if (outcome.kind === 'combat') {
+        if (outcome.not_started) {
+            lines.push(`Alaric's declared attack is NOT possible: ${outcome.illegal}. No combat started; nothing was spent or rolled. It is still Alaric's decision.`);
+            return lines.join('\n');
+        }
+        if (outcome.started) lines.push(`${outcome.started.joined ? outcome.started.reason : `Combat starts${outcome.c ? ' — ENTRY, BEFORE the attack' : ''} (${outcome.started.reason})`}. Turn order: ${outcome.started.order}.`);
+        for (const r of outcome.records) lines.push(`- ${recordLine(state, r, (id) => fightLabel(state, id, outcome.board?.labels), outcome.c ? content : null)}`);
+        // Prototype C (4.3.0-c.6.6.7): where everyone stands once these steps are done; a place they left is behind them
+        const stand = outcome.c && outcome.records.length && outcome.board ? outcome.board.hp.filter((h) => h.id !== 'pc' && h.band && !h.state) : [];
+        if (stand.length) lines.push(`- Where everyone stands after these steps (end the narration with them there; a place they left, a den or cover, is behind them): ${stand.map((h) => `${fightLabel(state, h.id, outcome.board.labels)} ${h.band}${h.cover && h.cover !== 'none' ? ` (${h.cover} cover)` : ''}`).join(', ')}.`);
+        if (outcome.note) lines.push(`- ${outcome.note}`);
+        if (outcome.illegal) lines.push(`- Alaric's declared action is NOT possible now: ${outcome.illegal}. Nothing was spent or rolled for it; it is still Alaric's decision.`);
+        if (outcome.ended) {
+            const s = outcome.ended;
+            lines.push(`- Combat is over.${s.pc_dead ? ' Alaric is dead.' : ''}${s.xp_awarded ? ` Alaric gains ${s.xp_awarded} XP.` : ''}${outcome.levelups?.length ? ` LEVEL UP -> ${outcome.levelups.join(', ')} (+5 free Stat Points each; resources are not refilled).` : ''}${s.pp?.length ? ` Skill Proficiency (the engine's, from how he fought; mention it at most in passing): ${s.pp.map((p) => `${skillOf(content, p.skill, state)?.name || p.skill} +${p.gained} PP${p.to.prof > p.from.prof ? `, now P${p.to.prof}` : ''}`).join(', ')}.` : ''}${s.lp?.length ? ` Learning Progress (the engine's; no new Skill until the engine names one): ${s.lp.map((l) => `${l.goal} +${l.lp} LP, ${l.total}/${l.need}`).join(', ')}.` : ''}${outcome.loot ? '' : ' Loot is only what the defeated actually carried or what can be harvested; nothing is taken automatically.'}`);
+            // Prototype C (4.3.0-c.6.6.4): the engine's automatic loot, already in his pack (src/v4/loot.js)
+            if (outcome.rewardLines?.length) lines.push(`- SPECIAL REWARD (engine-booked, already in his pack): ${outcome.rewardLines.join('; ')}. Describe these exact finds only; no extra item, coin, chest contents or magical effect. A hoard is a narrative frame, not a new room or an opening action. Gear found beside the defeated need not have been worn or used by them. Value guides are not guaranteed sale prices.`);
+            if (outcome.loot) lines.push(`- LOOT (the engine's automatic loot at the fight's end, already in Alaric's pack): ${outcome.loot.join(', ')}. It is no decision of his and took no time: mention it in a few words or leave it to the HUD; do not show him skinning, carving or searching bodies, and add no other drop, coin or item. It sits in his magic pouch: no weight, bulk, packing, straps or carrying effort, now or later.`);
+        } else if (outcome.next) lines.push(`- Next: ${outcome.next}. Stop the narration at Alaric's decision.`);
+        if (outcome.records.length) lines.push(`Narrate exactly these resolved steps in order: the same number of attacks/projectiles, every one landing with the damage given (no misses, grazes or dodges), no extra movement, attacks or combatants${outcome.ended ? '' : ', and no dialogue (combat silence; it overrides any habit of opening with speech)'}.${report(' Then write the fact report.')}`);
+        // Patch 8.1 (§8, live 21.10.2026 10:17: Glass Beetle A at 1/38 HP "burst apart", and a beetle dead a turn before
+        // "fled"): the state these steps leave, the last line of the mechanics, one entry per fighter
+        if (outcome.c && outcome.board) lines.push(stateNow(state, content, outcome));
+    } else if (outcome.kind === 'creation.step2') {
+        const cls = content.classes.get(outcome.class);
+        const s = state.entities.pc.sheet;
+        const dv = deriveCharacter(s, content);
+        lines.push(`CLASS SELECTED: ${cls.name.toUpperCase()} — favored ${cls.favored.join(' +1, ')} +1; Basic Attack granted (P1/PP0).`);
+        lines.push(`Stats now: STR ${s.stats.STR} VIT ${s.stats.VIT} AGI ${s.stats.AGI} INT ${s.stats.INT} PER ${s.stats.PER} WIL ${s.stats.WIL}; MaxHP ${dv.maxHp} MaxMP ${dv.maxMp} MaxSTA ${dv.maxSta}; Init ${dv.init}; Base DEF ${dv.baseDef} Base MDEF ${dv.baseMdef}; XP 0/100.`);
+        lines.push('Show CHARACTER CREATION — STEP 2/2 and ask the player to Select exactly 2 Skills from this pool (present each with these exact values):');
+        for (const sid of starterPool(content, cls.id, state)) lines.push(`  ${skillSummary(content.skills.get(sid))}`);
+        lines.push('Starter Gear is granted only after Step 2. Story time stays frozen: no world narration.');
+    } else if (outcome.kind === 'creation.complete') {
+        const s = state.entities.pc.sheet;
+        const dv = deriveCharacter(s, content);
+        lines.push(`SKILLS SELECTED: ${outcome.skills.map((id) => content.skills.get(id).name).join(', ')} (P1/PP0). Starter kit equipped: ${outcome.kit.map((id) => content.items.get(id).name).join(', ')}${s.inventory.standard_arrow ? ` (${s.inventory.standard_arrow} Standard Arrows)` : ''}. Possessions kept: Simple Traveler's Clothes, Small Pouch, ${formatCoin(s.coin_cp, content)}.`);
+        lines.push(`Derived: ATK ${dv.atk} MATK ${dv.matk} DEF ${dv.def} MDEF ${dv.mdef}; MaxHP ${dv.maxHp} MaxMP ${dv.maxMp} MaxSTA ${dv.maxSta}; Init ${dv.init}; XP 0/100.`);
+        lines.push('Output CHARACTER CREATION COMPLETE. This reply stays System-only with ZERO world narration; story time resumes with the next player message.');
+    } else if (outcome.kind === 'creation.invalid') {
+        lines.push(`The player's reply is not a valid creation choice (${outcome.reason}). Repeat the current creation step; no world narration.`);
+    } else if (outcome.kind === 'check') {
+        const c = outcome.check;
+        if (c.automatic) lines.push(`${c.label}: automatic success — ${c.note}. Alaric is now concealed.`);
+        else lines.push(`${c.label}: chance ${c.chance}% (d100 ${c.roll}) -> ${c.success ? 'SUCCESS: Alaric is concealed' : 'FAILURE: he is noticed'}. Narrate this result; do not change it.`);
+    } else if (outcome.kind === 'narrative') {
+        lines.push(`No mechanic was triggered by the player's message${report(' (the fact report is still due)')}. CHECK DIE for this reply: d100 = ${outcome.check_die}. Use it only if a Core #7 check is genuinely needed (uncertain AND consequential): Chance% = Actor ÷ (Actor + Opposition) × 100 (Actor = relevant stat + explicit bonuses; situational ±10/20/35 %); success if ${outcome.check_die} ≤ Chance%.${report(' Then add "check" to the fact report.')} Otherwise ignore the die.`);
+    } else if (outcome.kind === 'note') {
+        lines.push(outcome.text);
+    } else if (outcome.kind === 'ability_world') {
+        // prototype C (src/v4/planner.js): a known skill used on a thing outside a fight
+        const c = outcome.cost ? `${outcome.cost.resource.toUpperCase()} ${outcome.cost.before}->${outcome.cost.after}` : 'no cost';
+        // Patch 6: on an obstacle or hazard of the place the engine rolled and the result binds
+        if (outcome.feature) lines.push(`Alaric uses ${outcome.skill_name} on ${outcome.feature.name} (${outcome.feature.id})${outcome.goal ? ` (his aim: ${outcome.goal})` : ''} [${c}]. The engine resolved it: ${outcome.feature.text}. ${outcome.feature.success ? 'It is made harmless, and stays so.' : 'It stays as it was; the cost is spent.'} Tell exactly this; no other effect on any creature or person.`);
+        else lines.push(`Alaric uses ${outcome.skill_name} on ${outcome.target_text}${outcome.goal ? ` (his aim: ${outcome.goal})` : ''} [${c}${outcome.ammo ? `; ${outcome.ammo.used} arrow${outcome.ammo.used > 1 ? 's' : ''}` : ''}]. The engine booked the cost; it resolves no effect on any creature or person and no lasting change by itself. CHECK DIE for this attempt: d100 = ${outcome.check_die}. Use it only if the result is genuinely uncertain AND consequential: Chance% = Actor ÷ (Actor + Opposition) × 100; success if ${outcome.check_die} ≤ Chance%. Otherwise narrate the plausible result from established fiction.`);
+    }
+    return lines.join('\n');
+}
+
+export function skillSummary(skill) {
+    const bits = [`${skill.name} [${skill.category}]`];
+    if (skill.cost) bits.push(`Cost ${skill.cost.amount} ${skill.cost.resource.toUpperCase()}`);
+    if (skill.ammo) bits.push(`Ammo ${skill.ammo.qty} arrow${skill.ammo.qty > 1 ? 's' : ''} (bow)`);
+    if (skill.range) bits.push(`Range ${skill.range.band}${skill.range.extra_band ? ' after movement (EXTRA-BAND)' : ''}${skill.range.area ? (skill.range.area === 'target_band' ? ' AREA chosen band' : ' AREA around caster') : ''}`);
+    if (skill.effects?.some(e => e.kind === 'area' && e.shape !== 'burst')) bits.push('opponents only, plus explicitly attacked NPC targets; bystanders spared');
+    if (skill.attack) {
+        const f = `${skill.attack.base} + ${skill.attack.scaling.map((t) => `${t.stat} × ${t.text ?? t.coef}`).join(' + ')} + ${skill.attack.share === 1 ? skill.attack.uses : `${skill.attack.share * 100}% of ${skill.attack.uses}`}`;
+        if (skill.attack.ignores_partial_cover) bits.push('ignores Partial Cover');
+        bits.push(skill.strikes > 1 ? `${skill.strikes} strikes, each Raw = ${f}` : `Raw = ${f}`);
+    }
+    if (skill.effect_text && !/^none\.?$/i.test(skill.effect_text) && skill.effect_text !== 'no additional status effect.') bits.push(`Effect: ${skill.effect_text}`);
+    return bits.join(' | ') + (skill.flavor ? `\nDescription (appearance only, no mechanical effect): ${skill.flavor}` : '');
+}
+
+function isLocationId(state, content, id) {
+    return content.locations.has(id) || state.entities[id]?.kind === 'location';
+}
+
+function mentioned(label, text) {
+    const l = normText(label);
+    return l.length > 2 && new RegExp(`(^|[^a-z0-9])${l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[^a-z0-9])`).test(text);
+}
+
+function retrievalItems(state, content, pinnedIds, recentTurns) {
+    const items = [];
+    for (const m of state.memories) {
+        if (m.turn > state.turn - recentTurns) continue; // still visible in the recent chat: do not duplicate it
+        if (m.kind === 'meeting') continue; // "first saw Alaric" belongs on that NPC's card, not in the narrator's record
+        const text = memoryText(state, m, null);
+        items.push({ kind: m.kind === 'episode' ? 'episode' : 'memory', text, entities: [...(m.who || []), ...(m.about || [])], location: m.location, turn: m.turn, importance: (m.importance || 5) / 10, label: `[${day(m.minute)}] ${text}` });
+    }
+    // a person's record facts live on that person's card (shown when present or named), Alaric's Guild Rank in his line
+    // NPC E3: manner and interest are on the card in V4 only
+    const onCard = (x) => (RECORD_PREDICATES.has(x.p) && state.entities[x.s]?.kind === 'npc' && (state.meta?.runtime === 'v4' || !['manner', 'interest'].includes(x.p))) || (x.s === 'pc' && x.p === 'guild_rank');
+    for (const f of currentFacts(state, (x) => x.visibility !== 'secret' && !IDENTITY_FACTS.has(x.id) && !pinnedIds.has(x.id) && !onCard(x))) {
+        // NPC E2-A (R5): what a person said is true as their saying, never as the world's state (the board stays the
+        // engine's): the line names them as its speaker
+        const txt = state.entities[f.s]?.kind === 'npc' && SPEECH_PREDICATES.has(f.p) ? `${entityLabel(state, f.s)} said (their claim, not engine state): ${String(f.o).replace(/^(?:says|said|claims|claimed|reports|reported|mentions|mentioned|tells|told)\s+/i, '')}` : propText(state, f, content);
+        items.push({ kind: 'fact', text: txt, entities: [f.s, f.o].filter((x) => state.entities[x]), location: isLocationId(state, content, f.s) ? f.s : null, turn: f.since?.turn ?? 0, importance: f.importance ?? 0.5, label: `${f.hard ? 'HARD FACT: ' : ''}${txt}` });
+    }
+    for (const q of Object.values(state.quests).filter(q => questVisible(state, q))) {
+        if (q.status !== 'active' && q.status !== 'offered') continue;
+        // a Guild contract says where it ends: its reward is the Guild's to pay at a front desk (delta.js)
+        items.push({ kind: 'quest', text: `${q.title} ${q.notes.join(' ')}`, entities: [q.giver].filter(Boolean), quests: [q.id], turn: q.history.at(-1)?.turn ?? 0, importance: 0.8, label: `Quest (${q.status}${q.rank ? `, ${q.rank} Guild contract` : ''}): ${q.title}${q.giver ? ` — from ${anyLabel(state, content, q.giver)}` : ''}${q.reward ? ` — reward: ${q.reward}` : ''}${q.rank && q.status === 'active' ? ' (paid by the Guild when turned in at a front desk, never by its client or other locals)' : ''}${q.notes.length ? ` — ${q.notes.at(-1)}` : ''}` });
+    }
+    // Patch 2 (src/threads.js): the open threads that matter now; a faded or resolved one is history, found only when this
+    // turn's words are about it (low importance: the lexical match has to carry it)
+    for (const t of Object.values(state.threads)) {
+        const place = t.at && (isLocationId(state, content, t.at) || state.places?.[t.at]) ? t.at : null;
+        // NPC E2-B: an agreement is about its parties (retrieval by person)
+        const parties = (t.who || []).filter((x) => x !== 'pc');
+        if (threadCurrent(state, t)) items.push({ kind: 'thread', text: t.text, entities: parties, location: place, turn: t.updated?.turn ?? 0, importance: 0.7, label: `Open thread (${t.kind}): ${t.text}` });
+        else items.push({ kind: 'thread', text: `${t.text} ${t.resolution || ''}`, entities: parties, location: null, turn: t.updated?.turn ?? 0, importance: 0.2, label: t.status === 'resolved' ? `Resolved thread (${t.kind}): ${t.text} — ${t.resolution || 'settled'}` : `Earlier sign (${t.kind}, no longer current): ${t.text}` });
+    }
+    return mergeIdentical(items);
+}
+
+/**
+ * Lines the narrator would read word for word twice (two wolves with the same label killed in the same minute, the same
+ * status fact about each) take one line with a count: the record keeps every event, the context does not spend its
+ * allowance twice on one sentence. Only identical lines merge: a different time, place, name or wording stays its own.
+ */
+function mergeIdentical(items) {
+    const byLabel = new Map();
+    for (const it of items) {
+        const key = `${it.kind}|${normText(it.label)}`;
+        const prev = byLabel.get(key);
+        if (!prev) byLabel.set(key, { ...it, count: 1 });
+        else byLabel.set(key, { ...prev, count: prev.count + 1, turn: Math.max(prev.turn, it.turn), importance: Math.max(prev.importance, it.importance), entities: [...new Set([...prev.entities, ...it.entities])] });
+    }
+    return [...byLabel.values()].map((it) => (it.count > 1 ? { ...it, label: `${it.label} (×${it.count})` } : it));
+}
+
+/**
+ * The retrieval query (Patch 1, live run 18.10.2026): the player's message says what this turn is about. The last reply
+ * adds only the known names it mentions (people, places, Quests), not its prose: 1,500 characters of narration matched
+ * almost every record ("wolf", "cold", "dark" ...), so an older record the player named outright ("the Dungeon location
+ * from the map") fell to places 18, 19 and 41 behind the latest fights.
+ */
+const nameOf = (state, id) => state.entities[id]?.name || (state.entities[id]?.kind === 'npc' ? entityLabel(state, id) : null);
+
+function retrievalQuery(state, content, input, lastReply) {
+    const reply = normText(lastReply);
+    const names = new Set();
+    const named = [];
+    const consider = (label, id = null) => {
+        if (!label || names.has(normText(label)) || !mentioned(label, reply)) return;
+        names.add(normText(label));
+        if (id) named.push(id);
+    };
+    for (const e of Object.values(state.entities)) if (e.id !== 'pc' && (e.kind === 'npc' || e.kind === 'location')) consider(nameOf(state, e.id), e.kind === 'npc' ? e.id : null);
+    for (const p of Object.values(state.places || {})) consider(p.name);
+    for (const l of content.locations.values()) consider(l.name);
+    for (const q of Object.values(state.quests).filter(q => questVisible(state, q))) if (q.status === 'active' || q.status === 'offered') consider(q.title);
+    return { query: input, context: [...names].join(' '), named };
+}
+
+/**
+ * The RELEVANT section: memories, facts, Quests and open threads ranked for this turn (src/retrieval.js) and packed
+ * into its share of the budget. Exported so tests can read the ranking as well as the packed lines.
+ */
+export function retrieveRelevant(state, content, { input = '', lastReply = '', budget = DEFAULT_BUDGET, pinnedIds = new Set(), recentTurns = DEFAULT_RECENT_TURNS, weights } = {}) {
+    const sceneNode = state.meta?.runtime === 'v4' && state.scene.at ? state.scene.at : state.scene.location;
+    const loc = state.entities[sceneNode] || content.locations.get(sceneNode) || state.places?.[sceneNode];
+    const others = state.scene.present.filter((id) => id !== 'pc' && state.entities[id]);
+    const relStrength = new Map();
+    for (const r of Object.values(state.relations)) if (r.b === 'pc' || r.a === 'pc') relStrength.set(r.a === 'pc' ? r.b : r.a, Math.min(1, Math.abs(r.value) / 100));
+    const q = retrievalQuery(state, content, input, lastReply);
+    // the people in the scene and the people named this turn: their shared history is what the scene can draw on
+    const inputScan = normText(input);
+    const namedInInput = Object.values(state.entities).filter((e) => e.kind === 'npc' && mentioned(nameOf(state, e.id), inputScan)).map((e) => e.id);
+    const focus = {
+        entities: [...new Set([...others, ...namedInInput, ...q.named])], location: sceneNode, realm: loc?.realm || null,
+        quests: Object.values(state.quests).filter(q => questVisible(state, q)).filter((x) => x.status === 'active').map((x) => x.id), turn: state.turn,
+        // present people by name (or an NPC's trade, "the chartmaker"); a nameless creature's look ("low, heavy bulk") is
+        // adjectives that would match every other beast: the entity signal already covers it by id
+        query: q.query, context: `${q.context} ${others.map((id) => nameOf(state, id)).filter(Boolean).join(' ')}`.trim(), relationStrength: relStrength,
+    };
+    let episodes = 0;
+    const ranked = rank(retrievalItems(state, content, pinnedIds, recentTurns), focus, { weights })
+        .filter((x) => x.item.kind !== 'episode' || (episodes += 1) <= MAX_EPISODES);
+    return { ranked, ...pack(ranked.filter((x) => x.score > 1.2), Math.max(120, Math.floor(budget * 0.25)), (t) => estimateTokens(t) + 4) };
+}
+
+/**
+ * Lore: the current realm's entry plus entries whose curated key phrases (proper nouns, topic names) occur in this
+ * turn's text. Matching on whole key phrases, not on arbitrary words of the lore body, avoids the lexical misfires
+ * seen in Testrun-v1 ("power" -> lifespan lore, "forest" -> a forest realm on the other side of the continent).
+ */
+function pickLore(content, realmId, scan, budget) {
+    const hits = [];
+    for (const l of content.lore) {
+        const keyHits = l.keys.filter((k) => mentioned(k, scan)).length;
+        const realmMatch = !!realmId && l.id === realmId;
+        if (keyHits || realmMatch) hits.push({ l, score: keyHits * 2 + (realmMatch ? 1 : 0) });
+    }
+    hits.sort((a, b) => b.score - a.score);
+    const out = [];
+    let used = 0;
+    for (const { l } of hits) {
+        const t = estimateTokens(l.text);
+        if (used + t > budget) continue;
+        out.push(l.text);
+        used += t;
+    }
+    return out;
+}
+
+/** Remove host tracker blocks (e.g. <Blocks>...</Blocks>) and code spans so only prose drives retrieval. */
+function proseOnly(text) {
+    return String(text || '').replace(/<([A-Za-z_][\w-]*)>[\s\S]*?<\/\1>/g, ' ').replace(/`[^`]*`/g, ' ');
+}
+
+const paragraphIndex = new WeakMap();
+
+/** Top rule paragraphs (Core/Content, verbatim) for a System question, via BM25 over paragraphs. */
+function ruleParagraphs(content, query, k, ruleset = 1) {
+    // Patch 9A: the texts of the campaign's ruleset (src/content.js rulesTextFor), one index per ruleset
+    if (!paragraphIndex.has(content)) paragraphIndex.set(content, new Map());
+    let idx = paragraphIndex.get(content).get(ruleset);
+    if (!idx) {
+        const paras = [];
+        for (const r of rulesTextFor(content, ruleset)) {
+            if (!/^(core|content)\./.test(r.id)) continue;
+            for (const p of r.text.split(/\n\s*\n/)) if (p.trim().length > 20) paras.push({ id: r.id, text: `${r.title.replace(/^\[[^\]]+\]\s*/, '')} (${r.id}): ${p.trim()}` });
+        }
+        idx = { paras, bm: new Bm25(paras.map((p) => p.text)) };
+        paragraphIndex.get(content).set(ruleset, idx);
+    }
+    return idx.paras.map((p, i) => [p.text, idx.bm.score(query, i)]).filter(([, sc]) => sc > 0).sort((a, b) => b[1] - a[1]).slice(0, k).map(([t]) => t);
+}
+
+// situational rules (state-triggered by the engine, never keyword-triggered by prose). Runtime V3: the short narrator
+// texts of narrator.json; the full Core texts (written for a narrator that kept the tracker) answer #system questions.
+const SITUATIONS = ['stealth', 'loot', 'trade'];
+
+/**
+ * Patch 8.3 (live 22.10.2026: QUEST PLAY asked a complication of the skeleton cull; the clerk warned of a crumbled
+ * stair, the next reply put it on the only stair down from the gate and the extractor booked it as an obstacle there):
+ * for a contract booked in a Living Dungeon, the Dungeon is its complication. The engine places its encounters,
+ * guardian and seals; a hazard the place itself plausibly holds stays the story's. Empty without such a contract.
+ */
+function dungeonWork(state, quests) {
+    const names = [...new Set(quests.map((q) => q.dungeon || q.clear?.dungeon).filter((id) => state.places[id]?.dungeon?.real).map((id) => state.places[id].name))];
+    return names.length
+        ? ` For a contract in a Living Dungeon (${names.join(', ')}) the Dungeon itself is that complication: its foes, dangerous parts, guardian and seals, which the engine places; invent no further hurdle for the contract in front of it or on the way in. A hazard the place plausibly holds of itself (a trap, a damaged stair) stays possible.`
+        : '';
+}
+
+/**
+ * Build the per-turn engine block.
+ * opts: {input, outcome, corrections: string[], budget, rulesBudget, recentTurns, situations: string[], weights, lastReply, systemQuery, lore, envelope}
+ */
+export function buildContext(state, content, opts = {}) {
+    const budget = opts.budget ?? DEFAULT_BUDGET;
+    const input = opts.input || '';
+    const lastReply = proseOnly(opts.lastReply).slice(-1500);
+    const sceneNode = state.meta?.runtime === 'v4' && state.scene.at ? state.scene.at : state.scene.location;
+    const loc = state.entities[sceneNode] || content.locations.get(sceneNode) || state.places?.[sceneNode];
+    const realmId = loc?.realm || null;
+    const realm = realmId ? content.factions.get(realmId)?.name || realmId : null;
+    const locStatus = statusOf(state, state.scene.location);
+    const v4 = state.meta?.runtime === 'v4';
+    const placeSuffix = !v4 ? (state.scene.place ? ` — ${state.scene.place}` : '') : state.scene.place && normText(state.scene.place) !== normText(loc?.name || '') ? ` — ${state.scene.place}` : '';
+    const sections = [];
+    const add = (name, text, priority, own = false) => text && sections.push({ name, text, priority, own, tokens: estimateTokens(text) });
+
+    if (!privateQuestsOf(state)) add('help', 'FREE HELP — only Guild contracts are formal quests. NPCs may request help, offer paid work, make promises and react freely. Preserve requests, deeds, relationships and outcomes as ordinary world continuity; no private Quest acceptance, objectives, READY, turn-in, work certificate, automatic reward or Quest XP. A present NPC may voluntarily hand over a credible gift or payment now; promises/recounts are not new money. Already recorded handovers: ' + ((state.credits || []).filter(x => x.gift && (x.turn === state.turn || state.scene.present.includes(x.gift.from))).slice(-4).map(x => `${x.gift.from}: ${x.cp} cp (${x.gift.why})`).join('; ') || 'none'), 0);
+    add('header', `[AVERETH ENGINE — authoritative game state, turn ${state.turn}. Numbers, rolls, positions and knowledge below are binding; narrate, never recalculate.]\n${formatClock(state.clock.minute)} | ${loc ? `${loc.name}${realm && (!v4 || normText(realm) !== normText(loc.name)) ? `, ${realm}` : ''}` : 'unknown location'}${placeSuffix} | mode: ${state.mode}${locStatus !== 'exists' && locStatus !== 'alive' ? ` | LOCATION STATUS: ${String(locStatus).toUpperCase()}` : ''}\nSetting: Western-fantasy medieval material culture with mana/high magic; letters and messengers for distance; no modern technology.`, 0);
+    // what Alaric's line carries depends on the turn: items and coin only when trade, loot or items are in play
+    const itemScan = `${input} ${lastReply}`;
+    const skillNamed = Object.keys(state.entities.pc.sheet?.skills || {}).some((id) => mentioned(skillOf(content, id, state)?.name || id, normText(input)));
+    add('pc', pcLine(state, content, {
+        combat: !!state.encounter || opts.outcome?.kind === 'combat',
+        items: state.mode === 'creation' || ITEM_RE.test(itemScan) || (opts.situations || []).some((x) => x === 'trade' || x === 'loot'),
+        skills: state.mode === 'creation' || !!state.encounter || opts.outcome?.kind === 'combat' || skillNamed,
+    }), 0);
+    if (state.mode === 'creation') add('creation', `CHARACTER CREATION — STEP ${state.creation.step}/2 in progress. Story time is frozen.${state.creation.step === 1 ? ` Base Classes: ${[...content.classes.values()].map((c) => `${c.name} (${c.favored.join('/')})`).join(', ')}.` : ''}`, 0);
+    // the System answered creation without the narrator: the first story reply must not reopen the greeting's menu
+    else if (state.creation?.turn != null && (v4 || state.turn === state.creation.turn + 1)) add('creation', 'CHARACTER CREATION is complete. Continue the story; never reopen class/skill selection', 0);
+
+    const queryText = `${input} ${lastReply}`;
+    const focusWords = new Set(tokenize(queryText));
+    const others = state.scene.present.filter((id) => id !== 'pc' && state.entities[id]);
+    const presentHead = v4 ? 'ACTIVE SCENE — canonical handles (use these exact handles to distinguish or target actors; card knowledge is authoritative relevant recall, not an exhaustive mind dump):' : 'PRESENT (each NPC knows ONLY what its card lists):';
+    const scored = v4 && !state.encounter ? interlocutorScores(state, input, lastReply, opts.outcome || state.last?.outcome) : [];
+    let focusNpcIds = scored.slice(0, 2).map((x) => x.id);
+    // NPC E2-B (R6): the people known where an authorized GO of this turn goes: their cards fill the slots nobody he
+    // addressed or acts with before leaving holds (interlocutor score >= 400), two in all; a slot no arrival card takes
+    // stays with the next interlocutor here. NOT YET SHOWN, never present
+    const arrival = v4 && !state.encounter && state.mode !== 'creation' && !opts.systemQuery ? arrivalPeople(state, opts.outcome, input) : null;
+    let arrivalIds = [];
+    if (arrival) {
+        const keep = scored.filter((x) => x.score >= 400).slice(0, 2).map((x) => x.id);
+        arrivalIds = arrival.ids.slice(0, 2 - keep.length);
+        if (arrivalIds.length) focusNpcIds = [...keep, ...scored.map((x) => x.id).filter((id) => !keep.includes(id))].slice(0, 2 - arrivalIds.length);
+    }
+    const compactCards = new Map(focusNpcIds.map((id) => [id, compactNpcCard(state, content, id, focusWords)]));
+    if (focusNpcIds.length) add('npc_compact', 'CURRENT INTERLOCUTORS — preserve recognition/experience; invitations alone authorize no movement or purchases:\n' + focusNpcIds.map((id) => compactCards.get(id)).join('\n'), 0);
+    if (arrivalIds.length) add('npc_arrival', `ARRIVING AT ${arrival.name} — people known there; NOT YET SHOWN: present only if the story shows them there\n${arrivalIds.map((id) => compactNpcCard(state, content, id, focusWords, { arriving: true })).join('\n')}`, 0);
+    const detailOthers = others;
+    if (detailOthers.length) add('present', `${presentHead}\n${detailOthers.map((id) => { const card=npcCard(state,content,id,focusWords); if (!focusNpcIds.includes(id)) return card; const rows=card.split('\n').filter(row=>/agenda:|keeps secret:|believes\/suspects:|established ties:/.test(row) || (/^ {2}(?:open|settled) between you:/.test(row) && !compactCards.get(id).includes('; between you: '))); return rows.length ? `• [${id}] additional recall:\n${rows.join('\n')}` : ''; }).filter(Boolean).join('\n')}`, 1);
+    else if (state.mode !== 'creation' && !focusNpcIds.length) add('present', v4 ? 'ACTIVE SCENE: nobody besides Alaric.' : 'PRESENT: nobody besides Alaric.', 1);
+    const continuity = v4 && state.mode !== 'creation' ? npcContinuity(state, queryText) : [];
+    if (continuity.length) add('npc_continuity', `KNOWN PEOPLE — narrator continuity, not local presence or shared NPC knowledge. Preserve established history; a new predicament needs a new cause, never replay an old rescue. Use existing identities; fuller names do not create new people:\n${continuity.map(x => x.text).join('\n')}`, 0);
+    const absent = state.mode === 'creation' ? [] : namedAbsent(state, normText(queryText));
+    if (absent.length) add('named', `NAMED, NOT PRESENT (continuity only; they are elsewhere unless the story brings them in):\n${absent.map((id) => npcCard(state, content, id, focusWords, { absent: true })).join('\n')}`, 2);
+    add('combat', combatBlock(state, content), 0);
+    if (v4 && (opts.outcome?.c || opts.outcome?.auth?.c)) {
+        const known = Object.values(state.quests || {}).filter(q => q.kind === 'guild_contract');
+        const branch = settlementOf(state, state.scene.at);
+        const official = [...known.filter(q => q.status === 'active' || (listedToday(state, q) && q.source?.branch === branch)),
+            ...known.filter(q => ['completed','expired','abandoned'].includes(q.status) && (hallOf(state, state.scene.at) || mentioned(q.title, normText(input)))).slice(-3)];
+        add('guild_authority', `OFFICIAL GUILD OFFERS — ENGINE AUTHORITY: Only listed contracts below are official selectable offers. Active/completed/expired contracts are not new offers. If none are listed, do not invent notices or claim another adventurer took them; invite a board reading. Private NPC jobs and rumours remain possible, clearly separate from official listings. A [listed] contract becomes Alaric's only by an ACCEPTS line of the engine; until then nobody stamps, logs or hands it to him, and nobody calls it his or active, also when he asks whether it is. Novice and Floor One are rank/depth labels, not promises of solo safety; describe only established risks, otherwise uncertainty.\n${official.map(q => `- ${q.id}: ${q.title} [${q.status}]`).join('\n') || '- No official listings established.'}`, 0);
+    }
+
+    // Build .144 (finance simplification S2, plan §6/§10.2): the one price contract of the story – the extractor reads a
+    // binding price only as one total, so the narrator is told the same whenever a trade is in play here (its own
+    // allowance, like the situational rules: it displaces no scene section)
+    const trading = (opts.situations || []).includes('trade') || Object.values(state.offers || {}).some((o) => o.status === 'open' && !o.canon && o.at === state.scene.at)
+        || (state.decisions || []).some((d) => (d.kind === 'purchase' || d.kind === 'sale') && (!d.at || d.at === state.scene.at));
+    if (v4 && trading && state.mode !== 'creation') add('price_contract', 'PRICES — a price binds only as ONE total in coin for exactly the goods or service named ("fifty-six copper for these fourteen plates", "two silver for the room tonight"). A price per piece, several part prices or a usual rate are talk until the trader states that total. Whoever agrees to a price says the total again, also when Alaric proposed it ("Sixty copper it is, for all fourteen plates."); a bare "Done." binds nothing. An appraisal, approval or later delivery keeps a price open until a new total is stated.', 0, true);
+
+    // .185 (Z1.2; natural batch 13.11.2026, Rogue T40–T43: the innkeeper asked four times for the room paid in T39):
+    // what the engine booked here that stays paid
+    const paid = v4 && (opts.outcome?.c || opts.outcome?.auth?.c) && state.mode !== 'creation' ? paidLodging(state) : [];
+    if (paid.length) add('paid_here', `PAID HERE (booked by the engine): ${paid.map((p) => `${p.what || 'a bed here'}${p.cp !== null ? `, ${p.cp} cp` : ''} to ${anyLabel(state, content, p.by)}`).join(' · ')}. Settled: nobody asks for it, quotes it or charges it again; a price named now is for something else.`, 0, true);
+
+    // Prototype C (4.3.0-c.6.6.5): the settlement around Alaric lives (crowd by time of day, everyday trades by size)
+    if (v4 && !state.encounter && (opts.outcome?.auth?.c || opts.outcome?.c)) add('settlement', settlementLife(state, content), 1);
+
+    if (v4 && !state.encounter) {
+        const area = lineage(state, state.scene.at).map(id => state.places[id]).find(p => p.encounter_levels);
+        if (area) add('world_area', `AREA LEVELS — ${area.name}: ${area.encounter_levels.join('–')}. Fixed world default for suitable new outdoor foes, never PC scaling. Specific local populations and existing individual profiles take priority.`, 0);
+        else if (lineage(state, state.scene.at).some(id => ['region', 'wilderness'].includes(state.places[id].kind)))
+            add('world_area', 'OUTDOOR DANGER — Establish typical danger from geography and ecology, never Alaric’s level: managed land usually L1, nearby wilderness L1–3, remote L4–7, deep L8–11, perilous F areas L12–14. Keep established populations and individuals unchanged; no mandatory encounter. An unknown area need not become dangerous.', 0);
+        const relevant = new Set([...lineage(state, state.scene.at), ...(opts.outcome?.auth?.gos || []).map(g => g.to),
+            ...Object.values(state.quests).filter(q => q.status === 'active' && q.hunt).map(q => q.hunt.at)]);
+        const populations = Object.values(state.places).filter(p => p.population && relevant.has(p.id)).slice(0, 6);
+        if (populations.length) add('world_populations', `ESTABLISHED WORLD POPULATIONS — fixed independently of Alaric; do not rescale, rename or replace them to make a contract easy. New individuals there use this supported kind, not unrelated weak wildlife. No mandatory attack or automatic spawn.\n${populations.map(p => `${p.name}: ${p.population.species}, body-plan ${p.population.anchor}, individual levels ${p.population.levels.join('-')}; count and risk follow the actual encounter/contract, not his level.`).join('\n')}`, 0);
+    }
+
+    // K3 (pilot 01 B2, .176): the equipment rules (priority 0) come where equipment is traded THIS turn: a present
+    // seller's open equipment offer; or his own message speaks of buying or selling gear (never the last reply's
+    // "armor" or "shield-sense") at a seller or a shop: a present person whose role a gear trade or the shop words of
+    // rules.settlements name, or one with an open offer here, or the place he is at or goes to by such a name; or his
+    // trade this turn (buy, sell, accepting an offer) together with such words. The first talk with a smith before any
+    // offer exists is such a turn.
+    const gearOfferHere = Object.values(state.offers || {}).some(o => o.status === 'open' && !o.bid && state.scene.present.includes(o.seller) && o.lines.some(l => l.profile?.kind === 'gear'));
+    const gearWords = /\b(?:shop|buy|sell|merchant|smith|blacksmith|gear|equipment|armou?r|weapon|shield)\b/i.test(input || '');
+    const venueRe = gearWords ? tradeVenueRe(content) : null;
+    const roles = (id) => [state.entities[id]?.name, truth(state, id, 'occupation')[0]?.o, state.entities[id]?.role, ...(state.entities[id]?.descriptors || [])].filter((x) => typeof x === 'string');
+    const sellerHere = gearWords && state.scene.present.some((id) => state.entities[id]?.kind === 'npc'
+        && (Object.values(state.offers || {}).some((o) => o.status === 'open' && !o.bid && o.seller === id) || (venueRe && roles(id).some((t) => venueRe.test(normText(t))))));
+    const shopPlace = gearWords && venueRe && [state.scene.at, ...(opts.outcome?.auth?.gos || []).map((g) => g.to)].filter(Boolean)
+        .some((id) => venueRe.test(normText(state.places?.[id]?.name || '')));
+    const tradeTurn = gearWords && (opts.outcome?.resolutions || []).some((r) => ['buy', 'sell', 'offer.accept'].includes(r.type));
+    if (v4 && rulesetOf(state) >= 2 && !state.encounter && (opts.outcome?.auth?.c || opts.outcome?.c)
+        && (gearOfferHere || sellerHere || shopPlace || tradeTurn)) {
+        const offers = Object.values(state.offers || {}).filter(o => o.status === 'open' && !o.bid && state.scene.present.includes(o.seller))
+            .flatMap(o => o.lines.filter(l => l.kind === 'goods').map(l => `${l.what}: ${gearText(l.profile) || 'ordinary merchandise'}`)).slice(0, 8);
+        add('gear_market', `${gearMarketText(content, true)}${offers.length ? `\nRECORDED GOODS: ${offers.join('; ')}` : ''}`, 0);
+    }
+
+    // hard facts about the current place, present people and anything named this turn are always shown (binding)
+    const scan = normText(queryText);
+    const pinned = currentFacts(state, (f) => f.hard && f.visibility !== 'secret').filter((f) => f.s === sceneNode || f.s === state.scene.location
+        || state.scene.present.includes(f.s) || mentioned(anyLabel(state, content, f.s), scan)).slice(-6);
+    if (pinned.length) add('facts', `ESTABLISHED FACTS (binding; they change only with an in-world cause):\n${pinned.map((f) => `- ${propText(state, f, content)} (since ${day(f.since.minute)}${f.source?.because ? `; cause: ${f.source.because}` : ''})`).join('\n')}`, 0);
+
+    const activeQuests = v4 ? Object.values(state.quests).filter(q => questVisible(state, q)).filter((q) => q.status === 'active'
+        || (rulesetOf(state) >= 2 && q.kind === 'private' && q.status === 'completed' && q.work && q.payout_cp !== 0 && !q.payment)) : [];
+    // Prototype C (4.3.0-c.6): a hunt is proven by its contract slip, goods by the goods (src/v4/guild.js proofMemory)
+    const cTurn = !!(opts.outcome?.auth?.c || opts.outcome?.c);
+    if (activeQuests.length) add('quests', `ACTIVE QUEST MEMORY — use this to preserve continuity, not as a word-for-word checklist. For Guild contracts only payout, active/completed status, Quest XP/credit and Guild rank mechanics are hard engine state; ${rulesetOf(state) >= 2 ? 'objectives, witnesses and verification allow credible story alternatives except physical delivery: in ruleset 2 its actual cargo transfer to the agreed recipient/place is checked by the engine; neither a signed receipt nor dropping cargo elsewhere establishes delivery. Never explain a failed transfer by inventing a container-return duty or changing recipient:' : 'objectives, witnesses and verification are story guidance and may be satisfied by credible alternatives:'}\n${activeQuests.map((q) => {
+        const progress = (q.progress || []).slice(-4).map((p) => `${p.objective}: ${p.status}`).join('; ');
+        const req = q.kind === 'guild_contract'
+            ? ` | desired outcome: ${q.desired_end_state || objectiveText(q)} | remembered work: ${objectiveText(q)}${progress ? ` | progress: ${progress}` : ''}${q.status === 'active' && defeatTally(state, content, q).length ? ` | defeated (engine count): ${tallyText(defeatTally(state, content, q))}` : ''}${readyText(state, content, q, { c: cTurn }) ? ` | ${readyText(state, content, q, { c: cTurn })}` : ''} | ${cTurn ? proofMemory(state, content, q) : `verification examples: ${guildProofText(q) || 'none listed'}`} | payout: ${q.payout_cp ?? 0} cp (paid only by the Guild on explicit accepted turn-in)${cTurn ? ' | these are its whole terms: no clause the story adds binds it' : ''}`
+            : `${q.objectives?.length ? ` | remembered work: ${objectiveText(q)}` : ''}${rulesetOf(state) >= 2 ? ` | ${q.status}; actual job action: ${q.work?.quote || 'none recorded'}; wages: ${q.payment ? `${q.payment.cp} cp already paid` : `${q.payout_cp ?? 'unagreed'} cp not paid`}. Mere acceptance performs no work/travel. Judge only work the player actually chose and accomplished; no invented completion or wages.` : ''}`;
+        return `- ${q.title}${req}`;
+    }).join('\n')}\nQUEST PLAY: only when the current scene/action is actually pursuing a nontrivial active Quest, let that Quest develop at least one causal, meaningful complication or active situation before ordinary resolution. Do not inject Quest complications into unrelated scenes merely because a Quest is active. Combat is not required.${dungeonWork(state, activeQuests)} Once the desired outcome is genuinely achieved, let the extractor store quest.ready; do not manufacture extra bureaucracy merely to satisfy a generated proof phrase.`, 0);
+
+    // Patch 2: Alaric's own goals (src/v4/intents.js): a few short lines, so the story knows where he is headed
+    const goals = v4 ? goalLines(state) : [];
+    if (goals.length) add('goals', `ALARIC'S GOALS (his own decisions: remember them; never act, decide or move him toward them for him):\n${goals.map((g) => `- ${g.status === 'paused' ? '(paused) ' : ''}${g.text}`).join('\n')}`, 1);
+    // Patch 6: the obstacles and hazards of this place (src/v4/features.js), the engine's state of them; hidden ones only
+    // here, for the narrator (never to be revealed or sprung by the story: only the engine finds or springs them)
+    const feats = v4 ? featuresAt(state, state.scene.at, { hidden: true }) : [];
+    if (feats.length) {
+        const seen = feats.filter((f) => !f.hidden).map(featureText);
+        const hid = feats.filter((f) => f.hidden).map(featureText);
+        add('features', [
+            seen.length ? `FEATURES HERE (the engine's: their state binds; what he got past or made harmless stays so; only an engine check decides an attempt on them, and only the engine books harm): ${seen.join(' · ')}` : '',
+            hid.length ? `HIDDEN HERE (he has not found them; do not reveal or spring them in the story: only his search or the engine does): ${hid.join(' · ')}` : '',
+        ].filter(Boolean).join('\n'), 1);
+    }
+    // Patch 7: where he is in a dungeon and the ways from here (src/v4/dungeon.js): this room and its neighbours only,
+    // never the whole dungeon; hidden ways for the narrator alone (only his search or the engine finds them)
+    const dun = v4 ? dungeonOf(state, state.scene.at) : null;
+    if (dun) {
+        const ways = exitsFrom(state, state.scene.at, { hidden: true });
+        // .190 (B5): and in a Living Dungeon the engine's way on, down or the end of the level (src/v4/sections.js)
+        const seen = [...ways.filter((e) => !e.hidden).map((e) => exitText(state, e, { ids: false })), ...sectionExits(state, state.scene.at)];
+        const hid = ways.filter((e) => e.hidden).map((e) => exitText(state, e, { ids: false }));
+        const out = state.scene.at !== dun ? wayBetween(state, state.scene.at, dun) : null;
+        const real = trueDungeonOf(state, state.scene.at);
+        add('dungeon', [
+            real ? `DUNGEON — ${state.places[real].name} is a true Dungeon: ${dungeonText(state, real, { all: true }).replace(/^a Dungeon: /, '')}. Its Rank and theme are the world's and fixed: never fit it or its creatures to Alaric's level; what is hidden from him stays hidden until he learns it.` : '',
+            `ROOMS — he is in ${roomLabel(state, state.scene.at)}. WAYS FROM HERE (the engine's; he moves only by these, or on into a part nobody has shown yet; a blocked one stays blocked until the engine says he got past what blocks it): ${seen.join(' · ') || 'none known yet'}`,
+            hid.length ? `HIDDEN WAYS (he has not found them; do not reveal them by yourself: only his search finds them): ${hid.join(' · ')}` : '',
+            out?.path?.length > 2 ? `WAY OUT he knows: ${out.path.slice(1).map((id) => state.places[id]?.name || id).join(' › ')}` : '',
+            // Patch 8: the engine's level of a Living Dungeon (src/v4/living.js)
+            ...livingLines(state, content),
+        ].filter(Boolean).join('\n'), 0);
+    }
+    // review of Patch 7: the known Dungeons near the town he is in, only when they matter (at the Guild hall, or when
+    // a Dungeon or one of them is spoken of): common knowledge here, as the Guild has them on record (final review: never
+    // what the world keeps hidden or Alaric alone saw)
+    const town = v4 && !dun ? settlementOf(state, state.scene.at) : null;
+    const near = town ? nearDungeons(state, town, realmOf(state, town), { guild: true }) : [];
+    if (near.length && (hallOf(state, state.scene.at) || /\bdungeons?\b/.test(scan) || near.some((id) => scan.includes(normText(state.places[id].name))))) {
+        add('dungeon', `KNOWN DUNGEONS NEAR ${state.places[town].name.toUpperCase()} (common knowledge here; the Guild keeps records of them; the same places in every telling): ${near.map((id) => `${state.places[id].name} — ${dungeonText(state, id, { guild: true }).replace(/^a Dungeon: /, '')}${state.places[id].where ? `; ${state.places[id].where}` : ''}`).join(' · ')}`, 2);
+    }
+    const namedDungeons = v4 ? Object.keys(state.dungeons || {}).filter(id => state.places[id]?.name && normText(input).includes(normText(state.places[id].name))) : [];
+    const dungeonQuestion = /\b(?:dungeons?|deeper|lower|floors?|levels?|guardians?|seals?)\b/i.test(input);
+    const accessRoot = dun || (namedDungeons.length === 1 ? namedDungeons[0] : !namedDungeons.length && dungeonQuestion && near.length === 1 ? near[0] : null);
+    const access = v4 && accessRoot ? guardianAccessLines(state, accessRoot, { floor: dun ? Math.max(1, livingFloorAt(state, state.scene.at)) : null }) : [];
+    // relevant memories / facts / quests / threads
+    const rel = retrieveRelevant(state, content, { input, lastReply, budget, pinnedIds: new Set(pinned.map((f) => f.id)), recentTurns: opts.recentTurns ?? DEFAULT_RECENT_TURNS, weights: opts.weights });
+    if (rel.items.length) add('relevant', `RELEVANT (retrieved from the campaign record):\n${rel.items.map((s) => `- ${s.item.label}`).join('\n')}`, 2);
+    // lore: the current realm entry + entries whose key phrases occur in this turn's text. Off when the descriptive
+    // world lore comes from the narrator card's SillyTavern lorebook (docs/LOREBOOK.md): one copy, not two
+    const lorePicked = opts.lore === false ? [] : pickLore(content, realmId, scan, Math.max(100, Math.floor(budget * 0.2)));
+    if (lorePicked.length) add('lore', `LORE:\n${lorePicked.join('\n---\n')}`, 3);
+    // situational rules text (own allowance so they never crowd out scene state)
+    const rulesIds = [...new Set((opts.situations || []).filter((s) => SITUATIONS.includes(s)))];
+    let rulesUsed = 0;
+    const rulesTexts = [];
+    const rulesCap = opts.rulesBudget ?? DEFAULT_RULES_BUDGET;
+    if (opts.systemQuery) {
+        // just-in-time retrieval: the few rule paragraphs that answer the question (not whole entries)
+        for (const para of ruleParagraphs(content, opts.systemQuery, 4, rulesetOf(state))) {
+            if (rulesUsed + estimateTokens(para) > rulesCap) continue;
+            rulesTexts.push(para);
+            rulesUsed += estimateTokens(para);
+        }
+    }
+    for (const id of rulesIds) {
+        const t = content.narrator.situational_rules?.[id];
+        if (!t || rulesUsed + estimateTokens(t) > rulesCap) continue;
+        rulesTexts.push(t);
+        rulesUsed += estimateTokens(t);
+    }
+    if (rulesTexts.length) add('rules', `RULES (situational):\n${rulesTexts.join('\n---\n')}`, 0, true);
+    // Gen 3.5: the World Envelope (src/v4/envelope.js): the causal limits of this reply, nothing for a scene without them.
+    // Its own allowance, like the rules and the output line: it displaces no retrieved section (memories, lore)
+    if (v4 && !opts.systemQuery && opts.envelope !== false) add('envelope', envelopeBlock(state, content, { c: !!(opts.outcome?.auth?.c || opts.outcome?.c), pulse: opts.outcome?.auth?.pulse || null }), 0, true);
+    if (v4) add('chronicle', chronicleLine(opts.chronicle), 0, true);
+    // .190 (N1): where he is, which travel this turn has and who he speaks of that is not here, at the head of the block;
+    // the location sentences of the corrections it replaces are not repeated at their end
+    const where = v4 && state.scene?.at && state.mode !== 'creation' ? whereLines(state, input, opts) : null;
+    if (where) add('where', where, 0, true);
+    const located = /^(?:Alaric is still (?:in|at)\b|Alaric is at\b|Alaric remains at\b|Alaric did not voluntarily travel\b)/;
+    const fixes = (opts.corrections || []).filter((c) => !where || !located.test(String(c)));
+    if (fixes.length) add('corrections', `CORRECTIONS (the previous reply conflicted with the engine; keep the engine's version):\n${fixes.slice(0, 4).map((c) => `- ${String(c).slice(0, 400)}`).join('\n')}`, 0, true);
+    if (opts.systemQuery) {
+        add('resolved', `SYSTEM QUERY (#system): ${opts.systemQuery}\nAnswer ONLY as the System (neutral, private, computer-like): no narration, no NPC reactions, story time and combat stay frozen. Use the state above, Core rules and player-known content; show formulas and arithmetic when useful; say INSUFFICIENT INFORMATION when data is missing. Never reveal hidden NPC data.`, 0);
+    } else if (state.meta?.runtime === 'v4') {
+        // Runtime V4: PLAYER ACTIONS (a story turn) or the V3 resolution (combat, stealth), then prose only
+        const o = opts.outcome;
+        add('resolved', [o ? (o.kind === 'v4' ? outcomeBlock(state, content, o, { carded: arrivalIds.length ? { name: arrival.name, ids: arrivalIds } : null }) : `RESOLVED THIS TURN (binding):\n${outcomeBlock(state, content, o, { v4: true })}`) : '', ...access].filter(Boolean).join('\n'), 0);
+        if (state.mode !== 'creation') add('report', V4_OUTPUT_LINE, 0, true);
+    } else {
+        add('resolved', opts.outcome ? `RESOLVED THIS TURN (binding):\n${outcomeBlock(state, content, opts.outcome)}` : '', 0);
+        add('report', reportInstruction(content, reportKeys(state, content, { outcome: opts.outcome, scan: `${input} ${lastReply}` })), 0, true);
+    }
+
+    // pack by priority under budget (priority 0 always kept; sections with their own allowance don't count)
+    let used = sections.filter((s) => s.priority === 0 && !s.own).reduce((a, s) => a + s.tokens, 0);
+    const kept = new Set(sections.filter((s) => s.priority === 0));
+    for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
+        if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
+    }
+    const order = ['header', 'where', 'pc', 'creation', 'npc_compact', 'npc_arrival', 'present', 'settlement', 'world_area', 'world_populations', 'gear_market', 'price_contract', 'paid_here', 'npc_continuity', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
+    const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
+    const text = final.map((s) => s.text).join('\n\n');
+    const describe = section => ({ name: section.name, tokens: section.tokens, own: section.own,
+        npcIds: Object.values(state.entities).filter(e => e.kind === 'npc' && section.text.includes(e.id)).map(e => e.id) });
+    return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text),
+        diagnostics: { v: 1, budget, rulesBudget: rulesCap, tokens: estimateTokens(text), budgetedTokens: used,
+            overflow: Math.max(0, used - budget), separateTokens: final.filter(x => x.own).reduce((n,x) => n+x.tokens,0), focusNpcIds,
+            ...(arrivalIds.length ? { arrivalNpcIds: arrivalIds } : {}),
+            delivered: final.map(describe), dropped: sections.filter(x => !kept.has(x)).map(describe) } };
+}
+
+/**
+ * Retrieval keys for the host's lorebook (the "Lore Bridge"): the current realm and the current location by name, so
+ * their World Info entries activate even when no recent message names them. Keys only, never engine state.
+ */
+export function loreKeys(state, content) {
+    const sceneNode = state.meta?.runtime === 'v4' && state.scene.at ? state.scene.at : state.scene.location;
+    const loc = state.entities[sceneNode] || content.locations.get(sceneNode) || state.places?.[sceneNode];
+    const realmId = loc?.realm || null;
+    const keys = [content.factions.get(realmId)?.name, state.meta?.runtime === 'v4' ? loc?.name || null : content.locations.has(state.scene.location) ? loc.name : null];
+    // livetest 21.10.2026: inside a site of a town (its Guild hall) the bridge named the site only, never the town, so
+    // the town's entries (its seed) never activated there; the town is named as well, the site stays (its entries)
+    const town = state.meta?.runtime === 'v4' && sceneNode !== state.scene.location ? state.places?.[state.scene.location]?.name : null;
+    if (town) keys.splice(1, 0, town);
+    return [...new Set(keys.filter(Boolean))];
+}
+
+// Situational fact-report schema (Runtime V3): the parser accepts every key on every turn, but the prompt lists only
+// the keys that can matter now — the full list cost ~800 tokens on every turn, including combat rounds.
+const STORY_KEYS = ['time', 'place', 'location', 'forced_by', 'new', 'enter', 'leave', 'position', 'aware', 'concealed', 'facts', 'learn', 'believe', 'attitude', 'memory', 'items', 'coin', 'threads', 'combat'];
+const COMBAT_KEYS = ['time', 'new', 'enter', 'leave', 'concealed', 'facts', 'memory', 'combat', 'intent'];
+const QUEST_RE = /\b(?:quests?|jobs?|bills?|bount\w*|contracts?|guild|board|notices?|postings?|rewards?|tasks?|commissions?|hire\w*|work)\b/i;
+const REST_RE = /\b(?:rest\w*|sleep\w*|eat\w*|meal|drink\w*|heal\w*|bandag\w*|potion|tend\w*|camp\w*|inn)\b/i;
+
+/** The report keys this turn can use: none in character creation, the combat set while a fight runs, else story. */
+export function reportKeys(state, content, { outcome = null, scan = '' } = {}) {
+    if (state.mode === 'creation' || String(outcome?.kind || '').startsWith('creation')) return [];
+    if (state.encounter && !outcome?.ended) return COMBAT_KEYS;
+    const keys = [...STORY_KEYS];
+    const quests = Object.values(state.quests).filter(q => questVisible(state, q)).some((q) => q.status === 'offered' || q.status === 'active');
+    if (quests || QUEST_RE.test(`${scan} ${state.scene.place || ''}`)) keys.push('quests');
+    const s = state.entities.pc?.sheet;
+    const dv = s ? deriveCharacter(s, content) : null;
+    if (REST_RE.test(scan) || (dv && (s.hp < dv.maxHp || s.mp < dv.maxMp || s.sta < dv.maxSta))) keys.push('recover');
+    if (outcome?.kind === 'narrative' && outcome.check_die) keys.push('check');
+    if ((state.pending_combat || []).length) keys.push('intent');
+    return keys;
+}
+
+export function reportInstruction(content, keys = Object.keys(content.narrator.report.keys)) {
+    const r = content.narrator.report;
+    if (!keys.length) return 'FACT REPORT: end the reply with <avereth>{}</avereth> (character creation: nothing to report).';
+    const all = r.keys;
+    const listed = Object.keys(all).filter((k) => keys.includes(k));
+    // the last line before generation (Test 5 run: without the Megumin <Blocks> duty at the end, 6 of 9 replies had none)
+    return `FACT REPORT: ${r.instruction}\n${listed.map((k) => `${k}: ${all[k]}`).join(' | ')}${listed.includes('new') && listed.includes('aware') ? `\nExample: ${r.example}` : ''}\nEnd EVERY reply with <avereth>{…}</avereth>, {} if nothing new.`;
+}
+
+/** Deterministic salience from this input and existing shared records, independent of present-array order. */
+function interlocutorScores(state, input, lastReply, outcome) {
+    const actionIds=new Set();
+    const scan=(value,depth=0)=>{ if(depth>5 || value==null) return; if(typeof value === 'string') { if(state.entities[value]?.kind === 'npc') actionIds.add(value); } else if(typeof value === 'object') Object.values(value).forEach(v=>scan(v,depth+1)); };
+    scan(outcome?.auth); scan(outcome?.resolutions);
+    const words = new Set(tokenize(input));
+    return state.scene.present.filter(id => state.entities[id]?.kind === 'npc' && statusOf(state,id) !== 'dead')
+        .map(id => {
+            const e=state.entities[id], moments=sharedMoments(state,id), last=moments.at(-1);
+            const named=mentioned(e.name || '', normText(input));
+            const recent=mentioned(e.name || '', normText(lastReply));
+            const hits=moments.slice(-3).reduce((n,m)=>n+tokenize(m.text).filter(w=>words.has(w)).length,0);
+            return {id,score:(named?1000:0)+(actionIds.has(id)?400:0)+(recent?50:0)+Math.min(30,hits), minute:last?.minute ?? -1};
+        }).filter(x=>x.score>0 || x.minute>=0 || state.scene.present.filter(id=>state.entities[id]?.kind === 'npc').length===1).sort((a,b)=>b.score-a.score || b.minute-a.minute || a.id.localeCompare(b.id));
+}
+/**
+ * NPC E2-B (R6): the people known at the place the turn's last GO goes to, when that GO is authorized and no GO of the
+ * turn stops on the way: only outcome.known_at[seq] (never a person not offered there), alive and not here; ranked
+ * named in his message > open agreement with Alaric > meaningful shared memory > latest meeting, ties by id.
+ */
+export function arrivalPeople(state, outcome, input = '') {
+    if (outcome?.kind !== 'v4' || !outcome.known_at) return null;
+    const last = (outcome.resolutions || []).filter((r) => r.type === 'go').at(-1);
+    const gos = outcome.auth?.gos || [];
+    if (!last || last.status !== 'authorized' || gos.some((g) => g.stop)) return null;
+    const step = gos.find((g) => g.seq === last.seq);
+    const offered = outcome.known_at[String(last.seq)] || [];
+    if (!step?.name || !offered.length) return null;
+    const words = normText(input);
+    const rank = (id) => {
+        const e = state.entities[id];
+        const met = memoriesOf(state, id).filter((m) => (m.who || []).includes('pc') || (m.witnesses || []).includes('pc'));
+        return [mentioned(e.name || '', words) ? 1 : 0, agreementsWith(state, id).open.length ? 1 : 0, sharedMoments(state, id).length ? 1 : 0, met.at(-1)?.minute ?? -1];
+    };
+    const ids = offered.filter((id) => state.entities[id]?.kind === 'npc' && statusOf(state, id) !== 'dead' && !state.scene.present.includes(id))
+        .map((id) => ({ id, r: rank(id) }))
+        .sort((a, b) => a.r.reduce((d, x, i) => d || b.r[i] - x, 0) || a.id.localeCompare(b.id)).map((x) => x.id);
+    return ids.length ? { place: step.to, name: step.name, ids } : null;
+}
+/** .200 (B1): only a compact head selects whole E3 fields; detail cards keep their complete, original order. */
+function compactNpcHead(identity, fields, tail, focusWords, arriving) {
+    const suffix = arriving ? '; NOT YET SHOWN' : '';
+    const limit = 170 - suffix.length;
+    const cap = text => text.length > limit ? text.slice(0, limit - 1) + '…' : text;
+    const formatted = fields.map(({ key, value }) => ({ value, text: `; ${key}: ${value}` }));
+    const all = identity + formatted.map(f => f.text).join('');
+    // Keep the historical identity cap; never shorten an identity to make room for an E3 field.
+    if (identity.length >= limit) return cap(all + tail) + suffix;
+    let head = all;
+    if (all.length > limit) {
+        const scored = formatted.map((f, index) => ({ ...f, index,
+            hits: new Set(tokenize(f.value).filter(w => focusWords.has(w))).size }));
+        scored.sort((a, b) => b.hits - a.hits || a.index - b.index);
+        head = identity;
+        for (const f of scored) if (head.length + f.text.length <= limit) head += f.text;
+    }
+    // An exactly fitting field must not lose its last character to the appearance's ellipsis.
+    return (head.length === limit ? head : cap(head + tail)) + suffix;
+}
+
+function compactNpcCard(state, content, id, focusWords, { arriving = false } = {}) {
+    const rows=npcCard(state,content,id,focusWords,{ absent: arriving, compact: true }).split('\n');
+    // Whole fields are selected before shortening: identity and shared memory cannot be displaced by appearance.
+    const cap=(text,n)=>text.length>n?text.slice(0,n-1)+'…':text;
+    const head = rows[0];
+    const find = (key) => rows.find((r) => r.trimStart().startsWith(key));
+    // NPC E2-B (R8): the agreement with Alaric rides on the attitude row (shortened first, left out below 40 characters;
+    // the detail card keeps it); the two other fields are the first of last meaningful → knows → also remembers
+    let toward = find('toward Alaric:');
+    const agreed = toward && state.entities[id]?.kind === 'npc' ? agreementText(agreementsWith(state, id)) : null;
+    const room = toward ? 170 - toward.length - '; between you: '.length : 0;
+    if (agreed && room >= 40) toward = `${toward}; between you: ${cap(agreed, room)}`;
+    return [head, ...[toward, ...['last meaningful:', 'knows:', 'also remembers:'].map(find).filter(Boolean).slice(0, 2)].filter(Boolean).map((r) => cap(r, 170))].join('\n');
+}
+
+/**
+ * .190 (stage 4D, N1): WHERE (his place and the places the last reply told that he never reached), TRAVEL THIS TURN (the
+ * steps the engine authorized, or none), NOT HERE (known people his message speaks to or of who are elsewhere).
+ */
+function whereLines(state, input, opts) {
+    const here = placeName(state, state.scene.at);
+    const town = state.scene.location && state.places?.[state.scene.location]?.name;
+    const said = (to) => (typeof to === 'string' ? (state.places?.[to] ? placeName(state, to) : null) : to?.name || null);
+    const missed = [...new Set((opts.notReached || []).map(said).filter((n) => n && n !== here))];
+    const steps = (opts.outcome?.actions || []).map((a) => String(a).replace(/^\d+\.\s*/, '')).filter((a) => /^(?:GOES|CONTINUES|RETURNS|DEPARTS)\b/.test(a)).map((a) => a.split(' (')[0]);
+    const words = ` ${normText(input || '').replace(/[^a-z0-9' ]+/g, ' ')} `;
+    const absent = Object.values(state.entities || {}).filter((e) => e.kind === 'npc' && e.name && e.status !== 'dead' && !state.scene.present.includes(e.id)
+        && normText(e.name).split(' ').filter((w) => w.length >= 4).some((w) => words.includes(` ${w} `))).slice(0, 3);
+    return [
+        `WHERE — ${here}${town && town !== here ? ` (${town})` : ''}.${missed.length ? ` The last reply's ${missed.join(', ')} ${missed.length > 1 ? 'were' : 'was'} not reached: what it told there did not happen.` : ''}`,
+        `TRAVEL THIS TURN — ${steps.length ? steps.join('; ') : `none chosen: he stays at ${here}. An invitation he accepts, someone leading the way or going ahead, or his own agreement moves him nowhere; only a force he cannot refuse, told as it happens (carried, dragged, swept away), moves him without his own going`}.`,
+        absent.length ? `NOT HERE — ${absent.map((e) => `${e.name}${e.at && state.places?.[e.at] ? ` (${placeName(state, e.at)})` : ''}`).join(', ')}: he speaks of them from where he is; they answer only if the story brings them here.` : '',
+    ].filter(Boolean).join('\n');
+}

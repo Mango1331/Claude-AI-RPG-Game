@@ -1,0 +1,308 @@
+// Runtime V4: the command interpreter call (docs/RUNTIME_V4_PLAN.md §4.2). The player's story message becomes typed
+// commands for Alaric; the engine checks and books them. Prompt, schema and validator come from one vocabulary
+// (content/commands.json). The call itself is the host's (index.js, generateRaw); this module builds it and reads
+// the answer. P0/S1 measured the same prompt shape (tools/p0/s1_interpreter.mjs --prompt v4).
+//
+// Answer format: plain JSON per instruction, validated locally, one repair call with the error list when invalid
+// (P0/S0: json_schema is accepted but not enforced by the provider; plain JSON was 30/30 valid).
+import { O, S, B, I, E, A, N, REF, validate } from './schema.js';
+import { extractJsonObject } from './json.js';
+import { payArgument, playerPrice } from './finance_evidence.js';
+import { coinEvidence } from '../economy.js';
+
+export function commandVocabFor(vocab, privateQuests = true) {
+    return privateQuests ? vocab : { ...vocab, commands: vocab.commands.map(c => c.type === 'quest.accept'
+        ? { ...c, summary: 'Alaric explicitly accepts an official Guild listing; NPC help is ordinary world interaction, never formal acceptance.' } : c) };
+}
+
+export const INTERPRETER_VERSION = 'interp-4.6';
+
+// Contrastive examples from another town, so they never name a catalog id of the current scene. They follow the error
+// clusters of P0/S1 (docs/P0_BERICHT.md §5) without repeating any case of the evaluation corpora: a test checks that no
+// example message equals a corpus message.
+const EXAMPLES = `Examples (another town, not the current scene):
+CATALOG: PRESENT: npc.ferryman (ferryman) · OFFERS: offer.ferry (ferryman: l1 crossing 2 cp, l2 smoked eel 3 for 2 cp)
+MESSAGE: *i paid the ferryman and crossed to the far bank* nice weather today
+→ {"commands":[{"seq":1,"type":"offer.accept","offer":"offer.ferry","lines":["l1"],"qty":null,"quote":"i paid the ferryman"},{"seq":2,"type":"go","to":{"new":"the far bank"},"quote":"crossed to the far bank"}]}
+MESSAGE: Six of the eels, please.
+→ {"commands":[{"seq":1,"type":"offer.accept","offer":"offer.ferry","lines":["l2"],"qty":6,"quote":"Six of the eels, please."}]}
+MESSAGE: Would the smith buy my old boots? Maybe I'll ask him tomorrow.
+→ {"commands":[]}
+MESSAGE: *I turn toward the cracking branches, ready my sword, and walk in the direction of the sound.*
+→ {"commands":[{"seq":1,"type":"go","to":{"new":"toward the sound"},"quote":"walk in the direction of the sound"}]}
+CATALOG: OBJECTS: item.starter_longsword (Starter Longsword, held by Alaric, equipped: weapon)
+MESSAGE: *I get my sword out and hold it ready.*
+→ {"commands":[]}
+MESSAGE: I'll take a bed if it's no more than 6 copper, then sleep till morning.
+→ {"commands":[{"seq":1,"type":"buy","what":"a bed for the night","from":null,"qty":null,"max_cp":6,"any_price":false,"quote":"I'll take a bed if it's no more than 6 copper"},{"seq":2,"type":"activity","kind":"sleep","what":null,"minutes":null,"until":"morning","quote":"then sleep till morning"}]}
+MESSAGE: *the guard waves me through and i nod to him*
+→ {"commands":[]}
+CATALOG: HERE: Kestrel Ford › east gate (loc.kf.gate) · PRESENT: npc.warden (gate warden)
+MESSAGE: I'm here to find work with the Guild. *the warden takes my copper and waves me on*
+→ {"commands":[]}
+MESSAGE: I rode in on the marsh road an hour ago and paid your toll already.
+→ {"commands":[]}
+CATALOG: HERE: Kestrel Ford › Guild office (loc.kf.guild_hall) · PRESENT: npc.clerk (Guild clerk) · BOARD: quest.bridge (Bridge repair · Novice · 30 cp)
+MESSAGE: Hello there. I'd like to join, if you're taking new members.
+→ {"commands":[{"seq":1,"type":"guild.register","quote":"I'd like to join"}]}
+MESSAGE: *i stroll over to the notice wall and look over the contracts* could I sign up for the bridge one?
+→ {"commands":[{"seq":1,"type":"board.read","rank":null,"quote":"i stroll over to the notice wall and look over the contracts"}]}
+MESSAGE: *i pull the bridge slip and have the clerk write it into the ledger*
+→ {"commands":[{"seq":1,"type":"quest.accept","quest":"quest.bridge","quote":"i pull the bridge slip and have the clerk write it into the ledger"}]}
+CATALOG: JOURNEY READY: quest.wagon — "Wagon to Fenmoor": the contract's journey is underway; Alaric may continue it when he clearly agrees
+MESSAGE: We wait for the stragglers and then we continue.
+→ {"commands":[{"seq":1,"type":"activity","kind":"wait","what":"for the stragglers","minutes":null,"until":null,"quote":"We wait for the stragglers"},{"seq":2,"type":"journey.continue","quote":"then we continue"}]}
+MESSAGE: Please sign my contract slip to show the Guild we arrived.
+→ {"commands":[]}
+MESSAGE: *I walk back along the road I came from.*
+→ {"commands":[{"seq":1,"type":"go","to":{"new":"back along the road"},"quote":"I walk back along the road I came from"}]}`;
+
+export const EXAMPLE_MESSAGES = [...EXAMPLES.matchAll(/^MESSAGE: (.*)$/gm)].map((m) => m[1]);
+
+// 4.3.0-c.6.6.51 (live 23.10.2026 11:07: the planner spent its reasoning on whether the sleep needs the payment, its
+// ORDER_RULES saying "the go needs the pay" and this example none): in the planner's prompt the sleep in the bed he takes
+// builds on taking it ("needs"); the interpreter of Runtime V4-A knows no "needs" and keeps the example as it was
+const BED_SLEEP = '{"seq":2,"type":"activity","kind":"sleep","what":null,"minutes":null,"until":"morning","quote":"then sleep till morning"}';
+const BED_SLEEP_NEEDS = '{"seq":2,"type":"activity","kind":"sleep","what":null,"minutes":null,"until":"morning","needs":1,"quote":"then sleep till morning"}';
+
+function argSummary(args) {
+    const keys = Object.keys(args || {});
+    return keys.length ? ` {${keys.join(', ')}}` : '';
+}
+
+/** The vocabulary part of the prompt: one line per command (the positive/negative lists are never used here). */
+export function vocabularyText(vocab) {
+    return vocab.commands.map((c) => `- ${c.type}${argSummary(c.args)}: ${c.summary}`).join('\n');
+}
+
+/**
+ * System prompt of the interpreter (the same for every turn; the catalog goes into the user message). needs: the
+ * planner's form of the examples (its steps carry "needs", src/v4/planner.js ORDER_RULES).
+ */
+export function interpreterSystem(vocab, { examples = true, needs = false } = {}) {
+    return [
+        'You are the command interpreter of a text RPG engine. Translate the PLAYER MESSAGE into engine commands for Alaric, the player character. You decide no outcomes; the engine checks and books them.',
+        '',
+        'Rules:',
+        ...vocab.rules.map((r) => `- ${r}`),
+        '',
+        'Commands:',
+        vocabularyText(vocab),
+        '',
+        ...(examples ? [needs ? EXAMPLES.replace(BED_SLEEP, BED_SLEEP_NEEDS) : EXAMPLES, ''] : []),
+        'Answer with {"commands": [...]}; an empty list when the message contains no such action.',
+    ].join('\n');
+}
+
+/** Plain JSON per instruction: a short format line instead of the schema text; the answer is validated locally. */
+export const PLAIN_FORMAT = 'Return only one JSON object, no prose before or after it, no code fences: {"commands": [{"seq": 1, "type": "<command>", <every argument of that command>, "quote": "<exact words>"}]}. Give every argument listed for the command; null when the message does not say it (any_price: false when he sets no price rule).';
+
+function holderText(o) {
+    if (!o.holder || o.holder === 'Alaric') return `held by Alaric${o.state ? `, ${o.state}` : ''}`;
+    if (o.holder === 'here') return 'lying here';
+    return `held by ${o.holder}`;
+}
+
+/**
+ * The CATALOG block (plan §4.2). catalog: {here: {id, path}, time, alaric, present: [{id, label}], places: [{id, name}],
+ * quests: [{id, title, info}], completed, board_label, board: [...], offers: [{id, seller, lines: [{id, what, price_cp}]}],
+ * objects: [{id, name, qty?, unit?, holder?, state?}], open: [text]} — the shape of tests/eval/scenes.json, which the
+ * engine builds from its state (src/v4/catalog.js).
+ */
+export function catalogText(catalog) {
+    const L = ['CATALOG'];
+    if (catalog.privateQuests === false) L.push('FREE HELP: only Guild contracts have formal quest actions. NPC requests, agreement and help are ordinary world interactions.');
+    if (catalog.gear_market) L.push(catalog.gear_market);
+    const here = catalog.here || {};
+    L.push(`HERE: ${here.path || here.name} (${here.id})${catalog.time ? ` · ${catalog.time}` : ''}`);
+    L.push(`PRESENT: ${(catalog.present || []).map((p) => `${p.id}${p.handle ? ` [${p.handle}]` : ''} (${p.label})`).join(' · ') || 'nobody besides Alaric'}`);
+    if (catalog.alaric) L.push(`ALARIC: ${catalog.alaric}`);
+    const places = (catalog.places || []).filter((p) => p.id !== here.id);
+    if (places.length) L.push(`PLACES: ${places.map((p) => `${p.id} (${p.name})`).join(' · ')}`);
+    if ((catalog.quests || []).length) L.push(`QUESTS: ${catalog.quests.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
+    if ((catalog.goals || []).length) L.push(`GOALS (Alaric's own; never a reason to act for him): ${catalog.goals.map((g) => `${g.id} (${g.text})`).join(' · ')}`);
+    if (catalog.journey_ready) L.push(`JOURNEY READY: ${catalog.journey_ready}`);
+    if ((catalog.completed || []).length) L.push(`COMPLETED TODAY: ${catalog.completed.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
+    if ((catalog.board || []).length) L.push(`BOARD (${catalog.board_label || 'visible here'}): ${catalog.board.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
+    if ((catalog.known || []).length) L.push(`KNOWN CONTRACTS (listed on a Guild board elsewhere; taken only at that board's Guild hall, if still listed): ${catalog.known.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
+    const sells = (catalog.offers || []).filter((o) => !o.bid);
+    const bids = (catalog.offers || []).filter((o) => o.bid);
+    if (sells.length) L.push(`OFFERS: ${sells.map((o) => `${o.id} (${o.seller}: ${o.lines.map((l) => `${`line_id=${JSON.stringify(l.id)}; item=${JSON.stringify(l.what)}; `}${l.qty > 1 ? `${l.qty} for ${l.price_cp} cp` : `${l.price_cp} cp`}${l.equipment ? `; ${l.equipment}` : ''}${l.source ? `; ${l.source}` : ''}`).join(', ')})`).join(' · ')}`);
+    // 4.3.0-c.6.6.5: what a buyer would pay Alaric for his things (accepting it sells them)
+    if (bids.length) L.push(`BIDS (someone would BUY these things of Alaric's; accepting sells them): ${bids.map((o) => `${o.id} (${o.seller} pays ${o.price_cp} cp for: ${o.lines.map((l) => `${l.id} ${l.object} ×${l.qty}${Number.isInteger(l.price_cp) ? ` ${l.price_cp} cp` : ''}`).join(', ')})`).join(' · ')}`);
+    if ((catalog.objects || []).length) L.push(`OBJECTS: ${catalog.objects.map((o) => `${o.id} (${o.name}${o.qty ? `, ${o.qty}${o.unit ? ` ${o.unit}` : ''}` : ''}, ${holderText(o)})`).join(' · ')}`);
+    // Patch 6: the obstacles and hazards of this place (src/v4/features.js)
+    if ((catalog.features || []).length) L.push(`FEATURES (obstacles and dangers here): ${catalog.features.map((f) => f.text).join(' · ')}`);
+    // Patch 7: the ways from this room of a dungeon (src/v4/dungeon.js)
+    if ((catalog.exits || []).length) L.push(`EXITS (the ways from here; a blocked one is passed only by dealing with what blocks it): ${catalog.exits.map((e) => e.text).join(' · ')}`);
+    // Patch 8: a Living Dungeon's level (src/v4/living.js)
+    if ((catalog.dungeon || []).length) L.push(`DUNGEON: ${catalog.dungeon.join(' · ')}`);
+    if ((catalog.open || []).length) L.push(`OPEN DECISIONS: ${catalog.open.join(' · ')}`);
+    if ((catalog.paid || []).length) L.push(`PAID HERE: ${catalog.paid.join(' · ')}`);
+    // Patch 9C-2c: his Passives and the developments offered to him
+    if ((catalog.passives || []).length || (catalog.passive_offers || []).length) L.push(`PASSIVES (${catalog.passive_slots} slots): ${(catalog.passives || []).map((p) => `${p.id} (${p.text})`).join(' · ') || 'none'}`);
+    if ((catalog.passive_offers || []).length) L.push(`POSSIBLE PASSIVE (offered by the engine; his only if he accepts): ${catalog.passive_offers.map((p) => `${p.id} (${p.text})`).join(' · ')}`);
+    // 9C completion: a Skill development offered to him (a new technique, or the evolution of one of his)
+    if ((catalog.skill_offers || []).length) L.push(`POSSIBLE SKILL (offered by the engine; his only if he accepts): ${catalog.skill_offers.map((p) => `${p.id} (${p.text})`).join(' · ')}`);
+    if ((catalog.class_offers || []).length) L.push(`CLASS CHOICE (choose ONE by offered name; development.accept uses its OPTION id, not the group id): ${catalog.class_offers.map((d) => `group ${d.id}; OPTIONS: ${d.options.map((o) => `${o.id} (${o.text})`).join(' OR ')}`).join(' · ')}`);
+    return L.join('\n');
+}
+
+export function interpreterUser(catalog, text) {
+    return `${catalogText(catalog)}\n\nPLAYER MESSAGE:\n${text}`;
+}
+
+/** The ids a catalog offers as references, by kind. */
+export function catalogIds(catalog) {
+    const ids = (list) => (list || []).map((x) => x.id);
+    return {
+        place: [...new Set([catalog.here?.id, ...ids(catalog.places), ...(catalog.valid_places || [])].filter(Boolean))],
+        person: ids(catalog.present),
+        object: ids(catalog.objects),
+        quest: [...new Set([...ids(catalog.quests), ...ids(catalog.board), ...ids(catalog.completed), ...ids(catalog.known)])],
+        offer: ids(catalog.offers),
+        intent: ids(catalog.goals),
+        // Patch 9C-2c
+        // 9C completion: the older passive.accept/decline may name an offered Skill too (src/v4/commands.js sends it on)
+        passive_offer: [...ids(catalog.passive_offers), ...ids(catalog.skill_offers)],
+        passive: ids(catalog.passives),
+        development_offer: [...ids(catalog.passive_offers), ...ids(catalog.skill_offers), ...ids(catalog.class_offers), ...(catalog.class_offers || []).flatMap((d) => ids(d.options))],
+    };
+}
+
+// Build .142 (finance consolidation §4.1): the exact words of the money of a payment, and of a price he names
+const MONEY = O({ quote: S(), currency_quote: N(S()) });
+/** A left-out currency_quote of money/price_evidence is null, like a |null argument (no repair call for it). */
+export function softMoney(c) {
+    for (const k of ['money', 'price_evidence']) if (c && c[k] && typeof c[k] === 'object' && !Array.isArray(c[k]) && c[k].currency_quote === undefined) c[k].currency_quote = null;
+    return c;
+}
+// Build .144 (S2): "unit" stays readable (an older answer, or one unit) but binds only for exactly one unit
+const PRICE_EVIDENCE = O({ basis: E(['total', 'unit']), quote: S(), currency_quote: N(S()) });
+function argSchema(spec, ids) {
+    let s;
+    if (spec.object === 'money') s = MONEY;
+    else if (spec.object === 'price_evidence') s = PRICE_EVIDENCE;
+    else if (spec.ref) s = REF(ids[spec.ref] || []);
+    else if (spec.enum) s = E(spec.enum);
+    else if (spec.array) s = A(S());
+    else if (spec.type === 'integer') s = I(spec.min, spec.max);
+    else if (spec.type === 'boolean') s = B();
+    else s = S();
+    return spec.nullable ? N(s) : s;
+}
+
+/** Strict schema of the answer: a list of commands, a discriminated union with the catalog's ids as enums. */
+export function interpreterSchema(vocab, catalog) {
+    const ids = catalogIds(catalog);
+    const variants = vocab.commands.map((c) => {
+        const props = { seq: I(1), type: E([c.type]) };
+        for (const [k, spec] of Object.entries(c.args || {})) props[k] = argSchema(spec, ids);
+        props.quote = S();
+        return O(props);
+    });
+    return O({ commands: A({ anyOf: variants }) });
+}
+
+/**
+ * Read an interpreter answer: the commands if the JSON is valid against the schema, else the errors for a repair.
+ * @returns {{commands: object[]|null, errors: string[], raw: boolean}}
+ */
+// Build .142 (finance consolidation §3.3, §4.1): the money of a command is checked against the words the model assigns
+// to it – pay.money (the coin he hands over), price_evidence (his limit or agreed price). The engine never reads its
+// own number into a quote any more (Bree: a correct 20 cp was "repaired" to the 30 cp he held). A contradiction or an
+// incomplete amount goes back to the one repair with both readings; missing evidence is no error here: the handler then
+// treats the number as unproven (no payment, no limit, no price consent), never as given.
+const PRICE_FIELDS = { buy: 'max_cp', sell: 'min_cp', 'offer.accept': 'agreed_cp' };
+export function amountErrors(commands, currency, catalog = {}, message = null) {
+    const errors = [];
+    if (!currency) return errors;
+    const content = { rules: { currency } };
+    for (const c of commands || []) {
+        if (!c || typeof c !== 'object') continue;
+        const source = typeof message === 'string' && message ? message : String(c.quote || '');
+        if (c.type === 'pay' && c.money && Number.isInteger(c.amount_cp)) {
+            const present = (catalog.present || []).map((p) => ({ id: p.id, names: [p.handle, p.label, p.name].filter(Boolean) }));
+            const r = payArgument(source, c, { content, present });
+            if (r.state === 'contradicted') errors.push(`pay seq ${c.seq}: amount_cp ${c.amount_cp} is not the coin his words "${String(c.money.quote).slice(0, 40)}" hand over${Number.isInteger(r.cp) ? ` (${r.cp} cp)` : ' (several different amounts)'}; set amount_cp to the coin he actually hands over and quote exactly that money (1 silver = ${currency.copper_per_silver} copper, 1 gold = ${currency.copper_per_silver * currency.silver_per_gold} copper)`);
+            else if (r.state === 'incomplete') errors.push(`pay seq ${c.seq}: the money "${String(c.money.quote).slice(0, 40)}" continues in his words; quote the complete amount he hands over, or null when he names no complete amount`);
+            else if (r.state === 'missing' && r.reason !== 'no_money_argument') errors.push(`pay seq ${c.seq}: the money "${String(c.money.quote).slice(0, 40)}" is no single amount in his message (${r.reason}); quote his exact coin words, or null when he names none`);
+            continue;
+        }
+        const f = PRICE_FIELDS[c.type];
+        if (!f || !Number.isInteger(c[f]) || !c.price_evidence) continue;
+        const object = (catalog.objects || []).find(o => o.id === c.object);
+        const units = c.qty ?? (c.type === 'sell' ? (object ? object.qty ?? 1 : 1) : 1);
+        const r = playerPrice(source, c.price_evidence, { content, units, goods: [c.what, object?.name].filter(Boolean) });
+        // Build .144 (S2, plan §10.2 Nr. 3): a limit or agreed price binds only as his TOTAL. A price per unit for several
+        // units is a wish, not an error: no repair, the handler leaves the number unproven (no limit, no consent in advance)
+        if (r.reason === 'unit_price_as_total' || r.reason === 'total_required') continue;
+        if (r.state === 'verified' && r.cp !== c[f]) errors.push(`${c.type} seq ${c.seq}: ${f} ${c[f]} is not what his price words "${String(c.price_evidence.quote).slice(0, 40)}" give (${r.cp} cp); ${f} is his TOTAL for the selected quantity`);
+        else if (r.state !== 'verified') errors.push(`${c.type} seq ${c.seq}: the price words "${String(c.price_evidence.quote).slice(0, 40)}" ${r.state === 'incomplete' ? 'are not a complete amount' : r.reason === 'price_range' ? 'are a range, not one price' : r.state === 'contradicted' ? 'are several different amounts' : `carry no single amount in his message (${r.reason})`}; quote exactly his one price, or set price_evidence to null`);
+    }
+    return errors;
+}
+
+/**
+ * Build .142 (finance consolidation §4.4): a trade number his words may carry, or a pay beside money words, without the
+ * evidence fields that tie it to them. Not an error: the number stays unproven (no consent in advance, no payment) –
+ * the hint asks the one existing repair for the evidence, and the first valid answer stands if it brings none.
+ */
+export function financeHints(commands, currency, message = null) {
+    if (!currency) return [];
+    const content = { rules: { currency } };
+    const hints = [];
+    for (const c of commands || []) {
+        if (!c || typeof c !== 'object') continue;
+        const words = typeof message === 'string' && message ? message : String(c.quote || '');
+        if (!(coinEvidence(words, content).sums || []).length) continue;
+        const f = PRICE_FIELDS[c.type];
+        if (f && Number.isInteger(c[f]) && !c.price_evidence) hints.push(`${c.type} seq ${c.seq}: ${f} ${c[f]} has no price_evidence; quote his exact words of that TOTAL (basis total), or set ${f} to null if his words name no total for this`);
+        // Build .144 (S2): the engine no longer reads a second price out of his acceptance; a price his own acceptance
+        // names belongs into agreed_cp (with its words), so that it binds as his explicit limit
+        if (c.type === 'offer.accept' && !Number.isInteger(c.agreed_cp) && (coinEvidence(String(c.quote || ''), content).sums || []).length)
+            hints.push(`offer.accept seq ${c.seq}: his acceptance names money ("${String(c.quote).slice(0, 60)}"); if that is the TOTAL he agrees to pay or be paid, set agreed_cp to it with price_evidence; if it is no price for this (coin he holds, another thing), keep agreed_cp null`);
+        if (c.type === 'pay' && Number.isInteger(c.amount_cp) && !c.money) hints.push(`pay seq ${c.seq}: money is null; quote exactly the coin he hands over (currency_quote for a bare number), or keep it null if he hands over no named coin`);
+    }
+    return hints;
+}
+
+export function parseInterpretation(answer, vocab, catalog, { currency = null, text = null } = {}) {
+    const { value, error, raw } = extractJsonObject(answer);
+    if (!value) return { commands: null, errors: [error || 'no JSON object'], raw: false };
+    // an argument that may be null may also be left out (as the extractor's |null fields): no repair call for it
+    const specs = new Map((vocab.commands || []).map((c) => [c.type, c.args || {}]));
+    if (Array.isArray(value.commands)) {
+        for (const c of value.commands) {
+            if (!c || typeof c !== 'object') continue;
+            for (const [k, spec] of Object.entries(specs.get(c.type) || {})) if (spec.nullable && c[k] === undefined) c[k] = null;
+            // Build .144 (S1): words never confirm a payment card (cmd-1.9 dropped the field); an older answer still carrying
+            // it is read as the plain pay it also is
+            if (c.type === 'pay') delete c.confirmation;
+            softMoney(c);
+        }
+    }
+    const errors = validate(value, interpreterSchema(vocab, catalog));
+    if (errors.length) return { commands: null, errors: errors.slice(0, 8), raw };
+    const sums = amountErrors(value.commands, currency, catalog, text);
+    if (sums.length) return { commands: null, errors: sums.slice(0, 8), raw };
+    return { commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [], raw, hints: financeHints(value.commands, currency, text) };
+}
+
+/** The follow-up message of the one repair call (the previous answer stays in the conversation). */
+export function repairMessage(errors) {
+    return `Your answer was not valid: ${errors.slice(0, 8).join('; ')}. Answer again with only the corrected JSON object, nothing else.`;
+}
+
+/**
+ * The messages of an interpreter call (and of its repair, with the invalid answer and the errors appended).
+ * @returns {{system: string, user: string, messages: {role, content}[]}}
+ */
+export function interpreterRequest(vocab, catalog, text, { previous = null, errors = null } = {}) {
+    vocab = commandVocabFor(vocab, catalog.privateQuests);
+    const system = `${interpreterSystem(vocab)}\n\n${PLAIN_FORMAT}`;
+    const user = interpreterUser(catalog, text);
+    const messages = [{ role: 'system', content: system }, { role: 'user', content: user }];
+    if (previous !== null && errors) messages.push({ role: 'assistant', content: String(previous) }, { role: 'user', content: repairMessage(errors) });
+    return { system, user, messages };
+}

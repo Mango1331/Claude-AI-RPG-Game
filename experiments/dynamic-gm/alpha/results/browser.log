@@ -1,0 +1,24 @@
+FAIL Importable Chat Completion preset through actual ST file import ENOENT: no such file or directory, stat '/workspace/avereth-dynamic/avereth-gm-alpha/presets/Avereth%20GM%20Alpha%201.json'
+PASS Installed extension: real imported card, creation, HUD, #status, native send capture; zero model calls
+PASS Normal NPC talk + memory, confirmed DOM, reload and recall without original dialogue
+PASS Travel known_move via two actual ST backend requests
+PASS Travel forest200 via two actual ST backend requests
+PASS Not reached: actual arrival remains original place
+PASS Compound take then needs-go; NPC retains key=false
+PASS Compound take then needs-go; NPC retains key=true
+PASS NPC gift + genuine continuation, one transfer, new promise, reload no duplicates
+PASS Stop during pending request: no early story; late receipt permits explicit resume
+PASS Chat save failure http cannot publish; receipt resumes
+PASS Chat save failure silent cannot publish; receipt resumes
+PASS Chat switch during model request never writes/displays in another chat
+PASS ST masks 429: one request, unknown capacity blocks, explicit confirmed retry only
+PASS Malformed JSON cannot advance state or appear as narration
+PASS Swipe / regenerate refused by actual controls and interceptor
+PASS Native Featherless frontend parameters use existing connection; backend intercepted with scripted answer
+PASS Combat: recorded w191 #65 Heavy Slash resolved by .200 engine; receipt cannot reroll
+PASS Local timeout with unknown remote holds 4 units; late completion needs explicit resume
+PASS Reload after world commit before host save: durable ST file recovery, no model repeat
+PASS Journal save fails before commit: no visible world; acknowledged answer reused
+PASS Same-origin second tab cannot execute while first owns global Web Lock
+PASS Known semantic gap: omitted promise and invented consent still pass free prose (NOT a protection success)
+{"pass":22,"total":23,"pageErrors":[]}

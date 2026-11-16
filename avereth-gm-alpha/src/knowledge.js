@@ -1,0 +1,273 @@
+// World Truth vs Character Knowledge vs Belief vs Memory.
+//  * facts:     what IS true, with a validity window (since/until). Changes end the old fact (kept as history)
+//               and assert a new one — the Graphiti/Zep "invalidate, don't delete" pattern.
+//  * claims:    propositions a character can hold that may be FALSE (rumours, lies, mistakes).
+//  * knowledge: per character, which fact/claim it knows or believes, from which source (witnessed / told:X /
+//               rumor / inferred / public), with the predecessor stance kept (Talk of the Town belief facets).
+//  * memories:  episodic records with participants and witnesses; a character only "remembers" what it witnessed
+//               (Generative Agents: per-agent memory stream, perception-scoped).
+// NPCs never read world truth directly: the context builder only shows them their own knowledge rows.
+import { normText, hash32 } from './util.js';
+import { sceneHandle } from './v4/scene_handles.js';
+
+// Predicates are normalised so that "state"/"condition" and "status" are the same slot. FUNCTIONAL predicates hold
+// one current value per subject (a new value ends the old one); all other predicates may hold several values.
+const PRED_SYNONYMS = {
+    state: 'status', condition: 'status', located_in: 'location', located_at: 'location', lives_in: 'residence',
+    lives_at: 'residence', resides_in: 'residence', ruled_by: 'ruler', led_by: 'leader', owned_by: 'owner',
+    called: 'name', named: 'name', has_name: 'name', name_is: 'name', full_name: 'name', gave_name_as: 'name', knows_name: 'name', knows_name_of: 'name', goal: 'agenda', current_goal: 'agenda', objective: 'agenda', wants: 'agenda',
+    looks: 'appearance', look: 'appearance', speech: 'voice', speaks: 'voice', manner_of_speech: 'voice', role: 'occupation',
+    job: 'occupation', profession: 'occupation', guild_standing: 'guild_rank', guild_rank_of: 'guild_rank',
+};
+// NPC E3 (R10): a person's lasting manner and interest. Applied by World to a person's reported traits only (src/v4/
+// world.js), never to every predicate: a wolf's "demeanor" in a fight stays that fight's moment
+const ANCHOR_SYNONYMS = {
+    temperament: 'manner', demeanor: 'manner', demeanour: 'manner', personality: 'manner', disposition: 'manner',
+    interests: 'interest', hobby: 'interest', cares_about: 'interest', passion: 'interest',
+};
+/**
+ * NPC E3 (R10): has this person shared a moment with Alaric before their current presence began (scene.since)? Only
+ * then is what they show now a later encounter, the one a lasting trait is kept from (src/v4/world.js anchorRefusal).
+ * Build .183 (E3-V-1): the same test marks them for the extractor (src/v4/catalog.js extractorCatalog); it grants
+ * nothing by itself. Presence is checked by the caller.
+ */
+export function sharedBefore(state, id) {
+    const since = state.scene.since?.[id];
+    const shares = (m, x) => (m.who || []).includes(x) || (m.witnesses || []).includes(x);
+    return since != null && (state.memories || []).some((m) => (m.turn ?? Infinity) < since && shares(m, id) && shares(m, 'pc'));
+}
+/** NPC E3: the anchor predicate (voice, manner, interest) a person's reported predicate names, or null. */
+export function anchorPredicate(p) {
+    const k = normPredicate(p);
+    return ['voice', 'manner', 'interest'].includes(k) ? k : ANCHOR_SYNONYMS[k] || null;
+}
+// An NPC's minimal persistent record (Runtime V3, docs/REVIEW_V3.md 4.2) is built from ordinary facts: occupation (role),
+// appearance and voice (stable cues for a returning NPC) and agenda (what the NPC is working toward while it lasts;
+// o "none" ends it). All four hold one current value, so a new report replaces the old one.
+// guild_rank (Novice..Legend, only for registered members) and weather (of a location) are shown in the player HUD.
+export const FUNCTIONAL = new Set(['status', 'location', 'residence', 'ruler', 'leader', 'owner', 'allegiance', 'occupation', 'name', 'title', 'price', 'danger', 'appearance', 'voice', 'manner', 'interest', 'agenda', 'guild_rank', 'weather']);
+// A memory is meaningful (it enters an NPC's record and is recalled later) from this importance on; routine moments
+// ("Kest nodded", a first sighting, the player's own words) stay in the log but never become NPC canon.
+export const MEANINGFUL_IMPORTANCE = 6;
+export const isMeaningful = (m) => (m.importance ?? 5) >= MEANINGFUL_IMPORTANCE;
+// Terminal states are HARD facts automatically: a destroyed city or a dead person only changes with a stated cause.
+const TERMINAL_STATUS = /^(?:dead|destroyed|ruined|razed|burned|burnt|burned down|collapsed|sunk|annihilated|wiped out|obliterated)$/;
+
+// Ids of the two PC identity facts created at campaign start (who has SEEN Alaric / who knows his NAME).
+export const PC_NAME_FACT = 'f.pc.name';
+export const PC_LOOK_FACT = 'f.pc.appearance';
+
+export function normPredicate(p) {
+    const k = normText(p).replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40);
+    return PRED_SYNONYMS[k] || k;
+}
+
+export function isTerminalStatus(p, o) {
+    return p === 'status' && TERMINAL_STATUS.test(normText(o));
+}
+
+/**
+ * Is a fact live in this state (Gen 3.5 selective persistence, docs/ARCHITECTURE_GEN35.md §2.4)? A fact with a scope
+ * lives only as long as what it describes: the story's words about a combatant during a fight (its wounds, how it
+ * moves) describe state the fight owns, and end with that fight. Read-time, no event: the log keeps every fact.
+ */
+export function factLive(state, f) {
+    if (f.until) return false;
+    if (f.scope?.fight) return state.encounter?.id === f.scope.fight;
+    // Patch 3: a wound of Alaric's (src/v4/world.js) lives while he is below the maximum HP he had then; healing to
+    // that maximum ends it for good (src/state.js resource.changed): it never comes back with a later hurt
+    if (f.scope?.hurt) return (state.entities?.pc?.sheet?.hp ?? 0) < f.scope.hurt;
+    return true;
+}
+
+export function currentFacts(state, filter = () => true) {
+    return Object.values(state.facts).filter((f) => factLive(state, f) && filter(f));
+}
+
+/** Current value(s) of a predicate for a subject (world truth). */
+export function truth(state, s, p) {
+    return currentFacts(state, (f) => f.s === s && f.p === p);
+}
+
+/** Current status of an entity or location: the status fact if one exists, else the entity field, else 'exists'. */
+export function statusOf(state, id) {
+    const f = truth(state, id, 'status')[0];
+    if (f) return f.o;
+    return state.entities[id]?.status || 'exists';
+}
+
+/**
+ * Events that record a fact. Functional predicates end the old current value (kept as history) before the new one
+ * is asserted; non-functional predicates simply add a value. Re-asserting an existing value is a no-op.
+ */
+export function setFactEvents(state, { s, p, o, visibility = 'public', importance = 0.5, hard = false, source, id, scope = null }) {
+    const events = [];
+    const at = { turn: state.turn, minute: state.clock.minute };
+    const current = truth(state, s, p);
+    if (current.some((f) => normText(f.o) === normText(o))) return [];
+    if (FUNCTIONAL.has(p)) {
+        for (const old of current) events.push({ t: 'fact.ended', d: { id: old.id, until: at, reason: `superseded by ${s} ${p} ${o}` } });
+    }
+    const fact = {
+        id: id || nextFactId(state, s, p), s, p, o, since: at, until: null, visibility,
+        importance, hard: !!hard || isTerminalStatus(p, o), source, ...(scope ? { scope } : {}),
+    };
+    events.push({ t: 'fact.asserted', d: { fact } });
+    return events;
+}
+
+function slugPart(x) {
+    return normText(x).replace(/[^a-z0-9]+/g, '_').slice(0, 24);
+}
+
+// Full identity distinguishes similarly named subjects/predicates; the suffix also preserves A-B-A history.
+// Check occupied IDs even after their facts ended, including a possible hash collision. Old events keep their IDs.
+function nextFactId(state, s, p) {
+    const base = `f.${slugPart(s)}.${slugPart(p)}.${hash32(JSON.stringify([s, p]))}.t${state.turn}`;
+    let id = base;
+    for (let n = 2; Object.hasOwn(state.facts, id); n++) id = `${base}.${n}`;
+    return id;
+}
+
+/** What a character knows/believes (optionally only about given subjects). Returns resolved rows. */
+export function knowledgeOf(state, who, subjects = null) {
+    const rows = [];
+    for (const [about, k] of Object.entries(state.knowledge[who] || {})) {
+        const f = state.facts[about];
+        const c = state.claims[about];
+        const prop = f || c;
+        if (!prop) continue;
+        if (subjects && !subjects.includes(prop.s) && !subjects.includes(prop.o)) continue;
+        rows.push({
+            about, s: prop.s, p: prop.p, o: prop.o, stance: k.stance, source: k.source, turn: k.turn,
+            minute: k.minute, is_fact: !!f, true: f ? true : c.truth === 'true' ? true : c.truth === 'false' ? false : null /* null = unknown */, outdated: !!(f && !factLive(state, f)),
+            visibility: prop.visibility || 'public',
+        });
+    }
+    return rows;
+}
+
+export function knows(state, who, about) {
+    return !!(state.knowledge[who] && state.knowledge[who][about]);
+}
+
+/** How a character can identify Alaric: by name, by sight (name unknown), or not at all. */
+export function pcIdentityFor(state, who) {
+    if (who === 'pc') return { level: 'self', label: state.entities.pc.name };
+    if (knows(state, who, PC_NAME_FACT)) return { level: 'name', label: state.entities.pc.name };
+    if (knows(state, who, PC_LOOK_FACT)) return { level: 'seen', label: 'the stranger' };
+    return { level: 'unknown', label: 'someone unseen' };
+}
+
+/** Memories an entity can recall (it was a participant or witness). */
+export function memoriesOf(state, who) {
+    return state.memories.filter((m) => (m.who || []).includes(who) || (m.witnesses || []).includes(who));
+}
+
+/**
+ * Memory text as a given viewer remembers it. Memory texts refer to the PC as "{pc}"; a viewer who never learned
+ * Alaric's name or never saw him remembers "the stranger" / "someone unseen" instead (no knowledge leaks).
+ * viewer = null renders the narrator's (objective) version.
+ */
+export function memoryText(state, m, viewer = null) {
+    const name = state.entities.pc?.name || 'Alaric';
+    if (!String(m.text).includes('{pc}')) return m.text;
+    let label = name;
+    if (viewer && viewer !== 'pc') {
+        // only a viewer who SAW Alaric in this moment can attribute it to him (by name if it knows the name)
+        const saw = m.seen ? m.seen.includes(viewer) : true;
+        label = !saw ? 'someone unseen' : pcIdentityFor(state, viewer).level === 'name' ? name : 'the stranger';
+    }
+    return m.text.split('{pc}').join(label);
+}
+
+/**
+ * Present, living entities (physical presence only; the dead and the absent are excluded). Present is not perceiving:
+ * callers that grant knowledge or memories also drop NPCs that are unaware of the scene.
+ */
+export function perceivers(state) {
+    return state.scene.present.filter((id) => state.entities[id] && state.entities[id].status !== 'dead');
+}
+
+export function entityLabel(state, id) {
+    const e = state.entities[id];
+    if (!e) return id;
+    return e.name || (e.descriptors && e.descriptors[0] ? `the ${e.descriptors[0]}` : id);
+}
+
+/**
+ * The look an entity is known by without its name: its first descriptor that is more than the name ("gate sergeant"
+ * for Sergeant Hobb; never the ref "hobb" or "sergeant_hobb" that spells it), or null.
+ */
+export function lookOf(e) {
+    const own = new Set(normText(e.name || '').split(' ').filter(Boolean));
+    // a ref's index is no look: "rat_a", "rat_2" are a rat
+    return (e.descriptors || []).map((d) => String(d).replace(/[_.]+/g, ' ').replace(/\s*\d+$/, '').replace(/\s+[a-z]$/i, '').trim())
+        .find((d) => d && !normText(d).split(' ').every((w) => own.has(w))) || null;
+}
+
+/**
+ * How the player can name an entity: its name as far as the story has said it (known_name: the part said so far, ''
+ * none yet; absent = all of it), else its look (Test 5 run: "Sergeant Hobb" and "Wick" came in a report a reply
+ * before the story named them; see delta.js). Player views only: the narrator's own block keeps the name.
+ */
+export function playerLabel(state, id) {
+    const e = state.entities[id];
+    if (!e || e.known_name === undefined || e.known_name === null) return entityLabel(state, id);
+    if (e.known_name) return e.known_name;
+    const look = lookOf(e);
+    return look ? `the ${look}` : e.kind === 'creature' ? 'a creature' : 'a stranger';
+}
+
+/** Label for an entity id OR a content location/faction id (used when rendering facts). */
+export function anyLabel(state, content, id) {
+    const e = state.entities[id];
+    // Patch 3 (live 18.10.2026: four wolves of one pack were each "the lean grey-brown wolves at the ivy-hung q" in the
+    // facts the narrator and the extractor read): an unnamed creature that shares its look with another one is shown
+    // with its scene handle ("Wolf B"). A view at read time; no record keeps it
+    if (e && !e.name && e.kind === 'creature' && e.descriptors?.[0]) {
+        const look = normText(e.descriptors[0]);
+        if (Object.values(state.entities).some((x) => x.id !== id && x.kind === 'creature' && !x.name && normText(x.descriptors?.[0] || '') === look)) {
+            return `${entityLabel(state, id)} (${sceneHandle(state, content, id)})`;
+        }
+    }
+    if (e) return entityLabel(state, id);
+    if (content) {
+        const l = content.locations.get(id) || content.factions.get(id);
+        if (l) return l.name;
+    }
+    return id;
+}
+
+/** Human-readable proposition "s p o" with entity names. */
+export function propText(state, prop, content = null) {
+    const s = anyLabel(state, content, prop.s);
+    const o = String(prop.o).toLowerCase() === 'true' ? '' : anyLabel(state, content, prop.o);
+    return `${s} ${String(prop.p).replace(/_/g, ' ')} ${o}`.trim();
+}
+
+/** Bounded narrator/extractor recall, not NPC knowledge or an assertion of current presence. */
+export function npcContinuity(state, scan = '') {
+    const words = text => new Set(normText(text || '').split(/[^a-z0-9]+/).filter(w => w.length >= 4));
+    const places = new Set();
+    for (let id = state.scene.at, seen = new Set(); id && !seen.has(id); id = state.places?.[id]?.parent) {
+        seen.add(id);
+        const p = state.places?.[id];
+        if (p && !['realm', 'region', 'settlement'].includes(p.kind)) for (const w of words(p.name)) places.add(w);
+    }
+    const query = normText(scan);
+    return Object.values(state.entities).filter(e => e.kind === 'npc' && e.name && !state.scene.present.includes(e.id))
+        .map(e => {
+            const name = normText(e.name);
+            const history = state.memories.filter(m => ((m.who || []).includes('pc') || (m.witnesses || []).includes('pc') || (m.seen || []).includes('pc'))
+                && [...(m.who || []), ...(m.about || []), ...(m.witnesses || [])].includes(e.id));
+            const named = (` ${query} `).includes(` ${name} `);
+            const local = history.some(m => [...words(m.place)].some(w => places.has(w)));
+            const last = history.at(-1);
+            const facts = currentFacts(state, f => f.s === e.id && f.visibility !== 'secret'
+                && ['status', 'bindings', 'plans', 'residence'].includes(f.p)).slice(-4);
+            const moment = history.filter(isMeaningful).at(-1);
+            return { id: e.id, score: named ? 2 : local ? 1 : 0,
+                text: `${e.name} [${e.id}] — NOT PRESENT; last witnessed at ${last?.place || 'unknown place'}${last ? ` (minute ${last.minute}, historical)` : ''}. ${facts.map(f => `${f.p}: ${f.o}`).join('; ')}${moment ? `; remembers: ${memoryText(state, moment)}` : ''}` };
+        }).filter(x => x.score).sort((a, b) => b.score - a.score).slice(0, 3);
+}

@@ -1,0 +1,603 @@
+// Host adapter: maps the engine onto a chat transcript — an array of messages {mes, is_user, is_system, extra,
+// swipes, swipe_id, swipe_info} as SillyTavern stores them. It mutates only the message objects it is given, so the
+// same code runs in the browser (index.js) and in the Node tests (swipe / regenerate / delete / edit scenarios).
+//
+// Storage: every message carries its own events in message.extra.avereth. SillyTavern keeps `extra` per swipe, so
+// each alternative reply owns its own facts. ST copies `extra` into a NEW swipe before it is generated, so an
+// assistant record is only applied while its text_hash matches the message text (stale copies are ignored).
+import { paidCardFacts, payCommandId } from './v4/native_pay.js';
+import { applyEvent, emptyState } from './state.js';
+import { startCampaign, playerTurn, narratorReply, turnContext } from './engine.js';
+import { loreKeys, reportKeys } from './context.js';
+import { extractReport, tolerantJson } from './delta.js';
+import { turnPanel, NOT_ARRIVED_RULES } from './display.js';
+import { renderHud } from './hud.js';
+import { hash32, clone, normText, swapWords, hasTrackerBlocks, stripTrackerBlocks, ENGINE_VERSION } from './util.js';
+
+import { combatChronicle } from './v4/combat_truth.js';
+import { restCutFacts } from './v4/pulse.js';
+
+export const KEY = 'avereth';
+export const RECORD_VERSION = 2;
+
+export function rec(msg) {
+    return msg && msg.extra && msg.extra[KEY];
+}
+
+export function setRec(msg, record) {
+    if (!msg.extra || typeof msg.extra !== 'object') msg.extra = {};
+    record.build = ENGINE_VERSION; // which build wrote this record (display only; the fold never reads it)
+    msg.extra[KEY] = record;
+    syncSwipe(msg);
+}
+
+/** Keep the active swipe in step with the message (ST reads swipes/swipe_info on swipe changes). */
+export function syncSwipe(msg) {
+    if (!Array.isArray(msg.swipes) || typeof msg.swipe_id !== 'number') return;
+    msg.swipes[msg.swipe_id] = msg.mes;
+    if (Array.isArray(msg.swipe_info) && msg.swipe_info[msg.swipe_id] && typeof msg.swipe_info[msg.swipe_id] === 'object') {
+        msg.swipe_info[msg.swipe_id].extra = clone(msg.extra);
+    }
+}
+
+/** Events a message contributes to the campaign (empty for stale swipe copies and foreign messages). */
+export function messageEvents(msg) {
+    const r = rec(msg);
+    if (!r || !Array.isArray(r.events)) return [];
+    if (!msg.is_user && r.text_hash && r.text_hash !== hash32(msg.mes)) return [];
+    return r.events;
+}
+
+// Patch 8.2: how often the chat was folded and how long it took (telemetry: runtime.js turnPerf, the status line)
+const FOLDS = { calls: 0, ms: 0 };
+const clock = () => (typeof performance !== 'undefined' && typeof performance.now === 'function' ? performance.now() : Date.now());
+export const foldStats = () => ({ ...FOLDS });
+
+// .145: a stored card/confirmation is authority only while its actual player input still matches.
+// Keep the original record on edits: restoring the text restores it, without reinterpreting old money.
+function paymentInputError(msg, record, index) {
+    const cards = (record?.events || []).filter(e => e.t === 'decision.opened' && e.d.decision?.route === 'free');
+    const paid = (record?.events || []).filter(e => e.t === 'decision.closed' && e.d.expect);
+    if (!cards.length && !paid.length) return null;
+    const type = paid.length ? 'decision.closed' : 'decision.opened';
+    const invalid = error => ({ type, error });
+    const hash = hash32(msg.mes);
+    // ST marks handled user commands is_system=true after aborting narration; they are still user inputs.
+    if (!msg.is_user || record.input_hash !== hash)
+        return invalid('payment input changed; restore its original text or discard the history from this message');
+    for (const e of cards) {
+        const source = e.d.decision.source;
+        if (source?.message !== index || source.input_hash !== hash)
+            return invalid('payment card source no longer matches its player message');
+    }
+    if (paid.length && (paid.length !== 1 || payCommandId(msg.mes) !== paid[0].d.id))
+        return invalid('payment confirmation is no longer the standalone #pay that was recorded');
+    return null;
+}
+
+/**
+ * Fold messages [0, end) into the campaign state. Events that no longer apply (e.g. after deletions) are skipped, so a
+ * display can still show something; `failures` names each one (message index, event type). Architecture patch A
+ * (.127): such a state is partial and never the basis of a new authoritative step (foldBlock below).
+ */
+export function foldChat(chat, end = chat.length) {
+    const t0 = clock();
+    let state = emptyState();
+    const errors = [];
+    const failures = [];
+    for (let i = 0; i < Math.min(end, chat.length); i++) {
+        const record = rec(chat[i]);
+        const invalid = paymentInputError(chat[i], record, i);
+        if (invalid) {
+            errors.push(`message ${i}: ${invalid.type}: ${invalid.error}`);
+            failures.push({ index: i, ...invalid });
+            break;
+        }
+        const events = messageEvents(chat[i]);
+        // A failed card close must not leave its debit (or any later record) in the folded state.
+        // Only native payment records need this small transaction checkpoint; normal folds are unchanged.
+        if (events.some(e => e.t === 'decision.closed' && e.d.expect)) {
+            const staged = clone(state);
+            let failed = false;
+            for (const e of events) {
+                try { applyEvent(staged, e); }
+                catch (err) {
+                    const error = String(err.message).slice(0, 200);
+                    errors.push(`message ${i}: ${e.t}: ${error}`);
+                    failures.push({ index: i, type: e.t, error });
+                    failed = true;
+                    break;
+                }
+            }
+            if (failed) break;
+            state = staged;
+            continue;
+        }
+        for (const e of events) {
+            try {
+                applyEvent(state, e);
+            } catch (err) {
+                errors.push(`message ${i}: ${e.t}: ${err.message}`);
+                failures.push({ index: i, type: e.t, error: String(err.message).slice(0, 200) });
+            }
+        }
+    }
+    FOLDS.calls += 1;
+    FOLDS.ms += clock() - t0;
+    return { state, errors, failures };
+}
+
+/**
+ * Architecture patch A (.127): the one shared verdict on a fold that is not whole. null when every event applied;
+ * otherwise the first failing message and event type, and the notice the host shows. Nothing is booked, saved or asked
+ * of a model on such a state; the player loads a valid saved state or deliberately discards the history from there.
+ */
+export function foldBlock(fold) {
+    const first = fold?.failures?.[0];
+    if (!first) return null;
+    return {
+        index: first.index, type: first.type, error: first.error, count: fold.failures.length,
+        notice: `BLOCKED — the campaign record could not be rebuilt: message ${first.index} (${first.type}) no longer applies`
+            + ` (${first.error})${fold.failures.length > 1 ? `, ${fold.failures.length} failing events in all` : ''}. Nothing was booked,`
+            + ` saved or sent to a model. Load a valid saved state, or deliberately delete the messages from ${first.index} onward, then continue.`,
+    };
+}
+
+export function hasCampaign(chat) {
+    return chat.some((m) => messageEvents(m).some((e) => e.t === 'campaign.started'));
+}
+
+/**
+ * B1 review (.131): does a message still store a campaign.started record, whether or not its text still matches it? A
+ * greeting changed without the engine's edit handling hides its record from the fold (messageEvents); the record is
+ * still the campaign's and must never be replaced by a new start.
+ */
+export function hasStoredCampaign(chat) {
+    return chat.some((m) => (rec(m)?.events || []).some((e) => e?.t === 'campaign.started'));
+}
+
+export function lastUserIndex(chat, before = chat.length) {
+    for (let i = Math.min(before, chat.length) - 1; i >= 0; i--) if (chat[i].is_user && !chat[i].is_system) return i;
+    return -1;
+}
+
+/** The latest player message, including a command line the host hid from the prompt (it still carries our record). */
+export function lastPlayerIndex(chat) {
+    for (let i = chat.length - 1; i >= 0; i--) if (chat[i].is_user && (!chat[i].is_system || rec(chat[i])?.command)) return i;
+    return -1;
+}
+
+export function lastReplyIndex(chat, before) {
+    for (let i = before - 1; i >= 0; i--) if (!chat[i].is_user && !chat[i].is_system) return i;
+    return -1;
+}
+
+/**
+ * Start the campaign on the greeting (message 0) if none exists. A chat that already ran without the engine is left
+ * alone ('legacy') unless force is set: its history cannot be reconstructed into mechanical state. A chat whose stored
+ * start record is hidden by a changed greeting text is left alone too ('hidden', B1 review): no second start over it.
+ * @returns {'exists'|'created'|'legacy'|'hidden'|'none'}
+ */
+export function ensureCampaign(chat, content, { seed, force = false, runtime = 'v3', planner, ruleset } = {}) {
+    if (hasCampaign(chat)) return 'exists';
+    if (hasStoredCampaign(chat)) return 'hidden';
+    const first = chat[0];
+    if (!first || first.is_user) return 'none';
+    const played = chat.filter((m) => m.is_user && !m.is_system).length;
+    if (played > 1 && !force) return 'legacy';
+    const events = startCampaign(content, { seed, firstMessage: first.mes, runtime, planner, ...(ruleset ? { ruleset } : {}) });
+    setRec(first, { v: RECORD_VERSION, events, text_hash: hash32(first.mes) });
+    return 'created';
+}
+
+/**
+ * Called right before a generation. Resolves the latest player message once (stored on that message, so swipes and
+ * regenerations reuse the same dice) and returns what the host must do.
+ * settings.engineLore = false leaves the descriptive world lore to the host's lorebook (the engine block keeps
+ * mechanics and state only); loreKeys names the current realm and location for that lorebook's retrieval.
+ * settings.engineEnvelope = false leaves the World Envelope out of the block (Gen 3.5; for a comparison only).
+ * @returns {{action: 'none'|'clear'|'abort'|'panels'|'context', dirty: boolean, panels?: string[], context?: object, loreKeys?: string[], index?: number, errors?: string[]}}
+ */
+export function prepareGeneration(chat, content, { type = 'normal', settings = {} } = {}) {
+    if (type === 'quiet' || type === 'impersonate') return { action: 'clear', dirty: false };
+    if (!hasCampaign(chat)) return { action: 'none', dirty: false };
+    const u = lastPlayerIndex(chat);
+    if (u < 0) return { action: 'none', dirty: false };
+    const msg = chat[u];
+    let dirty = false;
+    let r = rec(msg);
+    if (type !== 'continue' && (!r || r.input_hash !== hash32(msg.mes))) {
+        const before = foldChat(chat, u);
+        const t = playerTurn(before.state, content, msg.mes, { msg: u });
+        r = { v: RECORD_VERSION, input_hash: hash32(msg.mes), events: t.events, command: t.command ? { panels: t.command.panels, llm: t.command.llm } : null };
+        setRec(msg, r);
+        dirty = true;
+    }
+    if (r?.command && !r.command.llm) {
+        if (r.command.posted) return { action: 'abort', dirty }; // regenerate/continue on a command: nothing to narrate
+        r.command.posted = true;
+        setRec(msg, r);
+        return { action: 'panels', panels: r.command.panels, index: u, dirty: true };
+    }
+    const { state, errors, context } = turnBlock(chat, u, content, settings);
+    return { action: 'context', context, loreKeys: loreKeys(state, content), dirty, errors };
+}
+
+/** The engine block for player message u: the state after that message, the reply before it, the host's settings. */
+export function turnBlock(chat, u, content, settings = {}) {
+    const r = rec(chat[u]);
+    const { state, errors, failures } = foldChat(chat, u + 1);
+    const p = lastReplyIndex(chat, u);
+    const prev = p >= 0 ? rec(chat[p]) : null;
+    const previousInput = chat.slice(0,u).findLast(m => m.is_user);
+    const notExecuted = rec(previousInput)?.continuation?.kind === 'planner_not_executed'
+        ? [`PREVIOUS INPUT NOT EXECUTED: ${String(previousInput.mes).slice(0,180)}. It caused no action, travel, payment or combat round. Resolve only the current input now.`] : [];
+    // Build .144 (S1): a payment card paid by "#pay" between the last reply and this input ran no story turn; the reply
+    // tells the handover as done (one line from the stored record, no extra model call)
+    const paidCards = paidCardFacts(state, chat.slice(Math.max(p, 0) + 1, u).filter((m) => m.is_user && rec(m)?.command).flatMap((m) => messageEvents(m)));
+    // PULSE package C (plan §6 C 5): a pause the last story turn's window cut short, once, from that turn's own events
+    const restCut = p >= 0 ? restCutFacts(chat.slice(lastReplyIndex(chat, p) + 1, p).filter((m) => m.is_user && rec(m) && !rec(m).command).flatMap((m) => messageEvents(m))) : [];
+    const context = turnContext(state, content, {
+        input: chat[u].mes,
+        corrections: [...notExecuted, ...paidCards, ...restCut, ...(prev && !prev.system_answer ? prev.corrections || [] : [])],
+        // .190 (N1): what the last reply put him at that he never reached (its refused arrivals), for the WHERE header
+        notReached: prev && !prev.system_answer ? (prev.rejected || []).filter((x) => x.type === 'arrive' && NOT_ARRIVED_RULES.has(x.rule)).map((x) => x.to).filter(Boolean) : [],
+        lastReply: p >= 0 ? chat[p].mes : '',
+        chronicle: state.meta?.runtime === 'v4' && (state.encounter || state.last?.outcome?.kind === 'combat') ? combatChronicle(chat.slice(0, u + 1), messageEvents) : null,
+        budget: settings.budget,
+        rulesBudget: settings.rulesBudget,
+        recentTurns: settings.recentTurns,
+        systemQuery: r?.command?.llm ? r.command.llm.question || 'help' : null,
+        lore: settings.engineLore !== false,
+        envelope: settings.engineEnvelope !== false,
+    });
+    return { state, errors, failures, context };
+}
+
+export const laterTurns = (chat, id) => chat.slice(id + 1).some((m) => messageEvents(m).length);
+
+// ------------------------------------------------------------------------------------------ report request
+// Test 5, runs 1 and 2: with Reasoning low, GLM ended only 5 of 15 replies with the fact report. The prompt's wording
+// (the engine block's last line, the Megumin checklist addendum) made no difference; the reasoning mostly never planned
+// the report, and once dropped it after planning it. A reply without a valid report therefore gets one separate,
+// report-only request while the player reads it. The answer is applied as if the narrator had written it.
+export const REPORT_REQUEST_HEAD = "[AVERETH ENGINE — FACT REPORT REQUEST] The narrator's reply below came without its fact report. Here you are the engine's bookkeeper, not the narrator: write no story. Read the player's message and the reply, and write the fact report the reply owed, measured against the game state that follows: only what the reply itself newly established, with the keys and rules under FACT REPORT; {} if it established nothing new.";
+
+// Live run 25.09. 01:31: a reply showed several rats and reported them as one free text in "combat" ("rat pack — first
+// rat …, two more …"). Attackers the engine cannot take as individual combatants (delta.js) are asked for the same way:
+// only the attackers the reply has established, one "new" entry each, their refs in "combat"; no story.
+export const ATTACKERS_REQUEST_HEAD = "[AVERETH ENGINE — COMBAT ATTACKERS REQUEST] The narrator's reply below established attackers, but its fact report did not identify them as individual combatants. Here you are the engine's bookkeeper, not the narrator: write no story and do not continue it. Return only one <avereth> report with two keys: \"new\", one entry for each distinct attacker the reply has already established that the game state below does not list yet (kind \"creature\" with its species, or \"npc\"; a pack or swarm is its individual animals, as many as the reply shows; band = its distance to Alaric), and \"combat\" {\"by\": [...]} naming every attacker by its ref, or by its name or label if the game state already lists it.";
+
+// Live run 27.09. 02:30: the player walked from the roadside verge outside Redmarch into the city and the Guild; the
+// reply passed the gate guard and found Marta at the Guild's desk, and its report named the city ("location") and no
+// spot. Where the reply ends and who is there is asked for the same way: only "place" and who of the people it introduced
+// is there ("present"); no story. Live run 27.09. 04:11: asked who was NOT there ("leave"), the answer named everyone in
+// the reply, the two clerks at the desk included, and the next reply brought two new clerks.
+export const PLACE_REQUEST_HEAD = "[AVERETH ENGINE — PLACE REQUEST] The narrator's reply below took Alaric from where the game began, outside the city, into the city, and its fact report named the city but not the spot where he is when the reply ends. Here you are the engine's bookkeeper, not the narrator: write no story and do not continue it. Return only one <avereth> report with two keys: \"place\", the spot where Alaric is when the reply ends (a short name, e.g. \"Adventurers' Guild hall\"), and \"present\", the refs of the people listed below who are with him at that spot when the reply ends ([] if none of them is).";
+
+const listOf = (x) => (x === undefined || x === null ? [] : Array.isArray(x) ? x : [x]);
+const commitmentsOf = (x) => listOf(x).flatMap((cb) => (typeof cb === 'string' ? [{ by: cb }] : cb && Array.isArray(cb.by) ? cb.by.map((by) => ({ ...cb, by })) : cb ? [cb] : []));
+
+/** The reply's own report with the attackers the request named: the unidentified entries out, the answer's "new" and "combat" in. */
+function withAttackers(report, attackers, answer) {
+    const out = new Set(attackers.map((a) => normText(a.by)));
+    const drop = new Set(attackers.map((a) => a.ref && normText(a.ref)).filter(Boolean)); // a pack the report introduced
+    const held = attackers.map((a) => a.group).filter(Boolean); // a group held as one creature: its animals take its place
+    return {
+        ...report,
+        new: [...listOf(report.new).filter((n) => !drop.has(normText(n?.ref))), ...listOf(answer.new)],
+        combat: [...commitmentsOf(report.combat).filter((cb) => !out.has(normText(cb?.by))), ...commitmentsOf(answer.combat)],
+        ...(held.length ? { leave: [...listOf(report.leave), ...held] } : {}),
+    };
+}
+
+/** The reply's own report with the spot the request named: its place; whom the reply introduced and the answer does not
+ * name as present stays where the reply met them. No "present" list: nobody is sent away. */
+function withPlace(report, answer) {
+    const here = new Set(listOf(answer.present).map((x) => normText(x)));
+    const gone = Array.isArray(answer.present) ? listOf(report.new).filter((n) => n && n.ref && !here.has(normText(n.ref)) && !(n.name && here.has(normText(n.name)))).map((n) => n.ref) : [];
+    return { ...report, place: answer.place, leave: [...listOf(report.leave), ...gone] };
+}
+
+/**
+ * The separate request for the missing report of reply `id`: the engine block the narrator had for this turn (without
+ * lore), the player's message and the reply as the player sees it. Null when there is nothing to ask: the reply has a
+ * report, is a System answer, belongs to character creation (no report keys), changed since, or a later turn was
+ * already resolved without it.
+ * @returns {null|{systemPrompt: string, prompt: string, hash: string}}
+ */
+export function reportRequest(chat, id, content, { settings = {} } = {}) {
+    const msg = chat[id];
+    const r = rec(msg);
+    if (!msg || msg.is_user || msg.is_system || !r || r.system_answer || !(r.report_error || r.attackers?.length || r.unplaced) || r.text_hash !== hash32(msg.mes)) return null;
+    const u = lastUserIndex(chat, id);
+    if (u < 0 || laterTurns(chat, id)) return null;
+    const { state, context } = turnBlock(chat, u, content, { ...settings, engineLore: false });
+    if (!r.report_error && r.attackers?.length) {
+        return {
+            systemPrompt: `${ATTACKERS_REQUEST_HEAD}\n\n${context.text}`,
+            prompt: `PLAYER'S MESSAGE:\n${chat[u].mes}\n\nNARRATOR'S REPLY:\n${msg.mes}\n\nIts "combat" named: ${r.attackers.map((a) => `"${a.by}"${a.group ? ' (a group the game state lists as one creature: its animals are the attackers, each a "new" entry)' : ''}`).join(', ')}. Write the attackers now: exactly one <avereth>{"new":[…],"combat":{"by":[…]}}</avereth>, nothing else. Do not continue the story.`,
+            hash: r.text_hash,
+        };
+    }
+    if (!r.report_error) {
+        const met = listOf(r.unplaced_report?.new).filter((n) => n && n.ref).map((n) => `"${n.ref}" (${[n.name, ...listOf(n.desc)].filter(Boolean).map(String).join(', ').slice(0, 80)})`);
+        return {
+            systemPrompt: `${PLACE_REQUEST_HEAD}\n\n${context.text}`,
+            prompt: `PLAYER'S MESSAGE:\n${chat[u].mes}\n\nNARRATOR'S REPLY:\n${msg.mes}\n\nIts report named the city reached ("${r.unplaced.city}") but no spot in it. ${met.length ? `The people its report introduced: ${met.join(', ')}.` : 'Its report introduced nobody.'} Write the place now: exactly one <avereth>{"place":"…","present":[…]}</avereth>, nothing else. Do not continue the story.`,
+            hash: r.text_hash,
+        };
+    }
+    if (!reportKeys(state, content, { outcome: state.last.outcome }).length) return null;
+    return {
+        systemPrompt: `${REPORT_REQUEST_HEAD}\n\n${context.text}`,
+        prompt: `PLAYER'S MESSAGE:\n${chat[u].mes}\n\nNARRATOR'S REPLY:\n${msg.mes}\n\nWrite the fact report for this reply now: exactly one <avereth>{…}</avereth>, nothing else.`,
+        hash: r.text_hash,
+    };
+}
+
+/** The report in the answer to a report request: tagged like the narrator's, or a bare JSON object. */
+export function reportFromAnswer(text) {
+    const s = String(text ?? '');
+    const tagged = extractReport(s);
+    if (tagged.report) return { report: tagged.report };
+    const a = s.indexOf('{');
+    const b = s.lastIndexOf('}');
+    if (!/<avereth>/i.test(s) && a >= 0 && b > a) {
+        const bare = tolerantJson(s.slice(a, b + 1));
+        if (bare.value) return { report: bare.value };
+    }
+    return { report: null, error: /<avereth>/i.test(s) ? tagged.error : 'no report in the answer' };
+}
+
+/**
+ * Apply the answer to reportRequest. The reply is validated again, now with the recovered report, against the state
+ * before it: the same rules and dice as if the narrator had written it; its events and display are replaced, the
+ * visible text stays. Refused when the reply changed meanwhile (swipe, edit, continue) or a later turn was resolved
+ * without it. An answer without a usable report (or none: answer null) leaves the facts as they were and says so.
+ * @returns {{changed: boolean, applied?: boolean, error?: string, result?: object}}
+ */
+export function applyReportAnswer(chat, id, content, answer, { hash, ms = null, hud = 'closed', stripTrackers = true } = {}) {
+    const msg = chat[id];
+    const r = rec(msg);
+    const attackers = !r?.report_error && r?.attackers?.length ? r.attackers : null; // the reply's report stands, its attackers were asked for
+    const unplaced = !r?.report_error && !attackers && r?.unplaced ? r.unplaced : null; // the reply's report stands, its spot was asked for
+    if (!msg || !r || !(r.report_error || attackers || unplaced) || r.text_hash !== hash || hash32(msg.mes) !== hash) return { changed: false, error: 'the reply changed' };
+    // too late (the next turn was resolved without it): the facts stay as they were, the notice above the reply says so
+    const late = laterTurns(chat, id);
+    const got = late ? { report: null, error: 'too late: a later turn was resolved without it' } : answer == null ? { report: null, error: 'no answer' } : reportFromAnswer(answer);
+    const { state } = foldChat(chat, id);
+    // the request records what the reply established; an open story thread is the narrator's to set (live run 24.09.
+    // 23:23: the request made the clerk's pending questions a deadline thread "registration … fee due" that nobody
+    // closed, and seven turns after the registration the clerk asked for the paid fee again)
+    // for attackers, the reply's own report stays and only its unidentified attackers are replaced by the answer's; for
+    // the spot, the reply's own report stays and gets the answer's place and who is not there (leave)
+    const spot = unplaced && typeof got.report?.place === 'string' && got.report.place.trim() ? got.report : null;
+    const report = attackers ? (got.report ? withAttackers(r.attackers_report || {}, attackers, got.report) : r.attackers_report || null)
+        : unplaced ? (spot ? withPlace(r.unplaced_report || {}, spot) : r.unplaced_report || null)
+        : got.report ? { ...got.report, threads: undefined } : null;
+    let result = narratorReply(state, content, report ? `${msg.mes}\n<avereth>${JSON.stringify(report)}</avereth>` : msg.mes, { msg: id, stripTrackers });
+    // an answer that still names attackers the game cannot tell apart (a pack again) is not used at all: the reply keeps
+    // its own report, and no pack of the answer's stays behind as one creature
+    const unusable = !!(attackers && got.report && result.attackers);
+    if (unusable) result = narratorReply(state, content, r.attackers_report ? `${msg.mes}\n<avereth>${JSON.stringify(r.attackers_report)}</avereth>` : msg.mes, { msg: id, stripTrackers });
+    // the visible text is already clean: the note about tracker blocks the reply had written comes from its first pass
+    const trackerNote = (r.corrections || []).find((c) => c.startsWith('Your last reply wrote tracker blocks'));
+    if (trackerNote && !result.corrections.includes(trackerNote)) result.corrections.unshift(trackerNote);
+    const from = r.report_error || (attackers ? 'attackers' : 'place');
+    // an answer that still names no individual attackers, or no spot, brought nothing either
+    const failed = !got.report ? got.error : unusable ? 'the answer named no attackers the game can tell apart' : unplaced && !spot ? 'the answer named no place' : null;
+    const recovery = !failed ? { from, ms } : { from, failed, ...(late ? { late: true } : {}), ms };
+    const events = late ? r.events : [...result.events, { t: 'report.requested', d: { ok: !failed, error: from, ...(failed ? { failed } : {}), ms } }];
+    const panel = turnPanel(state, content, result.state.last?.check, { ...result, recovery });
+    const view = renderHud(result.state, content, hud);
+    showPanel(msg, panel, view);
+    setRec(msg, {
+        v: RECORD_VERSION, events, text_hash: hash32(msg.mes), corrections: late ? r.corrections : result.corrections, accepted: late ? r.accepted : result.accepted,
+        rejected: late ? r.rejected : result.rejected, report_error: result.report_error, attackers: (late ? r.attackers : result.attackers) || undefined,
+        unplaced: (late ? r.unplaced : result.unplaced) || undefined, recovery, panel: panel || undefined, hud: view || undefined,
+    });
+    return { changed: true, applied: !failed, error: failed || undefined, result };
+}
+
+/**
+ * Called when a reply was received (or a greeting created). Validates the fact report into events on this swipe and
+ * strips the report from the visible text. The System block (what was resolved) goes above the reply and the player
+ * HUD (Character + World, rendered from the state after this reply) below it: display only, never in a prompt.
+ * hud: 'closed' | 'open' | 'off'. recover: a missing report will be asked for separately (reportRequest); the reply's
+ * record says so (recovery 'pending') until the answer is applied.
+ * @returns {{changed: boolean, result?: object, recover?: boolean}}
+ */
+export function processReply(chat, id, content, { seed, swaps = [], hud = 'closed', stripTrackers = true, recover = false, runtime = 'v3', planner } = {}) {
+    const msg = chat[id];
+    if (!msg || msg.is_user || msg.is_system) return { changed: false };
+    // the greeting of a new chat (SillyTavern sends MESSAGE_RECEIVED for it) starts the campaign, in the runtime set
+    // for new campaigns
+    if (!hasCampaign(chat)) {
+        return { changed: ensureCampaign(chat, content, { seed, runtime, planner }) === 'created' };
+    }
+    const r = rec(msg);
+    if (r && r.text_hash === hash32(msg.mes)) return { changed: false }; // already processed (this exact text)
+    const u = lastUserIndex(chat, id);
+    if (u < 0) return { changed: false };
+    const userRec = rec(chat[u]);
+    if (userRec?.command?.llm) {
+        msg.mes = swapWords(extractReport(msg.mes).clean, swaps);
+        setRec(msg, { v: RECORD_VERSION, events: [], system_answer: true, text_hash: hash32(msg.mes) });
+        return { changed: true };
+    }
+    const { state } = foldChat(chat, id);
+    const result = narratorReply(state, content, msg.mes, { msg: id, stripTrackers });
+    msg.mes = swapWords(result.clean, swaps);
+    // a missing report, attackers the report did not identify, or the city reached from the start without a spot in it
+    // (delta.js): asked for separately while the player reads
+    const pending = recover && (!!result.report_error || !!result.attackers || !!result.unplaced) && !laterTurns(chat, id)
+        && (!!result.attackers || !!result.unplaced || reportKeys(state, content, { outcome: state.last.outcome }).length > 0);
+    const panel = turnPanel(state, content, result.state.last?.check, { ...result, recovery: pending ? 'pending' : null });
+    const view = renderHud(result.state, content, hud);
+    showPanel(msg, panel, view);
+    setRec(msg, {
+        v: RECORD_VERSION, events: result.events, text_hash: hash32(msg.mes), corrections: result.corrections,
+        accepted: result.accepted, rejected: result.rejected, report_error: result.report_error, recovery: pending ? 'pending' : undefined,
+        attackers: result.attackers || undefined, attackers_report: result.attackers ? result.report : undefined,
+        unplaced: result.unplaced || undefined, unplaced_report: result.unplaced ? result.report : undefined,
+        panel: panel || undefined, hud: view || undefined,
+    });
+    return { changed: true, result, recover: pending };
+}
+
+const displayEsc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/**
+ * Patch 10A: the full panel stays in the message record; the player sees useful mechanics
+ * and actionable failures, not ordinary internal bookkeeping rejections.
+ */
+export function playerFacingLines(panel) {
+    const clean = (line) => line.startsWith('\x60') && line.endsWith('\x60') ? line.slice(1, -1) : line;
+    const out = [];
+    for (const raw of String(panel || '').split('\n').filter(Boolean)) {
+        const line = clean(raw);
+        // A rejected non-canonical fact does not change the state and needs no player action.
+        if (/^(?:ENGINE REFUSED\b|ENGINE BLOCKED\b|NOT A DECISION\b|NOT APPLIED\b|NON[- ]CANON(?:ICAL)? FACT\b)/i.test(line)) continue;
+        if (/^UNDERSTOOD — /i.test(line)) {
+            // A refused/ambiguous PLAYER action is important, ordinary command parsing is not.
+            const match = /^UNDERSTOOD — (.+) \((refused|unclear|open)(?:: (.+))?\)$/i.exec(line);
+            if (!match) continue;
+            const [, action, status, why] = match;
+            if (status.toLowerCase() === 'open') continue; // pending world/player response
+            const label = status.toLowerCase() === 'refused' ? 'ACTION NOT POSSIBLE' : 'ACTION NEEDS CLARIFICATION';
+            out.push('\x60' + label + ' — ' + action + (why ? ': ' + why : '') + '\x60');
+            continue;
+        }
+        // Time is visible in the world HUD; search checks, rewards and combat remain visible.
+        if (/^TIME — /i.test(line)) continue;
+        out.push(raw);
+    }
+    return out;
+}
+
+/** Render engine-owned display lines as a visually distinct System card without changing the stored panel text. */
+function displaySystemPanel(panel, { tactical = false, playerFacing = false, boardLines = 0 } = {}) {
+    let raw = playerFacing ? playerFacingLines(panel) : String(panel || '').split('\n').filter((x) => x.length);
+    if (!raw.length) return '';
+    const clean = (line) => line.startsWith('`') && line.endsWith('`') ? line.slice(1, -1) : line;
+    // The structured official board owns this snapshot; keep raw panel intact for audit/plaintext fallback.
+    const boardStart = boardLines ? raw.findIndex(line => clean(line).startsWith('SYSTEM — GUILD BOARD ·')) : -1;
+    if (boardStart >= 0) raw = raw.filter((_, i) => i < boardStart || i >= boardStart + boardLines);
+    // During ACTIVE combat the tactical HUD below the narration owns the current snapshot. Keep the System card as the
+    // action/log/refusal record instead of repeating the target table, HP, Range, resources and "Next" a second time.
+    if (tactical) raw = raw.filter((line) => !/^(?:COMBAT TARGETS|HP:|Range:|Alaric: MP |Next:)/.test(clean(line)));
+    const klass = (line) => {
+        if (/not possible|NEEDS CLARIFICATION|NOT TAKEN|REFUSED|FAILED|NOT RECORDED|NOT APPLIED|NO STORY TEXT/i.test(line)) return 'avereth-system-line avereth-system-warning';
+        if (/^(?:COMBAT(?: START| END| —)|— (?:Round|Opening)|Next:|SYSTEM — )/.test(line)) return 'avereth-system-line avereth-system-heading';
+        if (/^(?:COMBAT TARGETS|HP:|Range:|Alaric: MP|ACTIVE SCENE)/.test(line)) return 'avereth-system-line avereth-system-state';
+        if (/^(?:Initiative:|Alaric's attacks vs )/.test(line)) return 'avereth-system-line avereth-system-info';
+        return 'avereth-system-line';
+    };
+    if (!raw.length) return '';
+    const combat = raw.some((line) => /COMBAT|Round|Range:|COMBAT TARGETS/.test(clean(line)));
+    return `<div class="avereth-system-panel${combat ? ' avereth-system-combat' : ''}">${raw.map((line) => {
+        const text = clean(line);
+        return `<div class="${klass(text)}">${displayEsc(text)}</div>`;
+    }).join('')}</div>`;
+}
+
+/**
+ * Show the engine's System block (combat log, checks) above the reply and the player HUD below it: SillyTavern
+ * renders extra.display_text instead of mes, while prompts keep using mes. Only what the engine wrote is replaced or
+ * removed.
+ */
+export function showPanel(msg, panel, hud = '', { playerFacing = false } = {}) {
+    if (!msg.extra || typeof msg.extra !== 'object') msg.extra = {};
+    const r = rec(msg);
+    if (panel || hud) {
+        const tactical = String(hud || '').includes('avereth-combat-hud');
+        msg.extra.display_text = [panel ? displaySystemPanel(panel, { tactical, playerFacing, boardLines: Number(/class="avereth-board" data-board-lines="(\d+)"/.exec(hud)?.[1] || 0) }) : '', msg.mes, hud].filter(Boolean).join('\n\n');
+    }
+    else if ((r?.panel || r?.hud) && typeof msg.extra.display_text === 'string') delete msg.extra.display_text;
+}
+
+/**
+ * An edited reply keeps the facts it established (typo fixes, rewording): its record is re-stamped so it keeps
+ * applying. To retcon, the player edits in a new report block (`<avereth>{...}</avereth>`, `{}` = no facts): the
+ * reply is then re-validated against the state before it and its events are replaced. Only the latest reply can be
+ * retconned: later turns were resolved against its facts (rolls, XP, knowledge) and are not replayed, so an older
+ * reply keeps its facts and the host is told to delete the later messages first.
+ * @returns {{changed: boolean, text?: boolean, refused?: string}} text = the visible message text changed (host
+ *   re-renders it); refused = a retcon that was not applied (host shows it)
+ */
+export function onEdited(chat, id, content) {
+    const msg = chat[id];
+    const r = rec(msg);
+    if (!msg || msg.is_user || !r) return { changed: false };
+    if (content && !r.system_answer && extractReport(msg.mes).report !== null && hasCampaign(chat) && !r.events?.some((e) => e.t === 'campaign.started')) {
+        if (chat.slice(id + 1).some((m) => messageEvents(m).length)) {
+            r.text_hash = hash32(msg.mes);
+            setRec(msg, r);
+            return { changed: true, refused: 'Retcon works only on the latest reply: delete the later messages first, then save this edit again. The reply keeps its facts for now.' };
+        }
+        const { state } = foldChat(chat, id);
+        const result = narratorReply(state, content, msg.mes, { msg: id });
+        msg.mes = result.clean;
+        const panel = turnPanel(state, content, result.state.last?.check, result);
+        const view = r.hud ? renderHud(result.state, content, /<details class="avereth-hud" open>/.test(r.hud) ? 'open' : 'closed') : '';
+        showPanel(msg, panel, view);
+        setRec(msg, {
+            v: RECORD_VERSION, events: result.events, text_hash: hash32(msg.mes), corrections: result.corrections,
+            accepted: result.accepted, rejected: result.rejected, report_error: result.report_error, retcon: true, panel: panel || undefined, hud: view || undefined,
+        });
+        return { changed: true, text: true };
+    }
+    r.text_hash = hash32(msg.mes);
+    if (r.panel || r.hud) showPanel(msg, r.panel, r.hud); // the edited narration between the same System block and HUD
+    setRec(msg, r);
+    return r.panel || r.hud ? { changed: true, text: true } : { changed: true };
+}
+
+/**
+ * Prompt-only projection of the chat history (Runtime V3), applied by the generate interceptor to SillyTavern's prompt
+ * copy of the chat (coreChat: shallow copies of the messages, so the saved chat, its swipes and what the player sees
+ * are never touched):
+ *  - the presentation layer's retired tracker blocks (<Blocks>, <World_State>, <Character_Sheet>, <New_NPC>,
+ *    <NPC_Update>) are removed from every earlier reply, so old saves stop feeding them back to the narrator;
+ *  - only the last `keepTurns` player messages stay, each with its reply; the current message counts (4 keeps it and
+ *    the three exchanges before it). Older turns reach the narrator through the engine block (NPC cards, retrieved
+ *    memories, facts, quests, threads). keepTurns 0 keeps the whole history.
+ * @returns {{removed: number, stripped: number}}
+ */
+export function projectPromptHistory(messages, { keepTurns = 4 } = {}) {
+    let stripped = 0;
+    let marked = 0;
+    for (let i = 0; i < messages.length; i++) {
+        const m = messages[i];
+        if (!m || m.is_user || typeof m.mes !== 'string') continue;
+        // .190 (stage 4E, N4): a reply whose arrival the engine refused carries one line of what was not booked, in
+        // this prompt copy only (the saved chat, swipes and the player's view stay as they are)
+        const mark = historyMark(rec(m));
+        if (hasTrackerBlocks(m.mes)) { messages[i] = { ...m, mes: stripTrackerBlocks(m.mes) }; stripped += 1; }
+        if (mark) { messages[i] = { ...messages[i], mes: `${messages[i].mes}\n\n${mark}` }; marked += 1; }
+    }
+    let removed = 0;
+    if (keepTurns > 0) {
+        const users = messages.map((m, i) => (m?.is_user ? i : -1)).filter((i) => i >= 0);
+        if (users.length > keepTurns) {
+            removed = users[users.length - keepTurns];
+            messages.splice(0, removed);
+        }
+    }
+    return { removed, stripped, marked };
+}
+
+/**
+ * .190 (N4): the engine line a reply carries in the prompt history when its arrival was refused: the places it did not
+ * reach and who was not met there; everything else of the reply stands as the engine booked it. Null otherwise.
+ */
+export function historyMark(r) {
+    const refused = (r?.rejected || []).filter((x) => x.type === 'arrive' && NOT_ARRIVED_RULES.has(x.rule));
+    if (!refused.length) return null;
+    const words = (to) => (typeof to === 'string' ? to.replace(/^(?:loc|realm)\./, '').replace(/[._]/g, ' ') : to?.name || null);
+    const places = [...new Set(refused.map((x) => words(x.to)).filter(Boolean))];
+    const unmet = (r.rejected || []).filter((x) => /^met_/.test(x.rule || '')).length;
+    const moved = (r.events || []).some((e) => e.t === 'scene.moved' && e.d?.at);
+    return `[ENGINE: in this reply Alaric did not reach ${places.length ? places.join(', ') : 'the place it told'}; ${moved ? 'he got only as far as the engine booked' : 'he stayed where he was'}${unmet ? ', and nobody there was met' : ''}. What it told there was not booked; everything else stands as the engine booked it.]`;
+}

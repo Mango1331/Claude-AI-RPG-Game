@@ -1,0 +1,63 @@
+// XP, Level-up loop (Core #3, #25, #28) and free Stat Point assignment.
+import { rankOf, rankIndex } from './derived.js';
+import { roundHalfUp } from './util.js';
+
+/** Final target XP = round(Level*base_per_level (12) * rank-gap * type) vs the player's Rank at encounter start (Core #25). */
+export function defeatXp(targetLevel, targetType, playerRank, content, strength = 1) {
+    const x = content.rules.xp;
+    const gap = rankIndex(rankOf(targetLevel, content), content) - rankIndex(playerRank, content);
+    const key = String(Math.max(-2, Math.min(3, gap)));
+    return roundHalfUp(targetLevel * x.base_per_level * x.rank_gap[key] * x.target_type[targetType || 'normal'] * strength) * (x.reward_multiplier ?? 1);
+}
+
+/**
+ * How much more a creature's defeat is worth than the standard of its Level and type, from its own numbers (live run
+ * 30.09.2026 22:41: three boars, one of them the big one, 12 XP each): its HP times its ATK over the standard's,
+ * valued at the rate the content prices the Elite type (Elite: HP ×1.75 and ATK ×1.15 for XP ×1.5). A creature with the
+ * standard numbers is worth its Level's XP exactly, whatever it is called; a weaker one no less.
+ */
+export function strengthOf(fixed, standard, content, reference = null) {
+    const power = (fixed.max_hp / standard.max_hp) * (fixed.atk / standard.atk);
+    const elite = content.monsters.elite;
+    const own = power > 1 ? 1 + ((power - 1) * (content.rules.xp.target_type.elite - 1)) / (elite.hp * elite.atk - 1) : 1;
+    // 4.3.0-c.6.6.5 (live 15.10.2026: the strong mudwyrm of the Armored Beast plan, 84 HP, ATK 14, DEF 6, gave 14 XP beside
+    // 12 for the 20-HP serpent mudwyrms): its numbers against an ordinary creature of the same Level and type (content
+    // rules.xp.strength), durability (HP and defenses) times attack, square-rooted and capped; never less than before
+    const x = content.rules.xp.strength;
+    if (!reference || !x) return own;
+    const tough = (p) => p.max_hp * (1 + (((p.def || 0) + (p.mdef || 0)) / 2) * x.defense_weight);
+    const body = Math.min(x.max, Math.sqrt((tough(fixed) * fixed.atk) / (tough(reference) * reference.atk)));
+    return Math.max(1, own, body);
+}
+
+/** Events for an XP award including the WHILE level-up loop with carryover. No resource refill. */
+export function awardXp(sheet, amount, content, reason, who = 'pc') {
+    const events = [];
+    let xp = sheet.xp + amount;
+    let level = sheet.level;
+    const cls = sheet.class ? content.classes.get(sheet.class) : null;
+    events.push({ t: 'xp.changed', d: { id: who, xp, amount, reason } });
+    while (xp >= level * content.rules.progression.xp_to_next_per_level) {
+        xp -= level * content.rules.progression.xp_to_next_per_level;
+        level += 1;
+        events.push({
+            t: 'level.up', d: {
+                id: who, level, xp_after: xp, free_points: content.rules.progression.free_points_per_level,
+                favored: content.rules.progression.favored_growth_per_level > 0 && cls ? cls.favored : [], rank: rankOf(level, content),
+            },
+        });
+    }
+    return events;
+}
+
+export function questXp(recLevel, questType, content) {
+    const x = content.rules.xp;
+    return roundHalfUp(recLevel * x.quest_base_per_level * (x.quest_type[questType] || x.quest_type.standard)) * (x.reward_multiplier ?? 1);
+}
+
+export function assignStat(sheet, stat, amount, content) {
+    if (!content.rules.stats.includes(stat)) return { errors: [`Unknown stat ${stat}.`] };
+    if (!Number.isInteger(amount) || amount <= 0) return { errors: ['Amount must be a positive whole number.'] };
+    if (amount > sheet.free_points) return { errors: [`Only ${sheet.free_points} free Stat Points available.`] };
+    return { events: [{ t: 'stat.assigned', d: { id: 'pc', stat, amount } }] };
+}

@@ -46,3 +46,7 @@ Der Adapter nutzt tatsächliches ST-Raw-Generating beziehungsweise gepufferte SS
 ## Erster natürlicher Vergleich – Vorbereitung
 
 [Statusbericht](NATUERLICHER_VERGLEICH_GM_B_2026-11-16.md) und [eingefrorenes Vergleichsprotokoll](natural/README.md). Aktuell ausschließlich Vorbereitung: **null natürliche Providerrequests**, separate ausdrückliche Nutzerfreigabe und tatsächliche Modell-/Tokenizerkonfiguration noch ausstehend. Der gemeinsame persistente Zähler begrenzt die spätere Serie auf 24 physische Requests; es gibt keine automatischen Transportretrys. Kein Start durch bloßes Importieren der Module.
+
+## Installierbare GM Alpha 1
+
+Der neue Integrationsbuild liegt vollständig in [`avereth-gm-alpha/`](../../avereth-gm-alpha/). [Installation](../../avereth-gm-alpha/INSTALLATION_DE.md), [Grenzen](../../avereth-gm-alpha/LIMITATIONS.md), [Browserabnahme](alpha/ABNAHME_2026-11-16.md). Der Nutzer benötigt keine Node-/Playwright-Brücke mehr; die bestehende ST-Verbindung bleibt erhalten. Neue Testchats, keine Migration. Mechanischer Kern und Content `.200` sind bytegleich kopiert. Buildquellen und gezielte Prüfungen unter `alpha/`; ursprüngliche Prototypen bleiben erhalten. Keine natürliche Modellqualität behauptet.

@@ -1,0 +1,25 @@
+{
+  "base": "81195e187fac130c17cd904481eff36eaf8fdeea",
+  "prototype_tests": {
+    "passed": 21,
+    "failed": 0,
+    "duration_ms": 10343.33888
+  },
+  "engine_tests": {
+    "passed": 42,
+    "failed": 0,
+    "duration_ms": 1344.087709
+  },
+  "acceptance": {
+    "complete": false,
+    "G3": "unsupported existing gameplay resolver",
+    "semantic_failures": [
+      "omitted promise",
+      "contradictory arrival",
+      "invented PC consent"
+    ],
+    "world_continuation": "reuse validated candidate only"
+  },
+  "provider_calls": 0,
+  "product_changes": false
+}

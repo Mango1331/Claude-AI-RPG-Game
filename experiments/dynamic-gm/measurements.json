@@ -1,0 +1,87 @@
+{
+  "provenance": "Offline scripted answers; G2 original .200 input/plan/prose with synthetic successful world data. G1/G4 synthetic on recorded .191 state. No natural quality or provider tokens measured.",
+  "cases": [
+    {
+      "id": "G1",
+      "error": null,
+      "calls": 1,
+      "published": 1,
+      "worldRevision": 1,
+      "peak": 4,
+      "requests": [
+        {
+          "phase": "gm:0",
+          "promptChars": 13463,
+          "wireBytes": 15205,
+          "promptHash": "8f0a1f162520cbb9d28d9508d9ff9c5ee7729e25fcb1b90a9c9a0903f28ccbab"
+        }
+      ]
+    },
+    {
+      "id": "G2",
+      "error": null,
+      "calls": 3,
+      "published": 1,
+      "worldRevision": 1,
+      "peak": 4,
+      "requests": [
+        {
+          "phase": "gm:0",
+          "promptChars": 4830,
+          "wireBytes": 5542,
+          "promptHash": "4b69c6f38449ecb12071c81e8997f8aece340bb7f8530a969c7084712d9154fd"
+        },
+        {
+          "phase": "gm:1",
+          "promptChars": 6084,
+          "wireBytes": 6962,
+          "promptHash": "6be7d0e75d6a4bccb340027c440eee0dfdd167ad27693b18413f468a2cb1248a"
+        },
+        {
+          "phase": "gm:2",
+          "promptChars": 7468,
+          "wireBytes": 8574,
+          "promptHash": "6989a1be6fda59976d3cbeefd1dfdca7b33a7bbaa0b2d21913995fdf1440ded5"
+        }
+      ]
+    },
+    {
+      "id": "G3",
+      "error": "preparation incomplete",
+      "calls": 1,
+      "published": 0,
+      "worldRevision": 0,
+      "peak": 4,
+      "requests": [
+        {
+          "phase": "gm:0",
+          "promptChars": 13484,
+          "wireBytes": 15226,
+          "promptHash": "68671c1c4d5f69d313e1930f1636c10599b97696eeac7c8b44db04c55435d539"
+        }
+      ]
+    },
+    {
+      "id": "G4",
+      "error": null,
+      "calls": 2,
+      "published": 1,
+      "worldRevision": 1,
+      "peak": 4,
+      "requests": [
+        {
+          "phase": "gm:0",
+          "promptChars": 13463,
+          "wireBytes": 15205,
+          "promptHash": "8f0a1f162520cbb9d28d9508d9ff9c5ee7729e25fcb1b90a9c9a0903f28ccbab"
+        },
+        {
+          "phase": "gm:1",
+          "promptChars": 15290,
+          "wireBytes": 17292,
+          "promptHash": "498aa328c02b91b7eb6cd986f24e440fc1ef7c495ab57c3e6a02befdd67d2725"
+        }
+      ]
+    }
+  ]
+}

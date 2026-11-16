@@ -2,7 +2,7 @@
 
 **Stand 16.11.2026.** Branch `experiment/dynamic-gm-model`. Startcommit [`80d5fcb`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/80d5fcb8cf799061b7f8ab1842f1258ce9d94f1c); darin Produktbasis [`.200` / `0cd1480`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b) und der vorhandene **isolierte B/C1-Experimentcode** `experiments/architecture201/`.
 
-**Keine fertige neue dynamische GM-Implementierung.** Dieser Branch ist bewusst der einzige neue Arbeits-/Experimentbranch; `main` enthält die zentrale Dokumentation, der lange `claude/c-planner-prototype-2026-10-02-gpt-c666` bleibt unveränderter Produkt-/Rückfallstand.
+**Isolierter dynamischer GM-Durchstich vorhanden; keine vollständige Produktimplementierung.** Dieser Branch ist bewusst der einzige neue Arbeits-/Experimentbranch; `main` enthält die zentrale Dokumentation, der lange `claude/c-planner-prototype-2026-10-02-gpt-c666` bleibt unveränderter Produkt-/Rückfallstand.
 
 ## Aktives Ziel
 
@@ -35,3 +35,22 @@ Zunächst nur **offline mit gekennzeichneten Antwortfixtures und simulierten Pro
 Die gesamte bisherige Gameplay-Roadmap (NPC E4/E5, PULSE D, K1, Stealth S2, Balance, Shop/Preis/Quest/QoL) ist **ON HOLD**, bis über die neue Architektur entschieden und eine natürliche Spielqualitätsprobe bewertet wurde. Keine parallelen Gameplaypatches oder Änderungen am Produktbranch.
 
 Keine Merges in Produkt oder `main` ohne Auftrag. Dokumentation in `main`, experiment-spezifische technische README/Tests hier. Frühere alte Arbeitsbranches dürfen nach gesicherter Archivierung gelöscht werden; die [aktuelle Löschklassifikation](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md) schützt vier nicht integrierte Sonderstände, darunter die alten GM-Tools-Entwürfe.
+## Ausführbarer Durchstich (dieser Auftrag)
+
+Ausgangscommit `81195e187fac130c17cd904481eff36eaf8fdeea`. Der oben beschriebene Plan ist jetzt **teilweise ausführbar**, aber noch nicht fachlich vollständig abgenommen. Maßgeblicher Ergebnisbericht: [PROTOTYP_ERGEBNIS_2026-11-16.md](PROTOTYP_ERGEBNIS_2026-11-16.md).
+
+Vom Repositoryroot, Node 24:
+
+```sh
+node --test experiments/dynamic-gm/test.mjs
+node experiments/dynamic-gm/measure.mjs
+```
+
+- `runtime.mjs`: providerneutraler GM-Dialog mit `finish`, `resolve`, `world`, `recall`, `describe`. Höchstens sechs Modellphasen, bestehender Scheduler begrenzt Transportversuche zusätzlich. Keine Netzwerkimplementierung.
+- Scheduler, Journal, Publikationsadapter und Fachadapter werden aus `architecture201` importiert, nicht kopiert oder verändert.
+- `resolve` übergibt eine vollständige Spieleraktionsliste an vorhandene Planvalidierung/Engine. Der Adapter liefert diese lokal an die bestehende Runtime; **kein Planner-Modellrequest**. Zusätzliche Board-/Forgegeneratoren sind in diesem Durchstich nicht zugelassen.
+- `finish` kann gewöhnliche Narration und Memory direkt validieren und speichern. Geschützte Weltwirkungen verlangen `world`; dessen Ergebnis wird dauerhaft gespeichert. Die folgende Bestätigung `finish/use_result` übernimmt exakt diesen Kandidaten, ohne Neubuchung.
+- `recall` liefert die gespeicherte Perspektive einer Figur, `describe` ausgewählte bestehende Schemas. Initial werden aktuelle NPC-Erinnerungen bereitgestellt, kein vollständiger alter Dialog. Der Prototyp verwendet noch keine umfassend optimierte Kontextauswahl.
+- Fehler bleiben im Journal als `lastError`; Wiederaufnahme benutzt dieselbe Requestidentität und gespeicherte Antworten. Stop/Chatwechsel werden über den vorhandenen Hosttoken abgesichert.
+
+**Wesentliche Grenzen:** G3 hat keinen vorhandenen passenden Ablenkungs-/Diebstahlresolver und wird blockiert. Ein `world`-Ergebnis erlaubt noch keine weitere freie Weltänderung in derselben Fortsetzung; `use_result` ist eine Abschlussbestätigung, keine neue Renderphase. Die freie kreative Phase liegt davor beziehungsweise nach `resolve`. Die vorhandenen semantischen Fehlerfälle bleiben bestehen. Keine Freigabe für natürliche Qualität oder Produktintegration.

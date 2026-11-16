@@ -1,21 +1,23 @@
 # Avereth Engine – Arbeitsweise und Freigaben
 
-**Stand 15.11.2026.** Dauerhafte Prozessregeln, **keine zweite Status-/Patchchronik**. [Startseite](README.md) · [Aktueller Stand 03](03_AKTUELLER_PROJEKTSTAND.md) · [Design-Kanon 02](02_DESIGN_KANON.md).
+**Stand 16.11.2026.** Dauerhafte Prozessregeln, **keine zweite Status-/Patchchronik**. [Startseite](README.md) · [Aktueller Stand 03](03_AKTUELLER_PROJEKTSTAND.md) · [Design-Kanon 02](02_DESIGN_KANON.md).
 
 ## Zuständigkeiten
 
 - **Nutzer:** entscheidet Spielgefühl, Kanon, Prioritäten und Freigaben; führt persönliche SillyTavern-Tests und ggf. lokale LLM-Batches durch, liefert Originaldaten und ungefiltertes Spielerfeedback.
 - **ChatGPT/Codex:** unabhängige Code-/Design-/Run-Gegenprüfungen, Designentscheidungsvorlagen, präzise Aufträge; implementiert nur, wenn dies ausdrücklich verlangt ist. Eigene Testzahlen nur, wenn selbst ausgeführt; sonst als Implementiererangabe kennzeichnen. Startauftrag für einen neuen Chat: [README](README.md#kopierbarer-startauftrag-für-einen-neuen-gpt-chat).
 - **Claude/Sol/Opus:** beauftragte Implementierung oder unabhängige technische Analysen, Originalfall-Reproduktionen (lokaler Replay-Nachlauf aus aufgezeichneten Modellantworten, `tools/replay/build_corpus.mjs`). Frühere Modellaussagen sind keine automatisch richtigen Entscheidungen.
-- **Engine und LLM:** Planner interpretiert, JS-Engine autorisiert/bucht, Narrator erzählt, Extractor/Firewall übernimmt legitime Weltfolgen. Spielspaß, Spielerhoheit und persistente Konsistenz vor Vollsimulation.
+- **Engine und LLM:** **Aktuelle Produktarchitektur `.200`:** Planner interpretiert, JS-Engine autorisiert/bucht, Narrator erzählt, Extractor/Firewall übernimmt legitime Weltfolgen. **Zielarchitektur im Experiment:** kreativer dynamischer GM mit Engine-Werkzeugen und direkt verfasstem Weltgedächtnis. Mechanische Autorität und zuverlässige Speicherung bleiben bei der Engine; die Modellarchitektur ist **nicht** bereits umgestellt.
+
+**Roadmap ON HOLD (Beschluss 16.11.2026):** Produktbranch auf `.200` einfrieren. Gameplay-Roadmap auf [07](07_ROADMAP_NACH_10B_ENTWURF.md) pausieren; keine Patches zu K1, E4/E5, PULSE D, Balance, Shops/Stealth oder ähnlichen Featurefamilien während des Prototyps. Nur ausdrücklich beauftragte isolierte dynamische GM-Experimente auf `experiment/dynamic-gm-model`. [Aktueller Stand](03_AKTUELLER_PROJEKTSTAND.md) · [Astra-Ultra-GM-Richtung](recherche/ARCHITEKTUR_NEUBEWERTUNG_LLM_SPIELLEITER_ENGINE_2026-11-16.md).
 
 **Ein Fachplan, Review oder Dokumentationscommit ist keine Produktfreigabe.** Bereits beschlossener Kanon bleibt maßgeblich, ist aber bei ausdrücklicher Nutzerentscheidung bewusst änderbar. Keine weiteren P2-Sonderregeln ohne konkreten Integritätsnachweis; keine neuen Mechaniken/Balanceänderungen als Nebenprojekt. Fachlich zusammenhängende Patches bündeln, keine künstlichen Mikropatch-Serien.
 
 ## Einstieg eines neuen Chats
 
-1. Auf `main` **README, 01 und 03** lesen. Die tatsächlichen Remote-HEADs von `main` (Dokumentation) und `claude/c-planner-prototype-2026-10-02-gpt-c666` (Produkt) ermitteln.
+1. Auf `main` **README, 01 und 03** lesen. Die tatsächlichen Remote-HEADs von `main` (Dokumentation), `claude/c-planner-prototype-2026-10-02-gpt-c666` (Produkt `.200`) und `experiment/dynamic-gm-model` (einziger aktiver Modell-/Prototypbranch) ermitteln.
 2. Aufgabe eingrenzen: **02** bei verbindlichen Spielregeln, **07** bei noch geplanten Features, **06** als Fachquellenindex. Originalarchive und technische Patchnotes nur zum konkreten Fall lesen.
-3. Codebehauptungen am **aktuellen Produkt-HEAD** kontrollieren, nicht an alten Plan-Zeilennummern. Nach Kontextwechsel den letzten Produktdiff prüfen; identische Quellen nicht unnötig neu auslesen.
+3. Codebehauptungen am **aktuellen Produkt-HEAD** oder bei Experimenten gezielt am Modellbranch kontrollieren, nicht an alten Plan-Zeilennummern. Nach Kontextwechsel den letzten Produktdiff prüfen; identische Quellen nicht unnötig neu auslesen.
 4. Dokumente klar als **aktuell / geplant / historischer Befund / nicht freigegeben** markieren. Ein altes Modellprotokoll ersetzt keinen neuen natürlichen Run.
 
 ## Arbeits- und Testfolge
@@ -38,10 +40,11 @@
 | **04** | Neue Ideen ohne beschlossene Roadmap-Priorität |
 | **06** | Links zu Fachplänen, unabhängigen Architektur-/NPC-/PULSE-Prüfungen und Produktnachweisen |
 | **Pro-Run-Ordner** | Originalreview, Quellenmanifest, Gameplayfeedback, gezielte Folgeprüfungen |
-| **Produktbranch / `avereth-engine/docs`** | Tatsächlicher Codepatch, technische Patchnote, Tests und Kompatibilitätsaussagen |
+| **Produktbranch / `avereth-engine/docs`** | Bestätigter Code-/Buildstand `.200`, während Roadmap-Pause unverändert |
+| **`experiment/dynamic-gm-model`** | Isolierte dynamische-GM-Architekturprototypen, technische Versuche und Gegenfälle; keine Produktfreigabe |
 
 Bei einer reinen Dokumentationspflege **keine Node-/ST-Tests vortäuschen oder als notwendig erklären**: Inhaltsvergleich, Diff-, Link-, Referenz- und Git-HEAD-Prüfung reichen. Originalreviews, Historie und spezifische Fachpläne nicht blind kürzen; in Übersichten alte Detailketten nur verlinken. Bei Änderungen mindestens Dateiliste, Art der Änderung, Commit, neue/alte HEADs und Grenzen berichten. Keine Tokens/Schlüssel/Zugangsdaten in Chat, Repo oder Originalarchive aufnehmen.
 
 ## Historie und Quellen
 
-[Historischer Branchvermerk 05](05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md) · [10B-Fachindex 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Original-Runindex](testrun_10b/README.md) · [historische 01-Vorfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/ec0969b816249211bc71b3c53b10eb1faf11716a/01_ARBEITSWEISE_CHATGPT_CLAUDE.md).
+[Aktuelle Branch-Aufräumprüfung 05](05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md) · [10B-Fachindex 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Original-Runindex](testrun_10b/README.md) · [historische 01-Vorfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/ec0969b816249211bc71b3c53b10eb1faf11716a/01_ARBEITSWEISE_CHATGPT_CLAUDE.md).

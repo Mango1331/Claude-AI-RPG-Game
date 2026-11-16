@@ -30,3 +30,15 @@ Scheduler, atomarer Journal-Save, vier Kapazitätseinheiten, Antwortbelege und P
 `runtime.mjs`: GM-Koordinator. `contract.mjs`: Auslassungsschutz, typisierte Sprechakte und Memoryfortsetzung. `publication.mjs`: Chatbindung. Tests: ursprüngliche G1–G4 plus Sicherheits-/Fortsetzungsfälle. [Ergebnisbericht](PROTOTYP_ERGEBNIS_2026-11-16.md), [Vergleich](comparison.json), [Verifikation](verification.json).
 
 **Technisch geeignet für einen isolierten echten ST-Hostdurchstich mit geskriptetem Mockprovider. Keine Freigabe für natürliches Spiel oder Produktintegration.** G3 Ablenkung/Diebstahl bleibt absichtlich unsupported. Die drei ursprünglichen semantischen Fehler und ein freier Widerspruch in einer Fortsetzung sind weiterhin nachgewiesen. Tests namens `COUNTEREXAMPLE` bestätigen Fehlerexistenz, keinen erfolgreichen Schutz.
+
+## Echter ST1.19-Hostdurchstich
+
+[Browserbericht](ST_HOSTDURCHSTICH_2026-11-16.md). Neue externe Testbrücke `st-host.mjs`, Runner `st-browser.mjs`, Starthelfer `st-launch.mjs`; vorhandener GM-Executor und Fachregeln bleiben unverändert. Getrennte Datenwurzel `/workspace/avereth-setup/dynamic-host/data`, lokaler Mockprovider, Ports 8137/5138. Keine persönliche Installation.
+
+```sh
+node experiments/dynamic-gm/st-launch.mjs
+# In einem zweiten Prozess:
+node experiments/dynamic-gm/st-browser.mjs
+```
+
+Der Adapter nutzt tatsächliches ST-Raw-Generating beziehungsweise gepufferte SSE über STs Backend, explizite Save-/Get-Zieltupel, wirkliche Browseranzeige und Lifecycleevents. Die Node-/Playwright-Brücke ist keine fertige installierbare Extension. Technische Browserergebnisse sind keine natürliche Qualitätsabnahme. Die bekannten semantischen Gegenfälle werden im Browser ausdrücklich als Fehlerdemonstrationen geführt.

@@ -1,0 +1,22 @@
+PASS H1 raw ST generation + targeted save/readback + real DOM + reload
+PASS H2 forest via ST buffered SSE two physical calls
+PASS H2 not reached remains original scene
+PASS H3 real tool continuation appends promise and reuses mechanics
+PASS H4 recovery before_commit
+PASS H4 recovery after_commit
+PASS H4 recovery after_host_save
+PASS H4 recovery after_display
+PASS H4 ST stop event at precommit blocks state, same chat reload resumes
+PASS H4 delayed explicit save switches chat without cross-write
+PASS save failure silent
+PASS save failure http
+PASS malformed structured answer remains unpublished
+PASS provider 429 counted, retains unknown capacity until explicit completion
+PASS alternative regenerate/swipe visibly refused
+PASS late browser response after local stop cannot commit; capacity needs remote evidence
+PASS H1 recalled promise after reload without original dialogue in prompt
+PASS semantic counterexamples remain visible in actual ST DOM
+PASS semantic false arrival still passes world validator in browser
+PASS semantic continuation contradiction stays observable, mechanics retained
+PASS timeout unknown remote retains four units until delayed browser request ends
+{"pass":21,"total":21,"pageErrors":[]}

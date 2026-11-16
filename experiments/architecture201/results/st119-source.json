@@ -1,0 +1,13 @@
+{
+  "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9",
+  "scriptSHA256": "955c603d0bad84bac5a716f0818d85c2543e44d4c43878e0d63ef1e55ca91855",
+  "checks": {
+    "streamingCreatesMessageBeforeReceived": true,
+    "streamingRendersProgress": true,
+    "rawDoesNotAppendChat": true,
+    "explicitOffscreenSave": true,
+    "interceptorCanAbort": true,
+    "displayRequiresChatInsertion": true
+  },
+  "scope": "source-contract verification, NOT browser integration or provider validation"
+}

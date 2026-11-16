@@ -1,0 +1,1016 @@
+{
+  "product": "4.3.0-c.6.6.200",
+  "base": "0cd14806cd0c7fe2ab0d54b8463c486ee572714b",
+  "measurement": "complete messages actually passed to the offline scheduler; UTF-16 string length and serialized UTF-8 bytes; NOT provider tokens or full production ST injections",
+  "rows": [
+    {
+      "case": "forest200",
+      "variant": "B",
+      "origin": "Personal .200 #5/6: original plan/prose; NO successful original extraction; synthetic arrival control",
+      "C1response": null,
+      "calls": 3,
+      "prompts": [
+        {
+          "phase": "plan",
+          "utf16Characters": 48294,
+          "messagesJsonUtf8Bytes": 50193
+        },
+        {
+          "phase": "narrator",
+          "utf16Characters": 49509,
+          "messagesJsonUtf8Bytes": 50436
+        },
+        {
+          "phase": "extract",
+          "utf16Characters": 57646,
+          "messagesJsonUtf8Bytes": 58559
+        }
+      ],
+      "summedPromptCharacters": 155449,
+      "peakCapacity": 4,
+      "phases": [
+        "input",
+        "prepared",
+        "drafted",
+        "validated",
+        "committed"
+      ],
+      "final": "published",
+      "worldRevision": 1,
+      "publishedMessages": 1,
+      "semanticStateHash": "54647d8313b1332697697622530bf02a5c81eeed51b6560358b6836739051ff5",
+      "playerEvents": [
+        "turn.begun",
+        "cmd.interpreted",
+        "cmd.resolved",
+        "pulse.rolled",
+        "outcome.recorded"
+      ],
+      "worldEvents": [
+        "place.created",
+        "scene.moved",
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ]
+    },
+    {
+      "case": "forest200",
+      "variant": "C1",
+      "origin": "Personal .200 #5/6: original plan/prose; NO successful original extraction; synthetic arrival control",
+      "C1response": "derived from original/synthetic B prose and world answer; NOT naturally generated",
+      "calls": 2,
+      "prompts": [
+        {
+          "phase": "plan",
+          "utf16Characters": 48294,
+          "messagesJsonUtf8Bytes": 50193
+        },
+        {
+          "phase": "joint",
+          "utf16Characters": 106220,
+          "messagesJsonUtf8Bytes": 108080
+        }
+      ],
+      "summedPromptCharacters": 154514,
+      "peakCapacity": 4,
+      "phases": [
+        "input",
+        "prepared",
+        "drafted",
+        "validated",
+        "committed"
+      ],
+      "final": "published",
+      "worldRevision": 1,
+      "publishedMessages": 1,
+      "semanticStateHash": "54647d8313b1332697697622530bf02a5c81eeed51b6560358b6836739051ff5",
+      "playerEvents": [
+        "turn.begun",
+        "cmd.interpreted",
+        "cmd.resolved",
+        "pulse.rolled",
+        "outcome.recorded"
+      ],
+      "worldEvents": [
+        "place.created",
+        "scene.moved",
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "bindingSpans": [
+        {
+          "target": "scene",
+          "start": 0,
+          "end": 224
+        },
+        {
+          "target": "expected:1",
+          "start": 0,
+          "end": 224
+        },
+        {
+          "target": "delta:0",
+          "start": 0,
+          "end": 224
+        }
+      ]
+    },
+    {
+      "case": "known_move",
+      "variant": "B",
+      "origin": "Synthetic exact known GO on original .200 pre-state",
+      "C1response": null,
+      "calls": 2,
+      "prompts": [
+        {
+          "phase": "narrator",
+          "utf16Characters": 49448,
+          "messagesJsonUtf8Bytes": 50375
+        },
+        {
+          "phase": "extract",
+          "utf16Characters": 56206,
+          "messagesJsonUtf8Bytes": 57107
+        }
+      ],
+      "summedPromptCharacters": 105654,
+      "peakCapacity": 4,
+      "phases": [
+        "input",
+        "prepared",
+        "drafted",
+        "validated",
+        "committed"
+      ],
+      "final": "published",
+      "worldRevision": 1,
+      "publishedMessages": 1,
+      "semanticStateHash": "121edb8dacfe47feef637a6641517e763df3a818e6bddd84782be976c6c04374",
+      "playerEvents": [
+        "turn.begun",
+        "cmd.interpreted",
+        "cmd.resolved",
+        "pulse.rolled",
+        "outcome.recorded"
+      ],
+      "worldEvents": [
+        "scene.moved",
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ]
+    },
+    {
+      "case": "known_move",
+      "variant": "C1",
+      "origin": "Synthetic exact known GO on original .200 pre-state",
+      "C1response": "derived from original/synthetic B prose and world answer; NOT naturally generated",
+      "calls": 1,
+      "prompts": [
+        {
+          "phase": "joint",
+          "utf16Characters": 106098,
+          "messagesJsonUtf8Bytes": 107958
+        }
+      ],
+      "summedPromptCharacters": 106098,
+      "peakCapacity": 4,
+      "phases": [
+        "input",
+        "prepared",
+        "drafted",
+        "validated",
+        "committed"
+      ],
+      "final": "published",
+      "worldRevision": 1,
+      "publishedMessages": 1,
+      "semanticStateHash": "121edb8dacfe47feef637a6641517e763df3a818e6bddd84782be976c6c04374",
+      "playerEvents": [
+        "turn.begun",
+        "cmd.interpreted",
+        "cmd.resolved",
+        "pulse.rolled",
+        "outcome.recorded"
+      ],
+      "worldEvents": [
+        "scene.moved",
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "bindingSpans": [
+        {
+          "target": "scene",
+          "start": 0,
+          "end": 29
+        },
+        {
+          "target": "expected:1",
+          "start": 0,
+          "end": 29
+        },
+        {
+          "target": "delta:0",
+          "start": 0,
+          "end": 29
+        }
+      ]
+    },
+    {
+      "case": "npc_return",
+      "variant": "B",
+      "origin": "w191 #89/90: recorded plan/prose; last recorded extractor answer selected (earlier repairs excluded)",
+      "C1response": null,
+      "calls": 3,
+      "prompts": [
+        {
+          "phase": "plan",
+          "utf16Characters": 54221,
+          "messagesJsonUtf8Bytes": 56228
+        },
+        {
+          "phase": "narrator",
+          "utf16Characters": 51599,
+          "messagesJsonUtf8Bytes": 52532
+        },
+        {
+          "phase": "extract",
+          "utf16Characters": 64965,
+          "messagesJsonUtf8Bytes": 66018
+        }
+      ],
+      "summedPromptCharacters": 170785,
+      "peakCapacity": 4,
+      "phases": [
+        "input",
+        "prepared",
+        "drafted",
+        "validated",
+        "committed"
+      ],
+      "final": "published",
+      "worldRevision": 1,
+      "publishedMessages": 1,
+      "semanticStateHash": "aadcd021f2f1e98a9eb33359bdf77d727798067cb1358644654f63aa2c27a8ae",
+      "playerEvents": [
+        "turn.begun",
+        "cmd.interpreted",
+        "cmd.resolved",
+        "pulse.rolled",
+        "outcome.recorded"
+      ],
+      "worldEvents": [
+        "time.advanced",
+        "scene.moved",
+        "scene.entered",
+        "relation.set",
+        "memory.recorded",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ]
+    },
+    {
+      "case": "npc_return",
+      "variant": "C1",
+      "origin": "w191 #89/90: recorded plan/prose; last recorded extractor answer selected (earlier repairs excluded)",
+      "C1response": "derived from original/synthetic B prose and world answer; NOT naturally generated",
+      "calls": 2,
+      "prompts": [
+        {
+          "phase": "plan",
+          "utf16Characters": 54221,
+          "messagesJsonUtf8Bytes": 56228
+        },
+        {
+          "phase": "joint",
+          "utf16Characters": 115745,
+          "messagesJsonUtf8Bytes": 117741
+        }
+      ],
+      "summedPromptCharacters": 169966,
+      "peakCapacity": 4,
+      "phases": [
+        "input",
+        "prepared",
+        "drafted",
+        "validated",
+        "committed"
+      ],
+      "final": "published",
+      "worldRevision": 1,
+      "publishedMessages": 1,
+      "semanticStateHash": "aadcd021f2f1e98a9eb33359bdf77d727798067cb1358644654f63aa2c27a8ae",
+      "playerEvents": [
+        "turn.begun",
+        "cmd.interpreted",
+        "cmd.resolved",
+        "pulse.rolled",
+        "outcome.recorded"
+      ],
+      "worldEvents": [
+        "time.advanced",
+        "scene.moved",
+        "scene.entered",
+        "relation.set",
+        "memory.recorded",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "bindingSpans": [
+        {
+          "target": "scene",
+          "start": 261,
+          "end": 533
+        },
+        {
+          "target": "expected:1",
+          "start": 535,
+          "end": 928
+        },
+        {
+          "target": "delta:0",
+          "start": 0,
+          "end": 259
+        },
+        {
+          "target": "delta:1",
+          "start": 261,
+          "end": 533
+        },
+        {
+          "target": "delta:2",
+          "start": 535,
+          "end": 928
+        },
+        {
+          "target": "delta:3",
+          "start": 930,
+          "end": 1217
+        },
+        {
+          "target": "delta:4",
+          "start": 930,
+          "end": 1217
+        }
+      ]
+    },
+    {
+      "case": "npc_personality",
+      "variant": "B",
+      "origin": "w191 #91/92: recorded plan/prose; last recorded extractor answer selected (earlier repairs excluded)",
+      "C1response": null,
+      "calls": 3,
+      "prompts": [
+        {
+          "phase": "plan",
+          "utf16Characters": 54378,
+          "messagesJsonUtf8Bytes": 56396
+        },
+        {
+          "phase": "narrator",
+          "utf16Characters": 52493,
+          "messagesJsonUtf8Bytes": 53440
+        },
+        {
+          "phase": "extract",
+          "utf16Characters": 63841,
+          "messagesJsonUtf8Bytes": 64891
+        }
+      ],
+      "summedPromptCharacters": 170712,
+      "peakCapacity": 4,
+      "phases": [
+        "input",
+        "prepared",
+        "drafted",
+        "validated",
+        "committed"
+      ],
+      "final": "published",
+      "worldRevision": 1,
+      "publishedMessages": 1,
+      "semanticStateHash": "913b0a90f2495489f0369e845cbb4feaa875b49a1b3edf7dbb8fe8a7c07e1e2b",
+      "playerEvents": [
+        "turn.begun",
+        "cmd.interpreted",
+        "pulse.rolled",
+        "outcome.recorded"
+      ],
+      "worldEvents": [
+        "scene.entered",
+        "entity.updated",
+        "fact.asserted",
+        "memory.recorded",
+        "fact.ended",
+        "fact.asserted",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ]
+    },
+    {
+      "case": "npc_personality",
+      "variant": "C1",
+      "origin": "w191 #91/92: recorded plan/prose; last recorded extractor answer selected (earlier repairs excluded)",
+      "C1response": "derived from original/synthetic B prose and world answer; NOT naturally generated",
+      "calls": 2,
+      "prompts": [
+        {
+          "phase": "plan",
+          "utf16Characters": 54378,
+          "messagesJsonUtf8Bytes": 56396
+        },
+        {
+          "phase": "joint",
+          "utf16Characters": 115067,
+          "messagesJsonUtf8Bytes": 117058
+        }
+      ],
+      "summedPromptCharacters": 169445,
+      "peakCapacity": 4,
+      "phases": [
+        "input",
+        "prepared",
+        "drafted",
+        "validated",
+        "committed"
+      ],
+      "final": "published",
+      "worldRevision": 1,
+      "publishedMessages": 1,
+      "semanticStateHash": "913b0a90f2495489f0369e845cbb4feaa875b49a1b3edf7dbb8fe8a7c07e1e2b",
+      "playerEvents": [
+        "turn.begun",
+        "cmd.interpreted",
+        "pulse.rolled",
+        "outcome.recorded"
+      ],
+      "worldEvents": [
+        "scene.entered",
+        "entity.updated",
+        "fact.asserted",
+        "memory.recorded",
+        "fact.ended",
+        "fact.asserted",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "bindingSpans": [
+        {
+          "target": "scene",
+          "start": 298,
+          "end": 673
+        },
+        {
+          "target": "delta:0",
+          "start": 675,
+          "end": 952
+        },
+        {
+          "target": "delta:1",
+          "start": 298,
+          "end": 673
+        },
+        {
+          "target": "delta:2",
+          "start": 1596,
+          "end": 1740
+        },
+        {
+          "target": "delta:3",
+          "start": 675,
+          "end": 952
+        }
+      ]
+    },
+    {
+      "case": "npc_promise",
+      "variant": "B",
+      "origin": "w191 state after #92 with recorded voice/history; synthetic later promise",
+      "C1response": null,
+      "calls": 3,
+      "prompts": [
+        {
+          "phase": "plan",
+          "utf16Characters": 54524,
+          "messagesJsonUtf8Bytes": 56543
+        },
+        {
+          "phase": "narrator",
+          "utf16Characters": 53490,
+          "messagesJsonUtf8Bytes": 54475
+        },
+        {
+          "phase": "extract",
+          "utf16Characters": 61907,
+          "messagesJsonUtf8Bytes": 62916
+        }
+      ],
+      "summedPromptCharacters": 169921,
+      "peakCapacity": 4,
+      "phases": [
+        "input",
+        "prepared",
+        "drafted",
+        "validated",
+        "committed"
+      ],
+      "final": "published",
+      "worldRevision": 1,
+      "publishedMessages": 1,
+      "semanticStateHash": "f671f4c88946e19b329a16ec6192629a8f0d55fabad3c0475c429c3cabde125c",
+      "playerEvents": [
+        "turn.begun",
+        "cmd.interpreted",
+        "pulse.rolled",
+        "outcome.recorded"
+      ],
+      "worldEvents": [
+        "thread.set",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ]
+    },
+    {
+      "case": "npc_promise",
+      "variant": "C1",
+      "origin": "w191 state after #92 with recorded voice/history; synthetic later promise",
+      "C1response": "derived from original/synthetic B prose and world answer; NOT naturally generated",
+      "calls": 2,
+      "prompts": [
+        {
+          "phase": "plan",
+          "utf16Characters": 54524,
+          "messagesJsonUtf8Bytes": 56543
+        },
+        {
+          "phase": "joint",
+          "utf16Characters": 115786,
+          "messagesJsonUtf8Bytes": 117810
+        }
+      ],
+      "summedPromptCharacters": 170310,
+      "peakCapacity": 4,
+      "phases": [
+        "input",
+        "prepared",
+        "drafted",
+        "validated",
+        "committed"
+      ],
+      "final": "published",
+      "worldRevision": 1,
+      "publishedMessages": 1,
+      "semanticStateHash": "f671f4c88946e19b329a16ec6192629a8f0d55fabad3c0475c429c3cabde125c",
+      "playerEvents": [
+        "turn.begun",
+        "cmd.interpreted",
+        "pulse.rolled",
+        "outcome.recorded"
+      ],
+      "worldEvents": [
+        "thread.set",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "bindingSpans": [
+        {
+          "target": "scene",
+          "start": 0,
+          "end": 84
+        },
+        {
+          "target": "delta:0",
+          "start": 0,
+          "end": 84
+        }
+      ]
+    },
+    {
+      "case": "pulse_information",
+      "variant": "B",
+      "origin": "w191 #41/42: recorded plan/prose; last recorded extractor answer selected (earlier repairs excluded)",
+      "C1response": null,
+      "calls": 3,
+      "prompts": [
+        {
+          "phase": "plan",
+          "utf16Characters": 52141,
+          "messagesJsonUtf8Bytes": 54102
+        },
+        {
+          "phase": "narrator",
+          "utf16Characters": 55021,
+          "messagesJsonUtf8Bytes": 55997
+        },
+        {
+          "phase": "extract",
+          "utf16Characters": 65727,
+          "messagesJsonUtf8Bytes": 66754
+        }
+      ],
+      "summedPromptCharacters": 172889,
+      "peakCapacity": 4,
+      "phases": [
+        "input",
+        "prepared",
+        "drafted",
+        "validated",
+        "committed"
+      ],
+      "final": "published",
+      "worldRevision": 1,
+      "publishedMessages": 1,
+      "semanticStateHash": "605d897c1dc396012ffe02ab3a9677c66ce21c079f857b272c492be9c03a518f",
+      "playerEvents": [
+        "turn.begun",
+        "cmd.interpreted",
+        "intent.set",
+        "intent.set",
+        "intent.set",
+        "cmd.resolved",
+        "cmd.resolved",
+        "cmd.resolved",
+        "pulse.rolled",
+        "outcome.recorded"
+      ],
+      "worldEvents": [
+        "time.advanced",
+        "entity.updated",
+        "entity.updated",
+        "entity.updated",
+        "scene.moved",
+        "thread.set",
+        "cmd.expired",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ]
+    },
+    {
+      "case": "pulse_information",
+      "variant": "C1",
+      "origin": "w191 #41/42: recorded plan/prose; last recorded extractor answer selected (earlier repairs excluded)",
+      "C1response": "derived from original/synthetic B prose and world answer; NOT naturally generated",
+      "calls": 2,
+      "prompts": [
+        {
+          "phase": "plan",
+          "utf16Characters": 52141,
+          "messagesJsonUtf8Bytes": 54102
+        },
+        {
+          "phase": "joint",
+          "utf16Characters": 119547,
+          "messagesJsonUtf8Bytes": 121566
+        }
+      ],
+      "summedPromptCharacters": 171688,
+      "peakCapacity": 4,
+      "phases": [
+        "input",
+        "prepared",
+        "drafted",
+        "validated",
+        "committed"
+      ],
+      "final": "published",
+      "worldRevision": 1,
+      "publishedMessages": 1,
+      "semanticStateHash": "605d897c1dc396012ffe02ab3a9677c66ce21c079f857b272c492be9c03a518f",
+      "playerEvents": [
+        "turn.begun",
+        "cmd.interpreted",
+        "intent.set",
+        "intent.set",
+        "intent.set",
+        "cmd.resolved",
+        "cmd.resolved",
+        "cmd.resolved",
+        "pulse.rolled",
+        "outcome.recorded"
+      ],
+      "worldEvents": [
+        "time.advanced",
+        "entity.updated",
+        "entity.updated",
+        "entity.updated",
+        "scene.moved",
+        "thread.set",
+        "cmd.expired",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "bindingSpans": [
+        {
+          "target": "scene",
+          "start": 0,
+          "end": 587
+        },
+        {
+          "target": "expected:1",
+          "start": 0,
+          "end": 587
+        },
+        {
+          "target": "expected:2",
+          "start": 0,
+          "end": 587
+        },
+        {
+          "target": "expected:3",
+          "start": 0,
+          "end": 587
+        },
+        {
+          "target": "delta:0",
+          "start": 0,
+          "end": 587
+        },
+        {
+          "target": "delta:1",
+          "start": 0,
+          "end": 587
+        },
+        {
+          "target": "delta:2",
+          "start": 844,
+          "end": 1587
+        }
+      ]
+    },
+    {
+      "case": "bound_trade",
+      "variant": "B",
+      "origin": "b17-rogue #163/164: recorded plan/prose; last recorded extractor answer selected (earlier repairs excluded); controlled .200 adaptation: price_evidence added to existing agreed_cp=65, settlement is engine-owned, no coin.gift",
+      "C1response": null,
+      "calls": 3,
+      "prompts": [
+        {
+          "phase": "plan",
+          "utf16Characters": 54834,
+          "messagesJsonUtf8Bytes": 56856
+        },
+        {
+          "phase": "narrator",
+          "utf16Characters": 52126,
+          "messagesJsonUtf8Bytes": 53070
+        },
+        {
+          "phase": "extract",
+          "utf16Characters": 62599,
+          "messagesJsonUtf8Bytes": 63621
+        }
+      ],
+      "summedPromptCharacters": 169559,
+      "peakCapacity": 4,
+      "phases": [
+        "input",
+        "prepared",
+        "drafted",
+        "validated",
+        "committed"
+      ],
+      "final": "published",
+      "worldRevision": 1,
+      "publishedMessages": 1,
+      "semanticStateHash": "18b01e6c2acff94620620e41dc4a0ec17a7faf7dd5c849dff1a3c54eee0cf38d",
+      "playerEvents": [
+        "turn.begun",
+        "cmd.interpreted",
+        "object.moved",
+        "coin.changed",
+        "transaction.completed",
+        "offer.closed",
+        "cmd.resolved",
+        "pulse.rolled",
+        "outcome.recorded"
+      ],
+      "worldEvents": [
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ]
+    },
+    {
+      "case": "bound_trade",
+      "variant": "C1",
+      "origin": "b17-rogue #163/164: recorded plan/prose; last recorded extractor answer selected (earlier repairs excluded); controlled .200 adaptation: price_evidence added to existing agreed_cp=65, settlement is engine-owned, no coin.gift",
+      "C1response": "derived from original/synthetic B prose and world answer; NOT naturally generated",
+      "calls": 2,
+      "prompts": [
+        {
+          "phase": "plan",
+          "utf16Characters": 54834,
+          "messagesJsonUtf8Bytes": 56856
+        },
+        {
+          "phase": "joint",
+          "utf16Characters": 114435,
+          "messagesJsonUtf8Bytes": 116417
+        }
+      ],
+      "summedPromptCharacters": 169269,
+      "peakCapacity": 4,
+      "phases": [
+        "input",
+        "prepared",
+        "drafted",
+        "validated",
+        "committed"
+      ],
+      "final": "published",
+      "worldRevision": 1,
+      "publishedMessages": 1,
+      "semanticStateHash": "18b01e6c2acff94620620e41dc4a0ec17a7faf7dd5c849dff1a3c54eee0cf38d",
+      "playerEvents": [
+        "turn.begun",
+        "cmd.interpreted",
+        "object.moved",
+        "coin.changed",
+        "transaction.completed",
+        "offer.closed",
+        "cmd.resolved",
+        "pulse.rolled",
+        "outcome.recorded"
+      ],
+      "worldEvents": [
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "bindingSpans": [
+        {
+          "target": "scene",
+          "start": 0,
+          "end": 77
+        }
+      ]
+    },
+    {
+      "case": "new_person",
+      "variant": "B",
+      "origin": "Synthetic free new NPC and promise on .200 roadside state",
+      "C1response": null,
+      "calls": 3,
+      "prompts": [
+        {
+          "phase": "plan",
+          "utf16Characters": 48239,
+          "messagesJsonUtf8Bytes": 50138
+        },
+        {
+          "phase": "narrator",
+          "utf16Characters": 49448,
+          "messagesJsonUtf8Bytes": 50372
+        },
+        {
+          "phase": "extract",
+          "utf16Characters": 54828,
+          "messagesJsonUtf8Bytes": 55713
+        }
+      ],
+      "summedPromptCharacters": 152515,
+      "peakCapacity": 4,
+      "phases": [
+        "input",
+        "prepared",
+        "drafted",
+        "validated",
+        "committed"
+      ],
+      "final": "published",
+      "worldRevision": 1,
+      "publishedMessages": 1,
+      "semanticStateHash": "eab05cb6541cbe84a0243c8b29db51f78a30894c7da2ffcd3b4e5d299805d656",
+      "playerEvents": [
+        "turn.begun",
+        "cmd.interpreted",
+        "pulse.rolled",
+        "outcome.recorded"
+      ],
+      "worldEvents": [
+        "entity.created",
+        "scene.entered",
+        "scene.tactical",
+        "fact.asserted",
+        "thread.set",
+        "knowledge.gained",
+        "memory.recorded",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ]
+    },
+    {
+      "case": "new_person",
+      "variant": "C1",
+      "origin": "Synthetic free new NPC and promise on .200 roadside state",
+      "C1response": "derived from original/synthetic B prose and world answer; NOT naturally generated",
+      "calls": 2,
+      "prompts": [
+        {
+          "phase": "plan",
+          "utf16Characters": 48239,
+          "messagesJsonUtf8Bytes": 50138
+        },
+        {
+          "phase": "joint",
+          "utf16Characters": 104606,
+          "messagesJsonUtf8Bytes": 106443
+        }
+      ],
+      "summedPromptCharacters": 152845,
+      "peakCapacity": 4,
+      "phases": [
+        "input",
+        "prepared",
+        "drafted",
+        "validated",
+        "committed"
+      ],
+      "final": "published",
+      "worldRevision": 1,
+      "publishedMessages": 1,
+      "semanticStateHash": "eab05cb6541cbe84a0243c8b29db51f78a30894c7da2ffcd3b4e5d299805d656",
+      "playerEvents": [
+        "turn.begun",
+        "cmd.interpreted",
+        "pulse.rolled",
+        "outcome.recorded"
+      ],
+      "worldEvents": [
+        "entity.created",
+        "scene.entered",
+        "scene.tactical",
+        "fact.asserted",
+        "thread.set",
+        "knowledge.gained",
+        "memory.recorded",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "bindingSpans": [
+        {
+          "target": "scene",
+          "start": 0,
+          "end": 143
+        },
+        {
+          "target": "delta:0",
+          "start": 0,
+          "end": 143
+        },
+        {
+          "target": "delta:1",
+          "start": 0,
+          "end": 143
+        }
+      ]
+    }
+  ],
+  "correction": {
+    "case": "new_person",
+    "variant": "C1",
+    "calls": 3,
+    "prompts": [
+      {
+        "phase": "plan",
+        "utf16Characters": 48239,
+        "messagesJsonUtf8Bytes": 50138
+      },
+      {
+        "phase": "joint",
+        "utf16Characters": 104606,
+        "messagesJsonUtf8Bytes": 106443
+      },
+      {
+        "phase": "joint_correction",
+        "utf16Characters": 105866,
+        "messagesJsonUtf8Bytes": 107910
+      }
+    ]
+  },
+  "semanticAcceptance": {
+    "passed": false,
+    "counterexamples": [
+      "contradictory authorized arrival is accepted",
+      "narrated promise omitted from world is not discovered"
+    ],
+    "note": "Observed limits, not successful quality tests. B with an equally incorrect extractor answer shares the underlying guard limitation."
+  }
+}

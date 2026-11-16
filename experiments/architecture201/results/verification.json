@@ -1,0 +1,32 @@
+{
+  "base": "0cd14806cd0c7fe2ab0d54b8463c486ee572714b",
+  "node": "24.22.1",
+  "prototype": {
+    "command": "node --test --test-reporter=tap experiments/architecture201/prototype.test.mjs",
+    "tests": 61,
+    "pass": 61,
+    "fail": 0,
+    "skip": 0,
+    "duration_ms": 90280.606785
+  },
+  "engine": {
+    "cwd": "avereth-engine",
+    "command": "node --test --test-reporter=tap tests/v4/fix187_paid_work.test.js tests/v4/npc_e2b_host.test.js tests/v4/npc_e3_compact.test.js tests/v4/pulse_npc_arrival.test.js",
+    "tests": 47,
+    "pass": 47,
+    "fail": 0,
+    "skip": 0,
+    "duration_ms": 2093.922522
+  },
+  "st_source_contracts": 6,
+  "semantic_acceptance": {
+    "passed": false,
+    "counterexamples": 2,
+    "note": "The diagnostic counterexample test intentionally observes accepted inconsistency and omitted world information. Green technical tests are not semantic C1 acceptance."
+  },
+  "no_provider_calls": true,
+  "no_product_edits": true,
+  "no_full_suite_or_replay": true,
+  "script_lines": 586,
+  "core_adapter_lines": 294
+}

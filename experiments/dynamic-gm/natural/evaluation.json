@@ -1,0 +1,12 @@
+{
+  "status": "preregistered_preparation_only",
+  "technical": ["world persisted before display", "no double dice/XP/coin/loot/time/PULSE", "chosen supported player steps resolved or explicitly refused", "physical requests include continuations and failed attempts", "actual input/output usage or explicitly missing", "confirmed display latency distinct from provider latency"],
+  "semantic": ["important narrated commitments/facts missing from memory", "narration contradicts authoritative arrival or other mechanics", "invented voluntary PC decision/speech/consent", "NPC uses information not legitimately known", "required engine operation omitted", "continuation contradicts prior confirmed candidate", "prior agreement reopened or lost after context removal"],
+  "narrative": {
+    "method": "human assessment after seeing complete outputs; no extra model calls",
+    "scale": "1 poor, 3 adequate, 5 strong, with a concrete quoted reason; exploratory, not statistical",
+    "dimensions": ["plausibility", "creativity", "NPC initiative grounded in motive", "voice and personality", "coherence and pacing", "player freedom", "prose quality under structured output"]
+  },
+  "fairness": ["same actual model/temperature/output cap", "same initial state and player input per case", "N1 later branches may legitimately diverge", "no successful promise forced", "no identical end-state requirement for different fiction", "no prompt changes within series", "B prototype scope/encoding/recovery limitations disclosed"],
+  "unrun_result": "No comparative quality, reliability, memory adequacy or request savings can be concluded before authorized natural execution."
+}

@@ -1,0 +1,20 @@
+{
+  "status": "PREPARATION_ONLY",
+  "natural_provider_requests": 0,
+  "tests": {
+    "command": "node --test experiments/dynamic-gm/natural/preparation.test.mjs",
+    "passed": 15,
+    "failed": 0,
+    "skipped": 0,
+    "duration_ms": 3854.069844
+  },
+  "live_runner_executed": false,
+  "new_browser_test": false,
+  "required_before_live": [
+    "separate explicit user approval",
+    "actual endpoint/model/context/output configuration",
+    "model-specific verified tokenizer",
+    "dedicated credential provided outside Git"
+  ],
+  "scripted_adapter_checks_are_not_natural_results": true
+}

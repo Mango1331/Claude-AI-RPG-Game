@@ -1,0 +1,100 @@
+{
+  "status": "PREPARATION_ONLY_NO_NATURAL_CALLS",
+  "requestLimit": 24,
+  "concurrency": 1,
+  "automaticRetries": 0,
+  "model": null,
+  "provider": null,
+  "tokenizer": null,
+  "contextWindow": null,
+  "temperature": 0.7,
+  "maxOutput": 2000,
+  "scenarioOrder": [
+    {
+      "id": "N1-first",
+      "input": "\"Wat, how have things been around the pens since we last spoke?\"",
+      "source": "w191 state after #92; no synthetic promise inserted",
+      "order": [
+        "B",
+        "GM"
+      ],
+      "baseHash": "1983363efab7864ce0073ce05636adaaaf7c9321a81215d5589d0fd0c153327e",
+      "stateHash": "913b0a90f2495489f0369e845cbb4feaa875b49a1b3edf7dbb8fe8a7c07e1e2b"
+    },
+    {
+      "id": "N1-recall",
+      "depends": "N1-first",
+      "input": "\"Good to see you again, Wat. How are things around here now?\"",
+      "source": "same mutually confirmed initial branches; original N1 dialogue withheld from model context",
+      "order": [
+        "GM",
+        "B"
+      ],
+      "baseHash": null,
+      "stateHash": null
+    },
+    {
+      "id": "N2",
+      "input": "*i walk in the opposite direction of the city ahead and into the forest instead*",
+      "source": "original personal .200 user input/prestate #5; no recorded plan/narration/extraction used as new answer",
+      "order": [
+        "B",
+        "GM"
+      ],
+      "baseHash": "55a22a4cb191255bc424de3c022d1dc678ba9a6354292c0e490c4f3e9c6ca836",
+      "stateHash": "42c52d05e9ceb640fbbbc5962287c92e653fb87ec20c7604e7668f544ec67b3e"
+    },
+    {
+      "id": "N3",
+      "input": "I take the wooden key and, only once I have it, go to Alderwatch.",
+      "source": "same .200 prestate plus disclosed loose key setup event",
+      "setupEvents": [
+        {
+          "t": "object.created",
+          "d": {
+            "object": {
+              "id": "obj.natural.wooden_key",
+              "name": "wooden key",
+              "kind": "item",
+              "qty": 1,
+              "holder": {
+                "loc": "loc.alderwatch.verge"
+              },
+              "marks": []
+            }
+          }
+        }
+      ],
+      "order": [
+        "GM",
+        "B"
+      ],
+      "baseHash": "76ea0293a69aa0fca56ed29a21434715cb53910d17653ad1fcbd4478006e9dfa",
+      "stateHash": "b126ff53d5b1ed6cc41025542d12502d5a43cc0648558b92f3215f57a46e4a22"
+    },
+    {
+      "id": "N4",
+      "input": "*I quietly look over the repaired pen gate while Wat and the others continue what they were doing.*",
+      "source": "w191 state after #92, existing NPC motives and information; no instructed promise/gift/attack",
+      "order": [
+        "B",
+        "GM"
+      ],
+      "baseHash": "1983363efab7864ce0073ce05636adaaaf7c9321a81215d5589d0fd0c153327e",
+      "stateHash": "913b0a90f2495489f0369e845cbb4feaa875b49a1b3edf7dbb8fe8a7c07e1e2b"
+    }
+  ],
+  "hashes": {
+    "experiments/dynamic-gm/runtime.mjs": "7d9588974d19f24113a045d0fdd6a956a1014629dbea503144ccef6001f6a59a",
+    "experiments/dynamic-gm/contract.mjs": "4676b7b3b4eae4bcdf74f82a4cee6811df91045b6abd50050132344701d20ee4",
+    "experiments/dynamic-gm/st-host.mjs": "54d2b9eba86d928c38c54eed13a5343bed3ae79a7e9203e9ed546f75b67b6cc2",
+    "experiments/architecture201/orchestrator.mjs": "11f7c4fa734ca93aff4b03f3e9a65d2203122036929350423ba369dc97e12ab1",
+    "experiments/architecture201/engine.mjs": "2915e72d5a312112e3d9b77f1cd84665714e2e3ee13090e6c4c98cb11fed180f",
+    "experiments/architecture201/fixtures.mjs": "179bbc7ff36ef82cc072425e945c41ec512f83c249fd97bebf67a28ecf310385",
+    "experiments/dynamic-gm/natural/adapter.mjs": "69098a3b034525c4603c63b7586a7efdc2f7b192d6821eac295841983e220d4e",
+    "experiments/dynamic-gm/natural/cases.mjs": "5446fb2fc61526026609d8183516f0fc4845b7832462b973304efba8a300f785",
+    "experiments/dynamic-gm/natural/ledger.mjs": "4af7ab7a87ed9e9bf51d3b252f5fae24980418781d331d1d5c447f929fc03b74",
+    "experiments/dynamic-gm/natural/gateway.mjs": "86ce87548cfe99f88ce959b2bd4e627c08867dddb29ee9f07ed52b10aa7df230",
+    "experiments/dynamic-gm/natural/run.mjs": "2fddaf986a36b41c5f55f5767728d74750fa6d27e1955661f9e76e1ebec28203"
+  }
+}

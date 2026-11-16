@@ -42,3 +42,7 @@ node experiments/dynamic-gm/st-browser.mjs
 ```
 
 Der Adapter nutzt tatsächliches ST-Raw-Generating beziehungsweise gepufferte SSE über STs Backend, explizite Save-/Get-Zieltupel, wirkliche Browseranzeige und Lifecycleevents. Die Node-/Playwright-Brücke ist keine fertige installierbare Extension. Technische Browserergebnisse sind keine natürliche Qualitätsabnahme. Die bekannten semantischen Gegenfälle werden im Browser ausdrücklich als Fehlerdemonstrationen geführt.
+
+## Erster natürlicher Vergleich – Vorbereitung
+
+[Statusbericht](NATUERLICHER_VERGLEICH_GM_B_2026-11-16.md) und [eingefrorenes Vergleichsprotokoll](natural/README.md). Aktuell ausschließlich Vorbereitung: **null natürliche Providerrequests**, separate ausdrückliche Nutzerfreigabe und tatsächliche Modell-/Tokenizerkonfiguration noch ausstehend. Der gemeinsame persistente Zähler begrenzt die spätere Serie auf 24 physische Requests; es gibt keine automatischen Transportretrys. Kein Start durch bloßes Importieren der Module.

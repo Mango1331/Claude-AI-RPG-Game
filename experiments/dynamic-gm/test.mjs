@@ -1,12 +1,13 @@
+import {OriginHost as ST119Mock} from './publication.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import os from 'node:os';import path from 'node:path';
-import {Journal,copy,digest} from '../architecture201/journal.mjs';import {Scheduler} from '../architecture201/scheduler.mjs';import {ST119Mock,HeldPublication} from '../architecture201/host.mjs';
+import {Journal,copy,digest} from '../architecture201/journal.mjs';import {Scheduler} from '../architecture201/scheduler.mjs';import {HeldPublication} from '../architecture201/host.mjs';
 import {fixtures} from '../architecture201/fixtures.mjs';import {foldChat,prepare,validate,content} from '../architecture201/engine.mjs';import {DynamicGM,recall} from './runtime.mjs';
 import {harness,semantic} from '../architecture201/harness.mjs';
 const f=n=>copy(fixtures().find(x=>x.name===n));
 function setup(x){const dir=fs.mkdtempSync(path.join(os.tmpdir(),'dynamic-gm-'));const j=new Journal(path.join(dir,'j.json'),x.base),s=new Scheduler(j,{now:()=>100}),h=new ST119Mock(path.join(dir,'h.json')),p=new HeldPublication(j,h),g=new DynamicGM(j,s,p);g.begin('t',x.input);return {j,s,h,p,g};}
 const script=arr=>async r=>{const a=arr[Number(r.phase.split(':')[1])];if(!a)throw Error('missing script');return JSON.stringify(a);};
 const finish=x=>({op:'finish',narration:x.narration,world:x.world});
-const travel=x=>[{op:'resolve',commands:JSON.parse(x.plans[0]).commands},{...finish(x),op:'world'},{op:'finish',use_result:true}];
+const travel=x=>[{op:'resolve',commands:JSON.parse(x.plans[0]).commands},{...finish(x),op:'world',continue:true},{op:'finish',use_result:true}];
 const state=h=>semantic(foldChat(h.j.read().world.chat).state);
 const promises=s=>Object.values(s.threads).filter(t=>/old ford tomorrow/.test(t.text));
 
@@ -28,7 +29,7 @@ test('G2 original forest: GM chooses GO, world tool resolves actual new place; 3
 
 test('G2 partial travel: explicitly not arrived keeps original position',async()=>{
  const x=f('forest200'),h=setup(x),w={scene:foldChat(x.base).state.scene.at,expected:{1:{arrived:false,at:null,with:null,met:null}},deltas:[]};
- await h.g.run('t',script([{op:'resolve',commands:JSON.parse(x.plans[0]).commands},{op:'world',narration:'Alaric remained at the roadside verge; he had not reached the forest.',world:w},{op:'finish',use_result:true}]));assert.equal(state(h).scene.at,foldChat(x.base).state.scene.at);
+ await h.g.run('t',script([{op:'resolve',commands:JSON.parse(x.plans[0]).commands},{op:'world',continue:true,narration:'Alaric remained at the roadside verge; he had not reached the forest.',world:w},{op:'finish',use_result:true}]));assert.equal(state(h).scene.at,foldChat(x.base).state.scene.at);
 });
 
 test('G3 unsupported distraction/theft is blocked rather than inventing a rule or condition result',async()=>{
@@ -40,11 +41,11 @@ test('G3 unsupported distraction/theft is blocked rather than inventing a rule o
 test('G4 NPC gift: actual object transfer through existing world rules, 2 physical requests',async()=>{
  const x=f('npc_promise');x.narration='Wat handed Alaric a plain wooden token as a gift.';
  x.world={scene:foldChat(x.base).state.scene.at,expected:{},deltas:[{seq:1,type:'object.new',name:'plain wooden token',kind:'item',qty:1,holder:'npc.wat',effect:null,unit:null,for_quest:null,in:null,teaches:null},{seq:2,type:'object.move',object:{new:'plain wooden token'},qty:1,to:'pc'}]};
- const h=setup(x);await h.g.run('t',script([{...finish(x),op:'world'},{op:'finish',use_result:true}]));assert.equal(h.j.read().requests.length,2);assert.ok(Object.values(state(h).objects).some(o=>o.name==='plain wooden token'&&o.holder?.entity==='pc'));
+ const h=setup(x);await h.g.run('t',script([{...finish(x),op:'world',continue:true},{op:'finish',use_result:true}]));assert.equal(h.j.read().requests.length,2);assert.ok(Object.values(state(h).objects).some(o=>o.name==='plain wooden token'&&o.holder?.entity==='pc'));
 });
 
 test('G4 invalid transfer and second mechanical batch cannot commit',async()=>{
- const x=f('npc_promise'),h=setup(x);await assert.rejects(h.g.run('t',script([{op:'world',narration:'Wat gave Alaric a sword.',world:{scene:foldChat(x.base).state.scene.at,expected:{},deltas:[{seq:1,type:'object.move',object:'missing.sword',qty:1,to:'pc'}]}}])),/schema|rejected/);assert.equal(h.j.read().world.revision,0);
+ const x=f('npc_promise'),h=setup(x);await assert.rejects(h.g.run('t',script([{op:'world',continue:true,narration:'Wat gave Alaric a sword.',world:{scene:foldChat(x.base).state.scene.at,expected:{},deltas:[{seq:1,type:'object.move',object:'missing.sword',qty:1,to:'pc'}]}}])),/schema|rejected/);assert.equal(h.j.read().world.revision,0);
  const t=setup(x);await assert.rejects(t.g.run('t',script([{op:'resolve',commands:[]},{op:'resolve',commands:[]}])),/already resolved/);assert.equal(t.j.read().world.revision,0);
 });
 
@@ -72,7 +73,7 @@ test('recall filters knowledge by actor, but cannot prove prose knowledge or PC 
 test('G4 newcomer attack is refused by existing closed PULSE window',async()=>{
  const x=f('npc_promise'),h=setup(x),person=f('new_person').world.deltas[0];
  Object.assign(person,{ref:'rask',name:'Rask',role:'bandit',at:foldChat(x.base).state.scene.at,desc:['bandit'],threat:true});
- await assert.rejects(h.g.run('t',script([{op:'world',narration:'Rask the bandit came over and attacked Alaric with his knife.',world:{scene:foldChat(x.base).state.scene.at,expected:{},deltas:[person,{seq:2,type:'hostile',by:['rask'],scope:null,evidence:'Rask the bandit came over and attacked Alaric with his knife.'}]}}])),/pulse/);
+ await assert.rejects(h.g.run('t',script([{op:'world',continue:true,narration:'Rask the bandit came over and attacked Alaric with his knife.',world:{scene:foldChat(x.base).state.scene.at,expected:{},deltas:[person,{seq:2,type:'hostile',by:['rask'],scope:null,evidence:'Rask the bandit came over and attacked Alaric with his knife.'}]}}])),/pulse/);
  assert.equal(h.j.read().world.revision,0);
 });
 
@@ -82,7 +83,7 @@ test('COUNTEREXAMPLE: invented PC consent is not semantically detected in free p
 
 test('G4 timeout after transfer calculation: resume reuses the object events once',async()=>{
  const x=f('npc_promise');x.narration='Wat handed Alaric a plain wooden token as a gift.';x.world={scene:foldChat(x.base).state.scene.at,expected:{},deltas:[{seq:1,type:'object.new',name:'plain wooden token',kind:'item',qty:1,holder:'npc.wat',effect:null,unit:null,for_quest:null,in:null,teaches:null},{seq:2,type:'object.move',object:{new:'plain wooden token'},qty:1,to:'pc'}]};
- const h=setup(x),a=[{...finish(x),op:'world'},{op:'finish',use_result:true}];
+ const h=setup(x),a=[{...finish(x),op:'world',continue:true},{op:'finish',use_result:true}];
  await assert.rejects(h.g.run('t',r=>r.phase==='gm:1'?Promise.reject(Error('timeout')):script(a)(r)),/timeout/);
  const candidate=digest(h.j.read().turns.t.candidate);assert.equal(h.s.occupancy(),4);assert.equal(h.j.read().world.revision,0);
  h.s.remoteComplete('t:gm:1:attempt:1');h.s.now=()=>200;await h.g.run('t',script(a));await h.g.run('t',()=>{throw Error('no repeat');});

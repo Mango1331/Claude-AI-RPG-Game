@@ -1,80 +1,118 @@
-# Dynamischer GM – tatsächlicher Prototypbefund
+# Dynamischer GM – Werkzeugvertrag und Sicherheitsnachtrag
 
-Basis `81195e187fac130c17cd904481eff36eaf8fdeea`, ausschließlich `experiment/dynamic-gm-model`. Produkt .200 unverändert. Die Rollenentscheidung auf main und der bestehende B/C1-Versuch wurden berücksichtigt. Keine natürlichen Modell-/Provideraufrufe, keine ST-Starts, keine neuen Spielregeln. Alle Antworten sind offline geskriptet. G2 verwendet originale Eingabe, Plan und Prosa des persönlichen .200-Waldzugs; dessen erfolgreiche Weltantwort bleibt ausdrücklich synthetisch. G1/G4 verwenden einen historischen .191-Zustand mit synthetischen Fortsetzungen.
+16.11.2026. Ausgangspunkt `c7622605419855233a305b9c1c5c2b039c28ddf8`, ausschließlich `experiment/dynamic-gm-model`. Produkt `.200`, `main`, `architecture201`, persönliche ST-Installation und historische Originalcorpora unverändert. Keine Provideraufrufe, neue Gameplaymechanik oder Produktintegration. Frühere Ergebnisse sind über den Ausgangscommit weiter einsehbar; dieser Bericht beschreibt den aktuellen Nachtrag.
 
-## Ergebnis und Entscheidung
+## Entscheidung
 
-**Die technische Grundidee funktioniert, die verlangte vollständige Szenarienabnahme ist nicht bestanden.** Ein gewöhnliches Gespräch kann Geschichte und wichtige Zusage in einem Request dauerhaft abschließen, ohne obligatorischen Extractor. Gemeinsame Scheduler-/Journalgrundlage und vorhandene Engine lassen sich nutzen. G3 bleibt fachlich blockiert; semantische Widersprüche, ausgelassene Zusagen und erfundene PC-Zustimmung werden nicht zuverlässig erkannt. Daher zuerst **GM-/Werkzeugvertrag korrigieren**, noch keine Freigabe als Grundlage eines umfassenden ST-Hosttests oder natürlichen Spieltests.
+**Der Vertrag ist technisch bereit für einen kleinen isolierten echten ST-Hostdurchstich mit geskripteten Antworten.** Die zwei konkreten Hostfehler sind korrigiert; vollständige Abschlüsse benötigen keine reine Bestätigungsanfrage. Echte kreative Fortsetzungen können neue Zusagen ergänzen, ohne bereits aufgelöste Mechanik erneut auszuführen. Der echte Host muss allerdings die hier eingeführte explizite Chat-Zielbindung tatsächlich implementieren und im Browser beweisen.
 
-## Vier Szenarien und tatsächliche Aufrufe
+Das ist **keine Freigabe für natürliche Rollenspielqualität oder produktiven Spielbetrieb**. Freie Prosa kann nach wie vor wichtige Zusagen auslassen, gebuchten Orten widersprechen, PC-Zustimmung erfinden und fremdes Wissen verwenden. Stärkere deklarierte Strukturen begrenzen diese Risiken, erkennen aber nicht jede unmarkierte Behauptung. Diese Fehlerklassen bleiben Gegenfälle für den später separat freizugebenden natürlichen Vergleich.
 
-| Fall | Ergebnis | Physische Offline-Modellrequests |
-|---|---|---:|
-| G1 Wat | Neue Zusage gespeichert, idempotent; späterer Dialog ohne ursprüngliche Prosa, gespeicherte Zusage und Stimme wieder geliefert | 1 für Zusage; 2 für gesonderte Wiederbegegnung mit explizitem recall |
-| G2 Wald | Originaleingabe durch GM-Aktionsvorschlag; GO autorisiert, tatsächliche neue Waldankunft über Worldtool gebucht; Teilreise mit nicht erfolgter Ankunft bleibt am Ausgangsort | 3: Aktionsvorschlag, Weltdraft/Engineauflösung, Abschlussbestätigung |
-| G3 Ablenkung + bedingte Schlüsselentnahme | **Nicht erfolgreich umgesetzt.** Unbekannte `distract`/`steal`-Commands werden abgewiesen; keine erfundene Checkregel, kein Transfer, keine Veröffentlichung | 1 abgewiesener Request; kein erfolgreich abgeschlossener Zug |
-| G4 NPC-Gabe | Wat erschafft/besitzt einen gewöhnlichen Holzmarker und übergibt ihn; bestehende object.created/object.moved-Regeln buchen einmal | 2: Worldtool, Abschlussbestätigung |
+## 1. Host- und Transaktionssicherheit
 
-G1 und G2 wurden gegen B auf identischer Ausgangsgrundlage verglichen: gleicher gefalteter fachlicher Zustand, abgesehen von Laufzeittelemetrie. B benötigt dort jeweils drei Requests. Für G1 entfallen somit zwei Pflichtphasen, für die unbekannte Reise in diesem Durchstich **kein** Request. Für G4 wird keine nicht ausgeführte B-Vergleichsmessung behauptet. Beim simulierten Timeout nach dem Wald-Worldtool entstehen insgesamt vier Requests einschließlich des gescheiterten Versuchs; bereits bestätigte Phasen werden nicht wieder angefordert.
+Die vier zentralen Rotfälle wurden zuerst auf c762260 ausgeführt: Wiederaufnahme eines pending/published Turns im falschen Chat sowie Stop/Chatwechsel nach `await before_commit`. **0/4 bestanden.** Beim Commit-Gegenfall war die Weltrevision bereits verändert, obwohl spätere Anzeige abgewiesen wurde.
 
-G3 ist eine echte Grenze, kein grüner Ersatzfall. `content/commands.json` besitzt keinen allgemeinen Ablenkungs-/Diebstahlbefehl. Bestehende Suche-/Stealth-/Featurechecks dürfen nicht ohne fachliche Entscheidung in einen sozialen Ablenkungswurf mit neuer Transferregel umgedeutet werden. Die gezielt zusätzlich geprüften `c663`-Fälle bestätigen bestehende `needs`-Bedingungen, sind aber **kein erfolgreicher Ersatz für G3**. Der Auftrag untersagt neue Gameplayfunktionen; deshalb bleibt der genaue erfolgreiche Auflösungspfad offen. Gleiches gilt für die gezielte Erfolg-/Fehlschlagbedingung dieser konkreten Handlung.
+Jetzt speichern Journal und Turn eine unveränderliche `originChatId`. Wiederaufnahme benötigt denselben Chat, aber kein historisches Generationstoken: Ein Reload darf die Epoch erneuern. Ein anderer Chat wird vor einem neuen Request und auch bei bereits committed/published Turns abgewiesen. `begin` kann ein bestehendes Journal nicht einem anderen Chat zuordnen; alte Journale ohne gebundene Identität werden nicht still migriert.
 
-Anders als B/C1 beginnt dieser Executor unmittelbar beim GM. Der alte C1-Versuch führte zuerst dieselbe Planner-Vorbereitung wie B aus; hier entsteht der Spieleraktionsvorschlag erst als optionale GM-Operation. Das ist keine natürliche Qualitätsvergleichsmessung.
+Nach `await hook('before_commit')` erfolgt erneut die aktuelle Token-/Chatprüfung, unmittelbar vor dem synchronen Weltcommit. Die Weltrevision bleibt bei Stop/Chatwechsel dort unverändert. Ein später erlaubter Reload im ursprünglichen Chat nutzt den gespeicherten Antwortbeleg statt einer neuen Anfrage.
 
-## Datenfluss und Wiederverwendung
+Zusätzlich wurde die Save-Zielbindung konkret gemacht: `OriginHost.saveChatFor(originId, ...)` nimmt das unveränderliche Ziel ausdrücklich entgegen. Der `BoundPublication`-Adapter verwendet weiterhin den vorhandenen `HeldPublication`-Ablauf, aber mit zielgebundenem Save/Read-back. Ein Test wechselt den aktiven Chat **innerhalb eines verzögerten Saves**: nur der Ursprungs-Chat wird gespeichert, im Ersatzchat erscheint nichts; Reload des Ursprungs rekonstruiert das Ergebnis einmal. Damit wird nicht nur die Anzeige nach einem möglicherweise falschen Save abgewehrt.
 
-Ein einziger GM-Executor verarbeitet beliebige Folgen von `recall`/`describe`, höchstens einen vollständigen `resolve`-Spielerbatch, einen optionalen `world`-Kandidaten und einen Abschluss. Aufrufbudget: sechs Modellphasen; der importierte Scheduler gestattet maximal zwei Transportversuche pro Requestidentität. Jeder Dispatch einschließlich vollständiger Messages, UTF-16-Inhaltslänge und JSON-UTF-8-Größe steht im Journal. Kein Tool wird als kostenloser nachfolgender Modellrequest ausgegeben.
+Grenzen bleiben: lokales POSIX-Journal, ein Prozess/ein Journal pro Chat, Map-DOM statt Browser. Ein echter ST-Adapter ohne explizite zielgebundene Persistenz wird vom neuen Publikationsadapter abgewiesen. Der vorhandene Mock beweist noch keine tatsächliche ST-/Windows-Implementierung dieser Schnittstelle.
 
-`resolve` nutzt `prepare`/`prepareGenerationAsync` samt vorhandener Planvalidierung und Fachauflösung. Eine lokale Callbackantwort liefert die bereits vom GM vorgeschlagenen Commands; sie ruft kein weiteres Modell auf. Der bisherige interne Promptbuilder wird noch ausgeführt, seine Texte werden aber nicht an den GM-Transport gesendet. Gewöhnlicher Abschluss bereitet genau einmal einen leeren Spielerbatch vor, einschließlich vorhandener Zeit-/PULSE-Regeln. Ein zweiter Batch wird verweigert: kein zweiter Turn oder PULSE je Tool. Das ist ein begrenzter vertikaler Durchstich, kein fertiger beliebiger Tool-Aktionsautomat.
+## 2. Dynamischer Abschluss und echte Fortsetzung
 
-`world` nutzt unveränderte `parseExtraction`-/`applyExtraction`-/Worldregeln auf einer Kopie. Alte Telemetriebezeichnungen wie `extract.applied` bedeuten hier **keinen Extractor-Modellaufruf**. Gespeicherter Kandidat und Ergebnis werden vor der GM-Fortsetzung journalisiert. `finish/use_result` veröffentlicht genau diesen Kandidaten. Weitere kreative Änderungen nach diesem Worldtool sind noch nicht implementiert: Dafür müsste die Fortsetzung mit akzeptierten Mechanikresultaten und zusätzlichen reinen Memoryänderungen verbunden werden, ohne dieselbe Mechanik neu anzuwenden. Dieses Defizit wird nicht als vollständige freie GM-Fortsetzung verkauft.
+`world` und `finish` dürfen einen vollständigen Kandidaten sofort validieren, gemeinsam persistieren und veröffentlichen. Es gibt keine obligatorische Bestätigungsphase mehr. Der GM fordert nur mit `world.continue:true` ausdrücklich ein Ergebnis vor weiterer Erzählung an.
 
-Direkter `finish` erlaubt wichtige Gedächtnis-/Kontinuitätstypen, einschließlich Fakten, Lernen/Glauben, Erinnerungen, Threads, Personen und Berichte. Geschützte Transfers/Angriffe/Ankunftsfolgen verlangen das Worldtool. Die Engine bleibt autoritativ. Wahrheit, Gerücht und Wissen werden nicht zu einer allgemeinen freien Notiz zusammengelegt.
+Bei einer Fortsetzung gilt:
 
-Scheduler, Journal und Hostadapter werden importiert. Weltrevision verhindert konkurrierenden Commit; Turn-ID und Schrittindex binden Antworten. Fehler werden gespeichert. Nach Commit erfolgt bestätigter Hostsave vor Anzeige. Ein lokal unbekannt beendeter Request hält vier von vier Einheiten; nur bestätigtes Remoteende erlaubt Freigabe. Ein echter Provider und Browser sind weiterhin nicht angeschlossen.
+1. Der bereits aufgelöste Kandidat einschließlich Objekt-/Orts-/Mechanikereignissen wird dauerhaft im Turnjournal gehalten und als Ergebnis geliefert. Er ist noch kein veröffentlichter Gesamtzug.
+2. Ein neuer GM-Request kann zusätzliche freie Prosa und wichtige Sprechakte/Threads erzeugen. Der bestätigte Text bleibt als Präfix unverändert; Ersetzung des Weltobjekts oder widersprechende strukturierte Ortsclaims werden abgewiesen.
+3. Nur zusätzliche Versprechen, Schulden und Gerüchte laufen durch die bestehende Threadfunktion, einschließlich Identitäts-/Erledigungsregeln. Beteiligte müssen gültig sein; PC-Absprachen brauchen einen anwesenden NPC. Vorhandene Kampf-Todesprüfung wird wiederverwendet. Es wird weder `playerTurnV4` noch `applyWorld` noch ein Würfel erneut aufgerufen.
+4. Der Eventrecord wird samt aktualisiertem Texthash fortgeführt. Der gesamte gefaltete Zustand außer `threads` muss identisch zum gespeicherten Kandidaten sein: insbesondere RNG, Uhr, PULSE, Inventar, Geld, XP, Szene und Outcome.
+5. Retry nach Antwort/Tool/Save/Anzeige nutzt dieselben Belege und bucht keine zweite Zusage oder Gegenstandsübergabe.
 
-## Schutz und verbleibende semantische Fehler
+Das ist eine echte neue Erzähl-/Memoryfortsetzung, nicht `use_result` unter anderem Namen: Der Test lässt Wat nach der Gabe auf die Schilfgrenze reagieren und eine neue Furt-Zusage machen. Der alte `use_result`-Pfad bleibt nur als explizite unveränderte Wiederverwendung möglich und darf keine versteckten Zusatzfelder einschleusen.
 
-Nachgewiesen: idempotentes Speichern, einmaliger Objekttransfer, bestehender PULSE-Schutz gegen einen neu eintretenden Angreifer, Ablehnung unbekannter Objekte und wiederholter Spielerbatches. Wissenabruf selektiert nach Figur; ein ausschließlich bei PC gespeichertes Geheimnis erscheint nicht in Wats Wissensantwort. Wiedersehen enthält keine ursprüngliche Dialogprosa, liefert jedoch Zusage und Stimme. Das beweist Bereitstellung, **nicht natürliches richtiges Ausspielen durch ein Modell**.
+Bewusste Grenze: Nach diesem Worldtool ist **kein zweiter mechanischer Batch** erlaubt. Neue Personen, Orte, Checkketten oder beliebige Faktenänderungen nach diesem Punkt sind nicht implementiert; unterstützte zusätzliche Memorytypen sind eng benannt. Direkte freie Abschlüsse behalten dagegen die bisherigen World-/NPC-Fachpfade. Das ist ein kleiner dynamischer Durchstich, keine allgemeine offene Tool-Schleife.
 
-Drei absichtlich beobachtete semantische Gegenbeispiele bleiben rot auf Ebene der Produktanforderung:
+## 3. Ausgelassene Spielerhandlungen
 
-1. Wats gesprochenes Versprechen mit leerem Deltaarray wird veröffentlicht und nicht als Zusage gespeichert.
-2. Positive gebuchte Ankunft neben ausdrücklich verneinender Prosa wird akzeptiert.
-3. Freie Prosa mit erfundener Zustimmung Alarics wird nicht zuverlässig erkannt, auch wenn keine entsprechende mechanische Zahlung gebucht wird.
+`contract.mjs` nutzt bestehendes `readTurn`, `deedsOf`, `declarative` und `authorization`. Erkannte mechanische, Reise-, Wirtschafts- und Aktivitätssignale verlangen einen passenden aufgelösten Batch. Hinzu kommt **ein enger Gegenstands-Erkenner** für ausdrücklich verwendete/getrunkene gehaltene Dinge. Er erfindet keine Aktion, sondern verhindert einen Abschluss ohne entsprechende Engineauflösung. Bei uneindeutigem Gegenstand wird angehalten.
 
-Die grünen `COUNTEREXAMPLE`-Tests bestätigen jeweils **das Vorhandensein des Fehlers**. Sie sind keine Qualitätsabnahme. Strukturierte Referenzen und dauerhafter Save lösen diese Sprachprobleme nicht. Ein gemeinsamer GM kann außerdem trotz getrenntem Wissenabruf fremdes Wissen in Dialog übertragen. Der begrenzte Abruf-Gegenfall ist keine vollständige Metawissensgarantie. Bestehende Memory-Teilnehmer-/Zeugengrenzen bleiben unverändert.
+Für den vorhandenen Heiltrank bestehen:
 
-## Promptvertrag und Messung
+- Direkter fertiger GM-Text ohne Auflösung wird abgewiesen.
+- Ein vorgeschalteter leerer `resolve`-Batch umgeht den Schutz nicht.
+- Echte `use`-Auflösung über die vorhandene Engine verbraucht den Trank und bucht die vorhandene Heilwirkung einmal; der anschließende Weltabschluss benötigt insgesamt zwei Requests.
+- Negierte oder fremd zitierte Nutzung erzeugt keinen automatischen Verbrauch. Konservative Blockierung ist in unklaren Fällen zulässig.
 
-Ein neuer kurzer Zuständigkeitskern ersetzt die vollständigen alten Narrator-/Planner-/Extractor-Prompts im tatsächlichen Transport. Er behält Spielerhoheit, mechanische Autorität, Wissenstrennung, wichtige Gedächtnisarten und Regelbindung der Ergebnisse. Gegenfälle zu Negation, fehlenden Erinnerungen und Prosa-Widerspruch zeigen, dass Instruktionen allein nicht reichen.
+Nach dem Parser/Agency-Guard wird zusätzlich kontrolliert, ob die betreffenden Commands tatsächlich in der Auflösung vertreten sind. Eine regulär verweigerte Handlung darf als Verweigerung abgeschlossen werden; kein garantierter Erfolg wird daraus abgeleitet.
 
-Nicht pauschal übernommen werden vollständige globale Händler-, Quest-, Skill- und Kampfregeltexte. Kontext liefert aktuelle Szene, kanonische Orts-/Akteurreferenzen, vorhandene NPC-Erinnerungen, Memory-Feldschemata und Toolergebnisse. `describe` kann gezielt bestehende Fachschemata liefern; dafür zählt eine folgende Modellfortsetzung zusätzlich. Noch unoptimiert: alle bekannten Ortsnamen, gesamte relevante NPC-Datensätze und akkumulierte Toolergebnisse können wachsen. Es gibt noch keinen belastbaren großen Kampagnen-Kontextbudgetnachweis.
+**Kein allgemeiner Vollständigkeitsbeweis:** Bestehende Erkenner und die enge Ergänzung decken nicht alle Paraphrasen, Sprachen, gemischten Bedingungen und indirekten Absichten ab. Falsch positive Blockierungen sind möglich. Eine unbekannte Aktion darf nicht mit einem erfundenen erfolgreichen Check beantwortet werden. Eine unabhängig semantisch geprüfte Abdeckung beliebiger Prosa ist weiterhin unbewiesen; hierfür wird kein neuer Vollplanner versteckt aufgerufen.
 
-[measurements.json](measurements.json) enthält die vollständigen gemessenen Requestgrößen und Digests:
+## 4. G1–G4 und unterstützte zusammengesetzte Handlung
 
-| Fall | Zeichen je tatsächlich gesendeter Phase | Peak Kapazität |
-|---|---|---:|
-| G1 | 13.463 | 4 |
-| G2 | 4.830 / 6.084 / 7.468 | 4 |
-| G3 abgewiesen | 13.484 | 4 |
-| G4 | 13.463 / 15.290 | 4 |
+| Fall | Tatsächlicher Befund |
+|---|---|
+| G1 Wat | Zusage ohne Extractor in einem Request; späterer Abruf ohne Originaldialog liefert Erinnerung/Stimme. Typisierter Sprechakt erzeugt Text und Zusage aus derselben Quelle |
+| G2 Wald | Originaleingabe/-plan/-prosa von .200 mit ausdrücklich synthetischer erfolgreicher Weltantwort; tatsächliche Ankunft/Teilreise bleiben korrekt. Vollständiger Abschluss jetzt zwei statt drei Requests |
+| G3 ursprüngliche Ablenkung/Schlüsselentnahme | Weiter ausdrücklich nicht unterstützt und abgewiesen. Kein Diebstahl-, Ablenkungs- oder allgemeiner Checkresolver hinzugefügt |
+| G3 zusätzliche unterstützte Folge | Holzschlüssel vom Boden nehmen, danach `go` mit `needs:1`: zuerst `resolved`, dann `authorized`, tatsächliche Ankunft und Besitz geprüft. Behält ein NPC den Schlüssel, werden beide Schritte verweigert; kein Ortswechsel. Retry ändert nichts |
+| G4 NPC-Gabe | Gewöhnlicher Holzmarker wird einmal erstellt/übertragen. Vollständige Szene in einem Request oder echte Fortsetzung mit neuer Zusage in zwei Requests. Unzulässiger Transfer, zweiter Spielerbatch und neuer Angriff bei geschlossenem PULSE werden abgewehrt |
 
-Das sind UTF-16-Inhaltszeichen, keine Providertokens. JSON-UTF-8-Bytes stehen separat im Artefakt. Keine natürliche Latenz-, Kosten- oder Qualitätsverbesserung gemessen. Historische Prompts enthalten andere Instruktionsmengen; kleinere Zeichenwerte sind kein Nachweis gleichwertiger Schutz-/Rollenspielqualität.
+Die zusätzliche Folge nutzt dieselben vorhandenen Command-/Agency-/Weltpfade. G3 wird dadurch nicht nachträglich als gelöst bezeichnet. Langfristig braucht freie Sprache eine fachlich definierte Zuordnung von **Absicht, betroffener Entität, Handlungsmöglichkeiten, Opposition, Erfolgskriterium und bedingten Folgen** zu vorhandenen Auflösungsregeln. Ein immer größerer Satz Spezialverben ist dafür allein unzureichend. Ebenso wäre ein frei vom GM erfundener DC samt selbst bestimmtem Transfer nur versteckte Gameplayautorität. Welche allgemeinen Prüfungen unterstützt werden sollen, ist eine spätere fachliche Entscheidung; hier wird nichts davon implementiert.
 
-## Tatsächlich ausgeführte Prüfungen
+## 5. Semantische Gegenfälle und Figurenwissen
 
-- `node --test experiments/dynamic-gm/test.mjs`: **21/21 bestanden**, keine übersprungen, etwa 10,34 s. Davon dokumentieren zwei Tests die drei semantischen Fehlbefunde; G3 prüft die sichere Ablehnung, keinen erfolgreichen Diebstahl.
-- `node --test tests/v4/pulse_npc_arrival.test.js tests/v4/npc_e2b.test.js tests/v4/c663.test.js` im Engineverzeichnis: **42/42 bestanden**, etwa 1,34 s. Bestehende Ankunfts-/PULSE-, NPC- und bedingte Aktionsregeln.
-- `node experiments/dynamic-gm/measure.mjs`: ausgeführt; drei vollständige Abschlüsse und eine G3-Ablehnung im Messartefakt.
-- Erste G4-Testfassung scheiterte an falscher Referenz auf das gerade erzeugte Objekt, danach am falschen Testzugriff auf `holder`. Korrekt sind `{new:"plain wooden token"}` und `holder.entity`. Kein Produktvalidator wurde dafür gelockert.
+Stärkere gemeinsame Struktur:
 
-Fehlerpunkte: nach Antwort, nach Tool, vor Weltcommit, vor atomarem Rename, nach Rename ohne ACK, nach Weltcommit, nach Hostsave und nach Anzeige. Rekonstruktion verwendet vorhandene Antwortbelege; gleiches Ergebnis, drei statt wiederholter erfolgreicher Waldphasen, eine Anzeige. Zusätzliche Timeouts nach Engineergebnis für Wald und Objektgabe: Kapazität bleibt blockiert, explizite Freigabe und Wiederaufnahme bewahren den Kandidaten. Die POSIX-/Einprozess- und Mockgrenzen des früheren Journals bleiben bestehen.
+- `speech` benennt Sprecher, Inhalt und gegebenenfalls Empfänger/Zusage. Derselbe Text wird angezeigt und als Zusage gespeichert; fehlende separate Delta-Abschrift kann diese **deklarierte** Zusage nicht verlieren.
+- Ein PC-Sprechakt braucht identische tatsächlich zitierte Spielerworte; PC-Promises über diesen Kanal sind gesperrt. Das ist kein vollständiger Parser impliziter Zustimmung.
+- `claims.at` muss der gebuchten Szene entsprechen. Eine falsche strukturierte Ankunft wird abgewiesen.
+- `knowledgeRefs` müssen dem Sprecher gehören. Ein Test mit zwei anwesenden Figuren und getrennten Geheimnissen verweigert Wats expliziten Verweis auf das Geheimnis der anderen Person.
 
-Keine Vollsuite, kein historischer Replay, keine Fingerprintänderung, keine ST-Smokes und kein natürlicher Lauf. `architecture201` und Produktdateien wurden nicht verändert.
+Die **drei ursprünglichen freien Prosa-Gegenfälle bleiben offen**: Zusage ohne strukturierten Eintrag, gebuchte Ankunft trotz Verneinung, erfundene Zustimmung. Zusätzlich zeigt ein Fortsetzungsgegenfall: Der GM kann in freier angehängter Prosa eine zuvor bestätigte Gabe verneinen. Die Mechanik wird dabei nicht verändert, aber die Geschichte ist widersprüchlich. Ein unveränderliches Präfix allein verhindert diesen semantischen Widerspruch nicht.
 
-## Antwort auf die nächsten Schritte
+Die getrennten Wissensantworten enthalten jeweils nur die eigene Wissenszuordnung. Der gemeinsame GM-Kontext enthält bei mehreren Personen trotzdem beide markierten Perspektiven. Korrekte Zuordnung im Text ist damit nicht deterministisch garantiert. Nicht deklarierte Verwendung fremden Wissens bleibt ein späterer natürlicher Gegenfall. Kein Modell pro NPC und keine breite neue Regex-Firewall wurden eingeführt.
 
-Die festen Modellrollen können später entfallen: Der Planner bleibt als Fachparser/Validator nutzbar, ohne ein Pflichtmodell zu sein; der Extractor wird für gemeinsam gelieferte Daten nicht aufgerufen. Prosa-Evidenzregeln und die jetzigen World-Adapter bleiben noch erhebliche Altlasten. Der neue GM darf Gespräche und Ideen erzeugen, ist aber nach einem Worldtool noch an einen unveränderlichen Abschlusskandidaten gebunden.
+Für den späteren Vergleich sind deshalb getrennt zu prüfen: vollständige wichtige Sprechakte, Prosa-/Mechanikdeckung, Spielerautorisierung und perspektivengerechte Dialoge. Ein zweiter unabhängiger semantischer Leser kann bei Bedarf helfen; weder seine Wirksamkeit noch eine natürliche Fehlerrate wurde hier gemessen.
 
-**Empfehlung: zuerst den GM-Vertrag und den mechanischen Adapter vervollständigen.** Konkret sind ein fachlich zulässiger vorhandener G3-Pfad oder eine gesonderte Entscheidung über dessen fehlende Mechanik, freie Fortsetzung nach bestätigter Weltmechanik sowie Umgang mit ausgelassenen Zusagen/Prosa-Widersprüchen/PC-Zustimmung zu klären. Erst danach der isolierte echte ST-Hostdurchstich. Die technische Basis ist weiterverwendbar, die vollständige vierteilige Abnahme ist noch nicht erreicht. Natürliche Spielqualität bleibt ausdrücklich unbewiesen.
+## 6. Tatsächlicher Alt-/Neu-Vergleich
+
+`measure.mjs` lädt den **echten alten Executor von c762260** per read-only `git show` in eine temporäre Datei, mit denselben unveränderten Engine-/architecture201-Abhängigkeiten. Identische geskriptete Kandidaten, Eingaben und Ausgangszustände laufen anschließend durch Alt und Neu. Keine neue Branchanlage oder alte Produktdatei wird benötigt. [comparison.json](comparison.json) enthält jede gesendete Phase mit vollständiger Inhaltslänge, JSON-UTF-8-Größe, Promptdigest, Status, Belegung und fachlichem Zustandshash.
+
+| Probe | Requests alt → neu | Promptzeichen gesamt alt → neu | Fachlicher Zustand |
+|---|---:|---:|---|
+| G1 | 1 → 1 | 13.463 → 14.643 | identisch |
+| G2 vollständiger Waldabschluss | 3 → 2 | 18.382 → 11.984 | identisch |
+| G3 unsupported | 1 → 1 | 13.484 → 14.664 | identisch unverändert; kein Abschluss |
+| G4 vollständige Gabe | 2 → 1 | 28.753 → 14.643 | identisch |
+| Unterstütztes TAKE → GO erfolgreich | 3 → 2 | 18.098 → 12.114 | identisch |
+| Unterstütztes TAKE → GO verweigert | 2 → 2 | 10.905 → 12.127 | identisch |
+
+Aktuelle Phasengrößen: G2 5.365/6.619 Zeichen, erfolgreicher unterstützter G3-Fall 5.412/6.702, verweigerter Fall 5.575/6.552. Die übrigen Proben haben je einen Request. Der historische `measurements.json` bleibt separat unverändert.
+
+Die neuen Kernregeln und der sichtbare Gegenstands-/Autorisierungskontext erhöhen einzelne Promptgrößen. Die eingesparte Bestätigungsphase senkt dagegen bei G2/G4 die Gesamtsumme. Keine Behauptung pauschaler Promptverkleinerung. Zeichen sind UTF-16-Inhalte sämtlicher tatsächlich übergebener Messages, keine Tokens. Keine Providerlatenz, Geldkosten oder natürliche Qualität gemessen. Vier Einheiten bleiben die maximale simulierte Belegung.
+
+Eine **echte** G4-Fortsetzung kostet zwei Requests; Timeout nach dem Tool kostet einen weiteren Versuch. Die bisherigen expliziten Fortsetzungs-/Wiederaufnahmeproben laufen weiterhin, ohne sie als Ein-Request-Züge umzubenennen. Gleichheit gilt bei identischen Skriptentscheidungen; freie natürliche GM-Entscheidungen dürften legitim andere Weltfolgen haben.
+
+## 7. Prüfungen
+
+- Rotprüfung der vier Hostfälle vor Korrektur: **0/4 bestanden**.
+- `node --test experiments/dynamic-gm/test.mjs experiments/dynamic-gm/safety.test.mjs`: **49/49 Testassertionen bestanden**, 0 fehlgeschlagen/übersprungen, ca. 16,52 s.
+- Darin sind **drei ausdrücklich benannte COUNTEREXAMPLE-Tests**, welche vier semantische Fehlbefunde bestätigen. Sie sind keine bestanden geprüften Sprachschutzanforderungen. Die übrigen technischen Fälle prüfen erwarteten Schutz, regelgerechte Erfolge oder explizite Ablehnungen.
+- Bestehende Fachregressionen: `node --test tests/v4/pulse_npc_arrival.test.js tests/v4/npc_e2b.test.js tests/v4/c663.test.js` im Engineverzeichnis: **42/42 bestanden**, ca. 1,66 s.
+- `node experiments/dynamic-gm/measure.mjs`: sechs Alt-/Neu-Paare ausgeführt; alle jeweiligen fachlichen Zustandshashes gleich. Laufzeittelemetrie `ms/perf/llm` ist vom Fachvergleich ausgenommen.
+
+Zwischenstände deckten außerdem auf, dass angehängte Prosa den Event-Texthash aktualisieren muss und `object.consumed` ein Objekt über `holder.consumed` markiert statt zwingend dessen historische Menge zu nullen. Beide Fälle sind in der finalen Prüfung berücksichtigt; kein Produktvalidator wurde gelockert.
+
+Geprüfte Fehlerpunkte umfassen Antwort, Toolcheckpoint, Weltcommit, verlorene Savebestätigung, Hostsave, Anzeige, falschen Chat und erneuerten Reloadtoken. Gleichbleibende Mechanik wird bei Fortsetzung über den gesamten Fold außer den ausdrücklich neuen Threads verglichen. Die ursprünglichen B/C1-Dateien wurden nicht geändert. Keine Vollsuite, Replayfreigabe, ST-Smokes oder natürlichen Läufe.
+
+## 8. Nächste Entwicklungsphase und offene Grenzen
+
+**Empfohlen ist jetzt der isolierte reale ST1.19-Hostdurchstich mit Mockprovider**, eng auf explizite Save-Zielbindung, Save-Read-back, Stop/Chatwechsel, Reload, gepufferte Anzeige und diese zwei Abschlusswege begrenzt. Der Mock verlangt eine zielgebundene Save-Schnittstelle; ob der echte ST-Adapter sie zuverlässig einschließlich Windows/Browser/Extensions umsetzt, ist genau die nächste zu prüfende Frage.
+
+Keine Behauptung, sämtliche bisherigen Abnahmeprobleme seien damit gelöst. Blocker für einen natürlichen/prod­uktiven GO bleiben: freie semantische Widersprüche und Memoryauslassungen, unvollständige Erkennung beliebiger Spielerhandlungen, Wissensvermischung eines gemeinsamen GM, echte alternative Swipe-Welten, nicht unterstützte neue mechanische Ketten nach dem Worldtool und unbekannte Remote-Kapazitätsfreigabe. G3-Ablenkung ist bewusst unsupported; dieser bekannte fachliche Umfangsrand verhindert keinen geskripteten Hosttest.
+
+Es wird keine weitere fixe Modellphase eingeführt. Vollständige Kandidaten enden sofort; echte Abhängigkeiten erzeugen gezählte Fortsetzungen. Ob wichtige Szenen später einen unabhängigen semantischen Prüfer benötigen, bleibt eine empirische Qualitätsentscheidung.

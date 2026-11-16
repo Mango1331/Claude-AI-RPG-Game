@@ -1,56 +1,32 @@
-# Dynamischer GM – aktiver Architektur-/Modellbranch
+# Dynamischer GM – isolierter Werkzeugvertrag
 
-**Stand 16.11.2026.** Branch `experiment/dynamic-gm-model`. Startcommit [`80d5fcb`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/80d5fcb8cf799061b7f8ab1842f1258ce9d94f1c); darin Produktbasis [`.200` / `0cd1480`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b) und der vorhandene **isolierte B/C1-Experimentcode** `experiments/architecture201/`.
+Aktiver Branch ausschließlich `experiment/dynamic-gm-model`. Produktbasis bleibt `.200` / `0cd1480`; dieser Nachtrag baut auf `c7622605419855233a305b9c1c5c2b039c28ddf8` auf. Keine Produktintegration, kein natürlicher Modelllauf. Die [Rollenentscheidung auf main](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/recherche/ARCHITEKTUR_NEUBEWERTUNG_LLM_SPIELLEITER_ENGINE_2026-11-16.md) bleibt Grundlage.
 
-**Isolierter dynamischer GM-Durchstich vorhanden; keine vollständige Produktimplementierung.** Dieser Branch ist bewusst der einzige neue Arbeits-/Experimentbranch; `main` enthält die zentrale Dokumentation, der lange `claude/c-planner-prototype-2026-10-02-gpt-c666` bleibt unveränderter Produkt-/Rückfallstand.
-
-## Aktives Ziel
-
-Ein **kreatives LLM als tatsächlicher Spielleiter**, das freie NPC- und Weltreaktionen gestaltet, wichtige Gedächtnisänderungen **mit** der Erzählung liefert und nur erforderliche mechanische Auflösungen über Engine-Werkzeuge anfordert. Der deterministische RPG-Kern bleibt autoritativ für Würfel, Kampf, Stealth-Checks, Level/Stats, Ressourcen, Inventar/Geld/Loot und dauerhaft gespeichertes Figuren-/Weltwissen. Spieler entscheidet über seine eigenen freiwilligen Handlungen.
-
-Das alte stets dreistufige Planner–Narrator–Extractor-Protokoll ist **kein verbindliches Zukunftsdesign**. Ein Aufruf pro gewöhnlichem Spielzug ist ein **Ziel, keine Zusage**; mechanische Toolfortsetzungen oder zielgerichtete zweite Leser dürfen bedarfsabhängig notwendig sein.
-
-## Verbindliche Quellen auf `main`
-
-- [Aktueller Projekt- und Arbeitsstand](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/03_AKTUELLER_PROJEKTSTAND.md).
-- [Neue Rollen-/Architekturentscheidung, Astra Ultra](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/recherche/ARCHITEKTUR_NEUBEWERTUNG_LLM_SPIELLEITER_ENGINE_2026-11-16.md).
-- [Architekturaudit `.200`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/recherche/ARCHITEKTUR_AUDIT_REDESIGN_ENTSCHEIDUNG_2026-11-16.md).
-- [Pausierte Roadmap](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/07_ROADMAP_NACH_10B_ENTWURF.md).
-
-Der vorhandene [B/C1-Prototypvergleich](../architecture201/README.md) ist **technische Vergleichsbasis**, keine natürliche Modellqualitätsprüfung. Seine beiden semantisch fehlgeschlagenen C1-Gegenfälle (widersprüchliche Ankunft, ausgelassene NPC-Zusage) bleiben Pflicht-Gegenbelege. Sein Scheduler/Journal und die einmalige Buchung sind Bausteine, kein Grund, die feste B-Pipeline zu erhalten.
-
-## Nächster isolierter Durchstich
-
-Vier kurze Fälle, fachlich im [Astra-Ultra-Bericht §8](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/recherche/ARCHITEKTUR_NEUBEWERTUNG_LLM_SPIELLEITER_ENGINE_2026-11-16.md) beschrieben:
-
-1. **Wat:** neue Zusage und spätere Wiederbegegnung ohne ursprünglichen Chattext; vollständiges Gedächtnis, keine erfundene PC-Zustimmung oder fremdes Metawissen.
-2. **Waldreise:** unbekanntes Reiseziel, tatsächliche Ankunft/Unterbrechung/Ortsneuschöpfung; Narration und bestätigte Position stimmen überein.
-3. **Gemischte Spielerhandlung:** Ablenkung plus bedingte Schlüsselentnahme; Engineauflösung vor abhängiger Fortsetzung.
-4. **NPC-Eigeninitiative:** Angriff oder Gegenstandsübergabe; Engine entscheidet mechanische Folgen, kein neuer Wurf oder Doppeltransfer bei Timeout/Retry.
-
-Zunächst nur **offline mit gekennzeichneten Antwortfixtures und simulierten Provider-/Savefehlern**. Kein natürlicher Modellaufruf. Danach isolierter echter ST1.19-Hostdurchstich mit Mockprovider, danach ein **separat freizugebender** kleiner natürlicher GM-/B-Vergleich. Keine persönliche ST-Installation, keine unverifizierte Streaming-Veröffentlichung.
-
-## Roadmap- und Git-Grenzen
-
-Die gesamte bisherige Gameplay-Roadmap (NPC E4/E5, PULSE D, K1, Stealth S2, Balance, Shop/Preis/Quest/QoL) ist **ON HOLD**, bis über die neue Architektur entschieden und eine natürliche Spielqualitätsprobe bewertet wurde. Keine parallelen Gameplaypatches oder Änderungen am Produktbranch.
-
-Keine Merges in Produkt oder `main` ohne Auftrag. Dokumentation in `main`, experiment-spezifische technische README/Tests hier. Frühere alte Arbeitsbranches dürfen nach gesicherter Archivierung gelöscht werden; die [aktuelle Löschklassifikation](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md) schützt vier nicht integrierte Sonderstände, darunter die alten GM-Tools-Entwürfe.
-## Ausführbarer Durchstich (dieser Auftrag)
-
-Ausgangscommit `81195e187fac130c17cd904481eff36eaf8fdeea`. Der oben beschriebene Plan ist jetzt **teilweise ausführbar**, aber noch nicht fachlich vollständig abgenommen. Maßgeblicher Ergebnisbericht: [PROTOTYP_ERGEBNIS_2026-11-16.md](PROTOTYP_ERGEBNIS_2026-11-16.md).
-
-Vom Repositoryroot, Node 24:
+Vom Repositoryroot (Node 24):
 
 ```sh
-node --test experiments/dynamic-gm/test.mjs
+node --test experiments/dynamic-gm/test.mjs experiments/dynamic-gm/safety.test.mjs
 node experiments/dynamic-gm/measure.mjs
 ```
 
-- `runtime.mjs`: providerneutraler GM-Dialog mit `finish`, `resolve`, `world`, `recall`, `describe`. Höchstens sechs Modellphasen, bestehender Scheduler begrenzt Transportversuche zusätzlich. Keine Netzwerkimplementierung.
-- Scheduler, Journal, Publikationsadapter und Fachadapter werden aus `architecture201` importiert, nicht kopiert oder verändert.
-- `resolve` übergibt eine vollständige Spieleraktionsliste an vorhandene Planvalidierung/Engine. Der Adapter liefert diese lokal an die bestehende Runtime; **kein Planner-Modellrequest**. Zusätzliche Board-/Forgegeneratoren sind in diesem Durchstich nicht zugelassen.
-- `finish` kann gewöhnliche Narration und Memory direkt validieren und speichern. Geschützte Weltwirkungen verlangen `world`; dessen Ergebnis wird dauerhaft gespeichert. Die folgende Bestätigung `finish/use_result` übernimmt exakt diesen Kandidaten, ohne Neubuchung.
-- `recall` liefert die gespeicherte Perspektive einer Figur, `describe` ausgewählte bestehende Schemas. Initial werden aktuelle NPC-Erinnerungen bereitgestellt, kein vollständiger alter Dialog. Der Prototyp verwendet noch keine umfassend optimierte Kontextauswahl.
-- Fehler bleiben im Journal als `lastError`; Wiederaufnahme benutzt dieselbe Requestidentität und gespeicherte Antworten. Stop/Chatwechsel werden über den vorhandenen Hosttoken abgesichert.
+Der zweite Befehl liest den alten Executor mit `git show c762260:...` ausschließlich lesend, lädt ihn temporär mit denselben unveränderten .200-/architecture201-Abhängigkeiten und misst Alt/Neu. Er schreibt `comparison.json`. `measurements.json` bleibt das historische Messartefakt von c762260. Keine Providerverbindung; alle Transportantworten sind geskriptet.
 
-**Wesentliche Grenzen:** G3 hat keinen vorhandenen passenden Ablenkungs-/Diebstahlresolver und wird blockiert. Ein `world`-Ergebnis erlaubt noch keine weitere freie Weltänderung in derselben Fortsetzung; `use_result` ist eine Abschlussbestätigung, keine neue Renderphase. Die freie kreative Phase liegt davor beziehungsweise nach `resolve`. Die vorhandenen semantischen Fehlerfälle bleiben bestehen. Keine Freigabe für natürliche Qualität oder Produktintegration.
+## Vertrag
+
+- `finish` und `world` validieren und veröffentlichen einen vollständigen Abschluss unmittelbar. Kein obligatorischer Bestätigungsrequest.
+- `world` mit `continue:true` speichert den aufgelösten Kandidaten und liefert Engineergebnisse an eine weitere GM-Anfrage. Danach `finish` mit `continuation:true`, neuer `narration`, optionalen `speech`-Akten und `threads`. Die Fortsetzung wird an den unveränderlichen Text angehängt. Neue Mechanik/Ortswechsel sind dort unzulässig; zulässige zusätzliche Memorytypen sind derzeit Versprechen, Schulden und Gerüchte über den vorhandenen Thread-Lebenszyklus.
+- `speech:[{id,speaker,text,to:[ids],promise:true}]` nutzt denselben Inhalt für angezeigten Sprechakt und gespeicherte Zusage. Sprecher/Adressaten müssen etabliert sein. PC-Sprechakte erfordern ein identisches tatsächlich zitiertes Spielerwort; PC-Versprechen sind über diesen Kanal gesperrt. Optionale `knowledgeRefs` müssen dem Sprecher gehören. `claims.at` muss zum bestätigten Ort passen. Freie Prosa besitzt dadurch keine allgemeine semantische Garantie.
+- `resolve` liefert einen vollständigen Spieleraktionsbatch an bestehende Planvalidierung/Engine, ohne Planner-Modellrequest. Höchstens ein Batch je Zug. `recall` liefert eine Figurenperspektive; `describe` situationsbezogene vorhandene Schemas. Jede erforderliche Modellfortsetzung wird gezählt.
+- Der direkte Abschluss prüft vorhandene Intent-/Autorisierungssignale und einen engen Erkenner für die Verwendung gehaltener Gegenstände. Eine erkennbare Tranknutzung kann nicht durch einen leeren Batch übergangen werden. Dies ist ein konservativer Auslassungsschutz, kein universeller Freitextplanner; nicht erkannte Paraphrasen bleiben ein Qualitätsrisiko.
+
+## Host und Persistenz
+
+`OriginHost` in `publication.mjs` erweitert ausschließlich den isolierten ST-Mock um `saveChatFor(chatId, ...)` und `readChatFor(chatId)`. Ein echter Adapter muss diese explizite Zielbindung implementieren. `DynamicGM` verwendet darüber den bestehenden `HeldPublication`-Ablauf. Journal und Zug besitzen eine dauerhafte Ursprungs-Chat-ID. Epoch/Token werden nach Reload desselben Chats erneuert; ein anderer Chat wird vor Dispatch, Commit und Veröffentlichung abgewiesen. Alte Experimentjournale ohne Ursprung werden nicht still einem aktuellen Chat zugeordnet.
+
+Scheduler, atomarer Journal-Save, vier Kapazitätseinheiten, Antwortbelege und Publikationsreihenfolge stammen unverändert aus `architecture201`. Nach `before_commit` wird die aktuelle Hostgültigkeit nochmals geprüft. Ein verzögerter Save schreibt ausschließlich in den expliziten Ursprungs-Chat. Ein Journal gehört in diesem Prototyp einem Chat; Mehrchatverwaltung und echtes Browser-/Windowsverhalten sind noch nicht implementiert.
+
+## Dateien und Abnahme
+
+`runtime.mjs`: GM-Koordinator. `contract.mjs`: Auslassungsschutz, typisierte Sprechakte und Memoryfortsetzung. `publication.mjs`: Chatbindung. Tests: ursprüngliche G1–G4 plus Sicherheits-/Fortsetzungsfälle. [Ergebnisbericht](PROTOTYP_ERGEBNIS_2026-11-16.md), [Vergleich](comparison.json), [Verifikation](verification.json).
+
+**Technisch geeignet für einen isolierten echten ST-Hostdurchstich mit geskriptetem Mockprovider. Keine Freigabe für natürliches Spiel oder Produktintegration.** G3 Ablenkung/Diebstahl bleibt absichtlich unsupported. Die drei ursprünglichen semantischen Fehler und ein freier Widerspruch in einer Fortsetzung sind weiterhin nachgewiesen. Tests namens `COUNTEREXAMPLE` bestätigen Fehlerexistenz, keinen erfolgreichen Schutz.

@@ -1,0 +1,276 @@
+{
+  "baseline": "c7622605419855233a305b9c1c5c2b039c28ddf8",
+  "provenance": "Offline scripted answers; G2 original .200 input/plan/prose with synthetic successful world data. G1/G4 synthetic on recorded .191 state. No natural quality or provider tokens measured.",
+  "cases": [
+    {
+      "id": "G1",
+      "version": "baseline",
+      "stateHash": "f671f4c88946e19b329a16ec6192629a8f0d55fabad3c0475c429c3cabde125c",
+      "error": null,
+      "calls": 1,
+      "published": 1,
+      "worldRevision": 1,
+      "peak": 4,
+      "requests": [
+        {
+          "phase": "gm:0",
+          "promptChars": 13463,
+          "wireBytes": 15205,
+          "promptHash": "8f0a1f162520cbb9d28d9508d9ff9c5ee7729e25fcb1b90a9c9a0903f28ccbab"
+        }
+      ]
+    },
+    {
+      "id": "G1",
+      "version": "current",
+      "stateHash": "f671f4c88946e19b329a16ec6192629a8f0d55fabad3c0475c429c3cabde125c",
+      "error": null,
+      "calls": 1,
+      "published": 1,
+      "worldRevision": 1,
+      "peak": 4,
+      "requests": [
+        {
+          "phase": "gm:0",
+          "promptChars": 14643,
+          "wireBytes": 16527,
+          "promptHash": "67d47cb4db31675a7662532021a094f31bd52612ebdfbe433c2d69d8640d9109"
+        }
+      ]
+    },
+    {
+      "id": "G2",
+      "version": "baseline",
+      "stateHash": "54647d8313b1332697697622530bf02a5c81eeed51b6560358b6836739051ff5",
+      "error": null,
+      "calls": 3,
+      "published": 1,
+      "worldRevision": 1,
+      "peak": 4,
+      "requests": [
+        {
+          "phase": "gm:0",
+          "promptChars": 4830,
+          "wireBytes": 5542,
+          "promptHash": "4b69c6f38449ecb12071c81e8997f8aece340bb7f8530a969c7084712d9154fd"
+        },
+        {
+          "phase": "gm:1",
+          "promptChars": 6084,
+          "wireBytes": 6962,
+          "promptHash": "6be7d0e75d6a4bccb340027c440eee0dfdd167ad27693b18413f468a2cb1248a"
+        },
+        {
+          "phase": "gm:2",
+          "promptChars": 7468,
+          "wireBytes": 8574,
+          "promptHash": "6989a1be6fda59976d3cbeefd1dfdca7b33a7bbaa0b2d21913995fdf1440ded5"
+        }
+      ]
+    },
+    {
+      "id": "G2",
+      "version": "current",
+      "stateHash": "54647d8313b1332697697622530bf02a5c81eeed51b6560358b6836739051ff5",
+      "error": null,
+      "calls": 2,
+      "published": 1,
+      "worldRevision": 1,
+      "peak": 4,
+      "requests": [
+        {
+          "phase": "gm:0",
+          "promptChars": 5365,
+          "wireBytes": 6107,
+          "promptHash": "05b8cfbfc33b57e528db43645007c7fdbab706cec6d7cb217ca1d653f43f338a"
+        },
+        {
+          "phase": "gm:1",
+          "promptChars": 6619,
+          "wireBytes": 7527,
+          "promptHash": "22bfe4c8b03298d78c244c98a5b668afd5859f90fdd2583a21d2af498b88a02a"
+        }
+      ]
+    },
+    {
+      "id": "G3",
+      "version": "baseline",
+      "stateHash": "913b0a90f2495489f0369e845cbb4feaa875b49a1b3edf7dbb8fe8a7c07e1e2b",
+      "error": "preparation incomplete",
+      "calls": 1,
+      "published": 0,
+      "worldRevision": 0,
+      "peak": 4,
+      "requests": [
+        {
+          "phase": "gm:0",
+          "promptChars": 13484,
+          "wireBytes": 15226,
+          "promptHash": "68671c1c4d5f69d313e1930f1636c10599b97696eeac7c8b44db04c55435d539"
+        }
+      ]
+    },
+    {
+      "id": "G3",
+      "version": "current",
+      "stateHash": "913b0a90f2495489f0369e845cbb4feaa875b49a1b3edf7dbb8fe8a7c07e1e2b",
+      "error": "preparation incomplete",
+      "calls": 1,
+      "published": 0,
+      "worldRevision": 0,
+      "peak": 4,
+      "requests": [
+        {
+          "phase": "gm:0",
+          "promptChars": 14664,
+          "wireBytes": 16548,
+          "promptHash": "19af3f9d296ddb3001a6af8c2d9e9ad7c5eccd39fd328543271159b719829ef9"
+        }
+      ]
+    },
+    {
+      "id": "G4",
+      "version": "baseline",
+      "stateHash": "b8e5bda983d3dce1d655e9b6ca0d285fac4fc5aaefa45531b43d755009c4405b",
+      "error": null,
+      "calls": 2,
+      "published": 1,
+      "worldRevision": 1,
+      "peak": 4,
+      "requests": [
+        {
+          "phase": "gm:0",
+          "promptChars": 13463,
+          "wireBytes": 15205,
+          "promptHash": "8f0a1f162520cbb9d28d9508d9ff9c5ee7729e25fcb1b90a9c9a0903f28ccbab"
+        },
+        {
+          "phase": "gm:1",
+          "promptChars": 15290,
+          "wireBytes": 17292,
+          "promptHash": "498aa328c02b91b7eb6cd986f24e440fc1ef7c495ab57c3e6a02befdd67d2725"
+        }
+      ]
+    },
+    {
+      "id": "G4",
+      "version": "current",
+      "stateHash": "b8e5bda983d3dce1d655e9b6ca0d285fac4fc5aaefa45531b43d755009c4405b",
+      "error": null,
+      "calls": 1,
+      "published": 1,
+      "worldRevision": 1,
+      "peak": 4,
+      "requests": [
+        {
+          "phase": "gm:0",
+          "promptChars": 14643,
+          "wireBytes": 16527,
+          "promptHash": "67d47cb4db31675a7662532021a094f31bd52612ebdfbe433c2d69d8640d9109"
+        }
+      ]
+    },
+    {
+      "id": "G3-supported-success",
+      "version": "baseline",
+      "stateHash": "1af691d0ca8163708a1cb3fb6be95c93ca417a6506f1a573245c08466de981e2",
+      "error": null,
+      "calls": 3,
+      "published": 1,
+      "worldRevision": 1,
+      "peak": 4,
+      "requests": [
+        {
+          "phase": "gm:0",
+          "promptChars": 4793,
+          "wireBytes": 5505,
+          "promptHash": "81c8664d969869bfd3bb862c834ceca9db7ab7aa1ca830686beac2338444fd3d"
+        },
+        {
+          "phase": "gm:1",
+          "promptChars": 6098,
+          "wireBytes": 6994,
+          "promptHash": "39b0248bbea845de6385e7cde8ca11f7878c8282691a140de090d6ad14078a27"
+        },
+        {
+          "phase": "gm:2",
+          "promptChars": 7207,
+          "wireBytes": 8291,
+          "promptHash": "79e578bb61e10c39e863a97c3a97f832d66299f72a5ca3bb100cc8a71e10b5ae"
+        }
+      ]
+    },
+    {
+      "id": "G3-supported-success",
+      "version": "current",
+      "stateHash": "1af691d0ca8163708a1cb3fb6be95c93ca417a6506f1a573245c08466de981e2",
+      "error": null,
+      "calls": 2,
+      "published": 1,
+      "worldRevision": 1,
+      "peak": 4,
+      "requests": [
+        {
+          "phase": "gm:0",
+          "promptChars": 5412,
+          "wireBytes": 6170,
+          "promptHash": "562d00dfc00ea6dacda54efc226bc0f0c517f981f06b65313e5d93e0554844f4"
+        },
+        {
+          "phase": "gm:1",
+          "promptChars": 6702,
+          "wireBytes": 7644,
+          "promptHash": "4a79f603ac7c08717d5939f12652bda559633e04660746db24ad8933cc725511"
+        }
+      ]
+    },
+    {
+      "id": "G3-supported-refused",
+      "version": "baseline",
+      "stateHash": "cc48bf43d4c39656dd81f8467ba816966a8e4c6ce7cdb1aa1723059851657d1d",
+      "error": null,
+      "calls": 2,
+      "published": 1,
+      "worldRevision": 1,
+      "peak": 4,
+      "requests": [
+        {
+          "phase": "gm:0",
+          "promptChars": 4964,
+          "wireBytes": 5710,
+          "promptHash": "c8563fc3f5fc88a97a8ef296e0e55b5c9e515a554a03bc8b5425f4ec26d14c1f"
+        },
+        {
+          "phase": "gm:1",
+          "promptChars": 5941,
+          "wireBytes": 6821,
+          "promptHash": "5ccc20c48f7e35dae324b49408992cadc5582a240c2a04099e38963bf799387e"
+        }
+      ]
+    },
+    {
+      "id": "G3-supported-refused",
+      "version": "current",
+      "stateHash": "cc48bf43d4c39656dd81f8467ba816966a8e4c6ce7cdb1aa1723059851657d1d",
+      "error": null,
+      "calls": 2,
+      "published": 1,
+      "worldRevision": 1,
+      "peak": 4,
+      "requests": [
+        {
+          "phase": "gm:0",
+          "promptChars": 5575,
+          "wireBytes": 6367,
+          "promptHash": "c163a3ea992dc064caf874037b0d7da9061a4a6e80e05c3aa411432917d66479"
+        },
+        {
+          "phase": "gm:1",
+          "promptChars": 6552,
+          "wireBytes": 7478,
+          "promptHash": "da53c3a663f73597c93311cf6fe80978399576e1f4468b0786dd74a25bd38927"
+        }
+      ]
+    }
+  ]
+}

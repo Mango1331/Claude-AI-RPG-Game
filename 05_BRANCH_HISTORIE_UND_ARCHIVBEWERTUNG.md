@@ -49,7 +49,7 @@ Das GM-Tools-Archiv ist für das neue Modell besonders wertvoll: Vor einem neuen
 
 ## Ein weiterer einmaliger Branch: Prototyp übertragen
 
-`experiment/architecture-prototype-201` steht bei [`80d5fcb`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/80d5fcb8cf799061b7f8ab1842f1258ce9d94f1c) **einen Commit vor** `.200`; sein HEAD ist **genau der Ausgangscommit** des neuen Branches `experiment/dynamic-gm-model`. Sobald der neue Branch geprüft ist, ist der alte Experimentbranch ohne Datenverlust löschbar. [Draft-PR #20](https://github.com/Mango1331/Claude-AI-RPG-Game/pull/20) darf dabei **nicht** in das Produkt gemergt werden; vor Branchlöschung schließen/als überholt dokumentieren.
+`experiment/architecture-prototype-201` steht bei [`80d5fcb`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/80d5fcb8cf799061b7f8ab1842f1258ce9d94f1c) **einen Commit vor** `.200`; sein HEAD ist **genau der Ausgangscommit** des neuen Branches `experiment/dynamic-gm-model`. Sobald der neue Branch geprüft ist, ist der alte Experimentbranch ohne Datenverlust löschbar. [Draft-PR #20](https://github.com/Mango1331/Claude-AI-RPG-Game/pull/20) darf dabei **nicht** in das Produkt gemergt werden; bereits **geschlossen und als überholt markiert**, nicht gemergt (16.11.2026).
 
 ## Sicherheitsgrenzen und Durchführung
 

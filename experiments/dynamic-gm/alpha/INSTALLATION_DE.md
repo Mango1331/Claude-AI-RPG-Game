@@ -1,16 +1,27 @@
-# Avereth GM Alpha 1 für SillyTavern 1.19
+# Avereth GM Alpha 2 für SillyTavern 1.19
 
-Testversion **4.3.0-gm.alpha.1**, mechanischer Kern unverändert **.200**. Für einen **neuen Testchat**, nicht für laufende Kampagnen. Keine automatische Migration. Im Spiel werden nur SillyTavern und dessen bereits eingerichtete Modellverbindung benötigt. Keine Codex-, Playwright- oder zusätzliche Node-Anwendung, kein zusätzlicher API-Key.
+Testversion **4.3.0-gm.alpha.2**, mechanischer Kern unverändert **.200**. Für einen **neuen Testchat**, nicht für laufende Kampagnen. Keine automatische Migration. Im Spiel werden nur SillyTavern und dessen bereits eingerichtete Modellverbindung benötigt. Keine Codex-, Playwright- oder zusätzliche Node-Anwendung, kein zusätzlicher API-Key.
 
 ## Installation
 
 1. SillyTavern schließen und die eigene ST-Datenwurzel sichern. Das Alpha-Paket enthält **keine** Einstellungen oder Zugangsdaten; keine eigenen Dateien durch Testdaten ersetzen.
 2. Den **gesamten Ordner `avereth-gm-alpha`** aus dem ZIP nach `SillyTavern/data/<Benutzer>/extensions/avereth-gm-alpha` kopieren. Bei der Standardinstallation ist `<Benutzer>` `default-user`. `manifest.json`, `index.js`, `gm/`, `src/`, `content/` und `presets/` müssen unmittelbar darin liegen. Eine abweichende ST-Datenwurzel entsprechend verwenden. Nicht in den alten `.200`-Extensionordner kopieren. Die Git-URL dieses Mehrordner-Repositories ist kein geeigneter Ein-Klick-Installer für diesen Unterordner.
-3. ST normal starten. Unter **Extensions → Manage Extensions** die alte **Avereth Engine (.200)** deaktivieren, **Avereth GM Alpha 1** aktivieren, anschließend die Browserseite vollständig neu laden. Beide dürfen nicht gleichzeitig geladen sein. Die Alpha erkennt eine noch geladene alte Engine und verweigert den Start; sie deaktiviert keine fremden Extensions automatisch.
+3. ST normal starten. Unter **Extensions → Manage Extensions** die alte **Avereth Engine (.200)** deaktivieren, **Avereth GM Alpha 2** aktivieren, anschließend die Browserseite vollständig neu laden. Beide dürfen nicht gleichzeitig geladen sein. Die Alpha erkennt eine noch geladene alte Engine und verweigert den Start; sie deaktiviert keine fremden Extensions automatisch.
 4. Unter Characters die Datei `presets/Avereth GM Alpha.character.json` importieren. Die alte Narrator-Karte bleibt unverändert. Auf der neuen Karte **kein altes Avereth-Lorebook und keinen alten 35.000-Zeichen-Vertrag** ergänzen.
-5. Passendes Preset importieren:
-   - **Chat Completion** (einschließlich einer bestehenden Featherless-Verbindung als Custom/OpenAI-compatible): `presets/Avereth GM Alpha 1.json` über den Preset-Import der Chat-Completion-Einstellungen.
-   - **Text Completion → Featherless**: `presets/Avereth GM Alpha 1 Text Completion.json` über den Text-Completion-Preset-Import. Das zum Modell passende ST-Instruct-/Context-Template beibehalten. In der Ausgabe-Länge **4096 Tokens** wählen, soweit das Modell dies unterstützt. Kontextfenster auf den tatsächlichen Modellwert einstellen, beispielsweise 32768, nicht blind erhöhen.
+5. **Chat Completion → Custom (OpenAI-compatible)** verwenden. Bestehenden Featherless-Endpunkt `https://api.featherless.ai/v1` und Modell `zai-org/GLM-5.3-Flash` wählen. Schlüssel bleiben ausschließlich in STs vorhandener Keyverwaltung. Das Preset `presets/Avereth GM Alpha 2.json` importieren. „Bind preset to connection“ ausgeschaltet lassen; der Import soll keine persönliche Verbindung ersetzen. Temperature 0,8, Top P 0,95, Frequency/Presence Penalty 0, Ausgabe 4096, Kontext 32768, Seed -1, Streaming aus, n=1, Function Calling aus. Alpha 2 unterstützt für Modellrequests ausschließlich diesen budgetgeprüften Chat/Custom-Modellpfad. Der frühere native Textpfad wird vor Dispatch verständlich abgewiesen; dafür wird kein neues Preset ausgeliefert.
+
+   **Einmalig manuell in den erweiterten Custom-Verbindungseinstellungen → Include Body Parameters setzen:**
+
+   ```yaml
+   chat_template_kwargs:
+     reasoning_effort: low
+     clear_thinking: true
+   ```
+
+   Include Body enthält nur diesen Block. Optionaler `response_format: {type: json_object}` wird technisch unterstützt, ist aber noch kein natürlich abgenommener Standard. **Exclude Body leer, zusätzliche Custom-Headers leer, Prompt Post-Processing None, zusätzliche/temporäre Stopstrings leer.** Authentifizierung über STs Keyfeld, nicht über Custom-Headers. Alte top-level-Reasoning-, Streaming-, Sampler-, Tool- oder Budgetblöcke aus diesem Testprofil entfernen. Die Alpha verändert diese persönlichen Einstellungen nicht automatisch: Sie erklärt Konflikte und sendet dann keinen Request. Das normale ST-Reasoningfeld „Low“ allein reicht bei GLM/Custom nicht; der ST-Backendpfad entfernt es. Die verschachtelten Templateparameter sind lokal bis zum finalen Providerbody geprüft.
+
+   Vorhandene Verbindungswerte bei Bedarf in einem getrennten ST-Verbindungsprofil behalten. Kein „Test Message“-Aufruf wird automatisch gestartet. Für Alpha 2 einen **neuen** Testchat beginnen; Alpha-1-Chats werden nicht migriert.
+
 6. Die vorhandene Featherless-Quelle, das Modell und den bereits in ST gespeicherten Key weiterverwenden. Die Alpha verändert diese Verbindung nicht. Sie sendet ausschließlich über STs eigenen Backendpfad. Der kurze dynamische GM-Vertrag und relevante Memory-/Toolschema-Daten kommen einmal von der Extension; der lange alte Narrator-Prompt wird nicht angehängt. Das importierte Chat-Preset definiert Sampling und beschreibt die GM-Rolle; der Raw-Pfad verwendet keinen zweiten ST-Promptmanager-Regelblock. Für Text Completion bleiben die modellabhängigen Instruct-Tokens wichtig.
 
 ## Neues Spiel und Bedienung
@@ -38,3 +49,11 @@ Die eigenen Alpha-Journale liegen im selben ST-Benutzerprofil unter `user/files/
 Für `.200` die Alpha in Manage Extensions deaktivieren, die alte Engine wieder aktivieren, Browser vollständig neu laden und die **alte Narrator-Karte mit deren altem Preset und separaten Chats** öffnen. Keine Alpha-Kampagne unter `.200` fortsetzen. Die Alpha ändert weder die alte Karte noch deren Einstellungen, Schlüssel oder Spielstände. Die ursprünglichen Presets bleiben separat; bei Rückkehr das alte Preset wieder auswählen.
 
 Siehe [LIMITATIONS.md](LIMITATIONS.md) und den [Browser-Abnahmebericht](abnahme/ABNAHME_2026-11-16.md). Technisch geprüft mit Mockantworten; **natürliche Featherless-Rollenspielqualität noch nicht abgenommen**.
+
+## Kontext und Diagnose in Alpha 2
+
+Ein mitgelieferter lokaler GLM-Tokenizer zählt alle System-/Usernachrichten einschließlich Schemas, Memory, Toolergebnissen und Chattemplate. Es gilt Input + 4096 Ausgabe (auch Reasoning) + 512 Reserve ≤ 32768. Keine Schätzung aus Zeichen/4, keine Provideranfrage zum Zählen. Das gebündelte WASM/Tokenizerartefakt wird einmal lokal geladen; das Paket ist dadurch größer. Bei Überlauf hält die Alpha vor Dispatch an, ohne Memory zu kürzen. Aktuelle große Kampagnen können deshalb einen kontrollierten Halt erreichen; Schemaverdichtung folgt separat. Ein anderer Featherless-Servingstand kann abweichen; lokale Zählung und gemeldete Provider-Usage sind getrennt.
+
+Unter „Wiederherstellung und Hilfe → Requestdiagnose“ stehen die letzten verfügbaren Requestdaten, Phase, Modell, Dauer, Abschlussgrund und Tokenwerte. Fehlende Werte sind `null`, keine berechneten Providertokenzahlen. Gespeichert werden bis zu 100 abgeschlossene Diagnosen; die Oberfläche zeigt die jüngsten 20. Kein Reasoningtext, keine Auth-Header oder Schlüssel. „Show thoughts aus“ schaltet GLM-Reasoning nicht ab. Fehlerhüllen können von ST verändert werden; insbesondere ein maskierter 429 bleibt konservativ „Remoteabschluss unbekannt“.
+
+Der Stil wird genau einmal vom GM-Systemvertrag gesendet. Preset-Prompt-Managertexte, alte Charakterverträge und Lorebooks ergänzen diesen Raw-Pfad nicht. Keine alten Narrator-Regeln hinzufügen. Technische Abnahme: [Alpha 2](abnahme/ABNAHME_ALPHA2_2026-11-16.md).

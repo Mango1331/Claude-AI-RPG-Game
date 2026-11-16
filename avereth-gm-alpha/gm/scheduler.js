@@ -12,8 +12,11 @@ export class Scheduler {
         if (receipt) return copy(receipt.response);
         if (!current()) throw Error('Stopped or different chat');
         if (this.occupancy()) throw Error('Provider capacity locked: remote completion unknown or request running');
-        if (old.length >= 2) throw Error('Two explicit attempts exhausted; no automatic retry');
+        if (old.filter(l=>l.status!=='not_dispatched').length >= 2) throw Error('Two explicit attempts exhausted; no automatic retry');
         const id = `${key}:attempt:${old.length + 1}`;
+        // Budget and configuration failures consume neither remote capacity nor attempts.
+        const prepared = transport.prepare ? await transport.prepare({id,messages:copy(messages)}) : undefined;
+        if (!current()) throw Error('Stopped before dispatch');
         await this.ledger.update(db => { db.leases[id] = { id, key, weight: 4, status: 'sent', messages: copy(messages), sentAt: Date.now() }; });
         if (!current()) {
             await this.ledger.update(db => { db.leases[id].status = 'not_dispatched'; });
@@ -22,23 +25,26 @@ export class Scheduler {
         this.status('Modellanfrage läuft · 4/4 Kapazitätseinheiten');
         let timer;
         const pending = (async () => {
+            let diagnostic;
             try {
-                const response = await transport({ id, messages: copy(messages) });
+                const response = await transport({ id, messages: copy(messages), prepared, diagnose: async info => {
+                    diagnostic=info;
+                } });
                 if (typeof response !== 'string' || !response.trim()) throw Object.assign(Error('Empty response'), { remoteFinished: true });
-                await this.ledger.update(db => { Object.assign(db.leases[id], { status: 'completed', response, completedAt: Date.now() }); });
+                await this.ledger.update(db => { Object.assign(db.leases[id], { status: 'completed', response, diagnostic, completedAt: Date.now() }); });
                 return response;
             } catch (error) {
                 // Unknown transport/abort stays occupied. HTTP errors explicitly acknowledged
                 // by transport release only this request; no inference about other sessions.
                 await this.ledger.update(db => { const l = db.leases[id]; if (l.status !== 'completed') Object.assign(l, {
-                    status: error.remoteFinished ? 'remote_finished' : 'remote_unknown', error: error.message,
+                    status: error.notDispatched ? 'not_dispatched' : error.remoteFinished ? 'remote_finished' : 'remote_unknown', error: error.message, diagnostic,
                 }); }).catch(() => {}); // original write may have succeeded; reload reads authoritative disk
                 throw error;
             }
         })();
         try {
             const response = await Promise.race([pending, new Promise((_, reject) => {
-                timer = setTimeout(() => reject(Error('Provider timeout; remote completion unknown')), this.timeout);
+                timer = setTimeout(() => { this.status('Lokaler Timeout; Remoteabschluss unbekannt, Kapazität bleibt gesperrt'); reject(Error('Provider timeout; remote completion unknown')); }, this.timeout);
             })]);
             if (!current()) throw Error('Stopped: received answer stored, publication withheld');
             return response;
@@ -59,7 +65,9 @@ export class Scheduler {
         await this.ledger.update(db=>{
             db.closedRequests ||= 0;
             for(const [id,l] of Object.entries(db.leases)) if(l.key.startsWith(turnId+':') && !['sent','remote_unknown'].includes(l.status)) {
-                db.closedRequests++; delete db.leases[id];
+                db.closedRequests++;
+                if(l.diagnostic){db.diagnostics ||= [];db.diagnostics.push(l.diagnostic);db.diagnostics=db.diagnostics.slice(-100);}
+                delete db.leases[id];
             }
         });
     }

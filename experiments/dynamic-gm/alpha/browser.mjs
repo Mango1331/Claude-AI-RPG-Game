@@ -1,7 +1,7 @@
 import fs from 'node:fs';import http from 'node:http';import assert from 'node:assert/strict';import {createRequire} from 'node:module';import zlib from 'node:zlib';import {createHash} from 'node:crypto';import {fileURLToPath} from 'node:url';
 import {fixtures} from '../../architecture201/fixtures.mjs';import {foldChat,rec} from '../../architecture201/engine.mjs';
 const {chromium}=createRequire(import.meta.url)('playwright');
-const root='/workspace/avereth-setup/gm-alpha-host',out=new URL('./results/',import.meta.url);fs.mkdirSync(out,{recursive:true});
+const root='/workspace/avereth-setup/gm-alpha2-host',out=new URL('./results/',import.meta.url);fs.mkdirSync(out,{recursive:true});
 let answers=[],mode='ok',calls=0,release=null;const wire=[];
 async function respond(body,res) {
  calls++;wire.push({model:body.model,stream:body.stream,messages:body.messages,prompt:body.prompt});
@@ -10,7 +10,7 @@ async function respond(body,res) {
  const next=answers.shift();const answer=typeof next==='string'?next:JSON.stringify(next??{});
  res.setHeader('Content-Type','application/json');res.end(JSON.stringify({choices:[{index:0,message:{role:'assistant',content:answer},text:answer,finish_reason:'stop'}],usage:{prompt_tokens:100,completion_tokens:20}}));
 }
-const mock=http.createServer(async(req,res)=>{let b='';for await(const x of req)b+=x;if(req.url.includes('completions'))await respond(JSON.parse(b),res);else{res.setHeader('Content-Type','application/json');res.end(JSON.stringify({data:[{id:'mock-alpha'}]}));}});await new Promise(r=>mock.listen(5143,'127.0.0.1',r));
+const mock=http.createServer(async(req,res)=>{let b='';for await(const x of req)b+=x;if(req.url.includes('completions'))await respond(JSON.parse(b),res);else{res.setHeader('Content-Type','application/json');res.end(JSON.stringify({data:[{id:'zai-org/GLM-5.3-Flash'}]}));}});await new Promise(r=>mock.listen(5143,'127.0.0.1',r));
 const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']}),browserContext=await browser.newContext(),page=await browserContext.newPage();page.setDefaultTimeout(20000);
 const errors=[],checks=[],trace=[];let avatar;
 page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')trace.push(m.text());});
@@ -27,9 +27,9 @@ async function setup(x) {
   const mod='/scripts/extensions/third-party/avereth-gm-alpha';
   const {FileStore,Journal}=await import(mod+'/gm/storage.js'),{Host}=await import(mod+'/gm/host.js');
   const store=new FileStore(()=>SillyTavern.getContext()),host=new Host(()=>SillyTavern.getContext(),store),id=crypto.randomUUID(),file=`avereth-gm-alpha-${id}.json`;
-  const header={user_name:'unused',character_name:'unused',chat_metadata:{...c.chatMetadata,averethGMAlpha:{version:'4.3.0-gm.alpha.1',id,journal:file}}};
+  const header={user_name:'unused',character_name:'unused',chat_metadata:{...c.chatMetadata,averethGMAlpha:{version:'4.3.0-gm.alpha.2',id,journal:file}}};
   const target=host.target(),originChatId=host.id();
-  await Journal.open(store,file,{version:'4.3.0-gm.alpha.1',revision:0,originChatId,target,header,world:{revision:0,chat:base},turns:{}});
+  await Journal.open(store,file,{version:'4.3.0-gm.alpha.2',revision:0,originChatId,target,header,world:{revision:0,chat:base},turns:{}});
   await host.save(target,header,base);host.render(base,header,host.token());
  },{name,base:x.base});return name;
 }
@@ -42,9 +42,9 @@ try{
  const character=JSON.parse(fs.readFileSync(new URL('../../../avereth-gm-alpha/presets/Avereth GM Alpha.character.json',import.meta.url)));
  avatar=await page.evaluate(async card=>{const c=SillyTavern.getContext(),body=new FormData();body.append('avatar',new Blob([JSON.stringify(card)],{type:'application/json'}),'alpha.json');body.append('file_type','json');const headers=c.getRequestHeaders();delete headers['Content-Type'];const r=await fetch('/api/characters/import',{method:'POST',headers,body});if(!r.ok)throw Error('Card import '+r.status);const data=await r.json();return data.file_name.endsWith('.png')?data.file_name:data.file_name+'.png';},character);
  await page.reload({waitUntil:'networkidle'});await ready();await select();
- await page.evaluate(()=>{$('#main_api').val('openai').trigger('change');$('#chat_completion_source').val('custom').trigger('change');$('#custom_api_url_text').val('http://127.0.0.1:5143/v1').trigger('input');$('#custom_model_id').val('mock-alpha').trigger('input');SillyTavern.getContext().saveSettingsDebounced();});
+ await page.evaluate(()=>{$('#main_api').val('openai').trigger('change');$('#chat_completion_source').val('custom').trigger('change');$('#custom_api_url_text').val('http://127.0.0.1:5143/v1').trigger('input');$('#custom_model_id').val('zai-org/GLM-5.3-Flash').trigger('input');Object.assign(SillyTavern.getContext().chatCompletionSettings,{custom_include_body:'chat_template_kwargs:\n  reasoning_effort: low\n  clear_thinking: true',custom_exclude_body:'',custom_include_headers:'',custom_prompt_post_processing:'none'});SillyTavern.getContext().saveSettingsDebounced();});
  await page.evaluate(async()=>{const {FileStore,Journal}=await import('/scripts/extensions/third-party/avereth-gm-alpha/gm/storage.js');const j=await Journal.open(new FileStore(()=>SillyTavern.getContext()),'avereth-gm-alpha-capacity.json',{revision:0,leases:{}});await j.update(d=>{for(const l of Object.values(d.leases))if(['sent','remote_unknown'].includes(l.status)){l.status='remote_finished';l.testObservation='Prior loopback mock process exited; confirmed before next test series';}});});
- await check('Importable Chat Completion preset through actual ST file import',async()=>{await page.setInputFiles('#openai_preset_import_file',fileURLToPath(new URL('../../../avereth-gm-alpha/presets/Avereth GM Alpha 1.json',import.meta.url)));await page.waitForFunction(()=>SillyTavern.getContext().chatCompletionSettings.openai_max_tokens===4096&&SillyTavern.getContext().chatCompletionSettings.temp_openai===0.8);});
+ await check('Importable Chat Completion preset through actual ST file import',async()=>{await page.setInputFiles('#openai_preset_import_file',{name:'alpha2-gameplay-'+Date.now()+'.json',mimeType:'application/json',buffer:fs.readFileSync(new URL('../../../avereth-gm-alpha/presets/Avereth GM Alpha 2.json',import.meta.url))});await page.waitForFunction(()=>SillyTavern.getContext().chatCompletionSettings.openai_max_tokens===4096&&SillyTavern.getContext().chatCompletionSettings.temp_openai===0.8);});
  await check('Installed extension: real imported card, creation, HUD, #status, native send capture; zero model calls',async()=>{
   await page.evaluate(()=>AverethGMAlpha.start());
   for(const input of ['Warrior','Heavy Slash and Guard','#status']){
@@ -109,12 +109,11 @@ try{
   await page.evaluate(()=>document.querySelector('#option_regenerate').click());assert.match(await page.locator('#gm-alpha-status').innerText(),/gesperrt/);
   assert.equal(await page.evaluate(async()=>{let blocked=false;await averethGMAlphaInterceptor([],0,()=>blocked=true,'swipe');return blocked;}),true);
  });
- await check('Native Featherless frontend parameters use existing connection; backend intercepted with scripted answer',async()=>{
-  const x=f('npc_promise');await setup(x);let received;
-  await page.route('**/api/backends/text-completions/generate',async r=>{received=r.request().postDataJSON();calls++;await r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({choices:[{text:JSON.stringify(finish(x)),finish_reason:'stop'}]})});});
-  await page.evaluate(()=>{$('#main_api').val('textgenerationwebui').trigger('change');const c=SillyTavern.getContext();c.textCompletionSettings.type='featherless';c.textCompletionSettings.featherless_model='mock-featherless';});
-  await page.evaluate(input=>AverethGMAlpha.send(input),x.input);assert.equal(received.api_type,'featherless');assert.equal(received.stream,false);assert.ok(received.max_new_tokens>0);assert.ok(Object.values((await state()).threads).some(t=>t.text.includes('old ford')));
-  await page.unroute('**/api/backends/text-completions/generate');await page.evaluate(()=>$('#main_api').val('openai').trigger('change'));
+ await check('Unbudgeted Text Completion is refused before dispatch',async()=>{
+  const x=f('npc_promise');await setup(x);const before=calls;
+  await page.evaluate(()=>$('#main_api').val('textgenerationwebui').trigger('change'));
+  await assert.rejects(send(x,[finish(x)]),/Chat-Completion/);assert.equal(calls,before);
+  await page.evaluate(()=>$('#main_api').val('openai').trigger('change'));
  });
  await check('Combat: recorded w191 #65 Heavy Slash resolved by .200 engine; receipt cannot reroll',async()=>{
   const d=JSON.parse(zlib.gunzipSync(fs.readFileSync(new URL('../../../avereth-engine/tests/replay/corpus191/w191.json.gz',import.meta.url))));
@@ -163,4 +162,4 @@ try{
  await page.screenshot({path:new URL('alpha-installed.png',out).pathname,fullPage:true});
  fs.writeFileSync(root+'/restart-checkpoint.json',JSON.stringify({avatar,chatId:await page.evaluate(()=>SillyTavern.getContext().chatId),stateHash:createHash('sha256').update(JSON.stringify(await state())).digest('hex')}));
 }catch(e){checks.push({name:'setup',pass:false,error:e.stack});console.log('SETUP FAIL',e.stack);await page.screenshot({path:new URL('setup-failure.png',out).pathname});}
-finally{fs.writeFileSync(new URL('browser.json',out),JSON.stringify({checks,pageErrors:errors,physicalMockRequests:calls,browser:browser.version(),nativeFeatherless:'ST frontend exercised, backend mocked before any external call',allOtherTransport:'actual ST backend -> loopback mock',trace},null,2));await browser.close();mock.close();console.log(JSON.stringify({pass:checks.filter(x=>x.pass).length,total:checks.length,pageErrors:errors}));if(checks.some(x=>!x.pass)||errors.length)process.exitCode=1;}
+finally{fs.writeFileSync(new URL('browser.json',out),JSON.stringify({checks,pageErrors:errors,physicalMockRequests:calls,browser:browser.version(),nativeFeatherless:'unbudgeted Text Completion rejected before dispatch',allOtherTransport:'actual ST backend -> loopback mock',trace},null,2));await browser.close();mock.close();console.log(JSON.stringify({pass:checks.filter(x=>x.pass).length,total:checks.length,pageErrors:errors}));if(checks.some(x=>!x.pass)||errors.length)process.exitCode=1;}

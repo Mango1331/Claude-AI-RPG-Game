@@ -50,3 +50,7 @@ Der Adapter nutzt tatsächliches ST-Raw-Generating beziehungsweise gepufferte SS
 ## Installierbare GM Alpha 1
 
 Der neue Integrationsbuild liegt vollständig in [`avereth-gm-alpha/`](../../avereth-gm-alpha/). [Installation](../../avereth-gm-alpha/INSTALLATION_DE.md), [Grenzen](../../avereth-gm-alpha/LIMITATIONS.md), [Browserabnahme](alpha/ABNAHME_2026-11-16.md). Der Nutzer benötigt keine Node-/Playwright-Brücke mehr; die bestehende ST-Verbindung bleibt erhalten. Neue Testchats, keine Migration. Mechanischer Kern und Content `.200` sind bytegleich kopiert. Buildquellen und gezielte Prüfungen unter `alpha/`; ursprüngliche Prototypen bleiben erhalten. Keine natürliche Modellqualität behauptet.
+
+## Konfigurations- und Transportpatch: GM Alpha 2
+
+Aktueller installierbarer Stand: **4.3.0-gm.alpha.2**, `releases/Avereth-GM-Alpha-2.zip`. Chat Completion/Custom mit Featherless und GLM-5.3-Flash, explizite manuelle Include-Body-Konfiguration, geprüfter finaler Backendbody und gebündelter lokaler GLM-Tokenizer. Keine neuen Gameplayregeln, keine natürlichen Provideraufrufe. Neue Testchats; der zuvor angebotene ungeprüfte Textpfad wird kontrolliert abgewiesen. Siehe [Installation](../../avereth-gm-alpha/INSTALLATION_DE.md) und [Alpha-2-Abnahme](alpha/ABNAHME_ALPHA2_2026-11-16.md). Frühere Alpha-1-Berichte bleiben historische Nachweise.

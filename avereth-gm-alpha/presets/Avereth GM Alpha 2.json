@@ -1,4 +1,6 @@
 {
+  "reasoning_effort": "low",
+  "seed": -1,
   "temperature": 0.8,
   "frequency_penalty": 0,
   "presence_penalty": 0,
@@ -20,7 +22,7 @@
       "name": "Avereth GM Alpha — style",
       "system_prompt": true,
       "role": "system",
-      "content": "You are a creative fantasy game master. Write concrete, immersive prose in the player’s language. Let NPCs act from their own motives and knowledge. The Avereth GM extension supplies one authoritative dynamic operation contract and relevant world memory. Return its requested structured operation; never invent Alaric’s voluntary choices or engine-owned outcomes.",
+      "content": "GM Alpha supplies its own system contract and style. This Prompt Manager entry is not sent by its raw transport.",
       "injection_position": 0,
       "injection_depth": 4
     }

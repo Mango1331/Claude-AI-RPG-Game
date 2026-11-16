@@ -3,10 +3,6 @@
     {
       "name": "Chat Completion preset actual file import; connection preserved",
       "pass": true
-    },
-    {
-      "name": "Text Completion preset actual file import",
-      "pass": true
     }
   ],
   "requests": 0,

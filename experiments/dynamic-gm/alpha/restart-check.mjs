@@ -1,5 +1,5 @@
 import fs from 'node:fs';import assert from 'node:assert/strict';import {createRequire} from 'node:module';import {createHash} from 'node:crypto';
-const checkpoint=JSON.parse(fs.readFileSync('/workspace/avereth-setup/gm-alpha-host/restart-checkpoint.json'));
+const checkpoint=JSON.parse(fs.readFileSync('/workspace/avereth-setup/gm-alpha2-host/restart-checkpoint.json'));
 const {chromium}=createRequire(import.meta.url)('playwright'),browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']}),page=await browser.newPage();
 page.setDefaultTimeout(20000);const errors=[];let requests=0;
 page.on('pageerror',e=>errors.push(e.message));

@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import {spawn,execFileSync} from 'node:child_process';
-const source='/workspace/avereth-setup/st-sandbox/SillyTavern',root='/workspace/avereth-setup/gm-alpha-host';
+const source='/workspace/avereth-setup/st-sandbox/SillyTavern',root='/workspace/avereth-setup/gm-alpha2-host';
 if(execFileSync('git',['rev-parse','HEAD'],{cwd:source,encoding:'utf8'}).trim()!=='7e8663cd9c184a550b37238218bdd32c6efc68e9')throw Error('Expected pinned ST 1.19 source');
 fs.mkdirSync(root,{recursive:true});fs.writeFileSync(root+'/ISOLATED_GM_ALPHA_TEST','Separate data root; mock provider only. No personal data or credentials.\n');
 const ext=root+'/data/default-user/extensions/avereth-gm-alpha';fs.mkdirSync(ext,{recursive:true});

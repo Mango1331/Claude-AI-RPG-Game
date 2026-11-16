@@ -18,7 +18,7 @@ const meta = () => context().chatMetadata?.averethGMAlpha;
 const active = () => !!meta();
 const card = () => context().characters?.[context().characterId]?.data?.extensions?.avereth_gm_alpha === 1;
 const relevant = () => active() || card();
-function status(text) { const el=document.querySelector('#gm-alpha-status'); if(el)el.textContent=text; }
+function status(text) { const el=document.querySelector('#gm-alpha-status'); if(el)el.textContent=text; const d=document.querySelector('#gm-alpha-diagnostics');if(d&&scheduler){const l=scheduler.ledger.read();d.textContent=JSON.stringify({physicalRequests:(l.closedRequests||0)+Object.values(l.leases).filter(x=>x.status!=='not_dispatched').length,requests:[...(l.diagnostics||[]),...Object.values(l.leases).map(x=>x.diagnostic||{id:x.id,status:x.status,sentAt:x.sentAt})].slice(-20)},null,2);} }
 function failed(error) { lastError=error.message; status(`Angehalten: ${error.message}`); console.warn('[Avereth GM Alpha]',error.message); }
 function compatible() {
     if (!navigator.locks) throw Error('Web Locks unavailable: use localhost or HTTPS in a current browser');
@@ -97,7 +97,7 @@ async function remoteFinished() { return locked(async()=>{
     await scheduler.confirmRemoteFinished();status('Remoteabschluss ausdrücklich bestätigt. Wiederaufnahme separat starten.');
 }); }
 function stop() { host.stop();status('Gestoppt. Laufende Provideranfrage bleibt bis zum bestätigten Abschluss gesperrt.'); }
-function reject(event) { event.preventDefault();event.stopImmediatePropagation();status('Alpha 1: Swipe, Regenerate, Continue, Edit und Löschen sind für bestätigte GM-Chats gesperrt.'); }
+function reject(event) { event.preventDefault();event.stopImmediatePropagation();status('Alpha 2: Swipe, Regenerate, Continue, Edit und Löschen sind für bestätigte GM-Chats gesperrt.'); }
 
 // This stops native Generate calls (including slash commands/extensions) before the
 // stock request. The capture handlers additionally stop native transcript mutations.
@@ -106,7 +106,7 @@ async function init() {
     const base=new URL('.',import.meta.url);
     configure(await loadContentPack(async file=>{const r=await fetch(new URL(`content/${file}`,base));if(!r.ok)throw Error(`Missing content ${file}`);return r.json();}));
     const panel=document.createElement('section');panel.id='gm-alpha-panel';
-    panel.innerHTML=`<details open><summary>Avereth GM Alpha 1 · ${VERSION}</summary><div class="gm-alpha-buttons"><button id="gm-alpha-start">Neues Testspiel starten</button><button id="gm-alpha-send">GM senden</button><button id="gm-alpha-stop">Stop</button><button id="gm-alpha-resume">Wiederaufnehmen</button><button id="gm-alpha-discard">Offenen Zug verwerfen</button></div><div id="gm-alpha-status" role="status">Neue GM-Charakterkarte öffnen und Testspiel starten.</div><details><summary>Wiederherstellung und Hilfe</summary><p>Systembefehle wie #help, #status, #inventory im Eingabefeld senden. HUD unter den bestätigten Antworten. Keine Swipes/Regenerates in Alpha 1.</p><button id="gm-alpha-remote">Remoteabschluss bestätigen…</button><a target="_blank" rel="noopener" href="${new URL('INSTALLATION_DE.md',base)}">Installation / Grenzen</a></details></details>`;
+    panel.innerHTML=`<details open><summary>Avereth GM Alpha 2 · ${VERSION}</summary><div class="gm-alpha-buttons"><button id="gm-alpha-start">Neues Testspiel starten</button><button id="gm-alpha-send">GM senden</button><button id="gm-alpha-stop">Stop</button><button id="gm-alpha-resume">Wiederaufnehmen</button><button id="gm-alpha-discard">Offenen Zug verwerfen</button></div><div id="gm-alpha-status" role="status">Neue GM-Charakterkarte öffnen und Testspiel starten.</div><details><summary>Wiederherstellung und Hilfe</summary><p>Systembefehle wie #help, #status, #inventory im Eingabefeld senden. HUD unter den bestätigten Antworten. Keine Swipes/Regenerates in Alpha 2.</p><details><summary>Requestdiagnose (lokal, keine Keys)</summary><pre id="gm-alpha-diagnostics"></pre></details><button id="gm-alpha-remote">Remoteabschluss bestätigen…</button><a target="_blank" rel="noopener" href="${new URL('INSTALLATION_DE.md',base)}">Installation / Grenzen</a></details></details>`;
     document.querySelector('#form_sheld')?.before(panel);
     if(!panel.isConnected)document.querySelector('#sheld').append(panel);
     const hud=document.createElement('div');hud.id='gm-alpha-hud';panel.querySelector('details').append(hud);

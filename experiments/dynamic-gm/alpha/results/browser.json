@@ -2,9 +2,8 @@
   "checks": [
     {
       "name": "Importable Chat Completion preset through actual ST file import",
-      "pass": false,
-      "requests": 0,
-      "error": "Error: ENOENT: no such file or directory, stat '/workspace/avereth-dynamic/avereth-gm-alpha/presets/Avereth%20GM%20Alpha%201.json'\n    at async Object.stat (node:internal/fs/promises:1750:18)\n    at async resolvePathsAndDirectoryForInputFiles (/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright-core/lib/coreBundle.js:60325:18)\n    at async convertInputFiles (/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright-core/lib/coreBundle.js:60344:42)\n    at async _Frame.setInputFiles (/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright-core/lib/coreBundle.js:60197:27)\n    at async _Page.setInputFiles (/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright-core/lib/coreBundle.js:61552:16)\n    at async file:///workspace/avereth-dynamic/experiments/dynamic-gm/alpha/browser.mjs:47:90\n    at async check (file:///workspace/avereth-dynamic/experiments/dynamic-gm/alpha/browser.mjs:38:54)\n    at async file:///workspace/avereth-dynamic/experiments/dynamic-gm/alpha/browser.mjs:47:2"
+      "pass": true,
+      "requests": 0
     },
     {
       "name": "Installed extension: real imported card, creation, HUD, #status, native send capture; zero model calls",
@@ -82,9 +81,9 @@
       "requests": 0
     },
     {
-      "name": "Native Featherless frontend parameters use existing connection; backend intercepted with scripted answer",
+      "name": "Unbudgeted Text Completion is refused before dispatch",
       "pass": true,
-      "requests": 1
+      "requests": 0
     },
     {
       "name": "Combat: recorded w191 #65 Heavy Slash resolved by .200 engine; receipt cannot reroll",
@@ -118,9 +117,9 @@
     }
   ],
   "pageErrors": [],
-  "physicalMockRequests": 28,
+  "physicalMockRequests": 27,
   "browser": "156.0.8078.79",
-  "nativeFeatherless": "ST frontend exercised, backend mocked before any external call",
+  "nativeFeatherless": "unbudgeted Text Completion rejected before dispatch",
   "allOtherTransport": "actual ST backend -> loopback mock",
   "trace": [
     "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",

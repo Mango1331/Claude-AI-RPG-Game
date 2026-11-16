@@ -1,0 +1,48 @@
+✔ Alpha npc_promise commits through unchanged engine (1097.50709ms)
+✔ Alpha forest200 commits through unchanged engine (218.092077ms)
+✔ Alpha known_move commits through unchanged engine (198.949483ms)
+✔ creation and #status are local, preserve class/skills and HUD (197.58841ms)
+✔ stop immediately before commit prevents world advancement; same-chat receipt resumes (807.412773ms)
+✔ timeout persists capacity across instances; late answer permits explicit resume only (710.949634ms)
+✔ gift continuation transfers once and adds promise without time/RNG rerun (1416.146545ms)
+✔ package contains no Node imports, core/content files are byte-identical .200 (11.3952ms)
+✔ ST swipe decoration is ignored, actual prose/roles/event edits never are (0.816428ms)
+✔ ST text-completion prompt mutation cannot alter journalled request identity (184.96981ms)
+✔ missing potion use and typed invented consent are blocked (615.590972ms)
+✔ Bundled browser WASM matches pinned Python HF tokenizer/template on 107 multilingual vectors (1648.821071ms)
+✔ Reject late override messages (1.956513ms)
+✔ Reject late override model (0.180872ms)
+✔ Reject late override stream (0.228984ms)
+✔ Reject late override n (0.201833ms)
+✔ Reject late override tools (0.186791ms)
+✔ Reject late override tool_choice (0.172409ms)
+✔ Reject late override max_tokens (0.122344ms)
+✔ Reject late override max_completion_tokens (0.113631ms)
+✔ Reject late override seed (0.183666ms)
+✔ Reject late override temperature (3.579404ms)
+✔ Nested template and optional JSON mode survive canonicalization (1.230811ms)
+✔ Reject invalid nested profile {} (0.197286ms)
+✔ Reject invalid nested profile null (0.173782ms)
+✔ Reject invalid nested profile [] (1.503151ms)
+✔ Reject invalid nested profile {"chat_template_kwargs":{"reasoning_effort":"low","clear_thinking":true},"response_format":null} (0.094082ms)
+✔ Reject invalid nested profile {"chat_template_kwargs":{"reasoning_effort":"high","clear_thinking":true}} (0.096686ms)
+✔ Reject invalid nested profile {"chat_template_kwargs":{"reasoning_effort":"low","clear_thinking":true},"response_format":{"type":"json_schema"}} (0.198689ms)
+✔ Reject invalid nested profile {"chat_template_kwargs":{"reasoning_effort":"low","clear_thinking":true,"enable_thinking":false}} (0.087532ms)
+✔ Reject unsafe connection {"custom_exclude_body":"[messages]"} (0.420963ms)
+✔ Reject unsafe connection {"custom_prompt_post_processing":"strict"} (0.147351ms)
+✔ Reject unsafe connection {"stop":["}"]} (0.102915ms)
+✔ Reject unsafe connection {"custom_include_headers":"any: value"} (0.114001ms)
+✔ Reject unsafe connection {"model":"another"} (0.087141ms)
+✔ Reject unsafe connection {"max_tokens":8192} (0.104016ms)
+✔ Canonical request guards survive serialization (0.181433ms)
+✔ Exact total budget boundaries never truncate (0.260471ms)
+✔ Template scope rejects unsupported messages/media (0.403557ms)
+✔ Preflight failures consume no lease/attempt; diagnostics share completion checkpoint (2.023334ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5838.87112

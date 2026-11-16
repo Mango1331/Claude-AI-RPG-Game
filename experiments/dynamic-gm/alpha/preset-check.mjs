@@ -6,11 +6,10 @@ await page.route('**/api/horde/**',r=>r.fulfill({status:200,contentType:'applica
 try{
  await page.goto('http://127.0.0.1:8139/',{waitUntil:'networkidle'});await page.waitForFunction(()=>window.AverethGMAlpha&&SillyTavern.getContext().characters.length);
  const source=await page.evaluate(()=>({source:SillyTavern.getContext().chatCompletionSettings.chat_completion_source,url:SillyTavern.getContext().chatCompletionSettings.custom_url}));
- await page.setInputFiles('#openai_preset_import_file',fileURLToPath(new URL('../../../avereth-gm-alpha/presets/Avereth GM Alpha 1.json',import.meta.url)));
+ await page.evaluate(()=>{SillyTavern.getContext().chatCompletionSettings.temp_openai=1.1;});
+ await page.setInputFiles('#openai_preset_import_file',{name:'alpha2-preset-'+Date.now()+'.json',mimeType:'application/json',buffer:fs.readFileSync(new URL('../../../avereth-gm-alpha/presets/Avereth GM Alpha 2.json',import.meta.url))});
  await page.waitForFunction(()=>SillyTavern.getContext().chatCompletionSettings.openai_max_tokens===4096&&SillyTavern.getContext().chatCompletionSettings.temp_openai===0.8);
  assert.deepEqual(await page.evaluate(()=>({source:SillyTavern.getContext().chatCompletionSettings.chat_completion_source,url:SillyTavern.getContext().chatCompletionSettings.custom_url})),source);
- await page.setInputFiles('[data-preset-manager-file="textgenerationwebui"]',fileURLToPath(new URL('../../../avereth-gm-alpha/presets/Avereth GM Alpha 1 Text Completion.json',import.meta.url)));
- await page.waitForFunction(()=>SillyTavern.getContext().textCompletionSettings.temp===0.8&&SillyTavern.getContext().textCompletionSettings.rep_pen===1.05);
  assert.equal(requests,0);assert.deepEqual(errors,[]);
- fs.writeFileSync(new URL('./results/presets.json',import.meta.url),JSON.stringify({checks:[{name:'Chat Completion preset actual file import; connection preserved',pass:true},{name:'Text Completion preset actual file import',pass:true}],requests,pageErrors:errors},null,2));console.log('PASS both preset imports; connection unchanged; no model requests');
+ fs.writeFileSync(new URL('./results/presets.json',import.meta.url),JSON.stringify({checks:[{name:'Chat Completion preset actual file import; connection preserved',pass:true}],requests,pageErrors:errors},null,2));console.log('PASS Chat Completion preset import; connection unchanged; no model requests');
 }finally{await b.close();}

@@ -1,0 +1,21 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {templateExtras,protectBody} from '../../../avereth-gm-alpha/gm/request-policy.js';
+import {checkBudget,formatGLM} from '../../../avereth-gm-alpha/gm/budget.js';
+const value={chat_template_kwargs:{reasoning_effort:'low',clear_thinking:true}},extra=templateExtras(value);
+const base=()=>({chat_completion_source:'custom',model:'zai-org/GLM-5.3-Flash',custom_url:'https://api.featherless.ai/v1',max_tokens:4096,temperature:.8,top_p:.95,frequency_penalty:0,presence_penalty:0});
+for(const k of ['messages','model','stream','n','tools','tool_choice','max_tokens','max_completion_tokens','seed','temperature'])test('Reject late override '+k,()=>assert.throws(()=>templateExtras({...value,[k]:null}),/Include Body/));
+test('Nested template and optional JSON mode survive canonicalization',()=>{assert.deepEqual(JSON.parse(extra),value);assert.equal(JSON.parse(templateExtras({...value,response_format:{type:'json_object'}})).response_format.type,'json_object');});
+for(const v of [{},null,[],{...value,response_format:null},{chat_template_kwargs:{reasoning_effort:'high',clear_thinking:true}},{...value,response_format:{type:'json_schema'}},{chat_template_kwargs:{...value.chat_template_kwargs,enable_thinking:false}}])test('Reject invalid nested profile '+JSON.stringify(v),()=>assert.throws(()=>templateExtras(v)));
+for(const patch of [{custom_exclude_body:'[messages]'},{custom_prompt_post_processing:'strict'},{stop:['}']},{custom_include_headers:'any: value'},{model:'another'},{max_tokens:8192}])test('Reject unsafe connection '+JSON.stringify(patch),()=>assert.throws(()=>protectBody({...base(),...patch},extra)));
+test('Canonical request guards survive serialization',()=>{const b=protectBody({...base(),stream:true,n:3,tools:[{}],seed:7},extra);assert.equal(b.n,1);assert.equal(b.stream,false);assert.equal(b.tools,undefined);assert.equal(b.seed,undefined);assert.equal(b.custom_include_body,extra);});
+test('Exact total budget boundaries never truncate',()=>{assert.equal(checkBudget(28160).total,32768);assert.throws(()=>checkBudget(28161),/überschritten/);assert.throws(()=>checkBudget(NaN));});
+test('Template scope rejects unsupported messages/media',()=>{assert.match(formatGLM([{role:'system',content:'X'},{role:'user',content:'Y'}]),/Reasoning Effort: Low/);assert.throws(()=>formatGLM([{role:'assistant',content:'X'}]));assert.throws(()=>formatGLM([{role:'user',content:[]}]))});
+import {Scheduler} from '../../../avereth-gm-alpha/gm/scheduler.js';
+test('Preflight failures consume no lease/attempt; diagnostics share completion checkpoint',async()=>{
+ let data={leases:{},revision:0},writes=0;const ledger={read:()=>structuredClone(data),update:async f=>{f(data);writes++;}};
+ const s=new Scheduler(ledger),transport=Object.assign(async({diagnose})=>{await diagnose({model:'GLM',promptTokens:null});return '{}';},{prepare:async()=>{throw Error('budget');}});
+ for(let i=0;i<3;i++)await assert.rejects(s.request('test',[{role:'user',content:'X'}],transport),/budget/);
+ assert.equal(writes,0);transport.prepare=async()=>({});await s.request('test',[{role:'user',content:'X'}],transport);
+ assert.equal(writes,2);assert.equal(s.occupancy(),0);assert.equal(data.leases['test:attempt:1'].diagnostic.promptTokens,null);
+ await s.request('test',[{role:'user',content:'X'}],()=>{throw Error('duplicate');});assert.equal(writes,2);
+});

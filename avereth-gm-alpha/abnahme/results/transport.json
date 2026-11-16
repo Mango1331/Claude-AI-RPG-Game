@@ -1,0 +1,513 @@
+{
+  "checks": [
+    {
+      "name": "Preset import + final real ST backend body",
+      "pass": true,
+      "requests": 1,
+      "evidence": {
+        "messages": [
+          {
+            "role": "system",
+            "content": "Return JSON."
+          },
+          {
+            "role": "user",
+            "content": "hello"
+          }
+        ],
+        "model": "zai-org/GLM-5.3-Flash",
+        "temperature": 0.8,
+        "max_tokens": 4096,
+        "stream": false,
+        "presence_penalty": 0,
+        "frequency_penalty": 0,
+        "top_p": 0.95,
+        "n": 1,
+        "chat_template_kwargs": {
+          "reasoning_effort": "low",
+          "clear_thinking": true
+        }
+      }
+    },
+    {
+      "name": "Reject Include Body messages before backend dispatch",
+      "pass": true,
+      "requests": 0,
+      "evidence": "Include Body: nur chat_template_kwargs und optional response_format: {type: json_object} erlaubt; keine Nachrichten-, Modell-, Tool-, Sampling- oder Budgetüberschreibung"
+    },
+    {
+      "name": "Reject Include Body model before backend dispatch",
+      "pass": true,
+      "requests": 0,
+      "evidence": "Include Body: nur chat_template_kwargs und optional response_format: {type: json_object} erlaubt; keine Nachrichten-, Modell-, Tool-, Sampling- oder Budgetüberschreibung"
+    },
+    {
+      "name": "Reject Include Body stream before backend dispatch",
+      "pass": true,
+      "requests": 0,
+      "evidence": "Include Body: nur chat_template_kwargs und optional response_format: {type: json_object} erlaubt; keine Nachrichten-, Modell-, Tool-, Sampling- oder Budgetüberschreibung"
+    },
+    {
+      "name": "Reject Include Body n before backend dispatch",
+      "pass": true,
+      "requests": 0,
+      "evidence": "Include Body: nur chat_template_kwargs und optional response_format: {type: json_object} erlaubt; keine Nachrichten-, Modell-, Tool-, Sampling- oder Budgetüberschreibung"
+    },
+    {
+      "name": "Reject Include Body tools before backend dispatch",
+      "pass": true,
+      "requests": 0,
+      "evidence": "Include Body: nur chat_template_kwargs und optional response_format: {type: json_object} erlaubt; keine Nachrichten-, Modell-, Tool-, Sampling- oder Budgetüberschreibung"
+    },
+    {
+      "name": "Reject Include Body tool_choice before backend dispatch",
+      "pass": true,
+      "requests": 0,
+      "evidence": "Include Body: nur chat_template_kwargs und optional response_format: {type: json_object} erlaubt; keine Nachrichten-, Modell-, Tool-, Sampling- oder Budgetüberschreibung"
+    },
+    {
+      "name": "Reject Include Body max_tokens before backend dispatch",
+      "pass": true,
+      "requests": 0,
+      "evidence": "Include Body: nur chat_template_kwargs und optional response_format: {type: json_object} erlaubt; keine Nachrichten-, Modell-, Tool-, Sampling- oder Budgetüberschreibung"
+    },
+    {
+      "name": "Reject Include Body max_completion_tokens before backend dispatch",
+      "pass": true,
+      "requests": 0,
+      "evidence": "Include Body: nur chat_template_kwargs und optional response_format: {type: json_object} erlaubt; keine Nachrichten-, Modell-, Tool-, Sampling- oder Budgetüberschreibung"
+    },
+    {
+      "name": "Reject Include Body response_format before backend dispatch",
+      "pass": true,
+      "requests": 0,
+      "evidence": "Nur optionaler JSON-Objektmodus unterstützt; kein natives Tool-/Schemasystem"
+    },
+    {
+      "name": "Reject Include Body chat_template_kwargs before backend dispatch",
+      "pass": true,
+      "requests": 0,
+      "evidence": "Include Body benötigt chat_template_kwargs: {reasoning_effort: low, clear_thinking: true}"
+    },
+    {
+      "name": "Reject unsafe config {\"custom_exclude_body\":\"[messages]\"}",
+      "pass": true,
+      "requests": 0,
+      "evidence": "Exclude Body muss für GM Alpha leer sein"
+    },
+    {
+      "name": "Reject unsafe config {\"custom_prompt_post_processing\":\"strict\"}",
+      "pass": true,
+      "requests": 0,
+      "evidence": "Prompt Post-Processing muss None sein"
+    },
+    {
+      "name": "Reject unsafe config {\"custom_include_body\":\"chat_template_kwargs: &a {reasoning_effort: low, clear_thinking: true}\\nstream: true\"}",
+      "pass": true,
+      "requests": 0,
+      "evidence": "Include Body: nur chat_template_kwargs und optional response_format: {type: json_object} erlaubt; keine Nachrichten-, Modell-, Tool-, Sampling- oder Budgetüberschreibung"
+    },
+    {
+      "name": "Reject unsafe config {\"custom_include_body\":\"chat_template_kwargs: x\\nchat_template_kwargs: y\"}",
+      "pass": true,
+      "requests": 0,
+      "evidence": "Include Body: ungültiges YAML; Inhalt wird nicht protokolliert"
+    },
+    {
+      "name": "Reject unsafe config {\"openai_max_tokens\":8192}",
+      "pass": true,
+      "requests": 0,
+      "evidence": "GM Alpha 2 Preset wählen: 0.8 / 0.95 / Penalties 0 / Ausgabe 4096"
+    },
+    {
+      "name": "Optional JSON object mode in final backend body",
+      "pass": true,
+      "requests": 1
+    },
+    {
+      "name": "Full local tokenizer blocks oversized request without truncation",
+      "pass": true,
+      "requests": 0,
+      "evidence": "Kontextbudget überschritten: 80014 lokal gezählte GLM-Inputtokens + 4096 Ausgabe + 512 Reserve > 32768. Kein Request gesendet; Memory bleibt vollständig erhalten."
+    },
+    {
+      "name": "Style exactly once; original bound body unchanged; local counter",
+      "pass": true,
+      "requests": 1,
+      "evidence": {
+        "id": "audit:gm:0:attempt:1",
+        "phase": "gm:0",
+        "model": "zai-org/GLM-5.3-Flash",
+        "dispatched": true,
+        "parameters": {
+          "temperature": 0.8,
+          "top_p": 0.95,
+          "max_tokens": 4096,
+          "stream": false,
+          "n": 1,
+          "chat_template_kwargs": {
+            "reasoning_effort": "low",
+            "clear_thinking": true
+          }
+        },
+        "finishReason": "stop",
+        "promptTokens": 321,
+        "completionTokens": 41,
+        "reasoningTokens": 9,
+        "separateReasoning": true,
+        "budget": {
+          "localInputTokens": 650,
+          "outputReserve": 4096,
+          "templateReserve": 512,
+          "context": 32768,
+          "total": 5258,
+          "method": "pinned GLM tokenizer/template; not provider usage"
+        },
+        "httpStatus": 200,
+        "result": "complete_json",
+        "durationMs": 13
+      }
+    },
+    {
+      "name": "Response/diagnostics ok",
+      "pass": true,
+      "requests": 1,
+      "evidence": {
+        "text": "{\"ok\":true}",
+        "diagnostic": {
+          "id": "audit:gm:0:attempt:1",
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 321,
+          "completionTokens": 41,
+          "reasoningTokens": 9,
+          "separateReasoning": true,
+          "budget": {
+            "localInputTokens": 17,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 4625,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "complete_json",
+          "durationMs": 12
+        }
+      }
+    },
+    {
+      "name": "Response/diagnostics nousage",
+      "pass": true,
+      "requests": 1,
+      "evidence": {
+        "text": "{\"ok\":true}",
+        "diagnostic": {
+          "id": "audit:gm:0:attempt:1",
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": null,
+          "completionTokens": null,
+          "reasoningTokens": null,
+          "separateReasoning": true,
+          "budget": {
+            "localInputTokens": 17,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 4625,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "complete_json",
+          "durationMs": 14
+        }
+      }
+    },
+    {
+      "name": "Response/diagnostics length",
+      "pass": true,
+      "requests": 1,
+      "evidence": {
+        "error": "Incomplete answer: length",
+        "remoteFinished": true,
+        "diagnostic": {
+          "id": "audit:gm:0:attempt:1",
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "length",
+          "promptTokens": 321,
+          "completionTokens": 41,
+          "reasoningTokens": 9,
+          "separateReasoning": true,
+          "budget": {
+            "localInputTokens": 17,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 4625,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "rejected_complete",
+          "error": "Incomplete answer: length",
+          "durationMs": 12
+        }
+      }
+    },
+    {
+      "name": "Response/diagnostics empty",
+      "pass": true,
+      "requests": 1,
+      "evidence": {
+        "error": "Provider returned no narration JSON; separaten Reasoningkanal/Outputlimit prüfen",
+        "remoteFinished": true,
+        "diagnostic": {
+          "id": "audit:gm:0:attempt:1",
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 321,
+          "completionTokens": 41,
+          "reasoningTokens": 9,
+          "separateReasoning": true,
+          "budget": {
+            "localInputTokens": 17,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 4625,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "rejected_complete",
+          "error": "Provider returned no narration JSON; separaten Reasoningkanal/Outputlimit prüfen",
+          "durationMs": 14
+        }
+      }
+    },
+    {
+      "name": "Response/diagnostics invalid",
+      "pass": true,
+      "requests": 1,
+      "evidence": {
+        "error": "Ungültige strukturierte JSON-Antwort (ggf. Reasoning im Content); keine automatische Reparatur",
+        "remoteFinished": true,
+        "diagnostic": {
+          "id": "audit:gm:0:attempt:1",
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 321,
+          "completionTokens": 41,
+          "reasoningTokens": 9,
+          "separateReasoning": true,
+          "budget": {
+            "localInputTokens": 17,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 4625,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "rejected_complete",
+          "error": "Ungültige strukturierte JSON-Antwort (ggf. Reasoning im Content); keine automatische Reparatur",
+          "durationMs": 13
+        }
+      }
+    },
+    {
+      "name": "Response/diagnostics missing",
+      "pass": true,
+      "requests": 1,
+      "evidence": {
+        "error": "Antwortabschluss fehlt oder mehrere Antworten; nichts veröffentlicht",
+        "remoteFinished": true,
+        "diagnostic": {
+          "id": "audit:gm:0:attempt:1",
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": null,
+          "promptTokens": 321,
+          "completionTokens": 41,
+          "reasoningTokens": 9,
+          "separateReasoning": true,
+          "budget": {
+            "localInputTokens": 17,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 4625,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "rejected_complete",
+          "error": "Antwortabschluss fehlt oder mehrere Antworten; nichts veröffentlicht",
+          "durationMs": 12
+        }
+      }
+    },
+    {
+      "name": "Response/diagnostics inline",
+      "pass": true,
+      "requests": 1,
+      "evidence": {
+        "error": "Ungültige strukturierte JSON-Antwort (ggf. Reasoning im Content); keine automatische Reparatur",
+        "remoteFinished": true,
+        "diagnostic": {
+          "id": "audit:gm:0:attempt:1",
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": "stop",
+          "promptTokens": 321,
+          "completionTokens": 41,
+          "reasoningTokens": 9,
+          "separateReasoning": true,
+          "budget": {
+            "localInputTokens": 17,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 4625,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "rejected_complete",
+          "error": "Ungültige strukturierte JSON-Antwort (ggf. Reasoning im Content); keine automatische Reparatur",
+          "durationMs": 14
+        }
+      }
+    },
+    {
+      "name": "Response/diagnostics 429",
+      "pass": true,
+      "requests": 1,
+      "evidence": {
+        "error": "Provider returned an error; remote completion unconfirmed (ST may mask HTTP 429)",
+        "diagnostic": {
+          "id": "audit:gm:0:attempt:1",
+          "phase": "gm:0",
+          "model": "zai-org/GLM-5.3-Flash",
+          "dispatched": true,
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.95,
+            "max_tokens": 4096,
+            "stream": false,
+            "n": 1,
+            "chat_template_kwargs": {
+              "reasoning_effort": "low",
+              "clear_thinking": true
+            }
+          },
+          "finishReason": null,
+          "promptTokens": null,
+          "completionTokens": null,
+          "reasoningTokens": null,
+          "separateReasoning": false,
+          "budget": {
+            "localInputTokens": 17,
+            "outputReserve": 4096,
+            "templateReserve": 512,
+            "context": 32768,
+            "total": 4625,
+            "method": "pinned GLM tokenizer/template; not provider usage"
+          },
+          "httpStatus": 200,
+          "result": "remote_unknown",
+          "error": "Provider returned an error; remote completion unconfirmed (ST may mask HTTP 429)",
+          "durationMs": 11
+        }
+      }
+    }
+  ],
+  "wireRequests": 11,
+  "pageErrors": []
+}

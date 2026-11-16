@@ -1,11 +1,12 @@
 # Avereth Engine – 10B-Fachquellenindex
 
-**Stand 15.11.2026.** **Links statt zweiter Patch-, Test- oder Statuschronik.** [Startseite](README.md) · [aktueller Stand 03](03_AKTUELLER_PROJEKTSTAND.md) · [Roadmap 07](07_ROADMAP_NACH_10B_ENTWURF.md) · [Originalruns](testrun_10b/README.md).
+**Stand 16.11.2026 · Gameplay-Roadmap ON HOLD, Prototyp der dynamischen GM-Architektur hat Vorrang.** **Links statt zweiter Patch-, Test- oder Statuschronik.** [Startseite](README.md) · [aktueller Stand 03](03_AKTUELLER_PROJEKTSTAND.md) · [Roadmap 07](07_ROADMAP_NACH_10B_ENTWURF.md) · [Originalruns](testrun_10b/README.md).
 
 ## Aktuelle entscheidungsrelevante Fachquellen
 
 | Thema | Maßgebliche Primärdokumente und Abgrenzung |
 |---|---|
+| **Aktuelle Modellarchitektur (16.11.2026)** | [Dynamischer GM als Spielleiter – Neubewertung](recherche/ARCHITEKTUR_NEUBEWERTUNG_LLM_SPIELLEITER_ENGINE_2026-11-16.md) (**langfristige Entwicklungsrichtung**) · [Audit `.200`](recherche/ARCHITEKTUR_AUDIT_REDESIGN_ENTSCHEIDUNG_2026-11-16.md) (Original-Providerfehler, Prompt/Host) · [B/C1-Prototypvergleich auf Modellbranch](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/experiment/dynamic-gm-model/recherche/ARCHITEKTUR_PROTOTYP_B_C1_VERGLEICH_2026-11-16.md) (61/61 technische Prototyptests, C1-Semantik **nicht** bestanden). B ist eine technische Vergleichsgrundlage, nicht mehr das bevorzugte langfristige Modell. Neue GM-Versuche auf `experiment/dynamic-gm-model` gesondert. **Alte Gameplaypläne pausiert** ([07](07_ROADMAP_NACH_10B_ENTWURF.md)). |
 | **Architektur 10B – Fable/GPT/Opus** | [Fable-Audit §§1–13, GPT-Gegenreview §14](recherche/ARCHITEKTUR_AUDIT_10B_FABLE.md) · [Opus-Prüfung §§0–11 und GPT-Gegenreview §12](recherche/ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md). **V1 derzeit zurückgestellt**, keine pauschale Angriffs-/Szenenlockerung. |
 | **Ortschronologie O1/O2** | [Opus-Fachplan §§0–8 und GPT-Gegenreview §9](recherche/FACHPLAN_O1_O2_KAUSALITAET_UND_TEILBEWEGUNG.md). O1-B1 als enge Option, O1-Whitelist ausdrücklich NO-GO; O2-stay Designentscheidung, nicht Implementierung. |
 | **Preis-/Planner-Belege V4** | [Fable §13 + GPT §14](recherche/ARCHITEKTUR_AUDIT_10B_FABLE.md) · [Opus §5 + GPT §12](recherche/ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md). P1a–P1e **nicht implementiert**; P1f in `.187` **nur als engere Reparaturanweisung nach leerem Planner-`finish=length`** umgesetzt, ohne Budgetänderung. Vorhandene Finanzregeln bleiben. |

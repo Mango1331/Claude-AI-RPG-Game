@@ -1,23 +1,25 @@
 # Avereth Engine – Roadmap nach 10B
 
-**Stand 15.11.2026 · bewertete Entwicklungsoptionen, keine zweite Statuschronik.** [Start](README.md) · [aktuelle Abnahme 03](03_AKTUELLER_PROJEKTSTAND.md) · [verbindliche Regeln 02](02_DESIGN_KANON.md) · [Fachquellen 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). Alle historischen Kennungen bleiben auffindbar, **keine automatische Rangfolge oder Freigabe**.
+**Stand 16.11.2026 · **ON HOLD** bis zum Abschluss der dynamischen GM-/Modellarchitekturprototypen. Diese Datei bleibt ein **pausierter Themen- und Ideenspeicher**, keine aktive Arbeitsreihenfolge.** [Start](README.md) · [aktuelle Abnahme 03](03_AKTUELLER_PROJEKTSTAND.md) · [verbindliche Regeln 02](02_DESIGN_KANON.md) · [Fachquellen 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). Alle historischen Kennungen bleiben auffindbar, **keine automatische Rangfolge oder Freigabe**.
 
-## 1. Nächste fachliche Etappen
+## 1. Fachliche Etappen – vollständig pausiert
+
+**Aktive Architektur-Reihenfolge statt Gameplaypatches:** isolierter dynamischer GM-/Engine-Prototyp auf [`experiment/dynamic-gm-model`](https://github.com/Mango1331/Claude-AI-RPG-Game/tree/experiment/dynamic-gm-model) → angepasster isolierter ST-1.19-Hostdurchstich (Mockprovider) → separat freizugebender kleiner natürlicher LLM-Qualitätsvergleich → erst danach Produktentscheidung und Repriorisierung. [Astra-Ultra-Grundsatzentscheidung](recherche/ARCHITEKTUR_NEUBEWERTUNG_LLM_SPIELLEITER_ENGINE_2026-11-16.md) · [Status 03](03_AKTUELLER_PROJEKTSTAND.md). **Nicht parallel an den folgenden Gameplaythemen implementieren.**
 
 | Etappe | Stand / verbleibende Entscheidung |
 |---|---|
-| **Späterer persönlicher User-Test** | Nach Abschluss der Entwicklungsrunde und gesammelten ST-Smokes; bisherige Beobachtungspunkte ([GPT-Kontrollreview .192](patch_plans_10b/REVIEW_BUILD192_GPT_KONTROLLPRUEFUNG.md)). Schwerpunkte: B5-Ebenenwechsel und Boss, Stadt- gegen Außenjagd, NPC-Wiedersehen, Kampfgefühl. Kein Automatik-Vollbatch nur wegen `.192` |
+| **Späterer persönlicher User-Test** | **Pausiert bis zu Architektur- und Providerklärung**; bisherige Beobachtungspunkte ([GPT-Kontrollreview .192](patch_plans_10b/REVIEW_BUILD192_GPT_KONTROLLPRUEFUNG.md)). Schwerpunkte: B5-Ebenenwechsel und Boss, Stadt- gegen Außenjagd, NPC-Wiedersehen, Kampfgefühl. Kein Automatik-Vollbatch nur wegen `.192` |
 | **Bossloot V1** | **Umgesetzt .193/.194 und regulär gemergt** ([Entscheidungen](patch_plans_10b/GEGENREVIEW_BOSSLOOT_GPT_ENTSCHEIDUNGEN_2026-11-15.md) · [Fachplan](patch_plans_10b/FACHPLAN_BOSSLOOT_BESONDERE_BELOHNUNGEN.md)). Aktueller Abnahmestand ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md) |
 | **Kampf: Angriff mit Annäherung** | [Kampffachplan .192](patch_plans_10b/FACHPLAN_KAMPF_BEWEGUNG_ANGRIFF_192.md): Variante A (offene Reichweitenentscheidung, keine Buchung) als kleiner UX-Schritt möglich. B (Teilbewegung außerhalb des Kampfes) nach Designentscheidung. C/D (Konter, Teilbewegung im Kampf) erst mit K1 |
 | **Rang-/Qualitätskalibrierung der Ausrüstung** | [Analyse .195](recherche/AUSRUESTUNG_KAMPFBALANCE_ANALYSE_195_2026-11-15.md) mit echten Werten und Simulationen vorhanden; Varianten unbeschlossen, keine Nebenänderung |
-| **Orte/Reisen/Dungeons** | `.190–.192` umgesetzt, Bewegungsautorität natürlich bestätigt. Offen: natürliche B5-Ebenenwechsel und Boss, Elternszenen-Verluste (Schutz bleibt), Witwe-Hesse-Falsch-Negativ |
+| **Orte/Reisen/Dungeons** | `.190–.192` umgesetzt, Bewegungsautorität natürlich bestätigt. Offen: natürliche B5-Ebenenwechsel und Boss, Elternszenen-Verluste (Schutz bleibt); der enge Witwe-Hesse-Präsenzfall wurde in `.199` korrigiert |
 | **Natürliche NPC-/PULSE-Qualität** | `.191`-Batch nur Warrior vollständig. Rogue/Mage nach Provider-Guthaben neu; E3 seit `.183` natürlich belegt, E4/E5 und PULSE D erst danach |
 | **Preis-/Planner-Belege V4** | P1a–P1e codebelegt, nicht umgesetzt ([Architekturaudit §13](recherche/ARCHITEKTUR_AUDIT_10B_FABLE.md) · [Opus/GPT](recherche/ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md)); aus P1f nur die enge Planner-Behandlung in `.187` |
 | **K1 Main/Minor** | Designbeschlossen, nicht implementiert; [Fachplan auf `.104`](patch_plans_10b/PATCH_COMBAT_MAIN_MINOR_ACTIONS.md) vor Codearbeit auf den aktuellen HEAD abgleichen |
 | **Stealth S2** | S1 implementiert; heimliche Search/TAKE nach [S1/S2-Fachplan](patch_plans_10b/PATCH_STEALTH_ACTION_MANNER.md) |
 | **Erkundungsloot, Tatenbuch, Bossstärke, weitere Klassen-/Statprogression** | Eigene spätere Entscheidungen; PC 5+0 bereits umgesetzt, NPC-Angleichung/Rare+-Wachstum weiterhin offen |
 
-Keine dieser Empfehlungen ändert ohne ausdrücklichen Auftrag Kanon oder Produktcode. Ein natürlicher Lauf ist für *Pacing* und Spielgefühl nötig, blockiert aber keine Entwicklerarbeit in einem getrennten Checkout.
+**Sperre:** Keiner dieser Punkte ist während der GM-Architekturphase freigegeben – auch nicht als scheinbar kleiner Nebenfix in einem getrennten Checkout. Natürliche NPC-/PULSE- und Kampf-/Balancebewertungen sowie Wiederaufnahme der Feature-Roadmap erst nach ausdrücklicher Nutzerentscheidung. Bereits implementierte Builds bleiben als Baseline unverändert.
 
 ## 2. NPC- und PULSE-Reihenfolge
 
@@ -90,6 +92,7 @@ Diese Kennungen sind Such-/Diskussionshilfen. Der ausführliche alte [33-Kandida
 
 ## 4. Entscheidungsgates und Historie
 
+- **Vor allen alten Gates:** dynamischen GM-Prototyp, isolierten Hostdurchstich und kleinen natürlichen Qualitätsvergleich abschließen; anschließend die gesamte bisherige Fachroadmap neu priorisieren oder ändern. Die folgenden Gates sind historische fachliche Abhängigkeiten, derzeit **nicht aktiv**.
 - **Natürliche E2/E3-/PULSE-Qualität** vor E4/E5 und PULSE D; technische Regressionen sind dafür kein vollständiger Ersatz.
 - **Kampf-K1** vor breiten Boss-/Summon-/Spezialaktiven, sofern deren Aktionsökonomie tatsächlich davon abhängt; kein prinzipielles Verbot isolierter kleiner Technikprototypen.
 - **Monster A1/A2** umgesetzt (`.184`/`.186`); offen nur A2-4 und die Nachjustierung der Designzahlen. **Bossloot V1** einschließlich U1–U11 umgesetzt; weitere Balanceänderungen bleiben getrennt zu entscheiden.

@@ -1,16 +1,18 @@
 # Avereth Engine – Branchbestand und Aufräumfreigabe
 
-**Aktualisiert 16.11.2026.** GitHub-Remote geprüft: **20 vorhandene Branches**, darunter `main` und der bisherige Produktbranch. Nach dieser Prüfung wurde der dritte Zielbranch `experiment/dynamic-gm-model` vom unveränderten Experimentcommit `80d5fcb` erstellt. **Das Anlegen eines neuen Branches löscht noch keinen alten.** Das Aufräumziel sind **genau drei Branches**; Löschen erst nach Prüfung der aufgeführten Sicherungen.
+**Historische Branch-Bereinigungsprüfung vom 16.11.2026; Entwicklungsrichtung am 17.11. korrigiert.** GitHub-Remote geprüft: **20 vorhandene Branches**, darunter `main` und der bisherige Produktbranch. Nach dieser Prüfung wurde der dritte Zielbranch `experiment/dynamic-gm-model` vom unveränderten Experimentcommit `80d5fcb` erstellt. **Das Anlegen eines neuen Branches löscht noch keinen alten.** Das Aufräumziel sind **genau drei Branches**; Löschen erst nach Prüfung der aufgeführten Sicherungen.
 
-## Verbindliche Zielstruktur
+> **Aktuelle Einordnung 17.11.:** Die folgende Dreibranch-Struktur und Branchzählung sind eine **historische Aufräumplanung, keine neue Löschfreigabe**. `experiment/dynamic-gm-model` enthält **archivierte, nicht fortzusetzende** B/C1- und GM-Alpha-Versuche. Das neue Ziel ist die Weiterentwicklung der bestehenden `.200` nach Analyse und Nutzerentscheidung ([08](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md), [Archiv](recherche/ARCHITEKTUR_EXPERIMENTE_ARCHIV_2026-11-17.md)). Alte Branch-Löschanweisungen nicht ungeprüft ausführen.
+
+## Historisch vorgeschlagene Zielstruktur (kein aktueller Implementierungsauftrag)
 
 | Behalten | Aufgabe | Ausgangsstand |
 |---|---|---|
 | `main` | Zentraldokumentation, Architekturberichte, pausierte Roadmap | laufende Dokumentation; kein Produktcheckout |
 | `claude/c-planner-prototype-2026-10-02-gpt-c666` | **Produkt `.200`, eingefrorener Rückfallstand** | [`0cd1480`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b) |
-| `experiment/dynamic-gm-model` | Dynamischer kreativer GM, Engine-Werkzeuge, fortlaufende isolierte Prototypen | von [`80d5fcb`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/80d5fcb8cf799061b7f8ab1842f1258ce9d94f1c), enthält `.200` **plus** `experiments/architecture201` |
+| `experiment/dynamic-gm-model` | **Archivierte B/C1- und GM-Alpha-Experimente; keine aktive Produktentwicklung** | von [`80d5fcb`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/80d5fcb8cf799061b7f8ab1842f1258ce9d94f1c), enthält `.200` **plus** `experiments/architecture201` |
 
-**Roadmap-Status: ON HOLD.** Keine Entwicklung neuer Gameplayfeatures auf dem Produktbranch bis nach Architektur- und natürlicher Qualitätsabnahme; bestehende Featurepläne in [07](07_ROADMAP_NACH_10B_ENTWURF.md) behalten ihren Inhalt, sind aber keine aktive Arbeitsreihenfolge. [Status 03](03_AKTUELLER_PROJEKTSTAND.md) und [neue GM-Analyse](recherche/ARCHITEKTUR_NEUBEWERTUNG_LLM_SPIELLEITER_ENGINE_2026-11-16.md).
+**Roadmap-Status: ON HOLD.** Keine neue Gameplay-Implementierung vor der abschließenden `.200`-Vereinfachungsanalyse, dem unabhängigen Gegenreview und Nutzerentscheid. Die frühere dynamische-GM-Richtung ist **überholt**, historische Berichte bleiben Quellen ([Status 03](03_AKTUELLER_PROJEKTSTAND.md)).
 
 ## 13 Branches direkt löschbar (vollständig im Produkt-`.200`-HEAD enthalten)
 
@@ -51,7 +53,7 @@ Das GM-Tools-Archiv ist für das neue Modell besonders wertvoll: Vor einem neuen
 
 `experiment/architecture-prototype-201` steht bei [`80d5fcb`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/80d5fcb8cf799061b7f8ab1842f1258ce9d94f1c) **einen Commit vor** `.200`; sein HEAD ist **genau der Ausgangscommit** des neuen Branches `experiment/dynamic-gm-model`. Sobald der neue Branch geprüft ist, ist der alte Experimentbranch ohne Datenverlust löschbar. [Draft-PR #20](https://github.com/Mango1331/Claude-AI-RPG-Game/pull/20) darf dabei **nicht** in das Produkt gemergt werden; bereits **geschlossen und als überholt markiert**, nicht gemergt (16.11.2026).
 
-## Sicherheitsgrenzen und Durchführung
+## Historische Sicherheits-/Bereinigungshinweise – derzeit nicht beauftragt
 
 1. Zielbranches über GitHub oder `git ls-remote --heads origin` erneut prüfen. Den neuen Modellbranch samt `experiments/architecture201` auf GitHub verifizieren.
 2. Die vier abweichenden alten Commits über Tags archivieren und die Tags **remote** prüfen; bei einem Fehler keinen Sonderbranch löschen.

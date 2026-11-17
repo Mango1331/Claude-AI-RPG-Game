@@ -39,6 +39,8 @@
 
 ## Dokumentationspflege
 
+**Nutzerfreigabe vom 17.11.2026:** Vollständige neue und überarbeitete Fachberichte künftig auf `main` im passenden Dokumentationsbereich, insbesondere `recherche/`, ablegen, committen und pushen. Vorher Remote-HEAD und sauberen Arbeitsstand prüfen, zwischenzeitliche Änderungen und historische Quellen erhalten. Abschließend Dateipfade, Commit-SHA und GitHub-Links melden. Das ist eine dauerhafte Dokumentationsfreigabe, keine Implementierungs-, Build- oder Providerfreigabe. Berichte nicht mehr ausschließlich lokal oder auf einem archivierten Experimentbranch hinterlassen.
+
 | Einziger Pflegeort | Inhalt |
 |---|---|
 | **02** | Verbindliche Spiel-/Kanonentscheidungen, ausdrückliche geplante Regeländerungen |

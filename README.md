@@ -13,7 +13,8 @@
 
 ## Neue Ideen zur Prüfung – keine bereits geltenden Regeln
 
-- **Combat-HUD als Eingabehilfe:** bekannte Skills, Ziele und Reichweiten direkt auswählbar; die Engine erhält den Skill und die Gegner-ID ohne Tippfehler/Planner. **Zusätzlicher freier Rollenspieltext in derselben Nachricht** bleibt möglich (z. B. Begleitern zurufen). Komplexer Freitext und Dash/Move + Attacke dürfen weiterhin den Planner benötigen.
+- **Bevorzugtes Ziel: gemeinsames Action-HUD:** kontextabhängig Skills/Ziele, Bewegung, Verteidigung, Heiltränke und Gegenstände aus der bestehenden Mechanik auswählen. Typisierte Eingabe statt vieler UI-Sonderlösungen; freier Rollenspieltext und vollständige Freitexteingabe mit optionalem Planner bleiben möglich. [Fortgeschriebene vollständige Analyse](recherche/ANALYSE_200_VEREINFACHUNG_UND_NARRATORFREIHEIT_2026-11-17.md), noch keine Implementierungsfreigabe.
+- **NPC-Memory und Agency:** `#npc` perspektivisch um transparente, optionale Korrektur gespeicherter Fakten/Erinnerungen/Absprachen erweitern. Eine verständliche Agency-Regel in der tatsächlich verwendeten Character Description schützt bedeutsame PC-Entscheidungen und erlaubt Routineautonomie. Keine zweite Weltwahrheit; keine heimlichen Retcons.
 - **Weniger starre Narrator-/Extractorbelege:** eindeutig erzählte, durch Spielerhandlung gedeckte Ankunft oder kleine Alltagsfolgen ggf. übernehmen, statt weitere Modell-Reparaturen zu verlangen. Bei Unsicherheit Vorschlag mit **„So übernehmen“ / „Bearbeiten“ / ggf. Verwerfen**.
 - **Videospielartige Grundshops:** vorbereitete Alltagsangebote/Preise ähnlich Questboard; vereinfachte kleine Zahlungen. Vorhandenes `#pay`-System prüfen, bevor neue Befehle erfunden werden. Hohe oder ungewollte Buchungen bleiben besonders schützenswert.
 - **Automatische Fortschrittsanzeige:** „Erzählung sichtbar / Weltabgleich läuft / ✓ bestätigt gespeichert / ⚠ Fehler“. Nächste Eingabe **schreiben ja**, vor Weltcommit **ausführen nein**; Swipe/Regenerate/Events korrekt behalten.
@@ -36,6 +37,8 @@
 ## Entscheidungs- und Arbeitsregeln
 
 **Vor Codearbeit gemeinsam klären**, was der Nutzer tatsächlich will und welches Restrisiko bewusst akzeptiert wird. Astra analysiert, GPT gegenreviewt unabhängig, Nutzer entscheidet. Keine automatische große Implementierung nur wegen eines Modells, eines Berichts oder grüner Mocktests. **Bestehende funktionierende Mechanik/UI erhalten**; neue Lockerungen an realen Freitextfällen und natürlichem Rollenspiel überprüfen. Keine neuen Providerläufe ohne Auftrag.
+
+**Dokumentation ist freigegeben:** Vollständige Fachberichte auf `main` (insbesondere `recherche/`) ablegen, nach Remote-HEAD-Abgleich committen/pushen und mit Pfad, Commit und GitHub-Link liefern. Historische Quellen erhalten. Diese Freigabe umfasst keinen Produktcode, Build oder Provideraufruf.
 
 ## Startauftrag für den nächsten Reviewer
 

@@ -1,6 +1,6 @@
 # Avereth Engine
 
-**Entwicklungsstand 4.3.0-c.6.6.201 — Action-HUD V1:** [Bedienung, Installation, technische Abnahme und Grenzen](docs/PATCH_ACTION_HUD_201.md). Branch `experiment/action-hud-200-v1`; eingefrorenes Produkt `.200` bleibt unverändert. Die historischen Architekturabschnitte unten beschreiben ihre jeweiligen damaligen Stände. Für den Entwicklungsstand gilt insbesondere kein automatischer Folgezug bei offenem Weltabschluss.
+**Entwicklungsstand 4.3.0-c.6.6.202 — Action-HUD V1:** [Bedienung, Installation, technische Abnahme und Grenzen](docs/PATCH_ACTION_HUD_201.md). [Korrektur .202: Save-Integrität und Aktionsauswahl](docs/FIX_ACTION_HUD_202_SAVE_AND_SELECTION.md). Branch `experiment/action-hud-200-v1`; eingefrorenes Produkt `.200` bleibt unverändert. Die historischen Architekturabschnitte unten beschreiben ihre jeweiligen damaligen Stände. Für den Entwicklungsstand gilt insbesondere kein automatischer Folgezug bei offenem Weltabschluss.
 
 Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extension**. Sie besitzt Regeln, Würfel, Kampagnenzustand und Figurenwissen. Das Sprachmodell erzählt.
 

@@ -1,3 +1,4 @@
+import { actionReviewSmoke } from './action_review_smoke.mjs';
 import { actionHudTurns, actionHudPlan, actionHudSmoke } from './action_hud_smoke.mjs';
 import { actionHostSmoke } from './action_host_smoke.mjs';
 import { bossloot193Turns, bossloot193Smoke } from './bossloot193_smoke.mjs';
@@ -479,6 +480,8 @@ try {
             steps.swipe = { look: await look(t.player), state: await fold(), plans: calls.filter((c) => c.purpose === 'plan').length };
         }
     }
+    let actionReviewChecks=null;
+    if(process.env.AVERETH_SMOKE_ACTION_REVIEW==='1')actionReviewChecks=await actionReviewSmoke({page,idle,calls,saveFailure:async work=>{injectingSaveFailure=true;try{return await work();}finally{injectingSaveFailure=false;}}});
     let actionHudChecks=null;
     if(process.env.AVERETH_SMOKE_ACTION_HUD==='1'){stealthProbeMode=true;actionHudChecks=await actionHudSmoke({page,send,idle,calls,reconnect:()=>driver.connect(),onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});}});stealthProbeMode=false;}
     let stealthChecks = null;
@@ -519,7 +522,7 @@ try {
     await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); });
     await page.waitForTimeout(800);
     const actionHostChecks = process.env.AVERETH_SMOKE_ACTION_HOST === '1' ? await actionHostSmoke({page,send,idle}) : null;
-    result = { capacity:{peakUnits,activeUnits}, actionHudChecks, actionHostChecks, bossloot193Checks, toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
+    result = { actionReviewChecks, capacity:{peakUnits,activeUnits}, actionHudChecks, actionHostChecks, bossloot193Checks, toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
 } catch (error) {
     const screen = await page.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(-8000),
         chat: window.SillyTavern?.getContext?.()?.chat?.map(m => ({ user: m.is_user, system: m.is_system, text: m.mes?.slice(0, 120) })) })).catch(() => null);
@@ -612,6 +615,7 @@ const checks = { capacityAtMostFour:result.capacity.peakUnits<=4,
         && S('area').state.mp === S('search').state.mp - 14,
     proseOnlyRequests: narr.every((c) => engineOf(c).trimEnd().endsWith(V4_OUTPUT_LINE)),
     statusLine: status.includes(`Avereth Engine ${ENGINE_VERSION}`) && /runtime v4 \(LLM: custom endpoint\)/.test(status) && /integrity: OK/.test(status),
+    ...Object.fromEntries(Object.entries(result.actionReviewChecks || {}).map(([k,v])=>[`actionReview_${k}`,v])),
     noPageErrors: pageErrors.length === 0,
 };
 fs.writeFileSync(path.join(HERE, 'result.json'), JSON.stringify({ checks, toggle, steps, status, calls: calls.map((c) => ({ purpose: c.purpose, stream: c.stream, temperature: c.temperature, max_tokens: c.maxTokens, auth: c.auth ? 'Bearer <dummy>' : null, n: c.messages.length, lastUser: c.lastUser.slice(-80) })), keyInBrowser, pageErrors, injectedSaveErrors }, null, 1));

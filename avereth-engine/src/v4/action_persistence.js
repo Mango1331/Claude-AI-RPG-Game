@@ -7,10 +7,9 @@ export function chatOrigin(c) {
 export const originKey = o => JSON.stringify([o.avatar_url, o.file_name]);
 const canonical = value => JSON.stringify(value, (_key, v) => v && typeof v === 'object' && !Array.isArray(v)
     ? Object.fromEntries(Object.keys(v).sort().map(k => [k, v[k]])) : v);
-export const recordSignature = chat => canonical(chat.map(m => ({
-    mes:m.mes, user:!!m.is_user, system:!!m.is_system, extra:m.extra,
-    swipe_id:m.swipe_id ?? 0, swipes:m.swipes, swipe_info:m.swipe_info,
-})));
+// ST persists the complete message objects, including names, generation times and future fields.
+// A gameplay-only projection cannot prove that a native snapshot or its read-back is current.
+export const recordSignature = chat => canonical(chat);
 
 export async function decodeSave(options) {
     let body = options.body;
@@ -45,9 +44,17 @@ export function createChatPersistence({ request, headers, active, locks, changed
         if (!matching(frozen) || !isCurrent()) throw new Error('Stale origin chat save');
         const meta = frozen.chat[0]?.chat_metadata;
         if (!meta) throw new Error('Missing chat metadata');
-        const baseRevision = Number(meta.avereth_save_revision || 0);
+        let baseRevision = Number(meta.avereth_save_revision || 0);
         const activeRevision = Number(active().chatMetadata?.avereth_save_revision || 0);
-        if (baseRevision < activeRevision) throw new Error('Older native save revision');
+        if (baseRevision < activeRevision) {
+            // ST can serialize the same current content twice before its gzip fetch is dispatched.
+            // Rebase only an entirely identical snapshot. It still goes through a real write/read-back;
+            // no rejected or merely 'superseded' payload is ever acknowledged here.
+            if (recordSignature(frozen.chat.slice(1)) !== recordSignature(active().chat)
+                || canonical({...meta,avereth_save_revision:0}) !== canonical({...active().chatMetadata,avereth_save_revision:0}))
+                throw new Error('Older native save revision');
+            baseRevision = activeRevision;
+        }
         const saveRevision = baseRevision + 1;
         meta.avereth_save_revision = saveRevision;
         active().chatMetadata.avereth_save_revision = saveRevision;

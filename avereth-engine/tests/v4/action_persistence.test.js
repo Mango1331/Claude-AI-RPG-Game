@@ -36,6 +36,7 @@ test('stop during pre-write read-back cannot dispatch the pending save',async()=
 });
 test('a saved later revision cannot be overwritten by an older native compressed snapshot',async()=>{
  const {c,adapter,writes}=fixture(),old={...chatOrigin(c),chat:structuredClone([{chat_metadata:c.chatMetadata},...c.chat])};
+ c.chat[0].name='newer persisted name';
  await adapter.save(c);await assert.rejects(adapter.write(old),/Older native/);assert.equal(writes.length,1);
 });
 test('another writer advancing the remote revision stops before any overwrite',async()=>{
@@ -52,4 +53,38 @@ test('a reservation added during the prior read cannot be overwritten by older m
   writes++;return Response.json({ok:true});
  }});
  await assert.rejects(adapter.save(c),/Stale/);assert.equal(writes,0);
+});
+
+test('R1: delayed snapshot cannot overwrite newer ST fields outside Engine records',async()=>{
+ for(const [field,value] of Object.entries({name:'Renamed',send_date:'new date',gen_finished:'later',future_st_field:{value:2}})){
+  const {c,adapter,writes}=fixture(),old={...chatOrigin(c),chat:structuredClone([{chat_metadata:c.chatMetadata},...c.chat])};
+  c.chat[0][field]=value;
+  await assert.rejects(adapter.write(old),/Stale/,field);assert.equal(writes.length,0,field);
+ }
+});
+test('R1: read-back must detect dropped ST message fields, not only Engine events',async()=>{
+ const {c}=fixture();c.chat[0].name='Alaric';c.chat[0].gen_finished='complete';let saved;
+ const adapter=createChatPersistence({active:()=>c,headers:()=>({}),request:async(url,options)=>{
+  if(url.endsWith('/save')){saved=JSON.parse(options.body).chat;delete saved[1].gen_finished;return Response.json({ok:true});}
+  return Response.json(saved || []);
+ }});
+ await assert.rejects(adapter.save(c),/differs/);
+});
+test('R1: newer ST fields arriving during the prior read cannot be overwritten',async()=>{
+ const {c}=fixture();let writes=0;
+ const adapter=createChatPersistence({active:()=>c,headers:()=>({}),request:async url=>{
+  if(url.endsWith('/get')){c.chat[0].name='new name';return Response.json([]);}writes++;return Response.json({ok:true});
+ }});
+ await assert.rejects(adapter.save(c),/Stale/);assert.equal(writes,0);
+});
+
+test('R1: an identical delayed native snapshot is really saved/read back, never merely acknowledged',async()=>{
+ const {c,adapter,writes}=fixture(),old={...chatOrigin(c),chat:structuredClone([{chat_metadata:c.chatMetadata},...c.chat])};
+ await adapter.save(c);const first=c.chatMetadata.avereth_save_revision;
+ const response=await adapter.write(old);
+ assert.equal(response.ok,true);assert.equal(writes.length,2,'success requires a second real write');
+ assert.equal(c.chatMetadata.avereth_save_revision,first+1);assert.deepEqual(writes[1].chat.slice(1),c.chat);
+ await adapter.verify(chatOrigin(c),writes[1].chat);
+ c.chatMetadata.pending_action_input={id:'new reservation'};
+ await assert.rejects(adapter.write(old),/Older native/);assert.equal(writes.length,2);
 });

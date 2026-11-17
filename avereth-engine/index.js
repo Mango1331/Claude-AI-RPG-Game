@@ -500,13 +500,15 @@ persistence = createChatPersistence({request:hostFetch,headers:()=>ctx().getRequ
     },
 });
 globalThis.fetch = async function (url, options) {
-    if (modernHost() && settings().enabled && String(url).endsWith('/api/chats/save') && hasStoredCampaign(ctx().chat)) {
+    if (modernHost() && settings().enabled && String(url).endsWith('/api/chats/save')) {
         const data = await decodeSave(options);
+        // The delayed payload may belong to an Avereth chat which is no longer active.
+        if(!hasStoredCampaign(data.chat.slice(1)) && !hasStoredCampaign(ctx().chat))return hostFetch(url,options);
         try {return await persistence.write(data);}
         catch(error) {
-            // ST may finish compressing an old payload after an Engine save/swipe. Never overwrite the
-            // newer snapshot; this acknowledgement is not our saved status (only read-back can set that).
-            if(/Stale|Older native/.test(error.message))return Response.json({superseded:true});
+            // Rejection is not a save receipt. ST's native saveChat checks response.ok; a 2xx here
+            // would silently acknowledge an origin/snapshot which never reached persistence.
+            if(/Stale|Older native/.test(error.message))return Response.json({error:'avereth_save_rejected',message:error.message},{status:409,statusText:error.message});
             throw error;
         }
     }
@@ -803,6 +805,18 @@ function mountSettings() {
     });
     mountSettings();
     if(modernHost()) {
+        const nativeHost = await import('/script.js');
+        c.eventSource.on(ev.GENERATION_AFTER_COMMANDS,async(type,_params,dryRun)=>{
+            if(dryRun || !settings().enabled || !hasCampaign(ctx().chat) || ctx().groupId
+                || ![undefined,'normal','regenerate','swipe','continue'].includes(type))return;
+            // ST awaits this event before changing messages/context or reserving the HUD input.
+            // Slash commands which cancel Generate never get here and retain their deferred save.
+            // Drain only an existing save; do not add a write or mistake ST's swallowed errors for success.
+            // The upcoming native save persists the new input together with any pending edits.
+            nativeHost.cancelDebouncedChatSave();
+            while(nativeHost.isChatSaving)await new Promise(resolve=>setTimeout(resolve,25));
+            nativeHost.cancelDebouncedChatSave();
+        });
         actionComposer=installActionComposer({context:ctx,state:()=>foldChat(ctx().chat).state,content:()=>content,
             enabled:()=>settings().enabled && hasCampaign(ctx().chat) && campaignRuntime(ctx().chat)==='v4' && campaignPath(ctx().chat)==='c' && !campaignSupport(ctx().chat),settings,
             blocked:actionBlocked,save:saveAtOrigin,retry:resumeActionCompletion,status:()=>actionStatus});

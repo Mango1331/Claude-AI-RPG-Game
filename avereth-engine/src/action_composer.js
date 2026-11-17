@@ -21,12 +21,14 @@ export function installActionComposer({context,state,content,enabled,settings,bl
       <div><span id="avereth-action-status" role="status"></span> <button id="avereth-action-retry" type="button">Abschluss prüfen / fortsetzen</button></div>`;
     const area=textarea();if(!area)return null;area.closest('#send_form')?.prepend(box);
     const kind=box.querySelector('#avereth-action-kind'),target=box.querySelector('#avereth-action-target'),chip=box.querySelector('#avereth-action-chip'),mode=box.querySelector('#avereth-action-mode');
-    let options=[];
+    let options=[],controlsOrigin=null;
+    const clearControls=()=>{kind.value='';target.value='';box.querySelector('#avereth-action-approach').checked=false;};
     function refresh(){
         box.hidden=!enabled();if(box.hidden)return;
+        const owner=key();if(controlsOrigin!==owner){clearControls();controlsOrigin=owner;}
         const projected=availableActions(state(),content());options=projected.actions;
         const selected=kind.value,aim=target.value;
-        kind.replaceChildren(...options.map(o=>new Option(o.label,o.key)));
+        kind.replaceChildren(new Option('— Aktion wählen —',''),...options.map(o=>new Option(o.label,o.key)));
         target.replaceChildren(new Option('— Ziel wählen —',''),...projected.targets.map(o=>new Option(o.label,o.id)));
         if(options.some(o=>o.key===selected))kind.value=selected;
         if(projected.targets.some(o=>o.id===aim))target.value=aim;
@@ -49,7 +51,7 @@ export function installActionComposer({context,state,content,enabled,settings,bl
     };
     function projectedLabel(id){const s=state();return s.encounter?.combatants[id]?.label || s.entities[id]?.name || id;}
     mode.onchange=()=>{const d=draft();if(d){d.mode=mode.value;settings().actionTextMode=mode.value;context().saveSettingsDebounced();refresh();}};
-    box.querySelector('#avereth-action-clear').onclick=()=>{drafts.delete(key());refresh();};
+    box.querySelector('#avereth-action-clear').onclick=()=>{drafts.delete(key());clearControls();refresh();};
     box.querySelector('#avereth-action-retry').onclick=async()=>{try{await retry();refresh();}catch(e){tell(e.message);}};
     box.querySelector('#avereth-action-revise').onclick=async()=>{
         try {
@@ -120,7 +122,7 @@ export function installActionComposer({context,state,content,enabled,settings,bl
         displayInput(c.chat[index],p.input);
         delete c.chatMetadata.pending_action_input;
         const job={key:originKey(p.input.origin)};
-        job.promise=save(c).then(()=>{drafts.delete(job.key);if(capture===owner && owner)owner.bound=index;if(key()===job.key)refresh();})
+        job.promise=save(c).then(()=>{drafts.delete(job.key);if(capture===owner && owner)owner.bound=index;if(key()===job.key){clearControls();refresh();}})
             .catch(e=>{if(capture===owner && owner)owner.blocked=e.message;throw e;}).finally(()=>{if(binding===job)binding=null;});
         binding=job;await job.promise;
     }

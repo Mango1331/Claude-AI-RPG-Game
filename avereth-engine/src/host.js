@@ -1,3 +1,4 @@
+import { actionInputHash, actionInputOf } from './action_input.js';
 // Host adapter: maps the engine onto a chat transcript — an array of messages {mes, is_user, is_system, extra,
 // swipes, swipe_id, swipe_info} as SillyTavern stores them. It mutates only the message objects it is given, so the
 // same code runs in the browser (index.js) and in the Node tests (swipe / regenerate / delete / edit scenarios).
@@ -87,7 +88,9 @@ export function foldChat(chat, end = chat.length) {
     const failures = [];
     for (let i = 0; i < Math.min(end, chat.length); i++) {
         const record = rec(chat[i]);
-        const invalid = paymentInputError(chat[i], record, i);
+        const hudChanged=record?.action_input_hash!=null && record.events?.length
+            && (record.input_hash!==hash32(chat[i].mes) || record.action_input_hash!==actionInputHash(actionInputOf(chat[i])));
+        const invalid = hudChanged ? {type:'action.input_changed',error:'Booked HUD input changed; restore its original text and selection before continuing'} : paymentInputError(chat[i], record, i);
         if (invalid) {
             errors.push(`message ${i}: ${invalid.type}: ${invalid.error}`);
             failures.push({ index: i, ...invalid });
@@ -239,7 +242,8 @@ export function turnBlock(chat, u, content, settings = {}) {
     const restCut = p >= 0 ? restCutFacts(chat.slice(lastReplyIndex(chat, p) + 1, p).filter((m) => m.is_user && rec(m) && !rec(m).command).flatMap((m) => messageEvents(m))) : [];
     const context = turnContext(state, content, {
         input: chat[u].mes,
-        corrections: [...notExecuted, ...paidCards, ...restCut, ...(prev && !prev.system_answer ? prev.corrections || [] : [])],
+        hudSpeech: !!r?.action_input,
+        corrections: [...(r?.action_input ? [`INPUT MODE: ${r.action_input.mode === 'hud_roleplay' ? 'HUD + ROLEPLAY. The booked HUD action is his complete mechanical choice; accompanying PLAYER MESSAGE is speech/roleplay, never a second action or an order granting allies extra turns.' : 'HUD + FREE ACTIONS. Use only the engine-resolved combined plan; honor every not-taken action.'}`] : []), ...notExecuted, ...paidCards, ...restCut, ...(prev && !prev.system_answer ? prev.corrections || [] : [])],
         // .190 (N1): what the last reply put him at that he never reached (its refused arrivals), for the WHERE header
         notReached: prev && !prev.system_answer ? (prev.rejected || []).filter((x) => x.type === 'arrive' && NOT_ARRIVED_RULES.has(x.rule)).map((x) => x.to).filter(Boolean) : [],
         lastReply: p >= 0 ? chat[p].mes : '',

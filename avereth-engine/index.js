@@ -15,7 +15,7 @@
 //                              the narrator card's lorebook (lorebook/, docs/LOREBOOK.md) activates the right entries
 import { loadContentPack } from './src/content.js';
 import { onEdited, foldChat, ensureCampaign, hasCampaign, hasStoredCampaign, projectPromptHistory, reportRequest, applyReportAnswer, rec, setRec } from './src/host.js';
-import { prepareGenerationAsync, processReplyAny, runExtraction, applyExtraction, pendingExtraction, campaignRuntime, campaignSupport, onEditedV4, perfSummary } from './src/v4/runtime.js';
+import { prepareGenerationAsync, processReplyAny, runExtraction, applyExtraction, pendingExtraction, campaignRuntime, campaignPath, campaignSupport, onEditedV4, perfSummary } from './src/v4/runtime.js';
 import { createNarratorRecovery, narratorProviderResponse, providerResponseError } from './src/v4/narrator_recovery.js';
 import { verifySavedChat } from './src/v4/continuation.js';
 import { createWorldJobs } from './src/v4/world_jobs.js';
@@ -24,6 +24,9 @@ import { newSeed } from './src/rng.js';
 import { parseSwaps, hash32, ENGINE_VERSION, NARRATOR_CONTRACT_REVISION } from './src/util.js';
 import { migrateSettings, SETTINGS_REV } from './src/settings.js';
 import { installDraftActions } from './src/ui_actions.js';
+import { createRequestControl, capacityError } from './src/v4/request_control.js';
+import { createChatPersistence, decodeSave, chatOrigin, originKey } from './src/v4/action_persistence.js';
+import { installActionComposer } from './src/action_composer.js';
 
 const MODULE = 'avereth';
 const PROMPT_KEY = 'avereth_engine';
@@ -39,13 +42,13 @@ let legacyWarned = null;
 let persistenceBlocked = null;
 // Build .107 (audit of .106): SillyTavern 1.19 keeps one chat array for every chat and refills it in place, so the
 // block names its chat and record: another chat is never blocked or released by it
-const blockPersistence = (c, id) => { persistenceBlocked = { chat: c.chat, chatId: c.getCurrentChatId(), id, message: c.chat[id] }; };
+const blockPersistence = (c, id) => { persistenceBlocked = { chat: c.chat, chatId: hostChatKey(c), id, message: c.chat[id] }; };
 // Architecture patch A (.127): a campaign record that no longer folds whole stops every new authoritative step. The
 // host only shows it (no chat message, no save, no failure record): the player loads a valid state or deletes from there
 let foldWarned = null;
 function showFoldBlock(block) {
     if (!block) return;
-    const key = `${ctx().getCurrentChatId()}:${block.index}:${block.type}`;
+    const key = `${hostChatKey(ctx())}:${block.index}:${block.type}`;
     if (foldWarned !== key) toastr.error(block.notice, 'Avereth Engine', { timeOut: 0, extendedTimeOut: 0 });
     foldWarned = key;
 }
@@ -55,7 +58,7 @@ let supportWarned = null;
 function unsupported(chat) {
     const block = campaignSupport(chat);
     if (!block) return null;
-    const key = `${ctx().getCurrentChatId()}:${block.reason}`;
+    const key = `${hostChatKey(ctx())}:${block.reason}`;
     if (supportWarned !== key) toastr.error(block.notice, 'Avereth Engine', { timeOut: 0, extendedTimeOut: 0 });
     supportWarned = key;
     return block;
@@ -64,8 +67,8 @@ function unsupported(chat) {
 // edit event the engine re-reads): nothing is started over it and nothing is booked; the notice says how to recover
 let hiddenWarned = null;
 function hiddenStart() {
-    if (hiddenWarned === ctx().getCurrentChatId()) return;
-    hiddenWarned = ctx().getCurrentChatId();
+    if (hiddenWarned === hostChatKey(ctx())) return;
+    hiddenWarned = hostChatKey(ctx());
     toastr.error('CAMPAIGN START HIDDEN — the greeting that holds this campaign\'s start record was changed without the engine '
         + 'reading the edit. The engine starts no second campaign over it. Nothing was booked, saved or sent to a model. '
         + 'Swipe back to the original greeting, or edit and save the greeting once more so the engine re-reads it.',
@@ -89,6 +92,59 @@ let llmPath = null; // Runtime V4: which call the last LLM request used ('custom
 let narrationStart = null; // Patch 8.2: {chatId, user, t}: when the engine block of a story turn was handed to SillyTavern
 let narratorRequest = null;
 let generationRequest = 0; // an older async interceptor must never publish into a newer request or chat
+let actionStatus = 'Bereit';
+let actionComposer = null;
+const modernHost = () => !!ctx().eventTypes?.MESSAGE_SENT && !!ctx().chatMetadata;
+function setActionStatus(text) {
+    if(text==='Gespeichert' && modernHost() && requestControl.blocked(providerKey()))text='Remoteabschluss unbekannt – kein automatischer neuer Versuch';
+    actionStatus = text;
+    const node = document.getElementById('avereth-action-status');
+    if (node) node.textContent = text;
+}
+function providerKey() {
+    const s = ctx().chatCompletionSettings || {};
+    let endpoint = '';
+    try { const url = new URL(s.custom_url); endpoint = url.origin + url.pathname; } catch { /* built-in source */ }
+    return `${s.chat_completion_source || ctx().mainApi}:${endpoint}`;
+}
+const requestControl = createRequestControl({storage:globalThis.localStorage,locks:globalThis.navigator?.locks,
+    changed:(_key,s) => { if (s.leases.some(l=>l.status==='unknown')) setActionStatus('Remoteabschluss unbekannt – kein automatischer neuer Versuch'); },
+});
+let persistence;
+async function saveAtOrigin(c, current = () => true) {
+    if (!modernHost()) return c.saveChat();
+    const epoch=generationRequest;
+    return persistence.save(c, () => epoch===generationRequest && current());
+}
+function worldOpen() {
+    const c=ctx(),i=c.chat.findLastIndex(m=>!m.is_user && !m.is_system),r=rec(c.chat[i]);
+    return r?.extraction && ['pending','failed'].includes(r.extraction.status) ? {id:i,record:r} : null;
+}
+function actionBlocked() {
+    if(requestControl.blocked(providerKey()))return 'Remoteabschluss unbekannt – kein automatischer neuer Versuch';
+    if(worldJobs.currentJob())return 'Weltabgleich läuft; Text bleibt als Entwurf erhalten';
+    if(persistence?.pending())return 'Speichern läuft; Text bleibt als Entwurf erhalten';
+    if(persistenceBlocked?.chatId===hostChatKey(ctx()))return 'Speicherung offen – Abschluss prüfen';
+    if(worldOpen())return 'Weltabgleich offen – Abschluss prüfen / fortsetzen';
+    return null;
+}
+async function resumeActionCompletion() {
+    if(requestControl.blocked(providerKey())) {
+        if(!globalThis.confirm('Der vorige Remoteabschluss ist unbekannt. Prüfe die Providerbelegung. Ein einziger neuer Versuch kann eine noch laufende Anfrage überlappen. Trotzdem freigeben?'))return;
+        if(!await requestControl.allowOne(providerKey()))throw new Error('Kein weiterer Wiederholungsversuch freigegeben');
+    }
+    const c=ctx();
+    // Retry only the exact save / extraction. Never replay the user mechanics to repair persistence.
+    await saveAtOrigin(c);persistenceBlocked=null;
+    const open=worldOpen();
+    if(open && !c.chat.slice(open.id+1).some(m=>m.is_user && rec(m)?.events?.length)) {
+        if(open.record.extraction.status==='failed')setRec(c.chat[open.id],{...open.record,events:[],continuation:undefined,extraction:{...open.record.extraction,status:'pending'}});
+        await saveAtOrigin(c);await startWorld(open.id);
+    }
+    setActionStatus(worldOpen()?'Weltabgleich weiterhin offen':'Gespeichert');
+}
+
+function hostChatKey(c) { return JSON.stringify([c.characters?.[c.characterId]?.avatar || '',c.getCurrentChatId()]); }
 
 function ctx() {
     return SillyTavern.getContext();
@@ -171,7 +227,7 @@ function postPanel(text) {
  * SillyTavern adds the API key, the extension never sees it. Any other source uses generateRaw (temperature as the
  * active preset sets it).
  */
-async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500, signal = null }) {
+async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500, signal = null, purpose = 'structured' }) {
     const c = ctx();
     const oai = c.chatCompletionSettings;
     if (c.mainApi === 'openai' && oai?.chat_completion_source === 'custom' && typeof c.getRequestHeaders === 'function') {
@@ -181,7 +237,10 @@ async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500, signal = n
         const abortWithWorld = () => ctl.abort();
         if (signal?.aborted) ctl.abort();
         else signal?.addEventListener('abort', abortWithWorld, { once: true });
-        const timer = setTimeout(() => { timedOut = true; ctl.abort(); }, LLM_TIMEOUT_MS);
+        const timer = setTimeout(() => {
+            if (modernHost()) setActionStatus('Provider antwortet noch – Belegung bleibt reserviert');
+            else { timedOut = true; ctl.abort(); }
+        }, LLM_TIMEOUT_MS);
         try {
             const body = {
                 chat_completion_source: 'custom', custom_url: oai.custom_url, model: oai.custom_model, messages, max_tokens: maxTokens, temperature, stream: false,
@@ -189,7 +248,7 @@ async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500, signal = n
                 custom_include_headers: String(oai.custom_include_headers || ''), custom_prompt_post_processing: oai.custom_prompt_post_processing || '',
             };
             // Only a rejected browser request gets transport provenance. Setup/program errors remain unknown.
-            const pending = fetch('/api/backends/chat-completions/generate', { method: 'POST', headers: c.getRequestHeaders(), body: JSON.stringify(body), signal: ctl.signal });
+            const pending = fetch('/api/backends/chat-completions/generate', { method: 'POST', headers: c.getRequestHeaders(), body: JSON.stringify(body), signal: ctl.signal, averethPhase:purpose });
             let res;
             try { res = await pending; }
             catch (error) {
@@ -205,6 +264,7 @@ async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500, signal = n
             // Patch 8.2: why the answer ended and the provider's token counts go along as telemetry (runtime.js callMeta)
             return { content: text, finish_reason: json.choices[0]?.finish_reason ?? null, usage: json.usage ?? null };
         } catch (error) {
+            if (modernHost() && requestControl.blocked(providerKey())) throw capacityError();
             if (signal?.aborted) throw Object.assign(new Error('LLM request cancelled by caller'), { code: 'LLM_CANCELLED' });
             if (timedOut) throw Object.assign(new Error(`LLM request timed out after ${LLM_TIMEOUT_MS} ms`), { code: 'LLM_TIMEOUT' });
             throw error;
@@ -228,7 +288,7 @@ async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500, signal = n
 const worldJobs = createWorldJobs({
     active: () => {
         const c = ctx();
-        return { chat: c.chat, chatId: c.getCurrentChatId() };
+        return { chat: c.chat, chatId: hostChatKey(c) };
     },
     run: async (chat, id, { isCurrent, signal }) => {
         if (campaignSupport(chat)) return { changed: false, unsupported: true };
@@ -245,7 +305,7 @@ const worldJobs = createWorldJobs({
         try { rerender(c, id); } catch (error) { console.error('[Avereth] display failed',error); }
         if (!isCurrent()) return;
         try {
-            await c.saveChat();
+            await saveAtOrigin(c);
             if (rec(c.chat[id])?.continuation) await verifySavedChat(c,id,isCurrent);
         } catch (error) {
             if (isCurrent()) blockPersistence(c, id);
@@ -256,6 +316,7 @@ const worldJobs = createWorldJobs({
     onError: (err) => console.error('[Avereth] world extraction failed', err),
 });
 function startWorld(id) {
+    setActionStatus('Weltabgleich läuft');
     return worldJobs.start(id);
 }
 
@@ -263,14 +324,20 @@ function startWorld(id) {
 globalThis.averethInterceptor = async function (chat, contextSize, abort, type) {
     const request = ++generationRequest;
     const c = ctx();
-    const chatId = c.getCurrentChatId();
-    const isCurrent = () => request === generationRequest && ctx().chat === c.chat && ctx().getCurrentChatId() === chatId;
+    const chatId = hostChatKey(c);
+    const isCurrent = () => request === generationRequest && ctx().chat === c.chat && hostChatKey(ctx()) === chatId;
     const s = settings();
     if (!s.enabled || !content) {
         if (content) { setPrompt(''); setLoreKeys([]); }
         return;
     }
     try {
+        if(modernHost()) {
+            const bindingError=await actionComposer?.guard();
+            if(bindingError || requestControl.blocked(providerKey())) {
+                abort(true);setActionStatus(bindingError || 'Remoteabschluss unbekannt');return;
+            }
+        }
         // B1 review (.131): the version guard reads the stored start record before anything may start a campaign, so a
         // refused campaign is never re-initialised over; a stored start hidden by a changed greeting is never replaced
         if (unsupported(c.chat)) { abort(true); setPrompt(''); setLoreKeys([]); renderDebug(); return; }
@@ -278,15 +345,15 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
             settleGreeting(c);
             const created = ensureCampaign(c.chat, content, { seed: newSeed(), runtime: newRuntime(), planner: newPlanner() });
             if (created === 'legacy') {
-                if (legacyWarned !== c.getCurrentChatId()) toastr.warning('Avereth Engine: this chat was played without the engine. Start a new chat to use it.');
-                legacyWarned = c.getCurrentChatId();
+                if (legacyWarned !== hostChatKey(c)) toastr.warning('Avereth Engine: this chat was played without the engine. Start a new chat to use it.');
+                legacyWarned = hostChatKey(c);
                 setPrompt('');
                 return;
             }
             if (created === 'hidden') { abort(true); setPrompt(''); setLoreKeys([]); hiddenStart(); renderDebug(); return; }
         }
         // the report still being asked for belongs to the turn before this new message: its facts come first
-        if (pendingReport && pendingReport.chatId === c.getCurrentChatId() && (!type || type === 'normal') && c.chat.findLastIndex((m) => m.is_user) > pendingReport.id) {
+        if (pendingReport && pendingReport.chatId === hostChatKey(c) && (!type || type === 'normal') && c.chat.findLastIndex((m) => m.is_user) > pendingReport.id) {
             await Promise.race([pendingReport.job, new Promise((done) => setTimeout(done, REPORT_WAIT_MS))]);
             if (!isCurrent()) { abort(true); return; }
         }
@@ -314,13 +381,17 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
             }
         }
         const blocked = persistenceBlocked;
-        if (blocked && blocked.chat === c.chat && blocked.chatId === c.getCurrentChatId()) {
+        if (blocked && blocked.chat === c.chat && blocked.chatId === hostChatKey(c)) {
             // the same records still in memory: exactly they must be on disk. A chat opened again since was read
             // from disk (its unsaved records are gone from memory too): its records up to there are checked as they are
             const end = c.chat[blocked.id] === blocked.message ? blocked.id : Math.min(blocked.id, c.chat.length - 1);
             await verifySavedChat(c, end, isCurrent);
             if (persistenceBlocked === blocked) persistenceBlocked = null;
         }
+        if(modernHost() && (!type || type==='normal') && worldOpen()?.record.extraction.status==='failed') {
+            abort(true);setActionStatus('Weltabgleich fehlgeschlagen – Abschluss ausdrücklich fortsetzen');return;
+        }
+        setActionStatus('Aktion wird aufgelöst');
         const r = await prepareGenerationAsync(c.chat, content, { type, settings: engineSettings(), llm: v4Llm, waited, isCurrent });
         // ST's abort callback is local to this interceptor invocation, not the shared generation AbortController.
         if (!isCurrent()) { abort(true); return; }
@@ -329,7 +400,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         if (r.action === 'clear' || r.action === 'none') {
             // 'clear': quiet/impersonate generations get no engine block; 'none': no campaign or no player message yet
             setPrompt('');
-            if (r.dirty) await c.saveChat();
+            if (r.dirty) await saveAtOrigin(c);
             return;
         }
         if (r.action === 'fold_blocked') {
@@ -349,7 +420,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
             }
             const end=c.chat.length-1;
             try {
-                await c.saveChat();
+                await saveAtOrigin(c);
                 await verifySavedChat(c,end,isCurrent);
             } catch (error) {
                 if (isCurrent()) blockPersistence(c, end);
@@ -362,7 +433,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
             abort(true);
             setPrompt('');
             if (r.notice) toastr.error(r.notice);
-            if (r.dirty) await c.saveChat();
+            if (r.dirty) await saveAtOrigin(c);
             return;
         }
         if (r.action === 'panels') {
@@ -372,16 +443,17 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
             c.chat[r.index].is_system = true;
             document.querySelector(`#chat .mes[mesid="${r.index}"]`)?.setAttribute('is_system', 'true');
             postPanel(r.panels.join('\n\n'));
-            await c.saveChat();
+            await saveAtOrigin(c);
             return;
         }
         lastContext = r.context;
         setPrompt(r.context.text);
-        narrationStart = { chatId: c.getCurrentChatId(), user: c.chat.findLastIndex((m) => m.is_user), t: Date.now(), inputHash: hash32(c.chat[c.chat.findLastIndex(m => m.is_user)]?.mes || ''), context: r.context.diagnostics, epoch: generationRequest, chat: c.chat };
+        setActionStatus('Erzählung läuft');
+        narrationStart = { chatId: hostChatKey(c), user: c.chat.findLastIndex((m) => m.is_user), t: Date.now(), inputHash: hash32(c.chat[c.chat.findLastIndex(m => m.is_user)]?.mes || ''), context: r.context.diagnostics, epoch: generationRequest, chat: c.chat };
         // prompt-only: retired tracker blocks out of the history, and only the last exchanges (the saved chat is untouched)
         lastProjection = projectPromptHistory(chat, { keepTurns: Number(s.historyTurns) || 0 });
         if (r.errors?.length) console.warn('[Avereth] fold errors', r.errors);
-        if (r.dirty) await c.saveChat();
+        if (r.dirty) await saveAtOrigin(c);
         renderDebug();
     } catch (err) {
         if (!isCurrent()) { abort(true); return; }
@@ -408,10 +480,10 @@ function rerender(c, id) {
 }
 
 const narratorRecovery = createNarratorRecovery({
-    active: () => { const c = ctx(); return { chat: c.chat, chatId: c.getCurrentChatId(), epoch: generationRequest,
-        enabled: settings().enabled && settings().recoverReports && typeof c.generate === 'function', group: c.groupId,
+    active: () => { const c = ctx(); return { chat: c.chat, chatId: hostChatKey(c), epoch: generationRequest,
+        enabled: settings().enabled && settings().recoverReports && (!modernHost() || !requestControl.blocked(providerKey())) && typeof c.generate === 'function', group: c.groupId,
         busy: !!document.querySelector('#mes_stop')?.offsetParent }; },
-    save: () => ctx().saveChat(),
+    save: () => saveAtOrigin(ctx()),
     generate: type => ctx().generate(type),
     failed: error => toastr.warning(`Avereth: narrator recovery failed (${error.message}); regenerate manually.`),
 });
@@ -419,21 +491,46 @@ const narratorRecovery = createNarratorRecovery({
 // ST 1.19 exposes request-ready but no structured generation-error event.
 // Observe only its exact non-streaming Narrator request; all other fetches are untouched.
 const hostFetch = globalThis.fetch.bind(globalThis);
-globalThis.fetch = function (url, options) {
+persistence = createChatPersistence({request:hostFetch,headers:()=>ctx().getRequestHeaders(),active:ctx,locks:globalThis.navigator?.locks,
+    changed:(status,key,error)=>{
+        try {if(key!==originKey(chatOrigin(ctx())))return;}catch{return;}
+        setActionStatus(status==='saving'?'Speichern':status==='saved'?(worldOpen()?'Weltabgleich offen':'Gespeichert'):`Speichern offen: ${error?.message || ''}`);
+        if(status==='error' && !/Stale|Older native/.test(error?.message || ''))blockPersistence(ctx(),ctx().chat.length-1);
+        if(status==='saved')persistenceBlocked=null;
+    },
+});
+globalThis.fetch = async function (url, options) {
+    if (modernHost() && settings().enabled && String(url).endsWith('/api/chats/save') && hasStoredCampaign(ctx().chat)) {
+        const data = await decodeSave(options);
+        try {return await persistence.write(data);}
+        catch(error) {
+            // ST may finish compressing an old payload after an Engine save/swipe. Never overwrite the
+            // newer snapshot; this acknowledgement is not our saved status (only read-back can set that).
+            if(/Stale|Older native/.test(error.message))return Response.json({superseded:true});
+            throw error;
+        }
+    }
+    const physical = () => {
+        if (!modernHost() || !settings().enabled || !String(url).endsWith('/api/backends/chat-completions/generate')) return hostFetch(url, options);
+        const body = JSON.parse(options.body), c=ctx(), userIndex=c.chat.findLastIndex(m=>m.is_user), user=c.chat[userIndex], input=user?.extra?.avereth_action_input;
+        return requestControl.fetchRequest(providerKey(),()=>hostFetch(url,options),{signal:options.signal,stream:!!body.stream,
+            meta:{phase:options.averethPhase || ((body.messages || []).some(m=>String(m.content).includes('[AVERETH ENGINE'))?'narrator':'host_other'),
+                origin_chat:hostChatKey(c),input_id:input?.id || (user ? `user:${userIndex}:${hash32(user.mes || '')}` : null),revision:input?.revision ?? null,generation_epoch:generationRequest}});
+    };
     const job = narratorRequest;
     if (!job || !String(url).endsWith('/api/backends/chat-completions/generate') || options?.body !== job.body)
-        return hostFetch(url, options);
+        return physical();
     narratorRequest = null;
-    return narratorProviderResponse(() => hostFetch(url, options), {
+    return narratorProviderResponse(physical, {
         signal: options.signal,
         isCurrent: () => {
             const c = ctx();
-            return settings().enabled && settings().recoverReports && c.chat === job.chat && c.getCurrentChatId() === job.chatId
+            return (!modernHost() || !requestControl.blocked(providerKey())) && settings().enabled && settings().recoverReports && c.chat === job.chat && hostChatKey(c) === job.chatId
                 && generationRequest === job.epoch && c.chat[job.u] === job.user && job.user.mes === job.input
                 && rec(job.user) === job.record && c.chat.length === job.length;
         },
         mark: data => { setRec(job.user, { ...job.record, narrator_recovery: data }); job.record = rec(job.user); },
-        save: () => ctx().saveChat(),
+        save: () => saveAtOrigin(ctx()),
     });
 };
 
@@ -441,24 +538,24 @@ async function onMessageReceived(messageId) {
     if (!settings().enabled || !content) return;
     const c = ctx();
     const chat = c.chat; // stable origin, even if getContext() later points at another chat
-    const chatId = c.getCurrentChatId();
+    const chatId = hostChatKey(c);
     try {
         if (unsupported(chat)) { renderDebug(); return; }
         const recover = settings().recoverReports && typeof c.generateRaw === 'function';
         // the greeting of a new chat arrives here too (SillyTavern: MESSAGE_RECEIVED 'first_message') and starts the campaign
         // Patch 8.2: the narrator's time, from the engine block handed over to the reply received (telemetry)
         const snapshot = narrationStart;
-        const started = narrationStart?.chatId === c.getCurrentChatId() && Number(messageId) > narrationStart.user ? narrationStart.t : null;
+        const started = narrationStart?.chatId === hostChatKey(c) && Number(messageId) > narrationStart.user ? narrationStart.t : null;
         narrationStart = null;
         if (!hasCampaign(chat)) settleGreeting(c); // the greeting of a new chat starts the campaign here (hotfix .137)
         const r = processReplyAny(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers, recover, runtime: newRuntime(), planner: newPlanner(), narrationMs: started === null ? null : Date.now() - started, narratorContext: started !== null && snapshot.chat === c.chat && snapshot.epoch === generationRequest && snapshot.inputHash === hash32(c.chat[snapshot.user]?.mes || '') ? snapshot.context : null });
         if (r.foldBlocked) { showFoldBlock(r.foldBlocked); renderDebug(); return; }
         if (!r.changed) return;
         rerender(c, Number(messageId));
-        await c.saveChat();
+        await saveAtOrigin(c);
         // MESSAGE_RECEIVED can finish saving after the user switched chats.
         // Never start a world job at the same index in an unrelated chat.
-        if (ctx().chat !== chat || ctx().getCurrentChatId() !== chatId) return;
+        if (ctx().chat !== chat || hostChatKey(ctx()) !== chatId) return;
         if (r.result?.rejected?.length) console.info('[Avereth] rejected report items', r.result.rejected);
         renderDebug();
         if (r.recover) requestReport(Number(messageId));
@@ -480,7 +577,7 @@ async function onMessageReceived(messageId) {
  */
 function requestReport(id) {
     const c = ctx();
-    const chatId = c.getCurrentChatId();
+    const chatId = hostChatKey(c);
     if (typeof c.generateRaw !== 'function') return;
     const req = reportRequest(c.chat, id, content, { settings: engineSettings() });
     // the same text is asked for once; a new swipe of the same message is a new request
@@ -494,11 +591,11 @@ function requestReport(id) {
             console.warn('[Avereth] report request failed', err);
         }
         const now = ctx();
-        if (now.getCurrentChatId() !== chatId) return;
+        if (hostChatKey(now) !== chatId) return;
         const res = applyReportAnswer(now.chat, id, content, answer, { hash: req.hash, ms: Date.now() - started, hud: settings().hud, stripTrackers: settings().stripTrackers });
         if (!res.changed) return;
         rerender(now, id);
-        await now.saveChat();
+        await saveAtOrigin(now);
         renderDebug();
     })().catch((err) => console.error('[Avereth] report request failed', err));
     pendingReport = { chatId, id, hash: req.hash, job };
@@ -536,7 +633,7 @@ async function onMessageEdited(messageId) {
         // SillyTavern redraws the edited message from mes right after this event: draw ours (System block) after that
         if (r.text) setTimeout(() => rerender(c, Number(messageId)), 0);
         if (r.refused) toastr.warning(`Avereth Engine: ${r.refused}`);
-        await c.saveChat();
+        await saveAtOrigin(c);
         renderDebug();
         resumeReport(); // if the latest reply is still pending, re-read its current text
     } catch (err) {
@@ -559,13 +656,14 @@ function contractState() {
 
 let contractWarned = null;
 function renderDebug() {
+    actionComposer?.refresh();
     const el = document.getElementById('avereth_status');
     if (!el || !content) return;
     const c = ctx();
     const { state, errors } = foldChat(c.chat);
     const contract = state.meta.started && state.meta.runtime === 'v4' ? contractState() : null;
-    if (contract && contract !== 'current' && contractWarned !== c.getCurrentChatId()) {
-        contractWarned = c.getCurrentChatId();
+    if (contract && contract !== 'current' && contractWarned !== hostChatKey(c)) {
+        contractWarned = hostChatKey(c);
         toastr.warning(`Avereth Engine: the narrator contract on this character card is ${contract === 'OUTDATED' ? 'outdated' : 'missing'}. Replace the card description with content/narrator/Avereth_Narrator_Contract_v4.txt of this build (${NARRATOR_CONTRACT_REVISION}).`);
     }
     const problems = state.meta.started ? validateState(state, content) : [];
@@ -584,7 +682,7 @@ function exportLog() {
     const blob = new Blob([JSON.stringify(log, null, 1)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `avereth-events-${c.getCurrentChatId() || 'chat'}.json`;
+    a.download = `avereth-events-${hostChatKey(c) || 'chat'}.json`;
     a.click();
 }
 
@@ -668,17 +766,20 @@ function mountSettings() {
     const ev = c.eventTypes || c.event_types;
     installDraftActions(document);
     c.eventSource.on(ev.MESSAGE_RECEIVED, onMessageReceived);
-    c.eventSource.on(ev.GENERATION_ENDED, () => { narratorRecovery.finish(); narrationStart = null; });
+    // ST 1.19 non-streaming hides Stop (GENERATION_ENDED) before MESSAGE_RECEIVED. Keep the
+    // origin/epoch-bound context until that reply arrives; a new generation or cancellation invalidates it.
+    c.eventSource.on(ev.GENERATION_STARTED, () => { narrationStart = null; });
+    c.eventSource.on(ev.GENERATION_ENDED, () => { narratorRecovery.finish(); });
     c.eventSource.on(ev.CHAT_COMPLETION_SETTINGS_READY, data => {
         narratorRequest = null;
         const a = ctx(), u = a.chat.findLastIndex(m => m.is_user), user = a.chat[u], record = rec(user);
         if (data.stream || a.groupId || !settings().enabled || !settings().recoverReports || !record?.events?.length
-            || record.narrator_recovery || narrationStart?.chatId !== a.getCurrentChatId() || narrationStart?.user !== u
+            || record.narrator_recovery || narrationStart?.chatId !== hostChatKey(a) || narrationStart?.user !== u
             || !(data.messages || []).some(m => String(m.content).includes('[AVERETH ENGINE'))) return;
-        narratorRequest = { body: JSON.stringify(data), chat: a.chat, chatId: a.getCurrentChatId(), epoch: generationRequest,
+        narratorRequest = { body: JSON.stringify(data), chat: a.chat, chatId: hostChatKey(a), epoch: generationRequest,
             u, user, input: user.mes, record, length: a.chat.length };
     });
-    c.eventSource.on(ev.GENERATION_STOPPED, () => { narratorRecovery.invalidate(); narrationStart = null; });
+    c.eventSource.on(ev.GENERATION_STOPPED, () => { generationRequest++; actionComposer?.invalidate('Generierung gestoppt; keine neue Aktion gebucht'); worldJobs.invalidate(); narratorRecovery.invalidate(); narrationStart = null; });
     c.eventSource.on(ev.MESSAGE_EDITED, onMessageEdited);
     // state is always re-folded from the chat, so these events only refresh the status line; the interceptor sets
     // the engine block before every generation (normal, swipe, regenerate, continue)
@@ -701,6 +802,13 @@ function mountSettings() {
         resumeReport();
     });
     mountSettings();
+    if(modernHost()) {
+        actionComposer=installActionComposer({context:ctx,state:()=>foldChat(ctx().chat).state,content:()=>content,
+            enabled:()=>settings().enabled && hasCampaign(ctx().chat) && campaignRuntime(ctx().chat)==='v4' && campaignPath(ctx().chat)==='c' && !campaignSupport(ctx().chat),settings,
+            blocked:actionBlocked,save:saveAtOrigin,retry:resumeActionCompletion,status:()=>actionStatus});
+        c.eventSource.on(ev.CHAT_CHANGED,()=>actionComposer?.resume());
+        actionComposer?.resume();
+    }
     renderDebug();
     resumeReport(); // also recover a pending reply after a full browser reload
 })();

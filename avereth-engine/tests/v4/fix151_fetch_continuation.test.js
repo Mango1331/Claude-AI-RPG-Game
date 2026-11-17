@@ -15,7 +15,7 @@ const input = "I ask the clerk if there's a bed or cheap lodging nearby for the 
 function hostLlm(fetch, headers = () => ({})) {
     const index = fs.readFileSync(new URL('../../index.js', import.meta.url), 'utf8');
     const start = index.indexOf('async function v4Llm('), end = index.indexOf('\n}', start) + 2;
-    return new Function('ctx', 'fetch', 'LLM_TIMEOUT_MS', 'providerResponseError', `let llmPath;${index.slice(start, end)};return v4Llm;`)(
+    return new Function('ctx', 'fetch', 'LLM_TIMEOUT_MS', 'providerResponseError', `const modernHost=()=>false;let llmPath;${index.slice(start, end)};return v4Llm;`)(
         () => ({ mainApi: 'openai', chatCompletionSettings: { chat_completion_source: 'custom' }, getRequestHeaders: headers }),
         fetch, 120000, providerResponseError);
 }

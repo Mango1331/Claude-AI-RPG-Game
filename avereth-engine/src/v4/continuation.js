@@ -3,7 +3,9 @@
 import { rec, messageEvents } from '../host.js';
 const signature = chat => JSON.stringify(chat.map(m => ({mes:m.mes, user:!!m.is_user, system:!!m.is_system,
     events:messageEvents(m), status:rec(m)?.extraction?.status ?? null,
-    continuation:rec(m)?.continuation ?? null, failed:!!(rec(m)?.plan?.failed || rec(m)?.interp?.failed)})));
+    continuation:rec(m)?.continuation ?? null, failed:!!(rec(m)?.plan?.failed || rec(m)?.interp?.failed),
+    action_input:m.extra?.avereth_action_input,action_input_hash:rec(m)?.action_input_hash,
+    swipe_id:m.swipe_id ?? 0,swipe_info:m.swipe_info?.map(s=>s.extra?.avereth)})));
 export function savedPrefixMatches(chat, saved, end) {
     return Array.isArray(saved) && saved.length > end
         && signature(chat.slice(0,end+1)) === signature(saved.slice(0,end+1));

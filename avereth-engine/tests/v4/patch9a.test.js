@@ -407,7 +407,7 @@ test('9A F: the combat HUD shows every action: attacks with reach and cost, defe
     assert.ok(g.state.encounter);
     const html = renderHud(g.state, content, 'closed');
     assert.match(html, /<strong>Attack<\/strong> · .*Basic Attack.*Flame Lance/);
-    assert.match(html, /<strong>Utility<\/strong> · <span class="avereth-skill">Blink <span class="avereth-skill-cost">\(8 MP, move 1 band\)<\/span><\/span>/);
+    assert.match(html, /<strong>Utility<\/strong> · <span class="avereth-skill"><button type="button" data-avereth-select-skill="mage.blink">Blink<\/button> <span class="avereth-skill-cost">\(8 MP, move 1 band\)<\/span><\/span>/);
     assert.doesNotMatch(html, /<strong>Defense<\/strong>/, 'no defense he does not have');
     assert.doesNotMatch(html, /Passive/);
     // Blink unchanged and usable: 8 MP, one Range Band, his action
@@ -424,7 +424,7 @@ test('9A F: the combat HUD shows every action: attacks with reach and cost, defe
     w.input('I attack the boar.');
     w.state.encounter.combatants.pc.current.sta = 3;
     const low = renderHud(w.state, content, 'closed');
-    assert.match(low, /<strong>Defense<\/strong> · <span class="avereth-skill avereth-skill-unusable">Guard <span class="avereth-skill-cost">\(5 STA, \+DEF till his next turn\)<\/span> <span class="avereth-skill-short">not enough STA<\/span>/);
+    assert.match(low, /<strong>Defense<\/strong> · <span class="avereth-skill avereth-skill-unusable"><button type="button" data-avereth-select-skill="warrior.guard">Guard<\/button> <span class="avereth-skill-cost">\(5 STA, \+DEF till his next turn\)<\/span> <span class="avereth-skill-short">not enough STA<\/span>/);
 });
 
 // ------------------------------------------------------------------------------------------------ review: absent first

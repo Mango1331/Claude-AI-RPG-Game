@@ -1,3 +1,4 @@
+import { actionInputOf, actionInputHash, actionPrefix, validateActionSelection, reconcileHudPlan } from '../action_input.js';
 import { boardRepairGuidance } from './guild.js';
 import { movementEvidence } from './narration_evidence.js';
 import { placeKey } from './place_refs.js';
@@ -201,11 +202,11 @@ async function ask(llm, messages, purpose, overrides = {}) {
         // TypeError. The adapter supplies this provenance; a matching message alone never grants continuation.
         const fetchFailure = /^plan(?:_|$)/.test(purpose) && err?.code === 'LLM_TRANSPORT'
             && err.phase === 'fetch' && err.settled === true;
-        const kind = ({ LLM_TIMEOUT: 'timeout', LLM_CANCELLED: 'cancelled', LLM_PROVIDER: 'provider' })[err?.code]
+        const kind = ({ LLM_TIMEOUT: 'timeout', LLM_CANCELLED: 'cancelled', LLM_PROVIDER: 'provider', LLM_CAPACITY_BLOCKED:'remote_unknown' })[err?.code]
             || (err?.name === 'AbortError' ? 'aborted' : 'transport');
         const status = Number(err?.status) || null;
-        const retryable = !['cancelled', 'aborted'].includes(kind) && (kind !== 'provider' || (typeof err?.retryable === 'boolean' ? err.retryable : status === 408 || status === 429 || status >= 500));
-        return { ok: false, retryable, error: String(err?.message || err).slice(0, 200), ms, call: { purpose, ms, error: true, error_kind: kind, ...(kind === 'provider' ? { provider_retryable: retryable, ...(err.provider_code ? { provider_code: err.provider_code } : {}), ...(err.provider_type ? { provider_type: err.provider_type } : {}) } : {}), ...(fetchFailure ? { transport_phase: 'fetch', transport_settled: true } : {}), ...(!fetchFailure && !['LLM_TIMEOUT','LLM_PROVIDER','LLM_CANCELLED'].includes(err?.code) && err?.name !== 'AbortError' ? {unclassified:true} : {}), ...(status ? { status } : {}) } };
+        const retryable = err?.code !== 'LLM_CAPACITY_BLOCKED' && !['cancelled', 'aborted'].includes(kind) && (kind !== 'provider' || (typeof err?.retryable === 'boolean' ? err.retryable : status === 408 || status === 429 || status >= 500));
+        return { ok: false, retryable, error: String(err?.message || err).slice(0, 200), ms, call: { purpose, ms, error: true, error_kind: kind, ...(kind === 'provider' ? { provider_retryable: retryable, ...(err.provider_code ? { provider_code: err.provider_code } : {}), ...(err.provider_type ? { provider_type: err.provider_type } : {}) } : {}), ...(fetchFailure ? { transport_phase: 'fetch', transport_settled: true } : {}), ...(!fetchFailure && !['LLM_TIMEOUT','LLM_PROVIDER','LLM_CANCELLED','LLM_CAPACITY_BLOCKED'].includes(err?.code) && err?.name !== 'AbortError' ? {unclassified:true} : {}), ...(status ? { status } : {}) } };
     }
 }
 
@@ -260,7 +261,7 @@ export async function planMessage(llm, content, ctx, text, { recent = '', isCurr
         const p2 = parsePlan(second.content, vocab, ctx, text);
         const raw = [String(second.content).slice(0, 2000)];
         return p2.commands
-            ? { commands: p2.commands, failed: false, error: null, ms, repaired: true, recovery: 'transport', raw, calls }
+            ? { hud_binding:p2.hud_binding, hud_conflict:p2.hud_conflict, commands: p2.commands, failed: false, error: null, ms, repaired: true, recovery: 'transport', raw, calls }
             : { commands: null, failed: true, error: (p2.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired: true, recovery: 'transport', raw, calls };
     }
     const raw = [String(first.content).slice(0, 2000)];
@@ -329,7 +330,7 @@ export async function planMessage(llm, content, ctx, text, { recent = '', isCurr
     // Only schema-valid plans whose sole remaining errors concern trade consent may ask back.
     // Nothing from either rejected plan is executed, including dependent travel and sleep.
     if (!p.commands && consentClarify) return { commands: [{ seq: 1, type: 'clarify', about: 'action', question: tradeNote || 'Do you buy or sell, which goods, with whom, and at what total price? Nothing changes hands until clarified.', options: [] }], failed: false, error: null, ms, repaired, raw, calls };
-    return p.commands ? { commands: p.commands, failed: false, error: null, ms, repaired, raw, calls, ...(recovery ? { recovery } : {}) } : { commands: null, failed: true, error: (p.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired, raw, calls, ...(recovery ? { recovery } : {}) };
+    return p.commands ? { hud_binding:p.hud_binding, hud_conflict:p.hud_conflict, commands: p.commands, failed: false, error: null, ms, repaired, raw, calls, ...(recovery ? { recovery } : {}) } : { commands: null, failed: true, error: (p.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired, raw, calls, ...(recovery ? { recovery } : {}) };
 }
 
 /**
@@ -343,6 +344,8 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const recent = p >= 0 ? recentText(chat[p].mes) : '';
     const catalog = buildCatalog(before, content, { known: true, c: true });
     const ctx = withContentSkills(planContext(before, content, catalog), content, before);
+    const actionInput=actionInputOf(msg);
+    if(actionInput)ctx.actionInput=actionInput;
     const reuse = previous?.plan && previous.interp?.commands ? { commands: previous.interp.commands, failed: false, error: null, ms: 0, repaired: !!previous.interp.repaired, raw: previous.plan.raw || [], calls: previous.plan.llm, recovery: previous.plan.recovery || null } : null;
     const pl = reuse || await planMessage(llm, content, ctx, msg.mes, { recent, isCurrent, moveHints: (commands) => ineffectiveMoves(before, ctx, commands) });
     const plan = {
@@ -353,7 +356,10 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     };
     const interp = { version: PLANNER_VERSION, ms: pl.ms, failed: !!pl.failed, repaired: !!pl.repaired, commands: pl.commands, ...(pl.error ? { error: pl.error } : {}) };
     if (pl.failed) return { v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: { v: IR_VERSION, route: 'v4', reason: 'planner', links: ir.links, acts: [] }, plan, interp, events: [], command: null };
-    const guarded = guardCommands(msg.mes, pl.commands, guardContext(before, content, catalog));
+    const hud=actionInput ? reconcileHudPlan(actionInput,pl.commands,pl.hud_binding) : null;
+    if(hud && !hud.ok)return actionRefused(inputHash,hud.reason,{plan,interp});
+    const guarded = guardCommands(msg.mes, pl.commands.filter(c=>!hud?.bound.includes(c.seq)), guardContext(before, content, catalog));
+    if(hud)guarded.kept=[...guarded.kept,...pl.commands.filter(c=>hud.bound.includes(c.seq))].sort((a,b)=>a.seq-b.seq);
     // a contract given up only in words for later is no act now (live run 03.10.2026)
     const announced = announcedAbandon(msg.mes, guarded.kept, before);
     guarded.kept = announced.kept;
@@ -361,7 +367,21 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     // The request is informational: route it through the normal board command, including booking and reuse.
     const boardRead = implicitBoardRead(before, guarded.kept, msg.mes);
     if (boardRead) guarded.kept = [...guarded.kept.filter(x => x.seq !== boardRead.seq), boardRead].sort((a,b) => a.seq-b.seq);
-    const m = mapPlan(guarded.kept, ctx, content, msg.mes, before);
+    const m = mapPlan(guarded.kept, ctx, content, msg.mes, before,{hudSeqs:hud?.bound || []});
+    if(hud){
+        const valid=validateActionSelection(actionInput.selection,before,content);
+        if(!valid.ok)return actionRefused(inputHash,valid.reason,{plan,interp});
+        const chosen=valid.mapped;
+        // Combat's existing mapper has no command dependency executor. Only the selected, prevalidated
+        // approach+attack pair is atomic here; never erase an external condition while lowering it.
+        if(m.route==='v3' && pl.commands.some(c=>hud.bound.includes(c.seq) && c.needs!=null && !hud.bound.includes(c.needs)))
+            return actionRefused(inputHash,'Die Voraussetzung dieser Kampfauswahl ist noch nicht aufgelöst; Auswahl und Bedingung klären',{plan,interp});
+
+        const kept=chosen.route===m.route && (m.route==='v3'
+            ? Object.entries(chosen.intent).filter(([k])=>k!=='target_how').every(([k,v])=>(m.intent[k]??null)===(v??null))
+            : m.commands?.some(c=>hud.bound.includes(c.seq)));
+        if(!kept)return actionRefused(inputHash,'Die ausgewählte Aktion oder ihre Bedingung bleibt im Gesamtplan nicht erhalten',{plan,interp});
+    }
     plan.dropped = guarded.dropped.map((x) => ({ type: x.command?.type ?? null, rule: x.rule, quote: x.command?.quote ?? null }));
     plan.notes = m.notes;
     if (m.free?.length) plan.free = m.free;
@@ -372,11 +392,18 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
         ...guarded.dropped.map((x) => ({ act: x.command?.type ?? null, seq: x.command?.seq ?? null, quote: x.command?.quote ?? null, source: 'planner', dropped: x.rule })),
     ].map(({ type, ...a }) => a);
     const irRec = { v: IR_VERSION, route: m.route === 'v4' ? 'v4' : 'v3', reason: 'planner', links: ir.links, acts };
+    return executeMappedTurn(chat,content,{u,before,m,guarded,inputHash,llm,previous,plan,interp,irRec,typed:!!actionInput});
+}
+function actionRefused(inputHash,reason,extra={}) {
+    return {v:RECORD_V4,input_hash:inputHash,route:'v4',events:[],command:null,action_error:reason,...extra};
+}
+async function executeMappedTurn(chat,content,{u,before,m,guarded={dropped:[]},inputHash,llm,previous,plan,interp,irRec,typed=false}) {
+    const msg=chat[u],pl={ms:interp?.ms || 0,repaired:interp?.repaired};
     if (m.route === 'panel') return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, events: [], command: { panels: [m.panel], llm: null } };
     if (m.route === 'v3') {
         // 4.3.0-c.6.6.5: a fight among the crowd of a settlement's street makes people of it first (the passer-by he
         // names, the people closest to an area attack), in this turn's record; nobody in a crowd is out of reach
-        const crowd = crowdIntent(before, content, m.intent, msg.mes);
+        const crowd = typed ? null : crowdIntent(before, content, m.intent, msg.mes);
         const at = crowd ? clone(before) : before;
         if (crowd) for (const e of crowd.events) applyEvent(at, e);
         const t = playerTurn(at, content, msg.mes, { msg: u, intent: crowd ? crowd.intent : m.intent, c: true });
@@ -649,12 +676,15 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
     let dirty = false;
     let r = rec(msg);
     const inputHash = hash32(msg.mes);
+    const actionInput=actionInputOf(msg), actionHash=actionInputHash(actionInput);
+    if(r?.events?.length && r.action_input_hash!=null && (r.action_input_hash!==actionHash || r.input_hash!==inputHash))
+        return {action:'abort',dirty:false,notice:'Diese HUD-Aktion wurde bereits gebucht. Eine Text- oder Auswahledition würfelt sie nicht erneut.'};
     // an interpretation that failed is not cached: Regenerate asks again (plan §3.4); neither is a Board generation that
     // failed: a new generation of the same message asks for the board again, with the interpretation it came with
     const retryBoard = !!r && r.route === 'v4' && r.input_hash === inputHash && !r.interp?.failed && !!r.board?.failed;
-    if (type !== 'continue' && (!r || r.input_hash !== inputHash || r.interp?.failed || retryBoard)) {
+    if (type !== 'continue' && (!r || r.input_hash !== inputHash || r.action_input_hash!=null && r.action_input_hash!==actionHash || r.interp?.failed || retryBoard)) {
         const history = historyKey(chat, u);
-        const current = () => isCurrent() && chat[u] === msg && lastPlayerIndex(chat) === u && hash32(msg.mes) === inputHash && rec(msg) === originalRecord && historyKey(chat, u) === history;
+        const current = () => isCurrent() && chat[u] === msg && lastPlayerIndex(chat) === u && hash32(msg.mes) === inputHash && actionInputHash(actionInputOf(msg))===actionHash && rec(msg) === originalRecord && historyKey(chat, u) === history;
         // Stage a missed extraction's gap too: a stale async request must leave every record untouched.
         const p = lastReplyIndex(chat, u);
         const staged = [...chat];
@@ -662,6 +692,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         const late = closeLatePending(staged, u);
         const commit = () => {
             if (late) setRec(chat[p], rec(staged[p]));
+            if(actionInput){r.action_input=clone(actionInput);r.action_input_hash=actionHash;}
             setRec(msg, r);
         };
         const fold = foldChat(staged, u);
@@ -674,13 +705,24 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         // prototype C: the planner reads every free-text message; '#' commands, character creation and a dead PC stay
         // the deterministic control channels they are in A
         const control = ir.reason === 'creation' || ir.reason === 'dead' || ir.intent?.kind === 'command';
+        if(actionInput){
+            const valid=validateActionSelection(actionInput.selection,before,content);
+            const reason=actionInput.text!==msg.mes?'Text und gespeicherte HUD-Eingabe unterscheiden sich; Eingaberevision ausdrücklich korrigieren':control?'Systemeingaben werden nicht mit einer HUD-Aktion kombiniert':actionInput.base_revision!==actionPrefix(chat,u)?'Die Welt hat sich seit der Auswahl geändert':!['hud_roleplay','hud_free'].includes(actionInput.mode)?'Unbekannter Eingabemodus':!valid.ok?valid.reason:null;
+            if(reason){r=actionRefused(inputHash,reason);commit();return {action:'not_executed',dirty:true,index:u,notice:reason};}
+        }
+        if(actionInput?.mode==='hud_roleplay') {
+            const m=validateActionSelection(actionInput.selection,before,content).mapped;
+            r=await executeMappedTurn(chat,content,{u,before,m,inputHash,llm,previous:null,typed:true,
+                irRec:{v:IR_VERSION,route:m.route,reason:'hud',links:[],acts:[{...actionInput.selection,source:'hud'}]}});
+        } else
         if (campaignPath(chat, settings.legacyPlanner ?? settings.planner) === 'c' && !control) {
             if (typeof llm !== 'function') throw new Error('Runtime V4 needs an LLM call for the planner');
             r = await plannedTurn(chat, content, { u, before, ir, inputHash, llm, previous: retryBoard ? r : null, isCurrent: current });
             if (!current()) return stale();
             r.perf = turnPerf(r, t0, f0, waited);
+            if(r.action_error){commit();return {action:'not_executed',dirty:true,index:u,notice:r.action_error};}
             if (r.interp?.failed) {
-                const hard = (r.plan?.llm || []).some(x => x.error && (x.unclassified || ['unknown','cancelled','aborted'].includes(x.error_kind) || (x.error_kind === 'provider' && (x.provider_retryable === false || (x.provider_retryable !== true && x.status < 500 && ![408,429].includes(x.status))))));
+                const hard = (r.plan?.llm || []).some(x => x.error && (x.unclassified || ['unknown','remote_unknown','cancelled','aborted'].includes(x.error_kind) || (x.error_kind === 'provider' && (x.provider_retryable === false || (x.provider_retryable !== true && x.status < 500 && ![408,429].includes(x.status))))));
                 if (!hard) r.continuation = {kind:'planner_not_executed', reason:'model'};
                 commit();
                 return {
@@ -735,6 +777,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         const reused = foldBlock(foldChat(chat, u + 1)); // the reused record's own events included
         if (reused) return { action: 'fold_blocked', dirty, index: u, block: reused, notice: reused.notice };
     }
+    if(r?.action_error)return {action:'not_executed',dirty,index:u,notice:r.action_error};
     if (r?.route === 'v4' && r.interp?.failed) {
         return {
             action: 'abort', dirty,
@@ -771,7 +814,7 @@ export function notExecutedCause(r) {
 
 // Include event payloads, not just their count: a swipe or an extraction can replace an equal-sized record.
 function historyKey(chat, end) {
-    return hash32(JSON.stringify(chat.slice(0, end).map((m) => [!!m.is_user, !!m.is_system, m.mes, messageEvents(m), rec(m)?.extraction?.status])));
+    return hash32(JSON.stringify(chat.slice(0, end).map((m) => [!!m.is_user, !!m.is_system, m.mes, messageEvents(m), rec(m)?.extraction?.status, actionInputHash(actionInputOf(m))])));
 }
 
 // ------------------------------------------------------------------------------------------------ after the reply
@@ -956,7 +999,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
     }
 
     if (!isCurrent()) return { changed: false, cancelled: true };
-    const hard = calls.some(x => x.error && (x.unclassified || ['unknown','cancelled','aborted'].includes(x.error_kind) || (x.error_kind === 'provider' && (x.provider_retryable === false || (x.provider_retryable !== true && x.status < 500 && ![408,429].includes(x.status))))));
+    const hard = calls.some(x => x.error && (x.unclassified || ['unknown','remote_unknown','cancelled','aborted'].includes(x.error_kind) || (x.error_kind === 'provider' && (x.provider_retryable === false || (x.provider_retryable !== true && x.status < 500 && ![408,429].includes(x.status))))));
     return applyExtraction(chat, id, content, parsed, { hash: req.hash, ms, repaired, recovery, error, hud, calls, movementReviewed, errorKind:hard ? 'provider' : 'model' });
 }
 
@@ -1036,6 +1079,7 @@ export function onEditedV4(chat, id) {
     const r = rec(msg);
     if (!msg || !r) return { changed: false };
     if (msg.is_user) {
+        if(r.action_input_hash!=null && r.events?.length)return {changed:true,...(r.input_hash!==hash32(msg.mes) || r.action_input_hash!==actionInputHash(actionInputOf(msg))?{refused:'Die gebuchte HUD-Eingabe wurde geändert. Originaltext und Auswahl wiederherstellen; keine erneute Würfelung.'}:{})};
         const payment = (r.events || []).some(e => (e.t === 'decision.opened' && e.d.decision?.route === 'free') || (e.t === 'decision.closed' && e.d.expect));
         // Refresh the blocked HUD immediately, but never bless edited words by updating input_hash.
         return payment ? { changed: true, ...(r.input_hash !== hash32(msg.mes) ? { refused: 'Payment input changed. Restore its original text or discard the history from this message before continuing.' } : {}) } : { changed: false };

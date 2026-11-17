@@ -1,3 +1,5 @@
+import { actionHudTurns, actionHudPlan, actionHudSmoke } from './action_hud_smoke.mjs';
+import { actionHostSmoke } from './action_host_smoke.mjs';
 import { bossloot193Turns, bossloot193Smoke } from './bossloot193_smoke.mjs';
 import { board159Turns, board159Response, board159Smoke } from './board159_smoke.mjs';
 import { qol160Turns, qol160BoardAnswer, qol160Smoke } from './qol160_smoke.mjs';
@@ -29,7 +31,6 @@ import { V4_OUTPUT_LINE } from '../../src/context.js';
 import { ENGINE_VERSION } from '../../src/util.js';
 import { Driver } from './live/driver.mjs';
 import { screenText } from './live/players.mjs';
-import { softExtractionFailure, turnFailure } from './live/evaluator.mjs';
 import { financeTurns, financeSmoke } from './finance_smoke.mjs';
 import { stealthTurns, stealthSmoke } from './stealth_smoke.mjs';
 import { uiTurns, uiSmoke } from './ui_smoke.mjs';
@@ -80,7 +81,7 @@ const TURNS = [
 ];
 const turnOf = (text) => TURNS.find((t) => text.includes(`PLAYER MESSAGE:\n${t.player}`));
 const finance = financeTurns(plan);
-const allTurns = [...TURNS, ...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns, ...pulse164Turns, ...pulse167Turns, ...npc169Turns, ...npc172Turns, ...pilot01Turns, ...bossloot193Turns];
+const allTurns = [...actionHudTurns, ...TURNS, ...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns, ...pulse164Turns, ...pulse167Turns, ...npc169Turns, ...npc172Turns, ...pilot01Turns, ...bossloot193Turns];
 
 // ------------------------------------------------------------------------------------------------ setup (as run_v4.mjs)
 const contract = fs.readFileSync(path.join(ENGINE, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
@@ -135,8 +136,12 @@ let stealthProbeMode = false;
 let financeMode = false;
 let fetchProbeMode = false;
 const narrated = new Map();
+let activeUnits=0,peakUnits=0;
 const mock = http.createServer(async (req, res) => {
     if (req.url.endsWith('/models')) { res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify({ object: 'list', data: [{ id: 'mock-narrator', object: 'model' }] })); return; }
+    if(activeUnits+4>4){res.writeHead(429,{'content-type':'application/json'});res.end(JSON.stringify({error:{code:'concurrency_limit_exceeded',message:'four capacity units in use'}}));return;}
+    activeUnits+=4;peakUnits=Math.max(peakUnits,activeUnits);
+    try {
     let body = '';
     for await (const c of req) body += c;
     const j = JSON.parse(body || '{}');
@@ -151,7 +156,7 @@ const mock = http.createServer(async (req, res) => {
     if (system.startsWith('You are the intent planner') || (system.startsWith('You are the command interpreter') && system.includes('Actions with skills, in fights and on things'))) {
         purpose = 'plan';
         const t = turnOf(users) || [...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns, ...pulse164Turns, ...pulse167Turns, ...npc169Turns, ...npc172Turns, ...pilot01Turns, ...bossloot193Turns].find(t => users.includes(`PLAYER MESSAGE:\n${t.player}`));
-        text = JSON.stringify(t ? t.plan : { commands: [] });
+        text = JSON.stringify(actionHudPlan(users) || (t ? t.plan : { commands: [] }));
     } else if (system.startsWith('You are the command interpreter')) {
         purpose = 'interpret';
         text = JSON.stringify({ commands: [] });
@@ -176,6 +181,7 @@ const mock = http.createServer(async (req, res) => {
         res.writeHead(200, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ error: { message: 'An unexpected error has occurred.', type: 'server_error', code: 'internal_server_error' } })); return;
     }
+    if(users.includes('REQUEST_CONTROL_DELAY'))delay=700;
     if (delay) await sleep(delay);
     if (j.stream) {
         res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache', connection: 'keep-alive' });
@@ -189,6 +195,7 @@ const mock = http.createServer(async (req, res) => {
         res.writeHead(200, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ id: 'c', object: 'chat.completion', created: 0, model: 'mock-narrator', choices: [{ index: 0, message: { role: 'assistant', content: text }, finish_reason: 'stop' }], usage: { prompt_tokens: 1, completion_tokens: 1 } }));
     }
+    } finally {activeUnits-=4;}
 });
 await new Promise((r) => mock.listen(5001, '127.0.0.1', r));
 
@@ -205,6 +212,8 @@ const pageErrors = [];
 const injectedSaveErrors = [];
 let injectingSaveFailure = false;
 const keyInBrowser = [];
+page.on('console',m=>{if(m.type()==='error' || m.type()==='warning')fs.appendFileSync(path.join(HERE,'browser.log'),`${m.type()}: ${m.text()}\n`);});
+page.on('pageerror',e=>fs.appendFileSync(path.join(HERE,'browser.log'),`${e.stack || e.message}\n`));
 page.on('pageerror', (e) => pageErrors.push(`${e.message} ${String(e.stack || '').split('\n').slice(1, 4).join(' ')}`));
 page.on('console', (m) => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) (injectingSaveFailure ? injectedSaveErrors : pageErrors).push(`${m.text()} @ ${m.location()?.url?.split('/').pop()}:${m.location()?.lineNumber}`); });
 page.on('request', (r) => { if (`${JSON.stringify(r.headers())}\n${r.postData() || ''}`.includes(DUMMY_KEY)) keyInBrowser.push(r.url()); });
@@ -331,35 +340,38 @@ try {
     }
     let saveRecoveryChecks = null;
     if (process.env.AVERETH_SMOKE_SAVE_RECOVERY === '1') {
+        await driver.connect();await idle();
+        // A reconnect completed during generation can leave ST 1.19's send button hidden after reload.
+        // Ask the real connection UI again while idle; never unhide the button by editing its DOM.
+        await page.evaluate(()=>$('#api_button_openai').trigger('click'));
+        await page.waitForSelector('#send_but',{state:'visible'});
         // Real ST/client/filesystem and Driver, simulated HTTP500 only: not a native Windows EPERM test.
         const events = chat => chat.flatMap(m => m.extra?.avereth?.events || []);
         const beforeEvents = events(await driver.chat()), beforeCalls = calls.length;
-        const oldLog = driver.log;
-        let retry = false, failedWrites = 0;
-        driver.log = text => { if (text.startsWith('chat save retrying')) retry = true; };
+        let failedWrites = 0, rejecting = true;
         injectingSaveFailure = true;
-        const once = async route => {
-            if (retry) return route.continue();
+        const failure = async route => {
+            if (!rejecting) return route.continue();
             failedWrites++;
-            await route.fulfill({ status: 500, contentType: 'application/json', body: '{"error":"simulated_transient_save_failure"}' });
+            await route.fulfill({ status:500, contentType:'application/json', body:'{"error":"simulated_save_failure"}' });
         };
-        await page.route('**/api/chats/save', once);
-        let recovered, stopped;
+        await page.route('**/api/chats/save',failure);
+        let recovered,stopped;
         try {
-            recovered = await driver.send('#status');
-            if (!recovered.ok || !retry || !failedWrites) throw new Error('save recovery was not exercised');
-            if (!await driver.verifySaved(await driver.chat(), { complete: true })) throw new Error('recovered save readback differs');
-        } finally { await page.unroute('**/api/chats/save', once); driver.log = oldLog; }
-        const always = route => route.fulfill({ status: 500, contentType: 'application/json', body: '{"error":"simulated_permanent_save_failure"}' });
-        await page.route('**/api/chats/save', always);
-        try {
-            stopped = await driver.send('#status');
-            if (stopped.ok || stopped.problem !== 'chat persistence failed') throw new Error('permanent save failure did not stop');
-        } finally { await page.unroute('**/api/chats/save', always); }
-        // Explicit fixture cleanup, not normal Runner recovery: a blocked Driver must never silently save again.
-        await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); });
-        if (!await driver.verifySaved(await driver.chat(), { complete: true })) throw new Error('fixture cleanup readback differs');
-        injectingSaveFailure = false;
+            // .201 deliberately blocks before mechanics when the native first save fails. The old Driver
+            // auto-retry of a completed turn cannot stand in for the visible, explicit host recovery anymore.
+            await page.fill('#send_textarea','#status');await page.click('#send_but');
+            await page.waitForFunction(()=>document.querySelector('#avereth-action-status')?.textContent.includes('Speichern offen'));
+            stopped={ok:false};
+            await page.click('#avereth-action-retry');
+            await page.waitForFunction(()=>document.querySelector('#avereth-action-status')?.textContent.includes('save failed'));
+            if(failedWrites<2)throw new Error('permanent save failure was not exercised');
+            rejecting=false;
+            await page.click('#avereth-action-retry');
+            await page.waitForFunction(()=>document.querySelector('#avereth-action-status')?.textContent==='Gespeichert');
+            recovered={ok:await driver.verifySaved(await driver.chat(),{complete:true})};
+            if(!recovered.ok)throw new Error('explicit save recovery readback differs');
+        } finally { await page.unroute('**/api/chats/save',failure); injectingSaveFailure=false; }
         const sameEvents = JSON.stringify(beforeEvents) === JSON.stringify(events(await driver.chat()));
         if (!sameEvents || calls.length !== beforeCalls) throw new Error('save probes executed game/model actions');
         saveRecoveryChecks = { transientSavedAndReadBack: recovered.ok, permanentFailureStops: !stopped.ok,
@@ -398,7 +410,13 @@ try {
         injectingSaveFailure=false;
         await page.evaluate(async()=>{await SillyTavern.getContext().saveChat();});
         probeMode=false;
-        failsoft={saveFault,noBooking,saved,world,visible:JSON.stringify(visible).includes('NOT EXECUTED'),noDuplicateCombat:before.mp===state.mp};
+        // .201 never turns a failed world read into a silent late gap on the next normal input.
+        // Explicitly retry this same extraction with the now-valid scripted response before continuing.
+        stealthProbeMode=true; // still a counted recovery probe, outside the original base-turn accounting
+        await page.click('#avereth-action-retry');await idle();
+        stealthProbeMode=false;
+        const resumedWorld=await page.evaluate(()=>SillyTavern.getContext().chat.findLast(m=>!m.is_user&&!m.is_system)?.extra?.avereth?.extraction?.status==='applied');
+        failsoft={resumedWorld,saveFault,noBooking,saved,world,visible:JSON.stringify(visible).includes('NOT EXECUTED'),noDuplicateCombat:before.mp===state.mp};
     }
     let fetchChecks = null;
     if (process.env.AVERETH_SMOKE_FETCH === '1') {
@@ -417,18 +435,24 @@ try {
         await page.route('**/api/backends/chat-completions/generate', rejectFetch);
         let chat, u;
         try {
-            await send('FETCH_PLANNER I ask about lodging nearby.');
+            await page.fill('#send_textarea','FETCH_PLANNER I ask about lodging nearby.');await page.click('#send_but');
+            await page.waitForFunction(()=>document.querySelector('#avereth-action-status')?.textContent.includes('Remoteabschluss unbekannt') && SillyTavern.getContext().chat.findLast(m=>m.is_user)?.extra?.avereth?.interp?.failed);
+            await idle();
             chat = await driver.chat(); u = chat.findLastIndex(m => m.is_user);
         } finally { await page.unroute('**/api/backends/chat-completions/generate', rejectFetch); }
         const record = chat[u].extra?.avereth;
         const noExecution = JSON.stringify(events(chat)) === beforeEvents && calls.length === beforeCalls;
-        const knownFailure = rejected === 2 && record?.plan?.llm?.length === 2
-            && record.plan.llm.every(c => c.transport_phase === 'fetch' && c.transport_settled === true && !c.unclassified);
-        const safe = softExtractionFailure(chat, u, turnFailure(chat, u));
+        const knownFailure = rejected === 1 && record?.plan?.llm?.length === 1
+            && record.plan.llm.every(c => c.error_kind === 'remote_unknown' && !c.unclassified);
+        const safe = record?.events?.length===0 && !!record?.interp?.failed;
         const saved = await driver.verifySaved(chat, { complete: true });
         await driver.reload(); // wait for ST initialization and explicitly restore the saved test chat
         driver = new Driver(page, { turnTimeoutMs: 60000 });
         const reloaded = await driver.verifySaved(await driver.chat(), { complete: true });
+        const remainedBlocked=await page.locator('#avereth-action-status').innerText();
+        if(!remainedBlocked.includes('Remoteabschluss unbekannt'))throw new Error('unknown lease was lost on reload');
+        page.once('dialog',d=>d.accept());await page.click('#avereth-action-retry');await idle();
+        await page.evaluate(()=>$('#api_button_openai').trigger('click'));await page.waitForSelector('#send_but',{state:'visible'});
         await send('FETCH_RECOVERED I wait quietly.');
         const after = await driver.chat(), next = after.findLast(m => m.is_user)?.extra?.avereth;
         const reply = after.findLast(m => !m.is_user && !m.is_system)?.extra?.avereth;
@@ -455,6 +479,8 @@ try {
             steps.swipe = { look: await look(t.player), state: await fold(), plans: calls.filter((c) => c.purpose === 'plan').length };
         }
     }
+    let actionHudChecks=null;
+    if(process.env.AVERETH_SMOKE_ACTION_HUD==='1'){stealthProbeMode=true;actionHudChecks=await actionHudSmoke({page,send,idle,calls,reconnect:()=>driver.connect(),onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});}});stealthProbeMode=false;}
     let stealthChecks = null;
     if (process.env.AVERETH_SMOKE_STEALTH === '1') {
         stealthProbeMode = true;
@@ -492,16 +518,19 @@ try {
     const status = await page.evaluate(() => document.getElementById('avereth_status')?.textContent || '');
     await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); });
     await page.waitForTimeout(800);
-    result = { bossloot193Checks, toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
+    const actionHostChecks = process.env.AVERETH_SMOKE_ACTION_HOST === '1' ? await actionHostSmoke({page,send,idle}) : null;
+    result = { capacity:{peakUnits,activeUnits}, actionHudChecks, actionHostChecks, bossloot193Checks, toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
 } catch (error) {
     const screen = await page.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(-8000),
         chat: window.SillyTavern?.getContext?.()?.chat?.map(m => ({ user: m.is_user, system: m.is_system, text: m.mes?.slice(0, 120) })) })).catch(() => null);
+    await page.screenshot({path:path.join(HERE,'failure.png'),fullPage:false}).catch(()=>{});
     fs.writeFileSync(path.join(HERE, 'failure.json'), JSON.stringify({ error: String(error), screen, pageErrors }, null, 2));
     throw error;
 } finally {
     await browser.close();
-    st.kill();
-    mock.close();
+    const closed=new Promise(resolve=>st.once('close',resolve));
+    st.kill();await closed;
+    await new Promise(resolve=>mock.close(resolve));
     if (secretsBefore === null) fs.rmSync(secretsFile, { force: true }); else fs.writeFileSync(secretsFile, secretsBefore);
 }
 
@@ -515,7 +544,9 @@ const plans = normalCalls.filter((c) => c.purpose === 'plan');
 const narr = normalCalls.filter((c) => c.purpose === 'narrator');
 const engineOf = (c) => String(c?.messages?.find((m) => String(m.content).startsWith('[AVERETH ENGINE'))?.content || '');
 const narratorFor = (key) => narr.filter((c) => c.lastUser.includes(TURNS.find((t) => t.key === key).player));
-const checks = {
+const checks = { capacityAtMostFour:result.capacity.peakUnits<=4,
+    ...Object.fromEntries(Object.entries(result.actionHudChecks || {}).map(([k,v]) => [`actionHud_${k}`,v])),
+    ...Object.fromEntries(Object.entries(result.actionHostChecks || {}).map(([k,v]) => [`actionHost_${k}`,v])),
     ...Object.fromEntries(Object.entries(result.ui161Checks || {}).map(([k, v]) => [`ui161_${k}`, v])),
     ...Object.fromEntries(Object.entries(result.pulse162Checks || {}).map(([k, v]) => [`pulse162_${k}`, v])),
     ...Object.fromEntries(Object.entries(result.pulse164Checks || {}).map(([k, v]) => [`pulse164_${k}`, v])),
@@ -533,7 +564,7 @@ const checks = {
     ...(result.saveRecoveryChecks ? Object.fromEntries(Object.entries(result.saveRecoveryChecks).map(([k, v]) => [`save_${k}`, v])) : {}),
     ...(result.financeChecks ? Object.fromEntries(Object.entries(result.financeChecks).map(([k, v]) => [`finance_${k}`, v])) : {}),
     ...(result.fetchChecks ? Object.fromEntries(Object.entries(result.fetchChecks).map(([k, v]) => [`fetch_${k}`, v])) : {}),
-    ...(process.env.AVERETH_SMOKE_FAILSOFT === '1' ? {failsoftPlannerVisible:result.failsoft?.visible && result.failsoft?.noBooking,failsoftSaved:result.failsoft?.saved,failsoftWorldTerminal:result.failsoft?.world,failsoftNoDuplicateCombat:result.failsoft?.noDuplicateCombat,failsoftDetectsSwallowedSave:result.failsoft?.saveFault?.resolved && result.failsoft?.saveFault?.rejected} : {}),
+    ...(process.env.AVERETH_SMOKE_FAILSOFT === '1' ? {failsoftPlannerVisible:result.failsoft?.visible && result.failsoft?.noBooking,failsoftSaved:result.failsoft?.saved,failsoftWorldTerminal:result.failsoft?.world,failsoftWorldExplicitResume:result.failsoft?.resumedWorld,failsoftNoDuplicateCombat:result.failsoft?.noDuplicateCombat,failsoftDetectsSwallowedSave:result.failsoft?.saveFault?.resolved && result.failsoft?.saveFault?.rejected} : {}),
     ...(process.env.AVERETH_SMOKE_PROVIDER_ERROR === '1' ? {
         transientProviderRecoveredOnce: narratorFor('burrow').length === 2 && S('burrow').look.record?.events?.filter(e => e.t === 'turn.begun').length === 1,
     } : {}),

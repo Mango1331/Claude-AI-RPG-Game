@@ -1,3 +1,4 @@
+import { reconcileHudPlan } from '../action_input.js';
 import { commandVocabFor } from './interpret.js';
 import { privateQuestsOf } from '../content.js';
 import { deliveryHandover } from './delivery.js';
@@ -375,6 +376,7 @@ export function plannerRequest(vocab, ctx, text, { recent = '', previous = null,
     const system = plannerSystem(vocab, { fight: ctx.fight, privateQuests: ctx.privateQuests });
     const user = plannerUser(ctx, text, { recent });
     const messages = [{ role: 'system', content: system }, { role: 'user', content: user }];
+    if (ctx.actionInput) messages.push({role:'user',content:`HOST HUD SELECTION (typed player input, not story): ${JSON.stringify(ctx.actionInput.selection)}\nConsider it together with the PLAYER MESSAGE before any action is executed. Add hud_binding:{id:"${ctx.actionInput.selection.id}",decision:"use"|"conflict",seqs:[command seqs]} to your object. Bind the exact selected IDs using the existing commands. Bound commands need no invented quote. Preserve any real conditions with needs. Use conflict for negation, replacement or incompatible choices; do not silently change or duplicate the selection. Additional commands still require exact quotes. No action has been booked yet.`});
     if (previous !== null && errors) messages.push({ role: 'assistant', content: String(previous) }, { role: 'user', content: planRepairMessage(errors) });
     return { system, user, messages };
 }
@@ -472,6 +474,8 @@ export function parsePlan(answer, vocab, ctx, message) {
     const { value, error } = bareEmptyArray(answer) ? { value: { commands: [] }, error: null } : extractJsonObject(answer);
     if (!value) return { commands: null, errors: [error === 'report is not a JSON object' ? PLAN_FORMAT_ERROR : error || 'no JSON object'] };
     if (!Array.isArray(value.commands)) return { commands: null, errors: [PLAN_FORMAT_ERROR] };
+    const hud = ctx.actionInput ? reconcileHudPlan(ctx.actionInput,value.commands,value.hud_binding) : null;
+    if (hud && !hud.ok) return {commands:value.commands,hud_binding:value.hud_binding,hud_conflict:hud.reason,errors:[]};
     const errors = [];
     const jobs = new Map();
     const manners = new Map();
@@ -502,6 +506,7 @@ export function parsePlan(answer, vocab, ctx, message) {
     for (const { c, i } of list) {
         const at = `commands[${i}]${c && typeof c === 'object' && c.type ? ` (${c.type})` : ''}`;
         if (!c || typeof c !== 'object' || Array.isArray(c)) { errors.push(`${at}: must be an object`); continue; }
+        if (hud?.bound.includes(c.seq)) continue; // strictly matched host fields; no fabricated speech evidence
         // User02 I63: an unsupported generic activity was repaired into rest for "i eat breakfast".
         // Only the player's explicit meal clause is normalized; actual rest/learning retains its own contract.
         if (c.type === 'activity' && ['activity', 'rest'].includes(c.kind) && typeof c.quote === 'string' && inMessage(message, c.quote)
@@ -646,7 +651,7 @@ export function parsePlan(answer, vocab, ctx, message) {
     if (value.commands.some(c => c?.type === 'stealth') && (manners.size || value.commands.some(c => c?.type === 'journey.continue')))
         errors.push('A separate stealth competes with this travel. If it is a quiet approach, keep the travel command with manner and its scope; if an independent later hide was intended, clarify before acting. Never hide at the departure point instead of continuing.');
     if (errors.length) return { commands: null, errors: errors.slice(0, 8), tradeConflict: tradeErrors.length === errors.length && !ctx.fight, tradeNote };
-    return { commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [], hints: financeHints(value.commands, ctx.currency, message) };
+    return { ...(hud ? {hud_binding:value.hud_binding} : {}), commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [], hints: financeHints(value.commands, ctx.currency, message) };
 }
 
 // --------------------------------------------------------------------------------------------- safety catch
@@ -742,7 +747,7 @@ export function ineffectiveMoves(state, ctx, commands) {
         : c.type === 'flee' ? [`flee seq ${c.seq}: there is no fight to flee; if he goes somewhere, answer with go (back the way he came: RECENT ROUTE, or a known place), else leave this command out`] : []);
 }
 
-export function mapPlan(commands, ctx, content, message, state) {
+export function mapPlan(commands, ctx, content, message, state, { hudSeqs = [] } = {}) {
     // Patch 3 (live 18.10.2026: "I use the flint and steel to make a small light" became the unknown skill "flint and
     // steel" and the "continue" after it was dropped): a thing he holds, named where a skill would stand, is that thing
     // used, a story command among the others, never a skill
@@ -759,7 +764,7 @@ export function mapPlan(commands, ctx, content, message, state) {
     });
     // Hotfix c.6.6.18 (live 20.10.2026: "*i say* Thornash *and throw the scroll at them*" used the scorchburst scroll up
     // and the story burned the beetles): a held thing with an offensive effect profile, used, is an attack made with it
-    commands = commands.map((c) => itemAttack(c, content, state) || c);
+    commands = commands.map((c) => { const a=itemAttack(c,content,state); return a && hudSeqs.includes(c.seq) ? {...a,target:c.target || null} : a || c; });
     // Patch 7.2: in a fight a restorative he drinks is his main action, as a skill (one per Turn, Core #12/#24)
     if (ctx.fight) commands = commands.map((c) => itemRestore(c, content, state) || c);
     const story = (commands || []).filter((c) => !MECH_TYPES.includes(c.type));
@@ -929,7 +934,7 @@ export function mapPlan(commands, ctx, content, message, state) {
     if (main.target === null && main.targets?.length) return base(asAction(main.targets[0], 'planner'));
     if (typeof main.target === 'string') {
         // livetest 21.10.2026 ("*i Basic Attack D*", D dead, C the planner's target): the handle he names is the target
-        const other = def.attack ? namedPeer(state, content, main.target, main.quote) : null;
+        const other = def.attack && !hudSeqs.includes(main.seq) ? namedPeer(state, content, main.target, main.quote) : null;
         const chosen = other?.id || main.target;
         if (def.attack && state && !attackTargetHere(state, chosen)) return base({ kind: 'no_target', skill,
             ref: other?.handle || sceneHandle(state, content, chosen, { c: true }), dead: state.entities[chosen]?.status === 'dead' });

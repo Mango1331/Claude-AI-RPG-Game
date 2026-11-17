@@ -241,13 +241,13 @@ function combatHud(state, content) {
         .filter((x) => x.side === 'hostile' && !x.current.defeated && !x.current.escaped && !x.current.surrendered)
         .sort((a, b) => bandIndex(a.current.band) - bandIndex(b.current.band) || name(a.id).localeCompare(name(b.id)));
     const range = (b) => `<span class="avereth-range avereth-range-${String(b || 'unknown').toLowerCase()}">${esc(b || '—')}</span>`;
-    const rows = foes.map((x) => `<div class="avereth-combat-row"><span class="avereth-combat-name">${esc(name(x.id))}</span><span class="avereth-combat-hp">${x.current.hp}/${x.fixed.max_hp}</span><span class="avereth-combat-range">${range(x.current.band)}</span><span class="avereth-combat-cover">${esc(x.current.cover && x.current.cover !== 'none' ? x.current.cover : '—')}<small class="avereth-awareness">${esc(awareness(state, x.id))}</small></span></div>`).join('');
+    const rows = foes.map((x) => `<div class="avereth-combat-row"><span class="avereth-combat-name"><button type="button" data-avereth-select-target="${esc(x.id)}">${esc(name(x.id))}</button></span><span class="avereth-combat-hp">${x.current.hp}/${x.fixed.max_hp}</span><span class="avereth-combat-range">${range(x.current.band)}</span><span class="avereth-combat-cover">${esc(x.current.cover && x.current.cover !== 'none' ? x.current.cover : '—')}<small class="avereth-awareness">${esc(awareness(state, x.id))}</small></span></div>`).join('');
     // Patch 10A: non-hostile combatants already in Initiative also deserve a row.
     // This is presentation-only: it never creates an ally or changes the encounter.
     const othersInFight = Object.values(enc.combatants)
         .filter((x) => x.id !== 'pc' && x.side !== 'hostile' && !x.current.defeated && !x.current.escaped && !x.current.surrendered)
         .sort((a, b) => bandIndex(a.current.band) - bandIndex(b.current.band) || name(a.id).localeCompare(name(b.id)));
-    const otherRows = othersInFight.map((x) => `<div class="avereth-combat-row avereth-combat-other-row"><span class="avereth-combat-name">${esc(name(x.id))}</span><span class="avereth-combat-hp">${x.current.hp}/${x.fixed.max_hp}</span><span class="avereth-combat-range">${range(x.current.band)}</span><span class="avereth-combat-cover">${esc(x.current.cover && x.current.cover !== 'none' ? x.current.cover : '—')}<small class="avereth-awareness">${esc(awareness(state, x.id))}</small></span></div>`).join('');
+    const otherRows = othersInFight.map((x) => `<div class="avereth-combat-row avereth-combat-other-row"><span class="avereth-combat-name"><button type="button" data-avereth-select-target="${esc(x.id)}">${esc(name(x.id))}</button></span><span class="avereth-combat-hp">${x.current.hp}/${x.fixed.max_hp}</span><span class="avereth-combat-range">${range(x.current.band)}</span><span class="avereth-combat-cover">${esc(x.current.cover && x.current.cover !== 'none' ? x.current.cover : '—')}<small class="avereth-awareness">${esc(awareness(state, x.id))}</small></span></div>`).join('');
     // Keep tactical context the player can already see even when those actors have not formally joined the encounter yet.
     // This is display-only: it never makes a bystander hostile or inserts them into Initiative.
     const visible = (state.scene?.present || []).filter((id) => id !== 'pc' && state.entities?.[id] && !enc.combatants[id] && statusOf(state, id) !== 'dead')
@@ -266,7 +266,7 @@ function combatHud(state, content) {
             : s.ammo && pc.fixed.weapon_family === 'bow' && (pc.current.ammo?.[s.ammo.item] || 0) < s.ammo.qty ? 'arrows' : null;
         const bits = [cost ? `${cost.amount} ${cost.resource.toUpperCase()}` : null, s.ammo && pc.fixed.weapon_family === 'bow' ? `${s.ammo.qty} arrow` : null, kind === 'attack' ? null : effectShort(s)].filter(Boolean).join(', ');
         const reach = kind === 'attack' ? ` <span class="avereth-skill-range">${range(s.range?.band)}${(s.effects || []).some((e) => e.kind === 'area') ? ' AoE' : ''}</span>` : '';
-        return `<span class="avereth-skill${short ? ' avereth-skill-unusable' : ''}">${esc(s.name)}${reach}${bits ? ` <span class="avereth-skill-cost">(${esc(bits)})</span>` : ''}${short ? ` <span class="avereth-skill-short">not enough ${esc(short)}</span>` : ''}</span>`;
+        return `<span class="avereth-skill${short ? ' avereth-skill-unusable' : ''}"><button type="button" data-avereth-select-skill="${esc(s.id)}">${esc(s.name)}</button>${reach}${bits ? ` <span class="avereth-skill-cost">(${esc(bits)})</span>` : ''}${short ? ` <span class="avereth-skill-short">not enough ${esc(short)}</span>` : ''}</span>`;
     }).join(' · ');
     const attacks = skillRow('attack');
     const defenses = skillRow('defense');

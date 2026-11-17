@@ -167,7 +167,7 @@ export function alive(c) {
  * Start an encounter (Core #26). trigger = {actor, action, target}.
  * participants: [{id, side}] (the PC is added automatically).
  */
-export function initEncounter(state, content, dice, trigger, participants, encId, { c = false } = {}) {
+export function initEncounter(state, content, dice, trigger, participants, encId, { c = false, preview = false } = {}) {
     const combatants = { pc: combatantOf(state, 'pc', content, 'pc') };
     for (const p of participants) {
         if (p.id === 'pc') continue;
@@ -211,7 +211,7 @@ export function initEncounter(state, content, dice, trigger, participants, encId
             ? `target awareness: ${state.scene.awareness[trigger.target] || 'unknown'} -> no Ambush; his declared attack opens the fight first (First Strike: no Ambush bonus; it is his action of Round 1)`
             : `${combatants[trigger.actor].name} attacks openly; its attack opens the fight first (First Strike: no Ambush bonus; its action of Round 1)`;
     }
-    enc.order = initiativeOrder(enc, dice);
+    enc.order = preview ? [] : initiativeOrder(enc, dice);
     return enc;
 }
 
@@ -505,6 +505,7 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
             if (have < skill.ammo.qty) return { illegal: `${actor.name} has ${have} arrow(s); ${skill.name} needs ${skill.ammo.qty}` };
             ammoUsed = skill.ammo.qty;
         }
+        if (extra.validateOnly) return { legal:true, targets:isArea ? plannedAreaTargets : [targetId], cost, band, moved };
         // commit movement + costs
         if (groupMove) {
             const change = repositionPc(enc, 'pc', -1, null);
@@ -627,6 +628,7 @@ export function skillAction(ctx, actorId, skillId, extra = {}) {
     const who = () => ({ stats: actor.fixed.stats, pools: { hp: actor.current.hp, mp: actor.current.mp, sta: actor.current.sta }, max: { hp: actor.fixed.max_hp, mp: actor.fixed.max_mp, sta: actor.fixed.max_sta } });
     const ahead = restoration(content, skill, actor.fixed.actions[skill.id].prof, rulesetOf(ctx.state), who(), cost);
     if (ahead?.full) return { illegal: `${actor.name} is at full ${ahead.resource.toUpperCase()}: ${skill.name} has nothing to restore` };
+    if (extra.validateOnly) return { legal:true, cost };
     const record = { round: enc.round, actor: actorId, kind: 'skill', skill: skill.id, skill_name: skill.name, effects: [] };
     if (cost) {
         record.cost = { resource: skill.cost.resource, amount: cost, before: actor.current[skill.cost.resource] };
@@ -728,7 +730,7 @@ function repositionPc(enc, actorId, dir, focusId) {
  * restorative the engine knows, or it would do nothing. The item is used up by the caller once it is resolved
  * (src/engine.js usedUp), as an attack item is.
  */
-export function itemAction(ctx, actorId, act) {
+export function itemAction(ctx, actorId, act, { validateOnly = false } = {}) {
     const { enc, content, state } = ctx;
     const actor = enc.combatants[actorId];
     const o = state?.objects?.[act.item];
@@ -737,6 +739,7 @@ export function itemAction(ctx, actorId, act) {
     if (!p) return { illegal: `${o.name} is no restorative the engine knows` };
     const x = restoreEffect(content, p, { level: actor.fixed.level, current: actor.current, max: { hp: actor.fixed.max_hp, mp: actor.fixed.max_mp, sta: actor.fixed.max_sta } });
     if (x.refused) return { illegal: `${o.name}: ${x.refused}; nothing was drunk or used up` };
+    if (validateOnly) return { legal:true, restore:x };
     const step = act.move ? moveAction(ctx, actorId, act.move, act.move_target) : null;
     actor.current[x.resource] = x.after;
     return { round: enc.round, actor: actorId, kind: 'item', item: o.id, item_name: o.name, restore: { resource: x.resource, amount: x.amount, of: p.amount, before: x.before, after: x.after, max: x.max }, ...(step ? { step: step.change } : {}) };

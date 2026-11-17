@@ -2,13 +2,25 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import zlib from 'node:zlib';
-import { scenarios, measure, render, cards, WAT, BRENNA, MANNER, INTEREST, VOICE, anchors, wat, fact, content, u1 } from './npc_e3_compact_lib.js';
-import { npcCues, buildContext } from '../../src/context.js';
+import { scenarios, measure as currentMeasure, render, cards, WAT, BRENNA, MANNER, INTEREST, VOICE, anchors, wat, fact, content, u1 } from './npc_e3_compact_lib.js';
+import { npcCues, buildContext, playerActionsBlock } from '../../src/context.js';
 import { foldChat, rec } from '../../src/host.js';
 import { prepareGenerationAsync } from '../../src/v4/runtime.js';
 import { setFactEvents } from '../../src/knowledge.js';
 import { applyEvent } from '../../src/state.js';
 import { run191 } from './batch191_lib.js';
+
+import { estimateTokens } from '../../src/util.js';
+// .201 changes only the agency sentence. Preserve the .199 source fixture and compare every
+// other byte/card; normalize that one documented sentence for this historical layout comparison.
+function measure(x) {
+    const ctx=render(x),old="PLAYER ACTIONS (the engine resolved Alaric's message; narrate exactly these, in this order; he decides nothing else):";
+    const text=ctx.text.replace(/^PLAYER ACTIONS \(resolved choices in order; routine details here allowed, no extra decisions or mechanics\):/m,old);
+    const block=text.split('\n\n').find(b=>b.startsWith('PLAYER ACTIONS'));
+    const actual=playerActionsBlock(x.state.last.outcome),historical=actual.replace(/^PLAYER ACTIONS[^\n]+/,old);
+    const delta=x.state.last.outcome.kind==='v4'?estimateTokens(historical)-estimateTokens(actual):0;
+    return currentMeasure(x,{...ctx,text,tokens:text===ctx.text?ctx.tokens:estimateTokens(text),sections:ctx.sections.map(s=>s.name==='resolved'?{...s,tokens:block?estimateTokens(block):s.tokens+delta}:s)});
+}
 
 // Captured from the merged .199 commit before changing product code. Not replay originals or updated expectations.
 const base = JSON.parse(zlib.gunzipSync(fs.readFileSync(new URL('./fixtures/npc_e3_compact199.json.gz', import.meta.url)))).cases;

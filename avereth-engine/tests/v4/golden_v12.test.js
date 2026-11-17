@@ -185,7 +185,7 @@ test('V12 golden path: every turn resolves as gold, PLAYER ACTIONS as gold, stat
 test('V12 golden path: the narrator gets PLAYER ACTIONS and is never asked for a fact report; the reply stays prose', () => {
     for (const t of gold.turns) {
         const text = R(t.id).prep.context.text;
-        assert.match(text, /PLAYER ACTIONS \(the engine resolved Alaric's message/);
+        assert.match(text, /PLAYER ACTIONS \(resolved choices in order/);
         assert.ok(text.endsWith(V4_OUTPUT_LINE), `${t.id}: the prose-only line comes last`);
         assert.doesNotMatch(text, /FACT REPORT|End EVERY reply with <avereth>/);
         assert.doesNotMatch(text, /CHECK DIE for this reply/);

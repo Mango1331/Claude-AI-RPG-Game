@@ -173,7 +173,7 @@ test('"Basic Attack Cellar Rat A" hits exactly A; the System panel, the HUD and 
     assert.match(gen.context.text, /- Alaric: Basic Attack -> Cellar Rat A \[/);
     assert.match(turnPanel(s, content), /`Alaric: Basic Attack → Cellar Rat A/);
     // c.6.4 combat HUD: one row per foe still in the fight, by the same label (a defeated one leaves the table)
-    const row = (label) => new RegExp(`<span class="avereth-combat-name">${label}</span><span class="avereth-combat-hp">\\d+/16</span>`);
+    const row = (label) => new RegExp(`<span class="avereth-combat-name"><button type="button" data-avereth-select-target="[^"]+">${label}</button></span><span class="avereth-combat-hp">\\d+/16</span>`);
     if (s.encounter?.combatants['mon.cellar_rat']?.current.defeated) assert.doesNotMatch(renderHud(s, content, 'open'), /avereth-combat-name">Cellar Rat A</);
     else assert.match(renderHud(s, content, 'open'), row('Cellar Rat A'));
     assert.match(renderHud(s, content, 'open'), row('Cellar Rat B'));

@@ -24,9 +24,12 @@ const flag = (f) => args.includes(f);
 const opt = (f, d) => { const i = args.indexOf(f); return i >= 0 && args[i + 1] ? args[i + 1] : d; };
 
 // the module smokes of run_c.mjs: "standard" is all of them, "failsoft" the same with the failsoft probes
-const MODULES = ['FINANCE', 'SAVE_RECOVERY', 'FETCH', 'STEALTH', 'UI', 'CONTINUITY', 'BOARD159', 'QOL160', 'UI161', 'PULSE162', 'PULSE164', 'PULSE167', 'NPC169', 'NPC172', 'PILOT01'];
+const MODULES = ['FINANCE', 'SAVE_RECOVERY', 'FETCH', 'STEALTH', 'UI', 'CONTINUITY', 'BOARD159', 'QOL160', 'UI161', 'PULSE162', 'PULSE164', 'PULSE167', 'NPC169', 'NPC172', 'PILOT01', 'ACTION_HOST', 'ACTION_HUD'];
 const MODES = {
     base: {},
+    action_host: { AVERETH_SMOKE_ACTION_HOST: '1' },
+    action_context: { AVERETH_SMOKE_ACTION_HOST:'1', AVERETH_SMOKE_ACTION_HUD:'1', AVERETH_SMOKE_CONTINUITY:'1', AVERETH_SMOKE_NPC172:'1' },
+    action_hud: { AVERETH_SMOKE_ACTION_HOST:'1', AVERETH_SMOKE_ACTION_HUD:'1' },
     standard: Object.fromEntries(MODULES.map((m) => [`AVERETH_SMOKE_${m}`, '1'])),
     failsoft: { ...Object.fromEntries(MODULES.map((m) => [`AVERETH_SMOKE_${m}`, '1'])), AVERETH_SMOKE_FAILSOFT: '1' },
 };

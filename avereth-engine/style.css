@@ -175,3 +175,18 @@
   /* Range table cells fill their columns; inline skill badges leave room for their AoE label. */
   .mes_text [class*="avereth-skill-range"] [class*="avereth-range"] { width: auto; min-width: 4.2em; }
 }
+/* Action HUD: one compact composer, no replacement of the chat textarea or reply HUDs. */
+.avereth-action-composer { width:100%; font-size:.85em; padding:.35em; border-top:1px solid var(--SmartThemeBorderColor); }
+.avereth-action-options, #avereth-action-chip { display:flex; flex-wrap:wrap; gap:.4em; align-items:center; }
+#avereth-action-chip[hidden], .avereth-action-composer[hidden] { display:none; }
+.avereth-action-composer select { max-width:19em; }
+#avereth-action-help { display:block; opacity:.85; }
+#avereth-action-status { white-space:normal; }
+.avereth-action-composer { min-width:0; box-sizing:border-box; white-space:normal; overflow-wrap:anywhere; }
+.avereth-action-composer select { max-width:min(100%, 19em); }
+.avereth-action-composer button,
+.mes_text button[data-avereth-select-skill], .mes_text button[data-avereth-select-target] {
+  background:var(--SmartThemeBlurTintColor, #222); color:var(--SmartThemeBodyColor, #ddd);
+  border:1px solid var(--SmartThemeBorderColor, #666); border-radius:4px; padding:.2em .45em;
+  font:inherit; cursor:pointer; max-width:100%; white-space:normal;
+}

@@ -260,7 +260,7 @@ function namedAbsent(state, scan) {
         .slice(0, 3).map((e) => e.id);
 }
 
-export function combatBlock(state, content = null) {
+export function combatBlock(state, content = null, { hudSpeech = false } = {}) {
     const enc = state.encounter;
     if (!enc) return '';
     const order = enc.order.map((id) => fightLabel(state, id)).join(' > ');
@@ -284,7 +284,7 @@ export function combatBlock(state, content = null) {
     // from someone with a stake, the malthouse owner counted his losses aloud every round. The player: no talking
     // in a fight. A line is mechanics only when a combatant surrenders or parleys (its engine intent).
     const bystanders = state.scene.present.filter((id) => id !== 'pc' && !enc.combatants[id] && state.entities[id]?.kind === 'npc' && state.entities[id].status !== 'dead');
-    lines.push(`  Combat silence: nobody talks while the fight runs — neither combatants nor ${bystanders.length ? `${bystanders.map((id) => entityLabel(state, id)).join(', ')} (not fighting)` : 'onlookers'}; show sounds, wordless cries, movement and faces. Only a combatant whose intent is surrender or parley may say one short line.`);
+    lines.push(hudSpeech ? '  Combat roleplay: preserve the player-supplied words and allow brief, plausible NPC reactions. Speech grants no extra actions, movement, obedience or tactical bonuses.' : `  Combat silence: nobody talks while the fight runs — neither combatants nor ${bystanders.length ? `${bystanders.map((id) => entityLabel(state, id)).join(', ')} (not fighting)` : 'onlookers'}; show sounds, wordless cries, movement and faces. Only a combatant whose intent is surrender or parley may say one short line.`);
     return lines.join('\n');
 }
 
@@ -334,7 +334,7 @@ export const V4_OUTPUT_LINE = 'OUTPUT: write only the story. No <avereth> block,
 
 /** The engine's instructions to the narrator for a V4 story turn. Search/combat checks are engine-owned; ordinary fiction is narrated plausibly and then stored. */
 export function playerActionsBlock(outcome, { carded = null } = {}) {
-    const lines = ['PLAYER ACTIONS (the engine resolved Alaric\'s message; narrate exactly these, in this order; he decides nothing else):', ...(outcome.actions || [])];
+    const lines = ['PLAYER ACTIONS (resolved choices in order; routine details here allowed, no extra decisions or mechanics):', ...(outcome.actions || [])];
     for (const x of outcome.extra || []) lines.push(carded ? knownAtUncarded(x, carded) : x);
     if ((outcome.resolutions || []).some((r) => (r.type === 'buy' || r.type === 'pay') && r.status === 'pending')) {
         lines.push('PENDING TRADE IS A HARD STOP: state the seller\'s actual price and stop BEFORE any payment, delivery, drinking, eating or other action that depends on the unaccepted purchase. A later player turn can explicitly accept the offer, at which point the engine debits coin and grants the goods/service. An unrelated independent action is unaffected.');
@@ -412,7 +412,7 @@ function knownAtUncarded(line, { name, ids }) {
     return `${line.slice(0, at)}${rest.length ? rest.join(' · ') : 'the people carded under ARRIVING AT'}`;
 }
 
-function outcomeLines(state, content, outcome, { v4 = false, carded = null } = {}) {
+function outcomeLines(state, content, outcome, { v4 = false, carded = null, hudSpeech = false } = {}) {
     if (!outcome) return '';
     if (outcome.kind === 'v4') return playerActionsBlock(outcome, { carded });
     const lines = [];
@@ -436,7 +436,7 @@ function outcomeLines(state, content, outcome, { v4 = false, carded = null } = {
             if (outcome.rewardLines?.length) lines.push(`- SPECIAL REWARD (engine-booked, already in his pack): ${outcome.rewardLines.join('; ')}. Describe these exact finds only; no extra item, coin, chest contents or magical effect. A hoard is a narrative frame, not a new room or an opening action. Gear found beside the defeated need not have been worn or used by them. Value guides are not guaranteed sale prices.`);
             if (outcome.loot) lines.push(`- LOOT (the engine's automatic loot at the fight's end, already in Alaric's pack): ${outcome.loot.join(', ')}. It is no decision of his and took no time: mention it in a few words or leave it to the HUD; do not show him skinning, carving or searching bodies, and add no other drop, coin or item. It sits in his magic pouch: no weight, bulk, packing, straps or carrying effort, now or later.`);
         } else if (outcome.next) lines.push(`- Next: ${outcome.next}. Stop the narration at Alaric's decision.`);
-        if (outcome.records.length) lines.push(`Narrate exactly these resolved steps in order: the same number of attacks/projectiles, every one landing with the damage given (no misses, grazes or dodges), no extra movement, attacks or combatants${outcome.ended ? '' : ', and no dialogue (combat silence; it overrides any habit of opening with speech)'}.${report(' Then write the fact report.')}`);
+        if (outcome.records.length) lines.push(`Narrate exactly these resolved steps in order: the same number of attacks/projectiles, every one landing with the damage given (no misses, grazes or dodges), no extra movement, attacks or combatants${outcome.ended ? '' : hudSpeech ? ', with player-supplied speech and brief NPC reactions but no extra mechanical actions' : ', and no dialogue (combat silence; it overrides any habit of opening with speech)'}.${report(' Then write the fact report.')}`);
         // Patch 8.1 (§8, live 21.10.2026 10:17: Glass Beetle A at 1/38 HP "burst apart", and a beetle dead a turn before
         // "fled"): the state these steps leave, the last line of the mechanics, one entry per fighter
         if (outcome.c && outcome.board) lines.push(stateNow(state, content, outcome));
@@ -723,7 +723,7 @@ export function buildContext(state, content, opts = {}) {
     if (continuity.length) add('npc_continuity', `KNOWN PEOPLE — narrator continuity, not local presence or shared NPC knowledge. Preserve established history; a new predicament needs a new cause, never replay an old rescue. Use existing identities; fuller names do not create new people:\n${continuity.map(x => x.text).join('\n')}`, 0);
     const absent = state.mode === 'creation' ? [] : namedAbsent(state, normText(queryText));
     if (absent.length) add('named', `NAMED, NOT PRESENT (continuity only; they are elsewhere unless the story brings them in):\n${absent.map((id) => npcCard(state, content, id, focusWords, { absent: true })).join('\n')}`, 2);
-    add('combat', combatBlock(state, content), 0);
+    add('combat', combatBlock(state, content, opts), 0);
     if (v4 && (opts.outcome?.c || opts.outcome?.auth?.c)) {
         const known = Object.values(state.quests || {}).filter(q => q.kind === 'guild_contract');
         const branch = settlementOf(state, state.scene.at);
@@ -886,10 +886,10 @@ export function buildContext(state, content, opts = {}) {
     } else if (state.meta?.runtime === 'v4') {
         // Runtime V4: PLAYER ACTIONS (a story turn) or the V3 resolution (combat, stealth), then prose only
         const o = opts.outcome;
-        add('resolved', [o ? (o.kind === 'v4' ? outcomeBlock(state, content, o, { carded: arrivalIds.length ? { name: arrival.name, ids: arrivalIds } : null }) : `RESOLVED THIS TURN (binding):\n${outcomeBlock(state, content, o, { v4: true })}`) : '', ...access].filter(Boolean).join('\n'), 0);
+        add('resolved', [o ? (o.kind === 'v4' ? outcomeBlock(state, content, o, { carded: arrivalIds.length ? { name: arrival.name, ids: arrivalIds } : null }) : `RESOLVED THIS TURN (binding):\n${outcomeBlock(state, content, o, { v4: true, hudSpeech:opts.hudSpeech })}`) : '', ...access].filter(Boolean).join('\n'), 0);
         if (state.mode !== 'creation') add('report', V4_OUTPUT_LINE, 0, true);
     } else {
-        add('resolved', opts.outcome ? `RESOLVED THIS TURN (binding):\n${outcomeBlock(state, content, opts.outcome)}` : '', 0);
+        add('resolved', opts.outcome ? `RESOLVED THIS TURN (binding):\n${outcomeBlock(state, content, opts.outcome, {hudSpeech:opts.hudSpeech})}` : '', 0);
         add('report', reportInstruction(content, reportKeys(state, content, { outcome: opts.outcome, scan: `${input} ${lastReply}` })), 0, true);
     }
 

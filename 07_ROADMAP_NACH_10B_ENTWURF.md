@@ -1,14 +1,14 @@
 # Avereth Engine – Roadmap nach 10B
 
-**Stand 16.11.2026 · **ON HOLD** bis zum Abschluss der dynamischen GM-/Modellarchitekturprototypen. Diese Datei bleibt ein **pausierter Themen- und Ideenspeicher**, keine aktive Arbeitsreihenfolge.** [Start](README.md) · [aktuelle Abnahme 03](03_AKTUELLER_PROJEKTSTAND.md) · [verbindliche Regeln 02](02_DESIGN_KANON.md) · [Fachquellen 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). Alle historischen Kennungen bleiben auffindbar, **keine automatische Rangfolge oder Freigabe**.
+**Stand 17.11.2026 · ON HOLD für neue Gameplayfeature-Patches während der `.200`-Spielflussanalyse.** Diese Datei ist ein **pausierter Themen-/Ideenvorrat**, keine aktive Arbeitsreihenfolge. [Start](README.md) · [Zielbild 08](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md) · [Status 03](03_AKTUELLER_PROJEKTSTAND.md) · [Kanon 02](02_DESIGN_KANON.md) · [Quellen 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). Historische Kennungen bleiben auffindbar; keine automatische Rangfolge/Freigabe.
 
 ## 1. Fachliche Etappen – vollständig pausiert
 
-**Aktive Architektur-Reihenfolge statt Gameplaypatches:** isolierter dynamischer GM-/Engine-Prototyp auf [`experiment/dynamic-gm-model`](https://github.com/Mango1331/Claude-AI-RPG-Game/tree/experiment/dynamic-gm-model) → angepasster isolierter ST-1.19-Hostdurchstich (Mockprovider) → separat freizugebender kleiner natürlicher LLM-Qualitätsvergleich → erst danach Produktentscheidung und Repriorisierung. [Astra-Ultra-Grundsatzentscheidung](recherche/ARCHITEKTUR_NEUBEWERTUNG_LLM_SPIELLEITER_ENGINE_2026-11-16.md) · [Status 03](03_AKTUELLER_PROJEKTSTAND.md). **Nicht parallel an den folgenden Gameplaythemen implementieren.**
+**Aktive Reihenfolge statt Gameplaypatches:** Astra-Ultra-Abschlussanalyse zur **Vereinfachung der vorhandenen `.200`** → unabhängiger GPT-Gegenreview → gemeinsame Nutzerentscheidung über Lockerung/HUD/Spielerbestätigung → **erst nach Freigabe** begrenzter `.200`-basierter Vergleich und natürliche Probe. **Hybrid B/C1 und dynamische GM-Alpha sind archiviert**, kein neuer GM-Host-/Produktpfad ([Archiv](recherche/ARCHITEKTUR_EXPERIMENTE_ARCHIV_2026-11-17.md)). Keine neuen Gameplayfeatures parallel implementieren.
 
 | Etappe | Stand / verbleibende Entscheidung |
 |---|---|
-| **Späterer persönlicher User-Test** | **Pausiert bis zu Architektur- und Providerklärung**; bisherige Beobachtungspunkte ([GPT-Kontrollreview .192](patch_plans_10b/REVIEW_BUILD192_GPT_KONTROLLPRUEFUNG.md)). Schwerpunkte: B5-Ebenenwechsel und Boss, Stadt- gegen Außenjagd, NPC-Wiedersehen, Kampfgefühl. Kein Automatik-Vollbatch nur wegen `.192` |
+| **Späterer persönlicher User-Test** | **Pausiert bis bewusster Freigabe des vereinfachten `.200`-Vergleichs**; bisherige Beobachtungspunkte ([GPT-Review `.192`](patch_plans_10b/REVIEW_BUILD192_GPT_KONTROLLPRUEFUNG.md)). Zusätzlich ab dann: HUD-Kampf, freie Begleitertexte, einfache Zahlungs-/Ankunftsfolgen, bestätigter Weltabschluss und Swipe. Kein unbestellter Vollbatch. |
 | **Bossloot V1** | **Umgesetzt .193/.194 und regulär gemergt** ([Entscheidungen](patch_plans_10b/GEGENREVIEW_BOSSLOOT_GPT_ENTSCHEIDUNGEN_2026-11-15.md) · [Fachplan](patch_plans_10b/FACHPLAN_BOSSLOOT_BESONDERE_BELOHNUNGEN.md)). Aktueller Abnahmestand ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md) |
 | **Kampf: Angriff mit Annäherung** | [Kampffachplan .192](patch_plans_10b/FACHPLAN_KAMPF_BEWEGUNG_ANGRIFF_192.md): Variante A (offene Reichweitenentscheidung, keine Buchung) als kleiner UX-Schritt möglich. B (Teilbewegung außerhalb des Kampfes) nach Designentscheidung. C/D (Konter, Teilbewegung im Kampf) erst mit K1 |
 | **Rang-/Qualitätskalibrierung der Ausrüstung** | [Analyse .195](recherche/AUSRUESTUNG_KAMPFBALANCE_ANALYSE_195_2026-11-15.md) mit echten Werten und Simulationen vorhanden; Varianten unbeschlossen, keine Nebenänderung |
@@ -19,7 +19,11 @@
 | **Stealth S2** | S1 implementiert; heimliche Search/TAKE nach [S1/S2-Fachplan](patch_plans_10b/PATCH_STEALTH_ACTION_MANNER.md) |
 | **Erkundungsloot, Tatenbuch, Bossstärke, weitere Klassen-/Statprogression** | Eigene spätere Entscheidungen; PC 5+0 bereits umgesetzt, NPC-Angleichung/Rare+-Wachstum weiterhin offen |
 
-**Sperre:** Keiner dieser Punkte ist während der GM-Architekturphase freigegeben – auch nicht als scheinbar kleiner Nebenfix in einem getrennten Checkout. Natürliche NPC-/PULSE- und Kampf-/Balancebewertungen sowie Wiederaufnahme der Feature-Roadmap erst nach ausdrücklicher Nutzerentscheidung. Bereits implementierte Builds bleiben als Baseline unverändert.
+**Sperre:** Keiner der folgenden historischen Gameplaypunkte ist während der Analyse freigegeben. Auch neu diskutierte `.200`-Lockerungen/HUD-Ideen benötigen **vor Implementierung** unabhängigen Gegenreview und Nutzerentscheidung. Die Produktbasis `.200` bleibt zunächst unverändert.
+
+## Neu in Prüfung – Vereinfachungen, keine neuen Freigaben
+
+[Entscheidungsgrundlage 08](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md): Reiseszenen und Kleinzahlungen mit weniger formellen Beweis-/Repairpflichten; **Combat-HUD mit auswählbaren Skill-/Gegner-IDs und frei ergänztem Begleiter-/Rollenspieltext**; optionaler Planner/Extractor; ein editierbarer „So übernehmen/Bearbeiten“-Weltvorschlag; Standardtavernen/Grundshops und vorhandener `#pay`-Weg; automatische Anzeige „Narrator fertig – Weltabgleich läuft – ✓ gespeichert – ⚠ Fehler“ bei erlaubtem Vortippen, aber mechanischer Sperre bis zum bestätigten Weltcommit. **Astra darf weitere Spieler-/HUD-Vereinfachungen vorschlagen.** Noch alles Hypothesen, keine beschlossenen Kanonregeln.
 
 ## 2. NPC- und PULSE-Reihenfolge
 
@@ -92,7 +96,7 @@ Diese Kennungen sind Such-/Diskussionshilfen. Der ausführliche alte [33-Kandida
 
 ## 4. Entscheidungsgates und Historie
 
-- **Vor allen alten Gates:** dynamischen GM-Prototyp, isolierten Hostdurchstich und kleinen natürlichen Qualitätsvergleich abschließen; anschließend die gesamte bisherige Fachroadmap neu priorisieren oder ändern. Die folgenden Gates sind historische fachliche Abhängigkeiten, derzeit **nicht aktiv**.
+- **Vor allen alten Gates:** Abschlussanalyse zur Flexibilisierung von `.200`, GPT-Gegenreview und bewusste Nutzerentscheidungen abschließen; erst dann kleine vergleichbare Schritte freigeben. Die früheren B-/GM-Prototypen sind [archiviert](recherche/ARCHITEKTUR_EXPERIMENTE_ARCHIV_2026-11-17.md), nicht mehr vorzuschalten. Folgende Gates bleiben historische fachliche Abhängigkeiten und sind derzeit **nicht aktiv**.
 - **Natürliche E2/E3-/PULSE-Qualität** vor E4/E5 und PULSE D; technische Regressionen sind dafür kein vollständiger Ersatz.
 - **Kampf-K1** vor breiten Boss-/Summon-/Spezialaktiven, sofern deren Aktionsökonomie tatsächlich davon abhängt; kein prinzipielles Verbot isolierter kleiner Technikprototypen.
 - **Monster A1/A2** umgesetzt (`.184`/`.186`); offen nur A2-4 und die Nachjustierung der Designzahlen. **Bossloot V1** einschließlich U1–U11 umgesetzt; weitere Balanceänderungen bleiben getrennt zu entscheiden.

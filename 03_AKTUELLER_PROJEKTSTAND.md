@@ -1,20 +1,20 @@
 # Avereth Engine – aktueller Produkt- und Arbeitsstand
 
-**Letzte verifizierte Abfrage: 16.11.2026.** **Dies ist die einzige laufende Statusquelle**, keine Patchchronik. [Startseite](README.md) · [Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Kanon](02_DESIGN_KANON.md) · [Roadmap](07_ROADMAP_NACH_10B_ENTWURF.md) · [Fachindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md).
+**Dokumentationsabgleich 17.11.2026; unveränderte Produktreferenz und ältere Testbelege.** **Dies ist die einzige laufende Statusquelle**, keine Patchchronik. [Startseite](README.md) · [Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Kanon](02_DESIGN_KANON.md) · [Zielbild 08](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md) · [Roadmap](07_ROADMAP_NACH_10B_ENTWURF.md) · [Fachindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md).
 
 ## Produkt und letzte technische Abnahme
 
 | | Bestätigter Stand |
 |---|---|
 | **Produkt** | **`4.3.0-c.6.6.200`**, eingefrorener Produktstand. `.193/.194` Bossloot V1, `.195` Basis 5 + einmalig zwei Favored +1, je weiterem Level 5 frei; `.196–.198` Gear-/NPC-/Schildbalance, `.199` PULSE × NPC-Begegnungsbuchung, `.200` vollständige E3-Kompaktkarten. [Balance .198](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0cd14806cd0c7fe2ab0d54b8463c486ee572714b/avereth-engine/docs/BALANCE_198.md) · [Encounter .199](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0cd14806cd0c7fe2ab0d54b8463c486ee572714b/avereth-engine/docs/ENCOUNTER199.md) · [NPC .200](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0cd14806cd0c7fe2ab0d54b8463c486ee572714b/avereth-engine/docs/NPC200.md) |
-| **Produktbranch** | `claude/c-planner-prototype-2026-10-02-gpt-c666`, Remote-HEAD [`0cd1480`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b), Merge von PR #19. **Keine neuen Gameplaypatches während des Architekturprototyps.** |
-| **Experimenteller Modellbranch** | [`experiment/dynamic-gm-model`](https://github.com/Mango1331/Claude-AI-RPG-Game/tree/experiment/dynamic-gm-model), angelegt von [`80d5fcb`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/80d5fcb8cf799061b7f8ab1842f1258ce9d94f1c). Beinhaltet unverändertes Produkt `.200` und den bestehenden isolierten B/C1-Prototyp `experiments/architecture201`. **Kein neues Produktbuild und noch keine dynamische GM-Implementierung.** |
-| **Dokumentation** | `main`. [Dynamische-GM-Neubewertung](recherche/ARCHITEKTUR_NEUBEWERTUNG_LLM_SPIELLEITER_ENGINE_2026-11-16.md), [älteres Architekturaudit](recherche/ARCHITEKTUR_AUDIT_REDESIGN_ENTSCHEIDUNG_2026-11-16.md), [B/C1-Prototypbericht auf Modellbranch](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/experiment/dynamic-gm-model/recherche/ARCHITEKTUR_PROTOTYP_B_C1_VERGLEICH_2026-11-16.md) |
-| **Heutige Produktarchitektur** | V4-C / Ruleset 2: Planner → deterministische Engine → Narrator → Extractor/Firewall. Eventlog autoritativ. **Geplante Zielrichtung** separat: dynamischer kreativer GM mit Engine-Werkzeugen und gemeinsam verfasstem Weltgedächtnis; noch nicht produktiv. |
+| **Produktbranch** | `claude/c-planner-prototype-2026-10-02-gpt-c666`, Remote-HEAD [`0cd1480`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b). **Unveränderte Basis für die laufende `.200`-Vereinfachungsanalyse; kein neuer Produktbuild beauftragt.** |
+| **Archivierter Experimentbranch** | [`experiment/dynamic-gm-model`](https://github.com/Mango1331/Claude-AI-RPG-Game/tree/experiment/dynamic-gm-model), zuletzt [`d8baa91`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/d8baa91ffa595ecf6076266ceed9e04ef164778e). Enthält den B/C1-Durchstich und die dynamische GM-Alpha. **Nicht mehr als Produkt- oder Zielarchitektur geplant.** [Archiv](recherche/ARCHITEKTUR_EXPERIMENTE_ARCHIV_2026-11-17.md). |
+| **Dokumentation** | `main`: [aktuelles Nutzerziel / Ideen](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md) und [Archiv beider Versuche](recherche/ARCHITEKTUR_EXPERIMENTE_ARCHIV_2026-11-17.md). [Audit](recherche/ARCHITEKTUR_AUDIT_REDESIGN_ENTSCHEIDUNG_2026-11-16.md) und [frühere Neubewertung](recherche/ARCHITEKTUR_NEUBEWERTUNG_LLM_SPIELLEITER_ENGINE_2026-11-16.md) sind **Quellen mit historischen Empfehlungen**, nicht mehr richtungsweisend. |
+| **Heutige Produktarchitektur** | `.200` V4-C / Ruleset 2: Planner → deterministische Engine → Narrator → Extractor/Firewall; plus gegebenenfalls Reparaturrequests. Dieselben GLM-Funktionen sind **getrennte physische Requests**. **Kein dynamischer GM als beschlossene Zielarchitektur.** |
 | **Letzte technische Produktbelege** | `.200`-Patchnote: **3345/3345** Node und **2235/2235** Replay, 0 neue/offene/veraltete Fingerprints. Isolierter ST1.19-Mock-Smoke nach `.200`-Merge laut Abnahmebericht: Standard **231/231**, Failsoft **236/236**, 0 PageErrors. Diese Zahlen wurden **in dieser Dokumentationsrunde nicht neu ausgeführt**. |
 | **Persönlicher Realtest** | **16.11.2026 auf `.200`**: Erstellung korrekt (Mage INT 6/WIL 6), erste Waldreise narrativ sichtbar, Extractor nach ca. 121 s fehlgeschlagen, anschließend drei `concurrency_limit_exceeded`-Ablehnungen. Der Waldort wurde **nicht** gebucht. Gesichert ist ein Provider-Concurrencyproblem, **nicht** ein Creditverbrauch. Siehe [Architekturaudit §4](recherche/ARCHITEKTUR_AUDIT_REDESIGN_ENTSCHEIDUNG_2026-11-16.md). Persönliche Spieltests vorerst pausiert. |
 | **Letzter gesonderter NPC-/PULSE-Naturlauf** | [Batch auf `.191`](testrun_10b/npc-20261115-103140Z/REVIEW_GPT.md): Warrior 70/70, Rogue 22/70, Mage 0/70. Kein vollständiger Dreiernachweis. |
-| **Modellarchitektur-Experimente** | Isolierter B/C1-Durchstich [`80d5fcb`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/80d5fcb8cf799061b7f8ab1842f1258ce9d94f1c): **61/61** Prototyptests und **47/47** ausgewählte Engine-Tests laut Experimentbericht; C1-Semantik **nicht bestanden**. Dynamischer GM nun **nächster Prototyp**, nicht Produktfreigabe. |
+| **Archivierte Architekturversuche** | B/C1: 61/61 isolierte technische Tests, C1-Semantik nicht bestanden. Dynamische GM-Alpha nach `d8baa91`: 57/57 Node und ST-Mocks, **aber natürliche Gildenreise am 17.11. trotz drei Modellrequests ohne veröffentlichte Antwort**. Keine Produkt-/Spielqualitätsabnahme. [Archiv](recherche/ARCHITEKTUR_EXPERIMENTE_ARCHIV_2026-11-17.md). |
 
 ## Was technisch umgesetzt ist
 
@@ -36,21 +36,21 @@ Details stehen nur an der verlinkten Quelle.
 
 ## Unmittelbare nächste Arbeit
 
-**ENTWICKLUNGSSTOPP FÜR DIE BESTEHENDE GAMEPLAY-ROADMAP (ON HOLD, Beschluss 16.11.2026).** Das derzeitige Produkt `.200` wird als Referenz und Rückfallstand erhalten. **Kein automatischer Fortgang** von NPC E4/E5, PULSE D, Kampferweiterungen K1, Stealth S2, Balance, Preis-/Shop-Patches, Quests oder weiteren Featurefamilien. Frühere Analysen/Entscheidungen bleiben als Quellen gültig; die Reihenfolge wird erst nach der Architekturentscheidung neu bewertet ([07](07_ROADMAP_NACH_10B_ENTWURF.md)).
+**Aktiv: Abschlussanalyse zur gezielten Vereinfachung der vorhandenen `.200`.** Die frühere dynamische-GM-Produktlinie wird nicht weiter verfolgt. Neue Gameplayfeatures aus 07 pausieren; kein Codeauftrag bis zum gemeinsamen Review.
 
-**Aktive Arbeit ausschließlich auf dem dritten Branch `experiment/dynamic-gm-model`:**
+1. **Astra Ultra** untersucht die bestehende Engine, reale Reise-/Payment-/Repairfälle, den Nutzen und Aufwand aller drei normalen LLM-Phasen und zusätzlicher Reparaturen sowie die Erkenntnisse aus beiden Experimenten. Nutzerziel: **weniger überstrenge Spielregeln, mehr Narratorfreiheit und Spielerhilfe**, nicht dieselbe Strenge schneller durchsetzen. [Briefing](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md).
+2. **GPT-Gegenreview** prüft Originalcode und historische Gründe der Guards; bewertet auch bewusst lockerere Alternativen und ihre echten Risiken. Keine automatische Implementierungsempfehlung aus einem Bericht.
+3. **Nutzer entscheidet** über zulässige Orts-/Weltübernahme, einfache Zahlungen, Spielervorschläge und mechanische Kontrollgrenzen. Erst dann begrenzter `.200`-basierter Versuch und früher natürlicher Test.
+4. **HUD-/Spielerhilfe als bevorzugt zu untersuchende Möglichkeit:** Skills und Gegner bereits in der Combat-HUD bekannt, per Buttons mit IDs auswählen; **freier Begleiter-/Rollenspieltext bleibt in derselben Eingabe**. Bei eindeutiger HUD-Aktion möglicher Entfall des Plannerrequests; Extractor nur bei relevantem Welt-/Memorybedarf prüfen.
+5. **Bei Unsicherheit** Vorschlag im Textfeld mit **„So übernehmen“ / „Bearbeiten“** statt weiterer API-Reparatur; für einfache Tavernen/Shopangebote vorbereitete Preise und `#pay`-Komfort prüfen. **Automatischer Weltabschlussstatus** „Erzählung sichtbar / Weltabgleich läuft / bestätigt gespeichert / Fehler“; Folgeeingabe darf geschrieben, aber vor Persistenz nicht ausgeführt werden. Swipe/Regenerate und Eventexport erhalten.
 
-1. **Kleiner isolierter dynamischer GM-/Engine-Prototyp:** eine kreative LLM-Spielleiterrolle mit bedarfsabhängigen Engine-Werkzeugen und gemeinsamem narrativen/gedächtnisbezogenen Abschluss; Pflichtfälle: Wat-Zusage/Wiedersehen, unbekannte Waldreise, zusammengesetzte Spielerhandlung, NPC-Eigeninitiative mit mechanischer Folge.
-2. **Sicherheit aus dem B/C1-Experiment übernehmen:** gewichtete Requeststeuerung, dauerhaftes Turnjournal, idempotente Wirkung, Wiederaufnahme und Speichern vor Veröffentlichung. Keine Übernahme der festen B-Pipeline als Langfristarchitektur.
-3. **Danach** isolierter echter ST-1.19-Hostdurchstich mit Mockprovider für denselben GM-Vertrag; anschließend **separat freizugebender** kleiner natürlicher Roleplay-Vergleich. Keine Provideraufrufe ohne Auftrag.
-4. **Nur nach bestandener Architektur- und Gameplay-Abnahme:** Zielarchitektur/Implementierungsfachplan und bewusstes Wiederaufnehmen/Repriorisieren der pausierten Roadmap.
-
-**Offen und nicht stillschweigend lösen:** wichtige Erinnerungen trotz gemeinsamer Ausgabe ausgelassen; Metawissen; falsch erkannte freiwillige Spielerhandlung; Narration/Weltzustand widersprüchlich; 32k Provider-Kontext, vier gewichtete Concurrency-Einheiten; echte ST-Swipes und Windows-Persistenz. Die Vorversuche belegen technische Machbarkeit einzelner Komponenten, **keine** natürliche Qualitätsüberlegenheit oder Produktabnahme.
+**Status:** Alle Vorschläge sind zur Analyse freigegeben, **nicht als geänderte Kanonregel oder Implementierungsauftrag**. Der unveränderte `.200`-Kanon bleibt bis zur bewussten Entscheidung gültig.
 
 ## Natürliche Läufe – Kurzüberblick
 
 | Lauf | Kernaussage | Quelle |
 |---|---|---|
+| **Persönliche GM Alpha · 17.11. · `d8baa91`** | Gilden-GO verstanden; neuer NPC/Dialog natürlich erzählt, durch formale Prüfung abgewiesen, Korrektur ebenfalls ohne Abschluss. **3 physische LLM-Aufrufe, 0 veröffentlichte Antworten.** | [Experimentarchiv](recherche/ARCHITEKTUR_EXPERIMENTE_ARCHIV_2026-11-17.md); Original-ST-Log im persönlichen Test, nicht auf GitHub |
 | **Persönlicher Lauf 16.11. · `.200`** | Mage-Erstellung korrekt; erzählte Waldankunft bleibt nach Extractor-Timeout ungebucht; Concurrency 429. Architektur-Warnsignal, keine abgeschlossene Spielevaluation | [Audit §4](recherche/ARCHITEKTUR_AUDIT_REDESIGN_ENTSCHEIDUNG_2026-11-16.md) |
 | `.191` · 15.11. | Bewegungsautorität bestätigt; fünf Szenenepisoden; T70-Thread; Guthabenstopps | [Review](testrun_10b/npc-20261115-103140Z/REVIEW_GPT.md) · [Gegenreview](testrun_10b/npc-20261115-103140Z/GEGENREVIEW_OPUS.md) |
 | `.188` · 14.11. | 70/70/70; mehrzügige Ortsdrift, Dungeon-Passage-Schleife, Ortskatalog → Anlass für `.190` | [Review](testrun_10b/npc-20261114-161005Z/REVIEW.md) · [Gegenreview](testrun_10b/npc-20261114-161005Z/GEGENREVIEW_OPUS.md) |
@@ -61,15 +61,14 @@ Details stehen nur an der verlinkten Quelle.
 
 Alle weiteren Runs stehen im [Runindex](testrun_10b/README.md).
 
-## Architekturgrenzen
+## Architekturgrenzen und offene Designentscheidung
 
-- **Aktuell vs. Ziel:** Die heutige P–N–X-Pipeline bleibt auf dem eingefrorenen Produktbranch; die kreative-GM-Zielarchitektur ist ein isoliertes Experiment, keine automatische Lockerung bestehender Fachguards.
-- **Roadmap-Pause:** Einzelne dokumentierte Fehlersymptome sind keine Freigabe für neue Gameplaypatches; nur prototypnotwendige, isolierte Untersuchungen.
-- **Ankunft:** Nur autorisierte, bestätigte und chronologisch gültige Ankünfte bewegen Alaric (Kanon §2). Eine vorab gebuchte Ankunft (V1/A4) ist nicht umgesetzt (D4).
-- **Angriff:** Autorisierung und tatsächlich ausgeführter Angriff bleiben getrennt. Anwesenheit in einem Dungeon-Slot ist kein Erstschlag.
-- **Szenen:** Die `scene_context`-Firewall bleibt bestehen. Eine Elternszene gilt nicht als „hier“ (Gegenbeleg im `.191`-Korpus).
-- **Vorgehen:** Tests am Originalfall statt großer Generalreviews ([Architekturprüfungen](recherche/ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md)).
+- **Heute gilt `.200`:** der strenge Ankunfts-/Orts-, Zahlungs-, Combat- und Agency-Kanon aus [02](02_DESIGN_KANON.md). **Neu geprüft:** kontrollierte Lockerung, Spielerbestätigung, geringere Repairpflicht. Kein stillschweigender Produktregelwechsel.
+- **Bewährten Kern schützen:** Kampfrechnung, HP/XP/Leveln, RNG, Loot, NPC-Kontinuität, Quests, HUD, Eventlog, Edit/Swipe/Regenerate. Nicht für eine neue Architektur nochmals aufbauen.
+- **Featherless:** 4 verfügbare gewichtete Einheiten, 4 pro GLM-Request im persönlichen Setup; ein lokaler Timeout ist kein bestätigter Remoteabschluss. Gesamtwartezeit und Zahl **physischer** Requests messen.
+- **Experimenttechnik selektiv nutzen:** Kapazitätssperren, Journale, Wiederaufnahme und Commit-vor-Publikation sind wertvoll, rechtfertigen keine Übernahme der fehlgeschlagenen GM-Alpha.
+- **Mock ist kein natürlicher Erfolg.** Bei Tests sichtbare Erzählung von tatsächlich gebuchten Events und bestätigter Persistenz unterscheiden. [Zielbild](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md).
 
 ## Historische Detailquellen
 
-Die vorige, ausführliche Fassung dieser Datei steht im [Git-Snapshot vor der Bereinigung vom 15.11.](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/af7c77eea7df3a81e0a961dc80f0ba2f81e131c9/03_AKTUELLER_PROJEKTSTAND.md). Sie enthält die Detailabsätze zu `.186–.189` und die damaligen Prioritäten. Ältere Stände: [Snapshot ec0969b](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/ec0969b816249211bc71b3c53b10eb1faf11716a/03_AKTUELLER_PROJEKTSTAND.md) und das [Archiv bis 24.10.](03_PROJEKTSTAND_ARCHIV_BIS_20261024.md). Testzahlen stehen in den Produktpatchnotes. **Dokumentationspflege am 16.11.2026:** Keine neue Testausführung und keine produktive Codeänderung; verifizierte Produkt- und Branch-HEADs und die verlinkten bestehenden Nachweise.
+Die vorige, ausführliche Fassung dieser Datei steht im [Git-Snapshot vor der Bereinigung vom 15.11.](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/af7c77eea7df3a81e0a961dc80f0ba2f81e131c9/03_AKTUELLER_PROJEKTSTAND.md). Sie enthält die Detailabsätze zu `.186–.189` und die damaligen Prioritäten. Ältere Stände: [Snapshot ec0969b](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/ec0969b816249211bc71b3c53b10eb1faf11716a/03_AKTUELLER_PROJEKTSTAND.md) und das [Archiv bis 24.10.](03_PROJEKTSTAND_ARCHIV_BIS_20261024.md). Testzahlen stehen in den Produktpatchnotes. **Dokumentationspflege am 17.11.2026:** Nutzerziel und natürlicher Alpha-Gegenbeleg ergänzt, frühere Modellversuche archiviert. **Keine Produkt-, LLM- oder Testausführung** durch diese Dokumentationspflege.

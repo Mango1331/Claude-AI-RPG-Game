@@ -1,0 +1,8 @@
+Die Action hud muss nur bei Combat aktiv sein würde ich sagen. oder auch andere dinge wo es sachen einfacher machen kann aber ausserhalb von kampf oder wie in der Gilde unnötig. frage ist nur wie es da unterscheiden kann tiwschen hostile und nicht da clerk ja auch als anwesend gilt mit short und dann goblins zb auch aber bevor wir kömpfen sie aber in range sind will ich schon das akions hud. weiß ich nicht wie das technisch möglich sein könnte
+UI der aktion Hud noch nicht wirklich schön. wenn sie nur im kampf ist kann man zb die vorhandene Combat HUD nehmen und dort die spells und Gegner als Buttons statt Dropdown. 
+
+questboard message ist sehr lange. scheint Probleme zu haben und wieder mehrere aufrufe zu machen. vllt da auch weniger streng wieder werden mit den quests oder sie nur von der engine anzeigen lassen und nicht vom Narrator (war glaube ich es schon mal geplannt und wir zeigen es gerade eh doppelt an. könnte in langen runs die Kreativität einschränken aber hier sehr gut sein habe ich keine ahnung)
+
+Button in der questboard UI "Ask to accept" schreibt den satz in meine zeile unten sollte aber für mich ehrlich gesagt direkt einfach die message schicken
+
+Drop down der items in aktion auswählen ist nicht ganzs sauber.

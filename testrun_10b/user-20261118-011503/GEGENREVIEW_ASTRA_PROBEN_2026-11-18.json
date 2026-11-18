@@ -1,0 +1,2309 @@
+{
+  "purpose": "Unabhängige Read-only-Gegenprüfung User05; keine Produktänderung, keine Browser-/Provider-/Vollsuite-Abnahme.",
+  "date": "2026-11-18",
+  "code_head": "6a92dcc650809eb16934a984c30ce0cf7c5cfe98",
+  "main_source_head": "f074c1d3a52fbd901f004b16a542c1d2fdb5f32e",
+  "method": {
+    "log_parser": "avereth-engine/tools/run_report.mjs:parseServerLog; User04 UTF-16LE nach gzip-Dekompression",
+    "state": "src/host.js:foldChat auf unveränderten Originalrecords, Produktcontent .202",
+    "binding": "src/v4/planner.js:parsePlan und src/action_input.js:reconcileHudPlan mit Originalantwort, Originalauswahl und Zustand vor dem Input",
+    "status": "aus index.js geladene Originalfunktionen/Callback in lokaler VM mit kontrollierten Jobzuständen; kein Browsernachweis des genauen User05-Moments",
+    "shape_probe": "nur an privaten Antwortkopien: eindeutiges commands[0].hud_binding an die Wurzel verschoben; keine neue Parserimplementierung"
+  },
+  "phases": [
+    {
+      "phase": "A",
+      "visible": 15,
+      "users": 7,
+      "groups": 13,
+      "events": 90,
+      "sameEvents": true,
+      "prefixEqual": true,
+      "calls": 17,
+      "types": {
+        "P": 5,
+        "N": 5,
+        "X": 5,
+        "Q": 2
+      },
+      "tokens": {
+        "prompt_tokens": 199100,
+        "completion_tokens": 5167,
+        "total_tokens": 204267
+      },
+      "cached": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "times": {
+        "P": [
+          {
+            "i": 5,
+            "ms": 7293
+          },
+          {
+            "i": 7,
+            "ms": 2799
+          },
+          {
+            "i": 9,
+            "ms": 5303
+          },
+          {
+            "i": 11,
+            "ms": 3423
+          },
+          {
+            "i": 13,
+            "ms": 7180
+          }
+        ],
+        "N": [
+          {
+            "i": 6,
+            "ms": 23745
+          },
+          {
+            "i": 8,
+            "ms": 22419
+          },
+          {
+            "i": 10,
+            "ms": 28882
+          },
+          {
+            "i": 12,
+            "ms": 24110
+          },
+          {
+            "i": 14,
+            "ms": 20052
+          }
+        ],
+        "X": [
+          {
+            "i": 6,
+            "ms": 17865,
+            "repair": false
+          },
+          {
+            "i": 8,
+            "ms": 14339,
+            "repair": false
+          },
+          {
+            "i": 10,
+            "ms": 3936,
+            "repair": false
+          },
+          {
+            "i": 12,
+            "ms": 5670,
+            "repair": false
+          },
+          {
+            "i": 14,
+            "ms": 19363,
+            "repair": false
+          }
+        ]
+      }
+    },
+    {
+      "phase": "B",
+      "visible": 31,
+      "users": 15,
+      "groups": 28,
+      "events": 243,
+      "sameEvents": true,
+      "prefixEqual": true,
+      "calls": 21,
+      "types": {
+        "P": 7,
+        "N": 7,
+        "X": 7,
+        "Q": 0
+      },
+      "tokens": {
+        "prompt_tokens": 264992,
+        "completion_tokens": 5581,
+        "total_tokens": 270573
+      },
+      "cached": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "times": {
+        "P": [
+          {
+            "i": 15,
+            "ms": 6355
+          },
+          {
+            "i": 17,
+            "ms": 3452
+          },
+          {
+            "i": 19,
+            "ms": 5822
+          },
+          {
+            "i": 21,
+            "ms": 6221
+          },
+          {
+            "i": 23,
+            "ms": 7363
+          },
+          {
+            "i": 25,
+            "ms": 10157
+          },
+          {
+            "i": 27,
+            "ms": 6093
+          }
+        ],
+        "N": [
+          {
+            "i": 16,
+            "ms": 22154
+          },
+          {
+            "i": 18,
+            "ms": 49528
+          },
+          {
+            "i": 20,
+            "ms": 20781
+          },
+          {
+            "i": 22,
+            "ms": 29211
+          },
+          {
+            "i": 24,
+            "ms": 20846
+          },
+          {
+            "i": 26,
+            "ms": 27820
+          },
+          {
+            "i": 28,
+            "ms": 23633
+          }
+        ],
+        "X": [
+          {
+            "i": 16,
+            "ms": 31819,
+            "repair": false
+          },
+          {
+            "i": 18,
+            "ms": 44145,
+            "repair": false
+          },
+          {
+            "i": 20,
+            "ms": 27192,
+            "repair": false
+          },
+          {
+            "i": 22,
+            "ms": 27195,
+            "repair": false
+          },
+          {
+            "i": 24,
+            "ms": 16042,
+            "repair": false
+          },
+          {
+            "i": 26,
+            "ms": 9246,
+            "repair": false
+          },
+          {
+            "i": 28,
+            "ms": 9242,
+            "repair": false
+          }
+        ]
+      }
+    },
+    {
+      "phase": "C",
+      "visible": 54,
+      "users": 26,
+      "groups": 41,
+      "events": 341,
+      "sameEvents": true,
+      "prefixEqual": true,
+      "calls": 26,
+      "types": {
+        "P": 11,
+        "N": 7,
+        "X": 8,
+        "Q": 0
+      },
+      "tokens": {
+        "prompt_tokens": 308734,
+        "completion_tokens": 7037,
+        "total_tokens": 315771
+      },
+      "cached": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "times": {
+        "P": [
+          {
+            "i": 31,
+            "ms": 6042
+          },
+          {
+            "i": 33,
+            "ms": 3742
+          },
+          {
+            "i": 35,
+            "ms": 7392
+          },
+          {
+            "i": 37,
+            "ms": 7035
+          },
+          {
+            "i": 39,
+            "ms": 7101
+          },
+          {
+            "i": 42,
+            "ms": 7002
+          },
+          {
+            "i": 44,
+            "ms": 6282
+          },
+          {
+            "i": 46,
+            "ms": 17586
+          },
+          {
+            "i": 48,
+            "ms": 6091
+          },
+          {
+            "i": 50,
+            "ms": 5681
+          },
+          {
+            "i": 52,
+            "ms": 6847
+          }
+        ],
+        "N": [
+          {
+            "i": 32,
+            "ms": 23907
+          },
+          {
+            "i": 34,
+            "ms": 26596
+          },
+          {
+            "i": 36,
+            "ms": 20185
+          },
+          {
+            "i": 38,
+            "ms": 32263
+          },
+          {
+            "i": 40,
+            "ms": 25884
+          },
+          {
+            "i": 41,
+            "ms": 21571
+          },
+          {
+            "i": 45,
+            "ms": 22232
+          }
+        ],
+        "X": [
+          {
+            "i": 32,
+            "ms": 46591,
+            "repair": false
+          },
+          {
+            "i": 34,
+            "ms": 41234,
+            "repair": true
+          },
+          {
+            "i": 36,
+            "ms": 10478,
+            "repair": false
+          },
+          {
+            "i": 38,
+            "ms": 41053,
+            "repair": false
+          },
+          {
+            "i": 40,
+            "ms": 28645,
+            "repair": false
+          },
+          {
+            "i": 41,
+            "ms": 8008,
+            "repair": false
+          },
+          {
+            "i": 45,
+            "ms": 38613,
+            "repair": false
+          }
+        ]
+      }
+    }
+  ],
+  "original_hashes": {
+    "originals/chat.jsonl": {
+      "sha256": "125adfaa6da20e61e7c6cd4082480fb281ce50a0f7cb167ddb3906de973e1b33",
+      "bytes": 181777,
+      "matches_manifest": true
+    },
+    "originals/completions.txt": {
+      "sha256": "b8d7e49b2f96c259174fd1ccb0f1fe9d480e18b2cbda28997faaecff5aac3f72",
+      "bytes": 967600,
+      "matches_manifest": true
+    },
+    "originals/events.json": {
+      "sha256": "a7cba6daf33fad9a98243cdf009b8c7a2449b5a59a3c09463e326530db562148",
+      "bytes": 63480,
+      "matches_manifest": true
+    },
+    "originals/phase_b_chat.jsonl": {
+      "sha256": "57606e757f8b273e4371a9e1b14767e2349a8fbd12d8c711b2211312c5bf4523",
+      "bytes": 453662,
+      "matches_manifest": true
+    },
+    "originals/phase_b_completions.txt": {
+      "sha256": "5c0effe233aeb59b1b33e3d3d706b7576db5781b855fa96988a311e3453e4fe5",
+      "bytes": 1270250,
+      "matches_manifest": true
+    },
+    "originals/phase_b_events.json": {
+      "sha256": "3676f3b1b54e5d20f4581cca326d83b5327180eebc05fd815a638434e01a5432",
+      "bytes": 185473,
+      "matches_manifest": true
+    },
+    "originals/phase_b_user_feedback.txt": {
+      "sha256": "248cf8c6bebd422fab6335d7fd074b0dd82805ef77ee9979bc67e2a76494908e",
+      "bytes": 1227,
+      "matches_manifest": true
+    },
+    "originals/phase_c_chat.jsonl": {
+      "sha256": "4c8022fda2c6c0c77fbfc91440d2edffa45e7ecf4d668b414ae1683d514e14ae",
+      "bytes": 692407,
+      "matches_manifest": true
+    },
+    "originals/phase_c_completions.txt": {
+      "sha256": "850894f11a536c63ca73c55136738e18026cb8f82859d03a2e27f5f41a671d59",
+      "bytes": 1463594,
+      "matches_manifest": true
+    },
+    "originals/phase_c_events.json": {
+      "sha256": "1969d5b99f4f231bcb1256751b6703a85be6d2eb792445a153f6e615912140bf",
+      "bytes": 245135,
+      "matches_manifest": true
+    },
+    "originals/phase_c_user_feedback.txt": {
+      "sha256": "a46873ebf768a3909e6bcf478b90d4ab13716251987d52cb651b35898a46849b",
+      "bytes": 1818,
+      "matches_manifest": true
+    },
+    "originals/user_feedback.txt": {
+      "sha256": "0ff00ba6e43427fff0921243a9b16fa6bfd9dfb714544667c20512c5aa62afae",
+      "bytes": 1263,
+      "matches_manifest": true
+    },
+    "screenshots/action_composer_guild.png": {
+      "sha256": "3ad70266f978f38503dfebaa4368f142aadd427c51d5ff5dffa2f621d8d14b2c",
+      "bytes": 53088,
+      "matches_manifest": true
+    },
+    "screenshots/action_dropdown_items.png": {
+      "sha256": "0bb3e7a0e5d4d86dee77e9476e98aedcf430adf2dad44ae946714963ec29d72a",
+      "bytes": 58832,
+      "matches_manifest": true
+    },
+    "screenshots/action_mode_FH.png": {
+      "sha256": "8d2a5da2f3b2a8ebf2ffb7466639813c4fdd55584b6a874ba0b87fd7f203068e",
+      "bytes": 29586,
+      "matches_manifest": true
+    },
+    "screenshots/precombat_target_ids.png": {
+      "sha256": "7752382e94aab09345ffe4dc1047183f5305bff6fedb35c4a792178331983205",
+      "bytes": 52848,
+      "matches_manifest": true
+    }
+  },
+  "six_original_bindings": [
+    {
+      "i": 42,
+      "text": "Flame Lance → Glimmer Queen",
+      "mode": "hud_free",
+      "selection": {
+        "id": "653d1c07-542d-464e-bde5-2fdf002635b6",
+        "kind": "attack",
+        "skill": "mage.flame_lance",
+        "target": "mon.glimmerdeep_grotto_c1_l1_e3",
+        "approach": false
+      },
+      "answer": "{\"commands\":[{\"seq\":1,\"type\":\"use_skill\",\"skill\":\"mage.flame_lance\",\"target\":\"mon.glimmerdeep_grotto_c1_l1_e3\",\"hud_binding\":{\"id\":\"653d1c07-542d-464e-bde5-2fdf002635b6\",\"decision\":\"use\",\"seqs\":[1]}}]}",
+      "parse": {
+        "errors": [],
+        "conflict": "HUD und Freitext sind noch nicht eindeutig verbunden"
+      },
+      "reconcile": {
+        "ok": false,
+        "reason": "HUD und Freitext sind noch nicht eindeutig verbunden"
+      },
+      "events": 0,
+      "prompt": 6600,
+      "ms": 7002
+    },
+    {
+      "i": 44,
+      "text": "Flame Lance → Glimmer Queen",
+      "mode": "hud_free",
+      "selection": {
+        "id": "5fe67b16-493b-4005-84dd-703a4226f8c6",
+        "kind": "attack",
+        "skill": "mage.flame_lance",
+        "target": "mon.glimmerdeep_grotto_c1_l1_e3",
+        "approach": false
+      },
+      "answer": "{\"commands\":[{\"seq\":1,\"type\":\"use_skill\",\"skill\":\"mage.flame_lance\",\"target\":\"mon.glimmerdeep_grotto_c1_l1_e3\",\"quote\":\"Flame Lance → Glimmer Queen\"}],\"hud_binding\":{\"id\":\"5fe67b16-493b-4005-84dd-703a4226f8c6\",\"decision\":\"use\",\"seqs\":[1]}}",
+      "parse": {
+        "errors": [],
+        "binding": {
+          "id": "5fe67b16-493b-4005-84dd-703a4226f8c6",
+          "decision": "use",
+          "seqs": [
+            1
+          ]
+        }
+      },
+      "reconcile": {
+        "ok": true,
+        "bound": [
+          1
+        ],
+        "commands": [
+          {
+            "seq": 1,
+            "type": "use_skill",
+            "skill": "mage.flame_lance",
+            "target": "mon.glimmerdeep_grotto_c1_l1_e3",
+            "quote": "Flame Lance → Glimmer Queen"
+          }
+        ]
+      },
+      "events": 4,
+      "prompt": 6602,
+      "ms": 6282
+    },
+    {
+      "i": 46,
+      "text": "Flame Lance → Glimmer Queen",
+      "mode": "hud_free",
+      "selection": {
+        "id": "e9d5424d-655a-48b2-8ef6-a85fcdd3f124",
+        "kind": "attack",
+        "skill": "mage.flame_lance",
+        "target": "mon.glimmerdeep_grotto_c1_l1_e3",
+        "approach": false
+      },
+      "answer": "{\"commands\":[{\"seq\":1,\"type\":\"use_skill\",\"skill\":\"mage.flame_lance\",\"target\":\"mon.glimmerdeep_grotto_c1_l1_e3\",\"hud_binding\":{\"id\":\"e9d5424d-655a-48b2-8ef6-a85fcdd3f124\",\"decision\":\"use\",\"seqs\":[1]}}]}",
+      "parse": {
+        "errors": [],
+        "conflict": "HUD und Freitext sind noch nicht eindeutig verbunden"
+      },
+      "reconcile": {
+        "ok": false,
+        "reason": "HUD und Freitext sind noch nicht eindeutig verbunden"
+      },
+      "events": 0,
+      "prompt": 6628,
+      "ms": 17586
+    },
+    {
+      "i": 48,
+      "text": "Flame Lance → Glimmer Queen",
+      "mode": "hud_free",
+      "selection": {
+        "id": "1a708ce3-dd12-4152-a1bf-ff1a7d29550e",
+        "kind": "attack",
+        "skill": "mage.flame_lance",
+        "target": "mon.glimmerdeep_grotto_c1_l1_e3",
+        "approach": false
+      },
+      "answer": "{\"commands\":[{\"seq\":1,\"type\":\"use_skill\",\"skill\":\"mage.flame_lance\",\"target\":\"mon.glimmerdeep_grotto_c1_l1_e3\",\"hud_binding\":{\"id\":\"1a708ce3-dd12-4152-a1bf-ff1a7d29550e\",\"decision\":\"use\",\"seqs\":[1]}}]}",
+      "parse": {
+        "errors": [],
+        "conflict": "HUD und Freitext sind noch nicht eindeutig verbunden"
+      },
+      "reconcile": {
+        "ok": false,
+        "reason": "HUD und Freitext sind noch nicht eindeutig verbunden"
+      },
+      "events": 0,
+      "prompt": 6626,
+      "ms": 6091
+    },
+    {
+      "i": 50,
+      "text": "Flame Lance → Glimmer Queen",
+      "mode": "hud_free",
+      "selection": {
+        "id": "977c35ae-6bd3-45f9-a49e-7c7862ca5231",
+        "kind": "attack",
+        "skill": "mage.flame_lance",
+        "target": "mon.glimmerdeep_grotto_c1_l1_e3",
+        "approach": false
+      },
+      "answer": "{\"commands\":[{\"seq\":1,\"type\":\"use_skill\",\"skill\":\"mage.flame_lance\",\"target\":\"mon.glimmerdeep_grotto_c1_l1_e3\",\"hud_binding\":{\"id\":\"977c35ae-6bd3-45f9-a49e-7c7862ca5231\",\"decision\":\"use\",\"seqs\":[1]}}]}",
+      "parse": {
+        "errors": [],
+        "conflict": "HUD und Freitext sind noch nicht eindeutig verbunden"
+      },
+      "reconcile": {
+        "ok": false,
+        "reason": "HUD und Freitext sind noch nicht eindeutig verbunden"
+      },
+      "events": 0,
+      "prompt": 6628,
+      "ms": 5681
+    },
+    {
+      "i": 52,
+      "text": "Flame Lance → Glimmer Queen",
+      "mode": "hud_free",
+      "selection": {
+        "id": "ba651c6d-39d8-4035-b09b-547d804aa19c",
+        "kind": "attack",
+        "skill": "mage.flame_lance",
+        "target": "mon.glimmerdeep_grotto_c1_l1_e3",
+        "approach": false
+      },
+      "answer": "{\"commands\":[{\"seq\":1,\"type\":\"use_skill\",\"skill\":\"mage.flame_lance\",\"target\":\"mon.glimmerdeep_grotto_c1_l1_e3\",\"hud_binding\":{\"id\":\"ba651c6d-39d8-4035-b09b-547d804aa19c\",\"decision\":\"use\",\"seqs\":[1]}}]}",
+      "parse": {
+        "errors": [],
+        "conflict": "HUD und Freitext sind noch nicht eindeutig verbunden"
+      },
+      "reconcile": {
+        "ok": false,
+        "reason": "HUD und Freitext sind noch nicht eindeutig verbunden"
+      },
+      "events": 0,
+      "prompt": 6628,
+      "ms": 6847
+    }
+  ],
+  "shape_only_counterprobe": [
+    {
+      "i": 42,
+      "ok": true,
+      "changed_target_refused": true
+    },
+    {
+      "i": 44,
+      "ok": true,
+      "changed_target_refused": true
+    },
+    {
+      "i": 46,
+      "ok": true,
+      "changed_target_refused": true
+    },
+    {
+      "i": 48,
+      "ok": true,
+      "changed_target_refused": true
+    },
+    {
+      "i": 50,
+      "ok": true,
+      "changed_target_refused": true
+    },
+    {
+      "i": 52,
+      "ok": true,
+      "changed_target_refused": true
+    }
+  ],
+  "status_transitions": [
+    {
+      "name": "refresh: extractor pending",
+      "job": true,
+      "save": false,
+      "extraction": "pending",
+      "display": "Weltabgleich läuft; Text bleibt als Entwurf erhalten"
+    },
+    {
+      "name": "save notification while extractor pending",
+      "job": true,
+      "save": true,
+      "extraction": "pending",
+      "display": "Speichern"
+    },
+    {
+      "name": "readback notification while extractor pending",
+      "job": true,
+      "save": true,
+      "extraction": "pending",
+      "display": "Weltabgleich offen"
+    },
+    {
+      "name": "refresh restores running status",
+      "job": true,
+      "save": false,
+      "extraction": "pending",
+      "display": "Weltabgleich läuft; Text bleibt als Entwurf erhalten"
+    },
+    {
+      "name": "readback notification while world/save jobs still in flight",
+      "job": true,
+      "save": true,
+      "extraction": "applied",
+      "display": "Gespeichert"
+    },
+    {
+      "name": "renderDebug within applied callback",
+      "job": true,
+      "save": false,
+      "extraction": "applied",
+      "display": "Weltabgleich läuft; Text bleibt als Entwurf erhalten"
+    },
+    {
+      "name": "worldJobs finally clears job without render",
+      "job": false,
+      "save": false,
+      "extraction": "applied",
+      "display": "Weltabgleich läuft; Text bleibt als Entwurf erhalten"
+    },
+    {
+      "name": "next UI interaction finally shows saved",
+      "job": false,
+      "save": false,
+      "extraction": "applied",
+      "display": "Gespeichert"
+    }
+  ],
+  "action_views": [
+    {
+      "after": 14,
+      "targets": [
+        {
+          "id": "npc.npcglassmere_clerk",
+          "label": "Brenna Hallowell",
+          "existingHandle": "Brenna Hallowell"
+        }
+      ],
+      "items": [
+        {
+          "key": "use:obj.guild_plate",
+          "label": "Guild plate",
+          "valid": {
+            "ok": true,
+            "mapped": {
+              "route": "v4",
+              "commands": [
+                {
+                  "seq": 1,
+                  "type": "use",
+                  "object": "obj.guild_plate",
+                  "qty": 1
+                }
+              ]
+            },
+            "preview": {
+              "legal": true
+            }
+          }
+        },
+        {
+          "key": "use:obj.slip.clear_the_outer_grottos_of_glimmerdeep",
+          "label": "Guild contract slip: Clear the Outer Grottos of Glimmerdeep",
+          "valid": {
+            "ok": true,
+            "mapped": {
+              "route": "v4",
+              "commands": [
+                {
+                  "seq": 1,
+                  "type": "use",
+                  "object": "obj.slip.clear_the_outer_grottos_of_glimmerdeep",
+                  "qty": 1
+                }
+              ]
+            },
+            "preview": {
+              "legal": true
+            }
+          }
+        },
+        {
+          "key": "use:item.small_pouch",
+          "label": "Small Pouch",
+          "valid": {
+            "ok": true,
+            "mapped": {
+              "route": "v4",
+              "commands": [
+                {
+                  "seq": 1,
+                  "type": "use",
+                  "object": "item.small_pouch",
+                  "qty": 1
+                }
+              ]
+            },
+            "preview": {
+              "legal": true
+            }
+          }
+        },
+        {
+          "key": "use:item.obj.guild_plate",
+          "label": "Guild plate",
+          "valid": {
+            "ok": true,
+            "mapped": {
+              "route": "v4",
+              "commands": [
+                {
+                  "seq": 1,
+                  "type": "use",
+                  "object": "obj.guild_plate",
+                  "qty": 1
+                }
+              ]
+            },
+            "preview": {
+              "legal": true
+            }
+          }
+        },
+        {
+          "key": "use:item.obj.slip.clear_the_outer_grottos_of_glimmerdeep",
+          "label": "Guild contract slip: Clear the Outer Grottos of Glimmerdeep",
+          "valid": {
+            "ok": true,
+            "mapped": {
+              "route": "v4",
+              "commands": [
+                {
+                  "seq": 1,
+                  "type": "use",
+                  "object": "obj.slip.clear_the_outer_grottos_of_glimmerdeep",
+                  "qty": 1
+                }
+              ]
+            },
+            "preview": {
+              "legal": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "after": 22,
+      "targets": [
+        {
+          "id": "mon.glimmerdeep_grotto_c1_l1_e1_1",
+          "label": "mon.glimmerdeep_grotto_c1_l1_e1_1",
+          "existingHandle": "Crystal Beetle A"
+        },
+        {
+          "id": "mon.glimmerdeep_grotto_c1_l1_e1_2",
+          "label": "mon.glimmerdeep_grotto_c1_l1_e1_2",
+          "existingHandle": "Crystal Beetle B"
+        },
+        {
+          "id": "mon.glimmerdeep_grotto_c1_l1_e1_3",
+          "label": "mon.glimmerdeep_grotto_c1_l1_e1_3",
+          "existingHandle": "Crystal Beetle C"
+        },
+        {
+          "id": "mon.glimmerdeep_grotto_c1_l1_e1_4",
+          "label": "mon.glimmerdeep_grotto_c1_l1_e1_4",
+          "existingHandle": "Crystal Beetle D"
+        }
+      ],
+      "items": [
+        {
+          "key": "use:obj.guild_plate",
+          "label": "Guild plate",
+          "valid": {
+            "ok": true,
+            "mapped": {
+              "route": "v4",
+              "commands": [
+                {
+                  "seq": 1,
+                  "type": "use",
+                  "object": "obj.guild_plate",
+                  "qty": 1
+                }
+              ]
+            },
+            "preview": {
+              "legal": true
+            }
+          }
+        },
+        {
+          "key": "use:obj.slip.clear_the_outer_grottos_of_glimmerdeep",
+          "label": "Guild contract slip: Clear the Outer Grottos of Glimmerdeep",
+          "valid": {
+            "ok": true,
+            "mapped": {
+              "route": "v4",
+              "commands": [
+                {
+                  "seq": 1,
+                  "type": "use",
+                  "object": "obj.slip.clear_the_outer_grottos_of_glimmerdeep",
+                  "qty": 1
+                }
+              ]
+            },
+            "preview": {
+              "legal": true
+            }
+          }
+        },
+        {
+          "key": "use:item.small_pouch",
+          "label": "Small Pouch",
+          "valid": {
+            "ok": true,
+            "mapped": {
+              "route": "v4",
+              "commands": [
+                {
+                  "seq": 1,
+                  "type": "use",
+                  "object": "item.small_pouch",
+                  "qty": 1
+                }
+              ]
+            },
+            "preview": {
+              "legal": true
+            }
+          }
+        },
+        {
+          "key": "use:item.obj.guild_plate",
+          "label": "Guild plate",
+          "valid": {
+            "ok": true,
+            "mapped": {
+              "route": "v4",
+              "commands": [
+                {
+                  "seq": 1,
+                  "type": "use",
+                  "object": "obj.guild_plate",
+                  "qty": 1
+                }
+              ]
+            },
+            "preview": {
+              "legal": true
+            }
+          }
+        },
+        {
+          "key": "use:item.obj.slip.clear_the_outer_grottos_of_glimmerdeep",
+          "label": "Guild contract slip: Clear the Outer Grottos of Glimmerdeep",
+          "valid": {
+            "ok": true,
+            "mapped": {
+              "route": "v4",
+              "commands": [
+                {
+                  "seq": 1,
+                  "type": "use",
+                  "object": "obj.slip.clear_the_outer_grottos_of_glimmerdeep",
+                  "qty": 1
+                }
+              ]
+            },
+            "preview": {
+              "legal": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "after": 34,
+      "targets": [
+        {
+          "id": "mon.glimmerdeep_grotto_c1_l1_e2",
+          "label": "mon.glimmerdeep_grotto_c1_l1_e2",
+          "existingHandle": "Quartz Ooze A"
+        }
+      ],
+      "items": [
+        {
+          "key": "use:obj.guild_plate",
+          "label": "Guild plate",
+          "valid": {
+            "ok": true,
+            "mapped": {
+              "route": "v4",
+              "commands": [
+                {
+                  "seq": 1,
+                  "type": "use",
+                  "object": "obj.guild_plate",
+                  "qty": 1
+                }
+              ]
+            },
+            "preview": {
+              "legal": true
+            }
+          }
+        },
+        {
+          "key": "use:obj.slip.clear_the_outer_grottos_of_glimmerdeep",
+          "label": "Guild contract slip: Clear the Outer Grottos of Glimmerdeep",
+          "valid": {
+            "ok": true,
+            "mapped": {
+              "route": "v4",
+              "commands": [
+                {
+                  "seq": 1,
+                  "type": "use",
+                  "object": "obj.slip.clear_the_outer_grottos_of_glimmerdeep",
+                  "qty": 1
+                }
+              ]
+            },
+            "preview": {
+              "legal": true
+            }
+          }
+        },
+        {
+          "key": "use:obj.loot.crystal_beetle.chitin.f",
+          "label": "F-Rank Crystal Beetle Chitin Plate",
+          "valid": {
+            "ok": true,
+            "mapped": {
+              "route": "v4",
+              "commands": [
+                {
+                  "seq": 1,
+                  "type": "use",
+                  "object": "obj.loot.crystal_beetle.chitin.f",
+                  "qty": 1
+                }
+              ]
+            },
+            "preview": {
+              "legal": true
+            }
+          }
+        },
+        {
+          "key": "use:item.small_pouch",
+          "label": "Small Pouch",
+          "valid": {
+            "ok": true,
+            "mapped": {
+              "route": "v4",
+              "commands": [
+                {
+                  "seq": 1,
+                  "type": "use",
+                  "object": "item.small_pouch",
+                  "qty": 1
+                }
+              ]
+            },
+            "preview": {
+              "legal": true
+            }
+          }
+        },
+        {
+          "key": "use:item.obj.guild_plate",
+          "label": "Guild plate",
+          "valid": {
+            "ok": true,
+            "mapped": {
+              "route": "v4",
+              "commands": [
+                {
+                  "seq": 1,
+                  "type": "use",
+                  "object": "obj.guild_plate",
+                  "qty": 1
+                }
+              ]
+            },
+            "preview": {
+              "legal": true
+            }
+          }
+        },
+        {
+          "key": "use:item.obj.slip.clear_the_outer_grottos_of_glimmerdeep",
+          "label": "Guild contract slip: Clear the Outer Grottos of Glimmerdeep",
+          "valid": {
+            "ok": true,
+            "mapped": {
+              "route": "v4",
+              "commands": [
+                {
+                  "seq": 1,
+                  "type": "use",
+                  "object": "obj.slip.clear_the_outer_grottos_of_glimmerdeep",
+                  "qty": 1
+                }
+              ]
+            },
+            "preview": {
+              "legal": true
+            }
+          }
+        },
+        {
+          "key": "use:item.obj.loot.crystal_beetle.chitin.f",
+          "label": "F-Rank Crystal Beetle Chitin Plate",
+          "valid": {
+            "ok": true,
+            "mapped": {
+              "route": "v4",
+              "commands": [
+                {
+                  "seq": 1,
+                  "type": "use",
+                  "object": "obj.loot.crystal_beetle.chitin.f",
+                  "qty": 1
+                }
+              ]
+            },
+            "preview": {
+              "legal": true
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "user04_historical_measurements": {
+    "pairs": 124,
+    "errors": [],
+    "models": [
+      "zai-org/GLM-5.3-Flash"
+    ],
+    "prompt": 1520007,
+    "cached": 825898,
+    "times": {
+      "plan": {
+        "n": 37,
+        "median_ms": 3866,
+        "min_ms": 1863,
+        "max_ms": 71315
+      },
+      "narration": {
+        "n": 36,
+        "median_ms": 14295,
+        "min_ms": 7091,
+        "max_ms": 45626
+      },
+      "extraction": {
+        "n": 36,
+        "median_ms": 8498,
+        "min_ms": 2500,
+        "max_ms": 59188
+      }
+    }
+  },
+  "physical_requests": [
+    {
+      "phase": "A",
+      "number": 1,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 12265,
+        "completion_tokens": 63,
+        "total_tokens": 12328,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 48393
+    },
+    {
+      "phase": "A",
+      "number": 2,
+      "kind": "N",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 10431,
+        "completion_tokens": 453,
+        "total_tokens": 10884,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 49135
+    },
+    {
+      "phase": "A",
+      "number": 3,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 13510,
+        "completion_tokens": 298,
+        "total_tokens": 13808,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 58086
+    },
+    {
+      "phase": "A",
+      "number": 4,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 12317,
+        "completion_tokens": 22,
+        "total_tokens": 12339,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 48635
+    },
+    {
+      "phase": "A",
+      "number": 5,
+      "kind": "N",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 11848,
+        "completion_tokens": 402,
+        "total_tokens": 12250,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 55563
+    },
+    {
+      "phase": "A",
+      "number": 6,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 13258,
+        "completion_tokens": 250,
+        "total_tokens": 13508,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 56887
+    },
+    {
+      "phase": "A",
+      "number": 7,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 12369,
+        "completion_tokens": 79,
+        "total_tokens": 12448,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 48825
+    },
+    {
+      "phase": "A",
+      "number": 8,
+      "kind": "N",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 12262,
+        "completion_tokens": 463,
+        "total_tokens": 12725,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 57162
+    },
+    {
+      "phase": "A",
+      "number": 9,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 13203,
+        "completion_tokens": 38,
+        "total_tokens": 13241,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 56748
+    },
+    {
+      "phase": "A",
+      "number": 10,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 12344,
+        "completion_tokens": 36,
+        "total_tokens": 12380,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 48730
+    },
+    {
+      "phase": "A",
+      "number": 11,
+      "kind": "Q",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 2602,
+        "completion_tokens": 959,
+        "total_tokens": 3561,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 11308
+    },
+    {
+      "phase": "A",
+      "number": 12,
+      "kind": "Q",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 3759,
+        "completion_tokens": 926,
+        "total_tokens": 4685,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 15572
+    },
+    {
+      "phase": "A",
+      "number": 13,
+      "kind": "N",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 12732,
+        "completion_tokens": 367,
+        "total_tokens": 13099,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 58838
+    },
+    {
+      "phase": "A",
+      "number": 14,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 15212,
+        "completion_tokens": 51,
+        "total_tokens": 15263,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 64343
+    },
+    {
+      "phase": "A",
+      "number": 15,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 13669,
+        "completion_tokens": 56,
+        "total_tokens": 13725,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 53733
+    },
+    {
+      "phase": "A",
+      "number": 16,
+      "kind": "N",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 12463,
+        "completion_tokens": 353,
+        "total_tokens": 12816,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 58100
+    },
+    {
+      "phase": "A",
+      "number": 17,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 14856,
+        "completion_tokens": 351,
+        "total_tokens": 15207,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 62910
+    },
+    {
+      "phase": "B",
+      "number": 1,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 13688,
+        "completion_tokens": 47,
+        "total_tokens": 13735,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 53851
+    },
+    {
+      "phase": "B",
+      "number": 2,
+      "kind": "N",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 12460,
+        "completion_tokens": 376,
+        "total_tokens": 12836,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 57871
+    },
+    {
+      "phase": "B",
+      "number": 3,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 15102,
+        "completion_tokens": 190,
+        "total_tokens": 15292,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 63955
+    },
+    {
+      "phase": "B",
+      "number": 4,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 12893,
+        "completion_tokens": 32,
+        "total_tokens": 12925,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 50632
+    },
+    {
+      "phase": "B",
+      "number": 5,
+      "kind": "N",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 11330,
+        "completion_tokens": 404,
+        "total_tokens": 11734,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 52804
+    },
+    {
+      "phase": "B",
+      "number": 6,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 14246,
+        "completion_tokens": 767,
+        "total_tokens": 15013,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 60519
+    },
+    {
+      "phase": "B",
+      "number": 7,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 12933,
+        "completion_tokens": 56,
+        "total_tokens": 12989,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 50768
+    },
+    {
+      "phase": "B",
+      "number": 8,
+      "kind": "N",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 11229,
+        "completion_tokens": 338,
+        "total_tokens": 11567,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 52557
+    },
+    {
+      "phase": "B",
+      "number": 9,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 14275,
+        "completion_tokens": 506,
+        "total_tokens": 14781,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 60613
+    },
+    {
+      "phase": "B",
+      "number": 10,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 13048,
+        "completion_tokens": 67,
+        "total_tokens": 13115,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 51119
+    },
+    {
+      "phase": "B",
+      "number": 11,
+      "kind": "N",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 12022,
+        "completion_tokens": 438,
+        "total_tokens": 12460,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 56011
+    },
+    {
+      "phase": "B",
+      "number": 12,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 14652,
+        "completion_tokens": 479,
+        "total_tokens": 15131,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 61961
+    },
+    {
+      "phase": "B",
+      "number": 13,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 13573,
+        "completion_tokens": 82,
+        "total_tokens": 13655,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 52746
+    },
+    {
+      "phase": "B",
+      "number": 14,
+      "kind": "N",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 12365,
+        "completion_tokens": 362,
+        "total_tokens": 12727,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 56907
+    },
+    {
+      "phase": "B",
+      "number": 15,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 14495,
+        "completion_tokens": 279,
+        "total_tokens": 14774,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 60893
+    },
+    {
+      "phase": "B",
+      "number": 16,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 6489,
+        "completion_tokens": 59,
+        "total_tokens": 6548,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 25196
+    },
+    {
+      "phase": "B",
+      "number": 17,
+      "kind": "N",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 12214,
+        "completion_tokens": 376,
+        "total_tokens": 12590,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 56225
+    },
+    {
+      "phase": "B",
+      "number": 18,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 14509,
+        "completion_tokens": 51,
+        "total_tokens": 14560,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 60962
+    },
+    {
+      "phase": "B",
+      "number": 19,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 6720,
+        "completion_tokens": 94,
+        "total_tokens": 6814,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 26070
+    },
+    {
+      "phase": "B",
+      "number": 20,
+      "kind": "N",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 12144,
+        "completion_tokens": 436,
+        "total_tokens": 12580,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 56069
+    },
+    {
+      "phase": "B",
+      "number": 21,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 14605,
+        "completion_tokens": 142,
+        "total_tokens": 14747,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 61364
+    },
+    {
+      "phase": "C",
+      "number": 1,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 13140,
+        "completion_tokens": 63,
+        "total_tokens": 13203,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 51373
+    },
+    {
+      "phase": "C",
+      "number": 2,
+      "kind": "N",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 11771,
+        "completion_tokens": 428,
+        "total_tokens": 12199,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 54743
+    },
+    {
+      "phase": "C",
+      "number": 3,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 14621,
+        "completion_tokens": 253,
+        "total_tokens": 14874,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 61267
+    },
+    {
+      "phase": "C",
+      "number": 4,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 13142,
+        "completion_tokens": 35,
+        "total_tokens": 13177,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 51369
+    },
+    {
+      "phase": "C",
+      "number": 5,
+      "kind": "N",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 11874,
+        "completion_tokens": 413,
+        "total_tokens": 12287,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 55211
+    },
+    {
+      "phase": "C",
+      "number": 6,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 14960,
+        "completion_tokens": 362,
+        "total_tokens": 15322,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 62781
+    },
+    {
+      "phase": "C",
+      "number": 7,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 15638,
+        "completion_tokens": 364,
+        "total_tokens": 16002,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 65231
+    },
+    {
+      "phase": "C",
+      "number": 8,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 13452,
+        "completion_tokens": 104,
+        "total_tokens": 13556,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 52356
+    },
+    {
+      "phase": "C",
+      "number": 9,
+      "kind": "N",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 12091,
+        "completion_tokens": 361,
+        "total_tokens": 12452,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 56022
+    },
+    {
+      "phase": "C",
+      "number": 10,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 14429,
+        "completion_tokens": 164,
+        "total_tokens": 14593,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 60664
+    },
+    {
+      "phase": "C",
+      "number": 11,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 13233,
+        "completion_tokens": 38,
+        "total_tokens": 13271,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 51646
+    },
+    {
+      "phase": "C",
+      "number": 12,
+      "kind": "N",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 12214,
+        "completion_tokens": 525,
+        "total_tokens": 12739,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 56884
+    },
+    {
+      "phase": "C",
+      "number": 13,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 15019,
+        "completion_tokens": 720,
+        "total_tokens": 15739,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 63164
+    },
+    {
+      "phase": "C",
+      "number": 14,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 13533,
+        "completion_tokens": 94,
+        "total_tokens": 13627,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 52687
+    },
+    {
+      "phase": "C",
+      "number": 15,
+      "kind": "N",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 12145,
+        "completion_tokens": 452,
+        "total_tokens": 12597,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 56361
+    },
+    {
+      "phase": "C",
+      "number": 16,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 14545,
+        "completion_tokens": 542,
+        "total_tokens": 15087,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 61230
+    },
+    {
+      "phase": "C",
+      "number": 17,
+      "kind": "N",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 12563,
+        "completion_tokens": 352,
+        "total_tokens": 12915,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 58260
+    },
+    {
+      "phase": "C",
+      "number": 18,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 14287,
+        "completion_tokens": 131,
+        "total_tokens": 14418,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 59998
+    },
+    {
+      "phase": "C",
+      "number": 19,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 6600,
+        "completion_tokens": 81,
+        "total_tokens": 6681,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 25674
+    },
+    {
+      "phase": "C",
+      "number": 20,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 6602,
+        "completion_tokens": 93,
+        "total_tokens": 6695,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 25674
+    },
+    {
+      "phase": "C",
+      "number": 21,
+      "kind": "N",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 11881,
+        "completion_tokens": 388,
+        "total_tokens": 12269,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 55322
+    },
+    {
+      "phase": "C",
+      "number": 22,
+      "kind": "X",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 14484,
+        "completion_tokens": 747,
+        "total_tokens": 15231,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 60948
+    },
+    {
+      "phase": "C",
+      "number": 23,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 6628,
+        "completion_tokens": 82,
+        "total_tokens": 6710,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 25775
+    },
+    {
+      "phase": "C",
+      "number": 24,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 6626,
+        "completion_tokens": 81,
+        "total_tokens": 6707,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 25775
+    },
+    {
+      "phase": "C",
+      "number": 25,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 6628,
+        "completion_tokens": 82,
+        "total_tokens": 6710,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 25775
+    },
+    {
+      "phase": "C",
+      "number": 26,
+      "kind": "P",
+      "model": "zai-org/GLM-5.3-Flash",
+      "usage": {
+        "prompt_tokens": 6628,
+        "completion_tokens": 82,
+        "total_tokens": 6710,
+        "cached_tokens": 0,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish": "stop",
+      "prompt_characters": 25775
+    }
+  ],
+  "final": {
+    "fold_errors": [],
+    "level": 4,
+    "hp": 70,
+    "mp": 59,
+    "coin_cp": 30,
+    "queen_hp": 21,
+    "queen_band": "SHORT",
+    "quest": "active; not completed; User05 deliberately ended after phase C"
+  }
+}

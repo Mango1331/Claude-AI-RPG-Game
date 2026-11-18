@@ -1,4 +1,4 @@
-# User05 – natürlicher Action-HUD-Test `.202` (Phasen A–C, Bosskampf blockiert)
+# User05 – natürlicher Action-HUD-Test `.202` (Phasen A–C, bewusst beendet)
 
 **18.11.2026 · ein einziger persönlicher SillyTavern-/GLM-5.3-Flash-Lauf**, Entwicklungsbuild `4.3.0-c.6.6.202` auf [`experiment/action-hud-200-v1 / 6a92dcc`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/6a92dcc650809eb16934a984c30ce0cf7c5cfe98). Produkt `.200` und GM-Archiv unverändert. Diese Testrun-Dokumentation liegt auf `main`.
 
@@ -9,7 +9,7 @@
 | Physische Modellaufrufe | 17 | 38 | **64** |
 | Anwendung der regulären Extraktionen | 5 | 12 | **19** (20 physische X-Requests inkl. 1 Repair) |
 
-**Spielstand zuletzt:** Alaric Level 4, Quest „Clear the Outer Grottos of Glimmerdeep“ noch **aktiv**, vier Crystal Beetles und ein Quartz Ooze besiegt. Boss Glimmer Queen bei **21/145 HP**, Alaric **70/105 HP, 59/132 MP**. **Der Test steht im Bosskampf**, weil die F-HUD-Bindung fünfmal unterbrochen wurde. Die fünf verweigerten Eingaben haben **keine Engineaktionen gebucht**. **Der H-Modus ohne Planner bleibt ungetestet.** Keine erfolgreiche Floor-Clear-/Questabgabe.
+**Spielstand zuletzt:** Alaric Level 4, Quest „Clear the Outer Grottos of Glimmerdeep“ noch **aktiv**, vier Crystal Beetles und ein Quartz Ooze besiegt. Boss Glimmer Queen bei **21/145 HP**, Alaric **70/105 HP, 59/132 MP**. **User05 ist auf Nutzerwunsch nach Phase C beendet.** Zuvor wurde die F-HUD-Bindung im Bosskampf fünfmal unterbrochen. Die offene Quest wird in diesem Run nicht mehr abgeschlossen. Die fünf verweigerten Eingaben haben **keine Engineaktionen gebucht**. **Der H-Modus ohne Planner bleibt ungetestet.** Keine erfolgreiche Floor-Clear-/Questabgabe.
 
 ## Phasenreviews und Spielerfeedback
 
@@ -27,6 +27,8 @@ Die **12 Textoriginale und vier Screenshots** aus allen drei Etappen liegen in [
 
 **A/B/C sind keine drei unabhängigen Tests.** Jeder spätere Chatexport enthält den vorigen Chatverlauf, deshalb die Eventzahlen nicht addieren. Completiondateien decken dagegen jeweils nur die neuen Aufrufgruppen ab. Alle Originaldateibytes bleiben unverändert.
 
-**Nächster Schritt:** User05 **nicht als vollständig abgeschlossen markieren**. Den HUD-Bindungsblocker eng unabhängig gegenprüfen, bevor erneut identische Boss-Angriffe ausgelöst werden. Danach kann der Nutzer denselben Run fortsetzen oder bewusst einen neuen technischen H-/F-Abnahmetest starten. Der umfassende Astra-Gegenreview zur gesamten Spielqualität ist weiterhin nach dem natürlichen Test beziehungsweise nach einer vom Nutzer freigegebenen vorgezogenen technischen Blockerprüfung vorgesehen. **Keine Implementierungs-/Mergefreigabe durch diesen Testordner.**
+**Abschlussentscheidung 18.11.2026:** User05 ist bewusst beendet, nicht erfolgreich bis zur Questabgabe durchgespielt. Die ursprünglichen Phasenreviews bleiben als damalige Bewertungen unverändert erhalten; dortige Vorschläge zur Fortsetzung sind durch diese Nutzerentscheidung überholt.
+
+**Nächster Schritt:** [Unabhängigen Gegenreview und priorisierte Fix-/QoL-Runde](../../recherche/GEGENREVIEW_USER05_ACTION_HUD_202_FIX_QOL_2026-11-18.md) prüfen und ausdrücklich zur Implementierung freigeben. [Neue lokale Gegenproben](GEGENREVIEW_ASTRA_PROBEN_2026-11-18.json) bestätigen die fünf Formbindungsfehler und trennen Status-/UI-Probleme von Saveverlust und Balancefragen. Erst nach Umsetzung und technischer Abnahme beginnt **User06 von vorne**. Kein Providerlauf, Merge oder Produktfix durch diese Dokumentationsrunde.
 
 [Runindex](../README.md) · [Projektstand](../../03_AKTUELLER_PROJEKTSTAND.md) · [Action-HUD-Fachplan](../../patch_plans_10b/FACHPLAN_ACTION_HUD_200_V1_2026-11-17.md).

@@ -1982,8 +1982,8 @@
           "shared_rolls": true
         }
       ],
-      "effect_text": "Resolve damage separately against everyone ENGAGED with the caster, friend or foe.",
-      "source_text": "Cleave [Offensive]\nRank: F\nComplexity: 2\nBase Power: 8\nScaling: STR × 1.25\nUses: ATK\nCost: 10 STA\nRange: ENGAGED\nEffect: Resolve damage separately against everyone ENGAGED with the caster, friend or foe."
+      "effect_text": "Resolve damage separately against opponents ENGAGED with the caster and explicitly attacked NPC targets; bystanders are spared.",
+      "source_text": "Cleave [Offensive]\nRank: F\nComplexity: 2\nBase Power: 8\nScaling: STR × 1.25\nUses: ATK\nCost: 10 STA\nRange: ENGAGED\nEffect: Resolve damage separately against opponents ENGAGED with the caster and explicitly attacked NPC targets; bystanders are spared."
     },
     {
       "id": "mage.arcane_wave",
@@ -2028,8 +2028,8 @@
           "shared_rolls": true
         }
       ],
-      "effect_text": "Choose a visible target within range. Resolve damage separately against everyone in that target's Range Band after declared movement, friend or foe; no cluster or direction restriction. Other bands are not hit.",
-      "source_text": "Arcane Wave [Offensive]\nRank: F\nComplexity: 2\nBase Power: 8\nScaling: INT × 1.25\nUses: MATK\nCost: 14 MP\nRange: MEDIUM\nEffect: Choose a visible target within range. Resolve damage separately against everyone in that target's Range Band after declared movement, friend or foe; no cluster or direction restriction. Other bands are not hit."
+      "effect_text": "Choose a visible target within range. Resolve damage separately against opponents and explicitly attacked NPC targets in that target's Range Band after declared movement; bystanders are spared; no cluster or direction restriction. Other bands are not hit.",
+      "source_text": "Arcane Wave [Offensive]\nRank: F\nComplexity: 2\nBase Power: 8\nScaling: INT × 1.25\nUses: MATK\nCost: 14 MP\nRange: MEDIUM\nEffect: Choose a visible target within range. Resolve damage separately against opponents and explicitly attacked NPC targets in that target's Range Band after declared movement; bystanders are spared; no cluster or direction restriction. Other bands are not hit."
     },
     {
       "id": "rogue.fan_of_blades",
@@ -2074,8 +2074,8 @@
           "shared_rolls": true
         }
       ],
-      "effect_text": "Choose a visible target within range. Resolve damage separately against everyone in that target's Range Band after declared movement, friend or foe; no cluster or direction restriction. Other bands are not hit.",
-      "source_text": "Fan of Blades [Offensive]\nRank: F\nComplexity: 2\nBase Power: 6\nScaling: AGI × 1.125\nUses: ATK\nCost: 10 STA\nRange: SHORT\nEffect: Choose a visible target within range. Resolve damage separately against everyone in that target's Range Band after declared movement, friend or foe; no cluster or direction restriction. Other bands are not hit."
+      "effect_text": "Choose a visible target within range. Resolve damage separately against opponents and explicitly attacked NPC targets in that target's Range Band after declared movement; bystanders are spared; no cluster or direction restriction. Other bands are not hit.",
+      "source_text": "Fan of Blades [Offensive]\nRank: F\nComplexity: 2\nBase Power: 6\nScaling: AGI × 1.125\nUses: ATK\nCost: 10 STA\nRange: SHORT\nEffect: Choose a visible target within range. Resolve damage separately against opponents and explicitly attacked NPC targets in that target's Range Band after declared movement; bystanders are spared; no cluster or direction restriction. Other bands are not hit."
     }
   ],
   "weapon_attacks": {

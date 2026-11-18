@@ -477,10 +477,25 @@ function fieldRepairHint(error, d, i, ids = {}, spec) {
     return '';
 }
 
+// User05 I34: an identical full reference is already supplied by both the expected GO and arrival.
+// Only resolve that repeated name; no inferred parent/kind, no extra arrival, no multi-stop inference.
+export function resolveRepeatedScene(value, ids, expectedKeys) {
+    const short=value?.scene;
+    if(!short || Object.keys(short).length!==1 || typeof short.new!=='string')return value;
+    const keys=Object.keys(expectedKeys || {});
+    if(keys.length!==1 || expectedKeys[keys[0]]!=='go')return value;
+    const expected=value.expected?.[keys[0]],arrivals=Array.isArray(value.deltas)?value.deltas.filter(d=>d?.type==='arrive'):[];
+    if(expected?.arrived!==true || arrivals.length!==1)return value;
+    const full=arrivals[0].at;
+    if(full?.new?.name!==short.new || JSON.stringify(full)!==JSON.stringify(expected.at) || validate(full,placeRef(ids.places || [])).length)return value;
+    return {...value,scene:JSON.parse(JSON.stringify(full))};
+}
+
 export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequired = false, startScene = null, state = null, content = null, explicitArrivals = sceneRequired, reply = null } = {}) {
     const parsed = extractJsonObject(answer);
     const { error, raw } = parsed;
-    const value = state ? newPlaceScope(normalizeSoftFields(parsed.value, vocab), state) : normalizeSoftFields(parsed.value, vocab);
+    const resolved=resolveRepeatedScene(parsed.value,ids,expectedKeys);
+    const value = state ? newPlaceScope(normalizeSoftFields(resolved, vocab), state) : normalizeSoftFields(resolved, vocab);
     const want = Object.keys(expectedKeys || {});
     if (!value) return { value: null, valid: false, complete: false, errors: [error || 'no JSON object'], missing: want, raw: false };
     // .190 (stage 5): an expected key nobody asked for (no step of this turn has it) is left out, empty or not: it never

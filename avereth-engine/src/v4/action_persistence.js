@@ -21,14 +21,14 @@ export async function decodeSave(options) {
     return data;
 }
 
-export function createChatPersistence({ request, headers, active, locks, changed = () => {} }) {
+export function createChatPersistence({ request, headers, active, locks, changed = () => {}, settled = () => {} }) {
     const queues = new Map();
     const matching = o => { try { return originKey(chatOrigin(active())) === originKey(o); } catch { return false; } };
     async function queue(key, fn) {
         const previous = queues.get(key) || Promise.resolve();
         const pending = previous.catch(() => {}).then(() => locks ? locks.request(`avereth.save:${key}`, fn) : fn());
         queues.set(key, pending);
-        try { return await pending; } finally { if (queues.get(key) === pending) queues.delete(key); }
+        try { return await pending; } finally { if (queues.get(key) === pending) queues.delete(key); settled(); }
     }
     async function verify(origin, snapshot) {
         const response = await request('/api/chats/get', {method:'POST',headers:headers(),body:JSON.stringify(origin)});

@@ -29,12 +29,12 @@ test('161 board retains unique job terms without repeated rank/reward or routine
     assert.ok(details.every(x => !/reward:|quest level|Contract:/.test(x)));
     assert.deepEqual(s, saved);
 });
-test('161 board drafts are escaped, editable requests; equal titles retain useful distinct references', () => {
+test('203 board acceptance controls are escaped and retain distinct quest identities', () => {
     const s = before(73), b = board(s), ids = b.listings.slice(0, 2);
     s.quests[ids[0]].title = s.quests[ids[1]].title = 'Rats "red" <img src=x onerror=alert(1)>';
     const h = renderBoardCards(s, content, { ...b, listings: ids });
-    assert.equal((h.match(/data-avereth-draft=/g) || []).length, 2);
-    assert.ok(h.includes('&quot;')); assert.ok(!h.includes('<img'));
+    assert.equal((h.match(/data-avereth-quest=/g) || []).length, 2);
+    assert.ok(h.includes('&lt;img')); assert.ok(!h.includes('<img'));
     for (const id of ids) assert.ok(h.includes(id));
     assert.doesNotMatch(h, /onclick=|onsubmit=/);
 });

@@ -21,9 +21,9 @@ export async function actionHudSmoke({page,send,idle,calls,onReload,reconnect}){
   await page.evaluate(async seed=>{const c=SillyTavern.getContext();c.chat.splice(0,c.chat.length,...structuredClone(seed));delete c.chatMetadata.pending_action_input;await c.saveChat();await c.reloadCurrentChat();},seed);onReload();await idle();
  };
  const choose=async(mode='hud_roleplay',skill='mage.flame_lance')=>{
-  await page.locator('#avereth-action-composer details').evaluate(el=>el.open=true);
-  await page.selectOption('#avereth-action-kind',`skill:${skill}`);await page.selectOption('#avereth-action-target','mon.barkscorpion_1');
-  await page.click('#avereth-action-select');await page.selectOption('#avereth-action-mode',mode);
+  await page.locator(`[data-avereth-select-skill="${skill}"]:not([disabled])`).last().click();
+  await page.locator('[data-avereth-aim="mon.barkscorpion_1"], [data-avereth-select-target="mon.barkscorpion_1"]:not([disabled])').last().click();
+  await page.selectOption('#avereth-action-mode',mode);
  };
  const snapshot=()=>page.evaluate(async base=>{
   const {foldChat,rec}=await import(base+'src/host.js');const c=SillyTavern.getContext(),u=c.chat.findLastIndex(m=>m.is_user),r=rec(c.chat[u]);
@@ -43,7 +43,7 @@ export async function actionHudSmoke({page,send,idle,calls,onReload,reconnect}){
  const attempts=await page.evaluate(id=>Object.keys(localStorage).filter(k=>k.startsWith('avereth.requests.v1:')).flatMap(k=>JSON.parse(localStorage.getItem(k)).attempts || []).filter(a=>a.input_id===id),h.input?.id);
  checks.physicalInputProvenance=attempts.length===2 && attempts.every(a=>a.request_id && a.capacity_key && a.origin_chat && a.revision===1 && a.attempt===1 && a.weight===4 && a.status==='terminal') && new Set(attempts.map(a=>a.phase)).size===2;
  checks.nonstreamContextRecorded=!!h.narration?.context;
- checks.sentModeVisible=await page.evaluate(()=>{const c=SillyTavern.getContext(),u=c.chat.findLastIndex(m=>m.is_user);return document.querySelector(`#chat [mesid="${u}"] .mes_text`)?.innerText.includes('H · Begleittext');});
+ checks.sentModeVisible=await page.evaluate(()=>{const c=SillyTavern.getContext(),u=c.chat.findLastIndex(m=>m.is_user);return document.querySelector(`#chat [mesid="${u}"] .mes_text`)?.innerText.includes('Auswahl + Rollenspiel');});
  await page.setViewportSize({width:390,height:844});
  checks.composerFitsNarrow=await page.locator('#avereth-action-composer').evaluate(el=>el.scrollWidth<=el.clientWidth+2);
  await page.setViewportSize({width:1280,height:900});

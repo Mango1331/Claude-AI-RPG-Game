@@ -261,7 +261,7 @@ export async function planMessage(llm, content, ctx, text, { recent = '', isCurr
         const p2 = parsePlan(second.content, vocab, ctx, text);
         const raw = [String(second.content).slice(0, 2000)];
         return p2.commands
-            ? { hud_binding:p2.hud_binding, hud_conflict:p2.hud_conflict, commands: p2.commands, failed: false, error: null, ms, repaired: true, recovery: 'transport', raw, calls }
+            ? { hud_binding:p2.hud_binding, hud_normalized:p2.hud_normalized, hud_conflict:p2.hud_conflict, commands: p2.commands, failed: false, error: null, ms, repaired: true, recovery: 'transport', raw, calls }
             : { commands: null, failed: true, error: (p2.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired: true, recovery: 'transport', raw, calls };
     }
     const raw = [String(first.content).slice(0, 2000)];
@@ -330,7 +330,7 @@ export async function planMessage(llm, content, ctx, text, { recent = '', isCurr
     // Only schema-valid plans whose sole remaining errors concern trade consent may ask back.
     // Nothing from either rejected plan is executed, including dependent travel and sleep.
     if (!p.commands && consentClarify) return { commands: [{ seq: 1, type: 'clarify', about: 'action', question: tradeNote || 'Do you buy or sell, which goods, with whom, and at what total price? Nothing changes hands until clarified.', options: [] }], failed: false, error: null, ms, repaired, raw, calls };
-    return p.commands ? { hud_binding:p.hud_binding, hud_conflict:p.hud_conflict, commands: p.commands, failed: false, error: null, ms, repaired, raw, calls, ...(recovery ? { recovery } : {}) } : { commands: null, failed: true, error: (p.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired, raw, calls, ...(recovery ? { recovery } : {}) };
+    return p.commands ? { hud_binding:p.hud_binding, hud_normalized:p.hud_normalized, hud_conflict:p.hud_conflict, commands: p.commands, failed: false, error: null, ms, repaired, raw, calls, ...(recovery ? { recovery } : {}) } : { commands: null, failed: true, error: (p.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired, raw, calls, ...(recovery ? { recovery } : {}) };
 }
 
 /**
@@ -346,9 +346,11 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const ctx = withContentSkills(planContext(before, content, catalog), content, before);
     const actionInput=actionInputOf(msg);
     if(actionInput)ctx.actionInput=actionInput;
-    const reuse = previous?.plan && previous.interp?.commands ? { commands: previous.interp.commands, failed: false, error: null, ms: 0, repaired: !!previous.interp.repaired, raw: previous.plan.raw || [], calls: previous.plan.llm, recovery: previous.plan.recovery || null } : null;
+    const priorBinding = actionInput && previous?.plan?.raw?.length ? parsePlan(previous.plan.raw.at(-1),content.commandVocab,ctx,msg.mes) : null;
+    const reuse = previous?.plan && previous.interp?.commands ? {hud_binding:previous.plan.hud_binding || priorBinding?.hud_binding, hud_normalized:previous.plan.hud_normalized || priorBinding?.hud_normalized, commands: previous.interp.commands, failed: false, error: null, ms: 0, repaired: !!previous.interp.repaired, raw: previous.plan.raw || [], calls: previous.plan.llm, recovery: previous.plan.recovery || null } : null;
     const pl = reuse || await planMessage(llm, content, ctx, msg.mes, { recent, isCurrent, moveHints: (commands) => ineffectiveMoves(before, ctx, commands) });
     const plan = {
+        ...(actionInput ? {hud_binding:pl.hud_binding,hud_normalized:!!pl.hud_normalized} : {}),
         version: PLANNER_VERSION, mode: ctx.fight ? 'fight' : 'story', ms: pl.ms, repaired: pl.repaired, failed: pl.failed,
         ...(pl.error ? { error: pl.error } : {}), raw: pl.raw, ...(pl.calls?.length ? { llm: pl.calls } : {}),
         ...(pl.recovery ? { recovery: pl.recovery } : {}),
@@ -908,7 +910,7 @@ export function extractionRequest(chat, id, content) {
  * persistence we have. A reply that changed meanwhile, or a later turn already resolved, is left alone.
  * @returns {{changed: boolean, applied?: boolean, failed?: string, late?: boolean}}
  */
-export async function runExtraction(chat, id, content, llm, { hud = 'closed', isCurrent = () => true } = {}) {
+export async function runExtraction(chat, id, content, llm, { hud = 'closed', isCurrent = () => true, commit = null } = {}) {
     if (!isCurrent()) return { changed: false, cancelled: true };
     // .127: a broken record stops here, before any provider request; the pending record stays untouched (a plain
     // result, no exception: the host's failure path would book extract.failed)
@@ -1000,7 +1002,10 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
 
     if (!isCurrent()) return { changed: false, cancelled: true };
     const hard = calls.some(x => x.error && (x.unclassified || ['unknown','remote_unknown','cancelled','aborted'].includes(x.error_kind) || (x.error_kind === 'provider' && (x.provider_retryable === false || (x.provider_retryable !== true && x.status < 500 && ![408,429].includes(x.status))))));
-    return applyExtraction(chat, id, content, parsed, { hash: req.hash, ms, repaired, recovery, error, hud, calls, movementReviewed, errorKind:hard ? 'provider' : 'model' });
+    // Host serialization must call this synchronously after its final save/ownership check.
+    // An await between that check and mutation would reopen the native-snapshot race.
+    const apply = () => current() ? applyExtraction(chat, id, content, parsed, { hash: req.hash, ms, repaired, recovery, error, hud, calls, movementReviewed, errorKind:hard ? 'provider' : 'model' }) : stale();
+    return commit ? commit(apply) : apply();
 }
 
 /** Commit an extractor result (or its failure) to reply id; refused when the reply changed or a later turn began. */

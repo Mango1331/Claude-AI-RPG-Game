@@ -24,7 +24,7 @@ const flag = (f) => args.includes(f);
 const opt = (f, d) => { const i = args.indexOf(f); return i >= 0 && args[i + 1] ? args[i + 1] : d; };
 
 // the module smokes of run_c.mjs: "standard" is all of them, "failsoft" the same with the failsoft probes
-const MODULES = ['FINANCE', 'SAVE_RECOVERY', 'FETCH', 'STEALTH', 'UI', 'CONTINUITY', 'BOARD159', 'QOL160', 'UI161', 'PULSE162', 'PULSE164', 'PULSE167', 'NPC169', 'NPC172', 'PILOT01', 'ACTION_HOST', 'ACTION_HUD', 'ACTION_REVIEW'];
+const MODULES = ['FINANCE', 'SAVE_RECOVERY', 'FETCH', 'STEALTH', 'UI', 'CONTINUITY', 'BOARD159', 'QOL160', 'UI161', 'PULSE162', 'PULSE164', 'PULSE167', 'NPC169', 'NPC172', 'PILOT01', 'ACTION_HOST', 'ACTION_HUD', 'ACTION_REVIEW', 'USER05', 'NATIVE_WORLD'];
 const MODES = {
     base: {},
     action_finance: { AVERETH_SMOKE_FINANCE:'1' },
@@ -32,6 +32,9 @@ const MODES = {
     action_review: { AVERETH_SMOKE_ACTION_REVIEW:'1', AVERETH_SMOKE_ACTION_HOST:'1' },
     action_host: { AVERETH_SMOKE_ACTION_HOST: '1' },
     action_context: { AVERETH_SMOKE_ACTION_HOST:'1', AVERETH_SMOKE_ACTION_HUD:'1', AVERETH_SMOKE_CONTINUITY:'1', AVERETH_SMOKE_NPC172:'1' },
+    native_world: {AVERETH_SMOKE_NATIVE_WORLD:'1'},
+    user05: {AVERETH_SMOKE_USER05:'1'},
+    user05_review: {AVERETH_SMOKE_USER05:'1',AVERETH_SMOKE_NATIVE_WORLD:'1',AVERETH_SMOKE_PULSE167:'1',AVERETH_SMOKE_ACTION_REVIEW:'1'},
     action_hud: { AVERETH_SMOKE_ACTION_HOST:'1', AVERETH_SMOKE_ACTION_HUD:'1' },
     standard: Object.fromEntries(MODULES.map((m) => [`AVERETH_SMOKE_${m}`, '1'])),
     failsoft: { ...Object.fromEntries(MODULES.map((m) => [`AVERETH_SMOKE_${m}`, '1'])), AVERETH_SMOKE_FAILSOFT: '1' },
@@ -67,7 +70,7 @@ async function preflight(root, { online = false } = {}) {
     }
     const pw = playwright(path.join(root, 'tools', 'node_modules'));
     let exe = null;
-    try { exe = pw?.chromium.executablePath(); } catch { exe = null; }
+    try { exe = process.env.AVERETH_CHROMIUM_EXECUTABLE || pw?.chromium.executablePath(); } catch { exe = null; }
     add('playwright', !!pw, pw ? 'found' : `not found (the run installs playwright@${PLAYWRIGHT_VERSION} into the sandbox)`, null);
     if (pw) add('chromium', !!exe && fs.existsSync(exe), exe && fs.existsSync(exe) ? exe : 'no browser binary', 'the run installs Chromium with "playwright install chromium" (network); system libraries need "npx playwright install-deps chromium" (root)');
     const marker = readMarker(root);
@@ -127,7 +130,7 @@ function ensureBrowser(root, logFile) {
         if (!pw) throw new SandboxError('browser', `playwright could not be loaded after installing it into ${nodePath}; see ${logFile}`);
     }
     let exe = null;
-    try { exe = pw.chromium.executablePath(); } catch { exe = null; }
+    try { exe = process.env.AVERETH_CHROMIUM_EXECUTABLE || pw.chromium.executablePath(); } catch { exe = null; }
     if (!exe || !fs.existsSync(exe)) {
         const req = createRequire(path.join(HERE, 'run_c.mjs'));
         let dir = null;
@@ -139,7 +142,7 @@ function ensureBrowser(root, logFile) {
 }
 async function launchProbe(nodePath) {
     const pw = playwright(nodePath);
-    try { const b = await pw.chromium.launch(); await b.close(); return null; } catch (e) { return String(e.message).split('\n').slice(0, 4).join(' '); }
+    try { const b = await pw.chromium.launch({executablePath:process.env.AVERETH_CHROMIUM_EXECUTABLE || undefined}); await b.close(); return null; } catch (e) { return String(e.message).split('\n').slice(0, 4).join(' '); }
 }
 
 // ------------------------------------------------------------------------------------------------ the smoke
@@ -221,7 +224,7 @@ async function main() {
         const nodePath = ensureBrowser(root, setupLog);
         const launch = await launchProbe(nodePath);
         if (launch) throw new SandboxError('browser', `Chromium does not start: ${launch} → system libraries: "npx playwright install-deps chromium" (root), see ${setupLog}`);
-        try { const pw = playwright(nodePath); const b = await pw.chromium.launch(); report.chromium = b.version(); await b.close(); } catch { /* reported above */ }
+        try { const pw = playwright(nodePath); const b = await pw.chromium.launch({executablePath:process.env.AVERETH_CHROMIUM_EXECUTABLE || undefined}); report.chromium = b.version(); await b.close(); } catch { /* reported above */ }
         for (const m of modes) {
             for (const [what, port] of Object.entries(PORTS)) if (!(await portFree(port))) throw new SandboxError('preflight', `port ${port} (${what}) became busy; nothing was stopped`);
             assertContained(root);

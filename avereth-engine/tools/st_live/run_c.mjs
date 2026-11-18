@@ -1,3 +1,5 @@
+import {nativeWorldSaveSmoke} from './native_world_save_smoke.mjs';
+import {user05Response,user05Smoke} from './user05_smoke.mjs';
 import { actionReviewSmoke } from './action_review_smoke.mjs';
 import { actionHudTurns, actionHudPlan, actionHudSmoke } from './action_hud_smoke.mjs';
 import { actionHostSmoke } from './action_host_smoke.mjs';
@@ -131,7 +133,7 @@ const secretsBefore = fs.existsSync(secretsFile) ? fs.readFileSync(secretsFile, 
 fs.writeFileSync(secretsFile, JSON.stringify({ api_key_custom: [{ id: 'smoke', value: DUMMY_KEY, label: 'smoke', active: true }], _migrated: [] }, null, 4));
 
 // ------------------------------------------------------------------------------------------------ mock provider
-const calls = [];
+const calls = [], worldTimings = [];
 let probeMode = false;
 let stealthProbeMode = false;
 let financeMode = false;
@@ -174,6 +176,7 @@ const mock = http.createServer(async (req, res) => {
         narrated.set(t?.key, n);
         text = t ? (n > 1 && t.swipe ? t.swipe : t.reply || 'The world waits.') : 'The world waits.';
     }
+    text=user05Response(purpose,j) ?? text;
     if (process.env.AVERETH_SMOKE_EMPTY_NARRATOR === '1' && purpose === 'narrator' && lastUser.includes(TURNS[0].player) && narrated.get('burrow') === 1) text = '';
     const probe = probeMode || financeMode || fetchProbeMode || stealthProbeMode;
     if (probeMode && ((purpose === 'plan' && users.includes('FAILSOFT_PLANNER')) || purpose === 'extract')) text='{bad';
@@ -207,13 +210,14 @@ st.stdout.on('data', (d) => { stOut += d; });
 st.stderr.on('data', (d) => { stOut += d; });
 for (let i = 0; i < 120 && !/listening on/.test(stOut); i++) await sleep(500);
 
-const browser = await chromium.launch();
+const browser = await chromium.launch({executablePath:process.env.AVERETH_CHROMIUM_EXECUTABLE || undefined});
 const page = await browser.newPage();
 const pageErrors = [];
 const injectedSaveErrors = [];
 let injectingSaveFailure = false;
 const keyInBrowser = [];
 page.on('console',m=>{if(m.type()==='error' || m.type()==='warning')fs.appendFileSync(path.join(HERE,'browser.log'),`${m.type()}: ${m.text()}\n`);});
+page.on('console',m=>{if(m.text().startsWith('[Avereth] world completion ')){try{worldTimings.push({at:Date.now(),...JSON.parse(m.text().slice('[Avereth] world completion '.length))});fs.writeFileSync(path.join(HERE,'world_timings.json'),JSON.stringify(worldTimings,null,2));}catch{}}});
 page.on('pageerror',e=>fs.appendFileSync(path.join(HERE,'browser.log'),`${e.stack || e.message}\n`));
 page.on('pageerror', (e) => pageErrors.push(`${e.message} ${String(e.stack || '').split('\n').slice(1, 4).join(' ')}`));
 page.on('console', (m) => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) (injectingSaveFailure ? injectedSaveErrors : pageErrors).push(`${m.text()} @ ${m.location()?.url?.split('/').pop()}:${m.location()?.lineNumber}`); });
@@ -480,6 +484,9 @@ try {
             steps.swipe = { look: await look(t.player), state: await fold(), plans: calls.filter((c) => c.purpose === 'plan').length };
         }
     }
+    // This probe reuses the base Barkscorpion prefix, before later modules replace the chat with historical fixtures.
+    let nativeWorldChecks=null;
+    if(process.env.AVERETH_SMOKE_NATIVE_WORLD==='1'){stealthProbeMode=true;nativeWorldChecks=await nativeWorldSaveSmoke({page,send,idle,calls,onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});}});stealthProbeMode=false;}
     let actionReviewChecks=null;
     if(process.env.AVERETH_SMOKE_ACTION_REVIEW==='1')actionReviewChecks=await actionReviewSmoke({page,idle,calls,saveFailure:async work=>{injectingSaveFailure=true;try{return await work();}finally{injectingSaveFailure=false;}}});
     let actionHudChecks=null;
@@ -518,11 +525,13 @@ try {
     if (process.env.AVERETH_SMOKE_UI161 === '1') { stealthProbeMode = true; ui161Checks = await ui161Smoke({ page, send, idle, calls, driver: () => driver, onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); }, out: HERE }); stealthProbeMode = false; }
     let bossloot193Checks = null;
     if (process.env.AVERETH_SMOKE_PILOT01 === '1') { stealthProbeMode = true; bossloot193Checks = await bossloot193Smoke({page,send,calls,onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});},out:HERE}); stealthProbeMode = false; }
+    let user05Checks=null;
+    if(process.env.AVERETH_SMOKE_USER05==='1'){stealthProbeMode=true;user05Checks=await user05Smoke({page,idle,calls,worldTimings,saveFailure:async work=>{injectingSaveFailure=true;try{return await work();}finally{injectingSaveFailure=false;}},onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});},out:HERE});stealthProbeMode=false;}
     const status = await page.evaluate(() => document.getElementById('avereth_status')?.textContent || '');
     await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); });
     await page.waitForTimeout(800);
     const actionHostChecks = process.env.AVERETH_SMOKE_ACTION_HOST === '1' ? await actionHostSmoke({page,send,idle}) : null;
-    result = { actionReviewChecks, capacity:{peakUnits,activeUnits}, actionHudChecks, actionHostChecks, bossloot193Checks, toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
+    result = { nativeWorldChecks, user05Checks, actionReviewChecks, capacity:{peakUnits,activeUnits}, actionHudChecks, actionHostChecks, bossloot193Checks, toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
 } catch (error) {
     const screen = await page.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(-8000),
         chat: window.SillyTavern?.getContext?.()?.chat?.map(m => ({ user: m.is_user, system: m.is_system, text: m.mes?.slice(0, 120) })) })).catch(() => null);
@@ -550,6 +559,8 @@ const narratorFor = (key) => narr.filter((c) => c.lastUser.includes(TURNS.find((
 const checks = { capacityAtMostFour:result.capacity.peakUnits<=4,
     ...Object.fromEntries(Object.entries(result.actionHudChecks || {}).map(([k,v]) => [`actionHud_${k}`,v])),
     ...Object.fromEntries(Object.entries(result.actionHostChecks || {}).map(([k,v]) => [`actionHost_${k}`,v])),
+    ...Object.fromEntries(Object.entries(result.nativeWorldChecks || {}).map(([k,v])=>[`nativeWorld_${k}`,v])),
+    ...Object.fromEntries(Object.entries(result.user05Checks || {}).map(([k,v])=>[`user05_${k}`,v])),
     ...Object.fromEntries(Object.entries(result.ui161Checks || {}).map(([k, v]) => [`ui161_${k}`, v])),
     ...Object.fromEntries(Object.entries(result.pulse162Checks || {}).map(([k, v]) => [`pulse162_${k}`, v])),
     ...Object.fromEntries(Object.entries(result.pulse164Checks || {}).map(([k, v]) => [`pulse164_${k}`, v])),

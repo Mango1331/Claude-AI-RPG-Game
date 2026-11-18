@@ -184,9 +184,23 @@
 #avereth-action-status { white-space:normal; }
 .avereth-action-composer { min-width:0; box-sizing:border-box; white-space:normal; overflow-wrap:anywhere; }
 .avereth-action-composer select { max-width:min(100%, 19em); }
-.avereth-action-composer button,
+.avereth-action-composer button, .avereth-action-controls button,
 .mes_text button[data-avereth-select-skill], .mes_text button[data-avereth-select-target] {
   background:var(--SmartThemeBlurTintColor, #222); color:var(--SmartThemeBodyColor, #ddd);
   border:1px solid var(--SmartThemeBorderColor, #666); border-radius:4px; padding:.2em .45em;
   font:inherit; cursor:pointer; max-width:100%; white-space:normal;
 }
+
+/* User05: one current tactical surface, with the ordinary ST textarea/send lifecycle. */
+.avereth-action-controls { padding: .4em; min-width: 0; }
+.avereth-action-buttons, #avereth-action-targets, #avereth-action-chip, #avereth-action-send-row { display: flex; flex-wrap: wrap; align-items: center; gap: .4em; margin: .35em 0; }
+.avereth-action-controls [hidden] { display: none !important; }
+.avereth-action-controls button, :is(.avereth-combat-hud,.custom-avereth-combat-hud) button { white-space: normal; overflow-wrap: anywhere; }
+.avereth-action-controls button[aria-pressed="true"], :is(.avereth-combat-hud,.custom-avereth-combat-hud) button[aria-pressed="true"] { outline: 2px solid var(--SmartThemeQuoteColor, #b99559); }
+.avereth-action-controls select { max-width: 100%; }
+#avereth-action-send { font-weight: bold; }
+
+.avereth-action-controls input[type="checkbox"] { display:inline-block; width:1em; min-width:1em; height:1em; vertical-align:middle; margin-right:.35em; }
+.avereth-action-controls { box-sizing:border-box; max-width:100%; white-space:normal; overflow-wrap:anywhere; }
+#avereth-action-send-row > label { flex:1 1 14em; min-width:0; max-width:100%; }
+#avereth-action-mode { box-sizing:border-box; width:100%; min-width:0; }

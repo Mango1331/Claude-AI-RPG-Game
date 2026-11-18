@@ -1,4 +1,4 @@
-import { reconcileHudPlan } from '../action_input.js';
+import { reconcileHudPlan, normalizeHudBinding } from '../action_input.js';
 import { commandVocabFor } from './interpret.js';
 import { privateQuestsOf } from '../content.js';
 import { deliveryHandover } from './delivery.js';
@@ -376,7 +376,7 @@ export function plannerRequest(vocab, ctx, text, { recent = '', previous = null,
     const system = plannerSystem(vocab, { fight: ctx.fight, privateQuests: ctx.privateQuests });
     const user = plannerUser(ctx, text, { recent });
     const messages = [{ role: 'system', content: system }, { role: 'user', content: user }];
-    if (ctx.actionInput) messages.push({role:'user',content:`HOST HUD SELECTION (typed player input, not story): ${JSON.stringify(ctx.actionInput.selection)}\nConsider it together with the PLAYER MESSAGE before any action is executed. Add hud_binding:{id:"${ctx.actionInput.selection.id}",decision:"use"|"conflict",seqs:[command seqs]} to your object. Bind the exact selected IDs using the existing commands. Bound commands need no invented quote. Preserve any real conditions with needs. Use conflict for negation, replacement or incompatible choices; do not silently change or duplicate the selection. Additional commands still require exact quotes. No action has been booked yet.`});
+    if (ctx.actionInput) messages.push({role:'user',content:`HOST HUD SELECTION (typed player input, not story): ${JSON.stringify(ctx.actionInput.selection)}\nConsider it together with the PLAYER MESSAGE before any action is executed. The COMPLETE outer answer object is {"commands":[...],"hud_binding":{"id":"${ctx.actionInput.selection.id}","decision":"use","seqs":[1]}}. hud_binding is a sibling of commands at the ROOT, never a field inside a command. Use decision:"conflict" when the player contradicts the choice. Bind the exact selected IDs using the existing commands. Bound commands need no invented quote. Preserve any real conditions with needs. Use conflict for negation, replacement or incompatible choices; do not silently change or duplicate the selection. Additional commands still require exact quotes. No action has been booked yet.`});
     if (previous !== null && errors) messages.push({ role: 'assistant', content: String(previous) }, { role: 'user', content: planRepairMessage(errors) });
     return { system, user, messages };
 }
@@ -471,9 +471,11 @@ export function parsePlan(answer, vocab, ctx, message) {
     // Build .180 (P2-3, batch 12./13.11.2026 Mage T24, T46–T48): an answer that is nothing but an empty JSON array is the
     // empty command list {"commands":[]}: no action of his is booked, nothing is made of it. Only the whole answer (a
     // <think> block or a code fence around it aside) counts; a non-empty array, or an array beside prose, stays invalid.
-    const { value, error } = bareEmptyArray(answer) ? { value: { commands: [] }, error: null } : extractJsonObject(answer);
+    let { value, error } = bareEmptyArray(answer) ? { value: { commands: [] }, error: null } : extractJsonObject(answer);
     if (!value) return { commands: null, errors: [error === 'report is not a JSON object' ? PLAN_FORMAT_ERROR : error || 'no JSON object'] };
     if (!Array.isArray(value.commands)) return { commands: null, errors: [PLAN_FORMAT_ERROR] };
+    const form = ctx.actionInput ? normalizeHudBinding(value) : {value,normalized:false};
+    value=form.value;
     const hud = ctx.actionInput ? reconcileHudPlan(ctx.actionInput,value.commands,value.hud_binding) : null;
     if (hud && !hud.ok) return {commands:value.commands,hud_binding:value.hud_binding,hud_conflict:hud.reason,errors:[]};
     const errors = [];
@@ -651,7 +653,7 @@ export function parsePlan(answer, vocab, ctx, message) {
     if (value.commands.some(c => c?.type === 'stealth') && (manners.size || value.commands.some(c => c?.type === 'journey.continue')))
         errors.push('A separate stealth competes with this travel. If it is a quiet approach, keep the travel command with manner and its scope; if an independent later hide was intended, clarify before acting. Never hide at the departure point instead of continuing.');
     if (errors.length) return { commands: null, errors: errors.slice(0, 8), tradeConflict: tradeErrors.length === errors.length && !ctx.fight, tradeNote };
-    return { ...(hud ? {hud_binding:value.hud_binding} : {}), commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [], hints: financeHints(value.commands, ctx.currency, message) };
+    return { ...(hud ? {hud_binding:value.hud_binding,hud_normalized:form.normalized} : {}), commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [], hints: financeHints(value.commands, ctx.currency, message) };
 }
 
 // --------------------------------------------------------------------------------------------- safety catch

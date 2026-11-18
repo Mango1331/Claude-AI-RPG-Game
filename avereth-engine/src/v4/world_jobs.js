@@ -12,7 +12,7 @@ import { hash32 } from '../util.js';
  *   onError?: (err: unknown) => void
  * }} dependencies
  */
-export function createWorldJobs({ active, run, applied, failed = null, onError = () => {} }) {
+export function createWorldJobs({ active, run, applied, failed = null, onError = () => {}, changed = () => {}, settled = () => {} }) {
     let pending = null;
 
     // A chat switch (including away-and-back to the same ID) invalidates
@@ -21,6 +21,7 @@ export function createWorldJobs({ active, run, applied, failed = null, onError =
         const previous = pending;
         pending = null;
         if (previous && !previous.signal.aborted) previous.controller.abort();
+        changed();
     }
 
     // ST 1.19 initialises swipe zero AFTER MESSAGE_RECEIVED; absent/null is that same first swipe.
@@ -60,12 +61,13 @@ export function createWorldJobs({ active, run, applied, failed = null, onError =
         };
         pending = job;
         const isCurrent = () => belongs(job);
-        let committed = null;
+        let committed = null, persisted = false;
+        const began=performance.now();let resolvedAt=null;
         job.job = Promise.resolve().then(async () => {
             if (!isCurrent()) return { changed: false, cancelled: true };
             const result = await run(chat, id, { isCurrent, signal: controller.signal });
-            committed = result;
-            if (isCurrent() && result?.changed) await applied(job, result, isCurrent);
+            committed = result;resolvedAt=performance.now();
+            if (isCurrent() && result?.changed) { await applied(job, result, isCurrent); persisted = isCurrent(); }
             return result;
         }).catch(async (error) => {
             if (!isCurrent()) return {changed:false, cancelled:true};
@@ -73,16 +75,22 @@ export function createWorldJobs({ active, run, applied, failed = null, onError =
             if (committed?.changed) return {...committed, persistenceFailed:true, error};
             if (failed && rec(job.message)?.extraction?.status === 'pending') {
                 const result = await failed(job, error, isCurrent);
+                committed=result;resolvedAt=performance.now();
                 if (isCurrent() && result?.changed) {
-                    try { await applied(job, result, isCurrent); }
+                    try { await applied(job, result, isCurrent); persisted=isCurrent(); }
                     catch (saveError) { onError(saveError); return {...result, persistenceFailed:true, error:saveError}; }
                 }
                 return result;
             }
             return { changed: false, error };
         }).finally(() => {
-            if (pending === job) pending = null;
+            if (pending === job) {
+                pending = null;
+                settled({id,extraction_validation_wait_ms:Math.round((resolvedAt ?? performance.now())-began),save_readback_ms:resolvedAt===null?null:Math.round(performance.now()-resolvedAt),total_ms:Math.round(performance.now()-began),record_changed:!!committed?.changed,persisted,extraction_status:rec(job.message)?.extraction?.status});
+                changed();
+            }
         });
+        changed();
         return job.job;
     }
 

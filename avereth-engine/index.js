@@ -1,3 +1,4 @@
+import { actionStatusView } from './src/action_status.js';
 // SillyTavern binding for the Avereth Engine. All game logic lives in src/ (pure ES modules, tested in Node);
 // this file only wires SillyTavern events to src/host.js (V3 campaigns) and src/v4/runtime.js (Runtime V4 campaigns,
 // docs/RUNTIME_V4_PLAN.md: interpreter before the narrator, extractor after it, the narrator writes prose only).
@@ -36,6 +37,7 @@ const REPORT_WAIT_MS = 60000; // the next turn waits this long at most for a rep
 const LLM_TIMEOUT_MS = 120000;
 
 let content = null;
+let nativeHost = null;
 let lastContext = null;
 let lastProjection = null;
 let legacyWarned = null;
@@ -96,10 +98,19 @@ let actionStatus = 'Bereit';
 let actionComposer = null;
 const modernHost = () => !!ctx().eventTypes?.MESSAGE_SENT && !!ctx().chatMetadata;
 function setActionStatus(text) {
-    if(text==='Gespeichert' && modernHost() && requestControl.blocked(providerKey()))text='Remoteabschluss unbekannt – kein automatischer neuer Versuch';
-    actionStatus = text;
-    const node = document.getElementById('avereth-action-status');
-    if (node) node.textContent = text;
+    actionStatus=text;
+    refreshActionStatus();
+}
+function actionView() {
+    const open=worldOpen();
+    return actionStatusView({unknown:requestControl.blocked(providerKey()),worldRunning:!!worldJobs.currentJob(),
+        saving:!!persistence?.pending(),saveFailed:persistenceBlocked?.chatId===hostChatKey(ctx()),
+        worldPending:open?.record.extraction.status==='pending',worldFailed:open?.record.extraction.status==='failed',phase:actionStatus});
+}
+function refreshActionStatus() {
+    const node=document.getElementById('avereth-action-status');
+    if(node)node.textContent=actionView().text;
+    actionComposer?.updateStatus();
 }
 function providerKey() {
     const s = ctx().chatCompletionSettings || {};
@@ -121,12 +132,7 @@ function worldOpen() {
     return r?.extraction && ['pending','failed'].includes(r.extraction.status) ? {id:i,record:r} : null;
 }
 function actionBlocked() {
-    if(requestControl.blocked(providerKey()))return 'Remoteabschluss unbekannt – kein automatischer neuer Versuch';
-    if(worldJobs.currentJob())return 'Weltabgleich läuft; Text bleibt als Entwurf erhalten';
-    if(persistence?.pending())return 'Speichern läuft; Text bleibt als Entwurf erhalten';
-    if(persistenceBlocked?.chatId===hostChatKey(ctx()))return 'Speicherung offen – Abschluss prüfen';
-    if(worldOpen())return 'Weltabgleich offen – Abschluss prüfen / fortsetzen';
-    return null;
+    const view=actionView();return view.blocked?view.text:null;
 }
 async function resumeActionCompletion() {
     if(requestControl.blocked(providerKey())) {
@@ -285,20 +291,27 @@ async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500, signal = n
 /** 10B-4c.2: capture the origin chat and active swipe for each world job.
  * Switched/reloaded chats can only be updated by their OWN newly resumed job.
  */
+async function afterHostSaves(isCurrent, apply) {
+    // ST marks its conditional save before compressing the snapshot; the Engine queue also covers direct saves.
+    // Wait only for existing work. No retry, acknowledgement or new save is created here.
+    while (isCurrent() && (nativeHost?.isChatSaving || persistence?.pending()))
+        await new Promise(resolve => setTimeout(resolve, 25));
+    return isCurrent() ? apply() : {changed:false,cancelled:true};
+}
 const worldJobs = createWorldJobs({
+    changed:refreshActionStatus,
+    settled: metrics => console.info('[Avereth] world completion',JSON.stringify(metrics)),
     active: () => {
         const c = ctx();
         return { chat: c.chat, chatId: hostChatKey(c) };
     },
     run: async (chat, id, { isCurrent, signal }) => {
         if (campaignSupport(chat)) return { changed: false, unsupported: true };
-        const result = await runExtraction(chat, id, content, (req) => v4Llm({ ...req, signal }), { hud: settings().hud, isCurrent });
+        const result = await runExtraction(chat, id, content, (req) => v4Llm({ ...req, signal }), { hud: settings().hud, isCurrent, commit:apply=>afterHostSaves(isCurrent,apply) });
         if (result?.foldBlocked && isCurrent()) { showFoldBlock(result.foldBlocked); renderDebug(); }
         return result;
     },
-    failed: ({chat, id, hash}, error, isCurrent) => isCurrent()
-        ? applyExtraction(chat,id,content,null,{hash,error:String(error?.message || error),errorKind:'engine',hud:settings().hud})
-        : {changed:false},
+    failed: ({chat, id, hash}, error, isCurrent) => afterHostSaves(isCurrent,()=>applyExtraction(chat,id,content,null,{hash,error:String(error?.message || error),errorKind:'engine',hud:settings().hud})),
     applied: async ({ id }, result, isCurrent) => {
         if (!isCurrent()) return;
         const c = ctx();
@@ -491,12 +504,12 @@ const narratorRecovery = createNarratorRecovery({
 // ST 1.19 exposes request-ready but no structured generation-error event.
 // Observe only its exact non-streaming Narrator request; all other fetches are untouched.
 const hostFetch = globalThis.fetch.bind(globalThis);
-persistence = createChatPersistence({request:hostFetch,headers:()=>ctx().getRequestHeaders(),active:ctx,locks:globalThis.navigator?.locks,
+persistence = createChatPersistence({request:hostFetch,headers:()=>ctx().getRequestHeaders(),active:ctx,locks:globalThis.navigator?.locks,settled:refreshActionStatus,
     changed:(status,key,error)=>{
         try {if(key!==originKey(chatOrigin(ctx())))return;}catch{return;}
-        setActionStatus(status==='saving'?'Speichern':status==='saved'?(worldOpen()?'Weltabgleich offen':'Gespeichert'):`Speichern offen: ${error?.message || ''}`);
-        if(status==='error' && !/Stale|Older native/.test(error?.message || ''))blockPersistence(ctx(),ctx().chat.length-1);
         if(status==='saved')persistenceBlocked=null;
+        if(status==='error' && !/Stale|Older native/.test(error?.message || ''))blockPersistence(ctx(),ctx().chat.length-1);
+        setActionStatus(status==='saving'?'Speichern':status==='saved'?'Gespeichert':`Speichern offen: ${error?.message || ''}`);
     },
 });
 globalThis.fetch = async function (url, options) {
@@ -786,6 +799,7 @@ function mountSettings() {
     // state is always re-folded from the chat, so these events only refresh the status line; the interceptor sets
     // the engine block before every generation (normal, swipe, regenerate, continue)
     c.eventSource.on(ev.CHAT_CHANGED, () => {
+        actionStatus='Bereit'; // transient phase labels belong to the chat being left, not its successor
         generationRequest++;
         narrationStart = null;
         narratorRecovery.invalidate();
@@ -805,7 +819,7 @@ function mountSettings() {
     });
     mountSettings();
     if(modernHost()) {
-        const nativeHost = await import('/script.js');
+        nativeHost = await import('/script.js');
         c.eventSource.on(ev.GENERATION_AFTER_COMMANDS,async(type,_params,dryRun)=>{
             if(dryRun || !settings().enabled || !hasCampaign(ctx().chat) || ctx().groupId
                 || ![undefined,'normal','regenerate','swipe','continue'].includes(type))return;
@@ -819,7 +833,7 @@ function mountSettings() {
         });
         actionComposer=installActionComposer({context:ctx,state:()=>foldChat(ctx().chat).state,content:()=>content,
             enabled:()=>settings().enabled && hasCampaign(ctx().chat) && campaignRuntime(ctx().chat)==='v4' && campaignPath(ctx().chat)==='c' && !campaignSupport(ctx().chat),settings,
-            blocked:actionBlocked,save:saveAtOrigin,retry:resumeActionCompletion,status:()=>actionStatus});
+            blocked:actionBlocked,save:saveAtOrigin,retry:resumeActionCompletion,status:()=>actionView()});
         c.eventSource.on(ev.CHAT_CHANGED,()=>actionComposer?.resume());
         actionComposer?.resume();
     }

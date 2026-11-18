@@ -1,0 +1,1863 @@
+{
+  "build": "4.3.0-c.6.6.203",
+  "branch": "experiment/action-hud-200-v1",
+  "base": "6a92dcc650809eb16934a984c30ce0cf7c5cfe98",
+  "main_reference": "866b2a9de267e1fa81fddd6b334b05cb065241a9",
+  "frozen_product": "0cd14806cd0c7fe2ab0d54b8463c486ee572714b",
+  "node": {
+    "tests": 3398,
+    "pass": 3398,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "targeted": {
+    "tests": 64,
+    "pass": 64,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "replay": "baseline b8d2af4b76cd0bc52ac178b8c500e5733878ecee (4.3.0-c.6.6.126): 2235 cases compared, 1131 differing, 1131 of them accepted with their exact output, 0 not accepted, 0 accepted but equal",
+  "tested_code_sha256": {
+    "avereth-engine/content/classes.json": "6e95061929e8115f8570a3166dd20e0e9e416703b7a33a86895a420c68f9ad56",
+    "avereth-engine/content/narrator/Avereth_Narrator_Contract_v4.txt": "e25cadda1908309ddf5561ada6f3ef2849d6d312da097bc2a43fa6fedb38fd97",
+    "avereth-engine/index.js": "880b6219ccb83b1b6e49381bd9ca6aa61836d7d10794ff463038ea6641e57341",
+    "avereth-engine/manifest.json": "1ff7dd7e31e3db96714f933e22e03ead6742d4414d3a065a97d11d70c0b00a98",
+    "avereth-engine/package.json": "db18ffa72ddfaa19a746fb53824505351eb2d8ddc630b432efb63b44435b73b1",
+    "avereth-engine/src/action_composer.js": "b7415c394d0291bc3c6d5cd77977b1ae81882022da5151376b3f9630790173cd",
+    "avereth-engine/src/action_input.js": "bdb2a755d7a0b6874f30c320a95928749d33d8e662ee139e0cd7862c57026566",
+    "avereth-engine/src/action_status.js": "fe20979fac0f8eb9aa4d7fea5dda8397d628c7d9e16865cc1ecbfa183931eac4",
+    "avereth-engine/src/context.js": "fe917460743876b807f02bbba6407efb33616396e157e76f9261ba5583cfaed5",
+    "avereth-engine/src/hud.js": "9c5674f1d9f81ea842835c972231a9d16c76af61363f29a5e9703dd783f71982",
+    "avereth-engine/src/util.js": "1fdff4958be07f9de85c2a52a159c81bb50bb31764b62b0afb0f5d30ae5994b3",
+    "avereth-engine/src/v4/action_persistence.js": "6902153e55cf95349f67eb87316501ef28fe25e0dc468a60ada8a83413e5b4d4",
+    "avereth-engine/src/v4/commands.js": "bec6ca747b01fe566c413b183969183c1d47b46ac5a877ff4f93335ebe22f176",
+    "avereth-engine/src/v4/extract.js": "f4b513129df3f0164f56a849dd963c52159f72d1fd8545c3d0a5288298cea847",
+    "avereth-engine/src/v4/guild.js": "de6c2bc65040ef9f4907d981ac53d241da9eca6ac76f3d883e306a1afdbe879f",
+    "avereth-engine/src/v4/planner.js": "8c175ee780991363095741abc89ec8ec98f694f344f3f87d43208924fd4c59e8",
+    "avereth-engine/src/v4/runtime.js": "3a888bbadebabc09c27d29bb58af5ee6ea5d88b5de2b0d954c16c957135e9845",
+    "avereth-engine/src/v4/world_jobs.js": "34143b34e41907225168d3f752a434215a0655e724681e0df4b7690635fb1e8d",
+    "avereth-engine/style.css": "19321394c7bf2987bbe289e90998523835645716f89a612dea627848f9a45472",
+    "avereth-engine/tests/v4/fix161_user_qol.test.js": "e49c2e2c45502acdcd4ce4daeaa2bcd8858f143f99a33cdaad7a38bef14441c4",
+    "avereth-engine/tests/v4/fixtures/user05_202.json.gz": "b33051c127c51492bf389a00750bbf917a584e2d5a17b5d35d2b67feace34b85",
+    "avereth-engine/tests/v4/user05_qol.test.js": "d3beb6be9718319473c1adaf75a1a82b1496de70a1654dda719674140b07324f",
+    "avereth-engine/tools/st_live/action_hud_smoke.mjs": "1b517e8b988417b382360602bd5a796eda0654ebea8c9070d91367a2e3cfaf68",
+    "avereth-engine/tools/st_live/isolated.mjs": "05f290b5fbb088dc3f92980db7f7d67953c6814ae98dab2090299dc7768887cf",
+    "avereth-engine/tools/st_live/native_world_save_smoke.mjs": "b66b3e7c88e096d2deb9259a6ba682a28e5563f933f42717eeaba5771a3a6408",
+    "avereth-engine/tools/st_live/run_c.mjs": "a1ca7233a74e67f8d9301fca2fff64ca6a2595b8c53396dd990e6a7d297f7e77",
+    "avereth-engine/tools/st_live/ui161_smoke.mjs": "025da3c5217ebfc0d034adcc5a515ddc1f27e8fb3ffa835be47b43c5a2406fe9",
+    "avereth-engine/tools/st_live/user05_smoke.mjs": "3f3fdc9b1e1e28375231f9613761f4fd8aab7e9318c78110421e52450cad09ec"
+  },
+  "fixture_sha256": "b33051c127c51492bf389a00750bbf917a584e2d5a17b5d35d2b67feace34b85",
+  "restrictions": {
+    "natural_provider_calls": 0,
+    "personal_st_used": false,
+    "main_modified": false,
+    "product_modified": false,
+    "originals_modified": false
+  },
+  "st": [
+    {
+      "started": "2026-11-18T06:23:27.380Z",
+      "finished": "2026-11-18T06:25:55.709Z",
+      "st": {
+        "version": "1.19.0",
+        "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+      },
+      "node": "24.22.1",
+      "chromium": "156.0.8078.79",
+      "engine_at_test": {
+        "version": "4.3.0-c.6.6.203",
+        "commit": "6a92dcc6",
+        "branch": "experiment/action-hud-200-v1",
+        "dirty": true
+      },
+      "runs": [
+        {
+          "mode": "user05_review",
+          "ok": true,
+          "exit": 0,
+          "line": "LIVE SILLYTAVERN SMOKE C: OK",
+          "seconds": 148,
+          "checks": 108,
+          "passed": 108,
+          "failed": [],
+          "page_errors": 0,
+          "calls": 62,
+          "out": "/workspace/avereth-setup/st-sandbox/out/2026-11-18T06-23-27-380Z/user05_review",
+          "log": "/workspace/avereth-setup/st-sandbox/out/2026-11-18T06-23-27-380Z/user05_review/run.log",
+          "checks_detail": {
+            "capacityAtMostFour": true,
+            "nativeWorld_nativePriorReadHeld": true,
+            "nativeWorld_worldWaitsForNativeSave": true,
+            "nativeWorld_worldAppliedAfterNativeSave": true,
+            "nativeWorld_noExtraModel": true,
+            "nativeWorld_sameWorldAfterReload": true,
+            "user05_guildNoTacticalButtons": true,
+            "user05_guildNoResourceUse": true,
+            "user05_questKeepsDraft": true,
+            "user05_directQuestNoPlanner": true,
+            "user05_directQuestCommonInput": true,
+            "user05_questCanonicalDestination": true,
+            "user05_currentBoardContractSentOnce": true,
+            "user05_questSecondClickNoRequests": true,
+            "user05_precombatReadableNames": true,
+            "user05_areaChoosesBand": true,
+            "user05_areaPreviewNoBooking": true,
+            "user05_bandSelectionFitsNarrow": true,
+            "user05_targetAloneNoAction": true,
+            "user05_controlsInsideCombat": true,
+            "user05_noDuplicateTargetControls": true,
+            "user05_noDuplicateSkillControls": true,
+            "user05_combatSelectionFitsNarrow": true,
+            "user05_approachCheckboxVisible": true,
+            "user05_worldStatusNotSaved": true,
+            "user05_nextTextEditableButNotSent": true,
+            "user05_statusSettlesWithoutClick": true,
+            "user05_pureHudRequestPath": true,
+            "user05_draftSurvivesWorldCompletion": true,
+            "user05_slowReadbackWaits": true,
+            "user05_readbackSuccessAutomaticStatus": true,
+            "user05_slowReadbackTwoRequests": true,
+            "user05_failedReadbackWaits": true,
+            "user05_failedReadbackBlocks": true,
+            "user05_readbackRetryNoModelOrMechanics": true,
+            "user05_readbackRecoveryAutomaticStatus": true,
+            "user05_failedReadbackTwoRequests": true,
+            "user05_nativeSaveFailureStatus": true,
+            "user05_nativeSaveRecoveryNoModel": true,
+            "user05_moveCommonTwoRequestPath": true,
+            "user05_defenseCommonTwoRequestPath": true,
+            "user05_potionCommonTwoRequestPath": true,
+            "user05_potionConsumedOnce": true,
+            "user05_originalI42BookedOnce": true,
+            "user05_originalI44BookedOnce": true,
+            "user05_originalI46BookedOnce": true,
+            "user05_originalI48BookedOnce": true,
+            "user05_originalI50BookedOnce": true,
+            "user05_originalI52BookedOnce": true,
+            "user05_finalReadbackIdentical": true,
+            "pulse167_wanderDraw": true,
+            "pulse167_wanderOneReservation": true,
+            "pulse167_wanderNarratorLine": true,
+            "pulse167_wanderExtractorCatalog": true,
+            "pulse167_wanderSlotMet": true,
+            "pulse167_wanderFight": true,
+            "pulse167_wanderPartsUnchanged": true,
+            "pulse167_reloadSameDungeon": true,
+            "pulse167_resetDropsReservation": true,
+            "pulse167_aheadNoDraw": true,
+            "pulse167_aheadOneReference": true,
+            "pulse167_aheadSlotMet": true,
+            "pulse167_restCut": true,
+            "pulse167_restOneReservation": true,
+            "pulse167_restGoStopped": true,
+            "pulse167_restRequestCause": true,
+            "pulse167_restReplyTimeNoRest": true,
+            "pulse167_restSlotMet": true,
+            "pulse167_saved": true,
+            "startStatsFive": true,
+            "campaignV4AtGreeting": true,
+            "plannerOnByDefault": true,
+            "campaignPinnedToC": true,
+            "creationWithoutPlanner": true,
+            "runnerSeparatesVisibleEngine": true,
+            "onePlanPerMessage": true,
+            "extractPerReply": true,
+            "planCallParams": true,
+            "fightPromptInFight": true,
+            "keyAddedBySillyTavern": true,
+            "keyNeverInBrowser": true,
+            "keyNotInChatFile": true,
+            "areaWindowCommitted": true,
+            "fightOpened": true,
+            "aliasBooksFlameLance": true,
+            "aliasA0WasBasicAttack": true,
+            "typoAsks": true,
+            "worldUseBooked": true,
+            "swipeReusesPlan": true,
+            "searchNotTaken": true,
+            "bandAreaOnce": true,
+            "proseOnlyRequests": true,
+            "statusLine": true,
+            "actionReview_targetAloneNoAction": true,
+            "actionReview_explicitSkillAndTarget": true,
+            "actionReview_targetAfterClearNoAction": true,
+            "actionReview_newMessageFieldsRejectOldSave": true,
+            "actionReview_completeMessageFieldsReadBack": true,
+            "actionReview_identicalDuplicateReallyWritten": true,
+            "actionReview_destinationIsCampaign": true,
+            "actionReview_crossChatNativeSaveRejected": true,
+            "actionReview_destinationUnchanged": true,
+            "actionReview_unwrittenOriginChangeReported": true,
+            "actionReview_targetAfterChatSwitchNoAction": true,
+            "actionReview_generationWaitsForNativeSave": true,
+            "actionReview_slashCommandKeepsPendingEditSave": true,
+            "actionReview_onlyDraftsNoModelRequests": true,
+            "noPageErrors": true
+          },
+          "injected_save_error_count": 4,
+          "actual_page_errors": [],
+          "scripted_measurements": [
+            {
+              "key": "direct_quest",
+              "scripted": true,
+              "elapsed_ms": 2445,
+              "world_jobs": [
+                {
+                  "at": 1794983084107,
+                  "id": 14,
+                  "extraction_validation_wait_ms": 351,
+                  "save_readback_ms": 79,
+                  "total_ms": 430,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 59355,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 62427,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "pure_hud_delayed_extractor",
+              "scripted": true,
+              "elapsed_ms": 4527,
+              "world_jobs": [
+                {
+                  "at": 1794983093775,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 1833,
+                  "save_readback_ms": 167,
+                  "total_ms": 2000,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 58067,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "original_I42",
+              "scripted": true,
+              "elapsed_ms": 2817,
+              "world_jobs": [
+                {
+                  "at": 1794983127796,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 339,
+                  "save_readback_ms": 185,
+                  "total_ms": 523,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "plan",
+                  "prompt_characters": 26563,
+                  "max_output": 2000,
+                  "stream": false
+                },
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 57977,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "original_I44",
+              "scripted": true,
+              "elapsed_ms": 2717,
+              "world_jobs": [
+                {
+                  "at": 1794983132763,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 350,
+                  "save_readback_ms": 210,
+                  "total_ms": 559,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "plan",
+                  "prompt_characters": 26563,
+                  "max_output": 2000,
+                  "stream": false
+                },
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 57977,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "original_I46",
+              "scripted": true,
+              "elapsed_ms": 2945,
+              "world_jobs": [
+                {
+                  "at": 1794983137419,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 350,
+                  "save_readback_ms": 240,
+                  "total_ms": 590,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "plan",
+                  "prompt_characters": 26563,
+                  "max_output": 2000,
+                  "stream": false
+                },
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 57977,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "original_I48",
+              "scripted": true,
+              "elapsed_ms": 2782,
+              "world_jobs": [
+                {
+                  "at": 1794983142319,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 355,
+                  "save_readback_ms": 207,
+                  "total_ms": 562,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "plan",
+                  "prompt_characters": 26563,
+                  "max_output": 2000,
+                  "stream": false
+                },
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 57977,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "original_I50",
+              "scripted": true,
+              "elapsed_ms": 2663,
+              "world_jobs": [
+                {
+                  "at": 1794983146921,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 341,
+                  "save_readback_ms": 175,
+                  "total_ms": 516,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "plan",
+                  "prompt_characters": 26563,
+                  "max_output": 2000,
+                  "stream": false
+                },
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 57977,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "original_I52",
+              "scripted": true,
+              "elapsed_ms": 2666,
+              "world_jobs": [
+                {
+                  "at": 1794983151564,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 357,
+                  "save_readback_ms": 218,
+                  "total_ms": 575,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "plan",
+                  "prompt_characters": 26563,
+                  "max_output": 2000,
+                  "stream": false
+                },
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 57977,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "started": "2026-11-18T06:26:07.167Z",
+      "finished": "2026-11-18T06:50:22.595Z",
+      "st": {
+        "version": "1.19.0",
+        "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+      },
+      "node": "24.22.1",
+      "chromium": "156.0.8078.79",
+      "engine_at_test": {
+        "version": "4.3.0-c.6.6.203",
+        "commit": "6a92dcc6",
+        "branch": "experiment/action-hud-200-v1",
+        "dirty": true
+      },
+      "runs": [
+        {
+          "mode": "standard",
+          "ok": true,
+          "exit": 0,
+          "line": "LIVE SILLYTAVERN SMOKE C: OK",
+          "seconds": 717,
+          "checks": 337,
+          "passed": 337,
+          "failed": [],
+          "page_errors": 0,
+          "calls": 327,
+          "out": "/workspace/avereth-setup/st-sandbox/out/2026-11-18T06-26-07-166Z/standard",
+          "log": "/workspace/avereth-setup/st-sandbox/out/2026-11-18T06-26-07-166Z/standard/run.log",
+          "checks_detail": {
+            "capacityAtMostFour": true,
+            "actionHud_selectionIsDraftOnly": true,
+            "actionHud_hNoPlanner": true,
+            "actionHud_hNarratorAndExtractor": true,
+            "actionHud_hTypedInputBooked": true,
+            "actionHud_hWorldApplied": true,
+            "actionHud_physicalInputProvenance": true,
+            "actionHud_nonstreamContextRecorded": true,
+            "actionHud_sentModeVisible": true,
+            "actionHud_composerFitsNarrow": true,
+            "actionHud_activeAgency": true,
+            "actionHud_noConflictingCombatSilence": true,
+            "actionHud_modeInActualNarratorPrompt": true,
+            "actionHud_reloadPreservesMechanics": true,
+            "actionHud_regenerateNoSecondAction": true,
+            "actionHud_hudSwipeNoSecondAction": true,
+            "actionHud_fOnePlanner": true,
+            "actionHud_fKeepsAnchor": true,
+            "actionHud_conflictNoMechanics": true,
+            "actionHud_conflictNoRepairOrNarrator": true,
+            "actionHud_localCorrectionNoPlanner": true,
+            "actionHud_systemInputNotCombined": true,
+            "actionHud_nativeStreaming": true,
+            "actionHud_unknownNoAutomaticDispatch": true,
+            "actionHud_unknownSurvivesReload": true,
+            "actionHud_explicitRetryReusesMechanics": true,
+            "actionHud_genericHostErrorKeepsUnknown": true,
+            "actionHud_genericErrorRecoveryNoSecondAction": true,
+            "actionHud_crashReservationBoundWithoutExecution": true,
+            "actionHud_crashResumeExecutesOnce": true,
+            "actionHud_compositionEnterDoesNotSend": true,
+            "actionHud_emptyComposerEnterOneInput": true,
+            "actionHud_doubleClickOneInput": true,
+            "actionHud_draftDuringWorldRead": true,
+            "actionHud_chatSwitchNoForeignBinding": true,
+            "actionHud_chatSwitchOriginNotExecuted": true,
+            "actionHud_stopAfterBindingNoMechanics": true,
+            "actionHost_targetSaveReadBack": true,
+            "actionHost_settingsInDrawer": true,
+            "actionHost_gzipPayloadRoundtrip": true,
+            "actionHost_stopBeforeSave": true,
+            "actionHost_falseSaveDetected": true,
+            "actionHost_nativeReservationBeforeMessageSent": true,
+            "nativeWorld_nativePriorReadHeld": true,
+            "nativeWorld_worldWaitsForNativeSave": true,
+            "nativeWorld_worldAppliedAfterNativeSave": true,
+            "nativeWorld_noExtraModel": true,
+            "nativeWorld_sameWorldAfterReload": true,
+            "user05_guildNoTacticalButtons": true,
+            "user05_guildNoResourceUse": true,
+            "user05_questKeepsDraft": true,
+            "user05_directQuestNoPlanner": true,
+            "user05_directQuestCommonInput": true,
+            "user05_questCanonicalDestination": true,
+            "user05_currentBoardContractSentOnce": true,
+            "user05_questSecondClickNoRequests": true,
+            "user05_precombatReadableNames": true,
+            "user05_areaChoosesBand": true,
+            "user05_areaPreviewNoBooking": true,
+            "user05_bandSelectionFitsNarrow": true,
+            "user05_targetAloneNoAction": true,
+            "user05_controlsInsideCombat": true,
+            "user05_noDuplicateTargetControls": true,
+            "user05_noDuplicateSkillControls": true,
+            "user05_combatSelectionFitsNarrow": true,
+            "user05_approachCheckboxVisible": true,
+            "user05_worldStatusNotSaved": true,
+            "user05_nextTextEditableButNotSent": true,
+            "user05_statusSettlesWithoutClick": true,
+            "user05_pureHudRequestPath": true,
+            "user05_draftSurvivesWorldCompletion": true,
+            "user05_slowReadbackWaits": true,
+            "user05_readbackSuccessAutomaticStatus": true,
+            "user05_slowReadbackTwoRequests": true,
+            "user05_failedReadbackWaits": true,
+            "user05_failedReadbackBlocks": true,
+            "user05_readbackRetryNoModelOrMechanics": true,
+            "user05_readbackRecoveryAutomaticStatus": true,
+            "user05_failedReadbackTwoRequests": true,
+            "user05_nativeSaveFailureStatus": true,
+            "user05_nativeSaveRecoveryNoModel": true,
+            "user05_moveCommonTwoRequestPath": true,
+            "user05_defenseCommonTwoRequestPath": true,
+            "user05_potionCommonTwoRequestPath": true,
+            "user05_potionConsumedOnce": true,
+            "user05_originalI42BookedOnce": true,
+            "user05_originalI44BookedOnce": true,
+            "user05_originalI46BookedOnce": true,
+            "user05_originalI48BookedOnce": true,
+            "user05_originalI50BookedOnce": true,
+            "user05_originalI52BookedOnce": true,
+            "user05_finalReadbackIdentical": true,
+            "ui161_boardButtonsSurviveST": true,
+            "ui161_composerPreservesText": true,
+            "ui161_oneTypedSelection": true,
+            "ui161_noSendNoBooking": true,
+            "ui161_escapedBoardMarkup": true,
+            "ui161_editableBeforeSending": true,
+            "ui161_narrowBoardInWideWindow": true,
+            "ui161_rerenderDelegation": true,
+            "ui161_individualGroundQuantities": true,
+            "ui161_groundDraftOnly": true,
+            "ui161_narrowGroundFits": true,
+            "ui161_oneCombatViewAndOtherActors": true,
+            "ui161_firstStrikeHelpPresent": true,
+            "ui161_containerCombatFits": true,
+            "ui161_breakfastApplied": true,
+            "ui161_breakfastNoRestQuestion": true,
+            "ui161_retreatApplied": true,
+            "ui161_retreatOneChosenStep": true,
+            "ui161_mixedApplied": true,
+            "ui161_mixedSearchNoExtraLoot": true,
+            "ui161_savedAndReloaded": true,
+            "pulse162_travelWindowRecorded": true,
+            "pulse162_travelOneRoadLine": true,
+            "pulse162_travelRoadFollowsWindow": true,
+            "pulse162_travelEnvelopeRule": true,
+            "pulse162_hallRolled": true,
+            "pulse162_hallLineOnlyIfOpen": true,
+            "pulse162_hallHostApplied": true,
+            "pulse162_statusNoDraw": true,
+            "pulse162_reloadKeepsStreak": true,
+            "pulse162_soughtRegistered": true,
+            "pulse162_soughtExceptionInRequest": true,
+            "pulse162_ambushRefused": true,
+            "pulse162_ambushCorrection": true,
+            "pulse162_ambushDiagnosis": true,
+            "pulse162_saved": true,
+            "pulse164_campExposed": true,
+            "pulse164_campCut": true,
+            "pulse164_campRecoveryOfBookedMinutes": true,
+            "pulse164_campEventBeforeTime": true,
+            "pulse164_campRequestCause": true,
+            "pulse164_campFightOpened": true,
+            "pulse164_campReplyTimeNoRest": true,
+            "pulse164_campNoCorrection": true,
+            "pulse164_campReloadSame": true,
+            "pulse164_quietCut": true,
+            "pulse164_quietCorrection": true,
+            "pulse164_swipeReusesRecord": true,
+            "pulse164_nextFactLineOnce": true,
+            "pulse164_nextCorrectionCarried": true,
+            "pulse164_innSafe": true,
+            "pulse164_innFullNight": true,
+            "pulse164_innNoCut": true,
+            "pulse164_splitWaitOneDraw": true,
+            "pulse164_saved": true,
+            "pulse167_wanderDraw": true,
+            "pulse167_wanderOneReservation": true,
+            "pulse167_wanderNarratorLine": true,
+            "pulse167_wanderExtractorCatalog": true,
+            "pulse167_wanderSlotMet": true,
+            "pulse167_wanderFight": true,
+            "pulse167_wanderPartsUnchanged": true,
+            "pulse167_reloadSameDungeon": true,
+            "pulse167_resetDropsReservation": true,
+            "pulse167_aheadNoDraw": true,
+            "pulse167_aheadOneReference": true,
+            "pulse167_aheadSlotMet": true,
+            "pulse167_restCut": true,
+            "pulse167_restOneReservation": true,
+            "pulse167_restGoStopped": true,
+            "pulse167_restRequestCause": true,
+            "pulse167_restReplyTimeNoRest": true,
+            "pulse167_restSlotMet": true,
+            "pulse167_saved": true,
+            "npc169_metKnownAt": true,
+            "npc169_metEntered": true,
+            "npc169_metAsked": true,
+            "npc169_metNarratorArrivalCards": true,
+            "npc169_metApplied": true,
+            "npc169_reloadKeepsPresence": true,
+            "npc169_leftNotEntered": true,
+            "npc169_leftOtherMet": true,
+            "npc169_stoodLeftNotEntered": true,
+            "npc169_stoodLeftOtherMet": true,
+            "npc169_acceptDesk": true,
+            "npc169_acceptNewClerk": true,
+            "npc169_acceptHandlerKnows": true,
+            "npc169_acceptNoBooking": true,
+            "npc169_acceptAskedDesk": true,
+            "npc169_turnInDesk": true,
+            "npc169_turnInHandlerKnows": true,
+            "npc169_turnInApplied": true,
+            "npc172_promiseBound": true,
+            "npc172_npcAgreementSeparate": true,
+            "npc172_npcPanelOnlyHis": true,
+            "npc172_oneCardKeepsInterlocutor": true,
+            "npc172_arrivalCard": true,
+            "npc172_narratorKnownAtTrimmed": true,
+            "npc172_extractorKnownAtFull": true,
+            "npc172_settledKeepsParties": true,
+            "npc172_anchorLaterEncounter": true,
+            "npc172_anchorSaveReload": true,
+            "npc172_saveReload": true,
+            "npc172_anchorRegenerateOnce": true,
+            "npc172_regenerateOneSettlement": true,
+            "npc172_settledCard": true,
+            "npc172_anchorOnCard": true,
+            "npc172_anchorMoodRefused": true,
+            "npc172_anchorFirstContact": true,
+            "pilot01_k1NoPulseVeto": true,
+            "pilot01_k1SlotFoesHere": true,
+            "pilot01_k1FightOpens": true,
+            "pilot01_d5TakeRefused": true,
+            "pilot01_k2BoughtTheShownOne": true,
+            "pilot01_k2TuckAddsNothing": true,
+            "pilot01_k2SaveReload": true,
+            "pilot01_k3NoCatalogOnRoad": true,
+            "pilot01_k4ClerkReturns": true,
+            "pilot01_k4HandlerKnows": true,
+            "pilot01_k7ShortfallToNarrator": true,
+            "pilot01_k5CopperKeepsWords": true,
+            "pilot01_k5NoSettlementBySecondId": true,
+            "pilot01_d2RideNotBooked": true,
+            "pilot01_n2NotArrivedVisibleInST": true,
+            "pilot01_n1WhereHeadsNarrator": true,
+            "pilot01_k8NoPcNameOnCarter": true,
+            "pilot01_k8NoNullRole": true,
+            "pilot01_r2DisplayStaysOnSale": true,
+            "pilot01_r2SaveReload": true,
+            "pilot01_d5SoldWareNotTakenBack": true,
+            "pilot01_d5SoldWareSaveReload": true,
+            "bossloot193_originalWardenFirst": true,
+            "bossloot193_actualHud": true,
+            "bossloot193_narratorContract": true,
+            "bossloot193_realGrantNames": true,
+            "bossloot193_extractorSeesFind": true,
+            "bossloot193_reloadNoDuplicate": true,
+            "startStatsFive": true,
+            "qol160_boardHostApplied": true,
+            "qol160_boardCardsAfterArrival": true,
+            "qol160_boardReferenceOnly": true,
+            "qol160_boardNoPayment": true,
+            "qol160_titanHostApplied": true,
+            "qol160_titanCurrentAwareness": true,
+            "qol160_titanConcealmentPreserved": true,
+            "qol160_clearHostApplied": true,
+            "qol160_clearAccessDelivered": true,
+            "qol160_clearNoMove": true,
+            "qol160_searchHostApplied": true,
+            "qol160_searchAccessDelivered": true,
+            "qol160_searchNoMove": true,
+            "qol160_guildHostApplied": true,
+            "qol160_guildAccessDelivered": true,
+            "qol160_guildNoMove": true,
+            "qol160_saved": true,
+            "board159_originalRepairBooksFive": true,
+            "board159_repairShowsConstraints": true,
+            "board159_invalidBoardRemainsUnbooked": true,
+            "board159_noInventedSchedule": true,
+            "board159_extractionCompleted": true,
+            "board159_saved": true,
+            "continuity_acceptedGuide": true,
+            "continuity_emptyExitRecovery": true,
+            "continuity_singleExitBooking": true,
+            "continuity_contextRecorded": true,
+            "continuity_noPromptCopy": true,
+            "continuity_contextSwipe": true,
+            "continuity_contextSaveReload": true,
+            "ui_boardUsesCanonicalListings": true,
+            "ui_boardCoreVisible": true,
+            "ui_boardDetailsCollapsed": true,
+            "ui_nativeKeyboardDetails": true,
+            "ui_narrowBoardFits": true,
+            "ui_groundAndFloorVisible": true,
+            "ui_combatCanonicalView": true,
+            "ui_narrowCombatFits": true,
+            "stealth_originalMovement": true,
+            "stealth_destinationPopulationChecked": true,
+            "stealth_checkVisible": true,
+            "stealth_oneInitialChain": true,
+            "stealth_savedComplete": true,
+            "stealth_swipeAndReloadStable": true,
+            "stealth_normalTurnResumed": true,
+            "stealth_user01Continue": true,
+            "stealth_user01Save": true,
+            "stealth_user01Swipe": true,
+            "stealth_user01Reload": true,
+            "stealth_user01OnePlanner": true,
+            "stealth_user01NormalTurn": true,
+            "save_transientSavedAndReadBack": true,
+            "save_permanentFailureStops": true,
+            "save_noRepeatedEngineOrModel": true,
+            "save_purchaseAndPaymentRecordsPreserved": true,
+            "finance_nativeOnceNoModel": true,
+            "finance_reload": true,
+            "finance_realSourceEdit": true,
+            "finance_realConfirmationEdit": true,
+            "finance_restoreResumes": true,
+            "finance_swipeOnce": true,
+            "finance_regenerateOnce": true,
+            "finance_narratorFact": true,
+            "finance_arrivalCardExpired": true,
+            "finance_arrivalThenNormalTurn": true,
+            "fetch_classifiedOncePerAttempt": true,
+            "fetch_safeNonexecution": true,
+            "fetch_savedAndReloaded": true,
+            "fetch_normalTurnResumedOnce": true,
+            "campaignV4AtGreeting": true,
+            "plannerOnByDefault": true,
+            "campaignPinnedToC": true,
+            "creationWithoutPlanner": true,
+            "runnerSeparatesVisibleEngine": true,
+            "onePlanPerMessage": true,
+            "extractPerReply": true,
+            "planCallParams": true,
+            "fightPromptInFight": true,
+            "keyAddedBySillyTavern": true,
+            "keyNeverInBrowser": true,
+            "keyNotInChatFile": true,
+            "areaWindowCommitted": true,
+            "fightOpened": true,
+            "aliasBooksFlameLance": true,
+            "aliasA0WasBasicAttack": true,
+            "typoAsks": true,
+            "worldUseBooked": true,
+            "swipeReusesPlan": true,
+            "searchNotTaken": true,
+            "bandAreaOnce": true,
+            "proseOnlyRequests": true,
+            "statusLine": true,
+            "actionReview_targetAloneNoAction": true,
+            "actionReview_explicitSkillAndTarget": true,
+            "actionReview_targetAfterClearNoAction": true,
+            "actionReview_newMessageFieldsRejectOldSave": true,
+            "actionReview_completeMessageFieldsReadBack": true,
+            "actionReview_identicalDuplicateReallyWritten": true,
+            "actionReview_destinationIsCampaign": true,
+            "actionReview_crossChatNativeSaveRejected": true,
+            "actionReview_destinationUnchanged": true,
+            "actionReview_unwrittenOriginChangeReported": true,
+            "actionReview_targetAfterChatSwitchNoAction": true,
+            "actionReview_generationWaitsForNativeSave": true,
+            "actionReview_slashCommandKeepsPendingEditSave": true,
+            "actionReview_onlyDraftsNoModelRequests": true,
+            "noPageErrors": true
+          },
+          "injected_save_error_count": 6,
+          "actual_page_errors": [],
+          "scripted_measurements": [
+            {
+              "key": "direct_quest",
+              "scripted": true,
+              "elapsed_ms": 2495,
+              "world_jobs": [
+                {
+                  "at": 1794983803596,
+                  "id": 14,
+                  "extraction_validation_wait_ms": 344,
+                  "save_readback_ms": 66,
+                  "total_ms": 410,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 59355,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 62427,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "pure_hud_delayed_extractor",
+              "scripted": true,
+              "elapsed_ms": 4831,
+              "world_jobs": [
+                {
+                  "at": 1794983814056,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 2016,
+                  "save_readback_ms": 203,
+                  "total_ms": 2219,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 58067,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "original_I42",
+              "scripted": true,
+              "elapsed_ms": 2846,
+              "world_jobs": [
+                {
+                  "at": 1794983850566,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 492,
+                  "save_readback_ms": 163,
+                  "total_ms": 655,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "plan",
+                  "prompt_characters": 26563,
+                  "max_output": 2000,
+                  "stream": false
+                },
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 57977,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "original_I44",
+              "scripted": true,
+              "elapsed_ms": 3028,
+              "world_jobs": [
+                {
+                  "at": 1794983855463,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 372,
+                  "save_readback_ms": 155,
+                  "total_ms": 527,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "plan",
+                  "prompt_characters": 26563,
+                  "max_output": 2000,
+                  "stream": false
+                },
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 57977,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "original_I46",
+              "scripted": true,
+              "elapsed_ms": 3255,
+              "world_jobs": [
+                {
+                  "at": 1794983860814,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 450,
+                  "save_readback_ms": 211,
+                  "total_ms": 661,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "plan",
+                  "prompt_characters": 26563,
+                  "max_output": 2000,
+                  "stream": false
+                },
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 57977,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "original_I48",
+              "scripted": true,
+              "elapsed_ms": 3101,
+              "world_jobs": [
+                {
+                  "at": 1794983865785,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 351,
+                  "save_readback_ms": 172,
+                  "total_ms": 523,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "plan",
+                  "prompt_characters": 26563,
+                  "max_output": 2000,
+                  "stream": false
+                },
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 57977,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "original_I50",
+              "scripted": true,
+              "elapsed_ms": 2779,
+              "world_jobs": [
+                {
+                  "at": 1794983870796,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 340,
+                  "save_readback_ms": 250,
+                  "total_ms": 591,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "plan",
+                  "prompt_characters": 26563,
+                  "max_output": 2000,
+                  "stream": false
+                },
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 57977,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "original_I52",
+              "scripted": true,
+              "elapsed_ms": 2789,
+              "world_jobs": [
+                {
+                  "at": 1794983875416,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 343,
+                  "save_readback_ms": 163,
+                  "total_ms": 506,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "plan",
+                  "prompt_characters": 26563,
+                  "max_output": 2000,
+                  "stream": false
+                },
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 57977,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "mode": "failsoft",
+          "ok": true,
+          "exit": 0,
+          "line": "LIVE SILLYTAVERN SMOKE C: OK",
+          "seconds": 738,
+          "checks": 343,
+          "passed": 343,
+          "failed": [],
+          "page_errors": 0,
+          "calls": 334,
+          "out": "/workspace/avereth-setup/st-sandbox/out/2026-11-18T06-26-07-166Z/failsoft",
+          "log": "/workspace/avereth-setup/st-sandbox/out/2026-11-18T06-26-07-166Z/failsoft/run.log",
+          "checks_detail": {
+            "capacityAtMostFour": true,
+            "actionHud_selectionIsDraftOnly": true,
+            "actionHud_hNoPlanner": true,
+            "actionHud_hNarratorAndExtractor": true,
+            "actionHud_hTypedInputBooked": true,
+            "actionHud_hWorldApplied": true,
+            "actionHud_physicalInputProvenance": true,
+            "actionHud_nonstreamContextRecorded": true,
+            "actionHud_sentModeVisible": true,
+            "actionHud_composerFitsNarrow": true,
+            "actionHud_activeAgency": true,
+            "actionHud_noConflictingCombatSilence": true,
+            "actionHud_modeInActualNarratorPrompt": true,
+            "actionHud_reloadPreservesMechanics": true,
+            "actionHud_regenerateNoSecondAction": true,
+            "actionHud_hudSwipeNoSecondAction": true,
+            "actionHud_fOnePlanner": true,
+            "actionHud_fKeepsAnchor": true,
+            "actionHud_conflictNoMechanics": true,
+            "actionHud_conflictNoRepairOrNarrator": true,
+            "actionHud_localCorrectionNoPlanner": true,
+            "actionHud_systemInputNotCombined": true,
+            "actionHud_nativeStreaming": true,
+            "actionHud_unknownNoAutomaticDispatch": true,
+            "actionHud_unknownSurvivesReload": true,
+            "actionHud_explicitRetryReusesMechanics": true,
+            "actionHud_genericHostErrorKeepsUnknown": true,
+            "actionHud_genericErrorRecoveryNoSecondAction": true,
+            "actionHud_crashReservationBoundWithoutExecution": true,
+            "actionHud_crashResumeExecutesOnce": true,
+            "actionHud_compositionEnterDoesNotSend": true,
+            "actionHud_emptyComposerEnterOneInput": true,
+            "actionHud_doubleClickOneInput": true,
+            "actionHud_draftDuringWorldRead": true,
+            "actionHud_chatSwitchNoForeignBinding": true,
+            "actionHud_chatSwitchOriginNotExecuted": true,
+            "actionHud_stopAfterBindingNoMechanics": true,
+            "actionHost_targetSaveReadBack": true,
+            "actionHost_settingsInDrawer": true,
+            "actionHost_gzipPayloadRoundtrip": true,
+            "actionHost_stopBeforeSave": true,
+            "actionHost_falseSaveDetected": true,
+            "actionHost_nativeReservationBeforeMessageSent": true,
+            "nativeWorld_nativePriorReadHeld": true,
+            "nativeWorld_worldWaitsForNativeSave": true,
+            "nativeWorld_worldAppliedAfterNativeSave": true,
+            "nativeWorld_noExtraModel": true,
+            "nativeWorld_sameWorldAfterReload": true,
+            "user05_guildNoTacticalButtons": true,
+            "user05_guildNoResourceUse": true,
+            "user05_questKeepsDraft": true,
+            "user05_directQuestNoPlanner": true,
+            "user05_directQuestCommonInput": true,
+            "user05_questCanonicalDestination": true,
+            "user05_currentBoardContractSentOnce": true,
+            "user05_questSecondClickNoRequests": true,
+            "user05_precombatReadableNames": true,
+            "user05_areaChoosesBand": true,
+            "user05_areaPreviewNoBooking": true,
+            "user05_bandSelectionFitsNarrow": true,
+            "user05_targetAloneNoAction": true,
+            "user05_controlsInsideCombat": true,
+            "user05_noDuplicateTargetControls": true,
+            "user05_noDuplicateSkillControls": true,
+            "user05_combatSelectionFitsNarrow": true,
+            "user05_approachCheckboxVisible": true,
+            "user05_worldStatusNotSaved": true,
+            "user05_nextTextEditableButNotSent": true,
+            "user05_statusSettlesWithoutClick": true,
+            "user05_pureHudRequestPath": true,
+            "user05_draftSurvivesWorldCompletion": true,
+            "user05_slowReadbackWaits": true,
+            "user05_readbackSuccessAutomaticStatus": true,
+            "user05_slowReadbackTwoRequests": true,
+            "user05_failedReadbackWaits": true,
+            "user05_failedReadbackBlocks": true,
+            "user05_readbackRetryNoModelOrMechanics": true,
+            "user05_readbackRecoveryAutomaticStatus": true,
+            "user05_failedReadbackTwoRequests": true,
+            "user05_nativeSaveFailureStatus": true,
+            "user05_nativeSaveRecoveryNoModel": true,
+            "user05_moveCommonTwoRequestPath": true,
+            "user05_defenseCommonTwoRequestPath": true,
+            "user05_potionCommonTwoRequestPath": true,
+            "user05_potionConsumedOnce": true,
+            "user05_originalI42BookedOnce": true,
+            "user05_originalI44BookedOnce": true,
+            "user05_originalI46BookedOnce": true,
+            "user05_originalI48BookedOnce": true,
+            "user05_originalI50BookedOnce": true,
+            "user05_originalI52BookedOnce": true,
+            "user05_finalReadbackIdentical": true,
+            "ui161_boardButtonsSurviveST": true,
+            "ui161_composerPreservesText": true,
+            "ui161_oneTypedSelection": true,
+            "ui161_noSendNoBooking": true,
+            "ui161_escapedBoardMarkup": true,
+            "ui161_editableBeforeSending": true,
+            "ui161_narrowBoardInWideWindow": true,
+            "ui161_rerenderDelegation": true,
+            "ui161_individualGroundQuantities": true,
+            "ui161_groundDraftOnly": true,
+            "ui161_narrowGroundFits": true,
+            "ui161_oneCombatViewAndOtherActors": true,
+            "ui161_firstStrikeHelpPresent": true,
+            "ui161_containerCombatFits": true,
+            "ui161_breakfastApplied": true,
+            "ui161_breakfastNoRestQuestion": true,
+            "ui161_retreatApplied": true,
+            "ui161_retreatOneChosenStep": true,
+            "ui161_mixedApplied": true,
+            "ui161_mixedSearchNoExtraLoot": true,
+            "ui161_savedAndReloaded": true,
+            "pulse162_travelWindowRecorded": true,
+            "pulse162_travelOneRoadLine": true,
+            "pulse162_travelRoadFollowsWindow": true,
+            "pulse162_travelEnvelopeRule": true,
+            "pulse162_hallRolled": true,
+            "pulse162_hallLineOnlyIfOpen": true,
+            "pulse162_hallHostApplied": true,
+            "pulse162_statusNoDraw": true,
+            "pulse162_reloadKeepsStreak": true,
+            "pulse162_soughtRegistered": true,
+            "pulse162_soughtExceptionInRequest": true,
+            "pulse162_ambushRefused": true,
+            "pulse162_ambushCorrection": true,
+            "pulse162_ambushDiagnosis": true,
+            "pulse162_saved": true,
+            "pulse164_campExposed": true,
+            "pulse164_campCut": true,
+            "pulse164_campRecoveryOfBookedMinutes": true,
+            "pulse164_campEventBeforeTime": true,
+            "pulse164_campRequestCause": true,
+            "pulse164_campFightOpened": true,
+            "pulse164_campReplyTimeNoRest": true,
+            "pulse164_campNoCorrection": true,
+            "pulse164_campReloadSame": true,
+            "pulse164_quietCut": true,
+            "pulse164_quietCorrection": true,
+            "pulse164_swipeReusesRecord": true,
+            "pulse164_nextFactLineOnce": true,
+            "pulse164_nextCorrectionCarried": true,
+            "pulse164_innSafe": true,
+            "pulse164_innFullNight": true,
+            "pulse164_innNoCut": true,
+            "pulse164_splitWaitOneDraw": true,
+            "pulse164_saved": true,
+            "pulse167_wanderDraw": true,
+            "pulse167_wanderOneReservation": true,
+            "pulse167_wanderNarratorLine": true,
+            "pulse167_wanderExtractorCatalog": true,
+            "pulse167_wanderSlotMet": true,
+            "pulse167_wanderFight": true,
+            "pulse167_wanderPartsUnchanged": true,
+            "pulse167_reloadSameDungeon": true,
+            "pulse167_resetDropsReservation": true,
+            "pulse167_aheadNoDraw": true,
+            "pulse167_aheadOneReference": true,
+            "pulse167_aheadSlotMet": true,
+            "pulse167_restCut": true,
+            "pulse167_restOneReservation": true,
+            "pulse167_restGoStopped": true,
+            "pulse167_restRequestCause": true,
+            "pulse167_restReplyTimeNoRest": true,
+            "pulse167_restSlotMet": true,
+            "pulse167_saved": true,
+            "npc169_metKnownAt": true,
+            "npc169_metEntered": true,
+            "npc169_metAsked": true,
+            "npc169_metNarratorArrivalCards": true,
+            "npc169_metApplied": true,
+            "npc169_reloadKeepsPresence": true,
+            "npc169_leftNotEntered": true,
+            "npc169_leftOtherMet": true,
+            "npc169_stoodLeftNotEntered": true,
+            "npc169_stoodLeftOtherMet": true,
+            "npc169_acceptDesk": true,
+            "npc169_acceptNewClerk": true,
+            "npc169_acceptHandlerKnows": true,
+            "npc169_acceptNoBooking": true,
+            "npc169_acceptAskedDesk": true,
+            "npc169_turnInDesk": true,
+            "npc169_turnInHandlerKnows": true,
+            "npc169_turnInApplied": true,
+            "npc172_promiseBound": true,
+            "npc172_npcAgreementSeparate": true,
+            "npc172_npcPanelOnlyHis": true,
+            "npc172_oneCardKeepsInterlocutor": true,
+            "npc172_arrivalCard": true,
+            "npc172_narratorKnownAtTrimmed": true,
+            "npc172_extractorKnownAtFull": true,
+            "npc172_settledKeepsParties": true,
+            "npc172_anchorLaterEncounter": true,
+            "npc172_anchorSaveReload": true,
+            "npc172_saveReload": true,
+            "npc172_anchorRegenerateOnce": true,
+            "npc172_regenerateOneSettlement": true,
+            "npc172_settledCard": true,
+            "npc172_anchorOnCard": true,
+            "npc172_anchorMoodRefused": true,
+            "npc172_anchorFirstContact": true,
+            "pilot01_k1NoPulseVeto": true,
+            "pilot01_k1SlotFoesHere": true,
+            "pilot01_k1FightOpens": true,
+            "pilot01_d5TakeRefused": true,
+            "pilot01_k2BoughtTheShownOne": true,
+            "pilot01_k2TuckAddsNothing": true,
+            "pilot01_k2SaveReload": true,
+            "pilot01_k3NoCatalogOnRoad": true,
+            "pilot01_k4ClerkReturns": true,
+            "pilot01_k4HandlerKnows": true,
+            "pilot01_k7ShortfallToNarrator": true,
+            "pilot01_k5CopperKeepsWords": true,
+            "pilot01_k5NoSettlementBySecondId": true,
+            "pilot01_d2RideNotBooked": true,
+            "pilot01_n2NotArrivedVisibleInST": true,
+            "pilot01_n1WhereHeadsNarrator": true,
+            "pilot01_k8NoPcNameOnCarter": true,
+            "pilot01_k8NoNullRole": true,
+            "pilot01_r2DisplayStaysOnSale": true,
+            "pilot01_r2SaveReload": true,
+            "pilot01_d5SoldWareNotTakenBack": true,
+            "pilot01_d5SoldWareSaveReload": true,
+            "bossloot193_originalWardenFirst": true,
+            "bossloot193_actualHud": true,
+            "bossloot193_narratorContract": true,
+            "bossloot193_realGrantNames": true,
+            "bossloot193_extractorSeesFind": true,
+            "bossloot193_reloadNoDuplicate": true,
+            "startStatsFive": true,
+            "qol160_boardHostApplied": true,
+            "qol160_boardCardsAfterArrival": true,
+            "qol160_boardReferenceOnly": true,
+            "qol160_boardNoPayment": true,
+            "qol160_titanHostApplied": true,
+            "qol160_titanCurrentAwareness": true,
+            "qol160_titanConcealmentPreserved": true,
+            "qol160_clearHostApplied": true,
+            "qol160_clearAccessDelivered": true,
+            "qol160_clearNoMove": true,
+            "qol160_searchHostApplied": true,
+            "qol160_searchAccessDelivered": true,
+            "qol160_searchNoMove": true,
+            "qol160_guildHostApplied": true,
+            "qol160_guildAccessDelivered": true,
+            "qol160_guildNoMove": true,
+            "qol160_saved": true,
+            "board159_originalRepairBooksFive": true,
+            "board159_repairShowsConstraints": true,
+            "board159_invalidBoardRemainsUnbooked": true,
+            "board159_noInventedSchedule": true,
+            "board159_extractionCompleted": true,
+            "board159_saved": true,
+            "continuity_acceptedGuide": true,
+            "continuity_emptyExitRecovery": true,
+            "continuity_singleExitBooking": true,
+            "continuity_contextRecorded": true,
+            "continuity_noPromptCopy": true,
+            "continuity_contextSwipe": true,
+            "continuity_contextSaveReload": true,
+            "ui_boardUsesCanonicalListings": true,
+            "ui_boardCoreVisible": true,
+            "ui_boardDetailsCollapsed": true,
+            "ui_nativeKeyboardDetails": true,
+            "ui_narrowBoardFits": true,
+            "ui_groundAndFloorVisible": true,
+            "ui_combatCanonicalView": true,
+            "ui_narrowCombatFits": true,
+            "stealth_originalMovement": true,
+            "stealth_destinationPopulationChecked": true,
+            "stealth_checkVisible": true,
+            "stealth_oneInitialChain": true,
+            "stealth_savedComplete": true,
+            "stealth_swipeAndReloadStable": true,
+            "stealth_normalTurnResumed": true,
+            "stealth_user01Continue": true,
+            "stealth_user01Save": true,
+            "stealth_user01Swipe": true,
+            "stealth_user01Reload": true,
+            "stealth_user01OnePlanner": true,
+            "stealth_user01NormalTurn": true,
+            "save_transientSavedAndReadBack": true,
+            "save_permanentFailureStops": true,
+            "save_noRepeatedEngineOrModel": true,
+            "save_purchaseAndPaymentRecordsPreserved": true,
+            "finance_nativeOnceNoModel": true,
+            "finance_reload": true,
+            "finance_realSourceEdit": true,
+            "finance_realConfirmationEdit": true,
+            "finance_restoreResumes": true,
+            "finance_swipeOnce": true,
+            "finance_regenerateOnce": true,
+            "finance_narratorFact": true,
+            "finance_arrivalCardExpired": true,
+            "finance_arrivalThenNormalTurn": true,
+            "fetch_classifiedOncePerAttempt": true,
+            "fetch_safeNonexecution": true,
+            "fetch_savedAndReloaded": true,
+            "fetch_normalTurnResumedOnce": true,
+            "failsoftPlannerVisible": true,
+            "failsoftSaved": true,
+            "failsoftWorldTerminal": true,
+            "failsoftWorldExplicitResume": true,
+            "failsoftNoDuplicateCombat": true,
+            "failsoftDetectsSwallowedSave": true,
+            "campaignV4AtGreeting": true,
+            "plannerOnByDefault": true,
+            "campaignPinnedToC": true,
+            "creationWithoutPlanner": true,
+            "runnerSeparatesVisibleEngine": true,
+            "onePlanPerMessage": true,
+            "extractPerReply": true,
+            "planCallParams": true,
+            "fightPromptInFight": true,
+            "keyAddedBySillyTavern": true,
+            "keyNeverInBrowser": true,
+            "keyNotInChatFile": true,
+            "areaWindowCommitted": true,
+            "fightOpened": true,
+            "aliasBooksFlameLance": true,
+            "aliasA0WasBasicAttack": true,
+            "typoAsks": true,
+            "worldUseBooked": true,
+            "swipeReusesPlan": true,
+            "searchNotTaken": true,
+            "bandAreaOnce": true,
+            "proseOnlyRequests": true,
+            "statusLine": true,
+            "actionReview_targetAloneNoAction": true,
+            "actionReview_explicitSkillAndTarget": true,
+            "actionReview_targetAfterClearNoAction": true,
+            "actionReview_newMessageFieldsRejectOldSave": true,
+            "actionReview_completeMessageFieldsReadBack": true,
+            "actionReview_identicalDuplicateReallyWritten": true,
+            "actionReview_destinationIsCampaign": true,
+            "actionReview_crossChatNativeSaveRejected": true,
+            "actionReview_destinationUnchanged": true,
+            "actionReview_unwrittenOriginChangeReported": true,
+            "actionReview_targetAfterChatSwitchNoAction": true,
+            "actionReview_generationWaitsForNativeSave": true,
+            "actionReview_slashCommandKeepsPendingEditSave": true,
+            "actionReview_onlyDraftsNoModelRequests": true,
+            "noPageErrors": true
+          },
+          "injected_save_error_count": 7,
+          "actual_page_errors": [],
+          "scripted_measurements": [
+            {
+              "key": "direct_quest",
+              "scripted": true,
+              "elapsed_ms": 2447,
+              "world_jobs": [
+                {
+                  "at": 1794984542825,
+                  "id": 14,
+                  "extraction_validation_wait_ms": 332,
+                  "save_readback_ms": 59,
+                  "total_ms": 390,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 59355,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 62427,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "pure_hud_delayed_extractor",
+              "scripted": true,
+              "elapsed_ms": 4323,
+              "world_jobs": [
+                {
+                  "at": 1794984552790,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 1778,
+                  "save_readback_ms": 146,
+                  "total_ms": 1924,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 58067,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "original_I42",
+              "scripted": true,
+              "elapsed_ms": 2859,
+              "world_jobs": [
+                {
+                  "at": 1794984588173,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 383,
+                  "save_readback_ms": 156,
+                  "total_ms": 539,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "plan",
+                  "prompt_characters": 26563,
+                  "max_output": 2000,
+                  "stream": false
+                },
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 57977,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "original_I44",
+              "scripted": true,
+              "elapsed_ms": 3019,
+              "world_jobs": [
+                {
+                  "at": 1794984593218,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 339,
+                  "save_readback_ms": 169,
+                  "total_ms": 508,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "plan",
+                  "prompt_characters": 26563,
+                  "max_output": 2000,
+                  "stream": false
+                },
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 57977,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "original_I46",
+              "scripted": true,
+              "elapsed_ms": 2837,
+              "world_jobs": [
+                {
+                  "at": 1794984598118,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 340,
+                  "save_readback_ms": 153,
+                  "total_ms": 493,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "plan",
+                  "prompt_characters": 26563,
+                  "max_output": 2000,
+                  "stream": false
+                },
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 57977,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "original_I48",
+              "scripted": true,
+              "elapsed_ms": 3143,
+              "world_jobs": [
+                {
+                  "at": 1794984603158,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 370,
+                  "save_readback_ms": 169,
+                  "total_ms": 539,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "plan",
+                  "prompt_characters": 26563,
+                  "max_output": 2000,
+                  "stream": false
+                },
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 57977,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "original_I50",
+              "scripted": true,
+              "elapsed_ms": 3190,
+              "world_jobs": [
+                {
+                  "at": 1794984608632,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 346,
+                  "save_readback_ms": 231,
+                  "total_ms": 577,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "plan",
+                  "prompt_characters": 26563,
+                  "max_output": 2000,
+                  "stream": false
+                },
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 57977,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            },
+            {
+              "key": "original_I52",
+              "scripted": true,
+              "elapsed_ms": 2906,
+              "world_jobs": [
+                {
+                  "at": 1794984613561,
+                  "id": 43,
+                  "extraction_validation_wait_ms": 339,
+                  "save_readback_ms": 157,
+                  "total_ms": 496,
+                  "record_changed": true,
+                  "persisted": true,
+                  "extraction_status": "applied"
+                }
+              ],
+              "requests": [
+                {
+                  "phase": "plan",
+                  "prompt_characters": 26563,
+                  "max_output": 2000,
+                  "stream": false
+                },
+                {
+                  "phase": "narrator",
+                  "prompt_characters": 57977,
+                  "max_output": 1200,
+                  "stream": true
+                },
+                {
+                  "phase": "extract",
+                  "prompt_characters": 60248,
+                  "max_output": 4000,
+                  "stream": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "measurements_note": "Offline/mock evidence. prompt_characters is JSON.stringify(messages).length (UTF-16 units), not provider tokens. Artificial mock usage fields are not token measurements. Elapsed times include deliberately held responses. No natural latency or quality claim.",
+  "development_failures": [
+    {
+      "case": "third full runner",
+      "checks": 0,
+      "page_errors": null,
+      "captured_page_errors_before_abort": 0,
+      "description": "Native save gate ran after a historical Warden fixture replaced its required Barkscorpion prefix. Engine refused the mismatched target. Moved probe before fixture replacements, added explicit seed guard and contained pending response rejection so cleanup completes. No engine relaxation."
+    },
+    {
+      "case": "initial original fixtures",
+      "description": "Five nested HUD bindings rejected; I44 already passed; item duplicates/unusable menu entries reproduced."
+    },
+    {
+      "case": "early browser",
+      "description": "ST custom- class prefix; fixed actual combat panel binding."
+    },
+    {
+      "case": "test harness",
+      "description": "Held Playwright route removed before completion; corrected await."
+    },
+    {
+      "case": "first full standard",
+      "checks": 325,
+      "passed": 323,
+      "page_errors": 0,
+      "failed": [
+        "pulse167_wanderNarratorLine",
+        "pulse167_restGoStopped"
+      ],
+      "description": "Inappropriate DUNGEON AHEAD reference in generic actor context during wandering/rest. Corrected context, unchanged negative checks."
+    },
+    {
+      "case": "first full failsoft",
+      "checks": 336,
+      "passed": 333,
+      "page_errors": 0,
+      "failed": [
+        "pulse167_wanderNarratorLine",
+        "pulse167_restGoStopped",
+        "user05_combatSelectionFitsNarrow"
+      ],
+      "description": "Same copied pre-fix context and narrow selected-control overflow. Corrected CSS; no test relaxation."
+    },
+    {
+      "case": "second full failsoft",
+      "checks": 337,
+      "passed": 336,
+      "page_errors": 1,
+      "failed": [
+        "noPageErrors"
+      ],
+      "description": "Same native streaming save/world-commit conflict as the second standard run; no other check failed."
+    },
+    {
+      "case": "second full standard",
+      "checks": 331,
+      "passed": 330,
+      "page_errors": 1,
+      "failed": [
+        "noPageErrors"
+      ],
+      "description": "Native streaming snapshot became stale while the extractor committed. Same error independently reproduced with createChatPersistence and original I34. World commit now waits for in-flight native saves and rechecks ownership; no stale receipt and no filtering of PageErrors."
+    }
+  ]
+}

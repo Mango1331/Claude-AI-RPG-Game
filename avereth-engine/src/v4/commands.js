@@ -1,3 +1,4 @@
+import { applyEvent } from '../state.js';
 import { floorRefusal, namedLevel } from './dungeon.js';
 import { privateQuestsOf, questVisible } from '../content.js';
 // Runtime V4: the command handlers (docs/RUNTIME_V4_PLAN.md §4.1, §4.4). The interpreter translated the player's story
@@ -1643,6 +1644,13 @@ const HANDLERS = {
 
 // the message index of the player message (ids of what a command creates)
 const env = (ctx) => ctx.env || {};
+
+// A typed quest button previews the SAME handler on an isolated snapshot, without a turn/PULSE/RNG.
+export function previewQuestAcceptance(state, content, quest) {
+    const s=structuredClone(state),ctx=newTurnContext(content);
+    ctx.env={commands:[],text:''};
+    return HANDLERS['quest.accept'](s,content,{seq:1,type:'quest.accept',quest},ctx,e=>applyEvent(s,e),{c:true});
+}
 
 /** The command types the engine resolves (the vocabulary's commands must all be here: tests/unit/v4_turn.test.js). */
 export const COMMAND_TYPES = Object.keys(HANDLERS);

@@ -1,0 +1,88 @@
+{
+  "source_build": "4.3.0-c.6.6.202",
+  "chat_c": "Avereth Engine Test v4 - 2026-11-18@01h15m03s850ms (2).jsonl",
+  "event_c": "avereth-events-[_Avereth Engine Test v4.png_,_Avereth Engine Test v4 - 2026-11-18@01h15m03s850ms_] (2).json",
+  "checks": {
+    "chat_visible_messages": 54,
+    "chat_player_messages": 26,
+    "event_groups": 41,
+    "event_count": 341,
+    "event_group_equality": true,
+    "phase_b_prefix_messages_equal": true,
+    "phase_c_new_events": 98,
+    "completion_pairs": 26,
+    "finish_stop": 26
+  },
+  "model_calls_c": {
+    "planner": 11,
+    "narrator": 7,
+    "extractor": 8
+  },
+  "tokens_c": {
+    "prompt": 308734,
+    "completion": 7037,
+    "total": 315771,
+    "cached": 0
+  },
+  "times_ms_c": {
+    "extract_applied": [
+      46591,
+      41234,
+      10478,
+      41053,
+      28645,
+      8008,
+      38613
+    ],
+    "extract_median": 38613,
+    "narrator": [
+      23907,
+      26596,
+      20185,
+      32263,
+      25884,
+      21571,
+      22232
+    ],
+    "narrator_median": 23907
+  },
+  "hud_errors": {
+    "count": 5,
+    "message_indices": [
+      42,
+      46,
+      48,
+      50,
+      52
+    ],
+    "reason": "HUD und Freitext sind noch nicht eindeutig verbunden",
+    "all_no_engine_events": true
+  },
+  "originals": {
+    "chat": {
+      "filename": "Avereth Engine Test v4 - 2026-11-18@01h15m03s850ms (2).jsonl",
+      "bytes": 692407,
+      "sha256": "4c8022fda2c6c0c77fbfc91440d2edffa45e7ecf4d668b414ae1683d514e14ae",
+      "git_blob": "e68b8ef2b2fb718078ab6438497c5bcb5b59a9b8"
+    },
+    "events": {
+      "filename": "avereth-events-[_Avereth Engine Test v4.png_,_Avereth Engine Test v4 - 2026-11-18@01h15m03s850ms_] (2).json",
+      "bytes": 245135,
+      "sha256": "1969d5b99f4f231bcb1256751b6703a85be6d2eb792445a153f6e615912140bf",
+      "git_blob": "cfab23e988db6bbd7ffd36d61149d66b17c6b6f0"
+    },
+    "completions": {
+      "filename": "Chat Completion request {(20261118-034031).txt",
+      "bytes": 1463594,
+      "sha256": "850894f11a536c63ca73c55136738e18026cb8f82859d03a2e27f5f41a671d59",
+      "git_blob": "5abc6204474391eab5917054b8bcb7547cc25993"
+    },
+    "feedback": {
+      "filename": "Userfeedback Spielgefühl(5).txt",
+      "bytes": 1818,
+      "sha256": "a46873ebf768a3909e6bcf478b90d4ab13716251987d52cb651b35898a46849b",
+      "git_blob": "3902d7dd2fa9bcc95e3bd1b6e449953242ccca2c"
+    }
+  },
+  "evidence": "Personal natural run, source-side analysis; no independent ST/Node/provider execution. Calls are physical request/response pairs; A and B separately archived."
+}

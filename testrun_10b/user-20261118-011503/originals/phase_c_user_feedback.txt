@@ -1,0 +1,11 @@
+würde es es einfacher machen wenn die Engine nur noch "größere" Räume trackt? also Guild hall als eins und keine unter räume in der Guild hall? oder ist das zu schwer mit wer anwesend ist? das selbe bei Dungeon "dungeib Level 1" und "dungeon Level 2" statt "dungeon Level 1 quarz chamber" dann ist es auch nicht mehr so hart wie es bei der alten Architektur war wo die engine es abfängt wenn ich sage ich gehe in den ersten gang und die engine nochmal nachfrägt welchen gang genau usw.
+
+vllt sollten die "squishie" Gegner auch teilweise 2 Bandbreiten moven dürfen oder zumindest ne hauptfähigkeit haben die das kann... das ist ganz technisch unabhängiges balancing um Mages weniger stark zu machen
+
+ich glaube ich habe ausversehen einen leeren text abgesendet obwohl ich die nächste attack machen wollte einfach weil die aktions HUD noch nicht so ausgereift ist mit "Auswählen" und dann extra nochmal auf Freitext mit aktion und senden drücken
+
+es wirkt auch wieder weniger performant mit dem warten auf weltangleich. obwohl weniger API aufrufe sich so anhören als sollten sie es effizienter machen. vllt müssen wir nicht nur planner sondern auch Extractor anpacken. kann aber auch sein das ich es mir einbilde in git unter Archiv oder ganz frühen Tests wurden Performances und Zeiten getimet kann man vllt noch finden auf git und vergleichen.
+
+wenn man eine attacke "vorbereitet" im aktions HUD und auf "auswählen" drückt wird die Welt als Gespeichert angegeben auch wenn sie noch nicht so weit ist und noch auf angleich wartet und dann sieht man nun auch nicht mehr ob die Welt noch am Laden ist. scheint da nun auch fest zu hängen
+
+cached tokesn sind immer 0 kann das mit der Performance zusammenhängen? wie immer keine technische Fundierung nur Gedanken die ich reinwerfe zum anreizen

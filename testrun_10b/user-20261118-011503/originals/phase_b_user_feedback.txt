@@ -1,0 +1,11 @@
+wurde unterbrochen (pulse vllt? ist noch ungetestet bei der alten engine wie pulse funktioniert)
+
+Grotto wurde direkt gentered anstatt davor gestoppt mit dem normalen enter prompt. (ist vllt ein erster Ansatz der einfacheren und weniger strengen Architektur)
+
+wieso kann world HUD nicht direkt angepasst werden mit der Narrator Erzählung? es dauert immer etwas muss es mit Extractor API nochmal machen? ist der Narrator da so unzuverlässig? wie immer nur Gedanken ohne technischen wissen darüber
+
+AOE Attacken muss als Ziel Auswahl die Ranges haben die es angreifen kann nicht die einzelnen Ziele.
+Zielauswahl ist unschön mit engine namen statt den Monster A / Monster B usw
+Freitext Auswahl nach attack Auswahl ist verwirrend sollte vllt einfach ein leeres Textfeld sein das man optional nutzen oder leer lasssen kann dann noch ein senden button der extra ist vom normalen ST message button damit man auch merkt man nutzt den Freitext oder die aktions hud
+
+Technisch klappt die Erfassung der ziele mit der AOE da es alle hittet auch die die nicht ausgewählt sind das sollte dann reichen tatsächlich. diesmal sind die beetle auch mit den "schöneren" namen angezeigt im Dropdown und nicht mehr dem engine namen.

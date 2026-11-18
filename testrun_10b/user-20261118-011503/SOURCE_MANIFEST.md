@@ -1,6 +1,6 @@
 # Originalmanifest – User05, Zwischenstand A (.202)
 
-**Erster Export:** `Avereth Engine Test v4 - 2026-11-18@01h15m03s850ms.jsonl`. Die vier Textoriginale wurden mit der Git-Blob-SHA des hochgeladenen Byteinhalts abgeglichen; Zeilenenden nicht geändert. Zwei PNG-Screenshots aus demselben Nutzerupload sind im separat bereitgestellten vollständigen Originalbundle enthalten und durch SHA-256 gesichert.
+**Erster Export:** `Avereth Engine Test v4 - 2026-11-18@01h15m03s850ms.jsonl`. Alle sechs Originale (vier Textdateien und zwei PNG-Screenshots) wurden mit der Git-Blob-SHA des hochgeladenen Byteinhalts abgeglichen; Zeilenenden und Bildbytes nicht geändert. Sie liegen auf GitHub sowie zusätzlich im separat bereitgestellten vollständigen Originalbundle.
 
 | Hochgeladenes Original | Bytes | Original SHA-256 | Archiv auf main |
 |---|---:|---|---|
@@ -8,8 +8,8 @@
 | `avereth-events-[_Avereth Engine Test v4.png_,_Avereth Engine Test v4 - 2026-11-18@01h15m03s850ms_].json` | 63480 | `a7cba6daf33fad9a98243cdf009b8c7a2449b5a59a3c09463e326530db562148` | [`originals/events.json`](originals/events.json) |
 | `Chat Completion request {(20261118-002629).txt` | 967600 | `b8d7e49b2f96c259174fd1ccb0f1fe9d480e18b2cbda28997faaecff5aac3f72` | [`originals/completions.txt`](originals/completions.txt) |
 | `Userfeedback Spielgefühl(3).txt` | 1263 | `0ff00ba6e43427fff0921243a9b16fa6bfd9dfb714544667c20512c5aa62afae` | [`originals/user_feedback.txt`](originals/user_feedback.txt) |
-| `image(20261118-002612).png` | 53088 | `3ad70266f978f38503dfebaa4368f142aadd427c51d5ff5dffa2f621d8d14b2c` | **Original in begleitender ZIP, nicht einzeln als Git-Bilddatei** |
-| `image(20261118-002620).png` | 58832 | `0bb3e7a0e5d4d86dee77e9476e98aedcf430adf2dad44ae946714963ec29d72a` | **Original in begleitender ZIP, nicht einzeln als Git-Bilddatei** |
+| `image(20261118-002612).png` | 53088 | `3ad70266f978f38503dfebaa4368f142aadd427c51d5ff5dffa2f621d8d14b2c` | [\`screenshots/action_composer_guild.png\`](screenshots/action_composer_guild.png) |
+| `image(20261118-002620).png` | 58832 | `0bb3e7a0e5d4d86dee77e9476e98aedcf430adf2dad44ae946714963ec29d72a` | [\`screenshots/action_dropdown_items.png\`](screenshots/action_dropdown_items.png) |
 
 **Screenshots – Bildbelege:**
 

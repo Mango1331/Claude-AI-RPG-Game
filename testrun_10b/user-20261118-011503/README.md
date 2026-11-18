@@ -9,7 +9,7 @@
 - [**Quellen, Prüfsummen und Archivgrenzen**](SOURCE_MANIFEST.md).
 - Originaldaten im Repo: [Chat-JSONL](originals/chat.jsonl), [Avereth-Events](originals/events.json), [vollständiger Completion-Mitschnitt](originals/completions.txt), [wortgetreues Spielerfeedback](originals/user_feedback.txt).
 
-**Screenshots:** Zwei Original-PNGs wurden mitgeliefert: Action-Composer in der Gilde (00:26:12) und offenes Action-/Item-Dropdown (00:26:20). Sie liegen zusammen mit allen Quellen in der separat ausgegebenen vollständigen Original-ZIP. Ihre Bildinhalte und SHA-256 sind im Manifest beschrieben. *Die PNG-Binärdateien sind in diesem Git-Zwischencommit noch nicht als einzelne Git-Dateien archiviert.*
+**Screenshots:** Beide unveränderten Original-PNGs liegen jetzt ebenfalls im Runordner: [Action-Composer in der Gilde](screenshots/action_composer_guild.png) (00:26:12) und [offenes Action-/Item-Dropdown](screenshots/action_dropdown_items.png) (00:26:20). Beide sind zusätzlich in der vollständigen Original-ZIP enthalten; Originalbytes/Hashes im [Manifest](SOURCE_MANIFEST.md).
 
 **Nächster Schritt:** Nutzer spielt dieselbe Kampagne/Quest weiter und liefert den längeren Export. Dann Review und Quellen im **selben Ordner** als Phase B ergänzen; erst danach unabhängiger Astra-Gegenreview zur Gesamtheit. **Noch kein Produktpatch, Merge oder Abnahme-GO.**
 

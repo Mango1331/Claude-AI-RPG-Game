@@ -1,10 +1,10 @@
 # Avereth Engine – unpriorisierter Ideenspeicher
 
-**Stand 17.11.2026.** Hier stehen **nur offene, nicht bereits als umsetzungsreifer Fachplan priorisierte Ideen**. Keine zweite Roadmap. [Prioritäten 07](07_ROADMAP_NACH_10B_ENTWURF.md) · [aktueller Stand 03](03_AKTUELLER_PROJEKTSTAND.md) · [Fachquellen 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md).
+**Stand 19.11.2026.** Historischer und unpriorisierter Ideenspeicher, keine zweite Roadmap. Einige der unten aufgeführten Spielflussideen wurden bis Entwicklungsbuild .203 bereits umgesetzt. [Aktueller Stand](03_AKTUELLER_PROJEKTSTAND.md). [Prioritäten 07](07_ROADMAP_NACH_10B_ENTWURF.md) · [aktueller Stand 03](03_AKTUELLER_PROJEKTSTAND.md) · [Fachquellen 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md).
 
-## Neu: Vereinfachungen der bestehenden `.200` – zur Analyse, nicht beschlossen
+## Historische Ideen aus .200 – teilweise bis .203 umgesetzt
 
-Die folgenden **vom Nutzer angeregten Ideen** werden unter [Zielbild 08](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md) mit Astra und unabhängigem Gegenreview untersucht. Nicht als implementierte Fähigkeiten oder Roadmapfreigabe behandeln.
+Die folgenden Ideen entstanden aus dem [historischen Zielbild 08](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md). **Combat-HUD, F/H-Eingabemodus, direkte Questannahme und Weltabschlussstatus sind auf .203 implementiert**; andere Vorschläge bleiben ungeklärt. Der Tabellenstand ist daher keine Liste ausschließlich offener Aufgaben.
 
 | Idee | Noch zu prüfen |
 |---|---|
@@ -24,7 +24,7 @@ Die folgenden **vom Nutzer angeregten Ideen** werden unter [Zielbild 08](08_SPIE
 | **Engine-only-Komfort** | Bekannte Board-/Offertenansichten sowie sichere Rest-/Wait-/Reiseschritte, ohne neue Preisautorität oder Teleport. [Entwurf](patch_plans_10b/PATCH_ENGINE_BOARD_AND_TRADE_OFFERS.md) |
 | **Monster und lebendige Welt** | Spätere Sapienz, situative Flucht, glaubwürdige Monsterkulturen, kleine Populationen, Fähigkeiten/Bossphasen **als getrennte Features**. [Monsterdesign](recherche/MONSTERDESIGN_ANALYSE_20261028.md) |
 | **NPC-Eigenleben** | Agenden, Gerüchte, Fraktionsuhren und Salienz **erst nach belastbarer E2/E3-/PULSE-Evidenz**; keine dauerlaufenden Agenten oder zweite Dossierdatenbank |
-| **Spieltempo/Performance** | Reale Prompt-/Cache-/Repair-/Rollenzeit und Kosten je ausführbarer Handlung messen, bevor ein größerer Runtime-Umbau beschlossen wird |
+| **Spieltempo/Performance** | Inzwischen durch die [Work-Forschung .203](recherche/AVERETH_203_PERFORMANCE_EFFIZIENZ_UNABHAENGIGE_RECHERCHE_2026-11-19.md) untersucht; die aktuellen begrenzten GO-Experimente stehen ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md). |
 | **Neue Quest-/Abenteuerfamilien** | Delivery/Escort nur gezielt reaktivieren; Kill-Doppelzählung vermeiden; mehr Dungeonvielfalt ohne festes Drei-Kampf-Skript |
 
 **Nicht hier als unerledigte Idee wiederholen:** NPC E0–E3, PULSE A/B/C, Orte/Reisen/Dungeons `.190–.192`, Stealth S1, UI U1–U3 und alle erledigten 10B-Fixes sind implementiert (Stand: [03](03_AKTUELLER_PROJEKTSTAND.md)). Main/Minor K1, Monster A1/A2, Bossloot V1, Angriff mit Annäherung, Stealth S2, Shops und die konkrete NPC-/Kontextarbeit besitzen eigene Fachpläne; ihr Status/ihre Abhängigkeiten stehen in [07](07_ROADMAP_NACH_10B_ENTWURF.md).

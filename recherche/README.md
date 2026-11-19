@@ -15,6 +15,8 @@
 
 Je zehn Spielzüge mit echten GLM-Antworten und sechs Zusatzpaare zu X2 und Preset. Der Bericht enthält die Messung der ersten sichtbaren Prosa und der sicheren Zugfreigabe, alle Repairs, die gespeicherten Welten und die Einzelurteile zu den Optimierungen. [Ergebnisse, Rohdaten und Reproduktion](AVERETH_203_NATUERLICHER_FEATHERLESS_AB_2026-11-19.md)
 
+**Unabhängige Bewertung:** [GPT-Gegenreview des natürlichen A/B-Laufs](GEGENREVIEW_203_NATUERLICHER_FEATHERLESS_AB_GPT_2026-11-19.md) – früher lesbare Prosa nachgewiesen; gesamter Token- und Latenzgewinn nicht belegt. Empfehlung: S1/B1, kurzer Maschinenkatalog und Save behalten, erste Board-Kürzungsanweisung vor dauerhafter Übernahme gezielt zurücknehmen; X2 und Card-before-Lore ausgeschaltet lassen.
+
 ## Optimierungssuite und Vorversuche
 
 Die Optimierungssuite verwendet S1 und B1 als Basis. Der Bericht dokumentiert alle zehn Etappen, den isolierten A/B-Vergleich, die abgelehnten Vorschläge und die offenen natürlichen Qualitätsfragen. [Gesamtauswertung und Etappencommits](AVERETH_203_OPTIMIERUNGSSUITE_2026-11-19.md) · [Windows-Aufbau für den späteren Spieltest](performance_suite_203/AB_WINDOWS.md).

@@ -1,0 +1,7 @@
+die texte hinter den Buttons sollten etwas schöner sein. zb beim quest annehmen. ist nichts wichtiges nur ne Kleinigkeit die unschön aussieht
+
+Questbaord Annehmen Button ist weiß und macht die Schrift des Buttons schlecht erkennbar. im aktions hud die engine sperre der aufheben button oder Prüfung fortsetzen button ist schlecht erkennbar  
+
+Gatekeeper ist inside des Dungeons immer noch als Short angezeigt (ist bei arcane wave aber richtig angezeigt das der Gatekeeper kein target ist. wird aber dann im Combat HUD immer noch als Short angezueigt. da scheint sich die engine selber nicht sicher zu sein ob die Person da ist oder nicht)
+
+wir haben im aktions hud nur einen schritt näher mit angriff statt zurückweichen auch. aber da haben wir auch noch nicht Major and minor Action umgesetzt oder?

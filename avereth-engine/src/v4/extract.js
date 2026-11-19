@@ -264,6 +264,8 @@ export function repairForm(vocab, expectedKeys, errors) {
     return ` Required form: ${form}.${notes.length ? ` To correct: ${notes.join('; ')}.` : ''} Keep what was valid; invent no field and no event.`;
 }
 
+export const COMPACT = 'Write compact single-line JSON. Keep every required key, expected action and established delta in order. On delta objects only, omit optional fields whose value is null.';
+
 /** The messages of an extractor call, and of its one repair (the invalid answer and the errors appended). */
 export function extractorRequest(vocab, { catalog, actions, player = null, expectedKeys, reply, startScene = null }, { previous = null, errors = null } = {}) {
     const system = `${extractorSystem(vocab)}\n\n${EXTRACT_PLAIN_FORMAT}`;

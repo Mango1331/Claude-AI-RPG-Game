@@ -25,12 +25,12 @@ import { parseServerLog } from './run_report.mjs';
 import { loadContentPack } from '../src/content.js';
 import { foldChat, rec, setRec } from '../src/host.js';
 import { extractionRequest, runExtraction, applyExtraction, LLM } from '../src/v4/runtime.js';
-import { parseExtraction, extractorSystem, EXTRACTOR_VERSION } from '../src/v4/extract.js';
+import { COMPACT, parseExtraction, extractorSystem, EXTRACTOR_VERSION } from '../src/v4/extract.js';
 import { hash32 } from '../src/util.js';
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 export const VARIANTS = ['A0', 'A', 'C'];
-export const COMPACT = 'Write compact single-line JSON. Keep every required key, expected action and established delta in order. On delta objects only, omit optional fields whose value is null.';
+export { COMPACT } from '../src/v4/extract.js';
 export const CONCISE = 'Decide promptly. Report what this reply plainly establishes; leave out optional deltas you are unsure of instead of weighing them at length (a few minutes of time, small facts). An empty deltas list is a valid answer.';
 
 // ------------------------------------------------------------------------------------------------ requests
@@ -168,10 +168,10 @@ export async function replayJobs({items,chat,content}, transform = x => x, optio
         await runExtraction(c,first.id,content,request => {
             const item = attempts[calls.length];
             if (!item?.resp) { gap = true; return null; }
-            const sent = variantBody(request,variant);
+            const sent = variant === 'B' ? request : variantBody(request,variant);
             calls.push({purpose:request.purpose,identical:isDeepStrictEqual(sent.messages,clone(item.body.messages)),n:item.n});
             return transform(measures(item.resp,null).text, item, sent);
-        },{...runtimeOptions,isCurrent:()=>!gap});
+        },{...runtimeOptions,compactOutput:variant === 'B',isCurrent:()=>!gap});
         const now = worldEvidence(c,first.id), live = worldEvidence(chat,first.id);
         rows.push({id:first.id, calls, available:attempts.length, gap, status:rec(c[first.id]).extraction.status,
             eventsEqual:isDeepStrictEqual(now.events,live.events),worldEqual:isDeepStrictEqual(now.state,live.state),

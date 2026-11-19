@@ -34,7 +34,7 @@ import { readTurn, irRecord, interpretedActs, IR_VERSION } from '../ir.js';
 import { buildCatalog, extractorCatalog, guardContext } from './catalog.js';
 import { interpreterRequest, parseInterpretation, INTERPRETER_VERSION } from './interpret.js';
 import { guardCommands } from './agency.js';
-import { extractorRequest, parseExtraction, EXTRACTOR_VERSION } from './extract.js';
+import { COMPACT, extractorRequest, parseExtraction, EXTRACTOR_VERSION } from './extract.js';
 import { boardRequest, parseBoard, bookBoard, BOARD_VERSION, COUNT_BOARD_PROFILE } from './guild.js';
 import { extractionFailedEvents } from './world.js';
 import { hallOf, settlementOf, membership, boardKey, today, listingsOf, supportedRanks, placeName } from './domain.js';
@@ -916,7 +916,7 @@ export function extractionRequest(chat, id, content) {
  * persistence we have. A reply that changed meanwhile, or a later turn already resolved, is left alone.
  * @returns {{changed: boolean, applied?: boolean, failed?: string, late?: boolean}}
  */
-export async function runExtraction(chat, id, content, llm, { hud = 'closed', isCurrent = () => true, commit = null } = {}) {
+export async function runExtraction(chat, id, content, llm, { hud = 'closed', compactOutput = false, isCurrent = () => true, commit = null } = {}) {
     if (!isCurrent()) return { changed: false, cancelled: true };
     // .127: a broken record stops here, before any provider request; the pending record stays untouched (a plain
     // result, no exception: the host's failure path would book extract.failed)
@@ -956,7 +956,10 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
     let overrides = {};
     for (let attempt = 0; attempt < 3; attempt++) {
         if (!current()) return stale();
-        const response = await ask(llm, messages, purpose, overrides);
+        const outgoing = compactOutput
+            ? [{ ...messages[0], content: messages[0].content + '\n' + COMPACT }, ...messages.slice(1)]
+            : messages;
+        const response = await ask(llm, outgoing, purpose, overrides);
         calls.push(response.call);
         ms += response.ms;
         if (!current()) return stale();

@@ -42,17 +42,18 @@ export async function board159Smoke({page,send,idle,calls,driver,onReload}){
  });
  const originalSettings=await page.evaluate(()=>{
   const c=SillyTavern.getContext();
-  return {stream:c.chatCompletionSettings.stream_openai,smooth:c.powerUserSettings.smooth_streaming};
+  return {compact:c.extensionSettings.avereth.compactOutput,stream:c.chatCompletionSettings.stream_openai,smooth:c.powerUserSettings.smooth_streaming};
  });
- const setStream=({stream,smooth})=>page.evaluate(({stream,smooth})=>{
+ const setStream=({stream,smooth,compact})=>page.evaluate(({stream,smooth,compact})=>{
   const c=SillyTavern.getContext();
+  c.extensionSettings.avereth.compactOutput=compact;
   c.chatCompletionSettings.stream_openai=stream;
   c.powerUserSettings.smooth_streaming=smooth;
- },{stream,smooth});
+ },{stream,smooth,compact});
  let reference;
  try{
   for(const arm of ['reference','full','slot']){
-   mode=arm;n=0;await seed();await setStream({stream:arm==='slot',smooth:false});
+   mode=arm;n=0;await seed();await setStream({stream:arm==='slot',smooth:false,compact:arm==='slot'});
    const start=calls.length;await send(comparison);await idle();
    const turn=calls.slice(start),saved=await driver().verifySaved(await driver().chat(),{complete:true});
    const before=await publication();
@@ -66,6 +67,7 @@ export async function board159Smoke({page,send,idle,calls,driver,onReload}){
    if(arm==='reference')reference=after;
    else checks[arm+'SameWorld']=JSON.stringify(after)===JSON.stringify(reference);
    const expected=arm==='reference'?['plan','board','narrator','extract']:['plan','board','board','narrator','extract'];
+   checks[arm+'ExtractorFormat']=turn.find(c=>c.purpose==='extract')?.messages[0].content.includes('Write compact single-line JSON.') === (arm==='slot');
    checks[arm+'Calls']=JSON.stringify(turn.map(c=>c.purpose))===JSON.stringify(expected) &&
     turn.every(c=>c.stream===(arm==='slot' && c.purpose==='narrator'));
   }

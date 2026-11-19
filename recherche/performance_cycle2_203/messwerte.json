@@ -1,0 +1,3951 @@
+{
+ "commits": {
+  "B1": "9758ce724dc9ace92f3658c7be05a6778ad2ea14",
+  "B2": "3aaeb58b4cba487295137f6b99e3cdd8ab4b33b0",
+  "B3": "6d9770f9b31e78d37567719bf1c06d8a4942288c"
+ },
+ "plan": {
+  "status": 200,
+  "category": "chat"
+ },
+ "providerGenerations": 0,
+ "gates": {
+  "B1": {
+   "node": {
+    "tests": 3410,
+    "pass": 3410,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+   },
+   "target": {
+    "tests": 139,
+    "pass": 139,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+   },
+   "replay": {
+    "total": 2235,
+    "differing": 1131,
+    "exactAccepted": 1131,
+    "unaccepted": 0,
+    "staleAcceptances": 0
+   },
+   "browser": [
+    {
+     "session": "2026-11-19T15-54-25-544Z",
+     "st": {
+      "version": "1.19.0",
+      "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+     },
+     "node": "24.22.1",
+     "chromium": "156.0.8078.79",
+     "observedGit": {
+      "version": "4.3.0-c.6.6.203",
+      "commit": "8df38d3f",
+      "branch": "experiment/203-performance-cycle2",
+      "dirty": true
+     },
+     "modes": [
+      {
+       "mode": "board_slot",
+       "ok": true,
+       "checks": 49,
+       "passed": 49,
+       "failed": [],
+       "page_errors": 0,
+       "seconds": 123
+      }
+     ]
+    },
+    {
+     "session": "2026-11-19T16-26-24-549Z",
+     "st": {
+      "version": "1.19.0",
+      "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+     },
+     "node": "24.22.1",
+     "chromium": "156.0.8078.79",
+     "observedGit": {
+      "version": "4.3.0-c.6.6.203",
+      "commit": "8df38d3f",
+      "branch": "experiment/203-performance-cycle2",
+      "dirty": true
+     },
+     "modes": [
+      {
+       "mode": "failsoft",
+       "ok": true,
+       "checks": 360,
+       "passed": 360,
+       "failed": [],
+       "page_errors": 0,
+       "seconds": 783
+      }
+     ]
+    }
+   ],
+   "firstCombinedRun": {
+    "session": "2026-11-19T15-56-33-762Z",
+    "st": {
+     "version": "1.19.0",
+     "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+    },
+    "node": "24.22.1",
+    "chromium": "156.0.8078.79",
+    "observedGit": {
+     "version": "4.3.0-c.6.6.203",
+     "commit": "8df38d3f",
+     "branch": "experiment/203-performance-cycle2",
+     "dirty": true
+    },
+    "modes": [
+     {
+      "mode": "standard",
+      "ok": true,
+      "checks": 354,
+      "passed": 354,
+      "failed": [],
+      "page_errors": 0,
+      "seconds": 887
+     },
+     {
+      "mode": "failsoft",
+      "ok": false,
+      "checks": 360,
+      "passed": 359,
+      "failed": [
+       "noPageErrors"
+      ],
+      "page_errors": 2,
+      "seconds": 854
+     }
+    ]
+   },
+   "staleControls": {
+    "suite": {
+     "tests": 27,
+     "pass": 27,
+     "fail": 0,
+     "cancelled": 0,
+     "skipped": 0
+    },
+    "clean": {
+     "tests": 27,
+     "pass": 27,
+     "fail": 0,
+     "cancelled": 0,
+     "skipped": 0
+    }
+   },
+   "unexpectedBrowserMessages": [
+    "Stale chat snapshot",
+    "Stale origin or records before write"
+   ]
+  },
+  "B2": {
+   "node": {
+    "tests": 3410,
+    "pass": 3410,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+   },
+   "target": {
+    "tests": 31,
+    "pass": 31,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+   },
+   "replay": {
+    "total": 2235,
+    "differing": 1131,
+    "exactAccepted": 1131,
+    "unaccepted": 0,
+    "staleAcceptances": 0
+   },
+   "unitRed": {
+    "tests": 6,
+    "pass": 5,
+    "fail": 1,
+    "cancelled": 0,
+    "skipped": 0
+   },
+   "unitGreen": {
+    "tests": 6,
+    "pass": 6,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+   }
+  },
+  "B3": {
+   "node": {
+    "tests": 3411,
+    "pass": 3411,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+   },
+   "target": {
+    "tests": 43,
+    "pass": 43,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+   },
+   "replay": {
+    "total": 2235,
+    "differing": 1131,
+    "exactAccepted": 1131,
+    "unaccepted": 0,
+    "staleAcceptances": 0
+   },
+   "unitRed": {
+    "tests": 7,
+    "pass": 6,
+    "fail": 1,
+    "cancelled": 0,
+    "skipped": 0
+   },
+   "unitGreen": {
+    "tests": 7,
+    "pass": 7,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+   },
+   "browser": [
+    {
+     "session": "2026-11-19T16-39-33-099Z",
+     "st": {
+      "version": "1.19.0",
+      "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+     },
+     "node": "24.22.1",
+     "chromium": "156.0.8078.79",
+     "observedGit": {
+      "version": "4.3.0-c.6.6.203",
+      "commit": "8df38d3f",
+      "branch": "HEAD",
+      "dirty": true
+     },
+     "modes": [
+      {
+       "mode": "narrator_streaming",
+       "ok": true,
+       "checks": 59,
+       "passed": 59,
+       "failed": [],
+       "page_errors": 0,
+       "seconds": 322
+      }
+     ]
+    },
+    {
+     "session": "2026-11-19T16-44-57-945Z",
+     "st": {
+      "version": "1.19.0",
+      "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+     },
+     "node": "24.22.1",
+     "chromium": "156.0.8078.79",
+     "observedGit": {
+      "version": "4.3.0-c.6.6.203",
+      "commit": "8df38d3f",
+      "branch": "HEAD",
+      "dirty": true
+     },
+     "modes": [
+      {
+       "mode": "standard",
+       "ok": true,
+       "checks": 354,
+       "passed": 354,
+       "failed": [],
+       "page_errors": 0,
+       "seconds": 787
+      },
+      {
+       "mode": "failsoft",
+       "ok": true,
+       "checks": 360,
+       "passed": 360,
+       "failed": [],
+       "page_errors": 0,
+       "seconds": 782
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "historicalBoards": [
+  {
+   "name": "User04",
+   "slot": 1,
+   "rejected": {
+    "title": "Boar Problem at the Millrace Fields",
+    "why": "introductory habitat needs a weak ordinary level-1 individual (max HP 35, ATK 10)"
+   },
+   "replacement": "The Millrace Viper",
+   "counts": [
+    4,
+    5,
+    5
+   ],
+   "ids": [
+    "quest.the_millrace_viper",
+    "quest.thin_the_gull_wyrms_of_the_tidal_flats",
+    "quest.break_the_ashfen_stalker",
+    "quest.cull_the_hollowmere_marsh_titans",
+    "quest.clear_the_old_crown_catacombs_level_1"
+   ],
+   "levels": [
+    1,
+    5,
+    10,
+    13,
+    3
+   ],
+   "eventTypes": [
+    "place.created",
+    "quest.created",
+    "place.created",
+    "quest.created",
+    "place.created",
+    "quest.created",
+    "place.created",
+    "quest.created",
+    "quest.created",
+    "board.refreshed"
+   ],
+   "historicalEqual": true,
+   "negative": {
+    "unreadable": {
+     "accepted": null,
+     "errors": [
+      "report is not valid JSON"
+     ],
+     "slot": null
+    },
+    "fourOnly": {
+     "accepted": 4,
+     "errors": [],
+     "refused": [],
+     "slot": null
+    },
+    "twoInvalid": {
+     "accepted": 3,
+     "errors": [],
+     "refused": [
+      {
+       "title": "Boar Problem at the Millrace Fields",
+       "why": "introductory habitat needs a weak ordinary level-1 individual (max HP 35, ATK 10)"
+      },
+      {
+       "title": "Thin the Gull-Wyrms of the Tidal Flats",
+       "why": "rank Proven is not Novice"
+      }
+     ],
+     "slot": null
+    },
+    "missingField": {
+     "accepted": null,
+     "errors": [
+      "$.listings[1]: missing required \"client\""
+     ],
+     "slot": null
+    },
+    "ambiguousTitle": {
+     "accepted": 4,
+     "errors": [],
+     "refused": [
+      {
+       "title": "Boar Problem at the Millrace Fields",
+       "why": "introductory habitat needs a weak ordinary level-1 individual (max HP 35, ATK 10)"
+      }
+     ],
+     "slot": null
+    },
+    "duplicateTarget": {
+     "accepted": 4,
+     "errors": [],
+     "refused": [
+      {
+       "title": "Thin the Gull-Wyrms of the Tidal Flats",
+       "why": "duplicate counted hunt targets: another listing A different title for the same hunt; choose different targets"
+      }
+     ],
+     "slot": null
+    },
+    "secondClearance": {
+     "accepted": 4,
+     "errors": [],
+     "refused": [
+      {
+       "title": "Clear the Old Crown Catacombs, Level 1",
+       "why": "at most one Dungeon clearance on this board"
+      }
+     ],
+     "slot": null
+    },
+    "levelWindow": {
+     "accepted": 4,
+     "errors": [],
+     "refused": [
+      {
+       "title": "The Millrace Viper",
+       "why": "habitat level window must be 1-1, 1-3, 4-7, 8-11 or 12-14 and contain the quest recommendation"
+      }
+     ],
+     "slot": 1
+    },
+    "missingIntro": {
+     "accepted": null,
+     "errors": [
+      "Novice board needs an introductory single-foe hunt (qty 1, level 1, qtype minor)"
+     ],
+     "refused": [],
+     "slot": null
+    },
+    "missingMid": {
+     "accepted": null,
+     "errors": [
+      "F board needs voluntary mid-F (4-7) and upper-F (8-14) hunts as well as its introductory hunt; preserve the 4+1/5 family"
+     ],
+     "refused": [],
+     "slot": null
+    },
+    "missingUpper": {
+     "accepted": null,
+     "errors": [
+      "F board needs voluntary mid-F (4-7) and upper-F (8-14) hunts as well as its introductory hunt; preserve the 4+1/5 family"
+     ],
+     "refused": [],
+     "slot": null
+    },
+    "missingClearance": {
+     "accepted": null,
+     "errors": [
+      "board requires 4 hunts, 0 deliveries and 1 suitable Dungeon clearance; include existing notices"
+     ],
+     "refused": [],
+     "slot": null
+    }
+   }
+  },
+  {
+   "name": "User05",
+   "slot": 4,
+   "rejected": {
+    "title": "Take the Snapper at Miller's Weir",
+    "why": "habitat.anchor contradicts the named species body plan"
+   },
+   "replacement": "Kill the Stray Hound of Tanner's Row",
+   "counts": [
+    4,
+    5,
+    5
+   ],
+   "ids": [
+    "quest.cull_the_ditch_boars_at_the_southfield_vineyards",
+    "quest.thin_the_reedfang_serpent_brood_of_the_mire_causeway",
+    "quest.slay_the_pale_stag_of_hollowmere_wood",
+    "quest.kill_the_stray_hound_of_tanners_row",
+    "quest.clear_the_outer_grottos_of_glimmerdeep"
+   ],
+   "levels": [
+    4,
+    9,
+    13,
+    1,
+    1
+   ],
+   "eventTypes": [
+    "place.created",
+    "quest.created",
+    "place.created",
+    "quest.created",
+    "place.created",
+    "quest.created",
+    "place.created",
+    "quest.created",
+    "quest.created",
+    "board.refreshed"
+   ],
+   "historicalEqual": true,
+   "negative": {
+    "unreadable": {
+     "accepted": null,
+     "errors": [
+      "report is not valid JSON"
+     ],
+     "slot": null
+    },
+    "fourOnly": {
+     "accepted": 4,
+     "errors": [],
+     "refused": [],
+     "slot": null
+    },
+    "twoInvalid": {
+     "accepted": 3,
+     "errors": [],
+     "refused": [
+      {
+       "title": "Cull the Ditch Boars at the Southfield Vineyards",
+       "why": "rank Proven is not Novice"
+      },
+      {
+       "title": "Take the Snapper at Miller's Weir",
+       "why": "habitat.anchor contradicts the named species body plan"
+      }
+     ],
+     "slot": null
+    },
+    "missingField": {
+     "accepted": null,
+     "errors": [
+      "$.listings[0]: missing required \"client\""
+     ],
+     "slot": null
+    },
+    "ambiguousTitle": {
+     "accepted": 4,
+     "errors": [],
+     "refused": [
+      {
+       "title": "Take the Snapper at Miller's Weir",
+       "why": "habitat.anchor contradicts the named species body plan"
+      }
+     ],
+     "slot": null
+    },
+    "duplicateTarget": {
+     "accepted": 4,
+     "errors": [],
+     "refused": [
+      {
+       "title": "A different title for the same hunt",
+       "why": "duplicate counted hunt targets: another listing Cull the Ditch Boars at the Southfield Vineyards; choose different targets"
+      }
+     ],
+     "slot": null
+    },
+    "secondClearance": {
+     "accepted": 4,
+     "errors": [],
+     "refused": [
+      {
+       "title": "Clear the Outer Grottos of Glimmerdeep",
+       "why": "at most one Dungeon clearance on this board"
+      }
+     ],
+     "slot": null
+    },
+    "levelWindow": {
+     "accepted": 4,
+     "errors": [],
+     "refused": [
+      {
+       "title": "Kill the Stray Hound of Tanner's Row",
+       "why": "habitat level window must be 1-1, 1-3, 4-7, 8-11 or 12-14 and contain the quest recommendation"
+      }
+     ],
+     "slot": 4
+    },
+    "missingIntro": {
+     "accepted": null,
+     "errors": [
+      "Novice board needs an introductory single-foe hunt (qty 1, level 1, qtype minor)"
+     ],
+     "refused": [],
+     "slot": null
+    },
+    "missingMid": {
+     "accepted": null,
+     "errors": [
+      "F board needs voluntary mid-F (4-7) and upper-F (8-14) hunts as well as its introductory hunt; preserve the 4+1/5 family"
+     ],
+     "refused": [],
+     "slot": null
+    },
+    "missingUpper": {
+     "accepted": null,
+     "errors": [
+      "F board needs voluntary mid-F (4-7) and upper-F (8-14) hunts as well as its introductory hunt; preserve the 4+1/5 family"
+     ],
+     "refused": [],
+     "slot": null
+    },
+    "missingClearance": {
+     "accepted": null,
+     "errors": [
+      "board requires 4 hunts, 0 deliveries and 1 suitable Dungeon clearance; include existing notices"
+     ],
+     "refused": [],
+     "slot": null
+    }
+   }
+  },
+  {
+   "name": "User06",
+   "slot": 1,
+   "rejected": {
+    "title": "Take the Pike That Took the Mill Pond",
+    "why": "introductory habitat needs a weak ordinary level-1 individual (max HP 35, ATK 10)"
+   },
+   "replacement": "Slay the Marsh Adder of the Eel Weirs",
+   "counts": [
+    4,
+    5,
+    5
+   ],
+   "ids": [
+    "quest.slay_the_marsh_adder_of_the_eel_weirs",
+    "quest.thin_the_thistleback_boars",
+    "quest.break_the_howling_pack_of_the_old_quarry_track",
+    "quest.slay_the_ashbridge_ravager",
+    "quest.clear_mossback_warrens_level_1"
+   ],
+   "levels": [
+    1,
+    5,
+    9,
+    13,
+    3
+   ],
+   "eventTypes": [
+    "place.created",
+    "quest.created",
+    "place.created",
+    "quest.created",
+    "place.created",
+    "quest.created",
+    "place.created",
+    "quest.created",
+    "quest.created",
+    "board.refreshed"
+   ],
+   "historicalEqual": true,
+   "negative": {
+    "unreadable": {
+     "accepted": null,
+     "errors": [
+      "report is not valid JSON"
+     ],
+     "slot": null
+    },
+    "fourOnly": {
+     "accepted": 4,
+     "errors": [],
+     "refused": [],
+     "slot": null
+    },
+    "twoInvalid": {
+     "accepted": 3,
+     "errors": [],
+     "refused": [
+      {
+       "title": "Take the Pike That Took the Mill Pond",
+       "why": "introductory habitat needs a weak ordinary level-1 individual (max HP 35, ATK 10)"
+      },
+      {
+       "title": "Thin the Thistleback Boars",
+       "why": "rank Proven is not Novice"
+      }
+     ],
+     "slot": null
+    },
+    "missingField": {
+     "accepted": null,
+     "errors": [
+      "$.listings[1]: missing required \"client\""
+     ],
+     "slot": null
+    },
+    "ambiguousTitle": {
+     "accepted": 4,
+     "errors": [],
+     "refused": [
+      {
+       "title": "Take the Pike That Took the Mill Pond",
+       "why": "introductory habitat needs a weak ordinary level-1 individual (max HP 35, ATK 10)"
+      }
+     ],
+     "slot": null
+    },
+    "duplicateTarget": {
+     "accepted": 4,
+     "errors": [],
+     "refused": [
+      {
+       "title": "Thin the Thistleback Boars",
+       "why": "duplicate counted hunt targets: another listing A different title for the same hunt; choose different targets"
+      }
+     ],
+     "slot": null
+    },
+    "secondClearance": {
+     "accepted": 4,
+     "errors": [],
+     "refused": [
+      {
+       "title": "Clear Mossback Warrens Level 1",
+       "why": "at most one Dungeon clearance on this board"
+      }
+     ],
+     "slot": null
+    },
+    "levelWindow": {
+     "accepted": 4,
+     "errors": [],
+     "refused": [
+      {
+       "title": "Slay the Marsh Adder of the Eel Weirs",
+       "why": "habitat level window must be 1-1, 1-3, 4-7, 8-11 or 12-14 and contain the quest recommendation"
+      }
+     ],
+     "slot": 1
+    },
+    "missingIntro": {
+     "accepted": null,
+     "errors": [
+      "Novice board needs an introductory single-foe hunt (qty 1, level 1, qtype minor)"
+     ],
+     "refused": [],
+     "slot": null
+    },
+    "missingMid": {
+     "accepted": null,
+     "errors": [
+      "F board needs voluntary mid-F (4-7) and upper-F (8-14) hunts as well as its introductory hunt; preserve the 4+1/5 family"
+     ],
+     "refused": [],
+     "slot": null
+    },
+    "missingUpper": {
+     "accepted": null,
+     "errors": [
+      "F board needs voluntary mid-F (4-7) and upper-F (8-14) hunts as well as its introductory hunt; preserve the 4+1/5 family"
+     ],
+     "refused": [],
+     "slot": null
+    },
+    "missingClearance": {
+     "accepted": null,
+     "errors": [
+      "board requires 4 hunts, 0 deliveries and 1 suitable Dungeon clearance; include existing notices"
+     ],
+     "refused": [],
+     "slot": null
+    }
+   }
+  }
+ ],
+ "naturalBoardReplay": [
+  {
+   "label": "A",
+   "requests": 2,
+   "events": 10,
+   "originalEventsEqual": true,
+   "slot": false
+  },
+  {
+   "label": "B",
+   "requests": 2,
+   "events": 10,
+   "originalEventsEqual": true,
+   "slot": true
+  },
+  {
+   "label": "B1",
+   "requests": 2,
+   "events": 10,
+   "originalEventsEqual": true,
+   "slot": true
+  },
+  {
+   "label": "kandidat",
+   "requests": 2,
+   "events": 10,
+   "originalEventsEqual": true,
+   "slot": true
+  }
+ ],
+ "promptQuality": {
+  "natural": [
+   {
+    "ids": [
+     5
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     8
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     12
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     17
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     20
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     23,
+     24
+    ],
+    "calls": [
+     2,
+     2
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true,
+    "counterexamples": {
+     "endBrace": {
+      "valid": false,
+      "worldEqual": null
+     },
+     "beforeDeltas": {
+      "valid": true,
+      "worldEqual": false,
+      "diff": [
+       "quests.quest.the_adder_by_the_millrace"
+      ]
+     }
+    }
+   },
+   {
+    "ids": [
+     27
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     30,
+     31
+    ],
+    "calls": [
+     2,
+     2
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true,
+    "unwrap": {
+     "valid": true,
+     "worldEqual": true,
+     "diff": [],
+     "accepted": [
+      "object.new",
+      "fact",
+      "thread",
+      "time"
+     ]
+    }
+   },
+   {
+    "ids": [
+     34
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     37
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     40,
+     41
+    ],
+    "calls": [
+     2,
+     2
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true,
+    "counterexamples": {
+     "villager": {
+      "valid": true,
+      "worldEqual": true,
+      "diff": []
+     },
+     "guildOfficial": {
+      "valid": true,
+      "worldEqual": false,
+      "diff": [
+       "last.rejected"
+      ]
+     }
+    }
+   },
+   {
+    "ids": [
+     44
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     47
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     50
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     53
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     56
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     59
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     62
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     65
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     68
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     69
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     70
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     71
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     72
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     73
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     74
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     76
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     78
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     80
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     82
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     84
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     86
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   }
+  ],
+  "historical": [
+   {
+    "corpus": "U5A",
+    "physical": 5,
+    "jobs": 5,
+    "used": 5
+   },
+   {
+    "corpus": "U5B",
+    "physical": 7,
+    "jobs": 7,
+    "used": 7
+   },
+   {
+    "corpus": "U5C",
+    "physical": 8,
+    "jobs": 7,
+    "used": 7
+   },
+   {
+    "corpus": "U6",
+    "physical": 12,
+    "jobs": 10,
+    "used": 12
+   }
+  ],
+  "parseBatchMs": [
+   [
+    35.02454200000102,
+    24.089028000000326,
+    43.9624189999995,
+    15.471463000001677,
+    10.284643999999389,
+    11.364041000000725,
+    11.443830999998681,
+    14.201656999999614,
+    14.407460000000356,
+    19.66066099999989,
+    12.921222000000853,
+    32.64064899999903,
+    11.438767000001462,
+    26.759941999998773,
+    11.739902000001166,
+    9.984112000000096,
+    9.981660999999804,
+    31.14521799999966,
+    9.85582599999907,
+    11.421148999999787
+   ],
+   [
+    15.995393999999578,
+    19.994510000000446,
+    12.163958999999522,
+    11.672990000000937,
+    11.100185999999667,
+    31.466287999999622,
+    13.134446000000025,
+    13.966946000000462,
+    27.081849000000147,
+    10.5148250000002,
+    12.65528699999959,
+    10.389067000000068,
+    11.948472000000038,
+    12.063790000000154,
+    30.075227999999697,
+    19.065920999999435,
+    12.385305999998309,
+    9.765338999999585,
+    9.319164000000455,
+    11.321501000000353
+   ]
+  ]
+ },
+ "objectQuality": {
+  "natural": [
+   {
+    "ids": [
+     5
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     8
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     12
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     17
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     20
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     23,
+     24
+    ],
+    "calls": [
+     2,
+     2
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true,
+    "counterexamples": {
+     "endBrace": {
+      "valid": false,
+      "worldEqual": null
+     },
+     "beforeDeltas": {
+      "valid": true,
+      "worldEqual": false,
+      "diff": [
+       "quests.quest.the_adder_by_the_millrace"
+      ]
+     }
+    }
+   },
+   {
+    "ids": [
+     27
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     30,
+     31
+    ],
+    "calls": [
+     2,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true,
+    "unwrap": {
+     "valid": true,
+     "worldEqual": true,
+     "diff": [],
+     "accepted": [
+      "object.new",
+      "fact",
+      "thread",
+      "time"
+     ]
+    }
+   },
+   {
+    "ids": [
+     34
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     37
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     40,
+     41
+    ],
+    "calls": [
+     2,
+     2
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true,
+    "counterexamples": {
+     "villager": {
+      "valid": true,
+      "worldEqual": true,
+      "diff": []
+     },
+     "guildOfficial": {
+      "valid": true,
+      "worldEqual": false,
+      "diff": [
+       "last.rejected"
+      ]
+     }
+    }
+   },
+   {
+    "ids": [
+     44
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     47
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     50
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     53
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     56
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     59
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     62
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     65
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     68
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     69
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     70
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     71
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     72
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     73
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     74
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     76
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     78
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     80
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     82
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     84
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   },
+   {
+    "ids": [
+     86
+    ],
+    "calls": [
+     1,
+     1
+    ],
+    "equal": true,
+    "reload": true,
+    "originalState": true
+   }
+  ],
+  "historical": [
+   {
+    "corpus": "U5A",
+    "physical": 5,
+    "jobs": 5,
+    "used": 5
+   },
+   {
+    "corpus": "U5B",
+    "physical": 7,
+    "jobs": 7,
+    "used": 7
+   },
+   {
+    "corpus": "U5C",
+    "physical": 8,
+    "jobs": 7,
+    "used": 7
+   },
+   {
+    "corpus": "U6",
+    "physical": 12,
+    "jobs": 10,
+    "used": 12
+   }
+  ],
+  "parseBatchMs": [
+   [
+    25.447415999999066,
+    28.061776000000464,
+    23.72433799999999,
+    17.158306999999695,
+    21.15674399999989,
+    40.92407500000081,
+    48.210182000000714,
+    45.42502599999898,
+    43.87872099999913,
+    19.20712999999887,
+    37.54115599999932,
+    20.92974099999992,
+    36.613148999998884,
+    20.825276999999915,
+    40.00452799999948,
+    19.51427700000022,
+    21.348183000000063,
+    42.50069099999928,
+    65.48337699999865,
+    63.710004999999
+   ],
+   [
+    35.41043600000012,
+    50.081828999998834,
+    39.92687500000102,
+    17.24568999999974,
+    48.95221499999934,
+    23.824781999999686,
+    39.46730699999898,
+    55.84475500000008,
+    22.377959999999803,
+    22.008514999999534,
+    20.43971600000077,
+    18.627448999999615,
+    17.66530799999964,
+    18.267878999999084,
+    19.548751999998785,
+    18.532044000001406,
+    38.79364199999873,
+    18.469098000001395,
+    68.68534800000089,
+    49.79809899999964
+   ]
+  ]
+ },
+ "objectHost": [
+  {
+   "requests": 2,
+   "state": "4f9414073ed85e6c8045e07a2cd59e9db272ee0b57ff4aeacd4df4e46a4b85a5",
+   "eventsWithoutRepairFlag": "c80badb86b2273079492d0f30c509b35bfe1a793215c66efe622f32941b0c3cd",
+   "readback": true
+  },
+  {
+   "requests": 1,
+   "state": "4f9414073ed85e6c8045e07a2cd59e9db272ee0b57ff4aeacd4df4e46a4b85a5",
+   "eventsWithoutRepairFlag": "c80badb86b2273079492d0f30c509b35bfe1a793215c66efe622f32941b0c3cd",
+   "readback": true
+  }
+ ],
+ "promptTrialsAndTimings": {
+  "rows": [
+   {
+    "id": 3,
+    "role": "planner",
+    "turn": 1,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 12329,
+    "trial": 12329,
+    "examples": 49,
+    "original": 12329
+   },
+   {
+    "id": 5,
+    "role": "extractor",
+    "turn": 1,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 12987,
+    "trial": 12973,
+    "examples": 0,
+    "original": 12987
+   },
+   {
+    "id": 9,
+    "role": "planner",
+    "turn": 2,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 12334,
+    "trial": 12334,
+    "examples": 49,
+    "original": 12334
+   },
+   {
+    "id": 10,
+    "role": "board",
+    "turn": 2,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 2643,
+    "trial": 2617,
+    "examples": 0,
+    "original": 2643
+   },
+   {
+    "id": 12,
+    "role": "extractor",
+    "turn": 2,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 15187,
+    "trial": 15173,
+    "examples": 0,
+    "original": 15187
+   },
+   {
+    "id": 18,
+    "role": "planner",
+    "turn": 3,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 13644,
+    "trial": 13644,
+    "examples": 49,
+    "original": 13644
+   },
+   {
+    "id": 20,
+    "role": "extractor",
+    "turn": 3,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 14715,
+    "trial": 14701,
+    "examples": 0,
+    "original": 14715
+   },
+   {
+    "id": 25,
+    "role": "planner",
+    "turn": 4,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 13752,
+    "trial": 13752,
+    "examples": 49,
+    "original": 13752
+   },
+   {
+    "id": 27,
+    "role": "extractor",
+    "turn": 4,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 14511,
+    "trial": 14497,
+    "examples": 0,
+    "original": 14511
+   },
+   {
+    "id": 32,
+    "role": "planner",
+    "turn": 5,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 13778,
+    "trial": 13778,
+    "examples": 49,
+    "original": 13778
+   },
+   {
+    "id": 34,
+    "role": "extractor",
+    "turn": 5,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 14694,
+    "trial": 14680,
+    "examples": 0,
+    "original": 14694
+   },
+   {
+    "id": 38,
+    "role": "planner",
+    "turn": 6,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 13755,
+    "trial": 13755,
+    "examples": 49,
+    "original": 13755
+   },
+   {
+    "id": 40,
+    "role": "extractor",
+    "turn": 6,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 14559,
+    "trial": 14545,
+    "examples": 0,
+    "original": 14559
+   },
+   {
+    "id": 41,
+    "role": "extractor",
+    "turn": 6,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 14845,
+    "trial": 14831,
+    "examples": 0,
+    "original": 14845
+   },
+   {
+    "id": 45,
+    "role": "planner",
+    "turn": 7,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 13775,
+    "trial": 13775,
+    "examples": 49,
+    "original": 13775
+   },
+   {
+    "id": 47,
+    "role": "extractor",
+    "turn": 7,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 15317,
+    "trial": 15303,
+    "examples": 0,
+    "original": 15317
+   },
+   {
+    "id": 51,
+    "role": "planner",
+    "turn": 8,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 13049,
+    "trial": 13049,
+    "examples": 49,
+    "original": 13049
+   },
+   {
+    "id": 53,
+    "role": "extractor",
+    "turn": 8,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 14020,
+    "trial": 14006,
+    "examples": 0,
+    "original": 14020
+   },
+   {
+    "id": 57,
+    "role": "planner",
+    "turn": 9,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 13029,
+    "trial": 13029,
+    "examples": 49,
+    "original": 13029
+   },
+   {
+    "id": 59,
+    "role": "extractor",
+    "turn": 9,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 14559,
+    "trial": 14545,
+    "examples": 0,
+    "original": 14559
+   },
+   {
+    "id": 63,
+    "role": "planner",
+    "turn": 10,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 13069,
+    "trial": 13069,
+    "examples": 49,
+    "original": 13069
+   },
+   {
+    "id": 65,
+    "role": "extractor",
+    "turn": 10,
+    "arm": "A",
+    "stage": "main",
+    "baseline": 14038,
+    "trial": 14024,
+    "examples": 0,
+    "original": 14038
+   },
+   {
+    "id": 6,
+    "role": "planner",
+    "turn": 1,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 12251,
+    "trial": 12251,
+    "examples": 49,
+    "original": 12251
+   },
+   {
+    "id": 8,
+    "role": "extractor",
+    "turn": 1,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 12955,
+    "trial": 12941,
+    "examples": 0,
+    "original": 12955
+   },
+   {
+    "id": 13,
+    "role": "planner",
+    "turn": 2,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 12246,
+    "trial": 12246,
+    "examples": 49,
+    "original": 12246
+   },
+   {
+    "id": 14,
+    "role": "board",
+    "turn": 2,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 2643,
+    "trial": 2617,
+    "examples": 0,
+    "original": 2685
+   },
+   {
+    "id": 15,
+    "role": "board",
+    "turn": 2,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 3118,
+    "trial": 3092,
+    "examples": 0,
+    "original": 3118
+   },
+   {
+    "id": 17,
+    "role": "extractor",
+    "turn": 2,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 15303,
+    "trial": 15289,
+    "examples": 0,
+    "original": 15303
+   },
+   {
+    "id": 21,
+    "role": "planner",
+    "turn": 3,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 13680,
+    "trial": 13680,
+    "examples": 49,
+    "original": 13680
+   },
+   {
+    "id": 23,
+    "role": "extractor",
+    "turn": 3,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 14831,
+    "trial": 14817,
+    "examples": 0,
+    "original": 14831
+   },
+   {
+    "id": 24,
+    "role": "extractor",
+    "turn": 3,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 15284,
+    "trial": 15270,
+    "examples": 0,
+    "original": 15284
+   },
+   {
+    "id": 28,
+    "role": "planner",
+    "turn": 4,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 13759,
+    "trial": 13759,
+    "examples": 49,
+    "original": 13759
+   },
+   {
+    "id": 30,
+    "role": "extractor",
+    "turn": 4,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 14587,
+    "trial": 14573,
+    "examples": 0,
+    "original": 14587
+   },
+   {
+    "id": 31,
+    "role": "extractor",
+    "turn": 4,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 15054,
+    "trial": 15040,
+    "examples": 0,
+    "original": 15054
+   },
+   {
+    "id": 35,
+    "role": "planner",
+    "turn": 5,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 13799,
+    "trial": 13799,
+    "examples": 49,
+    "original": 13799
+   },
+   {
+    "id": 37,
+    "role": "extractor",
+    "turn": 5,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 14719,
+    "trial": 14705,
+    "examples": 0,
+    "original": 14719
+   },
+   {
+    "id": 42,
+    "role": "planner",
+    "turn": 6,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 13776,
+    "trial": 13776,
+    "examples": 49,
+    "original": 13776
+   },
+   {
+    "id": 44,
+    "role": "extractor",
+    "turn": 6,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 14602,
+    "trial": 14588,
+    "examples": 0,
+    "original": 14602
+   },
+   {
+    "id": 48,
+    "role": "planner",
+    "turn": 7,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 13801,
+    "trial": 13801,
+    "examples": 49,
+    "original": 13801
+   },
+   {
+    "id": 50,
+    "role": "extractor",
+    "turn": 7,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 15395,
+    "trial": 15381,
+    "examples": 0,
+    "original": 15395
+   },
+   {
+    "id": 54,
+    "role": "planner",
+    "turn": 8,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 12997,
+    "trial": 12997,
+    "examples": 49,
+    "original": 12997
+   },
+   {
+    "id": 56,
+    "role": "extractor",
+    "turn": 8,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 13990,
+    "trial": 13976,
+    "examples": 0,
+    "original": 13990
+   },
+   {
+    "id": 60,
+    "role": "planner",
+    "turn": 9,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 12992,
+    "trial": 12992,
+    "examples": 49,
+    "original": 12992
+   },
+   {
+    "id": 62,
+    "role": "extractor",
+    "turn": 9,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 14367,
+    "trial": 14353,
+    "examples": 0,
+    "original": 14367
+   },
+   {
+    "id": 66,
+    "role": "planner",
+    "turn": 10,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 13032,
+    "trial": 13032,
+    "examples": 49,
+    "original": 13032
+   },
+   {
+    "id": 68,
+    "role": "extractor",
+    "turn": 10,
+    "arm": "B",
+    "stage": "main",
+    "baseline": 14203,
+    "trial": 14189,
+    "examples": 0,
+    "original": 14203
+   },
+   {
+    "id": 69,
+    "role": "extractor",
+    "turn": 3,
+    "arm": "B",
+    "stage": "extractor-0",
+    "baseline": 14831,
+    "trial": 14817,
+    "examples": 0,
+    "original": 14831
+   },
+   {
+    "id": 70,
+    "role": "extractor",
+    "turn": 3,
+    "arm": "B",
+    "stage": "extractor-1",
+    "baseline": 14863,
+    "trial": 14849,
+    "examples": 0,
+    "original": 14863
+   },
+   {
+    "id": 71,
+    "role": "extractor",
+    "turn": 4,
+    "arm": "B",
+    "stage": "extractor-1",
+    "baseline": 14619,
+    "trial": 14605,
+    "examples": 0,
+    "original": 14619
+   },
+   {
+    "id": 72,
+    "role": "extractor",
+    "turn": 4,
+    "arm": "B",
+    "stage": "extractor-0",
+    "baseline": 14587,
+    "trial": 14573,
+    "examples": 0,
+    "original": 14587
+   },
+   {
+    "id": 73,
+    "role": "extractor",
+    "turn": 7,
+    "arm": "B",
+    "stage": "extractor-0",
+    "baseline": 15395,
+    "trial": 15381,
+    "examples": 0,
+    "original": 15395
+   },
+   {
+    "id": 74,
+    "role": "extractor",
+    "turn": 7,
+    "arm": "B",
+    "stage": "extractor-1",
+    "baseline": 15427,
+    "trial": 15413,
+    "examples": 0,
+    "original": 15427
+   },
+   {
+    "id": 76,
+    "role": "extractor",
+    "turn": 1,
+    "arm": "B",
+    "stage": "preset-0",
+    "baseline": 12991,
+    "trial": 12977,
+    "examples": 0,
+    "original": 12991
+   },
+   {
+    "id": 78,
+    "role": "extractor",
+    "turn": 1,
+    "arm": "B",
+    "stage": "preset-1",
+    "baseline": 12952,
+    "trial": 12938,
+    "examples": 0,
+    "original": 12952
+   },
+   {
+    "id": 80,
+    "role": "extractor",
+    "turn": 4,
+    "arm": "B",
+    "stage": "preset-1",
+    "baseline": 14611,
+    "trial": 14597,
+    "examples": 0,
+    "original": 14611
+   },
+   {
+    "id": 82,
+    "role": "extractor",
+    "turn": 4,
+    "arm": "B",
+    "stage": "preset-0",
+    "baseline": 14680,
+    "trial": 14666,
+    "examples": 0,
+    "original": 14680
+   },
+   {
+    "id": 84,
+    "role": "extractor",
+    "turn": "U06-I21",
+    "arm": "B",
+    "stage": "preset-0",
+    "baseline": 13995,
+    "trial": 13981,
+    "examples": 0,
+    "original": 13995
+   },
+   {
+    "id": 86,
+    "role": "extractor",
+    "turn": "U06-I21",
+    "arm": "B",
+    "stage": "preset-1",
+    "baseline": 13992,
+    "trial": 13978,
+    "examples": 0,
+    "original": 13992
+   }
+  ],
+  "local": {
+   "A": {
+    "lastExtractorTransportEnd": {
+     "toReadyMs": [
+      99.9,
+      150.5,
+      127.5,
+      298.3,
+      153.6,
+      179.0,
+      294.6,
+      200.5,
+      264.1,
+      198.4
+     ],
+     "median": 188.7,
+     "max": 298.3
+    },
+    "worldCommit": {
+     "toReadyMs": [
+      69.5,
+      130.2,
+      99.3,
+      259.0,
+      138.0,
+      165.3,
+      263.1,
+      179.8,
+      224.9,
+      183.7
+     ],
+     "median": 172.55,
+     "max": 263.1
+    },
+    "confirmedSave": {
+     "toReadyMs": [
+      4.5,
+      5.2,
+      4.3,
+      6.0,
+      7.0,
+      7.3,
+      4.1,
+      2.8,
+      2.9,
+      2.7
+     ],
+     "median": 4.4,
+     "max": 7.3
+    }
+   },
+   "B": {
+    "lastExtractorTransportEnd": {
+     "toReadyMs": [
+      110.9,
+      229.0,
+      175.9,
+      158.3,
+      129.3,
+      607.7,
+      189.7,
+      120.3,
+      174.5,
+      190.7
+     ],
+     "median": 175.2,
+     "max": 607.7
+    },
+    "worldCommit": {
+     "toReadyMs": [
+      77.9,
+      157.2,
+      152.5,
+      134.4,
+      114.7,
+      568.5,
+      157.2,
+      109.7,
+      141.1,
+      167.2
+     ],
+     "median": 146.8,
+     "max": 568.5
+    },
+    "confirmedSave": {
+     "toReadyMs": [
+      4.8,
+      11.0,
+      5.9,
+      4.4,
+      19.1,
+      28.3,
+      7.8,
+      2.9,
+      3.2,
+      2.8
+     ],
+     "median": 5.35,
+     "max": 28.3
+    }
+   }
+  },
+  "pairs": {
+   "firstProse": {
+    "deltaMs": [
+     -11062.0,
+     -4900.1,
+     -7575.7,
+     -12871.4,
+     -5660.1,
+     -17695.5,
+     -20450.1,
+     -11247.5,
+     -12744.4
+    ],
+    "median": -11247.5,
+    "n": 9
+   },
+   "stNarrationFinished": {
+    "deltaMs": [
+     994.3,
+     -84737.6,
+     6493.8,
+     9499.2,
+     -811.8,
+     6999.9,
+     -1229.6,
+     -8746.6,
+     1664.6,
+     6767.7
+    ],
+    "median": 1329.4499999999998,
+    "n": 10
+   },
+   "ready": {
+    "deltaMs": [
+     3090.3,
+     -86832.1,
+     55968.2,
+     41416.2,
+     -1773.1,
+     -16373.4,
+     -16986.5,
+     -25727.8,
+     -11362.0,
+     23052.0
+    ],
+    "median": -6567.55,
+    "n": 10
+   }
+  }
+ },
+ "semanticArchive": [
+  {
+   "name": "U5A",
+   "missingChatJobs": [],
+   "rows": [
+    {
+     "request": 3,
+     "id": 6,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 3,
+     "rejections": [],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 6,
+     "id": 8,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 2,
+     "rejections": [
+      {
+       "seq": 2,
+       "type": "learn",
+       "rule": "identity_subject",
+       "why": "\"Alaric Red\" is Alaric's name, not Brenna Hallowell's: what someone learns of him is about pc"
+      }
+     ],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": true,
+     "missingRequirements": []
+    },
+    {
+     "request": 9,
+     "id": 10,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 0,
+     "rejections": [],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 14,
+     "id": 12,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 0,
+     "rejections": [],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 17,
+     "id": 14,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 3,
+     "rejections": [],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": true,
+     "missingRequirements": []
+    }
+   ],
+   "jobs": [
+    {
+     "id": 6,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 2
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": []
+    },
+    {
+     "id": 8,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 5
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": [
+      {
+       "seq": 2,
+       "type": "learn",
+       "rule": "identity_subject",
+       "why": "\"Alaric Red\" is Alaric's name, not Brenna Hallowell's: what someone learns of him is about pc"
+      }
+     ]
+    },
+    {
+     "id": 10,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 8
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": []
+    },
+    {
+     "id": 12,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 13
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": []
+    },
+    {
+     "id": 14,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 16
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": []
+    }
+   ]
+  },
+  {
+   "name": "U5B",
+   "missingChatJobs": [],
+   "rows": [
+    {
+     "request": 3,
+     "id": 16,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 2,
+     "rejections": [],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 6,
+     "id": 18,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 6,
+     "rejections": [],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 9,
+     "id": 20,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 4,
+     "rejections": [
+      {
+       "seq": 4,
+       "type": "passage",
+       "rule": "dungeon_way",
+       "why": "the engine keeps the ways of Glimmerdeep Grotto: he goes on, back, down or out along its parts, never by a way the story tells"
+      }
+     ],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 12,
+     "id": 22,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 3,
+     "rejections": [],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 15,
+     "id": 24,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 0,
+     "rejections": [
+      {
+       "seq": 1,
+       "type": "position",
+       "rule": "world_rule",
+       "why": "positions of combatants are engine-owned during ACTIVE combat"
+      },
+      {
+       "seq": 2,
+       "type": "position",
+       "rule": "world_rule",
+       "why": "positions of combatants are engine-owned during ACTIVE combat"
+      },
+      {
+       "seq": 3,
+       "type": "position",
+       "rule": "world_rule",
+       "why": "positions of combatants are engine-owned during ACTIVE combat"
+      }
+     ],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 18,
+     "id": 26,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 0,
+     "rejections": [],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 21,
+     "id": 28,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 1,
+     "rejections": [],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    }
+   ],
+   "jobs": [
+    {
+     "id": 16,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 2
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": []
+    },
+    {
+     "id": 18,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 5
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": []
+    },
+    {
+     "id": 20,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 8
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": [
+      {
+       "seq": 4,
+       "type": "passage",
+       "rule": "dungeon_way",
+       "why": "the engine keeps the ways of Glimmerdeep Grotto: he goes on, back, down or out along its parts, never by a way the story tells"
+      }
+     ]
+    },
+    {
+     "id": 22,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 11
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": []
+    },
+    {
+     "id": 24,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 14
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": [
+      {
+       "seq": 1,
+       "type": "position",
+       "rule": "world_rule",
+       "why": "positions of combatants are engine-owned during ACTIVE combat"
+      },
+      {
+       "seq": 2,
+       "type": "position",
+       "rule": "world_rule",
+       "why": "positions of combatants are engine-owned during ACTIVE combat"
+      },
+      {
+       "seq": 3,
+       "type": "position",
+       "rule": "world_rule",
+       "why": "positions of combatants are engine-owned during ACTIVE combat"
+      }
+     ]
+    },
+    {
+     "id": 26,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 17
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": []
+    },
+    {
+     "id": 28,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 20
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": []
+    }
+   ]
+  },
+  {
+   "name": "U5C",
+   "missingChatJobs": [],
+   "rows": [
+    {
+     "request": 3,
+     "id": 32,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 2,
+     "rejections": [
+      {
+       "seq": 2,
+       "type": "recover",
+       "rule": "engine_recovery",
+       "why": "the engine already booked his recovery for the rest or sleep"
+      }
+     ],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 6,
+     "id": 34,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 3,
+     "rejections": [],
+     "worldEqual": true,
+     "eventsEqual": false,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 7,
+     "id": 34,
+     "attempt": 2,
+     "identical": null,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 3,
+     "rejections": [],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 10,
+     "id": 36,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 1,
+     "rejections": [],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 13,
+     "id": 38,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 4,
+     "rejections": [
+      {
+       "seq": 3,
+       "type": "creature.new",
+       "rule": "dungeon_foe",
+       "why": "only the engine adds the foes of Glimmerdeep Grotto: crystal beetle is no encounter of this level"
+      },
+      {
+       "seq": 5,
+       "type": "aware",
+       "rule": "creature_continuity",
+       "why": "dependent claim about a creature this reply could not book"
+      }
+     ],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 16,
+     "id": 40,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 2,
+     "rejections": [
+      {
+       "seq": 1,
+       "type": "creature.new",
+       "rule": "dungeon_foe",
+       "why": "only the engine adds the foes of Glimmerdeep Grotto: crystal beetle is no encounter of this level"
+      },
+      {
+       "seq": 2,
+       "type": "position",
+       "rule": "world_rule",
+       "why": "positions of combatants are engine-owned during ACTIVE combat"
+      }
+     ],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 18,
+     "id": 41,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 0,
+     "rejections": [
+      {
+       "seq": 1,
+       "type": "position",
+       "rule": "world_rule",
+       "why": "positions of combatants are engine-owned during ACTIVE combat"
+      }
+     ],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 22,
+     "id": 45,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 2,
+     "rejections": [
+      {
+       "seq": 1,
+       "type": "fact",
+       "rule": "world_rule",
+       "why": "mon.glimmerdeep_grotto_c1_l1_e3 is a combatant; its condition is resolved by the engine"
+      },
+      {
+       "seq": 2,
+       "type": "position",
+       "rule": "world_rule",
+       "why": "positions of combatants are engine-owned during ACTIVE combat"
+      }
+     ],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    }
+   ],
+   "jobs": [
+    {
+     "id": 32,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 2
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": [
+      {
+       "seq": 2,
+       "type": "recover",
+       "rule": "engine_recovery",
+       "why": "the engine already booked his recovery for the rest or sleep"
+      }
+     ]
+    },
+    {
+     "id": 34,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 5
+      }
+     ],
+     "available": 2,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": false,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": []
+    },
+    {
+     "id": 36,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 9
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": []
+    },
+    {
+     "id": 38,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 12
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": [
+      {
+       "seq": 3,
+       "type": "creature.new",
+       "rule": "dungeon_foe",
+       "why": "only the engine adds the foes of Glimmerdeep Grotto: crystal beetle is no encounter of this level"
+      },
+      {
+       "seq": 5,
+       "type": "aware",
+       "rule": "creature_continuity",
+       "why": "dependent claim about a creature this reply could not book"
+      }
+     ]
+    },
+    {
+     "id": 40,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 15
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": [
+      {
+       "seq": 1,
+       "type": "creature.new",
+       "rule": "dungeon_foe",
+       "why": "only the engine adds the foes of Glimmerdeep Grotto: crystal beetle is no encounter of this level"
+      },
+      {
+       "seq": 2,
+       "type": "position",
+       "rule": "world_rule",
+       "why": "positions of combatants are engine-owned during ACTIVE combat"
+      }
+     ]
+    },
+    {
+     "id": 41,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 17
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": [
+      {
+       "seq": 1,
+       "type": "position",
+       "rule": "world_rule",
+       "why": "positions of combatants are engine-owned during ACTIVE combat"
+      }
+     ]
+    },
+    {
+     "id": 45,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 21
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": [
+      {
+       "seq": 1,
+       "type": "fact",
+       "rule": "world_rule",
+       "why": "mon.glimmerdeep_grotto_c1_l1_e3 is a combatant; its condition is resolved by the engine"
+      },
+      {
+       "seq": 2,
+       "type": "position",
+       "rule": "world_rule",
+       "why": "positions of combatants are engine-owned during ACTIVE combat"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "U6",
+   "missingChatJobs": [
+    25
+   ],
+   "rows": [
+    {
+     "request": 3,
+     "id": 6,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 2,
+     "rejections": [
+      {
+       "seq": 3,
+       "type": "person.new",
+       "rule": "ambient",
+       "why": "scene colour: an unnamed person nothing else of the reply deals with is not kept; the story brings them back when they matter"
+      }
+     ],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": true,
+     "missingRequirements": []
+    },
+    {
+     "request": 6,
+     "id": 8,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 0,
+     "rejections": [],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 9,
+     "id": 10,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 0,
+     "rejections": [],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 14,
+     "id": 12,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 1,
+     "rejections": [],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 16,
+     "id": 14,
+     "attempt": 1,
+     "identical": false,
+     "valid": false,
+     "issues": [],
+     "errors": [
+      "$.deltas: expected array, got undefined"
+     ],
+     "semanticComplete": null
+    },
+    {
+     "request": 17,
+     "id": 14,
+     "attempt": 2,
+     "identical": null,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 1,
+     "rejections": [],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": true,
+     "missingRequirements": []
+    },
+    {
+     "request": 21,
+     "id": 16,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 4,
+     "rejections": [],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 24,
+     "id": 18,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [
+      "$.deltas[1].scene: explicitly name this earlier scene before the later arrival; here/final scene does not establish chronology",
+      "$.deltas[2].scene: explicitly name this earlier scene before the later arrival; here/final scene does not establish chronology",
+      "$.deltas[3].scene: explicitly name this earlier scene before the later arrival; here/final scene does not establish chronology"
+     ],
+     "accepted": 2,
+     "rejections": [
+      {
+       "seq": 2,
+       "type": "person.new",
+       "rule": "scene_context",
+       "why": "$.deltas[1].scene: explicitly name this earlier scene before the later arrival; here/final scene does not establish chronology"
+      },
+      {
+       "seq": 3,
+       "type": "learn",
+       "rule": "scene_context",
+       "why": "$.deltas[2].scene: explicitly name this earlier scene before the later arrival; here/final scene does not establish chronology"
+      },
+      {
+       "seq": 4,
+       "type": "thread",
+       "rule": "scene_context",
+       "why": "$.deltas[3].scene: explicitly name this earlier scene before the later arrival; here/final scene does not establish chronology"
+      },
+      {
+       "seq": 6,
+       "type": "creature.new",
+       "rule": "scene_context",
+       "why": "the narrative setting is not the location reached at this step"
+      },
+      {
+       "seq": 7,
+       "type": "aware",
+       "rule": "scene_context",
+       "why": "the narrative setting is not the location reached at this step"
+      }
+     ],
+     "worldEqual": false,
+     "eventsEqual": false,
+     "semanticComplete": true,
+     "missingRequirements": []
+    },
+    {
+     "request": 25,
+     "id": 18,
+     "attempt": 2,
+     "identical": null,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 5,
+     "rejections": [
+      {
+       "seq": 6,
+       "type": "creature.new",
+       "rule": "scene_context",
+       "why": "the narrative setting is not the location reached at this step"
+      },
+      {
+       "seq": 7,
+       "type": "aware",
+       "rule": "scene_context",
+       "why": "the narrative setting is not the location reached at this step"
+      }
+     ],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": false,
+     "missingRequirements": [
+      "The gatekeeper at the palisade does not accompany Alaric around the bend"
+     ]
+    },
+    {
+     "request": 27,
+     "id": 20,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 4,
+     "rejections": [
+      {
+       "seq": 3,
+       "type": "position",
+       "rule": "world_rule",
+       "why": "positions of combatants are engine-owned during ACTIVE combat"
+      },
+      {
+       "seq": 4,
+       "type": "position",
+       "rule": "world_rule",
+       "why": "positions of combatants are engine-owned during ACTIVE combat"
+      }
+     ],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": true,
+     "missingRequirements": []
+    },
+    {
+     "request": 29,
+     "id": 22,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 0,
+     "rejections": [],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    },
+    {
+     "request": 31,
+     "id": 24,
+     "attempt": 1,
+     "identical": false,
+     "valid": true,
+     "complete": true,
+     "issues": [],
+     "accepted": 0,
+     "rejections": [],
+     "worldEqual": true,
+     "eventsEqual": true,
+     "semanticComplete": null,
+     "missingRequirements": []
+    }
+   ],
+   "jobs": [
+    {
+     "id": 6,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 2
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": [
+      {
+       "seq": 3,
+       "type": "person.new",
+       "rule": "ambient",
+       "why": "scene colour: an unnamed person nothing else of the reply deals with is not kept; the story brings them back when they matter"
+      }
+     ]
+    },
+    {
+     "id": 8,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 5
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": []
+    },
+    {
+     "id": 10,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 8
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": []
+    },
+    {
+     "id": 12,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 13
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": []
+    },
+    {
+     "id": 14,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 15
+      },
+      {
+       "purpose": "extract_repair",
+       "identical": false,
+       "n": 16
+      }
+     ],
+     "available": 2,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": []
+    },
+    {
+     "id": 16,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 20
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": []
+    },
+    {
+     "id": 18,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 23
+      },
+      {
+       "purpose": "extract_repair",
+       "identical": false,
+       "n": 24
+      }
+     ],
+     "available": 2,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": [
+      {
+       "seq": 6,
+       "type": "creature.new",
+       "rule": "scene_context",
+       "why": "the narrative setting is not the location reached at this step"
+      },
+      {
+       "seq": 7,
+       "type": "aware",
+       "rule": "scene_context",
+       "why": "the narrative setting is not the location reached at this step"
+      }
+     ]
+    },
+    {
+     "id": 20,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 26
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": [
+      {
+       "seq": 3,
+       "type": "position",
+       "rule": "world_rule",
+       "why": "positions of combatants are engine-owned during ACTIVE combat"
+      },
+      {
+       "seq": 4,
+       "type": "position",
+       "rule": "world_rule",
+       "why": "positions of combatants are engine-owned during ACTIVE combat"
+      }
+     ]
+    },
+    {
+     "id": 22,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 28
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": []
+    },
+    {
+     "id": 24,
+     "calls": [
+      {
+       "purpose": "extract",
+       "identical": false,
+       "n": 30
+      }
+     ],
+     "available": 1,
+     "gap": false,
+     "status": "applied",
+     "eventsEqual": true,
+     "worldEqual": true,
+     "reloadEqual": true,
+     "rejected": []
+    }
+   ]
+  }
+ ],
+ "lateRecall": 16,
+ "sourceFiles": {
+  "B1": {
+   "avereth-engine/src/v4/extract.js": "19dc3140f90702a482d6e21b2b9d2547ffa383e575d415161420ae4b93dc7775",
+   "avereth-engine/src/v4/guild.js": "91235f46dab137ff77c529496db5692001382fa34d19b6c18d3b9f0b22c32c6b",
+   "avereth-engine/src/v4/runtime.js": "757317c40967e19d52a418e68d8d53ca2c5f8d5f8d180429f276621f27abf148",
+   "avereth-engine/tests/unit/v4_extract.test.js": "b4270c88ccda6d0506229fd5cc9317f9025e2dc059f541fe33b67d0c43275ec1",
+   "avereth-engine/tools/board_slot_offline.mjs": "979082f9b590e62185be916c3097505623d57c0d5cb45f84cd4a989446dce740",
+   "avereth-engine/tools/st_live/board159_smoke.mjs": "3f22a7198871f842337bc922f4bbf546fa0535b428dc28f26079ee32f08d3837"
+  },
+  "B2": {
+   "avereth-engine/src/v4/extract.js": "1730bce9f3bae5051958312f0395e81c0d59fda18c2f08377e3072e4ead52c72",
+   "avereth-engine/src/v4/guild.js": "91235f46dab137ff77c529496db5692001382fa34d19b6c18d3b9f0b22c32c6b",
+   "avereth-engine/src/v4/runtime.js": "757317c40967e19d52a418e68d8d53ca2c5f8d5f8d180429f276621f27abf148",
+   "avereth-engine/tests/unit/v4_extract.test.js": "903446fbb3236dac70c2f05d704abf01fd7c7118098ffb5c569609f4dd2f3a44",
+   "avereth-engine/tools/board_slot_offline.mjs": "979082f9b590e62185be916c3097505623d57c0d5cb45f84cd4a989446dce740",
+   "avereth-engine/tools/st_live/board159_smoke.mjs": "3f22a7198871f842337bc922f4bbf546fa0535b428dc28f26079ee32f08d3837"
+  },
+  "B3": {
+   "avereth-engine/src/v4/extract.js": "a70d7c863da7f783dab274759cce684f78343b1c0385641444be659e4da68f63",
+   "avereth-engine/src/v4/guild.js": "91235f46dab137ff77c529496db5692001382fa34d19b6c18d3b9f0b22c32c6b",
+   "avereth-engine/src/v4/runtime.js": "757317c40967e19d52a418e68d8d53ca2c5f8d5f8d180429f276621f27abf148",
+   "avereth-engine/tests/unit/v4_extract.test.js": "5d3cb67fe30a7a10b20248248bef8b9e863cdf1f03ea27237d6f0fbaa0e8a6f3",
+   "avereth-engine/tools/board_slot_offline.mjs": "979082f9b590e62185be916c3097505623d57c0d5cb45f84cd4a989446dce740",
+   "avereth-engine/tools/st_live/board159_smoke.mjs": "3f22a7198871f842337bc922f4bbf546fa0535b428dc28f26079ee32f08d3837"
+  }
+ },
+ "streaming": {
+  "smoothStreaming": false,
+  "narratorLimit": 4096,
+  "checks": {
+   "matchedTurnPair1": true,
+   "earlierProsePair1": true,
+   "matchedTurnPair2": true,
+   "earlierProsePair2": true,
+   "matchedTurnPair3": true,
+   "earlierProsePair3": true,
+   "matchedTurnPair4": true,
+   "earlierProsePair4": true,
+   "swipeOnceAndReload": true,
+   "regenerateOnceAndReload": true,
+   "revisionsSinglePlanner": true,
+   "error-bufferedBookings": true,
+   "error-beforeBookings": true,
+   "error-afterBookings": true,
+   "incompleteMarkedAfterReload": true,
+   "incompleteBlocksFollowingTurn": true,
+   "bufferedRegenerateAfterStreamFailure": true,
+   "malformedBookings": true,
+   "eofBookings": true,
+   "eofCapacityAndDraft": true,
+   "finish-no-doneBookings": true,
+   "finish-no-doneCapacityAndDraft": true,
+   "disconnectBookings": true,
+   "disconnectCapacityAndDraft": true,
+   "stopBookings": true,
+   "stopCapacityAndDraft": true,
+   "reload-bufferedBookings": true,
+   "reload-bufferedCapacityAndDraft": true,
+   "reload-openBookings": true,
+   "reload-openCapacityAndDraft": true,
+   "draftWhileStreaming": true,
+   "reloadDraftParity": true,
+   "providerSinglePhysicalRequest": true
+  },
+  "provider": {
+   "activeUnits": 0,
+   "peakUnits": 4,
+   "capacityRejections": 0
+  }
+ },
+ "baselineSuite": "8df38d3fe4b62eafc2b746ada81e5f2470956dea"
+}

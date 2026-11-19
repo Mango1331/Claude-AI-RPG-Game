@@ -1,0 +1,1077 @@
+{
+  "kind": "Avereth .203 Phase 1, isolated mock only",
+  "product_base": "5e5b8272412b51b91f75b6e37c5b94d95c9fae11",
+  "test_source": "342779c828697477f0c563bb5df107590c3b07c3",
+  "research_main": "fa343c8dde106666a0a4c09cb1e4b07c0a6ef93c",
+  "source_sha256": {
+    "avereth-engine/tools/st_live/isolated.mjs": "42ac7774075e5a4e8dd565a2188e273798c726de136a87b0c6dad69b7c02ff57",
+    "avereth-engine/tools/st_live/narrator_streaming_smoke.mjs": "6e809c5f7e0621080a72448e00bac0b5a2e8431b98fcfcbb307d55288be882ee",
+    "avereth-engine/tools/st_live/run_c.mjs": "589a42fd59c8efb5222b441f00a646af324edeeffd3a527d1353326a79aedcbb"
+  },
+  "node": {
+    "tests": 3398,
+    "pass": 3398,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "targeted_node_subset": {
+    "tests": 54,
+    "pass": 54,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "replay": "baseline b8d2af4b76cd0bc52ac178b8c500e5733878ecee (4.3.0-c.6.6.126): 2235 cases compared, 1131 differing, 1131 of them accepted with their exact output, 0 not accepted, 0 accepted but equal",
+  "user05_review": [
+    {
+      "started": "2026-11-19T03:24:00.987Z",
+      "finished": "2026-11-19T03:27:16.410Z",
+      "node": "24.22.1",
+      "chromium": "156.0.8078.79",
+      "engine": {
+        "version": "4.3.0-c.6.6.203",
+        "commit": "5e5b8272",
+        "branch": "experiment/203-narrator-streaming-phase1",
+        "dirty": false
+      },
+      "st": {
+        "version": "1.19.0",
+        "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+      },
+      "run": {
+        "mode": "user05_review",
+        "ok": false,
+        "exit": 1,
+        "seconds": 194,
+        "checks": 108,
+        "passed": 107,
+        "failed": [
+          "noPageErrors"
+        ],
+        "page_errors": 1,
+        "calls": 62
+      },
+      "pageErrors": [
+        "Unexpected token 'I', \"Internal S\"... is not valid JSON "
+      ]
+    },
+    {
+      "started": "2026-11-19T03:32:06.356Z",
+      "finished": "2026-11-19T03:34:37.391Z",
+      "node": "24.22.1",
+      "chromium": "156.0.8078.79",
+      "engine": {
+        "version": "4.3.0-c.6.6.203",
+        "commit": "5e5b8272",
+        "branch": "experiment/203-narrator-streaming-phase1",
+        "dirty": true
+      },
+      "st": {
+        "version": "1.19.0",
+        "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+      },
+      "run": {
+        "mode": "user05_review",
+        "ok": true,
+        "exit": 0,
+        "seconds": 151,
+        "checks": 108,
+        "passed": 108,
+        "failed": [],
+        "page_errors": 0,
+        "calls": 62
+      },
+      "pageErrors": []
+    }
+  ],
+  "narrator_streaming": {
+    "started": "2026-11-19T03:40:02.715Z",
+    "finished": "2026-11-19T03:44:59.830Z",
+    "node": "24.22.1",
+    "chromium": "156.0.8078.79",
+    "engine": {
+      "version": "4.3.0-c.6.6.203",
+      "commit": "342779c8",
+      "branch": "experiment/203-narrator-streaming-phase1",
+      "dirty": false
+    },
+    "st": {
+      "version": "1.19.0",
+      "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+    },
+    "run": {
+      "mode": "narrator_streaming",
+      "ok": false,
+      "exit": 1,
+      "seconds": 297,
+      "checks": 56,
+      "passed": 54,
+      "failed": [
+        "error-afterBookings",
+        "malformedBookings"
+      ],
+      "page_errors": 0,
+      "calls": 72
+    },
+    "base_page_errors": [],
+    "all_checks": {
+      "capacityAtMostFour": true,
+      "matchedTurnPair1": true,
+      "earlierProsePair1": true,
+      "matchedTurnPair2": true,
+      "earlierProsePair2": true,
+      "matchedTurnPair3": true,
+      "earlierProsePair3": true,
+      "matchedTurnPair4": true,
+      "earlierProsePair4": true,
+      "swipeOnceAndReload": true,
+      "regenerateOnceAndReload": true,
+      "revisionsSinglePlanner": true,
+      "error-bufferedBookings": true,
+      "error-beforeBookings": true,
+      "error-afterBookings": false,
+      "malformedBookings": false,
+      "eofBookings": true,
+      "eofCapacityAndDraft": true,
+      "finish-no-doneBookings": true,
+      "finish-no-doneCapacityAndDraft": true,
+      "disconnectBookings": true,
+      "disconnectCapacityAndDraft": true,
+      "stopBookings": true,
+      "stopCapacityAndDraft": true,
+      "reload-bufferedBookings": true,
+      "reload-bufferedCapacityAndDraft": true,
+      "reload-openBookings": true,
+      "reload-openCapacityAndDraft": true,
+      "draftWhileStreaming": true,
+      "reloadDraftParity": true,
+      "providerSinglePhysicalRequest": true,
+      "startStatsFive": true,
+      "campaignV4AtGreeting": true,
+      "plannerOnByDefault": true,
+      "campaignPinnedToC": true,
+      "creationWithoutPlanner": true,
+      "runnerSeparatesVisibleEngine": true,
+      "onePlanPerMessage": true,
+      "extractPerReply": true,
+      "planCallParams": true,
+      "fightPromptInFight": true,
+      "keyAddedBySillyTavern": true,
+      "keyNeverInBrowser": true,
+      "keyNotInChatFile": true,
+      "areaWindowCommitted": true,
+      "fightOpened": true,
+      "aliasBooksFlameLance": true,
+      "aliasA0WasBasicAttack": true,
+      "typoAsks": true,
+      "worldUseBooked": true,
+      "swipeReusesPlan": true,
+      "searchNotTaken": true,
+      "bandAreaOnce": true,
+      "proseOnlyRequests": true,
+      "statusLine": true,
+      "noPageErrors": true
+    },
+    "experiment": {
+      "seed": 1185604178,
+      "prefixSha256": "60a352ff03d70f0011fbd9cb3999337e67af59af063484f10259be81f991f644",
+      "smoothStreaming": false,
+      "narratorLimit": 4096,
+      "endMs": 1800,
+      "timings": [
+        {
+          "stream": false,
+          "firstMs": 180,
+          "marks": {
+            "narratorSettingsReady": 309,
+            "received": 2189,
+            "fullProse": 2208,
+            "firstProse": 2215,
+            "ready": 3509
+          },
+          "requests": [
+            {
+              "phase": "plan",
+              "stream": false,
+              "maxTokens": 2000
+            },
+            {
+              "phase": "narrator",
+              "stream": false,
+              "maxTokens": 4096
+            },
+            {
+              "phase": "extract",
+              "stream": false,
+              "maxTokens": 4000
+            }
+          ],
+          "narratorPrompt": "e122a1e70ebeb3ec7e10a20f7fd80fe927e24b32a16858a664ad03fe3afa16bf",
+          "verifiedWorld": {
+            "at": 1795059647328,
+            "id": 6,
+            "extraction_validation_wait_ms": 1263,
+            "save_readback_ms": 51,
+            "total_ms": 1314,
+            "record_changed": true,
+            "persisted": true,
+            "extraction_status": "applied"
+          },
+          "userEvents": "b36a552db9db2a22bb0970d5018e474748753f1bfb13e6326428d33298695bbf",
+          "replyEvents": "835d090296a8bf972418c166ad445317aaa4f7b4c87407e93992274b3cd34285",
+          "state": "26d89fd3c989147790bd853bb2a4a747028f5fe88478f37744c83296a1b95327",
+          "worldEvents": 31,
+          "text": "a9d7cfe8b2e0c6ab86f8cf5effca31db3dd0aa5deb74abf8e440a22f60762b36",
+          "blockedDraftSentAfterSave": true
+        },
+        {
+          "stream": true,
+          "firstMs": 180,
+          "marks": {
+            "narratorSettingsReady": 276,
+            "firstDecodedSentence": 482,
+            "firstProse": 491,
+            "fullProse": 2137,
+            "received": 2167,
+            "ready": 3449
+          },
+          "requests": [
+            {
+              "phase": "plan",
+              "stream": false,
+              "maxTokens": 2000
+            },
+            {
+              "phase": "narrator",
+              "stream": true,
+              "maxTokens": 4096
+            },
+            {
+              "phase": "extract",
+              "stream": false,
+              "maxTokens": 4000
+            }
+          ],
+          "narratorPrompt": "e122a1e70ebeb3ec7e10a20f7fd80fe927e24b32a16858a664ad03fe3afa16bf",
+          "verifiedWorld": {
+            "at": 1795059651938,
+            "id": 6,
+            "extraction_validation_wait_ms": 1231,
+            "save_readback_ms": 49,
+            "total_ms": 1280,
+            "record_changed": true,
+            "persisted": true,
+            "extraction_status": "applied"
+          },
+          "userEvents": "b36a552db9db2a22bb0970d5018e474748753f1bfb13e6326428d33298695bbf",
+          "replyEvents": "835d090296a8bf972418c166ad445317aaa4f7b4c87407e93992274b3cd34285",
+          "state": "26d89fd3c989147790bd853bb2a4a747028f5fe88478f37744c83296a1b95327",
+          "worldEvents": 31,
+          "text": "a9d7cfe8b2e0c6ab86f8cf5effca31db3dd0aa5deb74abf8e440a22f60762b36",
+          "blockedDraftSentAfterSave": true
+        },
+        {
+          "stream": true,
+          "firstMs": 950,
+          "marks": {
+            "narratorSettingsReady": 249,
+            "firstDecodedSentence": 1215,
+            "firstProse": 1228,
+            "fullProse": 2100,
+            "received": 2142,
+            "ready": 3488
+          },
+          "requests": [
+            {
+              "phase": "plan",
+              "stream": false,
+              "maxTokens": 2000
+            },
+            {
+              "phase": "narrator",
+              "stream": true,
+              "maxTokens": 4096
+            },
+            {
+              "phase": "extract",
+              "stream": false,
+              "maxTokens": 4000
+            }
+          ],
+          "narratorPrompt": "e122a1e70ebeb3ec7e10a20f7fd80fe927e24b32a16858a664ad03fe3afa16bf",
+          "verifiedWorld": {
+            "at": 1795059656557,
+            "id": 6,
+            "extraction_validation_wait_ms": 1297,
+            "save_readback_ms": 47,
+            "total_ms": 1344,
+            "record_changed": true,
+            "persisted": true,
+            "extraction_status": "applied"
+          },
+          "userEvents": "b36a552db9db2a22bb0970d5018e474748753f1bfb13e6326428d33298695bbf",
+          "replyEvents": "835d090296a8bf972418c166ad445317aaa4f7b4c87407e93992274b3cd34285",
+          "state": "26d89fd3c989147790bd853bb2a4a747028f5fe88478f37744c83296a1b95327",
+          "worldEvents": 31,
+          "text": "a9d7cfe8b2e0c6ab86f8cf5effca31db3dd0aa5deb74abf8e440a22f60762b36",
+          "blockedDraftSentAfterSave": true
+        },
+        {
+          "stream": false,
+          "firstMs": 950,
+          "marks": {
+            "narratorSettingsReady": 273,
+            "received": 2133,
+            "fullProse": 2149,
+            "firstProse": 2174,
+            "ready": 3513
+          },
+          "requests": [
+            {
+              "phase": "plan",
+              "stream": false,
+              "maxTokens": 2000
+            },
+            {
+              "phase": "narrator",
+              "stream": false,
+              "maxTokens": 4096
+            },
+            {
+              "phase": "extract",
+              "stream": false,
+              "maxTokens": 4000
+            }
+          ],
+          "narratorPrompt": "e122a1e70ebeb3ec7e10a20f7fd80fe927e24b32a16858a664ad03fe3afa16bf",
+          "verifiedWorld": {
+            "at": 1795059661198,
+            "id": 6,
+            "extraction_validation_wait_ms": 1227,
+            "save_readback_ms": 147,
+            "total_ms": 1375,
+            "record_changed": true,
+            "persisted": true,
+            "extraction_status": "applied"
+          },
+          "userEvents": "b36a552db9db2a22bb0970d5018e474748753f1bfb13e6326428d33298695bbf",
+          "replyEvents": "835d090296a8bf972418c166ad445317aaa4f7b4c87407e93992274b3cd34285",
+          "state": "26d89fd3c989147790bd853bb2a4a747028f5fe88478f37744c83296a1b95327",
+          "worldEvents": 31,
+          "text": "a9d7cfe8b2e0c6ab86f8cf5effca31db3dd0aa5deb74abf8e440a22f60762b36",
+          "blockedDraftSentAfterSave": true
+        },
+        {
+          "stream": true,
+          "firstMs": 180,
+          "marks": {
+            "narratorSettingsReady": 266,
+            "firstDecodedSentence": 464,
+            "firstProse": 468,
+            "fullProse": 2123,
+            "received": 2256,
+            "ready": 3546
+          },
+          "requests": [
+            {
+              "phase": "plan",
+              "stream": false,
+              "maxTokens": 2000
+            },
+            {
+              "phase": "narrator",
+              "stream": true,
+              "maxTokens": 4096
+            },
+            {
+              "phase": "extract",
+              "stream": false,
+              "maxTokens": 4000
+            }
+          ],
+          "narratorPrompt": "e122a1e70ebeb3ec7e10a20f7fd80fe927e24b32a16858a664ad03fe3afa16bf",
+          "verifiedWorld": {
+            "at": 1795059665857,
+            "id": 6,
+            "extraction_validation_wait_ms": 1238,
+            "save_readback_ms": 50,
+            "total_ms": 1288,
+            "record_changed": true,
+            "persisted": true,
+            "extraction_status": "applied"
+          },
+          "userEvents": "b36a552db9db2a22bb0970d5018e474748753f1bfb13e6326428d33298695bbf",
+          "replyEvents": "835d090296a8bf972418c166ad445317aaa4f7b4c87407e93992274b3cd34285",
+          "state": "26d89fd3c989147790bd853bb2a4a747028f5fe88478f37744c83296a1b95327",
+          "worldEvents": 31,
+          "text": "a9d7cfe8b2e0c6ab86f8cf5effca31db3dd0aa5deb74abf8e440a22f60762b36",
+          "blockedDraftSentAfterSave": true
+        },
+        {
+          "stream": false,
+          "firstMs": 180,
+          "marks": {
+            "narratorSettingsReady": 283,
+            "received": 2136,
+            "fullProse": 2149,
+            "firstProse": 2163,
+            "ready": 3447
+          },
+          "requests": [
+            {
+              "phase": "plan",
+              "stream": false,
+              "maxTokens": 2000
+            },
+            {
+              "phase": "narrator",
+              "stream": false,
+              "maxTokens": 4096
+            },
+            {
+              "phase": "extract",
+              "stream": false,
+              "maxTokens": 4000
+            }
+          ],
+          "narratorPrompt": "e122a1e70ebeb3ec7e10a20f7fd80fe927e24b32a16858a664ad03fe3afa16bf",
+          "verifiedWorld": {
+            "at": 1795059670421,
+            "id": 6,
+            "extraction_validation_wait_ms": 1254,
+            "save_readback_ms": 55,
+            "total_ms": 1309,
+            "record_changed": true,
+            "persisted": true,
+            "extraction_status": "applied"
+          },
+          "userEvents": "b36a552db9db2a22bb0970d5018e474748753f1bfb13e6326428d33298695bbf",
+          "replyEvents": "835d090296a8bf972418c166ad445317aaa4f7b4c87407e93992274b3cd34285",
+          "state": "26d89fd3c989147790bd853bb2a4a747028f5fe88478f37744c83296a1b95327",
+          "worldEvents": 31,
+          "text": "a9d7cfe8b2e0c6ab86f8cf5effca31db3dd0aa5deb74abf8e440a22f60762b36",
+          "blockedDraftSentAfterSave": true
+        },
+        {
+          "stream": false,
+          "firstMs": 950,
+          "marks": {
+            "narratorSettingsReady": 282,
+            "received": 2161,
+            "fullProse": 2179,
+            "firstProse": 2185,
+            "ready": 3491
+          },
+          "requests": [
+            {
+              "phase": "plan",
+              "stream": false,
+              "maxTokens": 2000
+            },
+            {
+              "phase": "narrator",
+              "stream": false,
+              "maxTokens": 4096
+            },
+            {
+              "phase": "extract",
+              "stream": false,
+              "maxTokens": 4000
+            }
+          ],
+          "narratorPrompt": "e122a1e70ebeb3ec7e10a20f7fd80fe927e24b32a16858a664ad03fe3afa16bf",
+          "verifiedWorld": {
+            "at": 1795059675025,
+            "id": 6,
+            "extraction_validation_wait_ms": 1263,
+            "save_readback_ms": 65,
+            "total_ms": 1328,
+            "record_changed": true,
+            "persisted": true,
+            "extraction_status": "applied"
+          },
+          "userEvents": "b36a552db9db2a22bb0970d5018e474748753f1bfb13e6326428d33298695bbf",
+          "replyEvents": "835d090296a8bf972418c166ad445317aaa4f7b4c87407e93992274b3cd34285",
+          "state": "26d89fd3c989147790bd853bb2a4a747028f5fe88478f37744c83296a1b95327",
+          "worldEvents": 31,
+          "text": "a9d7cfe8b2e0c6ab86f8cf5effca31db3dd0aa5deb74abf8e440a22f60762b36",
+          "blockedDraftSentAfterSave": true
+        },
+        {
+          "stream": true,
+          "firstMs": 950,
+          "marks": {
+            "narratorSettingsReady": 272,
+            "firstDecodedSentence": 1240,
+            "firstProse": 1255,
+            "fullProse": 2127,
+            "received": 2248,
+            "ready": 3558
+          },
+          "requests": [
+            {
+              "phase": "plan",
+              "stream": false,
+              "maxTokens": 2000
+            },
+            {
+              "phase": "narrator",
+              "stream": true,
+              "maxTokens": 4096
+            },
+            {
+              "phase": "extract",
+              "stream": false,
+              "maxTokens": 4000
+            }
+          ],
+          "narratorPrompt": "e122a1e70ebeb3ec7e10a20f7fd80fe927e24b32a16858a664ad03fe3afa16bf",
+          "verifiedWorld": {
+            "at": 1795059679879,
+            "id": 6,
+            "extraction_validation_wait_ms": 1242,
+            "save_readback_ms": 63,
+            "total_ms": 1305,
+            "record_changed": true,
+            "persisted": true,
+            "extraction_status": "applied"
+          },
+          "userEvents": "b36a552db9db2a22bb0970d5018e474748753f1bfb13e6326428d33298695bbf",
+          "replyEvents": "835d090296a8bf972418c166ad445317aaa4f7b4c87407e93992274b3cd34285",
+          "state": "26d89fd3c989147790bd853bb2a4a747028f5fe88478f37744c83296a1b95327",
+          "worldEvents": 31,
+          "text": "a9d7cfe8b2e0c6ab86f8cf5effca31db3dd0aa5deb74abf8e440a22f60762b36",
+          "blockedDraftSentAfterSave": true
+        }
+      ],
+      "faults": [
+        {
+          "fault": "error-buffered",
+          "heldWhileInFlight": true,
+          "callsBeforeReload": [
+            "plan",
+            "narrator"
+          ],
+          "calls": [
+            "plan",
+            "narrator"
+          ],
+          "before": {
+            "text": "",
+            "extraction": null,
+            "events": [],
+            "location": "loc.alderwatch.verge",
+            "userEvents": "afc4f8a958475140879b24d8c28a4f40009918a22d28860c6ac840114996d93b",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Remoteabschluss unbekannt – kein automatischer neuer Versuch",
+            "leases": [
+              "unknown"
+            ]
+          },
+          "readback": {
+            "text": "",
+            "extraction": null,
+            "events": [],
+            "location": "loc.alderwatch.verge",
+            "userEvents": "afc4f8a958475140879b24d8c28a4f40009918a22d28860c6ac840114996d93b",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Remoteabschluss unbekannt – kein automatischer neuer Versuch",
+            "leases": [
+              "unknown"
+            ]
+          },
+          "openDraftKept": null,
+          "blockedDraftKept": true,
+          "blockedAfterReload": true,
+          "draftAfterFirstReload": null,
+          "draftAfterNavigation": "",
+          "pageErrors": [
+            "injected narrator failure"
+          ],
+          "consoleErrors": []
+        },
+        {
+          "fault": "error-before",
+          "heldWhileInFlight": false,
+          "callsBeforeReload": [
+            "plan",
+            "narrator",
+            "narrator"
+          ],
+          "calls": [
+            "plan",
+            "narrator",
+            "narrator"
+          ],
+          "before": {
+            "text": "",
+            "extraction": "skipped",
+            "events": [],
+            "location": "loc.alderwatch.verge",
+            "userEvents": "afc4f8a958475140879b24d8c28a4f40009918a22d28860c6ac840114996d93b",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Gespeichert",
+            "leases": []
+          },
+          "readback": {
+            "text": "",
+            "extraction": "skipped",
+            "events": [],
+            "location": "loc.alderwatch.verge",
+            "userEvents": "afc4f8a958475140879b24d8c28a4f40009918a22d28860c6ac840114996d93b",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Bereit",
+            "leases": []
+          },
+          "openDraftKept": null,
+          "blockedDraftKept": null,
+          "blockedAfterReload": null,
+          "draftAfterFirstReload": null,
+          "draftAfterNavigation": null,
+          "pageErrors": [],
+          "consoleErrors": []
+        },
+        {
+          "fault": "error-after",
+          "heldWhileInFlight": true,
+          "callsBeforeReload": [
+            "plan",
+            "narrator",
+            "extract"
+          ],
+          "calls": [
+            "plan",
+            "narrator",
+            "extract"
+          ],
+          "before": {
+            "text": "Alaric lowers himself into the burrow.",
+            "extraction": "applied",
+            "events": [
+              "place.created",
+              "scene.moved",
+              "time.advanced",
+              "memory.recorded",
+              "pulse.outcome",
+              "extract.applied"
+            ],
+            "location": "loc.the_old_burrow",
+            "userEvents": "235913970def690e26aa6d06e52410194f8566379e2f5f74fe9ac2415d5d54f5",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Gespeichert",
+            "leases": []
+          },
+          "readback": {
+            "text": "Alaric lowers himself into the burrow.",
+            "extraction": "applied",
+            "events": [
+              "place.created",
+              "scene.moved",
+              "time.advanced",
+              "memory.recorded",
+              "pulse.outcome",
+              "extract.applied"
+            ],
+            "location": "loc.the_old_burrow",
+            "userEvents": "235913970def690e26aa6d06e52410194f8566379e2f5f74fe9ac2415d5d54f5",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Bereit",
+            "leases": []
+          },
+          "openDraftKept": null,
+          "blockedDraftKept": null,
+          "blockedAfterReload": null,
+          "draftAfterFirstReload": null,
+          "draftAfterNavigation": null,
+          "pageErrors": [],
+          "consoleErrors": []
+        },
+        {
+          "fault": "malformed",
+          "heldWhileInFlight": true,
+          "callsBeforeReload": [
+            "plan",
+            "narrator",
+            "extract"
+          ],
+          "calls": [
+            "plan",
+            "narrator",
+            "extract"
+          ],
+          "before": {
+            "text": "Alaric lowers himself into the burrow.",
+            "extraction": "applied",
+            "events": [
+              "place.created",
+              "scene.moved",
+              "time.advanced",
+              "memory.recorded",
+              "pulse.outcome",
+              "extract.applied"
+            ],
+            "location": "loc.the_old_burrow",
+            "userEvents": "235913970def690e26aa6d06e52410194f8566379e2f5f74fe9ac2415d5d54f5",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Gespeichert",
+            "leases": []
+          },
+          "readback": {
+            "text": "Alaric lowers himself into the burrow.",
+            "extraction": "applied",
+            "events": [
+              "place.created",
+              "scene.moved",
+              "time.advanced",
+              "memory.recorded",
+              "pulse.outcome",
+              "extract.applied"
+            ],
+            "location": "loc.the_old_burrow",
+            "userEvents": "235913970def690e26aa6d06e52410194f8566379e2f5f74fe9ac2415d5d54f5",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Bereit",
+            "leases": []
+          },
+          "openDraftKept": null,
+          "blockedDraftKept": null,
+          "blockedAfterReload": null,
+          "draftAfterFirstReload": null,
+          "draftAfterNavigation": null,
+          "pageErrors": [],
+          "consoleErrors": [
+            "SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+          ]
+        },
+        {
+          "fault": "eof",
+          "heldWhileInFlight": true,
+          "callsBeforeReload": [
+            "plan",
+            "narrator"
+          ],
+          "calls": [
+            "plan",
+            "narrator"
+          ],
+          "before": {
+            "text": "Alaric lowers himself into the burrow.",
+            "extraction": "failed",
+            "events": [
+              "extract.failed"
+            ],
+            "location": "loc.alderwatch.verge",
+            "userEvents": "57af3cfa360b50e5458c4c1075f7fb442735cd3e3cdea9b10bfd850655449432",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Remoteabschluss unbekannt – kein automatischer neuer Versuch",
+            "leases": [
+              "unknown"
+            ]
+          },
+          "readback": {
+            "text": "Alaric lowers himself into the burrow.",
+            "extraction": "failed",
+            "events": [
+              "extract.failed"
+            ],
+            "location": "loc.alderwatch.verge",
+            "userEvents": "57af3cfa360b50e5458c4c1075f7fb442735cd3e3cdea9b10bfd850655449432",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Remoteabschluss unbekannt – kein automatischer neuer Versuch",
+            "leases": [
+              "unknown"
+            ]
+          },
+          "openDraftKept": null,
+          "blockedDraftKept": true,
+          "blockedAfterReload": true,
+          "draftAfterFirstReload": null,
+          "draftAfterNavigation": "",
+          "pageErrors": [],
+          "consoleErrors": []
+        },
+        {
+          "fault": "finish-no-done",
+          "heldWhileInFlight": true,
+          "callsBeforeReload": [
+            "plan",
+            "narrator"
+          ],
+          "calls": [
+            "plan",
+            "narrator"
+          ],
+          "before": {
+            "text": "Alaric lowers himself into the burrow. The burrow is a nearby low-danger wilderness. Three barkscorpions skitter out of the dark and rush at him, pincers raised.",
+            "extraction": "failed",
+            "events": [
+              "extract.failed"
+            ],
+            "location": "loc.alderwatch.verge",
+            "userEvents": "57af3cfa360b50e5458c4c1075f7fb442735cd3e3cdea9b10bfd850655449432",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Remoteabschluss unbekannt – kein automatischer neuer Versuch",
+            "leases": [
+              "unknown"
+            ]
+          },
+          "readback": {
+            "text": "Alaric lowers himself into the burrow. The burrow is a nearby low-danger wilderness. Three barkscorpions skitter out of the dark and rush at him, pincers raised.",
+            "extraction": "failed",
+            "events": [
+              "extract.failed"
+            ],
+            "location": "loc.alderwatch.verge",
+            "userEvents": "57af3cfa360b50e5458c4c1075f7fb442735cd3e3cdea9b10bfd850655449432",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Remoteabschluss unbekannt – kein automatischer neuer Versuch",
+            "leases": [
+              "unknown"
+            ]
+          },
+          "openDraftKept": null,
+          "blockedDraftKept": true,
+          "blockedAfterReload": true,
+          "draftAfterFirstReload": null,
+          "draftAfterNavigation": "",
+          "pageErrors": [],
+          "consoleErrors": []
+        },
+        {
+          "fault": "disconnect",
+          "heldWhileInFlight": true,
+          "callsBeforeReload": [
+            "plan",
+            "narrator"
+          ],
+          "calls": [
+            "plan",
+            "narrator"
+          ],
+          "before": {
+            "text": "Alaric lowers himself into the burrow.",
+            "extraction": null,
+            "events": [],
+            "location": "loc.alderwatch.verge",
+            "userEvents": "021d458fe7c66ebc845f5041c4c485159f912868d5148512cc75be4d0b142b4d",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Gespeichert",
+            "leases": [
+              "active"
+            ]
+          },
+          "readback": {
+            "text": "",
+            "extraction": null,
+            "events": [],
+            "location": "loc.alderwatch.verge",
+            "userEvents": "021d458fe7c66ebc845f5041c4c485159f912868d5148512cc75be4d0b142b4d",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Remoteabschluss unbekannt – kein automatischer neuer Versuch",
+            "leases": [
+              "unknown"
+            ]
+          },
+          "openDraftKept": null,
+          "blockedDraftKept": null,
+          "blockedAfterReload": true,
+          "draftAfterFirstReload": null,
+          "draftAfterNavigation": null,
+          "pageErrors": [],
+          "consoleErrors": []
+        },
+        {
+          "fault": "stop",
+          "heldWhileInFlight": true,
+          "callsBeforeReload": [
+            "plan",
+            "narrator"
+          ],
+          "calls": [
+            "plan",
+            "narrator"
+          ],
+          "before": {
+            "text": "Alaric lowers himself into the burrow.",
+            "extraction": "failed",
+            "events": [
+              "extract.failed"
+            ],
+            "location": "loc.alderwatch.verge",
+            "userEvents": "7871e12c93831e324603e7f5f069fe0e8030a4442d710b17a88d2ca2b0ccbfe2",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Remoteabschluss unbekannt – kein automatischer neuer Versuch",
+            "leases": [
+              "unknown"
+            ]
+          },
+          "readback": {
+            "text": "Alaric lowers himself into the burrow.",
+            "extraction": "failed",
+            "events": [
+              "extract.failed"
+            ],
+            "location": "loc.alderwatch.verge",
+            "userEvents": "7871e12c93831e324603e7f5f069fe0e8030a4442d710b17a88d2ca2b0ccbfe2",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Remoteabschluss unbekannt – kein automatischer neuer Versuch",
+            "leases": [
+              "unknown"
+            ]
+          },
+          "openDraftKept": null,
+          "blockedDraftKept": true,
+          "blockedAfterReload": true,
+          "draftAfterFirstReload": null,
+          "draftAfterNavigation": "",
+          "pageErrors": [],
+          "consoleErrors": []
+        },
+        {
+          "fault": "reload-buffered",
+          "heldWhileInFlight": true,
+          "callsBeforeReload": [
+            "plan",
+            "narrator"
+          ],
+          "calls": [
+            "plan",
+            "narrator"
+          ],
+          "before": {
+            "text": "",
+            "extraction": null,
+            "events": [],
+            "location": "loc.alderwatch.verge",
+            "userEvents": "235913970def690e26aa6d06e52410194f8566379e2f5f74fe9ac2415d5d54f5",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Remoteabschluss unbekannt – kein automatischer neuer Versuch",
+            "leases": [
+              "active"
+            ]
+          },
+          "readback": {
+            "text": "",
+            "extraction": null,
+            "events": [],
+            "location": "loc.alderwatch.verge",
+            "userEvents": "235913970def690e26aa6d06e52410194f8566379e2f5f74fe9ac2415d5d54f5",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Remoteabschluss unbekannt – kein automatischer neuer Versuch",
+            "leases": [
+              "active"
+            ]
+          },
+          "openDraftKept": true,
+          "blockedDraftKept": true,
+          "blockedAfterReload": true,
+          "draftAfterFirstReload": "",
+          "draftAfterNavigation": "",
+          "pageErrors": [],
+          "consoleErrors": []
+        },
+        {
+          "fault": "reload-open",
+          "heldWhileInFlight": true,
+          "callsBeforeReload": [
+            "plan",
+            "narrator"
+          ],
+          "calls": [
+            "plan",
+            "narrator"
+          ],
+          "before": {
+            "text": "",
+            "extraction": null,
+            "events": [],
+            "location": "loc.alderwatch.verge",
+            "userEvents": "14a1bc335798781807bf25e55b8d2d7dd15391dff8dc5fe59e356a85024541f2",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Remoteabschluss unbekannt – kein automatischer neuer Versuch",
+            "leases": [
+              "unknown"
+            ]
+          },
+          "readback": {
+            "text": "",
+            "extraction": null,
+            "events": [],
+            "location": "loc.alderwatch.verge",
+            "userEvents": "14a1bc335798781807bf25e55b8d2d7dd15391dff8dc5fe59e356a85024541f2",
+            "userEventCount": 5,
+            "users": 3,
+            "status": "Remoteabschluss unbekannt – kein automatischer neuer Versuch",
+            "leases": [
+              "unknown"
+            ]
+          },
+          "openDraftKept": true,
+          "blockedDraftKept": true,
+          "blockedAfterReload": true,
+          "draftAfterFirstReload": "",
+          "draftAfterNavigation": "",
+          "pageErrors": [],
+          "consoleErrors": []
+        }
+      ],
+      "checks": {
+        "matchedTurnPair1": true,
+        "earlierProsePair1": true,
+        "matchedTurnPair2": true,
+        "earlierProsePair2": true,
+        "matchedTurnPair3": true,
+        "earlierProsePair3": true,
+        "matchedTurnPair4": true,
+        "earlierProsePair4": true,
+        "swipeOnceAndReload": true,
+        "regenerateOnceAndReload": true,
+        "revisionsSinglePlanner": true,
+        "error-bufferedBookings": true,
+        "error-beforeBookings": true,
+        "error-afterBookings": false,
+        "malformedBookings": false,
+        "eofBookings": true,
+        "eofCapacityAndDraft": true,
+        "finish-no-doneBookings": true,
+        "finish-no-doneCapacityAndDraft": true,
+        "disconnectBookings": true,
+        "disconnectCapacityAndDraft": true,
+        "stopBookings": true,
+        "stopCapacityAndDraft": true,
+        "reload-bufferedBookings": true,
+        "reload-bufferedCapacityAndDraft": true,
+        "reload-openBookings": true,
+        "reload-openCapacityAndDraft": true,
+        "draftWhileStreaming": true,
+        "reloadDraftParity": true,
+        "providerSinglePhysicalRequest": true
+      },
+      "provider": {
+        "activeUnits": 0,
+        "peakUnits": 4,
+        "capacityRejections": 0
+      }
+    }
+  }
+}

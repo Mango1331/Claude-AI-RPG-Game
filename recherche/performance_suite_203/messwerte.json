@@ -1,0 +1,1829 @@
+{
+  "tokens": {
+    "sections": {
+      "P story": {
+        "You are the command": 39,
+        "Rules:": 787,
+        "Commands:": 2406,
+        "Examples (another town, not": 919,
+        "Answer with": 18,
+        "Guild contracts (": 538,
+        "Handing over (": 1158,
+        "Steps that build": 584,
+        "Learning and training": 1135,
+        "Ordinary meals": 2088,
+        "Commands for that:": 408,
+        "Examples (another place": 864,
+        "Return only one JSON": 77
+      },
+      "P combat": {
+        "You are the intent": 62,
+        "Ordinary meals": 2088,
+        "Commands for that:": 408,
+        "Examples (another place": 864,
+        "In a fight (": 189,
+        "Story commands (": 306,
+        "Answer with": 19,
+        "Return only one JSON": 77
+      },
+      "X": {
+        "You read one reply": 40,
+        "Rules:": 4547,
+        "FORMAT RULES": 1967,
+        "Deltas:": 4736,
+        "Answer with": 14,
+        "Return only one JSON": 70
+      }
+    },
+    "market": {
+      "requests": 43,
+      "a": 575,
+      "b": 497,
+      "saved": 3354
+    },
+    "system": {
+      "P story": 11021,
+      "X": 11374,
+      "P combat": 4013
+    },
+    "selectedDeltaLines": {
+      "combat": 1050,
+      "people": 963,
+      "trade": 907,
+      "guild": 429,
+      "travel": 1303,
+      "other": 81
+    },
+    "extractor": {
+      "U5": {
+        "requests": 20,
+        "overhead": 640,
+        "original": 4555,
+        "compact": 3440
+      },
+      "U6": {
+        "requests": 12,
+        "overhead": 384,
+        "original": 2532,
+        "compact": 1998
+      }
+    },
+    "context": {
+      "User05": {
+        "revisions": 19,
+        "full": 32833,
+        "lower": 32541
+      },
+      "User06": {
+        "revisions": 10,
+        "full": 15934,
+        "lower": 15803
+      }
+    },
+    "boards": [
+      {
+        "name": "User04",
+        "kind": "initial",
+        "a": 944,
+        "b": 694,
+        "initialInputDelta": 42
+      },
+      {
+        "name": "User04",
+        "kind": "valid",
+        "a": 941,
+        "b": 688,
+        "initialInputDelta": 42
+      },
+      {
+        "name": "User05",
+        "kind": "initial",
+        "a": 924,
+        "b": 658,
+        "initialInputDelta": 42
+      },
+      {
+        "name": "User05",
+        "kind": "valid",
+        "a": 922,
+        "b": 657,
+        "initialInputDelta": 42
+      },
+      {
+        "name": "User06",
+        "kind": "initial",
+        "a": 877,
+        "b": 651,
+        "initialInputDelta": 42
+      },
+      {
+        "name": "User06",
+        "kind": "valid",
+        "a": 878,
+        "b": 652,
+        "initialInputDelta": 42
+      }
+    ]
+  },
+  "ablations": [
+    {
+      "case": "U5B/22",
+      "request": 12,
+      "lost": [
+        "aware"
+      ],
+      "valid": [
+        true,
+        true
+      ],
+      "world": [
+        true,
+        false
+      ],
+      "semantic": [
+        null,
+        null
+      ]
+    },
+    {
+      "case": "U5C/38",
+      "request": 13,
+      "lost": [
+        "aware",
+        "aware"
+      ],
+      "valid": [
+        true,
+        true
+      ],
+      "world": [
+        true,
+        false
+      ],
+      "semantic": [
+        null,
+        null
+      ]
+    },
+    {
+      "case": "U5C/40",
+      "request": 16,
+      "lost": [
+        "fact"
+      ],
+      "valid": [
+        true,
+        true
+      ],
+      "world": [
+        true,
+        false
+      ],
+      "semantic": [
+        null,
+        null
+      ]
+    },
+    {
+      "case": "U5C/45",
+      "request": 22,
+      "lost": [
+        "fact",
+        "fact"
+      ],
+      "valid": [
+        true,
+        true
+      ],
+      "world": [
+        true,
+        false
+      ],
+      "semantic": [
+        null,
+        null
+      ]
+    },
+    {
+      "case": "U6/18",
+      "request": 24,
+      "lost": [
+        "aware"
+      ],
+      "valid": [
+        true,
+        true
+      ],
+      "world": [
+        false,
+        false
+      ],
+      "semantic": [
+        true,
+        true
+      ]
+    },
+    {
+      "case": "U6/18",
+      "request": 25,
+      "lost": [
+        "aware"
+      ],
+      "valid": [
+        true,
+        true
+      ],
+      "world": [
+        true,
+        false
+      ],
+      "semantic": [
+        false,
+        false
+      ]
+    },
+    {
+      "case": "U6/20",
+      "request": 27,
+      "lost": [
+        "fact",
+        "fact"
+      ],
+      "valid": [
+        true,
+        true
+      ],
+      "world": [
+        true,
+        false
+      ],
+      "semantic": [
+        true,
+        false
+      ]
+    }
+  ],
+  "routing": [
+    {
+      "scene": "trade while fighting",
+      "needsGear": true,
+      "planner": true,
+      "extractor": true
+    },
+    {
+      "scene": "gift",
+      "needsGear": true,
+      "planner": false,
+      "extractor": false
+    },
+    {
+      "scene": "conditional purchase",
+      "needsGear": true,
+      "planner": false,
+      "extractor": false
+    },
+    {
+      "scene": "binding price",
+      "needsGear": true,
+      "planner": true,
+      "extractor": true
+    },
+    {
+      "scene": "genuine quality",
+      "needsGear": true,
+      "planner": false,
+      "extractor": false
+    },
+    {
+      "scene": "guild dues",
+      "needsGear": false,
+      "planner": true,
+      "extractor": true
+    },
+    {
+      "scene": "service",
+      "needsGear": false,
+      "planner": false,
+      "extractor": true
+    },
+    {
+      "scene": "promise in combat",
+      "needsGear": false,
+      "planner": false,
+      "extractor": false
+    },
+    {
+      "scene": "free dialogue",
+      "needsGear": false,
+      "planner": false,
+      "extractor": false
+    }
+  ],
+  "dropped": {
+    "User05/settlement": 3,
+    "User05/dungeon": 3,
+    "User05/relevant": 15,
+    "User05/present": 13,
+    "User06/dungeon": 3,
+    "User06/settlement": 2,
+    "User06/relevant": 6,
+    "User06/present": 4
+  },
+  "s1mock": [
+    {
+      "stream": false,
+      "firstMs": 180,
+      "marks": {
+        "narratorSettingsReady": 370,
+        "received": 2271,
+        "fullProse": 2294,
+        "firstProse": 2302,
+        "ready": 3612,
+        "worldCommit": 3537,
+        "confirmedSave": 3607
+      },
+      "requests": [
+        {
+          "phase": "plan",
+          "stream": false,
+          "maxTokens": 2000,
+          "mockMs": 0
+        },
+        {
+          "phase": "narrator",
+          "stream": false,
+          "maxTokens": 4096,
+          "mockMs": 1802
+        },
+        {
+          "phase": "extract",
+          "stream": false,
+          "maxTokens": 4000,
+          "mockMs": 1202
+        }
+      ],
+      "state": "3902a04837bfc3a0515ed627284f9a5c012e1cd7d393c44a2e246df8ef0752b1",
+      "userEvents": "cec242aa4f889915865c8cb2a102a60c6337f33e79acf3e077680cf14f63ea32",
+      "replyEvents": "0a9b6145207bacd8491ae5d05009cb470e7a4d26be1084a1e7e9e768e311b294"
+    },
+    {
+      "stream": true,
+      "firstMs": 180,
+      "marks": {
+        "narratorSettingsReady": 308,
+        "firstDecodedSentence": 504,
+        "firstProse": 519,
+        "fullProse": 2162,
+        "received": 2196,
+        "ready": 3558,
+        "worldCommit": 3499,
+        "confirmedSave": 3553
+      },
+      "requests": [
+        {
+          "phase": "plan",
+          "stream": false,
+          "maxTokens": 2000,
+          "mockMs": 0
+        },
+        {
+          "phase": "narrator",
+          "stream": true,
+          "maxTokens": 4096,
+          "mockMs": 1808
+        },
+        {
+          "phase": "extract",
+          "stream": false,
+          "maxTokens": 4000,
+          "mockMs": 1201
+        }
+      ],
+      "state": "3902a04837bfc3a0515ed627284f9a5c012e1cd7d393c44a2e246df8ef0752b1",
+      "userEvents": "cec242aa4f889915865c8cb2a102a60c6337f33e79acf3e077680cf14f63ea32",
+      "replyEvents": "0a9b6145207bacd8491ae5d05009cb470e7a4d26be1084a1e7e9e768e311b294"
+    },
+    {
+      "stream": true,
+      "firstMs": 950,
+      "marks": {
+        "narratorSettingsReady": 249,
+        "firstDecodedSentence": 1219,
+        "firstProse": 1232,
+        "fullProse": 2099,
+        "received": 2202,
+        "ready": 3506,
+        "worldCommit": 3435,
+        "confirmedSave": 3501
+      },
+      "requests": [
+        {
+          "phase": "plan",
+          "stream": false,
+          "maxTokens": 2000,
+          "mockMs": 0
+        },
+        {
+          "phase": "narrator",
+          "stream": true,
+          "maxTokens": 4096,
+          "mockMs": 1805
+        },
+        {
+          "phase": "extract",
+          "stream": false,
+          "maxTokens": 4000,
+          "mockMs": 1205
+        }
+      ],
+      "state": "3902a04837bfc3a0515ed627284f9a5c012e1cd7d393c44a2e246df8ef0752b1",
+      "userEvents": "cec242aa4f889915865c8cb2a102a60c6337f33e79acf3e077680cf14f63ea32",
+      "replyEvents": "0a9b6145207bacd8491ae5d05009cb470e7a4d26be1084a1e7e9e768e311b294"
+    },
+    {
+      "stream": false,
+      "firstMs": 950,
+      "marks": {
+        "narratorSettingsReady": 306,
+        "received": 2161,
+        "fullProse": 2176,
+        "firstProse": 2185,
+        "ready": 3480,
+        "worldCommit": 3408,
+        "confirmedSave": 3475
+      },
+      "requests": [
+        {
+          "phase": "plan",
+          "stream": false,
+          "maxTokens": 2000,
+          "mockMs": 1
+        },
+        {
+          "phase": "narrator",
+          "stream": false,
+          "maxTokens": 4096,
+          "mockMs": 1802
+        },
+        {
+          "phase": "extract",
+          "stream": false,
+          "maxTokens": 4000,
+          "mockMs": 1201
+        }
+      ],
+      "state": "3902a04837bfc3a0515ed627284f9a5c012e1cd7d393c44a2e246df8ef0752b1",
+      "userEvents": "cec242aa4f889915865c8cb2a102a60c6337f33e79acf3e077680cf14f63ea32",
+      "replyEvents": "0a9b6145207bacd8491ae5d05009cb470e7a4d26be1084a1e7e9e768e311b294"
+    },
+    {
+      "stream": true,
+      "firstMs": 180,
+      "marks": {
+        "narratorSettingsReady": 315,
+        "firstDecodedSentence": 521,
+        "firstProse": 526,
+        "fullProse": 2182,
+        "received": 2331,
+        "ready": 3647,
+        "worldCommit": 3568,
+        "confirmedSave": 3639
+      },
+      "requests": [
+        {
+          "phase": "plan",
+          "stream": false,
+          "maxTokens": 2000,
+          "mockMs": 0
+        },
+        {
+          "phase": "narrator",
+          "stream": true,
+          "maxTokens": 4096,
+          "mockMs": 1803
+        },
+        {
+          "phase": "extract",
+          "stream": false,
+          "maxTokens": 4000,
+          "mockMs": 1201
+        }
+      ],
+      "state": "3902a04837bfc3a0515ed627284f9a5c012e1cd7d393c44a2e246df8ef0752b1",
+      "userEvents": "cec242aa4f889915865c8cb2a102a60c6337f33e79acf3e077680cf14f63ea32",
+      "replyEvents": "0a9b6145207bacd8491ae5d05009cb470e7a4d26be1084a1e7e9e768e311b294"
+    },
+    {
+      "stream": false,
+      "firstMs": 180,
+      "marks": {
+        "narratorSettingsReady": 336,
+        "received": 2207,
+        "fullProse": 2224,
+        "firstProse": 2232,
+        "ready": 3555,
+        "worldCommit": 3454,
+        "confirmedSave": 3546
+      },
+      "requests": [
+        {
+          "phase": "plan",
+          "stream": false,
+          "maxTokens": 2000,
+          "mockMs": 0
+        },
+        {
+          "phase": "narrator",
+          "stream": false,
+          "maxTokens": 4096,
+          "mockMs": 1802
+        },
+        {
+          "phase": "extract",
+          "stream": false,
+          "maxTokens": 4000,
+          "mockMs": 1202
+        }
+      ],
+      "state": "3902a04837bfc3a0515ed627284f9a5c012e1cd7d393c44a2e246df8ef0752b1",
+      "userEvents": "cec242aa4f889915865c8cb2a102a60c6337f33e79acf3e077680cf14f63ea32",
+      "replyEvents": "0a9b6145207bacd8491ae5d05009cb470e7a4d26be1084a1e7e9e768e311b294"
+    },
+    {
+      "stream": false,
+      "firstMs": 950,
+      "marks": {
+        "narratorSettingsReady": 422,
+        "received": 2369,
+        "fullProse": 2393,
+        "firstProse": 2420,
+        "ready": 3749,
+        "worldCommit": 3675,
+        "confirmedSave": 3740
+      },
+      "requests": [
+        {
+          "phase": "plan",
+          "stream": false,
+          "maxTokens": 2000,
+          "mockMs": 0
+        },
+        {
+          "phase": "narrator",
+          "stream": false,
+          "maxTokens": 4096,
+          "mockMs": 1807
+        },
+        {
+          "phase": "extract",
+          "stream": false,
+          "maxTokens": 4000,
+          "mockMs": 1201
+        }
+      ],
+      "state": "3902a04837bfc3a0515ed627284f9a5c012e1cd7d393c44a2e246df8ef0752b1",
+      "userEvents": "cec242aa4f889915865c8cb2a102a60c6337f33e79acf3e077680cf14f63ea32",
+      "replyEvents": "0a9b6145207bacd8491ae5d05009cb470e7a4d26be1084a1e7e9e768e311b294"
+    },
+    {
+      "stream": true,
+      "firstMs": 950,
+      "marks": {
+        "narratorSettingsReady": 379,
+        "firstDecodedSentence": 1361,
+        "firstProse": 1369,
+        "fullProse": 2249,
+        "received": 2307,
+        "ready": 3740,
+        "worldCommit": 3666,
+        "confirmedSave": 3735
+      },
+      "requests": [
+        {
+          "phase": "plan",
+          "stream": false,
+          "maxTokens": 2000,
+          "mockMs": 0
+        },
+        {
+          "phase": "narrator",
+          "stream": true,
+          "maxTokens": 4096,
+          "mockMs": 1804
+        },
+        {
+          "phase": "extract",
+          "stream": false,
+          "maxTokens": 4000,
+          "mockMs": 1202
+        }
+      ],
+      "state": "3902a04837bfc3a0515ed627284f9a5c012e1cd7d393c44a2e246df8ef0752b1",
+      "userEvents": "cec242aa4f889915865c8cb2a102a60c6337f33e79acf3e077680cf14f63ea32",
+      "replyEvents": "0a9b6145207bacd8491ae5d05009cb470e7a4d26be1084a1e7e9e768e311b294"
+    }
+  ],
+  "prefix": {
+    "postprocessing": "",
+    "groups": [
+      {
+        "long": false,
+        "hashes": [
+          {
+            "length": 8,
+            "card": "6aa8e48fba92f99ddecddfa9f8f200a11f2877b82fb89c339794bc6156202fa6",
+            "lore": "d7f76141a3cff01db68f7c150820406c3fa36fd49586ede5bbb464f6d43d79f2",
+            "rest": "93bcaadc4d8f1c4bdf4e46d3a53507cd4be5994773aef3de070eb17d10315d55"
+          },
+          {
+            "length": 8,
+            "card": "6aa8e48fba92f99ddecddfa9f8f200a11f2877b82fb89c339794bc6156202fa6",
+            "lore": "a33ac5c404948b45929d985c953fe2a65731ee65d60c305fa1f6023e4f7f623f",
+            "rest": "bb7f3a3f7e171de28d07fef4c0f728fff5a53c16cb4fb49e98ee4c610136ce73"
+          }
+        ],
+        "tokens": [
+          [
+            10146,
+            10855
+          ],
+          [
+            10146,
+            10855
+          ]
+        ],
+        "prefix": [
+          491,
+          8241
+        ]
+      },
+      {
+        "long": true,
+        "hashes": [
+          {
+            "length": 8,
+            "card": "6aa8e48fba92f99ddecddfa9f8f200a11f2877b82fb89c339794bc6156202fa6",
+            "lore": "d7f76141a3cff01db68f7c150820406c3fa36fd49586ede5bbb464f6d43d79f2",
+            "rest": "886a128d40491f5e5c5f2440dc168cfaa680f79603d27cfcefbe7bfde0762313"
+          },
+          {
+            "length": 8,
+            "card": "6aa8e48fba92f99ddecddfa9f8f200a11f2877b82fb89c339794bc6156202fa6",
+            "lore": "a33ac5c404948b45929d985c953fe2a65731ee65d60c305fa1f6023e4f7f623f",
+            "rest": "d03edea12c1283128b37b52e3fe8100fc5b0b23fe6e7372766bc7a3f671011b0"
+          }
+        ],
+        "tokens": [
+          [
+            26554,
+            27263
+          ],
+          [
+            26554,
+            27263
+          ]
+        ],
+        "prefix": [
+          491,
+          8241
+        ]
+      }
+    ]
+  },
+  "hostCost": {
+    "before": [
+      {
+        "kind": "pilot",
+        "messages": 141,
+        "bytes": 2082413,
+        "ms": {
+          "fold": [
+            5.6,
+            23.6,
+            5.2
+          ],
+          "signature": [
+            23.3,
+            21.1,
+            30.7
+          ],
+          "json": [
+            7.9,
+            9.1,
+            24.2
+          ],
+          "history": [
+            0.4,
+            0.4,
+            0.5
+          ],
+          "saveWithReadback": [
+            565.7,
+            757.4,
+            612.8
+          ],
+          "reloadAndFrame": [
+            677.5
+          ],
+          "hudClickAndFrame": [
+            78
+          ],
+          "stCount": [
+            6.7,
+            0,
+            0.1
+          ]
+        }
+      },
+      {
+        "kind": "extended",
+        "messages": 401,
+        "bytes": 2218003,
+        "ms": {
+          "fold": [
+            6.6,
+            6.9,
+            7.3
+          ],
+          "signature": [
+            30,
+            21.5,
+            20.9
+          ],
+          "json": [
+            10.8,
+            9.4,
+            8.9
+          ],
+          "history": [
+            0.6,
+            0.5,
+            0.5
+          ],
+          "saveWithReadback": [
+            620.2,
+            981.3,
+            764.3
+          ],
+          "reloadAndFrame": [
+            502.5
+          ],
+          "hudClickAndFrame": [
+            97.4
+          ],
+          "stCount": [
+            7.3,
+            0,
+            0
+          ]
+        }
+      }
+    ],
+    "after": [
+      {
+        "kind": "pilot",
+        "messages": 141,
+        "bytes": 2082413,
+        "ms": {
+          "fold": [
+            5.7,
+            5.8,
+            16.8
+          ],
+          "signature": [
+            23.6,
+            18.9,
+            37.6
+          ],
+          "json": [
+            8.7,
+            7.2,
+            22.9
+          ],
+          "history": [
+            1.5,
+            0.3,
+            0.4
+          ],
+          "saveWithReadback": [
+            454.4,
+            514.7,
+            642.2
+          ],
+          "reloadAndFrame": [
+            727.3
+          ],
+          "hudClickAndFrame": [
+            81.8
+          ],
+          "stCount": [
+            7,
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "kind": "extended",
+        "messages": 401,
+        "bytes": 2218003,
+        "ms": {
+          "fold": [
+            6.4,
+            10.8,
+            7.5
+          ],
+          "signature": [
+            27.5,
+            36.5,
+            23.7
+          ],
+          "json": [
+            9.9,
+            10.8,
+            9.1
+          ],
+          "history": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "saveWithReadback": [
+            563.3,
+            601.2,
+            603.3
+          ],
+          "reloadAndFrame": [
+            513.9
+          ],
+          "hudClickAndFrame": [
+            77.1
+          ],
+          "stCount": [
+            7.3,
+            0,
+            0
+          ]
+        }
+      }
+    ]
+  },
+  "lookup": [
+    {
+      "length": 21,
+      "label": "A",
+      "ms": [
+        61.034123,
+        40.024243999999996,
+        39.534706,
+        37.408135000000016,
+        33.67318300000002
+      ],
+      "readQueries": [
+        56,
+        285153,
+        56,
+        285153,
+        56,
+        285153,
+        56,
+        285153,
+        56,
+        285153
+      ]
+    },
+    {
+      "length": 21,
+      "label": "B",
+      "ms": [
+        24.538652000000013,
+        26.216647000000023,
+        31.095793000000015,
+        25.02468300000004,
+        25.514830000000018
+      ],
+      "readQueries": [
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56
+      ]
+    },
+    {
+      "length": 21,
+      "label": "B",
+      "ms": [
+        21.448789999999974,
+        34.80554699999999,
+        26.103546999999992,
+        56.84226200000006,
+        27.610816
+      ],
+      "readQueries": [
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56
+      ]
+    },
+    {
+      "length": 21,
+      "label": "A",
+      "ms": [
+        32.25152200000002,
+        32.92924199999993,
+        35.29860000000008,
+        36.25683199999992,
+        39.18705399999999
+      ],
+      "readQueries": [
+        56,
+        285153,
+        56,
+        285153,
+        56,
+        285153,
+        56,
+        285153,
+        56,
+        285153
+      ]
+    },
+    {
+      "length": 141,
+      "label": "A",
+      "ms": [
+        467.6771150000001,
+        363.20859599999994,
+        267.8314459999999,
+        266.6160160000002,
+        325.845233
+      ],
+      "readQueries": [
+        56,
+        2082570,
+        56,
+        2082570,
+        56,
+        2082570,
+        56,
+        2082570,
+        56,
+        2082570
+      ]
+    },
+    {
+      "length": 141,
+      "label": "B",
+      "ms": [
+        189.74505799999997,
+        256.2049589999997,
+        222.70548199999985,
+        213.4296330000002,
+        197.1284730000002
+      ],
+      "readQueries": [
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56
+      ]
+    },
+    {
+      "length": 141,
+      "label": "B",
+      "ms": [
+        178.24928199999977,
+        195.40284499999962,
+        182.37911899999972,
+        214.2169789999998,
+        280.58889699999963
+      ],
+      "readQueries": [
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56
+      ]
+    },
+    {
+      "length": 141,
+      "label": "A",
+      "ms": [
+        285.0969729999997,
+        253.6246029999993,
+        262.6411370000005,
+        280.9035100000001,
+        245.34403800000018
+      ],
+      "readQueries": [
+        56,
+        2082570,
+        56,
+        2082570,
+        56,
+        2082570,
+        56,
+        2082570,
+        56,
+        2082570
+      ]
+    }
+  ],
+  "extractorLocal": {
+    "results": [
+      {
+        "name": "U5A",
+        "physical": 5,
+        "jobs": 5,
+        "used": 5,
+        "repairs": 0,
+        "medianParseMs": {
+          "a": 0.6311800000000858,
+          "b": 0.5846500000000106
+        }
+      },
+      {
+        "name": "U5B",
+        "physical": 7,
+        "jobs": 7,
+        "used": 7,
+        "repairs": 0,
+        "medianParseMs": {
+          "a": 0.46679299999959767,
+          "b": 0.4048299999999472
+        }
+      },
+      {
+        "name": "U5C",
+        "physical": 8,
+        "jobs": 7,
+        "used": 7,
+        "repairs": 0,
+        "medianParseMs": {
+          "a": 0.27913000000035026,
+          "b": 0.28771299999971234
+        }
+      },
+      {
+        "name": "U6",
+        "physical": 12,
+        "jobs": 10,
+        "used": 12,
+        "repairs": 2,
+        "medianParseMs": {
+          "a": 0.17567400000007183,
+          "b": 0.13966999999956897
+        }
+      }
+    ],
+    "lateRecallTurns": 16
+  },
+  "browserRuns": {
+    "2026-11-19T07-30-08-448Z": [
+      {
+        "mode": "narrator_streaming",
+        "ok": true,
+        "passed": 59,
+        "checks": 59,
+        "failed": [],
+        "page_errors": 0,
+        "seconds": 315
+      }
+    ],
+    "2026-11-19T07-36-28-680Z": [
+      {
+        "mode": "prompt_prefix",
+        "ok": false,
+        "passed": 0,
+        "checks": 0,
+        "failed": [],
+        "page_errors": null,
+        "seconds": 64
+      }
+    ],
+    "2026-11-19T07-38-08-474Z": [
+      {
+        "mode": "prompt_prefix",
+        "ok": true,
+        "passed": 28,
+        "checks": 28,
+        "failed": [],
+        "page_errors": 0,
+        "seconds": 80
+      }
+    ],
+    "2026-11-19T07-41-25-499Z": [
+      {
+        "mode": "board_slot",
+        "ok": true,
+        "passed": 46,
+        "checks": 46,
+        "failed": [],
+        "page_errors": 0,
+        "seconds": 66
+      }
+    ],
+    "2026-11-19T07-43-18-710Z": [
+      {
+        "mode": "host_cost",
+        "ok": false,
+        "passed": 0,
+        "checks": 0,
+        "failed": [],
+        "page_errors": null,
+        "seconds": 44
+      }
+    ],
+    "2026-11-19T07-44-38-523Z": [
+      {
+        "mode": "host_cost",
+        "ok": true,
+        "passed": 28,
+        "checks": 28,
+        "failed": [],
+        "page_errors": 0,
+        "seconds": 49
+      }
+    ],
+    "2026-11-19T07-46-46-923Z": [
+      {
+        "mode": "host_cost",
+        "ok": true,
+        "passed": 28,
+        "checks": 28,
+        "failed": [],
+        "page_errors": 0,
+        "seconds": 47
+      }
+    ],
+    "2026-11-19T07-50-46-294Z": [
+      {
+        "mode": "standard",
+        "ok": false,
+        "passed": 352,
+        "checks": 354,
+        "failed": [
+          "board159_referenceCardOrder",
+          "board159_fullCardOrder"
+        ],
+        "page_errors": 0,
+        "seconds": 728
+      },
+      {
+        "mode": "failsoft",
+        "ok": true,
+        "passed": 360,
+        "checks": 360,
+        "failed": [],
+        "page_errors": 0,
+        "seconds": 731
+      }
+    ],
+    "2026-11-19T08-15-05-926Z": [
+      {
+        "mode": "narrator_streaming",
+        "ok": true,
+        "passed": 59,
+        "checks": 59,
+        "failed": [],
+        "page_errors": 0,
+        "seconds": 297
+      }
+    ],
+    "2026-11-19T08-20-04-311Z": [
+      {
+        "mode": "prompt_prefix",
+        "ok": true,
+        "passed": 28,
+        "checks": 28,
+        "failed": [],
+        "page_errors": 0,
+        "seconds": 78
+      }
+    ],
+    "2026-11-19T08-21-26-716Z": [
+      {
+        "mode": "board_reference",
+        "ok": true,
+        "passed": 43,
+        "checks": 43,
+        "failed": [],
+        "page_errors": 0,
+        "seconds": 58
+      }
+    ],
+    "2026-11-19T08-22-26-265Z": [
+      {
+        "mode": "board_slot",
+        "ok": true,
+        "passed": 49,
+        "checks": 49,
+        "failed": [],
+        "page_errors": 0,
+        "seconds": 65
+      }
+    ],
+    "2026-11-19T08-23-33-853Z": [
+      {
+        "mode": "standard",
+        "ok": true,
+        "passed": 354,
+        "checks": 354,
+        "failed": [],
+        "page_errors": 0,
+        "seconds": 723
+      }
+    ]
+  },
+  "boardsAfterReload": {
+    "2026-11-19T07-50-46-294Z/failsoft": {
+      "reference": {
+        "world": "08c152d2473d4493cfc2728938982ac54f367cad9f3eee28575fbd1514b66471",
+        "events": "f29dc9e387223020d7cd03223ce7b209633863ce1d32e1bc2a2eff9c19beca88",
+        "requests": [
+          {
+            "role": "plan",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "narrator",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "extract",
+            "mockMs": 301,
+            "finished": true
+          }
+        ]
+      },
+      "full": {
+        "world": "08c152d2473d4493cfc2728938982ac54f367cad9f3eee28575fbd1514b66471",
+        "events": "f29dc9e387223020d7cd03223ce7b209633863ce1d32e1bc2a2eff9c19beca88",
+        "requests": [
+          {
+            "role": "plan",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "narrator",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "extract",
+            "mockMs": 301,
+            "finished": true
+          }
+        ]
+      },
+      "slot": {
+        "world": "08c152d2473d4493cfc2728938982ac54f367cad9f3eee28575fbd1514b66471",
+        "events": "f29dc9e387223020d7cd03223ce7b209633863ce1d32e1bc2a2eff9c19beca88",
+        "requests": [
+          {
+            "role": "plan",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "narrator",
+            "mockMs": 20,
+            "finished": true
+          },
+          {
+            "role": "extract",
+            "mockMs": 312,
+            "finished": true
+          }
+        ]
+      }
+    },
+    "2026-11-19T07-50-46-294Z/standard": {
+      "reference": {
+        "world": "08c152d2473d4493cfc2728938982ac54f367cad9f3eee28575fbd1514b66471",
+        "events": "f29dc9e387223020d7cd03223ce7b209633863ce1d32e1bc2a2eff9c19beca88"
+      },
+      "full": {
+        "world": "08c152d2473d4493cfc2728938982ac54f367cad9f3eee28575fbd1514b66471",
+        "events": "f29dc9e387223020d7cd03223ce7b209633863ce1d32e1bc2a2eff9c19beca88"
+      },
+      "slot": {
+        "world": "08c152d2473d4493cfc2728938982ac54f367cad9f3eee28575fbd1514b66471",
+        "events": "f29dc9e387223020d7cd03223ce7b209633863ce1d32e1bc2a2eff9c19beca88"
+      }
+    },
+    "2026-11-19T08-21-26-716Z/board_reference": {
+      "reference": {
+        "world": "08c152d2473d4493cfc2728938982ac54f367cad9f3eee28575fbd1514b66471",
+        "events": "f29dc9e387223020d7cd03223ce7b209633863ce1d32e1bc2a2eff9c19beca88",
+        "requests": [
+          {
+            "role": "plan",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "narrator",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "extract",
+            "mockMs": 301,
+            "finished": true
+          }
+        ]
+      },
+      "full": {
+        "world": "08c152d2473d4493cfc2728938982ac54f367cad9f3eee28575fbd1514b66471",
+        "events": "f29dc9e387223020d7cd03223ce7b209633863ce1d32e1bc2a2eff9c19beca88",
+        "requests": [
+          {
+            "role": "plan",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "narrator",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "extract",
+            "mockMs": 301,
+            "finished": true
+          }
+        ]
+      }
+    },
+    "2026-11-19T08-22-26-265Z/board_slot": {
+      "reference": {
+        "world": "08c152d2473d4493cfc2728938982ac54f367cad9f3eee28575fbd1514b66471",
+        "events": "f29dc9e387223020d7cd03223ce7b209633863ce1d32e1bc2a2eff9c19beca88",
+        "requests": [
+          {
+            "role": "plan",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "narrator",
+            "mockMs": 2,
+            "finished": true
+          },
+          {
+            "role": "extract",
+            "mockMs": 300,
+            "finished": true
+          }
+        ]
+      },
+      "full": {
+        "world": "08c152d2473d4493cfc2728938982ac54f367cad9f3eee28575fbd1514b66471",
+        "events": "f29dc9e387223020d7cd03223ce7b209633863ce1d32e1bc2a2eff9c19beca88",
+        "requests": [
+          {
+            "role": "plan",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "narrator",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "extract",
+            "mockMs": 300,
+            "finished": true
+          }
+        ]
+      },
+      "slot": {
+        "world": "08c152d2473d4493cfc2728938982ac54f367cad9f3eee28575fbd1514b66471",
+        "events": "f29dc9e387223020d7cd03223ce7b209633863ce1d32e1bc2a2eff9c19beca88",
+        "requests": [
+          {
+            "role": "plan",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "narrator",
+            "mockMs": 23,
+            "finished": true
+          },
+          {
+            "role": "extract",
+            "mockMs": 301,
+            "finished": true
+          }
+        ]
+      }
+    },
+    "2026-11-19T08-23-33-853Z/standard": {
+      "reference": {
+        "world": "08c152d2473d4493cfc2728938982ac54f367cad9f3eee28575fbd1514b66471",
+        "events": "f29dc9e387223020d7cd03223ce7b209633863ce1d32e1bc2a2eff9c19beca88",
+        "requests": [
+          {
+            "role": "plan",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "narrator",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "extract",
+            "mockMs": 300,
+            "finished": true
+          }
+        ]
+      },
+      "full": {
+        "world": "08c152d2473d4493cfc2728938982ac54f367cad9f3eee28575fbd1514b66471",
+        "events": "f29dc9e387223020d7cd03223ce7b209633863ce1d32e1bc2a2eff9c19beca88",
+        "requests": [
+          {
+            "role": "plan",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "narrator",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "extract",
+            "mockMs": 300,
+            "finished": true
+          }
+        ]
+      },
+      "slot": {
+        "world": "08c152d2473d4493cfc2728938982ac54f367cad9f3eee28575fbd1514b66471",
+        "events": "f29dc9e387223020d7cd03223ce7b209633863ce1d32e1bc2a2eff9c19beca88",
+        "requests": [
+          {
+            "role": "plan",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "narrator",
+            "mockMs": 21,
+            "finished": true
+          },
+          {
+            "role": "extract",
+            "mockMs": 301,
+            "finished": true
+          }
+        ]
+      }
+    }
+  },
+  "browserVersions": {
+    "2026-11-19T07-30-08-448Z": {
+      "version": "4.3.0-c.6.6.203",
+      "commit": "399eb5b9",
+      "branch": "experiment/203-performance-optimization-suite",
+      "dirty": true
+    },
+    "2026-11-19T07-36-28-680Z": {
+      "version": "4.3.0-c.6.6.203",
+      "commit": "0bfb76be",
+      "branch": "experiment/203-performance-optimization-suite",
+      "dirty": true
+    },
+    "2026-11-19T07-38-08-474Z": {
+      "version": "4.3.0-c.6.6.203",
+      "commit": "0bfb76be",
+      "branch": "experiment/203-performance-optimization-suite",
+      "dirty": true
+    },
+    "2026-11-19T07-41-25-499Z": {
+      "version": "4.3.0-c.6.6.203",
+      "commit": "c15c0de5",
+      "branch": "experiment/203-performance-optimization-suite",
+      "dirty": true
+    },
+    "2026-11-19T07-43-18-710Z": {
+      "version": "4.3.0-c.6.6.203",
+      "commit": "052c33b1",
+      "branch": "experiment/203-performance-optimization-suite",
+      "dirty": true
+    },
+    "2026-11-19T07-44-38-523Z": {
+      "version": "4.3.0-c.6.6.203",
+      "commit": "052c33b1",
+      "branch": "experiment/203-performance-optimization-suite",
+      "dirty": true
+    },
+    "2026-11-19T07-46-46-923Z": {
+      "version": "4.3.0-c.6.6.203",
+      "commit": "057f32ad",
+      "branch": "experiment/203-performance-optimization-suite",
+      "dirty": true
+    },
+    "2026-11-19T07-50-46-294Z": {
+      "version": "4.3.0-c.6.6.203",
+      "commit": "e8650c36",
+      "branch": "experiment/203-performance-optimization-suite",
+      "dirty": true
+    },
+    "2026-11-19T08-15-05-926Z": {
+      "version": "4.3.0-c.6.6.203",
+      "commit": "e8650c36",
+      "branch": "experiment/203-performance-optimization-suite",
+      "dirty": true
+    },
+    "2026-11-19T08-20-04-311Z": {
+      "version": "4.3.0-c.6.6.203",
+      "commit": "8df38d3f",
+      "branch": "experiment/203-performance-optimization-suite",
+      "dirty": false
+    },
+    "2026-11-19T08-21-26-716Z": {
+      "version": "4.3.0-c.6.6.203",
+      "commit": "",
+      "branch": "",
+      "dirty": false
+    },
+    "2026-11-19T08-22-26-265Z": {
+      "version": "4.3.0-c.6.6.203",
+      "commit": "8df38d3f",
+      "branch": "experiment/203-performance-optimization-suite",
+      "dirty": false
+    },
+    "2026-11-19T08-23-33-853Z": {
+      "version": "4.3.0-c.6.6.203",
+      "commit": "8df38d3f",
+      "branch": "experiment/203-performance-optimization-suite",
+      "dirty": false
+    }
+  },
+  "streamRuns": {
+    "2026-11-19T07-30-08-448Z": {
+      "includesBufferedReference": true,
+      "cases": {
+        "error-buffered": [
+          "plan",
+          "narrator"
+        ],
+        "error-before": [
+          "plan",
+          "narrator"
+        ],
+        "error-after": [
+          "plan",
+          "narrator"
+        ],
+        "malformed": [
+          "plan",
+          "narrator"
+        ],
+        "eof": [
+          "plan",
+          "narrator"
+        ],
+        "finish-no-done": [
+          "plan",
+          "narrator"
+        ],
+        "disconnect": [
+          "plan",
+          "narrator"
+        ],
+        "stop": [
+          "plan",
+          "narrator"
+        ],
+        "reload-buffered": [
+          "plan",
+          "narrator"
+        ],
+        "reload-open": [
+          "plan",
+          "narrator"
+        ]
+      },
+      "provider": {
+        "activeUnits": 0,
+        "peakUnits": 4,
+        "capacityRejections": 0
+      },
+      "timingMedians": {
+        "buffered": {
+          "firstProse": 2267.0,
+          "fullProse": 2259.0,
+          "worldCommit": 3495.5,
+          "confirmedSave": 3576.5,
+          "ready": 3583.5
+        },
+        "stream": {
+          "firstProse": 879.0,
+          "fullProse": 2172.0,
+          "worldCommit": 3533.5,
+          "confirmedSave": 3596.0,
+          "ready": 3602.5
+        }
+      }
+    },
+    "2026-11-19T08-15-05-926Z": {
+      "includesBufferedReference": true,
+      "cases": {
+        "error-buffered": [
+          "plan",
+          "narrator"
+        ],
+        "error-before": [
+          "plan",
+          "narrator"
+        ],
+        "error-after": [
+          "plan",
+          "narrator"
+        ],
+        "malformed": [
+          "plan",
+          "narrator"
+        ],
+        "eof": [
+          "plan",
+          "narrator"
+        ],
+        "finish-no-done": [
+          "plan",
+          "narrator"
+        ],
+        "disconnect": [
+          "plan",
+          "narrator"
+        ],
+        "stop": [
+          "plan",
+          "narrator"
+        ],
+        "reload-buffered": [
+          "plan",
+          "narrator"
+        ],
+        "reload-open": [
+          "plan",
+          "narrator"
+        ]
+      },
+      "provider": {
+        "activeUnits": 0,
+        "peakUnits": 4,
+        "capacityRejections": 0
+      },
+      "timingMedians": {
+        "buffered": {
+          "firstProse": 2139.0,
+          "fullProse": 2129.0,
+          "worldCommit": 3369.5,
+          "confirmedSave": 3417.0,
+          "ready": 3422.5
+        },
+        "stream": {
+          "firstProse": 870.0,
+          "fullProse": 2144.0,
+          "worldCommit": 3486.5,
+          "confirmedSave": 3534.5,
+          "ready": 3540.5
+        }
+      }
+    }
+  },
+  "candidate": "8df38d3fe4b62eafc2b746ada81e5f2470956dea",
+  "reference": "5e5b8272412b51b91f75b6e37c5b94d95c9fae11",
+  "pushedCommitRegressions": {
+    "nodePassed": 3410,
+    "nodeFailed": 0,
+    "replay": "baseline b8d2af4b76cd0bc52ac178b8c500e5733878ecee (4.3.0-c.6.6.126): 2235 cases compared, 1131 differing, 1131 of them accepted with their exact output, 0 not accepted, 0 accepted but equal"
+  }
+}

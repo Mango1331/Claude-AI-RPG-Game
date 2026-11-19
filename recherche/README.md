@@ -11,6 +11,10 @@
 
 **Primärbelege:** [User06 .203 – neue natürliche Performance-Baseline](../testrun_10b/user-20261119-010838/PERFORMANCE_USER06_203_VORAB_2026-11-19.md) · [User05-Gegenreview](GEGENREVIEW_USER05_ACTION_HUD_202_FIX_QOL_2026-11-18.md) · [User05-Originale](../testrun_10b/user-20261118-011503/README.md) · [technischer .203-Patch](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/5e5b8272412b51b91f75b6e37c5b94d95c9fae11/avereth-engine/docs/PATCH_USER05_FIX_QOL_203.md).
 
+## Natürlicher Featherless-A/B-Spieltest
+
+Je zehn Spielzüge mit echten GLM-Antworten und sechs Zusatzpaare zu X2 und Preset. Der Bericht enthält die Messung der ersten sichtbaren Prosa und der sicheren Zugfreigabe, alle Repairs, die gespeicherten Welten und die Einzelurteile zu den Optimierungen. [Ergebnisse, Rohdaten und Reproduktion](AVERETH_203_NATUERLICHER_FEATHERLESS_AB_2026-11-19.md)
+
 ## Optimierungssuite und Vorversuche
 
 Die Optimierungssuite verwendet S1 und B1 als Basis. Der Bericht dokumentiert alle zehn Etappen, den isolierten A/B-Vergleich, die abgelehnten Vorschläge und die offenen natürlichen Qualitätsfragen. [Gesamtauswertung und Etappencommits](AVERETH_203_OPTIMIERUNGSSUITE_2026-11-19.md) · [Windows-Aufbau für den späteren Spieltest](performance_suite_203/AB_WINDOWS.md).

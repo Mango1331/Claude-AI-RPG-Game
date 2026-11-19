@@ -1,0 +1,2500 @@
+{
+  "model": "zai-org/GLM-5.3-Flash",
+  "globalPhysical": 86,
+  "globalPeak": 1,
+  "unconfirmed": [],
+  "completed": 86,
+  "globalUsage": {
+    "prompt_tokens": {
+      "sumReported": 1092207,
+      "coverage": [
+        86,
+        86
+      ]
+    },
+    "completion_tokens": {
+      "sumReported": 21912,
+      "coverage": [
+        86,
+        86
+      ]
+    },
+    "cached_tokens": {
+      "sumReported": 0,
+      "coverage": [
+        86,
+        86
+      ]
+    }
+  },
+  "stageCounts": {
+    "preflight": 2,
+    "main": 66,
+    "extractor-0": 3,
+    "extractor-1": 3,
+    "preset-0": 6,
+    "preset-1": 6
+  },
+  "groups": {
+    "A": {
+      "turns": 10,
+      "physical": 32,
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 413279,
+          "coverage": [
+            32,
+            32
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 8103,
+          "coverage": [
+            32,
+            32
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            32,
+            32
+          ]
+        }
+      },
+      "formal": [
+        31,
+        32
+      ],
+      "family": {
+        "planner": 10,
+        "narrator": 10,
+        "extractor": 11,
+        "board": 1
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 1
+      },
+      "time": {
+        "firstProse": {
+          "n": 9,
+          "sum": 197647.9,
+          "mean": 21960.9,
+          "median": 18894.3
+        },
+        "lastRenderedChange": {
+          "n": 10,
+          "sum": 585215.6,
+          "mean": 58521.6,
+          "median": 43360.3
+        },
+        "ready": {
+          "n": 10,
+          "sum": 628678.2,
+          "mean": 62867.8,
+          "median": 44786.4
+        },
+        "worldCommit": {
+          "n": 10,
+          "sum": 626965.4,
+          "mean": 62696.5,
+          "median": 44574.3
+        },
+        "confirmedSave": {
+          "n": 10,
+          "sum": 628631.4,
+          "mean": 62863.1,
+          "median": 44779.8
+        }
+      }
+    },
+    "B": {
+      "turns": 10,
+      "physical": 34,
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 432831,
+          "coverage": [
+            34,
+            34
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 8428,
+          "coverage": [
+            34,
+            34
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            34,
+            34
+          ]
+        }
+      },
+      "formal": [
+        31,
+        34
+      ],
+      "family": {
+        "planner": 10,
+        "narrator": 10,
+        "extractor": 12,
+        "board": 2
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 1,
+        "extractor": 2
+      },
+      "time": {
+        "firstProse": {
+          "n": 10,
+          "sum": 186444.3,
+          "mean": 18644.4,
+          "median": 10257.4
+        },
+        "lastRenderedChange": {
+          "n": 10,
+          "sum": 548069.2,
+          "mean": 54806.9,
+          "median": 41533.5
+        },
+        "ready": {
+          "n": 10,
+          "sum": 593150.0,
+          "mean": 59315.0,
+          "median": 55378.7
+        },
+        "worldCommit": {
+          "n": 10,
+          "sum": 591369.6,
+          "mean": 59137.0,
+          "median": 55216.5
+        },
+        "confirmedSave": {
+          "n": 10,
+          "sum": 593059.8,
+          "mean": 59306.0,
+          "median": 55373.4
+        }
+      }
+    }
+  },
+  "pairedByTurnIndex": {
+    "firstProse": {
+      "turns": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "A": {
+        "n": 9,
+        "sum": 197647.9,
+        "mean": 21960.9,
+        "median": 18894.3
+      },
+      "B": {
+        "n": 9,
+        "sum": 93441.1,
+        "mean": 10382.3,
+        "median": 9823.7
+      }
+    },
+    "lastRenderedChange": {
+      "turns": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "A": {
+        "n": 10,
+        "sum": 585215.6,
+        "mean": 58521.6,
+        "median": 43360.3
+      },
+      "B": {
+        "n": 10,
+        "sum": 548069.2,
+        "mean": 54806.9,
+        "median": 41533.5
+      }
+    },
+    "stNarrationFinished": {
+      "turns": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "A": {
+        "n": 10,
+        "sum": 392387.8,
+        "mean": 39238.8,
+        "median": 22107.0
+      },
+      "B": {
+        "n": 10,
+        "sum": 329281.7,
+        "mean": 32928.2,
+        "median": 23408.9
+      }
+    },
+    "ready": {
+      "turns": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "A": {
+        "n": 10,
+        "sum": 628678.2,
+        "mean": 62867.8,
+        "median": 44786.4
+      },
+      "B": {
+        "n": 10,
+        "sum": 593150.0,
+        "mean": 59315.0,
+        "median": 55378.7
+      }
+    }
+  },
+  "turns": [
+    {
+      "arm": "A",
+      "n": 1,
+      "intent": "membership",
+      "action": "I show my guild plate to the clerk. Please confirm that my Novice membership is active, and tell me your name.",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 37567,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 365,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            3,
+            3
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": 17308.0,
+        "lastRenderedChange": 17302.8,
+        "worldCommit": 26774.8,
+        "confirmedSave": 26839.8,
+        "ready": 26844.3,
+        "lastExtractorTransportEnd": 26744.4,
+        "saveReadbackMs": 65,
+        "narratorStartToFirstProse": 13724.6,
+        "firstProseBeforeTransportEnd": -148.6,
+        "stNarrationFinished": 17173.4
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "400944bf39615ced7ac355c38695d3440846320ed8962de56c56c54f308cea00",
+        "eventHash": "9197721a5dd8846e7ee887a05462c11ee48b7377d6d1c782e6cefa804f0fa888"
+      },
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 0
+      },
+      "ids": [
+        3,
+        4,
+        5
+      ],
+      "transportMs": {
+        "planner": 2996,
+        "narrator": 13576,
+        "extractor": 9407
+      },
+      "formal": [
+        true,
+        true,
+        true
+      ],
+      "events": [
+        "entity.updated",
+        "fact.asserted",
+        "entity.updated",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [],
+      "world": {
+        "location": "loc.ashbridge.guild_hall",
+        "present": [
+          "pc",
+          "npc.npcguild_clerk"
+        ],
+        "quests": []
+      }
+    },
+    {
+      "arm": "B",
+      "n": 1,
+      "intent": "membership",
+      "action": "I show my guild plate to the clerk. Please confirm that my Novice membership is active, and tell me your name.",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 37457,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 448,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            3,
+            3
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": 6246.0,
+        "lastRenderedChange": 18214.0,
+        "worldCommit": 29856.7,
+        "confirmedSave": 29929.8,
+        "ready": 29934.6,
+        "lastExtractorTransportEnd": 29823.7,
+        "saveReadbackMs": 73,
+        "narratorStartToFirstProse": 2970.3,
+        "firstProseBeforeTransportEnd": 11916.7,
+        "stNarrationFinished": 18167.7
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "4fe4a1ce6d4cb4646e8597d807909f92769c4fd0f8bf69d38ae9eea8a6cafce8",
+        "eventHash": "9adb717944106e99212f26eebe5e7b6d05d33f59b8c43670eb7ce591f4f3f849"
+      },
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 0
+      },
+      "ids": [
+        6,
+        7,
+        8
+      ],
+      "transportMs": {
+        "planner": 2610,
+        "narrator": 14887,
+        "extractor": 11506
+      },
+      "formal": [
+        true,
+        true,
+        true
+      ],
+      "events": [
+        "entity.updated",
+        "fact.asserted",
+        "entity.updated",
+        "fact.ended",
+        "fact.asserted",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [],
+      "world": {
+        "location": "loc.ashbridge.guild_hall",
+        "present": [
+          "pc",
+          "npc.npcguild_clerk"
+        ],
+        "quests": []
+      }
+    },
+    {
+      "arm": "A",
+      "n": 2,
+      "intent": "board",
+      "action": "I read the official Novice quest board and look through the available contracts.",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 43074,
+          "coverage": [
+            4,
+            4
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 1696,
+          "coverage": [
+            4,
+            4
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            4,
+            4
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": null,
+        "lastRenderedChange": 205834.8,
+        "worldCommit": 205819.5,
+        "confirmedSave": 205944.5,
+        "ready": 205949.7,
+        "lastExtractorTransportEnd": 205799.2,
+        "saveReadbackMs": 125,
+        "stNarrationFinished": 196466.2
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "05020218aedbe6f8e4d770af8df55f26b829de9553dbe2f12f93ddc5044f220c",
+        "eventHash": "6f1306f629ade3bacc914d68d5db33070eb0cc3fb3ba31795aaa8b5b28e091e7"
+      },
+      "roles": {
+        "planner": 1,
+        "board": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 0
+      },
+      "ids": [
+        9,
+        10,
+        11,
+        12
+      ],
+      "transportMs": {
+        "planner": 3021,
+        "board": 170553,
+        "narrator": 22290,
+        "extractor": 9196
+      },
+      "formal": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "events": [
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [],
+      "world": {
+        "location": "loc.ashbridge.guild_hall",
+        "present": [
+          "pc",
+          "npc.npcguild_clerk"
+        ],
+        "quests": [
+          [
+            "A Single Big Owl Has Taken the Dovecotes",
+            "listed"
+          ],
+          [
+            "Thin the Reed Flats Striders",
+            "listed"
+          ],
+          [
+            "Break the Quarry Track Boar Sounder",
+            "listed"
+          ],
+          [
+            "Slay the Marsh King's Serpent",
+            "listed"
+          ],
+          [
+            "Clear Mossback Warrens Level 1",
+            "listed"
+          ]
+        ]
+      }
+    },
+    {
+      "arm": "B",
+      "n": 2,
+      "intent": "board",
+      "action": "I read the official Novice quest board and look through the available contracts.",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 46295,
+          "coverage": [
+            5,
+            5
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 2146,
+          "coverage": [
+            5,
+            5
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            5,
+            5
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": 93003.2,
+        "lastRenderedChange": 119005.1,
+        "worldCommit": 118960.4,
+        "confirmedSave": 119106.6,
+        "ready": 119117.6,
+        "lastExtractorTransportEnd": 118888.6,
+        "saveReadbackMs": 146,
+        "narratorStartToFirstProse": 5395.6,
+        "firstProseBeforeTransportEnd": 18721.4,
+        "stNarrationFinished": 111728.6
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "f012e6c943a476a07150c43ea01d35d29d17efccf88935af462f598e502f1599",
+        "eventHash": "b4ee35810ee8953f806824868fcd13a54c1544ec8cd78d760f2cffd8b6b46a33"
+      },
+      "roles": {
+        "planner": 1,
+        "board": 2,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 1,
+        "extractor": 0
+      },
+      "ids": [
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "transportMs": {
+        "planner": 3828,
+        "board": 83139,
+        "narrator": 24117,
+        "extractor": 6952
+      },
+      "formal": [
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "events": [
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [],
+      "world": {
+        "location": "loc.ashbridge.guild_hall",
+        "present": [
+          "pc",
+          "npc.npcguild_clerk"
+        ],
+        "quests": [
+          [
+            "The Adder by the Millrace",
+            "listed"
+          ],
+          [
+            "Thin the Reed Flat Striders",
+            "listed"
+          ],
+          [
+            "Rid the Quarry Track of Gnashers",
+            "listed"
+          ],
+          [
+            "Slay the Marsh Wyrm of Blackfen",
+            "listed"
+          ],
+          [
+            "Clear Mossback Warrens, Level 1",
+            "listed"
+          ]
+        ]
+      }
+    },
+    {
+      "arm": "A",
+      "n": 3,
+      "intent": "accept",
+      "action": "I accept the official guild contract \"A Single Big Owl Has Taken the Dovecotes\".",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 40731,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 712,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            3,
+            3
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": 16540.4,
+        "lastRenderedChange": 42439.6,
+        "worldCommit": 42424.8,
+        "confirmedSave": 42519.8,
+        "ready": 42524.1,
+        "lastExtractorTransportEnd": 42396.6,
+        "saveReadbackMs": 95,
+        "narratorStartToFirstProse": 11873.8,
+        "firstProseBeforeTransportEnd": -155.8,
+        "stNarrationFinished": 16389.6
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "a643b08eb8be5e67439aab961498095be9a7df2d85a55e8402a6479086f4e753",
+        "eventHash": "0aea22e185f8904879550bfb710bbc5d3e1997171323f5ea7c035a28c72bcbe6"
+      },
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 0
+      },
+      "ids": [
+        18,
+        19,
+        20
+      ],
+      "transportMs": {
+        "planner": 4030,
+        "narrator": 11718,
+        "extractor": 25834
+      },
+      "formal": [
+        true,
+        true,
+        true
+      ],
+      "events": [
+        "delta.rejected",
+        "quest.detailed",
+        "place.updated",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [
+        {
+          "seq": 2,
+          "type": "fact",
+          "rule": "guild_canon",
+          "why": "the Guild's fees and payouts are the engine's canon, not a fact of the story"
+        }
+      ],
+      "world": {
+        "location": "loc.ashbridge.guild_hall",
+        "present": [
+          "pc",
+          "npc.npcguild_clerk"
+        ],
+        "quests": [
+          [
+            "A Single Big Owl Has Taken the Dovecotes",
+            "active"
+          ],
+          [
+            "Thin the Reed Flats Striders",
+            "listed"
+          ],
+          [
+            "Break the Quarry Track Boar Sounder",
+            "listed"
+          ],
+          [
+            "Slay the Marsh King's Serpent",
+            "listed"
+          ],
+          [
+            "Clear Mossback Warrens Level 1",
+            "listed"
+          ]
+        ]
+      }
+    },
+    {
+      "arm": "B",
+      "n": 3,
+      "intent": "accept",
+      "action": "I accept the official guild contract \"The Adder by the Millrace\".",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 56262,
+          "coverage": [
+            4,
+            4
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 1067,
+          "coverage": [
+            4,
+            4
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            4,
+            4
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": 11640.3,
+        "lastRenderedChange": 98365.9,
+        "worldCommit": 98339.8,
+        "confirmedSave": 98486.4,
+        "ready": 98492.3,
+        "lastExtractorTransportEnd": 98316.4,
+        "saveReadbackMs": 147,
+        "narratorStartToFirstProse": 7399.9,
+        "firstProseBeforeTransportEnd": 11241.1,
+        "stNarrationFinished": 22883.4
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "31e44fef3a55e9d8b3606ede7cd06785ae76fabb4cf8278a8d0236ed26412266",
+        "eventHash": "b23c794767d665b367e3b630af8a0f1de3528626769f9525ce81f00f7da87340"
+      },
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 2
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 1
+      },
+      "ids": [
+        21,
+        22,
+        23,
+        24
+      ],
+      "transportMs": {
+        "planner": 3794,
+        "narrator": 18641,
+        "extractor": 75193
+      },
+      "formal": [
+        true,
+        true,
+        false,
+        true
+      ],
+      "events": [
+        "quest.detailed",
+        "quest.detailed",
+        "place.updated",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [],
+      "world": {
+        "location": "loc.ashbridge.guild_hall",
+        "present": [
+          "pc",
+          "npc.npcguild_clerk"
+        ],
+        "quests": [
+          [
+            "The Adder by the Millrace",
+            "active"
+          ],
+          [
+            "Thin the Reed Flat Striders",
+            "listed"
+          ],
+          [
+            "Rid the Quarry Track of Gnashers",
+            "listed"
+          ],
+          [
+            "Slay the Marsh Wyrm of Blackfen",
+            "listed"
+          ],
+          [
+            "Clear Mossback Warrens, Level 1",
+            "listed"
+          ]
+        ]
+      }
+    },
+    {
+      "arm": "A",
+      "n": 4,
+      "intent": "agreement",
+      "action": "I ask Maren Holt to promise to keep my blue route note at the desk until I come back. Will you do that?",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 40284,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 759,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            3,
+            3
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": 14609.1,
+        "lastRenderedChange": 44906.6,
+        "worldCommit": 44886.5,
+        "confirmedSave": 45139.5,
+        "ready": 45145.5,
+        "lastExtractorTransportEnd": 44847.2,
+        "saveReadbackMs": 253,
+        "narratorStartToFirstProse": 11962.9,
+        "firstProseBeforeTransportEnd": -185.9,
+        "stNarrationFinished": 14435.2
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "84e91e7f66e53f29b8efe77c6877035e52feb7ea844f0642817c1c2bed510975",
+        "eventHash": "4c1a5dc6ac34ece85a1539e85710baa01b1db2f917c8a13a527a53edebabab4f"
+      },
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 0
+      },
+      "ids": [
+        25,
+        26,
+        27
+      ],
+      "transportMs": {
+        "planner": 2120,
+        "narrator": 11777,
+        "extractor": 30222
+      },
+      "formal": [
+        true,
+        true,
+        true
+      ],
+      "events": [
+        "time.advanced",
+        "object.created",
+        "fact.asserted",
+        "thread.set",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [],
+      "world": {
+        "location": "loc.ashbridge.guild_hall",
+        "present": [
+          "pc",
+          "npc.npcguild_clerk"
+        ],
+        "quests": [
+          [
+            "A Single Big Owl Has Taken the Dovecotes",
+            "active"
+          ],
+          [
+            "Thin the Reed Flats Striders",
+            "listed"
+          ],
+          [
+            "Break the Quarry Track Boar Sounder",
+            "listed"
+          ],
+          [
+            "Slay the Marsh King's Serpent",
+            "listed"
+          ],
+          [
+            "Clear Mossback Warrens Level 1",
+            "listed"
+          ]
+        ]
+      }
+    },
+    {
+      "arm": "B",
+      "n": 4,
+      "intent": "agreement",
+      "action": "I ask Hedda to promise to keep my blue route note at the desk until I come back. Will you do that?",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 55449,
+          "coverage": [
+            4,
+            4
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 860,
+          "coverage": [
+            4,
+            4
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            4,
+            4
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": 7033.4,
+        "lastRenderedChange": 86453.5,
+        "worldCommit": 86427.3,
+        "confirmedSave": 86557.3,
+        "ready": 86561.7,
+        "lastExtractorTransportEnd": 86403.4,
+        "saveReadbackMs": 130,
+        "narratorStartToFirstProse": 4117.0,
+        "firstProseBeforeTransportEnd": 16899.0,
+        "stNarrationFinished": 23934.4
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "4f9414073ed85e6c8045e07a2cd59e9db272ee0b57ff4aeacd4df4e46a4b85a5",
+        "eventHash": "232e47ecff2dfdb0cdfccc26717ce630fee49f6753d654a7bbc41b5c4cb22bcf"
+      },
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 2
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 1
+      },
+      "ids": [
+        28,
+        29,
+        30,
+        31
+      ],
+      "transportMs": {
+        "planner": 1966,
+        "narrator": 21016,
+        "extractor": 62261
+      },
+      "formal": [
+        true,
+        true,
+        false,
+        true
+      ],
+      "events": [
+        "object.created",
+        "fact.asserted",
+        "thread.set",
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [],
+      "world": {
+        "location": "loc.ashbridge.guild_hall",
+        "present": [
+          "pc",
+          "npc.npcguild_clerk"
+        ],
+        "quests": [
+          [
+            "The Adder by the Millrace",
+            "active"
+          ],
+          [
+            "Thin the Reed Flat Striders",
+            "listed"
+          ],
+          [
+            "Rid the Quarry Track of Gnashers",
+            "listed"
+          ],
+          [
+            "Slay the Marsh Wyrm of Blackfen",
+            "listed"
+          ],
+          [
+            "Clear Mossback Warrens, Level 1",
+            "listed"
+          ]
+        ]
+      }
+    },
+    {
+      "arm": "A",
+      "n": 5,
+      "intent": "combined",
+      "action": "I step aside, check the condition of my staff, and look around the hall for the safest way out.",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 40275,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 351,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            3,
+            3
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": 18894.3,
+        "lastRenderedChange": 24185.9,
+        "worldCommit": 24166.8,
+        "confirmedSave": 24297.8,
+        "ready": 24304.8,
+        "lastExtractorTransportEnd": 24151.2,
+        "saveReadbackMs": 131,
+        "narratorStartToFirstProse": 12792.1,
+        "firstProseBeforeTransportEnd": -138.1,
+        "stNarrationFinished": 18763.2
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "a5f9ec9b0dfd2c624c95863ece86aa0e49fc087343bbd970bcc99949bec5d11b",
+        "eventHash": "6e1ac61e79150166ac2e8af1d33e0f1181c8c9b4bbcb59d2b37e93f96c0714db"
+      },
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 0
+      },
+      "ids": [
+        32,
+        33,
+        34
+      ],
+      "transportMs": {
+        "planner": 5424,
+        "narrator": 12654,
+        "extractor": 5237
+      },
+      "formal": [
+        true,
+        true,
+        true
+      ],
+      "events": [
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [],
+      "world": {
+        "location": "loc.ashbridge.guild_hall",
+        "present": [
+          "pc",
+          "npc.npcguild_clerk"
+        ],
+        "quests": [
+          [
+            "A Single Big Owl Has Taken the Dovecotes",
+            "active"
+          ],
+          [
+            "Thin the Reed Flats Striders",
+            "listed"
+          ],
+          [
+            "Break the Quarry Track Boar Sounder",
+            "listed"
+          ],
+          [
+            "Slay the Marsh King's Serpent",
+            "listed"
+          ],
+          [
+            "Clear Mossback Warrens Level 1",
+            "listed"
+          ]
+        ]
+      }
+    },
+    {
+      "arm": "B",
+      "n": 5,
+      "intent": "combined",
+      "action": "I step aside, check the condition of my staff, and look around the hall for the safest way out.",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 40401,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 334,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            3,
+            3
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": 6022.9,
+        "lastRenderedChange": 22436.2,
+        "worldCommit": 22417.0,
+        "confirmedSave": 22512.6,
+        "ready": 22531.7,
+        "lastExtractorTransportEnd": 22402.4,
+        "saveReadbackMs": 96,
+        "narratorStartToFirstProse": 3026.5,
+        "firstProseBeforeTransportEnd": 11924.5,
+        "stNarrationFinished": 17951.4
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "aab7a5fa9f6aaf5db1e9f26ef0492a31a1e11b1c3c7111557518334c09c6d15c",
+        "eventHash": "300a037de6cfbaeb4b52a9c30ec3d2d6b45aa4cb55606ff8d5b75176a524fe12"
+      },
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 0
+      },
+      "ids": [
+        35,
+        36,
+        37
+      ],
+      "transportMs": {
+        "planner": 2465,
+        "narrator": 14951,
+        "extractor": 4231
+      },
+      "formal": [
+        true,
+        true,
+        true
+      ],
+      "events": [
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [],
+      "world": {
+        "location": "loc.ashbridge.guild_hall",
+        "present": [
+          "pc",
+          "npc.npcguild_clerk"
+        ],
+        "quests": [
+          [
+            "The Adder by the Millrace",
+            "active"
+          ],
+          [
+            "Thin the Reed Flat Striders",
+            "listed"
+          ],
+          [
+            "Rid the Quarry Track of Gnashers",
+            "listed"
+          ],
+          [
+            "Slay the Marsh Wyrm of Blackfen",
+            "listed"
+          ],
+          [
+            "Clear Mossback Warrens, Level 1",
+            "listed"
+          ]
+        ]
+      }
+    },
+    {
+      "arm": "A",
+      "n": 6,
+      "intent": "recall",
+      "action": "I return to the desk and ask what we agreed about my blue route note.",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 54732,
+          "coverage": [
+            4,
+            4
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 637,
+          "coverage": [
+            4,
+            4
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            4,
+            4
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": 12253.8,
+        "lastRenderedChange": 44281.1,
+        "worldCommit": 44262.1,
+        "confirmedSave": 44420.1,
+        "ready": 44427.4,
+        "lastExtractorTransportEnd": 44248.4,
+        "saveReadbackMs": 158,
+        "narratorStartToFirstProse": 9531.4,
+        "firstProseBeforeTransportEnd": -404.4,
+        "stNarrationFinished": 11884.4
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "df7b1b9a28a3c65f8d7cc7feadb91865b062de0b365ec82be904afa6818c7930",
+        "eventHash": "fd6d4bd41abeb53d440f76cf722f0c884dd0e1eef390fd30239d17ea011f53c4"
+      },
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 2
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 1
+      },
+      "ids": [
+        38,
+        39,
+        40,
+        41
+      ],
+      "transportMs": {
+        "planner": 2049,
+        "narrator": 9127,
+        "extractor": 31941
+      },
+      "formal": [
+        true,
+        true,
+        false,
+        true
+      ],
+      "events": [
+        "delta.rejected",
+        "fact.asserted",
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [
+        {
+          "seq": 1,
+          "type": "person.new",
+          "rule": "ambient",
+          "why": "scene colour: an unnamed person nothing else of the reply deals with is not kept; the story brings them back when they matter"
+        }
+      ],
+      "world": {
+        "location": "loc.ashbridge.guild_hall",
+        "present": [
+          "pc",
+          "npc.npcguild_clerk"
+        ],
+        "quests": [
+          [
+            "A Single Big Owl Has Taken the Dovecotes",
+            "active"
+          ],
+          [
+            "Thin the Reed Flats Striders",
+            "listed"
+          ],
+          [
+            "Break the Quarry Track Boar Sounder",
+            "listed"
+          ],
+          [
+            "Slay the Marsh King's Serpent",
+            "listed"
+          ],
+          [
+            "Clear Mossback Warrens Level 1",
+            "listed"
+          ]
+        ]
+      }
+    },
+    {
+      "arm": "B",
+      "n": 6,
+      "intent": "recall",
+      "action": "I return to the desk and ask what we agreed about my blue route note.",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 40113,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 242,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            3,
+            3
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": 6593.7,
+        "lastRenderedChange": 27687.6,
+        "worldCommit": 27485.5,
+        "confirmedSave": 28025.7,
+        "ready": 28054.0,
+        "lastExtractorTransportEnd": 27446.3,
+        "saveReadbackMs": 540,
+        "narratorStartToFirstProse": 3520.4,
+        "firstProseBeforeTransportEnd": 12287.6,
+        "stNarrationFinished": 18884.3
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "0852d941e2e308067c9ca162aa9fecfec9d991a93e1dd87921502f91641a1dd1",
+        "eventHash": "d650e1b1aedc5bd178c2a062f4015f653705540ae4e798bdca6ce6d989bc6b84"
+      },
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 0
+      },
+      "ids": [
+        42,
+        43,
+        44
+      ],
+      "transportMs": {
+        "planner": 2515,
+        "narrator": 15808,
+        "extractor": 8351
+      },
+      "formal": [
+        true,
+        true,
+        true
+      ],
+      "events": [
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [],
+      "world": {
+        "location": "loc.ashbridge.guild_hall",
+        "present": [
+          "pc",
+          "npc.npcguild_clerk"
+        ],
+        "quests": [
+          [
+            "The Adder by the Millrace",
+            "active"
+          ],
+          [
+            "Thin the Reed Flat Striders",
+            "listed"
+          ],
+          [
+            "Rid the Quarry Track of Gnashers",
+            "listed"
+          ],
+          [
+            "Slay the Marsh Wyrm of Blackfen",
+            "listed"
+          ],
+          [
+            "Clear Mossback Warrens, Level 1",
+            "listed"
+          ]
+        ]
+      }
+    },
+    {
+      "arm": "A",
+      "n": 7,
+      "intent": "travel",
+      "action": "I leave the guild and travel to the old elm above the Ashbridge dovecotes for the contract \"A Single Big Owl Has Taken the Dovecotes\".",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 40728,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 1092,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            3,
+            3
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": 28386.6,
+        "lastRenderedChange": 67638.7,
+        "worldCommit": 67607.7,
+        "confirmedSave": 67866.7,
+        "ready": 67870.8,
+        "lastExtractorTransportEnd": 67576.2,
+        "saveReadbackMs": 259,
+        "narratorStartToFirstProse": 20509.4,
+        "firstProseBeforeTransportEnd": -182.4,
+        "stNarrationFinished": 28211.2
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "a1f83e1f27902ada8d888ecac391839004f69ef1ad4b7fa0d36e486ed17e8f59",
+        "eventHash": "b30f6a502c593d834aa5d9deebcb9490b4305dd0916c87c4b667201b768bf47c"
+      },
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 0
+      },
+      "ids": [
+        45,
+        46,
+        47
+      ],
+      "transportMs": {
+        "planner": 7302,
+        "narrator": 20327,
+        "extractor": 39175
+      },
+      "formal": [
+        true,
+        true,
+        true
+      ],
+      "events": [
+        "time.advanced",
+        "entity.updated",
+        "scene.moved",
+        "place.updated",
+        "intent.set",
+        "delta.rejected",
+        "entity.created",
+        "scene.entered",
+        "entity.updated",
+        "entity.updated",
+        "scene.awareness",
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [
+        {
+          "seq": 3,
+          "type": "person.new",
+          "rule": "ambient",
+          "why": "scene colour: an unnamed person nothing else of the reply deals with is not kept; the story brings them back when they matter"
+        }
+      ],
+      "world": {
+        "location": "realm.duskreach.the_old_elm_above_the_ashbridge_dovecotes",
+        "present": [
+          "pc",
+          "mon.owlgreat_horned_1"
+        ],
+        "quests": [
+          [
+            "A Single Big Owl Has Taken the Dovecotes",
+            "active"
+          ],
+          [
+            "Thin the Reed Flats Striders",
+            "listed"
+          ],
+          [
+            "Break the Quarry Track Boar Sounder",
+            "listed"
+          ],
+          [
+            "Slay the Marsh King's Serpent",
+            "listed"
+          ],
+          [
+            "Clear Mossback Warrens Level 1",
+            "listed"
+          ]
+        ]
+      }
+    },
+    {
+      "arm": "B",
+      "n": 7,
+      "intent": "travel",
+      "action": "I leave the guild and travel to the millrace embankment at the lower mill, Ashbridge for the contract \"The Adder by the Millrace\".",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 40923,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 853,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            3,
+            3
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": 10691.1,
+        "lastRenderedChange": 50759.6,
+        "worldCommit": 50727.1,
+        "confirmedSave": 50876.5,
+        "ready": 50884.3,
+        "lastExtractorTransportEnd": 50694.6,
+        "saveReadbackMs": 149,
+        "narratorStartToFirstProse": 5128.5,
+        "firstProseBeforeTransportEnd": 16288.5,
+        "stNarrationFinished": 26981.6
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "ede080bcf60d94405045ecde0c6c9c80624b3545d5125d7a56668525e03016a4",
+        "eventHash": "e9b098a811c806521c60790833b98232cadbf0dbfff2790268411f25640a056f"
+      },
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 0
+      },
+      "ids": [
+        48,
+        49,
+        50
+      ],
+      "transportMs": {
+        "planner": 5051,
+        "narrator": 21417,
+        "extractor": 23511
+      },
+      "formal": [
+        true,
+        true,
+        true
+      ],
+      "events": [
+        "entity.updated",
+        "scene.moved",
+        "place.updated",
+        "intent.set",
+        "entity.created",
+        "scene.entered",
+        "fact.asserted",
+        "scene.awareness",
+        "fact.asserted",
+        "thread.set",
+        "time.advanced",
+        "knowledge.gained",
+        "memory.recorded",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [],
+      "world": {
+        "location": "loc.ashbridge.the_millrace_embankment_at_the_lower_mill",
+        "present": [
+          "pc",
+          "npc.npcmillers_boy"
+        ],
+        "quests": [
+          [
+            "The Adder by the Millrace",
+            "active"
+          ],
+          [
+            "Thin the Reed Flat Striders",
+            "listed"
+          ],
+          [
+            "Rid the Quarry Track of Gnashers",
+            "listed"
+          ],
+          [
+            "Slay the Marsh Wyrm of Blackfen",
+            "listed"
+          ],
+          [
+            "Clear Mossback Warrens, Level 1",
+            "listed"
+          ]
+        ]
+      }
+    },
+    {
+      "arm": "A",
+      "n": 8,
+      "intent": "track",
+      "action": "I scout the marked site for the quarry from the contract \"A Single Big Owl Has Taken the Dovecotes\", keeping my staff ready.",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 38246,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 848,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            3,
+            3
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": 30273.8,
+        "lastRenderedChange": 30266.5,
+        "worldCommit": 51691.4,
+        "confirmedSave": 51868.4,
+        "ready": 51871.2,
+        "lastExtractorTransportEnd": 51670.7,
+        "saveReadbackMs": 177,
+        "narratorStartToFirstProse": 22214.1,
+        "firstProseBeforeTransportEnd": -193.1,
+        "stNarrationFinished": 30088.7
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "8612e631dfa21cb853d70699935d96fb36a0c68a7dcc3ed68438da188640ee90",
+        "eventHash": "78c3ffa2d4ccc89ccb820fff24c6e5f03bfd09fe37dfcd1245cc50e455c2f6be"
+      },
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 0
+      },
+      "ids": [
+        51,
+        52,
+        53
+      ],
+      "transportMs": {
+        "planner": 7429,
+        "narrator": 22021,
+        "extractor": 21385
+      },
+      "formal": [
+        true,
+        true,
+        true
+      ],
+      "events": [
+        "time.advanced",
+        "fact.asserted",
+        "scene.position",
+        "scene.awareness",
+        "fact.asserted",
+        "thread.set",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [],
+      "world": {
+        "location": "realm.duskreach.the_old_elm_above_the_ashbridge_dovecotes",
+        "present": [
+          "pc",
+          "mon.owlgreat_horned_1"
+        ],
+        "quests": [
+          [
+            "A Single Big Owl Has Taken the Dovecotes",
+            "active"
+          ],
+          [
+            "Thin the Reed Flats Striders",
+            "listed"
+          ],
+          [
+            "Break the Quarry Track Boar Sounder",
+            "listed"
+          ],
+          [
+            "Slay the Marsh King's Serpent",
+            "listed"
+          ],
+          [
+            "Clear Mossback Warrens Level 1",
+            "listed"
+          ]
+        ]
+      }
+    },
+    {
+      "arm": "B",
+      "n": 8,
+      "intent": "track",
+      "action": "I scout the marked site for the quarry from the contract \"The Adder by the Millrace\", keeping my staff ready.",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 38416,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 397,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            3,
+            3
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": 9823.7,
+        "lastRenderedChange": 21397.2,
+        "worldCommit": 26033.7,
+        "confirmedSave": 26140.5,
+        "ready": 26143.4,
+        "lastExtractorTransportEnd": 26023.1,
+        "saveReadbackMs": 107,
+        "narratorStartToFirstProse": 4381.6,
+        "firstProseBeforeTransportEnd": 11516.4,
+        "stNarrationFinished": 21342.1
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "341f6d6477440652e55ecf5a3859172d2b453a45f847d7155bfa517ac08878ce",
+        "eventHash": "c13058e57909563ae6587a6cd257bde75e93197e9dd2cc3423ef6edeebeca850"
+      },
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 0
+      },
+      "ids": [
+        54,
+        55,
+        56
+      ],
+      "transportMs": {
+        "planner": 4885,
+        "narrator": 15898,
+        "extractor": 4433
+      },
+      "formal": [
+        true,
+        true,
+        true
+      ],
+      "events": [
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [],
+      "world": {
+        "location": "loc.ashbridge.the_millrace_embankment_at_the_lower_mill",
+        "present": [
+          "pc",
+          "npc.npcmillers_boy"
+        ],
+        "quests": [
+          [
+            "The Adder by the Millrace",
+            "active"
+          ],
+          [
+            "Thin the Reed Flat Striders",
+            "listed"
+          ],
+          [
+            "Rid the Quarry Track of Gnashers",
+            "listed"
+          ],
+          [
+            "Slay the Marsh Wyrm of Blackfen",
+            "listed"
+          ],
+          [
+            "Clear Mossback Warrens, Level 1",
+            "listed"
+          ]
+        ]
+      }
+    },
+    {
+      "arm": "A",
+      "n": 9,
+      "intent": "approach",
+      "action": "I follow the tracks into sight of the quarry, ready to confront it without approaching bystanders.",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 38969,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 1102,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            3,
+            3
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": 33736.4,
+        "lastRenderedChange": 82719.9,
+        "worldCommit": 82694.4,
+        "confirmedSave": 82916.4,
+        "ready": 82919.3,
+        "lastExtractorTransportEnd": 82655.2,
+        "saveReadbackMs": 222,
+        "narratorStartToFirstProse": 24098.2,
+        "firstProseBeforeTransportEnd": -220.2,
+        "stNarrationFinished": 33525.2
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "d45fbdd6b5aaf2f2ab5e7619f8d302a4844ef58ff2a2386ab18b2a263bf54890",
+        "eventHash": "6d81d7e50da736225b394022f3531c1cb7520192c13cba8e357e80c10cac79ee"
+      },
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 0
+      },
+      "ids": [
+        57,
+        58,
+        59
+      ],
+      "transportMs": {
+        "planner": 8995,
+        "narrator": 23878,
+        "extractor": 48871
+      },
+      "formal": [
+        true,
+        true,
+        true
+      ],
+      "events": [
+        "time.advanced",
+        "entity.updated",
+        "scene.moved",
+        "place.updated",
+        "intent.set",
+        "entity.created",
+        "scene.entered",
+        "entity.updated",
+        "entity.updated",
+        "scene.awareness",
+        "fact.asserted",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [],
+      "world": {
+        "location": "realm.duskreach.the_quarry_spoil_heaps_along_the_old_quarry_track",
+        "present": [
+          "pc",
+          "mon.crtusker_boar_1"
+        ],
+        "quests": [
+          [
+            "A Single Big Owl Has Taken the Dovecotes",
+            "active"
+          ],
+          [
+            "Thin the Reed Flats Striders",
+            "listed"
+          ],
+          [
+            "Break the Quarry Track Boar Sounder",
+            "listed"
+          ],
+          [
+            "Slay the Marsh King's Serpent",
+            "listed"
+          ],
+          [
+            "Clear Mossback Warrens Level 1",
+            "listed"
+          ]
+        ]
+      }
+    },
+    {
+      "arm": "B",
+      "n": 9,
+      "intent": "approach",
+      "action": "I follow the tracks into sight of the quarry, ready to confront it without approaching bystanders.",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 38755,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 1053,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            3,
+            3
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": 22488.9,
+        "lastRenderedChange": 71442.7,
+        "worldCommit": 71416.2,
+        "confirmedSave": 71554.1,
+        "ready": 71557.3,
+        "lastExtractorTransportEnd": 71382.8,
+        "saveReadbackMs": 138,
+        "narratorStartToFirstProse": 6227.1,
+        "firstProseBeforeTransportEnd": 12696.9,
+        "stNarrationFinished": 35189.8
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "b95213f2adc405e5d450603446f6907d29cb01442b25fe595a281059a170c0ef",
+        "eventHash": "8291d06ec8efd953435b6bf4ad1bab68157e452ad298ba9ff3da50ae5adef8ec"
+      },
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 0
+      },
+      "ids": [
+        60,
+        61,
+        62
+      ],
+      "transportMs": {
+        "planner": 15646,
+        "narrator": 18924,
+        "extractor": 35976
+      },
+      "formal": [
+        true,
+        true,
+        true
+      ],
+      "events": [
+        "place.created",
+        "entity.updated",
+        "scene.moved",
+        "entity.created",
+        "scene.entered",
+        "entity.updated",
+        "entity.updated",
+        "scene.awareness",
+        "scene.position",
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [],
+      "world": {
+        "location": "loc.ashbridge.the_millrace_embankment_at_the_lower_mill.adder_wallow_in_the_reed_beds",
+        "present": [
+          "pc",
+          "mon.creaturelarge_adder"
+        ],
+        "quests": [
+          [
+            "The Adder by the Millrace",
+            "active"
+          ],
+          [
+            "Thin the Reed Flat Striders",
+            "listed"
+          ],
+          [
+            "Rid the Quarry Track of Gnashers",
+            "listed"
+          ],
+          [
+            "Slay the Marsh Wyrm of Blackfen",
+            "listed"
+          ],
+          [
+            "Clear Mossback Warrens, Level 1",
+            "listed"
+          ]
+        ]
+      }
+    },
+    {
+      "arm": "A",
+      "n": 10,
+      "intent": "finish",
+      "action": "I inspect the evidence around me and check my equipment before deciding whether to return to the guild.",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 38673,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 541,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            3,
+            3
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": 25645.5,
+        "lastRenderedChange": 25639.7,
+        "worldCommit": 36637.4,
+        "confirmedSave": 36818.4,
+        "ready": 36821.1,
+        "lastExtractorTransportEnd": 36622.7,
+        "saveReadbackMs": 181,
+        "narratorStartToFirstProse": 20001.8,
+        "firstProseBeforeTransportEnd": -207.8,
+        "stNarrationFinished": 25450.7
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "e8341857d5e1da050bc7a01d314adca5bad460eb3b7062c296ee7c51b2dbcdb9",
+        "eventHash": "076c23f479ccb0816e0362980f0881d07dd30810af4eb70bb697a20e4bbba01a"
+      },
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 0
+      },
+      "ids": [
+        63,
+        64,
+        65
+      ],
+      "transportMs": {
+        "planner": 4905,
+        "narrator": 19794,
+        "extractor": 10959
+      },
+      "formal": [
+        true,
+        true,
+        true
+      ],
+      "events": [
+        "time.advanced",
+        "scene.position",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [],
+      "world": {
+        "location": "realm.duskreach.the_quarry_spoil_heaps_along_the_old_quarry_track",
+        "present": [
+          "pc",
+          "mon.crtusker_boar_1"
+        ],
+        "quests": [
+          [
+            "A Single Big Owl Has Taken the Dovecotes",
+            "active"
+          ],
+          [
+            "Thin the Reed Flats Striders",
+            "listed"
+          ],
+          [
+            "Break the Quarry Track Boar Sounder",
+            "listed"
+          ],
+          [
+            "Slay the Marsh King's Serpent",
+            "listed"
+          ],
+          [
+            "Clear Mossback Warrens Level 1",
+            "listed"
+          ]
+        ]
+      }
+    },
+    {
+      "arm": "B",
+      "n": 10,
+      "intent": "finish",
+      "action": "I inspect the evidence around me and check my equipment before deciding whether to return to the guild.",
+      "usage": {
+        "prompt_tokens": {
+          "sumReported": 38760,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "completion_tokens": {
+          "sumReported": 1028,
+          "coverage": [
+            3,
+            3
+          ]
+        },
+        "cached_tokens": {
+          "sumReported": 0,
+          "coverage": [
+            3,
+            3
+          ]
+        }
+      },
+      "phaseMs": {
+        "firstProse": 12901.1,
+        "lastRenderedChange": 32307.4,
+        "worldCommit": 59705.9,
+        "confirmedSave": 59870.3,
+        "ready": 59873.1,
+        "lastExtractorTransportEnd": 59682.4,
+        "saveReadbackMs": 164,
+        "narratorStartToFirstProse": 6579.7,
+        "firstProseBeforeTransportEnd": 19317.3,
+        "stNarrationFinished": 32218.4
+      },
+      "checks": {
+        "readback": true,
+        "worldHash": "21f6e917aa643d14d66d3cdb693e840dc10001e488702f9809bdd954c9024dad",
+        "eventHash": "ba95e53b63915a8d201e496223345de16d0e49eae649571784b1faff00337fc1"
+      },
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "repairs": {
+        "planner": 0,
+        "board": 0,
+        "extractor": 0
+      },
+      "ids": [
+        66,
+        67,
+        68
+      ],
+      "transportMs": {
+        "planner": 5676,
+        "narrator": 25897,
+        "extractor": 27079
+      },
+      "formal": [
+        true,
+        true,
+        true
+      ],
+      "events": [
+        "fact.asserted",
+        "fact.asserted",
+        "fact.asserted",
+        "fact.asserted",
+        "thread.set",
+        "scene.position",
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome",
+        "extract.applied"
+      ],
+      "rejected": [],
+      "world": {
+        "location": "loc.ashbridge.the_millrace_embankment_at_the_lower_mill.adder_wallow_in_the_reed_beds",
+        "present": [
+          "pc",
+          "mon.creaturelarge_adder"
+        ],
+        "quests": [
+          [
+            "The Adder by the Millrace",
+            "active"
+          ],
+          [
+            "Thin the Reed Flat Striders",
+            "listed"
+          ],
+          [
+            "Rid the Quarry Track of Gnashers",
+            "listed"
+          ],
+          [
+            "Slay the Marsh Wyrm of Blackfen",
+            "listed"
+          ],
+          [
+            "Clear Mossback Warrens, Level 1",
+            "listed"
+          ]
+        ]
+      }
+    }
+  ]
+}

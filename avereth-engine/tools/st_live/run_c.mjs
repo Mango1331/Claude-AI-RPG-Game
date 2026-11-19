@@ -128,6 +128,8 @@ const settingsFile = path.join(USER, 'settings.json');
 const settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
 settings.firstRun = false;
 settings.username = 'Alaric';
+// Each marked run starts with the shipped prompt order, even if ST persisted a previous comparison.
+settings.oai_settings.prompt_order = JSON.parse(fs.readFileSync(path.join(ENGINE, `presets/${PRESET}.json`))).prompt_order;
 Object.assign(settings.oai_settings, { openai_max_context: 32000, openai_max_tokens: 1200, max_context_unlocked: true });
 if (settings.extension_settings) delete settings.extension_settings.avereth; // the defaults: V4 with the planner (V4-C, Patch 7.2)
 fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 4));
@@ -172,6 +174,11 @@ const mock = http.createServer(async (req, res) => {
         purpose = 'extract';
         const t = allTurns.find((x) => x.reply && users.includes(x.reply.slice(0, 60)));
         text = continuityAnswer(t) ?? JSON.stringify({ scene: 'here', ...(t?.answer || { expected: {}, deltas: [] }) });
+        if (t?.key === 'board203comparison' && !system.includes('Write compact single-line JSON.')) {
+            const answer=JSON.parse(text);
+            answer.deltas[0].scene=null;
+            text=JSON.stringify(answer,null,2);
+        }
         delay = 300;
     } else {
         const t = allTurns.find((x) => lastUser.includes(x.player));
@@ -514,7 +521,7 @@ try {
     let continuityChecks=null;
     if (process.env.AVERETH_SMOKE_CONTINUITY === '1') { stealthProbeMode=true; continuityChecks=await continuitySmoke({page,send,idle,calls,driver:()=>driver,onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});}});stealthProbeMode=false; }
     let board159Checks=null;
-    if(process.env.AVERETH_SMOKE_BOARD159 === '1'){stealthProbeMode=true;board159Checks=await board159Smoke({page,send,idle,calls,driver:()=>driver,onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});}});stealthProbeMode=false;}
+    if(process.env.AVERETH_SMOKE_BOARD159 === '1'){stealthProbeMode=true;board159Checks=await board159Smoke({page,send,idle,calls,out:HERE,driver:()=>driver,onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});}});stealthProbeMode=false;}
     let qol160Checks = null;
     if (process.env.AVERETH_SMOKE_QOL160 === '1') { stealthProbeMode = true; qol160Checks = await qol160Smoke({ page, send, idle, calls, driver: () => driver, onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); }, out: HERE }); stealthProbeMode = false; }
     let pulse162Checks = null;
@@ -653,7 +660,7 @@ const checks = { capacityAtMostFour:result.capacity.peakUnits<=4,
     ...Object.fromEntries(Object.entries(result.actionReviewChecks || {}).map(([k,v])=>[`actionReview_${k}`,v])),
     noPageErrors: pageErrors.length === 0,
 };
-fs.writeFileSync(path.join(HERE, 'result.json'), JSON.stringify({ checks, toggle, steps, status, calls: calls.map((c) => ({ purpose: c.purpose, stream: c.stream, temperature: c.temperature, max_tokens: c.maxTokens, auth: c.auth ? 'Bearer <dummy>' : null, n: c.messages.length, lastUser: c.lastUser.slice(-80) })), keyInBrowser, pageErrors, injectedSaveErrors }, null, 1));
+fs.writeFileSync(path.join(HERE, 'result.json'), JSON.stringify({ checks, toggle, steps, status, calls: calls.map((c) => ({ purpose: c.purpose, mockMs: c.durationMs, finished: c.finished, stream: c.stream, temperature: c.temperature, max_tokens: c.maxTokens, auth: c.auth ? 'Bearer <dummy>' : null, n: c.messages.length, lastUser: c.lastUser.slice(-80) })), keyInBrowser, pageErrors, injectedSaveErrors }, null, 1));
 fs.writeFileSync(path.join(HERE, 'planner_alias_request.json'), JSON.stringify(plans[1]?.messages || [], null, 1));
 fs.writeFileSync(path.join(HERE, 'narrator_world_request.json'), JSON.stringify(narratorFor('world')[0]?.messages || [], null, 1));
 console.log(JSON.stringify(checks, null, 1));

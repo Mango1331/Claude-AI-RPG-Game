@@ -1,4 +1,6 @@
 // Original User03 Board failure through a real ST host; scripted provider, no natural-model claim.
+import {createHash} from 'node:crypto';
+import path from 'node:path';
 import fs from 'node:fs';import zlib from 'node:zlib';
 const f=JSON.parse(zlib.gunzipSync(fs.readFileSync(new URL('../../tests/v4/fixtures/user03_board158.json.gz',import.meta.url))));
 const success='I read the official board and study the notices.';
@@ -30,7 +32,7 @@ export function board159Response(system){
  }
  return JSON.stringify(raw);
 }
-export async function board159Smoke({page,send,idle,calls,driver,onReload}){
+export async function board159Smoke({page,send,idle,calls,driver,onReload,out}){
  const seed=async()=>{await page.evaluate(async prefix=>{const c=SillyTavern.getContext();c.chat.splice(0,c.chat.length,...prefix);await c.saveChat();await c.reloadCurrentChat();},structuredClone(f.prefix));onReload();};
  const snapshot=()=>page.evaluate(async()=>{const{foldChat}=await import('/scripts/extensions/third-party/avereth-engine/src/host.js');const c=SillyTavern.getContext(),r=foldChat(c.chat),s=r.state;return{errors:r.errors,quests:Object.values(s.quests).filter(q=>q.kind==='guild_contract').length,coin:s.entities.pc.sheet.coin_cp,facts:Object.values(s.facts),rejected:c.chat.at(-1)?.extra?.avereth?.rejected,status:c.chat.at(-1)?.extra?.avereth?.extraction?.status};});
  mode='success';n=0;await seed();const start=calls.length;await send(success);await idle();const good=await snapshot();
@@ -47,18 +49,23 @@ export async function board159Smoke({page,send,idle,calls,driver,onReload}){
  });
  const originalSettings=await page.evaluate(()=>{
   const c=SillyTavern.getContext();
-  return {compact:c.extensionSettings.avereth.compactOutput,stream:c.chatCompletionSettings.stream_openai,smooth:c.powerUserSettings.smooth_streaming};
+  return {order:c.chatCompletionSettings.prompt_order,compact:c.extensionSettings.avereth.compactOutput,stream:c.chatCompletionSettings.stream_openai,smooth:c.powerUserSettings.smooth_streaming};
  });
- const setStream=({stream,smooth,compact})=>page.evaluate(({stream,smooth,compact})=>{
+ const configure=({stream,smooth,compact,order})=>page.evaluate(({stream,smooth,compact,order})=>{
   const c=SillyTavern.getContext();
+  c.chatCompletionSettings.prompt_order=order;
   c.extensionSettings.avereth.compactOutput=compact;
   c.chatCompletionSettings.stream_openai=stream;
   c.powerUserSettings.smooth_streaming=smooth;
- },{stream,smooth,compact});
+ },{stream,smooth,compact,order});
+ const standard=JSON.parse(fs.readFileSync(new URL('../../presets/Avereth Narrator V4.json',import.meta.url))).prompt_order;
+ const alternate=JSON.parse(fs.readFileSync(new URL('../../presets/Avereth Narrator V4 - Card before Lore.json',import.meta.url))).prompt_order;
+ const digest=x=>createHash('sha256').update(JSON.stringify(x)).digest('hex');
+ const fingerprint={};
  let reference;
  try{
-  for(const arm of ['reference','full','slot']){
-   mode=arm;n=0;await seed();await setStream({stream:arm==='slot',smooth:false,compact:arm==='slot'});
+  for(const arm of (process.env.AVERETH_SMOKE_BOARD_REFERENCE ? ['reference','full'] : ['reference','full','slot'])){
+   mode=arm;n=0;await seed();await configure({stream:arm==='slot',smooth:false,compact:arm==='slot',order:arm==='slot'?alternate:standard});
    const start=calls.length;await send(comparison);await idle();
    const turn=calls.slice(start),saved=await driver().verifySaved(await driver().chat(),{complete:true});
    const before=await publication();
@@ -69,6 +76,11 @@ export async function board159Smoke({page,send,idle,calls,driver,onReload}){
    // Independently timed calls. Reload above must preserve even the elapsed times exactly.
    for(const events of after.events)for(const event of events)
     if(['cmd.interpreted','extract.applied'].includes(event.t))delete event.d.ms;
+   fingerprint[arm]={world:digest(after.world),events:digest(after.events),
+       requests:turn.map(c=>({role:c.purpose,mockMs:c.durationMs,finished:c.finished}))};
+   const narrator=turn.find(c=>c.purpose==='narrator').messages;
+   const card=narrator.findIndex(m=>m.content.startsWith('AVERETH RPG'));
+   checks[arm+'CardOrder']=card === (arm==='slot'?1:2);
    if(arm==='reference')reference=after;
    else checks[arm+'SameWorld']=JSON.stringify(after)===JSON.stringify(reference);
    const expected=arm==='reference'?['plan','board','narrator','extract']:['plan','board','board','narrator','extract'];
@@ -76,6 +88,7 @@ export async function board159Smoke({page,send,idle,calls,driver,onReload}){
    checks[arm+'Calls']=JSON.stringify(turn.map(c=>c.purpose))===JSON.stringify(expected) &&
     turn.every(c=>c.stream===(arm==='slot' && c.purpose==='narrator'));
   }
- }finally{await setStream(originalSettings);}
+ }finally{await configure(originalSettings);}
+ fs.writeFileSync(path.join(out,'board-world.json'),JSON.stringify(fingerprint,null,2));
  mode=null;return checks;
 }

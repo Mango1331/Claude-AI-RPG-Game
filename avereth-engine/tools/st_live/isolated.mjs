@@ -29,6 +29,7 @@ const MODES = {
     base: {},
     host_cost: { AVERETH_SMOKE_HOST_COST: '1' },
     prompt_prefix: { AVERETH_SMOKE_PREFIX: '1' },
+    board_reference: { AVERETH_SMOKE_BOARD159: '1', AVERETH_SMOKE_BOARD_REFERENCE: '1' },
     board_slot: { AVERETH_SMOKE_BOARD159: '1' },
     action_finance: { AVERETH_SMOKE_FINANCE:'1' },
     action_saves: { AVERETH_SMOKE_FINANCE:'1', AVERETH_SMOKE_SAVE_RECOVERY:'1', AVERETH_SMOKE_ACTION_REVIEW:'1', AVERETH_SMOKE_ACTION_HOST:'1' },

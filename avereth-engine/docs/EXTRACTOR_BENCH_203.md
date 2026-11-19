@@ -24,4 +24,4 @@ Die explizite Benchmarkvariante `B` ergänzt einen Satz im Systemauftrag. `A` ve
 
 Für die sichtbaren Inhaltstokens die Felder `a` und `b` aus `samples.json` pro Antwort mit `Tokenizer.from_file(...).encode(text, add_special_tokens=False).ids` zählen. GLM-5.3-Flash-Tokenizer SHA-256 `19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82d`. Die kumulierte Provider-Completion aus den historischen Antworten steht separat in `reportedCompletion`.
 
-Die Ausgabeanweisung bleibt ein Benchmarkexperiment. Der gemeinsame Spieltestkandidat verwendet den ursprünglichen Extractor. Eine neue kompakte Modellantwort, ihre tatsächliche Erfolgsrate und die natürliche Latenz wurden nicht gemessen.
+Auf dem Suite-Branch verwendet die Extension standardmäßig den ursprünglichen Ausgabeauftrag. „Compact extractor JSON (experiment)“ in den Avereth-Einstellungen aktiviert für Erst- und Reparaturversuche denselben kurzen Systemzusatz wie im Archivvergleich. Parser, Weltprüfung und Commitpfad sind gemeinsam. Erfolgsrate und natürliche Latenz frisch generierter kompakter Antworten sind offen.

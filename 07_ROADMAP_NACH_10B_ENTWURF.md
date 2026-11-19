@@ -1,14 +1,14 @@
 # Avereth Engine – Roadmap nach 10B
 
-**Stand 17.11.2026 · ON HOLD für neue Gameplayfeature-Patches während der `.200`-Spielflussanalyse.** Diese Datei ist ein **pausierter Themen-/Ideenvorrat**, keine aktive Arbeitsreihenfolge. [Start](README.md) · [Zielbild 08](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md) · [Status 03](03_AKTUELLER_PROJEKTSTAND.md) · [Kanon 02](02_DESIGN_KANON.md) · [Quellen 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). Historische Kennungen bleiben auffindbar; keine automatische Rangfolge/Freigabe.
+**Stand 19.11.2026 · ON HOLD für neue Gameplayfeatures.** Dies bleibt ein historischer Ideenvorrat; aktuelle Performancearbeit steht in [03](03_AKTUELLER_PROJEKTSTAND.md) und im [Forschungsindex](recherche/README.md).
 
 ## 1. Fachliche Etappen – vollständig pausiert
 
-**Aktive Reihenfolge statt Gameplaypatches:** Astra-Ultra-Abschlussanalyse zur **Vereinfachung der vorhandenen `.200`** → unabhängiger GPT-Gegenreview → gemeinsame Nutzerentscheidung über Lockerung/HUD/Spielerbestätigung → **erst nach Freigabe** begrenzter `.200`-basierter Vergleich und natürliche Probe. **Hybrid B/C1 und dynamische GM-Alpha sind archiviert**, kein neuer GM-Host-/Produktpfad ([Archiv](recherche/ARCHITEKTUR_EXPERIMENTE_ARCHIV_2026-11-17.md)). Keine neuen Gameplayfeatures parallel implementieren.
+**Aktueller Stand:** Action-HUD bis .203 technisch umgesetzt; User06 durch Charaktertod beendet, Originalreview noch offen. Neue Gameplayfeatures bleiben pausiert; die drei begrenzten Performance-GOs werden separat geprüft. Dynamische GM-Alpha und B/C1 bleiben archiviert.
 
 | Etappe | Stand / verbleibende Entscheidung |
 |---|---|
-| **Späterer persönlicher User-Test** | **Pausiert bis bewusster Freigabe des vereinfachten `.200`-Vergleichs**; bisherige Beobachtungspunkte ([GPT-Review `.192`](patch_plans_10b/REVIEW_BUILD192_GPT_KONTROLLPRUEFUNG.md)). Zusätzlich ab dann: HUD-Kampf, freie Begleitertexte, einfache Zahlungs-/Ankunftsfolgen, bestätigter Weltabschluss und Swipe. Kein unbestellter Vollbatch. |
+| **Späterer persönlicher User-Test** | **User06 wurde auf .203 gestartet und nach Nutzerangabe durch Charaktertod beendet; Originalreview noch offen. Künftige persönliche Tests erst nach neuer Planung.**; bisherige Beobachtungspunkte ([GPT-Review `.192`](patch_plans_10b/REVIEW_BUILD192_GPT_KONTROLLPRUEFUNG.md)). Zusätzlich ab dann: HUD-Kampf, freie Begleitertexte, einfache Zahlungs-/Ankunftsfolgen, bestätigter Weltabschluss und Swipe. Kein unbestellter Vollbatch. |
 | **Bossloot V1** | **Umgesetzt .193/.194 und regulär gemergt** ([Entscheidungen](patch_plans_10b/GEGENREVIEW_BOSSLOOT_GPT_ENTSCHEIDUNGEN_2026-11-15.md) · [Fachplan](patch_plans_10b/FACHPLAN_BOSSLOOT_BESONDERE_BELOHNUNGEN.md)). Aktueller Abnahmestand ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md) |
 | **Kampf: Angriff mit Annäherung** | [Kampffachplan .192](patch_plans_10b/FACHPLAN_KAMPF_BEWEGUNG_ANGRIFF_192.md): Variante A (offene Reichweitenentscheidung, keine Buchung) als kleiner UX-Schritt möglich. B (Teilbewegung außerhalb des Kampfes) nach Designentscheidung. C/D (Konter, Teilbewegung im Kampf) erst mit K1 |
 | **Rang-/Qualitätskalibrierung der Ausrüstung** | [Analyse .195](recherche/AUSRUESTUNG_KAMPFBALANCE_ANALYSE_195_2026-11-15.md) mit echten Werten und Simulationen vorhanden; Varianten unbeschlossen, keine Nebenänderung |
@@ -19,9 +19,9 @@
 | **Stealth S2** | S1 implementiert; heimliche Search/TAKE nach [S1/S2-Fachplan](patch_plans_10b/PATCH_STEALTH_ACTION_MANNER.md) |
 | **Erkundungsloot, Tatenbuch, Bossstärke, weitere Klassen-/Statprogression** | Eigene spätere Entscheidungen; PC 5+0 bereits umgesetzt, NPC-Angleichung/Rare+-Wachstum weiterhin offen |
 
-**Sperre:** Keiner der folgenden historischen Gameplaypunkte ist während der Analyse freigegeben. Auch neu diskutierte `.200`-Lockerungen/HUD-Ideen benötigen **vor Implementierung** unabhängigen Gegenreview und Nutzerentscheidung. Die Produktbasis `.200` bleibt zunächst unverändert.
+**Abgrenzung:** Historische Gameplayfeatures unten bleiben ungeplant. HUD-Auswahl, F/H-Begleittext, Questannahme und Weltstatus sind bereits auf .203 umgesetzt. Die drei Performance-GOs sind isolierte Versuche, kein automatischer Produktmerge.
 
-## Neu in Prüfung – Vereinfachungen, keine neuen Freigaben
+## Historische Spielflussideen – teilweise in .203 umgesetzt
 
 [Entscheidungsgrundlage 08](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md): Reiseszenen und Kleinzahlungen mit weniger formellen Beweis-/Repairpflichten; **Combat-HUD mit auswählbaren Skill-/Gegner-IDs und frei ergänztem Begleiter-/Rollenspieltext**; optionaler Planner/Extractor; ein editierbarer „So übernehmen/Bearbeiten“-Weltvorschlag; Standardtavernen/Grundshops und vorhandener `#pay`-Weg; automatische Anzeige „Narrator fertig – Weltabgleich läuft – ✓ gespeichert – ⚠ Fehler“ bei erlaubtem Vortippen, aber mechanischer Sperre bis zum bestätigten Weltcommit. **Astra darf weitere Spieler-/HUD-Vereinfachungen vorschlagen.** Noch alles Hypothesen, keine beschlossenen Kanonregeln.
 

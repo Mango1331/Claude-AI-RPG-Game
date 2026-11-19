@@ -20,7 +20,12 @@ export function board159Response(system){
  for(const k of ['title','task','desired_end_state'])if(l[k])l[k]=l[k].replace(/boars?/gi,'giant rat');
  l.objectives[0].what='giant rat';l.objectives[0].qty=1;l.habitat={...l.habitat,species:'giant rat',anchor:'rat',min_level:1,max_level:1};if(mode==='slot'){
   const pos=raw.listings.indexOf(l)+1;
-  if(n===1)l.habitat.max_level=3;
+  if(n===1) {
+   l.habitat.max_level=3;
+   if(system.includes('omit task and desired_end_state'))for(const entry of raw.listings)if(entry.habitat){
+    delete entry.task;delete entry.desired_end_state;
+   }
+  }
   else if(system.includes('"slot":'+pos+',"listing":'))return JSON.stringify({slot:pos,listing:l});
  }
  return JSON.stringify(raw);

@@ -762,7 +762,7 @@ function retainedListings(s, need) {
         && q.source?.branch === need.branch && (need.have || []).includes(q.title));
 }
 
-export function boardRequest(s, content, need, repair = null) {
+export function boardRequest(s, content, need, repair = null, initial = false) {
     const [lo, hi] = content.rules.guild.rank_levels[need.rank];
     const guide = need.rank === 'Novice' ? [30, 600] : content.rules.guild.board?.payout_guide_cp?.[need.rank];
     const town = s.places[need.branch];
@@ -827,7 +827,7 @@ export function boardRequest(s, content, need, repair = null) {
         '- client is who posted the work (a person, a trade, a hamlet); titles differ from the listings already on the board.',
         ...(profile?.countOnly ? ['- Each numbered hunt has EXACTLY ONE DEFEAT objective with integer qty and destination in where, delivery:null. No GO/FIND objectives or additional duties. Engine-recorded kills of that population count; flight and narrative alternatives do not. Task and end state are generated from this objective.'] : profile?.noDelivery ? ['- Only GO/FIND guidance and one DEFEAT objective; delivery:null on these objectives. No delivery, retrieval, repair, escort or service duties.'] : []),
         '',
-        `Return only one JSON object, no prose before or after it, no code fences: ${repair ? '{"slot":' + repair.slot + ',"listing":' : '{"listings": ['}{"title": "...", "client": "...", "rank": "...", "level": 1, "qtype": "...", "payout_cp": 0, "task": "...", "desired_end_state": "...", "objectives": [...], "proof": [...], "habitat": null}${repair ? '}' : ']}'}. Every field is required; null where a field allows it and does not apply.`,
+        `Return only one JSON object, no prose before or after it, no code fences: ${repair ? '{"slot":' + repair.slot + ',"listing":' : '{"listings": ['}{"title": "...", "client": "...", "rank": "...", "level": 1, "qtype": "...", "payout_cp": 0, "task": "...", "desired_end_state": "...", "objectives": [...], "proof": [...], "habitat": null}${repair ? '}' : ']}'}. Every field is required${initial && compactHuntBoard(s,need) ? ' except on numbered outdoor hunts with habitat and one DEFEAT objective: omit task and desired_end_state there. Keep the full title, client, target, quantity and exact site. Other listings require the full form' : ''}; null where a field allows it and does not apply.`,
     ].join('\n');
     // review of Patch 7: the known Dungeons near this branch, by their names (the same places on every board); work
     // there is clearance of a part whose Rank this board's work fits (a Novice board: the F-Rank part), one listing
@@ -994,6 +994,30 @@ function boardQuotaError(s, content, need, profile, all) {
 function strictBoardObject(answer) {
     try { return JSON.parse(answer.trim().replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/i, '$1')); }
     catch { return null; }
+}
+
+function compactHuntBoard(s, need) {
+    return progressive(s, need) && need.profile === COUNT_BOARD_PROFILE && need.missing === 5 && !need.have?.length;
+}
+
+const countedEnd = objective => `${objective.qty} ${objective.what} killed at ${objective.where}.`;
+
+// Only the first wire draft admits the short form. parseBoard checks the resulting full board as usual.
+export function expandInitialBoard(answer, state, need) {
+    if (!compactHuntBoard(state, need)) return answer;
+    const raw = strictBoardObject(answer);
+    if (!Array.isArray(raw?.listings) || raw.listings.length !== 5) return answer;
+    let expanded = false;
+    for (const listing of raw.listings) {
+        if (!listing?.habitat || !Array.isArray(listing.objectives) || listing.objectives.length !== 1
+            || 'task' in listing || 'desired_end_state' in listing) continue;
+        const o = listing.objectives[0];
+        if (o?.verb !== 'DEFEAT' || !Number.isInteger(o.qty) || o.qty < 1
+            || typeof o.what !== 'string' || !o.what.trim() || typeof o.where !== 'string' || !o.where.trim()) continue;
+        listing.desired_end_state = countedEnd(o);
+        expanded = true;
+    }
+    return expanded ? JSON.stringify(raw) : answer;
 }
 
 // Restrict the smaller second request to an independently invalid introductory habitat.
@@ -1238,7 +1262,7 @@ export function bookBoard(s, content, need, listings, emit) {
             quest.source.profile = COUNT_BOARD_PROFILE;
             const o = quest.objectives[0];
             quest.task = `Kill ${o.qty} ${o.what} at ${o.where}. Only engine-recorded kills of this population count. Return to the Guild to claim payment.`;
-            quest.desired_end_state = `${o.qty} ${o.what} killed at ${o.where}.`;
+            quest.desired_end_state = countedEnd(o);
         }
         emit({ t: 'quest.created', d: { quest } });
         ids.push(id);

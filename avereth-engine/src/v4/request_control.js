@@ -32,7 +32,7 @@ export function createRequestControl({ storage, locks, capacity = 4, changed = (
         // An active request in another tab must not be mistaken for an abandoned lease.
         return locks ? locks.request(`avereth.request:${key}`, {ifAvailable:true}, lock => lock ? release() : false) : release();
     }
-    async function fetchRequest(key, send, { weight = 4, signal, meta = {}, stream = false } = {}) {
+    async function fetchRequest(key, send, { weight = 4, signal, meta = {}, stream = false, inspectStream } = {}) {
         if (!Number.isInteger(weight) || weight < 1 || weight > capacity) throw capacityError('Invalid provider capacity weight');
         if (blocked(key)) throw capacityError();
         // The lock spans response consumption, not merely response headers.
@@ -52,14 +52,17 @@ export function createRequestControl({ storage, locks, capacity = 4, changed = (
                 const copy = answer.clone();
                 if (stream && answer.ok) {
                     deliver.resolve(answer);
-                    const reader = copy.body.getReader(), decoder = new TextDecoder();
-                    let pending = '';
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-                        pending += decoder.decode(value, { stream: true });
-                        const lines = pending.split('\n'); pending = lines.pop();
-                        for (const line of lines) if (line.trim() === 'data: [DONE]') terminal = true;
+                    if (inspectStream) terminal = await inspectStream(copy);
+                    else {
+                        const reader = copy.body.getReader(), decoder = new TextDecoder();
+                        let pending = '';
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) break;
+                            pending += decoder.decode(value, { stream: true });
+                            const lines = pending.split('\n'); pending = lines.pop();
+                            for (const line of lines) if (line.trim() === 'data: [DONE]') terminal = true;
+                        }
                     }
                 } else {
                     const body = await copy.json().catch(() => null);

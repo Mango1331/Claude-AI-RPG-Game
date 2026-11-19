@@ -354,6 +354,28 @@ export async function narratorStreamingSmoke({ page, calls, worldTimings, occupa
                     const baseline = result.faults.find(f => f.fault === 'reload-buffered');
                     result.checks.reloadDraftParity = row.draftAfterFirstReload === baseline.draftAfterFirstReload;
                 }
+                if (fault === 'error-after') {
+                    result.checks.incompleteMarkedAfterReload = row.readback.extraction === 'incomplete';
+                }
+                if (fault === 'error-after' && result.checks.incompleteMarkedAfterReload) {
+                    const before = await inspect(faultPage), start = calls.length;
+                    await faultPage.fill('#send_textarea', draft);
+                    await faultPage.locator('#send_textarea').press('Enter');
+                    const refused = await inspect(faultPage);
+                    result.checks.incompleteBlocksFollowingTurn = refused.draft === draft && refused.users === before.users &&
+                        refused.status.includes('unbestätigt') && calls.length === start;
+                    await faultPage.fill('#send_textarea', '');
+                    await configure(faultPage, false);
+                    script = { firstMs: 180, suffix: '' };
+                    await faultPage.evaluate(() => SillyTavern.getContext().generate('regenerate'));
+                    await faultPage.waitForFunction(() => SillyTavern.getContext().chat.at(-1)?.extra?.avereth?.extraction?.status === 'applied' &&
+                        document.querySelector('#avereth-action-status')?.textContent === 'Gespeichert');
+                    await faultPage.evaluate(() => SillyTavern.getContext().reloadCurrentChat());
+                    const regenerated = await inspect(faultPage);
+                    result.checks.bufferedRegenerateAfterStreamFailure = regenerated.text === text &&
+                        regenerated.extraction === 'applied' && hash(before.userEvents) === hash(regenerated.userEvents) &&
+                        before.users === regenerated.users && calls.slice(start).map(c => c.purpose).join(',') === 'narrator,extract';
+                }
                 // Restore the saved fixture before another independent browser opens this same file.
                 await seed(faultPage, prefix);
                 save();

@@ -1,3 +1,4 @@
+import { readNarratorFrames, streamReply } from './src/v4/narrator_stream.js';
 import { actionStatusView } from './src/action_status.js';
 // SillyTavern binding for the Avereth Engine. All game logic lives in src/ (pure ES modules, tested in Node);
 // this file only wires SillyTavern events to src/host.js (V3 campaigns) and src/v4/runtime.js (Runtime V4 campaigns,
@@ -15,8 +16,8 @@ import { actionStatusView } from './src/action_status.js';
 //   * Lore Bridge           -> the current realm and location as World Info scan text (never part of the prompt), so
 //                              the narrator card's lorebook (lorebook/, docs/LOREBOOK.md) activates the right entries
 import { loadContentPack } from './src/content.js';
-import { onEdited, foldChat, ensureCampaign, hasCampaign, hasStoredCampaign, projectPromptHistory, reportRequest, applyReportAnswer, rec, setRec } from './src/host.js';
-import { prepareGenerationAsync, processReplyAny, runExtraction, applyExtraction, pendingExtraction, campaignRuntime, campaignPath, campaignSupport, onEditedV4, perfSummary } from './src/v4/runtime.js';
+import { onEdited, foldChat, ensureCampaign, hasCampaign, hasStoredCampaign, projectPromptHistory, lastReplyIndex, showPanel, reportRequest, applyReportAnswer, rec, setRec } from './src/host.js';
+import { RECORD_V4, prepareGenerationAsync, processReplyAny, runExtraction, applyExtraction, pendingExtraction, campaignRuntime, campaignPath, campaignSupport, onEditedV4, perfSummary } from './src/v4/runtime.js';
 import { createNarratorRecovery, narratorProviderResponse, providerResponseError } from './src/v4/narrator_recovery.js';
 import { verifySavedChat } from './src/v4/continuation.js';
 import { createWorldJobs } from './src/v4/world_jobs.js';
@@ -101,11 +102,29 @@ function setActionStatus(text) {
     actionStatus=text;
     refreshActionStatus();
 }
+const streamNotice = 'Erzählung unvollständig – per Swipe oder Regenerate neu erzählen';
+const streamOwners = new WeakMap();
+let NativeEventSourceStream;
+const incomplete = msg => rec(msg)?.extraction?.status === 'incomplete';
+function bindStreamReply() {
+    const c = ctx(), owner = streamOwners.get(c.streamingProcessor);
+    const msg = streamReply(owner, c, generationRequest);
+    if (msg && !owner.reply) {
+        owner.reply = msg;
+        owner.swipe = msg.swipe_id ?? 0;
+        owner.previous = rec(msg);
+        // A native save, reload or failed swipe may happen before MESSAGE_RECEIVED (or without it).
+        setRec(msg, { v: RECORD_V4, events: [], extraction: { status: 'incomplete' } });
+        refreshActionStatus();
+    }
+    return msg;
+}
+function latestReply(c) { return c.chat[lastReplyIndex(c.chat, c.chat.length)]; }
 function actionView() {
     const open=worldOpen();
     return actionStatusView({unknown:requestControl.blocked(providerKey()),worldRunning:!!worldJobs.currentJob(),
         saving:!!persistence?.pending(),saveFailed:persistenceBlocked?.chatId===hostChatKey(ctx()),
-        worldPending:open?.record.extraction.status==='pending',worldFailed:open?.record.extraction.status==='failed',phase:actionStatus});
+        incomplete:incomplete(latestReply(ctx())),worldPending:open?.record.extraction.status==='pending',worldFailed:open?.record.extraction.status==='failed',phase:actionStatus});
 }
 function refreshActionStatus() {
     const node=document.getElementById('avereth-action-status');
@@ -347,6 +366,9 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
     try {
         if(modernHost()) {
             const bindingError=await actionComposer?.guard();
+            if ((!type || type === 'normal' || type === 'continue') && incomplete(latestReply(ctx()))) {
+                abort(true); setActionStatus(streamNotice); return;
+            }
             if(bindingError || requestControl.blocked(providerKey())) {
                 abort(true);setActionStatus(bindingError || 'Remoteabschluss unbekannt');return;
             }
@@ -528,7 +550,17 @@ globalThis.fetch = async function (url, options) {
     const physical = () => {
         if (!modernHost() || !settings().enabled || !String(url).endsWith('/api/backends/chat-completions/generate')) return hostFetch(url, options);
         const body = JSON.parse(options.body), c=ctx(), userIndex=c.chat.findLastIndex(m=>m.is_user), user=c.chat[userIndex], input=user?.extra?.avereth_action_input;
-        return requestControl.fetchRequest(providerKey(),()=>hostFetch(url,options),{signal:options.signal,stream:!!body.stream,
+        const processor = c.streamingProcessor;
+        let inspectStream;
+        if (body.stream && processor && options.signal === processor.abortController.signal && user &&
+            !c.groupId && hasCampaign(c.chat) && campaignRuntime(c.chat) === 'v4') {
+            let finish;
+            const receipt = new Promise(resolve => { finish = resolve; });
+            streamOwners.set(processor, { processor, receipt, chat: c.chat, chatId: c.getCurrentChatId(),
+                characterId: c.characterId, epoch: generationRequest, index: userIndex, user, input: user.mes, inputId: input?.id, revision: input?.revision });
+            inspectStream = copy => readNarratorFrames(copy.body.pipeThrough(new NativeEventSourceStream()), finish);
+        }
+        return requestControl.fetchRequest(providerKey(),()=>hostFetch(url,options),{signal:options.signal,stream:!!body.stream, inspectStream,
             meta:{phase:options.averethPhase || ((body.messages || []).some(m=>String(m.content).includes('[AVERETH ENGINE'))?'narrator':'host_other'),
                 origin_chat:hostChatKey(c),input_id:input?.id || (user ? `user:${userIndex}:${hash32(user.mes || '')}` : null),revision:input?.revision ?? null,generation_epoch:generationRequest}});
     };
@@ -549,13 +581,33 @@ globalThis.fetch = async function (url, options) {
     });
 };
 
-async function onMessageReceived(messageId) {
+async function onMessageReceived(messageId, type) {
     if (!settings().enabled || !content) return;
     const c = ctx();
     const chat = c.chat; // stable origin, even if getContext() later points at another chat
     const chatId = hostChatKey(c);
     try {
         if (unsupported(chat)) { renderDebug(); return; }
+        const processor = c.streamingProcessor, owner = streamOwners.get(processor);
+        const msg = chat[Number(messageId)];
+        if (owner && processor.messageId === Number(messageId) && type !== 'first_message') {
+            if (owner.handled || !bindStreamReply() || msg !== owner.reply) return;
+            owner.handled = true;
+            const text = msg.mes;
+            const complete = processor.isFinished && !processor.isStopped && !processor.abortController.signal.aborted && await owner.receipt;
+            if (streamReply(owner, ctx(), generationRequest) !== msg || msg.mes !== text) return;
+            if (!complete || processor.abortController.signal.aborted) {
+                showPanel(msg, streamNotice, '', {playerFacing:true});
+                setRec(msg, { v: RECORD_V4, text_hash:hash32(text), events:[], panel:streamNotice, extraction:{status:'incomplete'} });
+                rerender(c, Number(messageId));
+                await saveAtOrigin(c);
+                return;
+            }
+            // Preserve .203's identical-text deduplication for an already committed revision.
+            if (owner.previous?.text_hash === hash32(text) && owner.previous.extraction?.status !== 'incomplete')
+                setRec(msg, owner.previous);
+            else delete msg.extra.avereth;
+        } else if (incomplete(msg)) return;
         const recover = settings().recoverReports && typeof c.generateRaw === 'function';
         // the greeting of a new chat arrives here too (SillyTavern: MESSAGE_RECEIVED 'first_message') and starts the campaign
         // Patch 8.2: the narrator's time, from the engine block handed over to the reply received (telemetry)
@@ -780,21 +832,24 @@ function mountSettings() {
     const c = ctx();
     const ev = c.eventTypes || c.event_types;
     installDraftActions(document);
+    if (ev.STREAM_TOKEN_RECEIVED) c.eventSource.on(ev.STREAM_TOKEN_RECEIVED, bindStreamReply);
     c.eventSource.on(ev.MESSAGE_RECEIVED, onMessageReceived);
     // ST 1.19 non-streaming hides Stop (GENERATION_ENDED) before MESSAGE_RECEIVED. Keep the
     // origin/epoch-bound context until that reply arrives; a new generation or cancellation invalidates it.
     c.eventSource.on(ev.GENERATION_STARTED, () => { narrationStart = null; });
-    c.eventSource.on(ev.GENERATION_ENDED, () => { narratorRecovery.finish(); });
+    c.eventSource.on(ev.GENERATION_ENDED, () => { bindStreamReply(); narratorRecovery.finish(); });
     c.eventSource.on(ev.CHAT_COMPLETION_SETTINGS_READY, data => {
         narratorRequest = null;
         const a = ctx(), u = a.chat.findLastIndex(m => m.is_user), user = a.chat[u], record = rec(user);
+        // ST can retain an errored processor until the next native generation finishes.
+        if (!data.stream && narrationStart?.epoch === generationRequest) streamOwners.delete(a.streamingProcessor);
         if (data.stream || a.groupId || !settings().enabled || !settings().recoverReports || !record?.events?.length
             || record.narrator_recovery || narrationStart?.chatId !== hostChatKey(a) || narrationStart?.user !== u
             || !(data.messages || []).some(m => String(m.content).includes('[AVERETH ENGINE'))) return;
         narratorRequest = { body: JSON.stringify(data), chat: a.chat, chatId: hostChatKey(a), epoch: generationRequest,
             u, user, input: user.mes, record, length: a.chat.length };
     });
-    c.eventSource.on(ev.GENERATION_STOPPED, () => { generationRequest++; actionComposer?.invalidate('Generierung gestoppt; keine neue Aktion gebucht'); worldJobs.invalidate(); narratorRecovery.invalidate(); narrationStart = null; });
+    c.eventSource.on(ev.GENERATION_STOPPED, () => { bindStreamReply(); generationRequest++; actionComposer?.invalidate('Generierung gestoppt; keine neue Aktion gebucht'); worldJobs.invalidate(); narratorRecovery.invalidate(); narrationStart = null; });
     c.eventSource.on(ev.MESSAGE_EDITED, onMessageEdited);
     // state is always re-folded from the chat, so these events only refresh the status line; the interceptor sets
     // the engine block before every generation (normal, swipe, regenerate, continue)
@@ -820,6 +875,7 @@ function mountSettings() {
     mountSettings();
     if(modernHost()) {
         nativeHost = await import('/script.js');
+        ({default: NativeEventSourceStream} = await import('/scripts/sse-stream.js'));
         c.eventSource.on(ev.GENERATION_AFTER_COMMANDS,async(type,_params,dryRun)=>{
             if(dryRun || !settings().enabled || !hasCampaign(ctx().chat) || ctx().groupId
                 || ![undefined,'normal','regenerate','swipe','continue'].includes(type))return;

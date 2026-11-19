@@ -1,47 +1,26 @@
-# Avereth Engine – Projektstart und Einstieg für neue Chats
+# Avereth Engine – Einstieg
 
-**Stand: 17.11.2026.** Dieses README ist die Einstiegshilfe auf `main`. Aktuelle Produktdaten, Testnachweise und Arbeitsstände stehen **nur in [03](03_AKTUELLER_PROJEKTSTAND.md)**.
+**Stand 19.11.2026.** Die einzige aktuelle Statusquelle ist [03](03_AKTUELLER_PROJEKTSTAND.md); ältere Analysen bleiben als historische Belege erhalten.
 
-## Aktueller Kurs in 60 Sekunden
+## Aktueller Stand
 
-- **Produktbasis bleibt `4.3.0-c.6.6.200`:** [Commit `0cd1480`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b) auf `claude/c-planner-prototype-2026-10-02-gpt-c666`. Combat, Charaktererstellung, Leveln/Stats, Loot, NPC-Memory, Quests und HUD sind ausgereifte **Bestandsfunktionen**. Keine neue Produktversion freigegeben.
-- **Der eigentliche Verbesserungswunsch:** Die sehr strenge Engine soll **weniger unnötige Reparaturen und Spezialfallprüfungen** bei Reisen, Ortswechseln, Handel und alltäglichen Zahlungen verursachen. Dem bisherigen Narrator darf sie mehr zutrauen, der Spieler darf bei Unsicherheit selbst bestätigen oder bearbeiten. [Bestätigtes Zielbild und Ideen 08](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md).
-- **Drei Modellphasen sind drei API-Aufrufe:** V4-C nutzt normalerweise Planner → deterministische Engine → Narrator → Extractor/Firewall, ggf. plus Reparaturen. Der Nutzer nennt alle Modellaufrufe oft „Narrator“, da überall dasselbe GLM-Modell arbeitet. Eine freiere, `.200`-basierte Architektur soll nur dort Phasen sparen, wo ihre Fachaufgabe nicht gebraucht wird.
-- **Echte Fehlerlage:** Persönlicher `.200`-Waldlauf: Narratorgeschichte sichtbar, Weltabschluss/Extractor scheiterte samt Concurrency-Folgefehlern. Die alternative dynamische GM-Alpha scheiterte am 17.11. trotz drei API-Aufrufen erneut an einer einfachen natürlich erzählten Gildenankunft.
-- **Zwei Experimente sind ARCHIVIERT, nicht geplant:** Hybrid B/C1 und dynamischer GM/Alpha auf [`experiment/dynamic-gm-model`](https://github.com/Mango1331/Claude-AI-RPG-Game/tree/experiment/dynamic-gm-model). Ihre Fachberichte, Tests und technischen Lehren bleiben erhalten. Keine neue GM-Produktarchitektur oder Weiterentwicklung der Alpha geplant. [Archiv](recherche/ARCHITEKTUR_EXPERIMENTE_ARCHIV_2026-11-17.md).
-- **Aktiv:** Abschlussanalyse durch Astra Ultra zur **kleinstmöglichen sinnvollen Flexibilisierung von `.200`**, danach unabhängiger GPT-Gegenreview und gemeinsame Nutzerentscheidung. **Noch kein Codeauftrag, kein Produktbuild.** Gameplay-Features aus 07 sind pausiert, keine alten Architektur-Experimente vorgelagert.
+- **Eingefrorenes Produkt:** Build **4.3.0-c.6.6.200**, Branch `claude/c-planner-prototype-2026-10-02-gpt-c666`, [HEAD 0cd1480](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b). Kein Merge der aktuellen Entwicklung.
+- **Entwicklungs- und Spieltestbasis:** Build **4.3.0-c.6.6.203**, Branch `experiment/action-hud-200-v1`, [HEAD 5e5b827](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/5e5b8272412b51b91f75b6e37c5b94d95c9fae11). F-HUD-Bindung, gemeinsame Kampfbedienung, Band-AoE, Questannahme, Weltstatus/Save und enge Kontextfixes sind technisch umgesetzt und mit isolierten ST-Mocks geprüft. [Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/5e5b8272412b51b91f75b6e37c5b94d95c9fae11/avereth-engine/docs/PATCH_USER05_FIX_QOL_203.md). **Kein natürliches Gesamt-GO.**
+- **Persönliche Runs:** [User05](testrun_10b/user-20261118-011503/README.md) auf .202 nach Phase C bewusst beendet. **User06 auf .203 ist laut Nutzer durch Charaktertod beendet; vollständige Logs und abschließendes Feedback stehen noch aus.** Der Todesfall wurde weder als Fehler noch als regelgerecht geprüft. Kein persönlicher Test läuft aktuell.
+- **Forschung:** [Aktueller Work-Performancebericht](recherche/AVERETH_203_PERFORMANCE_EFFIZIENZ_UNABHAENGIGE_RECHERCHE_2026-11-19.md), [Forschungswegweiser](recherche/README.md).
 
-## Neue Ideen zur Prüfung – keine bereits geltenden Regeln
+## Nächste begrenzte Performance-GOs
 
-- **Bevorzugtes Ziel: gemeinsames Action-HUD:** kontextabhängig Skills/Ziele, Bewegung, Verteidigung, Heiltränke und Gegenstände aus der bestehenden Mechanik auswählen. Typisierte Eingabe statt vieler UI-Sonderlösungen; freier Rollenspieltext und vollständige Freitexteingabe mit optionalem Planner bleiben möglich. [Fortgeschriebene vollständige Analyse](recherche/ANALYSE_200_VEREINFACHUNG_UND_NARRATORFREIHEIT_2026-11-17.md), noch keine Implementierungsfreigabe.
-- **NPC-Memory und Agency:** `#npc` perspektivisch um transparente, optionale Korrektur gespeicherter Fakten/Erinnerungen/Absprachen erweitern. Eine verständliche Agency-Regel in der tatsächlich verwendeten Character Description schützt bedeutsame PC-Entscheidungen und erlaubt Routineautonomie. Keine zweite Weltwahrheit; keine heimlichen Retcons.
-- **Weniger starre Narrator-/Extractorbelege:** eindeutig erzählte, durch Spielerhandlung gedeckte Ankunft oder kleine Alltagsfolgen ggf. übernehmen, statt weitere Modell-Reparaturen zu verlangen. Bei Unsicherheit Vorschlag mit **„So übernehmen“ / „Bearbeiten“ / ggf. Verwerfen**.
-- **Videospielartige Grundshops:** vorbereitete Alltagsangebote/Preise ähnlich Questboard; vereinfachte kleine Zahlungen. Vorhandenes `#pay`-System prüfen, bevor neue Befehle erfunden werden. Hohe oder ungewollte Buchungen bleiben besonders schützenswert.
-- **Automatische Fortschrittsanzeige:** „Erzählung sichtbar / Weltabgleich läuft / ✓ bestätigt gespeichert / ⚠ Fehler“. Nächste Eingabe **schreiben ja**, vor Weltcommit **ausführen nein**; Swipe/Regenerate/Events korrekt behalten.
-- **Mehr eigene Vorschläge von Astra erwünscht:** bestehende HUD- und Engine-Daten stärker nutzen und **ganze Klassen unnötiger Repair-Aufrufe** vermeiden. Alle Vorschläge vor Implementierung gemeinsam besprechen.
+1. **N-Streaming:** Natives SillyTavern-1.19-Streaming **ohne Smooth Streaming** gegen gepufferten Narrator vergleichen; erste sichtbare Prosa und sichere nächste Sendefreigabe separat messen. Stop, unvollständiger Stream, Swipe, Weltabschluss und Save absichern.
+2. **Gildenboard:** Nur bei einem eindeutig isolierten ungültigen Listing einen Ersatz anfordern, danach **alle** bestehenden Boardprüfungen auf dem Gesamtset erneut anwenden. Bei strukturellen/globalen Fehlern bisheriger Vollrepair; höchstens zwei physische Requests.
+3. **Extractor:** Zuerst den Offlinebenchmark mit vollständigen HUD-/Revisionsmetadaten und aussagekräftiger Weltprüfung reparieren; erst danach kompaktes JSON als **eigenständigen Versuch** vergleichen. Kein pauschales Abschalten des Extractors.
 
-## Lesereihenfolge (nicht alle alten Reviews pauschal einlesen)
+Diese GOs betreffen **isolierte Experimente und Abnahme**, noch keinen Produktmerge oder kostenpflichtigen Providervergleich. Charakterbeschreibung, Preset, Lorebook und globale Enginebudgets bleiben bis zu eigenständigen Qualitäts-/Performancebelegen unverändert.
 
-| Datei | Zweck |
-|---|---|
-| [01 – Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) | Rollen, neue Abstimmungspflicht, Tests und Freigaben |
-| [03 – Projektstand](03_AKTUELLER_PROJEKTSTAND.md) | **Einzige aktuelle Build-/Arbeits-/Testquelle** |
-| [08 – Neues Nutzerziel](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md) | **Verbindliches Zielverständnis**, offene Vereinfachungs- und HUD-Ideen, Abnahmefragen |
-| [02 – Design-Kanon](02_DESIGN_KANON.md) | Geltende Regeln der unveränderten `.200`; zur Lockerung **noch nicht** entschieden |
-| [07 – Gameplay-Roadmap](07_ROADMAP_NACH_10B_ENTWURF.md) | Pausierter Featurevorrat, keine aktive Patchreihenfolge |
-| [06 – Quellenindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) | Technische Detailberichte und frühere Architekturprüfungen |
-| [Archiv – Architekturversuche](recherche/ARCHITEKTUR_EXPERIMENTE_ARCHIV_2026-11-17.md) | B/C1 und GM-Alpha samt Fehlversuchen und wiederverwendbaren Ideen |
-| [04 – Ideenspeicher](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md) | Weitere nicht priorisierte Vorschläge |
-| [Runindex](testrun_10b/README.md) | Originale User-Runs und Quellen |
+## Einstiegsquellen
 
-## Entscheidungs- und Arbeitsregeln
+[01 – Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [03 – Projektstand](03_AKTUELLER_PROJEKTSTAND.md) · [02 – Kanon](02_DESIGN_KANON.md) · [06 – Fachindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [07 – pausierte Gameplay-Roadmap](07_ROADMAP_NACH_10B_ENTWURF.md) · [Rechercheindex](recherche/README.md) · [Userruns](testrun_10b/README.md).
 
-**Vor Codearbeit gemeinsam klären**, was der Nutzer tatsächlich will und welches Restrisiko bewusst akzeptiert wird. Astra analysiert, GPT gegenreviewt unabhängig, Nutzer entscheidet. Keine automatische große Implementierung nur wegen eines Modells, eines Berichts oder grüner Mocktests. **Bestehende funktionierende Mechanik/UI erhalten**; neue Lockerungen an realen Freitextfällen und natürlichem Rollenspiel überprüfen. Keine neuen Providerläufe ohne Auftrag.
+[08 – Spielfluss-Zielbild vom 17.11.](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md) ist **historische Entscheidungsgrundlage**, nicht der aktuelle Implementierungsstand.
 
-**Dokumentation ist freigegeben:** Vollständige Fachberichte auf `main` (insbesondere `recherche/`) ablegen, nach Remote-HEAD-Abgleich committen/pushen und mit Pfad, Commit und GitHub-Link liefern. Historische Quellen erhalten. Diese Freigabe umfasst keinen Produktcode, Build oder Provideraufruf.
-
-## Startauftrag für den nächsten Reviewer
-
-> Projekt Avereth Engine, `Mango1331/Claude-AI-RPG-Game`. Lies auf `main` README, 01, 03 und besonders **08**. Produktreferenz `.200` / `0cd1480`; nicht den dynamischen GM als neuen Produktpfad behandeln. Analysiere bzw. gegenreviewe **Vereinfachung und mehr Freiheit der bestehenden Engine**: Reise-/Ort-/Paymentguards kritisch prüfen, HUD-Skill/Zielwahl mit freiem Rollenspieltext, Spielerbestätigung statt LLM-Reparaturen, optionaler Planner/Extractor, sichtbarer gespeicherter Zug. Alte Analysen und Experimente nur als Belege, keine automatisch richtigen Entscheidungen. **Keine Codearbeit vor gemeinsamem Nutzerentscheid.** Kurz auf Deutsch berichten, natürliche Tests von Mocks unterscheiden.
-
-**Archivschutz:** Historische Reviews und Produktpatchnotes nicht nur wegen der neuen Richtung verändern oder löschen. Frühere [README-Fassung 15.11.](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/af7c77eea7df3a81e0a961dc80f0ba2f81e131c9/README.md) bleibt über Git erreichbar. Diese Änderung ist reine Dokumentation.
+**Schutz:** Historische Berichte, User-Originale und Spielregeln nicht still verändern. Code nur auf gesondertem Entwicklungs-/Experimentbranch, gezielte Tests und unabhängiger Diffreview vor einem Merge. Dokumentationspflege auf main ist erlaubt; sie ist keine Produktfreigabe.

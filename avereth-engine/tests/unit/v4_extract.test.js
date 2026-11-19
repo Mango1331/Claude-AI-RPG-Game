@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { deltaSchema, extractorSystem, extractorRequest, parseExtraction, FORMAT_RULES, EXTRACT_PLAIN_FORMAT } from '../../src/v4/extract.js';
+import { firewall } from '../../src/v4/firewall.js';
 import { strictProblems } from '../../src/v4/schema.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -101,4 +102,24 @@ test('soft-world extractor protects PC commitments while recording NPC/world age
     // the one repair keeps the player message
     const rep = extractorRequest(vocab, { catalog: 'CATALOG', actions: 'none', player, expectedKeys: {}, reply: 'x' }, { previous: '{}', errors: ['$.deltas: missing'] });
     assert.match(rep.messages[1].content, /PLAYER MESSAGE[^]*\*i sign the card\*/);
+});
+
+test('a wrapped object.new has exactly the authority and schema of its flat fields', () => {
+    const fields = {name:'blue route note', kind:'document', qty:1, holder:'pc', in:'tin box'};
+    const wrapped = {seq:1, type:'object.new', object:fields};
+    const flat = {seq:1, type:'object.new', ...fields};
+    const read = delta => parseExtraction(JSON.stringify({scene:'here', expected:{}, deltas:[delta]}), vocab, ids, {});
+    assert.equal(read(wrapped).valid, true);
+    assert.deepEqual(read(wrapped).value, read(flat).value);
+    const plate = {...wrapped, object:{...fields, kind:'item', name:'brass Guild plate'}};
+    const alreadyGranted = firewall(read(plate).value.deltas, {booked:{registration:true, grants:['brass Guild plate']}});
+    assert.deepEqual(alreadyGranted.accept, []);
+    assert.deepEqual(alreadyGranted.reject.map(r=>r.rule), ['engine_booked']);
+    for (const invalid of [
+        {...wrapped, holder:'here'}, {...wrapped, scene:'here'}, {...wrapped, object:null}, {...wrapped, object:[fields]},
+        {...wrapped, object:{...fields, seq:2}}, {...wrapped, object:{...fields, type:'coin.gift'}},
+        {...wrapped, object:{...fields, scene:'here'}}, {...wrapped, object:{...fields, price:1}},
+        {...wrapped, object:{...fields, qty:'two'}}, {...wrapped, object:{...fields, holder:undefined}},
+        {...wrapped, type:'object.move'}, {type:'object.new', object:fields},
+    ]) assert.equal(read(invalid).valid, false, JSON.stringify(invalid));
 });

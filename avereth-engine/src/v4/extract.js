@@ -318,7 +318,13 @@ function normalizeSoftFields(value, vocab) {
         if (!d || typeof d !== 'object') return d;
         const spec = specs.get(d.type);
         if (!spec) return d;
-        const x = { scene: null, ...d };
+        // The Guild clerk's route note was reported with all object.new fields under "object".
+        // Accept only that single unambiguous envelope. The usual schema still checks every field.
+        const wrapped = d.object;
+        const objectEnvelope = d.type === 'object.new' && Object.hasOwn(d, 'seq') && Object.keys(d).length === 3
+            && wrapped && typeof wrapped === 'object' && !Array.isArray(wrapped)
+            && Object.keys(wrapped).every(k => Object.hasOwn(spec.fields || {}, k));
+        const x = objectEnvelope ? { scene: null, seq: d.seq, type: d.type, ...wrapped } : { scene: null, ...d };
         for (const [k, f] of Object.entries(spec.fields || {})) if (x[k] === undefined && f.nullable) x[k] = null;
         // Harmless persistence defaults: their omission should not trigger another LLM call.
         if (d.type === 'person.new' && x.desc === undefined) x.desc = [];

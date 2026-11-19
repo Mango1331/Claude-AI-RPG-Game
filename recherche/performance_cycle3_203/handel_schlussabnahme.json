@@ -1,0 +1,250 @@
+{
+  "armA": "6d9770f9b31e78d37567719bf1c06d8a4942288c",
+  "armB": "25c46bc9d342c9ed6cf87f8ac59e11c85ab4de18",
+  "testCommit": "1c581b83fbf590f05ab5bbbb78302064940ec0dd",
+  "st": "7e8663cd9c184a550b37238218bdd32c6efc68e9",
+  "featherless": {
+    "planCheckHttp": 200,
+    "category": "Chat",
+    "generations": 0,
+    "inferenceCostUSD": 0,
+    "naturalPairsCompleted": 0,
+    "naturalUsage": null,
+    "naturalPairedMedianMs": null
+  },
+  "firstStreamingFailure": {
+    "outcome": "driver assertion before aggregate output",
+    "fault": "eof",
+    "expectedLease": "active",
+    "observedLease": "unknown"
+  },
+  "streamRepeatFailed": false,
+  "firstFailsoftFailure": {
+    "mode": "failsoft",
+    "passed": 359,
+    "checks": 360,
+    "failed": [
+      "noPageErrors"
+    ],
+    "page_errors": 1,
+    "seconds": 814
+  },
+  "failsoftRepeatFailed": false,
+  "node": {
+    "node": {
+      "tests": 3412,
+      "pass": 3412,
+      "fail": 0,
+      "skipped": 0
+    },
+    "target": {
+      "tests": 35,
+      "pass": 35,
+      "fail": 0,
+      "skipped": 0
+    },
+    "finance-cycle2": {
+      "tests": 111,
+      "pass": 111,
+      "fail": 0,
+      "skipped": 0
+    },
+    "finance-cycle3": {
+      "tests": 111,
+      "pass": 111,
+      "fail": 0,
+      "skipped": 0
+    },
+    "persistence-cycle2": {
+      "tests": 27,
+      "pass": 27,
+      "fail": 0,
+      "skipped": 0
+    },
+    "persistence-cycle3": {
+      "tests": 27,
+      "pass": 27,
+      "fail": 0,
+      "skipped": 0
+    }
+  },
+  "replay": {
+    "cases": 2235,
+    "exactKnown": 1131,
+    "unexpected": 0
+  },
+  "stMock": [
+    {
+      "mode": "standard",
+      "passed": 354,
+      "checks": 354,
+      "page_errors": 0,
+      "seconds": 847,
+      "calls": 341
+    },
+    {
+      "mode": "board_slot",
+      "passed": 49,
+      "checks": 49,
+      "page_errors": 0,
+      "seconds": 65,
+      "calls": 42
+    },
+    {
+      "mode": "failsoft",
+      "passed": 360,
+      "checks": 360,
+      "page_errors": 0,
+      "seconds": 792,
+      "calls": 348
+    },
+    {
+      "mode": "narrator_streaming",
+      "passed": 59,
+      "checks": 59,
+      "page_errors": 0,
+      "seconds": 312,
+      "calls": 71
+    }
+  ],
+  "mockExtracts": [
+    {
+      "scene": 1,
+      "arm": "A",
+      "requests": 1,
+      "repairs": 0,
+      "intendedTerms": "firm",
+      "priceBindingCorrect": true,
+      "initial": "6859c3fb150e5aff0b24b270606c80ec7011c8a97c0512a580f052d426b4efeb",
+      "state": "b32b723f0a1385d8a073445922342f484f2b4b80fa68b867c75535f399fb3eb2",
+      "events": "64d72eda93438b59847dcc4fabc204dbc4ff1134a798f8ad9ff2d4a737498660",
+      "base": "chainmail",
+      "label": "chainmail",
+      "quality": "fine",
+      "slot": "armor",
+      "atk": 0,
+      "def": 7,
+      "quotedPrice": 80,
+      "storedPrice": 72,
+      "mdef": 2,
+      "terms": "firm",
+      "coin": 30,
+      "readback": true
+    },
+    {
+      "scene": 1,
+      "arm": "B",
+      "requests": 1,
+      "repairs": 0,
+      "intendedTerms": "firm",
+      "priceBindingCorrect": true,
+      "initial": "6859c3fb150e5aff0b24b270606c80ec7011c8a97c0512a580f052d426b4efeb",
+      "state": "b32b723f0a1385d8a073445922342f484f2b4b80fa68b867c75535f399fb3eb2",
+      "events": "64d72eda93438b59847dcc4fabc204dbc4ff1134a798f8ad9ff2d4a737498660",
+      "base": "chainmail",
+      "label": "chainmail",
+      "quality": "fine",
+      "slot": "armor",
+      "atk": 0,
+      "def": 7,
+      "quotedPrice": 80,
+      "storedPrice": 72,
+      "mdef": 2,
+      "terms": "firm",
+      "coin": 30,
+      "readback": true
+    },
+    {
+      "scene": 2,
+      "arm": "B",
+      "requests": 1,
+      "repairs": 0,
+      "intendedTerms": "conditional",
+      "priceBindingCorrect": true,
+      "initial": "6859c3fb150e5aff0b24b270606c80ec7011c8a97c0512a580f052d426b4efeb",
+      "state": "56ad11fa7e6dd75d95ac5c6fb96e154c8992d62c666877aa12514b09d7edde03",
+      "events": "995952ffac21e8c5730d57749a36a0fe27d9ff91f9099b3c1453b77179a92054",
+      "base": "hand_axe",
+      "label": "hand-axe",
+      "quality": "fine",
+      "slot": "weapon",
+      "atk": 14,
+      "def": 0,
+      "quotedPrice": 12,
+      "storedPrice": 140,
+      "mdef": 0,
+      "terms": "conditional",
+      "coin": 30,
+      "readback": true
+    },
+    {
+      "scene": 2,
+      "arm": "A",
+      "requests": 1,
+      "repairs": 0,
+      "intendedTerms": "conditional",
+      "priceBindingCorrect": true,
+      "initial": "6859c3fb150e5aff0b24b270606c80ec7011c8a97c0512a580f052d426b4efeb",
+      "state": "56ad11fa7e6dd75d95ac5c6fb96e154c8992d62c666877aa12514b09d7edde03",
+      "events": "995952ffac21e8c5730d57749a36a0fe27d9ff91f9099b3c1453b77179a92054",
+      "base": "hand_axe",
+      "label": "hand-axe",
+      "quality": "fine",
+      "slot": "weapon",
+      "atk": 14,
+      "def": 0,
+      "quotedPrice": 12,
+      "storedPrice": 140,
+      "mdef": 0,
+      "terms": "conditional",
+      "coin": 30,
+      "readback": true
+    },
+    {
+      "scene": 3,
+      "arm": "A",
+      "requests": 2,
+      "repairs": 1,
+      "intendedTerms": "firm",
+      "priceBindingCorrect": false,
+      "initial": "d8f06167618b25cd5fffb97199973a5a042b173b7cf5f432ef11a3ac3691febc",
+      "state": "834aee90f0de3734ffddea321a43552c92540da27f36b6fef08428956fa33250",
+      "events": "ed29abca0eacde0cf248d5672f1983b001723e9e200c4024649299dd39755ab1",
+      "base": "buckler",
+      "label": "buckler",
+      "quality": "fine",
+      "slot": "offhand",
+      "atk": 0,
+      "def": 5,
+      "quotedPrice": 64,
+      "storedPrice": 64,
+      "mdef": 3,
+      "terms": "unverified",
+      "coin": 30,
+      "readback": true
+    },
+    {
+      "scene": 3,
+      "arm": "B",
+      "requests": 2,
+      "repairs": 1,
+      "intendedTerms": "firm",
+      "priceBindingCorrect": false,
+      "initial": "d8f06167618b25cd5fffb97199973a5a042b173b7cf5f432ef11a3ac3691febc",
+      "state": "834aee90f0de3734ffddea321a43552c92540da27f36b6fef08428956fa33250",
+      "events": "ed29abca0eacde0cf248d5672f1983b001723e9e200c4024649299dd39755ab1",
+      "base": "buckler",
+      "label": "buckler",
+      "quality": "fine",
+      "slot": "offhand",
+      "atk": 0,
+      "def": 5,
+      "quotedPrice": 64,
+      "storedPrice": 64,
+      "mdef": 3,
+      "terms": "unverified",
+      "coin": 30,
+      "readback": true
+    }
+  ]
+}

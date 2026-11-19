@@ -1,5 +1,5 @@
 import { actionInputOf, actionInputHash, actionPrefix, validateActionSelection, reconcileHudPlan } from '../action_input.js';
-import { boardRepairGuidance } from './guild.js';
+import { boardRepairGuidance, boardSlotRepair, parseBoardSlot } from './guild.js';
 import { movementEvidence } from './narration_evidence.js';
 import { placeKey } from './place_refs.js';
 import { worldVocab } from './extract.js';
@@ -614,17 +614,23 @@ export async function generateBoard(llm, state, content, need) {
     let ms = 0;
     let last = null;
     const calls = [];
+    let repair = null;
+    let messages = req.messages;
     for (let attempt = 0; attempt < 2; attempt++) {
-        const a = await ask(llm, attempt ? [...req.messages, { role: 'assistant', content: String(last?.answer || '') }, { role: 'user', content: `That answer was not valid: ${(last?.errors || ['no answer']).join('; ')}. ${last?.hints ? last.hints + ' ' : ''}Answer again with only the corrected JSON object.` }] : req.messages, 'board');
+        if (attempt) messages = repair ? boardRequest(state, content, need, repair).messages : [...req.messages,
+            { role:'assistant', content:String(last?.answer || '') },
+            { role:'user', content:`That answer was not valid: ${(last?.errors || ['no answer']).join('; ')}. ${last?.hints ? last.hints + ' ' : ''}Answer again with only the corrected JSON object.` }];
+        const a = await ask(llm, messages, 'board');
         ms += a.ms;
         calls.push(a.call);
         if (!a.ok) { last = { errors: [a.error] }; continue; }
-        const p = parseBoard(a.content, content, need, state);
+        const p = repair ? parseBoardSlot(a.content, repair, content, need, state) : parseBoard(a.content, content, need, state);
         // Prototype C (4.3.0-c.6.1): fewer valid listings than the day's board asks for are no board (repaired once, else
         // failed: yesterday's stays up), never a smaller day
         const n = p.listings?.length;
         const short = need.c && p.listings && n < need.missing ? [`${n} valid listing${n === 1 ? '' : 's'} of the ${need.missing} asked for${p.refused.length ? `; refused: ${p.refused.map((r) => `"${r.title}" (${r.why})`).join(', ')}` : ''}; write all ${need.missing}`] : null;
         if (p.listings && p.listings.length && !short) return { ...need, listings: p.listings, refused: p.refused, ms, calls, version: BOARD_VERSION };
+        if (!attempt) repair = boardSlotRepair(a.content, p, state, content, need);
         last = { answer: a.content, hints: boardRepairGuidance(a.content, content, need), errors: [...(short || (p.errors.length ? p.errors : ['no valid listing'])), ...(!short ? (p.refused || []).map(r => `${r.title}: ${r.why}`) : [])].slice(0, 12) };
     }
     return { ...need, listings: [], failed: (last?.errors || ['failed']).join('; ').slice(0, 200), ms, calls, version: BOARD_VERSION };

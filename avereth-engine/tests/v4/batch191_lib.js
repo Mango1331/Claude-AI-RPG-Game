@@ -2,6 +2,7 @@
 // corpus (tests/replay/corpus191, built with tools/replay/build_corpus.mjs from the batch's recorded model answers):
 // one recorded message processed again on its original prior state, its model answers as recorded or changed by a
 // disclosed transformation. No provider request.
+import { recordedBoardSlot } from '../../tools/replay/contract_board_slot.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { engineAt, loadRun } from '../../tools/replay/replay.mjs';
@@ -15,14 +16,14 @@ export const run191 = (label) => (runs[label] ||= loadRun(label, CORPUS191));
 /** A scripted model: the recorded answers of message i, each passed through change(json, purpose) when given. */
 function scripted(answers, change) {
     const queue = [...(answers || [])];
-    return async ({ purpose }) => {
+    return async ({ purpose, messages }) => {
         const next = queue.shift();
         if (!next) throw Object.assign(new Error(`no recorded answer for ${purpose}`), { code: 'LLM_PROVIDER', status: 500, retryable: false });
         if (next.error) throw Object.assign(new Error('replayed provider error'), { code: 'LLM_PROVIDER', status: next.error.status, retryable: false });
-        if (!change) return next.content;
+        if (!change) return recordedBoardSlot(next.content, purpose, messages);
         let json;
         try { json = JSON.parse(next.content); } catch { return next.content; }
-        return JSON.stringify(change(json, purpose) ?? json);
+        return recordedBoardSlot(JSON.stringify(change(json, purpose) ?? json), purpose, messages);
     };
 }
 
@@ -72,12 +73,7 @@ export async function chain191(label, from, to, rewrite = (t) => t) {
         chat.push(m);
         if (!r) continue;
         const queue = (run.answers[i] || []).map((a) => ({ ...a, content: a.content == null ? a.content : rewrite(a.content) }));
-        const llm = async ({ purpose }) => {
-            const next = queue.shift();
-            if (!next) throw Object.assign(new Error(`no recorded answer for ${purpose}`), { code: 'LLM_PROVIDER', status: 500, retryable: false });
-            if (next.error) throw Object.assign(new Error('replayed provider error'), { code: 'LLM_PROVIDER', status: next.error.status, retryable: false });
-            return next.content;
-        };
+        const llm = scripted(queue);
         if (m.is_user) {
             if (!r.input_hash) { m.extra.avereth = r; continue; }
             await E.runtime.prepareGenerationAsync(chat, E.content, { type: 'normal', settings: {}, llm });

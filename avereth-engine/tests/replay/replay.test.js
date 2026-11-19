@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import zlib from 'node:zlib';
-import { loadCorpus, replayCorpus, compareToBaseline, firstDifference, normalizeEvent, IGNORED, DEFAULT_BASELINE, acceptedDiffs, recordFingerprint } from '../../tools/replay/replay.mjs';
+import { loadCorpus, replayCorpus, compareToBaseline, firstDifference, normalizeEvent, IGNORED, DEFAULT_BASELINE, acceptedDiffs, readAccepted, recordFingerprint } from '../../tools/replay/replay.mjs';
 
 const baseline = JSON.parse(zlib.gunzipSync(fs.readFileSync(DEFAULT_BASELINE)).toString('utf8'));
 const QUICK = ['b16-rogue-sale', 'b18-mage', 'b19-mage', 'b19-rogue'];
@@ -71,6 +71,7 @@ const ACCEPTED186 = JSON.parse(fs.readFileSync(new URL('./accepted_monster186_vs
 const ACCEPTED187 = JSON.parse(fs.readFileSync(new URL('./accepted_travel187_vs_126.json', import.meta.url), 'utf8'));
 // .190 location architecture: the running list of the stages (place book, movement step, dungeon sections, movement kinds)
 const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_stat195_vs_126.json', import.meta.url), 'utf8'));
+const CURRENT = readAccepted(new URL('./accepted_board_slot_vs_126.json', import.meta.url).pathname);
 const F144 = ['finance 144 payment card', 'finance 144 contract fields', 'finance 144 acceptance hint', 'finance 144 price open', 'finance 144 unit limit', 'finance 144 acceptance', 'finance 144 own coin'];
 const SUB = { ...baseline, runs: Object.fromEntries(QUICK.map((l) => [l, baseline.runs[l]])) };
 let quick = null; // the four quick runs, replayed once for this file
@@ -79,9 +80,9 @@ test('A1/C: the four quick runs replay as on the start commit, from whole and va
     const result = await quickRuns();
     const { compared, diffs } = compareToBaseline(SUB, result);
     assert.equal(compared, QUICK.reduce((n, l) => n + Object.keys(baseline.runs[l].cases).length, 0));
-    assert.deepEqual(diffs.map((d) => d.id).sort(), Object.keys(ACCEPTED.cases).filter((id) => QUICK.includes(id.split('#')[0])).sort());
-    assert.ok(diffs.every((d) => ['stat195 level-up', 'representation','D offer contract','finance 138','finance 142','finance 142 contract fields', 'batch21 integration 146', 'design148 danger', 'design148 area', 'design149 offensive growth', 'fix150 place fact', 'fix158 fact text', 'fix158 guild witness', 'fix159 board failure', 'fix160 board narration', 'pulse162 window', 'pulse162 road', 'pulse163 sought', 'pulse164 pause order', 'pulse164 early claim', 'pulse167 dungeon window', 'pulse167 dungeon diagnosis', 'e2a169 outcome fields', 'e2a169 group person', 'e2b172 thread who field', 'e2b172 memory social rest', 'pilot177 npc name subject', 'pilot177 scene correction place', 'batch182 status correction final', 'batch182 extractor form', 'monster184 creature look', 'monster184 no venom from the anchor attack', 'stab185 conditional purchase line', 'stab185 purchase reason', 'stab185 priced repair', 'stab185 bought after reply', 'monster186 humanoid loadout', 'monster186 armed field', 'travel187 stay correction places', 'location190-s1 outcome', 'location190-s1 rejected-to', 'location190-s1 events', 'location190-s1 rejected+events+corrections', 'location190-s2 outcome', 'location190-s345 events', 'location190-s345 outcome', 'location190-s345 rejected+events+corrections', 'review190 rejected+events+corrections', 'batch191 town hunt site', ...F144].includes(ACCEPTED.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F/integration differences are allowed');
-    const { open, accepted, stale } = acceptedDiffs(diffs, ACCEPTED.cases, result);
+    assert.deepEqual(diffs.map((d) => d.id).sort(), Object.keys(CURRENT.cases).filter((id) => QUICK.includes(id.split('#')[0])).sort());
+    assert.ok(diffs.every((d) => ['board slot preserves retained title', 'stat195 level-up', 'representation','D offer contract','finance 138','finance 142','finance 142 contract fields', 'batch21 integration 146', 'design148 danger', 'design148 area', 'design149 offensive growth', 'fix150 place fact', 'fix158 fact text', 'fix158 guild witness', 'fix159 board failure', 'fix160 board narration', 'pulse162 window', 'pulse162 road', 'pulse163 sought', 'pulse164 pause order', 'pulse164 early claim', 'pulse167 dungeon window', 'pulse167 dungeon diagnosis', 'e2a169 outcome fields', 'e2a169 group person', 'e2b172 thread who field', 'e2b172 memory social rest', 'pilot177 npc name subject', 'pilot177 scene correction place', 'batch182 status correction final', 'batch182 extractor form', 'monster184 creature look', 'monster184 no venom from the anchor attack', 'stab185 conditional purchase line', 'stab185 purchase reason', 'stab185 priced repair', 'stab185 bought after reply', 'monster186 humanoid loadout', 'monster186 armed field', 'travel187 stay correction places', 'location190-s1 outcome', 'location190-s1 rejected-to', 'location190-s1 events', 'location190-s1 rejected+events+corrections', 'location190-s2 outcome', 'location190-s345 events', 'location190-s345 outcome', 'location190-s345 rejected+events+corrections', 'review190 rejected+events+corrections', 'batch191 town hunt site', ...F144].includes(CURRENT.cases[d.id].category)), 'in quick runs only the individually fingerprinted C/D/F/integration differences are allowed');
+    const { open, accepted, stale } = acceptedDiffs(diffs, CURRENT.cases, result);
     assert.deepEqual([open, stale, accepted.length], [[], [], diffs.length], 'every accepted record has exactly the fingerprinted output');
     for (const [label, run] of Object.entries(result.runs)) {
         assert.equal(Object.values(run.cases).filter((c) => c.error).length, 0, label);
@@ -133,12 +134,12 @@ test('C review: an unexpected change of money, quest or events inside an already
     const result = await quickRuns();
     const { diffs } = compareToBaseline(SUB, result);
     const ids = ['b19-mage#13', 'b16-rogue-sale#5', 'b19-mage#20'];
-    for (const id of ids) assert.ok(ACCEPTED.cases[id] && diffs.some((d) => d.id === id), `${id} is an accepted difference`);
-    assert.equal(recordFingerprint(result.runs['b19-mage'].cases['b19-mage#13']), ACCEPTED.cases['b19-mage#13'].fingerprint);
+    for (const id of ids) assert.ok(CURRENT.cases[id] && diffs.some((d) => d.id === id), `${id} is an accepted difference`);
+    assert.equal(recordFingerprint(result.runs['b19-mage'].cases['b19-mage#13']), CURRENT.cases['b19-mage#13'].fingerprint);
     const changed = (id, change) => {
         const r = structuredClone(result);
         change(r.runs[id.split('#')[0]].cases[id]);
-        return acceptedDiffs(compareToBaseline(SUB, r).diffs, ACCEPTED.cases, r).open;
+        return acceptedDiffs(compareToBaseline(SUB, r).diffs, CURRENT.cases, r).open;
     };
     const mutations = {
         money: ['b19-mage#20', (c) => c.events.push({ t: 'coin.changed', d: { id: 'pc', value: 999, delta: 5 } })],
@@ -158,9 +159,9 @@ test('C review: an unexpected change of money, quest or events inside an already
     // an output equal to the accepted one in another key order is the same output
     const reordered = structuredClone(result), c = reordered.runs['b19-mage'].cases['b19-mage#13'];
     reordered.runs['b19-mage'].cases['b19-mage#13'] = Object.fromEntries(Object.entries(c).reverse());
-    assert.deepEqual(acceptedDiffs(compareToBaseline(SUB, reordered).diffs, ACCEPTED.cases, reordered).open, []);
+    assert.deepEqual(acceptedDiffs(compareToBaseline(SUB, reordered).diffs, CURRENT.cases, reordered).open, []);
     // a listed record without a fingerprint accepts nothing
-    const bare = structuredClone(ACCEPTED.cases);
+    const bare = structuredClone(CURRENT.cases);
     delete bare['b19-mage#13'].fingerprint;
     assert.deepEqual(acceptedDiffs(diffs, bare, result).open.map((d) => d.id), ['b19-mage#13']);
 });

@@ -1,0 +1,11 @@
+{
+ "inherits": "accepted_stat195_vs_126.json",
+ "cases": {
+  "b19-mage#13": {
+   "category": "board slot preserves retained title",
+   "reason": "Slot 1 is repaired. The first valid slot 4 retains Cull the Old Bridge Wyrm. The archived full retry independently renamed it Kill the Old Bridge Wyrm. Only this title, its derived quest ID and their references change.",
+   "previous": "sha256:151004109628b4db8b6e0a3237bd69ade3c2ac3c7979b5e3b84ceaaac00465c0",
+   "fingerprint": "sha256:9edbc9fafcec054b99fe55e3e5bbffb81849736aa8bc7d818cf3e70f8b84962e"
+  }
+ }
+}

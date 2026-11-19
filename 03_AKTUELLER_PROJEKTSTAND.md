@@ -10,7 +10,7 @@
 | **Aktuelle Entwicklungs-/Testbasis** | **4.3.0-c.6.6.203**, Branch `experiment/action-hud-200-v1`, [HEAD 5e5b827](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/5e5b8272412b51b91f75b6e37c5b94d95c9fae11): F-Bindung, Kampf-HUD, AoE, Items, direkte Questannahme, Weltstatus/Save und enge Kontextfixes. [Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/5e5b8272412b51b91f75b6e37c5b94d95c9fae11/avereth-engine/docs/PATCH_USER05_FIX_QOL_203.md). |
 | **Technische Abnahme .203** | Implementiererbericht: 64/64 gezielte, **3.398/3.398 Node**, **2.235 Replay ohne neue Abweichung**, **108/108 ST gezielt**, **337/337 Standard**, **343/343 Failsoft**, 0 PageErrors. Unabhängiger Code-Diffreview: GO für persönlichen Spieltest. **Keine erneut unabhängig ausgeführte Gesamtsuite und keine allgemeine natürliche Qualitätsfreigabe.** |
 | **User05** | Persönlicher .202-Run, nach Phase C bewusst beendet; 26 Inputs, 341 Events, 64 Requests, fünf F-Bindungsverweigerungen. [Originale](testrun_10b/user-20261118-011503/README.md) · [Gegenreview](recherche/GEGENREVIEW_USER05_ACTION_HUD_202_FIX_QOL_2026-11-18.md). |
-| **User06** | Persönlicher .203-Run, **am 19.11. laut Nutzer durch Charaktertod beendet**. Originale/abschließendes Feedback liegen noch nicht vor; Ursachen und Spielqualität sind nicht geprüft. **Kein aktiver Spieltest.** |
+| **User06** | Persönlicher .203-Run, **am 19.11. laut Nutzer durch Charaktertod beendet**. [Vier Originaldateien und die Performance-Vorauswertung](testrun_10b/user-20261119-010838/README.md) sind nun auf `main` archiviert. Die Todesursache/Fairness und das abschließende Spielgefühl sind **nicht** vollständig geprüft. **Kein aktiver Spieltest.** |
 | **Forschung** | [Unabhängige Work-Performanceanalyse 19.11.](recherche/AVERETH_203_PERFORMANCE_EFFIZIENZ_UNABHAENGIGE_RECHERCHE_2026-11-19.md) · [alle Forschungsberichte](recherche/README.md). Noch keine natürliche Leistungssteigerung durch neuen Patch nachgewiesen. |
 | **Historische Architekturversuche** | B/C1 und dynamischer GM [archiviert](recherche/ARCHITEKTUR_EXPERIMENTE_ARCHIV_2026-11-17.md), nicht als aktuelle Produktmigration freigegeben. |
 
@@ -34,7 +34,7 @@ Details stehen nur an der verlinkten Quelle.
 
 ## Unmittelbare nächste Arbeit – Performance-GOs
 
-User06 ist beendet, aber erst mit Originalen und Feedback fachlich zu bewerten. Keine pauschale Folgerung aus dem Charaktertod. Neue Gameplayfeatures [07](07_ROADMAP_NACH_10B_ENTWURF.md) bleiben pausiert.
+User06 ist beendet und seine Originale sind archiviert; eine vollständige fachliche Gameplay-/UI-/Balancebewertung steht noch aus. Keine pauschale Folgerung aus dem Charaktertod. Neue Gameplayfeatures [07](07_ROADMAP_NACH_10B_ENTWURF.md) bleiben pausiert.
 
 1. **S1: Narrator-Streaming ohne Smooth.** In isoliertem ST 1.19 gepufferte gegen gestreamte Ausgabe messen: erstes sichtbares Prosastück, Prosaende, vollständiger Extractor-/Saveabschluss und nächste Sendefreigabe. Stop, unvollständige SSE-DONE, Swipe und Reload prüfen.
 2. **B1: Guild-Board-Einzelslotrepair.** Bei einem eindeutig isolierten fehlerhaften Listing nur diesen Slot erneut generieren. Zusammengesetzte Tafel durch den **unveränderten vollständigen Validator** schicken; global/strukturell fehlerhafte Fälle bleiben beim Vollrepair. Höchstens zwei Boardrequests.
@@ -46,7 +46,7 @@ User06 ist beendet, aber erst mit Originalen und Feedback fachlich zu bewerten. 
 
 | Lauf | Kernaussage | Quelle |
 |---|---|---|
-| **User06 · 19.11. · `.203`** | Laut Nutzer durch Charaktertod beendet. Keine Originaldaten/abschließendes Feedback, noch keine unabhängige Ursachenprüfung und keine natürliche Gesamt-Abnahme. | Noch nicht archiviert |
+| **User06 · 19.11. · `.203`** | Laut Nutzer durch Charaktertod beendet. [Vier Originale und Performance-Vorauswertung](testrun_10b/user-20261119-010838/README.md); noch keine unabhängige Todesursachenprüfung oder natürliche Gesamt-Abnahme. | [Run und Auswertung](testrun_10b/user-20261119-010838/README.md) |
 | **User05 · 18.11. · `.202`** | Bewusst nach Phase C beendet. Funktionierender Grundspielbogen, F-HUD-P1 und wesentliche UI-/Statusprobleme; keine Questabgabe, kein allgemeines Gameplay-GO. | [Run](testrun_10b/user-20261118-011503/README.md) · [Gegenreview](recherche/GEGENREVIEW_USER05_ACTION_HUD_202_FIX_QOL_2026-11-18.md) |
 | **Persönliche GM Alpha · 17.11. · `d8baa91`** | Gilden-GO verstanden; neuer NPC/Dialog natürlich erzählt, durch formale Prüfung abgewiesen, Korrektur ebenfalls ohne Abschluss. **3 physische LLM-Aufrufe, 0 veröffentlichte Antworten.** | [Experimentarchiv](recherche/ARCHITEKTUR_EXPERIMENTE_ARCHIV_2026-11-17.md); Original-ST-Log im persönlichen Test, nicht auf GitHub |
 | **Persönlicher Lauf 16.11. · `.200`** | Mage-Erstellung korrekt; erzählte Waldankunft bleibt nach Extractor-Timeout ungebucht; Concurrency 429. Architektur-Warnsignal, keine abgeschlossene Spielevaluation | [Audit §4](recherche/ARCHITEKTUR_AUDIT_REDESIGN_ENTSCHEIDUNG_2026-11-16.md) |

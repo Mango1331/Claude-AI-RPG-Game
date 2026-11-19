@@ -30,11 +30,11 @@ export function createChatPersistence({ request, headers, active, locks, changed
         queues.set(key, pending);
         try { return await pending; } finally { if (queues.get(key) === pending) queues.delete(key); settled(); }
     }
-    async function verify(origin, snapshot) {
+    async function verify(origin, snapshot, frozenSignature) {
         const response = await request('/api/chats/get', {method:'POST',headers:headers(),body:JSON.stringify(origin)});
         if (!response.ok) throw new Error('Chat read-back failed');
         const saved = await response.json();
-        if (!Array.isArray(saved) || recordSignature(saved.slice(1)) !== recordSignature(snapshot.slice(1))
+        if (!Array.isArray(saved) || recordSignature(saved.slice(1)) !== (frozenSignature ?? recordSignature(snapshot.slice(1)))
             || canonical(saved[0]?.chat_metadata) !== canonical(snapshot[0]?.chat_metadata))
             throw new Error('Chat read-back differs from the saved revision');
         return true;
@@ -44,13 +44,16 @@ export function createChatPersistence({ request, headers, active, locks, changed
         if (!matching(frozen) || !isCurrent()) throw new Error('Stale origin chat save');
         const meta = frozen.chat[0]?.chat_metadata;
         if (!meta) throw new Error('Missing chat metadata');
+        // frozen is a private structured clone. Only its header revision changes during this write.
+        const frozenSignature = recordSignature(frozen.chat.slice(1));
+        const origin = {avatar_url:frozen.avatar_url, file_name:frozen.file_name, ch_name:frozen.ch_name};
         let baseRevision = Number(meta.avereth_save_revision || 0);
         const activeRevision = Number(active().chatMetadata?.avereth_save_revision || 0);
         if (baseRevision < activeRevision) {
             // ST can serialize the same current content twice before its gzip fetch is dispatched.
             // Rebase only an entirely identical snapshot. It still goes through a real write/read-back;
             // no rejected or merely 'superseded' payload is ever acknowledged here.
-            if (recordSignature(frozen.chat.slice(1)) !== recordSignature(active().chat)
+            if (frozenSignature !== recordSignature(active().chat)
                 || canonical({...meta,avereth_save_revision:0}) !== canonical({...active().chatMetadata,avereth_save_revision:0}))
                 throw new Error('Older native save revision');
             baseRevision = activeRevision;
@@ -62,20 +65,20 @@ export function createChatPersistence({ request, headers, active, locks, changed
         return queue(key, async () => {
             if (!matching(frozen) || !isCurrent()) throw new Error('Stale origin chat save');
             // Reject a delayed native snapshot after in-memory game/input changes.
-            if (recordSignature(frozen.chat.slice(1)) !== recordSignature(active().chat)) throw new Error('Stale chat snapshot');
-            const priorResponse = await request('/api/chats/get', {method:'POST',headers:headers(),body:JSON.stringify({avatar_url:frozen.avatar_url,file_name:frozen.file_name,ch_name:frozen.ch_name})});
+            if (frozenSignature !== recordSignature(active().chat)) throw new Error('Stale chat snapshot');
+            const priorResponse = await request('/api/chats/get', {method:'POST',headers:headers(),body:JSON.stringify(origin)});
             if (!priorResponse.ok) throw new Error('Cannot check prior chat revision');
             const prior = await priorResponse.json();
             if (Number(prior?.[0]?.chat_metadata?.avereth_save_revision || 0) > baseRevision)
                 throw new Error('Another writer advanced this chat; reload before continuing');
-            if (!matching(frozen) || !isCurrent() || recordSignature(frozen.chat.slice(1)) !== recordSignature(active().chat)
+            if (!matching(frozen) || !isCurrent() || frozenSignature !== recordSignature(active().chat)
                 || canonical({...meta,avereth_save_revision:0}) !== canonical({...active().chatMetadata,avereth_save_revision:0}))
                 throw new Error('Stale origin or records before write');
             const response = await request('/api/chats/save', {method:'POST',headers:headers(),body:JSON.stringify({...frozen,force:false})});
             if (!response.ok) throw new Error(`Chat save failed (${response.status})`);
-            await verify(frozen, frozen.chat);
+            await verify(origin, frozen.chat, frozenSignature);
             if (matching(frozen) && isCurrent() && active().chatMetadata.avereth_save_revision === saveRevision
-                && recordSignature(active().chat)===recordSignature(frozen.chat.slice(1))
+                && recordSignature(active().chat)===frozenSignature
                 && canonical(active().chatMetadata)===canonical(meta)) changed('saved', key);
             return response;
         }).catch(e => { changed('error', key, e); throw e; });
@@ -85,5 +88,5 @@ export function createChatPersistence({ request, headers, active, locks, changed
         const snapshot = structuredClone([{chat_metadata:c.chatMetadata || {},user_name:'unused',character_name:'unused'},...c.chat]);
         return write({...origin,chat:snapshot}, isCurrent);
     }
-    return { save, write, verify, matching, pending: () => queues.size > 0 };
+    return { save, write, verify: (origin, snapshot) => verify(origin, snapshot), matching, pending: () => queues.size > 0 };
 }

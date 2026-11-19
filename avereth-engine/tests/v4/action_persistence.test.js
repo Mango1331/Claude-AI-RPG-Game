@@ -3,12 +3,13 @@ import assert from 'node:assert/strict';
 import { createChatPersistence, decodeSave, chatOrigin } from '../../src/v4/action_persistence.js';
 function fixture() {
     const c={characters:[{avatar:'a.png',name:'A'}],characterId:0,getCurrentChatId:()=> 'origin',chatMetadata:{integrity:'i',other:{kept:true}},chat:[{mes:'hello',extra:{avereth:{events:[],action_input:{id:'one'}}}}]};
-    let saved=[]; const writes=[];
-    const request=async(url,opts)=>{ const data=JSON.parse(opts.body); if(url.endsWith('/save')){writes.push(data);saved=data.chat;return Response.json({ok:true});}return Response.json(saved); };
-    return {c,writes,adapter:createChatPersistence({request,headers:()=>({}),active:()=>c}),request};
+    let saved=[]; const writes=[], lookups=[];
+    const request=async(url,opts)=>{ const data=JSON.parse(opts.body); if(url.endsWith('/save')){writes.push(data);saved=data.chat;return Response.json({ok:true});}lookups.push(data);return Response.json(saved); };
+    return {c,writes,lookups,adapter:createChatPersistence({request,headers:()=>({}),active:()=>c}),request};
 }
 test('target-bound save reads back HUD identity, all swipe data and foreign metadata', async()=>{
-    const {c,adapter,writes}=fixture(); await adapter.save(c);
+    const {c,adapter,writes,lookups}=fixture(); await adapter.save(c);
+    assert.deepEqual(lookups,[chatOrigin(c),chatOrigin(c)]);
     assert.deepEqual(writes[0].chat[0].chat_metadata,c.chatMetadata); assert.equal(writes[0].file_name,'origin');
     c.chat[0].extra.avereth.action_input.id='two';
     await assert.rejects(adapter.verify(chatOrigin(c),[{},...c.chat]),/differs/);

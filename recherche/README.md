@@ -15,6 +15,8 @@
 
 Aus den archivierten natürlichen Antworten wurden ein entbehrlicher Extractor-Repair, der vollständige Board-Erstvertrag und die Meldesemantik des Promptcaches untersucht. Die Messungen unterscheiden lokale Gegenproben, tatsächliche historische Gebühren und offene natürliche Qualität. [Paketentscheidungen und Abnahme](AVERETH_203_PERFORMANCE_ZYKLUS2_2026-11-19.md) · [Cacheanalyse, aktueller Tarif und kontrollierter Testplan](AVERETH_203_FEATHERLESS_CACHE_ZYKLUS2_2026-11-19.md)
 
+**Unabhängiger Gegenreview:** [GPT-Code- und Evidenzprüfung Zyklus 2](GEGENREVIEW_203_PERFORMANCE_ZYKLUS2_GPT_2026-11-19.md) – GO für die drei engen B1/B2/B3-Änderungen auf dem Experimentbranch, keine neue echte Provider-/Zeitmessung; automatisierte Benchmarks auf dem bestätigten Chat-Tarif nicht freigegeben.
+
 ## Natürlicher Featherless-A/B-Spieltest
 
 Je zehn Spielzüge mit echten GLM-Antworten und sechs Zusatzpaare zu X2 und Preset. Der Bericht enthält die Messung der ersten sichtbaren Prosa und der sicheren Zugfreigabe, alle Repairs, die gespeicherten Welten und die Einzelurteile zu den Optimierungen. [Ergebnisse, Rohdaten und Reproduktion](AVERETH_203_NATUERLICHER_FEATHERLESS_AB_2026-11-19.md)

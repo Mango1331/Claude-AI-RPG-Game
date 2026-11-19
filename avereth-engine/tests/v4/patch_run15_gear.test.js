@@ -10,7 +10,7 @@ import { buildCatalog } from '../../src/v4/catalog.js';
 import { catalogText } from '../../src/v4/interpret.js';
 import { buildContext } from '../../src/context.js';
 import { deriveCharacter } from '../../src/derived.js';
-import { itemProfile } from '../../src/v4/items.js';
+import { gearBases, gearMarketText, itemProfile } from '../../src/v4/items.js';
 const content = await loadProductContent(), clone = structuredClone;
 const f = JSON.parse(fs.readFileSync(new URL('./fixtures/run15_gear.json', import.meta.url)));
 const a = JSON.parse(fs.readFileSync(new URL('./fixtures/run15_trade.json', import.meta.url)));
@@ -176,4 +176,18 @@ test('review P2: slot and rank refusals do not split or consume stacked gear', (
         assert.ok(!r.events.some(e => ['object.moved', 'object.consumed', 'item.equipped'].includes(e.t)));
         assert.deepEqual(r.state.objects, s.objects);
     }
+});
+
+test('machine catalogs preserve every exact base ID and display name, including differing labels', () => {
+    const catalog = gearMarketText(content, false, 'catalog');
+    const entries = /BASES \(ID or ID=name\): (.+?)\. QUALITY:/.exec(catalog);
+    assert.ok(entries);
+    const decoded = entries[1].split('; ').map(entry => {
+        const [id, name = id] = entry.split('=');
+        return { id, name };
+    });
+    assert.deepEqual(decoded, gearBases(content).map(({ id, name }) => ({ id, name })));
+    assert.match(catalog, /hand_axe=hand-axe/);
+    assert.doesNotMatch(catalog, /sword=sword/);
+    assert.match(gearMarketText(content), /sword=sword/);
 });

@@ -1,0 +1,1067 @@
+{
+  "verifiedInputs": 86,
+  "requests": [
+    {
+      "id": 3,
+      "role": "planner",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 12251,
+      "candidate": 12130,
+      "saved": 121
+    },
+    {
+      "id": 5,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 12895,
+      "candidate": 12774,
+      "saved": 121
+    },
+    {
+      "id": 6,
+      "role": "planner",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 12251,
+      "candidate": 12130,
+      "saved": 121
+    },
+    {
+      "id": 8,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 12941,
+      "candidate": 12820,
+      "saved": 121
+    },
+    {
+      "id": 9,
+      "role": "planner",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 12256,
+      "candidate": 12135,
+      "saved": 121
+    },
+    {
+      "id": 12,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 15095,
+      "candidate": 14974,
+      "saved": 121
+    },
+    {
+      "id": 13,
+      "role": "planner",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 12246,
+      "candidate": 12125,
+      "saved": 121
+    },
+    {
+      "id": 17,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 15289,
+      "candidate": 15168,
+      "saved": 121
+    },
+    {
+      "id": 18,
+      "role": "planner",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 13566,
+      "candidate": 13445,
+      "saved": 121
+    },
+    {
+      "id": 20,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 14623,
+      "candidate": 14502,
+      "saved": 121
+    },
+    {
+      "id": 21,
+      "role": "planner",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 13680,
+      "candidate": 13559,
+      "saved": 121
+    },
+    {
+      "id": 23,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 14817,
+      "candidate": 14696,
+      "saved": 121
+    },
+    {
+      "id": 24,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 15270,
+      "candidate": 15149,
+      "saved": 121
+    },
+    {
+      "id": 25,
+      "role": "planner",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 13674,
+      "candidate": 13553,
+      "saved": 121
+    },
+    {
+      "id": 27,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 14419,
+      "candidate": 14298,
+      "saved": 121
+    },
+    {
+      "id": 28,
+      "role": "planner",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 13759,
+      "candidate": 13638,
+      "saved": 121
+    },
+    {
+      "id": 30,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 14573,
+      "candidate": 14452,
+      "saved": 121
+    },
+    {
+      "id": 32,
+      "role": "planner",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 13700,
+      "candidate": 13579,
+      "saved": 121
+    },
+    {
+      "id": 34,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 14602,
+      "candidate": 14481,
+      "saved": 121
+    },
+    {
+      "id": 35,
+      "role": "planner",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 13799,
+      "candidate": 13678,
+      "saved": 121
+    },
+    {
+      "id": 37,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 14705,
+      "candidate": 14584,
+      "saved": 121
+    },
+    {
+      "id": 38,
+      "role": "planner",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 13677,
+      "candidate": 13556,
+      "saved": 121
+    },
+    {
+      "id": 40,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 14467,
+      "candidate": 14346,
+      "saved": 121
+    },
+    {
+      "id": 41,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 14753,
+      "candidate": 14632,
+      "saved": 121
+    },
+    {
+      "id": 42,
+      "role": "planner",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 13776,
+      "candidate": 13655,
+      "saved": 121
+    },
+    {
+      "id": 44,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 14588,
+      "candidate": 14467,
+      "saved": 121
+    },
+    {
+      "id": 45,
+      "role": "planner",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 13697,
+      "candidate": 13576,
+      "saved": 121
+    },
+    {
+      "id": 47,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 15225,
+      "candidate": 15104,
+      "saved": 121
+    },
+    {
+      "id": 48,
+      "role": "planner",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 13801,
+      "candidate": 13680,
+      "saved": 121
+    },
+    {
+      "id": 50,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 15381,
+      "candidate": 15260,
+      "saved": 121
+    },
+    {
+      "id": 51,
+      "role": "planner",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 12971,
+      "candidate": 12850,
+      "saved": 121
+    },
+    {
+      "id": 53,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 13928,
+      "candidate": 13807,
+      "saved": 121
+    },
+    {
+      "id": 54,
+      "role": "planner",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 12997,
+      "candidate": 12876,
+      "saved": 121
+    },
+    {
+      "id": 56,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 13976,
+      "candidate": 13855,
+      "saved": 121
+    },
+    {
+      "id": 57,
+      "role": "planner",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 12951,
+      "candidate": 12830,
+      "saved": 121
+    },
+    {
+      "id": 59,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 14467,
+      "candidate": 14346,
+      "saved": 121
+    },
+    {
+      "id": 60,
+      "role": "planner",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 12992,
+      "candidate": 12871,
+      "saved": 121
+    },
+    {
+      "id": 62,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 14353,
+      "candidate": 14232,
+      "saved": 121
+    },
+    {
+      "id": 63,
+      "role": "planner",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 12991,
+      "candidate": 12870,
+      "saved": 121
+    },
+    {
+      "id": 65,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "A",
+      "baseline": 13946,
+      "candidate": 13825,
+      "saved": 121
+    },
+    {
+      "id": 66,
+      "role": "planner",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 13032,
+      "candidate": 12911,
+      "saved": 121
+    },
+    {
+      "id": 68,
+      "role": "extractor",
+      "stage": "main",
+      "arm": "B",
+      "baseline": 14189,
+      "candidate": 14068,
+      "saved": 121
+    },
+    {
+      "id": 69,
+      "role": "extractor",
+      "stage": "extractor-0",
+      "arm": "B",
+      "baseline": 14817,
+      "candidate": 14696,
+      "saved": 121
+    },
+    {
+      "id": 70,
+      "role": "extractor",
+      "stage": "extractor-1",
+      "arm": "B",
+      "baseline": 14849,
+      "candidate": 14728,
+      "saved": 121
+    },
+    {
+      "id": 71,
+      "role": "extractor",
+      "stage": "extractor-1",
+      "arm": "B",
+      "baseline": 14605,
+      "candidate": 14484,
+      "saved": 121
+    },
+    {
+      "id": 72,
+      "role": "extractor",
+      "stage": "extractor-0",
+      "arm": "B",
+      "baseline": 14573,
+      "candidate": 14452,
+      "saved": 121
+    },
+    {
+      "id": 73,
+      "role": "extractor",
+      "stage": "extractor-0",
+      "arm": "B",
+      "baseline": 15381,
+      "candidate": 15260,
+      "saved": 121
+    },
+    {
+      "id": 74,
+      "role": "extractor",
+      "stage": "extractor-1",
+      "arm": "B",
+      "baseline": 15413,
+      "candidate": 15292,
+      "saved": 121
+    },
+    {
+      "id": 76,
+      "role": "extractor",
+      "stage": "preset-0",
+      "arm": "B",
+      "baseline": 12977,
+      "candidate": 12856,
+      "saved": 121
+    },
+    {
+      "id": 78,
+      "role": "extractor",
+      "stage": "preset-1",
+      "arm": "B",
+      "baseline": 12938,
+      "candidate": 12817,
+      "saved": 121
+    },
+    {
+      "id": 80,
+      "role": "extractor",
+      "stage": "preset-1",
+      "arm": "B",
+      "baseline": 14597,
+      "candidate": 14476,
+      "saved": 121
+    },
+    {
+      "id": 82,
+      "role": "extractor",
+      "stage": "preset-0",
+      "arm": "B",
+      "baseline": 14666,
+      "candidate": 14545,
+      "saved": 121
+    },
+    {
+      "id": 84,
+      "role": "extractor",
+      "stage": "preset-0",
+      "arm": "B",
+      "baseline": 13981,
+      "candidate": 13860,
+      "saved": 121
+    },
+    {
+      "id": 86,
+      "role": "extractor",
+      "stage": "preset-1",
+      "arm": "B",
+      "baseline": 13978,
+      "candidate": 13857,
+      "saved": 121
+    }
+  ],
+  "repairProbe": [
+    {
+      "id": 24,
+      "validJSON": false
+    },
+    {
+      "id": 41,
+      "validJSON": true,
+      "inputSavedSendingOnlyFirstDelta": 111,
+      "otherOriginalDeltasReusedInFullRepair": [
+        "fact",
+        "time"
+      ]
+    }
+  ],
+  "schemaDelimiters": [
+    {
+      "id": 5,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 8,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 12,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 17,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 20,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 23,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 24,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 27,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 30,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 34,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 37,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 40,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 41,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 44,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 47,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 50,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 53,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 56,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 59,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 62,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 65,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 68,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 69,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 70,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 71,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 72,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 73,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 74,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 76,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 78,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 80,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 82,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 84,
+      "shapes": 36,
+      "saved": 15
+    },
+    {
+      "id": 86,
+      "shapes": 36,
+      "saved": 15
+    }
+  ],
+  "samePlannerInput": [
+    {
+      "turn": 1,
+      "sameCommands": true,
+      "types": [
+        [],
+        []
+      ]
+    },
+    {
+      "turn": 2,
+      "sameCommands": true,
+      "types": [
+        [
+          "board.read"
+        ],
+        [
+          "board.read"
+        ]
+      ]
+    },
+    {
+      "turn": 5,
+      "sameCommands": false,
+      "types": [
+        [
+          "activity"
+        ],
+        []
+      ]
+    },
+    {
+      "turn": 6,
+      "sameCommands": true,
+      "types": [
+        [],
+        []
+      ]
+    },
+    {
+      "turn": 9,
+      "sameCommands": false,
+      "types": [
+        [
+          "go"
+        ],
+        [
+          "go"
+        ]
+      ]
+    },
+    {
+      "turn": 10,
+      "sameCommands": true,
+      "types": [
+        [
+          "activity"
+        ],
+        [
+          "activity"
+        ]
+      ]
+    }
+  ],
+  "jobs": [
+    {
+      "first": 5,
+      "calls": 1,
+      "emptyExpected": true,
+      "lostEventsIfSkipped": [
+        "entity.updated",
+        "fact.asserted",
+        "entity.updated",
+        "memory.recorded",
+        "pulse.outcome"
+      ],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 8,
+      "calls": 1,
+      "emptyExpected": true,
+      "lostEventsIfSkipped": [
+        "entity.updated",
+        "fact.asserted",
+        "entity.updated",
+        "fact.ended",
+        "fact.asserted",
+        "memory.recorded",
+        "pulse.outcome"
+      ],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 12,
+      "calls": 1,
+      "emptyExpected": true,
+      "lostEventsIfSkipped": [
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome"
+      ],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 17,
+      "calls": 1,
+      "emptyExpected": true,
+      "lostEventsIfSkipped": [
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome"
+      ],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 20,
+      "calls": 1,
+      "emptyExpected": false,
+      "lostEventsIfSkipped": [],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 23,
+      "calls": 2,
+      "emptyExpected": false,
+      "lostEventsIfSkipped": [],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 27,
+      "calls": 1,
+      "emptyExpected": true,
+      "lostEventsIfSkipped": [
+        "time.advanced",
+        "object.created",
+        "fact.asserted",
+        "thread.set",
+        "memory.recorded",
+        "pulse.outcome"
+      ],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 30,
+      "calls": 1,
+      "emptyExpected": true,
+      "lostEventsIfSkipped": [
+        "object.created",
+        "fact.asserted",
+        "thread.set",
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome"
+      ],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 34,
+      "calls": 1,
+      "emptyExpected": false,
+      "lostEventsIfSkipped": [],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 37,
+      "calls": 1,
+      "emptyExpected": true,
+      "lostEventsIfSkipped": [
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome"
+      ],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 40,
+      "calls": 2,
+      "emptyExpected": true,
+      "lostEventsIfSkipped": [
+        "delta.rejected",
+        "fact.asserted",
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome"
+      ],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 44,
+      "calls": 1,
+      "emptyExpected": true,
+      "lostEventsIfSkipped": [
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome"
+      ],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 47,
+      "calls": 1,
+      "emptyExpected": false,
+      "lostEventsIfSkipped": [],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 50,
+      "calls": 1,
+      "emptyExpected": false,
+      "lostEventsIfSkipped": [],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 53,
+      "calls": 1,
+      "emptyExpected": false,
+      "lostEventsIfSkipped": [],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 56,
+      "calls": 1,
+      "emptyExpected": false,
+      "lostEventsIfSkipped": [],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 59,
+      "calls": 1,
+      "emptyExpected": false,
+      "lostEventsIfSkipped": [],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 62,
+      "calls": 1,
+      "emptyExpected": false,
+      "lostEventsIfSkipped": [],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 65,
+      "calls": 1,
+      "emptyExpected": false,
+      "lostEventsIfSkipped": [],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 68,
+      "calls": 1,
+      "emptyExpected": false,
+      "lostEventsIfSkipped": [],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 69,
+      "calls": 1,
+      "emptyExpected": false,
+      "lostEventsIfSkipped": [],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 70,
+      "calls": 1,
+      "emptyExpected": false,
+      "lostEventsIfSkipped": [],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 71,
+      "calls": 1,
+      "emptyExpected": true,
+      "lostEventsIfSkipped": [
+        "object.created",
+        "thread.set",
+        "memory.recorded",
+        "pulse.outcome"
+      ],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 72,
+      "calls": 1,
+      "emptyExpected": true,
+      "lostEventsIfSkipped": [
+        "object.created",
+        "thread.set",
+        "memory.recorded",
+        "pulse.outcome"
+      ],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 73,
+      "calls": 1,
+      "emptyExpected": false,
+      "lostEventsIfSkipped": [],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 74,
+      "calls": 1,
+      "emptyExpected": false,
+      "lostEventsIfSkipped": [],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 76,
+      "calls": 1,
+      "emptyExpected": true,
+      "lostEventsIfSkipped": [
+        "entity.updated",
+        "fact.asserted",
+        "entity.updated",
+        "entity.created",
+        "scene.entered",
+        "fact.asserted",
+        "fact.asserted",
+        "knowledge.gained",
+        "memory.recorded",
+        "memory.recorded",
+        "pulse.outcome"
+      ],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 78,
+      "calls": 1,
+      "emptyExpected": true,
+      "lostEventsIfSkipped": [
+        "entity.updated",
+        "fact.asserted",
+        "entity.updated",
+        "fact.ended",
+        "fact.asserted",
+        "memory.recorded",
+        "pulse.outcome"
+      ],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 80,
+      "calls": 1,
+      "emptyExpected": true,
+      "lostEventsIfSkipped": [
+        "object.created",
+        "thread.set",
+        "memory.recorded",
+        "pulse.outcome"
+      ],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 82,
+      "calls": 1,
+      "emptyExpected": true,
+      "lostEventsIfSkipped": [
+        "delta.rejected",
+        "delta.rejected",
+        "fact.asserted",
+        "thread.set",
+        "time.advanced",
+        "memory.recorded",
+        "pulse.outcome"
+      ],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 84,
+      "calls": 1,
+      "emptyExpected": true,
+      "lostEventsIfSkipped": [
+        "combat.intent",
+        "combat.intent"
+      ],
+      "skippedStateEqual": false
+    },
+    {
+      "first": 86,
+      "calls": 1,
+      "emptyExpected": true,
+      "lostEventsIfSkipped": [
+        "delta.rejected",
+        "delta.rejected"
+      ],
+      "skippedStateEqual": false
+    }
+  ]
+}

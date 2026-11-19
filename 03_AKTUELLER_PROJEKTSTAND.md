@@ -32,7 +32,7 @@ Details stehen nur an der verlinkten Quelle.
 | **Balance/Power** | `.196–.198` | Angepasste Waffenqualität im F-Rang, normales menschliches NPC-Statbudget und F-fine-Schild; siehe Produktpatchnotes |
 | **PULSE/NPC-Kompaktkarten** | `.199–.200` | PULSE-Schutz für bekannte zurückkehrende NPCs, enger Hesse-Präsenzbeleg und vollständige E3-Felder in kompakten NPC-Köpfen; siehe Produktpatchnotes |
 
-## Unmittelbare nächste Arbeit – B3 als Optimierungskandidat gegenreviewt
+## Unmittelbare nächste Arbeit – Gegenreview des Zyklus-3-Kandidaten
 
 Der unabhängige [GPT-Gegenreview des Performancezyklus 2](recherche/GEGENREVIEW_203_PERFORMANCE_ZYKLUS2_GPT_2026-11-19.md) hat **GO für den B3-Experimentkandidaten** `experiment/203-performance-cycle2` bei [`6d9770f`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/6d9770f9b31e78d37567719bf1c06d8a4942288c) ergeben, **ohne Produktmerge oder allgemeines Gameplay-GO**. Drei eng begrenzte Änderungen: erfolglose Erstboard-Kürzung rückgängig, vollständigen Extractor-Ausgabeauftrag entdoppelt (14 Inputtokens je historischem X-Request) und einzig die eindeutige verschachtelte `object.new`-Form vor der unveränderten Schema-/Firewallprüfung normalisiert. Beim isolierten ST-1.19-Host mit archivierter Originalantwort vermied B3 die zweite Extractoranfrage, bei gleichen Fachereignissen und gleichem Weltzustand nach Save/Read-back/Reload. Der historische Repair dauerte 40,197 s; der reale zukünftige Effekt ist noch ungemessen. [Fachbericht und Tests](recherche/AVERETH_203_PERFORMANCE_ZYKLUS2_2026-11-19.md).
 
@@ -40,7 +40,7 @@ Im vorherigen [natürlichen A/B-Lauf](recherche/AVERETH_203_NATUERLICHER_FEATHER
 
 **Cachefrage:** 274/274 historische Promptlängen lassen sich laut Implementierer rekonstruieren; User04 hatte 80/124 positive Cachemeldungen, User05 0/64, jüngster A/B-Lauf 0/86. Auch lange identische Präfixe belegen nicht, ob der Provider intern wiederverwendet. Die aktuelle nichtgenerierende Tarifprüfung ergibt Featherless **Chat**; der Tarif ist nicht für automatisierte Benchmarks vorgesehen. Keine neue automatisierte Provider-A/B-Messung, bevor ein berechtigter Zugang und ein ausdrücklich genehmigtes Budget vorliegen. [Cacheanalyse](recherche/AVERETH_203_FEATHERLESS_CACHE_ZYKLUS2_2026-11-19.md).
 
-**Nächste Entscheidung:** B3 als weiterentwickelten B-Kandidaten erhalten. Zusätzliche fachlich begrenzte Offline-/Mockanalysen sind möglich. Spätere Integration in die .203-Entwicklungsbasis und echte Modellvergleiche bedürfen eigener Entscheidung. User06-I18-Torwache, Todesursache/Fairness und der B-Müllerjunge bleiben eigene offene Gameplay-/Anwesenheitsbefunde. Produkt .200 bleibt eingefroren.
+**Nächste Entscheidung:** Der von B3 abgeleitete Branch `experiment/203-performance-cycle3` bei `25c46bc9d342c9ed6cf87f8ac59e11c85ab4de18` wartet auf den unabhängigen Gegenreview. Sein Maschinenkatalog spart bei den 21 P-/X-Aufrufen der zehn archivierten B-Hauptzüge insgesamt 2.541 Inputtokens; alle 32 geprüften X-Revisionen ergaben bei identischen Antworten dieselbe Welt. [Fachbericht und Prüfungen](recherche/AVERETH_203_PERFORMANCE_ZYKLUS3_2026-11-19.md) Spätere Integration in die .203-Entwicklungsbasis und echte Modellvergleiche bedürfen eigener Entscheidung. User06-I18-Torwache, Todesursache/Fairness und der B-Müllerjunge bleiben eigene offene Gameplay-/Anwesenheitsbefunde. Produkt .200 bleibt eingefroren.
 
 ## Natürliche Läufe – Kurzüberblick
 

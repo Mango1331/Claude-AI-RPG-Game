@@ -11,6 +11,10 @@
 
 **Primärbelege:** [User06 .203 – neue natürliche Performance-Baseline](../testrun_10b/user-20261119-010838/PERFORMANCE_USER06_203_VORAB_2026-11-19.md) · [User05-Gegenreview](GEGENREVIEW_USER05_ACTION_HUD_202_FIX_QOL_2026-11-18.md) · [User05-Originale](../testrun_10b/user-20261118-011503/README.md) · [technischer .203-Patch](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/5e5b8272412b51b91f75b6e37c5b94d95c9fae11/avereth-engine/docs/PATCH_USER05_FIX_QOL_203.md).
 
+## Performance-Forschungszyklus 3
+
+Katalogkürzung mit 121 GLM-Inputtokens je P-/X-Aufruf, vier verworfene bzw. zurückgestellte Versuche und Abnahme des neuen Kandidaten. [Messungen und Fachentscheidungen](AVERETH_203_PERFORMANCE_ZYKLUS3_2026-11-19.md)
+
 ## Performance-Forschungszyklus 2
 
 Aus den archivierten natürlichen Antworten wurden ein entbehrlicher Extractor-Repair, der vollständige Board-Erstvertrag und die Meldesemantik des Promptcaches untersucht. Die Messungen unterscheiden lokale Gegenproben, tatsächliche historische Gebühren und offene natürliche Qualität. [Paketentscheidungen und Abnahme](AVERETH_203_PERFORMANCE_ZYKLUS2_2026-11-19.md) · [Cacheanalyse, aktueller Tarif und kontrollierter Testplan](AVERETH_203_FEATHERLESS_CACHE_ZYKLUS2_2026-11-19.md)

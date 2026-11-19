@@ -1,0 +1,49 @@
+{
+  "candidate": "25c46bc9d342c9ed6cf87f8ac59e11c85ab4de18",
+  "providerGenerations": 0,
+  "browsers": [
+    {
+      "mode": "action_finance",
+      "started": "2026-11-19T22:29:53.331Z",
+      "st": {
+        "version": "1.19.0",
+        "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+      },
+      "passed": 36,
+      "checks": 36,
+      "pageErrors": 0,
+      "mockCalls": 40
+    },
+    {
+      "mode": "user05_review",
+      "started": "2026-11-19T22:31:55.128Z",
+      "st": {
+        "version": "1.19.0",
+        "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+      },
+      "passed": 108,
+      "checks": 108,
+      "pageErrors": 0,
+      "mockCalls": 62
+    },
+    {
+      "mode": "narrator_streaming",
+      "started": "2026-11-19T22:34:49.405Z",
+      "st": {
+        "version": "1.19.0",
+        "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+      },
+      "passed": 59,
+      "checks": 59,
+      "pageErrors": 0,
+      "mockCalls": 71
+    }
+  ],
+  "node": 3412,
+  "targeted": 28,
+  "replay": {
+    "total": 2235,
+    "knownExactDifferences": 1131,
+    "unexpected": 0
+  }
+}

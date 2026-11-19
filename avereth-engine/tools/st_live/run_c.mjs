@@ -1,3 +1,4 @@
+import { hostCostSmoke } from './host_cost_smoke.mjs';
 import { prefixSmoke } from './prompt_prefix_smoke.mjs';
 import { narratorStreamingSmoke, scriptedNarratorResponse } from './narrator_streaming_smoke.mjs';
 import {nativeWorldSaveSmoke} from './native_world_save_smoke.mjs';
@@ -550,7 +551,8 @@ try {
         prefixChecks = await prefixSmoke({page,send,idle,calls,out:HERE,contract});
         stealthProbeMode = false;
     }
-    result = { prefixChecks, streamingChecks, nativeWorldChecks, user05Checks, actionReviewChecks, capacity:{peakUnits,activeUnits}, actionHudChecks, actionHostChecks, bossloot193Checks, toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
+    const costChecks=process.env.AVERETH_SMOKE_HOST_COST === '1' ? await hostCostSmoke({page,out:HERE,calls}) : null;
+    result = { costChecks, prefixChecks, streamingChecks, nativeWorldChecks, user05Checks, actionReviewChecks, capacity:{peakUnits,activeUnits}, actionHudChecks, actionHostChecks, bossloot193Checks, toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
 } catch (error) {
     const screen = await page.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(-8000),
         chat: window.SillyTavern?.getContext?.()?.chat?.map(m => ({ user: m.is_user, system: m.is_system, text: m.mes?.slice(0, 120) })) })).catch(() => null);
@@ -590,6 +592,7 @@ const checks = { capacityAtMostFour:result.capacity.peakUnits<=4,
     ...Object.fromEntries(Object.entries(result.pilot01Checks || {}).map(([k, v]) => [`pilot01_${k}`, v])),
     ...Object.fromEntries(Object.entries(result.bossloot193Checks || {}).map(([k,v]) => [`bossloot193_${k}`,v])),
     ...result.prefixChecks,
+    ...result.costChecks,
     startStatsFive: result.startStatsFive,
     ...Object.fromEntries(Object.entries(result.qol160Checks || {}).map(([k, v]) => [`qol160_${k}`, v])),
     ...Object.fromEntries(Object.entries(result.board159Checks || {}).map(([k,v])=>[`board159_${k}`,v])),

@@ -111,6 +111,7 @@ for (const [name, run, chatFile, logFile, number] of cases) {
     assert.deepEqual(actual.result.listings,composed);
     const direct = await generate(state,need,[second.text]);
     assert.equal(direct.calls,1);
+    assert.match(direct.requests[0][0].content, /Every field is required; null where/);
     assert.deepEqual(direct.result.listings,composed);
 
     // Board generation precedes the turn; booking occurs after turn.begun and the command prelude.
@@ -122,29 +123,6 @@ for (const [name, run, chatFile, logFile, number] of cases) {
     const booked = book(beforeBooking,need,composed);
     assert.deepEqual(booked,book(beforeBooking,need,actual.result.listings));
     assert.deepEqual(booked,book(beforeBooking,need,approved.listings));
-    const short = listings => pack(listings.map(listing => {
-        if (!listing.habitat) return listing;
-        const {task,desired_end_state,...rest} = listing;
-        return rest;
-    }));
-    const shortValid = await generate(state,need,[short(valid)]);
-    assert.equal(shortValid.calls,1);
-    assert.match(shortValid.requests[0][0].content,/omit task and desired_end_state/);
-    assert.deepEqual(book(beforeBooking,need,shortValid.result.listings),booked);
-    const shortRepair = await generate(state,need,[short(raw),slot]);
-    assert.equal(shortRepair.calls,2);
-    assert.match(shortRepair.requests[1][0].content,/"slot":\d+,"listing"/);
-    assert.deepEqual(book(beforeBooking,need,shortRepair.result.listings),booked);
-    const unclear = JSON.parse(short(valid));
-    const outdoor = unclear.listings.find(l=>l.habitat);
-    outdoor.objectives.push({...outdoor.objectives[0],verb:'FIND'});
-    const failure = await generate(state,need,[JSON.stringify(unclear),short(valid)]);
-    assert.equal(failure.result.failed !== undefined,true);
-    assert.deepEqual(failure.result.listings,[]);
-    const oldProfile = {...need,profile:'hunt_clear',progression:false};
-    const legacy = await generate(state,oldProfile,[short(valid),short(valid)]);
-    assert.deepEqual(legacy.result.listings,[]);
-    assert.doesNotMatch(legacy.requests[0][0].content,/omit task and desired_end_state/);
     const archivalEvents = record.events.slice(start,end+1);
     const historicalEqual = equal(JSON.parse(JSON.stringify(booked.events)),archivalEvents);
     assert(historicalEqual, name + ": archived publication differs from the offline replay");

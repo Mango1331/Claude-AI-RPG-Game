@@ -30,6 +30,7 @@ import { hash32 } from '../src/util.js';
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 export const VARIANTS = ['A0', 'A', 'C'];
+export const COMPACT = 'Write compact single-line JSON. Keep every required key, expected action and established delta in order. On delta objects only, omit optional fields whose value is null.';
 export const CONCISE = 'Decide promptly. Report what this reply plainly establishes; leave out optional deltas you are unsure of instead of weighing them at length (a few minutes of time, small facts). An empty deltas list is a valid answer.';
 
 // ------------------------------------------------------------------------------------------------ requests
@@ -90,6 +91,7 @@ export function pendingChat(chat, id) {
 export function variantBody(body, variant) {
     const b = clone(body);
     for (const k of Object.keys(b)) if (b[k] === undefined) delete b[k];
+    if (variant === 'B') b.messages[0].content += '\n' + COMPACT;
     if (variant === 'A0') delete b.reasoning_effort;
     if (variant === 'C') b.messages = [...b.messages, { role: 'user', content: CONCISE }];
     return b;
@@ -160,14 +162,16 @@ export async function replayJobs({items,chat,content}, transform = x => x, optio
         const first = attempts[0];
         if (!current(first,chat) || first.kind !== 'initial') { rows.push({id:first.id,mapping:first.mapping}); continue; }
         const c = pendingChat(chat,first.id);
+        const {variant = 'A', ...runtimeOptions} = options;
         const calls = [];
         let gap = false;
         await runExtraction(c,first.id,content,request => {
             const item = attempts[calls.length];
             if (!item?.resp) { gap = true; return null; }
-            calls.push({purpose:request.purpose,identical:isDeepStrictEqual(clone(request.messages),clone(item.body.messages)),n:item.n});
-            return transform(measures(item.resp,null).text, item, request);
-        },{...options,isCurrent:()=>!gap});
+            const sent = variantBody(request,variant);
+            calls.push({purpose:request.purpose,identical:isDeepStrictEqual(sent.messages,clone(item.body.messages)),n:item.n});
+            return transform(measures(item.resp,null).text, item, sent);
+        },{...runtimeOptions,isCurrent:()=>!gap});
         const now = worldEvidence(c,first.id), live = worldEvidence(chat,first.id);
         rows.push({id:first.id, calls, available:attempts.length, gap, status:rec(c[first.id]).extraction.status,
             eventsEqual:isDeepStrictEqual(now.events,live.events),worldEqual:isDeepStrictEqual(now.state,live.state),
@@ -290,7 +294,7 @@ function parseArgs(argv) {
         if (a === '--log') o.log = next();
         else if (a === '--chat') o.chat = next();
         else if (a === '--rounds') o.rounds = Math.max(1, Number(next()) || 1);
-        else if (a === '--variants') o.variants = next().split(',').map((s) => s.trim().toUpperCase()).filter((s) => VARIANTS.includes(s));
+        else if (a === '--variants') o.variants = next().split(',').map((s) => s.trim().toUpperCase()).filter((s) => s === 'B' || VARIANTS.includes(s));
         else if (a === '--only') o.only = next().split(',').map(Number).filter(Number.isInteger);
         else if (a === '--out') o.out = next();
         else if (a === '--dry-run') o.dryRun = true;

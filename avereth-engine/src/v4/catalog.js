@@ -355,7 +355,7 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         ...(known ? { known: seen } : {}),
         offers,
         objects,
-        ...(c && rulesetOf(state) >= 2 ? { gear_market: gearMarketText(content) } : {}),
+        ...(c && rulesetOf(state) >= 2 ? { gear_market: gearMarketText(content, false, 'catalog') } : {}),
         // Patch 6: the obstacles and hazards of this place; hidden ones only for the extractor (it names them by id)
         features: featuresAt(state, at, { hidden: hiddenFeatures }).map((f) => ({ id: f.id, name: f.name, text: `${featureText(f)}${f.hidden ? ' — HIDDEN: Alaric has not found it' : ''}` })),
         // Patch 7: the ways from here (src/v4/dungeon.js); hidden ones only for the extractor

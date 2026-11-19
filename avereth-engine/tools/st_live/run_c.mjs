@@ -1,3 +1,4 @@
+import { narratorStreamingSmoke, scriptedNarratorResponse } from './narrator_streaming_smoke.mjs';
 import {nativeWorldSaveSmoke} from './native_world_save_smoke.mjs';
 import {user05Response,user05Smoke} from './user05_smoke.mjs';
 import { actionReviewSmoke } from './action_review_smoke.mjs';
@@ -139,10 +140,10 @@ let stealthProbeMode = false;
 let financeMode = false;
 let fetchProbeMode = false;
 const narrated = new Map();
-let activeUnits=0,peakUnits=0;
+let activeUnits=0,peakUnits=0,capacityRejections=0;
 const mock = http.createServer(async (req, res) => {
     if (req.url.endsWith('/models')) { res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify({ object: 'list', data: [{ id: 'mock-narrator', object: 'model' }] })); return; }
-    if(activeUnits+4>4){res.writeHead(429,{'content-type':'application/json'});res.end(JSON.stringify({error:{code:'concurrency_limit_exceeded',message:'four capacity units in use'}}));return;}
+    if(activeUnits+4>4){capacityRejections++;res.writeHead(429,{'content-type':'application/json'});res.end(JSON.stringify({error:{code:'concurrency_limit_exceeded',message:'four capacity units in use'}}));return;}
     activeUnits+=4;peakUnits=Math.max(peakUnits,activeUnits);
     try {
     let body = '';
@@ -185,6 +186,7 @@ const mock = http.createServer(async (req, res) => {
         res.writeHead(200, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ error: { message: 'An unexpected error has occurred.', type: 'server_error', code: 'internal_server_error' } })); return;
     }
+    if (await scriptedNarratorResponse(res, purpose, j, text, TURNS[0].answer)) return;
     if(users.includes('REQUEST_CONTROL_DELAY'))delay=700;
     if (delay) await sleep(delay);
     if (j.stream) {
@@ -531,7 +533,14 @@ try {
     await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); });
     await page.waitForTimeout(800);
     const actionHostChecks = process.env.AVERETH_SMOKE_ACTION_HOST === '1' ? await actionHostSmoke({page,send,idle}) : null;
-    result = { nativeWorldChecks, user05Checks, actionReviewChecks, capacity:{peakUnits,activeUnits}, actionHudChecks, actionHostChecks, bossloot193Checks, toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
+    let streamingChecks;
+    if (process.env.AVERETH_SMOKE_NARRATOR_STREAMING === '1') {
+        stealthProbeMode = true;
+        streamingChecks = await narratorStreamingSmoke({ page, calls, worldTimings, out: HERE,
+            occupancy: () => ({ activeUnits, peakUnits, capacityRejections }) });
+        stealthProbeMode = false;
+    }
+    result = { streamingChecks, nativeWorldChecks, user05Checks, actionReviewChecks, capacity:{peakUnits,activeUnits}, actionHudChecks, actionHostChecks, bossloot193Checks, toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
 } catch (error) {
     const screen = await page.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(-8000),
         chat: window.SillyTavern?.getContext?.()?.chat?.map(m => ({ user: m.is_user, system: m.is_system, text: m.mes?.slice(0, 120) })) })).catch(() => null);
@@ -557,6 +566,7 @@ const narr = normalCalls.filter((c) => c.purpose === 'narrator');
 const engineOf = (c) => String(c?.messages?.find((m) => String(m.content).startsWith('[AVERETH ENGINE'))?.content || '');
 const narratorFor = (key) => narr.filter((c) => c.lastUser.includes(TURNS.find((t) => t.key === key).player));
 const checks = { capacityAtMostFour:result.capacity.peakUnits<=4,
+    ...result.streamingChecks,
     ...Object.fromEntries(Object.entries(result.actionHudChecks || {}).map(([k,v]) => [`actionHud_${k}`,v])),
     ...Object.fromEntries(Object.entries(result.actionHostChecks || {}).map(([k,v]) => [`actionHost_${k}`,v])),
     ...Object.fromEntries(Object.entries(result.nativeWorldChecks || {}).map(([k,v])=>[`nativeWorld_${k}`,v])),

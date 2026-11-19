@@ -15,6 +15,10 @@
 
 [Vollständige ST-Abnahme, drei lokale Handelspaare und Tarifbefund](AVERETH_203_HANDEL_SCHLUSSABNAHME_2026-11-20.md)
 
+## Technische Handels-Schlussabnahme und Gegenreview
+
+[Codex-Schlussabnahme mit ST-Mock-Handelspaaren](AVERETH_203_HANDEL_SCHLUSSABNAHME_2026-11-20.md) · [unabhängiger GPT-Gegenreview](GEGENREVIEW_203_HANDEL_SCHLUSSABNAHME_GPT_2026-11-20.md). Technisches GO für den unveränderten OpenRouter-A/B-Katalogvergleich; ein gemeinsam vorhandener Preisbindungsfehler (unabhängige morgige NPC-Zusage) wird getrennt behandelt. Keine neue natürliche Providerinferenz durch die lokale Schlussabnahme.
+
 ## Performance-Forschungszyklus 3
 
 Katalogkürzung mit 121 GLM-Inputtokens je P-/X-Aufruf, vier verworfene bzw. zurückgestellte Versuche und Abnahme des neuen Kandidaten. [Messungen und Fachentscheidungen](AVERETH_203_PERFORMANCE_ZYKLUS3_2026-11-19.md)

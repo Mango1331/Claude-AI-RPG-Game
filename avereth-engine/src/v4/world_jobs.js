@@ -86,7 +86,15 @@ export function createWorldJobs({ active, run, applied, failed = null, onError =
         }).finally(() => {
             if (pending === job) {
                 pending = null;
-                settled({id,extraction_validation_wait_ms:Math.round((resolvedAt ?? performance.now())-began),save_readback_ms:resolvedAt===null?null:Math.round(performance.now()-resolvedAt),total_ms:Math.round(performance.now()-began),record_changed:!!committed?.changed,persisted,extraction_status:rec(job.message)?.extraction?.status});
+                const finished = performance.now();
+                settled({
+                    id, committed_at_ms: committed?.changed ? resolvedAt : null,
+                    persisted_at_ms: persisted ? finished : null,
+                    extraction_validation_wait_ms: Math.round((resolvedAt ?? finished) - began),
+                    save_readback_ms: resolvedAt === null ? null : Math.round(finished - resolvedAt),
+                    total_ms: Math.round(finished - began), record_changed: !!committed?.changed,
+                    persisted, extraction_status: rec(job.message)?.extraction?.status,
+                });
                 changed();
             }
         });

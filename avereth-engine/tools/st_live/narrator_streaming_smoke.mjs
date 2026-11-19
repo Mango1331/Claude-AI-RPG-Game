@@ -128,7 +128,7 @@ async function begin(page, finalText) {
     await page.fill('#send_textarea', action);
     await page.evaluate(({ first, finalText }) => {
         document.querySelector('#send_but').addEventListener('click', () => {
-            const start = performance.now(), marks = {};
+            const start = performance.now(), marks = { click: start };
             window.narratorMarks = marks;
             const c = SillyTavern.getContext();
             const replyIndex = c.chat.length + 1;
@@ -201,7 +201,12 @@ async function normal(page, prefix, calls, worldTimings, stream, firstMs, finalT
     const jobs = worldTimings.slice(jobStart);
     assert.equal(jobs.length, 1);
     assert.ok(jobs[0].persisted && jobs[0].extraction_status === 'applied');
-    return { stream, firstMs, marks, requests: physical.map(c => ({ phase: c.purpose, stream: c.stream, maxTokens: c.maxTokens })),
+    marks.worldCommit = Math.round(jobs[0].committed_at_ms - marks.click);
+    marks.confirmedSave = Math.round(jobs[0].persisted_at_ms - marks.click);
+    delete marks.click;
+    assert.ok(marks.worldCommit >= 0 && marks.confirmedSave >= marks.worldCommit && marks.ready >= marks.confirmedSave);
+    assert.ok(physical.every(c => c.finished && Number.isFinite(c.durationMs)));
+    return { stream, firstMs, marks, requests: physical.map(c => ({ phase: c.purpose, stream: c.stream, maxTokens: c.maxTokens, mockMs: c.durationMs })),
         narratorPrompt: hash(physical[1].messages), verifiedWorld: jobs[0], userEvents: eventHash(snapshot.userEvents),
         replyEvents: eventHash(snapshot.replyEvents), state: hash(snapshot.state), worldEvents: snapshot.replyEvents.length,
         text: hash(snapshot.text), blockedDraftSentAfterSave: true };

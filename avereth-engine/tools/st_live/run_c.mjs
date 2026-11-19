@@ -181,7 +181,10 @@ const mock = http.createServer(async (req, res) => {
     if (process.env.AVERETH_SMOKE_EMPTY_NARRATOR === '1' && purpose === 'narrator' && lastUser.includes(TURNS[0].player) && narrated.get('burrow') === 1) text = '';
     const probe = probeMode || financeMode || fetchProbeMode || stealthProbeMode;
     if (probeMode && ((purpose === 'plan' && users.includes('FAILSOFT_PLANNER')) || purpose === 'extract')) text='{bad';
-    calls.push({ probe, empty: !text.trim(), purpose, at: Date.now(), auth: req.headers.authorization || null, stream: !!j.stream, temperature: j.temperature, maxTokens: j.max_tokens, model: j.model, messages: msgs, lastUser });
+    const physical = { probe, empty: !text.trim(), purpose, at: Date.now(), auth: req.headers.authorization || null, stream: !!j.stream, temperature: j.temperature, maxTokens: j.max_tokens, model: j.model, messages: msgs, lastUser };
+    calls.push(physical);
+    const began = performance.now();
+    res.once('close', () => { physical.durationMs = Math.round(performance.now() - began); physical.finished = res.writableFinished; });
     if (process.env.AVERETH_SMOKE_PROVIDER_ERROR === '1' && purpose === 'narrator' && lastUser.includes(TURNS[0].player) && narrated.get('burrow') === 1) {
         res.writeHead(200, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ error: { message: 'An unexpected error has occurred.', type: 'server_error', code: 'internal_server_error' } })); return;

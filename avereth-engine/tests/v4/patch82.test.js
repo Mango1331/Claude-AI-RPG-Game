@@ -222,22 +222,25 @@ function serverLog(ids) {
         const raw = rec(fx.messages[id]).extraction?.raw;
         parts.push(`Chat Completion request: ${JSON.stringify(body)}`);
         parts.push(`Chat Completion response: ${JSON.stringify({ id: `r${id}`, choices: [{ message: { role: 'assistant', content: raw ? JSON.stringify(raw) : '' }, finish_reason: raw ? 'stop' : 'length' }], usage: usage(8500, 7000, raw ? 300 : 2500) })}`);
-        // its repair is no first call: never benchmarked on its own
+        // A physical repair request with a missing response must remain visible as a gap.
         parts.push(`Chat Completion request: ${JSON.stringify({ ...body, messages: [...req.messages, { role: 'user', content: 'Your previous answer was empty.' }] })}`);
     }
     return parts.join('\n');
 }
 
-test('8.2 bench 1: the logged requests are found, mapped to their replies (repairs left out), rebuilt byte-identical, and the live answers judged as the live world', async () => {
+test('8.2 bench 1: the logged requests are found, mapped to their replies (missing repair bodies reported), rebuilt byte-identical, and historical world differences retained', async () => {
     const file = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'bench-')), 'server.log');
     fs.writeFileSync(file, serverLog([12, 22, 24]));
     const prep = await prepare({ log: file, chat: path.join(ROOT, 'tests/v4/live_1021e.json') });
-    assert.deepEqual(prep.items.map((x) => x.id), [12, 22, 24]);
+    assert.deepEqual(prep.items.map((x) => x.id), [12,12,22,22,24,24]);
     const rows = dryRun({ ...prep, content });
-    for (const r of rows) {
+    assert(rows.filter(r=>r.kind === "repair").every(r=>r.judged === null && r.attempt === 2));
+    for (const r of rows.filter(r=>r.kind === "initial")) {
         assert.equal(r.identical, true, `request of message ${r.id}`);
         assert.equal(r.judged.valid, true);
-        assert.deepEqual(r.judged.diff, [], `the live answer of message ${r.id} makes the live world again`);
+        // .203 keeps the beetles' narrated traits and normalizes the scene of rejected items.
+        const drift = {12:[],22:[1,2,3].map(n=>'entities.mon.glimmerdeep_grotto_c1_l1_e1_'+n),24:['last.rejected']};
+        assert.deepEqual(r.judged.diff, drift[r.id]);
     }
 });
 
@@ -271,7 +274,8 @@ test('8.2 bench 4: the judge sees a world that differs from the live one (an ext
     const j = judge(items[0], JSON.stringify(more), content, fx.messages);
     assert.equal(j.valid, true);
     assert.deepEqual(j.diff.filter((k) => k.startsWith('facts.')).length, 1, j.diff.join(','));
-    assert.ok(j.diff.every((k) => k.startsWith('facts.')), 'only the extra fact differs from the live world');
+    const original=judge(items[0],JSON.stringify(raw),content,fx.messages);
+    assert.deepEqual(j.diff.filter(k=>!k.startsWith('facts.')),original.diff);
     assert.equal(judge(items[0], 'I think the reply establishes', content, fx.messages).valid, false);
     assert.equal(rebuiltIdentical(items[0], content, fx.messages), true);
 });

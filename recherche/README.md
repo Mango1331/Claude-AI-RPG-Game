@@ -11,12 +11,8 @@
 
 **Primärbelege:** [User06 .203 – neue natürliche Performance-Baseline](../testrun_10b/user-20261119-010838/PERFORMANCE_USER06_203_VORAB_2026-11-19.md) · [User05-Gegenreview](GEGENREVIEW_USER05_ACTION_HUD_202_FIX_QOL_2026-11-18.md) · [User05-Originale](../testrun_10b/user-20261118-011503/README.md) · [technischer .203-Patch](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/5e5b8272412b51b91f75b6e37c5b94d95c9fae11/avereth-engine/docs/PATCH_USER05_FIX_QOL_203.md).
 
-## Eng abgegrenzte Performanceversuche
+## Stand der drei Performanceversuche
 
-| ID | Technische Aufgabe | Grenze |
-|---|---|---|
-| **S1** | Natives ST1.19-Narrator-Streaming **ohne Smooth**. [Minifix und ST-Abnahme](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/af45acf499137009883a55b1c3e1004567470a9f). | Frühe Prosa ≠ früher gespeicherter Zug. Stop/fehlendes DONE/Swipe/Save berücksichtigen. |
-| **B1** | Drei Originaltafeln lokal mit einem Ersatzlisting rekonstruiert. [Fachauswertung und bedingtes GO](AVERETH_203_B1_GILDENBOARD_EINZELSLOT_2026-11-19.md). | Kein dritter Request, keine Lockerung globaler Regeln. |
-| **X1 → X2** | Zuerst historischen Extractor-Benchmark mit vollständigen Metadaten korrigieren, danach kompaktes JSON getrennt vergleichen. | Kein pauschaler X-Skip, keine rein aus nachträglicher Minifizierung behauptete Latenzersparnis. |
+Der integrierte Kandidat umfasst S1 und B1. X1 wurde am User05-/User06-Korpus geprüft. X2 bleibt auf dem Benchmarkbranch. Die Vollauswertung enthält die Reproduktionspfade, abweichende historische Fälle, die Tokenmessung und die isolierte Browserabnahme. [Fachbericht vom 19.11.](AVERETH_203_PERFORMANCE_INTEGRATION_B1_X1_X2_2026-11-19.md) · [erste B1-Offlineanalyse](AVERETH_203_B1_GILDENBOARD_EINZELSLOT_2026-11-19.md).
 
 **Noch kein GO:** Character-Card-Kürzung, Card-vor-Lore im Produkt, globale Kontextbudgetsenkung, Modell-/Tarifwechsel oder Architekturumbau. Der User06-Run ist durch Charaktertod beendet. Vier Originale und eine technische Performance-Vorauswertung sind archiviert; vollständiger Gameplayreview und abschließende Bewertung stehen aus.

@@ -32,15 +32,13 @@ Details stehen nur an der verlinkten Quelle.
 | **Balance/Power** | `.196–.198` | Angepasste Waffenqualität im F-Rang, normales menschliches NPC-Statbudget und F-fine-Schild; siehe Produktpatchnotes |
 | **PULSE/NPC-Kompaktkarten** | `.199–.200` | PULSE-Schutz für bekannte zurückkehrende NPCs, enger Hesse-Präsenzbeleg und vollständige E3-Felder in kompakten NPC-Köpfen; siehe Produktpatchnotes |
 
-## Unmittelbare nächste Arbeit – Performance-GOs
+## Unmittelbare nächste Arbeit – Schlussreview des Performancekandidaten
 
 User06 ist beendet und seine Originale sind archiviert; eine vollständige fachliche Gameplay-/UI-/Balancebewertung steht noch aus. Keine pauschale Folgerung aus dem Charaktertod. Neue Gameplayfeatures [07](07_ROADMAP_NACH_10B_ENTWURF.md) bleiben pausiert.
 
-1. **S1 · Narrator-Streaming ohne Smooth.** Der Minifix sperrt unvollständige Revisionen vor der Extraktion. Beide reproduzierten Fehlbuchungen blieben im erneuten ST-Test aus. Die vier Vergleichspaare zeigten frühere Prosa bei identischen Weltfolgen. Nächster Schritt ist der unabhängige Gegenreview vor einer persönlichen Testfreigabe. [Experiment und Abnahme](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/af45acf499137009883a55b1c3e1004567470a9f).
-2. **B1 · Gildenboard-Einzelslotreparatur.** Bei drei Originaltafeln ergab der archivierte einzelne Ersatz dieselben Buchungen wie der Vollrepair. Bedingtes GO für einen gesondert freizugebenden Implementierungsversuch bei eindeutig lokalen Fehlern. Neue Modellantworten und natürliche Zeitwirkung sind offen. [Fachauswertung](recherche/AVERETH_203_B1_GILDENBOARD_EINZELSLOT_2026-11-19.md).
-3. **X1, danach X2: Extractor-Benchmark sanieren.** Vollständige HUD-/Revisionsmetadaten, realer Parser und echte Welt-/Folgezustandsprüfung. Erst danach eine kompakte JSON-Variante getrennt testen. Kein genereller Extractor-Skip.
+Der gemeinsame Experimentbranch `experiment/203-performance-review-candidate` enthält den S1-Streamingfix und die implementierte B1-Einzelslotreparatur. Im kombinierten ST-Mock blieb der Zug nach Slotrepair, Streaming, Extractor und gespeichertem Reload fachlich gleich zu beiden gepufferten Referenzen. Nächster Schritt ist der unabhängige Schlussreview vor der persönlichen Testfreigabe. [Kandidat](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/399eb5b9f1f814f32a63bdc219f8499dfc107f0b) · [Fachbericht und Abnahme](recherche/AVERETH_203_PERFORMANCE_INTEGRATION_B1_X1_X2_2026-11-19.md).
 
-**Arbeitsgrenzen:** separat von .203 abgeleiteter Experimentbranch, zunächst offline/Mock; kein persönlicher ST-Eingriff, kein Produktmerge, keine Providerkosten ohne Freigabe. Character Description, Preset, Lorebook und Enginebudget vorerst unverändert. [Forschungsbelege](recherche/AVERETH_203_PERFORMANCE_EFFIZIENZ_UNABHAENGIGE_RECHERCHE_2026-11-19.md).
+X1 rekonstruiert 32 physische Archivantworten und trennt Weltgleichheit von fachlicher Vollständigkeit. X2 spart in der lokalen Rekonstruktion sichtbare Inhaltstokens. Neue Modellausgaben und natürliche Zeitwirkung sind offen. Der Spieltestkandidat verwendet den ursprünglichen Extractorvertrag. Produkt .200 und die Vergleichsbasis .203 bleiben separat.
 
 ## Natürliche Läufe – Kurzüberblick
 

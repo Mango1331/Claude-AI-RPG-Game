@@ -196,7 +196,7 @@ export function extractorSystem(vocab) {
         'Deltas:',
         deltaVocabularyText(vocab),
         '',
-        'Answer with {"expected": {...}, "deltas": [...]}.',
+        EXTRACT_PLAIN_FORMAT,
     ].join('\n');
 }
 
@@ -268,7 +268,7 @@ export const COMPACT = 'Write compact single-line JSON. Keep every required key,
 
 /** The messages of an extractor call, and of its one repair (the invalid answer and the errors appended). */
 export function extractorRequest(vocab, { catalog, actions, player = null, expectedKeys, reply, startScene = null }, { previous = null, errors = null } = {}) {
-    const system = `${extractorSystem(vocab)}\n\n${EXTRACT_PLAIN_FORMAT}`;
+    const system = extractorSystem(vocab);
     const user = extractorUser({ catalog, actions, player, expectedKeys, vocab, reply });
     const messages = [{ role: 'system', content: system }, { role: 'user', content: user }];
     // Patch 8.1 (§9, live 21.10.2026 10:17: twice all 2,500 tokens went to deliberation and the answer was empty): an

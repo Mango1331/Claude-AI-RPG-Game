@@ -20,7 +20,9 @@ test('the extractor prompt states every rule and every constraint the validator 
     assert.ok(!/<avereth>/.test(sys));
     const { messages } = extractorRequest(vocab, { catalog: 'CATALOG\nHERE: x', actions: '1. GOES — to the Guild hall.', expectedKeys: { 1: 'go' }, reply: 'He walks in.' });
     assert.equal(messages.length, 2);
-    assert.ok(messages[0].content.endsWith(EXTRACT_PLAIN_FORMAT));
+    assert.equal(messages[0].content, sys);
+    assert.ok(sys.endsWith(EXTRACT_PLAIN_FORMAT));
+    assert.doesNotMatch(sys, /Answer with \{"expected":/);
     assert.match(messages[1].content, /PLAYER ACTIONS \(each status[^\n]*\):\n1\. GOES/);
     // c.6.6: the go question also says that seeing or passing a place is no arrival
     assert.match(messages[1].content, /"1" \(go: did he arrive, where, and who came with him; arrived is true only when the reply ends with him at the place/);

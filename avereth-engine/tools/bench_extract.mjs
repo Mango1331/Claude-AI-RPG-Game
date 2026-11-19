@@ -6,8 +6,7 @@
 //   C   A with one closing instruction to decide promptly (CONCISE below), as the 8.1 repair of an empty answer asks
 // Each answer is judged by the engine against the state the live extractor saw: the run's chat file (--chat: a fixture
 // or SillyTavern's .jsonl) up to that reply, the reply's extraction set pending again, the answer parsed and committed
-// as the runtime commits it (runtime.js applyExtraction), and the resulting world compared with what the live answer
-// made of the same reply (worldSummary). The variants run interleaved (their order rotates per round and request), so a
+// as the runtime commits it (runtime.js applyExtraction), and the resulting complete world and ordered events compared with the archived result. Semantic assertions are separate. The variants run interleaved (their order rotates per round and request), so a
 // provider's slow minute does not land on one variant alone.
 //
 // Usage:
@@ -15,21 +14,23 @@
 //   AVERETH_BENCH_API_BASE=<OpenAI-compatible base URL> AVERETH_BENCH_API_KEY=<key> \
 //     node tools/bench_extract.mjs --log <server log> --chat <chat> [--rounds 3] [--variants A0,A,C] [--only 12,14]
 //       [--out bench_extract_out.json]
-// --dry-run sends nothing: it checks that each logged request is found in the chat, rebuilds it with this engine
+// --dry-run sends nothing: it checks that each physical request is linked to a reply revision, rebuilds it with this engine
 // version (identical or not) and judges the logged answer (the live A) against the live result.
 // The key is read from the environment only; it is never written anywhere.
 import fs from 'node:fs';
+import { isDeepStrictEqual } from 'node:util';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseServerLog } from './run_report.mjs';
 import { loadContentPack } from '../src/content.js';
 import { foldChat, rec, setRec } from '../src/host.js';
-import { extractionRequest, applyExtraction, LLM } from '../src/v4/runtime.js';
+import { extractionRequest, runExtraction, applyExtraction, LLM } from '../src/v4/runtime.js';
 import { parseExtraction, extractorSystem, EXTRACTOR_VERSION } from '../src/v4/extract.js';
 import { hash32 } from '../src/util.js';
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 export const VARIANTS = ['A0', 'A', 'C'];
+export const COMPACT = 'Write compact single-line JSON. Keep every required key, expected action and established delta in order. On delta objects only, omit optional fields whose value is null.';
 export const CONCISE = 'Decide promptly. Report what this reply plainly establishes; leave out optional deltas you are unsure of instead of weighing them at length (a few minutes of time, small facts). An empty deltas list is a valid answer.';
 
 // ------------------------------------------------------------------------------------------------ requests
@@ -44,28 +45,45 @@ export function readChat(file) {
 const clone = (x) => JSON.parse(JSON.stringify(x));
 const userText = (req) => String(req.messages?.find((m) => m.role === 'user')?.content ?? '');
 
-/**
- * The logged extractor requests (first calls, not their repairs: system + user only), each with the reply of the chat
- * it read. A request whose reply is not in the chat is kept with id null (it can be timed, not judged).
- */
+/** Match a whole reply in its dedicated prompt section. Discarded or ambiguous revisions are unscorable. */
 export function extractorRequests(pairs, chat, content) {
     const head = extractorSystem(content.deltaVocab).slice(0, 160);
     const out = [];
+    let first;
     for (const [n, p] of pairs.entries()) {
         const m = p.req?.messages;
-        if (!Array.isArray(m) || m.length !== 2 || !String(m[0].content).startsWith(head)) continue;
-        const u = userText(p.req);
-        const id = chat.findIndex((x) => !x.is_user && !x.is_system && String(x.mes).trim() && u.includes(String(x.mes).slice(0, 300)));
-        out.push({ n, body: p.req, resp: p.resp, id: id >= 0 ? id : null });
+        if (!Array.isArray(m) || !String(m[0]?.content).startsWith(head)) continue;
+        const user = userText(p.req);
+        const marker = '\nREPLY:\n';
+        const section = user.slice(user.indexOf(marker) + marker.length);
+        const matches = text => text && section.startsWith(text) &&
+            (section.length === text.length || /^\n\n(?:TRAVEL CHRONOLOGY:|QUEST OUTCOME CHECK:)/.test(section.slice(text.length)));
+        const active = [], inactive = [];
+        for (const [i, msg] of chat.entries()) {
+            if (msg.is_user || msg.is_system) continue;
+            if (matches(msg.mes) && (!rec(msg)?.text_hash || rec(msg).text_hash === hash32(msg.mes))) active.push(i);
+            if (msg.swipes?.some((swipe,j) => j !== msg.swipe_id && matches(swipe))) inactive.push(i);
+        }
+        const id = active.length === 1 && !inactive.length ? active[0] : null;
+        const initial = m.length === 2;
+        if (initial) first = {n,id,user,system:m[0].content,count:0,answers:[]};
+        const previous = m.slice(2).find(x=>x.role==='assistant');
+        const linked = first && first.id === id && first.user === user && first.system === m[0].content &&
+            (!previous || first.answers.includes(previous.content));
+        if (linked && p.resp) first.answers.push(measures(p.resp,null).text);
+        out.push({n, body:p.req, resp:p.resp, id:linked ? id : null, hash:id === null ? null : hash32(chat[id].mes),
+            swipe:id === null ? null : chat[id].swipe_id, group:linked ? first.n : n,
+            attempt:linked ? ++first.count : null, kind:initial ? 'initial' : 'repair',
+            mapping:!linked ? 'unmatched repair' : id !== null ? 'active' : inactive.length ? 'discarded/ambiguous swipe' : 'missing/ambiguous reply'});
     }
     return out;
 }
 
-/** The chat up to reply id with that reply's extraction pending again, as the runtime had it before the live answer. */
 export function pendingChat(chat, id) {
-    const c = clone(chat.slice(0, id + 1)).map((m) => ({ mes: m.mes, is_user: !!m.is_user, is_system: !!m.is_system, extra: m.extra?.avereth ? { avereth: m.extra.avereth } : {} }));
+    const c = structuredClone(chat.slice(0, id + 1));
     const r = rec(c[id]);
-    setRec(c[id], { v: r?.v ?? 3, events: [], text_hash: hash32(c[id].mes), extraction: { status: 'pending', version: EXTRACTOR_VERSION }, corrections: [] });
+    setRec(c[id], { v:r?.v ?? 3, events:[], text_hash:hash32(c[id].mes), narration:r?.narration,
+        extraction:{status:'pending',version:EXTRACTOR_VERSION}, corrections:[] });
     return c;
 }
 
@@ -73,65 +91,99 @@ export function pendingChat(chat, id) {
 export function variantBody(body, variant) {
     const b = clone(body);
     for (const k of Object.keys(b)) if (b[k] === undefined) delete b[k];
+    if (variant === 'B') b.messages[0].content += '\n' + COMPACT;
     if (variant === 'A0') delete b.reasoning_effort;
     if (variant === 'C') b.messages = [...b.messages, { role: 'user', content: CONCISE }];
     return b;
 }
 
 // ------------------------------------------------------------------------------------------------ judging
-/** What of a state a reply's extraction can change, in a form two runs of the same reply can be compared by. */
-export function worldSummary(state) {
-    const ents = Object.fromEntries(Object.values(state.entities || {}).map((e) => [e.id, [e.kind, e.status, e.location ?? null, e.group ?? null].join('|')]));
-    return {
-        at: state.scene?.at ?? null,
-        present: [...(state.scene?.present || [])].sort(),
-        minute: state.clock?.minute ?? null,
-        entities: ents,
-        places: Object.keys(state.places || {}).sort(),
-        links: Object.keys(state.links || {}).length,
-        quests: Object.fromEntries(Object.values(state.quests || {}).map((q) => [q.id, `${q.status}${q.ready ? '+ready' : ''}`])),
-        objects: Object.fromEntries(Object.values(state.objects || {}).map((o) => [o.id, JSON.stringify(o.holder ?? null)])),
-        awareness: { ...(state.scene?.awareness || {}) },
-        facts: Object.fromEntries(Object.values(state.facts || {}).map((f) => [f.id, `${f.p}=${f.o}${f.until ? ' (ended)' : ''}`])),
-        memories: (state.memories || []).length,
-        threads: Object.fromEntries(Object.values(state.threads || {}).map((t) => [t.id, t.status])),
-        encounter: state.encounter ? `${state.encounter.id}:${state.encounter.phase}` : null,
-    };
-}
-
-/** The keys in which two summaries differ ("entities.npc.x", "minute", "facts"). */
+// Compare the complete persisted state and ordered events. Only per-call clock readings are diagnostic.
+export const worldSummary = state => clone(state);
 export function summaryDiff(a, b) {
-    const out = [];
+    const paths = [];
     for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) {
-        const x = a[k];
-        const y = b[k];
-        if (x && y && typeof x === 'object' && !Array.isArray(x)) {
-            for (const j of new Set([...Object.keys(x), ...Object.keys(y)])) if (x[j] !== y[j]) out.push(`${k}.${j}`);
-        } else if (JSON.stringify(x) !== JSON.stringify(y)) out.push(k);
+        if (isDeepStrictEqual(a[k], b[k])) continue;
+        if (a[k] && b[k] && typeof a[k] === 'object' && typeof b[k] === 'object' && !Array.isArray(a[k])) {
+            for (const j of new Set([...Object.keys(a[k]), ...Object.keys(b[k])]))
+                if (!isDeepStrictEqual(a[k][j], b[k][j])) paths.push(k + '.' + j);
+        } else paths.push(k);
     }
-    return out;
+    return paths;
 }
 
-/**
- * Judge one answer to request item: parsed and committed as the runtime does, its world compared with the live one.
- * @returns {{valid: boolean, errors?: string[], deltas?: number, rejected?: number, diff?: string[]}}
- */
-export function judge(item, answerText, content, chat) {
-    if (item.id === null) return { valid: false, errors: ['reply not in the chat'] };
-    const c = pendingChat(chat, item.id);
-    const req = extractionRequest(c, item.id, content);
-    if (!req) return { valid: false, errors: ['no extraction request'] };
-    const parsed = parseExtraction(String(answerText ?? ''), content.deltaVocab, req.ids, req.expectedKeys);
-    if (!parsed.valid) return { valid: false, errors: parsed.errors.slice(0, 3) };
-    applyExtraction(c, item.id, content, parsed, { hash: req.hash });
-    const live = worldSummary(foldChat(chat.slice(0, item.id + 1)).state);
-    const r = rec(c[item.id]);
-    return { valid: true, complete: parsed.complete, deltas: (parsed.value.deltas || []).length, rejected: (r.rejected || []).length, diff: summaryDiff(live, worldSummary(foldChat(c).state)) };
+export function worldEvidence(chat, id) {
+    const fold = foldChat(chat,id+1);
+    if (fold.errors.length) throw new Error(fold.errors.join(' / '));
+    const events = clone(rec(chat[id])?.events || []);
+    for (const e of events) if (e.t === 'extract.applied' || e.t === 'extract.failed') delete e.d.ms;
+    return {state:worldSummary(fold.state), events};
+}
+
+export function readPhysical(answer, req, content, reply) {
+    return parseExtraction(String(answer ?? ''),req.vocab,req.ids,req.expectedKeys,{
+        sceneRequired:req.sceneRequired,startScene:req.startScene,state:req.state,content,explicitArrivals:req.sceneRequired,reply,
+    });
+}
+
+function current(item, chat) {
+    const msg = chat[item.id];
+    return item.id !== null && msg && (!item.hash || item.hash === hash32(msg.mes) && item.swipe === msg.swipe_id);
+}
+
+export function judge(item, answerText, content, chat, requirements = []) {
+    if (!current(item,chat)) return {valid:false,errors:['unmatched reply revision']};
+    const c = pendingChat(chat,item.id);
+    const req = extractionRequest(c,item.id,content);
+    if (!req) return {valid:false,errors:['no extraction request']};
+    const parsed = readPhysical(answerText,req,content,c[item.id].mes);
+    if (!parsed.valid) return {valid:false,errors:parsed.errors,issues:parsed.issues,semanticComplete:null};
+    // Per-attempt counterfactual. The actual retry/selection loop is exercised separately by replayJobs.
+    const applied = applyExtraction(c,item.id,content,parsed,{hash:req.hash,repaired:item.attempt > 1});
+    const live = worldEvidence(chat,item.id), now = worldEvidence(c,item.id);
+    const r = rec(c[item.id]), refused = r.rejected || [];
+    const diff = summaryDiff(live.state,now.state);
+    const missing = requirements.filter(rule => !rule.test(now)).map(rule => rule.name);
+    return {valid:true,complete:parsed.complete,issues:parsed.issues,missingKeys:parsed.missing,applied:applied.applied,
+        deltas:parsed.value.deltas.length,acceptedDeltas:parsed.value.deltas.filter(d => !refused.some(x => x.seq===d.seq && x.type===d.type)),
+        rejected:refused.length,rejections:refused,diff,worldEqual:!diff.length,eventsEqual:isDeepStrictEqual(live.events,now.events),
+        semanticComplete:requirements.length ? !missing.length : null,missingRequirements:missing};
+}
+
+/** Replay physical answers in their original job. Stop on a log gap without inventing a response. */
+export async function replayJobs({items,chat,content}, transform = x => x, options = {}) {
+    const groups = new Map();
+    for (const item of items) {
+        if (!groups.has(item.group)) groups.set(item.group,[]);
+        groups.get(item.group).push(item);
+    }
+    const rows = [];
+    for (const attempts of groups.values()) {
+        const first = attempts[0];
+        if (!current(first,chat) || first.kind !== 'initial') { rows.push({id:first.id,mapping:first.mapping}); continue; }
+        const c = pendingChat(chat,first.id);
+        const {variant = 'A', ...runtimeOptions} = options;
+        const calls = [];
+        let gap = false;
+        await runExtraction(c,first.id,content,request => {
+            const item = attempts[calls.length];
+            if (!item?.resp) { gap = true; return null; }
+            const sent = variantBody(request,variant);
+            calls.push({purpose:request.purpose,identical:isDeepStrictEqual(sent.messages,clone(item.body.messages)),n:item.n});
+            return transform(measures(item.resp,null).text, item, sent);
+        },{...runtimeOptions,isCurrent:()=>!gap});
+        const now = worldEvidence(c,first.id), live = worldEvidence(chat,first.id);
+        rows.push({id:first.id, calls, available:attempts.length, gap, status:rec(c[first.id]).extraction.status,
+            eventsEqual:isDeepStrictEqual(now.events,live.events),worldEqual:isDeepStrictEqual(now.state,live.state),
+            reloadEqual:isDeepStrictEqual(now,worldEvidence(clone(c),first.id)),rejected:rec(c[first.id]).rejected || [],
+            evidence:now});
+    }
+    return rows;
 }
 
 /** Is the request this engine version builds for the reply the logged one (system and user text byte-identical)? */
 export function rebuiltIdentical(item, content, chat) {
-    if (item.id === null) return null;
+    if (!current(item,chat) || item.kind === 'repair') return null;
     const req = extractionRequest(pendingChat(chat, item.id), item.id, content);
     if (!req) return false;
     return req.messages.length === item.body.messages.length && req.messages.every((m, i) => m.role === item.body.messages[i].role && m.content === item.body.messages[i].content);
@@ -195,15 +247,15 @@ export function summaryText(rows) {
     return L.join('\n');
 }
 
-async function callApi(body, { base, key, timeoutMs = 240000 }) {
+export async function callApi(body, { base, key, timeoutMs = 240000 }) {
     const url = new URL('chat/completions', base.endsWith('/') ? base : `${base}/`);
     const ctl = new AbortController();
     const timer = setTimeout(() => ctl.abort(), timeoutMs);
     const started = Date.now();
     try {
         const res = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` }, body: JSON.stringify(body), signal: ctl.signal });
-        const ms = Date.now() - started;
         const textBody = await res.text();
+        const ms = Date.now() - started;
         let json = null;
         try { json = JSON.parse(textBody); } catch { /* not JSON */ }
         if (!res.ok || !json?.choices) return { error: `HTTP ${res.status}: ${textBody.slice(0, 300)}`, ms };
@@ -218,7 +270,8 @@ async function callApi(body, { base, key, timeoutMs = 240000 }) {
 /** Load the log and the chat; the extractor requests with their replies (only: the reply indices to keep). */
 export async function prepare({ log, chat: chatFile, only = null }) {
     const content = await loadContentPack(async (name) => JSON.parse(fs.readFileSync(path.join(ROOT, 'content', name), 'utf8')));
-    const { pairs } = parseServerLog(fs.readFileSync(log, 'utf8'));
+    const { pairs, errors } = parseServerLog(fs.readFileSync(log, 'utf8').replaceAll('\r\n','\n'));
+    if (errors.length) throw new Error(errors.join('\n'));
     const chat = readChat(chatFile);
     let items = extractorRequests(pairs, chat, content);
     if (only) items = items.filter((x) => only.includes(x.id));
@@ -226,10 +279,10 @@ export async function prepare({ log, chat: chatFile, only = null }) {
 }
 
 /** The dry run: each request found, rebuilt (identical?) and the logged answer judged against the live world. */
-export function dryRun({ content, chat, items }) {
+export function dryRun({ content, chat, items, requirements = () => [] }) {
     return items.map((item) => {
         const logged = item.resp ? measures(item.resp, null) : null;
-        return { n: item.n, id: item.id, identical: rebuiltIdentical(item, content, chat), logged: logged && { finish: logged.finish, completion: logged.completion, empty: logged.empty }, judged: logged ? judge(item, logged.text, content, chat) : null };
+        return { n: item.n, id: item.id, group:item.group, attempt:item.attempt, kind:item.kind, mapping:item.mapping, identical: rebuiltIdentical(item, content, chat), logged: logged && { finish: logged.finish, completion: logged.completion, empty: logged.empty }, judged: logged ? judge(item, logged.text, content, chat, requirements(item.id)) : null };
     });
 }
 
@@ -241,7 +294,7 @@ function parseArgs(argv) {
         if (a === '--log') o.log = next();
         else if (a === '--chat') o.chat = next();
         else if (a === '--rounds') o.rounds = Math.max(1, Number(next()) || 1);
-        else if (a === '--variants') o.variants = next().split(',').map((s) => s.trim().toUpperCase()).filter((s) => VARIANTS.includes(s));
+        else if (a === '--variants') o.variants = next().split(',').map((s) => s.trim().toUpperCase()).filter((s) => s === 'B' || VARIANTS.includes(s));
         else if (a === '--only') o.only = next().split(',').map(Number).filter(Number.isInteger);
         else if (a === '--out') o.out = next();
         else if (a === '--dry-run') o.dryRun = true;

@@ -14,6 +14,7 @@
 // --write-baseline  store the outputs of the engine at --engine (the chosen start commit) with its SHA
 // --check           compare the outputs of --engine with a stored baseline; exit 1 on any difference
 // --original        additionally count differences to the events the original build stored (build drift, informative)
+import { recordedBoardSlot } from './contract_board_slot.mjs';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import path from 'node:path';
@@ -75,7 +76,7 @@ export async function engineAt(root = ROOT) {
 function scripted(answers = [], convert = null) {
     const queue = [...answers];
     const asked = [];
-    const llm = async ({ purpose }) => {
+    const llm = async ({ purpose, messages }) => {
         asked.push(purpose);
         const next = queue.shift();
         if (!next) throw Object.assign(new Error(`replay: no recorded answer for ${purpose}`), { code: 'REPLAY_UNSCRIPTED' });
@@ -87,7 +88,7 @@ function scripted(answers = [], convert = null) {
             throw Object.assign(new Error(`replayed ${next.error.kind} error`), code ? { code } : {}, next.error.status ? { status: next.error.status } : {},
                 typeof next.error.retryable === 'boolean' ? { retryable: next.error.retryable } : {});
         }
-        return convert ? convert(next.content, purpose) : next.content;
+        return recordedBoardSlot(convert ? convert(next.content, purpose) : next.content, purpose, messages);
     };
     return { llm, asked, left: () => queue.length };
 }
@@ -288,6 +289,16 @@ export function compareToBaseline(baseline, result) {
     return { compared, diffs };
 }
 
+export function readAccepted(file) {
+    const list = JSON.parse(fs.readFileSync(file, 'utf8'));
+    if (!list.inherits) return list;
+    const base = JSON.parse(fs.readFileSync(path.join(path.dirname(file), list.inherits), 'utf8'));
+    for (const [id, entry] of Object.entries(list.cases)) {
+        if (base.cases[id]?.fingerprint !== entry.previous) throw new Error('Changed previous acceptance for ' + id);
+    }
+    return {...list, cases:{...base.cases, ...list.cases}};
+}
+
 function summary(result) {
     const lines = [];
     for (const [label, run] of Object.entries(result.runs)) {
@@ -324,9 +335,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         // tests/replay/accepted_c132_vs_126.json), each accepted only with the exact output it was checked with
         // (its fingerprint); a listed record with another output, or one that no longer differs, fails the check
         const file = opt('--accepted');
-        const list = file ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+        const list = file ? readAccepted(file) : null;
         // --write-fingerprints: after an intended, reviewed change, record the current outputs of the listed records
         if (file && args.includes('--write-fingerprints')) {
+            if (list.inherits) throw new Error('Review inherited fingerprints individually');
             for (const id of Object.keys(list.cases)) list.cases[id].fingerprint = recordFingerprint(result.runs[id.split('#')[0]]?.cases?.[id]);
             list.engine = result.engine;
             fs.writeFileSync(file, `${JSON.stringify(list, null, 1)}\n`);

@@ -164,7 +164,7 @@ const mock = http.createServer(async (req, res) => {
         purpose = 'interpret';
         text = JSON.stringify({ commands: [] });
     } else if (system.includes('Intro eligible body-plan ids')) {
-        purpose = 'board'; text = qol160BoardAnswer() ?? board159Response();
+        purpose = 'board'; text = qol160BoardAnswer() ?? board159Response(system);
     } else if (system.startsWith('You read one reply')) {
         purpose = 'extract';
         const t = allTurns.find((x) => x.reply && users.includes(x.reply.slice(0, 60)));

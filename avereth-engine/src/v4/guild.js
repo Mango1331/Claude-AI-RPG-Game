@@ -634,7 +634,7 @@ function habitatPlace(s, need, where) {
 const introAnchor = a => !!a && a.hp <= 35 && a.atk <= 10;
 const introAnchors = content => [...content.anchors.values()].filter(introAnchor).map(a => a.id);
 /** Targeted repair guidance uses the same eligibility rule as the validator and generator. */
-export function boardRepairGuidance(answer, content, need) {
+export function boardRepairGuidance(answer, content, need, slotOnly = false) {
     if (!need.c || !need.progression || need.rank !== 'Novice') return '';
     const { value } = extractJsonObject(answer);
     const candidates = (Array.isArray(value?.listings) ? value.listings : []).filter(l => l?.level === 1);
@@ -644,7 +644,7 @@ export function boardRepairGuidance(answer, content, need) {
         const objective = Array.isArray(l.objectives) ? l.objectives.find(o => o?.verb === 'DEFEAT') : null;
         return `${l.title}: anchor ${l.habitat?.anchor}, HP ${anchor?.hp ?? 'unknown'}, ATK ${anchor?.atk ?? 'unknown'}, qty ${objective?.qty ?? 'unknown'}, qtype ${l.qtype}, window ${l.habitat?.min_level}-${l.habitat?.max_level}`;
     });
-    return `INTRO REPAIR: include one qty 1, level 1, qtype minor hunt with habitat min_level=max_level=1 and an ordinary anchor HP <=35, ATK <=10. Eligible anchor IDs: ${introAnchors(content).join(', ')}. Current level-1 candidates: ${current.join('; ')}. Choose a species that really fits an eligible anchor; never relabel an incompatible species or weaken its fixed stats. Preserve valid other notices and return the complete requested board.`;
+    return `INTRO REPAIR: include one qty 1, level 1, qtype minor hunt with habitat min_level=max_level=1 and an ordinary anchor HP <=35, ATK <=10. Eligible anchor IDs: ${introAnchors(content).join(', ')}. Current level-1 candidates: ${current.join('; ')}. Choose a species that really fits an eligible anchor; never relabel an incompatible species or weaken its fixed stats. ${slotOnly ? 'Return only the requested replacement.' : 'Preserve valid other notices and return the complete requested board.'}`;
 }
 
 function habitatWhy(s, content, need, l) {
@@ -762,7 +762,7 @@ function retainedListings(s, need) {
         && q.source?.branch === need.branch && (need.have || []).includes(q.title));
 }
 
-export function boardRequest(s, content, need) {
+export function boardRequest(s, content, need, repair = null) {
     const [lo, hi] = content.rules.guild.rank_levels[need.rank];
     const guide = need.rank === 'Novice' ? [30, 600] : content.rules.guild.board?.payout_guide_cp?.[need.rank];
     const town = s.places[need.branch];
@@ -827,7 +827,7 @@ export function boardRequest(s, content, need) {
         '- client is who posted the work (a person, a trade, a hamlet); titles differ from the listings already on the board.',
         ...(profile?.countOnly ? ['- Each numbered hunt has EXACTLY ONE DEFEAT objective with integer qty and destination in where, delivery:null. No GO/FIND objectives or additional duties. Engine-recorded kills of that population count; flight and narrative alternatives do not. Task and end state are generated from this objective.'] : profile?.noDelivery ? ['- Only GO/FIND guidance and one DEFEAT objective; delivery:null on these objectives. No delivery, retrieval, repair, escort or service duties.'] : []),
         '',
-        'Return only one JSON object, no prose before or after it, no code fences: {"listings": [{"title": "...", "client": "...", "rank": "...", "level": 1, "qtype": "...", "payout_cp": 0, "task": "...", "desired_end_state": "...", "objectives": [...], "proof": [...], "habitat": null}]}. Every field is required; null where a field allows it and does not apply.',
+        `Return only one JSON object, no prose before or after it, no code fences: ${repair ? '{"slot":' + repair.slot + ',"listing":' : '{"listings": ['}{"title": "...", "client": "...", "rank": "...", "level": 1, "qtype": "...", "payout_cp": 0, "task": "...", "desired_end_state": "...", "objectives": [...], "proof": [...], "habitat": null}${repair ? '}' : ']}'}. Every field is required; null where a field allows it and does not apply.`,
     ].join('\n');
     // review of Patch 7: the known Dungeons near this branch, by their names (the same places on every board); work
     // there is clearance of a part whose Rank this board's work fits (a Novice board: the F-Rank part), one listing
@@ -848,7 +848,10 @@ export function boardRequest(s, content, need) {
         ...(dungeons.length ? [`KNOWN DUNGEONS NEAR THIS BRANCH (the Guild's records): ${dungeons.join(' · ')}. ${up ? (profile ? 'A Dungeon clearance is already listed: add no second clearance; numbered hunts in suitable parts remain allowed.' : 'A Dungeon job is on the board already: write no other work in them.') : `At most one listing may be clearance work in one of them, and only in a part whose danger Rank is ${fits.join(' or ')} (this board's work; ${order.filter((r) => !fits.includes(r)).length ? 'deeper or stronger parts are not this board\'s' : 'any part'}): name the Dungeon exactly as written, the part (a level, a gallery) and its concrete outcome; ${profile ? 'this is the separate Dungeon slot, and numbered hunts there do not consume it' : 'it counts as one of the culling jobs'}.${levelRule}`}`] : []),
         `RANK: ${need.rank} · DAY ${need.day}`,
         `ON THE BOARD ALREADY: ${need.have.length ? need.have.join(' | ') : 'nothing'}`,
-        `WRITE: ${need.missing} new listing${need.missing > 1 ? 's' : ''}.`,
+        repair ? [
+            'The quotas apply to the whole board. Keep these notices fixed: ' + JSON.stringify(repair.retained),
+            `Replace only slot ${repair.slot} ("${repair.title}"). ${repair.why}. ${repair.guidance}`,
+        ].join('\n') : `WRITE: ${need.missing} new listing${need.missing > 1 ? 's' : ''}.`,
     ].join('\n');
     return { system, user, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] };
 }
@@ -973,20 +976,63 @@ export function parseBoard(answer, content, need, s = null) {
         && need.missing + (need.have || []).length === (content.rules.guild.board?.size ?? 5)) {
         const retained = retainedListings(s, need);
         const all = [...retained, ...listings];
-        const count = kind => all.filter(l => boardFamily(s, content, l) === kind).length;
-        if (['hunt', 'delivery', 'dungeon'].some(kind => count(kind) !== profile[kind])) return {
-            listings: null, refused, errors: [`board requires ${profile.hunt} hunts, ${profile.delivery} deliveries and ${profile.dungeon} suitable Dungeon clearance; include existing notices`],
-        };
-        if (need.rank === 'Novice' && !all.some(l => boardFamily(s, content, l) === 'hunt' && l.level === 1 && l.qtype === 'minor'
-            && l.objectives.some(o => o.verb === 'DEFEAT' && o.qty === 1))) return {
-            listings: null, refused, errors: ['Novice board needs an introductory single-foe hunt (qty 1, level 1, qtype minor)'],
-        };
-        if (progressive(s, need) && (!all.some(l => boardFamily(s, content, l) === 'hunt' && l.level >= 4 && l.level <= 7)
-            || !all.some(l => boardFamily(s, content, l) === 'hunt' && l.level >= 8 && l.level <= 14))) return {
-            listings: null, refused, errors: ['F board needs voluntary mid-F (4-7) and upper-F (8-14) hunts as well as its introductory hunt; preserve the 4+1/5 family'],
-        };
+        const error = boardQuotaError(s, content, need, profile, all);
+        if (error) return { listings: null, refused, errors: [error] };
     }
     return { listings, refused, errors: [] };
+}
+
+function boardQuotaError(s, content, need, profile, all) {
+    const count = kind => all.filter(l => boardFamily(s, content, l) === kind).length;
+    if (['hunt', 'delivery', 'dungeon'].some(kind => count(kind) !== profile[kind])) return `board requires ${profile.hunt} hunts, ${profile.delivery} deliveries and ${profile.dungeon} suitable Dungeon clearance; include existing notices`;
+    if (need.rank === 'Novice' && !all.some(l => introHunt(s, content, l))) return 'Novice board needs an introductory single-foe hunt (qty 1, level 1, qtype minor)';
+    if (progressive(s, need) && (!all.some(l => boardFamily(s, content, l) === 'hunt' && l.level >= 4 && l.level <= 7)
+        || !all.some(l => boardFamily(s, content, l) === 'hunt' && l.level >= 8 && l.level <= 14))) return 'F board needs voluntary mid-F (4-7) and upper-F (8-14) hunts as well as its introductory hunt; preserve the 4+1/5 family';
+    return null;
+}
+
+function strictBoardObject(answer) {
+    try { return JSON.parse(answer.trim().replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/i, '$1')); }
+    catch { return null; }
+}
+
+// Restrict the smaller second request to an independently invalid introductory habitat.
+// Read the untouched wire objects; parseBoard normalizes its own parsed copy.
+export function boardSlotRepair(answer, parsed, s, content, need) {
+    if (!progressive(s, need) || need.profile !== COUNT_BOARD_PROFILE || need.missing !== 5 || need.have?.length ||
+        parsed.listings?.length !== 4 || parsed.refused?.length !== 1 || parsed.errors.length) return null;
+    const original = strictBoardObject(answer)?.listings;
+    if (!Array.isArray(original) || original.length !== 5) return null;
+    const {title, why} = parsed.refused[0];
+    const index = original.findIndex(l => l.title === title);
+    if (index < 0 || original.findLastIndex(l => l.title === title) !== index) return null;
+    const l = original[index];
+    if (!introHunt(s, content, l) || habitatWhy(s, content, need, l) !== why) return null;
+    const profile = boardProfile(s, content, need);
+    if (!profile || activeHuntConflict(s, content, l, need.branch) ||
+        huntConflict(s, content, l, parsed.listings, need.branch) || boardQuotaError(s, content, need, profile, original)) return null;
+    const isolated = parseBoard(JSON.stringify({listings:[l]}), content, need, s);
+    if (isolated.refused?.[0]?.why !== why) return null;
+    const retained = original.flatMap((item, i) => i === index ? [] : [{
+        slot:i + 1, title:item.title, level:item.level, target:item.objectives.find(o => o.verb === 'DEFEAT'),
+    }]);
+    return { original, slot:index + 1, title, why, retained, guidance:boardRepairGuidance(answer, content, need, true) };
+}
+
+function introHunt(s, content, l) {
+    return l?.level === 1 && l.qtype === 'minor' && Array.isArray(l.objectives) &&
+        l.objectives.some(o => o?.verb === 'DEFEAT' && o.qty === 1) && boardFamily(s, content, l) === 'hunt';
+}
+
+export function parseBoardSlot(answer, repair, content, need, s) {
+    const value = strictBoardObject(answer);
+    if (value?.slot !== repair.slot || Object.keys(value).length !== 2 || !value.listing)
+        return { listings:null, errors:['wrong replacement envelope or slot'] };
+    const all = repair.original.with(repair.slot - 1, value.listing);
+    const parsed = parseBoard(JSON.stringify({listings:all}), content, need, s);
+    if (parsed.listings?.length === 5 && !introHunt(s, content, parsed.listings[repair.slot - 1]))
+        return { listings:null, errors:['replacement must supply the introductory hunt'] };
+    return parsed;
 }
 
 const CULL_VERB = /^\s*(?:cull|thin)(?:\s+out)?\b/i;

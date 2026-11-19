@@ -8,12 +8,17 @@ export const board159Turns=[
  {key:'board159failure',player:failure,plan:{commands:[{seq:1,type:'board.read',rank:null,quote:failure}]},reply:f.reply,answer:f.extraction},
 ];
 let mode=null,n=0;
-export function board159Response(){
+export function board159Response(system){
  n++;const pair=f.attempts[mode==='success'?0:1];
- if(mode!=='success'||n===1)return pair[(n-1)%2];
+ if(!['slot','reference'].includes(mode) && (mode!=='success'||n===1))return pair[(n-1)%2];
  const raw=JSON.parse(pair[1]),l=raw.listings.find(l=>l.level===1);
  for(const k of ['title','task','desired_end_state'])if(l[k])l[k]=l[k].replace(/boars?/gi,'giant rat');
- l.objectives[0].what='giant rat';l.objectives[0].qty=1;l.habitat={...l.habitat,species:'giant rat',anchor:'rat',min_level:1,max_level:1};return JSON.stringify(raw);
+ l.objectives[0].what='giant rat';l.objectives[0].qty=1;l.habitat={...l.habitat,species:'giant rat',anchor:'rat',min_level:1,max_level:1};if(mode==='slot'){
+  const pos=raw.listings.indexOf(l)+1;
+  if(n===1)l.habitat.max_level=3;
+  else if(system.includes('"slot":'+pos+',"listing":'))return JSON.stringify({slot:pos,listing:l});
+ }
+ return JSON.stringify(raw);
 }
 export async function board159Smoke({page,send,idle,calls,driver,onReload}){
  const seed=async()=>{await page.evaluate(async prefix=>{const c=SillyTavern.getContext();c.chat.splice(0,c.chat.length,...prefix);await c.saveChat();await c.reloadCurrentChat();},structuredClone(f.prefix));onReload();};
@@ -26,5 +31,24 @@ export async function board159Smoke({page,send,idle,calls,driver,onReload}){
  checks.noInventedSchedule=!bad.facts.some(f=>f.p==='post_schedule')&&bad.rejected?.some(x=>x.rule==='board_availability');
  checks.extractionCompleted=bad.status==='applied';
  checks.saved=await driver().verifySaved(await driver().chat(),{complete:true});
+ const publication=()=>page.evaluate(async()=>{
+  const c=SillyTavern.getContext(), {foldChat,rec}=await import('/scripts/extensions/third-party/avereth-engine/src/host.js');
+  return {world:foldChat(c.chat).state,events:c.chat.slice(-2).map(m=>rec(m)?.events),status:rec(c.chat.at(-1))?.extraction?.status};
+ });
+ let reference;
+ for(const arm of ['reference','slot']){
+  mode=arm;n=0;await seed();const start=calls.length;await send(success);await idle();
+  const turn=calls.slice(start),saved=await driver().verifySaved(await driver().chat(),{complete:true});
+  const before=await publication();
+  await page.evaluate(()=>SillyTavern.getContext().reloadCurrentChat());onReload();
+  const after=await publication();
+  checks[arm+'Saved']=saved&&after.status==='applied'&&JSON.stringify(before)===JSON.stringify(after);
+  // Keep the persisted reload comparison exact. Wall-clock durations differ between independent requests.
+  for(const events of after.events)for(const event of events)
+   if(['cmd.interpreted','extract.applied'].includes(event.t))delete event.d.ms;
+  if(arm==='reference')reference=after;
+  else checks.slotSameWorld=JSON.stringify(after)===JSON.stringify(reference);
+  checks[arm+'Calls']=n===(arm==='slot'?2:1)&&turn.filter(c=>c.purpose==='extract').length===1;
+ }
  mode=null;return checks;
 }

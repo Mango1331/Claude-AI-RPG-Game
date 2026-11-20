@@ -64,7 +64,7 @@ export async function user05Smoke({page,idle,calls,onReload,out,saveFailure,worl
   checks.directQuestCommonInput=accepted.input?.selection.kind==='quest.accept' && accepted.input.mode==='hud_roleplay' && accepted.state.quests[q.id].status==='active';
   checks.questCanonicalDestination=calls.slice(q0).find(c=>c.purpose==='narrator')?.messages.some(m=>m.content.includes("morning's walk north of Glassmere"));
   const narratorPrompt=calls.slice(q0).find(c=>c.purpose==='narrator')?.messages.map(m=>m.content).join('\n') || '';
-  checks.currentBoardContractSentOnce=narratorPrompt.includes('Contract revision: 4.3.0-c.6.6.203') && narratorPrompt.split('Engine-rendered catalogues are the exception:').length===2;
+  checks.currentBoardContractSentOnce=narratorPrompt.includes('Contract revision: 4.3.0-c.6.6.204') && narratorPrompt.split('Engine-rendered catalogues are the exception:').length===2;
   const qn=calls.length;await button.click();await page.waitForTimeout(200);
   checks.questSecondClickNoRequests=calls.length===qn;
   measure('direct_quest',q0,t0);

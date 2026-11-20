@@ -1,0 +1,243 @@
+{
+  "scope": "local replay, scripted planner and extractor, recorded narrator prose",
+  "testCommit": "e970e13bf60f8e8b40396137e34c1e958af0ba01",
+  "naturalNewRequests": 0,
+  "naturalNewCostUSD": 0,
+  "oldPhysicalRequests": 9,
+  "oldReportedAndReservedUSD": "0.046565124",
+  "maxAdditionalRequests": 51,
+  "maxAdditionalUSD": "0.453434876",
+  "priorRemoteEnd": "unknown",
+  "oldJournalSha256": "aeb5d59635de1ac767a86126c23b8be04d0176c4c290903530cb5c30aaf8b805",
+  "tests": {
+    "python": 4,
+    "node": 16
+  },
+  "localCanary": {
+    "world": "7ed2cefab68a88b5ad3e535641592aa38f3685d90458b36cacfff0ea40c681ab",
+    "readback": true,
+    "worldConfirmation": {
+      "id": 20,
+      "committed_at_ms": 41876.80000000005,
+      "persisted_at_ms": 41959.10000000009,
+      "extraction_validation_wait_ms": 206,
+      "save_readback_ms": 82,
+      "total_ms": 288,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    },
+    "requests": [
+      1,
+      2,
+      3
+    ]
+  },
+  "localPair": {
+    "kind": "local scripted extractor / replayed prose",
+    "turns": [
+      {
+        "arm": "A",
+        "readback": true,
+        "world": "7ed2cefab68a88b5ad3e535641592aa38f3685d90458b36cacfff0ea40c681ab",
+        "requests": [
+          4,
+          5,
+          6
+        ]
+      },
+      {
+        "arm": "B",
+        "readback": true,
+        "world": "7ed2cefab68a88b5ad3e535641592aa38f3685d90458b36cacfff0ea40c681ab",
+        "requests": [
+          7,
+          8,
+          9
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "kind": "start",
+        "arm": "A",
+        "stage": "canary",
+        "turn": 1,
+        "id": 1,
+        "role": "planner",
+        "params": {
+          "stream": false
+        }
+      },
+      {
+        "kind": "end",
+        "arm": "A",
+        "stage": "canary",
+        "turn": 1,
+        "id": 1,
+        "role": "planner",
+        "ok": true
+      },
+      {
+        "kind": "start",
+        "arm": "A",
+        "stage": "canary",
+        "turn": 1,
+        "id": 2,
+        "role": "narrator",
+        "params": {
+          "stream": true
+        }
+      },
+      {
+        "kind": "end",
+        "arm": "A",
+        "stage": "canary",
+        "turn": 1,
+        "id": 2,
+        "role": "narrator",
+        "ok": true
+      },
+      {
+        "kind": "start",
+        "arm": "A",
+        "stage": "canary",
+        "turn": 1,
+        "id": 3,
+        "role": "extractor",
+        "params": {
+          "stream": false
+        }
+      },
+      {
+        "kind": "end",
+        "arm": "A",
+        "stage": "canary",
+        "turn": 1,
+        "id": 3,
+        "role": "extractor",
+        "ok": true
+      },
+      {
+        "kind": "start",
+        "arm": "A",
+        "stage": "trade",
+        "turn": 1,
+        "id": 4,
+        "role": "planner",
+        "params": {
+          "stream": false
+        }
+      },
+      {
+        "kind": "end",
+        "arm": "A",
+        "stage": "trade",
+        "turn": 1,
+        "id": 4,
+        "role": "planner",
+        "ok": true
+      },
+      {
+        "kind": "start",
+        "arm": "A",
+        "stage": "trade",
+        "turn": 1,
+        "id": 5,
+        "role": "narrator",
+        "params": {
+          "stream": true
+        }
+      },
+      {
+        "kind": "end",
+        "arm": "A",
+        "stage": "trade",
+        "turn": 1,
+        "id": 5,
+        "role": "narrator",
+        "ok": true
+      },
+      {
+        "kind": "start",
+        "arm": "A",
+        "stage": "trade",
+        "turn": 1,
+        "id": 6,
+        "role": "extractor",
+        "params": {
+          "stream": false
+        }
+      },
+      {
+        "kind": "end",
+        "arm": "A",
+        "stage": "trade",
+        "turn": 1,
+        "id": 6,
+        "role": "extractor",
+        "ok": true
+      },
+      {
+        "kind": "start",
+        "arm": "B",
+        "stage": "trade",
+        "turn": 1,
+        "id": 7,
+        "role": "planner",
+        "params": {
+          "stream": false
+        }
+      },
+      {
+        "kind": "end",
+        "arm": "B",
+        "stage": "trade",
+        "turn": 1,
+        "id": 7,
+        "role": "planner",
+        "ok": true
+      },
+      {
+        "kind": "start",
+        "arm": "B",
+        "stage": "trade",
+        "turn": 1,
+        "id": 8,
+        "role": "narrator",
+        "params": {
+          "stream": true
+        }
+      },
+      {
+        "kind": "end",
+        "arm": "B",
+        "stage": "trade",
+        "turn": 1,
+        "id": 8,
+        "role": "narrator",
+        "ok": true
+      },
+      {
+        "kind": "start",
+        "arm": "B",
+        "stage": "trade",
+        "turn": 1,
+        "id": 9,
+        "role": "extractor",
+        "params": {
+          "stream": false
+        }
+      },
+      {
+        "kind": "end",
+        "arm": "B",
+        "stage": "trade",
+        "turn": 1,
+        "id": 9,
+        "role": "extractor",
+        "ok": true
+      }
+    ]
+  }
+}

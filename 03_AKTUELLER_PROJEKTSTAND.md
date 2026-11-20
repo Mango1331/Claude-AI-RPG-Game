@@ -42,6 +42,8 @@ Die [Codex-Schlussabnahme](recherche/AVERETH_203_HANDEL_SCHLUSSABNAHME_2026-11-2
 
 Der [natürliche OpenRouter-Teilversuch](recherche/AVERETH_203_OPENROUTER_HANDEL_AB_2026-11-20.md) endete nach neun physischen Requests bei unbekanntem Remoteabschluss. **0/6 vollständige Handelspaare; B begann noch keinen natürlichen Hauptzug.** Der [unabhängige Teilversuch-Gegenreview](recherche/GEGENREVIEW_203_OPENROUTER_HANDEL_TEILVERSUCH_GPT_2026-11-20.md) bestätigt zwei Testinfrastruktur-Ursachen: ein nachträgliches leeres Stop-Choice im Usage-Stream (gezielter Testproxy-Adapter vorhanden) und eine zu frühe Bewertung des vorläufigen `incomplete`-Status (Testtreiber korrigiert). **GO für einen kontrollierten Neustart** mit unveränderten Engine-SHAs, neuem Runverzeichnis, echtem vollständigem ST-Canary vor den A/B-Paaren und den **verbleibenden** ursprünglichen Budgetgrenzen (maximal 51 weitere physische Anfragen, konservativ 0,453434876 USD). Das alte Journal bleibt wegen Request 9 gesperrt. Die 121 Inputtokens sind offline bestätigt; natürliche Qualität und End-to-End-Zeitdifferenz bleiben offen. User06-I18-Torwache, B-Müllerjunge und Todesursache/Fairness bleiben getrennt offen.
 
+Beim [kontrollierten Neustart](recherche/AVERETH_203_OPENROUTER_HANDEL_NEUSTART_2026-11-20.md) bestanden lokaler Canary und lokales A/B-Paar. Die natürliche Generierung wartet auf den Einzelabschluss von Request 9 des ersten Versuchs.
+
 ## Natürliche Läufe – Kurzüberblick
 
 | Lauf | Kernaussage | Quelle |

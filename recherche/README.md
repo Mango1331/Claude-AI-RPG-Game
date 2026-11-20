@@ -4,6 +4,8 @@
 
 ## Natürlicher OpenRouter-Handelstest
 
+Die [Neustartprüfung](AVERETH_203_OPENROUTER_HANDEL_NEUSTART_2026-11-20.md) bestätigt den lokalen Canary und das kumulative Budget. Der natürliche Canary wartet auf den Einzelbeleg zum früheren Request 9.
+
 Neun serielle Modellrequests über Wafer, zwei begonnene A-Züge, null vollständige Paare. Der Bericht dokumentiert die Sperre bei unbekanntem Remoteabschluss, die getrennte lokale ST-Prüfung des korrigierten Treibers und die gemessenen Katalogtokens. [Teilbericht und bereinigte Laufdaten](AVERETH_203_OPENROUTER_HANDEL_AB_2026-11-20.md)
 
 **Unabhängiger Gegenreview:** [GPT-Code- und Evidenzprüfung des Abbruchs](GEGENREVIEW_203_OPENROUTER_HANDEL_TEILVERSUCH_GPT_2026-11-20.md) – Testinfrastruktur statt Enginekatalog als Blocker; enger Proxy-/Treiberfix vorhanden, GO nur für kontrollierten Neustart mit echtem ST-End-to-End-Canary und Restbudget.

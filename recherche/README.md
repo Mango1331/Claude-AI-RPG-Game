@@ -6,6 +6,8 @@
 
 Der vollständige natürliche Neustart umfasst einen bestätigten ST-Canary und sechs Handelspaare. Alle zwölf Vergleichszüge bestanden Save und Reload. Der kürzere Katalog sparte in jedem gepaarten Plannerrequest 121 gemeldete Inputtokens. Die sichere Eingabe kam in B im Median der Paardifferenzen 12,726 s später. [Abschlussbericht und bereinigte Laufdaten](AVERETH_203_OPENROUTER_HANDEL_AB_ABSCHLUSS_2026-11-20.md) · [Neustartprüfung](AVERETH_203_OPENROUTER_HANDEL_NEUSTART_2026-11-20.md)
 
+**Unabhängiger Abschlussgegenreview:** [GPT-Code- und Evidenzprüfung des natürlichen A/B](GEGENREVIEW_203_OPENROUTER_HANDEL_AB_ABSCHLUSS_GPT_2026-11-20.md) – bedingtes GO für die nachgewiesene 121-Token-Katalogeinsparung, ausdrücklich kein Geschwindigkeits-GO (B in dieser Stichprobe +12,7265 s bis zur sicheren Eingabe), kein generelles Gameplay-GO. Zwei zusätzliche A-Repairs und unterschiedliche Providerzeiten/Cache-Usage nicht als Wirkung der Katalogzeile werten.
+
 Neun serielle Modellrequests über Wafer, zwei begonnene A-Züge, null vollständige Paare. Der Bericht dokumentiert die Sperre bei unbekanntem Remoteabschluss, die getrennte lokale ST-Prüfung des korrigierten Treibers und die gemessenen Katalogtokens. [Teilbericht und bereinigte Laufdaten](AVERETH_203_OPENROUTER_HANDEL_AB_2026-11-20.md)
 
 **Unabhängiger Gegenreview:** [GPT-Code- und Evidenzprüfung des Abbruchs](GEGENREVIEW_203_OPENROUTER_HANDEL_TEILVERSUCH_GPT_2026-11-20.md) – Testinfrastruktur statt Enginekatalog als Blocker; enger Proxy-/Treiberfix vorhanden, GO nur für kontrollierten Neustart mit echtem ST-End-to-End-Canary und Restbudget.

@@ -1,0 +1,332 @@
+{
+  "groups": {
+    "A": {
+      "firstMs": {
+        "n": 6,
+        "sum": 47153,
+        "median": 6249.0,
+        "mean": 7858.833333333333
+      },
+      "narrationMs": {
+        "n": 6,
+        "sum": 106295,
+        "median": 15068.0,
+        "mean": 17715.833333333332
+      },
+      "commitMs": {
+        "n": 6,
+        "sum": 114234,
+        "median": 15881.0,
+        "mean": 19039
+      },
+      "saveMs": {
+        "n": 6,
+        "sum": 114810,
+        "median": 15975.5,
+        "mean": 19135
+      },
+      "safeMs": {
+        "n": 6,
+        "sum": 114855,
+        "median": 15980.0,
+        "mean": 19142.5
+      },
+      "input": {
+        "n": 6,
+        "sum": 260750,
+        "median": 41284.5,
+        "mean": 43458.333333333336
+      },
+      "output": {
+        "n": 6,
+        "sum": 4709,
+        "median": 653.0,
+        "mean": 784.8333333333334
+      },
+      "reasoning": {
+        "n": 6,
+        "sum": 1940,
+        "median": 221.0,
+        "mean": 323.3333333333333
+      },
+      "cache": {
+        "n": 6,
+        "sum": 151296,
+        "median": 28192.0,
+        "mean": 25216
+      },
+      "requests": {
+        "n": 6,
+        "sum": 20,
+        "median": 3.0,
+        "mean": 3.3333333333333335
+      },
+      "repairs": {
+        "n": 6,
+        "sum": 2,
+        "median": 0.0,
+        "mean": 0.3333333333333333
+      },
+      "cost": {
+        "n": 6,
+        "sum": 0.01166666,
+        "median": 0.001801609,
+        "mean": 0.0019444433333333335
+      }
+    },
+    "B": {
+      "firstMs": {
+        "n": 6,
+        "sum": 89843,
+        "median": 16215.0,
+        "mean": 14973.833333333334
+      },
+      "narrationMs": {
+        "n": 6,
+        "sum": 211106,
+        "median": 26184.0,
+        "mean": 35184.333333333336
+      },
+      "commitMs": {
+        "n": 6,
+        "sum": 225712,
+        "median": 33529.5,
+        "mean": 37618.666666666664
+      },
+      "saveMs": {
+        "n": 6,
+        "sum": 226395,
+        "median": 33658.0,
+        "mean": 37732.5
+      },
+      "safeMs": {
+        "n": 6,
+        "sum": 226432,
+        "median": 33664.5,
+        "mean": 37738.666666666664
+      },
+      "input": {
+        "n": 6,
+        "sum": 229259,
+        "median": 41073.0,
+        "mean": 38209.833333333336
+      },
+      "output": {
+        "n": 6,
+        "sum": 4117,
+        "median": 674.0,
+        "mean": 686.1666666666666
+      },
+      "reasoning": {
+        "n": 6,
+        "sum": 1481,
+        "median": 217.0,
+        "mean": 246.83333333333334
+      },
+      "cache": {
+        "n": 6,
+        "sum": 92992,
+        "median": 16960.0,
+        "mean": 15498.666666666666
+      },
+      "requests": {
+        "n": 6,
+        "sum": 18,
+        "median": 3.0,
+        "mean": 3
+      },
+      "repairs": {
+        "n": 6,
+        "sum": 0,
+        "median": 0.0,
+        "mean": 0
+      },
+      "cost": {
+        "n": 6,
+        "sum": 0.010293414,
+        "median": 0.001810338,
+        "mean": 0.0017155690000000001
+      }
+    }
+  },
+  "pairs": {
+    "1": {
+      "firstMs": -1155,
+      "narrationMs": 152,
+      "commitMs": 160,
+      "saveMs": 159,
+      "safeMs": 160,
+      "input": -195,
+      "output": 2,
+      "reasoning": -79,
+      "cache": -13824,
+      "requests": 0,
+      "repairs": 0,
+      "cost": 6.002000000000177e-06
+    },
+    "2": {
+      "firstMs": 1634,
+      "narrationMs": -799,
+      "commitMs": -795,
+      "saveMs": -784,
+      "safeMs": -789,
+      "input": -228,
+      "output": 83,
+      "reasoning": 28,
+      "cache": -5760,
+      "requests": 0,
+      "repairs": 0,
+      "cost": 1.1455999999999966e-05
+    },
+    "3": {
+      "firstMs": 19296,
+      "narrationMs": 55886,
+      "commitMs": 55896,
+      "saveMs": 55909,
+      "safeMs": 55912,
+      "input": -15288,
+      "output": -113,
+      "reasoning": 24,
+      "cache": -18176,
+      "requests": -1,
+      "repairs": -1,
+      "cost": -0.0006447120000000004
+    },
+    "4": {
+      "firstMs": 5919,
+      "narrationMs": 30803,
+      "commitMs": 30789,
+      "saveMs": 30852,
+      "safeMs": 30841,
+      "input": -15341,
+      "output": -764,
+      "reasoning": -500,
+      "cache": 9408,
+      "requests": -1,
+      "repairs": -1,
+      "cost": -0.0007943059999999998
+    },
+    "5": {
+      "firstMs": 9050,
+      "narrationMs": 9733,
+      "commitMs": 7371,
+      "saveMs": 7346,
+      "safeMs": 7349,
+      "input": -250,
+      "output": -118,
+      "reasoning": 10,
+      "cache": 0,
+      "requests": 0,
+      "repairs": 0,
+      "cost": -3.2211999999999996e-05
+    },
+    "6": {
+      "firstMs": 7946,
+      "narrationMs": 9036,
+      "commitMs": 18057,
+      "saveMs": 18103,
+      "safeMs": 18104,
+      "input": -189,
+      "output": 318,
+      "reasoning": 58,
+      "cache": -29952,
+      "requests": 0,
+      "repairs": 0,
+      "cost": 8.052599999999982e-05
+    }
+  },
+  "paired": {
+    "firstMs": {
+      "n": 6,
+      "median": 6932.5
+    },
+    "narrationMs": {
+      "n": 6,
+      "median": 9384.5
+    },
+    "commitMs": {
+      "n": 6,
+      "median": 12714.0
+    },
+    "saveMs": {
+      "n": 6,
+      "median": 12724.5
+    },
+    "safeMs": {
+      "n": 6,
+      "median": 12726.5
+    },
+    "input": {
+      "n": 6,
+      "median": -239.0
+    },
+    "output": {
+      "n": 6,
+      "median": -55.5
+    },
+    "reasoning": {
+      "n": 6,
+      "median": 17.0
+    },
+    "cache": {
+      "n": 6,
+      "median": -9792.0
+    },
+    "requests": {
+      "n": 6,
+      "median": 0.0
+    },
+    "repairs": {
+      "n": 6,
+      "median": 0.0
+    },
+    "cost": {
+      "n": 6,
+      "median": -1.310499999999991e-05
+    }
+  },
+  "newRequests": 46,
+  "cumulativeRequests": 55,
+  "confirmedNewUSD": "0.025168428",
+  "confirmedTotalUSD": "0.027561108",
+  "additionalTradeAttempts": [
+    {
+      "id": 30,
+      "arm": "A",
+      "stage": "trade",
+      "turn": 5,
+      "role": "planner",
+      "elapsedMs": 2616,
+      "input": 6237,
+      "output": 19,
+      "cache": 0,
+      "reasoning": 13,
+      "cost": 0.00026545,
+      "finish": "stop",
+      "complete": true,
+      "jsonValid": true
+    },
+    {
+      "id": 31,
+      "arm": "A",
+      "stage": "trade",
+      "turn": 5,
+      "role": "narrator",
+      "elapsedMs": 196,
+      "complete": false,
+      "jsonValid": null
+    },
+    {
+      "id": 38,
+      "arm": "B",
+      "stage": "trade",
+      "turn": 6,
+      "role": "planner",
+      "elapsedMs": 243,
+      "complete": false,
+      "jsonValid": false
+    }
+  ],
+  "unreportedReserveUSD": "0.089202048",
+  "confirmedPlusOpenReserveUSD": "0.116763156"
+}

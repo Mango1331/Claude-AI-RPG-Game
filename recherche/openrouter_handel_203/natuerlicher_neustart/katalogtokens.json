@@ -1,0 +1,302 @@
+[
+  {
+    "id": 1,
+    "arm": "A",
+    "role": "planner",
+    "hits": 1,
+    "reported": 13886,
+    "localA": 13886,
+    "localB": 13765,
+    "localSaved": 121
+  },
+  {
+    "id": 3,
+    "arm": "A",
+    "role": "extractor",
+    "hits": 1,
+    "reported": 14716,
+    "localA": 14716,
+    "localB": 14595,
+    "localSaved": 121
+  },
+  {
+    "id": 4,
+    "arm": "A",
+    "role": "planner",
+    "hits": 1,
+    "reported": 13886,
+    "localA": 13886,
+    "localB": 13765,
+    "localSaved": 121
+  },
+  {
+    "id": 6,
+    "arm": "A",
+    "role": "extractor",
+    "hits": 1,
+    "reported": 14750,
+    "localA": 14750,
+    "localB": 14629,
+    "localSaved": 121
+  },
+  {
+    "id": 7,
+    "arm": "B",
+    "role": "planner",
+    "hits": 1,
+    "reported": 13765,
+    "localA": 13886,
+    "localB": 13765,
+    "localSaved": 121
+  },
+  {
+    "id": 9,
+    "arm": "B",
+    "role": "extractor",
+    "hits": 1,
+    "reported": 14676,
+    "localA": 14797,
+    "localB": 14676,
+    "localSaved": 121
+  },
+  {
+    "id": 10,
+    "arm": "B",
+    "role": "planner",
+    "hits": 1,
+    "reported": 13765,
+    "localA": 13886,
+    "localB": 13765,
+    "localSaved": 121
+  },
+  {
+    "id": 12,
+    "arm": "B",
+    "role": "extractor",
+    "hits": 1,
+    "reported": 14656,
+    "localA": 14777,
+    "localB": 14656,
+    "localSaved": 121
+  },
+  {
+    "id": 13,
+    "arm": "A",
+    "role": "planner",
+    "hits": 1,
+    "reported": 13886,
+    "localA": 13886,
+    "localB": 13765,
+    "localSaved": 121
+  },
+  {
+    "id": 15,
+    "arm": "A",
+    "role": "extractor",
+    "hits": 1,
+    "reported": 14763,
+    "localA": 14763,
+    "localB": 14642,
+    "localSaved": 121
+  },
+  {
+    "id": 16,
+    "arm": "A",
+    "role": "planner",
+    "hits": 1,
+    "reported": 13895,
+    "localA": 13895,
+    "localB": 13774,
+    "localSaved": 121
+  },
+  {
+    "id": 18,
+    "arm": "A",
+    "role": "extractor",
+    "hits": 1,
+    "reported": 14783,
+    "localA": 14783,
+    "localB": 14662,
+    "localSaved": 121
+  },
+  {
+    "id": 19,
+    "arm": "A",
+    "role": "extractor",
+    "hits": 1,
+    "reported": 15060,
+    "localA": 15060,
+    "localB": 14939,
+    "localSaved": 121
+  },
+  {
+    "id": 20,
+    "arm": "B",
+    "role": "planner",
+    "hits": 1,
+    "reported": 13774,
+    "localA": 13895,
+    "localB": 13774,
+    "localSaved": 121
+  },
+  {
+    "id": 22,
+    "arm": "B",
+    "role": "extractor",
+    "hits": 1,
+    "reported": 14676,
+    "localA": 14797,
+    "localB": 14676,
+    "localSaved": 121
+  },
+  {
+    "id": 23,
+    "arm": "B",
+    "role": "planner",
+    "hits": 1,
+    "reported": 13774,
+    "localA": 13895,
+    "localB": 13774,
+    "localSaved": 121
+  },
+  {
+    "id": 25,
+    "arm": "B",
+    "role": "extractor",
+    "hits": 1,
+    "reported": 14714,
+    "localA": 14835,
+    "localB": 14714,
+    "localSaved": 121
+  },
+  {
+    "id": 26,
+    "arm": "A",
+    "role": "planner",
+    "hits": 1,
+    "reported": 13895,
+    "localA": 13895,
+    "localB": 13774,
+    "localSaved": 121
+  },
+  {
+    "id": 28,
+    "arm": "A",
+    "role": "extractor",
+    "hits": 1,
+    "reported": 14734,
+    "localA": 14734,
+    "localB": 14613,
+    "localSaved": 121
+  },
+  {
+    "id": 29,
+    "arm": "A",
+    "role": "extractor",
+    "hits": 1,
+    "reported": 15200,
+    "localA": 15200,
+    "localB": 15079,
+    "localSaved": 121
+  },
+  {
+    "id": 30,
+    "arm": "A",
+    "role": "planner",
+    "hits": 1,
+    "reported": 6237,
+    "localA": 6237,
+    "localB": 6116,
+    "localSaved": 121
+  },
+  {
+    "id": 32,
+    "arm": "A",
+    "role": "planner",
+    "hits": 1,
+    "reported": 6237,
+    "localA": 6237,
+    "localB": 6116,
+    "localSaved": 121
+  },
+  {
+    "id": 34,
+    "arm": "A",
+    "role": "extractor",
+    "hits": 1,
+    "reported": 14041,
+    "localA": 14041,
+    "localB": 13920,
+    "localSaved": 121
+  },
+  {
+    "id": 35,
+    "arm": "B",
+    "role": "planner",
+    "hits": 1,
+    "reported": 6116,
+    "localA": 6237,
+    "localB": 6116,
+    "localSaved": 121
+  },
+  {
+    "id": 37,
+    "arm": "B",
+    "role": "extractor",
+    "hits": 1,
+    "reported": 13952,
+    "localA": 14073,
+    "localB": 13952,
+    "localSaved": 121
+  },
+  {
+    "id": 38,
+    "arm": "B",
+    "role": "planner",
+    "hits": 1,
+    "reported": null,
+    "localA": 6237,
+    "localB": 6116,
+    "localSaved": 121
+  },
+  {
+    "id": 39,
+    "arm": "B",
+    "role": "planner",
+    "hits": 1,
+    "reported": 6116,
+    "localA": 6237,
+    "localB": 6116,
+    "localSaved": 121
+  },
+  {
+    "id": 41,
+    "arm": "B",
+    "role": "extractor",
+    "hits": 1,
+    "reported": 13987,
+    "localA": 14108,
+    "localB": 13987,
+    "localSaved": 121
+  },
+  {
+    "id": 42,
+    "arm": "A",
+    "role": "planner",
+    "hits": 1,
+    "reported": 6237,
+    "localA": 6237,
+    "localB": 6116,
+    "localSaved": 121
+  },
+  {
+    "id": 44,
+    "arm": "A",
+    "role": "extractor",
+    "hits": 1,
+    "reported": 14055,
+    "localA": 14055,
+    "localB": 13934,
+    "localSaved": 121
+  }
+]

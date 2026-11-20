@@ -1,0 +1,13 @@
+{
+  "providerKeyAggregateUSD": "0.027561108",
+  "confirmedTotalUSD": "0.027561108",
+  "reservesOn429USD": "0.089202048",
+  "maximumIncludingReserveUSD": "0.116763156",
+  "requestCount": 55,
+  "newRequestCount": 46,
+  "maxObservedConcurrent": 1,
+  "sha256": {
+    "erster_canary.tar.gz": "b4902f1ae9e34393972a980c3e2450504790d25c17d746f83cd737de2914e757",
+    "laufdaten.tar.gz": "1455770d43dd0c818d210f977e4a30dc42df6f25f7900643de55cf8c66fb6ee0"
+  }
+}

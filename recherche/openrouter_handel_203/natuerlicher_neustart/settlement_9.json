@@ -1,0 +1,18 @@
+{
+  "id": "gen-1795132937-y4K4TwwYrW4wGZzHAFzA",
+  "model": "z-ai/glm-5.3-flash-20260826",
+  "provider_name": "Wafer",
+  "streamed": true,
+  "cancelled": true,
+  "finish_reason": null,
+  "native_finish_reason": null,
+  "created_at": "2026-11-20T00:02:17.619Z",
+  "native_tokens_prompt": 14778,
+  "native_tokens_completion": 4,
+  "native_tokens_reasoning": 4,
+  "total_cost": 0.000621412,
+  "generation_time": 987,
+  "providerStatus": [
+    499
+  ]
+}

@@ -1,6 +1,6 @@
 # Avereth Engine – aktueller Produkt- und Arbeitsstand
 
-**Dokumentationsabgleich 19.11.2026; Produkt `.200` eingefroren, Entwicklungsbuild `.203` technisch abgenommen, User06 durch Charaktertod beendet (Originalreview ausstehend).** **Dies ist die einzige laufende Statusquelle**, keine Patchchronik. [Startseite](README.md) · [Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Kanon](02_DESIGN_KANON.md) · [Zielbild 08](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md) · [Roadmap](07_ROADMAP_NACH_10B_ENTWURF.md) · [Fachindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md).
+**Dokumentationsabgleich 20.11.2026; Produkt `.200` eingefroren, Entwicklungsbuild `.203` technisch abgenommen, User06 durch Charaktertod beendet (Originalreview ausstehend).** **Dies ist die einzige laufende Statusquelle**, keine Patchchronik. [Startseite](README.md) · [Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Kanon](02_DESIGN_KANON.md) · [Zielbild 08](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md) · [Roadmap](07_ROADMAP_NACH_10B_ENTWURF.md) · [Fachindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md).
 
 ## Produkt und letzte technische Abnahme
 
@@ -32,7 +32,7 @@ Details stehen nur an der verlinkten Quelle.
 | **Balance/Power** | `.196–.198` | Angepasste Waffenqualität im F-Rang, normales menschliches NPC-Statbudget und F-fine-Schild; siehe Produktpatchnotes |
 | **PULSE/NPC-Kompaktkarten** | `.199–.200` | PULSE-Schutz für bekannte zurückkehrende NPCs, enger Hesse-Präsenzbeleg und vollständige E3-Felder in kompakten NPC-Köpfen; siehe Produktpatchnotes |
 
-## Unmittelbare nächste Arbeit – OpenRouter-A/B für Zyklus 3
+## OpenRouter-Handelsvergleich und nächster Gegenreview
 
 Der unabhängige [GPT-Gegenreview der technischen Handels-Schlussabnahme](recherche/GEGENREVIEW_203_HANDEL_SCHLUSSABNAHME_GPT_2026-11-20.md) bestätigt **technisches GO für den isolierten natürlichen OpenRouter-A/B-Katalogvergleich** mit unveränderten SHA-Ständen: A/B3 `6d9770f9b31e78d37567719bf1c06d8a4942288c`, B/Zyklus 3 `25c46bc9d342c9ed6cf87f8ac59e11c85ab4de18`. Der Laufzeitunterschied ist ausschließlich die maschinenlesbare Darstellung gleicher Ausrüstungs-ID und Artikelname. Die 59 Basiseinträge bleiben rekonstruierbar; 121 GLM-Inputtokens pro betroffenem P-/X-Prompt (2.541 pro zehn archivierte B-Züge) sind offline nachgerechnet. **Neue natürliche OpenRouter-Modellqualität und Wartezeiten stehen noch aus.** [Zyklus-3-Fachbericht](recherche/AVERETH_203_PERFORMANCE_ZYKLUS3_2026-11-19.md).
 
@@ -40,7 +40,7 @@ Die [Codex-Schlussabnahme](recherche/AVERETH_203_HANDEL_SCHLUSSABNAHME_2026-11-2
 
 **Bekannter gemeinsamer Gameplayfehler, unabhängig vom Katalog:** `openConditionNear` untersucht nach dem Preis auch einen Folgesatz; `tomorrow` in einer eigenständigen NPC-Verabredung lässt dadurch ein verbindliches Buckler-Angebot irrtümlich unverifiziert erscheinen. Im lokalen Vergleich tritt dies bei A und B identisch auf. Der für reguläre F-Ausrüstung feste Enginepreis weicht teils bewusst vom erzählten Händlerpreis ab (Kettenhemd 80→72, Handaxt 12→140); diese Diskrepanz ist keine neue Katalogregression, bleibt aber mögliche Spielerfriktion. Den Preisbedingungsfehler nach dem reinen Katalog-A/B in einem **separaten gezielten gemeinsamen Gameplaypatch** prüfen und korrigieren, ohne die zwei getesteten SHA-Stände nachträglich zu vermischen.
 
-**Nächste Arbeit:** kontrollierter natürlicher A/B-Spieltest über OpenRouter auf gleichem Modell-/Providerpfad, mit identischen Ausgangszuständen, seriellen physischen Requests, begrenztem Budget, dokumentierter Weltqualität und Save/Read-back. Kein Produktmerge. User06-I18-Torwache, B-Müllerjunge sowie Todesursache/Fairness bleiben getrennt offen. Produkt .200 eingefroren.
+Der [natürliche OpenRouter-Teilversuch](recherche/AVERETH_203_OPENROUTER_HANDEL_AB_2026-11-20.md) endete nach neun physischen Requests bei unbekanntem Remoteabschluss. Der Testtreiber schloss den laufenden A-Narrator zu früh. 0/6 vollständige Handelspaare. Die korrigierte Beobachtung bestand auf beiden Pins im isolierten ST-Wiederholungstest mit lokalem Provider. Die 121 Inputtokens sind für das konkrete Planner- und Extractorbeispiel offline bestätigt. Natürliche Qualität und Zeitdifferenz bleiben offen. Nächster Schritt ist der unabhängige Gegenreview des Teilversuchs. User06-I18-Torwache, B-Müllerjunge und Todesursache/Fairness bleiben getrennt offen.
 
 ## Natürliche Läufe – Kurzüberblick
 

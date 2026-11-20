@@ -1,6 +1,10 @@
 # Forschung – Performance und LLM-Effizienz von Avereth .203
 
-**Stand 19.11.2026.** Die Quellen bleiben getrennt und unverändert. Aktuelle Arbeits-/Produktentscheidungen stehen allein in [03](../03_AKTUELLER_PROJEKTSTAND.md).
+**Stand 20.11.2026.** Die Quellen bleiben getrennt und unverändert. Aktuelle Arbeits-/Produktentscheidungen stehen allein in [03](../03_AKTUELLER_PROJEKTSTAND.md).
+
+## Natürlicher OpenRouter-Handelstest
+
+Neun serielle Modellrequests über Wafer, zwei begonnene A-Züge, null vollständige Paare. Der Bericht dokumentiert die Sperre bei unbekanntem Remoteabschluss, die getrennte lokale ST-Prüfung des korrigierten Treibers und die gemessenen Katalogtokens. [Teilbericht und bereinigte Laufdaten](AVERETH_203_OPENROUTER_HANDEL_AB_2026-11-20.md)
 
 ## Lesereihenfolge
 

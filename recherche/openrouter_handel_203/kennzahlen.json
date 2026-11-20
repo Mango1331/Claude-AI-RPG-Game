@@ -1,0 +1,327 @@
+{
+  "decision": "natural quality gate not evaluable",
+  "testedModel": "z-ai/glm-5.3-flash",
+  "provider": "Wafer",
+  "tag": "wafer/us",
+  "pins": {
+    "A": "6d9770f9b31e78d37567719bf1c06d8a4942288c",
+    "B": "25c46bc9d342c9ed6cf87f8ac59e11c85ab4de18"
+  },
+  "st": "7e8663cd9c184a550b37238218bdd32c6efc68e9",
+  "tool": "eb656853e87388fc2ab9fe3dd0f321bacf3a8752",
+  "physicalRequests": 9,
+  "peakConcurrent": 1,
+  "httpStopDones": 8,
+  "unknown": [
+    9
+  ],
+  "reportedUSD": "0.001771268",
+  "reservedUnknownUSD": "0.044793856",
+  "totalChargedOrReservedUSD": "0.046565124",
+  "naturalPairs": {
+    "complete": 0,
+    "planned": 6,
+    "firstProseMedianPairedMs": null,
+    "safeMedianPairedMs": null
+  },
+  "turns": {
+    "complete": 0,
+    "planned": 12,
+    "Astarted": 2,
+    "Bstarted": 0
+  },
+  "sumEightKnown": {
+    "input": 40522,
+    "output": 452,
+    "reasoning": 109,
+    "cache": 13824
+  },
+  "requests": [
+    {
+      "id": 1,
+      "arm": "A",
+      "stage": "preflight",
+      "turn": 0,
+      "role": "narrator",
+      "elapsedMs": 1538,
+      "input": 22,
+      "output": 11,
+      "cache": 0,
+      "reasoning": 0,
+      "cost": 2.948e-06,
+      "finish": "stop",
+      "complete": true,
+      "jsonValid": null
+    },
+    {
+      "id": 2,
+      "arm": "B",
+      "stage": "preflight",
+      "turn": 0,
+      "role": "narrator",
+      "elapsedMs": 1346,
+      "input": 22,
+      "output": 14,
+      "cache": 0,
+      "reasoning": 0,
+      "cost": 3.5e-06,
+      "finish": "stop",
+      "complete": true,
+      "jsonValid": null
+    },
+    {
+      "id": 3,
+      "arm": "A",
+      "stage": "main",
+      "turn": 1,
+      "role": "planner",
+      "elapsedMs": 2118,
+      "input": 13886,
+      "output": 17,
+      "cache": 0,
+      "reasoning": 12,
+      "cost": 0.00058634,
+      "finish": "stop",
+      "complete": true,
+      "jsonValid": true
+    },
+    {
+      "id": 4,
+      "arm": "A",
+      "stage": "main",
+      "turn": 1,
+      "role": "narrator",
+      "elapsedMs": 7018,
+      "input": 12642,
+      "output": 351,
+      "cache": 0,
+      "reasoning": 87,
+      "cost": 0.000595548,
+      "finish": "stop",
+      "complete": true,
+      "jsonValid": null
+    },
+    {
+      "id": 5,
+      "arm": "A",
+      "stage": "stream-envelope",
+      "turn": 0,
+      "role": "narrator",
+      "elapsedMs": 1631,
+      "input": 20,
+      "output": 20,
+      "cache": 0,
+      "reasoning": 0,
+      "cost": 4.52e-06,
+      "finish": "stop",
+      "complete": true,
+      "jsonValid": null
+    },
+    {
+      "id": 6,
+      "arm": "A",
+      "stage": "preflight-adapter",
+      "turn": 0,
+      "role": "narrator",
+      "elapsedMs": 1424,
+      "input": 22,
+      "output": 11,
+      "cache": 0,
+      "reasoning": 0,
+      "cost": 2.948e-06,
+      "finish": "stop",
+      "complete": true,
+      "jsonValid": null
+    },
+    {
+      "id": 7,
+      "arm": "B",
+      "stage": "preflight-adapter",
+      "turn": 0,
+      "role": "narrator",
+      "elapsedMs": 1330,
+      "input": 22,
+      "output": 12,
+      "cache": 0,
+      "reasoning": 0,
+      "cost": 3.132e-06,
+      "finish": "stop",
+      "complete": true,
+      "jsonValid": null
+    },
+    {
+      "id": 8,
+      "arm": "A",
+      "stage": "trade",
+      "turn": 1,
+      "role": "planner",
+      "elapsedMs": 2069,
+      "input": 13886,
+      "output": 16,
+      "cache": 13824,
+      "reasoning": 10,
+      "cost": 0.000572332,
+      "finish": "stop",
+      "complete": true,
+      "jsonValid": true
+    },
+    {
+      "id": 9,
+      "arm": "A",
+      "stage": "trade",
+      "turn": 1,
+      "role": "narrator",
+      "elapsedMs": 2091,
+      "complete": false,
+      "jsonValid": null
+    }
+  ],
+  "naturalPlannerCounterfactual": [
+    {
+      "id": 3,
+      "reportedA": 13886,
+      "localA": 13886,
+      "localB": 13765,
+      "localSaved": 121
+    },
+    {
+      "id": 8,
+      "reportedA": 13886,
+      "localA": 13886,
+      "localB": 13765,
+      "localSaved": 121
+    }
+  ],
+  "separateLocalST": {
+    "tokens": [
+      {
+        "localST": "planner",
+        "A": 13886,
+        "B": 13765,
+        "deltaBminusA": -121
+      },
+      {
+        "localST": "extractor",
+        "A": 14802,
+        "B": 14681,
+        "deltaBminusA": -121
+      }
+    ],
+    "results": [
+      {
+        "arm": "A",
+        "readback": true,
+        "world": "7ed2cefab68a88b5ad3e535641592aa38f3685d90458b36cacfff0ea40c681ab",
+        "requests": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "arm": "B",
+        "readback": true,
+        "world": "7ed2cefab68a88b5ad3e535641592aa38f3685d90458b36cacfff0ea40c681ab",
+        "requests": [
+          4,
+          5,
+          6
+        ]
+      }
+    ],
+    "localAudit": {
+      "line": {
+        "id": "l1",
+        "what": "fine F-Rank hand-axe",
+        "base": "hand_axe",
+        "quality": "fine",
+        "appearance": "fine hand-axe",
+        "kind": "goods",
+        "service": null,
+        "qty": 1,
+        "price_cp": 140,
+        "said": "Fourteen copper.",
+        "terms": "firm",
+        "condition": null,
+        "evidence": {
+          "source_reference": {
+            "message": 20,
+            "text_hash": "e81c64d2"
+          },
+          "ranges": [
+            {
+              "start": 714,
+              "end": 729
+            }
+          ],
+          "basis": "engine",
+          "derived_cp": 140,
+          "reason": "engine_price"
+        },
+        "equipment": true,
+        "profile": {
+          "kind": "gear",
+          "base": "martial_weapon",
+          "title": "hand-axe",
+          "rank": "F",
+          "quality": "fine",
+          "balance": 114,
+          "slot": "weapon",
+          "family": "melee",
+          "atk": 14,
+          "matk": 0,
+          "def": 0,
+          "mdef": 0,
+          "value_cp": 140
+        }
+      },
+      "balance": 30,
+      "explicitAcceptanceOnCopy": [
+        "1. NOT BOUGHT — fine F-Rank hand-axe: 140 cp (1 Gold 4 Silver) needed; he has 30 cp (3 Silver), 110 cp (1 Gold 1 Silver) short. Silver and copper are one purse (1 silver = 10 copper, 1 gold = 100 copper): no coin needs changing, and changing coin makes up nothing. Nothing changes hands."
+      ],
+      "events": [
+        "cmd.resolved"
+      ],
+      "normalized": [
+        [
+          "planner",
+          "f7d9e72b5d93ac13c11189f6fff0d2a0f1af1777adf7fdb0718ebdbd506d8850"
+        ],
+        [
+          "extractor",
+          "e7009031b863f94ddf0c136a243c491e2def7dfee9166b65382807ad1b4c4c67"
+        ]
+      ]
+    }
+  },
+  "commonConditionControl": {
+    "A": [
+      {
+        "text": "Sixty-four copper for this fine buckler.",
+        "flag": null
+      },
+      {
+        "text": "Sixty-four copper for this fine buckler. She promised to meet him at the old ford tomorrow.",
+        "flag": "tomorrow"
+      },
+      {
+        "text": "Sixty-four copper for this fine buckler, only after the guild seals your permit.",
+        "flag": "after the"
+      }
+    ],
+    "B": [
+      {
+        "text": "Sixty-four copper for this fine buckler.",
+        "flag": null
+      },
+      {
+        "text": "Sixty-four copper for this fine buckler. She promised to meet him at the old ford tomorrow.",
+        "flag": "tomorrow"
+      },
+      {
+        "text": "Sixty-four copper for this fine buckler, only after the guild seals your permit.",
+        "flag": "after the"
+      }
+    ]
+  }
+}

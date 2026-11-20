@@ -1,0 +1,922 @@
+{
+  "complete": 41,
+  "inputs": 41,
+  "physical": 106,
+  "endRecords": 106,
+  "serial": true,
+  "roles": {
+    "planner": 28,
+    "narrator": 36,
+    "extractor": 40,
+    "board": 2
+  },
+  "input": 1388262,
+  "output": 37789,
+  "reasoning": 11159,
+  "cache": 811776,
+  "confirmedCostUSD": "0.064448404",
+  "chargedOrReservedUSD": "0.064448404",
+  "turns": [
+    {
+      "n": 1,
+      "player": "Warrior",
+      "hud": false,
+      "mode": null,
+      "requested": [],
+      "ids": [],
+      "failed": [],
+      "firstProse": null,
+      "ready": null,
+      "applied": null,
+      "persisted": null,
+      "verifiedReload": true,
+      "cost": "0"
+    },
+    {
+      "n": 2,
+      "player": "Charge + Cleave",
+      "hud": false,
+      "mode": null,
+      "requested": [],
+      "ids": [],
+      "failed": [],
+      "firstProse": null,
+      "ready": null,
+      "applied": null,
+      "persisted": null,
+      "verifiedReload": true,
+      "cost": "0"
+    },
+    {
+      "n": 3,
+      "player": "I follow the road toward Glassmere. At the gate I ask where a newcomer can find honest work, preferably somewhere my sword can keep someone else out of trouble.",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        1,
+        2,
+        3
+      ],
+      "failed": [],
+      "firstProse": 3.962,
+      "ready": 19.58,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001712866"
+    },
+    {
+      "n": 4,
+      "player": "I thank the watchman and walk down to the guild counter by the water gate. 'Alaric. Warrior. New to the city. What does it cost to enter the roll, and whose name should I ask for when I bring back my first job?'",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        4,
+        5,
+        6
+      ],
+      "failed": [],
+      "firstProse": 4.24,
+      "ready": 15.28,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001746806"
+    },
+    {
+      "n": 5,
+      "player": "'Two silver it is, Serah.' I pay the registration fee and put my hand on the stone. I'll bring my first completed contract back to you.",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        7,
+        8,
+        9
+      ],
+      "failed": [],
+      "firstProse": 6.552,
+      "ready": 23.292,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001811468"
+    },
+    {
+      "n": 6,
+      "player": "My guild status still says unregistered, Serah. Please register me with the Adventurers' Guild now and charge the single two-silver fee once. Is my name in your roll?",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "planner"
+      ],
+      "ids": [
+        10,
+        11
+      ],
+      "failed": [],
+      "firstProse": null,
+      "ready": null,
+      "applied": null,
+      "persisted": null,
+      "verifiedReload": true,
+      "cost": "0.001056320"
+    },
+    {
+      "n": 7,
+      "player": "I register as a Novice adventurer at the guild counter.",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        12,
+        13,
+        14
+      ],
+      "failed": [],
+      "firstProse": 4.427,
+      "ready": 8.386,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001629442"
+    },
+    {
+      "n": 8,
+      "player": "Yes. I accept the two-silver guild registration fee and pay the 2 silver for my Novice membership.",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        15,
+        16,
+        17
+      ],
+      "failed": [],
+      "firstProse": 3.406,
+      "ready": 8.545,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001644928"
+    },
+    {
+      "n": 9,
+      "player": "I pocket my guild plate and read today's quest board. I look for someone close to Glassmere who needs help with a small but real danger.",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "board",
+        "board",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        18,
+        19,
+        20,
+        21,
+        22
+      ],
+      "failed": [],
+      "firstProse": 19.524,
+      "ready": 26.534,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.002402762"
+    },
+    {
+      "n": 10,
+      "player": null,
+      "hud": true,
+      "mode": null,
+      "requested": [
+        "narrator",
+        "extractor",
+        "extractor"
+      ],
+      "ids": [
+        23,
+        24,
+        25
+      ],
+      "failed": [],
+      "firstProse": 1.661,
+      "ready": 8.421,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001988432"
+    },
+    {
+      "n": 11,
+      "player": "I walk to Marta Fleck's pie shop in Cordwainer Row and show her the slip. 'Serah sends me. Where are your chickens now? I'd like everyone out of the yard before I go in.'",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor",
+        "extractor"
+      ],
+      "ids": [
+        26,
+        27,
+        28,
+        29
+      ],
+      "failed": [],
+      "firstProse": 6.089,
+      "ready": 24.513,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.002997078"
+    },
+    {
+      "n": 12,
+      "player": "'I'll tell your sister myself when it's safe, Marta.' I listen at the cellar hatch and look under the edge of the overturned boat from a few paces away. I want to know which hiding place is occupied before opening either.",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        30,
+        31,
+        32
+      ],
+      "failed": [],
+      "firstProse": 3.891,
+      "ready": 11.263,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001777134"
+    },
+    {
+      "n": 13,
+      "player": "'Back inside, please. Shut the kitchen door behind you.' With my sword drawn I slide the bolt and lift the hatch from one side, leaving the cat a way up into the empty yard.",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        33,
+        34,
+        35
+      ],
+      "failed": [],
+      "firstProse": 7.359,
+      "ready": 18.578,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001960770"
+    },
+    {
+      "n": 14,
+      "player": null,
+      "hud": true,
+      "mode": null,
+      "requested": [
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        36,
+        37
+      ],
+      "failed": [],
+      "firstProse": 3.089,
+      "ready": 9.073,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001182378"
+    },
+    {
+      "n": 15,
+      "player": "I keep the edge away from the stair rail. There's no sense in ruining Marta's cellar.",
+      "hud": true,
+      "mode": "hud_roleplay",
+      "requested": [
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        38,
+        39
+      ],
+      "failed": [],
+      "firstProse": 1.653,
+      "ready": 13.437,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001230746"
+    },
+    {
+      "n": 16,
+      "player": "'Done, Marta. Tam can use the stairs again.' I show her the cleared cellar and my contract slip. Before I go to tell her sister, I ask what name her sister uses.",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        40,
+        41,
+        42
+      ],
+      "failed": [],
+      "firstProse": 11.074,
+      "ready": 22.152,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001809454"
+    },
+    {
+      "n": 17,
+      "player": "I go to the green awning by the Corn Gate. 'Bess? Marta sent me. The grey tom had one torn ear. It's dead, and Tam and the hens are safe.' I wait to see how she takes that.",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor",
+        "extractor"
+      ],
+      "ids": [
+        43,
+        44,
+        45,
+        46
+      ],
+      "failed": [],
+      "firstProse": 6.973,
+      "ready": 16.391,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.002544368"
+    },
+    {
+      "n": 18,
+      "player": "I leave Bess to her work and go back to Serah at the Adventurers' Guild hall in Glassmere, with the pie-shop slip ready on the counter.",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        47,
+        48,
+        49
+      ],
+      "failed": [],
+      "firstProse": 2.425,
+      "ready": 10.898,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001994036"
+    },
+    {
+      "n": 19,
+      "player": "'That's the first contract I promised to bring you, Serah.' I show her the two tomcat claws. 'Who buys these in Glassmere? And can anyone here show me how to bind that scratch before I try Glimmerdeep?'",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        50,
+        51,
+        52
+      ],
+      "failed": [],
+      "firstProse": 2.588,
+      "ready": 12.616,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.002007134"
+    },
+    {
+      "n": 20,
+      "player": "I follow Serah to the basin and let her show me that linen wrap. I try tying the last knot myself. 'If I'm bleeding under armor later, what would tell me to stop and turn back?'",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        53,
+        54,
+        55
+      ],
+      "failed": [],
+      "firstProse": 2.344,
+      "ready": 7.7,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001924214"
+    },
+    {
+      "n": 21,
+      "player": "#journal",
+      "hud": false,
+      "mode": null,
+      "requested": [],
+      "ids": [],
+      "failed": [],
+      "firstProse": null,
+      "ready": null,
+      "applied": null,
+      "persisted": null,
+      "verifiedReload": true,
+      "cost": "0"
+    },
+    {
+      "n": 22,
+      "player": "I go to Brannik's parts counter on Ironrow. I lay out the pelt and both whole claws, and ask him for his cash price for the lot.",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "planner",
+        "narrator",
+        "extractor",
+        "extractor"
+      ],
+      "ids": [
+        56,
+        57,
+        58,
+        59,
+        60
+      ],
+      "failed": [],
+      "firstProse": 9.486,
+      "ready": 15.938,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.003275226"
+    },
+    {
+      "n": 23,
+      "player": "'Five copper for the lot, agreed.' I sell Brannik my one grey tomcat pelt and my two grey tomcat claws.",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        61,
+        62,
+        63
+      ],
+      "failed": [],
+      "firstProse": 2.574,
+      "ready": 7.966,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001769338"
+    },
+    {
+      "n": 24,
+      "player": "#assign STR 3 VIT 2",
+      "hud": false,
+      "mode": null,
+      "requested": [],
+      "ids": [],
+      "failed": [],
+      "firstProse": null,
+      "ready": null,
+      "applied": null,
+      "persisted": null,
+      "verifiedReload": true,
+      "cost": "0"
+    },
+    {
+      "n": 25,
+      "player": "Back at the Adventurers' Guild, I read the Novice board again to find the contract for the outer grottos of Glimmerdeep.",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        64,
+        65,
+        66
+      ],
+      "failed": [],
+      "firstProse": 3.983,
+      "ready": 10.786,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001845048"
+    },
+    {
+      "n": 26,
+      "player": null,
+      "hud": true,
+      "mode": null,
+      "requested": [
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        67,
+        68
+      ],
+      "failed": [],
+      "firstProse": 1.932,
+      "ready": 9.217,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001299234"
+    },
+    {
+      "n": 27,
+      "player": "Before I leave town, I stop at an apothecary and ask for the price and effect of one small health potion I can carry into the grotto.",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        69,
+        70,
+        71
+      ],
+      "failed": [],
+      "firstProse": 3.414,
+      "ready": 9.904,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001908352"
+    },
+    {
+      "n": 28,
+      "player": "I pay the eight copper for that lesser mending draught and tuck the sealed vial where I can reach it quickly.",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        72,
+        73,
+        74,
+        75
+      ],
+      "failed": [],
+      "firstProse": 7.339,
+      "ready": 12.839,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.002273822"
+    },
+    {
+      "n": 29,
+      "player": "I follow the north road past Shepherd's Mill and the stream up to the entrance of Glimmerdeep Grotto. At the cleft I stop to check the light and the way back.",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        76,
+        77,
+        78
+      ],
+      "failed": [],
+      "firstProse": 6.317,
+      "ready": 15.39,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001907180"
+    },
+    {
+      "n": 30,
+      "player": "I enter level one of Glimmerdeep on the dry side, following the faint blue points. I keep the stream on my left so I can find the entrance again.",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        79,
+        80,
+        81
+      ],
+      "failed": [],
+      "firstProse": 4.042,
+      "ready": 14.915,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001831948"
+    },
+    {
+      "n": 31,
+      "player": "I keep the stream on my left and watch for the other beetle turning toward me.",
+      "hud": true,
+      "mode": "hud_free",
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        82,
+        83,
+        84
+      ],
+      "failed": [],
+      "firstProse": 6.528,
+      "ready": 13.515,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001804116"
+    },
+    {
+      "n": 32,
+      "player": null,
+      "hud": true,
+      "mode": null,
+      "requested": [
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        85,
+        86
+      ],
+      "failed": [],
+      "firstProse": 2.727,
+      "ready": 5.776,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001151380"
+    },
+    {
+      "n": 33,
+      "player": null,
+      "hud": true,
+      "mode": null,
+      "requested": [
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        87,
+        88
+      ],
+      "failed": [],
+      "firstProse": 2.506,
+      "ready": 6.776,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001147596"
+    },
+    {
+      "n": 34,
+      "player": null,
+      "hud": true,
+      "mode": null,
+      "requested": [
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        89,
+        90
+      ],
+      "failed": [],
+      "firstProse": 5.095,
+      "ready": 8.85,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001148842"
+    },
+    {
+      "n": 35,
+      "player": null,
+      "hud": true,
+      "mode": null,
+      "requested": [
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        91,
+        92
+      ],
+      "failed": [],
+      "firstProse": 3.912,
+      "ready": 8.774,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001166522"
+    },
+    {
+      "n": 36,
+      "player": "I check the wrap Serah showed me, listen for movement and look for the next passage on this same level. If I have to choose between a wet tunnel and a dry one, I want to see what tracks lead into each before I choose.",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        93,
+        94,
+        95
+      ],
+      "failed": [],
+      "firstProse": 3.408,
+      "ready": 10.292,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001842114"
+    },
+    {
+      "n": 37,
+      "player": null,
+      "hud": true,
+      "mode": null,
+      "requested": [
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        96,
+        97
+      ],
+      "failed": [],
+      "firstProse": 4.578,
+      "ready": 12.898,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001295550"
+    },
+    {
+      "n": 38,
+      "player": null,
+      "hud": true,
+      "mode": null,
+      "requested": [
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        98,
+        99
+      ],
+      "failed": [],
+      "firstProse": 2.413,
+      "ready": 7.133,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001206358"
+    },
+    {
+      "n": 39,
+      "player": null,
+      "hud": true,
+      "mode": null,
+      "requested": [
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        100,
+        101
+      ],
+      "failed": [],
+      "firstProse": 2.339,
+      "ready": 7.849,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001183518"
+    },
+    {
+      "n": 40,
+      "player": null,
+      "hud": true,
+      "mode": null,
+      "requested": [
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        102,
+        103
+      ],
+      "failed": [],
+      "firstProse": 1.862,
+      "ready": 7.522,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001157242"
+    },
+    {
+      "n": 41,
+      "player": "The light is going and my potion is gone. I leave the boss for another day. I retrace my steps along the stream and go out to the entrance of Glimmerdeep with my loot.",
+      "hud": false,
+      "mode": null,
+      "requested": [
+        "planner",
+        "narrator",
+        "extractor"
+      ],
+      "ids": [
+        104,
+        105,
+        106
+      ],
+      "failed": [],
+      "firstProse": 7.673,
+      "ready": 17.809,
+      "applied": "applied",
+      "persisted": true,
+      "verifiedReload": true,
+      "cost": "0.001814682"
+    }
+  ]
+}

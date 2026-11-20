@@ -1,8 +1,12 @@
 # Avereth – Originalruns und Reviews
 
-**Stand: 19.11.2026 · Quellenindex, keine zweite Produkt-/Teststatusliste.** [Aktueller Stand 03](../03_AKTUELLER_PROJEKTSTAND.md) · [Fachquellen 06](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Arbeitsweise 01](../01_ARBEITSWEISE_CHATGPT_CLAUDE.md).
+**Stand: 20.11.2026 · Quellenindex, keine zweite Produkt-/Teststatusliste.** [Aktueller Stand 03](../03_AKTUELLER_PROJEKTSTAND.md) · [Fachquellen 06](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Arbeitsweise 01](../01_ARBEITSWEISE_CHATGPT_CLAUDE.md).
 
 Der aktuelle Produkt- und Abnahmestand steht ausschließlich in [03](../03_AKTUELLER_PROJEKTSTAND.md). Zuletzt wurde ein natürlicher NPC-/PULSE-Dreierbatch auf `.191` geprüft: **Warrior 70 Inputs**, Rogue **22 Inputs bis Provider-/Credit-Stopp**, Mage **0 Inputs nach HTTP-Fehlern**; daher **keine vollständige Dreierabnahme**. Im Warrior ein korrekt gebuchter neuer Mossback-Abschnitt und eine erfolgreiche N1/N4-Ortsrückführung, zugleich fünf konzentrierte Szenenkaskaden in Warrior/Rogue sowie ein akzeptierter Thread über verweigerte Dungeon-Gegner. Der vorherige vollständige `.188`-Batch bleibt unten als Vergleichsquelle erhalten. Ein Runner-Ende ist keine Integritätsfreigabe; getesteter Build `.188` ist vom inzwischen gepushten `.189` zu unterscheiden. Freie persönliche Runs und gezielte natürliche NPC-/PULSE-Läufe nur bei konkretem Erkenntnisbedarf; historisch war 10B auf `.154` als technischer Zwischenstand für persönliche Spieltests teilabgenommen. Ein Runner-`completed` ist nur ein Ende, weder Levelziel noch Integritätsnachweis. Keine gemeinsame Erfolgsquote aus unterschiedlichen Builds, kurzen Toden und langen fortgesetzten Läufen bilden.
+
+## Autonome Codex-Kampagne
+
+[Glassmere und Glimmerdeep auf .204](codex-204-glassmere-20261120/README.md) · 41 Eingaben mit Reload, Originalchat, zeitnahes Spielerfeedback, Fallreplays und Windows-Anleitung.
 
 ## Persönliche User-Spieltests (keine Runner-Batches)
 

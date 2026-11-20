@@ -1,0 +1,87 @@
+{
+  "fold": {
+    "events": 599,
+    "problems": [],
+    "problem_count": 0,
+    "fold_errors": 0
+  },
+  "cases": [
+    {
+      "turn": 5,
+      "side": "player",
+      "modelInputs": 1,
+      "originalEvents": 7,
+      "replayedEvents": 7,
+      "identical": true,
+      "rejected": []
+    },
+    {
+      "turn": 5,
+      "side": "reply",
+      "modelInputs": 1,
+      "originalEvents": 7,
+      "replayedEvents": 7,
+      "identical": true,
+      "rejected": [
+        [
+          "engine_owned_fact",
+          "Alaric's Guild registration is the engine's state, and the engine has not registered him"
+        ],
+        [
+          "engine_owned_fact",
+          "a known Guild contract keeps payout and formal status/completion in the engine domain; use quest.detail/quest.progress/quest.ready for story progress instead of overriding that state with a free fact"
+        ],
+        [
+          "quest",
+          "unknown quest"
+        ]
+      ]
+    },
+    {
+      "turn": 6,
+      "side": "player",
+      "modelInputs": 2,
+      "originalEvents": 0,
+      "replayedEvents": 0,
+      "identical": true,
+      "rejected": []
+    },
+    {
+      "turn": 16,
+      "side": "reply",
+      "modelInputs": 1,
+      "originalEvents": 8,
+      "replayedEvents": 8,
+      "identical": true,
+      "rejected": [
+        [
+          "npc_presence",
+          "an NPC handover needs the giver present at this story step; use enter for an actual arrival"
+        ]
+      ]
+    },
+    {
+      "turn": 20,
+      "side": "reply",
+      "modelInputs": 1,
+      "originalEvents": 9,
+      "replayedEvents": 9,
+      "identical": true,
+      "rejected": []
+    },
+    {
+      "turn": 23,
+      "side": "reply",
+      "modelInputs": 1,
+      "originalEvents": 5,
+      "replayedEvents": 5,
+      "identical": true,
+      "rejected": [
+        [
+          "coin_already_received",
+          "an existing handover or its recount never creates another payment"
+        ]
+      ]
+    }
+  ]
+}

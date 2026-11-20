@@ -41,7 +41,7 @@ try{
             const body=JSON.parse(Buffer.concat(chunks));
             const role=body.stream?'narrator':body.messages[0].content.startsWith('You read one reply')?'extractor':'planner';
             const id=rows.filter(r=>r.kind==='start').length+1;
-            rows.push({kind:'start',...active,id,role});
+            rows.push({kind:'start',...active,id,role,params:{stream:!!body.stream}});
             if(body.stream){
                 res.setHeader('Content-Type','text/event-stream');res.flushHeaders();
                 await delay(1100);
@@ -74,6 +74,8 @@ try{
         const driver=await Driver.create(browser,{turnTimeoutMs:90000});assert((await driver.open(server.url)).connected);
         await driver.openCard(card);hosts[arm]={driver,page:driver.page,foldChat,inst,card};
     }
+    await play({hosts,gate,readRecords:()=>rows,root,save,hash,delay,canary:true});
+    assert(fs.existsSync(path.join(root,'canary-complete.json')));
     await play({hosts,gate,readRecords:()=>rows,root,save,hash,delay,pairCount:1});
     const result=JSON.parse(fs.readFileSync(path.join(root,'turns.json')));
     assert(result.length===2&&result.every(r=>r.readback));assert.equal(result[0].worldHash,result[1].worldHash);

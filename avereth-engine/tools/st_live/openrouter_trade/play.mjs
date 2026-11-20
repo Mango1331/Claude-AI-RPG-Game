@@ -4,13 +4,14 @@ import fs from 'node:fs';
 
 import {observeTurn} from '../natural_ab/observe.mjs';
 
-export async function play({hosts,gate,readRecords,save,root,hash,delay,pairCount=6}){
+export async function play({hosts,gate,readRecords,save,root,hash,delay,pairCount=6,canary=false}){
     const turns=[];
-    for(let n=1;n<=pairCount;n++)for(const arm of (n%2 ? ['A','B']:['B','A'])){
+    for(let n=1;n<=(canary?1:pairCount);n++)for(const arm of (canary?['A']:n%2 ? ['A','B']:['B','A'])){
         const {driver,page,foldChat,inst,card}=hosts[arm];
         const scenario=Math.ceil(n/2);
         const seed=fs.readFileSync(path.join(root,scenario===3?'combat-seed.jsonl':'guild-seed.jsonl'),'utf8');
-        const name='natural-trade-'+arm+'-'+n;
+        const stage=canary?'canary':'trade';
+        const name='natural-'+stage+'-'+arm+'-'+n;
         fs.writeFileSync(path.join(inst.user,'chats',card,name+'.jsonl'),seed,{flag:'wx'});
         await page.evaluate(n=>SillyTavern.getContext().openCharacterChat(n),name);
         driver.testChat=await driver.identity();
@@ -28,7 +29,7 @@ export async function play({hosts,gate,readRecords,save,root,hash,delay,pairCoun
         const action=texts[scenario-1];
         await page.fill('#send_textarea',action);
         await page.evaluate(observeTurn,{index:before.length+1});
-        gate(arm,'trade',n);
+        gate(arm,stage,n);
         await page.click('#send_but');
         let terminal=false;
         for(let i=0;i<1800;i++){
@@ -63,14 +64,24 @@ export async function play({hosts,gate,readRecords,save,root,hash,delay,pairCoun
         assert.deepEqual(fold.errors,[]);assert.deepEqual(fold.state,foldChat(after).state);
         assert.equal(hash(reloaded.map(m=>m.extra?.avereth?.events||[])),hash(after.map(m=>m.extra?.avereth?.events||[])));
         assert(await driver.verifySaved(reloaded,{complete:true}));
-        const physical=readRecords().filter(r=>r.stage==='trade'&&r.turn===n&&r.arm===arm);
+        const physical=readRecords().filter(r=>r.stage===stage&&r.turn===n&&r.arm===arm);
         const end=physical.filter(r=>r.kind==='end');assert.equal(end.length,physical.filter(r=>r.kind==='start').length);
         const durable={world:fold.state,player:after.at(-2),reply,eventsHash:hash(reloaded.map(m=>m.extra?.avereth?.events||[]))};
-        save('turn-'+arm+n+'.json',durable);
+        save((canary?'canary-turn-':'turn-')+arm+n+'.json',durable);
         fs.copyFileSync(path.join(inst.user,'chats',card,name+'.jsonl'),path.join(root,name+'.jsonl'));
         const item={arm,n,scenario,startWorld:hash(state),startEvents:hash(before.map(m=>m.extra?.avereth?.events||[])),action:after.at(-2).mes,worldHash:hash(fold.state),readback:true,requests:end.map(x=>x.id),measured};
-        turns.push(item);save('turns.json',turns);
+        if(canary){
+            const roles=end.map(r=>r.role);
+            assert(/^(planner,)+narrator,(extractor,)*extractor$/.test(roles.join(',')));
+            assert(physical.some(r=>r.kind==='start' && r.role==='narrator' && r.params.stream));
+            assert(end.every(r=>r.ok) && measured.world.persisted && measured.world.record_changed);
+            assert(!(await driver.probe()).busy);
+            assert(await page.evaluate(()=>document.querySelector('#send_but')?.checkVisibility() &&
+                !document.querySelector('#mes_stop')?.checkVisibility() &&
+                !document.querySelector('#send_textarea')?.disabled));
+        }
+        turns.push(item);save(canary?'canary.json':'turns.json',turns);
         console.log('saved',arm,n,scenario,end.length,Math.round(measured.marks.ready-measured.marks.click));
     }
-    save('main-complete.json',{turns:turns.length});
+    save(canary?'canary-complete.json':'main-complete.json',{turns:turns.length});
 }

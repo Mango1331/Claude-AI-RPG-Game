@@ -10,6 +10,7 @@ import ssl
 import time
 
 from stream_usage import UsageFrames
+from restart_budget import allowance
 
 import httpx
 from aiohttp import web
@@ -19,8 +20,8 @@ BASE = "https://openrouter.ai/api/v1"
 ROOT = Path(os.environ["AVERETH_AB_DIR"])
 KEY = os.environ["OPENROUTER_API_KEY"]
 LOG = ROOT / "physical.jsonl"
-LIMIT = 60
-CAP = Decimal("0.50")
+LIMIT = 51
+CAP = Decimal("0.453434876")
 ROUTE = json.loads((ROOT / "route.json").read_text())
 RATES = ROUTE["pricing"]
 PRICE = {k: float(Decimal(RATES[k]) * 1000000) for k in ("prompt", "completion")}
@@ -55,11 +56,20 @@ def inspect_answer(payload, stream):
     packets = []
     done = not stream
     if stream:
+        adapter = UsageFrames()
+        payload = b"".join(adapter.feed(payload))
+        if adapter.pending.strip():
+            raise ValueError("unterminated SSE frame")
         ended = False
         for block in payload.decode().replace("\r\n", "\n").replace("\r", "\n").split("\n\n"):
-            data = "\n".join(line[5:].lstrip(" ") for line in block.split("\n") if line.startswith("data:"))
-            if not data:
+            if any(line.partition(":")[0]=="event" and line.partition(":")[2].strip()=="error" for line in block.splitlines()):
+                raise ValueError("SSE error event")
+            fields = [line[5:].lstrip(" ") for line in block.splitlines() if line.startswith("data:")]
+            if not fields:
                 continue
+            data = "\n".join(fields)
+            if not data:
+                raise ValueError("empty SSE data")
             if ended:
                 raise ValueError("data after DONE")
             if data == "[DONE]":
@@ -80,6 +90,8 @@ def inspect_answer(payload, stream):
         if packet.get("usage") is not None:
             usage = packet["usage"]
         for c in packet.get("choices") or []:
+            if stream and finish is not None:
+                raise ValueError("choice after primary finish")
             if c.get("index", 0) != 0:
                 raise ValueError("unexpected choice")
             msg = c.get("delta") or c.get("message") or {}
@@ -87,7 +99,7 @@ def inspect_answer(payload, stream):
             text += (c.get("delta") or c.get("message") or {}).get("content") or ""
             if c.get("finish_reason") is not None:
                 finish = c["finish_reason"]
-    if not done or finish is None:
+    if not done or finish is None or (stream and finish != "stop"):
         raise ValueError("no regular completion evidence")
     if not models or not models.issubset({MODEL, ROUTE["canonical_slug"]}):
         raise ValueError("reported model mismatch")
@@ -103,6 +115,7 @@ async def serve():
         raise SystemExit("Unexpected route")
     if any(PRICE[k] > ceiling for k, ceiling in (("prompt", 0.042), ("completion", 0.184))):
         raise SystemExit("Published price above the verified ceiling")
+    remaining_cap = min(CAP, allowance(json.loads((ROOT / "prior-settlement.json").read_text())))
     lock = (ROOT / "process.lock").open("a")
     fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
     prior = [json.loads(line) for line in LOG.read_text().splitlines()] if LOG.exists() else []
@@ -134,7 +147,7 @@ async def serve():
             if not isinstance(limit,int) or not 0 < limit <= ROUTE["max_completion_tokens"]:
                 return web.json_response({"error":"Missing or invalid output limit"},status=400)
             reserve = Decimal(ROUTE["context_length"]) * Decimal(RATES["prompt"]) + Decimal(limit) * Decimal(RATES["completion"])
-            if spent + reserve > CAP:
+            if spent + reserve > remaining_cap:
                 blocked=True
                 record(dict(kind="budget_stop", at=CLOCK(), spent=str(spent), reserve=str(reserve)))
                 return web.json_response({"error":"Test cost ceiling"},status=409)
@@ -157,6 +170,9 @@ async def serve():
                     "Authorization":"Bearer "+KEY, "Content-Type":"application/json","Accept-Encoding":"identity",
                 }) as upstream:
                     result.update(status=upstream.status_code,headersAt=CLOCK())
+                    receipt = upstream.headers.get("x-generation-id") or upstream.headers.get("x-openrouter-generation-id")
+                    if receipt and receipt.startswith("gen-"):
+                        record(dict(kind="generation", **tag, generationId=receipt, at=CLOCK()))
                     downstream = web.StreamResponse(status=upstream.status_code, headers={
                         "Content-Type":upstream.headers.get("content-type","application/octet-stream"), "Cache-Control":"no-cache"})
                     await downstream.prepare(req)
@@ -166,6 +182,14 @@ async def serve():
                         if chunk and "firstByteAt" not in result:
                             result["firstByteAt"] = CLOCK()
                         for part in adapter.feed(chunk) if adapter else [chunk]:
+                            if adapter and not receipt and part.startswith(b"data:"):
+                                try:
+                                    packet = json.loads(part[5:])
+                                    receipt = packet.get("id") if isinstance(packet, dict) else None
+                                except ValueError:
+                                    receipt = None
+                                if isinstance(receipt,str) and receipt.startswith("gen-"):
+                                    record(dict(kind="generation", **tag, generationId=receipt, at=CLOCK()))
                             await downstream.write(part)
                     if adapter:
                         if adapter.pending: await downstream.write(adapter.pending)
@@ -192,7 +216,7 @@ async def serve():
                 charged = Decimal(str(reported)) if isinstance(reported,(int,float)) and reported >= 0 else reserve
                 spent += charged
                 result.update(chargedOrReservedUSD=str(charged), spentOrReservedUSD=str(spent))
-                blocked = not result["ok"] or spent >= CAP
+                blocked = not result["ok"] or spent >= remaining_cap
                 record(dict(kind="end", **tag, **result, at=CLOCK(), elapsedMs=CLOCK()-start))
             if downstream is not None:
                 return downstream

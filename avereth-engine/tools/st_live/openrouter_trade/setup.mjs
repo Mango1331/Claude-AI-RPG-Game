@@ -70,31 +70,8 @@ try{
     for (const key of ['world','events','description','lore','preset','messages'])assert.deepEqual(sources.A[key],sources.B[key]);
     assert.deepEqual({...sources.A.params,stream:true},sources.B.params);
     save('configuration.json',sources);
-    for(const arm of ['A','B']){
-        gate(arm,'preflight-adapter');
-        const t=await hosts[arm].page.evaluate(async arm=>{
-            const c=SillyTavern.getContext(),o=c.chatCompletionSettings,old=o.openai_max_tokens;
-            try{
-                o.openai_max_tokens=512;o.stream_openai=arm==='B';
-                const {sendOpenAIRequest}=await import('/scripts/openai.js');
-                const reply=await sendOpenAIRequest('normal',[{role:'user',content:'Reply in English with one short sentence about rain.'}],new AbortController().signal);
-                if(arm==='A')return reply.choices?.[0]?.message?.content;
-                let content='';for await(const frame of reply())content=frame.text;
-                return content;
-            }finally{o.openai_max_tokens=old;o.stream_openai=true;}
-        },arm);
-        const end=readRecords().filter(r=>r.stage==='preflight-adapter'&&r.arm===arm&&r.kind==='end');
-        assert.equal(end.length,1);assert(end[0].ok);
-        assert.equal(typeof t,'string');assert(t.trim());assert.equal(t,end[0].text);
-        console.log(arm,'natural connection verified',end[0].finish);
-        gate(null,'closed');
-    }
-    const sent=readRecords().filter(r=>r.stage==='preflight-adapter'&&r.kind==='start');
-    assert.equal(sent.length,2);const common=({stream,stream_options,...rest})=>rest;assert.deepEqual(common(sent[0].params),common(sent[1].params));
-    assert(sent.every(r=>r.params.reasoning.effort==='low'&&r.params.model===model));
-    save('preflight.json',{verified:true,requests:sent.map(x=>x.id)});
-    while(!fs.existsSync(path.join(root,'main.ready')))await delay(500);
     const {play}=await import('./play.mjs');
+    await play({hosts,gate,readRecords,save,root,hash,delay,canary:true});
     await play({hosts,gate,readRecords,save,root,hash,engine,delay});
 }catch(err){
     save('interruption.json',{message:err.message,stack:String(err.stack).split('\n').slice(0,5)});

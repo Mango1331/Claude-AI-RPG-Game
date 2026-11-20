@@ -6,7 +6,7 @@ Der aktuelle Produkt- und Abnahmestand steht ausschließlich in [03](../03_AKTUE
 
 ## Autonome Codex-Kampagne
 
-[Glassmere und Glimmerdeep auf .204](codex-204-glassmere-20261120/README.md) · 41 Eingaben mit Reload, Originalchat, zeitnahes Spielerfeedback, Fallreplays und Windows-Anleitung.
+[Glassmere und Glimmerdeep auf .204](codex-204-glassmere-20261120/README.md) · [unabhängiger GPT-Gegenreview](codex-204-glassmere-20261120/REVIEW_GPT.md) · 41 Eingaben mit Reload, Originalchat, zeitnahes Spielerfeedback, Fallreplays und Windows-Anleitung. **GO für nächsten persönlichen .204-Spieltest**, bei zwei bekannten mittleren Erzähl-/Weltwidersprüchen (Gildenbeitritt, Martas Brötchen).
 
 ## Persönliche User-Spieltests (keine Runner-Batches)
 

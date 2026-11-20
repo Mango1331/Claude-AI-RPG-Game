@@ -15,13 +15,21 @@ old,new=json.loads((root/'markets.json').read_text())
 rows=[]
 ledger=[json.loads(l) for l in (root/'physical.jsonl').read_text().splitlines()]
 for r in ledger:
-    if r['kind']!='start' or r['role']!='planner' or r['arm']!='A':continue
+    if r['kind']!='start' or r['role'] not in ('planner','extractor'):continue
     original=r['body']['messages']
-    assert sum(m['content'].count(old) for m in original)==1
-    local=lambda ms:len(tok.encode(chat.render(messages=ms,tools=None,add_generation_prompt=True,reasoning_effort='low'),add_special_tokens=False).ids)
-    candidate=[{**m,'content':m['content'].replace(old,new)} for m in original]
-    actual=next(x for x in ledger if x['kind']=='end' and x['id']==r['id'])
-    rows.append(dict(id=r['id'],reportedA=actual['usage']['prompt_tokens'],localA=local(original),localB=local(candidate),localSaved=local(original)-local(candidate)))
+    sent=old if r['arm']=='A' else new
+    hits=sum(m['content'].count(sent) for m in original)
+    if hits!=1:
+        rows.append(dict(id=r['id'],hits=hits))
+        continue
+    def local(catalog):
+        messages=[{**m,'content':m['content'].replace(sent,catalog)} for m in original]
+        rendered=chat.render(messages=messages,tools=None,add_generation_prompt=True,reasoning_effort='low')
+        return len(tok.encode(rendered,add_special_tokens=False).ids)
+    baseline,candidate=local(old),local(new)
+    end=next(x for x in ledger if x['kind']=='end' and x['id']==r['id'])
+    rows.append(dict(id=r['id'],arm=r['arm'],role=r['role'],hits=hits,reported=(end.get('usage') or {}).get('prompt_tokens'),
+                     localA=baseline,localB=candidate,localSaved=baseline-candidate))
 (root/'token-comparison.json').write_text(json.dumps(rows,indent=2)+'\n')
 if (root/'offline-wire.json').exists():
     observed=json.loads((root/'offline-wire.json').read_text())

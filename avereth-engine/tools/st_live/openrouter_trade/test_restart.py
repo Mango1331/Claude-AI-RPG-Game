@@ -29,12 +29,19 @@ class Restart(unittest.TestCase):
             with self.subTest(wire=bad), self.assertRaises(ValueError):
                 self.proxy.inspect_answer(bad,True)
 
+    def test_only_reviewed_explicit_rate_rejection_can_resume(self):
+        denied=dict(id=31,status=429,reason="upstream_http_error",serviceError={"code":"429"})
+        self.assertTrue(self.proxy.reviewed_rejection(denied,[31]))
+        self.assertFalse(self.proxy.reviewed_rejection(denied,[]))
+        for change in [dict(status=200),dict(reason="ClientConnectionResetError"),dict(serviceError={})]:
+            self.assertFalse(self.proxy.reviewed_rejection({**denied,**change},[31]))
+
     def test_budget(self):
         record=dict(created_at='2026-11-20T00:02:17.700Z',model='z-ai/glm-5.3-flash',streamed=True,
-                    provider_name='Wafer',native_tokens_prompt=12642,cancelled=True,total_cost='0.0006')
+                    provider_name='Wafer',id='gen-1795132937-y4K4TwwYrW4wGZzHAFzA',native_tokens_prompt=14778,cancelled=True,total_cost='0.0006')
         self.assertEqual(self.proxy.LIMIT,51)
         self.assertEqual(allowance(record),Decimal('0.453434876'))
         self.assertEqual(allowance({**record,'total_cost':'0.05'}),Decimal('0.448228732'))
-        for bad in ({'cancelled':False},{'created_at':'2026-11-20T00:02:15Z'},{'native_tokens_prompt':13886}):
+        for bad in ({'cancelled':False},{'created_at':'2026-11-20T00:02:15Z'},{'id':'unrelated'}):
             with self.assertRaises(ValueError):
                 allowance({**record,**bad})

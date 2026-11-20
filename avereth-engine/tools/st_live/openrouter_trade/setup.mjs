@@ -71,8 +71,13 @@ try{
     assert.deepEqual({...sources.A.params,stream:true},sources.B.params);
     save('configuration.json',sources);
     const {play}=await import('./play.mjs');
-    await play({hosts,gate,readRecords,save,root,hash,delay,canary:true});
-    await play({hosts,gate,readRecords,save,root,hash,engine,delay});
+    const resume=fs.existsSync(path.join(root,'reviewed-rate-limit.json'));
+    if(resume){
+        const [canary]=JSON.parse(fs.readFileSync(path.join(root,'canary.json')));
+        assert(canary.readback && canary.measured.world.persisted && canary.measured.marks.ready);
+        assert(fs.existsSync(path.join(root,'canary-complete.json')));
+    }else await play({hosts,gate,readRecords,save,root,hash,delay,canary:true});
+    await play({hosts,gate,readRecords,save,root,hash,engine,delay,resume});
 }catch(err){
     save('interruption.json',{message:err.message,stack:String(err.stack).split('\n').slice(0,5)});
     console.log('Test stopped:',err.message);process.exitCode=1;

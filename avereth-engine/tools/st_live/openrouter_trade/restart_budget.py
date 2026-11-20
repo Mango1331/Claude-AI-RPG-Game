@@ -19,8 +19,8 @@ def allowance(generation):
     if (generation.get("provider_name") != "Wafer"
             or generation.get("model") not in ("z-ai/glm-5.3-flash", "z-ai/glm-5.3-flash-20260826")
             or generation.get("streamed") is not True
-            or generation.get("native_tokens_prompt") != 12642):
-        raise ValueError("Provider, model, streaming or prompt length mismatch")
+            or generation.get("id") != "gen-1795132937-y4K4TwwYrW4wGZzHAFzA"):
+        raise ValueError("Provider, model, streaming or assigned generation ID mismatch")
     if not generation.get("finish_reason") and generation.get("cancelled") is not True:
         raise ValueError("No provider terminal status")
     cost = Decimal(str(generation["total_cost"]))

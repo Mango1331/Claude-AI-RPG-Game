@@ -4,9 +4,12 @@ import fs from 'node:fs';
 
 import {observeTurn} from '../natural_ab/observe.mjs';
 
-export async function play({hosts,gate,readRecords,save,root,hash,delay,pairCount=6,canary=false}){
-    const turns=[];
+export async function play({hosts,gate,readRecords,save,root,hash,delay,pairCount=6,canary=false,resume=false}){
+    const turns=resume ? JSON.parse(fs.readFileSync(path.join(root,'turns.json'))) : [];
     for(let n=1;n<=(canary?1:pairCount);n++)for(const arm of (canary?['A']:n%2 ? ['A','B']:['B','A'])){
+        if(turns.some(t=>t.n===n && t.arm===arm))continue;
+        const afterId=Math.max(0,...readRecords().filter(r=>r.kind==='start').map(r=>r.id));
+        const current=()=>readRecords().filter(r=>r.id>afterId);
         const {driver,page,foldChat,inst,card}=hosts[arm];
         const scenario=Math.ceil(n/2);
         const seed=fs.readFileSync(path.join(root,scenario===3?'combat-seed.jsonl':'guild-seed.jsonl'),'utf8');
@@ -31,9 +34,9 @@ export async function play({hosts,gate,readRecords,save,root,hash,delay,pairCoun
         await page.evaluate(observeTurn,{index:before.length+1});
         gate(arm,stage,n);
         await page.click('#send_but');
-        let terminal=false;
+        let terminal=false, rejected=false;
         for(let i=0;i<1800;i++){
-            const issue=readRecords().find(r=>r.kind==='end'&&!r.ok);
+            const issue=current().find(r=>r.kind==='end'&&!r.ok);
             if(issue)throw Error('physical gate stopped at request '+issue.id);
             const result=await page.evaluate(()=>({ready:!!window.abTurn?.marks.ready,status:document.querySelector('#avereth-action-status')?.textContent}));
             if(result.ready){terminal=true;break;}
@@ -47,9 +50,33 @@ export async function play({hosts,gate,readRecords,save,root,hash,delay,pairCoun
             },before.length+1);
             if(failed) throw Error('ST rejected the completed narrator revision');
             const xFailed=await page.evaluate(i=>SillyTavern.getContext().chat[i]?.extra?.avereth?.extraction?.status==='failed',before.length+1);
-            if(xFailed) throw Error('ST recorded an extractor failure');
+            if(xFailed){
+                if(canary) throw Error('Canary extractor failed');
+                const attempts=current().filter(r=>r.stage===stage && r.turn===n && r.arm===arm);
+                if(attempts.filter(r=>r.kind==='start').length===attempts.filter(r=>r.kind==='end'&&r.ok).length &&
+                    await driver.verifySaved(await driver.chat(),{complete:true})){
+                    rejected=true;break;
+                }
+            }
             if(/Remoteabschluss unbekannt|Speichern fehlgeschlagen/.test(result.status||''))throw Error('host gate: '+result.status);
             await delay(500);
+        }
+        if(rejected){
+            gate(null,'closed');
+            const observation=await page.evaluate(()=>{const s=window.abTurn;s.stop();return {marks:s.marks,firstSentence:s.firstSentence,world:s.world};});
+            const archived=await driver.chat();
+            await page.evaluate(()=>SillyTavern.getContext().reloadCurrentChat());
+            const reloaded=await driver.chat();
+            assert(await driver.verifySaved(reloaded,{complete:true}));
+            assert.deepEqual(foldChat(archived).state,foldChat(reloaded).state);
+            const reply=reloaded.at(-1);
+            assert.equal(reply.extra.avereth.extraction.status,'failed');
+            save('turn-'+arm+n+'.json',{world:foldChat(reloaded).state,reply,player:reloaded.at(-2)});
+            fs.copyFileSync(path.join(inst.user,'chats',card,name+'.jsonl'),path.join(root,name+'.jsonl'));
+            turns.push({arm,n,scenario,status:'extractor-failed',startWorld:hash(state),startEvents:hash(before.map(m=>m.extra?.avereth?.events||[])),
+                action,worldHash:hash(foldChat(reloaded).state),readback:true,measured:observation,
+                requests:current().filter(r=>r.stage===stage&&r.turn===n&&r.arm===arm&&r.kind==='end').map(r=>r.id)});
+            save('turns.json',turns);continue;
         }
         if(!terminal)throw Error('turn did not reach verified read-back and UI readiness');
         const after=await driver.chat(),reply=after.at(-1);
@@ -64,7 +91,7 @@ export async function play({hosts,gate,readRecords,save,root,hash,delay,pairCoun
         assert.deepEqual(fold.errors,[]);assert.deepEqual(fold.state,foldChat(after).state);
         assert.equal(hash(reloaded.map(m=>m.extra?.avereth?.events||[])),hash(after.map(m=>m.extra?.avereth?.events||[])));
         assert(await driver.verifySaved(reloaded,{complete:true}));
-        const physical=readRecords().filter(r=>r.stage===stage&&r.turn===n&&r.arm===arm);
+        const physical=current().filter(r=>r.stage===stage&&r.turn===n&&r.arm===arm);
         const end=physical.filter(r=>r.kind==='end');assert.equal(end.length,physical.filter(r=>r.kind==='start').length);
         const durable={world:fold.state,player:after.at(-2),reply,eventsHash:hash(reloaded.map(m=>m.extra?.avereth?.events||[]))};
         save((canary?'canary-turn-':'turn-')+arm+n+'.json',durable);

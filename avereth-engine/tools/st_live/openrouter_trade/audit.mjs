@@ -11,7 +11,7 @@ const json=name=>JSON.parse(read(name));
 const records=read('physical.jsonl').trim().split('\n').map(JSON.parse);
 const turns=fs.existsSync(path.join(root,'turns.json'))?json('turns.json'):[];
 const digest=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
-const metrics=[], machines=[], intervals=[];
+const metrics=[], machines=[], intervals=[], catalogs=[];
 let lastEnd=0, totalCost=0;
 for(const start of records.filter(r=>r.kind==='start')){
     const end=records.find(r=>r.kind==='end'&&r.id===start.id);
@@ -33,6 +33,7 @@ for(const [arm,repo] of Object.entries({A:ref,B:suite})){
     const {resolveCommands}=await mod('src/v4/commands.js');
     const {applyEvent}=await mod('src/state.js');
     const market=gearMarketText(content,false,'catalog');
+    catalogs.push(market);
     for(const start of records.filter(r=>r.kind==='start'&&r.arm===arm&&['planner','extractor'].includes(r.role))){
         const messages=structuredClone(start.body.messages);
         const hits=messages.reduce((n,m)=>n+m.content.split(market).length-1,0);
@@ -65,7 +66,12 @@ for(const [arm,repo] of Object.entries({A:ref,B:suite})){
         const ms=key=>typeof marks[key]==='number'?Math.round(marks[key]-marks.click):null;
         const events=[...(player.extra.avereth?.events||[]),...(reply.extra.avereth?.events||[])];
         const changes=key=>Object.values(world[key]).filter(x=>JSON.stringify(x)!==JSON.stringify(old[key][x.id]));
-        metrics.push({arm,pair:turn.n,scenario:turn.scenario,source:turn.startWorld,sourceEvents:turn.startEvents,requests:ph.length,
+        const extraction=reply.extra.avereth.extraction, applied=events.find(e=>e.t==='extract.applied');
+        const firstSentence=turn.measured.firstSentence||null;
+        const normalized=s=>s.replace(/[*_]/g,'').replace(/\s+/g,' ').trim();
+        const firstMatches=firstSentence?normalized(reply.mes).includes(normalized(firstSentence)):null;
+        metrics.push({firstSentence,firstMatches,deltaCount:applied?.d?.deltas,rejected:applied?.d?.rejected,
+            extractorStatus:extraction.status,stGenerationMs:Date.parse(reply.gen_finished)-Date.parse(reply.gen_started),arm,status:turn.status||'applied',pair:turn.n,scenario:turn.scenario,source:turn.startWorld,sourceEvents:turn.startEvents,requests:ph.length,
             repairs:ph.filter(r=>r.role==='extractor').length-1+Math.max(0,ph.filter(r=>r.role==='planner').length-1),
             input:sum('input'),output:sum('output'),reasoning:sum('reasoning'),cache:sum('cache'),cost:sum('cost'),
             firstMs:ms('firstProse'),narrationMs:ms('lastRenderedChange'),safeMs:ms('ready'),saveMs:ms('confirmedSave'),commitMs:ms('worldCommit'),
@@ -74,5 +80,6 @@ for(const [arm,repo] of Object.entries({A:ref,B:suite})){
             hp:[old.entities.pc.sheet.hp,world.entities.pc.sheet.hp],reload:true,measured:turn.measured.world});
     }
 }
+fs.writeFileSync(path.join(root,'markets.json'),JSON.stringify(catalogs));
 const output={confirmedCostUSD:totalCost,reservedOrChargedUSD:records.filter(r=>r.kind==='end').at(-1)?.spentOrReservedUSD,intervals,machines,metrics:metrics.sort((a,b)=>a.pair-b.pair||a.arm.localeCompare(b.arm)),maximumConcurrent:intervals.length?1:0};
 fs.writeFileSync(path.join(root,'audit.json'),JSON.stringify(output,null,2)+'\n');

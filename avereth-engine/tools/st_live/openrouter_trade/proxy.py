@@ -108,6 +108,11 @@ def inspect_answer(payload, stream):
     return dict(providers=sorted(providers), reasoningChars=reasoning_chars,text=text, finish=finish, done=done, usage=usage, reportedModels=sorted(models))
 
 
+def reviewed_rejection(record, approved_ids):
+    return (record["id"] in approved_ids and record.get("status")==429 and record.get("reason")=="upstream_http_error"
+            and str((record.get("serviceError") or {}).get("code"))=="429")
+
+
 async def serve():
     if not KEY.strip() or os.environ["OPENROUTER_API_BASE_URL"].rstrip("/") != BASE or os.environ["OPENROUTER_MODEL"] != MODEL:
         raise SystemExit("Invalid provider configuration")
@@ -115,13 +120,16 @@ async def serve():
         raise SystemExit("Unexpected route")
     if any(PRICE[k] > ceiling for k, ceiling in (("prompt", 0.042), ("completion", 0.184))):
         raise SystemExit("Published price above the verified ceiling")
-    remaining_cap = min(CAP, allowance(json.loads((ROOT / "prior-settlement.json").read_text())))
+    carried = json.loads((ROOT / "earlier-attempts.json").read_text()) if (ROOT / "earlier-attempts.json").exists() else []
+    remaining_cap = min(CAP, allowance(json.loads((ROOT / "prior-settlement.json").read_text()))) - sum(Decimal(str(r["total_cost"])) for r in carried)
+    remaining_count = LIMIT - len(carried)
     lock = (ROOT / "process.lock").open("a")
     fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
     prior = [json.loads(line) for line in LOG.read_text().splitlines()] if LOG.exists() else []
     started = [r for r in prior if r.get("kind") == "start"]
     ended = [r for r in prior if r.get("kind") == "end"]
-    if [r["id"] for r in started] != [r["id"] for r in ended] or any(not r["ok"] for r in ended):
+    resume = json.loads((ROOT/"reviewed-rate-limit.json").read_text()) if (ROOT/"reviewed-rate-limit.json").exists() else {}
+    if [r["id"] for r in started] !=  [r["id"] for r in ended] or any(not r["ok"] and not reviewed_rejection(r,resume.get("ids",[])) for r in ended):
         raise SystemExit("Previous incomplete or unsuccessful request. Physical gate remains closed.")
     count, blocked = len(started), False
     spent = sum((Decimal(r["chargedOrReservedUSD"]) for r in ended), Decimal(0))
@@ -139,7 +147,7 @@ async def serve():
         arm = "A" if req.transport.get_extra_info("sockname")[1] == 18551 else "B"
         async with serial:
             gate = json.loads((ROOT / "gate.json").read_text())
-            if blocked or count >= LIMIT or gate.get("arm") != arm or data.get("model") != MODEL or data.get("n", 1) != 1:
+            if blocked or count >= remaining_count or gate.get("arm") != arm or data.get("model") != MODEL or data.get("n", 1) != 1:
                 return web.json_response({"error":"Local physical request gate closed"},status=409)
             if req.transport is None or req.transport.is_closing():
                 return web.Response(status=409)
@@ -192,6 +200,8 @@ async def serve():
                                     record(dict(kind="generation", **tag, generationId=receipt, at=CLOCK()))
                             await downstream.write(part)
                     if adapter:
+                        # Local evidence for frame-level replay; the exporter excludes raw SSE and private reasoning.
+                        (ROOT / ("raw-"+str(count)+".sse")).write_bytes(content)
                         if adapter.pending: await downstream.write(adapter.pending)
                         result["usageFrameNormalizations"] = adapter.normalized
                     if not upstream.is_success:

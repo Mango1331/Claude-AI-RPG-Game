@@ -19,6 +19,19 @@ class StreamUsageTests(unittest.TestCase):
         self.assertEqual(out,frame(first)+frame({**last,"choices":[]})+b"data: [DONE]\n\n")
         self.assertEqual(adapter.normalized,1)
 
+    def test_wafer_null_reasoning_on_first_stop(self):
+        first=packet()
+        first["choices"][0]["delta"]["reasoning"]=None
+        usage={**packet(),"usage":{"cost":0.01}}
+        self.assertEqual(b"".join(UsageFrames().feed(frame(first)+frame(usage))),frame(first)+frame({**usage,"choices":[]}))
+
+    def test_first_stop_can_carry_text(self):
+        first=packet()
+        first["choices"][0]["delta"]["content"]="last word"
+        usage={**packet(),"usage":{"cost":0.01}}
+        wire=frame(first)+frame(usage)
+        self.assertEqual(b"".join(UsageFrames().feed(wire)),frame(first)+frame({**usage,"choices":[]}))
+
     def test_keep_anomalies(self):
         first=packet()
         for mutation in [lambda p:p.update(error="bad"),lambda p:p.update(id="other"),lambda p:p.update(provider="other"),

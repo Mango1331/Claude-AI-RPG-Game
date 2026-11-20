@@ -6,6 +6,8 @@
 
 Neun serielle Modellrequests über Wafer, zwei begonnene A-Züge, null vollständige Paare. Der Bericht dokumentiert die Sperre bei unbekanntem Remoteabschluss, die getrennte lokale ST-Prüfung des korrigierten Treibers und die gemessenen Katalogtokens. [Teilbericht und bereinigte Laufdaten](AVERETH_203_OPENROUTER_HANDEL_AB_2026-11-20.md)
 
+**Unabhängiger Gegenreview:** [GPT-Code- und Evidenzprüfung des Abbruchs](GEGENREVIEW_203_OPENROUTER_HANDEL_TEILVERSUCH_GPT_2026-11-20.md) – Testinfrastruktur statt Enginekatalog als Blocker; enger Proxy-/Treiberfix vorhanden, GO nur für kontrollierten Neustart mit echtem ST-End-to-End-Canary und Restbudget.
+
 ## Lesereihenfolge
 
 1. **[Work-Performanceforschung vom 19.11.](AVERETH_203_PERFORMANCE_EFFIZIENZ_UNABHAENGIGE_RECHERCHE_2026-11-19.md):** umfangreichste neuere Messgrundlage (188 exakt rekonstruierte GLM-Promptlängen, N-Streaming/Smooth, Prefix, Questboard, Extractor, lokale Hostzeit, Modellalternativen). Keine natürliche .203-Provider-A/B-Abnahme.

@@ -1,0 +1,8 @@
+Stealth ist glaube ich immer noch nicht ganz fit also der success wurf auch wenn es in der Story gepasst hat.
+
+die normalen Messages wirken nicht so ewig lang weil keine boards usw erstellt werden nehme ich an. also falls wir die ausreise ein wenig besser hinbekommen sind sie tolerierbar solange der durchschnitt wieder Richtung 30/40 Sekunden gehen. 40/50 ist tolerierbar wenn wir sagen das sonst die engine sehr viel schlechter wird. aber eigentlich sind 30 Sekunden für normale Messages mit Dialoge und Narration das ziel. noch nicht verbindlich aber mal so einfach rausgesagt normaler Dialog 20 Sekunden Dialog mit reise 30 Sekunden Dialog mit kampf oder payment 40 Sekunden und dann die kompliziertesten Messages durchschnitt unter 1 min. ausreißer sind okay solange der durchschnitt in die richtige Richtung geht. sage mir gerne falls die zahlen schwachsinn sind und was gute und realistische ziele wären
+
+die aktions HUD ist besser als davor die Buttons beim questboard sind immer noch unschön, da sie weiß sind und so die Beschriftung schlecht zu lesen ist. können wir die button in den huds schwarz mit weißer Schrift und dann weißen rahmen machen? so sind sie denke ich am besten sehbar für user.
+
+normales looten von camps sollte was rausbringen und kein würfel wurf auslösen es sei den es geht um vllt versteckte dinge oder so. also man kann schon einen wurf auslösen der aber nicht aussagt ob du loot bekommst oder nicht sondern ob du sagen wir 3 silber findest oder 6 silber und ein schwert. nur ein zufälliges Beispiel
+

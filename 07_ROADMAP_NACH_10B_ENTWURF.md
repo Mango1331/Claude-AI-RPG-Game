@@ -1,10 +1,10 @@
 # Avereth Engine – Roadmap nach 10B
 
-**Stand 19.11.2026 · ON HOLD für neue Gameplayfeatures.** Dies bleibt ein historischer Ideenvorrat; aktuelle Performancearbeit steht in [03](03_AKTUELLER_PROJEKTSTAND.md) und im [Forschungsindex](recherche/README.md).
+**Stand 21.11.2026 · ON HOLD für neue Gameplayfeatures.** Dies bleibt ein historischer Ideenvorrat; aktuelle Performancearbeit steht in [03](03_AKTUELLER_PROJEKTSTAND.md) und im [Forschungsindex](recherche/README.md).
 
 ## 1. Fachliche Etappen – vollständig pausiert
 
-**Aktueller Stand:** Action-HUD bis .203 technisch umgesetzt; User06 durch Charaktertod beendet, Originalreview noch offen. Neue Gameplayfeatures bleiben pausiert; die drei begrenzten Performance-GOs werden separat geprüft. Dynamische GM-Alpha und B/C1 bleiben archiviert.
+**Aktueller Stand:** Entwicklungsbuild .204 (Action-HUD, Streaming, Board-Slotrepair) wird im persönlichen User-Test 7 gespielt; Patchkandidaten entstehen dort aus Originalfällen (siehe 03). S1 (natives Streaming) und B1 (Board-Slotrepair) sowie die Extractor-/Katalogänderungen sind in .204 enthalten; kompaktes X2-JSON bleibt aus. Neue Gameplayfeatures bleiben pausiert. Dynamische GM-Alpha und B/C1 bleiben archiviert.
 
 | Etappe | Stand / verbleibende Entscheidung |
 |---|---|

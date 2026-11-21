@@ -1,6 +1,6 @@
 # Avereth Engine – 10B-Fachquellenindex
 
-**Stand 19.11.2026.** Fachquellenindex, **keine zweite Produktstatuschronik**. Action-HUD bis .203 auf gesondertem Entwicklungsbranch umgesetzt; Produkt .200 eingefroren. [Aktueller Stand](03_AKTUELLER_PROJEKTSTAND.md) · [Forschungsindex](recherche/README.md).
+**Stand 21.11.2026.** Fachquellenindex, **keine zweite Produktstatuschronik**. Entwicklungsbuild .204 (Action-HUD, Streaming, Board-Slotrepair, Save mit Read-back) auf gesondertem Branch; Produkt .200 eingefroren. Laufender persönlicher Test: [User07](testrun_10b/user-20261121-171341-204/README.md). [Aktueller Stand](03_AKTUELLER_PROJEKTSTAND.md) · [Forschungsindex](recherche/README.md).
 
 ## Aktuelle entscheidungsrelevante Fachquellen
 

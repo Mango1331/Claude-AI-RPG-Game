@@ -1,6 +1,6 @@
 # User07 – erster persönlicher User-Spieltest auf Avereth .204
 
-**Stand 21.11.2026 · Persönlicher Run bis Dungeon fortgeführt; Phase-1-Codex-Gegenreview und Boardprinzip erhalten; Phase-2-GPT-Review dokumentiert.**
+**Stand 21.11.2026 · Persönlicher Run bis Dungeon fortgeführt; Phase-1-Codex-Gegenreview und Boardprinzip erhalten; Phase-2-GPT-Review dokumentiert; eigenständige Codex-Prüfung und Gegenreview der Phase 2 ausstehend.**
 
 - **Build:** `4.3.0-c.6.6.204`, geprüfte Entwicklungsbasis `b51e850bfa233b32f10ba01c563002ab26061c85` (`experiment/action-hud-200-v1`, `experiment/204-b-playtest-ready`). Die eingefrorene Produktversion `.200` ist nicht Teil dieses Tests.
 - **Durchgeführte Eingaben:** sechs Spielerinputs (zwei Charaktererstellung, dann Reise zur Gildenhalle, Registrierungsanfrage, Zahlung/Abschluss, Questboard-Lesen); vier Narratorantworten. Letzter archivierter Zustand: Engine hat fünf Novice-Boardeinträge erzeugt, keine Quest angenommen. Der User-Run ist **nicht als abgeschlossen oder langfristig validiert** ausgewiesen.

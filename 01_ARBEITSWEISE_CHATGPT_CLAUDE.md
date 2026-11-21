@@ -1,21 +1,21 @@
 # Avereth Engine – Arbeitsweise und Freigaben
 
-**Stand 19.11.2026.** Dauerhafte Prozessregeln, **keine zweite Status-/Patchchronik**. [Startseite](README.md) · [Aktueller Stand 03](03_AKTUELLER_PROJEKTSTAND.md) · [Neues Zielbild 08](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md) · [Design-Kanon 02](02_DESIGN_KANON.md).
+**Stand 21.11.2026.** Dauerhafte Prozessregeln, **keine zweite Status-/Patchchronik**. [Startseite](README.md) · [Aktueller Stand 03](03_AKTUELLER_PROJEKTSTAND.md) · [Neues Zielbild 08](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md) · [Design-Kanon 02](02_DESIGN_KANON.md).
 
 ## Zuständigkeiten
 
 - **Nutzer:** entscheidet Spielgefühl, Kanon, Prioritäten und Freigaben; führt persönliche SillyTavern-Tests und ggf. lokale LLM-Batches durch, liefert Originaldaten und ungefiltertes Spielerfeedback.
-- **ChatGPT/Codex:** unabhängige Code-/Design-/Run-Gegenprüfungen, Designentscheidungsvorlagen, präzise Aufträge; implementiert nur, wenn dies ausdrücklich verlangt ist. Eigene Testzahlen nur, wenn selbst ausgeführt; sonst als Implementiererangabe kennzeichnen. Startauftrag für einen neuen Chat: [README](README.md#kopierbarer-startauftrag-für-einen-neuen-gpt-chat).
+- **ChatGPT/Codex:** unabhängige Code-/Design-/Run-Gegenprüfungen, Designentscheidungsvorlagen, präzise Aufträge; implementiert nur, wenn dies ausdrücklich verlangt ist. Eigene Testzahlen nur, wenn selbst ausgeführt; sonst als Implementiererangabe kennzeichnen. Startauftrag für einen neuen Chat: [README](README.md#kopierbarer-startauftrag-für-einen-neuen-gpt-chat) (Kurzfassung; Claude schreibt die Vollfassung bei Statuswechseln neu).
 - **Claude/Sol/Opus:** beauftragte Implementierung oder unabhängige technische Analysen, Originalfall-Reproduktionen (lokaler Replay-Nachlauf aus aufgezeichneten Modellantworten, `tools/replay/build_corpus.mjs`). Frühere Modellaussagen sind keine automatisch richtigen Entscheidungen.
 - **Engine und LLM:** In eingefrorener .200-Basis und aktueller .203-Entwicklung interpretiert bei freiem Text der Planner, die deterministische Engine autorisiert/bucht, der Narrator erzählt und der Extractor/Firewall übernimmt legitime Weltfolgen. Die drei Rollen verursachen getrennte **physische API-Aufrufe desselben GLM-Modells**. Der frühere dynamische GM ist **archiviert**, nicht die geplante Zielarchitektur. Die historische Spielflussanalyse betrachtete eine **tolerantere, spielerunterstützte Weiterentwicklung von `.200`**, inzwischen zum Teil als .203 umgesetzt ([08](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md)).
 
-**Arbeitsgrenze 19.11.:** Produkt .200 eingefroren, Entwicklungsbuild .203 technisch geprüft. User06 ist nach Nutzerangabe durch Charaktertod beendet; vollständiges Review steht aus. Gameplay-Roadmap 07 bleibt pausiert. Aktuelle Performance-GOs: N-Streaming ohne Smooth, Einzelslot-Boardrepair und Extractor-Benchmarkkorrektur – zunächst isolierte Tests, keine automatische Produkt- oder Providerfreigabe. [Forschungsindex](recherche/README.md).
+**Arbeitsgrenze 21.11.:** Produkt .200 eingefroren; Entwicklungs- und Spieltestbuild .204 (`experiment/action-hud-200-v1` = `experiment/204-b-playtest-ready`). **Persönlicher User-Test 7 läuft:** Phase 2 ist von GPT reviewt, die eigenständige Codex-Prüfung und der Gegenreview stehen aus, danach gemeinsame Patchentscheidung. Gameplay-Roadmap 07 bleibt pausiert, die B-Performanceforschung ist vorerst abgeschlossen. Keine automatische Produkt- oder Providerfreigabe. [Run](testrun_10b/user-20261121-171341-204/README.md) · [Forschungsindex](recherche/README.md).
 
 **Ein Fachplan, Review oder Dokumentationscommit ist keine Produktfreigabe.** Bereits beschlossener Kanon bleibt maßgeblich, ist aber bei ausdrücklicher Nutzerentscheidung bewusst änderbar. Keine weiteren P2-Sonderregeln ohne konkreten Integritätsnachweis; keine neuen Mechaniken/Balanceänderungen als Nebenprojekt. Fachlich zusammenhängende Patches bündeln, keine künstlichen Mikropatch-Serien.
 
 ## Einstieg eines neuen Chats
 
-1. Auf `main` **README, 01 und 03** lesen; für Performancearbeit [Forschungsindex](recherche/README.md). HEADs von `main`, dem Produktbranch `claude/c-planner-prototype-2026-10-02-gpt-c666` **und dem Entwicklungsbranch `experiment/action-hud-200-v1`** prüfen. `experiment/dynamic-gm-model` ist **historischer Quellenbranch**, keine aktive Entwicklungsaufgabe; nur zur gezielten Archivnachprüfung lesen.
+1. Auf `main` **README, 01 und 03** lesen; für Performancearbeit [Forschungsindex](recherche/README.md). HEADs von `main`, dem Produktbranch `claude/c-planner-prototype-2026-10-02-gpt-c666` **und den Entwicklungsbranches `experiment/action-hud-200-v1` / `experiment/204-b-playtest-ready`** prüfen. Für einen laufenden User-Test zusätzlich dessen Runordner in `testrun_10b/`. `experiment/dynamic-gm-model` ist **historischer Quellenbranch**, keine aktive Entwicklungsaufgabe; nur zur gezielten Archivnachprüfung lesen.
 2. Aufgabe eingrenzen: **02** bei verbindlichen Spielregeln, **07** bei noch geplanten Features, **06** als Fachquellenindex. Originalarchive und technische Patchnotes nur zum konkreten Fall lesen.
 3. Codebehauptungen am **aktuellen Produkt-HEAD** oder bei Experimenten gezielt am Modellbranch kontrollieren, nicht an alten Plan-Zeilennummern. Nach Kontextwechsel den letzten Produktdiff prüfen; identische Quellen nicht unnötig neu auslesen.
 4. Dokumente klar als **aktuell / geplant / historischer Befund / nicht freigegeben** markieren. Ein altes Modellprotokoll ersetzt keinen neuen natürlichen Run.
@@ -50,7 +50,7 @@
 | **08** | Historisches Spielfluss-Zielbild; mehrere HUD-Teile wurden bis .203 umgesetzt, kein aktueller Statusbericht |
 | **06** | Links zu Fachplänen, unabhängigen Architektur-/NPC-/PULSE-Prüfungen und Produktnachweisen |
 | **Pro-Run-Ordner** | Originalreview, Quellenmanifest, Gameplayfeedback, gezielte Folgeprüfungen |
-| **Produkt und Entwicklung** | Produkt .200 eingefroren; .203 mit Patchnotes auf `experiment/action-hud-200-v1` gesondert getestet |
+| **Produkt und Entwicklung** | Produkt .200 eingefroren; .204 mit Patchnotes auf `experiment/action-hud-200-v1` / `experiment/204-b-playtest-ready` gesondert getestet |
 | **`experiment/dynamic-gm-model`** | Archiv von B/C1 und dynamischem GM mit Fehler-/Mockbelegen, kein Entwicklungs- oder Produktbranch ([Archiv](recherche/ARCHITEKTUR_EXPERIMENTE_ARCHIV_2026-11-17.md)) |
 
 Bei einer reinen Dokumentationspflege **keine Node-/ST-Tests vortäuschen oder als notwendig erklären**: Inhaltsvergleich, Diff-, Link-, Referenz- und Git-HEAD-Prüfung reichen. Originalreviews, Historie und spezifische Fachpläne nicht blind kürzen; in Übersichten alte Detailketten nur verlinken. Bei Änderungen mindestens Dateiliste, Art der Änderung, Commit, neue/alte HEADs und Grenzen berichten. Keine Tokens/Schlüssel/Zugangsdaten in Chat, Repo oder Originalarchive aufnehmen.

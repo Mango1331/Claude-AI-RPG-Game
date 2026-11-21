@@ -1,6 +1,10 @@
-# Forschung – Performance und LLM-Effizienz von Avereth .203
+# Forschung – Performance und LLM-Effizienz von Avereth
 
-**Stand 20.11.2026.** Die Quellen bleiben getrennt und unverändert. Aktuelle Arbeits-/Produktentscheidungen stehen allein in [03](../03_AKTUELLER_PROJEKTSTAND.md).
+**Stand 21.11.2026.** Aktuelle Arbeits-/Produktentscheidungen stehen in [03](../03_AKTUELLER_PROJEKTSTAND.md).
+
+## User07 auf .204
+
+T7 bereitet eine spätere Untersuchung der tatsächlich gelieferten Prompts, des Kontextinhalts und der Tokens pro gespeichertem Zug vor. Die drei User07-Patches sind unabhängig davon geplant. [Forschungsvorhaben T7](USER07_T7_PROMPTS_KONTEXT_UND_TOKENVERBRAUCH.md) · [Fachpläne und Reihenfolge](../patch_plans_10b/USER07_A_QUESTBOARD_UND_HUD.md)
 
 ## Natürlicher OpenRouter-Handelstest
 

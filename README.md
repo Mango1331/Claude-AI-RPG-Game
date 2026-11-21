@@ -11,7 +11,7 @@
 - **Läuft gerade: persönlicher User-Test 7 auf `.204`** ([Run](testrun_10b/user-20261121-171341-204/README.md)):
   - **Phase 1** (bis zum Questboard): Codex-Gegenreview abgeschlossen; danach die Nutzer-/GPT-Designentscheidung, starre Board-Kompositionsquoten zu lockern.
   - **Phase 2** (bis Mossback Warrens L1, `l1_s3`, Level 4): [GPT-Review](testrun_10b/user-20261121-171341-204/REVIEW_GPT_PHASE2_2026-11-21.md) abgeschlossen.
-  - **Ausstehend:** die eigenständige Codex-Prüfung der Phase-2-Originale und der Gegenreview zum GPT-Review. Danach entscheiden Nutzer und GPT gemeinsam über einen Patch.
+  - **Phase-2-Gegenreviews abgeschlossen:** [Codex](testrun_10b/user-20261121-171341-204/CODEX_GEGENREVIEW_PHASE2.md) und [GPT](testrun_10b/user-20261121-171341-204/REVIEW_GPT_CODEX_PHASE2_2026-11-21.md). **Jetzt gemeinsame Patchentscheidung**, noch kein Codepatch.
   - **Noch keine Codeänderung.**
 - **Ältere persönliche Runs:**
   - [User06](testrun_10b/user-20261119-010838/README.md) (`.203`) endete mit dem Tod des Charakters; der Gameplayreview steht aus.
@@ -28,7 +28,7 @@
 
 Den aktuellen, vollständigen Startauftrag schreibt Claude bei jedem Statuswechsel neu (zuletzt für User07 Phase 2). Kurzfassung:
 
-> Projekt Avereth Engine, `Mango1331/Claude-AI-RPG-Game`. Lies auf `main` README, 01 und 03, dann den Runordner `testrun_10b/user-20261121-171341-204/` (README, Phase-2-Manifest, GPT-Review Phase 2, Feedbackbewertung, Phase-1-Codex-Gegenreview, Board-Designnachtrag). Prüfe die HEADs von `main`, Produkt `.200` und Entwicklung `.204`. Wir sind mitten in User-Test 7: Der GPT-Review der Phase 2 ist fertig, die eigenständige Codex-Prüfung und der Gegenreview stehen aus. Trenne Evidenzklassen, behaupte keine eigenen Testzahlen, ändere keinen Code. Fasse zuerst den Stand zusammen und schlage die nächsten Schritte vor.
+> Projekt Avereth Engine, `Mango1331/Claude-AI-RPG-Game`. Lies auf `main` README, 01 und 03, dann den Runordner `testrun_10b/user-20261121-171341-204/` (README, Phase-2-Manifest, GPT-Review Phase 2, Feedbackbewertung, Phase-1-Codex-Gegenreview, Board-Designnachtrag). Prüfe die HEADs von `main`, Produkt `.200` und Entwicklung `.204`. Wir sind mitten in User-Test 7: Codex- und GPT-Gegenreview zur Phase 2 sind abgeschlossen; die gemeinsame Patchentscheidung steht aus. Trenne Evidenzklassen, behaupte keine eigenen Testzahlen, ändere keinen Code. Fasse zuerst den Stand zusammen und schlage die nächsten Schritte vor.
 
 **Schutz:**
 - Historische Berichte, User-Originale und Spielregeln nicht still verändern.

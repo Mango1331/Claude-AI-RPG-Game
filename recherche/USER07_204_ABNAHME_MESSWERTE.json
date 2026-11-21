@@ -1,0 +1,878 @@
+{
+  "evidence": "Ausgeführte Offline- und ST-Mockprüfungen. Millisekunden auf der Browseruhr ab Klick. Abnahmeläufe vor den einzelnen Commits zeigen im ST-Bericht jeweils den vorherigen HEAD und dirty=true. Die gemeinsame Abnahme verwendet den sauberen Endcommit.",
+  "technical_branch": "experiment/204-user07-board-dungeon-camp",
+  "basis": "b51e850bfa233b32f10ba01c563002ab26061c85",
+  "A": {
+    "commit": "9fc26076162cdf3f769fe2b9da6e293d030fb4e5",
+    "node": {
+      "tests": 3412,
+      "pass": 3412,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0
+    },
+    "replay": "baseline b8d2af4b76cd0bc52ac178b8c500e5733878ecee (4.3.0-c.6.6.126): 2235 cases compared, 1131 differing, 1131 of them accepted with their exact output, 0 not accepted, 0 accepted but equal",
+    "sandbox": {
+      "started": "2026-11-21T20:19:58.769Z",
+      "finished": "2026-11-21T20:22:56.032Z",
+      "engine": {
+        "version": "4.3.0-c.6.6.204",
+        "commit": "b51e850b",
+        "branch": "experiment/204-user07-board-dungeon-camp",
+        "dirty": true
+      },
+      "st": {
+        "version": "1.19.0",
+        "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+      },
+      "node": "24.22.1",
+      "chromium": "156.0.8078.79",
+      "runs": [
+        {
+          "mode": "user07_board_hud",
+          "ok": true,
+          "exit": 0,
+          "seconds": 176,
+          "checks": 118,
+          "passed": 118,
+          "failed": [],
+          "page_errors": 0,
+          "calls": 77
+        }
+      ]
+    },
+    "board": {
+      "reference": {
+        "timing": {
+          "worldCommitMs": 685.4000000059605,
+          "readbackMs": 736.0999999940395,
+          "readyMs": 743.8000000119209,
+          "saveDurationMs": 51
+        },
+        "world": "08c152d2473d4493cfc2728938982ac54f367cad9f3eee28575fbd1514b66471",
+        "events": "f29dc9e387223020d7cd03223ce7b209633863ce1d32e1bc2a2eff9c19beca88",
+        "requests": [
+          {
+            "role": "plan",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "narrator",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "extract",
+            "mockMs": 301,
+            "finished": true
+          }
+        ]
+      },
+      "full": {
+        "timing": {
+          "worldCommitMs": 729,
+          "readbackMs": 783.3000000119209,
+          "readyMs": 792.0999999940395,
+          "saveDurationMs": 54
+        },
+        "world": "08c152d2473d4493cfc2728938982ac54f367cad9f3eee28575fbd1514b66471",
+        "events": "f29dc9e387223020d7cd03223ce7b209633863ce1d32e1bc2a2eff9c19beca88",
+        "requests": [
+          {
+            "role": "plan",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "narrator",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "extract",
+            "mockMs": 300,
+            "finished": true
+          }
+        ]
+      },
+      "slot": {
+        "timing": {
+          "worldCommitMs": 730.9000000059605,
+          "readbackMs": 779.2999999821186,
+          "readyMs": 788,
+          "saveDurationMs": 48
+        },
+        "world": "08c152d2473d4493cfc2728938982ac54f367cad9f3eee28575fbd1514b66471",
+        "events": "f29dc9e387223020d7cd03223ce7b209633863ce1d32e1bc2a2eff9c19beca88",
+        "requests": [
+          {
+            "role": "plan",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "board",
+            "mockMs": 0,
+            "finished": true
+          },
+          {
+            "role": "narrator",
+            "mockMs": 20,
+            "finished": true
+          },
+          {
+            "role": "extract",
+            "mockMs": 301,
+            "finished": true
+          }
+        ]
+      }
+    }
+  },
+  "B": {
+    "commit": "2c465aa8e2ee5fe5ce38bf1d962d7a2f0023e55f",
+    "node": {
+      "tests": 3412,
+      "pass": 3412,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0
+    },
+    "replay": "baseline b8d2af4b76cd0bc52ac178b8c500e5733878ecee (4.3.0-c.6.6.126): 2235 cases compared, 1131 differing, 1131 of them accepted with their exact output, 0 not accepted, 0 accepted but equal",
+    "sandbox": [
+      {
+        "started": "2026-11-21T20:25:13.029Z",
+        "finished": "2026-11-21T20:27:37.092Z",
+        "engine": {
+          "version": "4.3.0-c.6.6.204",
+          "commit": "9fc26076",
+          "branch": "experiment/204-user07-board-dungeon-camp",
+          "dirty": true
+        },
+        "st": {
+          "version": "1.19.0",
+          "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+        },
+        "node": "24.22.1",
+        "chromium": "156.0.8078.79",
+        "runs": [
+          {
+            "mode": "user05_review",
+            "ok": true,
+            "exit": 0,
+            "seconds": 143,
+            "checks": 108,
+            "passed": 108,
+            "failed": [],
+            "page_errors": 0,
+            "calls": 62
+          }
+        ]
+      },
+      {
+        "started": "2026-11-21T20:27:37.579Z",
+        "finished": "2026-11-21T20:33:10.240Z",
+        "engine": {
+          "version": "4.3.0-c.6.6.204",
+          "commit": "9fc26076",
+          "branch": "experiment/204-user07-board-dungeon-camp",
+          "dirty": true
+        },
+        "st": {
+          "version": "1.19.0",
+          "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+        },
+        "node": "24.22.1",
+        "chromium": "156.0.8078.79",
+        "runs": [
+          {
+            "mode": "narrator_streaming",
+            "ok": true,
+            "exit": 0,
+            "seconds": 332,
+            "checks": 59,
+            "passed": 59,
+            "failed": [],
+            "page_errors": 0,
+            "calls": 71
+          }
+        ]
+      },
+      {
+        "started": "2026-11-21T20:33:11.170Z",
+        "finished": "2026-11-21T20:36:33.312Z",
+        "engine": {
+          "version": "4.3.0-c.6.6.204",
+          "commit": "9fc26076",
+          "branch": "experiment/204-user07-board-dungeon-camp",
+          "dirty": true
+        },
+        "st": {
+          "version": "1.19.0",
+          "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+        },
+        "node": "24.22.1",
+        "chromium": "156.0.8078.79",
+        "runs": [
+          {
+            "mode": "user07_world",
+            "ok": true,
+            "exit": 0,
+            "seconds": 202,
+            "checks": 78,
+            "passed": 78,
+            "failed": [],
+            "page_errors": 0,
+            "calls": 94
+          }
+        ]
+      }
+    ],
+    "streaming": [
+      {
+        "stream": false,
+        "firstMs": 180,
+        "marks": {
+          "narratorSettingsReady": 292,
+          "received": 2180,
+          "fullProse": 2196,
+          "firstProse": 2202,
+          "ready": 3521,
+          "worldCommit": 3438,
+          "confirmedSave": 3515
+        },
+        "requests": [
+          {
+            "phase": "plan",
+            "stream": false,
+            "maxTokens": 2000,
+            "mockMs": 0
+          },
+          {
+            "phase": "narrator",
+            "stream": false,
+            "maxTokens": 4096,
+            "mockMs": 1803
+          },
+          {
+            "phase": "extract",
+            "stream": false,
+            "maxTokens": 4000,
+            "mockMs": 1200
+          }
+        ],
+        "verifiedWorld": {
+          "at": 1795292901595,
+          "id": 6,
+          "committed_at_ms": 39743.59999999404,
+          "persisted_at_ms": 39820.89999997616,
+          "extraction_validation_wait_ms": 1259,
+          "save_readback_ms": 77,
+          "total_ms": 1337,
+          "record_changed": true,
+          "persisted": true,
+          "extraction_status": "applied"
+        },
+        "userEvents": "96be85d4f653a8de8de5d2ac90c35cc479adf7d95ea0b34d48edc84edb7fdc5e",
+        "replyEvents": "6f42e9869134f3589eb8fc76c5b449d459460e19f2e9011d6aa40ea231075224"
+      },
+      {
+        "stream": true,
+        "firstMs": 180,
+        "marks": {
+          "narratorSettingsReady": 350,
+          "firstDecodedSentence": 562,
+          "firstProse": 567,
+          "fullProse": 2245,
+          "received": 2406,
+          "ready": 3784,
+          "worldCommit": 3681,
+          "confirmedSave": 3774
+        },
+        "requests": [
+          {
+            "phase": "plan",
+            "stream": false,
+            "maxTokens": 2000,
+            "mockMs": 0
+          },
+          {
+            "phase": "narrator",
+            "stream": true,
+            "maxTokens": 4096,
+            "mockMs": 1809
+          },
+          {
+            "phase": "extract",
+            "stream": false,
+            "maxTokens": 4000,
+            "mockMs": 1201
+          }
+        ],
+        "verifiedWorld": {
+          "at": 1795292906603,
+          "id": 6,
+          "committed_at_ms": 44736.29999998212,
+          "persisted_at_ms": 44829.5,
+          "extraction_validation_wait_ms": 1278,
+          "save_readback_ms": 93,
+          "total_ms": 1371,
+          "record_changed": true,
+          "persisted": true,
+          "extraction_status": "applied"
+        },
+        "userEvents": "96be85d4f653a8de8de5d2ac90c35cc479adf7d95ea0b34d48edc84edb7fdc5e",
+        "replyEvents": "6f42e9869134f3589eb8fc76c5b449d459460e19f2e9011d6aa40ea231075224"
+      },
+      {
+        "stream": true,
+        "firstMs": 950,
+        "marks": {
+          "narratorSettingsReady": 700,
+          "firstDecodedSentence": 1690,
+          "firstProse": 1698,
+          "fullProse": 2613,
+          "received": 3002,
+          "ready": 4428,
+          "worldCommit": 4275,
+          "confirmedSave": 4421
+        },
+        "requests": [
+          {
+            "phase": "plan",
+            "stream": false,
+            "maxTokens": 2000,
+            "mockMs": 1
+          },
+          {
+            "phase": "narrator",
+            "stream": true,
+            "maxTokens": 4096,
+            "mockMs": 1804
+          },
+          {
+            "phase": "extract",
+            "stream": false,
+            "maxTokens": 4000,
+            "mockMs": 1203
+          }
+        ],
+        "verifiedWorld": {
+          "at": 1795292913321,
+          "id": 6,
+          "committed_at_ms": 51401.39999997616,
+          "persisted_at_ms": 51547,
+          "extraction_validation_wait_ms": 1280,
+          "save_readback_ms": 146,
+          "total_ms": 1426,
+          "record_changed": true,
+          "persisted": true,
+          "extraction_status": "applied"
+        },
+        "userEvents": "96be85d4f653a8de8de5d2ac90c35cc479adf7d95ea0b34d48edc84edb7fdc5e",
+        "replyEvents": "6f42e9869134f3589eb8fc76c5b449d459460e19f2e9011d6aa40ea231075224"
+      },
+      {
+        "stream": false,
+        "firstMs": 950,
+        "marks": {
+          "narratorSettingsReady": 449,
+          "received": 2391,
+          "fullProse": 2427,
+          "firstProse": 2445,
+          "ready": 3829,
+          "worldCommit": 3725,
+          "confirmedSave": 3819
+        },
+        "requests": [
+          {
+            "phase": "plan",
+            "stream": false,
+            "maxTokens": 2000,
+            "mockMs": 0
+          },
+          {
+            "phase": "narrator",
+            "stream": false,
+            "maxTokens": 4096,
+            "mockMs": 1802
+          },
+          {
+            "phase": "extract",
+            "stream": false,
+            "maxTokens": 4000,
+            "mockMs": 1202
+          }
+        ],
+        "verifiedWorld": {
+          "at": 1795292919089,
+          "id": 6,
+          "committed_at_ms": 57221.5,
+          "persisted_at_ms": 57315.79999998212,
+          "extraction_validation_wait_ms": 1338,
+          "save_readback_ms": 94,
+          "total_ms": 1432,
+          "record_changed": true,
+          "persisted": true,
+          "extraction_status": "applied"
+        },
+        "userEvents": "96be85d4f653a8de8de5d2ac90c35cc479adf7d95ea0b34d48edc84edb7fdc5e",
+        "replyEvents": "6f42e9869134f3589eb8fc76c5b449d459460e19f2e9011d6aa40ea231075224"
+      },
+      {
+        "stream": true,
+        "firstMs": 180,
+        "marks": {
+          "narratorSettingsReady": 409,
+          "firstDecodedSentence": 643,
+          "firstProse": 669,
+          "fullProse": 2332,
+          "received": 2603,
+          "ready": 4088,
+          "worldCommit": 3886,
+          "confirmedSave": 4047
+        },
+        "requests": [
+          {
+            "phase": "plan",
+            "stream": false,
+            "maxTokens": 2000,
+            "mockMs": 1
+          },
+          {
+            "phase": "narrator",
+            "stream": true,
+            "maxTokens": 4096,
+            "mockMs": 1822
+          },
+          {
+            "phase": "extract",
+            "stream": false,
+            "maxTokens": 4000,
+            "mockMs": 1208
+          }
+        ],
+        "verifiedWorld": {
+          "at": 1795292924756,
+          "id": 6,
+          "committed_at_ms": 62800.79999998212,
+          "persisted_at_ms": 62961.79999998212,
+          "extraction_validation_wait_ms": 1286,
+          "save_readback_ms": 161,
+          "total_ms": 1447,
+          "record_changed": true,
+          "persisted": true,
+          "extraction_status": "applied"
+        },
+        "userEvents": "96be85d4f653a8de8de5d2ac90c35cc479adf7d95ea0b34d48edc84edb7fdc5e",
+        "replyEvents": "6f42e9869134f3589eb8fc76c5b449d459460e19f2e9011d6aa40ea231075224"
+      },
+      {
+        "stream": false,
+        "firstMs": 180,
+        "marks": {
+          "narratorSettingsReady": 497,
+          "received": 2423,
+          "fullProse": 2450,
+          "firstProse": 2456,
+          "ready": 3850,
+          "worldCommit": 3695,
+          "confirmedSave": 3845
+        },
+        "requests": [
+          {
+            "phase": "plan",
+            "stream": false,
+            "maxTokens": 2000,
+            "mockMs": 0
+          },
+          {
+            "phase": "narrator",
+            "stream": false,
+            "maxTokens": 4096,
+            "mockMs": 1802
+          },
+          {
+            "phase": "extract",
+            "stream": false,
+            "maxTokens": 4000,
+            "mockMs": 1200
+          }
+        ],
+        "verifiedWorld": {
+          "at": 1795292930584,
+          "id": 6,
+          "committed_at_ms": 68660.39999997616,
+          "persisted_at_ms": 68810.59999999404,
+          "extraction_validation_wait_ms": 1291,
+          "save_readback_ms": 150,
+          "total_ms": 1441,
+          "record_changed": true,
+          "persisted": true,
+          "extraction_status": "applied"
+        },
+        "userEvents": "96be85d4f653a8de8de5d2ac90c35cc479adf7d95ea0b34d48edc84edb7fdc5e",
+        "replyEvents": "6f42e9869134f3589eb8fc76c5b449d459460e19f2e9011d6aa40ea231075224"
+      },
+      {
+        "stream": false,
+        "firstMs": 950,
+        "marks": {
+          "narratorSettingsReady": 528,
+          "received": 2424,
+          "fullProse": 2453,
+          "firstProse": 2467,
+          "ready": 3790,
+          "worldCommit": 3695,
+          "confirmedSave": 3784
+        },
+        "requests": [
+          {
+            "phase": "plan",
+            "stream": false,
+            "maxTokens": 2000,
+            "mockMs": 0
+          },
+          {
+            "phase": "narrator",
+            "stream": false,
+            "maxTokens": 4096,
+            "mockMs": 1802
+          },
+          {
+            "phase": "extract",
+            "stream": false,
+            "maxTokens": 4000,
+            "mockMs": 1201
+          }
+        ],
+        "verifiedWorld": {
+          "at": 1795292935988,
+          "id": 6,
+          "committed_at_ms": 74126,
+          "persisted_at_ms": 74215.09999999404,
+          "extraction_validation_wait_ms": 1281,
+          "save_readback_ms": 89,
+          "total_ms": 1371,
+          "record_changed": true,
+          "persisted": true,
+          "extraction_status": "applied"
+        },
+        "userEvents": "96be85d4f653a8de8de5d2ac90c35cc479adf7d95ea0b34d48edc84edb7fdc5e",
+        "replyEvents": "6f42e9869134f3589eb8fc76c5b449d459460e19f2e9011d6aa40ea231075224"
+      },
+      {
+        "stream": true,
+        "firstMs": 950,
+        "marks": {
+          "narratorSettingsReady": 533,
+          "firstDecodedSentence": 1573,
+          "firstProse": 1584,
+          "fullProse": 2512,
+          "received": 2894,
+          "ready": 4404,
+          "worldCommit": 4185,
+          "confirmedSave": 4382
+        },
+        "requests": [
+          {
+            "phase": "plan",
+            "stream": false,
+            "maxTokens": 2000,
+            "mockMs": 0
+          },
+          {
+            "phase": "narrator",
+            "stream": true,
+            "maxTokens": 4096,
+            "mockMs": 1824
+          },
+          {
+            "phase": "extract",
+            "stream": false,
+            "maxTokens": 4000,
+            "mockMs": 1201
+          }
+        ],
+        "verifiedWorld": {
+          "at": 1795292942098,
+          "id": 6,
+          "committed_at_ms": 80107.5,
+          "persisted_at_ms": 80305.29999998212,
+          "extraction_validation_wait_ms": 1293,
+          "save_readback_ms": 198,
+          "total_ms": 1491,
+          "record_changed": true,
+          "persisted": true,
+          "extraction_status": "applied"
+        },
+        "userEvents": "96be85d4f653a8de8de5d2ac90c35cc479adf7d95ea0b34d48edc84edb7fdc5e",
+        "replyEvents": "6f42e9869134f3589eb8fc76c5b449d459460e19f2e9011d6aa40ea231075224"
+      }
+    ]
+  },
+  "C": {
+    "commit": "4ff1500e4929c0604803a19d31fb6b52b348f209",
+    "node": {
+      "tests": 3422,
+      "pass": 3422,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0
+    },
+    "targeted_node": {
+      "tests": 35,
+      "pass": 35,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0
+    },
+    "replay": "baseline b8d2af4b76cd0bc52ac178b8c500e5733878ecee (4.3.0-c.6.6.126): 2235 cases compared, 1131 differing, 1131 of them accepted with their exact output, 0 not accepted, 0 accepted but equal",
+    "sandbox": {
+      "started": "2026-11-21T20:52:26.202Z",
+      "finished": "2026-11-21T20:53:30.526Z",
+      "engine": {
+        "version": "4.3.0-c.6.6.204",
+        "commit": "2c465aa8",
+        "branch": "experiment/204-user07-board-dungeon-camp",
+        "dirty": true
+      },
+      "st": {
+        "version": "1.19.0",
+        "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+      },
+      "node": "24.22.1",
+      "chromium": "156.0.8078.79",
+      "runs": [
+        {
+          "mode": "user07_camp",
+          "ok": true,
+          "exit": 0,
+          "seconds": 63,
+          "checks": 32,
+          "passed": 32,
+          "failed": [],
+          "page_errors": 0,
+          "calls": 27
+        }
+      ]
+    },
+    "camp": {
+      "checks": {
+        "originalRise": true,
+        "confirmedApproach": true,
+        "deliberateTake": true,
+        "noRenewal": true,
+        "settled": true,
+        "reloaded": true
+      },
+      "turns": [
+        {
+          "timing": {
+            "verified": true,
+            "worldCommitMs": 1714.5,
+            "readbackMs": 1985.4000000059605,
+            "readyMs": 1988.5999999940395,
+            "saveDurationMs": 271
+          },
+          "driver_roundtrip_ms": 4015,
+          "requests": [
+            {
+              "role": "plan",
+              "mockMs": 0
+            },
+            {
+              "role": "narrator",
+              "mockMs": 20
+            },
+            {
+              "role": "extract",
+              "mockMs": 300
+            }
+          ],
+          "world": {
+            "at": "loc.rise_above_the_goblin_camp.goblin_camp",
+            "stock": [
+              "obj.t44.clay_bowl"
+            ],
+            "bowls": [
+              {
+                "id": "obj.t44.clay_bowl",
+                "holder": {
+                  "loc": "loc.rise_above_the_goblin_camp.goblin_camp"
+                },
+                "qty": 1
+              }
+            ],
+            "coin": 43,
+            "checks": [],
+            "errors": [],
+            "rejected": [],
+            "applied": "applied"
+          }
+        },
+        {
+          "timing": {
+            "verified": true,
+            "worldCommitMs": 1876.300000011921,
+            "readbackMs": 2143.699999988079,
+            "readyMs": 2146.9000000059605,
+            "saveDurationMs": 267
+          },
+          "driver_roundtrip_ms": 4672,
+          "requests": [
+            {
+              "role": "plan",
+              "mockMs": 0
+            },
+            {
+              "role": "narrator",
+              "mockMs": 21
+            },
+            {
+              "role": "extract",
+              "mockMs": 302
+            }
+          ],
+          "world": {
+            "at": "loc.rise_above_the_goblin_camp.goblin_camp",
+            "stock": [
+              "obj.t44.clay_bowl"
+            ],
+            "bowls": [
+              {
+                "id": "obj.t44.clay_bowl",
+                "holder": {
+                  "entity": "pc"
+                },
+                "qty": 1
+              }
+            ],
+            "coin": 43,
+            "checks": [],
+            "errors": [],
+            "rejected": [],
+            "applied": "applied"
+          }
+        },
+        {
+          "timing": {
+            "verified": true,
+            "worldCommitMs": 2338,
+            "readbackMs": 2628.800000011921,
+            "readyMs": 2631.4000000059605,
+            "saveDurationMs": 291
+          },
+          "driver_roundtrip_ms": 5093,
+          "requests": [
+            {
+              "role": "plan",
+              "mockMs": 0
+            },
+            {
+              "role": "narrator",
+              "mockMs": 37
+            },
+            {
+              "role": "extract",
+              "mockMs": 302
+            }
+          ],
+          "world": {
+            "at": "loc.rise_above_the_goblin_camp.goblin_camp",
+            "stock": [
+              "obj.t44.clay_bowl"
+            ],
+            "bowls": [
+              {
+                "id": "obj.t44.clay_bowl",
+                "holder": {
+                  "entity": "pc"
+                },
+                "qty": 1
+              }
+            ],
+            "coin": 43,
+            "checks": [],
+            "errors": [],
+            "rejected": [
+              "camp_stock"
+            ],
+            "applied": "applied"
+          }
+        }
+      ]
+    }
+  },
+  "combined": {
+    "node": {
+      "tests": 3422,
+      "pass": 3422,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0
+    },
+    "replay": "baseline b8d2af4b76cd0bc52ac178b8c500e5733878ecee (4.3.0-c.6.6.126): 2235 cases compared, 1131 differing, 1131 of them accepted with their exact output, 0 not accepted, 0 accepted but equal",
+    "sandbox": {
+      "started": "2026-11-21T20:54:24.384Z",
+      "finished": "2026-11-21T21:18:11.794Z",
+      "engine": {
+        "version": "4.3.0-c.6.6.204",
+        "commit": "4ff1500e",
+        "branch": "experiment/204-user07-board-dungeon-camp",
+        "dirty": false
+      },
+      "st": {
+        "version": "1.19.0",
+        "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+      },
+      "node": "24.22.1",
+      "chromium": "156.0.8078.79",
+      "runs": [
+        {
+          "mode": "standard",
+          "ok": true,
+          "exit": 0,
+          "seconds": 718,
+          "checks": 366,
+          "passed": 366,
+          "failed": [],
+          "page_errors": 0,
+          "calls": 349
+        },
+        {
+          "mode": "failsoft",
+          "ok": true,
+          "exit": 0,
+          "seconds": 709,
+          "checks": 372,
+          "passed": 372,
+          "failed": [],
+          "page_errors": 0,
+          "calls": 356
+        }
+      ]
+    }
+  }
+}

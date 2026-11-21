@@ -4,7 +4,7 @@
 
 ## User07 auf .204
 
-T7 bereitet eine spätere Untersuchung der tatsächlich gelieferten Prompts, des Kontextinhalts und der Tokens pro gespeichertem Zug vor. Die drei User07-Patches sind unabhängig davon geplant. [Forschungsvorhaben T7](USER07_T7_PROMPTS_KONTEXT_UND_TOKENVERBRAUCH.md) · [Fachpläne und Reihenfolge](../patch_plans_10b/USER07_A_QUESTBOARD_UND_HUD.md)
+T7 bereitet eine spätere Untersuchung der tatsächlich gelieferten Prompts, des Kontextinhalts und der Tokens pro gespeichertem Zug vor. Die technischen Einzelabnahmen der drei User07-Patches und die gemeinsame Prüfung stehen im [Abnahmebericht](USER07_204_PATCHABNAHME_A_B_C.md). [Forschungsvorhaben T7](USER07_T7_PROMPTS_KONTEXT_UND_TOKENVERBRAUCH.md) · [Fachpläne und Reihenfolge](../patch_plans_10b/USER07_A_QUESTBOARD_UND_HUD.md)
 
 ## Natürlicher OpenRouter-Handelstest
 

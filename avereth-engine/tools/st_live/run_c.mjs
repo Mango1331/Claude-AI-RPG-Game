@@ -1,3 +1,4 @@
+import {campTurns, campSmoke} from './user07_camp_smoke.mjs';
 import { hostCostSmoke } from './host_cost_smoke.mjs';
 import { prefixSmoke } from './prompt_prefix_smoke.mjs';
 import { narratorStreamingSmoke, scriptedNarratorResponse } from './narrator_streaming_smoke.mjs';
@@ -87,7 +88,7 @@ const TURNS = [
 ];
 const turnOf = (text) => TURNS.find((t) => text.includes(`PLAYER MESSAGE:\n${t.player}`));
 const finance = financeTurns(plan);
-const allTurns = [...actionHudTurns, ...TURNS, ...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns, ...pulse164Turns, ...pulse167Turns, ...npc169Turns, ...npc172Turns, ...pilot01Turns, ...bossloot193Turns];
+const allTurns = [...actionHudTurns, ...TURNS, ...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns, ...pulse164Turns, ...pulse167Turns, ...npc169Turns, ...npc172Turns, ...pilot01Turns, ...bossloot193Turns, ...campTurns];
 
 // ------------------------------------------------------------------------------------------------ setup (as run_v4.mjs)
 const contract = fs.readFileSync(path.join(ENGINE, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
@@ -163,7 +164,7 @@ const mock = http.createServer(async (req, res) => {
     // the planner: its own role in a fight, the interpreter's prompt with the planner's section outside one
     if (system.startsWith('You are the intent planner') || (system.startsWith('You are the command interpreter') && system.includes('Actions with skills, in fights and on things'))) {
         purpose = 'plan';
-        const t = turnOf(users) || [...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns, ...pulse164Turns, ...pulse167Turns, ...npc169Turns, ...npc172Turns, ...pilot01Turns, ...bossloot193Turns].find(t => users.includes(`PLAYER MESSAGE:\n${t.player}`));
+        const t = turnOf(users) || [...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns, ...pulse164Turns, ...pulse167Turns, ...npc169Turns, ...npc172Turns, ...pilot01Turns, ...bossloot193Turns, ...campTurns].find(t => users.includes(`PLAYER MESSAGE:\n${t.player}`));
         text = JSON.stringify(actionHudPlan(users) || (t ? t.plan : { commands: [] }));
     } else if (system.startsWith('You are the command interpreter')) {
         purpose = 'interpret';
@@ -537,6 +538,12 @@ try {
     if (process.env.AVERETH_SMOKE_PULSE164 === '1') { stealthProbeMode = true; pulse164Checks = await pulse164Smoke({ page, send, idle, calls, driver: () => driver, onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); }, out: HERE }); stealthProbeMode = false; }
     let ui161Checks = null;
     if (process.env.AVERETH_SMOKE_UI161 === '1') { stealthProbeMode = true; ui161Checks = await ui161Smoke({ page, send, idle, calls, driver: () => driver, onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); }, out: HERE }); stealthProbeMode = false; }
+    let campChecks = null;
+    if (process.env.AVERETH_SMOKE_USER07_CAMP === '1') {
+        stealthProbeMode = true;
+        campChecks = await campSmoke({page,send,calls,worldTimings,onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});},out:HERE});
+        stealthProbeMode = false;
+    }
     let bossloot193Checks = null;
     if (process.env.AVERETH_SMOKE_PILOT01 === '1') { stealthProbeMode = true; bossloot193Checks = await bossloot193Smoke({page,send,calls,onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});},out:HERE}); stealthProbeMode = false; }
     let user05Checks=null;
@@ -559,7 +566,7 @@ try {
         stealthProbeMode = false;
     }
     const costChecks=process.env.AVERETH_SMOKE_HOST_COST === '1' ? await hostCostSmoke({page,out:HERE,calls}) : null;
-    result = { costChecks, prefixChecks, streamingChecks, nativeWorldChecks, user05Checks, actionReviewChecks, capacity:{peakUnits,activeUnits}, actionHudChecks, actionHostChecks, bossloot193Checks, toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
+    result = { campChecks, costChecks, prefixChecks, streamingChecks, nativeWorldChecks, user05Checks, actionReviewChecks, capacity:{peakUnits,activeUnits}, actionHudChecks, actionHostChecks, bossloot193Checks, toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
 } catch (error) {
     const screen = await page.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(-8000),
         chat: window.SillyTavern?.getContext?.()?.chat?.map(m => ({ user: m.is_user, system: m.is_system, text: m.mes?.slice(0, 120) })) })).catch(() => null);
@@ -597,6 +604,7 @@ const checks = { capacityAtMostFour:result.capacity.peakUnits<=4,
     ...Object.fromEntries(Object.entries(result.npc169Checks || {}).map(([k, v]) => [`npc169_${k}`, v])),
     ...Object.fromEntries(Object.entries(result.npc172Checks || {}).map(([k, v]) => [`npc172_${k}`, v])),
     ...Object.fromEntries(Object.entries(result.pilot01Checks || {}).map(([k, v]) => [`pilot01_${k}`, v])),
+    ...Object.fromEntries(Object.entries(result.campChecks || {}).map(([k,v]) => [`camp_${k}`,v])),
     ...Object.fromEntries(Object.entries(result.bossloot193Checks || {}).map(([k,v]) => [`bossloot193_${k}`,v])),
     ...result.prefixChecks,
     ...result.costChecks,

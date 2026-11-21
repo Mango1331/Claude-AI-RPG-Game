@@ -1,4 +1,5 @@
 import { applyEvent } from '../state.js';
+import { campInspection, campLine, ordinarySupply, looksDownOnCamp } from './camp.js';
 import { floorRefusal, namedLevel } from './dungeon.js';
 import { privateQuestsOf, questVisible } from '../content.js';
 // Runtime V4: the command handlers (docs/RUNTIME_V4_PLAN.md §4.1, §4.4). The interpreter translated the player's story
@@ -26,7 +27,7 @@ import { deriveCharacter } from '../derived.js';
 import {
     lineage, placeName, hallOf, hallOfSettlement, guildDestination, guildJourney, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey, isLooseCoin, listedToday,
 } from './domain.js';
-import { sameWant, keyWords, wantedLines } from './world.js';
+import { sameGoods, sameWant, keyWords, wantedLines } from './world.js';
 import { LOOT_WORDS, lootedHere } from './loot.js';
 import { shopSearch, findTrades } from './settlement.js';
 import { journeyReady, knownAt, personLabel } from './catalog.js';
@@ -825,6 +826,28 @@ const HANDLERS = {
         }
         const looted = credited.length && remainsSearch(s, c) ? credited : [];
         if (looted.length) return { status: 'resolved', reason: 'looted already', done: true, line: `LOOTED ALREADY — what ${looted.map((id) => who(s, id)).join(', ')} left was credited at the fight's end (the engine's automatic loot, in his pack); there is nothing more on the remains. No check, no time.` };
+        const view = envx?.c && c.kind === 'search' && campInspection(s, ctx.env.commands.length === 1 ? ctx.env.text || c.quote : c.quote || c.what);
+        if (view) {
+            ctx.camp = view;
+            const line = campLine(s, view);
+            if (view.far) return { status: 'resolved', done: true, line };
+            if (view.approach) {
+                if (ctx.env.commands.some(cmd => cmd.type === 'go')) {
+                    ctx.camp = {...view, approach:false, far:true, free:false};
+                    return {status:'resolved', line:'The separate travel step decides the route. No camp items are established from this viewpoint.'};
+                }
+                const go = HANDLERS.go(s, content, {seq:c.seq, type:'go', to:{new:view.name}, quote:c.quote}, ctx, emit, envx);
+                if (go.status !== 'authorized' || !ctx.auth.gos.length) {
+                    ctx.camp = {...view, approach:false, far:true, free:false};
+                    return go;
+                }
+                ctx.extra.push(line);
+                const scope = view.origin;
+                return {...go, line: go.line + ` Approach only the nearby ${view.name}, a site at ${scope}, if the way is clear. Confirm the arrival before showing items there. Stop for any real obstacle.`};
+            }
+            if (!view.hidden) return { status:'resolved', done:true, line };
+            ctx.extra.push(line);
+        }
         // Prototype C (4.3.0-c.6.6.5): an ordinary shop or service of the settlement he is in is found, not searched for
         // (live 15.10.2026: "look for a store to sell the monster parts to" in Ashbridge by day was a failed PER check
         // and an hour): which trades the place has, the shops the story established first, no check; he chooses where
@@ -872,8 +895,8 @@ const HANDLERS = {
         const cap = cut && !cut.at_end ? Math.ceil(cut.after_min * t.minutes_factor)
             : c.until ? untilMinutes(content, s, c.until) : c.minutes ? Math.ceil(c.minutes * t.minutes_factor) : t.default_cap_min;
         ctx.auth.timeCap = Math.max(ctx.auth.timeCap, cap);
-        if (YIELDING.has(c.kind)) ctx.auth.gather = true;
-        if (ROAMING.has(c.kind)) ctx.auth.roam = true;
+        if (!view && YIELDING.has(c.kind)) ctx.auth.gather = true;
+        if (!view && ROAMING.has(c.kind)) ctx.auth.roam = true;
         if (RESTING.has(c.kind)) ctx.auth.rest = true;
         ctx.expectedKeys[String(c.seq)] = 'activity';
         const span = c.until ? UNTIL[c.until] || `until ${c.until}` : c.minutes ? `for ${c.minutes} minutes` : 'for a while';
@@ -958,6 +981,21 @@ const HANDLERS = {
         // Prototype C (4.3.0-c.6.6.4): the pelts and fangs of foes looted at the fight's end are in his pack already
         const looted = envx?.c && c.object && typeof c.object === 'object' && LOOT_WORDS.test(String(c.object.new || '')) ? lootedHere(s) : [];
         if (looted.length) return { status: 'resolved', reason: 'looted already', done: true, line: `NOTHING MORE — what ${looted.map((id) => who(s, id)).join(', ')} left was credited at the fight's end (the engine's automatic loot, in his pack).` };
+        if (envx?.c && rulesetOf(s) >= 2 && c.object?.new && looksDownOnCamp(s) &&
+            (ordinarySupply(c.object.new) || /\bcamp\b/i.test(c.quote || ''))) {
+            const here = Object.values(s.objects).filter(o => o.holder?.loc === s.scene.at && sameGoods(o.name, c.object.new));
+            if (here.length === 1) c = {...c, object:here[0].id};
+            else return {status:'refused', reason:'camp not reached', line:'CANNOT TAKE — he is at the observation point. No such accessible object is identified here.'};
+        }
+        // Once inventoried, taking a camp object resolves its existing ID, even after it was moved or consumed.
+        if (envx?.c && c.object?.new && s.places[s.scene.at]?.camp_stock) {
+            const stock = s.places[s.scene.at].camp_stock.map(id => s.objects[id]).filter(Boolean);
+            const candidates = new Set([...stock, ...Object.values(s.objects).filter(o => o.holder?.loc === s.scene.at ||
+                (o.holder?.entity && s.scene.present.includes(o.holder.entity)))]);
+            const matches = [...candidates].filter(o => sameGoods(o.name, c.object.new));
+            if (matches.length === 1) c = {...c, object:matches[0].id};
+            else return {status:'refused', reason:'no identified camp object', line:'CANNOT TAKE — identify an existing object here; the camp inspection establishes no further supply.'};
+        }
         if (c.object && typeof c.object === 'object') {
             ctx.auth.take.push(c.seq);
             ctx.auth.takeNames = { ...(ctx.auth.takeNames || {}), [String(c.seq)]: String(c.object.new).slice(0, 80) };

@@ -11,6 +11,7 @@ import { Dice } from '../rng.js';
 import { applyEvent } from '../state.js';
 import { clone, hash32 } from '../util.js';
 import { readTurn } from '../ir.js';
+import { campInspection } from './camp.js';
 import { resolveCommands } from './commands.js';
 import { applyWorld } from './world.js';
 import { syncEvents } from './living.js';
@@ -76,7 +77,10 @@ export function playerTurnV4(state, content, text, { msg = null, commands = [], 
     } });
     // Patch 8: the Dungeon he is at, its cycle and its companies, as time has brought them (src/v4/living.js)
     if (c) syncEvents(s, content, emit);
-    const ctx = resolveCommands(s, content, commands, emit, { msg, dice, board, c, dropped, text });
+    const freeLook = c && !interp.failed && !commands.length && !dropped.length && /^\s*\*?(?:I (?:look|inspect|survey|examine|search)|what (?:is|lies))\b/i.test(input)
+        && !/["“”]|\b(?:and|then)\b/i.test(input) && campInspection(s, input);
+    const steps = freeLook ? [{seq:1, type:'activity', kind:'search', quote:input, what:input}] : commands;
+    const ctx = resolveCommands(s, content, steps, emit, { msg, dice, board, c, dropped, text });
     if (c) syncEvents(s, content, emit);
     const clarify = ctx.resolutions.find((r) => r.status === 'clarify');
     // Patch 3 (live 18.10.2026: "I settle on the ring of stones for my camp this night and go looking for animals to
@@ -97,9 +101,13 @@ export function playerTurnV4(state, content, text, { msg = null, commands = [], 
     const actions = interp.failed
         ? ['NOTHING TO BOOK — the engine could not read what Alaric decided in this message; narrate only what changes nothing about him (no travel, no payment, no acceptance), and stop at his next decision.']
         : ctx.actions.length ? ctx.actions : ['NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; narrate what he says and does, and the world\'s response.'];
+    if (ctx.camp && ctx.auth.gather) {
+        ctx.camp.gather = steps.filter(cmd => cmd.type === 'activity' && cmd.kind === 'gather' &&
+            ctx.resolutions.some(r => r.seq === cmd.seq && r.status === 'authorized')).map(cmd => cmd.what).filter(Boolean);
+    }
     const outcome = {
         kind: 'v4', actions, extra: ctx.extra, resolutions: ctx.resolutions, expected_keys: ctx.expectedKeys,
-        auth: serializableAuth(ctx.auth), conditionals: ctx.conditionals, booked: ctx.booked, board: ctx.boardShown,
+        auth: serializableAuth(ctx.auth), ...(ctx.camp ? {camp:ctx.camp} : {}), conditionals: ctx.conditionals, booked: ctx.booked, board: ctx.boardShown,
         search_checks: ctx.searchChecks, check_die: null, interp_failed: !!interp.failed,
         dropped: dropped.map((x) => ({ type: x.command?.type, rule: x.rule, quote: x.command?.quote ?? null })),
         ...(ctx.engineLines.length ? { engine_lines: ctx.engineLines } : {}),

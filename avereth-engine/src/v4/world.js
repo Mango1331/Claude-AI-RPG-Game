@@ -1,3 +1,4 @@
+import { campInspection, campObjects, visibleSupply, uncoveredSupply } from './camp.js';
 import { floorRefusal, namedLevel, goesFrom, otherEnd } from './dungeon.js';
 import { placeParent, placeIdentity, placeKey, samePlace } from './place_refs.js';
 import { resolvePlaceRef, usualPersonNamed } from './place_book.js';
@@ -318,6 +319,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const refusedArrival = (d) => { if (d?.type === 'arrive') { travel.push({ seq: d.seq ?? 0, ok: false, away: leavesHere(d.at) }); } };
     const outcome = s.last?.outcome || {};
     const auth = outcome.auth || {};
+    const camp = outcome.camp;
+    const campAt = () => camp && !camp.far && (camp.at === s.scene.at || (camp.approach && s.places[s.scene.at]?.parent === camp.origin
+        && normText(s.places[s.scene.at].name) === normText(camp.name)));
+    const newlySeen = [];
     const stealthGos = (auth.gos || []).filter(g => g.sneak || g.manner?.kind === 'stealth');
     let stealthGo = null;
     // Prototype C: the turn the planner read (a story turn: auth.c; a V3-routed one: the outcome's c)
@@ -1163,6 +1168,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 if (part?.refuse) { reject(d, 'passage', part.refuse); const fix = `Alaric is still in ${placeName(s, s.scene.at)}: ${part.refuse}.`; if (!corrections.includes(fix)) corrections.push(fix); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
                 let at = part?.id ? { id: part.id } : viaStop(arrivalPlace(ref));
                 if (at.error) { unmake(); reject(d, 'place', at.error); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
+                if (camp?.approach && auth.gos?.length === 1 && at.id !== camp.origin &&
+                    (s.places[at.id]?.parent !== camp.origin || normText(s.places[at.id]?.name) !== normText(camp.name))) {
+                    unmake(); reject(d, 'passage', 'this camp approach reaches only the nearby site he inspected'); refusedArrival(d); break;
+                }
                 if (at.id === s.scene.at && !(explicitTravel && s.places[at.id]?.kind === 'realm' && auth.gos?.length)) { travel.push({ seq: d.seq, ok: true }); break; }
                 const forcedHere = !!String(d.forced_by || '').trim() && !unprovenForced.has(d);
                 // .190 (A2): the movement proof – the place his step may end at, decided by the GO, not by the reply
@@ -1826,7 +1835,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const m = Math.min(e.minutes, Math.max(0, cap - timeUsed));
             if (m > 0) { emit({ t: 'time.advanced', d: { minutes: m, why: 'activity' } }); timeUsed += m; }
         }
-        if (type === 'take' && e.taken === true && !events.some((x) => x.t === 'object.created' && x.d.object.holder?.entity === 'pc') && !events.some((x) => x.t === 'object.moved' && x.d.to?.entity === 'pc')) {
+        if (!camp && type === 'take' && e.taken === true && !events.some((x) => x.t === 'object.created' && x.d.object.holder?.entity === 'pc') && !events.some((x) => x.t === 'object.moved' && x.d.to?.entity === 'pc')) {
             const name = (auth.takeNames || {})[k];
             if (name && !isLooseCoin(name)) emit({ t: 'object.created', d: { object: { id: uniqueObjectId(s, tag, name), name, kind: 'item', stack: false, qty: 1, unit: null, ...itemTraits(content, { name, balance: true }, s.clock.minute), holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'taken' } } } });
         }
@@ -1990,6 +1999,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
 
     // 5. who noticed him, his introduction, his own record of the turn, a fight the reply committed to
     step = { kind: 'engine' };
+    if (campAt() && !s.places[s.scene.at].camp_stock) {
+        const ids = [...new Set([...campObjects(s, s.scene.at).map(o => o.id), ...newlySeen])];
+        if (ids.length) emit({t:'place.updated', d:{id:s.scene.at, set:{camp_stock:ids}}});
+    }
     // Prototype C (4.3.0-c.6): his contract slips show what the engine holds of their contracts (READY, COMPLETED)
     // Patch 8: what the reply's arrivals and deaths bring about in a Living Dungeon (a level cleared, its contracts)
     if (cPath) syncEvents(s, content, emit, { touch: [trueDungeonOf(s, s.scene.at)] });
@@ -3009,6 +3022,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     function objectNew(d, settling = false) {
         const holder = holderOf(d.holder);
         if (!holder) { reject(d, 'object', `unknown holder ${String(d.holder).slice(0, 40)}`); return; }
+        if (camp && holder.entity === 'pc' && !(camp.gather || []).some(n => sameGoods(n, d.name))) {
+            reject(d, 'pc_inventory', 'a look cannot take an item from the camp'); return;
+        }
+        if (camp && holder.loc) {
+            const hiddenFind = camp.hidden && outcome.search_checks?.some(r => r.success && r.at === s.scene.at) && uncoveredSupply(d, prose);
+            if (!campAt() || holder.loc !== s.scene.at || (!hiddenFind && (!camp.free || !campInspection(s, 'inspect the camp')?.free || s.places[s.scene.at].camp_stock ||
+                !visibleSupply(content, d, prose) || Object.values(s.objects).some(o => o.holder?.loc === holder.loc && sameGoods(o.name, d.name))))) {
+                reject(d, 'camp_stock', 'no new freely accessible camp object established at the confirmed location'); return;
+            }
+        }
         if (holder.entity && holder.entity !== 'pc') {
             const units = Number.isInteger(d.qty) && d.qty > 0 ? d.qty : 1;
             const g = purchaseOf(d.name, holder.entity, units);
@@ -3022,6 +3045,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const id = uniqueObjectId(s, tag, d.name);
         if (holder.entity === 'pc' && ((auth.take || []).length || auth.gather)) grant('player.take');
         emit({ t: 'object.created', d: { object: { id, name: String(d.name).slice(0, 80), kind: d.kind, stack: d.kind === 'resource', qty: d.qty ?? 1, unit: d.unit || null, ...itemTraits(content, { ...d, balance: true }, s.clock.minute), holder, marks: [], for_quests: q ? [q.id] : [], ...(box ? { in: box } : d.in && holder.loc ? { in_name: String(d.in).slice(0, 80) } : {}), source: { turn: s.turn, how: holder.entity === 'pc' ? (((auth.take || []).length || auth.gather) ? 'taken' : 'world_gift') : 'story' } } } });
+        if (campAt() && holder.loc === s.scene.at && !d.in) newlySeen.push(id);
         const key = normText(d.name);
         objectsNew.set(key, objectsNew.has(key) ? null : id); // duplicate labels are ambiguous, never last-wins
     }
@@ -3075,6 +3099,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             transferCargo(s, content, emit, o, to, handOver.qty, handOver.seq);
             emit({ t: 'cmd.completed', d: { seq: handOver.seq, ok: true, reason: null } });
             return;
+        }
+        if (camp && to.entity === 'pc' && o.holder?.loc &&
+            (!campAt() || o.holder.loc !== s.scene.at || !Object.values(auth.takeNames || {}).some(n => sameGoods(n, o.name)))) {
+            reject(d, 'pc_inventory', 'no matching take of this object at the reached camp'); return;
         }
         if (to.entity === 'pc' && o.holder?.loc && !(auth.take || []).length) { reject(d, 'pc_inventory', 'what lies here becomes his only by his own take'); return; }
         // D5 (.175): a ware on open sale becomes his by buying it, never by a take or a story move

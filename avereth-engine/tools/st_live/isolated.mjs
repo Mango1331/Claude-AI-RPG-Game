@@ -24,12 +24,13 @@ const flag = (f) => args.includes(f);
 const opt = (f, d) => { const i = args.indexOf(f); return i >= 0 && args[i + 1] ? args[i + 1] : d; };
 
 // the module smokes of run_c.mjs: "standard" is all of them, "failsoft" the same with the failsoft probes
-const MODULES = ['FINANCE', 'SAVE_RECOVERY', 'FETCH', 'STEALTH', 'UI', 'CONTINUITY', 'BOARD159', 'QOL160', 'UI161', 'PULSE162', 'PULSE164', 'PULSE167', 'NPC169', 'NPC172', 'PILOT01', 'ACTION_HOST', 'ACTION_HUD', 'ACTION_REVIEW', 'USER05', 'NATIVE_WORLD'];
+const MODULES = ['FINANCE', 'SAVE_RECOVERY', 'FETCH', 'STEALTH', 'UI', 'CONTINUITY', 'BOARD159', 'QOL160', 'UI161', 'PULSE162', 'PULSE164', 'PULSE167', 'NPC169', 'NPC172', 'PILOT01', 'ACTION_HOST', 'ACTION_HUD', 'ACTION_REVIEW', 'USER05', 'NATIVE_WORLD', 'USER07_CAMP'];
 const MODES = {
     base: {},
     host_cost: { AVERETH_SMOKE_HOST_COST: '1' },
     prompt_prefix: { AVERETH_SMOKE_PREFIX: '1' },
     board_reference: { AVERETH_SMOKE_BOARD159: '1', AVERETH_SMOKE_BOARD_REFERENCE: '1' },
+    user07_camp: { AVERETH_SMOKE_USER07_CAMP:'1' },
     user07_world: { AVERETH_SMOKE_PILOT01:'1', AVERETH_SMOKE_PULSE167:'1', AVERETH_SMOKE_NATIVE_WORLD:'1' },
     user07_board_hud: { AVERETH_SMOKE_BOARD159:'1', AVERETH_SMOKE_UI161:'1', AVERETH_SMOKE_ACTION_HUD:'1', AVERETH_SMOKE_ACTION_HOST:'1' },
     board_slot: { AVERETH_SMOKE_BOARD159: '1' },

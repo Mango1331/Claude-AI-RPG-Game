@@ -1,3 +1,4 @@
+import {watchInput, inputTiming} from './safe_input_timing.mjs';
 // Original User03 Board failure through a real ST host; scripted provider, no natural-model claim.
 import {createHash} from 'node:crypto';
 import path from 'node:path';
@@ -63,30 +64,11 @@ export async function board159Smoke({page,send,idle,calls,worldTimings,driver,on
   for(const arm of (process.env.AVERETH_SMOKE_BOARD_REFERENCE ? ['reference','full'] : ['reference','full','slot'])){
    mode=arm;n=0;await seed();await configure({stream:arm==='slot',smooth:false,compact:arm==='slot',order:arm==='slot'?alternate:standard});
    const fromJob=worldTimings.length;
-   await page.evaluate(() => {
-    const ctx=SillyTavern.getContext(), replyIndex=ctx.chat.length+1;
-    $('#send_but').one('click.user07', () => {
-     const marks=window.user07BoardTiming={click:performance.now()};
-     const inspect=()=>{
-      const reply=ctx.chat[replyIndex];
-      if (reply?.extra?.avereth?.extraction?.status==='applied' &&
-          document.querySelector('#avereth-action-status')?.textContent==='Gespeichert' &&
-          document.querySelector('#send_but')?.checkVisibility() &&
-          !document.querySelector('#mes_stop')?.checkVisibility()) marks.ready=performance.now();
-      else if (performance.now()-marks.click<60000) requestAnimationFrame(inspect);
-     };
-     requestAnimationFrame(inspect);
-    });
-   });
+   await watchInput(page);
    const start=calls.length;await send(comparison);await idle();
    const turn=calls.slice(start),saved=await driver().verifySaved(await driver().chat(),{complete:true});
-   await page.waitForFunction(()=>Number.isFinite(window.user07BoardTiming?.ready));
-   const marks=await page.evaluate(()=>window.user07BoardTiming);
-   const jobs=worldTimings.slice(fromJob),job=jobs[0];
-   checks[arm+'ReadyAfterReadback']=saved && jobs.length===1 && job.persisted && job.extraction_status==='applied'
-    && marks.click<=job.committed_at_ms && job.persisted_at_ms<=marks.ready;
-   const timing={worldCommitMs:job.committed_at_ms-marks.click,readbackMs:job.persisted_at_ms-marks.click,
-    readyMs:marks.ready-marks.click,saveDurationMs:job.save_readback_ms};
+   const timing=await inputTiming(page,worldTimings.slice(fromJob));
+   checks[arm+'ReadyAfterReadback']=saved && timing.verified;
    const before=await publication();
    await page.evaluate(()=>SillyTavern.getContext().reloadCurrentChat());onReload();
    const after=await publication();

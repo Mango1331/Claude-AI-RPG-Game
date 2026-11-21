@@ -1,6 +1,12 @@
 # Avereth Engine – aktueller Produkt- und Arbeitsstand
 
-**Dokumentationsabgleich 20.11.2026; Produkt `.200` eingefroren, Entwicklungsbuild `.204` technisch abgenommen und in Glassmere gespielt, User06 durch Charaktertod beendet (Originalreview ausstehend).** **Dies ist die einzige laufende Statusquelle**, keine Patchchronik. [Startseite](README.md) · [Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Kanon](02_DESIGN_KANON.md) · [Zielbild 08](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md) · [Roadmap](07_ROADMAP_NACH_10B_ENTWURF.md) · [Fachindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md).
+**Dokumentationsabgleich 21.11.2026; Produkt `.200` eingefroren, Entwicklungsbuild `.204` technisch abgenommen und in Glassmere gespielt, User06 durch Charaktertod beendet (Originalreview ausstehend).** **Dies ist die einzige laufende Statusquelle**, keine Patchchronik. [Startseite](README.md) · [Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Kanon](02_DESIGN_KANON.md) · [Zielbild 08](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md) · [Roadmap](07_ROADMAP_NACH_10B_ENTWURF.md) · [Fachindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md).
+
+## User07 – erster persönlicher .204-Lauf (21.11.2026)
+
+[Archiv der drei bytegenauen Originaldateien](testrun_10b/user-20261121-171341-204/README.md) · [Nutzerfeedback](testrun_10b/user-20261121-171341-204/USER_FEEDBACK.md) · [frühere GPT-Hypothesen](testrun_10b/user-20261121-171341-204/GPT_DISKUSSIONSSTAND.md) · [unabhängiger Codex-Analyseauftrag](testrun_10b/user-20261121-171341-204/CODEX_ANALYSEAUFTRAG.md).
+
+**6 Spielerinputs (2 Charaktererstellung, 4 erzählte Züge)** bis Questboard in Ashbridge, Benutzerlauf *noch nicht beendet*. Turn 5: Gildenregistrierung mit einmaliger 20-cp-Zahlung korrekt gebucht; Narrator-/UI-Generierungsfenster 246,199 s, danach Extractor 35,653 s; zwei `no_go` und zwei nachfolgende `scene_context`-Ablehnungen wegen erzählter Messraumroutine. Turn 6: Questboard nach zweitem Generierungsversuch, Systemkarten und nochmals erzählte fünf Aufträge; Narrator-/UI-Generierungsfenster 143,165 s, danach Extractor 20,958 s. Zeitursachen und technisch sinnvolle Abhilfe **nicht abschließend bewertet**. Nutzer priorisiert tatsächliche Zeit bis sichere Folgeeingabe und freies Spiel; Streaming und rein kosmetische Wiederholungsverbote sind keine ausreichende Antwort. **Codex muss unabhängig erst Rohdaten/Code, danach Nutzerfeedback und GPT-Diskussion prüfen, ohne Code zu ändern.** Erst anschließend gemeinsam Patchbedarf entscheiden. `.204`-Entwicklungsbuild und eingefrorenes Produkt `.200` bleiben unverändert.
 
 ## Produkt und letzte technische Abnahme
 

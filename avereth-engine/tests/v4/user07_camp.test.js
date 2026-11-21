@@ -191,3 +191,45 @@ test('A separate TAKE in the inspection cannot mint an unknown item from expecte
     assert.equal(held.length,1); assert.equal(held[0].holder.entity,'pc');
     assert.deepEqual(legal.state.places[site].camp_stock,[held[0].id]);
 });
+
+
+test('Scene evidence permits a reordered ordinary item only at the positively vacant camp', () => {
+    const d = {...bowl,qty:1,unit:null,name:'dented copper cooking pot'};
+    const words = 'A cooking pot of dented copper, worth little but real.';
+    const siteWithFact = location();
+    siteWithFact.facts.site = {s:site,p:'site',o:'This camp here stands empty.'};
+    const stock = (s, prose) => local(reply(player(s).state,[d],prose).state);
+    assert.equal(stock(siteWithFact,words).length,1);
+    assert.deepEqual(stock(location(),words),[]);
+    const uncertain = structuredClone(siteWithFact);
+    uncertain.facts.site.o = 'This camp here might be abandoned.';
+    assert.deepEqual(stock(uncertain,words),[]);
+    for (const prose of [
+        "A trader's cooking pot of dented copper.", 'A cooking pot of dented copper is for sale.',
+        'A cooking pot of dented copper. It belongs to Mara.', 'A cooking pot of dented copper. Mara owns it.', 'Her cooking pot of dented copper.',
+        'There is no cooking pot of dented copper.', 'A rare cooking pot of dented copper.',
+        'A cooking pot of dented copper is hidden inside a chest.',
+        'A cooking pot sits beside a dented copper spear.', 'Alaric remembers a cooking pot of dented copper.',
+        'A cooking pot of dented copper belonging to a travelling cook rests here.',
+    ]) assert.deepEqual(stock(siteWithFact,prose),[],prose);
+});
+
+test('Observer and remote camp are distinct even when a delta reports here', () => {
+    const hill = location('rise above the forest camp');
+    const r = player(hill,'I look at the camp from here.');
+    const d = {...bowl,name:'clay bowl',qty:1};
+    for (const words of [
+        'A clay bowl rests there.', 'Far below, a clay bowl rests beside Alaric.',
+        'A goblin waits in the camp. A clay bowl rests at his feet.',
+        'Right beside him on the rise, a clay bowl might lie in the grass.',
+        'Right beside him on the rise, a clay bowl lies hidden in a pack.',
+        'Right beside him on the rise, a clay bowl lies in the trader’s chest.',
+    ]) assert.deepEqual(local(reply(r.state,[d],words).state),[],words);
+});
+
+
+test('An explicitly free hyphenated utensil still matches its extractor label', () => {
+    const spoon = {...bowl, name:'bone-handled spoon', qty:1};
+    const s = reply(player(location()).state,[spoon],'An unclaimed bone-handled spoon lies by the ashes.').state;
+    assert.deepEqual(local(s).map(o => o.name),[spoon.name]);
+});

@@ -12,7 +12,8 @@ const REMOTE = /\b(?:from (?:here|afar|a distance|the (?:ridge|rise|hill))|throu
 const BARRED = /\b(?:guarded|occupied|locked|barred|blocked|impassable|cliff|chasm|across the river|miles away|distant|horizon)\b/i;
 const OUTSIDE = /\b(?:above|overlooking|outside|towards?|beyond|across from|road to|path to|view of|approach to|distant|horizon)\b/i;
 const VACANT = /\b(?:abandoned|deserted|unoccupied|sits empty|stands empty|empty camp)\b/i;
-const vantage = name => String(name || '').match(/^(?:.*?\b(?:rise|ridge|slope|hill|bank|ledge|overlook|path|trail))\s+(?:above|beside|overlooking|next to)\s+(?:the\s+)?(.+\bcamp|camp|campsite|encampment)$/i);
+const NEARBY = /\b(?:below the (?:rise|ridge|slope|hill)|next to|beside|nearby|at the foot)\b/i;
+const vantage = name => String(name || '').match(/^(?:.*?\b(?<terrain>rise|ridge|slope|hill|bank|ledge|overlook|path|trail))\s+(?:above|beside|overlooking|next to)\s+(?:the\s+)?(?<camp>.+\bcamp|camp|campsite|encampment)$/i);
 
 // An observation point and its camp are different holders, even before a camp site ID exists.
 export function looksDownOnCamp(s) {
@@ -38,9 +39,9 @@ export function campInspection(s, text) {
     const people = s.scene.present.filter(id => id !== 'pc' && s.entities[id]?.status !== 'dead');
     const danger = s.pending_combat?.length || people.some(id => s.entities[id]?.kind === 'creature');
     const closed = danger || BARRED.test(place.name + ' ' + details) || featuresAt(s, place.id, {hidden:true}).some(f => f.status === 'active' && ['obstacle','hazard'].includes(f.kind));
-    const near = !view || facts.some(f => CAMP.test(f.o) && /\b(?:below the (?:rise|ridge|slope|hill)|next to|beside|nearby|at the foot)\b/i.test(f.o) && VACANT.test(f.o));
+    const near = !view || facts.some(f => CAMP.test(f.o) && NEARBY.test(f.o) && VACANT.test(f.o));
     const far = REMOTE.test(text) || (!view && OUTSIDE.test(place.name)) || !!view && (!near || closed || people.length > 0 || !/\b(?:around|inspect|examine|survey|search|approach|enter|walk to)\b/i.test(text));
-    return {origin:place.id, name:view ? normText(view[1]) : place.name, approach:!!view && !far,
+    return {origin:place.id, name:view ? normText(view.groups.camp) : place.name, approach:!!view && !far,
         at:!view && !far ? place.id : null, far, free:!far && !closed && !people.length && (!view || VACANT.test(details)),
         hidden:UNCERTAIN.test(text)};
 }
@@ -72,15 +73,73 @@ export function uncoveredSupply(d, prose) {
 // goods can still exist through the ordinary trade, gift, search and discovery paths.
 export const ordinarySupply = name => /\b(?:bowl|pot|pan|cup|kettle|utensil|ladle|spoon|blanket|bedroll|rope|cord|cloth|sack|basket|waterskin|flask|pail|bucket|tinder|firewood|peat|ration|rabbit|meat|hide|tarp|tent peg)s?\b/i.test(name);
 
-export function visibleSupply(content, d, prose) {
+// Match one noun phrase, including "pot of dented copper". Words from separate objects
+// must never complete the label. Keep the offset for the existing quantity check.
+function itemMention(line, name) {
+    const label = (normText(name).match(/[a-z0-9]+/g) || []).filter(w => !['of', 'the'].includes(w));
+    if (!label.length) return null;
+    const normalized = normText(line).replace(/(?<=[a-z])-(?=[a-z])/g, ' ');
+    const tokens = [...normalized.matchAll(/[a-z0-9]+|[^\s]/g)];
+    for (let start = 0; start < tokens.length; start++) {
+        const remaining = new Set(label);
+        for (let i = start; i < tokens.length; i++) {
+            const word = tokens[i][0];
+            if (i > start && ['of','the'].includes(word)) continue;
+            if (!remaining.delete(word) && !remaining.delete(word.replace(/s$/, ''))) break;
+            if (!remaining.size) return {before:normalized.slice(0,tokens[start].index), after:normalized.slice(tokens[i].index + word.length)};
+        }
+    }
+    return null;
+}
+
+const UNSUITABLE = /\b(?:if|might|would|could|should|imagined|missing|gone|not|no|nothing|without|isn't|wasn't|weren't|unseen|inaccessible|underneath|inside|shut|broken|ruined|rotten|spoiled|inedible|shattered|locked|tied shut|laced shut|hidden|buried|concealed|stolen|costly|priceless|ornate|unreachable|owned|owns?|guards?|borrowed|loan|belong(?:s|ed|ing)?|his|her|hers|their|sale|valuable|precious|rare|gilded|gold(?:en)?|silver|platinum|diamond|gemstone|jewels?|jewelled|jeweled|coins?|enchanted|magical|painting|depiction|replica of|dreamed)\b|['’]s\b/i;
+const DISCLAIMS = /\b(?:abandoned|discarded|ownerless|unclaimed|left behind|free to take)\b/i;
+
+// Only a local record of this camp can stand in for an explicit disclaimer on the item.
+export function vacantSite(s, view) {
+    const place = s.places[view.origin];
+    const local = text => CAMP.test(text) && VACANT.test(text) && !/\b(?:not|never|no longer|formerly|once|might|possibly|appears?|looks?|seems?|rumou?r(?:ed)?|other|another)\b/i.test(text);
+    if (!view.approach && local(place?.name || '')) return true;
+    return Object.values(s.facts || {}).some(f => f.s === view.origin && !f.until && f.visibility !== 'private' && local(f.o)
+        && (view.approach ? NEARBY.test(f.o)
+            : /\b(?:here|this (?:camp|clearing)|camp here)\b/i.test(f.o)));
+}
+
+export function visibleSupply(content, d, prose, vacant = false) {
     if (!['item','resource'].includes(d.kind) || d.teaches || d.effect || d.for_quest || d.in) return false;
     const name = normText(d.name);
-    if (itemProfile(content, {name, kind:'item'})) return false;
-    const clause = String(prose).split(/[.!?;\n]/).find(line => normText(line).includes(name));
-    if (!clause || (d.qty ?? 1) < 1 || (!ordinarySupply(name) && !/\b(?:plain|ordinary|mundane|commonplace)\b/i.test(clause))) return false;
-    if (d.qty > 1) {
-        const before = normText(clause).split(name)[0].replace(/\b(?:unclaimed|discarded|ownerless|abandoned)\s*$/i, '');
-        if (trailingNumber(before) !== d.qty) return false;
+    if (itemProfile(content, {name, kind:'item'}) || (d.qty ?? 1) < 1) return false;
+    const lines = String(prose).split(/[.!?;\n]+/).map(line => line.trim()).filter(Boolean);
+    let affirmed = false;
+    for (const [i,line] of lines.entries()) {
+        const mention = itemMention(line,name);
+        if (!mention) continue;
+        const next = lines[i+1] || '';
+        if (UNSUITABLE.test(line) || (/^(?:it|this|that)\b/i.test(next) && UNSUITABLE.test(next))
+            || /\b(?:owns?|claims?|guards?) (?:it|them)\b/i.test(next)) return false;
+        if (!ordinarySupply(name) && !/\b(?:plain|ordinary|mundane|commonplace)\b/i.test(line)) continue;
+        if (d.qty > 1 && trailingNumber(mention.before.replace(/\b(?:unclaimed|discarded|ownerless|abandoned)\s*$/i, '')) !== d.qty) continue;
+        // At a proven vacant site a directly listed object or one physically placed in
+        // the scene is sufficient. A remembered, wanted or merely mentioned item is not.
+        const listed = /^(?:a|an|the)?\s*$/.test(mention.before.trim()) && /^(?:\s*$|\s*,)/.test(mention.after);
+        const placed = /^\s+(?:(?:is|was|were|are) (?:lying|resting|sitting|hanging)|sits?|hangs?|lies|rests?|stands?|leans?|lay)\b/.test(mention.after)
+            || /\b(?:lies|rests?|hangs?|sits?|stands?|lay)\s+(?:a|an|the)\s+$/.test(mention.before);
+        if (DISCLAIMS.test(line) || (vacant && ordinarySupply(name.split(/\s+/).at(-1)) && (listed || placed))) affirmed = true;
     }
-    return /\b(?:abandoned|discarded|ownerless|unclaimed|left behind|free to take)\b/i.test(clause) && !/\b(?:if|might|would|could|imagined|not|no|nothing|without|missing|broken|ruined|rotten|spoiled|inedible|shattered|locked|hidden|buried|owned|borrowed|loan|belongs|sale|valuable|gold(?:en)?|silver|platinum|diamond|gemstone|jewels?|jewelled|jeweled|coins?|enchanted|magical)\b|['’]s\b/i.test(clause);
+    return affirmed;
+}
+
+// A remote view can include a second object on the lookout. Bind proximity to
+// the reported noun itself; "he looks down from the rise" locates only the observer.
+export function atObserver(place, name, prose) {
+    const terrain = vantage(place?.name)?.groups.terrain.toLowerCase();
+    if (!terrain) return false;
+    const near = "(?:beside alaric|at alaric's feet|(?:beside him|at his feet) on the " + terrain + ")";
+    const before = new RegExp('(?:^|,\\s*)(?:(?:right|directly) )?' + near + ',? (?:a|an|the) $');
+    const after = new RegExp('^\\s+(?:lies|rests|lands|falls) (?:right |directly )?' + near + '\\b');
+    return String(prose).split(/[.!?;\n]/).some(line => {
+        const mention = itemMention(line,name);
+        if (!mention || UNSUITABLE.test(line.replace(/(?:his|alaric['’]s) feet/ig,'feet')) || /\b(?:below|downhill|camp|distant|afar|imagines?|might|could|not|no)\b/i.test(line)) return false;
+        return (before.test(mention.before.trimStart()) && /^\s+(?:lies|rests|lands|falls)\b/.test(mention.after)) || after.test(mention.after);
+    });
 }

@@ -1026,6 +1026,7 @@ const HANDLERS = {
         const sale = wareOnSale(s, o);
         if (sale) return { status: 'refused', reason: 'for sale', line: `CANNOT TAKE — ${o.name} is ${who(s, sale.offer.seller)}'s ware for sale${Number.isInteger(sale.line.price_cp) ? ` (${cpText(sale.line.price_cp, content)})` : ''}; it becomes his by buying it (${sale.open ? 'accepting the offer' : `a new offer from ${who(s, sale.offer.seller)}`}), not by taking it.` };
         const part = c.qty && c.qty < (o.qty ?? 1) ? c.qty : null;
+        if (s.places[s.scene.at]?.camp_stock?.includes(o.id)) (ctx.booked.campTakes ||= []).push({at:s.scene.at, id:o.id});
         emit({ t: 'object.moved', d: { id: o.id, to: { entity: 'pc' }, ...(part ? { qty: part, split: `${o.id}_${s.turn}` } : {}) } });
         return { status: 'resolved', line: `TAKES — ${o.name}${(part || o.qty) && (o.stack || (o.qty ?? 1) > 1 || o.unit) ? ` (${part || o.qty}${o.unit ? ` ${o.unit}` : ''})` : ''} along.` };
     },

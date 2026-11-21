@@ -1,4 +1,4 @@
-import { campInspection, campObjects, visibleSupply, uncoveredSupply } from './camp.js';
+import { campInspection, campObjects, vacantSite, atObserver, visibleSupply, uncoveredSupply } from './camp.js';
 import { floorRefusal, namedLevel, goesFrom, otherEnd } from './dungeon.js';
 import { placeParent, placeIdentity, placeKey, samePlace } from './place_refs.js';
 import { resolvePlaceRef, usualPersonNamed } from './place_book.js';
@@ -320,8 +320,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const outcome = s.last?.outcome || {};
     const auth = outcome.auth || {};
     const camp = outcome.camp;
-    const campAt = () => camp && !camp.far && (camp.at === s.scene.at || (camp.approach && s.places[s.scene.at]?.parent === camp.origin
-        && normText(s.places[s.scene.at].name) === normText(camp.name)));
+    const nearbyCamp = () => s.places[s.scene.at]?.parent === camp.origin && normText(s.places[s.scene.at].name) === normText(camp.name);
+    const campAt = () => camp && !camp.far && (s.scene.at === camp.at || (camp.approach && nearbyCamp()));
     const newlySeen = [];
     const stealthGos = (auth.gos || []).filter(g => g.sneak || g.manner?.kind === 'stealth');
     let stealthGo = null;
@@ -488,6 +488,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     let cutLeft = besideCut && Number.isInteger(pauseTold) ? Math.min(cutAway, Math.max(0, pauseTold - pauseCut.after_min)) : cutAway;
     const startAt = s.scene.at;
     let arrived = null;
+    let separateDestination = null;
     let stealthAt = null; // actual voluntary arrival of this GO, never a forced relocation
     let arrivedHall = null;
     let sceneEpoch = 0;
@@ -1200,6 +1201,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 const party = companions(d.with, d);
                 perceiveAll(s, emit, seeing());
                 arriveThrough(at.id, party);
+                if (camp) {
+                    const separateGo = !d.forced_by && at.id !== camp.origin && !nearbyCamp() && auth.gos?.some(g =>
+                        g.to === at.id || (!g.to && g.newName && normText(g.newName) === normText(s.places[at.id]?.name)));
+                    separateDestination = separateGo ? at.id : null;
+                }
                 // NPC E2-A (R1): the known people this GO step's arrival shows here
                 if (explicitTravel) { const k = goStepAt(at.id, ref); if (k !== null) metArrivals(k, at.id); }
                 stealthGo = String(d.forced_by || '').trim() ? null : arrivalManner();
@@ -3019,18 +3025,31 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         return null;
     }
 
+    function campGroundAllowed(d, loc) {
+        if (loc !== s.scene.at) return false;
+        if (loc === separateDestination) {
+            const scene = sceneOf(d);
+            return d.holder === loc || (scene && scene !== 'here' && samePlace(s, scene, loc, content));
+        }
+        if (!campAt()) return camp.far && loc === camp.origin && atObserver(s.places[loc], d.name, prose);
+        if (camp.hidden && outcome.search_checks?.some(r => r.success && r.at === loc) && uncoveredSupply(d, prose)) return true;
+        return camp.free && !s.places[loc].camp_stock && campInspection(s, 'inspect the camp')?.free
+            && visibleSupply(content, d, prose, vacantSite(state, camp))
+            && !Object.values(s.objects).some(o => o.holder?.loc === loc && sameGoods(o.name, d.name));
+    }
+
     function objectNew(d, settling = false) {
         const holder = holderOf(d.holder);
         if (!holder) { reject(d, 'object', `unknown holder ${String(d.holder).slice(0, 40)}`); return; }
         if (camp && holder.entity === 'pc' && !(camp.gather || []).some(n => sameGoods(n, d.name))) {
             reject(d, 'pc_inventory', 'a look cannot take an item from the camp'); return;
         }
-        if (camp && holder.loc) {
-            const hiddenFind = camp.hidden && outcome.search_checks?.some(r => r.success && r.at === s.scene.at) && uncoveredSupply(d, prose);
-            if (!campAt() || holder.loc !== s.scene.at || (!hiddenFind && (!camp.free || !campInspection(s, 'inspect the camp')?.free || s.places[s.scene.at].camp_stock ||
-                !visibleSupply(content, d, prose) || Object.values(s.objects).some(o => o.holder?.loc === holder.loc && sameGoods(o.name, d.name))))) {
-                reject(d, 'camp_stock', 'no new freely accessible camp object established at the confirmed location'); return;
-            }
+        const takenStock = outcome.booked?.campTakes;
+        if (takenStock?.some(t => (t.at === holder.loc || holder.entity === 'pc') && sameGoods(s.objects[t.id]?.name, d.name))) {
+            reject(d, 'engine_booked', 'the identified camp object was already taken this turn'); return;
+        }
+        if (camp && holder.loc && !campGroundAllowed(d, holder.loc)) {
+            reject(d, 'camp_stock', 'no new freely accessible camp object established at the confirmed location'); return;
         }
         if (holder.entity && holder.entity !== 'pc') {
             const units = Number.isInteger(d.qty) && d.qty > 0 ? d.qty : 1;

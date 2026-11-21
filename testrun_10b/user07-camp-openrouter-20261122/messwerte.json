@@ -1,0 +1,373 @@
+[
+  {
+    "n": 1,
+    "input": "I follow the goblin tracks and search for their camp, stopping where I can see it before going in.",
+    "at": "loc.wrecked_cart_hollow",
+    "rolls": [],
+    "commands": [
+      "1. GOES — to the goblin camp, following the tracks north into the pines (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop.",
+      "2. NOT DONE — \"search for their camp, stopping where I can see it before going in\": the earlier journey has not arrived yet. Perform this action after confirmed arrival; no local check, payment or activity time was booked."
+    ],
+    "camp": null,
+    "extraction": "applied",
+    "reject": [
+      [
+        "arrive",
+        "passage"
+      ],
+      [
+        "creature.new",
+        "scene_context"
+      ],
+      [
+        "creature.new",
+        "scene_context"
+      ],
+      [
+        "aware",
+        "scene_context"
+      ],
+      [
+        "aware",
+        "scene_context"
+      ],
+      [
+        "object.new",
+        "scene_context"
+      ],
+      [
+        "quest.detail",
+        "scene_context"
+      ]
+    ],
+    "T4ms": {
+      "firstProse": 4188,
+      "lastRenderedChange": 17256,
+      "worldCommit": 17236,
+      "confirmedSave": 17400,
+      "ready": 17403
+    },
+    "hashes_after_reload": {
+      "state": "f67fcc91607e6ff8617f4ef108a7e6f3dfdbe7ad81e83add36f96f6d5aed4765",
+      "events": "7dc29251208beb767011c690364e2e4680c8fc6e88a341a505f24bd86c1db8e7",
+      "messages": 35
+    },
+    "ids": [
+      1,
+      2,
+      3
+    ],
+    "roles": [
+      "planner",
+      "narrator",
+      "extractor"
+    ],
+    "inputTokens": 38253,
+    "outputTokens": 2261,
+    "usd": "0.002022650",
+    "physicalMs": [
+      1593,
+      5162,
+      9627
+    ]
+  },
+  {
+    "n": 2,
+    "input": "I look around the camp for any useful equipment.",
+    "at": "loc.rise_above_the_goblin_camp.goblin_camp",
+    "rolls": [],
+    "commands": [
+      "1. GOES — to goblin camp (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop. Approach only the nearby goblin camp, a site at loc.rise_above_the_goblin_camp, if the way is clear. Confirm the arrival before showing items there. Stop for any real obstacle."
+    ],
+    "camp": {
+      "origin": "loc.rise_above_the_goblin_camp",
+      "name": "goblin camp",
+      "approach": true,
+      "at": null,
+      "far": false,
+      "free": true,
+      "hidden": false
+    },
+    "extraction": "applied",
+    "reject": [
+      [
+        "object.new",
+        "camp_stock"
+      ],
+      [
+        "object.new",
+        "camp_stock"
+      ],
+      [
+        "object.new",
+        "camp_stock"
+      ]
+    ],
+    "T4ms": {
+      "firstProse": 7410,
+      "lastRenderedChange": 10237,
+      "worldCommit": 18810,
+      "confirmedSave": 18958,
+      "ready": 18961
+    },
+    "hashes_after_reload": {
+      "state": "52c15c149480b1e54cf180aad72c3be956aaa697258008e1350d9671059ff60f",
+      "events": "77abb584f89098f25e24cada6b87561067aaad6fd71788dcd466e536c3f420a2",
+      "messages": 45
+    },
+    "ids": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "roles": [
+      "planner",
+      "narrator",
+      "extractor",
+      "extractor"
+    ],
+    "inputTokens": 54306,
+    "outputTokens": 2156,
+    "usd": "0.002662964",
+    "physicalMs": [
+      5264,
+      4260,
+      5929,
+      2368
+    ]
+  },
+  {
+    "n": 3,
+    "input": "I take the dented cooking pot from beside the fire.",
+    "at": "loc.rise_above_the_goblin_camp.goblin_camp",
+    "rolls": [],
+    "commands": [
+      "1. TAKES — dented cooking pot, if it is there (the story decides whether he gets it)."
+    ],
+    "camp": null,
+    "extraction": "applied",
+    "reject": [],
+    "T4ms": {
+      "firstProse": 5223,
+      "lastRenderedChange": 8994,
+      "worldCommit": 8956,
+      "confirmedSave": 9161,
+      "ready": 9165
+    },
+    "hashes_after_reload": {
+      "state": "63ab988e7c98261865ba92713aef18f7ee90bf4f2687a3bff5253f5b530d61ad",
+      "events": "70e641de3c3df6d754fe0e06351db6cf5ac20b1ec671760c16d3dc20c4f68f99",
+      "messages": 47
+    },
+    "ids": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "roles": [
+      "planner",
+      "narrator",
+      "extractor",
+      "extractor"
+    ],
+    "inputTokens": 51837,
+    "outputTokens": 613,
+    "usd": "0.002248730",
+    "physicalMs": [
+      3874,
+      1838,
+      1566,
+      694
+    ]
+  },
+  {
+    "n": 4,
+    "input": "I look around the camp again to see what is still lying by the fire.",
+    "at": "loc.rise_above_the_goblin_camp.goblin_camp",
+    "rolls": [],
+    "commands": [
+      "1. CAMP INSPECTION — Describe ordinary portable equipment only if actually present, visible and accessible. Record a new item on the ground only when its use and lack of an owner are clear in the narration. Looking transfers nothing. Corpses were settled separately. Hidden contents stay unknown without a successful search."
+    ],
+    "camp": {
+      "origin": "loc.rise_above_the_goblin_camp.goblin_camp",
+      "name": "goblin camp",
+      "approach": false,
+      "at": "loc.rise_above_the_goblin_camp.goblin_camp",
+      "far": false,
+      "free": false,
+      "hidden": false
+    },
+    "extraction": "applied",
+    "reject": [
+      [
+        "object.new",
+        "camp_stock"
+      ],
+      [
+        "object.new",
+        "camp_stock"
+      ]
+    ],
+    "T4ms": {
+      "firstProse": 2207,
+      "lastRenderedChange": 4219,
+      "worldCommit": 9065,
+      "confirmedSave": 9271,
+      "ready": 9274
+    },
+    "hashes_after_reload": {
+      "state": "fab13fb66d18da2e32d5caebeacd718a31b8bb11d9755de7b659a1bff7c79492",
+      "events": "5405b22a16350e1c57ab694de10df33d6ef7e71060cdd3fa034813e8e0a7e242",
+      "messages": 49
+    },
+    "ids": [
+      12,
+      13,
+      14
+    ],
+    "roles": [
+      "planner",
+      "narrator",
+      "extractor"
+    ],
+    "inputTokens": 37993,
+    "outputTokens": 1087,
+    "usd": "0.001768066",
+    "physicalMs": [
+      756,
+      2711,
+      4659
+    ]
+  },
+  {
+    "n": 5,
+    "input": "I search under the peat stack for a hidden compartment or buried supplies.",
+    "at": "loc.rise_above_the_goblin_camp.goblin_camp",
+    "rolls": [
+      {
+        "what": "under the peat stack for a hidden compartment or buried supplies",
+        "stat": "PER",
+        "actor": 5,
+        "opposition": 6,
+        "chance": 45.45,
+        "roll": 77,
+        "success": false,
+        "claimed": false,
+        "by": "engine",
+        "seq": 1,
+        "search": true,
+        "at": "loc.rise_above_the_goblin_camp.goblin_camp",
+        "focus": [
+          "under",
+          "peat",
+          "stack",
+          "hidden",
+          "compartment",
+          "buried",
+          "supplies"
+        ],
+        "found": null,
+        "sig": "feat.1:active:v"
+      }
+    ],
+    "commands": [
+      "1. SEARCHES under the peat stack for a hidden compartment or buried supplies for a while. SEARCH CHECK (PER 5 vs 6): 45.45% (d100 77) → FAILURE — he finds nothing new this way: say so plainly (no false lead, nothing he wrongly believes, no interchangeable hint); what is there stays as it is, and another place, method or tool may still find it."
+    ],
+    "camp": null,
+    "extraction": "applied",
+    "reject": [],
+    "T4ms": {
+      "firstProse": 2591,
+      "lastRenderedChange": 10655,
+      "worldCommit": 10617,
+      "confirmedSave": 10823,
+      "ready": 10828
+    },
+    "hashes_after_reload": {
+      "state": "2bc1cecb3d40e8e7848eaa7382a3261c57c73138b01062a914c654c849dd1660",
+      "events": "929eee807d4ec4ea048c986556d54decbce373b6881d1f2c30ea89c766433a06",
+      "messages": 51
+    },
+    "ids": [
+      15,
+      16,
+      17
+    ],
+    "roles": [
+      "planner",
+      "narrator",
+      "extractor"
+    ],
+    "inputTokens": 38255,
+    "outputTokens": 1121,
+    "usd": "0.001785326",
+    "physicalMs": [
+      881,
+      2788,
+      5979
+    ]
+  },
+  {
+    "n": 6,
+    "input": "I inspect the camp one last time, then return to Ashbridge and look over the ground by the village gate.",
+    "at": "realm.duskreach",
+    "rolls": [],
+    "commands": [
+      "1. CAMP INSPECTION — Describe ordinary portable equipment only if actually present, visible and accessible. Record a new item on the ground only when its use and lack of an owner are clear in the narration. Looking transfers nothing. Corpses were settled separately. Hidden contents stay unknown without a successful search.",
+      "2. GOES — to Ashbridge (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop.",
+      "3. NOT DONE — \"look over the ground by the village gate\": the earlier journey has not arrived yet. Perform this action after confirmed arrival; no local check, payment or activity time was booked."
+    ],
+    "camp": {
+      "origin": "loc.rise_above_the_goblin_camp.goblin_camp",
+      "name": "goblin camp",
+      "approach": false,
+      "at": "loc.rise_above_the_goblin_camp.goblin_camp",
+      "far": false,
+      "free": false,
+      "hidden": false
+    },
+    "extraction": "applied",
+    "reject": [
+      [
+        "position",
+        "group_unclear"
+      ],
+      [
+        "intent",
+        "group_unclear"
+      ]
+    ],
+    "T4ms": {
+      "firstProse": 4026,
+      "lastRenderedChange": 17036,
+      "worldCommit": 17003,
+      "confirmedSave": 17181,
+      "ready": 17184
+    },
+    "hashes_after_reload": {
+      "state": "2f27e83e17eedf608ce8a558eb9c0e02b0c5b79ecb950b971ac0599458a33a25",
+      "events": "28698c7227027b5ebe50d9056f279f345d6ed7f3a5ac03c377d6bdc79bdb9f77",
+      "messages": 53
+    },
+    "ids": [
+      18,
+      19,
+      20
+    ],
+    "roles": [
+      "planner",
+      "narrator",
+      "extractor"
+    ],
+    "inputTokens": 39014,
+    "outputTokens": 2671,
+    "usd": "0.002109316",
+    "physicalMs": [
+      1108,
+      4483,
+      10602
+    ]
+  }
+]

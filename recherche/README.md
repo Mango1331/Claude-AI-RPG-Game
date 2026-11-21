@@ -4,6 +4,8 @@
 
 ## User07 auf .204
 
+Der natürliche Camp-Gegencheck umfasst sechs gespeicherte OpenRouter-Züge. Die kontrollierte Vergleichsreise bestätigt eine C-Regression bei unabhängigen Bodenfunden nach der Ankunft am anderen Ort. [Gegencheck, Entscheidung und Testdaten](../testrun_10b/user07-camp-openrouter-20261122/README.md)
+
 T7 bereitet eine spätere Untersuchung der tatsächlich gelieferten Prompts, des Kontextinhalts und der Tokens pro gespeichertem Zug vor. Die technischen Einzelabnahmen der drei User07-Patches und die gemeinsame Prüfung stehen im [Abnahmebericht](USER07_204_PATCHABNAHME_A_B_C.md). [Forschungsvorhaben T7](USER07_T7_PROMPTS_KONTEXT_UND_TOKENVERBRAUCH.md) · [Fachpläne und Reihenfolge](../patch_plans_10b/USER07_A_QUESTBOARD_UND_HUD.md)
 
 ## Natürlicher OpenRouter-Handelstest

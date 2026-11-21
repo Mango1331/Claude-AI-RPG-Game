@@ -1,0 +1,861 @@
+[
+  {
+    "engine": "reference",
+    "case": "mixed",
+    "prefixHash": "abe344faf8eb1683c50e9643d5e7f9ff12fe58829c791f3b65f1e935c0675d28",
+    "input": "I inspect the camp and then travel back to Ashbridge.",
+    "commands": [
+      {
+        "seq": 1,
+        "type": "activity",
+        "kind": "search",
+        "what": "the camp",
+        "quote": "I inspect the camp"
+      },
+      {
+        "seq": 2,
+        "type": "go",
+        "to": "loc.ashbridge",
+        "quote": "travel back to Ashbridge"
+      }
+    ],
+    "prose": "After inspecting the camp Alaric returns to Ashbridge. At the village gate a courier drops a printed market notice beside the milestone and rides on.",
+    "report": {
+      "scene": "loc.ashbridge",
+      "expected": {
+        "1": {
+          "minutes": 0,
+          "done": true
+        },
+        "2": {
+          "arrived": true,
+          "at": "loc.ashbridge",
+          "with": null
+        }
+      },
+      "deltas": [
+        {
+          "seq": 1,
+          "type": "arrive",
+          "at": "loc.ashbridge",
+          "with": null,
+          "forced_by": null
+        },
+        {
+          "type": "object.new",
+          "name": "printed market notice",
+          "kind": "item",
+          "qty": 1,
+          "holder": "here",
+          "unit": null,
+          "for_quest": null,
+          "seq": 2
+        }
+      ]
+    },
+    "camp": null,
+    "authorized": [
+      {
+        "seq": 2,
+        "to": "loc.ashbridge",
+        "name": "Ashbridge",
+        "hall": false,
+        "newName": null,
+        "mode": "travel",
+        "enter": null,
+        "scope": null
+      }
+    ],
+    "at": "loc.ashbridge",
+    "objects": [
+      {
+        "marks": [],
+        "for_quests": [],
+        "id": "obj.t44.printed_market_notice",
+        "name": "printed market notice",
+        "kind": "item",
+        "stack": false,
+        "qty": 1,
+        "unit": null,
+        "use": "tool",
+        "holder": {
+          "loc": "loc.ashbridge"
+        },
+        "source": {
+          "turn": 21,
+          "how": "story"
+        }
+      }
+    ],
+    "rejected": [],
+    "events": [
+      "scene.moved",
+      "intent.set",
+      "object.created",
+      "time.advanced",
+      "dungeon.party",
+      "dungeon.booked",
+      "memory.recorded",
+      "pulse.outcome",
+      "extract.applied"
+    ],
+    "stateHash": "c3b52d2479b9af3aff02ce385e69be2d3f3f9a4603f111c9bd20166be4094b48"
+  },
+  {
+    "engine": "reference",
+    "case": "lookout",
+    "prefixHash": "abe344faf8eb1683c50e9643d5e7f9ff12fe58829c791f3b65f1e935c0675d28",
+    "input": "I look at the camp from here.",
+    "commands": [
+      {
+        "seq": 1,
+        "type": "activity",
+        "kind": "search",
+        "what": "the camp",
+        "quote": "I look at the camp from here"
+      }
+    ],
+    "prose": "Alaric stays on the rise, looking down at the camp. Right beside him on the rise, a dropped survey marker lies in the grass.",
+    "report": {
+      "scene": "here",
+      "expected": {
+        "1": {
+          "minutes": 0,
+          "done": true
+        }
+      },
+      "deltas": [
+        {
+          "type": "object.new",
+          "name": "dropped survey marker",
+          "kind": "item",
+          "qty": 1,
+          "holder": "here",
+          "unit": null,
+          "for_quest": null,
+          "seq": 1
+        }
+      ]
+    },
+    "camp": null,
+    "authorized": [],
+    "at": "loc.rise_above_the_goblin_camp",
+    "objects": [
+      {
+        "marks": [],
+        "for_quests": [],
+        "id": "obj.t44.dropped_survey_marker",
+        "name": "dropped survey marker",
+        "kind": "item",
+        "stack": false,
+        "qty": 1,
+        "unit": null,
+        "use": "tool",
+        "holder": {
+          "loc": "loc.rise_above_the_goblin_camp"
+        },
+        "source": {
+          "turn": 21,
+          "how": "story"
+        }
+      }
+    ],
+    "rejected": [],
+    "events": [
+      "object.created",
+      "memory.recorded",
+      "pulse.outcome",
+      "extract.applied"
+    ],
+    "stateHash": "682c17252176c64792443e660181a34ac90c218105868f3edb0ecd4d19f17204"
+  },
+  {
+    "engine": "reference",
+    "case": "remote",
+    "prefixHash": "abe344faf8eb1683c50e9643d5e7f9ff12fe58829c791f3b65f1e935c0675d28",
+    "input": "I look at the camp from here.",
+    "commands": [
+      {
+        "seq": 1,
+        "type": "activity",
+        "kind": "search",
+        "what": "the camp",
+        "quote": "I look at the camp from here"
+      }
+    ],
+    "prose": "Far below him at the camp, a clay bowl rests by the fire. Alaric stays on the rise.",
+    "report": {
+      "scene": "here",
+      "expected": {
+        "1": {
+          "minutes": 0,
+          "done": true
+        }
+      },
+      "deltas": [
+        {
+          "type": "object.new",
+          "name": "clay bowl",
+          "kind": "item",
+          "qty": 1,
+          "holder": "here",
+          "unit": null,
+          "for_quest": null,
+          "seq": 1
+        }
+      ]
+    },
+    "camp": null,
+    "authorized": [],
+    "at": "loc.rise_above_the_goblin_camp",
+    "objects": [
+      {
+        "marks": [],
+        "for_quests": [],
+        "id": "obj.t44.clay_bowl",
+        "name": "clay bowl",
+        "kind": "item",
+        "stack": false,
+        "qty": 1,
+        "unit": null,
+        "use": "tool",
+        "holder": {
+          "loc": "loc.rise_above_the_goblin_camp"
+        },
+        "source": {
+          "turn": 21,
+          "how": "story"
+        }
+      }
+    ],
+    "rejected": [],
+    "events": [
+      "object.created",
+      "memory.recorded",
+      "pulse.outcome",
+      "extract.applied"
+    ],
+    "stateHash": "3fb155bdfa55c99dd13c84160830e5e589c62171f623906829447f8839ea8070"
+  },
+  {
+    "engine": "reference",
+    "case": "travel-control",
+    "prefixHash": "abe344faf8eb1683c50e9643d5e7f9ff12fe58829c791f3b65f1e935c0675d28",
+    "input": "I travel back to Ashbridge.",
+    "commands": [
+      {
+        "seq": 1,
+        "type": "go",
+        "to": "loc.ashbridge",
+        "quote": "I travel back to Ashbridge"
+      }
+    ],
+    "prose": "Alaric returns to Ashbridge. At the village gate a courier drops a printed market notice beside the milestone and rides on.",
+    "report": {
+      "scene": "loc.ashbridge",
+      "expected": {
+        "1": {
+          "arrived": true,
+          "at": "loc.ashbridge",
+          "with": null
+        }
+      },
+      "deltas": [
+        {
+          "seq": 1,
+          "type": "arrive",
+          "at": "loc.ashbridge",
+          "with": null,
+          "forced_by": null
+        },
+        {
+          "type": "object.new",
+          "name": "printed market notice",
+          "kind": "item",
+          "qty": 1,
+          "holder": "here",
+          "unit": null,
+          "for_quest": null,
+          "seq": 2
+        }
+      ]
+    },
+    "camp": null,
+    "authorized": [
+      {
+        "seq": 1,
+        "to": "loc.ashbridge",
+        "name": "Ashbridge",
+        "hall": false,
+        "newName": null,
+        "mode": "travel",
+        "enter": null,
+        "scope": null
+      }
+    ],
+    "at": "loc.ashbridge",
+    "objects": [
+      {
+        "marks": [],
+        "for_quests": [],
+        "id": "obj.t44.printed_market_notice",
+        "name": "printed market notice",
+        "kind": "item",
+        "stack": false,
+        "qty": 1,
+        "unit": null,
+        "use": "tool",
+        "holder": {
+          "loc": "loc.ashbridge"
+        },
+        "source": {
+          "turn": 21,
+          "how": "story"
+        }
+      }
+    ],
+    "rejected": [],
+    "events": [
+      "scene.moved",
+      "intent.set",
+      "object.created",
+      "time.advanced",
+      "dungeon.party",
+      "dungeon.booked",
+      "memory.recorded",
+      "pulse.outcome",
+      "extract.applied"
+    ],
+    "stateHash": "3bfbc1fbdce2d28e9b956bd1fbc1ffe1f5a8d520eb6d4b8747f42485b6e0b280"
+  },
+  {
+    "engine": "reference",
+    "case": "actual-planner",
+    "prefixHash": "6364887945c6e77572fe9032e925bb038af3437942c24e08a063bf5b8a594470",
+    "input": "I inspect the camp one last time, then return to Ashbridge and look over the ground by the village gate.",
+    "commands": [
+      {
+        "seq": 1,
+        "type": "activity",
+        "kind": "search",
+        "what": "the camp one last time",
+        "minutes": null,
+        "until": null,
+        "quote": "I inspect the camp one last time"
+      },
+      {
+        "seq": 2,
+        "type": "go",
+        "to": "loc.ashbridge",
+        "quote": "then return to Ashbridge"
+      },
+      {
+        "seq": 3,
+        "type": "activity",
+        "kind": "search",
+        "what": "the ground by the village gate",
+        "minutes": null,
+        "until": null,
+        "quote": "look over the ground by the village gate"
+      }
+    ],
+    "prose": "After inspecting the camp Alaric returns to Ashbridge. At the village gate a courier drops a printed market notice beside the milestone and rides on.",
+    "report": {
+      "scene": "loc.ashbridge",
+      "expected": {
+        "1": {
+          "minutes": 0,
+          "done": true
+        },
+        "2": {
+          "arrived": true,
+          "at": "loc.ashbridge",
+          "with": null
+        }
+      },
+      "deltas": [
+        {
+          "seq": 1,
+          "type": "arrive",
+          "at": "loc.ashbridge",
+          "with": null,
+          "forced_by": null
+        },
+        {
+          "type": "object.new",
+          "name": "printed market notice",
+          "kind": "item",
+          "qty": 1,
+          "holder": "here",
+          "unit": null,
+          "for_quest": null,
+          "seq": 2
+        }
+      ]
+    },
+    "camp": null,
+    "authorized": [
+      {
+        "seq": 2,
+        "to": "loc.ashbridge",
+        "name": "Ashbridge",
+        "hall": false,
+        "newName": null,
+        "mode": "travel",
+        "enter": null,
+        "scope": null
+      }
+    ],
+    "at": "loc.ashbridge",
+    "objects": [
+      {
+        "marks": [],
+        "for_quests": [],
+        "id": "obj.t52.printed_market_notice",
+        "name": "printed market notice",
+        "kind": "item",
+        "stack": false,
+        "qty": 1,
+        "unit": null,
+        "use": "tool",
+        "holder": {
+          "loc": "loc.ashbridge"
+        },
+        "source": {
+          "turn": 25,
+          "how": "story"
+        }
+      }
+    ],
+    "rejected": [],
+    "events": [
+      "entity.updated",
+      "scene.moved",
+      "intent.set",
+      "object.created",
+      "time.advanced",
+      "dungeon.booked",
+      "memory.recorded",
+      "pulse.outcome",
+      "extract.applied"
+    ],
+    "stateHash": "34f9c0b35d06c47bf685ea219fa0d31d0e7ebc9b8956b2c7ea5e8b737e5c5a39"
+  },
+  {
+    "engine": "C",
+    "case": "mixed",
+    "prefixHash": "abe344faf8eb1683c50e9643d5e7f9ff12fe58829c791f3b65f1e935c0675d28",
+    "input": "I inspect the camp and then travel back to Ashbridge.",
+    "commands": [
+      {
+        "seq": 1,
+        "type": "activity",
+        "kind": "search",
+        "what": "the camp",
+        "quote": "I inspect the camp"
+      },
+      {
+        "seq": 2,
+        "type": "go",
+        "to": "loc.ashbridge",
+        "quote": "travel back to Ashbridge"
+      }
+    ],
+    "prose": "After inspecting the camp Alaric returns to Ashbridge. At the village gate a courier drops a printed market notice beside the milestone and rides on.",
+    "report": {
+      "scene": "loc.ashbridge",
+      "expected": {
+        "2": {
+          "arrived": true,
+          "at": "loc.ashbridge",
+          "with": null
+        }
+      },
+      "deltas": [
+        {
+          "seq": 1,
+          "type": "arrive",
+          "at": "loc.ashbridge",
+          "with": null,
+          "forced_by": null
+        },
+        {
+          "type": "object.new",
+          "name": "printed market notice",
+          "kind": "item",
+          "qty": 1,
+          "holder": "here",
+          "unit": null,
+          "for_quest": null,
+          "seq": 2
+        }
+      ]
+    },
+    "camp": {
+      "origin": "loc.rise_above_the_goblin_camp",
+      "name": "goblin camp",
+      "approach": false,
+      "at": null,
+      "far": true,
+      "free": false,
+      "hidden": false
+    },
+    "authorized": [
+      {
+        "seq": 2,
+        "to": "loc.ashbridge",
+        "name": "Ashbridge",
+        "hall": false,
+        "newName": null,
+        "mode": "travel",
+        "enter": null,
+        "scope": null
+      }
+    ],
+    "at": "loc.ashbridge",
+    "objects": [],
+    "rejected": [
+      {
+        "seq": 2,
+        "type": "object.new",
+        "rule": "camp_stock",
+        "why": "no new freely accessible camp object established at the confirmed location"
+      }
+    ],
+    "events": [
+      "scene.moved",
+      "intent.set",
+      "delta.rejected",
+      "time.advanced",
+      "dungeon.party",
+      "dungeon.booked",
+      "memory.recorded",
+      "pulse.outcome",
+      "extract.applied"
+    ],
+    "stateHash": "1969ef7a70b7f7a5adaf8f1fa39aec4b31bc63ae003b28d6b30ae867387ff7ef"
+  },
+  {
+    "engine": "C",
+    "case": "lookout",
+    "prefixHash": "abe344faf8eb1683c50e9643d5e7f9ff12fe58829c791f3b65f1e935c0675d28",
+    "input": "I look at the camp from here.",
+    "commands": [
+      {
+        "seq": 1,
+        "type": "activity",
+        "kind": "search",
+        "what": "the camp",
+        "quote": "I look at the camp from here"
+      }
+    ],
+    "prose": "Alaric stays on the rise, looking down at the camp. Right beside him on the rise, a dropped survey marker lies in the grass.",
+    "report": {
+      "scene": "here",
+      "expected": {},
+      "deltas": [
+        {
+          "type": "object.new",
+          "name": "dropped survey marker",
+          "kind": "item",
+          "qty": 1,
+          "holder": "here",
+          "unit": null,
+          "for_quest": null,
+          "seq": 1
+        }
+      ]
+    },
+    "camp": {
+      "origin": "loc.rise_above_the_goblin_camp",
+      "name": "goblin camp",
+      "approach": false,
+      "at": null,
+      "far": true,
+      "free": false,
+      "hidden": false
+    },
+    "authorized": [],
+    "at": "loc.rise_above_the_goblin_camp",
+    "objects": [],
+    "rejected": [
+      {
+        "seq": 1,
+        "type": "object.new",
+        "rule": "camp_stock",
+        "why": "no new freely accessible camp object established at the confirmed location"
+      }
+    ],
+    "events": [
+      "delta.rejected",
+      "memory.recorded",
+      "pulse.outcome",
+      "extract.applied"
+    ],
+    "stateHash": "99c0a6dea9ea3ee79772ff3eda51cba09d4c59ac5df1fbc7ee0478c1d6659534"
+  },
+  {
+    "engine": "C",
+    "case": "remote",
+    "prefixHash": "abe344faf8eb1683c50e9643d5e7f9ff12fe58829c791f3b65f1e935c0675d28",
+    "input": "I look at the camp from here.",
+    "commands": [
+      {
+        "seq": 1,
+        "type": "activity",
+        "kind": "search",
+        "what": "the camp",
+        "quote": "I look at the camp from here"
+      }
+    ],
+    "prose": "Far below him at the camp, a clay bowl rests by the fire. Alaric stays on the rise.",
+    "report": {
+      "scene": "here",
+      "expected": {},
+      "deltas": [
+        {
+          "type": "object.new",
+          "name": "clay bowl",
+          "kind": "item",
+          "qty": 1,
+          "holder": "here",
+          "unit": null,
+          "for_quest": null,
+          "seq": 1
+        }
+      ]
+    },
+    "camp": {
+      "origin": "loc.rise_above_the_goblin_camp",
+      "name": "goblin camp",
+      "approach": false,
+      "at": null,
+      "far": true,
+      "free": false,
+      "hidden": false
+    },
+    "authorized": [],
+    "at": "loc.rise_above_the_goblin_camp",
+    "objects": [],
+    "rejected": [
+      {
+        "seq": 1,
+        "type": "object.new",
+        "rule": "camp_stock",
+        "why": "no new freely accessible camp object established at the confirmed location"
+      }
+    ],
+    "events": [
+      "delta.rejected",
+      "memory.recorded",
+      "pulse.outcome",
+      "extract.applied"
+    ],
+    "stateHash": "f977593a2814b49f036384dd8398552b2b27d7cc88642daef040408e2a04153c",
+    "remoteTake": [
+      {
+        "seq": 1,
+        "type": "take",
+        "status": "refused",
+        "reason": "camp not reached",
+        "quote": "I take the clay bowl from the camp below"
+      }
+    ]
+  },
+  {
+    "engine": "C",
+    "case": "travel-control",
+    "prefixHash": "abe344faf8eb1683c50e9643d5e7f9ff12fe58829c791f3b65f1e935c0675d28",
+    "input": "I travel back to Ashbridge.",
+    "commands": [
+      {
+        "seq": 1,
+        "type": "go",
+        "to": "loc.ashbridge",
+        "quote": "I travel back to Ashbridge"
+      }
+    ],
+    "prose": "Alaric returns to Ashbridge. At the village gate a courier drops a printed market notice beside the milestone and rides on.",
+    "report": {
+      "scene": "loc.ashbridge",
+      "expected": {
+        "1": {
+          "arrived": true,
+          "at": "loc.ashbridge",
+          "with": null
+        }
+      },
+      "deltas": [
+        {
+          "seq": 1,
+          "type": "arrive",
+          "at": "loc.ashbridge",
+          "with": null,
+          "forced_by": null
+        },
+        {
+          "type": "object.new",
+          "name": "printed market notice",
+          "kind": "item",
+          "qty": 1,
+          "holder": "here",
+          "unit": null,
+          "for_quest": null,
+          "seq": 2
+        }
+      ]
+    },
+    "camp": null,
+    "authorized": [
+      {
+        "seq": 1,
+        "to": "loc.ashbridge",
+        "name": "Ashbridge",
+        "hall": false,
+        "newName": null,
+        "mode": "travel",
+        "enter": null,
+        "scope": null
+      }
+    ],
+    "at": "loc.ashbridge",
+    "objects": [
+      {
+        "marks": [],
+        "for_quests": [],
+        "id": "obj.t44.printed_market_notice",
+        "name": "printed market notice",
+        "kind": "item",
+        "stack": false,
+        "qty": 1,
+        "unit": null,
+        "use": "tool",
+        "holder": {
+          "loc": "loc.ashbridge"
+        },
+        "source": {
+          "turn": 21,
+          "how": "story"
+        }
+      }
+    ],
+    "rejected": [],
+    "events": [
+      "scene.moved",
+      "intent.set",
+      "object.created",
+      "time.advanced",
+      "dungeon.party",
+      "dungeon.booked",
+      "memory.recorded",
+      "pulse.outcome",
+      "extract.applied"
+    ],
+    "stateHash": "3bfbc1fbdce2d28e9b956bd1fbc1ffe1f5a8d520eb6d4b8747f42485b6e0b280"
+  },
+  {
+    "engine": "C",
+    "case": "actual-planner",
+    "prefixHash": "6364887945c6e77572fe9032e925bb038af3437942c24e08a063bf5b8a594470",
+    "input": "I inspect the camp one last time, then return to Ashbridge and look over the ground by the village gate.",
+    "commands": [
+      {
+        "seq": 1,
+        "type": "activity",
+        "kind": "search",
+        "what": "the camp one last time",
+        "minutes": null,
+        "until": null,
+        "quote": "I inspect the camp one last time"
+      },
+      {
+        "seq": 2,
+        "type": "go",
+        "to": "loc.ashbridge",
+        "quote": "then return to Ashbridge"
+      },
+      {
+        "seq": 3,
+        "type": "activity",
+        "kind": "search",
+        "what": "the ground by the village gate",
+        "minutes": null,
+        "until": null,
+        "quote": "look over the ground by the village gate"
+      }
+    ],
+    "prose": "After inspecting the camp Alaric returns to Ashbridge. At the village gate a courier drops a printed market notice beside the milestone and rides on.",
+    "report": {
+      "scene": "loc.ashbridge",
+      "expected": {
+        "2": {
+          "arrived": true,
+          "at": "loc.ashbridge",
+          "with": null
+        }
+      },
+      "deltas": [
+        {
+          "seq": 1,
+          "type": "arrive",
+          "at": "loc.ashbridge",
+          "with": null,
+          "forced_by": null
+        },
+        {
+          "type": "object.new",
+          "name": "printed market notice",
+          "kind": "item",
+          "qty": 1,
+          "holder": "here",
+          "unit": null,
+          "for_quest": null,
+          "seq": 2
+        }
+      ]
+    },
+    "camp": {
+      "origin": "loc.rise_above_the_goblin_camp.goblin_camp",
+      "name": "goblin camp",
+      "approach": false,
+      "at": "loc.rise_above_the_goblin_camp.goblin_camp",
+      "far": false,
+      "free": false,
+      "hidden": false
+    },
+    "authorized": [
+      {
+        "seq": 2,
+        "to": "loc.ashbridge",
+        "name": "Ashbridge",
+        "hall": false,
+        "newName": null,
+        "mode": "travel",
+        "enter": null,
+        "scope": null
+      }
+    ],
+    "at": "loc.ashbridge",
+    "objects": [],
+    "rejected": [
+      {
+        "seq": 2,
+        "type": "object.new",
+        "rule": "camp_stock",
+        "why": "no new freely accessible camp object established at the confirmed location"
+      }
+    ],
+    "events": [
+      "entity.updated",
+      "scene.moved",
+      "intent.set",
+      "delta.rejected",
+      "time.advanced",
+      "dungeon.booked",
+      "memory.recorded",
+      "pulse.outcome",
+      "extract.applied"
+    ],
+    "stateHash": "852e8ba389b6a6cb11bca8892bee310bc9f45835fc6c88f4ec6d1ffcfa82f730"
+  }
+]

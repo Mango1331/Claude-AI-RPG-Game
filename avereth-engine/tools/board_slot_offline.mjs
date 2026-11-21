@@ -175,31 +175,29 @@ for (const [name, run, chatFile, logFile, number] of cases) {
     await reject('secondClearance',pack(valid.with(index,{...clearance,title:'Clear the same level again'})));
     const contradictory = {...valid[index],habitat:{...valid[index].habitat,min_level:4,max_level:7}};
     await reject('levelWindow',pack(valid.with(index,contradictory)),index);
-    // All five listings pass individually, but the global introductory quota is missing.
     const noIntro = {...valid[index],level:2,habitat:{...valid[index].habitat,min_level:1,max_level:3}};
-    await reject('missingIntro',pack(valid.with(index,noIntro)));
-    for (const [label,lo,hi] of [['missingMid',4,7],['missingUpper',8,14]]) {
+    async function acceptsImmediately(listings) {
+        const trial = await generate(state,need,[pack(listings)]);
+        assert.equal(trial.calls,1);
+        assert.equal(trial.result.listings.length,5);
+    }
+    await acceptsImmediately(valid.with(index,noIntro));
+    for (const [lo,hi] of [[4,7],[8,14]]) {
         const changed = valid.map(l => l.habitat && l.level >= lo && l.level <= hi
             ? {...l,level:2,habitat:{...l.habitat,min_level:1,max_level:3}} : l);
-        await reject(label,pack(changed));
-        // A local refusal can mask an unrelated quota defect among the retained four.
-        const hiddenQuota = changed.with(index,raw[index]);
-        assert.equal(localSlot(hiddenQuota,parse(pack(hiddenQuota)),parse,need.missing),index);
-        assert.equal(compose(parse,hiddenQuota,index,slot),null);
-        const global = await generate(state,need,[pack(hiddenQuota),second.text]);
-        assert.equal(global.requests[1].length,4);
-        assert.deepEqual(global.result.listings,approved.listings);
+        await acceptsImmediately(changed);
     }
+    const differentHunt = await generate(state,need,[first.text,JSON.stringify({slot:index+1,listing:noIntro})]);
+    assert.deepEqual(differentHunt.result.listings,parse(pack(valid.with(index,noIntro))).listings);
     const noClear = {...valid[other],title:'Another outdoor hunt',objectives:valid[other].objectives.map(o=>({...o,where:'Far Rill Fen'}))};
     await reject('missingClearance',pack(valid.with(valid.indexOf(clearance),noClear)));
     assert.equal(compose(parse,raw,index,JSON.stringify({slot:index+2,listing:valid[index]})),null);
     assert.equal(compose(parse,raw,index,JSON.stringify({slot:index+1,listing:duplicate})),null);
-    assert.equal(compose(parse,raw,index,JSON.stringify({slot:index+1,listing:noIntro})),null);
     assert.equal(compose(parse,raw,index,second.text),null);
     const repair = boardSlotRepair(first.text,parsed,state,content,need);
     const original = structuredClone(repair.original);
     for (const answer of [slot, slot.slice(0,-1), '{}', second.text, JSON.stringify({slot:index+2,listing:valid[index]}),
-        ...[duplicate,noIntro,contradictory].map(listing=>JSON.stringify({slot:index+1,listing}))]) {
+        ...[duplicate,contradictory].map(listing=>JSON.stringify({slot:index+1,listing}))]) {
         parseBoardSlot(answer,repair,content,need,state);
         assert.deepEqual(repair.original,original);
         const trial = await generate(state,need,[first.text,answer]);

@@ -50,6 +50,21 @@ export async function ui161Smoke({ page, send, idle, calls, driver, onReload, ou
     await seed(u4.chat.slice(0, 73)); await render('board');
     const before = await snap(), count = calls.length;
     const button = page.locator('#chat .last_mes button[data-avereth-quest]').first();
+    for (const theme of ['light','dark']) {
+        const dark = theme === 'dark';
+        const sheet = await page.addStyleTag({content: `:root { --SmartThemeBodyColor: ${dark?'white':'black'}; --SmartThemeBlurTintColor: ${dark?'black':'white'}; }`});
+        try {
+            await button.hover();
+            checks['boardContrast'+theme] = await button.evaluate(el=>{
+                const css=getComputedStyle(el);
+                return css.backgroundColor==='rgb(0, 0, 0)' && css.color==='rgb(255, 255, 255)' &&
+                    css.borderTopColor===css.color && css.textDecorationLine.includes('underline');
+            });
+            await page.keyboard.press('Tab');
+            await button.focus();
+            checks['boardFocus'+theme]=await button.evaluate(el=>el.matches(':focus-visible') && getComputedStyle(el).outlineWidth==='2px');
+        } finally { await sheet.evaluate(el=>el.remove()); }
+    }
     checks.boardButtonsSurviveST = await button.count() === 1;
     await page.fill('#send_textarea','Keep my existing draft.');
     await button.click(); await button.click();

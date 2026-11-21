@@ -13,14 +13,22 @@ const f=JSON.parse(zlib.gunzipSync(fs.readFileSync(new URL('./fixtures/user03_bo
 const before=()=>foldChat(structuredClone(f.prefix)).state;
 const need={branch:'loc.ashbridge',rank:'Novice',missing:5,have:[],c:true,profile:'count_hunt_clear',progression:true,day:0};
 function legal(raw){const x=JSON.parse(raw),l=x.listings.find(l=>l.level===1);for(const k of ['title','task','desired_end_state'])if(l[k])l[k]=l[k].replace(/boars?/gi,'giant rat');l.objectives[0].what='giant rat';l.objectives[0].qty=1;l.habitat={...l.habitat,species:'giant rat',anchor:'rat',min_level:1,max_level:1};return JSON.stringify(x);}
-for(const [i,pair]of f.attempts.entries())test(`159 original board attempt ${i+1}: repair names weak anchors/limits and accepts lawful correction`,async()=>{
- const s=before();let calls=0;
- const r=await generateBoard(async req=>{calls++;if(calls===1)return pair[0];const text=req.messages.at(-1).content;assert.match(text,/rat/);assert.match(text,/HP.*35/);assert.match(text,/ATK.*10/);assert.match(text,/boar/);assert.match(text,/41/);assert.match(text,/11/);return legal(pair[1]);},s,content,need);
- assert.equal(calls,2);assert.equal(r.listings.length,5);assert.ok(!r.failed);
-});
-test('159 unchanged strong boar stays invalid, two failures publish no partial board',async()=>{
- const s=before(),pair=f.attempts[1];let n=0;const r=await generateBoard(async()=>pair[n++],s,content,need);assert.equal(n,2);assert.deepEqual(r.listings,[]);assert.ok(r.failed);
- const p=parseBoard(pair[1],content,need,s);assert.ok(!p.listings||p.listings.length<5);
+for (const [i,pair] of f.attempts.entries()) test(`159 original board ${i+1}: group hunt accepted, strong single boar still refused`,async()=>{
+ const s=before();
+ const first=await generateBoard(async()=>pair[0],s,content,need);
+ assert.equal(first.calls.length,1);
+ assert.equal(first.listings.length,5);
+ const refused=parseBoard(pair[1],content,need,s);
+ assert.match(refused.refused[0].why,/weak ordinary/);
+ const fixed=JSON.parse(legal(pair[1])).listings;
+ const idx=fixed.findIndex(l=>l.level===1);
+ const result=await generateBoard(async req=>req.messages[0].content.includes('"slot":') ?
+    JSON.stringify({slot:idx+1,listing:fixed[idx]}) : pair[1],s,content,need);
+ assert.equal(result.calls.length,2);
+ assert.equal(result.listings.length,5);
+ const failed=await generateBoard(async()=>pair[1],s,content,need);
+ assert.equal(failed.calls.length,2);
+ assert.deepEqual(failed.listings,[]);
 });
 function failed(){const s=before();return playerTurnV4(s,content,'I read the board',{c:true,commands:[{seq:1,type:'board.read',rank:null,quote:'I read the board'}],board:{...need,listings:[],failed:'invalid intro'}});}
 test('159 original post_schedule is refused after technical failure; unrelated Guild facts survive',()=>{

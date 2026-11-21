@@ -103,7 +103,7 @@ test('P2 R T7 original board: "Millrace Row culvert, Ashbridge" is a place of As
     for (const name of ['reed-bank paths of the Reed Flats', 'Windmill Gully', 'Thornwood Edge charcoal camps']) assert.equal(created(p.record, name).parent, 'realm.duskreach', name);
     // W T6 original board: sites "south of Ashbridge" are out in the realm
     const w = await player191('w191', 11);
-    for (const name of ['the millpond hamlet pens south of Ashbridge', 'the millpond hamlet fields south of Ashbridge']) assert.equal(created(w.record, name).parent, 'realm.duskreach', name);
+    for (const name of ['the old quarry track east of Ashbridge', 'the millpond hamlet fields south of Ashbridge']) assert.equal(created(w.record, name).parent, 'realm.duskreach', name);
 });
 
 test('P2 negative: a direction, a road or another town keeps a hunt site in the realm; only the address form of the Guild\'s town is in town', async () => {

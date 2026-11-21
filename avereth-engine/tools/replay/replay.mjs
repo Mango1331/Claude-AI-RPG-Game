@@ -292,7 +292,7 @@ export function compareToBaseline(baseline, result) {
 export function readAccepted(file) {
     const list = JSON.parse(fs.readFileSync(file, 'utf8'));
     if (!list.inherits) return list;
-    const base = JSON.parse(fs.readFileSync(path.join(path.dirname(file), list.inherits), 'utf8'));
+    const base = readAccepted(path.join(path.dirname(file), list.inherits));
     for (const [id, entry] of Object.entries(list.cases)) {
         if (base.cases[id]?.fingerprint !== entry.previous) throw new Error('Changed previous acceptance for ' + id);
     }

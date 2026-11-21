@@ -17,7 +17,8 @@ let mode=null,n=0;
 export function board159Response(system){
  n++;const pair=f.attempts[mode==='success'?0:1];
  if(mode==='full' && n===1)return 'unreadable initial board';
- if(!['slot','reference','full'].includes(mode) && (mode!=='success'||n===1))return pair[(n-1)%2];
+ if(mode==='failure') return pair[1]; // locally invalid single boar on both attempts
+ if(mode==='success') return pair[0]; // valid group hunt on the archived first board
  const raw=JSON.parse(pair[1]),l=raw.listings.find(l=>l.level===1);
  for(const k of ['title','task','desired_end_state'])if(l[k])l[k]=l[k].replace(/boars?/gi,'giant rat');
  l.objectives[0].what='giant rat';l.objectives[0].qty=1;l.habitat={...l.habitat,species:'giant rat',anchor:'rat',min_level:1,max_level:1};if(mode==='slot'){
@@ -27,12 +28,12 @@ export function board159Response(system){
  }
  return JSON.stringify(raw);
 }
-export async function board159Smoke({page,send,idle,calls,driver,onReload,out}){
+export async function board159Smoke({page,send,idle,calls,worldTimings,driver,onReload,out}){
  const seed=async()=>{await page.evaluate(async prefix=>{const c=SillyTavern.getContext();c.chat.splice(0,c.chat.length,...prefix);await c.saveChat();await c.reloadCurrentChat();},structuredClone(f.prefix));onReload();};
  const snapshot=()=>page.evaluate(async()=>{const{foldChat}=await import('/scripts/extensions/third-party/avereth-engine/src/host.js');const c=SillyTavern.getContext(),r=foldChat(c.chat),s=r.state;return{errors:r.errors,quests:Object.values(s.quests).filter(q=>q.kind==='guild_contract').length,coin:s.entities.pc.sheet.coin_cp,facts:Object.values(s.facts),rejected:c.chat.at(-1)?.extra?.avereth?.rejected,status:c.chat.at(-1)?.extra?.avereth?.extraction?.status};});
  mode='success';n=0;await seed();const start=calls.length;await send(success);await idle();const good=await snapshot();
- const boardCalls=calls.slice(start).filter(c=>c.purpose==='board'),repair=boardCalls[1]?.lastUser || '';
- const checks={originalRepairBooksFive:good.quests===5&&n===2&&good.coin===30&&!good.errors.length,repairShowsConstraints:/rat/.test(repair)&&/HP.*35/.test(repair)&&/41/.test(repair)&&/11/.test(repair)};
+ const checks={originalGroupHuntBooksFive:good.quests===5&&n===1&&good.coin===30&&!good.errors.length &&
+   calls.slice(start).filter(c=>c.purpose==='board').length===1};
  mode='failure';n=0;await seed();await send(failure);await idle();const bad=await snapshot();
  checks.invalidBoardRemainsUnbooked=bad.quests===0&&n===2&&bad.coin===30&&!bad.errors.length;
  checks.noInventedSchedule=!bad.facts.some(f=>f.p==='post_schedule')&&bad.rejected?.some(x=>x.rule==='board_availability');
@@ -61,8 +62,31 @@ export async function board159Smoke({page,send,idle,calls,driver,onReload,out}){
  try{
   for(const arm of (process.env.AVERETH_SMOKE_BOARD_REFERENCE ? ['reference','full'] : ['reference','full','slot'])){
    mode=arm;n=0;await seed();await configure({stream:arm==='slot',smooth:false,compact:arm==='slot',order:arm==='slot'?alternate:standard});
+   const fromJob=worldTimings.length;
+   await page.evaluate(() => {
+    const ctx=SillyTavern.getContext(), replyIndex=ctx.chat.length+1;
+    $('#send_but').one('click.user07', () => {
+     const marks=window.user07BoardTiming={click:performance.now()};
+     const inspect=()=>{
+      const reply=ctx.chat[replyIndex];
+      if (reply?.extra?.avereth?.extraction?.status==='applied' &&
+          document.querySelector('#avereth-action-status')?.textContent==='Gespeichert' &&
+          document.querySelector('#send_but')?.checkVisibility() &&
+          !document.querySelector('#mes_stop')?.checkVisibility()) marks.ready=performance.now();
+      else if (performance.now()-marks.click<60000) requestAnimationFrame(inspect);
+     };
+     requestAnimationFrame(inspect);
+    });
+   });
    const start=calls.length;await send(comparison);await idle();
    const turn=calls.slice(start),saved=await driver().verifySaved(await driver().chat(),{complete:true});
+   await page.waitForFunction(()=>Number.isFinite(window.user07BoardTiming?.ready));
+   const marks=await page.evaluate(()=>window.user07BoardTiming);
+   const jobs=worldTimings.slice(fromJob),job=jobs[0];
+   checks[arm+'ReadyAfterReadback']=saved && jobs.length===1 && job.persisted && job.extraction_status==='applied'
+    && marks.click<=job.committed_at_ms && job.persisted_at_ms<=marks.ready;
+   const timing={worldCommitMs:job.committed_at_ms-marks.click,readbackMs:job.persisted_at_ms-marks.click,
+    readyMs:marks.ready-marks.click,saveDurationMs:job.save_readback_ms};
    const before=await publication();
    await page.evaluate(()=>SillyTavern.getContext().reloadCurrentChat());onReload();
    const after=await publication();
@@ -71,7 +95,7 @@ export async function board159Smoke({page,send,idle,calls,driver,onReload,out}){
    // Independently timed calls. Reload above must preserve even the elapsed times exactly.
    for(const events of after.events)for(const event of events)
     if(['cmd.interpreted','extract.applied'].includes(event.t))delete event.d.ms;
-   fingerprint[arm]={world:digest(after.world),events:digest(after.events),
+   fingerprint[arm]={timing,world:digest(after.world),events:digest(after.events),
        requests:turn.map(c=>({role:c.purpose,mockMs:c.durationMs,finished:c.finished}))};
    const narrator=turn.find(c=>c.purpose==='narrator').messages;
    const card=narrator.findIndex(m=>m.content.startsWith('AVERETH RPG'));

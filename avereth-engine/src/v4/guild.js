@@ -610,6 +610,7 @@ export function listingSchema(content) {
 }
 
 const progressive = (s, need) => need.c && need.progression && need.rank === 'Novice';
+const openDifficulty = (s, need) => progressive(s, need) && need.profile === COUNT_BOARD_PROFILE;
 
 /** Identity is local to the branch's land; an ambiguous or already incompatible place is never overwritten. */
 /**
@@ -634,17 +635,19 @@ function habitatPlace(s, need, where) {
 const introAnchor = a => !!a && a.hp <= 35 && a.atk <= 10;
 const introAnchors = content => [...content.anchors.values()].filter(introAnchor).map(a => a.id);
 /** Targeted repair guidance uses the same eligibility rule as the validator and generator. */
-export function boardRepairGuidance(answer, content, need, slotOnly = false) {
+export function boardRepairGuidance(answer, content, need, slotOnly = false, refused = []) {
     if (!need.c || !need.progression || need.rank !== 'Novice') return '';
     const { value } = extractJsonObject(answer);
-    const candidates = (Array.isArray(value?.listings) ? value.listings : []).filter(l => l?.level === 1);
+    const candidates = (Array.isArray(value?.listings) ? value.listings : []).filter(l => l?.level === 1 &&
+        (need.profile !== COUNT_BOARD_PROFILE || refused.some(r => r.title === l.title && r.why.startsWith('introductory habitat'))));
     if (!candidates.length) return '';
     const current = candidates.map(l => {
         const anchor = content.anchors.get(l.habitat?.anchor);
         const objective = Array.isArray(l.objectives) ? l.objectives.find(o => o?.verb === 'DEFEAT') : null;
         return `${l.title}: anchor ${l.habitat?.anchor}, HP ${anchor?.hp ?? 'unknown'}, ATK ${anchor?.atk ?? 'unknown'}, qty ${objective?.qty ?? 'unknown'}, qtype ${l.qtype}, window ${l.habitat?.min_level}-${l.habitat?.max_level}`;
     });
-    return `INTRO REPAIR: include one qty 1, level 1, qtype minor hunt with habitat min_level=max_level=1 and an ordinary anchor HP <=35, ATK <=10. Eligible anchor IDs: ${introAnchors(content).join(', ')}. Current level-1 candidates: ${current.join('; ')}. Choose a species that really fits an eligible anchor; never relabel an incompatible species or weaken its fixed stats. ${slotOnly ? 'Return only the requested replacement.' : 'Preserve valid other notices and return the complete requested board.'}`;
+    const requirement = need.profile === COUNT_BOARD_PROFILE ? 'If the replacement is a level-1 single-foe minor hunt, use' : 'Include one';
+    return `INTRO REPAIR: ${requirement} qty 1, level 1, qtype minor hunt with habitat min_level=max_level=1 and an ordinary anchor HP <=35, ATK <=10. Eligible anchor IDs: ${introAnchors(content).join(', ')}. Current level-1 candidates: ${current.join('; ')}. Choose a species that really fits an eligible anchor; never relabel an incompatible species or weaken its fixed stats. ${slotOnly ? 'Return only the requested replacement.' : 'Preserve valid other notices and return the complete requested board.'}`;
 }
 
 function habitatWhy(s, content, need, l) {
@@ -800,6 +803,7 @@ export function boardRequest(s, content, need, repair = null) {
         '- These examples demonstrate structure only. Do not reuse their people, locations, creatures, objects, circumstances or exact objective sequence.',
         ...noviceProfile,
         ...(progressive(s, need) ? [
+            openDifficulty(s, need) ? '- Choose locally plausible hunts anywhere within F (levels 1-14), independent of the reader. Keep the specified quest families and warn about danger.' :
             '- F WORLD PROGRESSION: The full board offers voluntary choices across F, never scaled to the player: one weak introductory level-1 hunt, at least one hunt at levels 4-7, and one at 8-14. Prefer separate 8-11 and 12-14 hunts when four outdoor notices fit. Keep the 4-hunt/1-clearance or 5-hunt distribution. Do not inflate group sizes for high levels.',
             '- For every non-Dungeon hunt add habitat:{species:"the actual creature kind",anchor:"one supported body-plan id",min_level:4,max_level:7}. Allowed fixed population windows: 1-1 (intro), 1-3, 4-7, 8-11, 12-14. The quest level lies inside that window. This describes a world population, NOT a change to existing creatures or a spawn instruction. Other listings use habitat:null.',
             `- Intro eligible body-plan ids (ordinary level 1, calculated from Content): ${introAnchors(content).join(', ')}. Species names must still fit their body plan.`,
@@ -814,7 +818,7 @@ export function boardRequest(s, content, need, repair = null) {
                 '- Each delivery has exactly one DELIVER objective, concrete physical cargo, integer qty and a specific receiver and exact destination: where "Healer at Quarry Camp Infirmary" or "Gretha at Thornhollow", or "deposit at Receiving Shed". Name a person or a recognizable job role (healer, quartermaster, clerk), never "Recipient", "someone", "staff" or other placeholder. Place must name the ACTUAL destination, not only its parent settlement. A previously unknown interior must be visited before delivery can be confirmed. No GET/GIVE/ESCORT or other objective, signature, return trip, returned container, deadline or additional duty. proof is []. The engine renders task and desired_end_state from this objective; keep its title and client consistent. Travel and obtaining the cargo happen naturally in play; no mandatory ambush.',
             ]),
             '- Hunts have one DEFEAT objective with an exact quantity and a clear location, plus only optional FIND/GO guidance. proof is []. The target must be an animal or Monster, not people; distinguish living hostile plants from ordinary gardening.',
-            ...(need.rank === 'Novice' ? ['- At least one hunt is an introductory single-foe job: qty 1, level 1, qtype minor, one weak ordinary F-rank animal or Monster, no elite/boss or concealed required group. This is an available choice, not a compulsory fight.'] : []),
+            ...(need.rank === 'Novice' && !openDifficulty(s, need) ? ['- At least one hunt is an introductory single-foe job: qty 1, level 1, qtype minor, one weak ordinary F-rank animal or Monster, no elite/boss or concealed required group. This is an available choice, not a compulsory fight.'] : []),
             '- Dungeon clearance has one DEFEAT objective with qty null, where naming the exact known Dungeon and level number. proof is []. Include a short explicit danger/risk warning in task; a rank-compatible floor is not automatically safe for a fresh solo adventurer.',
         ] : []),
         `- rank is "${need.rank}"; level is the quest level, an integer from ${lo} to ${hi}; qtype is minor, standard, dangerous or major.`,
@@ -985,6 +989,7 @@ export function parseBoard(answer, content, need, s = null) {
 function boardQuotaError(s, content, need, profile, all) {
     const count = kind => all.filter(l => boardFamily(s, content, l) === kind).length;
     if (['hunt', 'delivery', 'dungeon'].some(kind => count(kind) !== profile[kind])) return `board requires ${profile.hunt} hunts, ${profile.delivery} deliveries and ${profile.dungeon} suitable Dungeon clearance; include existing notices`;
+    if (openDifficulty(s, need)) return null;
     if (need.rank === 'Novice' && !all.some(l => introHunt(s, content, l))) return 'Novice board needs an introductory single-foe hunt (qty 1, level 1, qtype minor)';
     if (progressive(s, need) && (!all.some(l => boardFamily(s, content, l) === 'hunt' && l.level >= 4 && l.level <= 7)
         || !all.some(l => boardFamily(s, content, l) === 'hunt' && l.level >= 8 && l.level <= 14))) return 'F board needs voluntary mid-F (4-7) and upper-F (8-14) hunts as well as its introductory hunt; preserve the 4+1/5 family';
@@ -1016,7 +1021,7 @@ export function boardSlotRepair(answer, parsed, s, content, need) {
     const retained = original.flatMap((item, i) => i === index ? [] : [{
         slot:i + 1, title:item.title, level:item.level, target:item.objectives.find(o => o.verb === 'DEFEAT'),
     }]);
-    return { original, slot:index + 1, title, why, retained, guidance:boardRepairGuidance(answer, content, need, true) };
+    return { original, slot:index + 1, title, why, retained, guidance:boardRepairGuidance(answer, content, need, true, parsed.refused) };
 }
 
 function introHunt(s, content, l) {
@@ -1029,10 +1034,7 @@ export function parseBoardSlot(answer, repair, content, need, s) {
     if (value?.slot !== repair.slot || Object.keys(value).length !== 2 || !value.listing)
         return { listings:null, errors:['wrong replacement envelope or slot'] };
     const all = repair.original.with(repair.slot - 1, value.listing);
-    const parsed = parseBoard(JSON.stringify({listings:all}), content, need, s);
-    if (parsed.listings?.length === 5 && !introHunt(s, content, parsed.listings[repair.slot - 1]))
-        return { listings:null, errors:['replacement must supply the introductory hunt'] };
-    return parsed;
+    return parseBoard(JSON.stringify({listings:all}), content, need, s);
 }
 
 const CULL_VERB = /^\s*(?:cull|thin)(?:\s+out)?\b/i;

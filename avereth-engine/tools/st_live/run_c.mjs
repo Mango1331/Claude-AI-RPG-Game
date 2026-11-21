@@ -521,7 +521,7 @@ try {
     let continuityChecks=null;
     if (process.env.AVERETH_SMOKE_CONTINUITY === '1') { stealthProbeMode=true; continuityChecks=await continuitySmoke({page,send,idle,calls,driver:()=>driver,onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});}});stealthProbeMode=false; }
     let board159Checks=null;
-    if(process.env.AVERETH_SMOKE_BOARD159 === '1'){stealthProbeMode=true;board159Checks=await board159Smoke({page,send,idle,calls,out:HERE,driver:()=>driver,onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});}});stealthProbeMode=false;}
+    if(process.env.AVERETH_SMOKE_BOARD159 === '1'){stealthProbeMode=true;board159Checks=await board159Smoke({page,send,idle,calls,worldTimings,out:HERE,driver:()=>driver,onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});}});stealthProbeMode=false;}
     let qol160Checks = null;
     if (process.env.AVERETH_SMOKE_QOL160 === '1') { stealthProbeMode = true; qol160Checks = await qol160Smoke({ page, send, idle, calls, driver: () => driver, onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); }, out: HERE }); stealthProbeMode = false; }
     let pulse162Checks = null;

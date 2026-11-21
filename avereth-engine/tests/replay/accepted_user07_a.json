@@ -1,0 +1,23 @@
+{
+ "inherits": "accepted_board_slot_vs_126.json",
+ "cases": {
+  "b17-warrior#11": {
+   "category": "F board difficulty",
+   "reason": "The invalid family mix still requires a full retry. The five valid listings in that retry start at level 4 and are now published.",
+   "previous": "sha256:bc44a335a426fdccd4003ce27153f14e3fdf53282d3a6e250fdb76e716f51b50",
+   "fingerprint": "sha256:fb3ffc7b8584dc2800379db5ebf46bbe37b78a334cc9fcb4afcb3990ec2b0dd7"
+  },
+  "b17-warrior#135": {
+   "category": "F board difficulty",
+   "reason": "The first board contracts three marsh adders. The archived second board contracts a single adder; it is no longer requested.",
+   "previous": "sha256:53143dc7db915e46a9867400125b02bded01efca8f78b82e347b3930bdaf205b",
+   "fingerprint": "sha256:50d2b7cb7cf31cbb0c1aa1cc131e517ecbad90f94c9b29c598fd0bed29c30d0b"
+  },
+  "b19-mage#167": {
+   "category": "F board difficulty",
+   "reason": "The first board contracts two gaunt wolves. The archived replacement of that group with one wolf is no longer requested.",
+   "previous": "sha256:f09310164fc73aa9396a50092fdb7c27a6896aa5a1bad71199318df7eaa8bc2b",
+   "fingerprint": "sha256:2155a551d388f971cf3babd1906a4e77ea4869c3482209c82d14878d3a428a18"
+  }
+ }
+}

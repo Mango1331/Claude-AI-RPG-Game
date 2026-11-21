@@ -72,6 +72,18 @@ test('F progression: live board requests select world progression without changi
     s.entities.pc.sheet.level = 14;
     assert.deepEqual(boardRequest(s, c, n).messages, before, 'world offers never use the PC level');
 });
+test('current Novice board accepts five low or five high hunts, while each contract must fit its habitat and rank', () => {
+    const s = state();
+    const n = { ...need(s), profile: 'count_hunt_clear' };
+    for (const [level, min_level, max_level] of [[1,1,3], [14,12,14]]) {
+        const ls = listings().map(l => ({ ...l, level, qtype:'standard', habitat:{...l.habitat,min_level,max_level} }));
+        assert.equal(parse(s,ls,n).listings?.length,5);
+        ls[0].level = 15;
+        assert.match(parse(s,ls,n).refused[0].why,/outside/);
+    }
+    assert.doesNotMatch(boardRequest(s,c,n).system,/at least one hunt at levels|At least one hunt is an introductory/);
+});
+
 test('F progression: a complete world-bound F board validates with one weak introductory hunt', () => {
     const r = parse(state()); assert.equal(r.listings?.length, 5, JSON.stringify(r)); assert.equal(r.refused.length, 0);
 });

@@ -352,7 +352,8 @@ test('patch 8 (9): delving on: every GO into a new part is told where it ends (a
     for (let i = 0; i < 6; i++) {
         const r = await delve(g, `Passage ${i + 1}`);
         const lines = linesOf(g);
-        assert.match(lines, /never a stop\./, 'the way is carried to its end');
+        assert.match(lines, /Stop in this section/, 'the way is carried to the assigned section');
+        assert.doesNotMatch(lines, /real choice of way|a room, a find, a fork/);
         assert.match(lines, /DUNGEON AHEAD \(the engine's\)/);
         if (r.slot) { quiet = 0; await fightAll(g); } else { quiet += 1; most = Math.max(most, quiet); }
         if (living(g).run.floors[1].cleared) break;

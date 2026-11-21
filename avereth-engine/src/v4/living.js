@@ -376,7 +376,7 @@ export function aheadEvents(s, content, { into = false, root: dest = null, floor
         ahead = { turn: s.turn, cycle: x.cycle, floor, slot: n.id, ref: n.ref };
         lines.push(`DUNGEON AHEAD (the engine's) — going on into a part of level ${floor} he has not seen: there he meets ${say(n)}${n.role === 'boss' ? ', the master of this Dungeon' : n.role === 'guard' ? `, the guardian of level ${floor}` : ''}. That is where this walk ends; bring exactly these, and the quiet way there is told in passing (a sound, a shadow or old tracks without consequence are no stop).`);
     } else if (n?.quiet) {
-        lines.push(`DUNGEON AHEAD (the engine's) — the next part of level ${floor} he goes into holds no foe: a room, a find, a fork or a sign of what lies further; no fight there. Carry the walk to it, not further.`);
+        lines.push(`DUNGEON AHEAD (the engine's) — the next part of level ${floor} he goes into holds no foe: shape this room with a find, tracks or other signs within it; no fight there. Carry the walk to it, not further.`);
     } else if (x.run.floors[floor]?.slots.some(sl => !resolved(s, sl))) {
         lines.push(`DUNGEON AHEAD (the engine's) — previously met foes of level ${floor} still stand; no further encounter is placed until the remaining threats allow it. Invent no extra guardian or boss.`);
     } else if (x.run.floors[floor]) {

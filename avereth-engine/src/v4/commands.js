@@ -780,8 +780,10 @@ const HANDLERS = {
         if (there.length && rulesetOf(s) >= 2) ctx.knownAt[String(c.seq)] = there.map((p) => p.id);
         if (there.length) ctx.extra.push(`KNOWN AT ${name} (met there before; when the story shows the people of that place, they are these, not new ones; whoever works there is at work unless the story establishes otherwise): ${there.map((p) => `${p.label} (${p.id})`).join(' · ')}`);
         // Patch 8 (pacing): a way he chose is carried to its end, never stopped for what changes nothing
-        const pace = envx?.c ? ' Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop.' : '';
-        if (section) return { status: 'authorized', line: `GOES — on into ${section.down ? `level ${section.level} of ${placeName(s, section.root)}, down the way at the end of level ${section.level - 1}` : `part ${section.k} of level ${section.level} of ${placeName(s, section.root)}`} (the engine's next part: the story names and shapes it; it tells no other room, passage, stair or level).${pace}` };
+        if (section) return { status: 'authorized', line: `GOES — on into ${section.down ? `level ${section.level} of ${placeName(s, section.root)}, down the way at the end of level ${section.level - 1}` : `part ${section.k} of level ${section.level} of ${placeName(s, section.root)}`} (the engine's next part: the story names and shapes it; it tells no other room, passage, stair or level). Stop in this section. Leave the next movement and any answer to Alaric.` };
+        const knownDungeonWay = envx?.c && inside && trueDungeonOf(s, c.to);
+        const pace = knownDungeonWay ? ' Follow the established way to the chosen place or its actual obstruction. Leave any further movement to Alaric.' :
+            envx?.c ? ' Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop.' : '';
         if (sought) return { status: 'authorized', line: `GOES — on to find a way to ${sought}: he knows of it, not of a way there; he gets there only by a way the story shows him find (a stair, a door, a passage), never straight.${pace}` };
         return { status: 'authorized', line: `GOES — to ${name} (the story decides whether and where he arrives).${pace}` };
     },
@@ -1355,7 +1357,7 @@ const HANDLERS = {
         if (!o.canon) ctx.booked.sellers.push(o.seller);
         for (const d of s.decisions.filter((x) => x.offer === o.id || (reg && x.kind === 'registration') || purchaseDecisionMatches(x, o, pick.picks))) emit({ t: 'decision.closed', d: { id: d.id, status: 'accepted' } });
         if (o.gate) return { status: 'resolved', line: `PAYS — the entry fee of ${placeName(s, o.gate)}, ${cpText(price, content)}: he may pass the gate (until he comes out again).` };
-        if (reg) return { status: 'resolved', line: `PAYS — the Guild registration fee, ${price} cp: registered at Guild Rank ${content.rules.guild.ranks[0]}; the crystal reads his Power Rank: ${power} (his measured strength, a separate scale from the Guild's ranks); he receives his Guild plate.` };
+        if (reg) return { status: 'resolved', line: `PAYS — the Guild registration fee, ${price} cp: registered at Guild Rank ${content.rules.guild.ranks[0]}; the crystal reads his Power Rank: ${power} (his measured strength, a separate scale from the Guild's ranks); he receives his Guild plate. Desk, crystal measurement and handover are one service inside the Guild hall. Describe the routine in place; only actual witnesses know it.` };
         return { status: 'resolved', line: `ACCEPTS the offer — ${picksText(pick.picks)} for ${cpText(price, content)}; he pays ${who(s, o.seller)}.` };
     },
     // Patch 9C-2c (src/v4/passive_growth.js): his answer to a development the engine offers him (a POSSIBLE PASSIVE);

@@ -903,6 +903,10 @@ export function extractionRequest(chat, id, content) {
         : o.kind === 'combat' ? 'COMBAT — the engine resolved this round (attacks, damage, movement); report only what else the reply established.'
             : o.kind === 'check' ? `CHECK — the engine resolved: ${o.check?.label || 'a check'}, ${o.check?.success ? 'success' : 'failure'}.`
                 : 'NOTHING TO BOOK — Alaric decided nothing the engine resolves.';
+    if (o.booked?.registration) actions += '\nThe measuring stone is part of the completed in-hall service. Report no arrival or escort for its routine movements; separate authorized travel still uses normal arrivals.';
+    if (o.auth?.roam && o.search_checks?.some(check => check.success)) {
+        actions += `\nSearch began at ${state.scene.at}. Set scene on evidence observed there before an arrival. At the sighting, use only a population established there or in its ancestry; otherwise independent.`;
+    }
     if (state.encounter || o.kind === 'combat') actions += `\n${chronicleLine(combatChronicle(chat.slice(0, id), messageEvents))}`;
     const expectedKeys = o.expected_keys || {};
     const player = state.last?.input || null;

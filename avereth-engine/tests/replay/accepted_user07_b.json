@@ -1,0 +1,95 @@
+{
+ "inherits": "accepted_user07_a.json",
+ "cases": {
+  "b16-rogue-sale#9": {
+   "category": "User07 action text",
+   "reason": "The paid registration action now describes desk, stone and handover as one in-hall service. Only outcome text differs from A.",
+   "previous": "sha256:bdf0f1f04d8292f3f22967a6588e7a1a812184bd7dc234c29030a28c2e082832",
+   "fingerprint": "sha256:660327144a1a7d2b52d28c2892a0e85016a097501769bcd4da099704d278f9f0"
+  },
+  "b17-mage#7": {
+   "category": "User07 action text",
+   "reason": "The paid registration action now describes desk, stone and handover as one in-hall service. Only outcome text differs from A.",
+   "previous": "sha256:e1a61326453912ab1848b84d0eac695a24f751a678eb6115975e64e4ee7b49d3",
+   "fingerprint": "sha256:0fc5aedbbebe1a31fcaa7ae73c95fdea7c77e3f5bf690b9deb3399e957905026"
+  },
+  "b17-rogue#9": {
+   "category": "User07 action text",
+   "reason": "The paid registration action now describes desk, stone and handover as one in-hall service. Only outcome text differs from A.",
+   "previous": "sha256:0e036232f294554db006c307a06424d0e5a67f5af03fa87cab2e4883b45c2720",
+   "fingerprint": "sha256:39d00caabfdf706bf0eaf723e55b1bd845a6c651154264815beb07368676d83c"
+  },
+  "b17-rogue#177": {
+   "category": "User07 action text",
+   "reason": "Part 1 of level 1 stops inside the assigned section. Only outcome text differs from A.",
+   "previous": "sha256:342037bc303a52c9a298f7185b316a4aae22cba5ef6c108ecc85386777eb3ee4",
+   "fingerprint": "sha256:19f40d77363142e1b1cb08fbfa5e59d50f6fd337f4f9aca070465e7d0707bfd1"
+  },
+  "b17-rogue#191": {
+   "category": "User07 action text",
+   "reason": "Part 2 stops in the assigned section and the quiet-room note offers details inside it. Only outcome text differs from A.",
+   "previous": "sha256:7e5d5d66f2c36cfc793a25436ab04cd4106d4a23d7cf09e70dee454e5a5125de",
+   "fingerprint": "sha256:b04cccbe28a504f649f0d3f1704e66dd456f182b84d9ba0cbf4c09e27f7138d8"
+  },
+  "b17-rogue#199": {
+   "category": "User07 action text",
+   "reason": "Part 5 stops inside the assigned section. Only outcome text differs from A.",
+   "previous": "sha256:b58085a424ed32f4ac183345c89d9aec6ad72f0a6c97e4204836e8ac0b190830",
+   "fingerprint": "sha256:2f6e4f21da720cc7aaf704bb64652202d588948d616bd1535ebd7f90379cb505"
+  },
+  "b17-warrior#9": {
+   "category": "User07 action text",
+   "reason": "The paid registration action now describes desk, stone and handover as one in-hall service. Only outcome text differs from A.",
+   "previous": "sha256:af9093f63616b54c6102987d21e86bc298439f60d76a8b1e7ee7351f1abe1528",
+   "fingerprint": "sha256:2aa1b2edf9dee97797db167e2423bdee7b1d3cae2fba65bebff6761c597240e4"
+  },
+  "b18-mage#9": {
+   "category": "User07 action text",
+   "reason": "The paid registration action now describes desk, stone and handover as one in-hall service. Only outcome text differs from A.",
+   "previous": "sha256:d14651cf204feaac5210b2b830f399be2ff64269d3d0e1789e7d833870da0754",
+   "fingerprint": "sha256:441106f58b9c1947e0f756ccd2b0c2d00e179b2e6512d203d68054eae0a103ef"
+  },
+  "b18-rogue#9": {
+   "category": "User07 action text",
+   "reason": "The paid registration action now describes desk, stone and handover as one in-hall service. Only outcome text differs from A.",
+   "previous": "sha256:f8fa45468f4a0b696a42a8c3e0261eb1f28f72591937e673d4f134bd2cd00548",
+   "fingerprint": "sha256:db7dee7ba89420138d46fab64ea1bf8112e2216474e6b91b41e66eea54cf5222"
+  },
+  "b18-warrior#7": {
+   "category": "User07 action text",
+   "reason": "The paid registration action now describes desk, stone and handover as one in-hall service. Only outcome text differs from A.",
+   "previous": "sha256:d3567c50d405f5099f9bd1a72187aad7adac9b055b1cbe36ba931b32a067a512",
+   "fingerprint": "sha256:d74b16b4d6308178a44ed139f1c797f7037bd79e87f14deeec3e90e30b1ec270"
+  },
+  "b19-mage#11": {
+   "category": "User07 action text",
+   "reason": "The paid registration action now describes desk, stone and handover as one in-hall service. Only outcome text differs from A.",
+   "previous": "sha256:241b864bd7eeaf0503f1cc202aad9db7f487af067b25d0f494fdbe434ad75c36",
+   "fingerprint": "sha256:8f7e4e65321de43bf835dcafde514feee03ef425faaaaebabf5f142af4e32b4e"
+  },
+  "b19-rogue#11": {
+   "category": "User07 action text",
+   "reason": "The paid registration action now describes desk, stone and handover as one in-hall service. Only outcome text differs from A.",
+   "previous": "sha256:2088bc6d689794706fae0e9fb552a5a04c804992c17cbfcbaa102cabed4dff2b",
+   "fingerprint": "sha256:00b1fdbb001bcc5ecbda4298bed5e4dae021cb746ec6d0bdb18405f2dd6fbfe9"
+  },
+  "b19-warrior#9": {
+   "category": "User07 action text",
+   "reason": "The paid registration action now describes desk, stone and handover as one in-hall service. Only outcome text differs from A.",
+   "previous": "sha256:19336c66dcb69eba60a0219cb7012d9a1b2677523370ab7de2c61ca16e66d5d5",
+   "fingerprint": "sha256:838ebf2d9399ef7c68e00ef606c7b5cba800a124b6f4de33c32c210227a63933"
+  },
+  "b17-rogue#195": {
+   "category": "User07 action text",
+   "reason": "The established way to Tall cleft carries no invented fork. Other steps of the message are unchanged.",
+   "previous": "sha256:f4e462b4d6a956d82e037a7dc43f2a4cc5078988ee29abdab3c95f8d49a6a7b8",
+   "fingerprint": "sha256:bdac7272307d4cfb1448f2a3f1e705acccf8c9e86d1f7d56ab8ba19e9f072744"
+  },
+  "b17-rogue#217": {
+   "category": "User07 action text",
+   "reason": "The established way to Dripping gallery carries no invented fork. Other steps of the message are unchanged.",
+   "previous": "sha256:752fe9842327313c6167d11172fc419c602c98043f081800f863f0ebc877e1b0",
+   "fingerprint": "sha256:3b0d20e058756a3c877142e09d719b635eb17247ab7642ddac33b4aa63760b50"
+  }
+ }
+}

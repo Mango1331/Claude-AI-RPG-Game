@@ -1,11 +1,11 @@
 # User07 – erster persönlicher User-Spieltest auf Avereth .204
 
-**Stand 21.11.2026 · Begonnener persönlicher Run; unabhängige erneute Codex-Analyse ausstehend.**
+**Stand 21.11.2026 · Persönlicher Run begonnen; unabhängiger Codex-Gegenreview abgeschlossen; neues Nutzer-/GPT-Boardprinzip für nächsten Patch dokumentiert.**
 
 - **Build:** `4.3.0-c.6.6.204`, geprüfte Entwicklungsbasis `b51e850bfa233b32f10ba01c563002ab26061c85` (`experiment/action-hud-200-v1`, `experiment/204-b-playtest-ready`). Die eingefrorene Produktversion `.200` ist nicht Teil dieses Tests.
 - **Durchgeführte Eingaben:** sechs Spielerinputs (zwei Charaktererstellung, dann Reise zur Gildenhalle, Registrierungsanfrage, Zahlung/Abschluss, Questboard-Lesen); vier Narratorantworten. Letzter archivierter Zustand: Engine hat fünf Novice-Boardeinträge erzeugt, keine Quest angenommen. Der User-Run ist **nicht als abgeschlossen oder langfristig validiert** ausgewiesen.
 - **Provider:** Nutzerlauf über Featherless mit `zai-org/GLM-5.3-Flash`; API-Requestlog protokolliert `stream:false` bei den Erzählrequests. Vergleich zu einer anderen Providerroute ist kein natürlicher A/B-Test dieses Runs.
-- **Trennung:** [Nutzerfeedback](USER_FEEDBACK.md), [frühere GPT-Einordnung und prüfbedürftige Hypothesen](GPT_DISKUSSIONSSTAND.md) sowie [Analyseauftrag an Codex](CODEX_ANALYSEAUFTRAG.md) sind ausdrücklich getrennt. **Vor jeder Implementierung unabhängige Codex-Zweitbewertung.**
+- **Trennung:** [Nutzerfeedback](USER_FEEDBACK.md), [frühere GPT-Einordnung und prüfbedürftige Hypothesen](GPT_DISKUSSIONSSTAND.md) sowie [Analyseauftrag an Codex](CODEX_ANALYSEAUFTRAG.md) sind ausdrücklich getrennt. Der [abgeschlossene Codex-Gegenreview](CODEX_GEGENREVIEW.md) und der [spätere GPT-/Nutzer-Designnachtrag](REVIEW_GPT_NACHTRAG_2026-11-21.md) behalten getrennte Provenienz.
 
 ## Originalquellen – bytegenau auf main
 
@@ -30,6 +30,8 @@ Die Dateien des früheren Uploads **ohne** Suffix `(1)` sind ein kürzerer Zwisc
 
 **Nicht behauptet:** Ein eigenständiger Replay-/Save-/Reload-Nachlauf der drei Originale durch GPT, eine belastbare Langzeit-FPS/Latenz-Aussage, bewiesener Zeitgewinn durch Character-Description-Kürzungen oder eine bereits erfolgte Codex-Implementierung.
 
-## Nächster Schritt
+## Ergebnis und Grundlage für den nächsten Patch
 
-[Codex führt zuerst eine quelleneigene Prüfung durch](CODEX_ANALYSEAUFTRAG.md), liest anschließend die [Nutzerposition](USER_FEEDBACK.md) und [GPT-Hypothesen](GPT_DISKUSSIONSSTAND.md), erstellt einen Gegenreview mit Korrekturen, übersehenen Ursachen und konkreter Nutzen-/Aufwandabwägung. **Keine Änderungen am Runtimecode vor einer erneuten Nutzerentscheidung.**
+[Codex hat die Originale und den tatsächlichen `.204`-Code unabhängig geprüft](CODEX_GEGENREVIEW.md). Erst **danach** entwickelte der Nutzer die neue Präferenz, bei technisch gültigen F-/Novice-Aufträgen **keine erzwungene leichte Einstiegsquest oder zwingende Staffelung** zu verlangen. [Detaillierte Diskussion und GPT-Bewertung](REVIEW_GPT_NACHTRAG_2026-11-21.md) · [fortgeschriebenes Nutzerfeedback](USER_FEEDBACK.md) · [historischer und neuer Diskussionsstand](GPT_DISKUSSIONSSTAND.md).
+
+**Vorläufige Patchrichtung:** unnötige globale Board-Kompositionsquoten gegenüber gültigen Einzelverträgen abschwächen; im User07-Erstentwurf wäre der zweite vollständige Request von 56,168 s dann möglicherweise entfallen. **Unverändert wichtig:** spielbare, prüfbare Quests, Novice L1–14, gültige Dungeon-/Population-/Zählmechanik, verlässlicher Tageswechsel und kein implizites Wiederfreigeben anderer Questtypen. Daneben steht die schon identifizierte Messraum-Routine als separates Kontinuitätsthema. Bis zur ausdrücklichen nächsten Patchentscheidung **kein Runtime-/Preset-/Lore-/Contract-Code geändert**.

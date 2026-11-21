@@ -19,3 +19,13 @@ Die Archivnachricht in Turn 5 lautet wörtlich: `*i pay the 2 silver and say* Al
 ## Feedback-Status
 
 Das sind **erste spontane Eindrücke eines begonnenen persönlichen Runs**, nicht der Abschluss eines umfangreichen User-Tests. Individuelle Spielgefühl-Wertung des Nutzers nicht mit Codex-Spielerfeedback aus der 41-Züge-Kampagne in Glassmere vermischen.
+
+## Nachträgliche Präzisierung zur Questboard-Philosophie (21.11.2026)
+
+Nach dem Codex-Gegenreview stellte der Nutzer ausdrücklich folgende **neue Designpräferenz** zur Diskussion: Die Adventurers' Guild soll **nicht zwingend immer einen einfachen Level-1-Questauftrag** anbieten müssen. Es darf vorkommen, dass alle Aufträge eines F-/Novice-Boards für den aktuellen Spieler zu schwierig sind. Dieser entscheidet dann selbst, ob er eine Gefahr eingeht, außerhalb der Gilde jagt bzw. Erfahrungen sammelt oder **erst am nächsten Tag** erneut das Board liest. Ziel ist eine eigenständig wirkende Welt und weniger ganze Modell-Reparaturen wegen starrer, nicht mechanisch erforderlicher Verteilungsvorgaben.
+
+Der Nutzer nannte umgangssprachlich F „Level 1 bis 15“; laut gültigem Code umfasst **Novice/F Level 1–14**, **Proven/E beginnt Level 15**. Es ist keine Änderung dieser Grenze gewünscht.
+
+**Wichtige Grenze des Spielerwunsches:** Technisch ungültige, nicht erfüllbare oder nicht korrekt verbuchbare Quests sollen **nicht** akzeptiert werden. Nicht alle Engine-Sicherungen lockern, sondern unnötige Designquoten hinterfragen. Auch die feste 4+1-Zusammensetzung kann später diskutiert werden, ist noch nicht als aufgehoben beschlossen. Die doppelte Questboard-Erzählung und das kleine Registrierungsbeispiel in der Character Description bleiben aus Nutzersicht unkritisch, solange sie keinen relevanten Zeit-/Qualitätsverlust verursachen.
+
+[Abgewogener GPT-Nachtrag mit technischer Trennung und späteren Testkriterien](REVIEW_GPT_NACHTRAG_2026-11-21.md).

@@ -17,3 +17,21 @@
 Codex soll **für jeden Punkt separat** entscheiden: `belegt`, `teilweise`, `falsch`, `unbewiesen`, `unwesentlich`. Explizit auch die Gegenargumente: Modell-/Providerlatenz versus Engine, lokale mikroskopische Vereinfachung versus Persistenzrisiko, Nacharbeit/Kontextversand versus Performancenutzen, Stabilität aus einer kleinen Stichprobe versus Generalisierung.
 
 **Weitere unabhängige Suche erwünscht:** Übersehenes in Promptlog, Zeitstempeln, zweiten Boardgenerationen, Reparaturstatus, Präsenz-/Weltkonsistenz, NPC-Speicher, User-Erlebnis oder Offline-Beweisbarkeit. Kein Cherry-Picking, kein Schönreden früherer GPT-Fehler und keine zwanghafte Patchliste.
+
+---
+
+## Nach Codex-Gegenreview: neue Nutzerentscheidung und aktualisierte GPT-Bewertung (21.11.2026)
+
+Die obigen sieben Punkte sind bewusst der **vorherige Diskussionsstand, auf den Codex seinen unabhängigen Gegenreview bezog**. [Codex-Bericht](CODEX_GEGENREVIEW.md) hat die Quellendaten danach unabhängig geprüft. Der Spieler hat **erst anschließend** eine neue Frage gestellt: *Warum müssen wir eine bestimmte Level-1-Einzeljagd und eine feste Schwierigkeitsverteilung zwingend erzwingen? Warum nicht eine glaubwürdige F-Tafel annehmen und bei zu hohen Schwierigkeiten am nächsten Tag wiederkommen?*
+
+**Aktuelle gemeinsame Präferenz:** ***Validität vor Wunschverteilung.*** Global vorgeschriebene Schwierigkeitsquoten wie 1 × einzelner L1-Einstiegsgegner, 1 × mittlere L4–7-Jagd und 1 × hohe L8–14-Jagd sollten für die nächste Patchplanung **als weiche Hinweise statt als harte Ablehnung der ganzen Tafel** geprüft werden. Die Spielwelt muss nicht täglich eine zum Spielerlevel passende Auswahl garantieren. **Novice/F ist technisch Level 1–14**, nicht 1–15; ab Level 15 beginnt Proven/E. Mehrere schwere Tage sind als Sandbox-Situation möglich: andere Aktivitäten, freies Jagen, freiwilliges Risiko, neuer Gildentag. Dass die Tafel desselben Tages nicht beliebig oft neu gewürfelt werden kann, bleibt erhalten.
+
+**Warum das eine sachliche Richtungsänderung zu Codex ist:** Codex schlug im Hauptreview vor, den Erstprompt *stärker* auf die verbindliche Intro-Einzeljagd auszurichten. Diese Empfehlung war unter dem damaligen Design schlüssig, ist aber nicht mehr die bevorzugte nächste Maßnahme. Beim User07-Erstboard waren fünf Aufträge mechanisch brauchbar; erst die globale Intro-Quote löste den zweiten vollständigen Modellrequest von **56,168 s** aus. Die neue Idee vermeidet möglicherweise den Repair statt das Modell auf eine willkürliche Balancequote hin zu dressieren. In anderen Fällen bleibt ein Repair aus echten Struktur-/Mechanikfehlern sinnvoll.
+
+**Strenge, die bleiben soll:** Quest-Rank, echte einzelne Questvalidität, definierte/gezählte Population und Habitatlevel, Dungeonkompatibilität, einmalige IDs, keine doppelten gezählten Zielpopulationen, richtige Zahlung/Questfortschrittsbuchung. **Separat** untersuchen, ob das starre **4-Jagden/1-Dungeon-Profil** selbst bloße Designvorgabe ist; es ist **noch nicht freigegeben**, es auszuschalten oder andere (ausgesetzte) Questtypen zu reaktivieren. Die Boardgröße von fünf und Tageswechsel sollen vorerst bleiben.
+
+**Bewertung der Effektivität:** Für User07 ist genau **ein** entbehrlich erscheinender Board-Repair nachgewiesen, keine generelle Häufigkeit und keine Garantielatenz. Die Unterauswahl aller Quests nach Schwierigkeitsstufen ist ein Balancingwunsch, nicht Sicherheitslogik. Qualitative Risiken (über mehrere Tage kein sinnvoller Auftrag für Anfänger, unklare Gefahrenhinweise) sind sichtbar zu halten. Bei einer künftigen Umsetzung zunächst offline die **Original-Erstantwort** gegen den unveränderten mechanischen Validator nachspielen, nachdem *nur* globale Zusammensetzungszwänge weich geworden sind. Keine neue kostenpflichtige A/B-Serie als Voraussetzung.
+
+**Andere Themen bleiben unverändert eingeordnet:** Registrierungsroutine innerhalb der Gildenhalle ist ein enges Kontinuitätsproblem, nicht die Ursache der 206,320 s Narratorzeit; `quote`-Autoergänzung ist nach Codex' Gegenprobe zu riskant; Boardprosa nicht pauschal verbieten; Character Description nicht ohne Qualitätsnachweis kürzen; Streaming ist keine Lösung für die gesperrte Folgeeingabe.
+
+Ausführlich: [GPT-Nachtrag als nächste Patch-Diskussionsgrundlage](REVIEW_GPT_NACHTRAG_2026-11-21.md). **Noch keine Implementierung.**

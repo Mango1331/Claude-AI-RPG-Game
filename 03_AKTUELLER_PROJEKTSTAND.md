@@ -12,6 +12,8 @@ Der Testbuild enthält die Änderungen an Questboard und HUD, Gildenroutine und 
 
 ## User08 – Befunde und nächste Entscheidung
 
+Im lokalen Nachspiel ließ sich der verweigerte Eintritt auf das fälschlich gesetzte Habitatfeld `within` zurückführen. Beim Board genügte die Änderung eines Körperbauankers, damit die ursprünglichen fünf Aufträge die vollständige Prüfung bestanden. Von 75 geloggten Modellantworten lassen sich 74 einem vollständig geloggten Request zuordnen. [Unabhängiger Codex-Gegenreview](testrun_10b/user-20261122-161817-205/CODEX_GEGENREVIEW.md)
+
 Im neuen Run wurden die Vorteile der HUD-Kontraste und echte PULSE-Würfe auf Reisen und während zweier Dungeon-Rasten bestätigt. Offen sind ein **fälschlich verweigerter, eindeutiger Dungeon-Eintritt** durch einen Planner-`within`-Fehler, ein **in sich widersprüchliches Händlergesamtangebot** und ein teurer **Board-Zweitrequest wegen eines Schildkröten-/Körperplanankers**. Der Kauf-/Verkaufs-HUD mit Stückzahlwahl und eine konsistente Shop-/Gildenbestandsansicht sind **noch nicht freigegebene QoL-Ideen**. Eine große lineare Dungeon-Neuarchitektur folgt aus diesem Run gerade nicht. [Originale, Beispiele und Prioritäten](testrun_10b/user-20261122-161817-205/REVIEW.md).
 
 **Messung:** 27 persönliche Erzählzüge auf der .205-Featherless-Linie mit Host+X-Untergrenze **56,68 s im Mittel / 52,65 s Median**, **keine** aufgezeichneten sicheren Host-Folgeeingaben. Als Vergleich die historischen Reihen nur mit ihren genauen Messpunkten lesen: [Durchschnittsmessungen](testrun_10b/durchschnittsmessungen/README.md). **Keine neue Implementierung oder ein Produktmerge freigegeben.** [Ablage weiterer Runs](testrun_10b/README.md).

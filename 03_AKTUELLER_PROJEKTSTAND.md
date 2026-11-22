@@ -1,6 +1,6 @@
 # Avereth Engine – aktueller Projektstand
 
-**22. November 2026. User08 ist für eine neue Kampagne auf `4.3.0-c.6.6.205` vorbereitet.** Der persönliche Lauf hat im dokumentierten Stand noch keine Messwerte. Beim Start in SillyTavern die Buildkennung prüfen und einen neuen Chat anlegen. [Installation und Testanleitung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/a69daeeed613850919f16eb810cc2c150c8aafd0/avereth-engine/docs/USER08_205_PLAYTEST.md)
+**22. November 2026. User08 auf `4.3.0-c.6.6.205` wurde als neuer persönlicher Run abgeschlossen und ausgewertet.** 27 erzählte Züge mit Mage Alaric; die unveränderten Originaldaten liegen im [User08-Run](testrun_10b/user-20261122-161817-205/README.md), [unabhängiger Review](testrun_10b/user-20261122-161817-205/REVIEW.md) und [Zeitvergleich](testrun_10b/durchschnittsmessungen/README.md). Der spielbare Experiment-HEAD bleibt `a69daeee`, keine Produktfreigabe.
 
 | Verwendung | Branch | Geprüfter Commit |
 |---|---|---|
@@ -10,8 +10,10 @@
 
 Der Testbuild enthält die Änderungen an Questboard und HUD, Gildenroutine und Dungeon-Erzählführung sowie Campfunden und ihrer Ortsbindung. Die technische Abnahme mit 3.425 bestandenen Node-Tests, 2.235 Replayfällen ohne neue Abweichung und 32/32 isolierten Camp-Mockprüfungen gehört zu `52d9c04`. Der unabhängige Diffreview gab diesen Stand für den persönlichen Test frei. Für `.205` wurden darauf aufbauend die Buildkennung und die Testdokumentation aktualisiert. Die Narrator-Vertragsrevision bleibt `.204`. [Abnahme](recherche/USER07_204_C_KORREKTUR_ABNAHME.md) · [Diffreview](patch_plans_10b/REVIEW_USER07_204_C_KORREKTUR_GPT_2026-11-22.md)
 
-## Was User08 klären kann
+## User08 – Befunde und nächste Entscheidung
 
-Im freien Spiel zählen das spontane Spielgefühl und die Zeit bis zur sicheren Folgeeingabe auf der persönlichen Providerroute. Chat, Events, Hostlog und Feedback gehören zum neuen Run. Der [Messvergleich](testrun_10b/durchschnittsmessungen/README.md) führt die vorhandenen Vergleichsreihen mit ihren jeweiligen Messpunkten. [Ablage für neue Runs](testrun_10b/README.md)
+Im neuen Run wurden die Vorteile der HUD-Kontraste und echte PULSE-Würfe auf Reisen und während zweier Dungeon-Rasten bestätigt. Offen sind ein **fälschlich verweigerter, eindeutiger Dungeon-Eintritt** durch einen Planner-`within`-Fehler, ein **in sich widersprüchliches Händlergesamtangebot** und ein teurer **Board-Zweitrequest wegen eines Schildkröten-/Körperplanankers**. Der Kauf-/Verkaufs-HUD mit Stückzahlwahl und eine konsistente Shop-/Gildenbestandsansicht sind **noch nicht freigegebene QoL-Ideen**. Eine große lineare Dungeon-Neuarchitektur folgt aus diesem Run gerade nicht. [Originale, Beispiele und Prioritäten](testrun_10b/user-20261122-161817-205/REVIEW.md).
+
+**Messung:** 27 persönliche Erzählzüge auf der .205-Featherless-Linie mit Host+X-Untergrenze **56,68 s im Mittel / 52,65 s Median**, **keine** aufgezeichneten sicheren Host-Folgeeingaben. Als Vergleich die historischen Reihen nur mit ihren genauen Messpunkten lesen: [Durchschnittsmessungen](testrun_10b/durchschnittsmessungen/README.md). **Keine neue Implementierung oder ein Produktmerge freigegeben.** [Ablage weiterer Runs](testrun_10b/README.md).
 
 Die weitere Gameplay-Roadmap ist pausiert. Zurückgestellte Fachfragen und historische Bewertungen bleiben über ihre Quellen zugänglich. [Roadmap](07_ROADMAP_NACH_10B_ENTWURF.md) · [Fachindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Archivierte Spieltests](testrun_10b/archiv/README.md) · [Frühere vollständige Statusfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/292a4372654f027fb579bf8e338ff9d25d981da7/03_AKTUELLER_PROJEKTSTAND.md) · [Projektchronik bis Oktober](03_PROJEKTSTAND_ARCHIV_BIS_20261024.md)

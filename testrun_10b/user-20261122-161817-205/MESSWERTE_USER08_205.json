@@ -1,0 +1,297 @@
+{
+  "build": "4.3.0-c.6.6.205",
+  "technical_sha": "a69daeeed613850919f16eb810cc2c150c8aafd0",
+  "date": "2026-11-22",
+  "source": "Personal User08 SillyTavern chat JSONL, events and captured ST completion log",
+  "window": {
+    "narrated_game_turns": 27,
+    "excluded": "Two class/skill creation replies and three native #assign replies",
+    "host": "gen_started to gen_finished",
+    "lower_bound": "host elapsed + corresponding extraction job duration; excludes unmeasured save/read-back and actual safe host send"
+  },
+  "metrics": {
+    "host_to_narration_end": {
+      "n": 27,
+      "mean_seconds": 37.777,
+      "median_seconds": 33.903,
+      "p90_nearest_seconds": 48.318,
+      "min_seconds": 15.724,
+      "max_seconds": 141.981
+    },
+    "host_plus_extractor_lower_bound": {
+      "n": 27,
+      "mean_seconds": 56.681,
+      "median_seconds": 52.648,
+      "p90_nearest_seconds": 93.339,
+      "min_seconds": 21.392,
+      "max_seconds": 145.227
+    }
+  },
+  "captured_physical_provider_responses": {
+    "n": 75,
+    "role_counts": {
+      "planner": 21,
+      "narrator": 26,
+      "extractor": 26,
+      "board": 2
+    },
+    "prompt_tokens": 940716,
+    "completion_tokens": 21106,
+    "reported_cached_tokens": 0,
+    "capture_limitation": "The provided completion log has 75 pairs and does not fully reconcile with 27 stored narrations/27 extractor results; do not claim exhaustive physical-call totals."
+  },
+  "notes": [
+    "The single Board read needed two physical board requests; first rejected because a snapping turtle was mapped to aquatic rather than armored_beast.",
+    "No Extractor repair flagged in 27 stored extraction results; one Board repair occurred.",
+    "Stream:false for captured physical requests; no natural T4 safe-send timestamp.",
+    "Reported provider tokens and times are not directly comparable to OpenRouter wafer/us or paired .203 architecture tests."
+  ],
+  "turns": [
+    {
+      "chat_index": 6,
+      "turn": 3,
+      "kind": "story",
+      "narrator_host_ms": 29814,
+      "extractor_job_ms": 14831,
+      "host_plus_extractor_lower_ms": 44645,
+      "planner_job_ms": 5157
+    },
+    {
+      "chat_index": 8,
+      "turn": 4,
+      "kind": "story",
+      "narrator_host_ms": 25565,
+      "extractor_job_ms": 5000,
+      "host_plus_extractor_lower_ms": 30565,
+      "planner_job_ms": 4847
+    },
+    {
+      "chat_index": 10,
+      "turn": 5,
+      "kind": "story",
+      "narrator_host_ms": 38179,
+      "extractor_job_ms": 15455,
+      "host_plus_extractor_lower_ms": 53634,
+      "planner_job_ms": 12318,
+      "rejected_deltas": 2
+    },
+    {
+      "chat_index": 12,
+      "turn": 6,
+      "kind": "board",
+      "narrator_host_ms": 141981,
+      "extractor_job_ms": 3246,
+      "host_plus_extractor_lower_ms": 145227,
+      "planner_job_ms": 5414,
+      "board_job_ms": 115845,
+      "board_physical_requests": 2
+    },
+    {
+      "chat_index": 14,
+      "turn": 7,
+      "kind": "story",
+      "narrator_host_ms": 18846,
+      "extractor_job_ms": 20270,
+      "host_plus_extractor_lower_ms": 39116,
+      "rejected_deltas": 1
+    },
+    {
+      "chat_index": 16,
+      "turn": 8,
+      "kind": "story",
+      "narrator_host_ms": 38262,
+      "extractor_job_ms": 30169,
+      "host_plus_extractor_lower_ms": 68431,
+      "planner_job_ms": 4191
+    },
+    {
+      "chat_index": 18,
+      "turn": 9,
+      "kind": "story",
+      "narrator_host_ms": 28681,
+      "extractor_job_ms": 26854,
+      "host_plus_extractor_lower_ms": 55535,
+      "planner_job_ms": 5323,
+      "rejected_deltas": 1
+    },
+    {
+      "chat_index": 20,
+      "turn": 10,
+      "kind": "story",
+      "narrator_host_ms": 39028,
+      "extractor_job_ms": 16525,
+      "host_plus_extractor_lower_ms": 55553,
+      "planner_job_ms": 7375
+    },
+    {
+      "chat_index": 22,
+      "turn": 11,
+      "kind": "story",
+      "narrator_host_ms": 41278,
+      "extractor_job_ms": 24971,
+      "host_plus_extractor_lower_ms": 66249,
+      "planner_job_ms": 13545
+    },
+    {
+      "chat_index": 24,
+      "turn": 12,
+      "kind": "combat",
+      "narrator_host_ms": 22228,
+      "extractor_job_ms": 10156,
+      "host_plus_extractor_lower_ms": 32384,
+      "rejected_deltas": 2
+    },
+    {
+      "chat_index": 26,
+      "turn": 13,
+      "kind": "combat",
+      "narrator_host_ms": 20936,
+      "extractor_job_ms": 6336,
+      "host_plus_extractor_lower_ms": 27272
+    },
+    {
+      "chat_index": 30,
+      "turn": 14,
+      "kind": "story",
+      "narrator_host_ms": 25667,
+      "extractor_job_ms": 4070,
+      "host_plus_extractor_lower_ms": 29737,
+      "planner_job_ms": 5162
+    },
+    {
+      "chat_index": 32,
+      "turn": 15,
+      "kind": "story",
+      "narrator_host_ms": 57399,
+      "extractor_job_ms": 28847,
+      "host_plus_extractor_lower_ms": 86246,
+      "planner_job_ms": 5910,
+      "rejected_deltas": 2
+    },
+    {
+      "chat_index": 34,
+      "turn": 16,
+      "kind": "combat",
+      "narrator_host_ms": 32951,
+      "extractor_job_ms": 6221,
+      "host_plus_extractor_lower_ms": 39172
+    },
+    {
+      "chat_index": 36,
+      "turn": 17,
+      "kind": "combat",
+      "narrator_host_ms": 47750,
+      "extractor_job_ms": 6241,
+      "host_plus_extractor_lower_ms": 53991
+    },
+    {
+      "chat_index": 40,
+      "turn": 18,
+      "kind": "story",
+      "narrator_host_ms": 36387,
+      "extractor_job_ms": 9245,
+      "host_plus_extractor_lower_ms": 45632,
+      "planner_job_ms": 7509
+    },
+    {
+      "chat_index": 42,
+      "turn": 19,
+      "kind": "story",
+      "narrator_host_ms": 30666,
+      "extractor_job_ms": 39985,
+      "host_plus_extractor_lower_ms": 70651,
+      "planner_job_ms": 3698,
+      "rejected_deltas": 1
+    },
+    {
+      "chat_index": 44,
+      "turn": 20,
+      "kind": "story",
+      "narrator_host_ms": 37152,
+      "extractor_job_ms": 12273,
+      "host_plus_extractor_lower_ms": 49425,
+      "planner_job_ms": 11612
+    },
+    {
+      "chat_index": 46,
+      "turn": 21,
+      "kind": "story",
+      "narrator_host_ms": 44115,
+      "extractor_job_ms": 49224,
+      "host_plus_extractor_lower_ms": 93339,
+      "planner_job_ms": 16974
+    },
+    {
+      "chat_index": 48,
+      "turn": 22,
+      "kind": "combat",
+      "narrator_host_ms": 21659,
+      "extractor_job_ms": 16841,
+      "host_plus_extractor_lower_ms": 38500,
+      "rejected_deltas": 1
+    },
+    {
+      "chat_index": 50,
+      "turn": 23,
+      "kind": "combat",
+      "narrator_host_ms": 40356,
+      "extractor_job_ms": 18244,
+      "host_plus_extractor_lower_ms": 58600
+    },
+    {
+      "chat_index": 54,
+      "turn": 24,
+      "kind": "story",
+      "narrator_host_ms": 25700,
+      "extractor_job_ms": 14006,
+      "host_plus_extractor_lower_ms": 39706,
+      "planner_job_ms": 4610
+    },
+    {
+      "chat_index": 56,
+      "turn": 25,
+      "kind": "story",
+      "narrator_host_ms": 48318,
+      "extractor_job_ms": 56211,
+      "host_plus_extractor_lower_ms": 104529,
+      "planner_job_ms": 17236,
+      "rejected_deltas": 3
+    },
+    {
+      "chat_index": 58,
+      "turn": 26,
+      "kind": "story",
+      "narrator_host_ms": 30667,
+      "extractor_job_ms": 21981,
+      "host_plus_extractor_lower_ms": 52648,
+      "planner_job_ms": 8247
+    },
+    {
+      "chat_index": 60,
+      "turn": 27,
+      "kind": "story",
+      "narrator_host_ms": 46764,
+      "extractor_job_ms": 36630,
+      "host_plus_extractor_lower_ms": 83394,
+      "planner_job_ms": 22616
+    },
+    {
+      "chat_index": 62,
+      "turn": 28,
+      "kind": "story",
+      "narrator_host_ms": 33903,
+      "extractor_job_ms": 10903,
+      "host_plus_extractor_lower_ms": 44806,
+      "planner_job_ms": 11470
+    },
+    {
+      "chat_index": 64,
+      "turn": 29,
+      "kind": "story",
+      "narrator_host_ms": 15724,
+      "extractor_job_ms": 5668,
+      "host_plus_extractor_lower_ms": 21392,
+      "planner_job_ms": 5023
+    }
+  ]
+}

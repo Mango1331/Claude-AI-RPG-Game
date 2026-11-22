@@ -1,8 +1,8 @@
 # 10B-Spieltests
 
-## User08 · Neuer Run auf .205
+## User08 · Neuer persönlicher Run auf .205 (ausgewertet)
 
-Für User08 beginnt eine neue Kampagne. Sobald die ersten Exporte vorliegen, erhält der Run hier einen eigenen Datumsordner. Chat-JSONL, Avereth-Events, SillyTavern-Log und spontane Spielnotizen gehören zusammen. Build, Providerroute und Umfang im Runindex festhalten. [Anleitung zu User08](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/a69daeeed613850919f16eb810cc2c150c8aafd0/avereth-engine/docs/USER08_205_PLAYTEST.md)
+[Runverzeichnis mit allen vier Originaldateien, Quellenmanifest und Review](user-20261122-161817-205/README.md) · [unabhängige Auswertung](user-20261122-161817-205/REVIEW.md) · [pro Zug nachprüfbare Messdaten](user-20261122-161817-205/MESSWERTE_USER08_205.json). Mage Alaric, 27 erzählte Spielzüge, abgeschlossen am 22.11.2026. Der große Completion-Log ist in sechs **binär ohne Änderung zusammensetzbare** Teile zerlegt und mit Prüfsummen dokumentiert. Neuer technischer Teststand `.205` bleibt unverändert. [Installation](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/a69daeeed613850919f16eb810cc2c150c8aafd0/avereth-engine/docs/USER08_205_PLAYTEST.md).
 
 ## Frühere Läufe
 

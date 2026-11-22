@@ -1,0 +1,12 @@
+testen ob PULSE wirklich gewürfelt wird oder nicht. kann zufall sein aber beide der letzten test runs haben auf dem weg zum dungeon einen break drinnen mit einem vorfall den man findet.
+
+Buttons sind viel besser zu erkennen nun. sowohl im aktions HUD als auch beim questboard.
+
+PULSE würfe kontrollieren während "rest" im dungeon. also passiert es wirklich und ich hatte nur glück oder passiert nie was.
+
+frage wenn wir Dungeons linear machen einfach also nur Chambers ohne abzweigungen und nach dem boss einfach die treppen runter ob es das einfacher machen würde auch für Ortswechsel usw. oder ob das unnötig ist. 
+
+QoL für faule user wie mich. Verkaufen und kaufen wie quesboard und aktions HUD mit Buttons und vllt sogar zähler wie viel ich davon verkaufen will also 3x A oder 2x A und 1x B usw. würde quasie mein ganzes inventory anbieten und dann wie viele ich davon habe und dann wie beim aktions hud ein button für "verkaufen" und den Rollenspiel text dazu.
+
+In der Guild hall werden primer aufgelistet immer wenn ich questboard uind clerk rede da man die dort kaufen kann also das teraining aber hier im shop wo ich rein bin wurde nichts aufgelistet. weiß nicht ob es darum gign weil ich verkaufen wollte oder weil der Narrator keinen standart shop erstellt hat und den shop nicht benannt hat. oder ob es wartet bis ich frage was ich kaufen kann. das wäre ja an sich okay sollte dann aber bei der Gilde auch so sein. 
+

@@ -14,7 +14,7 @@
 | Dokumentation | `main` · Remote-HEAD `f7f2b8b` bei Analysebeginn |
 | Arbeitsweise | Produkt als losgelöster Worktree auf `8c7ee1f` gelesen; `git status` blieb leer. Keine Produktdatei, kein Test, keine Replayakzeptanz geändert, kein Build, kein Modellaufruf |
 
-**Gelesene Projektquellen:** [01](../01_ARBEITSWEISE_CHATGPT_CLAUDE.md), [02](../02_DESIGN_KANON.md) (NPC-Wissen, Gesprächskontinuität, Flirt ohne automatische Zuneigung), [03](../03_AKTUELLER_PROJEKTSTAND.md), [07 §2](../07_ROADMAP_NACH_10B_ENTWURF.md#2-npc-kontinuität--neue-fachliche-reihenfolge), historische Analyse inklusive §§9–10, [Patchnote .158](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/8c7ee1f55f3d4c052d2baacb3790919e2396c980/avereth-engine/docs/FIX158_USER02_NPC_CONTINUITY.md), [User04-Review §6](../testrun_10b/user-20261106-072640/REVIEW.md#6-npc-e0e1-diagnose-und-auslieferung-funktionieren-inhaltliche-kette-hat-lücken), [User02-GPT-Review](../testrun_10b/user-20261105-050449/REVIEW_CHATGPT.md) §§3D/4/8.
+**Gelesene Projektquellen:** [01](../01_ARBEITSWEISE_CHATGPT_CLAUDE.md), [02](../02_DESIGN_KANON.md) (NPC-Wissen, Gesprächskontinuität, Flirt ohne automatische Zuneigung), [03](../03_AKTUELLER_PROJEKTSTAND.md), [07 §2](../07_ROADMAP_NACH_10B_ENTWURF.md#2-npc-kontinuität--neue-fachliche-reihenfolge), historische Analyse inklusive §§9–10, [Patchnote .158](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/8c7ee1f55f3d4c052d2baacb3790919e2396c980/avereth-engine/docs/FIX158_USER02_NPC_CONTINUITY.md), [User04-Review §6](../testrun_10b/archiv/user-20261106-072640/REVIEW.md#6-npc-e0e1-diagnose-und-auslieferung-funktionieren-inhaltliche-kette-hat-lücken), [User02-GPT-Review](../testrun_10b/archiv/user-20261105-050449/REVIEW_CHATGPT.md) §§3D/4/8.
 
 **Gelesener Produktcode (.168):** `src/context.js`, `src/knowledge.js`, `src/threads.js`, `src/state.js`, `src/delta.js`, `src/commands.js` (`#npc`), `src/v4/world.js`, `src/v4/commands.js`, `src/v4/catalog.js`, `src/v4/runtime.js`, `src/v4/extract.js`, `src/v4/narration_evidence.js`, `src/v4/guild.js`, `src/v4/ownership.js`, `src/v4/scene_handles.js`, `src/v4/pulse.js`, `content/deltas.json`, `tests/v4/fix158_continuity.test.js`.
 
@@ -22,9 +22,9 @@
 
 | Lauf | Datei | Fall |
 |---|---|---|
-| User01 | `testrun_10b/user-20261104-162404/originals/chat.jsonl` | Brenna (I52–I70) |
+| User01 | `testrun_10b/archiv/user-20261104-162404/originals/chat.jsonl` | Brenna (I52–I70) |
 | User02 | Produktfixture `tests/v4/fixtures/user02_157.jsonl.gz` | Tam Ostler als Positivkontrolle, Marda |
-| User04 | `testrun_10b/user-20261106-072640/originals/chat.jsonl.gz` | Gildenschreiber, Crossbowman, Harl Vess |
+| User04 | `testrun_10b/archiv/user-20261106-072640/originals/chat.jsonl.gz` | Gildenschreiber, Crossbowman, Harl Vess |
 
 **Tatsächlich ausgeführte Nachweise** (Skripte unverändert unter [`npc_e2_e3_probes/`](npc_e2_e3_probes/README.md)):
 

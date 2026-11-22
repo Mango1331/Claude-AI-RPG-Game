@@ -4,7 +4,7 @@
 
 **Referenzen:** Produktbranch `claude/c-planner-prototype-2026-10-02-gpt-c666`, Ausgangs-Produktstand `.186` `13824919a85042184d7ced2fc2ca783bf6cf7103` mit Test-Sandbox-Schutzstand `24d2aa955f400d598c234b4527c7a04993fa8309`; drei Etappen `568d905`, `a5d02c1` + `92593fd`, `c567e97`; Releasecommit `5b4d493fda26811bb267bbff9adf174b797b971d`; ST-Ergebnis **nur dokumentiert** in `bd52d2f9a002c62e321634ae1e8894fefd3918f6`. [Produktpatchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/bd52d2f/avereth-engine/docs/BATCH186_FIXES_187.md).
 
-**Anlass:** [Opus-Gegenreview .186](../testrun_10b/npc-20261114-094810Z/GEGENREVIEW_OPUS.md), [GPT-Originalreview einschließlich §9](../testrun_10b/npc-20261114-094810Z/REVIEW.md), [Architektur-/Budget-Einordnung §12.4](../recherche/ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md), [Arbeitsweise](../01_ARBEITSWEISE_CHATGPT_CLAUDE.md).
+**Anlass:** [Opus-Gegenreview .186](../testrun_10b/archiv/npc-20261114-094810Z/GEGENREVIEW_OPUS.md), [GPT-Originalreview einschließlich §9](../testrun_10b/archiv/npc-20261114-094810Z/REVIEW.md), [Architektur-/Budget-Einordnung §12.4](../recherche/ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md), [Arbeitsweise](../01_ARBEITSWEISE_CHATGPT_CLAUDE.md).
 
 ## 1. Prüfmethodik und Beweisgrenzen
 

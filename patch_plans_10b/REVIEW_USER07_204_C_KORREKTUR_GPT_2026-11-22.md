@@ -2,7 +2,7 @@
 
 **22.11.2026 · Urteil: GO für die persönliche Fortsetzung von User07 auf dem gepinnten Experimentkandidaten `52d9c04aaf9f32ae92f03a72e9686d4b662749c6`.** Kein GO für einen Produktmerge. Es ist **eine** Fast-Forward-Änderung gegenüber dem zuvor gesperrten `4ff1500e4929c0604803a19d31fb6b52b348f209`. Die vorangehenden Patches A/B bleiben unverändert. Der Diff ändert drei Laufzeitdateien (`src/v4/camp.js`, `src/v4/world.js`, `src/v4/commands.js`) und drei Testdateien/-werkzeuge, sonst nichts. Die Manifest-/Packageversion bleibt `4.3.0-c.6.6.204`; für Reproduktionen **Commit-SHA statt bloßer Buildnummer** angeben.
 
-**Quellen:** [Technischer Korrekturcommit](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/52d9c04aaf9f32ae92f03a72e9686d4b662749c6) · [Codex-Abnahmebericht](../recherche/USER07_204_C_KORREKTUR_ABNAHME.md) · [natürlicher OpenRouter-Test einschließlich archivierter Originalantworten](../testrun_10b/user07-camp-openrouter-20261122/README.md) · [früherer unabhängiger NO-GO-Befund](../testrun_10b/user07-camp-openrouter-20261122/REVIEW_GPT.md).
+**Quellen:** [Technischer Korrekturcommit](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/52d9c04aaf9f32ae92f03a72e9686d4b662749c6) · [Codex-Abnahmebericht](../recherche/USER07_204_C_KORREKTUR_ABNAHME.md) · [natürlicher OpenRouter-Test einschließlich archivierter Originalantworten](../testrun_10b/archiv/user07-camp-openrouter-20261122/README.md) · [früherer unabhängiger NO-GO-Befund](../testrun_10b/archiv/user07-camp-openrouter-20261122/REVIEW_GPT.md).
 
 ## R1 – Bestätigte Ortsregression gezielt korrigiert
 

@@ -6,7 +6,7 @@ Maßgeblich ist diese Fassung. Vorherige Entwurfsentscheidungen werden durch die
 
 ## 1. Grundlagen und Grenzen
 
-Quellen: [Claude-Audit](architekturaudit_126/01_CLAUDE_AUDIT.md), [Sol-Gegenfeedback](architekturaudit_126/02_SOL_GEGENFEEDBACK.md), [Claude-Gegenreview](architekturaudit_126/03_CLAUDE_GEGENREVIEW.md), [Sol-Präzisierungen](architekturaudit_126/04_SOL_ENTSCHEIDUNGEN.md), anschließend [Claude-Abschlussreview mit Sonden](architekturaudit_126/05_CLAUDE_ABSCHLUSSREVIEW.md). Das zusätzliche GPT-Feedback wurde im verlinkten Entwurf aufgenommen. Originaldateien aller 19 Batches: [Archivindex](../testrun_10b/ARCHIV_BATCHES.md).
+Quellen: [Claude-Audit](architekturaudit_126/01_CLAUDE_AUDIT.md), [Sol-Gegenfeedback](architekturaudit_126/02_SOL_GEGENFEEDBACK.md), [Claude-Gegenreview](architekturaudit_126/03_CLAUDE_GEGENREVIEW.md), [Sol-Präzisierungen](architekturaudit_126/04_SOL_ENTSCHEIDUNGEN.md), anschließend [Claude-Abschlussreview mit Sonden](architekturaudit_126/05_CLAUDE_ABSCHLUSSREVIEW.md). Das zusätzliche GPT-Feedback wurde im verlinkten Entwurf aufgenommen. Originaldateien aller 19 Batches: [Archivindex](../testrun_10b/archiv/ARCHIV_BATCHES.md).
 
 - Aktuelles Produktziel: V4-C, Ruleset 2, drei Klassen und die aktuellen F-Regeln. Alte Kampagnen begrenzen die Weiterentwicklung nicht. Aktuelle Geld-, Inventar-, Orts-, Kampf-, Quest- und Replayintegrität bleiben verbindlich.
 - Keine neuen Kampf-, Reise-, NPC-Bewegungs- oder Questmechaniken. Delivery/Escort ruhend erhalten, keine neuen automatischen Lieferangebote. Formale Privatquests bleiben abgeschafft; freie Hilfe, Arbeit und Geschenke bleiben.

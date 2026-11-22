@@ -1,6 +1,6 @@
 # GPT-Gegenreview: Payment-Tiefenanalyse nach NPC-Dreierbatch .183
 
-**Stand:** 13.11.2026. **Gegenstand:** [Fable-Tiefenanalyse](PAYMENT_TIEFENANALYSE_183.md) (auf `main`, Commit `f65891e`); natürliche Primärquelle [Dreierbatch .183](../testrun_10b/npc-20261113-135417Z/REVIEW.md); echter Produktcode bei `efcad4c` (Build .184, Paymentpfad seit .183 unverändert). **Nur unabhängiger Review; keine Produktänderung, keine Freigabe.**
+**Stand:** 13.11.2026. **Gegenstand:** [Fable-Tiefenanalyse](PAYMENT_TIEFENANALYSE_183.md) (auf `main`, Commit `f65891e`); natürliche Primärquelle [Dreierbatch .183](../testrun_10b/archiv/npc-20261113-135417Z/REVIEW.md); echter Produktcode bei `efcad4c` (Build .184, Paymentpfad seit .183 unverändert). **Nur unabhängiger Review; keine Produktänderung, keine Freigabe.**
 
 **Eigener Prüfungsumfang:** Fable-Dokument vollständig gelesen; auf Produkt-HEAD `src/v4/commands.js`, `src/v4/native_pay.js`, `src/display.js`, `src/v4/catalog.js`, `src/v4/domain.js`, `src/v4/trade.js`, `src/v4/world.js`, `src/v4/finance_evidence.js`, `src/v4/firewall.js`, `src/v4/pulse.js` gezielt gegen die Behauptungen geprüft. **Keine eigene Node-Suite, kein erneuter vollständiger Runner-/ST-/Replaylauf; Zahlen über sieben Läufe (410 Eingaben, 18 Buchungen, 0/8, 0/12) stammen aus Fables Originalzählung und wurden nicht unabhängig nachgezählt.** Frühere lokale Originalreviews und ZIP bleiben getrennte Nachweise.
 

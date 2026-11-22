@@ -1,21 +1,19 @@
 # Avereth Engine – Arbeitsweise und Freigaben
 
-**Stand 21.11.2026.** Dauerhafte Prozessregeln, **keine zweite Status-/Patchchronik**. [Startseite](README.md) · [Aktueller Stand 03](03_AKTUELLER_PROJEKTSTAND.md) · [Neues Zielbild 08](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md) · [Design-Kanon 02](02_DESIGN_KANON.md).
+Zuständigkeiten, Testfolge und dauerhafte Freigaben für die Arbeit an Avereth. [Aktueller Projektstand](03_AKTUELLER_PROJEKTSTAND.md) · [Design-Kanon](02_DESIGN_KANON.md)
 
 ## Zuständigkeiten
 
 - **Nutzer:** entscheidet Spielgefühl, Kanon, Prioritäten und Freigaben; führt persönliche SillyTavern-Tests und ggf. lokale LLM-Batches durch, liefert Originaldaten und ungefiltertes Spielerfeedback.
-- **ChatGPT/Codex:** unabhängige Code-/Design-/Run-Gegenprüfungen, Designentscheidungsvorlagen, präzise Aufträge; implementiert nur, wenn dies ausdrücklich verlangt ist. Eigene Testzahlen nur, wenn selbst ausgeführt; sonst als Implementiererangabe kennzeichnen. Startauftrag für einen neuen Chat: [README](README.md#kopierbarer-startauftrag-für-einen-neuen-gpt-chat) (Kurzfassung; Claude schreibt die Vollfassung bei Statuswechseln neu).
+- **ChatGPT/Codex:** unabhängige Code-/Design-/Run-Gegenprüfungen, Designentscheidungsvorlagen, präzise Aufträge; implementiert nur, wenn dies ausdrücklich verlangt ist. Eigene Testzahlen nur, wenn selbst ausgeführt; sonst als Implementiererangabe kennzeichnen. Startauftrag für einen neuen Chat: [README](README.md#kopierbarer-startauftrag-für-einen-neuen-gpt-chat).
 - **Claude/Sol/Opus:** beauftragte Implementierung oder unabhängige technische Analysen, Originalfall-Reproduktionen (lokaler Replay-Nachlauf aus aufgezeichneten Modellantworten, `tools/replay/build_corpus.mjs`). Frühere Modellaussagen sind keine automatisch richtigen Entscheidungen.
-- **Engine und LLM:** In eingefrorener .200-Basis und aktueller .203-Entwicklung interpretiert bei freiem Text der Planner, die deterministische Engine autorisiert/bucht, der Narrator erzählt und der Extractor/Firewall übernimmt legitime Weltfolgen. Die drei Rollen verursachen getrennte **physische API-Aufrufe desselben GLM-Modells**. Der frühere dynamische GM ist **archiviert**, nicht die geplante Zielarchitektur. Die historische Spielflussanalyse betrachtete eine **tolerantere, spielerunterstützte Weiterentwicklung von `.200`**, inzwischen zum Teil als .203 umgesetzt ([08](08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md)).
-
-**Arbeitsgrenze 21.11.:** Produkt .200 eingefroren; Entwicklungs- und Spieltestbuild .204 (`experiment/action-hud-200-v1` = `experiment/204-b-playtest-ready`). **Persönlicher User-Test 7 läuft:** Phase 2 ist von Codex und GPT unabhängig gegenreviewt; jetzt ist die gemeinsame Patchentscheidung ausstehend. Gameplay-Roadmap 07 bleibt pausiert, die B-Performanceforschung ist vorerst abgeschlossen. Keine automatische Produkt- oder Providerfreigabe. [Run](testrun_10b/user-20261121-171341-204/README.md) · [Forschungsindex](recherche/README.md).
+- **Engine und LLM**. Bei freier Eingabe interpretiert der Planner die Handlung. Die Engine entscheidet und bucht, der Narrator erzählt, der Extractor prüft neue Weltfolgen. Bei Messungen die physischen Modellaufrufe und Reparaturen einzeln zählen. [Zuständigkeiten im Kanon](02_DESIGN_KANON.md#2-zuständigkeiten-von-llm-und-engine)
 
 **Ein Fachplan, Review oder Dokumentationscommit ist keine Produktfreigabe.** Bereits beschlossener Kanon bleibt maßgeblich, ist aber bei ausdrücklicher Nutzerentscheidung bewusst änderbar. Keine weiteren P2-Sonderregeln ohne konkreten Integritätsnachweis; keine neuen Mechaniken/Balanceänderungen als Nebenprojekt. Fachlich zusammenhängende Patches bündeln, keine künstlichen Mikropatch-Serien.
 
 ## Einstieg eines neuen Chats
 
-1. Auf `main` **README, 01 und 03** lesen; für Performancearbeit [Forschungsindex](recherche/README.md). HEADs von `main`, dem Produktbranch `claude/c-planner-prototype-2026-10-02-gpt-c666` **und den Entwicklungsbranches `experiment/action-hud-200-v1` / `experiment/204-b-playtest-ready`** prüfen. Für einen laufenden User-Test zusätzlich dessen Runordner in `testrun_10b/`. `experiment/dynamic-gm-model` ist **historischer Quellenbranch**, keine aktive Entwicklungsaufgabe; nur zur gezielten Archivnachprüfung lesen.
+1. Auf `main` den [Projektstand](03_AKTUELLER_PROJEKTSTAND.md) lesen und die dort genannte Branch-/Commitkombination für den Auftrag prüfen. Bei einem Spieltest die Originale im [Runindex](testrun_10b/README.md) öffnen.
 2. Aufgabe eingrenzen: **02** bei verbindlichen Spielregeln, **07** bei noch geplanten Features, **06** als Fachquellenindex. Originalarchive und technische Patchnotes nur zum konkreten Fall lesen.
 3. Codebehauptungen am **aktuellen Produkt-HEAD** oder bei Experimenten gezielt am Modellbranch kontrollieren, nicht an alten Plan-Zeilennummern. Nach Kontextwechsel den letzten Produktdiff prüfen; identische Quellen nicht unnötig neu auslesen.
 4. Dokumente klar als **aktuell / geplant / historischer Befund / nicht freigegeben** markieren. Ein altes Modellprotokoll ersetzt keinen neuen natürlichen Run.
@@ -47,14 +45,14 @@
 | **03** | Letzter **verifizierter** Produktbuild, neue natürliche Ergebnisse, unmittelbare Prioritäten, offene Entscheidungen |
 | **07** | Featurefamilien, Reihenfolge, Abhängigkeiten, aufgeschobene Optionen |
 | **04** | Neue Ideen ohne beschlossene Roadmap-Priorität |
-| **08** | Historisches Spielfluss-Zielbild; mehrere HUD-Teile wurden bis .203 umgesetzt, kein aktueller Statusbericht |
+| **08** | Historisches Spielfluss-Zielbild und zugehörige Abschlussanalyse |
 | **06** | Links zu Fachplänen, unabhängigen Architektur-/NPC-/PULSE-Prüfungen und Produktnachweisen |
 | **Pro-Run-Ordner** | Originalreview, Quellenmanifest, Gameplayfeedback, gezielte Folgeprüfungen |
-| **Produkt und Entwicklung** | Produkt .200 eingefroren; .204 mit Patchnotes auf `experiment/action-hud-200-v1` / `experiment/204-b-playtest-ready` gesondert getestet |
+| **Produkt- und Testbranch** | Technische Patchnotes und ausführbare Fassung des in 03 genannten Builds |
 | **`experiment/dynamic-gm-model`** | Archiv von B/C1 und dynamischem GM mit Fehler-/Mockbelegen, kein Entwicklungs- oder Produktbranch ([Archiv](recherche/ARCHITEKTUR_EXPERIMENTE_ARCHIV_2026-11-17.md)) |
 
 Bei einer reinen Dokumentationspflege **keine Node-/ST-Tests vortäuschen oder als notwendig erklären**: Inhaltsvergleich, Diff-, Link-, Referenz- und Git-HEAD-Prüfung reichen. Originalreviews, Historie und spezifische Fachpläne nicht blind kürzen; in Übersichten alte Detailketten nur verlinken. Bei Änderungen mindestens Dateiliste, Art der Änderung, Commit, neue/alte HEADs und Grenzen berichten. Keine Tokens/Schlüssel/Zugangsdaten in Chat, Repo oder Originalarchive aufnehmen.
 
 ## Historie und Quellen
 
-[Aktuelle Branch-Aufräumprüfung 05](05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md) · [10B-Fachindex 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Original-Runindex](testrun_10b/README.md) · [historische 01-Vorfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/ec0969b816249211bc71b3c53b10eb1faf11716a/01_ARBEITSWEISE_CHATGPT_CLAUDE.md).
+[Historische Branchprüfung 05](05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md) · [10B-Fachindex 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Original-Runindex](testrun_10b/README.md) · [historische 01-Vorfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/ec0969b816249211bc71b3c53b10eb1faf11716a/01_ARBEITSWEISE_CHATGPT_CLAUDE.md).

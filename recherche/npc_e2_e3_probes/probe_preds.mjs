@@ -2,9 +2,9 @@ import fs from 'node:fs'; import zlib from 'node:zlib';
 const E = process.env.ENG, M = process.env.MAIN;
 const { foldChat, rec } = await import(`${E}/src/host.js`);
 const runs = {
-  user01: `${M}/testrun_10b/user-20261104-162404/originals/chat.jsonl`,
+  user01: `${M}/testrun_10b/archiv/user-20261104-162404/originals/chat.jsonl`,
   user02: `${E}/tests/v4/fixtures/user02_157.jsonl.gz`,
-  user04: `${M}/testrun_10b/user-20261106-072640/originals/chat.jsonl.gz`,
+  user04: `${M}/testrun_10b/archiv/user-20261106-072640/originals/chat.jsonl.gz`,
 };
 for (const [label, f] of Object.entries(runs)) {
   const raw = f.endsWith('.gz') ? zlib.gunzipSync(fs.readFileSync(f)).toString('utf8') : fs.readFileSync(f, 'utf8');

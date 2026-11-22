@@ -66,8 +66,8 @@ Für die optionale Tokenzählung wurden `tokenizers==0.22.2`, `Jinja2==3.1.6` so
 [runtime]: https://github.com/Mango1331/Claude-AI-RPG-Game/blob/5e5b8272412b51b91f75b6e37c5b94d95c9fae11/avereth-engine/src/v4/runtime.js#L587
 [guild]: https://github.com/Mango1331/Claude-AI-RPG-Game/blob/5e5b8272412b51b91f75b6e37c5b94d95c9fae11/avereth-engine/src/v4/guild.js#L917
 [hf]: https://huggingface.co/zai-org/GLM-5.3-Flash/tree/46a050bec13002ad29ee795c16e61cf4fa3c4a9c
-[u4]: ../testrun_10b/user-20261106-072640/README.md
-[u5]: ../testrun_10b/user-20261118-011503/README.md
-[u6]: ../testrun_10b/user-20261119-010838/README.md
-[u6perf]: ../testrun_10b/user-20261119-010838/PERFORMANCE_USER06_203_VORAB_2026-11-19.md
+[u4]: ../testrun_10b/archiv/user-20261106-072640/README.md
+[u5]: ../testrun_10b/archiv/user-20261118-011503/README.md
+[u6]: ../testrun_10b/archiv/user-20261119-010838/README.md
+[u6perf]: ../testrun_10b/archiv/user-20261119-010838/PERFORMANCE_USER06_203_VORAB_2026-11-19.md
 [research]: AVERETH_203_PERFORMANCE_EFFIZIENZ_UNABHAENGIGE_RECHERCHE_2026-11-19.md

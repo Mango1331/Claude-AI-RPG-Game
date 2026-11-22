@@ -295,7 +295,7 @@ Arbeitsverzeichnis: eine Produkt-Worktree auf `2089dcc` (`<eng>` = deren `averet
 ENG=<eng> node --test patch_plans_10b/pulse_probes/pulse_probe.test.mjs
 ```
 ```bash
-ENG=<eng> node patch_plans_10b/pulse_probes/user04_frames.mjs testrun_10b/user-20261106-072640/originals/chat.jsonl.gz
+ENG=<eng> node patch_plans_10b/pulse_probes/user04_frames.mjs testrun_10b/archiv/user-20261106-072640/originals/chat.jsonl.gz
 ```
 ```bash
 ENG=<eng> node patch_plans_10b/pulse_probes/pulse_sim.mjs

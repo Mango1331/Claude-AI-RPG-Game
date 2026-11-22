@@ -4,7 +4,7 @@ const { foldChat } = await import(`${E}/src/host.js`);
 const { presenceInReply, guildParticipationEvidence } = await import(`${E}/src/v4/narration_evidence.js`);
 const { loadProductContent } = await import(`${E}/tests/helpers.js`);
 const content = await loadProductContent();
-const lines = zlib.gunzipSync(fs.readFileSync(`${M}/testrun_10b/user-20261106-072640/originals/chat.jsonl.gz`)).toString('utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
+const lines = zlib.gunzipSync(fs.readFileSync(`${M}/testrun_10b/archiv/user-20261106-072640/originals/chat.jsonl.gz`)).toString('utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
 const chat = lines.slice(1);
 const labels = (s, id) => { const e = s.entities[id]; return [e.name, e.known_name, ...(e.descriptors || [])].filter((x) => typeof x === 'string' && x.trim()); };
 // I72: arrival at the hall; who of the known people left there does the reply actually show?

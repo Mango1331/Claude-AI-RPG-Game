@@ -3,8 +3,8 @@
 **Stand 15.11.2026 · Entscheidungsvorlage, keine Umsetzung.**
 
 **Anlass:**
-- [Opus-Gegenreview `.191`](../testrun_10b/npc-20261115-103140Z/GEGENREVIEW_OPUS.md), Befund P2-d.
-- [GPT-Gegenbewertung](../testrun_10b/npc-20261115-103140Z/GEGENBEWERTUNG_GPT_ZU_OPUS.md), Abschnitt 7.
+- [Opus-Gegenreview `.191`](../testrun_10b/archiv/npc-20261115-103140Z/GEGENREVIEW_OPUS.md), Befund P2-d.
+- [GPT-Gegenbewertung](../testrun_10b/archiv/npc-20261115-103140Z/GEGENBEWERTUNG_GPT_ZU_OPUS.md), Abschnitt 7.
 - Geprüft im Korrekturpaket `.192`. Dort wurde **bewusst nicht** umgesetzt: Die Frage berührt Aktionsökonomie und bedingte Absichten, die der Kanon noch offen hält (Main/Minor ist **[GEPLANT]**).
 
 ## 1. Die sieben Originalfälle

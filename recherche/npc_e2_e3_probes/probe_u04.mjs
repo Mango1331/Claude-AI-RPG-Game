@@ -2,7 +2,7 @@
 import fs from 'node:fs'; import zlib from 'node:zlib';
 const E = process.env.ENG, M = process.env.MAIN;
 const { foldChat, rec } = await import(`${E}/src/host.js`);
-const lines = zlib.gunzipSync(fs.readFileSync(`${M}/testrun_10b/user-20261106-072640/originals/chat.jsonl.gz`)).toString('utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
+const lines = zlib.gunzipSync(fs.readFileSync(`${M}/testrun_10b/archiv/user-20261106-072640/originals/chat.jsonl.gz`)).toString('utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
 const chat = lines.slice(1); // I0 = first visible message
 const npcs = (s) => Object.values(s.entities).filter((e) => e.kind === 'npc');
 const at = (i) => foldChat(chat, i + 1).state;

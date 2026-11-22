@@ -6,7 +6,7 @@
 
 **Abgrenzung:** Die Grundarchitektur ist im [Architekturaudit .126](../patch_plans_10b/PATCH_ARCHITEKTUR_126_KONSOLIDIERT.md) und im [Zahlungsaudit .141](../patch_plans_10b/PAYMENT_SYSTEM_AUDIT.md) untersucht. Dieses Dokument wiederholt sie nicht. Es fragt, was die 53 Builds seit `.126` strukturell bewirkt haben und wo dieselbe Ursache mehrfach als Einzelsymptom behandelt wurde.
 
-**Quellen:** [01](../01_ARBEITSWEISE_CHATGPT_CLAUDE.md), [02](../02_DESIGN_KANON.md), [03](../03_AKTUELLER_PROJEKTSTAND.md), [06](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md), die Fachpläne und Reviews in `patch_plans_10b/`, die Produktpatchnotes in `avereth-engine/docs/`, der Produktcode und seine Git-Historie (725 Commits), sowie drei Originalarchive: [NPC/PULSE-Pilot 01](../testrun_10b/npc-20261109-160250Z/REVIEW.md) (`.174`), [Batch 28 Warrior](../testrun_10b/batch-20261103-171839Z/REVIEW.md) (`.154`) und [User04](../testrun_10b/user-20261106-072640/REVIEW.md) (`.159`).
+**Quellen:** [01](../01_ARBEITSWEISE_CHATGPT_CLAUDE.md), [02](../02_DESIGN_KANON.md), [03](../03_AKTUELLER_PROJEKTSTAND.md), [06](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md), die Fachpläne und Reviews in `patch_plans_10b/`, die Produktpatchnotes in `avereth-engine/docs/`, der Produktcode und seine Git-Historie (725 Commits), sowie drei Originalarchive: [NPC/PULSE-Pilot 01](../testrun_10b/archiv/npc-20261109-160250Z/REVIEW.md) (`.174`), [Batch 28 Warrior](../testrun_10b/archiv/batch-20261103-171839Z/REVIEW.md) (`.154`) und [User04](../testrun_10b/archiv/user-20261106-072640/REVIEW.md) (`.159`).
 
 **Nachweisgrade:**
 
@@ -117,7 +117,7 @@ Ein Erzählzug kostet im Mittel 45 700 Prompt-Tokens und 57 Sekunden Modellzeit.
 - `scene_context` ist in Batch 28 mit 96 von 297 Ablehnungen die mit Abstand häufigste Regel.
 - 4 der 12 Extractor-Reparaturen im Pilot betreffen die Szenenchronologie.
 - „arrival pending“ macht in Batch 28 25 der 83 verweigerten Befehle aus.
-- Pilot T61/T62: Hof, Begrüßung und eine Stunde Fahrt in einer Antwort. Der Name des Fuhrmanns, die Mitfahrt und das `met` gehen verloren (`scene_context`, `met_without_arrival`); die Korrektur an den Erzähler widerspricht der Kopfzeile ([Gegenreview B6/B7](../testrun_10b/npc-20261109-160250Z/GEGENREVIEW_CLAUDE.md)).
+- Pilot T61/T62: Hof, Begrüßung und eine Stunde Fahrt in einer Antwort. Der Name des Fuhrmanns, die Mitfahrt und das `met` gehen verloren (`scene_context`, `met_without_arrival`); die Korrektur an den Erzähler widerspricht der Kopfzeile ([Gegenreview B6/B7](../testrun_10b/archiv/npc-20261109-160250Z/GEGENREVIEW_CLAUDE.md)).
 
 **Entscheidende Beobachtung [D]:** Wie oft nutzt die Erzählung die Freiheit, über die Ankunft zu entscheiden?
 
@@ -322,7 +322,7 @@ Das `.126`-Audit hat die Funktion mit 2542 Zeilen als Hauptproblemzone benannt; 
 
 **Handlungsschleifen [D]:** Im Pilot keine technische Blockade. Die Wechselkursschleife T27–T42 entstand aus einer zu knappen Ergebniszeile, nicht aus einem Guard.
 
-**Kontext [D, D3-Analyse]:** Priorität 0 belegt im Mittel 1320 von 1400 Tokens. Der Abruf `relevant` erreicht den Erzähler in 2 von 65 Zügen. Ein Teil der Priorität-0-Last ist `resolved` (bis 706 Tokens) mit den Ergebnis- und Ablehnungszeilen der Engine; je mehr Sonderhinweise eine Zeile trägt, desto weniger bleibt für `present` und `relevant`. Korrekturen haben ein eigenes Kontingent und zählen nicht ins Budget (`context.js:854`), verlängern aber den Prompt. Die [D3-Analyse](../testrun_10b/npc-20261109-160250Z/D3_KONTEXTANALYSE_RELEVANT.md) hat das gemessen; ich übernehme ihre Empfehlung (Teillieferung, keine Budgeterhöhung).
+**Kontext [D, D3-Analyse]:** Priorität 0 belegt im Mittel 1320 von 1400 Tokens. Der Abruf `relevant` erreicht den Erzähler in 2 von 65 Zügen. Ein Teil der Priorität-0-Last ist `resolved` (bis 706 Tokens) mit den Ergebnis- und Ablehnungszeilen der Engine; je mehr Sonderhinweise eine Zeile trägt, desto weniger bleibt für `present` und `relevant`. Korrekturen haben ein eigenes Kontingent und zählen nicht ins Budget (`context.js:854`), verlängern aber den Prompt. Die [D3-Analyse](../testrun_10b/archiv/npc-20261109-160250Z/D3_KONTEXTANALYSE_RELEVANT.md) hat das gemessen; ich übernehme ihre Empfehlung (Teillieferung, keine Budgeterhöhung).
 
 **Spielerfreiheit:** Die Agency-Guard ist unauffällig (Pilot 1 verworfener Befehl, Batch 28 8). Sie schränkt nicht spürbar ein. Die Einschränkung entsteht nach der Erzählung, nicht davor.
 
@@ -517,7 +517,7 @@ Damit 10B stabil bleibt, ohne neue Sonderfallketten aufzubauen, schlage ich sech
 
 - **Keine Ausführung.** Alle Aussagen über Verhalten stammen aus Code, Patchnotes, Reviews und gespeicherten Events. Kein Befund ist auf `.179` reproduziert.
 - **Datenbasis.** Drei Läufe, drei verschiedene Builds, ein Modell je Lauf. Die Ablehnungsquote (18–21 %) ist über alle drei stabil; die Ankunftszahl (11 von 11) stammt aus einem Lauf mit 16 Fällen.
-- **Ablehnungen sind nicht bewertet.** Ich habe gezählt, nicht klassifiziert. Wie viele der 297 Ablehnungen in Batch 28 ein echter Schutz waren, ist offen; genau das soll die Guard-Bilanz klären. Für den Pilot liegt die Einordnung im [Gegenreview](../testrun_10b/npc-20261109-160250Z/GEGENREVIEW_CLAUDE.md) vor.
+- **Ablehnungen sind nicht bewertet.** Ich habe gezählt, nicht klassifiziert. Wie viele der 297 Ablehnungen in Batch 28 ein echter Schutz waren, ist offen; genau das soll die Guard-Bilanz klären. Für den Pilot liegt die Einordnung im [Gegenreview](../testrun_10b/archiv/npc-20261109-160250Z/GEGENREVIEW_CLAUDE.md) vor.
 - **Zählmethoden.** Wortlisten sind als Vorkommen von `\b(?:` und `new Set([` gezählt, Ablehnungsstellen über die Aufrufmuster. Die Größenordnungen stimmen; einzelne Zahlen können um wenige Stellen abweichen.
 - **Nicht untersucht:** Kampfengine (`combat.js`), Skill- und Passivwachstum, Gildenboard-Generator, UI, Runner. NPC E0–E3 und PULSE A–C nur an ihren Schnittstellen zu den Ketten C, D und E.
 - **Aufwandsangaben** sind Schätzungen aus dem gelesenen Code, keine Planung.
@@ -668,7 +668,7 @@ Die Schätzung aus §9 („4, vermutlich 6 Reparaturen“) ist damit auf **drei*
 
 **12.11.2026 · unabhängige Bewertung; keine Implementierung, keine Kanonänderung und keine zusätzliche Produktfreigabe.**
 
-**Quellen:** Fable-Audit §§1–13 in dieser Datei, [Design-Kanon 02](../02_DESIGN_KANON.md), [Arbeitsweise 01](../01_ARBEITSWEISE_CHATGPT_CLAUDE.md), [früheres Architekturaudit/Umsetzung .126](../patch_plans_10b/PATCH_ARCHITEKTUR_126_KONSOLIDIERT.md), [Pilot-01-Reviews](../testrun_10b/npc-20261109-160250Z/REVIEW.md) einschließlich [Sols Gegenreview](../testrun_10b/npc-20261109-160250Z/GEGENREVIEW_CLAUDE.md), [GPT-Produktdiffreview](../testrun_10b/npc-20261109-160250Z/REVIEW_175_177_PRODUKTDIFF_GPT.md), [GPT-Gegenreview zu .179 und D3](../testrun_10b/npc-20261109-160250Z/REVIEW_179_UND_D3_GPT.md) und [D3-Kontextanalyse](../testrun_10b/npc-20261109-160250Z/D3_KONTEXTANALYSE_RELEVANT.md).
+**Quellen:** Fable-Audit §§1–13 in dieser Datei, [Design-Kanon 02](../02_DESIGN_KANON.md), [Arbeitsweise 01](../01_ARBEITSWEISE_CHATGPT_CLAUDE.md), [früheres Architekturaudit/Umsetzung .126](../patch_plans_10b/PATCH_ARCHITEKTUR_126_KONSOLIDIERT.md), [Pilot-01-Reviews](../testrun_10b/archiv/npc-20261109-160250Z/REVIEW.md) einschließlich [Sols Gegenreview](../testrun_10b/archiv/npc-20261109-160250Z/GEGENREVIEW_CLAUDE.md), [GPT-Produktdiffreview](../testrun_10b/archiv/npc-20261109-160250Z/REVIEW_175_177_PRODUKTDIFF_GPT.md), [GPT-Gegenreview zu .179 und D3](../testrun_10b/archiv/npc-20261109-160250Z/REVIEW_179_UND_D3_GPT.md) und [D3-Kontextanalyse](../testrun_10b/archiv/npc-20261109-160250Z/D3_KONTEXTANALYSE_RELEVANT.md).
 
 **Unabhängig kontrollierte Codebasis:** Produktbranch `claude/c-planner-prototype-2026-10-02-gpt-c666`, Remote-HEAD `59f868eaf3c4ed7942ddc42ba3d180fab44a72cd` (Build `.179`); `main` vor diesem Nachtrag `49285df6ab294aad176a654c0fb18122af819465`. Gezielt geprüft: `src/v4/commands.js` (GO, bedingte Folgeschritte, Handel und Zielkauf), `pulse.js`, `world.js` (Ankunft/Chronologie und `envelopeAllows`), `extract.js` (`sceneIssues`), `envelope.js` (`mayOpenFight`, `attackCommitted`), `planner.js`, `interpret.js`, `finance_evidence.js`, `trade.js`, `runtime.js` (Planner-Reparatur und `campaignSupport`), `context.js`/`retrieval.js` und die aktuelle Replay-Wächterdatei.
 

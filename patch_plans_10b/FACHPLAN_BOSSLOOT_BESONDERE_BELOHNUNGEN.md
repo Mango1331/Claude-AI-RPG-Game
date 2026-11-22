@@ -8,9 +8,9 @@
 
 **Quellen:**
 - Persönliche User-Feedbacks:
-  - 04.11. (`testrun_10b/user-20261104-162404/originals/Userfeedback Spielgefühl.txt`, Absätze zu Loot),
-  - 05.11. (`testrun_10b/user-20261105-050449/originals/user_feedback.txt`: „videospielmäßiger lootbox drop von elites und mini bossen mit rank und dann einem randomised reward im selben rank und mit minichance auf ‚höheres' seltenes bis zu skillstones“),
-  - 06.11. (`testrun_10b/user-20261106-072640/originals/user_feedback.txt`: „dann wieder das lootbox Thema für bosse“, Bosse stärker, Tatenbuch).
+  - 04.11. (`testrun_10b/archiv/user-20261104-162404/originals/Userfeedback Spielgefühl.txt`, Absätze zu Loot),
+  - 05.11. (`testrun_10b/archiv/user-20261105-050449/originals/user_feedback.txt`: „videospielmäßiger lootbox drop von elites und mini bossen mit rank und dann einem randomised reward im selben rank und mit minichance auf ‚höheres' seltenes bis zu skillstones“),
+  - 06.11. (`testrun_10b/archiv/user-20261106-072640/originals/user_feedback.txt`: „dann wieder das lootbox Thema für bosse“, Bosse stärker, Tatenbuch).
 - Die Reviews dazu (`USER_FEEDBACK_REVIEW.md` vom 05.11., Punkt 6: „offener eigenständiger Loot-/Progressionsentwurf … keine Dropraten beschlossen“; `REVIEW.md` vom 06.11., Punkt 7).
 - Design-Kanon §§4, 5, 7, 8, der Ideenkatalog (Zeile „Erkundung und Beute“) und [Fachplan Monster A1/A2](FACHPLAN_MONSTER_ANATOMIE_LOOT_A1_A2.md).
 - Produktcode `.192`: `src/v4/loot.js`, `src/engine.js`, `src/v4/living.js`, `src/v4/items.js`, `src/v4/growth.js`, `src/v4/passive_growth.js`, `src/display.js`, `src/context.js`; Content `monsters.json`, `rules.json`, `gear.json`.

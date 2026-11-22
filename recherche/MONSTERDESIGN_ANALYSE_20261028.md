@@ -501,9 +501,9 @@ Je Fall: Welt und Lore · Engine heute [CODE] · Engine mit den Paketen [EMPFEHL
 - [Lorebook v0.14](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/96fa3ed0e9750066e20ebd94c532f7bde310b3bf/avereth-engine/lorebook/Avereth_World_Lore_v0.14.json)
 - [10B-Archiv §§5–8](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0ebf4496f185a69ebac235a337ab9dd2e2b470c7/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md#5-monster-lore-audit-von-chatgpt--rekonstruierte-vollständige-analyse)
 - [02 Designkanon](../02_DESIGN_KANON.md)
-- [F→E-Scaling GPT](../testrun_10b/scaling_gpt.md)
-- [Sols F→E-Entwurf](../testrun_10b/ENTWURF_F_RANG_PROGRESSION_UND_E_UEBERGANG.md)
-- [Balance-Beobachtungen](../testrun_10b/BALANCE_ERSTEINDRUECKE_XP_STARTWERTE_20261026.md)
+- [F→E-Scaling GPT](../testrun_10b/archiv/scaling_gpt.md)
+- [Sols F→E-Entwurf](../testrun_10b/archiv/ENTWURF_F_RANG_PROGRESSION_UND_E_UEBERGANG.md)
+- [Balance-Beobachtungen](../testrun_10b/archiv/BALANCE_ERSTEINDRUECKE_XP_STARTWERTE_20261026.md)
 
 **Pathfinder 2e:**
 - **[PF2-GMG]** Paizo, *Gamemastery Guide – Monster and Hazard Creation* (Vorabkapitel 2019): [PDF](https://downloads.paizo.com/PZOCUP024E_PathfinderGameMasteryGuide_MonsterHazardCreation_PF2E.pdf)

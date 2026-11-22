@@ -16,9 +16,9 @@
 | **[P]** | Schluss oder Prognose, nicht ausgeführt |
 
 **Datengrundlage [D]:**
-- Pilot 01 auf `.174`: `avereth-events.json`, `calls.json`, `chat-completions.jsonl` und `chat.jsonl` aus [`originals.tar.xz`](../testrun_10b/npc-20261109-160250Z/originals/).
-- Batch 28 Warrior auf `.154`: [`001-guild-warrior.chat.jsonl.gz`](../testrun_10b/batch-20261103-171839Z/originals/).
-- User04 auf `.159`: [`chat.jsonl.gz`](../testrun_10b/user-20261106-072640/originals/).
+- Pilot 01 auf `.174`: `avereth-events.json`, `calls.json`, `chat-completions.jsonl` und `chat.jsonl` aus [`originals.tar.xz`](../testrun_10b/archiv/npc-20261109-160250Z/originals/).
+- Batch 28 Warrior auf `.154`: [`001-guild-warrior.chat.jsonl.gz`](../testrun_10b/archiv/batch-20261103-171839Z/originals/).
+- User04 auf `.159`: [`chat.jsonl.gz`](../testrun_10b/archiv/user-20261106-072640/originals/).
 
 **Datensatznummern:** „recN“ ist der Zeilenindex in der Chat- bzw. Eventdatei; Spielerzeile N, Erzählerzeile N+1.
 

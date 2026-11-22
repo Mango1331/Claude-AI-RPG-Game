@@ -5,11 +5,11 @@
 **Prüfstand:** Produktbranch `claude/c-planner-prototype-2026-10-02-gpt-c666`, Remote-HEAD `59f868e` (Build `.179`), am 12.11. erneut abgefragt. `main` vor diesem Dokument: `cc4630e`. Zeilenangaben beziehen sich auf `59f868e` in `avereth-engine/`.
 
 **Grundlage:**
-- Originalarchiv des [Pilot 01](../testrun_10b/npc-20261109-160250Z/originals/) auf `.174`: `avereth-events.json`, `chat.jsonl`, `chat-completions.jsonl` (vollständige Erzähler- und Extractor-Prompts mit Antworten), `calls.json`.
-- [Review](../testrun_10b/npc-20261109-160250Z/REVIEW.md) und [Gegenreview](../testrun_10b/npc-20261109-160250Z/GEGENREVIEW_CLAUDE.md) des Piloten.
+- Originalarchiv des [Pilot 01](../testrun_10b/archiv/npc-20261109-160250Z/originals/) auf `.174`: `avereth-events.json`, `chat.jsonl`, `chat-completions.jsonl` (vollständige Erzähler- und Extractor-Prompts mit Antworten), `calls.json`.
+- [Review](../testrun_10b/archiv/npc-20261109-160250Z/REVIEW.md) und [Gegenreview](../testrun_10b/archiv/npc-20261109-160250Z/GEGENREVIEW_CLAUDE.md) des Piloten.
 - Patchnotes `.175`–`.179` in `avereth-engine/docs/`.
 - [E2/E3-Fachplan](../patch_plans_10b/NPC_E2_E3_FACHPLAN.md) mit den Regeln R1–R10.
-- [D3-Analyse](../testrun_10b/npc-20261109-160250Z/D3_KONTEXTANALYSE_RELEVANT.md).
+- [D3-Analyse](../testrun_10b/archiv/npc-20261109-160250Z/D3_KONTEXTANALYSE_RELEVANT.md).
 
 **Nachweisgrade:**
 - **[C]** Code an `59f868e` gelesen.
@@ -292,7 +292,7 @@ Alle Fragen lassen sich mit derselben lesenden Auswertung beantworten wie in die
 
 **12.11.2026 · Nur unabhängiger Code- und Fachreview, keine Tests, keine Implementierung oder Kanonänderung.**
 
-**Prüfgrundlage:** Opus-Audit §§0–8 dieser Datei; [Pilot-01-Review](../testrun_10b/npc-20261109-160250Z/REVIEW.md), [Gegenreview](../testrun_10b/npc-20261109-160250Z/GEGENREVIEW_CLAUDE.md), [D3-Kontextanalyse](../testrun_10b/npc-20261109-160250Z/D3_KONTEXTANALYSE_RELEVANT.md), [NPC-Fachplan](../patch_plans_10b/NPC_E2_E3_FACHPLAN.md), [Patchnote .176](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/59f868eaf3c4ed7942ddc42ba3d180fab44a72cd/avereth-engine/docs/PILOT01_176_CONTEXT_EVIDENCE.md).
+**Prüfgrundlage:** Opus-Audit §§0–8 dieser Datei; [Pilot-01-Review](../testrun_10b/archiv/npc-20261109-160250Z/REVIEW.md), [Gegenreview](../testrun_10b/archiv/npc-20261109-160250Z/GEGENREVIEW_CLAUDE.md), [D3-Kontextanalyse](../testrun_10b/archiv/npc-20261109-160250Z/D3_KONTEXTANALYSE_RELEVANT.md), [NPC-Fachplan](../patch_plans_10b/NPC_E2_E3_FACHPLAN.md), [Patchnote .176](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/59f868eaf3c4ed7942ddc42ba3d180fab44a72cd/avereth-engine/docs/PILOT01_176_CONTEXT_EVIDENCE.md).
 
 **Eigenständig am Produktcode .179 geprüft:** `src/v4/world.js` (`anchorRefusal`, `metArrivals`, `deskHandlers`, `fact`, `thread`), `src/knowledge.js` (Ankerprädikate, bedeutsame Erinnerungen, `npcContinuity`), `src/context.js` (Kompakt-/Ankunftskarten, `relevant`, P0), `src/engine.js` (erste Begegnung), `src/state.js` (Präsenzspanne), `src/v4/interpret.js` und `content/deltas.json` (Extractor-Vertrag) sowie `src/threads.js` (Parteien/IDs). Opus' Zahlen aus dem ursprünglichen Pilot auf `.174` wurden **nicht unabhängig erneut aus allen Originalantworten gezählt**. Keine Node-, Replay-, ST-, Modell- oder Fold-Ausführung.
 

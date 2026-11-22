@@ -2,7 +2,7 @@
 
 **Stand 04.11.2026 · nur Analyse und Bewertung, keine Implementierung, keine Patchplanung auf Codeebene.**
 Grundlage: main `b2682a5`, Produkt **.155 / [62672d8](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/62672d875ad02204c06d9b9f76425f1127572ad7)**,
-der persönliche [User-Testrun 01](../testrun_10b/user-20261104-162404/README.md), der vollständige Serverlog des Laufs,
+der persönliche [User-Testrun 01](../testrun_10b/archiv/user-20261104-162404/README.md), der vollständige Serverlog des Laufs,
 [Designkanon](../02_DESIGN_KANON.md) und [Roadmap-Entwurf](../07_ROADMAP_NACH_10B_ENTWURF.md).
 
 **Kennzeichnung:**
@@ -51,12 +51,12 @@ Codeverweise beziehen sich auf .155 und sind relativ zu `avereth-engine/`.
 ## 1. Methode und Belegbasis
 
 - **Daten:**
-  - [Originalchat](../testrun_10b/user-20261104-162404/originals/chat.jsonl) mit den eingebetteten Engine-Records
+  - [Originalchat](../testrun_10b/archiv/user-20261104-162404/originals/chat.jsonl) mit den eingebetteten Engine-Records
     jeder Nachricht.
-  - [Eventexport](../testrun_10b/user-20261104-162404/originals/events.json).
-  - [Userfeedback](../testrun_10b/user-20261104-162404/originals/Userfeedback%20Spielgef%C3%BChl.txt).
+  - [Eventexport](../testrun_10b/archiv/user-20261104-162404/originals/events.json).
+  - [Userfeedback](../testrun_10b/archiv/user-20261104-162404/originals/Userfeedback%20Spielgef%C3%BChl.txt).
   - Der Serverlog `ST_2026-11-04_16-24-04.txt`: UTF-16, 12 004 086 Byte, SHA-256 `fe43106b…ac73b`, identisch mit dem
-    [Quellenmanifest](../testrun_10b/user-20261104-162404/SOURCE_MANIFEST.md); nicht im Git.
+    [Quellenmanifest](../testrun_10b/archiv/user-20261104-162404/SOURCE_MANIFEST.md); nicht im Git.
 - **Serverlog:** Alle 102 Modellaufrufe wurden aus dem Node-Objektdruck rekonstruiert und über ihren Antworttext den
   Chatnachrichten zugeordnet. Maßgeblich sind die Erzähler-Requests **#82 (I62), #85 (I64), #88 (I66) und #95 (I70)**.
 - **Rekonstruktion des Engine-Blocks:** `host.turnBlock()` des .155-Codes, angewendet auf die gespeicherten Records.
@@ -212,7 +212,7 @@ Teilen:
    - Der einzige Hinweis war die anonyme Zeile „[completed]“ in der Gildenliste.
 3. **Verwendung [B]:** Der Erzähler übersah diese Zeile und erfand einen Ledger-Rückstand.
 
-Die Einschätzung im [Host-Log-Audit](../testrun_10b/user-20261104-162404/HOST_LOG_AUDIT.md) („Narrator widerspricht
+Die Einschätzung im [Host-Log-Audit](../testrun_10b/archiv/user-20261104-162404/HOST_LOG_AUDIT.md) („Narrator widerspricht
 vorhandenem Zustand“) bleibt richtig, ist aber unvollständig: Der Zustand war nur schwach und unpersönlich verfügbar.
 
 ## 4. Bewertung der Roadmap

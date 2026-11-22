@@ -29,7 +29,7 @@ const ends = new Map(
 const chats = Object.fromEntries(
     ['A', 'B'].map((arm) => [arm, jsonl(path.join(raw, 'main-chat-' + arm + '.jsonl')).slice(1)]),
 );
-const dir = path.join(main, 'testrun_10b/user-20261119-010838/originals');
+const dir = path.join(main, 'testrun_10b/archiv/user-20261119-010838/originals');
 const historical = jsonl(
     path.join(
         dir,

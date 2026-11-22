@@ -88,5 +88,5 @@ Der Kandidat ist für den unabhängigen Schlussreview bestimmt. Für einen spät
 [x1]: https://github.com/Mango1331/Claude-AI-RPG-Game/blob/2bad913b0dba624e569392d7b29a10241f0aad15/avereth-engine/docs/EXTRACTOR_BENCH_203.md
 [x2]: https://github.com/Mango1331/Claude-AI-RPG-Game/blob/1123b7e5b9d130145f95f860d466842e2cc8ea6e/avereth-engine/docs/EXTRACTOR_BENCH_203.md
 [b1report]: AVERETH_203_B1_GILDENBOARD_EINZELSLOT_2026-11-19.md
-[u6]: ../testrun_10b/user-20261119-010838/PERFORMANCE_USER06_203_VORAB_2026-11-19.md
+[u6]: ../testrun_10b/archiv/user-20261119-010838/PERFORMANCE_USER06_203_VORAB_2026-11-19.md
 [candidate]: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/399eb5b9f1f814f32a63bdc219f8499dfc107f0b

@@ -218,7 +218,7 @@ Im `.191`-Original wurden gezielt geprüft:
 
 Die aktuelle Kontextrekonstruktion aus diesen Originalzuständen liefert Hedwins und Wats Stimme sowie die gemeinsame Erinnerung; beim Clerk auch „between you“ mit dem Beschwerdeversprechen. Das belegt den heutigen Transportpfad, **nicht rückwirkend den kompletten ursprünglichen Narrator-Request**. In den geprüften `.191`-Records gibt es keine spätere Ersetzung dieser vier Anker.
 
-Das [Review zu `.188`](../testrun_10b/npc-20261114-161005Z/REVIEW.md), §6, berichtet 15 gespeicherte Anker, vier spätere Änderungen, neun vollständige und drei weitere gekürzte spätere Lieferungen. Genannt werden Marla, Brannic Vell, Vessa nach `#88` und Berra Wren. Diese betreffenden Originalabschnitte fehlen hier; insbesondere Berras spätere Ersetzungen sind **Reviewbefund, nicht in dieser Untersuchung neu verifizierte Naturbeobachtung**. Die technische Ersetzbarkeit ist im aktuellen Code vorhanden; die Qualität langfristiger Persönlichkeitsentwicklung ist damit noch nicht abgenommen.
+Das [Review zu `.188`](../testrun_10b/archiv/npc-20261114-161005Z/REVIEW.md), §6, berichtet 15 gespeicherte Anker, vier spätere Änderungen, neun vollständige und drei weitere gekürzte spätere Lieferungen. Genannt werden Marla, Brannic Vell, Vessa nach `#88` und Berra Wren. Diese betreffenden Originalabschnitte fehlen hier; insbesondere Berras spätere Ersetzungen sind **Reviewbefund, nicht in dieser Untersuchung neu verifizierte Naturbeobachtung**. Die technische Ersetzbarkeit ist im aktuellen Code vorhanden; die Qualität langfristiger Persönlichkeitsentwicklung ist damit noch nicht abgenommen.
 
 Der `.191`-Rogue-Lauf endet nach 22 Eingaben wegen Provider-/Guthabenproblemen, der Mage liefert keine spielbare Vergleichsreihe. Die Reviews belegen daher keinen gleichwertigen vollständigen Dreierbatch und keinen kausalen Qualitätsgewinn durch E3. Für dieses Urteil wurden keine Provideraufrufe nachgeholt.
 
@@ -407,8 +407,8 @@ Lebendiger und persönlicher wird die Welt vor allem, wenn ein vorhandener Mensc
 
 **Natürliche Quellen und Zuordnung:**
 
-- [Lauf `.188`](../testrun_10b/npc-20261114-161005Z/), insbesondere `REVIEW.md`; verfügbarer Rogue-Chat laut Fixturequelle SHA-256 `f030d34e8ef584b39a15e45703b19e9050d45c26fa0131df3804d00dc1062951`, Ausschnitt `#0–#83`.
-- [Lauf `.191`](../testrun_10b/npc-20261115-103140Z/), insbesondere `REVIEW_GPT.md`, `GEGENREVIEW_OPUS.md`, `GEGENBEWERTUNG_GPT_ZU_OPUS.md` als Wegweiser; Originalprüfung über die Produktcorpora. Warrior-Chat laut Corpusquelle SHA-256 `b7ecb114985ab918fc217f435d68cedefdb4dec17326183aec73976160aeaadf`; Rogue `0c91b45c2218dc9f3a2f2da5c1463d0d2cbf2fc2d9542c537da67f0b32bd2d55`.
+- [Lauf `.188`](../testrun_10b/archiv/npc-20261114-161005Z/), insbesondere `REVIEW.md`; verfügbarer Rogue-Chat laut Fixturequelle SHA-256 `f030d34e8ef584b39a15e45703b19e9050d45c26fa0131df3804d00dc1062951`, Ausschnitt `#0–#83`.
+- [Lauf `.191`](../testrun_10b/archiv/npc-20261115-103140Z/), insbesondere `REVIEW_GPT.md`, `GEGENREVIEW_OPUS.md`, `GEGENBEWERTUNG_GPT_ZU_OPUS.md` als Wegweiser; Originalprüfung über die Produktcorpora. Warrior-Chat laut Corpusquelle SHA-256 `b7ecb114985ab918fc217f435d68cedefdb4dec17326183aec73976160aeaadf`; Rogue `0c91b45c2218dc9f3a2f2da5c1463d0d2cbf2fc2d9542c537da67f0b32bd2d55`.
 - Obsidian: ausschließlich die im Auftrag übermittelten Vergleichsmerkmale, keine ergänzten Originalregeln.
 
 **Lieferumfang:** ausschließlich dieser Bericht auf `main`. Produktcode, Content, Replayoriginale, Version und Produktbranch bleiben unverändert. Kein GO für einen persönlichen Spieltest und keine Produktabnahme durch diese Analyse.

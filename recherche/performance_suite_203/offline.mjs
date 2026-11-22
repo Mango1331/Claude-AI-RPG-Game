@@ -67,7 +67,7 @@ for(const p of preps){
     }
 }
 for(const part of ['','phase_b_','phase_c_']){
-    const log=path.join(main,'testrun_10b/user-20261118-011503/originals',part+'completions.txt');
+    const log=path.join(main,'testrun_10b/archiv/user-20261118-011503/originals',part+'completions.txt');
     const {pairs,errors}=parseServerLog(fs.readFileSync(log,'utf8').replaceAll('\r\n','\n'));
     assert.deepEqual(errors,[]);
     for(const {req,resp} of pairs){
@@ -82,7 +82,7 @@ for(const part of ['','phase_b_','phase_c_']){
 const bench=(file)=>JSON.parse(execFileSync(process.execPath,[path.join(suite,'avereth-engine/tools',file),main,'--token-samples'],{encoding:'utf8',maxBuffer:16_000_000}));
 input.sizes=bench('bench_extract_compact.mjs');
 for(const s of bench('board_slot_offline.mjs')){
-    const chat=s.name==='User04' ? gunzipSync(fs.readFileSync(path.join(main,'testrun_10b/user-20261106-072640/originals/chat.jsonl.gz'))).toString().trim().split('\n').map(JSON.parse).slice(1)
+    const chat=s.name==='User04' ? gunzipSync(fs.readFileSync(path.join(main,'testrun_10b/archiv/user-20261106-072640/originals/chat.jsonl.gz'))).toString().trim().split('\n').map(JSON.parse).slice(1)
         : preps.find(p=>p.name===(s.name==='User05'?'U5A':'U6')).chat;
     const idx=11;
     const state=foldChat(chat,idx).state;

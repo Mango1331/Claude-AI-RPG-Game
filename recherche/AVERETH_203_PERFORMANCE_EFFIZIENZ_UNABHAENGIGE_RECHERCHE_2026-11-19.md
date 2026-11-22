@@ -329,8 +329,8 @@ Für §7.2 jeweils Originalchat bis vor I11 mit `foldChat(chat,11)`, Bedarf mit 
 [arch]: ARCHITEKTUR_EXPERIMENTE_ARCHIV_2026-11-17.md
 [brief]: ../08_SPIELFLUSS_VEREINFACHUNG_200_ANALYSEBRIEF_2026-11-17.md
 [runs]: ../testrun_10b/README.md
-[u4]: ../testrun_10b/user-20261106-072640/originals/
-[u5]: ../testrun_10b/user-20261118-011503/originals/
+[u4]: ../testrun_10b/archiv/user-20261106-072640/originals/
+[u5]: ../testrun_10b/archiv/user-20261118-011503/originals/
 [runtime]: https://github.com/Mango1331/Claude-AI-RPG-Game/blob/5e5b8272412b51b91f75b6e37c5b94d95c9fae11/avereth-engine/src/v4/runtime.js
 [host]: https://github.com/Mango1331/Claude-AI-RPG-Game/blob/5e5b8272412b51b91f75b6e37c5b94d95c9fae11/avereth-engine/index.js
 [host202]: https://github.com/Mango1331/Claude-AI-RPG-Game/blob/6a92dcc650809eb16934a984c30ce0cf7c5cfe98/avereth-engine/index.js#L123

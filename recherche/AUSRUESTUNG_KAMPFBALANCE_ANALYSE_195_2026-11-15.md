@@ -22,7 +22,7 @@ Die wenigen aussichtsreichsten Änderungen sind **eine nachvollziehbare E-Waffen
 
 ## 2. Grundlagen, Funktionen und Methodik
 
-Gezielt gelesen: [Kanon 02](../02_DESIGN_KANON.md), [Stand 03](../03_AKTUELLER_PROJEKTSTAND.md), [Roadmap 07](../07_ROADMAP_NACH_10B_ENTWURF.md), [Fachindex 06](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md), [F-/E-Entwurf](../testrun_10b/ENTWURF_F_RANG_PROGRESSION_UND_E_UEBERGANG.md), die auf Anatomie/Bosskörper bezogenen Befunde der [Monsteranalyse](MONSTERDESIGN_ANALYSE_20261028.md), sowie Bossloot-Content und [U1–U11](../patch_plans_10b/GEGENREVIEW_BOSSLOOT_GPT_ENTSCHEIDUNGEN_2026-11-15.md). Ältere Zahlen sind historische Vorschläge; die folgenden Zahlen stammen aus .195.
+Gezielt gelesen: [Kanon 02](../02_DESIGN_KANON.md), [Stand 03](../03_AKTUELLER_PROJEKTSTAND.md), [Roadmap 07](../07_ROADMAP_NACH_10B_ENTWURF.md), [Fachindex 06](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md), [F-/E-Entwurf](../testrun_10b/archiv/ENTWURF_F_RANG_PROGRESSION_UND_E_UEBERGANG.md), die auf Anatomie/Bosskörper bezogenen Befunde der [Monsteranalyse](MONSTERDESIGN_ANALYSE_20261028.md), sowie Bossloot-Content und [U1–U11](../patch_plans_10b/GEGENREVIEW_BOSSLOOT_GPT_ENTSCHEIDUNGEN_2026-11-15.md). Ältere Zahlen sind historische Vorschläge; die folgenden Zahlen stammen aus .195.
 
 Alle Produktlinks in dieser Tabelle beziehen sich auf den festen Mergecommit:
 

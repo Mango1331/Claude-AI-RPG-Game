@@ -31,7 +31,7 @@ Wegfallen soll das Erraten, *welche* erzählte Zahl mit *welcher* Menge gerechne
 ## 2. Belegbasis und Aussagegrenzen
 
 - [Finanz-Audit](PAYMENT_SYSTEM_AUDIT.md), besonders §§1.4, 12.3–12.6; frühere Entwürfe bleiben historische Quellen.
-- [Batch20-Originalreview samt Claude/Sol-Gegenprüfung](../testrun_10b/batch-20261031-140346Z/REVIEW.md).
+- [Batch20-Originalreview samt Claude/Sol-Gegenprüfung](../testrun_10b/archiv/batch-20261031-140346Z/REVIEW.md).
   Dort sind korrekte Käufe und Gildenbuchungen ebenso belegt wie die Platten-Verkaufsschleife.
 - [.142-Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/f84e6e5/avereth-engine/docs/FIX142_FINANCE_CONSOLIDATION.md),
   [.143-Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/d2a292a/avereth-engine/docs/FIX143_FINANCE_BOUNDARIES.md).

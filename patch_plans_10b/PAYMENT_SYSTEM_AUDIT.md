@@ -6,7 +6,7 @@
 **31.10.2026 · Claude · Analyse und Fachplan, keine Implementierung.** Prüfstand: Entwicklungsbranch
 `claude/c-planner-prototype-2026-10-02-gpt-c666`, **Build `.141` / `3d8f062`** (vor Beginn erneut abgerufen). Grundlage: Produktcode
 `.141`, Diffs `.137→.138→.139→.140→.141`, `avereth-engine/docs/FIX138_FINANCE.md`,
-[Batch20-Review §§5, 7, 8](../testrun_10b/batch-20261031-140346Z/REVIEW.md), Sols Feedback zu `.141`, die Finanz-/Handelsregressionen
+[Batch20-Review §§5, 7, 8](../testrun_10b/archiv/batch-20261031-140346Z/REVIEW.md), Sols Feedback zu `.141`, die Finanz-/Handelsregressionen
 und die Originalrecords des Replay-Korpus (b16–b19, zehn Läufe) sowie Batch20-Warrior.
 
 **Methode und Nachweisgrade.** Kein Produkt-, Test-, Prompt- oder Fingerprintstand wurde verändert. Keine Suite, kein Replay-Lauf,

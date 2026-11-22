@@ -1,12 +1,12 @@
 # User07 auf .204 · Technische Abnahme der C-Korrektur
 
-**Der Aushang bleibt nach der bestätigten Rückkehr in Ashbridge. Der Kupfertopf erhält beim ersten Blick ins Goblinlager eine Boden-ID. TAKE und Wiederbesuch erhalten diese ID.** Der Kandidat ist bereit für den unabhängigen Diffreview. Die persönliche Fortsetzung entscheidet der Nutzer anschließend. [Natürlicher Ausgangstest](../testrun_10b/user07-camp-openrouter-20261122/README.md) · [GPT-Gegenreview](../testrun_10b/user07-camp-openrouter-20261122/REVIEW_GPT.md)
+**Der Aushang bleibt nach der bestätigten Rückkehr in Ashbridge. Der Kupfertopf erhält beim ersten Blick ins Goblinlager eine Boden-ID. TAKE und Wiederbesuch erhalten diese ID.** Der Kandidat ist bereit für den unabhängigen Diffreview. Die persönliche Fortsetzung entscheidet der Nutzer anschließend. [Natürlicher Ausgangstest](../testrun_10b/archiv/user07-camp-openrouter-20261122/README.md) · [GPT-Gegenreview](../testrun_10b/archiv/user07-camp-openrouter-20261122/REVIEW_GPT.md)
 
 Abnahme vom 22. November 2026 auf `experiment/204-user07-board-dungeon-camp`. Elterncommit `4ff1500e4929c0604803a19d31fb6b52b348f209`, Korrekturcommit `52d9c04aaf9f32ae92f03a72e9686d4b662749c6`. Die Laufzeitänderung betrifft `src/v4/camp.js`, `src/v4/world.js` und `src/v4/commands.js` unter `avereth-engine/`.
 
 ## R1 · Welcher Ort trägt den Fund?
 
-Die Inspektion galt zuvor für alle Bodenmeldungen des Zugs. Der reguläre Objektpfad öffnet sich jetzt nach einer tatsächlich verarbeiteten freiwilligen Ankunft an einem separaten GO-Ziel. Der Holder muss am erreichten Ort liegen und der Bericht muss ihn durch Ortshalter oder Szenenreferenz dort verankern. Auf einer Anhöhe muss die Prosa den gemeldeten Gegenstand selbst ausdrücklich beim Beobachter verorten. [Kontrollierte Eingaben, Prosa und Extractorberichte](../testrun_10b/user07-camp-openrouter-20261122/gegenprobe.json)
+Die Inspektion galt zuvor für alle Bodenmeldungen des Zugs. Der reguläre Objektpfad öffnet sich jetzt nach einer tatsächlich verarbeiteten freiwilligen Ankunft an einem separaten GO-Ziel. Der Holder muss am erreichten Ort liegen und der Bericht muss ihn durch Ortshalter oder Szenenreferenz dort verankern. Auf einer Anhöhe muss die Prosa den gemeldeten Gegenstand selbst ausdrücklich beim Beobachter verorten. [Kontrollierte Eingaben, Prosa und Extractorberichte](../testrun_10b/archiv/user07-camp-openrouter-20261122/gegenprobe.json)
 
 | Fall | Auf `4ff1500` erneut beobachtet | Mit Korrektur |
 |---|---|---|
@@ -20,7 +20,7 @@ Die unbestätigte Reise und eine örtlich uneindeutige Meldung ergeben ebenfalls
 
 ## R2 · Was wurde gesehen, was genommen?
 
-Die unveränderten physischen Antworten zu den natürlichen Zügen 2–4 liefen offline durch Parser und Weltanwendung. „A cooking pot of dented copper, worth little but real“ ist die Beschreibung in der Prosa. „dented copper cooking pot“ lautet der Name im reparierten Extractorbericht. Zuvor scheiterte die Buchung an der Wortreihenfolge und am fehlenden Besitzfreiheitshinweis im selben Satz. Jetzt können die Namenswörter innerhalb einer zusammenhängenden Objektbeschreibung anders angeordnet sein. Bei einem örtlich belegten, verlassenen und zugänglichen Lager genügt für gewöhnliches Gebrauchsgut eine direkte Sichtbeschreibung. Hinweise auf Eigentum, Wert, Verschluss oder Verbergung begrenzen die Buchung. [Archivierte Modellantworten 4–14](../testrun_10b/user07-camp-openrouter-20261122/provider.jsonl.gz)
+Die unveränderten physischen Antworten zu den natürlichen Zügen 2–4 liefen offline durch Parser und Weltanwendung. „A cooking pot of dented copper, worth little but real“ ist die Beschreibung in der Prosa. „dented copper cooking pot“ lautet der Name im reparierten Extractorbericht. Zuvor scheiterte die Buchung an der Wortreihenfolge und am fehlenden Besitzfreiheitshinweis im selben Satz. Jetzt können die Namenswörter innerhalb einer zusammenhängenden Objektbeschreibung anders angeordnet sein. Bei einem örtlich belegten, verlassenen und zugänglichen Lager genügt für gewöhnliches Gebrauchsgut eine direkte Sichtbeschreibung. Hinweise auf Eigentum, Wert, Verschluss oder Verbergung begrenzen die Buchung. [Archivierte Modellantworten 4–14](../testrun_10b/archiv/user07-camp-openrouter-20261122/provider.jsonl.gz)
 
 | Zug | Nachgespielter Weltstand |
 |---|---|
@@ -28,7 +28,7 @@ Die unveränderten physischen Antworten zu den natürlichen Zügen 2–4 liefen 
 | 3 · Ausdrückliches TAKE | „dented cooking pot“ löst auf die bestehende ID auf. Die originale Extractorantwort meldet nochmals Neuanlage und Transfer. Die Eingabebuchung belegt die Mitnahme bereits. Die ursprüngliche ID liegt einmal beim PC, am Boden liegt keine Topfkopie. |
 | 4 · Wiederbesuch | Dieselbe ID bleibt beim PC. Die neuen Meldungen erzeugen keinen zweiten Campbestand. |
 
-**Warum beim Wiederbesuch `camp.free=false` gilt.** Der gespeicherte Vorzustand enthält als einziges aktives Hindernis oder Gefahrenmerkmal am Ort `gathering storm` vom Typ `hazard`. Alaric ist allein, die Liste ausstehender Kämpfe ist leer. Entfernt der Test ausschließlich den Sturm aus einer gefalteten Arbeitsspeicherkopie, wechselt `free` auf `true`. Die bestehende Gefahrenregel kann damit bei einem aktiven Wettermerkmal eine neue Bestandserfassung sperren. Die zuvor angelegte Boden-ID bleibt bei zulässigem Zugriff mitnehmbar. [Archivierte Reload-Welten](../testrun_10b/user07-camp-openrouter-20261122/reload-welten.json.gz)
+**Warum beim Wiederbesuch `camp.free=false` gilt.** Der gespeicherte Vorzustand enthält als einziges aktives Hindernis oder Gefahrenmerkmal am Ort `gathering storm` vom Typ `hazard`. Alaric ist allein, die Liste ausstehender Kämpfe ist leer. Entfernt der Test ausschließlich den Sturm aus einer gefalteten Arbeitsspeicherkopie, wechselt `free` auf `true`. Die bestehende Gefahrenregel kann damit bei einem aktiven Wettermerkmal eine neue Bestandserfassung sperren. Die zuvor angelegte Boden-ID bleibt bei zulässigem Zugriff mitnehmbar. [Archivierte Reload-Welten](../testrun_10b/archiv/user07-camp-openrouter-20261122/reload-welten.json.gz)
 
 ## Prüfungen
 

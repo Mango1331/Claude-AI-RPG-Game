@@ -39,5 +39,5 @@ Nicht bloß weitere Bugs suchen: Der bisherige Monsteraudit und Sols Gegenreview
 
 - [02 Designkanon §§1, 5, 7, 8](../02_DESIGN_KANON.md) · [03 aktueller Stand](../03_AKTUELLER_PROJEKTSTAND.md).
 - [06 aktueller 10B-Fachindex §4](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [historischer Monsteraudit und Sol-Gegenreview §§5–7](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0ebf4496f185a69ebac235a337ab9dd2e2b470c7/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md#5-monster--lore-audit-von-chatgpt--rekonstruierte-vollständige-analyse); insbesondere die vier Pfade M-A bis M-D und die getrennte Chase-Frage §8.
-- [F→E-Scaling GPT](../testrun_10b/scaling_gpt.md) · [Sols F→E-Entwurf](../testrun_10b/ENTWURF_F_RANG_PROGRESSION_UND_E_UEBERGANG.md) · [Balance-Beobachtungen](../testrun_10b/BALANCE_ERSTEINDRUECKE_XP_STARTWERTE_20261026.md).
+- [F→E-Scaling GPT](../testrun_10b/archiv/scaling_gpt.md) · [Sols F→E-Entwurf](../testrun_10b/archiv/ENTWURF_F_RANG_PROGRESSION_UND_E_UEBERGANG.md) · [Balance-Beobachtungen](../testrun_10b/archiv/BALANCE_ERSTEINDRUECKE_XP_STARTWERTE_20261026.md).
 - [Aktueller AI-RPG-Recherchevergleich](AI_RPG_RECHERCHE_20261028.md) als Hintergrund, **kein Ersatz** für diese eigene thematische Quellenrecherche.

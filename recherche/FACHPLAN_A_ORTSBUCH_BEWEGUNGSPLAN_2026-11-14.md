@@ -7,7 +7,7 @@
 **Grundlagen:**
 - [Grundanalyse](ORT_REISE_UMGEBUNG_ARCHITEKTUR_GRUNDANALYSE_2026-11-14.md) und [GPT-Gegenreview](ORT_REISE_UMGEBUNG_GPT_GEGENREVIEW_2026-11-14.md).
 - Frühere Architekturtexte: [Fable](ARCHITEKTUR_AUDIT_10B_FABLE.md), [Opus 5.5](ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md), [O1/O2](FACHPLAN_O1_O2_KAUSALITAET_UND_TEILBEWEGUNG.md), [Kanon](../02_DESIGN_KANON.md).
-- Gegenreviews der Batches [`.186`](../testrun_10b/npc-20261114-094810Z/GEGENREVIEW_OPUS.md) und [`.188`](../testrun_10b/npc-20261114-161005Z/GEGENREVIEW_OPUS.md).
+- Gegenreviews der Batches [`.186`](../testrun_10b/archiv/npc-20261114-094810Z/GEGENREVIEW_OPUS.md) und [`.188`](../testrun_10b/archiv/npc-20261114-161005Z/GEGENREVIEW_OPUS.md).
 
 **Nachweisgrade:**
 

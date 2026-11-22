@@ -127,7 +127,7 @@ Für alle gilt: Nur validierte Events werden kanonisch. Swipe, Replay und Save/R
 
 ### 4.8 Laufzeit – korrigierte Messbasis
 
-**Korrektur an der Claude-Gegenrecherche:** Die zunächst genannten ≈ 19 Token/s, 41–61 % Reasoning-Anteil und `cached_tokens` = 0 stammen aus V3/Pretest 5 (September) und sind **überholt**. GPTs Vorbehalt war berechtigt. Aktuelle Messung aus dem vorhandenen Lauf `testrun_10b/20261026-132758Z-current_test` (Build `.98`, GLM-5.3-Flash über lokalen Endpoint, `reasoning_effort` low, 73 Eingaben):
+**Korrektur an der Claude-Gegenrecherche:** Die zunächst genannten ≈ 19 Token/s, 41–61 % Reasoning-Anteil und `cached_tokens` = 0 stammen aus V3/Pretest 5 (September) und sind **überholt**. GPTs Vorbehalt war berechtigt. Aktuelle Messung aus dem vorhandenen Lauf `testrun_10b/archiv/20261026-132758Z-current_test` (Build `.98`, GLM-5.3-Flash über lokalen Endpoint, `reasoning_effort` low, 73 Eingaben):
 
 | | Wert |
 |---|---|

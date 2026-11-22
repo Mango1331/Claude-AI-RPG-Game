@@ -31,7 +31,7 @@ Offizielle ST-Grundlagen: [Prompt Manager](https://docs.sillytavern.app/usage/pr
 
 ## 3. Neuer Offlinebefund: wiederverwendbare Promptanfänge
 
-**Methode:** Die **17 vollständigen Requestblöcke von User05 Phase A** in `main/testrun_10b/user-20261118-011503/originals/completions.txt` wurden in die aufeinanderfolgenden physischen P/N/X/Board-Requests aufgeteilt. Verglichen wurde der *längste exakt übereinstimmende Zeichenanfang* (Longest Common Prefix) innerhalb derselben Phase. **Das sind Zeichen der formatierten Original-Logdarstellung, keine Provider-Token, keine HTTP-Bytes, kein simuliertes KV-Cache-Ergebnis.** Ermittelt wurden der gemeinsame Anfang aller Requests desselben Typs und seine erste Abweichung.
+**Methode:** Die **17 vollständigen Requestblöcke von User05 Phase A** in `main/testrun_10b/archiv/user-20261118-011503/originals/completions.txt` wurden in die aufeinanderfolgenden physischen P/N/X/Board-Requests aufgeteilt. Verglichen wurde der *längste exakt übereinstimmende Zeichenanfang* (Longest Common Prefix) innerhalb derselben Phase. **Das sind Zeichen der formatierten Original-Logdarstellung, keine Provider-Token, keine HTTP-Bytes, kein simuliertes KV-Cache-Ergebnis.** Ermittelt wurden der gemeinsame Anfang aller Requests desselben Typs und seine erste Abweichung.
 
 | Phase | Requests in A | Mittlere Länge des geloggten Requestblocks | Gemeinsamer Anfang aller |
 |---|---:|---:|---:|
@@ -61,7 +61,7 @@ Offizielle ST-Grundlagen: [Prompt Manager](https://docs.sillytavern.app/usage/pr
 | User05 C, `.202` | 6,847 s | 23,907 s | 38,613 s |
 | User04, `.159` | 3,866 s | 14,295 s | 8,498 s |
 
-User05 A–C: **64 physische Requests**, **772.826 Prompttokens + 17.785 Completiontokens**, jedes mit **gemeldeten 0 Cachetokens**. User04: im umfassenderen Serverlog **124 Requests**, **1.520.007 Prompttokens**, **825.898 gemeldete Cachetokens**; die historische Zeitmediane stammen aus den finalen Chatrecords und sind **nicht** als gleiche Stichprobe wie das Serverlog zu behandeln. Quellen: [User05-Gegenreview](GEGENREVIEW_USER05_ACTION_HUD_202_FIX_QOL_2026-11-18.md), [User04-Review](../testrun_10b/user-20261106-072640/REVIEW.md), [`.203`-Abnahme](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/5e5b8272412b51b91f75b6e37c5b94d95c9fae11/avereth-engine/docs/PATCH_USER05_FIX_QOL_203.md).
+User05 A–C: **64 physische Requests**, **772.826 Prompttokens + 17.785 Completiontokens**, jedes mit **gemeldeten 0 Cachetokens**. User04: im umfassenderen Serverlog **124 Requests**, **1.520.007 Prompttokens**, **825.898 gemeldete Cachetokens**; die historische Zeitmediane stammen aus den finalen Chatrecords und sind **nicht** als gleiche Stichprobe wie das Serverlog zu behandeln. Quellen: [User05-Gegenreview](GEGENREVIEW_USER05_ACTION_HUD_202_FIX_QOL_2026-11-18.md), [User04-Review](../testrun_10b/archiv/user-20261106-072640/REVIEW.md), [`.203`-Abnahme](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/5e5b8272412b51b91f75b6e37c5b94d95c9fae11/avereth-engine/docs/PATCH_USER05_FIX_QOL_203.md).
 
 **Zwei Uhren statt einer „Antwortzeit“:**
 1. `t_first_prose`: ab tatsächlichem Senden bis zur ersten für den Spieler sichtbaren Narration (nicht bloß bis zum HTTP-Header).
@@ -133,7 +133,7 @@ Mit vorhandenen Original-Prompts lässt sich bereits **ohne Provider** prüfen, 
 - [User05-Gegenreview A–C](GEGENREVIEW_USER05_ACTION_HUD_202_FIX_QOL_2026-11-18.md)
 - [Historisches Prompt-/Architekturaudit](ARCHITEKTUR_AUDIT_REDESIGN_ENTSCHEIDUNG_2026-11-16.md)
 - [Bisherige AI-RPG-Recherche](AI_RPG_RECHERCHE_20261028.md)
-- [User05-Originalrequest Phase A](../testrun_10b/user-20261118-011503/originals/completions.txt)
+- [User05-Originalrequest Phase A](../testrun_10b/archiv/user-20261118-011503/originals/completions.txt)
 - [`.203`-Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/5e5b8272412b51b91f75b6e37c5b94d95c9fae11/avereth-engine/docs/PATCH_USER05_FIX_QOL_203.md)
 - [`.203`-Narratorvertrag](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/5e5b8272412b51b91f75b6e37c5b94d95c9fae11/avereth-engine/content/narrator/Avereth_Narrator_Contract_v4.txt)
 - [`.203`-Preset](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/5e5b8272412b51b91f75b6e37c5b94d95c9fae11/avereth-engine/presets/Avereth%20Narrator%20V4.json)

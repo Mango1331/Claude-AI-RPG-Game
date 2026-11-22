@@ -4,7 +4,7 @@
 
 Der Nutzer hat die Präzisierung der Idee und diesen technischen Fachplan beauftragt. **Das ist keine Implementierungsfreigabe und kein Beschluss der hier empfohlenen neuen Spielregeln.** Die aktuelle .146-Abnahme und der nächste natürliche Batch bleiben bestehen. Vor Umsetzung die offenen Entscheidungen in §10 bestätigen und den tatsächlichen Produkt-HEAD prüfen.
 
-[Ideenkatalog](../04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md#handel--engine-shop-fallback) · [aktueller Stand](../03_AKTUELLER_PROJEKTSTAND.md) · [Batch21](../testrun_10b/batch-20261101-152756Z/REVIEW.md) · [geprüfter Produktcode](https://github.com/Mango1331/Claude-AI-RPG-Game/tree/9136f8ff664ad12e29fc74190f5d8a0909e3d4eb/avereth-engine).
+[Ideenkatalog](../04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md) · [aktueller Stand](../03_AKTUELLER_PROJEKTSTAND.md) · [Batch21](../testrun_10b/archiv/batch-20261101-152756Z/REVIEW.md) · [geprüfter Produktcode](https://github.com/Mango1331/Claude-AI-RPG-Game/tree/9136f8ff664ad12e29fc74190f5d8a0909e3d4eb/avereth-engine).
 
 ## 1. Ziel und bewusste Vereinfachung
 

@@ -16,7 +16,7 @@ const files = [
 ];
 const rows = [];
 for (const [corpus, run, name] of files) {
-    const bytes = fs.readFileSync(path.join(main, 'testrun_10b', 'user-' + run, 'originals', name));
+    const bytes = fs.readFileSync(path.join(main, 'testrun_10b', 'archiv', 'user-' + run, 'originals', name));
     const text = name.endsWith('.gz') ? gunzipSync(bytes).toString('utf16le') : bytes.toString('utf8');
     const { pairs, errors } = parseServerLog(text.replace(/^\uFEFF/, '').replaceAll('\r\n', '\n'));
     assert.deepEqual(errors, []);

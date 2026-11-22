@@ -5,9 +5,9 @@
 **Prüfstand:** Produktbranch `claude/c-planner-prototype-2026-10-02-gpt-c666`, HEAD [`efcad4c`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/efcad4c02f4d2a47ab5f777d6cf6581979e36e4e) (Build `.184`). Der Batch lief auf `.183` (`86465eb`). Zwischen `.183` und `.184` ändern sich nur `loot.js`, `delta.js` und `monsters.json`; der Zahlungscode ist identisch. `commands.js`, `trade.js`, `interpret.js`, `runtime.js`, `native_pay.js` und `display.js` sind seit `.179` unverändert. Zeilenangaben beziehen sich auf `efcad4c` in `avereth-engine/`.
 
 **Quellen:**
-- das vom Nutzer bereitgestellte Gegenreview-Paket `npc-batch-20261113-135417Z-CLAUDE-GEGENREVIEW.zip`; alle 32 Dateiprüfsummen aus `HASHES.json` und die drei `chat.jsonl`-Werte aus dem [Quellenmanifest](../testrun_10b/npc-20261113-135417Z/SOURCE_MANIFEST.md) stimmen;
-- zum Vergleich die Originale von [Pilot 01 (`.174`)](../testrun_10b/npc-20261109-160250Z/REVIEW.md) und vom [Dreierbatch `.179`](../testrun_10b/npc-20261112-220625Z/REVIEW.md);
-- [GPT-Review `.183` §4/§5](../testrun_10b/npc-20261113-135417Z/REVIEW.md), [Architekturaudit §13](ARCHITEKTUR_AUDIT_10B_FABLE.md), [Opus-Gegenreview §5](ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md) (P1a–P1f), [Zahlungsaudit `.141`](../patch_plans_10b/PAYMENT_SYSTEM_AUDIT.md), Patchnotes `.144` und `.180`.
+- das vom Nutzer bereitgestellte Gegenreview-Paket `npc-batch-20261113-135417Z-CLAUDE-GEGENREVIEW.zip`; alle 32 Dateiprüfsummen aus `HASHES.json` und die drei `chat.jsonl`-Werte aus dem [Quellenmanifest](../testrun_10b/archiv/npc-20261113-135417Z/SOURCE_MANIFEST.md) stimmen;
+- zum Vergleich die Originale von [Pilot 01 (`.174`)](../testrun_10b/archiv/npc-20261109-160250Z/REVIEW.md) und vom [Dreierbatch `.179`](../testrun_10b/archiv/npc-20261112-220625Z/REVIEW.md);
+- [GPT-Review `.183` §4/§5](../testrun_10b/archiv/npc-20261113-135417Z/REVIEW.md), [Architekturaudit §13](ARCHITEKTUR_AUDIT_10B_FABLE.md), [Opus-Gegenreview §5](ARCHITEKTUR_GEGENREVIEW_10B_OPUS55.md) (P1a–P1f), [Zahlungsaudit `.141`](../patch_plans_10b/PAYMENT_SYSTEM_AUDIT.md), Patchnotes `.144` und `.180`.
 
 **Nachweisgrade:** **[C]** am Code gelesen · **[D]** aus den Originalrecords · **[R]** reine Prüffunktion mit dem Originalwortlaut nachgerechnet (`payArgument`, `playerPrice`; kein Zustand, keine Events, keine Testsuite) · **[P]** aus Code und Daten abgeleitet, nicht ausgeführt.
 
@@ -155,7 +155,7 @@ Alle sechs sind am HEAD **nicht umgesetzt**; die betroffenen Dateien sind seit `
 
 **Zu korrigieren ist die Erwartung an das Paket.** P1a–P1f verbessern die Belegprüfung zwischen Planner und Handler. Keiner der Punkte hätte Rogue T38–T43 oder Mage T24 behoben: Dort war der Plan richtig und der Beleg geprüft. Das P1-Paket ist deshalb weiter sinnvoll, aber nicht „der Zahlungsfix“.
 
-**Zu `.180`:** Der Patch hat die beiden Originalfälle geschlossen, indem er die Verbmuster erweitert hat. Der im [Batchreview `.179` §8.4](../testrun_10b/npc-20261112-220625Z/REVIEW.md) vorgeschlagene strukturelle Weg wurde mit Verweis auf GPT §9 verworfen. Auf `.183` ist dieselbe Klasse in Mage T7 und Rogue T42/T43 mit drei neuen Formulierungen wieder aufgetreten. Das spricht dafür, die Frage neu zu entscheiden (§7 E-2).
+**Zu `.180`:** Der Patch hat die beiden Originalfälle geschlossen, indem er die Verbmuster erweitert hat. Der im [Batchreview `.179` §8.4](../testrun_10b/archiv/npc-20261112-220625Z/REVIEW.md) vorgeschlagene strukturelle Weg wurde mit Verweis auf GPT §9 verworfen. Auf `.183` ist dieselbe Klasse in Mage T7 und Rogue T42/T43 mit drei neuen Formulierungen wieder aufgetreten. Das spricht dafür, die Frage neu zu entscheiden (§7 E-2).
 
 ---
 

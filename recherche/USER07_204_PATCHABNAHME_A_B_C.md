@@ -2,7 +2,7 @@
 
 Basis `b51e850bfa233b32f10ba01c563002ab26061c85`. Technischer Branch `experiment/204-user07-board-dungeon-camp`. Die angegebenen ST-Zeiten stammen ausschließlich aus der markierten 1.19.0-Sandbox mit lokalem Mock.
 
-**Ergebnis für den Gegenreview.** Auf dem sauberen Endcommit `4ff1500e4929c0604803a19d31fb6b52b348f209` bestanden 3.422 Node-Tests, 2.235 exakte Replayvergleiche, 366 Standard- und 372 Failsoft-Prüfungen. Bei I6 entfällt ein belegter Boardrequest. Offen sind die natürliche Extractor-Repairrate, der Abruf der I31-Spuren im Folgezug und die Erkennungsrate frei formulierter Campausstattung. [Fachpläne und Gegenreview](../patch_plans_10b/GEGENREVIEW_USER07_FACHPLAENE_A_B_C_GPT_2026-11-21.md) · [User07-Originale und Auswertungen](../testrun_10b/user-20261121-171341-204/README.md)
+**Ergebnis für den Gegenreview.** Auf dem sauberen Endcommit `4ff1500e4929c0604803a19d31fb6b52b348f209` bestanden 3.422 Node-Tests, 2.235 exakte Replayvergleiche, 366 Standard- und 372 Failsoft-Prüfungen. Bei I6 entfällt ein belegter Boardrequest. Offen sind die natürliche Extractor-Repairrate, der Abruf der I31-Spuren im Folgezug und die Erkennungsrate frei formulierter Campausstattung. [Fachpläne und Gegenreview](../patch_plans_10b/GEGENREVIEW_USER07_FACHPLAENE_A_B_C_GPT_2026-11-21.md) · [User07-Originale und Auswertungen](../testrun_10b/archiv/user-20261121-171341-204/README.md)
 
 ## A · Tagesboard und HUD
 

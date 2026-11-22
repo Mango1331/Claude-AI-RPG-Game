@@ -501,7 +501,7 @@ Zeilenentwürfe (`estimateTokens`): THE ROAD heute 103; PULSE Reise mit `danger`
 ## 11. Reproduktion
 Produkt-Worktree auf `16e7358` (`<eng>` = deren `avereth-engine`).
 ```bash
-ENG=<eng> node patch_plans_10b/pulse_probes/budget160.mjs testrun_10b/user-20261106-072640/originals/chat.jsonl.gz
+ENG=<eng> node patch_plans_10b/pulse_probes/budget160.mjs testrun_10b/archiv/user-20261106-072640/originals/chat.jsonl.gz
 ```
 ```bash
 ENG=<eng> node patch_plans_10b/pulse_probes/pulse_v2_sim.mjs

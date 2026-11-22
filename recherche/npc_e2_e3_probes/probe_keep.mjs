@@ -7,7 +7,7 @@ const { foldChat } = await import(`${E}/src/host.js`);
 const { replyTurnV4 } = await import(`${E}/src/v4/turn.js`);
 const { loadProductContent } = await import(`${E}/tests/helpers.js`);
 const content = await loadProductContent();
-const lines = zlib.gunzipSync(fs.readFileSync(`${M}/testrun_10b/user-20261106-072640/originals/chat.jsonl.gz`)).toString('utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
+const lines = zlib.gunzipSync(fs.readFileSync(`${M}/testrun_10b/archiv/user-20261106-072640/originals/chat.jsonl.gz`)).toString('utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
 const chat = lines.slice(1);
 const s = foldChat(structuredClone(chat), 72).state; // after the player's I71, before the reply I72
 const hall = 'loc.alderwatch.guild_hall';

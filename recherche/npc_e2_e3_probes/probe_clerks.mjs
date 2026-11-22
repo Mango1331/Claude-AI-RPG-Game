@@ -2,7 +2,7 @@
 import fs from 'node:fs'; import zlib from 'node:zlib';
 const E = process.env.ENG, M = process.env.MAIN;
 const { foldChat, rec } = await import(`${E}/src/host.js`);
-const lines = zlib.gunzipSync(fs.readFileSync(`${M}/testrun_10b/user-20261106-072640/originals/chat.jsonl.gz`)).toString('utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
+const lines = zlib.gunzipSync(fs.readFileSync(`${M}/testrun_10b/archiv/user-20261106-072640/originals/chat.jsonl.gz`)).toString('utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
 const chat = lines.slice(1);
 const s = foldChat(chat).state;
 for (const id of ['npc.npcguild_clerks', 'npc.npcnpcwiry_woman', 'npc.npcbench_crossbowman']) console.log(id, 'knows:', Object.keys(s.knowledge[id] || {}).join(', '));

@@ -4,6 +4,7 @@ Für Zahlen nach Build, Architektur und Messpunkt gibt es den [Messvergleich](..
 
 | Thema | Untersuchung | Gegenprüfung oder Daten |
 |---|---|---|
+| Dungeon-Eintritt und Boardanker nach User08 | [Abnahme des .206-Kandidaten](USER08_206_DUNGEON_BOARD_ABNAHME.md) | [User08-Gegenreview](../testrun_10b/user-20261122-161817-205/CODEX_GEGENREVIEW.md) |
 | Campfunde nach User07 | [Abnahme der Orts- und Objektkorrektur](USER07_204_C_KORREKTUR_ABNAHME.md) | [Natürlicher Camp-Gegencheck](../testrun_10b/archiv/user07-camp-openrouter-20261122/README.md) · [Diffreview](../patch_plans_10b/REVIEW_USER07_204_C_KORREKTUR_GPT_2026-11-22.md) |
 | Kontext und Tokenverbrauch | [Forschungsfrage T7](USER07_T7_PROMPTS_KONTEXT_UND_TOKENVERBRAUCH.md) | [Gemessene Prompts in User07](../testrun_10b/archiv/user-20261121-171341-204/CODEX_GEGENREVIEW.md) |
 | Natürliche Featherless-Vergleiche | [Gepaarter A/B-Spieltest](AVERETH_203_NATUERLICHER_FEATHERLESS_AB_2026-11-19.md) | [Unabhängiger Gegenreview](GEGENREVIEW_203_NATUERLICHER_FEATHERLESS_AB_GPT_2026-11-19.md) |

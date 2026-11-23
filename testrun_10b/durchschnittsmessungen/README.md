@@ -1,18 +1,19 @@
 # Durchschnittsmessungen der optimierten 10B-Architektur
 
-Hier stehen die Vergleichsreihen ab der Integration der Performance-Änderungen in `.204` (`b51e850`) einschließlich des neuen persönlichen `.205`-Runs. Die frühere Architektur und die gepaarten Vorher-/Nachher-Versuche bleiben getrennt im [Messarchiv](archiv/README.md), damit Mittelwerte, Mediane, Messpunkte und Stichprobengrößen nicht verwechselt werden. [Runverzeichnis](../README.md)
+Hier stehen die Vergleichsreihen ab der Integration der Performance-Änderungen in `.204` (`b51e850`) einschließlich der persönlichen `.205`- und `.207`-Runs. Die frühere Architektur und die gepaarten Vorher-/Nachher-Versuche bleiben getrennt im [Messarchiv](archiv/README.md), damit Mittelwerte, Mediane, Messpunkte und Stichprobengrößen nicht verwechselt werden. [Runverzeichnis](../README.md)
 
 ## Persönlicher Spieltest auf Featherless
 
-Zeit in Sekunden pro erzähltem Zug, jeweils **arithmetisches Mittel / Median**. Der Host misst vom ST-Generierungsstart bis zum Erzählende. Für die Untergrenze wird pro Zug die Dauer des zugehörigen Extractorjobs einschließlich Repairs addiert. Die tatsächliche Freigabe nach dem Speichern wurde im persönlichen Lauf nicht aufgezeichnet. Für User07 ist trotz integrierter Streaming-Unterstützung `stream:false` protokolliert.
+Zeit in Sekunden pro erzähltem Zug, jeweils **arithmetisches Mittel / Median**. Der Host misst vom ST-Generierungsstart bis zum Erzählende. Für die Untergrenze wird pro Zug die Dauer des zugehörigen Extractorjobs einschließlich Repairs addiert. Die tatsächliche Freigabe nach dem Speichern wurde im persönlichen Lauf nicht aufgezeichnet. Bei User07 und User09 ist trotz integrierter Streaming-Unterstützung `stream:false` protokolliert.
 
 | Build und Messfenster | Erzählzüge | Host bis Erzählende | Host + Extractor, Untergrenze | Quelle |
 |---|---:|---:|---:|---|
 | .204 User07, Phase 1 mit erstem Questboard | 4 | 114,66 / 97,81 | 132,29 / 113,18 | [Originalchat Phase 1](../archiv/user-20261121-171341-204/ORIGINAL_CHAT.jsonl) |
 | .204 User07, nur Zuwachs in Phase 2 | 22 | 40,12 / 33,46 | 73,92 / 62,61 | [Auswertung Phase 2](../archiv/user-20261121-171341-204/REVIEW_GPT_PHASE2_2026-11-21.md) |
 | **.205 User08, neuer persönlicher Mage-Run** | **27** | **37,78 / 33,90** | **56,68 / 52,65** | [Originaldaten und Bericht](../user-20261122-161817-205/README.md) · [Messpunkte pro Zug](../user-20261122-161817-205/MESSWERTE_USER08_205.json) |
+| **.207 User09, neuer kurzer Mage-Run** | **11** | **40,13 / 32,97** | **62,49 / 50,59** | [GPT-Erstreview](../user-20261123-042623-207/REVIEW.md) · [Einzelwerte](../user-20261123-042623-207/MESSWERTE_USER09_207.json) |
 
-Die zwei .204-User07-Fenster gehören zum selben Chat; Phase 2 umfasst die 22 zusätzlichen Antworten nach den ersten vier. User08 ist **eine andere Kampagne mit anderen Szenen**, kein gepaarter A/B-Vergleich. Im .205-Lauf benötigte das Questboard erneut zwei physische Requests (115,845 s), während alle 27 gespeicherten Extractorabschlüsse `repaired:false` melden. Stream:false und null gemeldete Cachetokens sind im physischen Completion-Log belegt. **Auch bei User08 wurde die tatsächlich sichere Folgeeingabe nach Save nicht gemessen.** Die älteren .202/.203-Serien stehen im [Messarchiv](archiv/README.md#persönliche-spieltests-vor-der-integration).
+User09 endete nach 11 Erzählzügen, enthält 3 Extractor- und 1 Planner-Reparatur, 36 physische Request-/Responsepaare und einen einzigen Boardrequest von ca. 61 s. Die User09-Originale sind derzeit nur als Chat-Uploads vorhanden (SHA im Manifest), nicht auf GitHub archiviert. Die zwei .204-User07-Fenster gehören zum selben Chat; Phase 2 umfasst die 22 zusätzlichen Antworten nach den ersten vier. User08 ist **eine andere Kampagne mit anderen Szenen**, kein gepaarter A/B-Vergleich. Im .205-Lauf benötigte das Questboard erneut zwei physische Requests (115,845 s), während alle 27 gespeicherten Extractorabschlüsse `repaired:false` melden. Stream:false und null gemeldete Cachetokens sind im physischen Completion-Log belegt. **Auch bei User08 wurde die tatsächlich sichere Folgeeingabe nach Save nicht gemessen.** Die älteren .202/.203-Serien stehen im [Messarchiv](archiv/README.md#persönliche-spieltests-vor-der-integration).
 
 ## Natürliche Vergleichsläufe auf OpenRouter
 

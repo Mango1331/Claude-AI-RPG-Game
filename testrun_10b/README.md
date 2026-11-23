@@ -1,5 +1,9 @@
 # 10B-Spieltests
 
+## User09 · Persönlicher Kurztest auf .207 (GPT-Erstreview)
+
+[Erstreview](user-20261123-042623-207/REVIEW.md) · [Messpunkte](user-20261123-042623-207/MESSWERTE_USER09_207.json) · [Quellenmanifest](user-20261123-042623-207/SOURCE_MANIFEST.md). 11 Erzählzüge, 36 physische Request-/Responsepaare, zwei echte aber im Systempanel nicht sichtbare HP-Verluste und ein Abhängigkeitsfehler nach gescheiterter Brückenüberquerung. Originaluploads noch nicht in Git archiviert, unabhängiger Codex-Gegenreview offen.
+
 ## User08 · Neuer persönlicher Run auf .205 (ausgewertet)
 
 [Runverzeichnis mit allen vier Originaldateien, Quellenmanifest und Review](user-20261122-161817-205/README.md) · [unabhängige Auswertung](user-20261122-161817-205/REVIEW.md) · [pro Zug nachprüfbare Messdaten](user-20261122-161817-205/MESSWERTE_USER08_205.json). Mage Alaric, 27 erzählte Spielzüge, abgeschlossen am 22.11.2026. Der große Completion-Log ist in sechs **binär ohne Änderung zusammensetzbare** Teile zerlegt und mit Prüfsummen dokumentiert. Neuer technischer Teststand `.205` bleibt unverändert. [Installation](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/a69daeeed613850919f16eb810cc2c150c8aafd0/avereth-engine/docs/USER08_205_PLAYTEST.md).

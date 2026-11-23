@@ -1,6 +1,6 @@
 # Avereth Engine – aktueller Projektstand
 
-**23. November 2026. Der unabhängige GPT-Diffreview empfiehlt GO für einen begrenzten persönlichen Spieltest auf `.207` bei `609380b3`; über die Installation entscheidet der Nutzer.** [Technische Abnahme](recherche/ABNAHME_207_HANDELS_HUD.md) · [GPT-Diffreview](patch_plans_10b/REVIEW_207_HANDELS_HUD_GPT_2026-11-23.md)
+**23. November 2026. Der erste persönliche Kurztest auf `.207` ist abgeschlossen; der GPT-Erstreview nennt zwei konkrete neue Befunde vor dem nächsten längeren Test.** [User09-Review](testrun_10b/user-20261123-042623-207/REVIEW.md) · [Messdaten](testrun_10b/user-20261123-042623-207/MESSWERTE_USER09_207.json). Der vorherige Diffreview hatte GO zum Test auf `609380b3` erteilt; nach den neuen Originalbelegen ist ein gezielter Review der beiden Hindernisfälle angezeigt. [Technische Abnahme](recherche/ABNAHME_207_HANDELS_HUD.md) · [GPT-Diffreview](patch_plans_10b/REVIEW_207_HANDELS_HUD_GPT_2026-11-23.md)
 
 Für .206 gilt weiterhin das begrenzte GO des vorangegangenen Diffreviews. Über die persönliche Installation entscheidet der Nutzer. Der persönliche User08-Lauf mit 27 Erzählzügen fand auf `.205` statt. [Abnahme](recherche/USER08_206_DUNGEON_BOARD_ABNAHME.md) · [Unabhängiger GPT-Diffreview](patch_plans_10b/REVIEW_USER08_206_DUNGEON_BOARD_GPT_2026-11-23.md) · [Originale und Reviews](testrun_10b/user-20261122-161817-205/README.md) · [Zeitvergleich](testrun_10b/durchschnittsmessungen/README.md)
 
@@ -13,6 +13,10 @@ Für .206 gilt weiterhin das begrenzte GO des vorangegangenen Diffreviews. Über
 | Eingefrorenes Produkt `.200` | `claude/c-planner-prototype-2026-10-02-gpt-c666` | [`0cd1480`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b) |
 
 Der Testbuild enthält die Änderungen an Questboard und HUD, Gildenroutine und Dungeon-Erzählführung sowie Campfunden und ihrer Ortsbindung. Die technische Abnahme mit 3.425 bestandenen Node-Tests, 2.235 Replayfällen ohne neue Abweichung und 32/32 isolierten Camp-Mockprüfungen gehört zu `52d9c04`. Der unabhängige Diffreview gab diesen Stand für den persönlichen Test frei. Für `.205` wurden darauf aufbauend die Buildkennung und die Testdokumentation aktualisiert. Die Narrator-Vertragsrevision bleibt `.204`. [Abnahme](recherche/USER07_204_C_KORREKTUR_ABNAHME.md) · [Diffreview](patch_plans_10b/REVIEW_USER07_204_C_KORREKTUR_GPT_2026-11-22.md)
+
+## User09 – offene Befunde aus dem Kurztest
+
+Im Test wurden zwei echte Hindernisschäden (14 und 8 HP) gebucht, ohne dass die unmittelbare Systemkarte einen HP-/Damagehinweis zeigte; das korrigierte Nutzerfeedback fordert eine sichtbare Engine-Schadenszeile wie im Combat. Eine misslungene Brückenprobe mit `success:false` lieferte `status:resolved` und erfüllte damit die `needs`-Bedingung des nachfolgenden GO; der Folgeschritt gelangte fälschlich bis zum Dungeon. Das ist vor dem nächsten längeren Lauf unabhängig gegenzuprüfen. Das neue Handels-HUD blieb im User09-Kurztest unbenutzt. [Erstreview](testrun_10b/user-20261123-042623-207/REVIEW.md). Die Originaluploads sind noch nicht bytegleich im Git-Archiv abgelegt; kein Codepatch freigegeben.
 
 ## User08 – Befunde und nächste Entscheidung
 

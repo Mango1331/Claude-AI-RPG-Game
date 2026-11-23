@@ -1,0 +1,173 @@
+{
+  "build": "4.3.0-c.6.6.207",
+  "experiment_commit": "609380b308d89d14c289e9ca1c4e26ed29174789",
+  "source": "personal User09 2026-11-23 04:26 CET",
+  "window": "gen_started → gen_finished host narration, plus subsequent extraction.ms as lower bound; no confirmed host safe-send timestamp",
+  "narrated_turns": 11,
+  "host": {
+    "mean_s": 40.129,
+    "median_s": 32.973
+  },
+  "extractor": {
+    "mean_s": 22.358,
+    "median_s": 24.508
+  },
+  "host_plus_extractor": {
+    "mean_s": 62.488,
+    "median_s": 50.588
+  },
+  "physical_requests": {
+    "total": 36,
+    "responses": 36,
+    "stream_false": 36,
+    "prompt_tokens": 446632,
+    "completion_tokens": 10075,
+    "total_tokens": 456707,
+    "cached_tokens": 0,
+    "by_role": {
+      "planner": {
+        "requests": 10,
+        "prompt_tokens": 125112,
+        "completion_tokens": 723
+      },
+      "board": {
+        "requests": 1,
+        "prompt_tokens": 2524,
+        "completion_tokens": 1117
+      },
+      "narrator": {
+        "requests": 11,
+        "prompt_tokens": 121890,
+        "completion_tokens": 4477
+      },
+      "extractor": {
+        "requests": 14,
+        "prompt_tokens": 197106,
+        "completion_tokens": 3758
+      }
+    }
+  },
+  "narrated": [
+    {
+      "turn": 3,
+      "host_s": 82.137,
+      "extract_s": 16.198,
+      "host_plus_extractor_lower_bound_s": 98.335,
+      "planner_ms": 50094,
+      "board_ms": 0,
+      "planner_repaired": false,
+      "extractor_repaired": false,
+      "hud_planner_bypass": false
+    },
+    {
+      "turn": 4,
+      "host_s": 21.74,
+      "extract_s": 24.508,
+      "host_plus_extractor_lower_bound_s": 46.248,
+      "planner_ms": 3982,
+      "board_ms": 0,
+      "planner_repaired": false,
+      "extractor_repaired": true,
+      "hud_planner_bypass": false
+    },
+    {
+      "turn": 5,
+      "host_s": 34.655,
+      "extract_s": 6.285,
+      "host_plus_extractor_lower_bound_s": 40.94,
+      "planner_ms": 11898,
+      "board_ms": 0,
+      "planner_repaired": true,
+      "extractor_repaired": false,
+      "hud_planner_bypass": false
+    },
+    {
+      "turn": 6,
+      "host_s": 92.318,
+      "extract_s": 4.205,
+      "host_plus_extractor_lower_bound_s": 96.523,
+      "planner_ms": 6675,
+      "board_ms": 61000,
+      "planner_repaired": false,
+      "extractor_repaired": false,
+      "hud_planner_bypass": false
+    },
+    {
+      "turn": 7,
+      "host_s": 20.731,
+      "extract_s": 25.719,
+      "host_plus_extractor_lower_bound_s": 46.45,
+      "planner_ms": 0,
+      "board_ms": 0,
+      "planner_repaired": false,
+      "extractor_repaired": true,
+      "hud_planner_bypass": true
+    },
+    {
+      "turn": 8,
+      "host_s": 30.886,
+      "extract_s": 45.767,
+      "host_plus_extractor_lower_bound_s": 76.653,
+      "planner_ms": 4504,
+      "board_ms": 0,
+      "planner_repaired": false,
+      "extractor_repaired": false,
+      "hud_planner_bypass": false
+    },
+    {
+      "turn": 9,
+      "host_s": 31.054,
+      "extract_s": 6.933,
+      "host_plus_extractor_lower_bound_s": 37.987,
+      "planner_ms": 6842,
+      "board_ms": 0,
+      "planner_repaired": false,
+      "extractor_repaired": false,
+      "hud_planner_bypass": false
+    },
+    {
+      "turn": 10,
+      "host_s": 36.275,
+      "extract_s": 12.614,
+      "host_plus_extractor_lower_bound_s": 48.889,
+      "planner_ms": 10494,
+      "board_ms": 0,
+      "planner_repaired": false,
+      "extractor_repaired": false,
+      "hud_planner_bypass": false
+    },
+    {
+      "turn": 11,
+      "host_s": 37.61,
+      "extract_s": 36.41,
+      "host_plus_extractor_lower_bound_s": 74.02,
+      "planner_ms": 7631,
+      "board_ms": 0,
+      "planner_repaired": false,
+      "extractor_repaired": true,
+      "hud_planner_bypass": false
+    },
+    {
+      "turn": 12,
+      "host_s": 32.973,
+      "extract_s": 37.757,
+      "host_plus_extractor_lower_bound_s": 70.73,
+      "planner_ms": 4839,
+      "board_ms": 0,
+      "planner_repaired": false,
+      "extractor_repaired": false,
+      "hud_planner_bypass": false
+    },
+    {
+      "turn": 13,
+      "host_s": 21.041,
+      "extract_s": 29.547,
+      "host_plus_extractor_lower_bound_s": 50.588,
+      "planner_ms": 0,
+      "board_ms": 0,
+      "planner_repaired": false,
+      "extractor_repaired": false,
+      "hud_planner_bypass": true
+    }
+  ]
+}

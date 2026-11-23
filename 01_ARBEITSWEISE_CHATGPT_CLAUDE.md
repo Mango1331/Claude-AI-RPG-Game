@@ -13,7 +13,7 @@ Zuständigkeiten, Testfolge und dauerhafte Freigaben für die Arbeit an Avereth.
 
 ## Einstieg eines neuen Chats
 
-1. Auf `main` den [Projektstand](03_AKTUELLER_PROJEKTSTAND.md) lesen und die dort genannte Branch-/Commitkombination für den Auftrag prüfen. Bei einem Spieltest die Originale im [Runindex](testrun_10b/README.md) öffnen.
+1. Auf `main` den [Projektstand](03_AKTUELLER_PROJEKTSTAND.md) als **Meilensteinübersicht** lesen und die für den Auftrag relevante Branch-/Commitkombination **anschließend am tatsächlichen Remote-HEAD verifizieren**; der Meilensteintext muss nicht jeden Zwischencommit enthalten. Bei einem Spieltest die Originale im [Runindex](testrun_10b/README.md) öffnen.
 2. Aufgabe eingrenzen: **02** bei verbindlichen Spielregeln, **07** bei noch geplanten Features, **06** als Fachquellenindex. Originalarchive und technische Patchnotes nur zum konkreten Fall lesen.
 3. Codebehauptungen am **aktuellen Produkt-HEAD** oder bei Experimenten gezielt am Modellbranch kontrollieren, nicht an alten Plan-Zeilennummern. Nach Kontextwechsel den letzten Produktdiff prüfen; identische Quellen nicht unnötig neu auslesen.
 4. Dokumente klar als **aktuell / geplant / historischer Befund / nicht freigegeben** markieren. Ein altes Modellprotokoll ersetzt keinen neuen natürlichen Run.
@@ -42,14 +42,16 @@ Zuständigkeiten, Testfolge und dauerhafte Freigaben für die Arbeit an Avereth.
 | Einziger Pflegeort | Inhalt |
 |---|---|
 | **02** | Verbindliche Spiel-/Kanonentscheidungen, ausdrückliche geplante Regeländerungen |
-| **03** | Letzter **verifizierter** Produktbuild, neue natürliche Ergebnisse, unmittelbare Prioritäten, offene Entscheidungen |
+| **03** | **Meilensteinübersicht:** zuletzt ausdrücklich bestätigte Entwicklungs-/Produktreferenz, technische Freigabe und zentrale Quellenlinks. **Keine einzelnen neuen Usertests, Runergebnisse, Tokenmessungen oder laufenden Zwischencommits einpflegen.** Nur bei wesentlichem Architektur-/Release-Meilenstein oder gebündelt nach ca. zehn neuen Usertests aktualisieren; vor Codearbeit tatsächlichen Remote-HEAD gesondert prüfen. |
 | **07** | Featurefamilien, Reihenfolge, Abhängigkeiten, aufgeschobene Optionen |
 | **04** | Neue Ideen ohne beschlossene Roadmap-Priorität |
 | **08** | Historisches Spielfluss-Zielbild und zugehörige Abschlussanalyse |
 | **06** | Links zu Fachplänen, unabhängigen Architektur-/NPC-/PULSE-Prüfungen und Produktnachweisen |
-| **Pro-Run-Ordner** | Originalreview, Quellenmanifest, Gameplayfeedback, gezielte Folgeprüfungen |
-| **Produkt- und Testbranch** | Technische Patchnotes und ausführbare Fassung des in 03 genannten Builds |
+| **`testrun_10b/README.md` und Pro-Run-Ordner** | **Laufend zu pflegender Usertestindex**; pro Run eigene Originale, Quellenmanifest, subjektives Gameplayfeedback, Reviews, Gegenreviews und Messwerte. Frühere Tests über `testrun_10b/archiv/README.md`, Messreihen über `testrun_10b/durchschnittsmessungen/README.md`. Keine Inhaltsdoppelung nach 03. |
+| **Produkt- und Testbranch** | Technische Patchnotes und ausführbare Fassung des jeweils konkret geprüften Builds; am Remote-HEAD statt allein am Stand von 03 verifizieren |
 | **`experiment/dynamic-gm-model`** | Archiv von B/C1 und dynamischem GM mit Fehler-/Mockbelegen, kein Entwicklungs- oder Produktbranch ([Archiv](recherche/ARCHITEKTUR_EXPERIMENTE_ARCHIV_2026-11-17.md)) |
+
+**Dokumentationsregel aus dem Nutzerfeedback vom 23.11.2026:** Einzelne Spieltests sofort im Testordner und Runindex dokumentieren, aber `03_AKTUELLER_PROJEKTSTAND.md` nicht nach jedem Test oder jedem zweiten Patch aktualisieren. Dort ausschließlich knappen Entwicklungsmeilenstein und einen dauerhaften Abschnitt **„Usertests“** mit Link auf `testrun_10b/README.md` pflegen. Historische Detailberichte nur verlinken.
 
 Bei einer reinen Dokumentationspflege **keine Node-/ST-Tests vortäuschen oder als notwendig erklären**: Inhaltsvergleich, Diff-, Link-, Referenz- und Git-HEAD-Prüfung reichen. Originalreviews, Historie und spezifische Fachpläne nicht blind kürzen; in Übersichten alte Detailketten nur verlinken. Bei Änderungen mindestens Dateiliste, Art der Änderung, Commit, neue/alte HEADs und Grenzen berichten. Keine Tokens/Schlüssel/Zugangsdaten in Chat, Repo oder Originalarchive aufnehmen.
 

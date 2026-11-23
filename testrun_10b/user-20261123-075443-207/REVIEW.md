@@ -1,4 +1,4 @@
-# User10 – zweiter persönlicher Kurztest  auf Avereth .207 · Questboard scheitert
+# User10 – zweiter persönlicher Kurztest auf Avereth .207 · Questboard scheitert
 
 **23.11.2026 · Erstreview durch GPT, ohne Patch.** Neuer Mage-Alaric in Ashbridge, 6 Spielereingaben (davon 2 zur Charaktererstellung), 4 erzählte Züge. Original-Enginebuild `4.3.0-c.6.6.207` auf `experiment/207-trade-hud` / [`609380b3`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/609380b308d89d14c289e9ca1c4e26ed29174789). Der Lauf wird bei der ersten Questboard-Lesung abgebrochen. Drei ursprüngliche Uploads (Chat, Engine-Events, PowerShell/UTF-16-Log) sind im [Quellenmanifest](SOURCE_MANIFEST.md) nach Größe und SHA-256 eindeutig bezeichnet; **diese Originalbytes sind noch nicht auf `main` archiviert**. Dies ist eine Auswertung der tatsächlichen Uploads und des Codepfads in `.207`, keine autonome Codex-Reproduktion. **Kein Patch oder Provideraufruf durch den Review.**
 

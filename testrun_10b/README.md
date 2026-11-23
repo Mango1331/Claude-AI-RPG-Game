@@ -6,7 +6,7 @@
 
 ## User09 · Persönlicher Kurztest auf .207 (GPT-Erstreview)
 
-[Erstreview](user-20261123-042623-207/REVIEW.md) · [Messpunkte](user-20261123-042623-207/MESSWERTE_USER09_207.json) · [Quellenmanifest](user-20261123-042623-207/SOURCE_MANIFEST.md). 11 Erzählzüge, 36 physische Request-/Responsepaare, zwei echte aber im Systempanel nicht sichtbare HP-Verluste und ein Abhängigkeitsfehler nach gescheiterter Brückenüberquerung. Originaluploads noch nicht in Git archiviert, unabhängiger Codex-Gegenreview offen.
+[Erstreview](user-20261123-042623-207/REVIEW.md) · [Messpunkte](user-20261123-042623-207/MESSWERTE_USER09_207.json) · [Quellenmanifest](user-20261123-042623-207/SOURCE_MANIFEST.md). 11 Erzählzüge, 36 physische Request-/Responsepaare, zwei echte, aber im Systempanel nicht sichtbare HP-Verluste; die vom Narrator ausdrücklich erzählte improvisierte Brückenüberquerung wurde vom Nutzer als gelungenes „fail forward“ akzeptiert (nur Engine-Wortlaut P2). Originaluploads noch nicht in Git archiviert, unabhängiger Codex-Gegenreview offen.
 
 ## User08 · Neuer persönlicher Run auf .205 (ausgewertet)
 

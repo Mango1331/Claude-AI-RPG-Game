@@ -16,7 +16,7 @@ Der Testbuild enthält die Änderungen an Questboard und HUD, Gildenroutine und 
 
 ## User09 – offene Befunde aus dem Kurztest
 
-Im Test wurden zwei echte Hindernisschäden (14 und 8 HP) gebucht, ohne dass die unmittelbare Systemkarte einen HP-/Damagehinweis zeigte; das korrigierte Nutzerfeedback fordert eine sichtbare Engine-Schadenszeile wie im Combat. Eine misslungene Brückenprobe mit `success:false` lieferte `status:resolved` und erfüllte damit die `needs`-Bedingung des nachfolgenden GO; der Folgeschritt gelangte fälschlich bis zum Dungeon. Das ist vor dem nächsten längeren Lauf unabhängig gegenzuprüfen. Das neue Handels-HUD blieb im User09-Kurztest unbenutzt. [Erstreview](testrun_10b/user-20261123-042623-207/REVIEW.md). Die Originaluploads sind noch nicht bytegleich im Git-Archiv abgelegt; kein Codepatch freigegeben.
+Im Test wurden zwei echte Hindernisschäden (14 und 8 HP) gebucht, ohne dass die unmittelbare Systemkarte einen HP-/Damagehinweis zeigte; das korrigierte Nutzerfeedback fordert eine sichtbare Engine-Schadenszeile wie im Combat. Der Narrator schilderte nach der misslungenen Brückenprobe tatsächlich eine improvisierte Überquerung am Seilgeländer und den Weg zum Dungeon. Der Nutzer akzeptiert diese *fail-forward*-Fortsetzung ausdrücklich. Nur die Engineformulierung `He does not get past it` ist dadurch semantisch zu streng (P2, kein zwingender Reiseblocker). Das neue Handels-HUD blieb im User09-Kurztest unbenutzt. [Erstreview](testrun_10b/user-20261123-042623-207/REVIEW.md). Die Originaluploads sind noch nicht bytegleich im Git-Archiv abgelegt; kein Codepatch freigegeben.
 
 ## User08 – Befunde und nächste Entscheidung
 

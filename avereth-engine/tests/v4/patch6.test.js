@@ -261,7 +261,7 @@ test('patch 6 (14, 15, 16): the story cannot change the roll or the difficulty; 
         const stairs = featNamed(g.state(), /stairs/);
         const before = hp(g.state());
         await say(g, '*I balance across the rotten beam*', attempt(beam.id, 'pass', { stat: 'AGI' }));
-        assert.match(outcome(g).actions.join('\n'), /FAILS — rotten beam .*He does not get past it; it hurts him: HP \d+->\d+/);
+        assert.match(outcome(g).actions.join('\n'), /FAILS — rotten beam .*This method fails.*; it hurts him: HP \d+->\d+/);
         assert.equal(hp(g.state()), before - content.rules.exploration.harm.hard);
         assert.equal(g.state().features[beam.id].status, 'active', 'still in the way');
         await g.reply('He slips and catches himself, bruised.', { expected: {}, deltas: [] });

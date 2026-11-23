@@ -977,6 +977,24 @@ export function parseBoard(answer, content, need, s = null) {
             if (limited && ok.length <= need.missing) inDungeon = true;
         }
     }
+    if (need.minimum === 4) {
+        const titles = value.listings.map(l => slug(l.title));
+        if (titles.length > need.missing || new Set(titles).size !== titles.length)
+            return { listings: null, refused, errors: ['ambiguous or oversized board'] };
+        if (ok.length === 4) {
+            // Pairwise conflicts are order-dependent: neither member gets priority on a partial board.
+            const excluded = value.listings.find(l => !ok.includes(l));
+            if (excluded) {
+                const wireListing = {...excluded};
+                delete wireListing.dungeon; // derived above; not a generator field
+                const alone = parseBoard(JSON.stringify({listings:[wireListing]}), content, {...need, minimum:undefined}, s);
+                if (alone.listings?.length)
+                    return { listings:null, refused, errors:['conflicting listings or board composition'] };
+            }
+            if (['hunt','delivery','dungeon'].some(family => ok.filter(l => boardFamily(s,content,l) === family).length > profile[family]))
+                return { listings:null, refused, errors:['partial board exceeds its family quota'] };
+        }
+    }
     const listings = ok.slice(0, need.missing);
     if (profile && listings.length === need.missing
         && need.missing + (need.have || []).length === (content.rules.guild.board?.size ?? 5)) {

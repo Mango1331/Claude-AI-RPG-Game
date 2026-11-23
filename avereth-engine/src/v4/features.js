@@ -207,7 +207,7 @@ export function attemptEvents(s, content, dice, emit, c) {
     }
     const harm = f.status === 'active' && (f.kind === 'hazard' || f.harm) ? harmEvents(s, content, f, emit) : null;
     emit(changed(s, f, {}, `failed: ${words}`));
-    return { status: 'resolved', success: false, line: `FAILS — ${f.name} (${f.id}), "${words}": ${r.text || r.auto}.${toolText} ${aim === 'pass' ? 'He does not get past it' : 'It is not made harmless'}${harm ? `; it hurts him: ${harm}` : '; no harm'}. It stays as it was; another way, a tool or more care may still work. Tell exactly this.${hidden ? ` ${hidden}` : ''}` };
+    return { status: 'resolved', success: false, line: `FAILS — ${f.name} (${f.id}), "${words}": ${r.text || r.auto}.${toolText} ${aim === 'pass' ? 'This method fails. A plausible alternative within his declared course may still carry him onward' : 'It is not made harmless'}${harm ? `; it hurts him: ${harm}` : '; no harm'}. It stays as it was; another way, a tool or more care may still work. Tell exactly this.${hidden ? ` ${hidden}` : ''}` };
 }
 
 /**

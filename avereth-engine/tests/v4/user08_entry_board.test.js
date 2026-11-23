@@ -132,7 +132,7 @@ test('User08 first board answer books the original five contracts and ten events
     assert.deepEqual(folded(replay.chat).quests, folded(original).quests);
 });
 
-test('additional defects, ambiguous species, ambiguous slots and population conflicts still need the physical repair', async () => {
+test('an ambiguous species is never auto-corrected; publish only independently valid notices', async () => {
     for (const problem of ['hybrid', 'pike-heron', 'wrong unit', 'second fault', 'duplicate title', 'population', 'quota']) {
         const s = folded(f.chat.slice(0,11));
         const need = boardFor(s, content, JSON.parse(f.plans[11]).commands, {c:true});
@@ -169,9 +169,11 @@ test('additional defects, ambiguous species, ambiguous slots and population conf
         }
         let attempts = 0;
         const result = await generateBoard(async () => ++attempts === 1 ? JSON.stringify({listings}) : 'invalid', s, content, need);
-        assert.equal(attempts, 2, problem);
-        assert.ok(result.failed, problem);
-        assert.deepEqual(result.listings, []);
+        const ambiguousBoard = problem === 'duplicate title';
+        assert.equal(attempts, ambiguousBoard ? 2 : 1, problem);
+        const expected = ambiguousBoard || problem === 'second fault' ? 0 : 4;
+        assert.equal(result.listings.length, expected, problem);
+        assert.ok(result.listings.every(l => l.title !== hunt.title),problem);
     }
 });
 

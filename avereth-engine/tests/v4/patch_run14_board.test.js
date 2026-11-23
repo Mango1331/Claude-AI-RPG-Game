@@ -54,11 +54,11 @@ test('Run14 board: generator and one repair obey the same profile',async()=>{
  const repair=[[1,1],[4,7],[8,11],[12,14],[1,3]].map(([min,max],i)=>({...hunt('Cull the mire wolves '+i,i?2:1),level:min,qtype:i?'standard':'minor',payout_cp:50+i*25,
   task:`Cull ${i?2:1} feral wolves at Mire Pasture ${i}.`,desired_end_state:`The ${i?2:1} feral wolves at Mire Pasture ${i} are defeated.`,
   objectives:[{verb:'DEFEAT',what:'feral wolves',qty:i?2:1,unit:null,where:`Mire Pasture ${i}`}],proof:[],habitat:{species:'feral wolf',anchor:'wolf',min_level:min,max_level:max}}));
- const r=await generateBoard(async req=>{calls.push(req);return JSON.stringify({listings:calls.length===1?old():repair});},s,c,n);
+ const r=await generateBoard(async req=>{calls.push(req);return calls.length===1?'invalid':JSON.stringify({listings:repair});},s,c,n);
  assert.equal(calls.length,2);assert.equal(r.listings.length,5);assert.equal(r.profile,'count_hunt_clear');
- assert.match(calls[1].messages.at(-1).content,/suspended|valid listing/);
+ assert.match(calls[1].messages.at(-1).content,/not valid/);
  let count=0;const failed=await generateBoard(async()=>{count++;return JSON.stringify({listings:old()});},s,c,n);
- assert.equal(count,2);assert.equal(failed.listings.length,0);assert.ok(failed.failed);
+ assert.equal(count,1);assert.equal(failed.listings.length,0);assert.ok(failed.failed);
 });
 test('Run14 board: an already published legacy board remains unchanged and needs no regeneration',()=>{
  const s=state(),ls=parse(s,old(),legacyNeed(s)).listings;assert.equal(ls.length,5);

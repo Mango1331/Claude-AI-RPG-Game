@@ -298,6 +298,8 @@ test('9C-2a: actual board retry reuses a committed Forge fallback and never rena
     assert.ok(lastUser(g).board.failed);
     assert.equal(forges, 2);
     const first = structuredClone(g.state().skill_defs);
+    // Replaying an already persisted pre-.208 retryable record.
+    delete lastUser(g).board.manualRetry;
     const oldChat = structuredClone(g.chat);
     delete rec(oldChat.at(-1)).forge;
     await prepareGenerationAsync(g.chat, content, { settings: { planner: true }, llm });

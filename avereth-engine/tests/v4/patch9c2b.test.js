@@ -322,6 +322,8 @@ test('9C-2b (6): an actual board retry with a stone activated in the same messag
     assert.equal(forges, 1);
     const first = structuredClone(g.state().skill_defs);
     assert.deepEqual(Object.values(first).map((d) => d.name), ['Ember Seed']);
+    // Legacy retryable record without the .208 manual-read marker.
+    delete lastUser(g).board.manualRetry;
     await prepareGenerationAsync(g.chat, content, { settings: { planner: true }, llm });
     assert.equal(boards, 3, 'the board was asked again');
     assert.equal(forges, 1, 'the Forge was not');

@@ -1615,6 +1615,7 @@ const HANDLERS = {
         const listed = listingsOf(s, branch, rank).filter((q) => !envx.c || listedToday(s, q));
         const when = ahead ? ', when he reaches the Guild hall' : '';
         if (!listed.length) {
+            if (gen?.failed) ctx.engineLines.push('QUESTBOARD — Heute wurden keine neuen Aufträge bestätigt. Du kannst sofort erneut lesen.');
             ctx.boardShown = { branch, rank, failed: true };
             return { status: 'resolved', reason: 'generator_failed', line: `READS the board${when} — BOARD RESULT UNCONFIRMED (technical generation failure): no official notices were established by this read. This is not an empty board, closure, delivery schedule or waiting requirement in the world; invent none. The player may retry reading immediately, without waiting in-game.` };
         }
@@ -1748,9 +1749,18 @@ function moveStep(s, content, c, ctx, emit, envx) {
 // Patch 6: his attempt on an obstacle or hazard of this place (src/v4/features.js): the engine's check, before the story
 function attemptStep(s, content, c, ctx, emit, envx) {
     if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT — not while the fight runs.' };
-    const r = attemptEvents(s, content, envx?.dice, emit, c);
+    const losses = [];
+    const r = attemptEvents(s, content, envx?.dice, event => {
+        const d = event.d;
+        if (event.t === 'resource.changed' && d.id === 'pc' && ['hp','sta'].includes(d.resource)) {
+            const before = s.entities.pc.sheet[d.resource];
+            if (d.value < before) losses.push(`HINDERNIS — −${before-d.value} ${d.resource.toUpperCase()} · ${before} → ${d.value}`);
+        }
+        emit(event);
+    }, c);
     const rec = s.last?.check;
     if (rec?.feature && rec.seq === c.seq) ctx.engineLines?.push(`CHECK — ${rec.what}: ${rec.chance}% · d100 ${rec.roll} → ${rec.success ? 'SUCCESS' : 'FAILURE'}`);
+    ctx.engineLines?.push(...losses);
     return r;
 }
 

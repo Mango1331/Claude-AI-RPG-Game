@@ -436,7 +436,7 @@ async function executeMappedTurn(chat,content,{u,before,m,guarded={dropped:[]},i
     const growth = await withGrowth(t, content, llm, previous);
     return {
         v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: irRec, plan, interp,
-        board: board ? { branch: board.branch, rank: board.rank, ms: board.ms, failed: board.failed || undefined, listings: board.listings.length, ...(board.calls?.length ? { llm: board.calls } : {}) } : undefined,
+        board: board ? { branch: board.branch, rank: board.rank, ms: board.ms, failed: board.failed || undefined, ...(board.failed && board.minimum ? {manualRetry:true} : {}), listings: board.listings.length, ...(board.calls?.length ? { llm: board.calls } : {}) } : undefined,
         ...growth, command: t.command ? { panels: t.command.panels, llm: null } : null,
     };
 }
@@ -612,7 +612,7 @@ export function boardFor(state, content, commands, { c = false } = {}) {
     const size = content.rules.guild.board?.size ?? 5;
     // Prototype C (4.3.0-c.6): a new day's board is a new board: five notices, none of yesterday's (src/v4/commands.js
     // board.read retires those), booked whole or not at all (generateBoard)
-    if (c) return { branch, rank, missing: size, day: today(state), have: [], c: true, ...(rulesetOf(state) >= 2 ? { profile: COUNT_BOARD_PROFILE, ...(rank === 'Novice' ? { progression: true } : {}) } : {}) };
+    if (c) return { branch, rank, missing: size, day: today(state), have: [], c: true, ...(rulesetOf(state) >= 2 ? { profile: COUNT_BOARD_PROFILE, ...(rank === 'Novice' ? { progression: true, minimum: 4 } : {}) } : {}) };
     const have = listingsOf(state, branch, rank);
     const missing = size - have.length;
     return missing > 0 ? { branch, rank, missing, day: today(state), have: have.map((q) => q.title) } : null;
@@ -633,15 +633,23 @@ export async function generateBoard(llm, state, content, need) {
         const a = await ask(llm, messages, 'board');
         ms += a.ms;
         calls.push(a.call);
-        if (!a.ok) { last = { errors: [a.error] }; continue; }
-        const parseFull = attempt === 0 ? parseInitialBoard : parseBoard;
+        if (!a.ok) {
+            last = { errors: [a.error] };
+            if (need.minimum || !a.retryable) break;
+            continue;
+        }
+        const parseFull = attempt === 0 || need.minimum ? parseInitialBoard : parseBoard;
         const p = repair ? parseBoardSlot(a.content, repair, content, need, state) : parseFull(a.content, content, need, state);
         // Prototype C (4.3.0-c.6.1): fewer valid listings than the day's board asks for are no board (repaired once, else
         // failed: yesterday's stays up), never a smaller day
         const n = p.listings?.length;
-        const short = need.c && p.listings && n < need.missing ? [`${n} valid listing${n === 1 ? '' : 's'} of the ${need.missing} asked for${p.refused.length ? `; refused: ${p.refused.map((r) => `"${r.title}" (${r.why})`).join(', ')}` : ''}; write all ${need.missing}`] : null;
+        const short = need.c && p.listings && n < (need.minimum ?? need.missing) ? [`${n} valid listing${n === 1 ? '' : 's'} of the ${need.missing} asked for${p.refused.length ? `; refused: ${p.refused.map((r) => `"${r.title}" (${r.why})`).join(', ')}` : ''}; write all ${need.missing}`] : null;
         if (p.listings && p.listings.length && !short) return { ...need, listings: p.listings, refused: p.refused, ms, calls, version: BOARD_VERSION };
-        if (!attempt) repair = boardSlotRepair(a.content, p, state, content, need);
+        if (need.minimum && Array.isArray(p.listings)) {
+            last = {errors:[`Only ${n} valid listings; read again for a new board.`]};
+            break;
+        }
+        if (!attempt && !need.minimum) repair = boardSlotRepair(a.content, p, state, content, need);
         last = { answer: a.content, hints: boardRepairGuidance(a.content, content, need, false, p.refused), errors: [...(short || (p.errors.length ? p.errors : ['no valid listing'])), ...(!short ? (p.refused || []).map(r => `${r.title}: ${r.why}`) : [])].slice(0, 12) };
     }
     return { ...need, listings: [], failed: (last?.errors || ['failed']).join('; ').slice(0, 200), ms, calls, version: BOARD_VERSION };
@@ -700,7 +708,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         return {action:'abort',dirty:false,notice:'Diese HUD-Aktion wurde bereits gebucht. Eine Text- oder Auswahledition würfelt sie nicht erneut.'};
     // an interpretation that failed is not cached: Regenerate asks again (plan §3.4); neither is a Board generation that
     // failed: a new generation of the same message asks for the board again, with the interpretation it came with
-    const retryBoard = !!r && r.route === 'v4' && r.input_hash === inputHash && !r.interp?.failed && !!r.board?.failed;
+    const retryBoard = !!r && r.route === 'v4' && r.input_hash === inputHash && !r.interp?.failed && !!r.board?.failed && !r.board.manualRetry;
     if (type !== 'continue' && (!r || r.input_hash !== inputHash || r.action_input_hash!=null && r.action_input_hash!==actionHash || r.interp?.failed || retryBoard)) {
         const history = historyKey(chat, u);
         const current = () => isCurrent() && chat[u] === msg && lastPlayerIndex(chat) === u && hash32(msg.mes) === inputHash && actionInputHash(actionInputOf(msg))===actionHash && rec(msg) === originalRecord && historyKey(chat, u) === history;
@@ -785,7 +793,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
             r = {
                 v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: irRecord(ir, interpretedActs(guarded.kept, guarded.dropped)),
                 interp: { version: INTERPRETER_VERSION, ms: ip.ms, failed: false, repaired: ip.repaired, commands: ip.commands, ...(ip.calls?.length ? { llm: ip.calls } : {}) },
-                board: board ? { branch: board.branch, rank: board.rank, ms: board.ms, failed: board.failed || undefined, listings: board.listings.length, ...(board.calls?.length ? { llm: board.calls } : {}) } : undefined,
+                board: board ? { branch: board.branch, rank: board.rank, ms: board.ms, failed: board.failed || undefined, ...(board.failed && board.minimum ? {manualRetry:true} : {}), listings: board.listings.length, ...(board.calls?.length ? { llm: board.calls } : {}) } : undefined,
                 events: t.events, command: t.command ? { panels: t.command.panels, llm: null } : null,
             };
         }

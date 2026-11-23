@@ -4,10 +4,12 @@ import {createHash} from 'node:crypto';
 import path from 'node:path';
 import fs from 'node:fs';import zlib from 'node:zlib';
 const f=JSON.parse(zlib.gunzipSync(fs.readFileSync(new URL('../../tests/v4/fixtures/user03_board158.json.gz',import.meta.url))));
+const user09 = JSON.parse(zlib.gunzipSync(fs.readFileSync(new URL('../../tests/v4/fixtures/user09_207.json.gz',import.meta.url)))).chat;
+const hazardTurns = [17,21].map(i=>({key:'hazard208_'+i,player:user09[i].mes,plan:JSON.parse(user09[i].extra.avereth.plan.raw[0]),reply:user09[i+1].mes,answer:user09[i+1].extra.avereth.extraction.raw}));
 const success='I read the official board and study the notices.';
 const failure='I try reading the official quest board again.';
 const comparison='I spend three minutes comparing the official notices on the Guild board.';
-export const board159Turns=[
+export const board159Turns=[...hazardTurns,
  {key:'board203comparison',player:comparison,plan:{commands:[{seq:1,type:'board.read',rank:null,quote:comparison}]},
   reply:'Three minutes passed as Alaric compared the official contracts at the Guild board.',answer:{scene:'here',expected:{},deltas:[{seq:1,type:'time',minutes:3}]}},
 
@@ -18,7 +20,7 @@ let mode=null,n=0;
 export function board159Response(system){
  n++;const pair=f.attempts[mode==='success'?0:1];
  if(mode==='full' && n===1)return 'unreadable initial board';
- if(mode==='failure') return pair[1]; // locally invalid single boar on both attempts
+ if(mode==='failure') return JSON.stringify({listings:JSON.parse(pair[0]).listings.slice(0,3)});
  if(mode==='success') return pair[0]; // valid group hunt on the archived first board
  const raw=JSON.parse(pair[1]),l=raw.listings.find(l=>l.level===1);
  for(const k of ['title','task','desired_end_state'])if(l[k])l[k]=l[k].replace(/boars?/gi,'giant rat');
@@ -30,13 +32,13 @@ export function board159Response(system){
  return JSON.stringify(raw);
 }
 export async function board159Smoke({page,send,idle,calls,worldTimings,driver,onReload,out}){
- const seed=async()=>{await page.evaluate(async prefix=>{const c=SillyTavern.getContext();c.chat.splice(0,c.chat.length,...prefix);await c.saveChat();await c.reloadCurrentChat();},structuredClone(f.prefix));onReload();};
+ const seed=async(messages=f.prefix)=>{await page.evaluate(async prefix=>{const c=SillyTavern.getContext();c.chat.splice(0,c.chat.length,...prefix);await c.saveChat();await c.reloadCurrentChat();},structuredClone(messages));onReload();};
  const snapshot=()=>page.evaluate(async()=>{const{foldChat}=await import('/scripts/extensions/third-party/avereth-engine/src/host.js');const c=SillyTavern.getContext(),r=foldChat(c.chat),s=r.state;return{errors:r.errors,quests:Object.values(s.quests).filter(q=>q.kind==='guild_contract').length,coin:s.entities.pc.sheet.coin_cp,facts:Object.values(s.facts),rejected:c.chat.at(-1)?.extra?.avereth?.rejected,status:c.chat.at(-1)?.extra?.avereth?.extraction?.status};});
  mode='success';n=0;await seed();const start=calls.length;await send(success);await idle();const good=await snapshot();
  const checks={originalGroupHuntBooksFive:good.quests===5&&n===1&&good.coin===30&&!good.errors.length &&
    calls.slice(start).filter(c=>c.purpose==='board').length===1};
  mode='failure';n=0;await seed();await send(failure);await idle();const bad=await snapshot();
- checks.invalidBoardRemainsUnbooked=bad.quests===0&&n===2&&bad.coin===30&&!bad.errors.length;
+ checks.invalidBoardRemainsUnbooked=bad.quests===0&&n===1&&bad.coin===30&&!bad.errors.length;
  checks.noInventedSchedule=!bad.facts.some(f=>f.p==='post_schedule')&&bad.rejected?.some(x=>x.rule==='board_availability');
  checks.extractionCompleted=bad.status==='applied';
  checks.saved=await driver().verifySaved(await driver().chat(),{complete:true});
@@ -83,13 +85,28 @@ export async function board159Smoke({page,send,idle,calls,worldTimings,driver,on
    const card=narrator.findIndex(m=>m.content.startsWith('AVERETH RPG'));
    checks[arm+'CardOrder']=card === (arm==='slot'?1:2);
    if(arm==='reference')reference=after;
-   else checks[arm+'SameWorld']=JSON.stringify(after)===JSON.stringify(reference);
-   const expected=arm==='reference'?['plan','board','narrator','extract']:['plan','board','board','narrator','extract'];
+   else if(arm==='slot'){
+    const offered=Object.values(after.world.quests).filter(q=>q.status==='listed');
+    checks.partialDayHasFourOriginals=offered.length===4&&offered.every(q=>JSON.stringify(q)===JSON.stringify(reference.world.quests[q.id]));
+   }else checks[arm+'SameWorld']=JSON.stringify(after)===JSON.stringify(reference);
+   const expected=arm!=='full'?['plan','board','narrator','extract']:['plan','board','board','narrator','extract'];
    checks[arm+'ExtractorFormat']=turn.find(c=>c.purpose==='extract')?.messages[0].content.includes('Write compact single-line JSON.') === (arm==='slot');
    checks[arm+'Calls']=JSON.stringify(turn.map(c=>c.purpose))===JSON.stringify(expected) &&
     turn.every(c=>c.stream===(arm==='slot' && c.purpose==='narrator'));
   }
  }finally{await configure(originalSettings);}
  fs.writeFileSync(path.join(out,'board-world.json'),JSON.stringify(fingerprint,null,2));
+ for (const [j,i] of [17,21].entries()){
+  await seed(user09.slice(0,i));
+  await send(hazardTurns[j].player);await idle();
+  const observed=await page.evaluate(()=>{const c=SillyTavern.getContext();const m=c.chat.at(-1),u=c.chat.findLast(x=>x.is_user);return {player:u?.mes,plan:u?.extra?.avereth?.plan?.raw,charged:u?.extra?.avereth?.events?.filter(e=>e.t==='resource.changed'||e.t==='check.recorded'),panel:m?.extra?.avereth?.panel,visible:document.querySelector('#chat .mes:last-child .mes_text')?.innerText};});
+  fs.writeFileSync(path.join(out,'hazard-'+i+'.json'),JSON.stringify(observed,null,2));
+  const line='−'+(i===17?14:8)+' HP';
+  const visible=async()=> (await page.locator('#chat .mes').last().locator('.mes_text').innerText()).split('\n').filter(row=>row.startsWith('HINDERNIS') && row.includes(line)).length;
+  checks['hazard'+i+'Visible']=await visible()===1;
+  checks['hazard'+i+'Saved']=await driver().verifySaved(await driver().chat(),{complete:true});
+  await page.evaluate(()=>SillyTavern.getContext().reloadCurrentChat());onReload();await idle();
+  checks['hazard'+i+'Reload']=await visible()===1;
+ }
  mode=null;return checks;
 }

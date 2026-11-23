@@ -7,7 +7,7 @@
 //   P4 Warrior T47: the narrator's TRAVEL line names an invitation or a guide as no cause that moves him
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { reply191, player191, before191, rejectedOf, eventsOf, E } from './batch191_lib.js';
+import { reply191, player191, run191, before191, rejectedOf, eventsOf, E } from './batch191_lib.js';
 import * as evidence from '../../src/v4/run9_evidence.js';
 import { slotForNew, contextLines } from '../../src/v4/living.js';
 
@@ -80,8 +80,12 @@ test('P1 B5: a creative appearance fills only the encounter of the section he is
 // ------------------------------------------------------------------------------------------------ P2
 const OLD_CULVERT = 'realm.duskreach.millrace_row_culvert_ashbridge';
 const CULVERT = 'loc.ashbridge.millrace_row_culvert';
+// These address tests exercise the accepted historical serpent contract. .208 can publish
+// the initial four before this archived second answer is needed; select it explicitly here.
+const serpentBoard = run191('r191').answers[13].filter(a => a.purpose === 'board').at(-1).content;
 const siteAs = (where) => (a, purpose) => {
     if (!/board/.test(purpose) || !Array.isArray(a.listings)) return a;
+    a = JSON.parse(serpentBoard);
     const l = a.listings[0];
     const o = l.objectives.find((x) => x.verb === 'DEFEAT');
     const old = o.where;
@@ -93,7 +97,7 @@ const siteAs = (where) => (a, purpose) => {
 const created = (record, name) => eventsOf(record, 'place.created').map((e) => e.d.place).find((p) => p.name === name);
 
 test('P2 R T7 original board: "Millrace Row culvert, Ashbridge" is a place of Ashbridge with its population and hunt; the other hunt sites stay in the realm', async () => {
-    const p = await player191('r191', 13);
+    const p = await player191('r191', 13, (a,purpose)=>purpose==='board'?JSON.parse(serpentBoard):a);
     const culvert = created(p.record, 'Millrace Row culvert, Ashbridge');
     assert.equal(culvert.id, CULVERT);
     assert.equal(culvert.parent, 'loc.ashbridge');
@@ -124,7 +128,7 @@ test('P2 an existing save keeps its hunt site where it was: a site of that name 
 
 test('P2 R T7–T22 chained on the corrected board: the walks in Ashbridge are local (no realm journey, no 45/50 minutes, no road halt), the hunt is credited and paid', async () => {
     const { chain191 } = await import('./batch191_lib.js');
-    const chat = await chain191('r191', 13, 43, (t) => t.split(OLD_CULVERT).join(CULVERT));
+    const chat = await chain191('r191', 13, 43, (t) => (t===run191('r191').answers[13].find(a=>a.purpose==='board').content?serpentBoard:t).split(OLD_CULVERT).join(CULVERT));
     const out = (i) => chat[i].extra.avereth;
     const gos = (i) => (out(i).events.find((e) => e.t === 'outcome.recorded')?.d.outcome.auth?.gos || []).map((g) => g.mode);
     for (const i of [17, 27, 35, 39]) assert.deepEqual(gos(i), ['local'], `#${i}`);

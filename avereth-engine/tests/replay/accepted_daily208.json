@@ -1,0 +1,35 @@
+{
+ "inherits": "accepted_user08_206.json",
+ "cases": {
+  "b17-mage#5": {
+   "category": "208 daily board",
+   "previous": "sha256:614c19ee90988ae11c9ddd97d61e02eb4337d3aad9a2931063fd073177953b61",
+   "fingerprint": "sha256:8e2c8f7ebcd5b4ea66107bd23f0f98d8f756dafc1edeaf37f2652cd317ec50c2",
+   "reason": "One call publishes four independent notices. The former second call added «A Wolf at the Turnip Rows»."
+  },
+  "b17-warrior#25": {
+   "category": "208 daily board",
+   "previous": "sha256:f2629027b0e369ce6d9984b7d44fa58d91ea12ef2ed472940d986014855baae7",
+   "fingerprint": "sha256:8e773ff7368fc0bf7543ccd3ec8875b428e9283d3cd93f082e6c4329624e0586",
+   "reason": "One call publishes four independent notices. The former second call added «Kill the Marsh Adder at the Eel-Weirs»."
+  },
+  "b19-mage#13": {
+   "category": "208 daily board",
+   "previous": "sha256:9edbc9fafcec054b99fe55e3e5bbffb81849736aa8bc7d818cf3e70f8b84962e",
+   "fingerprint": "sha256:05c109be302e4ccfc70bf30eabad3b22a60c955199908c6ce339a2ab4d5fa58e",
+   "reason": "One call publishes four independent notices. The former second call added «Kill the Quarry Track Wolf»."
+  },
+  "b19-rogue#13": {
+   "category": "208 daily board",
+   "previous": "sha256:fb99df169f9ffed3e3f11318b9a8bafe987cae0f0db62b15addf9454729262c0",
+   "fingerprint": "sha256:8709ce7e5a642d1400bf4e5958320d53a11701ee00cdbd42aed5ec5a53c21d4c",
+   "reason": "One call publishes four independent notices. The former second call added «Thin the Reedmire Herons»."
+  },
+  "b19-warrior#7": {
+   "category": "208 daily board",
+   "previous": "sha256:eb7ba97f99b9637ca06ed14c4c6bf38389f3a116d75f9ef87d8d2ca2131a995b",
+   "fingerprint": "sha256:33e951128c05f6a880f2f52b52d3b583486969a07773914fb6a8d477aa6c9ea3",
+   "reason": "One call publishes four independent notices. The former second call added «Hunt the Millpond Marsh Harrier»."
+  }
+ }
+}

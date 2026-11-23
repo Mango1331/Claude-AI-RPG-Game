@@ -1,0 +1,126 @@
+{
+  "engine_commit": "609380b308d89d14c289e9ca1c4e26ed29174789",
+  "st": {
+    "version": "1.19.0",
+    "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+  },
+  "node": "24.22.1",
+  "chromium": "156.0.8078.79",
+  "smokes": [
+    {
+      "mode": "standard",
+      "ok": true,
+      "passed": 366,
+      "checks": 366,
+      "failed": [],
+      "page_errors": 0,
+      "calls": 349,
+      "seconds": 735,
+      "reported_checkout": {
+        "version": "4.3.0-c.6.6.207",
+        "commit": "0d55ca0a",
+        "branch": "experiment/207-trade-hud",
+        "dirty": true
+      },
+      "run_started": "2026-11-23T02:45:59.804Z"
+    },
+    {
+      "mode": "failsoft",
+      "ok": true,
+      "passed": 372,
+      "checks": 372,
+      "failed": [],
+      "page_errors": 0,
+      "calls": 356,
+      "seconds": 704,
+      "reported_checkout": {
+        "version": "4.3.0-c.6.6.207",
+        "commit": "0d55ca0a",
+        "branch": "experiment/207-trade-hud",
+        "dirty": true
+      },
+      "run_started": "2026-11-23T02:20:28.926Z"
+    },
+    {
+      "mode": "trade_hud",
+      "ok": true,
+      "passed": 41,
+      "checks": 41,
+      "failed": [],
+      "page_errors": 0,
+      "calls": 25,
+      "seconds": 64,
+      "reported_checkout": {
+        "version": "4.3.0-c.6.6.207",
+        "commit": "609380b3",
+        "branch": "experiment/207-trade-hud",
+        "dirty": false
+      },
+      "run_started": "2026-11-23T02:58:18.263Z"
+    }
+  ],
+  "trade_hud": {
+    "checks": {
+      "preview21": true,
+      "previewFree": true,
+      "narrowAndKeyboard": true,
+      "quantityContrast": true,
+      "independentSelectors": true,
+      "conditionalTextProtected": true,
+      "freeDraft": true,
+      "onePurchase": true,
+      "quoteOnly": true,
+      "originalSale": true,
+      "savedAndReloaded": true,
+      "guildSameView": true,
+      "keepExistingDraft": true,
+      "assignDraft": true,
+      "assignReload": true
+    },
+    "timings": [
+      {
+        "roles": [
+          "narrator",
+          "extract"
+        ],
+        "timing": {
+          "verified": true,
+          "worldCommitMs": 1401.4000000059605,
+          "readbackMs": 1515.2000000029802,
+          "readyMs": 1528.8000000044703,
+          "saveDurationMs": 114
+        },
+        "reloaded": true
+      },
+      {
+        "roles": [
+          "plan",
+          "narrator",
+          "extract"
+        ],
+        "timing": {
+          "verified": true,
+          "worldCommitMs": 1234,
+          "readbackMs": 1394.1999999955297,
+          "readyMs": 1408.1000000014901,
+          "saveDurationMs": 160
+        },
+        "reloaded": true
+      },
+      {
+        "roles": [
+          "narrator",
+          "extract"
+        ],
+        "timing": {
+          "verified": true,
+          "worldCommitMs": 1536,
+          "readbackMs": 1665.5,
+          "readyMs": 1681.2000000029802,
+          "saveDurationMs": 130
+        },
+        "reloaded": true
+      }
+    ]
+  }
+}

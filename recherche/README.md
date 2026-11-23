@@ -4,7 +4,7 @@ Für Zahlen nach Build, Architektur und Messpunkt gibt es den [Messvergleich](..
 
 | Thema | Untersuchung | Gegenprüfung oder Daten |
 |---|---|---|
-| HUD, Handel und strukturierte Spieleraktionen | [Fachplan nach User08](USER08_HUD_HANDEL_UND_STRUKTURIERTE_SPIELERAKTIONEN.md) | [Spielerfeedback](../testrun_10b/user-20261122-161817-205/originals/spielgefuehl.txt) · [Unabhängiger Runreview](../testrun_10b/user-20261122-161817-205/CODEX_GEGENREVIEW.md) |
+| HUD, Handel und strukturierte Spieleraktionen | [Fachplan nach User08](USER08_HUD_HANDEL_UND_STRUKTURIERTE_SPIELERAKTIONEN.md) | [GPT-Gegenreview](GEGENREVIEW_USER08_HUD_HANDEL_GPT_2026-11-23.md) · [Spielerfeedback](../testrun_10b/user-20261122-161817-205/originals/spielgefuehl.txt) · [Unabhängiger Runreview](../testrun_10b/user-20261122-161817-205/CODEX_GEGENREVIEW.md) |
 | Dungeon-Eintritt und Boardanker nach User08 | [Abnahme des .206-Kandidaten](USER08_206_DUNGEON_BOARD_ABNAHME.md) | [User08-Gegenreview](../testrun_10b/user-20261122-161817-205/CODEX_GEGENREVIEW.md) |
 | Campfunde nach User07 | [Abnahme der Orts- und Objektkorrektur](USER07_204_C_KORREKTUR_ABNAHME.md) | [Natürlicher Camp-Gegencheck](../testrun_10b/archiv/user07-camp-openrouter-20261122/README.md) · [Diffreview](../patch_plans_10b/REVIEW_USER07_204_C_KORREKTUR_GPT_2026-11-22.md) |
 | Kontext und Tokenverbrauch | [Forschungsfrage T7](USER07_T7_PROMPTS_KONTEXT_UND_TOKENVERBRAUCH.md) | [Gemessene Prompts in User07](../testrun_10b/archiv/user-20261121-171341-204/CODEX_GEGENREVIEW.md) |

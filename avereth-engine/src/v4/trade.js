@@ -197,6 +197,27 @@ export function pickLines(offer, lineIds = null, units = null) {
     return { picks, cp: picks.reduce((n, p) => n + p.cp, 0) };
 }
 
+/** Price exactly these units of these stored lines. Used at preview and again before any event. */
+export function pricePositions(offer, positions) {
+    if (!Array.isArray(positions) || !positions.length) return { error: 'empty selection' };
+    const seen = new Set(), picks = [];
+    let cp = 0;
+    for (const row of positions) {
+        const line = row && offer.lines.find(l => l.id === row.id);
+        if (!line || seen.has(line.id) || !Number.isSafeInteger(row.units) || row.units <= 0)
+            return { error: 'invalid or duplicate position' };
+        if (!Number.isSafeInteger(line.price_cp) || line.price_cp < 0 || !Number.isSafeInteger(line.qty ?? 1) || (line.qty ?? 1) < 1)
+            return { error: 'no valid price for this lot' };
+        const cost = linePrice(line, row.units);
+        if (cost.error) return cost;
+        cp += cost.cp;
+        if (!Number.isSafeInteger(cp)) return { error: 'total outside currency range' };
+        picks.push({ line, ...cost });
+        seen.add(line.id);
+    }
+    return { picks, cp };
+}
+
 /** "water flask", "3 water flask": what a purchase or sale is of, for the lines and the coin's reason. */
 export const unitsText = (what, units) => (units > 1 ? `${units} ${what}` : what);
 /**
@@ -396,8 +417,8 @@ export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = nu
     const live = s.offers[offer.id];
     const unavailable = offerAvailability(s, live);
     if (unavailable) return { error: unavailable };
-    const selection = pickLines(live, picks.map(p => p.line.id), picks.length === 1 ? picks[0].units : null);
-    if (selection.error || selection.clarify || selection.picks.length !== picks.length || selection.cp !== cp)
+    const selection = pricePositions(live, picks.map(p => ({ id: p.line.id, units: p.units })));
+    if (selection.error || selection.cp !== cp || selection.picks.some((p,i) => p.cp !== picks[i].cp))
         return { error: selection.error || 'selection or price changed' };
     offer = live; picks = selection.picks;
     // Build .142 (§6.2): the last boundary checks the binding of exactly these positions, whoever called
@@ -414,13 +435,22 @@ export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = nu
     if (again) return { error: again, clarify: true };
     const coin = s.entities.pc.sheet.coin_cp;
     if (!Number.isInteger(cp) || cp < 0 || coin < cp) return { error: 'not enough coin' };
+    // A line that promised an actual object cannot fall back to minting goods from its name.
+    const shownIds = new Set();
+    for (const {line, units} of picks) {
+        if (!line.object || line.kind !== 'goods') continue;
+        const shown = s.objects[line.object];
+        if (shownIds.has(line.object) || !physical(s, shown, offer) || (shown.qty ?? 1) < units)
+            return { error: 'the displayed goods are no longer available in that quantity' };
+        shownIds.add(line.object);
+    }
     const counted = picks.some((p) => p.units !== (Number(p.line.qty) || 1));
     emit({ t: 'transaction.completed', d: { offer: offer.id, lines: picks.map((p) => p.line.id), ...(counted ? { units: picks.map((p) => p.units) } : {}), cp, seller: offer.seller } });
     emit({ t: 'coin.changed', d: { id: 'pc', value: coin - cp, delta: -cp, why: picksText(picks) } });
     for (const p of picks.filter((x) => x.line.kind === 'goods')) {
         // K2: the thing shown is the thing sold (all of it, or the bought units split off its stack); nothing is created
         const shown = p.line.object ? s.objects[p.line.object] : null;
-        if (shown && physical(s, shown, { seller: offer.seller, at: offer.at }) && (shown.qty ?? 1) >= p.units) {
+        if (shown) {
             const part = p.units < (shown.qty ?? 1);
             let split = null;
             if (part) { split = `${shown.id}_${s.turn}`; for (let n = 2; s.objects[split]; n++) split = `${shown.id}_${s.turn}_${n}`; }
@@ -515,9 +545,11 @@ export function bookSale(s, emit, { items = null, ref, units, buyer, cp, what, s
         // Build .142 (§6.2): only a binding bid is sold, whoever called
         const terms = tradeTermsWhy(live);
         if (terms) return { error: terms };
-        const ids = live.lines.filter(l => lot.some(it => it.ref === objectRef(s, l.object) && it.units === l.qty)).map(l => l.id);
-        const selection = bidSale(s, live, ids);
-        if (selection.error || ids.length !== lot.length || selection.cp !== cp) return { error: selection.error || 'the lot or price differs from the bid' };
+        const positions = lot.map(it => ({
+            id: live.lines.find(l => objectRef(s, l.object) === it.ref)?.id, units: it.units,
+        }));
+        const selection = bidSale(s, live, null, positions);
+        if (selection.error || selection.cp !== cp) return { error: selection.error || 'the lot or price differs from the bid' };
     }
     for (const it of lot) {
         const o = s.objects[it.ref];
@@ -537,8 +569,25 @@ export function bookSale(s, emit, { items = null, ref, units, buyer, cp, what, s
  * that many, or he names part of a lot the buyer priced only whole).
  * @returns {{lines: object[], cp: number} | {error: string, stale?: boolean}}
  */
-export function bidSale(s, offer, lineIds = null) {
+export function bidSale(s, offer, lineIds = null, positions = null) {
     const all = offer.lines || [];
+    if (positions) {
+        if (!Array.isArray(positions) || !positions.length || new Set(positions.map(p => p.id)).size !== positions.length)
+            return { error: 'invalid bid selection' };
+        const lines = [];
+        let whole = positions.length === all.length;
+        for (const {id, units} of positions) {
+            const l = all.find(line => line.id === id);
+            if (!l || !Number.isSafeInteger(units) || units <= 0 || units > l.qty) return { error: 'outside the bid quantity' };
+            if (units > heldUnits(s, l.object)) return { error: 'the selected lot is no longer held', stale: true };
+            whole &&= l.qty === units;
+            lines.push({ ...l, qty: units });
+        }
+        if (whole && Number.isSafeInteger(offer.price_cp) && offer.price_cp >= 0) return { lines, cp: offer.price_cp };
+        const priced = pricePositions(offer, positions);
+        if (priced.error) return { error: 'the buyer has named no price for this selection' };
+        return { lines, cp: priced.cp };
+    }
     const lines = Array.isArray(lineIds) && lineIds.length ? all.filter((l) => lineIds.includes(l.id)) : all;
     if (!lines.length) return { error: 'the bid has no such thing' };
     const priced = lines.every((l) => Number.isInteger(l.price_cp));

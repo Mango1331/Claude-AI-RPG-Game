@@ -3,7 +3,7 @@
 // board and its listings (from the Board generator, validated and booked before the narrator describes them), the
 // acceptance with its contract slip, the turn-in with the proof check, the payout, Quest XP, the contract count and
 // the promotion. The narrator only tells what the engine booked; the extractor's deltas cannot change any of it.
-import { rulesetOf as deliveryRuleset, speciesAnchor } from '../content.js';
+import { rulesetOf as deliveryRuleset, speciesAnchor, speciesMatches } from '../content.js';
 import { deliveryStatus, confirmsOnly, nonphysicalDelivery, deliveryWhere, genericRecipient } from './delivery.js';
 import { nearDungeons, dungeonText, rankText, guildRecord, trueDungeonOf } from './dungeon.js';
 import { clearOf, clearDone, clearTarget, cullPopulation, slotNameOf, floorAt } from './living.js';
@@ -650,6 +650,8 @@ export function boardRepairGuidance(answer, content, need, slotOnly = false, ref
     return `INTRO REPAIR: ${requirement} qty 1, level 1, qtype minor hunt with habitat min_level=max_level=1 and an ordinary anchor HP <=35, ATK <=10. Eligible anchor IDs: ${introAnchors(content).join(', ')}. Current level-1 candidates: ${current.join('; ')}. Choose a species that really fits an eligible anchor; never relabel an incompatible species or weaken its fixed stats. ${slotOnly ? 'Return only the requested replacement.' : 'Preserve valid other notices and return the complete requested board.'}`;
 }
 
+const ANCHOR_CONFLICT = 'habitat.anchor contradicts the named species body plan';
+
 function habitatWhy(s, content, need, l) {
     const h = l.habitat;
     if (!h) return 'habitat: a world hunt needs its population (species, anchor, min_level, max_level)';
@@ -666,7 +668,7 @@ function habitatWhy(s, content, need, l) {
         return 'habitat level window must be 1-1, 1-3, 4-7, 8-11 or 12-14 and contain the quest recommendation';
     const anchor = content.anchors.get(h.anchor);
     const named = speciesAnchor(content, h.species, h.anchor);
-    if (named && named.id !== h.anchor) return 'habitat.anchor contradicts the named species body plan';
+    if (named && named.id !== h.anchor) return ANCHOR_CONFLICT;
     if (l.level === 1 && o.qty === 1 && l.qtype === 'minor' && (h.max_level !== 1 || !introAnchor(anchor)))
         return 'introductory habitat needs a weak ordinary level-1 individual (max HP 35, ATK 10)';
     const places = habitatPlace(s, need, o.where);
@@ -999,6 +1001,31 @@ function boardQuotaError(s, content, need, profile, all) {
 function strictBoardObject(answer) {
     try { return JSON.parse(answer.trim().replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/i, '$1')); }
     catch { return null; }
+}
+
+/** On the first draft only, retry the full validator locally for one independently known body plan. */
+export function parseInitialBoard(answer, content, need, s) {
+    const parsed = parseBoard(answer, content, need, s);
+    if (parsed.refused?.length !== 1 || parsed.refused[0].why !== ANCHOR_CONFLICT ||
+        parsed.listings?.length !== need.missing - 1 || parsed.errors.length) return parsed;
+    const board = strictBoardObject(answer);
+    if (!Array.isArray(board?.listings) || board.listings.length !== need.missing) return parsed;
+    const slots = board.listings.filter(l => l.title === parsed.refused[0].title);
+    if (slots.length !== 1) return parsed;
+    const listing = slots[0];
+    const target = listing.objectives.find(o => o.verb === 'DEFEAT');
+    // A body plan must be named by both head nouns. "Pike" in "pike-heron" cannot make a bird aquatic.
+    const matches = speciesMatches(content, listing.habitat.species);
+    const heads = kindHeads({what:listing.habitat.species});
+    const targetHeads = kindHeads({what:target.what});
+    const proof = matches.find(([alias]) => heads.includes(alias) && targetHeads.includes(alias));
+    if (!proof) return parsed;
+    const anchor = proof[1];
+    const evidence = [...matches, ...speciesMatches(content, target.what), ...speciesMatches(content, target.unit)];
+    if (evidence.some(([, id]) => id !== anchor) || habitatPlace(s, need, target.where).some(p => p.population)) return parsed;
+    listing.habitat.anchor = anchor;
+    const checked = parseBoard(JSON.stringify(board), content, need, s);
+    return checked.listings?.length === need.missing && !checked.refused.length ? checked : parsed;
 }
 
 // Restrict the smaller second request to an independently invalid introductory habitat.

@@ -1,0 +1,17 @@
+{
+ "inherits": "accepted_user07_b.json",
+ "cases": {
+  "b18-mage#7": {
+   "category": "User08 board body plan",
+   "previous": "sha256:d8d41162bd22a8c245ef961529ef658793db33a1da12473eaefc0147de49f2c7",
+   "fingerprint": "sha256:1ef11c49ff41b0a58fd0c1c7e2f127796b757e5ab6d523d6c47134fa44df219f",
+   "reason": "The first board's snapping turtle is armored_beast. Four other notices survive; the unused retry would have replaced slot 2 with mire pike. Both boards publish five contracts."
+  },
+  "b18-rogue#5": {
+   "category": "User08 board body plan",
+   "previous": "sha256:204150f995cf514ce9ecc21e67d8d58194325e68dc314b45328391ef27ae9a0b",
+   "fingerprint": "sha256:44fd43c5bd7599b611a26a2bf7dee60ade8e940f88ae2508a42419892e1ea681",
+   "reason": "The first Gristbeck giant snapping turtle hunt has one wrong body plan. Correcting it publishes the full valid five-notice board. The historical retry repeated that defect and used to leave the board unpublished."
+  }
+ }
+}

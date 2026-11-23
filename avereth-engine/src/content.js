@@ -211,14 +211,19 @@ export function anchorFor(content, text) {
     return null;
 }
 
+/** Catalog aliases present in a species description, including their plurals, most specific first. */
+export function speciesMatches(content, text) {
+    const t = normText(text || '');
+    const plural = alias => alias.replace(/([a-z]+)$/, word => /[^aeiou]y$/.test(word) ? word.slice(0, -1) + 'ies'
+        : /f$/.test(word) ? word.slice(0, -1) + 'ves' : /(?:s|x|z|ch|sh)$/.test(word) ? word + 'es' : word + 's');
+    return content.anchorAliases.filter(([alias]) => wordMatch(t, alias) || wordMatch(t, plural(alias)));
+}
+
 /** Same species/body-plan interpretation for new V4 creatures and new world hunts, including plurals.
  * A supplied body plan stands when it names the species equally specifically; established populations are resolved first.
  */
 export function speciesAnchor(content, text, supplied = null) {
-    const t = normText(text || '');
-    const plural = alias => alias.replace(/([a-z]+)$/, word => /[^aeiou]y$/.test(word) ? word.slice(0, -1) + 'ies'
-        : /f$/.test(word) ? word.slice(0, -1) + 'ves' : /(?:s|x|z|ch|sh)$/.test(word) ? word + 'es' : word + 's');
-    const matches = content.anchorAliases.filter(([alias]) => wordMatch(t, alias) || wordMatch(t, plural(alias)));
+    const matches = speciesMatches(content, text);
     const first = matches[0];
     const given = matches.find(([, id]) => id === supplied);
     const id = given && (!first || given[0].length >= first[0].length) ? supplied : first?.[1] || supplied;

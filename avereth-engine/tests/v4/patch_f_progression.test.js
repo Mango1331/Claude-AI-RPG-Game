@@ -222,11 +222,15 @@ test('F progression: actual arrival and extraction bind a creature to the report
     assert.ok(foes.every(e => e.profile.level >= 4 && e.profile.level <= 7));
     assert.deepEqual(validateState(r.state, c), []);
 });
-test('F progression: generator repair uses the same population and diversity validator, without partial booking', async () => {
+test('F progression: a unique wolf anchor is corrected locally, a second bad contract still requires repair', async () => {
     const s = state(), n = need(s), original = copy(s), bad = listings(); bad[2].habitat.anchor = 'ogre';
     let calls = 0;
     const r = await generateBoard(async () => JSON.stringify({ listings: ++calls === 1 ? bad : listings() }), s, c, n);
-    assert.equal(calls, 2); assert.equal(r.listings.length, 5); assert.deepEqual(s, original);
+    assert.equal(calls, 1); assert.deepEqual(r.listings, parse(s).listings); assert.deepEqual(s, original);
+    bad[1].habitat.max_level = 14;
+    calls = 0;
+    const repaired = await generateBoard(async () => JSON.stringify({ listings: ++calls === 1 ? bad : listings() }), s, c, n);
+    assert.equal(calls, 2); assert.deepEqual(repaired.listings, parse(s).listings); assert.deepEqual(s, original);
     calls = 0;
     const fail = await generateBoard(async () => { calls++; return JSON.stringify({ listings: bad }); }, s, c, n);
     assert.equal(calls, 2); assert.equal(fail.listings.length, 0); assert.deepEqual(s, original);

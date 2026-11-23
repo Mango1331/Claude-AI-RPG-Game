@@ -1,5 +1,5 @@
 import { actionInputOf, actionInputHash, actionPrefix, validateActionSelection, reconcileHudPlan } from '../action_input.js';
-import { boardRepairGuidance, boardSlotRepair, parseBoardSlot } from './guild.js';
+import { boardRepairGuidance, boardSlotRepair, parseBoardSlot, parseInitialBoard } from './guild.js';
 import { movementEvidence } from './narration_evidence.js';
 import { placeKey } from './place_refs.js';
 import { worldVocab } from './extract.js';
@@ -624,7 +624,8 @@ export async function generateBoard(llm, state, content, need) {
         ms += a.ms;
         calls.push(a.call);
         if (!a.ok) { last = { errors: [a.error] }; continue; }
-        const p = repair ? parseBoardSlot(a.content, repair, content, need, state) : parseBoard(a.content, content, need, state);
+        const parseFull = attempt === 0 ? parseInitialBoard : parseBoard;
+        const p = repair ? parseBoardSlot(a.content, repair, content, need, state) : parseFull(a.content, content, need, state);
         // Prototype C (4.3.0-c.6.1): fewer valid listings than the day's board asks for are no board (repaired once, else
         // failed: yesterday's stays up), never a smaller day
         const n = p.listings?.length;

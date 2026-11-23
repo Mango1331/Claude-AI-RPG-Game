@@ -440,6 +440,15 @@ function blockingHere(s, name) {
     }) || null;
 }
 
+// Only a direct entry, in the player's own words, can disambiguate a spurious habitat scope.
+function entersThisDungeon(quote, name) {
+    const entry = normText(quote).match(/^(?:i )?(?:enter|(?:go|step|walk|head|descend) (?:in|inside|into))(?: (?:the |this )?([\w '-]+?))?[.!]?$/);
+    if (!entry) return false;
+    const target = entry[1];
+    const dungeon = normText(name);
+    return !target || target === 'dungeon' || target === dungeon || dungeon.endsWith(' ' + target);
+}
+
 function dungeonGo(s, c) {
     const here = s.scene.at;
     let to = c.to;
@@ -708,6 +717,11 @@ const HANDLERS = {
             return { status: 'authorized', line: `RETURNS — to ${name} after the steps before (the story decides whether he gets back).` };
         }
         if (known && c.to === s.scene.at) return { status: 'refused', reason: 'already here', done: true, line: `NOTHING TO DO — he is already at ${placeName(s, c.to)}.` };
+        if (envx?.c && rulesetOf(s) >= 2 && !ctx.auth.gos.length && c.within === s.scene.at && s.places[c.within]?.dungeon?.real) {
+            const entry = section || (known && positionOf(s, c.to));
+            if (entry?.root === c.within && entry.level === 1 && entry.k === 1 && entersThisDungeon(c.quote, placeName(s, c.within)))
+                c = { ...c, within: null };
+        }
         if (c.within != null && (!envx?.c || rulesetOf(s) < 2 || known || !s.places[c.within]?.population || !lineage(s, s.scene.at).includes(c.within)))
             return { status: 'refused', reason: 'invalid local habitat scope', line: 'CANNOT GO — local exploration needs the current habitat; choose a normal destination to leave it.' };
         const name = known ? placeName(s, c.to) : section ? section.name : String(c.to?.new || 'somewhere');

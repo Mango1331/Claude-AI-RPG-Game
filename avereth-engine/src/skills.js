@@ -349,6 +349,12 @@ export function noteUse(ctx, r) {
         }
         return;
     }
+    // A minor is part of this turn: keep the major's defense/attack evidence until the opponent acts.
+    if (r.phase_slot === 'minor') {
+        if (r.skill && r.reposition && enc.combatants.pc.fixed.actions[r.skill])
+            pp.used[r.skill] ||= 'a step that moved him';
+        return;
+    }
     const waiting = pp.wait;
     pp.wait = null;
     const before = pp.last ?? null;

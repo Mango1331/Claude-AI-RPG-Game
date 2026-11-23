@@ -33,6 +33,7 @@ import { syncEvents, levelSpan, livingOf } from './v4/living.js';
 import { attackTargetHere, tacticalHere, areaCaught, areaBand, approachedBy, sideOf, burstCaught, skillAreaTarget } from './v4/scene_handles.js';
 import { lootEvents, speciesName } from './v4/loot.js';
 import { groupJoiners } from './v4/group_combat.js';
+import { tradeObject } from './v4/trade.js';
 import { featureEvent } from './v4/features.js';
 
 const GROUP_RE = /\b(?:everyone|everybody|all of you|you all|the (?:group|room|crowd|table|company)|(?:to|at|toward|towards) them)\b/i;
@@ -157,13 +158,15 @@ function creationTurn(s, content, intent, emit) {
 
 function storyTurn(s, content, text, intent, dice, emit, situations, c = false) {
     const pcAction = pcActionOf(s, content, intent, text);
+    if (pcAction && intent.phase) pcAction.phase = intent.phase;
     // Hotfix c.6.6.18: a thrown burst (an offensive item) strikes whom the engine fixes now, from where they stand;
     // Patch 7.1: only an item of his Power-Rank (or one whose own profile allows him) is activated at all
     if (pcAction?.kind === 'attack' && pcAction.item) {
-        const fx = itemEffectOf(content, s.objects?.[pcAction.item]);
+        const fx = itemEffectOf(content, tradeObject(s, content, pcAction.item));
         const no = fx ? rankRefusal(content, s.entities.pc.sheet.level, fx.profile || { kind: 'attack', title: fx.name, rank: fx.rank, requires_rank: fx.requires_rank }) : null;
         if (no) return { kind: 'note', text: `${no}. Nothing was used up, spent or rolled; nothing burns and nothing is struck.`, notice: `${fx.name}: Rank too high for him (nothing used up, nothing rolled)` };
         pcAction.burst = burstOf(s, content, pcAction);
+        if (pcAction.phase) pcAction.phase = pcAction.phase.map(a=>a.kind==='attack' ? {...a,burst:pcAction.burst} : a);
     }
     // 1) an NPC commitment reported last turn resolves first; player input cannot erase it (Core #23 PENDING)
     const committed = (s.pending_combat || []).map((p) => p.by).filter((by) => s.entities[by] && s.entities[by].status !== 'dead' && s.scene.present.includes(by));
@@ -185,7 +188,7 @@ function storyTurn(s, content, text, intent, dice, emit, situations, c = false) 
         const committed = uniq([...field, ...caught]);
         const sides = c && areaSkill(content, pcAction.skill, s) ? Object.fromEntries([pcAction.target, ...committed].filter(Boolean).map((id) => [id, sideOf(s, id)])) : null;
         const item = pcAction.item ? { item: pcAction.item, burst: pcAction.burst } : {};
-        return combatTurn(s, content, dice, emit, { trigger: { actor: 'pc', target: pcAction.target, skill: pcAction.skill, move: pcAction.move, move_target: pcAction.move_target, ...(pcAction.crowd ? { field: pcAction.field, crowd: true } : {}), ...item }, committed, sides, pcAction: null, c }, situations);
+        return combatTurn(s, content, dice, emit, { trigger: { actor: 'pc', target: pcAction.target, skill: pcAction.skill, ...(pcAction.phase ? {phase:pcAction.phase} : {}), move: pcAction.move, move_target: pcAction.move_target, ...(pcAction.crowd ? { field: pcAction.field, crowd: true } : {}), ...item }, committed, sides, pcAction: null, c }, situations);
     }
     if (pcAction?.kind === 'engage') return engagementTurn(s, content, dice, emit, pcAction.targets, { c });
     // 3) declared stealth: opposed check (or automatic with nobody around)
@@ -312,6 +315,7 @@ function pcActionOf(s, content, intent, text) {
         case 'skill': return { kind: 'skill', skill: intent.skill, dir: intent.dir, target: intent.target };
         // Patch 7.2: a restorative drunk in a fight, his main action (src/combat.js itemAction)
         case 'item': return s.encounter || (s.pending_combat || []).length ? { kind: 'item', item: intent.item, move: intent.move || null, move_target: intent.move_target ?? null } : { note: 'A potion is drunk outside a fight as a story command; nothing was used up here.', notice: 'Not in a fight (nothing used up)' };
+        case 'sidestep': return {kind:'sidestep'};
         case 'move': return { kind: 'move', dir: intent.dir, target: intent.target };
         case 'flee': return { kind: 'flee' };
         // prototype C (src/v4/planner.js): a declared wait in a fight (the same hold as A's HOLD_RE below), a known skill
@@ -656,10 +660,14 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
     // (src/v4/scene_handles.js approachedBy); their distances are the engine's then, not the story's
     if (c && !res.illegal) {
         const act = pcAction || (trigger?.actor === 'pc' ? trigger : null);
-        const mine = res.records.find((r) => r.actor === 'pc' && (r.kind === 'move' || r.move || r.after_move));
-        const step = !mine || !act ? null : mine.kind === 'move' ? { move: mine.dir, moveTarget: act.target ?? null }
-            : mine.move ? { move: 'closer', moveTarget: act.move_target ?? null } : { move: 'away', moveTarget: null };
-        for (const x of step ? approachedBy(s, step).filter((x) => !enc.combatants[x.id]) : []) emit({ t: 'scene.position', d: { id: x.id, band: x.to, cover: s.scene.positions[x.id]?.cover || 'none' } });
+        for (const mine of res.records.filter(r => r.actor === 'pc')) {
+            const step = !act ? null : mine.kind === 'move' ? {move:mine.dir,moveTarget:Object.hasOwn(mine,'focus') ? mine.focus : act.target ?? null}
+                : mine.reposition && mine.phase_slot ? {move:mine.dir,moveTarget:mine.focus}
+                : mine.move ? {move:'closer',moveTarget:mine.phase_slot ? mine.target : act.move_target ?? null}
+                : mine.after_move ? {move:'away',moveTarget:null} : null;
+            for (const x of step ? approachedBy(s,step).filter(x=>!enc.combatants[x.id]) : [])
+                emit({t:'scene.position',d:{id:x.id,band:x.to,cover:s.scene.positions[x.id]?.cover || 'none'}});
+        }
     }
     if (enc.log.length > 20) enc.log = enc.log.slice(-20);
     // the Turns resolved when the reply opened the fight come first for the narrator; the panel showed them already
@@ -685,10 +693,11 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
 
 /** Hotfix c.6.6.18: the item a resolved attack was made with is used up (one use of it; the rest stays his). */
 function usedUp(s, content, emit, record) {
-    const o = s.objects?.[record.item];
+    const o = tradeObject(s, content, record.item);
     if (!o || o.holder?.entity !== 'pc') return;
     const left = (o.qty ?? 1) - 1;
-    emit({ t: 'object.consumed', d: { id: o.id, by: 'pc', ...(left > 0 ? { qty: 1 } : {}) } });
+    if (o.id.startsWith('item.')) emit({t:'item.changed', d:{id:'pc',item:o.template,qty:-1,why:'used in combat'}});
+    else emit({ t: 'object.consumed', d: { id: o.id, by: 'pc', ...(left > 0 ? { qty: 1 } : {}) } });
     record.item_name = o.name;
     record.used_up = left > 0 ? `one used, ${left} left` : 'used up';
 }
@@ -707,7 +716,9 @@ function caughtBy(s, content, act) {
     const skill = skillOf(content, act.skill, s);
     const bandArea = skill.effects.some(e => e.kind === 'area' && e.shape === 'target_band');
     const band = areaBand(skill, s.encounter?.combatants?.[act.target]?.current.band ?? s.scene.positions?.[act.target]?.band);
-    return areaCaught(s, { move: act.move, moveTarget: act.move_target ?? null, band, visible: bandArea, ...(bandArea ? { target: act.target } : {}) }).filter((id) => {
+    const first = act.phase?.[0];
+    const step = first?.kind === 'move' ? first : first?.kind === 'skill' && skillOf(content,first.skill,s)?.effects?.some(e => e.kind === 'reposition') ? first : null;
+    return areaCaught(s, { move: step ? step.dir : act.move==='closer' ? 'closer' : null, moveTarget: step ? step.target : act.move_target ?? null, band, visible: bandArea, ...(bandArea ? { target: act.target } : {}) }).filter((id) => {
         const e = s.entities[id];
         const explicit = [act.target, ...(act.crowd ? act.field || [] : [])];
         return skillAreaTarget({ id: 'pc', side: 'pc' }, { id, side: sideOf(s, id) }, explicit)
@@ -720,7 +731,7 @@ function caughtBy(s, content, act) {
  * its knot (src/v4/scene_handles.js burstCaught), however many, each one the engine can give a combat profile.
  */
 function burstOf(s, content, act) {
-    const item = itemEffectOf(content, s.objects?.[act.item]) || skillOf(content, act.skill, s);
+    const item = itemEffectOf(content, tradeObject(s, content, act.item)) || skillOf(content, act.skill, s);
     if (!item?.effects?.some((e) => e.kind === 'area' && e.shape === 'burst')) return [];
     return burstCaught(s, act.target).filter((id) => {
         const e = s.entities[id];

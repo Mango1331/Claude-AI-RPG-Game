@@ -1,3 +1,4 @@
+import {combatSlot} from '../combat.js';
 import { reconcileHudPlan, normalizeHudBinding, hudCommands } from '../action_input.js';
 import { commandVocabFor } from './interpret.js';
 import { privateQuestsOf } from '../content.js';
@@ -37,11 +38,11 @@ import { openGoals, goalText } from './growth.js';
 import { composerFunctions } from '../skill_composer.js';
 import { disciplineTags, skillAspects, DEFENSE } from '../skills.js';
 import { CORE_STATS } from '../passives.js';
-import { acceptanceWhy, rateUnits } from './trade.js';
+import { acceptanceWhy, rateUnits, tradeObject } from './trade.js';
 
 export const PLANNER_VERSION = 'plan-c0.2';
 
-export const MECH_TYPES = ['use_skill', 'ability_world', 'move', 'flee', 'stealth', 'attempt', 'other', 'clarify'];
+export const MECH_TYPES = ['use_skill', 'ability_world', 'move', 'sidestep', 'flee', 'stealth', 'attempt', 'other', 'clarify'];
 
 // --------------------------------------------------------------------------------------------- prompt
 // Role, rules and examples are the ones P0/S4b measured (tools/p0/lib/s4b.mjs, arm p1), adapted to the frozen schema:
@@ -376,6 +377,8 @@ export function plannerRequest(vocab, ctx, text, { recent = '', previous = null,
     const system = plannerSystem(vocab, { fight: ctx.fight, privateQuests: ctx.privateQuests });
     const user = plannerUser(ctx, text, { recent });
     const messages = [{ role: 'system', content: system }, { role: 'user', content: user }];
+    if (ctx.fight || ctx.actionInput?.selection.kind === 'attack' || ctx.actionInput?.selection.kind === 'phase')
+        messages.push({role:'system',content:'A normal combat turn allows one major and one minor in declared order. A one-band move, movement skill or {"type":"sidestep","quote":"exact words"} is a minor. Sidestep reduces ranged damage; it changes no band. Flee takes the whole turn. A selected strike and an explicitly ordered complementary step are compatible.'});
     if (ctx.actionInput) messages.push({role:'user',content:`HOST HUD SELECTION (typed player input, not story): ${JSON.stringify(ctx.actionInput.selection)}\nConsider it together with the PLAYER MESSAGE before any action is executed. The COMPLETE outer answer object is {"commands":[...],"hud_binding":{"id":"${ctx.actionInput.selection.id}","decision":"use","seqs":[1]}}. hud_binding is a sibling of commands at the ROOT, never a field inside a command. Use decision:"conflict" when the player contradicts the choice. Bind the exact selected IDs using the existing commands. Bound commands need no invented quote. Preserve any real conditions with needs. Use conflict for negation, replacement or incompatible choices; do not silently change or duplicate the selection. Additional commands still require exact quotes. No action has been booked yet.`});
     if (ctx.actionInput?.selection.kind === 'trade.ask') {
         messages.at(-1).content += '\nThis is only a request for terms, never consent to a sale, purchase or payment. Bind these selected steps in order (seq may change): ' + JSON.stringify(hudCommands(ctx.actionInput.selection));
@@ -421,6 +424,7 @@ const FIELDS = {
     use_skill: ['skill', 'target', 'targets', 'quote'],
     ability_world: ['skill', 'target', 'target_words', 'goal', 'quote'],
     move: ['dir', 'target', 'quote'],
+    sidestep: ['quote'],
     flee: ['quote'],
     stealth: ['quote'],
     attempt: ['feature', 'aim', 'approach', 'stat', 'tool', 'possible', 'quote'],
@@ -752,7 +756,7 @@ export function ineffectiveMoves(state, ctx, commands) {
         : c.type === 'flee' ? [`flee seq ${c.seq}: there is no fight to flee; if he goes somewhere, answer with go (back the way he came: RECENT ROUTE, or a known place), else leave this command out`] : []);
 }
 
-export function mapPlan(commands, ctx, content, message, state, { hudSeqs = [] } = {}) {
+export function mapPlan(commands, ctx, content, message, state, { hudSeqs = [], orderedTurn = false } = {}) {
     // Patch 3 (live 18.10.2026: "I use the flint and steel to make a small light" became the unknown skill "flint and
     // steel" and the "continue" after it was dropped): a thing he holds, named where a skill would stand, is that thing
     // used, a story command among the others, never a skill
@@ -772,6 +776,42 @@ export function mapPlan(commands, ctx, content, message, state, { hudSeqs = [] }
     commands = commands.map((c) => { const a=itemAttack(c,content,state); return a && hudSeqs.includes(c.seq) ? {...a,target:c.target || null} : a || c; });
     // Patch 7.2: in a fight a restorative he drinks is his main action, as a skill (one per Turn, Core #12/#24)
     if (ctx.fight) commands = commands.map((c) => itemRestore(c, content, state) || c);
+    const actions = commands.filter(c => ['use_skill','move','sidestep','ability_world','flee'].includes(c.type));
+    if (orderedTurn && actions.length && (ctx.fight || actions.some(c => c.type === 'use_skill' && skillOf(content,c.skill,state)?.attack))) {
+        const clarify = text => ({route:'panel',panel:clarifyPanel(text,[]),notes:[],refused:true});
+        if (actions.length === 1 && actions[0].type === 'sidestep') return {route:'v3',intent:{kind:'sidestep'},notes:[]};
+        const flight = actions.find(c => c.type==='flee');
+        // A defense naming a later flight or describing a withdrawal is already disambiguated below.
+        const singleFlight = flight && actions.length===2 && actions.some(c=>c.type==='use_skill' &&
+            (coversFlight(c,flight,message,content,state) || LATER.test(flat(flight.quote))));
+        if (actions.length > 1 && !singleFlight) {
+            if (actions.length > 2 || actions.some(c=>c.type==='flee')) return clarify('One major and one minor per turn. Flee takes the whole turn.');
+            if (actions.some(c=>c.needs!=null) || commands.some(c=>!actions.includes(c) && c.type!=='other'))
+                return clarify('Separate conditional or additional actions from the combat phase.');
+            const phase=[];
+            for (const command of actions) {
+                if (command.type==='move') phase.push({kind:'move',dir:command.dir,target:command.target});
+                else if (command.type==='sidestep') phase.push({kind:'sidestep'});
+                else {
+                    const single=mapPlan([command],ctx,content,message,state,{hudSeqs});
+                    if (single.route==='panel' || ['no_target','ambiguous_target','unknown_skill'].includes(single.intent?.kind)) return single;
+                    if (single.route!=='v3' || !['attack','skill','item','ability_world'].includes(single.intent?.kind))
+                        return clarify('Choose a legal skill, item and target for the combined turn.');
+                    phase.push(single.intent);
+                }
+            }
+            if (combatSlot(phase[0],content,state)===combatSlot(phase[1],content,state))
+                return clarify('Choose at most one major and one minor.');
+            const opening=phase[1], step=phase[0];
+            if (!ctx.fight && opening.kind==='attack' && state?.scene?.awareness?.[opening.target]==='unaware' && step.kind==='move' && step.dir==='closer' &&
+                (!step.target || step.target===opening.target)) {
+                // The existing concealed approach can put the one opening strike in reach.
+                return {route:'v3',intent:{...opening,move:'closer',move_target:step.target ?? null},notes:[]};
+            }
+            const lead=phase.find(a=>a.kind==='attack') || phase.find(a=>combatSlot(a,content,state)==='major');
+            return {route:'v3',intent:{...lead,phase},notes:[]};
+        }
+    }
     const story = (commands || []).filter((c) => !MECH_TYPES.includes(c.type));
     const mech = (commands || []).filter((c) => MECH_TYPES.includes(c.type));
     const label = (id) => ctx.opponents.find((o) => o.id === id)?.label || (ctx.catalog.present || []).find((p) => p.id === id)?.handle || id;
@@ -911,7 +951,7 @@ export function mapPlan(commands, ctx, content, message, state, { hudSeqs = [] }
         if (!skill) return base({ kind: 'narrative', flags: { attack_without_class: true } });
     }
     // Patch 7.1: an attack item acts by its own snapshot (its reach); a skill by the content
-    const def = (main.item && state ? itemEffectOf(content, state.objects?.[main.item]) : null) || skillOf(content, skill, state);
+    const def = (main.item && state ? itemEffectOf(content, tradeObject(state, content, main.item)) : null) || skillOf(content, skill, state);
 
     // Hotfix c.6.6.18: an offensive item is thrown from where he stands, at the one he names or where most foes within its
     // reach stand (src/v4/scene_handles.js burstAim); with no foe in reach it stays his, unused
@@ -1027,7 +1067,7 @@ function heldUse(c, ctx) {
  */
 function itemAttack(c, content, state) {
     if (c?.type !== 'use' || typeof c.object !== 'string' || !state) return null;
-    const o = state.objects?.[c.object];
+    const o = tradeObject(state, content, c.object);
     if (!o || o.holder?.entity !== 'pc') return null;
     const fx = itemEffectOf(content, o);
     if (!fx?.attack) return null;
@@ -1040,7 +1080,7 @@ function itemAttack(c, content, state) {
  */
 function itemRestore(c, content, state) {
     if (c?.type !== 'use' || typeof c.object !== 'string' || !state) return null;
-    const o = state.objects?.[c.object];
+    const o = tradeObject(state, content, c.object);
     if (!o || o.holder?.entity !== 'pc') return null;
     const p = restoreOf(content, o);
     if (!p) return null;

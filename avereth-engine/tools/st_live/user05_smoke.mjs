@@ -95,7 +95,7 @@ export async function user05Smoke({page,idle,calls,onReload,out,saveFailure,worl
   await page.locator('.avereth-action-controls').scrollIntoViewIfNeeded();
   layouts.combat=await page.locator('.avereth-action-controls').evaluate(el=>({width:el.clientWidth,scroll:el.scrollWidth,children:[...el.querySelectorAll('*')].filter(c=>c.scrollWidth>c.clientWidth+2).map(c=>({tag:c.tagName,id:c.id,width:c.clientWidth,scroll:c.scrollWidth}))}));
   checks.combatSelectionFitsNarrow=layouts.combat.scroll<=layouts.combat.width+2;
-  checks.approachCheckboxVisible=await page.locator('#avereth-action-approach').evaluate(el=>el.getBoundingClientRect().width>=12 && el.getBoundingClientRect().height>=12);
+  checks.approachControlVisible=await page.locator('#avereth-minor').evaluate(el=>el.getBoundingClientRect().width>=12 && el.getBoundingClientRect().height>=12 && [...el.options].some(o=>o.value==='move:closer'));
   await page.locator('.avereth-action-controls').screenshot({path:path.join(out,'user05-selected-combat.png')});
   await page.setViewportSize({width:1280,height:900});
   // A delayed real ST extractor response plus a native intermediate save must not show completion.

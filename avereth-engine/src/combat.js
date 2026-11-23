@@ -3,6 +3,8 @@
 // Crit, no PER in combat math; only a true Ambush Opening Action crits (×1.5, every strike, PC and creatures alike).
 // The only roll left in an attack is the damage variance. Every step is written into the encounter snapshot (the
 // FIXED+CURRENT snapshot that Testrun-v1 lost), so the next turn copies it instead of re-guessing.
+import { Dice } from './rng.js';
+import { tradeObject } from './v4/trade.js';
 import { opensViolence } from './policy.js';
 import { actorTraits } from './v4/envelope.js';
 import { deriveCharacter, rawPower, rawPowerText, actionsOf } from './derived.js';
@@ -332,7 +334,7 @@ function reductionPct(e) {
  * between fighters ENGAGED with each other nothing of the place stands. The one rule of the strike (resolveStrike) and of
  * its preview (damagePreview); band is the distance between attacker and target as the attack strikes.
  */
-export const partialCoverAt = (target, band) => target.current.cover === 'partial' && band !== 'ENGAGED';
+export const partialCoverAt = (target, band) => band !== 'ENGAGED' && (target.current.cover === 'partial' || target.current.effects?.some(e => e.kind === 'sidestep'));
 
 function resolveStrike(ctx, attacker, target, attack, opts) {
     const { dice, content } = ctx;
@@ -366,7 +368,7 @@ function resolveStrike(ctx, attacker, target, attack, opts) {
             const pct = content.rules.cover.partial_damage_reduction_pct;
             rec.cover = `-${pct}%`;
             dmg = num(dmg * (1 - pct / 100));
-            steps.push(`Partial Cover -${pct}% = ${dmg}`);
+            steps.push(`${target.current.cover === 'partial' ? 'Partial Cover' : 'Sidestep'} -${pct}% = ${dmg}`);
         }
     }
     for (const e of target.current.effects) {
@@ -436,7 +438,7 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
     // For an area attack targetId is only the routing/nominal target. Its personal full cover must not veto an AoE
     // that may actually strike different ENGAGED foes.
     // Patch 7.1: an attack item acts by its own snapshot (its power, reach, area), not by the standard profile of its kind
-    const thing = extra.item ? state?.objects?.[extra.item] : null;
+    const thing = extra.item && state ? tradeObject(state, content, extra.item) : null;
     const charSkill = actor.model === 'character' ? (thing && itemEffectOf(content, thing)?.attack ? itemEffectOf(content, thing) : skillOf(content, skillId, state)) : null;
     const charArea = !!charSkill?.effects?.some((e) => e.kind === 'area');
     // Hotfix c.6.6.18: a thrown burst (an offensive item) lands where it is thrown: the one it is thrown at must be seen
@@ -466,8 +468,8 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         const groupMove = actorId === 'pc' && isArea && !bandArea && extra.move === 'closer' && moveTarget === null;
         // declared "close in" = the normal one-band move; EXTRA-BAND skills (Charge/Lunge/Shield Charge) add their
         // written extra band and may combine with the normal move (Content: "may combine with the normal one-band
-        // Turn movement"), so declaring the skill authorises both.
-        const allowed = (extra.move === 'closer' || skill.range.extra_band || extra.autoNormalMove ? 1 : 0) + (skill.range.extra_band ? 1 : 0);
+        // Turn movement"). The normal step requires its own declaration on the C path.
+        const allowed = (extra.move === 'closer' || extra.autoNormalMove || (!ctx.c && skill.range.extra_band) ? 1 : 0) + (skill.range.extra_band ? 1 : 0);
         // Prototype C (4.3.0-c.6.6.6, review): an area attack's reach is who stands ENGAGED with him (below), not where its
         // nominal target stands: a hound at SHORT does not veto a burst that reaches the companion at his side
         if (!groupMove && !(ctx.c && isArea && !bandArea)) {
@@ -733,8 +735,8 @@ function repositionPc(enc, actorId, dir, focusId) {
 export function itemAction(ctx, actorId, act, { validateOnly = false } = {}) {
     const { enc, content, state } = ctx;
     const actor = enc.combatants[actorId];
-    const o = state?.objects?.[act.item];
-    if (!o || o.holder?.entity !== actorId) return { illegal: `${actor.name} does not hold ${o ? o.name : 'that'}` };
+    const o = state && tradeObject(state, content, act.item);
+    if (!o || o.holder?.entity !== actorId || o.qty === 0) return { illegal: `${actor.name} does not hold ${o ? o.name : 'that'}` };
     const p = restoreOf(content, o);
     if (!p) return { illegal: `${o.name} is no restorative the engine knows` };
     const x = restoreEffect(content, p, { level: actor.fixed.level, current: actor.current, max: { hp: actor.fixed.max_hp, mp: actor.fixed.max_mp, sta: actor.fixed.max_sta } });
@@ -1025,7 +1027,10 @@ function npcAct(ctx, npcId, decided = null) {
         return { round: enc.round, actor: npcId, kind: 'surrender', why: decision.why, pending_xp_added: 0 };
     }
     if (decision.kind === 'flee') return { ...moveAction(ctx, npcId, 'away'), why: decision.why, ...(ctx.c ? { fleeing: true } : {}) };
+    if (ctx.c && decision.kind === 'retreat' && me.current.band === 'LONG')
+        return {round:enc.round,actor:npcId,kind:'hold',why:'already at LONG; only a full flight leaves the encounter'};
     if (decision.kind === 'retreat') return { ...moveAction(ctx, npcId, 'away'), kind: 'move', dir: 'away', why: decision.why };
+    if (decision.kind === 'cover' && ctx.c && rulesetOf(ctx.state) >= 2) return {...sidestep(ctx,npcId),why:decision.why};
     if (decision.kind === 'cover') {
         const before = me.current.cover;
         let change = '';
@@ -1250,11 +1255,93 @@ function chase(ctx, id) {
     return { ...record, caught: true, change: `${t.name} ${before} -> ENGAGED`, why: `caught: it cannot run again (escape d100 ${r.roll} > ${r.chance})` };
 }
 
+function sidestep(ctx, id) {
+    const actor = ctx.enc.combatants[id];
+    addEffect(actor, {kind:'sidestep', source:id, expires:'start_of_source_next_turn',
+        name:'Sidestep', round:ctx.enc.round_marker ?? ctx.enc.round});
+    return {round:ctx.enc.round, actor:id, kind:'sidestep', change:'25% less damage at distance until the next own turn'};
+}
+
+export function combatSlot(act, content, state) {
+    if (act.kind === 'flee') return 'whole';
+    if (['sidestep','move'].includes(act.kind)) return 'minor';
+    const skill = act.kind === 'skill' && resolveSkill(content,act.skill,state);
+    if (skill && content.skills.has(skill.id) && skill.effects?.some(e=>e.kind==='reposition' && e.bands===1 && e.extra) &&
+        skill.effects.every(e=>['reposition','incoming_damage_reduction'].includes(e.kind))) return 'minor';
+    return 'major';
+}
+
+function singlePcAction(ctx, act) {
+    const {enc} = ctx;
+    let r;
+    if (act.kind === 'attack') r = attackAction(ctx, 'pc', act.target, act.skill, { move: act.move, moveTarget: act.move_target, item: act.item, burst: act.burst, field: act.field, crowd: act.crowd });
+    else if (act.kind === 'sidestep') r = sidestep(ctx, 'pc');
+    else if (act.kind === 'skill') r = skillAction(ctx, 'pc', act.skill, { dir: act.dir, target: act.target });
+    else if (act.kind === 'move') r = ctx.c && !act.explicitBudget && act.dir === 'closer' && fleeing(enc, act.target) ? chase(ctx, act.target) : { ...moveAction(ctx, 'pc', act.dir, act.target), ...(act.explicitBudget ? {focus:act.target ?? null} : {}) };
+    else if (act.kind === 'ability_world') r = worldAction(ctx, 'pc', act);
+    else if (act.kind === 'item') r = itemAction(ctx, 'pc', act);
+    else if (act.kind === 'flee' && ctx.c) r = pcFlee(ctx);
+    else if (act.kind === 'flee') {
+        const far = Object.values(enc.combatants).filter((c) => c.side === 'hostile' && alive(c)).every((c) => c.current.band === 'LONG');
+        if (far) { enc.combatants.pc.current.escaped = true; r = { round: enc.round, actor: 'pc', kind: 'flee', escaped: true }; }
+        else r = { ...moveAction(ctx, 'pc', 'away'), kind: 'flee' };
+    } else r = { round: enc.round, actor: 'pc', kind: 'hold', why: 'no combat action declared' };
+    return r;
+}
+
+// Stage only the acting player's phase. Earlier initiative and reactions already belong to the encounter.
+export function orderedPhase(ctx, phase, {preview = false} = {}) {
+    if (!Array.isArray(phase) || phase.length < 1 || phase.length > 2 ||
+        phase.some(a => !['attack','skill','item','move','sidestep','flee','ability_world'].includes(a?.kind) || a.move || a.phase))
+        return {illegal:'Ungültige Kampffolge'};
+    const slots = phase.map(act => combatSlot(act, ctx.content, ctx.state));
+    if (slots.length === 2 && (new Set(slots).size !== 2 || slots.includes('whole')))
+        return {illegal:'Ein Major und ein Minor pro Zug. Flucht verbraucht den ganzen Zug.'};
+    for (const act of phase) {
+        if (act.item) {
+            const held = tradeObject(ctx.state, ctx.content, act.item);
+            if (!held || held.holder?.entity !== 'pc' || held.qty === 0) return {illegal:'The selected item is not held'};
+        }
+        if (act.target && (!ctx.enc.combatants[act.target] || !alive(ctx.enc.combatants[act.target])))
+            return {illegal:'Ungültiges Kampfziel'};
+        if (act.kind === 'move' && !['closer','away'].includes(act.dir)) return {illegal:'Ungültige Bewegungsrichtung'};
+        if (act.kind==='skill' && !resolveSkill(ctx.content,act.skill,ctx.state)) return {illegal:'Unbekannte Fähigkeit'};
+    }
+    const enc = clone(ctx.enc), origin = ctx.dice || Dice.from(ctx.state);
+    const dice = new Dice(origin.seed, origin.n), staged = {...ctx, enc, dice};
+    const records = [];
+    for (const act of phase) {
+        const r = singlePcAction(staged, {...act, explicitBudget:true});
+        if (r.illegal) return {illegal:r.illegal};
+        if (act.expected_band && r.area_band !== act.expected_band)
+            return {illegal:'Das gewählte Angriffsband ist vor dem eigenen Zug nicht mehr erreichbar.'};
+        if (r.reposition) Object.assign(r,{dir:act.dir || 'away',focus:act.target ?? null});
+        r.phase_slot = combatSlot(act,ctx.content,ctx.state);
+        noteUse(staged,r);
+        records.push(r);
+        if (!alive(enc.combatants.pc) || r.kind==='attack' && !activeHostiles(enc).length) {
+            // Even a lethal opening cannot launder an unaffordable selected mobility skill.
+            const trailing=phase[records.length];
+            if (trailing?.kind==='skill') {
+                const valid=skillAction(staged,'pc',trailing.skill,{validateOnly:true});
+                if (valid.illegal) return {illegal:valid.illegal};
+            }
+            break;
+        }
+    }
+    if (!preview) {
+        Object.assign(ctx.enc, enc);
+        origin.n = dice.n;
+        origin.log.push(...dice.log);
+    }
+    return {records};
+}
+
 export function runCombat(ctx, pcAction) {
     const { enc } = ctx;
     const records = [];
     // Patch 9B-1: every record also tells what it shows of his use of a Skill (src/skills.js noteUse; ruleset 2)
-    const push = (r) => { enc.log.push(r); records.push(r); noteUse(ctx, r); };
+    const push = (r) => { enc.log.push(r); records.push(r); if (!r.phase_slot) noteUse(ctx, r); };
     // snapshots saved before carried ammunition was tracked per combatant: take it from the sheet once
     for (const c of Object.values(enc.combatants)) if (c.model === 'character' && !c.current.ammo) c.current.ammo = ammoOf(ctx.state?.entities[c.id]?.sheet || {}, ctx.content);
     let pcActed = false;
@@ -1263,6 +1350,7 @@ export function runCombat(ctx, pcAction) {
         const t = enc.trigger;
         let r;
         if (t.actor === 'pc') {
+            if (t.phase?.length > 1) return {enc,records,stopped:'illegal',illegal:'Ein echter Hinterhalt eröffnet mit einem einzelnen Angriff.'};
             r = attackAction(ctx, 'pc', t.target, t.skill, { opening: true, move: t.move, moveTarget: t.move_target, item: t.item, burst: t.burst, field: t.field, crowd: t.crowd });
             if (r.illegal) return { enc, records, stopped: 'illegal', illegal: r.illegal };
             pcActed = true;
@@ -1284,8 +1372,14 @@ export function runCombat(ctx, pcAction) {
     if (ctx.c && enc.round === 0 && enc.first_strike && !enc.opening && !enc.trigger_done) {
         const t = enc.trigger;
         let r;
+        let openingRecords;
         if (t.actor === 'pc') {
-            r = attackAction(ctx, 'pc', t.target, t.skill, { move: t.move, moveTarget: t.move_target, item: t.item, burst: t.burst, field: t.field, crowd: t.crowd });
+            if (t.phase) {
+                const phase = orderedPhase(ctx,t.phase);
+                if (phase.illegal) return {enc,records,stopped:'illegal',illegal:phase.illegal};
+                openingRecords = phase.records;
+                r = openingRecords.find(action => action.kind === 'attack');
+            } else r = attackAction(ctx, 'pc', t.target, t.skill, { move: t.move, moveTarget: t.move_target, item: t.item, burst: t.burst, field: t.field, crowd: t.crowd });
             if (r.illegal) return { enc, records, stopped: 'illegal', illegal: r.illegal };
             pcActed = true;
         } else {
@@ -1303,7 +1397,7 @@ export function runCombat(ctx, pcAction) {
             r.first_strike = true;
             r.note = 'First Strike (an open attack that opens the fight: no Ambush bonus; its maker\'s action of Round 1)';
             enc.spent = { ...(enc.spent || {}), [t.actor]: 1 };
-            push(r);
+            (openingRecords || [r]).forEach(push);
         }
     }
     if (enc.round === 0) { enc.round = 1; enc.turn_index = -1; advance(enc); if (enc.round > 1) enc.round = 1; }
@@ -1335,20 +1429,10 @@ export function runCombat(ctx, pcAction) {
             const act = pcAction || (enc.trigger && enc.trigger.actor === 'pc' && !enc.trigger_done ? { kind: 'attack', skill: enc.trigger.skill, target: enc.trigger.target, move: enc.trigger.move, move_target: enc.trigger.move_target, item: enc.trigger.item, burst: enc.trigger.burst, field: enc.trigger.field, crowd: enc.trigger.crowd } : null);
             if (enc.trigger && enc.trigger.actor === 'pc') enc.trigger_done = true;
             if (!act) return { enc, records, stopped: 'pc_turn' };
-            let r;
-            if (act.kind === 'attack') r = attackAction(ctx, 'pc', act.target, act.skill, { move: act.move, moveTarget: act.move_target, item: act.item, burst: act.burst, field: act.field, crowd: act.crowd });
-            else if (act.kind === 'skill') r = skillAction(ctx, 'pc', act.skill, { dir: act.dir, target: act.target });
-            else if (act.kind === 'move') r = ctx.c && act.dir === 'closer' && fleeing(enc, act.target) ? chase(ctx, act.target) : moveAction(ctx, 'pc', act.dir, act.target);
-            else if (act.kind === 'ability_world') r = worldAction(ctx, 'pc', act);
-            else if (act.kind === 'item') r = itemAction(ctx, 'pc', act);
-            else if (act.kind === 'flee' && ctx.c) r = pcFlee(ctx);
-            else if (act.kind === 'flee') {
-                const far = Object.values(enc.combatants).filter((c) => c.side === 'hostile' && alive(c)).every((c) => c.current.band === 'LONG');
-                if (far) { enc.combatants.pc.current.escaped = true; r = { round: enc.round, actor: 'pc', kind: 'flee', escaped: true }; }
-                else r = { ...moveAction(ctx, 'pc', 'away'), kind: 'flee' };
-            } else r = { round: enc.round, actor: 'pc', kind: 'hold', why: 'no combat action declared' };
-            if (r.illegal) return { enc, records, stopped: 'illegal', illegal: r.illegal };
-            push(r);
+            const result = act.phase ? orderedPhase(ctx, act.phase) : {records:[singlePcAction(ctx, act)]};
+            const illegal = result.illegal || result.records[0]?.illegal;
+            if (illegal) return { enc, records, stopped:'illegal', illegal };
+            result.records.forEach(push);
             pcActed = true;
             endTurn(enc, 'pc');
             advance(enc);

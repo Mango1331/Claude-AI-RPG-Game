@@ -1,4 +1,5 @@
 import {availableActions,validateActionSelection,actionPrefix,actionInputOf,actionLabel,actionBands} from './action_input.js';
+import {combatSlot} from './combat.js';
 import {installTradePanel} from './ui_trade.js';
 import {chatOrigin,originKey} from './v4/action_persistence.js';
 
@@ -20,15 +21,42 @@ export function installActionComposer({context,state,content,enabled,settings,bl
     const area=textarea();if(!area)return null;area.closest('#send_form')?.prepend(box);
     const controls=document.createElement('section');controls.className='avereth-action-controls';
     controls.innerHTML=`<div id="avereth-action-choices"></div><div id="avereth-action-targets"></div>
-      <label id="avereth-action-approach-label" hidden><input id="avereth-action-approach" type="checkbox"> Ein Bandschritt näher + Angriff</label>
+      <label id="avereth-mobility-label" hidden>Bewegungsrichtung <select id="avereth-mobility-dir"><option value="away">Zurück</option><option value="closer">Näher</option></select></label>
+      <div id="avereth-phase-controls" hidden><label>Zusätzliche Minor Action <select id="avereth-minor"></select></label>
+        <label>Reihenfolge <select id="avereth-order"><option value="after">Major → Minor</option><option value="before">Minor → Major</option></select></label></div>
       <div id="avereth-action-chip" hidden><span></span><button id="avereth-action-clear" type="button">Entfernen</button></div>
       <div id="avereth-action-send-row" hidden><label>Optionaler Text im ST-Eingabefeld: <select id="avereth-action-mode" aria-label="Bedeutung des Begleittexts"><option value="hud_free">Auch Handlungen im Text berücksichtigen</option><option value="hud_roleplay">Text ist nur Rollenspiel</option></select></label><button id="avereth-action-send" type="button">Aktion senden</button></div>
       <button id="avereth-action-revise" type="button" hidden>Ungebuchte Eingabe: nur Auswahl mit Rollenspiel ausführen</button>`;
     box.querySelector('#avereth-action-home').append(controls);
-    const chip=controls.querySelector('#avereth-action-chip'),mode=controls.querySelector('#avereth-action-mode'),approach=controls.querySelector('#avereth-action-approach');
+    const chip=controls.querySelector('#avereth-action-chip'),mode=controls.querySelector('#avereth-action-mode');
     const tell=text=>{box.querySelector('#avereth-action-status').textContent=text;};
     let options=[],targets=[],choice={},controlsOrigin=null,activePanel=null;
-    const clearControls=()=>{choice={};approach.checked=false;};
+    const minor = controls.querySelector('#avereth-minor'), order = controls.querySelector('#avereth-order');
+    const clearControls=()=>{choice={};minor.value='';order.value='after';};
+    const direction = controls.querySelector('#avereth-mobility-dir');
+    function minorChoices() {
+        return options.filter(a=>combatSlot(a,content(),state())==='minor').flatMap(a=>a.skill
+            ? ['away','closer'].map(dir=>({...a,key:a.key+':'+dir,dir,label:a.label+(dir==='away'?' · zurück':' · näher')})) : [a]);
+    }
+    function compose(s) {
+        const m=minorChoices().find(a=>a.key===minor.value);
+        if (!m || combatSlot(s,content(),state())!=='major') return s;
+        const step={kind:m.kind,id:uid(),...(m.skill?{skill:m.skill}:{}),
+            ...(m.kind==='move' || m.skill ? {dir:m.dir || 'away',target:m.dir==='closer'?s.target || choice.target:null} : {})};
+        if (m.dir==='closer' && !step.target) return null;
+        return {id:s.id,kind:'phase',steps:order.value==='before'?[step,s]:[s,step]};
+    }
+    function bands(s) {
+        if (!minor.value) return actionBands(s,state(),content());
+        const rows=[];
+        for (const t of targets.filter(t=>t.hostile)) {
+            if (rows.some(r=>r.band===t.band)) continue;
+            const phase=compose({...s,target:t.id,band:t.band});
+            const v=phase && validateActionSelection(phase,state(),content());
+            if (v?.ok) rows.push({band:t.band,at:v.preview.band,target:t.id,targets:v.preview.targets || [t.id]});
+        }
+        return rows;
+    }
     const tradeRevision = () => key() + '|' + actionPrefix(context().chat);
     const refreshTrade = installTradePanel(box, {
         revision: tradeRevision, live: state, notice: tell,
@@ -76,14 +104,22 @@ export function installActionComposer({context,state,content,enabled,settings,bl
         const home=activePanel || box.querySelector('#avereth-action-home');if(controls.parentNode!==home)home.append(controls);
         const button=(a)=>`<button type="button" data-avereth-action="${escape(a.key)}" aria-pressed="${choice.action===a.key}">${escape(a.label)}</button>`;
         const items=options.filter(a=>a.kind==='use');
-        const actions=options.filter(a=>a.kind!=='use' && (!activePanel || a.kind==='move'));
+        const actions=options.filter(a=>a.kind!=='use' && (s.encounter || a.kind==='attack') && (!activePanel || ['move','flee','sidestep'].includes(a.kind)));
         controls.querySelector('#avereth-action-choices').innerHTML=`${projected.tactical?`<div class="avereth-action-buttons">${actions.map(button).join('')}</div>`:''}${items.length?`<details><summary>Gegenstände</summary><div class="avereth-action-buttons">${items.map(button).join('')}</div></details>`:''}${!projected.tactical && targets.length?`<details><summary>Weitere Aktionen / Ziele</summary><div class="avereth-action-buttons">${actions.map(button).join('')}</div></details>`:''}`;
         const a=options.find(a=>a.key===choice.action);
-        controls.querySelector('#avereth-action-approach-label').hidden=a?.kind!=='attack';
+        const mobility=a?.kind==='skill' && combatSlot(a,content(),s)==='minor';
+        controls.querySelector('#avereth-mobility-label').hidden=!mobility;
+        const allowMinor=projected.tactical && a && (s.encounter || a.kind==='attack' || a.kind==='use' && a.needsTarget) && combatSlot(a,content(),s)==='major';
+        controls.querySelector('#avereth-phase-controls').hidden=!allowMinor;
+        const prior=minor.value;
+        minor.replaceChildren(new Option('Keine',''));
+        if (allowMinor) for (const m of minorChoices()) minor.add(new Option(m.label,m.key));
+        minor.value=[...minor.options].some(o=>o.value===prior)?prior:'';
+        order.disabled=!minor.value;
         let aims='';
         if(a?.area){
-            const bands=actionBands({id:'preview',kind:a.kind,skill:a.skill,approach:approach.checked},s,content());
-            aims=bands.map(b=>`<button type="button" data-avereth-band="${b.band}" aria-pressed="${choice.band===b.band}">${b.band} · ${b.targets.map(id=>escape(actionLabel(s,content(),id))).join(', ')}</button>`).join('');
+            const choices=bands({id:'preview',kind:a.kind,skill:a.skill,approach:false});
+            aims=choices.map(b=>`<button type="button" data-avereth-band="${b.band}" aria-pressed="${choice.band===b.band}">${b.band}${b.at && b.at!==b.band?' → '+b.at:''} · ${b.targets.map(id=>escape(actionLabel(s,content(),id))).join(', ')}</button>`).join('');
         } else if(!activePanel && (a?.needsTarget || projected.tactical)){
             aims=targets.filter(t=>projected.tactical?t.hostile || t.id===choice.target:true).map(t=>`<button type="button" data-avereth-aim="${escape(t.id)}" aria-pressed="${choice.target===t.id}">${escape(t.label)} · ${escape(t.band || '')}</button>`).join('');
         }
@@ -100,20 +136,35 @@ export function installActionComposer({context,state,content,enabled,settings,bl
         drafts.delete(key());
         const a=options.find(a=>a.key===choice.action);if(!a){refresh();return;}
         const {kind,skill,object,dir}=a;
-        const selection={id:uid(),kind,...(skill?{skill}:{}),...(object?{object}:{}),...(dir?{dir}:{})};
-        if(kind==='attack')selection.approach=approach.checked;
+        let selection={id:uid(),kind,...(skill?{skill}:{}),...(object?{object}:{}),...(dir?{dir}:{})};
+        if(kind==='attack')selection.approach=false;
+        if(kind==='skill' && combatSlot(a,content(),state())==='minor') {
+            selection.dir=direction.value;
+            if(choice.target)selection.target=choice.target;
+        }
         if(a.area){
-            const band=actionBands(selection,state(),content()).find(b=>b.band===choice.band);
+            const band=bands(selection).find(b=>b.band===choice.band);
             if(!band){refresh();return;}selection.target=band.target;selection.band=band.band;
         }else if(a.needsTarget){if(!choice.target){refresh();return;}selection.target=choice.target;}
+        const main=selection;
+        selection=compose(main);
+        if (!selection) {refresh();tell('Bewegungsziel wählen');return;}
         const check=validateActionSelection(selection,state(),content());
         if(!check.ok){refresh();tell(check.reason);return;}
         const affected=check.preview?.targets || [];
-        const label=a.label+(selection.band?` → ${selection.band}`:selection.target?` → ${actionLabel(state(),content(),selection.target)}`:'')+(selection.approach?' · ein Schritt näher':'')+(affected.length>1?` · trifft: ${affected.map(id=>actionLabel(state(),content(),id)).join(', ')}`:'');
+        let label=a.label+(main.band?` → ${main.band}`:main.target?` → ${actionLabel(state(),content(),main.target)}`:'')+(affected.length>1?` · trifft: ${affected.map(id=>actionLabel(state(),content(),id)).join(', ')}`:'');
+        if(selection.kind==='phase') {
+            const second=minorChoices().find(o=>o.key===minor.value).label;
+            if (check.preview.band && main.band && check.preview.band!==main.band) label+=' · Angriffsband '+check.preview.band;
+            label=order.value==='before'?second+' → '+label:label+' → '+second;
+            if(check.preview.costs.length) label+=' · '+check.preview.costs.map(c=>c.amount+' '+c.resource.toUpperCase()).join(' + ');
+        }
         drafts.set(key(),{selection,label,mode:settings().actionTextMode || 'hud_free',base_revision:actionPrefix(context().chat)});refresh();
     }
     mode.onchange=()=>{const d=draft();if(d){d.mode=mode.value;settings().actionTextMode=mode.value;context().saveSettingsDebounced();refresh();}};
-    approach.onchange=selectChoice;
+    direction.onchange=selectChoice;
+    minor.onchange=selectChoice;
+    order.onchange=selectChoice;
     controls.querySelector('#avereth-action-clear').onclick=()=>{drafts.delete(key());clearControls();refresh();};
     controls.querySelector('#avereth-action-send').onclick=()=>{if(draft() && !generating && !blocked())document.getElementById('send_but')?.click();};
     box.querySelector('#avereth-action-retry').onclick=async()=>{try{await retry();refresh();}catch(e){tell(e.message);}};

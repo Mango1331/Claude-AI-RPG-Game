@@ -6,10 +6,20 @@ import fs from 'node:fs';import zlib from 'node:zlib';
 const f=JSON.parse(zlib.gunzipSync(fs.readFileSync(new URL('../../tests/v4/fixtures/user03_board158.json.gz',import.meta.url))));
 const user09 = JSON.parse(zlib.gunzipSync(fs.readFileSync(new URL('../../tests/v4/fixtures/user09_207.json.gz',import.meta.url)))).chat;
 const hazardTurns = [17,21].map(i=>({key:'hazard208_'+i,player:user09[i].mes,plan:JSON.parse(user09[i].extra.avereth.plan.raw[0]),reply:user09[i+1].mes,answer:user09[i+1].extra.avereth.extraction.raw}));
+const user10 = JSON.parse(zlib.gunzipSync(fs.readFileSync(new URL('../../tests/v4/fixtures/user10_207.json.gz',import.meta.url))));
+const journeyBoard=user10.boards[13];
+const acceptText='Annehmen: Clear Mossback Warrens, Level 1';
+const finalText='I watch the scouts and steady my staff.';
+const journeyTurns=[11,13,15,19,23,25].map(i=>({
+ key:'journey208_'+i, player:i===13?acceptText:i===25?finalText:user09[i].mes,
+ plan:{commands:user09[i].extra.avereth.interp?.commands || []},
+ reply:user09[i+1].mes,answer:user09[i+1].extra.avereth.extraction.raw,
+}));
+const projection208={key:'projection208',player:'I stay still and watch the wasps.',plan:{commands:[]},reply:'The wasps hover beside the wall.',answer:{scene:'here',expected:{},deltas:[]}};
 const success='I read the official board and study the notices.';
 const failure='I try reading the official quest board again.';
 const comparison='I spend three minutes comparing the official notices on the Guild board.';
-export const board159Turns=[...hazardTurns,
+export const board159Turns=[projection208,...journeyTurns,...hazardTurns,
  {key:'board203comparison',player:comparison,plan:{commands:[{seq:1,type:'board.read',rank:null,quote:comparison}]},
   reply:'Three minutes passed as Alaric compared the official contracts at the Guild board.',answer:{scene:'here',expected:{},deltas:[{seq:1,type:'time',minutes:3}]}},
 
@@ -18,6 +28,7 @@ export const board159Turns=[...hazardTurns,
 ];
 let mode=null,n=0;
 export function board159Response(system){
+ if(mode==='journey')return JSON.stringify(journeyBoard);
  n++;const pair=f.attempts[mode==='success'?0:1];
  if(mode==='full' && n===1)return 'unreadable initial board';
  if(mode==='failure') return JSON.stringify({listings:JSON.parse(pair[0]).listings.slice(0,3)});
@@ -107,6 +118,48 @@ export async function board159Smoke({page,send,idle,calls,worldTimings,driver,on
   checks['hazard'+i+'Saved']=await driver().verifySaved(await driver().chat(),{complete:true});
   await page.evaluate(()=>SillyTavern.getContext().reloadCurrentChat());onReload();await idle();
   checks['hazard'+i+'Reload']=await visible()===1;
+ }
+ if(process.env.AVERETH_SMOKE_JOURNEY208==='1'){
+  mode='journey';await seed(user09.slice(0,11));
+  const log=[];
+  for(const i of [11,13,15,17,19,21,23,25]){
+   const pos=calls.length;
+   if(i===13)await page.locator('#chat [data-avereth-quest="quest.clear_mossback_warrens_level_1"]').last().click();
+   else if(i===25){
+    await page.click('[data-avereth-action="skill:mage.arcane_wave"]');
+    await page.selectOption('#avereth-minor','move:away');
+    await page.selectOption('#avereth-order','before');
+    await page.locator('[data-avereth-band="SHORT"]').last().click();
+    await page.selectOption('#avereth-action-mode','hud_roleplay');
+    await send(finalText);
+   } else await send(user09[i].mes);
+   await idle();
+   const data=await page.evaluate(async()=>{
+    const c=SillyTavern.getContext(),{foldChat,rec}=await import('/scripts/extensions/third-party/avereth-engine/src/host.js');
+    const user=rec(c.chat.findLast(m=>m.is_user)), fold=foldChat(c.chat);
+    return {errors:fold.errors,where:fold.state.scene.at,hp:fold.state.entities.pc.sheet.hp,quests:Object.values(fold.state.quests).map(q=>[q.id,q.status]),
+     acts:(fold.state.last?.outcome?.records || []).filter(r=>r.actor==='pc').map(r=>r.kind),notice:user?.action_error,
+     hazards:(user?.events || []).filter(e=>e.t==='resource.changed'), world:rec(c.chat.at(-1))?.extraction?.status};
+   });
+   data.calls=calls.slice(pos).map(c=>c.purpose);log.push(data);
+   fs.writeFileSync(path.join(out,'journey208.json'),JSON.stringify(log,null,2));
+   checks['journeySaved'+i]=!data.errors.length && data.world==='applied' && await driver().verifySaved(await driver().chat(),{complete:true});
+   if(i===11)checks.journeyFour=data.quests.filter(q=>q[1]==='listed').length===4 && data.calls.filter(p=>p==='board').length===1;
+   if(i===13)checks.journeyAccepted=data.quests.some(q=>q[0]==='quest.clear_mossback_warrens_level_1' && q[1]==='active') && !data.calls.includes('plan');
+   if(i===17 || i===21)checks['journeyHazard'+i]=data.hazards.some(e=>e.d.resource==='hp');
+   if(i===25)checks.journeyOrder=data.acts.join(',')==='move,attack' && !data.calls.includes('plan');
+  }
+  const end=await publication();await page.evaluate(()=>SillyTavern.getContext().reloadCurrentChat());onReload();await idle();
+  checks.journeyReload=JSON.stringify(end)===JSON.stringify(await publication());
+  await seed(user10.chat.slice(0,29));const index=calls.length;
+  await send(projection208.player);await idle();
+  const later=calls.slice(index),rejected=user10.chat[27].mes;
+  for(const role of ['plan','narrator','extract']){
+   const records=later.filter(c=>c.purpose===role);
+   checks['projection208_'+role]=records.length===1 && !records.some(c=>c.messages.some(m=>String(m.content).toLowerCase().includes('after the spell i jump backwards')));
+  }
+  checks.projection208Audit=(await driver().chat()).some(m=>m.mes===rejected);
+
  }
  mode=null;return checks;
 }

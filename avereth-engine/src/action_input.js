@@ -2,7 +2,7 @@
 import { hash32, clone, BANDS } from './util.js';
 import { actionsOf, deriveCharacter } from './derived.js';
 import { rulesetOf, skillOf, itemEffectOf } from './content.js';
-import { attackAction, skillAction, itemAction, initEncounter, addCombatant, alive } from './combat.js';
+import { attackAction, skillAction, itemAction, orderedPhase, combatSlot, initEncounter, addCombatant, alive } from './combat.js';
 import { attackTargetHere, tacticalHere, sideOf, sceneHandle } from './v4/scene_handles.js';
 import { tradeObject } from './v4/trade.js';
 import { restoreOf, restoreEffect, useOf, profileOf, namedSource } from './v4/items.js';
@@ -39,6 +39,7 @@ function previewEncounter(state,content,target) {
 }
 export function lowerActionSelection(selection,state,content) {
     const s=selection;
+    if(s.kind==='sidestep' || s.kind==='flee')return {route:'v3',intent:{kind:s.kind}};
     if(s.kind==='quest.accept')return {route:'v4',commands:[{seq:1,type:'quest.accept',quest:s.quest}]};
     if(s.kind==='attack')return {route:'v3',intent:{kind:'attack',skill:s.skill,target:s.target,target_how:'hud',move:s.approach?'closer':null,move_target:s.approach?s.target:null}};
     if(s.kind==='skill')return {route:'v3',intent:{kind:'skill',skill:s.skill,target:s.target || null,dir:s.dir || 'away'}};
@@ -48,8 +49,34 @@ export function lowerActionSelection(selection,state,content) {
     if(state.encounter && restoreOf(content,o))return {route:'v3',intent:{kind:'item',item:o.id}};
     return {route:'v4',commands:[{seq:1,type:'use',object:o.id,qty:1}]};
 }
-export function validateActionSelection(selection,state,content) {
-    const s=selection, fields={attack:['skill','target','approach','band'],skill:['skill','target','dir'],move:['dir','target'],use:['object','target'],'quest.accept':['quest']};
+function validatePhase(selection,state,content) {
+    if (!selection.id || typeof selection.id !== 'string' || Object.keys(selection).some(k => !['id','kind','steps'].includes(k)) ||
+        !Array.isArray(selection.steps) || selection.steps.length !== 2 ||
+        selection.steps.some(s => !s || !['attack','skill','move','use','sidestep','flee'].includes(s.kind) || s.approach))
+        return refusal('Unerlaubte Kombination');
+    const target = selection.steps.find(a => a.kind === 'attack' || a.kind === 'use' && a.target)?.target;
+    const enc = target ? previewEncounter(state,content,target) : state.encounter;
+    if (!enc || !state.encounter && (!target || enc.ambush)) return refusal('Eine Kombination braucht einen regulären Kampfzug oder offenen Erstschlag');
+    const projected = {...state, encounter:enc};
+    const phase = [];
+    for (const step of selection.steps) {
+        const checked = validateActionSelection(step, projected, content, {ordered:true});
+        if (!checked.ok) return checked;
+        if (checked.mapped.route !== 'v3') return refusal('Diese Handlung ist kein Kampfakt');
+        phase.push(checked.mapped.intent);
+    }
+    const checked = orderedPhase({enc,content,state:projected,c:true},phase,{preview:true});
+    if (checked.illegal) return refusal(checked.illegal);
+    const lead = phase.find(a => a.kind === 'attack') || phase.find(a => combatSlot(a,content,state) === 'major') || phase[0];
+    const attack = checked.records.find(r => r.kind === 'attack');
+    const aimed = selection.steps.findIndex(step=>step.kind==='attack' && step.band);
+    if (aimed>=0 && attack?.area_band) phase[aimed].expected_band=attack.area_band;
+    return {ok:true,mapped:{route:'v3',intent:{...lead,phase}},preview:{targets:attack && [...new Set(attack.strikes.map(s => s.target))], band:attack?.area_band, costs:checked.records.filter(r=>r.cost).map(r=>r.cost)}};
+}
+
+export function validateActionSelection(selection,state,content,{ordered = false} = {}) {
+    if (selection?.kind === 'phase') return validatePhase(selection,state,content);
+    const s=selection, fields={sidestep:[],flee:[],attack:['skill','target','approach','band'],skill:['skill','target','dir'],move:['dir','target'],use:['object','target'],'quest.accept':['quest']};
     if (s?.kind === 'trade.accept' || s?.kind === 'trade.ask') {
         if (typeof s.id !== 'string' || !s.id) return refusal('Auswahl-ID fehlt');
         const {id, ...choice} = s;
@@ -59,7 +86,7 @@ export function validateActionSelection(selection,state,content) {
         const commands = tradeCommands(choice).map(c => boundTradeCommand(choice, c, draft.label));
         return {ok:true, mapped:{route:'v4',commands}, preview:{label:draft.label}};
     }
-    if(!s || !fields[s.kind] || Object.keys(s).some(k=>!['id','kind',...fields[s.kind]].includes(k)))return refusal('Unbekannte Aktionsfelder');
+    if(!s || !Object.hasOwn(fields,s.kind) || Object.keys(s).some(k=>!['id','kind',...fields[s.kind]].includes(k)))return refusal('Unbekannte Aktionsfelder');
     if(typeof s.id!=='string' || !s.id)return refusal('Auswahl-ID fehlt');
     if(state.mode==='creation' || state.entities.pc?.status==='dead')return refusal('Der Charakter kann jetzt keine HUD-Aktion ausführen');
     if(s.approach!==undefined && typeof s.approach!=='boolean')return refusal('Ungültige Annäherung');
@@ -79,12 +106,13 @@ export function validateActionSelection(selection,state,content) {
         if(s.kind==='skill' && !enc)return refusal('Diese Kampffähigkeit benötigt einen laufenden Kampf');
     }
     const itemAttack=s.kind==='use' && itemEffectOf(content,tradeObject(state,content,s.object))?.attack;
-    if(s.kind==='attack' || s.kind==='move' || itemAttack) {
+    if(s.kind==='attack' || (s.kind==='move' && !(s.target==null && (ordered || s.dir==='away'))) || itemAttack) {
         if(typeof s.target!=='string' || !attackTargetHere(state,s.target))return refusal('Das gewählte Ziel ist nicht aktiv anwesend');
         enc=previewEncounter(state,content,s.target);
         if(!enc)return refusal('Für dieses Ziel fehlt noch ein Kampfprofil; Freitext verwenden');
         if(!alive(enc.combatants[s.target]))return refusal('Das Ziel ist nicht mehr kampffähig');
     }
+    if (['sidestep','flee'].includes(s.kind) && !state.encounter) return refusal('Diese Aktion benötigt einen Kampf');
     if(s.kind==='move') {
         if(!state.encounter || !['closer','away'].includes(s.dir))return refusal('Bewegung braucht einen Kampf und eine gültige Richtung');
     }
@@ -110,7 +138,7 @@ export function validateActionSelection(selection,state,content) {
     }
     const mapped=lowerActionSelection(s,state,content);
     let preview={legal:true};
-    if(enc && mapped.route==='v3') {
+    if(enc && mapped.route==='v3' && !ordered) {
         // Virtual inventory objects are resolved through the same catalog resolver used by .200.
         const at=object && !state.objects[object.id] ? {...state,objects:{...state.objects,[object.id]:object}} : state;
         const ctx={enc,content,state:at,c:true};
@@ -133,9 +161,11 @@ export function availableActions(state,content) {
     const tactical=!!state.encounter || !!state.pending_combat?.length || targets.some(t=>t.hostile),actions=[];
     for(const id of Object.keys(actionsOf(state.entities.pc.sheet,content,rulesetOf(state),state))) {
         const skill=skillOf(content,id,state);
-        if(skill.attack || state.encounter)actions.push({key:`skill:${id}`,label:skill.name,kind:skill.attack?'attack':'skill',skill:id,needsTarget:!!skill.attack,area:skill.effects?.some(e=>e.kind==='area' && e.shape==='target_band')});
+        if(skill.attack || state.encounter || tactical && combatSlot({kind:'skill',skill:id},content,state)==='minor')actions.push({key:`skill:${id}`,label:skill.name,kind:skill.attack?'attack':'skill',skill:id,needsTarget:!!skill.attack,area:skill.effects?.some(e=>e.kind==='area' && e.shape==='target_band')});
     }
-    if(state.encounter) for(const dir of ['closer','away'])actions.push({key:`move:${dir}`,kind:'move',dir,label:dir==='closer'?'Näher gehen':'Zurückweichen',needsTarget:true});
+    if (tactical) actions.push({key:'sidestep',kind:'sidestep',label:'Ausweichen (−25 % Distanzschaden bis zum nächsten Zug)'});
+    if (state.encounter) actions.push({key:'flee',kind:'flee',label:'Flucht (ganzer Zug)'});
+    if(tactical) for(const dir of ['closer','away'])actions.push({key:`move:${dir}`,kind:'move',dir,label:dir==='closer'?'Näher gehen':'Zurückweichen',needsTarget:dir==='closer'});
     const refs=[...Object.keys(state.objects || {}),...Object.keys(state.entities.pc.sheet.inventory || {}).map(id=>`item.${id}`)],seen=new Set();
     for(const ref of refs){
         const o=tradeObject(state,content,ref);
@@ -174,6 +204,8 @@ export function normalizeHudBinding(value) {
 
 export function hudCommands(selection) {
     const s=selection;
+    if (s.kind === 'phase') return s.steps.flatMap(hudCommands).map((c,i)=>({...c,seq:i+1}));
+    if (s.kind === 'sidestep' || s.kind === 'flee') return [{seq:1,type:s.kind}];
     if (s.kind === 'trade.ask' || s.kind === 'trade.accept') return tradeCommands(s);
     const main=s.kind==='quest.accept'?{type:'quest.accept',quest:s.quest}:s.kind==='use'?{type:'use',object:s.object,qty:1,...(s.target?{target:s.target}:{})}:s.kind==='move'?{type:'move',dir:s.dir,target:s.target}:{type:'use_skill',skill:s.skill,target:s.target || null};
     return s.approach?[{seq:1,type:'move',dir:'closer',target:s.target},{seq:2,...main}]:[{seq:1,...main}];
@@ -181,6 +213,17 @@ export function hudCommands(selection) {
 export function reconcileHudPlan(input,commands,binding) {
     if(!Array.isArray(commands) || commands.some(c=>!c || typeof c!=='object' || !Number.isInteger(c.seq) || c.seq<1)
         || new Set(commands.map(c=>c.seq)).size!==commands.length)return refusal('Unvollständige Kommandobindung');
+    if (binding?.decision === 'conflict' && binding.id === input.selection.id && Array.isArray(binding.seqs) && !binding.seqs.length &&
+        input.selection.kind === 'attack' && !input.selection.approach && commands.length === 1) {
+        const c = commands[0], words = String(input.text || '').trim().replace(/^\*|\*$/g,'').trim();
+        const after = /^after (?:the|my) (?:spell|attack|shot|strike)\s*,?\s*i (?:jump|step|move|hop) (?:back|backward|backwards)(?: to (?:create|make) (?:some )?(?:space|distance))?[.!]?$/i;
+        const before = /^before (?:the|my) (?:spell|attack|shot|strike)\s*,?\s*i (?:jump|step|move|hop) (?:back|backward|backwards)[.!]?$/i;
+        if (c.type==='move' && c.dir==='away' && c.target==null && c.needs==null && c.quote?.trim()===input.text.trim() &&
+            Object.keys(c).every(k=>['seq','type','dir','target','quote'].includes(k)) && (after.test(words) || before.test(words))) {
+            const minor={kind:'move',id:input.selection.id+'-move',dir:'away',target:null};
+            return {ok:true,bound:[],commands,phase:{kind:'phase',id:input.selection.id,steps:after.test(words)?[input.selection,minor]:[minor,input.selection]}};
+        }
+    }
     if(binding?.id!==input.selection.id || binding.decision!=='use' || !Array.isArray(binding.seqs))return refusal('HUD und Freitext sind noch nicht eindeutig verbunden');
     const expected=hudCommands(input.selection),bound=commands.filter(c=>binding.seqs.includes(c.seq));
     if(bound.length!==expected.length || binding.seqs.length!==expected.length || new Set(binding.seqs).size!==expected.length)return refusal('Auswahlbindung fehlt oder ist doppelt');
@@ -197,5 +240,14 @@ export function reconcileHudPlan(input,commands,binding) {
         && ['buy','sell','pay','give','drop','take','offer.accept','guild.register'].includes(c.type)))
         return refusal('Zusätzlichen Handel als eigene freie Eingabe klären.');
     if(commands.some(c=>!bound.includes(c) && expected.some(e=>c.type===e.type && (c.skill===e.skill && c.skill || c.object===e.object && c.object || c.type==='move'))))return refusal('Die ausgewählte Aktion steht nochmals im Plan');
+    if (input.selection.kind === 'phase' && commands.some(c=>!bound.includes(c) || c.needs!=null))
+        return refusal('Zusatzhandlung und gewählte Kampffolge getrennt klären');
+    if (input.selection.kind === 'attack' && !input.selection.approach && bound.length === 1 && commands.length === 2) {
+        const c = commands.find(x=>x!==bound[0]);
+        if (c.type === 'move' && c.needs==null && bound[0].needs==null && typeof c.quote==='string' && c.quote.trim() && input.text.includes(c.quote) && ['closer','away'].includes(c.dir)) {
+            const move={id:input.selection.id+'-move',kind:'move',dir:c.dir,target:c.target ?? null};
+            return {ok:true,bound:[bound[0].seq],commands,phase:{id:input.selection.id,kind:'phase',steps:c.seq<bound[0].seq?[move,input.selection]:[input.selection,move]}};
+        }
+    }
     return {ok:true,bound:bound.map(c=>c.seq),commands:clone(commands)};
 }

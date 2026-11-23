@@ -360,6 +360,16 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     if (pl.failed) return { v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: { v: IR_VERSION, route: 'v4', reason: 'planner', links: ir.links, acts: [] }, plan, interp, events: [], command: null };
     const hud=actionInput ? reconcileHudPlan(actionInput,pl.commands,pl.hud_binding) : null;
     if(hud && !hud.ok)return actionRefused(inputHash,hud.reason,{plan,interp});
+    const combatChoice = hud?.phase || (actionInput?.selection.kind === 'phase' ? actionInput.selection : null);
+    if (combatChoice) {
+        const supplementary = pl.commands.filter(c=>!hud.bound.includes(c.seq));
+        const guard = guardCommands(msg.mes,supplementary,guardContext(before,content,catalog));
+        if (guard.dropped.length) return actionRefused(inputHash,'Zusätzliche Kampfhandlung nicht autorisiert.',{plan,interp});
+        const valid = validateActionSelection(combatChoice,before,content);
+        if (!valid.ok) return actionRefused(inputHash,valid.reason,{plan,interp});
+        return executeMappedTurn(chat,content,{u,before,m:valid.mapped,inputHash,llm,previous,plan,interp,typed:true,
+            irRec:{v:IR_VERSION,route:'v3',reason:'hud',links:[],acts:combatChoice.steps.map(s=>({...s,source:'player'}))}});
+    }
     const guarded = guardCommands(msg.mes, pl.commands.filter(c=>!hud?.bound.includes(c.seq)), guardContext(before, content, catalog));
     if(hud)guarded.kept=[...guarded.kept,...pl.commands.filter(c=>hud.bound.includes(c.seq))].sort((a,b)=>a.seq-b.seq);
     // a contract given up only in words for later is no act now (live run 03.10.2026)
@@ -369,7 +379,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     // The request is informational: route it through the normal board command, including booking and reuse.
     const boardRead = implicitBoardRead(before, guarded.kept, msg.mes);
     if (boardRead) guarded.kept = [...guarded.kept.filter(x => x.seq !== boardRead.seq), boardRead].sort((a,b) => a.seq-b.seq);
-    const m = mapPlan(guarded.kept, ctx, content, msg.mes, before,{hudSeqs:hud?.bound || []});
+    const m = mapPlan(guarded.kept, ctx, content, msg.mes, before,{hudSeqs:hud?.bound || [],orderedTurn:!actionInput && rulesetOf(before)>=2});
     if(hud){
         const valid=validateActionSelection(actionInput.selection,before,content);
         if(!valid.ok)return actionRefused(inputHash,valid.reason,{plan,interp});
@@ -411,6 +421,7 @@ function actionRefused(inputHash,reason,extra={}) {
 }
 async function executeMappedTurn(chat,content,{u,before,m,guarded={dropped:[]},inputHash,llm,previous,plan,interp,irRec,typed=false}) {
     const msg=chat[u],pl={ms:interp?.ms || 0,repaired:interp?.repaired};
+    if (m.refused) return actionRefused(inputHash,m.panel,{plan,interp});
     if (m.route === 'panel') return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, events: [], command: { panels: [m.panel], llm: null } };
     if (m.route === 'v3') {
         // 4.3.0-c.6.6.5: a fight among the crowd of a settlement's street makes people of it first (the passer-by he
@@ -419,13 +430,16 @@ async function executeMappedTurn(chat,content,{u,before,m,guarded={dropped:[]},i
         const at = crowd ? clone(before) : before;
         if (crowd) for (const e of crowd.events) applyEvent(at, e);
         const t = playerTurn(at, content, msg.mes, { msg: u, intent: crowd ? crowd.intent : m.intent, c: true });
+        if (m.intent.phase && t.outcome?.illegal && !t.outcome.records?.length)
+            return actionRefused(inputHash,t.outcome.illegal,{plan,interp});
+        const ownPhaseRefused = !!m.intent.phase && t.outcome?.kind==='combat' && !t.outcome.records?.some(r=>r.actor==='pc');
         const recorded = t.events.findLast(e => e.t === 'outcome.recorded');
         if (m.intent.job && recorded && recorded.d.outcome.kind === 'combat') {
             recorded.d.outcome.job = { job: m.intent.job, seq: m.intent.job_seq, type: 'use_skill', quote: m.intent.job_quote };
             applyEvent(t.state, recorded);
         }
         const growth = await withGrowth(t, content, llm, previous);
-        return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, ...growth, events: [...(crowd && t.events.length ? crowd.events : []), ...growth.events], command: t.command ? { panels: t.command.panels, llm: t.command.llm } : null };
+        return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, ...(ownPhaseRefused ? {own_phase_refused:true} : {}), ...growth, events: [...(crowd && t.events.length ? crowd.events : []), ...growth.events], command: t.command ? { panels: t.command.panels, llm: t.command.llm } : null };
     }
     const need = boardFor(before, content, m.commands, { c: true });
     const board = need ? await generateBoard(llm, before, content, need) : null;
@@ -932,7 +946,7 @@ export function extractionRequest(chat, id, content) {
     }
     if (state.encounter || o.kind === 'combat') actions += `\n${chronicleLine(combatChronicle(chat.slice(0, id), messageEvents))}`;
     const expectedKeys = o.expected_keys || {};
-    const player = state.last?.input || null;
+    const player = rec(chat[lastUserIndex(chat,id)])?.own_phase_refused ? null : state.last?.input || null;
     const vocab = worldVocab(content.deltaVocab, state);
     const req = extractorRequest(vocab, { catalog: cat.text, actions, player, expectedKeys, reply: msg.mes });
     return { ...req, vocab, hash: r.text_hash, expectedKeys, state, startScene: state.scene.at, sceneRequired: (state.meta?.ruleset || 1) >= 2 && !!(o.c || o.auth?.c), ids: { places: cat.places, quests: cat.quests, objects: cat.objects }, catalog: cat.text, actions, player };

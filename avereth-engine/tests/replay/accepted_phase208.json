@@ -1,0 +1,400 @@
+{
+ "inherits": "accepted_daily208.json",
+ "cases": {
+  "b16-rogue-sale#19": {
+   "category": "208 combat phase",
+   "previous": "sha256:4ea0a4f207583d032626296413c51495b2b66b8d6c278113a2eef7729ac760c7",
+   "fingerprint": "sha256:58fdb0a02a0ec43f9f211928e9a92ab074d617ab39d2e73562d0fb470ea6fcfa",
+   "reason": "Declared order: step closer → Razor Cut. Stranglewillow Sprout A SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b16-rogue-sale#49": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:9ba80ba19d006fa3f85afa1ea79ea82c5dfcf6a52f7adb9628295cb4d7c46e68",
+   "reason": "Declared order: step closer → Razor Cut. No remaining distance change or fight ended before the optional trailing step. Hits 1 → 1."
+  },
+  "b16-rogue-sale#59": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:f4317923027283aac835a15f151582ae9fcd028d470d1b66d5c1695c0ec1ad89",
+   "reason": "Declared order: step closer → Fan of Blades. Otterhound D MEDIUM -> SHORT; Otterhound C MEDIUM -> SHORT. Hits 1 → 2. Enemy reactions finish at 36 HP vs 49 previously."
+  },
+  "b17-mage#161": {
+   "category": "208 combat phase",
+   "previous": "sha256:4b2c8c8351da2fde5c3ff288230e13e0262e5d73d58bd7c2f98590091ba1c067",
+   "fingerprint": "sha256:4540443639bf763458e8697864856a79f5a1fd9da681ea16234f913515a94fb3",
+   "reason": "Declared order: step away → Arcane Bolt. Quarry Gnoll B ENGAGED -> SHORT. Hits 1 → 1. Enemy reactions finish at 49 HP vs unchanged previously."
+  },
+  "b17-mage#165": {
+   "category": "208 combat phase",
+   "previous": "sha256:324a952a3332e37305ce0a12be6b6c3f65c63d92447caef9e639e1950cf4d4f4",
+   "fingerprint": "sha256:cd7d6550fdcef188f18d752ee041e8b81b7329f9e987f08bc19ba2f68e447d8c",
+   "reason": "Declared order: step away → Arcane Bolt. Quarry Gnoll C ENGAGED -> SHORT; Quarry Gnoll D ENGAGED -> SHORT. Hits 1 → 1."
+  },
+  "b17-mage#189": {
+   "category": "208 combat phase",
+   "previous": "sha256:3933f831d807615aef11a511a96f7a4c8877b2de253c177eb76b3b08c30e3ea7",
+   "fingerprint": "sha256:ae9f0e1d8ebcf79c443409be6f934bd740d0a27ed9846dcf81b79bdd29580d89",
+   "reason": "Declared order: step closer → Arcane Wave. Quarry Gnoll G LONG -> MEDIUM; Quarry Gnoll H LONG -> MEDIUM. Hits 1 → 2. Enemy reactions finish at 104 HP vs 128 previously."
+  },
+  "b17-rogue#15": {
+   "category": "208 combat phase",
+   "previous": "sha256:efb06b8410c8e0f84a794f8e7f8ffaac50ac60b9dca03ca40ff8ffa6818e1696",
+   "fingerprint": "sha256:60895e17eca1cb9f325cb344924e9f5c3fbb0a3c886101aa16abff4dc2df244f",
+   "reason": "Declared order: step closer → Fan of Blades. Banded Water Snake A MEDIUM -> SHORT. Hits 1 → 1."
+  },
+  "b17-rogue#43": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:f8fae42e9243fda3a0d6d887c399c5320bbf738e2181fd99aa1d50dc39658c5a",
+   "reason": "Declared order: step closer → Fan of Blades. Bog Strider B MEDIUM -> SHORT. Hits 1 → 1."
+  },
+  "b17-rogue#55": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:e61a2561aeb31123430ace3b657e016b32331e0433edcce36b0762a1bad6a6bf",
+   "reason": "Declared order: Razor Cut → step away. Bog Strider D ENGAGED -> SHORT. Hits 1 → 1."
+  },
+  "b17-rogue#63": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:f72038515c6be1da5c3b950448dc921ffce4d5006600f4ae339a92fdd86b9e01",
+   "reason": "Declared order: step closer → Razor Cut. Bog Strider C SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b17-rogue#107": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Banded Water Snake B is at MEDIUM; Razor Cut reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b17-rogue#109": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Banded Water Snake B is at MEDIUM; Razor Cut reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b17-rogue#113": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:6dba6453f4a35a64789deb644d531e264d711b332b568e8c608024fc2e5ea6b5",
+   "reason": "Declared order: step closer → Razor Cut. Banded Water Snake B SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b17-rogue#141": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Separate stealth check, approach and attack: asks for one unambiguous phase instead of silently taking only the stealth check."
+  },
+  "b17-rogue#181": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:42db8c46ae8155f50d4d41801ab5aa831bfcb51c901338a79a96d71c5618f90a",
+   "reason": "Declared order: step closer → Razor Cut. Glass Beetle A SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b17-rogue#243": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:eaf1a3f99b5cf4849ef5eb4f9b9c1a0450e1e84cdcfe931327cc1a2e5f92f99b",
+   "reason": "Declared order: step closer → Razor Cut. Bog Strider L SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b17-rogue#257": {
+   "category": "208 combat phase",
+   "previous": "sha256:575dc690e02ba7fdecfc4d4b6956f18abea56a25d9c4cfd66efcc89425dca19e",
+   "fingerprint": "sha256:fe434b6ce605e435cb2cff673ddff4b8a900f5e3ec69422f7d07a0a3a4d1c10e",
+   "reason": "Declared order: step closer → Fan of Blades. Bog Strider M MEDIUM -> SHORT. Hits 1 → 1."
+  },
+  "b17-warrior#97": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:19b192cd499ada3aba998499b7185b25c68b3ba4c4913a873ecd217903650c73",
+   "reason": "Declared order: step closer → Basic Attack. Wolf E SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b17-warrior#167": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:ce2163f7c685037337ae16a989a8a8e14c4215d728baeea8a0035deb6f49caca",
+   "reason": "Declared order: step closer → Basic Attack. Reed Wharf-Wasp A SHORT -> ENGAGED; Reed Wharf-Wasp B MEDIUM -> SHORT. Hits 1 → 1. Enemy reactions finish at 149 HP vs unchanged previously."
+  },
+  "b17-warrior#169": {
+   "category": "208 combat phase",
+   "previous": "sha256:781abe85f1e0fdb32cf0c8c5324ade97797624c8c9402323eabc4499a753c011",
+   "fingerprint": "sha256:c719d628403557ae4b4a1a5eb69f315a953679096354bec792463d3dd88b16bb",
+   "reason": "Declared order: step closer → Basic Attack. Reed Wharf-Wasp B SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b17-warrior#231": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Cleave needs a valid target ENGAGED with Alaric after the declared movement. No player action or opponent turn was removed."
+  },
+  "b17-warrior#233": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:9f27b02faaa23cc4a2fd401159175a48f441f8c17cd8938020ae03e047097bef",
+   "reason": "Declared order: step closer → Cleave. Great Tusked Boar A SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b17-warrior#249": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:ad0f1a995e5c5ebd8138e9e4e72b2163594f83c100db243da34efddbf8d883ab",
+   "reason": "Declared order: step closer → Cleave. Great Tusked Boar B SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b17-warrior#289": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:d2e68ef4d5f5d81e897f5e21eb20b364425ec6b4e0cf992b33e2691cd447bb2c",
+   "reason": "Declared order: step closer → Basic Attack. Barrowfield Bramble Wolf D SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b17-warrior#317": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Marsh Adder B is at LONG; Basic Attack reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b17-warrior#319": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Marsh Adder B is at MEDIUM; Basic Attack reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b17-warrior#331": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:2f2ba2c706a346cee54a32340b93e2ca64a3826f96b79c9b915850bde254df94",
+   "reason": "Declared order: step closer → Basic Attack. Marsh Adder B SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b18-rogue#23": {
+   "category": "208 combat phase",
+   "previous": "sha256:9f47c0f22d49d4a725c93ca060b8fc7868648721b55999ac40cb1b89856fb211",
+   "fingerprint": "sha256:86706ff8d6dec0051ce2ed86cad927d600db1ab4d75d4857d2263f192f8c2102",
+   "reason": "Declared order: step closer → Piercing Thrust. Gray Wolf A SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b18-rogue#45": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:ed1dee8aaa110799e87dc3f83dbc0aa2a585a876bb233e44438a0fcc352ed9ce",
+   "reason": "Declared order: step closer → Piercing Thrust. Giant Snapping Turtle B SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b18-rogue#57": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:9cd8b6aa95f0521e1a0ee83239c695ebba6e1683fd03b39fbc687673f31d1662",
+   "reason": "Declared order: step closer → Piercing Thrust. Giant Snapping Turtle A SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b18-rogue#75": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Giant Snapping Turtle D is at MEDIUM; Piercing Thrust reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b18-rogue#77": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Giant Snapping Turtle D is at MEDIUM; Piercing Thrust reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b18-rogue#79": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Giant Snapping Turtle D is at MEDIUM; Piercing Thrust reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b18-rogue#101": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:04286553e94a74197989851c2b012758ad702a1c3d205eea1157a3d23a95cb12",
+   "reason": "Declared order: step closer → Piercing Thrust. Giant Snapping Turtle F SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b18-rogue#107": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Giant Snapping Turtle E is at MEDIUM; Piercing Thrust reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b18-rogue#141": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Giant Snapping Turtle H is at MEDIUM; Piercing Thrust reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b18-rogue#143": {
+   "category": "208 combat phase",
+   "previous": "sha256:debcab98350a14cfc2b9966bfa6ea35df101e7c6e1b829407c2c7737764527e8",
+   "fingerprint": "sha256:0dcacfe885bc7930cc0be90e96d4090ffcfb593cceebdd101b91447a637a9815",
+   "reason": "Declared order: step closer → Piercing Thrust. Giant Snapping Turtle H SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b18-rogue#203": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Giant Snapping Turtle K is at MEDIUM; Piercing Thrust reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b18-rogue#205": {
+   "category": "208 combat phase",
+   "previous": "sha256:936ff63ddc1fe919a07c51a9af0cdcc67ebb3adb1f33fbba5efba989e2504724",
+   "fingerprint": "sha256:e4e788190b1da9724374383459e83283d727e6177ad8f64372599855941737a9",
+   "reason": "Declared order: step closer → Piercing Thrust. Giant Snapping Turtle K SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b18-rogue#217": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Giant Snapping Turtle M is at LONG; Piercing Thrust reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b18-rogue#221": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Giant Snapping Turtle M is at LONG; Piercing Thrust reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b18-rogue#273": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Giant Snapping Turtle O is at MEDIUM; Piercing Thrust reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b18-rogue#309": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "The input requires waiting for the animal before the approach and strike. It asks for a separate turn instead of dropping that prerequisite."
+  },
+  "b18-warrior#17": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Cleave needs a valid target ENGAGED with Alaric after the declared movement. No player action or opponent turn was removed."
+  },
+  "b18-warrior#19": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Cleave needs a valid target ENGAGED with Alaric after the declared movement. No player action or opponent turn was removed."
+  },
+  "b18-warrior#23": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Cleave needs a valid target ENGAGED with Alaric after the declared movement. No player action or opponent turn was removed."
+  },
+  "b18-warrior#69": {
+   "category": "208 combat phase",
+   "previous": "sha256:ba954725a9c6f5e19df0b4f8566c2613611aecf6624dba4f972b2e67a50b5aba",
+   "fingerprint": "sha256:23bac5adaab727b7d206b00589fc48af90d2a642c6529e6761f5d7b9ed0baab4",
+   "reason": "Declared order: step closer → Quick Slash. Grey Long-Jawed Predator A SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b18-warrior#71": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Cleave needs a valid target ENGAGED with Alaric after the declared movement. No player action or opponent turn was removed."
+  },
+  "b18-warrior#73": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Cleave needs a valid target ENGAGED with Alaric after the declared movement. No player action or opponent turn was removed."
+  },
+  "b18-warrior#75": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:5836bf383e2cf2eb730ab73672a5b08fd6f0c91f09c58b2995333d628db2d7a4",
+   "reason": "Declared order: step closer → Cleave. Tusked Quarry Boar A SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b18-warrior#87": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Cleave needs a valid target ENGAGED with Alaric after the declared movement. No player action or opponent turn was removed."
+  },
+  "b18-warrior#89": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Tusked Quarry Boar B is at LONG; Basic Attack reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b18-warrior#93": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Cleave needs a valid target ENGAGED with Alaric after the declared movement. No player action or opponent turn was removed."
+  },
+  "b18-warrior#115": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Cleave needs a valid target ENGAGED with Alaric after the declared movement. No player action or opponent turn was removed."
+  },
+  "b18-warrior#121": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Tusked Quarry Boar C is at LONG; Basic Attack reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b18-warrior#125": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:38b487ea1480bd22d9a35ea6375c3c28f817e8d107865f9ab06712220162cd44",
+   "reason": "Declared order: step closer → Basic Attack. Tusked Quarry Boar D SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b18-warrior#141": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Tusked Quarry Boar C is at MEDIUM; Basic Attack reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b18-warrior#147": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Tusked Quarry Boar C is at MEDIUM; Basic Attack reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b18-warrior#211": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:52bc1d250837ade2f649cf3d3b0081a41376b24dde6e4d26f61ddcd0de581397",
+   "reason": "Declared order: step closer → Basic Attack. Tusked Quarry Boar E SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b18-warrior#213": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:9b06b3d65308a8b8a23750965a99ae15dd15cd4254009ebd27d8129b3f39b4cd",
+   "reason": "Declared order: Quick Slash → step away. Tusked Quarry Boar E ENGAGED -> SHORT. Hits 1 → 1."
+  },
+  "b18-warrior#267": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Tusked Quarry Boar N is at LONG; Quick Slash reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b18-warrior#273": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:5ffce43cfd0c975b0c23e97bad165ea20312e470e33afdd69050c76f2c751044",
+   "reason": "Declared order: step closer → Quick Slash. Tusked Quarry Boar N SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b18-warrior#285": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Cleave needs a valid target ENGAGED with Alaric after the declared movement. No player action or opponent turn was removed."
+  },
+  "b18-warrior#299": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Tusked Quarry Boar O is at MEDIUM; Basic Attack reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b18-warrior#301": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Tusked Quarry Boar O is at MEDIUM; Basic Attack reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b18-warrior#395": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Tusked Quarry Boar Z is at LONG; Basic Attack reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b18-warrior#397": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Tusked Quarry Boar Y is at MEDIUM; Basic Attack reaches ENGAGED at most and no declared movement brings it into range. No player action or opponent turn was removed."
+  },
+  "b19-mage#23": {
+   "category": "208 combat phase",
+   "previous": "sha256:106fdf5308880c19277832e8971bac4251471e680daade850ac6bf87721c3ddc",
+   "fingerprint": "sha256:c7161ac2795e5fdd424a48200e40ba396b21ee7428c6b32b91048cdc1f2f3d77",
+   "reason": "Declared order: step closer → Arcane Bolt. Gaunt Wolf A LONG -> MEDIUM. Hits 1 → 1."
+  },
+  "b19-mage#31": {
+   "category": "208 combat phase",
+   "previous": "sha256:3ca39fe6428c93f2c1f68ca226b302baf0a26d8547f3e5f888eeb63d277a477c",
+   "fingerprint": "sha256:66c4bd6d10878750a01a72e96d7163c6e6431999a9967660f39a291f4aec9c84",
+   "reason": "Declared order: step closer → Arcane Bolt. Gaunt Wolf B MEDIUM -> SHORT. Hits 1 → 1."
+  },
+  "b19-rogue#59": {
+   "category": "208 combat phase",
+   "previous": "sha256:476b5fe40daee2f57b514844c7e285c3708a58b41175f687637708b9d6989a7d",
+   "fingerprint": "sha256:24555dba1619ab7d93ef46aaabcc96b47bb0db29b37fdfd0d88d8c519e48361e",
+   "reason": "Declared order: step closer → Fan of Blades. Marsh Pike-Heron A SHORT -> ENGAGED; Marsh Pike-Heron B MEDIUM -> SHORT; Marsh Pike-Heron C MEDIUM -> SHORT. Hits 1 → 1. Enemy reactions finish at 28 HP vs 63 previously."
+  },
+  "b19-warrior#189": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:fac5ebc0f4baaa1ad66a17f3f81c4af9eadd89b319681b768e704f2b029c569d",
+   "reason": "Declared order: step closer → Cleave. Wild Boar G SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b19-warrior#223": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:a1a4696210b157686e1deea9ed25a8c3b9c4c54d91a40eb2f51fb51a0c042820",
+   "reason": "Atomic refusal before booking: Cleave needs a valid target ENGAGED with Alaric after the declared movement. No player action or opponent turn was removed."
+  },
+  "b19-warrior#279": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:f551e9ace52c09568ef3ba2e537a05277fc439745b640abc58ee62d0dd3ea15a",
+   "reason": "Declared order: step closer → Basic Attack. Wild Boar Sow B SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b19-warrior#381": {
+   "category": "208 combat phase",
+   "previous": "sha256:5f8ae8c0667b87f09330c7ef1aa15708bb9bbd176ffb1e3fa768f1f9df733cb6",
+   "fingerprint": "sha256:1d982b290218ea46d192f38b86aa0bd8e00e18513ab62257ba8efe19f181b88d",
+   "reason": "Declared order: step closer → Basic Attack. Wild Boar Q SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b19-warrior#389": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:0ce7526e8d1ab2ffc1c95be51deaeb9ba0fb8bda68cd8d25d4f7050ee68ac34c",
+   "reason": "Declared order: step closer → Basic Attack. Wild Boar S SHORT -> ENGAGED. Hits 1 → 1."
+  },
+  "b19-warrior#395": {
+   "category": "208 combat phase",
+   "fingerprint": "sha256:1dad116f0eaeeeda221782d0a2db44ad202173d6ac7ef4e41054030b342da287",
+   "reason": "Declared order: step closer → Basic Attack. Wild Boar R SHORT -> ENGAGED. Hits 1 → 1."
+  }
+ }
+}

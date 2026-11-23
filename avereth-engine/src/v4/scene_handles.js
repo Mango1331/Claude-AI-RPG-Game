@@ -108,9 +108,9 @@ export function approachedBy(state, { move = null, moveTarget = null } = {}) {
  * @returns {string[]}
  */
 export function areaCaught(state, { move = null, moveTarget = null, band = 'ENGAGED', target = null, visible = false } = {}) {
-    const stepped = new Map(approachedBy(state, { move: move === 'closer' ? 'closer' : null, moveTarget }).map((x) => [x.id, x.to]));
+    const stepped = new Map(approachedBy(state, { move, moveTarget }).map((x) => [x.id, x.to]));
     let wanted = target ? (stepped.get(target) || bandOf(state, target)) : band;
-    if (target && state.encounter?.combatants?.[target] && move === 'closer' && (!moveTarget || moveTarget === target)) wanted = BANDS[Math.max(0, BANDS.indexOf(wanted) - 1)];
+    if (target && state.encounter?.combatants?.[target] && move && (!moveTarget || moveTarget === target)) wanted = BANDS[Math.max(0, Math.min(BANDS.length - 1, BANDS.indexOf(wanted) + (move === 'closer' ? -1 : 1)))];
     return (state.scene?.present || []).filter((id) => {
         const e = state.entities?.[id];
         if (id === 'pc' || !e || e.status === 'dead' || !['npc', 'creature'].includes(e.kind) || state.encounter?.combatants?.[id]) return false;

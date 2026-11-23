@@ -502,6 +502,7 @@ function recordLines(name, r) {
         }
         return lines;
     }
+    if (r.kind === 'sidestep') return [sys(`${who}: Ausweichen · −25 % Distanzschaden bis zum nächsten eigenen Zug`)];
     if (r.kind === 'skill') return [sys(`${who}: ${r.skill_name}${cost}${r.effects?.length ? ` — ${r.effects.join('; ')}` : ''}`)];
     // Patch 7.2: a restorative drunk as his main action
     if (r.kind === 'item' && r.restore) return [sys(`${who}: ${r.step ? `moves (${String(r.step).replace(/ -> /g, ' → ')}), then ` : ''}drinks ${String(r.item_name).replace(/[<>`]/g, '')} → ${r.restore.resource.toUpperCase()} ${r.restore.before} + ${r.restore.amount} = ${r.restore.after}${r.restore.amount < r.restore.of ? ` (max ${r.restore.max})` : ''}${ammo}`)];

@@ -17,7 +17,7 @@ export async function ui161Smoke({ page, send, idle, calls, driver, onReload, ou
         const { foldChat } = await import('/scripts/extensions/third-party/avereth-engine/src/host.js');
         const c = SillyTavern.getContext(), f = foldChat(c.chat), r = c.chat.at(-1)?.extra?.avereth;
         return { state: JSON.stringify(f.state), at: f.state.scene.at, minute: f.state.clock.minute, inventory: f.state.entities.pc.sheet.inventory,
-            errors: f.errors, extraction: r?.extraction?.status, events: c.chat.flatMap(m => m.extra?.avereth?.events || []), context: r?.narration?.context };
+            refusal: c.chat.findLast(m => m.is_user)?.extra?.avereth?.action_error, errors: f.errors, extraction: r?.extraction?.status, events: c.chat.flatMap(m => m.extra?.avereth?.events || []), context: r?.narration?.context };
     });
     const render = async mode => {
         await page.evaluate(async mode => {
@@ -107,12 +107,14 @@ export async function ui161Smoke({ page, send, idle, calls, driver, onReload, ou
     checkpoint();
     for (const [key, prefix] of [['breakfast', u2.slice(0, 63)], ['retreat', frames.retreat.prefix], ['mixed', frames.mixed.prefix]]) {
         await seed(prefix);
-        const t = ui161Turns.find(t => t.key === `ui161${key}`), old = await snap(); await send(t.player); await idle(); const current = await snap();
-        checks[`${key}Applied`] = current.extraction === 'applied' && !current.errors.length;
+        const t = ui161Turns.find(t => t.key === `ui161${key}`), old = await snap(), firstCall = calls.length; await send(t.player); await idle(); const current = await snap();
+        if (key !== 'retreat') checks[`${key}Applied`] = current.extraction === 'applied' && !current.errors.length;
         if (key === 'breakfast') checks.breakfastNoRestQuestion = !current.events.slice(old.events.length).some(e => e.t === 'resource.changed') && current.at === 'loc.glassmere.guild_hall';
         if (key === 'retreat') {
-            const outcome = current.events.slice(old.events.length).find(e => e.t === 'outcome.recorded')?.d.outcome;
-            checks.retreatOneChosenStep = outcome?.records?.some(r => r.actor === 'pc' && r.after_move?.dir === 'away' && /MEDIUM -> LONG/.test(r.after_move.change));
+            // The archived Queen is unaware. A true ambush grants one opening attack only.
+            checks.retreatAmbushRefused = /Hinterhalt/.test(current.refusal) && !current.errors.length;
+            checks.retreatNoPartialBooking = current.state === old.state && current.events.length === old.events.length;
+            checks.retreatPlannerOnly = calls.slice(firstCall).map(c => c.purpose).join(',') === 'plan';
         }
         if (key === 'mixed') checks.mixedSearchNoExtraLoot = current.events.slice(old.events.length).some(e => e.t === 'check.recorded') && JSON.stringify(old.inventory) === JSON.stringify(current.inventory) && current.minute === old.minute + 30;
         checkpoint();

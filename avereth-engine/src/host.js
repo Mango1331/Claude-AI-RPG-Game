@@ -241,7 +241,7 @@ export function turnBlock(chat, u, content, settings = {}) {
     // PULSE package C (plan §6 C 5): a pause the last story turn's window cut short, once, from that turn's own events
     const restCut = p >= 0 ? restCutFacts(chat.slice(lastReplyIndex(chat, p) + 1, p).filter((m) => m.is_user && rec(m) && !rec(m).command).flatMap((m) => messageEvents(m))) : [];
     const context = turnContext(state, content, {
-        input: chat[u].mes,
+        input: r?.own_phase_refused ? '' : chat[u].mes,
         hudSpeech: !!r?.action_input,
         corrections: [...(r?.action_input ? [`INPUT MODE: ${r.action_input.mode === 'hud_roleplay' ? 'HUD + ROLEPLAY. The booked HUD action is his complete mechanical choice; accompanying PLAYER MESSAGE is speech/roleplay, never a second action or an order granting allies extra turns.' : 'HUD + FREE ACTIONS. Use only the engine-resolved combined plan; honor every not-taken action.'}`] : []), ...notExecuted, ...paidCards, ...restCut, ...(prev && !prev.system_answer ? prev.corrections || [] : [])],
         // .190 (N1): what the last reply put him at that he never reached (its refused arrivals), for the WHERE header
@@ -575,6 +575,21 @@ export function onEdited(chat, id, content) {
 export function projectPromptHistory(messages, { keepTurns = 4 } = {}) {
     let stripped = 0;
     let marked = 0;
+    let removed = 0;
+    const refused = new Set();
+    for (let i=0;i<messages.length;i++) {
+        const r=rec(messages[i]);
+        if (messages[i]?.is_user && r?.action_error && !r.events?.length) refused.add(i);
+    }
+    for (let i=messages.length-1;i>=0;i--) {
+        const m = messages[i];
+        if (m?.is_user && rec(m)?.own_phase_refused) {
+            messages[i] = {...m, mes:'[The declared player phase was not executed. Only the booked encounter events occurred.]'};
+        }
+        if (refused.has(i) || m?.is_system && m.extra?.avereth_notice_for!=null && (refused.has(i-1) || refused.has(m.extra.avereth_notice_for))) {
+            messages.splice(i,1); removed++;
+        }
+    }
     for (let i = 0; i < messages.length; i++) {
         const m = messages[i];
         if (!m || m.is_user || typeof m.mes !== 'string') continue;
@@ -584,12 +599,10 @@ export function projectPromptHistory(messages, { keepTurns = 4 } = {}) {
         if (hasTrackerBlocks(m.mes)) { messages[i] = { ...m, mes: stripTrackerBlocks(m.mes) }; stripped += 1; }
         if (mark) { messages[i] = { ...messages[i], mes: `${messages[i].mes}\n\n${mark}` }; marked += 1; }
     }
-    let removed = 0;
     if (keepTurns > 0) {
         const users = messages.map((m, i) => (m?.is_user ? i : -1)).filter((i) => i >= 0);
         if (users.length > keepTurns) {
-            removed = users[users.length - keepTurns];
-            messages.splice(0, removed);
+            removed += messages.splice(0,users[users.length - keepTurns]).length;
         }
     }
     return { removed, stripped, marked };

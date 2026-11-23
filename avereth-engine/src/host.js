@@ -500,10 +500,13 @@ function displaySystemPanel(panel, { tactical = false, playerFacing = false, boa
     };
     if (!raw.length) return '';
     const combat = raw.some((line) => /COMBAT|Round|Range:|COMBAT TARGETS/.test(clean(line)));
-    return `<div class="avereth-system-panel${combat ? ' avereth-system-combat' : ''}">${raw.map((line) => {
+    const shop = raw.filter(line => clean(line).startsWith('SHOP — '));
+    const history = shop.length ? '<details class="avereth-offer-history"><summary>Warenangebot (' + shop.length + ')</summary>'
+        + shop.map(line => '<div>' + displayEsc(clean(line)) + '</div>').join('') + '</details>' : '';
+    return `<div class="avereth-system-panel${combat ? ' avereth-system-combat' : ''}">${raw.filter(line=>!shop.includes(line)).map((line) => {
         const text = clean(line);
         return `<div class="${klass(text)}">${displayEsc(text)}</div>`;
-    }).join('')}</div>`;
+    }).join('')}${history}</div>`;
 }
 
 /**

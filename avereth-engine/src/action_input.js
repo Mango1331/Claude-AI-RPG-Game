@@ -12,6 +12,7 @@ import { materialise } from './engine.js';
 import { Dice } from './rng.js';
 import { applyEvent } from './state.js';
 import { isGroupCreature } from './delta.js';
+import { tradeDraft, tradeCommands, boundTradeCommand } from './trade_input.js';
 import { previewQuestAcceptance } from './v4/commands.js';
 
 const canonical = x => JSON.stringify(x,(_k,v)=>v && typeof v==='object' && !Array.isArray(v)
@@ -49,6 +50,15 @@ export function lowerActionSelection(selection,state,content) {
 }
 export function validateActionSelection(selection,state,content) {
     const s=selection, fields={attack:['skill','target','approach','band'],skill:['skill','target','dir'],move:['dir','target'],use:['object','target'],'quest.accept':['quest']};
+    if (s?.kind === 'trade.accept' || s?.kind === 'trade.ask') {
+        if (typeof s.id !== 'string' || !s.id) return refusal('Auswahl-ID fehlt');
+        const {id, ...choice} = s;
+        const draft = tradeDraft(state, content, choice);
+        if (!draft.ok) return draft;
+        if (canonical(choice) !== canonical(draft.selection)) return refusal('Position, Preis oder Ort hat sich geändert.');
+        const commands = tradeCommands(choice).map(c => boundTradeCommand(choice, c, draft.label));
+        return {ok:true, mapped:{route:'v4',commands}, preview:{label:draft.label}};
+    }
     if(!s || !fields[s.kind] || Object.keys(s).some(k=>!['id','kind',...fields[s.kind]].includes(k)))return refusal('Unbekannte Aktionsfelder');
     if(typeof s.id!=='string' || !s.id)return refusal('Auswahl-ID fehlt');
     if(state.mode==='creation' || state.entities.pc?.status==='dead')return refusal('Der Charakter kann jetzt keine HUD-Aktion ausführen');
@@ -164,6 +174,7 @@ export function normalizeHudBinding(value) {
 
 export function hudCommands(selection) {
     const s=selection;
+    if (s.kind === 'trade.ask' || s.kind === 'trade.accept') return tradeCommands(s);
     const main=s.kind==='quest.accept'?{type:'quest.accept',quest:s.quest}:s.kind==='use'?{type:'use',object:s.object,qty:1,...(s.target?{target:s.target}:{})}:s.kind==='move'?{type:'move',dir:s.dir,target:s.target}:{type:'use_skill',skill:s.skill,target:s.target || null};
     return s.approach?[{seq:1,type:'move',dir:'closer',target:s.target},{seq:2,...main}]:[{seq:1,...main}];
 }
@@ -180,6 +191,11 @@ export function reconcileHudPlan(input,commands,binding) {
         if(Object.entries(fields).some(([k,v])=>canonical(c[k]??null)!==canonical(v??null)) || c.targets?.length || c.item || c.area)
             return refusal('Der Plan hat Ziel, Fähigkeit oder Gegenstand der Auswahl verändert');
     }
+    // One trade per structured input. Extra speech and travel can accompany a price enquiry;
+    // an extra economic command would grant authority independent of the displayed choice.
+    if (input.selection.kind.startsWith('trade.') && commands.some(c => !bound.includes(c)
+        && ['buy','sell','pay','give','drop','take','offer.accept','guild.register'].includes(c.type)))
+        return refusal('Zusätzlichen Handel als eigene freie Eingabe klären.');
     if(commands.some(c=>!bound.includes(c) && expected.some(e=>c.type===e.type && (c.skill===e.skill && c.skill || c.object===e.object && c.object || c.type==='move'))))return refusal('Die ausgewählte Aktion steht nochmals im Plan');
     return {ok:true,bound:bound.map(c=>c.seq),commands:clone(commands)};
 }

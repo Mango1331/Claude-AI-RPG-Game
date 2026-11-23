@@ -7,6 +7,10 @@ export const actionHudTurns=[
 export function actionHudPlan(users){
  const m=/HOST HUD SELECTION \(typed player input, not story\): ([^\n]+)/.exec(users);if(!m)return null;
  const s=JSON.parse(m[1]);
+ if(s.kind==='trade.ask') {
+  const commands=s.rows.length?s.rows.map((r,i)=>({seq:i+1,type:'sell',object:r.id,to:s.party,qty:r.units})):[{seq:1,type:'other',what:'request trade terms'}];
+  return {commands,hud_binding:{id:s.id,decision:'use',seqs:commands.map(c=>c.seq)}};
+ }
  const command=s.kind==='move'?{seq:1,type:'move',dir:s.dir,target:s.target}:s.kind==='use'?{seq:1,type:'use',object:s.object,qty:1}:{seq:1,type:'use_skill',skill:s.skill,target:s.target || null};
  return {commands:[command],hud_binding:{id:s.id,decision:users.includes(actionHudTurns[2].player)?'conflict':'use',seqs:[1]}};
 }

@@ -1,4 +1,5 @@
 import { applyEvent } from '../state.js';
+import { tradeDraft } from '../trade_input.js';
 import { campInspection, campLine, ordinarySupply, looksDownOnCamp } from './camp.js';
 import { floorRefusal, namedLevel } from './dungeon.js';
 import { privateQuestsOf, questVisible } from '../content.js';
@@ -44,7 +45,7 @@ import { jobAction, jobOf } from './private_jobs.js';
 import { acceptPassive, declinePassive } from './passive_growth.js';
 import { acceptSkill, declineSkill, developmentOffers, skillOffers } from './skill_growth.js';
 import { classOffer, classSelection, acceptClass } from './class_growth.js';
-import { paidWorkLine, tradeObject as objectOf, pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, rateUnits, offerAvailability, tradeTermsWhy, purchaseLines, samePurchaseRequest, purchaseDecisionMatches, wareOnSale, shortfallText } from './trade.js';
+import { paidWorkLine, tradeObject as objectOf, pickLines, pricePositions, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, rateUnits, offerAvailability, tradeTermsWhy, purchaseLines, samePurchaseRequest, purchaseDecisionMatches, wareOnSale, shortfallText } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import { pulseBegin, pulseFinish, pulseLeg, pulseClaimPause, pulseSought, goSought, searchSought, aheadReserved } from './pulse.js';
 import { bookStealth } from '../checks.js';
@@ -388,7 +389,7 @@ function acceptBid(s, content, c, ctx, emit, o) {
     // a bid priced only for the whole lot is accepted whole unless he holds part of it back in words ("only the
     // fangs", "but I keep the sacs"): the line ids a planner copies along are no choice of his (live: lines ["l1"])
     const priced = (o.lines || []).every((l) => Number.isInteger(l.price_cp));
-    const sale = bidSale(s, o, priced || PART_ONLY.test(c.quote || '') ? c.lines : null);
+    const sale = bidSale(s, o, priced || PART_ONLY.test(c.quote || '') ? c.lines : null, c.hudTrade?.rows);
     if (sale.error) {
         if (sale.stale) emit({ t: 'offer.closed', d: { id: o.id, status: 'expired' } });
         return { status: 'refused', reason: sale.stale ? 'no longer held' : 'part of a lot', line: `NOT SOLD — ${sale.error}. Nothing changes hands; the buyer may name a new price.` };
@@ -1307,7 +1308,7 @@ const HANDLERS = {
         // Prototype C (4.3.0-c.6.6.5): what a buyer here has bid for is sold by accepting that bid ("i accept and sell all
         // parts to her"): the sell commands of the message cover the lot, or he sells exactly a line she priced
         const bid = Object.values(s.offers).find((x) => x.status === 'open' && x.bid && present(s, x.seller) && (!c.to || x.seller === c.to) && x.lines.some((l) => l.object === o.id));
-        if (bid) {
+        if (bid && !c.inquiry) {
             const sells = (env(ctx).commands || []).filter((x) => x.type === 'sell');
             const line = bid.lines.find((l) => l.object === o.id);
             const whole = bid.lines.every((l) => sells.some((x) => x.object === l.object && (!x.qty || x.qty === l.qty))) || /\b(?:all|every\w*|the lot|the whole|them)\b/i.test(c.quote || '');
@@ -1337,6 +1338,15 @@ const HANDLERS = {
         if (!o || o.status !== 'open') {
             if (o?.bid && o.status === 'accepted' && ctx.soldInBid?.size) return { status: 'resolved', done: true, line: 'SOLD — with the lot above.' };
             return { status: 'refused', reason: 'no open offer', line: 'CANNOT ACCEPT — there is no such open offer.' };
+        }
+        if (c.hudTrade) {
+            const current = tradeDraft(s, content, c.hudTrade);
+            const agreed = c.hudTrade;
+            if (!current.ok || current.selection.direction !== agreed.direction || current.selection.at !== agreed.at
+                || current.selection.total_cp !== agreed.total_cp || current.selection.terms.some((p,i) => {
+                    const old = agreed.terms[i];
+                    return !old || p.name !== old.name || p.object !== old.object || p.units !== old.units || p.cp !== old.cp;
+                })) return { status:'refused', reason:'selection or price changed', line:'NOT TRADED — the goods or terms changed. Review the offer again.' };
         }
         // Build .142 (§6.2): an open or unconfirmed price is not accepted, on every path that leads here
         const terms = tradeTermsWhy(o, c.lines);
@@ -1379,7 +1389,7 @@ const HANDLERS = {
             return { status: 'clarify', reason: 'buy or sell?', line: `CLARIFY — ${who(s, o.seller)}'s open offer sells ${picksText(pickLines(o).picks || [])} to Alaric; he speaks of selling. Does he buy that, or sell his own things (which, and for what price)?` };
         }
         // the lines he takes, in the number he names (review of 4.1.0: "three flasks" became one flask for one price)
-        const pick = pickLines(o, c.lines, c.qty ?? null);
+        const pick = c.hudTrade ? pricePositions(o, c.hudTrade.rows) : pickLines(o, c.lines, c.qty ?? null);
         if (pick.clarify) return { status: 'clarify', reason: 'which line?', line: `CLARIFY — ${c.qty} of which: ${pick.clarify.join(' or ')}?` };
         if (pick.error === 'the offer has no such item') return { status: 'refused', reason: 'no such line', line: `CANNOT ACCEPT — the offer has no such item. Available positions: ${o.lines.map(l => `${l.id}: ${l.what}`).join('; ')}. Nothing was bought.` };
         if (pick.error) return { status: 'refused', reason: 'not in that amount', line: `CANNOT BUY ${c.qty} — ${pick.error}.` };
@@ -1818,6 +1828,7 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
     const trades = new Map();
     const selections = new Map();
     if (envx.c && rulesetOf(s) >= 2) for (const c of ordered.filter(c => ['offer.accept', 'buy', 'sell'].includes(c.type))) {
+        if (c.inquiry) continue;
         let a = c;
         if (c.type === 'buy') {
             const matches = Object.values(s.offers).filter(o => o.status === 'open' && !o.bid && !o.canon && (!c.from || o.seller === c.from))

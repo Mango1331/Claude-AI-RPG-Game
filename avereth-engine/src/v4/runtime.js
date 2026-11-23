@@ -374,6 +374,16 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
         const valid=validateActionSelection(actionInput.selection,before,content);
         if(!valid.ok)return actionRefused(inputHash,valid.reason,{plan,interp});
         const chosen=valid.mapped;
+        // The planner only anchors the selection in its sequence. Quantities, price and
+        // quote-only authority always come from the host, including in a mixed turn.
+        if (m.route === 'v4' && actionInput.selection.kind.startsWith('trade.')) {
+            if (!hud.bound.every(seq => m.commands.some(c => c.seq === seq)))
+                return actionRefused(inputHash,'Die Handelsauswahl ist im Gesamtplan unvollständig.',{plan,interp});
+            m.commands = m.commands.map(c => {
+                const i = hud.bound.indexOf(c.seq);
+                return i < 0 ? c : { ...chosen.commands[i], seq:c.seq, ...(c.needs != null ? {needs:c.needs} : {}) };
+            });
+        }
         // Combat's existing mapper has no command dependency executor. Only the selected, prevalidated
         // approach+attack pair is atomic here; never erase an external condition while lowering it.
         if(m.route==='v3' && pl.commands.some(c=>hud.bound.includes(c.seq) && c.needs!=null && !hud.bound.includes(c.needs)))
@@ -717,6 +727,10 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         if(actionInput){
             const valid=validateActionSelection(actionInput.selection,before,content);
             const reason=actionInput.text!==msg.mes?'Text und gespeicherte HUD-Eingabe unterscheiden sich; Eingaberevision ausdrücklich korrigieren':control?'Systemeingaben werden nicht mit einer HUD-Aktion kombiniert':actionInput.base_revision!==actionPrefix(chat,u)?'Die Welt hat sich seit der Auswahl geändert':!['hud_roleplay','hud_free'].includes(actionInput.mode)?'Unbekannter Eingabemodus':!valid.ok?valid.reason:null;
+            if (actionInput.selection?.kind === 'trade.accept' && actionInput.mode !== 'hud_roleplay') {
+                r=actionRefused(inputHash,'Preis und Menge ausdrücklich bestätigen oder den freien Handelsentwurf verwenden.');commit();
+                return {action:'not_executed',dirty:true,index:u,notice:r.action_error};
+            }
             if(reason){r=actionRefused(inputHash,reason);commit();return {action:'not_executed',dirty:true,index:u,notice:reason};}
         }
         if(actionInput?.mode==='hud_roleplay') {

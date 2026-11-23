@@ -1,4 +1,5 @@
 import {availableActions,validateActionSelection,actionPrefix,actionInputOf,actionLabel,actionBands} from './action_input.js';
+import {installTradePanel} from './ui_trade.js';
 import {chatOrigin,originKey} from './v4/action_persistence.js';
 
 // A single typed draft and ST send path; the current combat panel is its input surface.
@@ -8,7 +9,12 @@ export function installActionComposer({context,state,content,enabled,settings,bl
     const key=()=>originKey(origin()),draft=()=>drafts.get(key());
     const textarea=()=>document.getElementById('send_textarea');
     const escape=s=>String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-    const displayInput=(m,input)=>{m.extra.display_text=`${escape(m.mes)}\n\n<small class="avereth-action-sent">${escape(input.label)} · ${input.mode==='hud_roleplay'?'Auswahl + Rollenspiel':'Auswahl und Text gemeinsam geplant'}</small>`;};
+    const displayInput=(m,input)=>{
+        const included = m.mes === input.label || m.mes.startsWith(input.label + '\n');
+        const mode = input.mode === 'hud_roleplay' ? 'Auswahl + Rollenspiel' : 'Auswahl und Text gemeinsam geplant';
+        m.extra.display_text = escape(m.mes) + '\n\n<small class="avereth-action-sent">'
+            + (included ? '' : escape(input.label) + ' · ') + mode + '</small>';
+    };
     const box=document.createElement('div');box.id='avereth-action-composer';box.className='avereth-action-composer';
     box.innerHTML=`<div id="avereth-action-home"></div><div><span id="avereth-action-status" role="status"></span> <button id="avereth-action-retry" type="button" hidden>Abschluss prüfen / fortsetzen</button></div>`;
     const area=textarea();if(!area)return null;area.closest('#send_form')?.prepend(box);
@@ -23,6 +29,35 @@ export function installActionComposer({context,state,content,enabled,settings,bl
     const tell=text=>{box.querySelector('#avereth-action-status').textContent=text;};
     let options=[],targets=[],choice={},controlsOrigin=null,activePanel=null;
     const clearControls=()=>{choice={};approach.checked=false;};
+    const tradeRevision = () => key() + '|' + actionPrefix(context().chat);
+    const refreshTrade = installTradePanel(box, {
+        revision: tradeRevision, live: state, notice: tell,
+        draftText(text, system = false) {
+            const field = textarea();
+            if (draft() || field.disabled || field.readOnly || (system && field.value.trim()) || /^\s*[#/]/.test(field.value)) {
+                tell('Vorhandene Eingabe oder Auswahl zuerst abschließen.'); return;
+            }
+            field.value = [text, field.value.trim()].filter(Boolean).join('\n');
+            field.dispatchEvent(new Event('input',{bubbles:true})); field.focus();
+        },
+        submit(result, stamp, companion) {
+            const field = textarea(), extra = field.value.trim();
+            if (draft() || field.disabled || field.readOnly || generating || blocked() || stamp !== tradeRevision() || /^\s*[#/]/.test(extra)) {
+                tell(blocked() || 'Zug läuft oder die Auswahl muss erneuert werden.'); return;
+            }
+            const settling = result.selection.kind === 'trade.accept';
+            if (settling && extra && !companion) {
+                tell('Bedingungen als freien Text vorbereiten. Für einen festen Abschluss den Zusatz als Begleitrede bestätigen.'); return;
+            }
+            const text = [result.label, extra].filter(Boolean).join('\n');
+            const selection = {...result.selection, id:uid()};
+            drafts.set(key(), {selection, label:result.label, expectedText:text, base_revision:actionPrefix(context().chat),
+                mode:!extra || companion ? 'hud_roleplay' : 'hud_free'});
+            field.value = text;
+            field.dispatchEvent(new Event('input',{bubbles:true}));
+            refresh(); document.getElementById('send_but')?.click();
+        },
+    });
     function updateStatus(){
         const v=status(),text=typeof v==='string'?v:v.text;
         tell(blocked() || text);
@@ -33,6 +68,7 @@ export function installActionComposer({context,state,content,enabled,settings,bl
         box.hidden=!enabled();controls.hidden=box.hidden;if(box.hidden)return;
         const owner=key();if(controlsOrigin!==owner){clearControls();controlsOrigin=owner;}
         const s=state(),projected=availableActions(s,content());options=projected.actions;targets=projected.targets;
+        refreshTrade(s,content());
         const panels=[...document.querySelectorAll('#chat :is(.avereth-combat-hud,.custom-avereth-combat-hud)')];
         activePanel=s.encounter?panels.at(-1):null;
         // Historical panels remain history, never additional input surfaces.
@@ -99,6 +135,7 @@ export function installActionComposer({context,state,content,enabled,settings,bl
         const block=blocked();if(block)return block;
         const d=draft();if(!d)return null;
         if(/^\s*[#/]/.test(textarea().value))return 'Systembefehl: Auswahl zuerst entfernen';
+        if(d.expectedText !== undefined && d.expectedText !== textarea().value)return 'Handelstext geändert. Bitte Auswahl entfernen und neu bestätigen.';
         if(d.base_revision!==actionPrefix(context().chat))return 'Die Welt hat sich geändert. Aktion erneut auswählen.';
         const valid=validateActionSelection(d.selection,state(),content());return valid.ok?null:valid.reason;
     }

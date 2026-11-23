@@ -26,10 +26,10 @@ const contains = (text, part) => !!flat(part) && ` ${flat(text)} `.includes(` ${
 export function saleOfferLines(state, seller, lines) {
     if (!Array.isArray(lines)) return [];
     const current = (state.decisions || []).filter(d => d.turn === state.turn && d.at === state.scene.at && (!d.seller || d.seller === seller));
-    const sales = current.filter(d => d.kind === 'sale' && state.objects[d.object]?.holder?.entity === 'pc');
+    const sales = current.filter(d => d.kind === 'sale' && heldUnits(state, d.object) > 0);
     if (!sales.length) return [];
     return lines.filter(l => (l.kind || 'goods') === 'goods'
-        && sales.some(d => d.seller === seller || (state.scene.present.includes(seller) && purchaseLines(state.objects[d.object].name, [l]).length))
+        && sales.some(d => d.seller === seller || (state.scene.present.includes(seller) && purchaseLines(state.objects[d.object]?.name || d.what, [l]).length))
         && !current.some(d => d.kind === 'purchase' && purchaseLines(d.what, [l]).length));
 }
 
@@ -274,6 +274,11 @@ export function offerAvailability(s, o) {
     // Build .142: a bid, or an offer none of whose lines binds, is information, not a deal that can be closed
     if (o.bid && (o.terms ?? 'firm') !== 'firm') return 'the bid does not bind';
     if (!o.bid && (o.lines || []).length && o.lines.every((l) => (l.terms ?? 'firm') !== 'firm')) return 'no binding price';
+    return offerLocationWhy(s, o);
+}
+
+/** Conditional offers may be seen only at the same counter as a firm offer. */
+export function offerLocationWhy(s, o) {
     if (o.gate) return s.scene.at === o.gate ? null : 'not at the gate';
     if (o.canon && !hallOf(s, s.scene.at)) return 'not at a Guild hall';
     if (o.stock === 'manuals' && hallOf(s, o.at) !== hallOf(s, s.scene.at)) return 'another Guild hall';
@@ -317,6 +322,17 @@ export function purchaseDecisionMatches(d, offer, picks) {
 // buying it moves that object (or the bought part of its stack) to him instead of creating a second one.
 const physical = (s, o, { seller, at }) => !!o && o.holder?.entity !== 'pc' && !o.laid_by_pc && !(o.for_quests || []).length
     && ((seller && o.holder?.entity === seller) || (at && o.holder?.loc === at));
+/** Confirmed supply for a HUD purchase. A stored NPC lot by itself is no promise of restocking it. */
+export function purchaseQuantityLimit(s, offer, line) {
+    const lot = line.qty ?? 1;
+    let limit = offer.stock === 'manuals' ? Number.MAX_SAFE_INTEGER : lot;
+    if (line.object) {
+        const obj = s.objects[line.object];
+        limit = physical(s, obj, offer) ? Math.min(limit, obj.qty ?? 1) : 0;
+    }
+    return limit;
+}
+
 const sameGear = (a, b) => a?.kind === 'gear' && b?.kind === 'gear' && a.base === b.base && a.quality === b.quality && (a.slot ?? null) === (b.slot ?? null);
 /**
  * The one object of the place or the seller that an offered goods line is (or null): the same name (the line's or its
@@ -572,7 +588,7 @@ export function bookSale(s, emit, { items = null, ref, units, buyer, cp, what, s
 export function bidSale(s, offer, lineIds = null, positions = null) {
     const all = offer.lines || [];
     if (positions) {
-        if (!Array.isArray(positions) || !positions.length || new Set(positions.map(p => p.id)).size !== positions.length)
+        if (!Array.isArray(positions) || !positions.length || positions.some(p => !p) || new Set(positions.map(p => p.id)).size !== positions.length)
             return { error: 'invalid bid selection' };
         const lines = [];
         let whole = positions.length === all.length;

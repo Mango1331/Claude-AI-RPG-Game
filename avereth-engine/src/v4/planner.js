@@ -1,4 +1,4 @@
-import { reconcileHudPlan, normalizeHudBinding } from '../action_input.js';
+import { reconcileHudPlan, normalizeHudBinding, hudCommands } from '../action_input.js';
 import { commandVocabFor } from './interpret.js';
 import { privateQuestsOf } from '../content.js';
 import { deliveryHandover } from './delivery.js';
@@ -377,6 +377,9 @@ export function plannerRequest(vocab, ctx, text, { recent = '', previous = null,
     const user = plannerUser(ctx, text, { recent });
     const messages = [{ role: 'system', content: system }, { role: 'user', content: user }];
     if (ctx.actionInput) messages.push({role:'user',content:`HOST HUD SELECTION (typed player input, not story): ${JSON.stringify(ctx.actionInput.selection)}\nConsider it together with the PLAYER MESSAGE before any action is executed. The COMPLETE outer answer object is {"commands":[...],"hud_binding":{"id":"${ctx.actionInput.selection.id}","decision":"use","seqs":[1]}}. hud_binding is a sibling of commands at the ROOT, never a field inside a command. Use decision:"conflict" when the player contradicts the choice. Bind the exact selected IDs using the existing commands. Bound commands need no invented quote. Preserve any real conditions with needs. Use conflict for negation, replacement or incompatible choices; do not silently change or duplicate the selection. Additional commands still require exact quotes. No action has been booked yet.`});
+    if (ctx.actionInput?.selection.kind === 'trade.ask') {
+        messages.at(-1).content += '\nThis is only a request for terms, never consent to a sale, purchase or payment. Bind these selected steps in order (seq may change): ' + JSON.stringify(hudCommands(ctx.actionInput.selection));
+    }
     if (previous !== null && errors) messages.push({ role: 'assistant', content: String(previous) }, { role: 'user', content: planRepairMessage(errors) });
     return { system, user, messages };
 }

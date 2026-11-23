@@ -88,7 +88,9 @@ const TURNS = [
 ];
 const turnOf = (text) => TURNS.find((t) => text.includes(`PLAYER MESSAGE:\n${t.player}`));
 const finance = financeTurns(plan);
-const allTurns = [...actionHudTurns, ...TURNS, ...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns, ...pulse164Turns, ...pulse167Turns, ...npc169Turns, ...npc172Turns, ...pilot01Turns, ...bossloot193Turns, ...campTurns];
+const { tradeHudSmoke, tradeTurns } = process.env.AVERETH_SMOKE_TRADE_HUD === '1'
+    ? await import('./trade_hud_smoke.mjs') : { tradeTurns: [] };
+const allTurns = [...tradeTurns,...actionHudTurns, ...TURNS, ...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns, ...pulse164Turns, ...pulse167Turns, ...npc169Turns, ...npc172Turns, ...pilot01Turns, ...bossloot193Turns, ...campTurns];
 
 // ------------------------------------------------------------------------------------------------ setup (as run_v4.mjs)
 const contract = fs.readFileSync(path.join(ENGINE, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
@@ -538,6 +540,12 @@ try {
     if (process.env.AVERETH_SMOKE_PULSE164 === '1') { stealthProbeMode = true; pulse164Checks = await pulse164Smoke({ page, send, idle, calls, driver: () => driver, onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); }, out: HERE }); stealthProbeMode = false; }
     let ui161Checks = null;
     if (process.env.AVERETH_SMOKE_UI161 === '1') { stealthProbeMode = true; ui161Checks = await ui161Smoke({ page, send, idle, calls, driver: () => driver, onReload: () => { driver = new Driver(page, { turnTimeoutMs: 60000 }); }, out: HERE }); stealthProbeMode = false; }
+    let tradeChecks = null;
+    if (process.env.AVERETH_SMOKE_TRADE_HUD === '1') {
+        stealthProbeMode=true;
+        tradeChecks=await tradeHudSmoke({page,calls,worldTimings,idle,onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});},out:HERE});
+        stealthProbeMode=false;
+    }
     let campChecks = null;
     if (process.env.AVERETH_SMOKE_USER07_CAMP === '1') {
         stealthProbeMode = true;
@@ -566,7 +574,7 @@ try {
         stealthProbeMode = false;
     }
     const costChecks=process.env.AVERETH_SMOKE_HOST_COST === '1' ? await hostCostSmoke({page,out:HERE,calls}) : null;
-    result = { campChecks, costChecks, prefixChecks, streamingChecks, nativeWorldChecks, user05Checks, actionReviewChecks, capacity:{peakUnits,activeUnits}, actionHudChecks, actionHostChecks, bossloot193Checks, toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
+    result = { tradeChecks, campChecks, costChecks, prefixChecks, streamingChecks, nativeWorldChecks, user05Checks, actionReviewChecks, capacity:{peakUnits,activeUnits}, actionHudChecks, actionHostChecks, bossloot193Checks, toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
 } catch (error) {
     const screen = await page.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(-8000),
         chat: window.SillyTavern?.getContext?.()?.chat?.map(m => ({ user: m.is_user, system: m.is_system, text: m.mes?.slice(0, 120) })) })).catch(() => null);
@@ -593,6 +601,7 @@ const engineOf = (c) => String(c?.messages?.find((m) => String(m.content).starts
 const narratorFor = (key) => narr.filter((c) => c.lastUser.includes(TURNS.find((t) => t.key === key).player));
 const checks = { capacityAtMostFour:result.capacity.peakUnits<=4,
     ...result.streamingChecks,
+    ...Object.fromEntries(Object.entries(result.tradeChecks || {}).map(([k,v]) => [`tradeHud_${k}`,v])),
     ...Object.fromEntries(Object.entries(result.actionHudChecks || {}).map(([k,v]) => [`actionHud_${k}`,v])),
     ...Object.fromEntries(Object.entries(result.actionHostChecks || {}).map(([k,v]) => [`actionHost_${k}`,v])),
     ...Object.fromEntries(Object.entries(result.nativeWorldChecks || {}).map(([k,v])=>[`nativeWorld_${k}`,v])),

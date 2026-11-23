@@ -1,12 +1,12 @@
 # Avereth Engine – aktueller Projektstand
 
-**23. November 2026. Die Handelsansicht auf .207 ist technisch abgenommen und liegt zum unabhängigen GPT-Diffreview vor.** [Technische Abnahme](recherche/ABNAHME_207_HANDELS_HUD.md)
+**23. November 2026. Der unabhängige GPT-Diffreview empfiehlt GO für einen begrenzten persönlichen Spieltest auf `.207` bei `609380b3`; über die Installation entscheidet der Nutzer.** [Technische Abnahme](recherche/ABNAHME_207_HANDELS_HUD.md) · [GPT-Diffreview](patch_plans_10b/REVIEW_207_HANDELS_HUD_GPT_2026-11-23.md)
 
 Für .206 gilt weiterhin das begrenzte GO des vorangegangenen Diffreviews. Über die persönliche Installation entscheidet der Nutzer. Der persönliche User08-Lauf mit 27 Erzählzügen fand auf `.205` statt. [Abnahme](recherche/USER08_206_DUNGEON_BOARD_ABNAHME.md) · [Unabhängiger GPT-Diffreview](patch_plans_10b/REVIEW_USER08_206_DUNGEON_BOARD_GPT_2026-11-23.md) · [Originale und Reviews](testrun_10b/user-20261122-161817-205/README.md) · [Zeitvergleich](testrun_10b/durchschnittsmessungen/README.md)
 
 | Verwendung | Branch | Geprüfter Commit |
 |---|---|---|
-| .207-Handels-HUD, unabhängiger Diffreview ausstehend | `experiment/207-trade-hud` | [`609380b3`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/609380b308d89d14c289e9ca1c4e26ed29174789) |
+| .207-Handels-HUD, Diffreview GO zum persönlichen Test | `experiment/207-trade-hud` | [`609380b3`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/609380b308d89d14c289e9ca1c4e26ed29174789) |
 | .206-Kandidat, Diffreview GO für persönlichen Test | `experiment/206-user08-dungeon-board` | [`cecc2c37`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/cecc2c3777542e5bf9c74096c810a1c04fbed36e) |
 | Persönlicher User08-Spieltest | `experiment/205-user08-playtest-ready` | [`a69daee`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/a69daeeed613850919f16eb810cc2c150c8aafd0) |
 | Technisch abgenommene Basis mit A, B, C und R1/R2 | `experiment/204-user07-board-dungeon-camp` | [`52d9c04`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/52d9c04aaf9f32ae92f03a72e9686d4b662749c6) |

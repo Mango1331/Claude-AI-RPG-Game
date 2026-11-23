@@ -1,11 +1,12 @@
 # Avereth Engine – aktueller Projektstand
 
-**23. November 2026. Beide persönlichen .207-Läufe einschließlich der User10-Fortsetzung sind gegengeprüft.** Der unabhängige GPT-Abgleich hat fehlende/abweichende Spielerentscheidungen im Fachplan präzisiert: neue Fünfertafel am Folgetag statt Nachfüllung, maximal zwei Boardrequests mit Viererfallback (Codex-Sofortvierer als offene Optimierung), echte Deckung nur bei vorhandener Quelle oder die vom Nutzer erlaubte Alternative **Seitwärtsschritt/Ausweichen (Minor, zeitlich begrenzt 25 % gegen Distanzangriffe)** sowie Flucht als ganzer Turn. [GPT-Kontrollreview](patch_plans_10b/REVIEW_208_FACHPLAN_GPT_2026-11-23.md). Der bestätigte Kandidat steht auf `609380b3`. Der Fachplan für .208 liegt zur gemeinsamen Entscheidung vor. [User09](testrun_10b/user-20261123-042623-207/CODEX_GEGENREVIEW.md) · [User10](testrun_10b/user-20261123-075443-207/CODEX_GEGENREVIEW.md) · [Fachplan .208](patch_plans_10b/FACHPLAN_208_TAGESBOARD_UND_KAMPFAKTIONEN.md) · [Abnahme .207](recherche/ABNAHME_207_HANDELS_HUD.md) · [Diffreview .207](patch_plans_10b/REVIEW_207_HANDELS_HUD_GPT_2026-11-23.md)
+**23. November 2026. Der .208-Experimentkandidat für den unabhängigen Diffreview steht auf `cb1eb944`.** Eine konfliktfreie Vierertafel erscheint nach dem ersten Boardrequest, der gebuchte Hindernisschaden steht im Spielverlauf, und das Aktions-HUD unterstützt geordnete Haupt- und Nebenaktionen. Beide Etappen sind einzeln committed und mit den Originalfällen aus User09 und User10 geprüft. Nach dem Diffreview entscheidet der Nutzer über die persönliche Installation. [Abnahme .208 und Installationsliste](recherche/ABNAHME_208_TAGESBOARD_UND_KAMPFAKTIONEN.md) · [User09](testrun_10b/user-20261123-042623-207/CODEX_GEGENREVIEW.md) · [User10](testrun_10b/user-20261123-075443-207/CODEX_GEGENREVIEW.md)
 
 Für .206 gilt weiterhin das begrenzte GO des vorangegangenen Diffreviews. Über die persönliche Installation entscheidet der Nutzer. Der persönliche User08-Lauf mit 27 Erzählzügen fand auf `.205` statt. [Abnahme](recherche/USER08_206_DUNGEON_BOARD_ABNAHME.md) · [Unabhängiger GPT-Diffreview](patch_plans_10b/REVIEW_USER08_206_DUNGEON_BOARD_GPT_2026-11-23.md) · [Originale und Reviews](testrun_10b/user-20261122-161817-205/README.md) · [Zeitvergleich](testrun_10b/durchschnittsmessungen/README.md)
 
 | Verwendung | Branch | Geprüfter Commit |
 |---|---|---|
+| .208, technische Abnahme, unabhängiger Diffreview ausstehend | `experiment/208-board-hazard-main-minor` | [`cb1eb944`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/cb1eb944a041b26be9210199d780be9ff740f74d) |
 | .207-Handels-HUD, Diffreview GO zum persönlichen Test | `experiment/207-trade-hud` | [`609380b3`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/609380b308d89d14c289e9ca1c4e26ed29174789) |
 | .206-Kandidat, Diffreview GO für persönlichen Test | `experiment/206-user08-dungeon-board` | [`cecc2c37`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/cecc2c3777542e5bf9c74096c810a1c04fbed36e) |
 | Persönlicher User08-Spieltest | `experiment/205-user08-playtest-ready` | [`a69daee`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/a69daeeed613850919f16eb810cc2c150c8aafd0) |
@@ -14,11 +15,11 @@ Für .206 gilt weiterhin das begrenzte GO des vorangegangenen Diffreviews. Über
 
 Der Testbuild enthält die Änderungen an Questboard und HUD, Gildenroutine und Dungeon-Erzählführung sowie Campfunden und ihrer Ortsbindung. Die technische Abnahme mit 3.425 bestandenen Node-Tests, 2.235 Replayfällen ohne neue Abweichung und 32/32 isolierten Camp-Mockprüfungen gehört zu `52d9c04`. Der unabhängige Diffreview gab diesen Stand für den persönlichen Test frei. Für `.205` wurden darauf aufbauend die Buildkennung und die Testdokumentation aktualisiert. Die Narrator-Vertragsrevision bleibt `.204`. [Abnahme](recherche/USER07_204_C_KORREKTUR_ABNAHME.md) · [Diffreview](patch_plans_10b/REVIEW_USER07_204_C_KORREKTUR_GPT_2026-11-22.md)
 
-## User10 · Tagesboard und Kampferöffnung
+## Persönlicher User10-Lauf auf .207 · Tagesboard und Kampferöffnung
 
 Die erste Lesung scheiterte nach zwei Boardrequests. Eine neue Eingabe erzeugte fünf Verträge. Beim späteren Angriff gelangte der verworfene Rücksprung in den nächsten Narratorrequest und die Prosa. Die Engine buchte nur die Arcane Wave und einen regelkonformen Kampftod. Der kumulative Log enthält 43 physische Aufrufe. [Originalnachspiele und Messung](testrun_10b/user-20261123-075443-207/CODEX_GEGENREVIEW.md)
 
-## User09 – offene Befunde aus dem Kurztest
+## Persönlicher User09-Lauf auf .207 – Hindernisschaden
 
 Im Test wurden zwei echte Hindernisschäden (14 und 8 HP) gebucht, ohne dass die unmittelbare Systemkarte einen HP-/Damagehinweis zeigte; das korrigierte Nutzerfeedback fordert eine sichtbare Engine-Schadenszeile wie im Combat. Der Narrator schilderte nach der misslungenen Brückenprobe tatsächlich eine improvisierte Überquerung am Seilgeländer und den Weg zum Dungeon. Der Nutzer akzeptiert diese *fail-forward*-Fortsetzung ausdrücklich. Nur die Engineformulierung `He does not get past it` ist dadurch semantisch zu streng (P2, kein zwingender Reiseblocker). Das neue Handels-HUD blieb im User09-Kurztest unbenutzt. [Erstreview](testrun_10b/user-20261123-042623-207/REVIEW.md). Chat und Events sind bytegleich archiviert. [Gegenreview und Messgrenzen](testrun_10b/user-20261123-042623-207/CODEX_GEGENREVIEW.md).
 

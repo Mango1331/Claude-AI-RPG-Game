@@ -1,0 +1,546 @@
+{
+  "source": "Isolierte SillyTavern-Mockläufe, eigene Datenwurzel. Keine natürliche Provider-Usage.",
+  "candidate": "cb1eb944a041b26be9210199d780be9ff740f74d",
+  "stage1": "89b3695c19523d6c250c956ef6f4bac695ee1be4",
+  "st": {
+    "version": "1.19.0",
+    "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+  },
+  "node_version": "24.22.1",
+  "chromium": "156.0.8078.79",
+  "evidence": [
+    {
+      "stage": "vor Commit 1",
+      "start_utc": "2026-11-23T13:16:38.713Z",
+      "end_utc": "2026-11-23T13:17:56.928Z",
+      "build_at_run": {
+        "version": "4.3.0-c.6.6.208",
+        "commit": "609380b3",
+        "branch": "experiment/208-board-hazard-main-minor",
+        "dirty": true
+      },
+      "modes": [
+        {
+          "mode": "board_slot",
+          "checks": 57,
+          "passed": 57,
+          "seconds": 78,
+          "page_errors": 0,
+          "calls": 45
+        }
+      ]
+    },
+    {
+      "stage": "vor Commit 2",
+      "start_utc": "2026-11-23T13:57:39.620Z",
+      "end_utc": "2026-11-23T14:23:02.146Z",
+      "build_at_run": {
+        "version": "4.3.0-c.6.6.208",
+        "commit": "89b3695c",
+        "branch": "experiment/208-board-hazard-main-minor",
+        "dirty": true
+      },
+      "modes": [
+        {
+          "mode": "standard",
+          "checks": 373,
+          "passed": 373,
+          "seconds": 758,
+          "page_errors": 0,
+          "calls": 351
+        },
+        {
+          "mode": "failsoft",
+          "checks": 379,
+          "passed": 379,
+          "seconds": 764,
+          "page_errors": 0,
+          "calls": 358
+        }
+      ]
+    },
+    {
+      "stage": "Gesamtabnahme auf Commit 2",
+      "start_utc": "2026-11-23T14:25:11.997Z",
+      "end_utc": "2026-11-23T14:27:43.164Z",
+      "build_at_run": {
+        "version": "4.3.0-c.6.6.208",
+        "commit": "cb1eb944",
+        "branch": "experiment/208-board-hazard-main-minor",
+        "dirty": false
+      },
+      "modes": [
+        {
+          "mode": "journey208",
+          "checks": 75,
+          "passed": 75,
+          "seconds": 150,
+          "page_errors": 0,
+          "calls": 71
+        }
+      ]
+    }
+  ],
+  "journey_counts": {
+    "plan": 6,
+    "board": 1,
+    "narrator": 8,
+    "extract": 8
+  },
+  "journey": [
+    {
+      "errors": [],
+      "where": "loc.ashbridge.guild_hall",
+      "hp": 80,
+      "quests": [
+        [
+          "quest.cull_the_quarry_track_wolves",
+          "listed"
+        ],
+        [
+          "quest.cull_the_vineyard_boar",
+          "listed"
+        ],
+        [
+          "quest.cull_the_reedsnake_brood",
+          "listed"
+        ],
+        [
+          "quest.clear_mossback_warrens_level_1",
+          "listed"
+        ]
+      ],
+      "acts": [],
+      "hazards": [],
+      "world": "applied",
+      "calls": [
+        "plan",
+        "board",
+        "narrator",
+        "extract"
+      ]
+    },
+    {
+      "errors": [],
+      "where": "loc.ashbridge.guild_hall",
+      "hp": 80,
+      "quests": [
+        [
+          "quest.cull_the_quarry_track_wolves",
+          "listed"
+        ],
+        [
+          "quest.cull_the_vineyard_boar",
+          "listed"
+        ],
+        [
+          "quest.cull_the_reedsnake_brood",
+          "listed"
+        ],
+        [
+          "quest.clear_mossback_warrens_level_1",
+          "active"
+        ]
+      ],
+      "acts": [],
+      "hazards": [],
+      "world": "applied",
+      "calls": [
+        "narrator",
+        "extract"
+      ]
+    },
+    {
+      "errors": [],
+      "where": "loc.the_swollen_ford_on_the_quarry_track",
+      "hp": 80,
+      "quests": [
+        [
+          "quest.cull_the_quarry_track_wolves",
+          "listed"
+        ],
+        [
+          "quest.cull_the_vineyard_boar",
+          "listed"
+        ],
+        [
+          "quest.cull_the_reedsnake_brood",
+          "listed"
+        ],
+        [
+          "quest.clear_mossback_warrens_level_1",
+          "active"
+        ]
+      ],
+      "acts": [],
+      "hazards": [],
+      "world": "applied",
+      "calls": [
+        "plan",
+        "narrator",
+        "extract"
+      ]
+    },
+    {
+      "errors": [],
+      "where": "loc.the_swollen_ford_on_the_quarry_track",
+      "hp": 66,
+      "quests": [
+        [
+          "quest.cull_the_quarry_track_wolves",
+          "listed"
+        ],
+        [
+          "quest.cull_the_vineyard_boar",
+          "listed"
+        ],
+        [
+          "quest.cull_the_reedsnake_brood",
+          "listed"
+        ],
+        [
+          "quest.clear_mossback_warrens_level_1",
+          "active"
+        ]
+      ],
+      "acts": [],
+      "hazards": [
+        {
+          "t": "resource.changed",
+          "d": {
+            "id": "pc",
+            "resource": "hp",
+            "value": 66,
+            "why": "the washed-out ford (feat.1)"
+          }
+        }
+      ],
+      "world": "applied",
+      "calls": [
+        "plan",
+        "narrator",
+        "extract"
+      ]
+    },
+    {
+      "errors": [],
+      "where": "loc.the_old_footbridge_over_the_narrows",
+      "hp": 66,
+      "quests": [
+        [
+          "quest.cull_the_quarry_track_wolves",
+          "listed"
+        ],
+        [
+          "quest.cull_the_vineyard_boar",
+          "listed"
+        ],
+        [
+          "quest.cull_the_reedsnake_brood",
+          "listed"
+        ],
+        [
+          "quest.clear_mossback_warrens_level_1",
+          "active"
+        ]
+      ],
+      "acts": [],
+      "hazards": [],
+      "world": "applied",
+      "calls": [
+        "plan",
+        "narrator",
+        "extract"
+      ]
+    },
+    {
+      "errors": [],
+      "where": "loc.mossback_warrens",
+      "hp": 58,
+      "quests": [
+        [
+          "quest.cull_the_quarry_track_wolves",
+          "listed"
+        ],
+        [
+          "quest.cull_the_vineyard_boar",
+          "listed"
+        ],
+        [
+          "quest.cull_the_reedsnake_brood",
+          "listed"
+        ],
+        [
+          "quest.clear_mossback_warrens_level_1",
+          "active"
+        ]
+      ],
+      "acts": [],
+      "hazards": [
+        {
+          "t": "resource.changed",
+          "d": {
+            "id": "pc",
+            "resource": "hp",
+            "value": 58,
+            "why": "rotted span of the footbridge (feat.2)"
+          }
+        }
+      ],
+      "world": "applied",
+      "calls": [
+        "plan",
+        "narrator",
+        "extract"
+      ]
+    },
+    {
+      "errors": [],
+      "where": "loc.mossback_warrens.l1_s1",
+      "hp": 58,
+      "quests": [
+        [
+          "quest.cull_the_quarry_track_wolves",
+          "listed"
+        ],
+        [
+          "quest.cull_the_vineyard_boar",
+          "listed"
+        ],
+        [
+          "quest.cull_the_reedsnake_brood",
+          "listed"
+        ],
+        [
+          "quest.clear_mossback_warrens_level_1",
+          "active"
+        ]
+      ],
+      "acts": [],
+      "hazards": [],
+      "world": "applied",
+      "calls": [
+        "plan",
+        "narrator",
+        "extract"
+      ]
+    },
+    {
+      "errors": [],
+      "where": "loc.mossback_warrens.l1_s1",
+      "hp": 18,
+      "quests": [
+        [
+          "quest.cull_the_quarry_track_wolves",
+          "listed"
+        ],
+        [
+          "quest.cull_the_vineyard_boar",
+          "listed"
+        ],
+        [
+          "quest.cull_the_reedsnake_brood",
+          "listed"
+        ],
+        [
+          "quest.clear_mossback_warrens_level_1",
+          "active"
+        ]
+      ],
+      "acts": [
+        "move",
+        "attack"
+      ],
+      "hazards": [
+        {
+          "t": "resource.changed",
+          "d": {
+            "id": "pc",
+            "resource": "hp",
+            "value": 18
+          }
+        },
+        {
+          "t": "resource.changed",
+          "d": {
+            "id": "pc",
+            "resource": "mp",
+            "value": 58
+          }
+        }
+      ],
+      "world": "applied",
+      "calls": [
+        "narrator",
+        "extract"
+      ]
+    }
+  ],
+  "final_board_checks": {
+    "originalGroupHuntBooksFive": true,
+    "invalidBoardRemainsUnbooked": true,
+    "noInventedSchedule": true,
+    "extractionCompleted": true,
+    "saved": true,
+    "referenceReadyAfterReadback": true,
+    "referenceSaved": true,
+    "referenceWorldBooking": true,
+    "referenceCardOrder": true,
+    "referenceExtractorFormat": true,
+    "referenceCalls": true,
+    "fullReadyAfterReadback": true,
+    "fullSaved": true,
+    "fullWorldBooking": true,
+    "fullCardOrder": true,
+    "fullSameWorld": true,
+    "fullExtractorFormat": true,
+    "fullCalls": true,
+    "slotReadyAfterReadback": true,
+    "slotSaved": true,
+    "slotWorldBooking": true,
+    "slotCardOrder": true,
+    "partialDayHasFourOriginals": true,
+    "slotExtractorFormat": true,
+    "slotCalls": true,
+    "hazard17Visible": true,
+    "hazard17Saved": true,
+    "hazard17Reload": true,
+    "hazard21Visible": true,
+    "hazard21Saved": true,
+    "hazard21Reload": true,
+    "journeySaved11": true,
+    "journeyFour": true,
+    "journeySaved13": true,
+    "journeyAccepted": true,
+    "journeySaved15": true,
+    "journeySaved17": true,
+    "journeyHazard17": true,
+    "journeySaved19": true,
+    "journeySaved21": true,
+    "journeyHazard21": true,
+    "journeySaved23": true,
+    "journeySaved25": true,
+    "journeyOrder": true,
+    "journeyReload": true,
+    "projection208_plan": true,
+    "projection208_narrator": true,
+    "projection208_extract": true,
+    "projection208Audit": true
+  },
+  "standard_board_timings": {
+    "reference": {
+      "timing": {
+        "verified": true,
+        "worldCommitMs": 805.7000000001863,
+        "readbackMs": 884.7000000001863,
+        "readyMs": 894.4000000003725,
+        "saveDurationMs": 79
+      },
+      "world": "08c152d2473d4493cfc2728938982ac54f367cad9f3eee28575fbd1514b66471",
+      "events": "f29dc9e387223020d7cd03223ce7b209633863ce1d32e1bc2a2eff9c19beca88",
+      "requests": [
+        {
+          "role": "plan",
+          "mockMs": 0,
+          "finished": true
+        },
+        {
+          "role": "board",
+          "mockMs": 0,
+          "finished": true
+        },
+        {
+          "role": "narrator",
+          "mockMs": 0,
+          "finished": true
+        },
+        {
+          "role": "extract",
+          "mockMs": 300,
+          "finished": true
+        }
+      ]
+    },
+    "full": {
+      "timing": {
+        "verified": true,
+        "worldCommitMs": 754.2999999998137,
+        "readbackMs": 811.5999999996275,
+        "readyMs": 817.5,
+        "saveDurationMs": 57
+      },
+      "world": "08c152d2473d4493cfc2728938982ac54f367cad9f3eee28575fbd1514b66471",
+      "events": "f29dc9e387223020d7cd03223ce7b209633863ce1d32e1bc2a2eff9c19beca88",
+      "requests": [
+        {
+          "role": "plan",
+          "mockMs": 0,
+          "finished": true
+        },
+        {
+          "role": "board",
+          "mockMs": 0,
+          "finished": true
+        },
+        {
+          "role": "board",
+          "mockMs": 0,
+          "finished": true
+        },
+        {
+          "role": "narrator",
+          "mockMs": 0,
+          "finished": true
+        },
+        {
+          "role": "extract",
+          "mockMs": 301,
+          "finished": true
+        }
+      ]
+    },
+    "slot": {
+      "timing": {
+        "verified": true,
+        "worldCommitMs": 845.1000000005588,
+        "readbackMs": 897.9000000003725,
+        "readyMs": 905.7999999998137,
+        "saveDurationMs": 53
+      },
+      "world": "3672870247c431d8d5c6c60e3a009ce702e723a5274921f406d16da5ee92536b",
+      "events": "4a4339faf69d2b3e48d2b0ad2d8c6286898ee3b0b49e65fa949ee537d0d97e92",
+      "requests": [
+        {
+          "role": "plan",
+          "mockMs": 0,
+          "finished": true
+        },
+        {
+          "role": "board",
+          "mockMs": 0,
+          "finished": true
+        },
+        {
+          "role": "narrator",
+          "mockMs": 20,
+          "finished": true
+        },
+        {
+          "role": "extract",
+          "mockMs": 300,
+          "finished": true
+        }
+      ]
+    }
+  },
+  "node": {
+    "stage1": 3453,
+    "stage2": 3472
+  },
+  "replay": {
+    "inputs": 2235,
+    "stage1_exact_variations": 1131,
+    "stage2_exact_variations": 1192,
+    "unaccepted": 0
+  }
+}

@@ -85,7 +85,7 @@ Narration **Englisch, dritte Person, Vergangenheit**; Wahrnehmung/Dialog statt S
 - **Eindeutiges Band-AoE:** Bei fehlender ausdrücklicher Zielwahl genau ein sichtbares, erreichbares gegnerisches Band als eindeutige Auswahl zulassen; mehrere Möglichkeiten klären. Ausdrücklich benannte oder ungültige Ziele nie still ersetzen.
 - **Gefahrenanzeige:** Populations-Levelspanne, Vertragskillzahl und sichtbare Gegnerzahl trennen. Bekannte Gruppen-/Levelrisiken zeigen, keine verborgenen Gegner/Werte, Solo- oder Fluchtgarantie. Skills im HUD mit Besitz, Kosten und Wirkung verständlich darstellen; Balance separat entscheiden.
 
-**[GEPLANT] Main/Minor:** pro normalem Turn maximal eine Haupt- und eine Nebenaktion. Normale Ein-Band-Bewegung und Mobility teilen denselben Minor-Slot; kein Gratisbewegungsbudget. PC-/NPC-Parität, Besitz und Turnpersistenz schützen. [Fachplan](patch_plans_10b/PATCH_COMBAT_MAIN_MINOR_ACTIONS.md) vor Umsetzung gegen aktuelle Kompatibilitätspolitik prüfen.
+**[GEPLANT für die Produktlinie · umgesetzt im .208-Experiment]** Pro normalem Turn sind höchstens eine Haupt- und eine Nebenaktion in frei gewählter Reihenfolge möglich. Ein Bandschritt, eine zugelassene Mobilitätsfähigkeit und Ausweichen belegen denselben Minor-Slot. Flucht belegt den ganzen Turn. [Kampffachplan](patch_plans_10b/PATCH_COMBAT_MAIN_MINOR_ACTIONS.md) · [Technische Abnahme des .208-Experiments](recherche/ABNAHME_208_TAGESBOARD_UND_KAMPFAKTIONEN.md)
 
 ## 6. Quests und Gilde
 

@@ -2,9 +2,9 @@
 
 Der [Projektstand](03_AKTUELLER_PROJEKTSTAND.md) nennt die spielbare Fassung und den nächsten Arbeitsschritt. Die Quellen hier dokumentieren, welche Entscheidungen zum persönlichen Test geführt haben.
 
-## Planung nach User09 und User10
+## .208 nach User09 und User10
 
-[.208 · Tagesboard, Hindernisschaden und geordnete Kampfhandlungen](patch_plans_10b/FACHPLAN_208_TAGESBOARD_UND_KAMPFAKTIONEN.md)
+[.208 · Tagesboard, Hindernisschaden und geordnete Kampfhandlungen](patch_plans_10b/FACHPLAN_208_TAGESBOARD_UND_KAMPFAKTIONEN.md) · [Technische Abnahme des Experimentbranches](recherche/ABNAHME_208_TAGESBOARD_UND_KAMPFAKTIONEN.md)
 
 ## Entscheidungsweg zu User08
 

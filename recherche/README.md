@@ -4,6 +4,7 @@ Für Zahlen nach Build, Architektur und Messpunkt gibt es den [Messvergleich](..
 
 | Thema | Untersuchung | Gegenprüfung oder Daten |
 |---|---|---|
+| Tagesboard, Hindernisse und Kampfzug auf .208 | [Technische Abnahme](ABNAHME_208_TAGESBOARD_UND_KAMPFAKTIONEN.md) | [Fachplan](../patch_plans_10b/FACHPLAN_208_TAGESBOARD_UND_KAMPFAKTIONEN.md) · [Kontrollreview des Plans](../patch_plans_10b/REVIEW_208_FACHPLAN_GPT_2026-11-23.md) |
 | Handels-HUD auf .207 | [Technische Abnahme mit User08 und ST](ABNAHME_207_HANDELS_HUD.md) | [Umsetzungsfachplan](../patch_plans_10b/FACHPLAN_207_HANDELS_HUD.md) · [ST-Messwerte](handel_hud_207/st-mock.json) |
 | HUD, Handel und strukturierte Spieleraktionen | [Fachplan nach User08](USER08_HUD_HANDEL_UND_STRUKTURIERTE_SPIELERAKTIONEN.md) | [GPT-Gegenreview](GEGENREVIEW_USER08_HUD_HANDEL_GPT_2026-11-23.md) · [Spielerfeedback](../testrun_10b/user-20261122-161817-205/originals/spielgefuehl.txt) · [Unabhängiger Runreview](../testrun_10b/user-20261122-161817-205/CODEX_GEGENREVIEW.md) |
 | Dungeon-Eintritt und Boardanker nach User08 | [Abnahme des .206-Kandidaten](USER08_206_DUNGEON_BOARD_ABNAHME.md) | [User08-Gegenreview](../testrun_10b/user-20261122-161817-205/CODEX_GEGENREVIEW.md) |

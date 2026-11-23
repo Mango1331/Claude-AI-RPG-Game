@@ -1,6 +1,8 @@
 # Fachplan .208 · Spielbare Tagesangebote und geordnete Kampfhandlungen
 
-**Zur Entscheidung.** Zwei getrennt rücknehmbare Patches, anschließend eine gemeinsame Abnahme. Zuerst die zwei kleinen, im Original reproduzierten Friktionen am Board und am Hindernis beseitigen. Danach den Kampfeingabepfad vom HUD bis zur nächsten Modellhistorie schließen. Der zweite Patch ändert die Aktionsökonomie; er verdient einen eigenen Diff und eine eigene Balanceprüfung. Ein Umbau von Handel, Questwirtschaft, PULSE, Modellprofil oder Speicherarchitektur ist dafür entbehrlich.
+**Planungsstand vor der Implementierungsfreigabe.** Der anschließende Nutzerauftrag hat die sofortige Veröffentlichung von vier konfliktfreien Quests verbindlich festgelegt. Die ausgeführten Prüfungen und die aktuelle Fassung stehen in der [technischen Abnahme .208](../recherche/ABNAHME_208_TAGESBOARD_UND_KAMPFAKTIONEN.md).
+
+**Ursprünglicher Vorschlag.** Zwei getrennt rücknehmbare Patches, anschließend eine gemeinsame Abnahme. Zuerst die zwei kleinen, im Original reproduzierten Friktionen am Board und am Hindernis beseitigen. Danach den Kampfeingabepfad vom HUD bis zur nächsten Modellhistorie schließen. Der zweite Patch ändert die Aktionsökonomie; er verdient einen eigenen Diff und eine eigene Balanceprüfung. Ein Umbau von Handel, Questwirtschaft, PULSE, Modellprofil oder Speicherarchitektur ist dafür entbehrlich.
 
 Vergleichsbasis ist ausschließlich `experiment/207-trade-hud` bei `609380b308d89d14c289e9ca1c4e26ed29174789`. Die beiden Durchläufe sind unabhängige persönliche Spiele und keine gepaarte Leistungsstudie. [User09 mit Originalnachspielen](../testrun_10b/user-20261123-042623-207/CODEX_GEGENREVIEW.md) · [User10 einschließlich Fortsetzung](../testrun_10b/user-20261123-075443-207/CODEX_GEGENREVIEW.md) · [Kanon, Main/Minor als geplant](../02_DESIGN_KANON.md) · [Früherer Kampffachplan mit Öffnungs- und Kompatibilitätsfällen](PATCH_COMBAT_MAIN_MINOR_ACTIONS.md)
 

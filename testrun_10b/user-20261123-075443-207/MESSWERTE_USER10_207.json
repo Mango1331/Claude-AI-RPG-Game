@@ -1,0 +1,96 @@
+{
+  "build": "4.3.0-c.6.6.207",
+  "experiment_commit": "609380b308d89d14c289e9ca1c4e26ed29174789",
+  "test": "user10-second-207-2026-11-23-075443",
+  "event_groups": 11,
+  "player_inputs": 6,
+  "creation_inputs": 2,
+  "narrated_turns": 4,
+  "scope": "Personal run ended on first board failure; diagnostic, not representative of ordinary throughput",
+  "physical_requests": {
+    "total": 16,
+    "responses": 16,
+    "stream_false": 16,
+    "cached_tokens": 0,
+    "by_role": {
+      "planner": {
+        "calls": 4,
+        "prompt_tokens": 48405,
+        "completion_tokens": 258
+      },
+      "narrator": {
+        "calls": 4,
+        "prompt_tokens": 42497,
+        "completion_tokens": 1268
+      },
+      "extractor": {
+        "calls": 6,
+        "prompt_tokens": 79010,
+        "completion_tokens": 1346,
+        "repairs": 2
+      },
+      "board": {
+        "calls": 2,
+        "prompt_tokens": 6018,
+        "completion_tokens": 1791,
+        "durations_ms": [
+          54836,
+          50782
+        ],
+        "total_ms": 105618
+      }
+    },
+    "prompt_tokens": 175930,
+    "completion_tokens": 4663,
+    "total_tokens": 180593
+  },
+  "measurement_definition": "Host gen_started → gen_finished, plus extractor.ms as lower bound; no first-visible-text or safe-send timestamp",
+  "performance": {
+    "n": 4,
+    "host_mean_s": 53.74875,
+    "host_median_s": 34.501,
+    "extractor_mean_s": 28.80975,
+    "extractor_median_s": 32.519,
+    "host_plus_extractor_mean_s": 82.5585,
+    "host_plus_extractor_median_s": 72.301
+  },
+  "turns": [
+    {
+      "turn": 3,
+      "host_s": 27.465,
+      "extractor_s": 30.715,
+      "host_plus_extractor_lower_bound_s": 58.18,
+      "extractor_repaired": true
+    },
+    {
+      "turn": 4,
+      "host_s": 22.834,
+      "extractor_s": 34.323,
+      "host_plus_extractor_lower_bound_s": 57.157,
+      "extractor_repaired": true
+    },
+    {
+      "turn": 5,
+      "host_s": 41.537,
+      "extractor_s": 44.885,
+      "host_plus_extractor_lower_bound_s": 86.422,
+      "extractor_repaired": false
+    },
+    {
+      "turn": 6,
+      "host_s": 123.159,
+      "extractor_s": 5.316,
+      "host_plus_extractor_lower_bound_s": 128.475,
+      "extractor_repaired": false,
+      "board_calls": 2,
+      "board_ms": 105618,
+      "board_failed": true,
+      "board_listings_booked": 0
+    }
+  ],
+  "original_sha256": {
+    "chat_jsonl": "3afe42f53301d97c728d7fdc057217c636dac8f70401d5677f5a4af079fc963c",
+    "events_json": "6ab19615f33226a68ab829d10bd9b65f07bbe706a168a9bfbf9053c461e8deb6",
+    "powershell_txt": "466329bf891bd8964ce5955269b0fad6fe071878225d43e17e59b0f5f0ce84ff"
+  }
+}

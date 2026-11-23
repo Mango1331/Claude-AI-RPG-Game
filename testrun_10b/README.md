@@ -1,5 +1,9 @@
 # 10B-Spieltests
 
+## User10 · Zweiter persönlicher .207-Kurztest (diagnostischer Boardabbruch)
+
+[Review des Boardfehlers](user-20261123-075443-207/REVIEW.md) · [Messpunkte](user-20261123-075443-207/MESSWERTE_USER10_207.json) · [Quellenmanifest](user-20261123-075443-207/SOURCE_MANIFEST.md). Die erste Questboardgenerierung scheitert nach zwei LLM-Calls: erst falsches Levelband, dann falscher Turtle-Anker; die automatische lokale Korrektur ist auf den ersten Entwurf beschränkt. 0 Quests gebucht, Gildenprimer verfügbar; die Kampagne kann mit einer neuen Boardlesen-Eingabe fortgesetzt werden. 4 Erzählzüge; keine vollständige Benchmarkkampagne. Originalbytes noch nicht auf GitHub archiviert.
+
 ## User09 · Persönlicher Kurztest auf .207 (GPT-Erstreview)
 
 [Erstreview](user-20261123-042623-207/REVIEW.md) · [Messpunkte](user-20261123-042623-207/MESSWERTE_USER09_207.json) · [Quellenmanifest](user-20261123-042623-207/SOURCE_MANIFEST.md). 11 Erzählzüge, 36 physische Request-/Responsepaare, zwei echte aber im Systempanel nicht sichtbare HP-Verluste und ein Abhängigkeitsfehler nach gescheiterter Brückenüberquerung. Originaluploads noch nicht in Git archiviert, unabhängiger Codex-Gegenreview offen.

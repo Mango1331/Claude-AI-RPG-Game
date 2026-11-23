@@ -15,6 +15,10 @@ Zeit in Sekunden pro erzähltem Zug, jeweils **arithmetisches Mittel / Median**.
 
 User09 endete nach 11 Erzählzügen, enthält 3 Extractor- und 1 Planner-Reparatur, 36 physische Request-/Responsepaare und einen einzigen Boardrequest von ca. 61 s. Die User09-Originale sind derzeit nur als Chat-Uploads vorhanden (SHA im Manifest), nicht auf GitHub archiviert. Die zwei .204-User07-Fenster gehören zum selben Chat; Phase 2 umfasst die 22 zusätzlichen Antworten nach den ersten vier. User08 ist **eine andere Kampagne mit anderen Szenen**, kein gepaarter A/B-Vergleich. Im .205-Lauf benötigte das Questboard erneut zwei physische Requests (115,845 s), während alle 27 gespeicherten Extractorabschlüsse `repaired:false` melden. Stream:false und null gemeldete Cachetokens sind im physischen Completion-Log belegt. **Auch bei User08 wurde die tatsächlich sichere Folgeeingabe nach Save nicht gemessen.** Die älteren .202/.203-Serien stehen im [Messarchiv](archiv/README.md#persönliche-spieltests-vor-der-integration).
 
+## Diagnostischer Abbruchlauf – nicht in reguläre Durchschnittswerte einmischen
+
+**.207 User10 (4 Erzählzüge):** Host bis Erzählende 53,75 s Mittel / 34,50 s Median; Host + Extractor 82,56 / 72,30 s als Untergrenze. Der erste Boardzug scheiterte nach zwei physischen LLM-Calls von 54,836 + 50,782 = **105,618 s**, kein Questboard wurde gebucht. Die vier Turnwerte stehen [im diagnostischen Review](../user-20261123-075443-207/REVIEW.md) und [als JSON](../user-20261123-075443-207/MESSWERTE_USER10_207.json). Diesen technischen Fehlerlauf **nicht** zur normalen Performance-Architekturmittelwertreihe zählen; die Originaluploads sind bisher nur im Chat archiviert.
+
 ## Natürliche Vergleichsläufe auf OpenRouter
 
 Browserzeit ab Senden, jeweils **arithmetisches Mittel / Median** in Sekunden. Der erste lesbare Satz und die erste sichere Folgeeingabe nach bestätigtem Speichern wurden getrennt beobachtet. Beide Läufe verwendeten GLM-5.3-Flash auf der Route `wafer/us` mit nativem Streaming. Die Werte wurden aus den verlinkten Einzelmessungen berechnet.

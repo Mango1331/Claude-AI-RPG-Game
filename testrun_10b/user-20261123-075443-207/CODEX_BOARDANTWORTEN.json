@@ -1,0 +1,408 @@
+{
+  "13": {
+    "listings": [
+      {
+        "title": "Cull the Quarry-Track Wolves",
+        "client": "Grimble Stoneway, quarry foreman",
+        "rank": "Novice",
+        "level": 4,
+        "qtype": "standard",
+        "payout_cp": 130,
+        "task": "Hunt and cull 4 gray wolves denning along the old quarry track east of Ashbridge before they pull down a cart horse on the haul road.",
+        "desired_end_state": "4 gray wolves of the quarry-track pack are slain and carts travel the haul road without attack.",
+        "objectives": [
+          {
+            "verb": "DEFEAT",
+            "what": "gray wolves",
+            "qty": 4,
+            "unit": "wolves",
+            "where": "old quarry track east of Ashbridge",
+            "delivery": null
+          }
+        ],
+        "proof": [],
+        "habitat": {
+          "species": "gray wolf",
+          "anchor": "wolf",
+          "min_level": 4,
+          "max_level": 7
+        }
+      },
+      {
+        "title": "Cull the Millpond Snappers",
+        "client": "Widow Hessa, miller of Ashbridge",
+        "rank": "Novice",
+        "level": 1,
+        "qtype": "minor",
+        "payout_cp": 40,
+        "task": "Hunt and kill 2 large snapping turtles that have been snatching ducklings and nipping waders at the Ashbridge millpond.",
+        "desired_end_state": "Both snapping turtles troubling the millpond are killed and the miller's ducks and waders are safe again.",
+        "objectives": [
+          {
+            "verb": "DEFEAT",
+            "what": "snapping turtles",
+            "qty": 2,
+            "unit": "turtles",
+            "where": "Ashbridge millpond",
+            "delivery": null
+          }
+        ],
+        "proof": [],
+        "habitat": {
+          "species": "snapping turtle",
+          "anchor": "aquatic",
+          "min_level": 4,
+          "max_level": 7
+        }
+      },
+      {
+        "title": "Cull the Vineyard Boar",
+        "client": "Tallows Vineyard, Duskreach outskirts",
+        "rank": "Novice",
+        "level": 5,
+        "qtype": "standard",
+        "payout_cp": 150,
+        "task": "Hunt and kill 1 tusked old boar that has been breaking into the Tallows Vineyard rows each night and flattening the harvest.",
+        "desired_end_state": "The tusked boar raiding the Tallows Vineyard is killed and the vine rows are no longer torn up at night.",
+        "objectives": [
+          {
+            "verb": "DEFEAT",
+            "what": "tusked old boar",
+            "qty": 1,
+            "unit": "boar",
+            "where": "Tallows Vineyard, Duskreach outskirts",
+            "delivery": null
+          }
+        ],
+        "proof": [],
+        "habitat": {
+          "species": "tusked boar",
+          "anchor": "boar",
+          "min_level": 4,
+          "max_level": 7
+        }
+      },
+      {
+        "title": "Cull the Reedsnake Brood",
+        "client": "Reedham Fen eel-fishers",
+        "rank": "Novice",
+        "level": 6,
+        "qtype": "dangerous",
+        "payout_cp": 170,
+        "task": "Hunt and cull 3 marsh serpents of the Reedsnake brood that have been striking eel-fishers among the reed beds south of Ashbridge.",
+        "desired_end_state": "3 marsh serpents of the Reedsnake brood are slain and the eel-fishers work the reed beds without attack.",
+        "objectives": [
+          {
+            "verb": "DEFEAT",
+            "what": "marsh serpents",
+            "qty": 3,
+            "unit": "serpents",
+            "where": "reed beds south of Ashbridge",
+            "delivery": null
+          }
+        ],
+        "proof": [],
+        "habitat": {
+          "species": "marsh serpent",
+          "anchor": "serpent",
+          "min_level": 4,
+          "max_level": 7
+        }
+      },
+      {
+        "title": "Clear Mossback Warrens, Level 1",
+        "client": "Adventurers' Guild of Ashbridge",
+        "rank": "Novice",
+        "level": 2,
+        "qtype": "dangerous",
+        "payout_cp": 160,
+        "task": "Clear level 1 of Mossback Warrens: push through the mossy hill's upper tunnels off the old quarry track and drive out or slay the goblin scouts and warriors holding them. Beware: goblins fight in numbers and a shaman is said to lurk deeper ÔÇö do not press past level 1.",
+        "desired_end_state": "Level 1 of Mossback Warrens is cleared of its goblin scouts and warriors.",
+        "objectives": [
+          {
+            "verb": "DEFEAT",
+            "what": "goblin scouts and warriors of Mossback Warrens",
+            "qty": null,
+            "unit": null,
+            "where": "Mossback Warrens, level 1",
+            "delivery": null
+          }
+        ],
+        "proof": [],
+        "habitat": null
+      }
+    ]
+  },
+  "14": {
+    "listings": [
+      {
+        "title": "Cull the Quarry-Track Wolves",
+        "client": "Grimble Stoneway, quarry foreman",
+        "rank": "Novice",
+        "level": 4,
+        "qtype": "standard",
+        "payout_cp": 130,
+        "task": "Hunt and cull 4 gray wolves denning along the old quarry track east of Ashbridge before they pull down a cart horse on the haul road.",
+        "desired_end_state": "4 gray wolves of the quarry-track pack are slain and carts travel the haul road without attack.",
+        "objectives": [
+          {
+            "verb": "DEFEAT",
+            "what": "gray wolves",
+            "qty": 4,
+            "unit": "wolves",
+            "where": "old quarry track east of Ashbridge",
+            "delivery": null
+          }
+        ],
+        "proof": [],
+        "habitat": {
+          "species": "gray wolf",
+          "anchor": "wolf",
+          "min_level": 4,
+          "max_level": 7
+        }
+      },
+      {
+        "title": "Cull the Millpond Snappers",
+        "client": "Widow Hessa, miller of Ashbridge",
+        "rank": "Novice",
+        "level": 1,
+        "qtype": "minor",
+        "payout_cp": 40,
+        "task": "Hunt and kill 2 large snapping turtles that have been snatching ducklings and nipping waders at the Ashbridge millpond.",
+        "desired_end_state": "Both snapping turtles troubling the millpond are killed and the miller's ducks and waders are safe again.",
+        "objectives": [
+          {
+            "verb": "DEFEAT",
+            "what": "snapping turtles",
+            "qty": 2,
+            "unit": "turtles",
+            "where": "Ashbridge millpond",
+            "delivery": null
+          }
+        ],
+        "proof": [],
+        "habitat": {
+          "species": "snapping turtle",
+          "anchor": "aquatic",
+          "min_level": 1,
+          "max_level": 3
+        }
+      },
+      {
+        "title": "Cull the Vineyard Boar",
+        "client": "Tallows Vineyard, Duskreach outskirts",
+        "rank": "Novice",
+        "level": 5,
+        "qtype": "standard",
+        "payout_cp": 150,
+        "task": "Hunt and kill 1 tusked old boar that has been breaking into the Tallows Vineyard rows each night and flattening the harvest.",
+        "desired_end_state": "The tusked boar raiding the Tallows Vineyard is killed and the vine rows are no longer torn up at night.",
+        "objectives": [
+          {
+            "verb": "DEFEAT",
+            "what": "tusked old boar",
+            "qty": 1,
+            "unit": "boar",
+            "where": "Tallows Vineyard, Duskreach outskirts",
+            "delivery": null
+          }
+        ],
+        "proof": [],
+        "habitat": {
+          "species": "tusked boar",
+          "anchor": "boar",
+          "min_level": 4,
+          "max_level": 7
+        }
+      },
+      {
+        "title": "Cull the Reedsnake Brood",
+        "client": "Reedham Fen eel-fishers",
+        "rank": "Novice",
+        "level": 6,
+        "qtype": "dangerous",
+        "payout_cp": 170,
+        "task": "Hunt and cull 3 marsh serpents of the Reedsnake brood that have been striking eel-fishers among the reed beds south of Ashbridge.",
+        "desired_end_state": "3 marsh serpents of the Reedsnake brood are slain and the eel-fishers work the reed beds without attack.",
+        "objectives": [
+          {
+            "verb": "DEFEAT",
+            "what": "marsh serpents",
+            "qty": 3,
+            "unit": "serpents",
+            "where": "reed beds south of Ashbridge",
+            "delivery": null
+          }
+        ],
+        "proof": [],
+        "habitat": {
+          "species": "marsh serpent",
+          "anchor": "serpent",
+          "min_level": 4,
+          "max_level": 7
+        }
+      },
+      {
+        "title": "Clear Mossback Warrens, Level 1",
+        "client": "Adventurers' Guild of Ashbridge",
+        "rank": "Novice",
+        "level": 2,
+        "qtype": "dangerous",
+        "payout_cp": 160,
+        "task": "Clear level 1 of Mossback Warrens: push through the mossy hill's upper tunnels off the old quarry track and drive out or slay the goblin scouts and warriors holding them. Beware: goblins fight in numbers and a shaman is said to lurk deeper ÔÇö do not press past level 1.",
+        "desired_end_state": "Level 1 of Mossback Warrens is cleared of its goblin scouts and warriors.",
+        "objectives": [
+          {
+            "verb": "DEFEAT",
+            "what": "goblin scouts and warriors of Mossback Warrens",
+            "qty": null,
+            "unit": null,
+            "where": "Mossback Warrens, level 1",
+            "delivery": null
+          }
+        ],
+        "proof": [],
+        "habitat": null
+      }
+    ]
+  },
+  "18": {
+    "listings": [
+      {
+        "title": "Thin the Millpond Snappers",
+        "client": "Alder Mill, east bank of the Ashbridge millpond",
+        "rank": "Novice",
+        "level": 4,
+        "qtype": "standard",
+        "payout_cp": 120,
+        "task": "Hunt and cull 4 of the snapping terrapins infesting the millpond sluice so the mill wheel can be cleared and repaired.",
+        "desired_end_state": "4 snapping terrapins are culled at the millpond sluice and the mill wheel can be cleared and repaired.",
+        "objectives": [
+          {
+            "verb": "DEFEAT",
+            "what": "snapping terrapins",
+            "qty": 4,
+            "unit": "terrapins",
+            "where": "the millpond sluice east of Ashbridge",
+            "delivery": null
+          }
+        ],
+        "proof": [],
+        "habitat": {
+          "species": "snapping terrapin",
+          "anchor": "aquatic",
+          "min_level": 4,
+          "max_level": 7,
+          "life_stage": "adult"
+        }
+      },
+      {
+        "title": "Quarry Track Wolves",
+        "client": "Quarry Track Carters' Circle",
+        "rank": "Novice",
+        "level": 5,
+        "qtype": "dangerous",
+        "payout_cp": 160,
+        "task": "Hunt and cull 5 of the wolf pack that has been pulling down cart-horses along the old quarry track east of Ashbridge.",
+        "desired_end_state": "5 wolves of the quarry track pack are culled and cart-horse losses along the track stop.",
+        "objectives": [
+          {
+            "verb": "DEFEAT",
+            "what": "wolves of the quarry track pack",
+            "qty": 5,
+            "unit": "wolves",
+            "where": "the old quarry track east of Ashbridge",
+            "delivery": null
+          }
+        ],
+        "proof": [],
+        "habitat": {
+          "species": "grey wolf",
+          "anchor": "wolf",
+          "min_level": 4,
+          "max_level": 7,
+          "life_stage": "adult"
+        }
+      },
+      {
+        "title": "Wasps in the Orchard Walls",
+        "client": "Pommel Row orchardists",
+        "rank": "Novice",
+        "level": 4,
+        "qtype": "standard",
+        "payout_cp": 100,
+        "task": "Hunt and cull 6 of the giant wall-wasps nesting in the old orchard boundary walls before harvest picking begins.",
+        "desired_end_state": "6 giant wall-wasps are culled from the orchard boundary walls and harvest picking can begin safely.",
+        "objectives": [
+          {
+            "verb": "DEFEAT",
+            "what": "giant wall-wasps",
+            "qty": 6,
+            "unit": "wasps",
+            "where": "the Pommel Row orchard boundary walls",
+            "delivery": null
+          }
+        ],
+        "proof": [],
+        "habitat": {
+          "species": "giant wall-wasp",
+          "anchor": "arthropod",
+          "min_level": 4,
+          "max_level": 7,
+          "life_stage": "adult"
+        }
+      },
+      {
+        "title": "The Boar of Tanner's Gully",
+        "client": "Tanner's Gully tan-houses",
+        "rank": "Novice",
+        "level": 6,
+        "qtype": "dangerous",
+        "payout_cp": 180,
+        "task": "Hunt and kill the great scarred boar that has gored two tanners and torn open the soaking pits in Tanner's Gully.",
+        "desired_end_state": "The great scarred boar of Tanner's Gully is killed and the soaking pits are safe to work again.",
+        "objectives": [
+          {
+            "verb": "DEFEAT",
+            "what": "the great scarred boar",
+            "qty": 1,
+            "unit": "boar",
+            "where": "Tanner's Gully, south of Ashbridge",
+            "delivery": null
+          }
+        ],
+        "proof": [],
+        "habitat": {
+          "species": "scarred old boar",
+          "anchor": "boar",
+          "min_level": 4,
+          "max_level": 7,
+          "life_stage": "adult"
+        }
+      },
+      {
+        "title": "Clear Mossback Warrens, Level 1",
+        "client": "Adventurers' Guild of Ashbridge",
+        "rank": "Novice",
+        "level": 2,
+        "qtype": "dangerous",
+        "payout_cp": 140,
+        "task": "Clear level 1 of the Mossback Warrens ÔÇö the mossy hill's upper goblin tunnels off the old quarry track ÔÇö of its goblin scouts and warriors. Expect a fighting withdrawal to be hard: the tunnels are cramped, the goblins defend their palisades in numbers, and a shaman is said to keep deeper down; do not press past level 1.",
+        "desired_end_state": "Level 1 of the Mossback Warrens is cleared of its goblin scouts and warriors.",
+        "objectives": [
+          {
+            "verb": "DEFEAT",
+            "what": "goblin scouts and warriors of the Mossback Warrens",
+            "qty": null,
+            "unit": null,
+            "where": "Mossback Warrens, level 1",
+            "delivery": null
+          }
+        ],
+        "proof": [],
+        "habitat": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,6397 @@
+[
+ {
+  "i": 0,
+  "user": false,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "campaign.started",
+    "d": {
+     "seed": 2716486382,
+     "minute": 540,
+     "entities": [
+      {
+       "id": "pc",
+       "kind": "pc",
+       "name": "Alaric",
+       "race": "Human",
+       "age": 18,
+       "origin": "Earth",
+       "descriptors": [
+        "alaric",
+        "stranger",
+        "traveler"
+       ],
+       "status": "alive",
+       "location": "loc.ashbridge",
+       "sheet": {
+        "level": 1,
+        "class": null,
+        "stats": {
+         "STR": 5,
+         "VIT": 5,
+         "AGI": 5,
+         "INT": 5,
+         "PER": 5,
+         "WIL": 5
+        },
+        "skills": {},
+        "equipment": {
+         "clothing": "simple_travelers_clothes"
+        },
+        "inventory": {
+         "small_pouch": 1
+        },
+        "coin_cp": 50,
+        "xp": 0,
+        "free_points": 0,
+        "hp": 80,
+        "mp": 60,
+        "sta": 100
+       }
+      }
+     ],
+     "location": "loc.ashbridge",
+     "place": "public roadside verge outside Ashbridge",
+     "facts": [
+      {
+       "id": "f.pc.name",
+       "s": "pc",
+       "p": "name",
+       "o": "Alaric",
+       "visibility": "public",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      },
+      {
+       "id": "f.pc.appearance",
+       "s": "pc",
+       "p": "appearance",
+       "o": "Human, about eighteen; wears simple traveler's clothes",
+       "visibility": "public",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      },
+      {
+       "id": "f.pc.origin",
+       "s": "pc",
+       "p": "origin",
+       "o": "Earth (transmigrated; memories intact)",
+       "visibility": "secret",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      },
+      {
+       "id": "f.pc.arrival_witnesses",
+       "s": "pc",
+       "p": "arrival_witnesses",
+       "o": "none",
+       "visibility": "secret",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      }
+     ],
+     "knowledge": [
+      {
+       "who": "pc",
+       "about": "f.pc.name",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      },
+      {
+       "who": "pc",
+       "about": "f.pc.appearance",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      },
+      {
+       "who": "pc",
+       "about": "f.pc.origin",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      },
+      {
+       "who": "pc",
+       "about": "f.pc.arrival_witnesses",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      }
+     ],
+     "campaign": "avereth",
+     "content_version": "4.2.0",
+     "engine_version": "4.3.0-c.6.6.207",
+     "ruleset": 2,
+     "private_quests": false,
+     "runtime": "v4",
+     "path": "c",
+     "places": [
+      {
+       "id": "realm.valedorn_crown",
+       "name": "Valedorn Crown",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.caelreth",
+       "name": "Caelreth",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.duskreach",
+       "name": "Duskreach",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.ashen_scale_dominion",
+       "name": "Ashen Scale Dominion",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.ashen_scale_dominion",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.verdant_fang_court",
+       "name": "Verdant Fang Court",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.verdant_fang_court",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.alderwatch",
+       "name": "Alderwatch",
+       "kind": "settlement",
+       "sub": "city",
+       "parent": "realm.valedorn_crown",
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.alderwatch.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.alderwatch",
+       "realm": "realm.valedorn_crown",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.glassmere",
+       "name": "Glassmere",
+       "kind": "settlement",
+       "sub": "city",
+       "parent": "realm.caelreth",
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.glassmere.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.glassmere",
+       "realm": "realm.caelreth",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.ashbridge",
+       "name": "Ashbridge",
+       "kind": "settlement",
+       "sub": "city",
+       "parent": "realm.duskreach",
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.ashbridge.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.ashbridge",
+       "realm": "realm.duskreach",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.crownheart",
+       "name": "Crownheart",
+       "kind": "settlement",
+       "sub": "capital",
+       "parent": "realm.valedorn_crown",
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.crownheart.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.crownheart",
+       "realm": "realm.valedorn_crown",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.asterhall",
+       "name": "Asterhall",
+       "kind": "settlement",
+       "sub": "capital",
+       "parent": "realm.caelreth",
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.asterhall.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.asterhall",
+       "realm": "realm.caelreth",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.blackgate",
+       "name": "Blackgate",
+       "kind": "settlement",
+       "sub": "capital",
+       "parent": "realm.duskreach",
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.blackgate.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.blackgate",
+       "realm": "realm.duskreach",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.cinder_throne",
+       "name": "Cinder Throne",
+       "kind": "settlement",
+       "sub": "seat",
+       "parent": "realm.ashen_scale_dominion",
+       "realm": "realm.ashen_scale_dominion",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.thornheart",
+       "name": "Thornheart",
+       "kind": "settlement",
+       "sub": "seat",
+       "parent": "realm.verdant_fang_court",
+       "realm": "realm.verdant_fang_court",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.mossback_warrens",
+       "name": "Mossback Warrens",
+       "kind": "site",
+       "parent": "realm.duskreach",
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content",
+       "near": "loc.ashbridge",
+       "where": "a moss-grown hill half a day's walk east of Ashbridge, off the old quarry track",
+       "rooms": true,
+       "dungeon": {
+        "real": true,
+        "theme": "goblin warrens: tunnels dug into a mossy hill, crude palisades, goblin scouts and warriors, a shaman deeper down",
+        "rank": {
+         "min": "F",
+         "max": "E"
+        },
+        "levels": {
+         "1": {
+          "min": "F",
+          "max": "F"
+         },
+         "2": {
+          "min": "E",
+          "max": "E"
+         }
+        },
+        "control": "the Adventurers' Guild of Ashbridge keeps its entry ledger under a charter of the Duskreach crown",
+        "hidden": [],
+        "heard": [],
+        "guild": [
+         "theme",
+         "rank",
+         "level:1",
+         "level:2",
+         "control"
+        ]
+       }
+      },
+      {
+       "id": "loc.glimmerdeep_grotto",
+       "name": "Glimmerdeep Grotto",
+       "kind": "site",
+       "parent": "realm.caelreth",
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content",
+       "near": "loc.glassmere",
+       "where": "a cleft in the hills a morning's walk north of Glassmere, where the stream runs out of the rock",
+       "rooms": true,
+       "dungeon": {
+        "real": true,
+        "theme": "crystal caverns: glittering grottos of mana-fed crystal, crystal beetles and mineral slimes",
+        "rank": {
+         "min": "F",
+         "max": "F"
+        },
+        "levels": {
+         "1": {
+          "min": "F",
+          "max": "F"
+         }
+        },
+        "control": "a Glassmere academy of magic holds the cleft and lets registered adventurers cull its outer grottos; what they kill and the free crystal there is theirs, the deep galleries the academy's",
+        "hidden": [],
+        "heard": [],
+        "guild": [
+         "theme",
+         "rank",
+         "level:1",
+         "control"
+        ]
+       }
+      },
+      {
+       "id": "loc.old_crown_catacombs",
+       "name": "Old Crown Catacombs",
+       "kind": "site",
+       "parent": "realm.valedorn_crown",
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content",
+       "near": "loc.alderwatch",
+       "where": "beneath a ruined chapel an hour's ride west of Alderwatch",
+       "rooms": true,
+       "dungeon": {
+        "real": true,
+        "theme": "undead catacombs: burial galleries, restless skeletons, ghouls deeper down",
+        "rank": {
+         "min": "F",
+         "max": "E"
+        },
+        "levels": {
+         "1": {
+          "min": "F",
+          "max": "F"
+         },
+         "2": {
+          "min": "E",
+          "max": "E"
+         }
+        },
+        "control": "the temple wardens of Alderwatch, who ask the Guild to keep the upper galleries culled",
+        "hidden": [],
+        "heard": [],
+        "guild": [
+         "theme",
+         "rank",
+         "level:1",
+         "level:2",
+         "control"
+        ]
+       }
+      },
+      {
+       "id": "loc.ashbridge.verge",
+       "name": "public roadside verge outside Ashbridge",
+       "kind": "site",
+       "parent": "loc.ashbridge",
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content"
+      }
+     ],
+     "at": "loc.ashbridge.verge"
+    }
+   }
+  ]
+ },
+ {
+  "i": 1,
+  "user": true,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 1,
+     "input_hash": "488a02e3",
+     "input": "Mage"
+    }
+   },
+   {
+    "t": "creation.class_selected",
+    "d": {
+     "class": "mage",
+     "favored": [
+      "INT",
+      "WIL"
+     ],
+     "basic_attack": "mage.basic_attack"
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "creation.step2",
+      "class": "mage"
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 3,
+  "user": true,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 2,
+     "input_hash": "b6e3aa01",
+     "input": "Flame Lance + Arcane Wave"
+    }
+   },
+   {
+    "t": "creation.completed",
+    "d": {
+     "skills": [
+      "mage.flame_lance",
+      "mage.arcane_wave"
+     ],
+     "equip": {
+      "weapon": "starter_arcane_staff_r2",
+      "armor": "starter_light_robes"
+     },
+     "items": {},
+     "hp": 80,
+     "mp": 72,
+     "sta": 100
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "creation.complete",
+      "class": "mage",
+      "skills": [
+       "mage.flame_lance",
+       "mage.arcane_wave"
+      ],
+      "kit": [
+       "starter_arcane_staff_r2",
+       "starter_light_robes"
+      ]
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 5,
+  "user": true,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 3,
+     "input_hash": "63d650ce",
+     "input": "*i walk into the city ahead and make my way over to the adventurers hall*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 50094,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "go",
+       "to": "loc.ashbridge.guild_hall",
+       "quote": "i walk into the city ahead and make my way over to the adventurers hall",
+       "within": null
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "go",
+     "status": "authorized",
+     "quote": "i walk into the city ahead and make my way over to the adventurers hall"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 3,
+     "at": "loc.ashbridge.verge",
+     "exposure": "scene",
+     "frame": "inside",
+     "phase": "day",
+     "base": 6,
+     "misses_before": 0,
+     "p": 6,
+     "roll": 47,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. GOES — to Adventurers' Guild hall, Ashbridge (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "i walk into the city ahead and make my way over to the adventurers hall"
+       }
+      ],
+      "expected_keys": {
+       "1": "go"
+      },
+      "auth": {
+       "go": {
+        "seq": 1,
+        "to": "loc.ashbridge.guild_hall",
+        "name": "Adventurers' Guild hall, Ashbridge",
+        "hall": true,
+        "newName": null,
+        "mode": "local",
+        "enter": null,
+        "scope": null
+       },
+       "gos": [
+        {
+         "seq": 1,
+         "to": "loc.ashbridge.guild_hall",
+         "name": "Adventurers' Guild hall, Ashbridge",
+         "hall": true,
+         "newName": null,
+         "mode": "local",
+         "enter": null,
+         "scope": null
+        }
+       ],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "inside",
+        "phase": "day",
+        "p": 6,
+        "roll": 47,
+        "misses": 0,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 6,
+  "user": false,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "scene.moved",
+    "d": {
+     "at": "loc.ashbridge.guild_hall",
+     "location": "loc.ashbridge",
+     "place": "Adventurers' Guild hall, Ashbridge",
+     "reset_present": true,
+     "track_history": true
+    }
+   },
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 15,
+     "why": "travel"
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t3.m6.ep",
+      "turn": 3,
+      "minute": 555,
+      "text": "Adventurers' Guild hall, Ashbridge: {pc}: \"*i walk into the city ahead and make my way over to the adventurers hall*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 2,
+      "kind": "episode",
+      "msg": 6
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 3,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 16198,
+     "repaired": false,
+     "deltas": 1,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 7,
+  "user": true,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 4,
+     "input_hash": "e80f457f",
+     "input": "*i walk up to the counter and say* Hello my name is Alaric Red and im here to register"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 3982,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "guild.register",
+       "quote": "Hello my name is Alaric Red and im here to register"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "offer.created",
+    "d": {
+     "offer": {
+      "id": "offer.registration",
+      "seller": "guild",
+      "at": "loc.ashbridge.guild_hall",
+      "status": "open",
+      "canon": true,
+      "turn": 4,
+      "lines": [
+       {
+        "id": "l1",
+        "what": "Guild registration fee",
+        "kind": "service",
+        "service": "guild_registration",
+        "qty": 1,
+        "price_cp": 20
+       }
+      ]
+     }
+    }
+   },
+   {
+    "t": "decision.opened",
+    "d": {
+     "decision": {
+      "id": "dec.registration",
+      "kind": "registration",
+      "what": "Guild registration",
+      "offer": "offer.registration",
+      "at": "loc.ashbridge.guild_hall",
+      "turn": 4,
+      "price_cp": 20
+     }
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "guild.register",
+     "status": "pending",
+     "reason": "fee",
+     "quote": "Hello my name is Alaric Red and im here to register"
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. REGISTERS — pending: the Guild's registration fee is 2 silver (20 cp), one-time; a new member starts at Guild Rank Novice (the Guild's ranks run Novice to Legend); Power Rank (F to S) is a person's measured strength, a separate scale the Guild reads but never grants. Let the clerk name the fee and explain; stop there: he has not agreed to pay."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "guild.register",
+        "status": "pending",
+        "reason": "fee",
+        "quote": "Hello my name is Alaric Red and im here to register"
+       }
+      ],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": false,
+        "exposure": "scene",
+        "eligible": false,
+        "reason": "hard_stop"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 8,
+  "user": false,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "npc.npcguild_clerk",
+      "kind": "npc",
+      "name": null,
+      "descriptors": [
+       "clerk",
+       "thin woman of middle years",
+       "ink-stained fingers",
+       "spectacles perched low on her nose",
+       "npc.guild_clerk"
+      ],
+      "traits": "thin woman of middle years, ink-stained fingers, spectacles perched low on her nose",
+      "status": "alive",
+      "location": "loc.ashbridge",
+      "created": {
+       "turn": 4,
+       "minute": 555
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 8
+      },
+      "card": {},
+      "template": "commoner"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "npc.npcguild_clerk",
+     "band": "ENGAGED"
+    }
+   },
+   {
+    "t": "scene.tactical",
+    "d": {
+     "id": "npc.npcguild_clerk",
+     "relevant": true,
+     "threat": false
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_npcguild_clerk.occupation.30b90ecf.t4",
+      "s": "npc.npcguild_clerk",
+      "p": "occupation",
+      "o": "clerk",
+      "since": {
+       "turn": 4,
+       "minute": 555
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 8
+      }
+     }
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 2,
+      "type": "learn",
+      "who": "npc.guild_clerk",
+      "s": "npc.guild_clerk",
+      "p": "name",
+      "o": "Alaric Red",
+      "how": "witnessed"
+     },
+     "rule": "identity_subject",
+     "reason": "\"Alaric Red\" is Alaric's name, not the clerk's: what someone learns of him is about pc"
+    }
+   },
+   {
+    "t": "fact.ended",
+    "d": {
+     "id": "f.npc_npcguild_clerk.occupation.30b90ecf.t4",
+     "until": {
+      "turn": 4,
+      "minute": 555
+     },
+     "reason": "superseded by npc.npcguild_clerk occupation Guild registration clerk"
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t4.m8.d3_2.1",
+      "s": "npc.npcguild_clerk",
+      "p": "occupation",
+      "o": "Guild registration clerk",
+      "since": {
+       "turn": 4,
+       "minute": 555
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 8,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcguild_clerk",
+     "about": "f.pc.appearance",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 4,
+     "minute": 555
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t4.seen.npc.npcguild_clerk",
+      "turn": 4,
+      "minute": 555,
+      "text": "first saw {pc} at Adventurers' Guild hall, Ashbridge",
+      "who": [
+       "npc.npcguild_clerk",
+       "pc"
+      ],
+      "witnesses": [
+       "npc.npcguild_clerk"
+      ],
+      "seen": [
+       "npc.npcguild_clerk"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 4,
+      "kind": "meeting"
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcguild_clerk",
+     "about": "f.pc.name",
+     "stance": "knows",
+     "source": "told:pc",
+     "turn": 4,
+     "minute": 555
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t4.m8.ep",
+      "turn": 4,
+      "minute": 555,
+      "text": "Adventurers' Guild hall, Ashbridge: {pc}: \"*i walk up to the counter and say* Hello my name is Alaric Red and im here to register\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 8
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 4,
+     "rolled": false,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 1,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 24508,
+     "repaired": true,
+     "deltas": 3,
+     "rejected": 1
+    }
+   }
+  ]
+ },
+ {
+  "i": 9,
+  "user": true,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 5,
+     "input_hash": "0983cbce",
+     "input": "*i pay the 2 Silver and finish the registration*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json_repaired",
+     "ms": 11898,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "offer.accept",
+       "offer": "offer.registration",
+       "lines": [
+        "l1"
+       ],
+       "qty": null,
+       "party_words": null,
+       "agreed_cp": 20,
+       "price_evidence": {
+        "basis": "total",
+        "quote": "2 Silver",
+        "currency_quote": "Silver"
+       },
+       "quote": "i pay the 2 Silver and finish the registration"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "transaction.completed",
+    "d": {
+     "offer": "offer.registration",
+     "lines": [
+      "l1"
+     ],
+     "cp": 20,
+     "seller": "guild"
+    }
+   },
+   {
+    "t": "coin.changed",
+    "d": {
+     "id": "pc",
+     "value": 30,
+     "delta": -20,
+     "why": "Guild registration fee"
+    }
+   },
+   {
+    "t": "offer.closed",
+    "d": {
+     "id": "offer.registration",
+     "status": "accepted"
+    }
+   },
+   {
+    "t": "guild.registered",
+    "d": {
+     "rank": "Novice",
+     "branch": "loc.ashbridge",
+     "power_rank": "F"
+    }
+   },
+   {
+    "t": "object.created",
+    "d": {
+     "object": {
+      "id": "obj.guild_plate",
+      "name": "Guild plate",
+      "kind": "document",
+      "stack": false,
+      "qty": 1,
+      "unit": null,
+      "holder": {
+       "entity": "pc"
+      },
+      "marks": [
+       {
+        "text": "Novice stamp",
+        "by": "guild",
+        "turn": 5
+       }
+      ],
+      "for_quests": [],
+      "source": {
+       "turn": 5,
+       "how": "guild"
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.pc.guild_rank.d0460f90.t5",
+      "s": "pc",
+      "p": "guild_rank",
+      "o": "Novice",
+      "since": {
+       "turn": 5,
+       "minute": 555
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.7,
+      "hard": false,
+      "source": {
+       "kind": "engine"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcguild_clerk",
+     "about": "f.pc.guild_rank.d0460f90.t5",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 5,
+     "minute": 555
+    }
+   },
+   {
+    "t": "decision.closed",
+    "d": {
+     "id": "dec.registration",
+     "status": "accepted"
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "offer.accept",
+     "status": "resolved",
+     "quote": "i pay the 2 Silver and finish the registration"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 5,
+     "at": "loc.ashbridge.guild_hall",
+     "exposure": "scene",
+     "frame": "inside",
+     "phase": "day",
+     "base": 6,
+     "misses_before": 1,
+     "p": 6.9,
+     "roll": 69.42,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. PAYS — the Guild registration fee, 20 cp: registered at Guild Rank Novice; the crystal reads his Power Rank: F (his measured strength, a separate scale from the Guild's ranks); he receives his Guild plate. Desk, crystal measurement and handover are one service inside the Guild hall. Describe the routine in place; only actual witnesses know it."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "offer.accept",
+        "status": "resolved",
+        "quote": "i pay the 2 Silver and finish the registration"
+       }
+      ],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "inside",
+        "phase": "day",
+        "p": 6.9,
+        "roll": 69.42,
+        "misses": 1,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": true,
+       "grants": [
+        "Guild plate"
+       ],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": [],
+      "coin": [
+       {
+        "kind": "purchase",
+        "delta": -20,
+        "before": 50,
+        "after": 30,
+        "why": "Guild registration fee"
+       }
+      ]
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 10,
+  "user": false,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 10,
+     "why": "narration"
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t5.m10.ep",
+      "turn": 5,
+      "minute": 565,
+      "text": "Adventurers' Guild hall, Ashbridge: {pc}: \"*i pay the 2 Silver and finish the registration*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 10
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 5,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 6285,
+     "repaired": false,
+     "deltas": 1,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 11,
+  "user": true,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 6,
+     "input_hash": "1a611f45",
+     "input": "*i nod and walk over to the questboard and look at it*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 6675,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "board.read",
+       "rank": null,
+       "quote": "i nod and walk over to the questboard and look at it"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "offer.created",
+    "d": {
+     "offer": {
+      "id": "offer.manuals.locashbridgeguild_hall",
+      "seller": "npc.npcguild_clerk",
+      "at": "loc.ashbridge.guild_hall",
+      "status": "open",
+      "canon": true,
+      "stock": "manuals",
+      "turn": 6,
+      "lines": [
+       {
+        "id": "strike",
+        "what": "Primer of Strike",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "strike",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "bolt",
+        "what": "Primer of Bolt",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "bolt",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "guard",
+        "what": "Primer of Guard",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "guard",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "ward",
+        "what": "Primer of Ward",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "ward",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "mend",
+        "what": "Primer of Mend",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "mend",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "realm.duskreach.the_old_quarry_track_east_of_ashbridge",
+      "name": "the old quarry track east of Ashbridge",
+      "kind": "site",
+      "parent": "realm.duskreach",
+      "realm": "realm.duskreach",
+      "tags": [],
+      "known": "reported",
+      "reports": [],
+      "by": "guild",
+      "created": {
+       "turn": 6,
+       "minute": 565
+      },
+      "population": {
+       "anchor": "boar",
+       "species": "wild boar",
+       "levels": [
+        4,
+        7
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.cull_the_quarry_track_boars",
+      "title": "Cull the Quarry Track Boars",
+      "kind": "guild_contract",
+      "client": "Quarry Track Carters' Cooperative",
+      "giver": null,
+      "rank": "Novice",
+      "level": 4,
+      "qtype": "standard",
+      "payout_cp": 120,
+      "reward": "120 cp",
+      "task": "Kill 4 wild boars at the old quarry track east of Ashbridge. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+      "desired_end_state": "4 wild boars killed at the old quarry track east of Ashbridge.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "wild boars",
+        "qty": 4,
+        "unit": "boars",
+        "where": "the old quarry track east of Ashbridge",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.ashbridge.guild_hall",
+       "branch": "loc.ashbridge",
+       "listed": {
+        "turn": 6,
+        "minute": 565,
+        "day": 1
+       },
+       "profile": "count_hunt_clear"
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 565,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "hunt": {
+       "at": "realm.duskreach.the_old_quarry_track_east_of_ashbridge",
+       "age": "adult"
+      },
+      "count_rule": "killed"
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "realm.duskreach.the_millpond_sluice_works_at_ashbridge",
+      "name": "the millpond sluice works at Ashbridge",
+      "kind": "site",
+      "parent": "realm.duskreach",
+      "realm": "realm.duskreach",
+      "tags": [],
+      "known": "reported",
+      "reports": [],
+      "by": "guild",
+      "created": {
+       "turn": 6,
+       "minute": 565
+      },
+      "population": {
+       "anchor": "serpent",
+       "species": "water serpent",
+       "levels": [
+        4,
+        7
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.thin_the_millpond_snakes",
+      "title": "Thin the Millpond Snakes",
+      "kind": "guild_contract",
+      "client": "Odrik Weirwright, Ashbridge millpond keeper",
+      "giver": null,
+      "rank": "Novice",
+      "level": 4,
+      "qtype": "minor",
+      "payout_cp": 95,
+      "reward": "95 cp",
+      "task": "Kill 3 waterside serpents at the millpond sluice works at Ashbridge. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+      "desired_end_state": "3 waterside serpents killed at the millpond sluice works at Ashbridge.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "waterside serpents",
+        "qty": 3,
+        "unit": "serpents",
+        "where": "the millpond sluice works at Ashbridge",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.ashbridge.guild_hall",
+       "branch": "loc.ashbridge",
+       "listed": {
+        "turn": 6,
+        "minute": 565,
+        "day": 1
+       },
+       "profile": "count_hunt_clear"
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 565,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "hunt": {
+       "at": "realm.duskreach.the_millpond_sluice_works_at_ashbridge",
+       "age": "adult"
+      },
+      "count_rule": "killed"
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "realm.duskreach.the_charcoal_camp_in_the_coppice_north_of_the_quarry_track",
+      "name": "the charcoal camp in the coppice north of the quarry track",
+      "kind": "site",
+      "parent": "realm.duskreach",
+      "realm": "realm.duskreach",
+      "tags": [],
+      "known": "reported",
+      "reports": [],
+      "by": "guild",
+      "created": {
+       "turn": 6,
+       "minute": 565
+      },
+      "population": {
+       "anchor": "wolf",
+       "species": "grey wolf",
+       "levels": [
+        4,
+        7
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.rid_the_charcoal_camp_of_wolves",
+      "title": "Rid the Charcoal Camp of Wolves",
+      "kind": "guild_contract",
+      "client": "Brenna Hollis, charcoal burner",
+      "giver": null,
+      "rank": "Novice",
+      "level": 5,
+      "qtype": "standard",
+      "payout_cp": 150,
+      "reward": "150 cp",
+      "task": "Kill 5 grey wolves at the charcoal camp in the coppice north of the quarry track. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+      "desired_end_state": "5 grey wolves killed at the charcoal camp in the coppice north of the quarry track.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "grey wolves",
+        "qty": 5,
+        "unit": "wolves",
+        "where": "the charcoal camp in the coppice north of the quarry track",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.ashbridge.guild_hall",
+       "branch": "loc.ashbridge",
+       "listed": {
+        "turn": 6,
+        "minute": 565,
+        "day": 1
+       },
+       "profile": "count_hunt_clear"
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 565,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "hunt": {
+       "at": "realm.duskreach.the_charcoal_camp_in_the_coppice_north_of_the_quarry_track",
+       "age": "adult"
+      },
+      "count_rule": "killed"
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "realm.duskreach.the_ditch_marsh_causeway",
+      "name": "the Ditch Marsh causeway",
+      "kind": "site",
+      "parent": "realm.duskreach",
+      "realm": "realm.duskreach",
+      "tags": [],
+      "known": "reported",
+      "reports": [],
+      "by": "guild",
+      "created": {
+       "turn": 6,
+       "minute": 565
+      },
+      "population": {
+       "anchor": "raptor",
+       "species": "marsh raptor",
+       "levels": [
+        4,
+        7
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.slay_the_ditch_marsh_raptor",
+      "title": "Slay the Ditch Marsh Raptor",
+      "kind": "guild_contract",
+      "client": "Reed-cutters of the Ditch Marsh",
+      "giver": null,
+      "rank": "Novice",
+      "level": 6,
+      "qtype": "dangerous",
+      "payout_cp": 175,
+      "reward": "175 cp",
+      "task": "Kill 1 the marsh raptor at the Ditch Marsh causeway. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+      "desired_end_state": "1 the marsh raptor killed at the Ditch Marsh causeway.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "the marsh raptor",
+        "qty": 1,
+        "unit": "raptor",
+        "where": "the Ditch Marsh causeway",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.ashbridge.guild_hall",
+       "branch": "loc.ashbridge",
+       "listed": {
+        "turn": 6,
+        "minute": 565,
+        "day": 1
+       },
+       "profile": "count_hunt_clear"
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 565,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "hunt": {
+       "at": "realm.duskreach.the_ditch_marsh_causeway",
+       "age": "adult"
+      },
+      "count_rule": "killed"
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.clear_mossback_warrens_level_1",
+      "title": "Clear Mossback Warrens Level 1",
+      "kind": "guild_contract",
+      "client": "Adventurers' Guild of Ashbridge",
+      "giver": null,
+      "rank": "Novice",
+      "level": 3,
+      "qtype": "dangerous",
+      "payout_cp": 140,
+      "reward": "140 cp",
+      "task": "Clear level 1 of Mossback Warrens. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedition.",
+      "desired_end_state": "Level 1 of Mossback Warrens is clear.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "goblin scouts and warriors of Mossback Warrens",
+        "qty": null,
+        "unit": null,
+        "where": "Mossback Warrens, level 1",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.ashbridge.guild_hall",
+       "branch": "loc.ashbridge",
+       "listed": {
+        "turn": 6,
+        "minute": 565,
+        "day": 1
+       }
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 565,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "clear": {
+       "dungeon": "loc.mossback_warrens",
+       "floor": 1
+      },
+      "dungeon": "loc.mossback_warrens",
+      "floor": 1
+     }
+    }
+   },
+   {
+    "t": "board.refreshed",
+    "d": {
+     "key": "loc.ashbridge|Novice",
+     "branch": "loc.ashbridge",
+     "rank": "Novice",
+     "day": 1,
+     "listings": [
+      "quest.cull_the_quarry_track_boars",
+      "quest.thin_the_millpond_snakes",
+      "quest.rid_the_charcoal_camp_of_wolves",
+      "quest.slay_the_ditch_marsh_raptor",
+      "quest.clear_mossback_warrens_level_1"
+     ]
+    }
+   },
+   {
+    "t": "board.shown",
+    "d": {
+     "branch": "loc.ashbridge",
+     "rank": "Novice",
+     "listings": [
+      "quest.cull_the_quarry_track_boars",
+      "quest.thin_the_millpond_snakes",
+      "quest.rid_the_charcoal_camp_of_wolves",
+      "quest.slay_the_ditch_marsh_raptor",
+      "quest.clear_mossback_warrens_level_1"
+     ]
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "board.read",
+     "status": "resolved",
+     "quote": "i nod and walk over to the questboard and look at it"
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. READS the Novice board — BOARD (these listings now become canonical because Alaric actually reads them; System cards display the official catalogue once this read is confirmed. Tell the reading briefly, atmosphere and NPC reactions; do not reproduce the catalogue or repeat every title, objective, reward and risk line. Discussing an individual contract or answering requested details is allowed. Invent no other official contract; these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display):\nREFERENCE ONLY — authoritative contract data, not a prose catalogue:\n**Cull the Quarry Track Boars** (4) · 4 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 — client: Quarry Track Carters' Cooperative · reward: 120 cp · Kill 4 wild boars at the old quarry track east of Ashbridge. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Thin the Millpond Snakes** (3) · 3 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 — client: Odrik Weirwright, Ashbridge millpond keeper · reward: 95 cp · Kill 3 waterside serpents at the millpond sluice works at Ashbridge. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Rid the Charcoal Camp of Wolves** (5) · 5 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 — client: Brenna Hollis, charcoal burner · reward: 150 cp · Kill 5 grey wolves at the charcoal camp in the coppice north of the quarry track. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Slay the Ditch Marsh Raptor** (1) · 1 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 — client: Reed-cutters of the Ditch Marsh · reward: 175 cp · Kill 1 the marsh raptor at the Ditch Marsh causeway. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Clear Mossback Warrens Level 1** — Clear Mossback Warrens, level 1 — client: Adventurers' Guild of Ashbridge · reward: 140 cp · Clear level 1 of Mossback Warrens. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedition.\nStored objectives and any verification examples are continuity memory only."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "board.read",
+        "status": "resolved",
+        "quote": "i nod and walk over to the questboard and look at it"
+       }
+      ],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": false,
+        "exposure": "scene",
+        "eligible": false,
+        "reason": "board"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": {
+       "branch": "loc.ashbridge",
+       "rank": "Novice",
+       "listings": [
+        "quest.cull_the_quarry_track_boars",
+        "quest.thin_the_millpond_snakes",
+        "quest.rid_the_charcoal_camp_of_wolves",
+        "quest.slay_the_ditch_marsh_raptor",
+        "quest.clear_mossback_warrens_level_1"
+       ]
+      },
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": [],
+      "engine_lines": [
+       "SHOP — Guild: Primer of Strike · 1 for 80 cp · manual · F · teaches strike · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Bolt · 1 for 80 cp · manual · F · teaches bolt · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Guard · 1 for 80 cp · manual · F · teaches guard · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Ward · 1 for 80 cp · manual · F · teaches ward · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Mend · 1 for 80 cp · manual · F · teaches mend · value guide ~120 cp each (not the asking price)",
+       "SYSTEM — GUILD BOARD · Novice · Ashbridge",
+       "Cull the Quarry Track Boars (4) · 4 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 · Novice · client: Quarry Track Carters' Cooperative · reward: 120 cp (1 Gold 2 Silver) · Kill 4 wild boars at the old quarry track east of Ashbridge. Only engine-recorded kills of this population count. Return",
+       "Thin the Millpond Snakes (3) · 3 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 · Novice · client: Odrik Weirwright, Ashbridge millpond keeper · reward: 95 cp (9 Silver 5 Copper) · Kill 3 waterside serpents at the millpond sluice works at Ashbridge. Only engine-recorded kills of this population count",
+       "Rid the Charcoal Camp of Wolves (5) · 5 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 · Novice · client: Brenna Hollis, charcoal burner · reward: 150 cp (1 Gold 5 Silver) · Kill 5 grey wolves at the charcoal camp in the coppice north of the quarry track. Only engine-recorded kills of this pop",
+       "Slay the Ditch Marsh Raptor (1) · 1 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 · Novice · client: Reed-cutters of the Ditch Marsh · reward: 175 cp (1 Gold 7 Silver 5 Copper) · Kill 1 the marsh raptor at the Ditch Marsh causeway. Only engine-recorded kills of this population count. Return to the ",
+       "Clear Mossback Warrens Level 1 — Clear Mossback Warrens, level 1 · Novice · quest level 3 · client: Adventurers' Guild of Ashbridge · reward: 140 cp (1 Gold 4 Silver) · Clear level 1 of Mossback Warrens. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedi"
+      ]
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 12,
+  "user": false,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 5,
+     "why": "narration"
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t6.m12.ep",
+      "turn": 6,
+      "minute": 570,
+      "text": "Adventurers' Guild hall, Ashbridge: {pc}: \"*i nod and walk over to the questboard and look at it*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 12
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 6,
+     "rolled": false,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 4205,
+     "repaired": false,
+     "deltas": 1,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 13,
+  "user": true,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 7,
+     "input_hash": "f87039a6",
+     "input": "Annehmen: Clear Mossback Warrens Level 1"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 0,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "quest.accept",
+       "quest": "quest.clear_mossback_warrens_level_1"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "quest.status",
+    "d": {
+     "id": "quest.clear_mossback_warrens_level_1",
+     "from": "listed",
+     "to": "active",
+     "taker": "pc",
+     "at": "loc.ashbridge.guild_hall",
+     "step": 1
+    }
+   },
+   {
+    "t": "board.refreshed",
+    "d": {
+     "key": "loc.ashbridge|Novice",
+     "branch": "loc.ashbridge",
+     "rank": "Novice",
+     "day": 1,
+     "listings": [
+      "quest.cull_the_quarry_track_boars",
+      "quest.thin_the_millpond_snakes",
+      "quest.rid_the_charcoal_camp_of_wolves",
+      "quest.slay_the_ditch_marsh_raptor"
+     ]
+    }
+   },
+   {
+    "t": "object.created",
+    "d": {
+     "object": {
+      "id": "obj.slip.clear_mossback_warrens_level_1",
+      "name": "Guild contract slip: Clear Mossback Warrens Level 1",
+      "kind": "document",
+      "stack": false,
+      "qty": 1,
+      "unit": null,
+      "holder": {
+       "entity": "pc"
+      },
+      "marks": [],
+      "for_quests": [
+       "quest.clear_mossback_warrens_level_1"
+      ],
+      "source": {
+       "turn": 7,
+       "how": "guild"
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.pc.accepted.quest.clear_mossback_warrens_level_1",
+      "s": "pc",
+      "p": "accepted_contract",
+      "o": "Clear Mossback Warrens Level 1",
+      "since": {
+       "turn": 7,
+       "minute": 570
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.7,
+      "hard": false,
+      "source": {
+       "kind": "engine"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcguild_clerk",
+     "about": "f.pc.accepted.quest.clear_mossback_warrens_level_1",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 7,
+     "minute": 570
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "quest.accept",
+     "status": "resolved",
+     "quote": null
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 7,
+     "at": "loc.ashbridge.guild_hall",
+     "exposure": "scene",
+     "frame": "inside",
+     "phase": "day",
+     "base": 6,
+     "misses_before": 2,
+     "p": 7.8,
+     "roll": 77.76,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. ACCEPTS — \"Clear Mossback Warrens Level 1\" at the Guild desk; the clerk logs it and hands him its contract slip. Contract memory: Level 1 of Mossback Warrens is clear.. Proof: the contract slip itself; its Guild seal shows READY once the world has established the outcome (the engine marks it). No trophies or body parts are required or handed over; what he takes from his kills is his own loot. The stored objectives and any verification examples are continuity guidance, not mandatory steps or wording. Payout (140 cp), XP, completed-contract credit and promotion remain engine-owned at explicit turn-in."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "quest.accept",
+        "status": "resolved",
+        "quote": null
+       }
+      ],
+      "expected_keys": {
+       "1": "desk"
+      },
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "inside",
+        "phase": "day",
+        "p": 7.8,
+        "roll": 77.76,
+        "misses": 2,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [
+        "contract slip"
+       ],
+       "turnIns": [],
+       "accepted": [
+        "quest.clear_mossback_warrens_level_1"
+       ],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": [],
+      "desk": {
+       "1": {
+        "quest": "quest.clear_mossback_warrens_level_1",
+        "kind": "accept"
+       }
+      }
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 14,
+  "user": false,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "quest.detailed",
+    "d": {
+     "id": "quest.clear_mossback_warrens_level_1",
+     "note": "Clerk's directions: half a day east on the old quarry track, past the turnoff for the boar work, hill covered in moss. Warrens are a living Dungeon — what's down there doesn't sit still between visits",
+     "schedule": null
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t7.m14.ep",
+      "turn": 7,
+      "minute": 570,
+      "text": "Adventurers' Guild hall, Ashbridge: {pc}: \"Annehmen: Clear Mossback Warrens Level 1\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 14
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 7,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 25719,
+     "repaired": true,
+     "deltas": 1,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 15,
+  "user": true,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 8,
+     "input_hash": "6428e456",
+     "input": "*i follow the directions and make my way over to the Dungeon*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 4504,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "go",
+       "to": "loc.mossback_warrens",
+       "quote": "i follow the directions and make my way over to the Dungeon",
+       "within": null
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "dungeon.established",
+    "d": {
+     "dungeon": {
+      "id": "loc.mossback_warrens",
+      "name": "Mossback Warrens",
+      "since": {
+       "turn": 8,
+       "minute": 570
+      },
+      "seed": "2716486382|loc.mossback_warrens",
+      "gate": {
+       "names": [
+        "warren mouth",
+        "palisade gate",
+        "palisade",
+        "mossy hill"
+       ],
+       "text": "the palisaded mouth of the warrens in the hillside",
+       "requires": "guild",
+       "fee_cp": 0,
+       "keeper": "the Guild's ledger-keeper at the palisade"
+      },
+      "capacity": 8,
+      "reset_min": 4320,
+      "floors": {
+       "1": {
+        "rank": {
+         "min": "F",
+         "max": "F"
+        },
+        "spans": {
+         "minion": [
+          1,
+          5
+         ],
+         "guard": [
+          4,
+          8
+         ],
+         "boss": [
+          5,
+          9
+         ]
+        },
+        "slots": [
+         {
+          "id": "scouts",
+          "role": "minion",
+          "species": [
+           "goblin scout",
+           "goblin lookout"
+          ],
+          "anchor": "goblin",
+          "count": [
+           2,
+           3
+          ]
+         },
+         {
+          "id": "warband",
+          "role": "minion",
+          "species": [
+           "goblin warrior",
+           "goblin spearman"
+          ],
+          "anchor": "goblin",
+          "count": [
+           2,
+           3
+          ]
+         },
+         {
+          "id": "chief",
+          "role": "guard",
+          "name": "the Palisade Chief",
+          "species": "goblin chief",
+          "anchor": "goblin"
+         }
+        ],
+        "manifest": "the war-drum deeper in the tunnels falls silent and the crude barricade before the lower tunnels stands unmanned",
+        "sealed": false,
+        "pace": [
+         0,
+         1
+        ]
+       },
+       "2": {
+        "rank": {
+         "min": "E",
+         "max": "E"
+        },
+        "spans": {
+         "minion": [
+          15,
+          19
+         ],
+         "guard": [
+          18,
+          22
+         ],
+         "boss": [
+          20,
+          24
+         ]
+        },
+        "slots": [
+         {
+          "id": "guards",
+          "role": "minion",
+          "species": [
+           "goblin warrior",
+           "goblin brute"
+          ],
+          "anchor": "goblin",
+          "count": [
+           2,
+           3
+          ]
+         },
+         {
+          "id": "shaman",
+          "role": "boss",
+          "name": "the Moss Shaman",
+          "species": "goblin shaman",
+          "anchor": "goblin_shaman"
+         }
+        ],
+        "manifest": "the green fire in the shaman's hollow gutters out and the warrens go quiet",
+        "sealed": false,
+        "pace": [
+         0,
+         1
+        ]
+       }
+      },
+      "parties": [
+       {
+        "id": "party.lantern_five",
+        "name": "the Lantern Five",
+        "size": 4,
+        "leader": "Old Harl",
+        "affiliation": "a Guild-registered company",
+        "reach": 2
+       },
+       {
+        "id": "party.millward_blades",
+        "name": "the Millward Blades",
+        "size": 2,
+        "leader": "Ysolde Marr",
+        "affiliation": "hired blades of a local house",
+        "reach": 1
+       }
+      ],
+      "resources_spec": [],
+      "cycle": 1,
+      "cycle_start": 570,
+      "booked_to": 570,
+      "inside": {},
+      "clears": [],
+      "ahead": null,
+      "pass": null,
+      "run": {
+       "floors": {
+        "1": {
+         "parts": 0,
+         "pace": [
+          0,
+          1,
+          0
+         ],
+         "slots": [
+          {
+           "id": "scouts",
+           "role": "minion",
+           "name": null,
+           "species": "goblin scout",
+           "anchor": "goblin",
+           "count": 3,
+           "type": null,
+           "levels": [
+            3,
+            2,
+            5
+           ],
+           "ref": "mossback_warrens_c1_l1_e1",
+           "entities": [],
+           "at": null,
+           "taken": null
+          },
+          {
+           "id": "warband",
+           "role": "minion",
+           "name": null,
+           "species": "goblin warrior",
+           "anchor": "goblin",
+           "count": 3,
+           "type": null,
+           "levels": [
+            4,
+            3,
+            1
+           ],
+           "ref": "mossback_warrens_c1_l1_e2",
+           "entities": [],
+           "at": null,
+           "taken": null
+          },
+          {
+           "id": "chief",
+           "role": "guard",
+           "name": "the Palisade Chief",
+           "species": "goblin chief",
+           "anchor": "goblin",
+           "count": 1,
+           "type": null,
+           "levels": [
+            8
+           ],
+           "ref": "mossback_warrens_c1_l1_e3",
+           "entities": [],
+           "at": null,
+           "taken": null
+          }
+         ],
+         "cleared": null
+        },
+        "2": {
+         "parts": 0,
+         "pace": [
+          0,
+          0
+         ],
+         "slots": [
+          {
+           "id": "guards",
+           "role": "minion",
+           "name": null,
+           "species": "goblin warrior",
+           "anchor": "goblin",
+           "count": 3,
+           "type": null,
+           "levels": [
+            18,
+            17,
+            15
+           ],
+           "ref": "mossback_warrens_c1_l2_e1",
+           "entities": [],
+           "at": null,
+           "taken": null
+          },
+          {
+           "id": "shaman",
+           "role": "boss",
+           "name": "the Moss Shaman",
+           "species": "goblin shaman",
+           "anchor": "goblin_shaman",
+           "count": 1,
+           "type": null,
+           "levels": [
+            20
+           ],
+           "ref": "mossback_warrens_c1_l2_e2",
+           "entities": [],
+           "at": null,
+           "taken": null
+          }
+         ],
+         "cleared": null
+        }
+       },
+       "resources": {}
+      }
+     }
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "go",
+     "status": "authorized",
+     "quote": "i follow the directions and make my way over to the Dungeon"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 8,
+     "at": "loc.ashbridge.guild_hall",
+     "exposure": "travel",
+     "frame": "travel",
+     "phase": "day",
+     "base": 35,
+     "misses_before": 3,
+     "p": 50.75,
+     "roll": 40.81,
+     "open": true,
+     "kind": "obstacle",
+     "leg": 1
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. GOES — to Mossback Warrens (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+      ],
+      "extra": [
+       "THE ROAD — PULSE (the engine's; day): on this leg toward Mossback Warrens ONE concrete thing happens: an OBSTACLE: the way or the weather turns against him (a washed-out ford, a fallen tree, a storm); no foe. It is a real stop short of Mossback Warrens (the one exception to carrying the way forward); what he does about it is his decision. If nothing of this kind can fit what he does, nothing happens."
+      ],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "i follow the directions and make my way over to the Dungeon"
+       }
+      ],
+      "expected_keys": {
+       "1": "go"
+      },
+      "auth": {
+       "go": {
+        "seq": 1,
+        "to": "loc.mossback_warrens",
+        "name": "Mossback Warrens",
+        "hall": false,
+        "newName": null,
+        "mode": "dungeon",
+        "enter": {
+         "dungeon": "loc.mossback_warrens",
+         "root": "loc.mossback_warrens",
+         "gate": false
+        },
+        "scope": "loc.mossback_warrens"
+       },
+       "gos": [
+        {
+         "seq": 1,
+         "to": "loc.mossback_warrens",
+         "name": "Mossback Warrens",
+         "hall": false,
+         "newName": null,
+         "mode": "dungeon",
+         "enter": {
+          "dungeon": "loc.mossback_warrens",
+          "root": "loc.mossback_warrens",
+          "gate": false
+         },
+         "scope": "loc.mossback_warrens"
+        }
+       ],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 10080,
+       "road": "quiet",
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "travel",
+        "eligible": true,
+        "frame": "travel",
+        "phase": "day",
+        "p": 50.75,
+        "roll": 40.81,
+        "misses": 3,
+        "open": true,
+        "kind": "obstacle"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 16,
+  "user": false,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 90,
+     "why": "narration"
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "loc.the_swollen_ford_on_the_quarry_track",
+      "name": "the swollen ford on the quarry track",
+      "kind": "site",
+      "parent": "realm.duskreach",
+      "realm": "realm.duskreach",
+      "tags": [],
+      "by": "reply",
+      "created": {
+       "turn": 8,
+       "minute": 660
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "npc.npcguild_clerk",
+     "set": {
+      "at": "loc.ashbridge.guild_hall"
+     }
+    }
+   },
+   {
+    "t": "scene.moved",
+    "d": {
+     "at": "loc.the_swollen_ford_on_the_quarry_track",
+     "location": "realm.duskreach",
+     "place": "the swollen ford on the quarry track",
+     "reset_present": true,
+     "track_history": true
+    }
+   },
+   {
+    "t": "feature.set",
+    "d": {
+     "feature": {
+      "id": "feat.1",
+      "at": "loc.the_swollen_ford_on_the_quarry_track",
+      "name": "the washed-out ford",
+      "kind": "hazard",
+      "hidden": false,
+      "status": "active",
+      "trigger": "cross",
+      "stat": "AGI",
+      "difficulty": "hard",
+      "harm": "hp",
+      "on": null,
+      "since": {
+       "turn": 8,
+       "minute": 660
+      },
+      "found": {
+       "turn": 8,
+       "minute": 660,
+       "how": "seen"
+      },
+      "history": [
+       {
+        "turn": 8,
+        "minute": 660,
+        "what": "established"
+       }
+      ],
+      "by": "reply"
+     }
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "npc.npccarter_ford",
+      "kind": "npc",
+      "name": null,
+      "descriptors": [
+       "carter",
+       "carter with a load of hazel poles stoppe",
+       "pacing, watching the swollen stream",
+       "npc.carter_ford"
+      ],
+      "traits": "carter with a load of hazel poles stopped at the bank, pacing, watching the swollen stream",
+      "status": "alive",
+      "location": "realm.duskreach",
+      "created": {
+       "turn": 8,
+       "minute": 660
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 16
+      },
+      "card": {},
+      "template": "commoner"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "npc.npccarter_ford",
+     "band": "SHORT"
+    }
+   },
+   {
+    "t": "scene.tactical",
+    "d": {
+     "id": "npc.npccarter_ford",
+     "relevant": true,
+     "threat": false
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_npccarter_ford.occupation.cb5aeb41.t8",
+      "s": "npc.npccarter_ford",
+      "p": "occupation",
+      "o": "carter",
+      "since": {
+       "turn": 8,
+       "minute": 660
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 16
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "mon.crecarter_dog",
+      "kind": "creature",
+      "name": null,
+      "descriptors": [
+       "a lean dog circling at the cart wheels, ",
+       "cre.carter_dog"
+      ],
+      "traits": "a lean dog circling at the cart wheels, then scratching in the dust",
+      "status": "alive",
+      "location": "realm.duskreach",
+      "created": {
+       "turn": 8,
+       "minute": 660
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 16
+      },
+      "card": {},
+      "species": "dog",
+      "anchor": "wolf"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "mon.crecarter_dog",
+     "band": "SHORT"
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.crecarter_dog",
+     "set": {
+      "life_stage": "adult"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.crecarter_dog",
+     "set": {
+      "threat": false
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.crecarter_dog",
+     "set": {
+      "profile": {
+       "model": "creature",
+       "anchor": "wolf",
+       "body_plan": "Wolf / canid",
+       "level": 1,
+       "rank": "F",
+       "type": "normal",
+       "max_hp": 23,
+       "atk": 9,
+       "def": 0,
+       "mdef": 0,
+       "init": 12,
+       "attack": {
+        "name": "Bite",
+        "damage_type": "physical",
+        "range": "ENGAGED"
+       },
+       "temperament": "aggressive"
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t8.m16.d6_3.1",
+      "s": "npc.npccarter_ford",
+      "p": "stream_state",
+      "o": "the stream has run swollen and brown for three days, undercutting the bank",
+      "since": {
+       "turn": 8,
+       "minute": 660
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 16,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "loc.the_old_footbridge_over_the_narrows",
+      "name": "the old footbridge over the narrows",
+      "kind": "site",
+      "parent": "realm.duskreach",
+      "realm": "realm.duskreach",
+      "tags": [],
+      "by": "reply",
+      "created": {
+       "turn": 8,
+       "minute": 660
+      },
+      "known": "reported",
+      "reports": []
+     }
+    }
+   },
+   {
+    "t": "place.updated",
+    "d": {
+     "id": "loc.the_old_footbridge_over_the_narrows",
+     "set": {},
+     "report": {
+      "by": "npc.npccarter_ford",
+      "how": "told",
+      "where": "a log over the narrows, back a half mile west where the track forks; rotted some",
+      "turn": 8,
+      "minute": 660
+     }
+    }
+   },
+   {
+    "t": "dungeon.booked",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "to": 660
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npccarter_ford",
+     "about": "f.pc.appearance",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 8,
+     "minute": 660
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t8.seen.npc.npccarter_ford",
+      "turn": 8,
+      "minute": 660,
+      "text": "first saw {pc} at the swollen ford on the quarry track",
+      "who": [
+       "npc.npccarter_ford",
+       "pc"
+      ],
+      "witnesses": [
+       "npc.npccarter_ford"
+      ],
+      "seen": [
+       "npc.npccarter_ford"
+      ],
+      "location": "realm.duskreach",
+      "place": "the swollen ford on the quarry track",
+      "importance": 4,
+      "kind": "meeting"
+     }
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t8.m16.ep",
+      "turn": 8,
+      "minute": 660,
+      "text": "the swollen ford on the quarry track: {pc}: \"*i follow the directions and make my way over to the Dungeon*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npccarter_ford",
+       "mon.crecarter_dog"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "realm.duskreach",
+      "place": "the swollen ford on the quarry track",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 16
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 8,
+     "rolled": true,
+     "open": true,
+     "kind": "obstacle",
+     "narrated": "likely",
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 1,
+      "creatures": 1,
+      "features": 1,
+      "objects": 0,
+      "places": 2,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 45767,
+     "repaired": false,
+     "deltas": 7,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 17,
+  "user": true,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 9,
+     "input_hash": "b0421083",
+     "input": "thank you for the warning *i say and go to try the stones anyways. I am more careful though with the warning in mind*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 6842,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "attempt",
+       "feature": "feat.1",
+       "aim": "pass",
+       "approach": "carefully trying the stones, more careful with the warning in mind",
+       "stat": "AGI",
+       "tool": null,
+       "possible": null,
+       "quote": "i say and go to try the stones anyways. I am more careful though with the warning in mind"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "check.recorded",
+    "d": {
+     "what": "Past the washed-out ford",
+     "stat": "AGI",
+     "actor": 5,
+     "opposition": 10,
+     "chance": 33.33,
+     "roll": 61,
+     "success": false,
+     "claimed": false,
+     "by": "engine",
+     "seq": 1,
+     "feature": "feat.1",
+     "aim": "pass",
+     "difficulty": "hard"
+    },
+    "rng_to": 1
+   },
+   {
+    "t": "resource.changed",
+    "d": {
+     "id": "pc",
+     "resource": "hp",
+     "value": 66,
+     "why": "the washed-out ford (feat.1)"
+    }
+   },
+   {
+    "t": "feature.set",
+    "d": {
+     "feature": {
+      "id": "feat.1",
+      "at": "loc.the_swollen_ford_on_the_quarry_track",
+      "name": "the washed-out ford",
+      "kind": "hazard",
+      "hidden": false,
+      "status": "active",
+      "trigger": "cross",
+      "stat": "AGI",
+      "difficulty": "hard",
+      "harm": "hp",
+      "on": null,
+      "since": {
+       "turn": 8,
+       "minute": 660
+      },
+      "found": {
+       "turn": 8,
+       "minute": 660,
+       "how": "seen"
+      },
+      "history": [
+       {
+        "turn": 8,
+        "minute": 660,
+        "what": "established"
+       },
+       {
+        "turn": 9,
+        "minute": 660,
+        "what": "failed: carefully trying the stones, more careful with the warning in mind"
+       }
+      ],
+      "by": "reply"
+     }
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "attempt",
+     "status": "resolved",
+     "quote": "i say and go to try the stones anyways. I am more careful though with the warning in mind"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 9,
+     "at": "loc.the_swollen_ford_on_the_quarry_track",
+     "exposure": "scene",
+     "frame": "wild",
+     "phase": "day",
+     "base": 20,
+     "misses_before": 0,
+     "p": 20,
+     "roll": 87.86,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. FAILS — the washed-out ford (feat.1), \"carefully trying the stones, more careful with the warning in mind\": AGI 5 vs hard 10: 33.33% (d100 61) → FAILURE. He does not get past it; it hurts him: HP 80->66. It stays as it was; another way, a tool or more care may still work. Tell exactly this."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "attempt",
+        "status": "resolved",
+        "quote": "i say and go to try the stones anyways. I am more careful though with the warning in mind"
+       }
+      ],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "wild",
+        "phase": "day",
+        "p": 20,
+        "roll": 87.86,
+        "misses": 0,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": [],
+      "engine_lines": [
+       "CHECK — Past the washed-out ford: 33.33% · d100 61 → FAILURE"
+      ]
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 18,
+  "user": false,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 10,
+     "why": "narration"
+    }
+   },
+   {
+    "t": "dungeon.booked",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "to": 670
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t9.m18.ep",
+      "turn": 9,
+      "minute": 670,
+      "text": "the swollen ford on the quarry track: {pc}: \"thank you for the warning *i say and go to try the stones anyways. I am more careful though with the warning in mind*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npccarter_ford",
+       "mon.crecarter_dog"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "realm.duskreach",
+      "place": "the swollen ford on the quarry track",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 18
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 9,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 6933,
+     "repaired": false,
+     "deltas": 1,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 19,
+  "user": true,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 10,
+     "input_hash": "54d90a1e",
+     "input": "*i sigh as i clean myself a little* yeah im allright. guess i will take the detour after all "
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 10494,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "go",
+       "to": "loc.the_old_footbridge_over_the_narrows",
+       "quote": "guess i will take the detour after all",
+       "within": null
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "intent.set",
+    "d": {
+     "intent": {
+      "id": "intent.1",
+      "goal": "reach the old footbridge over the narrows",
+      "place": "loc.the_old_footbridge_over_the_narrows",
+      "status": "active",
+      "since": {
+       "turn": 10,
+       "minute": 670
+      },
+      "updated": {
+       "turn": 10,
+       "minute": 670
+      },
+      "quote": "guess i will take the detour after all",
+      "why": "he set off for it"
+     }
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "go",
+     "status": "authorized",
+     "quote": "guess i will take the detour after all"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 10,
+     "at": "loc.the_swollen_ford_on_the_quarry_track",
+     "exposure": "travel",
+     "frame": "travel",
+     "phase": "day",
+     "base": 35,
+     "misses_before": 1,
+     "p": 40.25,
+     "roll": 50.12,
+     "open": false,
+     "kind": null,
+     "leg": 1
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. GOES — to the old footbridge over the narrows (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+      ],
+      "extra": [
+       "THE ROAD — this leg toward the old footbridge over the narrows is uneventful: no ambush, attack or obstacle meets him on it. Scenery, weather, far-off animals and harmless travellers are atmosphere; carry the travel forward until he arrives or the day's travel ends, and leave every choice about it to him."
+      ],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "guess i will take the detour after all"
+       }
+      ],
+      "expected_keys": {
+       "1": "go"
+      },
+      "auth": {
+       "go": {
+        "seq": 1,
+        "to": "loc.the_old_footbridge_over_the_narrows",
+        "name": "the old footbridge over the narrows",
+        "hall": false,
+        "newName": null,
+        "mode": "travel",
+        "enter": null,
+        "scope": null
+       },
+       "gos": [
+        {
+         "seq": 1,
+         "to": "loc.the_old_footbridge_over_the_narrows",
+         "name": "the old footbridge over the narrows",
+         "hall": false,
+         "newName": null,
+         "mode": "travel",
+         "enter": null,
+         "scope": null
+        }
+       ],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 10080,
+       "road": "quiet",
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "travel",
+        "eligible": true,
+        "frame": "travel",
+        "phase": "day",
+        "p": 40.25,
+        "roll": 50.12,
+        "misses": 1,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 20,
+  "user": false,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 45,
+     "why": "narration"
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "npc.npccarter_ford",
+     "set": {
+      "at": "loc.the_swollen_ford_on_the_quarry_track"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.crecarter_dog",
+     "set": {
+      "left": {
+       "at": "loc.the_swollen_ford_on_the_quarry_track",
+       "minute": 715,
+       "turn": 10,
+       "leg": false
+      }
+     }
+    }
+   },
+   {
+    "t": "scene.moved",
+    "d": {
+     "at": "loc.the_old_footbridge_over_the_narrows",
+     "location": "realm.duskreach",
+     "place": "the old footbridge over the narrows",
+     "reset_present": true,
+     "track_history": true
+    }
+   },
+   {
+    "t": "place.updated",
+    "d": {
+     "id": "loc.the_old_footbridge_over_the_narrows",
+     "set": {
+      "known": "visited",
+      "visited": {
+       "turn": 10,
+       "minute": 715
+      }
+     }
+    }
+   },
+   {
+    "t": "intent.set",
+    "d": {
+     "intent": {
+      "id": "intent.1",
+      "goal": "reach the old footbridge over the narrows",
+      "place": "loc.the_old_footbridge_over_the_narrows",
+      "status": "done",
+      "since": {
+       "turn": 10,
+       "minute": 670
+      },
+      "updated": {
+       "turn": 10,
+       "minute": 715
+      },
+      "quote": "guess i will take the detour after all",
+      "why": "he arrived at the old footbridge over the narrows"
+     }
+    }
+   },
+   {
+    "t": "feature.set",
+    "d": {
+     "feature": {
+      "id": "feat.2",
+      "at": "loc.the_old_footbridge_over_the_narrows",
+      "name": "rotted span of the footbridge",
+      "kind": "hazard",
+      "hidden": false,
+      "status": "active",
+      "trigger": "cross",
+      "stat": "AGI",
+      "difficulty": "moderate",
+      "harm": "hp",
+      "on": null,
+      "since": {
+       "turn": 10,
+       "minute": 715
+      },
+      "found": {
+       "turn": 10,
+       "minute": 715,
+       "how": "seen"
+      },
+      "history": [
+       {
+        "turn": 10,
+        "minute": 715,
+        "what": "established"
+       }
+      ],
+      "by": "reply"
+     }
+    }
+   },
+   {
+    "t": "dungeon.booked",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "to": 715
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t10.m20.ep",
+      "turn": 10,
+      "minute": 715,
+      "text": "the old footbridge over the narrows: {pc}: \"*i sigh as i clean myself a little* yeah im allright. guess i will take the detour after all \"",
+      "who": [
+       "pc"
+      ],
+      "about": [],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "realm.duskreach",
+      "place": "the old footbridge over the narrows",
+      "importance": 2,
+      "kind": "episode",
+      "msg": 20
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 10,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 1,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 12614,
+     "repaired": false,
+     "deltas": 3,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 21,
+  "user": true,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 11,
+     "input_hash": "c95e343f",
+     "input": "*i walk over it and continue my way to the Dungeon*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 7631,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "attempt",
+       "feature": "feat.2",
+       "aim": "pass",
+       "approach": "walk over the rotted span",
+       "stat": null,
+       "tool": null,
+       "possible": null,
+       "quote": "i walk over it"
+      },
+      {
+       "seq": 2,
+       "type": "go",
+       "to": "loc.mossback_warrens",
+       "quote": "continue my way to the Dungeon",
+       "within": null,
+       "needs": 1
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "check.recorded",
+    "d": {
+     "what": "Past rotted span of the footbridge",
+     "stat": "AGI",
+     "actor": 5,
+     "opposition": 6,
+     "chance": 45.45,
+     "roll": 70,
+     "success": false,
+     "claimed": false,
+     "by": "engine",
+     "seq": 1,
+     "feature": "feat.2",
+     "aim": "pass",
+     "difficulty": "moderate"
+    },
+    "rng_to": 2
+   },
+   {
+    "t": "resource.changed",
+    "d": {
+     "id": "pc",
+     "resource": "hp",
+     "value": 58,
+     "why": "rotted span of the footbridge (feat.2)"
+    }
+   },
+   {
+    "t": "feature.set",
+    "d": {
+     "feature": {
+      "id": "feat.2",
+      "at": "loc.the_old_footbridge_over_the_narrows",
+      "name": "rotted span of the footbridge",
+      "kind": "hazard",
+      "hidden": false,
+      "status": "active",
+      "trigger": "cross",
+      "stat": "AGI",
+      "difficulty": "moderate",
+      "harm": "hp",
+      "on": null,
+      "since": {
+       "turn": 10,
+       "minute": 715
+      },
+      "found": {
+       "turn": 10,
+       "minute": 715,
+       "how": "seen"
+      },
+      "history": [
+       {
+        "turn": 10,
+        "minute": 715,
+        "what": "established"
+       },
+       {
+        "turn": 11,
+        "minute": 715,
+        "what": "failed: walk over the rotted span"
+       }
+      ],
+      "by": "reply"
+     }
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "attempt",
+     "status": "resolved",
+     "quote": "i walk over it"
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 2,
+     "type": "go",
+     "status": "authorized",
+     "quote": "continue my way to the Dungeon"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 11,
+     "at": "loc.the_old_footbridge_over_the_narrows",
+     "exposure": "scene",
+     "frame": "wild",
+     "phase": "day",
+     "base": 20,
+     "misses_before": 2,
+     "p": 26,
+     "roll": 37.55,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. FAILS — rotted span of the footbridge (feat.2), \"walk over the rotted span\": AGI 5 vs moderate 6: 45.45% (d100 70) → FAILURE. He does not get past it; it hurts him: HP 66->58. It stays as it was; another way, a tool or more care may still work. Tell exactly this.",
+       "2. GOES — to Mossback Warrens (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "attempt",
+        "status": "resolved",
+        "quote": "i walk over it"
+       },
+       {
+        "seq": 2,
+        "type": "go",
+        "status": "authorized",
+        "quote": "continue my way to the Dungeon"
+       }
+      ],
+      "expected_keys": {
+       "2": "go"
+      },
+      "auth": {
+       "go": {
+        "seq": 2,
+        "to": "loc.mossback_warrens",
+        "name": "Mossback Warrens",
+        "hall": false,
+        "newName": null,
+        "mode": "dungeon",
+        "enter": {
+         "dungeon": "loc.mossback_warrens",
+         "root": "loc.mossback_warrens",
+         "gate": false
+        },
+        "scope": "loc.mossback_warrens"
+       },
+       "gos": [
+        {
+         "seq": 2,
+         "to": "loc.mossback_warrens",
+         "name": "Mossback Warrens",
+         "hall": false,
+         "newName": null,
+         "mode": "dungeon",
+         "enter": {
+          "dungeon": "loc.mossback_warrens",
+          "root": "loc.mossback_warrens",
+          "gate": false
+         },
+         "scope": "loc.mossback_warrens"
+        }
+       ],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 10080,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "wild",
+        "phase": "day",
+        "p": 26,
+        "roll": 37.55,
+        "misses": 2,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": [],
+      "engine_lines": [
+       "CHECK — Past rotted span of the footbridge: 45.45% · d100 70 → FAILURE"
+      ]
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 22,
+  "user": false,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 180,
+     "why": "narration"
+    }
+   },
+   {
+    "t": "feature.set",
+    "d": {
+     "feature": {
+      "id": "feat.2",
+      "at": "loc.the_old_footbridge_over_the_narrows",
+      "name": "rotted span of the footbridge",
+      "kind": "hazard",
+      "hidden": false,
+      "status": "destroyed",
+      "trigger": "cross",
+      "stat": "AGI",
+      "difficulty": "moderate",
+      "harm": "hp",
+      "on": null,
+      "since": {
+       "turn": 10,
+       "minute": 715
+      },
+      "found": {
+       "turn": 10,
+       "minute": 715,
+       "how": "seen"
+      },
+      "history": [
+       {
+        "turn": 10,
+        "minute": 715,
+        "what": "established"
+       },
+       {
+        "turn": 11,
+        "minute": 715,
+        "what": "failed: walk over the rotted span"
+       },
+       {
+        "turn": 11,
+        "minute": 895,
+        "what": "destroyed (the story)"
+       }
+      ],
+      "by": "reply"
+     }
+    }
+   },
+   {
+    "t": "scene.moved",
+    "d": {
+     "at": "loc.mossback_warrens",
+     "location": "realm.duskreach",
+     "place": "Mossback Warrens",
+     "reset_present": true,
+     "track_history": true
+    }
+   },
+   {
+    "t": "place.updated",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "set": {
+      "visited": {
+       "turn": 11,
+       "minute": 895
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t11.m22.d4.1",
+      "s": "loc.mossback_warrens",
+      "p": "appearance",
+      "o": "moss-grown hill ringed with weathered standing stones, a doorway of leaning slabs opening into a downward passage",
+      "since": {
+       "turn": 11,
+       "minute": 895
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 22,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "dungeon.booked",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "to": 895
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t11.m22.ep",
+      "turn": 11,
+      "minute": 895,
+      "text": "Mossback Warrens: {pc}: \"*i walk over it and continue my way to the Dungeon*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "realm.duskreach",
+      "place": "Mossback Warrens",
+      "importance": 2,
+      "kind": "episode",
+      "msg": 22
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 11,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 1,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 36410,
+     "repaired": true,
+     "deltas": 4,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 23,
+  "user": true,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 12,
+     "input_hash": "7b88d9fb",
+     "input": "*i enter the dungeon*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 4839,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "go",
+       "to": {
+        "new": "down into the passage"
+       },
+       "quote": "i enter the dungeon",
+       "within": null
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "dungeon.ahead",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "ahead": {
+      "turn": 12,
+      "cycle": 1,
+      "floor": 1,
+      "slot": "scouts",
+      "ref": "mossback_warrens_c1_l1_e1"
+     }
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "go",
+     "status": "authorized",
+     "quote": "i enter the dungeon"
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. GOES — on into part 1 of level 1 of Mossback Warrens (the engine's next part: the story names and shapes it; it tells no other room, passage, stair or level). Stop in this section. Leave the next movement and any answer to Alaric."
+      ],
+      "extra": [
+       "DUNGEON AHEAD (the engine's) — going on into a part of level 1 he has not seen: there he meets 3 goblin scouts. That is where this walk ends; bring exactly these, and the quiet way there is told in passing (a sound, a shadow or old tracks without consequence are no stop)."
+      ],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "i enter the dungeon"
+       }
+      ],
+      "expected_keys": {
+       "1": "go"
+      },
+      "auth": {
+       "go": {
+        "seq": 1,
+        "to": null,
+        "name": "part 1 of level 1",
+        "hall": false,
+        "newName": "part 1 of level 1",
+        "section": {
+         "id": "loc.mossback_warrens.l1_s1",
+         "root": "loc.mossback_warrens",
+         "level": 1,
+         "k": 1,
+         "from": "loc.mossback_warrens",
+         "down": false,
+         "name": "part 1 of level 1"
+        },
+        "mode": "dungeon",
+        "enter": {
+         "dungeon": "loc.mossback_warrens",
+         "root": "loc.mossback_warrens",
+         "gate": false
+        },
+        "scope": null
+       },
+       "gos": [
+        {
+         "seq": 1,
+         "to": null,
+         "name": "part 1 of level 1",
+         "hall": false,
+         "newName": "part 1 of level 1",
+         "section": {
+          "id": "loc.mossback_warrens.l1_s1",
+          "root": "loc.mossback_warrens",
+          "level": 1,
+          "k": 1,
+          "from": "loc.mossback_warrens",
+          "down": false,
+          "name": "part 1 of level 1"
+         },
+         "mode": "dungeon",
+         "enter": {
+          "dungeon": "loc.mossback_warrens",
+          "root": "loc.mossback_warrens",
+          "gate": false
+         },
+         "scope": null
+        }
+       ],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 720,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": false,
+        "exposure": "scene",
+        "eligible": false,
+        "reason": "dungeon_ahead"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 24,
+  "user": false,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "loc.mossback_warrens.l1_s1",
+      "name": "mossy chamber under the hill's crown",
+      "kind": "interior",
+      "parent": "loc.mossback_warrens",
+      "realm": "realm.duskreach",
+      "tags": [],
+      "by": "dungeon",
+      "level": 1,
+      "section": 1,
+      "created": {
+       "turn": 12,
+       "minute": 895
+      }
+     }
+    }
+   },
+   {
+    "t": "link.set",
+    "d": {
+     "link": {
+      "id": "link.1",
+      "a": "loc.mossback_warrens",
+      "b": "loc.mossback_warrens.l1_s1",
+      "name": null,
+      "both": true,
+      "hidden": false,
+      "feature": null,
+      "dir": null,
+      "since": {
+       "turn": 12,
+       "minute": 895
+      },
+      "found": {
+       "turn": 12,
+       "minute": 895,
+       "how": "dungeon"
+      },
+      "by": "dungeon"
+     }
+    }
+   },
+   {
+    "t": "scene.moved",
+    "d": {
+     "at": "loc.mossback_warrens.l1_s1",
+     "location": "realm.duskreach",
+     "place": "Mossback Warrens › mossy chamber under the hill's crown",
+     "reset_present": true,
+     "track_history": true
+    }
+   },
+   {
+    "t": "place.updated",
+    "d": {
+     "id": "loc.mossback_warrens.l1_s1",
+     "set": {
+      "visited": {
+       "turn": 12,
+       "minute": 895
+      }
+     }
+    }
+   },
+   {
+    "t": "dungeon.part",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "cycle": 1,
+     "floor": 1,
+     "at": "loc.mossback_warrens.l1_s1"
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "mon.mossback_warrens_c1_l1_e1_1",
+      "kind": "creature",
+      "name": null,
+      "descriptors": [
+       "chest-high, leathery green-grey hides, k",
+       "snatched up short crooked clubs and a ru",
+       "mossback_warrens_c1_l1_e1 1"
+      ],
+      "traits": "chest-high, leathery green-grey hides, knobbed knees, big ears; two squabbling over pickings, one sitting apart gnawing a bone, snatched up short crooked clubs and a rusted knife from beside their feast",
+      "status": "alive",
+      "location": "realm.duskreach",
+      "created": {
+       "turn": 12,
+       "minute": 895
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 24
+      },
+      "card": {},
+      "species": "goblin scout",
+      "anchor": "goblin"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_1",
+     "band": "SHORT"
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "mon.mossback_warrens_c1_l1_e1_2",
+      "kind": "creature",
+      "name": null,
+      "descriptors": [
+       "chest-high, leathery green-grey hides, k",
+       "snatched up short crooked clubs and a ru",
+       "mossback_warrens_c1_l1_e1 2"
+      ],
+      "traits": "chest-high, leathery green-grey hides, knobbed knees, big ears; two squabbling over pickings, one sitting apart gnawing a bone, snatched up short crooked clubs and a rusted knife from beside their feast",
+      "status": "alive",
+      "location": "realm.duskreach",
+      "created": {
+       "turn": 12,
+       "minute": 895
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 24
+      },
+      "card": {},
+      "species": "goblin scout",
+      "anchor": "goblin"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_2",
+     "band": "SHORT"
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "mon.mossback_warrens_c1_l1_e1_3",
+      "kind": "creature",
+      "name": null,
+      "descriptors": [
+       "chest-high, leathery green-grey hides, k",
+       "snatched up short crooked clubs and a ru",
+       "mossback_warrens_c1_l1_e1 3"
+      ],
+      "traits": "chest-high, leathery green-grey hides, knobbed knees, big ears; two squabbling over pickings, one sitting apart gnawing a bone, snatched up short crooked clubs and a rusted knife from beside their feast",
+      "status": "alive",
+      "location": "realm.duskreach",
+      "created": {
+       "turn": 12,
+       "minute": 895
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 24
+      },
+      "card": {},
+      "species": "goblin scout",
+      "anchor": "goblin"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_3",
+     "band": "SHORT"
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_1",
+     "set": {
+      "life_stage": "adult"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_2",
+     "set": {
+      "life_stage": "adult"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_3",
+     "set": {
+      "life_stage": "adult"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_1",
+     "set": {
+      "group": "mossback_warrens_c1_l1_e1"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_2",
+     "set": {
+      "group": "mossback_warrens_c1_l1_e1"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_3",
+     "set": {
+      "group": "mossback_warrens_c1_l1_e1"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_1",
+     "set": {
+      "armed": "short crooked clubs and a rusted knife"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_2",
+     "set": {
+      "armed": "short crooked clubs and a rusted knife"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_3",
+     "set": {
+      "armed": "short crooked clubs and a rusted knife"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_1",
+     "set": {
+      "level": 3,
+      "type": "normal",
+      "slot": {
+       "dungeon": "loc.mossback_warrens",
+       "cycle": 1,
+       "floor": 1,
+       "id": "scouts",
+       "role": "minion"
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_2",
+     "set": {
+      "level": 2,
+      "type": "normal",
+      "slot": {
+       "dungeon": "loc.mossback_warrens",
+       "cycle": 1,
+       "floor": 1,
+       "id": "scouts",
+       "role": "minion"
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_3",
+     "set": {
+      "level": 5,
+      "type": "normal",
+      "slot": {
+       "dungeon": "loc.mossback_warrens",
+       "cycle": 1,
+       "floor": 1,
+       "id": "scouts",
+       "role": "minion"
+      }
+     }
+    }
+   },
+   {
+    "t": "dungeon.slot",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "cycle": 1,
+     "floor": 1,
+     "slot": "scouts",
+     "set": {
+      "entities": [
+       "mon.mossback_warrens_c1_l1_e1_1",
+       "mon.mossback_warrens_c1_l1_e1_2",
+       "mon.mossback_warrens_c1_l1_e1_3"
+      ],
+      "at": "loc.mossback_warrens.l1_s1",
+      "met_turn": 12
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_1",
+     "set": {
+      "profile": {
+       "model": "creature",
+       "anchor": "goblin",
+       "body_plan": "Goblin-like",
+       "level": 3,
+       "rank": "F",
+       "type": "normal",
+       "max_hp": 63,
+       "atk": 16,
+       "def": 2,
+       "mdef": 2,
+       "init": 9,
+       "attack": {
+        "name": "Rusted knife",
+        "damage_type": "physical",
+        "range": "ENGAGED",
+        "weapon": true
+       },
+       "temperament": "cautious",
+       "gear": {
+        "weapon": {
+         "name": "Rusted knife",
+         "item": "Goblin Scout Rusted Knife",
+         "attack": "Rusted knife",
+         "family": "melee",
+         "slot": "weapon",
+         "atk": 2,
+         "matk": 0,
+         "from": "short crooked clubs and a rusted knife"
+        },
+        "source": "stated"
+       }
+      },
+      "met_at": "loc.mossback_warrens.l1_s1"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_2",
+     "set": {
+      "profile": {
+       "model": "creature",
+       "anchor": "goblin",
+       "body_plan": "Goblin-like",
+       "level": 2,
+       "rank": "F",
+       "type": "normal",
+       "max_hp": 54,
+       "atk": 13,
+       "def": 1,
+       "mdef": 1,
+       "init": 8,
+       "attack": {
+        "name": "Rusted knife",
+        "damage_type": "physical",
+        "range": "ENGAGED",
+        "weapon": true
+       },
+       "temperament": "cautious",
+       "gear": {
+        "weapon": {
+         "name": "Rusted knife",
+         "item": "Goblin Scout Rusted Knife",
+         "attack": "Rusted knife",
+         "family": "melee",
+         "slot": "weapon",
+         "atk": 2,
+         "matk": 0,
+         "from": "short crooked clubs and a rusted knife"
+        },
+        "source": "stated"
+       }
+      },
+      "met_at": "loc.mossback_warrens.l1_s1"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_3",
+     "set": {
+      "profile": {
+       "model": "creature",
+       "anchor": "goblin",
+       "body_plan": "Goblin-like",
+       "level": 5,
+       "rank": "F",
+       "type": "normal",
+       "max_hp": 81,
+       "atk": 21,
+       "def": 3,
+       "mdef": 3,
+       "init": 10,
+       "attack": {
+        "name": "Rusted knife",
+        "damage_type": "physical",
+        "range": "ENGAGED",
+        "weapon": true
+       },
+       "temperament": "cautious",
+       "gear": {
+        "weapon": {
+         "name": "Rusted knife",
+         "item": "Goblin Scout Rusted Knife",
+         "attack": "Rusted knife",
+         "family": "melee",
+         "slot": "weapon",
+         "atk": 2,
+         "matk": 0,
+         "from": "short crooked clubs and a rusted knife"
+        },
+        "source": "stated"
+       }
+      },
+      "met_at": "loc.mossback_warrens.l1_s1"
+     }
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 3,
+      "type": "aware",
+      "who": "mossback_warrens_c1_l1_e1",
+      "level": "aware",
+      "scope": "all",
+      "evidence": "It saw him. It went rigid... and the other two spun round, dropping what they held",
+      "ref": "mossback_warrens_c1_l1_e1"
+     },
+     "rule": "group_unclear",
+     "reason": "the evidence \"It saw him. It went rigid... and the other two spun round, d\" counts 2, the group is 3"
+    }
+   },
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 15,
+     "why": "travel"
+    }
+   },
+   {
+    "t": "dungeon.booked",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "to": 910
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t12.m24.ep",
+      "turn": 12,
+      "minute": 910,
+      "text": "Mossback Warrens › mossy chamber under the hill's crown: {pc}: \"*i enter the dungeon*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "mon.mossback_warrens_c1_l1_e1_1",
+       "mon.mossback_warrens_c1_l1_e1_2",
+       "mon.mossback_warrens_c1_l1_e1_3"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "realm.duskreach",
+      "place": "Mossback Warrens › mossy chamber under the hill's crown",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 24
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 12,
+     "rolled": false,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 3,
+      "features": 0,
+      "objects": 0,
+      "places": 1,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 37757,
+     "repaired": false,
+     "deltas": 3,
+     "rejected": 1
+    }
+   }
+  ]
+ },
+ {
+  "i": 25,
+  "user": true,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 13,
+     "input_hash": "436edf8f",
+     "input": "Arcane Wave → SHORT · trifft: Goblin Scout A, Goblin Scout B, Goblin Scout C"
+    }
+   },
+   {
+    "t": "encounter.started",
+    "d": {
+     "encounter": {
+      "id": "enc.t13",
+      "phase": "ACTIVE",
+      "round": 2,
+      "order": [
+       "mon.mossback_warrens_c1_l1_e1_3",
+       "mon.mossback_warrens_c1_l1_e1_1",
+       "mon.mossback_warrens_c1_l1_e1_2",
+       "pc"
+      ],
+      "turn_index": 1,
+      "current": "mon.mossback_warrens_c1_l1_e1_1",
+      "combatants": {
+       "pc": {
+        "id": "pc",
+        "name": "Alaric",
+        "side": "pc",
+        "model": "character",
+        "fixed": {
+         "level": 1,
+         "rank": "F",
+         "class": "mage",
+         "stats": {
+          "STR": 5,
+          "VIT": 5,
+          "AGI": 5,
+          "INT": 6,
+          "PER": 5,
+          "WIL": 6
+         },
+         "max_hp": 80,
+         "max_mp": 72,
+         "max_sta": 100,
+         "atk": 0,
+         "matk": 10,
+         "def": 3,
+         "mdef": 4,
+         "init": 7,
+         "type": "normal",
+         "actions": {
+          "mage.basic_attack": {
+           "prof": 1,
+           "pp": 0
+          },
+          "mage.flame_lance": {
+           "prof": 1,
+           "pp": 0
+          },
+          "mage.arcane_wave": {
+           "prof": 1,
+           "pp": 0
+          }
+         },
+         "weapon_family": "focus",
+         "temperament": null,
+         "sapient": true
+        },
+        "current": {
+         "hp": 0,
+         "mp": 58,
+         "sta": 100,
+         "ammo": {},
+         "band": null,
+         "cover": "none",
+         "effects": [],
+         "defeated": true,
+         "escaped": false,
+         "surrendered": false
+        }
+       },
+       "mon.mossback_warrens_c1_l1_e1_1": {
+        "id": "mon.mossback_warrens_c1_l1_e1_1",
+        "name": "Goblin Scout A",
+        "side": "hostile",
+        "model": "creature",
+        "fixed": {
+         "level": 3,
+         "rank": "F",
+         "type": "normal",
+         "body_plan": "Goblin-like",
+         "max_hp": 63,
+         "atk": 16,
+         "def": 2,
+         "mdef": 2,
+         "init": 9,
+         "attack": {
+          "name": "Rusted knife",
+          "damage_type": "physical",
+          "range": "ENGAGED",
+          "weapon": true
+         },
+         "temperament": "cautious",
+         "sapient": false,
+         "defeat_xp": 200
+        },
+        "current": {
+         "hp": 39,
+         "band": "ENGAGED",
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Goblin Scout A"
+       },
+       "mon.mossback_warrens_c1_l1_e1_2": {
+        "id": "mon.mossback_warrens_c1_l1_e1_2",
+        "name": "Goblin Scout B",
+        "side": "hostile",
+        "model": "creature",
+        "fixed": {
+         "level": 2,
+         "rank": "F",
+         "type": "normal",
+         "body_plan": "Goblin-like",
+         "max_hp": 54,
+         "atk": 13,
+         "def": 1,
+         "mdef": 1,
+         "init": 8,
+         "attack": {
+          "name": "Rusted knife",
+          "damage_type": "physical",
+          "range": "ENGAGED",
+          "weapon": true
+         },
+         "temperament": "cautious",
+         "sapient": false,
+         "defeat_xp": 130
+        },
+        "current": {
+         "hp": 31,
+         "band": "ENGAGED",
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Goblin Scout B"
+       },
+       "mon.mossback_warrens_c1_l1_e1_3": {
+        "id": "mon.mossback_warrens_c1_l1_e1_3",
+        "name": "Goblin Scout C",
+        "side": "hostile",
+        "model": "creature",
+        "fixed": {
+         "level": 5,
+         "rank": "F",
+         "type": "normal",
+         "body_plan": "Goblin-like",
+         "max_hp": 81,
+         "atk": 21,
+         "def": 3,
+         "mdef": 3,
+         "init": 10,
+         "attack": {
+          "name": "Rusted knife",
+          "damage_type": "physical",
+          "range": "ENGAGED",
+          "weapon": true
+         },
+         "temperament": "cautious",
+         "sapient": false,
+         "defeat_xp": 330
+        },
+        "current": {
+         "hp": 58,
+         "band": "ENGAGED",
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Goblin Scout C"
+       }
+      },
+      "pc_rank": "F",
+      "pending_xp": 0,
+      "defeated": [
+       "pc"
+      ],
+      "escaped": [],
+      "trigger": {
+       "actor": "pc",
+       "target": "mon.mossback_warrens_c1_l1_e1_1",
+       "skill": "mage.arcane_wave",
+       "move": null,
+       "move_target": null
+      },
+      "log": [
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "mon.mossback_warrens_c1_l1_e1_1",
+        "opening": false,
+        "cost": {
+         "resource": "mp",
+         "amount": 14,
+         "before": 72,
+         "after": 58
+        },
+        "skill": "mage.arcane_wave",
+        "skill_name": "Arcane Wave",
+        "area_band": "SHORT",
+        "raw": 25.5,
+        "raw_text": "8 + INT 6×1.25 + MATK 10 = 25.5",
+        "strikes": [
+         {
+          "target": "mon.mossback_warrens_c1_l1_e1_1",
+          "power": 25.5,
+          "defense": 2,
+          "post_def": 23.5,
+          "variance": 1.03,
+          "final": 24,
+          "absorbed": 0,
+          "hp_before": 63,
+          "hp_after": 39,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 2: max(25.5-2, 25.5×0.10) = 23.5",
+           "×1.03 variance = 24.205",
+           "round once = 24"
+          ]
+         },
+         {
+          "target": "mon.mossback_warrens_c1_l1_e1_2",
+          "power": 25.5,
+          "defense": 1,
+          "post_def": 24.5,
+          "variance": 0.92,
+          "final": 23,
+          "absorbed": 0,
+          "hp_before": 54,
+          "hp_after": 31,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 1: max(25.5-1, 25.5×0.10) = 24.5",
+           "×0.92 variance = 22.54",
+           "round once = 23"
+          ]
+         },
+         {
+          "target": "mon.mossback_warrens_c1_l1_e1_3",
+          "power": 25.5,
+          "defense": 3,
+          "post_def": 22.5,
+          "variance": 1,
+          "final": 23,
+          "absorbed": 0,
+          "hp_before": 81,
+          "hp_after": 58,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 3: max(25.5-3, 25.5×0.10) = 22.5",
+           "×1 variance = 22.5",
+           "round once = 23"
+          ]
+         }
+        ],
+        "first_strike": true,
+        "note": "First Strike (an open attack that opens the fight: no Ambush bonus; its maker's action of Round 1)"
+       },
+       {
+        "round": 1,
+        "actor": "mon.mossback_warrens_c1_l1_e1_3",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 1,
+         "from": "SHORT",
+         "to": "ENGAGED"
+        },
+        "skill_name": "Rusted knife",
+        "raw": 21,
+        "raw_text": "Rusted knife Raw = ATK 21",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 21,
+          "defense": 3,
+          "post_def": 18,
+          "variance": 0.97,
+          "final": 17,
+          "absorbed": 0,
+          "hp_before": 58,
+          "hp_after": 41,
+          "steps": [
+           "Raw 21",
+           "DEF 3: max(21-3, 21×0.10) = 18",
+           "×0.97 variance = 17.46",
+           "round once = 17"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 1,
+        "actor": "mon.mossback_warrens_c1_l1_e1_1",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 1,
+         "from": "SHORT",
+         "to": "ENGAGED"
+        },
+        "skill_name": "Rusted knife",
+        "raw": 16,
+        "raw_text": "Rusted knife Raw = ATK 16",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 16,
+          "defense": 3,
+          "post_def": 13,
+          "variance": 0.97,
+          "final": 13,
+          "absorbed": 0,
+          "hp_before": 41,
+          "hp_after": 28,
+          "steps": [
+           "Raw 16",
+           "DEF 3: max(16-3, 16×0.10) = 13",
+           "×0.97 variance = 12.61",
+           "round once = 13"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 1,
+        "actor": "mon.mossback_warrens_c1_l1_e1_2",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 1,
+         "from": "SHORT",
+         "to": "ENGAGED"
+        },
+        "skill_name": "Rusted knife",
+        "raw": 13,
+        "raw_text": "Rusted knife Raw = ATK 13",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 13,
+          "defense": 3,
+          "post_def": 10,
+          "variance": 0.96,
+          "final": 10,
+          "absorbed": 0,
+          "hp_before": 28,
+          "hp_after": 18,
+          "steps": [
+           "Raw 13",
+           "DEF 3: max(13-3, 13×0.10) = 10",
+           "×0.96 variance = 9.6",
+           "round once = 10"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 2,
+        "actor": "mon.mossback_warrens_c1_l1_e1_3",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "skill_name": "Rusted knife",
+        "raw": 21,
+        "raw_text": "Rusted knife Raw = ATK 21",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 21,
+          "defense": 3,
+          "post_def": 18,
+          "variance": 1.07,
+          "final": 19,
+          "absorbed": 0,
+          "hp_before": 18,
+          "hp_after": 0,
+          "steps": [
+           "Raw 21",
+           "DEF 3: max(21-3, 21×0.10) = 18",
+           "×1.07 variance = 19.26",
+           "round once = 19"
+          ],
+          "defeated": true
+         }
+        ]
+       }
+      ],
+      "opening": true,
+      "started": {
+       "turn": 13,
+       "minute": 910
+      },
+      "intents": {},
+      "ambush": false,
+      "ambush_reason": "target awareness: unknown -> no Ambush; his declared attack opens the fight first (First Strike: no Ambush bonus; it is his action of Round 1)",
+      "first_strike": true,
+      "career": {
+       "damage": {
+        "mon.mossback_warrens_c1_l1_e1_1": 24,
+        "mon.mossback_warrens_c1_l1_e1_2": 23,
+        "mon.mossback_warrens_c1_l1_e1_3": 23
+       },
+       "personal": {
+        "mon.mossback_warrens_c1_l1_e1_1": 24,
+        "mon.mossback_warrens_c1_l1_e1_2": 23,
+        "mon.mossback_warrens_c1_l1_e1_3": 23
+       }
+      },
+      "trigger_done": true,
+      "spent": {},
+      "pp": {
+       "used": {
+        "mage.arcane_wave": "an attack on a foe"
+       },
+       "wait": null,
+       "threatened": true,
+       "last": "mage.arcane_wave",
+       "answer": "mage.arcane_wave",
+       "guarding": null,
+       "offense": {
+        "mage.arcane_wave": true
+       },
+       "trial": {
+        "start": 72,
+        "low": 0,
+        "foes": [
+         "mon.mossback_warrens_c1_l1_e1_3",
+         "mon.mossback_warrens_c1_l1_e1_1",
+         "mon.mossback_warrens_c1_l1_e1_2"
+        ],
+        "taken": {
+         "physical": 59,
+         "magical": 0
+        }
+       },
+       "marks": {
+        "mage.arcane_wave": [
+         "riposte"
+        ]
+       }
+      },
+      "round_marker": 2.01
+     }
+    },
+    "rng_to": 9
+   },
+   {
+    "t": "scene.awareness",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_1",
+     "level": "aware"
+    }
+   },
+   {
+    "t": "scene.awareness",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_2",
+     "level": "aware"
+    }
+   },
+   {
+    "t": "scene.awareness",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_3",
+     "level": "aware"
+    }
+   },
+   {
+    "t": "resource.changed",
+    "d": {
+     "id": "pc",
+     "resource": "hp",
+     "value": 0
+    }
+   },
+   {
+    "t": "resource.changed",
+    "d": {
+     "id": "pc",
+     "resource": "mp",
+     "value": 58
+    }
+   },
+   {
+    "t": "entity.status",
+    "d": {
+     "id": "pc",
+     "status": "dead"
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.pc.status.t13",
+      "s": "pc",
+      "p": "status",
+      "o": "dead",
+      "since": {
+       "turn": 13,
+       "minute": 910
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.9,
+      "hard": true,
+      "source": {
+       "kind": "engine",
+       "encounter": "enc.t13"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "mon.mossback_warrens_c1_l1_e1_1",
+     "about": "f.pc.status.t13",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 13,
+     "minute": 910
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "mon.mossback_warrens_c1_l1_e1_2",
+     "about": "f.pc.status.t13",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 13,
+     "minute": 910
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "mon.mossback_warrens_c1_l1_e1_3",
+     "about": "f.pc.status.t13",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 13,
+     "minute": 910
+    }
+   },
+   {
+    "t": "career.recorded",
+    "d": {
+     "source": "fight:enc.t13",
+     "stats": {
+      "fights_won": 0,
+      "foes_defeated": 0,
+      "stronger_defeated": 0,
+      "extraordinary_wins": 0
+     },
+     "feats": [],
+     "style": {
+      "Arcane": 1,
+      "offense": 1
+     }
+    }
+   },
+   {
+    "t": "encounter.ended",
+    "d": {
+     "id": "enc.t13",
+     "summary": {
+      "defeated": [],
+      "escaped": [],
+      "xp_awarded": 0,
+      "pc_dead": true,
+      "pc_escaped": false
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_1",
+     "set": {
+      "profile": {
+       "model": "creature",
+       "anchor": "goblin",
+       "body_plan": "Goblin-like",
+       "level": 3,
+       "rank": "F",
+       "type": "normal",
+       "max_hp": 63,
+       "atk": 16,
+       "def": 2,
+       "mdef": 2,
+       "init": 9,
+       "attack": {
+        "name": "Rusted knife",
+        "damage_type": "physical",
+        "range": "ENGAGED",
+        "weapon": true
+       },
+       "temperament": "cautious",
+       "gear": {
+        "weapon": {
+         "name": "Rusted knife",
+         "item": "Goblin Scout Rusted Knife",
+         "attack": "Rusted knife",
+         "family": "melee",
+         "slot": "weapon",
+         "atk": 2,
+         "matk": 0,
+         "from": "short crooked clubs and a rusted knife"
+        },
+        "source": "stated"
+       },
+       "hp": 39
+      }
+     }
+    }
+   },
+   {
+    "t": "scene.position",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_1",
+     "band": "ENGAGED",
+     "cover": "none"
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_2",
+     "set": {
+      "profile": {
+       "model": "creature",
+       "anchor": "goblin",
+       "body_plan": "Goblin-like",
+       "level": 2,
+       "rank": "F",
+       "type": "normal",
+       "max_hp": 54,
+       "atk": 13,
+       "def": 1,
+       "mdef": 1,
+       "init": 8,
+       "attack": {
+        "name": "Rusted knife",
+        "damage_type": "physical",
+        "range": "ENGAGED",
+        "weapon": true
+       },
+       "temperament": "cautious",
+       "gear": {
+        "weapon": {
+         "name": "Rusted knife",
+         "item": "Goblin Scout Rusted Knife",
+         "attack": "Rusted knife",
+         "family": "melee",
+         "slot": "weapon",
+         "atk": 2,
+         "matk": 0,
+         "from": "short crooked clubs and a rusted knife"
+        },
+        "source": "stated"
+       },
+       "hp": 31
+      }
+     }
+    }
+   },
+   {
+    "t": "scene.position",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_2",
+     "band": "ENGAGED",
+     "cover": "none"
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_3",
+     "set": {
+      "profile": {
+       "model": "creature",
+       "anchor": "goblin",
+       "body_plan": "Goblin-like",
+       "level": 5,
+       "rank": "F",
+       "type": "normal",
+       "max_hp": 81,
+       "atk": 21,
+       "def": 3,
+       "mdef": 3,
+       "init": 10,
+       "attack": {
+        "name": "Rusted knife",
+        "damage_type": "physical",
+        "range": "ENGAGED",
+        "weapon": true
+       },
+       "temperament": "cautious",
+       "gear": {
+        "weapon": {
+         "name": "Rusted knife",
+         "item": "Goblin Scout Rusted Knife",
+         "attack": "Rusted knife",
+         "family": "melee",
+         "slot": "weapon",
+         "atk": 2,
+         "matk": 0,
+         "from": "short crooked clubs and a rusted knife"
+        },
+        "source": "stated"
+       },
+       "hp": 58
+      }
+     }
+    }
+   },
+   {
+    "t": "scene.position",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_3",
+     "band": "ENGAGED",
+     "cover": "none"
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_1",
+     "set": {
+      "wary": {
+       "turn": 13,
+       "minute": 910,
+       "encounter": "enc.t13"
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_2",
+     "set": {
+      "wary": {
+       "turn": 13,
+       "minute": 910,
+       "encounter": "enc.t13"
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_3",
+     "set": {
+      "wary": {
+       "turn": 13,
+       "minute": 910,
+       "encounter": "enc.t13"
+      }
+     }
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.enc.t13",
+      "turn": 13,
+      "minute": 910,
+      "text": "Fight at Mossback Warrens › mossy chamber under the hill's crown: {pc} (Arcane Wave) vs the chest-high, leathery green-grey hides, k — survived; the chest-high, leathery green-grey hides, k — survived; the chest-high, leathery green-grey hides, k — survived; {pc} died.",
+      "who": [
+       "pc",
+       "mon.mossback_warrens_c1_l1_e1_1",
+       "mon.mossback_warrens_c1_l1_e1_2",
+       "mon.mossback_warrens_c1_l1_e1_3"
+      ],
+      "witnesses": [
+       "mon.mossback_warrens_c1_l1_e1_1",
+       "mon.mossback_warrens_c1_l1_e1_2",
+       "mon.mossback_warrens_c1_l1_e1_3"
+      ],
+      "seen": [
+       "mon.mossback_warrens_c1_l1_e1_1",
+       "mon.mossback_warrens_c1_l1_e1_2",
+       "mon.mossback_warrens_c1_l1_e1_3"
+      ],
+      "location": "realm.duskreach",
+      "place": "Mossback Warrens › mossy chamber under the hill's crown",
+      "importance": 7,
+      "kind": "combat"
+     }
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "combat",
+      "started": {
+       "reason": "target awareness: unknown -> no Ambush; his declared attack opens the fight first (First Strike: no Ambush bonus; it is his action of Round 1)",
+       "order": "Goblin Scout C > Goblin Scout A > Goblin Scout B > Alaric",
+       "ambush": false
+      },
+      "records": [
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "mon.mossback_warrens_c1_l1_e1_1",
+        "opening": false,
+        "cost": {
+         "resource": "mp",
+         "amount": 14,
+         "before": 72,
+         "after": 58
+        },
+        "skill": "mage.arcane_wave",
+        "skill_name": "Arcane Wave",
+        "area_band": "SHORT",
+        "raw": 25.5,
+        "raw_text": "8 + INT 6×1.25 + MATK 10 = 25.5",
+        "strikes": [
+         {
+          "target": "mon.mossback_warrens_c1_l1_e1_1",
+          "power": 25.5,
+          "defense": 2,
+          "post_def": 23.5,
+          "variance": 1.03,
+          "final": 24,
+          "absorbed": 0,
+          "hp_before": 63,
+          "hp_after": 39,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 2: max(25.5-2, 25.5×0.10) = 23.5",
+           "×1.03 variance = 24.205",
+           "round once = 24"
+          ]
+         },
+         {
+          "target": "mon.mossback_warrens_c1_l1_e1_2",
+          "power": 25.5,
+          "defense": 1,
+          "post_def": 24.5,
+          "variance": 0.92,
+          "final": 23,
+          "absorbed": 0,
+          "hp_before": 54,
+          "hp_after": 31,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 1: max(25.5-1, 25.5×0.10) = 24.5",
+           "×0.92 variance = 22.54",
+           "round once = 23"
+          ]
+         },
+         {
+          "target": "mon.mossback_warrens_c1_l1_e1_3",
+          "power": 25.5,
+          "defense": 3,
+          "post_def": 22.5,
+          "variance": 1,
+          "final": 23,
+          "absorbed": 0,
+          "hp_before": 81,
+          "hp_after": 58,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 3: max(25.5-3, 25.5×0.10) = 22.5",
+           "×1 variance = 22.5",
+           "round once = 23"
+          ]
+         }
+        ],
+        "first_strike": true,
+        "note": "First Strike (an open attack that opens the fight: no Ambush bonus; its maker's action of Round 1)"
+       },
+       {
+        "round": 1,
+        "actor": "mon.mossback_warrens_c1_l1_e1_3",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 1,
+         "from": "SHORT",
+         "to": "ENGAGED"
+        },
+        "skill_name": "Rusted knife",
+        "raw": 21,
+        "raw_text": "Rusted knife Raw = ATK 21",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 21,
+          "defense": 3,
+          "post_def": 18,
+          "variance": 0.97,
+          "final": 17,
+          "absorbed": 0,
+          "hp_before": 58,
+          "hp_after": 41,
+          "steps": [
+           "Raw 21",
+           "DEF 3: max(21-3, 21×0.10) = 18",
+           "×0.97 variance = 17.46",
+           "round once = 17"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 1,
+        "actor": "mon.mossback_warrens_c1_l1_e1_1",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 1,
+         "from": "SHORT",
+         "to": "ENGAGED"
+        },
+        "skill_name": "Rusted knife",
+        "raw": 16,
+        "raw_text": "Rusted knife Raw = ATK 16",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 16,
+          "defense": 3,
+          "post_def": 13,
+          "variance": 0.97,
+          "final": 13,
+          "absorbed": 0,
+          "hp_before": 41,
+          "hp_after": 28,
+          "steps": [
+           "Raw 16",
+           "DEF 3: max(16-3, 16×0.10) = 13",
+           "×0.97 variance = 12.61",
+           "round once = 13"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 1,
+        "actor": "mon.mossback_warrens_c1_l1_e1_2",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 1,
+         "from": "SHORT",
+         "to": "ENGAGED"
+        },
+        "skill_name": "Rusted knife",
+        "raw": 13,
+        "raw_text": "Rusted knife Raw = ATK 13",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 13,
+          "defense": 3,
+          "post_def": 10,
+          "variance": 0.96,
+          "final": 10,
+          "absorbed": 0,
+          "hp_before": 28,
+          "hp_after": 18,
+          "steps": [
+           "Raw 13",
+           "DEF 3: max(13-3, 13×0.10) = 10",
+           "×0.96 variance = 9.6",
+           "round once = 10"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 2,
+        "actor": "mon.mossback_warrens_c1_l1_e1_3",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "skill_name": "Rusted knife",
+        "raw": 21,
+        "raw_text": "Rusted knife Raw = ATK 21",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 21,
+          "defense": 3,
+          "post_def": 18,
+          "variance": 1.07,
+          "final": 19,
+          "absorbed": 0,
+          "hp_before": 18,
+          "hp_after": 0,
+          "steps": [
+           "Raw 21",
+           "DEF 3: max(21-3, 21×0.10) = 18",
+           "×1.07 variance = 19.26",
+           "round once = 19"
+          ],
+          "defeated": true
+         }
+        ]
+       }
+      ],
+      "illegal": null,
+      "next": null,
+      "board": {
+       "round": 2,
+       "order": [
+        {
+         "id": "mon.mossback_warrens_c1_l1_e1_3",
+         "init": 10
+        },
+        {
+         "id": "mon.mossback_warrens_c1_l1_e1_1",
+         "init": 9
+        },
+        {
+         "id": "mon.mossback_warrens_c1_l1_e1_2",
+         "init": 8
+        },
+        {
+         "id": "pc",
+         "init": 7
+        }
+       ],
+       "hp": [
+        {
+         "id": "mon.mossback_warrens_c1_l1_e1_3",
+         "hp": 58,
+         "max": 81,
+         "state": null,
+         "band": "ENGAGED",
+         "cover": "none"
+        },
+        {
+         "id": "mon.mossback_warrens_c1_l1_e1_1",
+         "hp": 39,
+         "max": 63,
+         "state": null,
+         "band": "ENGAGED",
+         "cover": "none"
+        },
+        {
+         "id": "mon.mossback_warrens_c1_l1_e1_2",
+         "hp": 31,
+         "max": 54,
+         "state": null,
+         "band": "ENGAGED",
+         "cover": "none"
+        },
+        {
+         "id": "pc",
+         "hp": 0,
+         "max": 80,
+         "state": "defeated"
+        }
+       ],
+       "labels": {
+        "mon.mossback_warrens_c1_l1_e1_1": "Goblin Scout A",
+        "mon.mossback_warrens_c1_l1_e1_2": "Goblin Scout B",
+        "mon.mossback_warrens_c1_l1_e1_3": "Goblin Scout C"
+       },
+       "pc": {
+        "mp": 58,
+        "max_mp": 72,
+        "sta": 100,
+        "max_sta": 100,
+        "arrows": 0
+       }
+      },
+      "ended": {
+       "defeated": [],
+       "escaped": [],
+       "xp_awarded": 0,
+       "pc_dead": true,
+       "pc_escaped": false
+      },
+      "levelups": [],
+      "c": true
+     },
+     "situations": [
+      "loot"
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "i": 26,
+  "user": false,
+  "build": "4.3.0-c.6.6.207",
+  "events": [
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 1,
+      "type": "fact",
+      "s": "mon.mossback_warrens_c1_l1_e1_1",
+      "p": "status",
+      "o": "survived the Arcane Wave, wounded, still fighting"
+     },
+     "rule": "engine_owned_fact",
+     "reason": "a known Guild contract keeps payout and formal status/completion in the engine domain; use quest.detail/quest.progress/quest.ready for story progress instead of overriding that state with a free fact"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 2,
+      "type": "fact",
+      "s": "mon.mossback_warrens_c1_l1_e1_2",
+      "p": "status",
+      "o": "survived the Arcane Wave, wounded, still fighting"
+     },
+     "rule": "engine_owned_fact",
+     "reason": "a known Guild contract keeps payout and formal status/completion in the engine domain; use quest.detail/quest.progress/quest.ready for story progress instead of overriding that state with a free fact"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 3,
+      "type": "fact",
+      "s": "mon.mossback_warrens_c1_l1_e1_3",
+      "p": "status",
+      "o": "survived the Arcane Wave, wounded, still fighting"
+     },
+     "rule": "engine_owned_fact",
+     "reason": "a known Guild contract keeps payout and formal status/completion in the engine domain; use quest.detail/quest.progress/quest.ready for story progress instead of overriding that state with a free fact"
+    }
+   },
+   {
+    "t": "scene.position",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_1",
+     "band": "ENGAGED",
+     "cover": "none"
+    }
+   },
+   {
+    "t": "scene.position",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_2",
+     "band": "ENGAGED",
+     "cover": "none"
+    }
+   },
+   {
+    "t": "scene.position",
+    "d": {
+     "id": "mon.mossback_warrens_c1_l1_e1_3",
+     "band": "ENGAGED",
+     "cover": "none"
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t13.m26.d7_4.1",
+      "s": "mon.mossback_warrens_c1_l1_e1_1",
+      "p": "alert",
+      "o": "listening toward the passage mouth for whatever the shriek woke",
+      "since": {
+       "turn": 13,
+       "minute": 910
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 26,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 29547,
+     "repaired": false,
+     "deltas": 7,
+     "rejected": 3
+    }
+   }
+  ]
+ }
+]

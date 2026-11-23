@@ -11,3 +11,7 @@ Alle drei Originaldateien wurden im aktuellen Chat hochgeladen und aus den **tat
 Der PowerShell-Konsolenlog ist UTF-16 LE mit BOM und enthält 4.959 Textzeilen, 16 vollständige `Chat Completion request`-/`Chat Completion response`-Paare mit Token-Usage. Die Modelle liefen mit `stream:false`; Cachetokens je Antwort null. Der Dateiname des PowerShell-Logs stammt von der alten Logger-Startzeit und ist **nicht** der Chat-/Runbeginn.
 
 [Review](REVIEW.md) · [Messwerte](MESSWERTE_USER10_207.json).
+
+## Nachtrag zum Codex-Gegenreview
+
+[Chat und Eventexport der Fortsetzung](originals/) enthalten den ersten Abschnitt. Prüfsummen, Zeitstand der Exporte und Abgleich des alten Logpräfixes stehen im [Gegenreview](CODEX_GEGENREVIEW.md). Die Tabelle oben identifiziert ausschließlich die drei früheren Dateien.

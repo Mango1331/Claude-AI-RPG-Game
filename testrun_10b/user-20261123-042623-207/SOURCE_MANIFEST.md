@@ -11,3 +11,7 @@ Die drei Dateien stammen aus den **Original-Uploads der laufenden ChatGPT-Konver
 **Logformat:** `ST_2026-11-23_04-25-38.txt` ist PowerShell-Tee-Object-Ausgabe in UTF-16 LE, Zeilenenden CRLF, rund 12.014 Textzeilen nach korrekter UTF-16-Dekodierung. Enthält 36 `Chat Completion request` und 36 `Chat Completion response`, alle mit Tokenusage; 36 `stream:false`, 0 angezeigte Cachetokens. Die darin enthaltene anfangs gemeldete fehlende ältere Chatdatei ist nicht ein Fehler des User09-Laufs.
 
 [Review](REVIEW.md) · [Messdaten](MESSWERTE_USER09_207.json)
+
+## Nachtrag zum Codex-Gegenreview
+
+Chat und Eventexport liegen jetzt byteidentisch unter [originals/](originals/). Der frühere PowerShell-Log ist durch den oben genannten Hash bezeichnet. [Gegenreview mit Messgrenzen](CODEX_GEGENREVIEW.md).

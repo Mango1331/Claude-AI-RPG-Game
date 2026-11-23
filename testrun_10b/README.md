@@ -1,12 +1,12 @@
 # 10B-Spieltests
 
-## User10 · Zweiter persönlicher .207-Kurztest (diagnostischer Boardabbruch)
+## User10 · Zweiter .207-Lauf mit Fortsetzung
 
-[Review des Boardfehlers](user-20261123-075443-207/REVIEW.md) · [Messpunkte](user-20261123-075443-207/MESSWERTE_USER10_207.json) · [Quellenmanifest](user-20261123-075443-207/SOURCE_MANIFEST.md). Die erste Questboardgenerierung scheitert nach zwei LLM-Calls: erst falsches Levelband, dann falscher Turtle-Anker; die automatische lokale Korrektur ist auf den ersten Entwurf beschränkt. 0 Quests gebucht, Gildenprimer verfügbar; die Kampagne kann mit einer neuen Boardlesen-Eingabe fortgesetzt werden. 4 Erzählzüge; keine vollständige Benchmarkkampagne. Originalbytes noch nicht auf GitHub archiviert.
+[Unabhängiger Gegenreview des Gesamtlaufs](user-20261123-075443-207/CODEX_GEGENREVIEW.md) · [GPT-Analyse der ersten Boardlesung](user-20261123-075443-207/REVIEW.md) · [43 physische Aufrufe](user-20261123-075443-207/CODEX_PHYSISCHE_AUFRUFE.csv). Das neue Lesen gelingt. Die abgewiesene Mischaktion wirkt später in der Prosa fort. Chat und Events der Fortsetzung enthalten den Anfang.
 
-## User09 · Persönlicher Kurztest auf .207 (GPT-Erstreview)
+## User09 · Erster persönlicher .207-Lauf
 
-[Erstreview](user-20261123-042623-207/REVIEW.md) · [Messpunkte](user-20261123-042623-207/MESSWERTE_USER09_207.json) · [Quellenmanifest](user-20261123-042623-207/SOURCE_MANIFEST.md). 11 Erzählzüge, 36 physische Request-/Responsepaare, zwei echte, aber im Systempanel nicht sichtbare HP-Verluste; die vom Narrator ausdrücklich erzählte improvisierte Brückenüberquerung wurde vom Nutzer als gelungenes „fail forward“ akzeptiert (nur Engine-Wortlaut P2). Originaluploads noch nicht in Git archiviert, unabhängiger Codex-Gegenreview offen.
+[Gegenreview mit Originalnachspiel](user-20261123-042623-207/CODEX_GEGENREVIEW.md) · [GPT-Erstreview](user-20261123-042623-207/REVIEW.md) · [Aufrufrekonstruktion](user-20261123-042623-207/CODEX_AUFRUFREKONSTRUKTION.csv). Die unmittelbare Schadensmeldung fehlt. Die improvisierte Brückenüberquerung ist gewünscht. Chat und Eventexport sind bytegleich archiviert.
 
 ## User08 · Neuer persönlicher Run auf .205 (ausgewertet)
 

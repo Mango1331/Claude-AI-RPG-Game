@@ -77,8 +77,16 @@ test('Ownership, locked containers, living guards and remote observation never m
     const owned=location(); owned.entities.keeper={id:'keeper',name:'Mara',kind:'npc',status:'alive'};owned.scene.present.push('keeper');
     const o=reply(player(owned).state,[{...bowl,holder:'keeper'}]).state;
     const id=Object.values(o.objects).find(v=>v.name==='clay bowl').id;
-    assert.equal(take(o,id).outcome.resolutions[0].status,'refused');
-    assert.equal(o.objects[id].holder.entity,'keeper');
+    const asked=take(o,id);
+    assert.equal(asked.outcome.resolutions[0].reason,'awaiting handover');
+    assert.equal(asked.state.objects[id].holder.entity,'keeper');
+    const unconfirmed=reply(asked.state,[{seq:1,type:'object.move',object:id,qty:1,to:'pc'}],
+        'Mara keeps her clay bowl in her hands.');
+    assert.equal(unconfirmed.state.objects[id].holder.entity,'keeper');
+    assert.ok(unconfirmed.rejected.some(r=>r.rule==='handover_unconfirmed'));
+    const absent=structuredClone(o);
+    absent.scene.present=['pc'];
+    assert.equal(take(absent,id).outcome.resolutions[0].status,'refused');
     const shut=location(); shut.features.chest={id:'chest',name:'locked chest',at:site,kind:'obstacle',status:'active'};
     shut.objects.bowl={id:'bowl',name:'clay bowl',holder:{loc:site},in:'chest',qty:1,kind:'item'};
     assert.equal(take(shut,'bowl').outcome.resolutions[0].status,'refused');

@@ -3112,6 +3112,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const o = objectRef(d.object);
         const to = holderOf(d.to);
         if (!to) { reject(d, 'object', `unknown receiver ${String(d.to).slice(0, 40)}`); return; }
+        const stock = o || (typeof d.object === 'string' && d.object.startsWith('item.') ? tradeObject(s, content, d.object) : null);
+        if (stock && d.qty != null && (!Number.isSafeInteger(d.qty) || d.qty < 1 || d.qty > (stock.qty ?? 1))) {
+            reject(d, 'object_quantity', 'only existing whole units can change hands'); return;
+        }
         if (!o && cPath && rulesetOf(s) >= 2) {
             const k = conditionals.find(x => !x.done && x.kind === 'give' && x.template && x.object === d.object);
             if (k && arrived && arrived !== transit && (!k.at || k.at === s.scene.at)
@@ -3165,9 +3169,6 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (onSale) { reject(d, 'for_sale', `${o.name} is ${entityLabel(s, onSale.offer.seller)}'s ware for sale (${onSale.offer.id}${onSale.open ? '' : `, ${onSale.offer.status}`}); it becomes his by buying it`); return; }
         const box = o.in ? s.features?.[o.in] : o.in_name && o.holder?.loc ? featureNamed(s, o.holder.loc, o.in_name) : null;
         if (to.entity === 'pc' && box?.status === 'active' && box.kind === 'obstacle') { reject(d, 'shut_in', `it lies in ${box.name} (${box.id}), which is not open yet`); return; }
-        if (d.qty != null && (!Number.isSafeInteger(d.qty) || d.qty < 1 || d.qty > (o.qty ?? 1))) {
-            reject(d, 'object_quantity', 'only existing whole units can change hands'); return;
-        }
         const receipts = to.entity === 'pc' ? conditionals.filter(k => k.kind === 'receive' && k.object === o.id && k.from === o.holder?.entity) : [];
         let confirmed;
         if (receipts.length) {

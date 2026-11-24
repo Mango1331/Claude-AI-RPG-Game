@@ -1854,8 +1854,13 @@ function overdrawnDispositions(s, content, commands) {
         lot.requested += command.qty ?? (command.type === 'use' ? 1 : available);
         lot.steps.push(command);
         byItem.set(item.id,lot);
-        if (lot.steps.length > 1 && lot.requested > available) {
-            for (const step of lot.steps) refused.add(step);
+        if (lot.requested > available) {
+            // Consumption already chosen first still happens (drink the broth, then return the bowl).
+            // A proposed handover must not pre-empt units the same disposition still needs to use.
+            const firstTransfer = lot.steps.findIndex(step => step.type !== 'use');
+            if (firstTransfer >= 0 && firstTransfer < lot.steps.length - 1) {
+                for (const step of lot.steps.slice(firstTransfer)) refused.add(step);
+            }
         }
     }
     return refused;

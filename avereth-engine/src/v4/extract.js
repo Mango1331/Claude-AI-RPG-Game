@@ -153,7 +153,7 @@ export const FORMAT_RULES = [
     'LOCAL HUNT EXPLORATION is an authorized continuation inside an existing habitat: a newly reached den, quarry hollow or other part keeps the stated habitat id as parent, not the realm. A separate journey does not inherit a population just because its species sounds similar. Arrive is still required.',
     'When the CATALOG already contains the place, quest or object, copy its id exactly. Never rewrite an id, invent another id for it, or substitute its title/name.',
     'quest-ref and object-ref mean the exact matching CATALOG id; use {"new":"..."} only when the thing is genuinely new and that reference type permits it.',
-    'A real handover or return of an existing item uses object.move with its catalog ID at the transfer scene, even for a loan or a shorter spoken name. For a requested loan or gift set expected.taken true only on receipt and move that ID. An offer alone means false and no move. Record voluntary receipt, actual quantity and holder; identify a different source for a second namesake. A TAKE boolean alone does not identify a loan. For a newly created object use object.new {name:"bread",holder:"npc.giver",...} then object.move {object:{new:"bread"},to:"pc",...}. object.new has no ref field. Never invent an obj.* id. The new-name reference must identify exactly one earlier created object; otherwise distinguish the actual objects by their established descriptions.',
+    'A real handover or return of an existing item uses object.move with its catalog ID at the transfer scene, even for a loan or a shorter spoken name. For a requested loan or gift set expected.taken true only on receipt and move that ID. For an offer alone omit the receipt or report false, and no move. Record voluntary receipt, actual quantity and holder; identify a different source for a second namesake. A TAKE boolean alone does not identify a loan. For a newly created object use object.new {name:"bread",holder:"npc.giver",...} then object.move {object:{new:"bread"},to:"pc",...}. object.new has no ref field. Never invent an obj.* id. The new-name reference must identify exactly one earlier created object; otherwise distinguish the actual objects by their established descriptions.',
     'In a multi-place reply use the existing per-delta scene explicitly for events before the last arrival. Example: enter known npc.giver at the starting place; create bread on that giver there; move {new:"bread"} to pc there; arrive at the authorized destination. present means co-presence at that step. Known return: enter with catalog ID/evidence. leave means the NPC departs, not Alaric.',
     'Chronology: when the reply establishes arrival and then meets local people or creatures, emit arrive BEFORE their present:true introductions, with increasing seq. A destination scene label never makes an earlier introduction local. Remote sightings use present:false. In a repair correct both missing scene fields and event order to match the REPLY; never invent an arrival or sort every arrival to the front.',
     'person-ref is a person id from PRESENT or the CATALOG, or the ref of a person.new/creature.new earlier in the same answer.',
@@ -550,6 +550,13 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
         if (unasked.length) value.expected = Object.fromEntries(Object.entries(value.expected).filter(([k]) => asked.has(k)));
     }
     const exp = value && typeof value.expected === 'object' && value.expected ? value.expected : {};
+    // A voluntary receipt is opt-in. Its omission confirms nothing and must not cost a repair
+    // or drop unrelated world facts. Other TAKE steps and all other expected types keep their contract.
+    for (const pending of state?.last?.outcome?.conditionals || []) {
+        if (pending.kind === 'receive' && expectedKeys?.[pending.seq] === 'take' && exp[pending.seq] === undefined) {
+            exp[pending.seq] = { taken:false };
+        }
+    }
     // who came along may be left out of an arrival answer, like a |null delta field
     for (const [k, t] of Object.entries(expectedKeys || {})) if (t === 'go' && exp[k] && typeof exp[k] === 'object' && exp[k].with === undefined) exp[k].with = null;
     // NPC E2-A: met and handled_by are optional evidence, never a reason for a repair call: a missing or malformed one

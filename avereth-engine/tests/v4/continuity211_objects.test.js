@@ -5,7 +5,8 @@ import zlib from 'node:zlib';
 import { loadProductContent } from '../helpers.js';
 import { playerTurnV4, replyTurnV4 } from '../../src/v4/turn.js';
 import { planContext, parsePlan } from '../../src/v4/planner.js';
-import { buildCatalog } from '../../src/v4/catalog.js';
+import { parseExtraction, worldVocab } from '../../src/v4/extract.js';
+import { buildCatalog, extractorCatalog } from '../../src/v4/catalog.js';
 
 const content = await loadProductContent();
 const fixture = name => JSON.parse(zlib.gunzipSync(fs.readFileSync(new URL('./fixtures/' + name, import.meta.url))));
@@ -157,4 +158,53 @@ test('receiving a local find cannot bring back a consumed lot or a tool left at 
         assert.ok(result.x.rejected.some(r=>r.rule==='object_source'));
         assert.ok(Object.values(result.s.objects).some(o=>o.name==='fallen apple' && o.holder.entity==='pc'));
     }
+});
+
+test('A3: drink the broth first, then return the vessel only if a separate empty bowl exists', () => {
+    const original = fixture('continuity211_broth.json.gz');
+    const id = original.commands[0].object;
+    const first = play(original.start,original.commands,original.report,original.input,original.prose,original.i);
+    assert.deepEqual(first.s.objects[id].holder,{consumed:'pc'});
+    assert.equal(first.p.events.filter(e=>e.t==='object.consumed' && e.d.id===id).length,1);
+    assert.equal(first.p.outcome.resolutions[1].reason,'he does not hold it');
+    const start = structuredClone(original.start);
+    const bowl = 'obj.empty_earthenware_bowl';
+    start.objects[bowl] = { ...start.objects[id],id:bowl,name:'empty earthenware bowl',use:'tool',qty:1,holder:{entity:'pc'} };
+    const separate=structuredClone(original.commands);
+    separate[1].object=bowl;
+    const two=play(start,separate,original.report,original.input,original.prose,original.i);
+    assert.deepEqual(two.s.objects[id].holder,{consumed:'pc'});
+    assert.deepEqual(two.s.objects[bowl].holder,{entity:'npc.meg'});
+});
+
+test('B5 conditional delivery rejects a physical receipt larger than the entire keg stock', () => {
+    const turn=archive.b5.turns[0];
+    const id='obj.t12.keg_of_salted_herring';
+    const command={seq:3,type:'give',object:id,qty:1,to:{new:'Bren'},needs:2,quote:"take it to Bren's stall on the west side of the market"};
+    const report=structuredClone(turn.report);
+    report.deltas.push({seq:report.deltas.length+1,type:'object.move',object:id,qty:3,to:'npc.bren'});
+    const caught=play(archive.b5.start,[...turn.commands,command],report,turn.input,turn.prose,turn.i);
+    assert.deepEqual(caught.s.objects[id].holder,{entity:'pc'});
+    assert.ok(caught.x.rejected.some(r=>r.rule==='object_quantity'));
+});
+
+test('an omitted voluntary receipt closes as false without repair or loss of an independent fact; the GO still must be answered', () => {
+    const turn=archive.c19.turns[0];
+    const p=playerTurnV4(archive.c19.start,content,turn.input,{c:true,commands:[take,turn.commands[1]],msg:41});
+    const ids=extractorCatalog(p.state,content,{c:true});
+    const report=structuredClone(turn.report);
+    delete report.expected['1'];
+    const parse=r=>parseExtraction(JSON.stringify(r),worldVocab(content.deltaVocab,p.state),ids,p.outcome.expected_keys,{
+        sceneRequired:true,state:p.state,content,startScene:p.state.scene.at,reply:turn.prose});
+    const ok=parse(report);
+    assert.ok(ok.valid && ok.complete);
+    assert.deepEqual(ok.value.expected['1'],{taken:false});
+    assert.equal(ok.value.deltas.length,turn.report.deltas.length);
+    const applied=replyTurnV4(p.state,content,ok.value,{msg:42,prose:turn.prose});
+    assert.notEqual(applied.state.scene.at,p.state.scene.at);
+    assert.deepEqual(applied.state.objects[satchel].holder,{entity:wren});
+    delete report.expected['2'];
+    const missing=parse(report);
+    assert.equal(missing.complete,false);
+    assert.deepEqual(missing.missing,['2']);
 });

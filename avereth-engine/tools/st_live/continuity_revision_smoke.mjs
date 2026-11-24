@@ -10,6 +10,7 @@ import { Driver, loadPlaywright } from './live/driver.mjs';
 import { createInstance, writeConfig, seedProfile } from './live/profile.mjs';
 import { startServer } from './live/server.mjs';
 import { startStub, STUB_MODEL } from './live/stub_provider.mjs';
+import { handoverCase, checkHandover } from './live/revision_handover.mjs';
 
 const st = process.env.AVERETH_ST_DIR;
 assert(st, 'Set AVERETH_ST_DIR to the pinned SillyTavern checkout.');
@@ -65,10 +66,12 @@ function decodeLastSavedMessage(route) {
     const body = JSON.parse(req.headers()['content-encoding'] === 'gzip' ? gunzipSync(bytes) : bytes);
     return body.chat?.at(-1);
 }
+let handover;
 const mock = await startStub({
     respond: async ({ role, messages }) => {
         const text = messages.at(-1).content;
         records.push({ role, messages: structuredClone(messages) });
+        if (handover) return handover.respond(role, messages);
         if (role === 'plan')
             return JSON.stringify({
                 commands: text.includes('PLAYER MESSAGE:\n' + input)
@@ -491,8 +494,12 @@ try {
 
     // Hold the actual origin's successful world POST and request a native switch to a separate chat.
     // ST may defer the switch until the save completes. In either ordering the destination must survive untouched.
-    await seed(alternatives);
-    await idle();
+    // The preceding native reload has already restored the fully saved Silver branch.
+    // Start the next action there; injecting an older copy while ST is finishing this switch can swallow a click.
+    dr.testChat = await dr.identity();
+    await page.waitForFunction(() =>
+        ['Gespeichert', 'Bereit'].includes(document.querySelector('#avereth-action-status')?.textContent)
+    );
     const saving = gate();
     let intercepted = false;
     const route = async (request) => {
@@ -508,8 +515,10 @@ try {
     };
     await page.route('**/api/chats/save', route);
     try {
-        await page.locator('#send_textarea').fill(input);
-        await page.locator('#send_but').click();
+        await page.evaluate((text) => {
+            $('#send_textarea').val(text).trigger('input');
+            $('#send_but').trigger('click');
+        }, input);
         await waitForHold(saving, 'world save POST');
         const arrowsVisible = await page.locator('#chat .last_mes .swipe_left').last().isVisible();
         await page.evaluate((id) => {
@@ -547,6 +556,8 @@ try {
             evidence.events.findIndex((e) => e.key === 'MESSAGE_UPDATED') >
                 evidence.events.findIndex((e) => e.key === 'MESSAGE_EDITED')
     );
+    handover = handoverCase();
+    await checkHandover({ trial: handover, dr, page, instance, idle, snapshot, check, changeSwipe, evidence, records });
 } catch (e) {
     evidence.error = String(e.stack);
     console.error(e);

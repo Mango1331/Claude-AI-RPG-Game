@@ -4,7 +4,7 @@ import { placeParent, placeIdentity, placeKey, samePlace } from './place_refs.js
 import { resolvePlaceRef, usualPersonNamed } from './place_book.js';
 import { allowedArrival, stepsOf, newPlaceScope } from './movement.js';
 import { sectionsOf, sectionId } from './sections.js';
-import { sceneIssues, localSceneDelta } from './extract.js';
+import { sceneIssues, sceneSteps, localSceneDelta } from './extract.js';
 import { privateQuestsOf, questVisible } from '../content.js';
 // Runtime V4: applying the extractor's world deltas (docs/RUNTIME_V4_PLAN.md §5.2). After the narrator's reply the
 // extractor reported, in story order, what the reply established (src/v4/extract.js); the domain/authority firewall
@@ -348,7 +348,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         return place(ref);
     };
     const expected = answer.expected || {};
-    const chronology = new Map(cPath && rulesetOf(s) >= 2 ? sceneIssues(answer, s.scene.at, s, content, explicitTravel).map(x => [answer.deltas[x.index], x.why]) : []);
+    const steps = sceneSteps(answer.deltas, s.scene.at, s, content, explicitTravel);
+    const chronology = new Map(explicitTravel ? sceneIssues(answer, s.scene.at, s, content, explicitTravel, steps).map(x => [answer.deltas[x.index], x.why]) : []);
     const sceneOf = d => cPath && rulesetOf(s) >= 2 ? d?.scene ?? answer.scene : null;
     const tag = msg !== null && msg !== undefined ? msg : s.turn;
 
@@ -1077,7 +1078,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         step = previousStep;
     };
 
-    for (const d of [...fw.accept].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0))) {
+    const allowed = new Set(fw.accept);
+    for (const {d} of steps) {
+        if (!allowed.has(d)) continue;
         const nextScene = d.scene ?? answer.scene;
         if (roadStop && localSceneDelta(d) && !atStart(d)) bookRoadStop();
         if (implicitArrivals.length && d.type !== 'arrive' && nextScene != null && nextScene !== 'here') {

@@ -425,10 +425,45 @@ function saleProceeds(state, value, d) {
  */
 export const localSceneDelta = d => !['time', 'arrive', 'overreach', 'place.reported', 'dungeon', 'area', 'guild.branch'].includes(d.type)
     && !(['person.new', 'creature.new'].includes(d.type) && d.present === false);
-export function sceneIssues(value, startScene, state = null, content = null, explicitArrivals = false) {
+// Keep the extractor's sequence numbers as audit and dependency identities. For a single visit,
+// explicitly located observations immediately preceding their own arrival belong after that arrival.
+// A time change, a transaction, an unnamed scene or a second visit makes that inference ambiguous.
+const arrivalObservations = new Set(['enter', 'person.new', 'fact', 'learn', 'memory']);
+export function sceneSteps(deltas, start, state, content, explicit) {
+    const steps = (Array.isArray(deltas) ? deltas : []).map((d, i) => ({d, i}))
+        .filter(x => x.d && typeof x.d === 'object').sort((a, b) => (a.d.seq ?? 0) - (b.d.seq ?? 0));
+    if (!explicit || !steps.some(x => x.d.type === 'arrive') ||
+        steps.some((x, i) => !Number.isInteger(x.d.seq) || (i > 0 && steps[i - 1].d.seq === x.d.seq))) return steps;
+
+    const visits = new Map();
+    for (const {d} of steps) if (d.type === 'arrive') {
+        const at = placeKey(state, d.at, content);
+        visits.set(at, (visits.get(at) || 0) + 1);
+    }
+    for (let i = 1; i < steps.length; i++) {
+        const arrival = steps[i].d;
+        if (arrival.type !== 'arrive') continue;
+        const at = placeKey(state, arrival.at, content);
+        if (!at || at === start || visits.get(at) !== 1) continue;
+        let first = i;
+        while (first > 0) {
+            const d = steps[first - 1].d;
+            if (!arrivalObservations.has(d.type) || d.present === false || d.scene == null || d.scene === 'here'
+                || placeKey(state, d.scene, content) !== at) break;
+            first--;
+        }
+        if (first < i) {
+            const [step] = steps.splice(i, 1);
+            steps.splice(first, 0, step);
+        }
+    }
+    return steps;
+}
+
+export function sceneIssues(value, startScene, state = null, content = null, explicitArrivals = false,
+    ordered = sceneSteps(value.deltas, startScene, state, content, explicitArrivals)) {
     const sceneKey = ref => placeKey(state, ref, content);
     const issues = [];
-    const ordered = (Array.isArray(value.deltas) ? value.deltas : []).map((d, i) => ({d, i})).filter(x => x.d && typeof x.d === 'object').sort((a, b) => a.d.seq - b.d.seq);
     const arrivals = ordered.filter(x => x.d.type === 'arrive');
     const last = arrivals.at(-1)?.d;
     if (explicitArrivals) for (const [seq, e] of Object.entries(value.expected || {})) {
@@ -439,7 +474,9 @@ export function sceneIssues(value, startScene, state = null, content = null, exp
         && sceneKey(e.at ?? value.scene) !== sceneKey(startScene));
     const implicit = implicitMove && ordered.some(x => localSceneDelta(x.d)
         && sceneKey(x.d.scene) === sceneKey(startScene));
+    const reached = new Set([sceneKey(startScene)]);
     for (const {d, i} of ordered) {
+        if (d.type === 'arrive') reached.add(sceneKey(d.at));
         if (!localSceneDelta(d)) continue;
         // In an Expected-only move, explicit "here" does not identify either temporal scene.
         if ((d.scene === 'here' && implicitMove) || ((d.scene == null || d.scene === 'here')
@@ -449,8 +486,7 @@ export function sceneIssues(value, startScene, state = null, content = null, exp
         }
         const at = sceneKey(d.scene ?? value.scene);
         if (!['person.new', 'creature.new', 'enter'].includes(d.type) || at === sceneKey(startScene)) continue;
-        const prior = arrivals.some(x => x.d.seq < d.seq && sceneKey(x.d.at) === at);
-        if (!prior && arrivals.some(x => x.d.seq > d.seq && sceneKey(x.d.at) === at))
+        if (!reached.has(at) && arrivals.some(x => x.d.seq > d.seq && sceneKey(x.d.at) === at))
             issues.push({index:i, seq:d.seq, why:`$.deltas[${i}]: arrival must come before this local introduction in the REPLY's order; correct scene and seq; remote sightings use present:false`});
     }
     return issues;

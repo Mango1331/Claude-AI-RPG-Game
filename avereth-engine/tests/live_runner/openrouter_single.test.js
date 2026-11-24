@@ -77,8 +77,7 @@ test('single-run helper guide is natural, favors NPC aid and real Guild/gear/lev
     assert.deepEqual(g.milestones.map(x=>x.id),['creation_complete','open_run_level','class_accepted']);
     const prompt=playerSystemPrompt(g,{username:'Alaric',persona:g.personas[0]});
     for(const phrase of ['whenever someone seems to have a problem','Guild contracts','gear upgrades',
-        'NPC conversations','same time','help']) {
-        if(phrase==='same time') continue;
+        'NPC conversations','help']) {
         assert.ok(prompt.toLowerCase().includes(phrase.toLowerCase()),phrase);
     }
     const pkg=JSON.parse(fs.readFileSync(new URL('../../package.json',import.meta.url),'utf8'));

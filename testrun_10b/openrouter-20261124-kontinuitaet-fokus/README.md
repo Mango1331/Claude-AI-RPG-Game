@@ -1,0 +1,32 @@
+# Sechs gepaarte natürliche Originalpräfixe
+
+Je Vergleich wurde derselbe gespeicherte Präfix auf zwei getrennten echten ST-Hosts geladen. Spielertext, Welt und Ereignisse sind innerhalb des Paars identisch. Alle Modellantworten nach dem Schnitt wurden frisch über OpenRouter / Relace erzeugt. A ist die Referenz bei `a854cd6759712571f078bff52e7fe439858b8454`, B der korrigierte Kandidat bei `82b2b30ef86507a4eeeaf4c72e006f80a6d5e8bc`.
+
+Jede Doppelangabe steht in der Reihenfolge Referenz A / Kandidat B. Das Timing reicht von der Spielereingabe bis zur ersten vollständig lesbaren Prosa bzw. zur beobachteten sicheren Folgeeingabe nach bestätigter Speicherung. Alle Zustände wurden zusätzlich neu geladen und mit dem vorher gespeicherten Ereignisstand verglichen.
+
+| Präfix | Aufrufe | Repairs | Inputtokens | Outputtokens | Erste Prosa (s) | Sichere Eingabe (s) | Kosten (USD) |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Bren und Cottage | 3 / 3 | 0 / 0 | 38613 / 38790 | 1646 / 1969 | 9.1 / 8.9 | 38.7 / 38.1 | 0.0015062630 / 0.0014457047 |
+| Tam und geladener Wagen | 2 / 3 | 1 / 0 | 25458 / 38783 | 245 / 2596 | – / 19.8 | – / 62.7 | 0.0008556675 / 0.0014617912 |
+| Wren, Rückgabe C21 | 4 / 3 | 1 / 0 | 54390 / 39326 | 2116 / 1193 | 13.1 / 5.5 | 50.5 / 18.1 | 0.0020402836 / 0.0014287807 |
+| Expliziter Weg zur grünen Tür | 4 / 3 | 1 / 0 | 52296 / 38564 | 1495 / 1230 | 7.5 / 17.2 | 23.8 / 27.7 | 0.0018943385 / 0.0014046690 |
+| Wrens Tasche, Übernahme C19 | 3 / 3 | 0 / 0 | 38729 / 39208 | 1513 / 1452 | 15.4 / 7.2 | 51.5 / 19.2 | 0.0013698123 / 0.0013811764 |
+| Danns Namenswissen | 3 / 3 | 0 / 0 | 38487 / 38428 | 1095 / 699 | 11.6 / 4.4 | 24.6 / 16.5 | 0.0014568709 / 0.0013579845 |
+
+A umfasste 19 physische Requests mit 3 zusätzlichen Rollenaufrufen, 247973 Eingabe- und 8110 Ausgabetokens. OpenRouter meldete 65280 enthaltene Cache- und 2473 enthaltene Reasoningtokens und 0.0091232358 USD.
+
+B umfasste 18 physische Requests mit 0 zusätzlichen Rollenaufrufen, 233099 Eingabe- und 9139 Ausgabetokens. OpenRouter meldete 100544 enthaltene Cache- und 3126 enthaltene Reasoningtokens und 0.0084801065 USD.
+
+Der Median der paarweisen B−A-Differenzen betrug 59 Inputtokens. Bei den 5 Paaren mit vollständiger Zeitbeobachtung lag er bei -8.10 s bis zur sicheren Folgeeingabe. Die sechs Paare bilden verschiedene Aufgaben ab. Neue Narratorantworten verändern den folgenden Extractorinput. Segmente lagen zeitlich auseinander, die lokale Hostlast war unterschiedlich. Diese Werte beschreiben den Versuch; eine Softwarebeschleunigung lässt sich daraus allein nicht ableiten.
+
+## Fachbeurteilung der sechs Einzelpaare
+
+- **Bren und das Cottage.** Beide frischen Planner erzeugten ein GO zur verfallenen Kapelle. Beide Varianten buchten die Ankunft mit Bren; bei B wurde der laut Erzählung vorantrabende Hund ausdrücklich in `expected.with` genannt und erschien am Ziel. Die Mädchen/Familie und der genaue Ort unterschieden sich mit der neuen Prosa. Damit reproduzieren die beiden neu gezogenen Ankünfte den alten fehlenden Plannerentscheid gerade nicht. Auch A kann diesen natürlichen Zug vollständig verarbeiten.
+- **Tam und der Wagen.** A brach nach einer Planner-Reparatur wegen nicht belegbarer Textzuordnung lokal ab und bewahrte den Ausgangszustand. Die Meldung blieb nach Reload erhalten. Es gab keinen natürlichen N/X-Zug und keine gemessene T4-Freigabe für diesen Arm. In B wählte der Planner nur das Warten; die Erzählung fuhr mit Tam bis zu einer Begegnung am Wagen. Der Extractor beschrieb die neue Szene, lieferte aber kein `arrive`. Vier szenenabhängige Meldungen wurden abgelehnt, die gespeicherte Szene blieb an der Mühle. Der Vergleich belegt weder einen generellen Parsergewinn noch die vollständige Korrektur kombinierter Reiseabsichten.
+- **Wren, Rückgabe C21.** Beide neu generierten Planner verstehen die Rückgabe derselben Satchel und die Bewegung in das Haus. Ausgangs- und Endhalter von `obj.t40.mother_wrens_leather_satchel` ist `npc.mother_wren`; der historische Doppelgänger `obj.t42.the_bag` bleibt in beiden Versionen beim PC. In B wurde ein `object.moved` an Wrens bereits bestehende Halterschaft gebucht. A erhielt eine davon unabhängige neue Schüssel Brühe. Beide verbleiben bei 40 cp. Der historische Widerspruch lässt sich aus diesem bereits inkonsistenten Präfix allein nicht heilen. Die Neuerzeugung einer anderen Sache oder ein Event mit unverändertem Halter ist kein Beleg für eine reparierte Taschenrückgabe.
+- **Ausdrücklich gewählter Weg an die grüne Tür.** Die unabhängige .209-Wiederholung reproduzierte das ursprüngliche A5-Problem. A-P lieferte keine Aktion; Narrator und Extractor meldeten die Ankunft. Eine zusätzliche Extractorantwort, `no_go` und vier `scene_context`-Ablehnungen hinterließen Alaric bei der Torwache. B-P meldete `journey.continue` mit dem Zitat über die grüne Tür. Die Engine hatte Wren als Reiseziel, buchte ihr Haus und ihre Anwesenheit und kam ohne Repair und Ablehnung aus. Diese einmalige, natürlich generierte Paarbeobachtung ist ein direkt belegter Vorteil in der tatsächlich vorgekommenen Situation.
+- **Taschenübernahme C19.** In beiden frischen Ausgaben benennt der Planner die bestehende Satchel-ID. Wren verweigert jeweils in der Prosa den Transfer und trägt die Flaschen selbst. Weder A noch B meldete deshalb eine `object.move`-Übergabe, und nach beiden Reloads bleibt die Satchel bei `npc.mother_wren`. `obj.t42.the_bag` ist in diesem älteren Startpräfix noch nicht vorhanden und wurde in keinem der beiden Vergleichszüge angelegt. Die beiden natürlichen Antworten belegen Respekt für das Eigentum und die Entscheidung der NPC. Sie liefern keinen Beleg für eine tatsächlich gewollte und erfolgreich ausgeführte Übergabe an Alaric.
+- **Danns Namenswissen.** A lieferte dem Narrator gleichzeitig die bestätigte Zeile `knows him by name` und die veraltete Annahme `Alaric name unknown ... actually FALSE` für Dann. In B stand an derselben Figur nur die bestätigte Kenntnis. Beide Erzähler beantworteten die Frage nach den Tieren, beide ließen Dann Alarics Namen in diesem neuen Text unangesprochen. Drei Buchungsablehnungen wegen `scene_context` in A gegenüber null in B entsprangen unterschiedlichen Erzählungen und Deltas. Der besser widerspruchsfreie Input ist direkt belegt; ein verbessertes gesprochenes Wiedererkennen wurde hier nicht sichtbar.
+
+
+[Maschinenlesbare Gegenüberstellung](fokuskennzahlen.json.gz) · [Quellen und SHA-256](SOURCE_MANIFEST.md) · [Versuchsprotokoll](../../recherche/kontinuitaet_209_naturtest/VERSUCHSPROTOKOLL.md)

@@ -1,0 +1,35 @@
+[
+  {
+    "n": 1,
+    "inputMessageIndex": 43,
+    "timing": {
+      "marks": {
+        "click": 2282930.299999999,
+        "lastRenderedChange": 2301120,
+        "firstProse": 2294504.299999999,
+        "confirmedSave": 2307513.5,
+        "worldCommit": 2307335.299999999,
+        "worldTimesInferred": false,
+        "ready": 2307517.299999999
+      },
+      "world": {
+        "id": 44,
+        "committed_at_ms": 2307335.299999999,
+        "persisted_at_ms": 2307513.5,
+        "extraction_validation_wait_ms": 5997,
+        "save_readback_ms": 178,
+        "total_ms": 6176,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "\"Rain never troubled a chicken that I met,\" Dann said, dumping an armful of straw by the hearth to dry."
+    },
+    "checked": {
+      "world": "16b2e109a0b2892d61d8b26888e7d65bf5617e3f2951e05107d80ff72da08fc7",
+      "events": "3647e751393e42dafb2c129f7d77faeddd9e9cb7cab3bfb653d7fa7b42acefbb",
+      "messages": 45
+    },
+    "elapsedIncludingReloadMs": 28251
+  }
+]

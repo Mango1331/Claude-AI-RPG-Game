@@ -1,0 +1,113 @@
+{
+  "arm": "A",
+  "candidate": "a854cd6759712571f078bff52e7fe439858b8454",
+  "route": "relace/fp4",
+  "physical_sends": 3,
+  "physical_refs_ended": 3,
+  "physical_roles": {
+    "planner": 1,
+    "narrator": 1,
+    "extractor": 1
+  },
+  "repeat_role_requests": {},
+  "success": 3,
+  "player_inputs": 1,
+  "confirmed_st_turns": 1,
+  "provider_input": 38487,
+  "provider_output": 1095,
+  "provider_cache": 448,
+  "provider_reasoning": 456,
+  "usage_records": 3,
+  "provider_cost_usd": "0.0014568709",
+  "cost_records": 3,
+  "charged_or_reserved_usd": "0.0014568709",
+  "physical_duration_ms": 22230,
+  "median_ready_ms": 24587,
+  "by_role": {
+    "planner": {
+      "dispatched": 1,
+      "duration_ms": {
+        "n": 1,
+        "sum": 1096,
+        "mean": 1096,
+        "median": 1096,
+        "min": 1096,
+        "max": 1096
+      },
+      "prompt_tokens": 12582,
+      "completion_tokens": 6,
+      "cost_usd": "0.0004484082"
+    },
+    "narrator": {
+      "dispatched": 1,
+      "duration_ms": {
+        "n": 1,
+        "sum": 15202,
+        "mean": 15202,
+        "median": 15202,
+        "min": 15202,
+        "max": 15202
+      },
+      "prompt_tokens": 11980,
+      "completion_tokens": 716,
+      "cost_usd": "0.0004823332"
+    },
+    "extractor": {
+      "dispatched": 1,
+      "duration_ms": {
+        "n": 1,
+        "sum": 5932,
+        "mean": 5932,
+        "median": 5932,
+        "min": 5932,
+        "max": 5932
+      },
+      "prompt_tokens": 13925,
+      "completion_tokens": 373,
+      "cost_usd": "0.0005261295"
+    }
+  },
+  "st_ms": {
+    "firstProse": {
+      "n": 1,
+      "sum": 11574,
+      "mean": 11574,
+      "median": 11574,
+      "min": 11574,
+      "max": 11574
+    },
+    "lastRenderedChange": {
+      "n": 1,
+      "sum": 18190,
+      "mean": 18190,
+      "median": 18190,
+      "min": 18190,
+      "max": 18190
+    },
+    "worldCommit": {
+      "n": 1,
+      "sum": 24405,
+      "mean": 24405,
+      "median": 24405,
+      "min": 24405,
+      "max": 24405
+    },
+    "confirmedSave": {
+      "n": 1,
+      "sum": 24583,
+      "mean": 24583,
+      "median": 24583,
+      "min": 24583,
+      "max": 24583
+    },
+    "ready": {
+      "n": 1,
+      "sum": 24587,
+      "mean": 24587,
+      "median": 24587,
+      "min": 24587,
+      "max": 24587
+    }
+  },
+  "all_reloads_match": true
+}

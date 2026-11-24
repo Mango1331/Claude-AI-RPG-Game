@@ -1,0 +1,58 @@
+[
+  {
+    "n": 1,
+    "seq": 1795511678203,
+    "op": "play",
+    "text": "Lead on, Dann. I'll come as far as the house and hear what your mother wants to say. We can talk about the fee by the fire.",
+    "intent_before_narration": "Accompany Dann to the farmhouse to hear his mother out. Decide on the journey and any payment after speaking with her.",
+    "at": "2026-11-24T09:14:41.777Z"
+  },
+  {
+    "n": 2,
+    "seq": 1795511753981,
+    "op": "play",
+    "text": "Keep the five silver for Wren. I'll take your message for the price of getting warm at this fire. Dann, how do I get past the mill ford safely? I don't fancy being the next one you send her for.",
+    "intent_before_narration": "Accept the errand without coin and ask Dann about the safest way past the ford before leaving the kitchen.",
+    "at": "2026-11-24T09:15:57.604Z"
+  },
+  {
+    "n": 3,
+    "seq": 1795511838019,
+    "op": "play",
+    "text": "I repeat 'left at the leaning oak' to fix it in my head, thank them both, and set off downhill. I want a good look at the mill causeway and the state of that rail before I put a foot on it.",
+    "intent_before_narration": "Go as far as the mill causeway and inspect the crossing before stepping onto it.",
+    "at": "2026-11-24T09:17:20.912Z"
+  },
+  {
+    "n": 4,
+    "seq": 1795511903189,
+    "op": "play",
+    "text": "I wave to the woman and make my way across on the crowns of the stones, keeping clear of the rotten post. On the far bank I ask if the rail can be mended before Mother Wren comes back this way.",
+    "intent_before_narration": "Cross the causeway carefully and ask the mill folk about mending the rail for Wren's possible return. Stop on the far bank to hear them.",
+    "at": "2026-11-24T09:18:23.840Z"
+  },
+  {
+    "n": 5,
+    "seq": 1795511973982,
+    "op": "play",
+    "text": "The rail will have to wait, I'm afraid. I'll remember about the upper stones. I take the left at the leaning oak and follow Dann's river road toward the east gate of Ashbridge.",
+    "intent_before_narration": "Defer the offered repair, remember the crossing advice, and head to Ashbridge's east gate by the river road.",
+    "at": "2026-11-24T09:19:34.780Z"
+  },
+  {
+    "n": 6,
+    "seq": 1795512008340,
+    "op": "play",
+    "text": "I keep my staff still and call to the person at the door. Could you call your dogs in, please? I'm headed for Mother Wren on the Hallorans' errand and I'll be out of your way as soon as I can pass.",
+    "intent_before_narration": "Ask the dogs' keeper for safe passage and wait for them to be called in.",
+    "at": "2026-11-24T09:20:08.911Z"
+  },
+  {
+    "n": 7,
+    "seq": 1795512041115,
+    "op": "play",
+    "text": "Much obliged. I pass the dogs at a walk, and follow the river on my right into Ashbridge. I take the lane behind the tithe barn to Wren's green door.",
+    "intent_before_narration": "Proceed through the open track to town and take the lane on foot to Wren's home.",
+    "at": "2026-11-24T09:20:41.685Z"
+  }
+]

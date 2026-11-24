@@ -1,0 +1,35 @@
+[
+  {
+    "n": 1,
+    "inputMessageIndex": 27,
+    "timing": {
+      "marks": {
+        "click": 19331,
+        "lastRenderedChange": 46949.699999999255,
+        "firstProse": 36579,
+        "confirmedSave": 47036.199999999255,
+        "worldCommit": 46928.89999999851,
+        "worldTimesInferred": false,
+        "ready": 47042.199999999255
+      },
+      "world": {
+        "id": 28,
+        "committed_at_ms": 46928.89999999851,
+        "persisted_at_ms": 47036.199999999255,
+        "extraction_validation_wait_ms": 6201,
+        "save_readback_ms": 107,
+        "total_ms": 6308,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The knock went flat against the rain, and for a moment nothing."
+    },
+    "checked": {
+      "world": "ddce2ac5611168030a8fd73e8061793e297532f671d5677f7779eccd9f7b6244",
+      "events": "d7491cb2dcd17b2a3b08907354f6c67a420d1404cacfa91856e790308908b49a",
+      "messages": 29
+    },
+    "elapsedIncludingReloadMs": 29676
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "n": 1,
+    "seq": 1795513980083,
+    "op": "play",
+    "text": "Keep the lantern on the high bank a moment, Wren. I'll look for a way round the root end, testing the turf with my staff. Wait here till I can see whether there's room for you to walk round without climbing over the tree.",
+    "intent_before_narration": "Scout the high bank by the roots for a passable detour while Wren waits at the cutting with the light and her satchel.",
+    "at": "2026-11-24T09:53:02.280Z"
+  },
+  {
+    "n": 2,
+    "seq": 1795514008516,
+    "op": "play",
+    "text": "I saw it too. It showed me enough bog to last the night. I come back to the trunk and offer Wren my shoulder for a step, so she can sit on the willow and swing her legs over. I'll steady her on the far side if she wants the help.",
+    "intent_before_narration": "Return to Wren and offer physical assistance over the trunk at her discretion. Leave the strange light alone and keep the satchel with Wren.",
+    "at": "2026-11-24T09:53:29.317Z"
+  },
+  {
+    "n": 3,
+    "seq": 1795514053471,
+    "op": "play",
+    "text": "Fast and quiet. Tam's been waiting long enough. I climb over to Wren and walk that last half mile beside her, keeping an eye on the track in her lantern light. At Marta's I'll knock and tell her we've brought help.",
+    "intent_before_narration": "Cross the trunk, leave the tracks alone, and accompany Wren with her own bag the remaining distance to Marta's door to announce her arrival.",
+    "at": "2026-11-24T09:54:14.497Z"
+  }
+]

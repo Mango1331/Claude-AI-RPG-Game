@@ -1,0 +1,35 @@
+[
+  {
+    "n": 1,
+    "inputMessageIndex": 41,
+    "timing": {
+      "marks": {
+        "click": 120552.30000000075,
+        "lastRenderedChange": 147465.1000000015,
+        "firstProse": 135957.40000000037,
+        "confirmedSave": 171987.70000000112,
+        "worldCommit": 169810.1000000015,
+        "worldTimesInferred": false,
+        "ready": 172016.20000000112
+      },
+      "world": {
+        "id": 42,
+        "committed_at_ms": 169810.1000000015,
+        "persisted_at_ms": 171987.70000000112,
+        "extraction_validation_wait_ms": 11488,
+        "save_readback_ms": 2178,
+        "total_ms": 13666,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "Mother Wren's hand closed over the strap as he reached for it."
+    },
+    "checked": {
+      "world": "feb1471c47648ff0f33235ff0b508cf85af40c8ff349e3d4fd59d5d591a6070e",
+      "events": "429f594af0aea663f6ad95e1e1547b52c030793d95465fe00b117e48faf68bd8",
+      "messages": 43
+    },
+    "elapsedIncludingReloadMs": 77961
+  }
+]

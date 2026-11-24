@@ -1,0 +1,16 @@
+diff --git a/avereth-engine/src/v4/world.js b/avereth-engine/src/v4/world.js
+index 41df54e5..77fd9aec 100644
+--- a/avereth-engine/src/v4/world.js
++++ b/avereth-engine/src/v4/world.js
+@@ -1254,6 +1254,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
+                         reject(d, rule, why);
+                         corrections.push(`${why}. Preserve the known person's recorded history. A fuller name uses person.named; an actual new return uses enter, without requiring Alaric to travel. Do not repeat an already resolved predicament.`);
+                     };
++                    const shortened = Object.values(s.entities).filter(e => e.kind === 'npc' && e.name && name && normText(e.name).startsWith(`${name} `));
++                    if (!known && shortened.length && !(shortened.length === 1 && shortened[0].id === d.distinct_from)) {
++                        refusePerson('npc_identity', 'Short name may refer to known NPC; use enter or distinguish', shortened.map(e=>e.id));
++                        break;
++                    }
+                     if (!known && extensions.length && !distinct) {
+                         refusePerson('npc_identity', `The name ${d.name} may extend an existing identity; establish the same person with person.named or explicitly distinguish the newcomer with distinct_from`, extensions.map(e => e.id));
+                         break;

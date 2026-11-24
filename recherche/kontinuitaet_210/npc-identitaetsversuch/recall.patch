@@ -1,0 +1,85 @@
+diff --git a/avereth-engine/src/knowledge.js b/avereth-engine/src/knowledge.js
+index fa41a878..690069ed 100644
+--- a/avereth-engine/src/knowledge.js
++++ b/avereth-engine/src/knowledge.js
+@@ -255,19 +255,35 @@ export function npcContinuity(state, scan = '') {
+         const p = state.places?.[id];
+         if (p && !['realm', 'region', 'settlement'].includes(p.kind)) for (const w of words(p.name)) places.add(w);
+     }
+-    const query = normText(scan);
+-    return Object.values(state.entities).filter(e => e.kind === 'npc' && e.name && !state.scene.present.includes(e.id))
++    // Compare complete words, including before punctuation and possessives. A partial personal name
++    // is useful for recall only when a single known identity owns it. Recall never grants presence.
++    const nameWords = text => normText(text).match(/[\p{L}\p{N}]+/gu) || [];
++    const query = ` ${nameWords(scan).join(' ')} `;
++    const properWords = text => new Set((String(text || '').match(/[\p{L}\p{N}]+/gu) || [])
++        .filter(w => /^\p{Lu}/u.test(w)).map(normText));
++    const called = properWords(scan);
++    const people = Object.values(state.entities).filter(e => e.kind === 'npc' && e.name);
++    const frequency = new Map();
++    for (const e of [...people, state.entities.pc].filter(Boolean)) {
++        for (const word of new Set(nameWords(e.known_name ?? e.name))) frequency.set(word, (frequency.get(word) || 0) + 1);
++    }
++    return people.filter(e => e.known_name !== '' && !state.scene.present.includes(e.id))
+         .map(e => {
+-            const name = normText(e.name);
+-            const history = state.memories.filter(m => ((m.who || []).includes('pc') || (m.witnesses || []).includes('pc') || (m.seen || []).includes('pc'))
++            const label = e.known_name ?? e.name;
++            const name = nameWords(label);
++            const history = state.memories.filter(m => (m.witnesses || m.seen || m.who || []).includes('pc')
+                 && [...(m.who || []), ...(m.about || []), ...(m.witnesses || [])].includes(e.id));
+-            const named = (` ${query} `).includes(` ${name} `);
++            const full = name.length && query.includes(` ${name.join(' ')} `);
++            // A word of a name could be a title (Mother, Captain) or a surname shared by a family.
++            // Prefer a call name the PC has already heard used independently of the full name.
++            const short = name.length > 1 && name.some(w => w.length >= 3 && frequency.get(w) === 1 && called.has(w)
++                && history.some(m => properWords(String(m.text || '').split(label).join(' ')).has(w)));
+             const local = history.some(m => [...words(m.place)].some(w => places.has(w)));
+             const last = history.at(-1);
+             const facts = currentFacts(state, f => f.s === e.id && f.visibility !== 'secret'
+                 && ['status', 'bindings', 'plans', 'residence'].includes(f.p)).slice(-4);
+             const moment = history.filter(isMeaningful).at(-1);
+-            return { id: e.id, score: named ? 2 : local ? 1 : 0,
+-                text: `${e.name} [${e.id}] — NOT PRESENT; last witnessed at ${last?.place || 'unknown place'}${last ? ` (minute ${last.minute}, historical)` : ''}. ${facts.map(f => `${f.p}: ${f.o}`).join('; ')}${moment ? `; remembers: ${memoryText(state, moment)}` : ''}` };
++            return { id: e.id, score: full ? 3 : short ? 2 : local ? 1 : 0,
++                text: `${label} [${e.id}] — NOT PRESENT; last witnessed at ${last?.place || 'unknown place'}${last ? ` (minute ${last.minute}, historical)` : ''}. ${facts.map(f => `${f.p}: ${f.o}`).join('; ')}${moment ? `; remembers: ${memoryText(state, moment)}` : ''}` };
+         }).filter(x => x.score).sort((a, b) => b.score - a.score).slice(0, 3);
+ }
+diff --git a/avereth-engine/src/v4/extract.js b/avereth-engine/src/v4/extract.js
+index 54e32793..7d054801 100644
+--- a/avereth-engine/src/v4/extract.js
++++ b/avereth-engine/src/v4/extract.js
+@@ -154,7 +154,7 @@ export const FORMAT_RULES = [
+     'When the CATALOG already contains the place, quest or object, copy its id exactly. Never rewrite an id, invent another id for it, or substitute its title/name.',
+     'quest-ref and object-ref mean the exact matching CATALOG id; use {"new":"..."} only when the thing is genuinely new and that reference type permits it.',
+     'For a newly created object use object.new {name:"bread",holder:"npc.giver",...} then object.move {object:{new:"bread"},to:"pc",...}. object.new has no ref field. Never invent an obj.* id. The new-name reference must identify exactly one earlier created object; otherwise distinguish the actual objects by their established descriptions.',
+-    'In a multi-place reply use the existing per-delta scene explicitly for events before the last arrival. Example: enter known npc.giver at the starting place; create bread on that giver there; move {new:"bread"} to pc there; arrive at the authorized destination. present describes co-presence at that step, not only the reply ending. A returning known NPC uses enter, not person.new.',
++    'In a multi-place reply use the existing per-delta scene explicitly for events before the last arrival. Example: enter known npc.giver at the starting place; create bread on that giver there; move {new:"bread"} to pc there; arrive at the authorized destination. present means co-presence at that step. Known return: enter with catalog ID/evidence. leave means the NPC departs, not Alaric.',
+     'Chronology: when the reply establishes arrival and then meets local people or creatures, emit arrive BEFORE their present:true introductions, with increasing seq. A destination scene label never makes an earlier introduction local. Remote sightings use present:false. In a repair correct both missing scene fields and event order to match the REPLY; never invent an arrival or sort every arrival to the front.',
+     'person-ref is a person id from PRESENT or the CATALOG, or the ref of a person.new/creature.new earlier in the same answer.',
+     'offer_line is {"what":string,"kind":"goods"|"service","service":"lodging"|"bath"|"laundry"|"meal"|"healing"|"training"|"other"|null,"qty":integer>=1,"price_cp":integer>=0,"said":string|null (the reply\'s words for the price),"effect":"heal"|"restore_mp"|"restore_sta"|null (only for a potion, draught or tonic that restores HP, MP or STA; the engine fixes how much),"teaches":teaches|null,"equipment":boolean|null,"base":string|null,"quality":string|null,"phase":"firm"|"conditional"|"unclear","condition":string|null,"pricing":pricing}.',
+diff --git a/avereth-engine/src/v4/runtime.js b/avereth-engine/src/v4/runtime.js
+index df276924..d7365874 100644
+--- a/avereth-engine/src/v4/runtime.js
++++ b/avereth-engine/src/v4/runtime.js
+@@ -935,7 +935,11 @@ export function extractionRequest(chat, id, content) {
+     const o = state.last?.outcome || {};
+     const gos = (o.auth?.gos || []).map((g) => g.to).filter(Boolean);
+     // Prototype C (4.3.0-c.5): the contracts he read on a board, by id, also for a contract or board taken on arrival
+-    const cat = extractorCatalog(state, content, { extraPlaces: gos, known: !!(o.auth?.c || o.c), c: !!(o.auth?.c || o.c) });
++    const player = rec(chat[lastUserIndex(chat,id)])?.own_phase_refused ? null : state.last?.input || null;
++    const cat = extractorCatalog(state, content, {
++        extraPlaces: gos, known: !!(o.auth?.c || o.c), c: !!(o.auth?.c || o.c),
++        input: [player, msg.mes].filter(Boolean).join('\n'),
++    });
+     let actions = o.kind === 'v4' ? [...o.actions, ...(o.extra || [])].join('\n')
+         : o.kind === 'combat' ? 'COMBAT — the engine resolved this round (attacks, damage, movement); report only what else the reply established.'
+             : o.kind === 'check' ? `CHECK — the engine resolved: ${o.check?.label || 'a check'}, ${o.check?.success ? 'success' : 'failure'}.`
+@@ -946,7 +950,6 @@ export function extractionRequest(chat, id, content) {
+     }
+     if (state.encounter || o.kind === 'combat') actions += `\n${chronicleLine(combatChronicle(chat.slice(0, id), messageEvents))}`;
+     const expectedKeys = o.expected_keys || {};
+-    const player = rec(chat[lastUserIndex(chat,id)])?.own_phase_refused ? null : state.last?.input || null;
+     const vocab = worldVocab(content.deltaVocab, state);
+     const req = extractorRequest(vocab, { catalog: cat.text, actions, player, expectedKeys, reply: msg.mes });
+     return { ...req, vocab, hash: r.text_hash, expectedKeys, state, startScene: state.scene.at, sceneRequired: (state.meta?.ruleset || 1) >= 2 && !!(o.c || o.auth?.c), ids: { places: cat.places, quests: cat.quests, objects: cat.objects }, catalog: cat.text, actions, player };

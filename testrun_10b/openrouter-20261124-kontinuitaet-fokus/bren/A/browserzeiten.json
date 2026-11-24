@@ -1,0 +1,35 @@
+[
+  {
+    "n": 1,
+    "inputMessageIndex": 17,
+    "timing": {
+      "marks": {
+        "click": 678954.3999999985,
+        "lastRenderedChange": 717228.1999999993,
+        "firstProse": 688032.8999999985,
+        "confirmedSave": 717626.1999999993,
+        "worldCommit": 717073.8999999985,
+        "worldTimesInferred": false,
+        "ready": 717698
+      },
+      "world": {
+        "id": 18,
+        "committed_at_ms": 717073.8999999985,
+        "persisted_at_ms": 717626.1999999993,
+        "extraction_validation_wait_ms": 20238,
+        "save_readback_ms": 552,
+        "total_ms": 20791,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "\"Right."
+    },
+    "checked": {
+      "world": "5ea0bc0019352457ccf5cffb9d929569574cf65a5c51c0efb11bd787fad1a420",
+      "events": "5f6da9d7db17c20ea24bce4923919c5c1d82e835fccda1337aafec47d064eb96",
+      "messages": 19
+    },
+    "elapsedIncludingReloadMs": 46514
+  }
+]

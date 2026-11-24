@@ -1,0 +1,10 @@
+[
+  {
+    "n": 1,
+    "seq": 1795513580125,
+    "op": "play",
+    "text": "No word needed over me, Wren. I got my breakfast, and three bites for Tam is good news. Morning, Dann. You look as wet as I was yesterday. Are the animals all right after the rain?",
+    "intent_before_narration": "Decline a fee or formal thanks and ask Dann about the condition of the animals. Hear him out before deciding where to go.",
+    "at": "2026-11-24T09:46:22.006Z"
+  }
+]

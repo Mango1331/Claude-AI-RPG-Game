@@ -1,0 +1,35 @@
+[
+  {
+    "n": 1,
+    "inputMessageIndex": 45,
+    "timing": {
+      "marks": {
+        "click": 119673.70000000112,
+        "lastRenderedChange": 130300.80000000075,
+        "firstProse": 125176.60000000149,
+        "confirmedSave": 137722.70000000112,
+        "worldCommit": 137504.40000000037,
+        "worldTimesInferred": false,
+        "ready": 137727.6000000015
+      },
+      "world": {
+        "id": 46,
+        "committed_at_ms": 137504.40000000037,
+        "persisted_at_ms": 137722.70000000112,
+        "extraction_validation_wait_ms": 7033,
+        "save_readback_ms": 218,
+        "total_ms": 7251,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The house was warm and smelled of peat smoke and boiled herbs, and it was loud with a coughing that came muffled through a hung cloth across the back corner."
+    },
+    "checked": {
+      "world": "3dc0d8a679a43c18f603bb6d354c51cbb5c66e71ca03c1837fdbb68bac1a783e",
+      "events": "0869d9846afd49dfe65cd4e9f434c189ac5f38360f890235f1ccc43e180a2f16",
+      "messages": 47
+    },
+    "elapsedIncludingReloadMs": 21377
+  }
+]

@@ -1,0 +1,85 @@
+{
+  "arm": "A",
+  "candidate": "a854cd6759712571f078bff52e7fe439858b8454",
+  "route": "relace/fp4",
+  "physical_sends": 2,
+  "physical_refs_ended": 2,
+  "physical_roles": {
+    "planner": 2
+  },
+  "repeat_role_requests": {
+    "planner": 1
+  },
+  "success": 2,
+  "player_inputs": 1,
+  "confirmed_st_turns": 1,
+  "provider_input": 25458,
+  "provider_output": 245,
+  "provider_cache": 12608,
+  "provider_reasoning": 21,
+  "usage_records": 2,
+  "provider_cost_usd": "0.0008556675",
+  "cost_records": 2,
+  "charged_or_reserved_usd": "0.0008556675",
+  "physical_duration_ms": 10618,
+  "median_ready_ms": null,
+  "by_role": {
+    "planner": {
+      "dispatched": 2,
+      "duration_ms": {
+        "n": 2,
+        "sum": 10618,
+        "mean": 5309,
+        "median": 5309.0,
+        "min": 3008,
+        "max": 7610
+      },
+      "prompt_tokens": 25458,
+      "completion_tokens": 245,
+      "cost_usd": "0.0008556675"
+    }
+  },
+  "st_ms": {
+    "firstProse": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    },
+    "lastRenderedChange": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    },
+    "worldCommit": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    },
+    "confirmedSave": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    },
+    "ready": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    }
+  },
+  "all_reloads_match": true
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "n": 1,
+    "inputMessageIndex": 33,
+    "timing": {
+      "marks": {
+        "click": 2282409.4000000004
+      },
+      "world": null
+    },
+    "checked": {
+      "world": "6c7d1371d36cf9f26e18fcb353be277e47feb20a86eff281dfa94c1c441737ef",
+      "events": "a82c9b37f07928a671c196ce763709130fa56099ba4b82f2917d5ab71902277a",
+      "messages": 35
+    },
+    "elapsedIncludingReloadMs": 13769
+  }
+]

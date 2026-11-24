@@ -1,0 +1,528 @@
+[
+  {
+    "variant": ".209",
+    "fall": "original",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren",
+      "npc.marta"
+    ],
+    "neu": [
+      "npc.marta"
+    ],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ]
+    ],
+    "erinnerung": [
+      [
+        "npc.mother_wren",
+        "npc.marta"
+      ]
+    ]
+  },
+  {
+    "variant": ".209",
+    "fall": "don-donna",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren",
+      "npc.don"
+    ],
+    "neu": [
+      "npc.don"
+    ],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ]
+    ],
+    "erinnerung": [
+      [
+        "npc.mother_wren"
+      ]
+    ]
+  },
+  {
+    "variant": ".209",
+    "fall": "different-town",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren",
+      "npc.marta"
+    ],
+    "neu": [
+      "npc.marta"
+    ],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ]
+    ],
+    "erinnerung": [
+      [
+        "npc.mother_wren",
+        "npc.marta"
+      ]
+    ]
+  },
+  {
+    "variant": ".209",
+    "fall": "two-martas",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren",
+      "npc.marta"
+    ],
+    "neu": [
+      "npc.marta"
+    ],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ]
+    ],
+    "erinnerung": [
+      [
+        "npc.mother_wren",
+        "npc.marta"
+      ]
+    ]
+  },
+  {
+    "variant": ".209",
+    "fall": "another-surname",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren",
+      "npc.marta_voss"
+    ],
+    "neu": [
+      "npc.marta_voss"
+    ],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ]
+    ],
+    "erinnerung": [
+      [
+        "npc.mother_wren",
+        "npc.marta_voss"
+      ]
+    ]
+  },
+  {
+    "variant": ".209",
+    "fall": "explicit-distinct",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren",
+      "npc.marta"
+    ],
+    "neu": [
+      "npc.marta"
+    ],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ]
+    ],
+    "erinnerung": [
+      [
+        "npc.mother_wren",
+        "npc.marta"
+      ]
+    ]
+  },
+  {
+    "variant": ".209",
+    "fall": "unrecorded-homonym",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren",
+      "npc.marta"
+    ],
+    "neu": [
+      "npc.marta"
+    ],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ]
+    ],
+    "erinnerung": [
+      [
+        "npc.mother_wren",
+        "npc.marta"
+      ]
+    ]
+  },
+  {
+    "variant": "symmetrisch",
+    "fall": "original",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren"
+    ],
+    "neu": [],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ],
+      [
+        3,
+        "person.new",
+        "npc_identity"
+      ],
+      [
+        6,
+        "memory",
+        "npc_continuity"
+      ]
+    ],
+    "erinnerung": []
+  },
+  {
+    "variant": "symmetrisch",
+    "fall": "don-donna",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren",
+      "npc.don"
+    ],
+    "neu": [
+      "npc.don"
+    ],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ]
+    ],
+    "erinnerung": [
+      [
+        "npc.mother_wren"
+      ]
+    ]
+  },
+  {
+    "variant": "symmetrisch",
+    "fall": "different-town",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren"
+    ],
+    "neu": [],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ],
+      [
+        3,
+        "person.new",
+        "npc_identity"
+      ],
+      [
+        6,
+        "memory",
+        "npc_continuity"
+      ]
+    ],
+    "erinnerung": []
+  },
+  {
+    "variant": "symmetrisch",
+    "fall": "two-martas",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren"
+    ],
+    "neu": [],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ],
+      [
+        3,
+        "person.new",
+        "npc_identity"
+      ],
+      [
+        6,
+        "memory",
+        "npc_continuity"
+      ]
+    ],
+    "erinnerung": []
+  },
+  {
+    "variant": "symmetrisch",
+    "fall": "another-surname",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren",
+      "npc.marta_voss"
+    ],
+    "neu": [
+      "npc.marta_voss"
+    ],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ]
+    ],
+    "erinnerung": [
+      [
+        "npc.mother_wren",
+        "npc.marta_voss"
+      ]
+    ]
+  },
+  {
+    "variant": "symmetrisch",
+    "fall": "explicit-distinct",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren",
+      "npc.marta"
+    ],
+    "neu": [
+      "npc.marta"
+    ],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ]
+    ],
+    "erinnerung": [
+      [
+        "npc.mother_wren",
+        "npc.marta"
+      ]
+    ]
+  },
+  {
+    "variant": "symmetrisch",
+    "fall": "unrecorded-homonym",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren"
+    ],
+    "neu": [],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ],
+      [
+        3,
+        "person.new",
+        "npc_identity"
+      ],
+      [
+        6,
+        "memory",
+        "npc_continuity"
+      ]
+    ],
+    "erinnerung": []
+  },
+  {
+    "variant": "ort_rolle",
+    "fall": "original",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren",
+      "npc.marta_halloran"
+    ],
+    "neu": [],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ]
+    ],
+    "erinnerung": [
+      [
+        "npc.mother_wren",
+        "npc.marta_halloran"
+      ]
+    ]
+  },
+  {
+    "variant": "ort_rolle",
+    "fall": "don-donna",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren",
+      "npc.don"
+    ],
+    "neu": [
+      "npc.don"
+    ],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ]
+    ],
+    "erinnerung": [
+      [
+        "npc.mother_wren"
+      ]
+    ]
+  },
+  {
+    "variant": "ort_rolle",
+    "fall": "different-town",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren",
+      "npc.marta"
+    ],
+    "neu": [
+      "npc.marta"
+    ],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ]
+    ],
+    "erinnerung": [
+      [
+        "npc.mother_wren",
+        "npc.marta"
+      ]
+    ]
+  },
+  {
+    "variant": "ort_rolle",
+    "fall": "two-martas",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren",
+      "npc.marta"
+    ],
+    "neu": [
+      "npc.marta"
+    ],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ]
+    ],
+    "erinnerung": [
+      [
+        "npc.mother_wren",
+        "npc.marta"
+      ]
+    ]
+  },
+  {
+    "variant": "ort_rolle",
+    "fall": "another-surname",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren",
+      "npc.marta_voss"
+    ],
+    "neu": [
+      "npc.marta_voss"
+    ],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ]
+    ],
+    "erinnerung": [
+      [
+        "npc.mother_wren",
+        "npc.marta_voss"
+      ]
+    ]
+  },
+  {
+    "variant": "ort_rolle",
+    "fall": "explicit-distinct",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren",
+      "npc.marta"
+    ],
+    "neu": [
+      "npc.marta"
+    ],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ]
+    ],
+    "erinnerung": [
+      [
+        "npc.mother_wren",
+        "npc.marta"
+      ]
+    ]
+  },
+  {
+    "variant": "ort_rolle",
+    "fall": "unrecorded-homonym",
+    "anwesend": [
+      "pc",
+      "npc.mother_wren",
+      "npc.marta_halloran"
+    ],
+    "neu": [],
+    "ablehnungen": [
+      [
+        4,
+        "fact",
+        "engine_owned_fact"
+      ]
+    ],
+    "erinnerung": [
+      [
+        "npc.mother_wren",
+        "npc.marta_halloran"
+      ]
+    ]
+  }
+]

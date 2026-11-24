@@ -1,0 +1,25 @@
+{
+  "id": 118,
+  "role": "planner",
+  "turn": 707,
+  "sha256_original_error_body": "1fd1e0b9f2efc5c92b0d23535606ff6776255452847d551c3c074b68862a4b1f",
+  "generationId": "gen-1795512880-657V3jk4KwnaFcJTeL9d",
+  "ended_ms": 1795512880620,
+  "min_next_request_at_ms": 1795513180620,
+  "reserved_usd": "0.0374923056",
+  "raw_size": 625,
+  "keys": [
+    "error",
+    "user_id"
+  ],
+  "metadata_lookup": {
+    "status": 404,
+    "generationId": "gen-1795512880-657V3jk4KwnaFcJTeL9d",
+    "response": {
+      "error": {
+        "code": 404,
+        "message": "Generation gen-1795512880-657V3jk4KwnaFcJTeL9d not found"
+      }
+    }
+  }
+}

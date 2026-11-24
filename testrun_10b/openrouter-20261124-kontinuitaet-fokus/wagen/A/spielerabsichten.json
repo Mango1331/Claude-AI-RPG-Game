@@ -1,0 +1,10 @@
+[
+  {
+    "n": 1,
+    "seq": 1795512776743,
+    "op": "play",
+    "text": "I'll wait here for Tam and take my share of the hauling down to Ashbridge. There's time for a breather first. I find a patch of shade in the yard and hold out a hand for the dog to sniff if he likes.",
+    "intent_before_narration": "Rest in the mill yard, then accompany Tam and the loaded cart down to Ashbridge when loading is finished. No separate destination or trade.",
+    "at": "2026-11-24T09:32:57.693Z"
+  }
+]

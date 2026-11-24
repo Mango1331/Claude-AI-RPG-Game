@@ -1,0 +1,35 @@
+[
+  {
+    "n": 1,
+    "inputMessageIndex": 17,
+    "timing": {
+      "marks": {
+        "click": 98535,
+        "lastRenderedChange": 136597.90000000037,
+        "firstProse": 107442.09999999963,
+        "confirmedSave": 136661.79999999888,
+        "worldCommit": 136580.40000000037,
+        "worldTimesInferred": false,
+        "ready": 136666.90000000037
+      },
+      "world": {
+        "id": 18,
+        "committed_at_ms": 136580.40000000037,
+        "persisted_at_ms": 136661.79999999888,
+        "extraction_validation_wait_ms": 18832,
+        "save_readback_ms": 81,
+        "total_ms": 18913,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "\"Part's all I've got,\" Bren said, and grinned through the pain."
+    },
+    "checked": {
+      "world": "324724b04ffa6da4d2d38e8df043ae0f412ae90dc55d39947c08a7edf9d9861f",
+      "events": "cbe702fbcea2a620dcc44d9ea0b83c4da518f0d03fa90ca6b0e5f88907436a96",
+      "messages": 19
+    },
+    "elapsedIncludingReloadMs": 39953
+  }
+]

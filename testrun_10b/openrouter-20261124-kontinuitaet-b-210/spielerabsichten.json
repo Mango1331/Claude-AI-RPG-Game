@@ -1,0 +1,178 @@
+[
+  {
+    "n": 1,
+    "seq": 1795512466715,
+    "op": "play",
+    "text": "Lead on, Dann. I'll come as far as the house and hear what your mother wants to say. We can talk about the fee by the fire.",
+    "intent_before_narration": "Accompany Dann to the farmhouse to hear his mother out. Decide on the journey and any payment after speaking with her.",
+    "at": "2026-11-24T09:27:47.377Z"
+  },
+  {
+    "n": 2,
+    "seq": 1795512501662,
+    "op": "play",
+    "text": "I'm Alaric. The walk and the wait are my gift, Lia. Wren can tell me her own fee, and I'll bring you her answer. Before I try the road, which way stays out of the ford in this weather?",
+    "intent_before_narration": "Accept the errand for free and ask Lia or Dann for a route that avoids the ford. Listen at the hearth.",
+    "at": "2026-11-24T09:28:22.540Z"
+  },
+  {
+    "n": 3,
+    "seq": 1795512548178,
+    "op": "play",
+    "text": "I take the bowl Lia set out and eat the broth with a slice off the loaf. Dann, would you mind walking me to the main track when I'm done? I'd rather get the first turning right, and you can be back with your family in a few minutes.",
+    "intent_before_narration": "Eat Lia's offered food and ask Dann to accompany me only as far as the main track, leaving him free to decline.",
+    "at": "2026-11-24T09:29:09.097Z"
+  },
+  {
+    "n": 4,
+    "seq": 1795512593183,
+    "op": "play",
+    "text": "I tuck Lia's wrapped bread inside my coat and set out for Ashbridge. West along the main track, then north at the broken wheel. I'll take the ridge road over those two stone bridges.",
+    "intent_before_narration": "Carry the bread and travel independently to Ashbridge, following Dann's marked ridge route.",
+    "at": "2026-11-24T09:29:53.753Z"
+  },
+  {
+    "n": 5,
+    "seq": 1795512808446,
+    "op": "play",
+    "text": "I can lift, if you can tell me where you want it. I've a message to get to Ashbridge, but I can spare a few minutes. I lay my staff aside and take the weight of the wheel so she can line it up.",
+    "intent_before_narration": "Pause briefly to help the carter lift her wheel under her direction, while keeping the errand to Ashbridge.",
+    "at": "2026-11-24T09:33:28.993Z"
+  },
+  {
+    "n": 6,
+    "seq": 1795512857788,
+    "op": "play",
+    "text": "I get clear of the hooves and put the cart between Bracken and me. I'll wait down the road while you settle him! I call to the carter as I make my escape.",
+    "intent_before_narration": "Escape the encounter without hurting Bracken, giving his owner room to quiet him.",
+    "at": "2026-11-24T09:34:18.454Z"
+  },
+  {
+    "n": 7,
+    "seq": 1795513181074,
+    "op": "play",
+    "text": "I scramble back from Bracken toward the bridge parapet, trying to put a few paces between us. Easy, lad. I'll give you all the road you want.",
+    "intent_before_narration": "Use the retreat action to increase distance from the mule before attempting to flee again.",
+    "at": "2026-11-24T09:39:42.049Z"
+  },
+  {
+    "n": 8,
+    "seq": 1795513215334,
+    "op": "play",
+    "text": "I slip along the parapet and run clear of Bracken while the carter has hold of his rope. I want off this bridge and out of his sight.",
+    "intent_before_narration": "Flee from the mule, seeking distance and cover to end the encounter without injuring the animal.",
+    "at": "2026-11-24T09:40:15.934Z"
+  },
+  {
+    "n": 9,
+    "seq": 1795513241145,
+    "op": "play",
+    "text": "Bracken is going to trample us both. I cast Arcane Wave to shove him clear of us and give the carter a chance to get her feet under her.",
+    "intent_before_narration": "Use the listed Arcane Wave spell against the mule in self-defense, aiming to create room to escape.",
+    "at": "2026-11-24T09:40:41.849Z"
+  },
+  {
+    "n": 10,
+    "seq": 1795513264649,
+    "op": "play",
+    "text": "With Bracken roped short at last I snatch up my staff and make a break for it, out of sight round the bend. Hold him there a moment!",
+    "intent_before_narration": "Flee again while the carter has the lead short, taking my nearby staff if possible.",
+    "at": "2026-11-24T09:41:05.159Z"
+  },
+  {
+    "n": 11,
+    "seq": 1795513429531,
+    "op": "play",
+    "text": "I can't take another hoof to the ribs. I call for the carter to stand clear and cast Flame Lance at Bracken before he can run me down again.",
+    "intent_before_narration": "Use Flame Lance against the attacking mule to end the immediate danger to Alaric.",
+    "at": "2026-11-24T09:43:50.373Z"
+  },
+  {
+    "n": 12,
+    "seq": 1795513456494,
+    "op": "play",
+    "text": "He can barely stand. I leave him to his owner and make for the far side of the bridge while he's swaying.",
+    "intent_before_narration": "Try to flee instead of striking the badly wounded mule again.",
+    "at": "2026-11-24T09:44:17.608Z"
+  },
+  {
+    "n": 13,
+    "seq": 1795513477839,
+    "op": "play",
+    "text": "I reach for the staff right beside me and swing it to stop that last kick. I want to get out from under him alive.",
+    "intent_before_narration": "Use a basic attack in self-defense against the mule still kicking at Alaric.",
+    "at": "2026-11-24T09:44:38.963Z"
+  },
+  {
+    "n": 14,
+    "seq": 1795513634840,
+    "op": "play",
+    "text": "Sixteen years. I'm sorry for your loss. I sit on the bridge with my back to the stone and try to catch my breath. Is there someone near here who can help with you and the cart? I'm in poor shape to move it now.",
+    "intent_before_narration": "Acknowledge the carter's loss, pause to catch my breath, and find out what local help is available for both of us.",
+    "at": "2026-11-24T09:47:15.740Z"
+  },
+  {
+    "n": 15,
+    "seq": 1795513677523,
+    "op": "play",
+    "text": "I'll get word to Osser when I can stand. I unwrap Lia's bread and break it in two, laying a share beside the carter within reach. I eat my half and rest here for one hour.",
+    "intent_before_narration": "Share the carried bread with the carter and rest an hour at the bridge, with the intention of fetching help afterward.",
+    "at": "2026-11-24T09:47:58.363Z"
+  },
+  {
+    "n": 16,
+    "seq": 1795513705608,
+    "op": "play",
+    "text": "I try my feet, leaning on my staff. I can stand. I'll go for Osser now. I follow her directions back by the first bridge to the mill, and tell Osser the carter needs help recovering her load.",
+    "intent_before_narration": "Go to the mill and inform Osser about the carter and her stranded load. Ask him to help her.",
+    "at": "2026-11-24T09:48:26.430Z"
+  },
+  {
+    "n": 17,
+    "seq": 1795513741584,
+    "op": "play",
+    "text": "It's Birta's load and she'll speak for herself about your price. Thank you for going out to her. I'll take the ridge road on to Ashbridge now, slow as I need to. There's a boy waiting for Mother Wren.",
+    "intent_before_narration": "Leave Birta to settle her own price with Osser and resume the original journey to Ashbridge at a manageable pace.",
+    "at": "2026-11-24T09:49:02.569Z"
+  },
+  {
+    "n": 18,
+    "seq": 1795513767005,
+    "op": "play",
+    "text": "I'm carrying word of a sick boy to Mother Wren. If the gate is open to me, I go straight to the green door behind the tithe barn and knock. Wren? Lia Halloran sent me about her son Tam.",
+    "intent_before_narration": "Identify my business to the guard, go to Wren's home, and announce Lia's message.",
+    "at": "2026-11-24T09:49:27.820Z"
+  },
+  {
+    "n": 19,
+    "seq": 1795513827474,
+    "op": "play",
+    "text": "I haven't the strength for another cart today. I go round it on foot through the shallow edge of the lane and knock at the green door. Mother Wren, Lia Halloran's Tam is nineteen, three days fevered after a soaking at the ford. Wet rattle in his chest, he can't bring anything up and can't keep broth down past midday. Serra says it's settling deeper. Can you come?",
+    "intent_before_narration": "Pass the stalled cart on foot, reach Wren's door and deliver Lia's full message, asking if Wren can visit.",
+    "at": "2026-11-24T09:50:28.821Z"
+  },
+  {
+    "n": 20,
+    "seq": 1795513870371,
+    "op": "play",
+    "text": "Two coppers, then. I pay the fellow in the leather apron for passage and use the crossing he pointed out. My errand is with the woman behind the green door, and I'd like to reach her before dark.",
+    "intent_before_narration": "Pay the requested two coppers to the man asking, pass the obstruction peacefully, and go to Wren's door.",
+    "at": "2026-11-24T09:51:11.398Z"
+  },
+  {
+    "n": 21,
+    "seq": 1795513910116,
+    "op": "play",
+    "text": "Mother Wren? I'm Alaric. Lia Halloran sent me for her son Tam, nineteen. Fever for three days after the ford. There's a wet rattle he can't cough up, and he sweats through the sheets and brings his broth back up after midday. Serra saw him yesterday and he's worse this morning. What would a house call cost them, and can you come?",
+    "intent_before_narration": "Deliver Lia's observations directly to the healer, ask her fee and whether she'll come, and wait for her answer.",
+    "at": "2026-11-24T09:51:51.045Z"
+  },
+  {
+    "n": 22,
+    "seq": 1795513941501,
+    "op": "play",
+    "text": "Fetch your donkey, Mother Wren. I won't hold you up by limping along in the mud. Tell Lia I got her message through, and when I'm walking properly I'll come see how Tam is getting on. May I sit here a while before I find a bed in town?",
+    "intent_before_narration": "Decline to accompany Wren tonight because of the injury. Ask her to go on and take Lia word, and request a seat before seeking lodging.",
+    "at": "2026-11-24T09:52:22.429Z"
+  }
+]

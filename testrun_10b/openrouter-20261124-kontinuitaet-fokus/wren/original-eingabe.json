@@ -1,0 +1,8 @@
+{
+  "archive": "openrouter-20261124-trust-c-208/original-chat.jsonl.gz",
+  "messageIndex": 45,
+  "prefix_sha256": "e97f6726bc11a4431227ded6b1263860db35eae79c3fbb2d3cc23df1496db21b",
+  "text": "I follow them inside and hand Wren her bag so she has everything she needs at Tam's bedside. Marta, she said you could keep the harvest silver for lamp oil. Let her tell you the rest herself. I take the wet things out of their way and leave them room to work.",
+  "intent": "Join Wren and the Halloran family in the house and hand back her carried medicine bag at Tam's bedside. No new care decision, payment or ownership of the bag.",
+  "physical_turn_tag": 301
+}

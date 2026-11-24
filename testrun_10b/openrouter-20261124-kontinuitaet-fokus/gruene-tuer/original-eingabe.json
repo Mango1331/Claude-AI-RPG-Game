@@ -1,0 +1,8 @@
+{
+  "archive": "openrouter-20261124-kontinuitaet-a-209/original-chat.jsonl.gz",
+  "messageIndex": 27,
+  "prefix_sha256": "6700f998677c1bc15fc99b802f9ada919da9bca55115aec56008d1e48a888362",
+  "text": "I make my way to the weathered green door and knock. Mother Wren? I've come from the Halloran steading, south road. Serra sent us to you about Tam.",
+  "intent": "Reach the green door and ask to speak to Wren on Tam's behalf.",
+  "physical_turn_tag": 401
+}

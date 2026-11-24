@@ -1,0 +1,35 @@
+[
+  {
+    "n": 1,
+    "inputMessageIndex": 27,
+    "timing": {
+      "marks": {
+        "click": 2669352.3999999985,
+        "lastRenderedChange": 2692730.8999999985,
+        "firstProse": 2676859,
+        "confirmedSave": 2693078.799999999,
+        "worldCommit": 2692641,
+        "worldTimesInferred": false,
+        "ready": 2693102.1999999993
+      },
+      "world": {
+        "id": 28,
+        "committed_at_ms": 2692641,
+        "persisted_at_ms": 2693078.799999999,
+        "extraction_validation_wait_ms": 11978,
+        "save_readback_ms": 438,
+        "total_ms": 12415,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "His knuckles had barely left the wood when a bolt slid back inside, and the door opened on a chain's width first, then all the way."
+    },
+    "checked": {
+      "world": "a87f5a0f9d5f239518c449ef3e20dba6856960f96b30f4e238a7f6ab9b268b9b",
+      "events": "96308b4f9c5ab2afc040cac683aa1bbd3d9493cd7ac24cb14431753e13eda7ff",
+      "messages": 29
+    },
+    "elapsedIncludingReloadMs": 29056
+  }
+]

@@ -1,0 +1,35 @@
+[
+  {
+    "n": 1,
+    "inputMessageIndex": 43,
+    "timing": {
+      "marks": {
+        "click": 16662.5,
+        "lastRenderedChange": 27974.800000000745,
+        "firstProse": 21063.200000001118,
+        "confirmedSave": 33151.800000000745,
+        "worldCommit": 32985.10000000149,
+        "worldTimesInferred": false,
+        "ready": 33155
+      },
+      "world": {
+        "id": 44,
+        "committed_at_ms": 32985.10000000149,
+        "persisted_at_ms": 33151.800000000745,
+        "extraction_validation_wait_ms": 4843,
+        "save_readback_ms": 167,
+        "total_ms": 5010,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "\"Wetter, maybe.\""
+    },
+    "checked": {
+      "world": "a02632ff7c77104e0c0833fd5134d6a5dc58c49572022f505824f864ca766c26",
+      "events": "bf760615d6d8dd2857d7f4c57217b6d6194b3f4d65a90063d7c06283108d79e6",
+      "messages": 45
+    },
+    "elapsedIncludingReloadMs": 19337
+  }
+]

@@ -1,0 +1,138 @@
+[
+  {
+    "n": 1,
+    "seq": 1795510289563,
+    "op": "play",
+    "text": "Lead on, Dann. I'll come as far as the house and hear what your mother wants to say. We can talk about the fee by the fire.",
+    "intent_before_narration": "Accompany Dann to the farmhouse to hear his mother out. Decide on the journey and any payment after speaking with her.",
+    "at": "2026-11-24T08:51:30.144Z"
+  },
+  {
+    "n": 2,
+    "seq": 1795510330141,
+    "op": "play",
+    "text": "I will go for you. Keep your silver for Mother Wren. While Meg pours the broth, I ask Dann which road a stranger can follow to Ashbridge in this rain.",
+    "intent_before_narration": "Accept the errand without a fee and get directions over broth before leaving.",
+    "at": "2026-11-24T08:52:10.510Z"
+  },
+  {
+    "n": 3,
+    "seq": 1795510359028,
+    "op": "play",
+    "text": "I drink the broth and return Meg's bowl with thanks. Then I'm off down the south road, keeping the ditch to my left. I'll look for that big oak fork on the way to Ashbridge.",
+    "intent_before_narration": "Finish the broth and return the bowl. Set out for Ashbridge along Dann's route, watching for his landmark.",
+    "at": "2026-11-24T08:52:39.374Z"
+  },
+  {
+    "n": 4,
+    "seq": 1795510398378,
+    "op": "play",
+    "text": "I pay the guard a copper for the gate. The fire sounds good, but I've a sick lad waiting. Could you point me toward the tithe barn?",
+    "intent_before_narration": "Pay the guard's gate toll and ask for directions to the tithe barn. Pass up the guild fire for now.",
+    "at": "2026-11-24T08:53:19.048Z"
+  },
+  {
+    "n": 5,
+    "seq": 1795510436489,
+    "op": "play",
+    "text": "I make my way to the weathered green door and knock. Mother Wren? I've come from the Halloran steading, south road. Serra sent us to you about Tam.",
+    "intent_before_narration": "Reach the green door and ask to speak to Wren on Tam's behalf.",
+    "at": "2026-11-24T08:53:57.038Z"
+  },
+  {
+    "n": 6,
+    "seq": 1795510471966,
+    "op": "play",
+    "text": "I go in and take the offered bench. The fever's on its third day. His mother said the cough was hollow, with nothing coming up. By evening he's talking to people who aren't there. This morning he asked for bread but couldn't finish it. Will you go see him? His mother asked what it costs and says they'll pay what they can, when they can.",
+    "intent_before_narration": "Accept Wren's invitation inside, relay the observations and the family's terms, and hear her decision about the house call.",
+    "at": "2026-11-24T08:54:33.774Z"
+  },
+  {
+    "n": 7,
+    "seq": 1795510514315,
+    "op": "play",
+    "text": "Aye, we'll get you to Tam together. Hand me the bundle if you like, and take my elbow. At the chandler's row I'll ask how they're getting on before we leave town.",
+    "intent_before_narration": "Agree to escort Wren, offer to carry her bundle, and check on the fire on the way out.",
+    "at": "2026-11-24T08:55:16.183Z"
+  },
+  {
+    "n": 8,
+    "seq": 1795510565722,
+    "op": "play",
+    "text": "I keep pace with Wren the rest of the way to the Halloran kitchen. When we reach the house I call for Dann to hold the door and set Wren's bundle where she can reach it.",
+    "intent_before_narration": "Reach the Halloran kitchen together, enlist Dann at the doorway, and put Wren's bundle within her reach.",
+    "at": "2026-11-24T08:56:07.828Z"
+  },
+  {
+    "n": 9,
+    "seq": 1795510619508,
+    "op": "play",
+    "text": "I'll stay within earshot tonight. I settle by the kitchen fire and give my boots a chance to dry. Is there somewhere to hang a wet cloak, Dann?",
+    "intent_before_narration": "Agree to remain available in the kitchen tonight, warm up, and ask Dann where to dry my cloak.",
+    "at": "2026-11-24T08:57:03.876Z"
+  },
+  {
+    "n": 10,
+    "seq": 1795510649373,
+    "op": "play",
+    "text": "I'll rest by the kitchen fire for two hours, or until Wren calls for me sooner. Dann, do you mind if I hang my cloak up here?",
+    "intent_before_narration": "Rest for two hours at most and be available to help earlier if called. Ask about the cloak.",
+    "at": "2026-11-24T08:57:32.493Z"
+  },
+  {
+    "n": 11,
+    "seq": 1795510706775,
+    "op": "play",
+    "text": "I've slept in worse than this chair. Wake me if you need a lift, Wren. I'll sleep here until dawn unless you call sooner.",
+    "intent_before_narration": "Sleep in the kitchen until dawn, available if Wren needs me first.",
+    "at": "2026-11-24T08:58:30.792Z"
+  },
+  {
+    "n": 12,
+    "seq": 1795510767372,
+    "op": "play",
+    "text": "I cut a heel of bread and a sliver of cheese for breakfast, then fold Dann's blanket and hang my now-dry cloak over my arm. When Wren comes back, I ask if she still needs me for the morning.",
+    "intent_before_narration": "Eat the offered breakfast, collect my cloak, and check what help Wren needs before making another commitment.",
+    "at": "2026-11-24T08:59:30.368Z"
+  },
+  {
+    "n": 13,
+    "seq": 1795510812514,
+    "op": "play",
+    "text": "No word needed over me, Wren. I got my breakfast, and three bites for Tam is good news. Morning, Dann. You look as wet as I was yesterday. Are the animals all right after the rain?",
+    "intent_before_narration": "Decline a fee or formal thanks and ask Dann about the condition of the animals. Hear him out before deciding where to go.",
+    "at": "2026-11-24T09:00:15.613Z"
+  },
+  {
+    "n": 14,
+    "seq": 1795510854319,
+    "op": "play",
+    "text": "Alaric. Pleased to have a name to go with the borrowed blanket, Dann. I'll walk down with you and help open that drain before I go. Show me which spade is yours.",
+    "intent_before_narration": "Give Dann my name, accept a short trip to the low field to help clear the drain, and ask him for the proper tool.",
+    "at": "2026-11-24T09:00:57.306Z"
+  },
+  {
+    "n": 15,
+    "seq": 1795510903505,
+    "op": "play",
+    "text": "Alaric. And yes, a mage, but it's a spade I want just now. I clear the last of the silt on my side and watch whether the furrows start to empty. Does your land drain to this ditch too, Mr Merrick?",
+    "intent_before_narration": "Finish my side of the drain with Dann, check whether it works, and ask Aldous about his interest in it.",
+    "at": "2026-11-24T09:01:46.166Z"
+  },
+  {
+    "n": 16,
+    "seq": 1795510957080,
+    "op": "play",
+    "text": "I give Dann his spade back and listen beside the ditch. What did that bell mean thirty years ago, Mr Merrick? I'd like to know what I've heard before I take to the road.",
+    "intent_before_narration": "Return the borrowed spade, listen, and ask Merrick about the bell before deciding whether to follow it.",
+    "at": "2026-11-24T09:02:39.563Z"
+  },
+  {
+    "n": 17,
+    "seq": 1795510998285,
+    "op": "play",
+    "text": "The bells can keep their morning, Mr Merrick. Thank you for the tale. I walk back with Dann as far as the farm gate and shake his hand there. Tell Meg her broth got me all the way to Ashbridge.",
+    "intent_before_narration": "Leave the bell mystery for another day, accompany Dann only to the gate, and say goodbye there.",
+    "at": "2026-11-24T09:03:19.974Z"
+  }
+]

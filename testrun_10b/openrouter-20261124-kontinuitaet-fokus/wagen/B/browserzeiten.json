@@ -1,0 +1,35 @@
+[
+  {
+    "n": 1,
+    "inputMessageIndex": 33,
+    "timing": {
+      "marks": {
+        "click": 16195.699999999255,
+        "lastRenderedChange": 78714.5,
+        "firstProse": 36006.300000000745,
+        "confirmedSave": 78883.30000000075,
+        "worldCommit": 78687.80000000075,
+        "worldTimesInferred": false,
+        "ready": 78894.90000000037
+      },
+      "world": {
+        "id": 34,
+        "committed_at_ms": 78687.80000000075,
+        "persisted_at_ms": 78883.30000000075,
+        "extraction_validation_wait_ms": 27987,
+        "save_readback_ms": 196,
+        "total_ms": 28183,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The dog considered the outstretched hand from a distance of three stones' throw, which for a dog is a great deal of thinking."
+    },
+    "checked": {
+      "world": "1492145fd261b46313e996368a5ff5f8672e5adbd6e400b4bdd570c7b28e78cd",
+      "events": "053361dd9d18b3a538db00b68d5a762656dae45f597e204a23b81eae05e3c86e",
+      "messages": 35
+    },
+    "elapsedIncludingReloadMs": 64987
+  }
+]

@@ -1,0 +1,38 @@
+{
+  "plan": {
+    "n": 41,
+    "referenceInput": 508950,
+    "candidateInput": 513202,
+    "referenceEqualsPhysicalArray": 41,
+    "candidateEqualsPhysicalArray": 0,
+    "minDelta": 103,
+    "maxDelta": 132
+  },
+  "extract": {
+    "n": 41,
+    "referenceInput": 562524,
+    "candidateInput": 565245,
+    "referenceEqualsPhysicalArray": 41,
+    "candidateEqualsPhysicalArray": 0,
+    "minDelta": -15,
+    "maxDelta": 165
+  },
+  "extract_repair": {
+    "n": 9,
+    "referenceInput": 131289,
+    "candidateInput": 131828,
+    "referenceEqualsPhysicalArray": 9,
+    "candidateEqualsPhysicalArray": 0,
+    "minDelta": 48,
+    "maxDelta": 139
+  },
+  "plan_repair": {
+    "n": 1,
+    "referenceInput": 12692,
+    "candidateInput": 12795,
+    "referenceEqualsPhysicalArray": 1,
+    "candidateEqualsPhysicalArray": 0,
+    "minDelta": 103,
+    "maxDelta": 103
+  }
+}

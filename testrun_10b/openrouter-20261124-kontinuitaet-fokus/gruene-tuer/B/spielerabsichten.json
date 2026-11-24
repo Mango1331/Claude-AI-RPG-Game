@@ -1,0 +1,10 @@
+[
+  {
+    "n": 1,
+    "seq": 1795513351829,
+    "op": "play",
+    "text": "I make my way to the weathered green door and knock. Mother Wren? I've come from the Halloran steading, south road. Serra sent us to you about Tam.",
+    "intent_before_narration": "Reach the green door and ask to speak to Wren on Tam's behalf.",
+    "at": "2026-11-24T09:42:33.169Z"
+  }
+]

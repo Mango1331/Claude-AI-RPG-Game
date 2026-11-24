@@ -1,0 +1,233 @@
+[
+  {
+    "n": 1,
+    "inputMessageIndex": 19,
+    "timing": {
+      "marks": {
+        "click": 131984.69999999925,
+        "lastRenderedChange": 177900.59999999963,
+        "firstProse": 143304.90000000037,
+        "confirmedSave": 178482.19999999925,
+        "worldCommit": 177706.59999999963,
+        "worldTimesInferred": false,
+        "ready": 178508.09999999963
+      },
+      "world": {
+        "id": 20,
+        "committed_at_ms": 177706.59999999963,
+        "persisted_at_ms": 178482.19999999925,
+        "extraction_validation_wait_ms": 18712,
+        "save_readback_ms": 776,
+        "total_ms": 19487,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "They crossed the yard at a run, heads down against the rain, and came into the house through a side door straight into the warmth of the kitchen."
+    },
+    "checked": {
+      "world": "826ddf2f621f6f3e6dc56111beb2234f7faef019965ab355402e0fa399ebafe7",
+      "events": "82b3ebea98c120774987aab1aaff2e5f4895f5ba8a655076a1f1f3179f3ae886",
+      "messages": 21
+    },
+    "elapsedIncludingReloadMs": 66511
+  },
+  {
+    "n": 2,
+    "inputMessageIndex": 21,
+    "timing": {
+      "marks": {
+        "click": 207797.90000000037,
+        "lastRenderedChange": 248301.30000000075,
+        "firstProse": 232022.5,
+        "confirmedSave": 266909,
+        "worldCommit": 266013.30000000075,
+        "worldTimesInferred": false,
+        "ready": 266929.30000000075
+      },
+      "world": {
+        "id": 22,
+        "committed_at_ms": 266013.30000000075,
+        "persisted_at_ms": 266909,
+        "extraction_validation_wait_ms": 16255,
+        "save_readback_ms": 896,
+        "total_ms": 17151,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The fire popped."
+    },
+    "checked": {
+      "world": "f968f72b7bebbb41058cff37c94b5f2b15d1b27e8d82af1305504dc8b7e3ec39",
+      "events": "c3e71c56e540e272c7de05f3d20a630c172af9f8f76f6c423704a2b6dcdd05ef",
+      "messages": 23
+    },
+    "elapsedIncludingReloadMs": 73971
+  },
+  {
+    "n": 3,
+    "inputMessageIndex": 23,
+    "timing": {
+      "marks": {
+        "click": 291023,
+        "lastRenderedChange": 311724.4000000004,
+        "firstProse": 300905.4000000004,
+        "confirmedSave": 345690.80000000075,
+        "worldCommit": 345549.30000000075,
+        "worldTimesInferred": false,
+        "ready": 345698.4000000004
+      },
+      "world": {
+        "id": 24,
+        "committed_at_ms": 345549.30000000075,
+        "persisted_at_ms": 345690.80000000075,
+        "extraction_validation_wait_ms": 33373,
+        "save_readback_ms": 142,
+        "total_ms": 33514,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "Halloran pressed a heel of bread and a piece of wrapped cheese into his hand at the door—no argument offered, just done—and Dann held the door against the wind while he got out into the rain."
+    },
+    "checked": {
+      "world": "46be50ffb3fbc72039ec424d559c2842572774dab8b41df027d6bc509ea5e204",
+      "events": "0d7de6483caa9163456945228435a4dbacbce8d795ef5ab24feecaa8927cfbea",
+      "messages": 25
+    },
+    "elapsedIncludingReloadMs": 57516
+  },
+  {
+    "n": 4,
+    "inputMessageIndex": 25,
+    "timing": {
+      "marks": {
+        "click": 353793.5999999996,
+        "lastRenderedChange": 410765.0999999996,
+        "firstProse": 363746.4000000004,
+        "confirmedSave": 411036.30000000075,
+        "worldCommit": 410712.30000000075,
+        "worldTimesInferred": false,
+        "ready": 411044.30000000075
+      },
+      "world": {
+        "id": 26,
+        "committed_at_ms": 410712.30000000075,
+        "persisted_at_ms": 411036.30000000075,
+        "extraction_validation_wait_ms": 38894,
+        "save_readback_ms": 324,
+        "total_ms": 39218,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "He waved; the woman raised a hand back, then said something to the old man again, and both of them stayed in the doorway watching him cross."
+    },
+    "checked": {
+      "world": "c73bf03e0010daa0255fd69feb44f100bf9c0b1cc307999adcb4ffa981da6253",
+      "events": "6e13726925a835453673ad2f31bc77e2aff144590099b99a457474403493afc0",
+      "messages": 27
+    },
+    "elapsedIncludingReloadMs": 60250
+  },
+  {
+    "n": 5,
+    "inputMessageIndex": 27,
+    "timing": {
+      "marks": {
+        "click": 424719.4000000004,
+        "lastRenderedChange": 450919.5999999996,
+        "firstProse": 432111.80000000075,
+        "confirmedSave": 451019.69999999925,
+        "worldCommit": 450890.30000000075,
+        "worldTimesInferred": false,
+        "ready": 451027.69999999925
+      },
+      "world": {
+        "id": 28,
+        "committed_at_ms": 450890.30000000075,
+        "persisted_at_ms": 451019.69999999925,
+        "extraction_validation_wait_ms": 11324,
+        "save_readback_ms": 129,
+        "total_ms": 11453,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The woman took his answer with a shrug and turned back to the mill, and Alaric set off up the bank with the rain still needling down."
+    },
+    "checked": {
+      "world": "84bfc9f7504e1a183d3760af4c14dfd90c0114d7a2e99aee2a4a0852681adcaf",
+      "events": "1ba967a24c23c30641136455411d172dcc789eeb6120927eb6416c03689b5338",
+      "messages": 29
+    },
+    "elapsedIncludingReloadMs": 28542
+  },
+  {
+    "n": 6,
+    "inputMessageIndex": 29,
+    "timing": {
+      "marks": {
+        "click": 458868,
+        "lastRenderedChange": 482389,
+        "firstProse": 464811.69999999925,
+        "confirmedSave": 482514.5,
+        "worldCommit": 482344.9000000004,
+        "worldTimesInferred": false,
+        "ready": 482520.0999999996
+      },
+      "world": {
+        "id": 30,
+        "committed_at_ms": 482344.9000000004,
+        "persisted_at_ms": 482514.5,
+        "extraction_validation_wait_ms": 10898,
+        "save_readback_ms": 170,
+        "total_ms": 11068,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The staff stayed planted, and his voice carried over the rain."
+    },
+    "checked": {
+      "world": "b8528c905c929dec09b4bc820da1e7a23e6d8690fc22e5e724f617ffab7b1eb4",
+      "events": "f35eb8601288891a878aecc4b9f78e516d23dbfa8dacb87431f0c0a658ce3f3d",
+      "messages": 31
+    },
+    "elapsedIncludingReloadMs": 26058
+  },
+  {
+    "n": 7,
+    "inputMessageIndex": 31,
+    "timing": {
+      "marks": {
+        "click": 491634.19999999925,
+        "lastRenderedChange": 512670.69999999925,
+        "firstProse": 501537.5999999996,
+        "confirmedSave": 519613,
+        "worldCommit": 519413.0999999996,
+        "worldTimesInferred": false,
+        "ready": 519619.5
+      },
+      "world": {
+        "id": 32,
+        "committed_at_ms": 519413.0999999996,
+        "persisted_at_ms": 519613,
+        "extraction_validation_wait_ms": 6547,
+        "save_readback_ms": 200,
+        "total_ms": 6747,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The dogs let him pass with no more than turning heads."
+    },
+    "checked": {
+      "world": "3f5c6cb4a9fb9f825bc960332365bccd80c7b51e4d2f5123abbfd9a537ff0da7",
+      "events": "a144f4041617a056edfde5deefe25573a6ab0795c2b3ea8810af796de24a5c41",
+      "messages": 33
+    },
+    "elapsedIncludingReloadMs": 30198
+  }
+]

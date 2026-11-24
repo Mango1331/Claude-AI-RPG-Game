@@ -1,5 +1,9 @@
 # 10B-Spieltests
 
+## .209 und .210 · Kontakte, Reisen und Besitz über mehrere Züge
+
+Dieselbe Ausgangswelt auf dem Halloran-Hof führt in zwei eigenständig gespielte Verläufe. Sechs zusätzlich eingefrorene Ausgangsszenen prüfen einzelne Entscheidungen unter vergleichbaren Bedingungen. [Referenzspiel](openrouter-20261124-kontinuitaet-a-209/README.md) · [Kandidatenspiel](openrouter-20261124-kontinuitaet-b-210/README.md) · [Verworfener Pilot](openrouter-20261124-kontinuitaet-pilot-210/README.md) · [Gepaarte Szenen](openrouter-20261124-kontinuitaet-fokus/README.md) · [Weg mit Wren im Anschluss an C19/B](openrouter-20261124-kontinuitaet-zusatz-wren-210/README.md) · [Entscheidung und technische Abnahme](../recherche/AVERETH_210_KONTINUITAET.md)
+
 ## .208 · Natürliche OpenRouter-Spielreihen zum Narrator-Vertrauen
 
 Die Arme starten nach derselben Mage-Erschaffung. Die getrennten Spielverläufe sind aus den tatsächlich sichtbaren Angeboten und Antworten entstanden. Jeder bestätigte Zug enthält einen Vergleich der Welt und der Ereignisse vor und nach Reload. [Kandidat B](openrouter-20261124-trust-b-208/README.md) · [Kandidat C](openrouter-20261124-trust-c-208/README.md) · [Vergleich und Entscheidung](../recherche/USER11_208_ENTSCHEIDUNG.md)

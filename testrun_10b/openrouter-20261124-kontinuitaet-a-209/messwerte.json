@@ -1,0 +1,115 @@
+{
+  "arm": "A",
+  "candidate": "a854cd6759712571f078bff52e7fe439858b8454",
+  "route": "relace/fp4",
+  "physical_sends": 57,
+  "physical_refs_ended": 57,
+  "physical_roles": {
+    "planner": 17,
+    "narrator": 16,
+    "extractor": 24
+  },
+  "repeat_role_requests": {
+    "extractor": 8
+  },
+  "success": 57,
+  "player_inputs": 17,
+  "confirmed_st_turns": 17,
+  "provider_input": 747609,
+  "provider_output": 25956,
+  "provider_cache": 504192,
+  "provider_reasoning": 6964,
+  "usage_records": 57,
+  "provider_cost_usd": "0.0259068192",
+  "cost_records": 57,
+  "charged_or_reserved_usd": "0.0259068192",
+  "physical_duration_ms": 401176,
+  "median_ready_ms": 29275.5,
+  "by_role": {
+    "planner": {
+      "dispatched": 17,
+      "duration_ms": {
+        "n": 17,
+        "sum": 58604,
+        "mean": 3447.29,
+        "median": 2604,
+        "min": 1267,
+        "max": 9620
+      },
+      "prompt_tokens": 212765,
+      "completion_tokens": 1832,
+      "cost_usd": "0.0067592876"
+    },
+    "narrator": {
+      "dispatched": 16,
+      "duration_ms": {
+        "n": 16,
+        "sum": 153223,
+        "mean": 9576.44,
+        "median": 9360.5,
+        "min": 7092,
+        "max": 15898
+      },
+      "prompt_tokens": 195035,
+      "completion_tokens": 9185,
+      "cost_usd": "0.0073857499"
+    },
+    "extractor": {
+      "dispatched": 24,
+      "duration_ms": {
+        "n": 24,
+        "sum": 189349,
+        "mean": 7889.54,
+        "median": 6617.0,
+        "min": 3511,
+        "max": 16383
+      },
+      "prompt_tokens": 339809,
+      "completion_tokens": 14939,
+      "cost_usd": "0.0117617817"
+    }
+  },
+  "st_ms": {
+    "firstProse": {
+      "n": 16,
+      "sum": 127250,
+      "mean": 7953.12,
+      "median": 7617.5,
+      "min": 3911,
+      "max": 15976
+    },
+    "lastRenderedChange": {
+      "n": 16,
+      "sum": 323549,
+      "mean": 20221.81,
+      "median": 18953.5,
+      "min": 11557,
+      "max": 31380
+    },
+    "worldCommit": {
+      "n": 16,
+      "sum": 441951,
+      "mean": 27621.94,
+      "median": 28749.5,
+      "min": 17848,
+      "max": 37910
+    },
+    "confirmedSave": {
+      "n": 16,
+      "sum": 451567,
+      "mean": 28222.94,
+      "median": 29268.5,
+      "min": 18584,
+      "max": 38799
+    },
+    "ready": {
+      "n": 16,
+      "sum": 452234,
+      "mean": 28264.62,
+      "median": 29275.5,
+      "min": 18630,
+      "max": 38840
+    }
+  },
+  "all_reloads_match": true
+}

@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-24T09:42:04.491042+00:00",
+  "status": 404,
+  "result": {
+    "error": {
+      "code": 404,
+      "message": "Generation gen-1795512880-657V3jk4KwnaFcJTeL9d not found"
+    }
+  }
+}

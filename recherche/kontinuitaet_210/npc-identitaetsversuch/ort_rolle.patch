@@ -1,0 +1,19 @@
+diff --git a/avereth-engine/src/v4/world.js b/avereth-engine/src/v4/world.js
+index 41df54e5..c4c26eba 100644
+--- a/avereth-engine/src/v4/world.js
++++ b/avereth-engine/src/v4/world.js
+@@ -1242,6 +1242,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
+                     const name = normText(d.name || '');
+                     const explicit = s.entities[d.ref]?.kind === 'npc' ? s.entities[d.ref] : null;
+                     const exact = Object.values(s.entities).filter(e => e.kind === 'npc' && name && normText(e.name || '') === name);
++                    const first=Object.values(s.entities).filter(e=>e.kind==='npc' && e.name && name && normText(e.name).startsWith(`${name} `));
++                    if (!explicit && !exact.length && !d.distinct_from && d.present!==false && first.length===1) {
++                        const e=first[0], names=[s.scene.at,...Object.values(s.places).filter(x=>x.parent===s.scene.at).map(x=>x.id)];
++                        const local=e.at?names.includes(e.at):s.memories.some(m=>m.kind==='meeting' && m.who?.includes(e.id) && m.who?.includes('pc') && m.location===s.scene.location && names.some(id=>normText(s.places[id]?.name)===normText(m.place)));
++                        if (local && normText(d.role)===normText(e.descriptors[0])) {
++                            refs.set(normText(d.ref),e.id); enterKnown(e.id,d); break;
++                        }
++                    }
+                     const known = explicit || (exact.length === 1 ? exact[0] : null);
+                     const extensions = Object.values(s.entities).filter(e => e.kind === 'npc' && e.name
+                         && name.startsWith(`${normText(e.name)} `));

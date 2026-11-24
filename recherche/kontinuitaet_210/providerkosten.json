@@ -1,0 +1,333 @@
+{
+  "reportedCostUSD": "0.0873246299",
+  "chargedOrReservedUSD": "0.1248169355",
+  "physical": 195,
+  "usageRecords": 194,
+  "peak": 1,
+  "groups": {
+    "A.campaign": {
+      "physical": 57,
+      "roles": {
+        "planner": 17,
+        "narrator": 16,
+        "extractor": 24
+      },
+      "prompt": 747609,
+      "output": 25956,
+      "cached": 504192,
+      "reasoning": 6964,
+      "costUSD": "0.0259068192",
+      "chargedOrReservedUSD": "0.0259068192",
+      "usageRecords": 57,
+      "refusals": [],
+      "upstreamMs": 401176,
+      "providers": [
+        "Relace"
+      ]
+    },
+    "A.focus-101": {
+      "physical": 3,
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "prompt": 38613,
+      "output": 1646,
+      "cached": 448,
+      "reasoning": 530,
+      "costUSD": "0.0015062630",
+      "chargedOrReservedUSD": "0.0015062630",
+      "usageRecords": 3,
+      "refusals": [],
+      "upstreamMs": 34201,
+      "providers": [
+        "Relace"
+      ]
+    },
+    "A.focus-301": {
+      "physical": 4,
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 2
+      },
+      "prompt": 54390,
+      "output": 2116,
+      "cached": 12224,
+      "reasoning": 631,
+      "costUSD": "0.0020402836",
+      "chargedOrReservedUSD": "0.0020402836",
+      "usageRecords": 4,
+      "refusals": [],
+      "upstreamMs": 36641,
+      "providers": [
+        "Relace"
+      ]
+    },
+    "A.focus-501": {
+      "physical": 3,
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "prompt": 38729,
+      "output": 1513,
+      "cached": 23616,
+      "reasoning": 545,
+      "costUSD": "0.0013698123",
+      "chargedOrReservedUSD": "0.0013698123",
+      "usageRecords": 3,
+      "refusals": [],
+      "upstreamMs": 28987,
+      "providers": [
+        "Relace"
+      ]
+    },
+    "B.pilot": {
+      "physical": 23,
+      "roles": {
+        "planner": 7,
+        "narrator": 7,
+        "extractor": 9
+      },
+      "prompt": 300290,
+      "output": 11874,
+      "cached": 160768,
+      "reasoning": 3474,
+      "costUSD": "0.0107577542",
+      "chargedOrReservedUSD": "0.0107577542",
+      "usageRecords": 23,
+      "refusals": [],
+      "upstreamMs": 272346,
+      "providers": [
+        "Relace"
+      ]
+    },
+    "B.campaign": {
+      "physical": 68,
+      "roles": {
+        "planner": 24,
+        "narrator": 21,
+        "extractor": 23
+      },
+      "prompt": 809235,
+      "output": 25307,
+      "cached": 411072,
+      "reasoning": 8037,
+      "costUSD": "0.0285692833",
+      "chargedOrReservedUSD": "0.0660615889",
+      "usageRecords": 67,
+      "refusals": [
+        {
+          "id": 118,
+          "status": 429,
+          "turn": 707
+        }
+      ],
+      "upstreamMs": 449885,
+      "providers": [
+        "Relace"
+      ]
+    },
+    "B.focus-101": {
+      "physical": 3,
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "prompt": 38790,
+      "output": 1969,
+      "cached": 17088,
+      "reasoning": 736,
+      "costUSD": "0.0014457047",
+      "chargedOrReservedUSD": "0.0014457047",
+      "usageRecords": 3,
+      "refusals": [],
+      "upstreamMs": 37169,
+      "providers": [
+        "Relace"
+      ]
+    },
+    "B.focus-201": {
+      "physical": 3,
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "prompt": 38783,
+      "output": 2596,
+      "cached": 23296,
+      "reasoning": 1168,
+      "costUSD": "0.0014617912",
+      "chargedOrReservedUSD": "0.0014617912",
+      "usageRecords": 3,
+      "refusals": [],
+      "upstreamMs": 61506,
+      "providers": [
+        "Relace"
+      ]
+    },
+    "A.focus-201": {
+      "physical": 2,
+      "roles": {
+        "planner": 2
+      },
+      "prompt": 25458,
+      "output": 245,
+      "cached": 12608,
+      "reasoning": 21,
+      "costUSD": "0.0008556675",
+      "chargedOrReservedUSD": "0.0008556675",
+      "usageRecords": 2,
+      "refusals": [],
+      "upstreamMs": 10618,
+      "providers": [
+        "Relace"
+      ]
+    },
+    "B.focus-301": {
+      "physical": 3,
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "prompt": 39326,
+      "output": 1193,
+      "cached": 12224,
+      "reasoning": 264,
+      "costUSD": "0.0014287807",
+      "chargedOrReservedUSD": "0.0014287807",
+      "usageRecords": 3,
+      "refusals": [],
+      "upstreamMs": 16749,
+      "providers": [
+        "Relace"
+      ]
+    },
+    "B.focus-401": {
+      "physical": 3,
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "prompt": 38564,
+      "output": 1230,
+      "cached": 12224,
+      "reasoning": 428,
+      "costUSD": "0.0014046690",
+      "chargedOrReservedUSD": "0.0014046690",
+      "usageRecords": 3,
+      "refusals": [],
+      "upstreamMs": 26665,
+      "providers": [
+        "Relace"
+      ]
+    },
+    "A.focus-401": {
+      "physical": 4,
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 2
+      },
+      "prompt": 52296,
+      "output": 1495,
+      "cached": 15936,
+      "reasoning": 290,
+      "costUSD": "0.0018943385",
+      "chargedOrReservedUSD": "0.0018943385",
+      "usageRecords": 4,
+      "refusals": [],
+      "upstreamMs": 21679,
+      "providers": [
+        "Relace"
+      ]
+    },
+    "B.focus-501": {
+      "physical": 3,
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "prompt": 39208,
+      "output": 1452,
+      "cached": 23744,
+      "reasoning": 398,
+      "costUSD": "0.0013811764",
+      "chargedOrReservedUSD": "0.0013811764",
+      "usageRecords": 3,
+      "refusals": [],
+      "upstreamMs": 17824,
+      "providers": [
+        "Relace"
+      ]
+    },
+    "B.focus-601": {
+      "physical": 3,
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "prompt": 38428,
+      "output": 699,
+      "cached": 11968,
+      "reasoning": 132,
+      "costUSD": "0.0013579845",
+      "chargedOrReservedUSD": "0.0013579845",
+      "usageRecords": 3,
+      "refusals": [],
+      "upstreamMs": 15229,
+      "providers": [
+        "Relace"
+      ]
+    },
+    "A.focus-601": {
+      "physical": 3,
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 1
+      },
+      "prompt": 38487,
+      "output": 1095,
+      "cached": 448,
+      "reasoning": 456,
+      "costUSD": "0.0014568709",
+      "chargedOrReservedUSD": "0.0014568709",
+      "usageRecords": 3,
+      "refusals": [],
+      "upstreamMs": 22230,
+      "providers": [
+        "Relace"
+      ]
+    },
+    "B.c19-continuation": {
+      "physical": 10,
+      "roles": {
+        "planner": 3,
+        "narrator": 3,
+        "extractor": 4
+      },
+      "prompt": 132125,
+      "output": 3807,
+      "cached": 94016,
+      "reasoning": 792,
+      "costUSD": "0.0044874309",
+      "chargedOrReservedUSD": "0.0044874309",
+      "usageRecords": 10,
+      "refusals": [],
+      "upstreamMs": 62614,
+      "providers": [
+        "Relace"
+      ]
+    }
+  }
+}

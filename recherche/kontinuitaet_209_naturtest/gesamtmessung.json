@@ -1,0 +1,751 @@
+{
+  "A": {
+    "confirmed_local_system": 1,
+    "confirmed_narrated": 16,
+    "engine": "a854cd6759712571f078bff52e7fe439858b8454",
+    "first_ms": [
+      4916,
+      4840,
+      3911,
+      4657,
+      4833,
+      6871,
+      8302,
+      8944,
+      13561,
+      15976,
+      6260,
+      7364,
+      8419,
+      7871,
+      9408,
+      11117
+    ],
+    "initial": {
+      "events": "1359467c1b35a4121c15a8c73ead809d7f4db731da51dccc12b2fac11f5d9ec1",
+      "messages": 19,
+      "world": "85861134feda7a75017a6077efa2a549a81461e127857a74f4ba28b4fa716335"
+    },
+    "inputs": 17,
+    "manifest_files": 12,
+    "repeats": {
+      "extractor": 8
+    },
+    "reported_cost_plus_reserves": "0.0259068192",
+    "requests": 57,
+    "roles": {
+      "extractor": 24,
+      "narrator": 16,
+      "planner": 17
+    },
+    "safe_ms": [
+      31464,
+      20592,
+      30739,
+      23368,
+      23118,
+      22101,
+      36401,
+      32538,
+      38840,
+      36276,
+      18630,
+      21279,
+      30812,
+      31712,
+      26552,
+      27812
+    ],
+    "tokens": {
+      "cached_tokens": 504192,
+      "completion_tokens": 25956,
+      "prompt_tokens": 747609,
+      "reasoning_tokens": 6964
+    },
+    "usage_reporting": {
+      "cached": 57,
+      "cost": 57,
+      "reasoning": 57,
+      "usage": 57
+    },
+    "usd": "0.0259068192"
+  },
+  "B": {
+    "confirmed_local_system": 1,
+    "confirmed_narrated": 21,
+    "engine": "82b2b30ef86507a4eeeaf4c72e006f80a6d5e8bc",
+    "first_ms": [
+      6249,
+      5590,
+      6760,
+      7307,
+      17675,
+      5675,
+      6413,
+      8882,
+      4762,
+      6177,
+      8974,
+      4696,
+      5824,
+      7902,
+      10378,
+      6107,
+      5823,
+      10406,
+      7140,
+      8239,
+      5374
+    ],
+    "initial": {
+      "events": "1359467c1b35a4121c15a8c73ead809d7f4db731da51dccc12b2fac11f5d9ec1",
+      "messages": 19,
+      "world": "85861134feda7a75017a6077efa2a549a81461e127857a74f4ba28b4fa716335"
+    },
+    "inputs": 22,
+    "manifest_files": 12,
+    "repeats": {
+      "extractor": 2,
+      "planner": 2
+    },
+    "reported_cost_plus_reserves": "0.0660615889",
+    "requests": 68,
+    "roles": {
+      "extractor": 23,
+      "narrator": 21,
+      "planner": 24
+    },
+    "safe_ms": [
+      23629,
+      36112,
+      37222,
+      31068,
+      41615,
+      13855,
+      12099,
+      18300,
+      14506,
+      14077,
+      17951,
+      12095,
+      14879,
+      19469,
+      19913,
+      25358,
+      16210,
+      33713,
+      32397,
+      26851,
+      18029
+    ],
+    "tokens": {
+      "cached_tokens": 411072,
+      "completion_tokens": 25307,
+      "prompt_tokens": 809235,
+      "reasoning_tokens": 8037
+    },
+    "usage_reporting": {
+      "cached": 67,
+      "cost": 67,
+      "reasoning": 67,
+      "usage": 67
+    },
+    "usd": "0.0285692833"
+  },
+  "bren": {
+    "A": {
+      "confirmed_local_system": 0,
+      "confirmed_narrated": 1,
+      "engine": "a854cd6759712571f078bff52e7fe439858b8454",
+      "first_ms": [
+        9078
+      ],
+      "initial": {
+        "events": "4e394858aeb2eab17c97a14272612ade0fbec4d67cd1fc6406a9d8c9993e1e49",
+        "messages": 17,
+        "world": "cf74ba104846520e7c8403352846f53eceec318c3c3fa6e05032631f577ec107"
+      },
+      "inputs": 1,
+      "manifest_files": 12,
+      "repeats": {},
+      "reported_cost_plus_reserves": "0.0015062630",
+      "requests": 3,
+      "roles": {
+        "extractor": 1,
+        "narrator": 1,
+        "planner": 1
+      },
+      "safe_ms": [
+        38744
+      ],
+      "tokens": {
+        "cached_tokens": 448,
+        "completion_tokens": 1646,
+        "prompt_tokens": 38613,
+        "reasoning_tokens": 530
+      },
+      "usage_reporting": {
+        "cached": 3,
+        "cost": 3,
+        "reasoning": 3,
+        "usage": 3
+      },
+      "usd": "0.0015062630"
+    },
+    "B": {
+      "confirmed_local_system": 0,
+      "confirmed_narrated": 1,
+      "engine": "82b2b30ef86507a4eeeaf4c72e006f80a6d5e8bc",
+      "first_ms": [
+        8907
+      ],
+      "initial": {
+        "events": "4e394858aeb2eab17c97a14272612ade0fbec4d67cd1fc6406a9d8c9993e1e49",
+        "messages": 17,
+        "world": "cf74ba104846520e7c8403352846f53eceec318c3c3fa6e05032631f577ec107"
+      },
+      "inputs": 1,
+      "manifest_files": 12,
+      "repeats": {},
+      "reported_cost_plus_reserves": "0.0014457047",
+      "requests": 3,
+      "roles": {
+        "extractor": 1,
+        "narrator": 1,
+        "planner": 1
+      },
+      "safe_ms": [
+        38132
+      ],
+      "tokens": {
+        "cached_tokens": 17088,
+        "completion_tokens": 1969,
+        "prompt_tokens": 38790,
+        "reasoning_tokens": 736
+      },
+      "usage_reporting": {
+        "cached": 3,
+        "cost": 3,
+        "reasoning": 3,
+        "usage": 3
+      },
+      "usd": "0.0014457047"
+    }
+  },
+  "gruene-tuer": {
+    "A": {
+      "confirmed_local_system": 0,
+      "confirmed_narrated": 1,
+      "engine": "a854cd6759712571f078bff52e7fe439858b8454",
+      "first_ms": [
+        7507
+      ],
+      "initial": {
+        "events": "1c8791dcf019746349f131a76db96b4ee017ef58bde8db705e2baf88a2965dd3",
+        "messages": 27,
+        "world": "c06c282cdb6cb9203a21f29419dd1cfb93d3b3d1bdda18ed694bf70c08b681c7"
+      },
+      "inputs": 1,
+      "manifest_files": 12,
+      "repeats": {
+        "extractor": 1
+      },
+      "reported_cost_plus_reserves": "0.0018943385",
+      "requests": 4,
+      "roles": {
+        "extractor": 2,
+        "narrator": 1,
+        "planner": 1
+      },
+      "safe_ms": [
+        23750
+      ],
+      "tokens": {
+        "cached_tokens": 15936,
+        "completion_tokens": 1495,
+        "prompt_tokens": 52296,
+        "reasoning_tokens": 290
+      },
+      "usage_reporting": {
+        "cached": 4,
+        "cost": 4,
+        "reasoning": 4,
+        "usage": 4
+      },
+      "usd": "0.0018943385"
+    },
+    "B": {
+      "confirmed_local_system": 0,
+      "confirmed_narrated": 1,
+      "engine": "82b2b30ef86507a4eeeaf4c72e006f80a6d5e8bc",
+      "first_ms": [
+        17248
+      ],
+      "initial": {
+        "events": "1c8791dcf019746349f131a76db96b4ee017ef58bde8db705e2baf88a2965dd3",
+        "messages": 27,
+        "world": "c06c282cdb6cb9203a21f29419dd1cfb93d3b3d1bdda18ed694bf70c08b681c7"
+      },
+      "inputs": 1,
+      "manifest_files": 12,
+      "repeats": {},
+      "reported_cost_plus_reserves": "0.0014046690",
+      "requests": 3,
+      "roles": {
+        "extractor": 1,
+        "narrator": 1,
+        "planner": 1
+      },
+      "safe_ms": [
+        27711
+      ],
+      "tokens": {
+        "cached_tokens": 12224,
+        "completion_tokens": 1230,
+        "prompt_tokens": 38564,
+        "reasoning_tokens": 428
+      },
+      "usage_reporting": {
+        "cached": 3,
+        "cost": 3,
+        "reasoning": 3,
+        "usage": 3
+      },
+      "usd": "0.0014046690"
+    }
+  },
+  "namenswissen": {
+    "A": {
+      "confirmed_local_system": 0,
+      "confirmed_narrated": 1,
+      "engine": "a854cd6759712571f078bff52e7fe439858b8454",
+      "first_ms": [
+        11574
+      ],
+      "initial": {
+        "events": "f3c6bdd38e23b11290924e8bcce2565787f48112fade14077bf002fbb5b9669f",
+        "messages": 43,
+        "world": "8600f5c128b78594adc5739338afd7a57e6b8e355629dab12b6152642ebf1898"
+      },
+      "inputs": 1,
+      "manifest_files": 12,
+      "repeats": {},
+      "reported_cost_plus_reserves": "0.0014568709",
+      "requests": 3,
+      "roles": {
+        "extractor": 1,
+        "narrator": 1,
+        "planner": 1
+      },
+      "safe_ms": [
+        24587
+      ],
+      "tokens": {
+        "cached_tokens": 448,
+        "completion_tokens": 1095,
+        "prompt_tokens": 38487,
+        "reasoning_tokens": 456
+      },
+      "usage_reporting": {
+        "cached": 3,
+        "cost": 3,
+        "reasoning": 3,
+        "usage": 3
+      },
+      "usd": "0.0014568709"
+    },
+    "B": {
+      "confirmed_local_system": 0,
+      "confirmed_narrated": 1,
+      "engine": "82b2b30ef86507a4eeeaf4c72e006f80a6d5e8bc",
+      "first_ms": [
+        4401
+      ],
+      "initial": {
+        "events": "f3c6bdd38e23b11290924e8bcce2565787f48112fade14077bf002fbb5b9669f",
+        "messages": 43,
+        "world": "8600f5c128b78594adc5739338afd7a57e6b8e355629dab12b6152642ebf1898"
+      },
+      "inputs": 1,
+      "manifest_files": 12,
+      "repeats": {},
+      "reported_cost_plus_reserves": "0.0013579845",
+      "requests": 3,
+      "roles": {
+        "extractor": 1,
+        "narrator": 1,
+        "planner": 1
+      },
+      "safe_ms": [
+        16492
+      ],
+      "tokens": {
+        "cached_tokens": 11968,
+        "completion_tokens": 699,
+        "prompt_tokens": 38428,
+        "reasoning_tokens": 132
+      },
+      "usage_reporting": {
+        "cached": 3,
+        "cost": 3,
+        "reasoning": 3,
+        "usage": 3
+      },
+      "usd": "0.0013579845"
+    }
+  },
+  "pilot": {
+    "confirmed_local_system": 0,
+    "confirmed_narrated": 7,
+    "engine": "0b713579c146167e83f992af6a7a5d0fb212292e",
+    "first_ms": [
+      11320,
+      24225,
+      9882,
+      9953,
+      7392,
+      5944,
+      9903
+    ],
+    "initial": {
+      "events": "1359467c1b35a4121c15a8c73ead809d7f4db731da51dccc12b2fac11f5d9ec1",
+      "messages": 19,
+      "world": "85861134feda7a75017a6077efa2a549a81461e127857a74f4ba28b4fa716335"
+    },
+    "inputs": 7,
+    "manifest_files": 12,
+    "repeats": {
+      "extractor": 2
+    },
+    "reported_cost_plus_reserves": "0.0107577542",
+    "requests": 23,
+    "roles": {
+      "extractor": 9,
+      "narrator": 7,
+      "planner": 7
+    },
+    "safe_ms": [
+      46523,
+      59131,
+      54675,
+      57251,
+      26308,
+      23652,
+      27985
+    ],
+    "tokens": {
+      "cached_tokens": 160768,
+      "completion_tokens": 11874,
+      "prompt_tokens": 300290,
+      "reasoning_tokens": 3474
+    },
+    "usage_reporting": {
+      "cached": 23,
+      "cost": 23,
+      "reasoning": 23,
+      "usage": 23
+    },
+    "usd": "0.0107577542"
+  },
+  "tasche": {
+    "A": {
+      "confirmed_local_system": 0,
+      "confirmed_narrated": 1,
+      "engine": "a854cd6759712571f078bff52e7fe439858b8454",
+      "first_ms": [
+        15405
+      ],
+      "initial": {
+        "events": "9767cbeb85bde2f18fa817284636db962534758051cc40c239d9816c410e94d4",
+        "messages": 41,
+        "world": "7980a9ca6dd5b2202f8fc6e70e8d1346788e3a6e95150f0a9bcb9f21f44294f4"
+      },
+      "inputs": 1,
+      "manifest_files": 12,
+      "repeats": {},
+      "reported_cost_plus_reserves": "0.0013698123",
+      "requests": 3,
+      "roles": {
+        "extractor": 1,
+        "narrator": 1,
+        "planner": 1
+      },
+      "safe_ms": [
+        51464
+      ],
+      "tokens": {
+        "cached_tokens": 23616,
+        "completion_tokens": 1513,
+        "prompt_tokens": 38729,
+        "reasoning_tokens": 545
+      },
+      "usage_reporting": {
+        "cached": 3,
+        "cost": 3,
+        "reasoning": 3,
+        "usage": 3
+      },
+      "usd": "0.0013698123"
+    },
+    "B": {
+      "confirmed_local_system": 0,
+      "confirmed_narrated": 1,
+      "engine": "82b2b30ef86507a4eeeaf4c72e006f80a6d5e8bc",
+      "first_ms": [
+        7185
+      ],
+      "initial": {
+        "events": "9767cbeb85bde2f18fa817284636db962534758051cc40c239d9816c410e94d4",
+        "messages": 41,
+        "world": "7980a9ca6dd5b2202f8fc6e70e8d1346788e3a6e95150f0a9bcb9f21f44294f4"
+      },
+      "inputs": 1,
+      "manifest_files": 12,
+      "repeats": {},
+      "reported_cost_plus_reserves": "0.0013811764",
+      "requests": 3,
+      "roles": {
+        "extractor": 1,
+        "narrator": 1,
+        "planner": 1
+      },
+      "safe_ms": [
+        19178
+      ],
+      "tokens": {
+        "cached_tokens": 23744,
+        "completion_tokens": 1452,
+        "prompt_tokens": 39208,
+        "reasoning_tokens": 398
+      },
+      "usage_reporting": {
+        "cached": 3,
+        "cost": 3,
+        "reasoning": 3,
+        "usage": 3
+      },
+      "usd": "0.0013811764"
+    }
+  },
+  "total": {
+    "cache": 1335872,
+    "duration_ms": 1515519,
+    "input": 2470331,
+    "output": 84193,
+    "peak": 1,
+    "reasoning": 24866,
+    "reported_cost_plus_reserves": "0.1248169355",
+    "requests": 195,
+    "roles": {
+      "extractor": 73,
+      "narrator": 58,
+      "planner": 64
+    },
+    "terminal_provider_rejections": 1,
+    "usd": "0.0873246299",
+    "with_usage": 194
+  },
+  "wagen": {
+    "A": {
+      "confirmed_local_system": 1,
+      "confirmed_narrated": 0,
+      "engine": "a854cd6759712571f078bff52e7fe439858b8454",
+      "first_ms": [],
+      "initial": {
+        "events": "b67e3807c9d1962ab5c2159771826ff65dfe41c5f988df3348285ca0a191e453",
+        "messages": 33,
+        "world": "6c7d1371d36cf9f26e18fcb353be277e47feb20a86eff281dfa94c1c441737ef"
+      },
+      "inputs": 1,
+      "manifest_files": 12,
+      "repeats": {
+        "planner": 1
+      },
+      "reported_cost_plus_reserves": "0.0008556675",
+      "requests": 2,
+      "roles": {
+        "planner": 2
+      },
+      "safe_ms": [],
+      "tokens": {
+        "cached_tokens": 12608,
+        "completion_tokens": 245,
+        "prompt_tokens": 25458,
+        "reasoning_tokens": 21
+      },
+      "usage_reporting": {
+        "cached": 2,
+        "cost": 2,
+        "reasoning": 2,
+        "usage": 2
+      },
+      "usd": "0.0008556675"
+    },
+    "B": {
+      "confirmed_local_system": 0,
+      "confirmed_narrated": 1,
+      "engine": "82b2b30ef86507a4eeeaf4c72e006f80a6d5e8bc",
+      "first_ms": [
+        19811
+      ],
+      "initial": {
+        "events": "b67e3807c9d1962ab5c2159771826ff65dfe41c5f988df3348285ca0a191e453",
+        "messages": 33,
+        "world": "6c7d1371d36cf9f26e18fcb353be277e47feb20a86eff281dfa94c1c441737ef"
+      },
+      "inputs": 1,
+      "manifest_files": 12,
+      "repeats": {},
+      "reported_cost_plus_reserves": "0.0014617912",
+      "requests": 3,
+      "roles": {
+        "extractor": 1,
+        "narrator": 1,
+        "planner": 1
+      },
+      "safe_ms": [
+        62699
+      ],
+      "tokens": {
+        "cached_tokens": 23296,
+        "completion_tokens": 2596,
+        "prompt_tokens": 38783,
+        "reasoning_tokens": 1168
+      },
+      "usage_reporting": {
+        "cached": 3,
+        "cost": 3,
+        "reasoning": 3,
+        "usage": 3
+      },
+      "usd": "0.0014617912"
+    }
+  },
+  "wren": {
+    "A": {
+      "confirmed_local_system": 0,
+      "confirmed_narrated": 1,
+      "engine": "a854cd6759712571f078bff52e7fe439858b8454",
+      "first_ms": [
+        13125
+      ],
+      "initial": {
+        "events": "33a503c7d5c9de053a8ea4f26a793f66c67ce64e9d3d1ffa36b42a08da261bd9",
+        "messages": 45,
+        "world": "ad20099c6519e91fdedab082987b4f77d025564b289607181616dd4d3e05b376"
+      },
+      "inputs": 1,
+      "manifest_files": 12,
+      "repeats": {
+        "extractor": 1
+      },
+      "reported_cost_plus_reserves": "0.0020402836",
+      "requests": 4,
+      "roles": {
+        "extractor": 2,
+        "narrator": 1,
+        "planner": 1
+      },
+      "safe_ms": [
+        50509
+      ],
+      "tokens": {
+        "cached_tokens": 12224,
+        "completion_tokens": 2116,
+        "prompt_tokens": 54390,
+        "reasoning_tokens": 631
+      },
+      "usage_reporting": {
+        "cached": 4,
+        "cost": 4,
+        "reasoning": 4,
+        "usage": 4
+      },
+      "usd": "0.0020402836"
+    },
+    "B": {
+      "confirmed_local_system": 0,
+      "confirmed_narrated": 1,
+      "engine": "82b2b30ef86507a4eeeaf4c72e006f80a6d5e8bc",
+      "first_ms": [
+        5503
+      ],
+      "initial": {
+        "events": "33a503c7d5c9de053a8ea4f26a793f66c67ce64e9d3d1ffa36b42a08da261bd9",
+        "messages": 45,
+        "world": "ad20099c6519e91fdedab082987b4f77d025564b289607181616dd4d3e05b376"
+      },
+      "inputs": 1,
+      "manifest_files": 12,
+      "repeats": {},
+      "reported_cost_plus_reserves": "0.0014287807",
+      "requests": 3,
+      "roles": {
+        "extractor": 1,
+        "narrator": 1,
+        "planner": 1
+      },
+      "safe_ms": [
+        18054
+      ],
+      "tokens": {
+        "cached_tokens": 12224,
+        "completion_tokens": 1193,
+        "prompt_tokens": 39326,
+        "reasoning_tokens": 264
+      },
+      "usage_reporting": {
+        "cached": 3,
+        "cost": 3,
+        "reasoning": 3,
+        "usage": 3
+      },
+      "usd": "0.0014287807"
+    }
+  },
+  "zusatz": {
+    "confirmed_local_system": 0,
+    "confirmed_narrated": 3,
+    "engine": "82b2b30ef86507a4eeeaf4c72e006f80a6d5e8bc",
+    "first_ms": [
+      5530,
+      9899,
+      7482
+    ],
+    "initial": {
+      "events": "13db33563fa72165deb5a31f3ac116290c31011a1db7ac547fa85bbdeedc9cda",
+      "messages": 43,
+      "world": "4a69eaa7215b4646d6d221edb3b1db22192f8bb2630b60f7b4b915d57de7f654"
+    },
+    "inputs": 3,
+    "manifest_files": 12,
+    "repeats": {
+      "extractor": 1
+    },
+    "reported_cost_plus_reserves": "0.0044874309",
+    "requests": 10,
+    "roles": {
+      "extractor": 4,
+      "narrator": 3,
+      "planner": 3
+    },
+    "safe_ms": [
+      16499,
+      21248,
+      30032
+    ],
+    "tokens": {
+      "cached_tokens": 94016,
+      "completion_tokens": 3807,
+      "prompt_tokens": 132125,
+      "reasoning_tokens": 792
+    },
+    "usage_reporting": {
+      "cached": 10,
+      "cost": 10,
+      "reasoning": 10,
+      "usage": 10
+    },
+    "usd": "0.0044874309"
+  }
+}

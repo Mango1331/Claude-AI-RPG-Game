@@ -1,0 +1,8 @@
+{
+  "archive": "openrouter-20261124-trust-c-208/original-chat.jsonl.gz",
+  "messageIndex": 41,
+  "prefix_sha256": "04dfc0f26c552feec8689c3e97dab33eb6c084e5ad6e518a63b6d7969d169223",
+  "text": "I can give Marta plain words, yes. I take the bag by the sound end and set out with Wren for the Halloran steading. The ford was under water on the way out, so I tell her about the ridge road and keep to her lantern and her pace.",
+  "intent": "Take Wren's bag, agree to speak honestly, and travel with her to the Hallorans by a passable route, staying together.",
+  "physical_turn_tag": 501
+}

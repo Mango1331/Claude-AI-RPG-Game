@@ -1,0 +1,21 @@
+{
+  "stDir": "C:\\SillyTavern",
+  "stUser": "default-user",
+  "provider": "openrouter",
+  "openrouterModel": "z-ai/glm-5.3-flash",
+  "keyEnv": "AVERETH_LIVE_API_KEY",
+  "guide": "natural_helper_progression",
+  "preset": "repo",
+  "browser": "chrome",
+  "headless": true,
+  "port": 8123,
+  "turnTimeoutSec": 900,
+  "maxTurns": null,
+  "keepProfile": false,
+  "player": {
+    "type": "llm",
+    "temperature": 0.8,
+    "maxTokens": 3000,
+    "reasoning": "profile"
+  }
+}

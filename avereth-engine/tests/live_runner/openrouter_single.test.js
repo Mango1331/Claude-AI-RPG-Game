@@ -4,10 +4,10 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { options } from '../../tools/st_live/live/run_live.mjs';
-import { OPENROUTER_URL, OPENROUTER_MODEL, useOpenRouter } from '../../tools/st_live/live/openrouter.mjs';
+import { OPENROUTER_URL, OPENROUTER_MODEL, OPENROUTER_PROVIDER, OPENROUTER_REASONING_EFFORT, OPENROUTER_INCLUDE_BODY, openRouterPlayerExtraBody, useOpenRouter } from '../../tools/st_live/live/openrouter.mjs';
 import { routeOf } from '../../tools/st_live/live/import_profile.mjs';
 import { loadGuide } from '../../tools/st_live/live/guide.mjs';
-import { playerSystemPrompt } from '../../tools/st_live/live/players.mjs';
+import { playerSystemPrompt, playerReasoning, llmPlayer } from '../../tools/st_live/live/players.mjs';
 
 test('one OpenRouter run overrides legacy Featherless settings without touching that config or the ST profile', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'avereth-or-single-'));
@@ -28,7 +28,7 @@ test('one OpenRouter run overrides legacy Featherless settings without touching 
         assert.equal(o.preset,'repo');
         assert.equal(o.keyEnv,'AVERETH_LIVE_API_KEY');
         assert.deepEqual([o.player.type,o.player.url,o.player.model,o.player.keyEnv,o.player.extraBody],
-            ['llm',OPENROUTER_URL,OPENROUTER_MODEL,null,null]);
+            ['llm',OPENROUTER_URL,OPENROUTER_MODEL,null,openRouterPlayerExtraBody()]);
         assert.equal(o.player.reasoning,'profile');
         assert.equal(fs.readFileSync(config,'utf8'),original);
 
@@ -44,7 +44,11 @@ test('one OpenRouter run overrides legacy Featherless settings without touching 
         assert.equal(adjusted.source,'custom');
         assert.equal(adjusted.connection.custom_url,OPENROUTER_URL);
         assert.equal(adjusted.connection.custom_model,OPENROUTER_MODEL);
-        assert.equal(adjusted.connection.custom_include_body,'');
+        assert.equal(adjusted.connection.custom_include_body,OPENROUTER_INCLUDE_BODY);
+        assert.match(adjusted.connection.custom_include_body,/reasoning_effort: low/);
+        assert.match(adjusted.connection.custom_include_body,/order: \[wafer\/us\]/);
+        assert.match(adjusted.connection.custom_include_body,/allow_fallbacks: false/);
+        assert.equal(playerReasoning(adjusted,o.player).body.reasoning_effort,OPENROUTER_REASONING_EFFORT);
         assert.equal(adjusted.connection.custom_include_headers,'');
         assert.equal(adjusted.route.runner.url,OPENROUTER_URL);
         assert.equal(adjusted.route.runner.model,OPENROUTER_MODEL);
@@ -82,4 +86,43 @@ test('single-run helper guide is natural, favors NPC aid and real Guild/gear/lev
     }
     const pkg=JSON.parse(fs.readFileSync(new URL('../../package.json',import.meta.url),'utf8'));
     assert.match(pkg.scripts['live:st:openrouter'],/run_live\.mjs --openrouter$/);
+});
+
+test('actual direct LLM-player HTTP body pins Wafer and low effort, not only the displayed preset', async () => {
+    const imp=useOpenRouter({
+        source:'custom',connection:{custom_url:'http://legacy.featherless.local/v1'},
+        generation:{reasoning_effort:'none'},
+        warnings:[],route:{profile:{source:'custom',url:'http://legacy.featherless.local/v1'}},
+    },{openrouter:true,openrouterModel:OPENROUTER_MODEL});
+    const opts=options(['--config','/path/to/nonexistent.json','--openrouter'],{});
+    const settings=playerReasoning(imp,opts.player);
+    assert.deepEqual(settings.body,{reasoning_effort:OPENROUTER_REASONING_EFFORT});
+    const outgoing=[];
+    const p=llmPlayer({
+        guide:loadGuide('natural_helper_progression'),
+        username:'Alaric',url:opts.player.url,model:opts.player.model,key:'TEST_ONLY',
+        body:settings.body,extraBody:opts.player.extraBody,
+        fetchImpl:async (url, request)=>{
+            outgoing.push({url,request:JSON.parse(request.body)});
+            return {ok:true,status:200,json:async()=>({
+                choices:[{message:{content:JSON.stringify({message:'I ask if the family needs any help.',milestone:'open_run_level',intent:'Offer assistance',stop:false,stop_reason:null,observations:''})},finish_reason:'stop'}],
+            })};
+        },
+    });
+    const answer=await p.decide({messages:[{user:false,system:false,text:'A villager asks for help.'}],hud:'HP 30/30'}, {turn:1,maxTurns:150});
+    assert.match(answer.message,/ask if the family/);
+    assert.equal(outgoing.length,1);
+    assert.equal(outgoing[0].url,OPENROUTER_URL+'/chat/completions');
+    assert.equal(outgoing[0].request.model,OPENROUTER_MODEL);
+    assert.equal(outgoing[0].request.reasoning_effort,'low');
+    assert.deepEqual(outgoing[0].request.provider,{order:[OPENROUTER_PROVIDER],allow_fallbacks:false});
+});
+
+test('fixed OpenRouter routing YAML is valid for ST Custom Chat Completion include-body',()=>{
+    assert.deepEqual(OPENROUTER_INCLUDE_BODY.split('\\n'),[
+        'reasoning_effort: low','provider:','  order: [wafer/us]','  allow_fallbacks: false'
+    ]);
+    const reference=openRouterPlayerExtraBody();
+    assert.deepEqual(reference.provider.order,[OPENROUTER_PROVIDER]);
+    assert.equal(reference.provider.allow_fallbacks,false);
 });

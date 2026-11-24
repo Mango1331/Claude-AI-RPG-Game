@@ -115,9 +115,7 @@ export function deltaSchema(vocab, ids = {}, expectedKeys = {}) {
     const variants = vocab.deltas.map((d) => {
         const props = { seq: I(1), type: E([d.type]), scene: N(refs.scene) };
         for (const [k, spec] of Object.entries(d.fields)) props[k] = fieldSchema(spec, refs);
-        const variant = O(props);
-        if (d.type === 'arrive') variant.required = variant.required.filter(k => !['evidence','after'].includes(k));
-        return variant;
+        return O(props);
     });
     return O({ scene: N(refs.scene), expected: O(expected), deltas: A({ anyOf: variants }) });
 }
@@ -327,9 +325,9 @@ function normalizeSoftFields(value, vocab) {
             && wrapped && typeof wrapped === 'object' && !Array.isArray(wrapped)
             && Object.keys(wrapped).every(k => Object.hasOwn(spec.fields || {}, k));
         const x = objectEnvelope ? { scene: null, seq: d.seq, type: d.type, ...wrapped } : { scene: null, ...d };
-        for (const [k, f] of Object.entries(spec.fields || {})) if (x[k] === undefined && f.nullable && !(d.type === 'arrive' && ['evidence','after'].includes(k))) x[k] = null;
+        for (const [k, f] of Object.entries(spec.fields || {})) if (x[k] === undefined && f.nullable) x[k] = null;
         if (d.type === 'arrive') for (const key of ['evidence','after']) {
-            if (typeof x[key] !== 'string') delete x[key];
+            if (Object.hasOwn(spec.fields, key) && typeof x[key] !== 'string') x[key] = null;
         }
         // Harmless persistence defaults: their omission should not trigger another LLM call.
         if (d.type === 'person.new' && x.desc === undefined) x.desc = [];
@@ -576,6 +574,11 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     const schema = deltaSchema(vocab, ids, Object.fromEntries(Object.entries(expectedKeys || {}).filter(([k]) => !missing.includes(k))));
     const clean = missing.length ? { ...value, expected: Object.fromEntries(Object.entries(exp).filter(([k]) => !missing.includes(k))) } : value;
     const errors = validate(clean, schema);
+    // Optional receipts participate in strict validation. Keep legacy arrival/event payloads identical afterwards.
+    if (!errors.length) for (const d of value.deltas) if (d.type === 'arrive') {
+        if (d.evidence === null) delete d.evidence;
+        if (d.after === null) delete d.after;
+    }
     const semanticIssues = [];
     let placeHintAdded = false;
     for (const [errorIndex,error] of [...errors].entries()) {

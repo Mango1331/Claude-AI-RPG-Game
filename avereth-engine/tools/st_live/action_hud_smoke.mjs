@@ -52,7 +52,10 @@ export async function actionHudSmoke({page,send,idle,calls,onReload,reconnect}){
  checks.composerFitsNarrow=await page.locator('#avereth-action-composer').evaluate(el=>el.scrollWidth<=el.clientWidth+2);
  await page.setViewportSize({width:1280,height:900});
  const nr=hc.find(c=>c.purpose==='narrator');
- checks.activeAgency=!!nr?.messages.some(m=>String(m.content).includes('ordinary, low-consequence gestures')) && !!h.card?.includes('HUD roleplay mode');
+ const roleplayLimit='accompanying text supplies roleplay, not additional mechanical actions';
+ const gestureLimit='within the same scene, without implying stealth, cover, a new destination or another decision';
+ const hasHudAgency=text=>typeof text==='string' && text.includes(roleplayLimit) && text.includes(gestureLimit);
+ checks.activeAgency=!!hasHudAgency(h.card) && !!nr?.messages.some(m=>m.role==='system' && hasHudAgency(m.content));
  checks.noConflictingCombatSilence=!!nr?.messages.some(m=>String(m.content).includes('Combat roleplay')) && !nr?.messages.some(m=>String(m.content).includes('Combat silence: nobody talks'));
  checks.modeInActualNarratorPrompt=!!nr?.messages.some(m=>String(m.content).includes('HUD + ROLEPLAY'));
  await page.evaluate(async()=>{await SillyTavern.getContext().reloadCurrentChat();});onReload();await idle();

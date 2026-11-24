@@ -37,7 +37,6 @@ import { tradeObject } from './v4/trade.js';
 import { featureEvent } from './v4/features.js';
 
 const GROUP_RE = /\b(?:everyone|everybody|all of you|you all|the (?:group|room|crowd|table|company)|(?:to|at|toward|towards) them)\b/i;
-const SELF_INTRO_RE = /\b(?:(?:my )?name(?:'s| is)|i am|i'?m|call me|they call me)\s+alaric\b/i; // "Name is Alaric" (Test 5 run 2)
 const HOLD_RE = /\b(?:i\s+)?(?:wait|hold (?:my )?(?:position|ground|fire)|do nothing|pass (?:my )?turn|end (?:my )?turn|stay put)\b/i;
 const TRADE_RE = /\b(?:buy|buys|bought|sell|sells|sold|pay|pays|paid|price|cost|costs|haggle|coin|coins|copper|silver|gold)\b/i;
 
@@ -921,15 +920,38 @@ export function perceiveAll(s, emit, { unaware = null } = {}) {
 }
 
 /**
- * Speech: introducing himself by name tells every NPC present at the end of the turn (including people the reply just
- * introduced) that can see him — knowledge by perception, not by the narrator's say-so.
+ * A spoken self-introduction reaches the addressed living witnesses at turn end, including people just introduced.
  */
 export function selfIntro(s, emit) {
-    if (!SELF_INTRO_RE.test(s.last.input || '') || s.scene.concealed.includes('pc')) return;
-    // only those he speaks to hear his name: NPCs named in the message, or the only NPC who notices him
-    const listeners = perceivers(s).filter((id) => id !== 'pc' && s.entities[id].kind === 'npc' && s.scene.awareness[id] !== 'unaware');
-    const addressed = listeners.filter((id) => [s.entities[id].name, ...(s.entities[id].descriptors || [])].filter(Boolean).some((n) => new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(s.last.input)));
-    const toAll = GROUP_RE.test(s.last.input) || listeners.length === 1;
+    const input = String(s.last.input || '').replace(/’/g, "'");
+    const escape = name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const nameFact = s.facts[PC_NAME_FACT]?.o;
+    if (!nameFact || s.scene.concealed.includes('pc')) return;
+    // A name fact grants its entire value. A shortened introduction cannot disclose an unspoken surname.
+    const introduction = new RegExp("(?:\\b(?:my name(?:'s| is)|i am|i'?m|call me|they call me)|(?:^|[.!?*:'\"“])\\s*name(?:'s| is))\\s+" + escape(nameFact) + "(?![\\p{L}\\p{N}'-])", 'iu');
+    if (!introduction.test(input)) return;
+    const listeners = perceivers(s).filter(id => s.entities[id].kind === 'npc' && s.scene.awareness[id] !== 'unaware');
+    // A direct address ("Lia, …", "… my gift, Lia.") takes precedence over a third person mentioned
+    // elsewhere in the sentence. A shared call name cannot select one of two people by chance.
+    const people = Object.values(s.entities).filter(e => e.kind === 'npc');
+    const vocatives = new Map();
+    for (const e of people) {
+        const label = e.known_name ?? e.name;
+        if (!label) continue;
+        for (const part of new Set([label, label.split(/\s+/)[0]])) {
+            const word = escape(part);
+            const direct = new RegExp('(?:^|[.!?:"“])\\s*' + word + '\\s*,|,\\s*' + word + '\\s*(?=[,.!?;"”]|$)', 'iu');
+            if (direct.test(input)) {
+                const key = normText(part);
+                vocatives.set(key, [...(vocatives.get(key) || []), e.id]);
+            }
+        }
+    }
+    const direct = [...vocatives.values()].filter(ids => ids.length === 1).flat();
+    const addressed = vocatives.size ? listeners.filter(id => direct.includes(id)) : listeners.filter(id =>
+        [s.entities[id].known_name ?? s.entities[id].name, ...(s.entities[id].descriptors || [])].filter(Boolean)
+            .some(label => new RegExp('\\b' + escape(label) + '\\b', 'i').test(input)));
+    const toAll = !vocatives.size && (GROUP_RE.test(input) || listeners.length === 1);
     for (const id of addressed.length ? addressed : toAll ? listeners : []) {
         if (knows(s, id, PC_NAME_FACT)) continue;
         emit({ t: 'knowledge.gained', d: { who: id, about: PC_NAME_FACT, stance: 'knows', source: 'told:pc', turn: s.turn, minute: s.clock.minute } });

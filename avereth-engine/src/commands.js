@@ -14,7 +14,7 @@ import { passiveTotals, skillCostAmount, passivesOf, passiveText, effectiveStats
 import { passiveLines, passiveOffers } from './v4/passive_growth.js';
 import { promotionPp, effectValue, effectFactor, flatEffectValue, affinityFor } from './skills.js';
 import { assignStat } from './progression.js';
-import { knowledgeOf, memoriesOf, memoryText, propText, playerLabel, statusOf } from './knowledge.js';
+import { knowledgeOf, memoriesOf, memoryText, propText, anyLabel, playerLabel, statusOf } from './knowledge.js';
 import { applyEvent } from './state.js';
 import { skillSummary } from './context.js';
 import { clone, itemLabel, joinList, normText, formatClock, roundHalfUp, ENGINE_VERSION } from './util.js';
@@ -22,6 +22,7 @@ import { currentThreads, threadHere } from './threads.js';
 import { knownNote } from './v4/known.js';
 import { dungeonOf, mapText } from './v4/dungeon.js';
 import { nativePay } from './v4/native_pay.js';
+import { sceneHandle } from './v4/scene_handles.js';
 
 const HELP = [
     ['#status', 'full current status (alias #stats)'], ['#skills', 'all known Skills'], ['#skill <name>', 'full Skill definition with current values'],
@@ -327,10 +328,22 @@ function combat(state) {
 }
 
 function npc(state, content, arg) {
-    const t = normText(arg);
-    const e = Object.values(state.entities).find((x) => x.id !== 'pc' && x.kind !== 'location' && [x.name, ...(x.descriptors || [])].filter(Boolean).some((n) => normText(n) === t || normText(n).includes(t)));
-    if (!e) return `[SYSTEM // NPC]\nAlaric knows nobody called "${arg}".`;
-    const rows = knowledgeOf(state, 'pc', [e.id]).map((r) => `- ${propText(state, r, content)}${r.stance !== 'knows' ? ` (${r.stance})` : ''}${r.outdated ? ' (outdated)' : ''}`);
+    const words = value => ' ' + normText(value).replace(/[^\p{L}\p{N}]+/gu, ' ').trim() + ' ';
+    const t = words(arg);
+    const rowsByName = Object.values(state.entities).filter(x => ['npc', 'creature'].includes(x.kind)).map(x => {
+        const label = playerLabel(state, x.id);
+        const hidden = words(x.name).trim().split(' ').filter(w => w && !words(x.known_name ?? x.name).includes(' ' + w + ' '));
+        const clues = (x.descriptors || []).filter(d => !/[_.]/.test(d) && !hidden.some(w => words(d).includes(' ' + w + ' ')));
+        return {entity: x, label, clues, handle: sceneHandle(state, content, x.id)};
+    });
+    // Legacy V3 accepted an explicitly supplied full name as a lookup key before its first mention.
+    const exact = rowsByName.filter(r => [r.label, r.handle, ...(state.meta?.runtime === 'v4' ? [] : [r.entity.name])].some(label => words(label) === t));
+    const hits = exact.length ? exact : rowsByName.filter(r => [r.label, r.handle, ...r.clues].some(label => words(label).includes(t)));
+    if (!hits.length || !t.trim()) return `[SYSTEM // NPC]\nAlaric knows nobody called "${arg}".`;
+    if (hits.length > 1) return `[SYSTEM // NPC]\nWhich person? ${hits.map(r => [r.handle, r.clues[0]].filter(Boolean).join(' · ')).join(' / ')}. Use a known full name or description.`;
+    const {entity: e, label, clues} = hits[0];
+    const publicLabel = id => state.entities[id] ? playerLabel(state, id) : anyLabel(state, content, id);
+    const rows = knowledgeOf(state, 'pc', [e.id]).map((r) => `- ${propText(state, r, content, publicLabel)}${r.stance !== 'knows' ? ` (${r.stance})` : ''}${r.outdated ? ' (outdated)' : ''}`);
     const mems = memoriesOf(state, 'pc').filter((m) => (m.who || []).includes(e.id) || (m.witnesses || []).includes(e.id)).slice(-5)
         .map((m) => `- [${formatClock(m.minute).split(' (')[0]}] ${memoryText(state, m, 'pc')}`);
     // NPC E2-B (D1): the open agreements of Alaric and this person (promise/debt threads with both as parties); one
@@ -339,7 +352,7 @@ function npc(state, content, arg) {
         && (x.who || []).includes('pc') && (x.who || []).includes(e.id)).map((x) => `- ${x.text}`);
     const st = statusOf(state, e.id);
     // only as much of a name as the story has said (delta.js known_name)
-    return [`[SYSTEM // NPC] ${playerLabel(state, e.id)}`, `Known as: ${[e.known_name ?? e.name, ...(e.descriptors || [])].filter(Boolean).join(', ')}${st === 'dead' ? ' | DEAD' : ''}${state.scene.present.includes(e.id) ? ' | present' : ''}`,
+    return [`[SYSTEM // NPC] ${label}`, `Known as: ${[...new Set([label, ...clues])].join(', ')}${st === 'dead' ? ' | DEAD' : ''}${state.scene.present.includes(e.id) ? ' | present' : ''}`,
         rows.length ? `Alaric knows:\n${rows.join('\n')}` : 'Alaric knows nothing beyond what he has seen.', agreed.length ? `Open between you:\n${agreed.join('\n')}` : '', mems.length ? `Shared moments:\n${mems.join('\n')}` : ''].filter(Boolean).join('\n');
 }
 

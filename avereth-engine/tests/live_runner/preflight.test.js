@@ -11,6 +11,7 @@ import { importProfile, routeOf, describeImport, PRESET_TO_SETTINGS } from '../.
 import { probeModels, probeRows, probeBlocks, modelIds } from '../../tools/st_live/live/preflight.mjs';
 import { createInstance, seedProfile, removeKey, cardPng, CONTRACT_FILE, WORLD } from '../../tools/st_live/live/profile.mjs';
 import { preflight, options } from '../../tools/st_live/live/run_live.mjs';
+import { OPENROUTER_URL, OPENROUTER_MODEL, useOpenRouter } from '../../tools/st_live/live/openrouter.mjs';
 import { treeStat, treeDiff } from '../../tools/st_live/live/lib.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -183,4 +184,37 @@ test('preflight of --check: the player\'s own model is asked for too', async () 
     const rows = await preflight(o, imp, 'K', { fetchImpl: fakeFetch(200, list) });
     assert.deepEqual(rows.map((r) => [r.good, r.what]), [[true, 'Endpoint erreichbar (GET /models)'], [true, 'Modell-ID (SillyTavern) in der Modellliste'], [true, 'Endpoint erreichbar (GET /models) [Spieler]'], [false, 'Modell-ID (Spieler) in der Modellliste [Spieler]'], [true, 'Spieler-Reasoning (keine Felder)']]);
     assert.match(rows[4].detail, /another endpoint or model/, 'another model gets none of the profile\'s fields');
+});
+
+test('OpenRouter single-run ST seed uses the env key and repo contract without writing the Featherless profile', () => {
+    const feather = { name: 'Featherless', url: PROXY, password: 'PERSONAL-PROXY' };
+    const st = profile({ chat_completion_source: 'openai', reverse_proxy: PROXY, openai_model: 'old-featherless',
+        proxy_password: 'PERSONAL-PROXY' }, { presets:true,
+        top:{ proxies:[{name:'None',url:'',password:''},feather], selected_proxy:feather } });
+    const sourceFile=path.join(st,'data','default-user','settings.json');
+    const original=fs.readFileSync(sourceFile,'utf8');
+    const inst=createInstance({runId:'openrouter-single',runDir:path.join(tmp(),'run')});
+    try {
+        const imported=importProfile({stDir:st,preset:'repo'});
+        assert.equal(imported.route.runner.via,'reverse_proxy');
+        const configured=useOpenRouter(imported,{openrouter:true,openrouterModel:OPENROUTER_MODEL});
+        fs.mkdirSync(inst.user,{recursive:true});
+        fs.writeFileSync(path.join(inst.user,'settings.json'),JSON.stringify({oai_settings:{}}));
+        const setup=seedProfile(inst,configured,{key:'OPENROUTER-ENV-KEY'});
+        assert.deepEqual([setup.source,setup.via,setup.model],['custom','custom_url',OPENROUTER_MODEL]);
+        const isolated=JSON.parse(fs.readFileSync(path.join(inst.user,'settings.json'),'utf8'));
+        assert.deepEqual([isolated.oai_settings.chat_completion_source,isolated.oai_settings.custom_url,
+            isolated.oai_settings.custom_model,isolated.oai_settings.custom_include_body,
+            isolated.oai_settings.reverse_proxy,isolated.selected_proxy.name],
+            ['custom',OPENROUTER_URL,OPENROUTER_MODEL,'','','None']);
+        const keys=JSON.parse(fs.readFileSync(path.join(inst.user,'secrets.json'),'utf8'));
+        assert.equal(keys.api_key_custom?.[0]?.value,'OPENROUTER-ENV-KEY');
+        assert.equal(keys.api_key_openai,undefined);
+        assert.equal(fs.readFileSync(sourceFile,'utf8'),original);
+        removeKey(inst);
+        assert.ok(!fs.existsSync(path.join(inst.user,'secrets.json')));
+    } finally {
+        fs.rmSync(inst.root,{recursive:true,force:true});
+        fs.rmSync(st,{recursive:true,force:true});
+    }
 });

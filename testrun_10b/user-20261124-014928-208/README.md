@@ -6,4 +6,4 @@
 
 [Originales Spielerfeedback](FEEDBACK_SPIELGEFUEHL.md) · [Technischer Erstreview inklusive Bren-Continuity-Befund](REVIEW.md) · [36 API-Aufrufe und Turnmessungen](MESSWERTE_USER11_208.json) · [Quellenmanifest](SOURCE_MANIFEST.md) · [RPG-Recherche, HUD & Aktionsökonomie](../../recherche/AVERETH_208_MAJOR_MINOR_RPG_VERGLEICH_BALANCE_2026-11-24.md)
 
-Die vollständigen Originalbytes befinden sich bislang **nur in den drei Chat-Uploads**, nicht im Git-Repo. Gegenreview und weitere kontrollierte Tests stehen noch aus; dieser Review änderte keinen Enginecode.
+Der [unabhängige Gegenreview](CODEX_GEGENREVIEW.md) prüft die tatsächlichen Modellantworten und vollzieht elf Weltabschlüsse lokal nach. Das [Quellenmanifest](SOURCE_MANIFEST.md) nennt Prüfsummen und Bereinigung der archivierten Logkopie.

@@ -1,0 +1,6971 @@
+[
+ {
+  "i": 0,
+  "user": false,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "campaign.started",
+    "d": {
+     "seed": 310361370,
+     "minute": 540,
+     "entities": [
+      {
+       "id": "pc",
+       "kind": "pc",
+       "name": "Alaric",
+       "race": "Human",
+       "age": 18,
+       "origin": "Earth",
+       "descriptors": [
+        "alaric",
+        "stranger",
+        "traveler"
+       ],
+       "status": "alive",
+       "location": "loc.alderwatch",
+       "sheet": {
+        "level": 1,
+        "class": null,
+        "stats": {
+         "STR": 5,
+         "VIT": 5,
+         "AGI": 5,
+         "INT": 5,
+         "PER": 5,
+         "WIL": 5
+        },
+        "skills": {},
+        "equipment": {
+         "clothing": "simple_travelers_clothes"
+        },
+        "inventory": {
+         "small_pouch": 1
+        },
+        "coin_cp": 50,
+        "xp": 0,
+        "free_points": 0,
+        "hp": 80,
+        "mp": 60,
+        "sta": 100
+       }
+      }
+     ],
+     "location": "loc.alderwatch",
+     "place": "public roadside verge outside Alderwatch",
+     "facts": [
+      {
+       "id": "f.pc.name",
+       "s": "pc",
+       "p": "name",
+       "o": "Alaric",
+       "visibility": "public",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      },
+      {
+       "id": "f.pc.appearance",
+       "s": "pc",
+       "p": "appearance",
+       "o": "Human, about eighteen; wears simple traveler's clothes",
+       "visibility": "public",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      },
+      {
+       "id": "f.pc.origin",
+       "s": "pc",
+       "p": "origin",
+       "o": "Earth (transmigrated; memories intact)",
+       "visibility": "secret",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      },
+      {
+       "id": "f.pc.arrival_witnesses",
+       "s": "pc",
+       "p": "arrival_witnesses",
+       "o": "none",
+       "visibility": "secret",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      }
+     ],
+     "knowledge": [
+      {
+       "who": "pc",
+       "about": "f.pc.name",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      },
+      {
+       "who": "pc",
+       "about": "f.pc.appearance",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      },
+      {
+       "who": "pc",
+       "about": "f.pc.origin",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      },
+      {
+       "who": "pc",
+       "about": "f.pc.arrival_witnesses",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      }
+     ],
+     "campaign": "avereth",
+     "content_version": "4.2.0",
+     "engine_version": "4.3.0-c.6.6.208",
+     "ruleset": 2,
+     "private_quests": false,
+     "runtime": "v4",
+     "path": "c",
+     "places": [
+      {
+       "id": "realm.valedorn_crown",
+       "name": "Valedorn Crown",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.caelreth",
+       "name": "Caelreth",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.duskreach",
+       "name": "Duskreach",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.ashen_scale_dominion",
+       "name": "Ashen Scale Dominion",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.ashen_scale_dominion",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.verdant_fang_court",
+       "name": "Verdant Fang Court",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.verdant_fang_court",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.alderwatch",
+       "name": "Alderwatch",
+       "kind": "settlement",
+       "sub": "city",
+       "parent": "realm.valedorn_crown",
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.alderwatch.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.alderwatch",
+       "realm": "realm.valedorn_crown",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.glassmere",
+       "name": "Glassmere",
+       "kind": "settlement",
+       "sub": "city",
+       "parent": "realm.caelreth",
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.glassmere.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.glassmere",
+       "realm": "realm.caelreth",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.ashbridge",
+       "name": "Ashbridge",
+       "kind": "settlement",
+       "sub": "city",
+       "parent": "realm.duskreach",
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.ashbridge.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.ashbridge",
+       "realm": "realm.duskreach",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.crownheart",
+       "name": "Crownheart",
+       "kind": "settlement",
+       "sub": "capital",
+       "parent": "realm.valedorn_crown",
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.crownheart.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.crownheart",
+       "realm": "realm.valedorn_crown",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.asterhall",
+       "name": "Asterhall",
+       "kind": "settlement",
+       "sub": "capital",
+       "parent": "realm.caelreth",
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.asterhall.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.asterhall",
+       "realm": "realm.caelreth",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.blackgate",
+       "name": "Blackgate",
+       "kind": "settlement",
+       "sub": "capital",
+       "parent": "realm.duskreach",
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.blackgate.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.blackgate",
+       "realm": "realm.duskreach",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.cinder_throne",
+       "name": "Cinder Throne",
+       "kind": "settlement",
+       "sub": "seat",
+       "parent": "realm.ashen_scale_dominion",
+       "realm": "realm.ashen_scale_dominion",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.thornheart",
+       "name": "Thornheart",
+       "kind": "settlement",
+       "sub": "seat",
+       "parent": "realm.verdant_fang_court",
+       "realm": "realm.verdant_fang_court",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.mossback_warrens",
+       "name": "Mossback Warrens",
+       "kind": "site",
+       "parent": "realm.duskreach",
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content",
+       "near": "loc.ashbridge",
+       "where": "a moss-grown hill half a day's walk east of Ashbridge, off the old quarry track",
+       "rooms": true,
+       "dungeon": {
+        "real": true,
+        "theme": "goblin warrens: tunnels dug into a mossy hill, crude palisades, goblin scouts and warriors, a shaman deeper down",
+        "rank": {
+         "min": "F",
+         "max": "E"
+        },
+        "levels": {
+         "1": {
+          "min": "F",
+          "max": "F"
+         },
+         "2": {
+          "min": "E",
+          "max": "E"
+         }
+        },
+        "control": "the Adventurers' Guild of Ashbridge keeps its entry ledger under a charter of the Duskreach crown",
+        "hidden": [],
+        "heard": [],
+        "guild": [
+         "theme",
+         "rank",
+         "level:1",
+         "level:2",
+         "control"
+        ]
+       }
+      },
+      {
+       "id": "loc.glimmerdeep_grotto",
+       "name": "Glimmerdeep Grotto",
+       "kind": "site",
+       "parent": "realm.caelreth",
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content",
+       "near": "loc.glassmere",
+       "where": "a cleft in the hills a morning's walk north of Glassmere, where the stream runs out of the rock",
+       "rooms": true,
+       "dungeon": {
+        "real": true,
+        "theme": "crystal caverns: glittering grottos of mana-fed crystal, crystal beetles and mineral slimes",
+        "rank": {
+         "min": "F",
+         "max": "F"
+        },
+        "levels": {
+         "1": {
+          "min": "F",
+          "max": "F"
+         }
+        },
+        "control": "a Glassmere academy of magic holds the cleft and lets registered adventurers cull its outer grottos; what they kill and the free crystal there is theirs, the deep galleries the academy's",
+        "hidden": [],
+        "heard": [],
+        "guild": [
+         "theme",
+         "rank",
+         "level:1",
+         "control"
+        ]
+       }
+      },
+      {
+       "id": "loc.old_crown_catacombs",
+       "name": "Old Crown Catacombs",
+       "kind": "site",
+       "parent": "realm.valedorn_crown",
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content",
+       "near": "loc.alderwatch",
+       "where": "beneath a ruined chapel an hour's ride west of Alderwatch",
+       "rooms": true,
+       "dungeon": {
+        "real": true,
+        "theme": "undead catacombs: burial galleries, restless skeletons, ghouls deeper down",
+        "rank": {
+         "min": "F",
+         "max": "E"
+        },
+        "levels": {
+         "1": {
+          "min": "F",
+          "max": "F"
+         },
+         "2": {
+          "min": "E",
+          "max": "E"
+         }
+        },
+        "control": "the temple wardens of Alderwatch, who ask the Guild to keep the upper galleries culled",
+        "hidden": [],
+        "heard": [],
+        "guild": [
+         "theme",
+         "rank",
+         "level:1",
+         "level:2",
+         "control"
+        ]
+       }
+      },
+      {
+       "id": "loc.alderwatch.verge",
+       "name": "public roadside verge outside Alderwatch",
+       "kind": "site",
+       "parent": "loc.alderwatch",
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content"
+      }
+     ],
+     "at": "loc.alderwatch.verge"
+    }
+   }
+  ]
+ },
+ {
+  "i": 1,
+  "user": true,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 1,
+     "input_hash": "488a02e3",
+     "input": "Mage"
+    }
+   },
+   {
+    "t": "creation.class_selected",
+    "d": {
+     "class": "mage",
+     "favored": [
+      "INT",
+      "WIL"
+     ],
+     "basic_attack": "mage.basic_attack"
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "creation.step2",
+      "class": "mage"
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 3,
+  "user": true,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 2,
+     "input_hash": "6027f909",
+     "input": "Arcane Wave + Flame Lance"
+    }
+   },
+   {
+    "t": "creation.completed",
+    "d": {
+     "skills": [
+      "mage.flame_lance",
+      "mage.arcane_wave"
+     ],
+     "equip": {
+      "weapon": "starter_arcane_staff_r2",
+      "armor": "starter_light_robes"
+     },
+     "items": {},
+     "hp": 80,
+     "mp": 72,
+     "sta": 100
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "creation.complete",
+      "class": "mage",
+      "skills": [
+       "mage.flame_lance",
+       "mage.arcane_wave"
+      ],
+      "kit": [
+       "starter_arcane_staff_r2",
+       "starter_light_robes"
+      ]
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 5,
+  "user": true,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 3,
+     "input_hash": "b4d933a4",
+     "input": "*i walk into the city ahead and make my way over to the adventurers guild*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 4354,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "go",
+       "to": "loc.alderwatch.guild_hall",
+       "quote": "i walk into the city ahead and make my way over to the adventurers guild",
+       "within": null
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "go",
+     "status": "authorized",
+     "quote": "i walk into the city ahead and make my way over to the adventurers guild"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 3,
+     "at": "loc.alderwatch.verge",
+     "exposure": "scene",
+     "frame": "inside",
+     "phase": "day",
+     "base": 6,
+     "misses_before": 0,
+     "p": 6,
+     "roll": 82.17,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. GOES — to Adventurers' Guild hall, Alderwatch (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "i walk into the city ahead and make my way over to the adventurers guild"
+       }
+      ],
+      "expected_keys": {
+       "1": "go"
+      },
+      "auth": {
+       "go": {
+        "seq": 1,
+        "to": "loc.alderwatch.guild_hall",
+        "name": "Adventurers' Guild hall, Alderwatch",
+        "hall": true,
+        "newName": null,
+        "mode": "local",
+        "enter": null,
+        "scope": null
+       },
+       "gos": [
+        {
+         "seq": 1,
+         "to": "loc.alderwatch.guild_hall",
+         "name": "Adventurers' Guild hall, Alderwatch",
+         "hall": true,
+         "newName": null,
+         "mode": "local",
+         "enter": null,
+         "scope": null
+        }
+       ],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "inside",
+        "phase": "day",
+        "p": 6,
+        "roll": 82.17,
+        "misses": 0,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 6,
+  "user": false,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "scene.moved",
+    "d": {
+     "at": "loc.alderwatch.guild_hall",
+     "location": "loc.alderwatch",
+     "place": "Adventurers' Guild hall, Alderwatch",
+     "reset_present": true,
+     "track_history": true
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "seq": 1,
+      "type": "expected",
+      "met": {
+       "who": "npc.alderwatch.clerk",
+       "evidence": "a broad woman with ink-stained fingers was writing in a ledger ... The woman at the counter glanced up, marked the staff and the robes"
+      }
+     },
+     "rule": "met_not_known_here",
+     "reason": "npc.alderwatch.clerk is not one of the people known at this place for step 1"
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "npc.npcalderwatchclerk",
+      "kind": "npc",
+      "name": null,
+      "descriptors": [
+       "clerk",
+       "broad woman with ink-stained fingers",
+       "writes in a ledger at the guild counter",
+       "npc.alderwatch.clerk"
+      ],
+      "traits": "broad woman with ink-stained fingers, writes in a ledger at the Guild counter",
+      "status": "alive",
+      "location": "loc.alderwatch",
+      "created": {
+       "turn": 3,
+       "minute": 540
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 6
+      },
+      "card": {},
+      "template": "commoner"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "npc.npcalderwatchclerk",
+     "band": "SHORT"
+    }
+   },
+   {
+    "t": "scene.tactical",
+    "d": {
+     "id": "npc.npcalderwatchclerk",
+     "relevant": true,
+     "threat": false
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_npcalderwatchclerk.occupation.6c1eaefc.t3",
+      "s": "npc.npcalderwatchclerk",
+      "p": "occupation",
+      "o": "clerk",
+      "since": {
+       "turn": 3,
+       "minute": 540
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 6
+      }
+     }
+    }
+   },
+   {
+    "t": "scene.awareness",
+    "d": {
+     "id": "npc.npcalderwatchclerk",
+     "level": "aware"
+    }
+   },
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 15,
+     "why": "travel"
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcalderwatchclerk",
+     "about": "f.pc.appearance",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 3,
+     "minute": 555
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t3.seen.npc.npcalderwatchclerk",
+      "turn": 3,
+      "minute": 555,
+      "text": "first saw {pc} at Adventurers' Guild hall, Alderwatch",
+      "who": [
+       "npc.npcalderwatchclerk",
+       "pc"
+      ],
+      "witnesses": [
+       "npc.npcalderwatchclerk"
+      ],
+      "seen": [
+       "npc.npcalderwatchclerk"
+      ],
+      "location": "loc.alderwatch",
+      "place": "Adventurers' Guild hall, Alderwatch",
+      "importance": 4,
+      "kind": "meeting"
+     }
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t3.m6.ep",
+      "turn": 3,
+      "minute": 555,
+      "text": "Adventurers' Guild hall, Alderwatch: {pc}: \"*i walk into the city ahead and make my way over to the adventurers guild*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcalderwatchclerk"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.alderwatch",
+      "place": "Adventurers' Guild hall, Alderwatch",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 6
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 3,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 1,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 35310,
+     "repaired": true,
+     "deltas": 3,
+     "rejected": 1
+    }
+   }
+  ]
+ },
+ {
+  "i": 7,
+  "user": true,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 4,
+     "input_hash": "8b9c95f3",
+     "input": "*i walk up to the counter* hello im Alaric Red im here to register"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 3796,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "guild.register",
+       "quote": "im here to register"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "offer.created",
+    "d": {
+     "offer": {
+      "id": "offer.registration",
+      "seller": "guild",
+      "at": "loc.alderwatch.guild_hall",
+      "status": "open",
+      "canon": true,
+      "turn": 4,
+      "lines": [
+       {
+        "id": "l1",
+        "what": "Guild registration fee",
+        "kind": "service",
+        "service": "guild_registration",
+        "qty": 1,
+        "price_cp": 20
+       }
+      ]
+     }
+    }
+   },
+   {
+    "t": "decision.opened",
+    "d": {
+     "decision": {
+      "id": "dec.registration",
+      "kind": "registration",
+      "what": "Guild registration",
+      "offer": "offer.registration",
+      "at": "loc.alderwatch.guild_hall",
+      "turn": 4,
+      "price_cp": 20
+     }
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "guild.register",
+     "status": "pending",
+     "reason": "fee",
+     "quote": "im here to register"
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. REGISTERS — pending: the Guild's registration fee is 2 silver (20 cp), one-time; a new member starts at Guild Rank Novice (the Guild's ranks run Novice to Legend); Power Rank (F to S) is a person's measured strength, a separate scale the Guild reads but never grants. Let the clerk name the fee and explain; stop there: he has not agreed to pay."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "guild.register",
+        "status": "pending",
+        "reason": "fee",
+        "quote": "im here to register"
+       }
+      ],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": false,
+        "exposure": "scene",
+        "eligible": false,
+        "reason": "hard_stop"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 8,
+  "user": false,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 1,
+      "type": "person.new",
+      "ref": "npc.dice_watcher",
+      "name": null,
+      "role": "gambler",
+      "desc": [
+       "man at the near dice table watching over the rim of his cup"
+      ],
+      "armed": null,
+      "present": true,
+      "relevant": false,
+      "threat": false,
+      "at": null,
+      "band": "SHORT",
+      "distinct_from": null
+     },
+     "rule": "ambient",
+     "reason": "scene colour: an unnamed person nothing else of the reply deals with is not kept; the story brings them back when they matter"
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcalderwatchclerk",
+     "about": "f.pc.name",
+     "stance": "knows",
+     "source": "told:pc",
+     "turn": 4,
+     "minute": 555
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t4.m8.ep",
+      "turn": 4,
+      "minute": 555,
+      "text": "Adventurers' Guild hall, Alderwatch: {pc}: \"*i walk up to the counter* hello im Alaric Red im here to register\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcalderwatchclerk"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.alderwatch",
+      "place": "Adventurers' Guild hall, Alderwatch",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 8
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 4,
+     "rolled": false,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 21971,
+     "repaired": true,
+     "deltas": 1,
+     "rejected": 1
+    }
+   }
+  ]
+ },
+ {
+  "i": 9,
+  "user": true,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 5,
+     "input_hash": "8806462e",
+     "input": "*i pay the 2 silver and finish the registration*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 5144,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "offer.accept",
+       "offer": "offer.registration",
+       "lines": [
+        "l1"
+       ],
+       "qty": null,
+       "party_words": null,
+       "agreed_cp": 20,
+       "price_evidence": {
+        "basis": "total",
+        "quote": "2 silver",
+        "currency_quote": "silver"
+       },
+       "quote": "i pay the 2 silver and finish the registration"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "transaction.completed",
+    "d": {
+     "offer": "offer.registration",
+     "lines": [
+      "l1"
+     ],
+     "cp": 20,
+     "seller": "guild"
+    }
+   },
+   {
+    "t": "coin.changed",
+    "d": {
+     "id": "pc",
+     "value": 30,
+     "delta": -20,
+     "why": "Guild registration fee"
+    }
+   },
+   {
+    "t": "offer.closed",
+    "d": {
+     "id": "offer.registration",
+     "status": "accepted"
+    }
+   },
+   {
+    "t": "guild.registered",
+    "d": {
+     "rank": "Novice",
+     "branch": "loc.alderwatch",
+     "power_rank": "F"
+    }
+   },
+   {
+    "t": "object.created",
+    "d": {
+     "object": {
+      "id": "obj.guild_plate",
+      "name": "Guild plate",
+      "kind": "document",
+      "stack": false,
+      "qty": 1,
+      "unit": null,
+      "holder": {
+       "entity": "pc"
+      },
+      "marks": [
+       {
+        "text": "Novice stamp",
+        "by": "guild",
+        "turn": 5
+       }
+      ],
+      "for_quests": [],
+      "source": {
+       "turn": 5,
+       "how": "guild"
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.pc.guild_rank.d0460f90.t5",
+      "s": "pc",
+      "p": "guild_rank",
+      "o": "Novice",
+      "since": {
+       "turn": 5,
+       "minute": 555
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.7,
+      "hard": false,
+      "source": {
+       "kind": "engine"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcalderwatchclerk",
+     "about": "f.pc.guild_rank.d0460f90.t5",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 5,
+     "minute": 555
+    }
+   },
+   {
+    "t": "decision.closed",
+    "d": {
+     "id": "dec.registration",
+     "status": "accepted"
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "offer.accept",
+     "status": "resolved",
+     "quote": "i pay the 2 silver and finish the registration"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 5,
+     "at": "loc.alderwatch.guild_hall",
+     "exposure": "scene",
+     "frame": "inside",
+     "phase": "day",
+     "base": 6,
+     "misses_before": 1,
+     "p": 6.9,
+     "roll": 58.47,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. PAYS — the Guild registration fee, 20 cp: registered at Guild Rank Novice; the crystal reads his Power Rank: F (his measured strength, a separate scale from the Guild's ranks); he receives his Guild plate. Desk, crystal measurement and handover are one service inside the Guild hall. Describe the routine in place; only actual witnesses know it."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "offer.accept",
+        "status": "resolved",
+        "quote": "i pay the 2 silver and finish the registration"
+       }
+      ],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "inside",
+        "phase": "day",
+        "p": 6.9,
+        "roll": 58.47,
+        "misses": 1,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": true,
+       "grants": [
+        "Guild plate"
+       ],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": [],
+      "coin": [
+       {
+        "kind": "purchase",
+        "delta": -20,
+        "before": 50,
+        "after": 30,
+        "why": "Guild registration fee"
+       }
+      ]
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 10,
+  "user": false,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 10,
+     "why": "narration"
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcalderwatchclerk",
+     "about": "f.pc.name",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 5,
+     "minute": 565
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t5.m10.ep",
+      "turn": 5,
+      "minute": 565,
+      "text": "Adventurers' Guild hall, Alderwatch: {pc}: \"*i pay the 2 silver and finish the registration*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcalderwatchclerk"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.alderwatch",
+      "place": "Adventurers' Guild hall, Alderwatch",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 10
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 5,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 22327,
+     "repaired": true,
+     "deltas": 3,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 11,
+  "user": true,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 6,
+     "input_hash": "25102611",
+     "input": "*i walk over to the questboard and look at it*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 34356,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "board.read",
+       "rank": null,
+       "quote": "i walk over to the questboard and look at it"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "offer.created",
+    "d": {
+     "offer": {
+      "id": "offer.manuals.localderwatchguild_hall",
+      "seller": "npc.npcalderwatchclerk",
+      "at": "loc.alderwatch.guild_hall",
+      "status": "open",
+      "canon": true,
+      "stock": "manuals",
+      "turn": 6,
+      "lines": [
+       {
+        "id": "strike",
+        "what": "Primer of Strike",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "strike",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "bolt",
+        "what": "Primer of Bolt",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "bolt",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "guard",
+        "what": "Primer of Guard",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "guard",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "ward",
+        "what": "Primer of Ward",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "ward",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "mend",
+        "what": "Primer of Mend",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "mend",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "loc.alderwatch.the_curing_sheds_and_scrap_yards_along_tanners_row",
+      "name": "the curing sheds and scrap yards along Tanners' Row, Alderwatch",
+      "kind": "site",
+      "parent": "loc.alderwatch",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "known": "reported",
+      "reports": [],
+      "by": "guild",
+      "created": {
+       "turn": 6,
+       "minute": 565
+      },
+      "population": {
+       "anchor": "wolf",
+       "species": "feral dogs",
+       "levels": [
+        1,
+        3
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.feral_dogs_at_the_tannery_rows",
+      "title": "Feral Dogs at the Tannery Rows",
+      "kind": "guild_contract",
+      "client": "Warden Ottel, Tanners' Row watch",
+      "giver": null,
+      "rank": "Novice",
+      "level": 1,
+      "qtype": "minor",
+      "payout_cp": 40,
+      "reward": "40 cp",
+      "task": "Kill 5 feral dogs at the curing sheds and scrap yards along Tanners' Row, Alderwatch. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+      "desired_end_state": "5 feral dogs killed at the curing sheds and scrap yards along Tanners' Row, Alderwatch.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "feral dogs",
+        "qty": 5,
+        "unit": "dogs",
+        "where": "the curing sheds and scrap yards along Tanners' Row, Alderwatch",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.alderwatch.guild_hall",
+       "branch": "loc.alderwatch",
+       "listed": {
+        "turn": 6,
+        "minute": 565,
+        "day": 1
+       },
+       "profile": "count_hunt_clear"
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 565,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "hunt": {
+       "at": "loc.alderwatch.the_curing_sheds_and_scrap_yards_along_tanners_row",
+       "age": "adult"
+      },
+      "count_rule": "killed"
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "realm.valedorn_crown.the_millbrook_market_garden_plots_south_of_alderwatch",
+      "name": "the Millbrook market-garden plots south of Alderwatch",
+      "kind": "site",
+      "parent": "realm.valedorn_crown",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "known": "reported",
+      "reports": [],
+      "by": "guild",
+      "created": {
+       "turn": 6,
+       "minute": 565
+      },
+      "population": {
+       "anchor": "boar",
+       "species": "wild boar",
+       "levels": [
+        4,
+        7
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.tusker_in_the_bean_rows",
+      "title": "Tusker in the Bean Rows",
+      "kind": "guild_contract",
+      "client": "Marga Fenwick, market gardener of the Millbrook plots",
+      "giver": null,
+      "rank": "Novice",
+      "level": 5,
+      "qtype": "standard",
+      "payout_cp": 150,
+      "reward": "150 cp",
+      "task": "Kill 1 old boar at the Millbrook market-garden plots south of Alderwatch. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+      "desired_end_state": "1 old boar killed at the Millbrook market-garden plots south of Alderwatch.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "old boar",
+        "qty": 1,
+        "unit": "boar",
+        "where": "the Millbrook market-garden plots south of Alderwatch",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.alderwatch.guild_hall",
+       "branch": "loc.alderwatch",
+       "listed": {
+        "turn": 6,
+        "minute": 565,
+        "day": 1
+       },
+       "profile": "count_hunt_clear"
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 565,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "hunt": {
+       "at": "realm.valedorn_crown.the_millbrook_market_garden_plots_south_of_alderwatch",
+       "age": "adult"
+      },
+      "count_rule": "killed"
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "realm.valedorn_crown.the_old_pear_orchard_of_orchard_hollow_half_a_day_east_of_alderwatch",
+      "name": "the old pear orchard of Orchard Hollow, half a day east of Alderwatch",
+      "kind": "site",
+      "parent": "realm.valedorn_crown",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "known": "reported",
+      "reports": [],
+      "by": "guild",
+      "created": {
+       "turn": 6,
+       "minute": 565
+      },
+      "population": {
+       "anchor": "arthropod",
+       "species": "giant hornets",
+       "levels": [
+        4,
+        7
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.hornets_over_the_orchard_hollow",
+      "title": "Hornets over the Orchard Hollow",
+      "kind": "guild_contract",
+      "client": "Orchard Hollow cider cooperative",
+      "giver": null,
+      "rank": "Novice",
+      "level": 6,
+      "qtype": "standard",
+      "payout_cp": 160,
+      "reward": "160 cp",
+      "task": "Kill 12 giant hornets at the old pear orchard of Orchard Hollow, half a day east of Alderwatch. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+      "desired_end_state": "12 giant hornets killed at the old pear orchard of Orchard Hollow, half a day east of Alderwatch.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "giant hornets",
+        "qty": 12,
+        "unit": "hornets",
+        "where": "the old pear orchard of Orchard Hollow, half a day east of Alderwatch",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.alderwatch.guild_hall",
+       "branch": "loc.alderwatch",
+       "listed": {
+        "turn": 6,
+        "minute": 565,
+        "day": 1
+       },
+       "profile": "count_hunt_clear"
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 565,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "hunt": {
+       "at": "realm.valedorn_crown.the_old_pear_orchard_of_orchard_hollow_half_a_day_east_of_alderwatch",
+       "age": "adult"
+      },
+      "count_rule": "killed"
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "realm.valedorn_crown.the_ferry_landing_and_stone_shallows_at_stoneford_crossing",
+      "name": "the ferry landing and stone shallows at Stoneford crossing",
+      "kind": "site",
+      "parent": "realm.valedorn_crown",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "known": "reported",
+      "reports": [],
+      "by": "guild",
+      "created": {
+       "turn": 6,
+       "minute": 565
+      },
+      "population": {
+       "anchor": "serpent",
+       "species": "marsh adders",
+       "levels": [
+        4,
+        7
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.adders_in_the_ferry_stones",
+      "title": "Adders in the Ferry Stones",
+      "kind": "guild_contract",
+      "client": "Corvin Hale, ferryman at the Stoneford crossing",
+      "giver": null,
+      "rank": "Novice",
+      "level": 6,
+      "qtype": "standard",
+      "payout_cp": 140,
+      "reward": "140 cp",
+      "task": "Kill 6 marsh adders at the ferry landing and stone shallows at Stoneford crossing. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+      "desired_end_state": "6 marsh adders killed at the ferry landing and stone shallows at Stoneford crossing.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "marsh adders",
+        "qty": 6,
+        "unit": "adders",
+        "where": "the ferry landing and stone shallows at Stoneford crossing",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.alderwatch.guild_hall",
+       "branch": "loc.alderwatch",
+       "listed": {
+        "turn": 6,
+        "minute": 565,
+        "day": 1
+       },
+       "profile": "count_hunt_clear"
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 565,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "hunt": {
+       "at": "realm.valedorn_crown.the_ferry_landing_and_stone_shallows_at_stoneford_crossing",
+       "age": "adult"
+      },
+      "count_rule": "killed"
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.clear_the_old_crown_catacombs_level_1",
+      "title": "Clear the Old Crown Catacombs, Level 1",
+      "kind": "guild_contract",
+      "client": "Temple wardens of Alderwatch",
+      "giver": null,
+      "rank": "Novice",
+      "level": 1,
+      "qtype": "minor",
+      "payout_cp": 60,
+      "reward": "60 cp",
+      "task": "Clear level 1 of Old Crown Catacombs. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedition.",
+      "desired_end_state": "Level 1 of Old Crown Catacombs is clear.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "restless skeletons",
+        "qty": null,
+        "unit": null,
+        "where": "Old Crown Catacombs, level 1 (upper burial galleries)",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.alderwatch.guild_hall",
+       "branch": "loc.alderwatch",
+       "listed": {
+        "turn": 6,
+        "minute": 565,
+        "day": 1
+       }
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 565,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "clear": {
+       "dungeon": "loc.old_crown_catacombs",
+       "floor": 1
+      },
+      "dungeon": "loc.old_crown_catacombs",
+      "floor": 1
+     }
+    }
+   },
+   {
+    "t": "board.refreshed",
+    "d": {
+     "key": "loc.alderwatch|Novice",
+     "branch": "loc.alderwatch",
+     "rank": "Novice",
+     "day": 1,
+     "listings": [
+      "quest.feral_dogs_at_the_tannery_rows",
+      "quest.tusker_in_the_bean_rows",
+      "quest.hornets_over_the_orchard_hollow",
+      "quest.adders_in_the_ferry_stones",
+      "quest.clear_the_old_crown_catacombs_level_1"
+     ]
+    }
+   },
+   {
+    "t": "board.shown",
+    "d": {
+     "branch": "loc.alderwatch",
+     "rank": "Novice",
+     "listings": [
+      "quest.feral_dogs_at_the_tannery_rows",
+      "quest.tusker_in_the_bean_rows",
+      "quest.hornets_over_the_orchard_hollow",
+      "quest.adders_in_the_ferry_stones",
+      "quest.clear_the_old_crown_catacombs_level_1"
+     ]
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "board.read",
+     "status": "resolved",
+     "quote": "i walk over to the questboard and look at it"
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. READS the Novice board — BOARD (these listings now become canonical because Alaric actually reads them; System cards display the official catalogue once this read is confirmed. Tell the reading briefly, atmosphere and NPC reactions; do not reproduce the catalogue or repeat every title, objective, reward and risk line. Discussing an individual contract or answering requested details is allowed. Invent no other official contract; these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display):\nREFERENCE ONLY — authoritative contract data, not a prose catalogue:\n**Feral Dogs at the Tannery Rows** (5) · 5 kills total · reported individuals L1–3 · kills are a total contract goal, not encounter group size; groups may be dangerous — client: Warden Ottel, Tanners' Row watch · reward: 40 cp · Kill 5 feral dogs at the curing sheds and scrap yards along Tanners' Row, Alderwatch. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Tusker in the Bean Rows** (1) · 1 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 — client: Marga Fenwick, market gardener of the Millbrook plots · reward: 150 cp · Kill 1 old boar at the Millbrook market-garden plots south of Alderwatch. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Hornets over the Orchard Hollow** (12) · 12 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 — client: Orchard Hollow cider cooperative · reward: 160 cp · Kill 12 giant hornets at the old pear orchard of Orchard Hollow, half a day east of Alderwatch. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Adders in the Ferry Stones** (6) · 6 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 — client: Corvin Hale, ferryman at the Stoneford crossing · reward: 140 cp · Kill 6 marsh adders at the ferry landing and stone shallows at Stoneford crossing. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Clear the Old Crown Catacombs, Level 1** — Clear Old Crown Catacombs, level 1 — client: Temple wardens of Alderwatch · reward: 60 cp · Clear level 1 of Old Crown Catacombs. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedition.\nStored objectives and any verification examples are continuity memory only."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "board.read",
+        "status": "resolved",
+        "quote": "i walk over to the questboard and look at it"
+       }
+      ],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": false,
+        "exposure": "scene",
+        "eligible": false,
+        "reason": "board"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": {
+       "branch": "loc.alderwatch",
+       "rank": "Novice",
+       "listings": [
+        "quest.feral_dogs_at_the_tannery_rows",
+        "quest.tusker_in_the_bean_rows",
+        "quest.hornets_over_the_orchard_hollow",
+        "quest.adders_in_the_ferry_stones",
+        "quest.clear_the_old_crown_catacombs_level_1"
+       ]
+      },
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": [],
+      "engine_lines": [
+       "SHOP — Guild: Primer of Strike · 1 for 80 cp · manual · F · teaches strike · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Bolt · 1 for 80 cp · manual · F · teaches bolt · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Guard · 1 for 80 cp · manual · F · teaches guard · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Ward · 1 for 80 cp · manual · F · teaches ward · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Mend · 1 for 80 cp · manual · F · teaches mend · value guide ~120 cp each (not the asking price)",
+       "SYSTEM — GUILD BOARD · Novice · Alderwatch",
+       "Feral Dogs at the Tannery Rows (5) · 5 kills total · reported individuals L1–3 · kills are a total contract goal, not encounter group size; groups may be dangerous · Novice · client: Warden Ottel, Tanners' Row watch · reward: 40 cp (4 Silver) · Kill 5 feral dogs at the curing sheds and scrap yards along Tanners' Row, Alderwatch. Only engine-recorded kills of this",
+       "Tusker in the Bean Rows (1) · 1 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 · Novice · client: Marga Fenwick, market gardener of the Millbrook plots · reward: 150 cp (1 Gold 5 Silver) · Kill 1 old boar at the Millbrook market-garden plots south of Alderwatch. Only engine-recorded kills of this population ",
+       "Hornets over the Orchard Hollow (12) · 12 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 · Novice · client: Orchard Hollow cider cooperative · reward: 160 cp (1 Gold 6 Silver) · Kill 12 giant hornets at the old pear orchard of Orchard Hollow, half a day east of Alderwatch. Only engine-recorded kil",
+       "Adders in the Ferry Stones (6) · 6 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 · Novice · client: Corvin Hale, ferryman at the Stoneford crossing · reward: 140 cp (1 Gold 4 Silver) · Kill 6 marsh adders at the ferry landing and stone shallows at Stoneford crossing. Only engine-recorded kills of this po",
+       "Clear the Old Crown Catacombs, Level 1 — Clear Old Crown Catacombs, level 1 · Novice · quest level 1 · client: Temple wardens of Alderwatch · reward: 60 cp (6 Silver) · Clear level 1 of Old Crown Catacombs. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo exp"
+      ]
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 12,
+  "user": false,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "npc.adventurer",
+      "kind": "npc",
+      "name": null,
+      "descriptors": [
+       "adventurer",
+       "scarred woman with a crossbow across her",
+       "took the adders contract slip from the b",
+       "npc.scarred_adventurer"
+      ],
+      "traits": "scarred woman with a crossbow across her knees, took the adders contract slip from the board and left through the side door",
+      "status": "alive",
+      "location": "loc.alderwatch",
+      "at": "loc.alderwatch.guild_hall",
+      "created": {
+       "turn": 6,
+       "minute": 565
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 12
+      },
+      "card": {},
+      "template": "adventurer"
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_adventurer.occupation.906d5a51.t6",
+      "s": "npc.adventurer",
+      "p": "occupation",
+      "o": "adventurer",
+      "since": {
+       "turn": 6,
+       "minute": 565
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 12
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_adventurer.armed.25ee4993.t6",
+      "s": "npc.adventurer",
+      "p": "armed",
+      "o": "crossbow",
+      "since": {
+       "turn": 6,
+       "minute": 565
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 12
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t6.m12.d2.1",
+      "s": "npc.adventurer",
+      "p": "took_contract",
+      "o": "pulled the Adders in the Ferry Stones slip off the board, saying it was the third time this month Hale's posted it",
+      "since": {
+       "turn": 6,
+       "minute": 565
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 12,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t6.m12.d3_2.1",
+      "turn": 6,
+      "minute": 565,
+      "text": "The Novice board at Alderwatch's Guild hall was read: five slips — four culls (feral dogs at Tanners' Row, an old boar at Millbrook, giant hornets at Orchard Hollow, marsh adders at Stoneford) and a wardens' sheet to clear Old Crown Catacombs, Level 1. A scarred crossbowwoman took the adders slip an",
+      "who": [
+       "npc.npcalderwatchclerk"
+      ],
+      "witnesses": [
+       "pc",
+       "npc.npcalderwatchclerk"
+      ],
+      "seen": [
+       "pc",
+       "npc.npcalderwatchclerk"
+      ],
+      "location": "loc.alderwatch",
+      "place": "Adventurers' Guild hall, Alderwatch",
+      "importance": 6,
+      "kind": "narrated",
+      "msg": 12
+     }
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t6.m12.ep",
+      "turn": 6,
+      "minute": 565,
+      "text": "Adventurers' Guild hall, Alderwatch: {pc}: \"*i walk over to the questboard and look at it*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcalderwatchclerk"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.alderwatch",
+      "place": "Adventurers' Guild hall, Alderwatch",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 12
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 6,
+     "rolled": false,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 1,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 37448,
+     "repaired": false,
+     "deltas": 3,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 13,
+  "user": true,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 7,
+     "input_hash": "a3be0b3d",
+     "input": "Annehmen: Clear the Old Crown Catacombs, Level 1"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 0,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "quest.accept",
+       "quest": "quest.clear_the_old_crown_catacombs_level_1"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "quest.status",
+    "d": {
+     "id": "quest.clear_the_old_crown_catacombs_level_1",
+     "from": "listed",
+     "to": "active",
+     "taker": "pc",
+     "at": "loc.alderwatch.guild_hall",
+     "step": 1
+    }
+   },
+   {
+    "t": "board.refreshed",
+    "d": {
+     "key": "loc.alderwatch|Novice",
+     "branch": "loc.alderwatch",
+     "rank": "Novice",
+     "day": 1,
+     "listings": [
+      "quest.feral_dogs_at_the_tannery_rows",
+      "quest.tusker_in_the_bean_rows",
+      "quest.hornets_over_the_orchard_hollow",
+      "quest.adders_in_the_ferry_stones"
+     ]
+    }
+   },
+   {
+    "t": "object.created",
+    "d": {
+     "object": {
+      "id": "obj.slip.clear_the_old_crown_catacombs_level_1",
+      "name": "Guild contract slip: Clear the Old Crown Catacombs, Level 1",
+      "kind": "document",
+      "stack": false,
+      "qty": 1,
+      "unit": null,
+      "holder": {
+       "entity": "pc"
+      },
+      "marks": [],
+      "for_quests": [
+       "quest.clear_the_old_crown_catacombs_level_1"
+      ],
+      "source": {
+       "turn": 7,
+       "how": "guild"
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.pc.accepted.quest.clear_the_old_crown_catacombs_level_1",
+      "s": "pc",
+      "p": "accepted_contract",
+      "o": "Clear the Old Crown Catacombs, Level 1",
+      "since": {
+       "turn": 7,
+       "minute": 565
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.7,
+      "hard": false,
+      "source": {
+       "kind": "engine"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcalderwatchclerk",
+     "about": "f.pc.accepted.quest.clear_the_old_crown_catacombs_level_1",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 7,
+     "minute": 565
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "quest.accept",
+     "status": "resolved",
+     "quote": null
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 7,
+     "at": "loc.alderwatch.guild_hall",
+     "exposure": "scene",
+     "frame": "inside",
+     "phase": "day",
+     "base": 6,
+     "misses_before": 2,
+     "p": 7.8,
+     "roll": 71.33,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. ACCEPTS — \"Clear the Old Crown Catacombs, Level 1\" at the Guild desk; the clerk logs it and hands him its contract slip. Contract memory: Level 1 of Old Crown Catacombs is clear.. Proof: the contract slip itself; its Guild seal shows READY once the world has established the outcome (the engine marks it). No trophies or body parts are required or handed over; what he takes from his kills is his own loot. The stored objectives and any verification examples are continuity guidance, not mandatory steps or wording. Payout (60 cp), XP, completed-contract credit and promotion remain engine-owned at explicit turn-in."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "quest.accept",
+        "status": "resolved",
+        "quote": null
+       }
+      ],
+      "expected_keys": {
+       "1": "desk"
+      },
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "inside",
+        "phase": "day",
+        "p": 7.8,
+        "roll": 71.33,
+        "misses": 2,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [
+        "contract slip"
+       ],
+       "turnIns": [],
+       "accepted": [
+        "quest.clear_the_old_crown_catacombs_level_1"
+       ],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": [],
+      "desk": {
+       "1": {
+        "quest": "quest.clear_the_old_crown_catacombs_level_1",
+        "kind": "accept"
+       }
+      }
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 14,
+  "user": false,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "quest.detailed",
+    "d": {
+     "id": "quest.clear_the_old_crown_catacombs_level_1",
+     "note": "Restless dead in the upper galleries; wardens seal the stair when a floor is done, so cleared floors are known. Entrance is a ruined chapel an hour west along the road; ask the gate wardens at the wes",
+     "schedule": null
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t7.m14.ep",
+      "turn": 7,
+      "minute": 565,
+      "text": "Adventurers' Guild hall, Alderwatch: {pc}: \"Annehmen: Clear the Old Crown Catacombs, Level 1\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcalderwatchclerk"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.alderwatch",
+      "place": "Adventurers' Guild hall, Alderwatch",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 14
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 7,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 60408,
+     "repaired": true,
+     "deltas": 2,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 15,
+  "user": true,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 8,
+     "input_hash": "78892150",
+     "input": "*i nod and then start making my way over to the catacombs*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 37490,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "go",
+       "to": "loc.old_crown_catacombs",
+       "quote": "i nod and then start making my way over to the catacombs",
+       "within": null
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "dungeon.established",
+    "d": {
+     "dungeon": {
+      "id": "loc.old_crown_catacombs",
+      "name": "Old Crown Catacombs",
+      "since": {
+       "turn": 8,
+       "minute": 565
+      },
+      "seed": "310361370|loc.old_crown_catacombs",
+      "gate": {
+       "names": [
+        "ruined chapel",
+        "chapel stair",
+        "chapel yard",
+        "chapel lodge"
+       ],
+       "text": "the stair beneath the ruined chapel, watched by the temple wardens",
+       "requires": null,
+       "fee_cp": 0,
+       "keeper": "the temple wardens"
+      },
+      "capacity": 6,
+      "reset_min": 4320,
+      "floors": {
+       "1": {
+        "rank": {
+         "min": "F",
+         "max": "F"
+        },
+        "spans": {
+         "minion": [
+          1,
+          5
+         ],
+         "guard": [
+          4,
+          8
+         ],
+         "boss": [
+          5,
+          9
+         ]
+        },
+        "slots": [
+         {
+          "id": "bones",
+          "role": "minion",
+          "species": [
+           "restless skeleton",
+           "risen bones"
+          ],
+          "anchor": "skeleton",
+          "count": [
+           2,
+           3
+          ]
+         },
+         {
+          "id": "gallery",
+          "role": "minion",
+          "species": [
+           "restless skeleton",
+           "skeletal gravekeeper"
+          ],
+          "anchor": "skeleton",
+          "count": [
+           1,
+           2
+          ]
+         },
+         {
+          "id": "warden",
+          "role": "guard",
+          "name": "the Gallery Warden",
+          "species": "armoured skeleton",
+          "anchor": "skeleton"
+         }
+        ],
+        "manifest": "the pale grave-light in the seal over the lower stair gutters out, and the seal's chalk lines crack",
+        "sealed": true,
+        "pace": [
+         0,
+         1
+        ]
+       },
+       "2": {
+        "rank": {
+         "min": "E",
+         "max": "E"
+        },
+        "spans": {
+         "minion": [
+          15,
+          19
+         ],
+         "guard": [
+          18,
+          22
+         ],
+         "boss": [
+          20,
+          24
+         ]
+        },
+        "slots": [
+         {
+          "id": "ghouls",
+          "role": "minion",
+          "species": [
+           "ghoul",
+           "ghast"
+          ],
+          "anchor": "ghoul",
+          "count": [
+           1,
+           2
+          ]
+         },
+         {
+          "id": "lord",
+          "role": "boss",
+          "name": "the Ossuary Lord",
+          "species": "ghoul lord",
+          "anchor": "ghoul"
+         }
+        ],
+        "manifest": "the charnel stink thins and the lower galleries fall still",
+        "sealed": false,
+        "pace": [
+         0,
+         1
+        ]
+       }
+      },
+      "parties": [
+       {
+        "id": "party.three_oaks_company",
+        "name": "the Three Oaks Company",
+        "size": 4,
+        "leader": "Ysolde Marr",
+        "affiliation": "a crew of independent delvers",
+        "reach": 2
+       },
+       {
+        "id": "party.grey_pennants",
+        "name": "the Grey Pennants",
+        "size": 2,
+        "leader": "Rook Tallow",
+        "affiliation": "a Guild-registered company",
+        "reach": 1
+       }
+      ],
+      "resources_spec": [],
+      "cycle": 1,
+      "cycle_start": 565,
+      "booked_to": 565,
+      "inside": {},
+      "clears": [],
+      "ahead": null,
+      "pass": null,
+      "run": {
+       "floors": {
+        "1": {
+         "parts": 0,
+         "pace": [
+          0,
+          1,
+          0
+         ],
+         "slots": [
+          {
+           "id": "bones",
+           "role": "minion",
+           "name": null,
+           "species": "restless skeleton",
+           "anchor": "skeleton",
+           "count": 3,
+           "type": null,
+           "levels": [
+            3,
+            2,
+            5
+           ],
+           "ref": "old_crown_catacombs_c1_l1_e1",
+           "entities": [],
+           "at": null,
+           "taken": null
+          },
+          {
+           "id": "gallery",
+           "role": "minion",
+           "name": null,
+           "species": "skeletal gravekeeper",
+           "anchor": "skeleton",
+           "count": 1,
+           "type": null,
+           "levels": [
+            2
+           ],
+           "ref": "old_crown_catacombs_c1_l1_e2",
+           "entities": [],
+           "at": null,
+           "taken": null
+          },
+          {
+           "id": "warden",
+           "role": "guard",
+           "name": "the Gallery Warden",
+           "species": "armoured skeleton",
+           "anchor": "skeleton",
+           "count": 1,
+           "type": null,
+           "levels": [
+            4
+           ],
+           "ref": "old_crown_catacombs_c1_l1_e3",
+           "entities": [],
+           "at": null,
+           "taken": null
+          }
+         ],
+         "cleared": null
+        },
+        "2": {
+         "parts": 0,
+         "pace": [
+          0,
+          0
+         ],
+         "slots": [
+          {
+           "id": "ghouls",
+           "role": "minion",
+           "name": null,
+           "species": "ghoul",
+           "anchor": "ghoul",
+           "count": 2,
+           "type": null,
+           "levels": [
+            18,
+            17
+           ],
+           "ref": "old_crown_catacombs_c1_l2_e1",
+           "entities": [],
+           "at": null,
+           "taken": null
+          },
+          {
+           "id": "lord",
+           "role": "boss",
+           "name": "the Ossuary Lord",
+           "species": "ghoul lord",
+           "anchor": "ghoul",
+           "count": 1,
+           "type": null,
+           "levels": [
+            21
+           ],
+           "ref": "old_crown_catacombs_c1_l2_e2",
+           "entities": [],
+           "at": null,
+           "taken": null
+          }
+         ],
+         "cleared": null
+        }
+       },
+       "resources": {}
+      }
+     }
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "go",
+     "status": "authorized",
+     "quote": "i nod and then start making my way over to the catacombs"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 8,
+     "at": "loc.alderwatch.guild_hall",
+     "exposure": "travel",
+     "frame": "travel",
+     "phase": "day",
+     "base": 35,
+     "misses_before": 3,
+     "p": 50.75,
+     "roll": 20.52,
+     "open": true,
+     "kind": "meeting",
+     "leg": 1
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. GOES — to Old Crown Catacombs (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+      ],
+      "extra": [
+       "THE ROAD — PULSE (the engine's; day): on this leg toward Old Crown Catacombs ONE concrete thing happens: a MEETING: people or creatures of this place who do not attack him (travellers, locals, an animal, someone who wants something of him). It is a real stop short of Old Crown Catacombs (the one exception to carrying the way forward); what he does about it is his decision. If nothing of this kind can fit what he does, nothing happens."
+      ],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "i nod and then start making my way over to the catacombs"
+       }
+      ],
+      "expected_keys": {
+       "1": "go"
+      },
+      "auth": {
+       "go": {
+        "seq": 1,
+        "to": "loc.old_crown_catacombs",
+        "name": "Old Crown Catacombs",
+        "hall": false,
+        "newName": null,
+        "mode": "dungeon",
+        "enter": {
+         "dungeon": "loc.old_crown_catacombs",
+         "root": "loc.old_crown_catacombs",
+         "gate": false
+        },
+        "scope": "loc.old_crown_catacombs"
+       },
+       "gos": [
+        {
+         "seq": 1,
+         "to": "loc.old_crown_catacombs",
+         "name": "Old Crown Catacombs",
+         "hall": false,
+         "newName": null,
+         "mode": "dungeon",
+         "enter": {
+          "dungeon": "loc.old_crown_catacombs",
+          "root": "loc.old_crown_catacombs",
+          "gate": false
+         },
+         "scope": "loc.old_crown_catacombs"
+        }
+       ],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 10080,
+       "road": "quiet",
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "travel",
+        "eligible": true,
+        "frame": "travel",
+        "phase": "day",
+        "p": 50.75,
+        "roll": 20.52,
+        "misses": 3,
+        "open": true,
+        "kind": "meeting"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 16,
+  "user": false,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 70,
+     "why": "narration"
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "loc.old_crown_road_near_the_ruined_chapel",
+      "name": "Old Crown road near the ruined chapel",
+      "kind": "wilderness",
+      "parent": "realm.valedorn_crown",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "by": "reply",
+      "created": {
+       "turn": 8,
+       "minute": 635
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "npc.npcalderwatchclerk",
+     "set": {
+      "at": "loc.alderwatch.guild_hall"
+     }
+    }
+   },
+   {
+    "t": "scene.moved",
+    "d": {
+     "at": "loc.old_crown_road_near_the_ruined_chapel",
+     "location": "realm.valedorn_crown",
+     "place": "Old Crown road near the ruined chapel",
+     "reset_present": true,
+     "track_history": true
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "npc.bren",
+      "kind": "npc",
+      "name": "Bren",
+      "descriptors": [
+       "carter",
+       "man in his forties, mud to the knee",
+       "sprained ankle from a tipped handcart lo",
+       "travelling with a curly wiry dog",
+       "npc.bren"
+      ],
+      "traits": "man in his forties, mud to the knee, sprained ankle from a tipped handcart loaded with firewood, travelling with a curly wiry dog",
+      "status": "alive",
+      "location": "realm.valedorn_crown",
+      "created": {
+       "turn": 8,
+       "minute": 635
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 16
+      },
+      "card": {},
+      "template": "commoner"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "npc.bren",
+     "band": "SHORT"
+    }
+   },
+   {
+    "t": "scene.tactical",
+    "d": {
+     "id": "npc.bren",
+     "relevant": true,
+     "threat": false
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_bren.occupation.17080406.t8",
+      "s": "npc.bren",
+      "p": "occupation",
+      "o": "carter",
+      "since": {
+       "turn": 8,
+       "minute": 635
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 16
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "mon.crebren_dog",
+      "kind": "creature",
+      "name": null,
+      "descriptors": [
+       "curly, wiry, unbothered",
+       "stands over bren panting",
+       "cre.bren_dog"
+      ],
+      "traits": "curly, wiry, unbothered, stands over Bren panting",
+      "status": "alive",
+      "location": "realm.valedorn_crown",
+      "created": {
+       "turn": 8,
+       "minute": 635
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 16
+      },
+      "card": {},
+      "species": "dog",
+      "anchor": "wolf"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "mon.crebren_dog",
+     "band": "SHORT"
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.crebren_dog",
+     "set": {
+      "life_stage": "adult"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.crebren_dog",
+     "set": {
+      "threat": false
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.crebren_dog",
+     "set": {
+      "profile": {
+       "model": "creature",
+       "anchor": "wolf",
+       "body_plan": "Wolf / canid",
+       "level": 1,
+       "rank": "F",
+       "type": "normal",
+       "max_hp": 23,
+       "atk": 9,
+       "def": 0,
+       "mdef": 0,
+       "init": 12,
+       "attack": {
+        "name": "Bite",
+        "damage_type": "physical",
+        "range": "ENGAGED"
+       },
+       "temperament": "aggressive"
+      }
+     }
+    },
+    "rng_to": 1
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t8.m16.d5_3.1",
+      "s": "npc.bren",
+      "p": "situation",
+      "o": "cart overturned in a rut, ankle hurt, asks help to right it and get up",
+      "since": {
+       "turn": 8,
+       "minute": 635
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 16,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 6,
+      "type": "place.reported",
+      "place": {
+       "new": {
+        "name": "chapel cottage by the ruined chapel",
+        "kind": "site",
+        "parent": "loc.old_crown_catacombs"
+       }
+      },
+      "by": "npc.bren",
+      "how": "told",
+      "where": "a quarter mile from the roadside bank, where his girl and her mother keep a cottage and sell candles to visitors",
+      "false": null
+     },
+     "rule": "dungeon_way",
+     "reason": "the parts of Old Crown Catacombs are the engine's sections, reached by going on; one told of is no place"
+    }
+   },
+   {
+    "t": "thread.set",
+    "d": {
+     "thread": {
+      "id": "thread.t8.1",
+      "text": "Bren, stuck on the roadside with a hurt ankle, asks Alaric to help him up and right the firewood cart, offering to owe him one",
+      "kind": "promise",
+      "status": "open",
+      "since": {
+       "turn": 8,
+       "minute": 635
+      },
+      "updated": {
+       "turn": 8,
+       "minute": 635
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 16
+      },
+      "at": "loc.old_crown_road_near_the_ruined_chapel",
+      "who": [
+       "npc.bren",
+       "pc"
+      ]
+     }
+    }
+   },
+   {
+    "t": "dungeon.booked",
+    "d": {
+     "id": "loc.old_crown_catacombs",
+     "to": 635
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.bren",
+     "about": "f.pc.appearance",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 8,
+     "minute": 635
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t8.seen.npc.bren",
+      "turn": 8,
+      "minute": 635,
+      "text": "first saw {pc} at Old Crown road near the ruined chapel",
+      "who": [
+       "npc.bren",
+       "pc"
+      ],
+      "witnesses": [
+       "npc.bren"
+      ],
+      "seen": [
+       "npc.bren"
+      ],
+      "location": "realm.valedorn_crown",
+      "place": "Old Crown road near the ruined chapel",
+      "importance": 4,
+      "kind": "meeting"
+     }
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t8.m16.ep",
+      "turn": 8,
+      "minute": 635,
+      "text": "Old Crown road near the ruined chapel: {pc}: \"*i nod and then start making my way over to the catacombs*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.bren",
+       "mon.crebren_dog"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "realm.valedorn_crown",
+      "place": "Old Crown road near the ruined chapel",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 16
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 8,
+     "rolled": true,
+     "open": true,
+     "kind": "meeting",
+     "narrated": "likely",
+     "heuristic": true,
+     "persisted": {
+      "threads": 1,
+      "npc_reentries": 0,
+      "persons": 1,
+      "creatures": 1,
+      "features": 0,
+      "objects": 0,
+      "places": 1,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 101209,
+     "repaired": false,
+     "deltas": 7,
+     "rejected": 1
+    }
+   }
+  ]
+ },
+ {
+  "i": 17,
+  "user": true,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 9,
+     "input_hash": "f2649957",
+     "input": "*i sigh and say* lets go ill help you out for the part"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 30179,
+     "failed": false,
+     "commands": [],
+     "dropped": []
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 9,
+     "at": "loc.old_crown_road_near_the_ruined_chapel",
+     "exposure": "scene",
+     "frame": "wild",
+     "phase": "day",
+     "base": 20,
+     "misses_before": 0,
+     "p": 20,
+     "roll": 81.39,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; narrate what he says and does, and the world's response."
+      ],
+      "extra": [],
+      "resolutions": [],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "wild",
+        "phase": "day",
+        "p": 20,
+        "roll": 81.39,
+        "misses": 0,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 18,
+  "user": false,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "stone cottage by the ruined chapel",
+        "kind": "site",
+        "parent": "loc.old_crown_road_near_the_ruined_chapel"
+       }
+      },
+      "forced_by": null,
+      "with": [
+       "npc.bren",
+       "mon.crebren_dog"
+      ]
+     },
+     "rule": "no_go",
+     "reason": "Alaric arrives somewhere only after his own travel/roaming action or an explicit external involuntary cause"
+    }
+   },
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 35,
+     "why": "narration"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 3,
+      "type": "person.new",
+      "ref": "npc.chapel_girl",
+      "name": null,
+      "role": "villager",
+      "desc": [
+       "girl of perhaps fifteen",
+       "woodsmoke in her braid",
+       "Bren's daughter"
+      ],
+      "armed": null,
+      "present": true,
+      "relevant": true,
+      "threat": false,
+      "at": null,
+      "band": "ENGAGED",
+      "distinct_from": null
+     },
+     "rule": "scene_context",
+     "reason": "ambiguous local scene after an unconfirmed arrival; here is not evidence"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 4,
+      "type": "person.new",
+      "ref": "npc.chapel_woman",
+      "name": null,
+      "role": "villager",
+      "desc": [
+       "older woman",
+       "sleeves floured to the elbow",
+       "Bren's wife"
+      ],
+      "armed": null,
+      "present": true,
+      "relevant": true,
+      "threat": false,
+      "at": null,
+      "band": "ENGAGED",
+      "distinct_from": null
+     },
+     "rule": "scene_context",
+     "reason": "ambiguous local scene after an unconfirmed arrival; here is not evidence"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 5,
+      "type": "fact",
+      "s": "npc.bren",
+      "p": "ankle",
+      "o": "hurt ankle, cannot walk without leaning on a shoulder"
+     },
+     "rule": "scene_context",
+     "reason": "ambiguous local scene after an unconfirmed arrival; here is not evidence"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 6,
+      "type": "thread",
+      "id": null,
+      "text": "Bren promises that when Alaric comes back up from the catacombs he will stop in at the cottage and Bren will have something for the help",
+      "kind": "promise",
+      "status": "open",
+      "who": [
+       "npc.bren",
+       "pc"
+      ],
+      "resolution": null
+     },
+     "rule": "scene_context",
+     "reason": "ambiguous local scene after an unconfirmed arrival; here is not evidence"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 7,
+      "type": "quest.detail",
+      "quest": "quest.clear_the_old_crown_catacombs_level_1",
+      "note": "Bren says the girl can show Alaric where the stair is; the chapel's open archway beside the cottage shows stone steps descending into dark",
+      "schedule": null
+     },
+     "rule": "scene_context",
+     "reason": "ambiguous local scene after an unconfirmed arrival; here is not evidence"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 8,
+      "type": "memory",
+      "text": "Alaric helped Bren walk the last quarter mile to the cottage by the ruined chapel; Bren promised a reward from the cottage when Alaric returns from the catacombs",
+      "who": [
+       "npc.bren",
+       "npc.chapel_girl",
+       "npc.chapel_woman"
+      ],
+      "imp": 7
+     },
+     "rule": "scene_context",
+     "reason": "ambiguous local scene after an unconfirmed arrival; here is not evidence"
+    }
+   },
+   {
+    "t": "dungeon.booked",
+    "d": {
+     "id": "loc.old_crown_catacombs",
+     "to": 670
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t9.m18.ep",
+      "turn": 9,
+      "minute": 670,
+      "text": "Old Crown road near the ruined chapel: {pc}: \"*i sigh and say* lets go ill help you out for the part\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.bren",
+       "mon.crebren_dog"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "realm.valedorn_crown",
+      "place": "Old Crown road near the ruined chapel",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 18
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 9,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 39522,
+     "repaired": false,
+     "deltas": 8,
+     "rejected": 7
+    }
+   }
+  ]
+ },
+ {
+  "i": 19,
+  "user": true,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 10,
+     "input_hash": "986ee619",
+     "input": "im gonna hold you to that Bren *i say and then make my way towards the dungeon again*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 4847,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "go",
+       "to": "loc.old_crown_catacombs",
+       "quote": "make my way towards the dungeon again",
+       "within": null
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "go",
+     "status": "authorized",
+     "quote": "make my way towards the dungeon again"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 10,
+     "at": "loc.old_crown_road_near_the_ruined_chapel",
+     "exposure": "scene",
+     "frame": "wild",
+     "phase": "day",
+     "base": 20,
+     "misses_before": 1,
+     "p": 23,
+     "roll": 78.79,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. GOES — to Old Crown Catacombs (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "make my way towards the dungeon again"
+       }
+      ],
+      "expected_keys": {
+       "1": "go"
+      },
+      "auth": {
+       "go": {
+        "seq": 1,
+        "to": "loc.old_crown_catacombs",
+        "name": "Old Crown Catacombs",
+        "hall": false,
+        "newName": null,
+        "mode": "dungeon",
+        "enter": {
+         "dungeon": "loc.old_crown_catacombs",
+         "root": "loc.old_crown_catacombs",
+         "gate": false
+        },
+        "scope": "loc.old_crown_catacombs"
+       },
+       "gos": [
+        {
+         "seq": 1,
+         "to": "loc.old_crown_catacombs",
+         "name": "Old Crown Catacombs",
+         "hall": false,
+         "newName": null,
+         "mode": "dungeon",
+         "enter": {
+          "dungeon": "loc.old_crown_catacombs",
+          "root": "loc.old_crown_catacombs",
+          "gate": false
+         },
+         "scope": "loc.old_crown_catacombs"
+        }
+       ],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 10080,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "wild",
+        "phase": "day",
+        "p": 23,
+        "roll": 78.79,
+        "misses": 1,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 20,
+  "user": false,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": {
+       "new": {
+        "name": "the ruined chapel interior",
+        "kind": "interior",
+        "parent": "loc.old_crown_road_near_the_ruined_chapel"
+       }
+      },
+      "seq": 1,
+      "type": "person.new",
+      "ref": "npc.nella",
+      "name": "Nella",
+      "role": "villager",
+      "desc": [
+       "girl in an apron, Bren's daughter",
+       "guides Alaric to the chapel stair"
+      ],
+      "armed": null,
+      "present": true,
+      "relevant": true,
+      "threat": false,
+      "at": {
+       "new": {
+        "name": "the ruined chapel interior",
+        "kind": "interior",
+        "parent": "loc.old_crown_road_near_the_ruined_chapel"
+       }
+      },
+      "band": "SHORT",
+      "distinct_from": null
+     },
+     "rule": "scene_context",
+     "reason": "$.deltas[0]: arrival must come before this local introduction in the REPLY's order; correct scene and seq; remote sightings use present:false"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": {
+       "new": {
+        "name": "the ruined chapel interior",
+        "kind": "interior",
+        "parent": "loc.old_crown_road_near_the_ruined_chapel"
+       }
+      },
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "the ruined chapel interior",
+        "kind": "interior",
+        "parent": "loc.old_crown_road_near_the_ruined_chapel"
+       }
+      },
+      "forced_by": null,
+      "with": [
+       "npc.nella"
+      ]
+     },
+     "rule": "passage",
+     "reason": "the ruined chapel interior is not where his step goes (Old Crown Catacombs)"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": {
+       "new": {
+        "name": "the ruined chapel interior",
+        "kind": "interior",
+        "parent": "loc.old_crown_road_near_the_ruined_chapel"
+       }
+      },
+      "seq": 3,
+      "type": "quest.detail",
+      "quest": "quest.clear_the_old_crown_catacombs_level_1",
+      "note": "Nella: the wardens' seal is a painted red-and-white line across the arch marking the finished floor; a cold iron brazier stands at the stair head, lit when wardens work the top floor; a second stair partway along the upper galleries leads down to Level 2 — don't take it by mistake.",
+      "schedule": null
+     },
+     "rule": "scene_context",
+     "reason": "the narrative setting is not the location reached at this step"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": {
+       "new": {
+        "name": "the ruined chapel interior",
+        "kind": "interior",
+        "parent": "loc.old_crown_road_near_the_ruined_chapel"
+       }
+      },
+      "seq": 4,
+      "type": "leave",
+      "who": "npc.nella"
+     },
+     "rule": "scene_context",
+     "reason": "the narrative setting is not the location reached at this step"
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "loc.old_crown_catacombs.l1_s1",
+      "name": "the upper galleries",
+      "kind": "interior",
+      "parent": "loc.old_crown_catacombs",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "by": "dungeon",
+      "level": 1,
+      "section": 1,
+      "created": {
+       "turn": 10,
+       "minute": 670
+      }
+     }
+    }
+   },
+   {
+    "t": "link.set",
+    "d": {
+     "link": {
+      "id": "link.1",
+      "a": "loc.old_crown_catacombs",
+      "b": "loc.old_crown_catacombs.l1_s1",
+      "name": null,
+      "both": true,
+      "hidden": false,
+      "feature": null,
+      "dir": null,
+      "since": {
+       "turn": 10,
+       "minute": 670
+      },
+      "found": {
+       "turn": 10,
+       "minute": 670,
+       "how": "dungeon"
+      },
+      "by": "dungeon"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "npc.bren",
+     "set": {
+      "at": "loc.old_crown_road_near_the_ruined_chapel"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.crebren_dog",
+     "set": {
+      "left": {
+       "at": "loc.old_crown_road_near_the_ruined_chapel",
+       "minute": 670,
+       "turn": 10,
+       "leg": false
+      }
+     }
+    }
+   },
+   {
+    "t": "scene.moved",
+    "d": {
+     "at": "loc.old_crown_catacombs.l1_s1",
+     "location": "realm.valedorn_crown",
+     "place": "Old Crown Catacombs › the upper galleries",
+     "reset_present": true,
+     "track_history": true
+    }
+   },
+   {
+    "t": "place.updated",
+    "d": {
+     "id": "loc.old_crown_catacombs.l1_s1",
+     "set": {
+      "visited": {
+       "turn": 10,
+       "minute": 670
+      }
+     }
+    }
+   },
+   {
+    "t": "dungeon.part",
+    "d": {
+     "id": "loc.old_crown_catacombs",
+     "cycle": 1,
+     "floor": 1,
+     "at": "loc.old_crown_catacombs.l1_s1"
+    }
+   },
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 15,
+     "why": "travel"
+    }
+   },
+   {
+    "t": "dungeon.booked",
+    "d": {
+     "id": "loc.old_crown_catacombs",
+     "to": 685
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t10.m20.ep",
+      "turn": 10,
+      "minute": 685,
+      "text": "Old Crown Catacombs › the upper galleries: {pc}: \"im gonna hold you to that Bren *i say and then make my way towards the dungeon again*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "realm.valedorn_crown",
+      "place": "Old Crown Catacombs › the upper galleries",
+      "importance": 2,
+      "kind": "episode",
+      "msg": 20
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 10,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 1,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 77278,
+     "repaired": true,
+     "deltas": 5,
+     "rejected": 4
+    }
+   }
+  ]
+ },
+ {
+  "i": 21,
+  "user": true,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 11,
+     "input_hash": "9b8e9850",
+     "input": "*i start walking deeper into the dungeon staff ready*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 4777,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "go",
+       "to": {
+        "new": "on"
+       },
+       "quote": "i start walking deeper into the dungeon",
+       "within": null
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "dungeon.ahead",
+    "d": {
+     "id": "loc.old_crown_catacombs",
+     "ahead": {
+      "turn": 11,
+      "cycle": 1,
+      "floor": 1,
+      "slot": "bones",
+      "ref": "old_crown_catacombs_c1_l1_e1"
+     }
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "go",
+     "status": "authorized",
+     "quote": "i start walking deeper into the dungeon"
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. GOES — on into part 2 of level 1 of Old Crown Catacombs (the engine's next part: the story names and shapes it; it tells no other room, passage, stair or level). Stop in this section. Leave the next movement and any answer to Alaric."
+      ],
+      "extra": [
+       "DUNGEON AHEAD (the engine's) — going on into a part of level 1 he has not seen: there he meets 3 restless skeletons. That is where this walk ends; bring exactly these, and the quiet way there is told in passing (a sound, a shadow or old tracks without consequence are no stop)."
+      ],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "i start walking deeper into the dungeon"
+       }
+      ],
+      "expected_keys": {
+       "1": "go"
+      },
+      "auth": {
+       "go": {
+        "seq": 1,
+        "to": null,
+        "name": "part 2 of level 1",
+        "hall": false,
+        "newName": "part 2 of level 1",
+        "section": {
+         "id": "loc.old_crown_catacombs.l1_s2",
+         "root": "loc.old_crown_catacombs",
+         "level": 1,
+         "k": 2,
+         "from": "loc.old_crown_catacombs.l1_s1",
+         "down": false,
+         "name": "part 2 of level 1"
+        },
+        "mode": "dungeon",
+        "enter": {
+         "dungeon": "loc.old_crown_catacombs",
+         "root": "loc.old_crown_catacombs",
+         "gate": false
+        },
+        "scope": null
+       },
+       "gos": [
+        {
+         "seq": 1,
+         "to": null,
+         "name": "part 2 of level 1",
+         "hall": false,
+         "newName": "part 2 of level 1",
+         "section": {
+          "id": "loc.old_crown_catacombs.l1_s2",
+          "root": "loc.old_crown_catacombs",
+          "level": 1,
+          "k": 2,
+          "from": "loc.old_crown_catacombs.l1_s1",
+          "down": false,
+          "name": "part 2 of level 1"
+         },
+         "mode": "dungeon",
+         "enter": {
+          "dungeon": "loc.old_crown_catacombs",
+          "root": "loc.old_crown_catacombs",
+          "gate": false
+         },
+         "scope": null
+        }
+       ],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 720,
+       "pulse": {
+        "v": 1,
+        "governs": false,
+        "rolled": false,
+        "exposure": "scene",
+        "eligible": false,
+        "reason": "dungeon_ahead"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 22,
+  "user": false,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 10,
+     "why": "narration"
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "loc.old_crown_catacombs.l1_s2",
+      "name": "the wide burial chamber",
+      "kind": "interior",
+      "parent": "loc.old_crown_catacombs",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "by": "dungeon",
+      "level": 1,
+      "section": 2,
+      "created": {
+       "turn": 11,
+       "minute": 695
+      }
+     }
+    }
+   },
+   {
+    "t": "link.set",
+    "d": {
+     "link": {
+      "id": "link.2",
+      "a": "loc.old_crown_catacombs.l1_s1",
+      "b": "loc.old_crown_catacombs.l1_s2",
+      "name": null,
+      "both": true,
+      "hidden": false,
+      "feature": null,
+      "dir": null,
+      "since": {
+       "turn": 11,
+       "minute": 695
+      },
+      "found": {
+       "turn": 11,
+       "minute": 695,
+       "how": "dungeon"
+      },
+      "by": "dungeon"
+     }
+    }
+   },
+   {
+    "t": "scene.moved",
+    "d": {
+     "at": "loc.old_crown_catacombs.l1_s2",
+     "location": "realm.valedorn_crown",
+     "place": "Old Crown Catacombs › the wide burial chamber",
+     "reset_present": true,
+     "track_history": true
+    }
+   },
+   {
+    "t": "place.updated",
+    "d": {
+     "id": "loc.old_crown_catacombs.l1_s2",
+     "set": {
+      "visited": {
+       "turn": 11,
+       "minute": 695
+      }
+     }
+    }
+   },
+   {
+    "t": "dungeon.part",
+    "d": {
+     "id": "loc.old_crown_catacombs",
+     "cycle": 1,
+     "floor": 1,
+     "at": "loc.old_crown_catacombs.l1_s2"
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+      "kind": "creature",
+      "name": null,
+      "descriptors": [
+       "loose in their frames, joints turning pa",
+       "old_crown_catacombs_c1_l1_e1 1"
+      ],
+      "traits": "loose in their frames, joints turning past where joints should stop, ember-glowing eye sockets; two carry rust-eaten blades, the third empty-handed and faster",
+      "status": "alive",
+      "location": "realm.valedorn_crown",
+      "created": {
+       "turn": 11,
+       "minute": 695
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 22
+      },
+      "card": {},
+      "species": "restless skeleton",
+      "anchor": "skeleton"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+     "band": "SHORT"
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+      "kind": "creature",
+      "name": null,
+      "descriptors": [
+       "loose in their frames, joints turning pa",
+       "old_crown_catacombs_c1_l1_e1 2"
+      ],
+      "traits": "loose in their frames, joints turning past where joints should stop, ember-glowing eye sockets; two carry rust-eaten blades, the third empty-handed and faster",
+      "status": "alive",
+      "location": "realm.valedorn_crown",
+      "created": {
+       "turn": 11,
+       "minute": 695
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 22
+      },
+      "card": {},
+      "species": "restless skeleton",
+      "anchor": "skeleton"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+     "band": "SHORT"
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+      "kind": "creature",
+      "name": null,
+      "descriptors": [
+       "loose in their frames, joints turning pa",
+       "old_crown_catacombs_c1_l1_e1 3"
+      ],
+      "traits": "loose in their frames, joints turning past where joints should stop, ember-glowing eye sockets; two carry rust-eaten blades, the third empty-handed and faster",
+      "status": "alive",
+      "location": "realm.valedorn_crown",
+      "created": {
+       "turn": 11,
+       "minute": 695
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 22
+      },
+      "card": {},
+      "species": "restless skeleton",
+      "anchor": "skeleton"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+     "band": "SHORT"
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+     "set": {
+      "life_stage": "adult"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+     "set": {
+      "life_stage": "adult"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+     "set": {
+      "life_stage": "adult"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+     "set": {
+      "group": "old_crown_catacombs_c1_l1_e1"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+     "set": {
+      "group": "old_crown_catacombs_c1_l1_e1"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+     "set": {
+      "group": "old_crown_catacombs_c1_l1_e1"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+     "set": {
+      "level": 3,
+      "type": "normal",
+      "slot": {
+       "dungeon": "loc.old_crown_catacombs",
+       "cycle": 1,
+       "floor": 1,
+       "id": "bones",
+       "role": "minion"
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+     "set": {
+      "level": 2,
+      "type": "normal",
+      "slot": {
+       "dungeon": "loc.old_crown_catacombs",
+       "cycle": 1,
+       "floor": 1,
+       "id": "bones",
+       "role": "minion"
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+     "set": {
+      "level": 5,
+      "type": "normal",
+      "slot": {
+       "dungeon": "loc.old_crown_catacombs",
+       "cycle": 1,
+       "floor": 1,
+       "id": "bones",
+       "role": "minion"
+      }
+     }
+    }
+   },
+   {
+    "t": "dungeon.slot",
+    "d": {
+     "id": "loc.old_crown_catacombs",
+     "cycle": 1,
+     "floor": 1,
+     "slot": "bones",
+     "set": {
+      "entities": [
+       "mon.old_crown_catacombs_c1_l1_e1_1",
+       "mon.old_crown_catacombs_c1_l1_e1_2",
+       "mon.old_crown_catacombs_c1_l1_e1_3"
+      ],
+      "at": "loc.old_crown_catacombs.l1_s2",
+      "met_turn": 11
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+     "set": {
+      "profile": {
+       "model": "creature",
+       "anchor": "skeleton",
+       "body_plan": "Skeleton / animated bones",
+       "level": 3,
+       "rank": "F",
+       "type": "normal",
+       "max_hp": 42,
+       "atk": 14,
+       "def": 3,
+       "mdef": 0,
+       "init": 9,
+       "attack": {
+        "name": "Bony strike",
+        "damage_type": "physical",
+        "range": "ENGAGED"
+       }
+      },
+      "met_at": "loc.old_crown_catacombs.l1_s2"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+     "set": {
+      "profile": {
+       "model": "creature",
+       "anchor": "skeleton",
+       "body_plan": "Skeleton / animated bones",
+       "level": 2,
+       "rank": "F",
+       "type": "normal",
+       "max_hp": 36,
+       "atk": 12,
+       "def": 3,
+       "mdef": 0,
+       "init": 8,
+       "attack": {
+        "name": "Bony strike",
+        "damage_type": "physical",
+        "range": "ENGAGED"
+       }
+      },
+      "met_at": "loc.old_crown_catacombs.l1_s2"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+     "set": {
+      "profile": {
+       "model": "creature",
+       "anchor": "skeleton",
+       "body_plan": "Skeleton / animated bones",
+       "level": 5,
+       "rank": "F",
+       "type": "normal",
+       "max_hp": 54,
+       "atk": 19,
+       "def": 4,
+       "mdef": 1,
+       "init": 10,
+       "attack": {
+        "name": "Bony strike",
+        "damage_type": "physical",
+        "range": "ENGAGED"
+       }
+      },
+      "met_at": "loc.old_crown_catacombs.l1_s2"
+     }
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 4,
+      "type": "hostile",
+      "by": [
+       "old_crown_catacombs_c1_l1_e1"
+      ],
+      "scope": "all",
+      "evidence": "the nearest blade-bearer raised its weapon with a scrape of iron on bone; the third came on empty-handed but faster, its ember-eyes fixed on him as it started across the flags",
+      "ref": "old_crown_catacombs_c1_l1_e1"
+     },
+     "rule": "group_unclear",
+     "reason": "the evidence \"the nearest blade-bearer raised its weapon with a scrape of \" is not in the reply"
+    }
+   },
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 5,
+     "why": "travel"
+    }
+   },
+   {
+    "t": "dungeon.booked",
+    "d": {
+     "id": "loc.old_crown_catacombs",
+     "to": 700
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t11.m22.ep",
+      "turn": 11,
+      "minute": 700,
+      "text": "Old Crown Catacombs › the wide burial chamber: {pc}: \"*i start walking deeper into the dungeon staff ready*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "mon.old_crown_catacombs_c1_l1_e1_1",
+       "mon.old_crown_catacombs_c1_l1_e1_2",
+       "mon.old_crown_catacombs_c1_l1_e1_3"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "realm.valedorn_crown",
+      "place": "Old Crown Catacombs › the wide burial chamber",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 22
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 39576,
+     "repaired": false,
+     "deltas": 4,
+     "rejected": 1
+    }
+   }
+  ]
+ },
+ {
+  "i": 23,
+  "user": true,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 12,
+     "input_hash": "ba6b4d38",
+     "input": "Arcane Wave → SHORT · trifft: Restless Skeleton A, Restless Skeleton B, Restless Skeleton C"
+    }
+   },
+   {
+    "t": "encounter.started",
+    "d": {
+     "encounter": {
+      "id": "enc.t12",
+      "phase": "ACTIVE",
+      "round": 2,
+      "order": [
+       "mon.old_crown_catacombs_c1_l1_e1_3",
+       "mon.old_crown_catacombs_c1_l1_e1_1",
+       "mon.old_crown_catacombs_c1_l1_e1_2",
+       "pc"
+      ],
+      "turn_index": 3,
+      "current": "pc",
+      "combatants": {
+       "pc": {
+        "id": "pc",
+        "name": "Alaric",
+        "side": "pc",
+        "model": "character",
+        "fixed": {
+         "level": 1,
+         "rank": "F",
+         "class": "mage",
+         "stats": {
+          "STR": 5,
+          "VIT": 5,
+          "AGI": 5,
+          "INT": 6,
+          "PER": 5,
+          "WIL": 6
+         },
+         "max_hp": 80,
+         "max_mp": 72,
+         "max_sta": 100,
+         "atk": 0,
+         "matk": 10,
+         "def": 3,
+         "mdef": 4,
+         "init": 7,
+         "type": "normal",
+         "actions": {
+          "mage.basic_attack": {
+           "prof": 1,
+           "pp": 0
+          },
+          "mage.flame_lance": {
+           "prof": 1,
+           "pp": 0
+          },
+          "mage.arcane_wave": {
+           "prof": 1,
+           "pp": 0
+          }
+         },
+         "weapon_family": "focus",
+         "temperament": null,
+         "sapient": true
+        },
+        "current": {
+         "hp": 8,
+         "mp": 58,
+         "sta": 100,
+         "ammo": {},
+         "band": null,
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        }
+       },
+       "mon.old_crown_catacombs_c1_l1_e1_1": {
+        "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+        "name": "Restless Skeleton A",
+        "side": "hostile",
+        "model": "creature",
+        "fixed": {
+         "level": 3,
+         "rank": "F",
+         "type": "normal",
+         "body_plan": "Skeleton / animated bones",
+         "max_hp": 42,
+         "atk": 14,
+         "def": 3,
+         "mdef": 0,
+         "init": 9,
+         "attack": {
+          "name": "Bony strike",
+          "damage_type": "physical",
+          "range": "ENGAGED"
+         },
+         "sapient": false,
+         "defeat_xp": 180
+        },
+        "current": {
+         "hp": 18,
+         "band": "ENGAGED",
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Restless Skeleton A"
+       },
+       "mon.old_crown_catacombs_c1_l1_e1_2": {
+        "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+        "name": "Restless Skeleton B",
+        "side": "hostile",
+        "model": "creature",
+        "fixed": {
+         "level": 2,
+         "rank": "F",
+         "type": "normal",
+         "body_plan": "Skeleton / animated bones",
+         "max_hp": 36,
+         "atk": 12,
+         "def": 3,
+         "mdef": 0,
+         "init": 8,
+         "attack": {
+          "name": "Bony strike",
+          "damage_type": "physical",
+          "range": "ENGAGED"
+         },
+         "sapient": false,
+         "defeat_xp": 120
+        },
+        "current": {
+         "hp": 12,
+         "band": "ENGAGED",
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Restless Skeleton B"
+       },
+       "mon.old_crown_catacombs_c1_l1_e1_3": {
+        "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+        "name": "Restless Skeleton C",
+        "side": "hostile",
+        "model": "creature",
+        "fixed": {
+         "level": 5,
+         "rank": "F",
+         "type": "normal",
+         "body_plan": "Skeleton / animated bones",
+         "max_hp": 54,
+         "atk": 19,
+         "def": 4,
+         "mdef": 1,
+         "init": 10,
+         "attack": {
+          "name": "Bony strike",
+          "damage_type": "physical",
+          "range": "ENGAGED"
+         },
+         "sapient": false,
+         "defeat_xp": 300
+        },
+        "current": {
+         "hp": 27,
+         "band": "ENGAGED",
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Restless Skeleton C"
+       }
+      },
+      "pc_rank": "F",
+      "pending_xp": 0,
+      "defeated": [],
+      "escaped": [],
+      "trigger": {
+       "actor": "pc",
+       "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+       "skill": "mage.arcane_wave",
+       "move": null,
+       "move_target": null
+      },
+      "log": [
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+        "opening": false,
+        "cost": {
+         "resource": "mp",
+         "amount": 14,
+         "before": 72,
+         "after": 58
+        },
+        "skill": "mage.arcane_wave",
+        "skill_name": "Arcane Wave",
+        "area_band": "SHORT",
+        "raw": 25.5,
+        "raw_text": "8 + INT 6×1.25 + MATK 10 = 25.5",
+        "strikes": [
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+          "power": 25.5,
+          "defense": 0,
+          "post_def": 25.5,
+          "variance": 0.96,
+          "final": 24,
+          "absorbed": 0,
+          "hp_before": 42,
+          "hp_after": 18,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 0: max(25.5-0, 25.5×0.10) = 25.5",
+           "×0.96 variance = 24.48",
+           "round once = 24"
+          ]
+         },
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_2",
+          "power": 25.5,
+          "defense": 0,
+          "post_def": 25.5,
+          "variance": 0.96,
+          "final": 24,
+          "absorbed": 0,
+          "hp_before": 36,
+          "hp_after": 12,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 0: max(25.5-0, 25.5×0.10) = 25.5",
+           "×0.96 variance = 24.48",
+           "round once = 24"
+          ]
+         },
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_3",
+          "power": 25.5,
+          "defense": 1,
+          "post_def": 24.5,
+          "variance": 1.09,
+          "final": 27,
+          "absorbed": 0,
+          "hp_before": 54,
+          "hp_after": 27,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 1: max(25.5-1, 25.5×0.10) = 24.5",
+           "×1.09 variance = 26.705",
+           "round once = 27"
+          ]
+         }
+        ],
+        "first_strike": true,
+        "note": "First Strike (an open attack that opens the fight: no Ambush bonus; its maker's action of Round 1)"
+       },
+       {
+        "round": 1,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_3",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 1,
+         "from": "SHORT",
+         "to": "ENGAGED"
+        },
+        "skill_name": "Bony strike",
+        "raw": 19,
+        "raw_text": "natural attack Raw = ATK 19",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 19,
+          "defense": 3,
+          "post_def": 16,
+          "variance": 1.09,
+          "final": 17,
+          "absorbed": 0,
+          "hp_before": 80,
+          "hp_after": 63,
+          "steps": [
+           "Raw 19",
+           "DEF 3: max(19-3, 19×0.10) = 16",
+           "×1.09 variance = 17.44",
+           "round once = 17"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 1,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_1",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 1,
+         "from": "SHORT",
+         "to": "ENGAGED"
+        },
+        "skill_name": "Bony strike",
+        "raw": 14,
+        "raw_text": "natural attack Raw = ATK 14",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 14,
+          "defense": 3,
+          "post_def": 11,
+          "variance": 1.1,
+          "final": 12,
+          "absorbed": 0,
+          "hp_before": 63,
+          "hp_after": 51,
+          "steps": [
+           "Raw 14",
+           "DEF 3: max(14-3, 14×0.10) = 11",
+           "×1.1 variance = 12.1",
+           "round once = 12"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 1,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_2",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 1,
+         "from": "SHORT",
+         "to": "ENGAGED"
+        },
+        "skill_name": "Bony strike",
+        "raw": 12,
+        "raw_text": "natural attack Raw = ATK 12",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 12,
+          "defense": 3,
+          "post_def": 9,
+          "variance": 0.95,
+          "final": 9,
+          "absorbed": 0,
+          "hp_before": 51,
+          "hp_after": 42,
+          "steps": [
+           "Raw 12",
+           "DEF 3: max(12-3, 12×0.10) = 9",
+           "×0.95 variance = 8.55",
+           "round once = 9"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 2,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_3",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "skill_name": "Bony strike",
+        "raw": 19,
+        "raw_text": "natural attack Raw = ATK 19",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 19,
+          "defense": 3,
+          "post_def": 16,
+          "variance": 0.96,
+          "final": 15,
+          "absorbed": 0,
+          "hp_before": 42,
+          "hp_after": 27,
+          "steps": [
+           "Raw 19",
+           "DEF 3: max(19-3, 19×0.10) = 16",
+           "×0.96 variance = 15.36",
+           "round once = 15"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 2,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_1",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "skill_name": "Bony strike",
+        "raw": 14,
+        "raw_text": "natural attack Raw = ATK 14",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 14,
+          "defense": 3,
+          "post_def": 11,
+          "variance": 1.03,
+          "final": 11,
+          "absorbed": 0,
+          "hp_before": 27,
+          "hp_after": 16,
+          "steps": [
+           "Raw 14",
+           "DEF 3: max(14-3, 14×0.10) = 11",
+           "×1.03 variance = 11.33",
+           "round once = 11"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 2,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_2",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "skill_name": "Bony strike",
+        "raw": 12,
+        "raw_text": "natural attack Raw = ATK 12",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 12,
+          "defense": 3,
+          "post_def": 9,
+          "variance": 0.91,
+          "final": 8,
+          "absorbed": 0,
+          "hp_before": 16,
+          "hp_after": 8,
+          "steps": [
+           "Raw 12",
+           "DEF 3: max(12-3, 12×0.10) = 9",
+           "×0.91 variance = 8.19",
+           "round once = 8"
+          ]
+         }
+        ]
+       }
+      ],
+      "opening": true,
+      "started": {
+       "turn": 12,
+       "minute": 700
+      },
+      "intents": {},
+      "ambush": false,
+      "ambush_reason": "target awareness: unknown -> no Ambush; his declared attack opens the fight first (First Strike: no Ambush bonus; it is his action of Round 1)",
+      "first_strike": true,
+      "career": {
+       "damage": {
+        "mon.old_crown_catacombs_c1_l1_e1_1": 24,
+        "mon.old_crown_catacombs_c1_l1_e1_2": 24,
+        "mon.old_crown_catacombs_c1_l1_e1_3": 27
+       },
+       "personal": {
+        "mon.old_crown_catacombs_c1_l1_e1_1": 24,
+        "mon.old_crown_catacombs_c1_l1_e1_2": 24,
+        "mon.old_crown_catacombs_c1_l1_e1_3": 27
+       }
+      },
+      "trigger_done": true,
+      "spent": {},
+      "pp": {
+       "used": {
+        "mage.arcane_wave": "an attack on a foe"
+       },
+       "wait": null,
+       "threatened": true,
+       "last": "mage.arcane_wave",
+       "answer": "mage.arcane_wave",
+       "guarding": null,
+       "offense": {
+        "mage.arcane_wave": true
+       },
+       "trial": {
+        "start": 100,
+        "low": 10,
+        "foes": [
+         "mon.old_crown_catacombs_c1_l1_e1_3",
+         "mon.old_crown_catacombs_c1_l1_e1_1",
+         "mon.old_crown_catacombs_c1_l1_e1_2"
+        ],
+        "taken": {
+         "physical": 72,
+         "magical": 0
+        }
+       },
+       "marks": {
+        "mage.arcane_wave": [
+         "riposte"
+        ]
+       }
+      },
+      "round_marker": 2.03
+     }
+    },
+    "rng_to": 10
+   },
+   {
+    "t": "scene.awareness",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+     "level": "aware"
+    }
+   },
+   {
+    "t": "scene.awareness",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+     "level": "aware"
+    }
+   },
+   {
+    "t": "scene.awareness",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+     "level": "aware"
+    }
+   },
+   {
+    "t": "resource.changed",
+    "d": {
+     "id": "pc",
+     "resource": "hp",
+     "value": 8
+    }
+   },
+   {
+    "t": "resource.changed",
+    "d": {
+     "id": "pc",
+     "resource": "mp",
+     "value": 58
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "combat",
+      "started": {
+       "reason": "target awareness: unknown -> no Ambush; his declared attack opens the fight first (First Strike: no Ambush bonus; it is his action of Round 1)",
+       "order": "Restless Skeleton C > Restless Skeleton A > Restless Skeleton B > Alaric",
+       "ambush": false
+      },
+      "records": [
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+        "opening": false,
+        "cost": {
+         "resource": "mp",
+         "amount": 14,
+         "before": 72,
+         "after": 58
+        },
+        "skill": "mage.arcane_wave",
+        "skill_name": "Arcane Wave",
+        "area_band": "SHORT",
+        "raw": 25.5,
+        "raw_text": "8 + INT 6×1.25 + MATK 10 = 25.5",
+        "strikes": [
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+          "power": 25.5,
+          "defense": 0,
+          "post_def": 25.5,
+          "variance": 0.96,
+          "final": 24,
+          "absorbed": 0,
+          "hp_before": 42,
+          "hp_after": 18,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 0: max(25.5-0, 25.5×0.10) = 25.5",
+           "×0.96 variance = 24.48",
+           "round once = 24"
+          ]
+         },
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_2",
+          "power": 25.5,
+          "defense": 0,
+          "post_def": 25.5,
+          "variance": 0.96,
+          "final": 24,
+          "absorbed": 0,
+          "hp_before": 36,
+          "hp_after": 12,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 0: max(25.5-0, 25.5×0.10) = 25.5",
+           "×0.96 variance = 24.48",
+           "round once = 24"
+          ]
+         },
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_3",
+          "power": 25.5,
+          "defense": 1,
+          "post_def": 24.5,
+          "variance": 1.09,
+          "final": 27,
+          "absorbed": 0,
+          "hp_before": 54,
+          "hp_after": 27,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 1: max(25.5-1, 25.5×0.10) = 24.5",
+           "×1.09 variance = 26.705",
+           "round once = 27"
+          ]
+         }
+        ],
+        "first_strike": true,
+        "note": "First Strike (an open attack that opens the fight: no Ambush bonus; its maker's action of Round 1)"
+       },
+       {
+        "round": 1,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_3",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 1,
+         "from": "SHORT",
+         "to": "ENGAGED"
+        },
+        "skill_name": "Bony strike",
+        "raw": 19,
+        "raw_text": "natural attack Raw = ATK 19",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 19,
+          "defense": 3,
+          "post_def": 16,
+          "variance": 1.09,
+          "final": 17,
+          "absorbed": 0,
+          "hp_before": 80,
+          "hp_after": 63,
+          "steps": [
+           "Raw 19",
+           "DEF 3: max(19-3, 19×0.10) = 16",
+           "×1.09 variance = 17.44",
+           "round once = 17"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 1,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_1",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 1,
+         "from": "SHORT",
+         "to": "ENGAGED"
+        },
+        "skill_name": "Bony strike",
+        "raw": 14,
+        "raw_text": "natural attack Raw = ATK 14",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 14,
+          "defense": 3,
+          "post_def": 11,
+          "variance": 1.1,
+          "final": 12,
+          "absorbed": 0,
+          "hp_before": 63,
+          "hp_after": 51,
+          "steps": [
+           "Raw 14",
+           "DEF 3: max(14-3, 14×0.10) = 11",
+           "×1.1 variance = 12.1",
+           "round once = 12"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 1,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_2",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 1,
+         "from": "SHORT",
+         "to": "ENGAGED"
+        },
+        "skill_name": "Bony strike",
+        "raw": 12,
+        "raw_text": "natural attack Raw = ATK 12",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 12,
+          "defense": 3,
+          "post_def": 9,
+          "variance": 0.95,
+          "final": 9,
+          "absorbed": 0,
+          "hp_before": 51,
+          "hp_after": 42,
+          "steps": [
+           "Raw 12",
+           "DEF 3: max(12-3, 12×0.10) = 9",
+           "×0.95 variance = 8.55",
+           "round once = 9"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 2,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_3",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "skill_name": "Bony strike",
+        "raw": 19,
+        "raw_text": "natural attack Raw = ATK 19",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 19,
+          "defense": 3,
+          "post_def": 16,
+          "variance": 0.96,
+          "final": 15,
+          "absorbed": 0,
+          "hp_before": 42,
+          "hp_after": 27,
+          "steps": [
+           "Raw 19",
+           "DEF 3: max(19-3, 19×0.10) = 16",
+           "×0.96 variance = 15.36",
+           "round once = 15"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 2,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_1",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "skill_name": "Bony strike",
+        "raw": 14,
+        "raw_text": "natural attack Raw = ATK 14",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 14,
+          "defense": 3,
+          "post_def": 11,
+          "variance": 1.03,
+          "final": 11,
+          "absorbed": 0,
+          "hp_before": 27,
+          "hp_after": 16,
+          "steps": [
+           "Raw 14",
+           "DEF 3: max(14-3, 14×0.10) = 11",
+           "×1.03 variance = 11.33",
+           "round once = 11"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 2,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_2",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "skill_name": "Bony strike",
+        "raw": 12,
+        "raw_text": "natural attack Raw = ATK 12",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 12,
+          "defense": 3,
+          "post_def": 9,
+          "variance": 0.91,
+          "final": 8,
+          "absorbed": 0,
+          "hp_before": 16,
+          "hp_after": 8,
+          "steps": [
+           "Raw 12",
+           "DEF 3: max(12-3, 12×0.10) = 9",
+           "×0.91 variance = 8.19",
+           "round once = 8"
+          ]
+         }
+        ]
+       }
+      ],
+      "illegal": null,
+      "next": "Alaric's Turn (Round 2)",
+      "board": {
+       "round": 2,
+       "order": [
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+         "init": 10
+        },
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+         "init": 9
+        },
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+         "init": 8
+        },
+        {
+         "id": "pc",
+         "init": 7
+        }
+       ],
+       "hp": [
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+         "hp": 27,
+         "max": 54,
+         "state": null,
+         "band": "ENGAGED",
+         "cover": "none"
+        },
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+         "hp": 18,
+         "max": 42,
+         "state": null,
+         "band": "ENGAGED",
+         "cover": "none"
+        },
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+         "hp": 12,
+         "max": 36,
+         "state": null,
+         "band": "ENGAGED",
+         "cover": "none"
+        },
+        {
+         "id": "pc",
+         "hp": 8,
+         "max": 80,
+         "state": null
+        }
+       ],
+       "labels": {
+        "mon.old_crown_catacombs_c1_l1_e1_1": "Restless Skeleton A",
+        "mon.old_crown_catacombs_c1_l1_e1_2": "Restless Skeleton B",
+        "mon.old_crown_catacombs_c1_l1_e1_3": "Restless Skeleton C"
+       },
+       "pc": {
+        "mp": 58,
+        "max_mp": 72,
+        "sta": 100,
+        "max_sta": 100,
+        "arrows": 0
+       }
+      },
+      "c": true
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 24,
+  "user": false,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 4079,
+     "repaired": false,
+     "deltas": 0,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 25,
+  "user": true,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 13,
+     "input_hash": "d14f44cf",
+     "input": "Arcane Wave → ENGAGED · trifft: Restless Skeleton A, Restless Skeleton B, Restless Skeleton C → Ausweichen (−25 % Distanzschaden bis zum nächsten Zug) · 14 MP"
+    }
+   },
+   {
+    "t": "encounter.updated",
+    "d": {
+     "encounter": {
+      "id": "enc.t12",
+      "phase": "ACTIVE",
+      "round": 4,
+      "order": [
+       "mon.old_crown_catacombs_c1_l1_e1_3",
+       "mon.old_crown_catacombs_c1_l1_e1_1",
+       "mon.old_crown_catacombs_c1_l1_e1_2",
+       "pc"
+      ],
+      "turn_index": 0,
+      "current": "mon.old_crown_catacombs_c1_l1_e1_3",
+      "combatants": {
+       "pc": {
+        "id": "pc",
+        "name": "Alaric",
+        "side": "pc",
+        "model": "character",
+        "fixed": {
+         "level": 1,
+         "rank": "F",
+         "class": "mage",
+         "stats": {
+          "STR": 5,
+          "VIT": 5,
+          "AGI": 5,
+          "INT": 6,
+          "PER": 5,
+          "WIL": 6
+         },
+         "max_hp": 80,
+         "max_mp": 72,
+         "max_sta": 100,
+         "atk": 0,
+         "matk": 10,
+         "def": 3,
+         "mdef": 4,
+         "init": 7,
+         "type": "normal",
+         "actions": {
+          "mage.basic_attack": {
+           "prof": 1,
+           "pp": 0
+          },
+          "mage.flame_lance": {
+           "prof": 1,
+           "pp": 0
+          },
+          "mage.arcane_wave": {
+           "prof": 1,
+           "pp": 0
+          }
+         },
+         "weapon_family": "focus",
+         "temperament": null,
+         "sapient": true
+        },
+        "current": {
+         "hp": 0,
+         "mp": 44,
+         "sta": 100,
+         "ammo": {},
+         "band": null,
+         "cover": "none",
+         "effects": [
+          {
+           "kind": "sidestep",
+           "source": "pc",
+           "expires": "start_of_source_next_turn",
+           "name": "Sidestep",
+           "round": 2.03
+          }
+         ],
+         "defeated": true,
+         "escaped": false,
+         "surrendered": false
+        }
+       },
+       "mon.old_crown_catacombs_c1_l1_e1_1": {
+        "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+        "name": "Restless Skeleton A",
+        "side": "hostile",
+        "model": "creature",
+        "fixed": {
+         "level": 3,
+         "rank": "F",
+         "type": "normal",
+         "body_plan": "Skeleton / animated bones",
+         "max_hp": 42,
+         "atk": 14,
+         "def": 3,
+         "mdef": 0,
+         "init": 9,
+         "attack": {
+          "name": "Bony strike",
+          "damage_type": "physical",
+          "range": "ENGAGED"
+         },
+         "sapient": false,
+         "defeat_xp": 180
+        },
+        "current": {
+         "hp": 0,
+         "band": "ENGAGED",
+         "cover": "none",
+         "effects": [],
+         "defeated": true,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Restless Skeleton A"
+       },
+       "mon.old_crown_catacombs_c1_l1_e1_2": {
+        "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+        "name": "Restless Skeleton B",
+        "side": "hostile",
+        "model": "creature",
+        "fixed": {
+         "level": 2,
+         "rank": "F",
+         "type": "normal",
+         "body_plan": "Skeleton / animated bones",
+         "max_hp": 36,
+         "atk": 12,
+         "def": 3,
+         "mdef": 0,
+         "init": 8,
+         "attack": {
+          "name": "Bony strike",
+          "damage_type": "physical",
+          "range": "ENGAGED"
+         },
+         "sapient": false,
+         "defeat_xp": 120
+        },
+        "current": {
+         "hp": 0,
+         "band": "ENGAGED",
+         "cover": "none",
+         "effects": [],
+         "defeated": true,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Restless Skeleton B"
+       },
+       "mon.old_crown_catacombs_c1_l1_e1_3": {
+        "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+        "name": "Restless Skeleton C",
+        "side": "hostile",
+        "model": "creature",
+        "fixed": {
+         "level": 5,
+         "rank": "F",
+         "type": "normal",
+         "body_plan": "Skeleton / animated bones",
+         "max_hp": 54,
+         "atk": 19,
+         "def": 4,
+         "mdef": 1,
+         "init": 10,
+         "attack": {
+          "name": "Bony strike",
+          "damage_type": "physical",
+          "range": "ENGAGED"
+         },
+         "sapient": false,
+         "defeat_xp": 300
+        },
+        "current": {
+         "hp": 4,
+         "band": "ENGAGED",
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Restless Skeleton C"
+       }
+      },
+      "pc_rank": "F",
+      "pending_xp": 300,
+      "defeated": [
+       "mon.old_crown_catacombs_c1_l1_e1_1",
+       "mon.old_crown_catacombs_c1_l1_e1_2",
+       "pc"
+      ],
+      "escaped": [],
+      "trigger": {
+       "actor": "pc",
+       "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+       "skill": "mage.arcane_wave",
+       "move": null,
+       "move_target": null
+      },
+      "log": [
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+        "opening": false,
+        "cost": {
+         "resource": "mp",
+         "amount": 14,
+         "before": 72,
+         "after": 58
+        },
+        "skill": "mage.arcane_wave",
+        "skill_name": "Arcane Wave",
+        "area_band": "SHORT",
+        "raw": 25.5,
+        "raw_text": "8 + INT 6×1.25 + MATK 10 = 25.5",
+        "strikes": [
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+          "power": 25.5,
+          "defense": 0,
+          "post_def": 25.5,
+          "variance": 0.96,
+          "final": 24,
+          "absorbed": 0,
+          "hp_before": 42,
+          "hp_after": 18,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 0: max(25.5-0, 25.5×0.10) = 25.5",
+           "×0.96 variance = 24.48",
+           "round once = 24"
+          ]
+         },
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_2",
+          "power": 25.5,
+          "defense": 0,
+          "post_def": 25.5,
+          "variance": 0.96,
+          "final": 24,
+          "absorbed": 0,
+          "hp_before": 36,
+          "hp_after": 12,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 0: max(25.5-0, 25.5×0.10) = 25.5",
+           "×0.96 variance = 24.48",
+           "round once = 24"
+          ]
+         },
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_3",
+          "power": 25.5,
+          "defense": 1,
+          "post_def": 24.5,
+          "variance": 1.09,
+          "final": 27,
+          "absorbed": 0,
+          "hp_before": 54,
+          "hp_after": 27,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 1: max(25.5-1, 25.5×0.10) = 24.5",
+           "×1.09 variance = 26.705",
+           "round once = 27"
+          ]
+         }
+        ],
+        "first_strike": true,
+        "note": "First Strike (an open attack that opens the fight: no Ambush bonus; its maker's action of Round 1)"
+       },
+       {
+        "round": 1,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_3",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 1,
+         "from": "SHORT",
+         "to": "ENGAGED"
+        },
+        "skill_name": "Bony strike",
+        "raw": 19,
+        "raw_text": "natural attack Raw = ATK 19",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 19,
+          "defense": 3,
+          "post_def": 16,
+          "variance": 1.09,
+          "final": 17,
+          "absorbed": 0,
+          "hp_before": 80,
+          "hp_after": 63,
+          "steps": [
+           "Raw 19",
+           "DEF 3: max(19-3, 19×0.10) = 16",
+           "×1.09 variance = 17.44",
+           "round once = 17"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 1,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_1",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 1,
+         "from": "SHORT",
+         "to": "ENGAGED"
+        },
+        "skill_name": "Bony strike",
+        "raw": 14,
+        "raw_text": "natural attack Raw = ATK 14",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 14,
+          "defense": 3,
+          "post_def": 11,
+          "variance": 1.1,
+          "final": 12,
+          "absorbed": 0,
+          "hp_before": 63,
+          "hp_after": 51,
+          "steps": [
+           "Raw 14",
+           "DEF 3: max(14-3, 14×0.10) = 11",
+           "×1.1 variance = 12.1",
+           "round once = 12"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 1,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_2",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 1,
+         "from": "SHORT",
+         "to": "ENGAGED"
+        },
+        "skill_name": "Bony strike",
+        "raw": 12,
+        "raw_text": "natural attack Raw = ATK 12",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 12,
+          "defense": 3,
+          "post_def": 9,
+          "variance": 0.95,
+          "final": 9,
+          "absorbed": 0,
+          "hp_before": 51,
+          "hp_after": 42,
+          "steps": [
+           "Raw 12",
+           "DEF 3: max(12-3, 12×0.10) = 9",
+           "×0.95 variance = 8.55",
+           "round once = 9"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 2,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_3",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "skill_name": "Bony strike",
+        "raw": 19,
+        "raw_text": "natural attack Raw = ATK 19",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 19,
+          "defense": 3,
+          "post_def": 16,
+          "variance": 0.96,
+          "final": 15,
+          "absorbed": 0,
+          "hp_before": 42,
+          "hp_after": 27,
+          "steps": [
+           "Raw 19",
+           "DEF 3: max(19-3, 19×0.10) = 16",
+           "×0.96 variance = 15.36",
+           "round once = 15"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 2,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_1",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "skill_name": "Bony strike",
+        "raw": 14,
+        "raw_text": "natural attack Raw = ATK 14",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 14,
+          "defense": 3,
+          "post_def": 11,
+          "variance": 1.03,
+          "final": 11,
+          "absorbed": 0,
+          "hp_before": 27,
+          "hp_after": 16,
+          "steps": [
+           "Raw 14",
+           "DEF 3: max(14-3, 14×0.10) = 11",
+           "×1.03 variance = 11.33",
+           "round once = 11"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 2,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_2",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "skill_name": "Bony strike",
+        "raw": 12,
+        "raw_text": "natural attack Raw = ATK 12",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 12,
+          "defense": 3,
+          "post_def": 9,
+          "variance": 0.91,
+          "final": 8,
+          "absorbed": 0,
+          "hp_before": 16,
+          "hp_after": 8,
+          "steps": [
+           "Raw 12",
+           "DEF 3: max(12-3, 12×0.10) = 9",
+           "×0.91 variance = 8.19",
+           "round once = 8"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 2,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+        "opening": false,
+        "cost": {
+         "resource": "mp",
+         "amount": 14,
+         "before": 58,
+         "after": 44
+        },
+        "skill": "mage.arcane_wave",
+        "skill_name": "Arcane Wave",
+        "area_band": "ENGAGED",
+        "raw": 25.5,
+        "raw_text": "8 + INT 6×1.25 + MATK 10 = 25.5",
+        "strikes": [
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+          "power": 25.5,
+          "defense": 0,
+          "post_def": 25.5,
+          "variance": 0.96,
+          "final": 24,
+          "absorbed": 0,
+          "hp_before": 18,
+          "hp_after": 0,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 0: max(25.5-0, 25.5×0.10) = 25.5",
+           "×0.96 variance = 24.48",
+           "round once = 24"
+          ],
+          "defeated": true
+         },
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_2",
+          "power": 25.5,
+          "defense": 0,
+          "post_def": 25.5,
+          "variance": 1.05,
+          "final": 27,
+          "absorbed": 0,
+          "hp_before": 12,
+          "hp_after": 0,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 0: max(25.5-0, 25.5×0.10) = 25.5",
+           "×1.05 variance = 26.775",
+           "round once = 27"
+          ],
+          "defeated": true
+         },
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_3",
+          "power": 25.5,
+          "defense": 1,
+          "post_def": 24.5,
+          "variance": 0.94,
+          "final": 23,
+          "absorbed": 0,
+          "hp_before": 27,
+          "hp_after": 4,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 1: max(25.5-1, 25.5×0.10) = 24.5",
+           "×0.94 variance = 23.03",
+           "round once = 23"
+          ]
+         }
+        ],
+        "pending_xp_added": 300,
+        "phase_slot": "major"
+       },
+       {
+        "round": 2,
+        "actor": "pc",
+        "kind": "sidestep",
+        "change": "25% less damage at distance until the next own turn",
+        "phase_slot": "minor"
+       },
+       {
+        "round": 3,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_3",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "skill_name": "Bony strike",
+        "raw": 19,
+        "raw_text": "natural attack Raw = ATK 19",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 19,
+          "defense": 3,
+          "post_def": 16,
+          "variance": 1.08,
+          "final": 17,
+          "absorbed": 0,
+          "hp_before": 8,
+          "hp_after": 0,
+          "steps": [
+           "Raw 19",
+           "DEF 3: max(19-3, 19×0.10) = 16",
+           "×1.08 variance = 17.28",
+           "round once = 17"
+          ],
+          "defeated": true
+         }
+        ]
+       }
+      ],
+      "opening": true,
+      "started": {
+       "turn": 12,
+       "minute": 700
+      },
+      "intents": {},
+      "ambush": false,
+      "ambush_reason": "target awareness: unknown -> no Ambush; his declared attack opens the fight first (First Strike: no Ambush bonus; it is his action of Round 1)",
+      "first_strike": true,
+      "career": {
+       "damage": {
+        "mon.old_crown_catacombs_c1_l1_e1_1": 42,
+        "mon.old_crown_catacombs_c1_l1_e1_2": 36,
+        "mon.old_crown_catacombs_c1_l1_e1_3": 50
+       },
+       "personal": {
+        "mon.old_crown_catacombs_c1_l1_e1_1": 42,
+        "mon.old_crown_catacombs_c1_l1_e1_2": 36,
+        "mon.old_crown_catacombs_c1_l1_e1_3": 50
+       }
+      },
+      "trigger_done": true,
+      "spent": {},
+      "pp": {
+       "used": {
+        "mage.arcane_wave": "an attack on a foe"
+       },
+       "wait": null,
+       "threatened": true,
+       "last": "mage.arcane_wave",
+       "answer": "mage.arcane_wave",
+       "guarding": null,
+       "offense": {
+        "mage.arcane_wave": true
+       },
+       "trial": {
+        "start": 100,
+        "low": 0,
+        "foes": [
+         "mon.old_crown_catacombs_c1_l1_e1_3",
+         "mon.old_crown_catacombs_c1_l1_e1_1",
+         "mon.old_crown_catacombs_c1_l1_e1_2"
+        ],
+        "taken": {
+         "physical": 89,
+         "magical": 0
+        }
+       },
+       "marks": {
+        "mage.arcane_wave": [
+         "riposte",
+         "crowd"
+        ]
+       }
+      },
+      "round_marker": 4
+     }
+    },
+    "rng_to": 14
+   },
+   {
+    "t": "resource.changed",
+    "d": {
+     "id": "pc",
+     "resource": "hp",
+     "value": 0
+    }
+   },
+   {
+    "t": "resource.changed",
+    "d": {
+     "id": "pc",
+     "resource": "mp",
+     "value": 44
+    }
+   },
+   {
+    "t": "entity.status",
+    "d": {
+     "id": "pc",
+     "status": "dead"
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.pc.status.t13",
+      "s": "pc",
+      "p": "status",
+      "o": "dead",
+      "since": {
+       "turn": 13,
+       "minute": 700
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.9,
+      "hard": true,
+      "source": {
+       "kind": "engine",
+       "encounter": "enc.t12"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "mon.old_crown_catacombs_c1_l1_e1_1",
+     "about": "f.pc.status.t13",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 13,
+     "minute": 700
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "mon.old_crown_catacombs_c1_l1_e1_2",
+     "about": "f.pc.status.t13",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 13,
+     "minute": 700
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "mon.old_crown_catacombs_c1_l1_e1_3",
+     "about": "f.pc.status.t13",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 13,
+     "minute": 700
+    }
+   },
+   {
+    "t": "entity.status",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+     "status": "dead"
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.mon.old_crown_catacombs_c1_l1_e1_1.status.t13",
+      "s": "mon.old_crown_catacombs_c1_l1_e1_1",
+      "p": "status",
+      "o": "dead",
+      "since": {
+       "turn": 13,
+       "minute": 700
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.9,
+      "hard": true,
+      "source": {
+       "kind": "engine",
+       "encounter": "enc.t12"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "mon.old_crown_catacombs_c1_l1_e1_2",
+     "about": "f.mon.old_crown_catacombs_c1_l1_e1_1.status.t13",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 13,
+     "minute": 700
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "mon.old_crown_catacombs_c1_l1_e1_3",
+     "about": "f.mon.old_crown_catacombs_c1_l1_e1_1.status.t13",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 13,
+     "minute": 700
+    }
+   },
+   {
+    "t": "entity.status",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+     "status": "dead"
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.mon.old_crown_catacombs_c1_l1_e1_2.status.t13",
+      "s": "mon.old_crown_catacombs_c1_l1_e1_2",
+      "p": "status",
+      "o": "dead",
+      "since": {
+       "turn": 13,
+       "minute": 700
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.9,
+      "hard": true,
+      "source": {
+       "kind": "engine",
+       "encounter": "enc.t12"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "mon.old_crown_catacombs_c1_l1_e1_3",
+     "about": "f.mon.old_crown_catacombs_c1_l1_e1_2.status.t13",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 13,
+     "minute": 700
+    }
+   },
+   {
+    "t": "career.recorded",
+    "d": {
+     "source": "fight:enc.t12",
+     "stats": {
+      "fights_won": 0,
+      "foes_defeated": 2,
+      "stronger_defeated": 2,
+      "extraordinary_wins": 0
+     },
+     "feats": [],
+     "style": {
+      "Arcane": 1,
+      "offense": 1
+     }
+    }
+   },
+   {
+    "t": "encounter.ended",
+    "d": {
+     "id": "enc.t12",
+     "summary": {
+      "defeated": [
+       "mon.old_crown_catacombs_c1_l1_e1_1",
+       "mon.old_crown_catacombs_c1_l1_e1_2"
+      ],
+      "escaped": [],
+      "xp_awarded": 0,
+      "pc_dead": true,
+      "pc_escaped": false
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+     "set": {
+      "profile": {
+       "model": "creature",
+       "anchor": "skeleton",
+       "body_plan": "Skeleton / animated bones",
+       "level": 5,
+       "rank": "F",
+       "type": "normal",
+       "max_hp": 54,
+       "atk": 19,
+       "def": 4,
+       "mdef": 1,
+       "init": 10,
+       "attack": {
+        "name": "Bony strike",
+        "damage_type": "physical",
+        "range": "ENGAGED"
+       },
+       "hp": 4
+      }
+     }
+    }
+   },
+   {
+    "t": "scene.position",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+     "band": "ENGAGED",
+     "cover": "none"
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+     "set": {
+      "wary": {
+       "turn": 13,
+       "minute": 700,
+       "encounter": "enc.t12"
+      }
+     }
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.enc.t12",
+      "turn": 13,
+      "minute": 700,
+      "text": "Fight at Old Crown Catacombs › the wide burial chamber: {pc} (Arcane Wave) vs the loose in their frames, joints turning pa — killed; the loose in their frames, joints turning pa — killed; the loose in their frames, joints turning pa — survived; {pc} died.",
+      "who": [
+       "pc",
+       "mon.old_crown_catacombs_c1_l1_e1_1",
+       "mon.old_crown_catacombs_c1_l1_e1_2",
+       "mon.old_crown_catacombs_c1_l1_e1_3"
+      ],
+      "witnesses": [
+       "mon.old_crown_catacombs_c1_l1_e1_3"
+      ],
+      "seen": [
+       "mon.old_crown_catacombs_c1_l1_e1_3"
+      ],
+      "location": "realm.valedorn_crown",
+      "place": "Old Crown Catacombs › the wide burial chamber",
+      "importance": 7,
+      "kind": "combat"
+     }
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "combat",
+      "started": null,
+      "records": [
+       {
+        "round": 2,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+        "opening": false,
+        "cost": {
+         "resource": "mp",
+         "amount": 14,
+         "before": 58,
+         "after": 44
+        },
+        "skill": "mage.arcane_wave",
+        "skill_name": "Arcane Wave",
+        "area_band": "ENGAGED",
+        "raw": 25.5,
+        "raw_text": "8 + INT 6×1.25 + MATK 10 = 25.5",
+        "strikes": [
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+          "power": 25.5,
+          "defense": 0,
+          "post_def": 25.5,
+          "variance": 0.96,
+          "final": 24,
+          "absorbed": 0,
+          "hp_before": 18,
+          "hp_after": 0,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 0: max(25.5-0, 25.5×0.10) = 25.5",
+           "×0.96 variance = 24.48",
+           "round once = 24"
+          ],
+          "defeated": true
+         },
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_2",
+          "power": 25.5,
+          "defense": 0,
+          "post_def": 25.5,
+          "variance": 1.05,
+          "final": 27,
+          "absorbed": 0,
+          "hp_before": 12,
+          "hp_after": 0,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 0: max(25.5-0, 25.5×0.10) = 25.5",
+           "×1.05 variance = 26.775",
+           "round once = 27"
+          ],
+          "defeated": true
+         },
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_3",
+          "power": 25.5,
+          "defense": 1,
+          "post_def": 24.5,
+          "variance": 0.94,
+          "final": 23,
+          "absorbed": 0,
+          "hp_before": 27,
+          "hp_after": 4,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 1: max(25.5-1, 25.5×0.10) = 24.5",
+           "×0.94 variance = 23.03",
+           "round once = 23"
+          ]
+         }
+        ],
+        "pending_xp_added": 300,
+        "phase_slot": "major"
+       },
+       {
+        "round": 2,
+        "actor": "pc",
+        "kind": "sidestep",
+        "change": "25% less damage at distance until the next own turn",
+        "phase_slot": "minor"
+       },
+       {
+        "round": 3,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_3",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "skill_name": "Bony strike",
+        "raw": 19,
+        "raw_text": "natural attack Raw = ATK 19",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 19,
+          "defense": 3,
+          "post_def": 16,
+          "variance": 1.08,
+          "final": 17,
+          "absorbed": 0,
+          "hp_before": 8,
+          "hp_after": 0,
+          "steps": [
+           "Raw 19",
+           "DEF 3: max(19-3, 19×0.10) = 16",
+           "×1.08 variance = 17.28",
+           "round once = 17"
+          ],
+          "defeated": true
+         }
+        ]
+       }
+      ],
+      "illegal": null,
+      "next": null,
+      "board": {
+       "round": 4,
+       "order": [
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+         "init": 10
+        },
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+         "init": 9
+        },
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+         "init": 8
+        },
+        {
+         "id": "pc",
+         "init": 7
+        }
+       ],
+       "hp": [
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+         "hp": 4,
+         "max": 54,
+         "state": null,
+         "band": "ENGAGED",
+         "cover": "none"
+        },
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+         "hp": 0,
+         "max": 42,
+         "state": "defeated",
+         "band": "ENGAGED",
+         "cover": "none"
+        },
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+         "hp": 0,
+         "max": 36,
+         "state": "defeated",
+         "band": "ENGAGED",
+         "cover": "none"
+        },
+        {
+         "id": "pc",
+         "hp": 0,
+         "max": 80,
+         "state": "defeated"
+        }
+       ],
+       "labels": {
+        "mon.old_crown_catacombs_c1_l1_e1_1": "Restless Skeleton A",
+        "mon.old_crown_catacombs_c1_l1_e1_2": "Restless Skeleton B",
+        "mon.old_crown_catacombs_c1_l1_e1_3": "Restless Skeleton C"
+       },
+       "pc": {
+        "mp": 44,
+        "max_mp": 72,
+        "sta": 100,
+        "max_sta": 100,
+        "arrows": 0
+       }
+      },
+      "ended": {
+       "defeated": [
+        "mon.old_crown_catacombs_c1_l1_e1_1",
+        "mon.old_crown_catacombs_c1_l1_e1_2"
+       ],
+       "escaped": [],
+       "xp_awarded": 0,
+       "pc_dead": true,
+       "pc_escaped": false
+      },
+      "levelups": [],
+      "c": true
+     },
+     "situations": [
+      "loot"
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "i": 26,
+  "user": false,
+  "build": "4.3.0-c.6.6.208",
+  "events": [
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 6350,
+     "repaired": false,
+     "deltas": 0,
+     "rejected": 0
+    }
+   }
+  ]
+ }
+]

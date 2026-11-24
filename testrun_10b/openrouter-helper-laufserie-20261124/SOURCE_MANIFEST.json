@@ -3,7 +3,7 @@
   "series": "natural_helper_progression",
   "stage": "mehrere automatische OpenRouter-Einzelruns, anschließend persönlicher Usertest, dann Gesamtauswertung",
   "created_on": "2026-11-24",
-  "archive_note": "Original-ZIPs wurden in dieser Chat-Sitzung byteweise geprüft; die großen Binärdateien werden getrennt mit tools/maintenance/import_helper_runs.ps1 aus dem lokalen Exportverzeichnis nach GitHub hochgeladen. Diese Manifestdatei ist keine Behauptung, dass die ZIP-Dateien bereits auf main liegen.",
+  "archive_note": "Die Original-ZIPs wurden in den jeweiligen Chat-Sitzungen geprüft. Die Binärdateien sind nicht auf main; Import aus lokalem Exportverzeichnis mit tools/maintenance/import_helper_runs.ps1. Manifest ist kein Nachweis eines GitHub-Originaluploads.",
   "entries": [
     {
       "zip": "20261124-183634Z-natural_helper_progression.zip",
@@ -80,6 +80,27 @@
       "reasoning_low_in_physical_engine_requests": true,
       "profile_unchanged": true,
       "runner_secret_scan_hits": 0
+    },
+    {
+      "zip": "20261124-222535Z-natural_helper_progression.zip",
+      "bytes": 22026087,
+      "sha256": "81278a1b3f874e0a886ca9008e15a14015e5223c121a446b37b0e2ce60dd7a1d",
+      "embedded_files": 13,
+      "build": "4.3.0-c.6.6.211",
+      "git_commit": "1d3171d756f8",
+      "runner_turns": 107,
+      "game_engine_calls": 317,
+      "run_end": "ui",
+      "end_detail": "T107: no reply; physical Narrator request 317 without response; server log Wafer upstream HTTP 429",
+      "level": 6,
+      "started_with_doubled_stats": true,
+      "wafer_fixed": true,
+      "reasoning_low_in_physical_engine_requests": true,
+      "model": "z-ai/glm-5.3-flash",
+      "profile_unchanged": true,
+      "runner_secret_scan_hits": 0,
+      "zip_crc_ok": true,
+      "original_on_main": false
     }
   ]
 }

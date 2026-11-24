@@ -1,4 +1,4 @@
-# Importiere die vier unveränderten natürlichen OpenRouter-Runner-Archive nach GitHub.
+# Importiere die fünf unveränderten natürlichen OpenRouter-Runner-Archive nach GitHub.
 # Benötigt nur Git (mit Pushberechtigung für origin) und die ZIPs auf dem eigenen Windows-PC.
 # Verändert keine Engine, keine ST-Installation und keine persönlichen Chat-Saves.
 [CmdletBinding()]
@@ -12,11 +12,12 @@ $entries = @(
   @{ Name='20261124-183634Z-natural_helper_progression.zip'; Sha='fcee87911c3ab58d79d0867d18a53cc590f4f5ddadad7cccbfeb55f40e3ceaa6'; Bytes=1136760 },
   @{ Name='20261124-202907Z-natural_helper_progression.zip'; Sha='25fd2ad75031ef1132b0f6eed46e0b96e1595ad9da75b225d9d1453250e32f17'; Bytes=2540462 },
   @{ Name='20261124-205854Z-natural_helper_progression.zip'; Sha='abad6d3d266e6d01e3a68942fa69b99b2ebd98db4f6c755953568aaee5bb0ad0'; Bytes=11504414 },
-  @{ Name='20261124-214323Z-natural_helper_progression.zip'; Sha='bf35564f47b76b9ca8847fbc00f01038d0c69f7293e5213fb7a08edab877f7f0'; Bytes=5061958 }
+  @{ Name='20261124-214323Z-natural_helper_progression.zip'; Sha='bf35564f47b76b9ca8847fbc00f01038d0c69f7293e5213fb7a08edab877f7f0'; Bytes=5061958 },
+  @{ Name='20261124-222535Z-natural_helper_progression.zip'; Sha='81278a1b3f874e0a886ca9008e15a14015e5223c121a446b37b0e2ce60dd7a1d'; Bytes=22026087 }
 )
 
 function RunGit([string[]]$Arguments) {
-  $output = & git @Args
+  $output = & git @Arguments
   if ($LASTEXITCODE -ne 0) { throw "git $($Arguments -join ' ') failed ($LASTEXITCODE)" }
   return $output
 }
@@ -51,7 +52,7 @@ try {
       $toCopy += @{ Source = $source; Dest = $dest; Name = $item.Name; Sha = $item.Sha }
     }
   }
-  if (-not $toCopy.Count) { Write-Host 'All four original ZIPs already exist with correct hashes. Nothing to commit.'; return }
+  if (-not $toCopy.Count) { Write-Host 'All five original ZIPs already exist with correct hashes. Nothing to commit.'; return }
   New-Item -ItemType Directory -Force -Path $destFolder | Out-Null
   foreach ($entry in $toCopy) {
     Copy-Item -LiteralPath $entry.Source -Destination $entry.Dest -ErrorAction Stop
@@ -67,7 +68,7 @@ try {
   }
   RunGit @('commit','-m','Archive original natural helper OpenRouter runs with verified SHA-256') | Out-Null
   RunGit @('push','origin','main') | Out-Null
-  Write-Host 'GitHub upload complete: 4 (or previously present) original ZIPs under' $relativeArchive
+  Write-Host 'GitHub upload complete: 5 (or previously present) original ZIPs under' $relativeArchive
 } finally {
   Pop-Location
 }

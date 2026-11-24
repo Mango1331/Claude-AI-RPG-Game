@@ -156,7 +156,7 @@ test('preflight: the profile\'s model in the proxy\'s five, a missing one, a ref
     assert.match(probeBlocks(denied), /refused the key/);
     const down = await probeModels({ url: PROXY, model: 'x', fetchImpl: async () => { throw Object.assign(new Error('fetch failed'), { cause: { code: 'ECONNREFUSED' } }); } });
     assert.equal(down.reachable, false);
-    assert.match(probeRows(down, { model: 'x' })[0].detail, /ECONNREFUSED\. Läuft dein Proxy \(z\. B\. der Featherless-Proxy\)\? Der Runner startet ihn nicht\./);
+    assert.match(probeRows(down, { model: 'x' })[0].detail, /ECONNREFUSED\. Prüfe die URL und Verbindung; ein separater lokaler Proxy muss bereits laufen\./);
     assert.match(probeBlocks(down), /does not answer/);
     const nolist = await probeModels({ url: PROXY, model: 'x', fetchImpl: fakeFetch(404, null) });
     assert.equal(probeBlocks(nolist), null, 'no /models: the run goes on, SillyTavern decides (bypass status check)');

@@ -6,6 +6,10 @@ Der [Projektstand](03_AKTUELLER_PROJEKTSTAND.md) nennt die spielbare Fassung und
 
 [.208 · Tagesboard, Hindernisschaden und geordnete Kampfhandlungen](patch_plans_10b/FACHPLAN_208_TAGESBOARD_UND_KAMPFAKTIONEN.md) · [Technische Abnahme des Experimentbranches](recherche/ABNAHME_208_TAGESBOARD_UND_KAMPFAKTIONEN.md)
 
+## User11 – Forschungsgegenreview zu .208
+
+[Unabhängiger GPT-Kontrollreview](recherche/USER11_208_GPT_GEGENREVIEW_TRUST_MAJOR_MINOR_2026-11-24.md) · [Codex-Entscheidungsvorlage](recherche/USER11_208_ENTSCHEIDUNG.md) · [Major-/Minor-Balance und HUD](recherche/CODEX_MAJOR_MINOR_USER11_208.md) · [natürliche OpenRouter-Spieltests](testrun_10b/README.md). Keine Produktfreigabe; HUD und Reise-Planer für .209 getrennt bewerten.
+
 ## Entscheidungsweg zu User08
 
 | Frage | Quelle |

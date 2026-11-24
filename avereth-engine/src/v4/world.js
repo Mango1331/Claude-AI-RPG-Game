@@ -3049,13 +3049,20 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (camp && holder.entity === 'pc' && !(camp.gather || []).some(n => sameGoods(n, d.name))) {
             reject(d, 'pc_inventory', 'a look cannot take an item from the camp'); return;
         }
-        if (holder.entity === 'pc' && cPath && rulesetOf(s) >= 2 && auth.take?.length && namedLocalObjects(s, d.name).length) {
-            const takes = Object.entries(auth.takeNames || {});
-            for (const [key, name] of takes) {
-                if (takes.length === 1 || normText(name) === normText(d.name)) refusedDuplicateTake.add(key);
+        if (holder.entity === 'pc' && cPath && rulesetOf(s) >= 2 && auth.take?.length) {
+            const sameName = namedLocalObjects(s, d.name);
+            // A named source can distinguish another item from an NPC's or PC's possession.
+            // Two articles at the same source still need their own physical receipt.
+            const sourceKey = ref => ref && (wayFeature(ref, s.scene.at) || normText(ref));
+            const from = sourceKey(d.in);
+            const separate = from && sameName.every(o => o.holder.entity || sourceKey(o.in || o.in_name) !== from);
+            if (sameName.length && !separate) {
+                for (const [key, name] of Object.entries(auth.takeNames || {})) {
+                    if (normText(name) === normText(d.name)) refusedDuplicateTake.add(key);
+                }
+                reject(d, 'object_identity', 'this name belongs to a local physical object; report its actual move by ID or establish a separate source');
+                return;
             }
-            reject(d, 'object_identity', 'this name belongs to a local physical object; report its actual move by ID or establish a separate source');
-            return;
         }
         const takenStock = outcome.booked?.campTakes;
         if (takenStock?.some(t => (t.at === holder.loc || holder.entity === 'pc') && sameGoods(s.objects[t.id]?.name, d.name))) {
@@ -3680,7 +3687,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
 
 const FILLER = new Set(['the', 'and', 'for', 'with', 'some', 'any', 'one', 'his', 'her', 'its', 'our', 'your', 'this', 'that', 'what', 'from', 'into']);
 /** Exact physical names among objects present at this scene, including held articles. */
-export function namedLocalObjects(s, name) {
+function namedLocalObjects(s, name) {
     const label = normText(name);
     return label ? Object.values(s.objects).filter(o => normText(o.name) === label
         && (o.holder?.loc === s.scene.at || s.scene.present.includes(o.holder?.entity))) : [];

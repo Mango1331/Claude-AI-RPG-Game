@@ -60,13 +60,15 @@ test('B8/9 evidenced new boards remain possible; craft without a booked material
     assert.deepEqual(s.objects['obj.t20.a_couple_of_boards_from_martas_woodpile'].holder, { entity:'pc' });
 });
 
-test('TAKE by the exact recorded name of a local ground object reuses its ID; ambiguity creates nothing', () => {
+test('named TAKE moves the actual ground ID on receipt; a boolean alone cannot identify one of two objects', () => {
     const s = structuredClone(corpus.c19.start);
     s.objects[satchel].holder = { loc:s.scene.at };
     const target = s.objects[satchel].name;
     const turn = {i:41, input:'I take the satchel.', commands:[{seq:1,type:'take',object:{new:target},qty:1,quote:'I take the satchel'}],
         prose:'Alaric picks up the satchel.',report:{scene:'here',expected:{1:{taken:true}},deltas:[]}};
-    const used = play(s,turn).state;
+    const used = play(s,turn,{report:{...turn.report,deltas:[
+        {seq:1,type:'object.move',object:satchel,to:'pc',qty:1},
+    ]}}).state;
     assert.deepEqual(used.objects[satchel].holder,{ entity:'pc' });
     assert.equal(Object.keys(used.objects).length,Object.keys(s.objects).length);
     s.objects['obj.second']={...s.objects[satchel],id:'obj.second'};
@@ -98,6 +100,7 @@ test('a catalog TAKE cannot strip an owner: only an actual NPC handover moves th
 test('a failed direct-to-PC CREATE naming local property cannot reappear as a boolean TAKE fallback', () => {
     const s=corpus.c19.start, turn=structuredClone(corpus.c19.turns[0]);
     turn.commands=turn.commands.slice(0,1);
+    turn.commands[0].object={new:s.objects[satchel].name};
     turn.report={scene:'here',expected:{1:{taken:true}},deltas:[
         {seq:1,type:'object.new',name:s.objects[satchel].name,kind:'item',qty:1,holder:'pc'},
     ]};
@@ -146,4 +149,54 @@ test('an arrival-pending TAKE cannot collect an origin object or an unconfirmed 
     assert.deepEqual(s.objects[satchel].holder,{loc:start.scene.at});
     assert.equal(result.p.outcome.resolutions[1].reason, 'arrival pending');
     assert.equal(Object.values(s.objects).filter(o=>o.name==='travel blanket' && o.holder.entity==='pc').length,0);
+});
+
+test('separately sourced hammers are not prebound to a namesake on a person or the local floor', () => {
+    for (const oldHolder of [{entity:keeper},{entity:'pc'},{loc:corpus.c19.start.scene.at}]) {
+        for (const sourceFirst of [true,false]) {
+            const start = structuredClone(corpus.c19.start);
+            const existing = start.objects[satchel];
+            existing.name = 'hammer';
+            existing.holder = oldHolder;
+            const create = {seq:1,type:'object.new',name:'hammer',kind:'item',qty:1,in:'open chest',holder:sourceFirst?'here':'pc'};
+            const deltas = [create];
+            if (sourceFirst) deltas.push({seq:2,type:'object.move',object:{new:'hammer'},to:'pc',qty:1});
+            const turn = {i:41,input:'I take the hammer from the open chest.',prose:'Alaric takes the second hammer from the chest.',
+                commands:[{seq:1,type:'take',object:{new:'hammer'},quote:'I take the hammer'}],
+                report:{scene:'here',expected:{1:{taken:true}},deltas}};
+            const result = play(start,turn);
+            assert.deepEqual(result.state.objects[satchel],existing);
+            const copy = Object.values(result.state.objects).filter(o=>o.id!==satchel && o.name==='hammer');
+            assert.equal(copy.length,1);
+            assert.deepEqual(copy[0].holder,{entity:'pc'});
+            assert.deepEqual(result.x.rejected,[]);
+        }
+    }
+});
+
+test('a rejected hammer duplication does not consume an independent apple TAKE, in either order', () => {
+    const start = structuredClone(corpus.c19.start);
+    start.objects[satchel].name='hammer';
+    for (const names of [['apple'],['hammer','apple'],['apple','hammer']]) {
+        const commands=names.map((name,i)=>({seq:i+1,type:'take',object:{new:name},quote:'I pick up the '+name}));
+        const expected=Object.fromEntries(commands.map(c=>[c.seq,{taken:true}]));
+        const turn={i:41,input:'I pick up the apple. I also ask about the hammer.',
+            prose:'Alaric collects the apple. Wren still holds the hammer.',commands,
+            report:{scene:'here',expected,deltas:[{seq:1,type:'object.new',name:'hammer',kind:'item',holder:'pc',qty:1}]}};
+        const {state}=play(start,turn);
+        assert.equal(Object.values(state.objects).filter(o=>o.name==='hammer').length,1);
+        assert.deepEqual(state.objects[satchel].holder,{entity:keeper});
+        assert.equal(Object.values(state.objects).filter(o=>o.name==='apple' && o.holder.entity==='pc').length,1);
+    }
+});
+
+test('the same ground container does not establish another namesake tool', () => {
+    const start=structuredClone(corpus.c19.start);
+    start.objects[satchel].name='hammer';
+    start.objects[satchel].holder={loc:start.scene.at};
+    start.objects[satchel].in_name='open chest';
+    const turn={i:41,input:'I take a hammer.',commands:[{seq:1,type:'take',object:{new:'hammer'},quote:'I take a hammer'}],
+        prose:'Alaric checks the chest.',report:{scene:'here',expected:{1:{taken:true}},deltas:[
+            {seq:1,type:'object.new',name:'hammer',kind:'item',holder:'pc',in:'open chest',qty:1}]}};
+    assert.deepEqual(play(start,turn).state.objects,start.objects);
 });

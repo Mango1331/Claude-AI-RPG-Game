@@ -4,7 +4,7 @@ Für Zahlen nach Build, Architektur und Messpunkt gibt es den [Messvergleich](..
 
 | Thema | Untersuchung | Gegenprüfung oder Daten |
 |---|---|---|
-| Reise, NPC-Wissen und Besitz nach .209 | [Architekturentscheid und Abnahme des Kontinuitätsexperiments](AVERETH_210_KONTINUITAET.md) | [Spielqualität auf Original- und frischen Verläufen](kontinuitaet_210/QUALITAET.md) · [Reproduktionsanleitung](kontinuitaet_210/REPRODUKTION.md) |
+| Reise, NPC-Wissen und Besitz nach .209 | [Architekturentscheid und Abnahme des Kontinuitätsexperiments](AVERETH_210_KONTINUITAET.md) | [Unabhängiger GPT-Gegenreview und neue Spielzielvorgabe](AVERETH_210_GPT_GEGENREVIEW_SPIELFLUSS_KONTINUITAET_2026-11-24.md) · [Spielqualität auf Original- und frischen Verläufen](kontinuitaet_210/QUALITAET.md) · [Reproduktionsanleitung](kontinuitaet_210/REPRODUKTION.md) |
 | Kampf-HUD .209 | [Technische Abnahme und Vergleich der Bedienung](ABNAHME_209_KOMPAKTES_AKTIONS_HUD.md) | [Codex-Gegenreview und Umsetzungsentscheidung](GEGENREVIEW_209_KAMPF_HUD_CODEX.md) · [GPT-Gegenreview zu User11](USER11_208_GPT_GEGENREVIEW_TRUST_MAJOR_MINOR_2026-11-24.md) |
 | User11, Begleitung und Spielerhoheit | [Entscheidung nach Originalen, Gegenproben und natürlichem Spiel](USER11_208_ENTSCHEIDUNG.md) | [Kontrollierter Firewallvergleich A/B/C](USER11_208_FIREWALLVERGLEICH.md) · [Persönlicher Run](../testrun_10b/user-20261124-014928-208/CODEX_GEGENREVIEW.md) |
 | Aktionsökonomie und Kampf-HUD | [Fünf RPG-Regelwerke und eigener Balancevergleich](CODEX_MAJOR_MINOR_USER11_208.md) | [Deterministische Kampfsimulation](user11_balance_208/kampf.json) · [Drei HUD-Varianten](user11_balance_208/hud.json) |

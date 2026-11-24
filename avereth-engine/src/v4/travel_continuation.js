@@ -13,8 +13,12 @@ const has = (text, part) => typeof part === 'string' && !!words(part) && ` ${wor
 /** Optional and advisory. A malformed supplied boundary must never broaden permission or cause a planner retry. */
 export function travelFrame(frame, input, present) {
     if (frame == null) return null;
-    if (normText(input).split(/[.!?\n]+/).some(clause => holdPosition.test(clause.trim()) &&
-        !/\b(?:until|unless|bis)\b/i.test(clause))) return 'stay';
+    for (const clause of normText(input).split(/[.!?\n]+/)) {
+        if (!holdPosition.test(clause.trim())) continue;
+        // A timed hold is a boundary in its own right: neutral scope never releases it.
+        const prerequisite = clause.split(/\b(?:until|unless|bis)\b/i)[1];
+        if (!prerequisite || !has(prerequisite, frame?.after)) return 'stay';
+    }
     if (frame === 'local' || frame === 'stay') return frame;
     if (!has(input, frame.choice)) return 'stay';
     if (frame.to != null && !has(frame.choice, frame.to)) return 'stay';

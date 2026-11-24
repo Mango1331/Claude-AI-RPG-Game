@@ -175,3 +175,18 @@ test('a narrated continuation never opens a Living Dungeon, unpaid entry or a lo
         assert.equal(x.events.some(e=>e.t==='coin.spent'),false);
     }
 });
+
+test('an explicit hold until the ferry returns requires the named condition and its actual fulfillment', () => {
+    const room={new:{name:'storeroom',kind:'interior',parent:b3.start.scene.at}};
+    const input='I stay here until the ferry returns. Then Dann can walk me to the storeroom.';
+    const after='The ferry returned to the landing';
+    const evidence='Alaric reached the storeroom with Dann';
+    const frame={choice:'Dann can walk me to the storeroom',to:'storeroom',with:dann,after:'the ferry'};
+    const turn={i:23,commands:[],input,frame,prose:after+'. '+evidence+'.',
+        report:{scene:room,expected:{},deltas:[{seq:1,type:'arrive',at:room,with:[dann],after,evidence}]}};
+    assert.notEqual(play(b3.start,turn).state.scene.at,b3.start.scene.at);
+    for(const alternate of ['local',undefined,{...frame,after:'the storeroom'},{...frame,after:null}])
+        assert.equal(play(b3.start,{...turn,frame:alternate}).state.scene.at,b3.start.scene.at);
+    assert.equal(play(b3.start,{...turn,prose:'The ferry had not returned to the landing. '+evidence+'.'}).state.scene.at,b3.start.scene.at);
+    assert.equal(play(b3.start,{...turn,report:{...turn.report,deltas:[{seq:1,type:'arrive',at:room,with:[dann],evidence}]}}).state.scene.at,b3.start.scene.at);
+});

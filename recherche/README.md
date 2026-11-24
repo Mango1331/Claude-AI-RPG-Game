@@ -4,6 +4,7 @@ Für Zahlen nach Build, Architektur und Messpunkt gibt es den [Messvergleich](..
 
 | Thema | Untersuchung | Gegenprüfung oder Daten |
 |---|---|---|
+| Unabhängiger GPT-Review zum natürlichen Langzeittest | [GPT-Gegenreview der vier Kampagnen und Besitzkorrektur](AVERETH_211_GPT_GEGENREVIEW_NATUERLICHER_LANGZEITTEST_2026-11-24.md) | [Entwicklerbericht](AVERETH_211_NATUERLICHER_LANGZEITVERGLEICH.md) · [Originalarchiv](../testrun_10b/openrouter-20261124-langzeit-211/README.md) |
 | Natürlicher Langzeitvergleich .210/.211 | [Entscheidung nach vier Kampagnen](AVERETH_211_NATUERLICHER_LANGZEITVERGLEICH.md) | [Originale und Vergleichsklone](../testrun_10b/openrouter-20261124-langzeit-211/README.md) · [Beobachtungen](langzeittest_211/BEOBACHTUNGEN.md) |
 | Weltkontinuität .211 | [Architektur, Revisionen und unabhängige Entscheidung](AVERETH_211_SPIELKONTINUITAET_OFFLINE.md) | [Archiv- und Folgezüge](kontinuitaet_211/KREUZVERGLEICH.md) · [Technische Offline-Abnahme](kontinuitaet_211/ABNAHME.md) · [Spätere natürliche Langzeitprüfung](kontinuitaet_211/LANGZEITPLAN.md) |
 | .211 – unabhängiger Offline-Gegenreview | [GPT-Diffreview zur Weltkontinuität, Reise-Agency und Revisionssicherheit](AVERETH_211_GPT_GEGENREVIEW_OFFLINE_2026-11-24.md) | [Astra-Fachbericht](AVERETH_211_SPIELKONTINUITAET_OFFLINE.md) · [technische Abnahme](kontinuitaet_211/ABNAHME.md) · [Langzeittestplan](kontinuitaet_211/LANGZEITPLAN.md) |

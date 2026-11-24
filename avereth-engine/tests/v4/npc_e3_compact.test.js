@@ -11,15 +11,52 @@ import { applyEvent } from '../../src/state.js';
 import { run191 } from './batch191_lib.js';
 
 import { estimateTokens } from '../../src/util.js';
-// .201 changes only the agency sentence. Preserve the .199 source fixture and compare every
-// other byte/card; normalize that one documented sentence for this historical layout comparison.
+// Preserve the .199 capture. Verify the current wording before projecting only the
+// individually reviewed text changes back onto it. The full reconstructed byte stream,
+// each section's token count, each block hash and all measured card fields are still compared.
+const guild211 = 'Only [listed] contracts are selectable. Active, completed and expired offers are unavailable. Any [listed] contract stays available when an NPC takes the paper copy. With no listings invite a board reading; invent none.';
+const guild199 = 'Only listed contracts below are official selectable offers. Active/completed/expired contracts are not new offers. If none are listed, do not invent notices or claim another adventurer took them; invite a board reading.';
+const witnessRows = [
+    ['Marren [npc.marren]', "Marren stitched and washed the stranger's boar-tusk gash", "Marren stitched and washed Alaric's boar-tusk gash"],
+    ['Hedwin [npc.npcmillpond_farmer]', "Hedwin's boy Wat asked the stranger to cut the dead wolf's good ear off", "Hedwin's boy Wat asked Alaric to cut the dead wolf's good ear off"],
+];
 function measure(x) {
-    const ctx=render(x),old="PLAYER ACTIONS (the engine resolved Alaric's message; narrate exactly these, in this order; he decides nothing else):";
-    const text=ctx.text.replace(/^PLAYER ACTIONS \(resolved choices in order; routine details here allowed, no extra decisions or mechanics\):/m,old);
-    const block=text.split('\n\n').find(b=>b.startsWith('PLAYER ACTIONS'));
-    const actual=playerActionsBlock(x.state.last.outcome),historical=actual.replace(/^PLAYER ACTIONS[^\n]+/,old);
-    const delta=x.state.last.outcome.kind==='v4'?estimateTokens(historical)-estimateTokens(actual):0;
-    return currentMeasure(x,{...ctx,text,tokens:text===ctx.text?ctx.tokens:estimateTokens(text),sections:ctx.sections.map(s=>s.name==='resolved'?{...s,tokens:block?estimateTokens(block):s.tokens+delta}:s)});
+    const ctx = render(x);
+    const sectionTokens = new Map();
+    const old = "PLAYER ACTIONS (the engine resolved Alaric's message; narrate exactly these, in this order; he decides nothing else):";
+    const blocks = ctx.text.split('\n\n').map(block => {
+        let historical = block, section;
+        if (block.startsWith('OFFICIAL GUILD OFFERS — ENGINE AUTHORITY:')) {
+            assert.ok(block.startsWith('OFFICIAL GUILD OFFERS — ENGINE AUTHORITY: '+guild211));
+            historical = block.replace(guild211, guild199);
+            section = 'guild_authority';
+        } else if (block.startsWith('KNOWN PEOPLE — narrator continuity')) {
+            historical = block.split('\n').map(line => {
+                for (const [who, now, before] of witnessRows) {
+                    if (line.startsWith(who) && line.includes(before)) assert.fail('Undisclosed PC name in '+who+' recall');
+                    if (line.startsWith(who) && line.includes(now)) return line.replace(now, before);
+                }
+                return line;
+            }).join('\n');
+            section = 'npc_continuity';
+        } else if (block.split('\n').includes('PLAYER ACTIONS (resolved choices in order; routine details here allowed, no extra decisions or mechanics):')) {
+            historical = block.replace(/^PLAYER ACTIONS [^\n]+/m, old);
+            if (block.startsWith('PLAYER ACTIONS')) section = 'resolved';
+        }
+        if (section && historical !== block) {
+            const actual = ctx.sections.find(s => s.name === section);
+            assert.equal(actual.tokens,estimateTokens(block),section);
+            sectionTokens.set(section,estimateTokens(historical));
+        }
+        return historical;
+    });
+    // A system query or other outcome may contain the resolved section without that visible
+    // heading. Preserve the .201 length adjustment for those original captures.
+    const action = playerActionsBlock(x.state.last.outcome);
+    const delta = x.state.last.outcome.kind === 'v4' ? estimateTokens(action.replace(/^PLAYER ACTIONS[^\n]+/,old))-estimateTokens(action) : 0;
+    const text = blocks.join('\n\n');
+    return currentMeasure(x,{...ctx,text,tokens:estimateTokens(text),
+        sections:ctx.sections.map(s => ({...s,tokens:sectionTokens.get(s.name) ?? (s.tokens+(s.name === 'resolved' ? delta : 0))}))});
 }
 
 // Captured from the merged .199 commit before changing product code. Not replay originals or updated expectations.
@@ -126,7 +163,10 @@ test('B16: every card <= old length, <= 4 rows of 170; unchanged body, slots and
             assert.ok(c.chars <= base[key].cards[id].chars, key);
             assert.deepEqual(c.rows.slice(1), base[key].cards[id].rows.slice(1), `${key} body`);
         }
-        assert.ok(m.sections.every(s => [...base[key].sections.map(s => s.name), ...base[key].dropped].includes(s.name)), key);
+        assert.deepEqual(m.sections.map(s => s.name), base[key].sections.map(s => s.name), key);
+        assert.deepEqual(m.dropped, base[key].dropped, key);
+        const otherBlocks = value => value.blocks.filter(b => !/^(CURRENT INTERLOCUTORS|ARRIVING AT)/.test(b.first));
+        assert.deepEqual(otherBlocks(m), otherBlocks(base[key]), key+' outside the compact cards');
     }
 });
 test('B17: same context after JSON reload, with no change to facts/events/RNG/state', () => {

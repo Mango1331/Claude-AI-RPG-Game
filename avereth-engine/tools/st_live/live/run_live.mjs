@@ -47,6 +47,13 @@ export async function verifyFixtureReload(driver, chat) {
     return JSON.stringify(before.entities.pc.sheet) === JSON.stringify(after.entities.pc.sheet) && JSON.stringify(before.career) === JSON.stringify(after.career);
 }
 export const DEFAULT_RUNS = path.join(ENGINE, 'tools', 'st_live', 'runs');
+/** A failed X record still blocks the native ST Action HUD; another player message cannot resume it. */
+export function nativeCompletionBlocksContinuation(fault, chat) {
+    if (fault?.kind !== 'extractor_failed') return false;
+    const status = chat?.[fault.at]?.extra?.avereth?.extraction?.status;
+    return status === 'failed' || status === 'pending';
+}
+
 export const STUB_KEY = 'stub-key-not-a-real-key-0000';
 export const DEFAULTS = {
     stDir: null, stUser: 'default-user', stData: null, card: null, preset: 'profile', port: 8123, browser: 'auto', headless: true,
@@ -429,6 +436,13 @@ export async function run(o) {
             const outcome = turnOutcome(chat, userAt);
             const fault = turnFailure(chat, userAt);
             let soft = softExtractionFailure(chat, userAt, fault);
+            if (soft && nativeCompletionBlocksContinuation(fault, chat)) {
+                // The previous reply's world job is terminal, but ST itself still requires
+                // "Abschluss prüfen / fortsetzen". Do not send another player input into
+                // the blocked host and misclassify the next turn as a UI/no-reply failure.
+                log(`turn ${turn}: failed Extractor remains blocked in ST; stopping without another game input`);
+                soft = false;
+            }
             if (soft) {
                 validationContent ||= await loadContentPack(async name => JSON.parse(fs.readFileSync(path.join(ENGINE,'content',name),'utf8')));
                 // .127: a fold with events that no longer apply is no basis for a continuation either

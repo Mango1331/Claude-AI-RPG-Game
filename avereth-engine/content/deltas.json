@@ -115,6 +115,8 @@
     {
       "type": "arrive",
       "fields": {
+        "evidence": { "type": "string", "nullable": true },
+        "after": { "type": "string", "nullable": true },
         "at": {
           "ref": "place"
         },
@@ -127,7 +129,7 @@
           "nullable": true
         }
       },
-      "summary": "Alaric arrives somewhere after his own GO/roaming action, or because the reply explicitly establishes an external involuntary cause in forced_by; with: the ids of the people who travel and arrive together with him (null when he arrives without anyone)"
+      "summary": "An actual PC arrival. Ordinary chosen scene continuation may reach its stop without GO. Optional evidence quotes the PC at the reached stop; after quotes an explicitly required condition fulfilled before it. with: the ids of the people who travel and arrive together with him (null when he arrives without anyone)"
     },
     {
       "type": "person.new",

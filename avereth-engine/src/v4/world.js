@@ -3,6 +3,7 @@ import { floorRefusal, namedLevel, goesFrom, otherEnd } from './dungeon.js';
 import { placeParent, placeIdentity, placeKey, samePlace } from './place_refs.js';
 import { resolvePlaceRef, usualPersonNamed } from './place_book.js';
 import { allowedArrival, stepsOf, newPlaceScope } from './movement.js';
+import { reportedContinuation } from './travel_continuation.js';
 import { sectionsOf, sectionId } from './sections.js';
 import { sceneIssues, sceneSteps, localSceneDelta } from './extract.js';
 import { privateQuestsOf, questVisible } from '../content.js';
@@ -379,7 +380,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const ev = forcedRelocation(prose, d.forced_by, { self: [s.entities.pc?.name, 'Alaric'].filter(Boolean), ...placeNames(d.at) });
         if (!ev.ok) unprovenForced.set(d, ev.why);
     }
-    const fw = firewall(answer.deltas, { ...firewallContext(s, content, chronicle, excludedFoes), unprovenForced });
+    const continuation = explicitTravel ? reportedContinuation(s, content, answer, prose) : null;
+    const fw = firewall(answer.deltas, { ...firewallContext(s, content, chronicle, excludedFoes), unprovenForced, continuation });
     const privateMode = cPath && rulesetOf(s) >= 2 && privateQuestsOf(s);
     const acceptanceOnly = privateMode && outcome.resolutions?.length > 0 && outcome.resolutions.every(r => r.type === 'quest.accept');
     const inventedWorkTime = acceptanceOnly && fw.accept.some(d => d.type === 'quest.close' && d.status === 'completed'
@@ -1059,7 +1061,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // extractor's expected.<seq>.with), the rest stays where it was. Never his destination: no arrival, no travel time,
     // no goal, delivery or turn-in at the stop (transit). A closed window, a scene or pause window, no authorized GO, a
     // fight, a reported arrive or a start on the realm's road itself keep .180's handling.
-    const stopRoad = explicitTravel && pulse?.exposure === 'travel' && pulse.open === true && (auth.gos || []).length
+    // A pause on a local leg remains at its last confirmed place; a local lane never becomes the realm road.
+    const firstLeg = (auth.gos || []).length ? stepsOf(s, auth.gos)[0] : null;
+    const inside = dungeonOf(s, startAt);
+    const outsideLeg = firstLeg && !['local', 'within'].includes(firstLeg.mode) && !(inside && inside === firstLeg.enter?.dungeon);
+    const stopRoad = outsideLeg && explicitTravel && pulse?.exposure === 'travel' && pulse.open === true && (auth.gos || []).length
         && !(answer.deltas || []).some((d) => d?.type === 'arrive') && !arrivesAnyway ? realmOf(s, startAt) : null;
     let roadStop = !!stopRoad && stopRoad !== startAt && s.places[stopRoad]?.kind === 'realm' && !auth.gos.some((g) => g.to === stopRoad);
     const atStart = (d) => { const at = d.scene ?? answer.scene; return at != null && at !== 'here' && samePlace(s, at, startAt, content); };
@@ -1090,7 +1096,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
         step = { kind: 'delta', type: d.type, seq: d.seq ?? 0, granted: new Set() };
         // Authority is checked again at the actual story step: earlier deltas may have changed its context.
-        const stepFw = firewall([d], { ...firewallContext(s, content, chronicle, excludedFoes), unprovenForced });
+        const stepFw = firewall([d], { ...firewallContext(s, content, chronicle, excludedFoes), unprovenForced, continuation: s.scene.at === startAt ? continuation : null });
         if (!stepFw.accept.length) {
             for (const x of stepFw.reject) { reject(x.delta, x.rule, x.why); refusedArrival(x.delta); if (x.delta?.type === 'creature.new') blockCreature(x.delta); }
             for (const x of stepFw.corrections) if (!corrections.includes(x)) corrections.push(x);
@@ -1173,6 +1179,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 if (part?.refuse) { reject(d, 'passage', part.refuse); const fix = `Alaric is still in ${placeName(s, s.scene.at)}: ${part.refuse}.`; if (!corrections.includes(fix)) corrections.push(fix); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
                 let at = part?.id ? { id: part.id } : viaStop(arrivalPlace(ref));
                 if (at.error) { unmake(); reject(d, 'place', at.error); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
+                if (continuation === d && at.id !== s.scene.at) {
+                    const restricted = id => trueDungeonOf(s, id) || lineage(s, id).some(p => s.places[p]?.population);
+                    const chosenTarget = auth.continuation?.to;
+                    const nearby = lineage(s, at.id).some(id => ['site','interior'].includes(s.places[id]?.kind)
+                        && lineage(s, s.scene.at).includes(id));
+                    if ((!chosenTarget && !nearby) || restricted(s.scene.at) || restricted(at.id) || !realmOf(s, s.scene.at)
+                        || realmOf(s, s.scene.at) !== realmOf(s, at.id) || ['realm','region','settlement'].includes(s.places[at.id]?.kind)
+                        || (settlementOf(s, at.id) && settlementOf(s, at.id) !== settlementOf(s, s.scene.at))) {
+                        unmake(); reject(d, 'passage', 'this route requires a travel action'); refusedArrival(d); break;
+                    }
+                }
                 if (camp?.approach && auth.gos?.length === 1 && at.id !== camp.origin &&
                     (s.places[at.id]?.parent !== camp.origin || normText(s.places[at.id]?.name) !== normText(camp.name))) {
                     unmake(); reject(d, 'passage', 'this camp approach reaches only the nearby site he inspected'); refusedArrival(d); break;

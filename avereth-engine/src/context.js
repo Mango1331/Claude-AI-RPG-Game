@@ -1055,9 +1055,14 @@ function whereLines(state, input, opts) {
     const words = ` ${normText(input || '').replace(/[^a-z0-9' ]+/g, ' ')} `;
     const absent = Object.values(state.entities || {}).filter((e) => e.kind === 'npc' && e.name && e.status !== 'dead' && !state.scene.present.includes(e.id)
         && normText(e.name).split(' ').filter((w) => w.length >= 4).some((w) => words.includes(` ${w} `))).slice(0, 3);
+    const frame = opts.outcome?.auth?.continuation;
+    const unbooked = frame === 'stay' ? `he stays at ${here} as requested`
+        : frame && frame !== 'local' ? `chosen continuation: ${frame.choice}; ${frame.with ? 'only if '+entityLabel(state,frame.with)+' agrees; ' : ''}${frame.after ? 'only once '+frame.after+' is fulfilled; ' : ''}no trip is booked yet`
+            : !frame ? `no booked route from ${here}; this turn has no continuation assessment. Keep his established place unless actually displaced by an external cause`
+            : `no booked route from ${here}. Ordinary movement within the present site may follow the current choice. Directions alone, an invitation, refusal or a deferred plan keeps him here. Actual external displacement remains possible`;
     return [
         `WHERE — ${here}${town && town !== here ? ` (${town})` : ''}.${missed.length ? ` The last reply's ${missed.join(', ')} ${missed.length > 1 ? 'were' : 'was'} not reached: what it told there did not happen.` : ''}`,
-        `TRAVEL THIS TURN — ${steps.length ? steps.join('; ') : `none chosen: he stays at ${here}. An invitation he accepts, someone leading the way or going ahead, or his own agreement moves him nowhere; only a force he cannot refuse, told as it happens (carried, dragged, swept away), moves him without his own going`}.`,
+        `TRAVEL THIS TURN — ${steps.length ? steps.join('; ') : unbooked}.`,
         absent.length ? `NOT HERE — ${absent.map((e) => `${e.name}${e.at && state.places?.[e.at] ? ` (${placeName(state, e.at)})` : ''}`).join(', ')}: he speaks of them from where he is; they answer only if the story brings them here.` : '',
     ].filter(Boolean).join('\n');
 }

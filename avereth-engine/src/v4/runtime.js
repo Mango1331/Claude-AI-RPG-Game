@@ -262,7 +262,7 @@ export async function planMessage(llm, content, ctx, text, { recent = '', isCurr
         const p2 = parsePlan(second.content, vocab, ctx, text);
         const raw = [String(second.content).slice(0, 2000)];
         return p2.commands
-            ? { hud_binding:p2.hud_binding, hud_normalized:p2.hud_normalized, hud_conflict:p2.hud_conflict, commands: p2.commands, failed: false, error: null, ms, repaired: true, recovery: 'transport', raw, calls }
+            ? { travel_frame:p2.travel_frame, hud_binding:p2.hud_binding, hud_normalized:p2.hud_normalized, hud_conflict:p2.hud_conflict, commands: p2.commands, failed: false, error: null, ms, repaired: true, recovery: 'transport', raw, calls }
             : { commands: null, failed: true, error: (p2.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired: true, recovery: 'transport', raw, calls };
     }
     const raw = [String(first.content).slice(0, 2000)];
@@ -331,7 +331,7 @@ export async function planMessage(llm, content, ctx, text, { recent = '', isCurr
     // Only schema-valid plans whose sole remaining errors concern trade consent may ask back.
     // Nothing from either rejected plan is executed, including dependent travel and sleep.
     if (!p.commands && consentClarify) return { commands: [{ seq: 1, type: 'clarify', about: 'action', question: tradeNote || 'Do you buy or sell, which goods, with whom, and at what total price? Nothing changes hands until clarified.', options: [] }], failed: false, error: null, ms, repaired, raw, calls };
-    return p.commands ? { hud_binding:p.hud_binding, hud_normalized:p.hud_normalized, hud_conflict:p.hud_conflict, commands: p.commands, failed: false, error: null, ms, repaired, raw, calls, ...(recovery ? { recovery } : {}) } : { commands: null, failed: true, error: (p.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired, raw, calls, ...(recovery ? { recovery } : {}) };
+    return p.commands ? { travel_frame:p.travel_frame, hud_binding:p.hud_binding, hud_normalized:p.hud_normalized, hud_conflict:p.hud_conflict, commands: p.commands, failed: false, error: null, ms, repaired, raw, calls, ...(recovery ? { recovery } : {}) } : { commands: null, failed: true, error: (p.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired, raw, calls, ...(recovery ? { recovery } : {}) };
 }
 
 // The previous narration is useful for references even when its reported move was refused.
@@ -363,9 +363,10 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const actionInput=actionInputOf(msg);
     if(actionInput)ctx.actionInput=actionInput;
     const priorBinding = actionInput && previous?.plan?.raw?.length ? parsePlan(previous.plan.raw.at(-1),content.commandVocab,ctx,msg.mes) : null;
-    const reuse = previous?.plan && previous.interp?.commands ? {hud_binding:previous.plan.hud_binding || priorBinding?.hud_binding, hud_normalized:previous.plan.hud_normalized || priorBinding?.hud_normalized, commands: previous.interp.commands, failed: false, error: null, ms: 0, repaired: !!previous.interp.repaired, raw: previous.plan.raw || [], calls: previous.plan.llm, recovery: previous.plan.recovery || null } : null;
+    const reuse = previous?.plan && previous.interp?.commands ? {travel_frame:previous.plan.travel_frame, hud_binding:previous.plan.hud_binding || priorBinding?.hud_binding, hud_normalized:previous.plan.hud_normalized || priorBinding?.hud_normalized, commands: previous.interp.commands, failed: false, error: null, ms: 0, repaired: !!previous.interp.repaired, raw: previous.plan.raw || [], calls: previous.plan.llm, recovery: previous.plan.recovery || null } : null;
     const pl = reuse || await planMessage(llm, content, ctx, msg.mes, { recent, isCurrent, moveHints: (commands) => ineffectiveMoves(before, ctx, commands) });
     const plan = {
+        ...(pl.travel_frame ? {travel_frame:pl.travel_frame} : {}),
         ...(actionInput ? {hud_binding:pl.hud_binding,hud_normalized:!!pl.hud_normalized} : {}),
         version: PLANNER_VERSION, mode: ctx.fight ? 'fight' : 'story', ms: pl.ms, repaired: pl.repaired, failed: pl.failed,
         ...(pl.error ? { error: pl.error } : {}), raw: pl.raw, ...(pl.calls?.length ? { llm: pl.calls } : {}),
@@ -461,7 +462,7 @@ async function executeMappedTurn(chat,content,{u,before,m,guarded={dropped:[]},i
     const board = need ? await generateBoard(llm, before, content, need) : null;
     const t = playerTurnV4(before, content, msg.mes, {
         msg: u, commands: m.commands, dropped: guarded.dropped.filter((x) => !MECH_TYPES.includes(x.command?.type)), board, c: true,
-        interp: { version: PLANNER_VERSION, ms: pl.ms, source: pl.repaired ? 'json_repaired' : 'json', failed: false, error: null },
+        interp: { travel_frame:plan?.travel_frame, version: PLANNER_VERSION, ms: pl.ms, source: pl.repaired ? 'json_repaired' : 'json', failed: false, error: null },
     });
     const growth = await withGrowth(t, content, llm, previous);
     return {
@@ -971,6 +972,7 @@ export function extractionRequest(chat, id, content) {
         : o.kind === 'combat' ? 'COMBAT — the engine resolved this round (attacks, damage, movement); report only what else the reply established.'
             : o.kind === 'check' ? `CHECK — the engine resolved: ${o.check?.label || 'a check'}, ${o.check?.success ? 'success' : 'failure'}.`
                 : 'NOTHING TO BOOK — Alaric decided nothing the engine resolves.';
+    if (typeof o.auth?.continuation === 'object' && o.auth.continuation) actions += '\nChosen possible continuation: '+JSON.stringify(o.auth.continuation)+'. Report arrive only after the actual movement, with its participants. If conditional, after quotes its concrete subject in the actual fulfilled prerequisite before arrival; evidence quotes the PC at the stop. No fulfillment or no agreement means no move.';
     if (o.booked?.registration) actions += '\nThe measuring stone is part of the completed in-hall service. Report no arrival or escort for its routine movements; separate authorized travel still uses normal arrivals.';
     if (o.auth?.roam && o.search_checks?.some(check => check.success)) {
         actions += `\nSearch began at ${state.scene.at}. Set scene on evidence observed there before an arrival. At the sighting, use only a population established there or in its ancestry; otherwise independent.`;

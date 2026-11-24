@@ -413,7 +413,7 @@ export function firewall(deltas, ctx = {}) {
                 // (live 15.10.2026: "a proper room" bought, the reply took him up, no_go kept him in the taproom)
                 // Build .107: a forced_by the reply does not narrate as a happening relocation is no cause (world.js)
                 const unproven = ctx.unprovenForced?.get(d);
-                if (!auth.go && !auth.roam && (!text(d.forced_by).trim() || unproven)) {
+                if (!auth.go && !auth.roam && ctx.continuation !== d && (!text(d.forced_by).trim() || unproven)) {
                     no(d, 'no_go', unproven ? `the involuntary cause is not narrated as a relocation that happens (${unproven})` : 'Alaric arrives somewhere only after his own travel/roaming action or an explicit external involuntary cause', 'Alaric did not voluntarily travel in the last reply, and no external event moved him; he remains where he was.');
                     continue;
                 }

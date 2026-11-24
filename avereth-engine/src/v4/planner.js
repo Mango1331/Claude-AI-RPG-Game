@@ -33,6 +33,7 @@ import { dungeonOf, roomKnown } from './dungeon.js';
 import { extractJsonObject } from './json.js';
 import { validate } from './schema.js';
 import { interpreterSystem, vocabularyText, catalogText, interpreterSchema, PLAIN_FORMAT, amountErrors, softMoney, financeHints } from './interpret.js';
+import { travelFrame } from './travel_continuation.js';
 import { anchorQuote } from './agency.js';
 import { openGoals, goalText } from './growth.js';
 import { composerFunctions } from '../skill_composer.js';
@@ -268,7 +269,7 @@ export function plannerSystem(vocab, { fight = false, privateQuests = true } = {
         const story = vocabularyText({ commands: vocab.commands.filter((c) => FIGHT_STORY_TYPES.has(c.type)) });
         return [PLANNER_ROLE, '', mech, '', FIGHT_RULES, '', 'Story commands (the same list):', story, '', 'Answer with {"commands": [...]}; an empty list when the message contains no action of his.', '', PLAIN_FORMAT].join('\n');
     }
-    return [interpreterSystem(vocab, { needs: true }), '', CONTRACT_RULES, '', HANDOVER_RULES, '', ORDER_RULES, '', LEARNING_RULES, '', mech, '', PLAIN_FORMAT].join('\n');
+    return [interpreterSystem(vocab, { needs: true }), '', 'travel_frame: "stay" for directions only, refusal, postponement or an unaccepted proposal; "local" if ordinary scene details are unrestricted. For a chosen or requested continuation without unconditional GO: {"choice":"literal player words","to":"destination in choice","with":"present guide ID","after":"short literal subject of the prerequisite"}; use null for absent details. This books no departure.', '', CONTRACT_RULES, '', HANDOVER_RULES, '', ORDER_RULES, '', LEARNING_RULES, '', mech, '', PLAIN_FORMAT].join('\n');
 }
 
 function skillText(skill) {
@@ -342,7 +343,7 @@ export function planContext(state, content, catalog) {
     const habitat = lineage(state, state.scene.at).find(id => state.places[id].population);
     // Build .138: the unit count each open bid's rate applies to (stacks of the same goods together)
     const bidUnits = Object.fromEntries(Object.values(state.offers || {}).filter((o) => o.bid && o.status === 'open').map((o) => [o.id, rateUnits(o.lines, (id) => state.objects[id])]));
-    return { habitat, bidUnits, tradeChecks: rulesetOf(state) >= 2, privateQuests: privateQuestsOf(state), fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content), jobs };
+    return { presentIds:state.scene.present, habitat, bidUnits, tradeChecks: rulesetOf(state) >= 2, privateQuests: privateQuestsOf(state), fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content), jobs };
 }
 
 /** The user message: the interpreter's CATALOG, then skills, opponents, engine facts, RECENT and the message. */
@@ -669,7 +670,8 @@ export function parsePlan(answer, vocab, ctx, message) {
     if (value.commands.some(c => c?.type === 'stealth') && (manners.size || value.commands.some(c => c?.type === 'journey.continue')))
         errors.push('A separate stealth competes with this travel. If it is a quiet approach, keep the travel command with manner and its scope; if an independent later hide was intended, clarify before acting. Never hide at the departure point instead of continuing.');
     if (errors.length) return { commands: null, errors: errors.slice(0, 8), tradeConflict: tradeErrors.length === errors.length && !ctx.fight, tradeNote };
-    return { ...(hud ? {hud_binding:value.hud_binding,hud_normalized:form.normalized} : {}), commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [], hints: financeHints(value.commands, ctx.currency, message) };
+    const frame = ctx.fight ? null : travelFrame(value.travel_frame,message,ctx.presentIds || []);
+    return { ...(frame ? {travel_frame:frame} : {}), ...(hud ? {hud_binding:value.hud_binding,hud_normalized:form.normalized} : {}), commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [], hints: financeHints(value.commands, ctx.currency, message) };
 }
 
 // --------------------------------------------------------------------------------------------- safety catch

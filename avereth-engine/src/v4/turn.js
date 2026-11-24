@@ -107,7 +107,7 @@ export function playerTurnV4(state, content, text, { msg = null, commands = [], 
     }
     const outcome = {
         kind: 'v4', actions, extra: ctx.extra, resolutions: ctx.resolutions, expected_keys: ctx.expectedKeys,
-        auth: serializableAuth(ctx.auth), ...(ctx.camp ? {camp:ctx.camp} : {}), conditionals: ctx.conditionals, booked: ctx.booked, board: ctx.boardShown,
+        auth: { ...serializableAuth(ctx.auth), ...(c && interp.travel_frame ? { continuation:interp.travel_frame } : {}) }, ...(ctx.camp ? {camp:ctx.camp} : {}), conditionals: ctx.conditionals, booked: ctx.booked, board: ctx.boardShown,
         search_checks: ctx.searchChecks, check_die: null, interp_failed: !!interp.failed,
         dropped: dropped.map((x) => ({ type: x.command?.type, rule: x.rule, quote: x.command?.quote ?? null })),
         ...(ctx.engineLines.length ? { engine_lines: ctx.engineLines } : {}),

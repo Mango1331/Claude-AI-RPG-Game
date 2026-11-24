@@ -189,13 +189,12 @@ test('P3 negative: someone the step does not name and nobody knows at the house,
 });
 
 // ------------------------------------------------------------------------------------------------ P4
-test('P4 W T47: with no travel chosen the narrator reads that an invitation, a guide or his agreement moves him nowhere, only a force he cannot refuse', async () => {
+test('P4 W T47: no booked GO distinguishes chosen continuation from a proposal or refusal', async () => {
     const p = await player191('w191', 93); // "Stew would be welcome, Hedwin …": the planner books no go (7d)
     const line = (p.res.context.text.match(/TRAVEL THIS TURN —[^\n]*/) || [''])[0];
-    assert.match(line, /none chosen: he stays at the pen gate by the pond\./);
-    assert.match(line, /An invitation he accepts, someone leading the way or going ahead, or his own agreement moves him nowhere/);
-    assert.match(line, /only a force he cannot refuse, told as it happens/);
-    assert.doesNotMatch(line, /unless something in the world moves him/);
+    assert.match(line, /no booked route from the pen gate by the pond/);
+    assert.match(line, /this turn has no continuation assessment/);
+    assert.match(line, /Keep his established place unless actually displaced by an external cause/);
     // a chosen step keeps its line as before
     const go = await player191('w191', 79); // T40: GO to the long house
     assert.match(go.res.context.text, /TRAVEL THIS TURN — GOES — to the long house by the mill/);

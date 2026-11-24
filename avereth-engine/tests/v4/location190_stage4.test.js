@@ -67,7 +67,8 @@ test('.190 4D (N1): after a refused arrival the engine block opens with WHERE, t
     const head = text.indexOf('WHERE — Ashbridge');
     assert.ok(head > 0 && head < text.indexOf('CORRECTIONS') || !text.includes('CORRECTIONS'), 'at the head of the block');
     assert.match(text, /WHERE — Ashbridge[^\n]*The last reply's the smithy by the well was not reached: what it told there did not happen\./);
-    assert.match(text, /TRAVEL THIS TURN — none chosen: he stays at Ashbridge\. An invitation he accepts, someone leading the way or going ahead, or his own agreement moves him nowhere; only a force he cannot refuse, told as it happens \(carried, dragged, swept away\), moves him without his own going\./);
+    assert.match(text, /TRAVEL THIS TURN — no booked route from Ashbridge; this turn has no continuation assessment/);
+    assert.match(text, /Keep his established place unless actually displaced by an external cause/);
     assert.match(text, /NOT HERE — Werrin Hale[^\n]*: he speaks of them from where he is/);
     assert.doesNotMatch(text, /- Alaric did not voluntarily travel/);
 });

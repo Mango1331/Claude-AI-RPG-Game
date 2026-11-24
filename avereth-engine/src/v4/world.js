@@ -2531,9 +2531,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
      */
     function soughtHere(id, party) {
         const from = s.scene.at;
-        const local = !!from && !!s.places[id] && (s.places[id].parent === from || s.places[from]?.parent === id
-            || (!!s.places[id].parent && s.places[id].parent === s.places[from]?.parent));
-        if (!local) return [];
+        const toParent = s.places[id]?.parent;
+        const enclosing = s.places[toParent === from ? from : s.places[from]?.parent];
+        // A shared realm or region can contain distant destinations. Only a step within a local place
+        // carries creatures implicitly; explicitly reported companions travelled with their party.
+        if (!enclosing || (id !== from && ['realm', 'region'].includes(enclosing.kind))
+            || (id !== enclosing.id && toParent !== enclosing.id)) return [];
         const said = [...(auth.gos || []).map((g) => g.newName || g.name || ''), ...(outcome.resolutions || []).filter((r) => r.type === 'go').map((r) => r.quote || '')].join(' ');
         const words = kindOf(said).words;
         const named = (e) => [e.species, e.name, e.known_name].filter(Boolean).some((t) => { const h = kindOf(t).head; return !!h && h.length >= 3 && words.has(h); });

@@ -4,6 +4,7 @@
 
 | Etappe | Runordner und Auswertung |
 |---|---|
+| **Nächste Testetappe · OpenRouter-Helfer-Einzelruns und anschließender persönlicher Spieltest** | [Sammelordner mit drei bisherigen Läufen, Quellenprüfsummen und offenen Beobachtungen](openrouter-helper-laufserie-20261124/README.md). Weitere Originale werden dort ergänzt; gemeinsamer Review erst nach Ende der Etappe. |
 | **.211 · natürlicher OpenRouter-Langzeitvergleich** | [Vier Kampagnen .210/.211, Revisionen und Gegenproben](openrouter-20261124-langzeit-211/README.md) · [fachlicher Abschluss](../recherche/AVERETH_211_NATUERLICHER_LANGZEITVERGLEICH.md) · [GPT-Gegenreview](../recherche/AVERETH_211_GPT_GEGENREVIEW_NATUERLICHER_LANGZEITTEST_2026-11-24.md) |
 | **.209/.210 · erste Kontinuitätsreihen** | [Referenz .209](openrouter-20261124-kontinuitaet-a-209/README.md) · [Kandidat .210](openrouter-20261124-kontinuitaet-b-210/README.md) · [sechs Fokuspaare](openrouter-20261124-kontinuitaet-fokus/README.md) · [Folge Wren](openrouter-20261124-kontinuitaet-zusatz-wren-210/README.md) · [verworfener Pilot](openrouter-20261124-kontinuitaet-pilot-210/README.md) |
 | **.208 · User11 und Firewallvergleiche** | [Persönlicher User11](user-20261124-014928-208/SOURCE_MANIFEST.md) · [OpenRouter Trust-B](openrouter-20261124-trust-b-208/README.md) · [OpenRouter Trust-C](openrouter-20261124-trust-c-208/README.md) · [Entscheidung](../recherche/USER11_208_ENTSCHEIDUNG.md) |

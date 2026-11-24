@@ -28,7 +28,7 @@ import { deriveCharacter } from '../derived.js';
 import {
     lineage, placeName, hallOf, hallOfSettlement, guildDestination, guildJourney, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey, isLooseCoin, listedToday,
 } from './domain.js';
-import { sameGoods, sameWant, keyWords, wantedLines } from './world.js';
+import { sameGoods, sameWant, keyWords, wantedLines, namedLocalObjects } from './world.js';
 import { LOOT_WORDS, lootedHere } from './loot.js';
 import { shopSearch, findTrades } from './settlement.js';
 import { journeyReady, knownAt, personLabel } from './catalog.js';
@@ -1010,6 +1010,11 @@ const HANDLERS = {
             const matches = [...candidates].filter(o => sameGoods(o.name, c.object.new));
             if (matches.length === 1) c = {...c, object:matches[0].id};
             else return {status:'refused', reason:'no identified camp object', line:'CANNOT TAKE — identify an existing object here; the camp inspection establishes no further supply.'};
+        }
+        if (envx?.c && rulesetOf(s) >= 2 && c.object?.new) {
+            const matches = namedLocalObjects(s, c.object.new);
+            if (matches.length > 1) return { status: 'clarify', reason: 'which object?', line: 'More than one object here has that name. Which one does he mean?' };
+            if (matches.length === 1) c = { ...c, object: matches[0].id };
         }
         if (c.object && typeof c.object === 'object') {
             ctx.auth.take.push(c.seq);

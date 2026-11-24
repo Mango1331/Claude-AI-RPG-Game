@@ -440,6 +440,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // paid ones stands as the story has it. Purchases: the one his command booked (offer.accept) and the ones his
     // decision books on an offer of this answer (offer below); a hand-over told before that offer waits for it
     const bought = cPath ? (outcome.booked?.goods || []).map((g) => ({ ...g, left: g.units })) : [];
+    const refusedDuplicateTake = new Set();
     const boughtNames = new Set(); // a refused object.new's name: its object.move {new: name} goes with it
     const deferred = []; // the hand-overs waiting for the offer of this answer that his purchase decision may take
     const purchaseOf = (name, from, units) => bought.find((g) => g.left > 0 && g.seller === from && g.left === units && sameGoods(name, g.what)) || null;
@@ -1843,7 +1844,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
         if (!camp && type === 'take' && e.taken === true && !events.some((x) => x.t === 'object.created' && x.d.object.holder?.entity === 'pc') && !events.some((x) => x.t === 'object.moved' && x.d.to?.entity === 'pc')) {
             const name = (auth.takeNames || {})[k];
-            if (name && !isLooseCoin(name)) emit({ t: 'object.created', d: { object: { id: uniqueObjectId(s, tag, name), name, kind: 'item', stack: false, qty: 1, unit: null, ...itemTraits(content, { name, balance: true }, s.clock.minute), holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'taken' } } } });
+            // A bare confirmation cannot override a refused duplicate declaration. A genuinely new find
+            // with no catalog conflict still uses the established fallback (e.g. the boards from the woodpile).
+            if (name && cPath && rulesetOf(s) >= 2 && (refusedDuplicateTake.has(k) || (s.scene.at === state.scene.at && namedLocalObjects(state, name).length))) {
+                if (!refusedDuplicateTake.has(k)) reject({ seq: Number(k), type: 'expected' }, 'object_identity', 'TAKE needs the existing object ID; no second copy was established');
+            } else if (name && !isLooseCoin(name)) emit({ t: 'object.created', d: { object: { id: uniqueObjectId(s, tag, name), name, kind: 'item', stack: false, qty: 1, unit: null, ...itemTraits(content, { name, balance: true }, s.clock.minute), holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'taken' } } } });
         }
         if ((type === 'buy' || type === 'pay') && e.taken_anyway === true) overreach(type === 'buy' ? 'purchase' : 'payment', `the reply had Alaric ${type === 'buy' ? 'take or use what he had not bought' : 'pay'} although he had not agreed`);
         if ((type === 'buy' || type === 'pay') && e.priced === true) {
@@ -3009,7 +3014,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (ref && typeof ref.new === 'string') {
             const id = objectsNew.get(normText(ref.new));
             if (objectsNew.has(normText(ref.new))) return id ? s.objects[id] : null;
-            const here = Object.values(s.objects).filter((o) => normText(o.name) === normText(ref.new) && (o.holder?.loc === s.scene.at || s.scene.present.includes(o.holder?.entity)));
+            const here = namedLocalObjects(s, ref.new);
             return here.length === 1 ? here[0] : null;
         }
         return null;
@@ -3043,6 +3048,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (!holder) { reject(d, 'object', `unknown holder ${String(d.holder).slice(0, 40)}`); return; }
         if (camp && holder.entity === 'pc' && !(camp.gather || []).some(n => sameGoods(n, d.name))) {
             reject(d, 'pc_inventory', 'a look cannot take an item from the camp'); return;
+        }
+        if (holder.entity === 'pc' && cPath && rulesetOf(s) >= 2 && auth.take?.length && namedLocalObjects(s, d.name).length) {
+            const takes = Object.entries(auth.takeNames || {});
+            for (const [key, name] of takes) {
+                if (takes.length === 1 || normText(name) === normText(d.name)) refusedDuplicateTake.add(key);
+            }
+            reject(d, 'object_identity', 'this name belongs to a local physical object; report its actual move by ID or establish a separate source');
+            return;
         }
         const takenStock = outcome.booked?.campTakes;
         if (takenStock?.some(t => (t.at === holder.loc || holder.entity === 'pc') && sameGoods(s.objects[t.id]?.name, d.name))) {
@@ -3666,6 +3679,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
 }
 
 const FILLER = new Set(['the', 'and', 'for', 'with', 'some', 'any', 'one', 'his', 'her', 'its', 'our', 'your', 'this', 'that', 'what', 'from', 'into']);
+/** Exact physical names among objects present at this scene, including held articles. */
+export function namedLocalObjects(s, name) {
+    const label = normText(name);
+    return label ? Object.values(s.objects).filter(o => normText(o.name) === label
+        && (o.holder?.loc === s.scene.at || s.scene.present.includes(o.holder?.entity))) : [];
+}
+
 /** The words that name a want or an offer's line ("a bed for the night" ~ "bed in the Guild dormitory"). */
 export const keyWords = (t) => normText(t).split(/[^a-z0-9]+/).map((w) => w.replace(/s$/, '')).filter((w) => w.length >= 3 && !FILLER.has(w));
 export const sameWant = (want, what) => { const k = keyWords(what); return keyWords(want).some((w) => k.includes(w)); };

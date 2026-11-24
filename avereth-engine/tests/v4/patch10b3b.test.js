@@ -66,7 +66,7 @@ test('3B narrator always has an authoritative board boundary, even before first 
     const s=hall();
     const block=buildContext(s,content,{input:'Hello',outcome:{c:true},budget:4000}).text;
     assert.match(block,/OFFICIAL GUILD OFFERS/);
-    assert.match(block,/\[listed\] contract stays available even if an NPC takes a paper copy/);
+    assert.match(block,/\[listed\] contract stays available when an NPC takes the paper copy/);
 });
 test('3B additional container returns are clause-specific',()=>{
     const q={task:'Deliver the crate.',desired_end_state:'It reaches the healer.'};

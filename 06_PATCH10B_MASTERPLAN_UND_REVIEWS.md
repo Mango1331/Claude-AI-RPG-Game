@@ -10,6 +10,10 @@ Der [Projektstand](03_AKTUELLER_PROJEKTSTAND.md) nennt die spielbare Fassung und
 
 [Unabhängiger GPT-Kontrollreview](recherche/USER11_208_GPT_GEGENREVIEW_TRUST_MAJOR_MINOR_2026-11-24.md) · [Codex-Entscheidungsvorlage](recherche/USER11_208_ENTSCHEIDUNG.md) · [Major-/Minor-Balance und HUD](recherche/CODEX_MAJOR_MINOR_USER11_208.md) · [natürliche OpenRouter-Spieltests](testrun_10b/README.md). Keine Produktfreigabe; HUD und Reise-Planer für .209 getrennt bewerten.
 
+## .211 – Natürliche OpenRouter-Langzeitprüfung und Besitzkorrektur
+
+[Unabhängiger GPT-Gegenreview](recherche/AVERETH_211_GPT_GEGENREVIEW_NATUERLICHER_LANGZEITTEST_2026-11-24.md) · [Astra-Fachbericht und Entscheidung](recherche/AVERETH_211_NATUERLICHER_LANGZEITVERGLEICH.md) · [Szenenbelege](recherche/langzeittest_211/BEOBACHTUNGEN.md) · [Spielarchive](testrun_10b/openrouter-20261124-langzeit-211/README.md). Bedingtes GO für persönlichen Test auf `8c88669b`, kein Produktmerge.
+
 ## .211 – Offline-Kontinuität und Revisionssicherheit
 
 [Unabhängiger GPT-Gegenreview](recherche/AVERETH_211_GPT_GEGENREVIEW_OFFLINE_2026-11-24.md) · [Astra-Fachbericht](recherche/AVERETH_211_SPIELKONTINUITAET_OFFLINE.md) · [Abnahme](recherche/kontinuitaet_211/ABNAHME.md) · [Langzeittestentwurf](recherche/kontinuitaet_211/LANGZEITPLAN.md). Technisch für natürliche Modellprüfung freigegeben; keine Produktübernahme.

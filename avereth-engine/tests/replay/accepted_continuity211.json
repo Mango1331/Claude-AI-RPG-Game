@@ -1,0 +1,11 @@
+{
+ "inherits": "accepted_phase208.json",
+ "cases": {
+  "b18-warrior#222": {
+   "category": "211 explicitly located observation at confirmed arrival",
+   "reference210": "sha256:0f4f98a0cccaf0d62b866a07e0dd151e36eb584258971861e039bff68f0a1b9d",
+   "fingerprint": "sha256:73c7311f244dec445ece389b3edd1c7a28a46b509e503aea20435c6be11f3fa7",
+   "reason": "Arrival in the Guild hall and all 200 minutes were already booked. The same openly acting clerk is now present there before Bexley speaks, as reported in the original and repair. No new entity, quest, money or player action."
+  }
+ }
+}

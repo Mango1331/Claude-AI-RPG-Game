@@ -1,0 +1,9 @@
+Error: Runner send failed: the message did not arrive in the chat (pending saves: 0)
+    at send (file:///workspace/avereth-211-natural-display/avereth-engine/tools/st_live/run_c.mjs:345:26)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processImmediate (node:internal/timers:541:9)
+    at async play (file:///workspace/avereth-211-natural-display/avereth-engine/tools/st_live/npc172_smoke.mjs:64:9)
+    at async npc172Smoke (file:///workspace/avereth-211-natural-display/avereth-engine/tools/st_live/npc172_smoke.mjs:120:15)
+    at async file:///workspace/avereth-211-natural-display/avereth-engine/tools/st_live/run_c.mjs:535:93
+
+Node.js v24.22.1

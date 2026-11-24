@@ -1,0 +1,35 @@
+[
+  {
+    "n": 6,
+    "inputMessageIndex": 29,
+    "timing": {
+      "marks": {
+        "click": 1148751.8999999985,
+        "lastRenderedChange": 1154804.799999997,
+        "firstProse": 1151932.299999997,
+        "confirmedSave": 1157116.3999999985,
+        "worldCommit": 1156986.799999997,
+        "worldTimesInferred": false,
+        "ready": 1157124.5
+      },
+      "world": {
+        "id": 30,
+        "committed_at_ms": 1156986.799999997,
+        "persisted_at_ms": 1157116.3999999985,
+        "extraction_validation_wait_ms": 2054,
+        "save_readback_ms": 130,
+        "total_ms": 2183,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The question caught her with her hand still on the latch, and she looked at him a long moment, rain dripping off the hood between them."
+    },
+    "checked": {
+      "world": "0eae8617939ab144b6fb4497757617783ca0ab864561745fe2d52210d0e7579c",
+      "events": "97feedafd371758daa782a78d9f32fda7ba2e87933ec60eada224468d5f8e625",
+      "messages": 31
+    },
+    "elapsedIncludingReloadMs": 10669
+  }
+]

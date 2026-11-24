@@ -1,0 +1,314 @@
+{
+  "arms": {
+    "K4": {
+      "sends": 2,
+      "completed": 2,
+      "http_errors": [],
+      "usage_records": 2,
+      "input": 42,
+      "output": 41,
+      "cache": 0,
+      "reasoning": 32,
+      "cost": "0.0000048367",
+      "reserved": "0E-10",
+      "roles": {
+        "preflight": 2
+      }
+    },
+    "HA": {
+      "sends": 2,
+      "completed": 1,
+      "http_errors": [
+        [
+          4,
+          429,
+          "upstream_http_error"
+        ]
+      ],
+      "usage_records": 1,
+      "input": 12428,
+      "output": 37,
+      "cache": 0,
+      "reasoning": 0,
+      "cost": "0.0004454523",
+      "reserved": "0.0376631296",
+      "roles": {
+        "planner": 1,
+        "narrator": 1
+      }
+    },
+    "K3": {
+      "sends": 10,
+      "completed": 10,
+      "http_errors": [],
+      "usage_records": 10,
+      "input": 113696,
+      "output": 6251,
+      "cache": 105216,
+      "reasoning": 3686,
+      "cost": "0.005820200",
+      "reserved": "0E-9",
+      "roles": {
+        "preflight": 2,
+        "extractor": 8
+      }
+    },
+    "GB": {
+      "sends": 103,
+      "completed": 103,
+      "http_errors": [],
+      "usage_records": 103,
+      "input": 1359237,
+      "output": 41310,
+      "cache": 758336,
+      "reasoning": 12134,
+      "cost": "0.063930658",
+      "reserved": "0E-9",
+      "roles": {
+        "planner": 34,
+        "board": 2,
+        "narrator": 30,
+        "extractor": 36,
+        "passive_name": 1
+      }
+    },
+    "GA": {
+      "sends": 109,
+      "completed": 109,
+      "http_errors": [],
+      "usage_records": 109,
+      "input": 1459840,
+      "output": 47334,
+      "cache": 859648,
+      "reasoning": 15803,
+      "cost": "0.069163088",
+      "reserved": "0E-9",
+      "roles": {
+        "planner": 37,
+        "board": 1,
+        "narrator": 32,
+        "extractor": 39
+      }
+    },
+    "HB": {
+      "sends": 98,
+      "completed": 98,
+      "http_errors": [],
+      "usage_records": 98,
+      "input": 1295226,
+      "output": 58747,
+      "cache": 826368,
+      "reasoning": 24148,
+      "cost": "0.064382572",
+      "reserved": "0E-9",
+      "roles": {
+        "planner": 31,
+        "narrator": 30,
+        "extractor": 37
+      }
+    },
+    "PA": {
+      "sends": 99,
+      "completed": 98,
+      "http_errors": [
+        [
+          522,
+          429,
+          "upstream_http_error"
+        ]
+      ],
+      "usage_records": 98,
+      "input": 1266247,
+      "output": 49341,
+      "cache": 773888,
+      "reasoning": 19975,
+      "cost": "0.061487230",
+      "reserved": "0.044776192",
+      "roles": {
+        "planner": 31,
+        "narrator": 31,
+        "extractor": 37
+      }
+    },
+    "RB": {
+      "sends": 7,
+      "completed": 7,
+      "http_errors": [],
+      "usage_records": 7,
+      "input": 92600,
+      "output": 4598,
+      "cache": 71168,
+      "reasoning": 1600,
+      "cost": "0.004664064",
+      "reserved": "0E-9",
+      "roles": {
+        "narrator": 3,
+        "extractor": 3,
+        "planner": 1
+      }
+    },
+    "XB": {
+      "sends": 4,
+      "completed": 4,
+      "http_errors": [],
+      "usage_records": 4,
+      "input": 53155,
+      "output": 3019,
+      "cache": 32000,
+      "reasoning": 1021,
+      "cost": "0.002756006",
+      "reserved": "0E-9",
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 2
+      }
+    },
+    "RA": {
+      "sends": 8,
+      "completed": 8,
+      "http_errors": [],
+      "usage_records": 8,
+      "input": 107052,
+      "output": 5045,
+      "cache": 60160,
+      "reasoning": 1790,
+      "cost": "0.005364304",
+      "reserved": "0E-9",
+      "roles": {
+        "narrator": 3,
+        "extractor": 4,
+        "planner": 1
+      }
+    },
+    "XA": {
+      "sends": 4,
+      "completed": 4,
+      "http_errors": [],
+      "usage_records": 4,
+      "input": 53305,
+      "output": 3092,
+      "cache": 43776,
+      "reasoning": 1266,
+      "cost": "0.002763962",
+      "reserved": "0E-9",
+      "roles": {
+        "planner": 1,
+        "narrator": 1,
+        "extractor": 2
+      }
+    },
+    "YB": {
+      "sends": 37,
+      "completed": 37,
+      "http_errors": [],
+      "usage_records": 37,
+      "input": 484890,
+      "output": 21208,
+      "cache": 327680,
+      "reasoning": 9573,
+      "cost": "0.023939972",
+      "reserved": "0E-9",
+      "roles": {
+        "planner": 12,
+        "narrator": 11,
+        "extractor": 14
+      }
+    },
+    "PB": {
+      "sends": 26,
+      "completed": 26,
+      "http_errors": [],
+      "usage_records": 26,
+      "input": 342241,
+      "output": 12885,
+      "cache": 177408,
+      "reasoning": 4779,
+      "cost": "0.016567554",
+      "reserved": "0E-9",
+      "roles": {
+        "planner": 8,
+        "narrator": 8,
+        "extractor": 10
+      }
+    },
+    "YA": {
+      "sends": 28,
+      "completed": 28,
+      "http_errors": [],
+      "usage_records": 28,
+      "input": 384417,
+      "output": 13950,
+      "cache": 203072,
+      "reasoning": 4833,
+      "cost": "0.018509242",
+      "reserved": "0E-9",
+      "roles": {
+        "planner": 9,
+        "narrator": 9,
+        "extractor": 10
+      }
+    },
+    "K1": {
+      "sends": 2,
+      "completed": 2,
+      "http_errors": [],
+      "usage_records": 2,
+      "input": 26944,
+      "output": 1224,
+      "cache": 11520,
+      "reasoning": 551,
+      "cost": "0.001345344",
+      "reserved": "0E-9",
+      "roles": {
+        "narrator": 1,
+        "extractor": 1
+      }
+    },
+    "K2": {
+      "sends": 11,
+      "completed": 11,
+      "http_errors": [],
+      "usage_records": 11,
+      "input": 144188,
+      "output": 5942,
+      "cache": 94976,
+      "reasoning": 2434,
+      "cost": "0.007054248",
+      "reserved": "0E-9",
+      "roles": {
+        "planner": 4,
+        "narrator": 3,
+        "extractor": 4
+      }
+    },
+    "QE": {
+      "sends": 5,
+      "completed": 5,
+      "http_errors": [],
+      "usage_records": 5,
+      "input": 66389,
+      "output": 1227,
+      "cache": 34560,
+      "reasoning": 238,
+      "cost": "0.002979546",
+      "reserved": "0E-9",
+      "roles": {
+        "narrator": 2,
+        "extractor": 2,
+        "planner": 1
+      }
+    }
+  },
+  "physical_requests": 555,
+  "routes": {
+    "relace/fp4": 4,
+    "wafer/us": 551
+  },
+  "max_concurrent": 1,
+  "known_cost": "0.3511782790",
+  "outstanding_cost_reserve": "0.0824393216",
+  "charged_or_reserved": "0.4336176006",
+  "max_exposure_before_send": "0.4777818986",
+  "limit": "5.00"
+}

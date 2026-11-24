@@ -1,0 +1,250 @@
+[
+  {
+    "n": 1,
+    "seq": 1795523156283,
+    "op": "play",
+    "text": "I follow Dann in out of the rain. I'd like to hear from Tam's mother what Wren needs to know before I promise anything.",
+    "intent_before_narration": "Accept the invitation indoors and listen, no commitment or payment yet.",
+    "at": "2026-11-24T12:25:56.912Z"
+  },
+  {
+    "n": 2,
+    "seq": 1795523223787,
+    "op": "play",
+    "text": "I'm Alaric, Tam. I'll carry that message to Wren. Maren, is there something of his she'd recognise that I can bring back to you afterward?",
+    "intent_before_narration": "Introduce myself, commit to carry the message, request a loan without taking it or assuming a fee.",
+    "at": "2026-11-24T12:27:04.269Z"
+  },
+  {
+    "n": 3,
+    "seq": 1795523297677,
+    "op": "play",
+    "text": "Thank you, Brigid. I'll bring both the ring and Dann's oilcloth back. I pull up the hood and take the longer bridge road toward Ashbridge; the sick lad needs a messenger who arrives in one piece.",
+    "intent_before_narration": "Carry the items already handed over and take the safer bridge route toward Wren. No promise to pay her.",
+    "at": "2026-11-24T12:28:18.185Z"
+  },
+  {
+    "n": 4,
+    "seq": 1795523424176,
+    "op": "play",
+    "text": "I show her Tam's ring. Brigid sent me. Tam has a fever and they need you at Halloran's. Is there anything you need me to carry on the way back?",
+    "intent_before_narration": "Explain illness, show the loan, offer to carry supplies if asked.",
+    "at": "2026-11-24T12:30:24.916Z"
+  },
+  {
+    "n": 5,
+    "seq": 1795523492020,
+    "op": "play",
+    "text": "She said Maren had the money. I couldn't promise you a price on his behalf. I'll carry that sack and walk the bridge road home beside you, if you're ready.",
+    "intent_before_narration": "Accept carriage of the sack, accompany Wren home; make no payment commitment.",
+    "at": "2026-11-24T12:31:32.546Z"
+  },
+  {
+    "n": 6,
+    "seq": 1795523555843,
+    "op": "play",
+    "text": "Brigid, here's the supply sack Wren asked me to carry. I give it to her, then stand clear so Wren can see Tam. Does the letter go to you or to Maren?",
+    "intent_before_narration": "Deliver the identified sack, ask about letter; stay available.",
+    "at": "2026-11-24T12:32:36.334Z"
+  },
+  {
+    "n": 7,
+    "seq": 1795523634594,
+    "op": "play",
+    "text": "Brigid lent me her boy's ring; I put it straight into Brigid's hand. Wren can borrow it from her if she needs it for Tam. Then I put the kettle on.",
+    "intent_before_narration": "Return this same family ring to its lender and heat water, no payment.",
+    "at": "2026-11-24T12:33:55.680Z"
+  },
+  {
+    "n": 8,
+    "seq": 1795523730710,
+    "op": "play",
+    "text": "I step inside the Halloran house and take a chair by the hearth. I'll sit the first watch if Brigid wants some rest. What should I watch for, Mother Wren?",
+    "intent_before_narration": "Enter the house explicitly; offer an ordinary watch and ask instructions.",
+    "at": "2026-11-24T12:35:31.577Z"
+  },
+  {
+    "n": 9,
+    "seq": 1795523829096,
+    "op": "play",
+    "text": "I leave the little whistle where Tam can find it. I'll keep the watch beside him until Brigid has slept for a while, and call Wren if he needs her.",
+    "intent_before_narration": "Watch for a while; no possession of the whistle, no medical intervention.",
+    "at": "2026-11-24T12:37:09.741Z"
+  },
+  {
+    "n": 10,
+    "seq": 1795523926319,
+    "op": "play",
+    "text": "I'll take you up on the relief, Wren. Wake me if you need me. I fold my cloak by the hearth and sleep until morning.",
+    "intent_before_narration": "Sleep until morning at the house with relief; no item transfer.",
+    "at": "2026-11-24T12:38:47.003Z"
+  },
+  {
+    "n": 11,
+    "seq": 1795524074225,
+    "op": "play",
+    "text": "I'll have some porridge with them. Before the rain starts, I'd like to find Dann and give him his oilcloth back. Brigid, where would he be this morning?",
+    "intent_before_narration": "Eat offered meal and ask where Dann is; keep garment until meeting him.",
+    "at": "2026-11-24T12:41:18.321Z"
+  },
+  {
+    "n": 12,
+    "seq": 1795524210782,
+    "op": "play",
+    "text": "I head to the ford with Dann's oilcloth under my arm. When I see him I'll tell him the good news about Tam, and the bit about the whistle exactly as Tam put it.",
+    "intent_before_narration": "Go to the ford; deliver news only on finding Dann, save the oilcloth for him.",
+    "at": "2026-11-24T12:43:31.763Z"
+  },
+  {
+    "n": 13,
+    "seq": 1795524321449,
+    "op": "play",
+    "text": "I follow the stones down to the ford. When I spot Dann, I call his name and hold up his oilcloth so he'll know who it is.",
+    "intent_before_narration": "Finish the interrupted walk on foot and find Dann; show the oilcloth.",
+    "at": "2026-11-24T12:45:22.287Z"
+  },
+  {
+    "n": 14,
+    "seq": 1795524413636,
+    "op": "play",
+    "text": "Tam's better. The ford's a coward's shortcut and his whistle's the best thing in the house, in his very words. That oilcloth kept his messenger dry. Are these carts getting across safely?",
+    "intent_before_narration": "Convey the promised news, acknowledge the returned loan, ask about present work.",
+    "at": "2026-11-24T12:46:54.584Z"
+  },
+  {
+    "n": 15,
+    "seq": 1795524533202,
+    "op": "play",
+    "text": "I'll help get the meal cart onto dry gravel. Dann knows the ford better than I do; I take the near wheel when he calls, without promising the driver any coin.",
+    "intent_before_narration": "Offer practical help with crossing, no payment or taking cargo.",
+    "at": "2026-11-24T12:48:54.611Z"
+  },
+  {
+    "n": 16,
+    "seq": 1795524680871,
+    "op": "play",
+    "text": "I climb onto the dry bank and get my breath. The punt sounds wiser. Who's waiting for the meal? I could take word of the delay while you ferry it, if that would help.",
+    "intent_before_narration": "Leave the water for safety, ask recipient, offer messenger work without taking cargo.",
+    "at": "2026-11-24T12:51:23.913Z"
+  },
+  {
+    "n": 17,
+    "seq": 1795524877789,
+    "op": "play",
+    "text": "I'll tell Brigid. I take the lane back to the Halloran house, above the flooded meadow. The meal is coming by punt; nobody should wait down by the fence.",
+    "intent_before_narration": "Take safe upper lane to family and deliver Dann’s message, leave meal in his custody.",
+    "at": "2026-11-24T12:54:38.884Z"
+  },
+  {
+    "n": 18,
+    "seq": 1795525007571,
+    "op": "play",
+    "text": "I come in by Brigid's invitation and sit by the fire for an hour. I'm Alaric, the messenger who went for Wren. How is Tam doing since breakfast?",
+    "intent_before_narration": "Accept the ordinary invitation, rest for an hour and reintroduce myself without inventing familiarity.",
+    "at": "2026-11-24T12:56:48.640Z"
+  },
+  {
+    "n": 19,
+    "seq": 1795525163066,
+    "op": "play",
+    "text": "I tell Tomen what I saw at the ford: the water came hard enough to stop the carts. I didn't see who cut a drain. Would it help if we looked at the flooded meadow together?",
+    "intent_before_narration": "Share only witnessed evidence; offer to inspect the meadow, promise no compensation.",
+    "at": "2026-11-24T12:59:24.164Z"
+  },
+  {
+    "n": 20,
+    "seq": 1795525422049,
+    "op": "play",
+    "text": "Thank you, Brigid. I pull the old cape around my shoulders and walk with Tomen along the fence to his meadow. I want to see where the water actually enters.",
+    "intent_before_narration": "Accept loaned cape, inspect the flooded meadow with Tomen, no blame or payment.",
+    "at": "2026-11-24T13:03:43.674Z"
+  },
+  {
+    "n": 21,
+    "seq": 1795525686762,
+    "op": "play",
+    "text": "I kneel by the burst and look for the direction the water came from. Tomen, what could we use here to slow it until the rain eases?",
+    "intent_before_narration": "Investigate local cause, discuss practical repair with Tomen, no invented supplies or blame.",
+    "at": "2026-11-24T13:08:08.627Z"
+  },
+  {
+    "n": 22,
+    "seq": 1795525854620,
+    "op": "play",
+    "text": "I'll fetch help. Tomen, can you cut what brush you safely can here? I take the high lane to the ford to ask Dann for two willing hands and a cart.",
+    "intent_before_narration": "Go to the previously visited ford, remember Dann and seek volunteers, no conscription or fee.",
+    "at": "2026-11-24T13:10:56.725Z"
+  },
+  {
+    "n": 23,
+    "seq": 1795526127960,
+    "op": "play",
+    "text": "I'm looking for Dann, the man who was working the crossing with me. Tomen's drain burst, and he needs a couple of willing hands and a cart of brush to keep the meadow from flooding. Can you spare them after the sacks?",
+    "intent_before_narration": "Ask the ferryman and seek Dann's help; do not take gear on bank or commit anyone to unpaid work.",
+    "at": "2026-11-24T13:15:29.873Z"
+  },
+  {
+    "n": 24,
+    "seq": 1795526344117,
+    "op": "play",
+    "text": "I'll help the ferryman on the rope until the last four sacks are landed. I'll let the pony and the river set the pace. There is no rush worth another soaking.",
+    "intent_before_narration": "Help complete the agreed condition locally, staying on the bank; no payment.",
+    "at": "2026-11-24T13:19:05.493Z"
+  },
+  {
+    "n": 25,
+    "seq": 1795526479643,
+    "op": "play",
+    "text": "Four are ashore. I'll show the carter the way back to Tomen's meadow with the brush. If Dann comes, tell him what we're doing; he shouldn't have to chase a rumor.",
+    "intent_before_narration": "Lead the willing worker back with agreed supplies, leave a message, no forced travel for Dann.",
+    "at": "2026-11-24T13:21:22.027Z"
+  },
+  {
+    "n": 26,
+    "seq": 1795526645263,
+    "op": "play",
+    "text": "I take the cart from the ford along the high lane to Tomen's meadow. When we're there, I'll ask Tomen where he needs the first load of brush tipped.",
+    "intent_before_narration": "Bring the material to the actual mapped meadow; do not assume it was already unloaded.",
+    "at": "2026-11-24T13:24:06.831Z"
+  },
+  {
+    "n": 27,
+    "seq": 1795526752296,
+    "op": "play",
+    "text": "Bors, ease the pony onto Tomen's gravel. I tip the first load above the thorn bush. Then I'll bind the green brush around the stakes Tomen has already driven.",
+    "intent_before_narration": "Complete the authorized communal repair with existing materials, no personal acquisition or wages.",
+    "at": "2026-11-24T13:25:53.895Z"
+  },
+  {
+    "n": 28,
+    "seq": 1795526864424,
+    "op": "play",
+    "text": "Will you come tell Brigid what we found, Tomen? I'd rather she heard from you that nobody cut the drain. If you need to watch the water I'll carry your words as you give them.",
+    "intent_before_narration": "Offer Tomen a choice between accompanying or sending a message, no forced departure or invented apology.",
+    "at": "2026-11-24T13:27:47.390Z"
+  },
+  {
+    "n": 29,
+    "seq": 1795526966121,
+    "op": "play",
+    "text": "I'll carry it as you said. Once I've thanked Bors, I take the high lane back to the Halloran house to find Brigid: the drain burst, nobody cut it, and Tomen says he was wrong.",
+    "intent_before_narration": "Return to Brigid with Tomen's actual apology; he remains at his own meadow.",
+    "at": "2026-11-24T13:29:29.989Z"
+  },
+  {
+    "n": 30,
+    "seq": 1795527136734,
+    "op": "play",
+    "text": "I'm glad he trusted me with it, Brigid. Before I go, I'd like to hear from Tam himself how he's feeling. Is he up for a quiet word?",
+    "intent_before_narration": "Ask for consent before revisiting Tam after the work and several intervening turns, stay if he needs sleep.",
+    "at": "2026-11-24T13:32:18.844Z"
+  },
+  {
+    "n": 31,
+    "seq": 1795527298702,
+    "op": "play",
+    "text": "I go up to Tam's room and sit where he patted the blanket. When you were ill you sent me to Wren. Do you remember what you gave me as a sign, and who you wanted to have it afterward?",
+    "intent_before_narration": "Reach the room and let recovered Tam recall our errand unprompted; do not create a new handover.",
+    "at": "2026-11-24T13:35:00.958Z"
+  }
+]

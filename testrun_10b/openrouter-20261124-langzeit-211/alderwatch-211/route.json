@@ -1,0 +1,36 @@
+{
+  "model_id": "z-ai/glm-5.3-flash",
+  "provider_name": "Wafer",
+  "tag": "wafer/us",
+  "canonical_slug": "z-ai/glm-5.3-flash-20260826",
+  "context_length": 1048576,
+  "max_completion_tokens": 943718,
+  "supported_parameters": [
+    "reasoning",
+    "include_reasoning",
+    "response_format",
+    "structured_outputs",
+    "tools",
+    "tool_choice",
+    "logprobs",
+    "top_logprobs",
+    "temperature",
+    "top_p",
+    "top_k",
+    "min_p",
+    "presence_penalty",
+    "frequency_penalty",
+    "repetition_penalty",
+    "stop",
+    "seed",
+    "max_tokens",
+    "logit_bias",
+    "reasoning_effort"
+  ],
+  "pricing": {
+    "prompt": "0.000000042",
+    "completion": "0.000000184",
+    "input_cache_read": "0.000000041",
+    "discount": 0
+  }
+}

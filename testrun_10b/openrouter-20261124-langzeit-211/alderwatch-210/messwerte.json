@@ -1,0 +1,131 @@
+{
+  "arm": "GA",
+  "candidate": "82b2b30ef86507a4eeeaf4c72e006f80a6d5e8bc",
+  "route": "wafer/us",
+  "physical_sends": 109,
+  "physical_refs_ended": 109,
+  "physical_roles": {
+    "planner": 37,
+    "board": 1,
+    "narrator": 32,
+    "extractor": 39
+  },
+  "repeat_role_requests": {
+    "extractor": 7,
+    "planner": 4
+  },
+  "success": 109,
+  "player_inputs": 33,
+  "confirmed_st_turns": 33,
+  "provider_input": 1459840,
+  "provider_output": 47334,
+  "provider_cache": 859648,
+  "provider_reasoning": 15803,
+  "usage_records": 109,
+  "provider_cost_usd": "0.069163088",
+  "cost_records": 109,
+  "charged_or_reserved_usd": "0.069163088",
+  "physical_duration_ms": 480729,
+  "median_ready_ms": 14606.0,
+  "by_role": {
+    "planner": {
+      "dispatched": 37,
+      "duration_ms": {
+        "n": 37,
+        "sum": 41467,
+        "mean": 1120.73,
+        "median": 938,
+        "min": 393,
+        "max": 2885
+      },
+      "prompt_tokens": 488610,
+      "completion_tokens": 3654,
+      "cost_usd": "0.020851172"
+    },
+    "board": {
+      "dispatched": 1,
+      "duration_ms": {
+        "n": 1,
+        "sum": 5237,
+        "mean": 5237,
+        "median": 5237,
+        "min": 5237,
+        "max": 5237
+      },
+      "prompt_tokens": 2508,
+      "completion_tokens": 1267,
+      "cost_usd": "0.00033616"
+    },
+    "narrator": {
+      "dispatched": 32,
+      "duration_ms": {
+        "n": 32,
+        "sum": 181794,
+        "mean": 5681.06,
+        "median": 4698.0,
+        "min": 1983,
+        "max": 12663
+      },
+      "prompt_tokens": 392778,
+      "completion_tokens": 17678,
+      "cost_usd": "0.019631924"
+    },
+    "extractor": {
+      "dispatched": 39,
+      "duration_ms": {
+        "n": 39,
+        "sum": 252231,
+        "mean": 6467.46,
+        "median": 3782,
+        "min": 786,
+        "max": 27982
+      },
+      "prompt_tokens": 575944,
+      "completion_tokens": 24735,
+      "cost_usd": "0.028343832"
+    }
+  },
+  "st_ms": {
+    "firstProse": {
+      "n": 32,
+      "sum": 141004,
+      "mean": 4406.38,
+      "median": 4276.5,
+      "min": 1990,
+      "max": 7745
+    },
+    "lastRenderedChange": {
+      "n": 32,
+      "sum": 447112,
+      "mean": 13972.25,
+      "median": 10544.5,
+      "min": 4599,
+      "max": 33685
+    },
+    "worldCommit": {
+      "n": 32,
+      "sum": 535977,
+      "mean": 16749.28,
+      "median": 14191.5,
+      "min": 4555,
+      "max": 35646
+    },
+    "confirmedSave": {
+      "n": 32,
+      "sum": 546529,
+      "mean": 17079.03,
+      "median": 14598.5,
+      "min": 4898,
+      "max": 36782
+    },
+    "ready": {
+      "n": 32,
+      "sum": 546759,
+      "mean": 17086.22,
+      "median": 14606.0,
+      "min": 4904,
+      "max": 36787
+    }
+  },
+  "all_reloads_match": true
+}

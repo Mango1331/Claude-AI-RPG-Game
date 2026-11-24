@@ -1,0 +1,35 @@
+[
+  {
+    "n": 6,
+    "inputMessageIndex": 29,
+    "timing": {
+      "marks": {
+        "click": 638773.1000000015,
+        "lastRenderedChange": 643511.8000000007,
+        "firstProse": 640896.8000000007,
+        "confirmedSave": 648543.1999999993,
+        "worldCommit": 648411.6000000015,
+        "worldTimesInferred": false,
+        "ready": 648549.1000000015
+      },
+      "world": {
+        "id": 30,
+        "committed_at_ms": 648411.6000000015,
+        "persisted_at_ms": 648543.1999999993,
+        "extraction_validation_wait_ms": 4711,
+        "save_readback_ms": 132,
+        "total_ms": 4842,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "Rain drummed the overhang above his head."
+    },
+    "checked": {
+      "world": "ef88018854b870e48a61db43fa350b5fb09dfc0be1f24374d9f2d0021cb90b3b",
+      "events": "19d5ab90894555e5895481846a60005ee29d2ff1c5c71238a221d72626877b50",
+      "messages": 31
+    },
+    "elapsedIncludingReloadMs": 12004
+  }
+]

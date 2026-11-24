@@ -1,0 +1,5 @@
+"pageErrors": [
+  "Error: Stale origin or records before write\n    at saveChat (http://127.0.0.1:8123/script.js:7456:19)\n    at async saveChatConditional (http://127.0.0.1:8123/script.js:9428:13)\n    at async http://127.0.0.1:8123/script.js:7379:9 @ script.js:7476"
+ ]
+}
+LIVE SILLYTAVERN SMOKE C: FAILED

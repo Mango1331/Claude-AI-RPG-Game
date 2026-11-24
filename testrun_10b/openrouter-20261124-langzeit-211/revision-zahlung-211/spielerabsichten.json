@@ -1,0 +1,10 @@
+[
+  {
+    "n": 4,
+    "seq": 1795528223329,
+    "op": "play",
+    "text": "I keep my purse closed. Is there a free seat by the door while I work out where to spend the evening?",
+    "intent_before_narration": "Stay at the inn without buying a room, resting overnight or spending coin after the revised decision.",
+    "at": "2026-11-24T13:50:24.692Z"
+  }
+]

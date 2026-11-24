@@ -1,0 +1,299 @@
+[
+  {
+    "n": 1,
+    "inputMessageIndex": 41,
+    "timing": {
+      "marks": {
+        "click": 78192.09999999776,
+        "lastRenderedChange": 82845.89999999851,
+        "firstProse": 81248.69999999925,
+        "confirmedSave": 85286.5,
+        "worldCommit": 85057,
+        "worldTimesInferred": false,
+        "ready": 85290
+      },
+      "world": {
+        "id": 42,
+        "committed_at_ms": 85057,
+        "persisted_at_ms": 85286.5,
+        "extraction_validation_wait_ms": 2062,
+        "save_readback_ms": 230,
+        "total_ms": 2292,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "Brannoc leaned in over the held paper, lips moving as he read it through, and at the end he nodded once, the way a man nods at a ledger that balances."
+    },
+    "checked": {
+      "world": "d0aa0992e22c0ba062a1644c557355f421e1edbe2cfd89ed50136dac1a8de7e2",
+      "events": "16b5f27da56c388a7dc70f386404e978d84f8fd023ddb4adc4cb5352409eb175",
+      "messages": 43
+    },
+    "elapsedIncludingReloadMs": 10058
+  },
+  {
+    "n": 2,
+    "inputMessageIndex": 43,
+    "timing": {
+      "marks": {
+        "click": 406375.69999999925,
+        "lastRenderedChange": 436260.19999999925,
+        "firstProse": 414932.3999999985,
+        "confirmedSave": 436418.799999997,
+        "worldCommit": 436209.19999999925,
+        "worldTimesInferred": false,
+        "ready": 436427.8999999985
+      },
+      "world": {
+        "id": 44,
+        "committed_at_ms": 436209.19999999925,
+        "persisted_at_ms": 436418.799999997,
+        "extraction_validation_wait_ms": 10579,
+        "save_readback_ms": 210,
+        "total_ms": 10789,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "First bell caught him in the cold blue before the sun cleared the rooftops."
+    },
+    "checked": {
+      "world": "9af73aae0f2aa31bdbb3427e4d25cc26ded358d961b5eaf70d0bf3eac008e8dd",
+      "events": "03a82cd84c997102533d710deca78c79955faf4241bdc758be124c8a373f5b14",
+      "messages": 45
+    },
+    "elapsedIncludingReloadMs": 33364
+  },
+  {
+    "n": 3,
+    "inputMessageIndex": 45,
+    "timing": {
+      "marks": {
+        "click": 628935.0999999978,
+        "lastRenderedChange": 657961.799999997,
+        "firstProse": 635345.3999999985,
+        "confirmedSave": 659916.6999999993,
+        "worldCommit": 657862.3999999985,
+        "worldTimesInferred": false,
+        "ready": 659921
+      },
+      "world": {
+        "id": 46,
+        "committed_at_ms": 657862.3999999985,
+        "persisted_at_ms": 659916.6999999993,
+        "extraction_validation_wait_ms": 18028,
+        "save_readback_ms": 2054,
+        "total_ms": 20082,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "First bell was still ringing off the rooftops when Merrin met him at the lane's end, hood up, unstrung bow across her back."
+    },
+    "checked": {
+      "world": "336bf0348ea32169db3cf9c62bc7d41291467dc716e743f066b7366c9bb3c295",
+      "events": "68ba454287a502fdd1106922eab04d0b587eac1a79c41887a7b47009366e4286",
+      "messages": 47
+    },
+    "elapsedIncludingReloadMs": 36893
+  },
+  {
+    "n": 4,
+    "inputMessageIndex": 47,
+    "timing": {
+      "marks": {
+        "click": 891144,
+        "lastRenderedChange": 907176.5999999978,
+        "firstProse": 896035.3999999985,
+        "confirmedSave": 910783.0999999978,
+        "worldCommit": 910589.799999997,
+        "worldTimesInferred": false,
+        "ready": 910787.1999999993
+      },
+      "world": {
+        "id": 48,
+        "committed_at_ms": 910589.799999997,
+        "persisted_at_ms": 910783.0999999978,
+        "extraction_validation_wait_ms": 3202,
+        "save_readback_ms": 193,
+        "total_ms": 3395,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "He said it plain, hands open at his sides, and the words did what words do in a tight place: they changed the shape of it."
+    },
+    "checked": {
+      "world": "4d2c9995ec8ce15e44dfd8cc3866da9589d106c0bb8243f697d3c6616359ec62",
+      "events": "d35af233a06d380d9a88aee6021c4ffc3ee9ce24e67f1567d4a3273aa4cd4783",
+      "messages": 49
+    },
+    "elapsedIncludingReloadMs": 23377
+  },
+  {
+    "n": 5,
+    "inputMessageIndex": 49,
+    "timing": {
+      "marks": {
+        "click": 1183568.799999997,
+        "lastRenderedChange": 1204934.1999999993,
+        "firstProse": 1187053.799999997,
+        "confirmedSave": 1205637.8999999985,
+        "worldCommit": 1204868.3999999985,
+        "worldTimesInferred": false,
+        "ready": 1205650.5
+      },
+      "world": {
+        "id": 50,
+        "committed_at_ms": 1204868.3999999985,
+        "persisted_at_ms": 1205637.8999999985,
+        "extraction_validation_wait_ms": 13615,
+        "save_readback_ms": 770,
+        "total_ms": 14384,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "He kept his voice level and his hands where they could see them, and he backed the way he'd come, shouting for the yard."
+    },
+    "checked": {
+      "world": "df3a40e76ba17c45d158eea54b2eff322267ecc6261560b2cb7ab37babaf4ab9",
+      "events": "e6cec68d6601822a982f3325e806324dee58d7cfd7d66cbb9a041a92fdbc5c27",
+      "messages": 51
+    },
+    "elapsedIncludingReloadMs": 25482
+  },
+  {
+    "n": 6,
+    "inputMessageIndex": 51,
+    "timing": {
+      "marks": {
+        "click": 1408472.5,
+        "lastRenderedChange": 1421454.799999997,
+        "firstProse": 1412597.3999999985,
+        "confirmedSave": 1421692.5999999978,
+        "worldCommit": 1421407.799999997,
+        "worldTimesInferred": false,
+        "ready": 1421699.0999999978
+      },
+      "world": {
+        "id": 52,
+        "committed_at_ms": 1421407.799999997,
+        "persisted_at_ms": 1421692.5999999978,
+        "extraction_validation_wait_ms": 4754,
+        "save_readback_ms": 285,
+        "total_ms": 5039,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "Dane grunted something that might have been any thanks at all, and his scrapers stayed between the track-men and the lane the whole way out."
+    },
+    "checked": {
+      "world": "26205eff940ced3e3ab6073ebbee5904b260f3fff25860b57a6211fcfaeb866c",
+      "events": "b317f108c57891fc94174094e90217532cc67bd0af1973b17ac003d40f74df54",
+      "messages": 53
+    },
+    "elapsedIncludingReloadMs": 16695
+  },
+  {
+    "n": 7,
+    "inputMessageIndex": 53,
+    "timing": {
+      "marks": {
+        "click": 1585853.299999997,
+        "lastRenderedChange": 1597469.799999997,
+        "firstProse": 1590253,
+        "confirmedSave": 1597668.3999999985,
+        "worldCommit": 1597417.0999999978,
+        "worldTimesInferred": false,
+        "ready": 1597676.5999999978
+      },
+      "world": {
+        "id": 54,
+        "committed_at_ms": 1597417.0999999978,
+        "persisted_at_ms": 1597668.3999999985,
+        "extraction_validation_wait_ms": 5043,
+        "save_readback_ms": 251,
+        "total_ms": 5294,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The hatch opened wider to take it, and the warden—Corven's watch, she'd named herself, and let her name go unoffered in return—unfolded the copied margin note with the paper held at arm's length, the way someone reads who reads for duty, not pleasure."
+    },
+    "checked": {
+      "world": "2c96a9c5ba68080f6a5e65c9e8e6fbde954e96fa2a98f29cd065549263b7934e",
+      "events": "902601eaf46fd0d20d8bcc1d06addcdd66e4b98a4889f9aaa70be11e8afea348",
+      "messages": 55
+    },
+    "elapsedIncludingReloadMs": 16513
+  },
+  {
+    "n": 8,
+    "inputMessageIndex": 55,
+    "timing": {
+      "marks": {
+        "click": 1754021.5,
+        "lastRenderedChange": 1773570.299999997,
+        "firstProse": 1765879,
+        "confirmedSave": 1781620.3999999985,
+        "worldCommit": 1781328.299999997,
+        "worldTimesInferred": false,
+        "ready": 1781627.1999999993
+      },
+      "world": {
+        "id": 56,
+        "committed_at_ms": 1781328.299999997,
+        "persisted_at_ms": 1781620.3999999985,
+        "extraction_validation_wait_ms": 7492,
+        "save_readback_ms": 292,
+        "total_ms": 7784,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "\"Alaric.\""
+    },
+    "checked": {
+      "world": "7396fc8e1a4d4ea2faf88c6c3f0eae5a1d7b7908b304293028ac36c938ffa4f9",
+      "events": "14393bf1e29fb0f15dbea9f17181a9de824873028928c465226f0ef8b2a98fa1",
+      "messages": 57
+    },
+    "elapsedIncludingReloadMs": 32281
+  },
+  {
+    "n": 9,
+    "inputMessageIndex": 57,
+    "timing": {
+      "marks": {
+        "click": 1905806.8999999985,
+        "lastRenderedChange": 1915055.799999997,
+        "firstProse": 1909173.0999999978,
+        "confirmedSave": 1915281.5999999978,
+        "worldCommit": 1915020.0999999978,
+        "worldTimesInferred": false,
+        "ready": 1915285.799999997
+      },
+      "world": {
+        "id": 58,
+        "committed_at_ms": 1915020.0999999978,
+        "persisted_at_ms": 1915281.5999999978,
+        "extraction_validation_wait_ms": 2548,
+        "save_readback_ms": 262,
+        "total_ms": 2810,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The warden house gave them up with one last look from Dagny, and the hatch slid shut on the kettle and the scrape of the boards below."
+    },
+    "checked": {
+      "world": "d1e46d13079ac4f0ec586395cb4b6dee6741767590f408ea4dd1d9eb428d5285",
+      "events": "1dd96b4aaf598414817ea608cc08f0afe828d7f96cb25abf1d6359b8c811eb08",
+      "messages": 59
+    },
+    "elapsedIncludingReloadMs": 13408
+  }
+]

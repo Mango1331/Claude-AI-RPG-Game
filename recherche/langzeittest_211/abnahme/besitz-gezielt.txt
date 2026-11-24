@@ -1,0 +1,26 @@
+✔ c.6.6.5 trade 1-4: from the clean state after #88, laying the parts out gives nothing away; "eight silver for the lot" is her bid; accepting it sells exactly those parts for +80 cp (417), no package, the bid closed (498.952008ms)
+✔ c.6.6.5 trade 5: a bid declined or left open moves nothing; 337 cp and all four stacks stay his (290.447443ms)
+✔ c.6.6.5 trade 6: selling part of a stack keeps the rest with its Rank, species, origin and value; a bid for things he no longer holds is void, never a negative stock (184.317565ms)
+✔ c.6.6.5 trade 7: an offer stored the wrong way round (the c.6.6.4 extractor's "mudwyrm parts … the lot") is never paid for: naming his things it is sold, else the System asks (268.651307ms)
+✔ c.6.6.5 trade 8-9: a gift stays a give, showing is none; buying from an offer still pays; "here to deliver" and the hand-over are as in c.6.6.4 (175.794798ms)
+✔ c.6.6.5 slips 11: a turn-in files its slip with the Guild; accepted, READY or refused contracts keep theirs; the Guild plate stays (93.592387ms)
+✔ c.6.6.5 slips 12: the three slips of contracts completed before this build leave his effective inventory on load, idempotently; quests, payouts and XP stay as they were (16.21689ms)
+✔ c.6.6.5 settlements 13-14: the Ashbridge market by day is crowded in the narrator's block without stored crowd people; its trades include a monster-parts buyer, the known shop first (57.084775ms)
+✔ c.6.6.5 settlements 15: "look for a store to sell the monster parts to" (live #85) finds the trades without a check and without the lost hour; he still goes where he chooses (32.124202ms)
+✔ c.6.6.5 settlements 16: a real search for something hidden is still a SEARCH, and its result is in the System block (52.436946ms)
+✔ c.6.6.5 settlements 17: a passer-by he attacks in the crowded market becomes a person and the target; an area attack meets the people closest; inside the shop nobody is made up (102.736943ms)
+✔ c.6.6.5 settlements 18: a village is no city: no monster-parts buyer, the larger places that have one named; a thin crowd (3.82246ms)
+✔ c.6.6.5 XP 19-21: the strong armored mudwyrm (84 HP, ATK 14, DEF 6) is worth clearly more than the 20-HP ones, not four times; the old fights keep 12/12/14 (8.78144ms)
+✔ c.6.6.5 XP 21 + display 22: a strong mudwyrm fight pays its locked Defeat XP once; COMBAT END shows the loot it brought, no ITEM line twice; a fight without loot shows no LOOT block (325.310523ms)
+✔ c.6.6.5 narrator 23-24: the Mage's Basic Attack is a bolt from where he stands; automatic loot is in the magic pouch; a toll nobody booked is no payment (329.037892ms)
+✔ c.6.6.5 B1-B2: a defensive creature struck in its cover closes to defend itself (planner path; the old path holds); venom only from a creature shown venomous (1.512606ms)
+✔ c.6.6.5 compatibility 26-27: the live chat to #88 loads with its hard state intact (337 cp, 145 XP, three quests completed, the parts 2/2/2/3, 85 HP max); the broken #89-#92 replay as stored and show why (37.042202ms)
+✔ a displayed item stays with its holder, including after travel; a separate real transfer remains possible (0.2838ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2948.732417

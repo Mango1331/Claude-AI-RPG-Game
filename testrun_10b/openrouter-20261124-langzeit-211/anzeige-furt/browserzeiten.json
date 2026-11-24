@@ -1,0 +1,266 @@
+[
+  {
+    "n": 1,
+    "inputMessageIndex": 43,
+    "timing": {
+      "marks": {
+        "click": 131223,
+        "lastRenderedChange": 147190.6000000015,
+        "firstProse": 135103.80000000075,
+        "confirmedSave": 147366.5,
+        "worldCommit": 147158.5,
+        "worldTimesInferred": false,
+        "ready": 147374.70000000298
+      },
+      "world": {
+        "id": 44,
+        "committed_at_ms": 147158.5,
+        "persisted_at_ms": 147366.5,
+        "extraction_validation_wait_ms": 7655,
+        "save_readback_ms": 208,
+        "total_ms": 7863,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The stones took him down to the water meadow, and it was there, on the rise where the drained field met the willows, that he stopped."
+    },
+    "checked": {
+      "world": "8265798f00d0549c21cb3e0ebfa128467670847b7286df9814b40548cd085c73",
+      "events": "7a127a9b03aba8450a3e89eb6188fb4741e1aff5ffd60b084dfee1547eae5f38",
+      "messages": 45
+    },
+    "elapsedIncludingReloadMs": 19478
+  },
+  {
+    "n": 2,
+    "inputMessageIndex": 45,
+    "timing": {
+      "marks": {
+        "click": 429484.200000003,
+        "lastRenderedChange": 455093.5,
+        "firstProse": 437667.90000000224,
+        "confirmedSave": 475093,
+        "worldCommit": 474882.6000000015,
+        "worldTimesInferred": false,
+        "ready": 475097.80000000075
+      },
+      "world": {
+        "id": 46,
+        "committed_at_ms": 474882.6000000015,
+        "persisted_at_ms": 475093,
+        "extraction_validation_wait_ms": 19623,
+        "save_readback_ms": 210,
+        "total_ms": 19833,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The news went first, because Dann's hands weren't free to take anything yet—he was still wringing water out of one trouser leg and glancing at his bank of waiting carts."
+    },
+    "checked": {
+      "world": "f6bc92eedb05842f5df07d9160c2b041b64f4c1d35ec68ef734f5edbb4fdbc8a",
+      "events": "e91bfddd04179baa921079d6102ae7c61a37e0ea60e54f171830cec68a281693",
+      "messages": 47
+    },
+    "elapsedIncludingReloadMs": 49408
+  },
+  {
+    "n": 3,
+    "inputMessageIndex": 47,
+    "timing": {
+      "marks": {
+        "click": 653659.1000000015,
+        "lastRenderedChange": 693241.9000000022,
+        "firstProse": 663564.3000000007,
+        "confirmedSave": 693497.4000000022,
+        "worldCommit": 693158.8000000007,
+        "worldTimesInferred": false,
+        "ready": 693504.8000000007
+      },
+      "world": {
+        "id": 48,
+        "committed_at_ms": 693158.8000000007,
+        "persisted_at_ms": 693497.4000000022,
+        "extraction_validation_wait_ms": 19152,
+        "save_readback_ms": 339,
+        "total_ms": 19490,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "Dann took that answer like a man who'd hoped for it."
+    },
+    "checked": {
+      "world": "6a64fb33d7e2726bb16d2a8bf15818742e100a2c94ac67cc1cf0c6bb36a405ba",
+      "events": "f58197db8ef0bedc45294a3215074f4d718f42a306072b2b1e0e0af71ed091fb",
+      "messages": 49
+    },
+    "elapsedIncludingReloadMs": 48251
+  },
+  {
+    "n": 4,
+    "inputMessageIndex": 49,
+    "timing": {
+      "marks": {
+        "click": 937295.200000003,
+        "lastRenderedChange": 953295.9000000022,
+        "firstProse": 944702.1000000015,
+        "confirmedSave": 960040,
+        "worldCommit": 959857,
+        "worldTimesInferred": false,
+        "ready": 960045.9000000022
+      },
+      "world": {
+        "id": 50,
+        "committed_at_ms": 959857,
+        "persisted_at_ms": 960040,
+        "extraction_validation_wait_ms": 5955,
+        "save_readback_ms": 183,
+        "total_ms": 6138,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "Berta heard the word out of mid-stream a second time and the one Alaric carried to her, and the two of them agreed with each other, which saved any arguing."
+    },
+    "checked": {
+      "world": "f60b759ff65d7a32c2f903141eab72ccdad2769376ff7419a9a102688f476481",
+      "events": "933e2682dd5e79161a1c8de19b1d0d7d2cfcd60422fcb822d2d57d60d238ce4c",
+      "messages": 51
+    },
+    "elapsedIncludingReloadMs": 26749
+  },
+  {
+    "n": 5,
+    "inputMessageIndex": 51,
+    "timing": {
+      "marks": {
+        "click": 1216374.9000000022,
+        "lastRenderedChange": 1226261.8000000007,
+        "firstProse": 1221824.3000000007,
+        "confirmedSave": 1231187.4000000022,
+        "worldCommit": 1230888.9000000022,
+        "worldTimesInferred": false,
+        "ready": 1231194
+      },
+      "world": {
+        "id": 52,
+        "committed_at_ms": 1230888.9000000022,
+        "persisted_at_ms": 1231187.4000000022,
+        "extraction_validation_wait_ms": 4375,
+        "save_readback_ms": 299,
+        "total_ms": 4674,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "\"Wren said it herself,\" Alaric told her."
+    },
+    "checked": {
+      "world": "67eba0358410623d9c797af943bf72f30b080cf2f940bb9d6b97dfab2679f4b4",
+      "events": "6bd3d6728a68a88b585264fb2a940c62fc66f4f8626e6eaa74a7e7c154506610",
+      "messages": 53
+    },
+    "elapsedIncludingReloadMs": 18975
+  },
+  {
+    "n": 6,
+    "inputMessageIndex": 53,
+    "timing": {
+      "marks": {
+        "click": 1455541.3000000007,
+        "lastRenderedChange": 1476765.4000000022,
+        "firstProse": 1460316.200000003,
+        "confirmedSave": 1476954.3000000007,
+        "worldCommit": 1476720.4000000022,
+        "worldTimesInferred": false,
+        "ready": 1476961.4000000022
+      },
+      "world": {
+        "id": 54,
+        "committed_at_ms": 1476720.4000000022,
+        "persisted_at_ms": 1476954.3000000007,
+        "extraction_validation_wait_ms": 13029,
+        "save_readback_ms": 234,
+        "total_ms": 13263,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "Up he went, and Berta took the brake off and let the mare have her head."
+    },
+    "checked": {
+      "world": "7983936ab97ba2e0a8a394c8eec124784a45bfc9664e0b56a076282a7ebd38cf",
+      "events": "b14f8746a09dbc8ed1a67a21b091936fb64bbbcccb6d4c94259a7e29f676251c",
+      "messages": 55
+    },
+    "elapsedIncludingReloadMs": 25674
+  },
+  {
+    "n": 7,
+    "inputMessageIndex": 55,
+    "timing": {
+      "marks": {
+        "click": 1617270.4000000022,
+        "lastRenderedChange": 1625511.5,
+        "firstProse": 1620157,
+        "confirmedSave": 1628154.1000000015,
+        "worldCommit": 1627898.5,
+        "worldTimesInferred": false,
+        "ready": 1628158.8000000007
+      },
+      "world": {
+        "id": 56,
+        "committed_at_ms": 1627898.5,
+        "persisted_at_ms": 1628154.1000000015,
+        "extraction_validation_wait_ms": 2173,
+        "save_readback_ms": 256,
+        "total_ms": 2429,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "He said it low, under the rain, hands flat on the tailframe where both men could see them empty."
+    },
+    "checked": {
+      "world": "069ab243e6c8238f72d886b50f269cb6d94a39e77b43edc89a9e954890210ea3",
+      "events": "5e32a444ef4dd28abada4e2a9c9749bc5d14afb1c0cc053549c0c0354e2a7469",
+      "messages": 57
+    },
+    "elapsedIncludingReloadMs": 15092
+  },
+  {
+    "n": 8,
+    "inputMessageIndex": 57,
+    "timing": {
+      "marks": {
+        "click": 1781645.5,
+        "lastRenderedChange": 1790156.6000000015,
+        "firstProse": 1787491.4000000022,
+        "confirmedSave": 1795564.4000000022,
+        "worldCommit": 1795319.9000000022,
+        "worldTimesInferred": false,
+        "ready": 1795568.4000000022
+      },
+      "world": {
+        "id": 58,
+        "committed_at_ms": 1795319.9000000022,
+        "persisted_at_ms": 1795564.4000000022,
+        "extraction_validation_wait_ms": 4832,
+        "save_readback_ms": 245,
+        "total_ms": 5076,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "Berta had him off the back before the words were fully out—down on the trackside, hands on the near trace, her at the mare's head with a low word that said now."
+    },
+    "checked": {
+      "world": "4480a4b1a24092570a702ed7a26b81690a00116becef902aab364033cd757f49",
+      "events": "7edaef53fd800b817d6affc512a86e64557a083a108afd14ccc95d3f2ff6a09b",
+      "messages": 59
+    },
+    "elapsedIncludingReloadMs": 18714
+  }
+]

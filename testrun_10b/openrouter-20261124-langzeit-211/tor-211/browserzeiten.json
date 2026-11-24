@@ -1,0 +1,35 @@
+[
+  {
+    "n": 1,
+    "inputMessageIndex": 23,
+    "timing": {
+      "marks": {
+        "click": 319906.69999999925,
+        "lastRenderedChange": 339562.19999999925,
+        "firstProse": 322558.5,
+        "confirmedSave": 339680.80000000075,
+        "worldCommit": 339530.30000000075,
+        "worldTimesInferred": false,
+        "ready": 339685.1000000015
+      },
+      "world": {
+        "id": 24,
+        "committed_at_ms": 339530.30000000075,
+        "persisted_at_ms": 339680.80000000075,
+        "extraction_validation_wait_ms": 13018,
+        "save_readback_ms": 151,
+        "total_ms": 13169,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "\"Take care of it, and I'll have it back warm,\" Asha said, and that was the end of the matter as far as she was concerned."
+    },
+    "checked": {
+      "world": "bd98a8ff46a273a1f947240ee2997dbee5f82c37b976c1a7ec4f5d4e8200d089",
+      "events": "cf137e28e39794c044930ac7070647c7cb9413792621e016f72adad4c7644f74",
+      "messages": 25
+    },
+    "elapsedIncludingReloadMs": 22032
+  }
+]

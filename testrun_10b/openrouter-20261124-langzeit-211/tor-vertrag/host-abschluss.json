@@ -1,0 +1,6 @@
+{
+  "seq": 1795523946826,
+  "n": 1,
+  "error": "Host stopped: {\"answered\":true,\"ext\":\"failed\",\"status\":\"Weltabgleich fehlgeschlagen – Abschluss ausdrücklich fortsetzen\",\"world\":{\"id\":24,\"committed_at_ms\":177117.30000000075,\"persisted_at_ms\":177296.80000000075,\"extraction_validation_wait_ms\":13303,\"save_readback_ms\":180,\"total_ms\":13482,\"record_changed\":true,\"persisted\":true,\"extraction_status\":\"failed\"},\"busy\":false,\"panel\":\"`WORLD NOT RECORDED — the extractor gave no valid answer ($.deltas[0] (object.new): : unexpected property \\\"desc\\\"; $.deltas[1] (object.new)). Nothing of this reply changed the game state; swipe to retry, or go on.`\",\"viewReady\":false}",
+  "blocked": true
+}

@@ -1,0 +1,101 @@
+[
+  {
+    "n": 1,
+    "inputMessageIndex": 29,
+    "timing": {
+      "marks": {
+        "click": 219114.59999999776,
+        "lastRenderedChange": 242392,
+        "firstProse": 223770.09999999776,
+        "confirmedSave": 242539.69999999925,
+        "worldCommit": 242358.8999999985,
+        "worldTimesInferred": false,
+        "ready": 242543.69999999925
+      },
+      "world": {
+        "id": 30,
+        "committed_at_ms": 242358.8999999985,
+        "persisted_at_ms": 242539.69999999925,
+        "extraction_validation_wait_ms": 12857,
+        "save_readback_ms": 181,
+        "total_ms": 13038,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "Brigid took the sack with both hands and a grunt, weighing it, and set it inside the door out of the wet."
+    },
+    "checked": {
+      "world": "c8ec7e9efe799f6c32f0743cd54417391d8bb870611fdb0f171d73da949ac740",
+      "events": "4464e9909cc96b95ce88fb48b507fa8a3553731a146102f9cf5bf1aabec598f0",
+      "messages": 31
+    },
+    "elapsedIncludingReloadMs": 26661
+  },
+  {
+    "n": 2,
+    "inputMessageIndex": 31,
+    "timing": {
+      "marks": {
+        "click": 416362.299999997,
+        "lastRenderedChange": 425642.299999997,
+        "firstProse": 422155.69999999925,
+        "confirmedSave": 431156.799999997,
+        "worldCommit": 431029.3999999985,
+        "worldTimesInferred": false,
+        "ready": 431160.5
+      },
+      "world": {
+        "id": 32,
+        "committed_at_ms": 431029.3999999985,
+        "persisted_at_ms": 431156.799999997,
+        "extraction_validation_wait_ms": 5227,
+        "save_readback_ms": 127,
+        "total_ms": 5354,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The cord passed from his hand to Brigid's, and she closed her fist around the ring without looking at it, only a short nod, the thing coming home."
+    },
+    "checked": {
+      "world": "6381a6f7a644b271b8038fafd1d7d020534ba4eee3412f866627b25e0239fd0f",
+      "events": "a5a0bb2b17258475b9201881349808e412f22e55ea097d78565b70601b988995",
+      "messages": 33
+    },
+    "elapsedIncludingReloadMs": 18009
+  },
+  {
+    "n": 3,
+    "inputMessageIndex": 33,
+    "timing": {
+      "marks": {
+        "click": 577598,
+        "lastRenderedChange": 603556.8999999985,
+        "firstProse": 594475.3999999985,
+        "confirmedSave": 609568.1999999993,
+        "worldCommit": 609404.1999999993,
+        "worldTimesInferred": false,
+        "ready": 609573.0999999978
+      },
+      "world": {
+        "id": 34,
+        "committed_at_ms": 609404.1999999993,
+        "persisted_at_ms": 609568.1999999993,
+        "extraction_validation_wait_ms": 5664,
+        "save_readback_ms": 164,
+        "total_ms": 5828,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The loft bunk went unclaimed."
+    },
+    "checked": {
+      "world": "0603509f7330b29ea774747df838a72a96327f73e50046a40c6451a11a1d933f",
+      "events": "6781bbe56f652db2e86486bd719daf7912d7f6d4977e0802f2bef9a441366dc7",
+      "messages": 35
+    },
+    "elapsedIncludingReloadMs": 35173
+  }
+]

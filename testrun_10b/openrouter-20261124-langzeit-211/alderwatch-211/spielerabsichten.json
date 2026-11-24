@@ -1,0 +1,258 @@
+[
+  {
+    "n": 1,
+    "seq": 1795523127217,
+    "op": "play",
+    "text": "I'll take a look at the jobs on the board. What can a newly registered mage actually take on here?",
+    "intent_before_narration": "Read official postings, without accepting or spending.",
+    "at": "2026-11-24T12:25:27.594Z"
+  },
+  {
+    "n": 2,
+    "seq": 1795523197225,
+    "op": "play",
+    "text": "I'll take the Old Crown Catacombs contract. Is anyone in this hall looking for a partner for their first descent?",
+    "intent_before_narration": "Accept precisely the posted Level 1 clearance. Ask about partners; no departure yet.",
+    "at": "2026-11-24T12:26:37.531Z"
+  },
+  {
+    "n": 3,
+    "seq": 1795523254297,
+    "op": "play",
+    "text": "I'm Alaric. I'd be glad of company, Dellan. Would you walk with me to the catacombs once you've got your things? We can decide at the entrance whether to go down.",
+    "intent_before_narration": "Offer partnership and shared journey contingent on his readiness, stopping outside.",
+    "at": "2026-11-24T12:27:34.701Z"
+  },
+  {
+    "n": 4,
+    "seq": 1795523451048,
+    "op": "play",
+    "text": "We still have the daylight. Dellan, let's walk up to the catacomb entrance together. I want to look at the door before I decide whether to open it.",
+    "intent_before_narration": "Reach entrance with Dellan, inspect only.",
+    "at": "2026-11-24T12:30:51.568Z"
+  },
+  {
+    "n": 5,
+    "seq": 1795523528138,
+    "op": "play",
+    "text": "Dellan, give me a hand with the iron ring. I pull open the slab and go down to the first landing of the Old Crown Catacombs.",
+    "intent_before_narration": "Choose to enter, with companion if willing.",
+    "at": "2026-11-24T12:32:08.518Z"
+  },
+  {
+    "n": 6,
+    "seq": 1795523597599,
+    "op": "play",
+    "text": "The guild slip is in my hand and the hall is still around me. I leave Alderwatch for the Old Crown Catacombs. I'll get to the place itself before trying the stairs again.",
+    "intent_before_narration": "Go to exact contract destination, no descent this turn.",
+    "at": "2026-11-24T12:33:18.117Z"
+  },
+  {
+    "n": 7,
+    "seq": 1795523672534,
+    "op": "play",
+    "text": "I show my signed slip to the temple warden. Dellan, I'd like you at my side. I open the slab and enter level one of the Old Crown Catacombs.",
+    "intent_before_narration": "Enter level one from the reached gate, willing ally invited.",
+    "at": "2026-11-24T12:34:33.619Z"
+  },
+  {
+    "n": 8,
+    "seq": 1795523764506,
+    "op": "play",
+    "text": "I cast Flame Lance at the skeleton with the sickle and step back to keep the other two at spear's length.",
+    "intent_before_narration": "One ranged spell at the armed opponent then retreat one band; avoid getting surrounded.",
+    "at": "2026-11-24T12:36:05.246Z"
+  },
+  {
+    "n": 9,
+    "seq": 1795523875318,
+    "op": "play",
+    "text": "Both are on top of me. I use Arcane Wave against the two skeletons at arm's reach, then step back toward the stairs.",
+    "intent_before_narration": "Use one area major, then retreat one band.",
+    "at": "2026-11-24T12:37:55.937Z"
+  },
+  {
+    "n": 10,
+    "seq": 1795524015600,
+    "op": "play",
+    "text": "I cast Arcane Wave again while they're still on top of me. I keep my footing this time.",
+    "intent_before_narration": "Finish the two close skeletons with the area spell; no movement.",
+    "at": "2026-11-24T12:40:16.555Z"
+  },
+  {
+    "n": 11,
+    "seq": 1795524159384,
+    "op": "play",
+    "text": "I level the staff at Restless Skeleton C and cast Flame Lance. I need to drop it before it reaches me again.",
+    "intent_before_narration": "Use the single-target fire spell on the last skeleton at five HP.",
+    "at": "2026-11-24T12:42:40.157Z"
+  },
+  {
+    "n": 12,
+    "seq": 1795524275057,
+    "op": "play",
+    "text": "I take my staff and lean on it. You're right, Dellan. I leave the dungeon by the entrance we used, back to the warden and daylight. The rest of the contract can wait.",
+    "intent_before_narration": "Exit the dungeon by the established route with companion, reserve remaining resources.",
+    "at": "2026-11-24T12:44:35.802Z"
+  },
+  {
+    "n": 13,
+    "seq": 1795524391915,
+    "op": "play",
+    "text": "I sit where the warden points and rest until I catch my breath. Dellan, would you ask the temple man what help he offers and what it would cost? Don't pay anything yet.",
+    "intent_before_narration": "Rest at gate, inquire about help; no purchase.",
+    "at": "2026-11-24T12:46:33.111Z"
+  },
+  {
+    "n": 14,
+    "seq": 1795524496603,
+    "op": "play",
+    "text": "I rest for two hours in the daylight beside the warden's hut. Dellan, what did you notice about those skeletons that I missed?",
+    "intent_before_narration": "Rest for an explicit duration at gate and speak with Dellan.",
+    "at": "2026-11-24T12:48:17.798Z"
+  },
+  {
+    "n": 15,
+    "seq": 1795524628034,
+    "op": "play",
+    "text": "Dellan, let's go back to the guild hall at Alderwatch before dark. I want to report the gallery and see whether anyone actually buys grave dust.",
+    "intent_before_narration": "Return to guild with Dellan, report partial progress and ask about selling loot.",
+    "at": "2026-11-24T12:50:31.160Z"
+  },
+  {
+    "n": 16,
+    "seq": 1795524781020,
+    "op": "play",
+    "text": "Three skeletons down in the left gallery; we turned back, so the level isn't cleared. I show the clerk the four bones and one measure of grave dust. What will the guild offer for two bones only?",
+    "intent_before_narration": "Report an incomplete contract and ask terms for two of four bones. Show loot, decline any unasked sale.",
+    "at": "2026-11-24T12:53:02.667Z"
+  },
+  {
+    "n": 17,
+    "seq": 1795524944330,
+    "op": "play",
+    "text": "Two bones at two coppers apiece is fair. I'll sell exactly two of the four to the guild clerk now for four coppers total. The other two and all the dust stay with me.",
+    "intent_before_narration": "Authorize a partial sale of two bones for four copper, retain all dust and remainder.",
+    "at": "2026-11-24T12:55:45.410Z"
+  },
+  {
+    "n": 18,
+    "seq": 1795525226701,
+    "op": "play",
+    "text": "I stop by Facinatus the apothecary, three doors beyond the fountain. I ask whether he can dress my wounds, and what he'd charge. Keep the dust for now.",
+    "intent_before_narration": "Reach the recommended healer and ask his terms only; retain dust.",
+    "at": "2026-11-24T13:00:28.011Z"
+  },
+  {
+    "n": 19,
+    "seq": 1795525483136,
+    "op": "play",
+    "text": "I take the stool and let Facinatus see the arm. Four copper for the ordinary dressing tonight, yes. I pay him the four; nothing for the deeper treatment.",
+    "intent_before_narration": "Accept the quoted basic service from this seller; spend only four and retain dust.",
+    "at": "2026-11-24T13:04:45.164Z"
+  },
+  {
+    "n": 20,
+    "seq": 1795525751270,
+    "op": "play",
+    "text": "Facinatus, I buy the ordinary dressing for four copper.",
+    "intent_before_narration": "Purchase one basic dressing, using only the agreed price.",
+    "at": "2026-11-24T13:09:12.563Z"
+  },
+  {
+    "n": 21,
+    "seq": 1795526013840,
+    "op": "play",
+    "text": "I count four copper into Facinatus's waiting hand. Please dress the arm now, as agreed.",
+    "intent_before_narration": "Pay the offered four copper once for the injury and check what care actually occurs.",
+    "at": "2026-11-24T13:13:34.893Z"
+  },
+  {
+    "n": 22,
+    "seq": 1795526244877,
+    "op": "play",
+    "text": "I'll leave the extra salve. If the plain dressing is on your counter, I'll take that at the four copper you just quoted. Then I need a quiet place to sleep, not another expedition.",
+    "intent_before_narration": "Accept exactly the now-quoted basic option, decline the eight-copper extra, seek a place to rest.",
+    "at": "2026-11-24T13:17:26.261Z"
+  },
+  {
+    "n": 23,
+    "seq": 1795526443961,
+    "op": "play",
+    "text": "I'd like a day's sleep more than a lock. I go two streets down toward the river to the Herron and ask the innkeeper for a quiet bed.",
+    "intent_before_narration": "Travel to the recommended inexpensive inn and ask terms, preserve remainder of coins and loot.",
+    "at": "2026-11-24T13:20:45.259Z"
+  },
+  {
+    "n": 24,
+    "seq": 1795526604839,
+    "op": "play",
+    "text": "My arm's no match for that awning. I take the slower sheltered shambles lane to the Herron, keeping clear of the thrashing pole.",
+    "intent_before_narration": "Choose the alternate route to the inn; decline danger and unnecessary exertion.",
+    "at": "2026-11-24T13:23:26.396Z"
+  },
+  {
+    "n": 25,
+    "seq": 1795526805987,
+    "op": "play",
+    "text": "I buy the six-copper bed and sign Alaric in her ledger. Please show me where I can lie down.",
+    "intent_before_narration": "Accept only the innkeeper's known bed price; rest after being shown the bed.",
+    "at": "2026-11-24T13:26:47.829Z"
+  },
+  {
+    "n": 26,
+    "seq": 1795526909005,
+    "op": "play",
+    "text": "I check the dressing against Facinatus's instructions and then sleep in the bed I've paid for until morning.",
+    "intent_before_narration": "Use the purchased bed, protect the arm, genuinely sleep to recover; no second payment.",
+    "at": "2026-11-24T13:28:30.145Z"
+  },
+  {
+    "n": 27,
+    "seq": 1795527052138,
+    "op": "play",
+    "text": "I'd like to know how Dellan fared. I return to the Adventurers' Guild hall in Alderwatch this morning and ask the clerk whether he left word for me.",
+    "intent_before_narration": "Revisit the same guild after the night's recovery and seek the previously met companion by name.",
+    "at": "2026-11-24T13:30:53.426Z"
+  },
+  {
+    "n": 28,
+    "seq": 1795527200741,
+    "op": "play",
+    "text": "Before the bell I read today's board once. I want to see which jobs are still open, but I'm keeping my Old Crown contract; I don't accept anything new.",
+    "intent_before_narration": "Read the new day's official offers; protect accepted contract and take no new one.",
+    "at": "2026-11-24T13:33:22.016Z"
+  },
+  {
+    "n": 29,
+    "seq": 1795527562359,
+    "op": "play",
+    "text": "I'll leave those slips for somebody else. I make for the east gate to catch Dellan before his escort leaves.",
+    "intent_before_narration": "Go to east gate and try to meet Dellan, no additional contract or payment.",
+    "at": "2026-11-24T13:39:24.047Z"
+  },
+  {
+    "n": 30,
+    "seq": 1795527636138,
+    "op": "play",
+    "text": "It's good to see you on your feet, Dellan. Before you go, what do you remember of the last walker down there? I have to decide whether to try it again with company or tell the Guild it can wait.",
+    "intent_before_narration": "Ask Dellan about our previous fight and for his view. No travel or new contract.",
+    "at": "2026-11-24T13:40:37.627Z"
+  },
+  {
+    "n": 31,
+    "seq": 1795527681647,
+    "op": "play",
+    "text": "Safe roads, Dellan. I'll go back to the Guild and report what happened before the details get any hazier. I mean to leave the level open until I've got a proper party.",
+    "intent_before_narration": "Bid him farewell, return to the Guild to report. Leave open the existing contract.",
+    "at": "2026-11-24T13:41:23.200Z"
+  },
+  {
+    "n": 32,
+    "seq": 1795527778533,
+    "op": "play",
+    "text": "Three walkers at the first bend. Dellan got me out with a bad cut. We didn't see the rest of the level, and I won't call it clear. Could you note that down for anyone else thinking to go under, and leave my contract open?",
+    "intent_before_narration": "Give a limited truthful field report, explicitly keep the original contract open and claim no reward.",
+    "at": "2026-11-24T13:42:59.754Z"
+  }
+]

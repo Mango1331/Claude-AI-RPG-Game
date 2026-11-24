@@ -1,0 +1,98 @@
+{
+  "arm": "K1",
+  "candidate": "c2ddc780d4c57b219f9cd7a1d134efceca7e459d",
+  "route": "wafer/us",
+  "physical_sends": 2,
+  "physical_refs_ended": 2,
+  "physical_roles": {
+    "narrator": 1,
+    "extractor": 1
+  },
+  "repeat_role_requests": {},
+  "success": 2,
+  "player_inputs": 0,
+  "confirmed_st_turns": 0,
+  "provider_input": 26944,
+  "provider_output": 1224,
+  "provider_cache": 11520,
+  "provider_reasoning": 551,
+  "usage_records": 2,
+  "provider_cost_usd": "0.001345344",
+  "cost_records": 2,
+  "charged_or_reserved_usd": "0.001345344",
+  "physical_duration_ms": 10391,
+  "median_ready_ms": null,
+  "by_role": {
+    "narrator": {
+      "dispatched": 1,
+      "duration_ms": {
+        "n": 1,
+        "sum": 6412,
+        "mean": 6412,
+        "median": 6412,
+        "min": 6412,
+        "max": 6412
+      },
+      "prompt_tokens": 12670,
+      "completion_tokens": 581,
+      "cost_usd": "0.000639044"
+    },
+    "extractor": {
+      "dispatched": 1,
+      "duration_ms": {
+        "n": 1,
+        "sum": 3979,
+        "mean": 3979,
+        "median": 3979,
+        "min": 3979,
+        "max": 3979
+      },
+      "prompt_tokens": 14274,
+      "completion_tokens": 643,
+      "cost_usd": "0.0007063"
+    }
+  },
+  "st_ms": {
+    "firstProse": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    },
+    "lastRenderedChange": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    },
+    "worldCommit": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    },
+    "confirmedSave": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    },
+    "ready": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    }
+  },
+  "all_reloads_match": false
+}

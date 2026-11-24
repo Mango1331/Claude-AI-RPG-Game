@@ -1,0 +1,266 @@
+[
+  {
+    "n": 1,
+    "seq": 1795523142162,
+    "op": "play",
+    "text": "I'll take a look at the jobs on the board. What can a newly registered mage actually take on here?",
+    "intent_before_narration": "Read official postings, without accepting or spending.",
+    "at": "2026-11-24T12:25:42.971Z"
+  },
+  {
+    "n": 2,
+    "seq": 1795523208473,
+    "op": "play",
+    "text": "I'll take the Old Crown Catacombs contract. Is anyone in this hall looking for a partner for their first descent?",
+    "intent_before_narration": "Accept only the posted Level 1 clearance. Ask about partners; no departure yet.",
+    "at": "2026-11-24T12:26:48.797Z"
+  },
+  {
+    "n": 3,
+    "seq": 1795523275583,
+    "op": "play",
+    "text": "I'm Alaric, and spells do tire me. I'd welcome that shield, Brannoc. Once you're ready, will you walk with me as far as the catacomb entrance?",
+    "intent_before_narration": "Accept the offered company, invite travel to the entrance when ready; no dungeon entry yet.",
+    "at": "2026-11-24T12:27:55.879Z"
+  },
+  {
+    "n": 4,
+    "seq": 1795523467514,
+    "op": "play",
+    "text": "Serra's hut sounds like the right first stop. I'll walk there with Brannoc and hear what she knows before we try the old door.",
+    "intent_before_narration": "Travel with Brannoc to the hut for advice, no dungeon entry.",
+    "at": "2026-11-24T12:31:08.052Z"
+  },
+  {
+    "n": 5,
+    "seq": 1795523505662,
+    "op": "play",
+    "text": "I leave the guild hall for Serra's hut. Brannoc is welcome to come along.",
+    "intent_before_narration": "Go to the warden, without taking a dungeon action.",
+    "at": "2026-11-24T12:31:46.237Z"
+  },
+  {
+    "n": 6,
+    "seq": 1795523580326,
+    "op": "play",
+    "text": "Alaric. First level, and the guild has our slip. Serra, what's changed below in the last week? Is there a warning sign that means we should turn back?",
+    "intent_before_narration": "Give name to warden, learn hazards, no descent yet.",
+    "at": "2026-11-24T12:33:00.719Z"
+  },
+  {
+    "n": 7,
+    "seq": 1795523654767,
+    "op": "play",
+    "text": "I walk from Serra's hut to the entrance of the Old Crown Catacombs with Brannoc and Merrin. At the chain I pause to get my bearings before opening it.",
+    "intent_before_narration": "Reach the dungeon root outside, companions welcome, no descent.",
+    "at": "2026-11-24T12:34:15.666Z"
+  },
+  {
+    "n": 8,
+    "seq": 1795523751247,
+    "op": "play",
+    "text": "I call up to Serra for the key she offered. If she passes it down, I'll take it on loan and unlock the chain; I'll bring it back before we leave.",
+    "intent_before_narration": "Request the offered gate key as a loan, unlock only on receipt, promise return.",
+    "at": "2026-11-24T12:35:51.683Z"
+  },
+  {
+    "n": 9,
+    "seq": 1795523861220,
+    "op": "play",
+    "text": "Light your lantern, Brannoc. I'll keep Serra's key safe. I enter the first level of the Old Crown Catacombs and look for her slate before we disturb the dust.",
+    "intent_before_narration": "Enter the authorized first level, observe slate; retain the warden’s key.",
+    "at": "2026-11-24T12:37:41.727Z"
+  },
+  {
+    "n": 10,
+    "seq": 1795523994611,
+    "op": "play",
+    "text": "I'll lead. I enter the Old Crown Catacombs, level one. Stay close with the lantern, Brannoc.",
+    "intent_before_narration": "Go in from the reached gate, keep the group together.",
+    "at": "2026-11-24T12:39:55.469Z"
+  },
+  {
+    "n": 11,
+    "seq": 1795524171457,
+    "op": "play",
+    "text": "I am not risking my two companions on a dark fight without an exit plan. I retreat up to the Old Crown Catacombs gate, taking the light with us.",
+    "intent_before_narration": "Choose a whole retreat before combat if available, no additional attack.",
+    "at": "2026-11-24T12:42:52.327Z"
+  },
+  {
+    "n": 12,
+    "seq": 1795524290078,
+    "op": "play",
+    "text": "A turning back for today. I hand Serra her iron key back and tell her the three were still standing at the bend. I'd rather warn the guild and come prepared.",
+    "intent_before_narration": "Return the existing key directly to Serra and report the sighting; no contract completion.",
+    "at": "2026-11-24T12:44:50.694Z"
+  },
+  {
+    "n": 13,
+    "seq": 1795524379865,
+    "op": "play",
+    "text": "Let's take the news straight to the guild hall in Alderwatch. I've no claim for a cleared level; it's a warning for the next party. Brannoc, Merrin, you're welcome to walk back with me.",
+    "intent_before_narration": "Return to registered guild and report a danger, no money claim.",
+    "at": "2026-11-24T12:46:20.634Z"
+  },
+  {
+    "n": 14,
+    "seq": 1795524430171,
+    "op": "play",
+    "text": "Three standing at the bend on the first level, not wandering. Dust on Serra's slate combed toward the back stairs. Don't mark the place cleared. What would a novice need to bring to come back alive?",
+    "intent_before_narration": "Report only personally observed hazards, ask for supplies, preserve open contract.",
+    "at": "2026-11-24T12:47:10.949Z"
+  },
+  {
+    "n": 15,
+    "seq": 1795524511479,
+    "op": "play",
+    "text": "I'd carry Serra's written account, Merrin, but not take her slate without her say-so. Could I have a copy of this margin note to take to the wardens in the morning?",
+    "intent_before_narration": "Ask clerk for a copy; no removal of official notice or slate.",
+    "at": "2026-11-24T12:48:32.263Z"
+  },
+  {
+    "n": 16,
+    "seq": 1795524652141,
+    "op": "play",
+    "text": "I'll join you for supper, Brannoc. Where can a novice get a meal and a bed for a fair price? I tuck the copy inside my coat to keep it dry.",
+    "intent_before_narration": "Keep the copied note and ask for lodging terms; no payment yet.",
+    "at": "2026-11-24T12:50:53.590Z"
+  },
+  {
+    "n": 17,
+    "seq": 1795524805615,
+    "op": "play",
+    "text": "I go to the Rope and Kettle with Brannoc. Marla, one bowl and a bed, please; I accept your three coppers altogether, no ale.",
+    "intent_before_narration": "Travel to named inn, authorize a total of three copper for one meal and one bed only.",
+    "at": "2026-11-24T12:53:27.736Z"
+  },
+  {
+    "n": 18,
+    "seq": 1795524962827,
+    "op": "play",
+    "text": "Marla, I'm here at your counter now. Is the bowl a copper and the bunk two for tonight? I'll wait for your price before touching the money.",
+    "intent_before_narration": "Establish a present seller and binding price only; no automatic payment.",
+    "at": "2026-11-24T12:56:03.749Z"
+  },
+  {
+    "n": 19,
+    "seq": 1795525210519,
+    "op": "play",
+    "text": "I accept Marla's price of three copper for the bowl of stew and the bunk tonight. I put exactly three copper on the counter.",
+    "intent_before_narration": "Buy the quoted supper and bunk as one purchase only.",
+    "at": "2026-11-24T13:00:11.502Z"
+  },
+  {
+    "n": 20,
+    "seq": 1795525450193,
+    "op": "play",
+    "text": "I finish the stew and take the third bunk past the loom. I tuck the folded copy inside my shirt and sleep until first bell.",
+    "intent_before_narration": "Use the supper and lodging already paid for; keep the note for the wardens.",
+    "at": "2026-11-24T13:04:11.170Z"
+  },
+  {
+    "n": 21,
+    "seq": 1795525711811,
+    "op": "play",
+    "text": "With the note dry against my chest I go to Serra's hut. If she is up, I'd like her to check the copy before I take it to the wardens.",
+    "intent_before_narration": "Return to named Serra after absence; seek confirmation of content before transferring it.",
+    "at": "2026-11-24T13:08:33.188Z"
+  },
+  {
+    "n": 22,
+    "seq": 1795525973734,
+    "op": "play",
+    "text": "Good morning. I'm Alaric from the guild. Do you know where Serra has gone? We met at the Old Crown, and I'm carrying her account for the wardens.",
+    "intent_before_narration": "Ask the present neighbor for a lead; do not assume she knows the document or move yet.",
+    "at": "2026-11-24T13:12:55.033Z"
+  },
+  {
+    "n": 23,
+    "seq": 1795526218201,
+    "op": "play",
+    "text": "You're right, Vessa. I won't enter her home. I'll remember your offer. Which warden should hear that Serra hasn't been back?",
+    "intent_before_narration": "Respect Serra's private threshold. Ask Vessa for the right contact, retain note.",
+    "at": "2026-11-24T13:16:59.330Z"
+  },
+  {
+    "n": 24,
+    "seq": 1795526382607,
+    "op": "play",
+    "text": "Thank you, Vessa. I follow the lane to the grey warden post at the market gate and ask for Harl. There's a warning for his rounds.",
+    "intent_before_narration": "Travel to the named gate post with note; ask for the identified warden and reveal no more yet.",
+    "at": "2026-11-24T13:19:43.878Z"
+  },
+  {
+    "n": 25,
+    "seq": 1795526557407,
+    "op": "play",
+    "text": "I'm carrying a report for the watch. If you are acting for Harl, walk with me to his post and let him ask me himself. I keep my coat closed and my hands in sight.",
+    "intent_before_narration": "Decline handover to strangers; offer the lawful destination, no attack, bribe or extra bargain.",
+    "at": "2026-11-24T13:22:39.113Z"
+  },
+  {
+    "n": 26,
+    "seq": 1795526776262,
+    "op": "play",
+    "text": "We go to Harl. I'll walk with you to the grey stone post at the market gate, and I keep the report in my coat until the warden himself asks.",
+    "intent_before_narration": "Travel to agreed official post, refuse immediate surrender to the group.",
+    "at": "2026-11-24T13:26:17.499Z"
+  },
+  {
+    "n": 27,
+    "seq": 1795526887265,
+    "op": "play",
+    "text": "I'll wait the hour on the bench for Harl. The paper stays under my coat while we wait. We can talk about why it's worth standing in the rain for.",
+    "intent_before_narration": "Wait one hour without surrendering document; willingly converse, no payment.",
+    "at": "2026-11-24T13:28:10.062Z"
+  },
+  {
+    "n": 28,
+    "seq": 1795526993379,
+    "op": "play",
+    "text": "I keep the note inside my coat. When Harl comes on watch, I introduce myself as Alaric and ask him to hear my report inside the post. Until then I'll keep my seat.",
+    "intent_before_narration": "Await corresponding official before revealing the report; inspect no other person's belongings.",
+    "at": "2026-11-24T13:29:54.638Z"
+  },
+  {
+    "n": 29,
+    "seq": 1795527157776,
+    "op": "play",
+    "text": "Harl, the guild clerk and Merrin copied this from Serra's account. I give Harl the folded margin note now. We saw three walkers at the first bend; we didn't clear the floor. Vessa says Serra hasn't been home since.",
+    "intent_before_narration": "Deliver the original borrowed report to Harl, preserve quest status, attribute observations only to their sources.",
+    "at": "2026-11-24T13:32:39.476Z"
+  },
+  {
+    "n": 30,
+    "seq": 1795527535702,
+    "op": "play",
+    "text": "I'm Alaric. I signed for the Old Crown clearance, but we came out before fighting. The Guild clerk and Merrin copied Serra's account. Vessa's the last person I spoke to about her. Could you give me a receipt to take back to the clerk?",
+    "intent_before_narration": "Answer Harl and request a receipt for the delivered report. Do not claim clearance.",
+    "at": "2026-11-24T13:38:57.532Z"
+  },
+  {
+    "n": 31,
+    "seq": 1795527612963,
+    "op": "play",
+    "text": "I pick up my signed receipt from the table. I'll leave the original with you, Harl. I'm going back to the Guild to show the clerk what you've signed.",
+    "intent_before_narration": "Take the offered receipt only, leave the original in Harl's custody and head back to the Guild.",
+    "at": "2026-11-24T13:40:14.510Z"
+  },
+  {
+    "n": 32,
+    "seq": 1795527664939,
+    "op": "play",
+    "text": "I'm keeping the clearance open. I show her Harl's receipt so she can copy its wording into the ledger. The original report is with him as promised, and I'll keep this receipt in case Serra asks.",
+    "intent_before_narration": "Show the receipt, retain the original in my pocket, report delivery, no clearance or payment.",
+    "at": "2026-11-24T13:41:06.868Z"
+  },
+  {
+    "n": 33,
+    "seq": 1795527713408,
+    "op": "play",
+    "text": "I can't vouch for where Serra is now. She was alive at the gate when we came out, and I returned her key there. Vessa had not seen her at home. Please write it just that way. I'll leave my name if she comes looking.",
+    "intent_before_narration": "State the last direct sighting and neighbour's separate account. Leave name, no new quest or search.",
+    "at": "2026-11-24T13:41:56.875Z"
+  }
+]

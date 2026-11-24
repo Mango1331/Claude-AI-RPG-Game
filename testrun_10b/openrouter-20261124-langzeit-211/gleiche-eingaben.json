@@ -1,0 +1,389 @@
+{
+  "paired": [
+    {
+      "name": "Hofstart",
+      "left": [
+        "PA",
+        1
+      ],
+      "right": [
+        "HB",
+        1
+      ],
+      "player": "I follow Dann in out of the rain. I'd like to hear from Tam's mother what Wren needs to know before I promise anything.",
+      "first": {
+        "complete": true,
+        "site": "loc.halloran_steading.halloran_house",
+        "refs": 3,
+        "roles": [
+          "planner",
+          "narrator",
+          "extractor"
+        ],
+        "repairs": {},
+        "first": 2618,
+        "ready": 16351,
+        "input": 38372,
+        "output": 1820,
+        "usd": "0.001941896"
+      },
+      "second": {
+        "complete": true,
+        "site": "loc.halloran_steading.halloran_house_main_room",
+        "refs": 4,
+        "roles": [
+          "planner",
+          "narrator",
+          "extractor",
+          "extractor"
+        ],
+        "repairs": {
+          "extractor": 1
+        },
+        "first": 2702,
+        "ready": 19845,
+        "input": 53916,
+        "output": 3158,
+        "usd": "0.002827112"
+      },
+      "difference": {
+        "refs": 1,
+        "first": 84,
+        "ready": 3494,
+        "input": 15544,
+        "output": 1338
+      }
+    },
+    {
+      "name": "Gildenstart",
+      "left": [
+        "GA",
+        1
+      ],
+      "right": [
+        "GB",
+        1
+      ],
+      "player": "I'll take a look at the jobs on the board. What can a newly registered mage actually take on here?",
+      "first": {
+        "complete": true,
+        "site": "loc.alderwatch.guild_hall",
+        "refs": 4,
+        "roles": [
+          "planner",
+          "board",
+          "narrator",
+          "extractor"
+        ],
+        "repairs": {},
+        "first": 7745,
+        "ready": 11778,
+        "input": 42721,
+        "output": 1888,
+        "usd": "0.002139370"
+      },
+      "second": {
+        "complete": true,
+        "site": "loc.alderwatch.guild_hall",
+        "refs": 4,
+        "roles": [
+          "planner",
+          "board",
+          "narrator",
+          "extractor"
+        ],
+        "repairs": {},
+        "first": 9006,
+        "ready": 13022,
+        "input": 43057,
+        "output": 1647,
+        "usd": "0.002111442"
+      },
+      "difference": {
+        "refs": 0,
+        "first": 1261,
+        "ready": 1244,
+        "input": 336,
+        "output": -241
+      }
+    },
+    {
+      "name": "Hofausgang",
+      "left": [
+        "PA",
+        3
+      ],
+      "right": [
+        "XA",
+        1
+      ],
+      "player": "I'd welcome the company, Dann. When Asha has those dry things ready, would you walk me as far as the farm gate? I'll take care of Tam's knife.",
+      "first": {
+        "complete": true,
+        "site": "loc.halloran_steading.halloran_house",
+        "refs": 3,
+        "roles": [
+          "planner",
+          "narrator",
+          "extractor"
+        ],
+        "repairs": {},
+        "first": 2907,
+        "ready": 16563,
+        "input": 38003,
+        "output": 2160,
+        "usd": "0.001982046"
+      },
+      "second": {
+        "complete": true,
+        "site": "loc.halloran_steading.halloran_house",
+        "refs": 4,
+        "roles": [
+          "planner",
+          "narrator",
+          "extractor",
+          "extractor"
+        ],
+        "repairs": {
+          "extractor": 1
+        },
+        "first": 2652,
+        "ready": 19778,
+        "input": 53305,
+        "output": 3092,
+        "usd": "0.002763962"
+      },
+      "difference": {
+        "refs": 1,
+        "first": -255,
+        "ready": 3215,
+        "input": 15302,
+        "output": 932
+      }
+    },
+    {
+      "name": "Versorgungssack",
+      "left": [
+        "K2",
+        1
+      ],
+      "right": [
+        "HB",
+        6
+      ],
+      "player": "Brigid, here's the supply sack Wren asked me to carry. I give it to her, then stand clear so Wren can see Tam. Does the letter go to you or to Maren?",
+      "first": {
+        "complete": true,
+        "site": "loc.halloran_steading",
+        "refs": 3,
+        "roles": [
+          "planner",
+          "narrator",
+          "extractor"
+        ],
+        "repairs": {},
+        "first": 4656,
+        "ready": 23429,
+        "input": 38409,
+        "output": 2011,
+        "usd": "0.001960162"
+      },
+      "second": {
+        "complete": true,
+        "site": "loc.halloran_steading",
+        "refs": 3,
+        "roles": [
+          "planner",
+          "narrator",
+          "extractor"
+        ],
+        "repairs": {},
+        "first": 4523,
+        "ready": 21697,
+        "input": 38875,
+        "output": 2307,
+        "usd": "0.002034198"
+      },
+      "difference": {
+        "refs": 0,
+        "first": -133,
+        "ready": -1732,
+        "input": 466,
+        "output": 296
+      }
+    },
+    {
+      "name": "Versorgungssack, Formatversuch",
+      "left": [
+        "HB",
+        6
+      ],
+      "right": [
+        "YB",
+        1
+      ],
+      "player": "Brigid, here's the supply sack Wren asked me to carry. I give it to her, then stand clear so Wren can see Tam. Does the letter go to you or to Maren?",
+      "first": {
+        "complete": true,
+        "site": "loc.halloran_steading",
+        "refs": 3,
+        "roles": [
+          "planner",
+          "narrator",
+          "extractor"
+        ],
+        "repairs": {},
+        "first": 4523,
+        "ready": 21697,
+        "input": 38875,
+        "output": 2307,
+        "usd": "0.002034198"
+      },
+      "second": {
+        "complete": true,
+        "site": "loc.halloran_steading",
+        "refs": 4,
+        "roles": [
+          "planner",
+          "narrator",
+          "extractor",
+          "extractor"
+        ],
+        "repairs": {
+          "extractor": 1
+        },
+        "first": 4156,
+        "ready": 28086,
+        "input": 53597,
+        "output": 3544,
+        "usd": "0.002868610"
+      },
+      "difference": {
+        "refs": 1,
+        "first": -367,
+        "ready": 6389,
+        "input": 14722,
+        "output": 1237
+      }
+    },
+    {
+      "name": "Hofausgang, Formatversuch",
+      "left": [
+        "XA",
+        1
+      ],
+      "right": [
+        "XB",
+        1
+      ],
+      "player": "I'd welcome the company, Dann. When Asha has those dry things ready, would you walk me as far as the farm gate? I'll take care of Tam's knife.",
+      "first": {
+        "complete": true,
+        "site": "loc.halloran_steading.halloran_house",
+        "refs": 4,
+        "roles": [
+          "planner",
+          "narrator",
+          "extractor",
+          "extractor"
+        ],
+        "repairs": {
+          "extractor": 1
+        },
+        "first": 2652,
+        "ready": 19778,
+        "input": 53305,
+        "output": 3092,
+        "usd": "0.002763962"
+      },
+      "second": {
+        "complete": false,
+        "site": null,
+        "refs": 4,
+        "roles": [
+          "planner",
+          "narrator",
+          "extractor",
+          "extractor"
+        ],
+        "repairs": {
+          "extractor": 1
+        },
+        "first": null,
+        "ready": null,
+        "input": 53155,
+        "output": 3019,
+        "usd": "0.002756006"
+      },
+      "difference": {
+        "refs": 0,
+        "first": null,
+        "ready": null,
+        "input": -150,
+        "output": -73
+      }
+    },
+    {
+      "name": "Ölzeug, Besitzkorrektur",
+      "left": [
+        "HB",
+        13
+      ],
+      "right": [
+        "PB",
+        1
+      ],
+      "player": "I follow the stones down to the ford. When I spot Dann, I call his name and hold up his oilcloth so he'll know who it is.",
+      "first": {
+        "complete": true,
+        "site": "loc.the_ford",
+        "refs": 3,
+        "roles": [
+          "planner",
+          "narrator",
+          "extractor"
+        ],
+        "repairs": {},
+        "first": 5850,
+        "ready": 13024,
+        "input": 39158,
+        "output": 1697,
+        "usd": "0.001926932"
+      },
+      "second": {
+        "complete": true,
+        "site": "loc.the_ford",
+        "refs": 4,
+        "roles": [
+          "planner",
+          "narrator",
+          "extractor",
+          "extractor"
+        ],
+        "repairs": {
+          "extractor": 1
+        },
+        "first": 3881,
+        "ready": 16152,
+        "input": 54347,
+        "output": 2449,
+        "usd": "0.002687622"
+      },
+      "difference": {
+        "refs": 1,
+        "first": -1969,
+        "ready": 3128,
+        "input": 15189,
+        "output": 752
+      }
+    }
+  ],
+  "original_211_minus_210_median": {
+    "refs": 0.5,
+    "first": -24.5,
+    "ready": 2229.5,
+    "input": 7884.0,
+    "output": 614.0
+  },
+  "pairs_in_original_comparison": 4
+}

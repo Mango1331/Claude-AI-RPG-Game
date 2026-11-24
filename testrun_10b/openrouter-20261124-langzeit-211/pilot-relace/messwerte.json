@@ -1,0 +1,98 @@
+{
+  "arm": "HA",
+  "candidate": "82b2b30ef86507a4eeeaf4c72e006f80a6d5e8bc",
+  "route": "relace/fp4",
+  "physical_sends": 2,
+  "physical_refs_ended": 2,
+  "physical_roles": {
+    "planner": 1,
+    "narrator": 1
+  },
+  "repeat_role_requests": {},
+  "success": 1,
+  "player_inputs": 1,
+  "confirmed_st_turns": 0,
+  "provider_input": 12428,
+  "provider_output": 37,
+  "provider_cache": 0,
+  "provider_reasoning": 0,
+  "usage_records": 1,
+  "provider_cost_usd": "0.0004454523",
+  "cost_records": 1,
+  "charged_or_reserved_usd": "0.0381085819",
+  "physical_duration_ms": 10358,
+  "median_ready_ms": null,
+  "by_role": {
+    "planner": {
+      "dispatched": 1,
+      "duration_ms": {
+        "n": 1,
+        "sum": 10188,
+        "mean": 10188,
+        "median": 10188,
+        "min": 10188,
+        "max": 10188
+      },
+      "prompt_tokens": 12428,
+      "completion_tokens": 37,
+      "cost_usd": "0.0004454523"
+    },
+    "narrator": {
+      "dispatched": 1,
+      "duration_ms": {
+        "n": 1,
+        "sum": 170,
+        "mean": 170,
+        "median": 170,
+        "min": 170,
+        "max": 170
+      },
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": "0"
+    }
+  },
+  "st_ms": {
+    "firstProse": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    },
+    "lastRenderedChange": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    },
+    "worldCommit": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    },
+    "confirmedSave": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    },
+    "ready": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    }
+  },
+  "all_reloads_match": false
+}

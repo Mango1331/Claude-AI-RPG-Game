@@ -1,0 +1,1428 @@
+{
+  "alderwatch-210": {
+    "arm": "GA",
+    "narrated": 32,
+    "confirmed_inputs": 33,
+    "physical": 109,
+    "frame": {
+      "absent": 35,
+      "not_plain_json": 2
+    },
+    "opportunities": {
+      "arrival": {
+        "with_report": [
+          5,
+          7,
+          10,
+          11,
+          13,
+          16,
+          17,
+          20,
+          21,
+          24,
+          26,
+          28,
+          31
+        ],
+        "with_rejection_among_these": [
+          16,
+          24,
+          28
+        ]
+      },
+      "person": {
+        "with_report": [
+          2,
+          3,
+          5,
+          8,
+          11,
+          16,
+          17,
+          21,
+          22,
+          23,
+          24,
+          25,
+          28,
+          30,
+          31,
+          32
+        ],
+        "with_rejection_among_these": [
+          16,
+          24
+        ]
+      },
+      "knowledge": {
+        "with_report": [
+          3,
+          6,
+          14,
+          26,
+          28,
+          29,
+          30,
+          32,
+          33
+        ],
+        "with_rejection_among_these": [
+          28
+        ]
+      },
+      "property": {
+        "with_report": [
+          6,
+          8,
+          12,
+          15,
+          29,
+          30
+        ],
+        "with_rejection_among_these": []
+      },
+      "trade": {
+        "with_report": [
+          16,
+          17,
+          18
+        ],
+        "with_rejection_among_these": [
+          16
+        ]
+      }
+    },
+    "cost_usd": "0.069163088",
+    "cost_per_confirmed_input": "0.002095851",
+    "cost_per_narrated": "0.002161346",
+    "cost_per_dispatch": "0.000634524",
+    "measured_world_jobs": 32,
+    "inferred_browser_commits": 0,
+    "roles": {
+      "planner": 37,
+      "board": 1,
+      "narrator": 32,
+      "extractor": 39
+    },
+    "repeat_roles": {
+      "extractor": 7,
+      "planner": 4
+    },
+    "input": 1459840,
+    "output": 47334,
+    "cache": 859648,
+    "reasoning": 15803,
+    "first_ms": {
+      "n": 32,
+      "median": 4276.5,
+      "min": 1990,
+      "max": 7745,
+      "sum": 141004
+    },
+    "ready_ms": {
+      "n": 32,
+      "median": 14606.0,
+      "min": 4904,
+      "max": 36787,
+      "sum": 546759
+    },
+    "readback_ms": {
+      "n": 32,
+      "median": 305.0,
+      "min": 77,
+      "max": 1137,
+      "sum": 10554
+    }
+  },
+  "alderwatch-211": {
+    "arm": "GB",
+    "narrated": 30,
+    "confirmed_inputs": 32,
+    "physical": 103,
+    "frame": {
+      "absent": 34
+    },
+    "opportunities": {
+      "arrival": {
+        "with_report": [
+          3,
+          4,
+          6,
+          7,
+          12,
+          15,
+          18,
+          23,
+          24,
+          25,
+          27,
+          29,
+          31
+        ],
+        "with_rejection_among_these": [
+          3,
+          4,
+          25
+        ]
+      },
+      "person": {
+        "with_report": [
+          2,
+          3,
+          4,
+          6,
+          12,
+          18,
+          24,
+          29
+        ],
+        "with_rejection_among_these": [
+          3,
+          4
+        ]
+      },
+      "knowledge": {
+        "with_report": [
+          3,
+          12,
+          22,
+          25,
+          26,
+          28,
+          29
+        ],
+        "with_rejection_among_these": [
+          25
+        ]
+      },
+      "property": {
+        "with_report": [
+          14,
+          17,
+          22,
+          25
+        ],
+        "with_rejection_among_these": [
+          17,
+          25
+        ]
+      },
+      "trade": {
+        "with_report": [
+          16,
+          18,
+          20,
+          21,
+          24
+        ],
+        "with_rejection_among_these": [
+          18,
+          20
+        ]
+      }
+    },
+    "cost_usd": "0.063930658",
+    "cost_per_confirmed_input": "0.001997833",
+    "cost_per_narrated": "0.002131022",
+    "cost_per_dispatch": "0.000620686",
+    "measured_world_jobs": 30,
+    "inferred_browser_commits": 0,
+    "roles": {
+      "planner": 34,
+      "board": 2,
+      "narrator": 30,
+      "extractor": 36,
+      "passive_name": 1
+    },
+    "repeat_roles": {
+      "extractor": 6,
+      "planner": 2
+    },
+    "input": 1359237,
+    "output": 41310,
+    "cache": 758336,
+    "reasoning": 12134,
+    "first_ms": {
+      "n": 29,
+      "median": 4522,
+      "min": 2643,
+      "max": 17354,
+      "sum": 169123
+    },
+    "ready_ms": {
+      "n": 30,
+      "median": 13325.0,
+      "min": 7719,
+      "max": 41007,
+      "sum": 465216
+    },
+    "readback_ms": {
+      "n": 30,
+      "median": 290.5,
+      "min": 75,
+      "max": 2639,
+      "sum": 10904
+    }
+  },
+  "anzeige-furt": {
+    "arm": "PB",
+    "narrated": 8,
+    "confirmed_inputs": 8,
+    "physical": 26,
+    "frame": {
+      "absent": 8
+    },
+    "opportunities": {
+      "arrival": {
+        "with_report": [
+          1,
+          6
+        ],
+        "with_rejection_among_these": [
+          1
+        ]
+      },
+      "person": {
+        "with_report": [
+          1,
+          3,
+          6
+        ],
+        "with_rejection_among_these": []
+      },
+      "knowledge": {
+        "with_report": [
+          1,
+          3,
+          6,
+          8
+        ],
+        "with_rejection_among_these": [
+          8
+        ]
+      },
+      "property": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "trade": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      }
+    },
+    "cost_usd": "0.016567554",
+    "cost_per_confirmed_input": "0.002070944",
+    "cost_per_narrated": "0.002070944",
+    "cost_per_dispatch": "0.000637214",
+    "measured_world_jobs": 8,
+    "inferred_browser_commits": 0,
+    "roles": {
+      "planner": 8,
+      "narrator": 8,
+      "extractor": 10
+    },
+    "repeat_roles": {
+      "extractor": 2
+    },
+    "input": 342241,
+    "output": 12885,
+    "cache": 177408,
+    "reasoning": 4779,
+    "first_ms": {
+      "n": 8,
+      "median": 5647.5,
+      "min": 2887,
+      "max": 9905,
+      "sum": 48334
+    },
+    "ready_ms": {
+      "n": 8,
+      "median": 18786.0,
+      "min": 10888,
+      "max": 45614,
+      "sum": 185413
+    },
+    "readback_ms": {
+      "n": 8,
+      "median": 239.5,
+      "min": 183,
+      "max": 339,
+      "sum": 1974
+    }
+  },
+  "anzeige-urkunde": {
+    "arm": "YA",
+    "narrated": 9,
+    "confirmed_inputs": 9,
+    "physical": 28,
+    "frame": {
+      "absent": 8,
+      "object": 1
+    },
+    "opportunities": {
+      "arrival": {
+        "with_report": [
+          2,
+          3,
+          5,
+          6,
+          9
+        ],
+        "with_rejection_among_these": [
+          2
+        ]
+      },
+      "person": {
+        "with_report": [
+          1,
+          2,
+          3,
+          5,
+          6,
+          7,
+          8
+        ],
+        "with_rejection_among_these": [
+          2,
+          3
+        ]
+      },
+      "knowledge": {
+        "with_report": [
+          6,
+          8
+        ],
+        "with_rejection_among_these": []
+      },
+      "property": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "trade": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      }
+    },
+    "cost_usd": "0.018509242",
+    "cost_per_confirmed_input": "0.002056582",
+    "cost_per_narrated": "0.002056582",
+    "cost_per_dispatch": "0.000661044",
+    "measured_world_jobs": 9,
+    "inferred_browser_commits": 0,
+    "roles": {
+      "planner": 9,
+      "narrator": 9,
+      "extractor": 10
+    },
+    "repeat_roles": {
+      "extractor": 1
+    },
+    "input": 384417,
+    "output": 13950,
+    "cache": 203072,
+    "reasoning": 4833,
+    "first_ms": {
+      "n": 9,
+      "median": 4400,
+      "min": 3057,
+      "max": 11858,
+      "sum": 50149
+    },
+    "ready_ms": {
+      "n": 9,
+      "median": 19643,
+      "min": 7098,
+      "max": 30986,
+      "sum": 171996
+    },
+    "readback_ms": {
+      "n": 9,
+      "median": 262,
+      "min": 193,
+      "max": 2054,
+      "sum": 4547
+    }
+  },
+  "halloran-210": {
+    "arm": "PA",
+    "narrated": 30,
+    "confirmed_inputs": 30,
+    "physical": 99,
+    "frame": {
+      "absent": 31
+    },
+    "opportunities": {
+      "arrival": {
+        "with_report": [
+          1,
+          3,
+          4,
+          5,
+          7,
+          10,
+          11,
+          14,
+          15,
+          19,
+          20,
+          21,
+          29
+        ],
+        "with_rejection_among_these": [
+          3,
+          7,
+          14,
+          19
+        ]
+      },
+      "person": {
+        "with_report": [
+          1,
+          4,
+          5,
+          7,
+          8,
+          12,
+          13,
+          14,
+          15,
+          16,
+          21,
+          24,
+          28,
+          29,
+          30
+        ],
+        "with_rejection_among_these": [
+          4,
+          14,
+          28,
+          29
+        ]
+      },
+      "knowledge": {
+        "with_report": [
+          1,
+          5,
+          6,
+          9,
+          10,
+          11,
+          12,
+          13,
+          16,
+          17,
+          18,
+          20,
+          22,
+          23,
+          28,
+          30
+        ],
+        "with_rejection_among_these": [
+          28
+        ]
+      },
+      "property": {
+        "with_report": [
+          2,
+          3,
+          17,
+          18,
+          24,
+          25
+        ],
+        "with_rejection_among_these": [
+          3,
+          17
+        ]
+      },
+      "trade": {
+        "with_report": [
+          30
+        ],
+        "with_rejection_among_these": []
+      }
+    },
+    "cost_usd": "0.061487230",
+    "cost_per_confirmed_input": "0.002049574",
+    "cost_per_narrated": "0.002049574",
+    "cost_per_dispatch": "0.000621083",
+    "measured_world_jobs": 30,
+    "inferred_browser_commits": 0,
+    "roles": {
+      "planner": 31,
+      "narrator": 31,
+      "extractor": 37
+    },
+    "repeat_roles": {
+      "extractor": 6
+    },
+    "input": 1266247,
+    "output": 49341,
+    "cache": 773888,
+    "reasoning": 19975,
+    "first_ms": {
+      "n": 30,
+      "median": 4183.5,
+      "min": 2322,
+      "max": 16081,
+      "sum": 155997
+    },
+    "ready_ms": {
+      "n": 30,
+      "median": 15243.5,
+      "min": 6412,
+      "max": 32719,
+      "sum": 478935
+    },
+    "readback_ms": {
+      "n": 30,
+      "median": 319.5,
+      "min": 108,
+      "max": 1362,
+      "sum": 10958
+    }
+  },
+  "halloran-211": {
+    "arm": "HB",
+    "narrated": 30,
+    "confirmed_inputs": 30,
+    "physical": 98,
+    "frame": {
+      "absent": 30,
+      "object": 1
+    },
+    "opportunities": {
+      "arrival": {
+        "with_report": [
+          1,
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          13,
+          17,
+          18,
+          20,
+          22,
+          25,
+          26,
+          29,
+          30
+        ],
+        "with_rejection_among_these": [
+          6,
+          7,
+          25,
+          30
+        ]
+      },
+      "person": {
+        "with_report": [
+          1,
+          2,
+          3,
+          5,
+          6,
+          7,
+          8,
+          10,
+          11,
+          12,
+          13,
+          16,
+          17,
+          18,
+          19,
+          22,
+          23,
+          25,
+          26,
+          29,
+          30
+        ],
+        "with_rejection_among_these": [
+          6,
+          7,
+          8,
+          10,
+          25,
+          30
+        ]
+      },
+      "knowledge": {
+        "with_report": [
+          1,
+          2,
+          4,
+          6,
+          8,
+          9,
+          10,
+          11,
+          12,
+          14,
+          18,
+          25,
+          28,
+          29,
+          30
+        ],
+        "with_rejection_among_these": [
+          1,
+          6,
+          30
+        ]
+      },
+      "property": {
+        "with_report": [
+          2,
+          4,
+          5,
+          8,
+          13,
+          14
+        ],
+        "with_rejection_among_these": []
+      },
+      "trade": {
+        "with_report": [
+          16
+        ],
+        "with_rejection_among_these": [
+          16
+        ]
+      }
+    },
+    "cost_usd": "0.064382572",
+    "cost_per_confirmed_input": "0.002146086",
+    "cost_per_narrated": "0.002146086",
+    "cost_per_dispatch": "0.000656965",
+    "measured_world_jobs": 30,
+    "inferred_browser_commits": 0,
+    "roles": {
+      "planner": 31,
+      "narrator": 30,
+      "extractor": 37
+    },
+    "repeat_roles": {
+      "extractor": 7,
+      "planner": 1
+    },
+    "input": 1295226,
+    "output": 58747,
+    "cache": 826368,
+    "reasoning": 24148,
+    "first_ms": {
+      "n": 30,
+      "median": 4554.0,
+      "min": 2702,
+      "max": 7765,
+      "sum": 141784
+    },
+    "ready_ms": {
+      "n": 30,
+      "median": 16831.0,
+      "min": 9580,
+      "max": 42356,
+      "sum": 541761
+    },
+    "readback_ms": {
+      "n": 30,
+      "median": 265.0,
+      "min": 117,
+      "max": 806,
+      "sum": 9003
+    }
+  },
+  "pilot-relace": {
+    "arm": "HA",
+    "narrated": 0,
+    "confirmed_inputs": 0,
+    "physical": 2,
+    "frame": {
+      "absent": 1
+    },
+    "opportunities": {
+      "arrival": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "person": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "knowledge": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "property": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "trade": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      }
+    },
+    "cost_usd": "0.0004454523",
+    "cost_per_confirmed_input": null,
+    "cost_per_narrated": null,
+    "cost_per_dispatch": "0.000222726",
+    "measured_world_jobs": 0,
+    "inferred_browser_commits": 0,
+    "roles": {
+      "planner": 1,
+      "narrator": 1
+    },
+    "repeat_roles": {},
+    "input": 12428,
+    "output": 37,
+    "cache": 0,
+    "reasoning": 0,
+    "first_ms": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null,
+      "sum": 0
+    },
+    "ready_ms": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null,
+      "sum": 0
+    },
+    "readback_ms": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null,
+      "sum": 0
+    }
+  },
+  "revision-210": {
+    "arm": "RA",
+    "narrated": 1,
+    "confirmed_inputs": 1,
+    "physical": 8,
+    "frame": {
+      "absent": 1
+    },
+    "opportunities": {
+      "arrival": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "person": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "knowledge": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "property": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "trade": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      }
+    },
+    "cost_usd": "0.005364304",
+    "cost_per_confirmed_input": "0.005364304",
+    "cost_per_narrated": "0.005364304",
+    "cost_per_dispatch": "0.000670538",
+    "measured_world_jobs": 1,
+    "inferred_browser_commits": 0,
+    "roles": {
+      "narrator": 3,
+      "extractor": 4,
+      "planner": 1
+    },
+    "repeat_roles": {},
+    "input": 107052,
+    "output": 5045,
+    "cache": 60160,
+    "reasoning": 1790,
+    "first_ms": {
+      "n": 1,
+      "median": 3180,
+      "min": 3180,
+      "max": 3180,
+      "sum": 3180
+    },
+    "ready_ms": {
+      "n": 1,
+      "median": 8373,
+      "min": 8373,
+      "max": 8373,
+      "sum": 8373
+    },
+    "readback_ms": {
+      "n": 1,
+      "median": 130,
+      "min": 130,
+      "max": 130,
+      "sum": 130
+    }
+  },
+  "revision-211": {
+    "arm": "RB",
+    "narrated": 1,
+    "confirmed_inputs": 1,
+    "physical": 7,
+    "frame": {
+      "absent": 1
+    },
+    "opportunities": {
+      "arrival": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "person": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "knowledge": {
+        "with_report": [
+          6
+        ],
+        "with_rejection_among_these": []
+      },
+      "property": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "trade": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      }
+    },
+    "cost_usd": "0.004664064",
+    "cost_per_confirmed_input": "0.004664064",
+    "cost_per_narrated": "0.004664064",
+    "cost_per_dispatch": "0.000666295",
+    "measured_world_jobs": 1,
+    "inferred_browser_commits": 0,
+    "roles": {
+      "narrator": 3,
+      "extractor": 3,
+      "planner": 1
+    },
+    "repeat_roles": {},
+    "input": 92600,
+    "output": 4598,
+    "cache": 71168,
+    "reasoning": 1600,
+    "first_ms": {
+      "n": 1,
+      "median": 2124,
+      "min": 2124,
+      "max": 2124,
+      "sum": 2124
+    },
+    "ready_ms": {
+      "n": 1,
+      "median": 9776,
+      "min": 9776,
+      "max": 9776,
+      "sum": 9776
+    },
+    "readback_ms": {
+      "n": 1,
+      "median": 132,
+      "min": 132,
+      "max": 132,
+      "sum": 132
+    }
+  },
+  "revision-laufender-extractor": {
+    "arm": "K1",
+    "narrated": 0,
+    "confirmed_inputs": 0,
+    "physical": 2,
+    "frame": {},
+    "opportunities": {
+      "arrival": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "person": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "knowledge": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "property": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "trade": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      }
+    },
+    "cost_usd": "0.001345344",
+    "cost_per_confirmed_input": null,
+    "cost_per_narrated": null,
+    "cost_per_dispatch": "0.000672672",
+    "measured_world_jobs": 0,
+    "inferred_browser_commits": 0,
+    "roles": {
+      "narrator": 1,
+      "extractor": 1
+    },
+    "repeat_roles": {},
+    "input": 26944,
+    "output": 1224,
+    "cache": 11520,
+    "reasoning": 551,
+    "first_ms": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null,
+      "sum": 0
+    },
+    "ready_ms": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null,
+      "sum": 0
+    },
+    "readback_ms": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null,
+      "sum": 0
+    }
+  },
+  "revision-zahlung-211": {
+    "arm": "QE",
+    "narrated": 1,
+    "confirmed_inputs": 1,
+    "physical": 5,
+    "frame": {
+      "absent": 1
+    },
+    "opportunities": {
+      "arrival": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "person": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "knowledge": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "property": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "trade": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      }
+    },
+    "cost_usd": "0.002979546",
+    "cost_per_confirmed_input": "0.002979546",
+    "cost_per_narrated": "0.002979546",
+    "cost_per_dispatch": "0.000595909",
+    "measured_world_jobs": 1,
+    "inferred_browser_commits": 0,
+    "roles": {
+      "narrator": 2,
+      "extractor": 2,
+      "planner": 1
+    },
+    "repeat_roles": {},
+    "input": 66389,
+    "output": 1227,
+    "cache": 34560,
+    "reasoning": 238,
+    "first_ms": {
+      "n": 1,
+      "median": 3540,
+      "min": 3540,
+      "max": 3540,
+      "sum": 3540
+    },
+    "ready_ms": {
+      "n": 1,
+      "median": 8863,
+      "min": 8863,
+      "max": 8863,
+      "sum": 8863
+    },
+    "readback_ms": {
+      "n": 1,
+      "median": 392,
+      "min": 392,
+      "max": 392,
+      "sum": 392
+    }
+  },
+  "sack-210": {
+    "arm": "K2",
+    "narrated": 3,
+    "confirmed_inputs": 3,
+    "physical": 11,
+    "frame": {
+      "absent": 4
+    },
+    "opportunities": {
+      "arrival": {
+        "with_report": [
+          1,
+          3
+        ],
+        "with_rejection_among_these": [
+          1
+        ]
+      },
+      "person": {
+        "with_report": [
+          1,
+          3
+        ],
+        "with_rejection_among_these": [
+          1
+        ]
+      },
+      "knowledge": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "property": {
+        "with_report": [
+          1,
+          2
+        ],
+        "with_rejection_among_these": [
+          1,
+          2
+        ]
+      },
+      "trade": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      }
+    },
+    "cost_usd": "0.007054248",
+    "cost_per_confirmed_input": "0.002351416",
+    "cost_per_narrated": "0.002351416",
+    "cost_per_dispatch": "0.000641295",
+    "measured_world_jobs": 3,
+    "inferred_browser_commits": 0,
+    "roles": {
+      "planner": 4,
+      "narrator": 3,
+      "extractor": 4
+    },
+    "repeat_roles": {
+      "planner": 1,
+      "extractor": 1
+    },
+    "input": 144188,
+    "output": 5942,
+    "cache": 94976,
+    "reasoning": 2434,
+    "first_ms": {
+      "n": 3,
+      "median": 5793,
+      "min": 4656,
+      "max": 16877,
+      "sum": 27326
+    },
+    "ready_ms": {
+      "n": 3,
+      "median": 23429,
+      "min": 14798,
+      "max": 31975,
+      "sum": 70202
+    },
+    "readback_ms": {
+      "n": 3,
+      "median": 164,
+      "min": 127,
+      "max": 181,
+      "sum": 472
+    }
+  },
+  "tor-211": {
+    "arm": "XA",
+    "narrated": 1,
+    "confirmed_inputs": 1,
+    "physical": 4,
+    "frame": {
+      "absent": 1
+    },
+    "opportunities": {
+      "arrival": {
+        "with_report": [
+          1
+        ],
+        "with_rejection_among_these": [
+          1
+        ]
+      },
+      "person": {
+        "with_report": [
+          1
+        ],
+        "with_rejection_among_these": [
+          1
+        ]
+      },
+      "knowledge": {
+        "with_report": [
+          1
+        ],
+        "with_rejection_among_these": [
+          1
+        ]
+      },
+      "property": {
+        "with_report": [
+          1
+        ],
+        "with_rejection_among_these": []
+      },
+      "trade": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      }
+    },
+    "cost_usd": "0.002763962",
+    "cost_per_confirmed_input": "0.002763962",
+    "cost_per_narrated": "0.002763962",
+    "cost_per_dispatch": "0.000690990",
+    "measured_world_jobs": 1,
+    "inferred_browser_commits": 0,
+    "roles": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 2
+    },
+    "repeat_roles": {
+      "extractor": 1
+    },
+    "input": 53305,
+    "output": 3092,
+    "cache": 43776,
+    "reasoning": 1266,
+    "first_ms": {
+      "n": 1,
+      "median": 2652,
+      "min": 2652,
+      "max": 2652,
+      "sum": 2652
+    },
+    "ready_ms": {
+      "n": 1,
+      "median": 19778,
+      "min": 19778,
+      "max": 19778,
+      "sum": 19778
+    },
+    "readback_ms": {
+      "n": 1,
+      "median": 151,
+      "min": 151,
+      "max": 151,
+      "sum": 151
+    }
+  },
+  "tor-vertrag": {
+    "arm": "XB",
+    "narrated": 0,
+    "confirmed_inputs": 0,
+    "physical": 4,
+    "frame": {
+      "stay": 1
+    },
+    "opportunities": {
+      "arrival": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "person": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "knowledge": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "property": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      },
+      "trade": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      }
+    },
+    "cost_usd": "0.002756006",
+    "cost_per_confirmed_input": null,
+    "cost_per_narrated": null,
+    "cost_per_dispatch": "0.000689002",
+    "measured_world_jobs": 0,
+    "inferred_browser_commits": 0,
+    "roles": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 2
+    },
+    "repeat_roles": {
+      "extractor": 1
+    },
+    "input": 53155,
+    "output": 3019,
+    "cache": 32000,
+    "reasoning": 1021,
+    "first_ms": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null,
+      "sum": 0
+    },
+    "ready_ms": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null,
+      "sum": 0
+    },
+    "readback_ms": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null,
+      "sum": 0
+    }
+  },
+  "vertrag-hof": {
+    "arm": "YB",
+    "narrated": 11,
+    "confirmed_inputs": 11,
+    "physical": 37,
+    "frame": {
+      "null": 2,
+      "stay": 6,
+      "object": 4
+    },
+    "opportunities": {
+      "arrival": {
+        "with_report": [
+          1,
+          7,
+          9
+        ],
+        "with_rejection_among_these": [
+          1,
+          7
+        ]
+      },
+      "person": {
+        "with_report": [
+          1,
+          4,
+          5,
+          7,
+          8
+        ],
+        "with_rejection_among_these": [
+          1,
+          4,
+          5,
+          7
+        ]
+      },
+      "knowledge": {
+        "with_report": [
+          2,
+          3,
+          8
+        ],
+        "with_rejection_among_these": [
+          3
+        ]
+      },
+      "property": {
+        "with_report": [
+          1,
+          2,
+          3,
+          5,
+          6
+        ],
+        "with_rejection_among_these": [
+          3,
+          5,
+          6
+        ]
+      },
+      "trade": {
+        "with_report": [],
+        "with_rejection_among_these": []
+      }
+    },
+    "cost_usd": "0.023939972",
+    "cost_per_confirmed_input": "0.002176361",
+    "cost_per_narrated": "0.002176361",
+    "cost_per_dispatch": "0.000647026",
+    "measured_world_jobs": 11,
+    "inferred_browser_commits": 0,
+    "roles": {
+      "planner": 12,
+      "narrator": 11,
+      "extractor": 14
+    },
+    "repeat_roles": {
+      "extractor": 3,
+      "planner": 1
+    },
+    "input": 484890,
+    "output": 21208,
+    "cache": 327680,
+    "reasoning": 9573,
+    "first_ms": {
+      "n": 11,
+      "median": 5306,
+      "min": 3557,
+      "max": 23133,
+      "sum": 94269
+    },
+    "ready_ms": {
+      "n": 11,
+      "median": 22512,
+      "min": 9923,
+      "max": 67189,
+      "sum": 284985
+    },
+    "readback_ms": {
+      "n": 11,
+      "median": 205,
+      "min": 132,
+      "max": 846,
+      "sum": 3554
+    }
+  }
+}

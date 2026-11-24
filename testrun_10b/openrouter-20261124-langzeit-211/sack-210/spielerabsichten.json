@@ -1,0 +1,26 @@
+[
+  {
+    "n": 1,
+    "seq": 1795526162667,
+    "op": "play",
+    "text": "Brigid, here's the supply sack Wren asked me to carry. I give it to her, then stand clear so Wren can see Tam. Does the letter go to you or to Maren?",
+    "intent_before_narration": "Deliver the identified sack, ask about letter; stay available.",
+    "at": "2026-11-24T13:16:03.349Z"
+  },
+  {
+    "n": 2,
+    "seq": 1795526359867,
+    "op": "play",
+    "text": "Brigid lent me her boy's ring; I put it straight into Brigid's hand. I'll tend the fire as Wren asks. I didn't hear Tam raving, but I wasn't with him all night.",
+    "intent_before_narration": "Give back the identifiable ring, respond honestly, help at the fire.",
+    "at": "2026-11-24T13:19:20.693Z"
+  },
+  {
+    "n": 3,
+    "seq": 1795526521158,
+    "op": "play",
+    "text": "I'll stay and see the night through. I step into the Halloran house main room and sit by the fire to keep the broth warm. Wake me if Tam needs me.",
+    "intent_before_narration": "Accept Wren's request for household help and enter the known room, keeping the oilcloth.",
+    "at": "2026-11-24T13:22:01.933Z"
+  }
+]

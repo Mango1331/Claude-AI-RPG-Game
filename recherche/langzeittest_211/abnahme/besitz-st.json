@@ -1,0 +1,54 @@
+{
+ "kind": "avereth-st-smoke-isolated",
+ "started": "2026-11-24T13:05:28.953Z",
+ "sandbox": "/tmp/av211-contract-smoke",
+ "st": {
+  "version": "1.19.0",
+  "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+ },
+ "node": "24.22.1",
+ "chromium": "156.0.8078.79",
+ "engine": {
+  "version": "4.3.0-c.6.6.211",
+  "commit": "8c88669b",
+  "branch": "experiment/211-display-consent",
+  "dirty": false
+ },
+ "runs": [
+  {
+   "mode": "standard",
+   "ok": false,
+   "exit": 1,
+   "line": null,
+   "seconds": 496,
+   "checks": 0,
+   "passed": 0,
+   "failed": [],
+   "page_errors": null,
+   "calls": null,
+   "error": "    at async npc172Smoke (file:///workspace/avereth-211-natural-display/avereth-engine/tools/st_live/npc172_smoke.mjs:120:15)     at async file:///workspace/avereth-211-natural-display/avereth-engine/tools/st_live/run_c.mjs:535:93 Node.js v24.22.1",
+   "out": "/tmp/av211-contract-smoke/out/2026-11-24T13-05-28-952Z/standard",
+   "log": "/tmp/av211-contract-smoke/out/2026-11-24T13-05-28-952Z/standard/run.log"
+  },
+  {
+   "mode": "failsoft",
+   "ok": true,
+   "exit": 0,
+   "line": "LIVE SILLYTAVERN SMOKE C: OK",
+   "seconds": 885,
+   "checks": 384,
+   "passed": 384,
+   "failed": [],
+   "page_errors": 0,
+   "calls": 358,
+   "out": "/tmp/av211-contract-smoke/out/2026-11-24T13-05-28-952Z/failsoft",
+   "log": "/tmp/av211-contract-smoke/out/2026-11-24T13-05-28-952Z/failsoft/run.log"
+  }
+ ],
+ "open": [
+  "natural model behaviour (the mock provider answers scripted plans and reports)",
+  "personal SillyTavern profiles (never used)",
+  "other SillyTavern versions than 1.19.0"
+ ],
+ "finished": "2026-11-24T13:28:30.627Z"
+}

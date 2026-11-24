@@ -1,0 +1,10 @@
+[
+  {
+    "n": 1,
+    "seq": 1795524116808,
+    "op": "play",
+    "text": "I'd welcome the company, Dann. When Asha has those dry things ready, would you walk me as far as the farm gate? I'll take care of Tam's knife.",
+    "intent_before_narration": "Conditional escort to the farm gate after dry clothes, no further travel; retain the knife.",
+    "at": "2026-11-24T12:41:57.701Z"
+  }
+]

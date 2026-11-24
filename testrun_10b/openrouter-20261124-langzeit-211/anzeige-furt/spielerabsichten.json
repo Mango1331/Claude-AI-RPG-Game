@@ -1,0 +1,66 @@
+[
+  {
+    "n": 1,
+    "seq": 1795524974932,
+    "op": "play",
+    "text": "I follow the stones down to the ford. When I spot Dann, I call his name and hold up his oilcloth so he'll know who it is.",
+    "intent_before_narration": "Finish the interrupted walk on foot and find Dann; show the oilcloth.",
+    "at": "2026-11-24T12:56:15.901Z"
+  },
+  {
+    "n": 2,
+    "seq": 1795525273306,
+    "op": "play",
+    "text": "Tam is breathing easier and Wren is there. Thank you for the loan, Dann. I hand the hooded oilcloth back to him now.",
+    "intent_before_narration": "Deliberately return the same item to Dann after merely showing it.",
+    "at": "2026-11-24T13:01:14.204Z"
+  },
+  {
+    "n": 3,
+    "seq": 1795525497266,
+    "op": "play",
+    "text": "I'll stand clear on the dry bank, Dann. If Berta's team balks, where does she need a pair of hands on this side?",
+    "intent_before_narration": "Stay on the near bank, offer non-monetary help and leave the oilcloth with Dann.",
+    "at": "2026-11-24T13:04:58.378Z"
+  },
+  {
+    "n": 4,
+    "seq": 1795525780595,
+    "op": "play",
+    "text": "I tell Berta what Dann said about the cairns. I'll help get the mare and her cart back from the water on our side; I don't cross the ford.",
+    "intent_before_narration": "Help the waiting cart on dry land. Explicitly decline crossing, retain ownership from prior turn.",
+    "at": "2026-11-24T13:09:42.013Z"
+  },
+  {
+    "n": 5,
+    "seq": 1795526057916,
+    "op": "play",
+    "text": "He's breathing easier. I heard Wren say it myself, not a rumor from the ford. If your cart goes by the Hallorans, could you take me as far as their gate?",
+    "intent_before_narration": "Confirm only what I know; ask for a ride if Berta is already going past the family.",
+    "at": "2026-11-24T13:14:21.090Z"
+  },
+  {
+    "n": 6,
+    "seq": 1795526299127,
+    "op": "play",
+    "text": "I'm up. I climb into the place behind Berta's seat for the ride to the Halloran gate, and keep my hands to the tailframes as she asked.",
+    "intent_before_narration": "Accept the offered ride to the gate; authorize that destination only and no payment.",
+    "at": "2026-11-24T13:18:20.267Z"
+  },
+  {
+    "n": 7,
+    "seq": 1795526460650,
+    "op": "play",
+    "text": "I say nothing about money and keep my hands off my staff. Berta, it's your cart; if there's a way back rather than straight through them, I'll help you turn the mare.",
+    "intent_before_narration": "Refuse to volunteer payment or attack, leave route decision to cart owner and offer safe retreat.",
+    "at": "2026-11-24T13:21:01.996Z"
+  },
+  {
+    "n": 8,
+    "seq": 1795526625256,
+    "op": "play",
+    "text": "I give the mare room, take the near trace where Berta indicates, and help turn the cart back along the road we came. No toll and no fight for me.",
+    "intent_before_narration": "Attempt retreat with the owner's consent, no payment, no appropriation of the cart or gear.",
+    "at": "2026-11-24T13:23:46.356Z"
+  }
+]

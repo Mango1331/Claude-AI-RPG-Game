@@ -1,0 +1,35 @@
+[
+  {
+    "n": 4,
+    "inputMessageIndex": 63,
+    "timing": {
+      "marks": {
+        "click": 134735.19999999925,
+        "lastRenderedChange": 143259.30000000075,
+        "firstProse": 138274.80000000075,
+        "confirmedSave": 143591.1000000015,
+        "worldCommit": 143199.19999999925,
+        "worldTimesInferred": false,
+        "ready": 143598.5
+      },
+      "world": {
+        "id": 64,
+        "committed_at_ms": 143199.19999999925,
+        "persisted_at_ms": 143591.1000000015,
+        "extraction_validation_wait_ms": 1532,
+        "save_readback_ms": 392,
+        "total_ms": 1923,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "She looked at the closed purse, then at him, and made no ceremony of it—just swung the ledger shut with a flat of her hand and set it back under the bar."
+    },
+    "checked": {
+      "world": "ea81f59de34f808cfec0395dc698d6f4586a7340db66f9580b9e9df0dd57cffc",
+      "events": "9016dc866a98e76fb49c79b8629a421bb88b4c2239af497a7543b295b995fe48",
+      "messages": 65
+    },
+    "elapsedIncludingReloadMs": 12536
+  }
+]

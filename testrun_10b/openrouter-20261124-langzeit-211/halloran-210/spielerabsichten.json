@@ -1,0 +1,250 @@
+[
+  {
+    "n": 1,
+    "seq": 1795523178771,
+    "op": "play",
+    "text": "I follow Dann in out of the rain. I'd like to hear from Tam's mother what Wren needs to know before I promise anything.",
+    "intent_before_narration": "Accept invitation indoors and listen; no commitment or payment yet.",
+    "at": "2026-11-24T12:26:19.159Z"
+  },
+  {
+    "n": 2,
+    "seq": 1795523243854,
+    "op": "play",
+    "text": "Asha, I'm Alaric. I'll carry that message to Wren. Is there anything of Tam's she'll recognise that I can return to you afterward?",
+    "intent_before_narration": "Commit to carrying the information. Ask Asha about borrowing a token, no assumption of handover or fee.",
+    "at": "2026-11-24T12:27:24.415Z"
+  },
+  {
+    "n": 3,
+    "seq": 1795523314943,
+    "op": "play",
+    "text": "I'd welcome the company, Dann. When Asha has those dry things ready, would you walk me as far as the farm gate? I'll take care of Tam's knife.",
+    "intent_before_narration": "Accept Dann's escort conditional on the dry things being ready; destination only the farm gate, retain the knife.",
+    "at": "2026-11-24T12:28:35.434Z"
+  },
+  {
+    "n": 4,
+    "seq": 1795523472752,
+    "op": "play",
+    "text": "I thank Dann and set out along the lane to Ashbridge, keeping Tam's knife wrapped up. At the village I'll ask for Mother Wren.",
+    "intent_before_narration": "Travel to village and find healer, keep the loan.",
+    "at": "2026-11-24T12:31:13.521Z"
+  },
+  {
+    "n": 5,
+    "seq": 1795523540986,
+    "op": "play",
+    "text": "I go to the blue door past the bakehouse and knock. If Wren is attending a birth I won't drag her away; I can wait for her word. Tam at Halloran's needs a healer.",
+    "intent_before_narration": "Find Wren, ask for advice, respect a prior patient.",
+    "at": "2026-11-24T12:32:21.445Z"
+  },
+  {
+    "n": 6,
+    "seq": 1795523613264,
+    "op": "play",
+    "text": "Brann, I'm Alaric. Tam Halloran is coughing and feverish. His mother Asha sent me; I show Brann the knife she lent me. Is there anything I can usefully do while Wren is on the Row?",
+    "intent_before_narration": "Share the message and show the token, listen to the husband.",
+    "at": "2026-11-24T12:33:34.329Z"
+  },
+  {
+    "n": 7,
+    "seq": 1795523717794,
+    "op": "play",
+    "text": "I've no spell I'd trust with a child's lungs. I'll fetch the mule while you sort the linen. Which neighbor keeps it, and what should I tell them?",
+    "intent_before_narration": "Offer to fetch mule, ask for directions and permission before taking it.",
+    "at": "2026-11-24T12:35:18.425Z"
+  },
+  {
+    "n": 8,
+    "seq": 1795523846760,
+    "op": "play",
+    "text": "I pass Sorrel's halter to Brann and give him the widow's warning about the near foot and the gate latch. I'll stay until Wren comes home, rather than risk hurrying the mule.",
+    "intent_before_narration": "Hand back the borrowed animal, relay warning; wait for Wren.",
+    "at": "2026-11-24T12:37:27.689Z"
+  },
+  {
+    "n": 9,
+    "seq": 1795523911025,
+    "op": "play",
+    "text": "Mother Wren, I'm Alaric. Asha asked me to come about Tam's fever and cough. I lay his knife on my open palm for you to see. Will you ride out with me when you've caught your breath?",
+    "intent_before_narration": "Show the token, invite the healer to ride to the farm after rest, no payment.",
+    "at": "2026-11-24T12:38:31.651Z"
+  },
+  {
+    "n": 10,
+    "seq": 1795524055320,
+    "op": "play",
+    "text": "Nothing for me, Wren. I'm a messenger, not a healer. I take the road back to Halloran farm with Wren and keep Sorrel to a walk for the sake of that foot.",
+    "intent_before_narration": "Travel to family with Wren, respect mule injury, no personal fee.",
+    "at": "2026-11-24T12:40:57.285Z"
+  },
+  {
+    "n": 11,
+    "seq": 1795524190289,
+    "op": "play",
+    "text": "I carry Wren's bag inside the Halloran house, set it down within her reach, and call for Asha. I've brought the healer as promised.",
+    "intent_before_narration": "Enter the house and deliver Wren’s existing bag back to her, reunite with Asha.",
+    "at": "2026-11-24T12:43:11.161Z"
+  },
+  {
+    "n": 12,
+    "seq": 1795524304146,
+    "op": "play",
+    "text": "I'll wait by the fire to give Tam some room. Asha, here is the knife you lent me. I put it in your hand, and ask if the family has had anything to eat.",
+    "intent_before_narration": "Return the same knife to Asha in person, provide company downstairs; do not follow Wren.",
+    "at": "2026-11-24T12:45:04.840Z"
+  },
+  {
+    "n": 13,
+    "seq": 1795524397975,
+    "op": "play",
+    "text": "Thank you, Dann. I eat the bowl you put by me. How did Tam come by that knife? I'll keep it safe until his mother is back downstairs.",
+    "intent_before_narration": "Eat offered food and speak with Dann; retain the knife for its lender.",
+    "at": "2026-11-24T12:46:38.758Z"
+  },
+  {
+    "n": 14,
+    "seq": 1795524467673,
+    "op": "play",
+    "text": "I take the candle up to the loft. I'll help Dann sit Tam up while Wren works; Asha can take my place if she needs to.",
+    "intent_before_narration": "Join family in loft as invited and help physically, leave treatment to Wren.",
+    "at": "2026-11-24T12:47:48.393Z"
+  },
+  {
+    "n": 15,
+    "seq": 1795524589933,
+    "op": "play",
+    "text": "I climb the ladder to Tam's loft and stand where Wren asked, holding the candle steady for her.",
+    "intent_before_narration": "Reach the loft to assist by holding a light only.",
+    "at": "2026-11-24T12:49:52.069Z"
+  },
+  {
+    "n": 16,
+    "seq": 1795524755378,
+    "op": "play",
+    "text": "Yes, Asha. I stay with Tam until dawn if Wren needs the light. The knife has come home; I hold it out to Asha and ask her to put it away for him.",
+    "intent_before_narration": "Keep an overnight watch, offer the actual borrowed knife back to Asha in the loft.",
+    "at": "2026-11-24T12:52:37.235Z"
+  },
+  {
+    "n": 17,
+    "seq": 1795524933036,
+    "op": "play",
+    "text": "I put the candle out. When Tam is awake I sit beside him and put his whittling knife in his hand, handle first. Does he remember lending it for the journey?",
+    "intent_before_narration": "Return the identified knife to Tam himself if awake; ask about the token.",
+    "at": "2026-11-24T12:55:34.083Z"
+  },
+  {
+    "n": 18,
+    "seq": 1795525125040,
+    "op": "play",
+    "text": "Your da didn't send me. I met you on the road and it was your knife you trusted me with. How much of that do you remember?",
+    "intent_before_narration": "Reassure Tam, see what he remembers; leave the returned knife with him.",
+    "at": "2026-11-24T12:58:46.569Z"
+  },
+  {
+    "n": 19,
+    "seq": 1795525391787,
+    "op": "play",
+    "text": "I leave Tam to sleep. Down by the hearth I ask Asha what she would like done about the widow's mule before the weather gets worse.",
+    "intent_before_narration": "Visit the hearth and consult Asha about returning Sorrel, keeping faith with the widow.",
+    "at": "2026-11-24T13:03:13.254Z"
+  },
+  {
+    "n": 20,
+    "seq": 1795525584771,
+    "op": "play",
+    "text": "I'll offer to walk Sorrel home. I go down the ladder and outside to the yard where the mule was left. Mother Wren, did you promise the widow a particular gate or time?",
+    "intent_before_narration": "Find Sorrel in yard, obtain genuine delivery terms from the borrower, no ownership claim.",
+    "at": "2026-11-24T13:06:26.315Z"
+  },
+  {
+    "n": 21,
+    "seq": 1795525833564,
+    "op": "play",
+    "text": "Easy, Sorrel. I take her halter and lead her at a walk down the valley to widow Marek's paddock in Ashbridge, stopping if her lame leg bothers her.",
+    "intent_before_narration": "Return the borrowed mule to its original keeper at her pace; allow genuine interruption.",
+    "at": "2026-11-24T13:10:35.527Z"
+  },
+  {
+    "n": 22,
+    "seq": 1795526080429,
+    "op": "play",
+    "text": "A story this time, I hope. Tam took sick; Sorrel brought Mother Wren, and the boy's breathing better. I pass his halter to widow Marek and show her the foot we'd been watching.",
+    "intent_before_narration": "Return Sorrel to Marek; explain the earlier loan and let the owner assess the foot, no purchase.",
+    "at": "2026-11-24T13:14:42.172Z"
+  },
+  {
+    "n": 23,
+    "seq": 1795526277010,
+    "op": "play",
+    "text": "Alaric, ma'am. Thank you; I'd be glad of breakfast. Is there anything that would help Sorrel's foot after the long walk?",
+    "intent_before_narration": "Accept freely offered meal, ask keeper for practical care, no purchase.",
+    "at": "2026-11-24T13:17:58.319Z"
+  },
+  {
+    "n": 24,
+    "seq": 1795526422428,
+    "op": "play",
+    "text": "I thank the widow for breakfast. At her gate I listen to the seed merchant and his customer. Is the trouble a count of sacks, or has something gone missing?",
+    "intent_before_narration": "Look into the publicly audible dispute, no pledge, purchase or taking of seed.",
+    "at": "2026-11-24T13:20:23.844Z"
+  },
+  {
+    "n": 25,
+    "seq": 1795526587036,
+    "op": "play",
+    "text": "I take a bite of the toasted heel and save the rest. Widow Marek, could a scrap of leather make Sorrel's halter rub less? I can help mend it here if you'd like.",
+    "intent_before_narration": "Eat a portion; seek owner's leave before using materials or changing tack.",
+    "at": "2026-11-24T13:23:09.089Z"
+  },
+  {
+    "n": 26,
+    "seq": 1795526732908,
+    "op": "play",
+    "text": "I cut a pad from the square the widow put out, then use her awl and waxed thread to stitch it over the rubbing place on Sorrel's left cheekstrap. I'll follow her corrections.",
+    "intent_before_narration": "With owner's leave use supplied leather and tools to repair her existing tack; leave tools with owner.",
+    "at": "2026-11-24T13:25:34.887Z"
+  },
+  {
+    "n": 27,
+    "seq": 1795526843009,
+    "op": "play",
+    "text": "Who on Green Street needs a hand, Widow Marek? You know whose door I can knock on without getting in the way. I'll leave your sewing things here.",
+    "intent_before_narration": "Ask for a named local referral, leave borrowed tools and repaired halter behind.",
+    "at": "2026-11-24T13:27:25.337Z"
+  },
+  {
+    "n": 28,
+    "seq": 1795526940566,
+    "op": "play",
+    "text": "Alaric. I did say it over breakfast, but no harm in saying it twice. Thank you for trusting me with Sorrel. I'll knock at Osmet's daughter's door on Green Street and say Marek sent me.",
+    "intent_before_narration": "Restate name to Marek before leaving, follow her referral, authorize no bargain on her behalf.",
+    "at": "2026-11-24T13:29:02.714Z"
+  },
+  {
+    "n": 29,
+    "seq": 1795527013463,
+    "op": "play",
+    "text": "I go to Green Street, three doors past the cooper's, and knock at the door Marek pointed out. I call from outside: Widow Marek sent me; I'm Alaric.",
+    "intent_before_narration": "Follow the remembered local directions to a new household, wait to be invited inside.",
+    "at": "2026-11-24T13:30:14.680Z"
+  },
+  {
+    "n": 30,
+    "seq": 1795527113786,
+    "op": "play",
+    "text": "I've had enough practice with a lame mule for one morning. I'll take the horse gently by the cheekstrap and talk to her while you free the wheel. Tell me when to let her back.",
+    "intent_before_narration": "Help the carter with timing and horse handling, no taking the horse or cargo.",
+    "at": "2026-11-24T13:31:55.198Z"
+  },
+  {
+    "n": 31,
+    "seq": 1795527236243,
+    "op": "play",
+    "text": "Keep your copper. I'd take a direction instead: three doors past the cooper on Green Street, is that right for Osmet's daughter? I'll go there while there's light.",
+    "intent_before_narration": "Refuse the offered coin and continue to the referred household.",
+    "at": "2026-11-24T13:33:58.769Z"
+  }
+]

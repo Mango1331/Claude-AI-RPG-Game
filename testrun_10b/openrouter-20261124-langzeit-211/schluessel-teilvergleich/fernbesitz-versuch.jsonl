@@ -1,0 +1,3 @@
+{"target":"pc","before":{"entity":"npc.serra"},"after":{"entity":"npc.serra"},"calls":1,"status":"applied","rejected":[{"seq":1,"type":"object.move","rule":"npc_presence","why":"an NPC handover needs the giver present at this story step; use enter for an actual arrival"}],"reason":null}
+{"target":"npc.merrin","before":{"entity":"npc.serra"},"after":{"entity":"npc.merrin"},"calls":1,"status":"applied","reason":null}
+{"target":"here","before":{"entity":"npc.serra"},"after":{"loc":"loc.old_crown_catacombs"},"calls":1,"status":"applied","reason":null}

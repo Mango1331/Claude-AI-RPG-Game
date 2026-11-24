@@ -1,0 +1,37 @@
+✔ B3: actual P + N and evidence on the existing X arrival recover the meeting, memory and departure (51.335656ms)
+✔ B19/20 original P/N/X: a local interruption stays at the lane, then the tollman can identify himself before the trip resumes (65.966452ms)
+✔ B3 archived X without quotes cannot by itself establish that the meal finished (10.476405ms)
+✔ B3 travel boundary: stale choice from another input (9.370661ms)
+✔ B3 travel boundary: explicit stay even after a proposal (4.077507ms)
+✔ B3 travel boundary: asking only (3.999121ms)
+✔ B3 travel boundary: later (4.136224ms)
+✔ B3 travel boundary: explicit veto after a valid quoted request overrides a mistaken positive P (3.952883ms)
+✔ B3 travel boundary: explicit veto after a valid quoted request (negative verb) (4.940522ms)
+✔ B3 travel boundary: mere NPC invitation, no choice (3.689794ms)
+✔ B3 travel boundary: direction question (3.955897ms)
+✔ B3 travel boundary: NPC declines instead of joining (4.330911ms)
+✔ B3 travel boundary: only a future location in dialogue (3.742212ms)
+✔ B3 travel boundary: claimed condition never happened (4.008635ms)
+✔ B3 travel boundary: real earlier event about a different subject (3.602645ms)
+✔ B3 travel boundary: wrong scene cited as arrival (3.686779ms)
+✔ B3 travel boundary: condition evidenced after departure (4.736661ms)
+✔ B3 travel boundary: NPC moves alone (3.452232ms)
+✔ B3 travel boundary: different companion (3.168854ms)
+✔ B3 travel boundary: different destination (3.677556ms)
+✔ B3 travel boundary: no forged involuntary relocation (3.738486ms)
+✔ B3 travel boundary: additional arrival (4.257312ms)
+✔ same unmodified arrive protocol, local room reached without a positive P marker, including non-English actions (37.86022ms)
+✔ unusual polite requests including German use the same bounded P intent and original arrival (15.849696ms)
+✔ a malformed optional evidence property never fails an otherwise valid report (4.055905ms)
+✔ B3 through the host: selected P response, saved authority, X projection, active occurrence and refold (99.984432ms)
+✔ a narrated continuation never opens a Living Dungeon, unpaid entry or a locked ordinary room (12.232431ms)
+✔ an explicit hold until the ferry returns requires the named condition and its actual fulfillment (18.433315ms)
+✔ final story output contract includes the advisory travel frame even on social turns (1.192733ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 656.042955

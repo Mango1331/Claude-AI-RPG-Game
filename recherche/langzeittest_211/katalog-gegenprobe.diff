@@ -1,0 +1,13 @@
+diff --git a/avereth-engine/src/v4/catalog.js b/avereth-engine/src/v4/catalog.js
+index 7b5561c7..655386be 100644
+--- a/avereth-engine/src/v4/catalog.js
++++ b/avereth-engine/src/v4/catalog.js
+@@ -426,7 +426,7 @@ export function extractorCatalog(state, content, opts = {}) {
+         // a visited hunting site of a completed contract the QUESTS line names stays valid (.188 Rogue #80)
+         places: [...new Set([c.here.id, ...c.places.map((p) => p.id), ...(c.valid_places || [])].filter(Boolean))],
+         quests: [...new Set([...c.quests, ...c.board, ...c.completed, ...(c.known || [])].map((q) => q.id))],
+-        objects: c.objects.map((o) => o.id),
++        objects: [...new Set([...c.objects.map(o => o.id), ...Object.values(state.objects).filter(o => npcContinuity(state, opts.input || '').some(n => n.id === o.holder?.entity)).map(o => o.id)])],
+         catalog: c,
+     };
+ }

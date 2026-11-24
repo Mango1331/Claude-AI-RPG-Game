@@ -1,0 +1,115 @@
+{
+  "arm": "XB",
+  "candidate": "c47e43187e77837db102c3a1e3646c5630c315f6",
+  "route": "wafer/us",
+  "physical_sends": 4,
+  "physical_refs_ended": 4,
+  "physical_roles": {
+    "planner": 1,
+    "narrator": 1,
+    "extractor": 2
+  },
+  "repeat_role_requests": {
+    "extractor": 1
+  },
+  "success": 4,
+  "player_inputs": 1,
+  "confirmed_st_turns": 0,
+  "provider_input": 53155,
+  "provider_output": 3019,
+  "provider_cache": 32000,
+  "provider_reasoning": 1021,
+  "usage_records": 4,
+  "provider_cost_usd": "0.002756006",
+  "cost_records": 4,
+  "charged_or_reserved_usd": "0.002756006",
+  "physical_duration_ms": 45526,
+  "median_ready_ms": null,
+  "by_role": {
+    "planner": {
+      "dispatched": 1,
+      "duration_ms": {
+        "n": 1,
+        "sum": 868,
+        "mean": 868,
+        "median": 868,
+        "min": 868,
+        "max": 868
+      },
+      "prompt_tokens": 12694,
+      "completion_tokens": 39,
+      "cost_usd": "0.000540324"
+    },
+    "narrator": {
+      "dispatched": 1,
+      "duration_ms": {
+        "n": 1,
+        "sum": 31467,
+        "mean": 31467,
+        "median": 31467,
+        "min": 31467,
+        "max": 31467
+      },
+      "prompt_tokens": 11758,
+      "completion_tokens": 520,
+      "cost_usd": "0.000582604"
+    },
+    "extractor": {
+      "dispatched": 2,
+      "duration_ms": {
+        "n": 2,
+        "sum": 13191,
+        "mean": 6595.5,
+        "median": 6595.5,
+        "min": 2756,
+        "max": 10435
+      },
+      "prompt_tokens": 28703,
+      "completion_tokens": 2460,
+      "cost_usd": "0.001633078"
+    }
+  },
+  "st_ms": {
+    "firstProse": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    },
+    "lastRenderedChange": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    },
+    "worldCommit": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    },
+    "confirmedSave": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    },
+    "ready": {
+      "n": 0,
+      "sum": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "max": null
+    }
+  },
+  "all_reloads_match": false
+}

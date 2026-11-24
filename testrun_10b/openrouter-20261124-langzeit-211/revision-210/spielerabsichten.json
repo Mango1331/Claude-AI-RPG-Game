@@ -1,0 +1,10 @@
+[
+  {
+    "n": 6,
+    "seq": 1795525046543,
+    "op": "play",
+    "text": "Mother Wren, I'm still at your door. What's your history with the Hallorans? I'd like to hear it here before we decide on any travel.",
+    "intent_before_narration": "After editing the earlier turn, ask at the house without departing.",
+    "at": "2026-11-24T12:57:27.047Z"
+  }
+]

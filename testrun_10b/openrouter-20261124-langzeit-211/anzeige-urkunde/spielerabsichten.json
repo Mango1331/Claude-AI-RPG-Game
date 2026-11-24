@@ -1,0 +1,74 @@
+[
+  {
+    "n": 1,
+    "seq": 1795524995564,
+    "op": "play",
+    "text": "I hold up the copied margin note for Brannoc to see, keeping the paper in my hand. Which wardens' desk should I bring it to in the morning?",
+    "intent_before_narration": "Show the copied note only, retain it, and ask where to deliver it later.",
+    "at": "2026-11-24T12:56:36.886Z"
+  },
+  {
+    "n": 2,
+    "seq": 1795525323657,
+    "op": "play",
+    "text": "I thank Brannoc and keep the paper safe. At first bell I take the north lane to the wardens' desk he described, to look for Serra.",
+    "intent_before_narration": "Travel to the named desk in the morning; keep the note until recipient identified.",
+    "at": "2026-11-24T13:02:05.068Z"
+  },
+  {
+    "n": 3,
+    "seq": 1795525546684,
+    "op": "play",
+    "text": "I walk from the guild hall to Serra's hut at the Old Crown entrance. I'll keep her copy dry until I can put it in her own hand.",
+    "intent_before_narration": "Seek the previously visited named hut; preserve the original document en route.",
+    "at": "2026-11-24T13:05:47.624Z"
+  },
+  {
+    "n": 4,
+    "seq": 1795525808834,
+    "op": "play",
+    "text": "I keep my hands where they can see them, the note tucked inside my coat. There's a warning for the wardens about the dead waking in the Old Crown. Why do you want to stop it?",
+    "intent_before_narration": "Talk to the three men, no surrender of paper, payment or attack.",
+    "at": "2026-11-24T13:10:09.830Z"
+  },
+  {
+    "n": 5,
+    "seq": 1795526101407,
+    "op": "play",
+    "text": "I won't pay you or hand over the paper. I back away toward the shouting in the tanner's yard, calling for witnesses.",
+    "intent_before_narration": "Decline coercive demand; retreat toward witnesses with paper, avoid fighting if possible.",
+    "at": "2026-11-24T13:15:02.261Z"
+  },
+  {
+    "n": 6,
+    "seq": 1795526326178,
+    "op": "play",
+    "text": "Thank you, Dane. I take the lane from the tanner's yard to the warden house with Merrin and knock at the hatch. I ask for Serra by name.",
+    "intent_before_narration": "Reach the public hatch with companion after the threat, retain note until right recipient.",
+    "at": "2026-11-24T13:18:47.170Z"
+  },
+  {
+    "n": 7,
+    "seq": 1795526503316,
+    "op": "play",
+    "text": "Then you are the watch I was sent to. I hand the copied margin note to the guard at the hatch for Corven's desk. Please record that it came from Serra's account, via the guild.",
+    "intent_before_narration": "Deliberately hand the one existing note to the present on-duty recipient for the wardens; keep no duplicate.",
+    "at": "2026-11-24T13:21:44.536Z"
+  },
+  {
+    "n": 8,
+    "seq": 1795526671416,
+    "op": "play",
+    "text": "Alaric. Put that on the line, please. May I tell the guild whose watch acknowledged its report? I don't need the paper back.",
+    "intent_before_narration": "Authenticate the handover and ask the recipient's name; no second paper, payment, or quest completion.",
+    "at": "2026-11-24T13:24:32.718Z"
+  },
+  {
+    "n": 9,
+    "seq": 1795526823164,
+    "op": "play",
+    "text": "That's the whole parcel, Dagny. Thank you. I go back to the guild hall with Merrin to tell the clerk that Corven's watch received Serra's account.",
+    "intent_before_narration": "Return to guild with receipt in memory only. The original note belongs at the warden's desk.",
+    "at": "2026-11-24T13:27:04.498Z"
+  }
+]

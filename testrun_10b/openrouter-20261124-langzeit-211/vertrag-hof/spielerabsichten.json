@@ -1,0 +1,90 @@
+[
+  {
+    "n": 1,
+    "seq": 1795524236525,
+    "op": "play",
+    "text": "Brigid, here's the supply sack Wren asked me to carry. I give it to her, then stand clear so Wren can see Tam. Does the letter go to you or to Maren?",
+    "intent_before_narration": "Deliver the identified sack, ask about letter; stay available.",
+    "at": "2026-11-24T12:43:57.327Z"
+  },
+  {
+    "n": 2,
+    "seq": 1795524351245,
+    "op": "play",
+    "text": "Brigid, please have Tam's thumb-ring back. I give it to her, then help Serra bring the broth to the bedside if she'd like a hand.",
+    "intent_before_narration": "Return the actual loan to Brigid and join an ordinary short indoor errand if accepted.",
+    "at": "2026-11-24T12:45:52.090Z"
+  },
+  {
+    "n": 3,
+    "seq": 1795524441824,
+    "op": "play",
+    "text": "Thank you, Brigid. May I come sit by the hearth and hear what Mother Wren thinks? I have no wish to crowd the bed.",
+    "intent_before_narration": "Accept invitation to enter and ask to go as far as the hearth, avoid bedside.",
+    "at": "2026-11-24T12:47:22.418Z"
+  },
+  {
+    "n": 4,
+    "seq": 1795524559993,
+    "op": "play",
+    "text": "Brigid, are you expecting someone? I tell her about the pair of prints before I touch a thing. I'll stay by the fire with Tam for now.",
+    "intent_before_narration": "Ask about a possible visitor and expressly remain indoors.",
+    "at": "2026-11-24T12:49:22.684Z"
+  },
+  {
+    "n": 5,
+    "seq": 1795524707395,
+    "op": "play",
+    "text": "I'd like a place to sleep until morning. Would you show me where I may lay my cloak? I can look for Maren after breakfast.",
+    "intent_before_narration": "Accept a local guide to an ordinary sleeping place, postpone search for Maren.",
+    "at": "2026-11-24T12:51:48.236Z"
+  },
+  {
+    "n": 6,
+    "seq": 1795524893965,
+    "op": "play",
+    "text": "Brigid, I'll take the bread for the road, thank you. I'm happy to tell Maren how his son is doing, but keep your silver. Where do the drovers usually make camp?",
+    "intent_before_narration": "Accept bread only, decline the fee explicitly, ask for directions before traveling.",
+    "at": "2026-11-24T12:54:54.741Z"
+  },
+  {
+    "n": 7,
+    "seq": 1795525026562,
+    "op": "play",
+    "text": "Yes, Dann, I'd like your company. Would you lead me to the drovers' ford after breakfast? I'll carry the bread in case we need to split it on the way.",
+    "intent_before_narration": "Accept the guide and request a joint walk to the ford after breakfast; no fee or transfer yet.",
+    "at": "2026-11-24T12:57:07.371Z"
+  },
+  {
+    "n": 8,
+    "seq": 1795525358545,
+    "op": "play",
+    "text": "He's alive. Wren is with him and he's breathing easier. I offer Maren a piece of my road bread while he catches his breath.",
+    "intent_before_narration": "Report witnessed condition, offer part of bread; no compulsory departure.",
+    "at": "2026-11-24T13:02:39.652Z"
+  },
+  {
+    "n": 9,
+    "seq": 1795525615076,
+    "op": "play",
+    "text": "Then I'll take the east road to the drovers' ford myself. I put the bread back in my pouch for the journey.",
+    "intent_before_narration": "Explicitly travel from the actual farm to the ford, keep bread.",
+    "at": "2026-11-24T13:06:56.596Z"
+  },
+  {
+    "n": 10,
+    "seq": 1795525896974,
+    "op": "play",
+    "text": "I stop beside Dann and follow his gaze. What exactly is moving downriver? I'm not stepping into the water.",
+    "intent_before_narration": "Observe from a standstill at the interruption; do not cross.",
+    "at": "2026-11-24T13:11:38.255Z"
+  },
+  {
+    "n": 11,
+    "seq": 1795526190075,
+    "op": "play",
+    "text": "No, I haven't. I won't take either of us down there blind. I'll stay beside you on the rise and call a warning toward the cattle pens.",
+    "intent_before_narration": "End the excursion on the safe overlook, warn the drovers without entering the marsh or starting a fight.",
+    "at": "2026-11-24T13:16:31.761Z"
+  }
+]

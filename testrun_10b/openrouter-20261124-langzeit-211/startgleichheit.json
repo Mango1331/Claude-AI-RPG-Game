@@ -1,0 +1,123 @@
+{
+  "Halloran": {
+    "source": "PA",
+    "after": 0,
+    "clone": "HB",
+    "world_sorted_json_sha256": "64fb413984e0f0eeca9e3b4b1d5f9e50f5b35679cbef833238f5e67a8cb887e5",
+    "browser": {
+      "world": "85861134feda7a75017a6077efa2a549a81461e127857a74f4ba28b4fa716335",
+      "events": "1359467c1b35a4121c15a8c73ead809d7f4db731da51dccc12b2fac11f5d9ec1",
+      "messages": 19
+    }
+  },
+  "Alderwatch": {
+    "source": "GA",
+    "after": 0,
+    "clone": "GB",
+    "world_sorted_json_sha256": "3d19dec71ee56e8398cfd483f418a4bc156d17b69c554843e027aebe20750a6c",
+    "browser": {
+      "world": "ac7fdd7ae37f5e89dfc809d9c502586ca1dcbf2aba8ac828c714c295daa930af",
+      "events": "0c34ace76693c325141d0848958307cb2754df43335b270a7de1eeb2823b2276",
+      "messages": 11
+    }
+  },
+  "Revisionsklone": {
+    "source": "RA",
+    "after": 0,
+    "clone": "RB",
+    "world_sorted_json_sha256": "6d2bdd8bd4034d79ded515260b602952b0cc327d2b980c70509998a97893b275",
+    "browser": {
+      "world": "d64eea5b509c6d35e2a49c3e7f5f3c219b8bc4680fb3a83a02f1416d87ade28b",
+      "events": "64b16dcb54ee63f0a339cdeaabe4dca80b4b06045d7e82bdbbbdaf98c4066cda",
+      "messages": 29
+    }
+  },
+  "bedingter Weg": {
+    "source": "XA",
+    "after": 0,
+    "clone": "XB",
+    "world_sorted_json_sha256": "fbfed594f2b237f0f062760d34d2cb5b7e9aed0ae0b7a8c7ac28a5edb5e75852",
+    "browser": {
+      "world": "f364614617f4bc69444775bd99c2e86ca584e7ec0821ea455c423e0c04c47081",
+      "events": "19eb4e1f7d0bfe3e092a4f418d4b398852f5457f5ef985747c3ec03597ecea82",
+      "messages": 23
+    }
+  },
+  "Original vor der Anzeige": {
+    "source": "HB",
+    "after": 12,
+    "clone": "PB",
+    "world_sorted_json_sha256": "3c8f705ed9a6b6b625b03ee1cc5d3ffb82188f333c12eb22395319ccbae39549",
+    "browser": {
+      "world": "7f6e339ef0d30cc9ac989ecec9e3d444a1c47d619d3012d74fefdb96d7bec8aa",
+      "events": "f11e6f68b5cdef1b95dc73ec1cec03a4eeeab568b3cac02a9f94f319145f8da7",
+      "messages": 43
+    }
+  },
+  "Dokument vor der Anzeige": {
+    "source": "GA",
+    "after": 15,
+    "clone": "YA",
+    "world_sorted_json_sha256": "6eb48bce7786c114a70793b7239ed0898045e7d321454ece33f6fb8d373de040",
+    "browser": {
+      "world": "5783a9034169ace1221c01d3d666b515eee98aae89fb48a9109be2b101f71fc3",
+      "events": "205c2b17ef58dd5af66d928629998be2f72f6fa1b22c613bd15dcec83a4c3871",
+      "messages": 41
+    }
+  },
+  "gleicher Hofauftrag mit drei Builds": {
+    "source": "HB",
+    "after": 5,
+    "clone": "K2",
+    "world_sorted_json_sha256": "6d2bdd8bd4034d79ded515260b602952b0cc327d2b980c70509998a97893b275",
+    "browser": {
+      "world": "d64eea5b509c6d35e2a49c3e7f5f3c219b8bc4680fb3a83a02f1416d87ade28b",
+      "events": "64b16dcb54ee63f0a339cdeaabe4dca80b4b06045d7e82bdbbbdaf98c4066cda",
+      "messages": 29
+    }
+  },
+  "dritte Antwort unter laufender Extraktion": {
+    "source": "RB",
+    "after": 3,
+    "clone": "K1",
+    "world_sorted_json_sha256": "df8e9abf3bb1302d08c4a7c14c16f54a6ba3933c3446cae2f987aa4e936fecd8",
+    "browser": {
+      "world": "702efa958d9c6b2422ca6ca9d233a1607fdd714be19b2f41c50c2152037007eb",
+      "events": "ea8a53c61a46527b3f4ab42d703642c88fcfc47899fef1b3f3736d5db5ccad59",
+      "messages": 29
+    }
+  },
+  "Reiseformat auf dem Hof": {
+    "source": "HB",
+    "after": 5,
+    "clone": "YB",
+    "world_sorted_json_sha256": "6d2bdd8bd4034d79ded515260b602952b0cc327d2b980c70509998a97893b275",
+    "browser": {
+      "world": "d64eea5b509c6d35e2a49c3e7f5f3c219b8bc4680fb3a83a02f1416d87ade28b",
+      "events": "64b16dcb54ee63f0a339cdeaabe4dca80b4b06045d7e82bdbbbdaf98c4066cda",
+      "messages": 29
+    }
+  },
+  "Hofausgang aus laufender Referenz": {
+    "source": "PA",
+    "after": 2,
+    "clone": "XA",
+    "world_sorted_json_sha256": "fbfed594f2b237f0f062760d34d2cb5b7e9aed0ae0b7a8c7ac28a5edb5e75852",
+    "browser": {
+      "world": "f364614617f4bc69444775bd99c2e86ca584e7ec0821ea455c423e0c04c47081",
+      "events": "19eb4e1f7d0bfe3e092a4f418d4b398852f5457f5ef985747c3ec03597ecea82",
+      "messages": 23
+    }
+  },
+  "Bezahlte Rast": {
+    "source": "GB",
+    "after": 26,
+    "clone": "QE",
+    "world_sorted_json_sha256": "52f870ebc5425302ef4b29be4735f003c585d4a31ad8bd5241ecc044933b1704",
+    "browser": {
+      "world": "11bd2112d9fe4567d6e85e3bf78fefb22df72a70b561db747f4852ae50b20b90",
+      "events": "83dab936493b150c6caac072c94ea54004e18bce536f894c8c2289705660652d",
+      "messages": 63
+    }
+  }
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "n": 0,
+    "phase": "import",
+    "minute": 1920,
+    "coin_cp": 20,
+    "hp": 95,
+    "mp": 72,
+    "hud": [
+      "Coin: 2 Silver",
+      "Resources: HP 95/95 (unhurt) · MP 72/72 · STA 100/100 · XP 0/400"
+    ]
+  },
+  {
+    "n": 1,
+    "phase": "andere Schlafantwort",
+    "minute": 1920,
+    "coin_cp": 20,
+    "hp": 95,
+    "mp": 72,
+    "hud": [
+      "Coin: 2 Silver",
+      "Resources: HP 95/95 (unhurt) · MP 72/72 · STA 100/100 · XP 0/400"
+    ]
+  },
+  {
+    "n": 2,
+    "phase": "Rückwahl",
+    "minute": 1920,
+    "coin_cp": 20,
+    "hp": 95,
+    "mp": 72,
+    "hud": [
+      "Coin: 2 Silver",
+      "Resources: HP 95/95 (unhurt) · MP 72/72 · STA 100/100 · XP 0/400"
+    ]
+  },
+  {
+    "n": 3,
+    "phase": "frühere Kaufentscheidung editiert",
+    "minute": 1123,
+    "coin_cp": 26,
+    "hp": 31,
+    "mp": 33,
+    "hud": [
+      "Coin: 2 Silver 6 Copper",
+      "Resources: HP 31/95 (badly wounded) · MP 33/72 · STA 100/100 · XP 0/400"
+    ]
+  },
+  {
+    "n": 4,
+    "phase": "neuer Folgeturn",
+    "minute": 1123,
+    "coin_cp": 26,
+    "hp": 31,
+    "mp": 33,
+    "hud": [
+      "Coin: 2 Silver 6 Copper",
+      "Resources: HP 31/95 (badly wounded) · MP 33/72 · STA 100/100 · XP 0/400"
+    ]
+  }
+]

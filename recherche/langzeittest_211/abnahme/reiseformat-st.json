@@ -1,0 +1,56 @@
+{
+ "kind": "avereth-st-smoke-isolated",
+ "started": "2026-11-24T12:35:57.495Z",
+ "sandbox": "/tmp/av211-contract-smoke",
+ "st": {
+  "version": "1.19.0",
+  "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+ },
+ "node": "24.22.1",
+ "chromium": "156.0.8078.79",
+ "engine": {
+  "version": "4.3.0-c.6.6.211",
+  "commit": "c47e4318",
+  "branch": "experiment/211-travel-frame-contract",
+  "dirty": false
+ },
+ "runs": [
+  {
+   "mode": "standard",
+   "ok": true,
+   "exit": 0,
+   "line": "LIVE SILLYTAVERN SMOKE C: OK",
+   "seconds": 842,
+   "checks": 378,
+   "passed": 378,
+   "failed": [],
+   "page_errors": 0,
+   "calls": 351,
+   "out": "/tmp/av211-contract-smoke/out/2026-11-24T12-35-57-495Z/standard",
+   "log": "/tmp/av211-contract-smoke/out/2026-11-24T12-35-57-495Z/standard/run.log"
+  },
+  {
+   "mode": "failsoft",
+   "ok": false,
+   "exit": 1,
+   "line": "LIVE SILLYTAVERN SMOKE C: FAILED",
+   "seconds": 927,
+   "checks": 384,
+   "passed": 383,
+   "failed": [
+    "noPageErrors"
+   ],
+   "page_errors": 1,
+   "calls": 358,
+   "error": "exit 1",
+   "out": "/tmp/av211-contract-smoke/out/2026-11-24T12-35-57-495Z/failsoft",
+   "log": "/tmp/av211-contract-smoke/out/2026-11-24T12-35-57-495Z/failsoft/run.log"
+  }
+ ],
+ "open": [
+  "natural model behaviour (the mock provider answers scripted plans and reports)",
+  "personal SillyTavern profiles (never used)",
+  "other SillyTavern versions than 1.19.0"
+ ],
+ "finished": "2026-11-24T13:05:27.644Z"
+}

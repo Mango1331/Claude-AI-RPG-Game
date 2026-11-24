@@ -1,0 +1,146 @@
+{
+  "arm": "GB",
+  "candidate": "c2ddc780d4c57b219f9cd7a1d134efceca7e459d",
+  "route": "wafer/us",
+  "physical_sends": 103,
+  "physical_refs_ended": 103,
+  "physical_roles": {
+    "planner": 34,
+    "board": 2,
+    "narrator": 30,
+    "extractor": 36,
+    "passive_name": 1
+  },
+  "repeat_role_requests": {
+    "extractor": 6,
+    "planner": 2
+  },
+  "success": 103,
+  "player_inputs": 32,
+  "confirmed_st_turns": 32,
+  "provider_input": 1359237,
+  "provider_output": 41310,
+  "provider_cache": 758336,
+  "provider_reasoning": 12134,
+  "usage_records": 103,
+  "provider_cost_usd": "0.063930658",
+  "cost_records": 103,
+  "charged_or_reserved_usd": "0.063930658",
+  "physical_duration_ms": 412599,
+  "median_ready_ms": 13325.0,
+  "by_role": {
+    "planner": {
+      "dispatched": 34,
+      "duration_ms": {
+        "n": 34,
+        "sum": 64842,
+        "mean": 1907.12,
+        "median": 1434.5,
+        "min": 473,
+        "max": 5594
+      },
+      "prompt_tokens": 439467,
+      "completion_tokens": 3829,
+      "cost_usd": "0.018854950"
+    },
+    "board": {
+      "dispatched": 2,
+      "duration_ms": {
+        "n": 2,
+        "sum": 9603,
+        "mean": 4801.5,
+        "median": 4801.5,
+        "min": 3832,
+        "max": 5771
+      },
+      "prompt_tokens": 5113,
+      "completion_tokens": 2060,
+      "cost_usd": "0.000593786"
+    },
+    "narrator": {
+      "dispatched": 30,
+      "duration_ms": {
+        "n": 30,
+        "sum": 190488,
+        "mean": 6349.6,
+        "median": 5319.0,
+        "min": 3104,
+        "max": 20069
+      },
+      "prompt_tokens": 378679,
+      "completion_tokens": 16456,
+      "cost_usd": "0.018888646"
+    },
+    "extractor": {
+      "dispatched": 36,
+      "duration_ms": {
+        "n": 36,
+        "sum": 147021,
+        "mean": 4083.92,
+        "median": 3142.5,
+        "min": 1250,
+        "max": 14676
+      },
+      "prompt_tokens": 535615,
+      "completion_tokens": 18903,
+      "cost_usd": "0.025566622"
+    },
+    "passive_name": {
+      "dispatched": 1,
+      "duration_ms": {
+        "n": 1,
+        "sum": 645,
+        "mean": 645,
+        "median": 645,
+        "min": 645,
+        "max": 645
+      },
+      "prompt_tokens": 363,
+      "completion_tokens": 62,
+      "cost_usd": "0.000026654"
+    }
+  },
+  "st_ms": {
+    "firstProse": {
+      "n": 29,
+      "sum": 169123,
+      "mean": 5831.83,
+      "median": 4522,
+      "min": 2643,
+      "max": 17354
+    },
+    "lastRenderedChange": {
+      "n": 30,
+      "sum": 409831,
+      "mean": 13661.03,
+      "median": 11360.0,
+      "min": 5688,
+      "max": 40785
+    },
+    "worldCommit": {
+      "n": 30,
+      "sum": 454106,
+      "mean": 15136.87,
+      "median": 12888.5,
+      "min": 7603,
+      "max": 40739
+    },
+    "confirmedSave": {
+      "n": 30,
+      "sum": 465010,
+      "mean": 15500.33,
+      "median": 13316.5,
+      "min": 7713,
+      "max": 41000
+    },
+    "ready": {
+      "n": 30,
+      "sum": 465216,
+      "mean": 15507.2,
+      "median": 13325.0,
+      "min": 7719,
+      "max": 41007
+    }
+  },
+  "all_reloads_match": true
+}

@@ -14,9 +14,9 @@ $entries = @(
   @{ Name='20261124-205854Z-natural_helper_progression.zip'; Sha='abad6d3d266e6d01e3a68942fa69b99b2ebd98db4f6c755953568aaee5bb0ad0'; Bytes=11504414 }
 )
 
-function RunGit([string[]]$Args) {
+function RunGit([string[]]$Arguments) {
   $output = & git @Args
-  if ($LASTEXITCODE -ne 0) { throw "git $($Args -join ' ') failed ($LASTEXITCODE)" }
+  if ($LASTEXITCODE -ne 0) { throw "git $($Arguments -join ' ') failed ($LASTEXITCODE)" }
   return $output
 }
 if (!(Test-Path -LiteralPath $SourceDir -PathType Container)) {

@@ -4,6 +4,41 @@ Werkzeug: `tools/st_live/live/` (ab Build 4.3.0-c.6.6.29). Er spielt einen Livet
 
 **Grundsatz.** Der Runner übernimmt nur die Spielerentscheidungen. Er manipuliert keine Engine-Zustände, setzt keinen Questfortschritt und tötet keine Gegner. Er regeneriert, swipt und editiert keine Nachricht. Dein SillyTavern-Profil wird nur gelesen, nie geschrieben. Der Stub-Selbsttest (§10) prüft nur den Runner und **zählt nicht als Livetest**.
 
+## Einzelner natürlicher OpenRouter-Langlauf (Level, Quests, Gear und hilfsbereite NPC-Interaktion)
+
+**Neuer Einzellauf:** `npm run live:st:openrouter` startet **eine** echte Level-1-Kampagne. Er benötigt **keinen Featherless-Proxy** und übernimmt keine alten Featherless-Modell-, URL-, Header-, Body- oder Player-Einstellungen. Spiel und LLM-Testspieler verwenden direkt das OpenAI-kompatible OpenRouter-Endpunktformat `https://openrouter.ai/api/v1` und standardmäßig `z-ai/glm-5.3-flash`. Die Auswahl betrifft ausschließlich das **isolierte** ST-Profil dieses Runs; das eigene SillyTavern-Profil bleibt unverändert.
+
+Die einmalige Einrichtung der lokalen SillyTavern-Pfadkonfiguration bleibt bestehen (`tools/st_live/live.config.json` mit `stDir` oder `AVERETH_ST_DIR`). Wer diese Datei schon für frühere Einzelläufe hat, muss **keine** neue Featherless- oder OpenRouter-Verbindung darin anlegen. Nur den gültigen OpenRouter-Schlüssel für die aktuelle PowerShell setzen:
+
+```powershell
+cd C:\Git\Claude-AI-RPG-Game\avereth-engine
+$env:AVERETH_LIVE_API_KEY = "DEIN_OPENROUTER_API_KEY"
+npm run live:st:openrouter -- --check
+npm run live:st:openrouter -- --headed
+```
+
+`--check` überprüft lokale Voraussetzungen, ohne einen kostenpflichtigen Modellrequest zu senden. `--check --ping` testet zusätzlich `GET /models` und eventuell einen **kurzen echten** LLM-Probeaufruf für Reasoning-Felder. `--inspect` zeigt die absichtlich unterschiedliche Verbindung zum persönlichen ST-Profil, ohne dessen Secrets zu lesen. Beim tatsächlichen Start prüft der Runner zuerst die OpenRouter-Modellliste. Ein anderes Modell kann bei Bedarf mit `--model author/model` gewählt werden.
+
+```powershell
+# ein natürlicher Spieltest; sichtbarer Browser
+npm run live:st:openrouter -- --headed
+
+# kürzerer Test, bewusst auf 150 Spieler-Eingaben beschränkt
+npm run live:st:openrouter -- --headed --max-turns 150
+
+# eigenes OpenRouter-Modell verwenden
+npm run live:st:openrouter -- --headed --model z-ai/glm-5.3-flash
+
+# vor dem Spielen die Verbindung und Reasoning-Kurzprobe prüfen
+npm run live:st:openrouter -- --check --ping
+```
+
+**Motivation des Testspielers** (`guides/natural_helper_progression.json`): Gildenquests ernsthaft erfüllen, durch echte Erfolge leveln, Statpunkte und Skills entwickeln, Beute verkaufen, Waffen/Rüstung/Fokus upgraden und ausrüsten. Er spricht mit den Menschen unterwegs, fragt nach Problemen und **bietet nach Möglichkeit aktiv Hilfe an**, auch wenn es keine formale Gildenquest ist. Er behält Zusagen und frühere Kontakte im Blick. Gefahr, finanzielle Mittel und NPC-Ablehnungen berücksichtigt er; keine garantierten Siege, Käufe oder festen Questbefehle. Klasse und zwei Starter-Skills bleiben frei. Langfristiges Ziel sind Level 15 und eine tatsächlich angenommene E-Klasse; der 100-Eingaben-Checkpoint beendet nichts. Der Guide erlaubt bis zu 1000 Eingaben bzw. 1440 Minuten, `--max-turns` kann bewusst verkürzen.
+
+**Wichtige Sicherheitsgrenze:** Der bisherige Live-Runner führt **keine automatische USD-Gesamtabrechnung und keine Kostensperre**. OpenRouter berechnet Spiel- und Spieleraufrufe; beachte dein Guthaben und gegebenenfalls auf OpenRouter eingerichtete API-Key-Ausgabenlimits. Der Runner protokolliert Requests/Token und beendet bei eigenen Fehlergrenzen, nicht bei einem Dollarwert. Es wird **kein** API-Key eingecheckt oder aus deinem persönlichen `secrets.json` entnommen.
+
+Alte Befehle `npm run live:st`, `npm run live:st:batch` und `npm run live:st:npc` behalten ihren jeweiligen bisherigen Ablauf und die Profilverbindung, solange du nicht ausdrücklich `--openrouter` setzt oder die optionale Providerkonfiguration verwendest. Für eine alternative eigenständige Konfigurationsdatei liegt `tools/st_live/live.openrouter.example.json` bereit (`--config <pfad>`). Der einfache obige Start benötigt diese Datei nicht. Die Engine bleibt auf dem gewählten Repository-Commit und benutzt dessen Narratorvertrag; kein neuer Import deiner persönlichen Character Card nötig.
+
 ## Drei automatische Guild-Kampagnen (Batchmodus)
 
 Mit vorhandener Konfiguration und dem API-Schlüssel in der bisherigen Umgebungsvariable im Ordner `avereth-engine` starten:

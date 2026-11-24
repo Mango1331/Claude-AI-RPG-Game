@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import zlib from 'node:zlib';
 import path from 'node:path';
 const fixture=JSON.parse(zlib.gunzipSync(fs.readFileSync(new URL('../../tests/v4/fixtures/user05_202.json.gz',import.meta.url))));
+const narratorContract=fs.readFileSync(new URL('../../content/narrator/Avereth_Narrator_Contract_v4.txt',import.meta.url),'utf8');
+const contractRevision=narratorContract.split(/\r?\n/).find(line=>line.startsWith('Contract revision: '));
 const control={active:false,binding:null};
 export function user05Response(purpose,request){
  if(!control.active)return undefined;
@@ -17,6 +19,7 @@ export function user05Response(purpose,request){
 }
 export async function user05Smoke({page,idle,calls,onReload,out,saveFailure,worldTimings=[]}){
  const checks={},measurements=[],layouts={};
+ let boardContractEvidence=null;
  const bounded=async(p,label)=>{let timer;try{return await Promise.race([p,new Promise((_,reject)=>timer=setTimeout(()=>reject(new Error(`User05 timeout: ${label}`)),20000))]);}finally{clearTimeout(timer);}};
  const base='/scripts/extensions/third-party/avereth-engine/';
  const snapshot=()=>page.evaluate(async base=>{
@@ -44,7 +47,7 @@ export async function user05Smoke({page,idle,calls,onReload,out,saveFailure,worl
   await page.fill('#send_textarea','');
   if(await page.locator('#avereth-action-chip').isVisible())await page.click('#avereth-action-clear');
  };
- const checkpoint=()=>fs.writeFileSync(path.join(out,'user05_checks.json'),JSON.stringify({checks,measurements,layouts},null,2));
+ const checkpoint=()=>fs.writeFileSync(path.join(out,'user05_checks.json'),JSON.stringify({checks,measurements,layouts,boardContractEvidence},null,2));
  const measure=(key,start,time)=>{
   const list=calls.slice(start);measurements.push({key,scripted:true,elapsed_ms:Date.now()-time,world_jobs:worldTimings.filter(t=>t.at>=time),requests:list.map(c=>({phase:c.purpose,prompt_characters:JSON.stringify(c.messages).length,max_output:c.maxTokens,stream:c.stream}))});checkpoint();
  };
@@ -64,7 +67,9 @@ export async function user05Smoke({page,idle,calls,onReload,out,saveFailure,worl
   checks.directQuestCommonInput=accepted.input?.selection.kind==='quest.accept' && accepted.input.mode==='hud_roleplay' && accepted.state.quests[q.id].status==='active';
   checks.questCanonicalDestination=calls.slice(q0).find(c=>c.purpose==='narrator')?.messages.some(m=>m.content.includes("morning's walk north of Glassmere"));
   const narratorPrompt=calls.slice(q0).find(c=>c.purpose==='narrator')?.messages.map(m=>m.content).join('\n') || '';
-  checks.currentBoardContractSentOnce=narratorPrompt.includes('Contract revision: 4.3.0-c.6.6.204') && narratorPrompt.split('Engine-rendered catalogues are the exception:').length===2;
+  const sentRevisions=narratorPrompt.match(/Contract revision: [^\r\n]+/g) || [];
+  boardContractEvidence={expectedRevision:contractRevision,sentRevisions,catalogueRules:narratorPrompt.split('Engine-rendered catalogues are the exception:').length-1};
+  checks.currentBoardContractSentOnce=sentRevisions.length===1 && sentRevisions[0]===contractRevision && boardContractEvidence.catalogueRules===1;
   const qn=calls.length;await button.click();await page.waitForTimeout(200);
   checks.questSecondClickNoRequests=calls.length===qn;
   measure('direct_quest',q0,t0);

@@ -130,7 +130,7 @@ const LOG = [
     '}',
     "Chat Completion request: {",
     "  messages: [ { role: 'system', content: 'contract' }, { role: 'system', content: '[AVERETH ENGINE — TURN]\\nthe block' }, { role: 'user', content: 'I cast Flame Lance' } ],",
-    "  model: 'glm-x', max_tokens: 4096, stream: false, reasoning_effort: 'low'",
+    "  model: 'glm-x', max_tokens: 4096, stream: false, reasoning_effort: 'low', provider: { order: ['wafer/us'], allow_fallbacks: false }",
     '}',
     "Chat Completion response: {",
     "  id: 'r3',",
@@ -150,6 +150,9 @@ test('calls: the server log\'s requests with their replies, roles, times, tokens
     assert.equal(calls[2].finish, 'length');
     assert.equal(calls[2].reasoning_chars, 'thinking a lot'.length);
     assert.equal(calls[2].reasoning_effort, 'low');
+    assert.deepEqual(calls[2].provider_order, ['wafer/us']);
+    assert.equal(calls[2].provider_allow_fallbacks, false);
+    assert.equal(calls[0].provider_order, null, 'historical requests without route remain distinct');
     const st = callStats(calls);
     assert.equal(st.plan.n, 2);
     assert.equal(st.plan.repairs, 1);

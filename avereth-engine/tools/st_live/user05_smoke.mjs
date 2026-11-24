@@ -88,6 +88,15 @@ export async function user05Smoke({page,idle,calls,onReload,out,saveFailure,worl
   await page.locator(`[data-avereth-select-target="${enemy}"]:not([disabled])`).last().click();
   checks.targetAloneNoAction=await page.locator('#avereth-action-chip').isHidden();
   await choose();
+  const swap=page.getByRole('button',{name:'Reihenfolge umkehren'}), minor=page.locator('#avereth-minor');
+  const preview=()=>page.locator('#avereth-action-chip span').innerText(), initialCalls=calls.length;
+  checks.soloNeedsNoOrder=await swap.isHidden() && await minor.inputValue()==='';
+  await minor.selectOption('sidestep');await swap.press('Enter');
+  checks.minorBeforeMajor=(await preview()).startsWith('Ausweichen') && (await preview()).includes('Flame Lance');
+  await minor.selectOption('');checks.removedMinorHidesOrder=await swap.isHidden();
+  await minor.selectOption('move:away');
+  checks.newPairStartsWithMajor=(await preview()).startsWith('Flame Lance') && (await preview()).includes('Zurückweichen');
+  await minor.selectOption('');checks.editingDraftUsesNoRequests=calls.length===initialCalls;
   checks.controlsInsideCombat=await page.locator('#avereth-action-send').evaluate(el=>!!el.closest('.avereth-combat-hud,.custom-avereth-combat-hud'));
   checks.noDuplicateTargetControls=await page.locator('[data-avereth-aim]:visible').count()===0;
   checks.noDuplicateSkillControls=await page.locator('[data-avereth-action^="skill:"]:visible').count()===0;

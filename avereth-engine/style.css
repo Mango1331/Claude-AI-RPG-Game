@@ -198,6 +198,7 @@
 /* User05: one current tactical surface, with the ordinary ST textarea/send lifecycle. */
 .avereth-action-controls { padding: .4em; min-width: 0; }
 .avereth-action-buttons, #avereth-action-targets, #avereth-action-chip, #avereth-action-send-row { display: flex; flex-wrap: wrap; align-items: center; gap: .4em; margin: .35em 0; }
+#avereth-phase-controls { display:flex; align-items:center; flex-wrap:wrap; gap:.4em; }
 .avereth-action-controls [hidden] { display: none !important; }
 .avereth-action-controls button, :is(.avereth-combat-hud,.custom-avereth-combat-hud) button { white-space: normal; overflow-wrap: anywhere; }
 .avereth-action-controls select { max-width: 100%; }

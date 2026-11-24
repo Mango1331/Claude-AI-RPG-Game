@@ -128,7 +128,7 @@ export async function board159Smoke({page,send,idle,calls,worldTimings,driver,on
    else if(i===25){
     await page.click('[data-avereth-action="skill:mage.arcane_wave"]');
     await page.selectOption('#avereth-minor','move:away');
-    await page.selectOption('#avereth-order','before');
+    await page.getByRole('button',{name:'Reihenfolge umkehren'}).click();
     await page.locator('[data-avereth-band="SHORT"]').last().click();
     await page.selectOption('#avereth-action-mode','hud_roleplay');
     await send(finalText);

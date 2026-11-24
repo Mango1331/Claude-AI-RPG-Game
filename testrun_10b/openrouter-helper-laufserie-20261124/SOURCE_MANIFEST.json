@@ -61,6 +61,25 @@
       "reasoning_low_in_physical_engine_requests": true,
       "profile_unchanged": true,
       "runner_secret_scan_hits": 0
+    },
+    {
+      "zip": "20261124-214323Z-natural_helper_progression.zip",
+      "bytes": 5061958,
+      "sha256": "bf35564f47b76b9ca8847fbc00f01038d0c69f7293e5213fb7a08edab877f7f0",
+      "embedded_files": 13,
+      "build": "4.3.0-c.6.6.211",
+      "git_commit": "1d3171d756f8",
+      "runner_turns": 24,
+      "game_engine_calls": 73,
+      "run_end": "extractor_failed",
+      "end_detail": "T24: invalid Extractor place-reference shape led to repair; Wafer upstream 429 left remote completion unknown; no automatic retry",
+      "level": 1,
+      "started_with_doubled_stats": true,
+      "model": "z-ai/glm-5.3-flash",
+      "wafer_fixed": true,
+      "reasoning_low_in_physical_engine_requests": true,
+      "profile_unchanged": true,
+      "runner_secret_scan_hits": 0
     }
   ]
 }

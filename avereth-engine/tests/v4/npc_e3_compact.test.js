@@ -11,6 +11,7 @@ import { applyEvent } from '../../src/state.js';
 import { run191 } from './batch191_lib.js';
 
 import { estimateTokens } from '../../src/util.js';
+import { placeName } from '../../src/v4/domain.js';
 // Preserve the .199 capture. Verify the current wording before projecting only the
 // individually reviewed text changes back onto it. The full reconstructed byte stream,
 // each section's token count, each block hash and all measured card fields are still compared.
@@ -26,7 +27,15 @@ function measure(x) {
     const old = "PLAYER ACTIONS (the engine resolved Alaric's message; narrate exactly these, in this order; he decides nothing else):";
     const blocks = ctx.text.split('\n\n').map(block => {
         let historical = block, section;
-        if (block.startsWith('OFFICIAL GUILD OFFERS — ENGINE AUTHORITY:')) {
+        if (block.startsWith('WHERE —') && !block.split('\n').includes('TRAVEL THIS TURN — GOES — to the long house by the mill.')) {
+            // The original Marren GO above stays byte-identical. The other V4 examples predate any continuation assessment.
+            const here = placeName(x.state, x.state.scene.at);
+            const now = `TRAVEL THIS TURN — no booked route from ${here}; this turn has no continuation assessment. Keep his established place unless actually displaced by an external cause.`;
+            const before = `TRAVEL THIS TURN — none chosen: he stays at ${here}. An invitation he accepts, someone leading the way or going ahead, or his own agreement moves him nowhere; only a force he cannot refuse, told as it happens (carried, dragged, swept away), moves him without his own going.`;
+            assert.ok(block.split('\n').includes(now), block);
+            historical = block.replace(now, before);
+            section = 'where';
+        } else if (block.startsWith('OFFICIAL GUILD OFFERS — ENGINE AUTHORITY:')) {
             assert.ok(block.startsWith('OFFICIAL GUILD OFFERS — ENGINE AUTHORITY: '+guild211));
             historical = block.replace(guild211, guild199);
             section = 'guild_authority';

@@ -53,7 +53,7 @@
     },
     {
       "type": "activity",
-      "summary": "Alaric spends time on something: rest, sleep, wait, work, train, study, craft, search, gather, errand. minutes when he names a duration; until when he names an end (noon, evening, end_of_day, night, dawn, morning; done = until the task is finished). For train and study only: learn = what he trains or studies, a KNOWN SKILLS id he practises, a LEARNING id he goes on with, a core stat he builds as a lasting quality of himself (STR strength, VIT toughness, AGI agility, INT mind, PER senses, WIL will), or the kind of a new technique he is taught (strike: a close weapon or body technique; bolt: a ranged spell; guard: a defensive stance; ward: a magical barrier; mend: a healing); teacher = the PRESENT person who teaches him now; material = the OBJECTS id of a manual or primer he studies from now (his own, held); tags = the disciplines of a new technique he names (Martial, Precision, Mobility, Defense, Arcane, Control); aspects = its elements he names (Fire, Ice, Lightning, Water, Earth, Wind, Shadow, Light, Poison, Nature, Blood, Sound). null for what he does not say; all five null for any other activity.",
+      "summary": "Alaric spends time on something: rest, sleep, wait, work, train, study, craft, search, gather, errand. minutes when he names a duration; until when he names an end (noon, evening, end_of_day, night, dawn, morning; done = until the task is finished). For craft, material may name a held resource he chooses to expend. For train and study: learn = what he trains or studies, a KNOWN SKILLS id he practises, a LEARNING id he goes on with, a core stat he builds as a lasting quality of himself (STR strength, VIT toughness, AGI agility, INT mind, PER senses, WIL will), or the kind of a new technique he is taught (strike: a close weapon or body technique; bolt: a ranged spell; guard: a defensive stance; ward: a magical barrier; mend: a healing); teacher = the PRESENT person who teaches him now; material = the OBJECTS id of a manual or primer he studies from now (his own, held); tags = the disciplines of a new technique he names (Martial, Precision, Mobility, Defense, Arcane, Control); aspects = its elements he names (Fire, Ice, Lightning, Water, Earth, Wind, Shadow, Light, Poison, Nature, Blood, Sound). null for what he does not say; all five null for any other activity.",
       "args": {
         "kind": {
           "enum": [
@@ -124,7 +124,7 @@
     },
     {
       "type": "take",
-      "summary": "Alaric picks something up or takes it along: loot, a pile, his arrows, an item left out for him. Not something a person still holds: that person has to give it.",
+      "summary": "Alaric picks something up or takes it along: loot, a pile, his arrows, an item left out for him. For an accepted gift or loan, name the ID still held by its giver. Only their completed handover changes custody.",
       "args": {
         "object": {
           "ref": "object"

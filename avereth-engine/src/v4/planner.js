@@ -130,6 +130,7 @@ export const HANDOVER_RULES = [
     '- When RECENT shows someone asking Alaric for a particular thing and he now holds out, offers or produces exactly that thing for them, that is give {object, to}, even without the word "give": the hand-over is what he does. The object is the one he names, by its OBJECTS id; never another object in its place. TAKE and GIVE keep this ID when he calls a loan by a shorter name. Use RECENT and its holder to resolve it; clarify if ambiguous.',
     '- Separate movement from registration: RECENT shows the Guild entrance, HERE is the city, and PLACES names its Guild hall. "I approach the front counter and ask the clerk how I can register with the Guild" means GO to that hall; the question is dialogue, not guild.register or pay. Seeing a sign or asking where the hall is means no GO. After confirmed arrival, "register me" is guild.register; agreeing to the canonical fee is its offer.accept.',
     '- For a delivery he accepts and carries to its named recipient now, plan the handover there as GIVE after GO; carrying cargo on a journey alone is no GIVE. For active delivery cargo: explicitly leaving it for the agreed recipient on their receiving counter is GIVE to that recipient; preserve object, quantity and their catalog ID. Merely showing it for inspection, pricing or verification is not GIVE. A shop owner and their assistant are different people; resolve the actual recipient shown, never invent an absent owner.',
+    '- Use stored quantities and units. A shared meal that uses one whole food portion now is one USE, with the participants in the quote; do not GIVE and USE the same final unit. Do not allocate persistent fractional lots. For material he actually fits or spends, activity craft may cite material: its held resource ID, qty: the number of stored units he uses. Tools, borrowed gear and mere plans are not spent.',
     '- No give when he only shows, looks at or examines it, keeps it ("but I don\'t hand it over"), only asks whether they need it, or produces a different thing than the one asked for (then the story lets them answer).',
     '- Saying why he came ("I\'m here to deliver this crate", "I have your delivery") is words, no give: the thing changes hands when he hands it over, holds it out or sets it down for them, or when they reach for it and he lets them.',
     '- He goes to someone in order to hand them a thing himself, now ("I go to Sister Maren and hand her the basket", "I\'ll follow you up to hand it over myself"): go, then give {object, to} with "needs" the go; to is their id, or {"new": "<who>"} when they are not in the catalog. Going somewhere only to ask whether they want it, carrying it along, or handing it over another day is no give.',
@@ -443,6 +444,7 @@ function learningErrors(c, ctx, at) {
     const set = ['learn', 'teacher', 'tags', 'aspects', 'material'].filter((k) => c[k] !== null && c[k] !== undefined);
     // a legacy campaign learns nothing this way: the engine takes such an activity as an ordinary one
     if (!set.length || !(ctx.techniques || []).length) return e;
+    if (c.kind === 'craft' && set.every(k => k === 'material')) return e;
     if (!['train', 'study'].includes(c.kind)) return [`${at}: learn, teacher, tags, aspects and material belong only to kind train or study (null otherwise)`];
     // Patch 9C-2c: a core stat he trains (an Ordinary Passive goal)
     const known = new Set([...(ctx.known || []), ...(ctx.learning || []).map((g) => g.id), ...(ctx.techniques || []), ...CORE_STATS]);
@@ -570,7 +572,13 @@ export function parsePlan(answer, vocab, ctx, message) {
             // "needs" (ORDER_RULES) is the planner's own field, checked here: an earlier step of this answer, or nothing
             const needs = c.needs ?? null;
             delete c.needs;
+            const craftUnits = type === 'activity' && c.kind === 'craft' ? c.qty : undefined;
+            if (craftUnits !== undefined) delete c.qty;
             const bad = validate({ commands: [c] }, schema);
+            if (craftUnits != null) {
+                if (Number.isSafeInteger(craftUnits) && craftUnits > 0 && typeof c.material === 'string') c.qty = craftUnits;
+                else errors.push(`${at}: craft qty needs a positive whole number and a material object ID`);
+            }
             if (needs !== null) {
                 if (Number.isInteger(needs) && needs < c.seq && value.commands.some((o) => o && o !== c && o.seq === needs)) c.needs = needs;
                 else errors.push(`${at}: "needs" must be the seq of an earlier command of this answer, or left out`);

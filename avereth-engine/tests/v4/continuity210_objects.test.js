@@ -84,7 +84,7 @@ test('a catalog TAKE cannot strip an owner: only an actual NPC handover moves th
         prose:'The healer offers to lend it when the other attendant returns.',report:empty};
     assert.deepEqual(play(start,turn).state.objects[satchel].holder,{entity:keeper});
     turn.prose='The healer takes her satchel from the peg and hands the strap to Alaric. He takes it.';
-    turn.report={...empty,deltas:[move]};
+    turn.report={...empty,expected:{1:{taken:true}},deltas:[move]};
     const handed=play(start,turn);
     assert.deepEqual(handed.state.objects[satchel].holder,{entity:'pc'});
     assert.equal(handed.x.events.filter(e=>e.t==='object.moved').length,1);

@@ -37,7 +37,7 @@ import { knownByName } from './known.js';
 import { resolvePlaceRef } from './place_book.js';
 import { stepFields, GATE_WORDS } from './movement.js';
 import { sectionStep, positionOf, ENTER, sectionsOf, afterPreview } from './sections.js';
-import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf, restoreEffect, namedSource, equipmentSlotKnown, offerCard } from './items.js';
+import { freeObjectId, useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf, restoreEffect, namedSource, equipmentSlotKnown, offerCard } from './items.js';
 import { itemEffectOf, rulesetOf } from '../content.js';
 import { learningActivity, stoneActivation } from './growth.js';
 import { effectiveStats } from '../passives.js';
@@ -902,6 +902,16 @@ const HANDLERS = {
             ctx.engineLines.push(r.engine);
             return { status: 'resolved', cap: minutes, line: `${r.line} ${minutes} minutes pass; it is now ${formatClock(s.clock.minute)}. Narrate it at that length.` };
         }
+        if (envx?.c && rulesetOf(s) >= 2 && c.kind === 'craft' && c.material) {
+            const material = s.objects[c.material];
+            const qty = c.qty;
+            if (!material || material.holder?.entity !== 'pc' || material.kind !== 'resource' || material.for_quests?.length ||
+                useOf(content, material) !== 'consumable' || material.effect || !Number.isSafeInteger(qty) || qty < 1 || qty > material.qty) {
+                return { status:'refused', reason:'unavailable craft material', line:'CANNOT SPEND MATERIAL — identify held raw stock and its exact available quantity. Tools and reserved items stay with their holders.' };
+            }
+            ctx.conditionals.push({seq:c.seq,kind:'craft',material:material.id,qty,at:s.scene.at});
+            ctx.extra.push(`MATERIAL — ${qty} of ${material.name} will be used up if the craft is completed here. Its tools stay with their holders.`);
+        }
         const t = content.rules.time;
         // PULSE package C (src/v4/pulse.js pulseClaimPause, plan §6 C): a pause the engine books is decided before its
         // time and recovery: an open window that cuts it short books only the minutes he rested (and their recovery)
@@ -1030,6 +1040,13 @@ const HANDLERS = {
         if (keeper && envx?.c && present(s, keeper) && (o.for_quests || []).some((id) => s.quests[id]?.status === 'active' && s.quests[id]?.taker === 'pc')) {
             return { status: 'authorized', uncertain: true, line: `TAKES — ${o.name} from ${who(s, keeper)}, who keeps it for his contract: he takes it along unless ${who(s, keeper)} holds it back for a reason of their own (the story decides; if it stays with them, nothing that was to follow it happens).` };
         }
+        if (keeper && envx?.c && rulesetOf(s) >= 2 && s.entities[keeper]?.kind === 'npc' &&
+            present(s, keeper) && !wareOnSale(s, o)) {
+            // A request can be accepted in the story. No possession or dependent action is authorised in advance.
+            ctx.expectedKeys[String(c.seq)] = 'take';
+            ctx.conditionals.push({seq:c.seq,kind:'receive',object:o.id,from:keeper,qty:c.qty ?? o.qty ?? 1});
+            return { status: 'pending', reason: 'awaiting handover', line: `REQUESTS — ${who(s, keeper)} holds ${o.name} (${o.id}). They may hand it to Alaric as a gift or loan, or retain it. Continue their actual offer and his response. It changes hands only if they complete the handover.` };
+        }
         if (keeper) return { status: 'refused', reason: 'someone holds it', line: `CANNOT TAKE — ${who(s, keeper)} holds ${o.name}; ${who(s, keeper)} would have to give it.` };
         const access = groundAccess(s, o);
         if (!access.ok && !access.shut) return { status: 'refused', reason: 'it is not here', line: `CANNOT TAKE — ${o.name} is not here.` };
@@ -1042,7 +1059,7 @@ const HANDLERS = {
         if (sale) return { status: 'refused', reason: 'for sale', line: `CANNOT TAKE — ${o.name} is ${who(s, sale.offer.seller)}'s ware for sale${Number.isInteger(sale.line.price_cp) ? ` (${cpText(sale.line.price_cp, content)})` : ''}; it becomes his by buying it (${sale.open ? 'accepting the offer' : `a new offer from ${who(s, sale.offer.seller)}`}), not by taking it.` };
         const part = c.qty && c.qty < (o.qty ?? 1) ? c.qty : null;
         if (s.places[s.scene.at]?.camp_stock?.includes(o.id)) (ctx.booked.campTakes ||= []).push({at:s.scene.at, id:o.id});
-        emit({ t: 'object.moved', d: { id: o.id, to: { entity: 'pc' }, ...(part ? { qty: part, split: `${o.id}_${s.turn}` } : {}) } });
+        emit({ t: 'object.moved', d: { id: o.id, to: { entity: 'pc' }, ...(part ? { qty: part, split: freeObjectId(s, `${o.id}_${s.turn}`) } : {}) } });
         return { status: 'resolved', line: `TAKES — ${o.name}${(part || o.qty) && (o.stack || (o.qty ?? 1) > 1 || o.unit) ? ` (${part || o.qty}${o.unit ? ` ${o.unit}` : ''})` : ''} along.` };
     },
     drop(s, content, c, ctx, emit, envx) {
@@ -1817,6 +1834,33 @@ function roomSteps(s, ordered, c) {
     return earlier.filter((x) => (x.seq ?? 0) > away && takesRoom(s, x));
 }
 
+// A series of explicit dispositions cannot spend the same counted unit twice. A TAKE or other
+// operation on that object breaks the calculation; orders that depend on earlier outcomes settle normally.
+function overdrawnDispositions(s, content, commands) {
+    const byItem = new Map();
+    const refused = new Set();
+    for (const command of commands) {
+        if (typeof command.object !== 'string') continue;
+        const item = s.objects[command.object];
+        if (item?.holder?.entity !== 'pc') continue;
+        if (!['give', 'drop', 'use'].includes(command.type) || command.needs != null ||
+            (command.type === 'give' && !present(s, command.to))) {
+            byItem.delete(item.id);
+            continue;
+        }
+        if (command.type === 'use' && !['food','consumable'].includes(useOf(content,item))) continue;
+        const lot = byItem.get(item.id) || { requested:0, steps:[] };
+        const available = item.qty ?? 1;
+        lot.requested += command.qty ?? (command.type === 'use' ? 1 : available);
+        lot.steps.push(command);
+        byItem.set(item.id,lot);
+        if (lot.steps.length > 1 && lot.requested > available) {
+            for (const step of lot.steps) refused.add(step);
+        }
+    }
+    return refused;
+}
+
 /**
  * Resolve the commands of one message in order. emit applies each event to s at once, so every command is checked
  * against the state after the ones before it ("pay the fee, then read the board").
@@ -1835,6 +1879,7 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
     ctx.pulse = pulseBegin(s, content, ordered, envx);
     // Related commands are alternate descriptions of one trade, not independent coin/goods transfers.
     // Links exist for this invocation only. Each handler still checks presence, custody, price and funds.
+    const overdrawn = envx.c && !s.encounter && rulesetOf(s) >= 2 ? overdrawnDispositions(s, content, ordered) : new Set();
     const trades = new Map();
     const selections = new Map();
     if (envx.c && rulesetOf(s) >= 2) for (const c of ordered.filter(c => ['offer.accept', 'buy', 'sell'].includes(c.type))) {
@@ -1961,6 +2006,7 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
             : room ? { status: 'refused', reason: 'room not booked', line: `NOT DONE — ${quoted}: he would ${c.kind} in the room or bed of step ${room.seq}, and it is not his yet: ${roomWhy(ctx.resolutions.find((x) => x.seq === room.seq))}. He does not ${c.kind} in this reply; tell no ${c.kind === 'sleep' ? 'night' : 'rest'} in it.` }
             : unmet ? { status: 'refused', reason: `needs step ${need}`, line: `NOT DONE — ${quoted}: it was to follow step ${need}, which did not happen; it does not happen in this reply (someone else's help does not do it for him).` }
             : trades.has(c) && !trade ? { status: 'clarify', reason: 'ambiguous trade payment', line: 'NOT PAID — this payment could belong to several trades. Clarify which; no additional coin was booked.' }
+            : overdrawn.has(c) && !trades.has(c) ? {status:'refused',reason:'insufficient whole units',line:`NOT ALLOCATED — these actions together require more ${s.objects[c.object].name} than he holds. None of those portions changed hands or were used; the rest of his turn may proceed.` }
             : trade?.bought ? { status: 'resolved', done: true, line: 'TRADE — the payment and goods above already complete this same transaction; nothing is booked again.' }
             : trade?.refused ? { status: 'refused', reason: trade.refused, line: 'NOT TRADED — the same trade remains unresolved; no separate payment or gift is made.' }
             : appraise ? { status: 'pending', reason: 'price still under appraisal', line: 'NOT SOLD — the buyer must finish appraising and name the final price. The goods remain Alaric’s; no gift or payment was booked.' }

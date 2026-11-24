@@ -34,6 +34,13 @@ export function gearOf(content, ref) {
     return [...content.items.values()].find((i) => normText(i.name) === n) || null;
 }
 
+// The first receipt keeps its historical ID; separate partial transfers never overwrite an earlier split.
+export function freeObjectId(state, base) {
+    let id = base;
+    for (let suffix = 2; state.objects[id]; suffix++) id = `${base}_${suffix}`;
+    return id;
+}
+
 /**
  * The behaviour of a thing: 'equipment' | 'tool' | 'consumable' | 'food'.
  * @param {{name: string, kind?: string, use?: string, template?: string}} o an object, or a sheet item

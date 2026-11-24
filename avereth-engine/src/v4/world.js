@@ -45,7 +45,7 @@ import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.j
 import { reachedEvents, setIntentEvents } from './intents.js';
 import { featureNamed, featureEvent, applySpring } from './features.js';
 import { complexOf, dungeonOf, trueDungeonOf, classified, rankText, linkBetween, sameWay, linksAt, wayBetween, roomByName, roomKnown, markEvents, newLink, linkEvent, levelVia, blockerOf, visited } from './dungeon.js';
-import { itemTraits, useOf, itemProfile, priceAudit, gearRetailPrice, gearOfferProfile, gearOfferName, gearOfferWhy, openEquipmentStock } from './items.js';
+import { freeObjectId, itemTraits, useOf, itemProfile, priceAudit, gearRetailPrice, gearOfferProfile, gearOfferName, gearOfferWhy, openEquipmentStock } from './items.js';
 import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity.js';
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
 import { anchorFor, speciesAnchor, templateFor, rulesetOf } from '../content.js';
@@ -1936,6 +1936,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
         emit({ t: 'cmd.completed', d: { seq: k.seq, ok: true, reason: null } });
     }
+    for (const k of conditionals.filter(x => x.kind === 'craft')) {
+        const material = s.objects[k.material];
+        if (expected[k.seq]?.done !== true || s.scene.at !== k.at || material?.holder?.entity !== 'pc' || k.qty > material.qty) continue;
+        emit({t:'object.consumed',d:{id:material.id,by:'craft',qty:k.qty}});
+        k.done = true;
+        emit({t:'cmd.completed',d:{seq:k.seq,ok:true,reason:null}});
+    }
     // Settle private work only after this reply's actual arrivals and conditional actions.
     // Completion and wage order in the extractor answer cannot change the result.
     step = { kind: 'engine' };
@@ -3119,6 +3126,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             }
         }
         if (!o) { reject(d, 'object', 'unknown object'); return; }
+        if (cPath && rulesetOf(s) >= 2 && (o.holder?.consumed || (to.entity === 'pc' && o.holder?.loc && o.holder.loc !== s.scene.at))) {
+            reject(d, 'object_source', 'a consumed item or stock left elsewhere cannot be received here'); return;
+        }
         if (to.entity === 'pc' && o.holder?.entity && o.holder.entity !== 'pc') {
             const units = d.qty && d.qty < (o.qty ?? 1) ? d.qty : (o.qty ?? 1);
             const g = purchaseOf(o.name, o.holder.entity, units);
@@ -3155,10 +3165,25 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (onSale) { reject(d, 'for_sale', `${o.name} is ${entityLabel(s, onSale.offer.seller)}'s ware for sale (${onSale.offer.id}${onSale.open ? '' : `, ${onSale.offer.status}`}); it becomes his by buying it`); return; }
         const box = o.in ? s.features?.[o.in] : o.in_name && o.holder?.loc ? featureNamed(s, o.holder.loc, o.in_name) : null;
         if (to.entity === 'pc' && box?.status === 'active' && box.kind === 'obstacle') { reject(d, 'shut_in', `it lies in ${box.name} (${box.id}), which is not open yet`); return; }
+        if (d.qty != null && (!Number.isSafeInteger(d.qty) || d.qty < 1 || d.qty > (o.qty ?? 1))) {
+            reject(d, 'object_quantity', 'only existing whole units can change hands'); return;
+        }
+        const receipts = to.entity === 'pc' ? conditionals.filter(k => k.kind === 'receive' && k.object === o.id && k.from === o.holder?.entity) : [];
+        let confirmed;
+        if (receipts.length) {
+            // The player's TAKE is conditional on a present owner's decision. A volunteered, unrelated gift
+            // uses the normal NPC path. A MOVE cannot override an offer the reply says was not taken.
+            confirmed = receipts.find(k => !k.done && expected[k.seq]?.taken === true && (d.qty ?? o.qty ?? 1) <= k.qty);
+            if (!confirmed) { reject(d, 'handover_unconfirmed', 'the requested handover of this item and quantity was not confirmed'); return; }
+        }
         const part = d.qty && d.qty < (o.qty ?? 1) ? d.qty : null;
         // to him: from where it lies, by his own take; from someone's hands, their gift (the firewall's rules)
         if (to.entity === 'pc') grant(o.holder?.loc ? 'player.take' : 'envelope.give');
-        emit({ t: 'object.moved', d: { id: o.id, to, ...(part ? { qty: part, split: `${o.id}_${tag}` } : {}) } });
+        emit({ t: 'object.moved', d: { id: o.id, to, ...(part ? { qty: part, split: freeObjectId(s, `${o.id}_${tag}`) } : {}) } });
+        if (confirmed) {
+            confirmed.done = true;
+            emit({t:'cmd.completed',d:{seq:confirmed.seq,ok:true,reason:null}});
+        }
         if (fresh && !part) objectsNew.delete(fresh); // this declaration was resolved; a later same-name gift is independent
     }
 
@@ -3718,9 +3743,7 @@ function uniqueEntityId(s, base) {
 
 /** "obj.t<reply index>.<name>" (the P0/S3 ids: obj.t16.marshmint), unique. */
 function uniqueObjectId(s, tag, name) {
-    let id = `obj.t${tag}.${slug(name) || 'thing'}`;
-    for (let n = 2; s.objects[id]; n++) id = `obj.t${tag}.${slug(name)}_${n}`;
-    return id;
+    return freeObjectId(s, `obj.t${tag}.${slug(name) || 'thing'}`);
 }
 
 /** A missing extractor answer: nothing of the reply was recorded (plan §3.4); the audit and the next block say so. */

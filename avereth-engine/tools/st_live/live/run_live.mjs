@@ -270,6 +270,12 @@ export async function run(o) {
         const pmodel = o.player.model || imp.route.runner.model;
         const p = purl ? await probePlayer({ url: purl, key: playerKey, model: pmodel, body: { ...playerSetup.reasoning.body, ...(o.player.extraBody || {}) } }) : null;
         playerSetup.probe = p;
+        if (o.openrouter && (!p || !p.ok)) {
+            // This run deliberately requires a fixed Wafer provider and low reasoning.
+            // Never silently remove either parameter following a 400/422; that would
+            // reintroduce the uncontrolled extractor budgets of the observed failed run.
+            throw new Error(`OpenRouter fixed-route preflight failed (${p?.error || 'no result'}). No fallback or degraded reasoning was enabled.`);
+        }
         if (p && !p.ok && (p.status === 400 || p.status === 422)) {
             playerSetup.dropped = `the endpoint refused the player's reasoning fields (${p.error}): the player sends none`;
             playerSetup.reasoning = { ...playerSetup.reasoning, body: {}, keys: [], source: 'none', note: playerSetup.dropped };

@@ -261,7 +261,7 @@ export async function run(o) {
     if (playerSetup.reasoning?.keys.length) {
         const purl = o.player.url || imp.route.runner.url;
         const pmodel = o.player.model || imp.route.runner.model;
-        const p = purl ? await probePlayer({ url: purl, key: playerKey, model: pmodel, body: playerSetup.reasoning.body }) : null;
+        const p = purl ? await probePlayer({ url: purl, key: playerKey, model: pmodel, body: { ...playerSetup.reasoning.body, ...(o.player.extraBody || {}) } }) : null;
         playerSetup.probe = p;
         if (p && !p.ok && (p.status === 400 || p.status === 422)) {
             playerSetup.dropped = `the endpoint refused the player's reasoning fields (${p.error}): the player sends none`;

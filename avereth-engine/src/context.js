@@ -13,7 +13,7 @@ import { skillOffers } from './v4/skill_growth.js';
 import { className, classText, classOffer } from './v4/class_growth.js';
 import {
     knowledgeOf, memoriesOf, memoryText, entityLabel, anyLabel, propText, currentFacts, statusOf, pcIdentityFor, truth, lookOf,
-    isMeaningful, PC_NAME_FACT, PC_LOOK_FACT, npcContinuity,
+    isMeaningful, PC_NAME_FACT, PC_LOOK_FACT, npcContinuity, FUNCTIONAL,
 } from './knowledge.js';
 import { rank, pack, Bm25 } from './retrieval.js';
 import { threadCurrent } from './threads.js';
@@ -235,10 +235,16 @@ function npcCard(state, content, id, focusWords, { absent = false, compact = fal
         const lastMoment = moments.at(-1);
         if (lastMoment) lines.push(`  last meaningful: [${day(lastMoment.minute)}${since(lastMoment)}] ${memoryText(state, lastMoment, id)}`);
         const subjects = absent ? ['pc'] : ['pc', ...state.scene.present, state.scene.location];
-        const rows = knowledgeOf(state, id).filter((r) => !IDENTITY_FACTS.has(r.about) && r.visibility !== 'secret'
+        const personal = knowledgeOf(state, id);
+        // A later observation by this person supersedes a false earlier guess about the same single-valued property.
+        // Keep both records as history; a fact this person never learned cannot correct a belief on their card.
+        const witnessed = v4 ? personal.filter(r => r.is_fact && !r.outdated && r.visibility !== 'secret'
+            && r.stance === 'knows' && r.source === 'witnessed' && FUNCTIONAL.has(r.p)) : [];
+        const rows = personal.filter((r) => !IDENTITY_FACTS.has(r.about) && r.visibility !== 'secret'
             && (subjects.includes(r.s) || subjects.includes(r.o) || (!absent && tokenize(propText(state, r, content)).some((w) => focusWords.has(w)))));
         const known = rows.filter((r) => r.stance === 'knows').slice(absent ? -3 : -5).map((r) => `${propText(state, r, content)}${r.outdated ? ' (OUTDATED: the world changed since)' : ''} [${r.source}]`);
-        const believed = rows.filter((r) => r.stance !== 'knows').slice(-3).map((r) => `${propText(state, r, content)} [${r.stance}${r.true === false ? ' — actually FALSE' : ''}]`);
+        const believed = rows.filter(r => r.stance !== 'knows' && !(r.true === false &&
+            witnessed.some(f => f.s === r.s && f.p === r.p && f.turn > r.turn))).slice(-3).map((r) => `${propText(state, r, content)} [${r.stance}${r.true === false ? ' — actually FALSE' : ''}]`);
         if (known.length) lines.push(`  knows: ${known.join('; ')}`);
         if (believed.length) lines.push(`  believes/suspects: ${believed.join('; ')}`);
         // other meaningful moments that matter to this turn's words (never routine ones: "Kest nodded" is not canon)

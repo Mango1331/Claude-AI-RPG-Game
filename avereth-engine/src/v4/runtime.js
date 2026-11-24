@@ -333,6 +333,20 @@ export async function planMessage(llm, content, ctx, text, { recent = '', isCurr
     return p.commands ? { hud_binding:p.hud_binding, hud_normalized:p.hud_normalized, hud_conflict:p.hud_conflict, commands: p.commands, failed: false, error: null, ms, repaired, raw, calls, ...(recovery ? { recovery } : {}) } : { commands: null, failed: true, error: (p.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired, raw, calls, ...(recovery ? { recovery } : {}) };
 }
 
+// The previous narration is useful for references even when its reported move was refused.
+// Only an active, committed reply with no booked movement can qualify its own RECENT text.
+function unbookedArrival(msg, state) {
+    const r = rec(msg);
+    if (!r?.text_hash || r.extraction?.status !== 'applied') return null;
+    const events = messageEvents(msg); // excludes a record belonging to an inactive/edited reply
+    if (events.some(e => e.t === 'scene.moved')) return null;
+    const refused = events.filter(e => e.t === 'delta.rejected' && e.d.rule === 'no_go' && e.d.item?.type === 'arrive');
+    if (!refused.length) return null;
+    const to = refused.length === 1 ? refused[0].d.item.at : null;
+    if (to === 'here' || to === state.scene.at) return null;
+    return typeof to === 'string' && state.places[to] ? to : 'the reported destination';
+}
+
 /**
  * Prototype C: one free-text message read by the planner (settings.planner on). The result goes to the engine's
  * existing inputs (src/v4/planner.js mapPlan); the record has the same shape as A's, plus `plan`, so swipes and
@@ -344,6 +358,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const recent = p >= 0 ? recentText(chat[p].mes) : '';
     const catalog = buildCatalog(before, content, { known: true, c: true });
     const ctx = withContentSkills(planContext(before, content, catalog), content, before);
+    if (p >= 0 && p === u - 1) ctx.unbookedArrival = unbookedArrival(chat[p], before);
     const actionInput=actionInputOf(msg);
     if(actionInput)ctx.actionInput=actionInput;
     const priorBinding = actionInput && previous?.plan?.raw?.length ? parsePlan(previous.plan.raw.at(-1),content.commandVocab,ctx,msg.mes) : null;

@@ -88,3 +88,35 @@ test('an invitation, a question, a deferral or a refusal supplies no travel perm
         assert.equal(r.state.scene.at,r.origin);
     }
 });
+
+test('A4/5: the next physical planner request distinguishes an unbooked narrated destination from the current input',async()=>{
+    const c=cases.A5, target='loc.ashbridge.mother_wrens_house', newInput=c.input;
+    const next = async edit => {
+        const chat=structuredClone(c.chat), prev=chat.at(-1);
+        if (edit) edit(prev,rec(prev));
+        chat.push({is_user:true,mes:newInput,extra:{}});
+        let request;
+        await prepareGenerationAsync(chat,content,{type:'normal',llm:async q=>{
+            assert.equal(q.purpose,'plan');request=q.messages[1].content;return '{"commands":[]}';
+        }});
+        assert.ok(!rec(chat.at(-1)).events.find(e=>e.t==='outcome.recorded').d.outcome.auth.go);
+        return request;
+    };
+    const marker='PREVIOUS ARRIVAL (engine):';
+    const actual=await next();
+    assert.match(actual,/HERE: .*Ashbridge \(loc\.ashbridge\)/);
+    assert.ok(actual.includes(marker));
+    assert.ok(actual.slice(actual.indexOf(marker),actual.indexOf('PLAYER MESSAGE:')).includes(target));
+    assert.ok(actual.endsWith(newInput));
+    const z = await play(c,[go(1,target,'I make my way to the weathered green door and knock')],
+        'Alaric walks from the Ashbridge gate to the green door of Mother Wren’s house and knocks.',
+        {scene:target,expected:{1:progress(true,target,null)},deltas:[arrival(target,null)]});
+    assert.equal(z.state.scene.at,target);
+    assert.ok(!z.reply.rejected?.some(d=>d.type==='arrive'));
+    for (const edit of [
+        prev=>{prev.mes='This is a different active swipe.';},
+        (_p,r)=>{r.extraction.status='pending';},
+        (_p,r)=>{r.events=r.events.filter(e=>e.t!=='delta.rejected');},
+        (_p,r)=>{r.events.push({t:'scene.moved',d:{at:'loc.ashbridge',location:'realm.duskreach',place:'Ashbridge'}});},
+    ]) assert.ok(!(await next(edit)).includes(marker));
+});

@@ -360,6 +360,7 @@ export function plannerUser(ctx, text, { recent = '' } = {}) {
     if (ctx.facts.length) L.push('ENGINE FACTS (the last rounds):', ...ctx.facts.map((f) => `- ${f}`));
     if (ctx.route?.length) L.push('RECENT ROUTE (older → newer; use these ids/names for "back", "return", "the city" and similar references):', ...ctx.route.map((p) => `- ${p.id}: ${p.name} (${p.kind})`));
     if (recent) L.push('RECENT (the end of the last narration; the catalog, RECENT ROUTE and ENGINE FACTS win where they differ):', recent);
+    if (ctx.unbookedArrival) L.push(`PREVIOUS ARRIVAL (engine): ${ctx.unbookedArrival} was not reached. Use HERE as the starting place for the current PLAYER MESSAGE.`);
     L.push('', 'PLAYER MESSAGE:', String(text ?? ''));
     return L.join('\n');
 }

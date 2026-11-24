@@ -105,3 +105,20 @@ test('Anonymous people can be distinguished by the same visible scene handles as
     assert.match(runCommands(state,content,'#npc Porter B').panels[0],/thick gloves/);
     assert.match(runCommands(state,content,'#npc porter').panels[0],/Which person/);
 });
+
+test('A direct call name grants no knowledge from an unspoken thought or another speaker’s quotation', () => {
+    for (const input of [
+        '*I decide against telling her my name is Alaric.* Who sent for me, Lia?',
+        "Lia, Bren said 'I'm Alaric.' I do not give you my name.",
+        "Lia, Bren said, “I'm Alaric.” Is that true?",
+        "Lia, I won't tell you I'm Alaric.",
+        'Lia, if I say my name is Alaric, will you let me pass?',
+    ]) assert.deepEqual(listeners(input), [], input);
+    for (const input of [
+        'Lia, “My name is Alaric.”',
+        '*I lower my hood.* My name is Alaric, Lia.',
+        'I tell Lia Halloran that my name is Alaric.',
+        '*I tell Lia Halloran my name is Alaric.*',
+        '*I tell the farmer my name is Alaric.*',
+    ]) assert.deepEqual(listeners(input), [lia], input);
+});

@@ -928,24 +928,42 @@ export function selfIntro(s, emit) {
     const nameFact = s.facts[PC_NAME_FACT]?.o;
     if (!nameFact || s.scene.concealed.includes('pc')) return;
     // A name fact grants its entire value. A shortened introduction cannot disclose an unspoken surname.
-    const introduction = new RegExp("(?:\\b(?:my name(?:'s| is)|i am|i'?m|call me|they call me)|(?:^|[.!?*:'\"“])\\s*name(?:'s| is))\\s+" + escape(nameFact) + "(?![\\p{L}\\p{N}'-])", 'iu');
-    if (!introduction.test(input)) return;
+    const intro = new RegExp("\\b(?:(?:my )?name(?:'s| is)|i am|i'?m|call me|they call me)\\s+" + escape(nameFact) + "(?![\\p{L}\\p{N}'-])", 'iu');
+    if (!intro.test(input)) return;
     const listeners = perceivers(s).filter(id => s.entities[id].kind === 'npc' && s.scene.awareness[id] !== 'unaware');
-    // A direct address ("Lia, …", "… my gift, Lia.") takes precedence over a third person mentioned
-    // elsewhere in the sentence. A shared call name cannot select one of two people by chance.
-    const people = Object.values(s.entities).filter(e => e.kind === 'npc');
-    const vocatives = new Map();
-    for (const e of people) {
+    const names = new Map();
+    for (const e of Object.values(s.entities)) {
+        if (e.kind !== 'npc') continue;
         const label = e.known_name ?? e.name;
         if (!label) continue;
-        for (const part of new Set([label, label.split(/\s+/)[0]])) {
-            const word = escape(part);
-            const direct = new RegExp('(?:^|[.!?:"“])\\s*' + word + '\\s*,|,\\s*' + word + '\\s*(?=[,.!?;"”]|$)', 'iu');
-            if (direct.test(input)) {
-                const key = normText(part);
-                vocatives.set(key, [...(vocatives.get(key) || []), e.id]);
-            }
+        for (const part of new Set([label, label.split(/\s+/)[0]].map(normText)))
+            names.set(part, [...(names.get(part) || []), e.id]);
+    }
+    // Match a direct declaration, or an affirmative speech action by the PC.
+    // A thought between roleplay markers or a quotation attributed to someone else grants nothing.
+    let told = null;
+    const spoken = input.split('*').some((part, index) => part.split(/[.!?;\n]/).some(clause => {
+        const match = intro.exec(clause);
+        if (!match) return false;
+        const lead = normText(clause.slice(0, match.index)).replace(/^["'\s]+|["',:\s]+$/g, '');
+        const speech = /^i (?:tell|say|whisper|reply|answer)(?: (?:to )?(.+?))?(?: that)?$/.exec(lead);
+        if (speech) {
+            const recipient = speech[1];
+            if (!recipient || /^(?:him|her|them|you)$/.test(recipient)) return true;
+            const role = recipient.replace(/^the /, '');
+            const ids = names.get(recipient) || listeners.filter(id => (s.entities[id].descriptors || []).some(d => normText(d) === role));
+            if (ids.length) { told = [recipient, ids]; return true; }
         }
+        return index % 2 === 0 && lead.split(/,\s*/).every(w => !w || names.has(w) || /^(?:hello|hi|hey)$/.test(w));
+    }));
+    if (!spoken) return;
+    // A direct address takes precedence over a third person mentioned elsewhere. A shared call
+    // name cannot select one of two people by chance; absent and unaware listeners still cannot hear.
+    const vocatives = new Map(told ? [told] : []);
+    for (const [part, ids] of names) {
+        const word = escape(part);
+        const direct = new RegExp('(?:^|[.!?:"“])\\s*' + word + '\\s*,|,\\s*' + word + '\\s*(?=[,.!?;"”]|$)', 'iu');
+        if (direct.test(input)) vocatives.set(part, ids);
     }
     const direct = [...vocatives.values()].filter(ids => ids.length === 1).flat();
     const addressed = vocatives.size ? listeners.filter(id => direct.includes(id)) : listeners.filter(id =>

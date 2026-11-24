@@ -1,5 +1,9 @@
 # 10B-Spieltests
 
+## User11 · Erster persönlicher .208-Lauf – Kampf-HUD und Major/Minor
+
+[Run-Übersicht, Spielerfeedback und Quellen](user-20261124-014928-208/README.md) · [Erstreview](user-20261124-014928-208/REVIEW.md) · [Messwerte](user-20261124-014928-208/MESSWERTE_USER11_208.json) · [externe RPG-Vergleichsrecherche](../recherche/AVERETH_208_MAJOR_MINOR_RPG_VERGLEICH_BALANCE_2026-11-24.md). Major/Minor funktioniert; subjektiv ist das HUD überladen. Im Dungeon zeigte sich Ausweichen bei ENGAGED ohne Schadensreduktion. Separater Continuity-Fall bei Bren/Hilfszusage. Originaluploads sind gehasht, noch nicht als Git-Blobs abgelegt.
+
 ## User10 · Zweiter .207-Lauf mit Fortsetzung
 
 [Unabhängiger Gegenreview des Gesamtlaufs](user-20261123-075443-207/CODEX_GEGENREVIEW.md) · [GPT-Analyse der ersten Boardlesung](user-20261123-075443-207/REVIEW.md) · [43 physische Aufrufe](user-20261123-075443-207/CODEX_PHYSISCHE_AUFRUFE.csv). Das neue Lesen gelingt. Die abgewiesene Mischaktion wirkt später in der Prosa fort. Chat und Events der Fortsetzung enthalten den Anfang.

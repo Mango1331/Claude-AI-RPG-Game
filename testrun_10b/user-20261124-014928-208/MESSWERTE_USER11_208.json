@@ -1,0 +1,162 @@
+{
+  "id": "User11",
+  "date": "2026-11-24",
+  "build": "4.3.0-c.6.6.208",
+  "commit": "cb1eb944a041b26be9210199d780be9ff740f74d",
+  "chat_messages_total": 28,
+  "user_messages": 13,
+  "creation_inputs": 2,
+  "narrated_turns": 11,
+  "event_groups": 25,
+  "server_calls": {
+    "requests": 36,
+    "responses": 36,
+    "all_stream_false": true,
+    "cached_tokens_reported": 0,
+    "input_tokens": 451528,
+    "output_tokens": 12000,
+    "total_tokens": 463528,
+    "by_role": {
+      "planner": {
+        "calls": 8,
+        "input": 100298,
+        "output": 380
+      },
+      "board": {
+        "calls": 1,
+        "input": 2508,
+        "output": 1073
+      },
+      "narrator": {
+        "calls": 11,
+        "input": 123423,
+        "output": 4404
+      },
+      "extractor": {
+        "calls": 16,
+        "input": 225299,
+        "output": 6143,
+        "repairs": 5
+      }
+    }
+  },
+  "board": {
+    "listings_created": 5,
+    "physical_calls": 1,
+    "board_llm_ms": 51618,
+    "quit_early_after_four": false
+  },
+  "combat": {
+    "first_strike_arcane_wave_targets": 3,
+    "first_wave_damage": [
+      24,
+      24,
+      27
+    ],
+    "hp_before_first": 80,
+    "hp_before_second": 8,
+    "first_turn_incoming_damage": [
+      17,
+      12,
+      9,
+      15,
+      11,
+      8
+    ],
+    "second_wave_damage": [
+      24,
+      27,
+      23
+    ],
+    "enemies_defeated_in_second_wave": 2,
+    "minor": "sidestep",
+    "minor_placed_after_major": true,
+    "sidestep_eligible_enemy_hits": 0,
+    "sidestep_mitigation_in_test": 0,
+    "final_enemy_attack_damage": 17,
+    "pc_final_hp": 0,
+    "pc_final_mp": 44,
+    "final_enemy_hp": 4
+  },
+  "times": {
+    "definition": "Host gen_started → gen_finished + extractor ms, lower bound; no ST safe-send / readback timestamp",
+    "n": 11,
+    "host_plus_x_mean_s": 85.04954545454545,
+    "host_plus_x_median_s": 68.418,
+    "min_s": 24.501,
+    "max_s": 197.791,
+    "turns": [
+      {
+        "turn": 3,
+        "host_s": 33.108,
+        "extractor_s": 35.31,
+        "host_plus_x_lower_bound_s": 68.418
+      },
+      {
+        "turn": 4,
+        "host_s": 28.762,
+        "extractor_s": 21.971,
+        "host_plus_x_lower_bound_s": 50.733
+      },
+      {
+        "turn": 5,
+        "host_s": 34.598,
+        "extractor_s": 22.327,
+        "host_plus_x_lower_bound_s": 56.925
+      },
+      {
+        "turn": 6,
+        "host_s": 97.912,
+        "extractor_s": 37.448,
+        "host_plus_x_lower_bound_s": 135.36
+      },
+      {
+        "turn": 7,
+        "host_s": 23.993,
+        "extractor_s": 60.408,
+        "host_plus_x_lower_bound_s": 84.401
+      },
+      {
+        "turn": 8,
+        "host_s": 96.582,
+        "extractor_s": 101.209,
+        "host_plus_x_lower_bound_s": 197.791
+      },
+      {
+        "turn": 9,
+        "host_s": 68.783,
+        "extractor_s": 39.522,
+        "host_plus_x_lower_bound_s": 108.305
+      },
+      {
+        "turn": 10,
+        "host_s": 32.34,
+        "extractor_s": 77.278,
+        "host_plus_x_lower_bound_s": 109.618
+      },
+      {
+        "turn": 11,
+        "host_s": 28.718,
+        "extractor_s": 39.576,
+        "host_plus_x_lower_bound_s": 68.294
+      },
+      {
+        "turn": 12,
+        "host_s": 27.12,
+        "extractor_s": 4.079,
+        "host_plus_x_lower_bound_s": 31.199
+      },
+      {
+        "turn": 13,
+        "host_s": 18.151,
+        "extractor_s": 6.35,
+        "host_plus_x_lower_bound_s": 24.501
+      }
+    ]
+  },
+  "original_sha256": {
+    "chat": "534059d2e42c13148f35dcd58559047c4f1636e55ee5a71a0b5e6612ac991e8c",
+    "events": "c76847a5b8ade424ae65e06714ea38edc5dd4cd2455c1dbacf5a947667f31b2a",
+    "st_log": "475720cd17cfb3f890db960ba913c48d65b7f2c0c3d21c63d6b8388aeff2d061"
+  }
+}

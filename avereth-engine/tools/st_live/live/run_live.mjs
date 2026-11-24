@@ -46,6 +46,25 @@ export async function verifyFixtureReload(driver, chat) {
     const after = foldChat(await driver.chat()).state;
     return JSON.stringify(before.entities.pc.sheet) === JSON.stringify(after.entities.pc.sheet) && JSON.stringify(before.career) === JSON.stringify(after.career);
 }
+/** Double only the six BASE attributes in the isolated helper-runner's copied start file.
+ * The normal product content, all NPCs, class favoured bonuses and level-up rules stay untouched.
+ * Must be called after seedProfile and before opening the character/card in the browser.
+ */
+export function applyIsolatedHelperStartStats(inst, enabled = false) {
+    if (!enabled) return null;
+    const file = path.join(inst.user, 'extensions', 'avereth-engine', 'content', 'campaign_start.json');
+    const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+    const before = data.pc?.stats;
+    const names = ['STR', 'VIT', 'AGI', 'INT', 'PER', 'WIL'];
+    if (!before || Object.keys(before).length !== names.length ||
+        names.some(name => !Number.isInteger(before[name]) || before[name] < 1))
+        throw new Error('Runner test bonus: unexpected campaign starting stats; no changes made');
+    const after = Object.fromEntries(names.map(name => [name, before[name] * 2]));
+    data.pc.stats = after;
+    inst.guard.write(file, JSON.stringify(data, null, 2) + '\n');
+    return { kind: 'isolated_runner_start_stats', multiplier: 2, before, after };
+}
+
 export const DEFAULT_RUNS = path.join(ENGINE, 'tools', 'st_live', 'runs');
 /** A failed X record still blocks the native ST Action HUD; another player message cannot resume it. */
 export function nativeCompletionBlocksContinuation(fault, chat) {
@@ -329,6 +348,12 @@ export async function run(o) {
         server = await startServer({ stDir: imp.st.dir, inst, port, logFile: path.join(runDir, 'server.log'), timedFile: path.join(runDir, 'server.timed.log') });
         log(`SillyTavern ${imp.st.version} on ${server.url} (${(server.startMs / 1000).toFixed(1)} s)`);
         setup = seedProfile(inst, imp, { key });
+        // Only this natural LLM helper test gets the doubled starting attributes.
+        // Existing stub/batch runs and all regular player campaigns retain the product stats.
+        setup.startStatsBonus = applyIsolatedHelperStartStats(
+            inst, o.openrouter && guide.id === 'natural_helper_progression' && o.player.type === 'llm' && !o.stub
+        );
+        if (setup.startStatsBonus) log('ISOLATED TEST BONUS: six Level-1 base stats doubled (5 → 10); normal product and NPC stats unchanged');
         setup.host = (() => { try { return new URL(imp.route.runner.url || '').host; } catch { return null; } })();
         const pw = loadPlaywright();
         if (!pw) throw new Error('Playwright is not installed (npm install -g playwright-core)');

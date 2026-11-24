@@ -3,11 +3,16 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { options, nativeCompletionBlocksContinuation } from '../../tools/st_live/live/run_live.mjs';
+import { options, nativeCompletionBlocksContinuation, applyIsolatedHelperStartStats } from '../../tools/st_live/live/run_live.mjs';
 import { OPENROUTER_URL, OPENROUTER_MODEL, OPENROUTER_PROVIDER, OPENROUTER_REASONING_EFFORT, OPENROUTER_INCLUDE_BODY, openRouterPlayerExtraBody, useOpenRouter } from '../../tools/st_live/live/openrouter.mjs';
 import { routeOf } from '../../tools/st_live/live/import_profile.mjs';
 import { loadGuide } from '../../tools/st_live/live/guide.mjs';
 import { playerSystemPrompt, playerReasoning, llmPlayer } from '../../tools/st_live/live/players.mjs';
+import { createInstance } from '../../tools/st_live/live/profile.mjs';
+import { loadProductContent } from '../helpers.js';
+import { startCampaign } from '../../src/engine.js';
+import { selectClass, selectSkills } from '../../src/creation.js';
+import { fold, applyEvent } from '../../src/state.js';
 
 test('one OpenRouter run overrides legacy Featherless settings without touching that config or the ST profile', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'avereth-or-single-'));
@@ -138,4 +143,55 @@ test('a terminal Extractor failure is not soft-continuable while ST still blocks
     assert.equal(nativeCompletionBlocksContinuation({kind:'extractor_failed',at:2},replies),false);
     assert.equal(nativeCompletionBlocksContinuation({kind:'planner_failed',at:0},replies),false);
     assert.equal(nativeCompletionBlocksContinuation(null,replies),false);
+});
+
+test('the helper runner alone doubles all six Level-1 baseline stats in its isolated content and records the bonus', async () => {
+    const dir=fs.mkdtempSync(path.join(os.tmpdir(),'avereth-helper-stats-'));
+    const inst=createInstance({runId:'helper-stats-test',runDir:dir});
+    const isolated=path.join(inst.user,'extensions','avereth-engine','content','campaign_start.json');
+    const productFile=new URL('../../content/campaign_start.json',import.meta.url);
+    const productText=fs.readFileSync(productFile,'utf8');
+    try {
+        inst.guard.mkdir(path.dirname(isolated));
+        inst.guard.write(isolated,productText);
+        assert.equal(applyIsolatedHelperStartStats(inst,false),null);
+        assert.equal(fs.readFileSync(isolated,'utf8'),productText);
+        const receipt=applyIsolatedHelperStartStats(inst,true);
+        assert.equal(receipt.kind,'isolated_runner_start_stats');
+        assert.equal(receipt.multiplier,2);
+        const normal=JSON.parse(productText);
+        const doubled=JSON.parse(fs.readFileSync(isolated,'utf8'));
+        for(const stat of ['STR','VIT','AGI','INT','PER','WIL']) {
+            assert.equal(normal.pc.stats[stat],5);
+            assert.equal(doubled.pc.stats[stat],10);
+            assert.equal(receipt.before[stat],5);
+            assert.equal(receipt.after[stat],10);
+        }
+        assert.equal(fs.readFileSync(productFile,'utf8'),productText,'product content is unchanged');
+        // The same real creation procedures must apply the existing favored +1 and
+        // derive HP/MP consistently; no NPC stats, XP or level thresholds are modified.
+        const content=await loadProductContent();
+        content.start=doubled;
+        const events=startCampaign(content,{seed:7,runtime:'v4'});
+        let state=fold(events);
+        const advance=(newEvents)=>{
+            for(const event of newEvents) { events.push(event); applyEvent(state,event); }
+        };
+        assert.deepEqual(state.entities.pc.sheet.stats,Object.fromEntries(content.rules.stats.map(k=>[k,10])));
+        advance(selectClass(state,content,'mage').events);
+        advance(selectSkills(state,content,['mage.flame_lance','mage.arcane_bolt']).events);
+        const pc=state.entities.pc.sheet;
+        assert.equal(pc.stats.INT,11);
+        assert.equal(pc.stats.WIL,11);
+        assert.equal(pc.stats.VIT,10);
+        assert.equal(pc.hp,105);
+        assert.equal(pc.mp,132);
+        assert.equal(pc.level,1);
+        assert.equal(pc.free_points,0);
+        assert.equal(pc.xp,0);
+        assert.equal(fold(JSON.parse(JSON.stringify(events))).entities.pc.sheet.hp,105);
+    } finally {
+        fs.rmSync(inst.root,{recursive:true,force:true});
+        fs.rmSync(dir,{recursive:true,force:true});
+    }
 });

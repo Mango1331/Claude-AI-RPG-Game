@@ -22,7 +22,7 @@ import { execSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { ENGINE, stamp, pick, isInside, changedSince, treeStat, treeDiff, sha256, clip } from './lib.mjs';
 import { importProfile, describeImport, routeOf, routeText, modelKeyOf } from './import_profile.mjs';
-import { OPENROUTER_URL, OPENROUTER_MODEL, useOpenRouter } from './openrouter.mjs';
+import { OPENROUTER_URL, OPENROUTER_MODEL, OPENROUTER_PROVIDER, OPENROUTER_REASONING_EFFORT, openRouterPlayerExtraBody, useOpenRouter } from './openrouter.mjs';
 import { probeModels, probeRows, probeBlocks, probePlayer, playerRows } from './preflight.mjs';
 import { createInstance, writeConfig, seedProfile, chatFiles, removeKey, removeInstance, WORLD_FILE } from './profile.mjs';
 import { startServer, freePort } from './server.mjs';
@@ -103,7 +103,7 @@ export function options(argv = process.argv.slice(2), env = process.env) {
         o.preset = arg('--preset') || 'repo';
         o.keyEnv = arg('--key-env') || 'AVERETH_LIVE_API_KEY';
         o.player = { ...o.player, type: 'llm', url: OPENROUTER_URL, model: o.openrouterModel,
-            keyEnv: null, reasoning: 'profile', extraBody: null };
+            keyEnv: null, reasoning: 'profile', extraBody: openRouterPlayerExtraBody() };
     } else if (arg('--model')) {
         throw new Error('--model requires --openrouter (other runs use the SillyTavern profile)');
     }
@@ -276,6 +276,9 @@ export async function run(o) {
     g.mkdir(path.join(runDir, 'screens'));
     log(`run ${runId}${o.stub ? ' (STUB: no live test)' : ''}`);
     log(`guide ${guide.chain.join(' → ')}, player ${o.player.type}${persona ? ` (${persona.split(':')[0]})` : ''}, seed ${seed}`);
+    if (o.openrouter) {
+        log(`OpenRouter fixed routing: provider ${OPENROUTER_PROVIDER}, fallbacks off; reasoning ${OPENROUTER_REASONING_EFFORT} on player + game roles`);
+    }
     log(`isolated instance ${inst.root}`);
 
     const playerLog = [];

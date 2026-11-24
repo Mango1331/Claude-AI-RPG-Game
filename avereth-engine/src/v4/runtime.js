@@ -950,7 +950,11 @@ export function extractionRequest(chat, id, content) {
     const o = state.last?.outcome || {};
     const gos = (o.auth?.gos || []).map((g) => g.to).filter(Boolean);
     // Prototype C (4.3.0-c.5): the contracts he read on a board, by id, also for a contract or board taken on arrival
-    const cat = extractorCatalog(state, content, { extraPlaces: gos, known: !!(o.auth?.c || o.c), c: !!(o.auth?.c || o.c) });
+    const player = rec(chat[lastUserIndex(chat,id)])?.own_phase_refused ? null : state.last?.input || null;
+    const cat = extractorCatalog(state, content, {
+        extraPlaces: gos, known: !!(o.auth?.c || o.c), c: !!(o.auth?.c || o.c),
+        input: [player, msg.mes].filter(Boolean).join('\n'),
+    });
     let actions = o.kind === 'v4' ? [...o.actions, ...(o.extra || [])].join('\n')
         : o.kind === 'combat' ? 'COMBAT — the engine resolved this round (attacks, damage, movement); report only what else the reply established.'
             : o.kind === 'check' ? `CHECK — the engine resolved: ${o.check?.label || 'a check'}, ${o.check?.success ? 'success' : 'failure'}.`
@@ -961,7 +965,6 @@ export function extractionRequest(chat, id, content) {
     }
     if (state.encounter || o.kind === 'combat') actions += `\n${chronicleLine(combatChronicle(chat.slice(0, id), messageEvents))}`;
     const expectedKeys = o.expected_keys || {};
-    const player = rec(chat[lastUserIndex(chat,id)])?.own_phase_refused ? null : state.last?.input || null;
     const vocab = worldVocab(content.deltaVocab, state);
     const req = extractorRequest(vocab, { catalog: cat.text, actions, player, expectedKeys, reply: msg.mes });
     return { ...req, vocab, hash: r.text_hash, expectedKeys, state, startScene: state.scene.at, sceneRequired: (state.meta?.ruleset || 1) >= 2 && !!(o.c || o.auth?.c), ids: { places: cat.places, quests: cat.quests, objects: cat.objects }, catalog: cat.text, actions, player };

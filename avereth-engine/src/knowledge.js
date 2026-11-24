@@ -255,19 +255,35 @@ export function npcContinuity(state, scan = '') {
         const p = state.places?.[id];
         if (p && !['realm', 'region', 'settlement'].includes(p.kind)) for (const w of words(p.name)) places.add(w);
     }
-    const query = normText(scan);
-    return Object.values(state.entities).filter(e => e.kind === 'npc' && e.name && !state.scene.present.includes(e.id))
+    // Compare complete words, including before punctuation and possessives. A partial personal name
+    // is useful for recall only when a single known identity owns it. Recall never grants presence.
+    const nameWords = text => normText(text).match(/[\p{L}\p{N}]+/gu) || [];
+    const query = ` ${nameWords(scan).join(' ')} `;
+    const properWords = text => new Set((String(text || '').match(/[\p{L}\p{N}]+/gu) || [])
+        .filter(w => /^\p{Lu}/u.test(w)).map(normText));
+    const called = properWords(scan);
+    const people = Object.values(state.entities).filter(e => e.kind === 'npc' && e.name);
+    const frequency = new Map();
+    for (const e of [...people, state.entities.pc].filter(Boolean)) {
+        for (const word of new Set(nameWords(e.known_name ?? e.name))) frequency.set(word, (frequency.get(word) || 0) + 1);
+    }
+    return people.filter(e => e.known_name !== '' && !state.scene.present.includes(e.id))
         .map(e => {
-            const name = normText(e.name);
-            const history = state.memories.filter(m => ((m.who || []).includes('pc') || (m.witnesses || []).includes('pc') || (m.seen || []).includes('pc'))
+            const label = e.known_name ?? e.name;
+            const name = nameWords(label);
+            const history = state.memories.filter(m => (m.witnesses || m.seen || m.who || []).includes('pc')
                 && [...(m.who || []), ...(m.about || []), ...(m.witnesses || [])].includes(e.id));
-            const named = (` ${query} `).includes(` ${name} `);
+            const full = name.length && query.includes(` ${name.join(' ')} `);
+            // A word of a name could be a title (Mother, Captain) or a surname shared by a family.
+            // Prefer a call name the PC has already heard used independently of the full name.
+            const short = name.length > 1 && name.some(w => w.length >= 3 && frequency.get(w) === 1 && called.has(w)
+                && history.some(m => properWords(String(m.text || '').split(label).join(' ')).has(w)));
             const local = history.some(m => [...words(m.place)].some(w => places.has(w)));
             const last = history.at(-1);
             const facts = currentFacts(state, f => f.s === e.id && f.visibility !== 'secret'
                 && ['status', 'bindings', 'plans', 'residence'].includes(f.p)).slice(-4);
             const moment = history.filter(isMeaningful).at(-1);
-            return { id: e.id, score: named ? 2 : local ? 1 : 0,
-                text: `${e.name} [${e.id}] — NOT PRESENT; last witnessed at ${last?.place || 'unknown place'}${last ? ` (minute ${last.minute}, historical)` : ''}. ${facts.map(f => `${f.p}: ${f.o}`).join('; ')}${moment ? `; remembers: ${memoryText(state, moment)}` : ''}` };
+            return { id: e.id, score: full ? 3 : short ? 2 : local ? 1 : 0,
+                text: `${label} [${e.id}] — NOT PRESENT; last witnessed at ${last?.place || 'unknown place'}${last ? ` (minute ${last.minute}, historical)` : ''}. ${facts.map(f => `${f.p}: ${f.o}`).join('; ')}${moment ? `; remembers: ${memoryText(state, moment)}` : ''}` };
         }).filter(x => x.score).sort((a, b) => b.score - a.score).slice(0, 3);
 }

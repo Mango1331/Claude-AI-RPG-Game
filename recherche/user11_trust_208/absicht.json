@@ -1,0 +1,36 @@
+{
+  "method": "Anker ist der sichtbare Präfix vor der getesteten Antwort plus aktuelle Spielereingabe. Zustimmung zu irgendeinem Weg, Zustimmung zu genau diesem Ziel und ein kanonisch möglicher Weg sind getrennte Fragen. Die historische Fallliste war schon bekannt; die Einstufung wurde vor dem ersten Variantenvergleich fixiert. Nur Originalpräfixe werden individuell eingestuft.",
+  "cases": [
+    ["186W",118,"Weg gewählt","Rückwärts Richtung Torpalisade, möglicher Angriff nur unter Bedingung. Kein Auftrag, einen beliebigen anderen Ort zu betreten."],
+    ["186W",120,"an Bedingungen gebunden","Bittet den Torwächter, das Tor zu öffnen, will Sicherheit dahinter. Eintritt erst nach Öffnung. Das zuvor erzählte Tor kann vom gebuchten Standort abweichen."],
+    ["186W",122,"Weg gewählt","Folgt der Wache ausdrücklich zum Wachhaus, nimmt Platz. Die gebuchte Ortshierarchie bleibt verbindlich. Eine Preisfrage ermächtigt keine Zahlung."],
+    ["186M",64,"Weg gewählt","Bis zum Höhleneingang laufen und hineinsehen. Kein tieferes Dungeonzimmer angeordnet."],
+    ["188R",8,"keine Reise","Nur nach dem Weg zur Gilde fragen. Die Beantwortung der Frage erfüllt den Wunsch am Tor."],
+    ["188R",62,"Weg gewählt","Show me these tracks at the lime pits' outflow: Der Besuch der benannten Spur ist gewollt. Öffnung eines versperrten Weges oder Questzusage ist davon unabhängig."],
+    ["188R",76,"offener Vorschlag","Shall we go ask him ... now, then? Konkreter gemeinsamer Vorschlag. Die Partnerin soll sich entscheiden können. Weder ausdrücklich losgelaufen noch jede Fortsetzung unerwünscht. Streng: Zustimmung zur Ausführung noch offen."],
+    ["188R",78,"offener Vorschlag","Die Annahme des Schafs ist ausdrücklich. Die anschließende Frage betrifft eine andere Tätigkeit. Keine rückwirkende Reisevollmacht zum Ort des Schäfers."],
+    ["U09",6,"Weg gewählt","Stadt und Gildenhalle ausdrücklich benannt."],
+    ["U09",16,"Weg gewählt","Zur Quest reisen; eine plausible Unterbrechung auf dem Weg ist gedeckt."],
+    ["U09",18,"an Bedingungen gebunden","Steine als Überquerungsmethode versuchen. Erfolg oder Reise über ein beliebiges anderes Ziel hinaus nicht vorgegeben."],
+    ["U09",20,"Weg gewählt","Der vorher angebotene Umweg ist angenommen."],
+    ["U09",22,"Weg gewählt","Über die Brücke und weiter zum Dungeon. Auch bei gebuchtem Schaden darf eine plausible improvisierte Passage gelingen."],
+    ["U09",24,"Weg gewählt","Dungeon betreten, nächster legaler Abschnitt."],
+    ["U10",6,"Weg gewählt","Stadt und Gildenhalle ausdrücklich."],
+    ["U10",18,"Weg gewählt","Aufbruch zum Orchard Walls."],
+    ["U10",20,"Weg und Frage","Zum Tor gehen ist gewählt. Nach Standort der Wespen fragen ermächtigt für sich genommen keinen Marsch zum Nest."],
+    ["U10",22,"Weg gewählt","In Richtung Wespennest schleichen. Keine freie Entscheidung, einen anderen Ort aufzusuchen oder anzugreifen."],
+    ["U10",24,"Annäherung","Näher an die bereits gewählte Gruppe, weiterhin geduckt. Kein freier Fernortswechsel."],
+    ["U10",26,"Annäherung","Annähern und Hinterhalt vorbereiten. Noch kein Angriff erklärt."],
+    ["U11",6,"Weg gewählt","Stadt und Gildenhalle ausdrücklich."],
+    ["U11",8,"lokale Handlung","Zum Schalter in der erreichten Gilde, um sich anzumelden."],
+    ["U11",12,"lokale Handlung","In derselben Halle zum Questboard, Aushang ansehen. Keine NPC-Annahme eines Vertrags ermächtigt."],
+    ["U11",16,"Weg gewählt","Zu den Katakomben aufbrechen. Ein Zwischenstopp vor dem Ziel ist eine zulässige Konsequenz."],
+    ["U11",18,"begrenzte Mitbewegung","Bren bittet um Aufhelfen, Wagenrichten und kann sich beim Humpeln stützen. Er nennt das Cottage an derselben Chapel-Route. Let's go und for the part tragen eine gemeinsame kurze Etappe, ein Cottage am Weg ist plausibel; kein beliebiges neues Ziel und keine feste Zusage einer ganzen Eskorte."],
+    ["U11",20,"Weg gewählt","Wieder in Richtung Dungeon aufbrechen. Keine unbeschränkte eigenständige Dungeonroute oder Zusatzentscheidung."],
+    ["U11",22,"Weg gewählt","Staff ready, tiefer in den Dungeon gehen, nur nach vorhandener Topologie."]
+  ],
+  "reported26": {
+    "186W": [118,120,122], "186M": [64,66,68,74,76], "186R": [56,76,98],
+    "188W": [110,112,138], "188M": [58,60,92,96,100,122], "188R": [8,62,76,78,100,122]
+  }
+}

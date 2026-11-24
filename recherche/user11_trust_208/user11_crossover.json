@@ -1,0 +1,1455 @@
+{
+  "sourceHash": "534059d2e42c13148f35dcd58559047c4f1636e55ee5a71a0b5e6612ac991e8c",
+  "branches": [
+    "cb1eb944a041b26be9210199d780be9ff740f74d",
+    "84a97c447a2736241eebda215d29f0dd9045a2cc",
+    "dc7290708b8d18dc1cb00320f6d0d4bb264164d4"
+  ],
+  "turns": [
+    {
+      "index": 6,
+      "input": "*i walk into the city ahead and make my way over to the adventurers guild*",
+      "reported": [
+        "loc.alderwatch.guild_hall"
+      ],
+      "A": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [
+          "loc.alderwatch.guild_hall"
+        ],
+        "rejected": [
+          [
+            1,
+            "expected",
+            "met_not_known_here"
+          ]
+        ],
+        "events": {
+          "scene.moved": 1,
+          "delta.rejected": 1,
+          "entity.created": 1,
+          "scene.entered": 1,
+          "scene.tactical": 1,
+          "fact.asserted": 1,
+          "scene.awareness": 1,
+          "time.advanced": 1,
+          "knowledge.gained": 1,
+          "memory.recorded": 2,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "323c23a0aec7da93f37e905209bea1a48f32e0e4daaca6f1d930abff664921f1",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "observed": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [
+          "loc.alderwatch.guild_hall"
+        ],
+        "rejected": [
+          [
+            1,
+            "expected",
+            "met_not_known_here"
+          ]
+        ],
+        "events": {
+          "scene.moved": 1,
+          "delta.rejected": 1,
+          "entity.created": 1,
+          "scene.entered": 1,
+          "scene.tactical": 1,
+          "fact.asserted": 1,
+          "scene.awareness": 1,
+          "time.advanced": 1,
+          "knowledge.gained": 1,
+          "memory.recorded": 2,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "323c23a0aec7da93f37e905209bea1a48f32e0e4daaca6f1d930abff664921f1"
+      },
+      "B": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [
+          "loc.alderwatch.guild_hall"
+        ],
+        "rejected": [
+          [
+            1,
+            "expected",
+            "met_not_known_here"
+          ]
+        ],
+        "events": {
+          "scene.moved": 1,
+          "delta.rejected": 1,
+          "entity.created": 1,
+          "scene.entered": 1,
+          "scene.tactical": 1,
+          "fact.asserted": 1,
+          "scene.awareness": 1,
+          "time.advanced": 1,
+          "knowledge.gained": 1,
+          "memory.recorded": 2,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "323c23a0aec7da93f37e905209bea1a48f32e0e4daaca6f1d930abff664921f1",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "C": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [
+          "loc.alderwatch.guild_hall"
+        ],
+        "rejected": [
+          [
+            1,
+            "expected",
+            "met_not_known_here"
+          ]
+        ],
+        "events": {
+          "scene.moved": 1,
+          "delta.rejected": 1,
+          "entity.created": 1,
+          "scene.entered": 1,
+          "scene.tactical": 1,
+          "fact.asserted": 1,
+          "scene.awareness": 1,
+          "time.advanced": 1,
+          "knowledge.gained": 1,
+          "memory.recorded": 2,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "323c23a0aec7da93f37e905209bea1a48f32e0e4daaca6f1d930abff664921f1",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      }
+    },
+    {
+      "index": 8,
+      "input": "*i walk up to the counter* hello im Alaric Red im here to register",
+      "reported": [],
+      "A": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [
+          [
+            1,
+            "person.new",
+            "ambient"
+          ]
+        ],
+        "events": {
+          "delta.rejected": 1,
+          "knowledge.gained": 1,
+          "memory.recorded": 1,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "ea1195cb7605fb1d7a18d394ab66f9df048de4383b2ae082c321dd8f34948621",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "observed": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [
+          [
+            1,
+            "person.new",
+            "ambient"
+          ]
+        ],
+        "events": {
+          "delta.rejected": 1,
+          "knowledge.gained": 1,
+          "memory.recorded": 1,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "ea1195cb7605fb1d7a18d394ab66f9df048de4383b2ae082c321dd8f34948621"
+      },
+      "B": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [
+          [
+            1,
+            "person.new",
+            "ambient"
+          ]
+        ],
+        "events": {
+          "delta.rejected": 1,
+          "knowledge.gained": 1,
+          "memory.recorded": 1,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "ea1195cb7605fb1d7a18d394ab66f9df048de4383b2ae082c321dd8f34948621",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "C": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [
+          [
+            1,
+            "person.new",
+            "ambient"
+          ]
+        ],
+        "events": {
+          "delta.rejected": 1,
+          "knowledge.gained": 1,
+          "memory.recorded": 1,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "ea1195cb7605fb1d7a18d394ab66f9df048de4383b2ae082c321dd8f34948621",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      }
+    },
+    {
+      "index": 10,
+      "input": "*i pay the 2 silver and finish the registration*",
+      "reported": [],
+      "A": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "time.advanced": 1,
+          "knowledge.gained": 1,
+          "memory.recorded": 1,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "ac7fdd7ae37f5e89dfc809d9c502586ca1dcbf2aba8ac828c714c295daa930af",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "observed": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "time.advanced": 1,
+          "knowledge.gained": 1,
+          "memory.recorded": 1,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "ac7fdd7ae37f5e89dfc809d9c502586ca1dcbf2aba8ac828c714c295daa930af"
+      },
+      "B": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "time.advanced": 1,
+          "knowledge.gained": 1,
+          "memory.recorded": 1,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "ac7fdd7ae37f5e89dfc809d9c502586ca1dcbf2aba8ac828c714c295daa930af",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "C": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "time.advanced": 1,
+          "knowledge.gained": 1,
+          "memory.recorded": 1,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "ac7fdd7ae37f5e89dfc809d9c502586ca1dcbf2aba8ac828c714c295daa930af",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      }
+    },
+    {
+      "index": 12,
+      "input": "*i walk over to the questboard and look at it*",
+      "reported": [],
+      "A": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "entity.created": 1,
+          "fact.asserted": 3,
+          "memory.recorded": 2,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "9fa6cb4a2da4ea92e500f2cd9fe670781dad84fb8a4c0d385b8ccd52a5ab16e1",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "observed": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "entity.created": 1,
+          "fact.asserted": 3,
+          "memory.recorded": 2,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "9fa6cb4a2da4ea92e500f2cd9fe670781dad84fb8a4c0d385b8ccd52a5ab16e1"
+      },
+      "B": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "entity.created": 1,
+          "fact.asserted": 3,
+          "memory.recorded": 2,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "9fa6cb4a2da4ea92e500f2cd9fe670781dad84fb8a4c0d385b8ccd52a5ab16e1",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "C": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "entity.created": 1,
+          "fact.asserted": 3,
+          "memory.recorded": 2,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "9fa6cb4a2da4ea92e500f2cd9fe670781dad84fb8a4c0d385b8ccd52a5ab16e1",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      }
+    },
+    {
+      "index": 14,
+      "input": "Annehmen: Clear the Old Crown Catacombs, Level 1",
+      "reported": [],
+      "A": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "quest.detailed": 1,
+          "memory.recorded": 1,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "bc60656487a9d53921d3666452c45a8aab7b6462a0765ce088b859836653c641",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "observed": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "quest.detailed": 1,
+          "memory.recorded": 1,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "bc60656487a9d53921d3666452c45a8aab7b6462a0765ce088b859836653c641"
+      },
+      "B": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "quest.detailed": 1,
+          "memory.recorded": 1,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "bc60656487a9d53921d3666452c45a8aab7b6462a0765ce088b859836653c641",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "C": {
+        "at": "loc.alderwatch.guild_hall",
+        "present": [
+          "npc.npcalderwatchclerk",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "quest.detailed": 1,
+          "memory.recorded": 1,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "bc60656487a9d53921d3666452c45a8aab7b6462a0765ce088b859836653c641",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      }
+    },
+    {
+      "index": 16,
+      "input": "*i nod and then start making my way over to the catacombs*",
+      "reported": [
+        {
+          "new": {
+            "name": "Old Crown road near the ruined chapel",
+            "kind": "wilderness",
+            "parent": "realm.valedorn_crown"
+          }
+        }
+      ],
+      "A": {
+        "at": "loc.old_crown_road_near_the_ruined_chapel",
+        "present": [
+          "mon.crebren_dog",
+          "npc.bren",
+          "pc"
+        ],
+        "arrived": [
+          "loc.old_crown_road_near_the_ruined_chapel"
+        ],
+        "rejected": [
+          [
+            6,
+            "place.reported",
+            "dungeon_way"
+          ]
+        ],
+        "events": {
+          "time.advanced": 1,
+          "place.created": 1,
+          "entity.updated": 4,
+          "scene.moved": 1,
+          "entity.created": 2,
+          "scene.entered": 2,
+          "scene.tactical": 1,
+          "fact.asserted": 2,
+          "delta.rejected": 1,
+          "thread.set": 1,
+          "dungeon.booked": 1,
+          "knowledge.gained": 1,
+          "memory.recorded": 2,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "cf74ba104846520e7c8403352846f53eceec318c3c3fa6e05032631f577ec107",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "observed": {
+        "at": "loc.old_crown_road_near_the_ruined_chapel",
+        "present": [
+          "mon.crebren_dog",
+          "npc.bren",
+          "pc"
+        ],
+        "arrived": [
+          "loc.old_crown_road_near_the_ruined_chapel"
+        ],
+        "rejected": [
+          [
+            6,
+            "place.reported",
+            "dungeon_way"
+          ]
+        ],
+        "events": {
+          "time.advanced": 1,
+          "place.created": 1,
+          "entity.updated": 4,
+          "scene.moved": 1,
+          "entity.created": 2,
+          "scene.entered": 2,
+          "scene.tactical": 1,
+          "fact.asserted": 2,
+          "delta.rejected": 1,
+          "thread.set": 1,
+          "dungeon.booked": 1,
+          "knowledge.gained": 1,
+          "memory.recorded": 2,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "cf74ba104846520e7c8403352846f53eceec318c3c3fa6e05032631f577ec107"
+      },
+      "B": {
+        "at": "loc.old_crown_road_near_the_ruined_chapel",
+        "present": [
+          "mon.crebren_dog",
+          "npc.bren",
+          "pc"
+        ],
+        "arrived": [
+          "loc.old_crown_road_near_the_ruined_chapel"
+        ],
+        "rejected": [
+          [
+            6,
+            "place.reported",
+            "dungeon_way"
+          ]
+        ],
+        "events": {
+          "time.advanced": 1,
+          "place.created": 1,
+          "entity.updated": 4,
+          "scene.moved": 1,
+          "entity.created": 2,
+          "scene.entered": 2,
+          "scene.tactical": 1,
+          "fact.asserted": 2,
+          "delta.rejected": 1,
+          "thread.set": 1,
+          "dungeon.booked": 1,
+          "knowledge.gained": 1,
+          "memory.recorded": 2,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "cf74ba104846520e7c8403352846f53eceec318c3c3fa6e05032631f577ec107",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "C": {
+        "at": "loc.old_crown_road_near_the_ruined_chapel",
+        "present": [
+          "mon.crebren_dog",
+          "npc.bren",
+          "pc"
+        ],
+        "arrived": [
+          "loc.old_crown_road_near_the_ruined_chapel"
+        ],
+        "rejected": [
+          [
+            6,
+            "place.reported",
+            "dungeon_way"
+          ]
+        ],
+        "events": {
+          "time.advanced": 1,
+          "place.created": 1,
+          "entity.updated": 4,
+          "scene.moved": 1,
+          "entity.created": 2,
+          "scene.entered": 2,
+          "scene.tactical": 1,
+          "fact.asserted": 2,
+          "delta.rejected": 1,
+          "thread.set": 1,
+          "dungeon.booked": 1,
+          "knowledge.gained": 1,
+          "memory.recorded": 2,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "cf74ba104846520e7c8403352846f53eceec318c3c3fa6e05032631f577ec107",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      }
+    },
+    {
+      "index": 18,
+      "input": "*i sigh and say* lets go ill help you out for the part",
+      "reported": [
+        {
+          "new": {
+            "name": "stone cottage by the ruined chapel",
+            "kind": "site",
+            "parent": "loc.old_crown_road_near_the_ruined_chapel"
+          }
+        }
+      ],
+      "A": {
+        "at": "loc.old_crown_road_near_the_ruined_chapel",
+        "present": [
+          "mon.crebren_dog",
+          "npc.bren",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [
+          [
+            2,
+            "arrive",
+            "no_go"
+          ],
+          [
+            3,
+            "person.new",
+            "scene_context"
+          ],
+          [
+            4,
+            "person.new",
+            "scene_context"
+          ],
+          [
+            5,
+            "fact",
+            "scene_context"
+          ],
+          [
+            6,
+            "thread",
+            "scene_context"
+          ],
+          [
+            7,
+            "quest.detail",
+            "scene_context"
+          ],
+          [
+            8,
+            "memory",
+            "scene_context"
+          ]
+        ],
+        "events": {
+          "delta.rejected": 7,
+          "time.advanced": 1,
+          "dungeon.booked": 1,
+          "memory.recorded": 1,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "31ba57e3b8abfb80bb2e97801a8376334851202de6ba1313ffd9e8925d67ad28",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "observed": {
+        "at": "loc.old_crown_road_near_the_ruined_chapel",
+        "present": [
+          "mon.crebren_dog",
+          "npc.bren",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [
+          [
+            2,
+            "arrive",
+            "no_go"
+          ],
+          [
+            3,
+            "person.new",
+            "scene_context"
+          ],
+          [
+            4,
+            "person.new",
+            "scene_context"
+          ],
+          [
+            5,
+            "fact",
+            "scene_context"
+          ],
+          [
+            6,
+            "thread",
+            "scene_context"
+          ],
+          [
+            7,
+            "quest.detail",
+            "scene_context"
+          ],
+          [
+            8,
+            "memory",
+            "scene_context"
+          ]
+        ],
+        "events": {
+          "delta.rejected": 7,
+          "time.advanced": 1,
+          "dungeon.booked": 1,
+          "memory.recorded": 1,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "31ba57e3b8abfb80bb2e97801a8376334851202de6ba1313ffd9e8925d67ad28"
+      },
+      "B": {
+        "at": "loc.old_crown_road_near_the_ruined_chapel.stone_cottage_by_the_ruined_chapel",
+        "present": [
+          "mon.crebren_dog",
+          "npc.bren",
+          "npc.npcchapel_girl",
+          "npc.npcchapel_woman",
+          "pc"
+        ],
+        "arrived": [
+          "loc.old_crown_road_near_the_ruined_chapel.stone_cottage_by_the_ruined_chapel"
+        ],
+        "rejected": [],
+        "events": {
+          "time.advanced": 1,
+          "place.created": 1,
+          "scene.moved": 1,
+          "scene.entered": 4,
+          "entity.created": 2,
+          "scene.tactical": 2,
+          "fact.asserted": 3,
+          "thread.set": 1,
+          "quest.detailed": 1,
+          "memory.recorded": 4,
+          "dungeon.booked": 1,
+          "knowledge.gained": 2,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "1811f04108afbc30819c7b42a0f9bd87bc11388b9006c9b94357fccf37e8f435",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "C": {
+        "at": "loc.old_crown_road_near_the_ruined_chapel.stone_cottage_by_the_ruined_chapel",
+        "present": [
+          "mon.crebren_dog",
+          "npc.bren",
+          "npc.npcchapel_girl",
+          "npc.npcchapel_woman",
+          "pc"
+        ],
+        "arrived": [
+          "loc.old_crown_road_near_the_ruined_chapel.stone_cottage_by_the_ruined_chapel"
+        ],
+        "rejected": [],
+        "events": {
+          "time.advanced": 1,
+          "place.created": 1,
+          "scene.moved": 1,
+          "scene.entered": 4,
+          "entity.created": 2,
+          "scene.tactical": 2,
+          "fact.asserted": 3,
+          "thread.set": 1,
+          "quest.detailed": 1,
+          "memory.recorded": 4,
+          "dungeon.booked": 1,
+          "knowledge.gained": 2,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "1811f04108afbc30819c7b42a0f9bd87bc11388b9006c9b94357fccf37e8f435",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      }
+    },
+    {
+      "index": 20,
+      "input": "im gonna hold you to that Bren *i say and then make my way towards the dungeon again*",
+      "reported": [
+        {
+          "new": {
+            "name": "the ruined chapel interior",
+            "kind": "interior",
+            "parent": "loc.old_crown_road_near_the_ruined_chapel"
+          }
+        },
+        {
+          "new": {
+            "name": "the upper galleries",
+            "kind": "interior",
+            "parent": "loc.old_crown_catacombs"
+          }
+        }
+      ],
+      "A": {
+        "at": "loc.old_crown_catacombs.l1_s1",
+        "present": [
+          "pc"
+        ],
+        "arrived": [
+          "loc.old_crown_catacombs.l1_s1"
+        ],
+        "rejected": [
+          [
+            1,
+            "person.new",
+            "scene_context"
+          ],
+          [
+            2,
+            "arrive",
+            "passage"
+          ],
+          [
+            3,
+            "quest.detail",
+            "scene_context"
+          ],
+          [
+            4,
+            "leave",
+            "scene_context"
+          ]
+        ],
+        "events": {
+          "delta.rejected": 4,
+          "place.created": 1,
+          "link.set": 1,
+          "entity.updated": 2,
+          "scene.moved": 1,
+          "place.updated": 1,
+          "dungeon.part": 1,
+          "time.advanced": 1,
+          "dungeon.booked": 1,
+          "memory.recorded": 1,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "4e22bc86a35a8a1c5ae7968335aadd379ebc1222d2b9084974b1e99624721635",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 1
+        }
+      },
+      "observed": {
+        "at": "loc.old_crown_catacombs.l1_s1",
+        "present": [
+          "pc"
+        ],
+        "arrived": [
+          "loc.old_crown_catacombs.l1_s1"
+        ],
+        "rejected": [
+          [
+            1,
+            "person.new",
+            "scene_context"
+          ],
+          [
+            2,
+            "arrive",
+            "passage"
+          ],
+          [
+            3,
+            "quest.detail",
+            "scene_context"
+          ],
+          [
+            4,
+            "leave",
+            "scene_context"
+          ]
+        ],
+        "events": {
+          "delta.rejected": 4,
+          "place.created": 1,
+          "link.set": 1,
+          "entity.updated": 2,
+          "scene.moved": 1,
+          "place.updated": 1,
+          "dungeon.part": 1,
+          "time.advanced": 1,
+          "dungeon.booked": 1,
+          "memory.recorded": 1,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "4e22bc86a35a8a1c5ae7968335aadd379ebc1222d2b9084974b1e99624721635"
+      },
+      "B": {
+        "at": "loc.old_crown_catacombs.l1_s1",
+        "present": [
+          "pc"
+        ],
+        "arrived": [
+          "loc.old_crown_catacombs.l1_s1"
+        ],
+        "rejected": [
+          [
+            1,
+            "person.new",
+            "scene_context"
+          ],
+          [
+            2,
+            "arrive",
+            "passage"
+          ],
+          [
+            3,
+            "quest.detail",
+            "scene_context"
+          ],
+          [
+            4,
+            "leave",
+            "scene_context"
+          ]
+        ],
+        "events": {
+          "delta.rejected": 4,
+          "place.created": 1,
+          "link.set": 1,
+          "entity.updated": 2,
+          "scene.moved": 1,
+          "place.updated": 1,
+          "dungeon.part": 1,
+          "time.advanced": 1,
+          "dungeon.booked": 1,
+          "memory.recorded": 1,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "4e22bc86a35a8a1c5ae7968335aadd379ebc1222d2b9084974b1e99624721635",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 1
+        }
+      },
+      "C": {
+        "at": "loc.old_crown_catacombs.l1_s1",
+        "present": [
+          "pc"
+        ],
+        "arrived": [
+          "loc.old_crown_catacombs.l1_s1"
+        ],
+        "rejected": [
+          [
+            1,
+            "person.new",
+            "scene_context"
+          ],
+          [
+            2,
+            "arrive",
+            "passage"
+          ],
+          [
+            3,
+            "quest.detail",
+            "scene_context"
+          ],
+          [
+            4,
+            "leave",
+            "scene_context"
+          ]
+        ],
+        "events": {
+          "delta.rejected": 4,
+          "place.created": 1,
+          "link.set": 1,
+          "entity.updated": 2,
+          "scene.moved": 1,
+          "place.updated": 1,
+          "dungeon.part": 1,
+          "time.advanced": 1,
+          "dungeon.booked": 1,
+          "memory.recorded": 1,
+          "pulse.outcome": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "4e22bc86a35a8a1c5ae7968335aadd379ebc1222d2b9084974b1e99624721635",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 1
+        }
+      }
+    },
+    {
+      "index": 22,
+      "input": "*i start walking deeper into the dungeon staff ready*",
+      "reported": [
+        {
+          "new": {
+            "name": "the wide burial chamber",
+            "kind": "interior",
+            "parent": "loc.old_crown_catacombs"
+          }
+        }
+      ],
+      "A": {
+        "at": "loc.old_crown_catacombs.l1_s2",
+        "present": [
+          "mon.old_crown_catacombs_c1_l1_e1_1",
+          "mon.old_crown_catacombs_c1_l1_e1_2",
+          "mon.old_crown_catacombs_c1_l1_e1_3",
+          "pc"
+        ],
+        "arrived": [
+          "loc.old_crown_catacombs.l1_s2"
+        ],
+        "rejected": [
+          [
+            4,
+            "hostile",
+            "group_unclear"
+          ]
+        ],
+        "events": {
+          "time.advanced": 2,
+          "place.created": 1,
+          "link.set": 1,
+          "scene.moved": 1,
+          "place.updated": 1,
+          "dungeon.part": 1,
+          "entity.created": 3,
+          "scene.entered": 3,
+          "entity.updated": 12,
+          "dungeon.slot": 1,
+          "delta.rejected": 1,
+          "dungeon.booked": 1,
+          "memory.recorded": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "f5ffd4ab301e1f3eb8ad8cefe40d02c38e697cd6a0f0e613f12f62a0a6e33f62",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "observed": {
+        "at": "loc.old_crown_catacombs.l1_s2",
+        "present": [
+          "mon.old_crown_catacombs_c1_l1_e1_1",
+          "mon.old_crown_catacombs_c1_l1_e1_2",
+          "mon.old_crown_catacombs_c1_l1_e1_3",
+          "pc"
+        ],
+        "arrived": [
+          "loc.old_crown_catacombs.l1_s2"
+        ],
+        "rejected": [
+          [
+            4,
+            "hostile",
+            "group_unclear"
+          ]
+        ],
+        "events": {
+          "time.advanced": 2,
+          "place.created": 1,
+          "link.set": 1,
+          "scene.moved": 1,
+          "place.updated": 1,
+          "dungeon.part": 1,
+          "entity.created": 3,
+          "scene.entered": 3,
+          "entity.updated": 12,
+          "dungeon.slot": 1,
+          "delta.rejected": 1,
+          "dungeon.booked": 1,
+          "memory.recorded": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "f5ffd4ab301e1f3eb8ad8cefe40d02c38e697cd6a0f0e613f12f62a0a6e33f62"
+      },
+      "B": {
+        "at": "loc.old_crown_catacombs.l1_s2",
+        "present": [
+          "mon.old_crown_catacombs_c1_l1_e1_1",
+          "mon.old_crown_catacombs_c1_l1_e1_2",
+          "mon.old_crown_catacombs_c1_l1_e1_3",
+          "pc"
+        ],
+        "arrived": [
+          "loc.old_crown_catacombs.l1_s2"
+        ],
+        "rejected": [
+          [
+            4,
+            "hostile",
+            "group_unclear"
+          ]
+        ],
+        "events": {
+          "time.advanced": 2,
+          "place.created": 1,
+          "link.set": 1,
+          "scene.moved": 1,
+          "place.updated": 1,
+          "dungeon.part": 1,
+          "entity.created": 3,
+          "scene.entered": 3,
+          "entity.updated": 12,
+          "dungeon.slot": 1,
+          "delta.rejected": 1,
+          "dungeon.booked": 1,
+          "memory.recorded": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "f5ffd4ab301e1f3eb8ad8cefe40d02c38e697cd6a0f0e613f12f62a0a6e33f62",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "C": {
+        "at": "loc.old_crown_catacombs.l1_s2",
+        "present": [
+          "mon.old_crown_catacombs_c1_l1_e1_1",
+          "mon.old_crown_catacombs_c1_l1_e1_2",
+          "mon.old_crown_catacombs_c1_l1_e1_3",
+          "pc"
+        ],
+        "arrived": [
+          "loc.old_crown_catacombs.l1_s2"
+        ],
+        "rejected": [
+          [
+            4,
+            "hostile",
+            "group_unclear"
+          ]
+        ],
+        "events": {
+          "time.advanced": 2,
+          "place.created": 1,
+          "link.set": 1,
+          "scene.moved": 1,
+          "place.updated": 1,
+          "dungeon.part": 1,
+          "entity.created": 3,
+          "scene.entered": 3,
+          "entity.updated": 12,
+          "dungeon.slot": 1,
+          "delta.rejected": 1,
+          "dungeon.booked": 1,
+          "memory.recorded": 1,
+          "extract.applied": 1
+        },
+        "stateHash": "f5ffd4ab301e1f3eb8ad8cefe40d02c38e697cd6a0f0e613f12f62a0a6e33f62",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      }
+    },
+    {
+      "index": 24,
+      "input": "Arcane Wave → SHORT · trifft: Restless Skeleton A, Restless Skeleton B, Restless Skeleton C",
+      "reported": [],
+      "A": {
+        "at": "loc.old_crown_catacombs.l1_s2",
+        "present": [
+          "mon.old_crown_catacombs_c1_l1_e1_1",
+          "mon.old_crown_catacombs_c1_l1_e1_2",
+          "mon.old_crown_catacombs_c1_l1_e1_3",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "extract.applied": 1
+        },
+        "stateHash": "14475ad3029919b053a718d4041319ec74b014a34a1aafa56b825344cabbf747",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "observed": {
+        "at": "loc.old_crown_catacombs.l1_s2",
+        "present": [
+          "mon.old_crown_catacombs_c1_l1_e1_1",
+          "mon.old_crown_catacombs_c1_l1_e1_2",
+          "mon.old_crown_catacombs_c1_l1_e1_3",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "extract.applied": 1
+        },
+        "stateHash": "14475ad3029919b053a718d4041319ec74b014a34a1aafa56b825344cabbf747"
+      },
+      "B": {
+        "at": "loc.old_crown_catacombs.l1_s2",
+        "present": [
+          "mon.old_crown_catacombs_c1_l1_e1_1",
+          "mon.old_crown_catacombs_c1_l1_e1_2",
+          "mon.old_crown_catacombs_c1_l1_e1_3",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "extract.applied": 1
+        },
+        "stateHash": "14475ad3029919b053a718d4041319ec74b014a34a1aafa56b825344cabbf747",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "C": {
+        "at": "loc.old_crown_catacombs.l1_s2",
+        "present": [
+          "mon.old_crown_catacombs_c1_l1_e1_1",
+          "mon.old_crown_catacombs_c1_l1_e1_2",
+          "mon.old_crown_catacombs_c1_l1_e1_3",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "extract.applied": 1
+        },
+        "stateHash": "14475ad3029919b053a718d4041319ec74b014a34a1aafa56b825344cabbf747",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      }
+    },
+    {
+      "index": 26,
+      "input": "Arcane Wave → ENGAGED · trifft: Restless Skeleton A, Restless Skeleton B, Restless Skeleton C → Ausweichen (−25 % Distanzschaden bis zum nächsten Zug) · 14 MP",
+      "reported": [],
+      "A": {
+        "at": "loc.old_crown_catacombs.l1_s2",
+        "present": [
+          "mon.old_crown_catacombs_c1_l1_e1_1",
+          "mon.old_crown_catacombs_c1_l1_e1_2",
+          "mon.old_crown_catacombs_c1_l1_e1_3",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "extract.applied": 1
+        },
+        "stateHash": "d2b1759640eb03d0ffa59c0ceae4da626a8b121c20d62666aa5acfbdd2800a8d",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "observed": {
+        "at": "loc.old_crown_catacombs.l1_s2",
+        "present": [
+          "mon.old_crown_catacombs_c1_l1_e1_1",
+          "mon.old_crown_catacombs_c1_l1_e1_2",
+          "mon.old_crown_catacombs_c1_l1_e1_3",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "extract.applied": 1
+        },
+        "stateHash": "d2b1759640eb03d0ffa59c0ceae4da626a8b121c20d62666aa5acfbdd2800a8d"
+      },
+      "B": {
+        "at": "loc.old_crown_catacombs.l1_s2",
+        "present": [
+          "mon.old_crown_catacombs_c1_l1_e1_1",
+          "mon.old_crown_catacombs_c1_l1_e1_2",
+          "mon.old_crown_catacombs_c1_l1_e1_3",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "extract.applied": 1
+        },
+        "stateHash": "d2b1759640eb03d0ffa59c0ceae4da626a8b121c20d62666aa5acfbdd2800a8d",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      },
+      "C": {
+        "at": "loc.old_crown_catacombs.l1_s2",
+        "present": [
+          "mon.old_crown_catacombs_c1_l1_e1_1",
+          "mon.old_crown_catacombs_c1_l1_e1_2",
+          "mon.old_crown_catacombs_c1_l1_e1_3",
+          "pc"
+        ],
+        "arrived": [],
+        "rejected": [],
+        "events": {
+          "extract.applied": 1
+        },
+        "stateHash": "d2b1759640eb03d0ffa59c0ceae4da626a8b121c20d62666aa5acfbdd2800a8d",
+        "normalizedParser": {
+          "valid": true,
+          "complete": true,
+          "issues": 0
+        }
+      }
+    }
+  ]
+}

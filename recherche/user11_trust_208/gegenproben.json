@@ -1,0 +1,345 @@
+[
+  {
+    "id": "original",
+    "intent": "getragen",
+    "input": "*i sigh and say* lets go ill help you out for the part",
+    "prose": "\"Part of the way, aye, that's fair,\" Bren said, and offered his arm.\n\nGetting him upright was mostly leverage and patience. He was heavier than his voice suggested, and the ankle made him swear twice—once in words, once just in breath. Once up, he leaned on Alaric's shoulder while the two of them righted the handcart, wood bundles shifting, the dog dancing out of the way with its tail going.\n\n\"There. Good lad.\" Bren tested weight on the bad foot, winced, and gave up on pretending. \"Right. Slow, then.\"\n\nThe quarter mile took longer than it should have. He talked the whole way, partly to keep his mind off the ankle, it seemed—about the wood, about the price of candles, about a cousin in Alderwatch who owed him money and would not be seeing it. The dog trotted ahead and sniffed every third stone. The ruined chapel grew out of the trees by degrees: moss-black walls, the broken roof open to the sky, and beside it a small stone cottage with smoke rising from its chimney and candles in the window, lit at midday, which said something about how dark the interior was.\n\nThe door opened before they reached it. A girl of perhaps fifteen with woodsmoke in her braid took one look and called back inside, voice cracking: \"Mam! It's Da, he's gone and hurt himself again!\"\n\nAn older woman filled the doorway after her, sleeves floured to the elbow.\n\n\"Third time this year,\" she said, not to Bren but to the sky, and then, to Alaric: \"Set him on the bench. There's water in the bucket.\"\n\nBren lowered himself onto the bench by the door with a grunt, and looked up at Alaric with the expression of a man doing sums he didn't like.\n\n\"You're going down there, aren't you. The catacombs.\" He nodded past the cottage, where the chapel's open archway showed stone steps descending into dark. \"The girl can show you where the stair is. And when you come back up—*if* you come back up—you'll stop in, and I'll have something for the help. That's not a ditch-man's promise. That's from the cottage.\"",
+    "A": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go",
+        "scene_context",
+        "scene_context",
+        "scene_context",
+        "scene_context",
+        "scene_context",
+        "scene_context"
+      ]
+    },
+    "B": {
+      "arrival": true,
+      "end": "loc.old_crown_road_near_the_ruined_chapel.stone_cottage_by_the_ruined_chapel",
+      "refusals": []
+    },
+    "C": {
+      "arrival": true,
+      "end": "loc.old_crown_road_near_the_ruined_chapel.stone_cottage_by_the_ruined_chapel",
+      "refusals": []
+    }
+  },
+  {
+    "id": "lokale-zusage",
+    "intent": "getragen",
+    "input": "I will walk with you to the cottage, Bren.",
+    "prose": "Bren walked beside Alaric for a quarter mile. Alaric and Bren reached the stone cottage. His daughter welcomed Alaric at the door.",
+    "A": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "B": {
+      "arrival": true,
+      "end": "loc.old_crown_road_near_the_ruined_chapel.stone_cottage_by_the_ruined_chapel",
+      "refusals": []
+    },
+    "C": {
+      "arrival": true,
+      "end": "loc.old_crown_road_near_the_ruined_chapel.stone_cottage_by_the_ruined_chapel",
+      "refusals": []
+    }
+  },
+  {
+    "id": "wegfrage",
+    "intent": "ohne Zustimmung",
+    "input": "Where is the cottage?",
+    "prose": "Bren walked beside Alaric for a quarter mile. Alaric and Bren reached the stone cottage. His daughter welcomed Alaric at the door.",
+    "A": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "B": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "C": {
+      "arrival": true,
+      "end": "loc.old_crown_road_near_the_ruined_chapel.stone_cottage_by_the_ruined_chapel",
+      "refusals": []
+    }
+  },
+  {
+    "id": "nur-aufrichten",
+    "intent": "örtlicher Handgriff",
+    "input": "I help you lift the cart.",
+    "prose": "Bren walked beside Alaric for a quarter mile. Alaric and Bren reached the stone cottage. His daughter welcomed Alaric at the door.",
+    "A": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "B": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "C": {
+      "arrival": true,
+      "end": "loc.old_crown_road_near_the_ruined_chapel.stone_cottage_by_the_ruined_chapel",
+      "refusals": []
+    }
+  },
+  {
+    "id": "ohne-mich",
+    "intent": "ausdrücklich abgelehnt",
+    "input": "Go ahead without me, Bren. I am staying on this road.",
+    "prose": "Bren walked beside Alaric for a quarter mile. Alaric and Bren reached the stone cottage. His daughter welcomed Alaric at the door.",
+    "A": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "B": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "C": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    }
+  },
+  {
+    "id": "verneint",
+    "intent": "ausdrücklich abgelehnt",
+    "input": "I will not go with you to the cottage.",
+    "prose": "Bren walked beside Alaric for a quarter mile. Alaric and Bren reached the stone cottage. His daughter welcomed Alaric at the door.",
+    "A": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "B": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "C": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    }
+  },
+  {
+    "id": "aufschub",
+    "intent": "auf später verschoben",
+    "input": "I will go tomorrow. Today I mend the wheel.",
+    "prose": "Bren walked beside Alaric for a quarter mile. Alaric and Bren reached the stone cottage. His daughter welcomed Alaric at the door.",
+    "A": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "B": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "C": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    }
+  },
+  {
+    "id": "unterwegs-anderer",
+    "intent": "keine vollzogene PC-Ankunft",
+    "input": "*i sigh and say* lets go ill help you out for the part",
+    "prose": "Alaric watched from the road. Bren and his daughter reached the stone cottage. Alaric stayed beside the overturned cart.",
+    "A": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "B": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "C": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    }
+  },
+  {
+    "id": "fernsicht",
+    "intent": "keine vollzogene PC-Ankunft",
+    "input": "*i sigh and say* lets go ill help you out for the part",
+    "prose": "The stone cottage stood beyond the bend. A passing carter greeted Alaric on the road beside the overturned cart.",
+    "A": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "B": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "C": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    }
+  },
+  {
+    "id": "echter-dialog",
+    "intent": "keine vollzogene PC-Ankunft",
+    "input": "*i sigh and say* lets go ill help you out for the part",
+    "prose": "Bren said, “Alaric and I reached the stone cottage yesterday.” The cart was still on its side.",
+    "A": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "B": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "C": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    }
+  },
+  {
+    "id": "anderes-ziel",
+    "intent": "anderer vom Spieler gewählter Endpunkt",
+    "input": "I walk with Bren to the wooden footbridge, then head home.",
+    "prose": "Bren walked beside Alaric for a quarter mile. Alaric and Bren reached the stone cottage. His daughter welcomed Alaric at the door.",
+    "A": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "B": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "C": {
+      "arrival": true,
+      "end": "loc.old_crown_road_near_the_ruined_chapel.stone_cottage_by_the_ruined_chapel",
+      "refusals": []
+    }
+  },
+  {
+    "id": "nur-npc",
+    "intent": "keine vollzogene PC-Ankunft",
+    "input": "*i sigh and say* lets go ill help you out for the part",
+    "prose": "Bren went ahead alone. He reached the stone cottage. Alaric stayed by the overturned cart on the road.",
+    "A": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "B": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "C": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    }
+  },
+  {
+    "id": "ausdrueckliche-grenze",
+    "intent": "Zusage nur bis zum Tor",
+    "input": "I walk with you as far as the gate. You will have to do the rest without me.",
+    "prose": "Bren walked beside Alaric for a quarter mile. Alaric and Bren reached the stone cottage. His daughter welcomed Alaric at the door.",
+    "A": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "B": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    },
+    "C": {
+      "arrival": false,
+      "end": "loc.old_crown_road_near_the_ruined_chapel",
+      "refusals": [
+        "no_go"
+      ]
+    }
+  }
+]

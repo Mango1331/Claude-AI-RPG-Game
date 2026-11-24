@@ -2,7 +2,7 @@
 
 ## User11 · Erster persönlicher .208-Lauf – Kampf-HUD und Major/Minor
 
-[Run-Übersicht, Spielerfeedback und Quellen](user-20261124-014928-208/README.md) · [Erstreview](user-20261124-014928-208/REVIEW.md) · [Messwerte](user-20261124-014928-208/MESSWERTE_USER11_208.json) · [externe RPG-Vergleichsrecherche](../recherche/AVERETH_208_MAJOR_MINOR_RPG_VERGLEICH_BALANCE_2026-11-24.md). Major/Minor funktioniert; subjektiv ist das HUD überladen. Im Dungeon zeigte sich Ausweichen bei ENGAGED ohne Schadensreduktion. Separater Continuity-Fall bei Bren/Hilfszusage. Originaluploads sind gehasht, noch nicht als Git-Blobs abgelegt.
+Elf erzählte Züge, 36 Modellaufrufe und fünf Extractor-Reparaturen. Der Questvertrag bleibt am Board verfügbar. Bei Brens Cottage kostet eine verweigerte Ankunft sechs weitere Weltänderungen. Die Kampfentscheidung in der ersten Runde beeinflusst Alarics Überleben stärker als das spätere Ausweichen im Nahkampf. [Gegenreview](user-20261124-014928-208/CODEX_GEGENREVIEW.md) · [Originale und Manifest](user-20261124-014928-208/SOURCE_MANIFEST.md) · [Spielerfeedback](user-20261124-014928-208/FEEDBACK_SPIELGEFUEHL.md) · [GPT-Erstreview](user-20261124-014928-208/REVIEW.md) · [RPG-Regeln, Kampfsimulation und HUD-Vergleich](../recherche/CODEX_MAJOR_MINOR_USER11_208.md)
 
 ## User10 · Zweiter .207-Lauf mit Fortsetzung
 

@@ -63,7 +63,10 @@ test('3B asking for jobs in a hall can generate the real board even if planner r
 });
 test('3B ordinary conversation never generates a board',()=>assert.equal(boardFor(hall(),content,[{seq:1,type:'other',quote:'How is your family?'}],{c:true}),null));
 test('3B narrator always has an authoritative board boundary, even before first board generation',()=>{
-    const s=hall();assert.match(buildContext(s,content,{input:'Hello',outcome:{c:true},budget:4000}).text,/OFFICIAL GUILD OFFERS/);
+    const s=hall();
+    const block=buildContext(s,content,{input:'Hello',outcome:{c:true},budget:4000}).text;
+    assert.match(block,/OFFICIAL GUILD OFFERS/);
+    assert.match(block,/\[listed\] contract stays available even if an NPC takes a paper copy/);
 });
 test('3B additional container returns are clause-specific',()=>{
     const q={task:'Deliver the crate.',desired_end_state:'It reaches the healer.'};

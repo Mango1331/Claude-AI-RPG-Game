@@ -104,7 +104,8 @@ $tags['archive/product-200-frozen'] = $heads[$product]
 Write-Host "Verified GitHub origin: $remoteUrl"
 Write-Host "Remote branches now: $($heads.Count). Will keep $($keep.Count), remove $($toDelete.Count)."
 Write-Host "Protected permanent refs: $($keep -join ', ')"
-Write-Host "Product .200 commit $($heads[$product]); $($(if ($Archive200) {'archive branch as tag'} else {'KEEP branch and create permanent tag'}))."
+$productAction = if ($Archive200) { 'archive branch as tag' } else { 'KEEP branch and create permanent tag' }
+Write-Host "Product .200 commit $($heads[$product]); $productAction."
 foreach ($name in $toDelete) {
     Write-Host "  REMOVE: $name  $($heads[$name])  -> archive/heads/$name"
 }
@@ -115,6 +116,12 @@ if (!$Apply) {
 }
 $working = @(Git @('status','--porcelain'))
 if ($working.Count) { throw "Uncommitted local changes detected; STOP before altering remote refs." }
+# Do not remove the remote counterpart of the current checkout; switch to main or the retained development branch first.
+$localBranch = (& git branch --show-current | Select-Object -First 1)
+if ($LASTEXITCODE -ne 0) { throw 'Cannot determine the local checkout.' }
+if ($localBranch -and $toDelete -contains $localBranch.Trim()) {
+    throw "Current checkout $localBranch is among the refs to delete. Switch to main or the kept development branch."
+}
 # Fetch every object before creating tags, then validate every expected HEAD again.
 Git @('fetch','--no-tags','origin','+refs/heads/*:refs/remotes/origin/*') | Out-Null
 $afterFetch = RemoteHeads

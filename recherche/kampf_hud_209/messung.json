@@ -1,0 +1,101 @@
+{
+  "chromium": "156.0.8078.79",
+  "source": "User11 T13; isolated real Composer + ST CSS; rounded CSS pixels",
+  "rows": [
+    {
+      "version": "208",
+      "width": 360,
+      "solo": {
+        "height": 445,
+        "width": 342,
+        "phaseHeight": 89,
+        "overflow": false,
+        "chip": "Arcane Wave → ENGAGED · trifft: Restless Skeleton A, Restless Skeleton B, Restless Skeleton C"
+      },
+      "pair": {
+        "height": 491,
+        "width": 342,
+        "phaseHeight": 89,
+        "overflow": false,
+        "chip": "Ausweichen (−25 % Distanzschaden bis zum nächsten Zug) → Arcane Wave → ENGAGED · trifft: Restless Skeleton A, Restless Skeleton B, Restless Skeleton C · 14 MP"
+      },
+      "afterReadding": [
+        "move",
+        "attack"
+      ]
+    },
+    {
+      "version": "209",
+      "width": 360,
+      "solo": {
+        "height": 389,
+        "width": 342,
+        "phaseHeight": 33,
+        "overflow": false,
+        "chip": "Arcane Wave → ENGAGED · trifft: Restless Skeleton A, Restless Skeleton B, Restless Skeleton C · 14 MP"
+      },
+      "pair": {
+        "height": 435,
+        "width": 342,
+        "phaseHeight": 33,
+        "overflow": false,
+        "chip": "Ausweichen (−25 % Distanzschaden bis zum nächsten Zug) → Arcane Wave → ENGAGED · trifft: Restless Skeleton A, Restless Skeleton B, Restless Skeleton C · 14 MP"
+      },
+      "afterReadding": [
+        "attack",
+        "move"
+      ]
+    },
+    {
+      "version": "208",
+      "width": 800,
+      "solo": {
+        "height": 253,
+        "width": 782,
+        "phaseHeight": 66,
+        "overflow": false,
+        "chip": "Arcane Wave → ENGAGED · trifft: Restless Skeleton A, Restless Skeleton B, Restless Skeleton C"
+      },
+      "pair": {
+        "height": 304,
+        "width": 782,
+        "phaseHeight": 66,
+        "overflow": false,
+        "chip": "Ausweichen (−25 % Distanzschaden bis zum nächsten Zug) → Arcane Wave → ENGAGED · trifft: Restless Skeleton A, Restless Skeleton B, Restless Skeleton C · 14 MP"
+      },
+      "afterReadding": [
+        "move",
+        "attack"
+      ]
+    },
+    {
+      "version": "209",
+      "width": 800,
+      "solo": {
+        "height": 220,
+        "width": 782,
+        "phaseHeight": 33,
+        "overflow": false,
+        "chip": "Arcane Wave → ENGAGED · trifft: Restless Skeleton A, Restless Skeleton B, Restless Skeleton C · 14 MP"
+      },
+      "pair": {
+        "height": 271,
+        "width": 782,
+        "phaseHeight": 33,
+        "overflow": false,
+        "chip": "Ausweichen (−25 % Distanzschaden bis zum nächsten Zug) → Arcane Wave → ENGAGED · trifft: Restless Skeleton A, Restless Skeleton B, Restless Skeleton C · 14 MP"
+      },
+      "afterReadding": [
+        "attack",
+        "move"
+      ]
+    }
+  ],
+  "controls": [
+    "opening",
+    "mobility",
+    "range",
+    "split",
+    "resource"
+  ]
+}

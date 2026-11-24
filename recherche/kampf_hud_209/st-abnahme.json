@@ -1,0 +1,177 @@
+{
+  "engineCommit": "a854cd6759712571f078bff52e7fe439858b8454",
+  "hostCheckoutBeforeCommit": "cb1eb944a041b26be9210199d780be9ff740f74d",
+  "runtimeSha256": {
+    "manifest.json": "9fa1a744a5ac7f06bc5b983995d07d498a64758aeed08ab55087e44e84880731",
+    "src/action_composer.js": "224301ae39c06fe12113c4beef43bd1c1daf41dd88e1f439794ff08bef1aabde",
+    "src/util.js": "1b3aee8e238706261796f88078991f530bbb1af80a8080e6c603c247b02682d6",
+    "style.css": "419a41293ba2f691a1596180b17eb7ac5fc6a383148da88c7928ac63a19131c1"
+  },
+  "finalRuns": [
+    {
+      "st": {
+        "version": "1.19.0",
+        "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+      },
+      "kind": "standard",
+      "checks": 378,
+      "passed": 378,
+      "failed": [],
+      "localMockRequests": 351,
+      "browserErrors": [],
+      "sha256Result": "f929cfcdb957cda2daf853565d5aa824dad562d3454c2d6482bf7162fdaad088",
+      "probes": {
+        "user05_soloNeedsNoOrder": true,
+        "user05_minorBeforeMajor": true,
+        "user05_removedMinorHidesOrder": true,
+        "user05_newPairStartsWithMajor": true,
+        "user05_editingDraftUsesNoRequests": true,
+        "user05_pureHudRequestPath": true,
+        "user05_finalReadbackIdentical": true,
+        "swipeReusesPlan": true,
+        "finance_regenerateOnce": true,
+        "actionReview_crossChatNativeSaveRejected": true,
+        "save_permanentFailureStops": true,
+        "noPageErrors": true
+      },
+      "batchStarted": "2026-11-24T07:58:07.509Z"
+    },
+    {
+      "st": {
+        "version": "1.19.0",
+        "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+      },
+      "kind": "failsoft",
+      "checks": 384,
+      "passed": 384,
+      "failed": [],
+      "localMockRequests": 358,
+      "browserErrors": [],
+      "sha256Result": "8a41513bb0c5758202281b645f11edcb3abba624c474e72b89a4f9fef8411310",
+      "probes": {
+        "user05_soloNeedsNoOrder": true,
+        "user05_minorBeforeMajor": true,
+        "user05_removedMinorHidesOrder": true,
+        "user05_newPairStartsWithMajor": true,
+        "user05_editingDraftUsesNoRequests": true,
+        "user05_pureHudRequestPath": true,
+        "user05_finalReadbackIdentical": true,
+        "swipeReusesPlan": true,
+        "finance_regenerateOnce": true,
+        "actionReview_crossChatNativeSaveRejected": true,
+        "save_permanentFailureStops": true,
+        "noPageErrors": true
+      },
+      "batchStarted": "2026-11-24T07:31:28.072Z"
+    },
+    {
+      "st": {
+        "version": "1.19.0",
+        "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+      },
+      "kind": "journey208",
+      "checks": 75,
+      "passed": 75,
+      "failed": [],
+      "localMockRequests": 71,
+      "browserErrors": [],
+      "sha256Result": "2199d9f08f9b672863b4381d12c073dc85c2f61094843ce53986e63287f5eefb",
+      "probes": {
+        "swipeReusesPlan": true,
+        "noPageErrors": true,
+        "board159_journeySaved11": true,
+        "board159_journeyFour": true,
+        "board159_journeySaved13": true,
+        "board159_journeyAccepted": true,
+        "board159_journeySaved15": true,
+        "board159_journeySaved17": true,
+        "board159_journeyHazard17": true,
+        "board159_journeySaved19": true,
+        "board159_journeySaved21": true,
+        "board159_journeyHazard21": true,
+        "board159_journeySaved23": true,
+        "board159_journeySaved25": true,
+        "board159_journeyOrder": true,
+        "board159_journeyReload": true,
+        "board159_projection208_plan": true,
+        "board159_projection208_narrator": true,
+        "board159_projection208_extract": true,
+        "board159_projection208Audit": true
+      },
+      "batchStarted": "2026-11-24T08:10:32.884Z"
+    }
+  ],
+  "earlierStandard": {
+    "st": {
+      "version": "1.19.0",
+      "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+    },
+    "kind": "standard",
+    "checks": 373,
+    "passed": 373,
+    "failed": [],
+    "localMockRequests": 351,
+    "browserErrors": [],
+    "sha256Result": "ecdafcadbc76f1858eb92662e53753efc5ebe009319084b042bcb4a69c278ad4",
+    "probes": {
+      "user05_pureHudRequestPath": true,
+      "user05_finalReadbackIdentical": true,
+      "swipeReusesPlan": true,
+      "finance_regenerateOnce": true,
+      "actionReview_crossChatNativeSaveRejected": true,
+      "save_permanentFailureStops": true,
+      "noPageErrors": true
+    },
+    "batchStarted": "2026-11-24T07:31:28.072Z"
+  },
+  "finalJourneyTurn": {
+    "errors": [],
+    "where": "loc.mossback_warrens.l1_s1",
+    "hp": 18,
+    "quests": [
+      [
+        "quest.cull_the_quarry_track_wolves",
+        "listed"
+      ],
+      [
+        "quest.cull_the_vineyard_boar",
+        "listed"
+      ],
+      [
+        "quest.cull_the_reedsnake_brood",
+        "listed"
+      ],
+      [
+        "quest.clear_mossback_warrens_level_1",
+        "active"
+      ]
+    ],
+    "acts": [
+      "move",
+      "attack"
+    ],
+    "hazards": [
+      {
+        "t": "resource.changed",
+        "d": {
+          "id": "pc",
+          "resource": "hp",
+          "value": 18
+        }
+      },
+      {
+        "t": "resource.changed",
+        "d": {
+          "id": "pc",
+          "resource": "mp",
+          "value": 58
+        }
+      }
+    ],
+    "world": "applied",
+    "calls": [
+      "narrator",
+      "extract"
+    ]
+  }
+}

@@ -180,9 +180,10 @@ const HANDING = /\b(?:hand(?:s|ed|ing)?|giv(?:e|es|ing)|pass(?:es|ing)?|offer(?:
 // "*i take out every monster part i carry with me*" in a monster-parts shop booked four gives). Showing is never a give;
 // laying things out is none for a trader, whose counter is not her hands. A message that gives, sells or trades in words
 // keeps its give
-const SHOWING = /\b(?:show(?:s|ed|ing)?|display\w*|let (?:her|him|them) (?:see|look|inspect|examine|have a look)|(?:for|to) (?:her |his |their |an? )?(?:appraisal|inspection|look|valuation)|apprais\w*|(?:for (?:her|him|them) |so (?:she|he|they) can )?(?:to )?(?:look (?:at|over)|inspect|examine|value|price|check) (?:it|them|the \w+|my \w+|what i)\b)/;
+const SHOWING = /\b(?:show(?:s|ed|ing)?|display\w*|(?:hold(?:s|ing)?|held) (?:[\w'-]+ ){0,4}up\b|let (?:her|him|them) (?:see|look|inspect|examine|have a look)|(?:for|to) (?:her |his |their |an? )?(?:appraisal|inspection|look|valuation)|apprais\w*|(?:for (?:her|him|them) |so (?:she|he|they) can )?(?:to )?(?:look (?:at|over)|inspect|examine|value|price|check) (?:it|them|the \w+|my \w+|what i)\b)/;
 const LAYING_OUT = /\b(?:(?:take|takes|took|taking|pull|pulls|pulled|pulling|get|gets|got|getting|bring|brings|brought|lay|lays|laid|laying|spread|spreads|spreading|empty|empties|emptied|tip|tips|tipped)\s+(?:\w+\s+){0,5}?(?:out|forth)|unpack\w*|(?:lay|lays|laid|laying|put|puts|putting|set|sets|setting|place|places|placed|placing|spread|spreads)\s+(?:\w+\s+){0,6}?(?:on|onto|across|over)\s+(?:the|her|his|their|a)\s+(?:counter|table|bench|planks|board|cloth|stall))\b/;
 const PARTING = /\b(?:giv(?:e|es|ing)|gave|given|gift\w*|sell\w*|sold|trade\w*|swap\w*|(?:let|lets) (?:her|him|them) (?:have|keep)|keep (?:it|them|the)|(?:it'?s|they'?re|that'?s|this is|these are) (?:yours|for (?:you|her|him|them))|deal\b)/;
+const TRANSFER_GESTURE = /\b(?:hand(?:s|ed|ing)?|pass(?:es|ed|ing)?) (?:[\w'-]+ ){0,4}(?:over|to|back)\b|\breturn(?:s|ed|ing)? (?:it|them|this|that|my|the|her|his|their)\b/;
 const HANDS = /\b(?:hand(?:s|ed|ing)?|pass(?:es|ed|ing)?|hold(?:s|ing)? (?:\w+ )?out|held (?:\w+ )?out)\b/;
 const TRADER = /\b(?:shop\w*|store\w*|merchant|trader|dealer|buyer|vendor|monger|broker|chandler|furrier|tanner|smith|apothecar\w*|alchemist|herbalist|pawn\w*|fence|outfitter|stall\w*|exchange|peddler|pedlar|haberdasher|leatherworker|clothier|jeweller|jeweler|innkeeper|keeper)\b/;
 
@@ -213,7 +214,11 @@ export function announcedAbandon(message, commands, state = null) {
         const words = flat(c.quote ?? '');
         if (c.type === 'quest.abandon' && ANNOUNCED_ABANDON.test(words) && inMessage(message, c.quote ?? '')) dropped.push({ command: c, rule: 'plan' });
         else if (c.type === 'give' && PURPOSE_ONLY.test(words) && !HANDING.test(all.replace(PURPOSE_ONLY, ' '))) dropped.push({ command: c, rule: 'plan' });
-        else if (c.type === 'give' && !PARTING.test(all) && (SHOWING.test(words) || (LAYING_OUT.test(words) && !HANDS.test(all) && !owed(state, c.object, c.to) && traderHere(state, c.to)))) dropped.push({ command: c, rule: 'shows' });
+        // A transfer of another item elsewhere in the input cannot authorize this display.
+        else if (c.type === 'give' && (
+            (SHOWING.test(words) && !PARTING.test(words) && !TRANSFER_GESTURE.test(words))
+            || (LAYING_OUT.test(words) && !PARTING.test(all) && !HANDS.test(all) && !owed(state, c.object, c.to) && traderHere(state, c.to))
+        )) dropped.push({ command: c, rule: 'shows' });
         else kept.push(c);
     }
     return { kept, dropped };

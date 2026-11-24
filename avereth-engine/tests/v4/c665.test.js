@@ -415,3 +415,16 @@ test('c.6.6.5 compatibility 26-27: the live chat to #88 loads with its hard stat
     const st = foldChat(structuredClone(fx.messages.slice(0, 89))).state;
     assert.equal(announcedAbandon(fx.messages[89].mes, t89.interp.commands, st).kept.length, 0);
 });
+test('a displayed item stays with its holder, including after travel; a separate real transfer remains possible', () => {
+    const go = {seq:1,type:'go',to:'loc.ford',quote:'I follow the stones down to the ford'};
+    const display = {seq:2,type:'give',object:'obj.cloak',to:{new:'guide'},needs:1,quote:"hold up his oilcloth so he'll know who it is"};
+    const input = "I follow the stones down to the ford. When I spot the guide, I call his name and hold up his oilcloth so he'll know who it is.";
+    assert.deepEqual(announcedAbandon(input,[go,display]).kept,[go]);
+    const badge = {...display,object:'obj.badge',quote:'I hold my badge up for the ferryman'};
+    const parcel = {...display,seq:3,object:'obj.parcel',quote:'give him the sealed parcel'};
+    assert.deepEqual(announcedAbandon(badge.quote+' and '+parcel.quote,[badge,parcel]).kept,[parcel]);
+    const real = {...parcel,quote:'I hold up the parcel, then hand it over to him'};
+    assert.deepEqual(announcedAbandon(real.quote,[real]).kept,[real]);
+    const returned = {...real,quote:'I hold it up, then return the parcel to the clerk'};
+    assert.deepEqual(announcedAbandon(returned.quote,[returned]).kept,[returned]);
+});

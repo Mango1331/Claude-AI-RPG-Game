@@ -5,6 +5,26 @@ import { routeOf } from './import_profile.mjs';
 
 export const OPENROUTER_URL = 'https://openrouter.ai/api/v1';
 export const OPENROUTER_MODEL = 'z-ai/glm-5.3-flash';
+export const OPENROUTER_PROVIDER = 'wafer/us';
+export const OPENROUTER_REASONING_EFFORT = 'low';
+
+// SillyTavern 1.19 parses custom_include_body as YAML and merges its fields into
+// every Custom Chat Completion request, including plan, narration, extraction and repairs.
+// Preset reasoning_effort alone is NOT sent by this Custom endpoint (verified in User run).
+export const OPENROUTER_INCLUDE_BODY = [
+    `reasoning_effort: ${OPENROUTER_REASONING_EFFORT}`,
+    'provider:',
+    `  order: [${OPENROUTER_PROVIDER}]`,
+    '  allow_fallbacks: false',
+].join('\n');
+
+// The test player sends its own requests directly, bypassing SillyTavern's YAML.
+// Supply the exact same route. Reasoning is inherited from custom_include_body
+// through playerReasoning(), whose parsed value is also checked by tests.
+export function openRouterPlayerExtraBody() {
+    return { provider: { order: [OPENROUTER_PROVIDER], allow_fallbacks: false } };
+}
+
 
 /** Apply only to the in-memory import; seedProfile writes the isolated ST profile later. */
 export function useOpenRouter(imp, options = {}) {
@@ -16,7 +36,7 @@ export function useOpenRouter(imp, options = {}) {
         chat_completion_source: 'custom',
         custom_url: OPENROUTER_URL,
         custom_model: model,
-        custom_include_body: '',
+        custom_include_body: OPENROUTER_INCLUDE_BODY,
         custom_exclude_body: '',
         custom_include_headers: '',
         bypass_status_check: false,

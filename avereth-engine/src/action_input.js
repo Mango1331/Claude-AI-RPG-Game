@@ -18,7 +18,7 @@ import { previewQuestAcceptance } from './v4/commands.js';
 const canonical = x => JSON.stringify(x,(_k,v)=>v && typeof v==='object' && !Array.isArray(v)
     ? Object.fromEntries(Object.keys(v).sort().map(k=>[k,v[k]])) : v);
 export const actionInputHash = input => input ? hash32(canonical(input)) : null;
-export const actionPrefix = (chat,end=chat.length) => hash32(canonical(chat.slice(0,end).map(m=>({
+export const actionPrefix = (chat,end=chat.length) => hash32(canonical(chat.slice(0,end).filter(m=>!m.avereth_inactive && !m.avereth_unplayed).map(m=>({
     user:!!m.is_user,system:!!m.is_system,text:m.mes,swipe:m.swipe_id ?? 0,record:m.extra?.avereth,
 }))));
 export const actionInputOf = msg => msg?.extra?.avereth_action_input || null;

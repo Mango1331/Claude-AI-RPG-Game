@@ -1,3 +1,4 @@
+import { activeMessage } from './v4/revisions.js';
 import { actionInputHash, actionInputOf } from './action_input.js';
 // Host adapter: maps the engine onto a chat transcript — an array of messages {mes, is_user, is_system, extra,
 // swipes, swipe_id, swipe_info} as SillyTavern stores them. It mutates only the message objects it is given, so the
@@ -44,7 +45,7 @@ export function syncSwipe(msg) {
 /** Events a message contributes to the campaign (empty for stale swipe copies and foreign messages). */
 export function messageEvents(msg) {
     const r = rec(msg);
-    if (!r || !Array.isArray(r.events)) return [];
+    if (!activeMessage(msg) || msg.avereth_unplayed || !r || !Array.isArray(r.events)) return [];
     if (!msg.is_user && r.text_hash && r.text_hash !== hash32(msg.mes)) return [];
     return r.events;
 }
@@ -76,6 +77,15 @@ function paymentInputError(msg, record, index) {
     return null;
 }
 
+// One decision for folding stored records and for native edit feedback.
+export function inputRecordError(msg, index) {
+    const record = rec(msg);
+    const changed = record?.action_input_hash != null && record.events?.length
+        && (record.input_hash !== hash32(msg.mes) || record.action_input_hash !== actionInputHash(actionInputOf(msg)));
+    return changed ? {type:'action.input_changed',error:'Booked HUD input changed; restore its original text and selection before continuing'}
+        : paymentInputError(msg, record, index);
+}
+
 /**
  * Fold messages [0, end) into the campaign state. Events that no longer apply (e.g. after deletions) are skipped, so a
  * display can still show something; `failures` names each one (message index, event type). Architecture patch A
@@ -87,10 +97,8 @@ export function foldChat(chat, end = chat.length) {
     const errors = [];
     const failures = [];
     for (let i = 0; i < Math.min(end, chat.length); i++) {
-        const record = rec(chat[i]);
-        const hudChanged=record?.action_input_hash!=null && record.events?.length
-            && (record.input_hash!==hash32(chat[i].mes) || record.action_input_hash!==actionInputHash(actionInputOf(chat[i])));
-        const invalid = hudChanged ? {type:'action.input_changed',error:'Booked HUD input changed; restore its original text and selection before continuing'} : paymentInputError(chat[i], record, i);
+        if (!activeMessage(chat[i])) continue;
+        const invalid = inputRecordError(chat[i], i);
         if (invalid) {
             errors.push(`message ${i}: ${invalid.type}: ${invalid.error}`);
             failures.push({ index: i, ...invalid });
@@ -160,18 +168,18 @@ export function hasStoredCampaign(chat) {
 }
 
 export function lastUserIndex(chat, before = chat.length) {
-    for (let i = Math.min(before, chat.length) - 1; i >= 0; i--) if (chat[i].is_user && !chat[i].is_system) return i;
+    for (let i = Math.min(before, chat.length) - 1; i >= 0; i--) if (activeMessage(chat[i]) && chat[i].is_user && !chat[i].is_system) return i;
     return -1;
 }
 
 /** The latest player message, including a command line the host hid from the prompt (it still carries our record). */
 export function lastPlayerIndex(chat) {
-    for (let i = chat.length - 1; i >= 0; i--) if (chat[i].is_user && (!chat[i].is_system || rec(chat[i])?.command)) return i;
+    for (let i = chat.length - 1; i >= 0; i--) if (activeMessage(chat[i]) && chat[i].is_user && (!chat[i].is_system || rec(chat[i])?.command)) return i;
     return -1;
 }
 
 export function lastReplyIndex(chat, before) {
-    for (let i = before - 1; i >= 0; i--) if (!chat[i].is_user && !chat[i].is_system) return i;
+    for (let i = before - 1; i >= 0; i--) if (activeMessage(chat[i]) && !chat[i].is_user && !chat[i].is_system) return i;
     return -1;
 }
 
@@ -232,7 +240,7 @@ export function turnBlock(chat, u, content, settings = {}) {
     const { state, errors, failures } = foldChat(chat, u + 1);
     const p = lastReplyIndex(chat, u);
     const prev = p >= 0 ? rec(chat[p]) : null;
-    const previousInput = chat.slice(0,u).findLast(m => m.is_user);
+    const previousInput = chat.slice(0,u).findLast(m => activeMessage(m) && !m.avereth_unplayed && m.is_user);
     const notExecuted = rec(previousInput)?.continuation?.kind === 'planner_not_executed'
         ? [`PREVIOUS INPUT NOT EXECUTED: ${String(previousInput.mes).slice(0,180)}. It caused no action, travel, payment or combat round. Resolve only the current input now.`] : [];
     // Build .144 (S1): a payment card paid by "#pay" between the last reply and this input ran no story turn; the reply
@@ -572,7 +580,7 @@ export function onEdited(chat, id, content) {
  *    memories, facts, quests, threads). keepTurns 0 keeps the whole history.
  * @returns {{removed: number, stripped: number}}
  */
-export function projectPromptHistory(messages, { keepTurns = 4 } = {}) {
+export function projectPromptHistory(messages, { keepTurns = 4, currentInput = null } = {}) {
     let stripped = 0;
     let marked = 0;
     let removed = 0;
@@ -586,7 +594,10 @@ export function projectPromptHistory(messages, { keepTurns = 4 } = {}) {
         if (m?.is_user && rec(m)?.own_phase_refused) {
             messages[i] = {...m, mes:'[The declared player phase was not executed. Only the booked encounter events occurred.]'};
         }
-        if (refused.has(i) || m?.is_system && m.extra?.avereth_notice_for!=null && (refused.has(i-1) || refused.has(m.extra.avereth_notice_for))) {
+        // ST snapshots top-level fields before our interceptor books a regenerated edited
+        // input. Its shallow copy shares extra with that player row; use the booked revision.
+        const unplayed = m?.avereth_unplayed && !(currentInput?.extra && m.extra === currentInput.extra && !currentInput.avereth_unplayed);
+        if (!activeMessage(m) || unplayed || refused.has(i) || m?.is_system && m.extra?.avereth_notice_for!=null && (refused.has(i-1) || refused.has(m.extra.avereth_notice_for))) {
             messages.splice(i,1); removed++;
         }
     }

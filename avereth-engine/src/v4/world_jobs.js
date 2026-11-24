@@ -30,7 +30,7 @@ export function createWorldJobs({ active, run, applied, failed = null, onError =
         const msg = job.chat[job.id];
         return pending === job && !job.signal.aborted
             && current?.chatId === job.chatId && current?.chat === job.chat
-            && msg === job.message && (msg?.swipe_id ?? 0) === (job.swipeId ?? 0)
+            && !msg?.avereth_inactive && msg === job.message && (msg?.swipe_id ?? 0) === (job.swipeId ?? 0)
             && rec(msg)?.text_hash === job.hash
             && hash32(msg?.mes ?? '') === job.hash && !laterTurns(job.chat, job.id);
     }
@@ -41,7 +41,7 @@ export function createWorldJobs({ active, run, applied, failed = null, onError =
         const msg = chat?.[id];
         const r = rec(msg);
         if (!Number.isInteger(id) || id < 0 || !current?.chatId || !msg
-            || msg.is_user || msg.is_system
+            || msg.avereth_inactive || msg.is_user || msg.is_system
             || r?.extraction?.status !== 'pending'
             || r.text_hash !== hash32(msg.mes) || laterTurns(chat, id)) return null;
 

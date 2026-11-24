@@ -34,6 +34,12 @@ for (const [name, target, text] of [
     onEditedV4(g.chat, index); // actual UI handler; never mutate a stored event
     const folded = foldChat(g.chat);
     assert.ok(foldBlock(folded));
+    assert.ok(g.chat[index].avereth_protected_edit);
+    // Historical follow-up confirmations cannot debit the revised input. Retrying the
+    // source itself also folds the failed confirmation, before any Planner request.
+    assert.ok(g.chat.slice(index+1).every(m => m.avereth_inactive));
+    const retry = await prepareGenerationAsync(g.chat,content,{type:'regenerate',llm:()=>assert.fail('unexpected payment request')});
+    assert.equal(retry.action,'fold_blocked');
     assert.equal(coin(folded.state), before);
     assert.equal(folded.state.decisions.some(d => d.route === 'free'), target === 'confirm');
     const calls = [];

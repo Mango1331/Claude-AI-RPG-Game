@@ -1,3 +1,4 @@
+import { activeMessage, previousRevision, reconcileRevisions, rememberRevision } from './revisions.js';
 import { actionInputOf, actionInputHash, actionPrefix, validateActionSelection, reconcileHudPlan } from '../action_input.js';
 import { boardRepairGuidance, boardSlotRepair, parseBoardSlot, parseInitialBoard } from './guild.js';
 import { movementEvidence } from './narration_evidence.js';
@@ -20,7 +21,7 @@ import { worldVocab } from './extract.js';
 // A V3 campaign never reaches this module's V4 branches: prepareGenerationAsync and processReplyAny hand it to host.js.
 import {
     rec, setRec, foldChat, foldBlock, hasCampaign, lastUserIndex, lastPlayerIndex, lastReplyIndex, prepareGeneration, processReply,
-    turnBlock, laterTurns, showPanel, messageEvents, foldStats,
+    turnBlock, laterTurns, showPanel, syncSwipe, messageEvents, foldStats, inputRecordError,
 } from '../host.js';
 import { playerTurn } from '../engine.js';
 import { loreKeys } from '../context.js';
@@ -358,7 +359,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const recent = p >= 0 ? recentText(chat[p].mes) : '';
     const catalog = buildCatalog(before, content, { known: true, c: true });
     const ctx = withContentSkills(planContext(before, content, catalog), content, before);
-    if (p >= 0 && p === u - 1) ctx.unbookedArrival = unbookedArrival(chat[p], before);
+    if (p >= 0 && !chat.slice(p + 1,u).some(m => activeMessage(m) && !m.avereth_unplayed)) ctx.unbookedArrival = unbookedArrival(chat[p], before);
     const actionInput=actionInputOf(msg);
     if(actionInput)ctx.actionInput=actionInput;
     const priorBinding = actionInput && previous?.plan?.raw?.length ? parsePlan(previous.plan.raw.at(-1),content.commandVocab,ctx,msg.mes) : null;
@@ -723,6 +724,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
     if (type === 'quiet' || type === 'impersonate') return { action: 'clear', dirty: false };
     if (!hasCampaign(chat)) return { action: 'none', dirty: false };
     if (campaignRuntime(chat) !== 'v4') return prepareGeneration(chat, content, { type, settings });
+    refreshRevisionDisplay(chat);
     const t0 = Date.now();
     const f0 = foldStats();
     const u = lastPlayerIndex(chat);
@@ -735,6 +737,12 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
     const actionInput=actionInputOf(msg), actionHash=actionInputHash(actionInput);
     if(r?.events?.length && r.action_input_hash!=null && (r.action_input_hash!==actionHash || r.input_hash!==inputHash))
         return {action:'abort',dirty:false,notice:'Diese HUD-Aktion wurde bereits gebucht. Eine Text- oder Auswahledition würfelt sie nicht erneut.'};
+    // A native regenerate can target the protected payment source itself; folding only its
+    // predecessor would otherwise bypass the failed, still unreconciled confirmation.
+    if (msg.avereth_protected_edit) {
+        const blocked = foldBlock(foldChat(chat,u+1));
+        if (blocked) return {action:'fold_blocked',dirty:false,index:u,block:blocked,notice:blocked.notice};
+    }
     // an interpretation that failed is not cached: Regenerate asks again (plan §3.4); neither is a Board generation that
     // failed: a new generation of the same message asks for the board again, with the interpretation it came with
     const retryBoard = !!r && r.route === 'v4' && r.input_hash === inputHash && !r.interp?.failed && !!r.board?.failed && !r.board.manualRetry;
@@ -747,6 +755,8 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         if (p >= 0) staged[p] = clone(chat[p]);
         const late = closeLatePending(staged, u);
         const commit = () => {
+            if (msg.avereth_unplayed && msg.extra) delete msg.extra.display_text;
+            delete msg.avereth_unplayed;
             if (late) setRec(chat[p], rec(staged[p]));
             if(actionInput){r.action_input=clone(actionInput);r.action_input_hash=actionHash;}
             setRec(msg, r);
@@ -874,7 +884,7 @@ export function notExecutedCause(r) {
 
 // Include event payloads, not just their count: a swipe or an extraction can replace an equal-sized record.
 function historyKey(chat, end) {
-    return hash32(JSON.stringify(chat.slice(0, end).map((m) => [!!m.is_user, !!m.is_system, m.mes, messageEvents(m), rec(m)?.extraction?.status, actionInputHash(actionInputOf(m))])));
+    return hash32(JSON.stringify(chat.slice(0, end).filter(m => activeMessage(m) && !m.avereth_unplayed).map((m) => [!!m.is_user, !!m.is_system, m.mes, messageEvents(m), rec(m)?.extraction?.status, actionInputHash(actionInputOf(m))])));
 }
 
 // ------------------------------------------------------------------------------------------------ after the reply
@@ -893,7 +903,8 @@ function display(msg, content, before, reply, hud) {
 export function processReplyAny(chat, id, content, opts = {}) {
     if (campaignRuntime(chat) !== 'v4') return processReply(chat, id, content, opts);
     const msg = chat[id];
-    if (!msg || msg.is_user || msg.is_system) return { changed: false };
+    refreshRevisionDisplay(chat);
+    if (!activeMessage(msg) || msg.is_user || msg.is_system) return { changed: false };
     const r = rec(msg);
     if (r && r.text_hash === hash32(msg.mes)) {
         // A real regeneration may produce identical prose with a different Engine context.
@@ -915,6 +926,7 @@ export function processReplyAny(chat, id, content, opts = {}) {
     // V4 prose is also the extractor's evidence. Post-generation word swaps can corrupt canonical names/content
     // (live 28.09.: "Deliver a Ledger" became "Deliver a Register"). Keep V4 text byte-faithful apart from retired blocks.
     msg.mes = opts.stripTrackers === false ? clean : stripTrackerBlocks(clean);
+    rememberRevision(msg);
     if (rec(chat[u])?.command?.llm) {
         setRec(msg, { v: RECORD_V4, events: [], system_answer: true, text_hash: hash32(msg.mes) });
         return { changed: true };
@@ -943,7 +955,7 @@ export function processReplyAny(chat, id, content, opts = {}) {
 export function extractionRequest(chat, id, content) {
     const msg = chat[id];
     const r = rec(msg);
-    if (!msg || !r || r.extraction?.status !== 'pending' || r.text_hash !== hash32(msg.mes) || laterTurns(chat, id)) return null;
+    if (!activeMessage(msg) || !r || r.extraction?.status !== 'pending' || r.text_hash !== hash32(msg.mes) || laterTurns(chat, id)) return null;
     const fold = foldChat(chat, id);
     if (foldBlock(fold)) return null; // .127: no model request from a broken record (runExtraction reports the block)
     const { state } = fold;
@@ -989,11 +1001,12 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', co
     if (!req) return { changed: false };
     // A provider failure may be caused by a swipe, edit, or newer Engine turn.
     // Do not spend another LLM call when the original reply is no longer current.
+    const source = chat[id], pending = rec(source)?.extraction;
     const current = () => {
         if (!isCurrent()) return false;
         const msg = chat[id];
         const r = rec(msg);
-        return !!msg && r?.extraction?.status === 'pending' && r.text_hash === req.hash
+        return msg === source && r?.extraction === pending && activeMessage(msg) && r?.extraction?.status === 'pending' && r.text_hash === req.hash
             && hash32(msg.mes) === req.hash && !laterTurns(chat, id);
     };
     const stale = () => ({ changed: false, ...(laterTurns(chat, id) ? { late: true } : {}) });
@@ -1080,7 +1093,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', co
 export function applyExtraction(chat, id, content, parsed, { hash, ms = null, repaired = false, recovery = null, error = null, hud = 'closed', calls = [], movementReviewed = false, errorKind = 'model' } = {}) {
     const msg = chat[id];
     const r = rec(msg);
-    if (!msg || !r || r.extraction?.status !== 'pending' || r.text_hash !== hash || hash32(msg.mes) !== hash) return { changed: false };
+    if (!activeMessage(msg) || !r || r.extraction?.status !== 'pending' || r.text_hash !== hash || hash32(msg.mes) !== hash) return { changed: false };
     if (laterTurns(chat, id)) return { changed: false, late: true };
     const fold = foldChat(chat, id);
     // .127: checked after the extractor's answer and on the host's failure path alike: no replyTurnV4, no setRec, no
@@ -1117,7 +1130,7 @@ export function perfSummary(chat) {
     const u = lastUserIndex(chat);
     const r = u >= 0 ? rec(chat[u]) : null;
     if (!r?.perf) return null;
-    const reply = chat.slice(u + 1).find((m) => !m.is_user && !m.is_system);
+    const reply = chat.slice(u + 1).find((m) => activeMessage(m) && !m.is_user && !m.is_system);
     const x = reply ? rec(reply) : null;
     const sec = (ms) => `${(ms / 1000).toFixed(1)} s`;
     const ends = (calls) => (calls || []).map((c) => c.finish).filter((f) => f && f !== 'stop');
@@ -1140,24 +1153,115 @@ export function perfSummary(chat) {
 
 /** The reply whose extraction a reload or a chat switch cut off (index.js resumes it), or -1. */
 export function pendingExtraction(chat) {
-    const id = chat.findLastIndex((m) => !m.is_user && !m.is_system);
+    const id = lastReplyIndex(chat, chat.length);
     const r = id >= 0 ? rec(chat[id]) : null;
     if (r && r.extraction?.status === 'pending' && r.text_hash === hash32(chat[id].mes) && !laterTurns(chat, id)) return id;
     return -1;
 }
 
-/** An edited reply of a V4 campaign keeps what its extraction committed (typo fixes); no retcon through tags. */
-export function onEditedV4(chat, id) {
+// Re-render only rows whose ancestry changed. Their original prose, inputs and records remain
+// available in the transcript and export, including the original system panel in the record.
+export function refreshRevisionDisplay(chat, id = -1, prior = null) {
+    const changed = reconcileRevisions(chat, id, prior);
+    for (const index of changed) {
+        const msg = chat[index];
+        const r = rec(msg);
+        if (!activeMessage(msg)) {
+            msg.extra ??= {};
+            if (msg.extra.display_text && !r?.hud && !r?.panel) msg.avereth_prior_display = msg.extra.display_text;
+            msg.extra.display_text = '[AVERETH · Inactive revision / inaktiver Verlauf]\n\n' + msg.mes;
+        } else {
+            if (msg.extra) delete msg.extra.display_text;
+            if (msg.avereth_prior_display) {
+                (msg.extra ??= {}).display_text = msg.avereth_prior_display;
+                delete msg.avereth_prior_display;
+            } else if (r?.panel || r?.hud) showPanel(msg, r.panel, r.hud, { playerFacing: true });
+        }
+    }
+    return changed;
+}
+
+export function onSwipedV4(chat, id) {
+    const msg = chat[id], prior = msg && previousRevision(msg);
+    const changed = prior && (prior.text !== msg.mes || prior.swipe !== (msg.swipe_id ?? 0));
+    return refreshRevisionDisplay(chat, id, changed && id + 1 < chat.length ? prior : null);
+}
+
+// ST's built-in Translate extension can clear display_text during MESSAGE_UPDATED,
+// even with translation disabled. Rebuild this view from the currently selected record.
+export function restoreEditedView(chat, id, content, hud = 'closed') {
+    const msg = chat[id], r = rec(msg);
+    if (!msg || !r) return;
+    if (!activeMessage(msg)) {
+        (msg.extra ??= {}).display_text = '[AVERETH · Inactive revision / inaktiver Verlauf]\n\n' + msg.mes;
+    } else if (msg.avereth_unplayed && !msg.avereth_protected_edit && content) {
+        const prefix = foldChat(chat, id);
+        if (!foldBlock(prefix))
+            showPanel(msg, 'Geänderte Eingabe · noch nicht ausgeführt', renderHud(prefix.state, content, hud), { playerFacing: true });
+    } else if (r.panel || r.hud) showPanel(msg, r.panel, r.hud, { playerFacing: true });
+}
+
+// Native edit replaces this swipe's prose in place. Preserve its old record and attach new
+// world effects only after the edited prose passes the normal extractor and save barrier.
+export function onEditedV4(chat, id, content, opts = {}) {
     const msg = chat[id];
     const r = rec(msg);
     if (!msg || !r) return { changed: false };
-    if (msg.is_user) {
-        if(r.action_input_hash!=null && r.events?.length)return {changed:true,...(r.input_hash!==hash32(msg.mes) || r.action_input_hash!==actionInputHash(actionInputOf(msg))?{refused:'Die gebuchte HUD-Eingabe wurde geändert. Originaltext und Auswahl wiederherstellen; keine erneute Würfelung.'}:{})};
-        const payment = (r.events || []).some(e => (e.t === 'decision.opened' && e.d.decision?.route === 'free') || (e.t === 'decision.closed' && e.d.expect));
-        // Refresh the blocked HUD immediately, but never bless edited words by updating input_hash.
-        return payment ? { changed: true, ...(r.input_hash !== hash32(msg.mes) ? { refused: 'Payment input changed. Restore its original text or discard the history from this message before continuing.' } : {}) } : { changed: false };
+    const hash = hash32(msg.mes);
+    if (!msg.is_user && !r.extraction) {
+        setRec(msg, { ...r, text_hash: hash });
+        if (r.panel || r.hud) showPanel(msg, r.panel, r.hud, { playerFacing: true });
+        return { changed: true, text: !!(r.panel || r.hud) };
     }
-    setRec(msg, { ...r, text_hash: hash32(msg.mes) });
-    if (r.panel || r.hud) showPanel(msg, r.panel, r.hud, { playerFacing: true });
-    return r.panel || r.hud ? { changed: true, text: true } : { changed: true };
+    const swipe = msg.swipe_id ?? 0;
+    const bookedHash = msg.is_user ? r.input_hash : r.text_hash;
+    const seen = previousRevision(msg);
+    const prior = seen || { hash: bookedHash, swipe };
+    const invalid = msg.is_user && inputRecordError(msg, id);
+    if (invalid || msg.avereth_protected_edit) {
+        const changedRows = refreshRevisionDisplay(chat, id, prior);
+        if (invalid) {
+            msg.avereth_protected_edit = invalid.error;
+            msg.avereth_unplayed = true;
+        } else {
+            delete msg.avereth_protected_edit;
+            delete msg.avereth_unplayed;
+        }
+        return { changed: true, changedRows, ...(invalid ? {refused:invalid.error} : {}) };
+    }
+    if (prior.hash === hash && bookedHash === hash && !msg.avereth_unplayed)
+        return { changed: false };
+    const archive = msg.avereth_edits ??= [];
+    if (bookedHash && !archive.some(x => x.swipe === swipe && x.hash === bookedHash))
+        archive.push({ swipe, hash: bookedHash, ...(seen?.hash === bookedHash ? { text: seen.text } : {}), record: r });
+    const changedRows = refreshRevisionDisplay(chat, id, prior);
+    const saved = archive.find(x => x.swipe === swipe && x.hash === hash && (x.text === undefined || x.text === msg.mes));
+    if (r.extraction?.status === 'incomplete') {
+        // An edit cannot turn an unconfirmed native generation into an extraction receipt.
+        setRec(msg, { ...r, events: [], text_hash: hash });
+        if (activeMessage(msg)) showPanel(msg, r.panel, r.hud, { playerFacing: true });
+    } else if (saved) {
+        if (msg.avereth_unplayed && msg.extra) {
+            if (msg.avereth_edit_display) msg.extra.display_text = msg.avereth_edit_display;
+            else delete msg.extra.display_text;
+            delete msg.avereth_edit_display;
+        }
+        delete msg.avereth_unplayed;
+        msg.extra.avereth = saved.record; // restore the recorded build and audit unchanged
+        syncSwipe(msg);
+        if (activeMessage(msg)) showPanel(msg, saved.record.panel, saved.record.hud, { playerFacing: true });
+    } else if (msg.is_user) {
+        if (!msg.avereth_unplayed && msg.extra?.display_text) msg.avereth_edit_display = msg.extra.display_text;
+        msg.avereth_unplayed = true;
+        restoreEditedView(chat,id,content,opts.hud);
+    } else if (content && activeMessage(msg)) {
+        processReplyAny(chat, id, content, opts);
+    } else {
+        // An edit inside an archived branch may become active much later upon a swipe back.
+        // Keep this text unread until its ancestors are selected and the normal world job can run.
+        const status = msg.mes.trim() ? 'pending' : 'skipped';
+        setRec(msg, { v: RECORD_V4, text_hash: hash, events: [], extraction: {status,version:EXTRACTOR_VERSION} });
+    }
+    rememberRevision(msg);
+    return { changed: true, text: true, changedRows };
 }

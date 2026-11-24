@@ -1,9 +1,10 @@
 // One derived view of the existing host state. Save completion alone is not turn completion.
-export function actionStatusView({unknown=false,worldRunning=false,saving=false,saveFailed=false,worldPending=false,worldFailed=false,incomplete=false,phase='Bereit'}={}) {
+export function actionStatusView({unknown=false,worldRunning=false,saving=false,saveFailed=false,worldPending=false,worldFailed=false,incomplete=false,invalidInput=false,phase='Bereit'}={}) {
     if(unknown)return {text:'Remoteabschluss unbekannt – kein automatischer neuer Versuch',blocked:true,retry:true};
     if(saveFailed)return {text:phase.startsWith('Speichern offen')?phase:'Speicherung offen – Abschluss prüfen',blocked:true,retry:true};
     if(worldRunning)return {text:'Weltabgleich läuft; Text bleibt als Entwurf erhalten',blocked:true,retry:false};
     if(saving)return {text:'Speichern läuft; Text bleibt als Entwurf erhalten',blocked:true,retry:false};
+    if(invalidInput)return {text:'Gebuchte Eingabe geändert – Originaltext und Auswahl wiederherstellen',blocked:true,retry:false};
     if(incomplete)return {text:'Erzählung unbestätigt – bei Abbruch per Swipe oder Regenerate neu erzählen',blocked:true,retry:false};
     if(worldPending || worldFailed)return {text:worldFailed?'Weltabgleich fehlgeschlagen – Abschluss ausdrücklich fortsetzen':'Weltabgleich offen – Abschluss prüfen / fortsetzen',blocked:true,retry:true};
     return {text:phase==='Gespeichert'?'Gespeichert':phase,blocked:false,retry:false};

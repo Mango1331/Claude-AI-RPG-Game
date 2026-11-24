@@ -2,6 +2,7 @@
 // failure-continuation path: ST 1.19 can resolve saveChat after a failed write.
 import { rec, messageEvents } from '../host.js';
 const signature = chat => JSON.stringify(chat.map(m => ({mes:m.mes, user:!!m.is_user, system:!!m.is_system,
+    revision:[m.avereth_parent,m.avereth_fork,m.avereth_inactive,m.avereth_unplayed,m.avereth_protected_edit,m.avereth_edits],
     events:messageEvents(m), status:rec(m)?.extraction?.status ?? null,
     continuation:rec(m)?.continuation ?? null, failed:!!(rec(m)?.plan?.failed || rec(m)?.interp?.failed),
     action_input:m.extra?.avereth_action_input,action_input_hash:rec(m)?.action_input_hash,

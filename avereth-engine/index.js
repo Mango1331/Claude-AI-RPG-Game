@@ -16,8 +16,8 @@ import { actionStatusView } from './src/action_status.js';
 //   * Lore Bridge           -> the current realm and location as World Info scan text (never part of the prompt), so
 //                              the narrator card's lorebook (lorebook/, docs/LOREBOOK.md) activates the right entries
 import { loadContentPack } from './src/content.js';
-import { onEdited, foldChat, ensureCampaign, hasCampaign, hasStoredCampaign, projectPromptHistory, lastReplyIndex, showPanel, reportRequest, applyReportAnswer, rec, setRec } from './src/host.js';
-import { RECORD_V4, prepareGenerationAsync, processReplyAny, runExtraction, applyExtraction, pendingExtraction, campaignRuntime, campaignPath, campaignSupport, onEditedV4, perfSummary } from './src/v4/runtime.js';
+import { onEdited, foldChat, ensureCampaign, hasCampaign, hasStoredCampaign, projectPromptHistory, messageEvents, lastPlayerIndex, lastReplyIndex, showPanel, reportRequest, applyReportAnswer, rec, setRec } from './src/host.js';
+import { RECORD_V4, prepareGenerationAsync, processReplyAny, runExtraction, applyExtraction, pendingExtraction, campaignRuntime, campaignPath, campaignSupport, onEditedV4, onSwipedV4, refreshRevisionDisplay, restoreEditedView, perfSummary } from './src/v4/runtime.js';
 import { createNarratorRecovery, narratorProviderResponse, providerResponseError } from './src/v4/narrator_recovery.js';
 import { verifySavedChat } from './src/v4/continuation.js';
 import { createWorldJobs } from './src/v4/world_jobs.js';
@@ -124,6 +124,7 @@ function actionView() {
     const open=worldOpen();
     return actionStatusView({unknown:requestControl.blocked(providerKey()),worldRunning:!!worldJobs.currentJob(),
         saving:!!persistence?.pending(),saveFailed:persistenceBlocked?.chatId===hostChatKey(ctx()),
+        invalidInput:ctx().chat.some(m=>!m.avereth_inactive && m.avereth_protected_edit),
         incomplete:incomplete(latestReply(ctx())),worldPending:open?.record.extraction.status==='pending',worldFailed:open?.record.extraction.status==='failed',phase:actionStatus});
 }
 function refreshActionStatus() {
@@ -147,7 +148,7 @@ async function saveAtOrigin(c, current = () => true) {
     return persistence.save(c, () => epoch===generationRequest && current());
 }
 function worldOpen() {
-    const c=ctx(),i=c.chat.findLastIndex(m=>!m.is_user && !m.is_system),r=rec(c.chat[i]);
+    const c=ctx(),i=lastReplyIndex(c.chat,c.chat.length),r=rec(c.chat[i]);
     return r?.extraction && ['pending','failed'].includes(r.extraction.status) ? {id:i,record:r} : null;
 }
 function actionBlocked() {
@@ -162,7 +163,7 @@ async function resumeActionCompletion() {
     // Retry only the exact save / extraction. Never replay the user mechanics to repair persistence.
     await saveAtOrigin(c);persistenceBlocked=null;
     const open=worldOpen();
-    if(open && !c.chat.slice(open.id+1).some(m=>m.is_user && rec(m)?.events?.length)) {
+    if(open && !c.chat.slice(open.id+1).some(m=>!m.avereth_inactive && m.is_user && rec(m)?.events?.length)) {
         if(open.record.extraction.status==='failed')setRec(c.chat[open.id],{...open.record,events:[],continuation:undefined,extraction:{...open.record.extraction,status:'pending'}});
         await saveAtOrigin(c);await startWorld(open.id);
     }
@@ -388,7 +389,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
             if (created === 'hidden') { abort(true); setPrompt(''); setLoreKeys([]); hiddenStart(); renderDebug(); return; }
         }
         // the report still being asked for belongs to the turn before this new message: its facts come first
-        if (pendingReport && pendingReport.chatId === hostChatKey(c) && (!type || type === 'normal') && c.chat.findLastIndex((m) => m.is_user) > pendingReport.id) {
+        if (pendingReport && pendingReport.chatId === hostChatKey(c) && (!type || type === 'normal') && lastPlayerIndex(c.chat) > pendingReport.id) {
             await Promise.race([pendingReport.job, new Promise((done) => setTimeout(done, REPORT_WAIT_MS))]);
             if (!isCurrent()) { abort(true); return; }
         }
@@ -401,12 +402,12 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
             // disconnected provider, or a chat switch. Resume BEFORE the new
             // player turn can let closeLatePending() mark it late.
             const id = pendingExtraction(c.chat);
-            if (id >= 0 && c.chat.findLastIndex((m) => m.is_user) > id) startWorld(id);
+            if (id >= 0 && lastPlayerIndex(c.chat) > id) startWorld(id);
             const job = worldJobs.currentJob();
             // The extraction may have applied its events while the host is
             // still saving the chat. Await that save before resolving the
             // next turn even when pendingExtraction() already became -1.
-            if (job && c.chat.findLastIndex((m) => m.is_user) > worldJobs.currentId()) {
+            if (job && lastPlayerIndex(c.chat) > worldJobs.currentId()) {
                 const w0 = Date.now();
                 const completed = await job;
                 if (completed?.persistenceFailed) throw new Error('World records could not be saved safely; no new turn was started.');
@@ -484,9 +485,9 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         lastContext = r.context;
         setPrompt(r.context.text);
         setActionStatus('Erzählung läuft');
-        narrationStart = { chatId: hostChatKey(c), user: c.chat.findLastIndex((m) => m.is_user), t: Date.now(), inputHash: hash32(c.chat[c.chat.findLastIndex(m => m.is_user)]?.mes || ''), context: r.context.diagnostics, epoch: generationRequest, chat: c.chat };
+        narrationStart = { chatId: hostChatKey(c), user: lastPlayerIndex(c.chat), t: Date.now(), inputHash: hash32(c.chat[lastPlayerIndex(c.chat)]?.mes || ''), context: r.context.diagnostics, epoch: generationRequest, chat: c.chat };
         // prompt-only: retired tracker blocks out of the history, and only the last exchanges (the saved chat is untouched)
-        lastProjection = projectPromptHistory(chat, { keepTurns: Number(s.historyTurns) || 0 });
+        lastProjection = projectPromptHistory(chat, { keepTurns: Number(s.historyTurns) || 0, currentInput:c.chat[lastPlayerIndex(c.chat)] });
         if (r.errors?.length) console.warn('[Avereth] fold errors', r.errors);
         if (r.dirty) await saveAtOrigin(c);
         renderDebug();
@@ -549,7 +550,7 @@ globalThis.fetch = async function (url, options) {
     }
     const physical = () => {
         if (!modernHost() || !settings().enabled || !String(url).endsWith('/api/backends/chat-completions/generate')) return hostFetch(url, options);
-        const body = JSON.parse(options.body), c=ctx(), userIndex=c.chat.findLastIndex(m=>m.is_user), user=c.chat[userIndex], input=user?.extra?.avereth_action_input;
+        const body = JSON.parse(options.body), c=ctx(), userIndex=lastPlayerIndex(c.chat), user=c.chat[userIndex], input=user?.extra?.avereth_action_input;
         const processor = c.streamingProcessor;
         let inspectStream;
         if (body.stream && processor && options.signal === processor.abortController.signal && user &&
@@ -684,6 +685,24 @@ function resumeReport() {
     if (id >= 0 && c.chat[id].extra?.avereth?.recovery === 'pending') requestReport(id);
 }
 
+function clearRevisionContext() {
+    lastContext = null;
+    lastProjection = null;
+    setPrompt('');
+    setLoreKeys([]);
+}
+
+const updatedEdits = new WeakMap();
+async function onNativeEditRendered(messageId) {
+    const c = ctx(), id = Number(messageId), msg = c.chat[id];
+    if (!msg || updatedEdits.get(msg) !== generationRequest) return;
+    updatedEdits.delete(msg);
+    const before = msg.extra?.display_text;
+    if (!before) restoreEditedView(c.chat,id,content,settings().hud);
+    if (msg.extra?.display_text) rerender(c,id);
+    if (msg.extra?.display_text !== before) await saveAtOrigin(c);
+}
+
 async function onMessageEdited(messageId) {
     generationRequest++;
     narratorRecovery.invalidate();
@@ -692,13 +711,22 @@ async function onMessageEdited(messageId) {
     const c = ctx();
     try {
         if (unsupported(c.chat)) return;
-        const r = campaignRuntime(c.chat) === 'v4' ? onEditedV4(c.chat, Number(messageId)) : onEdited(c.chat, Number(messageId), content);
+        const r = campaignRuntime(c.chat) === 'v4' ? onEditedV4(c.chat, Number(messageId), content, { hud: settings().hud, stripTrackers: settings().stripTrackers }) : onEdited(c.chat, Number(messageId), content);
         if (!r.changed) {
             resumeReport(); // edits to a player message can also cancel a pending world job
             return;
         }
-        // SillyTavern redraws the edited message from mes right after this event: draw ours (System block) after that
-        if (r.text) setTimeout(() => rerender(c, Number(messageId)), 0);
+        clearRevisionContext();
+        // Native formatting and the built-in Translate extension both finish on MESSAGE_UPDATED.
+        // Order at edit time, after extensions have installed their own handlers.
+        if (modernHost() && c.eventTypes.MESSAGE_UPDATED && c.eventSource.makeLast && r.text) {
+            updatedEdits.set(c.chat[Number(messageId)],generationRequest);
+            c.eventSource.makeLast(c.eventTypes.MESSAGE_UPDATED,onNativeEditRendered);
+        } else if (r.text) {
+            const msg = c.chat[Number(messageId)];
+            setTimeout(() => { if (ctx().chat[Number(messageId)] === msg) rerender(c,Number(messageId)); },0);
+        }
+        for (const row of r.changedRows || []) rerender(c, row);
         if (r.refused) toastr.warning(`Avereth Engine: ${r.refused}`);
         await saveAtOrigin(c);
         renderDebug();
@@ -736,7 +764,7 @@ function renderDebug() {
     const problems = state.meta.started ? validateState(state, content) : [];
     const perf = state.meta.runtime === 'v4' ? perfSummary(c.chat) : null; // Patch 8.2: the last turn's times
     el.textContent = `Avereth Engine ${ENGINE_VERSION} | ` + (state.meta.started
-        ? `runtime ${state.meta.runtime || 'v3'}${state.meta.runtime === 'v4' && llmPath ? ` (LLM: ${llmPath})` : ''} | turn ${state.turn} | mode ${state.mode} | events ${c.chat.reduce((a, m) => a + (m.extra?.avereth?.events?.length || 0), 0)} | integrity: ${problems.length || errors.length ? `${problems.length + errors.length} problem(s)` : 'OK'}${lastContext ? ` | last block ~${lastContext.tokens} tokens` : ''}${lastProjection ? ` | history: ${lastProjection.removed} older message(s) left out, ${lastProjection.stripped} tracker block(s) removed` : ''} | lore: ${loreFromWorldInfo() ? `World Info${cardLorebook() ? ` (${cardLorebook()})` : ''}` : 'engine'}${contract ? ` | narrator contract: ${contract}` : ''}${perf ? ` | last turn: ${perf}` : ''}`
+        ? `runtime ${state.meta.runtime || 'v3'}${state.meta.runtime === 'v4' && llmPath ? ` (LLM: ${llmPath})` : ''} | turn ${state.turn} | mode ${state.mode} | events ${c.chat.reduce((a, m) => a + messageEvents(m).length, 0)} | integrity: ${problems.length || errors.length ? `${problems.length + errors.length} problem(s)` : 'OK'}${lastContext ? ` | last block ~${lastContext.tokens} tokens` : ''}${lastProjection ? ` | history: ${lastProjection.removed} older message(s) left out, ${lastProjection.stripped} tracker block(s) removed` : ''} | lore: ${loreFromWorldInfo() ? `World Info${cardLorebook() ? ` (${cardLorebook()})` : ''}` : 'engine'}${contract ? ` | narrator contract: ${contract}` : ''}${perf ? ` | last turn: ${perf}` : ''}`
         : 'no campaign in this chat');
     const dbg = document.getElementById('avereth_debug');
     if (dbg) dbg.value = settings().showDebug ? [lastContext?.text || '', ...problems, ...errors].join('\n') : '';
@@ -745,7 +773,7 @@ function renderDebug() {
 function exportLog() {
     const c = ctx();
     // build: the engine build that wrote the message's record (none: written before 3.1.0)
-    const log = c.chat.map((m, i) => ({ i, user: !!m.is_user, build: m.extra?.avereth?.build, events: m.extra?.avereth?.events || [] })).filter((x) => x.events.length);
+    const log = c.chat.map((m, i) => ({ i, user: !!m.is_user, build: m.extra?.avereth?.build, events: messageEvents(m) })).filter((x) => x.events.length);
     const blob = new Blob([JSON.stringify(log, null, 1)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -842,7 +870,7 @@ function mountSettings() {
     c.eventSource.on(ev.GENERATION_ENDED, () => { bindStreamReply(); narratorRecovery.finish(); });
     c.eventSource.on(ev.CHAT_COMPLETION_SETTINGS_READY, data => {
         narratorRequest = null;
-        const a = ctx(), u = a.chat.findLastIndex(m => m.is_user), user = a.chat[u], record = rec(user);
+        const a = ctx(), u = lastPlayerIndex(a.chat), user = a.chat[u], record = rec(user);
         // ST can retain an errored processor until the next native generation finishes.
         if (!data.stream && narrationStart?.epoch === generationRequest) streamOwners.delete(a.streamingProcessor);
         if (data.stream || a.groupId || !settings().enabled || !settings().recoverReports || !record?.events?.length
@@ -856,21 +884,40 @@ function mountSettings() {
     // state is always re-folded from the chat, so these events only refresh the status line; the interceptor sets
     // the engine block before every generation (normal, swipe, regenerate, continue)
     c.eventSource.on(ev.CHAT_CHANGED, () => {
+        if (settings().enabled && content && campaignRuntime(ctx().chat) === 'v4') refreshRevisionDisplay(ctx().chat);
         actionStatus='Bereit'; // transient phase labels belong to the chat being left, not its successor
         generationRequest++;
         narrationStart = null;
         narratorRecovery.invalidate();
         worldJobs.invalidate();
-        lastContext = null; lastProjection = null;
-        setPrompt(''); setLoreKeys([]);
+        clearRevisionContext();
         renderDebug();
         resumeReport();
     });
-    for (const t of [ev.MESSAGE_DELETED, ev.MESSAGE_SWIPED]) c.eventSource.on(t, () => {
+    for (const t of [ev.MESSAGE_DELETED, ev.MESSAGE_SWIPED]) c.eventSource.on(t, async id => {
         generationRequest++;
         narrationStart = null;
         narratorRecovery.invalidate();
         worldJobs.invalidate();
+        const now = ctx();
+        if (settings().enabled && content && campaignRuntime(now.chat) === 'v4') {
+            clearRevisionContext();
+            if (t === ev.MESSAGE_SWIPED) {
+                const rows = onSwipedV4(now.chat, Number(id));
+                for (const row of rows) rerender(now, row);
+                // A new empty swipe is still being generated. Only selection of an existing
+                // recorded answer needs an immediate receipt in place of ST's deferred save.
+                const selected = now.chat[Number(id)];
+                if (selected && rec(selected)?.text_hash === hash32(selected.mes)) {
+                    try { await saveAtOrigin(now); }
+                    catch (err) {
+                        console.error('[Avereth] revision save failed', err);
+                        refreshActionStatus();
+                        return;
+                    }
+                }
+            } else refreshRevisionDisplay(now.chat);
+        }
         renderDebug();
         resumeReport();
     });
@@ -895,6 +942,7 @@ function mountSettings() {
         c.eventSource.on(ev.CHAT_CHANGED,()=>actionComposer?.resume());
         actionComposer?.resume();
     }
+    if (settings().enabled && content && campaignRuntime(c.chat) === 'v4') refreshRevisionDisplay(c.chat);
     renderDebug();
     resumeReport(); // also recover a pending reply after a full browser reload
 })();

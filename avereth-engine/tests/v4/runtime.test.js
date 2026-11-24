@@ -201,13 +201,16 @@ test('a swipe is a new reply: its own extraction; the player\'s commands, their 
     assert.equal(s.last.outcome.check_die, die);
 });
 
-test('an edited reply keeps what its extraction committed; a reload resumes a pending extraction', async () => {
+test('an edited reply needs its own extraction; a reload resumes pending work', async () => {
     const g = await created();
     const t = T('t1');
     await g.player(t.player, t.commands);
     const r = await g.reply('He walks up to the Guild hall.', fill(t.recovery));
     g.chat[r.id].mes = 'He walks up to the Guild hall, tired.';
-    assert.equal(onEditedV4(g.chat, r.id).changed, true);
+    assert.equal(onEditedV4(g.chat, r.id, content).changed, true);
+    assert.equal(g.state().scene.at, 'loc.redmarch.verge');
+    assert.equal(pendingExtraction(g.chat), r.id);
+    await runExtraction(g.chat,r.id,content,g.llm);
     assert.equal(g.state().scene.at, 'loc.redmarch.guild_hall');
     await g.player(T('t2').player, T('t2').commands);
     g.chat.push({ mes: 'The clerk names the fee.', is_user: false, is_system: false, extra: {} });

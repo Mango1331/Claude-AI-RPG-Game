@@ -4,6 +4,7 @@ Für Zahlen nach Build, Architektur und Messpunkt gibt es den [Messvergleich](..
 
 | Thema | Untersuchung | Gegenprüfung oder Daten |
 |---|---|---|
+| Kampf-HUD .209 | [Unabhängiger Codex-Gegenreview und Umsetzungsentscheidung](GEGENREVIEW_209_KAMPF_HUD_CODEX.md) | [GPT-Gegenreview zu User11](USER11_208_GPT_GEGENREVIEW_TRUST_MAJOR_MINOR_2026-11-24.md) |
 | User11, Begleitung und Spielerhoheit | [Entscheidung nach Originalen, Gegenproben und natürlichem Spiel](USER11_208_ENTSCHEIDUNG.md) | [Kontrollierter Firewallvergleich A/B/C](USER11_208_FIREWALLVERGLEICH.md) · [Persönlicher Run](../testrun_10b/user-20261124-014928-208/CODEX_GEGENREVIEW.md) |
 | Aktionsökonomie und Kampf-HUD | [Fünf RPG-Regelwerke und eigener Balancevergleich](CODEX_MAJOR_MINOR_USER11_208.md) | [Deterministische Kampfsimulation](user11_balance_208/kampf.json) · [Drei HUD-Varianten](user11_balance_208/hud.json) |
 | Tagesboard, Hindernisse und Kampfzug auf .208 | [Technische Abnahme](ABNAHME_208_TAGESBOARD_UND_KAMPFAKTIONEN.md) | [Fachplan](../patch_plans_10b/FACHPLAN_208_TAGESBOARD_UND_KAMPFAKTIONEN.md) · [Kontrollreview des Plans](../patch_plans_10b/REVIEW_208_FACHPLAN_GPT_2026-11-23.md) |

@@ -10,6 +10,10 @@ Der [Projektstand](03_AKTUELLER_PROJEKTSTAND.md) nennt die spielbare Fassung und
 
 [Unabhängiger GPT-Kontrollreview](recherche/USER11_208_GPT_GEGENREVIEW_TRUST_MAJOR_MINOR_2026-11-24.md) · [Codex-Entscheidungsvorlage](recherche/USER11_208_ENTSCHEIDUNG.md) · [Major-/Minor-Balance und HUD](recherche/CODEX_MAJOR_MINOR_USER11_208.md) · [natürliche OpenRouter-Spieltests](testrun_10b/README.md). Keine Produktfreigabe; HUD und Reise-Planer für .209 getrennt bewerten.
 
+## .211 – Offline-Kontinuität und Revisionssicherheit
+
+[Unabhängiger GPT-Gegenreview](recherche/AVERETH_211_GPT_GEGENREVIEW_OFFLINE_2026-11-24.md) · [Astra-Fachbericht](recherche/AVERETH_211_SPIELKONTINUITAET_OFFLINE.md) · [Abnahme](recherche/kontinuitaet_211/ABNAHME.md) · [Langzeittestentwurf](recherche/kontinuitaet_211/LANGZEITPLAN.md). Technisch für natürliche Modellprüfung freigegeben; keine Produktübernahme.
+
 ## .210 – Kontinuität, Narrator-Freiheit und zweiter Entwicklungszyklus
 
 [Unabhängiger GPT-Gegenreview und neue Spielzielvorgabe](recherche/AVERETH_210_GPT_GEGENREVIEW_SPIELFLUSS_KONTINUITAET_2026-11-24.md) · [Astra-Fachbericht .210](recherche/AVERETH_210_KONTINUITAET.md) · [Technische .210-Abnahme](recherche/kontinuitaet_210/TECHNISCHE_ABNAHME.md). Die zweite Entwicklungsetappe wird offline geprüft; spätere natürliche OpenRouter-Langzeittests sind separat.

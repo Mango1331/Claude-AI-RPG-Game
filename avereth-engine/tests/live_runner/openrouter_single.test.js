@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { options } from '../../tools/st_live/live/run_live.mjs';
+import { options, nativeCompletionBlocksContinuation } from '../../tools/st_live/live/run_live.mjs';
 import { OPENROUTER_URL, OPENROUTER_MODEL, OPENROUTER_PROVIDER, OPENROUTER_REASONING_EFFORT, OPENROUTER_INCLUDE_BODY, openRouterPlayerExtraBody, useOpenRouter } from '../../tools/st_live/live/openrouter.mjs';
 import { routeOf } from '../../tools/st_live/live/import_profile.mjs';
 import { loadGuide } from '../../tools/st_live/live/guide.mjs';
@@ -125,4 +125,17 @@ test('fixed OpenRouter routing YAML is valid for ST Custom Chat Completion inclu
     const reference=openRouterPlayerExtraBody();
     assert.deepEqual(reference.provider.order,[OPENROUTER_PROVIDER]);
     assert.equal(reference.provider.allow_fallbacks,false);
+});
+
+test('a terminal Extractor failure is not soft-continuable while ST still blocks the next input', () => {
+    const replies=[
+        {extra:{avereth:{extraction:{status:'failed'}}}},
+        {extra:{avereth:{extraction:{status:'pending'}}}},
+        {extra:{avereth:{extraction:{status:'applied'}}}},
+    ];
+    assert.equal(nativeCompletionBlocksContinuation({kind:'extractor_failed',at:0},replies),true);
+    assert.equal(nativeCompletionBlocksContinuation({kind:'extractor_failed',at:1},replies),true);
+    assert.equal(nativeCompletionBlocksContinuation({kind:'extractor_failed',at:2},replies),false);
+    assert.equal(nativeCompletionBlocksContinuation({kind:'planner_failed',at:0},replies),false);
+    assert.equal(nativeCompletionBlocksContinuation(null,replies),false);
 });

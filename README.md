@@ -1,18 +1,16 @@
 # Avereth Engine
 
-Für einen neuen Spieltest stehen Build, Branch und Installationsanleitung im [aktuellen Projektstand](03_AKTUELLER_PROJEKTSTAND.md).
+**Aktueller Einstieg:** [Projektstand nach der Kontinuitätsetappe .211](03_AKTUELLER_PROJEKTSTAND.md). Dieser Stand wird **nur bei einer abgeschlossenen Etappe**, nicht nach jedem Test oder Commit gepflegt.
 
-| Wenn du … | Einstieg |
+| Zweck | Maßgebliche Quelle |
 |---|---|
-| einen persönlichen Run ablegen oder wiederfinden möchtest | [10B-Testruns](testrun_10b/README.md) |
-| Zeiten und Tokenverbrauch vor und nach der Optimierung vergleichen möchtest | [Durchschnittsmessungen](testrun_10b/durchschnittsmessungen/README.md) |
-| eine Spielregel nachschlägst | [Design-Kanon](02_DESIGN_KANON.md) |
-| einen Patch oder dessen Abnahme nachvollziehen möchtest | [10B-Fachquellen und Reviews](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) |
-| eine Untersuchung suchst | [Forschungsindex](recherche/README.md) |
-| eine Idee oder spätere Entscheidung einordnen möchtest | [Ideenkatalog](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md) · [Roadmap](07_ROADMAP_NACH_10B_ENTWURF.md) |
+| Was ist der aktuelle Entwicklungsstand? | [03 · Meilensteinstand](03_AKTUELLER_PROJEKTSTAND.md) |
+| Wo wird gearbeitet und was darf gemergt werden? | [01 · Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [05 · Branch-/Archivplan](05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md) |
+| Verbindliche Regeln der eingefrorenen Produktlinie | [02 · Design-Kanon](02_DESIGN_KANON.md) |
+| Forschungsberichte, Gegenreviews und technische Abnahmen | [Forschungsindex](recherche/README.md) · [06 · Etappen und Fachquellen](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) |
+| Echte persönliche und automatisierte Runs | [10B-Runindex](testrun_10b/README.md) · [Messungen](testrun_10b/durchschnittsmessungen/README.md) |
+| Spätere Features | [Ideenkatalog](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md) · [Roadmap](07_ROADMAP_NACH_10B_ENTWURF.md) |
 
-## Kopierbarer Startauftrag für einen neuen GPT-Chat
+## Einstieg eines neuen GPT-/Astra-Chats
 
-> Lies auf `main` den aktuellen Projektstand in `03_AKTUELLER_PROJEKTSTAND.md` und die Zuständigkeiten in `01_ARBEITSWEISE_CHATGPT_CLAUDE.md`. Verwende den dort genannten Build und Commit. Öffne für die konkrete Frage den verlinkten Run, Fachplan oder Abnahmebericht.
-
-[Arbeitsweise und Freigaben](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Branchhistorie](05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md)
+> Öffne auf `main` `03_AKTUELLER_PROJEKTSTAND.md` und `01_ARBEITSWEISE_CHATGPT_CLAUDE.md`. Kontrolliere anschließend die **tatsächlichen Remote-HEADs** der dort genannten Arbeitsbranches. Lies für den konkreten Auftrag nur die verlinkten Originale und Reviews. Arbeite am bestehenden Entwicklungsbranch statt pro Patch einen neuen Experimentbranch anzulegen; unabhängiger Review und Nutzerfreigabe bleiben erforderlich.

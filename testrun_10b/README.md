@@ -1,33 +1,15 @@
-# 10B-Spieltests
+# Avereth – 10B-Spieltests und Originaldaten
 
-[OpenRouter-Langzeitvergleich .210/.211 mit vier Kampagnen, Antwortrevisionen und Korrekturläufen](openrouter-20261124-langzeit-211/README.md)
+**Neue Runs werden im jeweils eigenen Ordner vollständig archiviert.** Dieser Index wird **pro Etappe** ergänzt, nicht nach jeder Einzelantwort. Originalchats, Providerlogs, Screenshots, Messwerte und Reviews nicht in der Status-/Fachübersicht wiederholen.
 
-## .209 und .210 · Kontakte, Reisen und Besitz über mehrere Züge
+| Etappe | Runordner und Auswertung |
+|---|---|
+| **.211 · natürlicher OpenRouter-Langzeitvergleich** | [Vier Kampagnen .210/.211, Revisionen und Gegenproben](openrouter-20261124-langzeit-211/README.md) · [fachlicher Abschluss](../recherche/AVERETH_211_NATUERLICHER_LANGZEITVERGLEICH.md) · [GPT-Gegenreview](../recherche/AVERETH_211_GPT_GEGENREVIEW_NATUERLICHER_LANGZEITTEST_2026-11-24.md) |
+| **.209/.210 · erste Kontinuitätsreihen** | [Referenz .209](openrouter-20261124-kontinuitaet-a-209/README.md) · [Kandidat .210](openrouter-20261124-kontinuitaet-b-210/README.md) · [sechs Fokuspaare](openrouter-20261124-kontinuitaet-fokus/README.md) · [Folge Wren](openrouter-20261124-kontinuitaet-zusatz-wren-210/README.md) · [verworfener Pilot](openrouter-20261124-kontinuitaet-pilot-210/README.md) |
+| **.208 · User11 und Firewallvergleiche** | [Persönlicher User11](user-20261124-014928-208/SOURCE_MANIFEST.md) · [OpenRouter Trust-B](openrouter-20261124-trust-b-208/README.md) · [OpenRouter Trust-C](openrouter-20261124-trust-c-208/README.md) · [Entscheidung](../recherche/USER11_208_ENTSCHEIDUNG.md) |
+| **.205–.207 · User08–User10** | [User08](user-20261122-161817-205/README.md) · [User09](user-20261123-042623-207/CODEX_GEGENREVIEW.md) · [User10](user-20261123-075443-207/CODEX_GEGENREVIEW.md) |
+| **.204 und älter** | [Runarchiv mit persönlichen Tests, Einzelruns und Batches](archiv/README.md) |
 
-Dieselbe Ausgangswelt auf dem Halloran-Hof führt in zwei eigenständig gespielte Verläufe. Sechs zusätzlich eingefrorene Ausgangsszenen prüfen einzelne Entscheidungen unter vergleichbaren Bedingungen. [Referenzspiel](openrouter-20261124-kontinuitaet-a-209/README.md) · [Kandidatenspiel](openrouter-20261124-kontinuitaet-b-210/README.md) · [Verworfener Pilot](openrouter-20261124-kontinuitaet-pilot-210/README.md) · [Gepaarte Szenen](openrouter-20261124-kontinuitaet-fokus/README.md) · [Weg mit Wren im Anschluss an C19/B](openrouter-20261124-kontinuitaet-zusatz-wren-210/README.md) · [Entscheidung und technische Abnahme](../recherche/AVERETH_210_KONTINUITAET.md)
+[Vergleichbare Durchschnitts- und Medianmessungen](durchschnittsmessungen/README.md) · [Archiv älterer Messarchitektur](durchschnittsmessungen/archiv/README.md) · [Projektstand](../03_AKTUELLER_PROJEKTSTAND.md).
 
-## .208 · Natürliche OpenRouter-Spielreihen zum Narrator-Vertrauen
-
-Die Arme starten nach derselben Mage-Erschaffung. Die getrennten Spielverläufe sind aus den tatsächlich sichtbaren Angeboten und Antworten entstanden. Jeder bestätigte Zug enthält einen Vergleich der Welt und der Ereignisse vor und nach Reload. [Kandidat B](openrouter-20261124-trust-b-208/README.md) · [Kandidat C](openrouter-20261124-trust-c-208/README.md) · [Vergleich und Entscheidung](../recherche/USER11_208_ENTSCHEIDUNG.md)
-
-## User11 · Erster persönlicher .208-Lauf – Kampf-HUD und Major/Minor
-
-Elf erzählte Züge, 36 Modellaufrufe und fünf Extractor-Reparaturen. Der Questvertrag bleibt am Board verfügbar. Bei Brens Cottage kostet eine verweigerte Ankunft sechs weitere Weltänderungen. Die Kampfentscheidung in der ersten Runde beeinflusst Alarics Überleben stärker als das spätere Ausweichen im Nahkampf. [Gegenreview](user-20261124-014928-208/CODEX_GEGENREVIEW.md) · [Originale und Manifest](user-20261124-014928-208/SOURCE_MANIFEST.md) · [Spielerfeedback](user-20261124-014928-208/FEEDBACK_SPIELGEFUEHL.md) · [GPT-Erstreview](user-20261124-014928-208/REVIEW.md) · [RPG-Regeln, Kampfsimulation und HUD-Vergleich](../recherche/CODEX_MAJOR_MINOR_USER11_208.md)
-
-## User10 · Zweiter .207-Lauf mit Fortsetzung
-
-[Unabhängiger Gegenreview des Gesamtlaufs](user-20261123-075443-207/CODEX_GEGENREVIEW.md) · [GPT-Analyse der ersten Boardlesung](user-20261123-075443-207/REVIEW.md) · [43 physische Aufrufe](user-20261123-075443-207/CODEX_PHYSISCHE_AUFRUFE.csv). Das neue Lesen gelingt. Die abgewiesene Mischaktion wirkt später in der Prosa fort. Chat und Events der Fortsetzung enthalten den Anfang.
-
-## User09 · Erster persönlicher .207-Lauf
-
-[Gegenreview mit Originalnachspiel](user-20261123-042623-207/CODEX_GEGENREVIEW.md) · [GPT-Erstreview](user-20261123-042623-207/REVIEW.md) · [Aufrufrekonstruktion](user-20261123-042623-207/CODEX_AUFRUFREKONSTRUKTION.csv). Die unmittelbare Schadensmeldung fehlt. Die improvisierte Brückenüberquerung ist gewünscht. Chat und Eventexport sind bytegleich archiviert.
-
-## User08 · Neuer persönlicher Run auf .205 (ausgewertet)
-
-[Runverzeichnis mit allen vier Originaldateien, Quellenmanifest und Review](user-20261122-161817-205/README.md) · [unabhängige Auswertung](user-20261122-161817-205/REVIEW.md) · [pro Zug nachprüfbare Messdaten](user-20261122-161817-205/MESSWERTE_USER08_205.json). Mage Alaric, 27 erzählte Spielzüge, abgeschlossen am 22.11.2026. Der große Completion-Log ist in sechs **binär ohne Änderung zusammensetzbare** Teile zerlegt und mit Prüfsummen dokumentiert. Neuer technischer Teststand `.205` bleibt unverändert. [Installation](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/a69daeeed613850919f16eb810cc2c150c8aafd0/avereth-engine/docs/USER08_205_PLAYTEST.md).
-
-## Frühere Läufe
-
-Die Originale, Manifeste und Auswertungen bis einschließlich User07 liegen im [Laufarchiv](archiv/README.md). Für den letzten persönlichen Test sind [User07 auf .204](archiv/user-20261121-171341-204/README.md) und der [separate Camp-Gegencheck](archiv/user07-camp-openrouter-20261122/README.md) direkt erreichbar.
-
-[Durchschnittsmessungen und Architekturvergleich](durchschnittsmessungen/README.md) · [Aktueller Projektstand](../03_AKTUELLER_PROJEKTSTAND.md) · [Arbeitsweise und Reviewregeln](../01_ARBEITSWEISE_CHATGPT_CLAUDE.md)
+[Frühere ausführliche Runübersicht mit Beschreibungen je User08–11](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/510846a3d3185cd85e510e4f3d0c4f024c6f360e/testrun_10b/README.md).

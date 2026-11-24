@@ -1,5 +1,9 @@
 # 10B-Spieltests
 
+## .208 · Natürliche OpenRouter-Spielreihen zum Narrator-Vertrauen
+
+Die Arme starten nach derselben Mage-Erschaffung. Die getrennten Spielverläufe sind aus den tatsächlich sichtbaren Angeboten und Antworten entstanden. Jeder bestätigte Zug enthält einen Vergleich der Welt und der Ereignisse vor und nach Reload. [Kandidat B](openrouter-20261124-trust-b-208/README.md) · [Kandidat C](openrouter-20261124-trust-c-208/README.md) · [Vergleich und Entscheidung](../recherche/USER11_208_ENTSCHEIDUNG.md)
+
 ## User11 · Erster persönlicher .208-Lauf – Kampf-HUD und Major/Minor
 
 Elf erzählte Züge, 36 Modellaufrufe und fünf Extractor-Reparaturen. Der Questvertrag bleibt am Board verfügbar. Bei Brens Cottage kostet eine verweigerte Ankunft sechs weitere Weltänderungen. Die Kampfentscheidung in der ersten Runde beeinflusst Alarics Überleben stärker als das spätere Ausweichen im Nahkampf. [Gegenreview](user-20261124-014928-208/CODEX_GEGENREVIEW.md) · [Originale und Manifest](user-20261124-014928-208/SOURCE_MANIFEST.md) · [Spielerfeedback](user-20261124-014928-208/FEEDBACK_SPIELGEFUEHL.md) · [GPT-Erstreview](user-20261124-014928-208/REVIEW.md) · [RPG-Regeln, Kampfsimulation und HUD-Vergleich](../recherche/CODEX_MAJOR_MINOR_USER11_208.md)

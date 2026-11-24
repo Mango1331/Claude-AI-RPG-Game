@@ -1,0 +1,253 @@
+{
+  "B": {
+    "inputs": 20,
+    "confirmed": 20,
+    "physical": 65,
+    "regular": 65,
+    "cost_usd": {
+      "reported": 65,
+      "sum": "0.0294557480"
+    },
+    "provider_input": {
+      "reported": 65,
+      "sum": 836792
+    },
+    "provider_output": {
+      "reported": 65,
+      "sum": 28984
+    },
+    "provider_reasoning": {
+      "reported": 65,
+      "sum": 8607
+    },
+    "provider_cache": {
+      "reported": 65,
+      "sum": 481472
+    },
+    "roles_elapsed_ms": {
+      "planner": {
+        "n": 20,
+        "sum": 48463,
+        "median": 2581.5,
+        "min": 774,
+        "max": 4714
+      },
+      "narrator": {
+        "n": 20,
+        "sum": 188155,
+        "median": 8997.5,
+        "min": 6392,
+        "max": 17922
+      },
+      "extractor": {
+        "n": 25,
+        "sum": 188684,
+        "median": 6270,
+        "min": 3461,
+        "max": 18878
+      }
+    },
+    "browser_ms_after_click": {
+      "firstProse": {
+        "n": 20,
+        "sum": 134279,
+        "median": 5764.5,
+        "min": 3704,
+        "max": 17272
+      },
+      "lastRenderedChange": {
+        "n": 20,
+        "sum": 404750,
+        "median": 19964.5,
+        "min": 8832,
+        "max": 37723
+      },
+      "worldCommit": {
+        "n": 20,
+        "sum": 442265,
+        "median": 20175.0,
+        "min": 14314,
+        "max": 37672
+      },
+      "confirmedSave": {
+        "n": 20,
+        "sum": 445171,
+        "median": 20348.0,
+        "min": 14415,
+        "max": 37970
+      },
+      "ready": {
+        "n": 20,
+        "sum": 445289,
+        "median": 20352.5,
+        "min": 14418,
+        "max": 37978
+      }
+    },
+    "reply_event_types": {
+      "place.created": 12,
+      "scene.moved": 11,
+      "entity.created": 17,
+      "scene.entered": 23,
+      "scene.tactical": 11,
+      "fact.asserted": 45,
+      "place.updated": 8,
+      "time.advanced": 17,
+      "knowledge.gained": 14,
+      "memory.recorded": 36,
+      "pulse.outcome": 20,
+      "extract.applied": 20,
+      "entity.updated": 27,
+      "intent.set": 2,
+      "fact.ended": 4,
+      "thread.set": 9,
+      "object.created": 3,
+      "object.moved": 2,
+      "cmd.completed": 1,
+      "coin.changed": 1,
+      "transaction.completed": 1,
+      "delta.rejected": 12,
+      "scene.position": 1,
+      "relation.set": 1,
+      "scene.left": 3
+    },
+    "rejected": {
+      "arrive/no_go": 1,
+      "arrive/passage": 1,
+      "expected/met_evidence": 3,
+      "fact/anchor_absent": 1,
+      "fact/anchor_first_contact": 1,
+      "fact/anchor_value": 1,
+      "offer/offer": 1,
+      "offer/scene_context": 1,
+      "person.new/scene_context": 2
+    }
+  },
+  "C": {
+    "inputs": 21,
+    "confirmed": 21,
+    "physical": 68,
+    "regular": 68,
+    "cost_usd": {
+      "reported": 68,
+      "sum": "0.0301510360"
+    },
+    "provider_input": {
+      "reported": 68,
+      "sum": 868039
+    },
+    "provider_output": {
+      "reported": 68,
+      "sum": 29860
+    },
+    "provider_reasoning": {
+      "reported": 68,
+      "sum": 9115
+    },
+    "provider_cache": {
+      "reported": 68,
+      "sum": 568704
+    },
+    "roles_elapsed_ms": {
+      "planner": {
+        "n": 22,
+        "sum": 64892,
+        "median": 2344.5,
+        "min": 861,
+        "max": 10383
+      },
+      "narrator": {
+        "n": 21,
+        "sum": 205643,
+        "median": 9486,
+        "min": 4503,
+        "max": 19715
+      },
+      "extractor": {
+        "n": 25,
+        "sum": 176807,
+        "median": 6388,
+        "min": 3205,
+        "max": 16610
+      }
+    },
+    "browser_ms_after_click": {
+      "firstProse": {
+        "n": 21,
+        "sum": 168124,
+        "median": 6382,
+        "min": 2926,
+        "max": 19841
+      },
+      "lastRenderedChange": {
+        "n": 21,
+        "sum": 399678,
+        "median": 16083,
+        "min": 6954,
+        "max": 39607
+      },
+      "worldCommit": {
+        "n": 21,
+        "sum": 466815,
+        "median": 19624,
+        "min": 10733,
+        "max": 39578
+      },
+      "confirmedSave": {
+        "n": 21,
+        "sum": 470110,
+        "median": 19678,
+        "min": 10787,
+        "max": 39698
+      },
+      "ready": {
+        "n": 21,
+        "sum": 470243,
+        "median": 19684,
+        "min": 10793,
+        "max": 39702
+      }
+    },
+    "reply_event_types": {
+      "delta.rejected": 10,
+      "scene.moved": 12,
+      "entity.created": 13,
+      "scene.entered": 18,
+      "scene.tactical": 10,
+      "fact.asserted": 46,
+      "scene.awareness": 1,
+      "time.advanced": 18,
+      "knowledge.gained": 16,
+      "memory.recorded": 36,
+      "pulse.outcome": 21,
+      "extract.applied": 21,
+      "place.created": 10,
+      "place.updated": 10,
+      "thread.set": 19,
+      "entity.updated": 12,
+      "intent.set": 4,
+      "claim.created": 1,
+      "relation.set": 1,
+      "relation.changed": 1,
+      "object.created": 5,
+      "object.moved": 2,
+      "scene.left": 3,
+      "offer.created": 1,
+      "fact.ended": 1,
+      "feature.set": 1
+    },
+    "rejected": {
+      "expected/met_not_known_here": 4,
+      "fact/engine_owned_fact": 1,
+      "fact/entity_fact": 2,
+      "fact/guild_canon": 1,
+      "leave/world_rule": 1,
+      "person.new/ambient": 1
+    }
+  },
+  "global": {
+    "physical_starts": 133,
+    "max_parallel": 1,
+    "terminal_unsettled": false
+  }
+}

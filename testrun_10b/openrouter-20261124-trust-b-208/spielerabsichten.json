@@ -1,0 +1,162 @@
+[
+  {
+    "n": 1,
+    "seq": 1795501846838,
+    "op": "play",
+    "text": "I follow the public road to the gate of Ashbridge. If someone is on duty, I ask where a newcomer could lend a hand today.",
+    "intent_before_narration": "Proceed only from the verge to the gate. Ask for a lead; no agreement to go elsewhere or take a job.",
+    "at": "2026-11-24T06:30:47.108Z"
+  },
+  {
+    "n": 2,
+    "seq": 1795501916559,
+    "op": "play",
+    "text": "I step clear of the cart. Before I go in, which way is the Weary Ox, and is Marta a fair person to work for?",
+    "intent_before_narration": "Step aside within gate area and ask directions/opinion; no departure for tavern yet.",
+    "at": "2026-11-24T06:31:56.847Z"
+  },
+  {
+    "n": 3,
+    "seq": 1795501953764,
+    "op": "play",
+    "text": "I thank them, go in and follow the cooper's-yard directions to the Weary Ox. At the door I ask for Marta.",
+    "intent_before_narration": "Travel to the specified tavern by the described route and ask for Marta. No employment, purchase or onward trip.",
+    "at": "2026-11-24T06:32:34.038Z"
+  },
+  {
+    "n": 4,
+    "seq": 1795501997050,
+    "op": "play",
+    "text": "Alaric. The watch said you sometimes need a hand. I can do a short errand or help someone get where they're going; what's needed this morning?",
+    "intent_before_narration": "Make a work inquiry at the doorway; hear terms. No agreement or movement yet.",
+    "at": "2026-11-24T06:33:17.526Z"
+  },
+  {
+    "n": 5,
+    "seq": 1795502048055,
+    "op": "play",
+    "text": "Yes, it's a deal. I shoulder the herring keg and take it to Bren's stall on the west side of the market. What word does he want carried back?",
+    "intent_before_narration": "Accept Marta's specific errand and carry her keg to Bren at his market stall; offer delivery and request reply. Do not return or collect wages yet.",
+    "at": "2026-11-24T06:34:08.421Z"
+  },
+  {
+    "n": 6,
+    "seq": 1795502095666,
+    "op": "play",
+    "text": "I'll pass it on. I take the dill back to Marta at the Weary Ox. 'Good and whole,' I tell her, and hand her the dill. 'Bren sends his compliments to the cook, if not to the brewer.'",
+    "intent_before_narration": "Return to Marta at the Ox and deliver the message and dill; legitimate agreed wages may be offered. No new errand accepted.",
+    "at": "2026-11-24T06:34:56.071Z"
+  },
+  {
+    "n": 7,
+    "seq": 1795502161041,
+    "op": "play",
+    "text": "Thanks, Marta. I'll leave the afternoon hauling for another day. Over the bread and cheese I ask Hal about Otty. Is he going out to check on that broken stall? I could give them a hand.",
+    "intent_before_narration": "Decline the afternoon job; eat offered meal and ask Hal about Otty and whether he is going. No permission yet to follow Hal or leave.",
+    "at": "2026-11-24T06:36:01.490Z"
+  },
+  {
+    "n": 8,
+    "seq": 1795502525660,
+    "op": "play",
+    "text": "I thank Marta for the boards. Once I have eaten, I shoulder a couple from the woodpile and head to the drain corner to find Otty. I would like to hear what she wants done with her table.",
+    "intent_before_narration": "Accept the errand, carry boards to Otty, and consult her before repairing the table.",
+    "at": "2026-11-24T06:42:06.258Z"
+  },
+  {
+    "n": 9,
+    "seq": 1795502609906,
+    "op": "play",
+    "text": "I can drive a straight nail most days. I take her hammer and fit the boards where she showed me, picking the honest nails out of the pot. When the top sits level, I give it a gentle push to see if it rocks.",
+    "intent_before_narration": "Rebuild the stall under Otty's direction and check its stability.",
+    "at": "2026-11-24T06:43:30.379Z"
+  },
+  {
+    "n": 10,
+    "seq": 1795502695074,
+    "op": "play",
+    "text": "I lift the nail-pot onto the new top and sit with her for a minute. Keep the kindling for someone with a hearth, Otty. I spend a fair bit of my time on the road. What is there to see on foot just outside Ashbridge?",
+    "intent_before_narration": "Decline the kindling, chat with Otty, and ask for a nearby walking destination. I haven't chosen a destination yet.",
+    "at": "2026-11-24T06:44:55.564Z"
+  },
+  {
+    "n": 11,
+    "seq": 1795502755367,
+    "op": "play",
+    "text": "Today I can walk for the pleasure of my legs. The herons sound worth the mud. I wish her a good day's trade and walk out by the west gate, taking the river path as far as the water meadows.",
+    "intent_before_narration": "Head to the water meadows for a walk and watch for herons. The mill is an option for later.",
+    "at": "2026-11-24T06:45:55.934Z"
+  },
+  {
+    "n": 12,
+    "seq": 1795502838868,
+    "op": "play",
+    "text": "One copper for me, then. I put it in the thin man's hand and, if he lets me by, follow the bank to the dead willow. I sit quietly there to watch the shallows.",
+    "intent_before_narration": "Pay the one copper requested for passage and continue to the willow to look for herons.",
+    "at": "2026-11-24T06:47:19.477Z"
+  },
+  {
+    "n": 13,
+    "seq": 1795502917462,
+    "op": "play",
+    "text": "I watch until one of the herons fishes, or until my legs start to go to sleep. Then I stretch them on the path up to Weirbridge mill. Otty put me in the mood to see Ashbridge from that rise.",
+    "intent_before_narration": "Watch the herons for a little while, then walk on to the mill rise for the view.",
+    "at": "2026-11-24T06:48:37.887Z"
+  },
+  {
+    "n": 14,
+    "seq": 1795502979360,
+    "op": "play",
+    "text": "I would like some company for the way back. In the mill yard I hail whoever is minding the sacks. Has anyone a load going down to Ashbridge who would like a hand with the lifting?",
+    "intent_before_narration": "Ask in the yard about accompanying a wagon to Ashbridge in exchange for help loading. Find out whether anyone is going.",
+    "at": "2026-11-24T06:49:39.984Z"
+  },
+  {
+    "n": 15,
+    "seq": 1795503034525,
+    "op": "play",
+    "text": "I'll wait here for Tam and take my share of the hauling down to Ashbridge. There's time for a breather first. I find a patch of shade in the yard and hold out a hand for the dog to sniff if he likes.",
+    "intent_before_narration": "Agree to accompany Tam and help with the cart at loading time. Rest in the mill yard until then.",
+    "at": "2026-11-24T06:50:35.331Z"
+  },
+  {
+    "n": 16,
+    "seq": 1795503106863,
+    "op": "play",
+    "text": "I stay at Tam's side with a hand on the rail. Quietly, to the miller: This is your usual road. Do these two collect for anyone, or do you normally just tell them to let the cart through?",
+    "intent_before_narration": "Stand by Tam and consult the miller about the demand. Let him explain how he wants to handle his cart.",
+    "at": "2026-11-24T06:51:47.663Z"
+  },
+  {
+    "n": 17,
+    "seq": 1795503165565,
+    "op": "play",
+    "text": "Let this one be my expense, miller. I give the thin toll man two coppers for the whole cart and company. Once he has cleared the road, I help push the load with Tam to the west gate.",
+    "intent_before_narration": "Pay the thin man the two coppers requested for everyone and get the cart and Tam to the west gate together.",
+    "at": "2026-11-24T06:52:46.286Z"
+  },
+  {
+    "n": 18,
+    "seq": 1795503254309,
+    "op": "play",
+    "text": "The miller paid them himself. I tuck my coins away. I'll see the load home with you, Tam. I wheel the cart along with them to the storehouse by the market and ask the storekeeper where the sacks belong.",
+    "intent_before_narration": "Leave the toll settled by the miller. Accompany Tam and the miller to the market storehouse and find the unloading spot.",
+    "at": "2026-11-24T06:54:15.024Z"
+  },
+  {
+    "n": 19,
+    "seq": 1795503313486,
+    "op": "play",
+    "text": "Just the lifting today, Garl. I pass sacks down for the count and help Tam settle the last ones on the left of the post. When we're finished I thank the miller and his nephew for the company.",
+    "intent_before_narration": "Decline further employment, help unload the whole cart as agreed, and say farewell.",
+    "at": "2026-11-24T06:55:14.240Z"
+  },
+  {
+    "n": 20,
+    "seq": 1795503385345,
+    "op": "play",
+    "text": "I head back to the Weary Ox for the evening. If Marta has a minute, I tell her Otty put the boards to good use and that there were two herons out by the willow. Then I find a seat where I can put my feet up.",
+    "intent_before_narration": "Return to the inn, share the outcome of the morning's favor with Marta, and rest for the evening.",
+    "at": "2026-11-24T06:56:26.398Z"
+  }
+]

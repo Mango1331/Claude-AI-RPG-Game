@@ -4,7 +4,7 @@ Für Zahlen nach Build, Architektur und Messpunkt gibt es den [Messvergleich](..
 
 | Thema | Untersuchung | Gegenprüfung oder Daten |
 |---|---|---|
-| User11, Begleitung und Spielerhoheit | [Kontrollierter Firewallvergleich A/B/C](USER11_208_FIREWALLVERGLEICH.md) | [Historische Präfixe und Gegenproben](user11_trust_208/HISTORISCHER_VERGLEICH.md) · [Persönlicher Run](../testrun_10b/user-20261124-014928-208/CODEX_GEGENREVIEW.md) |
+| User11, Begleitung und Spielerhoheit | [Entscheidung nach Originalen, Gegenproben und natürlichem Spiel](USER11_208_ENTSCHEIDUNG.md) | [Kontrollierter Firewallvergleich A/B/C](USER11_208_FIREWALLVERGLEICH.md) · [Persönlicher Run](../testrun_10b/user-20261124-014928-208/CODEX_GEGENREVIEW.md) |
 | Aktionsökonomie und Kampf-HUD | [Fünf RPG-Regelwerke und eigener Balancevergleich](CODEX_MAJOR_MINOR_USER11_208.md) | [Deterministische Kampfsimulation](user11_balance_208/kampf.json) · [Drei HUD-Varianten](user11_balance_208/hud.json) |
 | Tagesboard, Hindernisse und Kampfzug auf .208 | [Technische Abnahme](ABNAHME_208_TAGESBOARD_UND_KAMPFAKTIONEN.md) | [Fachplan](../patch_plans_10b/FACHPLAN_208_TAGESBOARD_UND_KAMPFAKTIONEN.md) · [Kontrollreview des Plans](../patch_plans_10b/REVIEW_208_FACHPLAN_GPT_2026-11-23.md) |
 | Handels-HUD auf .207 | [Technische Abnahme mit User08 und ST](ABNAHME_207_HANDELS_HUD.md) | [Umsetzungsfachplan](../patch_plans_10b/FACHPLAN_207_HANDELS_HUD.md) · [ST-Messwerte](handel_hud_207/st-mock.json) |

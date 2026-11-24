@@ -11,7 +11,8 @@ import { execFileSync } from 'node:child_process';
 const [chatFile, ...roots] = process.argv.slice(2);
 if (roots.length !== 3) throw new Error('Expected a chat JSONL and three repository roots');
 const bytes = readFileSync(chatFile);
-const decoded = (chatFile.endsWith('.gz') ? gunzipSync(bytes) : bytes).toString('utf8');
+const original = chatFile.endsWith('.gz') ? gunzipSync(bytes) : bytes;
+const decoded = original.toString('utf8');
 const rows = decoded.trim().split(/\r?\n/).map(JSON.parse);
 const chat = rows.filter(row => typeof row.mes === 'string');
 const digest = data => createHash('sha256').update(JSON.stringify(data)).digest('hex');
@@ -58,4 +59,4 @@ for (const [index,msg] of chat.entries()) {
     }
     turns.push(turn);
 }
-console.log(JSON.stringify({sourceHash:createHash('sha256').update(bytes).digest('hex'),branches:arms.map(a=>a.commit),turns},null,2));
+console.log(JSON.stringify({sourceHash:createHash('sha256').update(original).digest('hex'),branches:arms.map(a=>a.commit),turns},null,2));

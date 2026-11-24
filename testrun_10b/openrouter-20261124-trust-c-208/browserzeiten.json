@@ -1,0 +1,695 @@
+[
+  {
+    "n": 1,
+    "inputMessageIndex": 5,
+    "timing": {
+      "marks": {
+        "click": 58061.30000000005,
+        "lastRenderedChange": 72491,
+        "firstProse": 62199.30000000005,
+        "confirmedSave": 72523.5,
+        "worldCommit": 72475.80000000005,
+        "worldTimesInferred": false,
+        "ready": 72531.8999999999
+      },
+      "world": {
+        "id": 6,
+        "committed_at_ms": 72475.80000000005,
+        "persisted_at_ms": 72523.5,
+        "extraction_validation_wait_ms": 5228,
+        "save_readback_ms": 48,
+        "total_ms": 5276,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The verge gave way to packed earth, and the road widened as it bent toward the walls."
+    },
+    "checked": {
+      "world": "0de9d385aebade936d853448bee840d9258229f2a0807b2afe50604a3c084f5f",
+      "events": "91a92b41dcd6e469dc81ec38210bab0d828210df829637879a7aab51c23eec03",
+      "messages": 7
+    },
+    "elapsedIncludingReloadMs": 15311
+  },
+  {
+    "n": 2,
+    "inputMessageIndex": 7,
+    "timing": {
+      "marks": {
+        "click": 115038.5,
+        "lastRenderedChange": 121992.19999999995,
+        "firstProse": 118547.8999999999,
+        "confirmedSave": 125825.80000000005,
+        "worldCommit": 125771.5,
+        "worldTimesInferred": false,
+        "ready": 125831.09999999986
+      },
+      "world": {
+        "id": 8,
+        "committed_at_ms": 125771.5,
+        "persisted_at_ms": 125825.80000000005,
+        "extraction_validation_wait_ms": 3742,
+        "save_readback_ms": 54,
+        "total_ms": 3796,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The guard thought about it, spear rocking an inch under his palm."
+    },
+    "checked": {
+      "world": "6b0303a461f6e69d5f23615b90bced32de51e4940a4bef399278a6b9c7639155",
+      "events": "5e30c0e48c0dd73b46794e431d84ac60a87eb8bc79008b7e3bacace8f438eca5",
+      "messages": 9
+    },
+    "elapsedIncludingReloadMs": 11705
+  },
+  {
+    "n": 3,
+    "inputMessageIndex": 9,
+    "timing": {
+      "marks": {
+        "click": 150999.3999999999,
+        "lastRenderedChange": 170637.09999999986,
+        "firstProse": 157381.59999999986,
+        "confirmedSave": 170677.59999999986,
+        "worldCommit": 170623.59999999986,
+        "worldTimesInferred": false,
+        "ready": 170683.59999999986
+      },
+      "world": {
+        "id": 10,
+        "committed_at_ms": 170623.59999999986,
+        "persisted_at_ms": 170677.59999999986,
+        "extraction_validation_wait_ms": 8139,
+        "save_readback_ms": 54,
+        "total_ms": 8193,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The eastern road left the city's shadow and ran out between fenced fields, hedges heavy with the season's growth."
+    },
+    "checked": {
+      "world": "6df66cd9cdd57a485dd7faa14cf5cd52e49396d91a1a90d14ef083ec743c551c",
+      "events": "0033e19a6d4c73f75685397111f259b2f9688486ce107d446990c319f0607880",
+      "messages": 11
+    },
+    "elapsedIncludingReloadMs": 20654
+  },
+  {
+    "n": 4,
+    "inputMessageIndex": 11,
+    "timing": {
+      "marks": {
+        "click": 199901.8999999999,
+        "lastRenderedChange": 210022.8999999999,
+        "firstProse": 203726.80000000005,
+        "confirmedSave": 220979,
+        "worldCommit": 220898.19999999995,
+        "worldTimesInferred": false,
+        "ready": 220985.59999999986
+      },
+      "world": {
+        "id": 12,
+        "committed_at_ms": 220898.19999999995,
+        "persisted_at_ms": 220979,
+        "extraction_validation_wait_ms": 10815,
+        "save_readback_ms": 81,
+        "total_ms": 10896,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "Maren pulled the scythe out of the dirt and looked him over again, differently this time."
+    },
+    "checked": {
+      "world": "2de926e1965e9fff33964c2f37828b07405d25d00631c1d141e347a127603c4a",
+      "events": "ab72cc6264b4b9bb7fe575fd91430e112f1750a0a478f09143666b6e8600cefa",
+      "messages": 13
+    },
+    "elapsedIncludingReloadMs": 22106
+  },
+  {
+    "n": 5,
+    "inputMessageIndex": 13,
+    "timing": {
+      "marks": {
+        "click": 247367.30000000005,
+        "lastRenderedChange": 259356.09999999986,
+        "firstProse": 252075.8999999999,
+        "confirmedSave": 265984.19999999995,
+        "worldCommit": 265914.09999999986,
+        "worldTimesInferred": false,
+        "ready": 265991.80000000005
+      },
+      "world": {
+        "id": 14,
+        "committed_at_ms": 265914.09999999986,
+        "persisted_at_ms": 265984.19999999995,
+        "extraction_validation_wait_ms": 6501,
+        "save_readback_ms": 70,
+        "total_ms": 6571,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "\"Alaric."
+    },
+    "checked": {
+      "world": "c6873693f207e14aa9491ab497c6cee1b2a87bba3df037af49a58d461a9c63e2",
+      "events": "966895c9f2ca99977c557d5dd9a2f3daaa0d49f6fd83c9ff722326bf284f3c5d",
+      "messages": 15
+    },
+    "elapsedIncludingReloadMs": 19781
+  },
+  {
+    "n": 6,
+    "inputMessageIndex": 15,
+    "timing": {
+      "marks": {
+        "click": 298571.19999999995,
+        "lastRenderedChange": 311167.59999999986,
+        "firstProse": 303607.19999999995,
+        "confirmedSave": 317152.59999999986,
+        "worldCommit": 317068.19999999995,
+        "worldTimesInferred": false,
+        "ready": 317158.69999999995
+      },
+      "world": {
+        "id": 16,
+        "committed_at_ms": 317068.19999999995,
+        "persisted_at_ms": 317152.59999999986,
+        "extraction_validation_wait_ms": 5827,
+        "save_readback_ms": 84,
+        "total_ms": 5911,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "They worked against the sky."
+    },
+    "checked": {
+      "world": "6f40f24696d6dd1ca10589a578e60dc43aaa0f0f0e0346ade78c59e260cef79e",
+      "events": "a698d947d905cdf6a8272d90ed1ac463b81b5426b06b275aa6d3f7256b90a881",
+      "messages": 17
+    },
+    "elapsedIncludingReloadMs": 19536
+  },
+  {
+    "n": 7,
+    "inputMessageIndex": 17,
+    "timing": {
+      "marks": {
+        "click": 358911.59999999986,
+        "lastRenderedChange": 374994.3999999999,
+        "firstProse": 369004.69999999995,
+        "confirmedSave": 383627.80000000005,
+        "worldCommit": 383501.30000000005,
+        "worldTimesInferred": false,
+        "ready": 383634.5
+      },
+      "world": {
+        "id": 18,
+        "committed_at_ms": 383501.30000000005,
+        "persisted_at_ms": 383627.80000000005,
+        "extraction_validation_wait_ms": 8424,
+        "save_readback_ms": 127,
+        "total_ms": 8551,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "\"A mage,\" Dann repeated, and there was a flicker of something in it—respect, maybe, or the recalculating look of a man pricing a stone differently."
+    },
+    "checked": {
+      "world": "85861134feda7a75017a6077efa2a549a81461e127857a74f4ba28b4fa716335",
+      "events": "1359467c1b35a4121c15a8c73ead809d7f4db731da51dccc12b2fac11f5d9ec1",
+      "messages": 19
+    },
+    "elapsedIncludingReloadMs": 26065
+  },
+  {
+    "n": 8,
+    "inputMessageIndex": 19,
+    "timing": {
+      "marks": {
+        "click": 744779.3999999999,
+        "lastRenderedChange": 781018.7,
+        "firstProse": 753839.5999999999,
+        "confirmedSave": 781135.3,
+        "worldCommit": 780996.7,
+        "worldTimesInferred": false,
+        "ready": 781141.0999999999
+      },
+      "world": {
+        "id": 20,
+        "committed_at_ms": 780996.7,
+        "persisted_at_ms": 781135.3,
+        "extraction_validation_wait_ms": 19855,
+        "save_readback_ms": 139,
+        "total_ms": 19993,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The run across the yard was a drowning in slow motion—twenty paces of rain that felt like thrown gravel—and then the low doorway and the sudden hush of a house built thick against weather."
+    },
+    "checked": {
+      "world": "b78b1f71a8aab6f8a00559669cebd3e3df0fc1aad37c4371b783a6cc37e68f3e",
+      "events": "84b4b937adbc21f56db2a0ac680c5e717715883d5a2c710a6497ca8d5b3e013b",
+      "messages": 21
+    },
+    "elapsedIncludingReloadMs": 38111
+  },
+  {
+    "n": 9,
+    "inputMessageIndex": 21,
+    "timing": {
+      "marks": {
+        "click": 822677.2,
+        "lastRenderedChange": 862284.2,
+        "firstProse": 831067.8999999999,
+        "confirmedSave": 862375.3999999999,
+        "worldCommit": 862254.8,
+        "worldTimesInferred": false,
+        "ready": 862379.5
+      },
+      "world": {
+        "id": 22,
+        "committed_at_ms": 862254.8,
+        "persisted_at_ms": 862375.3999999999,
+        "extraction_validation_wait_ms": 22180,
+        "save_readback_ms": 121,
+        "total_ms": 22301,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "Marta stared at him for a moment, the offer not fitting any shape she had ready for it."
+    },
+    "checked": {
+      "world": "6f4b774322471a1fd6ac85f9874fc91129118041c35f9e1b43b6758a83035dd0",
+      "events": "4512c6145d7db99fa955ed39b719478b7d85118c2863fc46a9a668829f571cd9",
+      "messages": 23
+    },
+    "elapsedIncludingReloadMs": 41057
+  },
+  {
+    "n": 10,
+    "inputMessageIndex": 23,
+    "timing": {
+      "marks": {
+        "click": 910710.5,
+        "lastRenderedChange": 928634.0999999999,
+        "firstProse": 917081.3999999999,
+        "confirmedSave": 928721.3999999999,
+        "worldCommit": 928603.7,
+        "worldTimesInferred": false,
+        "ready": 928724.8
+      },
+      "world": {
+        "id": 24,
+        "committed_at_ms": 928603.7,
+        "persisted_at_ms": 928721.3999999999,
+        "extraction_validation_wait_ms": 6445,
+        "save_readback_ms": 118,
+        "total_ms": 6562,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The thickset man watched the bundle come down without moving, only his eyes following it."
+    },
+    "checked": {
+      "world": "6713d75839ef2060b29ad62746fe2aa3ca8d7f0becd13202c7ff9317eeaf154c",
+      "events": "4bd495fd3b456a81fb76cf31e3a96c6ce488eb6afa3d493e582521fd466441f7",
+      "messages": 25
+    },
+    "elapsedIncludingReloadMs": 19904
+  },
+  {
+    "n": 11,
+    "inputMessageIndex": 25,
+    "timing": {
+      "marks": {
+        "click": 971607.3999999999,
+        "lastRenderedChange": 1007847.0999999999,
+        "firstProse": 991448.0999999999,
+        "confirmedSave": 1008192.7,
+        "worldCommit": 1007821.4000000001,
+        "worldTimesInferred": false,
+        "ready": 1008203.7
+      },
+      "world": {
+        "id": 26,
+        "committed_at_ms": 1007821.4000000001,
+        "persisted_at_ms": 1008192.7,
+        "extraction_validation_wait_ms": 10483,
+        "save_readback_ms": 371,
+        "total_ms": 10854,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The silver came out in a small wet pile in Alaric's palm—five coins, counted where the chief could see them—and before it could cross the space between them, a whistle came from the gorse bank above."
+    },
+    "checked": {
+      "world": "c67ba1905e395de68653de935eacf15da6fadf22af5a4deeb98466b9916cfea7",
+      "events": "7943b0083b21ca5531c4b28cc2f90382da26a446b2b4f2c7582880745ea52d35",
+      "messages": 27
+    },
+    "elapsedIncludingReloadMs": 38435
+  },
+  {
+    "n": 12,
+    "inputMessageIndex": 27,
+    "timing": {
+      "marks": {
+        "click": 1064918.9000000001,
+        "lastRenderedChange": 1088164.4999999998,
+        "firstProse": 1074128.9000000001,
+        "confirmedSave": 1088266.3,
+        "worldCommit": 1088142.3,
+        "worldTimesInferred": false,
+        "ready": 1088271.5999999999
+      },
+      "world": {
+        "id": 28,
+        "committed_at_ms": 1088142.3,
+        "persisted_at_ms": 1088266.3,
+        "extraction_validation_wait_ms": 9715,
+        "save_readback_ms": 124,
+        "total_ms": 9839,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The lane behind the tithe barn was busy in the way of a town that had no patience for weather."
+    },
+    "checked": {
+      "world": "f747510abda4edbc1aeaa71033de46e161ed54a6289e3e338ab50e5098636518",
+      "events": "26fb89669238dace0c69a33935c8b4f1eda7df4aeb5ea0fb3c19a802f98e145d",
+      "messages": 29
+    },
+    "elapsedIncludingReloadMs": 25218
+  },
+  {
+    "n": 13,
+    "inputMessageIndex": 29,
+    "timing": {
+      "marks": {
+        "click": 1128466.0999999999,
+        "lastRenderedChange": 1136164.9000000001,
+        "firstProse": 1131391.9999999998,
+        "confirmedSave": 1142390.2,
+        "worldCommit": 1142253.7,
+        "worldTimesInferred": false,
+        "ready": 1142395.8
+      },
+      "world": {
+        "id": 30,
+        "committed_at_ms": 1142253.7,
+        "persisted_at_ms": 1142390.2,
+        "extraction_validation_wait_ms": 5976,
+        "save_readback_ms": 137,
+        "total_ms": 6113,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The old man looked at the sky first, as if the answer were written there, then at the rivers beyond the roofs."
+    },
+    "checked": {
+      "world": "be314d08a8f3e8d0d802839cdf9c5d39c2f1674a254b06d630fbb49b8c3e8cb5",
+      "events": "6eedca6a0d2b837f0a802389e3ee752c0413e4e7b21fe106db9c1682a3875f60",
+      "messages": 31
+    },
+    "elapsedIncludingReloadMs": 15828
+  },
+  {
+    "n": 14,
+    "inputMessageIndex": 31,
+    "timing": {
+      "marks": {
+        "click": 1192145.8,
+        "lastRenderedChange": 1207822.4999999998,
+        "firstProse": 1197872.7,
+        "confirmedSave": 1207948.3,
+        "worldCommit": 1207795.8,
+        "worldTimesInferred": false,
+        "ready": 1207954.2
+      },
+      "world": {
+        "id": 32,
+        "committed_at_ms": 1207795.8,
+        "persisted_at_ms": 1207948.3,
+        "extraction_validation_wait_ms": 3550,
+        "save_readback_ms": 153,
+        "total_ms": 3703,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The tanner's row earned its name honestly."
+    },
+    "checked": {
+      "world": "dd31e928d253aaeb2643c06d54d53f9adf4b47f06ab46ffbd3e82afe8ec1d6fe",
+      "events": "461b30fa85abce6d0fe029635210d5c0d6f5db99f7c3db26438bdd30cbad10b6",
+      "messages": 33
+    },
+    "elapsedIncludingReloadMs": 18079
+  },
+  {
+    "n": 15,
+    "inputMessageIndex": 33,
+    "timing": {
+      "marks": {
+        "click": 1255361.4999999998,
+        "lastRenderedChange": 1266262.4999999998,
+        "firstProse": 1262936.9999999998,
+        "confirmedSave": 1273760.7,
+        "worldCommit": 1273602.7,
+        "worldTimesInferred": false,
+        "ready": 1273767.4999999998
+      },
+      "world": {
+        "id": 34,
+        "committed_at_ms": 1273602.7,
+        "persisted_at_ms": 1273760.7,
+        "extraction_validation_wait_ms": 7065,
+        "save_readback_ms": 158,
+        "total_ms": 7223,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The silver crossed palms, and Odd bit it out of habit, glanced at it, and tucked it somewhere inside the rope belt."
+    },
+    "checked": {
+      "world": "3afbc279d3e55c7304c3f26e404336bcf660cb36afdbd68790c78b423f8e0773",
+      "events": "6664e76a3df290b881db9bfc37fc11c5db99ba1d50e1420b08db38472a22dce9",
+      "messages": 35
+    },
+    "elapsedIncludingReloadMs": 20622
+  },
+  {
+    "n": 16,
+    "inputMessageIndex": 35,
+    "timing": {
+      "marks": {
+        "click": 1315943.5999999999,
+        "lastRenderedChange": 1336381.8,
+        "firstProse": 1321098.5999999999,
+        "confirmedSave": 1336493.4999999998,
+        "worldCommit": 1336355.4999999998,
+        "worldTimesInferred": false,
+        "ready": 1336500.4999999998
+      },
+      "world": {
+        "id": 36,
+        "committed_at_ms": 1336355.4999999998,
+        "persisted_at_ms": 1336493.4999999998,
+        "extraction_validation_wait_ms": 11337,
+        "save_readback_ms": 138,
+        "total_ms": 11475,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The track was puddled the whole way, and the long house grew as he came at it: stone base slick with rain, timber above, the bell-cote's small bell swinging without ringing."
+    },
+    "checked": {
+      "world": "54f2dc3d0a2d096e3a7e16723709447ff86ed05b9696d311778e8d7b30c28d01",
+      "events": "9400e5ed2f73bbbe2318b71d456340a18693d26a5cd65402042b035cd741b8cd",
+      "messages": 37
+    },
+    "elapsedIncludingReloadMs": 22761
+  },
+  {
+    "n": 17,
+    "inputMessageIndex": 37,
+    "timing": {
+      "marks": {
+        "click": 1399410.2,
+        "lastRenderedChange": 1412468.8,
+        "firstProse": 1408299.4000000001,
+        "confirmedSave": 1417880.4000000001,
+        "worldCommit": 1417609.4000000001,
+        "worldTimesInferred": false,
+        "ready": 1417887.8
+      },
+      "world": {
+        "id": 38,
+        "committed_at_ms": 1417609.4000000001,
+        "persisted_at_ms": 1417880.4000000001,
+        "extraction_validation_wait_ms": 4924,
+        "save_readback_ms": 271,
+        "total_ms": 5195,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The eaves threw a thin sheet of runoff between them and the dark, and Mother Wren stood in it with her shawl pulled close, listening the way working people listen—still, eyes down, counting each word onto some inner tally."
+    },
+    "checked": {
+      "world": "b7235531da12693b85cb66f3da00185c5645a2eb67ebad33f6f70b483d111b51",
+      "events": "64998bc21b3b9488132bcb51d063421a185949300c4a0c793d80eb5ad9a4935a",
+      "messages": 39
+    },
+    "elapsedIncludingReloadMs": 21559
+  },
+  {
+    "n": 18,
+    "inputMessageIndex": 39,
+    "timing": {
+      "marks": {
+        "click": 1467253.8,
+        "lastRenderedChange": 1478489.3,
+        "firstProse": 1471928.4000000001,
+        "confirmedSave": 1486443.4000000001,
+        "worldCommit": 1486201.7,
+        "worldTimesInferred": false,
+        "ready": 1486449.5999999999
+      },
+      "world": {
+        "id": 40,
+        "committed_at_ms": 1486201.7,
+        "persisted_at_ms": 1486443.4000000001,
+        "extraction_validation_wait_ms": 7521,
+        "save_readback_ms": 242,
+        "total_ms": 7762,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "\"Broth.\""
+    },
+    "checked": {
+      "world": "7980a9ca6dd5b2202f8fc6e70e8d1346788e3a6e95150f0a9bcb9f21f44294f4",
+      "events": "9767cbeb85bde2f18fa817284636db962534758051cc40c239d9816c410e94d4",
+      "messages": 41
+    },
+    "elapsedIncludingReloadMs": 21824
+  },
+  {
+    "n": 19,
+    "inputMessageIndex": 41,
+    "timing": {
+      "marks": {
+        "click": 1524890.4999999998,
+        "lastRenderedChange": 1552358.0999999999,
+        "firstProse": 1540242.4999999998,
+        "confirmedSave": 1552702.4999999998,
+        "worldCommit": 1552332.9000000001,
+        "worldTimesInferred": false,
+        "ready": 1552706.8
+      },
+      "world": {
+        "id": 42,
+        "committed_at_ms": 1552332.9000000001,
+        "persisted_at_ms": 1552702.4999999998,
+        "extraction_validation_wait_ms": 6130,
+        "save_readback_ms": 370,
+        "total_ms": 6499,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The bag was heavier than it looked, the bottles shifting with a soft clink at every step, and he took the sound end as promised."
+    },
+    "checked": {
+      "world": "6760db65457b3958bcea0120991a0629952461ad359120ce64c2d4266e72b72d",
+      "events": "8e864fefd3b1cbbc7968da2d89cef629aae7fef09d9bb26d15ff7582ad63ad7f",
+      "messages": 43
+    },
+    "elapsedIncludingReloadMs": 30926
+  },
+  {
+    "n": 20,
+    "inputMessageIndex": 43,
+    "timing": {
+      "marks": {
+        "click": 1599400.3,
+        "lastRenderedChange": 1630745.9000000001,
+        "firstProse": 1615189.9000000001,
+        "confirmedSave": 1630939.5999999999,
+        "worldCommit": 1630718.4000000001,
+        "worldTimesInferred": false,
+        "ready": 1630945.3
+      },
+      "world": {
+        "id": 44,
+        "committed_at_ms": 1630718.4000000001,
+        "persisted_at_ms": 1630939.5999999999,
+        "extraction_validation_wait_ms": 9107,
+        "save_readback_ms": 221,
+        "total_ms": 9328,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "\"The mill,\" Wren said, and swung the lantern round."
+    },
+    "checked": {
+      "world": "ad20099c6519e91fdedab082987b4f77d025564b289607181616dd4d3e05b376",
+      "events": "33a503c7d5c9de053a8ea4f26a793f66c67ce64e9d3d1ffa36b42a08da261bd9",
+      "messages": 45
+    },
+    "elapsedIncludingReloadMs": 34451
+  },
+  {
+    "n": 21,
+    "inputMessageIndex": 45,
+    "timing": {
+      "marks": {
+        "click": 1647399.3,
+        "lastRenderedChange": 1664186.2,
+        "firstProse": 1658868.3,
+        "confirmedSave": 1669908.2,
+        "worldCommit": 1669690.0999999999,
+        "worldTimesInferred": false,
+        "ready": 1669912.4999999998
+      },
+      "world": {
+        "id": 46,
+        "committed_at_ms": 1669690.0999999999,
+        "persisted_at_ms": 1669908.2,
+        "extraction_validation_wait_ms": 5250,
+        "save_readback_ms": 218,
+        "total_ms": 5468,
+        "record_changed": true,
+        "persisted": true,
+        "extraction_status": "applied"
+      },
+      "firstSentence": "The warmth of the house hit like a wall after the wind—peat smoke, wet wool, tallow."
+    },
+    "checked": {
+      "world": "71695f0297a12e536ca3d321a1c875d934d20df1f8489260625a0cfdfa9e206b",
+      "events": "7348a961efc7a2f99a2008b91972f4a6170034d2e63f05c8874e6cf3545a8ac6",
+      "messages": 47
+    },
+    "elapsedIncludingReloadMs": 25843
+  }
+]

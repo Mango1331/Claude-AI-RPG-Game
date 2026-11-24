@@ -1,0 +1,170 @@
+[
+  {
+    "n": 1,
+    "seq": 1795501876922,
+    "op": "play",
+    "text": "I follow the public road to the gate of Ashbridge. If someone is on duty, I ask where a newcomer could lend a hand today.",
+    "intent_before_narration": "Proceed only from the verge to the gate. Ask for a lead; no agreement to go elsewhere or take a job.",
+    "at": "2026-11-24T06:31:17.199Z"
+  },
+  {
+    "n": 2,
+    "seq": 1795501933813,
+    "op": "play",
+    "text": "The fields sound more my speed for a first day. Do you know a farmer by name who could use a hand? I stay beside the gate to listen.",
+    "intent_before_narration": "Ask for a farming contact while remaining by gate. No departure or agreement to a task.",
+    "at": "2026-11-24T06:32:14.177Z"
+  },
+  {
+    "n": 3,
+    "seq": 1795501969806,
+    "op": "play",
+    "text": "I thank him and take the eastern road to Halloran's double gate with the iron hoop. I call a greeting and ask for Maren there.",
+    "intent_before_narration": "Travel to known steading and stop at its double gate. No entry into the house or acceptance of a job yet.",
+    "at": "2026-11-24T06:32:50.128Z"
+  },
+  {
+    "n": 4,
+    "seq": 1795502018717,
+    "op": "play",
+    "text": "I can't promise the whole day, but I'll gladly help Dann with the cart for free. I step over to him and ask where he wants my shoulder.",
+    "intent_before_narration": "Consent to help Dann right the cart within the farmyard; not agreeing to the paid whole-day contract or leaving the farm.",
+    "at": "2026-11-24T06:33:39.042Z"
+  },
+  {
+    "n": 5,
+    "seq": 1795502066109,
+    "op": "play",
+    "text": "Alaric. Yes, let's get them in before the rain. Lead the way, Dann; I'll carry what I can alongside you.",
+    "intent_before_narration": "Agree to accompany Dann to the half-cured sheaves and bring them under farm cover. No paid employment or travel beyond the farm.",
+    "at": "2026-11-24T06:34:26.500Z"
+  },
+  {
+    "n": 6,
+    "seq": 1795502117340,
+    "op": "play",
+    "text": "I stack the rest on the boy's wagon with him and follow it under cover when it's loaded. Once we've caught our breath, I ask Dann how Tam is doing.",
+    "intent_before_narration": "Finish the agreed farm work, follow the wagon to its farm shelter and ask about Tam. No visit to Tam or away from the steading yet.",
+    "at": "2026-11-24T06:35:17.702Z"
+  },
+  {
+    "n": 7,
+    "seq": 1795502177536,
+    "op": "play",
+    "text": "A mage, but no healer. I'd be willing to go for someone who knows what they're doing. Does your mother want that, and does she have a name or a message for the herbwise?",
+    "intent_before_narration": "Inquire about family's wishes and what message to carry; conditional willingness only. No departure, entering sickroom, treatment or payment.",
+    "at": "2026-11-24T06:36:18.043Z"
+  },
+  {
+    "n": 8,
+    "seq": 1795502563298,
+    "op": "play",
+    "text": "Show me in, Dann. We can talk about the fee by the fire. I would rather your mother tell me what I should say to Mother Wren in her own words.",
+    "intent_before_narration": "Accompany Dann into the farmhouse and hear his mother's message. Leave the fee and trip to be settled together.",
+    "at": "2026-11-24T06:42:43.897Z"
+  },
+  {
+    "n": 9,
+    "seq": 1795502641516,
+    "op": "play",
+    "text": "The broth will do for my fee, Marta. I will carry your words to Mother Wren today and bring you her answer. Is there a bridge road that stays passable in this weather? I finish the bread and listen to her directions.",
+    "intent_before_narration": "Promise to carry the message and return an answer for the meal. Learn a passable route before setting out.",
+    "at": "2026-11-24T06:44:01.821Z"
+  },
+  {
+    "n": 10,
+    "seq": 1795502729155,
+    "op": "play",
+    "text": "I ease the bundle down and step back, my empty hand where he can see it. Dried meat and cheese. It is yours to share. All I am carrying to town is a sick boy's message. Let me take it to Mother Wren.",
+    "intent_before_narration": "Offer the food and ask for peaceful passage to Ashbridge. Keep my purse and avoid a fight if possible.",
+    "at": "2026-11-24T06:45:29.838Z"
+  },
+  {
+    "n": 11,
+    "seq": 1795502790210,
+    "op": "play",
+    "text": "I have no wish to lose half the afternoon here. I count out what silver I have, keep the coppers he said I could, and hand it over. As soon as the way opens, I walk on toward the east bridge.",
+    "intent_before_narration": "Give the demanded silver, retain the coppers, and resume the journey as far as the east bridge if they let me pass.",
+    "at": "2026-11-24T06:46:30.744Z"
+  },
+  {
+    "n": 12,
+    "seq": 1795502883516,
+    "op": "play",
+    "text": "The man waved me through, so the silver went back in my pouch. I follow the lane behind the tithe barn and knock at the green door. Is Mother Wren in? Marta Halloran has sent me about her son Tam.",
+    "intent_before_narration": "Leave the canceled payment alone, find Mother Wren, and introduce the errand at her door.",
+    "at": "2026-11-24T06:48:04.017Z"
+  },
+  {
+    "n": 13,
+    "seq": 1795502946990,
+    "op": "play",
+    "text": "Aye, a boy is ill out at the Halloran steading, and his mother is waiting on Wren's answer. Which crossing would you take to the almshouse with the river up like this?",
+    "intent_before_narration": "Get directions to the almshouse from Wren's neighbor, especially which crossing is passable.",
+    "at": "2026-11-24T06:49:07.590Z"
+  },
+  {
+    "n": 14,
+    "seq": 1795503010639,
+    "op": "play",
+    "text": "I take his advice and hurry through the tanner's row to the Fish Gate. At the ferry I call for Odd, making sure he sees me. How much to put one soaked messenger across?",
+    "intent_before_narration": "Go to the Fish Gate and ask Odd the fare to cross. Hear his terms at the ferry.",
+    "at": "2026-11-24T06:50:11.258Z"
+  },
+  {
+    "n": 15,
+    "seq": 1795503073725,
+    "op": "play",
+    "text": "One silver it is, Odd. I pay the ferryman for my crossing, step aboard, and ride to the far bank. Before I step off, I ask him which building is the almshouse.",
+    "intent_before_narration": "Pay Odd one silver and cross the river. Ask for directions to the almshouse at the far landing.",
+    "at": "2026-11-24T06:51:14.498Z"
+  },
+  {
+    "n": 16,
+    "seq": 1795503134326,
+    "op": "play",
+    "text": "I go up the track to the long almshouse and wipe my boots at the open door. I ask quietly for Mother Wren. I have a message from Marta Halloran about Tam, and I can speak outside if Nan Coll is sleeping.",
+    "intent_before_narration": "Enter the almshouse and discreetly ask to speak to Mother Wren about Tam.",
+    "at": "2026-11-24T06:52:15.068Z"
+  },
+  {
+    "n": 17,
+    "seq": 1795503217717,
+    "op": "play",
+    "text": "I step under the eaves with Wren. Tam is nineteen. He was drenched at the ford three days ago. Marta says the cough is dry and by evening he gets so muddled he cannot tell where he is. Serra called it lung-fever. Marta asks what you need and if you can come. She can pay in what they have now and the rest at harvest.",
+    "intent_before_narration": "Relay Marta's observations and terms faithfully and ask whether Wren can come to the steading. Hear her answer.",
+    "at": "2026-11-24T06:53:38.543Z"
+  },
+  {
+    "n": 18,
+    "seq": 1795503285676,
+    "op": "play",
+    "text": "She's paid me in broth, Mother Wren. She owes me nothing for the way back. I would be glad of your company and can carry your bag if you'd like. Is there anyone you want me to fetch for Nan before we set out?",
+    "intent_before_narration": "Confirm that Marta owes me nothing. Offer to accompany Wren and carry her bag, and ask what she needs for Nan before leaving.",
+    "at": "2026-11-24T06:54:46.382Z"
+  },
+  {
+    "n": 19,
+    "seq": 1795503342901,
+    "op": "play",
+    "text": "I can give Marta plain words, yes. I take the bag by the sound end and set out with Wren for the Halloran steading. The ford was under water on the way out, so I tell her about the ridge road and keep to her lantern and her pace.",
+    "intent_before_narration": "Take Wren's bag, agree to speak honestly, and travel with her to the Hallorans by a passable route, staying together.",
+    "at": "2026-11-24T06:55:44.024Z"
+  },
+  {
+    "n": 20,
+    "seq": 1795503417582,
+    "op": "play",
+    "text": "Let's take the long way past the mill. Tam needs you there with the bottles whole. I walk round with her, offering my arm on the bad stretches, and watch for the lights of the Halloran house.",
+    "intent_before_narration": "Take Wren's detour past the mill and continue with her and the bag toward the Halloran home, keeping out of the floodwater.",
+    "at": "2026-11-24T06:56:58.521Z"
+  },
+  {
+    "n": 21,
+    "seq": 1795503465768,
+    "op": "play",
+    "text": "I follow them inside and hand Wren her bag so she has everything she needs at Tam's bedside. Marta, she said you could keep the harvest silver for lamp oil. Let her tell you the rest herself. I take the wet things out of their way and leave them room to work.",
+    "intent_before_narration": "Deliver Wren and her bag to Tam, reassure Marta, and finish the errand by giving the healer room.",
+    "at": "2026-11-24T06:57:46.526Z"
+  }
+]

@@ -22,6 +22,7 @@ import { execSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { ENGINE, stamp, pick, isInside, changedSince, treeStat, treeDiff, sha256, clip } from './lib.mjs';
 import { importProfile, describeImport, routeOf, routeText, modelKeyOf } from './import_profile.mjs';
+import { OPENROUTER_URL, OPENROUTER_MODEL, useOpenRouter } from './openrouter.mjs';
 import { probeModels, probeRows, probeBlocks, probePlayer, playerRows } from './preflight.mjs';
 import { createInstance, writeConfig, seedProfile, chatFiles, removeKey, removeInstance, WORLD_FILE } from './profile.mjs';
 import { startServer, freePort } from './server.mjs';
@@ -50,6 +51,7 @@ export const STUB_KEY = 'stub-key-not-a-real-key-0000';
 export const DEFAULTS = {
     stDir: null, stUser: 'default-user', stData: null, card: null, preset: 'profile', port: 8123, browser: 'auto', headless: true,
     keyEnv: 'AVERETH_LIVE_API_KEY', guide: 'guild_dungeon_loop', seed: null, maxTurns: null, turnTimeoutSec: 900, runsDir: null, keepProfile: false, readPauseMs: 0,
+    openrouter: false, openrouterModel: null,
     player: { type: 'llm', url: null, model: null, keyEnv: null, temperature: 0.8, maxTokens: 3000, reasoning: 'profile', extraBody: null },
 };
 
@@ -91,6 +93,20 @@ export function options(argv = process.argv.slice(2), env = process.env) {
         throw new Error('--read-pause-ms must be an integer from 0 to 60000');
     if (flag('--headed')) o.headless = false;
     if (flag('--keep-profile')) o.keepProfile = true;
+    if (arg('--key-env')) o.keyEnv = arg('--key-env');
+    o.openrouter = flag('--openrouter') || o.openrouter === true || o.provider === 'openrouter';
+    if (o.openrouter) {
+        // The isolated single runner must never inherit a stale Featherless player endpoint,
+        // model, provider-specific request body or key name from an older local config.
+        o.openrouterModel = arg('--model') || o.openrouterModel || OPENROUTER_MODEL;
+        o.guide = arg('--guide') || 'natural_helper_progression';
+        o.preset = arg('--preset') || 'repo';
+        o.keyEnv = arg('--key-env') || 'AVERETH_LIVE_API_KEY';
+        o.player = { ...o.player, type: 'llm', url: OPENROUTER_URL, model: o.openrouterModel,
+            keyEnv: null, reasoning: 'profile', extraBody: null };
+    } else if (arg('--model')) {
+        throw new Error('--model requires --openrouter (other runs use the SillyTavern profile)');
+    }
     o.stub = flag('--stub');
     o.check = flag('--check');
     o.inspect = flag('--inspect');
@@ -141,9 +157,10 @@ export async function check(o) {
     ok(!!o.stDir && fs.existsSync(path.join(o.stDir, 'server.js')), 'SillyTavern-Installation', o.stDir || 'nicht gesetzt: "stDir" in live.config.json, --st oder AVERETH_ST_DIR');
     if (o.stDir && fs.existsSync(path.join(o.stDir, 'node_modules'))) ok(true, 'SillyTavern-Abhängigkeiten', 'node_modules vorhanden');
     else if (o.stDir) ok(false, 'SillyTavern-Abhängigkeiten', 'node_modules fehlt: SillyTavern einmal normal starten (Start.bat)');
-    try { imp = importProfile({ stDir: o.stDir, user: o.stUser, card: o.card, preset: o.preset, dataRoot: o.stData }); ok(true, 'Profil lesbar (nur lesend)', `${imp.st.userDir}, SillyTavern ${imp.st.version}`); } catch (e) { ok(false, 'Profil lesbar', String(e.message)); }
+    try { imp = useOpenRouter(importProfile({ stDir: o.stDir, user: o.stUser, card: o.card, preset: o.preset, dataRoot: o.stData }), o); ok(true, 'Profil lesbar (nur lesend)', `${imp.st.userDir}, SillyTavern ${imp.st.version}`); } catch (e) { ok(false, 'Profil lesbar', String(e.message)); }
     if (imp) {
-        ok(imp.route.same, 'Dieselbe Verbindung wie dein SillyTavern', imp.route.same ? routeText(imp.route.runner, { keyFrom: o.keyEnv }) : imp.route.differences.join('; '));
+        if (o.openrouter) ok(true, 'OpenRouter nur in der isolierten Instanz', routeText(imp.route.runner, { keyFrom: o.keyEnv }));
+        else ok(imp.route.same, 'Dieselbe Verbindung wie dein SillyTavern', imp.route.same ? routeText(imp.route.runner, { keyFrom: o.keyEnv }) : imp.route.differences.join('; '));
         if (imp.source !== 'custom') ok(true, 'Hinweis', `Quelle "${imp.source}" statt "custom": die Engine-Aufrufe laufen über generateRaw, ohne Metadaten in den Records${o.player.type === 'llm' && !imp.route.runner.url && !o.player.url ? '; der LLM-Spieler braucht player.url und player.model' : ''}`);
         ok(!!imp.card, 'Avereth-Karte im Profil', imp.card ? `${imp.card.name} (Vertrag ${imp.card.contract})` : 'keine: der Runner nimmt seine eigene Karte und Begrüßung');
         for (const w of imp.warnings) ok(true, 'Hinweis', w);
@@ -200,7 +217,7 @@ export function resolveTurnLimit(guide, o) {
 export async function run(o) {
     const startedAt = Date.now();
     const log = (s) => console.log(`[${new Date().toISOString().slice(11, 19)}] ${s}`);
-    const imp = importProfile({ stDir: o.stDir, user: o.stUser, card: o.card, preset: o.preset, dataRoot: o.stData });
+    const imp = useOpenRouter(importProfile({ stDir: o.stDir, user: o.stUser, card: o.card, preset: o.preset, dataRoot: o.stData }), o);
     const guide = scenarioGuide(loadGuide(o.guide), o.scenario);
     if (guide.fixture && !o.fixture) throw new Error(`This explicit fixture guide requires --fixture ${guide.fixture}`);
     if (guide.openRun && o.fixture) throw new Error('current_test is a natural campaign: do not pass --fixture');
@@ -574,7 +591,7 @@ async function main() {
     if (o.check) process.exit(await check(o));
     try {
         if (o.inspect) {
-            const imp = importProfile({ stDir: o.stDir, user: o.stUser, card: o.card, preset: o.preset, dataRoot: o.stData });
+            const imp = useOpenRouter(importProfile({ stDir: o.stDir, user: o.stUser, card: o.card, preset: o.preset, dataRoot: o.stData }), o);
             console.log(describeImport(imp, { keyEnv: o.keyEnv }));
             if (o.ping) for (const r of await preflight(o, imp, process.env[o.keyEnv])) console.log(`${r.good ? '✔' : '✖'} ${r.what}${r.detail ? ` — ${r.detail}` : ''}`);
             return;

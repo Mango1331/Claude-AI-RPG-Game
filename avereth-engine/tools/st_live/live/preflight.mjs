@@ -1,7 +1,7 @@
 // The provider check before a run (docs/LIVE_RUNNER.md §2, §3): GET <url>/models the way SillyTavern's own status
 // check asks it (src/endpoints/backends/chat-completions.js: urlJoin(url, '/models'), the key as a bearer token), and
-// whether the model the profile names is one of the models the endpoint offers. A local proxy that narrows the list
-// (Featherless) answers with its own list; the runner never starts or stops it, it only asks.
+// whether the requested model is listed. Works for OpenRouter and existing custom/local proxies;
+// the runner never starts or stops a separate local proxy.
 
 /** The model ids of a /models answer (OpenAI {data: [{id}]}, {models: [...]}, or a plain list). */
 export function modelIds(json) {
@@ -35,18 +35,18 @@ export async function probeModels({ url, key = null, model, fetchImpl = fetch, t
 
 /** The probe as the check's rows [{good, what, detail}] (German, like --check). */
 export function probeRows(p, { model, who = 'SillyTavern' }) {
-    if (!p.reachable) return [{ good: false, what: 'Endpoint erreichbar (GET /models)', detail: `${p.endpoint}: ${p.error}. Läuft dein Proxy (z. B. der Featherless-Proxy)? Der Runner startet ihn nicht.` }];
+    if (!p.reachable) return [{ good: false, what: 'Endpoint erreichbar (GET /models)', detail: `${p.endpoint}: ${p.error}. Prüfe die URL und Verbindung; ein separater lokaler Proxy muss bereits laufen.` }];
     if (p.status === 401 || p.status === 403) return [{ good: false, what: 'Endpoint erreichbar (GET /models)', detail: `${p.endpoint}: ${p.error} — der Schlüssel aus der Umgebungsvariable wurde abgelehnt (fehlt er, oder ist es ein anderer als in deinem SillyTavern?)` }];
     if (p.error) return [{ good: true, what: 'Endpoint erreichbar (GET /models)', detail: `${p.endpoint}: ${p.error}; die Modell-ID ist so nicht prüfbar (ohne /models braucht SillyTavern „Bypass status check“)` }];
     const rows = [{ good: true, what: 'Endpoint erreichbar (GET /models)', detail: `${p.endpoint}: ${p.ids.length} Modell(e)` }];
     if (p.found) rows.push({ good: true, what: `Modell-ID (${who}) in der Modellliste`, detail: `„${model}“ ist eines von ${p.ids.length}: ${p.ids.join(', ')}` });
-    else rows.push({ good: false, what: `Modell-ID (${who}) in der Modellliste`, detail: `„${model ?? '(keine)'}“ steht nicht in der Liste von ${p.endpoint} (${p.ids.length}: ${p.ids.join(', ') || 'leer'})${p.near.length ? `; ähnlich: ${p.near.join(', ')}` : ''}. Die ID muss genau so lauten, wie der Endpoint sie anbietet: in SillyTavern das Modell wählen, das die Liste enthält, oder die Liste des Proxys erweitern.` });
+    else rows.push({ good: false, what: `Modell-ID (${who}) in der Modellliste`, detail: `„${model ?? '(keine)'}“ steht nicht in der Liste von ${p.endpoint} (${p.ids.length}: ${p.ids.join(', ') || 'leer'})${p.near.length ? `; ähnlich: ${p.near.join(', ')}` : ''}. Die Modell-ID muss exakt einer angebotenen ID entsprechen (bei OpenRouter z. B. author/model).` });
     return rows;
 }
 
 /** Stop a run before it starts? Only when the endpoint answers and says no (the model missing, the key refused) or nothing answers. */
 export function probeBlocks(p) {
-    if (!p.reachable) return `the endpoint ${p.endpoint} does not answer (${p.error}); is your proxy running? The runner does not start it`;
+    if (!p.reachable) return `the endpoint ${p.endpoint} does not answer (${p.error}); check the endpoint and network; a local proxy must already be running`;
     if (p.status === 401 || p.status === 403) return `the endpoint refused the key (${p.error})`;
     if (p.ids && !p.found) return `the model is not in the model list of ${p.endpoint} (${p.ids.join(', ') || 'empty'})`;
     return null;

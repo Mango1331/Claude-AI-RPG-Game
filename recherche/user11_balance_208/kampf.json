@@ -1,0 +1,1112 @@
+{
+  "source": "cb1eb944a041b26be9210199d780be9ff740f74d",
+  "seeds": {
+    "first": 1,
+    "last": 48
+  },
+  "originalRng": {
+    "T12": {
+      "seed": 310361370,
+      "n": 1
+    },
+    "T13": {
+      "seed": 310361370,
+      "n": 10
+    }
+  },
+  "archived": {
+    "T12": {
+      "wave": {
+        "hp": 8,
+        "mp": 58,
+        "pcDamage": [
+          24,
+          24,
+          27
+        ],
+        "incoming": [
+          17,
+          12,
+          9,
+          15,
+          11,
+          8
+        ],
+        "kills": 0,
+        "covered": 0,
+        "own": [
+          [
+            "attack",
+            "SHORT"
+          ]
+        ],
+        "next": {
+          "hp": 0,
+          "mp": 44,
+          "pcDamage": [
+            24,
+            27,
+            23
+          ],
+          "incoming": [
+            17
+          ],
+          "kills": 2,
+          "covered": 0,
+          "own": [
+            [
+              "attack",
+              "ENGAGED"
+            ],
+            [
+              "sidestep",
+              "25% less damage at distance until the next own turn"
+            ]
+          ]
+        }
+      },
+      "afterStep": {
+        "hp": 42,
+        "mp": 58,
+        "pcDamage": [
+          24,
+          24,
+          27
+        ],
+        "incoming": [
+          17,
+          12,
+          9
+        ],
+        "kills": 0,
+        "covered": 0,
+        "own": [
+          [
+            "attack",
+            "SHORT"
+          ],
+          [
+            "move",
+            "Restless Skeleton A SHORT -> MEDIUM; Restless Skeleton B SHORT -> MEDIUM; Restless Skeleton C SHORT -> MEDIUM"
+          ]
+        ],
+        "next": {
+          "hp": 27,
+          "mp": 44,
+          "pcDamage": [
+            24,
+            26,
+            22
+          ],
+          "incoming": [
+            15
+          ],
+          "kills": 2,
+          "covered": 0,
+          "own": [
+            [
+              "attack",
+              "ENGAGED"
+            ],
+            [
+              "sidestep",
+              "25% less damage at distance until the next own turn"
+            ]
+          ]
+        }
+      },
+      "beforeStep": {
+        "hp": 42,
+        "mp": 58,
+        "pcDamage": [
+          24,
+          24,
+          27
+        ],
+        "incoming": [
+          17,
+          12,
+          9
+        ],
+        "kills": 0,
+        "covered": 0,
+        "own": [
+          [
+            "move",
+            "Restless Skeleton A SHORT -> MEDIUM; Restless Skeleton B SHORT -> MEDIUM; Restless Skeleton C SHORT -> MEDIUM"
+          ],
+          [
+            "attack",
+            "MEDIUM"
+          ]
+        ],
+        "next": {
+          "hp": 27,
+          "mp": 44,
+          "pcDamage": [
+            24,
+            26,
+            22
+          ],
+          "incoming": [
+            15
+          ],
+          "kills": 2,
+          "covered": 0,
+          "own": [
+            [
+              "attack",
+              "ENGAGED"
+            ],
+            [
+              "sidestep",
+              "25% less damage at distance until the next own turn"
+            ]
+          ]
+        }
+      },
+      "afterDodge": {
+        "hp": 8,
+        "mp": 58,
+        "pcDamage": [
+          24,
+          24,
+          27
+        ],
+        "incoming": [
+          17,
+          12,
+          9,
+          15,
+          11,
+          8
+        ],
+        "kills": 0,
+        "covered": 0,
+        "own": [
+          [
+            "attack",
+            "SHORT"
+          ],
+          [
+            "sidestep",
+            "25% less damage at distance until the next own turn"
+          ]
+        ],
+        "next": {
+          "hp": 0,
+          "mp": 44,
+          "pcDamage": [
+            24,
+            27,
+            23
+          ],
+          "incoming": [
+            17
+          ],
+          "kills": 2,
+          "covered": 0,
+          "own": [
+            [
+              "attack",
+              "ENGAGED"
+            ],
+            [
+              "sidestep",
+              "25% less damage at distance until the next own turn"
+            ]
+          ]
+        }
+      },
+      "beforeDodge": {
+        "hp": 8,
+        "mp": 58,
+        "pcDamage": [
+          24,
+          24,
+          27
+        ],
+        "incoming": [
+          17,
+          12,
+          9,
+          15,
+          11,
+          8
+        ],
+        "kills": 0,
+        "covered": 0,
+        "own": [
+          [
+            "sidestep",
+            "25% less damage at distance until the next own turn"
+          ],
+          [
+            "attack",
+            "SHORT"
+          ]
+        ],
+        "next": {
+          "hp": 0,
+          "mp": 44,
+          "pcDamage": [
+            24,
+            27,
+            23
+          ],
+          "incoming": [
+            17
+          ],
+          "kills": 2,
+          "covered": 0,
+          "own": [
+            [
+              "attack",
+              "ENGAGED"
+            ],
+            [
+              "sidestep",
+              "25% less damage at distance until the next own turn"
+            ]
+          ]
+        }
+      }
+    },
+    "T13": {
+      "wave": {
+        "hp": 0,
+        "mp": 44,
+        "pcDamage": [
+          24,
+          27,
+          23
+        ],
+        "incoming": [
+          17
+        ],
+        "kills": 2,
+        "covered": 0,
+        "own": [
+          [
+            "attack",
+            "ENGAGED"
+          ]
+        ]
+      },
+      "afterStep": {
+        "hp": 0,
+        "mp": 44,
+        "pcDamage": [
+          24,
+          27,
+          23
+        ],
+        "incoming": [
+          17
+        ],
+        "kills": 2,
+        "covered": 0,
+        "own": [
+          [
+            "attack",
+            "ENGAGED"
+          ],
+          [
+            "move",
+            "Restless Skeleton C ENGAGED -> SHORT"
+          ]
+        ]
+      },
+      "beforeStep": {
+        "hp": 0,
+        "mp": 44,
+        "pcDamage": [
+          24,
+          27,
+          23
+        ],
+        "incoming": [
+          17
+        ],
+        "kills": 2,
+        "covered": 0,
+        "own": [
+          [
+            "move",
+            "Restless Skeleton A ENGAGED -> SHORT; Restless Skeleton B ENGAGED -> SHORT; Restless Skeleton C ENGAGED -> SHORT"
+          ],
+          [
+            "attack",
+            "SHORT"
+          ]
+        ]
+      },
+      "afterDodge": {
+        "hp": 0,
+        "mp": 44,
+        "pcDamage": [
+          24,
+          27,
+          23
+        ],
+        "incoming": [
+          17
+        ],
+        "kills": 2,
+        "covered": 0,
+        "own": [
+          [
+            "attack",
+            "ENGAGED"
+          ],
+          [
+            "sidestep",
+            "25% less damage at distance until the next own turn"
+          ]
+        ]
+      },
+      "beforeDodge": {
+        "hp": 0,
+        "mp": 44,
+        "pcDamage": [
+          24,
+          27,
+          23
+        ],
+        "incoming": [
+          17
+        ],
+        "kills": 2,
+        "covered": 0,
+        "own": [
+          [
+            "sidestep",
+            "25% less damage at distance until the next own turn"
+          ],
+          [
+            "attack",
+            "ENGAGED"
+          ]
+        ]
+      }
+    }
+  },
+  "normalTurns": {
+    "melee1": {
+      "wave": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 1,
+        "hp": 68.979,
+        "mp": 44,
+        "sta": 100,
+        "incoming": 11.021,
+        "hits": 1,
+        "covered": 0,
+        "own": 2,
+        "casts": 2,
+        "refusal": 0
+      },
+      "dodge": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 1,
+        "hp": 68.979,
+        "mp": 44,
+        "sta": 100,
+        "incoming": 11.021,
+        "hits": 1,
+        "covered": 0,
+        "own": 2,
+        "casts": 2,
+        "refusal": 0
+      },
+      "step": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 1,
+        "hp": 80,
+        "mp": 44,
+        "sta": 100,
+        "incoming": 0,
+        "hits": 0,
+        "covered": 0,
+        "own": 2,
+        "casts": 2,
+        "refusal": 0
+      },
+      "before": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 1,
+        "hp": 80,
+        "mp": 44,
+        "sta": 100,
+        "incoming": 0,
+        "hits": 0,
+        "covered": 0,
+        "own": 2,
+        "casts": 2,
+        "refusal": 0
+      },
+      "blink": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 1,
+        "hp": 80,
+        "mp": 36,
+        "sta": 100,
+        "incoming": 0,
+        "hits": 0,
+        "covered": 0,
+        "own": 2,
+        "casts": 2,
+        "refusal": 0
+      },
+      "evasive": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 1,
+        "hp": 80,
+        "mp": 44,
+        "sta": 95,
+        "incoming": 0,
+        "hits": 0,
+        "covered": 0,
+        "own": 2,
+        "casts": 2,
+        "refusal": 0
+      },
+      "quickstep": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 1,
+        "hp": 80,
+        "mp": 44,
+        "sta": 95,
+        "incoming": 0,
+        "hits": 0,
+        "covered": 0,
+        "own": 2,
+        "casts": 2,
+        "refusal": 0
+      }
+    },
+    "melee3": {
+      "wave": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 3,
+        "hp": 27.896,
+        "mp": 30,
+        "sta": 100,
+        "incoming": 52.104,
+        "hits": 4,
+        "covered": 0,
+        "own": 3,
+        "casts": 3,
+        "refusal": 0
+      },
+      "dodge": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 3,
+        "hp": 27.896,
+        "mp": 30,
+        "sta": 100,
+        "incoming": 52.104,
+        "hits": 4,
+        "covered": 0,
+        "own": 3,
+        "casts": 3,
+        "refusal": 0
+      },
+      "step": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 3,
+        "hp": 80,
+        "mp": 30.292,
+        "sta": 100,
+        "incoming": 0,
+        "hits": 0,
+        "covered": 0,
+        "own": 2.979,
+        "casts": 2.979,
+        "refusal": 0
+      },
+      "before": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 3,
+        "hp": 80,
+        "mp": 30.292,
+        "sta": 100,
+        "incoming": 0,
+        "hits": 0,
+        "covered": 0,
+        "own": 2.979,
+        "casts": 2.979,
+        "refusal": 0
+      },
+      "blink": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 3,
+        "hp": 80,
+        "mp": 14.458,
+        "sta": 100,
+        "incoming": 0,
+        "hits": 0,
+        "covered": 0,
+        "own": 2.979,
+        "casts": 2.979,
+        "refusal": 0
+      },
+      "evasive": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 3,
+        "hp": 80,
+        "mp": 30.292,
+        "sta": 90.104,
+        "incoming": 0,
+        "hits": 0,
+        "covered": 0,
+        "own": 2.979,
+        "casts": 2.979,
+        "refusal": 0
+      },
+      "quickstep": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 3,
+        "hp": 80,
+        "mp": 30.292,
+        "sta": 90.104,
+        "incoming": 0,
+        "hits": 0,
+        "covered": 0,
+        "own": 2.979,
+        "casts": 2.979,
+        "refusal": 0
+      }
+    },
+    "archers3": {
+      "wave": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 3,
+        "hp": 27.896,
+        "mp": 30,
+        "sta": 100,
+        "incoming": 52.104,
+        "hits": 4,
+        "covered": 0,
+        "own": 3,
+        "casts": 3,
+        "refusal": 0
+      },
+      "dodge": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 3,
+        "hp": 40.813,
+        "mp": 30,
+        "sta": 100,
+        "incoming": 39.188,
+        "hits": 4,
+        "covered": 4,
+        "own": 3,
+        "casts": 3,
+        "refusal": 0
+      },
+      "step": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 3,
+        "hp": 27.896,
+        "mp": 30,
+        "sta": 100,
+        "incoming": 52.104,
+        "hits": 4,
+        "covered": 0,
+        "own": 3,
+        "casts": 3,
+        "refusal": 0
+      },
+      "before": {
+        "survived": 1,
+        "victory": 0,
+        "dead": 0,
+        "hp": 43.938,
+        "mp": 58,
+        "sta": 100,
+        "incoming": 36.063,
+        "hits": 3,
+        "covered": 0,
+        "own": 1,
+        "casts": 1,
+        "refusal": 1
+      },
+      "blink": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 3,
+        "hp": 27.896,
+        "mp": 14,
+        "sta": 100,
+        "incoming": 52.104,
+        "hits": 4,
+        "covered": 0,
+        "own": 3,
+        "casts": 3,
+        "refusal": 0
+      },
+      "evasive": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 3,
+        "hp": 40.813,
+        "mp": 30,
+        "sta": 90,
+        "incoming": 39.188,
+        "hits": 4,
+        "covered": 0,
+        "own": 3,
+        "casts": 3,
+        "refusal": 0
+      },
+      "quickstep": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 3,
+        "hp": 38.25,
+        "mp": 30,
+        "sta": 90,
+        "incoming": 41.75,
+        "hits": 4,
+        "covered": 0,
+        "own": 3,
+        "casts": 3,
+        "refusal": 0
+      }
+    },
+    "mixed3": {
+      "wave": {
+        "survived": 1,
+        "victory": 0,
+        "dead": 2,
+        "hp": 12.229,
+        "mp": 30,
+        "sta": 100,
+        "incoming": 67.771,
+        "hits": 5,
+        "covered": 0,
+        "own": 3,
+        "casts": 3,
+        "refusal": 0
+      },
+      "dodge": {
+        "survived": 1,
+        "victory": 0,
+        "dead": 2,
+        "hp": 24.063,
+        "mp": 30,
+        "sta": 100,
+        "incoming": 55.938,
+        "hits": 5,
+        "covered": 3,
+        "own": 3,
+        "casts": 3,
+        "refusal": 0
+      },
+      "step": {
+        "survived": 1,
+        "victory": 0.021,
+        "dead": 2.021,
+        "hp": 32.458,
+        "mp": 30,
+        "sta": 100,
+        "incoming": 47.542,
+        "hits": 2.979,
+        "covered": 0,
+        "own": 3,
+        "casts": 3,
+        "refusal": 0
+      },
+      "before": {
+        "survived": 1,
+        "victory": 0,
+        "dead": 2,
+        "hp": 47.938,
+        "mp": 44,
+        "sta": 100,
+        "incoming": 32.063,
+        "hits": 2,
+        "covered": 0,
+        "own": 2,
+        "casts": 2,
+        "refusal": 1
+      },
+      "blink": {
+        "survived": 1,
+        "victory": 0.021,
+        "dead": 2.021,
+        "hp": 32.458,
+        "mp": 6.167,
+        "sta": 100,
+        "incoming": 47.542,
+        "hits": 2.979,
+        "covered": 0,
+        "own": 3,
+        "casts": 3,
+        "refusal": 0
+      },
+      "evasive": {
+        "survived": 1,
+        "victory": 0.021,
+        "dead": 2.021,
+        "hp": 44.167,
+        "mp": 30,
+        "sta": 85.104,
+        "incoming": 35.833,
+        "hits": 2.979,
+        "covered": 0,
+        "own": 3,
+        "casts": 3,
+        "refusal": 0
+      },
+      "quickstep": {
+        "survived": 1,
+        "victory": 0.021,
+        "dead": 2.021,
+        "hp": 41.75,
+        "mp": 30,
+        "sta": 85.104,
+        "incoming": 38.25,
+        "hits": 2.979,
+        "covered": 0,
+        "own": 3,
+        "casts": 3,
+        "refusal": 0
+      }
+    },
+    "covered": {
+      "wave": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 1,
+        "hp": 71.708,
+        "mp": 44,
+        "sta": 100,
+        "incoming": 8.292,
+        "hits": 1,
+        "covered": 1,
+        "own": 2,
+        "casts": 2,
+        "refusal": 0
+      },
+      "dodge": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 1,
+        "hp": 71.708,
+        "mp": 44,
+        "sta": 100,
+        "incoming": 8.292,
+        "hits": 1,
+        "covered": 1,
+        "own": 2,
+        "casts": 2,
+        "refusal": 0
+      },
+      "step": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 1,
+        "hp": 71.708,
+        "mp": 44,
+        "sta": 100,
+        "incoming": 8.292,
+        "hits": 1,
+        "covered": 1,
+        "own": 2,
+        "casts": 2,
+        "refusal": 0
+      },
+      "before": {
+        "survived": 1,
+        "victory": 0,
+        "dead": 0,
+        "hp": 71.708,
+        "mp": 58,
+        "sta": 100,
+        "incoming": 8.292,
+        "hits": 1,
+        "covered": 1,
+        "own": 1,
+        "casts": 1,
+        "refusal": 1
+      },
+      "blink": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 1,
+        "hp": 71.708,
+        "mp": 36,
+        "sta": 100,
+        "incoming": 8.292,
+        "hits": 1,
+        "covered": 1,
+        "own": 2,
+        "casts": 2,
+        "refusal": 0
+      },
+      "evasive": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 1,
+        "hp": 73.75,
+        "mp": 44,
+        "sta": 95,
+        "incoming": 6.25,
+        "hits": 1,
+        "covered": 1,
+        "own": 2,
+        "casts": 2,
+        "refusal": 0
+      },
+      "quickstep": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 1,
+        "hp": 73.438,
+        "mp": 44,
+        "sta": 95,
+        "incoming": 6.563,
+        "hits": 1,
+        "covered": 1,
+        "own": 2,
+        "casts": 2,
+        "refusal": 0
+      }
+    },
+    "far": {
+      "wave": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 3,
+        "hp": 64.188,
+        "mp": 30.292,
+        "sta": 100,
+        "incoming": 15.813,
+        "hits": 0.979,
+        "covered": 0,
+        "own": 2.979,
+        "casts": 2.979,
+        "refusal": 0
+      },
+      "dodge": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 3,
+        "hp": 64.188,
+        "mp": 30.292,
+        "sta": 100,
+        "incoming": 15.813,
+        "hits": 0.979,
+        "covered": 0,
+        "own": 2.979,
+        "casts": 2.979,
+        "refusal": 0
+      },
+      "step": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 3,
+        "hp": 80,
+        "mp": 30.292,
+        "sta": 100,
+        "incoming": 0,
+        "hits": 0,
+        "covered": 0,
+        "own": 2.979,
+        "casts": 2.979,
+        "refusal": 0
+      },
+      "before": {
+        "survived": 1,
+        "victory": 0,
+        "dead": 0,
+        "hp": 80,
+        "mp": 72,
+        "sta": 100,
+        "incoming": 0,
+        "hits": 0,
+        "covered": 0,
+        "own": 0,
+        "casts": 0,
+        "refusal": 1
+      },
+      "blink": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 3,
+        "hp": 80,
+        "mp": 14.458,
+        "sta": 100,
+        "incoming": 0,
+        "hits": 0,
+        "covered": 0,
+        "own": 2.979,
+        "casts": 2.979,
+        "refusal": 0
+      },
+      "evasive": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 3,
+        "hp": 80,
+        "mp": 30.292,
+        "sta": 90.104,
+        "incoming": 0,
+        "hits": 0,
+        "covered": 0,
+        "own": 2.979,
+        "casts": 2.979,
+        "refusal": 0
+      },
+      "quickstep": {
+        "survived": 1,
+        "victory": 1,
+        "dead": 3,
+        "hp": 80,
+        "mp": 30.292,
+        "sta": 90.104,
+        "incoming": 0,
+        "hits": 0,
+        "covered": 0,
+        "own": 2.979,
+        "casts": 2.979,
+        "refusal": 0
+      }
+    },
+    "potion": {
+      "potion": {
+        "survived": 1,
+        "victory": 0,
+        "dead": 0,
+        "hp": 33.771,
+        "mp": 72,
+        "sta": 100,
+        "incoming": 36.229,
+        "hits": 3,
+        "covered": 0,
+        "own": 1,
+        "casts": 0,
+        "refusal": 0
+      },
+      "potionDodge": {
+        "survived": 1,
+        "victory": 0,
+        "dead": 0,
+        "hp": 37.813,
+        "mp": 72,
+        "sta": 100,
+        "incoming": 32.188,
+        "hits": 3,
+        "covered": 1,
+        "own": 1,
+        "casts": 0,
+        "refusal": 0
+      },
+      "potionStep": {
+        "survived": 1,
+        "victory": 0,
+        "dead": 0,
+        "hp": 53.854,
+        "mp": 72,
+        "sta": 100,
+        "incoming": 16.146,
+        "hits": 1,
+        "covered": 0,
+        "own": 1,
+        "casts": 0,
+        "refusal": 0
+      },
+      "stepPotion": {
+        "survived": 1,
+        "victory": 0,
+        "dead": 0,
+        "hp": 53.854,
+        "mp": 72,
+        "sta": 100,
+        "incoming": 16.146,
+        "hits": 1,
+        "covered": 0,
+        "own": 1,
+        "casts": 0,
+        "refusal": 0
+      },
+      "dodgePotion": {
+        "survived": 1,
+        "victory": 0,
+        "dead": 0,
+        "hp": 37.813,
+        "mp": 72,
+        "sta": 100,
+        "incoming": 32.188,
+        "hits": 3,
+        "covered": 1,
+        "own": 1,
+        "casts": 0,
+        "refusal": 0
+      }
+    },
+    "guard": {
+      "guard": {
+        "survived": 1,
+        "victory": 0,
+        "dead": 0,
+        "hp": 58.854,
+        "mp": 72,
+        "sta": 95,
+        "incoming": 21.146,
+        "hits": 3,
+        "covered": 0,
+        "own": 1,
+        "casts": 0,
+        "refusal": 0
+      },
+      "guardDodge": {
+        "survived": 1,
+        "victory": 0,
+        "dead": 0,
+        "hp": 61.625,
+        "mp": 72,
+        "sta": 95,
+        "incoming": 18.375,
+        "hits": 3,
+        "covered": 1,
+        "own": 1,
+        "casts": 0,
+        "refusal": 0
+      },
+      "guardStep": {
+        "survived": 1,
+        "victory": 0,
+        "dead": 0,
+        "hp": 68.896,
+        "mp": 72,
+        "sta": 95,
+        "incoming": 11.104,
+        "hits": 1,
+        "covered": 0,
+        "own": 1,
+        "casts": 0,
+        "refusal": 0
+      }
+    }
+  }
+}

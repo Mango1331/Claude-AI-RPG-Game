@@ -1,0 +1,129 @@
+{
+  "source_sha256": "d1353f4cfa29fac9b2e9ab3e4c769d5ff19d4722e82ba6d3052e4ea116c3f497",
+  "mock_cases": [
+    {
+      "original_player_index": 21,
+      "swipe_message": 22,
+      "through_message": 56,
+      "alternative": "local scripted arrival false; no deltas",
+      "active_original": {
+        "turn": 25,
+        "place": "loc.alderwatch.guild_hall",
+        "coin": 120,
+        "hp": 43,
+        "mp": 105,
+        "sta": 100,
+        "quest": "completed",
+        "ready": true,
+        "xp": 0,
+        "level": 6
+      },
+      "active_alternative": {
+        "turn": 11,
+        "place": "loc.old_crown_catacombs",
+        "coin": 30,
+        "hp": 80,
+        "mp": 72,
+        "sta": 100,
+        "quest": "active",
+        "ready": false,
+        "xp": 0,
+        "level": 1
+      },
+      "restored_original": {
+        "turn": 25,
+        "place": "loc.alderwatch.guild_hall",
+        "coin": 120,
+        "hp": 43,
+        "mp": 105,
+        "sta": 100,
+        "quest": "completed",
+        "ready": true,
+        "xp": 0,
+        "level": 6
+      },
+      "second_alternative": {
+        "turn": 11,
+        "place": "loc.old_crown_catacombs",
+        "coin": 30,
+        "hp": 80,
+        "mp": 72,
+        "sta": 100,
+        "quest": "active",
+        "ready": false,
+        "xp": 0,
+        "level": 1
+      },
+      "suffix_messages": 34,
+      "suffix_events_preserved": 264,
+      "mock_roles": [
+        "extract"
+      ],
+      "model_generations": 0,
+      "roundtrips": 3,
+      "full_world_original_restored": true
+    },
+    {
+      "original_player_index": 55,
+      "swipe_message": 56,
+      "through_message": 56,
+      "alternative": "local scripted arrival false; no deltas",
+      "active_original": {
+        "turn": 25,
+        "place": "loc.alderwatch.guild_hall",
+        "coin": 120,
+        "hp": 43,
+        "mp": 105,
+        "sta": 100,
+        "quest": "completed",
+        "ready": true,
+        "xp": 0,
+        "level": 6
+      },
+      "active_alternative": {
+        "turn": 25,
+        "place": "loc.old_crown_catacombs.l1_s4",
+        "coin": 30,
+        "hp": 43,
+        "mp": 105,
+        "sta": 100,
+        "quest": "active",
+        "ready": true,
+        "xp": 50,
+        "level": 5
+      },
+      "restored_original": {
+        "turn": 25,
+        "place": "loc.alderwatch.guild_hall",
+        "coin": 120,
+        "hp": 43,
+        "mp": 105,
+        "sta": 100,
+        "quest": "completed",
+        "ready": true,
+        "xp": 0,
+        "level": 6
+      },
+      "second_alternative": {
+        "turn": 25,
+        "place": "loc.old_crown_catacombs.l1_s4",
+        "coin": 30,
+        "hp": 43,
+        "mp": 105,
+        "sta": 100,
+        "quest": "active",
+        "ready": true,
+        "xp": 50,
+        "level": 5
+      },
+      "suffix_messages": 0,
+      "suffix_events_preserved": 0,
+      "mock_roles": [
+        "extract"
+      ],
+      "model_generations": 0,
+      "roundtrips": 3,
+      "full_world_original_restored": true
+    }
+  ]
+}

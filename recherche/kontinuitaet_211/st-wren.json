@@ -1,0 +1,651 @@
+{
+  "st": "7e8663cd9c184a550b37238218bdd32c6efc68e9",
+  "test_commit": "c1307c5663173f4600fa278af1342b2538b9aa62",
+  "method": "Fresh isolated ST 1.19 dataRoot and Chromium. GET /api/chats/get confirms stored player input, all (including inactive) records/swipes, lineage and folded world. Native text edits, actual DOM controls, full page reload before regeneration. Branch-choice and world saves/stale extraction held by loopback harness. No external network provider.",
+  "baseline": {
+    "runtime": "82b2b30ef86507a4eeeaf4c72e006f80a6d5e8bc",
+    "sha256_full_test_json": "ee2571bc861e2bf1c175c048a5429b3faac14decd2be73b384ac3d18e518d690",
+    "requestsByRole": {
+      "plan": 4,
+      "narrator": 5,
+      "extract": 6
+    },
+    "physicalMockRequests": 15,
+    "checks": 101,
+    "passed": 91,
+    "failed": [
+      "wrenAcceptanceHolder",
+      "wrenAcceptanceParty",
+      "wrenAcceptanceVisibleOwnership",
+      "wrenAcceptancePersonalKnowledge",
+      "wrenTimeFollowsStory",
+      "wrenAcceptanceReloadHolder",
+      "wrenAcceptanceReloadParty",
+      "wrenAcceptanceReloadVisibleOwnership",
+      "wrenAcceptanceReloadPersonalKnowledge",
+      "wrenacceptExtractorAuthority"
+    ],
+    "exception": null,
+    "specificChecks": {
+      "oldEditedFactsRemoved": null,
+      "olderEditNewFactsBound": null,
+      "oldSuffixStillAuditable": null,
+      "olderEditNewTurnPlayable": null,
+      "olderEditSubsequentRequestsExcludeDiscardedObject": null,
+      "earlierPlayerEditRetractsOldJourney": null,
+      "restoredExactBranch": null,
+      "editedLatestTracksChangedText": null,
+      "latestEditInvokesOnlyExtractor": null,
+      "lateExtractorActuallySwiped": null,
+      "extractDiscardsStale": null,
+      "extractPersistentActive": null,
+      "lateOriginSaveIsolated": null,
+      "lateSaveCorrectOrigin": null,
+      "nativeEditedBeforeUpdated": null
+    },
+    "stages": {
+      "wrenRefusal": {
+        "hudMessage": 42,
+        "hudActive": true,
+        "swipe": 0,
+        "ground": [],
+        "where": "loc.ashbridge.almshouse_on_the_far_bank",
+        "people": [
+          "pc",
+          "npc.mother_wren"
+        ],
+        "turn": 21,
+        "extracted": "applied",
+        "readback": true,
+        "initialReadback": true,
+        "statusAtFirstRead": "Gespeichert",
+        "readbackMs": 920,
+        "handover": {
+          "holder": {
+            "entity": "npc.mother_wren"
+          },
+          "bagId": "obj.t40.mother_wrens_leather_satchel",
+          "quantity": 1,
+          "coin_cp": 40,
+          "minute": 1135,
+          "learned": null,
+          "memories": []
+        },
+        "hudDOM": {
+          "Location": "Ashbridge, Duskreach — almshouse on the far bank",
+          "Present": "Mother Wren (caretaker healer at the almshouse, ENGAGED) [awareness: unknown]",
+          "Carried": "Small Pouch",
+          "Coin": "4 Silver",
+          "Active quests": null,
+          "Resources": "HP 80/80 (unhurt) · MP 72/72 · STA 100/100 · XP 0/100"
+        },
+        "hudMatchesFold": {
+          "Location": true,
+          "Present": true,
+          "Carried": true,
+          "Coin": true,
+          "Active quests": true,
+          "Resources": true
+        }
+      },
+      "wrenAcceptance": {
+        "hudMessage": 42,
+        "hudActive": true,
+        "swipe": 1,
+        "ground": [],
+        "where": "loc.ashbridge.almshouse_on_the_far_bank",
+        "people": [
+          "pc",
+          "npc.mother_wren"
+        ],
+        "turn": 21,
+        "extracted": "applied",
+        "readback": true,
+        "initialReadback": true,
+        "statusAtFirstRead": "Gespeichert",
+        "readbackMs": 742,
+        "handover": {
+          "holder": {
+            "entity": "npc.mother_wren"
+          },
+          "bagId": "obj.t40.mother_wrens_leather_satchel",
+          "quantity": 1,
+          "coin_cp": 40,
+          "minute": 1135,
+          "learned": null,
+          "memories": []
+        },
+        "hudDOM": {
+          "Location": "Ashbridge, Duskreach — almshouse on the far bank",
+          "Present": "Mother Wren (caretaker healer at the almshouse, ENGAGED) [awareness: unknown]",
+          "Carried": "Small Pouch",
+          "Coin": "4 Silver",
+          "Active quests": null,
+          "Resources": "HP 80/80 (unhurt) · MP 72/72 · STA 100/100 · XP 0/100"
+        },
+        "hudMatchesFold": {
+          "Location": true,
+          "Present": true,
+          "Carried": true,
+          "Coin": true,
+          "Active quests": true,
+          "Resources": true
+        }
+      },
+      "wrenBackToRefusal": {
+        "hudMessage": 42,
+        "hudActive": true,
+        "swipe": 0,
+        "ground": [],
+        "where": "loc.ashbridge.almshouse_on_the_far_bank",
+        "people": [
+          "pc",
+          "npc.mother_wren"
+        ],
+        "turn": 21,
+        "extracted": "applied",
+        "readback": true,
+        "initialReadback": false,
+        "statusAtFirstRead": "Gespeichert",
+        "readbackMs": 1668,
+        "handover": {
+          "holder": {
+            "entity": "npc.mother_wren"
+          },
+          "bagId": "obj.t40.mother_wrens_leather_satchel",
+          "quantity": 1,
+          "coin_cp": 40,
+          "minute": 1135,
+          "learned": null,
+          "memories": []
+        },
+        "hudDOM": {
+          "Location": "Ashbridge, Duskreach — almshouse on the far bank",
+          "Present": "Mother Wren (caretaker healer at the almshouse, ENGAGED) [awareness: unknown]",
+          "Carried": "Small Pouch",
+          "Coin": "4 Silver",
+          "Active quests": null,
+          "Resources": "HP 80/80 (unhurt) · MP 72/72 · STA 100/100 · XP 0/100"
+        },
+        "hudMatchesFold": {
+          "Location": true,
+          "Present": true,
+          "Carried": true,
+          "Coin": true,
+          "Active quests": true,
+          "Resources": true
+        }
+      },
+      "wrenAcceptanceReload": {
+        "hudMessage": 42,
+        "hudActive": true,
+        "swipe": 1,
+        "ground": [],
+        "where": "loc.ashbridge.almshouse_on_the_far_bank",
+        "people": [
+          "pc",
+          "npc.mother_wren"
+        ],
+        "turn": 21,
+        "extracted": "applied",
+        "readback": true,
+        "initialReadback": true,
+        "statusAtFirstRead": "Bereit",
+        "readbackMs": 918,
+        "handover": {
+          "holder": {
+            "entity": "npc.mother_wren"
+          },
+          "bagId": "obj.t40.mother_wrens_leather_satchel",
+          "quantity": 1,
+          "coin_cp": 40,
+          "minute": 1135,
+          "learned": null,
+          "memories": []
+        },
+        "hudDOM": {
+          "Location": "Ashbridge, Duskreach — almshouse on the far bank",
+          "Present": "Mother Wren (caretaker healer at the almshouse, ENGAGED) [awareness: unknown]",
+          "Carried": "Small Pouch",
+          "Coin": "4 Silver",
+          "Active quests": null,
+          "Resources": "HP 80/80 (unhurt) · MP 72/72 · STA 100/100 · XP 0/100"
+        },
+        "hudMatchesFold": {
+          "Location": true,
+          "Present": true,
+          "Carried": true,
+          "Coin": true,
+          "Active quests": true,
+          "Resources": true
+        }
+      }
+    },
+    "handover": {
+      "source": "e276cbd8eb149a2b3a0817dba0cfcc40832d4f03:testrun_10b/openrouter-20261124-kontinuitaet-fokus/tasche/original-start.jsonl.gz",
+      "input": "I take your satchel if you hand it to me, Wren. Would you walk with me to the Halloran steading?",
+      "origin": "loc.ashbridge.almshouse_on_the_far_bank",
+      "satchel": "obj.t40.mother_wrens_leather_satchel",
+      "wren": "npc.mother_wren",
+      "initialMinute": 1135,
+      "coin_cp": 40,
+      "refuseBeforeFollow": {
+        "phase": "Gespeichert",
+        "probe": {
+          "busy": false,
+          "len": 43,
+          "lastUser": 41,
+          "extraction": "applied",
+          "dialogs": 0,
+          "online": "Valid",
+          "chatId": "C19 refusal path",
+          "avatar": "Revision mock.png"
+        },
+        "activeText": "Mother Wren keeps her leather satchel against her chest. \"Not tonight,\" she says. The door stays shut. Neither of them leaves the almshouse.",
+        "swipe": 0,
+        "extraction": "applied",
+        "readback": true
+      },
+      "refuseFollow": {
+        "plan": {
+          "seen": true,
+          "marker": false
+        },
+        "narrator": {
+          "seen": true,
+          "marker": false
+        },
+        "extract": {
+          "seen": true,
+          "marker": false,
+          "here": "HERE: Duskreach › Ashbridge › almshouse on the far bank (loc.ashbridge.almshouse_on_the_far_bank) · day 1, 18:55",
+          "bagEntry": "Mother Wren's leather satchel, held by Mother Wren, caretaker healer at the almshouse, grey hair pinned tight",
+          "verifiedFromSTLog": {
+            "requestLogLine": 1976,
+            "here": "HERE: Duskreach › Ashbridge › almshouse on the far bank (loc.ashbridge.almshouse_on_the_far_bank) · day 1, 18:55",
+            "present": "PRESENT: npc.mother_wren [Mother Wren] (Mother Wren, caretaker healer at the almshouse, grey hair pinned tight)",
+            "currentReply": "Wren pauses to listen.",
+            "source": "unmodified ST provider log"
+          }
+        }
+      },
+      "acceptBeforeFollow": {
+        "phase": "Bereit",
+        "probe": {
+          "busy": false,
+          "len": 43,
+          "lastUser": 41,
+          "extraction": "applied",
+          "dialogs": 0,
+          "online": "Valid",
+          "chatId": "C19 alternatives path",
+          "avatar": "Revision mock.png"
+        },
+        "activeText": "Mother Wren passes her leather satchel into Alaric’s hands. Alaric reached the Halloran steading with Mother Wren. At its gate she says quietly, \"Bellthread was my old call sign. You may use it here.\"",
+        "swipe": 1,
+        "extraction": "applied",
+        "readback": true
+      },
+      "acceptFollow": {
+        "plan": {
+          "seen": true,
+          "marker": true
+        },
+        "narrator": {
+          "seen": true,
+          "marker": true
+        },
+        "extract": {
+          "seen": true,
+          "marker": false,
+          "here": "HERE: Duskreach › Ashbridge › almshouse on the far bank (loc.ashbridge.almshouse_on_the_far_bank) · day 1, 18:55",
+          "bagEntry": "Mother Wren's leather satchel, held by Mother Wren, caretaker healer at the almshouse, grey hair pinned tight",
+          "verifiedFromSTLog": {
+            "requestLogLine": 4925,
+            "here": "HERE: Duskreach › Ashbridge › almshouse on the far bank (loc.ashbridge.almshouse_on_the_far_bank) · day 1, 18:55",
+            "present": "PRESENT: npc.mother_wren [Mother Wren] (Mother Wren, caretaker healer at the almshouse, grey hair pinned tight)",
+            "currentReply": "Wren pauses to listen.",
+            "source": "unmodified ST provider log"
+          }
+        }
+      }
+    },
+    "nativeEditEvents": []
+  },
+  "candidate": {
+    "runtime": "10de728d4260e07ebf791cd2585ed93dc944bc7a",
+    "sha256_full_test_json": "80397b492c10f87300590852ca713befa31d63357865ef4ca4b1e45018284772",
+    "requestsByRole": {
+      "plan": 4,
+      "narrator": 5,
+      "extract": 5
+    },
+    "physicalMockRequests": 14,
+    "checks": 101,
+    "passed": 101,
+    "failed": [],
+    "exception": null,
+    "specificChecks": {
+      "oldEditedFactsRemoved": null,
+      "olderEditNewFactsBound": null,
+      "oldSuffixStillAuditable": null,
+      "olderEditNewTurnPlayable": null,
+      "olderEditSubsequentRequestsExcludeDiscardedObject": null,
+      "earlierPlayerEditRetractsOldJourney": null,
+      "restoredExactBranch": null,
+      "editedLatestTracksChangedText": null,
+      "latestEditInvokesOnlyExtractor": null,
+      "lateExtractorActuallySwiped": null,
+      "extractDiscardsStale": null,
+      "extractPersistentActive": null,
+      "lateOriginSaveIsolated": null,
+      "lateSaveCorrectOrigin": null,
+      "nativeEditedBeforeUpdated": null
+    },
+    "stages": {
+      "wrenRefusal": {
+        "hudMessage": 42,
+        "hudActive": true,
+        "swipe": 0,
+        "ground": [],
+        "where": "loc.ashbridge.almshouse_on_the_far_bank",
+        "people": [
+          "pc",
+          "npc.mother_wren"
+        ],
+        "turn": 21,
+        "extracted": "applied",
+        "readback": true,
+        "initialReadback": true,
+        "statusAtFirstRead": "Gespeichert",
+        "readbackMs": 1079,
+        "handover": {
+          "holder": {
+            "entity": "npc.mother_wren"
+          },
+          "bagId": "obj.t40.mother_wrens_leather_satchel",
+          "quantity": 1,
+          "coin_cp": 40,
+          "minute": 1135,
+          "learned": null,
+          "memories": []
+        },
+        "hudDOM": {
+          "Location": "Ashbridge, Duskreach — almshouse on the far bank",
+          "Present": "Mother Wren (caretaker healer at the almshouse, ENGAGED) [awareness: unknown]",
+          "Carried": "Small Pouch",
+          "Coin": "4 Silver",
+          "Active quests": null,
+          "Resources": "HP 80/80 (unhurt) · MP 72/72 · STA 100/100 · XP 0/100"
+        },
+        "hudMatchesFold": {
+          "Location": true,
+          "Present": true,
+          "Carried": true,
+          "Coin": true,
+          "Active quests": true,
+          "Resources": true
+        }
+      },
+      "wrenAcceptance": {
+        "hudMessage": 42,
+        "hudActive": true,
+        "swipe": 1,
+        "ground": [],
+        "where": "loc.halloran_steading",
+        "people": [
+          "pc",
+          "npc.mother_wren"
+        ],
+        "turn": 21,
+        "extracted": "applied",
+        "readback": true,
+        "initialReadback": true,
+        "statusAtFirstRead": "Gespeichert",
+        "readbackMs": 1371,
+        "handover": {
+          "holder": {
+            "entity": "pc"
+          },
+          "bagId": "obj.t40.mother_wrens_leather_satchel",
+          "quantity": 1,
+          "coin_cp": 40,
+          "minute": 1195,
+          "learned": {
+            "who": "pc",
+            "about": "f.t21.m42.d4.1",
+            "stance": "knows",
+            "source": "told",
+            "turn": 21,
+            "minute": 1165,
+            "previous": null
+          },
+          "memories": [
+            {
+              "id": "m.t21.m42.d6_3.1",
+              "who": [
+                "npc.mother_wren",
+                "pc"
+              ],
+              "location": "realm.duskreach",
+              "text": "At the steading Mother Wren told {pc} her former call sign was Bellthread."
+            }
+          ]
+        },
+        "hudDOM": {
+          "Location": "Duskreach — Halloran steading",
+          "Present": "Mother Wren (caretaker healer at the almshouse, SHORT) [awareness: unknown]",
+          "Carried": "Small Pouch · Mother Wren's leather satchel",
+          "Coin": "4 Silver",
+          "Active quests": null,
+          "Resources": "HP 80/80 (unhurt) · MP 72/72 · STA 100/100 · XP 0/100"
+        },
+        "hudMatchesFold": {
+          "Location": true,
+          "Present": true,
+          "Carried": true,
+          "Coin": true,
+          "Active quests": true,
+          "Resources": true
+        }
+      },
+      "wrenBackToRefusal": {
+        "hudMessage": 42,
+        "hudActive": true,
+        "swipe": 0,
+        "ground": [],
+        "where": "loc.ashbridge.almshouse_on_the_far_bank",
+        "people": [
+          "pc",
+          "npc.mother_wren"
+        ],
+        "turn": 21,
+        "extracted": "applied",
+        "readback": true,
+        "initialReadback": true,
+        "statusAtFirstRead": "Gespeichert",
+        "readbackMs": 971,
+        "handover": {
+          "holder": {
+            "entity": "npc.mother_wren"
+          },
+          "bagId": "obj.t40.mother_wrens_leather_satchel",
+          "quantity": 1,
+          "coin_cp": 40,
+          "minute": 1135,
+          "learned": null,
+          "memories": []
+        },
+        "hudDOM": {
+          "Location": "Ashbridge, Duskreach — almshouse on the far bank",
+          "Present": "Mother Wren (caretaker healer at the almshouse, ENGAGED) [awareness: unknown]",
+          "Carried": "Small Pouch",
+          "Coin": "4 Silver",
+          "Active quests": null,
+          "Resources": "HP 80/80 (unhurt) · MP 72/72 · STA 100/100 · XP 0/100"
+        },
+        "hudMatchesFold": {
+          "Location": true,
+          "Present": true,
+          "Carried": true,
+          "Coin": true,
+          "Active quests": true,
+          "Resources": true
+        }
+      },
+      "wrenAcceptanceReload": {
+        "hudMessage": 42,
+        "hudActive": true,
+        "swipe": 1,
+        "ground": [],
+        "where": "loc.halloran_steading",
+        "people": [
+          "pc",
+          "npc.mother_wren"
+        ],
+        "turn": 21,
+        "extracted": "applied",
+        "readback": true,
+        "initialReadback": true,
+        "statusAtFirstRead": "Bereit",
+        "readbackMs": 929,
+        "handover": {
+          "holder": {
+            "entity": "pc"
+          },
+          "bagId": "obj.t40.mother_wrens_leather_satchel",
+          "quantity": 1,
+          "coin_cp": 40,
+          "minute": 1195,
+          "learned": {
+            "who": "pc",
+            "about": "f.t21.m42.d4.1",
+            "stance": "knows",
+            "source": "told",
+            "turn": 21,
+            "minute": 1165,
+            "previous": null
+          },
+          "memories": [
+            {
+              "id": "m.t21.m42.d6_3.1",
+              "who": [
+                "npc.mother_wren",
+                "pc"
+              ],
+              "location": "realm.duskreach",
+              "text": "At the steading Mother Wren told {pc} her former call sign was Bellthread."
+            }
+          ]
+        },
+        "hudDOM": {
+          "Location": "Duskreach — Halloran steading",
+          "Present": "Mother Wren (caretaker healer at the almshouse, SHORT) [awareness: unknown]",
+          "Carried": "Small Pouch · Mother Wren's leather satchel",
+          "Coin": "4 Silver",
+          "Active quests": null,
+          "Resources": "HP 80/80 (unhurt) · MP 72/72 · STA 100/100 · XP 0/100"
+        },
+        "hudMatchesFold": {
+          "Location": true,
+          "Present": true,
+          "Carried": true,
+          "Coin": true,
+          "Active quests": true,
+          "Resources": true
+        }
+      }
+    },
+    "handover": {
+      "source": "e276cbd8eb149a2b3a0817dba0cfcc40832d4f03:testrun_10b/openrouter-20261124-kontinuitaet-fokus/tasche/original-start.jsonl.gz",
+      "input": "I take your satchel if you hand it to me, Wren. Would you walk with me to the Halloran steading?",
+      "origin": "loc.ashbridge.almshouse_on_the_far_bank",
+      "satchel": "obj.t40.mother_wrens_leather_satchel",
+      "wren": "npc.mother_wren",
+      "initialMinute": 1135,
+      "coin_cp": 40,
+      "refuseBeforeFollow": {
+        "phase": "Gespeichert",
+        "probe": {
+          "busy": false,
+          "len": 43,
+          "lastUser": 41,
+          "extraction": "applied",
+          "dialogs": 0,
+          "online": "Valid",
+          "chatId": "C19 refusal path",
+          "avatar": "Revision mock.png"
+        },
+        "activeText": "Mother Wren keeps her leather satchel against her chest. \"Not tonight,\" she says. The door stays shut. Neither of them leaves the almshouse.",
+        "swipe": 0,
+        "extraction": "applied",
+        "readback": true
+      },
+      "refuseFollow": {
+        "plan": {
+          "seen": true,
+          "marker": false
+        },
+        "narrator": {
+          "seen": true,
+          "marker": false
+        },
+        "extract": {
+          "seen": true,
+          "marker": false,
+          "here": "HERE: Duskreach › Ashbridge › almshouse on the far bank (loc.ashbridge.almshouse_on_the_far_bank) · day 1, 18:55",
+          "bagEntry": "Mother Wren's leather satchel, held by Mother Wren, caretaker healer at the almshouse, grey hair pinned tight",
+          "verifiedFromSTLog": {
+            "requestLogLine": 1983,
+            "here": "HERE: Duskreach › Ashbridge › almshouse on the far bank (loc.ashbridge.almshouse_on_the_far_bank) · day 1, 18:55",
+            "present": "PRESENT: npc.mother_wren [Mother Wren] (Mother Wren, caretaker healer at the almshouse, grey hair pinned tight)",
+            "currentReply": "Wren pauses to listen.",
+            "source": "unmodified ST provider log"
+          }
+        }
+      },
+      "acceptBeforeFollow": {
+        "phase": "Bereit",
+        "probe": {
+          "busy": false,
+          "len": 43,
+          "lastUser": 41,
+          "extraction": "applied",
+          "dialogs": 0,
+          "online": "Valid",
+          "chatId": "C19 alternatives path",
+          "avatar": "Revision mock.png"
+        },
+        "activeText": "Mother Wren passes her leather satchel into Alaric’s hands. Alaric reached the Halloran steading with Mother Wren. At its gate she says quietly, \"Bellthread was my old call sign. You may use it here.\"",
+        "swipe": 1,
+        "extraction": "applied",
+        "readback": true
+      },
+      "acceptFollow": {
+        "plan": {
+          "seen": true,
+          "marker": true
+        },
+        "narrator": {
+          "seen": true,
+          "marker": true
+        },
+        "extract": {
+          "seen": true,
+          "marker": false,
+          "here": "HERE: Duskreach › Halloran steading (loc.halloran_steading) · day 1, 19:55",
+          "bagEntry": "Mother Wren's leather satchel, held by Alaric",
+          "verifiedFromSTLog": {
+            "requestLogLine": 4746,
+            "here": "HERE: Duskreach › Halloran steading (loc.halloran_steading) · day 1, 19:55",
+            "present": "PRESENT: npc.mother_wren [Mother Wren] (Mother Wren, caretaker healer at the almshouse, grey hair pinned tight)",
+            "currentReply": "Wren pauses to listen.",
+            "source": "unmodified ST provider log"
+          }
+        }
+      }
+    },
+    "nativeEditEvents": []
+  },
+  "test_tree_on_candidate": "65df153ebcdce8874913298b99178f48e958e90f"
+}

@@ -1,0 +1,113 @@
+{
+  "engine": "10de728d4260e07ebf791cd2585ed93dc944bc7a",
+  "st": "7e8663cd9c184a550b37238218bdd32c6efc68e9",
+  "port": 18428,
+  "sourceHash": "c7fb9b8346c31b8aa6e461eb73c43428deb05c1f58dabd02df2549dfb855a505",
+  "measurements": {
+    "B19": {
+      "Location": "Ashbridge, Duskreach — flooded lane behind the tithe barn",
+      "Present": "Carter (carter, SHORT) [awareness: unknown] · Bandit A (bandit, SHORT) [awareness: aware] · Bandit B (bandit, SHORT) [awareness: unknown]",
+      "Carried": "Small Pouch · F-Rank Mule Hide · Starter Arcane Staff",
+      "Resources": "HP 32/85 (badly wounded) · MP 52/72 · STA 100/100 · XP 20/200",
+      "message": 56,
+      "place": "loc.ashbridge.flooded_lane_behind_the_tithe_barn",
+      "npcs": [
+        "pc",
+        "npc.npccarter",
+        "npc.npctollman",
+        "npc.npctollman2"
+      ],
+      "bagId": "obj.t40.mother_wrens_leather_satchel",
+      "extraBag": [],
+      "worldHash": "bd0ecbb81aabe171e1349fd730f1f24dd157d6a086d9693c04b199df5edc1b52",
+      "eventsHash": "e5ba98c1326566a43fef17c2818e40b0e8f0f2abfc401b2be12636f32a9dbf5f",
+      "identicalAfterFullReload": true,
+      "localArchiveAnswers": [
+        [
+          175
+        ],
+        [
+          177
+        ]
+      ],
+      "criteria": {
+        "Halt bleibt an der überfluteten Gasse": true
+      }
+    },
+    "B20": {
+      "Location": "Ashbridge, Duskreach — Mother Wren's house",
+      "Present": "Healer (healer, ENGAGED) [awareness: unknown]",
+      "Carried": "Small Pouch · F-Rank Mule Hide · Starter Arcane Staff",
+      "Resources": "HP 32/85 (badly wounded) · MP 52/72 · STA 100/100 · XP 20/200",
+      "message": 58,
+      "place": "loc.ashbridge.mother_wrens_house",
+      "npcs": [
+        "pc",
+        "npc.npcwren"
+      ],
+      "bagId": "obj.t40.mother_wrens_leather_satchel",
+      "extraBag": [],
+      "worldHash": "bb7e4dfdf4478ca89b0076b2993b17571c5ae1999a6602507cc481160b7a41b6",
+      "eventsHash": "c76a48531ea6c486b62ec5ba7b36c548b1a56f916d0fa4103329d88923abb915",
+      "identicalAfterFullReload": true,
+      "localArchiveAnswers": [
+        [
+          178
+        ],
+        [
+          180,
+          181
+        ]
+      ],
+      "criteria": {
+        "Wren an der grünen Tür": true,
+        "Doss bleibt benannter Zollmann": true,
+        "Neu erzählter Knüppelfakt aus B20 erhalten": true,
+        "Zollgeschichte erhalten": true,
+        "Kein neuer Geldabgang ohne vollzogene Zahlung": true
+      }
+    },
+    "C19": {
+      "Location": "Duskreach — flooded hollow on the ridge road",
+      "Present": "Mother Wren (caretaker healer at the almshouse, SHORT) [awareness: unknown]",
+      "Carried": "Small Pouch · the bag",
+      "Resources": "HP 80/80 (unhurt) · MP 72/72 · STA 100/100 · XP 0/100",
+      "message": 42,
+      "place": "loc.flooded_hollow_on_the_ridge_road",
+      "npcs": [
+        "pc",
+        "npc.mother_wren"
+      ],
+      "bagId": "obj.t40.mother_wrens_leather_satchel",
+      "bagHolder": {
+        "entity": "npc.mother_wren"
+      },
+      "extraBag": [
+        [
+          "obj.t42.the_bag",
+          {
+            "entity": "pc"
+          }
+        ]
+      ],
+      "worldHash": "6760db65457b3958bcea0120991a0629952461ad359120ce64c2d4266e72b72d",
+      "eventsHash": "ff6b1091725d2b358c66819af5872424786b986c7a3be514c18e98669cbb7722",
+      "identicalAfterFullReload": true,
+      "localArchiveAnswers": [
+        [
+          122
+        ],
+        [
+          124
+        ]
+      ],
+      "criteria": {
+        "Eine physische Taschenidentität während des ganzen Auftrags": false,
+        "Träger der geliehenen Tasche ist Alaric": false
+      }
+    }
+  },
+  "modelCalls": 0,
+  "method": "ST 1.19 auf isoliertem Port 18428. Archivierte Antworten über den vorhandenen Crossover-Hostpfad angewandt und die so neu berechneten Ereignisrecords in ST gespeichert. Die native letzte Chatnachricht wurde aufgeklappt. Vergleich Location, Present, Carried und Resources mit dem berechneten Weltzustand; vollständige Welt und Ereignisse über /api/chats/get und nach vollständigem Browser-Reload verglichen. B19 aus altem Originalpräfix, B20 setzt die neu berechnete B19-Welt fort; C19 aus seinem eigenen Originalpräfix.",
+  "interpretation": "B20 zeigt als anwesende Person Healer; die interne ID ist npc.npcwren. C19 bewahrt den bekannten Fehler: Alaric trägt den hinzugekommenen obj.t42.the_bag, die tatsächlich ausgeliehene obj.t40.mother_wrens_leather_satchel bleibt bei Wren. Das HUD gibt diese Fehlbuchung korrekt wieder."
+}

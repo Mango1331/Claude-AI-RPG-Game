@@ -1,0 +1,172 @@
+{
+  "runtime_commit": "10de728d4260e07ebf791cd2585ed93dc944bc7a",
+  "baseline": "82b2b30ef86507a4eeeaf4c72e006f80a6d5e8bc",
+  "fixture_file_sha256": {
+    "avereth-engine/tests/v4/fixtures/continuity211_absent_birta_b17.json.gz": "d74a81fd3e547cc58262cbcf67670b2bfaf9659324ccc34c76d0d90ff3311a77",
+    "avereth-engine/tests/v4/fixtures/continuity211_bread.json.gz": "aa56a87c93ac38de35220ef1ff1be77f82a3e42e10fc207683c31f01a556134f",
+    "avereth-engine/tests/v4/fixtures/continuity211_broth.json.gz": "b0c419b53a4d6c28494aa291d88ae2610caed1df039df8a5b629ffecf2fd58ff",
+    "avereth-engine/tests/v4/fixtures/continuity211_lia_b2.json.gz": "215c269d2aa06cb331d8c622cc0cb70773652b999eb3db163f1382b6f5b9a4ce",
+    "avereth-engine/tests/v4/fixtures/continuity211_travel.json.gz": "4cb1b59950a91febff937f9df6b525babf7ff701faa3a9331530bb48f9cad90a",
+    "avereth-engine/tests/v4/fixtures/continuity211_wren_arrival.json.gz": "91041dc58a0eab8bac19a32d41641f7f8bf9108658676283f272a01c18460cd8"
+  },
+  "runtime_diff": [
+    "avereth-engine/content/commands.json",
+    "avereth-engine/content/deltas.json",
+    "avereth-engine/content/narrator/Avereth_Narrator_Contract_v4.txt",
+    "avereth-engine/index.js",
+    "avereth-engine/manifest.json",
+    "avereth-engine/package.json",
+    "avereth-engine/src/action_input.js",
+    "avereth-engine/src/action_status.js",
+    "avereth-engine/src/commands.js",
+    "avereth-engine/src/context.js",
+    "avereth-engine/src/engine.js",
+    "avereth-engine/src/host.js",
+    "avereth-engine/src/knowledge.js",
+    "avereth-engine/src/util.js",
+    "avereth-engine/src/v4/commands.js",
+    "avereth-engine/src/v4/continuation.js",
+    "avereth-engine/src/v4/extract.js",
+    "avereth-engine/src/v4/firewall.js",
+    "avereth-engine/src/v4/items.js",
+    "avereth-engine/src/v4/planner.js",
+    "avereth-engine/src/v4/revisions.js",
+    "avereth-engine/src/v4/runtime.js",
+    "avereth-engine/src/v4/travel_continuation.js",
+    "avereth-engine/src/v4/turn.js",
+    "avereth-engine/src/v4/world.js",
+    "avereth-engine/src/v4/world_jobs.js"
+  ],
+  "commits": {
+    "b2790f721cda3eac60c8c0ef890a7be94a1e53a4": "Apply explicitly located social observations at their confirmed arrival",
+    "ed3829bd08a63affc7bea257af702513bd29e535": "Keep paper notices distinct from selectable Guild contracts in narrator context",
+    "3b38ade50b8a91e45996eda3c524a9035bde8aa4": "Bind named introductions to witnesses and distinguish NPC dossiers",
+    "1ccde172d000d14ca29d1e696add01a5f3cdcac9": "Record the verified Guild clerk encounter on the existing replay baseline",
+    "5960d96d9eaecb87377f4e1c86f7421cebf86649": "Settle voluntary handovers and account for actual whole stock",
+    "2a404c1e7f9088f1df767259a53310be6e4d58e9": "Render absent NPC memories from their own witnessed identity",
+    "df68f8109292bc935e74df94bfaa1c463cdd88fc": "Keep board status distinctions within the existing context allocation",
+    "cd1acc950be7416d956689b0d604bc7a0f5a0543": "Preserve proven consumption and independent facts during handover",
+    "686b07bad6294e564bd49d54d258f08e7061eb00": "Exercise native swipe, edit, regeneration and save isolation against an ST 1.19 mock",
+    "804428bd113705003e11818e00961542d97919eb": "Verify reviewed Guild and witness text against the original compact-card snapshot",
+    "aaa2ccbfbc5bf7235d1d12357233ce0349685e0c": "Bind edited and swiped chat history to its active world revision",
+    "3b1c06d1ee4ac6143d984905e50c1372e4266eff": "Bind narrated travel to player limits and preserve local interruption scenes",
+    "b15dc380eecdaa0166e4b665e42ff8ae432ace37": "Pin the exact legacy travel line across the original NPC context scenarios",
+    "ee4cc313f02cf3da0d42de6a2d18acf826bf1e47": "Identify the offline continuity candidate as 4.3.0-c.6.6.211",
+    "2f4110935cfe14afb69525fdc49e031aadadc999": "Keep a timed instruction to stay until its stated condition is shown",
+    "6bdc1ef44468c60b96b789c2f9505cad8047b5af": "Validate optional travel receipts with the existing strict extractor schema",
+    "10de728d4260e07ebf791cd2585ed93dc944bc7a": "Require a spoken personal introduction before granting witnessed name knowledge",
+    "65df153ebcdce8874913298b99178f48e958e90f": "Compare Wren's refused and completed handover on active native swipes",
+    "762a55eed2b45f887465925d71c543cd5222f6e1": "Check the pinned narrator contract in the User05 ST smoke",
+    "c2ddc780d4c57b219f9cd7a1d134efceca7e459d": "Check HUD roleplay and gesture limits in the active ST narrator prompt"
+  },
+  "unit_test_at_runtime_commit": {
+    "total": 3559,
+    "pass": 3559,
+    "fail": 0,
+    "skip": 0,
+    "targeted211": {
+      "pass": 56,
+      "fail": 0
+    }
+  },
+  "replay_at_runtime_commit": {
+    "compared": 2235,
+    "accepted_vs_historical": 1193,
+    "new_since_210": [
+      "b18-warrior#222"
+    ],
+    "open": 0,
+    "stale": 0
+  },
+  "archived_request_reconstruction": {
+    "physical_array_matched_in_reference": 77,
+    "p_x_calls_by_arm": [
+      {
+        "plan": 25,
+        "extract": 24,
+        "plan_repair": 1,
+        "extract_repair": 3
+      },
+      {
+        "plan": 25,
+        "extract": 24,
+        "plan_repair": 1,
+        "extract_repair": 3
+      }
+    ],
+    "archive_sequence_mismatches_by_arm": [
+      0,
+      0
+    ],
+    "externally_generated": 0,
+    "cost_usd": 0
+  },
+  "final_candidate": "c2ddc780d4c57b219f9cd7a1d134efceca7e459d",
+  "native_st_revisions": {
+    "reference": {
+      "passed": 286,
+      "total": 313,
+      "loopback_requests": 35
+    },
+    "candidate": {
+      "passed": 313,
+      "total": 313,
+      "loopback_requests": 36
+    },
+    "evidence": "st-revisionen.json"
+  },
+  "first_smokes": {
+    "standard": {
+      "seconds": 916,
+      "checks": 378,
+      "passed": 376,
+      "failed": [
+        "actionHud_activeAgency",
+        "user05_currentBoardContractSentOnce"
+      ],
+      "page_errors": 0,
+      "calls": 351
+    },
+    "failsoft": {
+      "seconds": 837,
+      "checks": 384,
+      "passed": 382,
+      "failed": [
+        "actionHud_activeAgency",
+        "user05_currentBoardContractSentOnce"
+      ],
+      "page_errors": 0,
+      "calls": 358
+    }
+  },
+  "final_node": {
+    "pass": 3559,
+    "total": 3559,
+    "fail": 0,
+    "skip": 0,
+    "duration_ms": 113772.242501,
+    "targeted_211_pass": 56
+  },
+  "final_replay": {
+    "compared": 2235,
+    "accepted_vs_historical": 1193,
+    "new_since_210": [
+      "b18-warrior#222"
+    ],
+    "open": 0,
+    "stale": 0
+  },
+  "final_standard_failsoft": {
+    "file": "st-smokes.json",
+    "standard": 378,
+    "failsoft": 384,
+    "page_errors": 0
+  },
+  "final_streaming": {
+    "pass": 59,
+    "total": 59,
+    "page_errors": 0,
+    "faults": 10,
+    "file": "st-smokes.json"
+  }
+}

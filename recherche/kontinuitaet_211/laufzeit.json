@@ -1,0 +1,77 @@
+{
+  "node": "v24.22.1",
+  "source": [
+    [
+      "b-210",
+      700
+    ],
+    [
+      "zusatz-wren-210",
+      900
+    ]
+  ],
+  "turns": 24,
+  "statistic": "wall ms for one complete pass of fold + narrator block + extractor request, paired order alternates; first two rounds discarded as warmup",
+  "timings": [
+    {
+      "round": 2,
+      "arm": 0,
+      "ms": 760.9804889999996
+    },
+    {
+      "round": 2,
+      "arm": 1,
+      "ms": 225.4692470000009
+    },
+    {
+      "round": 3,
+      "arm": 1,
+      "ms": 181.4081559999995
+    },
+    {
+      "round": 3,
+      "arm": 0,
+      "ms": 176.0220250000002
+    },
+    {
+      "round": 4,
+      "arm": 0,
+      "ms": 197.61253800000122
+    },
+    {
+      "round": 4,
+      "arm": 1,
+      "ms": 227.05715299999974
+    },
+    {
+      "round": 5,
+      "arm": 1,
+      "ms": 202.55999200000042
+    },
+    {
+      "round": 5,
+      "arm": 0,
+      "ms": 185.14258900000095
+    },
+    {
+      "round": 6,
+      "arm": 0,
+      "ms": 187.8710460000002
+    },
+    {
+      "round": 6,
+      "arm": 1,
+      "ms": 301.7737440000001
+    },
+    {
+      "round": 7,
+      "arm": 1,
+      "ms": 905.8423289999992
+    },
+    {
+      "round": 7,
+      "arm": 0,
+      "ms": 224.21537499999977
+    }
+  ]
+}

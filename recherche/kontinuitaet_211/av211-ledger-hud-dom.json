@@ -1,0 +1,91 @@
+{
+  "engine": "c2ddc780d4c57b219f9cd7a1d134efceca7e459d",
+  "st": "7e8663cd9c184a550b37238218bdd32c6efc68e9",
+  "source_sha256": "d1353f4cfa29fac9b2e9ab3e4c769d5ff19d4722e82ba6d3052e4ea116c3f497",
+  "loopbackPort": 41201,
+  "level": "Native ST 1.19.0, imported response branches, DOM / backend read-back / full browser reload",
+  "originalCase": "User08 M0–56; positive receipt on original, scripted negative X stored in alternative by offline helper",
+  "views": {
+    "alternate-22": {
+      "message": 22,
+      "swipe": 1,
+      "ui": {
+        "Location": "Valedorn Crown — Old Crown Catacombs",
+        "Coin": "3 Silver",
+        "Resources": "HP 80/80 (unhurt) · MP 72/72 · STA 100/100 · XP 0/100",
+        "Quests": "Clear the Old Crown Catacombs, Level 1 (active · Novice · reward 90 cp)",
+        "Active quests": "Clear the Old Crown Catacombs, Level 1 — Clear Old Crown Catacombs, level 1: not cleared yet"
+      },
+      "storedQuest": {
+        "status": "active",
+        "ready": false
+      },
+      "worldSHA256": "6a23c394b6595ff9039891fc37010fc0fdc3f969090d9d9554d4a0f5af280d05",
+      "eventsSHA256": "6ccad3f1469e0f86b180142a2e3af113abada6ed2f539b11d746d31098a7189e",
+      "noInactiveHud": true,
+      "activeStoredLineageMatches": true,
+      "identicalAfterFullReload": true
+    },
+    "restored-22": {
+      "message": 56,
+      "swipe": 0,
+      "ui": {
+        "Location": "Alderwatch, Valedorn Crown — Adventurers' Guild hall, Alderwatch",
+        "Coin": "1 Gold 2 Silver",
+        "Resources": "HP 43/105 (wounded) · MP 105/168 · STA 100/100 · XP 0/600",
+        "Quests": "—",
+        "Active quests": null
+      },
+      "storedQuest": {
+        "status": "completed",
+        "ready": true
+      },
+      "worldSHA256": "d9a958ff3311c1663d4b9346b0e491fbf52da1cfa8eb4c8538a6bfb179460a03",
+      "eventsSHA256": "d40a48d56a289d763e68ab79b67042bc2a659bef00c526861fad9635f9f9af49",
+      "noInactiveHud": true,
+      "activeStoredLineageMatches": true,
+      "identicalAfterFullReload": true
+    },
+    "alternate-56": {
+      "message": 56,
+      "swipe": 1,
+      "ui": {
+        "Location": "Valedorn Crown — Old Crown Catacombs › Warden's hall of the Old Crown Catacombs",
+        "Coin": "3 Silver",
+        "Resources": "HP 43/100 (wounded) · MP 105/168 · STA 100/100 · XP 50/500",
+        "Quests": "Clear the Old Crown Catacombs, Level 1 (active · Novice · reward 90 cp)",
+        "Active quests": "Clear the Old Crown Catacombs, Level 1 — Clear Old Crown Catacombs, level 1: cleared by him"
+      },
+      "storedQuest": {
+        "status": "active",
+        "ready": true
+      },
+      "worldSHA256": "3c8b397c66246055735a014381db1d80da00359a95130d0ee480d9052d1794b3",
+      "eventsSHA256": "f6f5e82bcd926ad17c674df46aa7aa86b827bd7e5c3a29bab875d04661f12fc8",
+      "noInactiveHud": true,
+      "activeStoredLineageMatches": true,
+      "identicalAfterFullReload": true
+    },
+    "restored-56": {
+      "message": 56,
+      "swipe": 0,
+      "ui": {
+        "Location": "Alderwatch, Valedorn Crown — Adventurers' Guild hall, Alderwatch",
+        "Coin": "1 Gold 2 Silver",
+        "Resources": "HP 43/105 (wounded) · MP 105/168 · STA 100/100 · XP 0/600",
+        "Quests": "—",
+        "Active quests": null
+      },
+      "storedQuest": {
+        "status": "completed",
+        "ready": true
+      },
+      "worldSHA256": "d9a958ff3311c1663d4b9346b0e491fbf52da1cfa8eb4c8538a6bfb179460a03",
+      "eventsSHA256": "d40a48d56a289d763e68ab79b67042bc2a659bef00c526861fad9635f9f9af49",
+      "noInactiveHud": true,
+      "activeStoredLineageMatches": true,
+      "identicalAfterFullReload": true
+    }
+  },
+  "stubGenerationCalls": 0
+}

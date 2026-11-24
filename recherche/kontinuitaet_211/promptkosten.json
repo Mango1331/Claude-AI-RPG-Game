@@ -1,0 +1,47 @@
+{
+  "plan": {
+    "n": 25,
+    "referenceInput": 261011,
+    "candidateInput": 264328,
+    "referenceEqualsPhysicalArray": 25,
+    "candidateEqualsPhysicalArray": 0,
+    "minDelta": 13,
+    "maxDelta": 189
+  },
+  "extract": {
+    "n": 24,
+    "referenceInput": 333907,
+    "candidateInput": 335562,
+    "referenceEqualsPhysicalArray": 24,
+    "candidateEqualsPhysicalArray": 0,
+    "minDelta": 68,
+    "maxDelta": 69
+  },
+  "plan_repair": {
+    "n": 1,
+    "referenceInput": 12797,
+    "candidateInput": 12986,
+    "referenceEqualsPhysicalArray": 1,
+    "candidateEqualsPhysicalArray": 0,
+    "minDelta": 189,
+    "maxDelta": 189
+  },
+  "extract_repair": {
+    "n": 3,
+    "referenceInput": 45527,
+    "candidateInput": 45734,
+    "referenceEqualsPhysicalArray": 3,
+    "candidateEqualsPhysicalArray": 0,
+    "minDelta": 69,
+    "maxDelta": 69
+  },
+  "narrator": {
+    "n": 24,
+    "referenceInput": 288118,
+    "candidateInput": 288197,
+    "referenceEqualsPhysicalArray": 24,
+    "candidateEqualsPhysicalArray": 0,
+    "minDelta": -7,
+    "maxDelta": 24
+  }
+}

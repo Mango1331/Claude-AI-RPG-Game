@@ -1,0 +1,144 @@
+{
+  "crossover": "686b07bad6294e564bd49d54d258f08e7061eb00",
+  "controls": {
+    "archivedC19": {
+      "createdForPlayer": [
+        "the bag"
+      ],
+      "holder": {
+        "entity": "npc.mother_wren"
+      },
+      "startingLocalNpcGoods": [
+        [
+          "Mother Wren's leather satchel",
+          "npc.mother_wren",
+          true
+        ]
+      ],
+      "arrivedAt": "loc.flooded_hollow_on_the_ridge_road"
+    },
+    "archivedB8": {
+      "createdForPlayer": [
+        "a couple of boards from Marta's woodpile"
+      ],
+      "startingLocalNpcGoods": [
+        [
+          "paper twist of dried dill",
+          "npc.marta",
+          false
+        ]
+      ],
+      "arrivedAt": "loc.ashbridge.drain_corner"
+    },
+    "sameRawOld": {
+      "createdForPlayer": [
+        "the bag"
+      ],
+      "holder": {
+        "entity": "npc.mother_wren"
+      },
+      "startingLocalNpcGoods": [
+        [
+          "Mother Wren's leather satchel",
+          "npc.mother_wren",
+          true
+        ]
+      ],
+      "arrivedAt": "loc.flooded_hollow_on_the_ridge_road"
+    },
+    "sameRawSecond": {
+      "createdForPlayer": [
+        "the bag"
+      ],
+      "holder": {
+        "entity": "npc.mother_wren"
+      },
+      "startingLocalNpcGoods": [
+        [
+          "Mother Wren's leather satchel",
+          "npc.mother_wren",
+          true
+        ]
+      ],
+      "arrivedAt": "loc.flooded_hollow_on_the_ridge_road"
+    },
+    "logicalIdOnly": {
+      "createdForPlayer": [],
+      "holder": {
+        "entity": "npc.mother_wren"
+      },
+      "startingLocalNpcGoods": [
+        [
+          "Mother Wren's leather satchel",
+          "npc.mother_wren",
+          true
+        ]
+      ],
+      "arrivedAt": "loc.flooded_hollow_on_the_ridge_road"
+    },
+    "sourcedMove": {
+      "createdForPlayer": [],
+      "holder": {
+        "entity": "pc"
+      },
+      "startingLocalNpcGoods": [
+        [
+          "Mother Wren's leather satchel",
+          "npc.mother_wren",
+          true
+        ]
+      ],
+      "arrivedAt": "loc.flooded_hollow_on_the_ridge_road"
+    },
+    "extractorIdentifiesSource": {
+      "createdForPlayer": [],
+      "holder": {
+        "entity": "pc"
+      },
+      "startingLocalNpcGoods": [
+        [
+          "Mother Wren's leather satchel",
+          "npc.mother_wren",
+          true
+        ]
+      ],
+      "arrivedAt": "loc.flooded_hollow_on_the_ridge_road"
+    }
+  },
+  "archive": {
+    "turns": 68,
+    "turnsWithParsedPlanner": 68,
+    "turnsWithoutPlannerOutput": [],
+    "missing": [],
+    "allTakes": [
+      {
+        "case": "B/16",
+        "object": "obj.t27.starter_arcane_staff"
+      },
+      {
+        "case": "C/19",
+        "object": {
+          "new": "the bag"
+        }
+      },
+      {
+        "case": "HB/5",
+        "object": "obj.t12.keg_of_salted_herring"
+      },
+      {
+        "case": "HB/8",
+        "object": {
+          "new": "a couple of boards from Marta's woodpile"
+        }
+      },
+      {
+        "case": "tasche/A/1",
+        "object": "obj.t40.mother_wrens_leather_satchel"
+      },
+      {
+        "case": "tasche/B/1",
+        "object": "obj.t40.mother_wrens_leather_satchel"
+      }
+    ]
+  }
+}

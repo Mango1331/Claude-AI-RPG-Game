@@ -11,7 +11,7 @@ import { importProfile, routeOf, describeImport, PRESET_TO_SETTINGS } from '../.
 import { probeModels, probeRows, probeBlocks, modelIds } from '../../tools/st_live/live/preflight.mjs';
 import { createInstance, seedProfile, removeKey, cardPng, CONTRACT_FILE, WORLD } from '../../tools/st_live/live/profile.mjs';
 import { preflight, options } from '../../tools/st_live/live/run_live.mjs';
-import { OPENROUTER_URL, OPENROUTER_MODEL, useOpenRouter } from '../../tools/st_live/live/openrouter.mjs';
+import { OPENROUTER_URL, OPENROUTER_MODEL, OPENROUTER_INCLUDE_BODY, useOpenRouter } from '../../tools/st_live/live/openrouter.mjs';
 import { treeStat, treeDiff } from '../../tools/st_live/live/lib.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -206,7 +206,7 @@ test('OpenRouter single-run ST seed uses the env key and repo contract without w
         assert.deepEqual([isolated.oai_settings.chat_completion_source,isolated.oai_settings.custom_url,
             isolated.oai_settings.custom_model,isolated.oai_settings.custom_include_body,
             isolated.oai_settings.reverse_proxy,isolated.selected_proxy.name],
-            ['custom',OPENROUTER_URL,OPENROUTER_MODEL,'','','None']);
+            ['custom',OPENROUTER_URL,OPENROUTER_MODEL,OPENROUTER_INCLUDE_BODY,'','None']);
         const keys=JSON.parse(fs.readFileSync(path.join(inst.user,'secrets.json'),'utf8'));
         assert.equal(keys.api_key_custom?.[0]?.value,'OPENROUTER-ENV-KEY');
         assert.equal(keys.api_key_openai,undefined);

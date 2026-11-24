@@ -284,6 +284,6 @@ export function npcContinuity(state, scan = '') {
                 && ['status', 'bindings', 'plans', 'residence'].includes(f.p)).slice(-4);
             const moment = history.filter(isMeaningful).at(-1);
             return { id: e.id, score: full ? 3 : short ? 2 : local ? 1 : 0,
-                text: `${label} [${e.id}] — NOT PRESENT; last witnessed at ${last?.place || 'unknown place'}${last ? ` (minute ${last.minute}, historical)` : ''}. ${facts.map(f => `${f.p}: ${f.o}`).join('; ')}${moment ? `; remembers: ${memoryText(state, moment)}` : ''}` };
+                text: `${label} [${e.id}] — NOT PRESENT; last witnessed at ${last?.place || 'unknown place'}${last ? ` (minute ${last.minute}, historical)` : ''}. ${facts.map(f => `${f.p}: ${f.o}`).join('; ')}${moment ? `; remembers: ${memoryText(state, moment, e.id)}` : ''}` };
         }).filter(x => x.score).sort((a, b) => b.score - a.score).slice(0, 3);
 }

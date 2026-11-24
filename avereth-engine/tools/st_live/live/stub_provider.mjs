@@ -15,7 +15,7 @@ export const PLAYER_SCRIPT = [
     { message: '*i look around for the front desk*', milestone: 'guild_registered', intent: 'find the front desk' },
 ];
 
-export async function startStub({ port = 0, key = null, delayMs = 50 } = {}) {
+export async function startStub({ port = 0, key = null, delayMs = 50, respond = null } = {}) {
     const calls = [];
     let playerTurn = 0;
     const server = http.createServer(async (req, res) => {
@@ -54,6 +54,16 @@ export async function startStub({ port = 0, key = null, delayMs = 50 } = {}) {
         } else {
             const said = lastUser.split('\n').filter(Boolean).at(-1) || '';
             text = `The world answers quietly. (Stub narrator: no model behind this reply; the player wrote: ${said.slice(0, 120)})`;
+        }
+        // Some isolated browser smokes supply deterministic responses and barriers for specific roles.
+        if (respond) {
+            try {
+                text = await respond({ role, messages: msgs, fallback: text });
+            } catch (error) {
+                res.writeHead(500, { 'content-type': 'application/json' });
+                res.end(JSON.stringify({ error: { message: String(error.message || error) } }));
+                return;
+            }
         }
         const steer = Object.fromEntries(['reasoning_effort', 'clear_thinking', 'thinking'].filter((k) => j[k] !== undefined).map((k) => [k, j[k]]));
         calls.push({ role, at: Date.now(), auth: req.headers.authorization ? (key && req.headers.authorization === `Bearer ${key}` ? 'key' : 'other') : 'none', model: j.model ?? null, stream: !!j.stream, max_tokens: j.max_tokens ?? null, steer });

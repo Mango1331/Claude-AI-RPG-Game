@@ -1,0 +1,43 @@
+{
+  "id": "natural_helper_progression",
+  "title": "Natural helpful adventurer — Guild quests, leveling, gear and NPCs",
+  "openRun": {
+    "targetLevel": 15,
+    "checkpointTurns": 100
+  },
+  "brief": "Play a genuinely new Level-1 Avereth campaign as a friendly, helpful adventurer. Become stronger by undertaking suitable Guild contracts, completing achievable quests, exploring, fighting when appropriate, gaining levels, allocating earned stats, improving skills, and actually acquiring and equipping affordable gear upgrades. Be sociable: talk with people naturally, ask about their situations, and whenever someone seems to have a problem, offer practical help if you reasonably can. Take voluntary detours and follow through on promises; return to earlier contacts when the story offers a sensible opportunity. Keep your own priorities and the other person's freedom to decline. Do not invent NPC needs, force every encounter into a quest, or make suicidal commitments. Sell surplus loot, compare equipment with current gear, buy worthwhile upgrades, rest when needed and use sensible tactics. Choose your own character class and starter skills, quests, routes and conversations; do not follow a scripted checklist or farm identical fights. Reaching Level 15 and accepting an offered E class is the long-term goal; the 100-input checkpoint is for observation, not an early finish. Death, serious blockers and runner limits have separate endings.",
+  "milestones": [
+    {
+      "id": "creation_complete",
+      "goal": "Create a genuine Level-1 character; choose your own base class and two legitimate starter skills. No forced AoE loadout.",
+      "maxTurns": 8
+    },
+    {
+      "id": "open_run_level",
+      "goal": "Play naturally while pursuing Guild contracts, useful NPC help, combat and exploration. Progress toward Engine-confirmed Level 15; regularly invest earned stat points, skill development, loot income, weapons, armour/focus and supplies. Help people when reasonably possible, especially when an NPC asks for assistance; follow through on accepted commitments without inventing successful results."
+    },
+    {
+      "id": "class_accepted",
+      "goal": "Once Level 15 is Engine-confirmed and immediate danger is resolved, inspect #class and the real E-class offers and choose an available evolution; postpone when necessary. No artificial farming or guaranteed combat."
+    }
+  ],
+  "focus": [
+    "Level progression: record actual level, XP, free stat allocation, class evolution, skills and development choices; do the gains and resource costs match the HUD and subsequent fights?",
+    "Guild quest progression: obtain legitimate contracts, meet their real conditions, turn in completed work and receive the recorded payouts; distinguish an accepted/ready/completed quest from merely narrated success.",
+    "Gear upgrades: on worthwhile town visits ask about usable weapons, armour or a mage focus, compare against currently equipped gear and affordability, sell surplus, buy and equip useful upgrades. Verify the final item ID, equipment slot and gold balance, but do not repeat unproductive shopping loops.",
+    "NPC conversations and practical help: whenever people need help, talk, offer assistance and pursue reasonable free favors or paid work alongside Guild adventures. Check whether promises, identities, locations, personal knowledge and later meetings remain consistent.",
+    "Natural travel, escort and inventory: observe companions, intermediate locations, gifts, loans, deliveries, resources and actual transfers in the HUD and next scene. Do not narrate an outcome yourself or deliberately force an error.",
+    "Player autonomy and recovery: honor explicit refusals and NPC choices, assess risks, seek rest and healing, and continue a believable adventurer's story instead of optimizing the test for one narrow failure."
+  ],
+  "limits": {
+    "maxTurns": 1000,
+    "maxMinutes": 1440,
+    "sameFailure": 3
+  },
+  "personas": [
+    "warm, sociable helper: greet people, listen carefully and actively volunteer to solve practical problems; also pursue attainable Guild contracts and better equipment",
+    "curious, cooperative adventurer: explore promising rumors, converse with locals and help when needed, without forgetting levels, gear and unfinished quests",
+    "pragmatic but compassionate adventurer: favor achievable quests, prepare and upgrade gear, take reasonable risks to help NPCs and keep promises"
+  ],
+  "exampleMilestone": "open_run_level"
+}

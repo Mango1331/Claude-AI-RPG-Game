@@ -1,29 +1,21 @@
-# Avereth Engine – abgeschlossener Meilenstein und nächste Etappe
+# Avereth Engine – Projektstand am Etappenabschluss
 
-**Meilensteinabschluss: 24. November 2026 · Astra-Ultra-Kontinuitätsrunde .210/.211 und natürlicher Langzeitvergleich.** Keine tagesaktuelle Testliste. Der Stand wird **erst am Ende einer Entwicklungs-, Test- oder Freigabeetappe** geändert; zwischenzeitliche Tests und Commits nur in ihren Originalordnern bzw. Berichten.
+**25. November 2026 · Entwicklungskandidat .212 nach Usertest 12.** **GO für unabhängigen GPT-Diffreview.**
 
-## Ergebnis der abgeschlossenen Etappe
+Die Etappe verbindet Revisionsbindung in SillyTavern 1.19, stabilere NPC-Kampfentscheidungen, sichere Runner-Abbrüche, die Bindung erster Gebote sowie gewöhnliche Szenenbewegung, PULSE, Questboard und zwei native Aktionen. Der Fachbericht unterscheidet Originalreplays, rekonstruierte Helferfälle, synthetische Gegenproben und Browser-Smokes. Die archivierte Bewertung zur natürlichen Reise-, NPC- und Gegenstandskontinuität bleibt für den damaligen Stand maßgeblich. Eine natürliche Vergleichskampagne mit .212 wurde in dieser Etappe nicht ausgeführt.
 
-- `.211` verbessert die **Rücknahme von Spielerentscheidungen**: Swipe, Edit, Regenerate, Folgeevents, HUD und Save/Reload wurden offline und in natürlichen ST-1.19-Läufen geprüft.
-- Vier natürliche OpenRouter-Kampagnen auf `.210`/`.211` ergaben **122 vollständig extrahierte Erzählzüge**. Einzelne NPC- und Ortsfolgen funktionieren; **allgemeine Reise-, NPC- und Gegenstandskontinuität bleibt NO-GO**. Eine globale Beschleunigung ist nicht belegt.
-- Ein **kleiner, separat geprüfter Besitzfix** verhindert die vorzeitige Übergabe eines bloß vorgezeigten Gegenstands (`8c88669b`). Der persönliche Test damit ist begrenzt freigegeben; **kein Produktmerge**.
-- Danach wurde ein **OpenRouter-Einzelrunner** für natürliche Level-, Quest-, Ausrüstungs- und hilfsbereite NPC-Spiele vorbereitet. Seine volle lokale Node-/ST-/Provider-Abnahme steht noch aus; dies ist kein freigegebener Produktbuild.
+[Fachbericht und Offline-Abnahme .212](recherche/AVERETH_212_FACH_UND_ABNAHME.md) · [Persönlicher Usertest 12](testrun_10b/user-20261125-005145-211/README.md) · [Helferserie und Quellenstand](testrun_10b/openrouter-helper-laufserie-20261124/README.md) · [Natürlicher .210/.211-Langzeit-Gegenreview](recherche/AVERETH_211_GPT_GEGENREVIEW_NATUERLICHER_LANGZEITTEST_2026-11-24.md).
 
-[Unabhängiger GPT-Gegenreview der Langzeitserie](recherche/AVERETH_211_GPT_GEGENREVIEW_NATUERLICHER_LANGZEITTEST_2026-11-24.md) · [Astra-Fachbericht](recherche/AVERETH_211_NATUERLICHER_LANGZEITVERGLEICH.md) · [Originale der vier Kampagnen](testrun_10b/openrouter-20261124-langzeit-211/README.md).
-
-## Relevante Code-Referenzen
-
-| Zweck | Fixierter Ausgangspunkt / derzeitiger Arbeitsstand |
+| Zweck | Git-Referenz |
 |---|---|
-| **Vor den zwei offenen Folgeänderungen:** `.211` nach Astra-Ultra-Kontinuitätsrunde | `experiment/211-scene-continuity` · [`c2ddc780`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c2ddc780d4c57b219f9cd7a1d134efceca7e459d) |
-| **Erste noch nicht allgemein übernommene Änderung:** Besitz-/Vorzeige-Fix | [`8c88669b`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/8c88669b82420f7656687f5d40e13ec83cbcd732), im aktuellen Entwicklungszweig enthalten |
-| **Zweite offene Änderung und aktueller Arbeitszweig:** OpenRouter-Einzelrunner | `experiment/211-openrouter-helper-single-runner` · [`a1361d73`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/a1361d734e30b5831db1b164222d17b1a94b74a6) · [Runner-Anleitung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/a1361d734e30b5831db1b164222d17b1a94b74a6/avereth-engine/docs/LIVE_RUNNER.md) |
-| **Historische eingefrorene Produktlinie:** `.200` | `claude/c-planner-prototype-2026-10-02-gpt-c666` · [`0cd14806`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b). Bis zu einer ausdrücklich sicheren Archivierung nicht löschen. |
+| .212, bestehender Entwicklungszweig | `experiment/211-openrouter-helper-single-runner` · [`7cf33bc0`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/7cf33bc08b050e1445ce8ee859c4d54f4b6000fc) |
+| .211, Ausgangspunkt des Neuaufbaus | [`1d3171d7`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/1d3171d756f828ab8e90db9111617d3234bdbf9c) · [Produktdiff zu .212](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/1d3171d756f828ab8e90db9111617d3234bdbf9c...7cf33bc08b050e1445ce8ee859c4d54f4b6000fc) |
+| Eingefrorene Produktlinie .200 | `claude/c-planner-prototype-2026-10-02-gpt-c666` · [`0cd14806`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b) |
 
-`main` ist die **separate Dokumentationslinie**, nicht automatisch derselbe Commit wie eine Enginefassung. Ein Commit in dieser Tabelle ist ein **Meilenstein-Snapshot** und **kein Versprechen**, dass der Branch bis zum nächsten Etappenabschluss nicht weiterentwickelt wurde. Vor jeder Arbeit Remote-HEAD neu kontrollieren.
+`main` führt die übergeordneten Dokumente und Originalarchive separat. Die Tabelle fixiert den Stand der jeweiligen Etappe. Vor neuer Arbeit die tatsächlichen Remote-Refs prüfen.
 
 ## Nächste Etappe
 
-**Natürliche Einzel-/Batchtests mit dem OpenRouter-Runner und danach eine gebündelte Auswertung.** Der Spieler entwickelt Level, erledigt Gildenaufträge, verbessert Gear und spricht mit NPCs bzw. hilft bei Problemen. Neue Originale, Messungen und Gegenreviews werden pro Run archiviert; diese Seite bleibt während der Etappe unverändert.
+Der unabhängige GPT-Diffreview bewertet den Entwicklungsdiff einschließlich der offenen Evidenz zu natürlicher Spielqualität. Entscheidungen zu natürlichen Helferläufen, Usertest 13 und einer Produktübernahme folgen separat.
 
-[Zentrale Testübersicht](testrun_10b/README.md) · [Forschungsberichte](recherche/README.md) · [Branchbereinigung und künftig nur bestehende Arbeitsbranches](05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md) · [Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Produkt-Kanon .200](02_DESIGN_KANON.md).
+[Etappenindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Forschungsindex](recherche/README.md) · [Testarchive](testrun_10b/README.md) · [Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Produkt-Kanon .200](02_DESIGN_KANON.md).

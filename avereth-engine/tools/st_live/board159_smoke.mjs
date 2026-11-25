@@ -48,10 +48,14 @@ export async function board159Smoke({page,send,idle,calls,worldTimings,driver,on
  mode='success';n=0;await seed();const start=calls.length;await send(success);await idle();const good=await snapshot();
  const checks={originalGroupHuntBooksFive:good.quests===5&&n===1&&good.coin===30&&!good.errors.length &&
    calls.slice(start).filter(c=>c.purpose==='board').length===1};
- mode='failure';n=0;await seed();await send(failure);await idle();const bad=await snapshot();
- checks.invalidBoardRemainsUnbooked=bad.quests===0&&n===1&&bad.coin===30&&!bad.errors.length;
- checks.noInventedSchedule=!bad.facts.some(f=>f.p==='post_schedule')&&bad.rejected?.some(x=>x.rule==='board_availability');
- checks.extractionCompleted=bad.status==='applied';
+ mode='failure';n=0;await seed();const failureAt=calls.length;await send(failure);await idle();const bad=await snapshot();
+ const failedChat=await driver().chat();
+ const failedRead=failedChat.findLast(m=>m.is_user)?.extra?.avereth;
+ const failureCalls=calls.slice(failureAt).map(c=>c.purpose);
+ checks.invalidBoardRemainsUnbooked=bad.quests===0&&n===2&&bad.coin===30&&!bad.errors.length&&!!failedRead?.board?.failed;
+ checks.noInventedSchedule=!bad.facts.some(f=>f.p==='post_schedule');
+ checks.technicalPanelWithoutModelNarration=failedChat.at(-1)?.mes.includes('The board could not be confirmed')
+   && JSON.stringify(failureCalls)===JSON.stringify(['plan','board','board']);
  checks.saved=await driver().verifySaved(await driver().chat(),{complete:true});
  const publication=()=>page.evaluate(async()=>{
   const c=SillyTavern.getContext(), {foldChat,rec}=await import('/scripts/extensions/third-party/avereth-engine/src/host.js');

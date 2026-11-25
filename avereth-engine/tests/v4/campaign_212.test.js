@@ -44,6 +44,16 @@ test('a single offline campaign connects creation, guild hunts, combat, recovery
     assert.equal(game.state().quests[quest.id].status,'active');
     const habitat = game.state().quests[quest.id].hunt.at;
 
+    // Reconstructed from helper run 3: a READY report cannot supply its own evidence.
+    await say(game,'I ask whether any proof has been received for the giant rat contract.');
+    const invalidReady = await game.reply('Maren notes the contract is ready.',{scene:'here',expected:{},deltas:[
+        {seq:1,type:'quest.ready',quest:quest.id,note:'Maren notes the contract is ready',alternative:null,depends_on:['1']},
+    ]});
+    assert.equal(game.state().quests[quest.id].status,'active');
+    assert.ok(invalidReady.record.rejected.some(r=>r.rule==='quest_dependency'));
+    assert.equal(game.calls.at(-1).purpose,'extract_repair');
+    assert.match(game.calls.at(-1).messages.at(-1).content,/cannot be its own evidence/);
+
     await walk(game,habitat,{text:'I walk to the west pasture.',prose:'A shepherd waves. Alaric reaches the west pasture and spots a giant rat.',
         deltas:[{seq:2,type:'creature.new',scene:habitat,ref:'pasture rat',species:'giant rat',anchor:'rat',
             desc:['a giant rat'],count:1,present:true,band:'SHORT',threat:true}]});

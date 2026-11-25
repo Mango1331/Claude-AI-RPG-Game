@@ -854,6 +854,9 @@ export function npcDecide(ctx, npcId) {
     // intent (hold / parley / take cover): Testrun 2 froze a trapper for three rounds under fire because the narrator
     // kept echoing the engine's "holds" as his next intent.
     const ownLast = enc.log.map((r) => r.actor).lastIndexOf(npcId);
+    // Ruleset 2's sidestep expires on the next turn and leaves terrain cover unchanged.
+    // One defensive turn gives the opponent a chance to react; under continued fire, close instead.
+    const canSeekCover = me.current.cover === 'none' && enc.log[ownLast]?.kind !== 'sidestep';
     if (PASSIVE_INTENTS.has(intent) && enc.log.slice(ownLast + 1).some(attackOn)) {
         delete enc.intents[npcId];
         intent = undefined;
@@ -869,7 +872,7 @@ export function npcDecide(ctx, npcId) {
         ? enc.trigger?.actor !== npcId && !opensViolence({ sapient: true, attitude, harmed, hostileRole: outlaw() }).ok
         : !opensViolence({ sapient: true, temperament: temper, attitude, harmed }).ok;
     if (!intent && me.fixed.sapient && holdsBack) {
-        return me.current.cover === 'none' && band !== 'ENGAGED' ? { kind: 'cover', why: 'not hostile, not yet harmed: seeks cover' } : { kind: 'hold', why: 'not hostile, not yet harmed' };
+        return canSeekCover && band !== 'ENGAGED' ? { kind: 'cover', why: 'not hostile, not yet harmed: seeks cover' } : { kind: 'hold', why: 'not hostile, not yet harmed' };
     }
     // Patch 4 (Prototype C): one that fled on its own last Turn goes on fleeing until it is out of the fight (live:
     // a wolf that broke for the trees turned at LONG and came back, its flight one step long); held in melee or
@@ -890,7 +893,7 @@ export function npcDecide(ctx, npcId) {
         if (inRange) return { kind: 'attack' };
         const lastShot = [...enc.log].reverse().find((r) => r.actor === 'pc' && r.kind === 'attack');
         const shot = lastShot && (lastShot.strikes || []).some((k) => k.target === npcId);
-        if (me.fixed.sapient && shot && me.current.cover === 'none') return { kind: 'cover', why: 'shot from range, out of its reach: takes cover' };
+        if (me.fixed.sapient && shot && canSeekCover) return { kind: 'cover', why: 'shot from range, out of its reach: takes cover' };
         return { kind: 'close_and_attack' };
     }
     if (temper === 'skittish') {

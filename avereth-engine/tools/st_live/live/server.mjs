@@ -45,6 +45,7 @@ export async function startServer({ stDir, inst, port, logFile, timedFile, timeo
     let tail = '';
     let partial = { out: '', err: '' };
     let exited = null;
+    let listening = false;
     let inBody = false; // inside a logged request or reply (its words are no server error)
     const take = (which) => (d) => {
         const t = Date.now();
@@ -56,6 +57,7 @@ export async function startServer({ stDir, inst, port, logFile, timedFile, timeo
         for (const raw of lines) {
             const line = raw.replace(ANSI, '');
             timed.write(`[${new Date(t).toISOString().slice(11, 23)}] ${line}\n`);
+            if (which === 'out' && line.startsWith('SillyTavern is listening on') && line.includes(`IPv4: 127.0.0.1:${port}`)) listening = true;
             const m = MARKER.exec(line);
             if (m) { markers.push({ kind: m[1], at: t }); inBody = !/}\s*$/.test(line); continue; }
             if (inBody) { if (/^}\s*$/.test(line)) inBody = false; continue; }
@@ -70,10 +72,13 @@ export async function startServer({ stDir, inst, port, logFile, timedFile, timeo
     process.on('exit', reap);
     const url = `http://127.0.0.1:${port}/`;
     const t0 = Date.now();
-    while (Date.now() - t0 < timeoutMs) {
-        if (exited) break;
-        const code = await get(url);
-        if (code >= 200 && code < 500) break;
+    let ready = false;
+    while (!exited && Date.now() - t0 < timeoutMs) {
+        // Another process can claim the port between freePort() and the child binding it.
+        if (listening) {
+            const code = await get(url);
+            if (code >= 200 && code < 500) { ready = true; break; }
+        }
         await sleep(500);
     }
     const stop = async () => {
@@ -86,7 +91,7 @@ export async function startServer({ stDir, inst, port, logFile, timedFile, timeo
         await new Promise((r) => log.end(r));
         await new Promise((r) => timed.end(r));
     };
-    if (exited || Date.now() - t0 >= timeoutMs) {
+    if (exited || !ready) {
         await stop();
         throw new Error(`SillyTavern did not start (${exited ? `exit ${exited.code}` : 'timeout'}): ${tail.replace(ANSI, '').slice(-1500)}`);
     }

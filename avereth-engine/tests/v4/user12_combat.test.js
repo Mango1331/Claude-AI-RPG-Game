@@ -28,3 +28,13 @@ test('User12 bandits try a new action after the recorded sidestep', () => {
         }
     }
 });
+
+test('new bandit profiles use an area band and stable individual variation', async () => {
+    const {encounterHumanLevel} = await import('../../src/npcgen.js');
+    const {npcTemplate} = await import('../../src/content.js');
+    const template = npcTemplate(content,2,'bandit');
+    const rolls = Array.from({length:50},(_,i) => encounterHumanLevel(template,[4,7],`45|loc.road|${i}`));
+    assert.deepEqual(new Set(rolls),new Set([4,5,6]));
+    assert.equal(encounterHumanLevel(template,[4,7],'45|loc.road|0'),rolls[0]);
+    assert.equal(encounterHumanLevel(template,[8,12],'45|loc.road|0'),6);
+});

@@ -46,6 +46,15 @@ export function scaleCreature(anchor, level, type, content, variation = null) {
 }
 
 /** Level for a newly instantiated creature without an established Level (Content #7). */
+/** A new outdoor threat's fixed level comes from its role and local world danger. */
+export function encounterHumanLevel(template, areaLevels, key) {
+    const band = template?.level;
+    if (!band || !Number.isInteger(band.min) || !Number.isInteger(band.max) || band.max < band.min) return null;
+    const low = Math.min(band.max,Math.max(band.min,areaLevels?.[0] ?? band.min));
+    const high = Math.max(low,Math.min(band.max,areaLevels?.[1] ?? band.max));
+    return low + parseInt(hash32(`${key}|encounter-human-level`),16) % (high - low + 1);
+}
+
 export function chooseCreatureLevel(areaContext, content, dice) {
     const band = content.monsters.level_selection.find((b) => b.context === areaContext)
         || content.monsters.level_selection.find((b) => b.context === 'unknown');

@@ -1,4 +1,5 @@
 import { campInspection, campObjects, vacantSite, atObserver, visibleSupply, uncoveredSupply } from './camp.js';
+import { encounterHumanLevel } from '../npcgen.js';
 import { floorRefusal, namedLevel, goesFrom, otherEnd } from './dungeon.js';
 import { placeParent, placeIdentity, placeKey, samePlace } from './place_refs.js';
 import { resolvePlaceRef, usualPersonNamed } from './place_book.js';
@@ -36,7 +37,7 @@ import { mayOpenFight, mayTake, attackCommitted } from './envelope.js';
 import { soughtMatch, CAUSE_SHORT } from './pulse.js';
 import {
     PLACE_PARENTS, HALL_NAME, lineage, guildDestination, hallOf, hallOfSettlement, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind, SERVICE_ROLE, collectivePerson,
-    progressKey, sameKinds, kindOf, populationAt, validEncounterLevels, realmOf,
+    progressKey, sameKinds, kindOf, populationAt, validEncounterLevels, realmOf, encounterArea,
 } from './domain.js';
 import { creatureContract } from './population.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
@@ -49,7 +50,7 @@ import { complexOf, dungeonOf, trueDungeonOf, classified, rankText, linkBetween,
 import { freeObjectId, itemTraits, useOf, itemProfile, priceAudit, gearRetailPrice, gearOfferProfile, gearOfferName, gearOfferWhy, openEquipmentStock } from './items.js';
 import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity.js';
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
-import { anchorFor, speciesAnchor, templateFor, rulesetOf } from '../content.js';
+import { anchorFor, speciesAnchor, templateFor, npcTemplate, rulesetOf } from '../content.js';
 import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotMet, resolved, slotForNew, resolvedSlotNamed, slotEntityEvents, establishEvents, syncEvents, insideOf } from './living.js';
 import { refusedCreatureInThread, unbookedDungeonThreat } from './run9_evidence.js';
 import { knownAt } from './catalog.js';
@@ -951,6 +952,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // Patch 9A.1: the weapon a new person holds ready (person.new armed), as their fact; their sheet takes it when it is
         // first built (src/engine.js rulesetTwoPerson). A legacy campaign keeps no such fact
         if (kind === 'npc' && created.length) armedFact(created[0], d.armed);
+        if (kind === 'npc' && pulse?.open && pulse.kind === 'danger' && d.present !== false && rulesetOf(s) >= 2) {
+            const area = encounterArea(s,s.scene.at);
+            for (const id of created) {
+                const e = s.entities[id];
+                const template = npcTemplate(content,2,e.template);
+                if (template?.id !== 'bandit' && !(d.threat && template?.training === 'trained')) continue;
+                const level = encounterHumanLevel(template,area?.encounter_levels,`${s.rng.seed}|${s.scene.at}|${id}`);
+                if (!e.level && level) emit({t:'entity.updated',d:{id,set:{level}}});
+            }
+        }
         // an individual the story establishes as bigger or stronger than ordinary ones of its kind (creature.new stronger):
         // the individual variation of Content #7, fixed with its profile (live run 30.09.2026 22:41: the big boar had the
         // numbers of a common one); the name it goes by decides nothing

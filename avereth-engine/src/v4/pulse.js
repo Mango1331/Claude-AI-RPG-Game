@@ -339,7 +339,24 @@ const KIND_TEXT = {
     obstacle: 'an OBSTACLE: the way or the weather turns against him (a washed-out ford, a fallen tree, a storm); no foe',
     trace: 'a TRACE or FIND: tracks, remains, a sign of something nearby, a thing lying here; nothing is taken, followed or entered unless he chooses',
     strange: 'something STRANGE: an odd light, sound, magic or wonder; it has no effect on him unless he acts on it',
-    danger: 'DANGER: ONE group of this land\'s people or creatures turns on him or bars his way with hostile intent; its strength is the land\'s (AREA LEVELS, populations), never his; nobody else joins it',
+    danger: 'DANGER: ONE group of this land\'s people or creatures turns on him or bars his way with hostile intent; its strength follows the area, roles and populations; nobody else joins it. Show visible numbers, weapons, discipline or other signs of danger early enough for a choice between dealing, avoiding or fighting',
+};
+// Use the existing window's roll to choose a visible prompt cue. No extra draw or world effect.
+const CUES = {
+    trace: [
+        'A recent change with a concrete implication for a person or route',
+        'A visible abandoned object or landmark with an immediate useful choice',
+        'A sign of an event that can be understood from here and freely passed by',
+    ],
+    obstacle: [
+        'An unstable crossing with a visible detour or a safe turn back',
+        'A temporary route disruption caused by terrain or local activity',
+        'A loss of visibility or footing that offers a clear way to continue safely at a cost',
+    ],
+};
+const eventCue = d => {
+    const cues = CUES[d.kind];
+    return cues ? ` Consider ${cues[Math.round(d.roll * 100) % cues.length].toLowerCase()}. Avoid repeating a recent incident. Give the player a concrete choice and allow ignoring a clue when the route is clear.` : '';
 };
 const FRAME_TEXT = { wild: 'out in the land', street: 'in the street', inside: 'indoors' };
 // package B: the kinds inside a Dungeon (danger is its wandering minion, a meeting one of the companies inside)
@@ -361,7 +378,7 @@ function lineFor(s, content, d, exposure, held, later) {
         // the held and quiet lines are Patch 5's own (ROAD AHEAD is this frame); only the open one is PULSE's
         if (held.length) return `THE ROAD — ${held.map((id) => sceneHandle(s, content, id)).join(', ')} ${held.length > 1 ? 'are' : 'is'} still here as he goes on toward ${to}: the story shows how they take it; nothing new meets him on this leg.`;
         if (!d?.open) return `THE ROAD — this leg toward ${to} is uneventful: no ambush, attack or obstacle meets him on it. Scenery, weather, far-off animals and harmless travellers are atmosphere; carry the travel forward until he arrives or the day's travel ends, and leave every choice about it to him.`;
-        return `THE ROAD — PULSE (the engine's; ${d.phase}): on this leg toward ${to} ONE concrete thing happens: ${KIND_TEXT[d.kind]}. It is a real stop short of ${to} (the one exception to carrying the way forward); what he does about it is his decision. If nothing of this kind can fit what he does, nothing happens.`;
+        return `THE ROAD — PULSE (the engine's; ${d.phase}): on this leg toward ${to} ONE concrete thing happens: ${KIND_TEXT[d.kind]}. It is a real stop short of ${to} (the one exception to carrying the way forward); what he does about it is his decision. If nothing of this kind can fit what he does, nothing happens.${eventCue(d)}`;
     }
     if (held.length) return `STILL HERE (PULSE) — ${held.map((id) => sceneHandle(s, content, id)).join(', ')}: the threat is still present; no new foe is brought into this scene while it is.`;
     if (!d?.open) return null;
@@ -378,12 +395,12 @@ function lineFor(s, content, d, exposure, held, later) {
     const what = dungeon && DUNGEON_TEXT[d.kind] ? `${DUNGEON_TEXT[d.kind](d)}. No foe: the level's foes come only as the engine adds them` : KIND_TEXT[d.kind];
     if (exposure.type === 'pause') {
         const at = later ? ` (at the end of step ${exposure.pause.seq}, before his next steps)` : '';
-        return `PULSE (the engine's; ${where}) — before he settles or as his ${exposure.pause.kind} ends${at}, ONE thing happens that he notices: ${what}. The ${exposure.pause.kind} itself is as booked.`;
+        return `PULSE (the engine's; ${where}) — before he settles or as his ${exposure.pause.kind} ends${at}, ONE thing happens that he notices: ${what}. The ${exposure.pause.kind} itself is as booked.${eventCue(d)}`;
     }
     // package B: the wandering minion comes to him here (not ahead where he arrives); the one encounter of this turn
     if (dungeon && d.wander) return `PULSE (the engine's; ${where}) — DANGER: ${d.wander.who} of this level ${d.wander.many ? 'come' : 'comes'} to him here, where he is (the engine's encounter for this reply; exactly these, nothing else, and no other foe). What he does about it is his decision.`;
-    if (dungeon) return `PULSE (the engine's; ${where}) — ONE thing happens around him that he notices: ${what}. It moves him nowhere and binds him to nothing; what he does about it is his decision.`;
-    return `PULSE (the engine's; ${where}) — ONE concrete thing happens around him that he notices: ${KIND_TEXT[d.kind]}. It takes nothing of his, moves him nowhere and binds him to nothing; what he does about it is his decision. If nothing of this kind can fit the scene, nothing happens.`;
+    if (dungeon) return `PULSE (the engine's; ${where}) — ONE thing happens around him that he notices: ${what}. It moves him nowhere and binds him to nothing; what he does about it is his decision.${eventCue(d)}`;
+    return `PULSE (the engine's; ${where}) — ONE concrete thing happens around him that he notices: ${KIND_TEXT[d.kind]}. It takes nothing of his, moves him nowhere and binds him to nothing; what he does about it is his decision. If nothing of this kind can fit the scene, nothing happens.${eventCue(d)}`;
 }
 
 /** The dynamic exclusions after the handlers (the resolutions of this message). */

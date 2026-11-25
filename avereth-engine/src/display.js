@@ -8,7 +8,7 @@ export const NOT_ARRIVED_RULES = new Set(['no_go', 'passage', 'place', 'combat']
 // coin, items, quests, XP, rest). host.js shows it through SillyTavern's extra.display_text: display only; the prompt
 // keeps the plain reply (the model already gets these numbers in the engine block, and a numbers block in the chat
 // history would invite it to write its own).
-import { playerLabel } from './knowledge.js';
+import { playerLabel, truth } from './knowledge.js';
 import { deriveCharacter } from './derived.js';
 import { formatCoin } from './economy.js';
 import { bandIndex, itemLabel } from './util.js';
@@ -264,7 +264,9 @@ export function worldPanel(state, content, reply = {}) {
             const pos = reply.state.scene.positions?.[id];
             const p = e.profile;
             const hp = p ? ` · HP ${p.hp ?? p.max_hp}/${p.max_hp}` : '';
-            lines.push(sys(`ACTIVE SCENE — ${sceneHandle(reply.state, content, id)}${hp} · ${pos.band}${pos.cover && pos.cover !== 'none' ? ` · ${pos.cover} cover` : ''}`));
+            const armed = e.kind === 'npc' ? truth(reply.state,id,'armed')[0]?.o : null;
+            const threat = e.kind === 'npc' && visible.includes(id) ? ` · hostile${armed ? ', visibly armed with '+armed : ''}` : '';
+            lines.push(sys(`ACTIVE SCENE — ${sceneHandle(reply.state, content, id)}${hp}${threat} · ${pos.band}${pos.cover && pos.cover !== 'none' ? ` · ${pos.cover} cover` : ''}`));
         }
     }
     if (o?.kind === 'v4') lines.push(...commandLines(o), ...paymentCardLines(reply.state || state, content));

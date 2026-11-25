@@ -119,6 +119,22 @@ test('same unmodified arrive protocol, local room reached without a positive P m
     }
 });
 
+test('reconstructed helper 5 T40: an explicit request to be carried establishes an actual ordinary arrival', () => {
+    const from = b3.start.scene.at;
+    for (const [input, name] of [['Would you carry me to the drying shed bunk?', 'drying shed bunk'], ['Trag mich bitte zur Liege.', 'Liege']]) {
+        const room = {new:{name,kind:'interior',parent:from}};
+        const turn = {input, frame:'stay', commands:[], i:23, prose:`Dann carried Alaric to the ${name}.`,
+            report:{scene:room,expected:{},deltas:[{seq:1,type:'arrive',at:room,with:[dann],forced_by:null}]}};
+        const reached = play(b3.start,turn).state;
+        assert.equal(reached.places[reached.scene.at].name,name);
+        assert.ok(reached.scene.present.includes(dann));
+        for (const prose of [`Dann said, "I can carry Alaric to the ${name}."`, `Dann went to the ${name} alone.`])
+            assert.equal(play(b3.start,{...turn,prose}).state.scene.at,from);
+        assert.equal(play(b3.start,{...turn,input:`${input} I stay here.`}).state.scene.at,from);
+        assert.equal(play(b3.start,{...turn,report:{...turn.report,deltas:[{...turn.report.deltas[0],with:['npc.absent']}]}}).state.scene.at,from);
+    }
+});
+
 test('unusual polite requests including German use the same bounded P intent and original arrival', () => {
     for (const input of ['Could I tag along to the main track?', 'Would you mind showing me the way to the main track in person?', 'Darf ich bis zum main track bei dir bleiben?']) {
         const {state} = social((t,d)=>{t.input=input;t.frame={choice:input,to:'main track',with:dann};delete d.after;});

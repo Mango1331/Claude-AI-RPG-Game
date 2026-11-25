@@ -45,7 +45,7 @@ export function ordinaryChoice(s, input) {
     if (room && has(lower,room) && (/^(?:just |i(?:'ll| will) take |i choose |i go to |to )/i.test(lower) || /\b(?:go|walk|head|take me|show me)\b/.test(lower)))
         return {choice,to:room,lodging:true};
     const target = lower.match(assisted)?.[1] || lower.match(/^trag mich (?:bitte )?(?:zur|zum|ins) (.+?)[.!?]*$/i)?.[1];
-    if (target) return {choice,to:target.replace(/^(?:my |the )/i,'')};
+    if (target) return {choice,to:target.replace(/^(?:my |the )/i,''),assisted:true};
     if (follows.test(choice)) return {choice,companion:true};
     if (localMotion.test(choice)) return {choice,to:localFurnishing.exec(choice)?.[0],within:true};
     return null;
@@ -53,7 +53,10 @@ export function ordinaryChoice(s, input) {
 
 export function reportedContinuation(s, content, answer, prose) {
     const o = s.last?.outcome;
-    const frame = o?.auth?.continuation ?? ordinaryChoice(s, s.last?.input);
+    const boundary = o?.auth?.continuation;
+    const choice = boundary && typeof boundary === 'object' ? null : ordinaryChoice(s, s.last?.input);
+    // A direct request for transport supplies its own destination and cannot be reduced to a planner's generic stay.
+    const frame = boundary === 'stay' && !choice?.assisted ? boundary : choice ?? boundary;
     const arrivals = (answer.deltas || []).filter(d => d.type === 'arrive');
     if (arrivals.length !== 1 || !o?.auth?.c || o.auth.go || o.auth.gos?.length || o.auth.roam || o.interp_failed || o.camp ||
         !frame || frame === 'stay' || s.mode !== 'story' || s.encounter || s.pending_combat?.length || s.scene.threats?.length ||
@@ -71,8 +74,9 @@ export function reportedContinuation(s, content, answer, prose) {
     // X identifies the stop. A literal quote about a different scene cannot establish presence at that stop.
     const placeWords = normText(label || '').split(/[^\p{L}\p{N}]+/u).filter(w => w.length >= 3 && !['the', 'and', 'above', 'below', 'behind', 'near'].includes(w));
     const storyClauses = String(prose).split(/[.!?…\n]+/);
-    const clauses = [d.evidence, ...storyClauses.filter(c => has(c, label) && movementEvidence(c))].filter(Boolean);
     const atStop = /\b(?:walked|reached|arrived|entered|returned|stood|stepped|crossed|emerged|carried|led|brought|settled|lay|sat|leaving)\b/i;
+    const clauses = [d.evidence, ...storyClauses.filter(c => has(c, label)
+        && (movementEvidence(c) || frame.assisted && /\b(?:carried|led|brought)\b/i.test(c)))].filter(Boolean);
     const landed = clauses.find(clause => atStop.test(clause) && placeWords.some(w => has(clause, w))
         && narratedPresence(prose, clause, names).ok);
     if (!landed) {

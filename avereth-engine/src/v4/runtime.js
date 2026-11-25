@@ -465,6 +465,12 @@ async function executeMappedTurn(chat,content,{u,before,m,guarded={dropped:[]},i
         msg: u, commands: m.commands, dropped: guarded.dropped.filter((x) => !MECH_TYPES.includes(x.command?.type)), board, c: true,
         interp: { travel_frame:plan?.travel_frame, version: PLANNER_VERSION, ms: pl.ms, source: pl.repaired ? 'json_repaired' : 'json', failed: false, error: null },
     });
+    const pureBoardFailure = board?.failed && m.commands.length === 1 && m.commands[0].type === 'board.read'
+        && t.outcome?.resolutions?.[0]?.reason === 'generator_failed';
+    if (pureBoardFailure) t.command = {
+        panels:['[SYSTEM // QUESTBOARD]\nThe board could not be confirmed. You can read it again now.'],
+        llm:null,
+    };
     const growth = await withGrowth(t, content, llm, previous);
     return {
         v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: irRec, plan, interp,
@@ -677,10 +683,6 @@ export async function generateBoard(llm, state, content, need) {
         const n = p.listings?.length;
         const short = need.c && p.listings && n < (need.minimum ?? need.missing) ? [`${n} valid listing${n === 1 ? '' : 's'} of the ${need.missing} asked for${p.refused.length ? `; refused: ${p.refused.map((r) => `"${r.title}" (${r.why})`).join(', ')}` : ''}; write all ${need.missing}`] : null;
         if (p.listings && p.listings.length && !short) return { ...need, listings: p.listings, refused: p.refused, ms, calls, version: BOARD_VERSION };
-        if (need.minimum && Array.isArray(p.listings)) {
-            last = {errors:[`Only ${n} valid listings; read again for a new board.`]};
-            break;
-        }
         if (!attempt && !need.minimum) repair = boardSlotRepair(a.content, p, state, content, need);
         last = { answer: a.content, hints: boardRepairGuidance(a.content, content, need, false, p.refused), errors: [...(short || (p.errors.length ? p.errors : ['no valid listing'])), ...(!short ? (p.refused || []).map(r => `${r.title}: ${r.why}`) : [])].slice(0, 12) };
     }

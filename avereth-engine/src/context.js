@@ -786,6 +786,10 @@ export function buildContext(state, content, opts = {}) {
         add('gear_market', `${gearMarketText(content, true)}${offers.length ? `\nRECORDED GOODS: ${offers.join('; ')}` : ''}`, 0);
     }
 
+    if (v4 && /\b(?:skill stones?|passive stones?|primers?)\b/i.test(input || '')) {
+        add('learning_sources', 'LEARNING SOURCES — Guild primers are manuals for their named techniques. Teachers teach by practice. Active Skill Stones are distinct, uncommon finds from specific sources. A rumour or ordinary shop does not establish one in stock. Passive Stones are exceptionally rare and use their own progression rules. Use established offers and finds as recorded.', 1);
+    }
+
     // hard facts about the current place, present people and anything named this turn are always shown (binding)
     const scan = normText(queryText);
     const pinned = currentFacts(state, (f) => f.hard && f.visibility !== 'secret').filter((f) => f.s === sceneNode || f.s === state.scene.location

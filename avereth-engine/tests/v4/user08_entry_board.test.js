@@ -170,7 +170,7 @@ test('an ambiguous species is never auto-corrected; publish only independently v
         let attempts = 0;
         const result = await generateBoard(async () => ++attempts === 1 ? JSON.stringify({listings}) : 'invalid', s, content, need);
         const ambiguousBoard = problem === 'duplicate title';
-        assert.equal(attempts, ambiguousBoard ? 2 : 1, problem);
+        assert.equal(attempts, ambiguousBoard || problem === 'second fault' ? 2 : 1, problem);
         const expected = ambiguousBoard || problem === 'second fault' ? 0 : 4;
         assert.equal(result.listings.length, expected, problem);
         assert.ok(result.listings.every(l => l.title !== hunt.title),problem);

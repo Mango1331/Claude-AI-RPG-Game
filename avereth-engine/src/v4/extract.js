@@ -216,7 +216,7 @@ export function extractorUser({ catalog, actions, player = null, expectedKeys, v
         '',
         'TRAVEL CHRONOLOGY: expected.arrived answers whether the final chosen destination was reached. If the reply actually stops at an intermediate place on an authorized journey, report its existing arrive BEFORE local events there, even if final arrived is false. Scene labels alone do not move anyone. Annotate events before the final arrival with their earlier scene; never invent travel for a question or WAIT.',
         '',
-        'QUEST OUTCOME CHECK: Before answering, compare this reply with every active Guild contract\'s desired end state in the CATALOG. If one is clearly achieved in this reply, quest.ready is required even when arrival/facts/memory are also reported; fact or memory alone is not enough.',
+        'QUEST OUTCOME CHECK: Before answering, compare this reply with every active Guild contract\'s desired end state in the CATALOG. For contracts judged by story outcomes, if one is clearly achieved in this reply, quest.ready is required even when arrival/facts/memory are also reported; fact or memory alone is not enough.',
     ].join('\n');
 }
 
@@ -623,6 +623,11 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
         // Build .138 (batch 20 crystal shard T26–T32, seven plates T58): the buyer's coin for things Alaric sells, reported
         // as coin.gift without the buyer's bid, is never paid; the existing repair asks for the bid. Nothing is converted:
         // a separate thanks or tip stays a gift, and a recount (repeat_of) stays a recount.
+        if (['quest.ready','quest.progress','quest.close'].includes(d?.type) && Array.isArray(d.depends_on)) {
+            if (d.depends_on.some(seq => Number(seq) >= d.seq
+                || value.deltas.filter(source => String(source.seq) === String(seq)).length !== 1))
+                semanticIssues.push({index:i,seq:d.seq,why:`$.deltas[${i}].depends_on: cite only unique, earlier supporting deltas. A quest claim cannot be its own evidence.`});
+        }
         if (d?.type === 'coin.gift' && saleProceeds(state, value, d))
             semanticIssues.push({ index: i, seq: d.seq, why: `$.deltas[${i}]: this coin pays for goods Alaric sells; report the buyer's price as bid (buyer, his held object ids and units, price_cp, phase, pricing), and give this coin relation "trade_settlement". A sale pays only through that bid; keep coin.gift relation "independent" only for a separate gift or thanks` });
         // Build .142 (§4.4): a finance report without its phase, pricing or relation is unclear, never firm or paid;

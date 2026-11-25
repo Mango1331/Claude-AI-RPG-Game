@@ -58,7 +58,7 @@ test('Run14 board: generator and one repair obey the same profile',async()=>{
  assert.equal(calls.length,2);assert.equal(r.listings.length,5);assert.equal(r.profile,'count_hunt_clear');
  assert.match(calls[1].messages.at(-1).content,/not valid/);
  let count=0;const failed=await generateBoard(async()=>{count++;return JSON.stringify({listings:old()});},s,c,n);
- assert.equal(count,1);assert.equal(failed.listings.length,0);assert.ok(failed.failed);
+ assert.equal(count,2);assert.equal(failed.listings.length,0);assert.ok(failed.failed);
 });
 test('Run14 board: an already published legacy board remains unchanged and needs no regeneration',()=>{
  const s=state(),ls=parse(s,old(),legacyNeed(s)).listings;assert.equal(ls.length,5);

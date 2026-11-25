@@ -1,0 +1,2 @@
+# Preserve exact archive bytes also on Windows checkouts.
+originals/** -text

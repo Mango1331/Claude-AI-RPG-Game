@@ -26,6 +26,8 @@ Die kurze .213-Kampagne bestätigt im konkreten Kampf unterschiedliche Banditenl
 
 **Nächster Schritt:** Codex-Gegenreview im User13-Ordner lesen und gegen Code/Originale abgleichen. Danach gemeinsam entscheiden, ob ein zusammenhängendes Surrender-/Combat-Negotiation-Paket erforderlich ist oder welche weitere natürliche Evidenz benötigt wird. Kein automatischer .214-Auftrag und kein Patch vor Entscheidung.
 
+**Arbeitsaufteilung:** Codex übernimmt beauftragte Analysen, Implementierungen, Abnahmen und Gegenreviews; GPT bleibt unabhängiger Fach-, Code- und Run-Reviewer. Keine weiteren Claude-Aufträge. Historische Fachquellen bleiben gültig als Belege ihrer jeweiligen Etappe.
+
 ## Einstieg und Fachquellen
 
-[Startnachricht für neue GPT-Chats](README.md#einstieg-eines-neuen-gpt-chats) · [Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Etappenindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Forschung](recherche/README.md) · [Originalarchive](testrun_10b/README.md) · [Verbindlicher Produkt-Kanon .200](02_DESIGN_KANON.md).
+[Startnachricht für neue GPT-Chats](README.md#einstieg-eines-neuen-gpt-chats) · [Arbeitsweise](01_ARBEITSWEISE_GPT_CODEX.md) · [Etappenindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Forschung](recherche/README.md) · [Originalarchive](testrun_10b/README.md) · [Verbindlicher Produkt-Kanon .200](02_DESIGN_KANON.md).

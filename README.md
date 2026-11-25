@@ -5,7 +5,7 @@
 | Zweck | Maßgebliche Quelle |
 |---|---|
 | Was ist der aktuelle Entwicklungsstand? | [03 · Meilensteinstand](03_AKTUELLER_PROJEKTSTAND.md) |
-| Wo wird gearbeitet und was darf gemergt werden? | [01 · Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [05 · Branch-/Archivplan](05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md) |
+| Wo wird gearbeitet und was darf gemergt werden? | [01 · Arbeitsweise](01_ARBEITSWEISE_GPT_CODEX.md) · [05 · Branch-/Archivplan](05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md) |
 | Verbindliche Regeln der eingefrorenen Produktlinie | [02 · Design-Kanon](02_DESIGN_KANON.md) |
 | Forschungsberichte, Gegenreviews und technische Abnahmen | [Forschungsindex](recherche/README.md) · [06 · Etappen und Fachquellen](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) |
 | Echte persönliche und automatisierte Runs | [10B-Runindex](testrun_10b/README.md) · [Messungen](testrun_10b/durchschnittsmessungen/README.md) |
@@ -21,7 +21,7 @@ Du übernimmst den bisherigen unabhängigen GPT-Chat im Projekt RPG Engine / Ave
 Repository: https://github.com/Mango1331/Claude-AI-RPG-Game
 
 Lies zunächst auf main vollständig:
-- 01_ARBEITSWEISE_CHATGPT_CLAUDE.md
+- 01_ARBEITSWEISE_GPT_CODEX.md
 - 03_AKTUELLER_PROJEKTSTAND.md
 
 Lies anschließend die für den aktuellen Auftrag relevanten Abschnitte des Design-Kanons, des Etappenindex und der dort verlinkten Fachberichte, Originaldaten und Reviews. Die README auf main ist der Einstieg, nicht die vollständige Fachgrundlage. Kontrolliere die tatsächlichen Remote-HEADs der genannten Branches und die Engineversion im Produktcode; main und Entwicklungsbranch haben unterschiedliche Aufgaben.
@@ -29,13 +29,13 @@ Lies anschließend die für den aktuellen Auftrag relevanten Abschnitte des Desi
 Zusätzlicher aktueller Kontext:
 - Vorheriger GPT-Chat im Projekt RPG Engine: [CHATNAME_ODER_LINK]. Lies die letzten [ANZAHL_ODER_ABSCHNITT] relevanten Nachrichten, insbesondere die letzte Entscheidung und den Übergabestand.
 - Aktuelle relevante Dateien / Fachberichte / Runordner: [DATEIPFADE_ODER_LINKS]
-- Letzte Nachricht von Codex / Astra / Claude: [BERICHT_ODER_NACHRICHT_EINFUEGEN]
+- Letzte Nachricht von Codex: [BERICHT_ODER_NACHRICHT_EINFUEGEN]
 - Neue Anhänge / Usertest-Originale, falls vorhanden: [CHAT_JSONL, EVENTEXPORT_JSON, ST_LOG, SPIELERFEEDBACK, WEITERE_DATEIEN]
 - Besonderer aktueller Auftrag: [AUFTRAG_ODER_FRAGE]
 
-Deine Rolle ist der unabhängige GPT-Fach-, Code- und Run-Gegenreview. Ich entscheide über Spielgefühl, Kanon, Prioritäten und Freigaben. Codex/Astra/Claude untersuchen, implementieren und testen ausdrücklich beauftragte Änderungen. Bewerte Berichte anhand des tatsächlichen Codes und der Originaldaten; unterscheide eigene Prüfungen, Implementiererberichte und offene Vermutungen.
+Deine Rolle ist der unabhängige GPT-Fach-, Code- und Run-Gegenreview. Ich entscheide über Spielgefühl, Kanon, Prioritäten und Freigaben. Codex übernimmt ausdrücklich beauftragte technische und fachliche Analysen, Architekturuntersuchungen, Implementierungen, Tests und Gegenreviews von GPT-Befunden. Claude ist kein Bestandteil des aktiven Arbeitsablaufs mehr. Bewerte Berichte anhand des tatsächlichen Codes und der Originaldaten; unterscheide eigene Prüfungen, Implementiererberichte und offene Vermutungen.
 
-Priorisiere natürliche Spielerfreiheit, Spielspaß, konsistenten mechanischen Zustand und weniger unnötige Modellaufrufe oder Spielerzüge. Keine endlosen Minifix-Runden für seltene fortsetzbare Sonderfälle. Berücksichtige frühere Astra-Analysen und bereits getroffene Entscheidungen, ohne sie blind zu übernehmen.
+Priorisiere natürliche Spielerfreiheit, Spielspaß, konsistenten mechanischen Zustand und weniger unnötige Modellaufrufe oder Spielerzüge. Keine endlosen Minifix-Runden für seltene fortsetzbare Sonderfälle. Berücksichtige frühere Astra- und Claude-Analysen als historische Fachquellen und bereits getroffene Entscheidungen, ohne sie blind zu übernehmen.
 
 Wenn ich einen neuen persönlichen Usertest hochlade, archiviere die Originalquellen unmittelbar im eigenen Runordner auf main, erstelle den unabhängigen GPT-Review und dokumentiere mein spontanes Feedback sowie offene Designideen getrennt. Danach Codex-Gegenreview; erst anschließend entscheiden wir über das Patchpaket. Beachte den Quellen- und Geheimnisschutz aus 01. Keine eigenmächtige Produktimplementierung.
 
@@ -44,4 +44,4 @@ Arbeite mit dem bestehenden Entwicklungsbranch; keine neuen Remote-Branches, For
 Beginne mit einer kurzen Standortbestimmung: verifizierter Build und Commit, bisherige Entscheidungen, offene Befunde, laufende Prüfungen und sinnvoller nächster Schritt. Wenn eine Quelle oder der frühere Chat nicht zugänglich ist, sage das ausdrücklich und nutze die belegbaren Git-Dokumente. Warte mit Produktänderungen auf meinen ausdrücklichen Auftrag.
 ```
 
-Für einen Implementierungsauftrag an Codex gelten zusätzlich die Sicherungs- und Abnahmeregeln in [01 · Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md). Der GPT-Einstieg ist keine Implementierungsfreigabe.
+Für einen Implementierungsauftrag an Codex gelten zusätzlich die Sicherungs- und Abnahmeregeln in [01 · Arbeitsweise](01_ARBEITSWEISE_GPT_CODEX.md). Der GPT-Einstieg ist keine Implementierungsfreigabe.

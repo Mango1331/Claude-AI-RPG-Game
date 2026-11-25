@@ -15,6 +15,17 @@ Zeit in Sekunden pro erzähltem Zug, jeweils **arithmetisches Mittel / Median**.
 
 User09 endete nach 11 Erzählzügen, enthält 3 Extractor- und 1 Planner-Reparatur, 36 physische Request-/Responsepaare und einen einzigen Boardrequest von ca. 61 s. Die User09-Originale sind derzeit nur als Chat-Uploads vorhanden (SHA im Manifest), nicht auf GitHub archiviert. Die zwei .204-User07-Fenster gehören zum selben Chat; Phase 2 umfasst die 22 zusätzlichen Antworten nach den ersten vier. User08 ist **eine andere Kampagne mit anderen Szenen**, kein gepaarter A/B-Vergleich. Im .205-Lauf benötigte das Questboard erneut zwei physische Requests (115,845 s), während alle 27 gespeicherten Extractorabschlüsse `repaired:false` melden. Stream:false und null gemeldete Cachetokens sind im physischen Completion-Log belegt. **Auch bei User08 wurde die tatsächlich sichere Folgeeingabe nach Save nicht gemessen.** Die älteren .202/.203-Serien stehen im [Messarchiv](archiv/README.md#persönliche-spieltests-vor-der-integration).
 
+## Spätere persönliche Läufe .211/.213 – getrennte Messdefinition
+
+Die folgenden Werte dienen als Quellenverweis, nicht als kontrollierter A/B-Vergleich mit den oben stehenden Kampagnen. Beide persönlichen Läufe verwendeten GLM-5.3-Flash, Reasoning low, ohne Streaming. Die gemessenen Komponenten und Nenner sind nicht identisch mit sicherer Browser-Folgeeingabe.
+
+| Build / Run | Erzählzüge mit zugeordneten Messwerten | Gemeldete Zeit, Mittel / Median (s) | Quelle und Messdefinition |
+|---|---:|---:|---|
+| .211 User12 | 64 | 71,50 / 62,81 | Host + X, Untergrenze; [Codex-Gegenreview](../user-20261125-005145-211/CODEX_GEGENREVIEW.md) |
+| .213 User13 | 9 | 93,12 / 77,38 | Summe gespeicherter P/B/N/X-Zeiten; [GPT-Review](../user-20261125-212154-213/REVIEW.md) |
+
+User13 endet bei der Kampfverhandlung, enthält zusätzlich einen gelöschten HUD-Versuch, der nicht in der gespeicherten Zugzeit enthalten ist. Kein Nachweis einer allgemeinen Performanceverschlechterung aus diesen verschiedenen Stichproben. Einzelwerte, Tokenzahlen und Einschränkungen stehen ausschließlich in den Runreviews.
+
 ## Diagnostischer Abbruchlauf – nicht in reguläre Durchschnittswerte einmischen
 
 **.207 User10 (4 Erzählzüge):** Host bis Erzählende 53,75 s Mittel / 34,50 s Median; Host + Extractor 82,56 / 72,30 s als Untergrenze. Der erste Boardzug scheiterte nach zwei physischen LLM-Calls von 54,836 + 50,782 = **105,618 s**, kein Questboard wurde gebucht. Die vier Turnwerte stehen [im diagnostischen Review](../user-20261123-075443-207/REVIEW.md) und [als JSON](../user-20261123-075443-207/MESSWERTE_USER10_207.json). Diesen technischen Fehlerlauf **nicht** zur normalen Performance-Architekturmittelwertreihe zählen; die Originaluploads sind bisher nur im Chat archiviert.

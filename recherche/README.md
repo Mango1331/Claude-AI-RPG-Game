@@ -4,6 +4,7 @@ Hier stehen **nur Quellenlinks**, keine wiederholten Ergebnisbeschreibungen. Erg
 
 | Etappe / Forschungsfeld | Berichte und unabhängige Reviews | Reproduktion und Originale |
 |---|---|---|
+| **.213 – Finanzkontrollreview / User13** | [GPT-Kontrollreview und Entscheidung](AVERETH_213_GPT_KONTROLLREVIEW.md) · [User13-GPT-Review](../testrun_10b/user-20261125-212154-213/REVIEW.md) | [Originale und Feedback](../testrun_10b/user-20261125-212154-213/README.md) · Codex-Gegenreview ausstehend |
 | **.212 – Offline-Abnahme nach User12** | [Fach- und Abnahmebericht](AVERETH_212_FACH_UND_ABNAHME.md) | [User12-Originale](../testrun_10b/user-20261125-005145-211/SOURCE_MANIFEST.md) · [Helfer-Gesamtreview](../testrun_10b/openrouter-helper-laufserie-20261124/CODEX_GESAMTREVIEW_211.md) |
 | **.211 – Offline-Kontinuität** | [Astra-Fachbericht](AVERETH_211_SPIELKONTINUITAET_OFFLINE.md) · [GPT-Gegenreview](AVERETH_211_GPT_GEGENREVIEW_OFFLINE_2026-11-24.md) | [Testabnahme](kontinuitaet_211/ABNAHME.md) · [Kreuzvergleich](kontinuitaet_211/KREUZVERGLEICH.md) · [Langzeitprüfplan](kontinuitaet_211/LANGZEITPLAN.md) |
 | **.211 – natürlicher Langzeitvergleich und Besitzfix** | [Entwicklerbericht](AVERETH_211_NATUERLICHER_LANGZEITVERGLEICH.md) · [unabhängiger GPT-Gegenreview](AVERETH_211_GPT_GEGENREVIEW_NATUERLICHER_LANGZEITTEST_2026-11-24.md) | [Vier Kampagnen, Originale, Messungen und Kosten](../testrun_10b/openrouter-20261124-langzeit-211/README.md) · [Szenenbeobachtungen](langzeittest_211/BEOBACHTUNGEN.md) |

@@ -1,11 +1,11 @@
 # Avereth Engine – dauerhafte Arbeitsweise und Freigaben
 
-[Meilensteinstand](03_AKTUELLER_PROJEKTSTAND.md) · [Verbindlicher Produktkanon](02_DESIGN_KANON.md) · [Branchstruktur](05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md)
+[Kopierbare Startnachricht für neue GPT-Chats](README.md#einstieg-eines-neuen-gpt-chats) · [Meilensteinstand](03_AKTUELLER_PROJEKTSTAND.md) · [Verbindlicher Produktkanon](02_DESIGN_KANON.md) · [Branchstruktur](05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md)
 
 ## Verantwortung und Entscheidung
 
 - **Spieler/Nutzer:** bestimmt Spielgefühl, Prioritäten, Kanon und endgültige Produktfreigaben. Persönliche ST-Tests und Feedback sind maßgeblich.
-- **Astra/Claude:** untersucht, implementiert und testet den ausdrücklich beauftragten Umfang; belegt Ergebnisse an Originaldaten.
+- **Codex/Astra/Claude:** untersucht, implementiert und testet den ausdrücklich beauftragten Umfang; belegt Ergebnisse an Originaldaten.
 - **ChatGPT/GPT:** unabhängige Fach-, Code- und Run-Gegenreviews; Ergebnisse als **selbst geprüft** oder **aus Implementiererbericht** unterscheiden.
 - **Engine/LLM:** Planner interpretiert Spielerhandlungen, Engine bucht deterministische Fakten, Narrator erzählt, Extractor erfasst gültige Weltfolgen. Wichtig sind **Spielspaß, Spielerhoheit, korrekter Save, HUD und Revidierbarkeit** – nicht eine möglichst hohe Zahl abgewiesener Deltas.
 
@@ -19,6 +19,20 @@
 4. **Historischer `.200`-Branch:** bis zur Entscheidung über einen verifizierten dauerhaften Archiv-Tag beibehalten. [Bereinigungsplan](05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md). Für drei **Gesamtbranches** muss .200 nach Sicherung als Tag entfallen; bis dahin sind es vier einschließlich `main`.
 
 **Ausnahme:** Eine größere risikoreiche Alternative darf in einem separaten lokalen Worktree oder mit einem **temporären Commit-/Tag-Snapshot** geprüft werden. Einen zusätzlichen Remote-Branch nur mit ausdrücklichem Grund/Freigabe anlegen. Temporäre Versuche nicht als neue Produktversion ausgeben.
+
+## Arbeitsstand sichern
+
+Nach dem Cloud-Ausfall bei der ersten .212-Implementierung gilt: Jedes abgeschlossene Teilpaket auf dem vorhandenen Entwicklungsbranch committen, **sofort regulär pushen und den Remote-HEAD verifizieren**. Vor langen Browser-/Regressionstests den erreichten Stand sichern. Ein Zwischenpush ist keine Gesamtabnahme. Lokale Codex-Arbeit im Windows-Git-Checkout ist möglich; alternativ Cloud, sofern verfügbar. Ein neues Cloud-Environment erhält nicht automatisch ungepushte Dateien eines früheren Workspaces. Keine Force-Pushes und keine konkurrierenden Implementierungsaufträge auf demselben Branch. Vor Änderungen und vor dem Push den aktuellen Remote-HEAD prüfen; abweichende Änderungen nicht überschreiben. Keine echten Providerrequests, Installationen oder Produktmerges ohne passenden ausdrücklichen Auftrag.
+
+## Persönliche Usertests – verbindlicher Ablauf
+
+Ein Upload der Usertest-Dateien ist bereits der Auftrag zur Archivierung und unabhängigen Auswertung:
+
+1. GPT sichert Chat-JSONL, Eventexport, ST-Log, ursprüngliches Spielerfeedback und ggf. weitere Quellen im eigenen Runordner unter `testrun_10b/` auf main. Originale/Prüfsummen, Build, tatsächlicher Commit und belegte Datenlücken dokumentieren; ggf. lokale Pfade und Zugangsdaten vor Git-Upload redigieren und die Änderung offenlegen. Wenn eine direkte Übertragung scheitert, verifizierte Teilarchive oder nachvollziehbares Importverfahren nutzen; fehlende Originale niemals als archiviert bezeichnen.
+2. GPT erstellt `REVIEW.md`, Feedback und Quellenmanifest, bewertet tatsächliche Spielprobleme und trennt gewünschte Funktionen von bloßen Erweiterungsideen. Daten aus früheren oder gelöschten Varianten und kumulativen Logs nicht doppelt zählen. Kein Patch allein aufgrund des Uploads.
+3. Codex erstellt unabhängig `CODEX_GEGENREVIEW.md` im selben Runordner, prüft tatsächlichen Code und Originaldaten, reproduziert wichtige Befunde soweit möglich und berichtet Unterschiede. Keine ungefragte Implementierung.
+4. Nutzer und GPT entscheiden anhand beider Reviews über den nächsten zusammenhängenden Patch oder weitere natürliche Tests. Priorität für allgemeine Spielblockaden, Spielerhoheit und harte Zustandsintegrität; seltene fortsetzbare Sonderfälle zurückstellen.
+5. Nur beauftragte Implementierung, passende Offline-Abnahme, unabhängiger Diffreview und ausdrückliche Test-/Produktfreigabe. Eine vollständige Suite nicht ohne sachlichen Grund nach einer rein dokumentarischen oder Versionsnummernänderung wiederholen.
 
 ## Testfolge
 
@@ -40,6 +54,6 @@
 | **`testrun_10b/`** | Jeder Run erhält Originale, Manifest, nachvollziehbare Berichte; der Runindex gruppiert **Etappen**, nicht jede Testantwort |
 | **`testrun_10b/durchschnittsmessungen/`** | Vergleichbare Mittel-/Medianmessungen; ältere Architektur getrennt im Archiv |
 
-**Änderungstakt:** Kleine Commits, gezielte Regressionsläufe, neue Einzelruns oder Tokenmessungen erfordern **keine** Änderung an `03`, `06`, `05` oder dem Forschungsindex. Ein einziger gebündelter Dokumentationscommit nach der Etappe genügt. Alte Inhalte **nicht duplizieren**, sondern auf unveränderliche Originalberichte oder historische Git-Commits verlinken. Dokumentationspflege erfordert keinen fingierten Node-/ST-Test; Links, Diff und HEAD genügen.
+**Änderungstakt:** Kleine Commits, gezielte Regressionsläufe, neue Einzelruns oder Tokenmessungen erfordern **keine** routinemäßige Änderung an `03`, `06`, `05` oder dem Forschungsindex. Runordner und Reviews werden trotzdem unmittelbar archiviert; bei ausdrücklicher Übergabe oder gebündelter Pflege darf der aktuelle Snapshot den offenen Reviewstatus nennen. Ein einziger gebündelter Dokumentationscommit nach der Etappe genügt. Alte Inhalte **nicht duplizieren**, sondern auf unveränderliche Originalberichte oder historische Git-Commits verlinken. Dokumentationspflege erfordert keinen fingierten Node-/ST-Test; Links, Diff und HEAD genügen.
 
 [Frühere ausführliche Arbeitsanweisung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/510846a3d3185cd85e510e4f3d0c4f024c6f360e/01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Fachquellen](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Runindex](testrun_10b/README.md).

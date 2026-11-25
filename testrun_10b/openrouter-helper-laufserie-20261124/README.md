@@ -1,6 +1,6 @@
 # Avereth – natürliche OpenRouter-Helferläufe · Sammelphase
 
-**Status: offene Testetappe.** In dieser Runde sammeln wir noch mehrere automatisierte Langläufe und **anschließend einen persönlichen Usertest**. Erst danach erfolgen eine gemeinsame, nach Häufigkeit und Spielrelevanz priorisierte Analyse und gegebenenfalls zusammenhängende Korrekturen. Kein vorschneller Patch wegen einzelner seltener Fehler.
+**Historische .211-Testetappe abgeschlossen:** fünf automatisierte Läufe und [User12](../user-20261125-005145-211/README.md) wurden gemeinsam ausgewertet. [Codex-Gesamtreview](CODEX_GESAMTREVIEW_211.md) · [.212-Umsetzung und Abnahme](../../recherche/AVERETH_212_FACH_UND_ABNAHME.md). Die noch ausstehenden fünf Original-ZIP-Importe sind von der abgeschlossenen Fachanalyse zu unterscheiden. Der aktuelle Stand steht in [03](../../03_AKTUELLER_PROJEKTSTAND.md).
 
 ## Bereits geprüfte ZIP-Exporte
 
@@ -27,6 +27,6 @@
 
 [GPT-Gegenreview Lauf 5 (107 Eingaben)](GPT_GEGENREVIEW_RUN05_107.md).
 
-## Fortsetzung
+## Offener Quellenimport
 
-Für die kommenden Läufe **keinen neuen Codebranch** und keine erneute Pflege von `03`, `06` oder dem Forschungsindex. Original-ZIP und SHA/Commit pro Run sichern; auffällige Fälle als Beobachtung festhalten. **Nach mehreren weiteren Runs und dem persönlichen Spieltest** Bilanz über tatsächliche Wiederholungen, Root Causes, Produktintegrität und Spielgefühl ziehen.
+Die Fachentscheidung aus dieser Etappe ist in den verlinkten Abschlussberichten erhalten. Fehlende Original-ZIPs bei Verfügbarkeit anhand des Manifests mit dem Importskript ergänzen. Neue Läufe auf dem aktuellen Entwicklungsstand gehören in eigene Runordner, nicht in diese historische .211-Sammlung.

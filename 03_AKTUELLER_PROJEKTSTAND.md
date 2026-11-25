@@ -1,21 +1,31 @@
-# Avereth Engine – Projektstand am Etappenabschluss
+# Avereth Engine – aktueller Projektstand
 
-**25. November 2026 · Entwicklungskandidat .212 nach Usertest 12.** **GO für unabhängigen GPT-Diffreview.**
+**25. November 2026 · Entwicklungskandidat `.213`, persönlicher Usertest 13 archiviert.** GPT-Review abgeschlossen, unabhängiger Codex-Gegenreview beauftragt und zum Zeitpunkt dieses Snapshots noch ausstehend. Keine Freigabe für ein neues Patchpaket oder Produktmerge.
 
-Die Etappe verbindet Revisionsbindung in SillyTavern 1.19, stabilere NPC-Kampfentscheidungen, sichere Runner-Abbrüche, die Bindung erster Gebote sowie gewöhnliche Szenenbewegung, PULSE, Questboard und zwei native Aktionen. Der Fachbericht unterscheidet Originalreplays, rekonstruierte Helferfälle, synthetische Gegenproben und Browser-Smokes. Die archivierte Bewertung zur natürlichen Reise-, NPC- und Gegenstandskontinuität bleibt für den damaligen Stand maßgeblich. Eine natürliche Vergleichskampagne mit .212 wurde in dieser Etappe nicht ausgeführt.
+## Aktuelle Referenzen
 
-[Fachbericht und Offline-Abnahme .212](recherche/AVERETH_212_FACH_UND_ABNAHME.md) · [Persönlicher Usertest 12](testrun_10b/user-20261125-005145-211/README.md) · [Helferserie und Quellenstand](testrun_10b/openrouter-helper-laufserie-20261124/README.md) · [Natürlicher .210/.211-Langzeit-Gegenreview](recherche/AVERETH_211_GPT_GEGENREVIEW_NATUERLICHER_LANGZEITTEST_2026-11-24.md).
-
-| Zweck | Git-Referenz |
+| Zweck | Verifizierte Referenz |
 |---|---|
-| .212, bestehender Entwicklungszweig | `experiment/211-openrouter-helper-single-runner` · [`7cf33bc0`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/7cf33bc08b050e1445ce8ee859c4d54f4b6000fc) |
-| .211, Ausgangspunkt des Neuaufbaus | [`1d3171d7`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/1d3171d756f828ab8e90db9111617d3234bdbf9c) · [Produktdiff zu .212](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/1d3171d756f828ab8e90db9111617d3234bdbf9c...7cf33bc08b050e1445ce8ee859c4d54f4b6000fc) |
-| Eingefrorene Produktlinie .200 | `claude/c-planner-prototype-2026-10-02-gpt-c666` · [`0cd14806`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b) |
+| Aktiver Entwicklungs-/Testbranch | `experiment/211-openrouter-helper-single-runner` · [`a89c690d`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/a89c690dbe0037f1c4d19a8d762e5b0fed207eab) · Build `4.3.0-c.6.6.213` |
+| Fester Kontinuitätsvergleich | `experiment/211-scene-continuity` · [`c2ddc780`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c2ddc780d4c57b219f9cd7a1d134efceca7e459d) |
+| Eingefrorenes Produkt `.200` | `claude/c-planner-prototype-2026-10-02-gpt-c666` · [`0cd14806`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b) |
 
-`main` führt die übergeordneten Dokumente und Originalarchive separat. Die Tabelle fixiert den Stand der jeweiligen Etappe. Vor neuer Arbeit die tatsächlichen Remote-Refs prüfen.
+`main` ist die separate Dokumentations- und Originalarchivlinie. Diese Tabelle ist ein Snapshot, keine Garantie für spätere HEADs. Vor neuer Arbeit aktuelle Remote-Refs prüfen.
 
-## Nächste Etappe
+## Letzte abgeschlossene Entwicklungsarbeit
 
-Der unabhängige GPT-Diffreview bewertet den Entwicklungsdiff einschließlich der offenen Evidenz zu natürlicher Spielqualität. Entscheidungen zu natürlichen Helferläufen, Usertest 13 und einer Produktübernahme folgen separat.
+- [User12 und .212-Fach-/Offline-Abnahme](recherche/AVERETH_212_FACH_UND_ABNAHME.md): Revisionsbindung, NPC-Sidestep, Runner-Sicherheit, Handel, lokale Reise, PULSE, Board, native Aktionen und HUD. Wiederimplementierung nach Cloud-Ausfall, gesichert auf `7cf33bc0`. 3.589/3.589 Node-Prüfungen, 2.235 historische Replays ohne neue ungeklärte Abweichung, 122/122 archivierte Weltstufen und isolierte ST-Abnahmen laut Implementiererbericht.
+- [.213-Kontrollreview](recherche/AVERETH_213_GPT_KONTROLLREVIEW.md): zusätzliche Finanzkorrekturen auf `e7a36e2f`; R1 bestätigt behoben, eine konkrete R2-Variante bleibt bewusst zurückgestellt. `a89c690d` erhöht nur die Versionsnummer. Keine erneute vollständige .213-Abnahme behauptet. Nutzer entschied GO für persönlichen Test statt weiterer Minifix-Runde.
+- **Persönliches ST-Profil:** vollständige Engine-Extension aus dem Entwicklungscheckout; Character Card/Description, Narrator-Preset, Lorebook, Regex und ST-Einstellungen unverändert. Narrator Contract bleibt `.211`. Der Runner ist für persönliches Spiel nicht erforderlich.
 
-[Etappenindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Forschungsindex](recherche/README.md) · [Testarchive](testrun_10b/README.md) · [Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Produkt-Kanon .200](02_DESIGN_KANON.md).
+## Aktuelle Entscheidung: User13
+
+[Runordner, GPT-Review und Originalquellen](testrun_10b/user-20261125-212154-213/README.md) · [Spielerfeedback und offene Designidee](testrun_10b/user-20261125-212154-213/USER_FEEDBACK_REVIEW.md).
+
+Die kurze .213-Kampagne bestätigt im konkreten Kampf unterschiedliche Banditenlevel und das Ende der wiederholten Sidestep-Schleife; erstes Board mit fünf gültigen Aufträgen. Sie endet bei der nicht mechanisch unterstützten Kapitulation/Verhandlung. Kein Grund zur pauschalen Abschwächung der Gegner. Surrender als Hauptaktion für verhandlungsfähige intelligente NPCs, frei wählbare Gegenleistungen und mögliche Ablehnung sind gewünschte Spieloptionen; Entscheidung über die technische Ausgestaltung folgt nach dem Gegenreview. Ein zusätzlicher Würfelwurf ist **nur offene Idee**, keine beschlossene Regel. Handel, längere Progression, Dungeon und Rast wurden in User13 nicht erreicht.
+
+**Nächster Schritt:** Codex-Gegenreview im User13-Ordner lesen und gegen Code/Originale abgleichen. Danach gemeinsam entscheiden, ob ein zusammenhängendes Surrender-/Combat-Negotiation-Paket erforderlich ist oder welche weitere natürliche Evidenz benötigt wird. Kein automatischer .214-Auftrag und kein Patch vor Entscheidung.
+
+## Einstieg und Fachquellen
+
+[Startnachricht für neue GPT-Chats](README.md#einstieg-eines-neuen-gpt-chats) · [Arbeitsweise](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [Etappenindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Forschung](recherche/README.md) · [Originalarchive](testrun_10b/README.md) · [Verbindlicher Produkt-Kanon .200](02_DESIGN_KANON.md).

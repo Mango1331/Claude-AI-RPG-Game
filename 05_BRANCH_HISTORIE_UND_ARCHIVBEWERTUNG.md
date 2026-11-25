@@ -1,6 +1,6 @@
 # Avereth – Branch- und Archivstrategie nach der .211-Etappe
 
-**Bestandsprüfung 24.11.2026:** **34 Remote-Branches**, **keine offenen Pull Requests**, keiner der gemeldeten Branches geschützt. `main` ist die Dokumentationslinie und hat eine von der Produktlinie `.200` **abgewichene Git-Historie**; die beiden Branches sind nicht austauschbar.
+**Historische Bestandsprüfung 24.11.2026:** **34 Remote-Branches**, **keine offenen Pull Requests**, keiner der gemeldeten Branches geschützt. `main` ist die Dokumentationslinie und hat eine von der Produktlinie `.200` **abgewichene Git-Historie**; die beiden Branches sind nicht austauschbar.
 
 ## Drei dauerhaft gewünschte Branches
 
@@ -22,6 +22,6 @@
 
 ## Zukünftiges Arbeiten
 
-Astra und GPT erhalten den **bestehenden Arbeitsbranch** und implementieren dort direkt. Nach jedem Fix HEAD und Diff protokollieren, aber keine eigene neue experimentelle Remote-Verzweigung anlegen. Zwischenstände für Replays mit **Commit-SHAs oder Tags**, die Baseline bleibt fix. Nur der Nutzer entscheidet eine Produktübernahme, einen neu benannten Meilensteinbranch oder die endgültige `.200`-Archivlöschung.
+Codex/Astra/Claude implementieren ausdrücklich beauftragte Änderungen auf dem **bestehenden Arbeitsbranch**. GPT prüft unabhängig und ändert Produktcode nur auf ausdrücklichen Auftrag. Nach jedem abgeschlossenen Teilpaket sofort committen, regulär pushen, Remote-HEAD und Diff verifizieren; vor längeren Tests sichern. Aktuelle HEADs stehen im [Projektstand](03_AKTUELLER_PROJEKTSTAND.md) als Snapshot und müssen vor neuer Arbeit live geprüft werden. Keine eigene neue experimentelle Remote-Verzweigung und keine konkurrierenden Schreibaufträge. Zwischenstände für Replays mit **Commit-SHAs oder Tags**, die Baseline bleibt fix. Nur der Nutzer entscheidet eine Produktübernahme, einen neu benannten Meilensteinbranch oder die endgültige `.200`-Archivlöschung.
 
 [Meilensteinstand](03_AKTUELLER_PROJEKTSTAND.md) · [Dauerhafte Arbeitsregeln](01_ARBEITSWEISE_CHATGPT_CLAUDE.md) · [historische detaillierte Branchaufnahme](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/292a4372654f027fb579bf8e338ff9d25d981da7/05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md).

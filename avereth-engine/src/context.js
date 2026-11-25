@@ -279,7 +279,11 @@ export function combatBlock(state, content = null, { hudSpeech = false } = {}) {
         const fx = c.current.effects.length ? `; effects: ${c.current.effects.map((x) => x.name).join(', ')}` : '';
         // Prototype C (4.3.0-c.6.6.6, review): who in the fight is no foe of his (caught in it, or at his side)
         const side = c.side === 'ally' ? '; ON ALARIC\'S SIDE (no foe)' : c.side === 'neutral' ? '; NEUTRAL (no foe, caught in the fight)' : '';
-        lines.push(`  ${fightName(state, c.id)}: L${c.fixed.level} ${c.fixed.rank} ${c.model === 'creature' ? c.fixed.body_plan : 'core-stat'}${creatureGearText(state.entities[c.id])}; ${st}${side}; locked DefeatXP ${c.fixed.defeat_xp ?? '-'}${fx}`);
+        const npc = state.entities[c.id];
+        const weapon = npc?.sheet?.equipment?.weapon;
+        const visible = npc?.kind === 'npc' && typeof weapon === 'object' && weapon?.name
+            ? ` · ${weapon.name}` : '';
+        lines.push(`  ${fightName(state, c.id)}${visible}: L${c.fixed.level} ${c.fixed.rank} ${c.model === 'creature' ? c.fixed.body_plan : 'core-stat'}${creatureGearText(state.entities[c.id])}; ${st}${side}; locked DefeatXP ${c.fixed.defeat_xp ?? '-'}${fx}`);
     }
     // Patch 4 (live 18.10.2026: the pack mates of the one wolf in the fight stood, paced and growled around it): who is
     // here but not in the fight makes no attack and deals no damage; a story that has them attack brings them in
@@ -344,6 +348,8 @@ export const V4_OUTPUT_LINE = 'OUTPUT: write only the story. No <avereth> block,
 export function playerActionsBlock(outcome, { carded = null } = {}) {
     const lines = ['PLAYER ACTIONS (resolved choices in order; routine details here allowed, no extra decisions or mechanics):', ...(outcome.actions || [])];
     for (const x of outcome.extra || []) lines.push(carded ? knownAtUncarded(x, carded) : x);
+    const cue = eventCue(outcome.auth?.pulse);
+    if (cue) lines.push(cue);
     if ((outcome.resolutions || []).some((r) => (r.type === 'buy' || r.type === 'pay') && r.status === 'pending')) {
         lines.push('PENDING TRADE IS A HARD STOP: state the seller\'s actual price and stop BEFORE any payment, delivery, drinking, eating or other action that depends on the unaccepted purchase. A later player turn can explicitly accept the offer, at which point the engine debits coin and grants the goods/service. An unrelated independent action is unaffected.');
     }
@@ -691,7 +697,7 @@ export function buildContext(state, content, opts = {}) {
     const sections = [];
     const add = (name, text, priority, own = false) => text && sections.push({ name, text, priority, own, tokens: estimateTokens(text) });
 
-    if (!privateQuestsOf(state)) add('help', 'FREE HELP — only Guild contracts are formal quests. NPCs may request help, offer paid work, make promises and react freely. Preserve requests, deeds, relationships and outcomes as ordinary world continuity; no private Quest acceptance, objectives, READY, turn-in, work certificate, automatic reward or Quest XP. A present NPC may voluntarily hand over a credible gift or payment now; promises/recounts are not new money. Already recorded handovers: ' + ((state.credits || []).filter(x => x.gift && (x.turn === state.turn || state.scene.present.includes(x.gift.from))).slice(-4).map(x => `${x.gift.from}: ${x.cp} cp (${x.gift.why})`).join('; ') || 'none'), 0);
+    if (!state.encounter && !privateQuestsOf(state)) add('help', 'FREE HELP — only Guild contracts are formal quests. NPCs may request help, offer paid work, make promises and react freely. Preserve requests, deeds, relationships and outcomes as ordinary world continuity; no private Quest acceptance, objectives, READY, turn-in, work certificate, automatic reward or Quest XP. A present NPC may voluntarily hand over a credible gift or payment now; promises/recounts are not new money. Already recorded handovers: ' + ((state.credits || []).filter(x => x.gift && (x.turn === state.turn || state.scene.present.includes(x.gift.from))).slice(-4).map(x => `${x.gift.from}: ${x.cp} cp (${x.gift.why})`).join('; ') || 'none'), 0);
     add('header', `[AVERETH ENGINE — authoritative game state, turn ${state.turn}. Numbers, rolls, positions and knowledge below are binding; narrate, never recalculate.]\n${formatClock(state.clock.minute)} | ${loc ? `${loc.name}${realm && (!v4 || normText(realm) !== normText(loc.name)) ? `, ${realm}` : ''}` : 'unknown location'}${placeSuffix} | mode: ${state.mode}${locStatus !== 'exists' && locStatus !== 'alive' ? ` | LOCATION STATUS: ${String(locStatus).toUpperCase()}` : ''}\nSetting: Western-fantasy medieval material culture with mana/high magic; letters and messengers for distance; no modern technology.`, 0);
     // what Alaric's line carries depends on the turn: items and coin only when trade, loot or items are in play
     const itemScan = `${input} ${lastReply}`;
@@ -732,7 +738,7 @@ export function buildContext(state, content, opts = {}) {
     const absent = state.mode === 'creation' ? [] : namedAbsent(state, normText(queryText));
     if (absent.length) add('named', `NAMED, NOT PRESENT (continuity only; they are elsewhere unless the story brings them in):\n${absent.map((id) => npcCard(state, content, id, focusWords, { absent: true })).join('\n')}`, 2);
     add('combat', combatBlock(state, content, opts), 0);
-    if (v4 && (opts.outcome?.c || opts.outcome?.auth?.c)) {
+    if (v4 && !state.encounter && (opts.outcome?.c || opts.outcome?.auth?.c)) {
         const known = Object.values(state.quests || {}).filter(q => q.kind === 'guild_contract');
         const branch = settlementOf(state, state.scene.at);
         const official = [...known.filter(q => q.status === 'active' || (listedToday(state, q) && q.source?.branch === branch)),
@@ -788,8 +794,6 @@ export function buildContext(state, content, opts = {}) {
         add('gear_market', `${gearMarketText(content, true)}${offers.length ? `\nRECORDED GOODS: ${offers.join('; ')}` : ''}`, 0);
     }
 
-    const pulseCue = v4 && eventCue(opts.outcome?.auth?.pulse);
-    if (pulseCue) add('pulse_cue',pulseCue,1);
     if (v4 && /\b(?:skill stones?|passive stones?|primers?)\b/i.test(input || '')) {
         add('learning_sources', 'LEARNING SOURCES — Guild primers are manuals for their named techniques. Teachers teach by practice. Active Skill Stones are distinct, uncommon finds from specific sources. A rumour or ordinary shop does not establish one in stock. Passive Stones are exceptionally rare and use their own progression rules. Use established offers and finds as recorded.', 1);
     }
@@ -804,7 +808,8 @@ export function buildContext(state, content, opts = {}) {
         || (rulesetOf(state) >= 2 && q.kind === 'private' && q.status === 'completed' && q.work && q.payout_cp !== 0 && !q.payment)) : [];
     // Prototype C (4.3.0-c.6): a hunt is proven by its contract slip, goods by the goods (src/v4/guild.js proofMemory)
     const cTurn = !!(opts.outcome?.auth?.c || opts.outcome?.c);
-    if (activeQuests.length) add('quests', `ACTIVE QUEST MEMORY — use this to preserve continuity, not as a word-for-word checklist. For Guild contracts only payout, active/completed status, Quest XP/credit and Guild rank mechanics are hard engine state; ${rulesetOf(state) >= 2 ? 'objectives, witnesses and verification allow credible story alternatives except physical delivery: in ruleset 2 its actual cargo transfer to the agreed recipient/place is checked by the engine; neither a signed receipt nor dropping cargo elsewhere establishes delivery. Never explain a failed transfer by inventing a container-return duty or changing recipient:' : 'objectives, witnesses and verification are story guidance and may be satisfied by credible alternatives:'}\n${activeQuests.map((q) => {
+    if (state.encounter && activeQuests.length) add('quests', 'ACTIVE QUESTS — ' + activeQuests.map(q => q.title).join(', '), 1);
+    else if (activeQuests.length) add('quests', `ACTIVE QUEST MEMORY — use this to preserve continuity, not as a word-for-word checklist. For Guild contracts only payout, active/completed status, Quest XP/credit and Guild rank mechanics are hard engine state; ${rulesetOf(state) >= 2 ? 'objectives, witnesses and verification allow credible story alternatives except physical delivery: in ruleset 2 its actual cargo transfer to the agreed recipient/place is checked by the engine; neither a signed receipt nor dropping cargo elsewhere establishes delivery. Never explain a failed transfer by inventing a container-return duty or changing recipient:' : 'objectives, witnesses and verification are story guidance and may be satisfied by credible alternatives:'}\n${activeQuests.map((q) => {
         const progress = (q.progress || []).slice(-4).map((p) => `${p.objective}: ${p.status}`).join('; ');
         const req = q.kind === 'guild_contract'
             ? ` | desired outcome: ${q.desired_end_state || objectiveText(q)} | remembered work: ${objectiveText(q)}${progress ? ` | progress: ${progress}` : ''}${q.status === 'active' && defeatTally(state, content, q).length ? ` | defeated (engine count): ${tallyText(defeatTally(state, content, q))}` : ''}${readyText(state, content, q, { c: cTurn }) ? ` | ${readyText(state, content, q, { c: cTurn })}` : ''} | ${cTurn ? proofMemory(state, content, q) : `verification examples: ${guildProofText(q) || 'none listed'}`} | payout: ${q.payout_cp ?? 0} cp (paid only by the Guild on explicit accepted turn-in)${cTurn ? ' | these are its whole terms: no clause the story adds binds it' : ''}`
@@ -916,7 +921,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'where', 'pc', 'creation', 'npc_compact', 'npc_arrival', 'present', 'settlement', 'world_area', 'world_populations', 'gear_market', 'price_contract', 'paid_here', 'npc_continuity', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
+    const order = ['header', 'where', 'pc', 'creation', 'npc_compact', 'npc_arrival', 'present', 'settlement', 'world_area', 'world_populations', 'gear_market', 'price_contract', 'learning_sources', 'paid_here', 'npc_continuity', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     const describe = section => ({ name: section.name, tokens: section.tokens, own: section.own,

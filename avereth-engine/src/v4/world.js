@@ -1505,6 +1505,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 // fighter's "demeanor" while the fight runs stays the fight's moment (below), never a synonym of an anchor
                 const named = normPredicate(d.p);
                 const fighting = !!s.encounter?.combatants?.[subject];
+                if (fighting && s.entities[subject]?.kind === 'npc' && named === 'armed') {
+                    reject(d, 'engine_owned_fact', 'The active fighter’s equipped weapon is already recorded on their sheet.');
+                    break;
+                }
                 const anchorP = explicitTravel && s.entities[subject]?.kind === 'npc' && typeof object === 'string'
                     ? (ANCHOR_PREDICATES.has(named) ? named : !fighting ? anchorPredicate(d.p) : null) : null;
                 if (anchorP) {

@@ -57,9 +57,12 @@ async function reply(chat,prose,payload){
     });
 }
 function response(chat,choice,members=[leader,axe,knife],items=[]){
-    return {offer:state(chat).encounter.negotiation.id,choice,speaker:members[0],members:members.map(id=>({id,evidence:evidence[[leader,axe,knife].indexOf(id)]})),evidence:choice==='counter'?counter:choice==='accept'?'Agreed.':'No deal.',terms:items};
+    const quote=choice==='counter'?counter:choice==='accept'?'Agreed.':'No deal.';
+    return {offer:state(chat).encounter.negotiation.id,choice,speaker:members[0],
+        members:choice==='refuse'?[]:members.map((id,i)=>({id,evidence:i===0?quote:evidence[[leader,axe,knife].indexOf(id)]})),
+        evidence:quote,terms:items};
 }
-const prose=choice=>[...evidence,choice==='counter'?counter:choice==='accept'?'Agreed.':'No deal.'].join(' ');
+const prose=choice=>[...evidence,'The cudgel man says, "'+(choice==='counter'?counter:choice==='accept'?'Agreed.':'No deal.')+'"'].join(' ');
 async function answer(chat,accept=true){
     const text=accept?original[21].mes:'No deal.';
     return turn(chat,text,[{seq:1,type:'negotiation_answer',accept,quote:text}]);
@@ -180,7 +183,8 @@ const smaller=structuredClone(opened);
 const smallDemand='Give us two silver.';
 const reduced=response(smaller,'counter',undefined,[{object:'coin',qty:20,mode:'offer',quote:'two silver'}]);
 reduced.evidence=smallDemand;
-await reply(smaller,prose('counter')+' '+smallDemand,reduced);
+reduced.members[0].evidence=smallDemand;
+await reply(smaller,prose('counter').replace(counter,smallDemand),reduced);
 await turn(smaller,'I agree.',[{seq:1,type:'negotiation_answer',accept:true,quote:'I agree.'}]);
 const left=state(smaller).objects[released.pile];
 assert.equal(left.holder.loc,base.scene.at);
@@ -221,4 +225,65 @@ edited[19].mes='I offer the silver.';
 runtime.onEditedV4(edited,19,content);
 assert(host.foldChat(edited).errors.length);
 assert.equal(host.foldChat(edited).state.entities.pc.sheet.coin_cp,30);
+// Contradict the local model deliberately. Only the actual actor's decision can release custody.
+const leaderYes='The cudgel man accepts the offer.';
+const leaderNo='The cudgel man says, "No deal."';
+const silent='The cudgel man studies the offer thoughtfully.';
+const axeNo='The axeman shakes his head in refusal.';
+const axeYes='The axeman says, "I accept."';
+const member=(id,evidence)=>({id,evidence});
+const joint='All three bandits nod in agreement.';
+const united=[leader,axe,knife].map(id=>member(id,joint));
+const authorizations=[
+    ['refusal reported as acceptance',leaderNo,'accept','No deal.',[member(leader,leaderNo)],false],
+    ['refusing opponent included',leaderYes+' '+axeNo,'accept',leaderYes,[member(leader,leaderYes),member(axe,axeNo)],false],
+    ['contemplation reported as acceptance',silent,'accept',silent,[member(leader,silent)],false],
+    ['another speaker quoted',leaderNo+' '+axeYes,'accept','I accept.',[member(leader,leaderNo)],false],
+    ['subject without decision',leaderYes,'accept','The cudgel man',[member(leader,leaderYes)],false],
+    ['cropped negation','Bandit B says, “I do not accept.”','accept','accept',[member(leader,'accept')],false],
+    ['explicit collective assent',leaderYes+' '+joint,'accept',leaderYes,united,true],
+    ['dissent overrides group claim',leaderYes+' '+joint.slice(0,-1)+', but '+axeNo,'accept',leaderYes,united.map(m=>({...m,evidence:joint.slice(0,-1)})),false],
+    ['clear refusal without consenting members',leaderNo,'refuse','No deal.',[],true],
+    ['actual offer accepted by one NPC',leaderYes+' '+axeNo,'accept',leaderYes,[member(leader,leaderYes)],true],
+    ['acceptance reported as refusal',leaderYes,'refuse',leaderYes,[],false],
+];
+for(const [name,story,choice,quote,members,expected] of authorizations){
+    const trial=structuredClone(merely);
+    const before=state(trial),reaction={offer:before.encounter.negotiation.id,choice,speaker:leader,members,evidence:quote,terms:[]};
+    const got=await reply(trial,story,reaction),after=state(trial);
+    assert.equal(got.applied,expected,name);
+    if (!expected) {
+        const {extract_error,...last}=after.last;
+        assert(extract_error,name);
+        assert.deepEqual({...after,last},before,name);
+    } else if (choice==='refuse') {
+        assert.equal(after.last.outcome.negotiation_result,'refused',name);
+        assert(after.last.outcome.records.some(r=>r.actor!=='pc'),name);
+        assert.equal(pc(trial).coin_cp,30,name);
+        const audit=host.messageEvents(trial.at(-1)).find(e=>e.t==='combat.negotiation');
+        assert.deepEqual(audit.d.reply.members,[],name);
+    } else {
+        assert.equal(after.last.outcome.negotiation_result,'accepted',name);
+        assert.equal(pc(trial).coin_cp,0,name);
+    }
+}
+const changedPrice='I offer only two silver and the staff';
+const playerCases=[
+    ['changed price',changedPrice,merely],
+    ['changed price after release',changedPrice,opened],
+    ['lower handover after release','I accept and give them two silver and the staff.',opened],
+    ['changed price with free HUD acceptance',changedPrice,merely,{id:'accept',kind:'negotiation_answer',accept:true}],
+    ['undecided player','I consider the demand.',merely],
+    ['player refusal','No deal.',merely],
+];
+for (const [name,words,fixture,hud] of playerCases){
+    const trial=structuredClone(fixture);
+    await reply(trial,prose('counter'),response(trial,'counter',undefined,terms));
+    const before=state(trial);
+    const result=await turn(trial,words,[{seq:1,type:'negotiation_answer',accept:true,quote:words}],hud);
+    assert.equal(result.action,'not_executed',name);
+    assert.deepEqual(state(trial),before,name);
+}
+
+console.log(authorizations.length+' NPC authority cases and '+playerCases.length+' contradictory planner responses passed.');
 console.log('User13 source, mercy, offer vs throw, counter, consent, partial settlement, pending recovery, refusal, replay and custody passed.');

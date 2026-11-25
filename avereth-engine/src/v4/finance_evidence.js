@@ -54,7 +54,7 @@ export function findQuote(source, quote, within = null) {
     return { state: 'found', ...hits[0] };
 }
 
-function speechPassages(source) {
+export function speechPassages(source) {
     const matches = [...source.matchAll(/"[^"]*"|“[^”]*”|«[^»]*»/g)];
     return matches.map((match, i) => {
         const start = match.index + 1, end = start + match[0].length - 2;
@@ -66,7 +66,7 @@ function speechPassages(source) {
 }
 
 const passageAt = (passages, at) => passages.find(p => p.start <= at.start && p.end >= at.end);
-const SPEECH_TAG = String.raw`(?:said|says?|asked|asks?|replied|replies|answered|answers?|offered|offers?|added|adds?|called|calls?|cut in)`;
+export const SPEECH_TAG = String.raw`(?:said|says?|asked|asks?|replied|replies|answered|answers?|offered|offers?|added|adds?|called|calls?|cut in)`;
 
 function namedSpeakers(source, passage, at, people) {
     const sentence = sentenceOf(source, at.start, at.end);

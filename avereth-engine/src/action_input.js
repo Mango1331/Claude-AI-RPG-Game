@@ -294,7 +294,7 @@ export function plannedNegotiation(commands,input,hud,state,content,text) {
         const bound=hud?.bound?.indexOf(c.seq) ?? -1;
         if (bound>=0) {
             const step=selected[bound];
-            const error=step.kind==='negotiation_answer' && step.accept && counterConsentError(state,content,text);
+            const error=step.kind==='negotiation_answer' && step.accept && counterConsentError(state,content,text,{selected:true});
             if (error) return refusal(error);
             steps.push(step);
             continue;

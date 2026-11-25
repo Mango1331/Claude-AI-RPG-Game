@@ -1,0 +1,6285 @@
+[
+ {
+  "i": 0,
+  "user": false,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "campaign.started",
+    "d": {
+     "seed": 1466412210,
+     "minute": 540,
+     "entities": [
+      {
+       "id": "pc",
+       "kind": "pc",
+       "name": "Alaric",
+       "race": "Human",
+       "age": 18,
+       "origin": "Earth",
+       "descriptors": [
+        "alaric",
+        "stranger",
+        "traveler"
+       ],
+       "status": "alive",
+       "location": "loc.ashbridge",
+       "sheet": {
+        "level": 1,
+        "class": null,
+        "stats": {
+         "STR": 5,
+         "VIT": 5,
+         "AGI": 5,
+         "INT": 5,
+         "PER": 5,
+         "WIL": 5
+        },
+        "skills": {},
+        "equipment": {
+         "clothing": "simple_travelers_clothes"
+        },
+        "inventory": {
+         "small_pouch": 1
+        },
+        "coin_cp": 50,
+        "xp": 0,
+        "free_points": 0,
+        "hp": 80,
+        "mp": 60,
+        "sta": 100
+       }
+      }
+     ],
+     "location": "loc.ashbridge",
+     "place": "public roadside verge outside Ashbridge",
+     "facts": [
+      {
+       "id": "f.pc.name",
+       "s": "pc",
+       "p": "name",
+       "o": "Alaric",
+       "visibility": "public",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      },
+      {
+       "id": "f.pc.appearance",
+       "s": "pc",
+       "p": "appearance",
+       "o": "Human, about eighteen; wears simple traveler's clothes",
+       "visibility": "public",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      },
+      {
+       "id": "f.pc.origin",
+       "s": "pc",
+       "p": "origin",
+       "o": "Earth (transmigrated; memories intact)",
+       "visibility": "secret",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      },
+      {
+       "id": "f.pc.arrival_witnesses",
+       "s": "pc",
+       "p": "arrival_witnesses",
+       "o": "none",
+       "visibility": "secret",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      }
+     ],
+     "knowledge": [
+      {
+       "who": "pc",
+       "about": "f.pc.name",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      },
+      {
+       "who": "pc",
+       "about": "f.pc.appearance",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      },
+      {
+       "who": "pc",
+       "about": "f.pc.origin",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      },
+      {
+       "who": "pc",
+       "about": "f.pc.arrival_witnesses",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      }
+     ],
+     "campaign": "avereth",
+     "content_version": "4.2.0",
+     "engine_version": "4.3.0-c.6.6.213",
+     "ruleset": 2,
+     "private_quests": false,
+     "runtime": "v4",
+     "path": "c",
+     "places": [
+      {
+       "id": "realm.valedorn_crown",
+       "name": "Valedorn Crown",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.caelreth",
+       "name": "Caelreth",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.duskreach",
+       "name": "Duskreach",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.ashen_scale_dominion",
+       "name": "Ashen Scale Dominion",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.ashen_scale_dominion",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.verdant_fang_court",
+       "name": "Verdant Fang Court",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.verdant_fang_court",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.alderwatch",
+       "name": "Alderwatch",
+       "kind": "settlement",
+       "sub": "city",
+       "parent": "realm.valedorn_crown",
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.alderwatch.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.alderwatch",
+       "realm": "realm.valedorn_crown",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.glassmere",
+       "name": "Glassmere",
+       "kind": "settlement",
+       "sub": "city",
+       "parent": "realm.caelreth",
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.glassmere.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.glassmere",
+       "realm": "realm.caelreth",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.ashbridge",
+       "name": "Ashbridge",
+       "kind": "settlement",
+       "sub": "city",
+       "parent": "realm.duskreach",
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.ashbridge.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.ashbridge",
+       "realm": "realm.duskreach",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.crownheart",
+       "name": "Crownheart",
+       "kind": "settlement",
+       "sub": "capital",
+       "parent": "realm.valedorn_crown",
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.crownheart.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.crownheart",
+       "realm": "realm.valedorn_crown",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.asterhall",
+       "name": "Asterhall",
+       "kind": "settlement",
+       "sub": "capital",
+       "parent": "realm.caelreth",
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.asterhall.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.asterhall",
+       "realm": "realm.caelreth",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.blackgate",
+       "name": "Blackgate",
+       "kind": "settlement",
+       "sub": "capital",
+       "parent": "realm.duskreach",
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.blackgate.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.blackgate",
+       "realm": "realm.duskreach",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.cinder_throne",
+       "name": "Cinder Throne",
+       "kind": "settlement",
+       "sub": "seat",
+       "parent": "realm.ashen_scale_dominion",
+       "realm": "realm.ashen_scale_dominion",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.thornheart",
+       "name": "Thornheart",
+       "kind": "settlement",
+       "sub": "seat",
+       "parent": "realm.verdant_fang_court",
+       "realm": "realm.verdant_fang_court",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.mossback_warrens",
+       "name": "Mossback Warrens",
+       "kind": "site",
+       "parent": "realm.duskreach",
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content",
+       "near": "loc.ashbridge",
+       "where": "a moss-grown hill half a day's walk east of Ashbridge, off the old quarry track",
+       "rooms": true,
+       "dungeon": {
+        "real": true,
+        "theme": "goblin warrens: tunnels dug into a mossy hill, crude palisades, goblin scouts and warriors, a shaman deeper down",
+        "rank": {
+         "min": "F",
+         "max": "E"
+        },
+        "levels": {
+         "1": {
+          "min": "F",
+          "max": "F"
+         },
+         "2": {
+          "min": "E",
+          "max": "E"
+         }
+        },
+        "control": "the Adventurers' Guild of Ashbridge keeps its entry ledger under a charter of the Duskreach crown",
+        "hidden": [],
+        "heard": [],
+        "guild": [
+         "theme",
+         "rank",
+         "level:1",
+         "level:2",
+         "control"
+        ]
+       }
+      },
+      {
+       "id": "loc.glimmerdeep_grotto",
+       "name": "Glimmerdeep Grotto",
+       "kind": "site",
+       "parent": "realm.caelreth",
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content",
+       "near": "loc.glassmere",
+       "where": "a cleft in the hills a morning's walk north of Glassmere, where the stream runs out of the rock",
+       "rooms": true,
+       "dungeon": {
+        "real": true,
+        "theme": "crystal caverns: glittering grottos of mana-fed crystal, crystal beetles and mineral slimes",
+        "rank": {
+         "min": "F",
+         "max": "F"
+        },
+        "levels": {
+         "1": {
+          "min": "F",
+          "max": "F"
+         }
+        },
+        "control": "a Glassmere academy of magic holds the cleft and lets registered adventurers cull its outer grottos; what they kill and the free crystal there is theirs, the deep galleries the academy's",
+        "hidden": [],
+        "heard": [],
+        "guild": [
+         "theme",
+         "rank",
+         "level:1",
+         "control"
+        ]
+       }
+      },
+      {
+       "id": "loc.old_crown_catacombs",
+       "name": "Old Crown Catacombs",
+       "kind": "site",
+       "parent": "realm.valedorn_crown",
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content",
+       "near": "loc.alderwatch",
+       "where": "beneath a ruined chapel an hour's ride west of Alderwatch",
+       "rooms": true,
+       "dungeon": {
+        "real": true,
+        "theme": "undead catacombs: burial galleries, restless skeletons, ghouls deeper down",
+        "rank": {
+         "min": "F",
+         "max": "E"
+        },
+        "levels": {
+         "1": {
+          "min": "F",
+          "max": "F"
+         },
+         "2": {
+          "min": "E",
+          "max": "E"
+         }
+        },
+        "control": "the temple wardens of Alderwatch, who ask the Guild to keep the upper galleries culled",
+        "hidden": [],
+        "heard": [],
+        "guild": [
+         "theme",
+         "rank",
+         "level:1",
+         "level:2",
+         "control"
+        ]
+       }
+      },
+      {
+       "id": "loc.ashbridge.verge",
+       "name": "public roadside verge outside Ashbridge",
+       "kind": "site",
+       "parent": "loc.ashbridge",
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content"
+      }
+     ],
+     "at": "loc.ashbridge.verge"
+    }
+   }
+  ]
+ },
+ {
+  "i": 1,
+  "user": true,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 1,
+     "input_hash": "488a02e3",
+     "input": "Mage"
+    }
+   },
+   {
+    "t": "creation.class_selected",
+    "d": {
+     "class": "mage",
+     "favored": [
+      "INT",
+      "WIL"
+     ],
+     "basic_attack": "mage.basic_attack"
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "creation.step2",
+      "class": "mage"
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 3,
+  "user": true,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 2,
+     "input_hash": "b6e3aa01",
+     "input": "Flame Lance + Arcane Wave"
+    }
+   },
+   {
+    "t": "creation.completed",
+    "d": {
+     "skills": [
+      "mage.flame_lance",
+      "mage.arcane_wave"
+     ],
+     "equip": {
+      "weapon": "starter_arcane_staff_r2",
+      "armor": "starter_light_robes"
+     },
+     "items": {},
+     "hp": 80,
+     "mp": 72,
+     "sta": 100
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "creation.complete",
+      "class": "mage",
+      "skills": [
+       "mage.flame_lance",
+       "mage.arcane_wave"
+      ],
+      "kit": [
+       "starter_arcane_staff_r2",
+       "starter_light_robes"
+      ]
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 5,
+  "user": true,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 3,
+     "input_hash": "7495a577",
+     "input": "*i walk into the city ahead and make my way over to the adventureres hall*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 37084,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "go",
+       "to": "loc.ashbridge.guild_hall",
+       "quote": "i walk into the city ahead and make my way over to the adventureres hall",
+       "within": null
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "go",
+     "status": "authorized",
+     "quote": "i walk into the city ahead and make my way over to the adventureres hall"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 3,
+     "at": "loc.ashbridge.verge",
+     "exposure": "scene",
+     "frame": "inside",
+     "phase": "day",
+     "base": 6,
+     "misses_before": 0,
+     "p": 6,
+     "roll": 19.82,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. GOES — to Adventurers' Guild hall, Ashbridge (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "i walk into the city ahead and make my way over to the adventureres hall"
+       }
+      ],
+      "expected_keys": {
+       "1": "go"
+      },
+      "auth": {
+       "go": {
+        "seq": 1,
+        "to": "loc.ashbridge.guild_hall",
+        "name": "Adventurers' Guild hall, Ashbridge",
+        "hall": true,
+        "newName": null,
+        "mode": "local",
+        "enter": null,
+        "scope": null
+       },
+       "gos": [
+        {
+         "seq": 1,
+         "to": "loc.ashbridge.guild_hall",
+         "name": "Adventurers' Guild hall, Ashbridge",
+         "hall": true,
+         "newName": null,
+         "mode": "local",
+         "enter": null,
+         "scope": null
+        }
+       ],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "inside",
+        "phase": "day",
+        "p": 6,
+        "roll": 19.82,
+        "misses": 0,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 6,
+  "user": false,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 60,
+     "why": "narration"
+    }
+   },
+   {
+    "t": "scene.moved",
+    "d": {
+     "at": "loc.ashbridge",
+     "location": "loc.ashbridge",
+     "place": "Ashbridge",
+     "reset_present": true,
+     "track_history": true
+    }
+   },
+   {
+    "t": "scene.moved",
+    "d": {
+     "at": "loc.ashbridge.guild_hall",
+     "location": "loc.ashbridge",
+     "place": "Adventurers' Guild hall, Ashbridge",
+     "reset_present": true,
+     "track_history": true
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t3.m6.ep",
+      "turn": 3,
+      "minute": 600,
+      "text": "Adventurers' Guild hall, Ashbridge: {pc}: \"*i walk into the city ahead and make my way over to the adventureres hall*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 2,
+      "kind": "episode",
+      "msg": 6
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 3,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 76161,
+     "repaired": false,
+     "deltas": 3,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 7,
+  "user": true,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 4,
+     "input_hash": "37b8f5ed",
+     "input": "*i walk up to the counter and offer my hand as i say* Hello my Name is Alaric Red and im here to register"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 10116,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "guild.register",
+       "quote": "im here to register"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "offer.created",
+    "d": {
+     "offer": {
+      "id": "offer.registration",
+      "seller": "guild",
+      "at": "loc.ashbridge.guild_hall",
+      "status": "open",
+      "canon": true,
+      "turn": 4,
+      "lines": [
+       {
+        "id": "l1",
+        "what": "Guild registration fee",
+        "kind": "service",
+        "service": "guild_registration",
+        "qty": 1,
+        "price_cp": 20
+       }
+      ]
+     }
+    }
+   },
+   {
+    "t": "decision.opened",
+    "d": {
+     "decision": {
+      "id": "dec.registration",
+      "kind": "registration",
+      "what": "Guild registration",
+      "offer": "offer.registration",
+      "at": "loc.ashbridge.guild_hall",
+      "turn": 4,
+      "price_cp": 20
+     }
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "guild.register",
+     "status": "pending",
+     "reason": "fee",
+     "quote": "im here to register"
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. REGISTERS — pending: the Guild's registration fee is 2 silver (20 cp), one-time; a new member starts at Guild Rank Novice (the Guild's ranks run Novice to Legend); Power Rank (F to S) is a person's measured strength, a separate scale the Guild reads but never grants. Let the clerk name the fee and explain; stop there: he has not agreed to pay."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "guild.register",
+        "status": "pending",
+        "reason": "fee",
+        "quote": "im here to register"
+       }
+      ],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": false,
+        "exposure": "scene",
+        "eligible": false,
+        "reason": "hard_stop"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 8,
+  "user": false,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 2,
+      "type": "fact",
+      "s": "pc",
+      "p": "power_rank",
+      "o": "F, as the clerk reads new members"
+     },
+     "rule": "engine_owned_fact",
+     "reason": "Alaric's hit points, mana, stamina, level and gear are the engine's state"
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "npc.npcguild_clerk",
+      "kind": "npc",
+      "name": null,
+      "descriptors": [
+       "clerk",
+       "thick-armed woman with gray streaking he",
+       "works the registration counter of the as",
+       "npc.guild_clerk"
+      ],
+      "traits": "thick-armed woman with gray streaking her braid, a quill tucked behind one ear, works the registration counter of the Ashbridge Guild hall",
+      "status": "alive",
+      "location": "loc.ashbridge",
+      "created": {
+       "turn": 4,
+       "minute": 600
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 8
+      },
+      "card": {},
+      "template": "commoner"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "npc.npcguild_clerk",
+     "band": "ENGAGED"
+    }
+   },
+   {
+    "t": "scene.tactical",
+    "d": {
+     "id": "npc.npcguild_clerk",
+     "relevant": true,
+     "threat": false
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_npcguild_clerk.occupation.30b90ecf.t4",
+      "s": "npc.npcguild_clerk",
+      "p": "occupation",
+      "o": "clerk",
+      "since": {
+       "turn": 4,
+       "minute": 600
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 8
+      }
+     }
+    }
+   },
+   {
+    "t": "object.created",
+    "d": {
+     "object": {
+      "id": "obj.t8.measuring_stone",
+      "name": "measuring stone",
+      "kind": "item",
+      "stack": false,
+      "qty": 1,
+      "unit": null,
+      "use": "tool",
+      "holder": {
+       "loc": "loc.ashbridge.guild_hall"
+      },
+      "marks": [],
+      "for_quests": [],
+      "source": {
+       "turn": 4,
+       "how": "story"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcguild_clerk",
+     "about": "f.pc.appearance",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 4,
+     "minute": 600
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t4.seen.npc.npcguild_clerk",
+      "turn": 4,
+      "minute": 600,
+      "text": "first saw {pc} at Adventurers' Guild hall, Ashbridge",
+      "who": [
+       "npc.npcguild_clerk",
+       "pc"
+      ],
+      "witnesses": [
+       "npc.npcguild_clerk"
+      ],
+      "seen": [
+       "npc.npcguild_clerk"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 4,
+      "kind": "meeting"
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcguild_clerk",
+     "about": "f.pc.name",
+     "stance": "knows",
+     "source": "told:pc",
+     "turn": 4,
+     "minute": 600
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t4.m8.ep",
+      "turn": 4,
+      "minute": 600,
+      "text": "Adventurers' Guild hall, Ashbridge: {pc}: \"*i walk up to the counter and offer my hand as i say* Hello my Name is Alaric Red and im here to register\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 8
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 4,
+     "rolled": false,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 1,
+      "creatures": 0,
+      "features": 0,
+      "objects": 1,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 35702,
+     "repaired": false,
+     "deltas": 3,
+     "rejected": 1
+    }
+   }
+  ]
+ },
+ {
+  "i": 9,
+  "user": true,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 5,
+     "input_hash": "8806462e",
+     "input": "*i pay the 2 silver and finish the registration*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 7759,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "offer.accept",
+       "offer": "offer.registration",
+       "lines": [
+        "l1"
+       ],
+       "qty": null,
+       "party_words": null,
+       "agreed_cp": 20,
+       "price_evidence": {
+        "basis": "total",
+        "quote": "2 silver",
+        "currency_quote": "silver"
+       },
+       "quote": "i pay the 2 silver and finish the registration"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "transaction.completed",
+    "d": {
+     "offer": "offer.registration",
+     "lines": [
+      "l1"
+     ],
+     "cp": 20,
+     "seller": "guild"
+    }
+   },
+   {
+    "t": "coin.changed",
+    "d": {
+     "id": "pc",
+     "value": 30,
+     "delta": -20,
+     "why": "Guild registration fee"
+    }
+   },
+   {
+    "t": "offer.closed",
+    "d": {
+     "id": "offer.registration",
+     "status": "accepted"
+    }
+   },
+   {
+    "t": "guild.registered",
+    "d": {
+     "rank": "Novice",
+     "branch": "loc.ashbridge",
+     "power_rank": "F"
+    }
+   },
+   {
+    "t": "object.created",
+    "d": {
+     "object": {
+      "id": "obj.guild_plate",
+      "name": "Guild plate",
+      "kind": "document",
+      "stack": false,
+      "qty": 1,
+      "unit": null,
+      "holder": {
+       "entity": "pc"
+      },
+      "marks": [
+       {
+        "text": "Novice stamp",
+        "by": "guild",
+        "turn": 5
+       }
+      ],
+      "for_quests": [],
+      "source": {
+       "turn": 5,
+       "how": "guild"
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.pc.guild_rank.d0460f90.t5",
+      "s": "pc",
+      "p": "guild_rank",
+      "o": "Novice",
+      "since": {
+       "turn": 5,
+       "minute": 600
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.7,
+      "hard": false,
+      "source": {
+       "kind": "engine"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcguild_clerk",
+     "about": "f.pc.guild_rank.d0460f90.t5",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 5,
+     "minute": 600
+    }
+   },
+   {
+    "t": "decision.closed",
+    "d": {
+     "id": "dec.registration",
+     "status": "accepted"
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "offer.accept",
+     "status": "resolved",
+     "quote": "i pay the 2 silver and finish the registration"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 5,
+     "at": "loc.ashbridge.guild_hall",
+     "exposure": "scene",
+     "frame": "inside",
+     "phase": "day",
+     "base": 6,
+     "misses_before": 1,
+     "p": 6.9,
+     "roll": 60.28,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. PAYS — the Guild registration fee, 20 cp: registered at Guild Rank Novice; the crystal reads his Power Rank: F (his measured strength, a separate scale from the Guild's ranks); he receives his Guild plate. Desk, crystal measurement and handover are one service inside the Guild hall. Describe the routine in place; only actual witnesses know it."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "offer.accept",
+        "status": "resolved",
+        "quote": "i pay the 2 silver and finish the registration"
+       }
+      ],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "inside",
+        "phase": "day",
+        "p": 6.9,
+        "roll": 60.28,
+        "misses": 1,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": true,
+       "grants": [
+        "Guild plate"
+       ],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": [],
+      "coin": [
+       {
+        "kind": "purchase",
+        "delta": -20,
+        "before": 50,
+        "after": 30,
+        "why": "Guild registration fee"
+       }
+      ]
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 10,
+  "user": false,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 1,
+      "type": "learn",
+      "who": "npc.npcguild_clerk",
+      "s": "npc.npcguild_clerk",
+      "p": "name",
+      "o": "Alaric Red",
+      "how": "witnessed"
+     },
+     "rule": "identity_subject",
+     "reason": "\"Alaric Red\" is Alaric's name, not the clerk's: what someone learns of him is about pc"
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t5.m10.ep",
+      "turn": 5,
+      "minute": 600,
+      "text": "Adventurers' Guild hall, Ashbridge: {pc}: \"*i pay the 2 silver and finish the registration*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 10
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 5,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 10308,
+     "repaired": false,
+     "deltas": 1,
+     "rejected": 1
+    }
+   }
+  ]
+ },
+ {
+  "i": 11,
+  "user": true,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 6,
+     "input_hash": "076a4897",
+     "input": "thank you *i say and then walk over to the questboard and look at it*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 6940,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "board.read",
+       "rank": null,
+       "quote": "i say and then walk over to the questboard and look at it"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "offer.created",
+    "d": {
+     "offer": {
+      "id": "offer.manuals.locashbridgeguild_hall",
+      "seller": "npc.npcguild_clerk",
+      "at": "loc.ashbridge.guild_hall",
+      "status": "open",
+      "canon": true,
+      "stock": "manuals",
+      "turn": 6,
+      "lines": [
+       {
+        "id": "strike",
+        "what": "Primer of Strike",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "strike",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "bolt",
+        "what": "Primer of Bolt",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "bolt",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "guard",
+        "what": "Primer of Guard",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "guard",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "ward",
+        "what": "Primer of Ward",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "ward",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "mend",
+        "what": "Primer of Mend",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "mend",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "realm.duskreach.old_quarry_track_east_of_ashbridge",
+      "name": "old quarry track east of Ashbridge",
+      "kind": "site",
+      "parent": "realm.duskreach",
+      "realm": "realm.duskreach",
+      "tags": [],
+      "known": "reported",
+      "reports": [],
+      "by": "guild",
+      "created": {
+       "turn": 6,
+       "minute": 600
+      },
+      "population": {
+       "anchor": "boar",
+       "species": "boar",
+       "levels": [
+        1,
+        3
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.cull_the_quarry_track_boars",
+      "title": "Cull the Quarry Track Boars",
+      "kind": "guild_contract",
+      "client": "Quarry track hauliers' cartel",
+      "giver": null,
+      "rank": "Novice",
+      "level": 3,
+      "qtype": "standard",
+      "payout_cp": 80,
+      "reward": "80 cp",
+      "task": "Kill 3 boars at old quarry track east of Ashbridge. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+      "desired_end_state": "3 boars killed at old quarry track east of Ashbridge.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "boars",
+        "qty": 3,
+        "unit": "boars",
+        "where": "old quarry track east of Ashbridge",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.ashbridge.guild_hall",
+       "branch": "loc.ashbridge",
+       "listed": {
+        "turn": 6,
+        "minute": 600,
+        "day": 1
+       },
+       "profile": "count_hunt_clear"
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 600,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "hunt": {
+       "at": "realm.duskreach.old_quarry_track_east_of_ashbridge",
+       "age": "adult"
+      },
+      "count_rule": "killed"
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "realm.duskreach.eel_weirs_and_reedbanks_by_the_river_near_ashbridge",
+      "name": "eel weirs and reedbanks by the river near Ashbridge",
+      "kind": "site",
+      "parent": "realm.duskreach",
+      "realm": "realm.duskreach",
+      "tags": [],
+      "known": "reported",
+      "reports": [],
+      "by": "guild",
+      "created": {
+       "turn": 6,
+       "minute": 600
+      },
+      "population": {
+       "anchor": "serpent",
+       "species": "water serpent",
+       "levels": [
+        1,
+        3
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.thin_the_reedbank_serpents",
+      "title": "Thin the Reedbank Serpents",
+      "kind": "guild_contract",
+      "client": "Ashbridge eel-fishers' wharf",
+      "giver": null,
+      "rank": "Novice",
+      "level": 2,
+      "qtype": "minor",
+      "payout_cp": 55,
+      "reward": "55 cp",
+      "task": "Kill 2 water serpents at eel weirs and reedbanks by the river near Ashbridge. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+      "desired_end_state": "2 water serpents killed at eel weirs and reedbanks by the river near Ashbridge.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "water serpents",
+        "qty": 2,
+        "unit": "serpents",
+        "where": "eel weirs and reedbanks by the river near Ashbridge",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.ashbridge.guild_hall",
+       "branch": "loc.ashbridge",
+       "listed": {
+        "turn": 6,
+        "minute": 600,
+        "day": 1
+       },
+       "profile": "count_hunt_clear"
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 600,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "hunt": {
+       "at": "realm.duskreach.eel_weirs_and_reedbanks_by_the_river_near_ashbridge",
+       "age": "adult"
+      },
+      "count_rule": "killed"
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "realm.duskreach.tannery_runoff_ditch_ashbridge_outskirts",
+      "name": "tannery runoff ditch, Ashbridge outskirts",
+      "kind": "site",
+      "parent": "realm.duskreach",
+      "realm": "realm.duskreach",
+      "tags": [],
+      "known": "reported",
+      "reports": [],
+      "by": "guild",
+      "created": {
+       "turn": 6,
+       "minute": 600
+      },
+      "population": {
+       "anchor": "rat",
+       "species": "giant rat",
+       "levels": [
+        1,
+        1
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.a_single_beast_at_the_tannery_runoff",
+      "title": "A Single Beast at the Tannery Runoff",
+      "kind": "guild_contract",
+      "client": "Master tanner Odrik of Ashbridge",
+      "giver": null,
+      "rank": "Novice",
+      "level": 1,
+      "qtype": "minor",
+      "payout_cp": 40,
+      "reward": "40 cp",
+      "task": "Kill 1 giant rat at tannery runoff ditch, Ashbridge outskirts. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+      "desired_end_state": "1 giant rat killed at tannery runoff ditch, Ashbridge outskirts.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "giant rat",
+        "qty": 1,
+        "unit": "rat",
+        "where": "tannery runoff ditch, Ashbridge outskirts",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.ashbridge.guild_hall",
+       "branch": "loc.ashbridge",
+       "listed": {
+        "turn": 6,
+        "minute": 600,
+        "day": 1
+       },
+       "profile": "count_hunt_clear"
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 600,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "hunt": {
+       "at": "realm.duskreach.tannery_runoff_ditch_ashbridge_outskirts",
+       "age": "adult"
+      },
+      "count_rule": "killed"
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "realm.duskreach.gorsefield_pastures_west_of_ashbridge",
+      "name": "Gorsefield pastures west of Ashbridge",
+      "kind": "site",
+      "parent": "realm.duskreach",
+      "realm": "realm.duskreach",
+      "tags": [],
+      "known": "reported",
+      "reports": [],
+      "by": "guild",
+      "created": {
+       "turn": 6,
+       "minute": 600
+      },
+      "population": {
+       "anchor": "wolf",
+       "species": "wolf",
+       "levels": [
+        4,
+        7
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.cull_the_gorsefield_wolves",
+      "title": "Cull the Gorsefield Wolves",
+      "kind": "guild_contract",
+      "client": "Sheep reeves of the Gorsefield hamlets",
+      "giver": null,
+      "rank": "Novice",
+      "level": 5,
+      "qtype": "dangerous",
+      "payout_cp": 160,
+      "reward": "160 cp",
+      "task": "Kill 4 wolves at Gorsefield pastures west of Ashbridge. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+      "desired_end_state": "4 wolves killed at Gorsefield pastures west of Ashbridge.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "wolves",
+        "qty": 4,
+        "unit": "wolves",
+        "where": "Gorsefield pastures west of Ashbridge",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.ashbridge.guild_hall",
+       "branch": "loc.ashbridge",
+       "listed": {
+        "turn": 6,
+        "minute": 600,
+        "day": 1
+       },
+       "profile": "count_hunt_clear"
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 600,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "hunt": {
+       "at": "realm.duskreach.gorsefield_pastures_west_of_ashbridge",
+       "age": "adult"
+      },
+      "count_rule": "killed"
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.clear_mossback_warrens_level_1",
+      "title": "Clear Mossback Warrens Level 1",
+      "kind": "guild_contract",
+      "client": "Adventurers' Guild of Ashbridge",
+      "giver": null,
+      "rank": "Novice",
+      "level": 4,
+      "qtype": "dangerous",
+      "payout_cp": 150,
+      "reward": "150 cp",
+      "task": "Clear level 1 of Mossback Warrens. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedition.",
+      "desired_end_state": "Level 1 of Mossback Warrens is clear.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "goblin scouts and warriors of Mossback Warrens level 1",
+        "qty": null,
+        "unit": null,
+        "where": "Mossback Warrens, level 1",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.ashbridge.guild_hall",
+       "branch": "loc.ashbridge",
+       "listed": {
+        "turn": 6,
+        "minute": 600,
+        "day": 1
+       }
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 600,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "clear": {
+       "dungeon": "loc.mossback_warrens",
+       "floor": 1
+      },
+      "dungeon": "loc.mossback_warrens",
+      "floor": 1
+     }
+    }
+   },
+   {
+    "t": "board.refreshed",
+    "d": {
+     "key": "loc.ashbridge|Novice",
+     "branch": "loc.ashbridge",
+     "rank": "Novice",
+     "day": 1,
+     "listings": [
+      "quest.cull_the_quarry_track_boars",
+      "quest.thin_the_reedbank_serpents",
+      "quest.a_single_beast_at_the_tannery_runoff",
+      "quest.cull_the_gorsefield_wolves",
+      "quest.clear_mossback_warrens_level_1"
+     ]
+    }
+   },
+   {
+    "t": "board.shown",
+    "d": {
+     "branch": "loc.ashbridge",
+     "rank": "Novice",
+     "listings": [
+      "quest.cull_the_quarry_track_boars",
+      "quest.thin_the_reedbank_serpents",
+      "quest.a_single_beast_at_the_tannery_runoff",
+      "quest.cull_the_gorsefield_wolves",
+      "quest.clear_mossback_warrens_level_1"
+     ]
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "board.read",
+     "status": "resolved",
+     "quote": "i say and then walk over to the questboard and look at it"
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. READS the Novice board — BOARD (these listings now become canonical because Alaric actually reads them; System cards display the official catalogue once this read is confirmed. Tell the reading briefly, atmosphere and NPC reactions; do not reproduce the catalogue or repeat every title, objective, reward and risk line. Discussing an individual contract or answering requested details is allowed. Invent no other official contract; these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display):\nREFERENCE ONLY — authoritative contract data, not a prose catalogue:\n**Cull the Quarry Track Boars** (3) · 3 kills total · reported individuals L1–3 · kills are a total contract goal, not encounter group size; groups may be dangerous — client: Quarry track hauliers' cartel · reward: 80 cp · Kill 3 boars at old quarry track east of Ashbridge. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Thin the Reedbank Serpents** (2) · 2 kills total · reported individuals L1–3 · kills are a total contract goal, not encounter group size; groups may be dangerous — client: Ashbridge eel-fishers' wharf · reward: 55 cp · Kill 2 water serpents at eel weirs and reedbanks by the river near Ashbridge. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**A Single Beast at the Tannery Runoff** (1) · 1 kills total · reported individuals L1–1 · kills are a total contract goal, not encounter group size; groups may be dangerous — client: Master tanner Odrik of Ashbridge · reward: 40 cp · Kill 1 giant rat at tannery runoff ditch, Ashbridge outskirts. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Cull the Gorsefield Wolves** (4) · 4 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 — client: Sheep reeves of the Gorsefield hamlets · reward: 160 cp · Kill 4 wolves at Gorsefield pastures west of Ashbridge. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Clear Mossback Warrens Level 1** — Clear Mossback Warrens, level 1 — client: Adventurers' Guild of Ashbridge · reward: 150 cp · Clear level 1 of Mossback Warrens. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedition.\nStored objectives and any verification examples are continuity memory only."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "board.read",
+        "status": "resolved",
+        "quote": "i say and then walk over to the questboard and look at it"
+       }
+      ],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": false,
+        "exposure": "scene",
+        "eligible": false,
+        "reason": "board"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": {
+       "branch": "loc.ashbridge",
+       "rank": "Novice",
+       "listings": [
+        "quest.cull_the_quarry_track_boars",
+        "quest.thin_the_reedbank_serpents",
+        "quest.a_single_beast_at_the_tannery_runoff",
+        "quest.cull_the_gorsefield_wolves",
+        "quest.clear_mossback_warrens_level_1"
+       ]
+      },
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": [],
+      "engine_lines": [
+       "SHOP — Guild: Primer of Strike · 1 for 80 cp · manual · F · teaches strike · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Bolt · 1 for 80 cp · manual · F · teaches bolt · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Guard · 1 for 80 cp · manual · F · teaches guard · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Ward · 1 for 80 cp · manual · F · teaches ward · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Mend · 1 for 80 cp · manual · F · teaches mend · value guide ~120 cp each (not the asking price)",
+       "SYSTEM — GUILD BOARD · Novice · Ashbridge",
+       "Cull the Quarry Track Boars (3) · 3 kills total · reported individuals L1–3 · kills are a total contract goal, not encounter group size; groups may be dangerous · Novice · client: Quarry track hauliers' cartel · reward: 80 cp (8 Silver) · Kill 3 boars at old quarry track east of Ashbridge. Only engine-recorded kills of this population count. Return to the G",
+       "Thin the Reedbank Serpents (2) · 2 kills total · reported individuals L1–3 · kills are a total contract goal, not encounter group size; groups may be dangerous · Novice · client: Ashbridge eel-fishers' wharf · reward: 55 cp (5 Silver 5 Copper) · Kill 2 water serpents at eel weirs and reedbanks by the river near Ashbridge. Only engine-recorded kills of this populat",
+       "A Single Beast at the Tannery Runoff (1) · 1 kills total · reported individuals L1–1 · kills are a total contract goal, not encounter group size; groups may be dangerous · Novice · client: Master tanner Odrik of Ashbridge · reward: 40 cp (4 Silver) · Kill 1 giant rat at tannery runoff ditch, Ashbridge outskirts. Only engine-recorded kills of this population count. Retu",
+       "Cull the Gorsefield Wolves (4) · 4 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 · Novice · client: Sheep reeves of the Gorsefield hamlets · reward: 160 cp (1 Gold 6 Silver) · Kill 4 wolves at Gorsefield pastures west of Ashbridge. Only engine-recorded kills of this population count. Return to t",
+       "Clear Mossback Warrens Level 1 — Clear Mossback Warrens, level 1 · Novice · quest level 4 · client: Adventurers' Guild of Ashbridge · reward: 150 cp (1 Gold 5 Silver) · Clear level 1 of Mossback Warrens. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedi"
+      ]
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 12,
+  "user": false,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 5,
+     "why": "narration"
+    }
+   },
+   {
+    "t": "scene.awareness",
+    "d": {
+     "id": "npc.npcguild_clerk",
+     "level": "aware"
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t6.m12.ep",
+      "turn": 6,
+      "minute": 605,
+      "text": "Adventurers' Guild hall, Ashbridge: {pc}: \"thank you *i say and then walk over to the questboard and look at it*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 12
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 6,
+     "rolled": false,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 42047,
+     "repaired": false,
+     "deltas": 2,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 13,
+  "user": true,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 7,
+     "input_hash": "f87039a6",
+     "input": "Annehmen: Clear Mossback Warrens Level 1"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 0,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "quest.accept",
+       "quest": "quest.clear_mossback_warrens_level_1"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "quest.status",
+    "d": {
+     "id": "quest.clear_mossback_warrens_level_1",
+     "from": "listed",
+     "to": "active",
+     "taker": "pc",
+     "at": "loc.ashbridge.guild_hall",
+     "step": 1
+    }
+   },
+   {
+    "t": "board.refreshed",
+    "d": {
+     "key": "loc.ashbridge|Novice",
+     "branch": "loc.ashbridge",
+     "rank": "Novice",
+     "day": 1,
+     "listings": [
+      "quest.cull_the_quarry_track_boars",
+      "quest.thin_the_reedbank_serpents",
+      "quest.a_single_beast_at_the_tannery_runoff",
+      "quest.cull_the_gorsefield_wolves"
+     ]
+    }
+   },
+   {
+    "t": "object.created",
+    "d": {
+     "object": {
+      "id": "obj.slip.clear_mossback_warrens_level_1",
+      "name": "Guild contract slip: Clear Mossback Warrens Level 1",
+      "kind": "document",
+      "stack": false,
+      "qty": 1,
+      "unit": null,
+      "holder": {
+       "entity": "pc"
+      },
+      "marks": [],
+      "for_quests": [
+       "quest.clear_mossback_warrens_level_1"
+      ],
+      "source": {
+       "turn": 7,
+       "how": "guild"
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.pc.accepted.quest.clear_mossback_warrens_level_1",
+      "s": "pc",
+      "p": "accepted_contract",
+      "o": "Clear Mossback Warrens Level 1",
+      "since": {
+       "turn": 7,
+       "minute": 605
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.7,
+      "hard": false,
+      "source": {
+       "kind": "engine"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcguild_clerk",
+     "about": "f.pc.accepted.quest.clear_mossback_warrens_level_1",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 7,
+     "minute": 605
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "quest.accept",
+     "status": "resolved",
+     "quote": null
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 7,
+     "at": "loc.ashbridge.guild_hall",
+     "exposure": "scene",
+     "frame": "inside",
+     "phase": "day",
+     "base": 6,
+     "misses_before": 2,
+     "p": 7.8,
+     "roll": 88.9,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. ACCEPTS — \"Clear Mossback Warrens Level 1\" at the Guild desk; the clerk logs it and hands him its contract slip. Contract memory: Level 1 of Mossback Warrens is clear.. Proof: the contract slip itself; its Guild seal shows READY once the world has established the outcome (the engine marks it). No trophies or body parts are required or handed over; what he takes from his kills is his own loot. The stored objectives and any verification examples are continuity guidance, not mandatory steps or wording. Payout (150 cp), XP, completed-contract credit and promotion remain engine-owned at explicit turn-in."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "quest.accept",
+        "status": "resolved",
+        "quote": null
+       }
+      ],
+      "expected_keys": {
+       "1": "desk"
+      },
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "inside",
+        "phase": "day",
+        "p": 7.8,
+        "roll": 88.9,
+        "misses": 2,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [
+        "contract slip"
+       ],
+       "turnIns": [],
+       "accepted": [
+        "quest.clear_mossback_warrens_level_1"
+       ],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": [],
+      "desk": {
+       "1": {
+        "quest": "quest.clear_mossback_warrens_level_1",
+        "kind": "accept"
+       }
+      }
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 14,
+  "user": false,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "quest.detailed",
+    "d": {
+     "id": "quest.clear_mossback_warrens_level_1",
+     "note": "Clerk: Level One is the shallow floor, goblin scouts and warriors by the last reports; folk who linger down there are the ones the Guild sends people after. Staff is good for goblins in the open, but ",
+     "schedule": null
+    }
+   },
+   {
+    "t": "quest.detailed",
+    "d": {
+     "id": "quest.clear_mossback_warrens_level_1",
+     "note": "Route: the warrens lie east of Ashbridge off the old quarry track, half a day's walk to the moss-grown hill; water pools in the low ground around it, so mind your footing. Bring the slip back when the",
+     "schedule": null
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t7.m14.ep",
+      "turn": 7,
+      "minute": 605,
+      "text": "Adventurers' Guild hall, Ashbridge: {pc}: \"Annehmen: Clear Mossback Warrens Level 1\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 14
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 7,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 48018,
+     "repaired": true,
+     "deltas": 2,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 15,
+  "user": true,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 8,
+     "input_hash": "61070213",
+     "input": "*i nod and then i start making my way over to the Mossback Warrens*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 5378,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "go",
+       "to": "loc.mossback_warrens",
+       "quote": "i start making my way over to the Mossback Warrens",
+       "within": null
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "dungeon.established",
+    "d": {
+     "dungeon": {
+      "id": "loc.mossback_warrens",
+      "name": "Mossback Warrens",
+      "since": {
+       "turn": 8,
+       "minute": 605
+      },
+      "seed": "1466412210|loc.mossback_warrens",
+      "gate": {
+       "names": [
+        "warren mouth",
+        "palisade gate",
+        "palisade",
+        "mossy hill"
+       ],
+       "text": "the palisaded mouth of the warrens in the hillside",
+       "requires": "guild",
+       "fee_cp": 0,
+       "keeper": "the Guild's ledger-keeper at the palisade"
+      },
+      "capacity": 8,
+      "reset_min": 4320,
+      "floors": {
+       "1": {
+        "rank": {
+         "min": "F",
+         "max": "F"
+        },
+        "spans": {
+         "minion": [
+          1,
+          5
+         ],
+         "guard": [
+          4,
+          8
+         ],
+         "boss": [
+          5,
+          9
+         ]
+        },
+        "slots": [
+         {
+          "id": "scouts",
+          "role": "minion",
+          "species": [
+           "goblin scout",
+           "goblin lookout"
+          ],
+          "anchor": "goblin",
+          "count": [
+           2,
+           3
+          ]
+         },
+         {
+          "id": "warband",
+          "role": "minion",
+          "species": [
+           "goblin warrior",
+           "goblin spearman"
+          ],
+          "anchor": "goblin",
+          "count": [
+           2,
+           3
+          ]
+         },
+         {
+          "id": "chief",
+          "role": "guard",
+          "name": "the Palisade Chief",
+          "species": "goblin chief",
+          "anchor": "goblin"
+         }
+        ],
+        "manifest": "the war-drum deeper in the tunnels falls silent and the crude barricade before the lower tunnels stands unmanned",
+        "sealed": false,
+        "pace": [
+         0,
+         1
+        ]
+       },
+       "2": {
+        "rank": {
+         "min": "E",
+         "max": "E"
+        },
+        "spans": {
+         "minion": [
+          15,
+          19
+         ],
+         "guard": [
+          18,
+          22
+         ],
+         "boss": [
+          20,
+          24
+         ]
+        },
+        "slots": [
+         {
+          "id": "guards",
+          "role": "minion",
+          "species": [
+           "goblin warrior",
+           "goblin brute"
+          ],
+          "anchor": "goblin",
+          "count": [
+           2,
+           3
+          ]
+         },
+         {
+          "id": "shaman",
+          "role": "boss",
+          "name": "the Moss Shaman",
+          "species": "goblin shaman",
+          "anchor": "goblin_shaman"
+         }
+        ],
+        "manifest": "the green fire in the shaman's hollow gutters out and the warrens go quiet",
+        "sealed": false,
+        "pace": [
+         0,
+         1
+        ]
+       }
+      },
+      "parties": [
+       {
+        "id": "party.grey_pennants",
+        "name": "the Grey Pennants",
+        "size": 4,
+        "leader": "Corvin Ash",
+        "affiliation": "a crew of independent delvers",
+        "reach": 2
+       },
+       {
+        "id": "party.three_oaks_company",
+        "name": "the Three Oaks Company",
+        "size": 2,
+        "leader": "Old Harl",
+        "affiliation": "a Guild-registered company",
+        "reach": 1
+       }
+      ],
+      "resources_spec": [],
+      "cycle": 1,
+      "cycle_start": 605,
+      "booked_to": 605,
+      "inside": {},
+      "clears": [],
+      "ahead": null,
+      "pass": null,
+      "run": {
+       "floors": {
+        "1": {
+         "parts": 0,
+         "pace": [
+          0,
+          1,
+          0
+         ],
+         "slots": [
+          {
+           "id": "scouts",
+           "role": "minion",
+           "name": null,
+           "species": "goblin scout",
+           "anchor": "goblin",
+           "count": 3,
+           "type": null,
+           "levels": [
+            2,
+            1,
+            5
+           ],
+           "ref": "mossback_warrens_c1_l1_e1",
+           "entities": [],
+           "at": null,
+           "taken": null
+          },
+          {
+           "id": "warband",
+           "role": "minion",
+           "name": null,
+           "species": "goblin warrior",
+           "anchor": "goblin",
+           "count": 3,
+           "type": null,
+           "levels": [
+            3,
+            2,
+            1
+           ],
+           "ref": "mossback_warrens_c1_l1_e2",
+           "entities": [],
+           "at": null,
+           "taken": null
+          },
+          {
+           "id": "chief",
+           "role": "guard",
+           "name": "the Palisade Chief",
+           "species": "goblin chief",
+           "anchor": "goblin",
+           "count": 1,
+           "type": null,
+           "levels": [
+            8
+           ],
+           "ref": "mossback_warrens_c1_l1_e3",
+           "entities": [],
+           "at": null,
+           "taken": null
+          }
+         ],
+         "cleared": null
+        },
+        "2": {
+         "parts": 0,
+         "pace": [
+          0,
+          0
+         ],
+         "slots": [
+          {
+           "id": "guards",
+           "role": "minion",
+           "name": null,
+           "species": "goblin warrior",
+           "anchor": "goblin",
+           "count": 3,
+           "type": null,
+           "levels": [
+            15,
+            19,
+            17
+           ],
+           "ref": "mossback_warrens_c1_l2_e1",
+           "entities": [],
+           "at": null,
+           "taken": null
+          },
+          {
+           "id": "shaman",
+           "role": "boss",
+           "name": "the Moss Shaman",
+           "species": "goblin shaman",
+           "anchor": "goblin_shaman",
+           "count": 1,
+           "type": null,
+           "levels": [
+            21
+           ],
+           "ref": "mossback_warrens_c1_l2_e2",
+           "entities": [],
+           "at": null,
+           "taken": null
+          }
+         ],
+         "cleared": null
+        }
+       },
+       "resources": {}
+      }
+     }
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "go",
+     "status": "authorized",
+     "quote": "i start making my way over to the Mossback Warrens"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 8,
+     "at": "loc.ashbridge.guild_hall",
+     "exposure": "travel",
+     "frame": "travel",
+     "phase": "day",
+     "base": 35,
+     "misses_before": 3,
+     "p": 50.75,
+     "roll": 42.07,
+     "open": true,
+     "kind": "danger",
+     "leg": 1
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. GOES — to Mossback Warrens (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+      ],
+      "extra": [
+       "THE ROAD — PULSE (the engine's; day): on this leg toward Mossback Warrens ONE concrete thing happens: DANGER: ONE group of this land's people or creatures turns on him or bars his way with hostile intent; its strength is the land's (AREA LEVELS, populations), never his; nobody else joins it. It is a real stop short of Mossback Warrens (the one exception to carrying the way forward); what he does about it is his decision. If nothing of this kind can fit what he does, nothing happens."
+      ],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "i start making my way over to the Mossback Warrens"
+       }
+      ],
+      "expected_keys": {
+       "1": "go"
+      },
+      "auth": {
+       "go": {
+        "seq": 1,
+        "to": "loc.mossback_warrens",
+        "name": "Mossback Warrens",
+        "hall": false,
+        "newName": null,
+        "mode": "dungeon",
+        "enter": {
+         "dungeon": "loc.mossback_warrens",
+         "root": "loc.mossback_warrens",
+         "gate": false
+        },
+        "scope": "loc.mossback_warrens"
+       },
+       "gos": [
+        {
+         "seq": 1,
+         "to": "loc.mossback_warrens",
+         "name": "Mossback Warrens",
+         "hall": false,
+         "newName": null,
+         "mode": "dungeon",
+         "enter": {
+          "dungeon": "loc.mossback_warrens",
+          "root": "loc.mossback_warrens",
+          "gate": false
+         },
+         "scope": "loc.mossback_warrens"
+        }
+       ],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 10080,
+       "road": "open",
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "travel",
+        "eligible": true,
+        "frame": "travel",
+        "phase": "day",
+        "p": 50.75,
+        "roll": 42.07,
+        "misses": 3,
+        "open": true,
+        "kind": "danger"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 16,
+  "user": false,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 210,
+     "why": "narration"
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "npc.npcguild_clerk",
+     "set": {
+      "at": "loc.ashbridge.guild_hall"
+     }
+    }
+   },
+   {
+    "t": "scene.moved",
+    "d": {
+     "at": "realm.duskreach.old_quarry_track_east_of_ashbridge",
+     "location": "realm.duskreach",
+     "place": "old quarry track east of Ashbridge",
+     "reset_present": true,
+     "track_history": true
+    }
+   },
+   {
+    "t": "place.updated",
+    "d": {
+     "id": "realm.duskreach.old_quarry_track_east_of_ashbridge",
+     "set": {
+      "known": "visited",
+      "visited": {
+       "turn": 8,
+       "minute": 815
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "npc.npctollcudgel",
+      "kind": "npc",
+      "name": null,
+      "descriptors": [
+       "bandit",
+       "broad, gap-toothed man, unshaved, mud to",
+       "planted himself on the road, turning a c",
+       "demands a toll of silver to let alaric w",
+       "npc.tollcudgel"
+      ],
+      "traits": "broad, gap-toothed man, unshaved, mud to the knees, planted himself on the road, turning a cudgel over in his hands, demands a toll of silver to let Alaric walk on",
+      "status": "alive",
+      "location": "realm.duskreach",
+      "created": {
+       "turn": 8,
+       "minute": 815
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 16
+      },
+      "card": {},
+      "template": "bandit"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "npc.npctollcudgel",
+     "band": "SHORT"
+    }
+   },
+   {
+    "t": "scene.tactical",
+    "d": {
+     "id": "npc.npctollcudgel",
+     "relevant": true,
+     "threat": true
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_npctollcudgel.occupation.8b7d437b.t8",
+      "s": "npc.npctollcudgel",
+      "p": "occupation",
+      "o": "bandit",
+      "since": {
+       "turn": 8,
+       "minute": 815
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 16
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_npctollcudgel.armed.a1454909.t8",
+      "s": "npc.npctollcudgel",
+      "p": "armed",
+      "o": "cudgel",
+      "since": {
+       "turn": 8,
+       "minute": 815
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 16
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "npc.npctollcudgel",
+     "set": {
+      "level": 3
+     }
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "npc.npctollaxe",
+      "kind": "npc",
+      "name": null,
+      "descriptors": [
+       "bandit",
+       "unshaved man with a wood axe, mud to the",
+       "drifted wide, cutting the grass verge on",
+       "npc.tollaxe"
+      ],
+      "traits": "unshaved man with a wood axe, mud to the knees, drifted wide, cutting the grass verge on Alaric's left",
+      "status": "alive",
+      "location": "realm.duskreach",
+      "created": {
+       "turn": 8,
+       "minute": 815
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 16
+      },
+      "card": {},
+      "template": "bandit"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "npc.npctollaxe",
+     "band": "SHORT"
+    }
+   },
+   {
+    "t": "scene.tactical",
+    "d": {
+     "id": "npc.npctollaxe",
+     "relevant": true,
+     "threat": true
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_npctollaxe.occupation.84c0fb41.t8",
+      "s": "npc.npctollaxe",
+      "p": "occupation",
+      "o": "bandit",
+      "since": {
+       "turn": 8,
+       "minute": 815
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 16
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_npctollaxe.armed.e27a6523.t8",
+      "s": "npc.npctollaxe",
+      "p": "armed",
+      "o": "wood axe",
+      "since": {
+       "turn": 8,
+       "minute": 815
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 16
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "npc.npctollaxe",
+     "set": {
+      "level": 1
+     }
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "npc.npctollknife",
+      "kind": "npc",
+      "name": null,
+      "descriptors": [
+       "bandit",
+       "unshaved man with a long knife, mud to t",
+       "hung back by the reeds after coming up o",
+       "npc.tollknife"
+      ],
+      "traits": "unshaved man with a long knife, mud to the knees, hung back by the reeds after coming up out of the ditch",
+      "status": "alive",
+      "location": "realm.duskreach",
+      "created": {
+       "turn": 8,
+       "minute": 815
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 16
+      },
+      "card": {},
+      "template": "bandit"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "npc.npctollknife",
+     "band": "SHORT"
+    }
+   },
+   {
+    "t": "scene.tactical",
+    "d": {
+     "id": "npc.npctollknife",
+     "relevant": true,
+     "threat": true
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_npctollknife.occupation.dce41406.t8",
+      "s": "npc.npctollknife",
+      "p": "occupation",
+      "o": "bandit",
+      "since": {
+       "turn": 8,
+       "minute": 815
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 16
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_npctollknife.armed.503ff6da.t8",
+      "s": "npc.npctollknife",
+      "p": "armed",
+      "o": "long knife",
+      "since": {
+       "turn": 8,
+       "minute": 815
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 16
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "npc.npctollknife",
+     "set": {
+      "level": 6
+     }
+    }
+   },
+   {
+    "t": "thread.set",
+    "d": {
+     "thread": {
+      "id": "thread.t8.1",
+      "text": "Three armed men bar the old quarry track east of Ashbridge, demanding a toll of silver — 'bit of silver in the pouch and you walk on' — from travellers headed to the warrens",
+      "kind": "threat",
+      "status": "open",
+      "since": {
+       "turn": 8,
+       "minute": 815
+      },
+      "updated": {
+       "turn": 8,
+       "minute": 815
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 16
+      },
+      "at": "realm.duskreach.old_quarry_track_east_of_ashbridge"
+     }
+    }
+   },
+   {
+    "t": "dungeon.party",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "party": "party.grey_pennants",
+     "kind": "enter",
+     "until": 889,
+     "minute": 633
+    }
+   },
+   {
+    "t": "dungeon.party",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "party": "party.grey_pennants",
+     "kind": "floor",
+     "floor": 1,
+     "minute": 703
+    }
+   },
+   {
+    "t": "dungeon.slot",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "cycle": 1,
+     "floor": 1,
+     "slot": "scouts",
+     "set": {
+      "taken": {
+       "party": "party.grey_pennants",
+       "minute": 703
+      }
+     }
+    }
+   },
+   {
+    "t": "dungeon.party",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "party": "party.three_oaks_company",
+     "kind": "enter",
+     "until": 934,
+     "minute": 727
+    }
+   },
+   {
+    "t": "dungeon.party",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "party": "party.grey_pennants",
+     "kind": "floor",
+     "floor": 2,
+     "minute": 773
+    }
+   },
+   {
+    "t": "dungeon.slot",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "cycle": 1,
+     "floor": 2,
+     "slot": "guards",
+     "set": {
+      "taken": {
+       "party": "party.grey_pennants",
+       "minute": 773
+      }
+     }
+    }
+   },
+   {
+    "t": "dungeon.party",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "party": "party.three_oaks_company",
+     "kind": "floor",
+     "floor": 1,
+     "minute": 797
+    }
+   },
+   {
+    "t": "dungeon.slot",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "cycle": 1,
+     "floor": 1,
+     "slot": "warband",
+     "set": {
+      "taken": {
+       "party": "party.three_oaks_company",
+       "minute": 797
+      }
+     }
+    }
+   },
+   {
+    "t": "dungeon.booked",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "to": 815
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npctollcudgel",
+     "about": "f.pc.appearance",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 8,
+     "minute": 815
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t8.seen.npc.npctollcudgel",
+      "turn": 8,
+      "minute": 815,
+      "text": "first saw {pc} at old quarry track east of Ashbridge",
+      "who": [
+       "npc.npctollcudgel",
+       "pc"
+      ],
+      "witnesses": [
+       "npc.npctollcudgel"
+      ],
+      "seen": [
+       "npc.npctollcudgel"
+      ],
+      "location": "realm.duskreach",
+      "place": "old quarry track east of Ashbridge",
+      "importance": 4,
+      "kind": "meeting"
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npctollaxe",
+     "about": "f.pc.appearance",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 8,
+     "minute": 815
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t8.seen.npc.npctollaxe",
+      "turn": 8,
+      "minute": 815,
+      "text": "first saw {pc} at old quarry track east of Ashbridge",
+      "who": [
+       "npc.npctollaxe",
+       "pc"
+      ],
+      "witnesses": [
+       "npc.npctollaxe"
+      ],
+      "seen": [
+       "npc.npctollaxe"
+      ],
+      "location": "realm.duskreach",
+      "place": "old quarry track east of Ashbridge",
+      "importance": 4,
+      "kind": "meeting"
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npctollknife",
+     "about": "f.pc.appearance",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 8,
+     "minute": 815
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t8.seen.npc.npctollknife",
+      "turn": 8,
+      "minute": 815,
+      "text": "first saw {pc} at old quarry track east of Ashbridge",
+      "who": [
+       "npc.npctollknife",
+       "pc"
+      ],
+      "witnesses": [
+       "npc.npctollknife"
+      ],
+      "seen": [
+       "npc.npctollknife"
+      ],
+      "location": "realm.duskreach",
+      "place": "old quarry track east of Ashbridge",
+      "importance": 4,
+      "kind": "meeting"
+     }
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t8.m16.ep",
+      "turn": 8,
+      "minute": 815,
+      "text": "old quarry track east of Ashbridge: {pc}: \"*i nod and then i start making my way over to the Mossback Warrens*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npctollcudgel",
+       "npc.npctollaxe",
+       "npc.npctollknife"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "realm.duskreach",
+      "place": "old quarry track east of Ashbridge",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 16
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 8,
+     "rolled": true,
+     "open": true,
+     "kind": "danger",
+     "narrated": "likely",
+     "heuristic": true,
+     "persisted": {
+      "threads": 1,
+      "npc_reentries": 0,
+      "persons": 3,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 62438,
+     "repaired": false,
+     "deltas": 6,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 17,
+  "user": true,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 9,
+     "input_hash": "f2e97d8c",
+     "input": "I didnt know there was a tax on this road *i say calmly as i get my staff ready* "
+    }
+   },
+   {
+    "t": "entity.sheet_set",
+    "d": {
+     "id": "npc.npctollcudgel",
+     "sheet": {
+      "level": 3,
+      "class": "rogue",
+      "training": "trained",
+      "stats": {
+       "STR": 9,
+       "VIT": 7,
+       "AGI": 10,
+       "INT": 5,
+       "PER": 6,
+       "WIL": 5
+      },
+      "skills": {
+       "rogue.basic_attack": {
+        "prof": 1,
+        "pp": 0
+       },
+       "rogue.guarded_cut": {
+        "prof": 1,
+        "pp": 0
+       },
+       "rogue.evasive_step": {
+        "prof": 1,
+        "pp": 0
+       }
+      },
+      "equipment": {
+       "weapon": {
+        "id": "npc_weapon",
+        "name": "Cudgel",
+        "slot": "weapon",
+        "family": "melee",
+        "atk": 6,
+        "matk": 0
+       },
+       "armor": {
+        "id": "npc_armor",
+        "name": "Worn light armor",
+        "slot": "armor",
+        "def": 2,
+        "mdef": 2
+       }
+      },
+      "inventory": {},
+      "coin_cp": 0,
+      "xp": 0,
+      "free_points": 0,
+      "hp": 100,
+      "mp": 60,
+      "sta": 100,
+      "template": "bandit",
+      "generated": {
+       "from": "npc_templates.json ruleset_2",
+       "status": "proposed",
+       "ruleset": 2,
+       "training": "trained",
+       "starters": [
+        "rogue.guarded_cut",
+        "rogue.evasive_step"
+       ],
+       "class_basis": "template",
+       "weapon_family": "melee",
+       "rank": "F",
+       "temperament": "aggressive",
+       "weapon": "established"
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.sheet_set",
+    "d": {
+     "id": "npc.npctollaxe",
+     "sheet": {
+      "level": 1,
+      "class": "rogue",
+      "training": "trained",
+      "stats": {
+       "STR": 5,
+       "VIT": 5,
+       "AGI": 6,
+       "INT": 5,
+       "PER": 6,
+       "WIL": 5
+      },
+      "skills": {
+       "rogue.basic_attack": {
+        "prof": 1,
+        "pp": 0
+       },
+       "rogue.piercing_thrust": {
+        "prof": 1,
+        "pp": 0
+       },
+       "rogue.evasive_step": {
+        "prof": 1,
+        "pp": 0
+       }
+      },
+      "equipment": {
+       "weapon": {
+        "id": "npc_weapon",
+        "name": "Wood axe",
+        "slot": "weapon",
+        "family": "melee",
+        "atk": 6,
+        "matk": 0
+       },
+       "armor": {
+        "id": "npc_armor",
+        "name": "Worn light armor",
+        "slot": "armor",
+        "def": 2,
+        "mdef": 2
+       }
+      },
+      "inventory": {},
+      "coin_cp": 0,
+      "xp": 0,
+      "free_points": 0,
+      "hp": 80,
+      "mp": 60,
+      "sta": 100,
+      "template": "bandit",
+      "generated": {
+       "from": "npc_templates.json ruleset_2",
+       "status": "proposed",
+       "ruleset": 2,
+       "training": "trained",
+       "starters": [
+        "rogue.piercing_thrust",
+        "rogue.evasive_step"
+       ],
+       "class_basis": "template",
+       "weapon_family": "melee",
+       "rank": "F",
+       "temperament": "aggressive",
+       "weapon": "established"
+      }
+     }
+    }
+   },
+   {
+    "t": "skill.defined",
+    "d": {
+     "skill": {
+      "id": "dyn.piercing_long_lunge",
+      "name": "Piercing Long Lunge",
+      "class": null,
+      "basic": false,
+      "dynamic": true,
+      "category": "Offensive / Utility",
+      "rank": "F",
+      "complexity": 2,
+      "tags": [
+       "Precision",
+       "Mobility"
+      ],
+      "aspects": [],
+      "type_text": "Physical / Melee",
+      "cost": {
+       "resource": "sta",
+       "amount": 10
+      },
+      "ammo": null,
+      "range": {
+       "band": "ENGAGED",
+       "extra_band": true,
+       "area": null
+      },
+      "attack": {
+       "base": 14,
+       "scaling": [
+        {
+         "stat": "AGI",
+         "coef": 1.92,
+         "text": "1.92"
+        }
+       ],
+       "uses": "ATK",
+       "share": 1,
+       "damage_type": "physical",
+       "ignores_partial_cover": true
+      },
+      "strikes": 1,
+      "effects": [
+       {
+        "kind": "extra_band"
+       }
+      ],
+      "effect_text": "Long Lunge, one step further: it ignores partial cover.",
+      "target": "enemy",
+      "activation": "action",
+      "origin": {
+       "kind": "signature",
+       "note": "their own way with Long Lunge"
+      },
+      "source_text": "Piercing Long Lunge [Offensive / Utility] (dynamic, signature)\nRank: F\nComplexity: 2\nTags: Precision, Mobility\nBase Power: 14\nScaling: AGI × 1.92\nUses: ATK\nRange: ENGAGED after movement\nCost: 10 STA\nEffect: Long Lunge, one step further: it ignores partial cover."
+     }
+    }
+   },
+   {
+    "t": "entity.sheet_set",
+    "d": {
+     "id": "npc.npctollknife",
+     "sheet": {
+      "level": 6,
+      "class": "rogue",
+      "training": "trained",
+      "stats": {
+       "STR": 15,
+       "VIT": 10,
+       "AGI": 16,
+       "INT": 5,
+       "PER": 6,
+       "WIL": 5
+      },
+      "skills": {
+       "rogue.basic_attack": {
+        "prof": 1,
+        "pp": 0
+       },
+       "rogue.long_lunge": {
+        "prof": 1,
+        "pp": 0
+       },
+       "rogue.feint": {
+        "prof": 1,
+        "pp": 0
+       },
+       "dyn.piercing_long_lunge": {
+        "prof": 1,
+        "pp": 0
+       }
+      },
+      "equipment": {
+       "weapon": {
+        "id": "npc_weapon",
+        "name": "Long knife",
+        "slot": "weapon",
+        "family": "melee",
+        "atk": 6,
+        "matk": 0
+       },
+       "armor": {
+        "id": "npc_armor",
+        "name": "Worn light armor",
+        "slot": "armor",
+        "def": 2,
+        "mdef": 2
+       }
+      },
+      "inventory": {},
+      "coin_cp": 0,
+      "xp": 0,
+      "free_points": 0,
+      "hp": 130,
+      "mp": 60,
+      "sta": 100,
+      "template": "bandit",
+      "generated": {
+       "from": "npc_templates.json ruleset_2",
+       "status": "proposed",
+       "ruleset": 2,
+       "training": "trained",
+       "starters": [
+        "rogue.long_lunge",
+        "rogue.feint"
+       ],
+       "class_basis": "template",
+       "weapon_family": "melee",
+       "rank": "F",
+       "temperament": "aggressive",
+       "weapon": "established",
+       "signature": "dyn.piercing_long_lunge"
+      }
+     }
+    }
+   },
+   {
+    "t": "encounter.started",
+    "d": {
+     "encounter": {
+      "id": "enc.t9",
+      "phase": "ACTIVE",
+      "round": 2,
+      "order": [
+       "npc.npctollknife",
+       "npc.npctollcudgel",
+       "npc.npctollaxe",
+       "pc"
+      ],
+      "turn_index": 3,
+      "current": "pc",
+      "combatants": {
+       "pc": {
+        "id": "pc",
+        "name": "Alaric",
+        "side": "pc",
+        "model": "character",
+        "fixed": {
+         "level": 1,
+         "rank": "F",
+         "class": "mage",
+         "stats": {
+          "STR": 5,
+          "VIT": 5,
+          "AGI": 5,
+          "INT": 6,
+          "PER": 5,
+          "WIL": 6
+         },
+         "max_hp": 80,
+         "max_mp": 72,
+         "max_sta": 100,
+         "atk": 0,
+         "matk": 10,
+         "def": 3,
+         "mdef": 4,
+         "init": 7,
+         "type": "normal",
+         "actions": {
+          "mage.basic_attack": {
+           "prof": 1,
+           "pp": 0
+          },
+          "mage.flame_lance": {
+           "prof": 1,
+           "pp": 0
+          },
+          "mage.arcane_wave": {
+           "prof": 1,
+           "pp": 0
+          }
+         },
+         "weapon_family": "focus",
+         "temperament": null,
+         "sapient": true
+        },
+        "current": {
+         "hp": 32,
+         "mp": 58,
+         "sta": 100,
+         "ammo": {},
+         "band": null,
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        }
+       },
+       "npc.npctollcudgel": {
+        "id": "npc.npctollcudgel",
+        "name": "Bandit B",
+        "side": "hostile",
+        "model": "character",
+        "fixed": {
+         "level": 3,
+         "rank": "F",
+         "class": "rogue",
+         "stats": {
+          "STR": 9,
+          "VIT": 7,
+          "AGI": 10,
+          "INT": 5,
+          "PER": 6,
+          "WIL": 5
+         },
+         "max_hp": 100,
+         "max_mp": 60,
+         "max_sta": 100,
+         "atk": 6,
+         "matk": 0,
+         "def": 3,
+         "mdef": 3,
+         "init": 15,
+         "type": "normal",
+         "actions": {
+          "rogue.basic_attack": {
+           "prof": 1,
+           "pp": 0
+          },
+          "rogue.guarded_cut": {
+           "prof": 1,
+           "pp": 0
+          },
+          "rogue.evasive_step": {
+           "prof": 1,
+           "pp": 0
+          }
+         },
+         "weapon_family": "melee",
+         "temperament": "aggressive",
+         "sapient": true,
+         "defeat_xp": 180
+        },
+        "current": {
+         "hp": 77,
+         "mp": 60,
+         "sta": 100,
+         "ammo": {},
+         "band": "SHORT",
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Bandit B"
+       },
+       "npc.npctollaxe": {
+        "id": "npc.npctollaxe",
+        "name": "Bandit A",
+        "side": "hostile",
+        "model": "character",
+        "fixed": {
+         "level": 1,
+         "rank": "F",
+         "class": "rogue",
+         "stats": {
+          "STR": 5,
+          "VIT": 5,
+          "AGI": 6,
+          "INT": 5,
+          "PER": 6,
+          "WIL": 5
+         },
+         "max_hp": 80,
+         "max_mp": 60,
+         "max_sta": 100,
+         "atk": 6,
+         "matk": 0,
+         "def": 3,
+         "mdef": 3,
+         "init": 9,
+         "type": "normal",
+         "actions": {
+          "rogue.basic_attack": {
+           "prof": 1,
+           "pp": 0
+          },
+          "rogue.piercing_thrust": {
+           "prof": 1,
+           "pp": 0
+          },
+          "rogue.evasive_step": {
+           "prof": 1,
+           "pp": 0
+          }
+         },
+         "weapon_family": "melee",
+         "temperament": "aggressive",
+         "sapient": true,
+         "defeat_xp": 60
+        },
+        "current": {
+         "hp": 60,
+         "mp": 60,
+         "sta": 100,
+         "ammo": {},
+         "band": "SHORT",
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Bandit A"
+       },
+       "npc.npctollknife": {
+        "id": "npc.npctollknife",
+        "name": "Bandit C",
+        "side": "hostile",
+        "model": "character",
+        "fixed": {
+         "level": 6,
+         "rank": "F",
+         "class": "rogue",
+         "stats": {
+          "STR": 15,
+          "VIT": 10,
+          "AGI": 16,
+          "INT": 5,
+          "PER": 6,
+          "WIL": 5
+         },
+         "max_hp": 130,
+         "max_mp": 60,
+         "max_sta": 100,
+         "atk": 6,
+         "matk": 0,
+         "def": 4,
+         "mdef": 3,
+         "init": 24,
+         "type": "normal",
+         "actions": {
+          "rogue.basic_attack": {
+           "prof": 1,
+           "pp": 0
+          },
+          "rogue.long_lunge": {
+           "prof": 1,
+           "pp": 0
+          },
+          "rogue.feint": {
+           "prof": 1,
+           "pp": 0
+          },
+          "dyn.piercing_long_lunge": {
+           "prof": 1,
+           "pp": 0
+          }
+         },
+         "weapon_family": "melee",
+         "temperament": "aggressive",
+         "sapient": true,
+         "defeat_xp": 360
+        },
+        "current": {
+         "hp": 106,
+         "mp": 60,
+         "sta": 90,
+         "ammo": {},
+         "band": "ENGAGED",
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Bandit C"
+       }
+      },
+      "pc_rank": "F",
+      "pending_xp": 0,
+      "defeated": [],
+      "escaped": [],
+      "trigger": {
+       "actor": "pc",
+       "target": "npc.npctollcudgel",
+       "skill": "mage.arcane_wave",
+       "phase": [
+        {
+         "kind": "attack",
+         "skill": "mage.arcane_wave",
+         "target": "npc.npctollcudgel",
+         "target_how": "hud",
+         "move": null,
+         "move_target": null,
+         "expected_band": "SHORT"
+        },
+        {
+         "kind": "move",
+         "dir": "away",
+         "target": null
+        }
+       ],
+       "move": null,
+       "move_target": null
+      },
+      "log": [
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "npc.npctollcudgel",
+        "opening": false,
+        "cost": {
+         "resource": "mp",
+         "amount": 14,
+         "before": 72,
+         "after": 58
+        },
+        "skill": "mage.arcane_wave",
+        "skill_name": "Arcane Wave",
+        "area_band": "SHORT",
+        "raw": 25.5,
+        "raw_text": "8 + INT 6×1.25 + MATK 10 = 25.5",
+        "strikes": [
+         {
+          "target": "npc.npctollcudgel",
+          "power": 25.5,
+          "defense": 3,
+          "post_def": 22.5,
+          "variance": 1.02,
+          "final": 23,
+          "absorbed": 0,
+          "hp_before": 100,
+          "hp_after": 77,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 3: max(25.5-3, 25.5×0.10) = 22.5",
+           "×1.02 variance = 22.95",
+           "round once = 23"
+          ]
+         },
+         {
+          "target": "npc.npctollaxe",
+          "power": 25.5,
+          "defense": 3,
+          "post_def": 22.5,
+          "variance": 0.9,
+          "final": 20,
+          "absorbed": 0,
+          "hp_before": 80,
+          "hp_after": 60,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 3: max(25.5-3, 25.5×0.10) = 22.5",
+           "×0.9 variance = 20.25",
+           "round once = 20"
+          ]
+         },
+         {
+          "target": "npc.npctollknife",
+          "power": 25.5,
+          "defense": 3,
+          "post_def": 22.5,
+          "variance": 1.05,
+          "final": 24,
+          "absorbed": 0,
+          "hp_before": 130,
+          "hp_after": 106,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 3: max(25.5-3, 25.5×0.10) = 22.5",
+           "×1.05 variance = 23.625",
+           "round once = 24"
+          ]
+         }
+        ],
+        "phase_slot": "major",
+        "first_strike": true,
+        "note": "First Strike (an open attack that opens the fight: no Ambush bonus; its maker's action of Round 1)"
+       },
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "move",
+        "dir": "away",
+        "change": "Bandit B SHORT -> MEDIUM; Bandit A SHORT -> MEDIUM; Bandit C SHORT -> MEDIUM",
+        "focus": null,
+        "phase_slot": "minor"
+       },
+       {
+        "round": 1,
+        "actor": "npc.npctollknife",
+        "kind": "sidestep",
+        "change": "25% less damage at distance until the next own turn",
+        "why": "shot from range, out of its reach: takes cover"
+       },
+       {
+        "round": 1,
+        "actor": "npc.npctollcudgel",
+        "kind": "sidestep",
+        "change": "25% less damage at distance until the next own turn",
+        "why": "shot from range, out of its reach: takes cover"
+       },
+       {
+        "round": 1,
+        "actor": "npc.npctollaxe",
+        "kind": "sidestep",
+        "change": "25% less damage at distance until the next own turn",
+        "why": "shot from range, out of its reach: takes cover"
+       },
+       {
+        "round": 2,
+        "actor": "npc.npctollknife",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 2,
+         "from": "MEDIUM",
+         "to": "ENGAGED"
+        },
+        "cost": {
+         "resource": "sta",
+         "amount": 10,
+         "before": 100,
+         "after": 90
+        },
+        "skill": "dyn.piercing_long_lunge",
+        "skill_name": "Piercing Long Lunge",
+        "raw": 50.72,
+        "raw_text": "14 + AGI 16×1.92 + ATK 6 = 50.72",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 50.72,
+          "defense": 3,
+          "post_def": 47.72,
+          "variance": 1.01,
+          "final": 48,
+          "absorbed": 0,
+          "hp_before": 80,
+          "hp_after": 32,
+          "steps": [
+           "Raw 50.72",
+           "DEF 3: max(50.72-3, 50.72×0.10) = 47.72",
+           "×1.01 variance = 48.1972",
+           "round once = 48"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 2,
+        "actor": "npc.npctollcudgel",
+        "kind": "move",
+        "dir": "closer",
+        "change": "MEDIUM -> SHORT",
+        "why": "closing distance (no attack reaches)"
+       },
+       {
+        "round": 2,
+        "actor": "npc.npctollaxe",
+        "kind": "move",
+        "dir": "closer",
+        "change": "MEDIUM -> SHORT",
+        "why": "closing distance (no attack reaches)"
+       }
+      ],
+      "opening": true,
+      "started": {
+       "turn": 9,
+       "minute": 815
+      },
+      "intents": {},
+      "ambush": false,
+      "ambush_reason": "target awareness: unknown -> no Ambush; his declared attack opens the fight first (First Strike: no Ambush bonus; it is his action of Round 1)",
+      "first_strike": true,
+      "career": {
+       "damage": {
+        "npc.npctollcudgel": 23,
+        "npc.npctollaxe": 20,
+        "npc.npctollknife": 24
+       },
+       "personal": {
+        "npc.npctollcudgel": 23,
+        "npc.npctollaxe": 20,
+        "npc.npctollknife": 24
+       }
+      },
+      "pp": {
+       "used": {
+        "mage.arcane_wave": "an attack on a foe"
+       },
+       "wait": null,
+       "threatened": true,
+       "last": "mage.arcane_wave",
+       "answer": "mage.arcane_wave",
+       "guarding": null,
+       "offense": {
+        "mage.arcane_wave": true
+       },
+       "trial": {
+        "start": 100,
+        "low": 40,
+        "foes": [
+         "npc.npctollknife"
+        ],
+        "taken": {
+         "physical": 48,
+         "magical": 0
+        }
+       },
+       "marks": {
+        "mage.arcane_wave": [
+         "riposte"
+        ]
+       }
+      },
+      "trigger_done": true,
+      "spent": {},
+      "round_marker": 2.03
+     }
+    },
+    "rng_to": 4
+   },
+   {
+    "t": "scene.awareness",
+    "d": {
+     "id": "npc.npctollcudgel",
+     "level": "aware"
+    }
+   },
+   {
+    "t": "scene.awareness",
+    "d": {
+     "id": "npc.npctollaxe",
+     "level": "aware"
+    }
+   },
+   {
+    "t": "scene.awareness",
+    "d": {
+     "id": "npc.npctollknife",
+     "level": "aware"
+    }
+   },
+   {
+    "t": "resource.changed",
+    "d": {
+     "id": "pc",
+     "resource": "hp",
+     "value": 32
+    }
+   },
+   {
+    "t": "resource.changed",
+    "d": {
+     "id": "pc",
+     "resource": "mp",
+     "value": 58
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "combat",
+      "started": {
+       "reason": "target awareness: unknown -> no Ambush; his declared attack opens the fight first (First Strike: no Ambush bonus; it is his action of Round 1)",
+       "order": "Bandit C > Bandit B > Bandit A > Alaric",
+       "ambush": false
+      },
+      "records": [
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "npc.npctollcudgel",
+        "opening": false,
+        "cost": {
+         "resource": "mp",
+         "amount": 14,
+         "before": 72,
+         "after": 58
+        },
+        "skill": "mage.arcane_wave",
+        "skill_name": "Arcane Wave",
+        "area_band": "SHORT",
+        "raw": 25.5,
+        "raw_text": "8 + INT 6×1.25 + MATK 10 = 25.5",
+        "strikes": [
+         {
+          "target": "npc.npctollcudgel",
+          "power": 25.5,
+          "defense": 3,
+          "post_def": 22.5,
+          "variance": 1.02,
+          "final": 23,
+          "absorbed": 0,
+          "hp_before": 100,
+          "hp_after": 77,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 3: max(25.5-3, 25.5×0.10) = 22.5",
+           "×1.02 variance = 22.95",
+           "round once = 23"
+          ]
+         },
+         {
+          "target": "npc.npctollaxe",
+          "power": 25.5,
+          "defense": 3,
+          "post_def": 22.5,
+          "variance": 0.9,
+          "final": 20,
+          "absorbed": 0,
+          "hp_before": 80,
+          "hp_after": 60,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 3: max(25.5-3, 25.5×0.10) = 22.5",
+           "×0.9 variance = 20.25",
+           "round once = 20"
+          ]
+         },
+         {
+          "target": "npc.npctollknife",
+          "power": 25.5,
+          "defense": 3,
+          "post_def": 22.5,
+          "variance": 1.05,
+          "final": 24,
+          "absorbed": 0,
+          "hp_before": 130,
+          "hp_after": 106,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 3: max(25.5-3, 25.5×0.10) = 22.5",
+           "×1.05 variance = 23.625",
+           "round once = 24"
+          ]
+         }
+        ],
+        "phase_slot": "major",
+        "first_strike": true,
+        "note": "First Strike (an open attack that opens the fight: no Ambush bonus; its maker's action of Round 1)"
+       },
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "move",
+        "dir": "away",
+        "change": "Bandit B SHORT -> MEDIUM; Bandit A SHORT -> MEDIUM; Bandit C SHORT -> MEDIUM",
+        "focus": null,
+        "phase_slot": "minor"
+       },
+       {
+        "round": 1,
+        "actor": "npc.npctollknife",
+        "kind": "sidestep",
+        "change": "25% less damage at distance until the next own turn",
+        "why": "shot from range, out of its reach: takes cover"
+       },
+       {
+        "round": 1,
+        "actor": "npc.npctollcudgel",
+        "kind": "sidestep",
+        "change": "25% less damage at distance until the next own turn",
+        "why": "shot from range, out of its reach: takes cover"
+       },
+       {
+        "round": 1,
+        "actor": "npc.npctollaxe",
+        "kind": "sidestep",
+        "change": "25% less damage at distance until the next own turn",
+        "why": "shot from range, out of its reach: takes cover"
+       },
+       {
+        "round": 2,
+        "actor": "npc.npctollknife",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 2,
+         "from": "MEDIUM",
+         "to": "ENGAGED"
+        },
+        "cost": {
+         "resource": "sta",
+         "amount": 10,
+         "before": 100,
+         "after": 90
+        },
+        "skill": "dyn.piercing_long_lunge",
+        "skill_name": "Piercing Long Lunge",
+        "raw": 50.72,
+        "raw_text": "14 + AGI 16×1.92 + ATK 6 = 50.72",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 50.72,
+          "defense": 3,
+          "post_def": 47.72,
+          "variance": 1.01,
+          "final": 48,
+          "absorbed": 0,
+          "hp_before": 80,
+          "hp_after": 32,
+          "steps": [
+           "Raw 50.72",
+           "DEF 3: max(50.72-3, 50.72×0.10) = 47.72",
+           "×1.01 variance = 48.1972",
+           "round once = 48"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 2,
+        "actor": "npc.npctollcudgel",
+        "kind": "move",
+        "dir": "closer",
+        "change": "MEDIUM -> SHORT",
+        "why": "closing distance (no attack reaches)"
+       },
+       {
+        "round": 2,
+        "actor": "npc.npctollaxe",
+        "kind": "move",
+        "dir": "closer",
+        "change": "MEDIUM -> SHORT",
+        "why": "closing distance (no attack reaches)"
+       }
+      ],
+      "illegal": null,
+      "next": "Alaric's Turn (Round 2)",
+      "board": {
+       "round": 2,
+       "order": [
+        {
+         "id": "npc.npctollknife",
+         "init": 24
+        },
+        {
+         "id": "npc.npctollcudgel",
+         "init": 15
+        },
+        {
+         "id": "npc.npctollaxe",
+         "init": 9
+        },
+        {
+         "id": "pc",
+         "init": 7
+        }
+       ],
+       "hp": [
+        {
+         "id": "npc.npctollknife",
+         "hp": 106,
+         "max": 130,
+         "state": null,
+         "band": "ENGAGED",
+         "cover": "none"
+        },
+        {
+         "id": "npc.npctollcudgel",
+         "hp": 77,
+         "max": 100,
+         "state": null,
+         "band": "SHORT",
+         "cover": "none"
+        },
+        {
+         "id": "npc.npctollaxe",
+         "hp": 60,
+         "max": 80,
+         "state": null,
+         "band": "SHORT",
+         "cover": "none"
+        },
+        {
+         "id": "pc",
+         "hp": 32,
+         "max": 80,
+         "state": null
+        }
+       ],
+       "labels": {
+        "npc.npctollcudgel": "Bandit B",
+        "npc.npctollaxe": "Bandit A",
+        "npc.npctollknife": "Bandit C"
+       },
+       "pc": {
+        "mp": 58,
+        "max_mp": 72,
+        "sta": 100,
+        "max_sta": 100,
+        "arrows": 0
+       }
+      },
+      "c": true
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 18,
+  "user": false,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t9.m18.d1.1",
+      "s": "npc.npctollcudgel",
+      "p": "armed",
+      "o": "long knife (dropped the cudgel)",
+      "since": {
+       "turn": 9,
+       "minute": 815
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 18,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 2,
+      "type": "position",
+      "who": "npc.npctollcudgel",
+      "band": "ENGAGED",
+      "cover": "none",
+      "evidence": "He stayed there, ENGAGED, knife hand loose and waiting",
+      "cluster": null,
+      "scope": null
+     },
+     "rule": "world_rule",
+     "reason": "positions of combatants are engine-owned during ACTIVE combat"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 3,
+      "type": "position",
+      "who": "npc.npctollaxe",
+      "band": "SHORT",
+      "cover": "none",
+      "evidence": "the axeman limping but closing",
+      "cluster": null,
+      "scope": null
+     },
+     "rule": "world_rule",
+     "reason": "positions of combatants are engine-owned during ACTIVE combat"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 4,
+      "type": "position",
+      "who": "npc.npctollknife",
+      "band": "SHORT",
+      "cover": "none",
+      "evidence": "the third one running hard across the verge, blade out",
+      "cluster": null,
+      "scope": null
+     },
+     "rule": "world_rule",
+     "reason": "positions of combatants are engine-owned during ACTIVE combat"
+    }
+   },
+   {
+    "t": "combat.intent",
+    "d": {
+     "who": "npc.npctollcudgel",
+     "intent": "attack"
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 30545,
+     "repaired": false,
+     "deltas": 6,
+     "rejected": 3
+    }
+   }
+  ]
+ },
+ {
+  "i": 19,
+  "user": true,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 10,
+     "input_hash": "27dee119",
+     "input": "fuck *i curse and lift my hands and say* okay okay... i surrender... i only have 3 Silver left but its not worth to lose my life over it. *i throw the 3 silver out of my pouch towards them"
+    }
+   },
+   {
+    "t": "encounter.updated",
+    "d": {
+     "encounter": {
+      "id": "enc.t9",
+      "phase": "ACTIVE",
+      "round": 2,
+      "order": [
+       "npc.npctollknife",
+       "npc.npctollcudgel",
+       "npc.npctollaxe",
+       "pc"
+      ],
+      "turn_index": 3,
+      "current": "pc",
+      "combatants": {
+       "pc": {
+        "id": "pc",
+        "name": "Alaric",
+        "side": "pc",
+        "model": "character",
+        "fixed": {
+         "level": 1,
+         "rank": "F",
+         "class": "mage",
+         "stats": {
+          "STR": 5,
+          "VIT": 5,
+          "AGI": 5,
+          "INT": 6,
+          "PER": 5,
+          "WIL": 6
+         },
+         "max_hp": 80,
+         "max_mp": 72,
+         "max_sta": 100,
+         "atk": 0,
+         "matk": 10,
+         "def": 3,
+         "mdef": 4,
+         "init": 7,
+         "type": "normal",
+         "actions": {
+          "mage.basic_attack": {
+           "prof": 1,
+           "pp": 0
+          },
+          "mage.flame_lance": {
+           "prof": 1,
+           "pp": 0
+          },
+          "mage.arcane_wave": {
+           "prof": 1,
+           "pp": 0
+          }
+         },
+         "weapon_family": "focus",
+         "temperament": null,
+         "sapient": true
+        },
+        "current": {
+         "hp": 32,
+         "mp": 58,
+         "sta": 100,
+         "ammo": {},
+         "band": null,
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        }
+       },
+       "npc.npctollcudgel": {
+        "id": "npc.npctollcudgel",
+        "name": "Bandit B",
+        "side": "hostile",
+        "model": "character",
+        "fixed": {
+         "level": 3,
+         "rank": "F",
+         "class": "rogue",
+         "stats": {
+          "STR": 9,
+          "VIT": 7,
+          "AGI": 10,
+          "INT": 5,
+          "PER": 6,
+          "WIL": 5
+         },
+         "max_hp": 100,
+         "max_mp": 60,
+         "max_sta": 100,
+         "atk": 6,
+         "matk": 0,
+         "def": 3,
+         "mdef": 3,
+         "init": 15,
+         "type": "normal",
+         "actions": {
+          "rogue.basic_attack": {
+           "prof": 1,
+           "pp": 0
+          },
+          "rogue.guarded_cut": {
+           "prof": 1,
+           "pp": 0
+          },
+          "rogue.evasive_step": {
+           "prof": 1,
+           "pp": 0
+          }
+         },
+         "weapon_family": "melee",
+         "temperament": "aggressive",
+         "sapient": true,
+         "defeat_xp": 180
+        },
+        "current": {
+         "hp": 77,
+         "mp": 60,
+         "sta": 100,
+         "ammo": {},
+         "band": "SHORT",
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Bandit B"
+       },
+       "npc.npctollaxe": {
+        "id": "npc.npctollaxe",
+        "name": "Bandit A",
+        "side": "hostile",
+        "model": "character",
+        "fixed": {
+         "level": 1,
+         "rank": "F",
+         "class": "rogue",
+         "stats": {
+          "STR": 5,
+          "VIT": 5,
+          "AGI": 6,
+          "INT": 5,
+          "PER": 6,
+          "WIL": 5
+         },
+         "max_hp": 80,
+         "max_mp": 60,
+         "max_sta": 100,
+         "atk": 6,
+         "matk": 0,
+         "def": 3,
+         "mdef": 3,
+         "init": 9,
+         "type": "normal",
+         "actions": {
+          "rogue.basic_attack": {
+           "prof": 1,
+           "pp": 0
+          },
+          "rogue.piercing_thrust": {
+           "prof": 1,
+           "pp": 0
+          },
+          "rogue.evasive_step": {
+           "prof": 1,
+           "pp": 0
+          }
+         },
+         "weapon_family": "melee",
+         "temperament": "aggressive",
+         "sapient": true,
+         "defeat_xp": 60
+        },
+        "current": {
+         "hp": 60,
+         "mp": 60,
+         "sta": 100,
+         "ammo": {},
+         "band": "SHORT",
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Bandit A"
+       },
+       "npc.npctollknife": {
+        "id": "npc.npctollknife",
+        "name": "Bandit C",
+        "side": "hostile",
+        "model": "character",
+        "fixed": {
+         "level": 6,
+         "rank": "F",
+         "class": "rogue",
+         "stats": {
+          "STR": 15,
+          "VIT": 10,
+          "AGI": 16,
+          "INT": 5,
+          "PER": 6,
+          "WIL": 5
+         },
+         "max_hp": 130,
+         "max_mp": 60,
+         "max_sta": 100,
+         "atk": 6,
+         "matk": 0,
+         "def": 4,
+         "mdef": 3,
+         "init": 24,
+         "type": "normal",
+         "actions": {
+          "rogue.basic_attack": {
+           "prof": 1,
+           "pp": 0
+          },
+          "rogue.long_lunge": {
+           "prof": 1,
+           "pp": 0
+          },
+          "rogue.feint": {
+           "prof": 1,
+           "pp": 0
+          },
+          "dyn.piercing_long_lunge": {
+           "prof": 1,
+           "pp": 0
+          }
+         },
+         "weapon_family": "melee",
+         "temperament": "aggressive",
+         "sapient": true,
+         "defeat_xp": 360
+        },
+        "current": {
+         "hp": 106,
+         "mp": 60,
+         "sta": 90,
+         "ammo": {},
+         "band": "ENGAGED",
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Bandit C"
+       }
+      },
+      "pc_rank": "F",
+      "pending_xp": 0,
+      "defeated": [],
+      "escaped": [],
+      "trigger": {
+       "actor": "pc",
+       "target": "npc.npctollcudgel",
+       "skill": "mage.arcane_wave",
+       "phase": [
+        {
+         "kind": "attack",
+         "skill": "mage.arcane_wave",
+         "target": "npc.npctollcudgel",
+         "target_how": "hud",
+         "move": null,
+         "move_target": null,
+         "expected_band": "SHORT"
+        },
+        {
+         "kind": "move",
+         "dir": "away",
+         "target": null
+        }
+       ],
+       "move": null,
+       "move_target": null
+      },
+      "log": [
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "npc.npctollcudgel",
+        "opening": false,
+        "cost": {
+         "resource": "mp",
+         "amount": 14,
+         "before": 72,
+         "after": 58
+        },
+        "skill": "mage.arcane_wave",
+        "skill_name": "Arcane Wave",
+        "area_band": "SHORT",
+        "raw": 25.5,
+        "raw_text": "8 + INT 6×1.25 + MATK 10 = 25.5",
+        "strikes": [
+         {
+          "target": "npc.npctollcudgel",
+          "power": 25.5,
+          "defense": 3,
+          "post_def": 22.5,
+          "variance": 1.02,
+          "final": 23,
+          "absorbed": 0,
+          "hp_before": 100,
+          "hp_after": 77,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 3: max(25.5-3, 25.5×0.10) = 22.5",
+           "×1.02 variance = 22.95",
+           "round once = 23"
+          ]
+         },
+         {
+          "target": "npc.npctollaxe",
+          "power": 25.5,
+          "defense": 3,
+          "post_def": 22.5,
+          "variance": 0.9,
+          "final": 20,
+          "absorbed": 0,
+          "hp_before": 80,
+          "hp_after": 60,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 3: max(25.5-3, 25.5×0.10) = 22.5",
+           "×0.9 variance = 20.25",
+           "round once = 20"
+          ]
+         },
+         {
+          "target": "npc.npctollknife",
+          "power": 25.5,
+          "defense": 3,
+          "post_def": 22.5,
+          "variance": 1.05,
+          "final": 24,
+          "absorbed": 0,
+          "hp_before": 130,
+          "hp_after": 106,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 3: max(25.5-3, 25.5×0.10) = 22.5",
+           "×1.05 variance = 23.625",
+           "round once = 24"
+          ]
+         }
+        ],
+        "phase_slot": "major",
+        "first_strike": true,
+        "note": "First Strike (an open attack that opens the fight: no Ambush bonus; its maker's action of Round 1)"
+       },
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "move",
+        "dir": "away",
+        "change": "Bandit B SHORT -> MEDIUM; Bandit A SHORT -> MEDIUM; Bandit C SHORT -> MEDIUM",
+        "focus": null,
+        "phase_slot": "minor"
+       },
+       {
+        "round": 1,
+        "actor": "npc.npctollknife",
+        "kind": "sidestep",
+        "change": "25% less damage at distance until the next own turn",
+        "why": "shot from range, out of its reach: takes cover"
+       },
+       {
+        "round": 1,
+        "actor": "npc.npctollcudgel",
+        "kind": "sidestep",
+        "change": "25% less damage at distance until the next own turn",
+        "why": "shot from range, out of its reach: takes cover"
+       },
+       {
+        "round": 1,
+        "actor": "npc.npctollaxe",
+        "kind": "sidestep",
+        "change": "25% less damage at distance until the next own turn",
+        "why": "shot from range, out of its reach: takes cover"
+       },
+       {
+        "round": 2,
+        "actor": "npc.npctollknife",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 2,
+         "from": "MEDIUM",
+         "to": "ENGAGED"
+        },
+        "cost": {
+         "resource": "sta",
+         "amount": 10,
+         "before": 100,
+         "after": 90
+        },
+        "skill": "dyn.piercing_long_lunge",
+        "skill_name": "Piercing Long Lunge",
+        "raw": 50.72,
+        "raw_text": "14 + AGI 16×1.92 + ATK 6 = 50.72",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 50.72,
+          "defense": 3,
+          "post_def": 47.72,
+          "variance": 1.01,
+          "final": 48,
+          "absorbed": 0,
+          "hp_before": 80,
+          "hp_after": 32,
+          "steps": [
+           "Raw 50.72",
+           "DEF 3: max(50.72-3, 50.72×0.10) = 47.72",
+           "×1.01 variance = 48.1972",
+           "round once = 48"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 2,
+        "actor": "npc.npctollcudgel",
+        "kind": "move",
+        "dir": "closer",
+        "change": "MEDIUM -> SHORT",
+        "why": "closing distance (no attack reaches)"
+       },
+       {
+        "round": 2,
+        "actor": "npc.npctollaxe",
+        "kind": "move",
+        "dir": "closer",
+        "change": "MEDIUM -> SHORT",
+        "why": "closing distance (no attack reaches)"
+       }
+      ],
+      "opening": true,
+      "started": {
+       "turn": 9,
+       "minute": 815
+      },
+      "intents": {
+       "npc.npctollcudgel": "attack"
+      },
+      "ambush": false,
+      "ambush_reason": "target awareness: unknown -> no Ambush; his declared attack opens the fight first (First Strike: no Ambush bonus; it is his action of Round 1)",
+      "first_strike": true,
+      "career": {
+       "damage": {
+        "npc.npctollcudgel": 23,
+        "npc.npctollaxe": 20,
+        "npc.npctollknife": 24
+       },
+       "personal": {
+        "npc.npctollcudgel": 23,
+        "npc.npctollaxe": 20,
+        "npc.npctollknife": 24
+       }
+      },
+      "pp": {
+       "used": {
+        "mage.arcane_wave": "an attack on a foe"
+       },
+       "wait": null,
+       "threatened": true,
+       "last": "mage.arcane_wave",
+       "answer": "mage.arcane_wave",
+       "guarding": null,
+       "offense": {
+        "mage.arcane_wave": true
+       },
+       "trial": {
+        "start": 100,
+        "low": 40,
+        "foes": [
+         "npc.npctollknife"
+        ],
+        "taken": {
+         "physical": 48,
+         "magical": 0
+        }
+       },
+       "marks": {
+        "mage.arcane_wave": [
+         "riposte"
+        ]
+       }
+      },
+      "trigger_done": true,
+      "spent": {},
+      "round_marker": 2.03
+     }
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "combat",
+      "started": null,
+      "records": [],
+      "illegal": null,
+      "next": "Alaric's Turn (Round 2)",
+      "board": {
+       "round": 2,
+       "order": [
+        {
+         "id": "npc.npctollknife",
+         "init": 24
+        },
+        {
+         "id": "npc.npctollcudgel",
+         "init": 15
+        },
+        {
+         "id": "npc.npctollaxe",
+         "init": 9
+        },
+        {
+         "id": "pc",
+         "init": 7
+        }
+       ],
+       "hp": [
+        {
+         "id": "npc.npctollknife",
+         "hp": 106,
+         "max": 130,
+         "state": null,
+         "band": "ENGAGED",
+         "cover": "none"
+        },
+        {
+         "id": "npc.npctollcudgel",
+         "hp": 77,
+         "max": 100,
+         "state": null,
+         "band": "SHORT",
+         "cover": "none"
+        },
+        {
+         "id": "npc.npctollaxe",
+         "hp": 60,
+         "max": 80,
+         "state": null,
+         "band": "SHORT",
+         "cover": "none"
+        },
+        {
+         "id": "pc",
+         "hp": 32,
+         "max": 80,
+         "state": null
+        }
+       ],
+       "labels": {
+        "npc.npctollcudgel": "Bandit B",
+        "npc.npctollaxe": "Bandit A",
+        "npc.npctollknife": "Bandit C"
+       },
+       "pc": {
+        "mp": 58,
+        "max_mp": 72,
+        "sta": 100,
+        "max_sta": 100,
+        "arrows": 0
+       }
+      },
+      "plan_notes": [
+       "not resolved by the engine: \"okay okay... i surrender... i only have 3 Silver left but its not worth to lose \""
+      ],
+      "c": true
+     },
+     "situations": [
+      "trade"
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "i": 20,
+  "user": false,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "npc.npctollcudgel",
+     "set": {
+      "name": "Fenn",
+      "known_name": "Fenn",
+      "descriptors": [
+       "fenn"
+      ]
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "npc.npctollcudgel",
+     "set": {
+      "known_name": null
+     }
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 2,
+      "type": "position",
+      "who": "npc.npctollaxe",
+      "band": "SHORT",
+      "cover": "none",
+      "evidence": "The axeman circled to his right, breathing hard through his teeth, knife held low",
+      "cluster": null,
+      "scope": null
+     },
+     "rule": "world_rule",
+     "reason": "positions of combatants are engine-owned during ACTIVE combat"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 3,
+      "type": "position",
+      "who": "npc.npctollknife",
+      "band": "ENGAGED",
+      "cover": "none",
+      "evidence": "The younger one came up on the left, blade pointed at the ground but ready, and stopped just outside arm's reach",
+      "cluster": null,
+      "scope": null
+     },
+     "rule": "world_rule",
+     "reason": "positions of combatants are engine-owned during ACTIVE combat"
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t10.m20.d4_3.1",
+      "s": "npc.npctollcudgel",
+      "p": "demands",
+      "o": "the whole pouch and Alaric's staff as the price of walking away",
+      "since": {
+       "turn": 10,
+       "minute": 815
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 20,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t10.m20.d5_4.1",
+      "s": "npc.npctollcudgel",
+      "p": "took",
+      "o": "the three silver Alaric threw, weighing the coins in his palm",
+      "since": {
+       "turn": 10,
+       "minute": 815
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 20,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "thread.set",
+    "d": {
+     "thread": {
+      "id": "thread.t8.1",
+      "text": "Fenn and his two men hold Alaric at bay on the quarry track, demanding his whole pouch and staff as toll, threatening to cripple him or send him bleeding toward the warrens if he refuses",
+      "kind": "threat",
+      "status": "open",
+      "since": {
+       "turn": 8,
+       "minute": 815
+      },
+      "updated": {
+       "turn": 10,
+       "minute": 815
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 16
+      },
+      "at": "realm.duskreach.old_quarry_track_east_of_ashbridge"
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 47157,
+     "repaired": false,
+     "deltas": 6,
+     "rejected": 2
+    }
+   }
+  ]
+ },
+ {
+  "i": 21,
+  "user": true,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 11,
+     "input_hash": "27dd696c",
+     "input": "i accept *i say and give them all my silver and the staff*"
+    }
+   },
+   {
+    "t": "encounter.updated",
+    "d": {
+     "encounter": {
+      "id": "enc.t9",
+      "phase": "ACTIVE",
+      "round": 2,
+      "order": [
+       "npc.npctollknife",
+       "npc.npctollcudgel",
+       "npc.npctollaxe",
+       "pc"
+      ],
+      "turn_index": 3,
+      "current": "pc",
+      "combatants": {
+       "pc": {
+        "id": "pc",
+        "name": "Alaric",
+        "side": "pc",
+        "model": "character",
+        "fixed": {
+         "level": 1,
+         "rank": "F",
+         "class": "mage",
+         "stats": {
+          "STR": 5,
+          "VIT": 5,
+          "AGI": 5,
+          "INT": 6,
+          "PER": 5,
+          "WIL": 6
+         },
+         "max_hp": 80,
+         "max_mp": 72,
+         "max_sta": 100,
+         "atk": 0,
+         "matk": 10,
+         "def": 3,
+         "mdef": 4,
+         "init": 7,
+         "type": "normal",
+         "actions": {
+          "mage.basic_attack": {
+           "prof": 1,
+           "pp": 0
+          },
+          "mage.flame_lance": {
+           "prof": 1,
+           "pp": 0
+          },
+          "mage.arcane_wave": {
+           "prof": 1,
+           "pp": 0
+          }
+         },
+         "weapon_family": "focus",
+         "temperament": null,
+         "sapient": true
+        },
+        "current": {
+         "hp": 32,
+         "mp": 58,
+         "sta": 100,
+         "ammo": {},
+         "band": null,
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        }
+       },
+       "npc.npctollcudgel": {
+        "id": "npc.npctollcudgel",
+        "name": "Bandit B",
+        "side": "hostile",
+        "model": "character",
+        "fixed": {
+         "level": 3,
+         "rank": "F",
+         "class": "rogue",
+         "stats": {
+          "STR": 9,
+          "VIT": 7,
+          "AGI": 10,
+          "INT": 5,
+          "PER": 6,
+          "WIL": 5
+         },
+         "max_hp": 100,
+         "max_mp": 60,
+         "max_sta": 100,
+         "atk": 6,
+         "matk": 0,
+         "def": 3,
+         "mdef": 3,
+         "init": 15,
+         "type": "normal",
+         "actions": {
+          "rogue.basic_attack": {
+           "prof": 1,
+           "pp": 0
+          },
+          "rogue.guarded_cut": {
+           "prof": 1,
+           "pp": 0
+          },
+          "rogue.evasive_step": {
+           "prof": 1,
+           "pp": 0
+          }
+         },
+         "weapon_family": "melee",
+         "temperament": "aggressive",
+         "sapient": true,
+         "defeat_xp": 180
+        },
+        "current": {
+         "hp": 77,
+         "mp": 60,
+         "sta": 100,
+         "ammo": {},
+         "band": "SHORT",
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Bandit B"
+       },
+       "npc.npctollaxe": {
+        "id": "npc.npctollaxe",
+        "name": "Bandit A",
+        "side": "hostile",
+        "model": "character",
+        "fixed": {
+         "level": 1,
+         "rank": "F",
+         "class": "rogue",
+         "stats": {
+          "STR": 5,
+          "VIT": 5,
+          "AGI": 6,
+          "INT": 5,
+          "PER": 6,
+          "WIL": 5
+         },
+         "max_hp": 80,
+         "max_mp": 60,
+         "max_sta": 100,
+         "atk": 6,
+         "matk": 0,
+         "def": 3,
+         "mdef": 3,
+         "init": 9,
+         "type": "normal",
+         "actions": {
+          "rogue.basic_attack": {
+           "prof": 1,
+           "pp": 0
+          },
+          "rogue.piercing_thrust": {
+           "prof": 1,
+           "pp": 0
+          },
+          "rogue.evasive_step": {
+           "prof": 1,
+           "pp": 0
+          }
+         },
+         "weapon_family": "melee",
+         "temperament": "aggressive",
+         "sapient": true,
+         "defeat_xp": 60
+        },
+        "current": {
+         "hp": 60,
+         "mp": 60,
+         "sta": 100,
+         "ammo": {},
+         "band": "SHORT",
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Bandit A"
+       },
+       "npc.npctollknife": {
+        "id": "npc.npctollknife",
+        "name": "Bandit C",
+        "side": "hostile",
+        "model": "character",
+        "fixed": {
+         "level": 6,
+         "rank": "F",
+         "class": "rogue",
+         "stats": {
+          "STR": 15,
+          "VIT": 10,
+          "AGI": 16,
+          "INT": 5,
+          "PER": 6,
+          "WIL": 5
+         },
+         "max_hp": 130,
+         "max_mp": 60,
+         "max_sta": 100,
+         "atk": 6,
+         "matk": 0,
+         "def": 4,
+         "mdef": 3,
+         "init": 24,
+         "type": "normal",
+         "actions": {
+          "rogue.basic_attack": {
+           "prof": 1,
+           "pp": 0
+          },
+          "rogue.long_lunge": {
+           "prof": 1,
+           "pp": 0
+          },
+          "rogue.feint": {
+           "prof": 1,
+           "pp": 0
+          },
+          "dyn.piercing_long_lunge": {
+           "prof": 1,
+           "pp": 0
+          }
+         },
+         "weapon_family": "melee",
+         "temperament": "aggressive",
+         "sapient": true,
+         "defeat_xp": 360
+        },
+        "current": {
+         "hp": 106,
+         "mp": 60,
+         "sta": 90,
+         "ammo": {},
+         "band": "ENGAGED",
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Bandit C"
+       }
+      },
+      "pc_rank": "F",
+      "pending_xp": 0,
+      "defeated": [],
+      "escaped": [],
+      "trigger": {
+       "actor": "pc",
+       "target": "npc.npctollcudgel",
+       "skill": "mage.arcane_wave",
+       "phase": [
+        {
+         "kind": "attack",
+         "skill": "mage.arcane_wave",
+         "target": "npc.npctollcudgel",
+         "target_how": "hud",
+         "move": null,
+         "move_target": null,
+         "expected_band": "SHORT"
+        },
+        {
+         "kind": "move",
+         "dir": "away",
+         "target": null
+        }
+       ],
+       "move": null,
+       "move_target": null
+      },
+      "log": [
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "npc.npctollcudgel",
+        "opening": false,
+        "cost": {
+         "resource": "mp",
+         "amount": 14,
+         "before": 72,
+         "after": 58
+        },
+        "skill": "mage.arcane_wave",
+        "skill_name": "Arcane Wave",
+        "area_band": "SHORT",
+        "raw": 25.5,
+        "raw_text": "8 + INT 6×1.25 + MATK 10 = 25.5",
+        "strikes": [
+         {
+          "target": "npc.npctollcudgel",
+          "power": 25.5,
+          "defense": 3,
+          "post_def": 22.5,
+          "variance": 1.02,
+          "final": 23,
+          "absorbed": 0,
+          "hp_before": 100,
+          "hp_after": 77,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 3: max(25.5-3, 25.5×0.10) = 22.5",
+           "×1.02 variance = 22.95",
+           "round once = 23"
+          ]
+         },
+         {
+          "target": "npc.npctollaxe",
+          "power": 25.5,
+          "defense": 3,
+          "post_def": 22.5,
+          "variance": 0.9,
+          "final": 20,
+          "absorbed": 0,
+          "hp_before": 80,
+          "hp_after": 60,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 3: max(25.5-3, 25.5×0.10) = 22.5",
+           "×0.9 variance = 20.25",
+           "round once = 20"
+          ]
+         },
+         {
+          "target": "npc.npctollknife",
+          "power": 25.5,
+          "defense": 3,
+          "post_def": 22.5,
+          "variance": 1.05,
+          "final": 24,
+          "absorbed": 0,
+          "hp_before": 130,
+          "hp_after": 106,
+          "steps": [
+           "Raw 25.5",
+           "MDEF 3: max(25.5-3, 25.5×0.10) = 22.5",
+           "×1.05 variance = 23.625",
+           "round once = 24"
+          ]
+         }
+        ],
+        "phase_slot": "major",
+        "first_strike": true,
+        "note": "First Strike (an open attack that opens the fight: no Ambush bonus; its maker's action of Round 1)"
+       },
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "move",
+        "dir": "away",
+        "change": "Bandit B SHORT -> MEDIUM; Bandit A SHORT -> MEDIUM; Bandit C SHORT -> MEDIUM",
+        "focus": null,
+        "phase_slot": "minor"
+       },
+       {
+        "round": 1,
+        "actor": "npc.npctollknife",
+        "kind": "sidestep",
+        "change": "25% less damage at distance until the next own turn",
+        "why": "shot from range, out of its reach: takes cover"
+       },
+       {
+        "round": 1,
+        "actor": "npc.npctollcudgel",
+        "kind": "sidestep",
+        "change": "25% less damage at distance until the next own turn",
+        "why": "shot from range, out of its reach: takes cover"
+       },
+       {
+        "round": 1,
+        "actor": "npc.npctollaxe",
+        "kind": "sidestep",
+        "change": "25% less damage at distance until the next own turn",
+        "why": "shot from range, out of its reach: takes cover"
+       },
+       {
+        "round": 2,
+        "actor": "npc.npctollknife",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 2,
+         "from": "MEDIUM",
+         "to": "ENGAGED"
+        },
+        "cost": {
+         "resource": "sta",
+         "amount": 10,
+         "before": 100,
+         "after": 90
+        },
+        "skill": "dyn.piercing_long_lunge",
+        "skill_name": "Piercing Long Lunge",
+        "raw": 50.72,
+        "raw_text": "14 + AGI 16×1.92 + ATK 6 = 50.72",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 50.72,
+          "defense": 3,
+          "post_def": 47.72,
+          "variance": 1.01,
+          "final": 48,
+          "absorbed": 0,
+          "hp_before": 80,
+          "hp_after": 32,
+          "steps": [
+           "Raw 50.72",
+           "DEF 3: max(50.72-3, 50.72×0.10) = 47.72",
+           "×1.01 variance = 48.1972",
+           "round once = 48"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 2,
+        "actor": "npc.npctollcudgel",
+        "kind": "move",
+        "dir": "closer",
+        "change": "MEDIUM -> SHORT",
+        "why": "closing distance (no attack reaches)"
+       },
+       {
+        "round": 2,
+        "actor": "npc.npctollaxe",
+        "kind": "move",
+        "dir": "closer",
+        "change": "MEDIUM -> SHORT",
+        "why": "closing distance (no attack reaches)"
+       }
+      ],
+      "opening": true,
+      "started": {
+       "turn": 9,
+       "minute": 815
+      },
+      "intents": {
+       "npc.npctollcudgel": "attack"
+      },
+      "ambush": false,
+      "ambush_reason": "target awareness: unknown -> no Ambush; his declared attack opens the fight first (First Strike: no Ambush bonus; it is his action of Round 1)",
+      "first_strike": true,
+      "career": {
+       "damage": {
+        "npc.npctollcudgel": 23,
+        "npc.npctollaxe": 20,
+        "npc.npctollknife": 24
+       },
+       "personal": {
+        "npc.npctollcudgel": 23,
+        "npc.npctollaxe": 20,
+        "npc.npctollknife": 24
+       }
+      },
+      "pp": {
+       "used": {
+        "mage.arcane_wave": "an attack on a foe"
+       },
+       "wait": null,
+       "threatened": true,
+       "last": "mage.arcane_wave",
+       "answer": "mage.arcane_wave",
+       "guarding": null,
+       "offense": {
+        "mage.arcane_wave": true
+       },
+       "trial": {
+        "start": 100,
+        "low": 40,
+        "foes": [
+         "npc.npctollknife"
+        ],
+        "taken": {
+         "physical": 48,
+         "magical": 0
+        }
+       },
+       "marks": {
+        "mage.arcane_wave": [
+         "riposte"
+        ]
+       }
+      },
+      "trigger_done": true,
+      "spent": {},
+      "round_marker": 2.03
+     }
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "combat",
+      "started": null,
+      "records": [],
+      "illegal": null,
+      "next": "Alaric's Turn (Round 2)",
+      "board": {
+       "round": 2,
+       "order": [
+        {
+         "id": "npc.npctollknife",
+         "init": 24
+        },
+        {
+         "id": "npc.npctollcudgel",
+         "init": 15
+        },
+        {
+         "id": "npc.npctollaxe",
+         "init": 9
+        },
+        {
+         "id": "pc",
+         "init": 7
+        }
+       ],
+       "hp": [
+        {
+         "id": "npc.npctollknife",
+         "hp": 106,
+         "max": 130,
+         "state": null,
+         "band": "ENGAGED",
+         "cover": "none"
+        },
+        {
+         "id": "npc.npctollcudgel",
+         "hp": 77,
+         "max": 100,
+         "state": null,
+         "band": "SHORT",
+         "cover": "none"
+        },
+        {
+         "id": "npc.npctollaxe",
+         "hp": 60,
+         "max": 80,
+         "state": null,
+         "band": "SHORT",
+         "cover": "none"
+        },
+        {
+         "id": "pc",
+         "hp": 32,
+         "max": 80,
+         "state": null
+        }
+       ],
+       "labels": {
+        "npc.npctollcudgel": "Bandit B",
+        "npc.npctollaxe": "Bandit A",
+        "npc.npctollknife": "Bandit C"
+       },
+       "pc": {
+        "mp": 58,
+        "max_mp": 72,
+        "sta": 100,
+        "max_sta": 100,
+        "arrows": 0
+       }
+      },
+      "plan_notes": [
+       "not resolved by the engine: \"i accept *i say and give them all my silver and the staff*\""
+      ],
+      "c": true
+     },
+     "situations": [
+      "trade"
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "i": 22,
+  "user": false,
+  "build": "4.3.0-c.6.6.213",
+  "events": [
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "npc.npctollaxe",
+     "set": {
+      "name": "Berrin",
+      "known_name": "Berrin",
+      "descriptors": [
+       "berrin"
+      ]
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "npc.npctollknife",
+     "set": {
+      "name": "Martel",
+      "known_name": "Martel",
+      "descriptors": [
+       "martel"
+      ]
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t11.m22.d3.1",
+      "s": "loc.mossback_warrens",
+      "p": "visible",
+      "o": "the mossy hill and the dark cleft of its entrance are in sight from the quarry track",
+      "since": {
+       "turn": 11,
+       "minute": 815
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 22,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "npc.npctollaxe",
+     "set": {
+      "known_name": null
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "npc.npctollknife",
+     "set": {
+      "known_name": null
+     }
+    }
+   },
+   {
+    "t": "thread.set",
+    "d": {
+     "thread": {
+      "id": "thread.t8.1",
+      "text": "Fenn sets the terms of the toll: Alaric must lay the staff in the ruts with the pouch on top, back up three steps, and Martel will pick them up, while Berrin stands close with his knife",
+      "kind": "threat",
+      "status": "open",
+      "since": {
+       "turn": 8,
+       "minute": 815
+      },
+      "updated": {
+       "turn": 11,
+       "minute": 815
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 16
+      },
+      "at": "realm.duskreach.old_quarry_track_east_of_ashbridge"
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 31113,
+     "repaired": false,
+     "deltas": 4,
+     "rejected": 0
+    }
+   }
+  ]
+ }
+]

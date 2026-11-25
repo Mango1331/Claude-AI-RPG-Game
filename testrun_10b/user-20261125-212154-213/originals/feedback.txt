@@ -1,0 +1,1 @@
+vllt noch eine Hauptaktion Surrender im HUD die aber auch nur bei menschen im Moment klappen sollte also bei intelligenten rassen und nicht den monstern. und es muss auch nicht klappen. und mann muss auswählen können was ich abgeben will und die müssen das ablehnen oder annehmen können. die engine im Moment verarbeitet das alles nicht 

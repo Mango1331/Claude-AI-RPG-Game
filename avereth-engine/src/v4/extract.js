@@ -13,7 +13,7 @@ import { O, S, B, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 import { saleOfferLines, purchaseLines } from './trade.js';
 import { normText } from '../util.js';
-import { commercialAnchor, findQuote, openConditionNear } from './finance_evidence.js';
+import { commercialAnchor, findQuote, moneyLiteral, openConditionNear } from './finance_evidence.js';
 import { creatureContract } from './population.js';
 
 /** Preserve the historical wire vocabulary; new campaigns have only Guild quests. */
@@ -654,7 +654,8 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
                     const money = anchor.state === 'found' && x.pricing?.quote ? findQuote(reply, x.pricing.quote, anchor) : null;
                     const at = money?.state === 'found' ? money : anchor;
                     const word = at.state === 'found' ? openConditionNear(reply, at.start, at.end, anchor) : null;
-                    if (word) semanticIssues.push({ index: i, seq: d.seq, why: `${where}: the reply names an open condition next to this price ("${word}"); "firm" only if the price binds now regardless, else "conditional" with condition` });
+                    const priced = gear || (word && x.price_cp > 0 && moneyLiteral(reply,x.pricing?.quote,{content,within:anchor}).state === 'verified');
+                    if (word && priced) semanticIssues.push({ index: i, seq: d.seq, why: `${where}: the reply names an open condition next to this price ("${word}"); "firm" only if the price binds now regardless, else "conditional" with condition` });
                 }
             });
         }

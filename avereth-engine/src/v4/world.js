@@ -404,7 +404,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     };
     let refusedScene = false;
     let sceneUnreached = null; // K6a: the first refused step of a scene not reached (its place then)
-    const sceneMatches = ref => ref === 'here' || gateAlias(state, ref) === s.scene.at || samePlace(s, ref, s.scene.at, content);
+    let localDetail = null;
+    const sceneMatches = ref => ref === 'here' || gateAlias(state, ref) === s.scene.at
+        || (localDetail?.at === s.scene.at && samePlace(s,ref,localDetail.ref,content))
+        || samePlace(s, ref, s.scene.at, content);
     const readied = []; // the contracts this reply made READY (their open deliveries are told after the deltas)
     // .187 (P2; natural batch 14.11.2026, Warrior #117–#121 on .186: the narrator kept Alaric at the gate the engine had
     // refused, twice, past "he remains where he was"): the stay is said with its places – where he is, and the place
@@ -1196,7 +1199,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     const chosenTarget = continuation.choice.to;
                     const nearby = lineage(s, at.id).some(id => ['site','interior'].includes(s.places[id]?.kind)
                         && lineage(s, s.scene.at).includes(id));
-                    if (((!chosenTarget || continuation.choice.lodging) && !nearby) || restricted(s.scene.at) || restricted(at.id) || !realmOf(s, s.scene.at)
+                    if (((!chosenTarget || continuation.choice.lodging || continuation.choice.within) && !nearby) || restricted(s.scene.at) || restricted(at.id) || !realmOf(s, s.scene.at)
                         || realmOf(s, s.scene.at) !== realmOf(s, at.id) || ['realm','region','settlement'].includes(s.places[at.id]?.kind)
                         || (settlementOf(s, at.id) && settlementOf(s, at.id) !== settlementOf(s, s.scene.at))) {
                         unmake(); reject(d, 'passage', 'this route requires a travel action'); refusedArrival(d); break;
@@ -1231,6 +1234,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     }
                 }
                 if (wayRefused(at.id, d, { forced: forcedHere })) { unmake(); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
+                if (continuation?.delta === d && continuation.detail) {
+                    unmake();
+                    localDetail = {at:s.scene.at,ref};
+                    travel.push({seq:d.seq,ok:true});
+                    break;
+                }
                 const party = companions(d.with, d);
                 perceiveAll(s, emit, seeing());
                 arriveThrough(at.id, party);

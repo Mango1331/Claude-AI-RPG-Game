@@ -221,7 +221,7 @@ export function priceEvidence(pricing, { source, content, units = 1, lines = nul
 const PAST = String.raw`(?:[a-z]+ed|was|were|had|did|caught|saw|came|went|took|gave|said|paid|made|got|left|found|told|knew|brought|sold|bought|held|kept|set|put|ran|sat|stood|began|spoke|met|heard|felt|lay|led|meant|rose|fell|threw|wore|won|wrote|drew|grew|struck|swung|broke|chose|drove|ate|drank|hung|shook|spent|sent|built|lost|thought|caught)`;
 const SUBJECT = String.raw`(?:the|he|she|they|it|i|we|my|his|her|our|their)`;
 const OPEN_CONDITION = new RegExp(String.raw`\b(?:unless|pending|provided(?:\s+that)?|providing|assuming|subject\s+to|as\s+soon\s+as|depending\s+on|(?:once|after)\s+(?:${SUBJECT}|you)\b(?!\s+(?:[a-z'-]+\s+)?${PAST}\b)|when\s+${SUBJECT}\b(?!\s+(?:[a-z'-]+\s+)?${PAST}\b)|only\s+(?:if|for|when|once)\b|approv(?:e|es|al|ing)\b|tomorrow)\b`, 'i');
-const CONDITIONAL_IF = /\bif\b(?!\s+anyone\s+(?:wants?|chooses?|prefers?)\b|\s+you(?:\s+(?:want|like|choose|prefer|accept|would\s+rather)|['’]d\s+rather|['’]re\s+(?:wanting|leaving|selling))\b)/i;
+const CONDITIONAL_IF = /\bif\b(?!\s+anyone\s+(?:wants?|chooses?|prefers?)\b|\s+you(?:\s+(?:want|like|choose|prefer|accept|would\s+rather)|['’]d\s+rather|['’]re\s+(?:wanting|leaving|selling|eating|up\s+for))\b)/i;
 export function openConditionNear(source, start, end, within = null) {
     const raw = String(source ?? '');
     const a = sentenceOf(raw, start, end);
@@ -230,7 +230,7 @@ export function openConditionNear(source, start, end, within = null) {
     const following = a.end < raw.length ? sentenceOf(raw, Math.min(raw.length, a.end + 1)) : null;
     const next = following && !kindsIn(raw.slice(following.start, following.end)).size ? following : null;
     const statement = raw.slice(a.start, a.end).split(/\bbecause\b/i)[0];
-    const quoted = within ? raw.slice(within.start,within.end) : '';
+    const quoted = within ? raw.slice(Math.max(within.start,a.start),Math.min(within.end,a.end)) : '';
     const nextWords = raw.slice(within?.end ?? end,a.end).trimStart().replace(/^,\s*/, '');
     const conditional = quoted.match(CONDITIONAL_IF) || (/^if\s/i.test(nextWords) ? nextWords.match(CONDITIONAL_IF) : null);
     const direct = statement.match(OPEN_CONDITION) || conditional;
@@ -240,7 +240,7 @@ export function openConditionNear(source, start, end, within = null) {
     // A separate sentence can add a prerequisite. Incidental temporal language
     // inside a resale explanation does not qualify the previous price.
     const leading = follow.trimStart().replace(/^["“]/, '');
-    const qualifier = leading.match(OPEN_CONDITION) || leading.match(CONDITIONAL_IF);
+    const qualifier = leading.match(OPEN_CONDITION);
     return follow.match(/\b(?:must|has to|have to|needs? to)\b.*\b(?:first|approve|check|inspect)\b/i)?.[0]
         ?? (qualifier?.index === 0 ? qualifier[0] : null);
 }

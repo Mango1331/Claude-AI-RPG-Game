@@ -9,6 +9,7 @@ import { samePlace } from './place_refs.js';
 const holdPosition = /\b(?:(?:i|we) (?:stay|remain) (?:here|put)|(?:i|we) (?:do not|don't|will not|won't) (?:go|leave|follow)|(?:only|just) (?:asking|want directions)|without leaving|ich bleibe hier|ich gehe nicht)\b|^(?:i refuse|i decline|not now)$/i;
 const assisted = /^(?:(?:would|could|can|will) you |please )?(?:carry|take|escort|walk|lead) me (?:please )?(?:to|into) (.+?)(?: please)?[.!?]*$/i;
 const follows = /^(?:i (?:follow|go with) (?:you|him|her|them)|i['’]m right behind you|ich (?:folge dir|schließe mich an))[.!]*$/i;
+const localFurnishing = /\b(counter|table|seat|bed|bunk|cot|bench|tresen|theke|tisch|liege|bank)\b/i;
 const localMotion = /^(?:i (?:step|walk|move|head|go) (?:over )?(?:to|towards?) (?:the |my )?(?:counter|table|seat|bed|bunk|cot|bench)\b|ich gehe (?:zum|zur) (?:tresen|theke|tisch|liege|bank))[^.!?]*[.!]*$/i;
 const lodgingWords = /\b(?:loft|room|bed|bunk|cot|berth|lodging|quarters|kitchen)\b/i;
 const words = value => normText(value).replace(/[^\p{L}\p{N}']+/gu, ' ').trim();
@@ -46,7 +47,7 @@ export function ordinaryChoice(s, input) {
     const target = lower.match(assisted)?.[1] || lower.match(/^trag mich (?:bitte )?(?:zur|zum|ins) (.+?)[.!?]*$/i)?.[1];
     if (target) return {choice,to:target.replace(/^(?:my |the )/i,'')};
     if (follows.test(choice)) return {choice,companion:true};
-    if (localMotion.test(choice)) return {choice};
+    if (localMotion.test(choice)) return {choice,to:localFurnishing.exec(choice)?.[0],within:true};
     return null;
 }
 
@@ -71,7 +72,9 @@ export function reportedContinuation(s, content, answer, prose) {
     const placeWords = normText(label || '').split(/[^\p{L}\p{N}]+/u).filter(w => w.length >= 3 && !['the', 'and', 'above', 'below', 'behind', 'near'].includes(w));
     const storyClauses = String(prose).split(/[.!?…\n]+/);
     const clauses = [d.evidence, ...storyClauses.filter(c => has(c, label) && movementEvidence(c))].filter(Boolean);
-    const landed = clauses.find(clause => placeWords.some(w => has(clause, w)) && narratedPresence(prose, clause, names).ok);
+    const atStop = /\b(?:walked|reached|arrived|entered|returned|stood|stepped|crossed|emerged|carried|led|brought|settled|lay|sat|leaving)\b/i;
+    const landed = clauses.find(clause => atStop.test(clause) && placeWords.some(w => has(clause, w))
+        && narratedPresence(prose, clause, names).ok);
     if (!landed) {
         // A paid room may be narrated through the walk inside and the PC settling there.
         const i = d.evidence ? storyClauses.findIndex(clause => has(clause,d.evidence)) : -1;
@@ -88,5 +91,7 @@ export function reportedContinuation(s, content, answer, prose) {
         if (!has(proof, frame.after)) return null;
         if (!narratedEvent(prose, d.after).ok || first < 0 || first + proof.length > last) return null;
     }
-    return { delta:d, choice:frame };
+    const detail = frame.within && d.at?.new?.kind === 'interior' && d.at.new.parent === s.scene.at
+        && words(label).replace(/^(?:a|the|my) /,'') === words(frame.to);
+    return { delta:d, choice:frame, detail };
 }

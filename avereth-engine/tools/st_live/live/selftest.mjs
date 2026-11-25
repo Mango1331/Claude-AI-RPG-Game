@@ -92,7 +92,7 @@ const players4 = fs.readFileSync(path.join(r4.runDir, 'player.jsonl'), 'utf8').s
 // The natural level guide: a deliberate four-input cap must be a limit, never Level-15 success.
 const guide5 = path.join(base, 'guide-level-cap.json');
 g.write(guide5, JSON.stringify({ id: 'selftest_level_cap', extends: 'current_test', openRun: { targetLevel: 15, checkpointTurns: 4 },
-    scripted: [{ say: 'Mage' }, { say: 'Flame Lance + Blink' }, { say: 'I look around the roadside.' }, { say: '#status' }] }));
+    scripted: [{ say: 'Mage' }, { say: 'Flame Lance + Arcane Wave' }, { say: 'I look around the roadside.' }, { say: '#status' }] }));
 const o5 = options(['--stub', '--st', ST, '--st-data', data, '--runs', path.join(base, 'runs'), '--player', 'scripted', '--guide', guide5, '--max-turns', '4'], { ...process.env, AVERETH_LIVE_API_KEY: '' });
 o5.configFile = null;
 const r5 = await run(o5);

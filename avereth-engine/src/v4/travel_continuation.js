@@ -7,6 +7,10 @@ import { samePlace } from './place_refs.js';
 // One negative boundary, on the whole current input before it is clipped for the event summary. P otherwise
 // interprets free language; these direct vetoes also win over a mistaken 'local' or an earlier positive quote.
 const holdPosition = /\b(?:(?:i|we) (?:stay|remain) (?:here|put)|(?:i|we) (?:do not|don't|will not|won't) (?:go|leave|follow)|(?:only|just) (?:asking|want directions)|without leaving|ich bleibe hier|ich gehe nicht)\b|^(?:i refuse|i decline|not now)$/i;
+const assisted = /^(?:(?:would|could|can|will) you |please )?(?:carry|take|escort|walk|lead) me (?:please )?(?:to|into) (.+?)(?: please)?[.!?]*$/i;
+const follows = /^(?:i (?:follow|go with) (?:you|him|her|them)|i['’]m right behind you|ich (?:folge dir|schließe mich an))[.!]*$/i;
+const localMotion = /^(?:i (?:step|walk|move|head|go) (?:over )?(?:to|towards?) (?:the |my )?(?:counter|table|seat|bed|bunk|cot|bench)\b|ich gehe (?:zum|zur) (?:tresen|theke|tisch|liege|bank))[^.!?]*[.!]*$/i;
+const lodgingWords = /\b(?:loft|room|bed|bunk|cot|berth|lodging|quarters|kitchen)\b/i;
 const words = value => normText(value).replace(/[^\p{L}\p{N}']+/gu, ' ').trim();
 const has = (text, part) => typeof part === 'string' && !!words(part) && ` ${words(text)} `.includes(` ${words(part)} `);
 
@@ -29,27 +33,53 @@ export function travelFrame(frame, input, present) {
     return { choice: frame.choice, to: frame.to || null, with: frame.with || null, after: frame.after || null };
 }
 
+/** Use the booked action or a clear current choice when the planner supplied no narrower boundary. */
+function ordinaryChoice(s, input) {
+    const choice = String(input || '').trim().replace(/^\*+|\*+$/g,'').trim();
+    if (!choice || choice.split(/[.!?\n]+/).some(clause => holdPosition.test(clause.trim()))) return null;
+    const lower = normText(choice);
+    const booked = (s.services || []).findLast(x => x.service === 'lodging' && x.at === s.scene.at && x.turn === s.turn);
+    const lodging = booked && (booked.what || s.offers?.[booked.offer]?.lines?.find(line => line.id === booked.line)?.what);
+    const room = words(lodging).split(' ').find(word => lodgingWords.test(word) && has(lower,word));
+    if (room && has(lower,room) && (/^(?:just |i(?:'ll| will) take |i choose |i go to |to )/i.test(lower) || /\b(?:go|walk|head|take me|show me)\b/.test(lower)))
+        return {choice,to:room,lodging:true};
+    const target = lower.match(assisted)?.[1] || lower.match(/^trag mich (?:bitte )?(?:zur|zum|ins) (.+?)[.!?]*$/i)?.[1];
+    if (target) return {choice,to:target.replace(/^(?:my |the )/i,'')};
+    if (follows.test(choice)) return {choice,companion:true};
+    if (localMotion.test(choice)) return {choice};
+    return null;
+}
+
 export function reportedContinuation(s, content, answer, prose) {
     const o = s.last?.outcome;
-    const frame = o?.auth?.continuation;
+    const frame = o?.auth?.continuation ?? ordinaryChoice(s, s.last?.input);
     const arrivals = (answer.deltas || []).filter(d => d.type === 'arrive');
     if (arrivals.length !== 1 || !o?.auth?.c || o.auth.go || o.auth.gos?.length || o.auth.roam || o.interp_failed || o.camp ||
         !frame || frame === 'stay' || s.mode !== 'story' || s.encounter || s.pending_combat?.length || s.scene.threats?.length ||
         s.entities.pc?.status === 'dead' || o.auth.pulse?.interrupt || o.conditionals?.some(r => r.kind === 'go') ||
-        [...(o.resolutions || []), ...(o.dropped || [])].some(r => ['go', 'journey.continue', 'attack', 'skill', 'flee', 'pay', 'offer.accept'].includes(r?.type)
+        [...(o.resolutions || []), ...(o.dropped || [])].some(r => ['go', 'journey.continue', 'attack', 'skill', 'flee'].includes(r?.type)
             || r.type === 'activity' && r.kind === 'wait')) return null;
     const d = arrivals[0];
     if (d.forced_by || !samePlace(s, answer.scene, d.at, content) || (d.with || []).some(id => !s.scene.present.includes(id))) return null;
     // 'local' records only the absence of an explicit limit. An older/missing assessment cannot clear a limit.
     // The current X still has to report a real arrival inside an ordinary site, checked after place resolution.
     const label = typeof d.at === 'string' ? s.places[d.at]?.name : d.at?.new?.name;
-    if ((frame.to && !has(label, frame.to)) || (frame.with && !d.with?.includes(frame.with))) return null;
+    if (frame.to && !has(label, frame.to) || frame.with && !d.with?.includes(frame.with)
+        || frame.companion && !d.with?.length) return null;
     const names = [s.entities.pc?.name?.split(' ')[0], 'you'].filter(Boolean);
     // X identifies the stop. A literal quote about a different scene cannot establish presence at that stop.
     const placeWords = normText(label || '').split(/[^\p{L}\p{N}]+/u).filter(w => w.length >= 3 && !['the', 'and', 'above', 'below', 'behind', 'near'].includes(w));
-    const clauses = d.evidence ? [d.evidence] : String(prose).split(/[.!?…\n]+/).filter(c => has(c, label) && movementEvidence(c));
+    const storyClauses = String(prose).split(/[.!?…\n]+/);
+    const clauses = [d.evidence, ...storyClauses.filter(c => has(c, label) && movementEvidence(c))].filter(Boolean);
     const landed = clauses.find(clause => placeWords.some(w => has(clause, w)) && narratedPresence(prose, clause, names).ok);
-    if (!landed) return null;
+    if (!landed) {
+        // A paid room may be narrated through the walk inside and the PC settling there.
+        const i = d.evidence ? storyClauses.findIndex(clause => has(clause,d.evidence)) : -1;
+        const atRoom = i >= 0 && has(d.evidence,frame.to) && narratedEvent(prose,d.evidence).ok;
+        if (!frame.lodging || !atRoom || !storyClauses.slice(i,i+5).some(clause =>
+            /\b(?:he|him)\b/i.test(clause) && /\b(?:mattress|blanket|bed|bunk|cot)\b/i.test(clause) && narratedEvent(prose,clause).ok))
+            return null;
+    }
     if (frame?.after) {
         const story = normText(prose), proof = normText(d.after || '');
         const first = story.indexOf(proof), last = story.indexOf(normText(landed));
@@ -58,5 +88,5 @@ export function reportedContinuation(s, content, answer, prose) {
         if (!has(proof, frame.after)) return null;
         if (!narratedEvent(prose, d.after).ok || first < 0 || first + proof.length > last) return null;
     }
-    return d;
+    return { delta:d, choice:frame };
 }

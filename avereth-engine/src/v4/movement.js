@@ -80,6 +80,16 @@ export function newPlaceScope(answer, s) {
     };
     return rewrite(answer);
 }
+/** A report of the entrance on a step that already targets that established gate. */
+export function gateAlias(s, ref) {
+    const place = ref?.new;
+    const root = place?.parent || trueDungeonOf(s, s.scene.at);
+    if (!place?.name || !s.places[root]?.dungeon?.real || trueDungeonOf(s, s.scene.at) !== root
+        || !GATE_WORDS.test(place.name) || !(s.last?.outcome?.auth?.gos || []).some(go => go.to === root))
+        return null;
+    return root;
+}
+
 const norm = (t) => String(t || '').toLowerCase().replace(/\s+/g, ' ').trim();
 
 /**

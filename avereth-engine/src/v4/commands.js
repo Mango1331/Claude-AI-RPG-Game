@@ -666,6 +666,13 @@ const HANDLERS = {
             if (r.existing && r.existing !== s.scene.at) c = { ...c, to: r.existing };
             else if (r.ambiguous) return { status: 'clarify', reason: 'which place', line: `CLARIFY — which place does he mean: ${r.ambiguous.map((id) => placeName(s, id)).join(' or ')}?` };
         }
+        // A room past a known gate cannot be the first reachable step from outside.
+        // Start at its gate and let the player decide about entry and its terms.
+        const roomRoot = typeof c.to === 'string' ? trueDungeonOf(s, c.to) : null;
+        if (envx?.c && rulesetOf(s) >= 2 && roomRoot && c.to !== roomRoot && trueDungeonOf(s, s.scene.at) !== roomRoot) {
+            ctx.extra.push(`NEXT REACHABLE STEP — the gate of ${placeName(s,roomRoot)}. ${placeName(s,c.to)} is inside; do not narrate entry yet.`);
+            c = {...c,to:roomRoot,gateFirst:true};
+        }
         // Patch 8: at a Dungeon's gate, going "in" (the Dungeon he stands at) is the step past the gate into its first part
         if (envx?.c && typeof c.to === 'string' && c.to === s.scene.at && s.places[c.to]?.dungeon?.real) c = { ...c, to: { new: `the way into ${placeName(s, c.to)}` } };
         // .190 (B5, src/v4/sections.js): in a Living Dungeon a part he has not seen is the engine's next section of the
@@ -744,7 +751,7 @@ const HANDLERS = {
         // .190 (A2): the step as decided once: its kind, the Dungeon it goes into, the scope of a new place of it; a
         // step whose words name a Dungeon's way in ends at its gate
         if (envx?.c && rulesetOf(s) >= 2) {
-            if (known && s.places[c.to]?.dungeon?.real && GATE_WORDS.test(`${wordsFor} ${c.quote || ''}`)) go.way_in = true;
+            if (known && s.places[c.to]?.dungeon?.real && (c.gateFirst || GATE_WORDS.test(`${wordsFor} ${c.quote || ''}`))) go.way_in = true;
             if (section) go.section = section;
             Object.assign(go, stepFields(s, go));
         }

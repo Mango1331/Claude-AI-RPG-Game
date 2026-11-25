@@ -2,7 +2,7 @@ import { campInspection, campObjects, vacantSite, atObserver, visibleSupply, unc
 import { floorRefusal, namedLevel, goesFrom, otherEnd } from './dungeon.js';
 import { placeParent, placeIdentity, placeKey, samePlace } from './place_refs.js';
 import { resolvePlaceRef, usualPersonNamed } from './place_book.js';
-import { allowedArrival, stepsOf, newPlaceScope } from './movement.js';
+import { allowedArrival, stepsOf, newPlaceScope, gateAlias } from './movement.js';
 import { reportedContinuation } from './travel_continuation.js';
 import { sectionsOf, sectionId } from './sections.js';
 import { sceneIssues, sceneSteps, localSceneDelta } from './extract.js';
@@ -337,7 +337,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // Patch 8 (13A): an arrival at a Dungeon's gate by any of its names (the ruined chapel above the Old Crown Catacombs)
     // is at the Dungeon itself, its way in: never a room of it, never a new place beside it
     const arrivalPlace = (ref) => {
-        const gate = cPath ? entranceOf(s, content, ref) : null;
+        const gate = cPath ? gateAlias(state, ref) || entranceOf(s, content, ref) : null;
         if (gate) return { id: gate };
         // .190 (place book): the known place this turn's GO set off for, told with other words, is that place
         if (cPath && ref?.new?.name) {
@@ -381,7 +381,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (!ev.ok) unprovenForced.set(d, ev.why);
     }
     const continuation = explicitTravel ? reportedContinuation(s, content, answer, prose) : null;
-    const fw = firewall(answer.deltas, { ...firewallContext(s, content, chronicle, excludedFoes), unprovenForced, continuation });
+    const fw = firewall(answer.deltas, { ...firewallContext(s, content, chronicle, excludedFoes), unprovenForced, continuation:continuation?.delta });
     const privateMode = cPath && rulesetOf(s) >= 2 && privateQuestsOf(s);
     const acceptanceOnly = privateMode && outcome.resolutions?.length > 0 && outcome.resolutions.every(r => r.type === 'quest.accept');
     const inventedWorkTime = acceptanceOnly && fw.accept.some(d => d.type === 'quest.close' && d.status === 'completed'
@@ -403,7 +403,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     };
     let refusedScene = false;
     let sceneUnreached = null; // K6a: the first refused step of a scene not reached (its place then)
-    const sceneMatches = ref => ref === 'here' || samePlace(s, ref, s.scene.at, content);
+    const sceneMatches = ref => ref === 'here' || gateAlias(state, ref) === s.scene.at || samePlace(s, ref, s.scene.at, content);
     const readied = []; // the contracts this reply made READY (their open deliveries are told after the deltas)
     // .187 (P2; natural batch 14.11.2026, Warrior #117–#121 on .186: the narrator kept Alaric at the gate the engine had
     // refused, twice, past "he remains where he was"): the stay is said with its places – where he is, and the place
@@ -1096,7 +1096,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
         step = { kind: 'delta', type: d.type, seq: d.seq ?? 0, granted: new Set() };
         // Authority is checked again at the actual story step: earlier deltas may have changed its context.
-        const stepFw = firewall([d], { ...firewallContext(s, content, chronicle, excludedFoes), unprovenForced, continuation: s.scene.at === startAt ? continuation : null });
+        const stepFw = firewall([d], { ...firewallContext(s, content, chronicle, excludedFoes), unprovenForced, continuation: s.scene.at === startAt ? continuation?.delta : null });
         if (!stepFw.accept.length) {
             for (const x of stepFw.reject) { reject(x.delta, x.rule, x.why); refusedArrival(x.delta); if (x.delta?.type === 'creature.new') blockCreature(x.delta); }
             for (const x of stepFw.corrections) if (!corrections.includes(x)) corrections.push(x);
@@ -1175,16 +1175,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 };
                 // .190 (B5): in a Living Dungeon the part he reaches is the section his step previewed (made now, named by
                 // this report); a room the story makes there is none
-                const part = explicitTravel ? sectionArrival(ref) : null;
+                const gate = explicitTravel && gateAlias(state, ref);
+                const part = gate ? {id:gate} : explicitTravel ? sectionArrival(ref) : null;
                 if (part?.refuse) { reject(d, 'passage', part.refuse); const fix = `Alaric is still in ${placeName(s, s.scene.at)}: ${part.refuse}.`; if (!corrections.includes(fix)) corrections.push(fix); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
                 let at = part?.id ? { id: part.id } : viaStop(arrivalPlace(ref));
                 if (at.error) { unmake(); reject(d, 'place', at.error); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
-                if (continuation === d && at.id !== s.scene.at) {
+                if (continuation?.delta === d && at.id !== s.scene.at) {
                     const restricted = id => trueDungeonOf(s, id) || lineage(s, id).some(p => s.places[p]?.population);
-                    const chosenTarget = auth.continuation?.to;
+                    const chosenTarget = continuation.choice.to;
                     const nearby = lineage(s, at.id).some(id => ['site','interior'].includes(s.places[id]?.kind)
                         && lineage(s, s.scene.at).includes(id));
-                    if ((!chosenTarget && !nearby) || restricted(s.scene.at) || restricted(at.id) || !realmOf(s, s.scene.at)
+                    if (((!chosenTarget || continuation.choice.lodging) && !nearby) || restricted(s.scene.at) || restricted(at.id) || !realmOf(s, s.scene.at)
                         || realmOf(s, s.scene.at) !== realmOf(s, at.id) || ['realm','region','settlement'].includes(s.places[at.id]?.kind)
                         || (settlementOf(s, at.id) && settlementOf(s, at.id) !== settlementOf(s, s.scene.at))) {
                         unmake(); reject(d, 'passage', 'this route requires a travel action'); refusedArrival(d); break;

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { loadProductContent } from '../helpers.js';
 import { campaign, say, walk } from './patch8_lib.js';
 import { foldChat, messageEvents, projectPromptHistory, rec, setRec } from '../../src/host.js';
-import { onEditedV4, onSwipedV4, refreshRevisionDisplay, restoreEditedView, pendingExtraction, runExtraction, extractionRequest, prepareGenerationAsync } from '../../src/v4/runtime.js';
+import { onEditedV4, onSwipedV4, refreshRevisionDisplay, restoreEditedView, pendingExtraction, runExtraction, extractionRequest, prepareGenerationAsync, processReplyAny } from '../../src/v4/runtime.js';
 import { savedPrefixMatches } from '../../src/v4/continuation.js';
 import { hash32 } from '../../src/util.js';
 
@@ -174,4 +174,39 @@ test('ST shallow prompt copy taken before explicit regeneration carries the newl
     projectPromptHistory(coreChat,{keepTurns:0,currentInput:g.chat[u]});
     assert.ok(coreChat.some(m=>m.mes===altInput));
     assert.doesNotMatch(JSON.stringify(coreChat.map(m=>m.mes)),/purple bell|blue quill/);
+});
+
+test('a generated native swipe belongs to the edited input even if ST carries the old extras forward', async () => {
+    const {g,u,n} = await played();
+    g.chat.splice(n+1);
+    const user = g.chat[u], reply = g.chat[n], originalInput = user.mes;
+    const original = structuredClone(g.state());
+    const oldExtra = structuredClone(reply.extra);
+    user.mes = altInput;
+    onEditedV4(g.chat,u,content);
+    await prepareGenerationAsync(g.chat,content,{type:'swipe',settings:{planner:true},llm:async ()=>'{"commands":[]}'});
+    assert.deepEqual(messageEvents(reply), []);
+    reply.swipe_id = 1;
+    reply.swipes = [oldStory, oldStory]; // even identical prose must be read under the new input
+    reply.swipe_info = [{extra:oldExtra}, {extra:structuredClone(oldExtra)}];
+    const result = processReplyAny(g.chat,n,content,{generatedFrom:{index:u, message:user, key:u+'/0/'+hash32(user.mes)}});
+    assert.equal(result.extract,true);
+    assert.equal(rec(reply).extraction.status,'pending');
+    assert.deepEqual(messageEvents(reply), []);
+    await runExtraction(g.chat,n,content,async ()=>'{"scene":"here","expected":{},"deltas":[]}');
+    assert.equal(rec(reply).extraction.status,'applied');
+    const latest = structuredClone(g.state());
+    assert.deepEqual(foldChat(JSON.parse(JSON.stringify(g.chat))).state,latest);
+
+    reply.swipe_id = 0;
+    reply.extra = structuredClone(reply.swipe_info[0].extra);
+    onSwipedV4(g.chat,n);
+    assert.deepEqual(messageEvents(reply), []);
+    user.mes = originalInput;
+    onEditedV4(g.chat,u,content);
+    assert.deepEqual(g.state(),original);
+    reply.swipe_id = 1;
+    reply.extra = structuredClone(reply.swipe_info[1].extra);
+    onSwipedV4(g.chat,n);
+    assert.deepEqual(messageEvents(reply), []);
 });

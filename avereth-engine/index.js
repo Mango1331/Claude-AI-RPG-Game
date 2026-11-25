@@ -1,3 +1,4 @@
+import { generationSource } from './src/v4/revisions.js';
 import { readNarratorFrames, streamReply } from './src/v4/narrator_stream.js';
 import { actionStatusView } from './src/action_status.js';
 // SillyTavern binding for the Avereth Engine. All game logic lives in src/ (pure ES modules, tested in Node);
@@ -485,7 +486,8 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         lastContext = r.context;
         setPrompt(r.context.text);
         setActionStatus('Erzählung läuft');
-        narrationStart = { chatId: hostChatKey(c), user: lastPlayerIndex(c.chat), t: Date.now(), inputHash: hash32(c.chat[lastPlayerIndex(c.chat)]?.mes || ''), context: r.context.diagnostics, epoch: generationRequest, chat: c.chat };
+        const user = lastPlayerIndex(c.chat);
+        narrationStart = { chatId: hostChatKey(c), user, source: type === 'continue' ? null : generationSource(c.chat, user), t: Date.now(), inputHash: hash32(c.chat[lastPlayerIndex(c.chat)]?.mes || ''), context: r.context.diagnostics, epoch: generationRequest, chat: c.chat };
         // prompt-only: retired tracker blocks out of the history, and only the last exchanges (the saved chat is untouched)
         lastProjection = projectPromptHistory(chat, { keepTurns: Number(s.historyTurns) || 0, currentInput:c.chat[lastPlayerIndex(c.chat)] });
         if (r.errors?.length) console.warn('[Avereth] fold errors', r.errors);
@@ -613,10 +615,17 @@ async function onMessageReceived(messageId, type) {
         // the greeting of a new chat arrives here too (SillyTavern: MESSAGE_RECEIVED 'first_message') and starts the campaign
         // Patch 8.2: the narrator's time, from the engine block handed over to the reply received (telemetry)
         const snapshot = narrationStart;
-        const started = narrationStart?.chatId === hostChatKey(c) && Number(messageId) > narrationStart.user ? narrationStart.t : null;
+        const validSnapshot = snapshot?.chat === chat && snapshot.chatId === chatId && snapshot.epoch === generationRequest
+            && Number(messageId) > snapshot.user && snapshot.inputHash === hash32(chat[snapshot.user]?.mes || '');
         narrationStart = null;
         if (!hasCampaign(chat)) settleGreeting(c); // the greeting of a new chat starts the campaign here (hotfix .137)
-        const r = processReplyAny(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers, recover, runtime: newRuntime(), planner: newPlanner(), narrationMs: started === null ? null : Date.now() - started, narratorContext: started !== null && snapshot.chat === c.chat && snapshot.epoch === generationRequest && snapshot.inputHash === hash32(c.chat[snapshot.user]?.mes || '') ? snapshot.context : null });
+        const r = processReplyAny(chat, Number(messageId), content, {
+            seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers,
+            recover, runtime: newRuntime(), planner: newPlanner(),
+            narrationMs: validSnapshot ? Date.now() - snapshot.t : null,
+            narratorContext: validSnapshot ? snapshot.context : null,
+            generatedFrom: validSnapshot && type !== 'first_message' ? snapshot.source : null,
+        });
         if (r.foldBlocked) { showFoldBlock(r.foldBlocked); renderDebug(); return; }
         if (!r.changed) return;
         rerender(c, Number(messageId));

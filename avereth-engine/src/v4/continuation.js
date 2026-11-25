@@ -2,11 +2,11 @@
 // failure-continuation path: ST 1.19 can resolve saveChat after a failed write.
 import { rec, messageEvents } from '../host.js';
 const signature = chat => JSON.stringify(chat.map(m => ({mes:m.mes, user:!!m.is_user, system:!!m.is_system,
-    revision:[m.avereth_parent,m.avereth_fork,m.avereth_inactive,m.avereth_unplayed,m.avereth_protected_edit,m.avereth_edits],
+    revision:[m.avereth_parent,m.extra?.avereth_reply_parent,m.avereth_fork,m.avereth_inactive,m.avereth_unplayed,m.avereth_protected_edit,m.avereth_edits],
     events:messageEvents(m), status:rec(m)?.extraction?.status ?? null,
     continuation:rec(m)?.continuation ?? null, failed:!!(rec(m)?.plan?.failed || rec(m)?.interp?.failed),
     action_input:m.extra?.avereth_action_input,action_input_hash:rec(m)?.action_input_hash,
-    swipe_id:m.swipe_id ?? 0,swipe_info:m.swipe_info?.map(s=>s.extra?.avereth)})));
+    swipe_id:m.swipe_id ?? 0,swipe_info:m.swipe_info?.map(s=>[s.extra?.avereth_reply_parent,s.extra?.avereth])})));
 export function savedPrefixMatches(chat, saved, end) {
     return Array.isArray(saved) && saved.length > end
         && signature(chat.slice(0,end+1)) === signature(saved.slice(0,end+1));

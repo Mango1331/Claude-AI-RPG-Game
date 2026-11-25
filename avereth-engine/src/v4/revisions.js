@@ -16,6 +16,28 @@ function key(index, revision) {
     return index + '/' + revision.swipe + '/' + revision.hash;
 }
 
+export function generationSource(chat, index) {
+    const message = chat[index];
+    return message?.is_user ? { index, message, key: key(index, identity(message)) } : null;
+}
+
+const parentOf = msg => msg.extra?.avereth_reply_parent ?? msg.avereth_parent;
+
+// ST keeps the assistant row and can carry its extra into an ungenerated swipe.
+// A fresh generation can replace that swipe's ancestry, with the old swipe and
+// legacy row-wide link retained for selecting historical answers.
+export function bindGeneratedReply(chat, id, source) {
+    const msg = chat[id];
+    if (!source || !msg?.avereth_parent || msg.is_user || msg.is_system) return false;
+    const { index, message, key: parent } = source;
+    if (index >= id || chat[index] !== message || !activeMessage(message) || parent !== key(index, identity(message)))
+        return false;
+    for (let i = index + 1; i < id; i++) if (activeMessage(chat[i])) return false;
+    if (parentOf(msg) === parent) return false;
+    (msg.extra ??= {}).avereth_reply_parent = parent;
+    return true;
+}
+
 export function previousRevision(msg) {
     return lastSeen.get(msg);
 }
@@ -44,7 +66,8 @@ export function reconcileRevisions(chat, id = -1, old = null) {
         for (let i = first; i < chat.length; i++) {
             const msg = chat[i];
             if (i > first && !msg.avereth_parent) msg.avereth_parent = parent;
-            const active = !msg.avereth_parent || msg.avereth_parent === parent;
+            const authoredOn = parentOf(msg);
+            const active = !authoredOn || authoredOn === parent;
             if (!prior && active !== activeMessage(msg)) {
                 if (active) delete msg.avereth_inactive;
                 else msg.avereth_inactive = true;

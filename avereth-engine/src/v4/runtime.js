@@ -1,4 +1,4 @@
-import { activeMessage, previousRevision, reconcileRevisions, rememberRevision } from './revisions.js';
+import { activeMessage, bindGeneratedReply, previousRevision, reconcileRevisions, rememberRevision } from './revisions.js';
 import { actionInputOf, actionInputHash, actionPrefix, validateActionSelection, reconcileHudPlan } from '../action_input.js';
 import { boardRepairGuidance, boardSlotRepair, parseBoardSlot, parseInitialBoard } from './guild.js';
 import { movementEvidence } from './narration_evidence.js';
@@ -904,6 +904,11 @@ function display(msg, content, before, reply, hud) {
 export function processReplyAny(chat, id, content, opts = {}) {
     if (campaignRuntime(chat) !== 'v4') return processReply(chat, id, content, opts);
     const msg = chat[id];
+    if (bindGeneratedReply(chat, id, opts.generatedFrom)) {
+        delete msg.extra.avereth;
+        delete msg.extra.display_text;
+        delete msg.avereth_prior_display;
+    }
     refreshRevisionDisplay(chat);
     if (!activeMessage(msg) || msg.is_user || msg.is_system) return { changed: false };
     const r = rec(msg);

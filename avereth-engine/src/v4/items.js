@@ -159,8 +159,11 @@ export function gearMarketText(content, balance = false, audience = 'narrator') 
     const bases = gearBases(content).map(({ id, name }) =>
         audience === 'catalog' && id === name ? id : `${id}=${name}`
     ).join('; ');
-    const quality = content.gear.instances.quality.map(q => q.tier).join(', ');
     const tiers = content.gear.instances.quality.map(q => q.tier);
+    const quality = tiers.join(', ');
+    if (audience === 'catalog') {
+        return `GEAR MARKET — Supported categories: ${categories}. BASES (ID or ID=name): ${bases}. QUALITY: ${quality}. Regular F gear: one base + quality per article; split packages. Names, material and price grant no stats. No separate armor parts, head, leg, hand or jewelry slots. Ordinary goods have no combat stats. Engine sets values: F weapon/focus ${staff}; starter staff MATK 10. Preserve recorded prices and quoted quality. Upgrades require genuine higher quality; other options include armor/offhand, consumables and Skill manuals.`;
+    }
     const prices = new Map();
     for (const {id} of gearBases(content)) {
         const schedule = tiers.map(tier => gearRetailPrice(content, gearOfferProfile(content, {base:id, quality:tier}))).join('/');
@@ -168,9 +171,6 @@ export function gearMarketText(content, balance = false, audience = 'narrator') 
         prices.get(schedule).push(id);
     }
     const retail = `Regular F retail (cp per unit in quality order ${quality}): ${[...prices].map(([schedule,bases]) => `${bases.join(', ')} ${schedule}`).join('; ')}. Use these prices for new regular stock and the recorded price for existing offers.`;
-    if (audience === 'catalog') {
-        return `GEAR MARKET — Supported categories: ${categories}. BASES (ID or ID=name): ${bases}. QUALITY: ${quality}. Regular F gear: one base + quality per article; split packages. Names, material and price grant no stats. No separate armor parts, head, leg, hand or jewelry slots. Ordinary goods have no combat stats. Engine sets values: F weapon/focus ${staff}; starter staff MATK 10. ${retail} Upgrades require genuine higher quality; other options include armor/offhand, consumables and Skill manuals.`;
-    }
     return `GEAR MARKET — Mechanical equipment uses only these supported categories: ${categories}. Every regular F equipment offer needs base and quality; names are appearance only. BASES: ${bases}. QUALITY: ${quality}. One base per line; packages need separate lines. Only the engine fixes its values. No extra head, leg, hand or jewelry slots or bonuses. Separate armor parts are not whole armor. Ordinary tools, clothes and decoration remain available, explicitly without combat stats. F weapon/focus values by actual quality: ${staff}; starter staff MATK 10. For requested upgrades, a suitable specialist may offer genuinely finer/superior/exceptional supported ware; do not keep offering common gear under expensive material names. If no upgrade is available, say so. Copper/silver cores and higher prices alone grant no stats. ${retail} Keep the named quality and price stable; armour/offhand, consumables and supported Skill manuals are other voluntary improvements.`;
 }
 

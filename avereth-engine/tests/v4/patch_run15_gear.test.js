@@ -189,5 +189,8 @@ test('machine catalogs preserve every exact base ID and display name, including 
     assert.deepEqual(decoded, gearBases(content).map(({ id, name }) => ({ id, name })));
     assert.match(catalog, /hand_axe=hand-axe/);
     assert.doesNotMatch(catalog, /sword=sword/);
-    assert.match(gearMarketText(content), /sword=sword/);
+    assert.doesNotMatch(catalog, /Regular F retail/);
+    const narrator = gearMarketText(content);
+    assert.match(narrator, /sword=sword/);
+    assert.match(narrator, /Regular F retail.*\bstaff\b[^;.]*\b80\/140\/260\/480\b/);
 });

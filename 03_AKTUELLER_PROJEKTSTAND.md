@@ -1,12 +1,12 @@
 # Avereth Engine – aktueller Projektstand
 
-**Entwicklungskandidat .214 ist für den unabhängigen GPT-Diffreview vorbereitet.** Die Kapitulation mit Gegenforderung, Übergabe und anschließender Fortsetzung wurde auf der User13-Vorgeschichte offline und in SillyTavern 1.19.0 abgenommen. Die Produktfreigabe steht aus. [Fachbericht und Abnahme](recherche/AVERETH_214_SURRENDER_COMBAT_NEGOTIATION.md)
+**Entwicklungskandidat .215 ist für den kurzen unabhängigen GPT-Kontrollreview vorbereitet.** Der .214-Diffreview bestätigte die Kapitulationsmechanik und belegte falsche Einigungen. .215 bindet die Entscheidung an den jeweiligen Sprecher und die vereinbarte Gegenleistung. [Korrektur, Gegenproben und Produktdiff](recherche/AVERETH_215_KAPITULATION_AUTORISIERUNG.md)
 
 ## Aktuelle Referenzen
 
 | Zweck | Verifizierte Referenz |
 |---|---|
-| Aktiver Entwicklungs-/Testbranch | `experiment/211-openrouter-helper-single-runner` · [`c2aa5737`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c2aa5737625f2f0ac0d4db1f5ee794202fd741c2) · Build `4.3.0-c.6.6.214` |
+| Aktiver Entwicklungs-/Testbranch | `experiment/211-openrouter-helper-single-runner` · [`9a954552`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/9a9545523fe142aec7cced1c1176f4b7baca5222) · Build `4.3.0-c.6.6.215` |
 | Fester Kontinuitätsvergleich | `experiment/211-scene-continuity` · [`c2ddc780`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c2ddc780d4c57b219f9cd7a1d134efceca7e459d) |
 | Eingefrorenes Produkt `.200` | `claude/c-planner-prototype-2026-10-02-gpt-c666` · [`0cd14806`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b) |
 
@@ -22,7 +22,7 @@
 
 Der bestätigte Gegenreview bildete die Grundlage der Implementierungsfreigabe für .214. Die zwei ursprünglichen Spielertexte schließen eine eindeutig vereinbarte Zahlung mit Stababgabe ab. Ein Gegenangebot, das ausdrücklich auch den Beutel verlangt, erfordert eine entsprechend eindeutige Autorisierung. 3.591 Node-Prüfungen und 2.235 historische Replayvergleiche bestanden. [User13-Gegenreview](testrun_10b/user-20261125-212154-213/CODEX_GEGENREVIEW.md) · [.214-Fachbericht und Reviewdiff](recherche/AVERETH_214_SURRENDER_COMBAT_NEGOTIATION.md)
 
-Der nächste Schritt ist der unabhängige GPT-Diffreview. Ob das natürliche Verhandeln einen weiteren Wurf braucht, bleibt eine spätere Spieltestfrage.
+Auf den kurzen unabhängigen GPT-Kontrollreview von .215 folgt der persönliche Usertest. Ob das natürliche Verhandeln einen weiteren Wurf braucht, bleibt eine spätere Spieltestfrage.
 
 **Arbeitsaufteilung:** Codex übernimmt beauftragte Analysen, Implementierungen, Abnahmen und Gegenreviews; GPT bleibt unabhängiger Fach-, Code- und Run-Reviewer. Keine weiteren Claude-Aufträge. Historische Fachquellen bleiben gültig als Belege ihrer jeweiligen Etappe.
 

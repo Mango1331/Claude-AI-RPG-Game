@@ -9,7 +9,7 @@ import net from 'node:net';
 import { spawn } from 'node:child_process';
 import { sleep } from './lib.mjs';
 
-const ANSI = /\x1b\[[0-9;]*[A-Za-z]|\x1b\][^\x07]*\x07/g;
+const ANSI = /\x1b\[[0-9;]*[A-Za-z]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)/g;
 export const MARKER = /^Chat Completion (request|response):/;
 
 /** A free TCP port on loopback, starting at `from`. */

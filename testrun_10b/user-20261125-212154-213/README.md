@@ -6,6 +6,8 @@ Build `4.3.0-c.6.6.213`, Remote-Kandidat [a89c690d](https://github.com/Mango1331
 
 Hauptbefund: Die stärkeren Banditen führen zu einer plausiblen Kapitulationsentscheidung des Spielers, die bisher keine mechanische Entsprechung hat. Surrender und Verhandlung sind noch keine implementierten PC-Kampfhandlungen. Der Nutzer wünscht eine entsprechende Hauptaktion mit wählbaren Gegenleistungen und ohne Erfolgsgarantie. Ein zusätzlicher Wurf für die Entscheidung der Gegner ist ausdrücklich nur eine offene Designidee.
 
+- [Bestätigter unabhängiger Codex-Gegenreview](CODEX_GEGENREVIEW.md)
+- [.214-Umsetzung, Abnahme und Diff für GPT](../../recherche/AVERETH_214_SURRENDER_COMBAT_NEGOTIATION.md)
 - [Unabhängiger GPT-Review](REVIEW.md)
 - [Spielerfeedback mit fachlicher Bewertung und offenen Designideen](USER_FEEDBACK_REVIEW.md)
 - [Unverändertes Originalfeedback und nachträgliche Ergänzung](FEEDBACK_SPIELGEFUEHL.md)
@@ -14,4 +16,4 @@ Hauptbefund: Die stärkeren Banditen führen zu einer plausiblen Kapitulationsen
 
 Der ST-Logger ist vollständig in neun Binärteilen im Ordner `originals/st-log-parts` gespeichert. `python restore_log.py` rekonstruiert die redigierte UTF-16-Datei bytegenau und prüft alle Quellen. Kein erneuter Upload notwendig.
 
-Codex soll den tatsächlichen Code des .213-Commits, die Originalquellen und die Befunde unabhängig prüfen und `CODEX_GEGENREVIEW.md` ergänzen. Noch keine Patchimplementierung, keine neuen Modellprovideraufrufe. Der Test endet vor Handel, Dungeon, Rast und weiterer Progression; Aussagen über deren langfristige Qualität bleiben offen.
+Die Originalkampagne endet vor Handel, Dungeon, Rast und weiterer Progression. Die späteren .214-Gegenproben sind im verlinkten Fachbericht dokumentiert.

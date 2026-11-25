@@ -1,0 +1,94 @@
+# Avereth .214 — Kapitulation und Verhandlung im Kampf
+
+**Stand für den unabhängigen GPT-Diffreview.** Auf der Originalvorgeschichte von User13 kann Alaric mit der ausgewählten Nebenaktion zurückweichen, kapitulieren und seine drei Silber hinwerfen. Verlangen die Banditen diese Silber und den Stab, schließt seine nächste Zustimmung den Handel ab. Der getestete Ausgang hinterlässt Alaric mit 32 HP, ohne Stab und mit seinem Small Pouch auf dem Steinbruchweg. Lehnt ein Bandit die Vereinbarung ab, bleibt er handlungsfähig. Die Produktfreigabe steht aus. [User13 mit Originalen](../testrun_10b/user-20261125-212154-213/) · [GPT-Review](../testrun_10b/user-20261125-212154-213/REVIEW.md) · [bestätigter Gegenreview](../testrun_10b/user-20261125-212154-213/CODEX_GEGENREVIEW.md) · [vollständiger Produktdiff](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/a89c690dbe0037f1c4d19a8d762e5b0fed207eab...c2aa5737625f2f0ac0d4db1f5ee794202fd741c2)
+
+## Fachentscheidungen und Integration
+
+| Paket | Umsetzung und sichtbare Wirkung |
+|---|---|
+| A · Hauptaktion | Die bestehende Initiative verbraucht den Major und gegebenenfalls einen kompatiblen Minor in der gewählten Reihenfolge. Berechtigt sind anwesende, lebende, feindliche NPC-Kampfteilnehmer mit dem vorhandenen Sapienzmerkmal. Alle drei namenlosen Banditen erfüllen das Kriterium. Auch mit leeren Händen kann der Spieler um Gnade bitten. |
+| B · Reaktion | Der reguläre Narrator erhält das Angebot, die sichtbare Situation und den Auftrag, aus den Interessen der Beteiligten heraus anzunehmen, abzulehnen oder eine konkrete Gegenforderung zu stellen. Der reguläre Extractor liest dafür ein kurzes zweckgebundenes Schema. Die Engine prüft Angebots-ID, Sprecher, zulässige Beteiligte, Material und wörtliche Belege. Kollektive ausdrückliche Zustimmung ist möglich. Unabhängige Teilnehmer brauchen zuordenbare Zustimmung. Ein Gegenangebot eröffnet eine unmittelbare Antwort. |
+| C · Übergabe | Geld wird in Kupfereinheiten validiert. Getragene Stapel, Ressourcen und ausgerüstete Slots behalten eigene Referenzen. Ein Angebot reserviert seine Bedingungen. Ein ausdrücklicher Wurf erzeugt sofort einen physischen Münzstapel am aktuellen Ort, eine direkte Gabe braucht einen Empfänger. Der Abschluss rechnet bereits abgegebene Einheiten an. Er nutzt die bestehenden Inventar-, Unequip-, Give-/Drop-, Objekt- und Finanzereignisse. Ausrüstung und wirksames Kampfprofil werden gemeinsam aktualisiert. Die Autorisierung gilt nur für diese Vereinbarung. Freie Zahlungen nutzen weiter ihren bisherigen Weg. |
+| D · Abschluss | Nur die zustimmenden Teilnehmer scheiden friedlich aus. Die Engine setzt am gespeicherten Initiativeplatz fort oder beendet den Kampf mit dem Grund `negotiated`. Die ausgeschiedenen Gegner erscheinen in der Vereinbarung und Kampferinnerung. Ein späterer neuer Angriff kann die vorhandene Reaktion neutraler Kampfteilnehmer auslösen. |
+| E · Eingabe | Der bestehende HUD-Komponist zeigt Partner, verfügbare Münzen, Bestände, ausgerüstete Slots, Mengen und die Angebotszusammenfassung. Null in allen Feldern bedeutet Kapitulation ohne Gegenleistung. Erst „Aktion senden“ autorisiert die Auswahl. Eine offene Gegenforderung zeigt die tatsächlichen Bedingungen und die bereits herausgegebenen Güter. Der Rollenspielmodus bindet ausschließlich die gewählte Mechanik. Im freien Modus führt dieselbe Phasenprüfung HUD- und Textaktionen zusammen. |
+| F · Identität | Der verbindliche Kampfblock verknüpft den stabilen Zielnamen mit kurzen sichtbaren Merkmalen, tatsächlicher Waffe und Reichweite. Aufgelöste Angriffe nennen denselben Akteur. Während eines aktiven Kampfes kann ein extrahierter Waffenfakt die Ausrüstung eines bestehenden NPCs nicht überschreiben. Echte Ausrüstungsvorgänge bleiben im Enginepfad. |
+| G · Gefahr | Das ausgewählte PULSE-Signal steht direkt im verbindlichen Ereignistext. Der Gefahrenhinweis fordert sichtbare Anzahl, Waffen, Auftreten und erkennbare Überlegenheit vor der Entscheidung. Bei den NPC-Kämpfen geben lange Gilden-, Handels- und Auftragserläuterungen Platz für die Teilnehmer frei. Beim Abgleich der Abschnittsnamen mit der finalen Ausgabe fiel ein zweiter verlorener Abschnitt auf. Auch ausgewählte `learning_sources` werden jetzt ausgegeben. Das Kontextbudget bleibt gleich. |
+
+Der Nachtrag des Spielers fragt ausdrücklich, ob der Narrator die situative Entscheidung bereits ausreichend selbst treffen kann. In dieser Fassung entscheidet er anhand der Szene. Die Engine zieht dafür keinen Zufallswert. Ein späterer Verhandlungswurf bleibt eine Designoption, falls im natürlichen Spiel ein konkreter Nutzen erkennbar wird. Die Stärke der Gegner richtet sich weiter nach der Welt. [Originalfeedback und Nachtrag](../testrun_10b/user-20261125-212154-213/FEEDBACK_SPIELGEFUEHL.md) · [Feedbackbewertung](../testrun_10b/user-20261125-212154-213/USER_FEEDBACK_REVIEW.md)
+
+## Zustandsübergänge, Autorisierung und Fortschritt
+
+1. Auf dem Spielerzug entsteht `encounter.negotiation` mit `stage: offered`, einer an Zustand und Bedingungen gebundenen ID, Ort, Ziel, Einzelpositionen und Belegen bereits ausgeführter Übergaben. Ein Angebot allein lässt Geld, Gegenstände und Ausrüstung beim Spieler. Die Engine verarbeitet ausdrücklich ausgeführte Gaben schon vor der NPC-Antwort. Der Initiativezeiger steht hinter dem bezahlten Spielerzug.
+2. Eine gültige Extraktion bucht genau eine Reaktion auf der Narratornachricht. `refuse` setzt die Initiative fort. `accept` wickelt die vereinbarten Positionen ab. `counter` hält die belegten Forderungen und Teilnehmer in `stage: counter` fest. Fehlende, unklare, überholte oder beschädigte Antworten können keinen Frieden buchen. Der Spieler kann die Antwort erneut erzeugen oder das Angebot zurückziehen.
+3. Bei einer Gegenforderung bestätigt der nächste Spielerzug deren vollständige Bedingungen oder beendet die Verhandlung. Ein neuer Verhandlungsversuch kostet erneut einen Major. Eine widersprüchliche oder unvollständige Autorisierung kann korrigiert werden. Währenddessen kann der Spieler keine Bewegung, Übergabe oder andere Kampfhandlung verbuchen. Nach einer gültigen Zustimmung erzählt der Narrator vom bereits vollzogenen Ergebnis.
+4. Abgeschlossene Vereinbarungen nennen Sprecher, Teilnehmer, Belege und Material. `combat.negotiation` prüft die Revision beim Falten. Führt eine ältere Nachricht inzwischen zu einer anderen Ausgangslage, wird die gesamte zugehörige Ereignisgruppe atomar verworfen. Zu einem inaktiven Swipe gehörende Folgezustände wirken sich auf den gewählten Verlauf nicht aus. Für Würfe, XP und Geld bleiben die normalen Nachrichten- und Swipe-Records maßgeblich.
+5. Der reguläre Kampfabschluss verbucht bereits erworbene Pending Combat XP einmal. Defensive und Lernqualifikation berücksichtigen eine tatsächlich erlebte Bedrohung. Offensive Proficiency und Entwicklung behalten ihre Siegbedingungen. Ausgezahlte Kill-XP, Beute, Sieg-Trials, Quest- oder Dungeonabschlüsse entstehen durch friedliches Ausscheiden nicht. Beispielsweise blieb die Liste besiegter Gegner leer und ein kontrolliert vorbereiteter Altbestand von 12 Pending XP wurde mit genau 12 XP abgeschlossen. Im unveränderten User13-Zustand waren es 0 XP. Eine getrennte kontrollierte Variante mit vorher eingesetztem Arcane Ward und offenem Lernziel erhielt 18 bereits erspielte PP und 18 LP (30 auf 48). Der vorhandene Entwicklungsmarker blieb erhalten. Die Karrierebilanz wies 0 Siege, 0 besiegte Gegner und keine Feats aus.
+
+## Originalreproduktion und Pflichtabnahme
+
+Die .213-Gegenprobe führte elf Spielereingaben und neun Erzählantworten auf ihrem jeweiligen Originalpräfix erneut aus. Der rekonstruierte verworfene HUD-Versuch endete ohne Aktion. Eine Gegenprobe mit gebundenem Rückzug und einem zusätzlichen `other` führte ausschließlich Bewegung aus. Die beiden gespeicherten Freitextversuche ließen den Kampf bei 30 cp und ausgerüstetem Stab stehen. Im Fluchtvergleich fiel Alaric nach dem regulären Gegenangriff auf 0 HP. Der gelöschte HUD-Versuch wurde aus dem physischen Request rekonstruiert. Er gehört nicht zu den gespeicherten Chatnachrichten. [Sequenz und Quellen](../testrun_10b/user-20261125-212154-213/CODEX_GEGENREVIEW.md)
+
+Für .214 lief die reale Engine ab Originalnachricht M18 mit den Spielertexten M19 und M21. Lokale, festgelegte Modellantworten machen widersprüchliche Ausgänge auf derselben Vorgeschichte vergleichbar. Die Browserprüfung setzte für den Gefahrenhinweis früher in der Originalreise an. Sie verwendete ein isoliertes SillyTavern 1.19.0, Chromium, den normalen Erweiterungs- und Speicherpfad und ausschließlich einen lokalen HTTP-Stub.
+
+| Abnahme | Beobachtung |
+|---|---|
+| Gnade ohne Gegenleistung, Annahme oder Ablehnung | Beide Antworten auf identischem Ausgangszustand geprüft. Bei Annahme bleiben 30 cp, bei Ablehnung führt die Initiative den nächsten Gegnerzug aus. |
+| Drei Silber anbieten oder hinwerfen | Das reine Angebot lässt 30 cp beim Spieler. Der Wurf erzeugt genau einen Abgang von 30 cp und einen gleichwertigen Stapel am Steinbruchweg. Nach Reload und wiederholter Vorbereitung desselben Zuges bleibt der Saldo 0. |
+| Zusätzlicher Stab, dann Zustimmung | Die NPC-Antwort öffnet eine Gegenforderung. Zustimmung zu Silber und Stab verschiebt die bereits abgelegten Münzen und überträgt den ausgerüsteten Stab. Kein zweiter Münzabgang. Bei einer reduzierten Forderung von 20 cp bleiben 10 cp am Ablageort. |
+| Wortlaut des historischen Ultimatums | M20 verlangt ausdrücklich den ganzen Beutel und den Stab. Geprüft wurde auch die engere Übergabeformulierung aus M21. Die Engine gibt den Beutel damit nicht stillschweigend ab. Sie lässt die konkrete Differenz offen. Der erfolgreiche Zweizugfall verwendet eine eindeutige Forderung nach Geldinhalt und Stab. |
+| Ein einzelner Sprecher, unabhängige Gegner | Zustimmung nur des Anführers lässt Axt- und Messerträger handeln. Stimmen Anführer und Messerträger zu, bleibt der Axtträger feindlich. Alaric erreicht Runde 3 mit 32 HP. Sein wirksamer MATK sinkt nach der Stababgabe von 10 auf 0. Das vollständige feste Kampfprofil entspricht der Neuberechnung ohne Stab. |
+| Monster | Bei gleicher Kampfsituation mit gewöhnlichen Kreaturen fehlen HUD-Aktion und mechanische Autorisierung. Der positive Vergleich verwendet die drei tatsächlichen NPCs ohne explizite Rassenangabe. |
+| HUD und Freitext | Der native freie Rückzug plus Kapitulation und Münzwurf ergibt Minor und Major in einem Zug. Ein widersprüchliches Bewegungsziel verbucht keine Teilaktion. Ein Plan, der nur den Rückzug übrig lässt, verbucht ebenfalls nichts. Im Rollenspielmodus autorisiert derselbe Begleittext zum Rückzug ausschließlich Bewegung. |
+| Dauer und unterbrochene Extraktion | Wiederholte ungültige Extraktion erhält `offered`, den Münzbeleg und den Initiativeplatz. Fehlt die Spielerentscheidung auch nach der normalen Plannerreparatur, bleibt die Gegenforderung unverändert und der Gegner erhält keinen unbeabsichtigten Zug. Abbrechen setzt den Kampf fort. Ein neuer Deal als Antwort auf eine Gegenforderung bringt keine zweite kostenlose Verhandlungsphase. |
+| Fortschritt und Ausrüstung | Friedlicher Abschluss mit leeren `defeated`- und `escaped`-Listen, ohne Kampfbeute. Der native HUD-Gegenversuch überträgt genau 10 cp und die getragene Rüstung. Der Spieler behält 20 cp. Ein erfundener Langbogen des Axtträgers wird als dauerhafter Waffenfakt abgewiesen. |
+| Revisionen | JSON-Rundreise, erneute Vorbereitung des bezahlten Majors, Edit und Wiederherstellung des Gegenangebots, Wechsel auf einen anderen Swipe und zurück sowie Bearbeitung des Buchungstextes über die produktiven Host-Hooks geprüft. Der Browser prüfte native Regeneration des Kampftexts, Reload bei offener Forderung sowie Speichern, vollständigen Read-back und Reload nach der Fortsetzung. |
+| Zustellung und Fortsetzung | Im echten HTTP-Request stehen Bandit A mit Wood axe bei SHORT, Bandit B mit Cudgel bei SHORT und Bandit C mit Long knife bei ENGAGED. Der frühere Reise-Request enthält den PULSE-Gefahrenhinweis. Der durchgehende Browserabschnitt umfasst Rückzug, Kapitulation, Gegenforderung, Übergabe und einen folgenden Erzählzug auf der Straße. |
+
+## Aufrufe, Promptumfang und Zustellnachweis
+
+Die Originalzahlen stammen aus dem vollständigen ST-Log. Für .214 zählen die Werte alle an den lokalen Endpoint zugestellten Nachrichteninhalte in Zeichen. Der Stub verwendet vorgegebene Antworten. Seine synthetischen Token- und Laufzeitwerte erlauben keine Aussage zu Providerabrechnung, Modellqualität oder Latenz.
+
+| Sequenz | Spielereingaben | Planner / Narrator / Extractor | Promptzeichen gesamt | Mechanisches Ergebnis |
+|---|---:|---:|---:|---|
+| .213 · physisch #22–28 | 3 Sendeversuche, davon 2 im Chat erhalten | 3 / 2 / 2 | 298.786 | Kampf aktiv, 30 cp, Stab ausgerüstet |
+| .213 · nur gespeicherte Folge #23–28 | 2 | 2 / 2 / 2 | 273.443 | gleicher Endstand |
+| .214 · Rückzug, Wurf, Gegenforderung, Zustimmung | 2 | 2 / 2 / 2 | 215.871 | Verhandlung beendet, 0 cp, Stab beim Empfänger, Beutel behalten |
+| .214 · feste HUD-Auswahl mit sofortiger Annahme | 1 | 0 / 1 / 1 | 53.879 | 10 cp und Rüstung übertragen, Kampf beendet |
+
+Für #22–28 sind **69.196 Inputtokens und 2.825 Outputtokens** gemessen. Die .214-Zweizugfolge enthält 26.199 / 51.864 / 2.711 Zeichen im ersten P/N/X-Triplett und 25.183 / 51.970 / 57.944 im zweiten. Der kompakte Extractor für die erste NPC-Entscheidung erklärt den größten Unterschied. Auf die rein erzählerische Fortsetzung nach dem Abschluss entfällt wieder der gewöhnliche Welt-Extractor. Gegenüber denselben zwei gespeicherten Altzügen wurden 57.572 Zeichen weniger zugestellt. Die abweichenden Erzähltexte und Antworten gehören zur Messung. Eine Erfolgsquote für natürliche Modellantworten lässt sich daraus nicht ableiten.
+
+Der zugestellte N-Request zur ursprünglichen Kampfrunde umfasste 52.259 Zeichen, davon 6.764 im Engineblock. Der aufgelöste Messerangriff erscheint dort als `Bandit C (Long knife)` mit dem Schritt von MEDIUM nach ENGAGED und den bereits gewürfelten 48 Schaden. Beim vorausgehenden PULSE waren es 54.534 Zeichen, davon 7.109 im Engineblock. Der Abgleich der 32 statisch angemeldeten Kontextabschnitte mit den 32 Ausgabenamen zeigte keine weitere Lücke. Eine separate Frage nach einem Primer auf dem archivierten Gildenzustand enthielt `learning_sources` sowohl in der Auswahl als auch im ausgelieferten Engine-Kontext.
+
+## Reproduzierbarkeit und Plattformen
+
+Aus dem Verzeichnis `avereth-engine` des Entwicklungskandidaten, mit dem auf `main` archivierten Chat und einer installierten ST-1.19.0-Kopie:
+
+```sh
+npm test
+npm run replay:check
+node tools/replay/user13_surrender.mjs "$USER13_CHAT"
+CHROME_PATH=/usr/bin/chromium node tools/st_live/live/user13_surrender_browser.mjs "$USER13_CHAT" "$ST_119"
+```
+
+- **Node auf Linux, Node 24.22.1.** Ausgangsstand .213 und abschließender .214-HEAD jeweils 3.591 von 3.591 bestanden. Ein früher Parallelvergleich lieferte am Kandidaten auch einen Listener-Timeout. Die nachfolgenden vollständigen Kandidatenläufe bestanden den Listener-Test.
+- **Historische Replays.** 2.235 Fälle verglichen, 1.193 bekannte Unterschiede exakt wie genehmigt, 0 neue oder ungeklärte Abweichungen. Baseline und akzeptierte Fingerprints wurden nicht geändert.
+- **Isoliertes SillyTavern.** Nativer HUD-Versand, feste Auswahl ohne Planner, kombinierter Freitextzug, normaler P/N/X-Versand, Regeneration und persistenter Kampagnenanschluss bestanden. Das Programm legt den Requestmitschnitt und die Größenmessungen im ausgegebenen temporären Verzeichnis ab. Jeder generierende Aufruf der Abnahme ging an den lokalen Stub.
+- **Windows separat.** Der frühere Finanzreview nennt 3.557 bestandene Tests und sechs auf dem damaligen Ausgangsstand identische Pfad-/Symlinkfehler. Der Bericht überliefert sie als Gruppe. Diese Abnahme lief auf Linux. Für .214 gibt es daher keinen neuen Windows-Befund und keine verifizierte Auflösung der sechs Fälle. [Historischer Plattformbefund](AVERETH_213_GPT_KONTROLLREVIEW.md)
+
+## Übergabe
+
+Alle folgenden Teilstände wurden auf `experiment/211-openrouter-helper-single-runner` regulär gepusht und jeweils über den Remote-Ref bestätigt.
+
+| Commit | Inhalt |
+|---|---|
+| `0dddce9eeeaffa5870ed8de0a9756de50b2ec06a` | PULSE-Ausgabe, Gegneridentitäten und Waffenautorität |
+| `8ef205a6adf0e6e9e9525a8f5fd2d68bd3d97329` | Hauptaktion, Initiative, Besitz und Kampfabschluss |
+| `bb212f8e1fe2cd065a73476024326c2dd6e5b204` | HUD, freie Planung, Narratorentscheidung und Extraktion |
+| `00b98420ca3e2402c2916ca58a8072778fb20d38` | Zustands- und Besitzprüfungen, Parteien und Fortschrittsregeln |
+| `08fc25a107fc79b35e41d745a35091279c5e8bbc` | Build .214, Originalsequenz und isolierte Browserabnahme |
+| `75dacb11fee94184ea537ea6b3dd153033b8f470` | Autorisierungs-, Revisions- und Originalultimatum-Gegenproben |
+| `c2aa5737625f2f0ac0d4db1f5ee794202fd741c2` | Endstand mit wiederaufnehmbarer Gegenforderung bei ausgelassener Plannerentscheidung |
+
+**Manuelles Update in SillyTavern.** Im installierten Erweiterungsordner `avereth-engine` aus diesem HEAD `manifest.json`, `package.json` und den Ordner `src/` übernehmen. Danach SillyTavern im Browser neu laden und im Manifest die Version `4.3.0-c.6.6.214` prüfen. Für eine Einzeldateikopie sind dies unter `src/` die Dateien `action_composer.js`, `action_input.js`, `combat.js`, `context.js`, `display.js`, `engine.js`, `host.js`, `skills.js`, `state.js` und `util.js`. Unter `src/v4/` gehören `commands.js`, `feats.js`, `ownership.js`, `passive_growth.js`, `planner.js`, `pulse.js`, `runtime.js`, die neue Datei `surrender.js` und `world.js` dazu. Die beiden Prüfprogramme unter `tools/` sind nur für die Wiederholung der Abnahme erforderlich. [Kandidat](https://github.com/Mango1331/Claude-AI-RPG-Game/tree/c2aa5737625f2f0ac0d4db1f5ee794202fd741c2/avereth-engine)
+
+**Grenzen und Reviewfrage.** Verhandlungsfähig sind zunächst intelligente NPC-Gegner. Unterstützt sind eine materielle Vereinbarung oder Gnade ohne Gegenleistung, eine konkrete Gegenforderung und eine unmittelbare Antwort. Weitergehende Versprechen bleiben erzählerisch. Mehrdeutige Besitzangaben oder unzureichend belegte gemeinsame Zustimmung können eine Klärung oder einen neuen Erzählversuch erfordern. Ein natürlicher Usertest muss noch zeigen, wie zuverlässig der reale Narrator Interessen, Zustimmung einzelner Gegner und geänderte Konditionen ausdrückt. Der übergebene Diff reicht vom verifizierten .213-Ausgangscommit `a89c690dbe0037f1c4d19a8d762e5b0fed207eab` bis zum .214-HEAD `c2aa5737625f2f0ac0d4db1f5ee794202fd741c2`. Der eingefrorene Produkt-Ref stand bei der Kontrolle auf `0cd14806cd0c7fe2ab0d54b8463c486ee572714b`. Nächster Entscheidungspunkt ist der unabhängige GPT-Diffreview. [Diff für GPT](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/a89c690dbe0037f1c4d19a8d762e5b0fed207eab...c2aa5737625f2f0ac0d4db1f5ee794202fd741c2)

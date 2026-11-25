@@ -4,7 +4,7 @@
 
 | Etappe | Runordner und Auswertung |
 |---|---|
-| **.213 · User13 – persönlicher Spieltest** | [Quellen, GPT-Review und offene Designideen](user-20261125-212154-213/README.md) · Codex-Gegenreview ausstehend |
+| **.213 · User13 – persönlicher Spieltest** | [Quellen, GPT-Review und offene Designideen](user-20261125-212154-213/README.md) · [bestätigter Gegenreview](user-20261125-212154-213/CODEX_GEGENREVIEW.md) · [.214-Abnahme](../recherche/AVERETH_214_SURRENDER_COMBAT_NEGOTIATION.md) |
 | **.211 · User12 und fünf OpenRouter-Helfer-Einzelruns** | [User12, Originale und Gegenreviews](user-20261125-005145-211/README.md) · [Helferserie und Quellenstand](openrouter-helper-laufserie-20261124/README.md) · [.212-Fach-/Offline-Abnahme](../recherche/AVERETH_212_FACH_UND_ABNAHME.md) |
 | **.211 · natürlicher OpenRouter-Langzeitvergleich** | [Vier Kampagnen .210/.211, Revisionen und Gegenproben](openrouter-20261124-langzeit-211/README.md) · [fachlicher Abschluss](../recherche/AVERETH_211_NATUERLICHER_LANGZEITVERGLEICH.md) · [GPT-Gegenreview](../recherche/AVERETH_211_GPT_GEGENREVIEW_NATUERLICHER_LANGZEITTEST_2026-11-24.md) |
 | **.209/.210 · erste Kontinuitätsreihen** | [Referenz .209](openrouter-20261124-kontinuitaet-a-209/README.md) · [Kandidat .210](openrouter-20261124-kontinuitaet-b-210/README.md) · [sechs Fokuspaare](openrouter-20261124-kontinuitaet-fokus/README.md) · [Folge Wren](openrouter-20261124-kontinuitaet-zusatz-wren-210/README.md) · [verworfener Pilot](openrouter-20261124-kontinuitaet-pilot-210/README.md) |

@@ -135,6 +135,17 @@ test('reconstructed helper 5 T40: an explicit request to be carried establishes 
     }
 });
 
+test('the direct transport choice reaches the Narrator and Extractor even when the plan says stay', async () => {
+    const { prepareGenerationAsync, processReplyAny, extractionRequest } = await import('../../src/v4/runtime.js');
+    const n = b3.turn.i+1;
+    const chat = [...structuredClone(b3.prefix),{is_user:true,mes:'Would you carry me to the drying shed bunk?',extra:{}}];
+    const result = await prepareGenerationAsync(chat,content,{llm:async()=>'{"commands":[],"travel_frame":"stay"}'});
+    assert.match(result.context.text,/carry it out as voluntary assistance/);
+    chat.push({is_user:false,mes:'Dann carried Alaric to the drying shed bunk.',extra:{}});
+    assert.ok(processReplyAny(chat,n,content).extract);
+    assert.ok(extractionRequest(chat,n,content).messages.some(m=>m.content.includes('Voluntary assistance:')));
+});
+
 test('unusual polite requests including German use the same bounded P intent and original arrival', () => {
     for (const input of ['Could I tag along to the main track?', 'Would you mind showing me the way to the main track in person?', 'Darf ich bis zum main track bei dir bleiben?']) {
         const {state} = social((t,d)=>{t.input=input;t.frame={choice:input,to:'main track',with:dann};delete d.after;});

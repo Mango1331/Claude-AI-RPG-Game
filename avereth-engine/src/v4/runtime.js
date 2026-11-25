@@ -3,6 +3,7 @@ import { actionInputOf, actionInputHash, actionPrefix, validateActionSelection, 
 import { boardRepairGuidance, boardSlotRepair, parseBoardSlot, parseInitialBoard } from './guild.js';
 import { nativeAction } from './native_actions.js';
 import { movementEvidence } from './narration_evidence.js';
+import { ordinaryChoice } from './travel_continuation.js';
 import { placeKey } from './place_refs.js';
 import { worldVocab } from './extract.js';
 // Runtime V4 on a chat transcript (docs/RUNTIME_V4_PLAN.md §3): the host side of a V4 campaign. The same message
@@ -988,6 +989,8 @@ export function extractionRequest(chat, id, content) {
             : o.kind === 'check' ? `CHECK — the engine resolved: ${o.check?.label || 'a check'}, ${o.check?.success ? 'success' : 'failure'}.`
                 : 'NOTHING TO BOOK — Alaric decided nothing the engine resolves.';
     if (typeof o.auth?.continuation === 'object' && o.auth.continuation) actions += '\nChosen possible continuation: '+JSON.stringify(o.auth.continuation)+'. Report arrive only after the actual movement, with its participants. If conditional, after quotes its concrete subject in the actual fulfilled prerequisite before arrival; evidence quotes the PC at the stop. No fulfillment or no agreement means no move.';
+    else if (o.auth?.c && !o.auth.gos?.length && ordinaryChoice(state,player,o.auth.continuation)?.assisted)
+        actions += '\nVoluntary assistance: if he was actually carried to the requested place, report arrive with the participants and forced_by:null. A request or promise alone is not an arrival.';
     if (o.booked?.registration) actions += '\nThe measuring stone is part of the completed in-hall service. Report no arrival or escort for its routine movements; separate authorized travel still uses normal arrivals.';
     if (o.auth?.roam && o.search_checks?.some(check => check.success)) {
         actions += `\nSearch began at ${state.scene.at}. Set scene on evidence observed there before an arrival. At the sighting, use only a population established there or in its ancestry; otherwise independent.`;

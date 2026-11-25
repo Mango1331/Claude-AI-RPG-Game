@@ -1064,10 +1064,11 @@ function whereLines(state, input, opts) {
     const absent = Object.values(state.entities || {}).filter((e) => e.kind === 'npc' && e.name && e.status !== 'dead' && !state.scene.present.includes(e.id)
         && normText(e.name).split(' ').filter((w) => w.length >= 4).some((w) => words.includes(` ${w} `))).slice(0, 3);
     const frame = opts.outcome?.auth?.continuation;
-    const ordinary = !frame && ordinaryChoice(state,input);
-    const unbooked = frame === 'stay' ? `he stays at ${here} as requested`
+    const ordinary = ordinaryChoice(state,input,frame);
+    const unbooked = ordinary?.assisted ? `he asks to be carried: ${ordinary.choice}. If an available helper agrees and can reach the destination, carry it out as voluntary assistance`
+        : frame === 'stay' ? `he stays at ${here} as requested`
         : frame && frame !== 'local' ? `chosen continuation: ${frame.choice}; ${frame.with ? 'only if '+entityLabel(state,frame.with)+' agrees; ' : ''}${frame.after ? 'only once '+frame.after+' is fulfilled; ' : ''}no trip is booked yet`
-            : ordinary ? `carry out the local movement he chose: ${ordinary.choice}. Keep the established site for furniture and ordinary steps within it`
+            : !frame && ordinary ? `carry out the local movement he chose: ${ordinary.choice}. Keep the established site for furniture and ordinary steps within it`
             : !frame ? `no booked route from ${here}; this turn has no continuation assessment. Keep his established place unless actually displaced by an external cause`
             : `no booked route from ${here}. Ordinary movement within the present site may follow the current choice. Directions alone, an invitation, refusal or a deferred plan keeps him here. Actual external displacement remains possible`;
     return [

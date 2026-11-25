@@ -35,17 +35,20 @@ export function travelFrame(frame, input, present) {
 }
 
 /** Use the booked action or a clear current choice when the planner supplied no narrower boundary. */
-export function ordinaryChoice(s, input) {
+export function ordinaryChoice(s, input, boundary = null) {
+    if (boundary && typeof boundary === 'object') return null;
     const choice = String(input || '').trim().replace(/^\*+|\*+$/g,'').trim();
     if (!choice || choice.split(/[.!?\n]+/).some(clause => holdPosition.test(clause.trim()))) return null;
     const lower = normText(choice);
+    const target = lower.match(assisted)?.[1] || lower.match(/^trag mich (?:bitte )?(?:zur|zum|ins) (.+?)[.!?]*$/i)?.[1];
+    if (target) return {choice,to:target.replace(/^(?:my |the )/i,''),assisted:true};
+    // Only an explicit transport request can resolve a generic stay classification.
+    if (boundary === 'stay') return null;
     const booked = (s.services || []).findLast(x => x.service === 'lodging' && x.at === s.scene.at && x.turn === s.turn);
     const lodging = booked && (booked.what || s.offers?.[booked.offer]?.lines?.find(line => line.id === booked.line)?.what);
     const room = words(lodging).split(' ').find(word => lodgingWords.test(word) && has(lower,word));
     if (room && has(lower,room) && (/^(?:just |i(?:'ll| will) take |i choose |i go to |to )/i.test(lower) || /\b(?:go|walk|head|take me|show me)\b/.test(lower)))
         return {choice,to:room,lodging:true};
-    const target = lower.match(assisted)?.[1] || lower.match(/^trag mich (?:bitte )?(?:zur|zum|ins) (.+?)[.!?]*$/i)?.[1];
-    if (target) return {choice,to:target.replace(/^(?:my |the )/i,''),assisted:true};
     if (follows.test(choice)) return {choice,companion:true};
     if (localMotion.test(choice)) return {choice,to:localFurnishing.exec(choice)?.[0],within:true};
     return null;
@@ -54,9 +57,7 @@ export function ordinaryChoice(s, input) {
 export function reportedContinuation(s, content, answer, prose) {
     const o = s.last?.outcome;
     const boundary = o?.auth?.continuation;
-    const choice = boundary && typeof boundary === 'object' ? null : ordinaryChoice(s, s.last?.input);
-    // A direct request for transport supplies its own destination and cannot be reduced to a planner's generic stay.
-    const frame = boundary === 'stay' && !choice?.assisted ? boundary : choice ?? boundary;
+    const frame = ordinaryChoice(s,s.last?.input,boundary) ?? boundary;
     const arrivals = (answer.deltas || []).filter(d => d.type === 'arrive');
     if (arrivals.length !== 1 || !o?.auth?.c || o.auth.go || o.auth.gos?.length || o.auth.roam || o.interp_failed || o.camp ||
         !frame || frame === 'stay' || s.mode !== 'story' || s.encounter || s.pending_combat?.length || s.scene.threats?.length ||

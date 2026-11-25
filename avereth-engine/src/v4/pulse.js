@@ -356,7 +356,7 @@ const CUES = {
 };
 export const eventCue = d => {
     if (!d?.open) return '';
-    if (d.kind === 'danger') return 'Show visible numbers, weapons or other signs of danger early enough for a choice between dealing, avoiding or fighting.';
+    if (d.kind === 'danger') return 'Show visible numbers, weapons, bearing and signs of danger early enough for a choice between dealing, avoiding or fighting. Convey an evident advantage through what he sees; keep exact levels and HP hidden.';
     const cues = CUES[d.kind];
     return cues ? `Consider ${cues[Math.round(d.roll * 100) % cues.length].toLowerCase()}. Avoid repeating a recent incident. Give the player a concrete choice and allow ignoring a clue when the route is clear.` : '';
 };

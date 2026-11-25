@@ -76,7 +76,7 @@ export function eventKind(e, s = null) {
         case 'scene.entered': case 'scene.left': case 'scene.position': case 'scene.awareness': case 'scene.tactical': case 'scene.concealed': case 'journey.party':
             return 'scene';
         case 'entity.created': case 'entity.updated': case 'entity.sheet_set': return 'entities';
-        case 'encounter.started': case 'encounter.updated': case 'encounter.ended':
+        case 'combat.negotiation': case 'encounter.started': case 'encounter.updated': case 'encounter.ended':
         case 'combat.pending': case 'combat.pending_cleared': case 'combat.intent':
             return 'combat';
         case 'fact.asserted': case 'fact.ended': return 'facts';

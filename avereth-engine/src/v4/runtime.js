@@ -381,6 +381,13 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     if (pl.failed) return { v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: { v: IR_VERSION, route: 'v4', reason: 'planner', links: ir.links, acts: [] }, plan, interp, events: [], command: null };
     const hud=actionInput ? reconcileHudPlan(actionInput,pl.commands,pl.hud_binding) : null;
     if(hud && !hud.ok)return actionRefused(inputHash,hud.reason,{plan,interp});
+    const pending=before.encounter?.negotiation;
+    if (pending && !pl.commands.some(c=>c.type==='negotiation_answer')) {
+        if (pending.stage==='offered')
+            return actionRefused(inputHash,'Antwort steht aus. Den Erzählzug wiederholen oder die Verhandlung abbrechen.',{plan,interp});
+        return executeMappedTurn(chat,content,{u,before,inputHash,llm,previous,plan,interp,typed:true,
+            m:{route:'v3',intent:{kind:'negotiation_answer',accept:false}},irRec:{v:IR_VERSION,route:'v3',reason:'counteroffer declined',links:[],acts:[]}});
+    }
     const negotiated=plannedNegotiation(pl.commands,actionInput,hud,before,content,msg.mes);
     if (negotiated) {
         if (!negotiated.ok) return actionRefused(inputHash,negotiated.reason,{plan,interp});
@@ -784,6 +791,10 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         // prototype C: the planner reads every free-text message; '#' commands, character creation and a dead PC stay
         // the deterministic control channels they are in A
         const control = ir.reason === 'creation' || ir.reason === 'dead' || ir.intent?.kind === 'command';
+        if (before.encounter?.negotiation && control && !/^#(?:system|status|sheet|inventory|help)\b/i.test(msg.mes.trim())) {
+            r=actionRefused(inputHash,'Die Verhandlung zuerst beantworten oder abbrechen.');commit();
+            return {action:'not_executed',dirty:true,index:u,notice:r.action_error};
+        }
         if(actionInput){
             const valid=validateActionSelection(actionInput.selection,before,content);
             const reason=actionInput.text!==msg.mes?'Text und gespeicherte HUD-Eingabe unterscheiden sich; Eingaberevision ausdrücklich korrigieren':control?'Systemeingaben werden nicht mit einer HUD-Aktion kombiniert':actionInput.base_revision!==actionPrefix(chat,u)?'Die Welt hat sich seit der Auswahl geändert':!['hud_roleplay','hud_free'].includes(actionInput.mode)?'Unbekannter Eingabemodus':!valid.ok?valid.reason:null;
@@ -1033,11 +1044,12 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', co
     // A provider failure may be caused by a swipe, edit, or newer Engine turn.
     // Do not spend another LLM call when the original reply is no longer current.
     const source = chat[id], pending = rec(source)?.extraction;
+    const offerHistory=req.negotiation ? historyKey(chat,id) : null;
     const current = () => {
         if (!isCurrent()) return false;
         const msg = chat[id];
         const r = rec(msg);
-        return msg === source && r?.extraction === pending && activeMessage(msg) && r?.extraction?.status === 'pending' && r.text_hash === req.hash
+        return (!req.negotiation || historyKey(chat,id)===offerHistory) && msg === source && r?.extraction === pending && activeMessage(msg) && r?.extraction?.status === 'pending' && r.text_hash === req.hash
             && hash32(msg.mes) === req.hash && !laterTurns(chat, id);
     };
     const stale = () => ({ changed: false, ...(laterTurns(chat, id) ? { late: true } : {}) });

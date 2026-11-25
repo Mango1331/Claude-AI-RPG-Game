@@ -670,7 +670,7 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
         const transfer=surrenderTransfers(s,content,terms,assets,{target:offer.target});
         transfer.events.forEach(emit);
         if (transfer.events.some(e=>e.t==='item.equipped')) refreshCombatGear(s,content,enc);
-        enc.negotiation={id:enc.id+'.t'+s.turn,stage:'offered',at:s.scene.at,target:offer.target,terms,released:transfer.receipts};
+        enc.negotiation={id:enc.id+'.t'+s.turn+'.'+hash32(JSON.stringify([offer.target,terms,negotiationRevision(s)])),stage:'offered',at:s.scene.at,target:offer.target,terms,released:transfer.receipts};
     }
     // Patch 8.1: those of the group who were unaware of him enter once the fight goes on past its opening (never one
     // that ended it); they take their place in the fixed Turn order from here, no Turn is replayed for them
@@ -723,6 +723,7 @@ function refreshCombatGear(s,content,enc) {
     const pc=enc.combatants.pc, fresh=characterCombatant(s,'pc',content,pc.side);
     pc.fixed=fresh.fixed;
     pc.current.ammo=fresh.current.ammo;
+    pc.current.hp=Math.min(pc.current.hp,pc.fixed.max_hp);
 }
 
 // The major and its optional minor are already complete. Resume at the stored initiative cursor.
@@ -748,7 +749,7 @@ function finishNegotiation(s,content,dice,emit,reply,accept) {
     delete enc.negotiation;
     const result=runCombat({enc,state:s,content,dice,c:true},null);
     const done=persistCombat(s,content,emit,enc,result.records,false,{c:true});
-    return {kind:'combat',c:true,records:result.records,board:done.board,ended:done.ended,next:done.next,
+    return {kind:'combat',c:true,records:result.records,board:done.board,ended:done.ended,next:done.next,levelups:done.levelups,
         negotiation_result:accepted?'accepted':'refused',negotiation_id:offer.id,
         note:accepted?'Settlement completed. '+describeTerms(reply.choice==='counter'?reply.terms:offer.terms):'Negotiation ended without agreement. The spent Major is resolved.'};
 }

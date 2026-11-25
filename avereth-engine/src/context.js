@@ -282,8 +282,10 @@ export function combatBlock(state, content = null, { hudSpeech = false } = {}) {
         const side = c.side === 'ally' ? '; ON ALARIC\'S SIDE (no foe)' : c.side === 'neutral' ? '; NEUTRAL (no foe, caught in the fight)' : '';
         const npc = state.entities[c.id];
         const weapon = npc?.sheet?.equipment?.weapon;
+        const appearance=String(npc?.traits || '').split(',')[0].trim();
+        const feature=appearance && appearance.length<=32 && !appearance.toLowerCase().includes(weapon?.name?.toLowerCase() || ' ') ? appearance+' · ' : '';
         const visible = npc?.kind === 'npc' && typeof weapon === 'object' && weapon?.name
-            ? ` · ${weapon.name}` : '';
+            ? ` · ${feature}${weapon.name}` : '';
         lines.push(`  ${fightName(state, c.id)}${visible}: L${c.fixed.level} ${c.fixed.rank} ${c.model === 'creature' ? c.fixed.body_plan : 'core-stat'}${creatureGearText(state.entities[c.id])}; ${st}${side}; locked DefeatXP ${c.fixed.defeat_xp ?? '-'}${fx}`);
     }
     // Patch 4 (live 18.10.2026: the pack mates of the one wolf in the fight stood, paced and growled around it): who is
@@ -444,11 +446,12 @@ function outcomeLines(state, content, outcome, { v4 = false, carded = null, hudS
         // Prototype C (4.3.0-c.6.6.7): where everyone stands once these steps are done; a place they left is behind them
         const stand = outcome.c && outcome.records.length && outcome.board ? outcome.board.hp.filter((h) => h.id !== 'pc' && h.band && !h.state) : [];
         if (stand.length) lines.push(`- Where everyone stands after these steps (end the narration with them there; a place they left, a den or cover, is behind them): ${stand.map((h) => `${fightLabel(state, h.id, outcome.board.labels)} ${h.band}${h.cover && h.cover !== 'none' ? ` (${h.cover} cover)` : ''}`).join(', ')}.`);
+        if (outcome.negotiation_result==='accepted') lines.push('The agreed participants have accepted and the authorized handover is complete. Continue from that fact, with no second demand or confirmation.');
         if (outcome.note) lines.push(`- ${outcome.note}`);
         if (outcome.illegal) lines.push(`- Alaric's declared action is NOT possible now: ${outcome.illegal}. Nothing was spent or rolled for it; it is still Alaric's decision.`);
         if (outcome.ended) {
             const s = outcome.ended;
-            lines.push(`- Combat is over.${s.pc_dead ? ' Alaric is dead.' : ''}${s.xp_awarded ? ` Alaric gains ${s.xp_awarded} XP.` : ''}${outcome.levelups?.length ? ` LEVEL UP -> ${outcome.levelups.join(', ')} (+5 free Stat Points each; resources are not refilled).` : ''}${s.pp?.length ? ` Skill Proficiency (the engine's, from how he fought; mention it at most in passing): ${s.pp.map((p) => `${skillOf(content, p.skill, state)?.name || p.skill} +${p.gained} PP${p.to.prof > p.from.prof ? `, now P${p.to.prof}` : ''}`).join(', ')}.` : ''}${s.lp?.length ? ` Learning Progress (the engine's; no new Skill until the engine names one): ${s.lp.map((l) => `${l.goal} +${l.lp} LP, ${l.total}/${l.need}`).join(', ')}.` : ''}${outcome.loot ? '' : ' Loot is only what the defeated actually carried or what can be harvested; nothing is taken automatically.'}`);
+            lines.push(`- Combat is over.${s.pc_dead ? ' Alaric is dead.' : ''}${s.xp_awarded ? ` Alaric gains ${s.xp_awarded} XP.` : ''}${outcome.levelups?.length ? ` LEVEL UP -> ${outcome.levelups.join(', ')} (+5 free Stat Points each; resources are not refilled).` : ''}${s.pp?.length ? ` Skill Proficiency (the engine's, from how he fought; mention it at most in passing): ${s.pp.map((p) => `${skillOf(content, p.skill, state)?.name || p.skill} +${p.gained} PP${p.to.prof > p.from.prof ? `, now P${p.to.prof}` : ''}`).join(', ')}.` : ''}${s.lp?.length ? ` Learning Progress (the engine's; no new Skill until the engine names one): ${s.lp.map((l) => `${l.goal} +${l.lp} LP, ${l.total}/${l.need}`).join(', ')}.` : ''}${s.reason==='negotiated' ? ' This was a negotiated exit.' : outcome.loot ? '' : ' Loot is only what the defeated actually carried or what can be harvested; nothing is taken automatically.'}`);
             // Prototype C (4.3.0-c.6.6.4): the engine's automatic loot, already in his pack (src/v4/loot.js)
             if (outcome.rewardLines?.length) lines.push(`- SPECIAL REWARD (engine-booked, already in his pack): ${outcome.rewardLines.join('; ')}. Describe these exact finds only; no extra item, coin, chest contents or magical effect. A hoard is a narrative frame, not a new room or an opening action. Gear found beside the defeated need not have been worn or used by them. Value guides are not guaranteed sale prices.`);
             if (outcome.loot) lines.push(`- LOOT (the engine's automatic loot at the fight's end, already in Alaric's pack): ${outcome.loot.join(', ')}. It is no decision of his and took no time: mention it in a few words or leave it to the HUD; do not show him skinning, carving or searching bodies, and add no other drop, coin or item. It sits in his magic pouch: no weight, bulk, packing, straps or carrying effort, now or later.`);
@@ -700,7 +703,9 @@ export function buildContext(state, content, opts = {}) {
     const sections = [];
     const add = (name, text, priority, own = false) => text && sections.push({ name, text, priority, own, tokens: estimateTokens(text) });
 
-    if (!state.encounter && !privateQuestsOf(state)) add('help', 'FREE HELP — only Guild contracts are formal quests. NPCs may request help, offer paid work, make promises and react freely. Preserve requests, deeds, relationships and outcomes as ordinary world continuity; no private Quest acceptance, objectives, READY, turn-in, work certificate, automatic reward or Quest XP. A present NPC may voluntarily hand over a credible gift or payment now; promises/recounts are not new money. Already recorded handovers: ' + ((state.credits || []).filter(x => x.gift && (x.turn === state.turn || state.scene.present.includes(x.gift.from))).slice(-4).map(x => `${x.gift.from}: ${x.cp} cp (${x.gift.why})`).join('; ') || 'none'), 0);
+    // Reserve room for the visible identities when people participate in a fight.
+    const npcFight=Object.values(state.encounter?.combatants || {}).some(c=>state.entities[c.id]?.kind==='npc');
+    if (!npcFight && !privateQuestsOf(state)) add('help', 'FREE HELP — only Guild contracts are formal quests. NPCs may request help, offer paid work, make promises and react freely. Preserve requests, deeds, relationships and outcomes as ordinary world continuity; no private Quest acceptance, objectives, READY, turn-in, work certificate, automatic reward or Quest XP. A present NPC may voluntarily hand over a credible gift or payment now; promises/recounts are not new money. Already recorded handovers: ' + ((state.credits || []).filter(x => x.gift && (x.turn === state.turn || state.scene.present.includes(x.gift.from))).slice(-4).map(x => `${x.gift.from}: ${x.cp} cp (${x.gift.why})`).join('; ') || 'none'), 0);
     add('header', `[AVERETH ENGINE — authoritative game state, turn ${state.turn}. Numbers, rolls, positions and knowledge below are binding; narrate, never recalculate.]\n${formatClock(state.clock.minute)} | ${loc ? `${loc.name}${realm && (!v4 || normText(realm) !== normText(loc.name)) ? `, ${realm}` : ''}` : 'unknown location'}${placeSuffix} | mode: ${state.mode}${locStatus !== 'exists' && locStatus !== 'alive' ? ` | LOCATION STATUS: ${String(locStatus).toUpperCase()}` : ''}\nSetting: Western-fantasy medieval material culture with mana/high magic; letters and messengers for distance; no modern technology.`, 0);
     // what Alaric's line carries depends on the turn: items and coin only when trade, loot or items are in play
     const itemScan = `${input} ${lastReply}`;
@@ -741,7 +746,7 @@ export function buildContext(state, content, opts = {}) {
     const absent = state.mode === 'creation' ? [] : namedAbsent(state, normText(queryText));
     if (absent.length) add('named', `NAMED, NOT PRESENT (continuity only; they are elsewhere unless the story brings them in):\n${absent.map((id) => npcCard(state, content, id, focusWords, { absent: true })).join('\n')}`, 2);
     add('combat', combatBlock(state, content, opts), 0);
-    if (v4 && !state.encounter && (opts.outcome?.c || opts.outcome?.auth?.c)) {
+    if (v4 && !npcFight && (opts.outcome?.c || opts.outcome?.auth?.c)) {
         const known = Object.values(state.quests || {}).filter(q => q.kind === 'guild_contract');
         const branch = settlementOf(state, state.scene.at);
         const official = [...known.filter(q => q.status === 'active' || (listedToday(state, q) && q.source?.branch === branch)),
@@ -754,7 +759,7 @@ export function buildContext(state, content, opts = {}) {
     // allowance, like the situational rules: it displaces no scene section)
     const trading = (opts.situations || []).includes('trade') || Object.values(state.offers || {}).some((o) => o.status === 'open' && !o.canon && o.at === state.scene.at)
         || (state.decisions || []).some((d) => (d.kind === 'purchase' || d.kind === 'sale') && (!d.at || d.at === state.scene.at));
-    if (v4 && trading && state.mode !== 'creation') add('price_contract', 'PRICES — a price binds only as ONE total in coin for exactly the goods or service named ("fifty-six copper for these fourteen plates", "two silver for the room tonight"). A price per piece, several part prices or a usual rate are talk until the trader states that total. Whoever agrees to a price says the total again, also when Alaric proposed it ("Sixty copper it is, for all fourteen plates."); a bare "Done." binds nothing. An appraisal, approval or later delivery keeps a price open until a new total is stated.', 0, true);
+    if (v4 && trading && !npcFight && state.mode !== 'creation') add('price_contract', 'PRICES — a price binds only as ONE total in coin for exactly the goods or service named ("fifty-six copper for these fourteen plates", "two silver for the room tonight"). A price per piece, several part prices or a usual rate are talk until the trader states that total. Whoever agrees to a price says the total again, also when Alaric proposed it ("Sixty copper it is, for all fourteen plates."); a bare "Done." binds nothing. An appraisal, approval or later delivery keeps a price open until a new total is stated.', 0, true);
 
     // .185 (Z1.2; natural batch 13.11.2026, Rogue T40–T43: the innkeeper asked four times for the room paid in T39):
     // what the engine booked here that stays paid
@@ -811,7 +816,7 @@ export function buildContext(state, content, opts = {}) {
         || (rulesetOf(state) >= 2 && q.kind === 'private' && q.status === 'completed' && q.work && q.payout_cp !== 0 && !q.payment)) : [];
     // Prototype C (4.3.0-c.6): a hunt is proven by its contract slip, goods by the goods (src/v4/guild.js proofMemory)
     const cTurn = !!(opts.outcome?.auth?.c || opts.outcome?.c);
-    if (state.encounter && activeQuests.length) add('quests', 'ACTIVE QUESTS — ' + activeQuests.map(q => q.title).join(', '), 1);
+    if (npcFight && activeQuests.length) add('quests', 'ACTIVE QUESTS — ' + activeQuests.map(q => q.title).join(', '), 1);
     else if (activeQuests.length) add('quests', `ACTIVE QUEST MEMORY — use this to preserve continuity, not as a word-for-word checklist. For Guild contracts only payout, active/completed status, Quest XP/credit and Guild rank mechanics are hard engine state; ${rulesetOf(state) >= 2 ? 'objectives, witnesses and verification allow credible story alternatives except physical delivery: in ruleset 2 its actual cargo transfer to the agreed recipient/place is checked by the engine; neither a signed receipt nor dropping cargo elsewhere establishes delivery. Never explain a failed transfer by inventing a container-return duty or changing recipient:' : 'objectives, witnesses and verification are story guidance and may be satisfied by credible alternatives:'}\n${activeQuests.map((q) => {
         const progress = (q.progress || []).slice(-4).map((p) => `${p.objective}: ${p.status}`).join('; ');
         const req = q.kind === 'guild_contract'

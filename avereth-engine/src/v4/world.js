@@ -2421,7 +2421,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
 
     /** Patch 9A.1 (ruleset 2): the weapon a person holds ready, as the reply shows it (person.new armed). */
     function armedFact(id, armed) {
-        if (rulesetOf(s) < 2 || typeof armed !== 'string' || !armed.trim()) return;
+        if (s.encounter?.combatants?.[id] || rulesetOf(s) < 2 || typeof armed !== 'string' || !armed.trim()) return;
         setFactEvents(s, { s: id, p: 'armed', o: armed.trim().slice(0, 80), source: { kind: 'narration', msg }, importance: 0.5 }).forEach(emit);
     }
 

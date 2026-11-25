@@ -1065,8 +1065,10 @@ const HANDLERS = {
         const sale = wareOnSale(s, o);
         if (sale) return { status: 'refused', reason: 'for sale', line: `CANNOT TAKE — ${o.name} is ${who(s, sale.offer.seller)}'s ware for sale${Number.isInteger(sale.line.price_cp) ? ` (${cpText(sale.line.price_cp, content)})` : ''}; it becomes his by buying it (${sale.open ? 'accepting the offer' : `a new offer from ${who(s, sale.offer.seller)}`}), not by taking it.` };
         if (Number.isSafeInteger(o.source?.surrender_cp) && o.source.surrender_cp>0) {
-            const cp=o.source.surrender_cp;
-            emit({t:'object.consumed',d:{id:o.id,by:'returned to purse'}});
+            const units=c.qty ?? o.qty ?? 1;
+            if (!Number.isSafeInteger(units) || units<1 || units>(o.qty ?? 1)) return {status:'refused',reason:'invalid coin quantity',line:'CANNOT TAKE — choose available loose coin.'};
+            const cp=o.source.surrender_cp*units;
+            emit({t:'object.consumed',d:{id:o.id,qty:units,by:'returned to purse'}});
             emit({t:'coin.changed',d:{id:'pc',value:s.entities.pc.sheet.coin_cp+cp,delta:cp,why:'recovered loose coin'}});
             return {status:'resolved',line:`TAKES — ${cp} cp returned to his purse.`};
         }
@@ -2095,7 +2097,11 @@ export function surrenderTransfers(state, content, lines, assets, {target, relea
         if (settle && prior?.pile) {
             const pile=s.objects[prior.pile];
             if (pile?.holder?.loc!==s.scene.at) throw Error('The released property is no longer here.');
-            emit({t:'object.moved',d:{id:pile.id,to:{entity:target}}});
+            const credited=Math.min(line.qty,prior.qty);
+            if (pile.holder.loc!==prior.at || prior.qty!==(pile.qty || 1)*(line.object==='coin' ? pile.source?.surrender_cp || 1 : 1))
+                throw Error('The released quantity changed.');
+            const split=credited<prior.qty ? {qty:credited,split:freeObjectId(s,pile.id+'_agreed')} : {};
+            emit({t:'object.moved',d:{id:pile.id,to:{entity:target},...split}});
         }
         if (!qty || !settle && line.mode==='offer') continue;
         const ground=!settle && line.mode==='drop';
@@ -2107,11 +2113,14 @@ export function surrenderTransfers(state, content, lines, assets, {target, relea
             const value=s.entities.pc.sheet.coin_cp-qty;
             if (value<0) throw Error('Insufficient funds.');
             emit({t:'coin.changed',d:{id:'pc',value,delta:-qty,why:'combat surrender'}});
-            if (ground) {
-                const id=freeObjectId(s,'obj.surrender_coin_t'+s.turn);
-                emit({t:'object.created',d:{object:{id,name:cpText(qty,content)+' in loose coin',kind:'item',qty:1,holder:{loc:s.scene.at},source:{how:'dropped',surrender_cp:qty}}}});
-                receipt.pile=id;
-            } else emit({t:'transaction.completed',d:{to:target,cp:qty,for:'combat surrender'}});
+            const id=freeObjectId(s,'obj.surrender_coin_t'+s.turn);
+            emit({t:'object.created',d:{object:{id,name:'Loose coin',kind:'item',qty,unit:'cp',stack:true,
+                holder:ground?{loc:s.scene.at}:{entity:target},source:{how:ground?'dropped':'given',surrender_cp:1}}}});
+            if (ground) receipt.pile=id;
+            else {
+                receipt.physical=id;
+                emit({t:'transaction.completed',d:{from:'pc',to:target,cp:qty,for:'combat surrender'}});
+            }
         } else {
             let ref=asset.ref || asset.object;
             if (asset.slot) {

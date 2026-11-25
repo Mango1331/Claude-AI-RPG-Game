@@ -451,7 +451,7 @@ export function fightQualifies(state, content, enc) {
     const rule = content.rules.proficiency.award || {};
     const lvl = enc.combatants.pc.fixed.level;
     const below = rule.challenge?.levels_below ?? 2;
-    const worthy = Object.values(enc.combatants).some((c) => c.side === 'hostile' && (c.fixed.level ?? 0) >= lvl - below);
+    const worthy = Object.values(enc.combatants).some((c) => (c.side === 'hostile' || c.current.peace) && (c.fixed.level ?? 0) >= lvl - below);
     return worthy && !(rule.challenge?.foe_attack !== false && !enc.pp.threatened);
 }
 
@@ -460,7 +460,7 @@ export function skillFightQualifies(state, content, enc, sid) {
     if (rulesetOf(state) < 2 || !enc?.pp || enc.combatants.pc.current.defeated || enc.combatants.pc.current.escaped) return false;
     const offense = enc.pp.offense?.[sid];
     if (offense === undefined) return fightQualifies(state, content, enc);
-    return offense === true && Object.values(enc.combatants).filter(c => c.side === 'hostile')
+    return offense === true && Object.values(enc.combatants).filter(c => c.side === 'hostile' || c.current.peace)
         .every(c => c.current.defeated || c.current.escaped || c.current.surrendered);
 }
 

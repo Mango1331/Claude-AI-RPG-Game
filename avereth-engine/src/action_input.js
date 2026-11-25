@@ -1,4 +1,4 @@
-import {negotiators,checkTerms} from './v4/surrender.js';
+import {negotiators,checkTerms,counterConsentError} from './v4/surrender.js';
 // Host-owned typed choices. These are inputs to the existing Engine, never events or model authority.
 import { hash32, clone, BANDS } from './util.js';
 import { actionsOf, deriveCharacter } from './derived.js';
@@ -94,10 +94,15 @@ export function validateActionSelection(selection,state,content,{ordered = false
     if(typeof s.id!=='string' || !s.id)return refusal('Auswahl-ID fehlt');
     if(state.mode==='creation' || state.entities.pc?.status==='dead')return refusal('Der Charakter kann jetzt keine HUD-Aktion ausführen');
     if(s.kind==='negotiation_answer'){
-        const stage=state.encounter?.negotiation?.stage;
+        const offer=state.encounter?.negotiation, stage=offer?.stage;
+        if (s.accept && stage==='counter') {
+            const error=checkTerms(state,content,offer.reply.terms,{credit:offer.released});
+            if (error) return refusal('Die geforderte Gegenleistung ist nicht verfügbar. Verhandlung abbrechen.');
+        }
         return typeof s.accept==='boolean' && (stage==='counter' || stage==='offered' && !s.accept)
             ? {ok:true,mapped:lowerActionSelection(s,state,content),preview:{}} : refusal('Kein passendes offenes Angebot.');
     }
+    if(state.encounter?.negotiation)return refusal('Die offene Verhandlung zuerst beantworten oder abbrechen.');
     if(s.kind==='surrender'){
         const people=negotiators(state);
         const why=checkTerms(state,content,s.terms);
@@ -284,7 +289,7 @@ export function plannedNegotiation(commands,input,hud,state,content,text) {
     if (!commands.some(isNegotiation)) return null;
     const steps=[];
     const selected=input?.selection.kind==='phase'?input.selection.steps:[input?.selection];
-    for (const c of commands) {
+    for (const c of [...commands].sort((a,b)=>a.seq-b.seq)) {
         const id='plan-'+c.seq;
         const bound=hud?.bound?.indexOf(c.seq) ?? -1;
         if (bound>=0) { steps.push(selected[bound]); continue; }
@@ -299,7 +304,8 @@ export function plannedNegotiation(commands,input,hud,state,content,text) {
             if (error) return refusal(error);
             steps.push({id,kind:c.type,target:c.target ?? null,terms:c.terms});
         } else if (c.type==='negotiation_answer') {
-            if (c.accept && /\b(?:except|but only|only if|unless|instead|except for)\b/i.test(text)) return refusal('Die Gegenforderung wurde nicht vollständig angenommen.');
+            const error=c.accept && counterConsentError(state,content,text);
+            if (error) return refusal(error);
             steps.push({id,kind:c.type,accept:c.accept});
         } else if (c.type==='move' || c.type==='sidestep') {
             steps.push(c.type==='sidestep'?{id,kind:c.type}:{id,kind:c.type,dir:c.dir,target:c.target});

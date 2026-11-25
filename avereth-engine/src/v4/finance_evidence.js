@@ -54,22 +54,77 @@ export function findQuote(source, quote, within = null) {
     return { state: 'found', ...hits[0] };
 }
 
+function speechPassages(source) {
+    const matches = [...source.matchAll(/"[^"]*"|“[^”]*”|«[^»]*»/g)];
+    return matches.map((match, i) => {
+        const start = match.index + 1, end = start + match[0].length - 2;
+        const previousEnd = i ? matches[i - 1].index + matches[i - 1][0].length : 0;
+        const before = source.slice(previousEnd, start - 1).split(/\r?\n/).at(-1);
+        const after = source.slice(end + 1, matches[i + 1]?.index).split(/[.!?\n]/)[0];
+        return { start, end, before, after };
+    });
+}
+
+const passageAt = (passages, at) => passages.find(p => p.start <= at.start && p.end >= at.end);
+const SPEECH_TAG = String.raw`(?:said|says?|asked|asks?|replied|replies|answered|answers?|offered|offers?|added|adds?|called|calls?|cut in)`;
+
+function namedSpeakers(source, passage, at, people) {
+    const sentence = sentenceOf(source, at.start, at.end);
+    return people.filter(person => person.names.some(name => {
+        const named = `\\b${escape(name)}\\b`;
+        const leading = new RegExp(String.raw`(?:^|[.!?])\s*,?\s*${named}\s*(?::|\s+(?:then\s+)?${SPEECH_TAG}\b)`, 'i');
+        if (!passage) return leading.test(source.slice(sentence.start, at.start).split(/[,;](?=\s)/).at(-1));
+        const trailing = new RegExp(String.raw`^\s*(?:${named}\s+${SPEECH_TAG}\b|${SPEECH_TAG}\s+${named})`, 'i');
+        return leading.test(passage.before) || (/,\s*$/.test(source.slice(passage.start, passage.end)) && trailing.test(passage.after));
+    }));
+}
+
+const goodsMentioned = (text, goods) => {
+    const words = new Set(flatten(text).replace(/s\b/g, '').split(' '));
+    return goods.length > 0 && goods.every(name => words.has(flatten(name).replace(/s$/, '').split(' ').at(-1)));
+};
+
 /** Recover a contiguous commercial clause from a model quote joined with editorial ellipses. */
-export function commercialAnchor(source, said, pricing) {
+export function commercialAnchor(source, said, pricing, bid = null) {
     const whole = findQuote(source, said);
-    if (whole.state !== 'missing' || !pricing?.quote) return whole;
+    const raw = String(source ?? '');
     const parts = String(said || '').split(/\.{3,}|…/).map(text => text.trim());
-    if (parts.length < 2) return whole;
+    const passages = bid ? speechPassages(raw) : [];
+    const speakers = (at, passage = passageAt(passages, at)) => namedSpeakers(raw, passage, at, bid.people);
+    const otherSpeaker = (people) => people.some(person => person.id !== bid.buyer);
+    const conflict = { state: EVIDENCE.CONTRADICTED, reason: 'bid_evidence_conflict' };
+    if (whole.state === 'found' && bid && pricing?.quote && parts.length === 1) {
+        const price = findQuote(raw, pricing.quote, whole);
+        const ranges = price.state === 'found' ? [price] : price.hits || [];
+        if (ranges.some(at => otherSpeaker(speakers(at)))) return conflict;
+    }
+    if (parts.length < 2 || !pricing?.quote || (!bid && whole.state !== 'missing')) return whole;
+    // Normalized quote matching ignores ellipses and other punctuation, including dialogue boundaries.
+    const missing = { state: 'missing' };
     let previousEnd = 0;
     let anchor;
+    let recoveredPrice;
     for (const part of parts) {
-        const at = findQuote(source, part);
-        if (at.state !== 'found' || at.start < previousEnd) return whole;
+        const at = findQuote(raw, part);
+        if (at.state !== 'found' || at.start < previousEnd) return missing;
         previousEnd = at.end;
-        if (!anchor && flatten(part) !== flatten(pricing.quote) && findQuote(source, pricing.quote, at).state === 'found')
-            anchor = at;
+        const passage = passageAt(passages, at);
+        const named = bid ? speakers(at, passage) : [];
+        if (bid && otherSpeaker(named)) return conflict;
+        if (bid) {
+            // Each monetary fragment must repeat the same single price, even if the quote supplied to us matches
+            // only one of them. The selected fragment also needs its own connection to the goods and buyer.
+            const prices = coinEvidence(part, bid.content).sums || [];
+            recoveredPrice ??= prices[0]?.cp;
+            if (prices.some(price => price.cp !== recoveredPrice)) return conflict;
+            const text = raw.slice(at.start, at.end);
+            const goodsHere = goodsMentioned(text, bid.goods) || (passage && /\b(?:it|them|my bid)\b/i.test(text)
+                && goodsMentioned(passage.before, bid.goods));
+            if (!named.length || !goodsHere) continue;
+        }
+        if (!anchor && flatten(part) !== flatten(pricing.quote) && findQuote(raw, pricing.quote, at).state === 'found') anchor = at;
     }
-    return anchor || whole;
+    return anchor || missing;
 }
 
 /** The sentence (raw range) around a range: from after the last . ! ? ; or line break before it to the next one. */
@@ -220,8 +275,15 @@ export function priceEvidence(pricing, { source, content, units = 1, lines = nul
 // (a told past is no condition: "she said when he caught her eye", "once he had paid")
 const PAST = String.raw`(?:[a-z]+ed|was|were|had|did|caught|saw|came|went|took|gave|said|paid|made|got|left|found|told|knew|brought|sold|bought|held|kept|set|put|ran|sat|stood|began|spoke|met|heard|felt|lay|led|meant|rose|fell|threw|wore|won|wrote|drew|grew|struck|swung|broke|chose|drove|ate|drank|hung|shook|spent|sent|built|lost|thought|caught)`;
 const SUBJECT = String.raw`(?:the|he|she|they|it|i|we|my|his|her|our|their)`;
-const OPEN_CONDITION = new RegExp(String.raw`\b(?:unless|pending|provided(?:\s+that)?|providing|assuming|subject\s+to|as\s+soon\s+as|depending\s+on|(?:once|after)\s+(?:${SUBJECT}|you)\b(?!\s+(?:[a-z'-]+\s+)?${PAST}\b)|when\s+${SUBJECT}\b(?!\s+(?:[a-z'-]+\s+)?${PAST}\b)|only\s+(?:if|for|when|once)\b|approv(?:e|es|al|ing)\b|tomorrow)\b`, 'i');
+const OPEN_CONDITION = new RegExp(String.raw`\b(?:unless|pending|provided(?:\s+that)?|providing|assuming|subject\s+to|as\s+soon\s+as|depending\s+on|(?:once|after)\s+(?:${SUBJECT}|you)\b(?!\s+(?:[a-z'-]+\s+)?${PAST}\b)|when\s+${SUBJECT}\b(?!\s+(?:[a-z'-]+\s+)?${PAST}\b)|only\s+(?:if|for|when|once)\b|approv(?:e|es|al|ing)\b)\b`, 'i');
 const CONDITIONAL_IF = /\bif\b(?!\s+anyone\s+(?:wants?|chooses?|prefers?)\b|\s+you(?:\s+(?:want|like|choose|prefer|accept|would\s+rather)|['’]d\s+rather|['’]re\s+(?:wanting|leaving|selling|eating|up\s+for))\b)/i;
+const PRICE_TIMING = /^(?:\s+for\s+[^,;"”]+?)?\s+(?:tomorrow|the next day)\s*[,"”]?\s*$/i;
+const TRADE_RETURN = /^(?:tomorrow,?\s+)?(?:you (?:must|have to|need to)\s+)?(?:bring\s+(.+?)(?=\s+(?:back|again|tomorrow)\b)|(?:come back|return)(?:\s+(?:tomorrow|later))?\s+with\s+([^"”]+))/i;
+function tradeReturn(text, goods) {
+    const mention = text.match(TRADE_RETURN)?.slice(1).find(Boolean);
+    return mention && (/^(?:it|them)\b/i.test(mention) || goods.some(name => goodsMentioned(mention, [name])));
+}
+
 export function openConditionNear(source, start, end, within = null) {
     const raw = String(source ?? '');
     const a = sentenceOf(raw, start, end);
@@ -230,17 +292,25 @@ export function openConditionNear(source, start, end, within = null) {
     const following = a.end < raw.length ? sentenceOf(raw, Math.min(raw.length, a.end + 1)) : null;
     const next = following && !kindsIn(raw.slice(following.start, following.end)).size ? following : null;
     const statement = raw.slice(a.start, a.end).split(/\bbecause\b/i)[0];
-    const quoted = within ? raw.slice(Math.max(within.start,a.start),Math.min(within.end,a.end)) : '';
+    const quoted = within ? raw.slice(Math.max(within.start,a.start),Math.min(within.end,a.end)) : statement;
     const nextWords = raw.slice(within?.end ?? end,a.end).trimStart().replace(/^,\s*/, '');
     const conditional = quoted.match(CONDITIONAL_IF) || (/^if\s/i.test(nextWords) ? nextWords.match(CONDITIONAL_IF) : null);
-    const direct = statement.match(OPEN_CONDITION) || conditional;
+    const direct = statement.match(OPEN_CONDITION) || conditional || raw.slice(end, a.end).match(PRICE_TIMING);
     if (direct) return direct[0];
+    const goods = within?.goods || [];
+    const tail = raw.slice(end, a.end).match(/^[^,;"”]*[,;]\s*([^"”]+)/)?.[1];
+    if (goods.length && tail && tradeReturn(tail, goods)) return tail.trim();
     if (!next) return null;
     const follow = raw.slice(next.start, next.end);
     // A separate sentence can add a prerequisite. Incidental temporal language
     // inside a resale explanation does not qualify the previous price.
     const leading = follow.trimStart().replace(/^["“]/, '');
     const qualifier = leading.match(OPEN_CONDITION);
+    if (goods.length && tradeReturn(leading, goods)) {
+        const passage = passageAt(speechPassages(raw), { start, end });
+        const sameSpeech = passage ? next.start < passage.end : !/["“”«»]/.test(raw.slice(end, next.start));
+        if (sameSpeech) return leading.trim();
+    }
     return follow.match(/\b(?:must|has to|have to|needs? to)\b.*\b(?:first|approve|check|inspect)\b/i)?.[0]
         ?? (qualifier?.index === 0 ? qualifier[0] : null);
 }

@@ -11,7 +11,7 @@ import { privateQuestsOf } from '../content.js';
 // valid answer decides the domain/authority firewall (src/v4/firewall.js), not this module.
 import { O, S, B, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
-import { saleOfferLines, purchaseLines } from './trade.js';
+import { saleOfferLines, purchaseLines, bidAnchor } from './trade.js';
 import { normText } from '../util.js';
 import { commercialAnchor, findQuote, moneyLiteral, openConditionNear } from './finance_evidence.js';
 import { creatureContract } from './population.js';
@@ -638,9 +638,12 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
                 if (!x || typeof x !== 'object') return;
                 const where = d.type === 'bid' ? `$.deltas[${i}]` : `$.deltas[${i}].lines[${k}]`;
                 const gear = d.type === 'offer' && (x.base != null || x.equipment === true);
-                const anchor = reply ? commercialAnchor(reply, x.said, x.pricing) : null;
+                const anchor = reply ? (d.type === 'bid' && content ? bidAnchor(reply, d, state, content, { present })
+                    : commercialAnchor(reply, x.said, x.pricing)) : null;
                 if (!gear && (!x.said || (reply && anchor.state !== 'found')))
-                    semanticIssues.push({ index: i, seq: d.seq, why: `${where}.said: provide the exact complete commercial clause from this reply; without its own located action anchor the price stays unverified` });
+                    semanticIssues.push({ index: i, seq: d.seq, why: anchor?.state === 'contradicted'
+                        ? `${where}.said: the evidence mixes speakers or prices. Quote the named buyer's own continuous clause for these goods and this price, or omit the bid.`
+                        : `${where}.said: provide the exact complete commercial clause from this reply; without its own located action anchor the price stays unverified` });
                 if (reply && !gear && x.said) {
                     const quotes = [x.pricing?.quote];
                     if (anchor.state === 'found' && quotes.some(q=>q && findQuote(reply,q,anchor).state === 'missing'))
@@ -654,7 +657,7 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
                     const money = anchor.state === 'found' && x.pricing?.quote ? findQuote(reply, x.pricing.quote, anchor) : null;
                     const at = money?.state === 'found' ? money : anchor;
                     const word = at.state === 'found' ? openConditionNear(reply, at.start, at.end, anchor) : null;
-                    const priced = gear || (word && x.price_cp > 0 && moneyLiteral(reply,x.pricing?.quote,{content,within:anchor}).state === 'verified');
+                    const priced = gear || (word && x.price_cp > 0 && content && moneyLiteral(reply,x.pricing?.quote,{content,within:anchor}).state === 'verified');
                     if (word && priced) semanticIssues.push({ index: i, seq: d.seq, why: `${where}: the reply names an open condition next to this price ("${word}"); "firm" only if the price binds now regardless, else "conditional" with condition` });
                 }
             });

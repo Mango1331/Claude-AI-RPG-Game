@@ -41,7 +41,7 @@ import {
 } from './domain.js';
 import { creatureContract } from './population.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
-import { paidWorkLine, tradeObject, pickLines, bookPurchase, bookSale, saleUnits, unitsText, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines, offerAvailability, rateUnits, displayedWare, wareOnSale, shortfallText } from './trade.js';
+import { paidWorkLine, tradeObject, pickLines, bookPurchase, bookSale, saleUnits, unitsText, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines, offerAvailability, rateUnits, displayedWare, wareOnSale, shortfallText, bidAnchor } from './trade.js';
 import { commercialAnchor, findQuote, priceEvidence, openConditionNear, moneyLiteral } from './finance_evidence.js';
 import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
 import { reachedEvents, setIntentEvents } from './intents.js';
@@ -3553,10 +3553,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const correction = `PRICE CONTRACT: ${party} named no binding total for ${goods}. If ${party} means to ${side} them, ${party} says one total in coin for exactly these goods (for example "fifty-six copper for the fourteen plates"); a price per piece, part prices or agreeing without saying the sum bind nothing.`;
         if (!corrections.includes(correction)) corrections.push(correction);
     }
-    function dealTerms(x, { units = 1, lines = null, reported = null, enginePrice = null, goods = [], note = null } = {}) {
+    function dealTerms(x, { units = 1, lines = null, reported = null, enginePrice = null, goods = [], note = null,
+        saidAt = commercialAnchor(prose, x.said, x.pricing) } = {}) {
         const phase = ['firm', 'conditional', 'unclear'].includes(x.phase) ? x.phase : 'unclear';
         const condition = typeof x.condition === 'string' && x.condition.trim() ? x.condition.trim().slice(0, 160) : null;
-        const saidAt = commercialAnchor(prose, x.said, x.pricing);
         const within = saidAt.state === 'found' ? saidAt : null;
         const ev = Number.isInteger(enginePrice)
             ? { state: 'verified', cp: enginePrice, reason: 'engine_price', source: null }
@@ -3564,7 +3564,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const anchor = ev.source?.money?.[0] || ev.source?.ranges?.[0] || within;
         const marker = anchor ? openConditionNear(prose, anchor.start, anchor.end, within) : null;
         const evidence = { source_reference: { message: msg, text_hash: hash32(prose) }, ranges: [...(within ? [{ start: within.start, end: within.end }] : []), ...(ev.source?.ranges || [])].slice(0, 4),
-            basis: Number.isInteger(enginePrice) ? 'engine' : x.pricing?.basis ?? 'unknown', derived_cp: ev.state === 'verified' ? ev.cp : null, reason: ev.reason ?? null };
+            basis: Number.isInteger(enginePrice) ? 'engine' : x.pricing?.basis ?? 'unknown', derived_cp: ev.state === 'verified' ? ev.cp : null, reason: saidAt.reason ?? ev.reason ?? null };
+        if (saidAt.state === 'contradicted') return { contradicted: true, why: 'its evidence mixes speakers or conflicting prices', evidence };
         if (ev.state === 'contradicted') return { contradicted: true, why: `the price words do not add up (${ev.reason})`, evidence };
         // §3.1/§3.3: a report that converted its own coin words wrongly ("two silver, ten copper" reported as 25; "2 silver"
         // as 200) is corrected to the words as before (amount.corrected); a plain copper sum that differs from the number is
@@ -3611,7 +3612,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
         if (!lines.length || !Number.isInteger(d.price_cp)) { reject(d, 'offer', 'a bid names his things and one price'); return; }
         // Build .138: stacks of the same goods share the unit rate; each line keeps its own object and units
-        const t = dealTerms(d, { units: rateUnits(lines, (id) => tradeObject(s, content, id)), lines: given, reported: d.price_cp, goods: lines.map(l => l.what) });
+        const names = lines.map(l => l.what);
+        const saidAt = bidAnchor(prose, d, s, content, { buyer, goods: names });
+        const t = dealTerms(d, { units: rateUnits(lines, (id) => tradeObject(s, content, id)), lines: given, reported: d.price_cp, goods: names, saidAt });
         const goods = lines.map(l => unitsText(l.what, l.qty)).join(', ');
         if (t.contradicted) {
             reject(d, 'offer', `the bid of ${d.price_cp} cp is not recorded: ${t.why}`);

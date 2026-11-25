@@ -16,9 +16,17 @@ import { hallOf } from './domain.js';
 import { rulesetOf } from '../content.js';
 import { trainingOfferWhy } from './growth.js';
 import { numbersIn, formatCoin } from '../economy.js';
+import { commercialAnchor } from './finance_evidence.js';
 
 const flat = text => normText(text || '').replace(/[^a-z0-9]+/g, ' ').trim();
 const contains = (text, part) => !!flat(part) && ` ${flat(text)} `.includes(` ${flat(part)} `);
+
+export function bidAnchor(source, bid, state, content, { buyer = bid.buyer, present = state.scene.present,
+    goods = (bid.lines || []).map(line => tradeObject(state, content, line.object)?.name).filter(Boolean) } = {}) {
+    const people = [...new Set([...present, buyer])].map(id => ({ id,
+        names: [...new Set([state.entities[id]?.name, state.entities[id]?.known_name].filter(Boolean))] }));
+    return { ...commercialAnchor(source, bid.said, bid.pricing, { buyer, people, goods, content }), goods };
+}
 
 /** In a sale-only exchange, goods prices must not silently become PC purchases.
  * A separate, current purchase request permits a real offer, including same-named goods.

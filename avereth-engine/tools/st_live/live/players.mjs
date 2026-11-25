@@ -6,7 +6,7 @@
 //   - llm: a language model plays by the guide's milestones, in its own words and tactics (an OpenAI-compatible
 //     endpoint called from here, not through SillyTavern: its calls are kept apart from the game's, in player.jsonl);
 //   - scripted: fixed steps from the guide (reproducible comparison runs; the selftest).
-import { clip, sleep } from './lib.mjs';
+import { clip } from './lib.mjs';
 
 export const DECISION_KEYS = ['message', 'milestone', 'intent', 'stop', 'stop_reason', 'observations'];
 
@@ -181,7 +181,7 @@ export const LONG_MESSAGE = 600; // characters: a player's turn, not a paragraph
  * reasoning (players.mjs playerReasoning: the profile's own for the game's endpoint and model), sent with every call.
  * record(entry) receives every call (strategy, prompt size, answer, finish, tokens, cause; never the key).
  */
-export function llmPlayer({ guide, username, persona, url, model, key, temperature = 0.8, maxTokens = 3000, body = null, extraBody = null, timeoutMs = 180000, record = () => {}, fetchImpl = fetch, backoffMs = 3000 }) {
+export function llmPlayer({ guide, username, persona, url, model, key, temperature = 0.8, maxTokens = 3000, body = null, extraBody = null, timeoutMs = 180000, record = () => {}, fetchImpl = fetch }) {
     const notes = [];
     const system = playerSystemPrompt(guide, { username, persona });
     const shoppingReminder = gearPreparation(guide)?.reminder || null;
@@ -199,11 +199,22 @@ export function llmPlayer({ guide, username, persona, url, model, key, temperatu
             });
             const json = await res.json().catch(() => null);
             const ms = Date.now() - t0;
-            if (!res.ok || !json?.choices) return { ok: false, ms, error: `HTTP ${res.status}${json?.error?.message ? `: ${clip(json.error.message, 200)}` : ''}` };
-            const m = json.choices[0]?.message || {};
-            return { ok: true, ms, content: typeof m.content === 'string' ? m.content : '', reasoning: m.reasoning_content || m.reasoning || null, finish: json.choices[0]?.finish_reason ?? null, usage: json.usage ?? null, model: json.model ?? model };
+            const status = res.status;
+            if (!res.ok) {
+                const rejected = status >= 400 && status < 500 && ![408, 429].includes(status);
+                return {ok:false, ms, status, completion:rejected ? 'rejected' : 'unknown',
+                    error:`HTTP ${status}${json?.error?.message ? `: ${clip(json.error.message, 200)}` : ''}`};
+            }
+            const choice = json?.choices?.[0];
+            const finish = choice?.finish_reason;
+            if (!finish || finish === 'error')
+                return {ok:false, ms, status, finish, completion:'unknown', error:`HTTP ${status}: no terminal player response`};
+            const m = choice.message || {};
+            return {ok:true, ms, status, completion:'finished', content:typeof m.content === 'string' ? m.content : '',
+                reasoning:m.reasoning_content || m.reasoning || null, finish, usage:json.usage ?? null, model:json.model ?? model};
         } catch (e) {
-            return { ok: false, ms: Date.now() - t0, error: String(e?.name === 'AbortError' ? 'timeout' : e?.message || e) };
+            return {ok:false, ms:Date.now() - t0, completion:'unknown',
+                error:String(e?.name === 'AbortError' || ctl.signal.aborted ? 'timeout' : e?.message || e)};
         } finally { clearTimeout(timer); }
     }
     return {
@@ -229,8 +240,8 @@ export function llmPlayer({ guide, username, persona, url, model, key, temperatu
                 let parsed = r.ok && !exhausted ? parseDecision(r.content) : { ok: false, error: r.ok ? 'the reasoning used the whole token budget and left no answer (finish_reason length)' : r.error };
                 // a story instead of a player's turn: once, asked for the turn only
                 const long = parsed.ok && !parsed.decision.stop && !/^\s*#/.test(parsed.decision.message) && parsed.decision.message.length > LONG_MESSAGE;
-                const cause = exhausted ? 'reasoning_exhausted' : !r.ok ? 'http' : !parsed.ok ? 'invalid_json' : long ? 'long_message' : null;
-                record({ turn, attempt, strategy, ms: r.ms, ok: r.ok, model: r.model, finish: r.finish, usage: r.usage, prompt_chars: messages.reduce((a, m) => a + m.content.length, 0), answer: r.content ?? null, reasoning_chars: r.reasoning ? r.reasoning.length : 0, cause, error: parsed.ok ? null : parsed.error, decision: parsed.ok ? parsed.decision : null });
+                const cause = exhausted ? 'reasoning_exhausted' : !r.ok ? (r.completion === 'unknown' ? 'remote_unknown' : 'provider_rejected') : !parsed.ok ? 'invalid_json' : long ? 'long_message' : null;
+                record({ turn, attempt, strategy, ms: r.ms, ok: r.ok, status:r.status, completion:r.completion, model: r.model, finish: r.finish, usage: r.usage, prompt_chars: messages.reduce((a, m) => a + m.content.length, 0), answer: r.content ?? null, reasoning_chars: r.reasoning ? r.reasoning.length : 0, cause, error: parsed.ok ? null : parsed.error, decision: parsed.ok ? parsed.decision : null });
                 if (cause) causes.push(cause);
                 if (parsed.ok && (!long || strategy === 'shorten' || attempt === 2)) {
                     notes.push({ turn, ...parsed.decision });
@@ -248,7 +259,11 @@ export function llmPlayer({ guide, username, persona, url, model, key, temperatu
                     messages = [{ role: 'system', content: system }, { role: 'user', content: shortTurnPrompt(view, notes, { turn, maxTurns, milestone, minimal: strategy === 'minimal', shoppingReminder, milestoneReminder }) }];
                     continue;
                 }
-                if (!r.ok) { await sleep(backoffMs * (attempt + 1)); continue; }
+                if (!r.ok) {
+                    const why = r.completion === 'unknown' ? 'remote completion unknown' : 'provider rejected the request';
+                    return {message:'', stop:true, harness:true, causes,
+                        stop_reason:`player failure: ${why} (${r.error}). No retry sent.`};
+                }
                 strategy = 'repair';
                 messages = [...full, ...(r.content ? [{ role: 'assistant', content: r.content }] : []), { role: 'user', content: `That answer could not be used: ${parsed.error}. Answer again with only the JSON object.` }];
             }

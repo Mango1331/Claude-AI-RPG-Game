@@ -344,11 +344,10 @@ test('players: the LLM player repairs a bad answer, keeps its notes, and never l
     await p.decide(VIEW, { turn: 2, maxTurns: 80 }).catch(() => {});
     assert.match(sent.at(-1).body.messages[1].content, /1\. you wrote: "Mage" — creation_complete: class — noted: a warning about the contract/);
     const dead = llmPlayer({ guide: loadGuide('guild_dungeon_loop'), username: 'Alaric', url: 'http://x/v1', model: 'm', key: 'k', fetchImpl: async () => ({ ok: false, status: 503, json: async () => ({ error: { message: 'down' } }) }) });
-    const t0 = Date.now();
     const stop = await dead.decide(VIEW, { turn: 1, maxTurns: 1 });
     assert.equal(stop.stop, true);
     assert.equal(stop.harness, true);
-    assert.ok(Date.now() - t0 >= 9000, 'it waits between attempts');
+    assert.match(stop.stop_reason, /remote completion unknown.*HTTP 503/);
 });
 
 // ------------------------------------------------------------------------------------------------ options, exports, report

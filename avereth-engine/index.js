@@ -130,7 +130,11 @@ function actionView() {
 }
 function refreshActionStatus() {
     const node=document.getElementById('avereth-action-status');
-    if(node)node.textContent=actionView().text;
+    if (node) {
+        const view = actionView();
+        node.textContent = view.text;
+        node.dataset.blocked = String(view.blocked);
+    }
     actionComposer?.updateStatus();
 }
 function providerKey() {

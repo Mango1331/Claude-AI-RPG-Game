@@ -1,10 +1,9 @@
-// Natural batch courtesy pacing for chat-tier LLM usage: the player decides, then ST gets a short
-// reading pause before its Planner/Narrator/Extractor chain. A runner-only delay, never game time.
+// A runner-only reading delay before subsequent LLM player requests.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
-import { options, pauseAfterPlayer } from '../../tools/st_live/live/run_live.mjs';
+import { options, pauseBeforePlayer } from '../../tools/st_live/live/run_live.mjs';
 import { batchArgs } from '../../tools/st_live/live/batch.mjs';
 
 const emptyConfig = path.join(os.tmpdir(), `avereth-no-live-config-${process.pid}-read-pause.json`);
@@ -20,6 +19,8 @@ test('natural NPC and Guild batches default to a 5-second reading pause without 
         assert.ok(b.args.includes('--headed'));
         assert.equal(b.args[b.args.indexOf('--guide') + 1], mode === 'npc' ? 'npc_pulse_test' : 'current_test');
     }
+    assert.equal(freshOptions(['--openrouter']).readPauseMs, 5000);
+    assert.equal(freshOptions(['--openrouter','--read-pause-ms','0']).readPauseMs, 0);
     assert.equal(freshOptions().readPauseMs, 0, 'ordinary single runs have no artificial delay');
 });
 
@@ -35,23 +36,23 @@ test('batch read-pause flag overrides the default, including disabling it', () =
     assert.throws(() => freshOptions(['--read-pause-ms']), /--read-pause-ms/);
 });
 
-test('pause occurs once after a live LLM-player decision; never in scripted, stub or zero-pause runs', async () => {
+test('pause occurs once before a subsequent live LLM-player decision; never in scripted, stub or zero-pause runs', async () => {
     const waits = [];
     const fake = { wait: async ms => waits.push(ms) };
-    assert.equal(await pauseAfterPlayer({ player: { type: 'llm' }, stub: false, readPauseMs: 5000 }, fake), true);
+    assert.equal(await pauseBeforePlayer({ player: { type: 'llm' }, stub: false, readPauseMs: 5000 }, fake), true);
     assert.deepEqual(waits, [5000]);
-    assert.equal(await pauseAfterPlayer({ player: { type: 'scripted' }, stub: false, readPauseMs: 5000 }, fake), true);
-    assert.equal(await pauseAfterPlayer({ player: { type: 'llm' }, stub: true, readPauseMs: 5000 }, fake), true);
-    assert.equal(await pauseAfterPlayer({ player: { type: 'llm' }, stub: false, readPauseMs: 0 }, fake), true);
+    assert.equal(await pauseBeforePlayer({ player: { type: 'scripted' }, stub: false, readPauseMs: 5000 }, fake), true);
+    assert.equal(await pauseBeforePlayer({ player: { type: 'llm' }, stub: true, readPauseMs: 5000 }, fake), true);
+    assert.equal(await pauseBeforePlayer({ player: { type: 'llm' }, stub: false, readPauseMs: 0 }, fake), true);
     assert.deepEqual(waits, [5000], 'no extra sleeping for other modes');
 });
 
 test('the reading pause checks the stop request before and after waiting', async () => {
     const player = { player: { type: 'llm' }, stub: false, readPauseMs: 5000 };
     let waited = 0;
-    assert.equal(await pauseAfterPlayer(player, { stopped: () => true, wait: async () => { waited++; } }), false);
+    assert.equal(await pauseBeforePlayer(player, { stopped: () => true, wait: async () => { waited++; } }), false);
     assert.equal(waited, 0);
     let stop = false;
-    assert.equal(await pauseAfterPlayer(player, { stopped: () => stop, wait: async () => { waited++; stop = true; } }), false);
+    assert.equal(await pauseBeforePlayer(player, { stopped: () => stop, wait: async () => { waited++; stop = true; } }), false);
     assert.equal(waited, 1);
 });

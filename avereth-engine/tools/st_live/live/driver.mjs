@@ -246,10 +246,11 @@ export class Driver {
     async probe() {
         return this.page.evaluate(() => {
             const c = SillyTavern.getContext();
+            const status = document.querySelector('#avereth-action-status');
             const stop = document.querySelector('#mes_stop');
             const busy = !!stop && getComputedStyle(stop).display !== 'none';
             const i = c.chat.findLastIndex((m) => !m.is_user && !m.is_system);
-            return { busy, len: c.chat.length, lastUser: c.chat.findLastIndex((m) => m.is_user), extraction: c.chat[i]?.extra?.avereth?.extraction?.status || null, dialogs: document.querySelectorAll('dialog[open]').length,
+            return { busy, engineBlocked:status?.dataset.blocked === 'true', engineStatus:status?.textContent, len: c.chat.length, lastUser: c.chat.findLastIndex((m) => m.is_user), extraction: c.chat[i]?.extra?.avereth?.extraction?.status || null, dialogs: document.querySelectorAll('dialog[open]').length,
                 online: c.onlineStatus, chatId: c.getCurrentChatId(), avatar: c.characters[c.characterId]?.avatar };
         });
     }
@@ -264,6 +265,7 @@ export class Driver {
         if (this.persistenceBlocked) return { ok: false, problem: 'chat persistence failed', ms: 0 };
         const before = await this.probe();
         const failuresBefore = this.saveFailures.length;
+        if (before.engineBlocked) return {ok:false, problem:before.engineStatus, ms:0};
         if (before.busy) return { ok: false, problem: 'busy before sending', ms: 0 };
         if (!before.online || before.online === 'no_connection') return { ok: false, problem: 'API disconnected before sending; no message entered', ms: 0 };
         if (!before.chatId || (this.testChat && (before.chatId !== this.testChat.chatId || before.avatar !== this.testChat.avatar))) return { ok: false, problem: 'wrong test chat before sending; no message entered', ms: 0 };

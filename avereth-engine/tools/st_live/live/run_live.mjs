@@ -32,6 +32,7 @@ import { loadGuide } from './guide.mjs';
 import { scenarioById, scenarioGuide, scenarioMismatch } from './scenarios.mjs';
 import { evaluate, finished, nextMilestone, turnOutcome, turnFailure, softExtractionFailure, driverFailure, failureEnd, settled, openMilestones, startRecordProblem, assessFinalIntegrity } from './evaluator.mjs';
 import { parseCalls } from './calls.mjs';
+import { savedPrefixMatches } from '../../../src/v4/continuation.js';
 import { readChatJsonl, eventsLog, jsonl, secretScan } from './export.mjs';
 import { buildReport } from './report.mjs';
 import { startStub, STUB_MODEL } from './stub_provider.mjs';
@@ -115,8 +116,6 @@ export function options(argv = process.argv.slice(2), env = process.env) {
     if (arg('--port')) o.port = Number(arg('--port'));
     const pauseIndex = argv.indexOf('--read-pause-ms');
     if (pauseIndex >= 0) o.readPauseMs = Number(argv[pauseIndex + 1]);
-    if (!Number.isInteger(o.readPauseMs) || o.readPauseMs < 0 || o.readPauseMs > 60000)
-        throw new Error('--read-pause-ms must be an integer from 0 to 60000');
     if (flag('--headed')) o.headless = false;
     if (flag('--keep-profile')) o.keepProfile = true;
     if (arg('--key-env')) o.keyEnv = arg('--key-env');
@@ -133,6 +132,10 @@ export function options(argv = process.argv.slice(2), env = process.env) {
     } else if (arg('--model')) {
         throw new Error('--model requires --openrouter (other runs use the SillyTavern profile)');
     }
+    if (o.openrouter && o.guide === 'natural_helper_progression' && pauseIndex < 0 && file.readPauseMs == null)
+        o.readPauseMs = 5000;
+    if (!Number.isInteger(o.readPauseMs) || o.readPauseMs < 0 || o.readPauseMs > 60000)
+        throw new Error('--read-pause-ms must be an integer from 0 to 60000');
     o.stub = flag('--stub');
     o.check = flag('--check');
     o.inspect = flag('--inspect');
@@ -141,11 +144,10 @@ export function options(argv = process.argv.slice(2), env = process.env) {
 }
 
 /**
- * A human-sized pause after the LLM player decides and before the game handles its message.
- * Batch-only by default. It does not slow the Planner/Narrator/Extractor requests inside one ST turn.
+ * A reading pause before the next live LLM player request. It does not slow the Planner/Narrator/Extractor requests inside one ST turn.
  * Inject wait/stopped for quick regression tests without real sleeping.
  */
-export async function pauseAfterPlayer(o, { wait = ms => new Promise(resolve => setTimeout(resolve, ms)), stopped = () => false } = {}) {
+export async function pauseBeforePlayer(o, { wait = ms => new Promise(resolve => setTimeout(resolve, ms)), stopped = () => false } = {}) {
     if (stopped()) return false;
     if (o.player?.type === 'llm' && !o.stub && o.readPauseMs > 0) await wait(o.readPauseMs);
     return !stopped();
@@ -255,6 +257,7 @@ export async function run(o) {
     for (let k = 2; fs.existsSync(path.join(runsDir, runId)); k++) runId = `${runId.replace(/-\d+$/, '')}-${k}`;
     const runDir = path.join(runsDir, runId);
     const profileBefore = treeStat(imp.st.userDir);
+    const readPauseMs = o.player.type === 'llm' && !o.stub ? o.readPauseMs : 0;
 
     let stub = null;
     let key;
@@ -279,14 +282,16 @@ export async function run(o) {
         if (block) { await stub?.close(); throw new Error(`Preflight, nichts gestartet: ${probeRows(p, { model: imp.route.runner.model }).filter((x) => !x.good).map((x) => `${x.what}: ${x.detail}`).join(' ') || block}`); }
         log(`preflight: ${p.endpoint} ${p.ids ? `offers ${p.ids.length} model(s), "${imp.route.runner.model}" among them` : `(${p.error}; model not checkable)`}`);
     }
+    const playerUrl = stub?.url || o.player.url || imp.route.runner.url;
+    const playerModel = stub ? STUB_MODEL : o.player.model || imp.route.runner.model;
     const playerKey = o.stub ? STUB_KEY : o.player.keyEnv ? process.env[o.player.keyEnv] : key;
     // Patch 8.4.1 (live 22.10.2026 05:43: the game's requests carried reasoning_effort low and clear_thinking, the
     // player's none; 8 of its 27 calls spent their 3,000 tokens on reasoning): the player's reasoning fields, the
     // profile's own for the game's endpoint and model, asked once whether the endpoint takes them
     const playerSetup = { reasoning: o.player.type === 'llm' ? playerReasoning(imp, o.player) : null, probe: null, dropped: null };
     if (playerSetup.reasoning?.keys.length) {
-        const purl = o.player.url || imp.route.runner.url;
-        const pmodel = o.player.model || imp.route.runner.model;
+        const purl = playerUrl;
+        const pmodel = playerModel;
         const p = purl ? await probePlayer({ url: purl, key: playerKey, model: pmodel, body: { ...playerSetup.reasoning.body, ...(o.player.extraBody || {}) } }) : null;
         playerSetup.probe = p;
         if (o.openrouter && (!p || !p.ok)) {
@@ -385,11 +390,11 @@ export async function run(o) {
             ? scriptedPlayer({ steps: guide.scripted || [] })
             : llmPlayer({
                 guide, username: imp.username, persona,
-                url: o.player.url || imp.route.runner.url, model: o.player.model || imp.route.runner.model, key: playerKey,
+                url: playerUrl, model: playerModel, key: playerKey,
                 temperature: o.player.temperature, maxTokens: o.player.maxTokens, body: playerSetup.reasoning?.body, extraBody: o.player.extraBody, record: (e) => playerLog.push({ at: new Date().toISOString(), ...e }),
             });
-        if (o.player.type === 'llm' && !(o.player.url || imp.route.runner.url)) throw new Error('the LLM player needs an OpenAI-compatible URL: player.url in live.config.json');
-        if (o.player.type === 'llm' && !o.stub && o.readPauseMs) log(`LLM player reading pause: ${o.readPauseMs} ms before each game turn (batch default; no pause within ST roles)`);
+        if (o.player.type === 'llm' && !playerUrl) throw new Error('the LLM player needs an OpenAI-compatible URL: player.url in live.config.json');
+        if (o.player.type === 'llm' && !o.stub && o.readPauseMs) log(`LLM player reading pause: ${o.readPauseMs} ms before each player decision after the first`);
         const maxTurns = guide.limits.maxTurns;
         const t0 = Date.now();
         let since = 0;
@@ -399,6 +404,16 @@ export async function run(o) {
             if (interrupted) { end = { kind: 'harness', why: 'interrupted (Ctrl+C)' }; break; }
             if (turn > maxTurns) { end = { kind: 'limit', why: `${maxTurns} turns` }; break; }
             if (Date.now() - t0 > guide.limits.maxMinutes * 60000) { end = { kind: 'limit', why: `${guide.limits.maxMinutes} minutes` }; break; }
+            if (turn > 1 && !(await pauseBeforePlayer(o, { stopped: () => !!interrupted || !!o.stopRequested?.() }))) {
+                end = { kind: 'harness', why: `interrupted before player request ${turn} (reading pause)` };
+                break;
+            }
+            const ready = await driver.probe();
+            if (ready.busy || ready.engineBlocked || driver.persistenceBlocked) {
+                end = {kind:'engine_blocked', why:ready.engineStatus || 'engine busy or save unconfirmed', turn};
+                log(`stopped before player request: ${end.why}`);
+                break;
+            }
             const view = await driver.view();
             const td = Date.now();
             const d = await player.decide(view, { turn, maxTurns, milestone: playerMilestone });
@@ -416,10 +431,8 @@ export async function run(o) {
                 log(`player stops: ${d.stop_reason}`);
                 break;
             }
-            // The LLM player has decided; leave a short reading pause before SillyTavern starts its
-            // Planner/Narrator/Extractor chain. No effect on manual play, scripted runs or stubs.
-            if (!(await pauseAfterPlayer(o, { stopped: () => !!interrupted || !!o.stopRequested?.() }))) {
-                end = { kind: 'harness', why: `interrupted before sending turn ${turn} (reading pause)` };
+            if (interrupted || o.stopRequested?.()) {
+                end = {kind:'harness', why:`interrupted before sending turn ${turn}`};
                 break;
             }
             log(`turn ${turn}: ${clip(d.message, 100)}`);
@@ -543,8 +556,8 @@ export async function run(o) {
     } finally {
         try {
             if (driver) {
-                if (!driver.persistenceBlocked) await driver.save();
                 chat = await driver.chat();
+                if (!driver.persistenceBlocked) await driver.save();
                 statusLine = await driver.status();
                 toasts = await driver.toasts();
                 await driver.screenshot(g.check(path.join(runDir, 'screens', 'final.png')));
@@ -573,6 +586,8 @@ export async function run(o) {
             const text = fs.readFileSync(chatFile, 'utf8');
             put('chat.jsonl', text, 'der vollständige Chat, wie SillyTavern ihn speichert');
             messages = readChatJsonl(text).messages;
+            if (chat && !savedPrefixMatches(chat, messages, chat.length - 1))
+                put('chat.browser.jsonl', jsonl(chat), 'letzter Browserstand bei abweichendem Save');
         }
         put('avereth-events.json', JSON.stringify(eventsLog(messages), null, 1), 'die Ereignisse der Engine (Format des Buttons „Export event log“)');
         const logText = fs.existsSync(path.join(runDir, 'server.log')) ? fs.readFileSync(path.join(runDir, 'server.log'), 'utf8') : '';
@@ -602,7 +617,7 @@ export async function run(o) {
         }
         const driverNotes = [...(driver?.setupNotes || []), ...callErrors.slice(0, 5).map((e) => `server log: ${e}`)];
         driverNotes.push(`Final saved-state integrity: ${finalCheck.integrity.ok ? 'OK' : 'FAILED'} (${finalCheck.integrity.foldErrors.length} fold errors, ${finalCheck.integrity.problems.length} validation problems).`);
-        put('run.json', JSON.stringify({ runId, build: buildOf(), git: gitInfo(), scenario: guide.scenario || null, stub: !!stub, seed, fixture: o.fixture || null, fixtureReload, persona, guide: { id: guide.id, chain: guide.chain, files: guide.files.map((f) => path.relative(ENGINE, f)) }, end, analysis: npcPulse?.status, timing, preflight: preflightResult, route: imp.route, player: { type: o.player.type, ...playerSetup }, setup, conn, chatId: opened?.chatId || null, safeContinuations: turnsLog.filter(t=>t.outcome === 'soft_continued').length, turns: turnsLog.map(({ decision, ...t }) => ({ ...t, milestone: decision?.milestone || null })), status: statusLine, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [], notes: driverNotes, stubCalls: stub ? stub.calls : undefined }, null, 1), 'Ablauf des Laufs: Züge, Zeiten, Hinweise, Seitenfehler, Statuszeile');
+        put('run.json', JSON.stringify({ runId, build: buildOf(), git: gitInfo(), scenario: guide.scenario || null, stub: !!stub, seed, fixture: o.fixture || null, fixtureReload, persona, guide: { id: guide.id, chain: guide.chain, files: guide.files.map((f) => path.relative(ENGINE, f)) }, end, analysis: npcPulse?.status, timing, preflight: preflightResult, route: imp.route, player: { type: o.player.type, readPauseMs, ...playerSetup }, setup, conn, chatId: opened?.chatId || null, safeContinuations: turnsLog.filter(t=>t.outcome === 'soft_continued').length, turns: turnsLog.map(({ decision, ...t }) => ({ ...t, milestone: decision?.milestone || null })), status: statusLine, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [], notes: driverNotes, stubCalls: stub ? stub.calls : undefined }, null, 1), 'Ablauf des Laufs: Züge, Zeiten, Hinweise, Seitenfehler, Statuszeile');
         put('import.json', JSON.stringify({ ...imp, preset: { ...imp.preset, text: undefined, sha256: imp.preset.text ? sha256(Buffer.from(imp.preset.text)) : null } }, null, 1), 'was aus dem Profil übernommen wurde (ohne Schlüssel)');
 
         const changedRead = changedSince(imp.read);
@@ -612,7 +627,7 @@ export async function run(o) {
         const secrets = [...new Set([key, playerKey, process.env[o.keyEnv]].filter(Boolean))];
         const scan = secretScan(runDir, secrets, g);
         const report = buildReport({
-            runId, stub: !!stub, guide, player: o.player.type === 'llm' ? { type: 'llm', model: o.player.model || imp.route.runner.model, endpoint: (() => { try { return new URL(o.player.url || imp.route.runner.url).host; } catch { return '?'; } })(), temperature: o.player.temperature, persona } : { type: 'scripted', steps: (guide.scripted || []).length },
+            runId, stub: !!stub, guide, player: o.player.type === 'llm' ? { type: 'llm', model: playerModel, endpoint: (() => { try { return new URL(playerUrl).host; } catch { return '?'; } })(), temperature: o.player.temperature, persona } : { type: 'scripted', steps: (guide.scripted || []).length },
             end, ev, calls, setup: setup || { source: imp.source, card: '?', world: '?', greeting: '?' }, imp, git: gitInfo(), build: buildOf(), st: { version: imp.st.version, dir: imp.st.dir, port, startMs: server?.startMs },
             browser: { name: br?.name || '?', version: br?.version || '?', headless: o.headless }, turnsLog, playerLog, driverNotes, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [],
             protection, scan, files: [...files, ['report.md', 'dieser Bericht'], ['screens/', 'Bildschirmfotos (Ende, Probleme)']], startedAt, endedAt, instanceKept: o.keepProfile ? inst.root : null,

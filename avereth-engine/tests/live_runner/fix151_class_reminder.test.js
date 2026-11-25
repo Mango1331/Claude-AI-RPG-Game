@@ -7,7 +7,7 @@ const guide = loadGuide('current_test');
 const view = { messages: [{ system: false, text: 'The clerk nods.', engine: 'POSSIBLE CLASS — Keen Shadow (E). Choose one or postpone (#class).' }], hud: 'Alaric — L15 Rogue', toasts: [] };
 const decision = JSON.stringify({ message: '#class', milestone: 'class_accepted', stop: false });
 function player(answers, seen, useGuide = guide) {
-    return llmPlayer({ guide: useGuide, username: 'Alaric', url: 'https://example.invalid/v1', model: 'stub', backoffMs: 0,
+    return llmPlayer({ guide: useGuide, username: 'Alaric', url: 'https://example.invalid/v1', model: 'stub',
         fetchImpl: async (url, req) => {
             seen.push(JSON.parse(req.body));
             const content = answers.shift();

@@ -771,7 +771,7 @@ export function buildContext(state, content, opts = {}) {
     // trade this turn (buy, sell, accepting an offer) together with such words. The first talk with a smith before any
     // offer exists is such a turn.
     const gearOfferHere = Object.values(state.offers || {}).some(o => o.status === 'open' && !o.bid && state.scene.present.includes(o.seller) && o.lines.some(l => l.profile?.kind === 'gear'));
-    const gearWords = /\b(?:shop|buy|sell|merchant|smith|blacksmith|gear|equipment|armou?r|weapon|shield)\b/i.test(input || '');
+    const gearWords = /\b(?:shop|buy|sell|merchant|smith|blacksmith|gear|equipment|armou?r|weapon|shield|staff|staves|focus|sword|bow|robes?)\b/i.test(input || '');
     const venueRe = gearWords ? tradeVenueRe(content) : null;
     const roles = (id) => [state.entities[id]?.name, truth(state, id, 'occupation')[0]?.o, state.entities[id]?.role, ...(state.entities[id]?.descriptors || [])].filter((x) => typeof x === 'string');
     const sellerHere = gearWords && state.scene.present.some((id) => state.entities[id]?.kind === 'npc'
@@ -782,7 +782,7 @@ export function buildContext(state, content, opts = {}) {
     if (v4 && rulesetOf(state) >= 2 && !state.encounter && (opts.outcome?.auth?.c || opts.outcome?.c)
         && (gearOfferHere || sellerHere || shopPlace || tradeTurn)) {
         const offers = Object.values(state.offers || {}).filter(o => o.status === 'open' && !o.bid && state.scene.present.includes(o.seller))
-            .flatMap(o => o.lines.filter(l => l.kind === 'goods').map(l => `${l.what}: ${gearText(l.profile) || 'ordinary merchandise'}`)).slice(0, 8);
+            .flatMap(o => o.lines.filter(l => l.kind === 'goods').map(l => `${l.what}: ${gearText(l.profile) || 'ordinary merchandise'} · ${l.qty ?? 1} for ${l.price_cp ?? '?'} cp`)).slice(0, 8);
         add('gear_market', `${gearMarketText(content, true)}${offers.length ? `\nRECORDED GOODS: ${offers.join('; ')}` : ''}`, 0);
     }
 

@@ -13,7 +13,7 @@ import { O, S, B, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 import { saleOfferLines, purchaseLines } from './trade.js';
 import { normText } from '../util.js';
-import { findQuote, openConditionNear } from './finance_evidence.js';
+import { commercialAnchor, findQuote, openConditionNear } from './finance_evidence.js';
 import { creatureContract } from './population.js';
 
 /** Preserve the historical wire vocabulary; new campaigns have only Guild quests. */
@@ -146,7 +146,7 @@ export const FORMAT_RULES = [
     'scene is the actual narrative setting at the end of this reply: a place-ref, or "here" ONLY when it is the current engine scene. It never authorizes arrival. Every delta may override scene with a place-ref or "here" (null/omitted inherits the answer scene); use this for earlier scenes in a reply with multiple arrivals. Do not label an unreached camp as here merely because the engine still lists a shop. Local changes need the actual scene; distant reports remain reports. A new scene label creates no place by itself.',
     'TRAVEL: Every actual arrival, including a road or intermediate stop, MUST have its own arrive delta in chronological order. expected.arrived:true requires that matching arrive; expected, time and scene never move Alaric. Local introductions and exchanges follow the arrival at their scene; actions before departure keep the earlier scene. In a Living Dungeon (DUNGEON lines) its parts, ways and levels belong to the engine: report the part he reached as arrive {new: {name, kind: "interior", parent: null}} with the name the story gives it, never a passage, room or level of it.',
     'SALES: Report an actual buyer price with bid (buyer, exact item ids and quantities, price, said). expected.sold is only a summary, never an independent payment. A current minimum-price instruction can accept a matching bid; a promise or appraisal is not an actual final bid.',
-    'Trade evidence: said is required for every NEW financial claim, including each offer line and coin.gift; missing or unlocatable said leaves it unverified. pricing.quote/money.quote must occur inside its own said, never in unrelated narration. offer/bid said quotes the actual commercial clause, including who offers, unit/lot price and conditions. Third-party price advice is fact/place.reported, not an offer or bid of the speaker. Price ranges, possible future prices and unaccepted discounts are not fixed prices. A price binds only as ONE total for exactly the line or the whole bid, in the reply\'s own words; a price per piece for several pieces, part prices without their sum or a count the reply leaves open is no binding price (pricing unknown, phase unclear). Never compute a total yourself. Never invent a seller commitment from a recommendation.',
+    'Trade evidence: said is required for every NEW financial claim, including each offer line and coin.gift; missing or unlocatable said leaves it unverified. pricing.quote/money.quote must occur inside its own said, never in unrelated narration. For offer/bid said copy one continuous clause from the party who actually offers, with the total, without ellipses. Report conditions only for prerequisites that must still be met before the offer binds. Explanations about resale or demand and the customer’s choice are compatible with a firm offer. Third-party price advice is fact/place.reported, not an offer or bid of the speaker. Price ranges, possible future prices and unaccepted discounts are not fixed prices. A price binds only as ONE total for exactly the line or the whole bid, in the reply\'s own words; a price per piece for several pieces, part prices without their sum or a count the reply leaves open is no binding price (pricing unknown, phase unclear). Never compute a total yourself. Never invent a seller commitment from a recommendation.',
     'string[] is always a JSON array, even when it contains only one value.',
     `place-ref is an exact known place id from the CATALOG, or {"new":{"name":"...","kind":"...","parent":...}}. For a new place, kind must be exactly one of: ${PLACE_KINDS.join(', ')}. Use settlement for a city, town, village or hamlet; site for a building, inn or Guild hall; interior for a room; wilderness for natural outdoor terrain.`,
     'AREA LEVELS: when an outdoor area’s danger is actually established, report area once with a fixed supported F window. Copy existing area/population levels from the catalog; never adapt to Alaric, overwrite them, or use a mere rumour. A local population’s body plan is authoritative over a free species-name guess. A newly reached local part keeps its genuine geographic parent; never infer a remote relationship merely to inherit levels.',
@@ -633,10 +633,10 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
                 if (!x || typeof x !== 'object') return;
                 const where = d.type === 'bid' ? `$.deltas[${i}]` : `$.deltas[${i}].lines[${k}]`;
                 const gear = d.type === 'offer' && (x.base != null || x.equipment === true);
-                if (!gear && (!x.said || (reply && findQuote(reply, x.said).state !== 'found')))
+                const anchor = reply ? commercialAnchor(reply, x.said, x.pricing) : null;
+                if (!gear && (!x.said || (reply && anchor.state !== 'found')))
                     semanticIssues.push({ index: i, seq: d.seq, why: `${where}.said: provide the exact complete commercial clause from this reply; without its own located action anchor the price stays unverified` });
                 if (reply && !gear && x.said) {
-                    const anchor = findQuote(reply, x.said);
                     const quotes = [x.pricing?.quote];
                     if (anchor.state === 'found' && quotes.some(q=>q && findQuote(reply,q,anchor).state === 'missing'))
                         semanticIssues.push({ index: i, seq: d.seq, why: `${where}.pricing: every money quote must belong to this same said, not another sentence or purse` });
@@ -646,8 +646,9 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
                 if (!gear && Number.isInteger(x.price_cp) && x.price_cp > 0 && (!x.pricing || x.pricing.basis === 'unknown') && x.phase === 'firm')
                     semanticIssues.push({ index: i, seq: d.seq, why: `${where}.pricing: a firm price needs the reply's one total for it (basis total with its money words); a price per piece for several pieces or part prices without their total are basis "unknown" with phase "unclear"` });
                 if (x.phase === 'firm' && !x.condition && reply && typeof x.said === 'string') {
-                    const at = findQuote(reply, x.said);
-                    const word = at.state === 'found' ? openConditionNear(reply, at.start, at.end) : null;
+                    const money = anchor.state === 'found' && x.pricing?.quote ? findQuote(reply, x.pricing.quote, anchor) : null;
+                    const at = money?.state === 'found' ? money : anchor;
+                    const word = at.state === 'found' ? openConditionNear(reply, at.start, at.end, anchor) : null;
                     if (word) semanticIssues.push({ index: i, seq: d.seq, why: `${where}: the reply names an open condition next to this price ("${word}"); "firm" only if the price binds now regardless, else "conditional" with condition` });
                 }
             });

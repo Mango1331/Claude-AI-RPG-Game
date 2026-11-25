@@ -41,7 +41,7 @@ import {
 import { creatureContract } from './population.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
 import { paidWorkLine, tradeObject, pickLines, bookPurchase, bookSale, saleUnits, unitsText, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines, offerAvailability, rateUnits, displayedWare, wareOnSale, shortfallText } from './trade.js';
-import { findQuote, priceEvidence, openConditionNear, moneyLiteral } from './finance_evidence.js';
+import { commercialAnchor, findQuote, priceEvidence, openConditionNear, moneyLiteral } from './finance_evidence.js';
 import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
 import { reachedEvents, setIntentEvents } from './intents.js';
 import { featureNamed, featureEvent, applySpring } from './features.js';
@@ -3535,13 +3535,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     function dealTerms(x, { units = 1, lines = null, reported = null, enginePrice = null, goods = [], note = null } = {}) {
         const phase = ['firm', 'conditional', 'unclear'].includes(x.phase) ? x.phase : 'unclear';
         const condition = typeof x.condition === 'string' && x.condition.trim() ? x.condition.trim().slice(0, 160) : null;
-        const saidAt = typeof x.said === 'string' ? findQuote(prose, x.said) : { state: 'missing' };
+        const saidAt = commercialAnchor(prose, x.said, x.pricing);
         const within = saidAt.state === 'found' ? saidAt : null;
         const ev = Number.isInteger(enginePrice)
             ? { state: 'verified', cp: enginePrice, reason: 'engine_price', source: null }
             : priceEvidence(x.pricing, { source: prose, content, units, lines, reported, within, goods: [...goods, x.what].filter(Boolean), ownCurrency: true });
-        const anchor = within || ev.source?.ranges?.[0] || null;
-        const marker = anchor ? openConditionNear(prose, anchor.start, anchor.end) : null;
+        const anchor = ev.source?.money?.[0] || ev.source?.ranges?.[0] || within;
+        const marker = anchor ? openConditionNear(prose, anchor.start, anchor.end, within) : null;
         const evidence = { source_reference: { message: msg, text_hash: hash32(prose) }, ranges: [...(within ? [{ start: within.start, end: within.end }] : []), ...(ev.source?.ranges || [])].slice(0, 4),
             basis: Number.isInteger(enginePrice) ? 'engine' : x.pricing?.basis ?? 'unknown', derived_cp: ev.state === 'verified' ? ev.cp : null, reason: ev.reason ?? null };
         if (ev.state === 'contradicted') return { contradicted: true, why: `the price words do not add up (${ev.reason})`, evidence };

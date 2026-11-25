@@ -98,6 +98,7 @@ export function acceptanceWhy(c, offer, party, currency = null, units = null) {
         if (!contains(label, named.replace(/^the\s+/i, ''))) return `counterparty ${named} is not ${party}`;
     }
     const quote = String(c.quote || '');
+    if (/^\s*[^.!?;]+\?\s*$/.test(quote)) return 'a price or availability question does not accept an offer';
     const lines = (offer.lines || []).filter(l => !c.lines?.length || c.lines.includes(l.id));
     const picked = offer.bid ? null : pickLines(offer, c.lines, c.qty ?? null);
     const selection = !offer.bid && selectionWhy(quote, offer, lines);

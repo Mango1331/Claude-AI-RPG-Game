@@ -1,3 +1,5 @@
+import { eventCue } from './v4/pulse.js';
+import { ordinaryChoice } from './v4/travel_continuation.js';
 import { privateQuestsOf, questVisible, starterPool } from './content.js';
 import { chronicleLine } from './v4/combat_truth.js';
 // Context Builder: turns the campaign state into the smallest high-signal prompt block for this turn
@@ -786,6 +788,8 @@ export function buildContext(state, content, opts = {}) {
         add('gear_market', `${gearMarketText(content, true)}${offers.length ? `\nRECORDED GOODS: ${offers.join('; ')}` : ''}`, 0);
     }
 
+    const pulseCue = v4 && eventCue(opts.outcome?.auth?.pulse);
+    if (pulseCue) add('pulse_cue',pulseCue,1);
     if (v4 && /\b(?:skill stones?|passive stones?|primers?)\b/i.test(input || '')) {
         add('learning_sources', 'LEARNING SOURCES — Guild primers are manuals for their named techniques. Teachers teach by practice. Active Skill Stones are distinct, uncommon finds from specific sources. A rumour or ordinary shop does not establish one in stock. Passive Stones are exceptionally rare and use their own progression rules. Use established offers and finds as recorded.', 1);
     }
@@ -1060,9 +1064,11 @@ function whereLines(state, input, opts) {
     const absent = Object.values(state.entities || {}).filter((e) => e.kind === 'npc' && e.name && e.status !== 'dead' && !state.scene.present.includes(e.id)
         && normText(e.name).split(' ').filter((w) => w.length >= 4).some((w) => words.includes(` ${w} `))).slice(0, 3);
     const frame = opts.outcome?.auth?.continuation;
+    const ordinary = !frame && ordinaryChoice(state,input);
     const unbooked = frame === 'stay' ? `he stays at ${here} as requested`
         : frame && frame !== 'local' ? `chosen continuation: ${frame.choice}; ${frame.with ? 'only if '+entityLabel(state,frame.with)+' agrees; ' : ''}${frame.after ? 'only once '+frame.after+' is fulfilled; ' : ''}no trip is booked yet`
-            : !frame ? `no booked route from ${here}; carry out the ordinary local movement he chose or requested, including actual escort or reaching lodging he selected. Keep the established site for furniture and ordinary steps within it. Directions, invitations and payment alone do not move him`
+            : ordinary ? `carry out the local movement he chose: ${ordinary.choice}. Keep the established site for furniture and ordinary steps within it`
+            : !frame ? `no booked route from ${here}; this turn has no continuation assessment. Keep his established place unless actually displaced by an external cause`
             : `no booked route from ${here}. Ordinary movement within the present site may follow the current choice. Directions alone, an invitation, refusal or a deferred plan keeps him here. Actual external displacement remains possible`;
     return [
         `WHERE — ${here}${town && town !== here ? ` (${town})` : ''}.${missed.length ? ` The last reply's ${missed.join(', ')} ${missed.length > 1 ? 'were' : 'was'} not reached: what it told there did not happen.` : ''}`,

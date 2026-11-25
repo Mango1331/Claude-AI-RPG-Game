@@ -82,7 +82,7 @@ export function guildRankOf(state) {
 }
 
 /** Alaric's sheet as rows [label, value] (tests read these; the HTML is only their layout). */
-export function characterRows(state, content) {
+export function characterRows(state, content, {showFreePoints=false} = {}) {
     const e = state.entities.pc;
     const s = e.sheet;
     const dv = deriveCharacter(s, content);
@@ -101,7 +101,7 @@ export function characterRows(state, content) {
     return [
         ['Level', `${s.level} ${cls} · Power Rank ${dv.rank} · Guild Rank ${guildRankOf(state) || '— (not registered)'}${e.status === 'dead' ? ' · DEAD' : ''}`],
         ['Resources', `HP ${s.hp}/${dv.maxHp} (${condition(s.hp, dv.maxHp)}) · MP ${s.mp}/${dv.maxMp} · STA ${s.sta}/${dv.maxSta} · XP ${s.xp}/${s.level * per}`],
-        ['Stats', `${statsText(s, content, ' · ')} · Free Stat Points ${s.free_points ?? 0}`],
+        ['Stats', `${statsText(s, content, ' · ')}${s.free_points || showFreePoints ? ` · Free Stat Points ${s.free_points ?? 0}` : ''}`],
         ['Combat', `ATK ${dv.atk} · MATK ${dv.matk} · DEF ${dv.def} · MDEF ${dv.mdef} · Initiative ${dv.init}`],
         ['Skills', list(skills)],
         // Patch 9C-2c: his Passive slots, and a development offered to him (not his yet)
@@ -287,7 +287,7 @@ ${defenses ? `<div class="avereth-combat-meta"><strong>Defense</strong> · ${def
  * The HUD shown under a reply: the Character panel and the World panel. mode: 'closed' (folded, the summary line
  * shows the essentials), 'open', or 'off' (''). Empty before the campaign has a character.
  */
-export function renderHud(state, content, mode = 'closed') {
+export function renderHud(state, content, mode = 'closed', options = {}) {
     if (mode === 'off' || !state.meta?.started || !state.entities.pc?.sheet) return '';
     if (state.encounter) return combatHud(state, content);
     const s = state.entities.pc.sheet;
@@ -299,7 +299,7 @@ export function renderHud(state, content, mode = 'closed') {
     const charSummary = `L${s.level} ${cls} · HP ${s.hp}/${dv.maxHp} · MP ${s.mp}/${dv.maxMp} · STA ${s.sta}/${dv.maxSta} · ${formatCoin(s.coin_cp, content)}`;
     const worldSummary = `${formatClock(state.clock.minute).split(' (')[0]} · ${location.brief}${dungeonLevel(state) ? ` · ${dungeonLevel(state)}` : ''}${others ? ` · ${others} present` : ''}`;
     return [
-        panel(state.entities.pc.name || 'Alaric', charSummary, characterRows(state, content), open),
+        panel(state.entities.pc.name || 'Alaric', charSummary, characterRows(state, content, options), open),
         panel('World', worldSummary, worldRows(state, content).filter(([label]) => label !== 'On the ground'), open, groundItems(state)),
     ].join('\n');
 }

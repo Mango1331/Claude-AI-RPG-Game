@@ -467,11 +467,11 @@ async function executeMappedTurn(chat,content,{u,before,m,guarded={dropped:[]},i
     });
     const pureBoardFailure = board?.failed && m.commands.length === 1 && m.commands[0].type === 'board.read'
         && t.outcome?.resolutions?.[0]?.reason === 'generator_failed';
+    const growth = await withGrowth(t, content, llm, previous);
     if (pureBoardFailure) t.command = {
         panels:['[SYSTEM // QUESTBOARD]\nThe board could not be confirmed. You can read it again now.'],
         llm:null,
     };
-    const growth = await withGrowth(t, content, llm, previous);
     return {
         v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: irRec, plan, interp,
         board: board ? { branch: board.branch, rank: board.rank, ms: board.ms, failed: board.failed || undefined, ...(board.failed && board.minimum ? {manualRetry:true} : {}), listings: board.listings.length, ...(board.calls?.length ? { llm: board.calls } : {}) } : undefined,
@@ -869,7 +869,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         setRec(msg, r);
         const updateHud = r.events.some(e => ['stat.assigned','item.equipped','resource.changed','time.advanced'].includes(e.t));
         return { action: 'panels', panels: r.command.panels, index: u, dirty: true,
-            ...(updateHud ? {hud:renderHud(foldChat(chat).state,content,settings.hud)} : {}) };
+            ...(updateHud ? {hud:renderHud(foldChat(chat).state,content,settings.hud,{showFreePoints:true})} : {}) };
     }
     const { state, errors, failures, context } = turnBlock(chat, u, content, settings);
     // .127: a reused record (swipe, regenerate, continue) is narrated only from a whole state as well

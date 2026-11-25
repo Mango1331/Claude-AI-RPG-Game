@@ -85,7 +85,7 @@ export function gateAlias(s, ref) {
     const place = ref?.new;
     const root = place?.parent || trueDungeonOf(s, s.scene.at);
     if (!place?.name || !s.places[root]?.dungeon?.real || trueDungeonOf(s, s.scene.at) !== root
-        || !GATE_WORDS.test(place.name) || !(s.last?.outcome?.auth?.gos || []).some(go => go.to === root))
+        || !/(?:^|\b)(?:entry tunnel|entrance tunnel|dungeon exit|dungeon entrance|entrance gate|entrance mouth)\b/i.test(place.name) || !(s.last?.outcome?.auth?.gos || []).some(go => go.to === root))
         return null;
     return root;
 }

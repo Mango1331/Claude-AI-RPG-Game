@@ -63,7 +63,7 @@ export function parseCalls(logText, markers = [], turnTimes = []) {
             at: reqAt ? new Date(reqAt).toISOString() : null, ms: reqAt && respAt ? respAt - reqAt : null,
             model: req.model ?? null, resp_model: resp?.model ?? null, max_tokens: req.max_tokens ?? req.max_completion_tokens ?? null, temperature: req.temperature ?? null,
             reasoning_effort: req.reasoning_effort ?? req.reasoning?.effort ?? null,
-            provider_order: Array.isArray(req.provider?.order) ? req.provider.order : null,
+            provider_order: Array.isArray(req.provider?.order) ? Array.from(req.provider.order) : null,
             provider_allow_fallbacks: req.provider?.allow_fallbacks ?? null,
             stream: !!req.stream, messages: msgs.length, prompt_chars: msgs.reduce((a, x) => a + textOf(x.content).length, 0),
             finish: choice?.finish_reason ?? null, prompt_tokens: u.prompt_tokens ?? null, cached_tokens: u.prompt_tokens_details?.cached_tokens ?? u.cached_tokens ?? null,

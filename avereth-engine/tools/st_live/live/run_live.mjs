@@ -437,7 +437,7 @@ export async function run(o) {
             }
             log(`turn ${turn}: ${clip(d.message, 100)}`);
             sends.push({ turn, at: Date.now() });
-            const r = await driver.send(d.message);
+            const r = await driver.send(d.message,{requireReady:true});
             turnsLog.push({ turn, text: d.message, decision: d, decideMs, ...r });
             if (!r.ok && interrupted) { end = { kind: 'harness', why: `interrupted (Ctrl+C) in turn ${turn}` }; break; }
             if (!r.ok) {

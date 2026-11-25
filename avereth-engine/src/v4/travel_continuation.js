@@ -34,7 +34,7 @@ export function travelFrame(frame, input, present) {
 }
 
 /** Use the booked action or a clear current choice when the planner supplied no narrower boundary. */
-function ordinaryChoice(s, input) {
+export function ordinaryChoice(s, input) {
     const choice = String(input || '').trim().replace(/^\*+|\*+$/g,'').trim();
     if (!choice || choice.split(/[.!?\n]+/).some(clause => holdPosition.test(clause.trim()))) return null;
     const lower = normText(choice);

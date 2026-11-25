@@ -124,7 +124,7 @@ test('actual direct LLM-player HTTP body pins Wafer and low effort, not only the
 });
 
 test('fixed OpenRouter routing YAML is valid for ST Custom Chat Completion include-body',()=>{
-    assert.deepEqual(OPENROUTER_INCLUDE_BODY.split('\\n'),[
+    assert.deepEqual(OPENROUTER_INCLUDE_BODY.split('\n'),[
         'reasoning_effort: low','provider:','  order: [wafer/us]','  allow_fallbacks: false'
     ]);
     const reference=openRouterPlayerExtraBody();

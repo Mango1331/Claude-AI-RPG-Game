@@ -23,12 +23,13 @@ export function loadPlaywright() {
 
 /** A Chromium browser: the installed Chrome, else Playwright's own Chromium, else Edge (auto); or the one named. */
 export async function launchBrowser(pw, { browser = 'auto', headless = true } = {}) {
-    const order = browser === 'auto' ? ['chrome', null, 'msedge'] : [browser === 'chromium' ? null : browser];
+    const executablePath = process.env.AVERETH_CHROMIUM_EXECUTABLE;
+    const order = executablePath ? [null] : browser === 'auto' ? ['chrome', null, 'msedge'] : [browser === 'chromium' ? null : browser];
     const errs = [];
     for (const channel of order) {
         try {
             // the runner handles Ctrl+C itself (run_live.mjs): Playwright must not close the browser and exit on its own
-            const b = await pw.chromium.launch({ headless, handleSIGINT: false, handleSIGTERM: false, handleSIGHUP: false, ...(channel ? { channel } : {}) });
+            const b = await pw.chromium.launch({ headless, handleSIGINT: false, handleSIGTERM: false, handleSIGHUP: false, ...(executablePath ? { executablePath } : channel ? { channel } : {}) });
             return { browser: b, name: channel || 'chromium', version: b.version() };
         } catch (e) { errs.push(`${channel || 'chromium'}: ${String(e.message || e).split('\n')[0]}`); }
     }
@@ -259,13 +260,13 @@ export class Driver {
      * Send one player message and wait until the turn is over: the generation ended, the newest reply has been read by
      * the extractor, and the page stayed quiet for a moment. Only a completed failed save may be retried, never play.
      */
-    async send(text) {
+    async send(text, {requireReady = false} = {}) {
         const p = this.page;
         const t0 = Date.now();
         if (this.persistenceBlocked) return { ok: false, problem: 'chat persistence failed', ms: 0 };
         const before = await this.probe();
         const failuresBefore = this.saveFailures.length;
-        if (before.engineBlocked) return {ok:false, problem:before.engineStatus, ms:0};
+        if (requireReady && before.engineBlocked) return {ok:false, problem:before.engineStatus, ms:0};
         if (before.busy) return { ok: false, problem: 'busy before sending', ms: 0 };
         if (!before.online || before.online === 'no_connection') return { ok: false, problem: 'API disconnected before sending; no message entered', ms: 0 };
         if (!before.chatId || (this.testChat && (before.chatId !== this.testChat.chatId || before.avatar !== this.testChat.avatar))) return { ok: false, problem: 'wrong test chat before sending; no message entered', ms: 0 };

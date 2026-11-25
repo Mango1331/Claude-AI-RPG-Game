@@ -350,7 +350,7 @@ export function planContext(state, content, catalog) {
     const habitat = lineage(state, state.scene.at).find(id => state.places[id].population);
     // Build .138: the unit count each open bid's rate applies to (stacks of the same goods together)
     const bidUnits = Object.fromEntries(Object.values(state.offers || {}).filter((o) => o.bid && o.status === 'open').map((o) => [o.id, rateUnits(o.lines, (id) => state.objects[id])]));
-    return { negotiationText:fight ? negotiationPlanText(state,content) : '', presentIds:state.scene.present, habitat, bidUnits, tradeChecks: rulesetOf(state) >= 2, privateQuests: privateQuestsOf(state), fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content), jobs };
+    return { negotiationStage:state.encounter?.negotiation?.stage, negotiationText:fight ? negotiationPlanText(state,content) : '', presentIds:state.scene.present, habitat, bidUnits, tradeChecks: rulesetOf(state) >= 2, privateQuests: privateQuestsOf(state), fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content), jobs };
 }
 
 /** The user message: the interpreter's CATALOG, then skills, opponents, engine facts, RECENT and the message. */
@@ -499,6 +499,8 @@ export function parsePlan(answer, vocab, ctx, message) {
     if (hud && !hud.ok && ctx.negotiationText && surrenderWords.test(message) && !value.commands.some(c=>c?.type==='surrender')) return {commands:null,errors:['Read the surrender as a Major and the selected HUD Minor as already chosen. Bind compatible actions together. If the player expressly contradicts the selection keep conflict.']};
     if (hud && !hud.ok) return {commands:value.commands,hud_binding:value.hud_binding,hud_conflict:hud.reason,errors:[]};
     const errors = [];
+    if (ctx.negotiationStage==='counter' && !value.commands.some(c=>['negotiation_answer','surrender','attack','move','use_skill','flee'].includes(c?.type)))
+        errors.push('Classify his immediate response to the binding counteroffer. A clear refusal or different price declines it. Keep an unresolved or ambiguous reply unbooked.');
     if (ctx.negotiationText && (ctx.actionInput && surrenderWords.test(message) || /\bI (?:surrender|yield|give up|beg for mercy)\b/i.test(message))
         && !value.commands.some(c=>['surrender','negotiation_answer'].includes(c?.type)) && !/\b(?:do not|don't|won't|never)\s+(?:surrender|yield|give up)\b/i.test(message))
         errors.push('The declared surrender was omitted. Encode its Major and any compatible chosen Minor together, or report a genuine conflict.');

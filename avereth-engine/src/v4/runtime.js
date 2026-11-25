@@ -379,6 +379,8 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
         a0: { route: ir.route, kind: ir.intent?.kind ?? null, skill: ir.intent?.skill ?? null, target: ir.intent?.target ?? null },
     };
     const interp = { version: PLANNER_VERSION, ms: pl.ms, failed: !!pl.failed, repaired: !!pl.repaired, commands: pl.commands, ...(pl.error ? { error: pl.error } : {}) };
+    if (pl.failed && before.encounter?.negotiation)
+        return actionRefused(inputHash,'Die offene Verhandlung konnte nicht eindeutig gelesen werden. Eingabe erneut versuchen oder die HUD-Antwort wählen.',{plan,interp});
     if (pl.failed) return { v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: { v: IR_VERSION, route: 'v4', reason: 'planner', links: ir.links, acts: [] }, plan, interp, events: [], command: null };
     const hud=actionInput ? reconcileHudPlan(actionInput,pl.commands,pl.hud_binding) : null;
     if(hud && !hud.ok)return actionRefused(inputHash,hud.reason,{plan,interp});

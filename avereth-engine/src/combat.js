@@ -1166,7 +1166,7 @@ function reactionsDue(enc) {
     if (pc.current.defeated || pc.current.escaped) return [];
     return enc.order.filter((id) => {
         const c = enc.combatants[id];
-        if (id === 'pc' || c.side === 'hostile' || !alive(c) || c.current.surrendered) return false;
+        if (id === 'pc' || c.current.peace || c.side === 'hostile' || !alive(c) || c.current.surrendered) return false;
         const hit = enc.log.findLastIndex((r) => r.actor === 'pc' && (r.strikes || []).some((k) => k.target === id));
         return hit >= 0 && enc.log.findLastIndex((r) => r.actor === id) < hit;
     });
@@ -1189,7 +1189,7 @@ function advance(enc) {
         if (idx >= enc.order.length) { idx = 0; enc.round += 1; }
         const id = enc.order[idx];
         const c = enc.combatants[id];
-        if (alive(c) && !c.current.surrendered) break;
+        if (alive(c) && !c.current.surrendered && !c.current.peace) break;
     }
     enc.turn_index = idx;
     enc.current = enc.order[idx];
@@ -1278,6 +1278,7 @@ function singlePcAction(ctx, act) {
     const {enc} = ctx;
     let r;
     if (act.kind === 'attack') r = attackAction(ctx, 'pc', act.target, act.skill, { move: act.move, moveTarget: act.move_target, item: act.item, burst: act.burst, field: act.field, crowd: act.crowd });
+    else if (act.kind === 'surrender') r = {round:enc.round,actor:'pc',kind:'surrender_offer',target:act.target,terms:act.terms};
     else if (act.kind === 'sidestep') r = sidestep(ctx, 'pc');
     else if (act.kind === 'skill') r = skillAction(ctx, 'pc', act.skill, { dir: act.dir, target: act.target });
     else if (act.kind === 'move') r = ctx.c && !act.explicitBudget && act.dir === 'closer' && fleeing(enc, act.target) ? chase(ctx, act.target) : { ...moveAction(ctx, 'pc', act.dir, act.target), ...(act.explicitBudget ? {focus:act.target ?? null} : {}) };
@@ -1295,7 +1296,7 @@ function singlePcAction(ctx, act) {
 // Stage only the acting player's phase. Earlier initiative and reactions already belong to the encounter.
 export function orderedPhase(ctx, phase, {preview = false} = {}) {
     if (!Array.isArray(phase) || phase.length < 1 || phase.length > 2 ||
-        phase.some(a => !['attack','skill','item','move','sidestep','flee','ability_world'].includes(a?.kind) || a.move || a.phase))
+        phase.some(a => !['attack','skill','item','move','sidestep','flee','ability_world','surrender'].includes(a?.kind) || a.move || a.phase))
         return {illegal:'Ungültige Kampffolge'};
     const slots = phase.map(act => combatSlot(act, ctx.content, ctx.state));
     if (slots.length === 2 && (new Set(slots).size !== 2 || slots.includes('whole')))
@@ -1420,6 +1421,7 @@ export function runCombat(ctx, pcAction) {
             continue;
         }
         const actorId = enc.current;
+        if (enc.combatants[actorId].current.peace) { advance(enc); continue; }
         // a place in the Turn order already used this Round (a First Strike, an answer to a strike) is passed over once
         if (enc.spent?.[actorId] !== undefined) {
             const round = enc.spent[actorId];
@@ -1439,6 +1441,7 @@ export function runCombat(ctx, pcAction) {
             pcActed = true;
             endTurn(enc, 'pc');
             advance(enc);
+            if (result.records.some(r=>r.kind==='surrender_offer')) return {enc,records,stopped:'negotiation'};
             continue;
         }
         const r = npcTurn(ctx, actorId);
@@ -1456,6 +1459,7 @@ export function endEncounterEvents(state, content, enc) {
     const xp = pc.current.defeated ? 0 : enc.pending_xp;
     const summary = {
         defeated: enc.defeated.filter((id) => id !== 'pc'), escaped: enc.escaped.slice(), xp_awarded: xp,
+         ...(enc.negotiatedEnd ? {reason:'negotiated',agreements:enc.agreements} : {}),
         pc_dead: pc.current.defeated, pc_escaped: !!pc.current.escaped,
     };
     if (xp > 0) {

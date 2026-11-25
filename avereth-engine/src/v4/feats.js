@@ -27,7 +27,7 @@ function contextOf(s, enc, ids) {
 export function fightFeats(s, content, enc) {
     if (rulesetOf(s) < 2 || !enc?.career || careerOf(s).seen?.[`fight:${enc.id}`]) return [];
     const pc = enc.combatants.pc;
-    const won = !pc.current.defeated && !pc.current.escaped;
+    const won = !enc.negotiatedEnd && !pc.current.defeated && !pc.current.escaped;
     const r = content.rules.class_growth;
     const personal = (enc.defeated || []).filter((id) => {
         const c = enc.combatants[id];

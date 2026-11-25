@@ -10,7 +10,7 @@
 //   relations – graph edges (attitude, membership, ownership, ...) with history
 //   quests, threads, scene, encounter, clock, rng
 //   places, objects, offers, guild, decisions, services – Runtime V4 domains (src/v4/domain.js); empty in a V3 campaign
-import { clone, uniq } from './util.js';
+import { clone, uniq, hash32 } from './util.js';
 import { emptyDomains, applyDomainEvent, V4_EVENTS } from './v4/domain.js';
 import { applyGrowthEvent } from './v4/growth.js';
 import { applyCareerEvent } from './v4/feats.js';
@@ -51,6 +51,11 @@ export function emptyState() {
 }
 
 /** Fold events onto a base state (the base is cloned once; events are applied in place for speed). */
+export function negotiationRevision(s) {
+    const sheet=s.entities.pc.sheet;
+    return hash32(JSON.stringify([s.encounter,s.scene.at,s.scene.present,sheet.coin_cp,sheet.equipment,sheet.inventory,s.objects]));
+}
+
 export function fold(events, base = emptyState()) {
     const state = clone(base);
     for (const e of events) applyEvent(state, e);
@@ -352,6 +357,9 @@ export function applyEvent(state, e) {
             if (d.status === 'dead' && state.entities[d.id].sheet) state.entities[d.id].sheet.hp = 0;
             break;
         // ------------------------------------------------------------------ encounter
+        case 'combat.negotiation':
+            if (negotiationRevision(state)!==d.revision) throw Error('Surrender offer or custody changed since this decision.');
+            break;
         case 'encounter.started':
             state.encounter = clone(d.encounter);
             state.mode = 'combat';

@@ -460,6 +460,7 @@ function roundLines(name, records) {
 function endLines(state, content, name, e, levelups = [], loot = null, rewardLines = []) {
     const fates = [...e.defeated.map((id) => `${name(id)} defeated`), ...e.escaped.filter((id) => id !== 'pc').map((id) => `${name(id)} escaped`)];
     if (e.pc_dead) fates.push(`${name('pc')} is dead`);
+    if (e.reason==='negotiated') fates.push('settlement agreed');
     if (e.pc_escaped) fates.push(`${name('pc')} escaped`);
     const sheet = state.entities.pc.sheet;
     const xp = e.xp_awarded ? ` · +${e.xp_awarded} XP → XP ${sheet.xp}/${sheet.level * content.rules.progression.xp_to_next_per_level}` : '';

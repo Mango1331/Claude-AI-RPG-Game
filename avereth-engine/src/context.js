@@ -1,3 +1,4 @@
+import {negotiationPrompt} from './v4/surrender.js';
 import { eventCue } from './v4/pulse.js';
 import { ordinaryChoice } from './v4/travel_continuation.js';
 import { privateQuestsOf, questVisible, starterPool } from './content.js';
@@ -296,7 +297,8 @@ export function combatBlock(state, content = null, { hudSpeech = false } = {}) {
     // from someone with a stake, the malthouse owner counted his losses aloud every round. The player: no talking
     // in a fight. A line is mechanics only when a combatant surrenders or parleys (its engine intent).
     const bystanders = state.scene.present.filter((id) => id !== 'pc' && !enc.combatants[id] && state.entities[id]?.kind === 'npc' && state.entities[id].status !== 'dead');
-    lines.push(hudSpeech ? '  Combat roleplay: preserve the player-supplied words and allow brief, plausible NPC reactions. Speech grants no extra actions, movement, obedience or tactical bonuses.' : `  Combat silence: nobody talks while the fight runs — neither combatants nor ${bystanders.length ? `${bystanders.map((id) => entityLabel(state, id)).join(', ')} (not fighting)` : 'onlookers'}; show sounds, wordless cries, movement and faces. Only a combatant whose intent is surrender or parley may say one short line.`);
+    if (enc.negotiation) lines.push(negotiationPrompt(state));
+    else lines.push(hudSpeech ? '  Combat roleplay: preserve the player-supplied words and allow brief, plausible NPC reactions. Speech grants no extra actions, movement, obedience or tactical bonuses.' : `  Combat silence: nobody talks while the fight runs — neither combatants nor ${bystanders.length ? `${bystanders.map((id) => entityLabel(state, id)).join(', ')} (not fighting)` : 'onlookers'}; show sounds, wordless cries, movement and faces. Only a combatant whose intent is surrender or parley may say one short line.`);
     return lines.join('\n');
 }
 
@@ -335,6 +337,7 @@ export function recordLine(state, r, name = (id) => fightLabel(state, id), conte
     if (r.kind === 'item' && r.restore) return `${who}: ${r.step ? `moves (${r.step}), then ` : ''}drinks ${r.item_name} (his main action this Turn; ${r.used_up || 'used up'}): ${r.restore.resource.toUpperCase()} ${r.restore.before}->${r.restore.after} (+${r.restore.amount}${r.restore.amount < r.restore.of ? `, the rest lost at his maximum ${r.restore.max}` : ''}); no other effect`;
     if (r.kind === 'move' || r.kind === 'flee') return `${who}: ${r.kind === 'flee' ? 'flees' : `moves ${r.dir}`} (${r.change || ''})${r.escaped ? ' — ESCAPED' : ''}${r.why ? ` — ${r.why}` : ''}`;
     if (r.kind === 'cover') return `${who}: takes cover (${r.change})${r.why ? ` — ${r.why}` : ''}`;
+    if (r.kind === 'surrender_offer') return who + ': offers surrender (Major spent).';
     if (r.kind === 'surrender') return `${who}: SURRENDERS${r.pending_xp_added ? ` (Pending XP +${r.pending_xp_added})` : ''}`;
     if (r.kind === 'hold') return `${who}: holds (${r.why || 'no action'})`;
     if (r.kind === 'ability_world') return `${who}: ${r.skill_name} on ${r.target_text}${r.goal ? ` (his aim: ${r.goal})` : ''} [${r.cost ? `${r.cost.resource.toUpperCase()} ${r.cost.before}->${r.cost.after}` : 'no cost'}${r.ammo ? `; ${r.ammo.used} arrow${r.ammo.used > 1 ? 's' : ''}` : ''}]: an attempt on a thing, his action this Turn. CHECK DIE d100 = ${r.check_die}: use it for a Core #7 check only if the result is uncertain AND consequential. The engine resolves NO damage and no effect on any combatant from it: narrate none`;
@@ -379,7 +382,7 @@ function stateNow(state, content, outcome) {
         ...b.hp.filter((h) => h.id !== 'pc').map((h) => `${name(h.id)} ${fate(h)}${!h.state && state.scene.awareness[h.id] ? `; ${state.scene.awareness[h.id]} of Alaric` : ''}`),
         ...before.map((id) => `${sceneHandle(state, content, id)} DEAD (earlier)`),
         `Alaric ${pc?.state === 'defeated' ? 'DOWN' : `${pc?.hp}/${pc?.max} HP`}`,
-        outcome.ended ? 'fight OVER' : 'fight goes on, Alaric\'s Turn',
+        outcome.ended ? 'fight OVER' : state.encounter?.negotiation ? 'awaiting negotiation result' : 'fight goes on, Alaric\'s Turn',
     ];
     return `STATE NOW — BINDING (end the reply so; no other foe): ${bits.join(' · ')}.${b.hp.some(h => h.id !== 'pc' && !h.state && state.scene.awareness[h.id] === 'aware') ? ' Current combat awareness supersedes earlier arrival/entry stealth; not proof of exact visual contact or identity.' : ''}`;
 }
@@ -449,8 +452,8 @@ function outcomeLines(state, content, outcome, { v4 = false, carded = null, hudS
             // Prototype C (4.3.0-c.6.6.4): the engine's automatic loot, already in his pack (src/v4/loot.js)
             if (outcome.rewardLines?.length) lines.push(`- SPECIAL REWARD (engine-booked, already in his pack): ${outcome.rewardLines.join('; ')}. Describe these exact finds only; no extra item, coin, chest contents or magical effect. A hoard is a narrative frame, not a new room or an opening action. Gear found beside the defeated need not have been worn or used by them. Value guides are not guaranteed sale prices.`);
             if (outcome.loot) lines.push(`- LOOT (the engine's automatic loot at the fight's end, already in Alaric's pack): ${outcome.loot.join(', ')}. It is no decision of his and took no time: mention it in a few words or leave it to the HUD; do not show him skinning, carving or searching bodies, and add no other drop, coin or item. It sits in his magic pouch: no weight, bulk, packing, straps or carrying effort, now or later.`);
-        } else if (outcome.next) lines.push(`- Next: ${outcome.next}. Stop the narration at Alaric's decision.`);
-        if (outcome.records.length) lines.push(`Narrate exactly these resolved steps in order: the same number of attacks/projectiles, every one landing with the damage given (no misses, grazes or dodges), no extra movement, attacks or combatants${outcome.ended ? '' : hudSpeech ? ', with player-supplied speech and brief NPC reactions but no extra mechanical actions' : ', and no dialogue (combat silence; it overrides any habit of opening with speech)'}.${report(' Then write the fact report.')}`);
+        } else if (!state.encounter?.negotiation && outcome.next) lines.push(`- Next: ${outcome.next}. Stop the narration at Alaric's decision.`);
+        if (outcome.records.length && !state.encounter?.negotiation) lines.push(`Narrate exactly these resolved steps in order: the same number of attacks/projectiles, every one landing with the damage given (no misses, grazes or dodges), no extra movement, attacks or combatants${outcome.ended ? '' : hudSpeech ? ', with player-supplied speech and brief NPC reactions but no extra mechanical actions' : ', and no dialogue (combat silence; it overrides any habit of opening with speech)'}.${report(' Then write the fact report.')}`);
         // Patch 8.1 (§8, live 21.10.2026 10:17: Glass Beetle A at 1/38 HP "burst apart", and a beetle dead a turn before
         // "fled"): the state these steps leave, the last line of the mechanics, one entry per fighter
         if (outcome.c && outcome.board) lines.push(stateNow(state, content, outcome));

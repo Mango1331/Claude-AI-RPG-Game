@@ -82,6 +82,8 @@ export function inputRecordError(msg, index) {
     const record = rec(msg);
     const changed = record?.action_input_hash != null && record.events?.length
         && (record.input_hash !== hash32(msg.mes) || record.action_input_hash !== actionInputHash(actionInputOf(msg)));
+    if (msg?.is_user && record?.events?.some(e=>e.t==='combat.negotiation') && record.input_hash!==hash32(msg.mes))
+        return {type:'action.input_changed',error:'Surrender input changed. Restore it or replay from this decision.'};
     return changed ? {type:'action.input_changed',error:'Booked HUD input changed; restore its original text and selection before continuing'}
         : paymentInputError(msg, record, index);
 }
@@ -107,7 +109,7 @@ export function foldChat(chat, end = chat.length) {
         const events = messageEvents(chat[i]);
         // A failed card close must not leave its debit (or any later record) in the folded state.
         // Only native payment records need this small transaction checkpoint; normal folds are unchanged.
-        if (events.some(e => e.t === 'decision.closed' && e.d.expect)) {
+        if (events.some(e => e.t === 'combat.negotiation' || e.t === 'decision.closed' && e.d.expect)) {
             const staged = clone(state);
             let failed = false;
             for (const e of events) {

@@ -1064,6 +1064,12 @@ const HANDLERS = {
         // also after its offer closed (the other quill on display), then by a new offer of the seller
         const sale = wareOnSale(s, o);
         if (sale) return { status: 'refused', reason: 'for sale', line: `CANNOT TAKE — ${o.name} is ${who(s, sale.offer.seller)}'s ware for sale${Number.isInteger(sale.line.price_cp) ? ` (${cpText(sale.line.price_cp, content)})` : ''}; it becomes his by buying it (${sale.open ? 'accepting the offer' : `a new offer from ${who(s, sale.offer.seller)}`}), not by taking it.` };
+        if (Number.isSafeInteger(o.source?.surrender_cp) && o.source.surrender_cp>0) {
+            const cp=o.source.surrender_cp;
+            emit({t:'object.consumed',d:{id:o.id,by:'returned to purse'}});
+            emit({t:'coin.changed',d:{id:'pc',value:s.entities.pc.sheet.coin_cp+cp,delta:cp,why:'recovered loose coin'}});
+            return {status:'resolved',line:`TAKES — ${cp} cp returned to his purse.`};
+        }
         const part = c.qty && c.qty < (o.qty ?? 1) ? c.qty : null;
         if (s.places[s.scene.at]?.camp_stock?.includes(o.id)) (ctx.booked.campTakes ||= []).push({at:s.scene.at, id:o.id});
         emit({ t: 'object.moved', d: { id: o.id, to: { entity: 'pc' }, ...(part ? { qty: part, split: freeObjectId(s, `${o.id}_${s.turn}`) } : {}) } });
@@ -2074,4 +2080,53 @@ function remainsSearch(s, c) {
         const e = s.entities[id];
         return [e?.name, e?.species, e?.species?.split(' ').at(-1)].filter(Boolean).some(label => normText(focus).includes(normText(label)));
     });
+}
+
+// The surrender action has its own explicit consent. Reuse physical custody handlers on a
+// private state so a failed later line cannot leave an earlier debit or unequip behind.
+export function surrenderTransfers(state, content, lines, assets, {target, released=[], settle=false}={}) {
+    const s=structuredClone(state), events=[], receipts=[];
+    const emit=e=>{applyEvent(s,e); events.push(e);};
+    const ctx=newTurnContext(content);
+    ctx.env={msg:s.last?.input_msg ?? s.turn,commands:[],text:''};
+    for (const [i,line] of lines.entries()) {
+        const prior=released.find(x=>x.object===line.object);
+        const qty=line.qty-(settle ? Math.min(prior?.qty || 0,line.qty) : 0);
+        if (settle && prior?.pile) {
+            const pile=s.objects[prior.pile];
+            if (pile?.holder?.loc!==s.scene.at) throw Error('The released property is no longer here.');
+            emit({t:'object.moved',d:{id:pile.id,to:{entity:target}}});
+        }
+        if (!qty || !settle && line.mode==='offer') continue;
+        const ground=!settle && line.mode==='drop';
+        if (!ground && !present(s,target)) throw Error('No present recipient.');
+        const asset=assets.find(x=>x.object===line.object);
+        if (!asset || qty>asset.qty) throw Error('The selected property is no longer available.');
+        const receipt={object:line.object,name:asset.name,qty,at:s.scene.at,to:ground ? null : target};
+        if (line.object==='coin') {
+            const value=s.entities.pc.sheet.coin_cp-qty;
+            if (value<0) throw Error('Insufficient funds.');
+            emit({t:'coin.changed',d:{id:'pc',value,delta:-qty,why:'combat surrender'}});
+            if (ground) {
+                const id=freeObjectId(s,'obj.surrender_coin_t'+s.turn);
+                emit({t:'object.created',d:{object:{id,name:cpText(qty,content)+' in loose coin',kind:'item',qty:1,holder:{loc:s.scene.at},source:{how:'dropped',surrender_cp:qty}}}});
+                receipt.pile=id;
+            } else emit({t:'transaction.completed',d:{to:target,cp:qty,for:'combat surrender'}});
+        } else {
+            let ref=asset.ref || asset.object;
+            if (asset.slot) {
+                const worn=HANDLERS.unequip(s,content,{object:ref.startsWith('obj.')?'item.'+ref:ref},ctx,emit);
+                if (worn.status!=='resolved') throw Error(worn.line);
+            }
+            const start=events.length;
+            const result=HANDLERS[ground?'drop':'give'](s,content,{seq:i+1,object:ref,qty,to:target},ctx,emit,{c:true});
+            if (result.status!=='resolved') throw Error(result.line);
+            if (ground) {
+                const move=events.slice(start).find(e=>e.t==='object.created' || e.t==='object.moved');
+                receipt.pile=move?.d.object?.id || move?.d.split || move?.d.id;
+            }
+        }
+        receipts.push(receipt);
+    }
+    return {events,receipts};
 }

@@ -76,7 +76,7 @@ export function trialEvidence(state, content, enc) {
     const r = P(content).trial;
     if (rulesetOf(state) < 2 || !r || !enc?.pp?.trial) return [];
     const pc = enc.combatants?.pc;
-    if (!pc || pc.current.defeated || pc.current.escaped) return [];
+    if (!pc || enc.negotiatedEnd || pc.current.defeated || pc.current.escaped) return [];
     const key = `trial:${enc.id}`;
     if (evidenceOf(state)[key]) return [];
     const t = enc.pp.trial;

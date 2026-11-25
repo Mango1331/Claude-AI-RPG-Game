@@ -8,7 +8,7 @@
 // State is never stored: it is fold(events) over the chat. Every roll is drawn from the counter-based Dice, so
 // re-running a turn from the same state (swipe/regenerate) yields the same results — dice are never rerolled.
 import { Dice, newSeed } from './rng.js';
-import { applyEvent, fold } from './state.js';
+import { negotiationRevision, applyEvent, fold } from './state.js';
 import { anchorFor, templateFor, locationByName, weaponFamily, startPlace, itemEffectOf, rulesetOf, rulesetDef, npcTemplate, skillOf } from './content.js';
 import { checkProgress, restoration, defineSkill } from './skills.js';
 import { signatureSkill } from './skill_composer.js';
@@ -17,7 +17,9 @@ import { rankRefusal, itemProfile } from './v4/items.js';
 import { deriveCharacter, actionsOf } from './derived.js';
 import { selectClass, selectSkills } from './creation.js';
 import { scaleCreature, chooseCreatureLevel, humanSheet } from './npcgen.js';
-import { initEncounter, addCombatant, runCombat, endEncounterEvents, terminal } from './combat.js';
+import { checkTerms, describeTerms, negotiators, surrenderAssets } from './v4/surrender.js';
+import { surrenderTransfers } from './v4/commands.js';
+import { characterCombatant, initEncounter, addCombatant, runCombat, endEncounterEvents, terminal } from './combat.js';
 import { parseIntent } from './intent.js';
 import { runCommands, creationPanel } from './commands.js';
 import { stealthEvents, resolveCheck } from './checks.js';
@@ -156,7 +158,24 @@ function creationTurn(s, content, intent, emit) {
 }
 
 function storyTurn(s, content, text, intent, dice, emit, situations, c = false) {
+    const pending=s.encounter?.negotiation;
+    if (pending) {
+        // A counter gives exactly one immediate answer. No second Major, movement or NPC roll.
+        if (pending.stage==='counter' || intent.kind==='negotiation_answer' && intent.accept===false)
+            return finishNegotiation(s,content,dice,emit,pending.reply,intent.kind==='negotiation_answer' && intent.accept===true);
+        return {kind:'note',text:'NPC decision still open. Retry the reply or withdraw the offer to resume combat.'};
+    }
     const pcAction = pcActionOf(s, content, intent, text);
+    const offerStep=(intent.phase || [intent]).find(a=>a.kind==='surrender');
+    if (offerStep) {
+        const possible=negotiators(s);
+        const error=checkTerms(s,content,offerStep.terms);
+        if (!possible.length || s.encounter.current!=='pc' || error ||
+            (offerStep.target && !possible.some(c=>c.id===offerStep.target)) ||
+            (!offerStep.target && offerStep.terms.some(l=>l.mode==='give')))
+            return {kind:'note',text:error || 'No eligible recipient for this surrender.'};
+        emit({t:'combat.negotiation',d:{revision:negotiationRevision(s),decision:'offer',target:offerStep.target,terms:offerStep.terms}});
+    }
     if (pcAction && intent.phase) pcAction.phase = intent.phase;
     // Hotfix c.6.6.18: a thrown burst (an offensive item) strikes whom the engine fixes now, from where they stand;
     // Patch 7.1: only an item of his Power-Rank (or one whose own profile allows him) is activated at all
@@ -302,6 +321,7 @@ function worldUse(s, content, act, dice, emit) {
 function pcActionOf(s, content, intent, text) {
     const name = (id) => entityLabel(s, id);
     switch (intent.kind) {
+        case 'surrender': return {kind:'surrender',target:intent.target,terms:intent.terms};
         case 'engage': return { kind: 'engage', targets: intent.targets || [] };
         case 'attack':
             // a group the story holds as one creature ("cellar rats") is never fought as one: the story shows its animals
@@ -643,6 +663,15 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
         if (group.now.length) started = { ...(started || {}), reason: `${[started?.reason, `${group.now.map(named).join(', ')} ${group.now.length > 1 ? 'join' : 'joins'} the fight with ${group.now.length > 1 ? 'their' : 'its'} group`].filter(Boolean).join('; ')}`, order: enc.order.map(named).join(' > '), joined: [...(started?.joined || []), ...group.now] };
     }
     const res = runCombat({ enc, content, dice, state: s, c }, pcAction);
+    const offer=res.records.find(r=>r.kind==='surrender_offer');
+    if (offer) {
+        const assets=surrenderAssets(s,content);
+        const terms=offer.terms.map(l=>({...l,name:assets.find(a=>a.object===l.object)?.name}));
+        const transfer=surrenderTransfers(s,content,terms,assets,{target:offer.target});
+        transfer.events.forEach(emit);
+        if (transfer.events.some(e=>e.t==='item.equipped')) refreshCombatGear(s,content,enc);
+        enc.negotiation={id:enc.id+'.t'+s.turn,stage:'offered',at:s.scene.at,target:offer.target,terms,released:transfer.receipts};
+    }
     // Patch 8.1: those of the group who were unaware of him enter once the fight goes on past its opening (never one
     // that ended it); they take their place in the fixed Turn order from here, no Turn is replayed for them
     const late = res.illegal || res.stopped === 'terminal' ? [] : alerted.filter((id) => !enc.combatants[id] && s.entities[id]?.status !== 'dead');
@@ -688,6 +717,59 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
         outcome.next = done.next;
     }
     return outcome;
+}
+
+function refreshCombatGear(s,content,enc) {
+    const pc=enc.combatants.pc, fresh=characterCombatant(s,'pc',content,pc.side);
+    pc.fixed=fresh.fixed;
+    pc.current.ammo=fresh.current.ammo;
+}
+
+// The major and its optional minor are already complete. Resume at the stored initiative cursor.
+function finishNegotiation(s,content,dice,emit,reply,accept) {
+    const enc=clone(s.encounter), offer=enc.negotiation;
+    const accepted=accept && !!reply;
+    emit({t:'combat.negotiation',d:{revision:negotiationRevision(s),offer:offer.id,decision:accepted?'accepted':'refused',reply}});
+    if (accepted) {
+        const terms=reply.choice==='counter' ? reply.terms : offer.terms;
+        const transfer=surrenderTransfers(s,content,terms,surrenderAssets(s,content),{target:reply.speaker,released:offer.released,settle:true});
+        transfer.events.forEach(emit);
+        if (transfer.events.some(e=>e.t==='item.equipped')) refreshCombatGear(s,content,enc);
+        for (const {id} of reply.members) {
+            const fighter=enc.combatants[id];
+            fighter.side='neutral';
+            fighter.current.peace=true;
+            delete enc.intents[id];
+            emit({t:'scene.tactical',d:{id,relevant:true,threat:false}});
+        }
+        (enc.agreements ||= []).push({offer:offer.id,speaker:reply.speaker,members:reply.members.map(m=>m.id),terms,receipts:[...offer.released,...transfer.receipts],evidence:reply.evidence});
+        if (terminal(enc)) enc.negotiatedEnd=true;
+    }
+    delete enc.negotiation;
+    const result=runCombat({enc,state:s,content,dice,c:true},null);
+    const done=persistCombat(s,content,emit,enc,result.records,false,{c:true});
+    return {kind:'combat',c:true,records:result.records,board:done.board,ended:done.ended,next:done.next,
+        negotiation_result:accepted?'accepted':'refused',negotiation_id:offer.id,
+        note:accepted?'Settlement completed. '+describeTerms(reply.choice==='counter'?reply.terms:offer.terms):'Negotiation ended without agreement. The spent Major is resolved.'};
+}
+
+// Reply-side outcomes live on the reply's own event record, like all swipeable world effects.
+export function negotiationReaction(state,content,reply) {
+    const s=clone(state),dice=Dice.from(s),events=[];
+    const emit=e=>{if(dice.n!==s.rng.n)e.rng_to=dice.n;applyEvent(s,e);events.push(e);};
+    const enc=clone(s.encounter);
+    if (enc?.negotiation?.stage!=='offered' || reply.offer!==enc.negotiation.id) throw Error('Expired surrender offer');
+    let outcome;
+    if (reply.choice==='counter') {
+        emit({t:'combat.negotiation',d:{revision:negotiationRevision(s),offer:reply.offer,decision:'counter',reply}});
+        enc.negotiation={...enc.negotiation,stage:'counter',reply};
+        emit({t:'encounter.updated',d:{encounter:enc}});
+    } else {
+        outcome=finishNegotiation(s,content,dice,emit,reply,reply.choice==='accept');
+        syncEvents(s,content,emit);
+        emit({t:'outcome.recorded',d:{outcome,situations:['combat']}});
+    }
+    return {events,state:s,outcome};
 }
 
 /** Hotfix c.6.6.18: the item a resolved attack was made with is used up (one use of it; the rest stays his). */
@@ -805,7 +887,7 @@ function persistCombat(s, content, emit, enc, records, isNew, { c: cPath = false
         }
         emit({ t: 'memory.recorded', d: { memory: fightMemory(s, content, enc, end.summary) } });
         // Prototype C (4.3.0-c.6.6.4): what the foes killed in a fight he won leave is his at once (src/v4/loot.js)
-        if (cPath) {
+        if (cPath && !enc.negotiatedEnd) {
             const loot = lootEvents(s, content, enc);
             loot.events.forEach(emit);
             if (loot.lines.length) out.loot = loot.lines;
@@ -845,7 +927,7 @@ function combatBoard(enc) {
 
 function fightMemory(s, content, enc, summary) {
     const foes = Object.values(enc.combatants).filter((c) => c.id !== 'pc');
-    const fate = (c) => (s.entities[c.id].status === 'dead' ? 'killed' : c.current.escaped ? 'fled' : c.current.surrendered ? 'surrendered' : 'survived');
+    const fate = (c) => (s.entities[c.id].status === 'dead' ? 'killed' : c.current.peace ? 'accepted terms' : c.current.escaped ? 'fled' : c.current.surrendered ? 'surrendered' : 'survived');
     const skills = uniq(enc.log.filter((r) => r.actor === 'pc' && r.skill_name).map((r) => r.skill_name));
     const text = `Fight at ${s.scene.place || entityLabel(s, s.scene.location)}: {pc}${skills.length ? ` (${skills.join(', ')})` : ''} vs ${foes.map((c) => `${entityLabel(s, c.id)} — ${fate(c)}`).join('; ')}${summary.pc_dead ? '; {pc} died' : ''}.`;
     const witnesses = uniq([...perceivers(s).filter((id) => s.scene.awareness[id] !== 'unaware'), ...foes.filter((c) => s.entities[c.id].status !== 'dead').map((c) => c.id)]);

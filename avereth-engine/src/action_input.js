@@ -1,3 +1,4 @@
+import {negotiators,checkTerms} from './v4/surrender.js';
 // Host-owned typed choices. These are inputs to the existing Engine, never events or model authority.
 import { hash32, clone, BANDS } from './util.js';
 import { actionsOf, deriveCharacter } from './derived.js';
@@ -39,6 +40,8 @@ function previewEncounter(state,content,target) {
 }
 export function lowerActionSelection(selection,state,content) {
     const s=selection;
+    if(s.kind==='surrender')return {route:'v3',intent:{kind:s.kind,target:s.target,terms:s.terms}};
+    if(s.kind==='negotiation_answer')return {route:'v3',intent:{kind:s.kind,accept:s.accept}};
     if(s.kind==='sidestep' || s.kind==='flee')return {route:'v3',intent:{kind:s.kind}};
     if(s.kind==='quest.accept')return {route:'v4',commands:[{seq:1,type:'quest.accept',quest:s.quest}]};
     if(s.kind==='attack')return {route:'v3',intent:{kind:'attack',skill:s.skill,target:s.target,target_how:'hud',move:s.approach?'closer':null,move_target:s.approach?s.target:null}};
@@ -52,7 +55,7 @@ export function lowerActionSelection(selection,state,content) {
 function validatePhase(selection,state,content) {
     if (!selection.id || typeof selection.id !== 'string' || Object.keys(selection).some(k => !['id','kind','steps'].includes(k)) ||
         !Array.isArray(selection.steps) || selection.steps.length !== 2 ||
-        selection.steps.some(s => !s || !['attack','skill','move','use','sidestep','flee'].includes(s.kind) || s.approach))
+        selection.steps.some(s => !s || !['attack','skill','move','use','sidestep','flee','surrender'].includes(s.kind) || s.approach))
         return refusal('Unerlaubte Kombination');
     const target = selection.steps.find(a => a.kind === 'attack' || a.kind === 'use' && a.target)?.target;
     const enc = target ? previewEncounter(state,content,target) : state.encounter;
@@ -77,7 +80,7 @@ function validatePhase(selection,state,content) {
 
 export function validateActionSelection(selection,state,content,{ordered = false} = {}) {
     if (selection?.kind === 'phase') return validatePhase(selection,state,content);
-    const s=selection, fields={sidestep:[],flee:[],attack:['skill','target','approach','band'],skill:['skill','target','dir'],move:['dir','target'],use:['object','target'],'quest.accept':['quest']};
+    const s=selection, fields={surrender:['target','terms'],negotiation_answer:['accept'],sidestep:[],flee:[],attack:['skill','target','approach','band'],skill:['skill','target','dir'],move:['dir','target'],use:['object','target'],'quest.accept':['quest']};
     if (s?.kind === 'trade.accept' || s?.kind === 'trade.ask') {
         if (typeof s.id !== 'string' || !s.id) return refusal('Auswahl-ID fehlt');
         const {id, ...choice} = s;
@@ -90,6 +93,18 @@ export function validateActionSelection(selection,state,content,{ordered = false
     if(!s || !Object.hasOwn(fields,s.kind) || Object.keys(s).some(k=>!['id','kind',...fields[s.kind]].includes(k)))return refusal('Unbekannte Aktionsfelder');
     if(typeof s.id!=='string' || !s.id)return refusal('Auswahl-ID fehlt');
     if(state.mode==='creation' || state.entities.pc?.status==='dead')return refusal('Der Charakter kann jetzt keine HUD-Aktion ausführen');
+    if(s.kind==='negotiation_answer'){
+        const stage=state.encounter?.negotiation?.stage;
+        return typeof s.accept==='boolean' && (stage==='counter' || stage==='offered' && !s.accept)
+            ? {ok:true,mapped:lowerActionSelection(s,state,content),preview:{}} : refusal('Kein passendes offenes Angebot.');
+    }
+    if(s.kind==='surrender'){
+        const people=negotiators(state);
+        const why=checkTerms(state,content,s.terms);
+        if (state.encounter?.negotiation || state.encounter?.current!=='pc' || !people.length || (s.target!==null && !people.some(c=>c.id===s.target)) || why || (!s.target && s.terms.some(l=>l.mode==='give')))
+            return refusal(why || 'Kein gültiger Verhandlungspartner für diese Auswahl.');
+        return {ok:true,mapped:lowerActionSelection(s,state,content),preview:{}};
+    }
     if(s.approach!==undefined && typeof s.approach!=='boolean')return refusal('Ungültige Annäherung');
     if(s.kind==='quest.accept') {
         const q=state.quests[s.quest];
@@ -160,6 +175,13 @@ export function availableActions(state,content) {
     const ids=[...new Set([...tacticalHere(state),...Object.keys(state.encounter?.combatants || {})])];
     const targets=ids.filter(id=>id!=='pc' && attackTargetHere(state,id)).map(id=>({id,label:actionLabel(state,content,id),band:state.encounter?.combatants?.[id]?.current?.band || state.scene.positions?.[id]?.band,hostile:sideOf(state,id)==='hostile'}));
     const tactical=!!state.encounter || !!state.pending_combat?.length || targets.some(t=>t.hostile),actions=[];
+    const negotiation=state.encounter?.negotiation;
+    if (negotiation) {
+        if (negotiation.stage==='counter') actions.push({key:'negotiation:accept',kind:'negotiation_answer',accept:true,label:'Gegenforderung annehmen'});
+        actions.push({key:'negotiation:refuse',kind:'negotiation_answer',accept:false,label:'Verhandlung abbrechen'});
+        return {actions,targets:[],tactical};
+    }
+    if (state.encounter?.current==='pc' && negotiators(state).length) actions.push({key:'surrender',kind:'surrender',label:'Kapitulieren'});
     for(const id of Object.keys(actionsOf(state.entities.pc.sheet,content,rulesetOf(state),state))) {
         const skill=skillOf(content,id,state);
         if(skill.attack || state.encounter || tactical && combatSlot({kind:'skill',skill:id},content,state)==='minor')actions.push({key:`skill:${id}`,label:skill.name,kind:skill.attack?'attack':'skill',skill:id,needsTarget:!!skill.attack,area:skill.effects?.some(e=>e.kind==='area' && e.shape==='target_band')});
@@ -206,6 +228,8 @@ export function normalizeHudBinding(value) {
 export function hudCommands(selection) {
     const s=selection;
     if (s.kind === 'phase') return s.steps.flatMap(hudCommands).map((c,i)=>({...c,seq:i+1}));
+    if (s.kind==='surrender') return [{seq:1,type:s.kind,target:s.target,terms:s.terms}];
+    if (s.kind==='negotiation_answer') return [{seq:1,type:s.kind,accept:s.accept}];
     if (s.kind === 'sidestep' || s.kind === 'flee') return [{seq:1,type:s.kind}];
     if (s.kind === 'trade.ask' || s.kind === 'trade.accept') return tradeCommands(s);
     const main=s.kind==='quest.accept'?{type:'quest.accept',quest:s.quest}:s.kind==='use'?{type:'use',object:s.object,qty:1,...(s.target?{target:s.target}:{})}:s.kind==='move'?{type:'move',dir:s.dir,target:s.target}:{type:'use_skill',skill:s.skill,target:s.target || null};
@@ -251,4 +275,37 @@ export function reconcileHudPlan(input,commands,binding) {
         }
     }
     return {ok:true,bound:bound.map(c=>c.seq),commands:clone(commands)};
+}
+
+// A typed and a spoken step share the very same phase validator. Never execute the legal
+// half of an unhandled negotiation (especially an otherwise legal HUD retreat).
+export function plannedNegotiation(commands,input,hud,state,content,text) {
+    const isNegotiation=c=>['surrender','negotiation_answer'].includes(c.type);
+    if (!commands.some(isNegotiation)) return null;
+    const steps=[];
+    const selected=input?.selection.kind==='phase'?input.selection.steps:[input?.selection];
+    for (const c of commands) {
+        const id='plan-'+c.seq;
+        const bound=hud?.bound?.indexOf(c.seq) ?? -1;
+        if (bound>=0) { steps.push(selected[bound]); continue; }
+        if (c.needs!=null || typeof c.quote!=='string' || !text.includes(c.quote))
+            return refusal('Kampfhandlungen und Voraussetzungen ausdrücklich klären.');
+        const start=text.indexOf(c.quote);
+        if (/\b(?:do not|don’t|don't|never|won't|refuse to)\s*$/i.test(text.slice(0,start)) ||
+            /\b(?:do not|don’t|don't|never|won't|refuse to)\s+(?:give|surrender|yield|accept|step|move|agree)\b/i.test(c.quote))
+            return refusal('Die verneinte Handlung wurde nicht ausgeführt.');
+        if (c.type==='surrender') {
+            const error=checkTerms(state,content,c.terms,{text});
+            if (error) return refusal(error);
+            steps.push({id,kind:c.type,target:c.target ?? null,terms:c.terms});
+        } else if (c.type==='negotiation_answer') {
+            if (c.accept && /\b(?:except|but only|only if|unless|instead|except for)\b/i.test(text)) return refusal('Die Gegenforderung wurde nicht vollständig angenommen.');
+            steps.push({id,kind:c.type,accept:c.accept});
+        } else if (c.type==='move' || c.type==='sidestep') {
+            steps.push(c.type==='sidestep'?{id,kind:c.type}:{id,kind:c.type,dir:c.dir,target:c.target});
+        } else if (c.type==='use_skill' && combatSlot({kind:'skill',skill:c.skill},content,state)==='minor') {
+            steps.push({id,kind:'skill',skill:c.skill,dir:c.dir || 'away',target:c.target || null});
+        } else return refusal('Nur die Kapitulation mit einer kompatiblen Nebenaktion ist möglich.');
+    }
+    return validateActionSelection(steps.length===1?steps[0]:{id:'negotiation',kind:'phase',steps},state,content);
 }

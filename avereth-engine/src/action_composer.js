@@ -1,4 +1,5 @@
 import {availableActions,validateActionSelection,actionPrefix,actionInputOf,actionLabel,actionBands} from './action_input.js';
+import {surrenderAssets,negotiators} from './v4/surrender.js';
 import {skillOf} from './content.js';
 import {combatSlot} from './combat.js';
 import {installTradePanel} from './ui_trade.js';
@@ -22,6 +23,7 @@ export function installActionComposer({context,state,content,enabled,settings,bl
     const area=textarea();if(!area)return null;area.closest('#send_form')?.prepend(box);
     const controls=document.createElement('section');controls.className='avereth-action-controls';
     controls.innerHTML=`<div id="avereth-action-choices"></div><div id="avereth-action-targets"></div>
+      <div id="avereth-negotiation-status" role="status"></div><fieldset id="avereth-surrender-terms" hidden><legend>Angebot</legend></fieldset>
       <label id="avereth-mobility-label" hidden>Bewegungsrichtung <select id="avereth-mobility-dir"><option value="away">Zurück</option><option value="closer">Näher</option></select></label>
       <div id="avereth-phase-controls" hidden><select id="avereth-minor" aria-label="Nebenaktion"></select>
         <button type="button" id="avereth-order" aria-label="Reihenfolge umkehren" hidden>⇄ Tauschen</button></div>
@@ -41,7 +43,7 @@ export function installActionComposer({context,state,content,enabled,settings,bl
     }
     function compose(s) {
         const m=minorChoices().find(a=>a.key===minor.value);
-        if (!m || combatSlot(s,content(),state())!=='major') return s;
+        if (s.kind==='negotiation_answer' || !m || combatSlot(s,content(),state())!=='major') return s;
         const step={kind:m.kind,id:uid(),...(m.skill?{skill:m.skill}:{}),
             ...(m.kind==='move' || m.skill ? {dir:m.dir || 'away',target:m.dir==='closer'?s.target || choice.target:null} : {})};
         if (m.dir==='closer' && !step.target) return null;
@@ -105,12 +107,34 @@ export function installActionComposer({context,state,content,enabled,settings,bl
         const home=activePanel || box.querySelector('#avereth-action-home');if(controls.parentNode!==home)home.append(controls);
         const button=(a)=>`<button type="button" data-avereth-action="${escape(a.key)}" aria-pressed="${choice.action===a.key}">${escape(a.label)}</button>`;
         const items=options.filter(a=>a.kind==='use');
-        const actions=options.filter(a=>a.kind!=='use' && (s.encounter || a.kind==='attack') && (!activePanel || ['move','flee','sidestep'].includes(a.kind)));
+        const actions=options.filter(a=>a.kind!=='use' && (s.encounter || a.kind==='attack') && (!activePanel || ['move','flee','sidestep','surrender','negotiation_answer'].includes(a.kind)));
         controls.querySelector('#avereth-action-choices').innerHTML=`${projected.tactical?`<div class="avereth-action-buttons">${actions.map(button).join('')}</div>`:''}${items.length?`<details><summary>Gegenstände</summary><div class="avereth-action-buttons">${items.map(button).join('')}</div></details>`:''}${!projected.tactical && targets.length?`<details><summary>Weitere Aktionen / Ziele</summary><div class="avereth-action-buttons">${actions.map(button).join('')}</div></details>`:''}`;
         const a=options.find(a=>a.key===choice.action);
+        const offer=controls.querySelector('#avereth-surrender-terms');
+        offer.hidden=a?.kind!=='surrender';
+        if (!offer.hidden) {
+            const recipients=negotiators(s).map(n=>new Option(n.label || n.name,n.id));
+            const who=document.createElement('select');
+            who.setAttribute('aria-label','Verhandlungspartner');
+            who.replaceChildren(new Option('Anwesende ansprechen',''),...recipients);
+            who.value=choice.recipient || '';
+            who.onchange=()=>{choice.recipient=who.value;selectChoice();};
+            offer.replaceChildren(Object.assign(document.createElement('legend'),{textContent:'Angebot'}),who);
+            for (const asset of surrenderAssets(s,content())) {
+                const label=document.createElement('label');
+                label.append(asset.name+(asset.slot?' (ausgerüstet)':'')+' · verfügbar '+asset.qty+' ');
+                const qty=document.createElement('input');
+                Object.assign(qty,{type:'number',min:'0',step:'1',max:String(asset.qty),value:String(choice.quantities?.[asset.object] ?? 0)});
+                qty.dataset.averethAsset=asset.object;
+                qty.onchange=()=>{(choice.quantities ||= {})[asset.object]=qty.valueAsNumber;selectChoice();};
+                label.append(qty);offer.append(label);
+            }
+        }
+        const negotiation=s.encounter?.negotiation;
+        controls.querySelector('#avereth-negotiation-status').textContent=negotiation?.reply?.evidence || (negotiation?'Antwort auf das Angebot steht aus.':'');
         const mobility=a?.kind==='skill' && combatSlot(a,content(),s)==='minor';
         controls.querySelector('#avereth-mobility-label').hidden=!mobility;
-        const allowMinor=projected.tactical && a && (s.encounter || a.kind==='attack' || a.kind==='use' && a.needsTarget) && combatSlot(a,content(),s)==='major';
+        const allowMinor=projected.tactical && a && a.kind!=='negotiation_answer' && (s.encounter || a.kind==='attack' || a.kind==='use' && a.needsTarget) && combatSlot(a,content(),s)==='major';
         controls.querySelector('#avereth-phase-controls').hidden=!allowMinor;
         const prior=minor.value;
         minor.replaceChildren(new Option('Keine Nebenaktion',''));
@@ -146,6 +170,11 @@ export function installActionComposer({context,state,content,enabled,settings,bl
         const a=options.find(a=>a.key===choice.action);if(!a){refresh();return;}
         const {kind,skill,object,dir}=a;
         let selection={id:uid(),kind,...(skill?{skill}:{}),...(object?{object}:{}),...(dir?{dir}:{})};
+        if(kind==='surrender') {
+            selection.target=choice.recipient || null;
+            selection.terms=Object.entries(choice.quantities || {}).filter(([,qty])=>qty!==0).map(([object,qty])=>({object,qty,mode:'offer'}));
+        }
+        if(kind==='negotiation_answer')selection.accept=a.accept;
         if(kind==='attack')selection.approach=false;
         if(kind==='skill' && combatSlot(a,content(),state())==='minor') {
             selection.dir=direction.value;
@@ -169,6 +198,10 @@ export function installActionComposer({context,state,content,enabled,settings,bl
         if(!check.ok)return explain(check.reason);
         const affected=check.preview?.targets || [];
         let label=a.label+(main.band?` → ${main.band}`:main.target?` → ${actionLabel(state(),content(),main.target)}`:'')+(affected.length>1?` · trifft: ${affected.map(id=>actionLabel(state(),content(),id)).join(', ')}`:'');
+        if(a.kind==='surrender'){
+            const assets=surrenderAssets(state(),content());
+            label+=' · '+(main.terms.map(l=>l.qty+' × '+assets.find(a=>a.object===l.object).name).join(' + ') || 'ohne Gegenleistung');
+        }
         if(a.kind==='skill' && main.dir)label+=main.dir==='away'?' · zurück':' · näher';
         if(selection.kind==='phase') {
             const m=minorChoices().find(o=>o.key===minor.value);
@@ -239,7 +272,7 @@ export function installActionComposer({context,state,content,enabled,settings,bl
         event.preventDefault();
         if(skill || action){
             const next=skill?`skill:${skill.dataset.averethSelectSkill}`:action.dataset.averethAction;
-            if(next!==choice.action){minor.value='';choice.minorFirst=false;direction.value='away';}
+            if(next!==choice.action){delete choice.quantities;delete choice.recipient;minor.value='';choice.minorFirst=false;direction.value='away';}
             choice.action=next;choice.band=null;
         }
         if(aim || target){choice.target=aim?aim.dataset.averethSelectTarget:target.dataset.averethAim;}

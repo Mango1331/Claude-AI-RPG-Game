@@ -1,5 +1,7 @@
+import {negotiationExtraction,reactionError,describeTerms} from './surrender.js';
+import {extractJsonObject} from './json.js';
 import { activeMessage, bindGeneratedReply, previousRevision, reconcileRevisions, rememberRevision } from './revisions.js';
-import { actionInputOf, actionInputHash, actionPrefix, validateActionSelection, reconcileHudPlan } from '../action_input.js';
+import { plannedNegotiation, actionInputOf, actionInputHash, actionPrefix, validateActionSelection, reconcileHudPlan } from '../action_input.js';
 import { boardRepairGuidance, boardSlotRepair, parseBoardSlot, parseInitialBoard } from './guild.js';
 import { nativeAction } from './native_actions.js';
 import { movementEvidence } from './narration_evidence.js';
@@ -25,8 +27,8 @@ import {
     rec, setRec, foldChat, foldBlock, hasCampaign, lastUserIndex, lastPlayerIndex, lastReplyIndex, prepareGeneration, processReply,
     turnBlock, laterTurns, showPanel, syncSwipe, messageEvents, foldStats, inputRecordError,
 } from '../host.js';
-import { playerTurn } from '../engine.js';
-import { loreKeys } from '../context.js';
+import { negotiationReaction, playerTurn } from '../engine.js';
+import { recordLine, loreKeys } from '../context.js';
 import { extractReport } from '../delta.js';
 import { renderHud, boardView } from '../hud.js';
 import { worldPanel } from '../display.js';
@@ -379,6 +381,12 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     if (pl.failed) return { v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: { v: IR_VERSION, route: 'v4', reason: 'planner', links: ir.links, acts: [] }, plan, interp, events: [], command: null };
     const hud=actionInput ? reconcileHudPlan(actionInput,pl.commands,pl.hud_binding) : null;
     if(hud && !hud.ok)return actionRefused(inputHash,hud.reason,{plan,interp});
+    const negotiated=plannedNegotiation(pl.commands,actionInput,hud,before,content,msg.mes);
+    if (negotiated) {
+        if (!negotiated.ok) return actionRefused(inputHash,negotiated.reason,{plan,interp});
+        return executeMappedTurn(chat,content,{u,before,m:negotiated.mapped,inputHash,llm,previous,plan,interp,typed:true,
+            irRec:{v:IR_VERSION,route:'v3',reason:actionInput?'hud':'planner',links:[],acts:pl.commands}});
+    }
     const combatChoice = hud?.phase || (actionInput?.selection.kind === 'phase' ? actionInput.selection : null);
     if (combatChoice) {
         const supplementary = pl.commands.filter(c=>!hud.bound.includes(c.seq));
@@ -976,6 +984,9 @@ export function extractionRequest(chat, id, content) {
     const fold = foldChat(chat, id);
     if (foldBlock(fold)) return null; // .127: no model request from a broken record (runExtraction reports the block)
     const { state } = fold;
+    if (state.encounter?.negotiation?.stage==='offered') return {
+        negotiation:true,state,hash:r.text_hash,expectedKeys:{},messages:negotiationExtraction(state,content,msg.mes),
+    };
     const o = state.last?.outcome || {};
     const gos = (o.auth?.gos || []).map((g) => g.to).filter(Boolean);
     // Prototype C (4.3.0-c.5): the contracts he read on a board, by id, also for a contract or board taken on arrival
@@ -1064,7 +1075,8 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', co
             error = 'no JSON text in extractor response';
             recovery = 'empty';
         } else {
-            const p = parseExtraction(response.content, vocab, req.ids, req.expectedKeys,
+            const p = req.negotiation ? parseNegotiation(req.state,content,response.content,chat[id].mes)
+                : parseExtraction(response.content, vocab, req.ids, req.expectedKeys,
                 { sceneRequired: req.sceneRequired, startScene: req.startScene, state: req.state, content, explicitArrivals: req.sceneRequired, reply: chat[id].mes });
             if (p.valid && emptyAnswers && !movementReviewed && attempt < 2
                 && Object.entries(req.expectedKeys).some(([k,t]) => t === 'go' && p.value.expected?.[k]?.arrived === false)
@@ -1089,7 +1101,8 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', co
         if (broke) return { changed: false, foldBlocked: broke };
         repaired = true;
         if (candidate) {
-            messages = extractorRequest(vocab, { catalog: req.catalog, actions: req.actions, player: req.player,
+            messages = req.negotiation ? [...req.messages,{role:'assistant',content:candidate.text},{role:'user',content:candidate.errors.join(' ')}]
+                : extractorRequest(vocab, { catalog: req.catalog, actions: req.actions, player: req.player,
                 expectedKeys: req.expectedKeys, reply: chat[id].mes, startScene: req.startScene },
             { previous: candidate.text, errors: candidate.errors }).messages;
             purpose = 'extract_repair';
@@ -1110,6 +1123,12 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', co
 }
 
 /** Commit an extractor result (or its failure) to reply id; refused when the reply changed or a later turn began. */
+function parseNegotiation(state,content,text,prose) {
+    const parsed=extractJsonObject(text);
+    const error=parsed.error || reactionError(state,content,parsed.value,prose);
+    return {valid:!error,complete:!error,missing:[],issues:[],errors:error?[error]:[],value:parsed.value};
+}
+
 export function applyExtraction(chat, id, content, parsed, { hash, ms = null, repaired = false, recovery = null, error = null, hud = 'closed', calls = [], movementReviewed = false, errorKind = 'model' } = {}) {
     const msg = chat[id];
     const r = rec(msg);
@@ -1126,6 +1145,20 @@ export function applyExtraction(chat, id, content, parsed, { hash, ms = null, re
         const view = errorKind === 'engine' ? {} : display(msg, content, state, { failed: `the extractor gave no valid answer (${String(error || 'no answer').slice(0, 80)})`, state }, hud);
         setRec(msg, { ...r, events, ...(errorKind === 'model' ? {continuation:{kind:'world_not_applied', reason: 'model'}} : {}), extraction: { status: 'failed', error_kind:errorKind, version: EXTRACTOR_VERSION, ms, repaired, ...(recovery ? { recovery } : {}), error: String(error || '').slice(0, 200), ...(calls.length ? { llm: calls } : {}) }, corrections: [FAILED_CORRECTION, ...(stillAt(state) ? [stillAt(state)] : [])], ...view });
         return { changed: true, applied: false, failed: error || 'no valid answer' };
+    }
+    if (state.encounter?.negotiation?.stage==='offered') {
+        const reaction=parsed.value;
+        const invalid=reactionError(state,content,reaction,msg.mes);
+        if (invalid) return applyExtraction(chat,id,content,null,{hash,ms,repaired,error:invalid,calls,hud});
+        const res=negotiationReaction(state,content,reaction);
+        const labels=Object.fromEntries(Object.values(state.encounter.combatants).map(c=>[c.id,c.label || c.name]));
+        const system=[reaction.choice==='counter'?'COUNTEROFFER — '+reaction.evidence+' ('+describeTerms(reaction.terms)+')':res.outcome.note,
+            ...(res.outcome?.records || []).map(r=>recordLine(res.state,r,id=>labels[id] || id,content))];
+        if (res.outcome?.ended) system.push('COMBAT END — '+(res.outcome.ended.reason || (res.outcome.ended.pc_dead?'Alaric defeated':'resolved')));
+        const view=display(msg,content,state,{...res,system},hud);
+        setRec(msg,{...r,...view,events:[...res.events,{t:'extract.applied',d:{version:EXTRACTOR_VERSION,ms,repaired,deltas:0,rejected:0}}],
+            system,extraction:{status:'applied',version:EXTRACTOR_VERSION,ms,repaired,raw:reaction,llm:calls}});
+        return {changed:true,applied:true};
     }
     const res = replyTurnV4(state, content, parsed.value, { msg: id, prose: msg.mes, ms, repaired, chronicle: state.encounter || state.last?.outcome?.kind === 'combat' ? combatChronicle(chat.slice(0, id), messageEvents) : null });
     const corrections = [...res.corrections];

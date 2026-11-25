@@ -1,3 +1,4 @@
+import {negotiationPlanText, surrenderWords} from './surrender.js';
 import {combatSlot} from '../combat.js';
 import { reconcileHudPlan, normalizeHudBinding, hudCommands } from '../action_input.js';
 import { commandVocabFor } from './interpret.js';
@@ -349,12 +350,13 @@ export function planContext(state, content, catalog) {
     const habitat = lineage(state, state.scene.at).find(id => state.places[id].population);
     // Build .138: the unit count each open bid's rate applies to (stacks of the same goods together)
     const bidUnits = Object.fromEntries(Object.values(state.offers || {}).filter((o) => o.bid && o.status === 'open').map((o) => [o.id, rateUnits(o.lines, (id) => state.objects[id])]));
-    return { presentIds:state.scene.present, habitat, bidUnits, tradeChecks: rulesetOf(state) >= 2, privateQuests: privateQuestsOf(state), fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content), jobs };
+    return { negotiationText:fight ? negotiationPlanText(state,content) : '', presentIds:state.scene.present, habitat, bidUnits, tradeChecks: rulesetOf(state) >= 2, privateQuests: privateQuestsOf(state), fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content), jobs };
 }
 
 /** The user message: the interpreter's CATALOG, then skills, opponents, engine facts, RECENT and the message. */
 export function plannerUser(ctx, text, { recent = '' } = {}) {
     const L = [catalogText(ctx.catalog)];
+    if (ctx.negotiationText) L.push(ctx.negotiationText);
     if (ctx.habitat) L.push(`CURRENT HABITAT: ${ctx.habitat}. A GO following this population's signs to a local den or part uses within:${ctx.habitat}. Actual departure, another settlement, or an independent new place uses within:null. Never infer a local population merely from similar species.`);
     if (ctx.jobs?.length) L.push('PRIVATE JOBS (optional job on actual work actions only):', ...ctx.jobs.map(q => `- ${q.id}: ${q.title}; ${(q.objectives || []).map(o => o.what).join('; ')}`));
     L.push('KNOWN SKILLS (the only skill ids):');
@@ -494,8 +496,11 @@ export function parsePlan(answer, vocab, ctx, message) {
     const form = ctx.actionInput ? normalizeHudBinding(value) : {value,normalized:false};
     value=form.value;
     const hud = ctx.actionInput ? reconcileHudPlan(ctx.actionInput,value.commands,value.hud_binding) : null;
+    if (hud && !hud.ok && ctx.negotiationText && surrenderWords.test(message) && !value.commands.some(c=>c?.type==='surrender')) return {commands:null,errors:['Read the surrender as a Major and the selected HUD Minor as already chosen. Bind compatible actions together. If the player expressly contradicts the selection keep conflict.']};
     if (hud && !hud.ok) return {commands:value.commands,hud_binding:value.hud_binding,hud_conflict:hud.reason,errors:[]};
     const errors = [];
+    if (ctx.negotiationText && ctx.actionInput && surrenderWords.test(message) && value.commands.some(c=>c?.type==='other') && !value.commands.some(c=>c?.type==='surrender'))
+        errors.push('Do not take a HUD movement while discarding the requested surrender as other.');
     const jobs = new Map();
     const manners = new Map();
     const tradeErrors = [];
@@ -536,6 +541,13 @@ export function parsePlan(answer, vocab, ctx, message) {
             Object.assign(c, { seq, type: 'other', what: quote, quote, ...(needs !== undefined ? { needs } : {}) });
         }
         const type = String(c.type ?? '');
+        if (type==='surrender' || type==='negotiation_answer') {
+            const keys=type==='surrender'?['seq','type','target','terms','quote']:['seq','type','accept','quote'];
+            if (!ctx.fight || !ctx.negotiationText || Object.keys(c).some(k=>!keys.includes(k)) ||
+                !Number.isInteger(c.seq) || c.seq<1 || typeof c.quote!=='string' || !inMessage(message,c.quote) ||
+                (type==='surrender' ? !Array.isArray(c.terms) : typeof c.accept!=='boolean')) errors.push(at+': invalid negotiation choice or player quote.');
+            continue;
+        }
         if (c.manner !== undefined) {
             const m = c.manner;
             delete c.manner;

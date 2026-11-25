@@ -239,12 +239,13 @@ function engineSettings() {
     return { ...s, recentTurns, engineLore: !loreFromWorldInfo() };
 }
 
-function postPanel(text) {
+function postPanel(text, hud = null) {
     const c = ctx();
     const message = {
         name: 'Avereth System', is_user: false, is_system: true, send_date: new Date().toLocaleString(),
         mes: '```\n' + text + '\n```', extra: { type: 'comment', isSmallSys: false, avereth_panel: true },
     };
+    if (hud) showPanel(message,'',hud,{playerFacing:true});
     c.chat.push(message);
     c.addOneMessage(message);
     return message;
@@ -483,7 +484,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
             // the command line is UI, not story: hide it from future prompts (like /hide) and answer as a System panel
             c.chat[r.index].is_system = true;
             document.querySelector(`#chat .mes[mesid="${r.index}"]`)?.setAttribute('is_system', 'true');
-            postPanel(r.panels.join('\n\n'));
+            postPanel(r.panels.join('\n\n'),r.hud);
             await saveAtOrigin(c);
             return;
         }

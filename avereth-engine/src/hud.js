@@ -101,7 +101,7 @@ export function characterRows(state, content) {
     return [
         ['Level', `${s.level} ${cls} · Power Rank ${dv.rank} · Guild Rank ${guildRankOf(state) || '— (not registered)'}${e.status === 'dead' ? ' · DEAD' : ''}`],
         ['Resources', `HP ${s.hp}/${dv.maxHp} (${condition(s.hp, dv.maxHp)}) · MP ${s.mp}/${dv.maxMp} · STA ${s.sta}/${dv.maxSta} · XP ${s.xp}/${s.level * per}`],
-        ['Stats', `${statsText(s, content, ' · ')}${s.free_points ? ` · Free Stat Points ${s.free_points}` : ''}`],
+        ['Stats', `${statsText(s, content, ' · ')} · Free Stat Points ${s.free_points ?? 0}`],
         ['Combat', `ATK ${dv.atk} · MATK ${dv.matk} · DEF ${dv.def} · MDEF ${dv.mdef} · Initiative ${dv.init}`],
         ['Skills', list(skills)],
         // Patch 9C-2c: his Passive slots, and a development offered to him (not his yet)

@@ -30,6 +30,7 @@ const HELP = [
     ['#bag', 'inventory and coin (alias #inventory)'], ['#item <name>', 'Item definition'], ['#quests', 'known Quests'],
     ['#quest <name>', 'Quest details'], ['#effects', 'active effects'], ['#effect <name>', 'effect details'],
     ['#combat', 'encounter audit (read-only)'], ['#system <question>', 'mechanics question answered by the System'],
+    ['#equip <item>', 'equip an item from the bag'], ['#rest <minutes>', 'start resting now'],
     ['#assign <STAT> <n>', 'spend free Stat Points (state-changing)'], ['#pay <card id>', 'pay exactly that payment card (alone in the message)'], ['#npc <name>', 'what Alaric knows about someone'],
     ['#log [n]', "Alaric's recent memories"], ['#journal', 'goals, places known by report, open and settled threads'], ['#map', 'the rooms and ways of the dungeon you are in, as far as you know them'], ['#audit', 'rolls, rejected reports and corrections of the last turn'], ['#help', 'this list'],
 ];

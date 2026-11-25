@@ -1888,7 +1888,7 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
     const ordered = [...commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0));
     ctx.env = { msg: envx.msg ?? s.turn, commands: ordered, text: envx.text || '' };
     // PULSE package A: this turn's one event window (src/v4/pulse.js); null outside a ruleset-2 planner campaign
-    ctx.pulse = pulseBegin(s, content, ordered, envx);
+    ctx.pulse = envx.skipPulse ? null : pulseBegin(s, content, ordered, envx);
     // Related commands are alternate descriptions of one trade, not independent coin/goods transfers.
     // Links exist for this invocation only. Each handler still checks presence, custody, price and funds.
     const overdrawn = envx.c && !s.encounter && rulesetOf(s) >= 2 ? overdrawnDispositions(s, content, ordered) : new Set();

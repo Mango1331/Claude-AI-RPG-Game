@@ -58,7 +58,7 @@ function coinBooked(events) {
  *   interp: {version, ms, source, failed?, error?}; board: the Board generator's validated listings for this turn
  * @returns {{events, outcome, state, command: null|{panels: string[], llm: null}}}
  */
-export function playerTurnV4(state, content, text, { msg = null, commands = [], dropped = [], interp = {}, board = null, c = false } = {}) {
+export function playerTurnV4(state, content, text, { msg = null, commands = [], dropped = [], interp = {}, board = null, c = false, skipPulse = false } = {}) {
     if (!state.meta.started) throw new Error('campaign not started');
     const s = clone(state);
     const dice = Dice.from(s);
@@ -80,7 +80,7 @@ export function playerTurnV4(state, content, text, { msg = null, commands = [], 
     const freeLook = c && !interp.failed && !commands.length && !dropped.length && /^\s*\*?(?:I (?:look|inspect|survey|examine|search)|what (?:is|lies))\b/i.test(input)
         && !/["“”]|\b(?:and|then)\b/i.test(input) && campInspection(s, input);
     const steps = freeLook ? [{seq:1, type:'activity', kind:'search', quote:input, what:input}] : commands;
-    const ctx = resolveCommands(s, content, steps, emit, { msg, dice, board, c, dropped, text });
+    const ctx = resolveCommands(s, content, steps, emit, { msg, dice, board, c, dropped, text, skipPulse });
     if (c) syncEvents(s, content, emit);
     const clarify = ctx.resolutions.find((r) => r.status === 'clarify');
     // Patch 3 (live 18.10.2026: "I settle on the ring of stones for my camp this night and go looking for animals to

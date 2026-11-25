@@ -56,7 +56,8 @@ function validatePhase(selection,state,content) {
         return refusal('Unerlaubte Kombination');
     const target = selection.steps.find(a => a.kind === 'attack' || a.kind === 'use' && a.target)?.target;
     const enc = target ? previewEncounter(state,content,target) : state.encounter;
-    if (!enc || !state.encounter && (!target || enc.ambush)) return refusal('Eine Kombination braucht einen regulären Kampfzug oder offenen Erstschlag');
+    if (!state.encounter && enc?.ambush) return refusal('Hinterhalt: Der erste Zug erlaubt eine einzelne Eröffnungsaktion. Wähle nur den Angriff.');
+    if (!enc || !state.encounter && !target) return refusal('Eine Kombination braucht einen regulären Kampfzug oder offenen Erstschlag');
     const projected = {...state, encounter:enc};
     const phase = [];
     for (const step of selection.steps) {

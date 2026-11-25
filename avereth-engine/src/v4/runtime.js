@@ -1,6 +1,7 @@
 import { activeMessage, bindGeneratedReply, previousRevision, reconcileRevisions, rememberRevision } from './revisions.js';
 import { actionInputOf, actionInputHash, actionPrefix, validateActionSelection, reconcileHudPlan } from '../action_input.js';
 import { boardRepairGuidance, boardSlotRepair, parseBoardSlot, parseInitialBoard } from './guild.js';
+import { nativeAction } from './native_actions.js';
 import { movementEvidence } from './narration_evidence.js';
 import { placeKey } from './place_refs.js';
 import { worldVocab } from './extract.js';
@@ -781,12 +782,17 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
             }
             if(reason){r=actionRefused(inputHash,reason);commit();return {action:'not_executed',dirty:true,index:u,notice:reason};}
         }
-        if(actionInput?.mode==='hud_roleplay') {
+        const isC = campaignPath(chat, settings.legacyPlanner ?? settings.planner) === 'c';
+        const native = !actionInput && ir.intent?.kind === 'command' && before.mode === 'story' && isC && rulesetOf(before) >= 2
+            ? nativeAction(before,content,msg.mes,u) : null;
+        if (native) {
+            r = {v:RECORD_V4,input_hash:inputHash,route:'v4',ir:irRecord(ir),events:native.events,command:native.command};
+        } else if(actionInput?.mode==='hud_roleplay') {
             const m=validateActionSelection(actionInput.selection,before,content).mapped;
             r=await executeMappedTurn(chat,content,{u,before,m,inputHash,llm,previous:null,typed:true,
                 irRec:{v:IR_VERSION,route:m.route,reason:'hud',links:[],acts:[{...actionInput.selection,source:'hud'}]}});
         } else
-        if (campaignPath(chat, settings.legacyPlanner ?? settings.planner) === 'c' && !control) {
+        if (isC && !control) {
             if (typeof llm !== 'function') throw new Error('Runtime V4 needs an LLM call for the planner');
             r = await plannedTurn(chat, content, { u, before, ir, inputHash, llm, previous: retryBoard ? r : null, isCurrent: current });
             if (!current()) return stale();
@@ -859,7 +865,9 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         if (r.command.posted) return { action: 'abort', dirty };
         r.command.posted = true;
         setRec(msg, r);
-        return { action: 'panels', panels: r.command.panels, index: u, dirty: true };
+        const updateHud = r.events.some(e => ['stat.assigned','item.equipped','resource.changed','time.advanced'].includes(e.t));
+        return { action: 'panels', panels: r.command.panels, index: u, dirty: true,
+            ...(updateHud ? {hud:renderHud(foldChat(chat).state,content,settings.hud)} : {}) };
     }
     const { state, errors, failures, context } = turnBlock(chat, u, content, settings);
     // .127: a reused record (swipe, regenerate, continue) is narrated only from a whole state as well

@@ -1,5 +1,5 @@
 import {availableActions,validateActionSelection,actionPrefix,actionInputOf,actionLabel,actionBands} from './action_input.js';
-import {surrenderAssets,negotiators} from './v4/surrender.js';
+import {surrenderAssets,negotiators,describeTerms} from './v4/surrender.js';
 import {skillOf} from './content.js';
 import {combatSlot} from './combat.js';
 import {installTradePanel} from './ui_trade.js';
@@ -131,7 +131,15 @@ export function installActionComposer({context,state,content,enabled,settings,bl
             }
         }
         const negotiation=s.encounter?.negotiation;
-        controls.querySelector('#avereth-negotiation-status').textContent=negotiation?.reply?.evidence || (negotiation?'Antwort auf das Angebot steht aus.':'');
+        let statusText=negotiation?'Antwort auf das Angebot steht aus.':'';
+        if (negotiation?.reply) {
+            const reply=negotiation.reply, assets=surrenderAssets(s,content());
+            const terms=reply.terms.map(l=>({...l,name:[...assets,...negotiation.released].find(a=>a.object===l.object)?.name}));
+            statusText=actionLabel(s,content(),reply.speaker)+' · '+reply.evidence+
+                ' · Forderung '+(terms.length?describeTerms(terms):'ohne Gegenleistung');
+            if (negotiation.released.length) statusText+=' · Bereits herausgegeben '+describeTerms(negotiation.released);
+        }
+        controls.querySelector('#avereth-negotiation-status').textContent=statusText;
         const mobility=a?.kind==='skill' && combatSlot(a,content(),s)==='minor';
         controls.querySelector('#avereth-mobility-label').hidden=!mobility;
         const allowMinor=projected.tactical && a && a.kind!=='negotiation_answer' && (s.encounter || a.kind==='attack' || a.kind==='use' && a.needsTarget) && combatSlot(a,content(),s)==='major';

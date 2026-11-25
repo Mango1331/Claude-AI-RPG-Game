@@ -499,8 +499,9 @@ export function parsePlan(answer, vocab, ctx, message) {
     if (hud && !hud.ok && ctx.negotiationText && surrenderWords.test(message) && !value.commands.some(c=>c?.type==='surrender')) return {commands:null,errors:['Read the surrender as a Major and the selected HUD Minor as already chosen. Bind compatible actions together. If the player expressly contradicts the selection keep conflict.']};
     if (hud && !hud.ok) return {commands:value.commands,hud_binding:value.hud_binding,hud_conflict:hud.reason,errors:[]};
     const errors = [];
-    if (ctx.negotiationText && (ctx.actionInput || /\bI (?:surrender|yield|give up|beg for mercy)\b/i.test(message)) && surrenderWords.test(message) && value.commands.some(c=>c?.type==='other') && !value.commands.some(c=>c?.type==='surrender'))
-        errors.push('Do not take a HUD movement while discarding the requested surrender as other.');
+    if (ctx.negotiationText && (ctx.actionInput && surrenderWords.test(message) || /\bI (?:surrender|yield|give up|beg for mercy)\b/i.test(message))
+        && !value.commands.some(c=>['surrender','negotiation_answer'].includes(c?.type)) && !/\b(?:do not|don't|won't|never)\s+(?:surrender|yield|give up)\b/i.test(message))
+        errors.push('The declared surrender was omitted. Encode its Major and any compatible chosen Minor together, or report a genuine conflict.');
     const jobs = new Map();
     const manners = new Map();
     const tradeErrors = [];

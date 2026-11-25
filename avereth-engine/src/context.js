@@ -375,7 +375,7 @@ export function playerActionsBlock(outcome, { carded = null } = {}) {
 function stateNow(state, content, outcome) {
     const b = outcome.board;
     const name = (id) => fightLabel(state, id, b.labels);
-    const fate = (h) => (h.state === 'defeated' ? 'DEAD' : h.state === 'fled' ? 'FLED' : h.state === 'surrendered' ? 'SURRENDERED' : `alive ${h.hp}/${h.max} HP`);
+    const fate = (h) => (h.state === 'defeated' ? 'DEAD' : h.state === 'fled' ? 'FLED' : h.state === 'surrendered' ? 'SURRENDERED' : h.state==='agreed' ? 'alive, agreed to terms' : `alive ${h.hp}/${h.max} HP`);
     const fought = new Set(b.hp.map((h) => h.id));
     const groups = new Set(b.hp.map((h) => state.entities[h.id]?.group).filter(Boolean));
     const before = (state.scene.present || []).filter((id) => !fought.has(id) && groups.has(state.entities[id]?.group) && state.entities[id].status === 'dead');
@@ -442,7 +442,14 @@ function outcomeLines(state, content, outcome, { v4 = false, carded = null, hudS
             return lines.join('\n');
         }
         if (outcome.started) lines.push(`${outcome.started.joined ? outcome.started.reason : `Combat starts${outcome.c ? ' — ENTRY, BEFORE the attack' : ''} (${outcome.started.reason})`}. Turn order: ${outcome.started.order}.`);
-        for (const r of outcome.records) lines.push(`- ${recordLine(state, r, (id) => fightLabel(state, id, outcome.board?.labels), outcome.c ? content : null)}`);
+        for (const r of outcome.records) {
+            const label=id=>{
+                const name=fightLabel(state,id,outcome.board?.labels);
+                const npc=state.entities[id], weapon=npc?.sheet?.equipment?.weapon;
+                return r.kind==='attack' && r.actor===id && npc?.kind==='npc' && weapon?.name ? name+' ('+weapon.name+')' : name;
+            };
+            lines.push('- '+recordLine(state,r,label,outcome.c ? content : null));
+        }
         // Prototype C (4.3.0-c.6.6.7): where everyone stands once these steps are done; a place they left is behind them
         const stand = outcome.c && outcome.records.length && outcome.board ? outcome.board.hp.filter((h) => h.id !== 'pc' && h.band && !h.state) : [];
         if (stand.length) lines.push(`- Where everyone stands after these steps (end the narration with them there; a place they left, a den or cover, is behind them): ${stand.map((h) => `${fightLabel(state, h.id, outcome.board.labels)} ${h.band}${h.cover && h.cover !== 'none' ? ` (${h.cover} cover)` : ''}`).join(', ')}.`);

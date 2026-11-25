@@ -914,7 +914,7 @@ function combatBoard(enc) {
         hp: enc.order.map((id) => {
             const c = enc.combatants[id];
             return {
-                id, hp: c.current.hp, max: c.fixed.max_hp, state: c.current.hp === 0 ? 'defeated' : c.current.escaped ? 'fled' : c.current.surrendered ? 'surrendered' : null,
+                id, hp: c.current.hp, max: c.fixed.max_hp, state: c.current.hp === 0 ? 'defeated' : c.current.escaped ? 'fled' : c.current.surrendered ? 'surrendered' : c.current.peace ? 'agreed' : null,
                 ...(id === 'pc' ? {} : { band: c.current.band, cover: c.current.cover }),
             };
         }),

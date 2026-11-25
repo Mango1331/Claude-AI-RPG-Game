@@ -1,3 +1,4 @@
+import {SurrenderTransferError} from './commands.js';
 import {negotiationExtraction,reactionError,describeTerms} from './surrender.js';
 import {extractJsonObject} from './json.js';
 import { activeMessage, bindGeneratedReply, previousRevision, reconcileRevisions, rememberRevision } from './revisions.js';
@@ -463,7 +464,13 @@ async function executeMappedTurn(chat,content,{u,before,m,guarded={dropped:[]},i
         const crowd = typed ? null : crowdIntent(before, content, m.intent, msg.mes);
         const at = crowd ? clone(before) : before;
         if (crowd) for (const e of crowd.events) applyEvent(at, e);
-        const t = playerTurn(at, content, msg.mes, { msg: u, intent: crowd ? crowd.intent : m.intent, c: true });
+        let t;
+        try {
+            t=playerTurn(at,content,msg.mes,{msg:u,intent:crowd ? crowd.intent : m.intent,c:true});
+        } catch (error) {
+            if (!(error instanceof SurrenderTransferError)) throw error;
+            return actionRefused(inputHash,error.message,{plan,interp});
+        }
         if (m.intent.phase && t.outcome?.illegal && !t.outcome.records?.length)
             return actionRefused(inputHash,t.outcome.illegal,{plan,interp});
         const ownPhaseRefused = !!m.intent.phase && t.outcome?.kind==='combat' && !t.outcome.records?.some(r=>r.actor==='pc');
@@ -1162,7 +1169,13 @@ export function applyExtraction(chat, id, content, parsed, { hash, ms = null, re
         const reaction=parsed.value;
         const invalid=reactionError(state,content,reaction,msg.mes);
         if (invalid) return applyExtraction(chat,id,content,null,{hash,ms,repaired,error:invalid,calls,hud});
-        const res=negotiationReaction(state,content,reaction);
+        let res;
+        try {
+            res=negotiationReaction(state,content,reaction);
+        } catch (error) {
+            if (!(error instanceof SurrenderTransferError)) throw error;
+            return applyExtraction(chat,id,content,null,{hash,ms,repaired,error:error.message,calls,hud});
+        }
         const labels=Object.fromEntries(Object.values(state.encounter.combatants).map(c=>[c.id,c.label || c.name]));
         const system=[reaction.choice==='counter'?'COUNTEROFFER — '+reaction.evidence+' ('+describeTerms(reaction.terms)+')':res.outcome.note,
             ...(res.outcome?.records || []).map(r=>recordLine(res.state,r,id=>labels[id] || id,content))];

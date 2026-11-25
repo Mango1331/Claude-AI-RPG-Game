@@ -1,4 +1,4 @@
-import {negotiators,checkTerms,counterConsentError} from './v4/surrender.js';
+import {negotiators,checkTerms,counterConsentError,identifiesRecipient} from './v4/surrender.js';
 // Host-owned typed choices. These are inputs to the existing Engine, never events or model authority.
 import { hash32, clone, BANDS } from './util.js';
 import { actionsOf, deriveCharacter } from './derived.js';
@@ -292,7 +292,13 @@ export function plannedNegotiation(commands,input,hud,state,content,text) {
     for (const c of [...commands].sort((a,b)=>a.seq-b.seq)) {
         const id='plan-'+c.seq;
         const bound=hud?.bound?.indexOf(c.seq) ?? -1;
-        if (bound>=0) { steps.push(selected[bound]); continue; }
+        if (bound>=0) {
+            const step=selected[bound];
+            const error=step.kind==='negotiation_answer' && step.accept && counterConsentError(state,content,text);
+            if (error) return refusal(error);
+            steps.push(step);
+            continue;
+        }
         if (c.needs!=null || typeof c.quote!=='string' || !text.includes(c.quote))
             return refusal('Kampfhandlungen und Voraussetzungen ausdrücklich klären.');
         const start=text.indexOf(c.quote);
@@ -302,6 +308,8 @@ export function plannedNegotiation(commands,input,hud,state,content,text) {
         if (c.type==='surrender') {
             const error=checkTerms(state,content,c.terms,{text});
             if (error) return refusal(error);
+            if (c.terms.some(t=>t.mode==='give') && !identifiesRecipient(state,c.target,text))
+                return refusal('Die direkte Übergabe braucht einen eindeutig bezeichneten Empfänger.');
             steps.push({id,kind:c.type,target:c.target ?? null,terms:c.terms});
         } else if (c.type==='negotiation_answer') {
             const error=c.accept && counterConsentError(state,content,text);

@@ -6,6 +6,21 @@ export const negotiators = state => state.meta?.runtime!=='v4' ? [] : Object.val
     c.side === 'hostile' && c.fixed.sapient && state.entities[c.id]?.kind === 'npc' &&
     state.scene.present.includes(c.id) && c.current.hp > 0 && !c.current.escaped && !c.current.surrendered);
 
+// A direct handover needs an identifiable receiver before their narrative response.
+export function identifiesRecipient(state,id,text) {
+    const people=negotiators(state), person=people.find(c=>c.id===id);
+    if (!person) return false;
+    if (people.length===1) return true;
+    const tokens=c=>{
+        const e=state.entities[c.id];
+        return [c.label,e.known_name,e.name,...String(e.sheet?.equipment?.weapon?.name || '').split(' '),
+            ...String(e.traits || '').split(',')[0].split(' ')].filter(w=>typeof w==='string' && w.length>2)
+            .map(w=>w.toLowerCase()).filter(w=>!['the','and','with','man','woman','long','wood','iron','steel'].includes(w));
+    };
+    const others=new Set(people.filter(c=>c!==person).flatMap(tokens));
+    return tokens(person).some(w=>!others.has(w) && text.toLowerCase().includes(w));
+}
+
 export function surrenderAssets(state, content) {
     const sheet = state.entities.pc.sheet;
     const assets = [{object:'coin', name:'Coin (cp)', qty:sheet.coin_cp}];
@@ -84,7 +99,7 @@ export function counterConsentError(state,content,text) {
     const handing=/\b(?:give|hand|pass|gebe|übergebe)\b([\s\S]*)/i.exec(text);
     const offer=state.encounter?.negotiation;
     if (!handing || !offer?.reply) return null;
-    const specified=handing[1].toLowerCase(), assets=surrenderAssets(state,content);
+    const specified=handing[1].toLowerCase().split(/\b(?:out of|from|inside)\b/)[0], assets=surrenderAssets(state,content);
     if (/^\s*(?:it|them|that|what they ask(?:ed)? for|everything (?:they asked for|agreed))[ .!*]*$/.test(specified)) return null;
     for (const line of offer.reply.terms) {
         if (offer.released.some(r=>r.object===line.object && r.qty>=line.qty)) continue;
@@ -92,6 +107,11 @@ export function counterConsentError(state,content,text) {
         const names=String(asset?.name || '').toLowerCase().match(/[\p{L}]+/gu) || [];
         const named=line.object==='coin' ? /\b(?:coin|coins|silver|copper|gold|geld|silber|kupfer)\b/.test(specified)
             : names.some(n=>n.length>2 && !['small','simple','starter','fine','light','basic','the','and'].includes(n) && specified.includes(n));
+        if (named && line.object!=='coin') {
+            const itemClause=specified.split(/,|\b(?:and|und)\b/).find(part=>names.some(n=>n.length>2 && part.includes(n)));
+            const quantities=numbersIn(itemClause || '');
+            if (quantities.size && !quantities.has(line.qty)) return 'Die Stückzahl weicht von der Gegenforderung ab.';
+        }
         if (!named) return 'Die genannte Herausgabe deckt die Gegenforderung nicht. Es wurde nichts übergeben.';
         if (line.object==='coin') {
             const amount=coinEvidence(specified,content);

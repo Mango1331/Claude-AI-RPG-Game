@@ -1345,7 +1345,16 @@ export function runCombat(ctx, pcAction) {
     const { enc } = ctx;
     const records = [];
     // Patch 9B-1: every record also tells what it shows of his use of a Skill (src/skills.js noteUse; ruleset 2)
-    const push = (r) => { enc.log.push(r); records.push(r); if (!r.phase_slot) noteUse(ctx, r); };
+    const push = r => {
+        // Fresh aggression after a settlement uses the existing neutral combatant reaction.
+        for (const strike of r.actor==='pc' ? r.strikes || [] : []) {
+            const target=enc.combatants[strike.target];
+            if (target?.current.peace) delete target.current.peace;
+        }
+        enc.log.push(r);
+        records.push(r);
+        if (!r.phase_slot) noteUse(ctx,r);
+    };
     // snapshots saved before carried ammunition was tracked per combatant: take it from the sheet once
     for (const c of Object.values(enc.combatants)) if (c.model === 'character' && !c.current.ammo) c.current.ammo = ammoOf(ctx.state?.entities[c.id]?.sheet || {}, ctx.content);
     let pcActed = false;

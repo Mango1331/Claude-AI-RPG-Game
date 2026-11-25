@@ -2086,6 +2086,8 @@ function remainsSearch(s, c) {
 
 // The surrender action has its own explicit consent. Reuse physical custody handlers on a
 // private state so a failed later line cannot leave an earlier debit or unequip behind.
+export class SurrenderTransferError extends Error {}
+
 export function surrenderTransfers(state, content, lines, assets, {target, released=[], settle=false}={}) {
     const s=structuredClone(state), events=[], receipts=[];
     const emit=e=>{applyEvent(s,e); events.push(e);};
@@ -2096,22 +2098,22 @@ export function surrenderTransfers(state, content, lines, assets, {target, relea
         const qty=line.qty-(settle ? Math.min(prior?.qty || 0,line.qty) : 0);
         if (settle && prior?.pile) {
             const pile=s.objects[prior.pile];
-            if (pile?.holder?.loc!==s.scene.at) throw Error('The released property is no longer here.');
+            if (pile?.holder?.loc!==s.scene.at) throw new SurrenderTransferError('The released property is no longer here.');
             const credited=Math.min(line.qty,prior.qty);
             if (pile.holder.loc!==prior.at || prior.qty!==(pile.qty || 1)*(line.object==='coin' ? pile.source?.surrender_cp || 1 : 1))
-                throw Error('The released quantity changed.');
+                throw new SurrenderTransferError('The released quantity changed.');
             const split=credited<prior.qty ? {qty:credited,split:freeObjectId(s,pile.id+'_agreed')} : {};
             emit({t:'object.moved',d:{id:pile.id,to:{entity:target},...split}});
         }
         if (!qty || !settle && line.mode==='offer') continue;
         const ground=!settle && line.mode==='drop';
-        if (!ground && !present(s,target)) throw Error('No present recipient.');
+        if (!ground && !present(s,target)) throw new SurrenderTransferError('No present recipient.');
         const asset=assets.find(x=>x.object===line.object);
-        if (!asset || qty>asset.qty) throw Error('The selected property is no longer available.');
+        if (!asset || qty>asset.qty) throw new SurrenderTransferError('The selected property is no longer available.');
         const receipt={object:line.object,name:asset.name,qty,at:s.scene.at,to:ground ? null : target};
         if (line.object==='coin') {
             const value=s.entities.pc.sheet.coin_cp-qty;
-            if (value<0) throw Error('Insufficient funds.');
+            if (value<0) throw new SurrenderTransferError('Insufficient funds.');
             emit({t:'coin.changed',d:{id:'pc',value,delta:-qty,why:'combat surrender'}});
             const id=freeObjectId(s,'obj.surrender_coin_t'+s.turn);
             emit({t:'object.created',d:{object:{id,name:'Loose coin',kind:'item',qty,unit:'cp',stack:true,
@@ -2125,11 +2127,11 @@ export function surrenderTransfers(state, content, lines, assets, {target, relea
             let ref=asset.ref || asset.object;
             if (asset.slot) {
                 const worn=HANDLERS.unequip(s,content,{object:ref.startsWith('obj.')?'item.'+ref:ref},ctx,emit);
-                if (worn.status!=='resolved') throw Error(worn.line);
+                if (worn.status!=='resolved') throw new SurrenderTransferError(worn.line);
             }
             const start=events.length;
             const result=HANDLERS[ground?'drop':'give'](s,content,{seq:i+1,object:ref,qty,to:target},ctx,emit,{c:true});
-            if (result.status!=='resolved') throw Error(result.line);
+            if (result.status!=='resolved') throw new SurrenderTransferError(result.line);
             if (ground) {
                 const move=events.slice(start).find(e=>e.t==='object.created' || e.t==='object.moved');
                 receipt.pile=move?.d.object?.id || move?.d.split || move?.d.id;

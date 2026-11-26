@@ -128,3 +128,21 @@ for(const [amount,money] of [[20,'two silver'],[25,'twenty-five copper']]){
 }
 assert.equal(state.party.claims[debt.id].paid,45);
 console.log('Waiting in the cleared room, absent at turn-in, real reunion and explicit 20+25 cp settlement passed.');
+
+// Repeat the contract after the same three real floor objectives have vested the fee.
+state=structuredClone(beforeReturn);
+const again='Let us split the pay equally and fight together.';
+const prior=Object.values(state.party.claims).find(row=>row.source===quest && row.who===who);
+assert.equal(prior?.amount,45);
+turn('What was our agreement again?',[]);
+reply('Ossen says, "'+again+'"',{scene:'here',expected:{},deltas:[{seq:1,type:'party',act:'offer',who,quest,combat:true,share:'half',quote:again}]});
+const current=Object.values(state.party.agreements).find(a=>a.phase==='open');
+assert(current);
+turn('Sure, half each.',[{seq:1,type:'party',act:'accept',who,agreement:current.id,quote:'Sure, half each.'}]);
+assert.equal(state.party.members[who].agreement,current.id);
+for (const dest of [root,baseAt]) travel(dest,dest,state.places[dest].name);
+const purse=state.entities[who].sheet.coin_cp;
+turn('We turn in the completed contract.',[{seq:1,type:'quest.turn_in',quest,quote:'We turn in the completed contract.'}]);
+assert.equal(state.entities[who].sheet.coin_cp-purse,45,'R2 one fee for the same completed work');
+assert.equal(state.party.claims[prior.id].paid,45);
+console.log('Renewal after real floor clear, one original 45 cp claim settled.');

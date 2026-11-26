@@ -449,6 +449,8 @@ function onDefeat(ctx, target, record) {
             if (afterSurrender) target.current.xp_counted = true;
             if (enc.participation) target.current.resolution = {
                 encounter:enc.id, actor:record.actor,
+                ...(enc.observe && !enc.observe.closed && enc.combatants.pc.current.escaped &&
+                    enc.participation[record.actor] && enc.combatants[record.actor].current.cover!=='full' ? {observedAfterFlight:true} : {}),
                 members:Object.keys(enc.participation).filter(id => enc.participation[id].to == null &&
                     !enc.combatants[id].current.escaped && !enc.combatants[id].current.defeated),
             };
@@ -1101,7 +1103,18 @@ function npcTurn(ctx, npcId) {
     const me = ctx.enc.combatants[npcId];
     if (ctx.enc.line && (me.side==='hostile' || ctx.enc.participation[npcId])) {
         const target=lineTarget(ctx.enc,npcId);
-        if(me.current.withdrawing) return actorFlight(ctx,npcId);
+        if (npcId!=='pc' && ctx.enc.participation[npcId] && (ctx.enc.observe || me.current.withdrawing)) {
+            // The call is shared. This actor's existing commitment and the person they
+            // guard still matter when their own initiative slot actually arrives.
+            const intent=ctx.enc.intents[npcId], priority=me.current.priority;
+            const charge=priority?.kind==='protect' && ctx.enc.combatants[priority.target];
+            const covering=charge && alive(charge) && target && distance(ctx.enc,charge.id,target)==='ENGAGED';
+            const pursue=priority?.kind==='target' && target && priority.target===target;
+            if (intent==='flee' || (!intent && priority?.kind!=='independent' && !covering && !pursue)) {
+                delete ctx.enc.intents[npcId];
+                return {...actorFlight(ctx,npcId),retreat_decision:intent==='flee'?'own flight intent':'joins group withdrawal'};
+            }
+        }
         if(!target) return {round:ctx.enc.round,actor:npcId,kind:'hold',why:'no visible hostile target'};
         return npcAct(ctx,npcId,null,target);
     }
@@ -1299,9 +1312,11 @@ function advance(enc) {
         const id = enc.order[idx];
         const c = enc.combatants[id];
         if (enc.observe && enc.combatants.pc.current.escaped && (id==='pc' ||
-            !Object.values(enc.combatants).some(c=>c.current.withdrawing && alive(c) && c.current.cover!=='full'))) {
+            !Object.keys(enc.participation).some(who=>who!=='pc' && alive(enc.combatants[who]) &&
+                !enc.combatants[who].current.surrendered && enc.combatants[who].current.cover!=='full'))) {
             enc.observe.closed=true;break;
         }
+        if (enc.observe && enc.combatants.pc.current.escaped && c.current.cover==='full') continue;
         if (alive(c) && !c.current.surrendered && !c.current.peace) break;
     }
     enc.turn_index = idx;
@@ -1413,13 +1428,11 @@ function singlePcAction(ctx, act) {
     else if (act.kind === 'ability_world') r = worldAction(ctx, 'pc', act);
     else if (act.kind === 'item') r = itemAction(ctx, 'pc', act);
     else if (act.kind === 'flee' && ctx.c) {
-        if (enc.line && act.together) {
-            for(const id of Object.keys(enc.participation).filter(id=>id!=='pc')) {
-                const ally=enc.combatants[id];
-                // Asked allies decide within their own action budget. An independent fighter keeps their goal.
-                if(alive(ally) && ally.current.priority?.kind!=='independent') ally.current.withdrawing=true;
-            }
-            if(Object.values(enc.combatants).some(c=>c.current.withdrawing && c.current.cover!=='full')) enc.observe={closed:false};
+        if (enc.line) {
+            // Also clear flags from an open .217 encounter when the player goes alone.
+            for (const id of Object.keys(enc.participation)) delete enc.combatants[id].current.withdrawing;
+            if (act.together) enc.observe={closed:false};
+            else delete enc.observe;
         }
         r = pcFlee(ctx);
     }

@@ -339,3 +339,38 @@ assert.equal(healed.events.filter(e=>e.t==='service.fulfilled').length,1);
 assert.equal(x(care,[healing],'Ossen looks around.',107).state.entities[who].sheet.hp,hp);
 assert.equal(x(care,[healing],'Ossen watches as the healer treats Alaric.',107).state.entities[who].sheet.hp,hp);
 console.log('Paid personal treatment, actual receipt, patient and duplicate recovery passed.');
+
+// Synthetic formation at User14's first encounter. A third companion keeps the
+// group in sight even on .217 while the independent scout takes their own slot.
+function retreatScene() {
+    const st=structuredClone(camp), en=setup(), foe=foes[0];
+    for (const other of foes.slice(1)) {delete en.combatants[other];st.scene.present=st.scene.present.filter(id=>id!==other);}
+    en.combatants[third]={...structuredClone(en.combatants[who]),id:third};
+    st.entities[third].sheet=structuredClone(st.entities[who].sheet);
+    st.party.members[third]={...st.party.members[who],who:third};
+    st.scene.present.push(third);
+    en.participation[third]={from:0};en.line.x[third]=en.line.x.pc;
+    en.round=1;en.turn_index=0;en.trigger_done=true;en.current='pc';en.order=['pc',who,third,foe];
+    en.combatants[foe].current.hp=1;
+    st.encounter=en;
+    return {st,en,foe};
+}
+const battleFailures=[];
+function expectBattle(test,pass){console.log(pass?'PASS':'FAIL',test);if(!pass)battleFailures.push(test);}
+for(const mode of ['independent','attack intent','alone','lost sight']){
+    const {st,en,foe}=retreatScene();
+    if(mode==='attack intent') en.intents[who]='attack';
+    else en.combatants[who].current.priority={kind:'independent'};
+    if(mode==='alone') { en.observe={closed:false};en.combatants[third].current.withdrawing=true; }
+    if(mode==='lost sight') for(const id of [who,third]) en.combatants[id].current.cover='full';
+    const group=mode!=='alone';
+    const result=playerTurn(st,content,group?'We retreat together.':'I flee alone.',{c:true,intent:{kind:'flee',together:group}});
+    const observed=result.outcome.records.some(rec=>rec.actor===who && rec.strikes?.some(hit=>hit.target===foe));
+    const looted=result.state.entities[foe].looted===en.id;
+    const drops=result.events.filter(e=>e.t==='object.created' && e.d.object.source?.encounter===en.id);
+    const see=mode==='independent' || mode==='attack intent';
+    expectBattle(mode+' regular scout strike',observed===see);
+    expectBattle(mode+' observed kill and one carrier',see ? looted && drops.length>0 && drops.every(e=>e.d.object.holder.entity===who) : !looted && !drops.length);
+    expectBattle(mode+' separated scout',result.state.party.members[who].mode==='wait');
+}
+assert.deepEqual(battleFailures,[]);

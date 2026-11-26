@@ -49,7 +49,16 @@ const valueOf = (base, rank, factor) => Math.max(1, Math.round((base || 1) * fac
 export function lootEvents(s, content, enc) {
     const table = content.monsters?.loot;
     const pc = enc.combatants.pc;
-    if (!table || !pc || pc.current.hp === 0 || pc.current.escaped) return { events: [], lines: [] };
+    if (!table || !pc || pc.current.hp===0) return {events:[],lines:[]};
+    let carrier='pc';
+    if (pc.current.escaped) {
+        const final=enc.combatants[enc.defeated?.at(-1)]?.current.resolution;
+        const actor=enc.combatants[final?.actor];
+        if (!final?.observedAfterFlight || !actor || actor.current.escaped || actor.current.defeated ||
+            Object.values(enc.combatants).some(c=>c.side==='hostile' && !c.current.escaped && !c.current.defeated && !c.current.surrendered))
+            return {events:[],lines:[]};
+        carrier=actor.id;
+    }
     const factor = table.rank_value_factor || 3;
     const events = [];
     const lines = [];
@@ -57,7 +66,7 @@ export function lootEvents(s, content, enc) {
     const agreements = Object.keys(enc.participation || {}).flatMap(id => {
         const member = s.party?.members[id];
         const a = s.party?.agreements[member?.agreement];
-        return a?.phase === 'accepted' && a.terms.loot && member.mode === 'follow' &&
+        return a?.phase === 'accepted' && a.terms.loot && (member.mode === 'follow' || pc.current.escaped && member.lastContact?.encounter===enc.id) &&
             !enc.combatants[id].current.defeated && !enc.combatants[id].current.escaped ? [a] : [];
     });
     const allocated = name => agreements.find(a => [name, name.replace(/^[A-S]-Rank /i,'')].some(n => n.toLowerCase() === a.terms.loot.goods));
@@ -73,6 +82,7 @@ export function lootEvents(s, content, enc) {
     const items = []; // non-stacking gear
     for (const c of Object.values(enc.combatants)) {
         if (c.id === 'pc' || enc.participation?.[c.id] || (enc.line && c.side !== 'hostile') || c.current.escaped || c.current.surrendered) continue;
+        if (pc.current.escaped && !c.current.resolution?.observedAfterFlight) continue;
         const e = s.entities[c.id];
         if (!e || e.status !== 'dead' || e.looted) continue;
         const seed = `${enc.id}|${c.id}`;
@@ -118,7 +128,7 @@ export function lootEvents(s, content, enc) {
                 items.push({ name: `${rank}-Rank ${titled(g.name)}`, rank, slot, atk: g.atk || 0, matk: g.matk || 0, def: g.def || 0, mdef: g.mdef || 0, from: c.id });
             }
             for (const [item, qty] of Object.entries(e.sheet.inventory || {})) {
-                if (qty > 0 && content.items.get(item)) events.push({ t: 'item.changed', d: { id: 'pc', item, qty, why: `loot: ${e.name || 'the fallen'}` } });
+                if (qty > 0 && content.items.get(item)) events.push({ t: 'item.changed', d: { id: carrier, item, qty, why: `loot: ${e.name || 'the fallen'}` } });
             }
             const purse = e.sheet.coin_cp > 0 ? [e.sheet.coin_cp, e.sheet.coin_cp] : table.purse_cp_by_template?.[e.template] || [0, 5];
             coin += draw(`${seed}|purse`, purse);
@@ -129,12 +139,12 @@ export function lootEvents(s, content, enc) {
         if (p && chance(`${seed}|return_stone`, p)) {
             const id = `obj.loot.return_stone.${slug(enc.id.replace(/\./g, '_'))}.${slug(c.id.replace(/\./g, '_'))}`;
             if (!s.objects?.[id]) {
-                events.push({ t: 'object.created', d: { object: { id, name: stone.name, kind: 'item', stack: false, qty: 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'loot', encounter: enc.id },
+                events.push({ t: 'object.created', d: { object: { id, name: stone.name, kind: 'item', stack: false, qty: 1, unit: null, holder: { entity: carrier }, marks: [], for_quests: [], source: { turn: s.turn, how: 'loot', encounter: enc.id },
                     return_stone: true, use: 'consumable', value_cp: stone.value_cp, text: stone.text } } });
                 lines.push(stone.name);
             }
         }
-        const reward = specialReward(s, content, enc, e, seen);
+        const reward = specialReward(s, content, enc, e, seen, carrier);
         if (reward) {
             events.push(...reward.events);
             rewards.push({foe: c.id, ...reward.meta, objects: reward.objects.map(o => o.id)});
@@ -148,10 +158,10 @@ export function lootEvents(s, content, enc) {
 
         const held = s.objects?.[base];
         const source = { turn: s.turn, how: 'loot', encounter: enc.id };
-        if (held && held.holder?.entity === (a?.terms.loot.kind === 'item' ? a.who : 'pc')) events.push({ t: 'object.added', d: { id: base, qty: m.qty } });
+        if (held && held.holder?.entity === (a?.terms.loot.kind === 'item' ? a.who : carrier)) events.push({ t: 'object.added', d: { id: base, qty: m.qty } });
         else {
             const id = held ? `${base}.${slug(enc.id.replace(/\./g, '_'))}` : base;
-            events.push({ t: 'object.created', d: { object: { id, name: m.name, kind: 'resource', stack: true, qty: m.qty, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source,
+            events.push({ t: 'object.created', d: { object: { id, name: m.name, kind: 'resource', stack: true, qty: m.qty, unit: null, holder: { entity: carrier }, marks: [], for_quests: [], source,
                 rank: m.rank, level: m.level, material: m.material, species: m.species, anchor: m.anchor, value_cp: m.value_cp } } });
         }
         lines.push(`${m.name} ×${m.qty}`);
@@ -159,14 +169,14 @@ export function lootEvents(s, content, enc) {
     for (const [i, g] of items.entries()) {
         const id = `obj.loot.${slug(enc.id.replace(/\./g, '_'))}.${slug(g.from.replace(/\./g, '_'))}.${i + 1}`;
         if (s.objects?.[id]) continue;
-        events.push({ t: 'object.created', d: { object: { id, name: g.name, kind: 'item', stack: false, qty: 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'loot', encounter: enc.id },
+        events.push({ t: 'object.created', d: { object: { id, name: g.name, kind: 'item', stack: false, qty: 1, unit: null, holder: { entity: carrier }, marks: [], for_quests: [], source: { turn: s.turn, how: 'loot', encounter: enc.id },
             rank: g.rank, gear: { slot: g.slot, atk: g.atk || 0, matk: g.matk || 0, def: g.def || 0, mdef: g.mdef || 0 },
             // Patch 7.1: the piece's own values as its profile (what it is worth, what it needs), fixed now
             ...gearTraits(content, g) } } });
         lines.push(g.name);
     }
     if (coin > 0) {
-        events.push({ t: 'coin.changed', d: { id: 'pc', value: (s.entities.pc.sheet.coin_cp || 0) + coin, delta: coin, why: 'loot' } });
+        events.push({ t: 'coin.changed', d: { id: carrier, value: (s.entities[carrier].sheet.coin_cp || 0) + coin, delta: coin, why: 'loot' } });
         lines.push(`${coin} cp`);
     }
     for (const e of events) {
@@ -185,7 +195,7 @@ export function lootEvents(s, content, enc) {
                 const {item,qty}=e.d;
                 const id='obj.loot.'+slug(enc.id)+'.'+item+'.'+events.indexOf(e);
                 e.t='object.created';
-                e.d={object:{id,kind:'item',name:content.items.get(item).name,stack:qty>1,qty,holder:{entity:'pc'},
+                e.d={object:{id,kind:'item',name:content.items.get(item).name,stack:qty>1,qty,holder:{entity:carrier},
                     source:{how:'loot',item,encounter:enc.id,proceeds:a.id}}};
                 lines.push(e.d.object.name+' ×'+qty);
             }
@@ -196,6 +206,7 @@ export function lootEvents(s, content, enc) {
     const grantNames = [...new Set(events.flatMap(e => e.t === 'object.created' ? [e.d.object.name]
         : e.t === 'object.added' ? [s.objects[e.d.id].name]
         : e.t === 'item.changed' ? [content.items.get(e.d.item)?.name || e.d.item] : []))];
+    if (carrier!=='pc' && lines.length) lines.unshift('Collected by '+s.entities[carrier].name);
     return { events, lines, grantNames, rewards, rewardLines };
 }
 

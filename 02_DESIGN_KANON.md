@@ -1,6 +1,6 @@
 # Avereth Engine – verbindlicher Design-Kanon
 
-Der Kanon beschreibt die Spielregeln des eingefrorenen Produkts `.200`. **[VERBINDLICH]** kennzeichnet geltende Regeln, **[GEPLANT]** beschlossene spätere Änderungen und **[OFFEN]** unentschiedene Optionen. Für den persönlichen Test dokumentieren die Fachpläne die Änderungen seit dieser Produktfassung, darunter die gelockerten globalen Questboardquoten. [Aktueller Projektstand](03_AKTUELLER_PROJEKTSTAND.md) · [Fachquellen](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Ältere Kanonfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/292a4372654f027fb579bf8e338ff9d25d981da7/02_DESIGN_KANON.md)
+Der Kanon dokumentiert die Spielregeln des eingefrorenen Produkts `.200` und kennzeichnet spätere bestätigte Regeln mit ihrem Entwicklungsstand. **[VERBINDLICH]** kennzeichnet geltende Regeln, **[GEPLANT]** beschlossene spätere Änderungen und **[OFFEN]** unentschiedene Optionen. Für den persönlichen Test dokumentieren die Fachpläne die Änderungen seit dieser Produktfassung, darunter die gelockerten globalen Questboardquoten. [Aktueller Projektstand](03_AKTUELLER_PROJEKTSTAND.md) · [Fachquellen](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Ältere Kanonfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/292a4372654f027fb579bf8e338ff9d25d981da7/02_DESIGN_KANON.md)
 
 ## Party im Entwicklungskandidaten .217
 

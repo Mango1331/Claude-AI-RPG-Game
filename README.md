@@ -6,7 +6,7 @@
 |---|---|
 | Was ist der aktuelle Entwicklungsstand? | [03 · Meilensteinstand](03_AKTUELLER_PROJEKTSTAND.md) |
 | Wo wird gearbeitet und was darf gemergt werden? | [01 · Arbeitsweise](01_ARBEITSWEISE_GPT_CODEX.md) · [05 · Branch-/Archivplan](05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md) |
-| Verbindliche Regeln der eingefrorenen Produktlinie | [02 · Design-Kanon](02_DESIGN_KANON.md) |
+| Spielregeln der eingefrorenen Produktlinie und bestätigte Regeln späterer Kandidaten | [02 · Design-Kanon](02_DESIGN_KANON.md) |
 | Forschungsberichte, Gegenreviews und technische Abnahmen | [Forschungsindex](recherche/README.md) · [06 · Etappen und Fachquellen](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) |
 | Echte persönliche und automatisierte Runs | [10B-Runindex](testrun_10b/README.md) · [Messungen](testrun_10b/durchschnittsmessungen/README.md) |
 | Spätere Features | [Ideenkatalog](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md) · [Roadmap](07_ROADMAP_NACH_10B_ENTWURF.md) |

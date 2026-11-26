@@ -74,7 +74,7 @@ test('runtime: each reported leg recovers mana only for the companions who trave
         const g = await journey({mode,two:true});
         const quote = act === 'wait' ? wait : follow;
         const change = act ? [{type:'party',scene:bridge,who,act,quote}] : [];
-        const {clock,state} = await finish(g,[road(60),arrive(bridge,firstGroup),...change,road(60),arrive(ferry,secondGroup)],{
+        const {clock,state} = await finish(g,[road(60),arrive(bridge,firstGroup),...change,{...road(60),scene:bridge},arrive(ferry,secondGroup)],{
             two:true,prose:'Alaric reached Stone Bridge. Ossen says, "'+quote+'" Alaric then reached West Ferry.',
         });
         assert.equal(state.scene.at,ferry);
@@ -84,6 +84,16 @@ test('runtime: each reported leg recovers mana only for the companions who trave
         assert.equal(state.entities[who].sheet.mp,npcMP);
         assert.equal(state.scene.present.includes(who),secondGroup.includes(who));
     }
+});
+
+test('runtime: durations reported after both arrivals use each original travelling party', async () => {
+    const g = await journey({mode:'follow',two:true});
+    const {clock,state} = await finish(g,[arrive(bridge,[who]),road(60),
+        {type:'party',scene:bridge,who,act:'wait',quote:wait},arrive(ferry),road(60)],{
+        two:true,prose:'Alaric reached Stone Bridge. Ossen says, "'+wait+'" Alaric then reached West Ferry.',
+    });
+    assert.deepEqual(clock,[[60,'travel',['pc',who]],[60,'travel',['pc']]]);
+    assert.equal(state.entities[who].sheet.mp,4);
 });
 
 test('runtime: the travel floor covers just the unmeasured road, never the delay', async () => {

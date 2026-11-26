@@ -488,7 +488,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     let timeUsed = booked;
     let travelMinutes = 0;
     let lastRoadLeg = null;
-    const reportedArrivals = steps.map(({d}) => d).filter(d => d.type === 'arrive');
+    // Older reports may consistently give the duration just after each arrival.
+    // Recognize that unambiguous ordering as well as the current time-then-arrive format.
+    const legSteps = steps.map(({d}) => d).filter(d => d.type === 'arrive' || (d.type === 'time' && d.during === 'travel'));
+    const reportedArrivals = legSteps.filter(d => d.type === 'arrive');
+    const timeAfterArrival = reportedArrivals.length > 1 && legSteps.length === 2 * reportedArrivals.length
+        && legSteps.every((d,i) => d.type === (i % 2 ? 'time' : 'arrive'));
     let pendingRoadTime = [];
     const actions = (outcome.resolutions || []).filter(r => ['resolved','authorized'].includes(r.status));
     const activities = actions.filter(r => r.type === 'activity');
@@ -1189,8 +1194,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 const next = reportedArrivals.find(a => a.seq > d.seq);
                 const previous = reportedArrivals.findLast(a => a.seq < d.seq);
                 const atLast = lastRoadLeg && lastRoadLeg.seq === (previous?.seq ?? null);
-                const scoped = atLast && d.scene && d.scene !== 'here' && samePlace(s,d.scene,lastRoadLeg.at,content);
-                const end = scoped ? null : next?.seq ?? null;
+                const scoped = atLast && !lastRoadLeg.measured && d.scene && d.scene !== 'here' && samePlace(s,d.scene,lastRoadLeg.at,content);
+                const end = scoped || (timeAfterArrival && atLast && d.during === 'travel') ? null : next?.seq ?? null;
                 // Legacy time has no activity tag. A span already accounted for cannot authorize
                 // another anonymous duration after that arrival.
                 const legacyRoad = d.during == null && !activities.length && !booked
@@ -1242,7 +1247,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     const continuing = s.places[s.scene.at]?.kind === 'realm' && actions.some(r => r.type === 'journey.continue')
                         && (movement || /\b(?:an? (?:hour|day) on|further along|walk(?:ed|s) on|continu(?:ed|es) along)\b/i.test(prose));
                     if (end != null) pendingRoadTime.push({minutes:m, delta:d, end});
-                    else if (atLast && (scoped || !unfinished || transit === lastRoadLeg.at)) {
+                    else if (atLast && (scoped || !unfinished || auth.gos.length === 1 || transit === lastRoadLeg.at)) {
                         bookRoadTime(m,lastRoadLeg.travellers);
                         lastRoadLeg.measured = true;
                     }

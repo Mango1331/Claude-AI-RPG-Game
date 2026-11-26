@@ -1,0 +1,11 @@
+{
+  "inherits": "accepted_user15_219.json",
+  "cases": {
+    "b16-rogue-sale#80": {
+      "category": "220 travel leg time",
+      "reason": "The 15 minutes walking to the Ferryman's Rest already cover the arrived leg. The following 600 minutes describe a night's sleep. That activity was refused while arrival was pending. No extra 105 capped minutes of travel accrue for sleeping.",
+      "previous": "sha256:317e7c3410995db6136b68c5ec9063360f5c22327db3f18210f2833b5e3105e7",
+      "fingerprint": "sha256:2c054601aba4b2865f706eff3fa13bc3611968bf5188af79c50f183215d9ca6b"
+    }
+  }
+}

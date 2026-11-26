@@ -145,6 +145,7 @@ export function catalogText(catalog) {
     // 9C completion: a Skill development offered to him (a new technique, or the evolution of one of his)
     if ((catalog.skill_offers || []).length) L.push(`POSSIBLE SKILL (offered by the engine; his only if he accepts): ${catalog.skill_offers.map((p) => `${p.id} (${p.text})`).join(' · ')}`);
     if ((catalog.class_offers || []).length) L.push(`CLASS CHOICE (choose ONE by offered name; development.accept uses its OPTION id, not the group id): ${catalog.class_offers.map((d) => `group ${d.id}; OPTIONS: ${d.options.map((o) => `${o.id} (${o.text})`).join(' OR ')}`).join(' · ')}`);
+    if (catalog.party?.length) L.push('PARTY: '+catalog.party.join('\n'));
     return L.join('\n');
 }
 

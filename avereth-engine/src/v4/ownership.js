@@ -17,6 +17,7 @@ export const STATE_KINDS = {
     'pc.progress': { owner: 'progression', engine: true, about: "Alaric's XP, level, stats, Skills, his creation" },
     // Patch 9B-1: the campaign's dynamic Skill definitions (skill.defined), the engine's alone
     skills: { owner: 'progression', engine: true, about: 'dynamic Skill and Passive definitions of this campaign (src/skills.js, src/passives.js)' },
+    party: { owner:'party', engine:false, about:'voluntary party agreements and membership' },
     'pc.location': { owner: 'movement', engine: false, about: 'where Alaric is (his go, or an arrival the story shows)' },
     'quest.delivery': { owner: 'guild', engine: true, about: 'authorised physical deliveries' },
     'quest.status': { owner: 'guild', engine: true, about: "a Guild contract's formal status (accepted, completed, failed)" },
@@ -55,6 +56,7 @@ export function eventKind(e, s = null) {
     const d = e.d || {};
     const heldByPc = (id) => pcHolder(s?.objects?.[id]?.holder);
     switch (e.t) {
+        case 'party.agreement': case 'party.member': case 'party.claim': return 'party';
         case 'coin.changed': return PC(d.id) ? 'pc.coin' : 'entities';
         case 'item.changed': case 'item.equipped': return PC(d.id ?? 'pc') ? 'pc.inventory' : 'entities';
         case 'resource.changed': return PC(d.id) ? 'pc.vitals' : 'entities';
@@ -165,6 +167,7 @@ export function stateRegions(s) {
     const quests = Object.values(s.quests || {});
     const contracts = quests.filter((q) => q.kind === 'guild_contract');
     return {
+        party: j(s.party),
         'pc.coin': j(sh.coin_cp),
         'pc.inventory': j([sh.inventory, sh.equipment, held]),
         'pc.vitals': j([sh.hp, sh.mp, sh.sta, status]),
@@ -208,6 +211,7 @@ export function effectViolation(step, e, before, after) {
  * reach only through the named check (docs/ARCHITECTURE_GEN35.md §2.2). A test replays every recorded run against it.
  */
 export const DELTA_WRITES = {
+    party: { writes:['party'] },
     time: { writes: ['time'] },
     // an arrival moves him and the people with him, may create the place, starts a journey, carries or closes open
     // decisions, and fires the turn-in his own command made conditional on arriving at a Guild hall (with the engine's

@@ -103,6 +103,55 @@
   },
   "deltas": [
     {
+      "type": "party",
+      "summary": "Voluntary cooperation with one present NPC. offer records a proposal (quest ID, combat readiness, confirmed half share or explicit copper amount); accept/decline name the other party's OPEN agreement ID. wait/follow/leave describe a real change. Use the speaker's exact decision, never a guess or mere co-presence. Only the identified NPC's own proposal or decision. Include a literal decision quote.",
+      "fields": {
+        "act": {
+          "enum": [
+            "offer",
+            "accept",
+            "decline",
+            "wait",
+            "follow",
+            "leave"
+          ]
+        },
+        "who": {
+          "ref": "person"
+        },
+        "agreement": {
+          "type": "string",
+          "nullable": true
+        },
+        "quest": {
+          "type": "string",
+          "nullable": true
+        },
+        "combat": {
+          "type": "boolean",
+          "nullable": true
+        },
+        "share": {
+          "enum": [
+            "half"
+          ],
+          "nullable": true
+        },
+        "amount": {
+          "type": "integer",
+          "min": 1,
+          "nullable": true
+        },
+        "money": {
+          "type": "string",
+          "nullable": true
+        },
+        "quote": {
+          "type": "string"
+        }
+      }
+    },
+    {
       "type": "time",
       "fields": {
         "minutes": {

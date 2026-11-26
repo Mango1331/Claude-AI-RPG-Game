@@ -1,3 +1,4 @@
+import { following, partyDecision } from '../party.js';
 import { campInspection, campObjects, vacantSite, atObserver, visibleSupply, uncoveredSupply } from './camp.js';
 import { encounterHumanLevel } from '../npcgen.js';
 import { floorRefusal, namedLevel, goesFrom, otherEnd } from './dungeon.js';
@@ -1562,6 +1563,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 v3({ memory: [{ text: cut.owned.length || cut.other.length || deaths.refused.length ? cut.kept.join(' ') : d.text, who: (d.who || []).map(mapRef), imp: d.imp }] }, d);
                 break;
             }
+            case 'party': {
+                const who = idOf(d.who);
+                const r = cPath && rulesetOf(s)>=2 && partyDecision(s,content,{...d,who},prose,who,emit);
+                if (!r?.done) reject(d,'party_decision',r?.reason || 'Unsupported campaign.');
+                break;
+            }
             case 'thread': {
                 // natural batch on .191 (Warrior T70, main: testrun_10b/npc-20261115-103140Z/GEGENREVIEW_OPUS.md): a
                 // thread of any kind that keeps a creature this reply could not book here or acting now ("… as the
@@ -2089,6 +2096,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     selfIntro(s, emit);
     const ep = episode(s, msg);
     if (ep) emit({ t: 'memory.recorded', d: { memory: ep } });
+    for (const member of following(s)) if (member.combat && !s.entities[member.who].sheet) materialise(s,content,dice,emit,member.who);
     const fightFrom = events.length;
     const opened = openCommitted(s, content, dice, emit, { hold: false, c: cPath });
     if (opened) opened.from = fightFrom;
@@ -2435,6 +2443,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const e = id && id !== 'pc' ? s.entities[id] : null;
             if (!e || !['npc', 'creature'].includes(e.kind) || e.status === 'dead') { reject(d, 'world_rule', `arrive.with: unknown person ${String(ref).slice(0, 40)}`); continue; }
             if (!s.scene.present.includes(id)) { reject(d, 'world_rule', `arrive.with: ${id} was not with Alaric`); continue; }
+            if (['wait','left'].includes(s.party?.members?.[id]?.mode)) { reject(d,'party_wait','Not travelling with Alaric.'); continue; }
             if (!out.includes(id)) out.push(id);
         }
         return [...new Set(out)];
@@ -2810,7 +2819,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     function gateRefusal(to) {
         const root = trueDungeonOf(s, to);
         if (!root || to === root || insideOf(s, root) || !livingOf(s, root)) return null;
-        const g = gateCheck(s, content, root);
+        const withIds = new Set([...following(s).map(m=>m.who), ...(auth.gos || []).flatMap(g=>g.along ? g.with || [] : [])]);
+        const g = gateCheck(s, content, root,{group:1+withIds.size});
         return g?.refuse || (g?.fee ? `${g.keeper} has not let him past the gate: the entry fee (${g.fee} cp) is not paid` : null);
     }
 

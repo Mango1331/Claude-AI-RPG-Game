@@ -435,7 +435,8 @@ export function materialise(s, content, dice, emit, id) {
         emit({ t: 'entity.updated', d: { id, set: { ...(population ? { anchor: anchor.id } : {}), profile, ...(belongs ? { population_at: population.id } : {}), ...(dungeonOf(s, at) && !e.met_at ? { met_at: at } : {}) } } });
         return;
     }
-    const words = [...(e.descriptors || []), e.traits || ''].join(' ');
+    const training = s.party?.members?.[id]?.combat ? truth(s,id,'occupation').map(f=>String(f.o).replace(/\bbows\b/gi,'bow')) : [];
+    const words = [...(e.descriptors || []), e.traits || '', ...training].join(' ');
     // Patch 9A: a campaign of ruleset 2 builds its people by its own templates; a legacy campaign exactly as before
     if (rulesetOf(s) >= 2) {
         const sheet = rulesetTwoPerson(s, content, e, words);

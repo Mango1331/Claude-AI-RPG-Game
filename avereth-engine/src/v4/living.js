@@ -423,7 +423,13 @@ function leaderEvents(s, x) {
 export function occupancy(s, x) {
     const parties = Object.keys(x.inside || {}).reduce((n, id) => n + ((x.parties || []).find((p) => p.id === id)?.size || 0), 0);
     // his own place inside (whoever travels with him took theirs at the gate: gateCheck's group)
-    const pc = insideOf(s, x.id) ? 1 : 0;
+    const inside = insideOf(s, x.id);
+    const others = Object.values(s.party?.members || {}).filter(m => {
+        if (s.entities[m.who]?.status === 'dead') return false;
+        if (s.scene.present.includes(m.who)) return inside;
+        return m.at !== x.id && trueDungeonOf(s,m.at) === x.id;
+    });
+    const pc = (inside ? 1 : 0) + others.length;
     return { parties, pc, total: parties + pc };
 }
 

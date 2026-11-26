@@ -1,3 +1,4 @@
+import { reduceParty } from './party.js';
 // Campaign state = fold(events). Event-sourced: the event log is the only persistent truth; this reducer derives
 // the current state. The reducer is deterministic and never rolls dice (rolls are already inside the events).
 //
@@ -141,6 +142,9 @@ export function applyEvent(state, e) {
             }
             break;
         }
+        case 'party.member': case 'party.agreement': case 'party.claim':
+            reduceParty(state,e.t,d);
+            break;
         case 'entity.sheet_set': // full combat-profile materialisation for an NPC (npcgen)
             state.entities[d.id].sheet = clone(d.sheet);
             break;

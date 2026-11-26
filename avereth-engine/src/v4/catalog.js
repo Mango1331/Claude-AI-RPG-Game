@@ -1,3 +1,4 @@
+import { partySummary } from '../party.js';
 import { offerAvailability, paidLodging } from './trade.js';
 import { knownPlace, knownPlaceIds } from './place_book.js';
 import { privateQuestsOf, questVisible } from '../content.js';
@@ -338,7 +339,8 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         ...lyingAt(state, at).map((o) => objectEntry(state, content, o)),
         ...state.scene.present.filter((id) => id !== 'pc').flatMap((id) => heldBy(state, id)).map((o) => objectEntry(state, content, o)),
     ];
-    return { privateQuests: privateQuestsOf(state),
+    const party = partySummary(state);
+    return { ...(party.length ? {party} : {}), privateQuests: privateQuestsOf(state),
         here: { id: at, path: placePath(state, at) },
         time: formatClock(state.clock.minute).split(' (')[0].replace(/^Day/, 'day'),
         alaric: alaricLine(state, content),

@@ -1,3 +1,4 @@
+import { partySummary } from './party.js';
 import {availableActions,validateActionSelection,actionPrefix,actionInputOf,actionLabel,actionBands} from './action_input.js';
 import {surrenderAssets,negotiators,describeTerms} from './v4/surrender.js';
 import {skillOf} from './content.js';
@@ -244,6 +245,21 @@ export function installActionComposer({context,state,content,enabled,settings,bl
             await context().generate('regenerate');
         }catch(e){tell(e.message);}
     };
+    function openParty() {
+        let panel = document.getElementById('avereth-party-panel');
+        if (!panel) {
+            panel = document.createElement('dialog');
+            panel.id = 'avereth-party-panel';
+            const details = document.createElement('pre');
+            const close = document.createElement('button');
+            close.type = 'button'; close.textContent = 'Schließen';
+            close.onclick = () => panel.close();
+            panel.append(details,close); document.body.append(panel);
+        }
+        const lines = partySummary(state());
+        panel.querySelector('pre').textContent = ['[PARTY]',...lines.length ? lines : ['Keine Gefährten oder offenen Abreden.']].join('\n');
+        if (!panel.open) panel.showModal();
+    }
     function refusal(){
         const block=blocked();if(block)return block;
         const d=draft();if(!d)return choice.hint || null;
@@ -256,6 +272,12 @@ export function installActionComposer({context,state,content,enabled,settings,bl
         if(!enabled())return;
         const send=e.type==='click'?e.target.closest?.('#send_but'):e.target===textarea() && e.key==='Enter' && !e.shiftKey && !e.isComposing;
         if(!send)return;
+        if (textarea().value.trim().toLowerCase()==='#party') {
+            e.preventDefault(); e.stopImmediatePropagation();
+            textarea().value='';
+            openParty();
+            return;
+        }
         const no=refusal();if(no){e.preventDefault();e.stopImmediatePropagation();tell(no);return;}
         armedUI={origin:origin(),type:'normal',blocked:null};
         const d=draft();if(d && !textarea().value.trim()){textarea().value=d.label;armedUI.generatedLabel=d.label;}

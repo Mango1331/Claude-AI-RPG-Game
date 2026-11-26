@@ -1053,12 +1053,12 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', co
     // A provider failure may be caused by a swipe, edit, or newer Engine turn.
     // Do not spend another LLM call when the original reply is no longer current.
     const source = chat[id], pending = rec(source)?.extraction;
-    const offerHistory=req.negotiation ? historyKey(chat,id) : null;
+    const offerHistory=historyKey(chat,id);
     const current = () => {
         if (!isCurrent()) return false;
         const msg = chat[id];
         const r = rec(msg);
-        return (!req.negotiation || historyKey(chat,id)===offerHistory) && msg === source && r?.extraction === pending && activeMessage(msg) && r?.extraction?.status === 'pending' && r.text_hash === req.hash
+        return historyKey(chat,id)===offerHistory && msg === source && r?.extraction === pending && activeMessage(msg) && r?.extraction?.status === 'pending' && r.text_hash === req.hash
             && hash32(msg.mes) === req.hash && !laterTurns(chat, id);
     };
     const stale = () => ({ changed: false, ...(laterTurns(chat, id) ? { late: true } : {}) });

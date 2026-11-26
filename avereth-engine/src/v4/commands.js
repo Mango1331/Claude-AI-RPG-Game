@@ -1,3 +1,4 @@
+import { following, partyDecision } from '../party.js';
 import { applyEvent } from '../state.js';
 import { tradeDraft } from '../trade_input.js';
 import { campInspection, campLine, ordinarySupply, looksDownOnCamp } from './camp.js';
@@ -291,7 +292,9 @@ function abandonGuild(s, content, q, c, ctx, emit) {
 function companionOf(s, envx) {
     if (!envx?.c) return {};
     const ready = journeyReady(s, { c: !!envx?.c });
-    return ready?.companion && s.quests[ready.id]?.journey && present(s, ready.companion) ? { with: [ready.companion], along: true } : {};
+    const ids = following(s).map(m => m.who);
+    if (ready?.companion && s.quests[ready.id]?.journey && present(s,ready.companion) && !['wait','left'].includes(s.party?.members[ready.companion]?.mode)) ids.push(ready.companion);
+    return ids.length ? { with:[...new Set(ids)], along:true } : {};
 }
 
 /**
@@ -581,6 +584,10 @@ function deskStep(s, c, ctx, envx, q, kind) {
 }
 
 const HANDLERS = {
+    party(s, content, command, ctx, emit, env) {
+        if (!env.c || rulesetOf(s) < 2) return {status:'refused',line:'Party requires the current campaign rules.'};
+        return partyDecision(s,content,command,env.text,'pc',emit);
+    },
     'journey.continue'(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT DEPART — not while the fight runs.' };
         // Patch 2: his own goals and the quest journey; with more than one, "I continue" is a question, never a pick

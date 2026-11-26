@@ -216,7 +216,7 @@ test('C1: a refused creature leaves the report\'s arrival and other facts standi
 test('C1: the parser reports the same issues as a repairable semantic issue, never as a schema error; the catalog names the populations', () => {
     const s = world();
     const ids = extractorCatalog(s, c, { c: true });
-    assert.match(ids.text, /loc\.wood \[wilderness[^\]]*population:wild boar, boar, levels 4-7/);
+    assert.match(ids.text, /loc\.wood \[wilderness[^\]]*population:"loc\.wood", species:wild boar, body-plan:boar, levels 4-7/);
     const parse = (d) => parseExtraction(JSON.stringify({ scene: 'here', expected: {}, deltas: [{ seq: 1, ...d }] }), c.deltaVocab, { places: [...ids.places, 'loc.pond'], quests: ids.quests, objects: ids.objects }, {}, { sceneRequired: true, startScene: s.scene.at, state: s, content: c });
     const ok = parse(beast('boar'));
     assert.deepEqual([ok.valid, ok.issues], [true, []]);
@@ -256,4 +256,15 @@ test('C1 runtime: a missing membership is repaired through the existing second c
     processReplyAny(g.chat, id, c, {});
     await runExtraction(g.chat, id, c, async () => JSON.stringify(fixed));
     assert.equal(Object.values(foldChat(g.chat).state.entities).filter((e) => e.kind === 'creature').length, 1);
+});
+
+test('a species-valued membership resolves only to one exact population at the sighting', () => {
+    const s = world();
+    const d = beast('boar', { species:'wild boar', population:'wild boar' });
+    const contract = at => creatureContract(s,c,at,d);
+    assert.equal(contract('loc.wood.glade').population,'loc.wood');
+    assert.ok(contract('loc.pond').why);
+    s.places['loc.wood.glade'].population = s.places['loc.wood'].population;
+    assert.ok(contract('loc.wood.glade').why);
+    assert.equal(creatureContract(s,c,'loc.wood.glade',{...d,population:'independent'}).population,null);
 });

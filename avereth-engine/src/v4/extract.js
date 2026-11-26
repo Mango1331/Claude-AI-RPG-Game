@@ -590,7 +590,7 @@ function readDeltaEnvelope(answer) {
     return { ...parsed, value: { ...intact, expected: steps, deltas } };
 }
 
-export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequired = false, startScene = null, state = null, content = null, explicitArrivals = sceneRequired, reply = null } = {}) {
+export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequired = false, startScene = null, state = null, content = null, explicitArrivals = sceneRequired, reply = null, previous = null } = {}) {
     const parsed = readDeltaEnvelope(answer);
     const { error, raw } = parsed;
     const resolved=resolveRepeatedScene(parsed.value,ids,expectedKeys);
@@ -728,8 +728,18 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
             const at = d.present === false ? named : named || stepAt;
             // a place this report creates is validated at its known parent (its own population cannot exist yet)
             const parent = typeof at === 'string' && at.startsWith('[') ? (() => { try { return JSON.parse(at)[2]; } catch { return null; } })() : null;
+            // A repair of the same reported animal must not erase an asserted
+            // membership just to pass validation. Revalidate it at the reported site.
+            if (d.population === 'independent' && previous) {
+                const prior = previous.deltas.filter(x => x.type === d.type && x.ref === d.ref &&
+                    x.species === d.species && x.anchor === d.anchor && x.present === d.present);
+                if (prior.length === 1 && prior[0].population &&
+                    (prior[0].population === d.species || state.places[prior[0].population]?.population))
+                    d.population = prior[0].population;
+            }
             const c = creatureContract(state, content, state.places[at] ? at : state.places[parent] ? parent : null, d);
             if (c.why) semanticIssues.push({ index: i, seq: d.seq, why: `$.deltas[${i}].${c.why}` });
+            else if (c.population) d.population = c.population;
         }
         if (d?.type === 'person.new' && d.present !== false) {
             const exact = Object.values(state.entities).filter(e => e.kind === 'npc' && d.name && normText(e.name || e.known_name || '') === normText(d.name));

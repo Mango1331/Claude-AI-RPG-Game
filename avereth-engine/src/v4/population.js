@@ -22,7 +22,7 @@ export function populationsAt(state, at) {
  */
 export function creatureContract(state, content, at, d) {
     const stage = d.life_stage ?? null;
-    const pop = d.population ?? null;
+    let pop = d.population ?? null;
     const dungeon = at && state.places?.[at] ? trueDungeonOf(state, at) : null;
     const badStage = { why: `life_stage must be "adult" or "young" (the reply's age of ${d.species || d.ref || 'this creature'}; "young" only for juveniles: young, cubs, pups, yearlings ...)` };
     if (dungeon) {
@@ -37,6 +37,15 @@ export function creatureContract(state, content, at, d) {
     const options = [...valid.map((id) => `${id} (${state.places[id].population.species}, ${state.places[id].population.anchor})`), `"${INDEPENDENT}"`].join(', ');
     if (pop === null) return { why: `population is required for a creature met outside a Dungeon: the id of the population it belongs to at this place or above it, else "${INDEPENDENT}" (here: ${options})` };
     if (pop === INDEPENDENT) return { population: null, life_stage: stage, anchor: null };
+    // An explicitly supplied, exact species value can identify one local record.
+    // Missing membership, visitors, similar names and an ambiguous lineage stay distinct.
+    if (!valid.includes(pop) && pop === d.species) {
+        const matches = valid.filter(id => {
+            const p = state.places[id].population;
+            return p.species === pop && p.anchor === d.anchor;
+        });
+        if (matches.length === 1) pop = matches[0];
+    }
     if (!valid.includes(pop)) return { why: `population: ${pop} is no population of ${at ? state.places[at]?.name || at : 'an established sighting place'} or its ancestors (here: ${options}); a creature that belongs to none is "${INDEPENDENT}"` };
     // the population's body plan is canonical for its members; the report's own body plan must be that one (a giant
     // boar reported into a turtle population is no member: GiantBoar ≠ Turtle)

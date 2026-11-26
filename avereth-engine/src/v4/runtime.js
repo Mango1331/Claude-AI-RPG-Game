@@ -1101,7 +1101,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', co
         } else {
             const p = req.negotiation ? parseNegotiation(req.state,content,response.content,chat[id].mes)
                 : parseExtraction(response.content, vocab, req.ids, req.expectedKeys,
-                { sceneRequired: req.sceneRequired, startScene: req.startScene, state: req.state, content, explicitArrivals: req.sceneRequired, reply: chat[id].mes });
+                { sceneRequired: req.sceneRequired, startScene: req.startScene, state: req.state, content, explicitArrivals: req.sceneRequired, reply: chat[id].mes, previous: parsed?.value });
             if (p.valid && emptyAnswers && !movementReviewed && attempt < 2
                 && Object.entries(req.expectedKeys).some(([k,t]) => t === 'go' && p.value.expected?.[k]?.arrived === false)
                 && !p.value.deltas.some(d => d.type === 'arrive')

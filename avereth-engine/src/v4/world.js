@@ -1677,6 +1677,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 break;
             case 'recover': {
                 const who = idOf(d.who) || 'pc';
+                if(s.party?.members?.[who]) {reject(d,'party_recovery','Only booked personal recovery changes a party profile.');break;}
                 const serviced = (s.services || []).some((x) => x.turn === s.turn && ['lodging', 'healing', 'meal'].includes(x.service));
                 if (who === 'pc' && !auth.rest && !serviced) { reject(d, 'recover', 'Alaric recovers only while resting or sleeping, or with lodging or healing he paid for'); break; }
                 // Prototype C: his natural recovery for the rest or sleep is the engine's, booked with the turn
@@ -1698,6 +1699,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 objectNew(d);
                 break;
             case 'object.move':
+                if(s.party?.members?.[objectRef(d.object)?.holder?.entity]) {reject(d,'party_custody','An explicit owner-authorized transfer is required.');break;}
                 objectMove(d);
                 break;
             case 'object.mark': {
@@ -1714,6 +1716,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 break;
             case 'coin.gift': {
                 const from = idOf(d.from);
+                if(s.party?.members?.[from]) {reject(d,'party_custody','Member money must be transferred from their own balance.');break;}
                 const free = !privateQuestsOf(s);
                 if (free) { giftFree(d, from); break; }
                 const quote = normText(d.said || '').replace(/[^a-z0-9]+/g, ' ').trim();

@@ -80,6 +80,13 @@ export function partyDecision(s, content, command, source, actor, emit) {
         }
         emit({t:'party.agreement',d:{...agreement,phase:accepts?'accepted':'declined',answer:sourceRef,previous:agreement.revision}});
         if (accepts) memberEvent('follow',{agreement:agreement.id,combat:agreement.terms.combat});
+    } else if (c.act==='coordinate') {
+        if (!member?.combat || member.mode!=='follow') return failure('Only a present combat partner can coordinate.');
+        const kinds={target:/\b(?:target|attack|shoot|take on|focus)\b/i,protect:/\b(?:guard|cover|protect|shield|keep.+off|defend)\b/i,independent:/\b(?:independent|own|your call|freely)\b/i,front:/\b(?:front|point|ahead|lead)\b/i,rear:/\b(?:rear|behind|back)\b/i};
+        if (!kinds[c.priority]?.test(c.quote) || no.test(words)) return failure('Quote the tactical request or decision.');
+        if (['target','protect'].includes(c.priority) && (c.target!=='pc' && !s.scene.present.includes(c.target))) return failure('Identify the present target.');
+        const changes=['front','rear'].includes(c.priority) ? {formation:c.priority} : {priority:{kind:c.priority,target:c.target || null}};
+        memberEvent(member.mode,changes);
     } else {
         if (!member || member.mode==='left') return failure('No active membership.');
         const actions = {wait:/\b(?:wait|stay|hold here)\b/i,follow:/\b(?:follow|come|rejoin|together)\b/i,leave:/\b(?:leave|quit|part ways|go alone|split up|dismiss|on my own)\b/i};

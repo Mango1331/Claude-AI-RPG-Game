@@ -1,3 +1,4 @@
+import { lineBand,projectedStep,canFight } from '../party_line.js';
 // Runtime V4: stable player-facing handles for people/creatures before combat.
 // They are views over canonical entity ids, never a second identity system. Anonymous actors keep the same
 // A/B/C handle across scene changes and when another peer leaves; named actors use the name the story established.
@@ -8,6 +9,7 @@ const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 /** A strike needs a living local actor, or a still active combatant of the current encounter. */
 export function attackTargetHere(state, id) {
     const e = state.entities?.[id], c = state.encounter?.combatants?.[id];
+    if(c && state.encounter?.line && !canFight(state.encounter,'pc',id)) return false;
     return !!e && ['npc', 'creature'].includes(e.kind) && e.status !== 'dead'
         && (c ? !c.current.defeated && !c.current.escaped : !!state.scene?.present?.includes(id));
 }
@@ -88,6 +90,12 @@ export const areaBand = (skill, targetBand) => skill?.effects?.some(e => e.kind 
  */
 export function approachedBy(state, { move = null, moveTarget = null } = {}) {
     if (move !== 'closer' && move !== 'away') return [];
+    if(state.encounter?.line) {
+        const enc=state.encounter, step=projectedStep(enc,'pc',move,moveTarget);
+        if(step.illegal) return [];
+        const projected={...enc.line,x:{...enc.line.x,pc:step.to}};
+        return Object.keys(enc.line.x).filter(id=>id!=='pc').map(id=>({id,from:lineBand(enc.line,'pc',id),to:lineBand(projected,'pc',id)})).filter(r=>r.from!==r.to);
+    }
     const foes = tacticalHere(state, { friendly: false });
     const among = moveTarget ? [moveTarget] : foes.length ? foes : tacticalHere(state);
     return among.filter((id) => id !== 'pc' && (state.scene?.present || []).includes(id) && !state.encounter?.combatants?.[id]
@@ -110,7 +118,7 @@ export function approachedBy(state, { move = null, moveTarget = null } = {}) {
 export function areaCaught(state, { move = null, moveTarget = null, band = 'ENGAGED', target = null, visible = false } = {}) {
     const stepped = new Map(approachedBy(state, { move, moveTarget }).map((x) => [x.id, x.to]));
     let wanted = target ? (stepped.get(target) || bandOf(state, target)) : band;
-    if (target && state.encounter?.combatants?.[target] && move && (!moveTarget || moveTarget === target)) wanted = BANDS[Math.max(0, Math.min(BANDS.length - 1, BANDS.indexOf(wanted) + (move === 'closer' ? -1 : 1)))];
+    if (!state.encounter?.line && target && state.encounter?.combatants?.[target] && move && (!moveTarget || moveTarget === target)) wanted = BANDS[Math.max(0, Math.min(BANDS.length - 1, BANDS.indexOf(wanted) + (move === 'closer' ? -1 : 1)))];
     return (state.scene?.present || []).filter((id) => {
         const e = state.entities?.[id];
         if (id === 'pc' || !e || e.status === 'dead' || !['npc', 'creature'].includes(e.kind) || state.encounter?.combatants?.[id]) return false;
@@ -119,7 +127,7 @@ export function areaCaught(state, { move = null, moveTarget = null, band = 'ENGA
 }
 
 /** Where someone stands from him: the fight's distance for a combatant, the scene's for anyone else. */
-const bandOf = (state, id) => state.encounter?.combatants?.[id]?.current?.band ?? state.scene?.positions?.[id]?.band ?? null;
+const bandOf = (state, id) => state.encounter?.line && Object.hasOwn(state.encounter.line.x,id) ? lineBand(state.encounter.line,'pc',id) : state.encounter?.combatants?.[id]?.current?.band ?? state.scene?.positions?.[id]?.band ?? null;
 /** Someone a strike can still land on: alive, and in a fight neither down, gone nor yielded. */
 function standing(state, id) {
     const e = state.entities?.[id];
@@ -183,6 +191,7 @@ export function burstCaught(state, target) {
  * @returns {'hostile'|'ally'|'neutral'}
  */
 export function sideOf(state, id) {
+    if(!state.encounter?.combatants?.[id] && state.party?.members?.[id]?.mode==='follow' && state.scene?.present?.includes(id)) return 'ally';
     if (state.encounter?.combatants?.[id]) return state.encounter.combatants[id].side;
     if (tacticalHere(state, { friendly: false }).includes(id)) return 'hostile';
     return (state.relations?.[`rel.${id}.attitude.pc`]?.value ?? 0) >= 20 ? 'ally' : 'neutral';
@@ -208,7 +217,7 @@ export function uniqueAreaAim(state, skill, { move = null, moveTarget = null } =
             && !(state.scene.concealed || []).includes(id) && (c?.current.cover || state.scene.positions?.[id]?.cover) !== 'full';
     }).map(id => {
         let band = stepped.get(id) || bandOf(state, id);
-        if (state.encounter?.combatants?.[id] && move === 'closer' && (!moveTarget || moveTarget === id)) band = BANDS[Math.max(0, BANDS.indexOf(band) - 1)];
+        if (!state.encounter?.line && state.encounter?.combatants?.[id] && move === 'closer' && (!moveTarget || moveTarget === id)) band = BANDS[Math.max(0, BANDS.indexOf(band) - 1)];
         return { id, band };
     }).filter(x => BANDS.indexOf(x.band) >= 0 && BANDS.indexOf(x.band) <= reach);
     return new Set(candidates.map(x => x.band)).size === 1 ? candidates.map(x => x.id).sort()[0] : null;

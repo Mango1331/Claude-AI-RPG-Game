@@ -251,7 +251,7 @@ export const LEARNING_RULES = [
  * them. Prototype C (4.3.0-c.6.2): no go in a fight, where it is never taken (mapPlan) — live: "i walk towards the next
  * beasts as i try to gather them all around me for one big action" became go + other, neither taken, the turn lost
  */
-const FIGHT_STORY_TYPES = new Set(['activity']);
+const FIGHT_STORY_TYPES = new Set(['activity','party']);
 
 // Prototype C (4.3.0-c.6.2): a step within the fight is move by the Range Bands, leaving the fight is flee; the purpose
 // of a step or an action is part of it, no other
@@ -789,6 +789,14 @@ export function ineffectiveMoves(state, ctx, commands) {
 }
 
 export function mapPlan(commands, ctx, content, message, state, { hudSeqs = [], orderedTurn = false } = {}) {
+    if (ctx.fight && commands?.some(c=>c.type==='party')) {
+        const party=commands.filter(c=>c.type==='party');
+        if (party.length!==1 || party[0].act!=='coordinate' || !state.encounter?.line)
+            return {route:'panel',panel:'Clarify the single tactical request during combat.',notes:[],refused:true};
+        const other=commands.filter(c=>c.type!=='party');
+        const mapped=other.length ? mapPlan(other,ctx,content,message,state,{hudSeqs,orderedTurn}) : {route:'v3',intent:{kind:'hold'},notes:[]};
+        return mapped.route==='v3' ? {...mapped,intent:{...mapped.intent,coordination:party[0]}} : mapped;
+    }
     // Patch 3 (live 18.10.2026: "I use the flint and steel to make a small light" became the unknown skill "flint and
     // steel" and the "continue" after it was dropped): a thing he holds, named where a skill would stand, is that thing
     // used, a story command among the others, never a skill
@@ -959,7 +967,7 @@ export function mapPlan(commands, ctx, content, message, state, { hudSeqs = [], 
         if (wait && fight) return base({ kind: 'hold' });
         return base({ kind: 'narrative', flags: {} });
     }
-    if (main.type === 'flee') { leaveMove('not taken this turn (fleeing is his whole turn)'); return base({ kind: 'flee' }); }
+    if (main.type === 'flee') { leaveMove('not taken this turn (fleeing is his whole turn)'); return base({ kind: 'flee', ...(state?.encounter?.line && /\b(?:together|all of us|as a group|we (?:run|flee|retreat|withdraw))\b/i.test(main.quote || message) ? {together:true}:{}) }); }
     if (main.type === 'stealth') { leaveMove('not taken (hiding is his whole action)'); return base({ kind: 'stealth' }); }
 
     // the skill: an unknown one is refused by the engine (never another in its place); null is the class's Basic

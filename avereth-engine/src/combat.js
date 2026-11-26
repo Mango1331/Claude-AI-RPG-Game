@@ -1,3 +1,5 @@
+import { fighters } from './party.js';
+import { startLine, canFight, lineTarget, lineBand, projectBands, projectedStep, stepLine } from './party_line.js';
 // Combat engine: Core #10-#12 (legality, damage, range), #13 (effects), #21 (ammo), #23-#28 (gate, turns, ambush,
 // XP, START/ACTIVE/END loops). Combat V3 (docs/REVIEW_V3.md): a legal attack connects — no Hit roll, no random
 // Crit, no PER in combat math; only a true Ambush Opening Action crits (×1.5, every strike, PC and creatures alike).
@@ -98,7 +100,7 @@ export function combatantOf(state, id, content, side) {
 }
 
 // Ordinary skills spare non-targeted allies/neutrals. Thrown bursts retain their physical friendly fire.
-const areaVictim = (ctx, actor, c, explicit = [], physical = false) => alive(c) && (ctx.c
+const areaVictim = (ctx, actor, c, explicit = [], physical = false) => alive(c) && (!ctx.enc.line || physical || canFight(ctx.enc,actor.id,c.id)) && (ctx.c
     ? physical ? c.id !== actor.id : skillAreaTarget(actor, c, explicit) && (!c.current.surrendered || explicit.includes(c.id))
     : isOpponent(actor, c) && !c.current.surrendered);
 
@@ -157,7 +159,7 @@ export function targetLabel(state, id, fallback = (x) => x) {
 
 /** The opponents the player can target now, in the order they entered: [{id, label, band, cover}]. */
 export function combatTargets(enc) {
-    return activeHostiles(enc).map((c) => ({ id: c.id, label: c.label || c.name, band: c.current.band, cover: c.current.cover }));
+    return activeHostiles(enc).filter(c=>!enc.line || canFight(enc,'pc',c.id)).map((c) => ({ id: c.id, label: c.label || c.name, band: c.current.band, cover: c.current.cover }));
 }
 
 export function alive(c) {
@@ -170,6 +172,8 @@ export function alive(c) {
  * participants: [{id, side}] (the PC is added automatically).
  */
 export function initEncounter(state, content, dice, trigger, participants, encId, { c = false, preview = false } = {}) {
+    const members = c ? fighters(state).filter(m=>m.who!==trigger.actor && !(trigger.actor==='pc' && trigger.target===m.who)) : [];
+    if(members.length) participants=[...participants.filter(p=>!members.some(m=>m.who===p.id)),...members.map(m=>({id:m.who,side:'ally'}))];
     const combatants = { pc: combatantOf(state, 'pc', content, 'pc') };
     for (const p of participants) {
         if (p.id === 'pc') continue;
@@ -213,6 +217,12 @@ export function initEncounter(state, content, dice, trigger, participants, encId
             ? `target awareness: ${state.scene.awareness[trigger.target] || 'unknown'} -> no Ambush; his declared attack opens the fight first (First Strike: no Ambush bonus; it is his action of Round 1)`
             : `${combatants[trigger.actor].name} attacks openly; its attack opens the fight first (First Strike: no Ambush bonus; its action of Round 1)`;
     }
+    if (members.length) {
+        enc.line=startLine(state,enc,members);
+        projectBands(enc);
+        enc.participation=Object.fromEntries(['pc',...members.map(m=>m.who)].map(id=>[id,{from:0}]));
+        for(const m of members) if(m.priority) combatants[m.who].current.priority={...m.priority};
+    }
     enc.order = preview ? [] : initiativeOrder(enc, dice);
     return enc;
 }
@@ -225,6 +235,13 @@ export function addCombatant(enc, state, content, id, side, intent = 'attack', {
     c.current.cover = pos.cover || 'none';
     if (side === 'hostile') c.fixed.defeat_xp = hostileXp(c, state, content, enc.pc_rank);
     enc.combatants[id] = c;
+    if (enc.line) {
+        const line=enc.line;
+        line.x[id] ??= line.x.pc + bandIndex(pos.band);
+        line.lo=Math.min(line.lo,line.x[id]); line.hi=Math.max(line.hi,line.x[id]);
+        projectBands(enc);
+        if(side==='ally' && fighters(state).some(m=>m.who===id)) enc.participation[id] ||= {from:enc.pending_xp};
+    }
     assignLabels(enc, state, content, [id], { c: cPath });
     // insert after all combatants with higher or equal Initiative (existing ties keep their locked order)
     let idx = enc.order.findIndex((x) => enc.combatants[x].fixed.init < c.fixed.init);
@@ -283,7 +300,8 @@ function tempDefense(c, magical) {
 
 /** Range Band between two combatants. Bands are tracked relative to the PC (Core #12: only mechanically relevant
  * pairs); two NPCs are approximated by the difference of their PC-relative bands. */
-function distance(enc, a, b) {
+export function distance(enc, a, b) {
+    if (enc.line) return lineBand(enc.line,a,b);
     if (a === 'pc') return enc.combatants[b].current.band;
     if (b === 'pc') return enc.combatants[a].current.band;
     return bandName(Math.abs(bandIndex(enc.combatants[a].current.band) - bandIndex(enc.combatants[b].current.band)));
@@ -430,6 +448,37 @@ function onDefeat(ctx, target, record) {
 
 /** Resolve an attack action by a character (skill) or creature (natural attack). Returns a record or {illegal}. */
 export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
+    if (!ctx.enc.line) return resolveAttack(ctx,actorId,targetId,skillId,extra);
+    const enc=ctx.enc, actor=enc.combatants[actorId], target=enc.combatants[targetId];
+    if (!target || !canFight(enc,actorId,targetId)) return {illegal:'No active hostile relationship with that target.'};
+    const attack=actor.model==='character' ? (extra.item ? itemEffectOf(ctx.content,tradeObject(ctx.state,ctx.content,extra.item)) : resolveSkill(ctx.content,skillId,ctx.state)) : actor.fixed.attack;
+    const reach=attack?.range?.band || attack?.range;
+    const from=enc.line.x[actorId];
+    const proposed={...enc,line:{...enc.line,x:{...enc.line.x}}};
+    const shift=(dir,focus)=>{
+        const step=projectedStep(proposed,actorId,dir,focus);
+        if(step.illegal) return step.illegal;
+        proposed.line.x[actorId]=step.to;
+    };
+    let err;
+    if(extra.move==='closer' || extra.autoNormalMove && bandIndex(distance(enc,actorId,targetId))>bandIndex(reach))
+        err=shift('closer',extra.moveTarget || targetId);
+    if(!err && attack?.range?.extra_band && distance(proposed,actorId,targetId)!=='ENGAGED') err=shift('closer',targetId);
+    if(err) return {illegal:err};
+    if(!attack?.effects?.some(e=>e.kind==='area') && bandIndex(distance(proposed,actorId,targetId))>bandIndex(reach))
+        return {illegal:target.name+' is outside '+reach+' from '+actor.name};
+    const clean={...extra,move:null,autoNormalMove:false};
+    const valid=resolveAttack({...ctx,enc:proposed},actorId,targetId,skillId,{...clean,validateOnly:true});
+    if(valid.illegal || extra.validateOnly) return valid;
+    enc.line=proposed.line;
+    projectBands(enc);
+    const result=resolveAttack(ctx,actorId,targetId,skillId,clean);
+    if(from!==enc.line.x[actorId]) {actor.current.cover='none'; result.move={from,to:enc.line.x[actorId],bands:Math.abs(from-enc.line.x[actorId])};}
+    result.band=distance(enc,actorId,targetId);
+    result.weapon=actor.fixed.weapon_name || actor.fixed.attack?.name || ctx.state.entities[actorId]?.sheet?.equipment?.weapon?.name;
+    return result;
+}
+function resolveAttack(ctx, actorId, targetId, skillId, extra = {}) {
     const { enc, content, state } = ctx;
     const actor = enc.combatants[actorId];
     const target = enc.combatants[targetId];
@@ -582,14 +631,15 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         return record;
     }
     // ---- creature natural attack
-    const band = actor.current.band;
+    const band = distance(enc,actorId,targetId);
     let b = band;
     let moved = 0;
     if (!rangeReaches(actor.fixed.attack.range, b) && extra.move === 'closer' && bandIndex(b) > 0) {
         b = bandName(bandIndex(b) - 1);
         moved = 1;
     }
-    if (!rangeReaches(actor.fixed.attack.range, b)) return { illegal: `${actor.name} cannot reach Alaric from ${band}` };
+    if (!rangeReaches(actor.fixed.attack.range, b)) return { illegal: `${actor.name} cannot reach ${enc.line ? target.name : 'Alaric'} from ${band}` };
+    if(extra.validateOnly) return {legal:true,targets:[targetId],cost:0,band:b,moved};
     if (moved) { record.move = { bands: 1, from: band, to: b }; actor.current.band = b; actor.current.cover = 'none'; }
     record.skill_name = actor.fixed.attack.name;
     record.raw = actor.fixed.atk;
@@ -708,6 +758,7 @@ export function worldAction(ctx, actorId, act) {
 }
 
 function repositionPc(enc, actorId, dir, focusId) {
+    if (enc.line) return stepLine(enc,actorId,dir<0?'closer':'away',focusId).change;
     // PC reposition shifts every hostile's band relative to the PC one step (away = +1, closer = -1)
     if (actorId !== 'pc') {
         const c = enc.combatants[actorId];
@@ -749,6 +800,7 @@ export function itemAction(ctx, actorId, act, { validateOnly = false } = {}) {
 
 export function moveAction(ctx, actorId, dir, focusId) {
     const { enc } = ctx;
+    if (enc.line) return {round:enc.round,actor:actorId,kind:'move',dir,...stepLine(enc,actorId,dir,focusId)};
     const record = { round: enc.round, actor: actorId, kind: 'move', dir };
     if (actorId === 'pc') {
         record.change = repositionPc(enc, 'pc', dir === 'closer' ? -1 : 1, focusId);
@@ -834,12 +886,12 @@ export function damagePreview(enc, content, targetId, state = null) {
 const PASSIVE_INTENTS = new Set(['hold', 'parley', 'take_cover']);
 
 /** Deterministic NPC decision (Core #27 NPC DECISION LOCK: decided from the NPC's own state/temperament first). */
-export function npcDecide(ctx, npcId) {
+export function npcDecide(ctx, npcId, target='pc') {
     const { enc } = ctx;
     const me = enc.combatants[npcId];
-    const pc = enc.combatants.pc;
+    const pc = enc.combatants[target];
     const hpPct = me.current.hp / me.fixed.max_hp;
-    const band = me.current.band;
+    const band = enc.line ? distance(enc,npcId,target) : me.current.band;
     // 4.3.0-c.6.6.24 (livetest 21.10.2026: restless skeletons on the rat body plan, "skittish", retreated and were chased
     // round after round): on the planner path no personality category decides; the legacy paths keep theirs
     const temper = ctx.c ? null : me.fixed.temperament || (me.fixed.sapient ? 'cautious' : 'aggressive');
@@ -871,7 +923,7 @@ export function npcDecide(ctx, npcId) {
     const holdsBack = ctx.c
         ? enc.trigger?.actor !== npcId && !opensViolence({ sapient: true, attitude, harmed, hostileRole: outlaw() }).ok
         : !opensViolence({ sapient: true, temperament: temper, attitude, harmed }).ok;
-    if (!intent && me.fixed.sapient && holdsBack) {
+    if (!intent && !enc.participation?.[npcId] && me.fixed.sapient && holdsBack) {
         return canSeekCover && band !== 'ENGAGED' ? { kind: 'cover', why: 'not hostile, not yet harmed: seeks cover' } : { kind: 'hold', why: 'not hostile, not yet harmed' };
     }
     // Patch 4 (Prototype C): one that fled on its own last Turn goes on fleeing until it is out of the fight (live:
@@ -949,9 +1001,9 @@ function npcReach(ctx, me) {
     return best;
 }
 
-function npcAttackSkill(ctx, me) {
+function npcAttackSkill(ctx, me, target='pc') {
     // the NPC's best legal attack: prefer the known attack with highest raw that reaches
-    const band = me.current.band;
+    const band = ctx.enc.line ? distance(ctx.enc,me.id,target) : me.current.band;
     let best = null;
     for (const sid of Object.keys(me.fixed.actions)) {
         const s = resolveSkill(ctx.content, sid, ctx.state);
@@ -1009,6 +1061,12 @@ function asideTurn(ctx, npcId) {
 
 function npcTurn(ctx, npcId) {
     const me = ctx.enc.combatants[npcId];
+    if (ctx.enc.line && (me.side==='hostile' || ctx.enc.participation[npcId])) {
+        const target=lineTarget(ctx.enc,npcId);
+        if(me.current.withdrawing) return actorFlight(ctx,npcId);
+        if(!target) return {round:ctx.enc.round,actor:npcId,kind:'hold',why:'no visible hostile target'};
+        return npcAct(ctx,npcId,null,target);
+    }
     if (ctx.c && me.side !== 'hostile') {
         const aside = asideTurn(ctx, npcId);
         if (!aside.turned) return aside;
@@ -1017,10 +1075,11 @@ function npcTurn(ctx, npcId) {
     return npcAct(ctx, npcId);
 }
 
-function npcAct(ctx, npcId, decided = null) {
+function npcAct(ctx, npcId, decided = null, target='pc') {
     const { enc } = ctx;
     const me = enc.combatants[npcId];
-    let decision = decided || npcDecide(ctx, npcId);
+    let decision = decided || npcDecide(ctx, npcId,target);
+    if(enc.line && decision.kind==='flee') return actorFlight(ctx,npcId);
     // Prototype C (4.3.0-c.6.6): caught after a chase, it does not run again in this fight; it fights back
     if (ctx.c && me.current.caught && (decision.kind === 'flee' || decision.kind === 'retreat')) decision = { kind: 'attack', why: 'caught: cornered' };
     if (decision.kind === 'surrender') {
@@ -1029,15 +1088,15 @@ function npcAct(ctx, npcId, decided = null) {
         if (!enc.defeated.includes(npcId)) enc.defeated.push(npcId);
         return { round: enc.round, actor: npcId, kind: 'surrender', why: decision.why, pending_xp_added: 0 };
     }
-    if (decision.kind === 'flee') return { ...moveAction(ctx, npcId, 'away'), why: decision.why, ...(ctx.c ? { fleeing: true } : {}) };
+    if (decision.kind === 'flee') return { ...moveAction(ctx, npcId, 'away',target), why: decision.why, ...(ctx.c ? { fleeing: true } : {}) };
     if (ctx.c && decision.kind === 'retreat' && me.current.band === 'LONG')
         return {round:enc.round,actor:npcId,kind:'hold',why:'already at LONG; only a full flight leaves the encounter'};
-    if (decision.kind === 'retreat') return { ...moveAction(ctx, npcId, 'away'), kind: 'move', dir: 'away', why: decision.why };
+    if (decision.kind === 'retreat') return { ...moveAction(ctx, npcId, 'away',target), kind: 'move', dir: 'away', why: decision.why };
     if (decision.kind === 'cover' && ctx.c && rulesetOf(ctx.state) >= 2) return {...sidestep(ctx,npcId),why:decision.why};
     if (decision.kind === 'cover') {
         const before = me.current.cover;
         let change = '';
-        if (me.current.band !== 'LONG' && before === 'none') change = `${moveAction(ctx, npcId, 'away').change}, `;
+        if (me.current.band !== 'LONG' && before === 'none') change = `${moveAction(ctx, npcId, 'away',target).change}, `;
         me.current.cover = 'partial';
         return { round: enc.round, actor: npcId, kind: 'cover', why: decision.why, change: `${change}cover ${before} -> partial` };
     }
@@ -1045,9 +1104,9 @@ function npcAct(ctx, npcId, decided = null) {
     // attack (optionally after one band of movement)
     const move = decision.kind === 'close_and_attack' ? 'closer' : null;
     if (me.model === 'creature') {
-        const r = attackAction(ctx, npcId, 'pc', null, { move });
+        const r = attackAction(ctx, npcId, target, null, { move });
         if (r.illegal) {
-            if (move) return { ...moveAction(ctx, npcId, 'closer'), why: 'closing distance' };
+            if (move) return { ...moveAction(ctx, npcId, 'closer',target), why: 'closing distance' };
             return { round: enc.round, actor: npcId, kind: 'hold', why: r.illegal };
         }
         return r;
@@ -1061,11 +1120,11 @@ function npcAct(ctx, npcId, decided = null) {
             return { ...t, why: tactic.why };
         }
     }
-    let sid = npcAttackSkill(ctx, me);
-    if (!sid) return move ? { ...moveAction(ctx, npcId, 'closer'), why: 'closing distance (no attack reaches)' } : { round: enc.round, actor: npcId, kind: 'hold', why: 'no usable attack' };
-    const r = attackAction(ctx, npcId, 'pc', sid, { move, autoNormalMove: true });
+    let sid = npcAttackSkill(ctx, me,target);
+    if (!sid) return move ? { ...moveAction(ctx, npcId, 'closer',target), why: 'closing distance (no attack reaches)' } : { round: enc.round, actor: npcId, kind: 'hold', why: 'no usable attack' };
+    const r = attackAction(ctx, npcId, target, sid, { move, autoNormalMove: true });
     if (r.illegal) {
-        if (move) return { ...moveAction(ctx, npcId, 'closer'), why: 'closing distance' };
+        if (move) return { ...moveAction(ctx, npcId, 'closer',target), why: 'closing distance' };
         return { round: enc.round, actor: npcId, kind: 'hold', why: r.illegal };
     }
     return r;
@@ -1177,6 +1236,10 @@ function terminal(enc) {
     // Prototype C (4.3.0-c.6.6.6, review): an attack of his that opens a fight among no foes (an area attack among
     // bystanders) is resolved before the fight can be over
     const opening = enc.trigger?.actor === 'pc' && !enc.trigger.engage && !enc.trigger_done;
+    if(enc.line) {
+        const contacts=Object.keys(enc.participation).some(id=>Object.keys(enc.combatants).some(other=>canFight(enc,id,other)));
+        return pc.current.defeated || (pc.current.escaped && (!enc.observe || enc.observe.closed)) || (!contacts && !opening);
+    }
     return (activeHostiles(enc).length === 0 && !opening) || pc.current.defeated || pc.current.escaped;
 }
 
@@ -1189,6 +1252,7 @@ function advance(enc) {
         if (idx >= enc.order.length) { idx = 0; enc.round += 1; }
         const id = enc.order[idx];
         const c = enc.combatants[id];
+        if (id==='pc' && enc.observe && c.current.escaped) {enc.observe.closed=true;break;}
         if (alive(c) && !c.current.surrendered && !c.current.peace) break;
     }
     enc.turn_index = idx;
@@ -1214,7 +1278,20 @@ function escapeRoll(ctx, runner, from) {
 }
 
 /** Alaric flees (Prototype C): nobody ENGAGED with him, he is gone; held in melee, one escape roll; failed, he stays. */
+function actorFlight(ctx,id) {
+    const enc=ctx.enc, c=enc.combatants[id];
+    const held=Object.values(enc.combatants).filter(o=>canFight(enc,id,o.id) && distance(enc,id,o.id)==='ENGAGED');
+    const escape=held.length ? escapeRoll(ctx,c,held) : null;
+    const escaped=!escape || escape.ok;
+    if(escaped) {
+        c.current.escaped=true;
+        if(!enc.escaped.includes(id)) enc.escaped.push(id);
+        if(enc.participation[id]) enc.participation[id].to=enc.pending_xp;
+    }
+    return {round:enc.round,actor:id,kind:'flee',escaped,...escape?{escape}:{},why:held.length?'break away from contact':'clear route'};
+}
 function pcFlee(ctx) {
+    if(ctx.enc.line) return actorFlight(ctx,'pc');
     const { enc } = ctx;
     const pc = enc.combatants.pc;
     const held = activeHostiles(enc).filter((c) => c.current.band === 'ENGAGED');
@@ -1278,13 +1355,23 @@ function singlePcAction(ctx, act) {
     const {enc} = ctx;
     let r;
     if (act.kind === 'attack') r = attackAction(ctx, 'pc', act.target, act.skill, { move: act.move, moveTarget: act.move_target, item: act.item, burst: act.burst, field: act.field, crowd: act.crowd });
-    else if (act.kind === 'surrender') r = {round:enc.round,actor:'pc',kind:'surrender_offer',target:act.target,terms:act.terms};
+    else if (act.kind === 'surrender') r = {round:enc.round,actor:'pc',kind:'surrender_offer',target:act.target,terms:act.terms,...act.group?{group:true}:{}};
     else if (act.kind === 'sidestep') r = sidestep(ctx, 'pc');
     else if (act.kind === 'skill') r = skillAction(ctx, 'pc', act.skill, { dir: act.dir, target: act.target });
     else if (act.kind === 'move') r = ctx.c && !act.explicitBudget && act.dir === 'closer' && fleeing(enc, act.target) ? chase(ctx, act.target) : { ...moveAction(ctx, 'pc', act.dir, act.target), ...(act.explicitBudget ? {focus:act.target ?? null} : {}) };
     else if (act.kind === 'ability_world') r = worldAction(ctx, 'pc', act);
     else if (act.kind === 'item') r = itemAction(ctx, 'pc', act);
-    else if (act.kind === 'flee' && ctx.c) r = pcFlee(ctx);
+    else if (act.kind === 'flee' && ctx.c) {
+        if (enc.line && act.together) {
+            for(const id of Object.keys(enc.participation).filter(id=>id!=='pc')) {
+                const ally=enc.combatants[id];
+                // Asked allies decide within their own action budget. An independent fighter keeps their goal.
+                if(alive(ally) && ally.current.priority?.kind!=='independent') ally.current.withdrawing=true;
+            }
+            if(Object.values(enc.combatants).some(c=>c.current.withdrawing && c.current.cover!=='full')) enc.observe={closed:false};
+        }
+        r = pcFlee(ctx);
+    }
     else if (act.kind === 'flee') {
         const far = Object.values(enc.combatants).filter((c) => c.side === 'hostile' && alive(c)).every((c) => c.current.band === 'LONG');
         if (far) { enc.combatants.pc.current.escaped = true; r = { round: enc.round, actor: 'pc', kind: 'flee', escaped: true }; }
@@ -1369,10 +1456,11 @@ export function runCombat(ctx, pcAction) {
             pcActed = true;
         } else {
             const me = enc.combatants[t.actor];
-            const sid = me.model === 'creature' ? null : npcAttackSkill(ctx, me);
+            const aim=enc.line && canFight(enc,t.actor,t.target) ? t.target : 'pc';
+            const sid = me.model === 'creature' ? null : npcAttackSkill(ctx, me,aim);
             // a character with no attack that reaches Alaric from where it hides cannot open (it used to crash here)
             r = me.model !== 'creature' && !sid ? { illegal: `${me.name} has no attack that reaches ${enc.combatants.pc.name} from ${me.current.band}` }
-                : attackAction(ctx, t.actor, 'pc', sid, { opening: true, move: 'closer', autoNormalMove: true });
+                : attackAction(ctx, t.actor, aim, sid, { opening: true, move: 'closer', autoNormalMove: true });
             if (r.illegal) r = { round: 0, actor: t.actor, kind: 'hold', why: `ambush attack impossible: ${r.illegal}` };
         }
         r.note = 'Opening Action (true Ambush: every strike is a Critical Hit ×1.5)';
@@ -1397,8 +1485,9 @@ export function runCombat(ctx, pcAction) {
             pcActed = true;
         } else {
             const me = enc.combatants[t.actor];
-            const sid = me.model === 'creature' ? null : npcAttackSkill(ctx, me);
-            r = me.model !== 'creature' && !sid ? { illegal: 'no attack reaches' } : attackAction(ctx, t.actor, 'pc', sid, { move: 'closer', autoNormalMove: true });
+            const aim=enc.line && canFight(enc,t.actor,t.target) ? t.target : 'pc';
+            const sid = me.model === 'creature' ? null : npcAttackSkill(ctx, me,aim);
+            r = me.model !== 'creature' && !sid ? { illegal: 'no attack reaches' } : attackAction(ctx, t.actor, aim, sid, { move: 'closer', autoNormalMove: true });
             // out of reach even after its step: no First Strike, it attacks on its own Turn as before; made, the attack
             // is the one its intent announced (npcDecide uses an intent once)
             if (r.illegal) r = null;
@@ -1419,7 +1508,7 @@ export function runCombat(ctx, pcAction) {
         if (terminal(enc)) {
             // Prototype C (4.3.0-c.6.6.7): someone who is no foe of his, struck since their last Turn, answers the strike
             // before the fight ends (asideTurn); that answer is their action of this Round. A turn on him goes on fighting
-            const due = ctx.c ? reactionsDue(enc) : [];
+            const due = ctx.c && !enc.line ? reactionsDue(enc) : [];
             if (!due.length) break;
             for (const id of due) {
                 startTurn(enc, id);
@@ -1468,7 +1557,7 @@ export function endEncounterEvents(state, content, enc) {
     const xp = pc.current.defeated ? 0 : enc.pending_xp;
     const summary = {
         defeated: enc.defeated.filter((id) => id !== 'pc'), escaped: enc.escaped.slice(), xp_awarded: xp,
-         ...(enc.negotiatedEnd ? {reason:'negotiated',agreements:enc.agreements} : {}),
+         ...(enc.negotiatedEnd ? {reason:'negotiated',agreements:enc.agreements} : enc.line ? {reason:pc.current.defeated?'pc_dead':pc.current.escaped?'withdrawal':'resolved',agreements:enc.agreements || []}:{}),
         pc_dead: pc.current.defeated, pc_escaped: !!pc.current.escaped,
     };
     if (xp > 0) {

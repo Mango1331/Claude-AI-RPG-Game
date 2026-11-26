@@ -54,7 +54,9 @@ export function emptyState() {
 /** Fold events onto a base state (the base is cloned once; events are applied in place for speed). */
 export function negotiationRevision(s) {
     const sheet=s.entities.pc.sheet;
-    return hash32(JSON.stringify([s.encounter,s.scene.at,s.scene.present,sheet.coin_cp,sheet.equipment,sheet.inventory,s.objects]));
+    const parts=[s.encounter,s.scene.at,s.scene.present,sheet.coin_cp,sheet.equipment,sheet.inventory,s.objects];
+    if(s.encounter?.line) parts.push(s.party,Object.keys(s.encounter.participation).map(id=>s.entities[id]?.sheet));
+    return hash32(JSON.stringify(parts));
 }
 
 export function fold(events, base = emptyState()) {

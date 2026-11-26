@@ -104,7 +104,7 @@
   "deltas": [
     {
       "type": "party",
-      "summary": "Voluntary cooperation with one present NPC. offer records a proposal (quest ID, combat readiness, confirmed half share or explicit copper amount); accept/decline name the other party's OPEN agreement ID. wait/follow/leave describe a real change. Use the speaker's exact decision, never a guess or mere co-presence. Only the identified NPC's own proposal or decision. Include a literal decision quote.",
+      "summary": "Voluntary cooperation with one present NPC. offer records a proposal (quest ID, combat readiness, confirmed half share or explicit copper amount); accept/decline name the other party's OPEN agreement ID. wait/follow/leave describe a real change. coordinate names the request to attack a target, protect a person, act independently, take point or bring up the rear. Use the speaker's exact decision, never a guess or mere co-presence. Only the identified NPC's own proposal or decision. Include a literal decision quote.",
       "fields": {
         "act": {
           "enum": [
@@ -113,12 +113,15 @@
             "decline",
             "wait",
             "follow",
-            "leave"
+            "leave",
+            "coordinate"
           ]
         },
         "who": {
           "ref": "person"
         },
+        "priority": {"enum":["target","protect","independent","front","rear"],"nullable":true},
+        "target": {"type":"string","nullable":true},
         "agreement": {
           "type": "string",
           "nullable": true

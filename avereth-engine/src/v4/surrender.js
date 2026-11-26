@@ -156,7 +156,7 @@ export function negotiationPrompt(state) {
     const actors=negotiators(state).map(c=>c.label || c.name).join(', ');
     if (n.stage==='counter') return 'BINDING COUNTEROFFER: '+n.reply.evidence+' Terms: '+describeTerms(n.reply.terms)+'. Alaric chooses now. No additional condition or attack.';
     return 'SURRENDER — his Major Action is spent. Offer to '+(n.target ? state.encounter.combatants[n.target].label : actors)+': '+describeTerms(n.terms)+
-        '. Already released: '+describeTerms(n.released)+'. From motives, the danger, prior harm and their interests, show a definite acceptance, refusal, or ONE concrete final counteroffer. Give the speaker and each consenting party a short, explicit decision in their own clause (e.g. “Bandit B accepts the offer.”). Use their combat label or unmistakable visible identity. Name who refuses or makes a demand. Others remain hostile. Allow their dialogue now. No extra PC decision, condition after acceptance, attack, damage, automatic safety or unbooked transfer.';
+        (n.group ? '. Group request for '+Object.keys(state.encounter.participation).join(', ')+'. Each partner decides for themselves. Explicitly identify both the protected party and each decision.' : '')+'. Already released: '+describeTerms(n.released)+'. From motives, the danger, prior harm and their interests, show a definite acceptance, refusal, or ONE concrete final counteroffer. Give the speaker and each consenting party a short, explicit decision in their own clause (e.g. “Bandit B accepts the offer.”). Use their combat label or unmistakable visible identity. Name who refuses or makes a demand. Others remain hostile. Allow their dialogue now. No extra PC decision, condition after acceptance, attack, damage, automatic safety or unbooked transfer.';
 }
 
 export const surrenderWords=/\b(?:surrender|yield|give up|mercy|spare (?:me|my life)|let me (?:live|go)|lay down (?:my |our )?arms|ergebe|gnade|kapitulier\w*)\b/i;
@@ -173,8 +173,8 @@ export function negotiationPlanText(state,content) {
 export function negotiationExtraction(state,content,prose) {
     const n=state.encounter.negotiation;
     return [
-        {role:'system',content:'You read one reply of a text RPG narrator. Extract ONLY the response to the specific open surrender offer. No attacks, damage, ordinary deltas or new player choices. Return JSON {offer,choice:"accept"|"refuse"|"counter",speaker,members:[{id,evidence}],evidence,terms:[{object,qty,mode:"offer",quote}]}. Quote a complete, attributable decision including the speaker or speech tag. Consideration and refusal are never assent. For refusal use members:[]; no consenting participant is needed. For agreement or counteroffer, members are only the speaker and eligible opponents who explicitly join, visibly assent or have established the speaker represents them. One person cannot bind independent foes. Distinct evidence for each independently assenting NPC. A counteroffer is a definite final demand. Put ALL material terms in terms, total including delivered units that count towards it. Additional prices are additional. Use exact asset IDs. A demand for the contents of a pouch is coin; the physical pouch only if explicitly demanded. For accept/refuse terms is []. If the response is missing or uncertain say {"choice":"unclear"}. Do not invent assent.'},
-        {role:'user',content:JSON.stringify({offer:n.id,addressed:n.target,offerTerms:n.terms,released:n.released,eligible:negotiators(state).map(c=>({id:c.id,label:c.label,description:state.entities[c.id].traits,weapon:state.entities[c.id].sheet?.equipment?.weapon?.name})),assets:surrenderAssets(state,content),reply:prose})},
+        {role:'system',content:'You read one reply of a text RPG narrator. Extract ONLY the response to the specific open surrender offer. No attacks, damage, ordinary deltas or new player choices. Return JSON {offer,choice:"accept"|"refuse"|"counter",speaker,members:[{id,evidence}],evidence,terms:[{object,qty,mode:"offer",quote}]}. Quote a complete, attributable decision including the speaker or speech tag. Consideration and refusal are never assent. For refusal use members:[]; no consenting participant is needed. For agreement or counteroffer, members are only the speaker and eligible opponents who explicitly join, visibly assent or have established the speaker represents them. One person cannot bind independent foes. Distinct evidence for each independently assenting NPC. A counteroffer is a definite final demand. Put ALL material terms in terms, total including delivered units that count towards it. Additional prices are additional. Use exact asset IDs. A demand for the contents of a pouch is coin; the physical pouch only if explicitly demanded. For accept/refuse terms is []. If the response is missing or uncertain say {"choice":"unclear"}. Do not invent assent.'+(n.group?' Include allies:[{id,evidence}] for each named ally explicitly accepting this same group settlement. Both sides must explicitly agree to protecting the group. Optional ally.pledges:[{object,qty,quote}] only for explicit personal handovers by that ally to the negotiating recipient. Quote their complete first-person line and the precise asset name and quantity.':'')},
+        {role:'user',content:JSON.stringify({offer:n.id,...n.group?{group:Object.keys(state.encounter.participation),allyAssets:Object.fromEntries(Object.keys(state.encounter.participation).filter(id=>id!=='pc').map(id=>[id,allyAssets(state,content,id).map(({object,name,qty})=>({object,name,qty}))]))}:{},addressed:n.target,offerTerms:n.terms,released:n.released,eligible:negotiators(state).map(c=>({id:c.id,label:c.label,description:state.entities[c.id].traits,weapon:state.entities[c.id].sheet?.equipment?.weapon?.name})),assets:surrenderAssets(state,content),reply:prose})},
     ];
 }
 
@@ -182,6 +182,10 @@ export function negotiationExtraction(state,content,prose) {
 // descriptions in the actual sheet; another actor mentioned elsewhere cannot lend their answer.
 function decisionSubject(state,subject) {
     const noun=cleanStatement(subject).replace(/^the /,'');
+    if(state.encounter?.line) {
+        const ally=Object.keys(state.encounter.participation).filter(id=>id!=='pc' && [state.entities[id]?.name,state.encounter.combatants[id]?.label].some(x=>x && cleanStatement(x)===noun));
+        if(ally.length===1) return ally[0];
+    }
     const people=negotiators(state);
     const group=noun.match(/^(all \w+|both)(?: (.+))?$/);
     if (/^(?:everyone|all of them)$/.test(noun) || group &&
@@ -253,6 +257,31 @@ export function reactionError(state,content,r,prose) {
     const records=decisionRecords(state,prose);
     const decision=citedDecision(records,prose,r.evidence);
     const members=r.members;
+    if(r.allies != null) {
+        if(!Array.isArray(r.allies) || (!n.group || r.choice==='refuse') && r.allies.length) return 'Only the requested group may consent.';
+        if(new Set(r.allies.map(a=>a?.id)).size!==r.allies.length) return 'Duplicate ally.';
+        for(const ally of r.allies) {
+            const a=state.encounter?.combatants[ally?.id];
+            const assent=citedDecision(records,prose,ally?.evidence);
+            if(!a || a.id==='pc' || !state.encounter.participation?.[a.id] || a.current.defeated || a.current.escaped ||
+                assent.actor!==a.id || assent.choice!=='accept' || records.some(x=>x.actor===a.id && x.choice==='refuse'))
+                return 'Quote the living ally personally accepting the same group agreement.';
+            const pledges=ally.pledges ?? [];
+            if(!Array.isArray(pledges) || new Set(pledges.map(p=>p?.object)).size!==pledges.length) return 'Duplicate or malformed ally pledge.';
+            for(const p of pledges) {
+                const item=allyAssets(state,content,ally.id).find(a=>a.object===p?.object);
+                const quote=findQuote(prose,p?.quote);
+                const spoken=records.find(v=>v.spoken && v.actor===ally.id && quote.state==='found' && quote.start>=v.start && quote.end<=v.end);
+                if(!item || !spoken || !Number.isSafeInteger(p.qty) || p.qty<=0 || p.qty>item.qty ||
+                    !/^I (?:give|hand over|offer) (?:my |the )?/i.test(spoken.predicate) || noCommit.test(spoken.predicate) ||
+                    !spoken.predicate.toLowerCase().includes(p.quote.toLowerCase()) || /\b(?:if|unless|but)\b|\?/i.test(spoken.predicate))
+                    return 'Missing voluntary handover by the owner of the pledged property.';
+                if(item.object==='coin' ? coinEvidence(p.quote,content).cp!==p.qty :
+                   !p.quote.toLowerCase().includes(item.name.toLowerCase()) || p.qty!==1 && !numbersIn(p.quote).has(p.qty))
+                    return 'The source or quantity of the ally pledge differs from their words.';
+            }
+        }
+    }
     if (r.choice==='refuse') {
         if (members!=null && (!Array.isArray(members) || members.length)) return 'A refusal has no consenting members.';
     } else if (!Array.isArray(members) || !members.some(m=>m?.id===r.speaker) || new Set(members.map(m=>m?.id)).size!==members.length) {
@@ -304,4 +333,45 @@ export function reactionError(state,content,r,prose) {
             return 'Quote this participant’s own assent or an explicit collective assent.';
     }
     return null;
+}
+
+/** Concrete property an ally can personally pledge in the reply to a group offer. */
+export function allyAssets(s,content,who) {
+    const sh=s.entities[who]?.sheet;
+    if(!sh) return [];
+    const list=[{object:'coin',name:'coin',qty:sh.coin_cp}];
+    for(const [slot,item] of Object.entries(sh.equipment || {})) {
+        const obj=s.objects[item?.object];
+        const gear=typeof item==='string'?content.items.get(item):item;
+        if(gear) list.push({object:'worn.'+slot,name:gear.name,qty:1,slot,gear,ref:obj?.id});
+    }
+    for(const [id,qty] of Object.entries(sh.inventory || {})) if(!s.objects[id] && qty>0)
+        list.push({object:'item.'+id,template:id,name:content.items.get(id)?.name || id,qty});
+    for(const o of Object.values(s.objects)) if(o.holder?.entity===who && !list.some(a=>a.ref===o.id))
+        list.push({object:o.id,name:o.name,qty:o.qty ?? 1,ref:o.id});
+    return list;
+}
+
+export function allyReceiptEvents(s,content,reply) {
+    const events=[], receipts=[];
+    for(const m of reply.allies || []) for(const p of m.pledges || []) {
+        const a=allyAssets(s,content,m.id).find(a=>a.object===p.object);
+        if(!a || a.qty<p.qty || !Number.isSafeInteger(p.qty) || p.qty<1) throw Error('Pledged property is no longer available.');
+        const recipient={entity:reply.speaker};
+        if(a.object==='coin') {
+            events.push({t:'coin.changed',d:{id:m.id,value:s.entities[m.id].sheet.coin_cp-p.qty,delta:-p.qty,why:'agreed surrender'}});
+            events.push({t:'object.created',d:{object:{id:'obj.'+s.encounter.negotiation.id+'.'+m.id+'.coin',name:'Loose coin',kind:'item',qty:p.qty,unit:'cp',holder:recipient,source:{surrender_cp:1}}}});
+            events.push({t:'transaction.completed',d:{from:m.id,to:reply.speaker,cp:p.qty,for:'combat surrender'}});
+        } else {
+            if(a.slot) events.push({t:'item.equipped',d:{id:m.id,slot:a.slot,item:null}});
+            if(a.ref) events.push({t:'object.moved',d:{id:a.ref,to:recipient,...p.qty<a.qty?{qty:p.qty,split:a.ref+'.'+s.encounter.negotiation.id}:{}}});
+            else {
+                if(a.template) events.push({t:'item.changed',d:{id:m.id,item:a.template,qty:-p.qty}});
+                const id='obj.'+s.encounter.negotiation.id+'.'+m.id+'.'+p.object;
+                events.push({t:'object.created',d:{object:{id,kind:'item',name:a.name,qty:p.qty,holder:recipient,...a.gear?{equipment:{...a.gear}}:{},source:{how:'given',from:m.id,template:a.template || a.gear?.id}}}});
+            }
+        }
+        receipts.push({owner:m.id,object:p.object,qty:p.qty,to:reply.speaker,at:s.scene.at});
+    }
+    return {events,receipts};
 }

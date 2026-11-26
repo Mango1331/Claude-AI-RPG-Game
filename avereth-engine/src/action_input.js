@@ -1,3 +1,4 @@
+import { projectedStep } from './party_line.js';
 import {negotiators,checkTerms,counterConsentError,identifiesRecipient} from './v4/surrender.js';
 // Host-owned typed choices. These are inputs to the existing Engine, never events or model authority.
 import { hash32, clone, BANDS } from './util.js';
@@ -40,7 +41,7 @@ function previewEncounter(state,content,target) {
 }
 export function lowerActionSelection(selection,state,content) {
     const s=selection;
-    if(s.kind==='surrender')return {route:'v3',intent:{kind:s.kind,target:s.target,terms:s.terms}};
+    if(s.kind==='surrender')return {route:'v3',intent:{kind:s.kind,target:s.target,terms:s.terms,...s.group===true?{group:true}:{}}};
     if(s.kind==='negotiation_answer')return {route:'v3',intent:{kind:s.kind,accept:s.accept}};
     if(s.kind==='sidestep' || s.kind==='flee')return {route:'v3',intent:{kind:s.kind}};
     if(s.kind==='quest.accept')return {route:'v4',commands:[{seq:1,type:'quest.accept',quest:s.quest}]};
@@ -80,7 +81,7 @@ function validatePhase(selection,state,content) {
 
 export function validateActionSelection(selection,state,content,{ordered = false} = {}) {
     if (selection?.kind === 'phase') return validatePhase(selection,state,content);
-    const s=selection, fields={surrender:['target','terms'],negotiation_answer:['accept'],sidestep:[],flee:[],attack:['skill','target','approach','band'],skill:['skill','target','dir'],move:['dir','target'],use:['object','target'],'quest.accept':['quest']};
+    const s=selection, fields={surrender:['target','terms','group'],negotiation_answer:['accept'],sidestep:[],flee:[],attack:['skill','target','approach','band'],skill:['skill','target','dir'],move:['dir','target'],use:['object','target'],'quest.accept':['quest']};
     if (s?.kind === 'trade.accept' || s?.kind === 'trade.ask') {
         if (typeof s.id !== 'string' || !s.id) return refusal('Auswahl-ID fehlt');
         const {id, ...choice} = s;
@@ -135,6 +136,10 @@ export function validateActionSelection(selection,state,content,{ordered = false
     }
     if (['sidestep','flee'].includes(s.kind) && !state.encounter) return refusal('Diese Aktion benötigt einen Kampf');
     if(s.kind==='move') {
+        if(enc?.line && !ordered) {
+            const step=projectedStep(enc,'pc',s.dir,s.target);
+            if(step.illegal) return refusal(step.illegal);
+        }
         if(!state.encounter || !['closer','away'].includes(s.dir))return refusal('Bewegung braucht einen Kampf und eine gültige Richtung');
     }
     if(s.kind==='skill' && s.dir && !['closer','away'].includes(s.dir))return refusal('Ungültige Richtung');
@@ -310,7 +315,7 @@ export function plannedNegotiation(commands,input,hud,state,content,text) {
             if (error) return refusal(error);
             if (c.terms.some(t=>t.mode==='give') && !identifiesRecipient(state,c.target,text))
                 return refusal('Die direkte Übergabe braucht einen eindeutig bezeichneten Empfänger.');
-            steps.push({id,kind:c.type,target:c.target ?? null,terms:c.terms});
+            steps.push({id,kind:c.type,target:c.target ?? null,terms:c.terms,...state.encounter?.line && /\b(?:we|all of us|our party|both of us|together)\b/i.test(c.quote)?{group:true}:{}});
         } else if (c.type==='negotiation_answer') {
             const error=c.accept && counterConsentError(state,content,text);
             if (error) return refusal(error);

@@ -1,3 +1,5 @@
+import { following, membersOf, partyDecision } from './party.js';
+import { canFight } from './party_line.js';
 // Engine facade — the whole API a host (SillyTavern extension, tests, CLI) needs:
 //
 //   startCampaign(content, {seed, firstMessage})      -> events            (stored with the first message)
@@ -17,8 +19,8 @@ import { rankRefusal, itemProfile } from './v4/items.js';
 import { deriveCharacter, actionsOf } from './derived.js';
 import { selectClass, selectSkills } from './creation.js';
 import { scaleCreature, chooseCreatureLevel, humanSheet } from './npcgen.js';
-import { checkTerms, describeTerms, negotiators, surrenderAssets } from './v4/surrender.js';
-import { surrenderTransfers } from './v4/commands.js';
+import { allyReceiptEvents, checkTerms, describeTerms, negotiators, surrenderAssets } from './v4/surrender.js';
+import { surrenderTransfers, SurrenderTransferError } from './v4/commands.js';
 import { characterCombatant, initEncounter, addCombatant, runCombat, endEncounterEvents, terminal } from './combat.js';
 import { parseIntent } from './intent.js';
 import { runCommands, creationPanel } from './commands.js';
@@ -166,6 +168,12 @@ function storyTurn(s, content, text, intent, dice, emit, situations, c = false) 
         return {kind:'note',text:'NPC decision still open. Retry the reply or withdraw the offer to resume combat.'};
     }
     const pcAction = pcActionOf(s, content, intent, text);
+    if (pcAction && s.encounter?.line && intent.coordination) {
+        const r=partyDecision(s,content,intent.coordination,text,'pc',emit);
+        if (!r.done) return {kind:'note',text:r.line,illegal:r.reason};
+    }
+    if (pcAction?.kind==='flee' && s.encounter?.line)
+        pcAction.together=intent.together===true && !/\b(?:alone|without them|leave them)\b/i.test(text);
     const offerStep=(intent.phase || [intent]).find(a=>a.kind==='surrender');
     if (offerStep) {
         const possible=negotiators(s);
@@ -321,7 +329,7 @@ function worldUse(s, content, act, dice, emit) {
 function pcActionOf(s, content, intent, text) {
     const name = (id) => entityLabel(s, id);
     switch (intent.kind) {
-        case 'surrender': return {kind:'surrender',target:intent.target,terms:intent.terms};
+        case 'surrender': return {kind:'surrender',target:intent.target,terms:intent.terms,...intent.group?{group:true}:{}};
         case 'engage': return { kind: 'engage', targets: intent.targets || [] };
         case 'attack':
             // a group the story holds as one creature ("cellar rats") is never fought as one: the story shows its animals
@@ -625,6 +633,11 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
         started = { reason: enc.ambush_reason, order: enc.order.map(named).join(' > '), ambush: enc.ambush };
     } else {
         enc = clone(s.encounter);
+        if(enc.line) for(const member of following(s)) {
+            const actor=enc.combatants[member.who];
+            if(actor && member.priority) actor.current.priority={...member.priority};
+            else if(!actor && member.combat && s.entities[member.who].sheet) addCombatant(enc,s,content,member.who,'ally',null,{c});
+        }
         // opened by the reply that reported the commitment (see openCommitted): the player already saw Initiative,
         // Turn order and the Turns before Alaric's (enc.preface); the narrator hears of the start and of those Turns
         // here. Round 0: a fight fixed without them (older chats, attackers still unidentified) starts Round 1 now.
@@ -671,7 +684,7 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
         const transfer=surrenderTransfers(s,content,terms,assets,{target:offer.target});
         transfer.events.forEach(emit);
         if (transfer.events.some(e=>e.t==='item.equipped')) refreshCombatGear(s,content,enc);
-        enc.negotiation={id:enc.id+'.t'+s.turn+'.'+hash32(JSON.stringify([offer.target,terms,negotiationRevision(s)])),stage:'offered',at:s.scene.at,target:offer.target,terms,released:transfer.receipts};
+        enc.negotiation={id:enc.id+'.t'+s.turn+'.'+hash32(JSON.stringify([offer.target,terms,negotiationRevision(s)])),stage:'offered',at:s.scene.at,target:offer.target,terms,released:transfer.receipts,...enc.line && offer.group?{group:true}:{}};
     }
     // Patch 8.1: those of the group who were unaware of him enter once the fight goes on past its opening (never one
     // that ended it); they take their place in the fixed Turn order from here, no Turn is replayed for them
@@ -720,8 +733,8 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
     return outcome;
 }
 
-function refreshCombatGear(s,content,enc) {
-    const pc=enc.combatants.pc, fresh=characterCombatant(s,'pc',content,pc.side);
+function refreshCombatGear(s,content,enc,id='pc') {
+    const pc=enc.combatants[id], fresh=characterCombatant(s,id,content,pc.side);
     pc.fixed=fresh.fixed;
     pc.current.ammo=fresh.current.ammo;
     pc.current.hp=Math.min(pc.current.hp,pc.fixed.max_hp);
@@ -735,16 +748,25 @@ function finishNegotiation(s,content,dice,emit,reply,accept) {
     if (accepted) {
         const terms=reply.choice==='counter' ? reply.terms : offer.terms;
         const transfer=surrenderTransfers(s,content,terms,surrenderAssets(s,content),{target:reply.speaker,released:offer.released,settle:true});
-        transfer.events.forEach(emit);
-        if (transfer.events.some(e=>e.t==='item.equipped')) refreshCombatGear(s,content,enc);
+        let allied;
+        try { allied=allyReceiptEvents(s,content,reply); }
+        catch(error) { throw new SurrenderTransferError(error.message); }
+        const all=[...transfer.events,...allied.events];
+        all.forEach(emit);
+        for(const id of new Set(all.filter(e=>e.t==='item.equipped').map(e=>e.d.id || 'pc'))) refreshCombatGear(s,content,enc,id);
+        transfer.receipts.push(...allied.receipts);
         for (const {id} of reply.members) {
             const fighter=enc.combatants[id];
+            if(enc.line) continue;
             fighter.side='neutral';
             fighter.current.peace=true;
             delete enc.intents[id];
             emit({t:'scene.tactical',d:{id,relevant:true,threat:false}});
         }
-        (enc.agreements ||= []).push({offer:offer.id,speaker:reply.speaker,members:reply.members.map(m=>m.id),terms,receipts:[...offer.released,...transfer.receipts],evidence:reply.evidence});
+        (enc.agreements ||= []).push({offer:offer.id,speaker:reply.speaker,members:reply.members.map(m=>m.id),...(enc.line ? {pairs:reply.members.flatMap(m=>['pc',...(reply.allies || []).map(a=>a.id)].map(id=>[m.id,id]))}:{}),terms,receipts:[...offer.released,...transfer.receipts],evidence:reply.evidence});
+        if (enc.line) for(const id of Object.keys(enc.participation)) {
+            if (!Object.keys(enc.combatants).some(other=>canFight(enc,id,other))) enc.participation[id].to ??= enc.pending_xp;
+        }
         if (terminal(enc)) enc.negotiatedEnd=true;
     }
     delete enc.negotiation;
@@ -846,6 +868,12 @@ function persistCombat(s, content, emit, enc, records, isNew, { c: cPath = false
     // mirror the PC's resources and every sheet-bearer's ammunition into the sheet (the snapshot stays authoritative for NPCs)
     const pcC = enc.combatants.pc;
     for (const r of ['hp', 'mp', 'sta']) if (pcC.current[r] !== s.entities.pc.sheet[r]) emit({ t: 'resource.changed', d: { id: 'pc', resource: r, value: pcC.current[r] } });
+    if (enc.line) for (const c of Object.values(enc.combatants)) {
+        const sheet=s.entities[c.id]?.sheet;
+        if(c.id==='pc' || !sheet) continue;
+        for(const resource of ['hp','mp','sta']) if(c.current[resource]!==sheet[resource])
+            emit({t:'resource.changed',d:{id:c.id,resource,value:c.current[resource]}});
+    }
     for (const r of records) if (r.ammo && s.entities[r.actor]?.sheet) emit({ t: 'item.changed', d: { id: r.actor, item: r.ammo.item, qty: -r.ammo.used, why: r.skill_name } });
     // deaths are world truth (hard facts) witnessed by everyone present who noticed the fight (not the unaware)
     for (const c of Object.values(enc.combatants)) {
@@ -858,6 +886,15 @@ function persistCombat(s, content, emit, enc, records, isNew, { c: cPath = false
     }
     const out = { board: combatBoard(enc), ended: null, levelups: [], next: null, loot: null };
     if (terminal(enc)) {
+        if(enc.line) for(const m of membersOf(s).filter(m=>m.mode==='follow')) {
+            const member=enc.combatants[m.who];
+            if(!member) continue;
+            if(member.current.defeated || member.current.escaped!==!!pcC.current.escaped) {
+                emit({t:'party.member',d:{...m,previous:m.revision,mode:member.current.defeated?'left':'wait',at:s.scene.at,
+                    lastContact:{encounter:enc.id,turn:s.turn,minute:s.clock.minute,escaped:member.current.escaped,
+                    danger:Object.keys(enc.combatants).filter(id=>canFight(enc,m.who,id))}}});
+            }
+        }
         const end = endEncounterEvents(s, content, enc);
         out.levelups = end.events.filter((e) => e.t === 'level.up').map((e) => `Level ${e.d.level}`);
         end.events.forEach(emit);
@@ -868,10 +905,12 @@ function persistCombat(s, content, emit, enc, records, isNew, { c: cPath = false
             if (e.sheet) for (const r of ['hp', 'mp', 'sta']) { if (c.current[r] !== undefined && c.current[r] !== e.sheet[r]) emit({ t: 'resource.changed', d: { id: c.id, resource: r, value: c.current[r] } }); }
             else if (e.profile && c.current.hp !== e.profile.hp) emit({ t: 'entity.updated', d: { id: c.id, set: { profile: { ...e.profile, hp: c.current.hp } } } });
             // Prototype C (4.3.0-c.6.6): when Alaric got away, the foes he left behind are out of his scene too
-            if (c.current.escaped || (cPath && enc.combatants.pc.current.escaped && c.side === 'hostile' && s.scene.present.includes(c.id))) {
+            const companion=enc.line && !!enc.participation[c.id];
+            const lost=companion && (!!pcC.current.escaped !== !!c.current.escaped);
+            if (lost || !companion && (c.current.escaped || (cPath && pcC.current.escaped && c.side === 'hostile' && s.scene.present.includes(c.id)))) {
                 emit({ t: 'scene.left', d: { id: c.id } });
                 // 4.3.0-c.6.6.6: one that fled the fight itself is driven off, as the engine saw it (src/v4/guild.js defeatTally)
-                if (cPath && c.current.escaped) emit({ t: 'entity.updated', d: { id: c.id, set: { fled: { turn: s.turn, encounter: enc.id } } } });
+                if (cPath && c.current.escaped && !companion) emit({ t: 'entity.updated', d: { id: c.id, set: { fled: { turn: s.turn, encounter: enc.id } } } });
                 // Patch 5 (review): where it got away, or where he got away from it, is where it may be met again
                 // (src/v4/world.js nearby)
                 if (s.entities[c.id]?.kind === 'creature') emit({ t: 'entity.updated', d: { id: c.id, set: { left: { at: s.scene.at, minute: s.clock.minute, turn: s.turn, leg: false } } } });

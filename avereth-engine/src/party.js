@@ -1,3 +1,5 @@
+import { allyAssets } from './v4/surrender.js';
+import { profileOf, restoreOf, restoreEffect, rankRefusal, freeObjectId } from './v4/items.js';
 import { claim, payClaim } from './party_rewards.js';
 import { deriveCharacter } from './derived.js';
 import { hash32 } from './util.js';
@@ -106,16 +108,69 @@ export function partyDecision(s, content, command, source, actor, emit) {
                 payClaim(s,emit,row,row.amount);
             }
         }
+    } else if (['equip','use','give'].includes(c.act)) {
+        if (actor !== who || !member || member.mode==='left' || s.encounter || !person.sheet)
+            return failure('Personal equipment decisions require the present owner outside combat.');
+        const asset=allyAssets(s,content,who).find(a=>a.object===c.object);
+        const qty=c.qty ?? 1;
+        if (!asset || asset.object==='coin' || !Number.isSafeInteger(qty) || qty<=0 || asset.qty<qty ||
+            !words.toLowerCase().includes(asset.name.toLowerCase()) || no.test(words) ||
+            /\b(?:if|unless|might|would|could)\b|\?/i.test(words)) return failure('Quote the actual use of a held item.');
+        const bag=asset.ref ? s.objects[asset.ref] : content.items.get(asset.template);
+        if (c.act==='equip') {
+            const p=bag && (profileOf(content,bag) || bag);
+            if (!/\b(?:equip|wear|wield|put on|ready)\b/i.test(words) || !['armor','weapon'].includes(p?.slot) ||
+                rankRefusal(content,person.sheet.level,p) || qty!==1) return failure('No usable equipment choice.');
+            const old=person.sheet.equipment[p.slot];
+            if (old && !old.object && !person.sheet.inventory[old.id || old]) {
+                const gear=typeof old==='string' ? content.items.get(old):old;
+                if (gear) emit({t:'object.created',d:{object:{id:freeObjectId(s,'obj.'+who+'.'+p.slot),kind:'item',name:gear.name,
+                    qty:1,holder:{entity:who},profile:{...gear,kind:'gear'},source:{how:'unequipped',from:who}}}});
+            }
+            emit({t:'item.equipped',d:{id:who,slot:p.slot,item:asset.ref ? {...p,id:asset.ref,object:asset.ref,name:bag.name}:asset.template}});
+        } else if (c.act==='use') {
+            if (!/\b(?:drink|consume|use|take|swallow)\b/i.test(words) || qty!==1 || asset.slot) return failure('Quote one actual use.');
+            const sh=person.sheet,d=deriveCharacter(sh,content),effect=restoreOf(content,bag);
+            if (!effect) return failure('This item has no recovery effect.');
+            const r=restoreEffect(content,effect,{level:sh.level,current:sh,max:{hp:d.maxHp,mp:d.maxMp,sta:d.maxSta}});
+            if (r.refused) return failure(r.refused);
+            emit(asset.ref ? {t:'object.consumed',d:{id:asset.ref,qty:1,by:who}} : {t:'item.changed',d:{id:who,item:asset.template,qty:-1,why:'used'}});
+            emit({t:'resource.changed',d:{id:who,resource:r.resource,value:r.after,why:asset.name}});
+        } else {
+            const recipient=c.target;
+            const other=recipient==='pc'?s.entities.pc:s.scene.present.includes(recipient)?s.entities[recipient]:null;
+            if (!other || other.status==='dead' || recipient===who || !/\b(?:give|hand|pass)\b/i.test(words) ||
+                !(words.toLowerCase().includes(other.name.toLowerCase()) || recipient==='pc' && /\byou\b/i.test(words)) ||
+                qty!==1 && !words.includes(String(qty))) return failure('Identify the actual recipient and quantity.');
+            if (asset.slot) emit({t:'item.equipped',d:{id:who,slot:asset.slot,item:null}});
+            if (asset.ref) emit({t:'object.moved',d:{id:asset.ref,to:{entity:recipient},...(qty<asset.qty?{qty,split:freeObjectId(s,asset.ref+'.part')}:{})}});
+            else if (asset.template && other.sheet) {
+                emit({t:'item.changed',d:{id:who,item:asset.template,qty:-qty}});
+                emit({t:'item.changed',d:{id:recipient,item:asset.template,qty}});
+            } else {
+                if (asset.template) emit({t:'item.changed',d:{id:who,item:asset.template,qty:-qty}});
+                emit({t:'object.created',d:{object:{id:freeObjectId(s,'obj.'+who+'.given'),kind:'item',name:asset.name,qty,
+                    holder:{entity:recipient},...(asset.gear?{profile:{...asset.gear,kind:'gear'}}:{}),source:{how:'given',from:who}}}});
+            }
+        }
     } else if (c.act === 'pay') {
         const row = s.party?.claims?.[c.claim];
         if (actor !== 'pc' || !row || who !== row.who || !/\b(?:pay|give|settle|hand)\b/i.test(words) ||
             moneyLiteral(words,c.money,{content}).cp !== c.amount ||
             !payClaim(s,emit,row,c.amount)) return failure('Identify the due claim, recipient and actual amount to pay.');
     } else if (c.act==='coordinate') {
-        if (!member?.combat || member.mode!=='follow') return failure('Only a present combat partner can coordinate.');
+        if (!member || (!member.combat && !['watch','rest'].includes(c.priority)) || member.mode!=='follow') return failure('Only a present combat partner can coordinate.');
         const kinds={target:/\b(?:target|attack|shoot|take on|focus)\b/i,protect:/\b(?:guard|cover|protect|shield|keep.+off|defend)\b/i,independent:/\b(?:independent|own|your call|freely)\b/i,front:/\b(?:front|point|ahead|lead)\b/i,rear:/\b(?:rear|behind|back)\b/i,watch:/\b(?:watch|lookout|sentry)\b/i,rest:/\b(?:rest|sleep|stand down)\b/i};
+        const vocative = /^([^,!?".]{1,50}),/.exec(c.quote);
+        if (actor==='pc' && vocative && s.scene.present.some(id=>id!==who && s.entities[id]?.name?.toLowerCase()===vocative[1].trim().toLowerCase()))
+            return failure('The addressed person differs from the requested actor.');
         if (!kinds[c.priority]?.test(c.quote) || no.test(words)) return failure('Quote the tactical request or decision.');
         if (['target','protect'].includes(c.priority) && (c.target!=='pc' && !s.scene.present.includes(c.target))) return failure('Identify the present target.');
+        if (c.priority==='target' || c.priority==='protect') {
+            const labels=[s.entities[c.target]?.name,s.encounter?.combatants[c.target]?.label,c.target==='pc'?'me':null].filter(Boolean);
+            if (!labels.some(name=>new RegExp('(^|[^a-z])'+escapedName(name)+'(?=$|[^a-z])','i').test(c.quote)))
+                return failure('Quote the identified target of the request.');
+        }
         const changes=['watch','rest'].includes(c.priority) ? {watch:c.priority==='watch'} : ['front','rear'].includes(c.priority) ? {formation:c.priority} : {priority:{kind:c.priority,target:c.target || null}};
         memberEvent(member.mode,changes);
     } else {
@@ -136,11 +191,13 @@ export function reduceParty(s,t,d) {
 }
 
 export function partySummary(s) {
-    const lines = membersOf(s).map(m => {
+    const lines = membersOf(s).filter(m=>m.mode!=='left').map(m => {
         const e = s.entities[m.who];
         return [m.who,e?.name,m.mode,m.combat?'combat ready':'traveller',m.agreement].join(' · ');
     });
-    for (const a of agreementsOf(s).filter(a=>a.phase==='open')) lines.push(a.id+' · '+a.proposer+' offers '+a.who+': '+a.terms.text);
+    for (const a of agreementsOf(s).filter(a=>a.phase==='open' || (s.party.members[a.who]?.mode!=='left' && s.party.members[a.who]?.agreement===a.id)))
+        lines.push(a.id+' · '+a.phase+' · '+a.proposer+' / '+a.who+' · '+a.terms.text);
+    for (const r of claimsOf(s).filter(r=>r.amount>r.paid)) lines.push(r.id+' · '+(r.amount-r.paid)+' cp owed to '+r.who);
     return lines;
 }
 

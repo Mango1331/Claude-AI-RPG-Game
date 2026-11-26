@@ -1,3 +1,4 @@
+import {estimateTokens} from '../../src/util.js';
 import fs from 'node:fs';
 import path from 'node:path';
 let replies;
@@ -7,7 +8,7 @@ export async function partySmoke({page,calls,send,idle,out,onReload}) {
     const original=fs.readFileSync(process.env.AVERETH_USER14_CHAT,'utf8').trim().split('\n').slice(1).map(JSON.parse);
     const who='npc.ossen',quest='quest.clear_the_old_crown_catacombs_level_1';
     const checks={}, measures=[];
-    const measure=(stage,from)=>measures.push({stage,requests:calls.slice(from).map(c=>({role:c.purpose,characters:c.messages.reduce((n,m)=>n+m.content.length,0),ms:c.durationMs}))});
+    const measure=(stage,from)=>measures.push({stage,requests:calls.slice(from).map(c=>({role:c.purpose,characters:c.messages.reduce((n,m)=>n+m.content.length,0),estimatedTokens:c.messages.reduce((n,m)=>n+estimateTokens(m.content),0),ms:c.durationMs}))});
     async function seed(chat) {
         await page.evaluate(async chat=>{
             const c=SillyTavern.getContext();c.chat.splice(0,c.chat.length,...chat);
@@ -16,7 +17,7 @@ export async function partySmoke({page,calls,send,idle,out,onReload}) {
     }
     const snap=()=>page.evaluate(async base=>{
         const c=SillyTavern.getContext(),{foldChat}=await import(base+'src/host.js'),fold=foldChat(c.chat);
-        return {length:c.chat.length,state:fold.state,errors:fold.errors,events:c.chat.flatMap(m=>m.extra?.avereth?.events || []),last:c.chat.at(-1).extra?.avereth?.extraction};
+        return {length:c.chat.length,state:fold.state,errors:fold.errors,events:c.chat.flatMap(m=>m.extra?.avereth?.events || []),last:c.chat.at(-1).extra?.avereth?.extraction,perf:c.chat.findLast(m=>m.is_user)?.extra?.avereth?.perf};
     },base);
     const command=(commands,narrator,deltas=[])=>{replies={plan:JSON.stringify({commands}),narrator,extract:JSON.stringify({scene:'here',expected:{},deltas})};};
     async function panel(kind) {
@@ -55,7 +56,7 @@ export async function partySmoke({page,calls,send,idle,out,onReload}) {
         const target='mon.old_crown_catacombs_c1_l1_e1_1',text='I use Basic Attack on Risen Bones A.';
         command([{seq:1,type:'use_skill',skill:'mage.basic_attack',target,quote:text}],'Fire strikes the bones. Ossen draws his bow.');
         await send(text);await idle();measure('first grouped attack',b);
-        current=await snap();checks.groupCombat=current.events.some(e=>e.t==='encounter.started' && !!e.d.encounter.line);
+        current=await snap();measures.at(-1).perf=current.perf;checks.groupCombat=current.events.some(e=>e.t==='encounter.started' && !!e.d.encounter.line);
         checks.realArrow=current.state.entities[who].sheet.inventory.standard_arrow<20;
         const second='Ossen, protect me.';b=calls.length;
         command([{seq:1,type:'party',act:'coordinate',who,priority:'protect',target:'pc',quote:'Ossen, protect me.'}],'Ossen covers Alaric.');
@@ -90,6 +91,25 @@ export async function partySmoke({page,calls,send,idle,out,onReload}) {
         b=calls.length;await send(surrender);await idle();measure('individual settlement in party',b);
         const agreed=(await snap()).state.encounter;checks.partialPeace=!!agreed?.agreements?.some(a=>
             a.pairs?.some(([x,y])=>x===leader && y==='pc') && !a.pairs.some(pair=>pair.includes(who)));
+        const secondId='npc.garrick', trio=structuredClone(combat);
+        // Synthetic accepted invitation for the third participant, in an isolated copy of the same encounter entrance.
+        const threeEvents=[{t:'scene.entered',d:{id:secondId,band:'SHORT'}},
+            {t:'party.agreement',d:{id:'variant.garrick',who:secondId,phase:'accepted',proposer:secondId,terms:{combat:true,text:'I will fight alongside you.'},previous:0}},
+            {t:'party.member',d:{who:secondId,mode:'follow',at:'loc.old_crown_catacombs.l1_s1',agreement:'variant.garrick',combat:true,previous:0}}];
+        const profile=await page.evaluate(async({base,chat,events,secondId})=>{
+            const [{foldChat},{Dice},{materialise},{applyEvent},cm]=await Promise.all(['host','rng','engine','state','content'].map(f=>import(base+'src/'+f+'.js')));
+            const content=await cm.loadContentPack(async n=>(await fetch(base+'content/'+n)).json());
+            const s=foldChat(chat).state;events.forEach(e=>applyEvent(s,e));
+            const out=[];materialise(s,content,Dice.from(s),e=>{applyEvent(s,e);out.push(e);},secondId);return out;
+        },{base,chat:trio,events:threeEvents,secondId});
+        trio.at(-1).extra.avereth.events.push(...threeEvents,...profile);
+        for (const [k,prefix] of [[0,original.slice(0,23)],[2,trio]]) {
+            await seed(prefix);command([{seq:1,type:'use_skill',skill:'mage.basic_attack',target,quote:text}],'The attack strikes the bones.');
+            b=calls.length;await send(text);await idle();measure('same attack, '+k+' companions',b);
+            const actual=await snap();measures.at(-1).perf=actual.perf;
+            checks['composition'+k]=actual.events.some(e=>e.t==='encounter.started' &&
+                (e.d.encounter.participation ? Object.keys(e.d.encounter.participation).length-1 : 0)===k);
+        }
         const pending=structuredClone(original);pending.at(-1).extra.avereth.events.push(...membership);
         await seed(pending.slice(0,-1)); // insert original pending assistant locally, without launching a job
         await page.evaluate(msg=>SillyTavern.getContext().chat.push(msg),pending.at(-1));

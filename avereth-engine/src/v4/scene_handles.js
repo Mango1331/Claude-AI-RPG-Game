@@ -122,7 +122,7 @@ export function areaCaught(state, { move = null, moveTarget = null, band = 'ENGA
     return (state.scene?.present || []).filter((id) => {
         const e = state.entities?.[id];
         if (id === 'pc' || !e || e.status === 'dead' || !['npc', 'creature'].includes(e.kind) || state.encounter?.combatants?.[id]) return false;
-        return (!visible || state.scene.positions?.[id]?.cover !== 'full') && (stepped.get(id) || state.scene.positions?.[id]?.band) === wanted;
+        return (!visible || state.scene.positions?.[id]?.cover !== 'full') && (stepped.get(id) || bandOf(state,id)) === wanted;
     });
 }
 

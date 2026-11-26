@@ -219,6 +219,10 @@ export function initEncounter(state, content, dice, trigger, participants, encId
     }
     if (members.length) {
         enc.line=startLine(state,enc,members);
+        const known = new Map();
+        for (const m of members) if (m.lastContact?.at === state.scene.at)
+            for (const g of m.lastContact.agreements || []) if (g.pairs?.some(([a,b])=>combatants[a] && combatants[b])) known.set(g.offer,g);
+        if (known.size) enc.agreements=clone([...known.values()]);
         projectBands(enc);
         enc.participation=Object.fromEntries(['pc',...members.map(m=>m.who).sort()].map(id=>[id,{from:0}]));
         for(const m of members) if(m.priority) combatants[m.who].current.priority={...m.priority};
@@ -862,6 +866,8 @@ export function damagePreview(enc, content, targetId, state = null) {
         const cost = skillCostAmount(content, skill, known.prof, pc.fixed.passive?.cost, true);
         const arrows = skill.ammo && pc.fixed.weapon_family === 'bow' ? (pc.current.ammo?.[skill.ammo.item] || 0) >= skill.ammo.qty : true;
         if (!reach || (skill.cost && pc.current[skill.cost.resource] < cost) || !arrows) continue;
+        if (enc.line && attackAction({enc,state,content,c:true},'pc',targetId,sid,
+            {validateOnly:true,move:rangeReaches(skill.range.band,band)?null:'closer'}).illegal) continue;
         const isRanged = skill.range.band !== 'ENGAGED';
         const magical = skill.attack.damage_type === 'magical';
         // review of 9B-2: the same steps, in the same order and with the same roundings, as attackAction and

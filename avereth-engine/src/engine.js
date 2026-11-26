@@ -899,9 +899,9 @@ function persistCombat(s, content, emit, enc, records, isNew, { c: cPath = false
         if(enc.line) for(const m of membersOf(s).filter(m=>m.mode==='follow')) {
             const member=enc.combatants[m.who];
             if(!member) continue;
-            if(member.current.defeated || member.current.escaped!==!!pcC.current.escaped) {
+            if(member.current.defeated || pcC.current.defeated || !!member.current.escaped!==!!pcC.current.escaped) {
                 emit({t:'party.member',d:{...m,previous:m.revision,mode:member.current.defeated?'left':'wait',at:s.scene.at,
-                    lastContact:{encounter:enc.id,turn:s.turn,minute:s.clock.minute,escaped:member.current.escaped,
+                    lastContact:{encounter:enc.id,agreements:enc.agreements || [],at:s.scene.at,turn:s.turn,minute:s.clock.minute,escaped:member.current.escaped,
                     danger:Object.keys(enc.combatants).filter(id=>canFight(enc,m.who,id))}}});
             }
         }

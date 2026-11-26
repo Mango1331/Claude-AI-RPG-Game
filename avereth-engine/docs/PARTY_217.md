@@ -25,3 +25,7 @@ Die Originalpräfixprobe umfasst nun eine isolierte Abschlussrechnung mit 180 Ka
 HUD und lokales Panel lesen den Fold. Anwesende zeigen eigene Ressourcen und Ausrüstung, getrennte Mitglieder den letzten beobachteten Stand. Die tatsächlich gebuchte Rast regeneriert die individuellen Ressourcen der Ruhenden. Ein Wachdienst erhält keine Rastgutschrift.
 
 Der durchgehende Offlinepfad in `tools/replay/party_campaign217.mjs` startet vor M13 ohne neue Party. Dieselbe Kampagne erreicht Bones, Gallery und Warden, Gildenabgabe und Trennung. Ergebnis bei Seed 3509323178 sind drei Slotnachweise, 225/225 Quest-XP und 45/45 cp im aktiven Spielstand. Der vollständige Implementierungsstand wird vor Node-, Replay- und Browserabnahme remote gesichert. Testergebnisse und mögliche Korrekturen folgen.
+
+## Hostgegenproben
+
+Der erste Browserlauf zeigte, dass die Bones bereits vor der taktischen Bitte fallen konnten. Der zweite Lauf belegte Beitritt, Schuss mit Pfeilverbrauch, Swipe, Reload, Teilfrieden und lokale Panelzugriffe einschließlich pending X. Er deckte außerdem eine echte Fehlklassifizierung auf: Der allgemeine Akteursfilter behandelte die angeredete Person in „Ossen, protect me“ als Sprecher. Der Gruppenpfad erkennt die direkte Anrede und prüft danach weiterhin Person, Beleg und Ziel. Der erneute Browserlauf enthält auch dieselbe Aktion mit null, einem und zwei Begleitern.

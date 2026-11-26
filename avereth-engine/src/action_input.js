@@ -1,4 +1,4 @@
-import { projectedStep } from './party_line.js';
+import { lineBand, projectedStep } from './party_line.js';
 import {negotiators,checkTerms,counterConsentError,identifiesRecipient} from './v4/surrender.js';
 // Host-owned typed choices. These are inputs to the existing Engine, never events or model authority.
 import { hash32, clone, BANDS } from './util.js';
@@ -43,7 +43,7 @@ export function lowerActionSelection(selection,state,content) {
     const s=selection;
     if(s.kind==='surrender')return {route:'v3',intent:{kind:s.kind,target:s.target,terms:s.terms,...s.group===true?{group:true}:{}}};
     if(s.kind==='negotiation_answer')return {route:'v3',intent:{kind:s.kind,accept:s.accept}};
-    if(s.kind==='sidestep' || s.kind==='flee')return {route:'v3',intent:{kind:s.kind}};
+    if(s.kind==='sidestep' || s.kind==='flee')return {route:'v3',intent:{kind:s.kind,...s.kind==='flee' && s.together?{together:true}:{}}};
     if(s.kind==='quest.accept')return {route:'v4',commands:[{seq:1,type:'quest.accept',quest:s.quest}]};
     if(s.kind==='attack')return {route:'v3',intent:{kind:'attack',skill:s.skill,target:s.target,target_how:'hud',move:s.approach?'closer':null,move_target:s.approach?s.target:null}};
     if(s.kind==='skill')return {route:'v3',intent:{kind:'skill',skill:s.skill,target:s.target || null,dir:s.dir || 'away'}};
@@ -81,7 +81,7 @@ function validatePhase(selection,state,content) {
 
 export function validateActionSelection(selection,state,content,{ordered = false} = {}) {
     if (selection?.kind === 'phase') return validatePhase(selection,state,content);
-    const s=selection, fields={surrender:['target','terms','group'],negotiation_answer:['accept'],sidestep:[],flee:[],attack:['skill','target','approach','band'],skill:['skill','target','dir'],move:['dir','target'],use:['object','target'],'quest.accept':['quest']};
+    const s=selection, fields={surrender:['target','terms','group'],negotiation_answer:['accept'],sidestep:[],flee:['together'],attack:['skill','target','approach','band'],skill:['skill','target','dir'],move:['dir','target'],use:['object','target'],'quest.accept':['quest']};
     if (s?.kind === 'trade.accept' || s?.kind === 'trade.ask') {
         if (typeof s.id !== 'string' || !s.id) return refusal('Auswahl-ID fehlt');
         const {id, ...choice} = s;
@@ -103,6 +103,8 @@ export function validateActionSelection(selection,state,content,{ordered = false
         return typeof s.accept==='boolean' && (stage==='counter' || stage==='offered' && !s.accept)
             ? {ok:true,mapped:lowerActionSelection(s,state,content),preview:{}} : refusal('Kein passendes offenes Angebot.');
     }
+    if ((s.group != null || s.together != null) && (!state.encounter?.line || (s.group ?? s.together)!==true))
+        return refusal('Dafür braucht es eine aktive Kampfgruppe.');
     if(state.encounter?.negotiation)return refusal('Die offene Verhandlung zuerst beantworten oder abbrechen.');
     if(s.kind==='surrender'){
         const people=negotiators(state);
@@ -174,7 +176,9 @@ export function validateActionSelection(selection,state,content,{ordered = false
     }
     if(s.band!==undefined) {
         const sk=skillOf(content,s.skill,state),band=enc?.combatants?.[s.target]?.current?.band;
-        const after=s.approach?BANDS[Math.max(0,BANDS.indexOf(band)-1)]:band;
+        const line=enc?.line, step=line && s.approach && projectedStep(enc,'pc','closer',s.target);
+        const after=step && !step.illegal ? lineBand({...line,x:{...line.x,pc:step.to}},'pc',s.target)
+            : s.approach?BANDS[Math.max(0,BANDS.indexOf(band)-1)]:band;
         if(!sk?.effects?.some(e=>e.kind==='area' && e.shape==='target_band') || !BANDS.includes(s.band) || after!==s.band)return refusal('Das gewählte Flächenband hat sich geändert; erneut wählen');
     }
     return preview.illegal ? refusal(preview.illegal) : {ok:true,mapped,preview};
@@ -191,12 +195,15 @@ export function availableActions(state,content) {
         actions.push({key:'negotiation:refuse',kind:'negotiation_answer',accept:false,label:'Verhandlung abbrechen'});
         return {actions,targets:[],tactical};
     }
+    if (state.encounter?.line && state.encounter.current==='pc' && negotiators(state).length)
+        actions.push({key:'surrender:group',kind:'surrender',group:true,label:'Für die Gruppe um Gnade bitten'});
     if (state.encounter?.current==='pc' && negotiators(state).length) actions.push({key:'surrender',kind:'surrender',label:'Kapitulieren'});
     for(const id of Object.keys(actionsOf(state.entities.pc.sheet,content,rulesetOf(state),state))) {
         const skill=skillOf(content,id,state);
         if(skill.attack || state.encounter || tactical && combatSlot({kind:'skill',skill:id},content,state)==='minor')actions.push({key:`skill:${id}`,label:skill.name,kind:skill.attack?'attack':'skill',skill:id,needsTarget:!!skill.attack,area:skill.effects?.some(e=>e.kind==='area' && e.shape==='target_band')});
     }
     if (tactical) actions.push({key:'sidestep',kind:'sidestep',label:'Ausweichen (−25 % Distanzschaden bis zum nächsten Zug)'});
+    if (state.encounter?.line) actions.push({key:'flee:group',kind:'flee',together:true,label:'Gemeinsamer Rückzug'});
     if (state.encounter) actions.push({key:'flee',kind:'flee',label:'Flucht (ganzer Zug)'});
     if(tactical) for(const dir of ['closer','away'])actions.push({key:`move:${dir}`,kind:'move',dir,label:dir==='closer'?'Näher gehen':'Zurückweichen',needsTarget:dir==='closer'});
     const refs=[...Object.keys(state.objects || {}),...Object.keys(state.entities.pc.sheet.inventory || {}).map(id=>`item.${id}`)],seen=new Set();

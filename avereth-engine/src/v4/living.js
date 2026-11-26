@@ -459,7 +459,8 @@ export function gateState(s, content, root, { group = 1 } = {}) {
     const keeper = x.gate.keeper || 'the gate-keeper';
     const o = occupancy(s, x);
     if (x.gate.requires === 'guild' && !s.guild?.membership) return { refuse: `${x.gate.keeper || 'the gate'} lets only registered Guild members into ${x.name}; he is not registered`, keeper, occupancy: o };
-    if (o.parties + group > x.capacity) return { refuse: `${x.name} is full: ${o.parties} adventurers are inside and it holds at most ${x.capacity} at once; he has to wait until some come out`, full: true, keeper, occupancy: o };
+    const waiting = !insideOf(s,root) ? o.pc : 0;
+    if (o.parties + waiting + group > x.capacity) return { refuse: `${x.name} is full: ${o.parties + waiting} adventurers are inside and it holds at most ${x.capacity} at once; he has to wait until some come out`, full: true, keeper, occupancy: o };
     if (!(x.gate.fee_cp > 0)) return { keeper, occupancy: o };
     if (x.pass) return { keeper, pass: x.pass, occupancy: o };
     const waived = waiverOf(s, content, root);

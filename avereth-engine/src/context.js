@@ -1,3 +1,4 @@
+import { partySummary } from './party.js';
 import {negotiationPrompt} from './v4/surrender.js';
 import { eventCue } from './v4/pulse.js';
 import { ordinaryChoice } from './v4/travel_continuation.js';
@@ -756,6 +757,7 @@ export function buildContext(state, content, opts = {}) {
     const absent = state.mode === 'creation' ? [] : namedAbsent(state, normText(queryText));
     if (absent.length) add('named', `NAMED, NOT PRESENT (continuity only; they are elsewhere unless the story brings them in):\n${absent.map((id) => npcCard(state, content, id, focusWords, { absent: true })).join('\n')}`, 2);
     add('combat', combatBlock(state, content, opts), 0);
+    if (state.party) add('party','PARTY AGREEMENTS (engine)\n'+partySummary(state).join('\n'),1);
     if (v4 && !npcFight && (opts.outcome?.c || opts.outcome?.auth?.c)) {
         const known = Object.values(state.quests || {}).filter(q => q.kind === 'guild_contract');
         const branch = settlementOf(state, state.scene.at);
@@ -939,7 +941,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'where', 'pc', 'creation', 'npc_compact', 'npc_arrival', 'present', 'settlement', 'world_area', 'world_populations', 'gear_market', 'price_contract', 'learning_sources', 'paid_here', 'npc_continuity', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
+    const order = ['header', 'where', 'pc', 'creation', 'npc_compact', 'npc_arrival', 'present', 'settlement', 'world_area', 'world_populations', 'gear_market', 'price_contract', 'learning_sources', 'paid_here', 'npc_continuity', 'named', 'combat', 'party', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     const describe = section => ({ name: section.name, tokens: section.tokens, own: section.own,

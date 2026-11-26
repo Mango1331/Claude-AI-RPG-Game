@@ -179,7 +179,9 @@ export function installActionComposer({context,state,content,enabled,settings,bl
         const a=options.find(a=>a.key===choice.action);if(!a){refresh();return;}
         const {kind,skill,object,dir}=a;
         let selection={id:uid(),kind,...(skill?{skill}:{}),...(object?{object}:{}),...(dir?{dir}:{})};
+        if(a.together) selection.together=true;
         if(kind==='surrender') {
+            if(a.group) selection.group=true;
             selection.target=choice.recipient || null;
             selection.terms=Object.entries(choice.quantities || {}).filter(([,qty])=>qty!==0).map(([object,qty])=>({object,qty,mode:'offer'}));
         }

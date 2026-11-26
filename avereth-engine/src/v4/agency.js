@@ -361,7 +361,10 @@ export function guardCommands(message, commands, context = {}, { language = true
         // Patch 9C-2b: wanting to use a Skill Stone is no activation
         if (type === 'use' && objects.get(idOf(c.object))?.source === 'stone' && WISH.test(evidence)) { drop(c, 'wish', 'the evidence wishes to use the Skill Stone; it is not activated now'); continue; }
         if (otherSpeech(message, evidence, context)) { drop(c, 'npc_speech', "the evidence is someone else's quoted words"); continue; }
-        if (otherActor(evidence, context)) { drop(c, 'npc_actor', 'the evidence is what someone else does'); continue; }
+        // In a tactical request “Name, guard me”, the vocative identifies the addressee.
+        // The party handler validates the addressee and action; attributed NPC dialogue was excluded above.
+        const address = type==='party' && c.act==='coordinate' && /^[^,!?".]{1,50},/.test(c.quote || '');
+        if (otherActor(evidence, context) && !address) { drop(c, 'npc_actor', 'the evidence is what someone else does'); continue; }
         // Build .138 (batch 20 T50: "I'll take that fifty copper now" became pay 50 cp to Tam, booked with enough coin):
         // a payment moves his own coin out, so its evidence must show his will to pay it (pay, give, hand, put, tip,
         // "here are", "take these coins"). Asking for, collecting or taking money owed to him pays nobody.

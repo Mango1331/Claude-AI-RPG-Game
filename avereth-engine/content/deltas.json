@@ -167,13 +167,14 @@
     {
       "type": "time",
       "fields": {
-        "during": { "enum": ["travel", "scene"], "nullable": true },
+        "during": { "enum": ["travel", "scene", "event"], "nullable": true },
+        "evidence": { "type": "string", "nullable": true },
         "minutes": {
           "type": "integer",
           "min": 0
         }
       },
-      "summary": "elapsed minutes of an action or actual event. Mark walking/riding time during travel; split other activities into separate time deltas. A purchase does not spend the evening."
+      "summary": "elapsed minutes of an action or actual event. Mark walking/riding time during travel; on an unfinished leg cite the actual movement in evidence; split other activities into separate time deltas. For an extended PULSE event, mark event and quote its actual cause and duration. A purchase does not spend the evening."
     },
     {
       "type": "arrive",

@@ -145,7 +145,7 @@ test('patch 5 (2, 4): a day on the road books its minutes once, puts him on the 
     assert.deepEqual([s.scene.at, s.scene.place], ['realm.duskreach', 'Duskreach']);
     assert.notEqual(s.places['loc.blackgate'].known, 'visited');
     assert.equal(goal(s, 'loc.blackgate').status, 'active');
-    assert.deepEqual([s.entities.pc.sheet.hp, s.entities.pc.sheet.mp], [40, 20], 'travel is no rest');
+    assert.deepEqual([s.entities.pc.sheet.hp, s.entities.pc.sheet.mp], [40, 48], 'eight hours of actual travel recover MP only');
     assert.ok(rejectedRules(r).includes('recover'));
 });
 

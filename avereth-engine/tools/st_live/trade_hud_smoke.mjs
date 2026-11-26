@@ -13,9 +13,9 @@ export const tradeTurns = [
 export async function tradeHudSmoke({page,calls,worldTimings,idle,onReload,out}) {
     const checks={},timings=[];
     const panel=page.locator('#avereth-trade'),source=panel.getByRole('combobox',{name:'Waren und Gebote'});
-    const seed=async(length=f.chat.length)=>{
-        const chat=structuredClone(f.chat.slice(0,length)),m=chat.at(-1);
-        if(length===f.chat.length) m.extra.avereth.events.push({t:'offer.created',d:{offer:{id:fixed,status:'open',seller,at:'loc.alderwatch.alderwatch_market_district',lines:[
+    const seed=async(length=f.chat.length, campaign=f.chat)=>{
+        const chat=structuredClone(campaign.slice(0,length)),m=chat.at(-1);
+        if(campaign===f.chat && length===f.chat.length) m.extra.avereth.events.push({t:'offer.created',d:{offer:{id:fixed,status:'open',seller,at:'loc.alderwatch.alderwatch_market_district',lines:[
             {id:'ration',kind:'goods',what:'Rations',qty:5,price_cp:15},{id:'bandage',kind:'goods',what:'Bandages',qty:5,price_cp:25},
         ]}}});
         await page.evaluate(async msgs=>{
@@ -24,12 +24,12 @@ export async function tradeHudSmoke({page,calls,worldTimings,idle,onReload,out})
             await c.saveChat(); await c.reloadCurrentChat();
         },chat);
         onReload(); await idle();
-        if (length!==27 && !await panel.evaluate(e=>e.open)) await panel.locator('summary').click();
+        if (length!==27 && await panel.isVisible() && !await panel.evaluate(e=>e.open)) await panel.locator('summary').click();
     };
     const world=()=>page.evaluate(async()=>{
         const {foldChat}=await import('/scripts/extensions/third-party/avereth-engine/src/host.js');
         const c=SillyTavern.getContext(), {state:s,errors}=foldChat(c.chat), u=c.chat.findLast(m=>m.is_user);
-        return {coin:s.entities.pc.sheet.coin_cp,offers:s.offers,objects:s.objects,errors,events:u.extra.avereth?.events,
+        return {clock:s.clock.minute, services:s.services,coin:s.entities.pc.sheet.coin_cp,offers:s.offers,objects:s.objects,errors,events:u.extra.avereth?.events,
             stats:s.entities.pc.sheet.stats,points:s.entities.pc.sheet.free_points,
             input:u.extra.avereth_action_input,applied:c.chat.at(-1).extra?.avereth?.extraction?.status};
     });
@@ -113,6 +113,34 @@ export async function tradeHudSmoke({page,calls,worldTimings,idle,onReload,out})
     const assigned=await world();
     checks.assignReload=assigned.points===0 && assigned.stats.INT===before.stats.INT+3
         && assigned.stats.WIL===before.stats.WIL+2 && !assigned.errors.length && calls.length===afterTrade;
+    if (process.env.AVERETH_USER15_CHAT) {
+        const original = fs.readFileSync(process.env.AVERETH_USER15_CHAT, 'utf8').trim().split('\n').slice(1).map(JSON.parse);
+        await seed(73,original);
+        await source.selectOption('offer.t72.3');
+        const old = await world();
+        await panel.locator('[data-row="l1"]').fill('1');
+        await panel.locator('[data-row="l2"]').fill('1');
+        const inn = await turn(panel.getByRole('button',{name:'Kaufen · 5 cp',exact:true}),true);
+        checks.user15Inn = inn.roles.join(',') === 'narrator,extract' && inn.s.coin === old.coin-5
+            && inn.s.events.filter(e => e.t === 'transaction.completed').length === 1
+            && inn.s.events.filter(e => e.t === 'service.granted').map(e=>e.d.service).join(',') === 'lodging,meal'
+            && inn.s.clock === old.clock;
+        await seed(29,original);
+        const rest = page.locator('#avereth-rest'), prior = await world(), count = calls.length;
+        await rest.locator('summary').click();
+        await rest.getByLabel('Rastdauer',{exact:true}).selectOption('120');
+        await rest.getByRole('button',{name:'Rast beginnen'}).click();
+        await idle();
+        await page.evaluate(()=>SillyTavern.getContext().reloadCurrentChat());onReload();await idle();
+        const rested = await world();
+        checks.user15Rest = calls.length === count && rested.clock === prior.clock+120
+            && rested.events.filter(e=>e.t==='pulse.rolled').length===1;
+        await seed(125,original);
+        const reads = calls.length;
+        await page.fill('#send_textarea','#item superior F-Rank sceptre');
+        await page.click('#send_but');await idle();
+        checks.user15Item = calls.length === reads && /MATK 18/.test(await page.locator('#chat .mes').last().innerText());
+    }
     fs.writeFileSync(out+'/trade-hud.json',JSON.stringify({checks,timings},null,2));
     return checks;
 }

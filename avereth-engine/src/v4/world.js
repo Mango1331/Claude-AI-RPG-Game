@@ -489,7 +489,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     let travelMinutes = 0;
     let travellers = null;
     const pendingRoadTime = [];
-    const activities = Object.entries(outcome.expected_keys || {}).filter(([,kind]) => kind === 'activity');
+    const actions = (outcome.resolutions || []).filter(r => ['resolved','authorized'].includes(r.status));
+    const activities = actions.filter(r => r.type === 'activity');
     const journeyTime = explicitTravel && !s.encounter && (auth.gos || []).length > 0;
     function bookRoadTime(minutes) {
         if (!minutes) return;
@@ -1192,13 +1193,22 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 cutLeft -= lost;
                 if (lost) reject(d, 'rest_cut', `${lost} min of the ${pulse.interrupt.of_min} min ${pulse.interrupt.kind} the engine cut short after ${pulse.interrupt.after_min} min are not booked`);
                 const want = d.minutes - covered - lost;
-                const timedAction = activities.some(([k]) => expected[k]?.minutes > booked);
-                const usedItem = outcome.resolutions?.some(r => r.type === 'use' && r.status === 'resolved');
-                const ordinaryAction = usedItem && want <= content.rules.time.default_cap_min;
+                const timedAction = activities.some(r => expected[r.seq]?.done !== false && expected[r.seq]?.minutes >= want && r.status === 'authorized');
+                // A second, independently chosen task can take its own scene time alongside a timed pause.
+                const services = (s.services || []).filter(service => service.turn === s.turn);
+                const shortAction = actions.some(r => ['equip','use'].includes(r.type) || (r.type === 'activity' && !booked))
+                    || (booked > 0 && actions.some(r => r.type === 'other'))
+                    || (services.length && services.every(service => service.service !== 'lodging'));
+                const ordinaryAction = shortAction && want <= content.rules.time.default_cap_min;
+                // An open window is an opportunity. Extended event time needs an actual narrated
+                // external delay; PC rest and waiting remain dedicated choices.
+                const eventTime = d.during === 'event' && pulse?.open && d.evidence
+                    && /\b(?:minutes?|hours?|days?)\b/i.test(d.evidence)
+                    && !/\b(?:alaric|he|we|they)\s+(?:slept|rested|waited|stayed)\b/i.test(d.evidence)
+                    && narratedEvent(prose,d.evidence).ok;
                 const incidental = content.rules.time.engine_clock.go_min_same_settlement;
                 if (explicitTravel && want > 0 && !s.encounter && !onRoad && !timedAction && !ordinaryAction &&
-                    (d.during === 'travel' || (want > incidental && !(want <= cap && pulse?.open && pulse.governs &&
-                    !continuation?.choice?.lodging && !auth.rest)))) {
+                    (d.during === 'travel' || (want > incidental && !(want <= cap && eventTime)))) {
                     reject(d, 'time_authority', 'No chosen activity or established event accounts for this elapsed time.');
                     break;
                 }
@@ -1206,6 +1216,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 const m = Math.min(want, room);
                 if (m < want) reject(d, 'time_cap', `${d.minutes} min exceed what this turn allows (${cap} min${auth.go ? '' : ' without travel or an activity'}); ${m} applied`);
                 if (m > 0 && onRoad) {
+                    // A continued journey can advance along the same realm road without crossing a node.
+                    if (!travellers && d.during === 'travel' && d.evidence && narratedEvent(prose, d.evidence).ok
+                        && firstLeg && ['travel','local'].includes(firstLeg.mode)
+                        && expected[firstLeg.seq]?.arrived === false) travellers = ['pc', ...following(s).map(m => m.who)];
+                    if (!travellers && s.places[s.scene.at]?.kind === 'realm' && actions.some(r => r.type === 'journey.continue')
+                        && (d.during === 'travel' || /\b(?:an? (?:hour|day) on|further along|walk(?:ed|s) on|continu(?:ed|es) along)\b/i.test(prose))) {
+                        travellers = ['pc', ...following(s).filter(member => s.scene.present.includes(member.who)).map(member => member.who)];
+                    }
                     if (travellers) bookRoadTime(m);
                     else pendingRoadTime.push({minutes:m, delta:d});
                 } else if (m > 0) { emit({ t: 'time.advanced', d: { minutes: m, why: 'narration' } }); timeUsed += m; }

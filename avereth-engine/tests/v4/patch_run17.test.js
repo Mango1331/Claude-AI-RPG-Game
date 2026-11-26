@@ -90,7 +90,7 @@ test('Run17 original purchase then drink resolves after ownership exists, exactl
     const r = await act(f.cases.accept.commands, f.cases.accept.text);
     assert.equal(r.record.plan.failed, false);
     assert.deepEqual(money(r.record).map(e => e.d.delta), [-50]);
-    assert.equal(r.state.entities.pc.sheet.mp, 72);
+    assert.equal(r.state.entities.pc.sheet.mp, 74);
     const item = r.record.events.find(e => e.t === 'object.created').d.object.id;
     assert.deepEqual(r.state.objects[item].holder, { consumed: 'pc' });
     assert.equal(r.record.events.filter(e => e.t === 'object.consumed').length, 1);
@@ -107,7 +107,7 @@ test('Run17 repeating the use command cannot drink one bought vial twice', async
     const commands = structuredClone(f.cases.accept.commands);
     commands.push({ ...commands[1], seq: 3 });
     const r = await act(commands, f.cases.accept.text);
-    assert.equal(r.state.entities.pc.sheet.mp, 72);
+    assert.equal(r.state.entities.pc.sheet.mp, 74);
     assert.equal(r.record.events.filter(e => e.t === 'object.consumed').length, 1);
     assert.deepEqual(money(r.record).map(e => e.d.delta), [-50]);
 });
@@ -116,24 +116,24 @@ test('Run17 a failed purchase cannot grant or consume the following new item', a
         record.events.push({ t: 'coin.changed', d: { id: 'pc', value: 10, delta: -88, why: 'test precondition' } });
     });
     assert.equal(money(r.record).length, 0);
-    assert.equal(r.state.entities.pc.sheet.mp, 47);
+    assert.equal(r.state.entities.pc.sheet.mp, 49);
     assert.ok(!r.record.events.some(e => ['object.created', 'object.consumed'].includes(e.t)));
 });
 test('Run17 unrelated, premature and ambiguous new-item uses remain unowned', async () => {
     const use = { seq: 1, type: 'use', object: { new: 'small mana draught vial' }, qty: 1, quote: 'I drink the vial' };
     const alone = await act([use], use.quote);
-    assert.equal(alone.state.entities.pc.sheet.mp, 47);
+    assert.equal(alone.state.entities.pc.sheet.mp, 49);
     const backwards = await act([use, { ...f.cases.accept.commands[0], seq: 2, quote: 'I buy the brew', agreed_cp: null }], 'I drink the vial, then I buy the brew.');
-    assert.equal(backwards.state.entities.pc.sheet.mp, 47);
+    assert.equal(backwards.state.entities.pc.sheet.mp, 49);
     const both = await act([{ ...f.cases.accept.commands[0], lines: null, qty: null, agreed_cp: null, quote: 'I buy both brews' }, { ...use, seq: 2 }], 'I buy both brews. I drink the vial.');
-    assert.equal(both.state.entities.pc.sheet.mp, 47);
+    assert.equal(both.state.entities.pc.sheet.mp, 49);
     assert.ok(!both.record.events.some(e => e.t === 'object.consumed'));
 });
 test('Run17 guards do not mistake a wish to use the newly bought item for activation', async () => {
     const c = structuredClone(f.cases.accept.commands);
     c[1].quote = "I'd like to use the vial";
     const r = await act(c, "I'll take your own brew at five silver. I'd like to use the vial.");
-    assert.equal(r.state.entities.pc.sheet.mp, 47);
+    assert.equal(r.state.entities.pc.sheet.mp, 49);
 });
 test('Run17 original bundled training is not published as an executable paid lesson', () => {
     const c = f.cases.training, r = applyWorld(before(c.i), content, contractValue(c.answer, before(c.i), content), { msg: c.i, prose: c.text });

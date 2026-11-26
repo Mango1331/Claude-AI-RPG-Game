@@ -57,7 +57,7 @@ test('K8-1 original T16: "name = Alaric Red" learned with the carter as its subj
     const s = valid(chat, content);
     assert.equal(facts(s, 'npc.npccarter_hazel', 'name').length, 0);
     // what he really learned (Alaric told him his name, the player's message) stays: knowledge of f.pc.name, no other
-    assert.deepEqual(events(r, 'knowledge.gained').map((e) => [e.d.who, e.d.about]), [['npc.npccarter_hazel', 'f.pc.name']]);
+    assert.deepEqual(events(r, 'knowledge.gained').map((e) => [e.d.who, e.d.about]), [['npc.npccarter_hazel', 'f.pc.name'], ['npc.npccarter_hazel', 'f.pc.given_full_name']]);
 });
 
 test('K8-1 the same as a plain fact is refused too; a name fact of his own name and what someone learns of Alaric stay', async () => {

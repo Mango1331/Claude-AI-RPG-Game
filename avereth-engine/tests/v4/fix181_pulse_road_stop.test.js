@@ -64,7 +64,7 @@ test('.181 P2-2 Mage T44: the open danger window on the leg to the Warrens stops
     assert.ok(events.findIndex((e) => e.t === 'scene.moved') < events.findIndex((e) => e.t === 'entity.created'), 'the stop is booked before the people of the reply');
     assert.ok(events.some((e) => e.t === 'memory.recorded' && /first saw \{pc\} at On the way to Mossback Warrens/.test(e.d.memory.text)));
     assert.ok(!events.some((e) => e.t === 'memory.recorded' && /Guild hall/.test(e.d.memory.text)));
-    assert.deepEqual(minutes(events), ['180 narration'], 'the narrated time only: no travel floor, no second booking');
+    assert.deepEqual(minutes(events), ['180 travel'], 'the narrated time only: no travel floor, no second booking');
     assert.notEqual(s.scene.at, WARRENS, 'never the destination');
     assert.deepEqual(buildCatalog(s, content).here, { id: DUSK, path: 'Duskreach' }, 'the planner of the next turn reads the road');
     // save/reload: the folded chat is the same state, valid

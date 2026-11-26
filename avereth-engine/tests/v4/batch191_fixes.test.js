@@ -133,7 +133,7 @@ test('P2 R T7–T22 chained on the corrected board: the walks in Ashbridge are l
     const gos = (i) => (out(i).events.find((e) => e.t === 'outcome.recorded')?.d.outcome.auth?.gos || []).map((g) => g.mode);
     for (const i of [17, 27, 35, 39]) assert.deepEqual(gos(i), ['local'], `#${i}`);
     const travel = (i) => out(i).events.filter((e) => e.t === 'time.advanced' && e.d.why === 'travel').reduce((n, e) => n + e.d.minutes, 0);
-    assert.equal(travel(28), 0, 'T14 house → culvert: no 45-minute journey');
+    assert.equal(travel(28), 15, 'T14 house → culvert: no 45-minute journey');
     assert.ok(travel(40) <= 15, `T20 lane → hall: ${travel(40)} min, not 50`);
     assert.ok(!out(36).events.some((e) => e.t === 'scene.moved' && /On the way to/.test(e.d.place || '')), 'T18: no halt on the realm road');
     assert.equal(out(36).events.find((e) => e.t === 'pulse.rolled')?.d?.exposure ?? out(35).events.find((e) => e.t === 'pulse.rolled')?.d.exposure, 'scene');

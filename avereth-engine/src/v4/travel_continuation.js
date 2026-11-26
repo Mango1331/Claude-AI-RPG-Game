@@ -15,6 +15,28 @@ const lodgingWords = /\b(?:loft|room|bed|bunk|cot|berth|lodging|quarters|kitchen
 const words = value => normText(value).replace(/[^\p{L}\p{N}']+/gu, ' ').trim();
 const has = (text, part) => typeof part === 'string' && !!words(part) && ` ${words(text)} `.includes(` ${words(part)} `);
 
+/** Bind a literal, current approach to a unique locally established referent.
+ * A person already in the scene needs no GO. The ordinary agency/GO checks still apply. */
+export function localApproach(s, input, prose) {
+    if (!prose || holdPosition.test(input) || /\?|\b(?:if|unless|after|once|until|would|might|before|instead)\b/i.test(input)) return null;
+    const motion = /(?:^|[*.,!]\s*|\bas\s+)(i\s+(?:walk|step|head|go|move)\s+(?:over\s+)?(?:to|towards?|into)\s+(?:the\s+)?([^*.!?,;]+?))(?=\s+and\b|[*.,!?;]|$)/ig;
+    const choices = [...input.matchAll(motion)];
+    if (choices.length !== 1) return null;
+    const [, quote, target] = choices[0];
+    if (!has(prose,target)) return null;
+    const here = s.scene.at;
+    const local = id => s.places[id]?.parent === here;
+    const sites = Object.values(s.places).filter(p => local(p.id) && has(p.name,target));
+    const people = Object.values(s.entities).filter(e => e.kind === 'npc' && e.status !== 'dead' &&
+        (s.scene.present.includes(e.id) || local(e.at)) &&
+        [e.name,e.known_name,...(e.descriptors || [])].some(label => has(label,target)));
+    if (people.some(e => s.scene.present.includes(e.id)) || people.length > 1) return null;
+    const destinations = new Set([...sites.map(p => p.id), ...people.map(e => e.at)]);
+    if (destinations.size !== 1) return null;
+    const go = { seq:1,type:'go',to:[...destinations][0],quote };
+    return guardCommands(input,[go]).kept[0] || null;
+}
+
 /** Optional and advisory. A malformed supplied boundary must never broaden permission or cause a planner retry. */
 export function travelFrame(frame, input, present) {
     if (frame == null) return null;
@@ -84,9 +106,12 @@ export function reportedContinuation(s, content, answer, prose) {
         // A paid room may be narrated through the walk inside and the PC settling there.
         const i = d.evidence ? storyClauses.findIndex(clause => has(clause,d.evidence)) : -1;
         const atRoom = i >= 0 && has(d.evidence,frame.to) && narratedEvent(prose,d.evidence).ok;
-        if (!frame.lodging || !atRoom || !storyClauses.slice(i,i+5).some(clause =>
-            /\b(?:he|him)\b/i.test(clause) && /\b(?:mattress|blanket|bed|bunk|cot)\b/i.test(clause) && narratedEvent(prose,clause).ok))
-            return null;
+        const occupied = (clause) => /\b(?:he|him|his weight)\b/i.test(clause) &&
+            /\b(?:mattress|blanket|bed|bunk|cot)\b/i.test(clause) && narratedEvent(prose,clause).ok;
+        const reachedRoom = frame.lodging && storyClauses.some((clause,index) =>
+            (atRoom && index === i || clause.split(/[,:;]/).some(part => has(part,frame.to) && narratedEvent(prose,part).ok)) &&
+            storyClauses.slice(index,index+5).some(occupied));
+        if (!reachedRoom) return null;
     }
     if (frame?.after) {
         const story = normText(prose), proof = normText(d.after || '');

@@ -167,12 +167,13 @@
     {
       "type": "time",
       "fields": {
+        "during": { "enum": ["travel", "scene"], "nullable": true },
         "minutes": {
           "type": "integer",
           "min": 0
         }
       },
-      "summary": "story time that passed"
+      "summary": "elapsed minutes of an action or actual event. Mark walking/riding time during travel; split other activities into separate time deltas. A purchase does not spend the evening."
     },
     {
       "type": "arrive",

@@ -68,7 +68,8 @@ test('B19/20 original P/N/X: a local interruption stays at the lane, then the to
 test('B3 archived X without quotes cannot by itself establish that the meal finished', () => {
     const { state,x } = play(b3.start,b3.turn);
     assert.equal(state.scene.at,b3.start.scene.at);
-    assert.deepEqual(x.events.filter(e=>e.t==='delta.rejected').map(e=>e.d.rule),['no_go','scene_context','scene_context']);
+    assert.deepEqual(x.events.filter(e=>e.t==='delta.rejected').map(e=>e.d.rule),['no_go','scene_context','scene_context','time_authority']);
+    assert.equal(state.clock.minute,b3.start.clock.minute);
 });
 
 const socialNegatives = {

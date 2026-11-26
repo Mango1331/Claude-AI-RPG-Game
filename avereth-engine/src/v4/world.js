@@ -485,6 +485,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const booked = auth.c ? auth.booked_min || 0 : 0;
     let bookedLeft = booked;
     let timeUsed = booked;
+    let travelMinutes = 0;
+    let travellers = null;
+    const pendingRoadTime = [];
+    const activities = Object.entries(outcome.expected_keys || {}).filter(([,kind]) => kind === 'activity');
+    const journeyTime = explicitTravel && !s.encounter && (auth.gos || []).length > 0;
+    function bookRoadTime(minutes) {
+        if (!minutes) return;
+        emit({ t:'time.advanced', d:{ minutes, why:'travel', travellers } });
+        travelMinutes += minutes;
+        timeUsed += minutes;
+    }
     // .165/.166 (reviews of .164 and .165, P2): a pause the engine cut short (PULSE package C) stays cut short. Time the
     // reply gives the pause beyond the cut is covered like the booked minutes and never booked. Which part of the
     // reply's time is the pause's: alone in the message (no other step happened before it), everything beyond the
@@ -1165,16 +1176,31 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         switch (d.type) {
             case 'time': {
                 if (inventedWorkTime) { reject(d, 'private_work', 'accepting a job does not authorize its narrated working time'); break; }
-                const covered = Math.min(bookedLeft, d.minutes);
+                const onRoad = journeyTime && d.during !== 'scene' &&
+                    (d.during === 'travel' || (!activities.length && !booked));
+                const covered = onRoad && d.during === 'travel' ? 0 : Math.min(bookedLeft, d.minutes);
                 bookedLeft -= covered;
                 const lost = Math.min(cutLeft, d.minutes - covered);
                 cutLeft -= lost;
                 if (lost) reject(d, 'rest_cut', `${lost} min of the ${pulse.interrupt.of_min} min ${pulse.interrupt.kind} the engine cut short after ${pulse.interrupt.after_min} min are not booked`);
                 const want = d.minutes - covered - lost;
-                const room = Math.max(0, cap - timeUsed);
+                const timedAction = activities.some(([k]) => expected[k]?.minutes > booked);
+                const usedItem = outcome.resolutions?.some(r => r.type === 'use' && r.status === 'resolved');
+                const ordinaryAction = usedItem && want <= content.rules.time.default_cap_min;
+                const incidental = content.rules.time.engine_clock.go_min_same_settlement;
+                if (explicitTravel && want > 0 && !s.encounter && !onRoad && !timedAction && !ordinaryAction &&
+                    (d.during === 'travel' || (want > incidental && !(want <= cap && pulse?.open && pulse.governs &&
+                    !continuation?.choice?.lodging && !auth.rest)))) {
+                    reject(d, 'time_authority', 'No chosen activity or established event accounts for this elapsed time.');
+                    break;
+                }
+                const room = Math.max(0, cap - timeUsed - pendingRoadTime.reduce((n,x) => n+x.minutes,0));
                 const m = Math.min(want, room);
                 if (m < want) reject(d, 'time_cap', `${d.minutes} min exceed what this turn allows (${cap} min${auth.go ? '' : ' without travel or an activity'}); ${m} applied`);
-                if (m > 0) { emit({ t: 'time.advanced', d: { minutes: m, why: 'narration' } }); timeUsed += m; }
+                if (m > 0 && onRoad) {
+                    if (travellers) bookRoadTime(m);
+                    else pendingRoadTime.push({minutes:m, delta:d});
+                } else if (m > 0) { emit({ t: 'time.advanced', d: { minutes: m, why: 'narration' } }); timeUsed += m; }
                 break;
             }
             case 'arrive': {
@@ -1947,11 +1973,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // (rules.time.engine_clock), never 0. Only the minutes beyond the booked activities count as travel.
     // 4.3.0-c.6.6.2: the long one only where the way crosses a settlement's bounds (into or out of a town, from one to
     // another); a short move within the wilds (the next bend of a wolf trail) is local like one within a town
-    if (auth.c && arrived && arrived !== startAt && arrived !== transit) {
+    for (const entry of pendingRoadTime)
+        reject(entry.delta, 'travel_time', 'No travelled leg was established for these minutes.');
+    if (auth.c && arrived && arrived !== startAt && arrived !== transit && !continuation?.choice?.lodging) {
         const t = content.rules.time.engine_clock;
         const floor = settlementOf(s, startAt) === settlementOf(s, arrived) ? t.go_min_same_settlement : t.go_min_elsewhere;
-        const travelled = timeUsed - booked;
-        if (travelled < floor) { emit({ t: 'time.advanced', d: { minutes: floor - travelled, why: 'travel' } }); timeUsed += floor - travelled; }
+        if (journeyTime && travellers) {
+            bookRoadTime(Math.max(0, floor-travelMinutes));
+        } else {
+            const travelled = timeUsed - booked;
+            if (travelled < floor) { emit({ t: 'time.advanced', d: { minutes: floor - travelled, why: 'travel' } }); timeUsed += floor - travelled; }
+        }
     }
 
     function giveReceiver(k) {
@@ -2974,6 +3006,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         sceneEpoch++;
         const town = locationOf(s, id);
         const from = s.scene.at;
+        if (id !== from && journeyTime) {
+            travellers = ['pc', ...following(s).filter(m => party.includes(m.who)).map(m => m.who)];
+            const owner = step;
+            step = {kind:'engine'};
+            for (const {minutes} of pendingRoadTime.splice(0)) bookRoadTime(minutes);
+            step = owner;
+        }
         // Patch 7: whether he knew a way here before he took it (else the way he took is kept). .190 (D1b): walking
         // between two rooms of a building no longer makes it a place explored room by room (only an older save's stays)
         const dun = dungeonOf(s, id);

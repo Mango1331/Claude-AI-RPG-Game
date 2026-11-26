@@ -6,7 +6,7 @@ import { plannedNegotiation, actionInputOf, actionInputHash, actionPrefix, valid
 import { boardRepairGuidance, boardSlotRepair, parseBoardSlot, parseInitialBoard } from './guild.js';
 import { nativeAction } from './native_actions.js';
 import { movementEvidence } from './narration_evidence.js';
-import { ordinaryChoice } from './travel_continuation.js';
+import { ordinaryChoice, localApproach } from './travel_continuation.js';
 import { placeKey } from './place_refs.js';
 import { worldVocab } from './extract.js';
 // Runtime V4 on a chat transcript (docs/RUNTIME_V4_PLAN.md §3): the host side of a V4 campaign. The same message
@@ -370,6 +370,11 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const priorBinding = actionInput && previous?.plan?.raw?.length ? parsePlan(previous.plan.raw.at(-1),content.commandVocab,ctx,msg.mes) : null;
     const reuse = previous?.plan && previous.interp?.commands ? {travel_frame:previous.plan.travel_frame, hud_binding:previous.plan.hud_binding || priorBinding?.hud_binding, hud_normalized:previous.plan.hud_normalized || priorBinding?.hud_normalized, commands: previous.interp.commands, failed: false, error: null, ms: 0, repaired: !!previous.interp.repaired, raw: previous.plan.raw || [], calls: previous.plan.llm, recovery: previous.plan.recovery || null } : null;
     const pl = reuse || await planMessage(llm, content, ctx, msg.mes, { recent, isCurrent, moveHints: (commands) => ineffectiveMoves(before, ctx, commands) });
+    if (!reuse && !pl.failed && !ctx.fight && !actionInput && pl.commands?.length === 0 &&
+        (!pl.travel_frame || pl.travel_frame === 'local') && rulesetOf(before) >= 2) {
+        const go = localApproach(before,msg.mes,p >= 0 ? chat[p].mes : '');
+        if (go) pl.commands = [go];
+    }
     const plan = {
         ...(pl.travel_frame ? {travel_frame:pl.travel_frame} : {}),
         ...(actionInput ? {hud_binding:pl.hud_binding,hud_normalized:!!pl.hud_normalized} : {}),

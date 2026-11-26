@@ -10,7 +10,7 @@ import { tradeObject } from './v4/trade.js';
 import { opensViolence } from './policy.js';
 import { actorTraits } from './v4/envelope.js';
 import { deriveCharacter, rawPower, rawPowerText, actionsOf } from './derived.js';
-import { defeatXp, awardXp, strengthOf } from './progression.js';
+import { defeatXp, awardXp, splitPool, strengthOf } from './progression.js';
 import { scaleCreature } from './npcgen.js';
 import { lookOf } from './knowledge.js';
 import { bandIndex, bandName, clone, num, roundHalfUp } from './util.js';
@@ -220,7 +220,7 @@ export function initEncounter(state, content, dice, trigger, participants, encId
     if (members.length) {
         enc.line=startLine(state,enc,members);
         projectBands(enc);
-        enc.participation=Object.fromEntries(['pc',...members.map(m=>m.who)].map(id=>[id,{from:0}]));
+        enc.participation=Object.fromEntries(['pc',...members.map(m=>m.who).sort()].map(id=>[id,{from:0}]));
         for(const m of members) if(m.priority) combatants[m.who].current.priority={...m.priority};
     }
     enc.order = preview ? [] : initiativeOrder(enc, dice);
@@ -240,7 +240,11 @@ export function addCombatant(enc, state, content, id, side, intent = 'attack', {
         line.x[id] ??= line.x.pc + bandIndex(pos.band);
         line.lo=Math.min(line.lo,line.x[id]); line.hi=Math.max(line.hi,line.x[id]);
         projectBands(enc);
-        if(side==='ally' && fighters(state).some(m=>m.who===id)) enc.participation[id] ||= {from:enc.pending_xp};
+        if (side === 'ally' && fighters(state).some(m => m.who === id)) {
+            const old = enc.participation[id];
+            if (!old || old.to != null)
+                enc.participation[id] = {from:enc.pending_xp, qualified:!!(old?.qualified || old?.to > old?.from)};
+        }
     }
     assignLabels(enc, state, content, [id], { c: cPath });
     // insert after all combatants with higher or equal Initiative (existing ties keep their locked order)
@@ -439,6 +443,11 @@ function onDefeat(ctx, target, record) {
         if (!enc.defeated.includes(target.id)) enc.defeated.push(target.id);
         if (target.side === 'hostile' && typeof target.fixed.defeat_xp === 'number') {
             if (afterSurrender) target.current.xp_counted = true;
+            if (enc.participation) target.current.resolution = {
+                encounter:enc.id, actor:record.actor,
+                members:Object.keys(enc.participation).filter(id => enc.participation[id].to == null &&
+                    !enc.combatants[id].current.escaped && !enc.combatants[id].current.defeated),
+            };
             enc.pending_xp += target.fixed.defeat_xp;
             // Prototype C (4.3.0-c.6.6.6): an area attack may defeat several at once; the record shows all they add
             record.pending_xp_added = (ctx.c ? record.pending_xp_added || 0 : 0) + target.fixed.defeat_xp;
@@ -1284,6 +1293,8 @@ function actorFlight(ctx,id) {
     const escape=held.length ? escapeRoll(ctx,c,held) : null;
     const escaped=!escape || escape.ok;
     if(escaped) {
+        if (c.side === 'hostile') c.current.resolution = {encounter:enc.id,actor:id,
+            members:Object.keys(enc.participation).filter(who => enc.participation[who].to == null && !enc.combatants[who].current.defeated)};
         c.current.escaped=true;
         if(!enc.escaped.includes(id)) enc.escaped.push(id);
         if(enc.participation[id]) enc.participation[id].to=enc.pending_xp;
@@ -1554,20 +1565,24 @@ export function runCombat(ctx, pcAction) {
 export function endEncounterEvents(state, content, enc) {
     const events = [];
     const pc = enc.combatants.pc;
-    const xp = pc.current.defeated ? 0 : enc.pending_xp;
+    const pool = enc.pending_xp;
+    const shares = enc.participation ? splitPool(pool, Object.keys(enc.participation).filter(id => {
+        const entry = enc.participation[id];
+        return !enc.combatants[id].current.defeated && (entry.qualified || (entry.to ?? pool) > entry.from);
+    })) : {pc:pc.current.defeated ? 0 : pool};
     const summary = {
-        defeated: enc.defeated.filter((id) => id !== 'pc'), escaped: enc.escaped.slice(), xp_awarded: xp,
-         ...(enc.negotiatedEnd ? {reason:'negotiated',agreements:enc.agreements} : enc.line ? {reason:pc.current.defeated?'pc_dead':pc.current.escaped?'withdrawal':'resolved',agreements:enc.agreements || []}:{}),
+        defeated: enc.defeated.filter(id => id !== 'pc' && !enc.participation?.[id]),
+        escaped: enc.escaped.slice(), xp_awarded: shares.pc || 0,
+        ...(enc.participation ? {xp_pool:pool, xp_shares:shares} : {}),
+        ...(enc.negotiatedEnd ? {reason:'negotiated',agreements:enc.agreements} : enc.line ? {reason:pc.current.defeated?'pc_dead':pc.current.escaped?'withdrawal':'resolved',agreements:enc.agreements || []}:{}),
         pc_dead: pc.current.defeated, pc_escaped: !!pc.current.escaped,
     };
-    if (xp > 0) {
-        const sheet = { ...state.entities.pc.sheet };
-        const earned = enc.defeated.filter((id) => !enc.combatants[id].current.surrendered || enc.combatants[id].current.xp_counted);
-        events.push(...awardXp(sheet, xp, content, `Combat XP (${earned.map((id) => `${enc.combatants[id].name} ${enc.combatants[id].fixed.defeat_xp}`).join(', ')})`));
-    }
-    // Patch 9B-1: the Proficiency Progress of the Skills he used meaningfully in it, now that it is over (ruleset 2)
-    const progress = fightProgress(state, content, enc);
-    if (progress.length) summary.pp = progress.map((e) => ({ skill: e.d.skill, gained: e.d.gained, from: e.d.from, to: e.d.to, need: e.d.need }));
+    const earned = enc.defeated.filter(id => !enc.participation?.[id] && (!enc.combatants[id].current.surrendered || enc.combatants[id].current.xp_counted));
+    const reason = `Combat XP (${earned.map(id => `${enc.combatants[id].name} ${enc.combatants[id].fixed.defeat_xp}`).join(', ')})`;
+    for (const [who, amount] of Object.entries(shares)) if (amount)
+        events.push(...awardXp(state.entities[who].sheet, amount, content, reason, who));
+    const progress = Object.keys(enc.participation || {pc:1}).flatMap(who => fightProgress(state, content, enc, who));
+    if (progress.length) summary.pp = progress.map((e) => ({ ...(enc.participation?{id:e.d.id}:{}), skill: e.d.skill, gained: e.d.gained, from: e.d.from, to: e.d.to, need: e.d.need }));
     events.push(...progress);
     // Patch 9C-1: the Learning Progress of a goal whose disciplines he fought with (src/v4/growth.js), on the same path
     // for every fight that ends (a fight a reply opened too)
@@ -1582,7 +1597,7 @@ export function endEncounterEvents(state, content, enc) {
     // 9C completion: what his Skills showed in a fight that was a real challenge, and the developments it makes possible
     // (src/v4/skill_growth.js); offered at his next turn outside a fight
     const developmentState = clone(state);
-    for (const e of progress) developmentState.entities.pc.sheet.skills[e.d.skill] = {
+    for (const e of progress.filter(e => e.d.id === 'pc')) developmentState.entities.pc.sheet.skills[e.d.skill] = {
         ...developmentState.entities.pc.sheet.skills[e.d.skill], ...e.d.to,
     };
     const developed = developmentEvents(developmentState, content, enc);

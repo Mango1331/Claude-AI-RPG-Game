@@ -1,4 +1,6 @@
 // XP, Level-up loop (Core #3, #25, #28) and free Stat Point assignment.
+import { npcTemplate } from './content.js';
+import { distributeFreePoints } from './npcgen.js';
 import { rankOf, rankIndex } from './derived.js';
 import { roundHalfUp } from './util.js';
 
@@ -46,6 +48,13 @@ export function awardXp(sheet, amount, content, reason, who = 'pc') {
                 favored: content.rules.progression.favored_growth_per_level > 0 && cls ? cls.favored : [], rank: rankOf(level, content),
             },
         });
+        if (who !== 'pc') {
+            const template = npcTemplate(content, 2, sheet.template);
+            const priority = template?.priority || template?.priority_by_class?.[sheet.class] || ['STR','VIT','AGI'];
+            const grants = distributeFreePoints(priority, content.rules.progression.free_points_per_level);
+            for (const [stat, amount] of Object.entries(grants))
+                events.push({t:'stat.assigned', d:{id:who, stat, amount}});
+        }
     }
     return events;
 }
@@ -60,4 +69,11 @@ export function assignStat(sheet, stat, amount, content) {
     if (!Number.isInteger(amount) || amount <= 0) return { errors: ['Amount must be a positive whole number.'] };
     if (amount > sheet.free_points) return { errors: [`Only ${sheet.free_points} free Stat Points available.`] };
     return { events: [{ t: 'stat.assigned', d: { id: 'pc', stat, amount } }] };
+}
+
+/** Caller supplies stable first-participation order. No XP is minted by rounding. */
+export function splitPool(amount, ordered) {
+    const ids = [...new Set(ordered)];
+    return Object.fromEntries(ids.map((id, i) => [id,
+        Math.floor(amount / ids.length) + Number(i < amount % ids.length)]));
 }

@@ -114,12 +114,17 @@
             "wait",
             "follow",
             "leave",
-            "coordinate"
+            "coordinate",
+            "pay"
           ]
         },
         "who": {
           "ref": "person"
         },
+        "loot": {"enum":["item","proceeds"],"nullable":true},
+        "goods": {"type":"string","nullable":true},
+        "claim": {"type":"string","nullable":true},
+        "due": {"enum":["advance","partial"],"nullable":true},
         "priority": {"enum":["target","protect","independent","front","rear"],"nullable":true},
         "target": {"type":"string","nullable":true},
         "agreement": {

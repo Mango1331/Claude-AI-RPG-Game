@@ -1,3 +1,4 @@
+import { claim, payClaim } from '../party_rewards.js';
 // Runtime V4: the quantities and prices of trade, one model for buying and selling (docs/INTEGRATION_4_1.md §7):
 //
 //   offer line   a lot: `qty` units (1 when the price is per piece) for `price_cp` ("three flasks for nine copper")
@@ -576,6 +577,24 @@ export function bookSale(s, emit, { items = null, ref, units, buyer, cp, what, s
         const selection = bidSale(s, live, null, positions);
         if (selection.error || selection.cp !== cp) return { error: selection.error || 'the lot or price differs from the bid' };
     }
+    // A mixed lot needs an actual price for the pledged lines or one common beneficiary.
+    const splits = new Map();
+    const sources = lot.map(it => s.objects[it.ref]?.source?.proceeds);
+    for (const aid of new Set(sources.filter(Boolean))) {
+        const a = s.party?.agreements[aid];
+        if (!a) return {error:'The proceeds agreement is missing.'};
+        let price = cp;
+        if (!sources.every(id => id === aid)) {
+            const priced = lot.map(it => {
+                const line = offer?.lines?.find(l => objectRef(s,l.object) === it.ref);
+                return line && pricePositions(offer,[{id:line.id,units:it.units}]).cp;
+            });
+            if (!priced.every(Number.isSafeInteger) || priced.reduce((n,x)=>n+x,0)!==cp)
+                return {error:'Agree separate prices for the pledged goods in this mixed lot.'};
+            price = priced.reduce((n,v,i)=>n+(sources[i]===aid?v:0),0);
+        }
+        splits.set(a,Math.floor(price/2));
+    }
     for (const it of lot) {
         const o = s.objects[it.ref];
         if (o?.holder?.entity === 'pc') {
@@ -585,6 +604,10 @@ export function bookSale(s, emit, { items = null, ref, units, buyer, cp, what, s
     }
     emit({ t: 'coin.changed', d: { id: 'pc', value: s.entities.pc.sheet.coin_cp + cp, delta: cp, why: `sold ${what}` } });
     emit({ t: 'transaction.completed', d: { to: 'pc', from: buyer, cp, for: what, at: s.scene.at, ...(offer ? { offer: offer.id } : {}) } });
+    for (const [a,amount] of splits) if (amount) {
+        const row = claim(s,emit,a,'sale/'+s.turn+'/'+s.credits.at(-1).id+'/'+lot.map(it=>it.ref+'-'+(s.objects[it.ref]?.qty??1)).join('+'),amount);
+        payClaim(s,emit,row,row.amount-row.paid);
+    }
     return { ok: true };
 }
 

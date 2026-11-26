@@ -10,7 +10,8 @@ import { clearOf, clearDone, clearTarget, cullPopulation, slotNameOf, floorAt } 
 import { O, S, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 import { setFactEvents, perceivers, knows, truth, PC_NAME_FACT } from '../knowledge.js';
-import { awardXp, questXp } from '../progression.js';
+import { settleQuest } from '../party_rewards.js';
+import { awardXp, questXp, splitPool } from '../progression.js';
 import { lifeStageOf } from './population.js';
 import { rankOf, rankIndex } from '../derived.js';
 import { slug, normText, hash32 } from '../util.js';
@@ -554,6 +555,7 @@ export function contractReady(s, content, q, { c = false } = {}) {
 
 /** Turn a contract in at a Guild hall: its readiness (contractReady), then deterministic payout/XP/count. */
 export function completeContract(s, content, q, emit, { step, c = false } = {}) {
+    if (q.status !== 'active') return {ok:false, reason:'This contract is already closed.'};
     const check = contractReady(s, content, q, { c });
     emit({ t: 'proof.checked', d: { quest: q.id, ok: check.ok, reason: check.reason, mode: check.mode } });
     if (!check.ok) return { ok: false, reason: check.reason };
@@ -568,8 +570,12 @@ export function completeContract(s, content, q, emit, { step, c = false } = {}) 
         emit({ t: 'transaction.completed', d: { to: 'pc', from: 'guild', cp: pay, for: q.title, quest: q.id, at: s.scene.at } });
     }
     const xp = q.level ? questXp(q.level, q.qtype || 'standard', content) : 0;
-    if (xp) awardXp(s.entities.pc.sheet, xp, content, `Quest XP: ${q.title}`).forEach(e =>
-        emit(e.t === 'xp.changed' ? { ...e, d: { ...e.d, quest: q.id } } : e));
+    const participants = q.party_work ? Object.values(q.party_work).flat().filter(id =>
+        s.entities[id]?.sheet && s.entities[id].status !== 'dead') : ['pc'];
+    for (const [id, amount] of Object.entries(splitPool(xp,participants))) if (amount)
+        awardXp(s.entities[id].sheet, amount, content, `Quest XP: ${q.title}`, id).forEach(e =>
+            emit(e.t === 'xp.changed' ? { ...e, d: { ...e.d, quest: q.id } } : e));
+    if (s.party) settleQuest(s, emit, q);
     emit({ t: 'quest.status', d: { id: q.id, from: q.status, to: 'completed', at: s.scene.at, step } });
     recordFact(s, emit, { p: 'completed_contract', o: q.title, id: `f.pc.completed.${q.id}` });
     return { ok: true, pay, xp, ready: !!q.ready, verification: q.ready_note || null };

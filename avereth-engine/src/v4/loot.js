@@ -54,6 +54,13 @@ export function lootEvents(s, content, enc) {
     const events = [];
     const lines = [];
     const rewards = [], rewardLines = [], seen = new Set();
+    const agreements = Object.keys(enc.participation || {}).flatMap(id => {
+        const member = s.party?.members[id];
+        const a = s.party?.agreements[member?.agreement];
+        return a?.phase === 'accepted' && a.terms.loot && member.mode === 'follow' &&
+            !enc.combatants[id].current.defeated && !enc.combatants[id].current.escaped ? [a] : [];
+    });
+    const allocated = name => agreements.find(a => [name, name.replace(/^[A-S]-Rank /i,'')].some(n => n.toLowerCase() === a.terms.loot.goods));
     const stacks = new Map(); // stack key -> {id, name, qty, ...} gathered over all foes of this fight
     const add = (key, item, qty) => {
         if (qty <= 0) return;
@@ -65,7 +72,7 @@ export function lootEvents(s, content, enc) {
     let coin = 0;
     const items = []; // non-stacking gear
     for (const c of Object.values(enc.combatants)) {
-        if (c.id === 'pc' || c.current.escaped || c.current.surrendered) continue;
+        if (c.id === 'pc' || enc.participation?.[c.id] || (enc.line && c.side !== 'hostile') || c.current.escaped || c.current.surrendered) continue;
         const e = s.entities[c.id];
         if (!e || e.status !== 'dead' || e.looted) continue;
         const seed = `${enc.id}|${c.id}`;
@@ -136,10 +143,12 @@ export function lootEvents(s, content, enc) {
         events.push({ t: 'entity.updated', d: { id: c.id, set: { looted: enc.id, ...(reward ? {reward: reward.meta} : {}) } } });
     }
     for (const [k, m] of stacks) {
-        const base = `obj.loot.${k}`;
+        const a = allocated(m.name);
+        const base = `obj.loot.${k}` + (a ? '.'+a.id : '');
+
         const held = s.objects?.[base];
         const source = { turn: s.turn, how: 'loot', encounter: enc.id };
-        if (held && held.holder?.entity === 'pc') events.push({ t: 'object.added', d: { id: base, qty: m.qty } });
+        if (held && held.holder?.entity === (a?.terms.loot.kind === 'item' ? a.who : 'pc')) events.push({ t: 'object.added', d: { id: base, qty: m.qty } });
         else {
             const id = held ? `${base}.${slug(enc.id.replace(/\./g, '_'))}` : base;
             events.push({ t: 'object.created', d: { object: { id, name: m.name, kind: 'resource', stack: true, qty: m.qty, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source,
@@ -159,6 +168,17 @@ export function lootEvents(s, content, enc) {
     if (coin > 0) {
         events.push({ t: 'coin.changed', d: { id: 'pc', value: (s.entities.pc.sheet.coin_cp || 0) + coin, delta: coin, why: 'loot' } });
         lines.push(`${coin} cp`);
+    }
+    for (const e of events) {
+        const obj = e.d.object;
+        if (e.t === 'object.created') {
+            const a = allocated(obj.name);
+            if (a?.terms.loot.kind === 'item') obj.holder = {entity:a.who};
+            if (a?.terms.loot.kind === 'proceeds') obj.source = {...obj.source, proceeds:a.id};
+        } else if (e.t === 'item.changed') {
+            const a = allocated(content.items.get(e.d.item)?.name || e.d.item);
+            if (a?.terms.loot.kind === 'item') e.d.id = a.who;
+        }
     }
     for (const e of events.filter((x) => x.t === 'item.changed')) lines.push(`${content.items.get(e.d.item)?.name || e.d.item} ×${e.d.qty}`);
     // Names come from actual inventory writes, never headers, comparisons, broken gear or coin text.

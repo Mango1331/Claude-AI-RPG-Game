@@ -1,3 +1,4 @@
+import { recordWork, vestQuest } from '../party_rewards.js';
 import { following, partyDecision } from '../party.js';
 import { campInspection, campObjects, vacantSite, atObserver, visibleSupply, uncoveredSupply } from './camp.js';
 import { encounterHumanLevel } from '../npcgen.js';
@@ -2281,6 +2282,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
         // the alternative is kept with the contract: the turn-in accepts the short count on it (guild.js contractReady)
         emit({ t: 'quest.ready', d: { id: q.id, note: `${claimed}${short.length ? ` — ${alternative}` : ''}`.slice(0, 220), ...(short.length ? { alternative: alternative.slice(0, 200) } : {}) } });
+        if (s.party) {
+            const escorts = following(s).filter(m => s.party.agreements[m.agreement]?.terms.quest === q.id);
+            if (escorts.length && q.journey && q.objectives?.some(o => o.verb === 'ESCORT'))
+                recordWork(s,emit,q,'escort/'+s.scene.at,['pc',...escorts.map(m=>m.who)]);
+            vestQuest(s,emit,q);
+        }
         return;
     }
 

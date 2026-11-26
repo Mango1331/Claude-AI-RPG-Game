@@ -101,3 +101,53 @@ assert(!canFight(partial,'pc',foes[0]) && canFight(partial,who,foes[0]));
 partial.agreements[0].pairs.push(...foes.map(id=>[id,who]));
 assert(terminal(partial));
 console.log('Group retreat, separation and bilateral peace passed.');
+
+const {endEncounterEvents}=await import('../../src/combat.js');
+const {completeContract}=await import('../../src/v4/guild.js');
+const {recordWork,vestQuest,payClaim}=await import('../../src/party_rewards.js');
+const {awardXp,splitPool}=await import('../../src/progression.js');
+for (const [entry, dead, pcDead, expected] of [
+    [{from:0},false,false,{pc:90,[who]:90}],
+    [{from:0,to:0},false,false,{pc:180}],
+    [{from:0,to:12},false,false,{pc:90,[who]:90}],
+    [{from:180},false,false,{pc:180}],
+    [{from:0},true,false,{pc:180}],
+    [{from:0},false,true,{[who]:180}],
+]) {
+    const enc=setup();enc.pending_xp=180;enc.participation[who]=entry;
+    enc.combatants[who].current.defeated=dead;enc.combatants.pc.current.defeated=pcDead;
+    assert.deepEqual(endEncounterEvents(camp,content,enc).summary.xp_shares,expected);
+}
+assert.deepEqual(splitPool(181,['pc','first','last']),{pc:61,first:60,last:60});
+const levels=awardXp(camp.entities[who].sheet,1500,content,'test',who);
+assert.equal(levels.filter(e=>e.t==='level.up').length*5,levels.filter(e=>e.t==='stat.assigned').reduce((a,e)=>a+e.d.amount,0));
+assert(levels.some(e=>e.t==='stat.assigned'));
+for (const mode of ['present','absent','left-early','dead']) {
+    const state=structuredClone(s), q=state.quests[quest], emit=e=>applyEvent(state,e);
+    recordWork(state,emit,q,'original-slot',['pc',who]);
+    if(mode==='left-early') state.party.members[who].mode='left';
+    vestQuest(state,emit,q);
+    if(mode==='absent') {state.scene.present=[];state.party.members[who].mode='left';}
+    if(mode==='dead') state.entities[who].status='dead';
+    // Isolate the real turn-in reducer at its existing authoritative clear gate.
+    state.dungeons=structuredClone(camp.dungeons);
+    state.dungeons[q.clear.dungeon].clears.push({floor:q.clear.floor,credit:'pc',turn:state.turn});
+    const before=state.entities.pc.sheet.coin_cp;
+    const events=[];
+    const result=completeContract(state,content,q,e=>{events.push(e);emit(e);},{c:true});
+    assert(result.ok,result.reason);
+    assert.equal(state.entities.pc.sheet.coin_cp-before,mode==='present'?45:90);
+    const claims=Object.values(state.party.claims);
+    assert.equal(claims.length,mode==='left-early'?0:1);
+    if(claims.length) assert.equal(claims[0].paid,mode==='present'?45:0);
+    const xp=events.filter(e=>e.t==='xp.changed').map(e=>e.d.amount);
+    assert.deepEqual(xp,mode==='dead'?[450]:[225,225]);
+    if(mode==='absent'){
+        state.scene.present.push(who);
+        assert(payClaim(state,emit,claims[0],20));
+        assert(payClaim(state,emit,state.party.claims[claims[0].id],25));
+        assert(!payClaim(state,emit,state.party.claims[claims[0].id],1));
+    }
+    assert(!completeContract(state,content,q,emit,{c:true}).ok);
+}
+console.log('D10 encounter intervals, D11 work, money, absence, death and settled claims passed.');

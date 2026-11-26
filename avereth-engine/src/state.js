@@ -144,6 +144,12 @@ export function applyEvent(state, e) {
             }
             break;
         }
+        case 'quest.party_work': {
+            const q = state.quests[d.id];
+            if (q?.status !== 'active') throw Error('Work requires an active quest.');
+            (q.party_work ||= {})[d.source] ??= [...d.members];
+            break;
+        }
         case 'party.member': case 'party.agreement': case 'party.claim':
             reduceParty(state,e.t,d);
             break;

@@ -313,14 +313,14 @@ export function restoration(content, skill, prof, ruleset, who, paid) {
 }
 
 /** The progress events of a gain (none when nothing is gained or the Skill is at P5). */
-function progressEvents(content, state, skillId, gained, why, key) {
-    const sheet = state.entities.pc.sheet;
+function progressEvents(content, state, skillId, gained, why, key, who = 'pc') {
+    const sheet = state.entities[who].sheet;
     const entry = sheet.skills[skillId];
     const skill = skillOf(content, skillId, state);
     if (!entry || !skill || gained <= 0) return [];
     const to = advancePp(content, entry, skill, gained, state);
     if (!to) return [];
-    return [{ t: 'skill.progress', d: { id: 'pc', skill: skillId, name: skill.name, gained, from: { prof: entry.prof || 1, pp: entry.pp || 0 }, to, need: promotionPp(content, skill, state), why, key } }];
+    return [{ t: 'skill.progress', d: { id: who, skill: skillId, name: skill.name, gained, from: { prof: entry.prof || 1, pp: entry.pp || 0 }, to, need: promotionPp(content, skill, state), why, key } }];
 }
 
 export const DEFENSE = new Set(['temp_def', 'temp_mdef', 'barrier', 'incoming_damage_reduction', 'damage_reduction_next']);
@@ -331,27 +331,35 @@ export const DEFENSE = new Set(['temp_def', 'temp_mdef', 'barrier', 'incoming_da
  * campaign of ruleset 2; kept on the encounter (its log is cut to the last 20 records).
  */
 export function noteUse(ctx, r) {
+    noteActorUse(ctx, r, 'pc');
+    for (const who of Object.keys(ctx.enc.participation || {})) {
+        if (who !== 'pc' && (r?.actor === who || r?.strikes?.some(hit => hit.target === who)))
+            noteActorUse(ctx, r, who);
+    }
+}
+function noteActorUse(ctx, r, who) {
     const { enc } = ctx;
     if (!r || r.illegal || rulesetOf(ctx.state) < 2) return;
-    const pp = (enc.pp ||= { used: {}, wait: null, threatened: false });
+    const holder = who === 'pc' ? enc : enc.combatants[who].current;
+    const pp = (holder.pp ||= { used: {}, wait: null, threatened: false });
     const hostile = (id) => enc.combatants[id]?.side === 'hostile';
-    if (r.actor !== 'pc') {
-        const onHim = r.kind === 'attack' && (r.strikes || []).some((s) => s.target === 'pc');
+    if (r.actor !== who) {
+        const onHim = r.kind === 'attack' && (r.strikes || []).some((s) => s.target === who);
         if (onHim && hostile(r.actor)) {
             pp.threatened = true;
             if (pp.wait?.kind === 'defense') { pp.used[pp.wait.skill] ||= 'a defense under attack'; pp.wait = null; }
-            trialNote(ctx, pp, r);
+            if (who === 'pc') trialNote(ctx, pp, r);
             // 9C completion: a foe's strike before his next turn answers the attack he made; a defense that still let
             // damage through to his HP is one that was not enough
             if (pp.answer) mark(pp, pp.answer, 'riposte');
-            if (pp.guarding && (r.strikes || []).some((s) => s.target === 'pc' && (s.final || 0) - (s.absorbed || 0) > 0)) mark(pp, pp.guarding, 'layered');
+            if (pp.guarding && (r.strikes || []).some((s) => s.target === who && (s.final || 0) - (s.absorbed || 0) > 0)) mark(pp, pp.guarding, 'layered');
             pp.guarding = null;
         }
         return;
     }
     // A minor is part of this turn: keep the major's defense/attack evidence until the opponent acts.
     if (r.phase_slot === 'minor') {
-        if (r.skill && r.reposition && enc.combatants.pc.fixed.actions[r.skill])
+        if (r.skill && r.reposition && enc.combatants[who].fixed.actions[r.skill])
             pp.used[r.skill] ||= 'a step that moved him';
         return;
     }
@@ -363,21 +371,21 @@ export function noteUse(ctx, r) {
     pp.guarding = null;
     const skill = r.skill ? skillOf(ctx.content, r.skill, ctx.state) : null;
     if (waiting?.kind === 'buff' && r.kind === 'attack') pp.used[waiting.skill] ||= 'a feint his next attack used';
-    if (!skill || skill.item || skill.weapon_attack || !enc.combatants.pc.fixed.actions[skill.id] || enc.combatants.pc.fixed.actions[skill.id].weapon) return;
+    if (!skill || skill.item || skill.weapon_attack || !enc.combatants[who].fixed.actions[skill.id] || enc.combatants[who].fixed.actions[skill.id].weapon) return;
     // 9C completion (src/v4/skill_growth.js): what his use showed, for the development of the Skill, and the Skill he used
     // the turn before it (two Skills one after the other)
-    usePatterns(ctx, pp, skill, r);
+    if (who === 'pc') usePatterns(ctx, pp, skill, r);
     if (before && before !== skill.id) pp.pairs = [...new Set([...(pp.pairs || []), [before, skill.id].sort().join('+')])];
     pp.last = skill.id;
     if (r.kind === 'attack' && (r.strikes || []).some((s) => hostile(s.target))) {
         pp.used[skill.id] ||= 'an attack on a foe';
         // Keep the actual target qualification, not the trimmed encounter log or a strong spectator.
         const challenge = ctx.content.rules.proficiency.award?.challenge || {};
-        const pc = enc.combatants.pc;
+        const pc = enc.combatants[who];
         const fOffense = (pc.fixed.rank || rankOf(pc.fixed.level, ctx.content)) === 'F' && skill.rank === 'F';
         const below = fOffense ? challenge.offensive_f_levels_below ?? 4 : challenge.levels_below ?? 2;
         const worthy = r.strikes.some(s => hostile(s.target)
-            && (enc.combatants[s.target].fixed.level ?? 0) >= enc.combatants.pc.fixed.level - below);
+            && (enc.combatants[s.target].fixed.level ?? 0) >= enc.combatants[who].fixed.level - below);
         const offense = (pp.offense ||= {});
         offense[skill.id] = offense[skill.id] === true || worthy;
     } else if (r.kind === 'skill') {
@@ -446,20 +454,22 @@ function trialNote(ctx, pp, r) {
  * as a real challenge: ruleset 2, he neither died nor ran, a foe at most `challenge.levels_below` Levels below him took
  * part and a foe attacked him.
  */
-export function fightQualifies(state, content, enc) {
-    if (rulesetOf(state) < 2 || !enc.pp || enc.combatants.pc.current.defeated || enc.combatants.pc.current.escaped) return false;
+export function fightQualifies(state, content, enc, who = 'pc') {
+    const pp = who === 'pc' ? enc.pp : enc.combatants[who].current.pp;
+    if (rulesetOf(state) < 2 || !pp || enc.combatants[who].current.defeated || enc.combatants[who].current.escaped) return false;
     const rule = content.rules.proficiency.award || {};
-    const lvl = enc.combatants.pc.fixed.level;
+    const lvl = enc.combatants[who].fixed.level;
     const below = rule.challenge?.levels_below ?? 2;
     const worthy = Object.values(enc.combatants).some((c) => (c.side === 'hostile' || c.current.peace) && (c.fixed.level ?? 0) >= lvl - below);
-    return worthy && !(rule.challenge?.foe_attack !== false && !enc.pp.threatened);
+    return worthy && !(rule.challenge?.foe_attack !== false && !pp.threatened);
 }
 
 /** One qualification for offensive PP and offensive development. Other skill uses keep their own gate. */
-export function skillFightQualifies(state, content, enc, sid) {
-    if (rulesetOf(state) < 2 || !enc?.pp || enc.combatants.pc.current.defeated || enc.combatants.pc.current.escaped) return false;
-    const offense = enc.pp.offense?.[sid];
-    if (offense === undefined) return fightQualifies(state, content, enc);
+export function skillFightQualifies(state, content, enc, sid, who = 'pc') {
+    const pp = who === 'pc' ? enc.pp : enc.combatants[who].current.pp;
+    if (rulesetOf(state) < 2 || !pp || enc.combatants[who].current.defeated || enc.combatants[who].current.escaped) return false;
+    const offense = pp.offense?.[sid];
+    if (offense === undefined) return fightQualifies(state, content, enc, who);
     return offense === true && Object.values(enc.combatants).filter(c => c.side === 'hostile' || c.current.peace)
         .every(c => c.current.defeated || c.current.escaped || c.current.surrendered);
 }
@@ -470,17 +480,19 @@ export function skillFightQualifies(state, content, enc, sid) {
  * and a foe's attack on him. F-balance offensive uses instead qualify by their actual target and victory,
  * including immediate kills. None when he died or ran from it, none in a legacy campaign.
  */
-export function fightProgress(state, content, enc) {
-    if (rulesetOf(state) < 2 || !enc.pp || enc.combatants.pc.current.defeated || enc.combatants.pc.current.escaped) return [];
-    const sheet = state.entities.pc.sheet;
+export function fightProgress(state, content, enc, who = 'pc') {
+    const pp = who === 'pc' ? enc.pp : enc.combatants[who].current.pp;
+    if (rulesetOf(state) < 2 || !pp || enc.combatants[who].current.defeated || enc.combatants[who].current.escaped) return [];
+    const sheet = state.entities[who].sheet;
     const out = [];
     const after = { ...sheet, skills: { ...sheet.skills } };
-    const view = { ...state, entities: { ...state.entities, pc: { ...state.entities.pc, sheet: after } } };
-    for (const [sid, why] of Object.entries(enc.pp.used)) {
-        if (!skillFightQualifies(state, content, enc, sid)) continue;
+    const view = { ...state, entities: { ...state.entities, [who]: { ...state.entities[who], sheet: after } } };
+    for (const [sid, why] of Object.entries(pp.used)) {
+        if (!skillFightQualifies(state, content, enc, sid, who)) continue;
         const skill = skillOf(content, sid, state);
-        if (!skill || !sheet.skills[sid] || state.pp_keys?.[`fight:${enc.id}:${sid}`]) continue;
-        const ev = progressEvents(content, view, sid, ppAward(content, sheet, skill), `${why} in ${enc.id}`, `fight:${enc.id}:${sid}`);
+        const key = enc.participation ? `fight:${enc.id}:${who}:${sid}` : `fight:${enc.id}:${sid}`;
+        if (!skill || !sheet.skills[sid] || state.pp_keys?.[key]) continue;
+        const ev = progressEvents(content, view, sid, ppAward(content, sheet, skill), `${why} in ${enc.id}`, key, who);
         for (const e of ev) after.skills[sid] = { ...after.skills[sid], ...e.d.to };
         out.push(...ev);
     }

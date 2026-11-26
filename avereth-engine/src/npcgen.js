@@ -61,7 +61,7 @@ export function chooseCreatureLevel(areaContext, content, dice) {
     return band.min === band.max ? band.min : dice.int(band.min, band.max, 'creature level');
 }
 
-function distributeFreePoints(priority, points) {
+export function distributeFreePoints(priority, points) {
     const out = {};
     const pattern = [2, 2, 1];
     let left = points;

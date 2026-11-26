@@ -1,3 +1,4 @@
+import { claim, payClaim } from './party_rewards.js';
 import { hash32 } from './util.js';
 import { findQuote, moneyLiteral } from './v4/finance_evidence.js';
 
@@ -39,12 +40,24 @@ function termsFrom(s, content, c, words) {
     if (terms.combat && !together.test(words) && !/\b(?:fight|battle|guard|protect|defend)\b/i.test(words)) return null;
     const half = /\b(?:half each|halves|half (?:of|the)|fifty.fifty|split (?:it |the (?:pay|reward|money) )?(?:evenly|equally)|equal shares)\b/i.test(words);
     if (c.share === 'half' && (!half || !terms.quest)) return null;
-    if (half && c.share !== 'half' && c.quest) return null;
+    if (half && c.share !== 'half' && c.quest && !c.loot) return null;
     if (c.share === 'half') terms.half = true;
     if (c.amount != null) {
         const m = moneyLiteral(words, c.money || '', { content });
         if (!c.quest || m.cp !== c.amount || !Number.isSafeInteger(c.amount) || c.amount <= 0 || terms.half) return null;
         terms.cp = c.amount;
+    }
+    if (c.loot != null) {
+        if (!['item','proceeds'].includes(c.loot) || !c.goods?.trim() ||
+            !words.toLowerCase().includes(c.goods.toLowerCase())) return null;
+        if (c.loot === 'proceeds' && (!half || !/\b(?:sale|sell|proceeds)\b/i.test(words))) return null;
+        if (c.loot === 'item' && !/\b(?:keep|take|get|receive|yours|mine|give)\b/i.test(words)) return null;
+        terms.loot = {kind:c.loot, goods:c.goods.trim().toLowerCase()};
+    }
+    if (c.due != null) {
+        if (!terms.cp || !['advance','partial'].includes(c.due) ||
+            !(c.due === 'advance' ? /\b(?:advance|up front|upfront)\b/i : /\b(?:partial|even if|part of the work)\b/i).test(words)) return null;
+        terms.due = c.due;
     }
     return terms;
 }
@@ -61,7 +74,7 @@ export function partyDecision(s, content, command, source, actor, emit) {
     const sourceRef = { actor, quote:c.quote, turn:s.turn, at:s.scene.at };
     const memberEvent = (mode, extras={}) => emit({t:'party.member',d:{...member,who,mode,at:s.scene.at,source:sourceRef,previous:member?.revision || 0, ...extras}});
     if (c.act === 'offer') {
-        if (!together.test(c.quote) || no.test(c.quote)) return failure('Quote the specific voluntary offer.');
+        if ((!together.test(c.quote) && !member) || no.test(c.quote)) return failure('Quote the specific voluntary offer.');
         const terms = termsFrom(s, content, c, c.quote);
         if (!terms) return failure('The work and compensation must match the quoted terms.');
         const id = 'party.'+who+'.'+s.turn+'.'+hash32(JSON.stringify([actor,c.seq,c.quote]));
@@ -76,10 +89,25 @@ export function partyDecision(s, content, command, source, actor, emit) {
             if (!q || q.status !== 'active') return failure('Quest is no longer active.');
             const cost = a => a.terms.half ? Math.floor(q.payout_cp/2) : a.terms.cp || 0;
             const others = membersOf(s).filter(m => m.who !== who).map(m=>s.party.agreements[m.agreement]).filter(a=>a?.terms.quest === q.id);
-            if (others.reduce((sum,a)=>sum+cost(a),cost(agreement)) > q.payout_cp) return failure('The promised shares exceed this reward.');
+            const owed = claimsOf(s).filter(r => r.source === q.id && !others.some(a=>a.id === r.agreement));
+            if (owed.reduce((n,r)=>n+r.amount,0) + others.reduce((sum,a)=>sum+cost(a),cost(agreement)) > q.payout_cp) return failure('The promised shares exceed this reward.');
         }
+        if (accepts && agreement.terms.loot && membersOf(s).some(m => m.who !== who && m.mode !== 'left' &&
+            s.party.agreements[m.agreement]?.terms.loot?.goods === agreement.terms.loot.goods))
+            return failure('This loot has already been promised.');
         emit({t:'party.agreement',d:{...agreement,phase:accepts?'accepted':'declined',answer:sourceRef,previous:agreement.revision}});
-        if (accepts) memberEvent('follow',{agreement:agreement.id,combat:agreement.terms.combat});
+        if (accepts) {
+            memberEvent('follow',{agreement:agreement.id,combat:agreement.terms.combat});
+            if (agreement.terms.due === 'advance') {
+                const row = claim(s,emit,agreement,agreement.terms.quest,agreement.terms.cp);
+                payClaim(s,emit,row,row.amount);
+            }
+        }
+    } else if (c.act === 'pay') {
+        const row = s.party?.claims?.[c.claim];
+        if (actor !== 'pc' || !row || who !== row.who || !/\b(?:pay|give|settle|hand)\b/i.test(words) ||
+            moneyLiteral(words,c.money,{content}).cp !== c.amount ||
+            !payClaim(s,emit,row,c.amount)) return failure('Identify the due claim, recipient and actual amount to pay.');
     } else if (c.act==='coordinate') {
         if (!member?.combat || member.mode!=='follow') return failure('Only a present combat partner can coordinate.');
         const kinds={target:/\b(?:target|attack|shoot|take on|focus)\b/i,protect:/\b(?:guard|cover|protect|shield|keep.+off|defend)\b/i,independent:/\b(?:independent|own|your call|freely)\b/i,front:/\b(?:front|point|ahead|lead)\b/i,rear:/\b(?:rear|behind|back)\b/i};

@@ -1,3 +1,5 @@
+import { defeatTally } from './v4/guild.js';
+import { recordWork } from './party_rewards.js';
 import { following, membersOf, partyDecision } from './party.js';
 import { canFight } from './party_line.js';
 // Engine facade — the whole API a host (SillyTavern extension, tests, CLI) needs:
@@ -878,8 +880,16 @@ function persistCombat(s, content, emit, enc, records, isNew, { c: cPath = false
     // deaths are world truth (hard facts) witnessed by everyone present who noticed the fight (not the unaware)
     for (const c of Object.values(enc.combatants)) {
         if (c.current.hp === 0 && s.entities[c.id].status !== 'dead') {
+            const sources = c.current.resolution;
+            const quests = sources ? Object.values(s.quests).filter(q => q.status === 'active') : [];
+            const counts = quests.map(q => defeatTally(s,content,q).reduce((n,t)=>n+t.done,0));
+            if (sources) emit({t:'entity.updated', d:{id:c.id,set:{party_resolution:sources}}});
             emit({ t: 'entity.status', d: { id: c.id, status: 'dead' } });
             setFactEvents(s, { id: `f.${c.id}.status.t${s.turn}`, s: c.id, p: 'status', o: 'dead', hard: true, importance: 0.9, source: { kind: 'engine', encounter: enc.id } }).forEach(emit);
+            quests.forEach((q,i) => {
+                if (defeatTally(s,content,q).reduce((n,t)=>n+t.done,0) > counts[i])
+                    recordWork(s,emit,q,c.id,sources.members);
+            });
             const deathFact = truth(s, c.id, 'status')[0];
             for (const w of perceivers(s)) if (w !== c.id && deathFact && s.scene.awareness[w] !== 'unaware') emit({ t: 'knowledge.gained', d: { who: w, about: deathFact.id, stance: 'knows', source: 'witnessed', turn: s.turn, minute: s.clock.minute } });
         }
@@ -910,7 +920,14 @@ function persistCombat(s, content, emit, enc, records, isNew, { c: cPath = false
             if (lost || !companion && (c.current.escaped || (cPath && pcC.current.escaped && c.side === 'hostile' && s.scene.present.includes(c.id)))) {
                 emit({ t: 'scene.left', d: { id: c.id } });
                 // 4.3.0-c.6.6.6: one that fled the fight itself is driven off, as the engine saw it (src/v4/guild.js defeatTally)
-                if (cPath && c.current.escaped && !companion) emit({ t: 'entity.updated', d: { id: c.id, set: { fled: { turn: s.turn, encounter: enc.id } } } });
+                if (cPath && c.current.escaped && !companion) {
+                    const src = c.current.resolution;
+                    const quests = src ? Object.values(s.quests).filter(q => q.status === 'active') : [];
+                    const count = q => defeatTally(s,content,q).reduce((n,t)=>n+t.driven,0);
+                    const before = quests.map(count);
+                    emit({t:'entity.updated',d:{id:c.id,set:{fled:{turn:s.turn,encounter:enc.id},...(src?{party_resolution:src}:{})}}});
+                    quests.forEach((q,i)=>{if(count(q)>before[i]) recordWork(s,emit,q,c.id,src.members);});
+                }
                 // Patch 5 (review): where it got away, or where he got away from it, is where it may be met again
                 // (src/v4/world.js nearby)
                 if (s.entities[c.id]?.kind === 'creature') emit({ t: 'entity.updated', d: { id: c.id, set: { left: { at: s.scene.at, minute: s.clock.minute, turn: s.turn, leg: false } } } });

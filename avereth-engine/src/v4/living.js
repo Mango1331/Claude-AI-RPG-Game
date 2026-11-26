@@ -1,3 +1,4 @@
+import { recordWork, vestQuest } from '../party_rewards.js';
 // Patch 8 (Living Dungeons, docs/PATCH8_LIVING_DUNGEONS.md): what makes a true Dungeon (src/v4/dungeon.js, its
 // classification) a place to delve again and again. The engine owns each level's essential contents and progress; the
 // narrator shapes the rooms, the mood and the meeting. No map is generated and no room count is fixed.
@@ -713,11 +714,20 @@ function partyEvents(s, content, emit, root, to) {
 function clearEvents(s, content, emit, root) {
     const x = s.dungeons[root];
     for (const [n, f] of Object.entries(x.run.floors)) {
+        const contracts = s.party ? Object.values(s.quests).filter(q => {
+            const goal = clearOf(s,q);
+            return q.status === 'active' && goal?.dungeon === root && goal.floor === Number(n);
+        }) : [];
+        for (const sl of f.slots.filter(sl => byPc(s,sl))) {
+            const work = sl.entities.flatMap(id => s.entities[id]?.party_resolution?.members || []);
+            for (const q of contracts) recordWork(s,emit,q,[root,x.cycle,n,sl.id].join('/'),work);
+        }
         if (f.cleared || !f.slots.length || !f.slots.every((sl) => resolved(s, sl))) continue;
         const pc = f.slots.filter((sl) => byPc(s, sl)).length;
         const head = f.slots.find((sl) => sl.role !== 'minion');
         const credit = pc * 2 >= f.slots.length || (head && byPc(s, head)) ? 'pc' : 'others';
         emit({ t: 'dungeon.cleared', d: { id: root, cycle: x.cycle, floor: Number(n), credit, pc, others: f.slots.length - pc, total: f.slots.length, turn: s.turn, minute: s.clock.minute } });
+        if (credit === 'pc') for (const q of contracts) vestQuest(s,emit,q);
         if (credit === 'others') for (const e of withdrawnEvents(s, root, Number(n))) emit(e);
     }
 }

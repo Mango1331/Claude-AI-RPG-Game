@@ -212,8 +212,8 @@ export function engineMinutes(content, s, c) {
  * Prototype C: natural recovery for booked rest or sleep. Per hour, a share of each maximum (rules.recovery), rounded
  * down, never above the maximum; no minutes, no recovery. Returns the resource.changed events and their lines.
  */
-export function recoveryEvents(s, content, minutes, why) {
-    const sheet = s.entities.pc.sheet;
+export function recoveryEvents(s, content, minutes, why, id = 'pc') {
+    const sheet = s.entities[id].sheet;
     const dv = deriveCharacter(sheet, content);
     const max = { hp: dv.maxHp, mp: dv.maxMp, sta: dv.maxSta };
     const pct = content.rules.recovery.per_hour_pct;
@@ -223,7 +223,7 @@ export function recoveryEvents(s, content, minutes, why) {
         const now = Number(sheet[r] ?? 0);
         const gain = Math.min(Math.floor((max[r] * pct[r] * minutes) / 6000), Math.max(0, max[r] - now));
         if (gain > 0) {
-            events.push({ t: 'resource.changed', d: { id: 'pc', resource: r, value: now + gain, why } });
+            events.push({ t: 'resource.changed', d: { id, resource: r, value: now + gain, why } });
             parts.push(`${r.toUpperCase()} ${now}→${now + gain}/${max[r]}`);
         }
     }
@@ -961,6 +961,11 @@ const HANDLERS = {
             if (RESTING.has(c.kind)) {
                 const r = recoveryEvents(s, content, booked, c.kind);
                 r.events.forEach(emit);
+                for (const m of following(s).filter(m=>!m.watch && s.entities[m.who]?.sheet)) {
+                    const own = recoveryEvents(s,content,booked,c.kind,m.who);
+                    own.events.forEach(emit);
+                    ctx.engineLines.push('RECOVERY — '+s.entities[m.who].name+' · '+own.text);
+                }
                 ctx.auth.recovered = true;
                 ctx.engineLines.push(`RECOVERY — ${r.text}`);
                 // Patch 8.4.3 (live 22.10.2026 09:00: MP 8→29 booked, the story said the mana stayed spent): what came back

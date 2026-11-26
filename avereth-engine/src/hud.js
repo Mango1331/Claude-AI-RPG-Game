@@ -1,3 +1,4 @@
+import { partyView } from './party.js';
 import { questVisible } from './content.js';
 import { className } from './v4/class_growth.js';
 // Player HUD (Runtime V3, docs/RUNTIME_V3.md): the Character and World panels the player sees under each reply,
@@ -289,7 +290,9 @@ ${defenses ? `<div class="avereth-combat-meta"><strong>Defense</strong> · ${def
  */
 export function renderHud(state, content, mode = 'closed', options = {}) {
     if (mode === 'off' || !state.meta?.started || !state.entities.pc?.sheet) return '';
-    if (state.encounter) return combatHud(state, content);
+    const crew = partyView(state,content,true);
+    const party = state.party ? '<div class="avereth-party"><button type="button" data-avereth-party="open">Party</button> '+crew.map(esc).join(' · ')+'</div>' : '';
+    if (state.encounter) return combatHud(state, content)+party;
     const s = state.entities.pc.sheet;
     const dv = deriveCharacter(s, content);
     const open = mode === 'open';
@@ -301,5 +304,5 @@ export function renderHud(state, content, mode = 'closed', options = {}) {
     return [
         panel(state.entities.pc.name || 'Alaric', charSummary, characterRows(state, content, options), open),
         panel('World', worldSummary, worldRows(state, content).filter(([label]) => label !== 'On the ground'), open, groundItems(state)),
-    ].join('\n');
+    ].join('\n')+party;
 }

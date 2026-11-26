@@ -173,7 +173,10 @@ export function lootEvents(s, content, enc) {
         const obj = e.d.object;
         if (e.t === 'object.created') {
             const a = allocated(obj.name);
-            if (a?.terms.loot.kind === 'item') obj.holder = {entity:a.who};
+            if (a?.terms.loot.kind === 'item') {
+                obj.holder = {entity:a.who};
+                lines.push(obj.name+' → '+s.entities[a.who].name);
+            }
             if (a?.terms.loot.kind === 'proceeds') obj.source = {...obj.source, proceeds:a.id};
         } else if (e.t === 'item.changed') {
             const a = allocated(content.items.get(e.d.item)?.name || e.d.item);

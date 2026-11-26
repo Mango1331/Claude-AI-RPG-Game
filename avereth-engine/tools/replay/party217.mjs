@@ -151,3 +151,14 @@ for (const mode of ['present','absent','left-early','dead']) {
     assert(!completeContract(state,content,q,emit,{c:true}).ok);
 }
 console.log('D10 encounter intervals, D11 work, money, absence, death and settled claims passed.');
+const {partyView}=await import('../../src/party.js');
+const {renderHud}=await import('../../src/hud.js');
+assert.match(renderHud(s,content),/data-avereth-party/);
+assert.match(partyView(s,content).join(' '),/Ossen.*Shortbow.*Arrow/i);
+const wounded=structuredClone(s);
+wounded.entities[who].sheet.hp-=20;
+const rest=st=>playerTurnV4(st,content,'We rest for one hour.',{c:true,commands:[{seq:1,type:'activity',kind:'rest',minutes:60,quote:'We rest for one hour.'}]}).state;
+assert(rest(wounded).entities[who].sheet.hp>wounded.entities[who].sheet.hp);
+wounded.party.members[who].watch=true;
+assert.equal(rest(wounded).entities[who].sheet.hp,wounded.entities[who].sheet.hp);
+console.log('Local party HUD, personal recovery and watch passed.');

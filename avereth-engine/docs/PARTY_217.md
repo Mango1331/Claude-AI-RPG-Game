@@ -19,3 +19,9 @@ Die Originalpräfixprobe erreicht einen echten Schuss Ossens. Zwei gegnerische Z
 Der Encounter teilt seinen tatsächlichen XP-Pool nach den Teilnahmeintervallen auf. Jeder Überlebende erhält seine eigenen XP-, Level- und gegebenenfalls Stat-Ereignisse. Skillfortschritt verwendet die Belege des jeweiligen Anwenders. Der Questnachweis bindet aufgelöste Ziele an ihre Quellen und Teilnehmenden. Die Gilde zahlt an den Auftragnehmer, private Ansprüche verweisen auf die akzeptierte Abrede. Zahlungen schreiben beide Geldbestände und eine Quittung. Sachbeute und zugesagte Erlöse bleiben an das tatsächliche Los gebunden.
 
 Die Originalpräfixprobe umfasst nun eine isolierte Abschlussrechnung mit 180 Kampf-XP, 450 Quest-XP, 90 cp, Trennung, Tod, Teilzahlung und wiederholter Abgabe. 61 bestehende Progressions-, Gilden- und Beutetests bestanden. Anzeige, durchgängige Kampagne und Hostabnahme folgen.
+
+## Gameplay und Kandidatenstand
+
+HUD und lokales Panel lesen den Fold. Anwesende zeigen eigene Ressourcen und Ausrüstung, getrennte Mitglieder den letzten beobachteten Stand. Die tatsächlich gebuchte Rast regeneriert die individuellen Ressourcen der Ruhenden. Ein Wachdienst erhält keine Rastgutschrift.
+
+Der durchgehende Offlinepfad in `tools/replay/party_campaign217.mjs` startet vor M13 ohne neue Party. Dieselbe Kampagne erreicht Bones, Gallery und Warden, Gildenabgabe und Trennung. Ergebnis bei Seed 3509323178 sind drei Slotnachweise, 225/225 Quest-XP und 45/45 cp im aktiven Spielstand. Der vollständige Implementierungsstand wird vor Node-, Replay- und Browserabnahme remote gesichert. Testergebnisse und mögliche Korrekturen folgen.

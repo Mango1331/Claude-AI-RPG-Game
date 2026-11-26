@@ -1,4 +1,4 @@
-import { partySummary } from './party.js';
+import { partyView } from './party.js';
 import {availableActions,validateActionSelection,actionPrefix,actionInputOf,actionLabel,actionBands} from './action_input.js';
 import {surrenderAssets,negotiators,describeTerms} from './v4/surrender.js';
 import {skillOf} from './content.js';
@@ -256,7 +256,7 @@ export function installActionComposer({context,state,content,enabled,settings,bl
             close.onclick = () => panel.close();
             panel.append(details,close); document.body.append(panel);
         }
-        const lines = partySummary(state());
+        const lines = partyView(state(),content());
         panel.querySelector('pre').textContent = ['[PARTY]',...lines.length ? lines : ['Keine Gefährten oder offenen Abreden.']].join('\n');
         if (!panel.open) panel.showModal();
     }
@@ -270,6 +270,9 @@ export function installActionComposer({context,state,content,enabled,settings,bl
     }
     function intercept(e){
         if(!enabled())return;
+        if (e.type==='click' && e.target.closest?.('[data-avereth-party]')?.closest('#chat')) {
+            e.preventDefault();e.stopImmediatePropagation();openParty();return;
+        }
         const send=e.type==='click'?e.target.closest?.('#send_but'):e.target===textarea() && e.key==='Enter' && !e.shiftKey && !e.isComposing;
         if(!send)return;
         if (textarea().value.trim().toLowerCase()==='#party') {

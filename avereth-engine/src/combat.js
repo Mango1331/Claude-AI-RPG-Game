@@ -462,6 +462,7 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
     if (!target || !canFight(enc,actorId,targetId)) return {illegal:'No active hostile relationship with that target.'};
     const attack=actor.model==='character' ? (extra.item ? itemEffectOf(ctx.content,tradeObject(ctx.state,ctx.content,extra.item)) : resolveSkill(ctx.content,skillId,ctx.state)) : actor.fixed.attack;
     const reach=attack?.range?.band || attack?.range;
+    if (!['ENGAGED','SHORT','MEDIUM','LONG'].includes(reach)) return {illegal:'This attack has no valid reach.'};
     const from=enc.line.x[actorId];
     const proposed={...enc,line:{...enc.line,x:{...enc.line.x}}};
     const shift=(dir,focus)=>{

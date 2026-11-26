@@ -1,4 +1,4 @@
-import { reduceParty } from './party.js';
+import { reduceParty, rememberMember } from './party.js';
 // Campaign state = fold(events). Event-sourced: the event log is the only persistent truth; this reducer derives
 // the current state. The reducer is deterministic and never rolls dice (rolls are already inside the events).
 //
@@ -158,6 +158,7 @@ export function applyEvent(state, e) {
             break;
         case 'scene.moved': {
             const from = state.scene.at;
+            if (d.reset_present && state.party) for (const id of state.scene.present) rememberMember(state,id,from);
             if (d.track_history && d.at !== undefined && d.at !== from && from) state.scene.history = [...(state.scene.history || []), from].slice(-16);
             state.scene.location = d.location ?? state.scene.location;
             state.scene.place = d.place ?? state.scene.place;
@@ -187,6 +188,7 @@ export function applyEvent(state, e) {
             if (state.entities[d.id]) state.entities[d.id].location = state.scene.location;
             break;
         case 'scene.left':
+            rememberMember(state,d.id,state.scene.at);
             state.scene.present = state.scene.present.filter((x) => x !== d.id);
             if (state.scene.since) delete state.scene.since[d.id];
             if (state.scene.relevant) state.scene.relevant = state.scene.relevant.filter((x) => x !== d.id);

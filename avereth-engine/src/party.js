@@ -1,4 +1,5 @@
 import { claim, payClaim } from './party_rewards.js';
+import { deriveCharacter } from './derived.js';
 import { hash32 } from './util.js';
 import { findQuote, moneyLiteral } from './v4/finance_evidence.js';
 
@@ -110,10 +111,10 @@ export function partyDecision(s, content, command, source, actor, emit) {
             !payClaim(s,emit,row,c.amount)) return failure('Identify the due claim, recipient and actual amount to pay.');
     } else if (c.act==='coordinate') {
         if (!member?.combat || member.mode!=='follow') return failure('Only a present combat partner can coordinate.');
-        const kinds={target:/\b(?:target|attack|shoot|take on|focus)\b/i,protect:/\b(?:guard|cover|protect|shield|keep.+off|defend)\b/i,independent:/\b(?:independent|own|your call|freely)\b/i,front:/\b(?:front|point|ahead|lead)\b/i,rear:/\b(?:rear|behind|back)\b/i};
+        const kinds={target:/\b(?:target|attack|shoot|take on|focus)\b/i,protect:/\b(?:guard|cover|protect|shield|keep.+off|defend)\b/i,independent:/\b(?:independent|own|your call|freely)\b/i,front:/\b(?:front|point|ahead|lead)\b/i,rear:/\b(?:rear|behind|back)\b/i,watch:/\b(?:watch|lookout|sentry)\b/i,rest:/\b(?:rest|sleep|stand down)\b/i};
         if (!kinds[c.priority]?.test(c.quote) || no.test(words)) return failure('Quote the tactical request or decision.');
         if (['target','protect'].includes(c.priority) && (c.target!=='pc' && !s.scene.present.includes(c.target))) return failure('Identify the present target.');
-        const changes=['front','rear'].includes(c.priority) ? {formation:c.priority} : {priority:{kind:c.priority,target:c.target || null}};
+        const changes=['watch','rest'].includes(c.priority) ? {watch:c.priority==='watch'} : ['front','rear'].includes(c.priority) ? {formation:c.priority} : {priority:{kind:c.priority,target:c.target || null}};
         memberEvent(member.mode,changes);
     } else {
         if (!member || member.mode==='left') return failure('No active membership.');
@@ -139,4 +140,44 @@ export function partySummary(s) {
     });
     for (const a of agreementsOf(s).filter(a=>a.phase==='open')) lines.push(a.id+' · '+a.proposer+' offers '+a.who+': '+a.terms.text);
     return lines;
+}
+
+/** A separated companion discloses only the observed snapshot at separation. */
+export function rememberMember(s,id,at) {
+    const m=s.party?.members[id], e=s.entities[id];
+    if (!m || !e?.sheet) return;
+    m.lastSeen={turn:s.turn,minute:s.clock.minute,at,sheet:structuredClone(e.sheet),status:e.status};
+}
+
+export function partyView(s,content,compact=false) {
+    const lines=[];
+    for (const m of membersOf(s)) {
+        const e=s.entities[m.who];
+        const here=s.scene.present.includes(m.who);
+        const sheet=here ? e?.sheet : m.lastSeen?.sheet;
+        if (compact && (m.mode==='left' || !here)) continue;
+        const known = here ? s.scene.at : m.lastSeen?.at || m.at;
+        const mode = (here?e?.status:m.lastSeen?.status)==='dead' ? 'dead' : m.mode;
+        lines.push([e?.name || m.who,mode,here ? '' : 'last seen '+known+' · minute '+(m.lastSeen?.minute ?? '?'),
+            sheet ? 'L'+sheet.level+' '+(sheet.class || sheet.training) : 'profile pending'].filter(Boolean).join(' · '));
+        if (sheet) {
+            const d=deriveCharacter(sheet,content);
+            lines.push(`HP ${sheet.hp}/${d.maxHp} · MP ${sheet.mp}/${d.maxMp} · STA ${sheet.sta}/${d.maxSta}`+
+                (m.watch?' · on watch':''));
+            if (!compact) {
+                lines.push('XP '+sheet.xp+' · '+Object.entries(sheet.skills || {}).map(([id,k])=>(content.skills.get(id)?.name || id)+' P'+k.prof).join(', '));
+                lines.push(Object.values(sheet.equipment || {}).filter(Boolean).map(g=>g.name || g.id || g).join(', '));
+                const pack=Object.entries(sheet.inventory || {}).filter(([,q])=>q>0).map(([id,q])=>(content.items.get(id)?.name || id)+' ×'+q);
+                if (here) pack.push(...Object.values(s.objects || {}).filter(o=>o.holder?.entity===m.who).map(o=>o.name+' ×'+(o.qty || 1)));
+                lines.push([sheet.coin_cp+' cp',...pack].join(' · '));
+                if(m.priority) lines.push([m.priority.kind,m.priority.target].filter(Boolean).join(' '));
+            }
+        }
+    }
+    if (!compact) {
+        for (const a of agreementsOf(s)) lines.push(a.phase+' · '+(s.entities[a.who]?.name || a.who)+' · '+a.terms.text);
+        for (const r of claimsOf(s)) lines.push(r.id+' · '+r.paid+'/'+r.amount+' cp paid'+
+            (s.entities[r.who]?.status==='dead'?' · payment blocked':''));
+    }
+    return lines.filter(Boolean);
 }

@@ -26,6 +26,7 @@ const opt = (f, d) => { const i = args.indexOf(f); return i >= 0 && args[i + 1] 
 // the module smokes of run_c.mjs: "standard" is all of them, "failsoft" the same with the failsoft probes
 const MODULES = ['FINANCE', 'SAVE_RECOVERY', 'FETCH', 'STEALTH', 'UI', 'CONTINUITY', 'BOARD159', 'QOL160', 'UI161', 'PULSE162', 'PULSE164', 'PULSE167', 'NPC169', 'NPC172', 'PILOT01', 'ACTION_HOST', 'ACTION_HUD', 'ACTION_REVIEW', 'USER05', 'NATIVE_WORLD', 'USER07_CAMP'];
 const MODES = {
+    party217: {AVERETH_SMOKE_PARTY217:'1'},
     base: {},
     host_cost: { AVERETH_SMOKE_HOST_COST: '1' },
     prompt_prefix: { AVERETH_SMOKE_PREFIX: '1' },

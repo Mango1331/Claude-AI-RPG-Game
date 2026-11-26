@@ -1,3 +1,4 @@
+import { partySmoke, partyResponse } from './party217_smoke.mjs';
 import {campTurns, campSmoke} from './user07_camp_smoke.mjs';
 import { hostCostSmoke } from './host_cost_smoke.mjs';
 import { prefixSmoke } from './prompt_prefix_smoke.mjs';
@@ -189,7 +190,7 @@ const mock = http.createServer(async (req, res) => {
         narrated.set(t?.key, n);
         text = t ? (n > 1 && t.swipe ? t.swipe : t.reply || 'The world waits.') : 'The world waits.';
     }
-    text=user05Response(purpose,j) ?? text;
+    text=partyResponse(purpose) ?? user05Response(purpose,j) ?? text;
     if (process.env.AVERETH_SMOKE_EMPTY_NARRATOR === '1' && purpose === 'narrator' && lastUser.includes(TURNS[0].player) && narrated.get('burrow') === 1) text = '';
     const probe = probeMode || financeMode || fetchProbeMode || stealthProbeMode;
     if (probeMode && ((purpose === 'plan' && users.includes('FAILSOFT_PLANNER')) || purpose === 'extract')) text='{bad';
@@ -560,6 +561,12 @@ try {
     await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); });
     await page.waitForTimeout(800);
     const actionHostChecks = process.env.AVERETH_SMOKE_ACTION_HOST === '1' ? await actionHostSmoke({page,send,idle}) : null;
+    let partyChecks;
+    if (process.env.AVERETH_SMOKE_PARTY217==='1') {
+        stealthProbeMode=true;
+        partyChecks=await partySmoke({page,send,idle,calls,out:HERE,onReload:()=>{driver=new Driver(page,{turnTimeoutMs:60000});}});
+        stealthProbeMode=false;
+    }
     let streamingChecks;
     if (process.env.AVERETH_SMOKE_NARRATOR_STREAMING === '1') {
         stealthProbeMode = true;
@@ -574,7 +581,7 @@ try {
         stealthProbeMode = false;
     }
     const costChecks=process.env.AVERETH_SMOKE_HOST_COST === '1' ? await hostCostSmoke({page,out:HERE,calls}) : null;
-    result = { tradeChecks, campChecks, costChecks, prefixChecks, streamingChecks, nativeWorldChecks, user05Checks, actionReviewChecks, capacity:{peakUnits,activeUnits}, actionHudChecks, actionHostChecks, bossloot193Checks, toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
+    result = { partyChecks, tradeChecks, campChecks, costChecks, prefixChecks, streamingChecks, nativeWorldChecks, user05Checks, actionReviewChecks, capacity:{peakUnits,activeUnits}, actionHudChecks, actionHostChecks, bossloot193Checks, toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
 } catch (error) {
     const screen = await page.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(-8000),
         chat: window.SillyTavern?.getContext?.()?.chat?.map(m => ({ user: m.is_user, system: m.is_system, text: m.mes?.slice(0, 120) })) })).catch(() => null);
@@ -603,6 +610,7 @@ const checks = { capacityAtMostFour:result.capacity.peakUnits<=4,
     ...result.streamingChecks,
     ...Object.fromEntries(Object.entries(result.tradeChecks || {}).map(([k,v]) => [`tradeHud_${k}`,v])),
     ...Object.fromEntries(Object.entries(result.actionHudChecks || {}).map(([k,v]) => [`actionHud_${k}`,v])),
+    ...Object.fromEntries(Object.entries(result.partyChecks || {}).map(([k,v]) => [`party_${k}`,v])),
     ...Object.fromEntries(Object.entries(result.actionHostChecks || {}).map(([k,v]) => [`actionHost_${k}`,v])),
     ...Object.fromEntries(Object.entries(result.nativeWorldChecks || {}).map(([k,v])=>[`nativeWorld_${k}`,v])),
     ...Object.fromEntries(Object.entries(result.user05Checks || {}).map(([k,v])=>[`user05_${k}`,v])),

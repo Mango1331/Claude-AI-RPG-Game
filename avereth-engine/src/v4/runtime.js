@@ -1061,7 +1061,10 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', co
         return historyKey(chat,id)===offerHistory && msg === source && r?.extraction === pending && activeMessage(msg) && r?.extraction?.status === 'pending' && r.text_hash === req.hash
             && hash32(msg.mes) === req.hash && !laterTurns(chat, id);
     };
-    const stale = () => ({ changed: false, ...(laterTurns(chat, id) ? { late: true } : {}) });
+    const stale = () => {
+        const blocked = foldBlock(foldChat(chat,id));
+        return {changed:false,...(blocked ? {foldBlocked:blocked} : laterTurns(chat,id) ? {late:true} : {})};
+    };
     const vocab = req.vocab;
     let ms = 0;
     let parsed = null;

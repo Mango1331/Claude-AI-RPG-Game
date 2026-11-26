@@ -99,7 +99,7 @@ export function eventKind(e, s = null) {
             return 'trade';
         case 'quest.delivered': return 'quest.delivery';
         case 'quest.status': return s?.quests?.[d.id]?.kind === 'guild_contract' ? 'quest.status' : 'quests';
-        case 'quest.created': return d.quest?.kind === 'guild_contract' ? 'guild.board' : 'quests';
+        case 'quest.party_work': case 'quest.created': return d.quest?.kind === 'guild_contract' ? 'guild.board' : 'quests';
         case 'quest.set': case 'quest.detailed': case 'quest.progressed': case 'quest.ready': case 'quest.journey': case 'proof.checked':
             return 'quests';
         case 'board.refreshed': case 'board.failed': case 'board.shown': return 'guild.board';

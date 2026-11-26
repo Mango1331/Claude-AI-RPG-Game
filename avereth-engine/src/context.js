@@ -295,7 +295,8 @@ export function combatBlock(state, content = null, { hudSpeech = false } = {}) {
     if (outside.length) lines.push(`  Here but NOT in the fight: ${outside.map((id) => `${sceneHandle(state, content, id)}${state.scene.positions[id]?.band ? ` (${state.scene.positions[id].band})` : ''}`).join(', ')}: no attack and no damage from them this turn; they join only on their own Turns after the story has them attack.`);
     if (enc.line) lines.push('  Positions (one shared line): '+enc.order.map(id=>{
         const priority=enc.combatants[id].current.priority;
-        return fightLabel(state,id)+' '+enc.line.x[id]+(priority ? ' ('+[priority.kind,priority.target && fightLabel(state,priority.target)].filter(Boolean).join(' ')+')':'');
+        const asked=state.party?.members[id]?.request;
+        return fightLabel(state,id)+' '+enc.line.x[id]+(asked?' (asked, awaiting response: '+asked.quote+')':'')+(priority ? ' ('+[priority.kind,priority.target && fightLabel(state,priority.target)].filter(Boolean).join(' ')+')':'');
     }).join(' · '));
     const pcfx = enc.combatants.pc.current.effects;
     if (pcfx.length) lines.push(`  Alaric effects: ${pcfx.map((x) => x.name).join(', ')}`);

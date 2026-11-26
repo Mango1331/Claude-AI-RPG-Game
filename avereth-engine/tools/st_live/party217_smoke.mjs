@@ -64,7 +64,8 @@ export async function partySmoke({page,calls,send,idle,out,onReload}) {
             /Risen Bones/i.test(booked) && /bow|arrow/i.test(booked);
         checks.oneHelperRound=calls.slice(b).map(c=>c.purpose).join('/')==='plan/narrator/extract';
         const second='Ossen, protect me.';b=calls.length;
-        command([{seq:1,type:'party',act:'coordinate',who,priority:'protect',target:'pc',quote:'Ossen, protect me.'}],'Ossen covers Alaric.');
+        command([{seq:1,type:'party',act:'coordinate',who,priority:'protect',target:'pc',quote:'Ossen, protect me.'}],'Ossen says, "Yes, I will protect Alaric."',[
+            {seq:1,type:'party',act:'coordinate',who,priority:'protect',target:'pc',quote:'Yes, I will protect Alaric.'}]);
         await send(second);await idle();measure('coordination',b);
         current=await snap();checks.priority=current.state.party.members[who].priority?.kind==='protect';
         await page.evaluate(async()=>{const c=SillyTavern.getContext();await c.saveChat();await c.reloadCurrentChat();});onReload();await idle();

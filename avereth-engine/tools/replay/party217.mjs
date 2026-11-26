@@ -304,3 +304,21 @@ if (process.argv[3]) {
     assert.equal(deal.receipts.find(r=>r.owner===who).instance,originalBow);
     console.log('Group counteroffer, independent owner assent, exact bow handed over once and named peace pairs passed.');
 }
+
+const requestText='Ossen, protect me.';
+const priority={seq:1,type:'party',act:'coordinate',who,priority:'protect',target:'pc'};
+const requested=playerTurnV4(s,content,requestText,{c:true,commands:[{...priority,quote:requestText}]}).state;
+assert.equal(requested.party.members[who].request.kind,'protect');
+assert(!requested.party.members[who].priority);
+const agrees='Yes, I will protect Alaric.';
+const promised=x(requested,[{...priority,quote:agrees}],'Ossen says, "'+agrees+'"',100);
+assert.equal(promised.state.party.members[who].priority?.target,'pc',JSON.stringify(promised.rejected));
+assert.equal(promised.state.party.members[who].request,null);
+const declined=x(requested,[{...priority,quote:'No.'}],'Ossen says, "No."',100).state;
+assert.equal(declined.party.members[who].request,null);
+assert(!declined.party.members[who].priority);
+const delegated=structuredClone(s);
+delegated.party.agreements[delegated.party.members[who].agreement].terms.tactics=true;
+const permitted=playerTurnV4(delegated,content,requestText,{c:true,commands:[{...priority,quote:requestText}]}).state;
+assert.equal(permitted.party.members[who].priority.target,'pc');
+console.log('Tactical request, attributed acceptance or refusal and prior delegation passed.');

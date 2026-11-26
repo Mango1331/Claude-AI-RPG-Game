@@ -46,6 +46,8 @@ function termsFrom(s, content, c, words, actor) {
     const half = /\b(?:half each|halves|half (?:of|the)|fifty.fifty|split (?:it |the (?:pay|reward|money) )?(?:evenly|equally)|equal shares)\b/i.test(words);
     if (c.share === 'half' && (!half || !terms.quest)) return null;
     if (half && c.share !== 'half' && c.quest && !c.loot) return null;
+    if (terms.combat && (actor==='pc' ? /\b(?:follow my (?:lead|orders)|I (?:choose|call) (?:our|the) targets)\b/i :
+        /\b(?:follow your (?:lead|orders)|you (?:choose|call) (?:our|the) targets)\b/i).test(words)) terms.tactics=true;
     if (c.share === 'half') terms.half = true;
     if (c.amount != null) {
         const m = moneyLiteral(words, c.money || '', { content });
@@ -188,22 +190,35 @@ export function partyDecision(s, content, command, source, actor, emit, contract
         const vocative = /^([^,!?".]{1,50}),/.exec(c.quote);
         if (actor==='pc' && vocative && s.scene.present.some(id=>id!==who && s.entities[id]?.name?.toLowerCase()===vocative[1].trim().toLowerCase()))
             return failure('The addressed person differs from the requested actor.');
-        if (!kinds[c.priority]?.test(c.quote) || no.test(words)) return failure('Quote the tactical request or decision.');
+        const matchesRequest=actor===who && member.request?.kind===c.priority && member.request?.target===(c.target || null);
+        if (matchesRequest && (/^(?:no|no thanks)[.!]?$/i.test(words.trim()) || no.test(words))) {
+            memberEvent(member.mode,{request:null});
+            return {status:'resolved',done:true,line:person.name+' declined the request.'};
+        }
+        const simpleAnswer=matchesRequest && /^(?:yes|sure|agreed|okay|all right|I agree|I accept)[.!]?$/i.test(words.trim());
+        if ((!simpleAnswer && !kinds[c.priority]?.test(c.quote)) || no.test(words)) return failure('Quote the tactical request or decision.');
         if (['target','protect'].includes(c.priority) && (c.target!=='pc' && !s.scene.present.includes(c.target))) return failure('Identify the present target.');
         if (c.priority==='target' || c.priority==='protect') {
             const labels=[s.entities[c.target]?.name,s.encounter?.combatants[c.target]?.label,c.target==='pc'?'me':null].filter(Boolean);
-            if (!labels.some(name=>new RegExp('(^|[^a-z])'+escapedName(name)+'(?=$|[^a-z])','i').test(c.quote)))
+            if (!simpleAnswer && !labels.some(name=>new RegExp('(^|[^a-z])'+escapedName(name)+'(?=$|[^a-z])','i').test(c.quote)))
                 return failure('Quote the identified target of the request.');
         }
         const changes=['watch','rest'].includes(c.priority) ? {watch:c.priority==='watch'} : ['front','rear'].includes(c.priority) ? {formation:c.priority} : {priority:{kind:c.priority,target:c.target || null}};
-        memberEvent(member.mode,changes);
+        const delegated=s.party.agreements[member.agreement]?.terms.tactics;
+        if (actor==='pc' && !delegated) {
+            memberEvent(member.mode,{request:{kind:c.priority,target:c.target || null,quote:c.quote}});
+        } else {
+            if (actor!==who && !delegated || actor===who && !simpleAnswer && !/\b(?:I will|I'll|I’ll|I shall|I am|let me|agreed|yes)\b/i.test(words))
+                return failure('The partner must decide for themselves.');
+            memberEvent(member.mode,{...changes,request:null});
+        }
     } else {
         if (!member || member.mode==='left') return failure('No active membership.');
         const actions = {wait:/\b(?:wait|stay|hold here)\b/i,follow:/\b(?:follow|come|rejoin|together)\b/i,leave:/\b(?:leave|quit|part ways|go alone|split up|dismiss|on my own)\b/i};
         if (!actions[c.act]?.test(c.quote)) return failure('Quote the change of travel arrangement.');
         const q=s.quests[s.party.agreements[member.agreement]?.terms.quest];
         if (q?.status==='active' && q.party_work && contractReady(s,content,q,{c:true}).ok) vestQuest(s,emit,q);
-        memberEvent({wait:'wait',follow:'follow',leave:'left'}[c.act]);
+        memberEvent({wait:'wait',follow:'follow',leave:'left'}[c.act],member.request ? {request:null}:{});
     }
     return {status:'resolved',done:true,line:'PARTY — '+person.name+' · '+c.act+' · '+c.quote};
 }
@@ -219,7 +234,8 @@ export function reduceParty(s,t,d) {
 export function partySummary(s) {
     const lines = membersOf(s).filter(m=>m.mode!=='left').map(m => {
         const e = s.entities[m.who];
-        return [m.who,e?.name,m.mode,m.combat?'combat ready':'traveller',m.agreement].join(' · ');
+        return [m.who,e?.name,m.mode,m.combat?'combat ready':'traveller',m.agreement,
+            m.request?'asked, awaiting reply: '+m.request.quote:null].filter(Boolean).join(' · ');
     });
     for (const a of agreementsOf(s).filter(a=>a.phase==='open' || (s.party.members[a.who]?.mode!=='left' && s.party.members[a.who]?.agreement===a.id)))
         lines.push(a.id+' · '+a.phase+' · '+a.proposer+' / '+a.who+' · '+a.terms.text);
@@ -249,13 +265,17 @@ export function partyView(s,content,compact=false) {
             const d=deriveCharacter(sheet,content);
             lines.push(`HP ${sheet.hp}/${d.maxHp} · MP ${sheet.mp}/${d.maxMp} · STA ${sheet.sta}/${d.maxSta}`+
                 (m.watch?' · on watch':''));
+            if(m.request) lines.push('Asked · '+m.request.quote);
+            if(m.priority) lines.push('Agreed · '+[m.priority.kind,m.priority.target && (s.entities[m.priority.target]?.name || m.priority.target)].filter(Boolean).join(' '));
             if (!compact) {
                 lines.push('XP '+sheet.xp+' · '+Object.entries(sheet.skills || {}).map(([id,k])=>(content.skills.get(id)?.name || id)+' P'+k.prof).join(', '));
                 lines.push(Object.values(sheet.equipment || {}).filter(Boolean).map(g=>g.name || g.id || g).join(', '));
                 const pack=Object.entries(sheet.inventory || {}).filter(([,q])=>q>0).map(([id,q])=>(content.items.get(id)?.name || id)+' ×'+q);
-                if (here) pack.push(...Object.values(s.objects || {}).filter(o=>o.holder?.entity===m.who).map(o=>o.name+' ×'+(o.qty || 1)));
+                if (here) {
+                    const worn=new Set(Object.values(sheet.equipment || {}).map(g=>g?.object).filter(Boolean));
+                    pack.push(...Object.values(s.objects || {}).filter(o=>o.holder?.entity===m.who && !worn.has(o.id)).map(o=>o.name+' ×'+(o.qty || 1)));
+                }
                 lines.push([sheet.coin_cp+' cp',...pack].join(' · '));
-                if(m.priority) lines.push([m.priority.kind,m.priority.target].filter(Boolean).join(' '));
             }
         }
     }

@@ -28,6 +28,7 @@ import { applyEvent } from '../state.js';
 import { clone, normText, slug, hash32, formatClock } from '../util.js';
 import { coinFromWords, coinEvidence, coinMentions, numbersIn } from '../economy.js';
 import { trainingOfferWhy } from './growth.js';
+import { travelManaEvent } from './commands.js';
 import { deriveCharacter } from '../derived.js';
 import { reportToEvents, makeResolver, isGroup, GROUP_WORDS } from '../delta.js';
 import { sceneHandle } from './scene_handles.js';
@@ -492,7 +493,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const journeyTime = explicitTravel && !s.encounter && (auth.gos || []).length > 0;
     function bookRoadTime(minutes) {
         if (!minutes) return;
+        const owner = step;
+        step = {kind:'engine'};
         emit({ t:'time.advanced', d:{ minutes, why:'travel', travellers } });
+        for (const who of travellers) {
+            const recovery = travelManaEvent(s,content,minutes,who);
+            if (recovery) emit(recovery);
+        }
+        step = owner;
         travelMinutes += minutes;
         timeUsed += minutes;
     }
@@ -3008,10 +3016,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const from = s.scene.at;
         if (id !== from && journeyTime) {
             travellers = ['pc', ...following(s).filter(m => party.includes(m.who)).map(m => m.who)];
-            const owner = step;
-            step = {kind:'engine'};
             for (const {minutes} of pendingRoadTime.splice(0)) bookRoadTime(minutes);
-            step = owner;
         }
         // Patch 7: whether he knew a way here before he took it (else the way he took is kept). .190 (D1b): walking
         // between two rooms of a building no longer makes it a place explored room by room (only an older save's stays)

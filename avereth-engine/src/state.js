@@ -243,6 +243,10 @@ export function applyEvent(state, e) {
         case 'resource.changed': {
             const s = sheetOf(state, d.id);
             s[d.resource] = d.value;
+            if (d.resource === 'mp' && (d.fraction !== undefined || d.full)) {
+                if (d.fraction) s.travel_mp_fraction = d.fraction;
+                else delete s.travel_mp_fraction;
+            }
             // Patch 3 (review): a wound of Alaric's (fact scope.hurt, src/v4/world.js) is healed for good the moment his
             // HP reach the maximum it was told under; a later, unrelated hurt does not bring it back
             if (d.id === 'pc' && d.resource === 'hp') {

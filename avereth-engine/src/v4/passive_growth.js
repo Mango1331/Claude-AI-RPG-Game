@@ -18,7 +18,7 @@ import { applyEvent } from '../state.js';
 import { clone, hash32, normText, slug } from '../util.js';
 import { definePassive, gainPassive, losePassive, passiveDefErrors, passiveGain, passivesOf, passiveSlots, passiveText, passiveWhen, passiveEffects, qualityBudget, CORE_STATS, QUALITY_TEXT } from '../passives.js';
 import { growthOf } from './growth.js';
-import { deriveCharacter } from '../derived.js';
+import { deriveCharacter, fullMana } from '../derived.js';
 import { offerRoom, SKILL_EVIDENCE } from './skill_growth.js';
 import { dungeonOf } from './dungeon.js';
 
@@ -350,7 +350,7 @@ export function acceptPassive(s, content, ref, replace = null) {
         const lowered = [];
         for (const [r, max] of [['hp', dv.maxHp], ['mp', dv.maxMp], ['sta', dv.maxSta]]) {
             if (!(settled[r] > max)) continue;
-            events.push({ t: 'resource.changed', d: { id: 'pc', resource: r, value: max, why: `${lose?.name || def.name}: its maximum ended` } });
+            events.push({ t: 'resource.changed', d: { id: 'pc', resource: r, value: max, ...fullMana(settled,r,max,dv.maxMp), why: `${lose?.name || def.name}: its maximum ended` } });
             lowered.push(`${r.toUpperCase()} ${settled[r]} → ${max}`);
         }
         events.push({ t: 'growth.decided', d: { key: ev.key, status: 'accepted', passive: def.id } }, { t: 'decision.closed', d: { id: offer.id, status: 'accepted' } });

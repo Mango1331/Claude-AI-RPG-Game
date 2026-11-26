@@ -25,7 +25,7 @@ import { spendsStatPoints, assignHint } from '../commands.js';
 import { resolveCheck } from '../checks.js';
 import { entityLabel, setFactEvents, truth } from '../knowledge.js';
 import { normText, slug, formatClock, hash32 } from '../util.js';
-import { deriveCharacter } from '../derived.js';
+import { deriveCharacter, fullMana } from '../derived.js';
 import {
     lineage, placeName, hallOf, hallOfSettlement, guildDestination, guildJourney, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey, isLooseCoin, listedToday,
 } from './domain.js';
@@ -212,6 +212,18 @@ export function engineMinutes(content, s, c) {
  * Prototype C: natural recovery for booked rest or sleep. Per hour, a share of each maximum (rules.recovery), rounded
  * down, never above the maximum; no minutes, no recovery. Returns the resource.changed events and their lines.
  */
+export function travelManaEvent(s, content, minutes, id) {
+    const sheet = s.entities[id]?.sheet;
+    if (!sheet || !Number.isSafeInteger(minutes) || minutes <= 0) return null;
+    const max = deriveCharacter(sheet,content).maxMp;
+    const before = sheet.travel_mp_fraction || 0;
+    const total = before + max * content.rules.recovery.travel_mp_pct * minutes;
+    const value = Math.min(max, sheet.mp + Math.floor(total / 6000));
+    const fraction = value >= max ? 0 : total % 6000;
+    if (value === sheet.mp && fraction === before) return null;
+    return {t:'resource.changed', d:{id,resource:'mp',value,why:'travel',fraction}};
+}
+
 export function recoveryEvents(s, content, minutes, why, id = 'pc') {
     const sheet = s.entities[id].sheet;
     const dv = deriveCharacter(sheet, content);
@@ -223,7 +235,7 @@ export function recoveryEvents(s, content, minutes, why, id = 'pc') {
         const now = Number(sheet[r] ?? 0);
         const gain = Math.min(Math.floor((max[r] * pct[r] * minutes) / 6000), Math.max(0, max[r] - now));
         if (gain > 0) {
-            events.push({ t: 'resource.changed', d: { id, resource: r, value: now + gain, why } });
+            events.push({ t: 'resource.changed', d: { id, resource: r, value: now + gain, ...fullMana(sheet,r,now+gain,max.mp), why } });
             parts.push(`${r.toUpperCase()} ${now}→${now + gain}/${max[r]}`);
         }
     }
@@ -1206,7 +1218,7 @@ const HANDLERS = {
                 done.push(x);
             }
             const R = rp.resource.toUpperCase();
-            emit({ t: 'resource.changed', d: { id: 'pc', resource: rp.resource, value: current[rp.resource], why: `${o.name} (${done.length > 1 ? `${done.length} × ` : ''}${rp.amount} ${R})` } });
+            emit({ t: 'resource.changed', d: { id: 'pc', resource: rp.resource, value: current[rp.resource], ...fullMana(sheet,rp.resource,current[rp.resource],max.mp), why: `${o.name} (${done.length > 1 ? `${done.length} × ` : ''}${rp.amount} ${R})` } });
             const left = (o.qty ?? 1) - done.length;
             if (o.template) emit({ t: 'item.changed', d: { id: 'pc', item: o.template, qty: -done.length, why: 'used' } });
             else emit({ t: 'object.consumed', d: { id: o.id, by: 'pc', ...(left > 0 ? { qty: done.length } : {}) } });

@@ -18,7 +18,7 @@ import { checkProgress, restoration, defineSkill } from './skills.js';
 import { signatureSkill } from './skill_composer.js';
 import { skillCostAmount, passiveTotals, effectiveStats } from './passives.js';
 import { rankRefusal, itemProfile } from './v4/items.js';
-import { deriveCharacter, actionsOf } from './derived.js';
+import { deriveCharacter, fullMana, actionsOf } from './derived.js';
 import { selectClass, selectSkills } from './creation.js';
 import { scaleCreature, chooseCreatureLevel, humanSheet } from './npcgen.js';
 import { allyAssets, allyReceiptEvents, checkTerms, describeTerms, negotiators, surrenderAssets } from './v4/surrender.js';
@@ -267,7 +267,7 @@ function selfRestore(s, content, act, emit) {
         emit({ t: 'resource.changed', d: { id: 'pc', resource: res, value: pools[res], why: skill.name } });
     }
     const r = restoration(content, skill, known.prof, rulesetOf(s), who(pools), amount);
-    emit({ t: 'resource.changed', d: { id: 'pc', resource: r.resource, value: r.after, why: skill.name } });
+    emit({ t: 'resource.changed', d: { id: 'pc', resource: r.resource, value: r.after, ...fullMana(sheet,r.resource,r.after,r.max), why: skill.name } });
     const text = `Alaric uses ${skill.name} on himself: ${amount ? `${res.toUpperCase()} -${amount}, ` : ''}${r.resource.toUpperCase()} +${r.after - r.before} (${r.before} -> ${r.after}/${r.max}). The engine booked it; narrate exactly this, nothing more.`;
     return { kind: 'note', text, notice: `${skill.name}: ${r.resource.toUpperCase()} +${r.after - r.before} (${r.before} -> ${r.after}/${r.max})` };
 }
@@ -876,12 +876,12 @@ function persistCombat(s, content, emit, enc, records, isNew, { c: cPath = false
     for (const id of Object.keys(enc.combatants)) if (id !== 'pc' && s.scene.awareness[id] !== 'aware') emit({ t: 'scene.awareness', d: { id, level: 'aware' } });
     // mirror the PC's resources and every sheet-bearer's ammunition into the sheet (the snapshot stays authoritative for NPCs)
     const pcC = enc.combatants.pc;
-    for (const r of ['hp', 'mp', 'sta']) if (pcC.current[r] !== s.entities.pc.sheet[r]) emit({ t: 'resource.changed', d: { id: 'pc', resource: r, value: pcC.current[r] } });
+    for (const r of ['hp', 'mp', 'sta']) if (pcC.current[r] !== s.entities.pc.sheet[r]) emit({ t: 'resource.changed', d: { id: 'pc', resource: r, value: pcC.current[r], ...fullMana(s.entities.pc.sheet,r,pcC.current[r],pcC.fixed.max_mp) } });
     if (enc.line) for (const c of Object.values(enc.combatants)) {
         const sheet=s.entities[c.id]?.sheet;
         if(c.id==='pc' || !sheet) continue;
         for(const resource of ['hp','mp','sta']) if(c.current[resource]!==sheet[resource])
-            emit({t:'resource.changed',d:{id:c.id,resource,value:c.current[resource]}});
+            emit({t:'resource.changed',d:{id:c.id,resource,value:c.current[resource],...fullMana(sheet,resource,c.current[resource],c.fixed.max_mp)}});
     }
     for (const r of records) if (r.ammo && s.entities[r.actor]?.sheet) emit({ t: 'item.changed', d: { id: r.actor, item: r.ammo.item, qty: -r.ammo.used, why: r.skill_name } });
     // deaths are world truth (hard facts) witnessed by everyone present who noticed the fight (not the unaware)
@@ -919,7 +919,7 @@ function persistCombat(s, content, emit, enc, records, isNew, { c: cPath = false
         for (const c of Object.values(enc.combatants)) {
             if (c.id === 'pc' || s.entities[c.id].status === 'dead') continue;
             const e = s.entities[c.id];
-            if (e.sheet) for (const r of ['hp', 'mp', 'sta']) { if (c.current[r] !== undefined && c.current[r] !== e.sheet[r]) emit({ t: 'resource.changed', d: { id: c.id, resource: r, value: c.current[r] } }); }
+            if (e.sheet) for (const r of ['hp', 'mp', 'sta']) { if (c.current[r] !== undefined && c.current[r] !== e.sheet[r]) emit({ t: 'resource.changed', d: { id: c.id, resource: r, value: c.current[r], ...fullMana(e.sheet,r,c.current[r],c.fixed.max_mp) } }); }
             else if (e.profile && c.current.hp !== e.profile.hp) emit({ t: 'entity.updated', d: { id: c.id, set: { profile: { ...e.profile, hp: c.current.hp } } } });
             // Prototype C (4.3.0-c.6.6): when Alaric got away, the foes he left behind are out of his scene too
             const companion=enc.line && !!enc.participation[c.id];

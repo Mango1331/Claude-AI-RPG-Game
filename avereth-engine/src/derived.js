@@ -82,6 +82,10 @@ export function initiativeOf(agi, content) {
  * Derived values for a core-stat character sheet.
  * sheet: {level, stats, equipment: {slot: itemRef}, bonuses?: {atk, matk, def, mdef}, passives?: {id: Passive}, temp?: {def, mdef}}
  */
+export function fullMana(sheet, resource, value, maxMp) {
+    return resource === 'mp' && sheet.travel_mp_fraction && value >= maxMp ? {full:true} : {};
+}
+
 export function deriveCharacter(sheet, content) {
     const r = content.rules.derived;
     // Patch 9C-2c: the stats his Passives raise count for every derived value (his assigned stats stay as they are)

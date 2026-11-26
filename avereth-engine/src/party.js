@@ -1,7 +1,7 @@
 import { allyAssets, decisionOf } from './v4/surrender.js';
 import { profileOf, restoreOf, restoreEffect, rankRefusal, freeObjectId } from './v4/items.js';
 import { claim, payClaim, vestQuest, questEntitlement, questFee } from './party_rewards.js';
-import { deriveCharacter } from './derived.js';
+import { deriveCharacter, fullMana } from './derived.js';
 import { hash32 } from './util.js';
 import { coinEvidence, numberRuns } from './economy.js';
 import { narratedEvent } from './v4/narration_evidence.js';
@@ -308,7 +308,7 @@ export function partyDecision(s, content, command, source, actor, emit, contract
             const r=restoreEffect(content,effect,{level:sh.level,current:sh,max:{hp:d.maxHp,mp:d.maxMp,sta:d.maxSta}});
             if (r.refused) return failure(r.refused);
             emit(asset.ref ? {t:'object.consumed',d:{id:asset.ref,qty:1,by:who}} : {t:'item.changed',d:{id:who,item:asset.template,qty:-1,why:'used'}});
-            emit({t:'resource.changed',d:{id:who,resource:r.resource,value:r.after,why:asset.name}});
+            emit({t:'resource.changed',d:{id:who,resource:r.resource,value:r.after,...fullMana(sh,r.resource,r.after,r.max),why:asset.name}});
         } else {
             const recipient=c.target;
             const other=recipient==='pc'?s.entities.pc:s.scene.present.includes(recipient)?s.entities[recipient]:null;

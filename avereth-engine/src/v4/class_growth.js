@@ -2,7 +2,7 @@
 import { rulesetOf, skillOf } from '../content.js';
 import { clone, hash32, normText } from '../util.js';
 import { applyEvent } from '../state.js';
-import { deriveCharacter } from '../derived.js';
+import { deriveCharacter, fullMana } from '../derived.js';
 import { effectErrors, passiveEffects, passiveWhen, passiveGain } from '../passives.js';
 import { careerOf, classQuality } from './feats.js';
 
@@ -147,7 +147,7 @@ export function acceptClass(s, content, ref) {
     const view = clone(s);
     try { for (const e of events) applyEvent(view, e); } catch (err) { return no(err.message); }
     const dv = deriveCharacter(view.entities.pc.sheet, content);
-    for (const [resource, max] of [['hp', dv.maxHp], ['mp', dv.maxMp], ['sta', dv.maxSta]]) if (sh[resource] > max) events.push({ t: 'resource.changed', d: { id: 'pc', resource, value: max } });
+    for (const [resource, max] of [['hp', dv.maxHp], ['mp', dv.maxMp], ['sta', dv.maxSta]]) if (sh[resource] > max) events.push({ t: 'resource.changed', d: { id: 'pc', resource, value: max, ...fullMana(sh,resource,max,dv.maxMp) } });
     return { events, booked: { name: def.name, quality: def.quality, text: classText(def) }, line: `CLASS EVOLVED — ${classText(def)}, booked by the engine. His Base Class ${content.classes.get(sh.class).name}, Skills, Passives and Favored Stats remain. This one class trait is active; it takes no Passive slot.` };
 }
 

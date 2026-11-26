@@ -550,7 +550,8 @@
   },
   "recovery": {
     "src": "Prototype C only (docs/PROTOTYPE_C.md §11): natural recovery while resting or sleeping, the same basis for both: per hour of booked rest or sleep, in % of the maximum, rounded down, never above the maximum. Provisional values, no balance",
-    "per_hour_pct": { "hp": 10, "mp": 15, "sta": 25 }
+    "per_hour_pct": { "hp": 10, "mp": 15, "sta": 25 },
+    "travel_mp_pct": 5
   },
   "exploration": {
     "src": "Patch 6 (docs/PROTOTYPE_C.md): obstacles and hazards of a place (src/v4/features.js). Provisional values, no balance",

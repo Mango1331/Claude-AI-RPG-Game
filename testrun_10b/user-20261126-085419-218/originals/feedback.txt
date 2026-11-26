@@ -1,0 +1,13 @@
+das REst System nochmal bewerten also einen #rest befehl der nur bei einem PULSE erfolg würfel den Narrator auslöst und sonst einfach die Regeneration und zeit fortsetzt. Regenerationrechnung nochmal nachschauen scaliert die mit WIL? bei MP? wie ist es bei HP? Wie schwer technisch ist passive Regeneration beim traveln?
+
+die genauen werte von PP Erhöhung bei skills? Basic skill ist erhöht aber wird nichts besonders angezeigt oder erklärt und MP kann ich nicht vergleichen da es 0 ist
+
+im Inn zeigt es korrekt das Angebot an aber ich kann nicht auf "kaufen" klicken auch wenn es in der Dropdown angezeigt wird usw normaler Handel hat aber funktionier per text
+
+Wolves quest hat zuerst 4 wölfe angezeigt wo ich annehme es wurde vergessen das die in der quest höhere Level sind? oder es war ein normaler PULSE Encounter oder Random. nicht sicher aber danach die suche nach noch mehr wölfen war ein PER check also hötte ich den nicht succeeded hätte ich dann nicht noch mehr wölfe gefunden? muss in den logs nachgeprüft werden. 
+
+Clerk hat meinen Nachnamen vergesse. oder das er im ledger steht von der Registrierung. 
+
+findet item aus dem bag nicht aber im bag ist es drinnen
+
+wieder mal reise fehler und mal wieder bei unnltigen Erzählungen wo es wirklich egal ist ob da alles perfekt ist oder nicht. vielleicht unterschätze ich es aber fühlt sich wieder zu eng ohne grund an.

@@ -100,4 +100,27 @@ check('R5 simultaneous pending request',combatState.party.members[who].request?.
 const pledged='I will protect you.';
 await reply(combined,'Ossen says, "'+pledged+'"',[{type:'party',seq:1,who,...priority,quote:pledged}]);
 check('R5 accepted in combat',state(combined).party.members[who].priority?.target==='pc');
+// The narrator's text survived a save; the extractor had not committed the transfer.
+const pending=structuredClone(joined);
+await player(pending,'What do you do with your bow?');
+const handover='I give you the '+name+'.';
+pending.push({is_user:false,mes:'Ossen says, "'+handover+'"',extra:{}});
+const index=pending.length-1;
+runtime.processReplyAny(pending,index,content);
+const saved=JSON.parse(JSON.stringify(pending));
+assert.equal(state(saved).objects[bow].holder.entity,who);
+let calls=0;
+const extract=async()=>{++calls;return JSON.stringify({scene:'here',expected:{},deltas:[
+    {type:'party',seq:1,who,act:'give',target:'pc',object:'worn.weapon',quote:handover}]});};
+await runtime.runExtraction(saved,index,content,extract);
+assert.equal(state(saved).objects[bow].holder.entity,'pc');
+await runtime.runExtraction(saved,index,content,extract);
+check('R3 recovered X runs once for original instance',calls===1 && state(saved).objects[bow].holder.entity==='pc');
+runtime.refreshRevisionDisplay(saved);
+const originalReply=saved[index].mes;
+saved[index].mes='Ossen keeps his bow.';runtime.onEditedV4(saved,index,content);
+assert.equal(state(saved).objects[bow].holder.entity,who);
+saved[index].mes=originalReply;runtime.onEditedV4(saved,index,content);
+check('R3 edited revision restores both owner and equipment',state(saved).objects[bow].holder.entity==='pc' &&
+    !state(saved).entities[who].sheet.equipment.weapon && !host.foldChat(saved).errors.length);
 assert.deepEqual(failed,[]);

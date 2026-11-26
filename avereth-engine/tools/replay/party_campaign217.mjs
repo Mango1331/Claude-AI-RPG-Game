@@ -30,6 +30,18 @@ for(let i=13;i<=21;i+=2) {
 assert.equal(state.entities[who].sheet.class,'rogue');
 assert(state.scene.present.includes(who));
 const act=(intent,text)=>{const r=playerTurn(state,content,text,{c:true,intent});state=r.state;return r;};
+const advance=process.argv.includes('--advance') ? 20 : 0;
+if (advance) {
+    const quote='I would like twenty copper in advance toward my share.';
+    turn('Would an advance help?',[]);
+    reply('Ossen says, "'+quote+'"',{scene:'here',expected:{},deltas:[{seq:1,type:'party',act:'offer',who,quest,amount:advance,due:'advance',money:'twenty copper',quote}]});
+    const offer=Object.values(state.party.agreements).find(a=>a.phase==='open');
+    assert(offer,'Advance proposal');
+    const prior=state.entities[who].sheet.coin_cp;
+    turn('Yes, I agree.',[{seq:1,type:'party',act:'accept',who,agreement:offer.id,quote:'Yes, I agree.'}]);
+    assert.equal(state.entities[who].sheet.coin_cp-prior,advance);
+    assert(state.party.members[who].combat,'An advance keeps the original combat agreement.');
+}
 const first=validateActionSelection(chat[23].extra.avereth_action_input.selection,state,content);
 assert(first.ok,first.reason);
 let battle=act(first.mapped.intent,chat[23].mes);
@@ -91,9 +103,14 @@ assert.equal(state.scene.at,baseAt);
 const q=state.quests[quest], cash=state.entities.pc.sheet.coin_cp, before=state.entities[who].sheet.coin_cp;
 const done=turn('We turn in the completed contract.',[{seq:1,type:'quest.turn_in',quest,quote:'We turn in the completed contract.'}]);
 assert.equal(state.quests[quest].status,'completed',JSON.stringify(done.outcome));
-assert.equal(state.entities.pc.sheet.coin_cp-cash,45);
-assert.equal(state.entities[who].sheet.coin_cp-before,45);
+assert.equal(state.entities.pc.sheet.coin_cp-cash,45+advance);
+assert.equal(state.entities[who].sheet.coin_cp-before,45-advance);
 assert.deepEqual(done.events.filter(e=>e.t==='xp.changed').map(e=>e.d.amount),[225,225]);
+if (advance) {
+    assert.equal(Object.values(state.party.claims).find(r=>r.who===who && r.source===quest).paid,45);
+    console.log('20 cp before the first fight, joint clear, 225/225 XP, then only 25 of 45 cp still due.');
+    process.exit(0);
+}
 reply('The clerk closes the contract.',{scene:'here',expected:{},deltas:[]});
 turn('We part ways.',[{seq:1,type:'party',who,act:'leave',quote:'We part ways.'}]);
 assert.equal(state.party.members[who].mode,'left');

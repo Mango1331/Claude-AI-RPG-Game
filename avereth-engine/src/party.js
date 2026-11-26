@@ -1,6 +1,6 @@
 import { allyAssets, decisionOf } from './v4/surrender.js';
 import { profileOf, restoreOf, restoreEffect, rankRefusal, freeObjectId } from './v4/items.js';
-import { claim, payClaim, vestQuest, questEntitlement } from './party_rewards.js';
+import { claim, payClaim, vestQuest, questEntitlement, questFee } from './party_rewards.js';
 import { deriveCharacter } from './derived.js';
 import { hash32 } from './util.js';
 import { coinEvidence, numberRuns } from './economy.js';
@@ -108,7 +108,7 @@ function unchangedAnswer(s,content,agreement,words,statement,actor) {
     statement=withoutAddress(s,statement);
     if (!(yes.test(statement) || decisionOf(statement)==='accept') || statement.includes('?') ||
         words.split(/[.!?;\n]/).some(part=>decisionOf(part)==='refuse') || no.test(words) || negated.test(words) || qualified.test(words)) return false;
-    const fee=terms.half ? Math.floor((s.quests[terms.quest]?.payout_cp || 0)/2) : terms.cp;
+    const fee=terms.installment ?? (s.quests[terms.quest] ? questFee(s.quests[terms.quest],terms) : null);
     const money=coinEvidence(words,content);
     if (!money.complete || money.sums.some(sum=>sum.cp!==fee)) return false;
     if (/\bhalf\b/i.test(words) && !terms.half && terms.loot?.kind!=='proceeds') return false;
@@ -213,7 +213,7 @@ export function partyDecision(s, content, command, source, actor, emit, contract
     const memberEvent = (mode, extras={}) => emit({t:'party.member',d:{...member,who,mode,at:s.scene.at,source:sourceRef,previous:member?.revision || 0, ...extras}});
     if (c.act === 'offer') {
         if ((!together.test(c.quote) && !member) || no.test(statement) || negated.test(statement)) return failure('Quote the specific voluntary offer.');
-        const terms = termsFrom(s, content, c, words, actor);
+        let terms = termsFrom(s, content, c, words, actor);
         if (!terms) return failure('The work and compensation must match the quoted terms.');
         const id = 'party.'+who+'.'+s.turn+'.'+hash32(JSON.stringify([actor,c.seq,c.quote]));
         if (s.party?.agreements?.[id]) return failure('Offer already recorded.');
@@ -221,9 +221,16 @@ export function partyDecision(s, content, command, source, actor, emit, contract
         const amends=c.agreement && c.agreement===priorAgreement?.id && terms.quest &&
             terms.quest===priorAgreement.terms.quest && (terms.half || terms.cp) && /\b(?:revise|amend|change|replace)\b/i.test(statement);
         if ((c.agreement || priorAgreement && /\b(?:amend|revise|replace)\b/i.test(statement)) && !amends && agreement?.phase!=='open') return failure('Identify the current agreement being changed.');
+        let installmentOn=null;
+        if (terms.due && !amends && priorAgreement?.terms.quest===terms.quest &&
+            (priorAgreement.terms.half || priorAgreement.terms.cp && (!priorAgreement.terms.due || priorAgreement.terms.installment))) {
+            if (terms.cp>questFee(s.quests[terms.quest],priorAgreement.terms)) return failure('An installment exceeds the agreed fee.');
+            installmentOn=priorAgreement.id;
+            terms={...priorAgreement.terms,installment:terms.cp,due:terms.due,text:terms.text};
+        }
         for (const prior of open.filter(a=>a.terms.quest===terms.quest))
             emit({t:'party.agreement',d:{...prior,phase:'superseded',previous:prior.revision}});
-        emit({t:'party.agreement',d:{id,who,phase:'open',terms,...(amends?{amends:c.agreement}:{}),proposer:actor,source:sourceRef,previous:0}});
+        emit({t:'party.agreement',d:{id,who,phase:'open',terms,...(amends?{amends:c.agreement}:{}),...(installmentOn?{installmentOn}:{}),proposer:actor,source:sourceRef,previous:0}});
     } else if (['accept','decline'].includes(c.act)) {
         if (!agreement || agreement.who !== who || agreement.phase !== 'open' || agreement.proposer === actor) return failure('Identify one current offer from the other party.');
         const answer=withoutAddress(s,statement);
@@ -231,11 +238,12 @@ export function partyDecision(s, content, command, source, actor, emit, contract
             answer.includes('?') || qualified.test(answer) || !(decisionOf(answer)==='refuse' || /^(?:no thanks|I (?:decline|refuse|won't|will not))\b/i.test(answer)))
             return failure('Quote a definite response to the unchanged terms.');
         const accepts = c.act === 'accept';
-        if (accepts && agreement.amends && member?.agreement!==agreement.amends) return failure('The agreement being amended has changed.');
+        const parent=agreement.amends || agreement.installmentOn;
+        if (accepts && parent && member?.agreement!==parent) return failure('The agreement being amended has changed.');
         if (accepts && agreement.terms.quest) {
             const q = s.quests[agreement.terms.quest];
             if (!q || q.status !== 'active') return failure('Quest is no longer active.');
-            const cost = a => a.terms.half ? Math.floor(q.payout_cp/2) : a.terms.cp || 0;
+            const cost = a => questFee(q,a.terms);
             const reserved=new Map();
             const reserve=(id,amount)=>reserved.set(id,Math.max(reserved.get(id) || 0,amount));
             const vested=claimsOf(s).filter(r=>r.source===q.id);
@@ -256,12 +264,13 @@ export function partyDecision(s, content, command, source, actor, emit, contract
             memberEvent(member?.mode==='wait'?'wait':'follow',{agreement:agreement.id,combat:agreement.terms.combat});
             if (agreement.terms.combat) bindPartyEquipment(s,who,emit);
             if (agreement.amends && claimsOf(s).some(r=>r.who===who && r.source===agreement.terms.quest)) {
-                const amount=agreement.terms.half ? Math.floor(s.quests[agreement.terms.quest].payout_cp/2) : agreement.terms.cp;
+                const amount=questFee(s.quests[agreement.terms.quest],agreement.terms);
                 if (amount!=null) claim(s,emit,agreement,agreement.terms.quest,amount,{amend:true});
             }
             if (agreement.terms.due === 'advance') {
-                const row = claim(s,emit,agreement,agreement.terms.quest,agreement.terms.cp);
-                payClaim(s,emit,row,Math.min(agreement.terms.cp,row.amount)-row.paid);
+                const advance=agreement.terms.installment ?? agreement.terms.cp;
+                const row=claim(s,emit,agreement,agreement.terms.quest,advance);
+                payClaim(s,emit,row,Math.min(advance,row.amount)-row.paid);
             }
         }
     } else if (['equip','use','give'].includes(c.act)) {
@@ -379,7 +388,8 @@ export function partySummary(s) {
             m.request?'asked, awaiting reply: '+m.request.quote:null].filter(Boolean).join(' · ');
     });
     for (const a of agreementsOf(s).filter(a=>a.phase==='open' || (s.party.members[a.who]?.mode!=='left' && s.party.members[a.who]?.agreement===a.id)))
-        lines.push(a.id+' · '+a.phase+' · '+a.proposer+' / '+a.who+' · '+a.terms.text);
+        lines.push(a.id+' · '+a.phase+' · '+a.proposer+' / '+a.who+' · '+a.terms.text+
+            (a.installmentOn?' · '+a.terms.installment+' cp on account of '+questFee(s.quests[a.terms.quest],a.terms)+' cp total':''));
     for (const r of claimsOf(s).filter(r=>r.amount>r.paid)) lines.push(r.id+' · '+(r.amount-r.paid)+' cp owed to '+r.who);
     return lines;
 }

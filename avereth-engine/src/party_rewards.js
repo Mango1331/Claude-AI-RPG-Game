@@ -1,11 +1,15 @@
 // Private entitlements always refer to an accepted agreement and a real source.
+export function questFee(quest, terms) {
+    return terms.half ? Math.floor((quest?.payout_cp || 0)/2) : terms.cp || 0;
+}
+
 export function recordWork(s, emit, quest, source, members) {
     if (!quest || quest.status !== 'active' || !members.length || quest.party_work?.[source]) return;
     emit({t:'quest.party_work', d:{id:quest.id, source, members:[...new Set(members)]}});
     for (const who of members) {
         const a = s.party?.agreements[s.party.members[who]?.agreement];
         if (a?.phase === 'accepted' && a.terms.quest === quest.id && a.terms.due === 'partial')
-            claim(s,emit,a,quest.id,a.terms.cp);
+            claim(s,emit,a,quest.id,a.terms.installment ?? a.terms.cp);
     }
 }
 
@@ -15,7 +19,7 @@ export function vestQuest(s, emit, quest) {
     for (const m of Object.values(s.party?.members || {})) {
         const a = s.party.agreements[m.agreement];
         if (!worked.has(m.who) || m.mode === 'left' || a?.phase !== 'accepted' || a.terms.quest !== quest.id) continue;
-        const amount = a.terms.half ? Math.floor((quest.payout_cp || 0) / 2) : a.terms.cp;
+        const amount = questFee(quest,a.terms);
         if (amount) claim(s, emit, a, quest.id, amount);
     }
 }

@@ -1217,11 +1217,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 if (m < want) reject(d, 'time_cap', `${d.minutes} min exceed what this turn allows (${cap} min${auth.go ? '' : ' without travel or an activity'}); ${m} applied`);
                 if (m > 0 && onRoad) {
                     // A continued journey can advance along the same realm road without crossing a node.
-                    if (!travellers && d.during === 'travel' && d.evidence && narratedEvent(prose, d.evidence).ok
+                    const movement = d.evidence && /\b(?:he|alaric|the party|they)\s+(?:walked|rode|travelled|traveled|followed|continued|crossed|advanced|covered|marched|hiked|went)\b/i.test(d.evidence)
+                        && narratedEvent(prose, d.evidence).ok;
+                    if (!travellers && auth.gos.length === 1 && !s.encounter && !dungeonOf(s,s.scene.at)
+                        && d.during === 'travel' && movement
                         && firstLeg && ['travel','local'].includes(firstLeg.mode)
                         && expected[firstLeg.seq]?.arrived === false) travellers = ['pc', ...following(s).map(m => m.who)];
                     if (!travellers && s.places[s.scene.at]?.kind === 'realm' && actions.some(r => r.type === 'journey.continue')
-                        && (d.during === 'travel' || /\b(?:an? (?:hour|day) on|further along|walk(?:ed|s) on|continu(?:ed|es) along)\b/i.test(prose))) {
+                        && (movement || /\b(?:an? (?:hour|day) on|further along|walk(?:ed|s) on|continu(?:ed|es) along)\b/i.test(prose))) {
                         travellers = ['pc', ...following(s).filter(member => s.scene.present.includes(member.who)).map(member => member.who)];
                     }
                     if (travellers) bookRoadTime(m);
@@ -1296,7 +1299,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 }
                 const party = companions(d.with, d);
                 perceiveAll(s, emit, seeing());
-                arriveThrough(at.id, party);
+                arriveThrough(at.id, party, !forcedHere);
                 if (camp) {
                     const separateGo = !d.forced_by && at.id !== camp.origin && !nearbyCamp() && auth.gos?.some(g =>
                         g.to === at.id || (!g.to && g.newName && normText(g.newName) === normText(s.places[at.id]?.name)));
@@ -1999,8 +2002,19 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // (rules.time.engine_clock), never 0. Only the minutes beyond the booked activities count as travel.
     // 4.3.0-c.6.6.2: the long one only where the way crosses a settlement's bounds (into or out of a town, from one to
     // another); a short move within the wilds (the next bend of a wolf trail) is local like one within a town
-    for (const entry of pendingRoadTime)
+    for (const entry of pendingRoadTime) {
+        // A confirmed approach within the current site can spend incidental scene time.
+        const stayedHere = auth.gos?.some(g => {
+            const reply = expected[g.seq];
+            return reply?.arrived && reply.at && samePlace(s, reply.at, startAt, content) && s.scene.at === startAt;
+        });
+        if (stayedHere && entry.delta.during == null && entry.minutes <= content.rules.time.engine_clock.go_min_same_settlement) {
+            emit({ t:'time.advanced', d:{minutes:entry.minutes, why:'narration'} });
+            timeUsed += entry.minutes;
+            continue;
+        }
         reject(entry.delta, 'travel_time', 'No travelled leg was established for these minutes.');
+    }
     if (auth.c && arrived && arrived !== startAt && arrived !== transit && !continuation?.choice?.lodging) {
         const t = content.rules.time.engine_clock;
         const floor = settlementOf(s, startAt) === settlementOf(s, arrived) ? t.go_min_same_settlement : t.go_min_elsewhere;
@@ -2899,10 +2913,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (hallOf(s, s.scene.at)) arrivedHall = hallOf(s, s.scene.at);
     }
 
-    function arriveThrough(id, party) {
+    function arriveThrough(id, party, voluntary = true) {
         const via = throughGoal(id);
-        if (via) arrive(via, party);
-        arrive(id, party);
+        if (via) arrive(via, party, voluntary);
+        arrive(id, party, voluntary);
     }
     /** Patch 8: why the gate of a Living Dungeon turns him back on a step from its gate (or from outside) into its parts. */
     function gateRefusal(to) {
@@ -3027,12 +3041,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (JSON.stringify(r.next) !== JSON.stringify(s.places[root].dungeon || null)) emit({ t: 'place.updated', d: { id: root, set: { dungeon: r.next } } });
     }
 
-    function arrive(id, party = []) {
+    function arrive(id, party = [], voluntary = true) {
         arrivals.add(id);
         sceneEpoch++;
         const town = locationOf(s, id);
         const from = s.scene.at;
-        if (id !== from && journeyTime) {
+        if (!voluntary) travellers = null;
+        if (id !== from && journeyTime && voluntary) {
             travellers = ['pc', ...following(s).filter(m => party.includes(m.who)).map(m => m.who)];
             for (const {minutes} of pendingRoadTime.splice(0)) bookRoadTime(minutes);
         }

@@ -6,6 +6,7 @@ import { rulesetOf } from './content.js';
 export function effectsNow(content, sk, stats, prof, ruleset) {
     return (sk.effects || []).map((e) => {
         if (e.kind === 'temp_def' || e.kind === 'temp_mdef') return `${e.kind === 'temp_def' ? 'DEF' : 'MDEF'} +${effectValue(content, e, stats, prof, ruleset)}`;
+        if (e.kind === 'heal') return 'Heal ' + effectValue(content, e, stats, prof, ruleset) + ' HP';
         if (e.kind === 'barrier') return `Barrier ${effectValue(content, e, stats, prof, ruleset)} HP`;
         if (e.kind === 'post_attack_temp_def') return `DEF +${flatEffectValue(content, e.flat, prof, ruleset)} after the attack`;
         return null;
@@ -27,6 +28,8 @@ export function masteryChange(state, content, skill, from, to, who = 'pc') {
         const next = Object.keys(levels).map(Number).find(p => p > to && levels[p].power > levels[to].power);
         if (next && levels[from].power === levels[to].power) parts.push('next Power increase P' + next);
     }
+    const restore = skill.effects?.find(e => e.kind === 'restore');
+    if (restore) parts.push('Restore ' + describe(Math.min(restore.amount, cost(from)), Math.min(restore.amount, cost(to))) + ' ' + restore.resource.toUpperCase());
     const effects = p => effectsNow(content, skill, effectiveStats(sheet, content), p, rulesetOf(state)).join(', ');
     if (effects(to)) parts.push(describe(effects(from), effects(to)));
     return parts.join(' · ');

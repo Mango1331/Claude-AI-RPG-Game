@@ -1,6 +1,6 @@
 # Avereth Engine – Roadmap nach 10B
 
-Die nächste Patchentscheidung ist offen. User13 liefert einen konkreten Bedarf an Kapitulation/Kampfverhandlung, aber noch keinen beschlossenen technischen Fachplan. Den laufenden Review und die nächste Entscheidung führt der [aktuelle Projektstand](03_AKTUELLER_PROJEKTSTAND.md). Größere allgemeine Gameplay-Erweiterungen bleiben zurückgestellt.
+**Nächste größere Etappe: Party-System.** Die [gemeinsame Designrichtung](recherche/AVERETH_PARTY_SYSTEM_FACHPLANUNG.md#12-gemeinsame-designentscheidungen-nach-gpt-review) ist als Planungsgrundlage bestätigt. Codex erstellt die [Architekturanalyse und den konkreten Fach-/Patchplan](recherche/AVERETH_PARTY_ARCHITEKTUR_FACHPLAN_AUFTRAG.md), noch ohne Implementierung. .216 bleibt für persönliche Tests freigegeben. Den laufenden Stand führt [03](03_AKTUELLER_PROJEKTSTAND.md). Andere größere Gameplay-Erweiterungen bleiben zurückgestellt.
 
 ## Zur späteren Entscheidung
 
@@ -8,7 +8,7 @@ Die nächste Patchentscheidung ist offen. User13 liefert einen konkreten Bedarf 
 |---|---|---|
 | <a name="2-npc-kontinuität--neue-fachliche-reihenfolge"></a>NPC-Kontinuität und Weltereignisse | Wie gut halten Absprachen und Persönlichkeitsmerkmale über mehrere Begegnungen? Wie oft unterbrechen Ereignisse Reise, Rast und Dungeonerkundung? Diese Beobachtungen tragen die Entscheidung über E4/E5 und PULSE D. | [NPC-Fachplan](patch_plans_10b/NPC_E2_E3_FACHPLAN.md) · [PULSE-Fachplan](patch_plans_10b/PULSE_W5_W7_TECHNISCHER_UMSETZUNGSPLAN.md) |
 | Kampfbewegung und Aktionsökonomie | Für Annäherung, Teilbewegung und Konter stehen Varianten zur Wahl. Haupt- und Nebenaktionen (K1) sind im Entwicklungszweig seit .209 umgesetzt. Weitere Vereinfachung der HUD-/Freitextbindung anhand tatsächlicher Spielblockaden prüfen. | [Angriff mit Annäherung](patch_plans_10b/FACHPLAN_KAMPF_BEWEGUNG_ANGRIFF_192.md) · [K1](patch_plans_10b/PATCH_COMBAT_MAIN_MINOR_ACTIONS.md) |
-| Kapitulation und Kampfverhandlung | User13: technische Lücke und gewünschte Alternativen zum Kampf. Erst Codex-Gegenreview, dann über Surrender, Übergabe, Reaktion und Kampffortsetzung entscheiden. Zusatzwurf bleibt offene Erweiterung. | [User13-Review](testrun_10b/user-20261125-212154-213/REVIEW.md) · [Feedback](testrun_10b/user-20261125-212154-213/USER_FEEDBACK_REVIEW.md) |
+| Kapitulation und Kampfverhandlung | Surrender und Übergabe seit .214/.215 umgesetzt und offline geprüft. Natürlicher Kapitulationstest bleibt offen; Gruppen-/Teilfrieden im Party-Fachplan berücksichtigen. Zusatzwurf bleibt zurückgestellt. | [User13-Review](testrun_10b/user-20261125-212154-213/REVIEW.md) · [Feedback](testrun_10b/user-20261125-212154-213/USER_FEEDBACK_REVIEW.md) |
 | Ausrüstung und Progression | Die Kalibrierung von Rang und Qualität braucht repräsentative Spielverläufe. Die Simulation enthält die Vergleichsvarianten und ihre Annahmen. | [Ausrüstungs- und Kampfbalance](recherche/AUSRUESTUNG_KAMPFBALANCE_ANALYSE_195_2026-11-15.md) |
 | Campfunde und Promptumfang | Zusätzliche Fundvariation (L2) und die Untersuchung des Tokenverbrauchs pro gespeichertem Zug (T7) sind zurückgestellt. | [Camp-Fachplan](patch_plans_10b/USER07_C_CAMPAUSSTATTUNG_UND_SUCHE.md) · [Forschungsfrage T7](recherche/USER07_T7_PROMPTS_KONTEXT_UND_TOKENVERBRAUCH.md) |
 

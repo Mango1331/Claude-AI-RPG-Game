@@ -488,15 +488,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     let timeUsed = booked;
     let travelMinutes = 0;
     let lastRoadLeg = null;
-    // Older reports may consistently give the duration just after each arrival.
-    // Recognize that unambiguous ordering as well as the current time-then-arrive format.
-    const legSteps = steps.map(({d}) => d).filter(d => d.type === 'arrive' || (d.type === 'time' && d.during === 'travel'));
-    const reportedArrivals = legSteps.filter(d => d.type === 'arrive');
-    const timeAfterArrival = reportedArrivals.length > 1 && legSteps.length === 2 * reportedArrivals.length
-        && legSteps.every((d,i) => d.type === (i % 2 ? 'time' : 'arrive'));
     let pendingRoadTime = [];
     const actions = (outcome.resolutions || []).filter(r => ['resolved','authorized'].includes(r.status));
     const activities = actions.filter(r => r.type === 'activity');
+    const roadSpan = d => d.during === 'travel' || (d.during == null && !activities.length && !booked);
+    // Older reports may consistently give the duration just after each arrival.
+    // Recognize that unambiguous ordering as well as the current time-then-arrive format.
+    const legSteps = steps.map(({d}) => d).filter(d => d.type === 'arrive' || (d.type === 'time' && roadSpan(d)));
+    const reportedArrivals = legSteps.filter(d => d.type === 'arrive');
+    const timeAfterArrival = reportedArrivals.length > 1 && legSteps.length === 2 * reportedArrivals.length
+        && legSteps.every((d,i) => d.type === (i % 2 ? 'time' : 'arrive'));
     const journeyTime = explicitTravel && !s.encounter && (auth.gos || []).length > 0;
     function bookRoadTime(minutes, travellers) {
         if (!minutes) return;
@@ -1195,12 +1196,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 const previous = reportedArrivals.findLast(a => a.seq < d.seq);
                 const atLast = lastRoadLeg && lastRoadLeg.seq === (previous?.seq ?? null);
                 const scoped = atLast && !lastRoadLeg.measured && d.scene && d.scene !== 'here' && samePlace(s,d.scene,lastRoadLeg.at,content);
-                const end = scoped || (timeAfterArrival && atLast && d.during === 'travel') ? null : next?.seq ?? null;
+                const end = scoped || (timeAfterArrival && atLast) ? null : next?.seq ?? null;
                 // Legacy time has no activity tag. A span already accounted for cannot authorize
                 // another anonymous duration after that arrival.
-                const legacyRoad = d.during == null && !activities.length && !booked
-                    && !(end == null && atLast && lastRoadLeg.measured);
-                const onRoad = journeyTime && (d.during === 'travel' || legacyRoad);
+                const alreadyMeasured = d.during == null && end == null && atLast && lastRoadLeg.measured;
+                const onRoad = journeyTime && roadSpan(d) && !alreadyMeasured;
                 const separateSpan = d.during === 'event' || (onRoad && d.during === 'travel');
                 const covered = separateSpan ? 0 : Math.min(bookedLeft, d.minutes);
                 bookedLeft -= covered;

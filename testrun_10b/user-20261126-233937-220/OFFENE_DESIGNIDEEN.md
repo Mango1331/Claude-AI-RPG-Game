@@ -1,0 +1,11 @@
+# User16 – zu entscheidende Grundlagen
+
+Diese Vorschläge sind keine beschlossenen Produktregeln.
+
+1. **Ortsautorität neu abgrenzen.** Bedeutungsvolle Ortsgrenzen vs gewöhnliche Bewegung innerhalb einer zusammenhängenden Situation. Annäherung und Sichtkontakt als Handlung, nicht erfundener Zielort. Eine ausdrücklich gewählte lokale Bewegung soll nicht an einer neuen Pflichtbenennung scheitern. Vorfeld/Schwelle/Innenraum sauber unterscheiden; Dungeon-Gate, Abschnittsfolge, tatsächliche Kampfbereitschaft und gefährliche freiwillige Entscheidungen schützen. Eine gemeinsame verlässliche Zuständigkeit für Ankunft statt weiterer Wortlautvalidatoren. Soft observations nicht global mit misslungenem arrive verwerfen; keine ungeprüfte Buchung harter Folgen am nicht erreichten Ort.
+2. **Wahrnehmung und Search.** Routinemäßiges Umschauen/Sichtbares und soziale Verfügbarkeit nicht als versteckte PER-Aufgabe behandeln. PER bleibt relevant bei wirklich versteckten/unsicheren Zielen, Tracking, Fallen, Geheimnissen; bisherige Formel zunächst unverändert. Kein garantierter Spawn, keine Suche als Zufalls-Erzwingung von NPC-Bereitschaft.
+3. **Erinnerung am passenden Anlass.** Dammar-Informationen an Quelle, Quest, betroffene Institution, Ort und tatsächliche Vereinbarung binden. Kompakte bedarfsorientierte Erinnerung ohne Namenspflicht, auch nach Ablauf History. Getrennte Wissensgrenzen. Forderung nicht mit akzeptierter bedingter Zusage verwechseln, abgeschnittene Sätze vermeiden. Kein automatischer Bericht/Quest.
+4. **Rastbutton.** Reproduzierbare Gründe für Blockade anzeigen, Controls aus konsistentem Live-Zustand; #rest, PULSE, D1 und Save-Schutz behalten.
+5. **Abnahme.** Nicht die Zahl grüner Mockfälle als alleinigen Freigabenachweis nutzen. Erst Originalantworten vollständig auf .220 reproduzieren, danach fachlich gewünschte Alternativen/zusammenhängende Präfixe prüfen. Vergleich bisheriger wiederkehrender Reiseprobleme seit .190/.211/.219. Keine pauschalen Validatorlockerungen oder weiteren seltenen Fälle, keine zusätzlichen Providerrequests ohne Freigabe. Designentscheidungen dem Nutzer vorlegen, dann erst Implementierung.
+
+[Review](REVIEW.md) · [Feedback](USER_FEEDBACK_REVIEW.md)

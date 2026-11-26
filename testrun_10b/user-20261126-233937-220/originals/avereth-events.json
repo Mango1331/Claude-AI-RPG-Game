@@ -1,0 +1,6861 @@
+[
+ {
+  "i": 0,
+  "user": false,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "campaign.started",
+    "d": {
+     "seed": 526138360,
+     "minute": 540,
+     "entities": [
+      {
+       "id": "pc",
+       "kind": "pc",
+       "name": "Alaric",
+       "full_name": "Alaric Red",
+       "race": "Human",
+       "age": 18,
+       "origin": "Earth",
+       "descriptors": [
+        "alaric",
+        "stranger",
+        "traveler"
+       ],
+       "status": "alive",
+       "location": "loc.ashbridge",
+       "sheet": {
+        "level": 1,
+        "class": null,
+        "stats": {
+         "STR": 5,
+         "VIT": 5,
+         "AGI": 5,
+         "INT": 5,
+         "PER": 5,
+         "WIL": 5
+        },
+        "skills": {},
+        "equipment": {
+         "clothing": "simple_travelers_clothes"
+        },
+        "inventory": {
+         "small_pouch": 1
+        },
+        "coin_cp": 50,
+        "xp": 0,
+        "free_points": 0,
+        "hp": 80,
+        "mp": 60,
+        "sta": 100
+       }
+      }
+     ],
+     "location": "loc.ashbridge",
+     "place": "public roadside verge outside Ashbridge",
+     "facts": [
+      {
+       "id": "f.pc.name",
+       "s": "pc",
+       "p": "name",
+       "o": "Alaric",
+       "visibility": "public",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      },
+      {
+       "id": "f.pc.appearance",
+       "s": "pc",
+       "p": "appearance",
+       "o": "Human, about eighteen; wears simple traveler's clothes",
+       "visibility": "public",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      },
+      {
+       "id": "f.pc.origin",
+       "s": "pc",
+       "p": "origin",
+       "o": "Earth (transmigrated; memories intact)",
+       "visibility": "secret",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      },
+      {
+       "id": "f.pc.arrival_witnesses",
+       "s": "pc",
+       "p": "arrival_witnesses",
+       "o": "none",
+       "visibility": "secret",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      }
+     ],
+     "knowledge": [
+      {
+       "who": "pc",
+       "about": "f.pc.name",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      },
+      {
+       "who": "pc",
+       "about": "f.pc.appearance",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      },
+      {
+       "who": "pc",
+       "about": "f.pc.origin",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      },
+      {
+       "who": "pc",
+       "about": "f.pc.arrival_witnesses",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      }
+     ],
+     "campaign": "avereth",
+     "content_version": "4.2.0",
+     "engine_version": "4.3.0-c.6.6.220",
+     "ruleset": 2,
+     "private_quests": false,
+     "runtime": "v4",
+     "path": "c",
+     "places": [
+      {
+       "id": "realm.valedorn_crown",
+       "name": "Valedorn Crown",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.caelreth",
+       "name": "Caelreth",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.duskreach",
+       "name": "Duskreach",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.ashen_scale_dominion",
+       "name": "Ashen Scale Dominion",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.ashen_scale_dominion",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.verdant_fang_court",
+       "name": "Verdant Fang Court",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.verdant_fang_court",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.alderwatch",
+       "name": "Alderwatch",
+       "kind": "settlement",
+       "sub": "city",
+       "parent": "realm.valedorn_crown",
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.alderwatch.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.alderwatch",
+       "realm": "realm.valedorn_crown",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.glassmere",
+       "name": "Glassmere",
+       "kind": "settlement",
+       "sub": "city",
+       "parent": "realm.caelreth",
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.glassmere.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.glassmere",
+       "realm": "realm.caelreth",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.ashbridge",
+       "name": "Ashbridge",
+       "kind": "settlement",
+       "sub": "city",
+       "parent": "realm.duskreach",
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.ashbridge.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.ashbridge",
+       "realm": "realm.duskreach",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.crownheart",
+       "name": "Crownheart",
+       "kind": "settlement",
+       "sub": "capital",
+       "parent": "realm.valedorn_crown",
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.crownheart.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.crownheart",
+       "realm": "realm.valedorn_crown",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.asterhall",
+       "name": "Asterhall",
+       "kind": "settlement",
+       "sub": "capital",
+       "parent": "realm.caelreth",
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.asterhall.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.asterhall",
+       "realm": "realm.caelreth",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.blackgate",
+       "name": "Blackgate",
+       "kind": "settlement",
+       "sub": "capital",
+       "parent": "realm.duskreach",
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.blackgate.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.blackgate",
+       "realm": "realm.duskreach",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.cinder_throne",
+       "name": "Cinder Throne",
+       "kind": "settlement",
+       "sub": "seat",
+       "parent": "realm.ashen_scale_dominion",
+       "realm": "realm.ashen_scale_dominion",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.thornheart",
+       "name": "Thornheart",
+       "kind": "settlement",
+       "sub": "seat",
+       "parent": "realm.verdant_fang_court",
+       "realm": "realm.verdant_fang_court",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.mossback_warrens",
+       "name": "Mossback Warrens",
+       "kind": "site",
+       "parent": "realm.duskreach",
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content",
+       "near": "loc.ashbridge",
+       "where": "a moss-grown hill half a day's walk east of Ashbridge, off the old quarry track",
+       "rooms": true,
+       "dungeon": {
+        "real": true,
+        "theme": "goblin warrens: tunnels dug into a mossy hill, crude palisades, goblin scouts and warriors, a shaman deeper down",
+        "rank": {
+         "min": "F",
+         "max": "E"
+        },
+        "levels": {
+         "1": {
+          "min": "F",
+          "max": "F"
+         },
+         "2": {
+          "min": "E",
+          "max": "E"
+         }
+        },
+        "control": "the Adventurers' Guild of Ashbridge keeps its entry ledger under a charter of the Duskreach crown",
+        "hidden": [],
+        "heard": [],
+        "guild": [
+         "theme",
+         "rank",
+         "level:1",
+         "level:2",
+         "control"
+        ]
+       }
+      },
+      {
+       "id": "loc.glimmerdeep_grotto",
+       "name": "Glimmerdeep Grotto",
+       "kind": "site",
+       "parent": "realm.caelreth",
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content",
+       "near": "loc.glassmere",
+       "where": "a cleft in the hills a morning's walk north of Glassmere, where the stream runs out of the rock",
+       "rooms": true,
+       "dungeon": {
+        "real": true,
+        "theme": "crystal caverns: glittering grottos of mana-fed crystal, crystal beetles and mineral slimes",
+        "rank": {
+         "min": "F",
+         "max": "F"
+        },
+        "levels": {
+         "1": {
+          "min": "F",
+          "max": "F"
+         }
+        },
+        "control": "a Glassmere academy of magic holds the cleft and lets registered adventurers cull its outer grottos; what they kill and the free crystal there is theirs, the deep galleries the academy's",
+        "hidden": [],
+        "heard": [],
+        "guild": [
+         "theme",
+         "rank",
+         "level:1",
+         "control"
+        ]
+       }
+      },
+      {
+       "id": "loc.old_crown_catacombs",
+       "name": "Old Crown Catacombs",
+       "kind": "site",
+       "parent": "realm.valedorn_crown",
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content",
+       "near": "loc.alderwatch",
+       "where": "beneath a ruined chapel an hour's ride west of Alderwatch",
+       "rooms": true,
+       "dungeon": {
+        "real": true,
+        "theme": "undead catacombs: burial galleries, restless skeletons, ghouls deeper down",
+        "rank": {
+         "min": "F",
+         "max": "E"
+        },
+        "levels": {
+         "1": {
+          "min": "F",
+          "max": "F"
+         },
+         "2": {
+          "min": "E",
+          "max": "E"
+         }
+        },
+        "control": "the temple wardens of Alderwatch, who ask the Guild to keep the upper galleries culled",
+        "hidden": [],
+        "heard": [],
+        "guild": [
+         "theme",
+         "rank",
+         "level:1",
+         "level:2",
+         "control"
+        ]
+       }
+      },
+      {
+       "id": "loc.ashbridge.verge",
+       "name": "public roadside verge outside Ashbridge",
+       "kind": "site",
+       "parent": "loc.ashbridge",
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content"
+      }
+     ],
+     "at": "loc.ashbridge.verge"
+    }
+   }
+  ]
+ },
+ {
+  "i": 1,
+  "user": true,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 1,
+     "input_hash": "e1a8d8c3",
+     "input": "mage"
+    }
+   },
+   {
+    "t": "creation.class_selected",
+    "d": {
+     "class": "mage",
+     "favored": [
+      "INT",
+      "WIL"
+     ],
+     "basic_attack": "mage.basic_attack"
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "creation.step2",
+      "class": "mage"
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 3,
+  "user": true,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 2,
+     "input_hash": "b6e3aa01",
+     "input": "Flame Lance + Arcane Wave"
+    }
+   },
+   {
+    "t": "creation.completed",
+    "d": {
+     "skills": [
+      "mage.flame_lance",
+      "mage.arcane_wave"
+     ],
+     "equip": {
+      "weapon": "starter_arcane_staff_r2",
+      "armor": "starter_light_robes"
+     },
+     "items": {},
+     "hp": 80,
+     "mp": 72,
+     "sta": 100
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "creation.complete",
+      "class": "mage",
+      "skills": [
+       "mage.flame_lance",
+       "mage.arcane_wave"
+      ],
+      "kit": [
+       "starter_arcane_staff_r2",
+       "starter_light_robes"
+      ]
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 5,
+  "user": true,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 3,
+     "input_hash": "b4d933a4",
+     "input": "*i walk into the city ahead and make my way over to the adventurers guild*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 6804,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "go",
+       "to": "loc.ashbridge.guild_hall",
+       "quote": "i walk into the city ahead and make my way over to the adventurers guild",
+       "within": null
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "go",
+     "status": "authorized",
+     "quote": "i walk into the city ahead and make my way over to the adventurers guild"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 3,
+     "at": "loc.ashbridge.verge",
+     "exposure": "scene",
+     "frame": "inside",
+     "phase": "day",
+     "base": 6,
+     "misses_before": 0,
+     "p": 6,
+     "roll": 11.91,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. GOES — to Adventurers' Guild hall, Ashbridge (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "i walk into the city ahead and make my way over to the adventurers guild"
+       }
+      ],
+      "expected_keys": {
+       "1": "go"
+      },
+      "auth": {
+       "go": {
+        "seq": 1,
+        "to": "loc.ashbridge.guild_hall",
+        "name": "Adventurers' Guild hall, Ashbridge",
+        "hall": true,
+        "newName": null,
+        "mode": "local",
+        "enter": null,
+        "scope": null
+       },
+       "gos": [
+        {
+         "seq": 1,
+         "to": "loc.ashbridge.guild_hall",
+         "name": "Adventurers' Guild hall, Ashbridge",
+         "hall": true,
+         "newName": null,
+         "mode": "local",
+         "enter": null,
+         "scope": null
+        }
+       ],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "inside",
+        "phase": "day",
+        "p": 6,
+        "roll": 11.91,
+        "misses": 0,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 6,
+  "user": false,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 40,
+     "why": "travel",
+     "travellers": [
+      "pc"
+     ]
+    }
+   },
+   {
+    "t": "scene.moved",
+    "d": {
+     "at": "loc.ashbridge.guild_hall",
+     "location": "loc.ashbridge",
+     "place": "Adventurers' Guild hall, Ashbridge",
+     "reset_present": true,
+     "track_history": true
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t3.m6.ep",
+      "turn": 3,
+      "minute": 580,
+      "text": "Adventurers' Guild hall, Ashbridge: {pc}: \"*i walk into the city ahead and make my way over to the adventurers guild*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 2,
+      "kind": "episode",
+      "msg": 6
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 3,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 11664,
+     "repaired": false,
+     "deltas": 2,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 7,
+  "user": true,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 4,
+     "input_hash": "d159b7df",
+     "input": "*i walk up to the counter and say* Hello my Name is Alaric Red and im here to register"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 12142,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "guild.register",
+       "quote": "Hello my Name is Alaric Red and im here to register"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "offer.created",
+    "d": {
+     "offer": {
+      "id": "offer.registration",
+      "seller": "guild",
+      "at": "loc.ashbridge.guild_hall",
+      "status": "open",
+      "canon": true,
+      "turn": 4,
+      "lines": [
+       {
+        "id": "l1",
+        "what": "Guild registration fee",
+        "kind": "service",
+        "service": "guild_registration",
+        "qty": 1,
+        "price_cp": 20
+       }
+      ]
+     }
+    }
+   },
+   {
+    "t": "decision.opened",
+    "d": {
+     "decision": {
+      "id": "dec.registration",
+      "kind": "registration",
+      "what": "Guild registration",
+      "offer": "offer.registration",
+      "at": "loc.ashbridge.guild_hall",
+      "turn": 4,
+      "price_cp": 20
+     }
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "guild.register",
+     "status": "pending",
+     "reason": "fee",
+     "quote": "Hello my Name is Alaric Red and im here to register"
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. REGISTERS — pending: the Guild's registration fee is 2 silver (20 cp), one-time; a new member starts at Guild Rank Novice (the Guild's ranks run Novice to Legend); Power Rank (F to S) is a person's measured strength, a separate scale the Guild reads but never grants. Let the clerk name the fee and explain; stop there: he has not agreed to pay."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "guild.register",
+        "status": "pending",
+        "reason": "fee",
+        "quote": "Hello my Name is Alaric Red and im here to register"
+       }
+      ],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": false,
+        "exposure": "scene",
+        "eligible": false,
+        "reason": "hard_stop"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 8,
+  "user": false,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 3,
+      "type": "fact",
+      "s": "npc.guild_clerk",
+      "p": "registration_fee",
+      "o": "one-time fee of two silver covering Guild record, rank certification and the measuring stone"
+     },
+     "rule": "guild_canon",
+     "reason": "the Guild's fees and payouts are the engine's canon, not a fact of the story"
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "npc.npcguild_clerk",
+      "kind": "npc",
+      "name": null,
+      "descriptors": [
+       "clerk",
+       "thin man with ink-stained fingers",
+       "spectacles perched low on his nose",
+       "npc.guild_clerk"
+      ],
+      "traits": "thin man with ink-stained fingers, spectacles perched low on his nose",
+      "status": "alive",
+      "location": "loc.ashbridge",
+      "created": {
+       "turn": 4,
+       "minute": 580
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 8
+      },
+      "card": {},
+      "template": "commoner"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "npc.npcguild_clerk",
+     "band": "ENGAGED"
+    }
+   },
+   {
+    "t": "scene.tactical",
+    "d": {
+     "id": "npc.npcguild_clerk",
+     "relevant": true,
+     "threat": false
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_npcguild_clerk.occupation.30b90ecf.t4",
+      "s": "npc.npcguild_clerk",
+      "p": "occupation",
+      "o": "clerk",
+      "since": {
+       "turn": 4,
+       "minute": 580
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 8
+      }
+     }
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 2,
+      "type": "learn",
+      "who": "npc.guild_clerk",
+      "s": "npc.guild_clerk",
+      "p": "name",
+      "o": "Alaric Red",
+      "how": "told"
+     },
+     "rule": "identity_subject",
+     "reason": "\"Alaric Red\" is Alaric's name, not the clerk's: what someone learns of him is about pc"
+    }
+   },
+   {
+    "t": "object.created",
+    "d": {
+     "object": {
+      "id": "obj.t8.contract_slip",
+      "name": "contract slip",
+      "kind": "document",
+      "stack": false,
+      "qty": 1,
+      "unit": null,
+      "use": "tool",
+      "holder": {
+       "entity": "npc.npcguild_clerk"
+      },
+      "marks": [],
+      "for_quests": [],
+      "source": {
+       "turn": 4,
+       "how": "story"
+      }
+     }
+    }
+   },
+   {
+    "t": "object.created",
+    "d": {
+     "object": {
+      "id": "obj.t8.measuring_stone",
+      "name": "measuring stone",
+      "kind": "item",
+      "stack": false,
+      "qty": 1,
+      "unit": null,
+      "use": "tool",
+      "holder": {
+       "entity": "npc.npcguild_clerk"
+      },
+      "marks": [],
+      "for_quests": [],
+      "source": {
+       "turn": 4,
+       "how": "story"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcguild_clerk",
+     "about": "f.pc.appearance",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 4,
+     "minute": 580
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t4.seen.npc.npcguild_clerk",
+      "turn": 4,
+      "minute": 580,
+      "text": "first saw {pc} at Adventurers' Guild hall, Ashbridge",
+      "who": [
+       "npc.npcguild_clerk",
+       "pc"
+      ],
+      "witnesses": [
+       "npc.npcguild_clerk"
+      ],
+      "seen": [
+       "npc.npcguild_clerk"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 4,
+      "kind": "meeting"
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcguild_clerk",
+     "about": "f.pc.name",
+     "stance": "knows",
+     "source": "told:pc",
+     "turn": 4,
+     "minute": 580
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.pc.given_full_name",
+      "s": "pc",
+      "p": "given_full_name",
+      "o": "Alaric Red",
+      "since": {
+       "turn": 4,
+       "minute": 580
+      },
+      "until": null,
+      "visibility": "secret",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "self_introduction"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcguild_clerk",
+     "about": "f.pc.given_full_name",
+     "stance": "knows",
+     "source": "told:pc",
+     "turn": 4,
+     "minute": 580
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t4.m8.ep",
+      "turn": 4,
+      "minute": 580,
+      "text": "Adventurers' Guild hall, Ashbridge: {pc}: \"*i walk up to the counter and say* Hello my Name is Alaric Red and im here to register\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 8
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 4,
+     "rolled": false,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 1,
+      "creatures": 0,
+      "features": 0,
+      "objects": 2,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 25000,
+     "repaired": false,
+     "deltas": 5,
+     "rejected": 2
+    }
+   }
+  ]
+ },
+ {
+  "i": 9,
+  "user": true,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 5,
+     "input_hash": "8806462e",
+     "input": "*i pay the 2 silver and finish the registration*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 8035,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "offer.accept",
+       "offer": "offer.registration",
+       "lines": [
+        "l1"
+       ],
+       "qty": null,
+       "party_words": null,
+       "agreed_cp": 20,
+       "price_evidence": {
+        "basis": "total",
+        "quote": "2 silver",
+        "currency_quote": "silver"
+       },
+       "quote": "i pay the 2 silver and finish the registration"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "transaction.completed",
+    "d": {
+     "offer": "offer.registration",
+     "lines": [
+      "l1"
+     ],
+     "cp": 20,
+     "seller": "guild"
+    }
+   },
+   {
+    "t": "coin.changed",
+    "d": {
+     "id": "pc",
+     "value": 30,
+     "delta": -20,
+     "why": "Guild registration fee"
+    }
+   },
+   {
+    "t": "offer.closed",
+    "d": {
+     "id": "offer.registration",
+     "status": "accepted"
+    }
+   },
+   {
+    "t": "guild.registered",
+    "d": {
+     "registered_name": "Alaric Red",
+     "rank": "Novice",
+     "branch": "loc.ashbridge",
+     "power_rank": "F"
+    }
+   },
+   {
+    "t": "object.created",
+    "d": {
+     "object": {
+      "id": "obj.guild_plate",
+      "name": "Guild plate",
+      "kind": "document",
+      "stack": false,
+      "qty": 1,
+      "unit": null,
+      "holder": {
+       "entity": "pc"
+      },
+      "marks": [
+       {
+        "text": "Novice stamp",
+        "by": "guild",
+        "turn": 5
+       }
+      ],
+      "for_quests": [],
+      "source": {
+       "turn": 5,
+       "how": "guild"
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.pc.guild_rank.d0460f90.t5",
+      "s": "pc",
+      "p": "guild_rank",
+      "o": "Novice",
+      "since": {
+       "turn": 5,
+       "minute": 580
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.7,
+      "hard": false,
+      "source": {
+       "kind": "engine"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcguild_clerk",
+     "about": "f.pc.guild_rank.d0460f90.t5",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 5,
+     "minute": 580
+    }
+   },
+   {
+    "t": "decision.closed",
+    "d": {
+     "id": "dec.registration",
+     "status": "accepted"
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "offer.accept",
+     "status": "resolved",
+     "quote": "i pay the 2 silver and finish the registration"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 5,
+     "at": "loc.ashbridge.guild_hall",
+     "exposure": "scene",
+     "frame": "inside",
+     "phase": "day",
+     "base": 6,
+     "misses_before": 1,
+     "p": 6.9,
+     "roll": 48.89,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. PAYS — the Guild registration fee, 20 cp: registered at Guild Rank Novice; the crystal reads his Power Rank: F (his measured strength, a separate scale from the Guild's ranks); he receives his Guild plate. Desk, crystal measurement and handover are one service inside the Guild hall. Describe the routine in place; only actual witnesses know it."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "offer.accept",
+        "status": "resolved",
+        "quote": "i pay the 2 silver and finish the registration"
+       }
+      ],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "inside",
+        "phase": "day",
+        "p": 6.9,
+        "roll": 48.89,
+        "misses": 1,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": true,
+       "grants": [
+        "Guild plate"
+       ],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": [],
+      "coin": [
+       {
+        "kind": "purchase",
+        "delta": -20,
+        "before": 50,
+        "after": 30,
+        "why": "Guild registration fee"
+       }
+      ]
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 10,
+  "user": false,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t5.m10.ep",
+      "turn": 5,
+      "minute": 580,
+      "text": "Adventurers' Guild hall, Ashbridge: {pc}: \"*i pay the 2 silver and finish the registration*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 10
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 5,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 5724,
+     "repaired": false,
+     "deltas": 0,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 11,
+  "user": true,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 6,
+     "input_hash": "ba4401c7",
+     "input": "*i look at the questboard*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 3125,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "board.read",
+       "rank": null,
+       "quote": "i look at the questboard"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "offer.created",
+    "d": {
+     "offer": {
+      "id": "offer.manuals.locashbridgeguild_hall",
+      "seller": "npc.npcguild_clerk",
+      "at": "loc.ashbridge.guild_hall",
+      "status": "open",
+      "canon": true,
+      "stock": "manuals",
+      "turn": 6,
+      "lines": [
+       {
+        "id": "strike",
+        "what": "Primer of Strike",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "strike",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "bolt",
+        "what": "Primer of Bolt",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "bolt",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "guard",
+        "what": "Primer of Guard",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "guard",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "ward",
+        "what": "Primer of Ward",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "ward",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "mend",
+        "what": "Primer of Mend",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "mend",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "realm.duskreach.old_quarry_track_east_of_ashbridge",
+      "name": "old quarry track east of Ashbridge",
+      "kind": "site",
+      "parent": "realm.duskreach",
+      "realm": "realm.duskreach",
+      "tags": [],
+      "known": "reported",
+      "reports": [],
+      "by": "guild",
+      "created": {
+       "turn": 6,
+       "minute": 580
+      },
+      "population": {
+       "anchor": "raptor",
+       "species": "giant whip strider",
+       "levels": [
+        1,
+        3
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.cull_the_quarry_track_striders",
+      "title": "Cull the Quarry Track Striders",
+      "kind": "guild_contract",
+      "client": "Haulers' cartage yard of Ashbridge",
+      "giver": null,
+      "rank": "Novice",
+      "level": 3,
+      "qtype": "standard",
+      "payout_cp": 70,
+      "reward": "70 cp",
+      "task": "Kill 3 giant whip striders at old quarry track east of Ashbridge. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+      "desired_end_state": "3 giant whip striders killed at old quarry track east of Ashbridge.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "giant whip striders",
+        "qty": 3,
+        "unit": "striders",
+        "where": "old quarry track east of Ashbridge",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.ashbridge.guild_hall",
+       "branch": "loc.ashbridge",
+       "listed": {
+        "turn": 6,
+        "minute": 580,
+        "day": 1
+       },
+       "profile": "count_hunt_clear"
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 580,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "hunt": {
+       "at": "realm.duskreach.old_quarry_track_east_of_ashbridge",
+       "age": "adult"
+      },
+      "count_rule": "killed"
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "realm.duskreach.eel_weirs_of_the_reed_flats",
+      "name": "eel-weirs of the Reed Flats",
+      "kind": "site",
+      "parent": "realm.duskreach",
+      "realm": "realm.duskreach",
+      "tags": [],
+      "known": "reported",
+      "reports": [],
+      "by": "guild",
+      "created": {
+       "turn": 6,
+       "minute": 580
+      },
+      "population": {
+       "anchor": "raptor",
+       "species": "bog strider",
+       "levels": [
+        1,
+        3
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.cull_the_eel_weir_bog_striders",
+      "title": "Cull the Eel-Weir Bog Striders",
+      "kind": "guild_contract",
+      "client": "Reed Flats eel fishermen",
+      "giver": null,
+      "rank": "Novice",
+      "level": 2,
+      "qtype": "standard",
+      "payout_cp": 55,
+      "reward": "55 cp",
+      "task": "Kill 4 bog striders at eel-weirs of the Reed Flats. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+      "desired_end_state": "4 bog striders killed at eel-weirs of the Reed Flats.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "bog striders",
+        "qty": 4,
+        "unit": "striders",
+        "where": "eel-weirs of the Reed Flats",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.ashbridge.guild_hall",
+       "branch": "loc.ashbridge",
+       "listed": {
+        "turn": 6,
+        "minute": 580,
+        "day": 1
+       },
+       "profile": "count_hunt_clear"
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 580,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "hunt": {
+       "at": "realm.duskreach.eel_weirs_of_the_reed_flats",
+       "age": "adult"
+      },
+      "count_rule": "killed"
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "realm.duskreach.terraced_vineyards_on_the_duskreach_slopes",
+      "name": "terraced vineyards on the Duskreach slopes",
+      "kind": "site",
+      "parent": "realm.duskreach",
+      "realm": "realm.duskreach",
+      "tags": [],
+      "known": "reported",
+      "reports": [],
+      "by": "guild",
+      "created": {
+       "turn": 6,
+       "minute": 580
+      },
+      "population": {
+       "anchor": "boar",
+       "species": "burrow boar",
+       "levels": [
+        4,
+        7
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.cull_the_vineyard_root_gnawers",
+      "title": "Cull the Vineyard Root-Gnawers",
+      "kind": "guild_contract",
+      "client": "Terraced vineyard keeper, Duskreach slopes",
+      "giver": null,
+      "rank": "Novice",
+      "level": 4,
+      "qtype": "standard",
+      "payout_cp": 95,
+      "reward": "95 cp",
+      "task": "Kill 5 burrow boars at terraced vineyards on the Duskreach slopes. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+      "desired_end_state": "5 burrow boars killed at terraced vineyards on the Duskreach slopes.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "burrow boars",
+        "qty": 5,
+        "unit": "boars",
+        "where": "terraced vineyards on the Duskreach slopes",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.ashbridge.guild_hall",
+       "branch": "loc.ashbridge",
+       "listed": {
+        "turn": 6,
+        "minute": 580,
+        "day": 1
+       },
+       "profile": "count_hunt_clear"
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 580,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "hunt": {
+       "at": "realm.duskreach.terraced_vineyards_on_the_duskreach_slopes",
+       "age": "adult"
+      },
+      "count_rule": "killed"
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.clear_mossback_warrens_level_1",
+      "title": "Clear Mossback Warrens Level 1",
+      "kind": "guild_contract",
+      "client": "Adventurers' Guild of Ashbridge",
+      "giver": null,
+      "rank": "Novice",
+      "level": 3,
+      "qtype": "dangerous",
+      "payout_cp": 140,
+      "reward": "140 cp",
+      "task": "Clear level 1 of Mossback Warrens. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedition.",
+      "desired_end_state": "Level 1 of Mossback Warrens is clear.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "goblins of Mossback Warrens level 1",
+        "qty": null,
+        "unit": null,
+        "where": "Mossback Warrens, level 1",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.ashbridge.guild_hall",
+       "branch": "loc.ashbridge",
+       "listed": {
+        "turn": 6,
+        "minute": 580,
+        "day": 1
+       }
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 580,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "clear": {
+       "dungeon": "loc.mossback_warrens",
+       "floor": 1
+      },
+      "dungeon": "loc.mossback_warrens",
+      "floor": 1
+     }
+    }
+   },
+   {
+    "t": "board.refreshed",
+    "d": {
+     "key": "loc.ashbridge|Novice",
+     "branch": "loc.ashbridge",
+     "rank": "Novice",
+     "day": 1,
+     "listings": [
+      "quest.cull_the_quarry_track_striders",
+      "quest.cull_the_eel_weir_bog_striders",
+      "quest.cull_the_vineyard_root_gnawers",
+      "quest.clear_mossback_warrens_level_1"
+     ]
+    }
+   },
+   {
+    "t": "board.shown",
+    "d": {
+     "branch": "loc.ashbridge",
+     "rank": "Novice",
+     "listings": [
+      "quest.cull_the_quarry_track_striders",
+      "quest.cull_the_eel_weir_bog_striders",
+      "quest.cull_the_vineyard_root_gnawers",
+      "quest.clear_mossback_warrens_level_1"
+     ]
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "board.read",
+     "status": "resolved",
+     "quote": "i look at the questboard"
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. READS the Novice board — BOARD (these listings now become canonical because Alaric actually reads them; System cards display the official catalogue once this read is confirmed. Tell the reading briefly, atmosphere and NPC reactions; do not reproduce the catalogue or repeat every title, objective, reward and risk line. Discussing an individual contract or answering requested details is allowed. Invent no other official contract; these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display):\nREFERENCE ONLY — authoritative contract data, not a prose catalogue:\n**Cull the Quarry Track Striders** (3) · 3 kills total · reported individuals L1–3 · kills are a total contract goal, not encounter group size; groups may be dangerous — client: Haulers' cartage yard of Ashbridge · reward: 70 cp · Kill 3 giant whip striders at old quarry track east of Ashbridge. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Cull the Eel-Weir Bog Striders** (4) · 4 kills total · reported individuals L1–3 · kills are a total contract goal, not encounter group size; groups may be dangerous — client: Reed Flats eel fishermen · reward: 55 cp · Kill 4 bog striders at eel-weirs of the Reed Flats. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Cull the Vineyard Root-Gnawers** (5) · 5 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 — client: Terraced vineyard keeper, Duskreach slopes · reward: 95 cp · Kill 5 burrow boars at terraced vineyards on the Duskreach slopes. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Clear Mossback Warrens Level 1** — Clear Mossback Warrens, level 1 — client: Adventurers' Guild of Ashbridge · reward: 140 cp · Clear level 1 of Mossback Warrens. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedition.\nStored objectives and any verification examples are continuity memory only."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "board.read",
+        "status": "resolved",
+        "quote": "i look at the questboard"
+       }
+      ],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": false,
+        "exposure": "scene",
+        "eligible": false,
+        "reason": "board"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": {
+       "branch": "loc.ashbridge",
+       "rank": "Novice",
+       "listings": [
+        "quest.cull_the_quarry_track_striders",
+        "quest.cull_the_eel_weir_bog_striders",
+        "quest.cull_the_vineyard_root_gnawers",
+        "quest.clear_mossback_warrens_level_1"
+       ]
+      },
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": [],
+      "engine_lines": [
+       "SHOP — Guild: Primer of Strike · 1 for 80 cp · manual · F · teaches strike · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Bolt · 1 for 80 cp · manual · F · teaches bolt · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Guard · 1 for 80 cp · manual · F · teaches guard · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Ward · 1 for 80 cp · manual · F · teaches ward · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Mend · 1 for 80 cp · manual · F · teaches mend · value guide ~120 cp each (not the asking price)",
+       "SYSTEM — GUILD BOARD · Novice · Ashbridge",
+       "Cull the Quarry Track Striders (3) · 3 kills total · reported individuals L1–3 · kills are a total contract goal, not encounter group size; groups may be dangerous · Novice · client: Haulers' cartage yard of Ashbridge · reward: 70 cp (7 Silver) · Kill 3 giant whip striders at old quarry track east of Ashbridge. Only engine-recorded kills of this population count. R",
+       "Cull the Eel-Weir Bog Striders (4) · 4 kills total · reported individuals L1–3 · kills are a total contract goal, not encounter group size; groups may be dangerous · Novice · client: Reed Flats eel fishermen · reward: 55 cp (5 Silver 5 Copper) · Kill 4 bog striders at eel-weirs of the Reed Flats. Only engine-recorded kills of this population count. Return to the G",
+       "Cull the Vineyard Root-Gnawers (5) · 5 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 · Novice · client: Terraced vineyard keeper, Duskreach slopes · reward: 95 cp (9 Silver 5 Copper) · Kill 5 burrow boars at terraced vineyards on the Duskreach slopes. Only engine-recorded kills of this population count. ",
+       "Clear Mossback Warrens Level 1 — Clear Mossback Warrens, level 1 · Novice · quest level 3 · client: Adventurers' Guild of Ashbridge · reward: 140 cp (1 Gold 4 Silver) · Clear level 1 of Mossback Warrens. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedi"
+      ]
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 12,
+  "user": false,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "npc.npcstocky_crossbow_woman",
+      "kind": "npc",
+      "name": null,
+      "descriptors": [
+       "adventurer",
+       "stocky woman with a crossbow slung acros",
+       "arguing over a map table with another wo",
+       "npc.stocky_crossbow_woman"
+      ],
+      "traits": "stocky woman with a crossbow slung across her back, arguing over a map table with another woman",
+      "status": "alive",
+      "location": "loc.ashbridge",
+      "created": {
+       "turn": 6,
+       "minute": 580
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 12
+      },
+      "card": {},
+      "template": "adventurer"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "npc.npcstocky_crossbow_woman",
+     "band": "SHORT"
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_npcstocky_crossbow_w.occupation.2eb22c39.t6",
+      "s": "npc.npcstocky_crossbow_woman",
+      "p": "occupation",
+      "o": "adventurer",
+      "since": {
+       "turn": 6,
+       "minute": 580
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 12
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_npcstocky_crossbow_w.armed.924bb35b.t6",
+      "s": "npc.npcstocky_crossbow_woman",
+      "p": "armed",
+      "o": "crossbow slung across her back",
+      "since": {
+       "turn": 6,
+       "minute": 580
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 12
+      }
+     }
+    }
+   },
+   {
+    "t": "scene.awareness",
+    "d": {
+     "id": "npc.npcstocky_crossbow_woman",
+     "level": "aware"
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcstocky_crossbow_woman",
+     "about": "f.pc.appearance",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 6,
+     "minute": 580
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t6.seen.npc.npcstocky_crossbow_woman",
+      "turn": 6,
+      "minute": 580,
+      "text": "first saw {pc} at Adventurers' Guild hall, Ashbridge",
+      "who": [
+       "npc.npcstocky_crossbow_woman",
+       "pc"
+      ],
+      "witnesses": [
+       "npc.npcstocky_crossbow_woman"
+      ],
+      "seen": [
+       "npc.npcstocky_crossbow_woman"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 4,
+      "kind": "meeting"
+     }
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t6.m12.ep",
+      "turn": 6,
+      "minute": 580,
+      "text": "Adventurers' Guild hall, Ashbridge: {pc}: \"*i look at the questboard*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk",
+       "npc.npcstocky_crossbow_woman"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 12
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 6,
+     "rolled": false,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 1,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 15317,
+     "repaired": false,
+     "deltas": 2,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 13,
+  "user": true,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 7,
+     "input_hash": "f87039a6",
+     "input": "Annehmen: Clear Mossback Warrens Level 1"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 0,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "quest.accept",
+       "quest": "quest.clear_mossback_warrens_level_1"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "quest.status",
+    "d": {
+     "id": "quest.clear_mossback_warrens_level_1",
+     "from": "listed",
+     "to": "active",
+     "taker": "pc",
+     "at": "loc.ashbridge.guild_hall",
+     "step": 1
+    }
+   },
+   {
+    "t": "board.refreshed",
+    "d": {
+     "key": "loc.ashbridge|Novice",
+     "branch": "loc.ashbridge",
+     "rank": "Novice",
+     "day": 1,
+     "listings": [
+      "quest.cull_the_quarry_track_striders",
+      "quest.cull_the_eel_weir_bog_striders",
+      "quest.cull_the_vineyard_root_gnawers"
+     ]
+    }
+   },
+   {
+    "t": "object.created",
+    "d": {
+     "object": {
+      "id": "obj.slip.clear_mossback_warrens_level_1",
+      "name": "Guild contract slip: Clear Mossback Warrens Level 1",
+      "kind": "document",
+      "stack": false,
+      "qty": 1,
+      "unit": null,
+      "holder": {
+       "entity": "pc"
+      },
+      "marks": [],
+      "for_quests": [
+       "quest.clear_mossback_warrens_level_1"
+      ],
+      "source": {
+       "turn": 7,
+       "how": "guild"
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.pc.accepted.quest.clear_mossback_warrens_level_1",
+      "s": "pc",
+      "p": "accepted_contract",
+      "o": "Clear Mossback Warrens Level 1",
+      "since": {
+       "turn": 7,
+       "minute": 580
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.7,
+      "hard": false,
+      "source": {
+       "kind": "engine"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcguild_clerk",
+     "about": "f.pc.accepted.quest.clear_mossback_warrens_level_1",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 7,
+     "minute": 580
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcstocky_crossbow_woman",
+     "about": "f.pc.accepted.quest.clear_mossback_warrens_level_1",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 7,
+     "minute": 580
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "quest.accept",
+     "status": "resolved",
+     "quote": null
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 7,
+     "at": "loc.ashbridge.guild_hall",
+     "exposure": "scene",
+     "frame": "inside",
+     "phase": "day",
+     "base": 6,
+     "misses_before": 2,
+     "p": 7.8,
+     "roll": 33.79,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. ACCEPTS — \"Clear Mossback Warrens Level 1\" at the Guild desk; the clerk logs it and hands him its contract slip. Contract memory: Level 1 of Mossback Warrens is clear.. Proof: the contract slip itself; its Guild seal shows READY once the world has established the outcome (the engine marks it). No trophies or body parts are required or handed over; what he takes from his kills is his own loot. The stored objectives and any verification examples are continuity guidance, not mandatory steps or wording. Payout (140 cp), XP, completed-contract credit and promotion remain engine-owned at explicit turn-in."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "quest.accept",
+        "status": "resolved",
+        "quote": null
+       }
+      ],
+      "expected_keys": {
+       "1": "desk"
+      },
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "inside",
+        "phase": "day",
+        "p": 7.8,
+        "roll": 33.79,
+        "misses": 2,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [
+        "contract slip"
+       ],
+       "turnIns": [],
+       "accepted": [
+        "quest.clear_mossback_warrens_level_1"
+       ],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": [],
+      "desk": {
+       "1": {
+        "quest": "quest.clear_mossback_warrens_level_1",
+        "kind": "accept"
+       }
+      }
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 14,
+  "user": false,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 2,
+      "type": "fact",
+      "s": "npc.npcguild_clerk",
+      "p": "occupation",
+      "o": "Guild clerk who logs contracts and pays out at the Ashbridge hall"
+     },
+     "rule": "guild_canon",
+     "reason": "the Guild's fees and payouts are the engine's canon, not a fact of the story"
+    }
+   },
+   {
+    "t": "quest.detailed",
+    "d": {
+     "id": "quest.clear_mossback_warrens_level_1",
+     "note": "Clerk's directions: half a day east of Ashbridge, off the old quarry track — follow the track past the quarry proper to the mossy hill with palisade stakes. Guild records: goblins inside — scouts outs",
+     "schedule": null
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t7.m14.ep",
+      "turn": 7,
+      "minute": 580,
+      "text": "Adventurers' Guild hall, Ashbridge: {pc}: \"Annehmen: Clear Mossback Warrens Level 1\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk",
+       "npc.npcstocky_crossbow_woman"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 14
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 7,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 17946,
+     "repaired": false,
+     "deltas": 2,
+     "rejected": 1
+    }
+   }
+  ]
+ },
+ {
+  "i": 15,
+  "user": true,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 8,
+     "input_hash": "2e12bbbe",
+     "input": "*i look around for another solo adventurer in the hall to ask to party up for the quest*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 6151,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "activity",
+       "kind": "search",
+       "what": "another solo adventurer in the hall to ask to party up for the quest",
+       "minutes": null,
+       "until": null,
+       "quote": "i look around for another solo adventurer in the hall to ask to party up for the quest",
+       "learn": null,
+       "teacher": null,
+       "tags": null,
+       "aspects": null,
+       "material": null
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "check.recorded",
+    "d": {
+     "what": "another solo adventurer in the hall to ask to party up for the quest",
+     "stat": "PER",
+     "actor": 5,
+     "opposition": 6,
+     "chance": 45.45,
+     "roll": 68,
+     "success": false,
+     "claimed": false,
+     "by": "engine",
+     "seq": 1,
+     "search": true,
+     "at": "loc.ashbridge.guild_hall",
+     "focus": [
+      "another",
+      "solo",
+      "adventurer",
+      "hall",
+      "ask",
+      "party",
+      "quest"
+     ],
+     "found": null,
+     "sig": ""
+    },
+    "rng_to": 1
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "activity",
+     "status": "authorized",
+     "cap": 120,
+     "quote": "i look around for another solo adventurer in the hall to ask to party up for the quest"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 8,
+     "at": "loc.ashbridge.guild_hall",
+     "exposure": "scene",
+     "frame": "inside",
+     "phase": "day",
+     "base": 6,
+     "misses_before": 3,
+     "p": 8.7,
+     "roll": 62.46,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. SEARCHES another solo adventurer in the hall to ask to party up for the quest for a while. SEARCH CHECK (PER 5 vs 6): 45.45% (d100 68) → FAILURE — he finds nothing new this way: say so plainly (no false lead, nothing he wrongly believes, no interchangeable hint); what is there stays as it is, and another place, method or tool may still find it."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "activity",
+        "status": "authorized",
+        "cap": 120,
+        "quote": "i look around for another solo adventurer in the hall to ask to party up for the quest"
+       }
+      ],
+      "expected_keys": {
+       "1": "activity"
+      },
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": true,
+       "take": [],
+       "takeNames": {},
+       "gather": true,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "inside",
+        "phase": "day",
+        "p": 8.7,
+        "roll": 62.46,
+        "misses": 3,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [
+       {
+        "what": "another solo adventurer in the hall to ask to party up for the quest",
+        "stat": "PER",
+        "actor": 5,
+        "opposition": 6,
+        "chance": 45.45,
+        "roll": 68,
+        "success": false,
+        "claimed": false,
+        "by": "engine",
+        "seq": 1,
+        "search": true,
+        "at": "loc.ashbridge.guild_hall",
+        "focus": [
+         "another",
+         "solo",
+         "adventurer",
+         "hall",
+         "ask",
+         "party",
+         "quest"
+        ],
+        "found": null,
+        "sig": ""
+       }
+      ],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 16,
+  "user": false,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t8.m16.d1.1",
+      "s": "npc.npcstocky_crossbow_woman",
+      "p": "party_status",
+      "o": "already four deep in her crew, not looking for a fifth",
+      "since": {
+       "turn": 8,
+       "minute": 580
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 16,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t8.m16.d2_2.1",
+      "s": "npc.npcguild_clerk",
+      "p": "remark",
+      "o": "pointed Alaric to the board: 'Hall's not a marriage market'",
+      "since": {
+       "turn": 8,
+       "minute": 580
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 16,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 20,
+     "why": "activity"
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t8.m16.ep",
+      "turn": 8,
+      "minute": 600,
+      "text": "Adventurers' Guild hall, Ashbridge: {pc}: \"*i look around for another solo adventurer in the hall to ask to party up for the quest*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk",
+       "npc.npcstocky_crossbow_woman"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.ashbridge",
+      "place": "Adventurers' Guild hall, Ashbridge",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 16
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 8,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 12877,
+     "repaired": false,
+     "deltas": 2,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 17,
+  "user": true,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 9,
+     "input_hash": "066c0386",
+     "input": "*i shrug my shoulders and make my way to the Dungeon*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 5072,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "go",
+       "to": "loc.mossback_warrens",
+       "quote": "i shrug my shoulders and make my way to the Dungeon",
+       "within": null
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "dungeon.established",
+    "d": {
+     "dungeon": {
+      "id": "loc.mossback_warrens",
+      "name": "Mossback Warrens",
+      "since": {
+       "turn": 9,
+       "minute": 600
+      },
+      "seed": "526138360|loc.mossback_warrens",
+      "gate": {
+       "names": [
+        "warren mouth",
+        "palisade gate",
+        "palisade",
+        "mossy hill"
+       ],
+       "text": "the palisaded mouth of the warrens in the hillside",
+       "requires": "guild",
+       "fee_cp": 0,
+       "keeper": "the Guild's ledger-keeper at the palisade"
+      },
+      "capacity": 8,
+      "reset_min": 4320,
+      "floors": {
+       "1": {
+        "rank": {
+         "min": "F",
+         "max": "F"
+        },
+        "spans": {
+         "minion": [
+          1,
+          5
+         ],
+         "guard": [
+          4,
+          8
+         ],
+         "boss": [
+          5,
+          9
+         ]
+        },
+        "slots": [
+         {
+          "id": "scouts",
+          "role": "minion",
+          "species": [
+           "goblin scout",
+           "goblin lookout"
+          ],
+          "anchor": "goblin",
+          "count": [
+           2,
+           3
+          ]
+         },
+         {
+          "id": "warband",
+          "role": "minion",
+          "species": [
+           "goblin warrior",
+           "goblin spearman"
+          ],
+          "anchor": "goblin",
+          "count": [
+           2,
+           3
+          ]
+         },
+         {
+          "id": "chief",
+          "role": "guard",
+          "name": "the Palisade Chief",
+          "species": "goblin chief",
+          "anchor": "goblin"
+         }
+        ],
+        "manifest": "the war-drum deeper in the tunnels falls silent and the crude barricade before the lower tunnels stands unmanned",
+        "sealed": false,
+        "pace": [
+         0,
+         1
+        ]
+       },
+       "2": {
+        "rank": {
+         "min": "E",
+         "max": "E"
+        },
+        "spans": {
+         "minion": [
+          15,
+          19
+         ],
+         "guard": [
+          18,
+          22
+         ],
+         "boss": [
+          20,
+          24
+         ]
+        },
+        "slots": [
+         {
+          "id": "guards",
+          "role": "minion",
+          "species": [
+           "goblin warrior",
+           "goblin brute"
+          ],
+          "anchor": "goblin",
+          "count": [
+           2,
+           3
+          ]
+         },
+         {
+          "id": "shaman",
+          "role": "boss",
+          "name": "the Moss Shaman",
+          "species": "goblin shaman",
+          "anchor": "goblin_shaman"
+         }
+        ],
+        "manifest": "the green fire in the shaman's hollow gutters out and the warrens go quiet",
+        "sealed": false,
+        "pace": [
+         0,
+         1
+        ]
+       }
+      },
+      "parties": [
+       {
+        "id": "party.wren_company",
+        "name": "the Wren Company",
+        "size": 4,
+        "leader": "Mira Fenwick",
+        "affiliation": "a Guild-registered company",
+        "reach": 1
+       },
+       {
+        "id": "party.ashen_hands",
+        "name": "the Ashen Hands",
+        "size": 3,
+        "leader": "Brannoc",
+        "affiliation": "a crew of independent delvers",
+        "reach": 2
+       }
+      ],
+      "resources_spec": [],
+      "cycle": 1,
+      "cycle_start": 600,
+      "booked_to": 600,
+      "inside": {},
+      "clears": [],
+      "ahead": null,
+      "pass": null,
+      "run": {
+       "floors": {
+        "1": {
+         "parts": 0,
+         "pace": [
+          0,
+          0,
+          1
+         ],
+         "slots": [
+          {
+           "id": "scouts",
+           "role": "minion",
+           "name": null,
+           "species": "goblin lookout",
+           "anchor": "goblin",
+           "count": 2,
+           "type": null,
+           "levels": [
+            3,
+            4
+           ],
+           "ref": "mossback_warrens_c1_l1_e1",
+           "entities": [],
+           "at": null,
+           "taken": null
+          },
+          {
+           "id": "warband",
+           "role": "minion",
+           "name": null,
+           "species": "goblin spearman",
+           "anchor": "goblin",
+           "count": 2,
+           "type": null,
+           "levels": [
+            5,
+            1
+           ],
+           "ref": "mossback_warrens_c1_l1_e2",
+           "entities": [],
+           "at": null,
+           "taken": null
+          },
+          {
+           "id": "chief",
+           "role": "guard",
+           "name": "the Palisade Chief",
+           "species": "goblin chief",
+           "anchor": "goblin",
+           "count": 1,
+           "type": null,
+           "levels": [
+            6
+           ],
+           "ref": "mossback_warrens_c1_l1_e3",
+           "entities": [],
+           "at": null,
+           "taken": null
+          }
+         ],
+         "cleared": null
+        },
+        "2": {
+         "parts": 0,
+         "pace": [
+          0,
+          1
+         ],
+         "slots": [
+          {
+           "id": "guards",
+           "role": "minion",
+           "name": null,
+           "species": "goblin brute",
+           "anchor": "goblin",
+           "count": 2,
+           "type": null,
+           "levels": [
+            19,
+            15
+           ],
+           "ref": "mossback_warrens_c1_l2_e1",
+           "entities": [],
+           "at": null,
+           "taken": null
+          },
+          {
+           "id": "shaman",
+           "role": "boss",
+           "name": "the Moss Shaman",
+           "species": "goblin shaman",
+           "anchor": "goblin_shaman",
+           "count": 1,
+           "type": null,
+           "levels": [
+            24
+           ],
+           "ref": "mossback_warrens_c1_l2_e2",
+           "entities": [],
+           "at": null,
+           "taken": null
+          }
+         ],
+         "cleared": null
+        }
+       },
+       "resources": {}
+      }
+     }
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "go",
+     "status": "authorized",
+     "quote": "i shrug my shoulders and make my way to the Dungeon"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 9,
+     "at": "loc.ashbridge.guild_hall",
+     "exposure": "travel",
+     "frame": "travel",
+     "phase": "day",
+     "base": 35,
+     "misses_before": 4,
+     "p": 56,
+     "roll": 17.65,
+     "open": true,
+     "kind": "meeting",
+     "leg": 1
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. GOES — to Mossback Warrens (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+      ],
+      "extra": [
+       "THE ROAD — PULSE (the engine's; day): on this leg toward Mossback Warrens ONE concrete thing happens: a MEETING: people or creatures of this place who do not attack him (travellers, locals, an animal, someone who wants something of him). It is a real stop short of Mossback Warrens (the one exception to carrying the way forward); what he does about it is his decision. If nothing of this kind can fit what he does, nothing happens."
+      ],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "i shrug my shoulders and make my way to the Dungeon"
+       }
+      ],
+      "expected_keys": {
+       "1": "go"
+      },
+      "auth": {
+       "go": {
+        "seq": 1,
+        "to": "loc.mossback_warrens",
+        "name": "Mossback Warrens",
+        "hall": false,
+        "newName": null,
+        "mode": "dungeon",
+        "enter": {
+         "dungeon": "loc.mossback_warrens",
+         "root": "loc.mossback_warrens",
+         "gate": false
+        },
+        "scope": "loc.mossback_warrens"
+       },
+       "gos": [
+        {
+         "seq": 1,
+         "to": "loc.mossback_warrens",
+         "name": "Mossback Warrens",
+         "hall": false,
+         "newName": null,
+         "mode": "dungeon",
+         "enter": {
+          "dungeon": "loc.mossback_warrens",
+          "root": "loc.mossback_warrens",
+          "gate": false
+         },
+         "scope": "loc.mossback_warrens"
+        }
+       ],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 10080,
+       "road": "quiet",
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "travel",
+        "eligible": true,
+        "frame": "travel",
+        "phase": "day",
+        "p": 56,
+        "roll": 17.65,
+        "misses": 4,
+        "open": true,
+        "kind": "meeting"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 18,
+  "user": false,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 180,
+     "why": "travel",
+     "travellers": [
+      "pc"
+     ]
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "npc.npcguild_clerk",
+     "set": {
+      "at": "loc.ashbridge.guild_hall"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "npc.npcstocky_crossbow_woman",
+     "set": {
+      "at": "loc.ashbridge.guild_hall"
+     }
+    }
+   },
+   {
+    "t": "scene.moved",
+    "d": {
+     "at": "realm.duskreach.old_quarry_track_east_of_ashbridge",
+     "location": "realm.duskreach",
+     "place": "old quarry track east of Ashbridge",
+     "reset_present": true,
+     "track_history": true
+    }
+   },
+   {
+    "t": "place.updated",
+    "d": {
+     "id": "realm.duskreach.old_quarry_track_east_of_ashbridge",
+     "set": {
+      "known": "visited",
+      "visited": {
+       "turn": 9,
+       "minute": 780
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "npc.dammar",
+      "kind": "npc",
+      "name": "Dammar",
+      "descriptors": [
+       "forager",
+       "scrawny forty-something man in a patched",
+       "hand-line wound on a bottle, reed creel,",
+       "unshaven, one eye narrowed against the l",
+       "npc.dammar"
+      ],
+      "traits": "scrawny forty-something man in a patched fisherman's oilskin, hand-line wound on a bottle, reed creel, pale dug-up roots beside him, unshaven, one eye narrowed against the light",
+      "status": "alive",
+      "location": "realm.duskreach",
+      "created": {
+       "turn": 9,
+       "minute": 780
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 18
+      },
+      "card": {},
+      "template": "commoner"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "npc.dammar",
+     "band": "SHORT"
+    }
+   },
+   {
+    "t": "scene.tactical",
+    "d": {
+     "id": "npc.dammar",
+     "relevant": true,
+     "threat": false
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_dammar.occupation.6b1b17b9.t9",
+      "s": "npc.dammar",
+      "p": "occupation",
+      "o": "forager",
+      "since": {
+       "turn": 9,
+       "minute": 780
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 18
+      }
+     }
+    }
+   },
+   {
+    "t": "scene.awareness",
+    "d": {
+     "id": "npc.dammar",
+     "level": "aware"
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t9.m18.d5_3.1",
+      "s": "npc.dammar",
+      "p": "agenda",
+      "o": "a word put in for him at the Ashbridge Guild hall when Alaric comes back, in exchange for what he knows about the Warrens",
+      "since": {
+       "turn": 9,
+       "minute": 780
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 18,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "thread.set",
+    "d": {
+     "thread": {
+      "id": "thread.t9.1",
+      "text": "Dammar, camped in the gorse by the quarry track, will tell things worth knowing about the Warrens for a word put in for him at the Guild hall",
+      "kind": "promise",
+      "status": "open",
+      "since": {
+       "turn": 9,
+       "minute": 780
+      },
+      "updated": {
+       "turn": 9,
+       "minute": 780
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 18
+      },
+      "at": "realm.duskreach.old_quarry_track_east_of_ashbridge",
+      "who": [
+       "npc.dammar",
+       "pc"
+      ]
+     }
+    }
+   },
+   {
+    "t": "thread.set",
+    "d": {
+     "thread": {
+      "id": "thread.t9.2",
+      "text": "A splayed three-toed print pressed deep at the track's edge, hours old at most",
+      "kind": "sign",
+      "status": "open",
+      "since": {
+       "turn": 9,
+       "minute": 780
+      },
+      "updated": {
+       "turn": 9,
+       "minute": 780
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 18
+      },
+      "at": "realm.duskreach.old_quarry_track_east_of_ashbridge"
+     }
+    }
+   },
+   {
+    "t": "thread.set",
+    "d": {
+     "thread": {
+      "id": "thread.t9.3",
+      "text": "Thin, greasy smoke rises from somewhere behind the shoulder of the moss-grown hill — the Warrens are occupied",
+      "kind": "sign",
+      "status": "open",
+      "since": {
+       "turn": 9,
+       "minute": 780
+      },
+      "updated": {
+       "turn": 9,
+       "minute": 780
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 18
+      },
+      "at": "realm.duskreach.old_quarry_track_east_of_ashbridge"
+     }
+    }
+   },
+   {
+    "t": "dungeon.booked",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "to": 780
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.dammar",
+     "about": "f.pc.appearance",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 9,
+     "minute": 780
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t9.seen.npc.dammar",
+      "turn": 9,
+      "minute": 780,
+      "text": "first saw {pc} at old quarry track east of Ashbridge",
+      "who": [
+       "npc.dammar",
+       "pc"
+      ],
+      "witnesses": [
+       "npc.dammar"
+      ],
+      "seen": [
+       "npc.dammar"
+      ],
+      "location": "realm.duskreach",
+      "place": "old quarry track east of Ashbridge",
+      "importance": 4,
+      "kind": "meeting"
+     }
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t9.m18.ep",
+      "turn": 9,
+      "minute": 780,
+      "text": "old quarry track east of Ashbridge: {pc}: \"*i shrug my shoulders and make my way to the Dungeon*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.dammar"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "realm.duskreach",
+      "place": "old quarry track east of Ashbridge",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 18
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 9,
+     "rolled": true,
+     "open": true,
+     "kind": "meeting",
+     "narrated": "likely",
+     "heuristic": true,
+     "persisted": {
+      "threads": 3,
+      "npc_reentries": 0,
+      "persons": 1,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 51799,
+     "repaired": false,
+     "deltas": 8,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 19,
+  "user": true,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 10,
+     "input_hash": "e148b64b",
+     "input": "talk then *i say calmly* what do you have? and what is it you want me to say back at the guild?"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 2091,
+     "failed": false,
+     "commands": [],
+     "dropped": []
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 10,
+     "at": "realm.duskreach.old_quarry_track_east_of_ashbridge",
+     "exposure": "scene",
+     "frame": "wild",
+     "phase": "day",
+     "base": 20,
+     "misses_before": 0,
+     "p": 20,
+     "roll": 21.89,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; narrate what he says and does, and the world's response."
+      ],
+      "extra": [],
+      "resolutions": [],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "wild",
+        "phase": "day",
+        "p": 20,
+        "roll": 21.89,
+        "misses": 0,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 20,
+  "user": false,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "fact.ended",
+    "d": {
+     "id": "f.npc_dammar.occupation.6b1b17b9.t9",
+     "until": {
+      "turn": 10,
+      "minute": 780
+     },
+     "reason": "superseded by npc.dammar occupation forager and fisherman of the flooded quarry"
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t10.m20.d1.1",
+      "s": "npc.dammar",
+      "p": "occupation",
+      "o": "forager and fisherman of the flooded quarry",
+      "since": {
+       "turn": 10,
+       "minute": 780
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 20,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.detailed",
+    "d": {
+     "id": "quest.clear_mossback_warrens_level_1",
+     "note": "Dammar: a goblin lookout watches from the old palisade atop the hill by the burnt stake, second from the left; approach low round the east side where a fold in the ground gives cover most of the way u",
+     "schedule": null
+    }
+   },
+   {
+    "t": "quest.detailed",
+    "d": {
+     "id": "quest.clear_mossback_warrens_level_1",
+     "note": "Dammar: a second way in — a sinkhole at the back of the hill behind the shoulder, near the smoke, dropping into the middle of the level; foul-smelling",
+     "schedule": null
+    }
+   },
+   {
+    "t": "thread.set",
+    "d": {
+     "thread": {
+      "id": "thread.t10.1",
+      "text": "A ragged human boy, young, has been living with or around the goblins on the hill this past month; Dammar saw him twice on the slope gathering what the goblins leave",
+      "kind": "mystery",
+      "status": "open",
+      "since": {
+       "turn": 10,
+       "minute": 780
+      },
+      "updated": {
+       "turn": 10,
+       "minute": 780
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 20
+      },
+      "at": "realm.duskreach.old_quarry_track_east_of_ashbridge"
+     }
+    }
+   },
+   {
+    "t": "thread.set",
+    "d": {
+     "thread": {
+      "id": "thread.t10.2",
+      "text": "Dammar asks that when Alaric returns to the Guild hall he tell the clerk, loud enough for the room, that Dammar's information held good and forage rights on the north slope be restored — Old Wenna ban",
+      "kind": "promise",
+      "status": "open",
+      "since": {
+       "turn": 10,
+       "minute": 780
+      },
+      "updated": {
+       "turn": 10,
+       "minute": 780
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 20
+      },
+      "at": "realm.duskreach.old_quarry_track_east_of_ashbridge",
+      "who": [
+       "npc.dammar",
+       "pc"
+      ]
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "loc.flooded_quarry",
+      "name": "flooded quarry",
+      "kind": "site",
+      "parent": "realm.duskreach",
+      "realm": "realm.duskreach",
+      "tags": [],
+      "by": "reply",
+      "created": {
+       "turn": 10,
+       "minute": 780
+      },
+      "known": "reported",
+      "reports": []
+     }
+    }
+   },
+   {
+    "t": "place.updated",
+    "d": {
+     "id": "loc.flooded_quarry",
+     "set": {},
+     "report": {
+      "by": "npc.dammar",
+      "how": "told",
+      "where": "the flooded quarry Dammar fishes, near the quarry track",
+      "turn": 10,
+      "minute": 780
+     }
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t10.m20.ep",
+      "turn": 10,
+      "minute": 780,
+      "text": "old quarry track east of Ashbridge: {pc}: \"talk then *i say calmly* what do you have? and what is it you want me to say back at the guild?\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.dammar"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "realm.duskreach",
+      "place": "old quarry track east of Ashbridge",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 20
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 10,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 2,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 1,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 40535,
+     "repaired": false,
+     "deltas": 6,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 21,
+  "user": true,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 11,
+     "input_hash": "826f8d32",
+     "input": "*i look at him and then nod* if your information is true i can put a word in for you. ill let them know you helped. i cant promise anything about the forage rights as it is not in my power to award them"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 2820,
+     "failed": false,
+     "commands": [],
+     "dropped": []
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 11,
+     "at": "realm.duskreach.old_quarry_track_east_of_ashbridge",
+     "exposure": "scene",
+     "frame": "wild",
+     "phase": "day",
+     "base": 20,
+     "misses_before": 1,
+     "p": 23,
+     "roll": 20.78,
+     "open": true,
+     "kind": "danger",
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; narrate what he says and does, and the world's response."
+      ],
+      "extra": [
+       "PULSE (the engine's; day, out in the land) — ONE concrete thing happens around him that he notices: DANGER: ONE group of this land's people or creatures turns on him or bars his way with hostile intent; its strength is the land's (AREA LEVELS, populations), never his; nobody else joins it. It takes nothing of his, moves him nowhere and binds him to nothing; what he does about it is his decision. If nothing of this kind can fit the scene, nothing happens."
+      ],
+      "resolutions": [],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "wild",
+        "phase": "day",
+        "p": 23,
+        "roll": 20.78,
+        "misses": 1,
+        "open": true,
+        "kind": "danger"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 22,
+  "user": false,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "quest.detailed",
+    "d": {
+     "id": "quest.clear_mossback_warrens_level_1",
+     "note": "Dammar's guidance: enter by the east fold, via the sinkhole round the back of the moss-grown hill; mind the goblin lookout.",
+     "schedule": null
+    }
+   },
+   {
+    "t": "thread.set",
+    "d": {
+     "thread": {
+      "id": "thread.t9.1",
+      "text": "Dammar, camped in the gorse by the quarry track, will tell things worth knowing about the Warrens for a word put in for him at the Guild hall",
+      "kind": "promise",
+      "status": "resolved",
+      "since": {
+       "turn": 9,
+       "minute": 780
+      },
+      "updated": {
+       "turn": 11,
+       "minute": 780
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 18
+      },
+      "at": "realm.duskreach.old_quarry_track_east_of_ashbridge",
+      "resolution": "Dammar told the route and warned of the lookout as promised",
+      "who": [
+       "npc.dammar",
+       "pc"
+      ]
+     }
+    }
+   },
+   {
+    "t": "thread.set",
+    "d": {
+     "thread": {
+      "id": "thread.t11.1",
+      "text": "Alaric promised Dammar a good word with the Guild clerk about his help, though not forage rights; Dammar accepted ('Word's all I ask').",
+      "kind": "promise",
+      "status": "open",
+      "since": {
+       "turn": 11,
+       "minute": 780
+      },
+      "updated": {
+       "turn": 11,
+       "minute": 780
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 22
+      },
+      "at": "realm.duskreach.old_quarry_track_east_of_ashbridge",
+      "who": [
+       "pc",
+       "npc.dammar"
+      ]
+     }
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "mon.creaturewhip_strider",
+      "kind": "creature",
+      "name": null,
+      "descriptors": [
+       "man-high at the hip, stilt legs, pale fe",
+       "creature.whip_strider"
+      ],
+      "traits": "man-high at the hip, stilt legs, pale featherless hide, whiplash neck, hooked beak, yellow eye",
+      "status": "alive",
+      "location": "realm.duskreach",
+      "created": {
+       "turn": 11,
+       "minute": 780
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 22
+      },
+      "card": {},
+      "species": "giant whip strider",
+      "anchor": "raptor"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "mon.creaturewhip_strider",
+     "band": "LONG"
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.creaturewhip_strider",
+     "set": {
+      "life_stage": "adult",
+      "population_at": "realm.duskreach.old_quarry_track_east_of_ashbridge"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.creaturewhip_strider",
+     "set": {
+      "anchor": "raptor",
+      "profile": {
+       "model": "creature",
+       "anchor": "raptor",
+       "body_plan": "Raptor / predatory bird",
+       "level": 3,
+       "rank": "F",
+       "type": "normal",
+       "max_hp": 25,
+       "atk": 10,
+       "def": 0,
+       "mdef": 0,
+       "init": 17,
+       "attack": {
+        "name": "Talons/Beak",
+        "damage_type": "physical",
+        "range": "ENGAGED"
+       },
+       "temperament": "skittish"
+      }
+     }
+    },
+    "rng_to": 2
+   },
+   {
+    "t": "scene.position",
+    "d": {
+     "id": "mon.creaturewhip_strider",
+     "band": "LONG",
+     "cover": "none"
+    }
+   },
+   {
+    "t": "scene.awareness",
+    "d": {
+     "id": "mon.creaturewhip_strider",
+     "level": "aware"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 7,
+      "type": "hostile",
+      "by": [
+       "creature.whip_strider"
+      ],
+      "scope": null,
+      "evidence": "cutting across the track between him and the way back to Ashbridge... its legs folding slightly the way a bird's do before it strikes"
+     },
+     "rule": "attack_commitment",
+     "reason": "mon.creaturewhip_strider: no immediate attack established in this reply"
+    }
+   },
+   {
+    "t": "scene.position",
+    "d": {
+     "id": "npc.dammar",
+     "band": "SHORT",
+     "cover": "partial"
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t11.m22.ep",
+      "turn": 11,
+      "minute": 780,
+      "text": "old quarry track east of Ashbridge: {pc}: \"*i look at him and then nod* if your information is true i can put a word in for you. ill let them know you helped. i cant promise anything about the forage rig\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.dammar",
+       "mon.creaturewhip_strider"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "realm.duskreach",
+      "place": "old quarry track east of Ashbridge",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 22
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 11,
+     "rolled": true,
+     "open": true,
+     "kind": "danger",
+     "narrated": "likely",
+     "heuristic": true,
+     "persisted": {
+      "threads": 2,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 1,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 52276,
+     "repaired": false,
+     "deltas": 8,
+     "rejected": 1
+    }
+   }
+  ]
+ },
+ {
+  "i": 23,
+  "user": true,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 12,
+     "input_hash": "19010894",
+     "input": "i got it no worries *i say and fire*"
+    }
+   },
+   {
+    "t": "encounter.started",
+    "d": {
+     "encounter": {
+      "id": "enc.t12",
+      "phase": "ACTIVE",
+      "round": 1,
+      "order": [
+       "mon.creaturewhip_strider",
+       "pc"
+      ],
+      "turn_index": 1,
+      "current": "pc",
+      "combatants": {
+       "pc": {
+        "id": "pc",
+        "name": "Alaric",
+        "side": "pc",
+        "model": "character",
+        "fixed": {
+         "level": 1,
+         "rank": "F",
+         "class": "mage",
+         "stats": {
+          "STR": 5,
+          "VIT": 5,
+          "AGI": 5,
+          "INT": 6,
+          "PER": 5,
+          "WIL": 6
+         },
+         "max_hp": 80,
+         "max_mp": 72,
+         "max_sta": 100,
+         "atk": 0,
+         "matk": 10,
+         "def": 3,
+         "mdef": 4,
+         "init": 7,
+         "type": "normal",
+         "actions": {
+          "mage.basic_attack": {
+           "prof": 1,
+           "pp": 0
+          },
+          "mage.flame_lance": {
+           "prof": 1,
+           "pp": 0
+          },
+          "mage.arcane_wave": {
+           "prof": 1,
+           "pp": 0
+          }
+         },
+         "weapon_family": "focus",
+         "temperament": null,
+         "sapient": true
+        },
+        "current": {
+         "hp": 80,
+         "mp": 56,
+         "sta": 100,
+         "ammo": {},
+         "band": null,
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        }
+       },
+       "mon.creaturewhip_strider": {
+        "id": "mon.creaturewhip_strider",
+        "name": "Giant Whip Strider A",
+        "side": "hostile",
+        "model": "creature",
+        "fixed": {
+         "level": 3,
+         "rank": "F",
+         "type": "normal",
+         "body_plan": "Raptor / predatory bird",
+         "max_hp": 25,
+         "atk": 10,
+         "def": 0,
+         "mdef": 0,
+         "init": 17,
+         "attack": {
+          "name": "Talons/Beak",
+          "damage_type": "physical",
+          "range": "ENGAGED"
+         },
+         "temperament": "skittish",
+         "sapient": false,
+         "defeat_xp": 180
+        },
+        "current": {
+         "hp": 0,
+         "band": "LONG",
+         "cover": "none",
+         "effects": [],
+         "defeated": true,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Giant Whip Strider A"
+       }
+      },
+      "pc_rank": "F",
+      "pending_xp": 180,
+      "defeated": [
+       "mon.creaturewhip_strider"
+      ],
+      "escaped": [],
+      "trigger": {
+       "actor": "pc",
+       "target": "mon.creaturewhip_strider",
+       "skill": "mage.flame_lance",
+       "move": null,
+       "move_target": null
+      },
+      "log": [
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "mon.creaturewhip_strider",
+        "opening": false,
+        "cost": {
+         "resource": "mp",
+         "amount": 16,
+         "before": 72,
+         "after": 56
+        },
+        "skill": "mage.flame_lance",
+        "skill_name": "Flame Lance",
+        "raw": 40.25,
+        "raw_text": "16 + INT 6×2.375 + MATK 10 = 40.25",
+        "strikes": [
+         {
+          "target": "mon.creaturewhip_strider",
+          "power": 40.25,
+          "defense": 0,
+          "post_def": 40.25,
+          "variance": 0.92,
+          "final": 37,
+          "absorbed": 0,
+          "hp_before": 25,
+          "hp_after": 0,
+          "steps": [
+           "Raw 40.25",
+           "MDEF 0: max(40.25-0, 40.25×0.10) = 40.25",
+           "×0.92 variance = 37.03",
+           "round once = 37"
+          ],
+          "defeated": true
+         }
+        ],
+        "pending_xp_added": 180,
+        "first_strike": true,
+        "note": "First Strike (an open attack that opens the fight: no Ambush bonus; its maker's action of Round 1)"
+       }
+      ],
+      "opening": true,
+      "started": {
+       "turn": 12,
+       "minute": 780
+      },
+      "intents": {},
+      "ambush": false,
+      "ambush_reason": "target awareness: aware -> no Ambush; his declared attack opens the fight first (First Strike: no Ambush bonus; it is his action of Round 1)",
+      "first_strike": true,
+      "career": {
+       "damage": {
+        "mon.creaturewhip_strider": 25
+       },
+       "personal": {
+        "mon.creaturewhip_strider": 25
+       }
+      },
+      "trigger_done": true,
+      "spent": {
+       "pc": 1
+      },
+      "pp": {
+       "used": {
+        "mage.flame_lance": "an attack on a foe"
+       },
+       "wait": null,
+       "threatened": false,
+       "last": "mage.flame_lance",
+       "answer": "mage.flame_lance",
+       "guarding": null,
+       "offense": {
+        "mage.flame_lance": true
+       }
+      },
+      "round_marker": 1.01
+     }
+    },
+    "rng_to": 3
+   },
+   {
+    "t": "resource.changed",
+    "d": {
+     "id": "pc",
+     "resource": "mp",
+     "value": 56
+    }
+   },
+   {
+    "t": "entity.status",
+    "d": {
+     "id": "mon.creaturewhip_strider",
+     "status": "dead"
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.mon.creaturewhip_strider.status.t12",
+      "s": "mon.creaturewhip_strider",
+      "p": "status",
+      "o": "dead",
+      "since": {
+       "turn": 12,
+       "minute": 780
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.9,
+      "hard": true,
+      "source": {
+       "kind": "engine",
+       "encounter": "enc.t12"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "pc",
+     "about": "f.mon.creaturewhip_strider.status.t12",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 12,
+     "minute": 780
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.dammar",
+     "about": "f.mon.creaturewhip_strider.status.t12",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 12,
+     "minute": 780
+    }
+   },
+   {
+    "t": "xp.changed",
+    "d": {
+     "id": "pc",
+     "xp": 180,
+     "amount": 180,
+     "reason": "Combat XP (Giant Whip Strider A 180)"
+    }
+   },
+   {
+    "t": "level.up",
+    "d": {
+     "id": "pc",
+     "level": 2,
+     "xp_after": 80,
+     "free_points": 5,
+     "favored": [],
+     "rank": "F"
+    }
+   },
+   {
+    "t": "skill.progress",
+    "d": {
+     "id": "pc",
+     "skill": "mage.flame_lance",
+     "name": "Flame Lance",
+     "gained": 18,
+     "from": {
+      "prof": 1,
+      "pp": 0
+     },
+     "to": {
+      "prof": 1,
+      "pp": 18
+     },
+     "need": 75,
+     "why": "an attack on a foe in enc.t12",
+     "key": "fight:enc.t12:mage.flame_lance"
+    }
+   },
+   {
+    "t": "career.recorded",
+    "d": {
+     "source": "fight:enc.t12",
+     "stats": {
+      "fights_won": 1,
+      "foes_defeated": 1,
+      "stronger_defeated": 1,
+      "extraordinary_wins": 0
+     },
+     "feats": [],
+     "style": {
+      "Arcane": 1,
+      "offense": 1
+     }
+    }
+   },
+   {
+    "t": "encounter.ended",
+    "d": {
+     "id": "enc.t12",
+     "summary": {
+      "defeated": [
+       "mon.creaturewhip_strider"
+      ],
+      "escaped": [],
+      "xp_awarded": 180,
+      "pc_dead": false,
+      "pc_escaped": false,
+      "pp": [
+       {
+        "skill": "mage.flame_lance",
+        "gained": 18,
+        "from": {
+         "prof": 1,
+         "pp": 0
+        },
+        "to": {
+         "prof": 1,
+         "pp": 18
+        },
+        "need": 75
+       }
+      ]
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "npc.dammar",
+     "set": {
+      "wary": {
+       "turn": 12,
+       "minute": 780,
+       "encounter": "enc.t12"
+      }
+     }
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.enc.t12",
+      "turn": 12,
+      "minute": 780,
+      "text": "Fight at old quarry track east of Ashbridge: {pc} (Flame Lance) vs the man-high at the hip, stilt legs, pale fe — killed.",
+      "who": [
+       "pc",
+       "mon.creaturewhip_strider"
+      ],
+      "witnesses": [
+       "pc",
+       "npc.dammar"
+      ],
+      "seen": [
+       "pc",
+       "npc.dammar"
+      ],
+      "location": "realm.duskreach",
+      "place": "old quarry track east of Ashbridge",
+      "importance": 7,
+      "kind": "combat"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.creaturewhip_strider",
+     "set": {
+      "looted": "enc.t12"
+     }
+    }
+   },
+   {
+    "t": "object.created",
+    "d": {
+     "object": {
+      "id": "obj.loot.giant_whip_strider.feather.f",
+      "name": "F-Rank Giant Whip Strider Feather",
+      "kind": "resource",
+      "stack": true,
+      "qty": 2,
+      "unit": null,
+      "holder": {
+       "entity": "pc"
+      },
+      "marks": [],
+      "for_quests": [],
+      "source": {
+       "turn": 12,
+       "how": "loot",
+       "encounter": "enc.t12"
+      },
+      "rank": "F",
+      "level": 3,
+      "material": "feather",
+      "species": "Giant Whip Strider",
+      "anchor": "raptor",
+      "value_cp": 1
+     }
+    }
+   },
+   {
+    "t": "object.created",
+    "d": {
+     "object": {
+      "id": "obj.loot.giant_whip_strider.talon.f",
+      "name": "F-Rank Giant Whip Strider Talon",
+      "kind": "resource",
+      "stack": true,
+      "qty": 2,
+      "unit": null,
+      "holder": {
+       "entity": "pc"
+      },
+      "marks": [],
+      "for_quests": [],
+      "source": {
+       "turn": 12,
+       "how": "loot",
+       "encounter": "enc.t12"
+      },
+      "rank": "F",
+      "level": 3,
+      "material": "talon",
+      "species": "Giant Whip Strider",
+      "anchor": "raptor",
+      "value_cp": 2
+     }
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "combat",
+      "started": {
+       "reason": "target awareness: aware -> no Ambush; his declared attack opens the fight first (First Strike: no Ambush bonus; it is his action of Round 1)",
+       "order": "Giant Whip Strider A > Alaric",
+       "ambush": false
+      },
+      "records": [
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "mon.creaturewhip_strider",
+        "opening": false,
+        "cost": {
+         "resource": "mp",
+         "amount": 16,
+         "before": 72,
+         "after": 56
+        },
+        "skill": "mage.flame_lance",
+        "skill_name": "Flame Lance",
+        "raw": 40.25,
+        "raw_text": "16 + INT 6×2.375 + MATK 10 = 40.25",
+        "strikes": [
+         {
+          "target": "mon.creaturewhip_strider",
+          "power": 40.25,
+          "defense": 0,
+          "post_def": 40.25,
+          "variance": 0.92,
+          "final": 37,
+          "absorbed": 0,
+          "hp_before": 25,
+          "hp_after": 0,
+          "steps": [
+           "Raw 40.25",
+           "MDEF 0: max(40.25-0, 40.25×0.10) = 40.25",
+           "×0.92 variance = 37.03",
+           "round once = 37"
+          ],
+          "defeated": true
+         }
+        ],
+        "pending_xp_added": 180,
+        "first_strike": true,
+        "note": "First Strike (an open attack that opens the fight: no Ambush bonus; its maker's action of Round 1)"
+       }
+      ],
+      "illegal": null,
+      "next": null,
+      "board": {
+       "round": 1,
+       "order": [
+        {
+         "id": "mon.creaturewhip_strider",
+         "init": 17
+        },
+        {
+         "id": "pc",
+         "init": 7
+        }
+       ],
+       "hp": [
+        {
+         "id": "mon.creaturewhip_strider",
+         "hp": 0,
+         "max": 25,
+         "state": "defeated",
+         "band": "LONG",
+         "cover": "none"
+        },
+        {
+         "id": "pc",
+         "hp": 80,
+         "max": 80,
+         "state": null
+        }
+       ],
+       "labels": {
+        "mon.creaturewhip_strider": "Giant Whip Strider A"
+       },
+       "pc": {
+        "mp": 56,
+        "max_mp": 72,
+        "sta": 100,
+        "max_sta": 100,
+        "arrows": 0
+       }
+      },
+      "ended": {
+       "defeated": [
+        "mon.creaturewhip_strider"
+       ],
+       "escaped": [],
+       "xp_awarded": 180,
+       "pc_dead": false,
+       "pc_escaped": false,
+       "pp": [
+        {
+         "skill": "mage.flame_lance",
+         "gained": 18,
+         "from": {
+          "prof": 1,
+          "pp": 0
+         },
+         "to": {
+          "prof": 1,
+          "pp": 18
+         },
+         "need": 75
+        }
+       ]
+      },
+      "levelups": [
+       "Level 2"
+      ],
+      "loot": [
+       "F-Rank Giant Whip Strider Feather ×2",
+       "F-Rank Giant Whip Strider Talon ×2"
+      ],
+      "booked": {
+       "registration": false,
+       "grants": [
+        "F-Rank Giant Whip Strider Feather",
+        "F-Rank Giant Whip Strider Talon"
+       ],
+       "turnIns": [],
+       "accepted": []
+      },
+      "c": true
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 24,
+  "user": false,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "relation.set",
+    "d": {
+     "rel": {
+      "id": "rel.npc.dammar.attitude.pc",
+      "a": "npc.dammar",
+      "type": "attitude",
+      "b": "pc",
+      "value": 10,
+      "since": {
+       "turn": 12,
+       "minute": 780
+      },
+      "history": [
+       {
+        "turn": 12,
+        "minute": 780,
+        "delta": 10,
+        "why": "saw Alaric kill the strider with one fire lance and reassessed him"
+       }
+      ]
+     }
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 3,
+      "type": "party",
+      "act": "offer",
+      "who": "npc.dammar",
+      "claim": "Dammar offers to stay on the track a while in case Alaric comes out of the Warrens running",
+      "quote": "Unless you'd rather I stopped here a while. In case. A man on the track's worth something if you come out of that place running.",
+      "object": null,
+      "qty": null,
+      "loot": null,
+      "goods": null,
+      "due": null,
+      "priority": null,
+      "target": null,
+      "agreement": null,
+      "quest": null,
+      "combat": null,
+      "share": null,
+      "amount": null,
+      "money": null
+     },
+     "rule": "party_decision",
+     "reason": "The decision needs words from the identified speaker."
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t12.m24.d4_3.1",
+      "turn": 12,
+      "minute": 780,
+      "text": "Dammar watched {pc} bring down a giant whip strider with a single lance of fire and recalculated who he was talking to",
+      "who": [
+       "npc.dammar"
+      ],
+      "witnesses": [
+       "pc",
+       "npc.dammar"
+      ],
+      "seen": [
+       "pc",
+       "npc.dammar"
+      ],
+      "location": "realm.duskreach",
+      "place": "old quarry track east of Ashbridge",
+      "importance": 7,
+      "kind": "narrated",
+      "msg": 24
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 17590,
+     "repaired": false,
+     "deltas": 4,
+     "rejected": 1
+    }
+   }
+  ]
+ },
+ {
+  "i": 25,
+  "user": true,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "stat.assigned",
+    "d": {
+     "id": "pc",
+     "stat": "INT",
+     "amount": 5
+    }
+   }
+  ]
+ },
+ {
+  "i": 27,
+  "user": true,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 13,
+     "input_hash": "67a0b426",
+     "input": "no need *i say and then start walking towards teh dungeon again. but once i get close i crouch and sneak around to find the goblin outpost Dammar told me about*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 9746,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "go",
+       "to": "loc.mossback_warrens",
+       "quote": "i say and then start walking towards teh dungeon again. but once i get close i crouch and sneak around to find the goblin outpost Dammar told me about",
+       "within": null,
+       "manner": {
+        "kind": "stealth",
+        "scope": "destination"
+       }
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "go",
+     "status": "authorized",
+     "quote": "i say and then start walking towards teh dungeon again. but once i get close i crouch and sneak around to find the goblin outpost Dammar told me about"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 13,
+     "at": "realm.duskreach.old_quarry_track_east_of_ashbridge",
+     "exposure": "scene",
+     "frame": "wild",
+     "phase": "day",
+     "base": 20,
+     "misses_before": 0,
+     "p": 20,
+     "roll": 51.84,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. GOES — to Mossback Warrens (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+      ],
+      "extra": [
+       "SNEAKING TRAVEL — movement and its approach are one action. Travel normally until the actual established destination is reached; no hiding or Detection roll at the source or an earlier interruption. Detection is PENDING: the engine checks against actual occupants after confirmed arrival and Dungeon population. A blocked way stays blocked. Do not invent discovery, guaranteed concealment, Ambush, further movement or an attack before the check."
+      ],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "i say and then start walking towards teh dungeon again. but once i get close i crouch and sneak around to find the goblin outpost Dammar told me about"
+       }
+      ],
+      "expected_keys": {
+       "1": "go"
+      },
+      "auth": {
+       "go": {
+        "seq": 1,
+        "to": "loc.mossback_warrens",
+        "name": "Mossback Warrens",
+        "hall": false,
+        "newName": null,
+        "mode": "dungeon",
+        "enter": {
+         "dungeon": "loc.mossback_warrens",
+         "root": "loc.mossback_warrens",
+         "gate": false
+        },
+        "scope": "loc.mossback_warrens",
+        "manner": {
+         "kind": "stealth",
+         "scope": "destination"
+        }
+       },
+       "gos": [
+        {
+         "seq": 1,
+         "to": "loc.mossback_warrens",
+         "name": "Mossback Warrens",
+         "hall": false,
+         "newName": null,
+         "mode": "dungeon",
+         "enter": {
+          "dungeon": "loc.mossback_warrens",
+          "root": "loc.mossback_warrens",
+          "gate": false
+         },
+         "scope": "loc.mossback_warrens",
+         "manner": {
+          "kind": "stealth",
+          "scope": "destination"
+         }
+        }
+       ],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 10080,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "wild",
+        "phase": "day",
+        "p": 20,
+        "roll": 51.84,
+        "misses": 0,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 28,
+  "user": false,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "scene.left",
+    "d": {
+     "id": "npc.dammar"
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "loc.east_fold_below_the_moss_grown_hill",
+      "name": "east fold below the moss-grown hill",
+      "kind": "wilderness",
+      "parent": "realm.duskreach",
+      "realm": "realm.duskreach",
+      "tags": [],
+      "by": "reply",
+      "created": {
+       "turn": 13,
+       "minute": 780
+      }
+     }
+    }
+   },
+   {
+    "t": "scene.moved",
+    "d": {
+     "at": "loc.east_fold_below_the_moss_grown_hill",
+     "location": "realm.duskreach",
+     "place": "east fold below the moss-grown hill",
+     "reset_present": true,
+     "track_history": true
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "mon.mongoblin_lookout",
+      "kind": "creature",
+      "name": null,
+      "descriptors": [
+       "small hunched green-grey figure sitting ",
+       "scratched itself and turned its head tow",
+       "mon.goblin_lookout"
+      ],
+      "traits": "small hunched green-grey figure sitting cross-legged on the flattened top of a palisade stake, staring west, scratched itself and turned its head toward the west track",
+      "status": "alive",
+      "location": "realm.duskreach",
+      "created": {
+       "turn": 13,
+       "minute": 780
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 28
+      },
+      "card": {},
+      "species": "goblin lookout",
+      "anchor": "goblin"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "mon.mongoblin_lookout",
+     "band": "LONG"
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mongoblin_lookout",
+     "set": {
+      "life_stage": "adult"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mongoblin_lookout",
+     "set": {
+      "profile": {
+       "model": "creature",
+       "anchor": "goblin",
+       "body_plan": "Goblin-like",
+       "level": 2,
+       "rank": "F",
+       "type": "normal",
+       "max_hp": 54,
+       "atk": 13,
+       "def": 1,
+       "mdef": 1,
+       "init": 8,
+       "attack": {
+        "name": "Crude knife",
+        "damage_type": "physical",
+        "range": "ENGAGED",
+        "weapon": true
+       },
+       "temperament": "cautious",
+       "gear": {
+        "weapon": {
+         "name": "Crude knife",
+         "item": "Crude Goblin Lookout Knife",
+         "attack": "Crude knife",
+         "family": "melee",
+         "slot": "weapon",
+         "atk": 2,
+         "matk": 0,
+         "from": "loadout"
+        },
+        "source": "default"
+       }
+      }
+     }
+    },
+    "rng_to": 4
+   },
+   {
+    "t": "scene.awareness",
+    "d": {
+     "id": "mon.mongoblin_lookout",
+     "level": "unaware"
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t13.m28.d5_4.1",
+      "s": "loc.mossback_warrens",
+      "p": "palisade",
+      "o": "a broken line of blackened rotted stakes crowns the hill; four stakes still stand at the west end",
+      "since": {
+       "turn": 13,
+       "minute": 780
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 28,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 15,
+     "why": "travel",
+     "travellers": [
+      "pc"
+     ]
+    }
+   },
+   {
+    "t": "resource.changed",
+    "d": {
+     "id": "pc",
+     "resource": "mp",
+     "value": 57,
+     "why": "travel",
+     "fraction": 2400
+    }
+   },
+   {
+    "t": "dungeon.booked",
+    "d": {
+     "id": "loc.mossback_warrens",
+     "to": 795
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t13.m28.ep",
+      "turn": 13,
+      "minute": 795,
+      "text": "east fold below the moss-grown hill: {pc}: \"no need *i say and then start walking towards teh dungeon again. but once i get close i crouch and sneak around to find the goblin outpost Dammar told me about*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "mon.mongoblin_lookout"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "realm.duskreach",
+      "place": "east fold below the moss-grown hill",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 28
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 13,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 1,
+      "features": 0,
+      "objects": 0,
+      "places": 1,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 62159,
+     "repaired": true,
+     "deltas": 5,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 29,
+  "user": true,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 14,
+     "input_hash": "05116ae3",
+     "input": "Flame Lance → Goblin Lookout A · 16 MP"
+    }
+   },
+   {
+    "t": "encounter.started",
+    "d": {
+     "encounter": {
+      "id": "enc.t14",
+      "phase": "ACTIVE",
+      "round": 1,
+      "order": [
+       "mon.mongoblin_lookout",
+       "pc"
+      ],
+      "turn_index": 1,
+      "current": "pc",
+      "combatants": {
+       "pc": {
+        "id": "pc",
+        "name": "Alaric",
+        "side": "pc",
+        "model": "character",
+        "fixed": {
+         "level": 2,
+         "rank": "F",
+         "class": "mage",
+         "stats": {
+          "STR": 5,
+          "VIT": 5,
+          "AGI": 5,
+          "INT": 11,
+          "PER": 5,
+          "WIL": 6
+         },
+         "max_hp": 85,
+         "max_mp": 112,
+         "max_sta": 100,
+         "atk": 0,
+         "matk": 10,
+         "def": 3,
+         "mdef": 4,
+         "init": 7,
+         "type": "normal",
+         "actions": {
+          "mage.basic_attack": {
+           "prof": 1,
+           "pp": 0
+          },
+          "mage.flame_lance": {
+           "prof": 1,
+           "pp": 18
+          },
+          "mage.arcane_wave": {
+           "prof": 1,
+           "pp": 0
+          }
+         },
+         "weapon_family": "focus",
+         "temperament": null,
+         "sapient": true
+        },
+        "current": {
+         "hp": 80,
+         "mp": 41,
+         "sta": 100,
+         "ammo": {},
+         "band": null,
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        }
+       },
+       "mon.mongoblin_lookout": {
+        "id": "mon.mongoblin_lookout",
+        "name": "Goblin Lookout A",
+        "side": "hostile",
+        "model": "creature",
+        "fixed": {
+         "level": 2,
+         "rank": "F",
+         "type": "normal",
+         "body_plan": "Goblin-like",
+         "max_hp": 54,
+         "atk": 13,
+         "def": 1,
+         "mdef": 1,
+         "init": 8,
+         "attack": {
+          "name": "Crude knife",
+          "damage_type": "physical",
+          "range": "ENGAGED",
+          "weapon": true
+         },
+         "temperament": "cautious",
+         "sapient": false,
+         "defeat_xp": 130
+        },
+        "current": {
+         "hp": 0,
+         "band": "LONG",
+         "cover": "none",
+         "effects": [],
+         "defeated": true,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Goblin Lookout A"
+       }
+      },
+      "pc_rank": "F",
+      "pending_xp": 130,
+      "defeated": [
+       "mon.mongoblin_lookout"
+      ],
+      "escaped": [],
+      "trigger": {
+       "actor": "pc",
+       "target": "mon.mongoblin_lookout",
+       "skill": "mage.flame_lance",
+       "move": null,
+       "move_target": null
+      },
+      "log": [
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "mon.mongoblin_lookout",
+        "opening": true,
+        "cost": {
+         "resource": "mp",
+         "amount": 16,
+         "before": 57,
+         "after": 41
+        },
+        "skill": "mage.flame_lance",
+        "skill_name": "Flame Lance",
+        "raw": 52.125,
+        "raw_text": "16 + INT 11×2.375 + MATK 10 = 52.125",
+        "strikes": [
+         {
+          "target": "mon.mongoblin_lookout",
+          "crit": {
+           "ambush": true,
+           "multiplier": 1.5
+          },
+          "power": 52.125,
+          "defense": 1,
+          "post_def": 51.125,
+          "variance": 0.94,
+          "final": 72,
+          "absorbed": 0,
+          "hp_before": 54,
+          "hp_after": 0,
+          "steps": [
+           "Raw 52.125",
+           "MDEF 1: max(52.125-1, 52.125×0.10) = 51.125",
+           "×0.94 variance = 48.0575",
+           "×1.5 Ambush Crit = 72.08625",
+           "round once = 72"
+          ],
+          "defeated": true
+         }
+        ],
+        "pending_xp_added": 130,
+        "note": "Opening Action (true Ambush: every strike is a Critical Hit ×1.5)"
+       }
+      ],
+      "opening": true,
+      "started": {
+       "turn": 14,
+       "minute": 795
+      },
+      "intents": {},
+      "ambush": true,
+      "ambush_reason": "target awareness: unaware -> true Ambush (Opening Action: guaranteed Critical Hit ×1.5)",
+      "career": {
+       "damage": {
+        "mon.mongoblin_lookout": 54
+       },
+       "personal": {
+        "mon.mongoblin_lookout": 54
+       }
+      },
+      "trigger_done": true,
+      "pp": {
+       "used": {
+        "mage.flame_lance": "an attack on a foe"
+       },
+       "wait": null,
+       "threatened": false,
+       "last": "mage.flame_lance",
+       "answer": "mage.flame_lance",
+       "guarding": null,
+       "offense": {
+        "mage.flame_lance": true
+       }
+      },
+      "round_marker": 1.01
+     }
+    },
+    "rng_to": 5
+   },
+   {
+    "t": "scene.awareness",
+    "d": {
+     "id": "mon.mongoblin_lookout",
+     "level": "aware"
+    }
+   },
+   {
+    "t": "resource.changed",
+    "d": {
+     "id": "pc",
+     "resource": "mp",
+     "value": 41
+    }
+   },
+   {
+    "t": "entity.status",
+    "d": {
+     "id": "mon.mongoblin_lookout",
+     "status": "dead"
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.mon.mongoblin_lookout.status.t14",
+      "s": "mon.mongoblin_lookout",
+      "p": "status",
+      "o": "dead",
+      "since": {
+       "turn": 14,
+       "minute": 795
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.9,
+      "hard": true,
+      "source": {
+       "kind": "engine",
+       "encounter": "enc.t14"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "pc",
+     "about": "f.mon.mongoblin_lookout.status.t14",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 14,
+     "minute": 795
+    }
+   },
+   {
+    "t": "xp.changed",
+    "d": {
+     "id": "pc",
+     "xp": 210,
+     "amount": 130,
+     "reason": "Combat XP (Goblin Lookout A 130)"
+    }
+   },
+   {
+    "t": "level.up",
+    "d": {
+     "id": "pc",
+     "level": 3,
+     "xp_after": 10,
+     "free_points": 5,
+     "favored": [],
+     "rank": "F"
+    }
+   },
+   {
+    "t": "skill.progress",
+    "d": {
+     "id": "pc",
+     "skill": "mage.flame_lance",
+     "name": "Flame Lance",
+     "gained": 18,
+     "from": {
+      "prof": 1,
+      "pp": 18
+     },
+     "to": {
+      "prof": 1,
+      "pp": 36
+     },
+     "need": 75,
+     "why": "an attack on a foe in enc.t14",
+     "key": "fight:enc.t14:mage.flame_lance"
+    }
+   },
+   {
+    "t": "career.recorded",
+    "d": {
+     "source": "fight:enc.t14",
+     "stats": {
+      "fights_won": 1,
+      "foes_defeated": 1,
+      "stronger_defeated": 0,
+      "extraordinary_wins": 0
+     },
+     "feats": [],
+     "style": {
+      "Arcane": 1,
+      "offense": 1
+     }
+    }
+   },
+   {
+    "t": "encounter.ended",
+    "d": {
+     "id": "enc.t14",
+     "summary": {
+      "defeated": [
+       "mon.mongoblin_lookout"
+      ],
+      "escaped": [],
+      "xp_awarded": 130,
+      "pc_dead": false,
+      "pc_escaped": false,
+      "pp": [
+       {
+        "skill": "mage.flame_lance",
+        "gained": 18,
+        "from": {
+         "prof": 1,
+         "pp": 18
+        },
+        "to": {
+         "prof": 1,
+         "pp": 36
+        },
+        "need": 75
+       }
+      ]
+     }
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.enc.t14",
+      "turn": 14,
+      "minute": 795,
+      "text": "Fight at east fold below the moss-grown hill: {pc} (Flame Lance) vs the small hunched green-grey figure sitting  — killed.",
+      "who": [
+       "pc",
+       "mon.mongoblin_lookout"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "realm.duskreach",
+      "place": "east fold below the moss-grown hill",
+      "importance": 7,
+      "kind": "combat"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.mongoblin_lookout",
+     "set": {
+      "looted": "enc.t14"
+     }
+    }
+   },
+   {
+    "t": "coin.changed",
+    "d": {
+     "id": "pc",
+     "value": 33,
+     "delta": 3,
+     "why": "loot"
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "combat",
+      "started": {
+       "reason": "target awareness: unaware -> true Ambush (Opening Action: guaranteed Critical Hit ×1.5)",
+       "order": "Goblin Lookout A > Alaric",
+       "ambush": true
+      },
+      "records": [
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "mon.mongoblin_lookout",
+        "opening": true,
+        "cost": {
+         "resource": "mp",
+         "amount": 16,
+         "before": 57,
+         "after": 41
+        },
+        "skill": "mage.flame_lance",
+        "skill_name": "Flame Lance",
+        "raw": 52.125,
+        "raw_text": "16 + INT 11×2.375 + MATK 10 = 52.125",
+        "strikes": [
+         {
+          "target": "mon.mongoblin_lookout",
+          "crit": {
+           "ambush": true,
+           "multiplier": 1.5
+          },
+          "power": 52.125,
+          "defense": 1,
+          "post_def": 51.125,
+          "variance": 0.94,
+          "final": 72,
+          "absorbed": 0,
+          "hp_before": 54,
+          "hp_after": 0,
+          "steps": [
+           "Raw 52.125",
+           "MDEF 1: max(52.125-1, 52.125×0.10) = 51.125",
+           "×0.94 variance = 48.0575",
+           "×1.5 Ambush Crit = 72.08625",
+           "round once = 72"
+          ],
+          "defeated": true
+         }
+        ],
+        "pending_xp_added": 130,
+        "note": "Opening Action (true Ambush: every strike is a Critical Hit ×1.5)"
+       }
+      ],
+      "illegal": null,
+      "next": null,
+      "board": {
+       "round": 1,
+       "order": [
+        {
+         "id": "mon.mongoblin_lookout",
+         "init": 8
+        },
+        {
+         "id": "pc",
+         "init": 7
+        }
+       ],
+       "hp": [
+        {
+         "id": "mon.mongoblin_lookout",
+         "hp": 0,
+         "max": 54,
+         "state": "defeated",
+         "band": "LONG",
+         "cover": "none"
+        },
+        {
+         "id": "pc",
+         "hp": 80,
+         "max": 85,
+         "state": null
+        }
+       ],
+       "labels": {
+        "mon.mongoblin_lookout": "Goblin Lookout A"
+       },
+       "pc": {
+        "mp": 41,
+        "max_mp": 112,
+        "sta": 100,
+        "max_sta": 100,
+        "arrows": 0
+       }
+      },
+      "ended": {
+       "defeated": [
+        "mon.mongoblin_lookout"
+       ],
+       "escaped": [],
+       "xp_awarded": 130,
+       "pc_dead": false,
+       "pc_escaped": false,
+       "pp": [
+        {
+         "skill": "mage.flame_lance",
+         "gained": 18,
+         "from": {
+          "prof": 1,
+          "pp": 18
+         },
+         "to": {
+          "prof": 1,
+          "pp": 36
+         },
+         "need": 75
+        }
+       ]
+      },
+      "levelups": [
+       "Level 3"
+      ],
+      "loot": [
+       "Crude Goblin Lookout Knife — broken, nothing worth taking",
+       "3 cp"
+      ],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": []
+      },
+      "c": true
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 30,
+  "user": false,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t14.m30.d1.1",
+      "s": "loc.east_fold_below_the_moss_grown_hill",
+      "p": "goblin_voices",
+      "o": "a snatch of high chattering voices, two or three, from the burnt doorway below the palisade",
+      "since": {
+       "turn": 14,
+       "minute": 795
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 30,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "thread.set",
+    "d": {
+     "thread": {
+      "id": "thread.t14.1",
+      "text": "Two or three goblins chatter from the burnt doorway on the far side of the palisade, unaware of the lookout's death",
+      "kind": "sign",
+      "status": "open",
+      "since": {
+       "turn": 14,
+       "minute": 795
+      },
+      "updated": {
+       "turn": 14,
+       "minute": 795
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 30
+      },
+      "at": "loc.east_fold_below_the_moss_grown_hill"
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 23954,
+     "repaired": false,
+     "deltas": 2,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 33,
+  "user": true,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "stat.assigned",
+    "d": {
+     "id": "pc",
+     "stat": "INT",
+     "amount": 2
+    }
+   },
+   {
+    "t": "stat.assigned",
+    "d": {
+     "id": "pc",
+     "stat": "WIL",
+     "amount": 1
+    }
+   },
+   {
+    "t": "stat.assigned",
+    "d": {
+     "id": "pc",
+     "stat": "AGI",
+     "amount": 2
+    }
+   }
+  ]
+ },
+ {
+  "i": 35,
+  "user": true,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 15,
+     "input_hash": "586c70d2",
+     "input": "*i sneak towards the other voices*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 6283,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "go",
+       "to": {
+        "new": "toward the voices"
+       },
+       "quote": "i sneak towards the other voices",
+       "within": null,
+       "manner": {
+        "kind": "stealth",
+        "scope": "action"
+       }
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "go",
+     "status": "authorized",
+     "quote": "i sneak towards the other voices"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 15,
+     "at": "loc.east_fold_below_the_moss_grown_hill",
+     "exposure": "scene",
+     "frame": "wild",
+     "phase": "day",
+     "base": 20,
+     "misses_before": 1,
+     "p": 23,
+     "roll": 16.1,
+     "open": true,
+     "kind": "strange",
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. GOES — to toward the voices (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+      ],
+      "extra": [
+       "SNEAKING TRAVEL — movement and its approach are one action. The quiet approach applies to this actual leg, not to future journeys. Detection is PENDING: the engine checks against actual occupants after confirmed arrival and Dungeon population. A blocked way stays blocked. Do not invent discovery, guaranteed concealment, Ambush, further movement or an attack before the check.",
+       "PULSE (the engine's; day, out in the land) — ONE concrete thing happens around him that he notices: something STRANGE: an odd light, sound, magic or wonder; it has no effect on him unless he acts on it. It takes nothing of his, moves him nowhere and binds him to nothing; what he does about it is his decision. If nothing of this kind can fit the scene, nothing happens."
+      ],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "i sneak towards the other voices"
+       }
+      ],
+      "expected_keys": {
+       "1": "go"
+      },
+      "auth": {
+       "go": {
+        "seq": 1,
+        "to": null,
+        "name": "toward the voices",
+        "hall": false,
+        "newName": "toward the voices",
+        "mode": "travel",
+        "enter": null,
+        "scope": null,
+        "manner": {
+         "kind": "stealth",
+         "scope": "action"
+        }
+       },
+       "gos": [
+        {
+         "seq": 1,
+         "to": null,
+         "name": "toward the voices",
+         "hall": false,
+         "newName": "toward the voices",
+         "mode": "travel",
+         "enter": null,
+         "scope": null,
+         "manner": {
+          "kind": "stealth",
+          "scope": "action"
+         }
+        }
+       ],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 720,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "wild",
+        "phase": "day",
+        "p": 23,
+        "roll": 16.1,
+        "misses": 1,
+        "open": true,
+        "kind": "strange"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 36,
+  "user": false,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 2,
+      "type": "arrive",
+      "evidence": "the palisade's stakes stood between him and the sky; the voices came from just inside",
+      "at": {
+       "new": {
+        "name": "Mine adit mouth of the Mossback Warrens",
+        "kind": "interior",
+        "parent": "loc.mossback_warrens"
+       }
+      },
+      "with": null,
+      "forced_by": null
+     },
+     "rule": "passage",
+     "reason": "Mine adit mouth of the Mossback Warrens lies in Mossback Warrens, where he did not set out for"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 3,
+      "type": "creature.new",
+      "ref": "mon.goblin_arguers",
+      "species": "goblin",
+      "anchor": "goblin",
+      "desc": [
+       "two goblins just inside the adit, out of sight below the lip of the doorway, one eating, arguing about a four-legged count"
+      ],
+      "count": 2,
+      "present": true,
+      "band": "SHORT",
+      "threat": null,
+      "population": "independent",
+      "life_stage": "adult",
+      "armed": null,
+      "cluster": null,
+      "stronger": null,
+      "more": null
+     },
+     "rule": "scene_context",
+     "reason": "ambiguous local scene after an unconfirmed arrival; here is not evidence"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 4,
+      "type": "thread",
+      "id": "thread.t14.1",
+      "text": "The chatter from the burnt doorway resolved into two goblins just inside the adit, arguing over a four-legged count",
+      "kind": "sign",
+      "status": "resolved",
+      "resolution": "Alaric crept close enough to place the voices: two goblins in the first ten paces of the tunnel",
+      "who": []
+     },
+     "rule": "scene_context",
+     "reason": "ambiguous local scene after an unconfirmed arrival; here is not evidence"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 5,
+      "type": "thread",
+      "id": null,
+      "text": "A cold green shimmer, not firelight, pulses from deeper down the passage below the goblins; the goblins no longer look at it",
+      "kind": "mystery",
+      "status": "open",
+      "who": [],
+      "resolution": null
+     },
+     "rule": "scene_context",
+     "reason": "ambiguous local scene after an unconfirmed arrival; here is not evidence"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 1,
+      "type": "time",
+      "during": "travel",
+      "evidence": "worked his way along the hill's flank toward the burnt doorway",
+      "minutes": 12
+     },
+     "rule": "travel_time",
+     "reason": "No travelled leg was established for these minutes."
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t15.m36.ep",
+      "turn": 15,
+      "minute": 795,
+      "text": "east fold below the moss-grown hill: {pc}: \"*i sneak towards the other voices*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "realm.duskreach",
+      "place": "east fold below the moss-grown hill",
+      "importance": 2,
+      "kind": "episode",
+      "msg": 36
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 15,
+     "rolled": true,
+     "open": true,
+     "kind": "strange",
+     "narrated": "none",
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 40902,
+     "repaired": false,
+     "deltas": 5,
+     "rejected": 5
+    }
+   }
+  ]
+ },
+ {
+  "i": 37,
+  "user": true,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 16,
+     "input_hash": "f4346be6",
+     "input": "*i sneak closer to the goblins*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 19252,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "go",
+       "to": {
+        "new": "closer to the goblins"
+       },
+       "quote": "i sneak closer to the goblins",
+       "within": null,
+       "manner": {
+        "kind": "stealth",
+        "scope": "action"
+       }
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "go",
+     "status": "authorized",
+     "quote": "i sneak closer to the goblins"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 16,
+     "at": "loc.east_fold_below_the_moss_grown_hill",
+     "exposure": "scene",
+     "frame": "wild",
+     "phase": "day",
+     "base": 20,
+     "misses_before": 0,
+     "p": 20,
+     "roll": 47.39,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. GOES — to closer to the goblins (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+      ],
+      "extra": [
+       "SNEAKING TRAVEL — movement and its approach are one action. The quiet approach applies to this actual leg, not to future journeys. Detection is PENDING: the engine checks against actual occupants after confirmed arrival and Dungeon population. A blocked way stays blocked. Do not invent discovery, guaranteed concealment, Ambush, further movement or an attack before the check."
+      ],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "i sneak closer to the goblins"
+       }
+      ],
+      "expected_keys": {
+       "1": "go"
+      },
+      "auth": {
+       "go": {
+        "seq": 1,
+        "to": null,
+        "name": "closer to the goblins",
+        "hall": false,
+        "newName": "closer to the goblins",
+        "mode": "travel",
+        "enter": null,
+        "scope": null,
+        "manner": {
+         "kind": "stealth",
+         "scope": "action"
+        }
+       },
+       "gos": [
+        {
+         "seq": 1,
+         "to": null,
+         "name": "closer to the goblins",
+         "hall": false,
+         "newName": "closer to the goblins",
+         "mode": "travel",
+         "enter": null,
+         "scope": null,
+         "manner": {
+          "kind": "stealth",
+          "scope": "action"
+         }
+        }
+       ],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 720,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "wild",
+        "phase": "day",
+        "p": 20,
+        "roll": 47.39,
+        "misses": 0,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 38,
+  "user": false,
+  "build": "4.3.0-c.6.6.220",
+  "events": [
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 2,
+      "type": "arrive",
+      "evidence": "put his back against the cold stone... look down the sloping mouth of the tunnel",
+      "at": {
+       "new": {
+        "name": "burnt doorway at the tunnel mouth",
+        "kind": "interior",
+        "parent": "loc.mossback_warrens"
+       }
+      },
+      "with": null,
+      "forced_by": null
+     },
+     "rule": "passage",
+     "reason": "burnt doorway at the tunnel mouth lies in Mossback Warrens, where he did not set out for"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 3,
+      "type": "creature.new",
+      "ref": "mon.doorway_goblins",
+      "species": "goblin",
+      "anchor": "goblin",
+      "desc": [
+       "two goblins on a flattened crate by the tunnel bend, playing a counting game with a knucklebone and slate",
+       "one chewing a grey haunch with a crooked knife at its belt",
+       "one thin and twitchy with a rope loop over its shoulder and a stone maul between its feet"
+      ],
+      "count": 2,
+      "present": true,
+      "band": "SHORT",
+      "cluster": null,
+      "stronger": null,
+      "threat": null,
+      "population": "independent",
+      "life_stage": "adult",
+      "armed": null,
+      "more": null
+     },
+     "rule": "scene_context",
+     "reason": "ambiguous local scene after an unconfirmed arrival; here is not evidence"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 4,
+      "type": "aware",
+      "who": "mon.doorway_goblins",
+      "level": "unaware",
+      "evidence": "Neither moved... the glow around the bend pulsed on, throwing both goblins' shadows long up the wall toward the doorway",
+      "scope": null
+     },
+     "rule": "scene_context",
+     "reason": "ambiguous local scene after an unconfirmed arrival; here is not evidence"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 5,
+      "type": "fact",
+      "s": "mon.doorway_goblins",
+      "p": "conversation",
+      "o": "spoke of a chained thing below, big as a cart, its chain rusted, and of Tolmag's order to leave it be till the new ones come"
+     },
+     "rule": "scene_context",
+     "reason": "ambiguous local scene after an unconfirmed arrival; here is not evidence"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 6,
+      "type": "thread",
+      "id": null,
+      "text": "A chained creature 'big as a cart' is kept somewhere down past the green-lit bend; its chain is rusted, and Tolmag has ordered the goblins to leave it be until 'the new ones' come",
+      "kind": "mystery",
+      "status": "open",
+      "who": [],
+      "resolution": null
+     },
+     "rule": "scene_context",
+     "reason": "ambiguous local scene after an unconfirmed arrival; here is not evidence"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 7,
+      "type": "thread",
+      "id": "thread.t14.1",
+      "text": "The two chattering goblins from the burnt doorway were found: they sit on a crate at the tunnel bend, playing a counting game",
+      "kind": "sign",
+      "status": "resolved",
+      "resolution": "Alaric crept to the doorway and saw the two goblins at their crate",
+      "who": []
+     },
+     "rule": "scene_context",
+     "reason": "ambiguous local scene after an unconfirmed arrival; here is not evidence"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 1,
+      "type": "time",
+      "during": "travel",
+      "evidence": "Alaric crossed the last stretch in a crouch, from slab shadow to the blackened jamb of the doorway",
+      "minutes": 4
+     },
+     "rule": "travel_time",
+     "reason": "No travelled leg was established for these minutes."
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t16.m38.ep",
+      "turn": 16,
+      "minute": 795,
+      "text": "east fold below the moss-grown hill: {pc}: \"*i sneak closer to the goblins*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "realm.duskreach",
+      "place": "east fold below the moss-grown hill",
+      "importance": 2,
+      "kind": "episode",
+      "msg": 38
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 16,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 62197,
+     "repaired": false,
+     "deltas": 7,
+     "rejected": 7
+    }
+   }
+  ]
+ }
+]

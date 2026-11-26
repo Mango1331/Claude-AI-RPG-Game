@@ -487,12 +487,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     let bookedLeft = booked;
     let timeUsed = booked;
     let travelMinutes = 0;
-    let travellers = null;
-    const pendingRoadTime = [];
+    let lastRoadLeg = null;
+    const reportedArrivals = steps.map(({d}) => d).filter(d => d.type === 'arrive');
+    let pendingRoadTime = [];
     const actions = (outcome.resolutions || []).filter(r => ['resolved','authorized'].includes(r.status));
     const activities = actions.filter(r => r.type === 'activity');
     const journeyTime = explicitTravel && !s.encounter && (auth.gos || []).length > 0;
-    function bookRoadTime(minutes) {
+    function bookRoadTime(minutes, travellers) {
         if (!minutes) return;
         const owner = step;
         step = {kind:'engine'};
@@ -1185,11 +1186,20 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         switch (d.type) {
             case 'time': {
                 if (inventedWorkTime) { reject(d, 'private_work', 'accepting a job does not authorize its narrated working time'); break; }
-                const onRoad = journeyTime && d.during !== 'scene' &&
-                    (d.during === 'travel' || (!activities.length && !booked));
-                const covered = onRoad && d.during === 'travel' ? 0 : Math.min(bookedLeft, d.minutes);
+                const next = reportedArrivals.find(a => a.seq > d.seq);
+                const previous = reportedArrivals.findLast(a => a.seq < d.seq);
+                const atLast = lastRoadLeg && lastRoadLeg.seq === (previous?.seq ?? null);
+                const scoped = atLast && d.scene && d.scene !== 'here' && samePlace(s,d.scene,lastRoadLeg.at,content);
+                const end = scoped ? null : next?.seq ?? null;
+                // Legacy time has no activity tag. A span already accounted for cannot authorize
+                // another anonymous duration after that arrival.
+                const legacyRoad = d.during == null && !activities.length && !booked
+                    && !(end == null && atLast && lastRoadLeg.measured);
+                const onRoad = journeyTime && (d.during === 'travel' || legacyRoad);
+                const separateSpan = d.during === 'event' || (onRoad && d.during === 'travel');
+                const covered = separateSpan ? 0 : Math.min(bookedLeft, d.minutes);
                 bookedLeft -= covered;
-                const lost = Math.min(cutLeft, d.minutes - covered);
+                const lost = separateSpan ? 0 : Math.min(cutLeft, d.minutes - covered);
                 cutLeft -= lost;
                 if (lost) reject(d, 'rest_cut', `${lost} min of the ${pulse.interrupt.of_min} min ${pulse.interrupt.kind} the engine cut short after ${pulse.interrupt.after_min} min are not booked`);
                 const want = d.minutes - covered - lost;
@@ -1206,30 +1216,42 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     && /\b(?:minutes?|hours?|days?)\b/i.test(d.evidence)
                     && !/\b(?:alaric|he|we|they)\s+(?:slept|rested|waited|stayed)\b/i.test(d.evidence)
                     && narratedEvent(prose,d.evidence).ok;
+                if (explicitTravel && d.during === 'event' && !eventTime) {
+                    reject(d, 'time_authority', 'Event minutes need an open event and a narrated delay.');
+                    break;
+                }
                 const incidental = content.rules.time.engine_clock.go_min_same_settlement;
                 if (explicitTravel && want > 0 && !s.encounter && !onRoad && !timedAction && !ordinaryAction &&
                     (d.during === 'travel' || (want > incidental && !(want <= cap && eventTime)))) {
                     reject(d, 'time_authority', 'No chosen activity or established event accounts for this elapsed time.');
                     break;
                 }
-                const room = Math.max(0, cap - timeUsed - pendingRoadTime.reduce((n,x) => n+x.minutes,0));
+                const reserved = pendingRoadTime.reduce((n,x) => n + (x.end == null || x.end >= d.seq ? x.minutes : 0), 0);
+                const room = Math.max(0, cap - timeUsed - reserved);
                 const m = Math.min(want, room);
                 if (m < want) reject(d, 'time_cap', `${d.minutes} min exceed what this turn allows (${cap} min${auth.go ? '' : ' without travel or an activity'}); ${m} applied`);
                 if (m > 0 && onRoad) {
                     // A continued journey can advance along the same realm road without crossing a node.
                     const movement = d.evidence && /\b(?:he|alaric|the party|they)\s+(?:walked|rode|travelled|traveled|followed|continued|crossed|advanced|covered|marched|hiked|went)\b/i.test(d.evidence)
                         && narratedEvent(prose, d.evidence).ok;
-                    if (!travellers && auth.gos.length === 1 && !s.encounter && !dungeonOf(s,s.scene.at)
-                        && d.during === 'travel' && movement
-                        && firstLeg && ['travel','local'].includes(firstLeg.mode)
-                        && expected[firstLeg.seq]?.arrived === false) travellers = ['pc', ...following(s).map(m => m.who)];
-                    if (!travellers && s.places[s.scene.at]?.kind === 'realm' && actions.some(r => r.type === 'journey.continue')
-                        && (movement || /\b(?:an? (?:hour|day) on|further along|walk(?:ed|s) on|continu(?:ed|es) along)\b/i.test(prose))) {
-                        travellers = ['pc', ...following(s).filter(member => s.scene.present.includes(member.who)).map(member => member.who)];
+                    // Minutes reported before an arrival belong to that crossing. A time explicitly
+                    // filed at the previous destination may instead describe the just-completed leg.
+                    const unfinished = auth.gos.findLast(g => expected[g.seq]?.arrived === false);
+                    const partial = unfinished && ['travel','local'].includes(unfinished.mode) && !dungeonOf(s,s.scene.at)
+                        && d.during === 'travel' && movement;
+                    const continuing = s.places[s.scene.at]?.kind === 'realm' && actions.some(r => r.type === 'journey.continue')
+                        && (movement || /\b(?:an? (?:hour|day) on|further along|walk(?:ed|s) on|continu(?:ed|es) along)\b/i.test(prose));
+                    if (end != null) pendingRoadTime.push({minutes:m, delta:d, end});
+                    else if (atLast && (scoped || !unfinished || transit === lastRoadLeg.at)) {
+                        bookRoadTime(m,lastRoadLeg.travellers);
+                        lastRoadLeg.measured = true;
                     }
-                    if (travellers) bookRoadTime(m);
-                    else pendingRoadTime.push({minutes:m, delta:d});
-                } else if (m > 0) { emit({ t: 'time.advanced', d: { minutes: m, why: 'narration' } }); timeUsed += m; }
+                    else if (partial || continuing) bookRoadTime(m,['pc', ...following(s).map(member => member.who)]);
+                    else pendingRoadTime.push({minutes:m, delta:d, end:null});
+                } else if (m > 0) {
+                    emit({ t:'time.advanced', d:{ minutes:m, why:eventTime ? 'event' : 'narration' } });
+                    timeUsed += m;
+                }
                 break;
             }
             case 'arrive': {
@@ -2018,8 +2040,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     if (auth.c && arrived && arrived !== startAt && arrived !== transit && !continuation?.choice?.lodging) {
         const t = content.rules.time.engine_clock;
         const floor = settlementOf(s, startAt) === settlementOf(s, arrived) ? t.go_min_same_settlement : t.go_min_elsewhere;
-        if (journeyTime && travellers) {
-            bookRoadTime(Math.max(0, floor-travelMinutes));
+        if (journeyTime && lastRoadLeg) {
+            bookRoadTime(Math.max(0, floor-travelMinutes),lastRoadLeg.travellers);
         } else {
             const travelled = timeUsed - booked;
             if (travelled < floor) { emit({ t: 'time.advanced', d: { minutes: floor - travelled, why: 'travel' } }); timeUsed += floor - travelled; }
@@ -2540,7 +2562,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     function companions(list, d) {
         // Patch 5: the charge of a quest journey he travels on (the GO's with, along: the journey is under way) arrives
         // with him unless the story parted them; a GO that only might start it (still in town) takes no one along
-        const out = (auth.gos || []).filter((g) => g.along).flatMap((g) => g.with || []).filter((id) => s.scene.present.includes(id) && statusOf(s, id) !== 'dead');
+        const out = (auth.gos || []).filter(g => g.along).flatMap(g => g.with || []).filter(id =>
+            s.scene.present.includes(id) && statusOf(s,id) !== 'dead' && !['wait','left'].includes(s.party?.members?.[id]?.mode));
         for (const ref of Array.isArray(list) ? list : []) {
             const id = idOf(ref);
             const e = id && id !== 'pc' ? s.entities[id] : null;
@@ -3046,10 +3069,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         sceneEpoch++;
         const town = locationOf(s, id);
         const from = s.scene.at;
-        if (!voluntary) travellers = null;
+        if (!voluntary) lastRoadLeg = null;
         if (id !== from && journeyTime && voluntary) {
-            travellers = ['pc', ...following(s).filter(m => party.includes(m.who)).map(m => m.who)];
-            for (const {minutes} of pendingRoadTime.splice(0)) bookRoadTime(minutes);
+            const travellers = ['pc', ...following(s).filter(m => party.includes(m.who)).map(m => m.who)];
+            const seq = step?.type === 'arrive' ? step.seq : null;
+            const spans = pendingRoadTime.filter(x => x.end === seq);
+            lastRoadLeg = { at:id, seq, travellers, measured:spans.length > 0 };
+            if (spans.length) {
+                pendingRoadTime = pendingRoadTime.filter(x => x.end !== seq);
+                for (const span of spans) bookRoadTime(span.minutes, travellers);
+            }
         }
         // Patch 7: whether he knew a way here before he took it (else the way he took is kept). .190 (D1b): walking
         // between two rooms of a building no longer makes it a place explored room by room (only an older save's stays)

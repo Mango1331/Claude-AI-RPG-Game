@@ -96,7 +96,7 @@ export function checkTerms(state,content,lines,{text=null,credit=[],counter=fals
 // Binding evidence is a completed decision, expressed in speech or by the actor's own action.
 // Read the predicate of the whole statement; a matching verb inside a thought or question is insufficient.
 const cleanStatement=text=>text.trim().toLowerCase().replace(/^[“"«]+|[.!,”"»]+$/g,'').trim();
-function decisionOf(statement) {
+export function decisionOf(statement) {
     const words=cleanStatement(statement).replace(/^(?:i|we) /,'');
     const decision=/^(?:(do not|don't|cannot|can't|won't|will not) )?(accept(?:s|ed)?|agree(?:s|d)?|assent(?:s|ed)?|consent(?:s|ed)?|refuse[sd]?|reject(?:s|ed)?|decline[sd]?)(?: (?:to )?(?:(?:the|these|your|his|their|those) )?(?:offer|counteroffer|terms|surrender|deal|it))?$/.exec(words);
     if (decision) {

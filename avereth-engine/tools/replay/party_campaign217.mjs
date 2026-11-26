@@ -146,3 +146,40 @@ turn('We turn in the completed contract.',[{seq:1,type:'quest.turn_in',quest,quo
 assert.equal(state.entities[who].sheet.coin_cp-purse,45,'R2 one fee for the same completed work');
 assert.equal(state.party.claims[prior.id].paid,45);
 console.log('Renewal after real floor clear, one original 45 cp claim settled.');
+
+// Mutual amendment of an earned total. A payment on account remains a real payment.
+state=structuredClone(beforeReturn);
+const earned=Object.values(state.party.claims)[0];
+const payText='I give Ossen two silver toward the debt.';
+const pay={seq:1,type:'party',act:'pay',who,claim:earned.id,amount:20,money:'two silver'};
+const promised='I will give Ossen two silver tomorrow.';
+const future=playerTurnV4(state,content,promised,{c:true,commands:[{...pay,quote:'give Ossen two silver'}]});
+assert.equal(future.state.party.claims[earned.id].paid,0);
+turn(payText,[{...pay,quote:payText}]);
+const amended='Let us change my total fee to thirty copper and still fight together.';
+reply('Ossen says, "'+amended+'"',{scene:'here',expected:{},deltas:[{seq:1,type:'party',act:'offer',who,quest,
+    agreement:state.party.members[who].agreement,combat:true,amount:30,money:'thirty copper',quote:amended}]});
+const revision=Object.values(state.party.agreements).find(a=>a.phase==='open');
+assert(revision?.amends);
+turn('Yes, I accept.',[{seq:1,type:'party',act:'accept',who,agreement:revision.id,quote:'Yes, I accept.'}]);
+assert.equal(state.party.claims[earned.id].amount,30);
+assert.equal(state.party.claims[earned.id].paid,20);
+for (const dest of [root,baseAt]) travel(dest,dest,state.places[dest].name);
+const balance=state.entities[who].sheet.coin_cp;
+turn('We turn in the completed contract.',[{seq:1,type:'quest.turn_in',quest,quote:'We turn in the completed contract.'}]);
+assert.equal(state.entities[who].sheet.coin_cp-balance,10);
+console.log('Mutual amendment to 30 cp, payment on account preserved, actual final balance 10 cp.');
+
+// Represent a loaded .217 ledger with two IDs for the same work and actual prior payments.
+state=structuredClone(beforeReturn);
+const legacy=Object.values(state.party.claims)[0];
+const second=legacy.id+'.legacy';
+legacy.paid=5;
+state.party.claims[second]={...legacy,id:second,paid:15};
+for(const dest of [root,baseAt]) travel(dest,dest,state.places[dest].name);
+const priorCash=state.entities[who].sheet.coin_cp;
+turn('We turn in the completed contract.',[{seq:1,type:'quest.turn_in',quest,quote:'We turn in the completed contract.'}]);
+assert.equal(state.entities[who].sheet.coin_cp-priorCash,25);
+assert.equal(Object.values(state.party.claims).reduce((n,r)=>n+r.paid,0),45);
+assert.equal(state.party.claims[second].paid,15);
+console.log('Synthetic .217 duplicate IDs retained. Prior payments of 5 and 15 cp leave one balance of 25 cp.');

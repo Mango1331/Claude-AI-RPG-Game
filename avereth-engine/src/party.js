@@ -1,4 +1,4 @@
-import { allyAssets } from './v4/surrender.js';
+import { allyAssets, decisionOf } from './v4/surrender.js';
 import { profileOf, restoreOf, restoreEffect, rankRefusal, freeObjectId } from './v4/items.js';
 import { claim, payClaim, vestQuest, questEntitlement } from './party_rewards.js';
 import { deriveCharacter } from './derived.js';
@@ -94,16 +94,27 @@ function recipientOf(s,words,target,actor) {
     return !!receiver && new RegExp('\\b(?:giv(?:e|es)|gave|hand(?:s|ed)?|pass(?:es|ed)?|pay(?:s)?|paid|to)\\s+(?:over\\s+)?(?:'+receiver+')\\b','i').test(words);
 }
 
+// A named fee is owed by the contractor to the partner. A reversed
+// payment or an explicit third beneficiary cannot be encoded by these terms.
+function wrongFeeRecipient(s,words,who,actor) {
+    const excluded=[actor==='pc'?'me':'you',escapedName(s.entities.pc.name),
+        ...s.scene.present.filter(id=>id!=='pc' && id!==who).map(id=>escapedName(s.entities[id]?.name))];
+    const recipient='(?:'+excluded.filter(Boolean).join('|')+')';
+    return new RegExp('\\b(?:pay|owe|for|to)\\s+'+recipient+'\\b','i').test(words);
+}
+
 function unchangedAnswer(s,content,agreement,words,statement,actor) {
     const terms=agreement.terms;
     statement=withoutAddress(s,statement);
-    if (!yes.test(statement) || statement.includes('?') || no.test(words) || negated.test(words) || qualified.test(words)) return false;
+    if (!(yes.test(statement) || decisionOf(statement)==='accept') || statement.includes('?') ||
+        words.split(/[.!?;\n]/).some(part=>decisionOf(part)==='refuse') || no.test(words) || negated.test(words) || qualified.test(words)) return false;
     const fee=terms.half ? Math.floor((s.quests[terms.quest]?.payout_cp || 0)/2) : terms.cp;
     const money=coinEvidence(words,content);
     if (!money.complete || money.sums.some(sum=>sum.cp!==fee)) return false;
     if (/\bhalf\b/i.test(words) && !terms.half && terms.loot?.kind!=='proceeds') return false;
     // A changed fraction, an extra asset or a new obligation is a fresh offer.
     if (/\b(?:third|quarter|percent|thirds|quarters|instead|extra|additional|also give|only)\b|\d\s*[%/]/i.test(words)) return false;
+    if (!terms.half && money.sums.length && wrongFeeRecipient(s,words,agreement.who,actor)) return false;
     const names=s.scene.present.filter(id=>id!=='pc' && id!==agreement.who).map(id=>escapedName(s.entities[id]?.name)).filter(Boolean);
     if (money.sums.length && names.some(name=>new RegExp('\\b'+name+'\\b','i').test(words))) return false;
     const goods=terms.loot?.goods;
@@ -139,20 +150,20 @@ function performed(s,source,c,actor,words) {
 
 function termsFrom(s, content, c, words, actor) {
     if (c.quest && s.quests[c.quest]?.status !== 'active') return null;
-    const terms = { quest:c.quest || null, combat:c.combat === true, text:words };
+    const terms = { quest:c.quest || null, combat:c.combat === true, text:c.quote };
     if (terms.combat && !together.test(words) && !/\b(?:fight|battle|guard|protect|defend)\b/i.test(words)) return null;
     const half = halfShare.test(words);
     if (c.share === 'half' && (!half || !terms.quest)) return null;
-    if (half && c.share !== 'half' && !c.loot) return null;
+    if (half && c.share !== 'half' && !c.loot || c.share==='half' && !halfShare.test(c.quote)) return null;
     const amounts=coinEvidence(words,content);
     const fee=c.share==='half' ? Math.floor(s.quests[c.quest].payout_cp/2) : c.amount;
-    if (!amounts.complete || amounts.sums.some(sum=>sum.cp!==fee)) return null;
+    if (!amounts.complete || amounts.sums.some(sum=>sum.cp!==fee) || (c.amount && wrongFeeRecipient(s,words,c.who,actor))) return null;
     if (fee && /\b(?:additional|extra|on top of)\b/i.test(words)) return null;
     if (terms.combat && (actor==='pc' ? /\b(?:follow my (?:lead|orders)|I (?:choose|call) (?:our|the) targets)\b/i :
         /\b(?:follow your (?:lead|orders)|you (?:choose|call) (?:our|the) targets)\b/i).test(words)) terms.tactics=true;
     if (c.share === 'half') terms.half = true;
     if (c.amount != null) {
-        const m = moneyLiteral(words, c.money || '', { content });
+        const m = moneyLiteral(words, c.money || '', { content, within:findQuote(words,c.quote) });
         if (!c.quest || m.cp !== c.amount || !Number.isSafeInteger(c.amount) || c.amount <= 0 || terms.half) return null;
         terms.cp = c.amount;
     }
@@ -198,7 +209,7 @@ export function partyDecision(s, content, command, source, actor, emit, contract
     const member = s.party?.members?.[who];
     const open = agreementsOf(s).filter(a => a.who === who && a.phase === 'open');
     let agreement = c.agreement ? s.party?.agreements?.[c.agreement] : open.length === 1 ? open[0] : null;
-    const sourceRef = { actor, quote:c.quote, turn:s.turn, at:s.scene.at };
+    const sourceRef = { actor, quote:['accept','decline'].includes(c.act) ? statement : c.quote, turn:s.turn, at:s.scene.at };
     const memberEvent = (mode, extras={}) => emit({t:'party.member',d:{...member,who,mode,at:s.scene.at,source:sourceRef,previous:member?.revision || 0, ...extras}});
     if (c.act === 'offer') {
         if ((!together.test(c.quote) && !member) || no.test(statement) || negated.test(statement)) return failure('Quote the specific voluntary offer.');
@@ -206,15 +217,21 @@ export function partyDecision(s, content, command, source, actor, emit, contract
         if (!terms) return failure('The work and compensation must match the quoted terms.');
         const id = 'party.'+who+'.'+s.turn+'.'+hash32(JSON.stringify([actor,c.seq,c.quote]));
         if (s.party?.agreements?.[id]) return failure('Offer already recorded.');
+        const priorAgreement=s.party?.agreements?.[member?.agreement];
+        const amends=c.agreement && c.agreement===priorAgreement?.id && terms.quest &&
+            terms.quest===priorAgreement.terms.quest && (terms.half || terms.cp) && /\b(?:revise|amend|change|replace)\b/i.test(statement);
+        if ((c.agreement || priorAgreement && /\b(?:amend|revise|replace)\b/i.test(statement)) && !amends && agreement?.phase!=='open') return failure('Identify the current agreement being changed.');
         for (const prior of open.filter(a=>a.terms.quest===terms.quest))
             emit({t:'party.agreement',d:{...prior,phase:'superseded',previous:prior.revision}});
-        emit({t:'party.agreement',d:{id,who,phase:'open',terms,proposer:actor,source:sourceRef,previous:0}});
+        emit({t:'party.agreement',d:{id,who,phase:'open',terms,...(amends?{amends:c.agreement}:{}),proposer:actor,source:sourceRef,previous:0}});
     } else if (['accept','decline'].includes(c.act)) {
         if (!agreement || agreement.who !== who || agreement.phase !== 'open' || agreement.proposer === actor) return failure('Identify one current offer from the other party.');
+        const answer=withoutAddress(s,statement);
         if (c.act === 'accept' ? !unchangedAnswer(s,content,agreement,words,statement,actor) :
-            statement.includes('?') || qualified.test(statement) || !(no.test(statement) || /^(?:no|no thanks)[.!]?$/i.test(statement)))
+            answer.includes('?') || qualified.test(answer) || !(decisionOf(answer)==='refuse' || /^(?:no thanks|I (?:decline|refuse|won't|will not))\b/i.test(answer)))
             return failure('Quote a definite response to the unchanged terms.');
         const accepts = c.act === 'accept';
+        if (accepts && agreement.amends && member?.agreement!==agreement.amends) return failure('The agreement being amended has changed.');
         if (accepts && agreement.terms.quest) {
             const q = s.quests[agreement.terms.quest];
             if (!q || q.status !== 'active') return failure('Quest is no longer active.');
@@ -227,6 +244,7 @@ export function partyDecision(s, content, command, source, actor, emit, contract
                 const other=s.party.agreements[m.agreement];
                 if (other?.terms.quest===q.id) reserve(m.who,cost(other));
             }
+            if (agreement.amends) reserved.set(who,vested.filter(r=>r.who===who).reduce((n,r)=>n+r.paid,0));
             reserve(who,cost(agreement));
             if ([...reserved.values()].reduce((n,cp)=>n+cp,0) > q.payout_cp) return failure('The promised shares exceed this reward.');
         }
@@ -237,6 +255,10 @@ export function partyDecision(s, content, command, source, actor, emit, contract
         if (accepts) {
             memberEvent(member?.mode==='wait'?'wait':'follow',{agreement:agreement.id,combat:agreement.terms.combat});
             if (agreement.terms.combat) bindPartyEquipment(s,who,emit);
+            if (agreement.amends && claimsOf(s).some(r=>r.who===who && r.source===agreement.terms.quest)) {
+                const amount=agreement.terms.half ? Math.floor(s.quests[agreement.terms.quest].payout_cp/2) : agreement.terms.cp;
+                if (amount!=null) claim(s,emit,agreement,agreement.terms.quest,amount,{amend:true});
+            }
             if (agreement.terms.due === 'advance') {
                 const row = claim(s,emit,agreement,agreement.terms.quest,agreement.terms.cp);
                 payClaim(s,emit,row,Math.min(agreement.terms.cp,row.amount)-row.paid);
@@ -305,7 +327,8 @@ export function partyDecision(s, content, command, source, actor, emit, contract
         if (!member || (!member.combat && !['watch','rest'].includes(c.priority)) || member.mode!=='follow') return failure('Only a present combat partner can coordinate.');
         const kinds={target:/\b(?:target|attack|shoot|take on|focus)\b/i,protect:/\b(?:guard|cover|protect|shield|(?:keep|hold)\b[^.!?]*?\b(?:off|away from)|defend)\b/i,independent:/\b(?:independent|own|your call|freely)\b/i,front:/\b(?:front|point|ahead|lead)\b/i,rear:/\b(?:rear|behind|back)\b/i,watch:/\b(?:watch|lookout|sentry)\b/i,rest:/\b(?:rest|sleep|stand down)\b/i};
         const matchesRequest=actor===who && member.request?.kind===c.priority && member.request?.target===(c.target || null);
-        if (matchesRequest && (/^(?:no|no thanks)[.!]?$/i.test(words.trim()) || no.test(words))) {
+        if (matchesRequest && !qualified.test(statement) && !statement.includes('?') &&
+            (decisionOf(statement)==='refuse' || /^(?:no thanks|I (?:refuse|decline|will not|won't))\b/i.test(statement))) {
             memberEvent(member.mode,{request:null});
             return {status:'resolved',done:true,line:person.name+' declined the request.'};
         }

@@ -32,6 +32,16 @@ for (const [message,quote,accept] of [
     await player(ch,message,{act:'accept',agreement:id,quote});
     check('R1 '+message,Boolean(state(ch).party.members[who])===accept);
 }
+const refusal=structuredClone(prefix);
+await player(refusal,'No deal.',{act:'decline',agreement:id,quote:'No deal.'});
+check('R1 definite refusal',state(refusal).party.agreements[id].phase==='declined');
+const revised=structuredClone(prefix);
+await player(revised,'Can we consider different terms?');
+const revisedText='Let us fight together for thirty copper.';
+await reply(revised,'Ossen says, "'+revisedText+'"',[{...offer,share:undefined,amount:30,money:'thirty copper',quote:revisedText}]);
+check('R1 new proposal supersedes earlier proposal',state(revised).party.agreements[id].phase==='superseded');
+await player(revised,'Yes, I accept.',{act:'accept',agreement:id,quote:'Yes, I accept.'});
+check('R1 stale planner ID',!state(revised).party.members[who]);
 const joined=structuredClone(prefix);
 await player(joined,'Yes, I accept.',{act:'accept',agreement:id,quote:'Yes, I accept.'});
 await reply(joined,original[16].mes,[{type:'fact',seq:1,s:who,p:'occupation',o:'Scout — bows and traps'}]);
@@ -47,6 +57,16 @@ for (const [speech,paid] of [
     await player(ch,'What about your bow?');
     await reply(ch,'Ossen says, "'+speech+'"',[{seq:1,type:'party',who,act:'give',target:'pc',object:'worn.weapon',quote:speech}]);
     check('R3 '+speech,state(ch).objects[bow].holder.entity===(paid?'pc':who));
+}
+for (const [prose,quote,paid] of [
+    ['Ossen hands Alaric the '+name+'.','Ossen hands Alaric the '+name,true],
+    ['Ossen tells Garrick, "I give you the '+name+'."','I give you the '+name,false],
+    ['Ossen says, "I give Garrick the '+name+' because you asked."','I give Garrick the '+name,false],
+]) {
+    const ch=structuredClone(joined);
+    await player(ch,'What happens to the bow?');
+    await reply(ch,prose,[{type:'party',seq:1,who,act:'give',target:'pc',object:'worn.weapon',quote}]);
+    check('R3 recipient '+prose,state(ch).objects[bow].holder.entity===(paid?'pc':who));
 }
 const priority={act:'coordinate',priority:'protect',target:'pc'};
 for(const text of [original[17].mes,'Keep the skeletons off me.']) {

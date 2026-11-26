@@ -24,7 +24,7 @@ export function questEntitlement(rows) {
     return Math.max(0,...rows.map(r=>r.entitlement ?? r.amount),rows.reduce((n,r)=>n+r.paid,0));
 }
 
-export function claim(s, emit, agreement, source, amount) {
+export function claim(s, emit, agreement, source, amount, {amend=false}={}) {
     // A payout belongs to one worker on one quest. Actual sales keep their independent sale IDs.
     const quest=source===agreement.terms.quest && !!s.quests[source];
     const prior=quest ? Object.values(s.party.claims).filter(r=>r.source===source && r.who===agreement.who) : [];
@@ -32,7 +32,7 @@ export function claim(s, emit, agreement, source, amount) {
     const existing=s.party.claims[id];
     if (prior.length) {
         // .217 could create several versions for one fee. Preserve every payment and ID.
-        const total=Math.max(amount,questEntitlement(prior));
+        const total=amend ? Math.max(amount,prior.reduce((n,row)=>n+row.paid,0)) : Math.max(amount,questEntitlement(prior));
         const vested=total-prior.slice(1).reduce((n,r)=>n+r.paid,0);
         for (const row of prior) {
             const due=row.id===id ? vested : row.paid;
@@ -51,15 +51,14 @@ export function payClaim(s, emit, row, cp) {
     if (!row || row.revision !== s.party?.claims[row.id]?.revision || !Number.isSafeInteger(cp) || cp <= 0 || cp > row.amount - row.paid ||
         !s.scene.present.includes(row.who) || s.entities[row.who]?.status === 'dead' ||
         !s.entities[row.who]?.sheet || s.entities.pc.sheet.coin_cp < cp) return false;
-    if (s.quests[row.source]) {
-        const same=Object.values(s.party.claims).filter(r=>r.source===row.source && r.who===row.who);
-        if (same.reduce((n,r)=>n+r.paid,cp)>questEntitlement(same)) return false;
-    }
+    const same=s.quests[row.source] ? Object.values(s.party.claims).filter(r=>r.source===row.source && r.who===row.who) : [];
+    if (same.length && same.reduce((n,r)=>n+r.paid,cp)>questEntitlement(same)) return false;
     const why = 'Party agreement ' + row.agreement;
     for (const [id,delta] of [['pc',-cp],[row.who,cp]])
         emit({t:'coin.changed',d:{id,value:s.entities[id].sheet.coin_cp + delta,delta,why}});
     emit({t:'transaction.completed',d:{from:'pc',to:row.who,cp,for:why,at:s.scene.at,claim:row.id}});
     emit({t:'party.claim',d:{...row,paid:row.paid + cp,previous:row.revision}});
+    if (same.length>1) claim(s,emit,s.party.agreements[row.agreement],row.source,questEntitlement(same));
     return true;
 }
 

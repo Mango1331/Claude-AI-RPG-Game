@@ -343,7 +343,7 @@ export function allyAssets(s,content,who) {
     for(const [slot,item] of Object.entries(sh.equipment || {})) {
         const obj=s.objects[item?.object];
         const gear=typeof item==='string'?content.items.get(item):item;
-        if(gear) list.push({object:'worn.'+slot,name:gear.name,qty:1,slot,gear,ref:obj?.id});
+        if(gear) list.push({object:'worn.'+slot,name:gear.name,qty:1,slot,gear,ref:obj?.id,wornTemplate:typeof item==='string'?item:null});
     }
     for(const [id,qty] of Object.entries(sh.inventory || {})) if(!s.objects[id] && qty>0)
         list.push({object:'item.'+id,template:id,name:content.items.get(id)?.name || id,qty});
@@ -368,7 +368,7 @@ export function allyReceiptEvents(s,content,reply) {
             else {
                 if(a.template) events.push({t:'item.changed',d:{id:m.id,item:a.template,qty:-p.qty}});
                 const id='obj.'+s.encounter.negotiation.id+'.'+m.id+'.'+p.object;
-                events.push({t:'object.created',d:{object:{id,kind:'item',name:a.name,qty:p.qty,holder:recipient,...a.gear?{equipment:{...a.gear}}:{},source:{how:'given',from:m.id,template:a.template || a.gear?.id}}}});
+                events.push({t:'object.created',d:{object:{id,kind:'item',name:a.name,qty:p.qty,holder:recipient,...a.gear?{profile:{...a.gear,kind:'gear'}}:{},source:{how:'given',from:m.id,template:a.template || a.wornTemplate || a.gear?.id}}}});
             }
         }
         receipts.push({owner:m.id,object:p.object,qty:p.qty,to:reply.speaker,at:s.scene.at});

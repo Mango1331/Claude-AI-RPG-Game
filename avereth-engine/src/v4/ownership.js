@@ -17,7 +17,7 @@ export const STATE_KINDS = {
     'pc.progress': { owner: 'progression', engine: true, about: "Alaric's XP, level, stats, Skills, his creation" },
     // Patch 9B-1: the campaign's dynamic Skill definitions (skill.defined), the engine's alone
     skills: { owner: 'progression', engine: true, about: 'dynamic Skill and Passive definitions of this campaign (src/skills.js, src/passives.js)' },
-    party: { owner:'party', engine:false, about:'voluntary party agreements and membership' },
+    party: { owner:'party', engine:true, about:'voluntary party agreements and membership' },
     'pc.location': { owner: 'movement', engine: false, about: 'where Alaric is (his go, or an arrival the story shows)' },
     'quest.delivery': { owner: 'guild', engine: true, about: 'authorised physical deliveries' },
     'quest.status': { owner: 'guild', engine: true, about: "a Guild contract's formal status (accepted, completed, failed)" },
@@ -211,8 +211,8 @@ export function effectViolation(step, e, before, after) {
  * reach only through the named check (docs/ARCHITECTURE_GEN35.md §2.2). A test replays every recorded run against it.
  */
 export const DELTA_WRITES = {
-    party: { writes:['party'], gates:{entities:'owner.party_decision',objects:'owner.party_decision',
-        'pc.inventory':'owner.party_decision','pc.coin':'owner.party_decision',trade:'owner.party_decision'} },
+    party: { writes:['entities','objects','trade'], gates:{party:'owner.party_decision',
+        'pc.inventory':'owner.party_decision','pc.coin':'owner.party_decision'} },
     time: { writes: ['time'] },
     // an arrival moves him and the people with him, may create the place, starts a journey, carries or closes open
     // decisions, and fires the turn-in his own command made conditional on arriving at a Guild hall (with the engine's
@@ -221,7 +221,7 @@ export const DELTA_WRITES = {
     // hall, which take a listing off its board and show the board
     // Patch 2: and reaches a goal of his there (player.goal: the place his own goal leads to)
     // Patch 8: and counts a new part of a Living Dungeon toward its level (dungeons)
-    arrive: { writes: ['features', 'pc.location', 'scene', 'entities', 'places', 'quests', 'trade', 'knowledge', 'facts', 'memory', 'objects'], gates: { 'pc.vitals': 'conditional', dungeons: 'dungeon.part', intents: 'player.goal', 'quest.status': 'conditional', 'pc.coin': 'conditional', 'pc.progress': 'conditional', 'pc.inventory': 'conditional', 'guild.standing': 'conditional', 'guild.board': 'conditional' } },
+    arrive: { writes: ['features', 'pc.location', 'scene', 'entities', 'places', 'quests', 'trade', 'knowledge', 'facts', 'memory', 'objects'], gates: { party:'conditional', 'pc.vitals': 'conditional', dungeons: 'dungeon.part', intents: 'player.goal', 'quest.status': 'conditional', 'pc.coin': 'conditional', 'pc.progress': 'conditional', 'pc.inventory': 'conditional', 'guild.standing': 'conditional', 'guild.board': 'conditional' } },
     'person.new': { writes: ['entities', 'scene', 'facts', 'places', 'knowledge'] },
     'person.named': { writes: ['entities'] },
     // Patch 8: a creature of the encounter the engine placed ahead is that slot's individual (dungeons)
@@ -251,12 +251,12 @@ export const DELTA_WRITES = {
     recover: { writes: ['entities'], gates: { 'pc.vitals': 'player.rest' } },
     'object.new': { writes: ['objects'], gates: { 'pc.inventory': 'player.take' } },
     // a thing handed to him (a gift), or taken from where it lies by his own take
-    'object.move': { writes: ['objects'], gates: { 'pc.inventory': ['envelope.give', 'player.take', 'player.give'], 'quest.delivery': 'player.give',quests:'player.give',party:'player.give' } },
+    'object.move': { writes: ['objects','quests'], gates: { 'pc.inventory': ['envelope.give', 'player.take', 'player.give'], 'quest.delivery': 'player.give',party:'player.give' } },
     'object.mark': { writes: ['objects'] },
     // Offers may describe NPC employment (an offered private quest), or a purchase within his agreed limit.
     offer: { writes: ['trade', 'quests'], gates: { 'pc.coin': 'player.buy', 'pc.inventory': 'player.buy' } },
     // 4.3.0-c.6.6.5: a buyer's price for his things; nothing changes hands until his own acceptance
-    bid: { writes: ['trade', 'objects'], gates: { 'pc.coin': 'player.sell', 'pc.inventory': 'player.sell' } },
+    bid: { writes: ['trade', 'objects', 'entities'], gates: { party:'player.sell', 'pc.coin': 'player.sell', 'pc.inventory': 'player.sell' } },
     'coin.gift': { writes: ['trade', 'quests'], gates: { 'pc.coin': 'envelope.give' } },
     coerce: { writes: [], gates: { 'pc.coin': 'envelope.take', 'pc.inventory': 'envelope.take' } },
     'quest.offer': { writes: ['quests'] },

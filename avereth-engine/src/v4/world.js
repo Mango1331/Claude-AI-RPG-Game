@@ -1568,7 +1568,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 const who = idOf(d.who);
                 const r = cPath && rulesetOf(s)>=2 && partyDecision(s,content,{...d,who},prose,who,e=>{
                     grant('owner.party_decision');emit(e);
-                });
+                },contractReady);
                 if (!r?.done) reject(d,'party_decision',r?.reason || 'Unsupported campaign.');
                 break;
             }
@@ -2285,10 +2285,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // the alternative is kept with the contract: the turn-in accepts the short count on it (guild.js contractReady)
         emit({ t: 'quest.ready', d: { id: q.id, note: `${claimed}${short.length ? ` — ${alternative}` : ''}`.slice(0, 220), ...(short.length ? { alternative: alternative.slice(0, 200) } : {}) } });
         if (s.party) {
+            grant('quest.earned');
             const escorts = following(s).filter(m => s.party.agreements[m.agreement]?.terms.quest === q.id);
             if (escorts.length && q.journey && q.objectives?.some(o => o.verb === 'ESCORT'))
                 recordWork(s,emit,q,'escort/'+s.scene.at,['pc',...escorts.map(m=>m.who)]);
-            grant('quest.earned');vestQuest(s,emit,q);
+            vestQuest(s,emit,q);
         }
         return;
     }

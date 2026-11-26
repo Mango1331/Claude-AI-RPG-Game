@@ -1,6 +1,5 @@
 import { allyAssets } from './v4/surrender.js';
 import { profileOf, restoreOf, restoreEffect, rankRefusal, freeObjectId } from './v4/items.js';
-import { contractReady } from './v4/guild.js';
 import { claim, payClaim, vestQuest } from './party_rewards.js';
 import { deriveCharacter } from './derived.js';
 import { hash32 } from './util.js';
@@ -71,7 +70,7 @@ function termsFrom(s, content, c, words, actor) {
     return terms;
 }
 
-export function partyDecision(s, content, command, source, actor, emit) {
+export function partyDecision(s, content, command, source, actor, emit, contractReady) {
     const c = command, who = c.who, person = s.entities[who];
     const failure = reason => ({status:'clarify',reason,line:'PARTY — '+reason});
     if (person?.kind !== 'npc' || person.status === 'dead' || !s.scene.present.includes(who)) return failure('The named living partner must be present.');
@@ -126,8 +125,11 @@ export function partyDecision(s, content, command, source, actor, emit) {
             if (!/\b(?:equip|wear|wield|put on|ready)\b/i.test(words) || !['armor','weapon'].includes(p?.slot) ||
                 rankRefusal(content,person.sheet.level,p) || qty!==1) return failure('No usable equipment choice.');
             const old=person.sheet.equipment[p.slot];
-            if (old && !old.object && !person.sheet.inventory[old.id || old]) {
-                const gear=typeof old==='string' ? content.items.get(old):old;
+            if (asset.slot || asset.ref && old?.object===asset.ref) return failure('Already equipped.');
+            if (asset.template) emit({t:'item.changed',d:{id:who,item:asset.template,qty:-1,why:'equipped'}});
+            if (typeof old==='string') emit({t:'item.changed',d:{id:who,item:old,qty:1,why:'unequipped'}});
+            else if (old && !old.object) {
+                const gear=old;
                 if (gear) emit({t:'object.created',d:{object:{id:freeObjectId(s,'obj.'+who+'.'+p.slot),kind:'item',name:gear.name,
                     qty:1,holder:{entity:who},profile:{...gear,kind:'gear'},source:{how:'unequipped',from:who}}}});
             }
@@ -148,9 +150,9 @@ export function partyDecision(s, content, command, source, actor, emit) {
                 qty!==1 && !words.includes(String(qty))) return failure('Identify the actual recipient and quantity.');
             if (asset.slot) emit({t:'item.equipped',d:{id:who,slot:asset.slot,item:null}});
             if (asset.ref) emit({t:'object.moved',d:{id:asset.ref,to:{entity:recipient},...(qty<asset.qty?{qty,split:freeObjectId(s,asset.ref+'.part')}:{})}});
-            else if (asset.template && other.sheet) {
-                emit({t:'item.changed',d:{id:who,item:asset.template,qty:-qty}});
-                emit({t:'item.changed',d:{id:recipient,item:asset.template,qty}});
+            else if ((asset.template || asset.wornTemplate) && other.sheet) {
+                if (asset.template) emit({t:'item.changed',d:{id:who,item:asset.template,qty:-qty}});
+                emit({t:'item.changed',d:{id:recipient,item:asset.template || asset.wornTemplate,qty}});
             } else {
                 if (asset.template) emit({t:'item.changed',d:{id:who,item:asset.template,qty:-qty}});
                 emit({t:'object.created',d:{object:{id:freeObjectId(s,'obj.'+who+'.given'),kind:'item',name:asset.name,qty,

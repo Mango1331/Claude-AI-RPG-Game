@@ -586,7 +586,7 @@ function deskStep(s, c, ctx, envx, q, kind) {
 const HANDLERS = {
     party(s, content, command, ctx, emit, env) {
         if (!env.c || rulesetOf(s) < 2) return {status:'refused',line:'Party requires the current campaign rules.'};
-        return partyDecision(s,content,command,env.text,'pc',emit);
+        return partyDecision(s,content,command,env.text,'pc',emit,contractReady);
     },
     'journey.continue'(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT DEPART — not while the fight runs.' };

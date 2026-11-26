@@ -191,6 +191,21 @@ assert(!given.state.entities[who].sheet.equipment.armor);
 const refusedMail=x(armed.state,[{seq:1,type:'party',act:'give',who,object:'worn.armor',target:'pc',qty:1,quote:'I give you the Iron Mail.'}],
     'Garrick says, "I give you the Iron Mail."',103);
 assert.equal(refusedMail.state.objects[armour].holder.entity,who);
+// A template moves from bag to slot and onward once, just as it does for the PC.
+const [template,gear]=[...content.items].find(([,item])=>item.slot==='armor' && (!item.rank || item.rank==='F'));
+const templateState=structuredClone(s);
+applyEvent(templateState,{t:'item.changed',d:{id:who,item:template,qty:1}});
+const wear='I wear the '+gear.name+'.';
+const equipped=x(templateState,[{seq:1,type:'party',act:'equip',who,object:'item.'+template,quote:wear}],
+    'Ossen says, "'+wear+'"',104).state;
+assert.equal(equipped.entities[who].sheet.equipment.armor,template);
+assert.equal(equipped.entities[who].sheet.inventory[template] || 0,0);
+const hand='I give you the '+gear.name+'.', beforeGear=equipped.entities.pc.sheet.inventory[template] || 0;
+const handed=x(equipped,[{seq:1,type:'party',act:'give',who,object:'worn.armor',target:'pc',quote:hand}],
+    'Ossen says, "'+hand+'"',105).state;
+assert.equal(handed.entities.pc.sheet.inventory[template],beforeGear+1);
+assert(!handed.entities[who].sheet.equipment.armor);
+assert.equal(handed.entities[who].sheet.inventory[template] || 0,0);
 const three=setup(), third='npc.garrick', team=structuredClone(camp);
 three.combatants[third]={...structuredClone(three.combatants[who]),id:third};
 three.participation[third]={from:0};team.entities[third].sheet=structuredClone(team.entities[who].sheet);

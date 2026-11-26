@@ -1,0 +1,2 @@
+# Keep exact uploaded and reconstructed bytes, including Windows CRLF and UTF-16 parts.
+originals/** -text

@@ -1,0 +1,6033 @@
+[
+ {
+  "i": 0,
+  "user": false,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "campaign.started",
+    "d": {
+     "seed": 3509323178,
+     "minute": 540,
+     "entities": [
+      {
+       "id": "pc",
+       "kind": "pc",
+       "name": "Alaric",
+       "race": "Human",
+       "age": 18,
+       "origin": "Earth",
+       "descriptors": [
+        "alaric",
+        "stranger",
+        "traveler"
+       ],
+       "status": "alive",
+       "location": "loc.alderwatch",
+       "sheet": {
+        "level": 1,
+        "class": null,
+        "stats": {
+         "STR": 5,
+         "VIT": 5,
+         "AGI": 5,
+         "INT": 5,
+         "PER": 5,
+         "WIL": 5
+        },
+        "skills": {},
+        "equipment": {
+         "clothing": "simple_travelers_clothes"
+        },
+        "inventory": {
+         "small_pouch": 1
+        },
+        "coin_cp": 50,
+        "xp": 0,
+        "free_points": 0,
+        "hp": 80,
+        "mp": 60,
+        "sta": 100
+       }
+      }
+     ],
+     "location": "loc.alderwatch",
+     "place": "public roadside verge outside Alderwatch",
+     "facts": [
+      {
+       "id": "f.pc.name",
+       "s": "pc",
+       "p": "name",
+       "o": "Alaric",
+       "visibility": "public",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      },
+      {
+       "id": "f.pc.appearance",
+       "s": "pc",
+       "p": "appearance",
+       "o": "Human, about eighteen; wears simple traveler's clothes",
+       "visibility": "public",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      },
+      {
+       "id": "f.pc.origin",
+       "s": "pc",
+       "p": "origin",
+       "o": "Earth (transmigrated; memories intact)",
+       "visibility": "secret",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      },
+      {
+       "id": "f.pc.arrival_witnesses",
+       "s": "pc",
+       "p": "arrival_witnesses",
+       "o": "none",
+       "visibility": "secret",
+       "since": {
+        "turn": 0,
+        "minute": 540
+       },
+       "until": null,
+       "importance": 0.9,
+       "hard": false,
+       "source": {
+        "kind": "campaign_start"
+       }
+      }
+     ],
+     "knowledge": [
+      {
+       "who": "pc",
+       "about": "f.pc.name",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      },
+      {
+       "who": "pc",
+       "about": "f.pc.appearance",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      },
+      {
+       "who": "pc",
+       "about": "f.pc.origin",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      },
+      {
+       "who": "pc",
+       "about": "f.pc.arrival_witnesses",
+       "stance": "knows",
+       "source": "self",
+       "turn": 0,
+       "minute": 540
+      }
+     ],
+     "campaign": "avereth",
+     "content_version": "4.2.0",
+     "engine_version": "4.3.0-c.6.6.215",
+     "ruleset": 2,
+     "private_quests": false,
+     "runtime": "v4",
+     "path": "c",
+     "places": [
+      {
+       "id": "realm.valedorn_crown",
+       "name": "Valedorn Crown",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.caelreth",
+       "name": "Caelreth",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.duskreach",
+       "name": "Duskreach",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.ashen_scale_dominion",
+       "name": "Ashen Scale Dominion",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.ashen_scale_dominion",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "realm.verdant_fang_court",
+       "name": "Verdant Fang Court",
+       "kind": "realm",
+       "parent": null,
+       "realm": "realm.verdant_fang_court",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.alderwatch",
+       "name": "Alderwatch",
+       "kind": "settlement",
+       "sub": "city",
+       "parent": "realm.valedorn_crown",
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.alderwatch.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.alderwatch",
+       "realm": "realm.valedorn_crown",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.glassmere",
+       "name": "Glassmere",
+       "kind": "settlement",
+       "sub": "city",
+       "parent": "realm.caelreth",
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.glassmere.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.glassmere",
+       "realm": "realm.caelreth",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.ashbridge",
+       "name": "Ashbridge",
+       "kind": "settlement",
+       "sub": "city",
+       "parent": "realm.duskreach",
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.ashbridge.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.ashbridge",
+       "realm": "realm.duskreach",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.crownheart",
+       "name": "Crownheart",
+       "kind": "settlement",
+       "sub": "capital",
+       "parent": "realm.valedorn_crown",
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.crownheart.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.crownheart",
+       "realm": "realm.valedorn_crown",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.asterhall",
+       "name": "Asterhall",
+       "kind": "settlement",
+       "sub": "capital",
+       "parent": "realm.caelreth",
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.asterhall.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.asterhall",
+       "realm": "realm.caelreth",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.blackgate",
+       "name": "Blackgate",
+       "kind": "settlement",
+       "sub": "capital",
+       "parent": "realm.duskreach",
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.blackgate.guild_hall",
+       "name": "Adventurers' Guild hall",
+       "kind": "site",
+       "parent": "loc.blackgate",
+       "realm": "realm.duskreach",
+       "tags": [
+        "guild_hall"
+       ],
+       "by": "engine"
+      },
+      {
+       "id": "loc.cinder_throne",
+       "name": "Cinder Throne",
+       "kind": "settlement",
+       "sub": "seat",
+       "parent": "realm.ashen_scale_dominion",
+       "realm": "realm.ashen_scale_dominion",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.thornheart",
+       "name": "Thornheart",
+       "kind": "settlement",
+       "sub": "seat",
+       "parent": "realm.verdant_fang_court",
+       "realm": "realm.verdant_fang_court",
+       "tags": [],
+       "by": "content"
+      },
+      {
+       "id": "loc.mossback_warrens",
+       "name": "Mossback Warrens",
+       "kind": "site",
+       "parent": "realm.duskreach",
+       "realm": "realm.duskreach",
+       "tags": [],
+       "by": "content",
+       "near": "loc.ashbridge",
+       "where": "a moss-grown hill half a day's walk east of Ashbridge, off the old quarry track",
+       "rooms": true,
+       "dungeon": {
+        "real": true,
+        "theme": "goblin warrens: tunnels dug into a mossy hill, crude palisades, goblin scouts and warriors, a shaman deeper down",
+        "rank": {
+         "min": "F",
+         "max": "E"
+        },
+        "levels": {
+         "1": {
+          "min": "F",
+          "max": "F"
+         },
+         "2": {
+          "min": "E",
+          "max": "E"
+         }
+        },
+        "control": "the Adventurers' Guild of Ashbridge keeps its entry ledger under a charter of the Duskreach crown",
+        "hidden": [],
+        "heard": [],
+        "guild": [
+         "theme",
+         "rank",
+         "level:1",
+         "level:2",
+         "control"
+        ]
+       }
+      },
+      {
+       "id": "loc.glimmerdeep_grotto",
+       "name": "Glimmerdeep Grotto",
+       "kind": "site",
+       "parent": "realm.caelreth",
+       "realm": "realm.caelreth",
+       "tags": [],
+       "by": "content",
+       "near": "loc.glassmere",
+       "where": "a cleft in the hills a morning's walk north of Glassmere, where the stream runs out of the rock",
+       "rooms": true,
+       "dungeon": {
+        "real": true,
+        "theme": "crystal caverns: glittering grottos of mana-fed crystal, crystal beetles and mineral slimes",
+        "rank": {
+         "min": "F",
+         "max": "F"
+        },
+        "levels": {
+         "1": {
+          "min": "F",
+          "max": "F"
+         }
+        },
+        "control": "a Glassmere academy of magic holds the cleft and lets registered adventurers cull its outer grottos; what they kill and the free crystal there is theirs, the deep galleries the academy's",
+        "hidden": [],
+        "heard": [],
+        "guild": [
+         "theme",
+         "rank",
+         "level:1",
+         "control"
+        ]
+       }
+      },
+      {
+       "id": "loc.old_crown_catacombs",
+       "name": "Old Crown Catacombs",
+       "kind": "site",
+       "parent": "realm.valedorn_crown",
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content",
+       "near": "loc.alderwatch",
+       "where": "beneath a ruined chapel an hour's ride west of Alderwatch",
+       "rooms": true,
+       "dungeon": {
+        "real": true,
+        "theme": "undead catacombs: burial galleries, restless skeletons, ghouls deeper down",
+        "rank": {
+         "min": "F",
+         "max": "E"
+        },
+        "levels": {
+         "1": {
+          "min": "F",
+          "max": "F"
+         },
+         "2": {
+          "min": "E",
+          "max": "E"
+         }
+        },
+        "control": "the temple wardens of Alderwatch, who ask the Guild to keep the upper galleries culled",
+        "hidden": [],
+        "heard": [],
+        "guild": [
+         "theme",
+         "rank",
+         "level:1",
+         "level:2",
+         "control"
+        ]
+       }
+      },
+      {
+       "id": "loc.alderwatch.verge",
+       "name": "public roadside verge outside Alderwatch",
+       "kind": "site",
+       "parent": "loc.alderwatch",
+       "realm": "realm.valedorn_crown",
+       "tags": [],
+       "by": "content"
+      }
+     ],
+     "at": "loc.alderwatch.verge"
+    }
+   }
+  ]
+ },
+ {
+  "i": 1,
+  "user": true,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 1,
+     "input_hash": "488a02e3",
+     "input": "Mage"
+    }
+   },
+   {
+    "t": "creation.class_selected",
+    "d": {
+     "class": "mage",
+     "favored": [
+      "INT",
+      "WIL"
+     ],
+     "basic_attack": "mage.basic_attack"
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "creation.step2",
+      "class": "mage"
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 3,
+  "user": true,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 2,
+     "input_hash": "b6e3aa01",
+     "input": "Flame Lance + Arcane Wave"
+    }
+   },
+   {
+    "t": "creation.completed",
+    "d": {
+     "skills": [
+      "mage.flame_lance",
+      "mage.arcane_wave"
+     ],
+     "equip": {
+      "weapon": "starter_arcane_staff_r2",
+      "armor": "starter_light_robes"
+     },
+     "items": {},
+     "hp": 80,
+     "mp": 72,
+     "sta": 100
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "creation.complete",
+      "class": "mage",
+      "skills": [
+       "mage.flame_lance",
+       "mage.arcane_wave"
+      ],
+      "kit": [
+       "starter_arcane_staff_r2",
+       "starter_light_robes"
+      ]
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 5,
+  "user": true,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 3,
+     "input_hash": "63d650ce",
+     "input": "*i walk into the city ahead and make my way over to the adventurers hall*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 8389,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "go",
+       "to": "loc.alderwatch.guild_hall",
+       "quote": "i walk into the city ahead and make my way over to the adventurers hall",
+       "within": null
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "go",
+     "status": "authorized",
+     "quote": "i walk into the city ahead and make my way over to the adventurers hall"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 3,
+     "at": "loc.alderwatch.verge",
+     "exposure": "scene",
+     "frame": "inside",
+     "phase": "day",
+     "base": 6,
+     "misses_before": 0,
+     "p": 6,
+     "roll": 17.52,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. GOES — to Adventurers' Guild hall, Alderwatch (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "i walk into the city ahead and make my way over to the adventurers hall"
+       }
+      ],
+      "expected_keys": {
+       "1": "go"
+      },
+      "auth": {
+       "go": {
+        "seq": 1,
+        "to": "loc.alderwatch.guild_hall",
+        "name": "Adventurers' Guild hall, Alderwatch",
+        "hall": true,
+        "newName": null,
+        "mode": "local",
+        "enter": null,
+        "scope": null
+       },
+       "gos": [
+        {
+         "seq": 1,
+         "to": "loc.alderwatch.guild_hall",
+         "name": "Adventurers' Guild hall, Alderwatch",
+         "hall": true,
+         "newName": null,
+         "mode": "local",
+         "enter": null,
+         "scope": null
+        }
+       ],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "inside",
+        "phase": "day",
+        "p": 6,
+        "roll": 17.52,
+        "misses": 0,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 6,
+  "user": false,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "scene.moved",
+    "d": {
+     "at": "loc.alderwatch.guild_hall",
+     "location": "loc.alderwatch",
+     "place": "Adventurers' Guild hall, Alderwatch",
+     "reset_present": true,
+     "track_history": true
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "npc.npcguild_clerk_a",
+      "kind": "npc",
+      "name": null,
+      "descriptors": [
+       "clerk",
+       "broad woman with iron-grey braids",
+       "writes in a ledger at the long counter",
+       "npc.guild_clerk_a"
+      ],
+      "traits": "broad woman with iron-grey braids, writes in a ledger at the long counter",
+      "status": "alive",
+      "location": "loc.alderwatch",
+      "created": {
+       "turn": 3,
+       "minute": 540
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 6
+      },
+      "card": {},
+      "template": "commoner"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "npc.npcguild_clerk_a",
+     "band": "ENGAGED"
+    }
+   },
+   {
+    "t": "scene.tactical",
+    "d": {
+     "id": "npc.npcguild_clerk_a",
+     "relevant": true,
+     "threat": false
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_npcguild_clerk_a.occupation.19bcc36b.t3",
+      "s": "npc.npcguild_clerk_a",
+      "p": "occupation",
+      "o": "clerk",
+      "since": {
+       "turn": 3,
+       "minute": 540
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 6
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t3.m6.d3_2.1",
+      "s": "loc.alderwatch.guild_hall",
+      "p": "layout",
+      "o": "long counter on the left, large notice board of contracts on the right, benches and hearth",
+      "since": {
+       "turn": 3,
+       "minute": 540
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 6,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 15,
+     "why": "travel"
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcguild_clerk_a",
+     "about": "f.pc.appearance",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 3,
+     "minute": 555
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t3.seen.npc.npcguild_clerk_a",
+      "turn": 3,
+      "minute": 555,
+      "text": "first saw {pc} at Adventurers' Guild hall, Alderwatch",
+      "who": [
+       "npc.npcguild_clerk_a",
+       "pc"
+      ],
+      "witnesses": [
+       "npc.npcguild_clerk_a"
+      ],
+      "seen": [
+       "npc.npcguild_clerk_a"
+      ],
+      "location": "loc.alderwatch",
+      "place": "Adventurers' Guild hall, Alderwatch",
+      "importance": 4,
+      "kind": "meeting"
+     }
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t3.m6.ep",
+      "turn": 3,
+      "minute": 555,
+      "text": "Adventurers' Guild hall, Alderwatch: {pc}: \"*i walk into the city ahead and make my way over to the adventurers hall*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk_a"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.alderwatch",
+      "place": "Adventurers' Guild hall, Alderwatch",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 6
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 3,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 1,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 49357,
+     "repaired": true,
+     "deltas": 3,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 7,
+  "user": true,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 4,
+     "input_hash": "7f607234",
+     "input": "Hello my name is Alaric Red and im here to register"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 3845,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "guild.register",
+       "quote": "im here to register"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "offer.created",
+    "d": {
+     "offer": {
+      "id": "offer.registration",
+      "seller": "guild",
+      "at": "loc.alderwatch.guild_hall",
+      "status": "open",
+      "canon": true,
+      "turn": 4,
+      "lines": [
+       {
+        "id": "l1",
+        "what": "Guild registration fee",
+        "kind": "service",
+        "service": "guild_registration",
+        "qty": 1,
+        "price_cp": 20
+       }
+      ]
+     }
+    }
+   },
+   {
+    "t": "decision.opened",
+    "d": {
+     "decision": {
+      "id": "dec.registration",
+      "kind": "registration",
+      "what": "Guild registration",
+      "offer": "offer.registration",
+      "at": "loc.alderwatch.guild_hall",
+      "turn": 4,
+      "price_cp": 20
+     }
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "guild.register",
+     "status": "pending",
+     "reason": "fee",
+     "quote": "im here to register"
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. REGISTERS — pending: the Guild's registration fee is 2 silver (20 cp), one-time; a new member starts at Guild Rank Novice (the Guild's ranks run Novice to Legend); Power Rank (F to S) is a person's measured strength, a separate scale the Guild reads but never grants. Let the clerk name the fee and explain; stop there: he has not agreed to pay."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "guild.register",
+        "status": "pending",
+        "reason": "fee",
+        "quote": "im here to register"
+       }
+      ],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": false,
+        "exposure": "scene",
+        "eligible": false,
+        "reason": "hard_stop"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 8,
+  "user": false,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 1,
+      "type": "fact",
+      "s": "npc.npcguild_clerk_a",
+      "p": "registration_fee",
+      "o": "one-time fee of two silver (20 cp) covers plate, contract slips and the measuring stone"
+     },
+     "rule": "guild_canon",
+     "reason": "the Guild's fees and payouts are the engine's canon, not a fact of the story"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 2,
+      "type": "fact",
+      "s": "npc.npcguild_clerk_a",
+      "p": "guild_ranks",
+      "o": "Guild ranks run Novice to Legend; new members start at Novice"
+     },
+     "rule": "guild_canon",
+     "reason": "the Guild's ranks are the engine's canon, not a fact of the story"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 3,
+      "type": "fact",
+      "s": "npc.npcguild_clerk_a",
+      "p": "power_rank",
+      "o": "Power Rank F to S is measured by the Guild, not granted; fresh registrations usually sit at F"
+     },
+     "rule": "domain_fact",
+     "reason": "\"power_rank\" is state with its own delta (arrive/enter/leave, intent, the Guild's rank), not a fact"
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcguild_clerk_a",
+     "about": "f.pc.name",
+     "stance": "knows",
+     "source": "told:pc",
+     "turn": 4,
+     "minute": 555
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t4.m8.ep",
+      "turn": 4,
+      "minute": 555,
+      "text": "Adventurers' Guild hall, Alderwatch: {pc}: \"Hello my name is Alaric Red and im here to register\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk_a"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.alderwatch",
+      "place": "Adventurers' Guild hall, Alderwatch",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 8
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 4,
+     "rolled": false,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 13077,
+     "repaired": false,
+     "deltas": 3,
+     "rejected": 3
+    }
+   }
+  ]
+ },
+ {
+  "i": 9,
+  "user": true,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 5,
+     "input_hash": "8806462e",
+     "input": "*i pay the 2 silver and finish the registration*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json_repaired",
+     "ms": 11503,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "offer.accept",
+       "offer": "offer.registration",
+       "lines": [
+        "l1"
+       ],
+       "qty": null,
+       "party_words": null,
+       "agreed_cp": 20,
+       "price_evidence": {
+        "basis": "total",
+        "quote": "2 silver",
+        "currency_quote": "silver"
+       },
+       "quote": "i pay the 2 silver and finish the registration"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "transaction.completed",
+    "d": {
+     "offer": "offer.registration",
+     "lines": [
+      "l1"
+     ],
+     "cp": 20,
+     "seller": "guild"
+    }
+   },
+   {
+    "t": "coin.changed",
+    "d": {
+     "id": "pc",
+     "value": 30,
+     "delta": -20,
+     "why": "Guild registration fee"
+    }
+   },
+   {
+    "t": "offer.closed",
+    "d": {
+     "id": "offer.registration",
+     "status": "accepted"
+    }
+   },
+   {
+    "t": "guild.registered",
+    "d": {
+     "rank": "Novice",
+     "branch": "loc.alderwatch",
+     "power_rank": "F"
+    }
+   },
+   {
+    "t": "object.created",
+    "d": {
+     "object": {
+      "id": "obj.guild_plate",
+      "name": "Guild plate",
+      "kind": "document",
+      "stack": false,
+      "qty": 1,
+      "unit": null,
+      "holder": {
+       "entity": "pc"
+      },
+      "marks": [
+       {
+        "text": "Novice stamp",
+        "by": "guild",
+        "turn": 5
+       }
+      ],
+      "for_quests": [],
+      "source": {
+       "turn": 5,
+       "how": "guild"
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.pc.guild_rank.d0460f90.t5",
+      "s": "pc",
+      "p": "guild_rank",
+      "o": "Novice",
+      "since": {
+       "turn": 5,
+       "minute": 555
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.7,
+      "hard": false,
+      "source": {
+       "kind": "engine"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcguild_clerk_a",
+     "about": "f.pc.guild_rank.d0460f90.t5",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 5,
+     "minute": 555
+    }
+   },
+   {
+    "t": "decision.closed",
+    "d": {
+     "id": "dec.registration",
+     "status": "accepted"
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "offer.accept",
+     "status": "resolved",
+     "quote": "i pay the 2 silver and finish the registration"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 5,
+     "at": "loc.alderwatch.guild_hall",
+     "exposure": "scene",
+     "frame": "inside",
+     "phase": "day",
+     "base": 6,
+     "misses_before": 1,
+     "p": 6.9,
+     "roll": 11.22,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. PAYS — the Guild registration fee, 20 cp: registered at Guild Rank Novice; the crystal reads his Power Rank: F (his measured strength, a separate scale from the Guild's ranks); he receives his Guild plate. Desk, crystal measurement and handover are one service inside the Guild hall. Describe the routine in place; only actual witnesses know it."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "offer.accept",
+        "status": "resolved",
+        "quote": "i pay the 2 silver and finish the registration"
+       }
+      ],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "inside",
+        "phase": "day",
+        "p": 6.9,
+        "roll": 11.22,
+        "misses": 1,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": true,
+       "grants": [
+        "Guild plate"
+       ],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": [],
+      "coin": [
+       {
+        "kind": "purchase",
+        "delta": -20,
+        "before": 50,
+        "after": 30,
+        "why": "Guild registration fee"
+       }
+      ]
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 10,
+  "user": false,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcguild_clerk_a",
+     "about": "f.pc.name",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 5,
+     "minute": 555
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t5.m10.ep",
+      "turn": 5,
+      "minute": 555,
+      "text": "Adventurers' Guild hall, Alderwatch: {pc}: \"*i pay the 2 silver and finish the registration*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk_a"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.alderwatch",
+      "place": "Adventurers' Guild hall, Alderwatch",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 10
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 5,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 11496,
+     "repaired": false,
+     "deltas": 1,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 11,
+  "user": true,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 6,
+     "input_hash": "25102611",
+     "input": "*i walk over to the questboard and look at it*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 3420,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "board.read",
+       "rank": null,
+       "quote": "i walk over to the questboard and look at it"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "offer.created",
+    "d": {
+     "offer": {
+      "id": "offer.manuals.localderwatchguild_hall",
+      "seller": "npc.npcguild_clerk_a",
+      "at": "loc.alderwatch.guild_hall",
+      "status": "open",
+      "canon": true,
+      "stock": "manuals",
+      "turn": 6,
+      "lines": [
+       {
+        "id": "strike",
+        "what": "Primer of Strike",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "strike",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "bolt",
+        "what": "Primer of Bolt",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "bolt",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "guard",
+        "what": "Primer of Guard",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "guard",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "ward",
+        "what": "Primer of Ward",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "ward",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       },
+       {
+        "id": "mend",
+        "what": "Primer of Mend",
+        "kind": "goods",
+        "qty": 1,
+        "price_cp": 80,
+        "profile": {
+         "kind": "skill_source",
+         "source": "manual",
+         "title": "manual",
+         "rank": "F",
+         "fn": "mend",
+         "tags": [],
+         "aspects": [],
+         "value_cp": 120
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "realm.valedorn_crown.the_millpond_sluice_and_shallows_below_alderwatchs_mill",
+      "name": "the millpond sluice and shallows below Alderwatch's mill",
+      "kind": "site",
+      "parent": "realm.valedorn_crown",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "known": "reported",
+      "reports": [],
+      "by": "guild",
+      "created": {
+       "turn": 6,
+       "minute": 555
+      },
+      "population": {
+       "anchor": "armored_beast",
+       "species": "snapping turtle",
+       "levels": [
+        1,
+        3
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.cull_the_millpond_snapping_turtles",
+      "title": "Cull the Millpond Snapping Turtles",
+      "kind": "guild_contract",
+      "client": "Alderwatch miller's cooperative",
+      "giver": null,
+      "rank": "Novice",
+      "level": 3,
+      "qtype": "standard",
+      "payout_cp": 70,
+      "reward": "70 cp",
+      "task": "Kill 3 snapping turtles at the millpond sluice and shallows below Alderwatch's mill. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+      "desired_end_state": "3 snapping turtles killed at the millpond sluice and shallows below Alderwatch's mill.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "snapping turtles",
+        "qty": 3,
+        "unit": "turtles",
+        "where": "the millpond sluice and shallows below Alderwatch's mill",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.alderwatch.guild_hall",
+       "branch": "loc.alderwatch",
+       "listed": {
+        "turn": 6,
+        "minute": 555,
+        "day": 1
+       },
+       "profile": "count_hunt_clear"
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 555,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "hunt": {
+       "at": "realm.valedorn_crown.the_millpond_sluice_and_shallows_below_alderwatchs_mill",
+       "age": "adult"
+      },
+      "count_rule": "killed"
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "realm.valedorn_crown.the_terraced_orchards_east_of_alderwatch",
+      "name": "the terraced orchards east of Alderwatch",
+      "kind": "site",
+      "parent": "realm.valedorn_crown",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "known": "reported",
+      "reports": [],
+      "by": "guild",
+      "created": {
+       "turn": 6,
+       "minute": 555
+      },
+      "population": {
+       "anchor": "boar",
+       "species": "wild boar",
+       "levels": [
+        4,
+        7
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.thin_the_orchard_boar_sounder",
+      "title": "Thin the Orchard Boar Sounder",
+      "kind": "guild_contract",
+      "client": "Warden Hessa of the Valedorn Crown orchards",
+      "giver": null,
+      "rank": "Novice",
+      "level": 5,
+      "qtype": "standard",
+      "payout_cp": 150,
+      "reward": "150 cp",
+      "task": "Kill 4 wild boars at the terraced orchards east of Alderwatch. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+      "desired_end_state": "4 wild boars killed at the terraced orchards east of Alderwatch.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "wild boars",
+        "qty": 4,
+        "unit": "boars",
+        "where": "the terraced orchards east of Alderwatch",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.alderwatch.guild_hall",
+       "branch": "loc.alderwatch",
+       "listed": {
+        "turn": 6,
+        "minute": 555,
+        "day": 1
+       },
+       "profile": "count_hunt_clear"
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 555,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "hunt": {
+       "at": "realm.valedorn_crown.the_terraced_orchards_east_of_alderwatch",
+       "age": "adult"
+      },
+      "count_rule": "killed"
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "realm.valedorn_crown.the_gorge_thickets_along_the_drovers_road_west_of_alderwatch",
+      "name": "the gorge thickets along the drovers' road west of Alderwatch",
+      "kind": "site",
+      "parent": "realm.valedorn_crown",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "known": "reported",
+      "reports": [],
+      "by": "guild",
+      "created": {
+       "turn": 6,
+       "minute": 555
+      },
+      "population": {
+       "anchor": "wolf",
+       "species": "wolf",
+       "levels": [
+        4,
+        7
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.cull_the_gorge_wolves",
+      "title": "Cull the Gorge Wolves",
+      "kind": "guild_contract",
+      "client": "Sheepdrovers' guild of the Crown road",
+      "giver": null,
+      "rank": "Novice",
+      "level": 6,
+      "qtype": "dangerous",
+      "payout_cp": 180,
+      "reward": "180 cp",
+      "task": "Kill 5 wolves at the gorge thickets along the drovers' road west of Alderwatch. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+      "desired_end_state": "5 wolves killed at the gorge thickets along the drovers' road west of Alderwatch.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "wolves",
+        "qty": 5,
+        "unit": "wolves",
+        "where": "the gorge thickets along the drovers' road west of Alderwatch",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.alderwatch.guild_hall",
+       "branch": "loc.alderwatch",
+       "listed": {
+        "turn": 6,
+        "minute": 555,
+        "day": 1
+       },
+       "profile": "count_hunt_clear"
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 555,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "hunt": {
+       "at": "realm.valedorn_crown.the_gorge_thickets_along_the_drovers_road_west_of_alderwatch",
+       "age": "adult"
+      },
+      "count_rule": "killed"
+     }
+    }
+   },
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "realm.valedorn_crown.the_barrow_burial_field_north_of_the_ruined_chapel",
+      "name": "the barrow burial field north of the ruined chapel",
+      "kind": "site",
+      "parent": "realm.valedorn_crown",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "known": "reported",
+      "reports": [],
+      "by": "guild",
+      "created": {
+       "turn": 6,
+       "minute": 555
+      },
+      "population": {
+       "anchor": "ghoul",
+       "species": "ghoul",
+       "levels": [
+        8,
+        11
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.cull_the_barrow_ghouls",
+      "title": "Cull the Barrow Ghouls",
+      "kind": "guild_contract",
+      "client": "Temple wardens of Alderwatch",
+      "giver": null,
+      "rank": "Novice",
+      "level": 10,
+      "qtype": "dangerous",
+      "payout_cp": 300,
+      "reward": "300 cp",
+      "task": "Kill 3 ghouls at the barrow burial field north of the ruined chapel. Only engine-recorded kills of this population count. Return to the Guild to claim payment.",
+      "desired_end_state": "3 ghouls killed at the barrow burial field north of the ruined chapel.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "ghouls",
+        "qty": 3,
+        "unit": "ghouls",
+        "where": "the barrow burial field north of the ruined chapel",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.alderwatch.guild_hall",
+       "branch": "loc.alderwatch",
+       "listed": {
+        "turn": 6,
+        "minute": 555,
+        "day": 1
+       },
+       "profile": "count_hunt_clear"
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 555,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "hunt": {
+       "at": "realm.valedorn_crown.the_barrow_burial_field_north_of_the_ruined_chapel",
+       "age": "adult"
+      },
+      "count_rule": "killed"
+     }
+    }
+   },
+   {
+    "t": "quest.created",
+    "d": {
+     "quest": {
+      "id": "quest.clear_the_old_crown_catacombs_level_1",
+      "title": "Clear the Old Crown Catacombs, Level 1",
+      "kind": "guild_contract",
+      "client": "Temple wardens of Alderwatch",
+      "giver": null,
+      "rank": "Novice",
+      "level": 3,
+      "qtype": "standard",
+      "payout_cp": 90,
+      "reward": "90 cp",
+      "task": "Clear level 1 of Old Crown Catacombs. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedition.",
+      "desired_end_state": "Level 1 of Old Crown Catacombs is clear.",
+      "objectives": [
+       {
+        "id": "o1",
+        "verb": "DEFEAT",
+        "what": "the restless skeletons of the Old Crown Catacombs, level 1",
+        "qty": null,
+        "unit": null,
+        "where": "Old Crown Catacombs, level 1",
+        "status": "open"
+       }
+      ],
+      "proof": [],
+      "source": {
+       "board": "loc.alderwatch.guild_hall",
+       "branch": "loc.alderwatch",
+       "listed": {
+        "turn": 6,
+        "minute": 555,
+        "day": 1
+       }
+      },
+      "schedule": {
+       "starts_at": null,
+       "deadline": null
+      },
+      "status": "listed",
+      "taker": null,
+      "history": [
+       {
+        "turn": 6,
+        "minute": 555,
+        "status": "listed"
+       }
+      ],
+      "details": [],
+      "notes": [],
+      "clear": {
+       "dungeon": "loc.old_crown_catacombs",
+       "floor": 1
+      },
+      "dungeon": "loc.old_crown_catacombs",
+      "floor": 1
+     }
+    }
+   },
+   {
+    "t": "board.refreshed",
+    "d": {
+     "key": "loc.alderwatch|Novice",
+     "branch": "loc.alderwatch",
+     "rank": "Novice",
+     "day": 1,
+     "listings": [
+      "quest.cull_the_millpond_snapping_turtles",
+      "quest.thin_the_orchard_boar_sounder",
+      "quest.cull_the_gorge_wolves",
+      "quest.cull_the_barrow_ghouls",
+      "quest.clear_the_old_crown_catacombs_level_1"
+     ]
+    }
+   },
+   {
+    "t": "board.shown",
+    "d": {
+     "branch": "loc.alderwatch",
+     "rank": "Novice",
+     "listings": [
+      "quest.cull_the_millpond_snapping_turtles",
+      "quest.thin_the_orchard_boar_sounder",
+      "quest.cull_the_gorge_wolves",
+      "quest.cull_the_barrow_ghouls",
+      "quest.clear_the_old_crown_catacombs_level_1"
+     ]
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "board.read",
+     "status": "resolved",
+     "quote": "i walk over to the questboard and look at it"
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. READS the Novice board — BOARD (these listings now become canonical because Alaric actually reads them; System cards display the official catalogue once this read is confirmed. Tell the reading briefly, atmosphere and NPC reactions; do not reproduce the catalogue or repeat every title, objective, reward and risk line. Discussing an individual contract or answering requested details is allowed. Invent no other official contract; these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display):\nREFERENCE ONLY — authoritative contract data, not a prose catalogue:\n**Cull the Millpond Snapping Turtles** (3) · 3 kills total · reported individuals L1–3 · kills are a total contract goal, not encounter group size; groups may be dangerous — client: Alderwatch miller's cooperative · reward: 70 cp · Kill 3 snapping turtles at the millpond sluice and shallows below Alderwatch's mill. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Thin the Orchard Boar Sounder** (4) · 4 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 — client: Warden Hessa of the Valedorn Crown orchards · reward: 150 cp · Kill 4 wild boars at the terraced orchards east of Alderwatch. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Cull the Gorge Wolves** (5) · 5 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 — client: Sheepdrovers' guild of the Crown road · reward: 180 cp · Kill 5 wolves at the gorge thickets along the drovers' road west of Alderwatch. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Cull the Barrow Ghouls** (3) · 3 kills total · reported individuals L8–11 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 — client: Temple wardens of Alderwatch · reward: 300 cp · Kill 3 ghouls at the barrow burial field north of the ruined chapel. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Clear the Old Crown Catacombs, Level 1** — Clear Old Crown Catacombs, level 1 — client: Temple wardens of Alderwatch · reward: 90 cp · Clear level 1 of Old Crown Catacombs. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedition.\nStored objectives and any verification examples are continuity memory only."
+      ],
+      "extra": [],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "board.read",
+        "status": "resolved",
+        "quote": "i walk over to the questboard and look at it"
+       }
+      ],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": false,
+        "exposure": "scene",
+        "eligible": false,
+        "reason": "board"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": {
+       "branch": "loc.alderwatch",
+       "rank": "Novice",
+       "listings": [
+        "quest.cull_the_millpond_snapping_turtles",
+        "quest.thin_the_orchard_boar_sounder",
+        "quest.cull_the_gorge_wolves",
+        "quest.cull_the_barrow_ghouls",
+        "quest.clear_the_old_crown_catacombs_level_1"
+       ]
+      },
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": [],
+      "engine_lines": [
+       "SHOP — Guild: Primer of Strike · 1 for 80 cp · manual · F · teaches strike · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Bolt · 1 for 80 cp · manual · F · teaches bolt · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Guard · 1 for 80 cp · manual · F · teaches guard · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Ward · 1 for 80 cp · manual · F · teaches ward · value guide ~120 cp each (not the asking price)",
+       "SHOP — Guild: Primer of Mend · 1 for 80 cp · manual · F · teaches mend · value guide ~120 cp each (not the asking price)",
+       "SYSTEM — GUILD BOARD · Novice · Alderwatch",
+       "Cull the Millpond Snapping Turtles (3) · 3 kills total · reported individuals L1–3 · kills are a total contract goal, not encounter group size; groups may be dangerous · Novice · client: Alderwatch miller's cooperative · reward: 70 cp (7 Silver) · Kill 3 snapping turtles at the millpond sluice and shallows below Alderwatch's mill. Only engine-recorded kills of this ",
+       "Thin the Orchard Boar Sounder (4) · 4 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 · Novice · client: Warden Hessa of the Valedorn Crown orchards · reward: 150 cp (1 Gold 5 Silver) · Kill 4 wild boars at the terraced orchards east of Alderwatch. Only engine-recorded kills of this population count. Retu",
+       "Cull the Gorge Wolves (5) · 5 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 · Novice · client: Sheepdrovers' guild of the Crown road · reward: 180 cp (1 Gold 8 Silver) · Kill 5 wolves at the gorge thickets along the drovers' road west of Alderwatch. Only engine-recorded kills of this popul",
+       "Cull the Barrow Ghouls (3) · 3 kills total · reported individuals L8–11 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 · Novice · client: Temple wardens of Alderwatch · reward: 300 cp (3 Gold) · Kill 3 ghouls at the barrow burial field north of the ruined chapel. Only engine-recorded kills of this population count",
+       "Clear the Old Crown Catacombs, Level 1 — Clear Old Crown Catacombs, level 1 · Novice · quest level 3 · client: Temple wardens of Alderwatch · reward: 90 cp (9 Silver) · Clear level 1 of Old Crown Catacombs. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo exp"
+      ]
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 12,
+  "user": false,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t6.m12.d1.1",
+      "s": "loc.alderwatch.guild_hall",
+      "p": "board_atmosphere",
+      "o": "a penciled skull marks the catacombs slip; a note says the boar sounder ran heavier than four",
+      "since": {
+       "turn": 6,
+       "minute": 555
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 12,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t6.m12.ep",
+      "turn": 6,
+      "minute": 555,
+      "text": "Adventurers' Guild hall, Alderwatch: {pc}: \"*i walk over to the questboard and look at it*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk_a"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.alderwatch",
+      "place": "Adventurers' Guild hall, Alderwatch",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 12
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 6,
+     "rolled": false,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 5058,
+     "repaired": false,
+     "deltas": 1,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 13,
+  "user": true,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 7,
+     "input_hash": "a3be0b3d",
+     "input": "Annehmen: Clear the Old Crown Catacombs, Level 1"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 0,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "quest.accept",
+       "quest": "quest.clear_the_old_crown_catacombs_level_1"
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "quest.status",
+    "d": {
+     "id": "quest.clear_the_old_crown_catacombs_level_1",
+     "from": "listed",
+     "to": "active",
+     "taker": "pc",
+     "at": "loc.alderwatch.guild_hall",
+     "step": 1
+    }
+   },
+   {
+    "t": "board.refreshed",
+    "d": {
+     "key": "loc.alderwatch|Novice",
+     "branch": "loc.alderwatch",
+     "rank": "Novice",
+     "day": 1,
+     "listings": [
+      "quest.cull_the_millpond_snapping_turtles",
+      "quest.thin_the_orchard_boar_sounder",
+      "quest.cull_the_gorge_wolves",
+      "quest.cull_the_barrow_ghouls"
+     ]
+    }
+   },
+   {
+    "t": "object.created",
+    "d": {
+     "object": {
+      "id": "obj.slip.clear_the_old_crown_catacombs_level_1",
+      "name": "Guild contract slip: Clear the Old Crown Catacombs, Level 1",
+      "kind": "document",
+      "stack": false,
+      "qty": 1,
+      "unit": null,
+      "holder": {
+       "entity": "pc"
+      },
+      "marks": [],
+      "for_quests": [
+       "quest.clear_the_old_crown_catacombs_level_1"
+      ],
+      "source": {
+       "turn": 7,
+       "how": "guild"
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.pc.accepted.quest.clear_the_old_crown_catacombs_level_1",
+      "s": "pc",
+      "p": "accepted_contract",
+      "o": "Clear the Old Crown Catacombs, Level 1",
+      "since": {
+       "turn": 7,
+       "minute": 555
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.7,
+      "hard": false,
+      "source": {
+       "kind": "engine"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.npcguild_clerk_a",
+     "about": "f.pc.accepted.quest.clear_the_old_crown_catacombs_level_1",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 7,
+     "minute": 555
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "quest.accept",
+     "status": "resolved",
+     "quote": null
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 7,
+     "at": "loc.alderwatch.guild_hall",
+     "exposure": "scene",
+     "frame": "inside",
+     "phase": "day",
+     "base": 6,
+     "misses_before": 2,
+     "p": 7.8,
+     "roll": 6.92,
+     "open": true,
+     "kind": "meeting",
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. ACCEPTS — \"Clear the Old Crown Catacombs, Level 1\" at the Guild desk; the clerk logs it and hands him its contract slip. Contract memory: Level 1 of Old Crown Catacombs is clear.. Proof: the contract slip itself; its Guild seal shows READY once the world has established the outcome (the engine marks it). No trophies or body parts are required or handed over; what he takes from his kills is his own loot. The stored objectives and any verification examples are continuity guidance, not mandatory steps or wording. Payout (90 cp), XP, completed-contract credit and promotion remain engine-owned at explicit turn-in."
+      ],
+      "extra": [
+       "PULSE (the engine's; day, indoors) — ONE concrete thing happens around him that he notices: a MEETING: people or creatures of this place who do not attack him (travellers, locals, an animal, someone who wants something of him). It takes nothing of his, moves him nowhere and binds him to nothing; what he does about it is his decision. If nothing of this kind can fit the scene, nothing happens."
+      ],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "quest.accept",
+        "status": "resolved",
+        "quote": null
+       }
+      ],
+      "expected_keys": {
+       "1": "desk"
+      },
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "inside",
+        "phase": "day",
+        "p": 7.8,
+        "roll": 6.92,
+        "misses": 2,
+        "open": true,
+        "kind": "meeting"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [
+        "contract slip"
+       ],
+       "turnIns": [],
+       "accepted": [
+        "quest.clear_the_old_crown_catacombs_level_1"
+       ],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": [],
+      "desk": {
+       "1": {
+        "quest": "quest.clear_the_old_crown_catacombs_level_1",
+        "kind": "accept"
+       }
+      }
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 14,
+  "user": false,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 1,
+      "type": "fact",
+      "s": "quest.clear_the_old_crown_catacombs_level_1",
+      "p": "payout_said",
+      "o": "Ninety copper on completion"
+     },
+     "rule": "engine_owned_fact",
+     "reason": "a known Guild contract keeps payout and formal status/completion in the engine domain; use quest.detail/quest.progress/quest.ready for story progress instead of overriding that state with a free fact"
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t7.m14.d2.1",
+      "s": "quest.clear_the_old_crown_catacombs_level_1",
+      "p": "client",
+      "o": "the temple wardens of Alderwatch",
+      "since": {
+       "turn": 7,
+       "minute": 555
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 14,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.detailed",
+    "d": {
+     "id": "quest.clear_the_old_crown_catacombs_level_1",
+     "note": "Entrance is under the ruined chapel, an hour or so west of the city on the old west road; ask at the west gate for the chapel track. Skeletons, mostly, on the first level; the clerk has heard them res",
+     "schedule": null
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "npc.ossen",
+      "kind": "npc",
+      "name": "Ossen",
+      "descriptors": [
+       "adventurer",
+       "lean man in a patched leather jerkin",
+       "smell of cheap ale about him",
+       "dice cup in hand",
+       "has been down in the catacombs twice",
+       "npc.ossen"
+      ],
+      "traits": "lean man in a patched leather jerkin, smell of cheap ale about him, dice cup in hand, has been down in the catacombs twice",
+      "status": "alive",
+      "location": "loc.alderwatch",
+      "created": {
+       "turn": 7,
+       "minute": 555
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 14
+      },
+      "card": {},
+      "template": "adventurer"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "npc.ossen",
+     "band": "ENGAGED"
+    }
+   },
+   {
+    "t": "scene.tactical",
+    "d": {
+     "id": "npc.ossen",
+     "relevant": true,
+     "threat": false
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_ossen.occupation.d65e1381.t7",
+      "s": "npc.ossen",
+      "p": "occupation",
+      "o": "adventurer",
+      "since": {
+       "turn": 7,
+       "minute": 555
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 14
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "npc.garrick",
+      "kind": "npc",
+      "name": "Garrick",
+      "descriptors": [
+       "adventurer",
+       "broad woman in ringmail",
+       "sitting on a bench, pretending not to li",
+       "npc.garrick"
+      ],
+      "traits": "broad woman in ringmail, sitting on a bench, pretending not to listen",
+      "status": "alive",
+      "location": "loc.alderwatch",
+      "created": {
+       "turn": 7,
+       "minute": 555
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 14
+      },
+      "card": {},
+      "template": "adventurer"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "npc.garrick",
+     "band": "ENGAGED"
+    }
+   },
+   {
+    "t": "scene.tactical",
+    "d": {
+     "id": "npc.garrick",
+     "relevant": true,
+     "threat": false
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.npc_garrick.occupation.41aad542.t7",
+      "s": "npc.garrick",
+      "p": "occupation",
+      "o": "adventurer",
+      "since": {
+       "turn": 7,
+       "minute": 555
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 14
+      }
+     }
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t7.m14.d6_4.1",
+      "s": "npc.ossen",
+      "p": "proposal",
+      "o": "offers to join Alaric on the catacombs job, two of them, half each; he knows where the stairs are",
+      "since": {
+       "turn": 7,
+       "minute": 555
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 14,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "thread.set",
+    "d": {
+     "thread": {
+      "id": "thread.t7.1",
+      "text": "Ossen wants to split the catacombs job two ways, half each, and knows where the stairs are; Alaric has not answered.",
+      "kind": "promise",
+      "status": "open",
+      "since": {
+       "turn": 7,
+       "minute": 555
+      },
+      "updated": {
+       "turn": 7,
+       "minute": 555
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 14
+      },
+      "at": "loc.alderwatch.guild_hall",
+      "who": [
+       "npc.ossen",
+       "pc"
+      ]
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.ossen",
+     "about": "f.pc.appearance",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 7,
+     "minute": 555
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t7.seen.npc.ossen",
+      "turn": 7,
+      "minute": 555,
+      "text": "first saw {pc} at Adventurers' Guild hall, Alderwatch",
+      "who": [
+       "npc.ossen",
+       "pc"
+      ],
+      "witnesses": [
+       "npc.ossen"
+      ],
+      "seen": [
+       "npc.ossen"
+      ],
+      "location": "loc.alderwatch",
+      "place": "Adventurers' Guild hall, Alderwatch",
+      "importance": 4,
+      "kind": "meeting"
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.garrick",
+     "about": "f.pc.appearance",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 7,
+     "minute": 555
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t7.seen.npc.garrick",
+      "turn": 7,
+      "minute": 555,
+      "text": "first saw {pc} at Adventurers' Guild hall, Alderwatch",
+      "who": [
+       "npc.garrick",
+       "pc"
+      ],
+      "witnesses": [
+       "npc.garrick"
+      ],
+      "seen": [
+       "npc.garrick"
+      ],
+      "location": "loc.alderwatch",
+      "place": "Adventurers' Guild hall, Alderwatch",
+      "importance": 4,
+      "kind": "meeting"
+     }
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t7.m14.ep",
+      "turn": 7,
+      "minute": 555,
+      "text": "Adventurers' Guild hall, Alderwatch: {pc}: \"Annehmen: Clear the Old Crown Catacombs, Level 1\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk_a",
+       "npc.ossen",
+       "npc.garrick"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.alderwatch",
+      "place": "Adventurers' Guild hall, Alderwatch",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 14
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 7,
+     "rolled": true,
+     "open": true,
+     "kind": "meeting",
+     "narrated": "likely",
+     "heuristic": true,
+     "persisted": {
+      "threads": 1,
+      "npc_reentries": 0,
+      "persons": 2,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 94290,
+     "repaired": true,
+     "deltas": 7,
+     "rejected": 1
+    }
+   }
+  ]
+ },
+ {
+  "i": 15,
+  "user": true,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 8,
+     "input_hash": "c8b2808a",
+     "input": "*i look at Ossen* Im Alaric. And Sure its always good to have someone to have ones back. im a Mage whats your class?"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 4195,
+     "failed": false,
+     "commands": [],
+     "dropped": []
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 8,
+     "at": "loc.alderwatch.guild_hall",
+     "exposure": "scene",
+     "frame": "inside",
+     "phase": "day",
+     "base": 6,
+     "misses_before": 0,
+     "p": 6,
+     "roll": 84.45,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; narrate what he says and does, and the world's response."
+      ],
+      "extra": [],
+      "resolutions": [],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "inside",
+        "phase": "day",
+        "p": 6,
+        "roll": 84.45,
+        "misses": 0,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 16,
+  "user": false,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "fact.ended",
+    "d": {
+     "id": "f.npc_ossen.occupation.d65e1381.t7",
+     "until": {
+      "turn": 8,
+      "minute": 555
+     },
+     "reason": "superseded by npc.ossen occupation Scout — bows, traps, reading corridors"
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t8.m16.d1.1",
+      "s": "npc.ossen",
+      "p": "occupation",
+      "o": "Scout — bows, traps, reading corridors",
+      "since": {
+       "turn": 8,
+       "minute": 555
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 16,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.detailed",
+    "d": {
+     "id": "quest.clear_the_old_crown_catacombs_level_1",
+     "note": "Ossen's plan: leave by the west gate together, take the chapel track, down the stairs; Ossen walks point, Alaric is the backstop caster. 'Clearing means cleared' — every skeleton on level 1, the warde",
+     "schedule": null
+    }
+   },
+   {
+    "t": "thread.set",
+    "d": {
+     "thread": {
+      "id": "thread.t7.1",
+      "text": "Ossen wants to split the catacombs job two ways, half each, and knows where the stairs are; Alaric has not answered.",
+      "kind": "promise",
+      "status": "open",
+      "since": {
+       "turn": 7,
+       "minute": 555
+      },
+      "updated": {
+       "turn": 8,
+       "minute": 555
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 14
+      },
+      "at": "loc.alderwatch.guild_hall",
+      "who": [
+       "npc.ossen",
+       "pc"
+      ]
+     }
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 4,
+      "type": "memory",
+      "text": "Garrick, passed over on Tuesday, told Ossen to take the Mage properly — 'Mage stands behind, not beside' — and challenged Alaric to show what he can actually cast, noting level 1 has killed novices who talked better than they cast.",
+      "who": [
+       "npc.garrick",
+       "npc.ossen",
+       "pc"
+      ],
+      "imp": 6
+     },
+     "rule": "engine_owned_combat",
+     "reason": "a memory of deaths the engine has not booked (1 has dead: the engine's fights have 0 dead)"
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.ossen",
+     "about": "f.pc.name",
+     "stance": "knows",
+     "source": "told:pc",
+     "turn": 8,
+     "minute": 555
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t8.m16.ep",
+      "turn": 8,
+      "minute": 555,
+      "text": "Adventurers' Guild hall, Alderwatch: {pc}: \"*i look at Ossen* Im Alaric. And Sure its always good to have someone to have ones back. im a Mage whats your class?\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk_a",
+       "npc.ossen",
+       "npc.garrick"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.alderwatch",
+      "place": "Adventurers' Guild hall, Alderwatch",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 16
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 8,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 1,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 33121,
+     "repaired": false,
+     "deltas": 4,
+     "rejected": 1
+    }
+   }
+  ]
+ },
+ {
+  "i": 17,
+  "user": true,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 9,
+     "input_hash": "ccb9fdab",
+     "input": "im a pure damage dealer for now since i just started. so as long as you can hold the skeletons away from me i can eliminate them"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 3389,
+     "failed": false,
+     "commands": [],
+     "dropped": []
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 9,
+     "at": "loc.alderwatch.guild_hall",
+     "exposure": "scene",
+     "frame": "inside",
+     "phase": "day",
+     "base": 6,
+     "misses_before": 1,
+     "p": 6.9,
+     "roll": 9.26,
+     "open": false,
+     "kind": null,
+     "leg": null
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; narrate what he says and does, and the world's response."
+      ],
+      "extra": [],
+      "resolutions": [],
+      "expected_keys": {},
+      "auth": {
+       "go": null,
+       "gos": [],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 120,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "scene",
+        "eligible": true,
+        "frame": "inside",
+        "phase": "day",
+        "p": 6.9,
+        "roll": 9.26,
+        "misses": 1,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 18,
+  "user": false,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 1,
+      "type": "fact",
+      "s": "npc.garrick",
+      "p": "experience",
+      "o": "has cleared the catacombs' first level twice with a mage behind her"
+     },
+     "rule": "engine_owned_fact",
+     "reason": "a known Guild contract keeps payout and formal status/completion in the engine domain; use quest.detail/quest.progress/quest.ready for story progress instead of overriding that state with a free fact"
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t9.m18.d2.1",
+      "s": "npc.garrick",
+      "p": "joins",
+      "o": "no — declines to come, two is enough for a first level",
+      "since": {
+       "turn": 9,
+       "minute": 555
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 18,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.detailed",
+    "d": {
+     "id": "quest.clear_the_old_crown_catacombs_level_1",
+     "note": "Garrick's advice: hold the bolt until a skeleton is two strides off, not across the room; Ossen brings bread and a waterskin, suggests bringing more; west gate, an hour out, mule carts jam the west ro",
+     "schedule": null
+    }
+   },
+   {
+    "t": "scene.left",
+    "d": {
+     "id": "npc.garrick"
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t9.m18.d5_3.1",
+      "turn": 9,
+      "minute": 555,
+      "text": "Garrick declined to join the catacombs run, saying two is enough for a first level if they're not fools, and warned that the wardens' chapel takes bodies if Ossen is wrong about {pc}.",
+      "who": [
+       "npc.garrick",
+       "npc.ossen",
+       "pc"
+      ],
+      "witnesses": [
+       "pc",
+       "npc.ossen"
+      ],
+      "seen": [
+       "pc",
+       "npc.ossen"
+      ],
+      "location": "loc.alderwatch",
+      "place": "Adventurers' Guild hall, Alderwatch",
+      "importance": 6,
+      "kind": "narrated",
+      "msg": 18
+     }
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t9.m18.ep",
+      "turn": 9,
+      "minute": 555,
+      "text": "Adventurers' Guild hall, Alderwatch: {pc}: \"im a pure damage dealer for now since i just started. so as long as you can hold the skeletons away from me i can eliminate them\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.npcguild_clerk_a",
+       "npc.ossen"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "loc.alderwatch",
+      "place": "Adventurers' Guild hall, Alderwatch",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 18
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 9,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 26020,
+     "repaired": false,
+     "deltas": 5,
+     "rejected": 1
+    }
+   }
+  ]
+ },
+ {
+  "i": 19,
+  "user": true,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 10,
+     "input_hash": "c9a337a6",
+     "input": "Allright lets go *i say and follow him as we start to make our way to the dungeon*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 41615,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "go",
+       "to": {
+        "new": "the Old Crown Catacombs"
+       },
+       "quote": "Allright lets go *i say and follow him as we start to make our way to the dungeon*",
+       "within": null
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "dungeon.established",
+    "d": {
+     "dungeon": {
+      "id": "loc.old_crown_catacombs",
+      "name": "Old Crown Catacombs",
+      "since": {
+       "turn": 10,
+       "minute": 555
+      },
+      "seed": "3509323178|loc.old_crown_catacombs",
+      "gate": {
+       "names": [
+        "ruined chapel",
+        "chapel stair",
+        "chapel yard",
+        "chapel lodge"
+       ],
+       "text": "the stair beneath the ruined chapel, watched by the temple wardens",
+       "requires": null,
+       "fee_cp": 0,
+       "keeper": "the temple wardens"
+      },
+      "capacity": 6,
+      "reset_min": 4320,
+      "floors": {
+       "1": {
+        "rank": {
+         "min": "F",
+         "max": "F"
+        },
+        "spans": {
+         "minion": [
+          1,
+          5
+         ],
+         "guard": [
+          4,
+          8
+         ],
+         "boss": [
+          5,
+          9
+         ]
+        },
+        "slots": [
+         {
+          "id": "bones",
+          "role": "minion",
+          "species": [
+           "restless skeleton",
+           "risen bones"
+          ],
+          "anchor": "skeleton",
+          "count": [
+           2,
+           3
+          ]
+         },
+         {
+          "id": "gallery",
+          "role": "minion",
+          "species": [
+           "restless skeleton",
+           "skeletal gravekeeper"
+          ],
+          "anchor": "skeleton",
+          "count": [
+           1,
+           2
+          ]
+         },
+         {
+          "id": "warden",
+          "role": "guard",
+          "name": "the Gallery Warden",
+          "species": "armoured skeleton",
+          "anchor": "skeleton"
+         }
+        ],
+        "manifest": "the pale grave-light in the seal over the lower stair gutters out, and the seal's chalk lines crack",
+        "sealed": true,
+        "pace": [
+         0,
+         1
+        ]
+       },
+       "2": {
+        "rank": {
+         "min": "E",
+         "max": "E"
+        },
+        "spans": {
+         "minion": [
+          15,
+          19
+         ],
+         "guard": [
+          18,
+          22
+         ],
+         "boss": [
+          20,
+          24
+         ]
+        },
+        "slots": [
+         {
+          "id": "ghouls",
+          "role": "minion",
+          "species": [
+           "ghoul",
+           "ghast"
+          ],
+          "anchor": "ghoul",
+          "count": [
+           1,
+           2
+          ]
+         },
+         {
+          "id": "lord",
+          "role": "boss",
+          "name": "the Ossuary Lord",
+          "species": "ghoul lord",
+          "anchor": "ghoul"
+         }
+        ],
+        "manifest": "the charnel stink thins and the lower galleries fall still",
+        "sealed": false,
+        "pace": [
+         0,
+         1
+        ]
+       }
+      },
+      "parties": [
+       {
+        "id": "party.kettles_company",
+        "name": "Kettle's Company",
+        "size": 4,
+        "leader": "Tamsin Reed",
+        "affiliation": "hired blades of a local house",
+        "reach": 1
+       },
+       {
+        "id": "party.wren_company",
+        "name": "the Wren Company",
+        "size": 3,
+        "leader": "Edda Lusk",
+        "affiliation": "a Guild-registered company",
+        "reach": 2
+       }
+      ],
+      "resources_spec": [],
+      "cycle": 1,
+      "cycle_start": 555,
+      "booked_to": 555,
+      "inside": {},
+      "clears": [],
+      "ahead": null,
+      "pass": null,
+      "run": {
+       "floors": {
+        "1": {
+         "parts": 0,
+         "pace": [
+          0,
+          0,
+          1
+         ],
+         "slots": [
+          {
+           "id": "bones",
+           "role": "minion",
+           "name": null,
+           "species": "risen bones",
+           "anchor": "skeleton",
+           "count": 2,
+           "type": null,
+           "levels": [
+            1,
+            2
+           ],
+           "ref": "old_crown_catacombs_c1_l1_e1",
+           "entities": [],
+           "at": null,
+           "taken": null
+          },
+          {
+           "id": "gallery",
+           "role": "minion",
+           "name": null,
+           "species": "restless skeleton",
+           "anchor": "skeleton",
+           "count": 2,
+           "type": null,
+           "levels": [
+            5,
+            4
+           ],
+           "ref": "old_crown_catacombs_c1_l1_e2",
+           "entities": [],
+           "at": null,
+           "taken": null
+          },
+          {
+           "id": "warden",
+           "role": "guard",
+           "name": "the Gallery Warden",
+           "species": "armoured skeleton",
+           "anchor": "skeleton",
+           "count": 1,
+           "type": null,
+           "levels": [
+            6
+           ],
+           "ref": "old_crown_catacombs_c1_l1_e3",
+           "entities": [],
+           "at": null,
+           "taken": null
+          }
+         ],
+         "cleared": null
+        },
+        "2": {
+         "parts": 0,
+         "pace": [
+          0,
+          1
+         ],
+         "slots": [
+          {
+           "id": "ghouls",
+           "role": "minion",
+           "name": null,
+           "species": "ghast",
+           "anchor": "ghoul",
+           "count": 1,
+           "type": null,
+           "levels": [
+            18
+           ],
+           "ref": "old_crown_catacombs_c1_l2_e1",
+           "entities": [],
+           "at": null,
+           "taken": null
+          },
+          {
+           "id": "lord",
+           "role": "boss",
+           "name": "the Ossuary Lord",
+           "species": "ghoul lord",
+           "anchor": "ghoul",
+           "count": 1,
+           "type": null,
+           "levels": [
+            23
+           ],
+           "ref": "old_crown_catacombs_c1_l2_e2",
+           "entities": [],
+           "at": null,
+           "taken": null
+          }
+         ],
+         "cleared": null
+        }
+       },
+       "resources": {}
+      }
+     }
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "go",
+     "status": "authorized",
+     "quote": "Allright lets go *i say and follow him as we start to make our way to the dungeon*"
+    }
+   },
+   {
+    "t": "pulse.rolled",
+    "d": {
+     "v": 1,
+     "turn": 10,
+     "at": "loc.alderwatch.guild_hall",
+     "exposure": "travel",
+     "frame": "travel",
+     "phase": "day",
+     "base": 35,
+     "misses_before": 2,
+     "p": 45.5,
+     "roll": 79.76,
+     "open": false,
+     "kind": null,
+     "leg": 1
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. GOES — to Old Crown Catacombs (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+      ],
+      "extra": [
+       "THE ROAD — this leg toward Old Crown Catacombs is uneventful: no ambush, attack or obstacle meets him on it. Scenery, weather, far-off animals and harmless travellers are atmosphere; carry the travel forward until he arrives or the day's travel ends, and leave every choice about it to him."
+      ],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "Allright lets go *i say and follow him as we start to make our way to the dungeon*"
+       }
+      ],
+      "expected_keys": {
+       "1": "go"
+      },
+      "auth": {
+       "go": {
+        "seq": 1,
+        "to": "loc.old_crown_catacombs",
+        "name": "Old Crown Catacombs",
+        "hall": false,
+        "newName": null,
+        "mode": "dungeon",
+        "enter": {
+         "dungeon": "loc.old_crown_catacombs",
+         "root": "loc.old_crown_catacombs",
+         "gate": false
+        },
+        "scope": "loc.old_crown_catacombs"
+       },
+       "gos": [
+        {
+         "seq": 1,
+         "to": "loc.old_crown_catacombs",
+         "name": "Old Crown Catacombs",
+         "hall": false,
+         "newName": null,
+         "mode": "dungeon",
+         "enter": {
+          "dungeon": "loc.old_crown_catacombs",
+          "root": "loc.old_crown_catacombs",
+          "gate": false
+         },
+         "scope": "loc.old_crown_catacombs"
+        }
+       ],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 10080,
+       "road": "quiet",
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": true,
+        "exposure": "travel",
+        "eligible": true,
+        "frame": "travel",
+        "phase": "day",
+        "p": 45.5,
+        "roll": 79.76,
+        "misses": 2,
+        "open": false,
+        "kind": null
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false,
+       "continuation": "local"
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 20,
+  "user": false,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 65,
+     "why": "narration"
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "npc.npcguild_clerk_a",
+     "set": {
+      "at": "loc.alderwatch.guild_hall"
+     }
+    }
+   },
+   {
+    "t": "scene.moved",
+    "d": {
+     "at": "loc.old_crown_catacombs",
+     "location": "realm.valedorn_crown",
+     "place": "Old Crown Catacombs",
+     "reset_present": true,
+     "track_history": true
+    }
+   },
+   {
+    "t": "place.updated",
+    "d": {
+     "id": "loc.old_crown_catacombs",
+     "set": {
+      "visited": {
+       "turn": 10,
+       "minute": 620
+      }
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "npc.ossen",
+     "band": "SHORT"
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.t10.m20.d3.1",
+      "s": "loc.old_crown_catacombs",
+      "p": "entrance",
+      "o": "low stone steps down through the ruined chapel floor into a dark square mouth, an old door lying beside them",
+      "since": {
+       "turn": 10,
+       "minute": 620
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.5,
+      "hard": false,
+      "source": {
+       "kind": "narration",
+       "msg": 20,
+       "because": null
+      }
+     }
+    }
+   },
+   {
+    "t": "quest.detailed",
+    "d": {
+     "id": "quest.clear_the_old_crown_catacombs_level_1",
+     "note": "Ossen will go first with his bow; Alaric keeps two steps back and holds his casting until Ossen says or something is too close",
+     "schedule": null
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t10.m20.d5_2.1",
+      "turn": 10,
+      "minute": 620,
+      "text": "Reached the ruined chapel above the Old Crown Catacombs with Ossen; he plans to lead with the bow while {pc} holds back two steps, and wants to go down while the sun is still up.",
+      "who": [
+       "npc.ossen",
+       "pc"
+      ],
+      "witnesses": [
+       "pc",
+       "npc.ossen"
+      ],
+      "seen": [
+       "pc",
+       "npc.ossen"
+      ],
+      "location": "realm.valedorn_crown",
+      "place": "Old Crown Catacombs",
+      "importance": 6,
+      "kind": "narrated",
+      "msg": 20
+     }
+    }
+   },
+   {
+    "t": "dungeon.booked",
+    "d": {
+     "id": "loc.old_crown_catacombs",
+     "to": 620
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t10.m20.ep",
+      "turn": 10,
+      "minute": 620,
+      "text": "Old Crown Catacombs: {pc}: \"Allright lets go *i say and follow him as we start to make our way to the dungeon*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.ossen"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "realm.valedorn_crown",
+      "place": "Old Crown Catacombs",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 20
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 10,
+     "rolled": true,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 0,
+      "features": 0,
+      "objects": 0,
+      "places": 0,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 27556,
+     "repaired": false,
+     "deltas": 5,
+     "rejected": 0
+    }
+   }
+  ]
+ },
+ {
+  "i": 21,
+  "user": true,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 11,
+     "input_hash": "554d3e6d",
+     "input": "lets go *i say and we enter the dungeon*"
+    }
+   },
+   {
+    "t": "cmd.interpreted",
+    "d": {
+     "version": "plan-c0.2",
+     "source": "json",
+     "ms": 7590,
+     "failed": false,
+     "commands": [
+      {
+       "seq": 1,
+       "type": "go",
+       "to": {
+        "new": "down the stairs into the catacombs"
+       },
+       "quote": "lets go *i say and we enter the dungeon*",
+       "within": null
+      }
+     ],
+     "dropped": []
+    }
+   },
+   {
+    "t": "dungeon.ahead",
+    "d": {
+     "id": "loc.old_crown_catacombs",
+     "ahead": {
+      "turn": 11,
+      "cycle": 1,
+      "floor": 1,
+      "slot": "bones",
+      "ref": "old_crown_catacombs_c1_l1_e1"
+     }
+    }
+   },
+   {
+    "t": "cmd.resolved",
+    "d": {
+     "seq": 1,
+     "type": "go",
+     "status": "authorized",
+     "quote": "lets go *i say and we enter the dungeon*"
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "v4",
+      "actions": [
+       "1. GOES — on into part 1 of level 1 of Old Crown Catacombs (the engine's next part: the story names and shapes it; it tells no other room, passage, stair or level). Stop in this section. Leave the next movement and any answer to Alaric."
+      ],
+      "extra": [
+       "DUNGEON AHEAD (the engine's) — going on into a part of level 1 he has not seen: there he meets 2 risen bones. That is where this walk ends; bring exactly these, and the quiet way there is told in passing (a sound, a shadow or old tracks without consequence are no stop)."
+      ],
+      "resolutions": [
+       {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "lets go *i say and we enter the dungeon*"
+       }
+      ],
+      "expected_keys": {
+       "1": "go"
+      },
+      "auth": {
+       "go": {
+        "seq": 1,
+        "to": null,
+        "name": "part 1 of level 1",
+        "hall": false,
+        "newName": "part 1 of level 1",
+        "section": {
+         "id": "loc.old_crown_catacombs.l1_s1",
+         "root": "loc.old_crown_catacombs",
+         "level": 1,
+         "k": 1,
+         "from": "loc.old_crown_catacombs",
+         "down": false,
+         "name": "part 1 of level 1"
+        },
+        "mode": "dungeon",
+        "enter": {
+         "dungeon": "loc.old_crown_catacombs",
+         "root": "loc.old_crown_catacombs",
+         "gate": false
+        },
+        "scope": null
+       },
+       "gos": [
+        {
+         "seq": 1,
+         "to": null,
+         "name": "part 1 of level 1",
+         "hall": false,
+         "newName": "part 1 of level 1",
+         "section": {
+          "id": "loc.old_crown_catacombs.l1_s1",
+          "root": "loc.old_crown_catacombs",
+          "level": 1,
+          "k": 1,
+          "from": "loc.old_crown_catacombs",
+          "down": false,
+          "name": "part 1 of level 1"
+         },
+         "mode": "dungeon",
+         "enter": {
+          "dungeon": "loc.old_crown_catacombs",
+          "root": "loc.old_crown_catacombs",
+          "gate": false
+         },
+         "scope": null
+        }
+       ],
+       "roam": false,
+       "take": [],
+       "takeNames": {},
+       "gather": false,
+       "rest": false,
+       "timeCap": 720,
+       "pulse": {
+        "v": 1,
+        "governs": true,
+        "rolled": false,
+        "exposure": "scene",
+        "eligible": false,
+        "reason": "dungeon_ahead"
+       },
+       "c": true,
+       "booked_min": 0,
+       "recovered": false
+      },
+      "conditionals": [],
+      "booked": {
+       "registration": false,
+       "grants": [],
+       "turnIns": [],
+       "accepted": [],
+       "sellers": [],
+       "goods": []
+      },
+      "board": null,
+      "search_checks": [],
+      "check_die": null,
+      "interp_failed": false,
+      "dropped": []
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 22,
+  "user": false,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "place.created",
+    "d": {
+     "place": {
+      "id": "loc.old_crown_catacombs.l1_s1",
+      "name": "Antechamber of the Old Crown Catacombs",
+      "kind": "interior",
+      "parent": "loc.old_crown_catacombs",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "by": "dungeon",
+      "level": 1,
+      "section": 1,
+      "created": {
+       "turn": 11,
+       "minute": 620
+      }
+     }
+    }
+   },
+   {
+    "t": "link.set",
+    "d": {
+     "link": {
+      "id": "link.1",
+      "a": "loc.old_crown_catacombs",
+      "b": "loc.old_crown_catacombs.l1_s1",
+      "name": null,
+      "both": true,
+      "hidden": false,
+      "feature": null,
+      "dir": null,
+      "since": {
+       "turn": 11,
+       "minute": 620
+      },
+      "found": {
+       "turn": 11,
+       "minute": 620,
+       "how": "dungeon"
+      },
+      "by": "dungeon"
+     }
+    }
+   },
+   {
+    "t": "scene.moved",
+    "d": {
+     "at": "loc.old_crown_catacombs.l1_s1",
+     "location": "realm.valedorn_crown",
+     "place": "Old Crown Catacombs › Antechamber of the Old Crown Catacombs",
+     "reset_present": true,
+     "track_history": true
+    }
+   },
+   {
+    "t": "place.updated",
+    "d": {
+     "id": "loc.old_crown_catacombs.l1_s1",
+     "set": {
+      "visited": {
+       "turn": 11,
+       "minute": 620
+      }
+     }
+    }
+   },
+   {
+    "t": "dungeon.part",
+    "d": {
+     "id": "loc.old_crown_catacombs",
+     "cycle": 1,
+     "floor": 1,
+     "at": "loc.old_crown_catacombs.l1_s1"
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "npc.ossen",
+     "band": "SHORT"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": {
+       "new": {
+        "name": "Antechamber of the Old Crown Catacombs",
+        "kind": "interior",
+        "parent": "loc.old_crown_catacombs"
+       }
+      },
+      "seq": 2,
+      "type": "passage",
+      "from": {
+       "new": {
+        "name": "Antechamber of the Old Crown Catacombs",
+        "kind": "interior",
+        "parent": "loc.old_crown_catacombs"
+       }
+      },
+      "to": {
+       "new": {
+        "name": "Burial Gallery",
+        "kind": "interior",
+        "parent": "loc.old_crown_catacombs"
+       }
+      },
+      "name": "low archway",
+      "feature": "scuff marks in the bone gravel",
+      "hidden": null,
+      "one_way": null,
+      "dir": null
+     },
+     "rule": "dungeon_way",
+     "reason": "the engine keeps the ways of Old Crown Catacombs: he goes on, back, down or out along its parts, never by a way the story tells"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 4,
+      "type": "creature.new",
+      "ref": "old_crown_catacombs_c1_l1_e1",
+      "species": "risen bones",
+      "anchor": "skeleton",
+      "desc": [
+       "skeletons of yellowed bone, joints bound with crusted sinew and verdigris rings, one with rusted mail scraps, one clutching a broken sword hilt"
+      ],
+      "count": 2,
+      "present": true,
+      "band": "LONG",
+      "population": "independent",
+      "life_stage": "adult",
+      "threat": null,
+      "cluster": null,
+      "stronger": null,
+      "more": null,
+      "armed": null
+     },
+     "rule": "scene_context",
+     "reason": "the narrative setting is not the location reached at this step"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 5,
+      "type": "position",
+      "who": "npc.ossen",
+      "band": "SHORT",
+      "evidence": "He eased through the arch into the gallery... Ossen drew the bowstring back to his cheek",
+      "cover": null,
+      "cluster": null,
+      "scope": null
+     },
+     "rule": "scene_context",
+     "reason": "the narrative setting is not the location reached at this step"
+    }
+   },
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 6,
+      "type": "aware",
+      "who": "old_crown_catacombs_c1_l1_e1",
+      "level": "aware",
+      "scope": "part",
+      "evidence": "One of them turned its head. The grinding of the neck vertebrae carried down the gallery"
+     },
+     "rule": "scene_context",
+     "reason": "the narrative setting is not the location reached at this step"
+    }
+   },
+   {
+    "t": "time.advanced",
+    "d": {
+     "minutes": 15,
+     "why": "travel"
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+      "kind": "creature",
+      "name": null,
+      "descriptors": [
+       "old_crown_catacombs_c1_l1_e1 1"
+      ],
+      "traits": "",
+      "status": "alive",
+      "location": "realm.valedorn_crown",
+      "created": {
+       "turn": 11,
+       "minute": 635
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 22
+      },
+      "card": {},
+      "species": "risen bones",
+      "anchor": "skeleton"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+     "band": "MEDIUM"
+    }
+   },
+   {
+    "t": "entity.created",
+    "d": {
+     "entity": {
+      "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+      "kind": "creature",
+      "name": null,
+      "descriptors": [
+       "old_crown_catacombs_c1_l1_e1 2"
+      ],
+      "traits": "",
+      "status": "alive",
+      "location": "realm.valedorn_crown",
+      "created": {
+       "turn": 11,
+       "minute": 635
+      },
+      "source": {
+       "kind": "narration",
+       "msg": 22
+      },
+      "card": {},
+      "species": "risen bones",
+      "anchor": "skeleton"
+     }
+    }
+   },
+   {
+    "t": "scene.entered",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+     "band": "MEDIUM"
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+     "set": {
+      "life_stage": "adult"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+     "set": {
+      "life_stage": "adult"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+     "set": {
+      "group": "old_crown_catacombs_c1_l1_e1"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+     "set": {
+      "group": "old_crown_catacombs_c1_l1_e1"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+     "set": {
+      "level": 1,
+      "type": "normal",
+      "slot": {
+       "dungeon": "loc.old_crown_catacombs",
+       "cycle": 1,
+       "floor": 1,
+       "id": "bones",
+       "role": "minion"
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+     "set": {
+      "level": 2,
+      "type": "normal",
+      "slot": {
+       "dungeon": "loc.old_crown_catacombs",
+       "cycle": 1,
+       "floor": 1,
+       "id": "bones",
+       "role": "minion"
+      }
+     }
+    }
+   },
+   {
+    "t": "dungeon.slot",
+    "d": {
+     "id": "loc.old_crown_catacombs",
+     "cycle": 1,
+     "floor": 1,
+     "slot": "bones",
+     "set": {
+      "entities": [
+       "mon.old_crown_catacombs_c1_l1_e1_1",
+       "mon.old_crown_catacombs_c1_l1_e1_2"
+      ],
+      "at": "loc.old_crown_catacombs.l1_s1",
+      "met_turn": 11
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+     "set": {
+      "profile": {
+       "model": "creature",
+       "anchor": "skeleton",
+       "body_plan": "Skeleton / animated bones",
+       "level": 1,
+       "rank": "F",
+       "type": "normal",
+       "max_hp": 30,
+       "atk": 10,
+       "def": 2,
+       "mdef": 0,
+       "init": 8,
+       "attack": {
+        "name": "Bony strike",
+        "damage_type": "physical",
+        "range": "ENGAGED"
+       }
+      },
+      "met_at": "loc.old_crown_catacombs.l1_s1"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+     "set": {
+      "profile": {
+       "model": "creature",
+       "anchor": "skeleton",
+       "body_plan": "Skeleton / animated bones",
+       "level": 2,
+       "rank": "F",
+       "type": "normal",
+       "max_hp": 36,
+       "atk": 12,
+       "def": 3,
+       "mdef": 0,
+       "init": 8,
+       "attack": {
+        "name": "Bony strike",
+        "damage_type": "physical",
+        "range": "ENGAGED"
+       }
+      },
+      "met_at": "loc.old_crown_catacombs.l1_s1"
+     }
+    }
+   },
+   {
+    "t": "dungeon.booked",
+    "d": {
+     "id": "loc.old_crown_catacombs",
+     "to": 635
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.t11.m22.ep",
+      "turn": 11,
+      "minute": 635,
+      "text": "Old Crown Catacombs › Antechamber of the Old Crown Catacombs: {pc}: \"lets go *i say and we enter the dungeon*\"",
+      "who": [
+       "pc"
+      ],
+      "about": [
+       "npc.ossen",
+       "mon.old_crown_catacombs_c1_l1_e1_1",
+       "mon.old_crown_catacombs_c1_l1_e1_2"
+      ],
+      "witnesses": [
+       "pc"
+      ],
+      "seen": [
+       "pc"
+      ],
+      "location": "realm.valedorn_crown",
+      "place": "Old Crown Catacombs › Antechamber of the Old Crown Catacombs",
+      "importance": 3,
+      "kind": "episode",
+      "msg": 22
+     }
+    }
+   },
+   {
+    "t": "pulse.outcome",
+    "d": {
+     "v": 2,
+     "turn": 11,
+     "rolled": false,
+     "open": false,
+     "kind": null,
+     "narrated": null,
+     "heuristic": true,
+     "persisted": {
+      "threads": 0,
+      "npc_reentries": 0,
+      "persons": 0,
+      "creatures": 2,
+      "features": 0,
+      "objects": 0,
+      "places": 1,
+      "fight": false,
+      "rejected_pulse": 0
+     }
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 127259,
+     "repaired": true,
+     "deltas": 6,
+     "rejected": 4
+    }
+   }
+  ]
+ },
+ {
+  "i": 23,
+  "user": true,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 12,
+     "input_hash": "c6d2f86b",
+     "input": "i got A *i whisper to Ossen and then i aim and fire at Skeleton A*"
+    }
+   },
+   {
+    "t": "encounter.started",
+    "d": {
+     "encounter": {
+      "id": "enc.t12",
+      "phase": "ACTIVE",
+      "round": 2,
+      "order": [
+       "mon.old_crown_catacombs_c1_l1_e1_1",
+       "mon.old_crown_catacombs_c1_l1_e1_2",
+       "pc"
+      ],
+      "turn_index": 2,
+      "current": "pc",
+      "combatants": {
+       "pc": {
+        "id": "pc",
+        "name": "Alaric",
+        "side": "pc",
+        "model": "character",
+        "fixed": {
+         "level": 1,
+         "rank": "F",
+         "class": "mage",
+         "stats": {
+          "STR": 5,
+          "VIT": 5,
+          "AGI": 5,
+          "INT": 6,
+          "PER": 5,
+          "WIL": 6
+         },
+         "max_hp": 80,
+         "max_mp": 72,
+         "max_sta": 100,
+         "atk": 0,
+         "matk": 10,
+         "def": 3,
+         "mdef": 4,
+         "init": 7,
+         "type": "normal",
+         "actions": {
+          "mage.basic_attack": {
+           "prof": 1,
+           "pp": 0
+          },
+          "mage.flame_lance": {
+           "prof": 1,
+           "pp": 0
+          },
+          "mage.arcane_wave": {
+           "prof": 1,
+           "pp": 0
+          }
+         },
+         "weapon_family": "focus",
+         "temperament": null,
+         "sapient": true
+        },
+        "current": {
+         "hp": 71,
+         "mp": 56,
+         "sta": 100,
+         "ammo": {},
+         "band": null,
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        }
+       },
+       "mon.old_crown_catacombs_c1_l1_e1_1": {
+        "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+        "name": "Risen Bones A",
+        "side": "hostile",
+        "model": "creature",
+        "fixed": {
+         "level": 1,
+         "rank": "F",
+         "type": "normal",
+         "body_plan": "Skeleton / animated bones",
+         "max_hp": 30,
+         "atk": 10,
+         "def": 2,
+         "mdef": 0,
+         "init": 8,
+         "attack": {
+          "name": "Bony strike",
+          "damage_type": "physical",
+          "range": "ENGAGED"
+         },
+         "sapient": false,
+         "defeat_xp": 60
+        },
+        "current": {
+         "hp": 0,
+         "band": "MEDIUM",
+         "cover": "none",
+         "effects": [],
+         "defeated": true,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Risen Bones A"
+       },
+       "mon.old_crown_catacombs_c1_l1_e1_2": {
+        "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+        "name": "Risen Bones B",
+        "side": "hostile",
+        "model": "creature",
+        "fixed": {
+         "level": 2,
+         "rank": "F",
+         "type": "normal",
+         "body_plan": "Skeleton / animated bones",
+         "max_hp": 36,
+         "atk": 12,
+         "def": 3,
+         "mdef": 0,
+         "init": 8,
+         "attack": {
+          "name": "Bony strike",
+          "damage_type": "physical",
+          "range": "ENGAGED"
+         },
+         "sapient": false,
+         "defeat_xp": 120
+        },
+        "current": {
+         "hp": 36,
+         "band": "ENGAGED",
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Risen Bones B"
+       }
+      },
+      "pc_rank": "F",
+      "pending_xp": 60,
+      "defeated": [
+       "mon.old_crown_catacombs_c1_l1_e1_1"
+      ],
+      "escaped": [],
+      "trigger": {
+       "actor": "pc",
+       "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+       "skill": "mage.flame_lance",
+       "move": null,
+       "move_target": null
+      },
+      "log": [
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+        "opening": false,
+        "cost": {
+         "resource": "mp",
+         "amount": 16,
+         "before": 72,
+         "after": 56
+        },
+        "skill": "mage.flame_lance",
+        "skill_name": "Flame Lance",
+        "raw": 40.25,
+        "raw_text": "16 + INT 6×2.375 + MATK 10 = 40.25",
+        "strikes": [
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+          "power": 40.25,
+          "defense": 0,
+          "post_def": 40.25,
+          "variance": 0.95,
+          "final": 38,
+          "absorbed": 0,
+          "hp_before": 30,
+          "hp_after": 0,
+          "steps": [
+           "Raw 40.25",
+           "MDEF 0: max(40.25-0, 40.25×0.10) = 40.25",
+           "×0.95 variance = 38.2375",
+           "round once = 38"
+          ],
+          "defeated": true
+         }
+        ],
+        "pending_xp_added": 60,
+        "first_strike": true,
+        "note": "First Strike (an open attack that opens the fight: no Ambush bonus; its maker's action of Round 1)"
+       },
+       {
+        "round": 1,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_2",
+        "kind": "move",
+        "dir": "closer",
+        "change": "MEDIUM -> SHORT",
+        "why": "closing distance"
+       },
+       {
+        "round": 2,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_2",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 1,
+         "from": "SHORT",
+         "to": "ENGAGED"
+        },
+        "skill_name": "Bony strike",
+        "raw": 12,
+        "raw_text": "natural attack Raw = ATK 12",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 12,
+          "defense": 3,
+          "post_def": 9,
+          "variance": 0.97,
+          "final": 9,
+          "absorbed": 0,
+          "hp_before": 80,
+          "hp_after": 71,
+          "steps": [
+           "Raw 12",
+           "DEF 3: max(12-3, 12×0.10) = 9",
+           "×0.97 variance = 8.73",
+           "round once = 9"
+          ]
+         }
+        ]
+       }
+      ],
+      "opening": true,
+      "started": {
+       "turn": 12,
+       "minute": 635
+      },
+      "intents": {},
+      "ambush": false,
+      "ambush_reason": "target awareness: unknown -> no Ambush; his declared attack opens the fight first (First Strike: no Ambush bonus; it is his action of Round 1)",
+      "first_strike": true,
+      "career": {
+       "damage": {
+        "mon.old_crown_catacombs_c1_l1_e1_1": 30
+       },
+       "personal": {
+        "mon.old_crown_catacombs_c1_l1_e1_1": 30
+       }
+      },
+      "trigger_done": true,
+      "spent": {},
+      "pp": {
+       "used": {
+        "mage.flame_lance": "an attack on a foe"
+       },
+       "wait": null,
+       "threatened": true,
+       "last": "mage.flame_lance",
+       "answer": "mage.flame_lance",
+       "guarding": null,
+       "offense": {
+        "mage.flame_lance": true
+       },
+       "trial": {
+        "start": 100,
+        "low": 88,
+        "foes": [
+         "mon.old_crown_catacombs_c1_l1_e1_2"
+        ],
+        "taken": {
+         "physical": 9,
+         "magical": 0
+        }
+       },
+       "marks": {
+        "mage.flame_lance": [
+         "riposte"
+        ]
+       }
+      },
+      "round_marker": 2.02
+     }
+    },
+    "rng_to": 3
+   },
+   {
+    "t": "scene.awareness",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+     "level": "aware"
+    }
+   },
+   {
+    "t": "scene.awareness",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+     "level": "aware"
+    }
+   },
+   {
+    "t": "resource.changed",
+    "d": {
+     "id": "pc",
+     "resource": "hp",
+     "value": 71
+    }
+   },
+   {
+    "t": "resource.changed",
+    "d": {
+     "id": "pc",
+     "resource": "mp",
+     "value": 56
+    }
+   },
+   {
+    "t": "entity.status",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+     "status": "dead"
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.mon.old_crown_catacombs_c1_l1_e1_1.status.t12",
+      "s": "mon.old_crown_catacombs_c1_l1_e1_1",
+      "p": "status",
+      "o": "dead",
+      "since": {
+       "turn": 12,
+       "minute": 635
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.9,
+      "hard": true,
+      "source": {
+       "kind": "engine",
+       "encounter": "enc.t12"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "pc",
+     "about": "f.mon.old_crown_catacombs_c1_l1_e1_1.status.t12",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 12,
+     "minute": 635
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.ossen",
+     "about": "f.mon.old_crown_catacombs_c1_l1_e1_1.status.t12",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 12,
+     "minute": 635
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "mon.old_crown_catacombs_c1_l1_e1_2",
+     "about": "f.mon.old_crown_catacombs_c1_l1_e1_1.status.t12",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 12,
+     "minute": 635
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "combat",
+      "started": {
+       "reason": "target awareness: unknown -> no Ambush; his declared attack opens the fight first (First Strike: no Ambush bonus; it is his action of Round 1)",
+       "order": "Risen Bones A > Risen Bones B > Alaric",
+       "ambush": false
+      },
+      "records": [
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+        "opening": false,
+        "cost": {
+         "resource": "mp",
+         "amount": 16,
+         "before": 72,
+         "after": 56
+        },
+        "skill": "mage.flame_lance",
+        "skill_name": "Flame Lance",
+        "raw": 40.25,
+        "raw_text": "16 + INT 6×2.375 + MATK 10 = 40.25",
+        "strikes": [
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+          "power": 40.25,
+          "defense": 0,
+          "post_def": 40.25,
+          "variance": 0.95,
+          "final": 38,
+          "absorbed": 0,
+          "hp_before": 30,
+          "hp_after": 0,
+          "steps": [
+           "Raw 40.25",
+           "MDEF 0: max(40.25-0, 40.25×0.10) = 40.25",
+           "×0.95 variance = 38.2375",
+           "round once = 38"
+          ],
+          "defeated": true
+         }
+        ],
+        "pending_xp_added": 60,
+        "first_strike": true,
+        "note": "First Strike (an open attack that opens the fight: no Ambush bonus; its maker's action of Round 1)"
+       },
+       {
+        "round": 1,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_2",
+        "kind": "move",
+        "dir": "closer",
+        "change": "MEDIUM -> SHORT",
+        "why": "closing distance"
+       },
+       {
+        "round": 2,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_2",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 1,
+         "from": "SHORT",
+         "to": "ENGAGED"
+        },
+        "skill_name": "Bony strike",
+        "raw": 12,
+        "raw_text": "natural attack Raw = ATK 12",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 12,
+          "defense": 3,
+          "post_def": 9,
+          "variance": 0.97,
+          "final": 9,
+          "absorbed": 0,
+          "hp_before": 80,
+          "hp_after": 71,
+          "steps": [
+           "Raw 12",
+           "DEF 3: max(12-3, 12×0.10) = 9",
+           "×0.97 variance = 8.73",
+           "round once = 9"
+          ]
+         }
+        ]
+       }
+      ],
+      "illegal": null,
+      "next": "Alaric's Turn (Round 2)",
+      "board": {
+       "round": 2,
+       "order": [
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+         "init": 8
+        },
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+         "init": 8
+        },
+        {
+         "id": "pc",
+         "init": 7
+        }
+       ],
+       "hp": [
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+         "hp": 0,
+         "max": 30,
+         "state": "defeated",
+         "band": "MEDIUM",
+         "cover": "none"
+        },
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+         "hp": 36,
+         "max": 36,
+         "state": null,
+         "band": "ENGAGED",
+         "cover": "none"
+        },
+        {
+         "id": "pc",
+         "hp": 71,
+         "max": 80,
+         "state": null
+        }
+       ],
+       "labels": {
+        "mon.old_crown_catacombs_c1_l1_e1_1": "Risen Bones A",
+        "mon.old_crown_catacombs_c1_l1_e1_2": "Risen Bones B"
+       },
+       "pc": {
+        "mp": 56,
+        "max_mp": 72,
+        "sta": 100,
+        "max_sta": 100,
+        "arrows": 0
+       }
+      },
+      "c": true
+     },
+     "situations": []
+    }
+   }
+  ]
+ },
+ {
+  "i": 24,
+  "user": false,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "delta.rejected",
+    "d": {
+     "item": {
+      "scene": null,
+      "seq": 1,
+      "type": "position",
+      "who": "mon.old_crown_catacombs_c1_l1_e1_2",
+      "band": "ENGAGED",
+      "cover": null,
+      "cluster": null,
+      "scope": null,
+      "evidence": "Then it was on them. The rusted fist drove into Alaric's side below the ribs"
+     },
+     "rule": "world_rule",
+     "reason": "positions of combatants are engine-owned during ACTIVE combat"
+    }
+   },
+   {
+    "t": "extract.applied",
+    "d": {
+     "version": "extract-5.26",
+     "source": "extractor",
+     "ms": 11584,
+     "repaired": false,
+     "deltas": 1,
+     "rejected": 1
+    }
+   }
+  ]
+ },
+ {
+  "i": 25,
+  "user": true,
+  "build": "4.3.0-c.6.6.215",
+  "events": [
+   {
+    "t": "turn.begun",
+    "d": {
+     "turn": 13,
+     "input_hash": "fcfa8fbc",
+     "input": "Flame Lance → Risen Bones B · 16 MP"
+    }
+   },
+   {
+    "t": "encounter.updated",
+    "d": {
+     "encounter": {
+      "id": "enc.t12",
+      "phase": "ACTIVE",
+      "round": 3,
+      "order": [
+       "mon.old_crown_catacombs_c1_l1_e1_1",
+       "mon.old_crown_catacombs_c1_l1_e1_2",
+       "pc"
+      ],
+      "turn_index": 2,
+      "current": "pc",
+      "combatants": {
+       "pc": {
+        "id": "pc",
+        "name": "Alaric",
+        "side": "pc",
+        "model": "character",
+        "fixed": {
+         "level": 1,
+         "rank": "F",
+         "class": "mage",
+         "stats": {
+          "STR": 5,
+          "VIT": 5,
+          "AGI": 5,
+          "INT": 6,
+          "PER": 5,
+          "WIL": 6
+         },
+         "max_hp": 80,
+         "max_mp": 72,
+         "max_sta": 100,
+         "atk": 0,
+         "matk": 10,
+         "def": 3,
+         "mdef": 4,
+         "init": 7,
+         "type": "normal",
+         "actions": {
+          "mage.basic_attack": {
+           "prof": 1,
+           "pp": 0
+          },
+          "mage.flame_lance": {
+           "prof": 1,
+           "pp": 0
+          },
+          "mage.arcane_wave": {
+           "prof": 1,
+           "pp": 0
+          }
+         },
+         "weapon_family": "focus",
+         "temperament": null,
+         "sapient": true
+        },
+        "current": {
+         "hp": 71,
+         "mp": 40,
+         "sta": 100,
+         "ammo": {},
+         "band": null,
+         "cover": "none",
+         "effects": [],
+         "defeated": false,
+         "escaped": false,
+         "surrendered": false
+        }
+       },
+       "mon.old_crown_catacombs_c1_l1_e1_1": {
+        "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+        "name": "Risen Bones A",
+        "side": "hostile",
+        "model": "creature",
+        "fixed": {
+         "level": 1,
+         "rank": "F",
+         "type": "normal",
+         "body_plan": "Skeleton / animated bones",
+         "max_hp": 30,
+         "atk": 10,
+         "def": 2,
+         "mdef": 0,
+         "init": 8,
+         "attack": {
+          "name": "Bony strike",
+          "damage_type": "physical",
+          "range": "ENGAGED"
+         },
+         "sapient": false,
+         "defeat_xp": 60
+        },
+        "current": {
+         "hp": 0,
+         "band": "MEDIUM",
+         "cover": "none",
+         "effects": [],
+         "defeated": true,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Risen Bones A"
+       },
+       "mon.old_crown_catacombs_c1_l1_e1_2": {
+        "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+        "name": "Risen Bones B",
+        "side": "hostile",
+        "model": "creature",
+        "fixed": {
+         "level": 2,
+         "rank": "F",
+         "type": "normal",
+         "body_plan": "Skeleton / animated bones",
+         "max_hp": 36,
+         "atk": 12,
+         "def": 3,
+         "mdef": 0,
+         "init": 8,
+         "attack": {
+          "name": "Bony strike",
+          "damage_type": "physical",
+          "range": "ENGAGED"
+         },
+         "sapient": false,
+         "defeat_xp": 120
+        },
+        "current": {
+         "hp": 0,
+         "band": "ENGAGED",
+         "cover": "none",
+         "effects": [],
+         "defeated": true,
+         "escaped": false,
+         "surrendered": false
+        },
+        "label": "Risen Bones B"
+       }
+      },
+      "pc_rank": "F",
+      "pending_xp": 180,
+      "defeated": [
+       "mon.old_crown_catacombs_c1_l1_e1_1",
+       "mon.old_crown_catacombs_c1_l1_e1_2"
+      ],
+      "escaped": [],
+      "trigger": {
+       "actor": "pc",
+       "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+       "skill": "mage.flame_lance",
+       "move": null,
+       "move_target": null
+      },
+      "log": [
+       {
+        "round": 0,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+        "opening": false,
+        "cost": {
+         "resource": "mp",
+         "amount": 16,
+         "before": 72,
+         "after": 56
+        },
+        "skill": "mage.flame_lance",
+        "skill_name": "Flame Lance",
+        "raw": 40.25,
+        "raw_text": "16 + INT 6×2.375 + MATK 10 = 40.25",
+        "strikes": [
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_1",
+          "power": 40.25,
+          "defense": 0,
+          "post_def": 40.25,
+          "variance": 0.95,
+          "final": 38,
+          "absorbed": 0,
+          "hp_before": 30,
+          "hp_after": 0,
+          "steps": [
+           "Raw 40.25",
+           "MDEF 0: max(40.25-0, 40.25×0.10) = 40.25",
+           "×0.95 variance = 38.2375",
+           "round once = 38"
+          ],
+          "defeated": true
+         }
+        ],
+        "pending_xp_added": 60,
+        "first_strike": true,
+        "note": "First Strike (an open attack that opens the fight: no Ambush bonus; its maker's action of Round 1)"
+       },
+       {
+        "round": 1,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_2",
+        "kind": "move",
+        "dir": "closer",
+        "change": "MEDIUM -> SHORT",
+        "why": "closing distance"
+       },
+       {
+        "round": 2,
+        "actor": "mon.old_crown_catacombs_c1_l1_e1_2",
+        "kind": "attack",
+        "target": "pc",
+        "opening": false,
+        "move": {
+         "bands": 1,
+         "from": "SHORT",
+         "to": "ENGAGED"
+        },
+        "skill_name": "Bony strike",
+        "raw": 12,
+        "raw_text": "natural attack Raw = ATK 12",
+        "strikes": [
+         {
+          "target": "pc",
+          "power": 12,
+          "defense": 3,
+          "post_def": 9,
+          "variance": 0.97,
+          "final": 9,
+          "absorbed": 0,
+          "hp_before": 80,
+          "hp_after": 71,
+          "steps": [
+           "Raw 12",
+           "DEF 3: max(12-3, 12×0.10) = 9",
+           "×0.97 variance = 8.73",
+           "round once = 9"
+          ]
+         }
+        ]
+       },
+       {
+        "round": 2,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "mon.old_crown_catacombs_c1_l1_e1_2",
+        "opening": false,
+        "cost": {
+         "resource": "mp",
+         "amount": 16,
+         "before": 56,
+         "after": 40
+        },
+        "skill": "mage.flame_lance",
+        "skill_name": "Flame Lance",
+        "raw": 40.25,
+        "raw_text": "16 + INT 6×2.375 + MATK 10 = 40.25",
+        "strikes": [
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_2",
+          "power": 40.25,
+          "defense": 0,
+          "post_def": 40.25,
+          "variance": 1.07,
+          "final": 43,
+          "absorbed": 0,
+          "hp_before": 36,
+          "hp_after": 0,
+          "steps": [
+           "Raw 40.25",
+           "MDEF 0: max(40.25-0, 40.25×0.10) = 40.25",
+           "×1.07 variance = 43.0675",
+           "round once = 43"
+          ],
+          "defeated": true
+         }
+        ],
+        "pending_xp_added": 120
+       }
+      ],
+      "opening": true,
+      "started": {
+       "turn": 12,
+       "minute": 635
+      },
+      "intents": {},
+      "ambush": false,
+      "ambush_reason": "target awareness: unknown -> no Ambush; his declared attack opens the fight first (First Strike: no Ambush bonus; it is his action of Round 1)",
+      "first_strike": true,
+      "career": {
+       "damage": {
+        "mon.old_crown_catacombs_c1_l1_e1_1": 30,
+        "mon.old_crown_catacombs_c1_l1_e1_2": 36
+       },
+       "personal": {
+        "mon.old_crown_catacombs_c1_l1_e1_1": 30,
+        "mon.old_crown_catacombs_c1_l1_e1_2": 36
+       }
+      },
+      "trigger_done": true,
+      "spent": {},
+      "pp": {
+       "used": {
+        "mage.flame_lance": "an attack on a foe"
+       },
+       "wait": null,
+       "threatened": true,
+       "last": "mage.flame_lance",
+       "answer": "mage.flame_lance",
+       "guarding": null,
+       "offense": {
+        "mage.flame_lance": true
+       },
+       "trial": {
+        "start": 100,
+        "low": 88,
+        "foes": [
+         "mon.old_crown_catacombs_c1_l1_e1_2"
+        ],
+        "taken": {
+         "physical": 9,
+         "magical": 0
+        }
+       },
+       "marks": {
+        "mage.flame_lance": [
+         "riposte"
+        ]
+       }
+      },
+      "round_marker": 3.02
+     }
+    },
+    "rng_to": 4
+   },
+   {
+    "t": "resource.changed",
+    "d": {
+     "id": "pc",
+     "resource": "mp",
+     "value": 40
+    }
+   },
+   {
+    "t": "entity.status",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+     "status": "dead"
+    }
+   },
+   {
+    "t": "fact.asserted",
+    "d": {
+     "fact": {
+      "id": "f.mon.old_crown_catacombs_c1_l1_e1_2.status.t13",
+      "s": "mon.old_crown_catacombs_c1_l1_e1_2",
+      "p": "status",
+      "o": "dead",
+      "since": {
+       "turn": 13,
+       "minute": 635
+      },
+      "until": null,
+      "visibility": "public",
+      "importance": 0.9,
+      "hard": true,
+      "source": {
+       "kind": "engine",
+       "encounter": "enc.t12"
+      }
+     }
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "pc",
+     "about": "f.mon.old_crown_catacombs_c1_l1_e1_2.status.t13",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 13,
+     "minute": 635
+    }
+   },
+   {
+    "t": "knowledge.gained",
+    "d": {
+     "who": "npc.ossen",
+     "about": "f.mon.old_crown_catacombs_c1_l1_e1_2.status.t13",
+     "stance": "knows",
+     "source": "witnessed",
+     "turn": 13,
+     "minute": 635
+    }
+   },
+   {
+    "t": "xp.changed",
+    "d": {
+     "id": "pc",
+     "xp": 180,
+     "amount": 180,
+     "reason": "Combat XP (Risen Bones A 60, Risen Bones B 120)"
+    }
+   },
+   {
+    "t": "level.up",
+    "d": {
+     "id": "pc",
+     "level": 2,
+     "xp_after": 80,
+     "free_points": 5,
+     "favored": [],
+     "rank": "F"
+    }
+   },
+   {
+    "t": "skill.progress",
+    "d": {
+     "id": "pc",
+     "skill": "mage.flame_lance",
+     "name": "Flame Lance",
+     "gained": 18,
+     "from": {
+      "prof": 1,
+      "pp": 0
+     },
+     "to": {
+      "prof": 1,
+      "pp": 18
+     },
+     "need": 75,
+     "why": "an attack on a foe in enc.t12",
+     "key": "fight:enc.t12:mage.flame_lance"
+    }
+   },
+   {
+    "t": "growth.noted",
+    "d": {
+     "fight": "enc.t12",
+     "marks": {
+      "mage.flame_lance": {
+       "prof": 1,
+       "patterns": [
+        "riposte"
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "career.recorded",
+    "d": {
+     "source": "fight:enc.t12",
+     "stats": {
+      "fights_won": 1,
+      "foes_defeated": 2,
+      "stronger_defeated": 1,
+      "extraordinary_wins": 0
+     },
+     "feats": [],
+     "style": {
+      "Arcane": 1,
+      "offense": 1
+     }
+    }
+   },
+   {
+    "t": "encounter.ended",
+    "d": {
+     "id": "enc.t12",
+     "summary": {
+      "defeated": [
+       "mon.old_crown_catacombs_c1_l1_e1_1",
+       "mon.old_crown_catacombs_c1_l1_e1_2"
+      ],
+      "escaped": [],
+      "xp_awarded": 180,
+      "pc_dead": false,
+      "pc_escaped": false,
+      "pp": [
+       {
+        "skill": "mage.flame_lance",
+        "gained": 18,
+        "from": {
+         "prof": 1,
+         "pp": 0
+        },
+        "to": {
+         "prof": 1,
+         "pp": 18
+        },
+        "need": 75
+       }
+      ],
+      "noted": {
+       "skills": [
+        "mage.flame_lance"
+       ]
+      }
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "npc.ossen",
+     "set": {
+      "wary": {
+       "turn": 13,
+       "minute": 635,
+       "encounter": "enc.t12"
+      }
+     }
+    }
+   },
+   {
+    "t": "memory.recorded",
+    "d": {
+     "memory": {
+      "id": "m.enc.t12",
+      "turn": 13,
+      "minute": 635,
+      "text": "Fight at Old Crown Catacombs › Antechamber of the Old Crown Catacombs: {pc} (Flame Lance) vs the old_crown_catacombs_c1_l1_e1 1 — killed; the old_crown_catacombs_c1_l1_e1 2 — killed.",
+      "who": [
+       "pc",
+       "mon.old_crown_catacombs_c1_l1_e1_1",
+       "mon.old_crown_catacombs_c1_l1_e1_2"
+      ],
+      "witnesses": [
+       "pc",
+       "npc.ossen"
+      ],
+      "seen": [
+       "pc",
+       "npc.ossen"
+      ],
+      "location": "realm.valedorn_crown",
+      "place": "Old Crown Catacombs › Antechamber of the Old Crown Catacombs",
+      "importance": 7,
+      "kind": "combat"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+     "set": {
+      "looted": "enc.t12"
+     }
+    }
+   },
+   {
+    "t": "entity.updated",
+    "d": {
+     "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+     "set": {
+      "looted": "enc.t12"
+     }
+    }
+   },
+   {
+    "t": "object.created",
+    "d": {
+     "object": {
+      "id": "obj.loot.risen_bones.bone.f",
+      "name": "F-Rank Risen Bones Bone",
+      "kind": "resource",
+      "stack": true,
+      "qty": 3,
+      "unit": null,
+      "holder": {
+       "entity": "pc"
+      },
+      "marks": [],
+      "for_quests": [],
+      "source": {
+       "turn": 13,
+       "how": "loot",
+       "encounter": "enc.t12"
+      },
+      "rank": "F",
+      "level": 1,
+      "material": "bone",
+      "species": "Risen Bones",
+      "anchor": "skeleton",
+      "value_cp": 1
+     }
+    }
+   },
+   {
+    "t": "object.created",
+    "d": {
+     "object": {
+      "id": "obj.loot.risen_bones.dust.f",
+      "name": "F-Rank Risen Bones Grave Dust",
+      "kind": "resource",
+      "stack": true,
+      "qty": 1,
+      "unit": null,
+      "holder": {
+       "entity": "pc"
+      },
+      "marks": [],
+      "for_quests": [],
+      "source": {
+       "turn": 13,
+       "how": "loot",
+       "encounter": "enc.t12"
+      },
+      "rank": "F",
+      "level": 1,
+      "material": "dust",
+      "species": "Risen Bones",
+      "anchor": "skeleton",
+      "value_cp": 2
+     }
+    }
+   },
+   {
+    "t": "outcome.recorded",
+    "d": {
+     "outcome": {
+      "kind": "combat",
+      "started": null,
+      "records": [
+       {
+        "round": 2,
+        "actor": "pc",
+        "kind": "attack",
+        "target": "mon.old_crown_catacombs_c1_l1_e1_2",
+        "opening": false,
+        "cost": {
+         "resource": "mp",
+         "amount": 16,
+         "before": 56,
+         "after": 40
+        },
+        "skill": "mage.flame_lance",
+        "skill_name": "Flame Lance",
+        "raw": 40.25,
+        "raw_text": "16 + INT 6×2.375 + MATK 10 = 40.25",
+        "strikes": [
+         {
+          "target": "mon.old_crown_catacombs_c1_l1_e1_2",
+          "power": 40.25,
+          "defense": 0,
+          "post_def": 40.25,
+          "variance": 1.07,
+          "final": 43,
+          "absorbed": 0,
+          "hp_before": 36,
+          "hp_after": 0,
+          "steps": [
+           "Raw 40.25",
+           "MDEF 0: max(40.25-0, 40.25×0.10) = 40.25",
+           "×1.07 variance = 43.0675",
+           "round once = 43"
+          ],
+          "defeated": true
+         }
+        ],
+        "pending_xp_added": 120
+       }
+      ],
+      "illegal": null,
+      "next": null,
+      "board": {
+       "round": 3,
+       "order": [
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+         "init": 8
+        },
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+         "init": 8
+        },
+        {
+         "id": "pc",
+         "init": 7
+        }
+       ],
+       "hp": [
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+         "hp": 0,
+         "max": 30,
+         "state": "defeated",
+         "band": "MEDIUM",
+         "cover": "none"
+        },
+        {
+         "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+         "hp": 0,
+         "max": 36,
+         "state": "defeated",
+         "band": "ENGAGED",
+         "cover": "none"
+        },
+        {
+         "id": "pc",
+         "hp": 71,
+         "max": 80,
+         "state": null
+        }
+       ],
+       "labels": {
+        "mon.old_crown_catacombs_c1_l1_e1_1": "Risen Bones A",
+        "mon.old_crown_catacombs_c1_l1_e1_2": "Risen Bones B"
+       },
+       "pc": {
+        "mp": 40,
+        "max_mp": 72,
+        "sta": 100,
+        "max_sta": 100,
+        "arrows": 0
+       }
+      },
+      "ended": {
+       "defeated": [
+        "mon.old_crown_catacombs_c1_l1_e1_1",
+        "mon.old_crown_catacombs_c1_l1_e1_2"
+       ],
+       "escaped": [],
+       "xp_awarded": 180,
+       "pc_dead": false,
+       "pc_escaped": false,
+       "pp": [
+        {
+         "skill": "mage.flame_lance",
+         "gained": 18,
+         "from": {
+          "prof": 1,
+          "pp": 0
+         },
+         "to": {
+          "prof": 1,
+          "pp": 18
+         },
+         "need": 75
+        }
+       ],
+       "noted": {
+        "skills": [
+         "mage.flame_lance"
+        ]
+       }
+      },
+      "levelups": [
+       "Level 2"
+      ],
+      "loot": [
+       "F-Rank Risen Bones Bone ×3",
+       "F-Rank Risen Bones Grave Dust ×1"
+      ],
+      "booked": {
+       "registration": false,
+       "grants": [
+        "F-Rank Risen Bones Bone",
+        "F-Rank Risen Bones Grave Dust"
+       ],
+       "turnIns": [],
+       "accepted": []
+      },
+      "c": true
+     },
+     "situations": []
+    }
+   }
+  ]
+ }
+]

@@ -1,5 +1,7 @@
 # Avereth · Fach- und Patchplan für das Party-System
 
+**Umsetzungsstand .217.** Die vier Pakete und D10–D12 sind technisch abgenommen. [Kandidat, Abnahme und Diffreview](../recherche/AVERETH_217_PARTY_SYSTEM.md)
+
 **Stand 26. November 2026 · zur unabhängigen fachlichen Prüfung.** Der erste persönliche Testkandidat soll einen zusammenhängenden Spielabschnitt tragen. Alaric nimmt den Auftrag an, verabredet sich mit Ossen, zieht mit ihm los, kämpft gemeinsam oder zieht sich zurück und rechnet den Lohn bei der Gilde ab. Der Spieler entscheidet für Alaric. Ein mitkämpfender NPC braucht eine belegte Zusage, einen eigenen regulären Zug und eindeutig zugeordneten Besitz. PC plus ein oder zwei NPCs sind die Abnahmegrößen. Daraus folgt keine Kaderobergrenze.
 
 **Maßgeblich** sind D1–D9 in § 12. Insbesondere gelten je **ein** gleichmäßig geteilter Kampf-XP-Pool pro Encounter und Quest-XP-Pool pro gemeinsam erledigtem Auftrag. Der Auftragnehmer und seine Gildenlaufbahn bleiben eigenständig. Wo der folgende Text Datenfelder, Berechnungszeitpunkte und Grenzfälle vorschlägt, handelt es sich um technische Defaults für den Review. „Ist“ und „gemessen“ beziehen sich auf bestehende Pfade, „Soll“ und die Abnahmetabellen auf künftige Arbeit. [Bestätigte Entscheidungen D1–D9](../recherche/AVERETH_PARTY_SYSTEM_FACHPLANUNG.md#12-gemeinsame-designentscheidungen-nach-gpt-review) · [Vollständiger Auftrag](../recherche/AVERETH_PARTY_ARCHITEKTUR_FACHPLAN_AUFTRAG.md) · [Design-Kanon](../02_DESIGN_KANON.md)

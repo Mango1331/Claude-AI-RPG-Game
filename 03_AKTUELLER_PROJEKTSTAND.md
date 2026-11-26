@@ -1,18 +1,20 @@
 # Avereth Engine – aktueller Projektstand
 
-**Entwicklungskandidat .216 ist auf dem Testbranch veröffentlicht.** Der Extractor kann die sieben belegten Antworten mit `expected.deltas` lokal verarbeiten. Im User14-Originalzug entfallen drei Folgeanfragen und 46.330 Inputtokens. Der unabhängige GPT-Kontrollreview bestätigt .216 für natürliche Spieltests. Der Architektur- und Patchplan auf Grundlage der bestätigten Party-Entscheidungen D1–D9 liegt zum unabhängigen GPT-Fachplanreview vor. Über die Implementierung entscheidet der Nutzer danach gesondert. [Party-Architektur und Abnahmeplan](patch_plans_10b/FACHPLAN_PARTY_SYSTEM.md) · [Abnahme .216](recherche/AVERETH_216_EXTRACTOR_NORMALISIERUNG.md) · [Party-Fachplanung](recherche/AVERETH_PARTY_SYSTEM_FACHPLANUNG.md)
+**.217 steht auf dem Entwicklungsbranch für den unabhängigen GPT-Diffreview bereit.** Der gemeinsame Lauf von Alaric und Ossen reicht von der Gildenhalle bis zur Abgabe mit 225/225 Quest-XP und 45/45 cp. Eine abwesende Partei kann ihren Anspruch beim Wiedersehen einlösen. Der persönliche Test folgt dem Diffreview. [Fach- und Abnahmebericht](recherche/AVERETH_217_PARTY_SYSTEM.md) · [Vergleich ab .216](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/bf44a5fbf439e8b43153f6db8b575048fc1e3e1f...d42621682d19cbd8819ca27594614e04a79ed0d1)
 
 ## Aktuelle Referenzen
 
 | Zweck | Verifizierte Referenz |
 |---|---|
-| Aktiver Entwicklungs-/Testbranch | `experiment/211-openrouter-helper-single-runner` · [`bf44a5fb`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/bf44a5fbf439e8b43153f6db8b575048fc1e3e1f) · Build `4.3.0-c.6.6.216` |
+| Aktiver Entwicklungs-/Testbranch | `experiment/211-openrouter-helper-single-runner` · [`d4262168`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/d42621682d19cbd8819ca27594614e04a79ed0d1) · Build `4.3.0-c.6.6.217` |
 | Fester Kontinuitätsvergleich | `experiment/211-scene-continuity` · [`c2ddc780`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c2ddc780d4c57b219f9cd7a1d134efceca7e459d) |
 | Eingefrorenes Produkt `.200` | `claude/c-planner-prototype-2026-10-02-gpt-c666` · [`0cd14806`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b) |
 
 `main` ist die separate Dokumentations- und Originalarchivlinie. Diese Tabelle ist ein Snapshot, keine Garantie für spätere HEADs. Vor neuer Arbeit aktuelle Remote-Refs prüfen.
 
 ## Letzte abgeschlossene Entwicklungsarbeit
+
+- .216 verarbeitete sieben belegte Extractorantworten lokal und sparte im User14-Originalzug drei Folgeanfragen mit 46.330 Inputtokens. Dieser Stand bildet die Vergleichsbasis für den Partykandidaten. [Extractor-Abnahme](recherche/AVERETH_216_EXTRACTOR_NORMALISIERUNG.md)
 
 - [User12 und .212-Fach-/Offline-Abnahme](recherche/AVERETH_212_FACH_UND_ABNAHME.md): Revisionsbindung, NPC-Sidestep, Runner-Sicherheit, Handel, lokale Reise, PULSE, Board, native Aktionen und HUD. Wiederimplementierung nach Cloud-Ausfall, gesichert auf `7cf33bc0`. 3.589/3.589 Node-Prüfungen, 2.235 historische Replays ohne neue ungeklärte Abweichung, 122/122 archivierte Weltstufen und isolierte ST-Abnahmen laut Implementiererbericht.
 - [.213-Kontrollreview](recherche/AVERETH_213_GPT_KONTROLLREVIEW.md): zusätzliche Finanzkorrekturen auf `e7a36e2f`; R1 bestätigt behoben, eine konkrete R2-Variante bleibt bewusst zurückgestellt. `a89c690d` erhöht nur die Versionsnummer. Keine erneute vollständige .213-Abnahme behauptet. Nutzer entschied GO für persönlichen Test statt weiterer Minifix-Runde.

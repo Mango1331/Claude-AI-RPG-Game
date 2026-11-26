@@ -1,9 +1,10 @@
 # User15 – persönlicher Test .218, 26.11.2026
 
-**Alle vier Quellen sind archiviert und geprüft. Der unabhängige GPT-Runreview und der Codex-Gegenreview liegen vor. Die Entscheidung über das nächste Entwicklungspaket ist offen.**
+**Alle vier Quellen sind archiviert und geprüft. Der unabhängige GPT-Runreview und der Codex-Gegenreview liegen vor. Das freigegebene Folgepaket .219 ist technisch abgenommen.**
 
 Build 4.3.0-c.6.6.218, Produktreferenz [a729d360] (Remote-HEAD bei Prüfung identisch; Build im Chat/Eventexport belegt, kein eigener lokaler Produkt-Hash im ST-Log). Seed 3042268705. Mage, 47 Spielzüge, 63 Spielereingaben, 127 Nachrichten ohne Header, 979 exportierte Events; 5 Kämpfe, zwei Gildenaufträge abgeschlossen, **kein mechanischer Partyfall**. Ende L10 F/Novice, 87/145 HP, 174/256 MP, STA 100, 380 cp, 995/1000 XP, Marktbezirk Ashbridge, Tag 2 14:30.
 
+- [.219-Fachbericht und Abnahme](../../recherche/AVERETH_219_USER15_FACH_UND_ABNAHME.md) · [Offline-Reproduktion der 108 Originalfolgen](replay_219.mjs)
 - [GPT-Review](REVIEW.md)
 - [Codex-Gegenreview mit Originalreplay und Gegenproben](CODEX_GEGENREVIEW.md)
 - [Originalfeedback](originals/feedback.txt) · [Einordnung](USER_FEEDBACK_REVIEW.md)

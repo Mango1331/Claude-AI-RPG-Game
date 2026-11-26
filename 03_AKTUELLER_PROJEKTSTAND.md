@@ -1,18 +1,20 @@
 # Avereth Engine – aktueller Projektstand
 
-**Build .218 steht für den unabhängigen GPT-Produktdiffreview bereit.** Der Gegenreview von .217 bestätigte Fehler bei gekürzter Zustimmung, doppelter Questvergütung und angekündigten Übergaben. Die korrigierte Offline-Kampagne schließt mit 225/225 Quest-XP und 45/45 cp. Über den persönlichen Spieltest entscheidet der Nutzer nach dem Diffreview. [R1–R6 und Abnahme](recherche/AVERETH_218_PARTY_GEGENREVIEW.md) · [Vollständiger Produktdiff .217 → .218](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/d42621682d19cbd8819ca27594614e04a79ed0d1...a729d3606f55cd1b71c57726befa80f897c946d3)
+**Build .219 ist bereit für den unabhängigen GPT-Diffreview.** Das Paket aus Usertest 15 korrigiert die Wolfpopulation, den Weg zum Händler, die Zeitbuchung und die Kontinuität am Gildenschalter. Es ergänzt Reisemana, native Dienstleistungskäufe und die Anzeige von Rast, Itemdetails und Skillfortschritt. 3.599 Node-Tests, 2.235 historische Replays und die isolierten ST-Abnahmen sind abgeschlossen. Über Usertest 16 entscheidet der Nutzer nach dem Diffreview. [Fachbericht und Abnahme](recherche/AVERETH_219_USER15_FACH_UND_ABNAHME.md) · [Produktdiff .218 → .219](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/a729d3606f55cd1b71c57726befa80f897c946d3...0a7a91b90d204e01c49747829308abf940343449) · [User15-Originale](testrun_10b/user-20261126-085419-218/)
 
 ## Aktuelle Referenzen
 
 | Zweck | Verifizierte Referenz |
 |---|---|
-| Aktiver Entwicklungs-/Testbranch | `experiment/211-openrouter-helper-single-runner` · [`a729d360`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/a729d3606f55cd1b71c57726befa80f897c946d3) · Build `4.3.0-c.6.6.218` |
+| Aktiver Entwicklungs-/Testbranch | `experiment/211-openrouter-helper-single-runner` · [`0a7a91b9`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0a7a91b90d204e01c49747829308abf940343449) · Build `4.3.0-c.6.6.219` |
 | Fester Kontinuitätsvergleich | `experiment/211-scene-continuity` · [`c2ddc780`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c2ddc780d4c57b219f9cd7a1d134efceca7e459d) |
 | Eingefrorenes Produkt `.200` | `claude/c-planner-prototype-2026-10-02-gpt-c666` · [`0cd14806`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b) |
 
 `main` ist die separate Dokumentations- und Originalarchivlinie. Diese Tabelle ist ein Snapshot, keine Garantie für spätere HEADs. Vor neuer Arbeit aktuelle Remote-Refs prüfen.
 
 ## Letzte abgeschlossene Entwicklungsarbeit
+
+- .218 korrigierte die Autorisierung von Partyabreden, doppelte Vergütung und angekündigte Übergaben. User15 spielte auf diesem Stand solo. [Party-Gegenreview](recherche/AVERETH_218_PARTY_GEGENREVIEW.md) · [Persönlicher Solorun](testrun_10b/user-20261126-085419-218/)
 
 - .216 verarbeitete sieben belegte Extractorantworten lokal und sparte im User14-Originalzug drei Folgeanfragen mit 46.330 Inputtokens. Dieser Stand bildet die Vergleichsbasis für den Partykandidaten. [Extractor-Abnahme](recherche/AVERETH_216_EXTRACTOR_NORMALISIERUNG.md)
 

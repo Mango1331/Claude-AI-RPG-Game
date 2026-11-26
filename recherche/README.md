@@ -4,6 +4,7 @@ Hier stehen **nur Quellenlinks**, keine wiederholten Ergebnisbeschreibungen. Erg
 
 | Etappe / Forschungsfeld | Berichte und unabhängige Reviews | Reproduktion und Originale |
 |---|---|---|
+| **.219 · Folgepaket aus User15** | [Fachbericht, Entscheidungen und Abnahme](AVERETH_219_USER15_FACH_UND_ABNAHME.md) | [User15](../testrun_10b/user-20261126-085419-218/) · [Reproduktion der 108 Folgen](../testrun_10b/user-20261126-085419-218/replay_219.mjs) |
 | **.218 · Party-Gegenreview** | [R1–R6, Korrekturen und Abnahme](AVERETH_218_PARTY_GEGENREVIEW.md) | [User14](../testrun_10b/user-20261126-010332-215/) · [User13](../testrun_10b/user-20261125-212154-213/) |
 | **.217 · Party-System** | [Fach- und Abnahmebericht](AVERETH_217_PARTY_SYSTEM.md) · [Regeln des Kandidaten](../02_DESIGN_KANON.md#party-im-entwicklungskandidaten-217) | [Fachplan und Matrix](../patch_plans_10b/FACHPLAN_PARTY_SYSTEM.md) · [Originalfall Ossen](../testrun_10b/user-20261126-010332-215/README.md) |
 | **.216 · Extractor und Party-Fachplanung** | [Extractor-Abnahme](AVERETH_216_EXTRACTOR_NORMALISIERUNG.md) · [Party-Erstanalyse und bestätigte Designrichtung](AVERETH_PARTY_SYSTEM_FACHPLANUNG.md#12-gemeinsame-designentscheidungen-nach-gpt-review) · [Planungsauftrag](AVERETH_PARTY_ARCHITEKTUR_FACHPLAN_AUFTRAG.md) · [Architektur- und Patchplan für den unabhängigen Fachreview](../patch_plans_10b/FACHPLAN_PARTY_SYSTEM.md) | [User14-Gegenreview](../testrun_10b/user-20261126-010332-215/CODEX_GEGENREVIEW.md) · [Offline-Originalabnahme](abnahme_216_extractor.mjs) |

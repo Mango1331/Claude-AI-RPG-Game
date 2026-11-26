@@ -4,6 +4,7 @@ Hier stehen **nur Quellenlinks**, keine wiederholten Ergebnisbeschreibungen. Erg
 
 | Etappe / Forschungsfeld | Berichte und unabhängige Reviews | Reproduktion und Originale |
 |---|---|---|
+| **.220 · Ereigniszeit und Mitreisende** | [Fach- und Abnahmebericht](AVERETH_220_REISEZEIT_UND_MITREISENDE.md) | [.219-Abnahme](AVERETH_219_USER15_FACH_UND_ABNAHME.md) · [User15](../testrun_10b/user-20261126-085419-218/) |
 | **.219 · Folgepaket aus User15** | [Fachbericht, Entscheidungen und Abnahme](AVERETH_219_USER15_FACH_UND_ABNAHME.md) | [User15](../testrun_10b/user-20261126-085419-218/) · [Reproduktion der 108 Folgen](../testrun_10b/user-20261126-085419-218/replay_219.mjs) |
 | **.218 · Party-Gegenreview** | [R1–R6, Korrekturen und Abnahme](AVERETH_218_PARTY_GEGENREVIEW.md) | [User14](../testrun_10b/user-20261126-010332-215/) · [User13](../testrun_10b/user-20261125-212154-213/) |
 | **.217 · Party-System** | [Fach- und Abnahmebericht](AVERETH_217_PARTY_SYSTEM.md) · [Regeln des Kandidaten](../02_DESIGN_KANON.md#party-im-entwicklungskandidaten-217) | [Fachplan und Matrix](../patch_plans_10b/FACHPLAN_PARTY_SYSTEM.md) · [Originalfall Ossen](../testrun_10b/user-20261126-010332-215/README.md) |

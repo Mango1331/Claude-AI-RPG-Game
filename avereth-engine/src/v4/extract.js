@@ -538,8 +538,60 @@ export function resolveRepeatedScene(value, ids, expectedKeys) {
     return {...value,scene:JSON.parse(JSON.stringify(full))};
 }
 
-export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequired = false, startScene = null, state = null, content = null, explicitArrivals = sceneRequired, reply = null } = {}) {
+// JSON.parse keeps the last of two equal member names. Check the original object before
+// adopting a misplaced list, including escaped names and duplicates inside an evidence record.
+function deltaEnvelopeKeys(source) {
+    const scopes = [];
+    let duplicate = false, lists = 0;
+    for (const [token, colon] of source.matchAll(/"(?:\\.|[^"\\])*"\s*(:)?|[{}]/gs)) {
+        if (token === '{') scopes.push(new Set());
+        else if (token === '}') scopes.pop();
+        else if (colon && scopes.length) {
+            const key = JSON.parse(token.slice(0, -1));
+            const scope = scopes.at(-1);
+            if (scope.has(key)) duplicate = true;
+            scope.add(key);
+            if (key === 'deltas') lists++;
+        }
+    }
+    return { duplicate, lists };
+}
+
+function readDeltaEnvelope(answer) {
     const parsed = extractJsonObject(answer);
+    const { value } = parsed;
+    const original = String(answer ?? '').trim();
+    const nested = Object.hasOwn(value?.expected || {}, 'deltas');
+    // Ordinary reports use the existing reader. A second list (even one hidden by
+    // last-key-wins) needs a repair. Quoted evidence can itself contain the word deltas.
+    if (value && !nested && original.indexOf('deltas') === original.lastIndexOf('deltas') && !original.includes('\\u')) return parsed;
+
+    // All seven archived reports had a complete expected object and delta list, but
+    // lacked the final root brace. Never complete a truncated list or rewrite quoted evidence here.
+    // Admit only one payload. The shared reader may discard prose or replace punctuation
+    // even inside evidence. Read the original text for this lossless move.
+    const body = original.replace(/^<think>[\s\S]*?<\/think>\s*/i, '');
+    const fence = /^```(?:json)?\s*([\s\S]*?)```$/i.exec(body);
+    const source = fence ? fence[1].trim() : body;
+    let keys;
+    try { keys = deltaEnvelopeKeys(source); }
+    catch { /* An invalid string escape cannot establish unique member names. */ }
+    if (keys?.lists > 1) return { ...parsed, value: null, error: 'Competing deltas fields. Supply a single root deltas array.' };
+    let intact;
+    try { intact = JSON.parse(source); }
+    catch {
+        try { intact = JSON.parse(source + '}'); }
+        catch { return nested ? { ...parsed, value: null, error: 'Incomplete or ambiguous expected.deltas envelope.' } : parsed; }
+    }
+    if (!Object.hasOwn(intact?.expected || {}, 'deltas')) return parsed;
+    const { deltas, ...steps } = intact.expected;
+    if (Object.hasOwn(intact, 'deltas') || !Array.isArray(deltas) || !keys || keys.duplicate || Object.values(steps).some(Array.isArray))
+        return { ...parsed, value: null, error: 'Ambiguous expected.deltas envelope. Supply a single root deltas array.' };
+    return { ...parsed, value: { ...intact, expected: steps, deltas } };
+}
+
+export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequired = false, startScene = null, state = null, content = null, explicitArrivals = sceneRequired, reply = null } = {}) {
+    const parsed = readDeltaEnvelope(answer);
     const { error, raw } = parsed;
     const resolved=resolveRepeatedScene(parsed.value,ids,expectedKeys);
     const value = state ? newPlaceScope(normalizeSoftFields(resolved, vocab), state) : normalizeSoftFields(resolved, vocab);

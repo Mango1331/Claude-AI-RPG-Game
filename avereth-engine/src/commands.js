@@ -7,6 +7,7 @@ import { goalLines } from './v4/growth.js';
 import { skillOfferLines, lineageText } from './v4/skill_growth.js';
 import { classLines, className } from './v4/class_growth.js';
 import { featLines } from './v4/feats.js';
+import { carriedObjects } from './v4/trade.js';
 import { profileOf, sourceText } from './v4/items.js';
 import { formatCoin } from './economy.js';
 import { findSkill, rulesetOf, startClasses, skillOf, kitOf } from './content.js';
@@ -246,11 +247,11 @@ function equipment(state, content) {
 function bag(state, content) {
     const s = pcSheet(state);
     const lines = ['[SYSTEM // BAG]'];
-    for (const [id, q] of Object.entries(s.inventory)) {
-        const it = content.items.get(id);
-        // Patch 9C-2b: a Skill Stone or a manual says what it holds or teaches
-        const src = sourceText(profileOf(content, state.objects?.[id]));
-        lines.push(`${itemLabel(state, content, id)}${it?.rank ? ` [${it.rank}]` : ''} ×${q}${id === 'standard_arrow' && s.equipment.quiver ? ' (in quiver)' : ''}${src ? ` · ${src}` : ''}`);
+    for (const o of carriedObjects(state, content)) {
+        const profile = o.template ? content.items.get(o.template) : profileOf(content, o);
+        const source = sourceText(profile);
+        lines.push(o.name + (profile?.rank ? ' [' + profile.rank + ']' : '') + ' ×' + (o.qty ?? 1)
+            + (o.template === 'standard_arrow' && s.equipment.quiver ? ' (in quiver)' : '') + (source ? ' · ' + source : ''));
     }
     if (lines.length === 1) lines.push('empty');
     lines.push(`Coin: ${formatCoin(s.coin_cp, content)} (${s.coin_cp} Copper)`);
@@ -260,16 +261,38 @@ function bag(state, content) {
 function item(state, content, arg) {
     const s = pcSheet(state);
     const t = normText(arg);
-    const owned = [...Object.values(s.equipment), ...Object.keys(s.inventory)].map((r) => itemOf(r, content));
-    const it = owned.find((x) => normText(x.name) === t) || owned.find((x) => normText(x.name).includes(t));
-    if (!it) return `[SYSTEM // ITEM]\nAlaric has no item called "${arg}".`;
+    const owned = new Map();
+    for (const o of carriedObjects(state, content)) {
+        const profile = o.template ? content.items.get(o.template) : profileOf(content, o);
+        owned.set(o.id, { ...o, ...profile, id: o.id, name: o.name, carried: o.qty ?? 1 });
+    }
+    for (const [slot, ref] of Object.entries(s.equipment || {})) {
+        const equipped = itemOf(ref, content);
+        if (!equipped) continue;
+        const id = equipped.object || (state.objects?.[equipped.id] ? equipped.id : 'item.' + equipped.id);
+        const object = state.objects?.[id];
+        owned.set(id, { ...owned.get(id), ...object, ...profileOf(content, object), ...equipped, id, equipped: slot });
+    }
+    const items = [...owned.values()];
+    const exact = owned.get(arg) || owned.get('item.' + arg);
+    const names = items.filter(o => normText(o.name) === t);
+    const hits = exact ? [exact] : names.length ? names : items.filter(o => t && normText(o.name).includes(t));
+    if (!hits.length) return '[SYSTEM // ITEM]\nAlaric has no item called "' + arg + '".';
+    if (hits.length > 1) return '[SYSTEM // ITEM]\nChoose an exact ID:\n' + hits.map(o => o.name + ' · #item ' + o.id).join('\n');
+    const [it] = hits;
     const lines = [`[SYSTEM // ITEM] ${it.name}`, `Rank ${it.rank || 'unranked'} | type ${it.slot || '-'}${it.family ? ` (${it.family.replace(/_/g, ' ')})` : ''}`];
     const bits = ['atk', 'matk', 'def', 'mdef'].filter((k) => it[k]).map((k) => `${k.toUpperCase()} ${it[k]}`);
     if (bits.length) lines.push(bits.join(' | '));
     if (it.contains) lines.push(`Contains: ${Object.entries(it.contains).map(([k]) => `${content.items.get(k)?.name || k} ×${s.inventory[k] || 0}`).join(', ')}`);
     if (it.note) lines.push(it.note);
-    const equipped = Object.entries(s.equipment).find(([, r]) => itemOf(r, content).name === it.name);
-    lines.push(equipped ? `Equipped (${equipped[0]})` : `Carried ×${s.inventory[it.id] || 1}`);
+    if (it.quality) lines.push('Quality: ' + it.quality);
+    const source = sourceText(it);
+    if (source) lines.push(source);
+    if (it.kind === 'restore') lines.push('Restores ' + it.amount + ' ' + it.resource.toUpperCase());
+    if (it.kind === 'attack' && it.power != null) lines.push('Power: ' + it.power);
+    if (it.uses != null) lines.push('Uses: ' + it.uses);
+    if (it.equipped) lines.push('Equipped (' + it.equipped + ')');
+    if (it.carried) lines.push('Carried ×' + it.carried);
     return lines.join('\n');
 }
 

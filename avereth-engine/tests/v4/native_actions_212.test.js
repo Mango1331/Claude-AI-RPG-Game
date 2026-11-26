@@ -51,3 +51,20 @@ test('native equip uses the existing exchange of held and equipped gear', async 
     assert.equal(game.state().entities.pc.sheet.inventory[replacement] || 0,0);
     assert.ok(!lastUser(game).events.some(e => ['coin.changed','pulse.rolled'].includes(e.t)));
 });
+
+test('item reads each owned instance by identity and disambiguates equal names', async () => {
+    const content = await loadProductContent();
+    const game = await campaign(content);
+    const s = game.state();
+    const {runCommands} = await import('../../src/commands.js');
+    for (const matk of [18, 21]) {
+        const id = 'obj.sceptre' + matk;
+        s.objects[id] = {id, name:'Superior sceptre', holder:{entity:'pc'}, qty:1, profile:{kind:'gear',slot:'weapon',rank:'F',matk}};
+        s.entities.pc.sheet.inventory[id] = 1;
+    }
+    const read = arg => runCommands(s,content,'#item ' + arg).panels.join('\n');
+    assert.match(read('Superior sceptre'), /#item obj.sceptre18[\s\S]*#item obj.sceptre21/);
+    assert.match(read('obj.sceptre18'), /MATK 18/);
+    assert.match(read('obj.sceptre21'), /MATK 21/);
+    assert.equal(runCommands(s,content,'#item obj.sceptre18').events.length, 0);
+});

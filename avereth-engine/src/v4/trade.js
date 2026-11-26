@@ -531,6 +531,13 @@ export function tradeObject(s, content, ref) {
     return s.objects[ref] || null;
 }
 
+// A physical object may also appear as a sheet inventory key. Enumerate it only once.
+export function carriedObjects(s, content) {
+    const inventory = Object.keys(s.entities.pc.sheet.inventory || {}).filter(id => !id.startsWith('obj.'));
+    return [...inventory.map(id => tradeObject(s, content, 'item.' + id)),
+        ...Object.values(s.objects || {}).filter(o => o.holder?.entity === 'pc' && (o.qty ?? 1) > 0)].filter(Boolean);
+}
+
 /** Units held in either inventory representation; equipped templates are not an extra carried copy. */
 export function heldUnits(s, ref) {
     ref = objectRef(s, ref);

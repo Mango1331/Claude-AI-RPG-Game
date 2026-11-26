@@ -1,5 +1,5 @@
 import { normText } from '../util.js';
-import { tradeObject } from './trade.js';
+import { carriedObjects } from './trade.js';
 import { playerTurnV4 } from './turn.js';
 
 /** Direct controls reuse the story action handler and its ordinary event log. */
@@ -13,9 +13,7 @@ export function nativeAction(state, content, text, msg) {
         return panel('Finish the current encounter before using this command.');
     let action;
     if (name === 'equip') {
-        const inventory = Object.keys(state.entities.pc.sheet.inventory || {}).map(id => `item.${id}`);
-        const held = [...inventory,...Object.keys(state.objects || {})].map(id => tradeObject(state,content,id))
-            .filter(o => o?.holder?.entity === 'pc');
+        const held = carriedObjects(state, content);
         const item = held.find(o => o.id === arg) || held.filter(o => arg && normText(o.name) === normText(arg));
         const object = Array.isArray(item) ? (item.length === 1 ? item[0].id : null) : item.id;
         if (!object) return panel('Use #equip <exact item name or inventory ID>. The item must be unique and in your bag.');

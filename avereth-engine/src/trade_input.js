@@ -1,6 +1,6 @@
 // A HUD choice is a request against the folded state. It owns no stock, prices or transactions.
 import { personLabel } from './v4/catalog.js';
-import { bidSale, tradeObject, heldUnits, pricePositions, offerLocationWhy, offerAvailability,
+import { bidSale, carriedObjects, heldUnits, pricePositions, offerLocationWhy, offerAvailability,
     tradeTermsWhy, purchaseQuantityLimit } from './v4/trade.js';
 import { PLATE_ID } from './v4/guild.js';
 
@@ -18,10 +18,8 @@ export function localOffers(s, party) {
 
 export function saleStock(s, content) {
     const sheet = s.entities.pc.sheet;
-    const refs = [...Object.keys(sheet.inventory || {}).filter(id => !id.startsWith('obj.')).map(id => 'item.' + id),
-        ...Object.values(s.objects || {}).filter(o => o.holder?.entity === 'pc').map(o => o.id)];
     const worn = new Set(Object.values(sheet.equipment || {}).map(v => typeof v === 'string' ? v : v?.id));
-    return refs.map(id => tradeObject(s, content, id)).filter(o => o && heldUnits(s, o.id) > 0
+    return carriedObjects(s, content).filter(o => o && heldUnits(s, o.id) > 0
         && !worn.has(o.id) && o.id !== PLATE_ID && !o.for_quests?.length);
 }
 

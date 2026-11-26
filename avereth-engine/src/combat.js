@@ -14,7 +14,7 @@ import { defeatXp, awardXp, splitPool, strengthOf } from './progression.js';
 import { scaleCreature } from './npcgen.js';
 import { lookOf } from './knowledge.js';
 import { bandIndex, bandName, clone, num, roundHalfUp } from './util.js';
-import { sceneHandle, areaBand, skillAreaTarget } from './v4/scene_handles.js';
+import { sceneHandle, areaBand, skillAreaTarget, burstCaught } from './v4/scene_handles.js';
 import { itemEffectOf, rulesetOf, skillOf as resolveSkill } from './content.js';
 import { effectValue, flatEffectValue, noteUse, fightProgress, restoration } from './skills.js';
 import { fightGrowth } from './v4/growth.js';
@@ -633,7 +633,8 @@ function resolveAttack(ctx, actorId, targetId, skillId, extra = {}) {
         if (burst) {
             // Hotfix c.6.6.18, Patch 7.1: a thrown burst strikes the one it is thrown at and those the engine fixed with it
             // (its knot: src/engine.js burstOf, however many), each with its own pipeline; no one else
-            const ids = uniqIds([targetId, ...(extra.burst || [])]).filter((id) => enc.combatants[id] && areaVictim(ctx, actor, enc.combatants[id], [], true));
+            const caught = enc.line ? burstCaught({...state,encounter:enc},targetId,actorId) : extra.burst || [];
+            const ids = uniqIds([targetId, ...caught]).filter((id) => enc.combatants[id] && areaVictim(ctx, actor, enc.combatants[id], [], true));
             for (const tid of ids) record.strikes.push(resolveStrike(ctx, actor, enc.combatants[tid], skill.attack, opts));
         } else if (isArea) {
             // Area: every valid target in the resolved band is hit, each with its own damage pipeline.

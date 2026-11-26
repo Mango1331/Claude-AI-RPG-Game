@@ -129,9 +129,9 @@ export function areaCaught(state, { move = null, moveTarget = null, band = 'ENGA
 /** Where someone stands from him: the fight's distance for a combatant, the scene's for anyone else. */
 const bandOf = (state, id) => state.encounter?.line && Object.hasOwn(state.encounter.line.x,id) ? lineBand(state.encounter.line,'pc',id) : state.encounter?.combatants?.[id]?.current?.band ?? state.scene?.positions?.[id]?.band ?? null;
 /** Someone a strike can still land on: alive, and in a fight neither down, gone nor yielded. */
-function standing(state, id) {
+function standing(state, id, actor = 'pc') {
     const e = state.entities?.[id];
-    if (id === 'pc' || !e || e.status === 'dead' || !['npc', 'creature'].includes(e.kind)) return false;
+    if (id === actor || !e || e.status === 'dead' || (id !== 'pc' && !['npc', 'creature'].includes(e.kind))) return false;
     const c = state.encounter?.combatants?.[id];
     return !c || (!c.current.defeated && !c.current.escaped && !c.current.surrendered);
 }
@@ -174,13 +174,13 @@ export function burstAim(state, range) {
  * engine's whole knowledge of where they stand is their distance from him and the knots the story established; it
  * strikes no one else, never everyone of a room, a distance or a kind because they are there.
  */
-export function burstCaught(state, target) {
+export function burstCaught(state, target, actor = 'pc') {
     const band = bandOf(state, target);
-    if (!band || !standing(state, target)) return [];
+    if (!band || !standing(state, target,actor)) return [];
     const knot = clusterOf(state, target);
     if (!knot) return [target];
     const pool = [...new Set([...Object.keys(state.encounter?.combatants || {}), ...(state.scene?.present || [])])];
-    return [target, ...pool.filter((id) => id !== target && standing(state, id) && bandOf(state, id) === band && (!state.encounter?.line || state.encounter.line.x[id] === state.encounter.line.x[target]) && clusterOf(state, id) === knot)];
+    return [target, ...pool.filter((id) => id !== target && standing(state, id,actor) && bandOf(state, id) === band && (!state.encounter?.line || state.encounter.line.x[id] === state.encounter.line.x[target]) && clusterOf(state, id) === knot)];
 }
 
 /**

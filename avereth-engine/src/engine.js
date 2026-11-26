@@ -21,7 +21,7 @@ import { rankRefusal, itemProfile } from './v4/items.js';
 import { deriveCharacter, actionsOf } from './derived.js';
 import { selectClass, selectSkills } from './creation.js';
 import { scaleCreature, chooseCreatureLevel, humanSheet } from './npcgen.js';
-import { allyReceiptEvents, checkTerms, describeTerms, negotiators, surrenderAssets } from './v4/surrender.js';
+import { allyAssets, allyReceiptEvents, checkTerms, describeTerms, negotiators, surrenderAssets } from './v4/surrender.js';
 import { surrenderTransfers, SurrenderTransferError } from './v4/commands.js';
 import { characterCombatant, initEncounter, addCombatant, runCombat, endEncounterEvents, terminal } from './combat.js';
 import { parseIntent } from './intent.js';
@@ -787,6 +787,13 @@ export function negotiationReaction(state,content,reply) {
     if (enc?.negotiation?.stage!=='offered' || reply.offer!==enc.negotiation.id) throw Error('Expired surrender offer');
     let outcome;
     if (reply.choice==='counter') {
+        if (reply.allies?.some(a=>a.pledges?.length)) {
+            reply=clone(reply);
+            for (const ally of reply.allies) for (const p of ally.pledges || []) {
+                const a=allyAssets(s,content,ally.id).find(a=>a.object===p.object);
+                p.instance=a?.ref || a?.wornTemplate || a?.template || null;
+            }
+        }
         emit({t:'combat.negotiation',d:{revision:negotiationRevision(s),offer:reply.offer,decision:'counter',reply}});
         enc.negotiation={...enc.negotiation,stage:'counter',reply};
         emit({t:'encounter.updated',d:{encounter:enc}});

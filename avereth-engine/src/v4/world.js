@@ -1,5 +1,5 @@
 import { recordWork, vestQuest } from '../party_rewards.js';
-import { following, partyDecision } from '../party.js';
+import { following, partyDecision, bindPartyEquipment } from '../party.js';
 import { campInspection, campObjects, vacantSite, atObserver, visibleSupply, uncoveredSupply } from './camp.js';
 import { encounterHumanLevel } from '../npcgen.js';
 import { floorRefusal, namedLevel, goesFrom, otherEnd } from './dungeon.js';
@@ -2102,7 +2102,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     selfIntro(s, emit);
     const ep = episode(s, msg);
     if (ep) emit({ t: 'memory.recorded', d: { memory: ep } });
-    for (const member of following(s)) if (member.combat && !s.entities[member.who].sheet) materialise(s,content,dice,emit,member.who);
+    for (const member of following(s)) if (member.combat && !s.entities[member.who].sheet) {
+        materialise(s,content,dice,emit,member.who);
+        bindPartyEquipment(s,member.who,emit);
+    }
     const fightFrom = events.length;
     const opened = openCommitted(s, content, dice, emit, { hold: false, c: cPath });
     if (opened) opened.from = fightFrom;

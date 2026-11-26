@@ -48,7 +48,7 @@ export async function partySmoke({page,calls,send,idle,out,onReload}) {
         await page.locator('#chat .last_mes .swipe_right').click();await idle();measure('swipe',b);
         checks.swipe=JSON.stringify((await snap()).state.party.members)===originalMember;
         checks.enter=await panel('enter');checks.send=await panel('send');checks.hud=await panel('hud');
-        const membership=current.events.filter(e=>e.t.startsWith('party.') || e.t==='entity.sheet_set' && e.d.id===who);
+        const membership=current.events.filter(e=>e.t.startsWith('party.') || ['entity.sheet_set','item.equipped'].includes(e.t) && e.d.id===who || e.t==='object.created' && e.d.object?.source?.how==='equipped' && e.d.object.holder.entity===who);
         const combat=structuredClone(original.slice(0,23));combat.at(-1).extra.avereth.events.push(...membership,
             {t:'scene.position',d:{id:who,band:'ENGAGED',cover:'none'}});
         // The scout is at Alaric’s shoulder for this variant. The original pre-combat scene put him by the skeletons.
@@ -58,6 +58,11 @@ export async function partySmoke({page,calls,send,idle,out,onReload}) {
         await send(text);await idle();measure('first grouped attack',b);
         current=await snap();measures.at(-1).perf=current.perf;measures.at(-1).context=current.context;checks.groupCombat=current.events.some(e=>e.t==='encounter.started' && !!e.d.encounter.line);
         checks.realArrow=current.state.entities[who].sheet.inventory.standard_arrow<20;
+        const narrator=calls.slice(b).find(c=>c.purpose==='narrator')?.messages.map(m=>m.content).join('\n') || '';
+        const booked=narrator.slice(narrator.lastIndexOf('RESOLVED THIS TURN'));
+        checks.deliveredPartyRecords=narrator.includes('Positions (one shared line)') && /Ossen/i.test(booked) &&
+            /Risen Bones/i.test(booked) && /bow|arrow/i.test(booked);
+        checks.oneHelperRound=calls.slice(b).map(c=>c.purpose).join('/')==='plan/narrator/extract';
         const second='Ossen, protect me.';b=calls.length;
         command([{seq:1,type:'party',act:'coordinate',who,priority:'protect',target:'pc',quote:'Ossen, protect me.'}],'Ossen covers Alaric.');
         await send(second);await idle();measure('coordination',b);

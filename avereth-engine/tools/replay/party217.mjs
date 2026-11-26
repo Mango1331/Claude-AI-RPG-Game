@@ -28,6 +28,9 @@ s=profile.state;
 assert.equal(s.entities[who].sheet.class,'rogue');
 assert.equal(s.entities[who].sheet.equipment.weapon.family,'bow');
 assert.equal(s.entities[who].sheet.inventory.standard_arrow,20);
+const originalBow=s.entities[who].sheet.equipment.weapon.object;
+assert.equal(s.objects[originalBow].holder.entity,who);
+assert.equal(s.objects[originalBow].profile.family,'bow');
 assert(!following(fold(22)).length);
 const refused=partyDecision(s,content,{...proposal,who:'npc.garrick'},chat[14].mes,'npc.garrick',()=>assert.fail('wrong speaker'));
 assert(!refused.done);
@@ -206,6 +209,12 @@ const handed=x(equipped,[{seq:1,type:'party',act:'give',who,object:'worn.armor',
 assert.equal(handed.entities.pc.sheet.inventory[template],beforeGear+1);
 assert(!handed.entities[who].sheet.equipment.armor);
 assert.equal(handed.entities[who].sheet.inventory[template] || 0,0);
+const bow=s.objects[originalBow], giveBow='I give you the '+bow.name+'.';
+const passedBow=x(s,[{seq:1,type:'party',act:'give',who,object:'worn.weapon',target:'pc',quote:giveBow}],
+    'Ossen says, "'+giveBow+'"',106).state;
+assert.equal(passedBow.objects[originalBow].holder.entity,'pc');
+assert.equal(passedBow.objects[originalBow].profile.atk,bow.profile.atk);
+assert(!passedBow.entities[who].sheet.equipment.weapon);
 const three=setup(), third='npc.garrick', team=structuredClone(camp);
 three.combatants[third]={...structuredClone(three.combatants[who]),id:third};
 three.participation[third]={from:0};team.entities[third].sheet=structuredClone(team.entities[who].sheet);
@@ -237,3 +246,61 @@ gate.scene.at=root;gate.scene.present=['pc'];const dungeon=gate.dungeons[root];d
 assert.equal(occupancy(gate,dungeon).pc,1);
 assert.match(gateCheck(gate,content,root,{group:1}).refuse,/full/);
 console.log('Three-person pool, personal equipment and recovery, physical loot, sale and gate occupancy passed.');
+
+// Ordinary skill areas and a physically established throwing cluster have separate target rules.
+const area=setup(), areaState=structuredClone(camp);
+for (const id of [who,...foes]) area.line.x[id]=0;
+areaState.scene.positions.pc={band:'ENGAGED',cluster:'near'};
+for(const id of [who,...foes]) areaState.scene.positions[id]={band:'ENGAGED',cluster:'near'};
+area.agreements=[{pairs:[[foes[0],'pc']]}];
+areaState.entities.pc.sheet.skills['mage.arcane_burst']={prof:1,pp:0};
+area.combatants.pc.fixed.actions['mage.arcane_burst']=1;
+const areaHit=attackAction({...ctx,enc:area,state:areaState},'pc',foes[1],'mage.arcane_burst');
+assert(!areaHit.illegal,areaHit.illegal);
+assert.deepEqual(areaHit.strikes.map(k=>k.target),[foes[1]]);
+const {burstCaught}=await import('../../src/v4/scene_handles.js');
+const knot={...areaState,encounter:area};
+assert(burstCaught(knot,foes[0],who).includes('pc'));
+assert(!burstCaught(knot,foes[0],who).includes(who));
+area.line.x.pc=-1;
+assert(!burstCaught(knot,foes[0],who).includes('pc'));
+area.line.x.pc=0;delete areaState.scene.positions.pc.cluster;
+assert(!burstCaught(knot,foes[0],who).includes('pc'));
+
+// A group counteroffer involving another person's weapon requires that actual owner's pledge.
+if (process.argv[3]) {
+    const banditChat=fs.readFileSync(process.argv[3],'utf8').trim().split('\n').slice(1,20).map(JSON.parse);
+    const group=host.foldChat(banditChat).state;
+    group.entities[who]=structuredClone(s.entities[who]);group.party=structuredClone(s.party);
+    for (const o of Object.values(s.objects).filter(o=>o.holder?.entity===who)) group.objects[o.id]=structuredClone(o);
+    group.scene.present.push(who);group.scene.positions[who]={band:'SHORT'};
+    const opponents=Object.values(group.encounter.combatants).filter(c=>c.side==='hostile');
+    const speaker=opponents[0].id;
+    const ge=initEncounter(group,content,Dice.from(group),{actor:'pc',target:speaker,engage:true},opponents.map(c=>({id:c.id,side:'hostile'})),'group-owner',{c:true});
+    group.encounter=ge;
+    ge.order=['pc',...ge.order.filter(id=>id!=='pc')];ge.current='pc';ge.turn_index=0;ge.round=1;ge.trigger_done=true;
+    const offered=playerTurn(group,content,'We all surrender.',{c:true,intent:{kind:'surrender',group:true,terms:[]}}).state;
+    const label=ge.combatants[speaker].label, weapon=s.objects[originalBow].name;
+    const demand="Give us Ossen's "+weapon+'.', assent='Ossen accepts the offer.', gift='I give my '+weapon+'.';
+    const prose=label+' says, "'+demand+'" '+assent+' Ossen says, "'+gift+'"';
+    const reply={offer:offered.encounter.negotiation.id,choice:'counter',speaker,members:[{id:speaker,evidence:demand}],evidence:demand,terms:[],
+        allies:[{id:who,evidence:assent,pledges:[{object:'worn.weapon',qty:1,quote:gift}]}]};
+    const {reactionError}=await import('../../src/v4/surrender.js');
+    const {negotiationReaction}=await import('../../src/engine.js');
+    assert(reactionError(offered,content,{...reply,allies:[]},prose));
+    assert.equal(reactionError(offered,content,reply,prose),null);
+    const pending=negotiationReaction(offered,content,reply).state;
+    assert.equal(pending.encounter.negotiation.reply.allies[0].pledges[0].instance,originalBow);
+    assert.equal(pending.objects[originalBow].holder.entity,who);
+    const stale=structuredClone(pending);
+    stale.objects[originalBow].holder={entity:'pc'};
+    const {allyReceiptEvents}=await import('../../src/v4/surrender.js');
+    assert.throws(()=>allyReceiptEvents(stale,content,stale.encounter.negotiation.reply),/available/);
+    const settled=playerTurn(pending,content,'I accept.',{c:true,intent:{kind:'negotiation_answer',accept:true}}).state;
+    assert.equal(settled.objects[originalBow].holder.entity,speaker);
+    assert(!settled.entities[who].sheet.equipment.weapon);
+    const deal=settled.encounter.agreements.at(-1);
+    assert(deal.pairs.some(pair=>pair.includes(who) && pair.includes(speaker)));
+    assert.equal(deal.receipts.find(r=>r.owner===who).instance,originalBow);
+    console.log('Group counteroffer, independent owner assent, exact bow handed over once and named peace pairs passed.');
+}

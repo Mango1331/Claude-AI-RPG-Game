@@ -718,7 +718,8 @@ export function buildContext(state, content, opts = {}) {
     const add = (name, text, priority, own = false) => text && sections.push({ name, text, priority, own, tokens: estimateTokens(text) });
 
     // Reserve room for the visible identities when people participate in a fight.
-    const npcFight=Object.values(state.encounter?.combatants || {}).some(c=>state.entities[c.id]?.kind==='npc');
+    const groupResolution=!!state.encounter?.line || !!opts.outcome?.ended?.xp_shares;
+    const npcFight=groupResolution || Object.values(state.encounter?.combatants || {}).some(c=>state.entities[c.id]?.kind==='npc');
     if (!npcFight && !privateQuestsOf(state)) add('help', 'FREE HELP — only Guild contracts are formal quests. NPCs may request help, offer paid work, make promises and react freely. Preserve requests, deeds, relationships and outcomes as ordinary world continuity; no private Quest acceptance, objectives, READY, turn-in, work certificate, automatic reward or Quest XP. A present NPC may voluntarily hand over a credible gift or payment now; promises/recounts are not new money. Already recorded handovers: ' + ((state.credits || []).filter(x => x.gift && (x.turn === state.turn || state.scene.present.includes(x.gift.from))).slice(-4).map(x => `${x.gift.from}: ${x.cp} cp (${x.gift.why})`).join('; ') || 'none'), 0);
     add('header', `[AVERETH ENGINE — authoritative game state, turn ${state.turn}. Numbers, rolls, positions and knowledge below are binding; narrate, never recalculate.]\n${formatClock(state.clock.minute)} | ${loc ? `${loc.name}${realm && (!v4 || normText(realm) !== normText(loc.name)) ? `, ${realm}` : ''}` : 'unknown location'}${placeSuffix} | mode: ${state.mode}${locStatus !== 'exists' && locStatus !== 'alive' ? ` | LOCATION STATUS: ${String(locStatus).toUpperCase()}` : ''}\nSetting: Western-fantasy medieval material culture with mana/high magic; letters and messengers for distance; no modern technology.`, 0);
     // what Alaric's line carries depends on the turn: items and coin only when trade, loot or items are in play
@@ -749,6 +750,8 @@ export function buildContext(state, content, opts = {}) {
         arrivalIds = arrival.ids.slice(0, 2 - keep.length);
         if (arrivalIds.length) focusNpcIds = [...keep, ...scored.map((x) => x.id).filter((id) => !keep.includes(id))].slice(0, 2 - arrivalIds.length);
     }
+    // The signed line and its resolved actions already identify the party. Reserve social dossiers for dialogue.
+    if (groupResolution) focusNpcIds = [];
     const compactCards = new Map(focusNpcIds.map((id) => [id, compactNpcCard(state, content, id, focusWords)]));
     if (focusNpcIds.length) add('npc_compact', 'CURRENT INTERLOCUTORS — preserve recognition/experience; invitations alone authorize no movement or purchases:\n' + focusNpcIds.map((id) => compactCards.get(id)).join('\n'), 0);
     if (arrivalIds.length) add('npc_arrival', `ARRIVING AT ${arrival.name} — people known there; NOT YET SHOWN: present only if the story shows them there\n${arrivalIds.map((id) => compactNpcCard(state, content, id, focusWords, { arriving: true })).join('\n')}`, 0);

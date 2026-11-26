@@ -70,6 +70,18 @@ function termsFrom(s, content, c, words, actor) {
     return terms;
 }
 
+// Name the already worn individual instance once. Its original stats and training stay on the sheet.
+export function bindPartyEquipment(s,who,emit) {
+    const sheet=s.entities[who]?.sheet;
+    for(const [slot,gear] of Object.entries(sheet?.equipment || {})) {
+        if (!gear || typeof gear!=='object' || gear.object) continue;
+        const id=freeObjectId(s,'obj.'+who+'.'+slot);
+        emit({t:'object.created',d:{object:{id,kind:'item',name:gear.name,qty:1,holder:{entity:who},
+            profile:{...gear,kind:'gear'},source:{how:'equipped',from:who}}}});
+        emit({t:'item.equipped',d:{id:who,slot,item:{...gear,object:id}}});
+    }
+}
+
 export function partyDecision(s, content, command, source, actor, emit, contractReady) {
     const c = command, who = c.who, person = s.entities[who];
     const failure = reason => ({status:'clarify',reason,line:'PARTY — '+reason});
@@ -106,6 +118,7 @@ export function partyDecision(s, content, command, source, actor, emit, contract
         emit({t:'party.agreement',d:{...agreement,phase:accepts?'accepted':'declined',answer:sourceRef,previous:agreement.revision}});
         if (accepts) {
             memberEvent('follow',{agreement:agreement.id,combat:agreement.terms.combat});
+            if (agreement.terms.combat) bindPartyEquipment(s,who,emit);
             if (agreement.terms.due === 'advance') {
                 const row = claim(s,emit,agreement,agreement.terms.quest,agreement.terms.cp);
                 payClaim(s,emit,row,row.amount);
@@ -133,7 +146,12 @@ export function partyDecision(s, content, command, source, actor, emit, contract
                 if (gear) emit({t:'object.created',d:{object:{id:freeObjectId(s,'obj.'+who+'.'+p.slot),kind:'item',name:gear.name,
                     qty:1,holder:{entity:who},profile:{...gear,kind:'gear'},source:{how:'unequipped',from:who}}}});
             }
-            emit({t:'item.equipped',d:{id:who,slot:p.slot,item:asset.ref ? {...p,id:asset.ref,object:asset.ref,name:bag.name}:asset.template}});
+            let equippedRef=asset.ref;
+            if (asset.ref && asset.qty>1) {
+                equippedRef=freeObjectId(s,asset.ref+'.equipped');
+                emit({t:'object.moved',d:{id:asset.ref,qty:1,split:equippedRef,to:{entity:who}}});
+            }
+            emit({t:'item.equipped',d:{id:who,slot:p.slot,item:equippedRef ? {...p,id:equippedRef,object:equippedRef,name:bag.name}:asset.template}});
         } else if (c.act==='use') {
             if (!/\b(?:drink|consume|use|take|swallow)\b/i.test(words) || qty!==1 || asset.slot) return failure('Quote one actual use.');
             const sh=person.sheet,d=deriveCharacter(sh,content),effect=restoreOf(content,bag);

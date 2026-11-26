@@ -307,7 +307,20 @@ export function reactionError(state,content,r,prose) {
         const source=words || prose.slice(decision.start,decision.end);
         const error=checkTerms(state,content,r.terms,{text:source,credit:n.released,counter:true});
         if (error) return error;
-        const demand=source.toLowerCase().split(/\b(?:out of|from|contents of)\b/)[0];
+        let demand=source.toLowerCase().split(/\b(?:out of|from|contents of)\b/)[0];
+        // A named partner's equipment is never the PC's price. Require its owner's pledged asset.
+        for(const id of Object.keys(state.encounter.participation || {}).filter(id=>id!=='pc')) {
+            const marker=state.entities[id].name.toLowerCase()+"'s ";
+            const start=demand.replaceAll('’',"'").indexOf(marker);
+            if(start<0) continue;
+            const mention=demand.slice(start+marker.length).split(/[,.;!?]|\s+and\s+/)[0].trim();
+            const own=allyAssets(state,content,id);
+            const matching=own.filter(a=>mention===a.name.toLowerCase() || mention===a.gear?.family ||
+                a.name.toLowerCase().endsWith(' '+mention));
+            const pledge=r.allies?.find(a=>a.id===id)?.pledges?.find(p=>matching.some(a=>a.object===p.object));
+            if(!pledge || matching.length!==1) return 'The named partner must independently pledge the exact demanded item.';
+            demand=demand.slice(0,start)+demand.slice(start+marker.length+mention.length);
+        }
         const price=coinEvidence(demand,content);
         if (price.complete && price.cp>0 && !r.terms.some(t=>t.object==='coin' && t.qty===price.cp+(additionalPrice(demand)?n.released.find(l=>l.object==='coin')?.qty || 0:0)))
             return 'Include the exact demanded coin amount.';
@@ -342,6 +355,7 @@ export function allyAssets(s,content,who) {
     const list=[{object:'coin',name:'coin',qty:sh.coin_cp}];
     for(const [slot,item] of Object.entries(sh.equipment || {})) {
         const obj=s.objects[item?.object];
+        if (item?.object && (!obj || obj.holder?.entity!==who && obj.holder?.consumed!=='equipped')) continue;
         const gear=typeof item==='string'?content.items.get(item):item;
         if(gear) list.push({object:'worn.'+slot,name:gear.name,qty:1,slot,gear,ref:obj?.id,wornTemplate:typeof item==='string'?item:null});
     }
@@ -356,7 +370,7 @@ export function allyReceiptEvents(s,content,reply) {
     const events=[], receipts=[];
     for(const m of reply.allies || []) for(const p of m.pledges || []) {
         const a=allyAssets(s,content,m.id).find(a=>a.object===p.object);
-        if(!a || a.qty<p.qty || !Number.isSafeInteger(p.qty) || p.qty<1) throw Error('Pledged property is no longer available.');
+        if(!a || p.instance && p.instance!==(a.ref || a.wornTemplate || a.template) || a.qty<p.qty || !Number.isSafeInteger(p.qty) || p.qty<1) throw Error('Pledged property is no longer available.');
         const recipient={entity:reply.speaker};
         if(a.object==='coin') {
             events.push({t:'coin.changed',d:{id:m.id,value:s.entities[m.id].sheet.coin_cp-p.qty,delta:-p.qty,why:'agreed surrender'}});
@@ -371,7 +385,9 @@ export function allyReceiptEvents(s,content,reply) {
                 events.push({t:'object.created',d:{object:{id,kind:'item',name:a.name,qty:p.qty,holder:recipient,...a.gear?{profile:{...a.gear,kind:'gear'}}:{},source:{how:'given',from:m.id,template:a.template || a.wornTemplate || a.gear?.id}}}});
             }
         }
-        receipts.push({owner:m.id,object:p.object,qty:p.qty,to:reply.speaker,at:s.scene.at});
+        const physical=events.at(-1);
+        receipts.push({owner:m.id,object:p.object,qty:p.qty,to:reply.speaker,at:s.scene.at,
+            ...(a.object!=='coin'?{instance:physical.d.split || physical.d.object?.id || physical.d.id}:{})});
     }
     return {events,receipts};
 }

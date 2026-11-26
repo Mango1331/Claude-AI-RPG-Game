@@ -15,6 +15,7 @@ import { bandIndex, itemLabel } from './util.js';
 import { damagePreview, combatTargets, targetLabel } from './combat.js';
 import { sceneHandle, tacticalHere, sideOf } from './v4/scene_handles.js';
 import { livingOf, gateCard, floorAt } from './v4/living.js';
+import { masteryChange } from './proficiency_display.js';
 import { skillOf } from './content.js';
 import { offerCard } from './v4/items.js';
 
@@ -149,7 +150,7 @@ function changeLines(before, after, content, events) {
             out.push(sys(`+${d.amount} XP → XP ${xp}/${level * per}${d.reason ? ` · ${d.reason}` : ''}`));
         } else if (e.t === 'skill.progress' && d.id === 'pc' && /^check:/.test(d.key || '')) {
             // Patch 9B-1: a check of real difficulty with a learned Skill (a fight's progress is told at its end, endLines)
-            out.push(sys(progressText(d)));
+            out.push(sys(progressText(d, after, content)));
         } else if (e.t === 'level.up' && d.id === 'pc') {
             lvl = d.level;
             out.push(sys(`LEVEL UP → Level ${d.level} (+${d.free_points} free Stat Points) · spend them with #assign <STAT> <n>, e.g. #assign INT 3 WIL 2`));
@@ -467,16 +468,17 @@ function endLines(state, content, name, e, levelups = [], loot = null, rewardLin
     // Prototype C (4.3.0-c.6.6.5): the automatic loot the fight's end booked (src/v4/loot.js), what came in by this fight
     const got = (loot || []).length ? [sys('LOOT ACQUIRED:'), ...loot.map((l) => sys(`  ${l}`))] : [];
     // Patch 9B-1: the Proficiency Progress of the fight, booked at its end
-    const pp = (e.pp || []).map((p) => sys(progressText({ ...p, name: skillOf(content, p.skill, state)?.name || p.skill })));
+    const pp = (e.pp || []).map((p) => sys(progressText({ ...p, name: skillOf(content, p.skill, state)?.name || p.skill }, state, content)));
     // Patch 9C-1: the Learning Progress the fight gave a learning goal (src/v4/growth.js)
     const lp = (e.lp || []).map((l) => sys(`LEARNING +${l.lp} LP ${l.goal} → ${l.total}/${l.need}${l.total >= l.need ? ' (complete)' : ''}`));
     return [sys(`COMBAT END${fates.length ? ` — ${fates.join(', ')}` : ''}${xp}`), ...got, ...rewardLines.map(sys), ...pp, ...lp, ...levelups.map((lv) => sys(`LEVEL UP → ${lv} (+5 free Stat Points) · spend them with #assign <STAT> <n>, e.g. #assign INT 3 WIL 2`))];
 }
 
 /** Patch 9B-1: one Skill's Proficiency Progress: "+18 PP Razor Cut → P1 18/75", a promotion named. */
-function progressText(p) {
+function progressText(p, state, content) {
     const up = p.from && p.to.prof > p.from.prof ? ` · PROFICIENCY P${p.from.prof} → P${p.to.prof}` : '';
-    return `SKILL +${p.gained} PP ${p.name} → P${p.to.prof}${p.to.prof >= 5 ? ' (max)' : ` ${p.to.pp}/${p.need}`}${up}`;
+    const detail = up && masteryChange(state, content, skillOf(content, p.skill, state), p.from.prof, p.to.prof, p.id);
+    return `SKILL +${p.gained} PP ${p.name} → P${p.to.prof}${p.to.prof >= 5 ? ' (max)' : ` ${p.to.pp}/${p.need}`}${up}${detail ? ' · ' + detail : ''}`;
 }
 
 function recordLines(name, r) {

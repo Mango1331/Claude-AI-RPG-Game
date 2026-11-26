@@ -7,13 +7,14 @@ import { goalLines } from './v4/growth.js';
 import { skillOfferLines, lineageText } from './v4/skill_growth.js';
 import { classLines, className } from './v4/class_growth.js';
 import { featLines } from './v4/feats.js';
+import { effectsNow, masteryChange } from './proficiency_display.js';
 import { carriedObjects } from './v4/trade.js';
 import { profileOf, sourceText } from './v4/items.js';
 import { formatCoin } from './economy.js';
 import { findSkill, rulesetOf, startClasses, skillOf, kitOf } from './content.js';
 import { passiveTotals, skillCostAmount, passivesOf, passiveText, effectiveStats, statsText, passiveSlots } from './passives.js';
 import { passiveLines, passiveOffers } from './v4/passive_growth.js';
-import { promotionPp, effectValue, effectFactor, flatEffectValue, affinityFor } from './skills.js';
+import { promotionPp, effectFactor, affinityFor } from './skills.js';
 import { assignStat } from './progression.js';
 import { knowledgeOf, memoriesOf, memoryText, propText, anyLabel, playerLabel, statusOf } from './knowledge.js';
 import { applyEvent } from './state.js';
@@ -31,7 +32,7 @@ const HELP = [
     ['#bag', 'inventory and coin (alias #inventory)'], ['#item <name>', 'Item definition'], ['#quests', 'known Quests'],
     ['#quest <name>', 'Quest details'], ['#effects', 'active effects'], ['#effect <name>', 'effect details'],
     ['#combat', 'encounter audit (read-only)'], ['#system <question>', 'mechanics question answered by the System'],
-    ['#equip <item>', 'equip an item from the bag'], ['#rest <minutes>', 'start resting now'],
+    ['#equip <item>', 'equip an item from the bag'], ['#rest <minutes>', 'choose a duration, e.g. #rest 30 or #rest 2h'],
     ['#assign <STAT> <n>', 'spend free Stat Points (state-changing)'], ['#pay <card id>', 'pay exactly that payment card (alone in the message)'], ['#npc <name>', 'what Alaric knows about someone'],
     ['#log [n]', "Alaric's recent memories"], ['#journal', 'goals, places known by report, open and settled threads'], ['#map', 'the rooms and ways of the dungeon you are in, as far as you know them'], ['#audit', 'rolls, rejected reports and corrections of the last turn'], ['#help', 'this list'],
 ];
@@ -56,16 +57,6 @@ function skillCost(skill, prof, content, sheet = null, meaningfulMastery = false
     const amount = skillCostAmount(content, skill, prof, mods, meaningfulMastery);
     const mult = content.rules.proficiency.levels[String(prof || 1)].cost;
     return `${amount} ${skill.cost.resource.toUpperCase()}${mult !== 1 || amount !== skill.cost.amount ? ` (base ${skill.cost.amount})` : ''}`;
-}
-
-/** Patch 9B-1: what a Skill's numeric effects give at this Proficiency, as the combat engine books them. */
-function effectsNow(content, sk, stats, prof, ruleset) {
-    return (sk.effects || []).map((e) => {
-        if (e.kind === 'temp_def' || e.kind === 'temp_mdef') return `${e.kind === 'temp_def' ? 'DEF' : 'MDEF'} +${effectValue(content, e, stats, prof, ruleset)}`;
-        if (e.kind === 'barrier') return `Barrier ${effectValue(content, e, stats, prof, ruleset)} HP`;
-        if (e.kind === 'post_attack_temp_def') return `DEF +${flatEffectValue(content, e.flat, prof, ruleset)} after the attack`;
-        return null;
-    }).filter(Boolean);
 }
 
 function status(state, content) {
@@ -209,6 +200,7 @@ function skill(state, content, arg) {
     const now = effectsNow(content, sk, effectiveStats(s, content), known.prof, rulesetOf(state));
     if (now.length) lines.push(`Current effect: ${now.join(' | ')}${effectFactor(content, known.prof, rulesetOf(state)) !== 1 ? ` (×${effectFactor(content, known.prof, rulesetOf(state))} Proficiency, rounded)` : ''}`);
     if (!known.weapon && rulesetOf(state) >= 2 && s.class) lines.push(`Proficiency Progress: ${ppText(content, sk, known, state)} · Affinity ×${affinityFor(content, s.class, sk)} (highest of its tags)`);
+    if (!known.weapon && known.prof > 1) lines.push('Last promotion: ' + masteryChange(state, content, sk, known.prof - 1, known.prof));
     const lineage = rulesetOf(state) >= 2 ? lineageText(state, content, sk.id) : null;
     if (lineage) lines.push(lineage);
     return lines.join('\n');

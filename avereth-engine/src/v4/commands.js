@@ -208,10 +208,7 @@ export function engineMinutes(content, s, c) {
     return null;
 }
 
-/**
- * Prototype C: natural recovery for booked rest or sleep. Per hour, a share of each maximum (rules.recovery), rounded
- * down, never above the maximum; no minutes, no recovery. Returns the resource.changed events and their lines.
- */
+/** Recover whole MP from a confirmed travel segment; keep the unspent numerator. */
 export function travelManaEvent(s, content, minutes, id) {
     const sheet = s.entities[id]?.sheet;
     if (!sheet || !Number.isSafeInteger(minutes) || minutes <= 0) return null;
@@ -224,6 +221,10 @@ export function travelManaEvent(s, content, minutes, id) {
     return {t:'resource.changed', d:{id,resource:'mp',value,why:'travel',fraction}};
 }
 
+/**
+ * Prototype C: natural recovery for booked rest or sleep. Per hour, a share of each maximum (rules.recovery), rounded
+ * down, never above the maximum; no minutes, no recovery. Returns the resource.changed events and their lines.
+ */
 export function recoveryEvents(s, content, minutes, why, id = 'pc') {
     const sheet = s.entities[id].sheet;
     const dv = deriveCharacter(sheet, content);

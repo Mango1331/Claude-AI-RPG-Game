@@ -62,6 +62,25 @@ export function installActionComposer({context,state,content,enabled,settings,bl
         return rows;
     }
     const tradeRevision = () => key() + '|' + actionPrefix(context().chat);
+    const rest = document.createElement('details');
+    rest.id = 'avereth-rest'; rest.className = 'avereth-shop';
+    rest.innerHTML = '<summary>Rasten</summary><select aria-label="Rastdauer"><option value="30">30 Minuten</option><option value="60">1 Stunde</option><option value="120">2 Stunden</option><option value="">Eigene Dauer</option></select> <input aria-label="Rastdauer in Minuten" type="number" min="1" max="1440" value="30" hidden> <button type="button">Rast beginnen</button>';
+    box.append(rest);
+    const duration = rest.querySelector('select'), minutes = rest.querySelector('input');
+    const startRest = rest.querySelector('button');
+    duration.onchange = () => { minutes.hidden = !!duration.value; };
+    startRest.onclick = () => {
+        const field = textarea(), s = state();
+        if (generating || blocked() || draft() || field.disabled || field.readOnly || field.value.trim()
+            || s.encounter || s.pending_combat?.length || s.entities.pc?.status === 'dead' || s.mode === 'creation') {
+            tell(blocked() || 'Offene Eingabe oder Aktion zuerst abschließen.'); return;
+        }
+        const n = duration.value ? Number(duration.value) : minutes.valueAsNumber;
+        if (!Number.isInteger(n) || n < 1 || n > 1440) { tell('Eine Rastdauer von 1 bis 1440 Minuten wählen.'); return; }
+        field.value = '#rest ' + n;
+        field.dispatchEvent(new Event('input', {bubbles:true}));
+        document.getElementById('send_but')?.click();
+    };
     const refreshTrade = installTradePanel(box, {
         revision: tradeRevision, live: state, notice: tell,
         draftText(text, system = false) {
@@ -100,6 +119,8 @@ export function installActionComposer({context,state,content,enabled,settings,bl
         box.hidden=!enabled();controls.hidden=box.hidden;if(box.hidden)return;
         const owner=key();if(controlsOrigin!==owner){clearControls();controlsOrigin=owner;}
         const s=state(),projected=availableActions(s,content());options=projected.actions;targets=projected.targets;
+        rest.hidden = !!(s.encounter || s.pending_combat?.length || s.mode === 'creation' || !s.entities.pc?.sheet || s.entities.pc.status === 'dead');
+        startRest.disabled = generating || !!blocked();
         refreshTrade(s,content());
         const panels=[...document.querySelectorAll('#chat :is(.avereth-combat-hud,.custom-avereth-combat-hud)')];
         activePanel=s.encounter?panels.at(-1):null;

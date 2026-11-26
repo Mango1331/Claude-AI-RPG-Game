@@ -1401,7 +1401,7 @@ const HANDLERS = {
             if (!current.ok || current.selection.direction !== agreed.direction || current.selection.at !== agreed.at
                 || current.selection.total_cp !== agreed.total_cp || current.selection.terms.some((p,i) => {
                     const old = agreed.terms[i];
-                    return !old || p.name !== old.name || p.object !== old.object || p.units !== old.units || p.cp !== old.cp;
+                    return !old || p.name !== old.name || p.object !== old.object || p.service !== old.service || p.units !== old.units || p.cp !== old.cp;
                 })) return { status:'refused', reason:'selection or price changed', line:'NOT TRADED — the goods or terms changed. Review the offer again.' };
         }
         // Build .142 (§6.2): an open or unconfirmed price is not accepted, on every path that leads here

@@ -12,6 +12,12 @@ export function tradePartners(s) {
     });
 }
 
+export function selectableLine(offer, line) {
+    if ((line.terms ?? 'firm') !== 'firm') return false;
+    return line.kind === 'goods' || (!offer.bid && line.kind === 'service'
+        && ['lodging', 'meal'].includes(line.service) && (line.qty ?? 1) === 1 && !line.condition);
+}
+
 export function localOffers(s, party) {
     return Object.values(s.offers || {}).filter(o => o.status === 'open' && !o.gate && o.seller === party && !offerLocationWhy(s, o));
 }
@@ -59,12 +65,12 @@ export function tradeDraft(s, content, {kind, party, offer = null, rows = []}) {
     const details = [];
     for (const p of positions) {
         const line = o.lines.find(l => l.id === p.id);
-        if (line.kind !== 'goods') return fail('Dienste und Gebühren werden im Gespräch vereinbart.');
+        if (!selectableLine(o, line)) return fail('Dienste und Gebühren werden im Gespräch vereinbart.');
         if (o.bid ? !stock.some(item => item.id === line.object) : p.units > purchaseQuantityLimit(s,o,line))
             return fail('Die ausgewählte Ware ist in dieser Menge nicht verfügbar.');
         const cp = o.bid ? (Number.isSafeInteger(line.price_cp) ? pricePositions(o,[p]).picks?.[0]?.cp ?? null : null)
             : picked.picks.find(x=>x.line.id === p.id).cp;
-        details.push({name:line.what, units:p.units, cp, object:line.object ?? null});
+        details.push({name:line.what, units:p.units, cp, object:line.object ?? null, ...(line.kind === 'service' ? {service:line.service} : {})});
     }
     if (!Number.isSafeInteger(picked.cp) || picked.cp < 0) return fail('Kein verbindlicher Gesamtpreis.');
     if (!o.bid && s.entities.pc.sheet.coin_cp < picked.cp) return fail('Gesamtpreis ' + picked.cp + ' cp übersteigt dein Guthaben.');

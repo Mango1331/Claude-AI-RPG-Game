@@ -1,4 +1,4 @@
-import { tradePartners, localOffers, saleStock, tradeDraft } from './trade_input.js';
+import { selectableLine, tradePartners, localOffers, saleStock, tradeDraft } from './trade_input.js';
 import { offerLocationWhy, purchaseQuantityLimit, heldUnits } from './v4/trade.js';
 import { offerCard } from './v4/items.js';
 import { personLabel } from './v4/catalog.js';
@@ -100,7 +100,7 @@ export function installTradePanel(parent, { revision, live, submit, draftText, n
             const cards = !o.bid && offerCard(s,content,o);
             for (const [i,l] of o.lines.entries()) {
                 const label = o.bid ? l.what + ' ×' + l.qty + (Number.isInteger(l.price_cp) ? ' · ' + l.price_cp + ' cp' : '') : cards[i];
-                if (selectedLot || l.kind !== 'goods' || (l.terms ?? 'firm') !== 'firm') rows.append(element('div', label));
+                if (selectedLot || !selectableLine(o, l)) rows.append(element('div', label));
                 else {
                     const max = o.bid ? Math.min(l.qty,heldUnits(s,l.object)) : purchaseQuantityLimit(s,o,l);
                     numberField(rows,l.id,label,max,l.price_cp % (l.qty ?? 1) === 0 ? 1 : l.qty);

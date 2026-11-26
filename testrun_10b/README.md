@@ -4,7 +4,7 @@
 
 | Etappe | Runordner und Auswertung |
 |---|---|
-| **.215 · User14 – persönlicher Spieltest** | [Quellen, GPT-Review und offene Party-Fachplanung](user-20261126-010332-215/README.md) · Codex-Gegenreview ausstehend |
+| **.215 · User14 – persönlicher Spieltest** | [Quellen und GPT-Review](user-20261126-010332-215/README.md) · [Codex-Gegenreview](user-20261126-010332-215/CODEX_GEGENREVIEW.md) · [Fachplanung](../recherche/AVERETH_PARTY_SYSTEM_FACHPLANUNG.md) |
 | **.213 · User13 – persönlicher Spieltest** | [Quellen, GPT-Review und offene Designideen](user-20261125-212154-213/README.md) · [bestätigter Gegenreview](user-20261125-212154-213/CODEX_GEGENREVIEW.md) · [.214-Abnahme](../recherche/AVERETH_214_SURRENDER_COMBAT_NEGOTIATION.md) |
 | **.211 · User12 und fünf OpenRouter-Helfer-Einzelruns** | [User12, Originale und Gegenreviews](user-20261125-005145-211/README.md) · [Helferserie und Quellenstand](openrouter-helper-laufserie-20261124/README.md) · [.212-Fach-/Offline-Abnahme](../recherche/AVERETH_212_FACH_UND_ABNAHME.md) |
 | **.211 · natürlicher OpenRouter-Langzeitvergleich** | [Vier Kampagnen .210/.211, Revisionen und Gegenproben](openrouter-20261124-langzeit-211/README.md) · [fachlicher Abschluss](../recherche/AVERETH_211_NATUERLICHER_LANGZEITVERGLEICH.md) · [GPT-Gegenreview](../recherche/AVERETH_211_GPT_GEGENREVIEW_NATUERLICHER_LANGZEITTEST_2026-11-24.md) |

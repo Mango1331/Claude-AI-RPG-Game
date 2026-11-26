@@ -4,6 +4,7 @@ Hier stehen **nur Quellenlinks**, keine wiederholten Ergebnisbeschreibungen. Erg
 
 | Etappe / Forschungsfeld | Berichte und unabhängige Reviews | Reproduktion und Originale |
 |---|---|---|
+| **.216 · Extractor und Party-Fachplanung** | [Extractor-Abnahme](AVERETH_216_EXTRACTOR_NORMALISIERUNG.md) · [Party-Fachplanung zur Entscheidung](AVERETH_PARTY_SYSTEM_FACHPLANUNG.md) | [User14-Gegenreview](../testrun_10b/user-20261126-010332-215/CODEX_GEGENREVIEW.md) · [Offline-Originalabnahme](abnahme_216_extractor.mjs) |
 | **.214/.215 – Kapitulation und Kampfverhandlung** | [Fachbericht und Abnahme](AVERETH_214_SURRENDER_COMBAT_NEGOTIATION.md) | [User13-Gegenreview](../testrun_10b/user-20261125-212154-213/CODEX_GEGENREVIEW.md) · [Autorisierungskorrektur .215 und Kontrollreviewstand](AVERETH_215_KAPITULATION_AUTORISIERUNG.md) |
 | **.213 – Finanzkontrollreview / User13** | [GPT-Kontrollreview und Entscheidung](AVERETH_213_GPT_KONTROLLREVIEW.md) · [User13-GPT-Review](../testrun_10b/user-20261125-212154-213/REVIEW.md) | [Originale und Feedback](../testrun_10b/user-20261125-212154-213/README.md) · [bestätigter Gegenreview](../testrun_10b/user-20261125-212154-213/CODEX_GEGENREVIEW.md) |
 | **.212 – Offline-Abnahme nach User12** | [Fach- und Abnahmebericht](AVERETH_212_FACH_UND_ABNAHME.md) | [User12-Originale](../testrun_10b/user-20261125-005145-211/SOURCE_MANIFEST.md) · [Helfer-Gesamtreview](../testrun_10b/openrouter-helper-laufserie-20261124/CODEX_GESAMTREVIEW_211.md) |

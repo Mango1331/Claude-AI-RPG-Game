@@ -5,6 +5,8 @@ import {engineAt} from './replay.mjs';
 import {playerTurnV4,replyTurnV4} from '../../src/v4/turn.js';
 import {playerTurn} from '../../src/engine.js';
 import {validateActionSelection,availableActions} from '../../src/action_input.js';
+import {assertOwnership} from '../../src/v4/world.js';
+assertOwnership(true);
 const {host,content}=await engineAt();
 const chat=fs.readFileSync(process.argv[2],'utf8').trim().split('\n').slice(1).map(JSON.parse);
 let state=host.foldChat(chat,13).state;
@@ -83,6 +85,7 @@ for(let section=2;section<=4;section++){
 assert(state.dungeons[root].run.floors[1].cleared?.credit==='pc');
 assert(Object.keys(state.quests[quest].party_work).length===3);
 console.log('Cleared by party',state.entities.pc.sheet.hp,state.entities[who].sheet.hp,promptCount);
+const beforeReturn=structuredClone(state);
 for(const dest of [root,baseAt]) travel(dest,dest,state.places[dest].name);
 assert.equal(state.scene.at,baseAt);
 const q=state.quests[quest], cash=state.entities.pc.sheet.coin_cp, before=state.entities[who].sheet.coin_cp;
@@ -95,3 +98,33 @@ reply('The clerk closes the contract.',{scene:'here',expected:{},deltas:[]});
 turn('We part ways.',[{seq:1,type:'party',who,act:'leave',quote:'We part ways.'}]);
 assert.equal(state.party.members[who].mode,'left');
 console.log('Original seed',state.rng.seed,'turn',state.turn,'45/45 cp, 225/225 XP; registered contract closed, Ossen parted.');
+
+// Branch at the actual clear. Ossen waits in his room; payment resumes after a real return there.
+state=structuredClone(beforeReturn);
+const lastRoom=state.scene.at;
+turn('Ossen, wait here.',[{seq:1,type:'party',act:'wait',who,quote:'wait here'}]);
+for (const dest of [root,baseAt]) {
+    const text='I return to '+state.places[dest].name+'.';
+    turn(text,[{seq:1,type:'go',to:dest,quote:text}]);
+    reply(text,{scene:dest,expected:{1:{arrived:true,at:dest,with:[]}},deltas:[{type:'arrive',seq:1,at:dest,with:[]}]});
+}
+assert(!state.scene.present.includes(who));
+const oldCash=state.entities.pc.sheet.coin_cp;
+turn('I turn in the contract.',[{seq:1,type:'quest.turn_in',quest,quote:'I turn in the contract.'}]);
+const debt=Object.values(state.party.claims)[0];
+assert.equal(state.entities.pc.sheet.coin_cp-oldCash,90);
+assert.equal(debt.amount-debt.paid,45);
+for (const dest of [root,...Object.values(state.places).filter(p=>p.section && p.parent===root).sort((a,b)=>a.section-b.section).map(p=>p.id)]) {
+    if(state.scene.at===dest) continue;
+    const text='I return to '+state.places[dest].name+'.';
+    turn(text,[{seq:1,type:'go',to:dest,quote:text}]);
+    reply(text,{scene:dest,expected:{1:{arrived:true,at:dest,with:[]}},deltas:[{type:'arrive',seq:1,at:dest,with:[]}]});
+}
+assert.equal(state.scene.at,lastRoom);
+assert(state.scene.present.includes(who));
+for(const [amount,money] of [[20,'two silver'],[25,'twenty-five copper']]){
+    const text='I give Ossen '+money+' toward the debt.';
+    turn(text,[{seq:1,type:'party',act:'pay',who,claim:debt.id,amount,money,quote:text}]);
+}
+assert.equal(state.party.claims[debt.id].paid,45);
+console.log('Waiting in the cleared room, absent at turn-in, real reunion and explicit 20+25 cp settlement passed.');

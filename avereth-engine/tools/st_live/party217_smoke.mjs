@@ -17,7 +17,7 @@ export async function partySmoke({page,calls,send,idle,out,onReload}) {
     }
     const snap=()=>page.evaluate(async base=>{
         const c=SillyTavern.getContext(),{foldChat}=await import(base+'src/host.js'),fold=foldChat(c.chat);
-        return {length:c.chat.length,state:fold.state,errors:fold.errors,events:c.chat.flatMap(m=>m.extra?.avereth?.events || []),last:c.chat.at(-1).extra?.avereth?.extraction,perf:c.chat.findLast(m=>m.is_user)?.extra?.avereth?.perf};
+        return {length:c.chat.length,state:fold.state,errors:fold.errors,events:c.chat.flatMap(m=>m.extra?.avereth?.events || []),last:c.chat.at(-1).extra?.avereth?.extraction,perf:c.chat.findLast(m=>m.is_user)?.extra?.avereth?.perf,context:c.chat.at(-1).extra?.avereth?.narration?.context};
     },base);
     const command=(commands,narrator,deltas=[])=>{replies={plan:JSON.stringify({commands}),narrator,extract:JSON.stringify({scene:'here',expected:{},deltas})};};
     async function panel(kind) {
@@ -56,7 +56,7 @@ export async function partySmoke({page,calls,send,idle,out,onReload}) {
         const target='mon.old_crown_catacombs_c1_l1_e1_1',text='I use Basic Attack on Risen Bones A.';
         command([{seq:1,type:'use_skill',skill:'mage.basic_attack',target,quote:text}],'Fire strikes the bones. Ossen draws his bow.');
         await send(text);await idle();measure('first grouped attack',b);
-        current=await snap();measures.at(-1).perf=current.perf;checks.groupCombat=current.events.some(e=>e.t==='encounter.started' && !!e.d.encounter.line);
+        current=await snap();measures.at(-1).perf=current.perf;measures.at(-1).context=current.context;checks.groupCombat=current.events.some(e=>e.t==='encounter.started' && !!e.d.encounter.line);
         checks.realArrow=current.state.entities[who].sheet.inventory.standard_arrow<20;
         const second='Ossen, protect me.';b=calls.length;
         command([{seq:1,type:'party',act:'coordinate',who,priority:'protect',target:'pc',quote:'Ossen, protect me.'}],'Ossen covers Alaric.');
@@ -106,7 +106,7 @@ export async function partySmoke({page,calls,send,idle,out,onReload}) {
         for (const [k,prefix] of [[0,original.slice(0,23)],[2,trio]]) {
             await seed(prefix);command([{seq:1,type:'use_skill',skill:'mage.basic_attack',target,quote:text}],'The attack strikes the bones.');
             b=calls.length;await send(text);await idle();measure('same attack, '+k+' companions',b);
-            const actual=await snap();measures.at(-1).perf=actual.perf;
+            const actual=await snap();measures.at(-1).perf=actual.perf;measures.at(-1).context=actual.context;
             checks['composition'+k]=actual.events.some(e=>e.t==='encounter.started' &&
                 (e.d.encounter.participation ? Object.keys(e.d.encounter.participation).length-1 : 0)===k);
         }

@@ -605,7 +605,9 @@ export function bookSale(s, emit, { items = null, ref, units, buyer, cp, what, s
     emit({ t: 'coin.changed', d: { id: 'pc', value: s.entities.pc.sheet.coin_cp + cp, delta: cp, why: `sold ${what}` } });
     emit({ t: 'transaction.completed', d: { to: 'pc', from: buyer, cp, for: what, at: s.scene.at, ...(offer ? { offer: offer.id } : {}) } });
     for (const [a,amount] of splits) if (amount) {
-        const row = claim(s,emit,a,'sale/'+s.turn+'/'+s.credits.at(-1).id+'/'+lot.map(it=>it.ref+'-'+(s.objects[it.ref]?.qty??1)).join('+'),amount);
+        const serial = Object.values(s.party.claims).filter(r=>r.agreement===a.id && r.source.startsWith('sale/')).length + 1;
+        const source='sale/'+serial+'/'+s.credits.at(-1).id+'/'+lot.map(it=>it.ref+'×'+it.units).join('+');
+        const row=claim(s,emit,a,source,amount);
         payClaim(s,emit,row,row.amount-row.paid);
     }
     return { ok: true };

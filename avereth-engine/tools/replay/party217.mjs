@@ -162,3 +162,63 @@ assert(rest(wounded).entities[who].sheet.hp>wounded.entities[who].sheet.hp);
 wounded.party.members[who].watch=true;
 assert.equal(rest(wounded).entities[who].sheet.hp,wounded.entities[who].sheet.hp);
 console.log('Local party HUD, personal recovery and watch passed.');
+
+const {lootEvents}=await import('../../src/v4/loot.js');
+const {bookSale}=await import('../../src/v4/trade.js');
+const {gateCheck,occupancy}=await import('../../src/v4/living.js');
+const {assertOwnership}=await import('../../src/v4/world.js');
+assertOwnership(true);
+const rawState=structuredClone(s);
+const emit=e=>applyEvent(rawState,e);
+const item='obj.party217_draught';
+emit({t:'object.created',d:{object:{id:item,name:'Red Draught',kind:'item',holder:{entity:who},qty:1,
+    profile:{kind:'restore',rank:'F',resource:'hp',amount:5}}}});
+rawState.entities[who].sheet.hp-=6;
+const personal=x(rawState,[{seq:1,type:'party',act:'use',who,object:item,quote:'I drink the Red Draught.'}],
+    'Ossen says, "I drink the Red Draught."',101);
+assert.equal(personal.state.entities[who].sheet.hp,rawState.entities[who].sheet.hp+5);
+assert.equal(personal.state.objects[item].holder.consumed,who);
+const armour='obj.party217_armour';
+emit({t:'object.created',d:{object:{id:armour,name:'Iron Mail',kind:'item',holder:{entity:who},qty:1,
+    profile:{kind:'gear',rank:'F',slot:'armor',def:4,mdef:2}}}});
+const armed=x(rawState,[{seq:1,type:'party',act:'equip',who,object:armour,quote:'I wear the Iron Mail.'}],
+    'Ossen says, "I wear the Iron Mail."',102);
+assert.equal(armed.state.entities[who].sheet.equipment.armor.object,armour);
+const given=x(armed.state,[{seq:1,type:'party',act:'give',who,object:'worn.armor',target:'pc',qty:1,quote:'I give you the Iron Mail.'}],
+    'Ossen says, "I give you the Iron Mail."',103);
+assert.equal(given.state.objects[armour].holder.entity,'pc');
+assert(!given.state.entities[who].sheet.equipment.armor);
+const refusedMail=x(armed.state,[{seq:1,type:'party',act:'give',who,object:'worn.armor',target:'pc',qty:1,quote:'I give you the Iron Mail.'}],
+    'Garrick says, "I give you the Iron Mail."',103);
+assert.equal(refusedMail.state.objects[armour].holder.entity,who);
+const three=setup(), third='npc.garrick', team=structuredClone(camp);
+three.combatants[third]={...structuredClone(three.combatants[who]),id:third};
+three.participation[third]={from:0};team.entities[third].sheet=structuredClone(team.entities[who].sheet);
+three.pending_xp=180;
+assert.deepEqual(endEncounterEvents(team,content,three).summary.xp_shares,{pc:60,[who]:60,[third]:60});
+
+const stock=structuredClone(camp), enc=setup();
+for (const id of foes) {stock.entities[id].status='dead';enc.combatants[id].current.defeated=true;enc.combatants[id].current.hp=0;}
+const draw=lootEvents(stock,content,enc);const material=draw.events.find(e=>e.t==='object.created').d.object;
+const agreement=stock.party.agreements[stock.party.members[who].agreement];
+agreement.terms.loot={kind:'item',goods:material.name.toLowerCase()};
+let loot=lootEvents(stock,content,enc);
+assert(loot.events.some(e=>e.d.object?.name===material.name && e.d.object.holder.entity===who));
+agreement.terms.loot.kind='proceeds';loot=lootEvents(stock,content,enc);
+loot.events.forEach(e=>applyEvent(stock,e));
+assert.equal(lootEvents(stock,content,enc).events.length,0);
+const lot=Object.values(stock.objects).find(o=>o.source?.proceeds===agreement.id);
+assert(lot);
+stock.scene.present.push(third);
+const account=stock.entities[who].sheet.coin_cp;
+assert(bookSale(stock,e=>applyEvent(stock,e),{ref:lot.id,units:1,splitId:'obj.part',buyer:third,cp:12,what:lot.name}).ok);
+assert.equal(stock.entities[who].sheet.coin_cp-account,6);
+const fallen=structuredClone(camp),lost=setup();
+fallen.entities[who].status='dead';lost.combatants[who].current.defeated=true;lost.combatants[who].current.hp=0;
+assert(!lootEvents(fallen,content,lost).events.some(e=>e.d.id===who || e.d.object));
+const root=camp.quests[quest].clear.dungeon,gate=structuredClone(camp);
+gate.party.members[who].mode='wait';gate.party.members[who].at=camp.scene.at;
+gate.scene.at=root;gate.scene.present=['pc'];const dungeon=gate.dungeons[root];dungeon.capacity=1;
+assert.equal(occupancy(gate,dungeon).pc,1);
+assert.match(gateCheck(gate,content,root,{group:1}).refuse,/full/);
+console.log('Three-person pool, personal equipment and recovery, physical loot, sale and gate occupancy passed.');

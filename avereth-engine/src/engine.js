@@ -987,7 +987,10 @@ function fightMemory(s, content, enc, summary) {
     const foes = Object.values(enc.combatants).filter((c) => c.id !== 'pc');
     const fate = (c) => (s.entities[c.id].status === 'dead' ? 'killed' : c.current.peace ? 'accepted terms' : c.current.escaped ? 'fled' : c.current.surrendered ? 'surrendered' : 'survived');
     const skills = uniq(enc.log.filter((r) => r.actor === 'pc' && r.skill_name).map((r) => r.skill_name));
-    const text = `Fight at ${s.scene.place || entityLabel(s, s.scene.location)}: {pc}${skills.length ? ` (${skills.join(', ')})` : ''} vs ${foes.map((c) => `${entityLabel(s, c.id)} — ${fate(c)}`).join('; ')}${summary.pc_dead ? '; {pc} died' : ''}.`;
+    const allied = foes.filter(c=>enc.participation?.[c.id]);
+    const together = allied.length ? ' with '+allied.map(c=>entityLabel(s,c.id)+' ('+fate(c)+')').join(', ') : '';
+    const opponents = foes.filter(c=>!enc.participation?.[c.id]);
+    const text = `Fight at ${s.scene.place || entityLabel(s, s.scene.location)}: {pc}${together}${skills.length ? ` (${skills.join(', ')})` : ''} vs ${opponents.map((c) => `${entityLabel(s, c.id)} — ${fate(c)}`).join('; ')}${summary.pc_dead ? '; {pc} died' : ''}.`;
     const witnesses = uniq([...perceivers(s).filter((id) => s.scene.awareness[id] !== 'unaware'), ...foes.filter((c) => s.entities[c.id].status !== 'dead').map((c) => c.id)]);
     return {
         id: `m.${enc.id}`, turn: s.turn, minute: s.clock.minute, text, who: ['pc', ...foes.map((c) => c.id)], witnesses,

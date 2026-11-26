@@ -167,7 +167,7 @@ export function stateRegions(s) {
     const quests = Object.values(s.quests || {});
     const contracts = quests.filter((q) => q.kind === 'guild_contract');
     return {
-        party: j(s.party),
+        party: j(s.party && {...s.party,members:Object.values(s.party.members).map(({lastSeen,...member})=>member)}),
         'pc.coin': j(sh.coin_cp),
         'pc.inventory': j([sh.inventory, sh.equipment, held]),
         'pc.vitals': j([sh.hp, sh.mp, sh.sta, status]),
@@ -175,7 +175,7 @@ export function stateRegions(s) {
         skills: j([s.skill_defs, s.passive_defs]),
         'pc.location': j([s.scene?.location, s.scene?.place, s.scene?.at, location, at]),
         entities: j([Object.entries(s.entities || {}).filter(([id]) => id !== 'pc'), pcRest]),
-        scene: j([s.scene?.present, s.scene?.positions, s.scene?.awareness, s.scene?.concealed, s.scene?.relevant, s.scene?.threats, s.scene?.since]),
+        scene: j([s.scene?.present, s.scene?.positions, s.scene?.awareness, s.scene?.concealed, s.scene?.relevant, s.scene?.threats, s.scene?.since,Object.values(s.party?.members || {}).filter(m=>m.lastSeen).map(m=>[m.who,m.lastSeen])]),
         combat: j([s.encounter, s.pending_combat, s.pending_intents, s.mode]),
         'quest.delivery': j(contracts.map(q => [q.id, q.deliveries || []])),
         'quest.status': j(contracts.map((q) => [q.id, q.status, q.history])),
@@ -211,7 +211,8 @@ export function effectViolation(step, e, before, after) {
  * reach only through the named check (docs/ARCHITECTURE_GEN35.md §2.2). A test replays every recorded run against it.
  */
 export const DELTA_WRITES = {
-    party: { writes:['party'] },
+    party: { writes:['party'], gates:{entities:'owner.party_decision',objects:'owner.party_decision',
+        'pc.inventory':'owner.party_decision','pc.coin':'owner.party_decision',trade:'owner.party_decision'} },
     time: { writes: ['time'] },
     // an arrival moves him and the people with him, may create the place, starts a journey, carries or closes open
     // decisions, and fires the turn-in his own command made conditional on arriving at a Guild hall (with the engine's
@@ -250,7 +251,7 @@ export const DELTA_WRITES = {
     recover: { writes: ['entities'], gates: { 'pc.vitals': 'player.rest' } },
     'object.new': { writes: ['objects'], gates: { 'pc.inventory': 'player.take' } },
     // a thing handed to him (a gift), or taken from where it lies by his own take
-    'object.move': { writes: ['objects'], gates: { 'pc.inventory': ['envelope.give', 'player.take', 'player.give'], 'quest.delivery': 'player.give' } },
+    'object.move': { writes: ['objects'], gates: { 'pc.inventory': ['envelope.give', 'player.take', 'player.give'], 'quest.delivery': 'player.give',quests:'player.give',party:'player.give' } },
     'object.mark': { writes: ['objects'] },
     // Offers may describe NPC employment (an offered private quest), or a purchase within his agreed limit.
     offer: { writes: ['trade', 'quests'], gates: { 'pc.coin': 'player.buy', 'pc.inventory': 'player.buy' } },
@@ -261,7 +262,7 @@ export const DELTA_WRITES = {
     'quest.offer': { writes: ['quests'] },
     'quest.detail': { writes: ['quests'] },
     'quest.progress': { writes: ['quests'] },
-    'quest.ready': { writes: ['quests'] },
+    'quest.ready': { writes: ['quests'],gates:{party:'quest.earned'} },
     'quest.close': { writes: ['quests'], gates: { 'quest.status': 'world.failed' } },
     'listing.gone': { writes: [], gates: { 'guild.board': 'world.taken', 'quest.status': 'world.taken' } },
     overreach: { writes: [] },

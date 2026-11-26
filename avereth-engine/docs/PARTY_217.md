@@ -29,3 +29,7 @@ Der durchgehende Offlinepfad in `tools/replay/party_campaign217.mjs` startet vor
 ## Hostgegenproben
 
 Der erste Browserlauf zeigte, dass die Bones bereits vor der taktischen Bitte fallen konnten. Der zweite Lauf belegte Beitritt, Schuss mit Pfeilverbrauch, Swipe, Reload, Teilfrieden und lokale Panelzugriffe einschließlich pending X. Er deckte außerdem eine echte Fehlklassifizierung auf: Der allgemeine Akteursfilter behandelte die angeredete Person in „Ossen, protect me“ als Sprecher. Der Gruppenpfad erkennt die direkte Anrede und prüft danach weiterhin Person, Beleg und Ziel. Der erneute Browserlauf enthält auch dieselbe Aktion mit null, einem und zwei Begleitern.
+
+## Zusatzabnahme vor dem Gesamtvergleich
+
+Der Originalpfad wurde mit aktiver Schreibrechteprüfung bis zur Abgabe durchgespielt. Auf einer Kopie desselben erreichten Clears wartet Ossen im Raum des Wardens. Alaric erhält am Schalter 90 cp, trifft Ossen tatsächlich wieder und begleicht die 45 cp in zwei ausdrücklich gebuchten Zahlungen. Die Einzelproben prüfen zusätzlich Dreieranteil, persönliche Rüstung und Trank, Eigenbesitz beim Tod, zugewiesene Sachbeute, realen Verkaufserlös und einen durch einen wartenden Begleiter belegten Dungeonplatz. Der isolierte ST-Lauf mit 39 Prüfungen bestand auf dem vorherigen Kontrollstand. Der abschließende Lauf prüft den gesicherten Kandidaten einschließlich gemeinsam aufgelöster Minor-/Major-Folgen.

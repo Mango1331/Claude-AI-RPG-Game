@@ -1,6 +1,7 @@
 import { allyAssets } from './v4/surrender.js';
 import { profileOf, restoreOf, restoreEffect, rankRefusal, freeObjectId } from './v4/items.js';
-import { claim, payClaim } from './party_rewards.js';
+import { contractReady } from './v4/guild.js';
+import { claim, payClaim, vestQuest } from './party_rewards.js';
 import { deriveCharacter } from './derived.js';
 import { hash32 } from './util.js';
 import { findQuote, moneyLiteral } from './v4/finance_evidence.js';
@@ -39,7 +40,7 @@ function evidenceOf(s, who, source, words, actor) {
     return speech ? speech[1] : paragraph;
 }
 
-function termsFrom(s, content, c, words) {
+function termsFrom(s, content, c, words, actor) {
     if (c.quest && s.quests[c.quest]?.status !== 'active') return null;
     const terms = { quest:c.quest || null, combat:c.combat === true, text:c.quote };
     if (terms.combat && !together.test(words) && !/\b(?:fight|battle|guard|protect|defend)\b/i.test(words)) return null;
@@ -57,6 +58,9 @@ function termsFrom(s, content, c, words) {
             !words.toLowerCase().includes(c.goods.toLowerCase())) return null;
         if (c.loot === 'proceeds' && (!half || !/\b(?:sale|sell|proceeds)\b/i.test(words))) return null;
         if (c.loot === 'item' && !/\b(?:keep|take|get|receive|yours|mine|give)\b/i.test(words)) return null;
+        const ownWords = actor === 'pc' ? /\b(?:you (?:may |can |will |shall )?(?:keep|take|get|receive|have)|yours|give you|your (?:half|share))\b/i :
+            /\b(?:I (?:may |can |will |shall )?(?:keep|take|get|receive|have)|mine|give me|my (?:half|share))\b/i;
+        if (!ownWords.test(words) && !(c.loot==='proceeds' && half && /\b(?:split|share|half each)\b/i.test(words))) return null;
         terms.loot = {kind:c.loot, goods:c.goods.trim().toLowerCase()};
     }
     if (c.due != null) {
@@ -80,14 +84,14 @@ export function partyDecision(s, content, command, source, actor, emit) {
     const memberEvent = (mode, extras={}) => emit({t:'party.member',d:{...member,who,mode,at:s.scene.at,source:sourceRef,previous:member?.revision || 0, ...extras}});
     if (c.act === 'offer') {
         if ((!together.test(c.quote) && !member) || no.test(c.quote)) return failure('Quote the specific voluntary offer.');
-        const terms = termsFrom(s, content, c, c.quote);
+        const terms = termsFrom(s, content, c, c.quote, actor);
         if (!terms) return failure('The work and compensation must match the quoted terms.');
         const id = 'party.'+who+'.'+s.turn+'.'+hash32(JSON.stringify([actor,c.seq,c.quote]));
         if (s.party?.agreements?.[id]) return failure('Offer already recorded.');
         emit({t:'party.agreement',d:{id,who,phase:'open',terms,proposer:actor,source:sourceRef,previous:0}});
     } else if (['accept','decline'].includes(c.act)) {
         if (!agreement || agreement.who !== who || agreement.phase !== 'open' || agreement.proposer === actor) return failure('Identify one current offer from the other party.');
-        if (c.act === 'accept' ? (!yes.test(c.quote) || no.test(words) || /\b(?:instead|only (?:pay|give)|on condition)\b/i.test(words)) : !no.test(c.quote)) return failure('Quote a definite response to the unchanged terms.');
+        if (c.act === 'accept' ? (!yes.test(c.quote) || no.test(words) || /\b(?:if|unless|except|but only|provided that|instead)\b/i.test(words) || /\b(?:instead|only (?:pay|give)|on condition)\b/i.test(words)) : !no.test(c.quote)) return failure('Quote a definite response to the unchanged terms.');
         const accepts = c.act === 'accept';
         if (accepts && agreement.terms.quest) {
             const q = s.quests[agreement.terms.quest];
@@ -177,6 +181,8 @@ export function partyDecision(s, content, command, source, actor, emit) {
         if (!member || member.mode==='left') return failure('No active membership.');
         const actions = {wait:/\b(?:wait|stay|hold here)\b/i,follow:/\b(?:follow|come|rejoin|together)\b/i,leave:/\b(?:leave|quit|part ways|go alone|split up|dismiss|on my own)\b/i};
         if (!actions[c.act]?.test(c.quote)) return failure('Quote the change of travel arrangement.');
+        const q=s.quests[s.party.agreements[member.agreement]?.terms.quest];
+        if (q?.status==='active' && q.party_work && contractReady(s,content,q,{c:true}).ok) vestQuest(s,emit,q);
         memberEvent({wait:'wait',follow:'follow',leave:'left'}[c.act]);
     }
     return {status:'resolved',done:true,line:'PARTY — '+person.name+' · '+c.act+' · '+c.quote};

@@ -181,6 +181,14 @@ export function lootEvents(s, content, enc) {
         } else if (e.t === 'item.changed') {
             const a = allocated(content.items.get(e.d.item)?.name || e.d.item);
             if (a?.terms.loot.kind === 'item') e.d.id = a.who;
+            if (a?.terms.loot.kind === 'proceeds') {
+                const {item,qty}=e.d;
+                const id='obj.loot.'+slug(enc.id)+'.'+item+'.'+events.indexOf(e);
+                e.t='object.created';
+                e.d={object:{id,kind:'item',name:content.items.get(item).name,stack:qty>1,qty,holder:{entity:'pc'},
+                    source:{how:'loot',item,encounter:enc.id,proceeds:a.id}}};
+                lines.push(e.d.object.name+' ×'+qty);
+            }
         }
     }
     for (const e of events.filter((x) => x.t === 'item.changed')) lines.push(`${content.items.get(e.d.item)?.name || e.d.item} ×${e.d.qty}`);

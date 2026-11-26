@@ -485,6 +485,8 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         return {illegal:target.name+' is outside '+reach+' from '+actor.name};
     if (attack?.range?.extra_band && distance(proposed,actorId,targetId)!=='ENGAGED')
         return {illegal:'This skill must reach contact.'};
+    const retreat=extra.move==='away' ? projectedStep(proposed,actorId,'away',extra.moveTarget || targetId) : null;
+    if (retreat?.illegal) return {illegal:retreat.illegal};
     const clean={...extra,move:null,autoNormalMove:false};
     const valid=resolveAttack({...ctx,enc:proposed},actorId,targetId,skillId,{...clean,validateOnly:true});
     if(valid.illegal || extra.validateOnly) return valid;
@@ -496,6 +498,11 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
     }
     projectBands(enc);
     const result=resolveAttack(ctx,actorId,targetId,skillId,clean);
+    if (retreat && !result.illegal) {
+        enc.line.x[actorId]=retreat.to;
+        actor.current.cover='none';projectBands(enc);
+        result.after_move={dir:'away',change:retreat.from+' → '+retreat.to};
+    }
     if(from!==enc.line.x[actorId]) {actor.current.cover='none'; result.move={from,to:enc.line.x[actorId],bands:Math.abs(from-enc.line.x[actorId])};}
     result.band=distance(enc,actorId,targetId);
     result.weapon=actor.fixed.weapon_name || actor.fixed.attack?.name || ctx.state.entities[actorId]?.sheet?.equipment?.weapon?.name;
@@ -703,6 +710,10 @@ export function skillAction(ctx, actorId, skillId, extra = {}) {
     const who = () => ({ stats: actor.fixed.stats, pools: { hp: actor.current.hp, mp: actor.current.mp, sta: actor.current.sta }, max: { hp: actor.fixed.max_hp, mp: actor.fixed.max_mp, sta: actor.fixed.max_sta } });
     const ahead = restoration(content, skill, actor.fixed.actions[skill.id].prof, rulesetOf(ctx.state), who(), cost);
     if (ahead?.full) return { illegal: `${actor.name} is at full ${ahead.resource.toUpperCase()}: ${skill.name} has nothing to restore` };
+    if (enc.line && skill.effects?.some(e=>e.kind==='reposition')) {
+        const step=projectedStep(enc,actorId,extra.dir==='closer'?'closer':'away',extra.target);
+        if (step.illegal) return {illegal:step.illegal};
+    }
     if (extra.validateOnly) return { legal:true, cost };
     const record = { round: enc.round, actor: actorId, kind: 'skill', skill: skill.id, skill_name: skill.name, effects: [] };
     if (cost) {
@@ -1130,6 +1141,13 @@ function npcAct(ctx, npcId, decided = null, target='pc') {
     if (decision.kind === 'hold') return { round: enc.round, actor: npcId, kind: 'hold', why: decision.why };
     // attack (optionally after one band of movement)
     const move = decision.kind === 'close_and_attack' ? 'closer' : null;
+    if (enc.line && move==='closer') {
+        const skill=me.model==='creature'?null:npcAttackSkill(ctx,me,target);
+        if (skill || me.model==='creature') {
+            const phase=orderedPhase(ctx,[{kind:'move',dir:'closer',target},{kind:'attack',target,skill}],{actor:npcId});
+            if (!phase.illegal) return {steps:phase.records};
+        }
+    }
     if (me.model === 'creature') {
         const r = attackAction(ctx, npcId, target, null, { move });
         if (r.illegal) {
@@ -1413,7 +1431,7 @@ function singlePcAction(ctx, act) {
 }
 
 // Stage only the acting player's phase. Earlier initiative and reactions already belong to the encounter.
-export function orderedPhase(ctx, phase, {preview = false} = {}) {
+export function orderedPhase(ctx, phase, {preview = false,actor='pc'} = {}) {
     if (!Array.isArray(phase) || phase.length < 1 || phase.length > 2 ||
         phase.some(a => !['attack','skill','item','move','sidestep','flee','ability_world','surrender'].includes(a?.kind) || a.move || a.phase))
         return {illegal:'Ungültige Kampffolge'};
@@ -1421,6 +1439,7 @@ export function orderedPhase(ctx, phase, {preview = false} = {}) {
     if (slots.length === 2 && (new Set(slots).size !== 2 || slots.includes('whole')))
         return {illegal:'Ein Major und ein Minor pro Zug. Flucht verbraucht den ganzen Zug.'};
     for (const act of phase) {
+        if (actor !== 'pc' && !['move','skill','sidestep','attack'].includes(act.kind)) return {illegal:'Unsupported NPC action sequence.'};
         if (act.item) {
             const held = tradeObject(ctx.state, ctx.content, act.item);
             if (!held || held.holder?.entity !== 'pc' || held.qty === 0) return {illegal:'The selected item is not held'};
@@ -1434,7 +1453,10 @@ export function orderedPhase(ctx, phase, {preview = false} = {}) {
     const dice = new Dice(origin.seed, origin.n), staged = {...ctx, enc, dice};
     const records = [];
     for (const act of phase) {
-        const r = singlePcAction(staged, {...act, explicitBudget:true});
+        const r = actor==='pc' ? singlePcAction(staged,{...act,explicitBudget:true})
+            : act.kind==='move' ? moveAction(staged,actor,act.dir,act.target)
+            : act.kind==='attack' ? attackAction(staged,actor,act.target,act.skill)
+            : act.kind==='sidestep' ? sidestep(staged,actor) : skillAction(staged,actor,act.skill,{dir:act.dir,target:act.target});
         if (r.illegal) return {illegal:r.illegal};
         if (act.expected_band && r.area_band !== act.expected_band)
             return {illegal:'Das gewählte Angriffsband ist vor dem eigenen Zug nicht mehr erreichbar.'};
@@ -1446,7 +1468,7 @@ export function orderedPhase(ctx, phase, {preview = false} = {}) {
             // Even a lethal opening cannot launder an unaffordable selected mobility skill.
             const trailing=phase[records.length];
             if (trailing?.kind==='skill') {
-                const valid=skillAction(staged,'pc',trailing.skill,{validateOnly:true});
+                const valid=skillAction(staged,actor,trailing.skill,{validateOnly:true,dir:trailing.dir,target:trailing.target});
                 if (valid.illegal) return {illegal:valid.illegal};
             }
             break;
@@ -1575,7 +1597,7 @@ export function runCombat(ctx, pcAction) {
             continue;
         }
         const r = npcTurn(ctx, actorId);
-        push(r);
+        for (const step of r.steps || [r]) push(step);
         endTurn(enc, actorId);
         advance(enc);
     }

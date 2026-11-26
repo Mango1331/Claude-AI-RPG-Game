@@ -171,7 +171,7 @@ export function validateActionSelection(selection,state,content,{ordered = false
         const at=object && !state.objects[object.id] ? {...state,objects:{...state.objects,[object.id]:object}} : state;
         const ctx={enc,content,state:at,c:true};
         if(mapped.intent.kind==='attack')preview=attackAction(ctx,'pc',s.target,mapped.intent.skill,{...mapped.intent,moveTarget:mapped.intent.move_target,validateOnly:true});
-        if(mapped.intent.kind==='skill')preview=skillAction(ctx,'pc',s.skill,{validateOnly:true});
+        if(mapped.intent.kind==='skill')preview=skillAction(ctx,'pc',s.skill,{validateOnly:true,dir:s.dir,target:s.target});
         if(mapped.intent.kind==='item')preview=itemAction(ctx,'pc',mapped.intent,{validateOnly:true});
     }
     if(s.band!==undefined) {

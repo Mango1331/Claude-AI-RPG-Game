@@ -1566,7 +1566,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             }
             case 'party': {
                 const who = idOf(d.who);
-                const r = cPath && rulesetOf(s)>=2 && partyDecision(s,content,{...d,who},prose,who,emit);
+                const r = cPath && rulesetOf(s)>=2 && partyDecision(s,content,{...d,who},prose,who,e=>{
+                    grant('owner.party_decision');emit(e);
+                });
                 if (!r?.done) reject(d,'party_decision',r?.reason || 'Unsupported campaign.');
                 break;
             }
@@ -2286,7 +2288,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const escorts = following(s).filter(m => s.party.agreements[m.agreement]?.terms.quest === q.id);
             if (escorts.length && q.journey && q.objectives?.some(o => o.verb === 'ESCORT'))
                 recordWork(s,emit,q,'escort/'+s.scene.at,['pc',...escorts.map(m=>m.who)]);
-            vestQuest(s,emit,q);
+            grant('quest.earned');vestQuest(s,emit,q);
         }
         return;
     }
@@ -2998,6 +3000,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
         // who travelled with him arrives with him
         for (const who of party) emit({ t: 'scene.entered', d: { id: who, band: 'SHORT' } });
+        for (const m of Object.values(s.party?.members || {})) if (m.mode==='wait' && m.at===id &&
+            !m.lastContact?.danger?.length && s.entities[m.who]?.status!=='dead' && !s.scene.present.includes(m.who))
+            emit({t:'scene.entered',d:{id:m.who,band:'SHORT'}});
         // and the creatures he went to in a part of the place he was in are there with him, as he knew them
         for (const n of near) {
             emit({ t: 'scene.entered', d: { id: n.id, band: 'SHORT' } });

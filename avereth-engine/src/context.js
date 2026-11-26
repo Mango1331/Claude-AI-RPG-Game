@@ -293,7 +293,10 @@ export function combatBlock(state, content = null, { hudSpeech = false } = {}) {
     // here but not in the fight makes no attack and deals no damage; a story that has them attack brings them in
     const outside = content && state.meta?.runtime === 'v4' ? state.scene.present.filter((id) => id !== 'pc' && !enc.combatants[id] && state.entities[id]?.kind === 'creature' && state.entities[id].status !== 'dead') : [];
     if (outside.length) lines.push(`  Here but NOT in the fight: ${outside.map((id) => `${sceneHandle(state, content, id)}${state.scene.positions[id]?.band ? ` (${state.scene.positions[id].band})` : ''}`).join(', ')}: no attack and no damage from them this turn; they join only on their own Turns after the story has them attack.`);
-    if (enc.line) lines.push('  Positions (one shared line): '+enc.order.map(id=>fightLabel(state,id)+' '+enc.line.x[id]).join(' · '));
+    if (enc.line) lines.push('  Positions (one shared line): '+enc.order.map(id=>{
+        const priority=enc.combatants[id].current.priority;
+        return fightLabel(state,id)+' '+enc.line.x[id]+(priority ? ' ('+[priority.kind,priority.target && fightLabel(state,priority.target)].filter(Boolean).join(' ')+')':'');
+    }).join(' · '));
     const pcfx = enc.combatants.pc.current.effects;
     if (pcfx.length) lines.push(`  Alaric effects: ${pcfx.map((x) => x.name).join(', ')}`);
     lines.push(`  Pending Combat XP: ${enc.pending_xp} (awarded only when the fight ends)`);

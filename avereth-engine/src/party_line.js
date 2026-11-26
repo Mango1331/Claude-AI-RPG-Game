@@ -13,13 +13,14 @@ export function startLine(s,enc,members) {
     return line;
 }
 
+const samePair = ([x,y],a,b) => (x===a && y===b) || (x===b && y===a);
 export function protectedPair(enc,a,b) {
-    return (enc.agreements || []).some(g=>g.pairs?.some(([x,y])=>(x===a && y===b)||(x===b && y===a)));
+    return (enc.agreements || []).some(g=>g.pairs?.some(pair=>samePair(pair,a,b)) && !g.breaches?.some(pair=>samePair(pair,a,b)));
 }
-export function canFight(enc,a,b) {
+export function canFight(enc,a,b,{renew=false}={}) {
     const left=enc.combatants[a], right=enc.combatants[b];
     return [left,right].every(c=>c && !c.current.defeated && !c.current.escaped && !c.current.surrendered && c.side!=='neutral')
-        && (left.side==='hostile') !== (right.side==='hostile') && !protectedPair(enc,a,b);
+        && (left.side==='hostile') !== (right.side==='hostile') && (renew || !protectedPair(enc,a,b));
 }
 
 export function projectedStep(enc,actor,dir,target=null) {
@@ -59,4 +60,9 @@ export function lineTarget(enc,actor) {
     if(harm(actor)) return harm(actor);
     const ref=p?.kind==='protect' && enc.combatants[p.target] ? p.target : actor;
     return targets.sort((a,b)=>Math.abs(enc.line.x[a]-enc.line.x[ref])-Math.abs(enc.line.x[b]-enc.line.x[ref]))[0];
+}
+
+export function renewedTerms(enc,a,b) {
+    return (enc.agreements || []).map(g=>g.pairs?.some(pair=>samePair(pair,a,b)) &&
+        !g.breaches?.some(pair=>samePair(pair,a,b)) ? {...g,breaches:[...(g.breaches || []),[a,b]]} : g);
 }

@@ -9,7 +9,7 @@ const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 /** A strike needs a living local actor, or a still active combatant of the current encounter. */
 export function attackTargetHere(state, id) {
     const e = state.entities?.[id], c = state.encounter?.combatants?.[id];
-    if(c && state.encounter?.line && !canFight(state.encounter,'pc',id)) return false;
+    if(c && state.encounter?.line && !canFight(state.encounter,'pc',id,{renew:true})) return false;
     return !!e && ['npc', 'creature'].includes(e.kind) && e.status !== 'dead'
         && (c ? !c.current.defeated && !c.current.escaped : !!state.scene?.present?.includes(id));
 }
@@ -180,7 +180,7 @@ export function burstCaught(state, target) {
     const knot = clusterOf(state, target);
     if (!knot) return [target];
     const pool = [...new Set([...Object.keys(state.encounter?.combatants || {}), ...(state.scene?.present || [])])];
-    return [target, ...pool.filter((id) => id !== target && standing(state, id) && bandOf(state, id) === band && clusterOf(state, id) === knot)];
+    return [target, ...pool.filter((id) => id !== target && standing(state, id) && bandOf(state, id) === band && (!state.encounter?.line || state.encounter.line.x[id] === state.encounter.line.x[target]) && clusterOf(state, id) === knot)];
 }
 
 /**

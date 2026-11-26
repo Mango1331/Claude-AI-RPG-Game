@@ -190,7 +190,7 @@ const mock = http.createServer(async (req, res) => {
         narrated.set(t?.key, n);
         text = t ? (n > 1 && t.swipe ? t.swipe : t.reply || 'The world waits.') : 'The world waits.';
     }
-    text=partyResponse(purpose) ?? user05Response(purpose,j) ?? text;
+    text=partyResponse(purpose,j) ?? user05Response(purpose,j) ?? text;
     if (process.env.AVERETH_SMOKE_EMPTY_NARRATOR === '1' && purpose === 'narrator' && lastUser.includes(TURNS[0].player) && narrated.get('burrow') === 1) text = '';
     const probe = probeMode || financeMode || fetchProbeMode || stealthProbeMode;
     if (probeMode && ((purpose === 'plan' && users.includes('FAILSOFT_PLANNER')) || purpose === 'extract')) text='{bad';

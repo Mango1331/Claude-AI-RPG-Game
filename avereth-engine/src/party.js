@@ -32,7 +32,9 @@ function evidenceOf(s, who, source, words, actor) {
     const tagged = names.filter(id => new RegExp('\\b'+escapedName(s.entities[id].name)+'\\s+(?:said|says|offers?|offered|replied|asks?|agrees?|accepts?|declines?|refuses?|answers?|calls?|tells?)\\b','i').test(outside));
     const introduced = names.filter(id => new RegExp("\\b(?:I am|I'm|I’m|name is) "+escapedName(s.entities[id].name)+'\\b','i').test(paragraph));
     const owners = tagged.length ? tagged : introduced.length ? introduced : names;
-    return owners.length === 1 && owners[0] === who ? words : null;
+    if (owners.length !== 1 || owners[0] !== who) return null;
+    const speech = [...paragraph.matchAll(/["“]([^"”]+)["”]/g)].find(m => m[1].includes(words));
+    return speech ? speech[1] : paragraph;
 }
 
 function termsFrom(s, content, c, words) {

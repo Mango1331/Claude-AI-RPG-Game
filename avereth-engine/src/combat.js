@@ -1,5 +1,5 @@
 import { fighters } from './party.js';
-import { startLine, canFight, lineTarget, lineBand, projectBands, projectedStep, stepLine } from './party_line.js';
+import { startLine, canFight, protectedPair, renewedTerms, lineTarget, lineBand, projectBands, projectedStep, stepLine } from './party_line.js';
 // Combat engine: Core #10-#12 (legality, damage, range), #13 (effects), #21 (ammo), #23-#28 (gate, turns, ambush,
 // XP, START/ACTIVE/END loops). Combat V3 (docs/REVIEW_V3.md): a legal attack connects — no Hit roll, no random
 // Crit, no PER in combat math; only a true Ambush Opening Action crits (×1.5, every strike, PC and creatures alike).
@@ -459,12 +459,14 @@ function onDefeat(ctx, target, record) {
 export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
     if (!ctx.enc.line) return resolveAttack(ctx,actorId,targetId,skillId,extra);
     const enc=ctx.enc, actor=enc.combatants[actorId], target=enc.combatants[targetId];
-    if (!target || !canFight(enc,actorId,targetId)) return {illegal:'No active hostile relationship with that target.'};
+    const renew = actorId === 'pc' && protectedPair(enc,actorId,targetId);
+    if (!target || !canFight(enc,actorId,targetId,{renew})) return {illegal:'No active hostile relationship with that target.'};
     const attack=actor.model==='character' ? (extra.item ? itemEffectOf(ctx.content,tradeObject(ctx.state,ctx.content,extra.item)) : resolveSkill(ctx.content,skillId,ctx.state)) : actor.fixed.attack;
     const reach=attack?.range?.band || attack?.range;
     if (!['ENGAGED','SHORT','MEDIUM','LONG'].includes(reach)) return {illegal:'This attack has no valid reach.'};
     const from=enc.line.x[actorId];
     const proposed={...enc,line:{...enc.line,x:{...enc.line.x}}};
+    if (renew) proposed.agreements=renewedTerms(enc,actorId,targetId);
     const shift=(dir,focus)=>{
         const step=projectedStep(proposed,actorId,dir,focus);
         if(step.illegal) return step.illegal;
@@ -477,10 +479,17 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
     if(err) return {illegal:err};
     if(!attack?.effects?.some(e=>e.kind==='area') && bandIndex(distance(proposed,actorId,targetId))>bandIndex(reach))
         return {illegal:target.name+' is outside '+reach+' from '+actor.name};
+    if (attack?.range?.extra_band && distance(proposed,actorId,targetId)!=='ENGAGED')
+        return {illegal:'This skill must reach contact.'};
     const clean={...extra,move:null,autoNormalMove:false};
     const valid=resolveAttack({...ctx,enc:proposed},actorId,targetId,skillId,{...clean,validateOnly:true});
     if(valid.illegal || extra.validateOnly) return valid;
     enc.line=proposed.line;
+    if (renew) {
+        enc.agreements=proposed.agreements;
+        const entry=enc.participation.pc;
+        if (entry.to != null) enc.participation.pc={from:enc.pending_xp,qualified:!!(entry.qualified || entry.to>entry.from)};
+    }
     projectBands(enc);
     const result=resolveAttack(ctx,actorId,targetId,skillId,clean);
     if(from!==enc.line.x[actorId]) {actor.current.cover='none'; result.move={from,to:enc.line.x[actorId],bands:Math.abs(from-enc.line.x[actorId])};}
@@ -1025,7 +1034,8 @@ function npcAttackSkill(ctx, me, target='pc') {
         const reach = s.range.extra_band ? 'SHORT' : s.range.band;
         if (bandIndex(band) > bandIndex(reach) + 1) continue;
         const raw = rawPower(s, me.fixed.stats, { atk: me.fixed.atk, matk: me.fixed.matk });
-        if (!best || raw > best.raw) best = { id: s.id, raw };
+        const bow = !!(ctx.enc.participation?.[me.id] && me.fixed.weapon_family === 'bow' && s.ammo && band !== 'ENGAGED');
+        if (!best || (bow !== best.bow ? bow : raw > best.raw)) best = { id:s.id,raw,bow };
     }
     return best ? best.id : null;
 }
@@ -1093,9 +1103,10 @@ function npcAct(ctx, npcId, decided = null, target='pc') {
     // Prototype C (4.3.0-c.6.6): caught after a chase, it does not run again in this fight; it fights back
     if (ctx.c && me.current.caught && (decision.kind === 'flee' || decision.kind === 'retreat')) decision = { kind: 'attack', why: 'caught: cornered' };
     if (decision.kind === 'surrender') {
+        if (enc.participation?.[npcId]) enc.participation[npcId].to=enc.pending_xp;
         me.current.surrendered = true;
         // livetest 21.10.2026: a surrender ends its part in the fight but is no defeat: no XP (a kill later gives it, once)
-        if (!enc.defeated.includes(npcId)) enc.defeated.push(npcId);
+        if (!enc.participation?.[npcId] && !enc.defeated.includes(npcId)) enc.defeated.push(npcId);
         return { round: enc.round, actor: npcId, kind: 'surrender', why: decision.why, pending_xp_added: 0 };
     }
     if (decision.kind === 'flee') return { ...moveAction(ctx, npcId, 'away',target), why: decision.why, ...(ctx.c ? { fleeing: true } : {}) };
@@ -1122,7 +1133,7 @@ function npcAct(ctx, npcId, decided = null, target='pc') {
         return r;
     }
     // Patch 9B-2 (ruleset 2): a trained person uses a defense or a feint it knows when the fight calls for it
-    const tactic = npcTactic(ctx, me, decision);
+    const tactic = npcTactic(ctx, me, decision,target);
     if (tactic) {
         const t = skillAction(ctx, npcId, tactic.skill, { dir: 'away' });
         if (!t.illegal) {
@@ -1155,7 +1166,7 @@ const NPC_TACTICS_PER_FIGHT = 3;
  *    blow do more than two blows);
  *  - never two such actions in a row, never more than three in one fight; one it cannot pay is none.
  */
-export function npcTactic(ctx, me, decision) {
+export function npcTactic(ctx, me, decision, target='pc') {
     const { enc, content } = ctx;
     if (rulesetOf(ctx.state) < 2 || me.model !== 'character' || !['attack', 'close_and_attack'].includes(decision.kind)) return null;
     if ((me.current.tactics || 0) >= NPC_TACTICS_PER_FIGHT) return null;
@@ -1191,13 +1202,13 @@ export function npcTactic(ctx, me, decision) {
     if (decision.kind !== 'attack') return null;
     const feint = known.find((s) => s.effects.some((e) => e.kind === 'next_attack_buff' && e.scope === 'attack') && payable(s));
     if (!feint || me.current.effects.some((e) => e.kind === 'next_attack_buff')) return null;
-    const sid = npcAttackSkill(ctx, me);
+    const sid = npcAttackSkill(ctx, me,target);
     const blow = sid ? resolveSkill(content, sid, ctx.state) : null;
-    if (!blow || blow.range.band !== 'ENGAGED' || me.current.band !== 'ENGAGED') return null;
+    if (!blow || blow.range.band !== 'ENGAGED' || distance(enc,me.id,target) !== 'ENGAGED') return null;
     const spent = feint.cost ? skillCostAmount(content, feint, me.fixed.actions[feint.id].prof, me.fixed.passive?.cost, true) : 0;
     const then = blow.cost ? skillCostAmount(content, blow, me.fixed.actions[blow.id].prof, me.fixed.passive?.cost, true) : 0;
     if (blow.cost && (blow.cost.resource === feint.cost?.resource ? me.current[blow.cost.resource] - spent : me.current[blow.cost.resource]) < then) return null;
-    const pc = enc.combatants.pc;
+    const pc = enc.combatants[target];
     const magical = blow.attack.damage_type === 'magical';
     const defense = (magical ? pc.fixed.mdef : pc.fixed.def) + tempDefense(pc, magical);
     const power = rawPower(blow, me.fixed.stats, { atk: me.fixed.atk, matk: me.fixed.matk });
@@ -1262,7 +1273,10 @@ function advance(enc) {
         if (idx >= enc.order.length) { idx = 0; enc.round += 1; }
         const id = enc.order[idx];
         const c = enc.combatants[id];
-        if (id==='pc' && enc.observe && c.current.escaped) {enc.observe.closed=true;break;}
+        if (enc.observe && enc.combatants.pc.current.escaped && (id==='pc' ||
+            !Object.values(enc.combatants).some(c=>c.current.withdrawing && alive(c) && c.current.cover!=='full'))) {
+            enc.observe.closed=true;break;
+        }
         if (alive(c) && !c.current.surrendered && !c.current.peace) break;
     }
     enc.turn_index = idx;

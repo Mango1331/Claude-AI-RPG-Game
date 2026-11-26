@@ -1,0 +1,1881 @@
+{
+ "inherits": "accepted_continuity211.json",
+ "reference218": "a729d360",
+ "cases": {
+  "b16-rogue-sale#6": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 20 narration → 20 travel.",
+   "fingerprint": "sha256:73e129b1ed74c928552cc6c43804800c07ab9f83d2505ccc22c4f704c143e627"
+  },
+  "b16-rogue-sale#9": {
+   "category": "219 branch register",
+   "reason": "The Guild records the disclosed name Alaric.",
+   "previous": "sha256:660327144a1a7d2b52d28c2892a0e85016a097501769bcd4da099704d278f9f0",
+   "fingerprint": "sha256:46ccf086405ff7c11ededace95c3144f9bc5ebbbf740ec0472335f0b904c4c03"
+  },
+  "b16-rogue-sale#14": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration, 45 travel → 15 travel, 45 travel.",
+   "fingerprint": "sha256:15e23ec69fd8d04b76fe9d15fef5b6ffa9416f30279d8419e868e0acaffa95d5"
+  },
+  "b16-rogue-sale#22": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 20 narration, 40 travel → 20 travel, 40 travel.",
+   "previous": "sha256:53f6bdd5bcfe9008b119bc4a7e981723b71af283be60210fcea715f202d97a4c",
+   "fingerprint": "sha256:64512631902276f4eb5b4b83453671edce503ffb8fe798e7c92639f811904959"
+  },
+  "b16-rogue-sale#28": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:bd8063cc3551d24f6dac84834bd5e0fe7426b72f8901dd56582603eb0f3346d9"
+  },
+  "b16-rogue-sale#30": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration, 45 travel → 15 travel, 45 travel.",
+   "previous": "sha256:97e48ce75b01edbc6402d98998711577f1527b2fddd4aa261e4affa457555b4f",
+   "fingerprint": "sha256:7518b0ff436defe6e616c20b9801039b2d8cc73c531fff756d20e244360a228e"
+  },
+  "b16-rogue-sale#44": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 10 narration, 5 travel → 10 travel, 5 travel.",
+   "previous": "sha256:ea89703dc487c20959dd3cbd23f575a697ce11024b027488a87fd8ae9f782eb7",
+   "fingerprint": "sha256:5978b9cc3de26a9c2a8e7289d01341c4cd3918b85b4347c1bae219a4eeca73fe"
+  },
+  "b16-rogue-sale#56": {
+   "category": "219 attributed time",
+   "reason": "Clock: 10 narration → 0 min. Unbound minutes (10) refused: travel_time.",
+   "fingerprint": "sha256:c5f698a2542ddd4ec8cd8a5b0d66f1f3e3b36472077df4365c9fb959b5ab301f"
+  },
+  "b16-rogue-sale#68": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 60 narration → 60 travel.",
+   "previous": "sha256:42618ed6d598c4a6dfa509a532da81b05742187f8607227372ab37cb84d0a629",
+   "fingerprint": "sha256:193ad24c560db72a8f0ba8bafe57bded812474dbc66667758848e3749ecf17b6"
+  },
+  "b16-rogue-sale#72": {
+   "category": "219 attributed time",
+   "reason": "Clock: 30 narration → 0 min. Unbound minutes (30) refused: time_authority.",
+   "fingerprint": "sha256:893f319cddb1d8dd0dc3525b68618a8a1aa8165eae1fbbc930198fff91865f92"
+  },
+  "b16-rogue-sale#80": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration, 105 narration → 15 travel, 105 travel.",
+   "previous": "sha256:9a0fe8970aa35539ec97f9da01ee54ed91171df55ed5a42af842f5f901f3df81",
+   "fingerprint": "sha256:317e7c3410995db6136b68c5ec9063360f5c22327db3f18210f2833b5e3105e7"
+  },
+  "b17-mage#6": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 45 narration → 45 travel.",
+   "previous": "sha256:08fa4b2b1cd8741cc89a07c3cc1856bdbb7a78fe5aa75ce83c1f502174e24a2d",
+   "fingerprint": "sha256:42e956d17ffdf8466e9f6bf6d9b83a2e39a864da6d5e30d326538076dd5e341d"
+  },
+  "b17-mage#7": {
+   "category": "219 branch register",
+   "reason": "The Guild records the disclosed name Alaric.",
+   "previous": "sha256:0fc5aedbbebe1a31fcaa7ae73c95fdea7c77e3f5bf690b9deb3399e957905026",
+   "fingerprint": "sha256:51d256eeecd6d5c30a0396223a6996380917404bdef7518de293bb1cdbeead2b"
+  },
+  "b17-mage#12": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 75 narration → 75 travel.",
+   "fingerprint": "sha256:499ba789dd7fa93b9c7377d5608ff0d19ec10ea9273b43ed3f9ac775467fccf7"
+  },
+  "b17-mage#14": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 activity → 15 activity, 15 travel.",
+   "previous": "sha256:d25091fda4d1fbd6f753f85ef80e75f590b00023c4a435187538ba0534d32b55",
+   "fingerprint": "sha256:77fb511c16ce887ab79364a06f1d72fb3a6f9f1878f37b8d8b91e60400c32d0e"
+  },
+  "b17-mage#18": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 150 narration → 150 travel. Journey MP for pc: 96 with remainder 0/6000.",
+   "previous": "sha256:6ac8a59798e75839c3af1fb02f67adbf609af2840adda7529a2648f258c828f3",
+   "fingerprint": "sha256:01234e8220f8764d76e3a38d90b95e51b8b293b13f360517c90ebd6d82835484"
+  },
+  "b17-mage#26": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 35 narration, 25 travel → 35 travel, 25 travel. Journey MP for pc: 90 with remainder 500/6000. Journey MP for pc: 93 with remainder 0/6000.",
+   "fingerprint": "sha256:dfd76a16a75a9e50f709e75704128d131ad1d8c56503faa81ca441763a0ed41e"
+  },
+  "b17-mage#28": {
+   "category": "219 attributed time",
+   "reason": "Confirmed local approach at the current site. Same ten scene minutes after the reported observations, no travel recovery.",
+   "previous": "sha256:f93b7645b0d2de879bf7d9566ff7d4bd63b6a3e79c44da48a771b7c9ad6a2967",
+   "fingerprint": "sha256:1897fafced9746e08b4904d6012d90337ae95f7188e13e8a5b50bf21fe74f990"
+  },
+  "b17-mage#30": {
+   "category": "219 attributed time",
+   "reason": "Clock: 20 narration → 0 min. Unbound minutes (20) refused: time_authority.",
+   "fingerprint": "sha256:88cafd3fd017d1f2f2ed155908cff9d5ed96d4e7e77ce3972fede88e3eec19b9"
+  },
+  "b17-mage#42": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 68 with remainder 5100/6000.",
+   "previous": "sha256:ddc8286a9220eccd8630864662837dd68ca87370813be1432d7aadaf5dc8b721",
+   "fingerprint": "sha256:f4f76cb7be092838bc81f08778d39a78efde513b10630cea293004747cf0ffe6"
+  },
+  "b17-mage#44": {
+   "category": "219 attributed time",
+   "reason": "Clock: 20 narration → 0 min. Unbound minutes (20) refused: time_authority.",
+   "fingerprint": "sha256:f20d999e29e1bf2322267526b2b0fd5406fdd77679bb59f58a2fbfefab741879"
+  },
+  "b17-mage#48": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 59 with remainder 2400/6000.",
+   "previous": "sha256:e223ba00c364a7237b9d4b4d1f79e62c433b77728c88f7facd9ddc5ba8956cae",
+   "fingerprint": "sha256:63db24462808746286e48490e13fcffe4205675e4b8361f9acedc6854f406119"
+  },
+  "b17-mage#52": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 90 narration → 90 travel. Journey MP for pc: 66 with remainder 2400/6000.",
+   "fingerprint": "sha256:b9504d039ee4586d6865c3513c66548a015bdb2b800de67c9fb4e7828fb58957"
+  },
+  "b17-mage#54": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 12 narration, 3 travel → 12 travel, 3 travel. Journey MP for pc: 48 with remainder 4320/6000. Journey MP for pc: 49 with remainder 2400/6000.",
+   "fingerprint": "sha256:ba3ddd9108cb6c4f589ccfec16aee808a8fac476f23e7679576788ffa00c4f30"
+  },
+  "b17-mage#58": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 45 narration, 15 travel → 45 travel, 15 travel.",
+   "fingerprint": "sha256:2a7d2df5b2eeb331e9f59365a1deb7261198a2de0f188ba4d7a6cb2bbd98a2ba"
+  },
+  "b17-mage#60": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 10 narration, 5 travel → 10 travel, 5 travel.",
+   "fingerprint": "sha256:78d3a2f6685e05a907cf7bcc0672cfd262c31c3437e71bd22ff0d6484bf834c1"
+  },
+  "b17-mage#62": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:2f0cccb77554fdfec81cb10843272c7041a74b5874ecbfe517161aa7ede62c05",
+   "fingerprint": "sha256:74e7c74f474963e7da156d7abd196ef5353c5695a1b5197483a427ed04692f0d"
+  },
+  "b17-mage#68": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 95 narration → 95 travel. Journey MP for pc: 287 with remainder 100/6000.",
+   "previous": "sha256:1b39b8691099cf1b930a94d89a065f35f9cfef7ae35f4bbdec9096dcdc6339c7",
+   "fingerprint": "sha256:5bf89eab231bdf7c2cc6e574b7a48a080fd0a2f71d68449ceb7322bc26aafa98"
+  },
+  "b17-mage#76": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 45 narration, 15 travel → 45 travel, 15 travel. Journey MP for pc: 275 with remainder 3000/6000. Journey MP for pc: 280 with remainder 0/6000.",
+   "fingerprint": "sha256:fdcf4ca909896703ff34c42d6713df94b4cce50aae3c818842aa238a284d3d23"
+  },
+  "b17-mage#78": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 266 with remainder 3000/6000.",
+   "previous": "sha256:1c9e415ad913c55949314e2ee59dbb3ae67b29e0ac0ec263134eb611ec399acd",
+   "fingerprint": "sha256:98f31ec8968cf35187250f05e08b7e8c9a9633cff9e0334fb0cf9362f862e9f6"
+  },
+  "b17-mage#82": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 150 narration → 150 travel. Journey MP for pc: 297 with remainder 0/6000.",
+   "fingerprint": "sha256:18a87581217202facbc1eeacfca8ca1ab2235f2ad4eca2ea15e425980708c8ef"
+  },
+  "b17-mage#88": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 256 with remainder 3000/6000.",
+   "previous": "sha256:a7dcab4511a4fb6e2586aa46a34be9b9be7cee6085c3f9fccfaa6f7c53364dd9",
+   "fingerprint": "sha256:8fe19d49f41bbd50f348b5ec10bf78b6fb230f950f41d7b2acb3e3ac8e00ea4c"
+  },
+  "b17-mage#90": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 150 narration → 150 travel. Journey MP for pc: 297 with remainder 0/6000.",
+   "fingerprint": "sha256:d2789b3250d10334a2cdfa3891580b730a65e88b511b40d5c5381b8713e43b71"
+  },
+  "b17-mage#92": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 10 narration, 5 travel → 10 travel, 5 travel. Journey MP for pc: 255 with remainder 0/6000. Journey MP for pc: 256 with remainder 3000/6000.",
+   "previous": "sha256:aefec24449c48d059218db1e5769468e47a23e12765354a504de5f5afacbed8b",
+   "fingerprint": "sha256:f90770824a1ed2d0bd0227617f661fbdffb19fc248e1ecd9ce836ab51e146b2c"
+  },
+  "b17-mage#100": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 25 narration → 25 travel. Journey MP for pc: 246 with remainder 2500/6000.",
+   "previous": "sha256:2ee51cb37823a4f5dc9f5436408fc93624e7a0a156fd53cf0c0839863e2e2a81",
+   "fingerprint": "sha256:457920cfd7dfc191605a836fd1729394b1078187c28a589d435f31213d83af5b"
+  },
+  "b17-mage#102": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 10 narration, 5 travel → 10 travel, 5 travel. Journey MP for pc: 241 with remainder 2200/6000. Journey MP for pc: 243 with remainder 300/6000.",
+   "fingerprint": "sha256:5c599f6070fc3f56df24e21450b61b6ed3435d866d49e17e58772128da8583d6"
+  },
+  "b17-mage#106": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 20 narration → 20 travel. Journey MP for pc: 244 with remainder 4400/6000.",
+   "previous": "sha256:f0746a81e4e66aa309c8e00be539a15d50f2fba43e271bc4c6ae51c4fe0fa32d",
+   "fingerprint": "sha256:24550d01005ebfb7d02d33b532aa807461630040923d5cda2780f1297572f167"
+  },
+  "b17-mage#112": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 25 narration → 25 travel.",
+   "fingerprint": "sha256:801cb61519475f805c5db7d39f057f61cfe97adc7ca31f84f71cfe8925f547c0"
+  },
+  "b17-mage#120": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:461f7c385aa26d8d061529b288f10a002075aa4d00aa51bcac260a9f1302e07a",
+   "fingerprint": "sha256:a340bf5fc9313dd491ff8ecb61b9cb692f13d5fe5b7d13d2b19b9cbaee9e4913"
+  },
+  "b17-mage#122": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 30 narration → 30 travel.",
+   "fingerprint": "sha256:43645caa1e838f7dffef007068a261c2921a8c9d1746d11925ce1406c0a9ff93"
+  },
+  "b17-mage#124": {
+   "category": "219 attributed time",
+   "reason": "Confirmed local approach at the current site. Same ten scene minutes after the reported observations, no travel recovery.",
+   "previous": "sha256:c89652cc2b0f4fb50872960d4889eeec1b112826eb43cc1c8eebdcfe2657de9e",
+   "fingerprint": "sha256:02dcd2d0ac06a5d2916109fc512d00828a8ae4931f9343c62438ddea0543209b"
+  },
+  "b17-mage#138": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 396 with remainder 2400/6000.",
+   "previous": "sha256:8b6420f396edebcab8e5e4cbfa67091b9725a9bb991b0c1162aa943cd03e0b12",
+   "fingerprint": "sha256:dea6796daf73227af2756c491962b9187628f84aeae95a212bfdcd9f2ed27b21"
+  },
+  "b17-mage#146": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 75 narration → 75 travel. Journey MP for pc: 404 with remainder 4500/6000.",
+   "fingerprint": "sha256:1bbb32ef7693a9d48ac4e07b929873e437644b50617ed4b34a6ed87bf4fc7b8a"
+  },
+  "b17-mage#174": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 60 narration → 60 travel. Journey MP for pc: 338 with remainder 0/6000.",
+   "previous": "sha256:e14ed37d12009963f148f0600a8203076a2aaf0374d89e73ee0dd85ace0b92ac",
+   "fingerprint": "sha256:608f0dcd38b40feb2d100371b5cac8426b0815ec4e08de8e662bba6da2e1a72f"
+  },
+  "b17-mage#180": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration → 15 travel. Journey MP for pc: 317 with remainder 0/6000.",
+   "previous": "sha256:a4ce824d3817b32bcfba088c8cc9fe02ee8814150b40fc5ed633fff7011f2ab4",
+   "fingerprint": "sha256:16447c2b80476689f1785c418c020446d99008418f23c5c5ca8396159b9ecc29"
+  },
+  "b17-mage#184": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 90 narration → 90 travel.",
+   "fingerprint": "sha256:ab6dd99ec0edf2ba9d7f1ee289aa278693cc2846e852dccee760c042377b5278"
+  },
+  "b17-mage#200": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 150 narration → 150 travel. Journey MP for pc: 591 with remainder 3000/6000.",
+   "fingerprint": "sha256:ac6c4897a705386b9e1664f2ab549094c7b1972a977edc86dd7902d758eb574c"
+  },
+  "b17-mage#212": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 523 with remainder 3300/6000.",
+   "previous": "sha256:ec134d9d5d23bbfe03976b291eea713982b792b9997c91b8cda031ec37555d25",
+   "fingerprint": "sha256:a13da496828eb7a4086c2a71bdd1e74db7c23382a08bda8af0d00e550171b066"
+  },
+  "b17-rogue#6": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 45 narration → 45 travel.",
+   "fingerprint": "sha256:d9be56332054903879d6d4acdf1bdfdc4e8c5f4a3de9bdcd8ad2757e9f64710a"
+  },
+  "b17-rogue#9": {
+   "category": "219 branch register",
+   "reason": "The Guild records the disclosed name Alaric.",
+   "previous": "sha256:39d00caabfdf706bf0eaf723e55b1bd845a6c651154264815beb07368676d83c",
+   "fingerprint": "sha256:cf5e8058c4d2c1a9f7ad4b9463e5f1d0b9500fb15c99c3fda034aa376e65e7dc"
+  },
+  "b17-rogue#14": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:3f0c2e615ab8d00893d98ee6ddd55fbedf333ebc41f6293a552f492e5f49308e",
+   "fingerprint": "sha256:28403ddca377ceb1ec3b4ac345592f1943164f16868d10ea2877dc1eb4f794f3"
+  },
+  "b17-rogue#22": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 120 narration → 120 narration, 60 travel.",
+   "previous": "sha256:6499d8d1dbe55c64c8e0310386b94b856c8ca47bb4f1f6792e869cb414d5a9eb",
+   "fingerprint": "sha256:ff0a0b836273583ec7f00d0d7c3287b210ebff9bfdfc2b5fe3972b74e85055e6"
+  },
+  "b17-rogue#26": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 85 with remainder 600/6000.",
+   "previous": "sha256:da5a99bab5866d08074cb4f3276494e4a440645ed3940bce6ccc8f00e2deefb0",
+   "fingerprint": "sha256:23715b5ea55081b924b0c642305d139a909afe0b6e68816b9790e4777d090dee"
+  },
+  "b17-rogue#34": {
+   "category": "219 attributed time",
+   "reason": "Clock: 75 narration → 0 min. Unbound minutes (75) refused: travel_time.",
+   "fingerprint": "sha256:2027446580db98bb4640e2e35c9867dfd2a4c7c80979554781426bb55d8c73d2"
+  },
+  "b17-rogue#36": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 5 narration, 55 travel → 5 travel, 55 travel. Journey MP for pc: 84 with remainder 2200/6000. Journey MP for pc: 88 with remainder 0/6000.",
+   "previous": "sha256:59c5bd645e90b319f49c51ea2bb4f5784d43dca33fbacaf47e37013e7e56de6f",
+   "fingerprint": "sha256:5961c88c1f03c2c110390e5f8ff9411c5089eb90107e661485a1bac6c62fd467"
+  },
+  "b17-rogue#50": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 10 narration, 5 travel → 10 travel, 5 travel. Journey MP for pc: 84 with remainder 4400/6000. Journey MP for pc: 85 with remainder 600/6000.",
+   "previous": "sha256:bb0f118f5e094974f3d03ae073dbd63a384c165dae946d87320c9f4bcf2249e6",
+   "fingerprint": "sha256:907532b6cf26ef9822b49a23393434ab4a38291e811a6c541f57dc67b7b26afe"
+  },
+  "b17-rogue#68": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 25 narration → 25 travel. Journey MP for pc: 85 with remainder 5000/6000.",
+   "fingerprint": "sha256:388ab69478f7f8f2fd447994a6857434125cea23d527aa4bc75585aa8741e4d1"
+  },
+  "b17-rogue#72": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 45 narration → 45 travel. Journey MP for pc: 87 with remainder 1800/6000.",
+   "previous": "sha256:52a57813ea0040ab67a228378c766c26fd231581c3ddcf3b4c5c2a16b531adb1",
+   "fingerprint": "sha256:1f9b4c59cdd60ff606c96d5b16b35656ae23c4918b1c3384b1cfa6177634d5eb"
+  },
+  "b17-rogue#84": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 45 narration → 45 travel.",
+   "previous": "sha256:4401696b13aea2177e806ba63ec69b2fbb4ce244315bb7c0098fd14540ac8f1a",
+   "fingerprint": "sha256:d3aaf13fe21e66447775a475b9c0ad9f4c0658383ba7737ea5d644c956c3c33b"
+  },
+  "b17-rogue#90": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 97 with remainder 1800/6000.",
+   "previous": "sha256:e055321da6dc175f6aba3504226953cbdc0cda2be35edd5158e99e288f75cf44",
+   "fingerprint": "sha256:811aff023d9696b45c5afdc014bef701fa2c3de51ea51bc8dd83e6f9834a5bae"
+  },
+  "b17-rogue#92": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 90 narration → 90 travel. Journey MP for pc: 103 with remainder 4800/6000.",
+   "previous": "sha256:3aa81daeb6b27fc5fc139517942cc540ade5c6889a162aa4ca2cd86c259c5b63",
+   "fingerprint": "sha256:a842e7b4d1758d0558c8099ba65f7d344af3ab51d4a01f34c14ef0a5ce98f5fa"
+  },
+  "b17-rogue#102": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 20 narration, 40 travel → 20 travel, 40 travel. Journey MP for pc: 97 with remainder 4400/6000. Journey MP for pc: 101 with remainder 1200/6000.",
+   "fingerprint": "sha256:709ff8aa9e02bc6ece1b97ec5f78c3cc50d3f686da6c5ca354986d55c257cac9"
+  },
+  "b17-rogue#116": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 30 narration, 30 travel → 30 travel, 30 travel. Journey MP for pc: 98 with remainder 3600/6000. Journey MP for pc: 101 with remainder 1200/6000.",
+   "fingerprint": "sha256:9650d95d4cab4e664947586b8ea01f66d52d32a9788ecef22fe455480f28fd8c"
+  },
+  "b17-rogue#122": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 60 narration → 60 travel. Journey MP for pc: 101 with remainder 1200/6000.",
+   "fingerprint": "sha256:173c333450b62a40c3bf702cbf99872a0e85980a5313b59f05bd559e38ef37ae"
+  },
+  "b17-rogue#130": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 30 narration → 30 travel. Journey MP for pc: 98 with remainder 3600/6000.",
+   "fingerprint": "sha256:71724b9232f8e907e39192e8278ab7dad22d81419a239ad5684f3ca201b0a5b7"
+  },
+  "b17-rogue#132": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 25 narration → 25 travel. Journey MP for pc: 98 with remainder 1000/6000.",
+   "previous": "sha256:dd3e444567c629ce4ca243be1a5d405ebe6b0ddb0390ddacb1dbb33b615fed58",
+   "fingerprint": "sha256:27496f0cde27b0052cf88a6834112fbec7c23bcfbbf51be3878e73f87c5a53a1"
+  },
+  "b17-rogue#140": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 97 with remainder 1800/6000.",
+   "previous": "sha256:31ffbee00ce754733c062c63cade2becd5568eff90b0e72e061efdc55c2fb1e5",
+   "fingerprint": "sha256:0d19c6133f6cf109edb8e3cf33404d0740f341f1a62b8e8c1a97d7cdd01bd851"
+  },
+  "b17-rogue#156": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 95 narration → 95 travel. Journey MP for pc: 104 with remainder 0/6000.",
+   "previous": "sha256:9cb4841f4017abd6899b0abb0ad667601f0476246ea7ad696c4e7afb2842adca",
+   "fingerprint": "sha256:6c0b2ff82d7231083cf87783af7b213bf7a50fe7938f6a8383447d037866054c"
+  },
+  "b17-rogue#162": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 97 with remainder 1800/6000.",
+   "previous": "sha256:a6c3976b7f3ad1778599068e752abe37920ab3191529678c71a08995080a308b",
+   "fingerprint": "sha256:5258171ea15332a8797ef3a4715332ed324045ead1273426277718840742743b"
+  },
+  "b17-rogue#170": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 97 with remainder 1800/6000.",
+   "previous": "sha256:7784d35fea30436526bd3dd3f8f55d899f0fa1eb1f25d1b184495423d84227b1",
+   "fingerprint": "sha256:500919707646fadbe91c8ca262f2b4e3f0285c2b3372ef38a6458de70d4ff086"
+  },
+  "b17-rogue#174": {
+   "category": "219 attributed time",
+   "reason": "Clock: 30 narration → 0 min. Unbound minutes (30) refused: time_authority.",
+   "fingerprint": "sha256:f30ddb36d4bba8e2dfaa02e9ee4ebcff39da52afdc3df3cdb2ffd790c06ecc39"
+  },
+  "b17-rogue#176": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 90 narration → 90 travel.",
+   "fingerprint": "sha256:b4a964fccb23fe5594811cff9cd592b802fd9abd4163ad1b8fe15c415b811a0a"
+  },
+  "b17-rogue#178": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:94bd732dd82b5de472ae26080bb0c2e5ccf2bfd12d7700ff22d822e7cb062768",
+   "fingerprint": "sha256:d0fedee4e012c6520596299f8f2bbd20f1c8a15c63823a8a9102aae9901fdf09"
+  },
+  "b17-rogue#192": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:68610b940fdfa1d2627820d9ff5afd0ee0cad2767108ce43653adece0cd96c54"
+  },
+  "b17-rogue#196": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:677913e2812cb03df01046155ef93a353f482810650e9428274524e0f0c57a42",
+   "fingerprint": "sha256:93e105879a6cca942887071dc7a63b53712049bcdc3d07a121ac32110aaa1325"
+  },
+  "b17-rogue#200": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 25 narration → 25 travel.",
+   "previous": "sha256:5196a10e3bf25ac753c43a68afa95ce1a2b473e81ba89bb1c1034c3b9e039d6f",
+   "fingerprint": "sha256:175524750dd4c5c85d389a11afa716f9c91fc647a33cbb7448e4a54bc381a550"
+  },
+  "b17-rogue#218": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 330 narration → 330 travel.",
+   "fingerprint": "sha256:f65d120876bf1bf5ded49e6654dabd06bd381fb28226df29b65b7ca945a93adc"
+  },
+  "b17-rogue#222": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 5 narration, 10 travel → 5 travel, 10 travel.",
+   "fingerprint": "sha256:9a768310087afeb643b1119cb5a82a4919efedd301694b50b258aa2c464b4661"
+  },
+  "b17-rogue#230": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 45 narration, 15 travel → 45 travel, 15 travel.",
+   "fingerprint": "sha256:777263d9318ecd2156fa2280bcb08be8fddea185c53ce6ef95c59bd42b291bf0"
+  },
+  "b17-rogue#236": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 25 narration → 25 travel.",
+   "fingerprint": "sha256:403e053a5a179c4fd8f056d6756e7f6243a88933153c162a0da1375c0503ecc2"
+  },
+  "b17-rogue#240": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:66ffb9c067ae089e6e02b702f7198c51c5167898cd8de492bbbf785381a1e093",
+   "fingerprint": "sha256:a5baac1901eb3a4388ea01bedc6afaa751494fbf427b9250b545160ff0dcc2f4"
+  },
+  "b17-rogue#246": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 30 narration → 30 travel.",
+   "previous": "sha256:301c69ccbd27f406d9d1cfb6e12ab283dac68892cf6023be136da0bfd4ad481b",
+   "fingerprint": "sha256:b5ab8687842d7f8cba15f0e9c27867088b2c15228e106ce76e457d7721763908"
+  },
+  "b17-rogue#250": {
+   "category": "219 attributed time",
+   "reason": "Clock: 45 narration → 0 min. Unbound minutes (45) refused: travel_time. Dungeon clock: loc.glimmerdeep_grotto to 4845 → none.",
+   "fingerprint": "sha256:bee639a7efd447ec6e32a6f02ecb190ea3710de028d7a90ef092c82399d85c29"
+  },
+  "b17-rogue#254": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration → 15 travel.",
+   "previous": "sha256:af2c66e35db8cb3c73cc099fd5c78230cc5ca2a86345896ac624f48ebe436700",
+   "fingerprint": "sha256:c1664ef3652b6f0533f803df1a06bf21def1437dbb7323f9f9d358714ea1be2c"
+  },
+  "b17-rogue#262": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:2f52d6896cc5ecd1164fb885d5d076958932fe1a8367327577d075ee16e94a66",
+   "fingerprint": "sha256:9d07767904d44e94e8f6eddc5e8cb603e3c7ee8e905be4d48dbd744d2faf1175"
+  },
+  "b17-rogue#268": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:18bff3cb1883c9d1a8222c02528cc9370d825557d59f917f730d9b35a5126b3c",
+   "fingerprint": "sha256:913539ade204b188d496a39a2e84efcf8f12dcfe817b7174b74540c0069d4ef8"
+  },
+  "b17-rogue#272": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 90 narration → 90 travel.",
+   "fingerprint": "sha256:7366a10061ec15725fa9c1ed17dff3e8c52e67dd94b79ac34ed49b2a5788241b"
+  },
+  "b17-rogue#276": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 20 narration, 40 travel → 20 travel, 40 travel.",
+   "fingerprint": "sha256:56da94ac03d3c8355a4ed83f360efb4c641b430df62a17cf013883383479ee47"
+  },
+  "b17-rogue#278": {
+   "category": "219 attributed time",
+   "reason": "Clock: 120 narration → 0 min. Unbound minutes (180) refused: time_authority. Dungeon clock: loc.glimmerdeep_grotto to 5187 → none.",
+   "previous": "sha256:0913dfbed59fa4785cdcbb4e5fe4276207320d9dfe9d476e7925ee89255d8a2f",
+   "fingerprint": "sha256:f9486da6bc0b134415cd1e4961a628c77ac898c2180e19c5c4837df041cb753c"
+  },
+  "b17-rogue#280": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 25 narration → 25 travel.",
+   "fingerprint": "sha256:470a81e925a09389bdf0b0afe552887d957e30aba0e785e29d8446f5a2806ad1"
+  },
+  "b17-warrior#6": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:372efc8dcd9c8be9578cff81451e035f45e5f38e5302765b782452fa33e78d99"
+  },
+  "b17-warrior#9": {
+   "category": "219 branch register",
+   "reason": "The Guild records the disclosed name Alaric.",
+   "previous": "sha256:2aa1b2edf9dee97797db167e2423bdee7b1d3cae2fba65bebff6761c597240e4",
+   "fingerprint": "sha256:7e96be778cf106ced026b338d876f95bda8c5a8ec734ab00a7bd996bd25aaf9b"
+  },
+  "b17-warrior#20": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:3ca2ea3655c828ab4f614b516742477b936a6b1a7f5a251542a0f747e2e8a71b",
+   "fingerprint": "sha256:03724ca33eeb2f1aa6a6fb47fa3f4e0da99aede6a59ab964a2d86b5052128c3d"
+  },
+  "b17-warrior#24": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:74c436a4c7e62cb0669044c3a7ba697f00d77a4167ccce32fed1a0e16e00f2eb"
+  },
+  "b17-warrior#26": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:44ab02f14345a531ca8ea1234f35e5bd93ac20d3eddbb5757bfc16645ce47e3c"
+  },
+  "b17-warrior#30": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:de101f819ea366ac91a239bd46bb4e4eb4a8afafa45354230bb6a024ca912d45",
+   "fingerprint": "sha256:4061472e7bd2a32dc1b670e1f5da8d6577efaff3b6aaa02edde2bab3a56c8f86"
+  },
+  "b17-warrior#32": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:3aed3cbcf47806b69d0b17d493f60744230add0d14ad672d95291d1fee68127e",
+   "fingerprint": "sha256:300366b30561c7d8813a93ad8b1510c08c5d2dac2d7d0ffecf22f45159d02823"
+  },
+  "b17-warrior#62": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 200 narration → 200 travel.",
+   "fingerprint": "sha256:cd14344921eadcf536e919d7db88da853613770416ac0102c0d8a732de639158"
+  },
+  "b17-warrior#64": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 45 narration, 15 travel → 45 travel, 15 travel.",
+   "previous": "sha256:6fd9918c17fe8944bb0fe486896990daffbaa8891583fe90df5a07ca65779024",
+   "fingerprint": "sha256:cb4d0f095b368088810326e4828be9f9ba713023da908f7fa0a07d79191204e7"
+  },
+  "b17-warrior#86": {
+   "category": "219 attributed time",
+   "reason": "Clock: 20 narration → 0 min. Unbound minutes (20) refused: time_authority.",
+   "fingerprint": "sha256:f089c5c025aadf2915212895d5d907fd2f656cdbc1f72895f2cd134204188583"
+  },
+  "b17-warrior#88": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 60 narration → 60 travel.",
+   "fingerprint": "sha256:beb75ac6d27747a11ea9c5db7dac3a9b6894f092a75dc633fbf1d432fff24754"
+  },
+  "b17-warrior#90": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration → 15 travel.",
+   "fingerprint": "sha256:299a145fb44fdeb3d18970f931ff1a32cc9e41a234517b26082a8bce2fa18a3c"
+  },
+  "b17-warrior#92": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 5 narration, 10 travel → 5 travel, 10 travel.",
+   "fingerprint": "sha256:1bcae09fe07e2d81d2fa52b66334cfe5c5308ee8ac24f1f8a44b97d69821c0f1"
+  },
+  "b17-warrior#94": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 10 narration, 5 travel → 10 travel, 5 travel.",
+   "previous": "sha256:c151fc169d039c6e570ab894c935d7a94f4fe9f5d424b65890d772c7d030c612",
+   "fingerprint": "sha256:fd0baa218ae7a16f8508c7d37757ce2624dc739f83bc4da55bf876ee9ef5673e"
+  },
+  "b17-warrior#104": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:19a1ed6021cd4c0d89334d8dc68c8c58f65783cbf8d3d48189e376fcdf3e8f83",
+   "fingerprint": "sha256:de3bf889a605c3f9290f34b414e300444c68d2135fa079a53ea4b760ea85883d"
+  },
+  "b17-warrior#114": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 90 narration → 90 travel.",
+   "previous": "sha256:66266f0a8cab8e39ab6a25e336d8a692a063260df7cb755057e217690d8943c2",
+   "fingerprint": "sha256:fa46b559080b09f7e9fcd1a8cfe432d26b0657f8448d360d2f5c2ab4fac91a92"
+  },
+  "b17-warrior#118": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:536a1e0d4e50241b2a219a7c91e28c53960114e9bf62bec2cc956de420ecbaeb",
+   "fingerprint": "sha256:ace5e75cfa77a0276718ad91ca3665cf0f1dd1dd07de6ec9e70912b87fc97183"
+  },
+  "b17-warrior#124": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:68a0b944fe49d49f66fbbcde4dc7538eb4d63864ac1d2b5d67f6455a8b50bf8a",
+   "fingerprint": "sha256:70167082e5a3e69ff60e80d60bddc8212b87f344a75657b6b55b8f5de50fc691"
+  },
+  "b17-warrior#142": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 12 narration, 3 travel → 12 travel, 3 travel.",
+   "previous": "sha256:35f526f09251ec9af7810057619fd665b5e3a9251d70b7629cc301b39fcf00a1",
+   "fingerprint": "sha256:437fe7f7b769b41a029185948bcab7593a69abd19745dbd253747fe72ddb8761"
+  },
+  "b17-warrior#146": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 12 narration, 3 travel → 12 travel, 3 travel.",
+   "fingerprint": "sha256:970b9ce9f119f0397d942d128a80e8cab992fcdd519c5b812cb185e0d2ab8e18"
+  },
+  "b17-warrior#150": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 60 narration → 60 travel.",
+   "fingerprint": "sha256:5f9e67b91efa981c3fa537349b0a9df512ffe989dfead46bb0386a9a7cda9f80"
+  },
+  "b17-warrior#158": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 95 narration → 95 travel.",
+   "previous": "sha256:99fd23d3806b23a6f2cdf97471064fa7c548aa881ca6e2dfdb3a16c0b9467893",
+   "fingerprint": "sha256:a99dcc468e9c225999ac75a6b250ebfee5a96aa40d236efaabc8da463721a2d6"
+  },
+  "b17-warrior#162": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 25 narration, 35 travel → 25 travel, 35 travel.",
+   "previous": "sha256:ce548089b29709890bc1d4ba53df3bdd9264a6d780cbceddce58553efe1e9cc2",
+   "fingerprint": "sha256:1792178bc3e9aaa4e660798f96c837d110213bb967607ea7c2b98d7143de3702"
+  },
+  "b17-warrior#176": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:f65bf131cc1ebbe6137bbc0a20f632e6a5f262badf731a8486d4844200152b92"
+  },
+  "b17-warrior#184": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:c72fcda2e193cd01411393964afbfe00329f745d9fb5139b2236b2362659ac3c",
+   "fingerprint": "sha256:0b2442603f81da8a00321e9f7342302b416f27ef2cd6d5415c43dccf8dbd3823"
+  },
+  "b17-warrior#188": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 60 narration → 60 travel.",
+   "fingerprint": "sha256:2502ae441d97ca9a999408bc987f4370fdd294301aadb4e57bbbad716fd7023e"
+  },
+  "b17-warrior#192": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 45 narration, 15 travel → 45 travel, 15 travel.",
+   "fingerprint": "sha256:3ca2595d41d91466c90c488af4a619db48c4b60e547c4959afaf16f7a1ec8bdd"
+  },
+  "b17-warrior#204": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 2 narration, 13 travel → 2 travel, 13 travel.",
+   "previous": "sha256:b31fe23cf1793fd089923382a533b10d74c8d88635a31590d9cb62e31851ca7b",
+   "fingerprint": "sha256:ea3a8821e3a4ff7a5cd65282a9db449badaf8784dff846b26dbe4d3480dacbd0"
+  },
+  "b17-warrior#214": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration, 45 travel → 15 travel, 45 travel.",
+   "previous": "sha256:a2c0848e29767c5efd139a457c07e3bf3b44617b2f033bf0a8f8290fd5502d6f",
+   "fingerprint": "sha256:5f58a790cc9201168c5a6b8e11696d4fa59171cf3b1309756740f7bff7b0f2e4"
+  },
+  "b17-warrior#222": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:f8c764e180d94ac393fb6db4701a3c4efd178e446290db72191dff6294db5027",
+   "fingerprint": "sha256:40bca144b4f50c709a269930b9c527ada5979600e0b9005df3f23de968a75743"
+  },
+  "b17-warrior#224": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 120 narration → 120 travel.",
+   "previous": "sha256:ae0d2a8d009f1cd42e6fc8e306043f82b464337430cf0e2c85bef4b57222a3ab",
+   "fingerprint": "sha256:3acdb462127621d9a3e6c0a15f09aca4e22151bb9a2eacbff59d2b33791f2935"
+  },
+  "b17-warrior#226": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration → 15 travel.",
+   "fingerprint": "sha256:2b68c79a98661cfafd62563aaa335773d2522da9a5b7d8afe0693a9d08f039ce"
+  },
+  "b17-warrior#228": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 240 narration → 240 travel.",
+   "fingerprint": "sha256:5c2b639b4b545d9d0dc6a86ac5ee169320d9b48b8a5ad022bdb49b3ab0fc1964"
+  },
+  "b17-warrior#230": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 5 narration, 10 travel → 5 travel, 10 travel.",
+   "previous": "sha256:0cb191fa6c5875da01efe314c89507104d0bbb0cf3179c76d6dc7023f5fd4197",
+   "fingerprint": "sha256:e81e1d69bde0b383bb27e0b9c8b0068a6bb3f4f4a088bc9d1bf705db65db569e"
+  },
+  "b17-warrior#238": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:09c0e5b52b7f9f51788fa4789334dafd6a111e8909f0b5ea99915df3b82a6944"
+  },
+  "b17-warrior#244": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 40 narration → 40 travel.",
+   "fingerprint": "sha256:3e26403b5ca40bd08f25aebdc4322f2552c3d6ddb529ac8dd9b19c95cc241396"
+  },
+  "b17-warrior#254": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 150 narration → 150 travel.",
+   "previous": "sha256:06c01fc0d267019a4e3c4f8a500fc30e04bf54b56b4e44e78ba6f2d846a173bd",
+   "fingerprint": "sha256:4aef44c1572517d35cb0144d3771487d0c491e208feb6403fbd5bda0badde4bd"
+  },
+  "b17-warrior#258": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 30 activity → 30 activity, 15 travel.",
+   "previous": "sha256:9d0911f34e03a5fa211f39377437940878c874bca6563837879d1b28e96f712a",
+   "fingerprint": "sha256:8238bdb16186073fc49bbbc6bbbd8279057ef4209ce010d38b14da20c1a5f64e"
+  },
+  "b17-warrior#262": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration → 15 travel.",
+   "fingerprint": "sha256:db3bc296aedbc743883e8cbe77d124e6eda4f9090d37398c8aea078227693242"
+  },
+  "b17-warrior#270": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 720 narration → 720 travel.",
+   "previous": "sha256:1f7cdede6deeba7c592714adc41b090e5758a9152c1b8e345ce024eacd8d27d2",
+   "fingerprint": "sha256:4bf5ab4a2876e3b2cfd4bd6ff7f741592bb4dfef150fab728f6672dc70ad12f5"
+  },
+  "b17-warrior#272": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 90 narration → 90 travel.",
+   "fingerprint": "sha256:da01dca957f89e65f45101a89a785b1cc4ae904da64dcb82d9318a183602052d"
+  },
+  "b17-warrior#274": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration → 15 travel.",
+   "previous": "sha256:dd6a864999b09d87861bab0c8830e31a8dbcd429e423f189f6e41a358044be42",
+   "fingerprint": "sha256:947a9eacebea44d7a2de8cf6e8678d5815597ead4c9ad3f8cd079356a87a936e"
+  },
+  "b17-warrior#284": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 activity → 15 activity, 15 travel.",
+   "previous": "sha256:9aafa89eb2db9efec04442b2a2360cb05ddcb19d89046040e587ebcdfb62c776",
+   "fingerprint": "sha256:94335fa169bede30c8d2b076e7481c4a5279287ce7a37d5b8c4c1f31d3a5f2c4"
+  },
+  "b17-warrior#292": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 180 narration → 180 travel.",
+   "fingerprint": "sha256:d224c120f0d0c80655f16315a0a1e441304e4cb2023e67f3d5a44f713ec7cef7"
+  },
+  "b17-warrior#294": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 120 narration → 120 travel.",
+   "previous": "sha256:fb67ac10662c4f31e9f7bedfe8531bd5aca15fa2eba668d63eec039ef2ac2d8d",
+   "fingerprint": "sha256:e276448c7a460c4dbd41336c432ab374271de6e3cd1845f112b1d92b2eff789c"
+  },
+  "b17-warrior#296": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:30c023d42c30f2417e0e1d23d49ffb9f657fc6e628d2a6e7d1c5d1ce6825fcff"
+  },
+  "b17-warrior#300": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 25 narration → 25 travel.",
+   "previous": "sha256:db6833785667f1507a9d927472a9f4e212310b1534dc4430b08b34033cbf2fdf",
+   "fingerprint": "sha256:bf38b9c6dc14c7775a7588a44dce6ff32b2b85f4d2e6f6cf79437d1a19b04683"
+  },
+  "b17-warrior#304": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 60 narration → 60 travel.",
+   "fingerprint": "sha256:af4c2386672cf564284ee12121a8ebccdc3b1bf25bf42d34e639907c633aae38"
+  },
+  "b17-warrior#306": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:bc42b9056b0ef046ecca7b441caefa77a3124b22611c6334d589b36a0495ee4b",
+   "fingerprint": "sha256:7bfab6d96127bbc13b3c84419103e173b87331cde04115de45cf48e9be74f63a"
+  },
+  "b17-warrior#336": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 240 narration → 240 travel.",
+   "previous": "sha256:ffdc8e2e8117ed0616063587795911a4acab9dafc96b763dcda7a452ca7d2778",
+   "fingerprint": "sha256:54e14f5c0bae95460a1e9aa4554be8294c5fc0d982f4810c60163c41b3a7ef52"
+  },
+  "b18-mage#6": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:fe4654446d04583edc35c87917c8c70a4bad9effba639fe117d63eb11f77f9ce"
+  },
+  "b18-mage#9": {
+   "category": "219 branch register",
+   "reason": "The Guild records the disclosed name Alaric.",
+   "previous": "sha256:441106f58b9c1947e0f756ccd2b0c2d00e179b2e6512d203d68054eae0a103ef",
+   "fingerprint": "sha256:093eb057ec53c94fede52bde571d23d7616acb34f72010de7f433e40298a1302"
+  },
+  "b18-mage#16": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 90 narration → 90 travel.",
+   "previous": "sha256:fd407c1c46f36685fc0533d0ef1d5a7ecc581726ed9abcc1087394688384d7fa",
+   "fingerprint": "sha256:752c526b1ec853494f2546fdbd5fa03f893890c4a6fe9f7718739cca9edd2730"
+  },
+  "b18-mage#20": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 90 narration → 90 travel. Journey MP for pc: 93 with remainder 1200/6000.",
+   "previous": "sha256:4a827b47630cc5b29b46daefbde8d62665eef1cd17198c8fde60f54391506143",
+   "fingerprint": "sha256:0b944e33af5d2be12d898ecba9f16dadd16d9016a1a46b24da2ab98fc2ff773f"
+  },
+  "b18-mage#28": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 40 narration, 20 travel → 40 travel, 20 travel. Journey MP for pc: 90 with remainder 4000/6000. Journey MP for pc: 93 with remainder 0/6000.",
+   "fingerprint": "sha256:5e32aad4d06e3f9d4b6302629c28a1a3080bdc28830de6bbf40e05b262f4b4a8"
+  },
+  "b18-mage#30": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 10 narration, 5 travel → 10 travel, 5 travel. Journey MP for pc: 87 with remainder 1000/6000. Journey MP for pc: 87 with remainder 4500/6000.",
+   "fingerprint": "sha256:7f6baa545212cf1267885a49c9f59a8329817e6a5220b56490590ecc2a89fde0"
+  },
+  "b18-rogue#6": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 20 narration → 20 travel.",
+   "fingerprint": "sha256:8749ac13f91698fbf582863aa1f4622b74e876be5d1ae6fe80700fe9099cfe8c"
+  },
+  "b18-rogue#9": {
+   "category": "219 branch register",
+   "reason": "The Guild records the disclosed name Alaric.",
+   "previous": "sha256:db7dee7ba89420138d46fab64ea1bf8112e2216474e6b91b41e66eea54cf5222",
+   "fingerprint": "sha256:da69db61ceea17c627cc921deeeb2ff8924146fc947d6bee9f509824d10209e0"
+  },
+  "b18-rogue#14": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 70 narration → 70 travel.",
+   "previous": "sha256:aa3bc530c74e65f5f31c3325d92871abfb6874d65580c3f3bd31ea2ed8653541",
+   "fingerprint": "sha256:64495f0e8872232b26f9a55f1b8ca9e56d47df4fef64cb0af60c73ca427943b2"
+  },
+  "b18-rogue#16": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:3c71c01a79628eabe35e687a61aca0112239c2f816dfd08fe92720640a49b36e"
+  },
+  "b18-rogue#26": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 330 narration → 330 travel.",
+   "previous": "sha256:e30c6153415ef834e825b7b3b61dd9a9dec577f42c800caada31688ee92eaced",
+   "fingerprint": "sha256:aec1d29070c8d67f9f1b903b3bb5358122f619ddab2df0ee3016252c3be55573"
+  },
+  "b18-rogue#36": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:1c43cf03b605b25fd9911ddb82dee0b0a2e13a8eb0c9f6ac460908a0d4f7b22a",
+   "fingerprint": "sha256:9ea6deb8a39836ea2914c67c8152870dfaaae14bc5d8a346edba915d46c8a4ec"
+  },
+  "b18-rogue#40": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 60 narration → 60 travel.",
+   "fingerprint": "sha256:bad5c71bcc968b7db413aab0b0e427bf2edbf4a2e266e5ee7abef394e052c8d8"
+  },
+  "b18-rogue#84": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 40 narration, 20 travel → 40 travel, 20 travel. Journey MP for pc: 86 with remainder 5600/6000. Journey MP for pc: 88 with remainder 0/6000.",
+   "fingerprint": "sha256:13be44998dc5e85d2dea4b6eae454508a0b44af44d0c140913e65e719b6c40e3"
+  },
+  "b18-rogue#86": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 85 with remainder 600/6000.",
+   "fingerprint": "sha256:97f035e8d2a6d4a89d7993dbfab39269b646906d4a3ac7bb2117151f924f5a6c"
+  },
+  "b18-rogue#94": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:b6c88fd0d0687dcf14349e7a31d6a85d54c2bf891f5f92ba6a45464a44c88ae6",
+   "fingerprint": "sha256:27ae88943e3c5f981a02feb51edc3e2070a34b6f4677c3e5135d0be37053f2c5"
+  },
+  "b18-rogue#98": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration, 45 travel → 15 travel, 45 travel.",
+   "fingerprint": "sha256:84242ae5b8e3773d7158b814012051e86612118a23dc16a2735103930da9825e"
+  },
+  "b18-rogue#100": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 10 narration, 5 travel → 10 travel, 5 travel.",
+   "previous": "sha256:72ff80f579f04e754d8fa3598b0ba4c3c274df9e4278e987ac661c2709c8978d",
+   "fingerprint": "sha256:5c0cd55f7ab4a5860f92df0e94ab3dc89fb6c1bdbee27d9fea9e546192c401ff"
+  },
+  "b18-rogue#120": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 120 narration → 120 narration, 60 travel.",
+   "previous": "sha256:b82ddcd78ee89d43265c88df5c2ced1bf18c252a8698a1f20856252bdcaf0581",
+   "fingerprint": "sha256:f33d144ff24f41443fea6e032b0c5e4feb1d87e08096e12264443ed4b2c5d908"
+  },
+  "b18-rogue#124": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 30 narration → 30 travel.",
+   "fingerprint": "sha256:4f7b721bd980f6bfff81e59ebc03c8e6bbbd82053dee4d9fc9657c17491a8c62"
+  },
+  "b18-rogue#128": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 300 narration → 300 travel.",
+   "fingerprint": "sha256:eb2ccb464f86d7e7c431b5bedba211f547db7592b0277bc151ce673dea5b0475"
+  },
+  "b18-rogue#130": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 10 narration, 50 travel → 10 travel, 50 travel.",
+   "previous": "sha256:ba905abd0f61ce748f6472712fc689e5594abfa146d8c102e8cdffd1d4e207e1",
+   "fingerprint": "sha256:381afde08a4ed83df3abd119cee70fc45778ba06b200526f53a3eb0c5107ba54"
+  },
+  "b18-rogue#140": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:27bc1e8035ce12ba5ab7c372236f221be2c8ed207b26fd0e3f47c4d8c66e20d0",
+   "fingerprint": "sha256:5cdbe9e7f973fc8f3eda17c9cc914ed01a98ce918d51168f585e4400d4426ff8"
+  },
+  "b18-rogue#162": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 75 narration → 75 travel.",
+   "fingerprint": "sha256:b76fe492ffb74926ec9e78793096ab2e2eb7311ce645a33a3ae0991d5f1fc112"
+  },
+  "b18-rogue#168": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:fc2ebb9ad2886663d54a4f2ea8fa5a86c66e41a87044b17971f6c329671a2087"
+  },
+  "b18-rogue#170": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 90 narration → 90 travel.",
+   "previous": "sha256:d7f15ec00a32c0f9d893f47178703167ced9ed287d9a8472060ecc927dd62554",
+   "fingerprint": "sha256:de8a6b0bea3e5cb0c16915aa35cf717471d5344e73e24150c3472538291c8cd4"
+  },
+  "b18-rogue#186": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:16a5779b3cd7d7d43922066d64b63c8eab90fd2ea2640b9692121c6a494503ac",
+   "fingerprint": "sha256:36505b1dcb5c8a2e09c10c176ee0322e22a1320598327755ca19c1fa58abbb41"
+  },
+  "b18-rogue#190": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:acb749789aaa41b21222622501c740b481a74d32ae789843310b0736a673634a"
+  },
+  "b18-rogue#198": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:47cc5f39ebe1429a21622d981b5c0b0fdcde9650b56d8d46642f1822797e4fce"
+  },
+  "b18-rogue#202": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 25 narration, 35 travel → 25 travel, 35 travel.",
+   "previous": "sha256:e9c564d2c7b4de83bcd1350b2ec9951ccf7c8e923f418ecc68c34a7fe3eed7d6",
+   "fingerprint": "sha256:9f36b03552cfede031d1400121a81b8bd16a0228726f74213a57a4234abede5a"
+  },
+  "b18-rogue#212": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 10 narration, 5 travel → 10 travel, 5 travel.",
+   "fingerprint": "sha256:465349cc51673ca1c3bd3a7bd9be11e1ab324220c294cb8c7596823ea84bfebd"
+  },
+  "b18-rogue#248": {
+   "category": "219 attributed time",
+   "reason": "Clock: 20 narration → 0 min. Unbound minutes (20) refused: time_authority.",
+   "previous": "sha256:02b960268df65ff3e2edba2e1d9c636a2f1a96c091a9de927a6380f0b167b51b",
+   "fingerprint": "sha256:26325da7baec7214f34ad48451799541b078cb44247f210b861d91f7fa2a6078"
+  },
+  "b18-rogue#256": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 100 narration → 100 travel.",
+   "fingerprint": "sha256:5d99f840ec7d867aff816c391aa02b81e47021d26e0c423e39f742769dbe417b"
+  },
+  "b18-rogue#260": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 20 narration → 20 travel.",
+   "previous": "sha256:54c7ba7b119eaf2b9e8b7611fde77cb30a1c79fa766a53378fbb24f20b72c3e6",
+   "fingerprint": "sha256:75cf25dcd7af2294876c48d914dafc04503381563c23bd494c53344567b35b54"
+  },
+  "b18-rogue#268": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 600 narration → 600 travel.",
+   "previous": "sha256:75018568f211cfbee5d918b9754b602a84ca753a677923a1585606d3e055fd80",
+   "fingerprint": "sha256:b1b455e0c14430ea4913c9d9a97836b28274eca8a4283d99778c49c5ea37ac67"
+  },
+  "b18-rogue#270": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 30 narration → 30 travel.",
+   "fingerprint": "sha256:72a60d64b43fd6db9879d25ecbbdc9c7fb6786d006c7cd0b4b40c4ea043f8f36"
+  },
+  "b18-rogue#272": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 75 narration → 75 travel.",
+   "previous": "sha256:0bd3aedb3f8ed160538883ed7eeafe1ee3efa1e168868f0efedb41775a81503e",
+   "fingerprint": "sha256:629c0aa405bbb93b8e2d41256ee7608b5ce2dfc0957a7139212d2a3d49978e87"
+  },
+  "b18-rogue#308": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:2f42e55ecdb9658afde141f062d9aa4aac314a90bf647cbb3e0ed6140a61d963"
+  },
+  "b18-rogue#312": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 300 narration → 300 travel.",
+   "fingerprint": "sha256:eaddbc56c9bd4c7bb4973ff460e05a0fa206f5f7b38160d91d2df6789070b704"
+  },
+  "b18-rogue#316": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 600 narration → 600 travel.",
+   "previous": "sha256:2aedeb03fa003f17ed6bf9aa86ac3ed7d6d95f5cf1618f8bab2394d3b1ddb1f4",
+   "fingerprint": "sha256:22889d91494888678253ec212f350d1c054db16c1900a22364ea8df034695302"
+  },
+  "b18-rogue#320": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 35 narration → 35 travel.",
+   "previous": "sha256:54b6b6b360c2cd1d1d6400e6f1a17ffceef8dbab19238e8b7d1987870f2a8d40",
+   "fingerprint": "sha256:a167146a3c19a6f52494002b3aaa774b54e3098e520e309ba83ddda87cb9e7a2"
+  },
+  "b18-rogue#328": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:0e0df7ca0807cc2be268d1731539c952ed8e9795ca16d1b26bad299e6213a15b",
+   "fingerprint": "sha256:7d5cfde963b154e663075f76ff07af5750d6aa28b6812bef5aefcd724c4fa7cc"
+  },
+  "b18-rogue#358": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 12 narration, 3 travel → 12 travel, 3 travel.",
+   "previous": "sha256:11766dc87d6e7650d073438d340a9255aad13e8a07eb170c3f1c20bb90159dda",
+   "fingerprint": "sha256:2db5840136cdc8f2b72fd7593c5ac8d44ec1cce73966aafb43a648c64347560e"
+  },
+  "b18-rogue#372": {
+   "category": "219 attributed time",
+   "reason": "Clock: 60 narration → 0 min. Unbound minutes (60) refused: time_authority.",
+   "fingerprint": "sha256:438831db6edd0c959e201978d5e9b11227e2c0889b5b0643b57b9ca428b07d7c"
+  },
+  "b18-rogue#382": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 60 narration → 60 travel.",
+   "fingerprint": "sha256:9f6e5d008ab44216ebd23b4f230fcf8fa092e2bab839cea7feb11780d0168b20"
+  },
+  "b18-rogue#384": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:2b9d28593493067d0346c9396940adacdbc2573d4cbbe3404a373e3844d0259c",
+   "fingerprint": "sha256:f8dd671258b61274fdef57e1ecb58ebf94784ae3116694851c64632a2116c25c"
+  },
+  "b18-rogue#390": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:86a6b2f5771cd2cdb5cc92eaa84f5fc4a45feb93925e44646afd9179f371aef6"
+  },
+  "b18-rogue#394": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 10 narration, 5 travel → 10 travel, 5 travel.",
+   "fingerprint": "sha256:b55661f1181298d8f5693b57c3d467d134faa5728790770bda6c28600ed7f371"
+  },
+  "b18-warrior#6": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 25 narration → 25 travel.",
+   "previous": "sha256:fab5c9087dc07b30db5c5f1df69ca9d5c45b9600f55cd42097f42ebf831924b7",
+   "fingerprint": "sha256:67ed7888c6cc556e70fc79a2e93dc1b28434befcf52fed5545fcd1e3513b8779"
+  },
+  "b18-warrior#7": {
+   "category": "219 branch register",
+   "reason": "The Guild records the disclosed name Alaric.",
+   "previous": "sha256:d74b16b4d6308178a44ed139f1c797f7037bd79e87f14deeec3e90e30b1ec270",
+   "fingerprint": "sha256:a63f78376d708b76a7e326f5b6a4deb3880596b09b8cf66393c2433e40bfe2ba"
+  },
+  "b18-warrior#12": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration, 45 travel → 15 travel, 45 travel.",
+   "previous": "sha256:149fc65c5cd2a6c01737347084ab5fccc2f759e375f6205a16482a96787c8c0f",
+   "fingerprint": "sha256:7725ece2254f528ea6b3f991be0e1e17061378f44321a3d629a2af6218aaa4e4"
+  },
+  "b18-warrior#14": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:f13743b56b53f77d365f5c9760a1c4e775ace5f772487f7665a83abcf08a0253",
+   "fingerprint": "sha256:4b789dd423ec0288d242acf5019c884dd67b104693f4a56d4a41d6e3a28fbf5e"
+  },
+  "b18-warrior#28": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration → 15 travel.",
+   "fingerprint": "sha256:8f165aa37dc1d2a33e8759724b9b9ad6048032ff9e616602d60289d2200ad52e"
+  },
+  "b18-warrior#30": {
+   "category": "219 attributed time",
+   "reason": "Clock: 20 narration → 0 min. Unbound minutes (20) refused: time_authority.",
+   "previous": "sha256:fd0ad86637feae1170e54916cb08d578605736c743ae45a6ea32d1827f863974",
+   "fingerprint": "sha256:ab2a06185b3231d92e4a400f426e79f84b678af4f4e98321f92199091b99cf71"
+  },
+  "b18-warrior#32": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 75 narration → 75 travel.",
+   "previous": "sha256:6fa61282fa385325d50823a3f44bf45329509468a805446d3874cce56c5dc305",
+   "fingerprint": "sha256:3914ef81f2d1208c5a14112f2e60dcedd433d0773e0d0e53552aec58ab3183f8"
+  },
+  "b18-warrior#36": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration → 15 travel. Journey MP for pc: 85 with remainder 600/6000.",
+   "previous": "sha256:dcd8bddd2a4295534b85fd859cfb7bdf344d98323b235564e39461b4d0023f0c",
+   "fingerprint": "sha256:51dee41b18aefe7996802809a5c0e92bc60c788837589ff1fd8de96fa28de3b8"
+  },
+  "b18-warrior#60": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 8 narration, 7 travel → 8 travel, 7 travel. Journey MP for pc: 84 with remainder 3520/6000. Journey MP for pc: 85 with remainder 600/6000.",
+   "fingerprint": "sha256:afdc4adcfbb03525b9385ff79ed93c7331bd86aa1f3258d0e6262d308f98e5aa"
+  },
+  "b18-warrior#64": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 60 narration → 60 travel. Journey MP for pc: 88 with remainder 0/6000.",
+   "previous": "sha256:f7b6c43b9e0e4614ff283029f74a173ea33856e3499089b26016d3ff446d0e12",
+   "fingerprint": "sha256:ee6ccdff2bf94df354ca579fa2f887388d70e1dfcfe10ef93b4fc141033b2d72"
+  },
+  "b18-warrior#84": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 85 with remainder 600/6000.",
+   "previous": "sha256:efe889d3512edfb780987c4c4afce0fa59c3ebfb1f0f5deafc424dd06922f23d",
+   "fingerprint": "sha256:c3cb31882e8323415e1e0e6e2523ea75f2542be8113fe77c66bedbec96d4816c"
+  },
+  "b18-warrior#106": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 45 narration → 45 travel. Journey MP for pc: 87 with remainder 1800/6000.",
+   "previous": "sha256:af8ae12bb76c268c9dd4358be8ac0272bc04413aa2d201a902c1c13bde387565",
+   "fingerprint": "sha256:229011f37175fac0a46d06b4b53672949c27d550a7e10ef747c4dc56bc2be36d"
+  },
+  "b18-warrior#114": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 40 narration → 40 travel.",
+   "previous": "sha256:2172520a0b5641c70fc4f5e394b98facc17eec88176fe0850fc252964837781b",
+   "fingerprint": "sha256:e33b69c23dd215f91974066ee91faf02736f5cefb7adcbf2afb31139ec0e5a16"
+  },
+  "b18-warrior#158": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 93 with remainder 1200/6000.",
+   "previous": "sha256:047e10a738b5c198c563655c934c67d8b1774d4eb250f1ce9fc7e3394e5e0cf5",
+   "fingerprint": "sha256:314325eaca5c60c2c72bdecb19081fa03bd231977aa06211d89574de7f717ab6"
+  },
+  "b18-warrior#164": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 89 with remainder 1800/6000.",
+   "previous": "sha256:90382832b1fa3282511cc2653ac836a6c6272dcd369b28632728b996e9b22f1d",
+   "fingerprint": "sha256:28a8c0d4eca214425178cc7df82f351f31fec22e9cf9bbc4ccb8f40f73a25ad1"
+  },
+  "b18-warrior#170": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 10 narration, 5 travel → 10 travel, 5 travel. Journey MP for pc: 88 with remainder 5200/6000. Journey MP for pc: 89 with remainder 1800/6000.",
+   "previous": "sha256:14df7d70283f16a3a8d95e23ffcd270e5c9bb9a53e881e91b891690e2fa22168",
+   "fingerprint": "sha256:a1546853b236ed4fccc8dc44967fce5b5b57b7232d1870103013044ca18cc992"
+  },
+  "b18-warrior#178": {
+   "category": "219 attributed time",
+   "reason": "Clock: 20 narration → 0 min. Unbound minutes (20) refused: time_authority.",
+   "fingerprint": "sha256:155879c2c47657283844ba80bed7ae8cc1f805a02d8441231a174dd5b1199b43"
+  },
+  "b18-warrior#180": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 20 narration, 40 travel → 20 travel, 40 travel. Journey MP for pc: 89 with remainder 4400/6000. Journey MP for pc: 93 with remainder 1200/6000.",
+   "previous": "sha256:774e7ad9f2e480976001a737ee66bbf25cbbb8c4d2a4a23f436e0c04a20d361e",
+   "fingerprint": "sha256:952195b9f689891f2d24b93a715a3971ebeb20851ba4854f4366881f5b991995"
+  },
+  "b18-warrior#188": {
+   "category": "219 attributed time",
+   "reason": "Clock: 45 narration → 0 min. Unbound minutes (45) refused: time_authority.",
+   "fingerprint": "sha256:a23c7eb417fcd1c4352884078f38cbc89609658c813c727fe8cc3ace21d094fc"
+  },
+  "b18-warrior#192": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 60 narration → 60 travel.",
+   "fingerprint": "sha256:a1ad2fff003e34b5555328f04f5420ca3ab2f3687cdd3e52e4c9679a0413f4a5"
+  },
+  "b18-warrior#196": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 90 narration → 90 travel.",
+   "fingerprint": "sha256:ee6451df07a16d1e4e1b8827d2a7348adce6ff721db7c903e05952752ba77d64"
+  },
+  "b18-warrior#198": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 10 narration, 5 travel → 10 travel, 5 travel.",
+   "previous": "sha256:874f0c77389c18184146d69246aa47c03c023a5048697fe2537b2f87da7feee7",
+   "fingerprint": "sha256:6d4a9b48c2a52ae59e55812ff549f99a1ecaca0ba6644752189e52d413f9b75d"
+  },
+  "b18-warrior#202": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:0d570a3717d4c4e383361dbdd44722349e54026e215ffaa699b555eb619dab71",
+   "fingerprint": "sha256:cbd1072fef24e22a7cd15642c15272c6d0bd04d67ca886e0e42153d0886b17a1"
+  },
+  "b18-warrior#220": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 8 narration, 7 travel → 8 travel, 7 travel.",
+   "previous": "sha256:3bae5354ec684511a18604013bb8318051bb13c36473b1fab1b301777c6d5304",
+   "fingerprint": "sha256:64bbf3f8afd49513318089f08f86abb0bce84c012ff02704b66da6dda3dcb8b9"
+  },
+  "b18-warrior#222": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 200 narration → 200 travel.",
+   "previous": "sha256:73c7311f244dec445ece389b3edd1c7a28a46b509e503aea20435c6be11f3fa7",
+   "fingerprint": "sha256:89075ac06cb48f9a2fc001b4ebbd2c19c767bd4cd434cd53ebd54837211a3ffe"
+  },
+  "b18-warrior#226": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 45 narration → 45 travel.",
+   "previous": "sha256:dc7b4a0a7070de13b90e5869829f37f7724a6dc466bbe0fb7f4a978f7ed12002",
+   "fingerprint": "sha256:60e4c65491433fa4d98040bad8c1f095f022a402313a4f1ef3a4c083dfef630f"
+  },
+  "b18-warrior#228": {
+   "category": "219 attributed time",
+   "reason": "Clock: 20 narration → 0 min. Unbound minutes (20) refused: time_authority.",
+   "previous": "sha256:6cb5711abf63705b8ae5ab8ac47b79e6e5436b0ce90dba571ad1f46873f3a4e2",
+   "fingerprint": "sha256:af70ced67579e1ad8d4ca3624e82b5d640d26ba5ed6be2a7b4d5f026092ad8dd"
+  },
+  "b18-warrior#230": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:93f14187ac4371c62ffbe10bdda3bca7be8aa6472351bc87d640de1eba1c9a3b",
+   "fingerprint": "sha256:4176d9092f20083f73a6eb751a2bfbe30c065a3e50b57c36c28eb2b2913c64db"
+  },
+  "b18-warrior#236": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 8 narration, 7 travel → 8 travel, 7 travel.",
+   "previous": "sha256:f6768b23b9be2bfbbfe85ad0e277f494240283cc35ea5ebb0f8cf03155b5d192",
+   "fingerprint": "sha256:1097c07c4d6cacba2df3b46009b531a6fc8f86178fd3fc88f25ca6ede72c1f7e"
+  },
+  "b18-warrior#240": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 45 narration, 15 travel → 45 travel, 15 travel.",
+   "previous": "sha256:e912c242e10b194011f7ce26573351902d54876ba3e245c1632b5e9e3fe8c3e9",
+   "fingerprint": "sha256:82d3ed598538a4f6664a99df1521992ac67e5fd9eba50669f2dd7238ebb5d4fc"
+  },
+  "b18-warrior#246": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:41ae85e7d4c07a538a4e3ab0b7f507c15abf9d19678f03465b024215dcba5c47"
+  },
+  "b18-warrior#252": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 60 narration → 60 travel.",
+   "fingerprint": "sha256:feb2afe23646d2ca9c82ab1c992c1801ce8f091f7f4839cfd2b427036e624490"
+  },
+  "b18-warrior#254": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:ef98f969608182d9fe36da48ba616b64d0e7a190d5c08ae81dd60cc7d387318a"
+  },
+  "b18-warrior#256": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:7bd8e2ab2ea53723bee9841e29c6e872fe16bbde1bb86bd2e284b529221e4906",
+   "fingerprint": "sha256:22f16509b912e5f6e5c3bc6fa479f03432cb62fb94b3e8e79b06d05bb0a04b89"
+  },
+  "b18-warrior#260": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 660 narration → 660 travel.",
+   "previous": "sha256:21ed9ba33beac5c2af65ce8a1cb3c853f63251c68ca9424592305fef49546410",
+   "fingerprint": "sha256:7b2782411807836404775ac854dca5acf0acf0efd0800a5cfbc0e1f6972c20f3"
+  },
+  "b18-warrior#262": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:dfc0670abef0204e608004f868c0e61ddd232bf670735a2827778ddad66cde40",
+   "fingerprint": "sha256:82220e640a6cc955bee44c53d6499ca910f03112474c40ed6df74c5a21d5feeb"
+  },
+  "b18-warrior#280": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 20 narration, 40 travel → 20 narration, 60 travel.",
+   "fingerprint": "sha256:5aeebdd612c9f168a87ec90e8085758e7dba2ea185c1e4a5944cbcc06fda46e6"
+  },
+  "b18-warrior#282": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 45 narration, 15 travel → 45 travel, 15 travel.",
+   "fingerprint": "sha256:2ccb1f6c240bf250c9b453fcaf2e1c8e7c79758f7dcb2d6e4bcdc455644eb709"
+  },
+  "b18-warrior#314": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 90 narration → 90 travel.",
+   "previous": "sha256:d268b5aadeaaba1bdad104777b2ace3e7848eec9d1edcb6ee36d24005d47fefe",
+   "fingerprint": "sha256:31db2dead93bb933b4588999b14fb16f71b9e8e3a3e7f96ec031de0543d677f4"
+  },
+  "b18-warrior#316": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:fafc0450625d7439a777b49e22e546bd2e969d5fbf9a95ab56ed9e885e5a061b",
+   "fingerprint": "sha256:279c5415399e96ffe122867544a65483973918fe6b0c690dd26ea8aa10d26728"
+  },
+  "b18-warrior#326": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:dc4b55932b5d9cc107cbfe90e2d7745065d961f84276974189235cf425c62229"
+  },
+  "b18-warrior#332": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 60 narration → 60 travel.",
+   "fingerprint": "sha256:a597e98199144a39194fda514bff8187100ff3a277ed724940bd17034d3d1c45"
+  },
+  "b18-warrior#360": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration → 15 travel.",
+   "fingerprint": "sha256:0ba00a91e76c9988fd2a6c695d55c9975e1241af8fb3f83859cda36473a01462"
+  },
+  "b18-warrior#378": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:7e86245c5f72aa1198604c9d87ba52cc0c0a9defc063db49c27a7afd120a7d1e",
+   "fingerprint": "sha256:77ec7b44e3936579c8a0558956fcb2d05df411c8bdd47d4b9fc8677e62fbe794"
+  },
+  "b18-warrior#386": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration → 15 travel.",
+   "fingerprint": "sha256:dc91b2d9a333a0edc48385ada10078035ab37a535605cec8bce73905f15f8d73"
+  },
+  "b18-warrior#392": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:fe75c375303f27f528e0ec38e51e6b23913af1ddb559786809068e36d8e9fdf7",
+   "fingerprint": "sha256:f2d0ec10e7790ced934f20dd068adde74806e9be621481ebc0fbb3546d560fbf"
+  },
+  "b19-mage#6": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:9f845ad20a94f878c00c966f585dfc40807727c2b0ddc0edaf9d0f802782fae0"
+  },
+  "b19-mage#8": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:ee7d8dfd455ccb1d764dad8d354a97c10387c721749e12c8b41062b4504558fb"
+  },
+  "b19-mage#11": {
+   "category": "219 branch register",
+   "reason": "The Guild records the disclosed name Alaric.",
+   "previous": "sha256:8f7e4e65321de43bf835dcafde514feee03ef425faaaaebabf5f142af4e32b4e",
+   "fingerprint": "sha256:689229e38ab913290ae64edb26a697738fcadf114d49144a6d8fdab8dc399b43"
+  },
+  "b19-mage#18": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 75 narration → 75 travel.",
+   "previous": "sha256:aeed1f4f1ba74251bc8322fc32a768f2978e3cd2e9f7c77dc3a78ea195adc1b2",
+   "fingerprint": "sha256:bf44e6de64f990f9c257d76122edb89c8b3d9e2da1456674aee26f473ea83845"
+  },
+  "b19-mage#20": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:721689f4f7c53a6758429bc98561f99d61cc15195ed01c532d8de6ef73dfabaa",
+   "fingerprint": "sha256:75c5a34b33434bf76f686785e0c734175285c1826fdb1efee5b96a0f8c5ab55c"
+  },
+  "b19-mage#26": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 90 with remainder 4800/6000.",
+   "fingerprint": "sha256:5bb46810030b11b1a686263bdc887324a9cde864c60714cef045ded91ddae1f6"
+  },
+  "b19-mage#30": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 60 narration → 60 travel. Journey MP for pc: 90 with remainder 4800/6000.",
+   "previous": "sha256:e17e45944e9c1fee637f317bcc85de8d66280aed66d690120c57bb436dec15f7",
+   "fingerprint": "sha256:2956dc636f35dffb87cd1b2ca189f3ed86bc7ce735b86f94e588b5985ae716d7"
+  },
+  "b19-mage#36": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 150 narration → 150 travel. Journey MP for pc: 93 with remainder 0/6000.",
+   "previous": "sha256:0e0a4fc84ef15166ff0bec7972054e77cff72155fc8c20b951f38b2fe82ac505",
+   "fingerprint": "sha256:eeb093caefee96238bc9f0ec20c2513cf59bfb8b0ce2c3c698fc0e6e9c9a8404"
+  },
+  "b19-mage#38": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 77 with remainder 4200/6000.",
+   "previous": "sha256:ba1ad266892312c45069098f55d10a0cdcc684d16dae2575f837344e91813a65",
+   "fingerprint": "sha256:adff3ae5c5d3144d09563db0c8cc96c01e411d14036a932febe0e0102de4c01f"
+  },
+  "b19-mage#44": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 77 with remainder 4200/6000.",
+   "previous": "sha256:03befe7040a07098f11787f1fb7a4871f79ac114cdebb9538dbede1285af86e5",
+   "fingerprint": "sha256:a89bc94e6ceb008b1b81d9b1bdee7daa754440e3603f51916968f6a8f7641ca4"
+  },
+  "b19-mage#48": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 77 with remainder 4200/6000.",
+   "fingerprint": "sha256:d8d3086e4c19ae5aed53f64ba2c1f91bfadc07203394816ef42dd44e739d5cd0"
+  },
+  "b19-mage#52": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 90 narration → 90 travel. Journey MP for pc: 86 with remainder 1200/6000.",
+   "fingerprint": "sha256:4900ceb646f03c0eab7a20544ae486955d0d162f31345367a12079fd5e26b15a"
+  },
+  "b19-mage#54": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 77 with remainder 4200/6000.",
+   "previous": "sha256:d349aac704cd8c35d1b8cd8892456923805fb2d33aad5cea625e113a173eba10",
+   "fingerprint": "sha256:fdb10b004e2a35e484631e6bc2d1256dfb68f8b4fe6f43328638e23fd380fe48"
+  },
+  "b19-mage#62": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration → 15 travel. Journey MP for pc: 58 with remainder 1500/6000.",
+   "fingerprint": "sha256:5c5c48415f8ed51121953ba7f167dfa77c5491dcebb09a13002be5686c4ba1a8"
+  },
+  "b19-mage#66": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 25 narration → 25 travel. Journey MP for pc: 59 with remainder 4500/6000.",
+   "previous": "sha256:31d6611641100c4aeefa74d15699748a58e6e553576ae1b926b438951277848c",
+   "fingerprint": "sha256:0e5a9adf7a071a0191615158182a063f3d7b43021b22f7483bd42e19c48b7fe3"
+  },
+  "b19-mage#76": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration → 15 narration, 15 travel. Journey MP for pc: 40 with remainder 5700/6000.",
+   "fingerprint": "sha256:f9bfc9c778215c7fa87c3485c34939ed645a02271982995bf45102fa4be7ba1a"
+  },
+  "b19-mage#80": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration → 15 travel. Journey MP for pc: 40 with remainder 5700/6000.",
+   "fingerprint": "sha256:3afd3b3eeaf5d53fda61c14898a36d5d2575895d770303d733d09e8b3f30c5f5"
+  },
+  "b19-mage#84": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:ad7f9b365d21df8d806a4bb2d31ea51d5452afbd3bb7e213fae200845d1b2a14"
+  },
+  "b19-mage#88": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:22a3bce66e13cc80ff2e1a5338fd609c804b0708d392566a3a7ebaae3823ad7b",
+   "fingerprint": "sha256:b56122a46b9c35a6d8073fff2b3259eaf0c144488545d06b3001e0d5ae6b9924"
+  },
+  "b19-mage#98": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 230 with remainder 2400/6000.",
+   "previous": "sha256:606e4078afa7567be3249560f60106d94dba04a035e1177d829a1f0911a01ab8",
+   "fingerprint": "sha256:5984ed4667f1b963b951214b9868cb4428f9665bd90e5a2a8f5d869d4dc87391"
+  },
+  "b19-mage#104": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 221 with remainder 600/6000.",
+   "previous": "sha256:a5ae5df1e79664ffc0b1591b241111d4b5418b05ec8e073e3baec39811498e77",
+   "fingerprint": "sha256:9f62951d73393d23448cfdb3af9d1123fe3c33d86b4c51ebbfe2eb1e6c049e31"
+  },
+  "b19-mage#108": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 221 with remainder 600/6000.",
+   "previous": "sha256:ad04cfe0315b9c0f775bd79e68c9dd3eba46708f46a0eb0fd526ea926cf8a041",
+   "fingerprint": "sha256:4209fa79de49c51f8dd0890073a4be6693b23fda809e3d092ca0265258f072f0"
+  },
+  "b19-mage#114": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 130 narration → 130 travel. Journey MP for pc: 248 with remainder 4600/6000.",
+   "fingerprint": "sha256:3729fdb2948b75b4d5f168fad17d132977ca704ea342fd7ecf176019cdb5cbc4"
+  },
+  "b19-mage#118": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 221 with remainder 3300/6000.",
+   "previous": "sha256:d73611bc8c3ac02b3421ed6ce1384e873fc836a1f1d71563a628a2093e40bf6f",
+   "fingerprint": "sha256:385992ef8148d5817fed021aa8b903c689145836a68b23bcd52f4a9e900b2553"
+  },
+  "b19-mage#128": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 240 narration → 240 travel. Journey MP for pc: 251 with remainder 4800/6000.",
+   "fingerprint": "sha256:ef43d58eb054b31fffea5074912d754d089acd9db98562f452e6bc57095baff3"
+  },
+  "b19-mage#130": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration → 15 travel. Journey MP for pc: 198 with remainder 3300/6000.",
+   "previous": "sha256:1e9e4305a682f13da8c68d8c306b5d9a9ffd0d558e75ebbeea4101154fb689b1",
+   "fingerprint": "sha256:bfbbbb380ad5aa7c5faa0f5f7728705fcd1ea39c377f0680ccec3b1f943c35bf"
+  },
+  "b19-mage#132": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 198 with remainder 4200/6000.",
+   "previous": "sha256:ef46bc2c513fb632adc0450ef07cb87899a1221b9b0e30bff660ec529ea539ee",
+   "fingerprint": "sha256:1780c27f9e366dfedccd1d8a233e90bf03b97622437996134c8fcd3ea1456ed9"
+  },
+  "b19-mage#138": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 10 narration, 5 travel → 10 travel, 5 travel. Journey MP for pc: 197 with remainder 2800/6000. Journey MP for pc: 198 with remainder 4200/6000.",
+   "fingerprint": "sha256:c2911f2789e988ff17144f3780c3688c60af4964fce29fd20fd9d0f062454ed7"
+  },
+  "b19-mage#178": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 90 narration → 90 travel. Journey MP for pc: 218 with remainder 600/6000.",
+   "fingerprint": "sha256:499e7ddd8cf08b2ac111fc97d07386d01eb8a3dc9f3857394115f01a36182bdd"
+  },
+  "b19-mage#182": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 660 narration → 660 travel. Journey MP for pc: 308 with remainder 0/6000.",
+   "fingerprint": "sha256:21cc8875fef9eb5b005d626203613a34c1abb885bcda04859d33e10703f081f6"
+  },
+  "b19-mage#184": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 40 narration → 40 travel. Journey MP for pc: 205 with remainder 1600/6000.",
+   "previous": "sha256:87401ffd95a02cfc276138c47590d4fc363121ee3ca0059c242ae10446cf0f74",
+   "fingerprint": "sha256:3a7a2dc55b0e46210d0d265baa9b079ab8d24fa7a54011442105844fcc6620c2"
+  },
+  "b19-rogue#6": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:9b33bd5bc3bc4f222746a825a7ec8744b68b216c6d705bbbcef80f6536a6c229"
+  },
+  "b19-rogue#8": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:6c09fcc0b3f60b20df93178ab73f585c66cb033d9104f4ad75b8c4684d3b891a",
+   "fingerprint": "sha256:b6ce4dace33277414fbf0fb19d27167c22de10e00e1e85c8c1a46c8a2de75c5b"
+  },
+  "b19-rogue#11": {
+   "category": "219 branch register",
+   "reason": "The Guild records the disclosed name Alaric.",
+   "previous": "sha256:00b1fdbb001bcc5ecbda4298bed5e4dae021cb746ec6d0bdb18405f2dd6fbfe9",
+   "fingerprint": "sha256:877981f5f25c64ff58e18dd43390dd3fad56f3fdab99859a22c4a71a6a36512a"
+  },
+  "b19-rogue#18": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 90 narration → 90 travel.",
+   "fingerprint": "sha256:06ce98fd966d6db58a06ec93f4bac1a0bee779c97d685f2015eabd5b8aded526"
+  },
+  "b19-rogue#32": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:a7e2f590b2047914d1a944e2c6219bea2a22ad9fea8473973329a4e675a9fd78",
+   "fingerprint": "sha256:c3f6571d93c02f06e1a4ade1988ce404b2e79ae34fd05b2e1ac308d8941210c9"
+  },
+  "b19-rogue#38": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:923cb58514d8dac6b26f66182d55fa84160276cf948460212a0d89ba286a5251",
+   "fingerprint": "sha256:e1369a193a6f39da9500bd6d01542b58c73a8bbb4079c07651939af4db7b74f6"
+  },
+  "b19-rogue#46": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 12 narration, 3 travel → 12 travel, 3 travel.",
+   "fingerprint": "sha256:8160c070416fc6336ba0620eb27485c1d7d59def70bfb23cc31365afe85fe9bb"
+  },
+  "b19-rogue#52": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:4dd43073c06d68707a9265f5a504882b28097d5300696d6c43dc727465f74e9d"
+  },
+  "b19-rogue#56": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 120 narration → 120 travel.",
+   "previous": "sha256:f99af39ac9bbdffc4e7cadb230ec84a99ea3df1dd56e49677da40958e867f288",
+   "fingerprint": "sha256:83cfe36a61e4b92fef19b1100d7f4de25bfc9a958107094ca3c1f08675e286ad"
+  },
+  "b19-warrior#6": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:446eb70e11d153f793d8d887f354960c8e0a00cb306f5439338ada0d03a7a588"
+  },
+  "b19-warrior#9": {
+   "category": "219 branch register",
+   "reason": "The Guild records the disclosed name Alaric.",
+   "previous": "sha256:838ebf2d9399ef7c68e00ef606c7b5cba800a124b6f4de33c32c210227a63933",
+   "fingerprint": "sha256:1277971f8a80b0d74d77c03277587ffe05e4ba8c82c30505e76735e636f41129"
+  },
+  "b19-warrior#14": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 45 narration, 15 travel → 45 travel, 15 travel.",
+   "fingerprint": "sha256:099177d32e65750f6df77b2241cb7f76a279a334efe0248bf4b3196c57a15630"
+  },
+  "b19-warrior#16": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:6d74d454c1b23b59b3a70f396d38cf94ce3c4c9c581477088ff529665f692077",
+   "fingerprint": "sha256:55f973053be26a7a51b56edd6b1ae3ff6ff0b84fb1fb9324a11a946207340688"
+  },
+  "b19-warrior#22": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 5 narration, 10 travel → 5 travel, 10 travel.",
+   "fingerprint": "sha256:6bb24346b74be376b40d3343e4e78b95c26add4938e106fc70a841ac5f9a9e1f"
+  },
+  "b19-warrior#24": {
+   "category": "219 attributed time",
+   "reason": "Clock: 30 narration → 0 min. Unbound minutes (30) refused: time_authority.",
+   "fingerprint": "sha256:ef0a3af5559b21eaf214b5ccf0df88d8289e7e4f6627ab0e187d3686eb69cf41"
+  },
+  "b19-warrior#26": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:a6811077e5da5d385a90d91f572360b2251fc4ff17e1dd5ffd03eba9c6c2d268"
+  },
+  "b19-warrior#38": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:bccc33e7da024786449813b29e91afb449e9ce89e4849f0c572e1cdef1a9be33",
+   "fingerprint": "sha256:cd94a5335739a0dfd73103126c1fcbf4969e12ffb10ba8e02c89559ff518763a"
+  },
+  "b19-warrior#46": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:cba547646603f561f09e02ccd6e618dbfe1729cc9ceeb45aaca0bad8fee809f7",
+   "fingerprint": "sha256:7899b337409009e74e1361c3581ddcfeada86efc94198efdb9fda126ef6395ee"
+  },
+  "b19-warrior#48": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 60 narration → 60 travel.",
+   "fingerprint": "sha256:fba263ddedc04b010bc5b6becaf2606ef8727c691c1052b98cfc622c5d64c7ff"
+  },
+  "b19-warrior#52": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration → 15 travel.",
+   "fingerprint": "sha256:e3c9635f353a2d81e6b008a11ec1dbbe4ba70a64c0710d14131f3178c68763a4"
+  },
+  "b19-warrior#58": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:be2211745c5ef799a6f7e2b38c3766ce8c037d6bc3388d03651ca1dda7581d73",
+   "fingerprint": "sha256:8ee8a0d5fcce12d2ac498c1a9c2ffe950309b0fabe8fa6128b1d7ec07998ae20"
+  },
+  "b19-warrior#74": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 88 with remainder 4800/6000.",
+   "fingerprint": "sha256:6b74e22fe9888c5ad10d91297033c56f4f0bc4bb6399a08adfc4d30177ede945"
+  },
+  "b19-warrior#76": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 3 narration, 12 travel → 3 travel, 12 travel. Journey MP for pc: 84 with remainder 1440/6000. Journey MP for pc: 85 with remainder 1200/6000.",
+   "fingerprint": "sha256:a54fe4b51a6348d7df535b1a697b5b3b8f53a0cf8496abaa1050eb34a0562627"
+  },
+  "b19-warrior#80": {
+   "category": "219 attributed time",
+   "reason": "Clock: 30 narration → 0 min. Unbound minutes (30) refused: time_authority.",
+   "previous": "sha256:b347ab1b1ae855521c78b432b8c438da00de66a14666bb115f3e57e80866c9a9",
+   "fingerprint": "sha256:7ed813482ba6908d603e21aae4e343655bd855ab6c6c5ff99fa28161deee5ed0"
+  },
+  "b19-warrior#84": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:4de6f39ed947a687169257f956826f835305c771d0141b55e7c3ac31a5eb2ba8",
+   "fingerprint": "sha256:fd245e27d83f0897633fee7b4806928595096be36469b24a13206e627c1af967"
+  },
+  "b19-warrior#88": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 80 narration → 80 travel.",
+   "fingerprint": "sha256:1ee838616287b2906c0f3e7f0d2ed2d4588559426aa1a0757d50ac926300ebd8"
+  },
+  "b19-warrior#92": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 60 narration → 60 travel.",
+   "fingerprint": "sha256:090a354c4e9755a4206b8386e1a41d42b32bdf7bb1892233e6132acb0d88c2e3"
+  },
+  "b19-warrior#94": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:6bbce2d4900183b7bc51d2c5a62e168cc5203c3c96be86e0950e515fbb80136c"
+  },
+  "b19-warrior#108": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:ff073b50d05a037b54497abec7e2ae293224a02bde17559864da0b2bd114d08d",
+   "fingerprint": "sha256:b7198962bf2bd36f8bb2e633e5f493cdc5ebd95364424754cc8014afa9e352b2"
+  },
+  "b19-warrior#112": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:2ca0f015a7b776a9f38f0a9dcd775aa085538ac4472861ae349f489d3b6bfb94",
+   "fingerprint": "sha256:4936eb7f6ef3bbcf32c5e774ca8836efcec9a0929a440928b56322db29d9ed2e"
+  },
+  "b19-warrior#116": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:d1c819687c3e394feb376c76fe5bd8bdee0edbea9cc1ec3317836b4cdbd68de2"
+  },
+  "b19-warrior#118": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:094288b1d2f1109fdf0d0a77a6e8f75153e96727e22a8993d7590a6ccdbfeff1",
+   "fingerprint": "sha256:43d9c81546b92d936b588608b1e3fa157da566f6493dbe7a046beba1b9cd5fbf"
+  },
+  "b19-warrior#132": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration → 15 travel. Journey MP for pc: 97 with remainder 1800/6000.",
+   "fingerprint": "sha256:949b96e3b33fe344fbe56838bb760c68a6619f71c7aee0062216d7437bb34c55"
+  },
+  "b19-warrior#134": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 15 narration → 15 travel. Journey MP for pc: 97 with remainder 1800/6000.",
+   "fingerprint": "sha256:2dab7fcaf0e289b48769ab84c361026a7e49a61797b2c0322f3577211defc349"
+  },
+  "b19-warrior#154": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 101 with remainder 1200/6000.",
+   "previous": "sha256:2fc753ab802f4b9d3992671f747ab0ae99688fef79035cf4a83303c6420bf13a",
+   "fingerprint": "sha256:97a4d24fa3bde7d0600fda593d6b0a6631d8bebf245f1197ed66bf47745ce78e"
+  },
+  "b19-warrior#156": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 97 with remainder 1800/6000.",
+   "fingerprint": "sha256:d25b20e7f4aef3ea086f1cb3b99b186beb91dffd8a86775c0245b256b4c7d25c"
+  },
+  "b19-warrior#158": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 330 narration → 330 travel. Journey MP for pc: 104 with remainder 0/6000.",
+   "previous": "sha256:0c366af8bcd87c1aae88b806e182d8cecd6d2974b798a3cba85913df6134572c",
+   "fingerprint": "sha256:389001639452dfc4514adbd09dfcc806f4e2a138c95b1ff4b7df7d83d46dd6ed"
+  },
+  "b19-warrior#162": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Journey MP for pc: 97 with remainder 1800/6000.",
+   "previous": "sha256:6d2f20394eaa70a55e0d99907058438ff64619ca73b870dbd2950c35ac121f3b",
+   "fingerprint": "sha256:4f8953ea4d128be85819ed147db10d1fd4d9f95fce089be5eafa05c63c7ffc0a"
+  },
+  "b19-warrior#168": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:bfe825e820dfee842d1cb7a17ed671712425468c69aa021fb8c8259b4d6ba6fc",
+   "fingerprint": "sha256:6264ae4b02ce485b81fe82ae9d43ce84805bb3b8ca1ccc8e68162e3bb376ce22"
+  },
+  "b19-warrior#172": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:1b1955121a592ed0bfb29b9d575eca1fa5b81ad36cee178b4de763050fbe49a2"
+  },
+  "b19-warrior#176": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 60 narration → 60 travel.",
+   "fingerprint": "sha256:d44e634b19161fa4199065d8d8f88cc28ae6b0a36a54701db180f2a30acb7462"
+  },
+  "b19-warrior#178": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:3bb65c05b9bea22f216a7ed244c18728cb518f375699b346e3df7bdd7ce36b9c"
+  },
+  "b19-warrior#186": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:b87d8932cdc24e5d7b4e17786ad057cf6b7cd794155f0b4044e8916c567a0eb3",
+   "fingerprint": "sha256:fd0f69a43d1d3e478108a54aa097e0d8cda87c1816f333d77dc74d32e5e59236"
+  },
+  "b19-warrior#196": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 20 narration → 20 travel.",
+   "fingerprint": "sha256:b6b8501ff1710fc8bbfe3a8953ac0521be8408145f1d71abdd958b57fae1627a"
+  },
+  "b19-warrior#200": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:ea6d09f9c1819798ac3f48bb1429e86f71e06fdc50fb52bc9629efa0ea9047db"
+  },
+  "b19-warrior#214": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 45 narration → 45 travel.",
+   "previous": "sha256:f8815147e5ee9cb433df703cffccb20e4c5e52717effdf5f8a5528caa5cf4b75",
+   "fingerprint": "sha256:db41492d725c9e64779abba0a75f86820e99d36807e4bceed8fea80c7a18d897"
+  },
+  "b19-warrior#230": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:c227a41604dc02c50d51eeab8805b13fa985bfe9dbece3d916a3e69a06040d17"
+  },
+  "b19-warrior#232": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:0490a5ccffdd8772224c343d21030d4343d5e62dae08f3830ad7d14c0b40021e",
+   "fingerprint": "sha256:bdf94737a1e36f3c2830dccd59e4be454027ce4170ffef92750e79cf27011f74"
+  },
+  "b19-warrior#240": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 80 narration → 80 travel.",
+   "fingerprint": "sha256:898436ad916c5a7153e7ac74679bb231bbcf2c10219d53c4b52bf139bf202850"
+  },
+  "b19-warrior#244": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:06503a34c59a6969e27fbe4c3000c3a2d45571ffe3c136faf75143351b91df06",
+   "fingerprint": "sha256:842f3d5dbb1d270fb68e78215299a88b00eb8a46cf847b2fecd10cba84ae80fc"
+  },
+  "b19-warrior#248": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:6cecfda27b5a9c7dccecc89b84f00d7c276ab2a9f612de219755cd001da4aaf7"
+  },
+  "b19-warrior#252": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:47f1f14feb63e428d4e3b073ff5131fdfdd60c811e675f054931394590c4fdf5",
+   "fingerprint": "sha256:520aaa45c1efc0409b8597879c77afba5243fdee1f85607c07e2ef0a49f22002"
+  },
+  "b19-warrior#256": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:62888700d051b9785e4f92083621fe9582f72423895dc229d9e8f91d3d5710f2"
+  },
+  "b19-warrior#258": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 20 narration → 20 travel.",
+   "fingerprint": "sha256:17729b2887fa7424f3a0d09ac3e03f4d620fa370940de6d53e10eccfcee79d16"
+  },
+  "b19-warrior#262": {
+   "category": "219 attributed time",
+   "reason": "Clock: 20 narration → 0 min. Unbound minutes (20) refused: time_authority.",
+   "previous": "sha256:de13d64c694ccac7a05abae2f7c7ee03ebba7511f9f0476f7fefb13eae0b6395",
+   "fingerprint": "sha256:7601da0d458a80ea42589123c1f7b9fb31f83a8526f5810af21e647f6f1bd007"
+  },
+  "b19-warrior#264": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 180 narration → 180 travel.",
+   "fingerprint": "sha256:f6ff698413d262335642c21374c5d43313a0cc20129934a4ae0dd5704aa1b666"
+  },
+  "b19-warrior#266": {
+   "category": "219 attributed time",
+   "reason": "Clock: 60 narration → 0 min. Unbound minutes (60) refused: time_authority.",
+   "fingerprint": "sha256:fbbdc1ddaa131f75cc21cff69bc33c9074a4fbe4bfdda10c3fe0018408adf383"
+  },
+  "b19-warrior#270": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:5c31473803877f12ee9e80e1872383ac3094e6eda3f1041f5a190a5da1b44152"
+  },
+  "b19-warrior#272": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 10 narration, 5 travel → 10 travel, 5 travel.",
+   "previous": "sha256:18e2928e20c63db41c7336c0b73d88daa762e953e9407a06c7012b6e74dc02e3",
+   "fingerprint": "sha256:b8e98a102b28e8d8a77d1b51e3ac44b3ee5ac25a665fabf3ab936935062c6b5a"
+  },
+  "b19-warrior#286": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:6932dc624a634f9f6ed715078b5fd4f4d7d3b2c9747173b14c168c2bbe3df774",
+   "fingerprint": "sha256:080d7e80b683051f317b151cbfea09454600cc23f57c46a332868c8a58aedcb2"
+  },
+  "b19-warrior#310": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 150 activity → 150 activity, 60 travel.",
+   "previous": "sha256:4ecbfd33919d2ad947146cd97ab477ef02b825b40ec994297f4d5d9829bb1089",
+   "fingerprint": "sha256:0491e203a0699d5ab29966e0bb14d349e4f4406a9602db12780cce5393014c5e"
+  },
+  "b19-warrior#320": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:5e2d02e47d68fa1ff7d2cfa8820d69765e0b4ff2360820c3b161b09803e6f91f",
+   "fingerprint": "sha256:ad0b40fac35e67deda5ba1fdc17384105a9b7c8b3b2b8e0e70ae3b1e450b23a7"
+  },
+  "b19-warrior#328": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:4466b14b8ede6aa0bbb5d75e864b7a59ca6ea6fce8c52652d543b0c9fb5b36f7",
+   "fingerprint": "sha256:2ffc1a796f117328cbf274270cc2c545a378a1bf3098b16c10761e66100d5aea"
+  },
+  "b19-warrior#334": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 30 narration → 30 travel.",
+   "previous": "sha256:bb502b9440bd111cff64d6fccc60433d801ca3227655597a9f93b6528532b9ed",
+   "fingerprint": "sha256:f3fa21e5889d5f4762e610b3b08a137437cc5dfc134383ad7c88f2aaa15c5756"
+  },
+  "b19-warrior#350": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:8901d8008a89067ae3f204988fc5f972d4fb05c65a206571f765576748b41914",
+   "fingerprint": "sha256:5a152778573a582e0e5a9aa493561dc9a3c362231adb1bbf5b4a81cfafa6aff0"
+  },
+  "b19-warrior#352": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:9477e605451d84147b81695a76e84b435b34195f819d15b6a3040a15fbf04c92"
+  },
+  "b19-warrior#356": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 30 narration, 30 travel → 30 travel, 30 travel.",
+   "fingerprint": "sha256:ec13f295ebd5dd856348e47579244d6a05c5d928566c357ec635a6a97ca4afdb"
+  },
+  "b19-warrior#358": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:449ecd98258939103a3b65a063760182a1d7d88b3e48ad6d4eea46c3d31c0c2a",
+   "fingerprint": "sha256:3e4e2b717bd8d79491d5eb8b92f38b3c91395ae8618748ca2d899f1e53ddd66a"
+  },
+  "b19-warrior#370": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:102eeaffe5b9d1e7c737862cf60cbe753c4eb5bc97ce6bbcb0bd629f89474cff"
+  },
+  "b19-warrior#372": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "fingerprint": "sha256:1656e22c93316b2a84964e931b851e4fa35e2234b3c03009b6aed3fc2c7f27d7"
+  },
+  "b19-warrior#374": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went. Clock: 20 narration → 20 travel.",
+   "fingerprint": "sha256:839908623c5a7dcb7ecababdef3350b30ae71837f8f3d2238b54496d2da3c193"
+  },
+  "b19-warrior#376": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:a814ce7d4596dda8a81fb50ab87e7d3a0918ed138d10b5d8fdc17f77e57f2f83",
+   "fingerprint": "sha256:1fd6b5dcaa79ec0ed50ba99732986fc242187f551914e323b12b44af31bfe0cd"
+  },
+  "b19-warrior#400": {
+   "category": "219 attributed time",
+   "reason": "Confirmed travel attributed to the people who went.",
+   "previous": "sha256:2acbd3af75e4d3bdd023fa88bcc938b66086701b3495b7b2ce2040ed4c602061",
+   "fingerprint": "sha256:0bebed328ae600a2b7fc4c79cf2ad0e2db64427afedf37e711cca605fce1d7bd"
+  }
+ }
+}

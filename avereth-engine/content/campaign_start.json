@@ -9,6 +9,7 @@
   "pc": {
     "id": "pc",
     "name": "Alaric",
+    "full_name": "Alaric Red",
     "kind": "pc",
     "race": "Human",
     "age": 18,

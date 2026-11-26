@@ -6,6 +6,8 @@
 // mysteries, promises, debts, rumours and deadlines stay until the story settles them. Fading is a view, never an
 // event: nothing is closed by it, the journal keeps it, and it is current again when he comes back. Only a reply that
 // shows the matter settled resolves a thread.
+import { narratedEvent } from './v4/narration_evidence.js';
+import { hallOf } from './v4/domain.js';
 import { normText, tokenize } from './util.js';
 
 /** Kinds that belong to their place and hours (fade); every other kind lasts until resolved. */
@@ -134,7 +136,31 @@ function namedIn(state, id, text) {
  * The events for one reported thread {id?, text, kind, status, resolution?}, or a reason it cannot apply.
  * @returns {{events: object[], accepted?: string, reject?: string}}
  */
-export function threadEvents(state, th, { at, src, place = null }) {
+function deliveredReport(state, agreement, resolution, prose) {
+    if (agreement.kind !== 'promise' || !resolution || !prose) return false;
+    // A promised notification is fulfilled at its recipient. A separate rescue, debt or
+    // reward never follows from it. Require a distinct topic, present recipient and delivery.
+    const recipient = /\b(?:tell|inform|notify)\s+(?:the\s+)?([\w'-]+)|\b(?:the\s+)?([\w'-]+)(?: in (?:the )?\w+)?\s+(?:be|must be|should be)\s+(?:told|notified|informed)\b/i.exec(agreement.text);
+    if (!recipient) return false;
+    const target = normText(recipient[1] || recipient[2]);
+    const intent = normText(state.last?.input);
+    if (!tokenize(intent).includes(target) || !/\b(?:tell|notify|inform|report|let .{1,40} know)\b/.test(intent)) return false;
+    const topics = (agreement.text.match(/\b[A-Z][a-z'-]{2,}\b/g) || []).filter(w => !['The','Tell','Inform','Notify','Alaric'].includes(w) && normText(w) !== target);
+    const informed = Object.values(state.facts || {}).filter(f => !f.until && f.since?.turn === state.turn && /^(?:informed|notified)$/.test(f.p) && state.scene.present.includes(f.s));
+    return informed.some(f => {
+        const entity = state.entities[f.s];
+        const role = normText(entity?.descriptors?.[0] || '');
+        const localRecipient = target === 'guild' ? hallOf(state, state.scene.at) && /\b(?:clerk|registrar|receptionist)\b/.test(role)
+            : [entity?.name, entity?.known_name, role].filter(Boolean).some(n => normText(n) === target);
+        if (!localRecipient || !namedIn(state, f.s, resolution.replace(/[^\w' -]+/g, ' ')) || !normText(resolution).includes(target)) return false;
+        return prose.split(/[.!?\n]/).some(sentence => {
+            const act = /\b(?:he|alaric)\s+(?:told|informed|notified|reported to)\s+(?:her|him|them|the \w+)\b/i.exec(sentence);
+            return act && narratedEvent(prose, act[0]).ok && topics.some(w => [sentence, resolution, f.o].every(x => words(x).has(tokenize(w)[0])));
+        });
+    });
+}
+
+export function threadEvents(state, th, { at, src, place = null, prose = '' }) {
     if (!th || !th.text) return { events: [], reject: 'thread needs text' };
     const status = th.status === 'resolved' ? 'resolved' : 'open';
     let cur = null;
@@ -159,7 +185,7 @@ export function threadEvents(state, th, { at, src, place = null }) {
         const reported = (Array.isArray(th.who) ? th.who : []).filter((x) => x !== 'pc');
         const others = reported.filter((x) => !stored.includes(x));
         if (stored.length && others.length) return { events: [], reject: `thread identity: ${cur.id} is the agreement of ${stored.join(', ')}; a report naming ${others.join(', ')} is another matter (a new thread, id null)` };
-        if (status === 'resolved' && stored.length && !stored.some((x) => (state.scene?.present || []).includes(x) || namedIn(state, x, `${th.text || ''} ${th.resolution || ''}`))) {
+        if (status === 'resolved' && stored.length && !stored.some((x) => (state.scene?.present || []).includes(x) || namedIn(state, x, `${th.text || ''} ${th.resolution || ''}`)) && !deliveredReport(state, cur, th.resolution, prose)) {
             return { events: [], reject: `thread identity: ${cur.id} is settled only with one of its parties (${stored.join(', ')}) here or named` };
         }
     }

@@ -9,7 +9,7 @@ import { nearDungeons, dungeonText, rankText, guildRecord, trueDungeonOf } from 
 import { clearOf, clearDone, clearTarget, cullPopulation, slotNameOf, floorAt } from './living.js';
 import { O, S, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
-import { setFactEvents, perceivers, knows, truth, PC_NAME_FACT } from '../knowledge.js';
+import { setFactEvents, perceivers, knows, truth, PC_FULL_NAME_FACT, PC_NAME_FACT } from '../knowledge.js';
 import { settleQuest } from '../party_rewards.js';
 import { awardXp, questXp, splitPool } from '../progression.js';
 import { lifeStageOf } from './population.js';
@@ -75,7 +75,8 @@ export function openRegistration(s, content, emit, at = s.scene.at) {
 export function registerEvents(s, content, emit) {
     const hall = hallOf(s, s.scene.at);
     const power = rankOf(s.entities.pc.sheet.level, content);
-    emit({ t: 'guild.registered', d: { rank: 'Novice', branch: settlementOf(s, hall), power_rank: power } });
+    const registeredName = deskStaff(s).some(id => knows(s, id, PC_FULL_NAME_FACT)) ? s.facts[PC_FULL_NAME_FACT].o : s.entities.pc.name;
+    emit({ t: 'guild.registered', d: { registered_name: registeredName, rank: 'Novice', branch: settlementOf(s, hall), power_rank: power } });
     if (!s.objects[PLATE_ID]) {
         emit({ t: 'object.created', d: { object: { id: PLATE_ID, name: 'Guild plate', kind: 'document', stack: false, qty: 1, unit: null, holder: { entity: 'pc' }, marks: [{ text: 'Novice stamp', by: 'guild', turn: s.turn }], for_quests: [], source: { turn: s.turn, how: 'guild' } } } });
     }

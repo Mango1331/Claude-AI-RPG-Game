@@ -54,6 +54,7 @@ export const isMeaningful = (m) => (m.importance ?? 5) >= MEANINGFUL_IMPORTANCE;
 const TERMINAL_STATUS = /^(?:dead|destroyed|ruined|razed|burned|burnt|burned down|collapsed|sunk|annihilated|wiped out|obliterated)$/;
 
 // Ids of the two PC identity facts created at campaign start (who has SEEN Alaric / who knows his NAME).
+export const PC_FULL_NAME_FACT = 'f.pc.given_full_name';
 export const PC_NAME_FACT = 'f.pc.name';
 export const PC_LOOK_FACT = 'f.pc.appearance';
 
@@ -154,6 +155,7 @@ export function knows(state, who, about) {
 /** How a character can identify Alaric: by name, by sight (name unknown), or not at all. */
 export function pcIdentityFor(state, who) {
     if (who === 'pc') return { level: 'self', label: state.entities.pc.name };
+    if (knows(state, who, PC_FULL_NAME_FACT)) return { level: 'name', label: state.facts[PC_FULL_NAME_FACT].o };
     if (knows(state, who, PC_NAME_FACT)) return { level: 'name', label: state.entities.pc.name };
     if (knows(state, who, PC_LOOK_FACT)) return { level: 'seen', label: 'the stranger' };
     return { level: 'unknown', label: 'someone unseen' };

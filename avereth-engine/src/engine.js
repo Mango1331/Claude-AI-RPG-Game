@@ -28,7 +28,7 @@ import { parseIntent } from './intent.js';
 import { runCommands, creationPanel } from './commands.js';
 import { stealthEvents, resolveCheck } from './checks.js';
 import { extractReport, reportToEvents, isGroupCreature } from './delta.js';
-import { truth, knows, perceivers, entityLabel, playerLabel, setFactEvents, PC_NAME_FACT, PC_LOOK_FACT } from './knowledge.js';
+import { truth, knows, perceivers, entityLabel, playerLabel, setFactEvents, PC_FULL_NAME_FACT, PC_NAME_FACT, PC_LOOK_FACT } from './knowledge.js';
 import { buildContext } from './context.js';
 import { targetQuestion } from './display.js';
 import { parseCoin } from './economy.js';
@@ -64,7 +64,7 @@ export function startCampaign(content, { seed = newSeed(), firstMessage = '', ru
     const dv = deriveCharacter(sheet, content);
     Object.assign(sheet, { hp: dv.maxHp, mp: dv.maxMp, sta: dv.maxSta });
     const at = { turn: 0, minute: st.start_scene.clock_minutes };
-    const pc = { id: 'pc', kind: 'pc', name: p.name, race: p.race, age: p.age, origin: p.origin, descriptors: p.descriptors.map((d) => d.toLowerCase()), status: 'alive', location: loc.id, sheet };
+    const pc = { id: 'pc', kind: 'pc', name: p.name, full_name: p.full_name || p.name, race: p.race, age: p.age, origin: p.origin, descriptors: p.descriptors.map((d) => d.toLowerCase()), status: 'alive', location: loc.id, sheet };
     const facts = [
         { id: PC_NAME_FACT, s: 'pc', p: 'name', o: p.name, visibility: 'public' },
         { id: PC_LOOK_FACT, s: 'pc', p: 'appearance', o: p.public_facts.join('; '), visibility: 'public' },
@@ -1031,7 +1031,7 @@ export function narratorReply(state, content, replyText, { msg = null, stripTrac
     if (!report && s.meta.started) emit({ t: 'report.missing', d: { error } });
     if (s.mode !== 'creation' && s.meta.started && !String(s.last.outcome?.kind || '').startsWith('creation')) {
         perceiveAll(s, emit);
-        selfIntro(s, emit);
+        selfIntro(s, emit, content.start.pc.full_name);
         const ep = episode(s, msg);
         if (ep) emit({ t: 'memory.recorded', d: { memory: ep } });
     }
@@ -1072,10 +1072,15 @@ export function perceiveAll(s, emit, { unaware = null } = {}) {
 /**
  * A spoken self-introduction reaches the addressed living witnesses at turn end, including people just introduced.
  */
-export function selfIntro(s, emit) {
+export function selfIntro(s, emit, canonical = s.entities.pc?.full_name) {
+    const short = s.facts[PC_NAME_FACT]?.o;
+    discloseName(s, emit, PC_NAME_FACT, short);
+    if (canonical && canonical !== short) discloseName(s, emit, PC_FULL_NAME_FACT, canonical);
+}
+
+function discloseName(s, emit, factId, nameFact) {
     const input = String(s.last.input || '').replace(/’/g, "'");
     const escape = name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const nameFact = s.facts[PC_NAME_FACT]?.o;
     if (!nameFact || s.scene.concealed.includes('pc')) return;
     // A name fact grants its entire value. A shortened introduction cannot disclose an unspoken surname.
     const intro = new RegExp("\\b(?:(?:my )?name(?:'s| is)|i am|i'?m|call me|they call me)\\s+" + escape(nameFact) + "(?![\\p{L}\\p{N}'-])", 'iu');
@@ -1121,8 +1126,11 @@ export function selfIntro(s, emit) {
             .some(label => new RegExp('\\b' + escape(label) + '\\b', 'i').test(input)));
     const toAll = !vocatives.size && (GROUP_RE.test(input) || listeners.length === 1);
     for (const id of addressed.length ? addressed : toAll ? listeners : []) {
-        if (knows(s, id, PC_NAME_FACT)) continue;
-        emit({ t: 'knowledge.gained', d: { who: id, about: PC_NAME_FACT, stance: 'knows', source: 'told:pc', turn: s.turn, minute: s.clock.minute } });
+        if (knows(s, id, factId)) continue;
+        if (!s.facts[factId]) {
+            for (const event of setFactEvents(s, { id: factId, s: 'pc', p: 'given_full_name', o: nameFact, visibility: 'secret', source: { kind: 'self_introduction' } })) emit(event);
+        }
+        emit({ t: 'knowledge.gained', d: { who: id, about: factId, stance: 'knows', source: 'told:pc', turn: s.turn, minute: s.clock.minute } });
     }
 }
 

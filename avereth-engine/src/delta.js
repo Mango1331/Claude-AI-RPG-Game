@@ -517,7 +517,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '',
         const p = normPredicate(f.p);
         // Alaric's name is the player's, and every "knows his name" rests on it (f.pc.name): a report never replaces it.
         // His full name ("Alaric Red") is the same name and changes nothing; any other is refused
-        if (s === 'pc' && p === 'name') {
+        if (s === 'pc' && (p === 'name' || p === 'given_full_name')) {
             const own = truth(state, 'pc', 'name')[0];
             if (own && sameValue('name', own.o, String(f.o))) accepted.push(`pc name ${String(f.o).slice(0, 60)}: his own name, kept`);
             else reject(f, `${pcName}'s name is the player's and stays as it is; a name he goes by is a fact of its own (p "alias"), and who learns his name goes in "learn"`);
@@ -563,6 +563,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '',
         const s = resolve(k.s) || String(k.s).slice(0, 80);
         const p = normPredicate(k.p);
         const o = typeof k.o === 'string' ? k.o.slice(0, 200) : String(k.o);
+        if (s === 'pc' && p === 'given_full_name') { reject(k, 'full name disclosure requires an addressed introduction'); continue; }
         // facts asserted earlier in this same report count as current truth
         const current = [...truth(state, s, p), ...events.filter((e) => e.t === 'fact.asserted' && e.d.fact.s === s && e.d.fact.p === p).map((e) => e.d.fact)];
         let fact = current.find((x) => sameValue(p, x.o, o) || (ent(x.o) && normText(ent(x.o).name || '') === normText(o)));
@@ -842,7 +843,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '',
     for (const th of arr(report.threads)) {
         const view = { ...state, threads: { ...state.threads } };
         for (const e of events.filter((x) => x.t === 'thread.set')) view.threads[e.d.thread.id] = e.d.thread;
-        const r = threadEvents(view, th, { at, src, place: state.meta?.runtime === 'v4' && state.scene.at ? state.scene.at : state.scene.location });
+        const r = threadEvents(view, th, { at, src, prose, place: state.meta?.runtime === 'v4' && state.scene.at ? state.scene.at : state.scene.location });
         if (r.reject) { reject(th, r.reject); continue; }
         events.push(...r.events);
         if (r.accepted) accepted.push(r.accepted);

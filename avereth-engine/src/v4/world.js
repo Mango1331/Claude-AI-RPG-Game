@@ -2154,7 +2154,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         system.push(`DESTINATION STEALTH NOT RESOLVED — current location: ${placeName(s, s.scene.at)}. The voluntary target arrival was not confirmed; no destination Detection result or future stealth permission was granted.`);
     }
     perceiveAll(s, emit, seeing());
-    selfIntro(s, emit);
+    selfIntro(s, emit, content.start.pc.full_name);
     const ep = episode(s, msg);
     if (ep) emit({ t: 'memory.recorded', d: { memory: ep } });
     for (const member of following(s)) if (member.combat && !s.entities[member.who].sheet) {

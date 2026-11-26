@@ -377,7 +377,12 @@ function presentHere(q, id, people, { here = [], elsewhere = [], self = ['alaric
     const spans = [];
     for (let len = 1; len <= 7; len++) for (let a = 0; a + len <= pos.length; a++) {
         const sl = pos.slice(a, a + len);
-        if (spans.some(([x, y]) => x >= sl[0] && y <= sl.at(-1))) continue;
+        // A look can identify the subject before its role noun. Keep the span ending at that
+        // noun as well, so its own predicate remains adjacent ("the broad-shouldered clerk sat").
+        if (spans.some(([x, y]) => x >= sl[0] && y === sl.at(-1))) continue;
+        const subject = people.find(p => p.id === id && p.role === q[sl.at(-1)]);
+        const qualifiedRole = subject && DETERMINER.has(q[sl[0]]) && sl.slice(1, -1).every(i => subject.words.includes(stem(q[i])) || q[i] === 'same');
+        if (!qualifiedRole && spans.some(([x, y]) => x >= sl[0] && y <= sl.at(-1))) continue;
         if (namedPeople(sl.map((i) => q[i]), people).has(id)) spans.push([sl[0], sl.at(-1)]);
     }
     const clauseEnd = (from) => { let k = from; while (k < q.length && !CLAUSE_END.has(q[k])) k++; return k; };
@@ -395,6 +400,8 @@ function presentHere(q, id, people, { here = [], elsewhere = [], self = ['alaric
         let p = null;
         // the person does it: the act right after their name (adverbs, and a "with …" of their look, between)
         let j = b + 1;
+        const comparison = q.slice(a, b).includes('same') && q[j] === 'as' && LOOK_BACK.test(q[j + 1]);
+        if (comparison) j += 2;
         while (j < q.length && LINGER.test(q[j])) j++;
         if (q[j] === 'with') { let k = j + 1; while (k < q.length && k <= j + 4 && !HERE_DOES.has(q[k]) && !COPULA.has(q[k]) && !CLAUSE_END.has(q[k])) k++; j = k; }
         // .199: a local doorstep greeting, not an unrestricted travel verb.
@@ -410,7 +417,7 @@ function presentHere(q, id, people, { here = [], elsewhere = [], self = ['alaric
         }
         if (p === null) continue;
         const end = clauseEnd(p), start = clauseStart(a);
-        if (q.slice(start, end).some((t) => LOOK_BACK.test(t))) { why = 'it looks back, not at them here now'; continue; }
+        if (q.slice(start, end).some((t, i) => LOOK_BACK.test(t) && !(comparison && start + i === b + 2))) { why = 'it looks back, not at them here now'; continue; }
         if (elsewhereIn(p, end)) { why = 'it shows them somewhere else'; continue; }
         return { ok: true, at: p };
     }
@@ -549,7 +556,8 @@ function deskHandlingOne(prose, evidence, id, people, { self = ['alaric'] } = {}
         const lead = sentences[s].slice(0, at);
         let found = null, seen = false;
         for (const [k, t] of [[s, lead], ...sentences.slice(Math.max(0, s - 8), s).map((x, n) => [n, x]).reverse()]) {
-            const words = t.filter(Boolean);
+            // A comparison with a hypothetical reader introduces no second scene participant.
+            const words = t.join(' ').replace(/\bof (?:someone|somebody) who\b.*$/, '').split(' ').filter(Boolean);
             // K4 (.176): "she"/"her" is never Alaric (his pronoun is he/him): his name is passed over like a pronoun
             const notHim = q[j] === 'she' || q[j] === 'her';
             let c = doer(words, words.length - 1);

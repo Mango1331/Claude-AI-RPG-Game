@@ -288,7 +288,7 @@ export function applyDomainEvent(state, e) {
             state.guild.boards[d.key] = { branch: d.branch, rank: d.rank, day: d.day, listings: [...d.listings] };
             break;
         case 'guild.registered':
-            state.guild.membership = { rank: d.rank, since: { turn: state.turn, minute: state.clock.minute }, branch: d.branch ?? null };
+            state.guild.membership = { ...(d.registered_name ? { registered_name: d.registered_name } : {}), rank: d.rank, since: { turn: state.turn, minute: state.clock.minute }, branch: d.branch ?? null };
             break;
         case 'guild.promoted':
             if (state.guild.membership) state.guild.membership.rank = d.rank;

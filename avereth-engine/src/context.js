@@ -17,7 +17,7 @@ import { skillOffers } from './v4/skill_growth.js';
 import { className, classText, classOffer } from './v4/class_growth.js';
 import {
     knowledgeOf, memoriesOf, memoryText, entityLabel, anyLabel, propText, currentFacts, statusOf, pcIdentityFor, truth, lookOf,
-    isMeaningful, PC_NAME_FACT, PC_LOOK_FACT, npcContinuity, FUNCTIONAL,
+    isMeaningful, PC_FULL_NAME_FACT, PC_NAME_FACT, PC_LOOK_FACT, npcContinuity, FUNCTIONAL,
 } from './knowledge.js';
 import { rank, pack, Bm25 } from './retrieval.js';
 import { threadCurrent } from './threads.js';
@@ -38,7 +38,7 @@ import { profileOf, sourceText, gearText, gearMarketText } from './v4/items.js';
 export const DEFAULT_BUDGET = 1400;
 export const DEFAULT_RULES_BUDGET = 800;
 export const DEFAULT_RECENT_TURNS = 4; // turns still visible in the chat history are not retrieved again
-const IDENTITY_FACTS = new Set([PC_NAME_FACT, PC_LOOK_FACT]);
+const IDENTITY_FACTS = new Set([PC_NAME_FACT, PC_LOOK_FACT, PC_FULL_NAME_FACT]);
 const RECORD_PREDICATES = new Set(['occupation', 'appearance', 'voice', 'manner', 'interest', 'agenda']);
 // NPC E2-A (R5): a person's own account (docs/NPC_E2A_INTEGRITY.md)
 const SPEECH_PREDICATES = new Set(['says', 'said', 'remark', 'remarked', 'claims', 'claimed', 'reports', 'reported', 'mentions', 'mentioned', 'tells', 'told', 'rumor', 'rumour']);
@@ -226,7 +226,7 @@ function npcCard(state, content, id, focusWords, { absent = false, compact = fal
         const ties = !v4 ? [] : currentFacts(state, (f) => f.s === id && f.visibility !== 'secret'
             && /\b(?:relationship|related|family|kin|parent|child|daughter|son|sibling|spouse|partner|friend|ally|serves|works_for|employer|member_of|affiliation)\b/i.test(String(f.p || '').replace(/_/g, ' '))).slice(-3);
         const ident = pcIdentityFor(state, id);
-        const idText = ident.level === 'name' ? 'knows him by name' : ident.level === 'seen' ? 'has seen him, does NOT know his name' : 'has never seen him';
+        const idText = ident.level === 'name' ? (ident.label === state.entities.pc.name ? 'knows him by name' : 'knows him by name (' + ident.label + ')') : ident.level === 'seen' ? 'has seen him, does NOT know his name' : 'has never seen him';
         lines.push(`  toward Alaric: ${attitudeLabel(rel?.value)}${last?.why ? ` (last change: ${last.why})` : ''}; ${idText}${aware ? `; awareness: ${aware}` : ''}${concealment}`);
         if (ties.length) lines.push(`  established ties: ${ties.map((f) => propText(state, f, content)).join('; ')}`);
         // NPC E2-B (R8, D4): what Alaric and this person agreed between them, open or settled
@@ -768,6 +768,8 @@ export function buildContext(state, content, opts = {}) {
     if (v4 && !npcFight && (opts.outcome?.c || opts.outcome?.auth?.c)) {
         const known = Object.values(state.quests || {}).filter(q => q.kind === 'guild_contract');
         const branch = settlementOf(state, state.scene.at);
+        const register = state.guild?.membership;
+        if (register?.registered_name && register.branch === branch && hallOf(state, state.scene.at)) add('branch_register', 'Local Guild register: ' + register.registered_name + ' (available at this desk).', 0);
         const official = [...known.filter(q => q.status === 'active' || (listedToday(state, q) && q.source?.branch === branch)),
             ...known.filter(q => ['completed','expired','abandoned'].includes(q.status) && (hallOf(state, state.scene.at) || mentioned(q.title, normText(input)))).slice(-3)];
         add('guild_authority', `OFFICIAL GUILD OFFERS — ENGINE AUTHORITY: Only [listed] contracts are selectable. Active, completed and expired offers are unavailable. Any [listed] contract stays available when an NPC takes the paper copy. With no listings invite a board reading; invent none. Private NPC jobs and rumours remain possible, clearly separate from official listings. A [listed] contract becomes Alaric's only by an ACCEPTS line of the engine; until then nobody stamps, logs or hands it to him, and nobody calls it his or active, also when he asks whether it is. Novice and Floor One are rank/depth labels, not promises of solo safety; describe only established risks, otherwise uncertainty.\n${official.map(q => `- ${q.id}: ${q.title} [${q.status}]`).join('\n') || '- No official listings established.'}`, 0);

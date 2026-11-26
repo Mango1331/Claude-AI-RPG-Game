@@ -1,0 +1,42 @@
+[
+  {
+    "original_name": "Avereth Engine Test v4 - 2026-11-26@08h54m19s256ms (1).jsonl",
+    "original_bytes": 1709137,
+    "original_sha256": "a0f915366c61b6578e77a71233e9c753dac939e52d6f9900273ba6c7765505e3",
+    "stored_path": "originals/chat.jsonl",
+    "decoded_bytes": 1709137,
+    "decoded_sha256": "a0f915366c61b6578e77a71233e9c753dac939e52d6f9900273ba6c7765505e3",
+    "redactions": 0,
+    "stored_sha256": "a0f915366c61b6578e77a71233e9c753dac939e52d6f9900273ba6c7765505e3"
+  },
+  {
+    "original_name": "avereth-events-[_Avereth Engine Test v4.png_,_Avereth Engine Test v4 - 2026-11-26@08h54m19s256ms_] (1).json",
+    "original_bytes": 613446,
+    "original_sha256": "7b083bd51b494f568c093e033bcac069bed89e589f2439028c6f7e6c0ebe439b",
+    "stored_path": "originals/avereth-events.json",
+    "decoded_bytes": 613446,
+    "decoded_sha256": "7b083bd51b494f568c093e033bcac069bed89e589f2439028c6f7e6c0ebe439b",
+    "redactions": 0,
+    "stored_sha256": "7b083bd51b494f568c093e033bcac069bed89e589f2439028c6f7e6c0ebe439b"
+  },
+  {
+    "original_name": "Userfeedback Spielgefühl(20261126-142012).txt",
+    "original_bytes": 1404,
+    "original_sha256": "03be539fef169c9f5f68d7ac52c913b0ec0385f00fb86fc3781d338076182121",
+    "stored_path": "originals/feedback.txt",
+    "decoded_bytes": 1404,
+    "decoded_sha256": "03be539fef169c9f5f68d7ac52c913b0ec0385f00fb86fc3781d338076182121",
+    "redactions": 0,
+    "stored_sha256": "03be539fef169c9f5f68d7ac52c913b0ec0385f00fb86fc3781d338076182121"
+  },
+  {
+    "original_name": "ST_2026-11-26_08-53-39.txt",
+    "original_bytes": 16405158,
+    "original_sha256": "2905ad328b377cd54affe444b47618c5f21ac34ecea47f1162a1f0affa71ccf0",
+    "stored_path": "originals/st-log.txt.gz",
+    "decoded_bytes": 16405168,
+    "decoded_sha256": "3d0c6628acf7070df2f00f59aff2f80e47df00e028c708009bc0ecedf491cceb",
+    "redactions": 1,
+    "stored_sha256": "feff479902fefcc083981182bec72e643b249910659570008d4777e9f5bb9c6a"
+  }
+]

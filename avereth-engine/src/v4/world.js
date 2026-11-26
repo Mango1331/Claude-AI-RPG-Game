@@ -1680,8 +1680,23 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 break;
             case 'recover': {
                 const who = idOf(d.who) || 'pc';
-                if(s.party?.members?.[who]) {reject(d,'party_recovery','Only booked personal recovery changes a party profile.');break;}
-                const serviced = (s.services || []).some((x) => x.turn === s.turn && ['lodging', 'healing', 'meal'].includes(x.service));
+                if(s.party?.members?.[who]) {
+                    const paid=s.services?.find(v=>v.patient===who && v.service==='healing' && v.turn===s.turn &&
+                        v.at===s.scene.at && v.id && !v.fulfilled);
+                    const name=normText(s.entities[who].name);
+                    const action=prose.split(/[.!?\n]/).find(line=>{
+                        const target=normText(line).match(/\b(?:treats?|treated|heals?|healed|bandages?|bandaged|dresses|dressed|binds) (.+)/)?.[1];
+                        return (target===name || target?.startsWith(name+' ') || target?.startsWith(name+"'s")) &&
+                            narratedEvent(prose,line.trim(),{minWords:2}).ok;
+                    });
+                    if (!paid || !action || !s.scene.present.includes(who) || s.encounter) {
+                        reject(d,'party_recovery','Only booked personal recovery changes a party profile.');break;
+                    }
+                    const r=v3({recover:[{who,...d.hp?{hp:d.hp}:{},...d.sta?{sta:d.sta}:{},why:'paid treatment '+paid.id}]},d);
+                    if (r.events.some(e=>e.t==='resource.changed')) emit({t:'service.fulfilled',d:{id:paid.id,patient:who}});
+                    break;
+                }
+                const serviced = (s.services || []).some((x) => x.turn === s.turn && !x.patient && ['lodging', 'healing', 'meal'].includes(x.service));
                 if (who === 'pc' && !auth.rest && !serviced) { reject(d, 'recover', 'Alaric recovers only while resting or sleeping, or with lodging or healing he paid for'); break; }
                 // Prototype C: his natural recovery for the rest or sleep is the engine's, booked with the turn
                 if (who === 'pc' && auth.c && auth.recovered) { reject(d, 'engine_recovery', 'the engine already booked his recovery for the rest or sleep'); break; }

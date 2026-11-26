@@ -94,7 +94,7 @@ export function eventKind(e, s = null) {
         case 'object.moved': return pcHolder(d.to) || heldByPc(d.id) ? 'pc.inventory' : 'objects';
         case 'object.consumed': case 'object.added': return heldByPc(d.id) || !s ? 'pc.inventory' : 'objects';
         case 'object.marked': return 'objects';
-        case 'offer.created': case 'offer.closed': case 'transaction.completed': case 'service.granted':
+        case 'offer.created': case 'offer.closed': case 'transaction.completed': case 'service.granted': case 'service.fulfilled':
         case 'decision.opened': case 'decision.closed':
             return 'trade';
         case 'quest.delivered': return 'quest.delivery';
@@ -248,7 +248,7 @@ export const DELTA_WRITES = {
     // review of Patch 7: a true Dungeon's classification (theme, Rank, levels, control), as the world establishes it
     dungeon: { writes: ['places'] },
     area: { writes: ['places'] },
-    recover: { writes: ['entities'], gates: { 'pc.vitals': 'player.rest' } },
+    recover: { writes: ['entities','trade'], gates: { 'pc.vitals': 'player.rest' } },
     'object.new': { writes: ['objects'], gates: { 'pc.inventory': 'player.take' } },
     // a thing handed to him (a gift), or taken from where it lies by his own take
     'object.move': { writes: ['objects','quests'], gates: { 'pc.inventory': ['envelope.give', 'player.take', 'player.give'], 'quest.delivery': 'player.give',party:'player.give' } },

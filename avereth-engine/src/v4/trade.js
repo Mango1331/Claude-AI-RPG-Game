@@ -497,8 +497,13 @@ export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = nu
     }
     for (const p of picks.filter((x) => x.line.kind === 'service' && x.line.service !== 'guild_registration')) {
         // Each bought training line is a separate commitment, even in the same transaction and minute.
-        const id = p.line.service === 'training' ? `svc:${s.turn}:${s.clock.minute}:${offer.seller}:${offer.id}:${p.line.id}` : null;
-        emit({ t: 'service.granted', d: { ...(id ? { id } : {}), service: p.line.service || 'other', what: p.line.what, by: offer.seller, at: s.scene.at, turn: s.turn } });
+        const namedPatients=p.line.service==='healing' && s.party ? Object.keys(s.party.members).filter(who=>{
+            const name=normText(s.entities[who]?.name || '');
+            return name && s.scene.present.includes(who) && (' '+normText(p.line.what)+' ').includes(' for '+name+' ');
+        }):[];
+        const patient=namedPatients.length===1 ? namedPatients[0]:null;
+        const id = p.line.service === 'training' || patient ? `svc:${s.turn}:${s.clock.minute}:${offer.seller}:${offer.id}:${p.line.id}` : null;
+        emit({ t: 'service.granted', d: { ...(id ? { id } : {}), ...(patient?{patient}:{}), service: p.line.service || 'other', what: p.line.what, by: offer.seller, at: s.scene.at, turn: s.turn } });
     }
     emit({ t: 'offer.closed', d: { id: offer.id, status: 'accepted' } });
     return { picks, cp };

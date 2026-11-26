@@ -322,3 +322,20 @@ delegated.party.agreements[delegated.party.members[who].agreement].terms.tactics
 const permitted=playerTurnV4(delegated,content,requestText,{c:true,commands:[{...priority,quote:requestText}]}).state;
 assert.equal(permitted.party.members[who].priority.target,'pc');
 console.log('Tactical request, attributed acceptance or refusal and prior delegation passed.');
+
+// The already priced and purchased healing service can treat the named patient only once.
+const {bookPurchase}=await import('../../src/v4/trade.js');
+const care=structuredClone(s);care.entities[who].sheet.hp-=12;
+const line={id:'line.heal',what:'Treatment for Ossen',kind:'service',service:'healing',qty:1,price_cp:4};
+const contract={id:'offer.clinic',seller:'npc.garrick',lines:[line],status:'open'};
+care.offers[contract.id]=contract;
+const hp=care.entities[who].sheet.hp, cash=care.entities.pc.sheet.coin_cp;
+const supplied=bookPurchase(care,e=>applyEvent(care,e),{offer:contract,picks:[{line,units:1,cp:4}],cp:4,content});
+assert(!supplied.error,supplied.error);assert.equal(care.entities.pc.sheet.coin_cp,cash-4);
+const healing={type:'recover',seq:1,who,hp:5};
+const healed=x(care,[healing,{...healing,seq:2}],"The healer treats Ossen's wounds.",107);
+assert.equal(healed.state.entities[who].sheet.hp,hp+5,JSON.stringify(healed.rejected));
+assert.equal(healed.events.filter(e=>e.t==='service.fulfilled').length,1);
+assert.equal(x(care,[healing],'Ossen looks around.',107).state.entities[who].sheet.hp,hp);
+assert.equal(x(care,[healing],'Ossen watches as the healer treats Alaric.',107).state.entities[who].sheet.hp,hp);
+console.log('Paid personal treatment, actual receipt, patient and duplicate recovery passed.');

@@ -38,7 +38,7 @@ export const HALL_NAME = "Adventurers' Guild hall";
 export const V4_EVENTS = new Set([
     'place.created', 'place.updated', 'intent.set', 'feature.set', 'link.set',
     'object.created', 'object.moved', 'object.marked', 'object.consumed', 'object.added',
-    'offer.created', 'offer.closed', 'transaction.completed', 'service.granted',
+    'offer.created', 'offer.closed', 'transaction.completed', 'service.granted', 'service.fulfilled',
     'quest.delivered', 'quest.created', 'quest.status', 'quest.detailed', 'quest.progressed', 'quest.ready', 'quest.journey', 'proof.checked',
     'board.refreshed', 'board.failed', 'board.shown',
     'guild.registered', 'guild.promoted',
@@ -196,12 +196,18 @@ export function applyDomainEvent(state, e) {
         case 'offer.closed':
             if (state.offers[d.id]) state.offers[d.id].status = d.status;
             break;
+        case 'service.fulfilled': {
+            const service=state.services?.find(v=>v.id===d.id && v.patient===d.patient);
+            if(!service || service.fulfilled) throw Error('Treatment receipt has already been used or replaced.');
+            service.fulfilled=true;
+            break;
+        }
         case 'service.granted': {
             // .186 (GPT review of .185, R1): the offer and line the service was sold under, so that PAID HERE names its own
             // price and words; fixed here from the event as it is (a purchase grants before it closes its offer), the same
             // on every fold of an old chat; none where the fold cannot tell it apart
             const sold = soldUnder(state, d);
-            state.services = [...(state.services || []), { ...(d.id ? { id: d.id } : {}), service: d.service, by: d.by ?? null, at: d.at ?? null, turn: d.turn ?? state.turn, minute: state.clock.minute, ...(sold || {}) }].slice(-10);
+            state.services = [...(state.services || []), { ...(d.id ? { id: d.id } : {}), ...(d.patient?{patient:d.patient}:{}), service: d.service, by: d.by ?? null, at: d.at ?? null, turn: d.turn ?? state.turn, minute: state.clock.minute, ...(sold || {}) }].slice(-10);
             break;
         }
         case 'quest.created':

@@ -462,7 +462,7 @@ export function partyView(s,content,compact=false) {
     }
     if (!compact) {
         for (const a of agreementsOf(s)) lines.push(a.phase+' · '+(s.entities[a.who]?.name || a.who)+' · '+a.terms.text);
-        for (const r of claimsOf(s)) lines.push(r.id+' · '+r.paid+'/'+r.amount+' cp paid'+
+        for (const r of claimsOf(s)) lines.push(r.id+' · '+r.paid+'/'+r.amount+' cp paid'+(r.paid<r.amount?' · #party pay '+r.id+' <cp>':'')+
             (s.entities[r.who]?.status==='dead'?' · payment blocked':''));
     }
     return lines.filter(Boolean);

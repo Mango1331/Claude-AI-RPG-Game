@@ -3,7 +3,7 @@ import { applyEvent } from '../state.js';
 import { truth } from '../knowledge.js';
 import { Dice } from '../rng.js';
 import { agreementsOf, membersOf, partyDecision, bindPartyEquipment } from '../party.js';
-import { vestQuest } from '../party_rewards.js';
+import { payClaim, vestQuest } from '../party_rewards.js';
 import { contractReady } from './guild.js';
 import { trueDungeonOf } from './dungeon.js';
 import { hash32, normText } from '../util.js';
@@ -23,6 +23,11 @@ export function partyControls(s) {
         } else actions.push(m.mode==='wait' ? {act:'follow',ref:id,label:'Mitkommen · '+name}
             : {act:'wait',ref:id,label:'Hier warten · '+name});
     }
+    for (const row of Object.values(s.party?.claims || {})) {
+        const due = row.amount - row.paid;
+        if (due > 0 && available(s, row.who) && s.entities.pc.sheet.coin_cp >= due)
+            actions.push({act:'pay', ref:row.id+' '+due, label:'Anspruch bezahlen · '+(s.entities[row.who].name || row.who)+' · '+due+' cp · '+(s.quests[row.source]?.title || row.source)});
+    }
     const members=membersOf(s).filter(m=>m.mode!=='left');
     for(const m of members) actions.push({act:'remove',ref:m.who,label:'Entfernen · '+s.entities[m.who].name});
     if(members.length) actions.push({act:'disband',ref:'',label:'Party auflösen'});
@@ -35,6 +40,13 @@ export async function partyControl(before,content,{act,ref='',source,revision,pr
     let call;
     const result=text=>({events,command:{panels:['[SYSTEM // PARTY]\n'+text],llm:null},...(call?{party_call:call}:{})});
     if(s.encounter || s.pending_combat?.length) return result('Finish the encounter first.');
+    if (act === 'pay') {
+        const payment = /^(\S+)\s+([1-9]\d*)$/u.exec(ref);
+        const row = payment && s.party?.claims?.[payment[1]];
+        if (!row || !payClaim(s, emit, row, Number(payment[2])))
+            return result('Select an outstanding claim and an affordable amount in copper for its present recipient.');
+        return result((s.entities[row.who].name || row.who)+' received '+payment[2]+' cp. Outstanding: '+(row.amount-row.paid-Number(payment[2]))+' cp.');
+    }
     const active=membersOf(s).filter(m=>m.mode!=='left');
     const memberEvent=(who,mode,extra={})=>{
         const m=s.party?.members[who];

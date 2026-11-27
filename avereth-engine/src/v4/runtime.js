@@ -830,7 +830,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
             if(reason){r=actionRefused(inputHash,reason);commit();return {action:'not_executed',dirty:true,index:u,notice:reason};}
         }
         const isC = campaignPath(chat, settings.legacyPlanner ?? settings.planner) === 'c';
-        const management = /^#party\s+(invite|wait|follow|remove|disband|accept)(?:\s+(.+))?$/i.exec(msg.mes.trim());
+        const management = /^#party\s+(invite|wait|follow|remove|disband|accept|pay)(?:\s+(.+))?$/i.exec(msg.mes.trim());
         const native = management && !actionInput && before.mode==='story' && isC && rulesetOf(before)>=2
             ? await partyControl(before,content,{act:management[1].toLowerCase(),ref:management[2]?.trim(),source:msg.mes,revision:actionPrefix(chat,u)},
                 messages=>ask(llm,messages,'party_decision',{maxTokens:200,temperature:0.3}))

@@ -340,6 +340,11 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         ...state.scene.present.filter((id) => id !== 'pc').flatMap((id) => heldBy(state, id)).map((o) => objectEntry(state, content, o)),
     ];
     const party = partySummary(state);
+    for (const row of Object.values(state.party?.claims || {})) {
+        if (row.paid < row.amount && state.scene.present.includes(row.who))
+            party.push('For an actual payment toward '+(state.quests[row.source]?.title || row.source)+
+                ' use party act=pay, who='+row.who+', claim='+row.id+', amount in copper, money as the literal coin words (string). A general pay card does not settle this debt.');
+    }
     return { ...(party.length ? {party} : {}), privateQuests: privateQuestsOf(state),
         here: { id: at, path: placePath(state, at), ...(state.scene.focus && state.scene.approaching ? {approaching:state.scene.approaching} : {}), ...(state.scene.focus ? {focus:state.scene.focus} : {}) },
         time: formatClock(state.clock.minute).split(' (')[0].replace(/^Day/, 'day'),

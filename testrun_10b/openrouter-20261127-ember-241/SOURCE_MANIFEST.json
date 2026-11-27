@@ -1,0 +1,36 @@
+{
+  "build": "4.3.0-c.6.6.241",
+  "commit": "1f07a4a38173b6c65c17b73f0bd9928255b758d8",
+  "seed": 3509323178,
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "AI · 15 Nachrichten bis zur noch offenen Anwerbung, vollständiger Weltzustand geprüft",
+  "savedMessages": 19,
+  "requests": 2,
+  "costUSD": "0.000640082",
+  "usage": {
+    "prompt_tokens": 14653,
+    "completion_tokens": 134,
+    "total_tokens": 14787
+  },
+  "sha256": {
+    "actions.jsonl.gz": "9b79b4195e92d510e522f1cc898ee251b51a75ba4881b2e0f200b65b413b8443",
+    "chat-0.jsonl.gz": "3ae5a1989f46ec7fc73dcd735ed5117f0f1f56d35f1b31cd759bf60a75a6cf9a",
+    "chat.jsonl.gz": "6d1f8706da207b2d441b756e1342006c187e95a3ff01d9f7d16ded2bf91f0104",
+    "events.json.gz": "f9edd5dfa6532514e57c50e382b6d9eb05e143a9dc280f9a599668e7e970bf05",
+    "last-verified-world.json.gz": "8088e60cf181a61fe7ca4d5c13b010c7c624a4847e7b1b0d9da6ae6e0a1e11ec",
+    "parent-check.json.gz": "a05943b2a51f0bd6a238487e5be5110238d298875aea63401f6af8a1b91b3f04",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "721e789c585be97c2b02a20b20ed11d61767ea776a5fa1290a0a76c5cb6c191d",
+    "raw-1.gz": "c5857fd2ae9214b0593c003c41e97a8f83c55a7a44127abd304858de9f52f704",
+    "raw-2.gz": "bb2b0bf3fd7ede5e693fdb1b148eeb6417671d0ffd99b0436bc8c16e4b8e3f6f",
+    "requests.jsonl.gz": "8f4867f3235e77bf8f53b14c15a33244035ab181a1fdb401d0862f2675997ba6",
+    "response.json.gz": "4b3029660b83514c7fbb629e784b16ca2425d3966a0511ef7fbf42f883ebc7cd",
+    "st.log.gz": "6e1e728461c892e03b31823ce57cdd440d90159ed70616721f95be6d4d680892",
+    "turns.jsonl.gz": "72835a86887c8130378b0586546a8e451d1a16f93934eb26e66a8330af3d4c1f",
+    "visible.json.gz": "ccfd7ee09dffd59880260d2a5ab768a84e8bbd8dbe4f7bd4c479ff314656a0fc",
+    "world-0.json.gz": "8088e60cf181a61fe7ca4d5c13b010c7c624a4847e7b1b0d9da6ae6e0a1e11ec"
+  }
+}

@@ -1,5 +1,5 @@
 import { tokenize } from '../util.js';
-import { movementEvidence } from './narration_evidence.js';
+import { movementEvidence, visualDetail } from './narration_evidence.js';
 import { thresholdSlot } from './living.js';
 import { placeKey } from './place_refs.js';
 import { newPlaceScope, reportedEndpoints } from './movement.js';
@@ -14,6 +14,7 @@ import { privateQuestsOf } from '../content.js';
 // valid answer decides the domain/authority firewall (src/v4/firewall.js), not this module.
 import { O, S, B, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
+import { findQuote } from './finance_evidence.js';
 import { purchaseLines } from './trade.js';
 
 
@@ -630,6 +631,14 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     let stepAt = startScene;
     if (!errors.length && sceneRequired && state?.meta?.ruleset >= 2) for (const d of [...value.deltas].sort((a,b) => a.seq-b.seq)) {
         if (d.type === 'arrive') stepAt = placeKey(state,d.at,content);
+        // The local stealth action needs actual observers. Keep the existing threshold
+        // receipt repair when dropping this sighting would also drop the booked check.
+        const approach = state.last?.outcome?.auth?.approach;
+        if (approach?.stealth && expectedKeys?.[approach.seq] === 'approach' && entrance &&
+            d.type === 'creature.new' && d.ref === entrance.ref && d.present &&
+            (!d.across || (reply && (findQuote(reply,d.across).state !== 'found' || (d.desc || []).some(label => !visualDetail(reply,label)))))) {
+            semanticIssues.push({seq:approach.seq,why:'For the booked stealth approach, report the actual threshold observers with across and individual desc copied from the reply. If only heard, report a clue.'});
+        }
         // Package C (.132): population and life stage of a new creature, at the place of its event (a remote sighting:
         // the place its scene names, else none), by the rule World enforces (src/v4/population.js)
         if (d?.type === 'creature.new') {

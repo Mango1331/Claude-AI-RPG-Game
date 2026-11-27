@@ -111,3 +111,23 @@ test('a malformed purchase receipt leaves that action open and preserves indepen
     assert.equal(p.value.deltas.length,1);
     assert.deepEqual(p.value.expected,{});
 });
+
+test('the reserved sighting can leave a booked stealth approach open, ordinary observation cannot request repair',()=>{
+    const s=campaign();
+    s.scene.approaching='loc.test_threshold';
+    const slot={role:'minion',ref:'threshold_minions',count:2,anchor:'goblin',entities:[]};
+    s.dungeons={[s.scene.approaching]:{run:{floors:{1:{slots:[slot]}}}}};
+    const approach={seq:1,at:s.scene.at,focus:'the lookouts',stealth:true};
+    s.last.outcome.auth.approach=approach;
+    const prose='Alaric leans around the jamb. Two lookouts wait on a crate. The tall one chews. The smaller one listens.';
+    const sight={seq:1,type:'creature.new',ref:slot.ref,count:2,anchor:slot.anchor,species:'goblin',
+        desc:['The tall one chews','The smaller one listens'],present:true,band:'SHORT',population:'independent',life_stage:'adult'};
+    const report=(delta)=>parseExtraction(JSON.stringify({expected:{1:{standpoint:'Alaric leans around the jamb'}},deltas:[delta]}),
+        content.deltaVocab,{places:Object.keys(s.places)},{1:'approach'},{sceneRequired:true,state:s,content,reply:prose,startScene:s.scene.at});
+    const incomplete=report(sight);
+    assert.deepEqual(incomplete.rejected,[]);
+    assert.equal(incomplete.issues.length,1);
+    assert.deepEqual(report({...sight,across:'Two lookouts wait on a crate'}).issues,[]);
+    approach.stealth=false;
+    assert.deepEqual(report(sight).issues,[]);
+});

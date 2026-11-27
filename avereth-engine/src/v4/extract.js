@@ -655,6 +655,11 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     const entered = new Map();
     const present = new Set(state?.scene?.present || []), introduced = new Set();
     if (!errors.length && sceneRequired && state?.meta?.ruleset >= 2) for (const { d, i } of value.deltas.map((d, i) => ({ d, i })).sort((a, b) => a.d.seq - b.d.seq)) {
+        if (d?.type === 'party' && d.agreement && !state.party?.agreements?.[d.agreement]) {
+            const open = Object.values(state.party?.agreements || {}).filter(a => a.who === d.who && a.phase === 'open');
+            semanticIssues.push({index:i,seq:d.seq,why:'party.agreement must be a stored ID, never dialogue. New proposal: null. Open for this NPC: '+
+                (open.map(a=>a.id).join(', ') || 'none')+'. Only report an actual attributed decision; quote its exact words.'});
+        }
         if (d?.type === 'arrive') {
             stepAt = placeKey(state, d.at, content);
             present.clear();

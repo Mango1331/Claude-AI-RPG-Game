@@ -652,6 +652,15 @@ const HANDLERS = {
     },
     go(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT GO — not while the fight runs.' };
+        // A known doorway on the exterior site is a waypoint. When the
+        // player explicitly enters the named destination, keep its entry rules.
+        const approaching = s.scene.approaching;
+        if (approaching && !c.within && typeof c.to === 'string' && lineage(s,c.to).includes(s.scene.at)) {
+            const entry = normText(c.quote).split(/\s+(?:via|through|down|using)\s+/i)[0];
+            const name = placeName(s,approaching);
+            if (entry.endsWith(normText(name)) && entersThisDungeon(entry,name)
+                && !/\b(?:if|unless|instead|but|before|without)\b|\?/i.test(c.quote)) c = {...c,to:approaching};
+        }
         if (typeof c.to?.scene === 'string') {
             const focus = c.to.scene.trim();
             if (!focus || focus.length > 200 || c.within) return {status:'refused', line:'A local approach needs a focus in this scene.'};

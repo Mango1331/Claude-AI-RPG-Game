@@ -381,7 +381,7 @@ export function partyDecision(s, content, command, source, actor, emit, contract
         memberEvent({wait:'wait',follow:'follow',leave:'left'}[c.act],member.request ? {request:null}:{});
     }
     const response = c.act === 'offer' && actor === 'pc'
-        ? ' The proposal is open. Show the named partner’s own reply here, attributing their words clearly. No journey or other player action has been chosen by making this offer.'
+        ? ' The proposal is open. Let the partner answer freely. Put their name with their spoken decision in the same paragraph, so its speaker and terms are clear. No journey or other player action has been chosen by making this offer.'
         : '';
     return {status:'resolved',done:true,line:'PARTY — '+person.name+' · '+c.act+' · '+c.quote+response};
 }

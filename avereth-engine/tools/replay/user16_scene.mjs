@@ -143,6 +143,11 @@ const crossed = await branch(chat,enter,go(dungeon,enter),entry,{scene:room,expe
     {seq:1,type:'arrive',at:room,evidence:entry,with:null}]});
 assert.notEqual(crossed.next.scene.at,outside,JSON.stringify(crossed.events));
 assert(!crossed.next.scene.focus && crossed.next.dungeons[dungeon]);
+// A planner can select the exterior waypoint instead of the dungeon named by the player.
+const namedEntry = 'I enter the Mossback Warrens down the tunnel steps.';
+const via = await branch(chat,namedEntry,go(outside,namedEntry),entry,{scene:room,expected:{1:{arrived:true,at:room,with:null,met:null}},deltas:[
+    {seq:1,type:'arrive',at:room,evidence:entry,with:null}]});
+assert.equal(via.next.scene.at,crossed.next.scene.at);
 const more = 'I follow the passage around the bend.';
 const around = {new:{name:'Bend beyond the adit',kind:'interior',parent:dungeon}};
 const nextRoom = 'Alaric walks around the bend and enters the next passage.';

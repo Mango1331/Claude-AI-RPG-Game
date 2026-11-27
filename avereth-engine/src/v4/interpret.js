@@ -138,6 +138,7 @@ export function catalogText(catalog) {
     // Patch 8: a Living Dungeon's level (src/v4/living.js)
     if ((catalog.dungeon || []).length) L.push(`DUNGEON: ${catalog.dungeon.join(' · ')}`);
     if ((catalog.open || []).length) L.push(`OPEN DECISIONS: ${catalog.open.join(' · ')}`);
+    if (here.approaching) L.push('DUNGEON DESTINATION from this exterior site: '+here.approaching+'. Looking toward it stays local; explicitly entering it targets this ID.');
     if (here.focus) L.push('LOCAL STANDPOINT (same site): ' + here.focus);
     if ((catalog.paid || []).length) L.push(`PAID HERE: ${catalog.paid.join(' · ')}`);
     // Patch 9C-2c: his Passives and the developments offered to him

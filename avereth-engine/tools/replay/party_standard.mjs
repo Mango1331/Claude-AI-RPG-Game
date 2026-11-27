@@ -116,3 +116,34 @@ console.log('AI/AJ original invitation and planner output: bound half, wrong per
     assert.equal(state.party.agreements[state.party.members[who].agreement].terms.quest,null);
 }
 console.log('Ember: current invitation excludes inherited fee; complete fenced decision resolves.');
+
+// A later join cannot earn old work. Death blocks payment and XP; a vested amount is still inspectable.
+const {partyControl}=await import('../../src/v4/party_actions.js');
+const {completeContract}=await import('../../src/v4/guild.js');
+{
+    const s=structuredClone(checkpoint);
+    const [a,b]=[who,helper];
+    const em=e=>applyEvent(s,e);
+    const quest={...q,id:'quest.second',title:'Second contract',payout_cp:95,clear:null,hunt:null,objectives:[],ready:true};
+    delete quest.party_work;delete quest.standard_workers;
+    em({t:'quest.created',d:{quest}});
+    recordWork(s,em,s.quests[quest.id],'shared work',['pc',a]);
+    s.entities[a].status='dead';
+    const initialGold=s.entities.pc.sheet.coin_cp;
+    const end=completeContract(s,content,s.quests[quest.id],em,{c:true});
+    assert.equal(end.ok,true,end.reason);
+    assert.equal(s.entities.pc.sheet.coin_cp-initialGold,95);
+    assert.equal(s.party.claims[quest.id+'/'+a].amount,47);
+    assert.equal(s.party.claims[quest.id+'/'+a].paid,0);
+    assert.equal(s.party.claims[quest.id+'/'+b],undefined);
+    assert.equal(completeContract(s,content,s.quests[quest.id],em,{c:true}).ok,false);
+    s.entities[a].status='alive';
+    for(const id of [a,b])em({t:'party.member',d:{...s.party.members[id],mode:'follow',previous:s.party.members[id].revision}});
+    const ask=()=>assert.fail('organisational request');
+    const sealed=await partyControl({...s,encounter:{id:'test'}},content,{act:'disband',source:'#party disband'},ask);
+    assert.equal(sealed.events.length,0);
+    const result=await partyControl(s,content,{act:'disband',source:'#party disband'},ask);
+    result.events.forEach(em);assert.deepEqual([s.party.members[a].mode,s.party.members[b].mode],['left','left']);
+    assert.equal(s.party.claims[quest.id+'/'+a].amount,47);
+}
+console.log('Absent deceased creditor, later non-contributor, repeat turn-in, combat lock and whole-party disband passed.');

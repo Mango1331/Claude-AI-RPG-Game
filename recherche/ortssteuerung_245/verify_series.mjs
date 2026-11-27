@@ -54,7 +54,17 @@ for(const run of runs){
     assert.equal(cost,Math.round(Number(manifest.costUSD)*1e9));
     nanoDollars+=cost;
     const final=foldChat(rows(dir,'chat.jsonl').slice(1));
-    assert.deepEqual(final.errors,[]);assert.deepEqual(JSON.parse(JSON.stringify(final.state)),JSON.parse(gz(dir,'last-verified-world.json')));
+    assert.deepEqual(final.errors,[]);
+    if (fs.existsSync(path.join(dir,'interrupted-browser-chat.json.gz'))) {
+        const disk = rows(dir,'chat.jsonl').slice(1);
+        const browser = JSON.parse(gz(dir,'interrupted-browser-chat.json'));
+        const projection = chat => chat.map(m=>[m.is_user,m.mes,m.extra?.avereth?.events || []]);
+        assert.deepEqual(projection(browser),projection(disk));
+        assert.equal(digest(JSON.stringify(foldChat(browser).state)),digest(JSON.stringify(final.state)));
+        const turns = fs.existsSync(path.join(dir,'turns.jsonl.gz')) ? rows(dir,'turns.jsonl') : [];
+        const size = turns.at(-1)?.checked.messages ?? initial.length;
+        assert.equal(digest(JSON.stringify(foldChat(disk.slice(0,size)).state)),digest(JSON.stringify(JSON.parse(gz(dir,'last-verified-world.json')))));
+    } else assert.deepEqual(JSON.parse(JSON.stringify(final.state)),JSON.parse(gz(dir,'last-verified-world.json')));
     console.log(run,initial.length,done.length,(cost/1e9).toFixed(9));
 }
 assert.ok(nanoDollars<=1e9);

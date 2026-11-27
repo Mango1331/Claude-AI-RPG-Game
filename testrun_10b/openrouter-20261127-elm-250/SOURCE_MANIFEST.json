@@ -1,0 +1,42 @@
+{
+  "build": "4.3.0-c.6.6.250",
+  "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+  "seed": 3509323178,
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Juniper T2 im Zimmer. Zurück zur wartenden Gruppe und Madge per Orts-HUD, Mahlzeit und Markt.",
+  "savedMessages": 87,
+  "requests": 7,
+  "costUSD": "0.004565570",
+  "usage": {
+    "prompt_tokens": 99273,
+    "completion_tokens": 2463,
+    "total_tokens": 101736
+  },
+  "sha256": {
+    "actions.jsonl.gz": "77ba71dfe4c96c34b11373ffdecc3f59f17f8d57f8d75fde892cf60ae9979d47",
+    "chat-0.jsonl.gz": "5d335757b9b0d52765e7bc8328d10782f89c6961c1cbf32832e896a90dcbbb32",
+    "chat.jsonl.gz": "ffedbf214199f8073c4600a7f4d1394b38ac7f2ccfddb9f3dcc65e2ae869b6bb",
+    "events.json.gz": "9455afa9aa5380dd8388eadc0ccc3610e2ccef9a1e17b10a331929c5d7fe1381",
+    "explore.log.gz": "85762631a92545fb3972ba352407d4e80d173e017b6923d074c73177bdaf8a64",
+    "last-verified-world.json.gz": "9f973a2e24eb3b21c43dd69e342ae123ce574226866f757db1c829de8ef73611",
+    "parent-check.json.gz": "4c29ebd8fd42c3a9f284834b922fcace2c76e473b9800916b851157de27f6b83",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "328dce62a029f2882fed3fac6050266b43cf18bd1673d1155c7c130a84e20f7d",
+    "raw-309.gz": "54288315d58569aefd40d57fb30b382d7eb1f446577e4a77cf0e751b4c050486",
+    "raw-310.gz": "c15d3fb33a2fbae5dcc9e89b7702b67213abc274cc8b728234b588b7dc86f590",
+    "raw-311.gz": "f9b241eb4493aa216df0a8f308d5fc6c01ae2c9efa7a952ef4a862eb55a61a31",
+    "raw-312.gz": "b1a971eced6f204772f1c030da12a7becf77eb595fe80a4996d52c5893e64e6f",
+    "raw-313.gz": "44a876caf7acaa2738bde4b99345537a919884aee0fa1b380ef6ca53d36fef90",
+    "raw-314.gz": "8ca44c69e8eb12559ca34ed570e649137b84ea56f9929fab782c81132977690a",
+    "raw-315.gz": "f993866d3193478e021edbbb74ba2c8f59a621c63add34abf3e20bd385de4bed",
+    "requests.jsonl.gz": "985f87cfc5845ece89538399052290d1170759c258f018c06d83727e2f82c8d5",
+    "response.json.gz": "08ca169c3c2baef57404dcd9a233bbfb91fbe303d9c46c7f1b5d9a40719769f6",
+    "st.log.gz": "c6ea20fb0a521861f904119b01048076e3818d6f8012872aa165ad09eff55d81",
+    "turns.jsonl.gz": "a003ca3af46784e43cd9789de6fbf4d9b7324ef9786d229b544eb09527292c94",
+    "visible.json.gz": "a1d889d8b498d225ace5c18a1091e773400afd8f5f88d470a165b14fdc6f9b6b",
+    "world-0.json.gz": "a8044950f879502e08cb066a97250a8b7d935ffed75f854bd374e894ae55a2b4"
+  }
+}

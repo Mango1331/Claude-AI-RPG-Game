@@ -1,0 +1,39 @@
+{
+  "build": "4.3.0-c.6.6.250",
+  "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+  "seed": 3509323178,
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Hazel T3 beim Wiedersehen am Markt. Wiederaufnahme, Kapelle und freies Nachforschen.",
+  "savedMessages": 23,
+  "requests": 4,
+  "costUSD": "0.002722332",
+  "usage": {
+    "prompt_tokens": 57382,
+    "completion_tokens": 1956,
+    "total_tokens": 59338
+  },
+  "sha256": {
+    "actions.jsonl.gz": "d953529d0401a0ec5e58caa3213bb10e00e812483500456feb818f495596a4cd",
+    "chat-0.jsonl.gz": "94cde7b870f16bded0c129eb3075f5f30d97a35b55344a6cef845337184c8776",
+    "chat.jsonl.gz": "03541530d28d9d31ebb25ad9922c9f3354326902efaea3899c86db2efdfbd7ae",
+    "events.json.gz": "c912a38f36084b8468c053cafcc191f4e8019b3a60ce6b8e5d1be40b24ade550",
+    "explore.log.gz": "f12016250ef832b2fdf80334599655b012c1716ce180c1d8170dcdf30dfe0dc5",
+    "interrupted-browser-chat.json.gz": "38844b1ef15adc5cdc059847f84d6d3e35308a78c92290cdbb95cb9c892caed4",
+    "last-verified-world.json.gz": "b088cdd63cc51daf30837795c2b823d36141b112b4935b2388b471afc3ede542",
+    "parent-check.json.gz": "5fe551365f54e40daecdb71d87d7129ad3dfd083148d1637e21c3ffc9fbb1190",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "2f6ba4334d1607fcd6bba22534b539455721d44827f349de372f67afc540d2c1",
+    "raw-282.gz": "795647a2d3db21270a91080b9f6c571490b0b581b0ef4849b702a48acb65f2e5",
+    "raw-283.gz": "8b6de4c61ec38be8a3c100d33201473814f999c0ef66289d97a88f5dbf4a0770",
+    "raw-284.gz": "e9991e829bf9a41453857f95cdb83a5287c04fe135da72b90fd37fc4e942603c",
+    "raw-285.gz": "80703bfd6f9b38d8b909088b0737297de20e0fabba39ebf3ff07ac96741c3002",
+    "requests.jsonl.gz": "cf4098d05d3dbb2d8b2f405c6e60e16bca7624b4100c31e55c6db7ea1d33a726",
+    "response.json.gz": "a5307ae8d9d0f7d5a6f0a6c40ed33b24e08bff42bb672ac02dd2e6fded7d3c1b",
+    "st.log.gz": "d95a8a245e8139b6d5d1ab46e57a61459f1d85489d53131a4cbcd3591a620f5e",
+    "visible.json.gz": "d66f3aaa29c2f15469f1afed7596465e22a53cd311862d01cf4bc80a7daf3f8d",
+    "world-0.json.gz": "b088cdd63cc51daf30837795c2b823d36141b112b4935b2388b471afc3ede542"
+  }
+}

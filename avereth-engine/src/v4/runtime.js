@@ -1,4 +1,4 @@
-import { chosenKnownRoute, explicitJourneyClause, knownRoutes } from './known_routes.js';
+import { knownRouteTarget, explicitJourneyClause, knownRoutes } from './known_routes.js';
 import {SurrenderTransferError} from './commands.js';
 import {negotiationExtraction,reactionError,describeTerms} from './surrender.js';
 import {extractJsonObject} from './json.js';
@@ -394,10 +394,10 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const reuse = previous?.plan && previous.interp?.commands ? {travel_frame:previous.plan.travel_frame, hud_binding:previous.plan.hud_binding || priorBinding?.hud_binding, hud_normalized:previous.plan.hud_normalized || priorBinding?.hud_normalized, commands: previous.interp.commands, failed: false, error: null, ms: 0, repaired: !!previous.interp.repaired, raw: previous.plan.raw || [], calls: previous.plan.llm, recovery: previous.plan.recovery || null } : null;
     const moveHints = commands => {
         const hints = ineffectiveMoves(before, ctx, commands);
-        if (actionInput || ctx.fight || rulesetOf(before)<2 || chosenKnownRoute(before,msg.mes)) return hints;
+        if (actionInput || ctx.fight || rulesetOf(before)<2) return hints;
         const missing = !commands.length;
         const localOnly = commands.length === 1 && commands[0].type === 'go' && commands[0].to?.scene;
-        if ((missing || localOnly) && explicitJourneyClause(msg.mes))
+        if ((missing || (localOnly && !knownRouteTarget(before,commands[0].to.scene).length)) && explicitJourneyClause(msg.mes))
             hints.push("Recheck the player's stated destination and the actual scene. Preserve their chosen journey toward an unvisited place or back along a route. A destination elsewhere is not a standpoint here. Preserve obstacles and leave arrival for the world report.");
         return hints;
     };
@@ -445,8 +445,6 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
             irRec:{v:IR_VERSION,route:'v3',reason:'hud',links:[],acts:combatChoice.steps.map(s=>({...s,source:'player'}))}});
     }
     if (!actionInput) pl.commands = splitPartyDeparture(before, msg.mes, pl.commands);
-    const chosen = !actionInput && !pl.commands.length && chosenKnownRoute(before,msg.mes);
-    if (chosen) pl.commands=[{seq:1,type:'go',to:chosen,quote:msg.mes.split(/[.!?]/)[0]}];
     const guarded = guardCommands(msg.mes, pl.commands.filter(c=>!hud?.bound.includes(c.seq)), guardContext(before, content, catalog));
     if(hud)guarded.kept=[...guarded.kept,...pl.commands.filter(c=>hud.bound.includes(c.seq))].sort((a,b)=>a.seq-b.seq);
     const partySteps = guarded.kept.filter(c=>c.type==='party');

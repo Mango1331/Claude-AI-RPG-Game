@@ -100,7 +100,7 @@ export function playerTurnV4(state, content, text, { msg = null, commands = [], 
     }
     const actions = interp.failed
         ? ['NOTHING TO BOOK — the engine could not read what Alaric decided in this message; narrate only what changes nothing about him (no travel, no payment, no acceptance), and stop at his next decision.']
-        : ctx.actions.length ? ctx.actions : ['NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; narrate what he says and does, and the world\'s response.'];
+        : ctx.actions.length ? ctx.actions : ['NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; no journey to another place was booked. He ends this reply at WHERE. Narrate conversation, movement within this scene and the world\'s response.'];
     if (ctx.camp && ctx.auth.gather) {
         ctx.camp.gather = steps.filter(cmd => cmd.type === 'activity' && cmd.kind === 'gather' &&
             ctx.resolutions.some(r => r.seq === cmd.seq && r.status === 'authorized')).map(cmd => cmd.what).filter(Boolean);

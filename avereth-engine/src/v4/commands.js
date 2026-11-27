@@ -1,4 +1,4 @@
-import { chosenKnownRoute } from './known_routes.js';
+import { knownRouteTarget } from './known_routes.js';
 import { following, partyDecision } from '../party.js';
 import { applyEvent } from '../state.js';
 import { tradeDraft } from '../trade_input.js';
@@ -665,10 +665,13 @@ const HANDLERS = {
             if (entry.endsWith(normText(name)) && entersThisDungeon(entry,name)
                 && !/\b(?:if|unless|instead|but|before|without)\b|\?/i.test(c.quote)) c = {...c,to:approaching};
         }
-        if (typeof c.to?.scene === 'string' && envx?.c && rulesetOf(s)>=2 && !c.within) {
-            const chosen=chosenKnownRoute(s,c.quote);
-            if (chosen) c={...c,to:chosen};
-            else if (s.services?.some(x=>x.service==='lodging' && x.at===s.scene.at && x.turn===s.turn)
+        const focus = c.to?.scene ?? c.to?.new;
+        if (typeof focus === 'string' && envx?.c && rulesetOf(s)>=2 && !c.within) {
+            const matches = knownRouteTarget(s,focus);
+            if (matches.length > 1) return {status:'clarify',reason:'which place',
+                line:`CLARIFY — which place does he mean: ${matches.map(id => placeName(s,id)).join(' or ')}?`};
+            if (matches.length) c = {...c,to:matches[0]};
+            else if (c.to.scene && s.services?.some(x=>x.service==='lodging' && x.at===s.scene.at && x.turn===s.turn)
                 &&  /^(?:upstairs|up the stairs|(?:(?:the|my|our|rented|paid|upstairs) )*(?:room|quarters|lodging)(?: upstairs)?)$/i.test(c.to.scene.trim()))
                 c={...c,to:{new:c.to.scene}};
 

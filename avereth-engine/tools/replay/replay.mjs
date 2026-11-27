@@ -346,6 +346,16 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         }
         const { open, accepted, stale } = acceptedDiffs(all, list?.cases || {}, result);
         console.log(`baseline ${baseline.sha} (${baseline.engine}): ${compared} cases compared, ${all.length} differing${file ? `, ${accepted.length} of them accepted with their exact output, ${open.length} not accepted, ${stale.length} accepted but equal` : ''}`);
+        if (args.includes('--categories')) {
+            const categories = { semantic: [], protocol: [], mechanical: [], unexplained: [] };
+            for (const id of accepted) {
+                const category = list.cases[id].category;
+                categories[Object.hasOwn(categories, category) ? category : 'unexplained'].push(id);
+            }
+            categories.unexplained.push(...open.map(d => d.id), ...stale);
+            console.log(JSON.stringify(categories));
+            if (categories.unexplained.length) process.exitCode = 1;
+        }
         for (const d of open.slice(0, Number(opt('--show') || 50))) console.log(JSON.stringify(d));
         for (const id of stale) console.log(JSON.stringify({ id, accepted_but_equal: true }));
         if (open.length || stale.length) process.exitCode = 1;

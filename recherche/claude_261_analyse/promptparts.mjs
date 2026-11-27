@@ -1,0 +1,11 @@
+import { pathToFileURL } from 'node:url'; import path from 'node:path';
+const root = process.argv[2];
+const h = await import(pathToFileURL(path.join(root, 'tests/helpers.js')).href);
+const c = await h.loadProductContent(); const ex = await import(pathToFileURL(path.join(root, 'src/v4/extract.js')).href);
+const v = c.deltaVocab;
+const d = v.deltas.map(x => [ex.deltaVocabularyText({ deltas: [x] }).length, x.type]).sort((a, b) => b[0] - a[0]);
+console.log('top deltas', d.slice(0, 12).map(x => x.join(':')).join(' '));
+const r = v.rules.map((x, i) => [x.length, i, x.slice(0, 70)]).sort((a, b) => b[0] - a[0]);
+for (const x of r.slice(0, 10)) console.log(x[0], '#' + x[1], x[2]);
+const all = v.rules.join(' ') + ex.deltaVocabularyText(v);
+for (const w of ['party', 'trade', 'price', 'arrive', 'present', 'travel', 'dungeon', 'quest', 'skill', 'combat', 'stealth', 'creature']) console.log(w, (all.match(new RegExp('\\b' + w, 'gi')) || []).length);

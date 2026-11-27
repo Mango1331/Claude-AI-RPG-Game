@@ -4,6 +4,7 @@ Hier stehen **nur Quellenlinks**, keine wiederholten Ergebnisbeschreibungen. Erg
 
 | Etappe / Forschungsfeld | Berichte und unabhängige Reviews | Reproduktion und Originale |
 |---|---|---|
+| **.261 · Gesamtarchitektur, Effizienz und Beta-Reife (Claude-Analyse)** | [Unabhängige Gesamtanalyse mit Paketen A–D](AVERETH_261_GESAMTARCHITEKTUR_EFFIZIENZ_UND_BETA_REIFE_CLAUDE.md) | [Offline-Skripte und Ergebnisse](claude_261_analyse/) |
 | **.261 · Restpaket nach Claim + State** | [Extractor-Recovery und Teilübernahme](AVERETH_261_EXTRACTOR_RECOVERY_ABNAHME.md) | [Abnahme der Validierungsvereinfachung auf .260](AVERETH_252_VALIDIERUNGSVEREINFACHUNG_ABNAHME.md) |
 | **.252 · Validierungsvereinfachung V1** | [Claim + State · technische Abnahme auf .260 und Replay-Einzelbewertung](AVERETH_252_VALIDIERUNGSVEREINFACHUNG_ABNAHME.md) | [User14-Originale](../testrun_10b/user-20261126-010332-215/SOURCE_MANIFEST.md) |
 | **.251 · Validierungsarchitektur (Analyse und Plan abgeschlossen)** | [Diskussionsgrundlage für Claude](AVERETH_251_VALIDIERUNGSARCHITEKTUR_DISKUSSION_2026-11-27.md) · [Claude-Analyse und Plan, Stand 2](AVERETH_251_CLAUDE_VALIDIERUNGSARCHITEKTUR_ANALYSE_UND_PLAN.md) · [GPT-Gegenreview und zweite Selbstprüfung](AVERETH_251_GPT_GEGENREVIEW_CLAUDE_VALIDIERUNGSARCHITEKTUR.md) · [Codex-Auftrag .252](AVERETH_252_CODEX_AUFTRAG_VALIDIERUNGSVEREINFACHUNG.md) | [Offline-Proben und Zählung](claude_251_analyse/) · [Originalfälle](AVERETH_251_VALIDIERUNGSARCHITEKTUR_DISKUSSION_2026-11-27.md#2-warum-die-frage-gerade-jetzt-wieder-aufkam) |

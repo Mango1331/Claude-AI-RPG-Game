@@ -1,0 +1,150 @@
+# Offline-Ergebnisse .261-Analyse (Claude, 27.11.2026). Keine Modellaufrufe. Produkt: 4b637c98 (.261); Vergleich .251: 4933a5f0.
+
+## graph.py (.261)
+files 101 lines 37610 bytes 2788672
+
+Top by size (lines, KB, fan-in, fan-out):
+  4008  313KB in=  3 out= 44 src/v4/world.js
+  2215  192KB in=  5 out= 38 src/v4/commands.js
+  1134  112KB in=  1 out= 26 src/v4/planner.js
+  1184  110KB in=  4 out= 28 src/context.js
+  1349  108KB in= 10 out= 15 src/v4/guild.js
+  1671  105KB in=  6 out= 20 src/combat.js
+  1427   99KB in=  1 out= 38 src/v4/runtime.js
+  1268   93KB in=  5 out= 34 src/engine.js
+  1040   77KB in=  7 out= 10 src/delta.js
+  1028   68KB in= 15 out=  4 src/v4/living.js
+   962   57KB in=  0 out= 17 index.js
+   729   56KB in=  3 out= 11 src/v4/extract.js
+   683   45KB in= 11 out=  8 src/v4/growth.js
+
+## latency.py
+click→firstProse  n=148 median=6.4s p75=7.7s p90=9.6s
+click→ready       n=211 median=12.3s p75=16.0s p90=20.6s
+lastRender→ready  n=211 median=0.4s p75=3.1s p90=5.3s
+X-validation wait n=211 median=4.4s p75=7.1s p90=10.0s
+turns without prose (local/native) click→ready n=63 median=13.7s p75=19.6s p90=22.1s
+
+## reqsize.py
+planner n 242 chars median 55482 p90 57831
+narrator n 217 chars median 55336 p90 58302
+extractor n 291 chars median 66014 p90 69375
+party_decision n 4 chars median 1002 p90 1050
+board n 2 chars median 13685 p90 15814
+planner system chars median 47214
+extractor system chars median 53439
+planner usage n 242 prompt med 14013.0 compl med 80.0 cached n 242 cached med 11520.0
+narrator usage n 217 prompt med 11961 compl med 386 cached n 217 cached med 6912
+extractor usage n 291 prompt med 15560 compl med 355 cached n 291 cached med 11520
+party_decision usage n 4 prompt med 252.5 compl med 37.5 cached n 4 cached med 0.0
+board usage n 2 prompt med 3207.5 compl med 1038.0 cached n 2 cached med 1280.0
+
+## x_per_turn.py
+222 N 1 X 0 X/N 0.00 repairs 0
+223 N 3 X 4 X/N 1.33 repairs 1
+224 N 16 X 18 X/N 1.12 repairs 2
+225 N 3 X 5 X/N 1.67 repairs 2
+226 N 3 X 5 X/N 1.67 repairs 2
+227 N 20 X 28 X/N 1.40 repairs 7
+229 N 6 X 7 X/N 1.17 repairs 1
+230 N 1 X 2 X/N 2.00 repairs 1
+231 N 10 X 14 X/N 1.40 repairs 3
+232 N 6 X 12 X/N 2.00 repairs 4
+233 N 3 X 7 X/N 2.33 repairs 2
+234 N 10 X 12 X/N 1.20 repairs 1
+235 N 18 X 21 X/N 1.17 repairs 3
+242 N 24 X 29 X/N 1.21 repairs 5
+243 N 13 X 18 X/N 1.38 repairs 5
+244 N 17 X 26 X/N 1.53 repairs 9
+246 N 1 X 2 X/N 2.00 repairs 1
+247 N 8 X 11 X/N 1.38 repairs 3
+248 N 13 X 16 X/N 1.23 repairs 4
+249 N 5 X 7 X/N 1.40 repairs 2
+250 N 23 X 30 X/N 1.30 repairs 6
+251 N 13 X 15 X/N 1.15 repairs 2
+
+## chat_size.py heron-250
+total 1928465
+   716359 37.1% swipe_info
+   396780 20.6% av.events
+   255913 13.3% extra.display_text
+   124343  6.4% av.hud
+    86676  4.5% mes
+    84476  4.4% swipes
+    66375  3.4% av.narration
+    61638  3.2% av.extraction
+    32074  1.7% av.panel
+    29483  1.5% av.plan
+    18646  1.0% av.ir
+    13890  0.7% av.interp
+    12154  0.6% extra.reasoning
+     5944  0.3% av.rejected
+   109882 event outcome.recorded
+    25194 event encounter.updated
+    24978 event memory.recorded
+    22797 event encounter.started
+    16766 event delta.rejected
+    16123 event fact.asserted
+    15151 event cmd.interpreted
+    12233 event quest.created
+    10738 event pulse.outcome
+     8379 event turn.begun
+
+## context_growth.py
+openrouter-20261127-heron-250 X user [9650, 17215, 17475, 13404, 12405] X catalog [7506, 12111, 12781, 10043, 10043] P user [6016, 6041, 10842, 8476, 8477] N total [56464, 60677, 60183, 54745, 54980] N msgs [13, 13, 13, 13, 13]
+openrouter-20261127-s-232 X user [16133, 16133, 13541, 11107, 11107] X catalog [11788, 11788, 9320, 9054, 9054] P user [11439, 11439, 8599, 8723, 8723] N total [60566, 60566, 56837, 54437, 54437] N msgs [13, 13, 13, 13, 13]
+
+## promptsize.mjs .251 / .261
+{"root":"o251","extractorSystem":53714,"rules":20248,"rulesN":47,"deltas":23231,"deltasN":38,"format":9609}
+{"root":"prod","extractorSystem":51968,"rules":19966,"rulesN":48,"deltas":23128,"deltasN":38,"format":8251}
+
+## promptparts.mjs .261
+top deltas 2546:creature.new 1993:thread 1671:party 1437:feature 1264:coin.gift 1124:person.new 997:passage 953:bid 895:object.new 842:offer 837:dungeon 695:area
+1299 #2 Overreach is only for meaningful voluntary PC commitments the narrator
+1108 #46 PERSON CONTINUITY: preserve known identities and their established his
+819 #12 Tracks, spoor, hair, a wallow, sounds, shadows or other evidence of an
+811 #24 creature.new population and life_stage are required for every creature
+807 #19 For person.new, role is a short plain word for what the person is in t
+716 #32 A known object voluntarily handed to Alaric by an NPC is object.move t
+653 #21 For person.new, relevant:true means important to Alaric's decision IN 
+574 #30 For every active Guild contract in the CATALOG, compare THIS reply wit
+570 #5 Known places, people, quests and objects by their id from the CATALOG;
+528 #34 arrive.forced_by is only for an external event that actually relocates
+party 1
+trade 7
+price 20
+arrive 17
+present 18
+travel 12
+dungeon 10
+quest 39
+skill 4
+combat 8
+stealth 0
+creature 34
+
+## foldtime.mjs (.261 engine)
+{"file":"openrouter-20261127-heron-250","messages":128,"events":971,"median_ms":10.4,"min_ms":7.9,"errors":0,"state_kb":109}
+{"file":"openrouter-20261127-s-232","messages":120,"events":1000,"median_ms":6.5,"min_ms":4.9,"errors":0,"state_kb":128}
+{"file":"openrouter-20261127-sage-248","messages":112,"events":834,"median_ms":7.8,"min_ms":6.5,"errors":0,"state_kb":89}
+{"file":"openrouter-20261127-oriole-251","messages":86,"events":756,"median_ms":7,"min_ms":5.4,"errors":0,"state_kb":93}
+
+## npm test (.261)
+# tests 3649
+# suites 0
+# pass 3649
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 76652.691909
+
+## npm run replay:check (.261)
+b17-warrior: player 168 (board 7, forge 1, control 14, planner failed 3) · reply 141 (extraction failed 0, empty 0) · skipped {"campaign start":1} · replay errors 0 · fold 2206 events, 0 fold errors, 0 validation problems · vs original build 102 same / 207 different
+b18-mage: player 22 (board 1, forge 0, control 4, planner failed 0) · reply 17 (extraction failed 1, empty 0) · skipped {"campaign start":1} · replay errors 0 · fold 283 events, 0 fold errors, 0 validation problems · vs original build 16 same / 23 different
+b18-rogue: player 200 (board 1, forge 0, control 10, planner failed 4) · reply 181 (extraction failed 1, empty 0) · skipped {"campaign start":1} · replay errors 0 · fold 2278 events, 0 fold errors, 0 validation problems · vs original build 137 same / 244 different
+b18-warrior: player 200 (board 3, forge 1, control 16, planner failed 0) · reply 173 (extraction failed 0, empty 0) · skipped {"campaign start":1} · replay errors 0 · fold 2229 events, 0 fold errors, 0 validation problems · vs original build 171 same / 202 different
+b19-mage: player 94 (board 2, forge 0, control 8, planner failed 0) · reply 74 (extraction failed 0, empty 0) · skipped {"campaign start":1} · replay errors 0 · fold 1115 events, 0 fold errors, 0 validation problems · vs original build 56 same / 112 different
+b19-rogue: player 32 (board 1, forge 0, control 3, planner failed 0) · reply 29 (extraction failed 0, empty 0) · skipped {"campaign start":1} · replay errors 0 · fold 456 events, 0 fold errors, 0 validation problems · vs original build 21 same / 40 different
+b19-warrior: player 200 (board 3, forge 1, control 13, planner failed 0) · reply 170 (extraction failed 0, empty 0) · skipped {"campaign start":1} · replay errors 0 · fold 2352 events, 0 fold errors, 0 validation problems · vs original build 142 same / 228 different
+baseline b8d2af4b76cd0bc52ac178b8c500e5733878ecee (4.3.0-c.6.6.126): 2235 cases compared, 1392 differing, 1392 of them accepted with their exact output, 0 not accepted, 0 accepted but equal

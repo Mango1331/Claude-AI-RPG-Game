@@ -2518,6 +2518,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             deniedPresence.add(who);
             return false;
         }
+        if (stealthGo?.manner?.scope === 'destination' && stealthAt === s.scene.at && s.scene.at !== startAt
+            && (d.type === 'aware' || d.type === 'position') && state.scene.present.includes(who) && !s.scene.present.includes(who)) {
+            reject(d, 'npc_presence', 'An observer left at departure needs an arrival or entry at the stealth destination.');
+            return false;
+        }
         if (!s.scene.present.includes(who)) enterKnown(who, d);
         return s.scene.present.includes(who);
     }

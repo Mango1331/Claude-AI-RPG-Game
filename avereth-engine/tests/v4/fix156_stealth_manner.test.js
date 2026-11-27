@@ -56,6 +56,20 @@ test('156 original journey + stealth is repaired as one approach before any sour
     assert.equal(folded.state.last.check.automatic, true, 'snoring alone did not establish a visible/canonical observer');
     assert.equal(n, 2);
 });
+test('arrival stealth counts a departure witness only after an entry or actual shared travel', () => {
+    for (const claim of ['aware','position']) {
+        for (const arrival of ['neither','companion','enter']) {
+            const stop = {...arrived(TARGET),with:arrival === 'companion' ? ['npc.hesk'] : null};
+            const deltas = [stop];
+            if (arrival === 'enter') deltas.push({seq:2,type:'enter',who:'npc.hesk'});
+            deltas.push(claim === 'aware' ? {seq:3,type:claim,who:'npc.hesk',level:'unaware'} : {seq:3,type:claim,who:'npc.hesk',band:'SHORT'});
+            const r = applyWorld(begin().state,content,{expected:{1:{arrived:true}},deltas});
+            assert.equal(r.state.scene.present.includes('npc.hesk'),arrival !== 'neither');
+            assert.equal(!!r.state.last.check.automatic,arrival === 'neither');
+        }
+    }
+});
+
 test('156 destination check sees real target observers and uses one die, both success and failure', () => {
     const outcomes = new Set();
     for (let seed = 1; seed <= 12; seed++) {

@@ -1,0 +1,35 @@
+{
+  "build": "4.3.0-c.6.6.222",
+  "commit": "0696b7665752755f66ef825c269254d099a92e9a",
+  "seed": 3509323178,
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "User14 / originals/chat.jsonl, M0–14 einschließlich",
+  "savedMessages": 19,
+  "requests": 4,
+  "costUSD": "0.002425892",
+  "usage": {
+    "prompt_tokens": 55586,
+    "completion_tokens": 574,
+    "total_tokens": 56160
+  },
+  "sha256": {
+    "actions.jsonl.gz": "51c29bad3a9a8982fef650f95e893433a23aa0f7b7c0fc13d788a85b7a0a3fe4",
+    "chat.jsonl.gz": "ba87b2f7a7b71cef6defe13d718dccef416e57e21ca087307350a82e57aa054b",
+    "events.json.gz": "277a5bd76d8ac76c6666bf02c21c2b19eefc47b7a5af3925ffba026986ad628d",
+    "interrupted-browser-chat.json.gz": "8057bfb89c0ba025cf4f4822eda21bd379faa0b32867c73c3730ccdbfbcf5e0f",
+    "last-verified-world.json.gz": "8088e60cf181a61fe7ca4d5c13b010c7c624a4847e7b1b0d9da6ae6e0a1e11ec",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "511006cd8fb14be8ae881b4583cd9d7dd0b465b9558f3aaf028bbf969c9a3b93",
+    "raw-1.gz": "c751e810a8ea6f5b61e4daa891bf725419a5e340617127a34777cc4443e098a7",
+    "raw-2.gz": "8c189a1fbd7725ff9c289eb7c9e15340d599f229367d9ac4bddd8660fe27e1ad",
+    "raw-3.gz": "2050ffad9c9f00195a1e5a8e751704dc0697f7d088f11fe7f54a2c8c7e77e206",
+    "raw-4.gz": "610965fd315137d7b1f3a1b466668b885544b62b75353844bf4581f67e051be1",
+    "requests.jsonl.gz": "601a3cb41c78404ff307651c926a8ef2224f8a8d02894949414d0778811e3631",
+    "st.log.gz": "c54cd7f94929ea63fab854252a62d557de9c406b13e308944de2f700f61c4d61",
+    "turns.jsonl.gz": "bf9c25a1f0e5a7c3363b411eb9d2424186af47309858fb9b21c7bcd02f07d748",
+    "visible.json.gz": "3b3aa93bffec1515c68e7c7f27f5a365ad2e4fc56620653c12eeb1155455ab98"
+  }
+}

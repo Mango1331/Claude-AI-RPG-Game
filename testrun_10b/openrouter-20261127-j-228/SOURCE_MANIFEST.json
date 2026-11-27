@@ -1,0 +1,33 @@
+{
+  "build": "4.3.0-c.6.6.228",
+  "commit": "072c3f19bb82e60747605176c3f22ad05364f821",
+  "seed": 526138360,
+  "model": "openai/gpt-4.1-mini",
+  "provider": "openai",
+  "reasoning": null,
+  "st": "1.19.0",
+  "prefix": "Original User16 M38; vorhergehende User16-Dialoge mit aus .221/.222 nachvollzogenen lokalen GO- und Erinnerungsbelegen, M38-Extraktion ausschließlich live.",
+  "savedMessages": 39,
+  "requests": 2,
+  "costUSD": "0.0043340",
+  "usage": {
+    "prompt_tokens": 30163,
+    "completion_tokens": 256,
+    "total_tokens": 30419
+  },
+  "sha256": {
+    "actions.jsonl.gz": "bcf800b2d8e6eb7c4cffa073bf15295bf60a5ef0cb97e85c07986f888ffa0af3",
+    "chat.jsonl.gz": "a80b9c95cf2f005d48e908c765d0aab24a5c126825ebf1c3397e640b0c617ec6",
+    "entry-boundary.json.gz": "bab451a8827230beafa86453f5fa1f677f3bf67a12aaa7be60225f1dae3b4a9e",
+    "events.json.gz": "d17631faf9f4d7dfc74644789c211129475e9044c9aa55dd97aa3373c958dec4",
+    "last-verified-world.json.gz": "3050904920fbb3c068bd547337301fde595fa891f89e17037cbc0b0293b23d9a",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "60660389227ad0ae11798fb07916b7c0e25f0045343783fa3965c769acbdb166",
+    "raw-165.gz": "fc0d1f8c7076d3e6d8412d3848cc8262884dd6053e9841dc6f033ca1ca2044fe",
+    "raw-166.gz": "518b356ec9260a40efbf013884ed2048ad7f01f5a8dfeda0b6f27b0ce0777012",
+    "requests.jsonl.gz": "ff2d691a6207ba5a0dbc306de6987012626935037c861afef7b8d4044ca4cb58",
+    "st.log.gz": "98865033f74f04c2c34ad5a46131660638a0e12e7ba857a95b77403b78d22a89",
+    "turns.jsonl.gz": "84b36ee01ffb2933502fdcfaee920a295ff8b0a8b538cdfacf1a700d1493ce8f",
+    "visible.json.gz": "af0521fbdf5e3965c0513620bbd3ba53ffddda140471c45fa72bc3e1f607be6e"
+  }
+}

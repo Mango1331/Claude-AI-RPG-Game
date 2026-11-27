@@ -2131,8 +2131,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const sl = a && x.run.floors[a.floor]?.slots.find((y) => y.id === a.slot);
         if (sl && !slotMet(sl) && !resolved(s, sl) && !sl.entities.some(id => namedHere.has(id))) {
             step = { kind: 'engine' };
-            const ids = newEntity({ seq: 0, type: 'creature.new', ref: sl.ref, species: sl.species, anchor: sl.anchor, desc: [], count: sl.count, present: true, band: 'MEDIUM', more: true }, 'creature', { slot: { root: x.id, floor: a.floor, slot: sl, existing: !!sl.entities.length } });
-            if (ids.length && sl.entities.length) corrections.push('ENGINE ENCOUNTER — here: '+ids.map(id=>s.entities[id].name).join(', '));
+            const reserved = !!sl.entities.length;
+            const ids = newEntity({ seq: 0, type: 'creature.new', ref: sl.ref, species: sl.species, anchor: sl.anchor, desc: [], count: sl.count, present: true, band: 'MEDIUM', more: true }, 'creature', { slot: { root: x.id, floor: a.floor, slot: sl, existing: reserved } });
+            if (ids.length && reserved) corrections.push('ENGINE ENCOUNTER — here: '+ids.map(id=>s.entities[id].name).join(', '));
             else if (ids.length) corrections.push(`ENGINE ENCOUNTER — ${sl.name ? sl.name : `${sl.count} ${sl.species}${sl.count > 1 ? 's' : ''}`} ${sl.count > 1 ? 'are' : 'is'} here in ${placeName(s, freshPart)} (the engine placed ${sl.count > 1 ? 'them' : 'it'} for this part of level ${a.floor}): the next reply shows ${sl.count > 1 ? 'them' : 'it'} at once.`);
         }
     }
@@ -2479,7 +2480,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         emit({ t: 'quest.ready', d: { id: q.id, note: `${claimed}${short.length ? ` — ${alternative}` : ''}`.slice(0, 220), ...(short.length ? { alternative: alternative.slice(0, 200) } : {}) } });
         if (s.party) {
             grant('quest.earned');
-            const escorts = following(s).filter(m => s.party.agreements[m.agreement]?.terms.quest === q.id);
+            const escorts = following(s);
             if (escorts.length && q.journey && q.objectives?.some(o => o.verb === 'ESCORT'))
                 recordWork(s,emit,q,'escort/'+s.scene.at,['pc',...escorts.map(m=>m.who)]);
             vestQuest(s,emit,q);

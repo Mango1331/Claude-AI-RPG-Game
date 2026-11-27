@@ -745,7 +745,7 @@ function closeLatePending(chat, u) {
  * calls, and how often and how long the chat was folded meanwhile.
  */
 function turnPerf(r, t0, f0, waited) {
-    const llm = (r.plan ? r.plan.ms || 0 : r.interp?.ms || 0) + (r.board?.ms || 0) + (r.forge?.ms || 0);
+    const llm = (r.plan ? r.plan.ms || 0 : r.interp?.ms || 0) + (r.board?.ms || 0) + (r.forge?.ms || 0) + (r.party_call?.ms || 0);
     const f = foldStats();
     return {
         ...(Number.isFinite(waited) ? { wait_ms: waited } : {}),

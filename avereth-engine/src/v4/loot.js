@@ -9,6 +9,7 @@
 //   carries, what their pack holds, and a purse that fits their station (template)
 // - stacks: the same material of the same Rank is one stack (object.added); another Rank is another stack
 // - never: a foe that fled, surrendered or survived, a fight Alaric fled or died in, a foe already looted, equipping
+import { splitPool } from '../progression.js';
 import { hash32, slug, normText } from '../util.js';
 import { rankOf } from '../derived.js';
 import { weaponFamily } from '../content.js';
@@ -176,8 +177,15 @@ export function lootEvents(s, content, enc) {
         lines.push(g.name);
     }
     if (coin > 0) {
-        events.push({ t: 'coin.changed', d: { id: carrier, value: (s.entities[carrier].sheet.coin_cp || 0) + coin, delta: coin, why: 'loot' } });
-        lines.push(`${coin} cp`);
+        const present=Object.keys(enc.participation || {}).filter(id=>{
+            const c=enc.combatants[id], interval=enc.participation[id];
+            return !c.current.defeated && !c.current.escaped && (interval.qualified || (interval.to ?? enc.pending_xp)>interval.from);
+        });
+        const recipients=present.some(id=>s.party?.members[id]?.standard) && present.includes(carrier) ? present : [carrier];
+        for(const [id,amount] of Object.entries(splitPool(coin,recipients))) if(amount) {
+            events.push({t:'coin.changed',d:{id,value:(s.entities[id].sheet.coin_cp || 0)+amount,delta:amount,why:'loot'}});
+            lines.push(recipients.length===1 ? amount+' cp' : amount+' cp → '+s.entities[id].name);
+        }
     }
     for (const e of events) {
         const obj = e.d.object;

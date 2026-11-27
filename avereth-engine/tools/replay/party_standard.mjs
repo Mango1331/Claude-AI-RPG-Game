@@ -47,3 +47,31 @@ async function run(outcome,natural=false){
 for(const decision of ['accept','decline','counter']) await run(decision);
 await run('accept',true);
 console.log('Original AI prefix: admission, refusal cache, counter, local organisation, reload and free-text admission passed.');
+
+const {applyEvent}=await import('../../src/state.js');
+const {recordWork,settleQuest,payClaim}=await import('../../src/party_rewards.js');
+const state=host.foldChat(structuredClone(prefix)).state;
+const helper=state.scene.present.find(id=>id!==who && state.entities[id]?.kind==='npc');
+const emit=e=>applyEvent(state,e);
+for(const id of [who,helper]){
+    state.entities[id].sheet=structuredClone(state.entities.pc.sheet);
+    emit({t:'party.member',d:{who:id,mode:'follow',at:state.scene.at,standard:true,combat:true,previous:0}});
+}
+const q=Object.values(state.quests).find(q=>q.status==='active');
+q.payout_cp=91;
+recordWork(state,emit,q,'first',['pc',who,helper]);
+emit({t:'party.member',d:{...state.party.members[who],mode:'left',previous:1}});
+state.scene.present=state.scene.present.filter(id=>id!==who);
+settleQuest(state,emit,q);
+const outstanding=state.party.claims[q.id+'/'+who];
+assert.equal(outstanding.amount,30);
+assert.equal(outstanding.paid,0);
+assert.equal(state.party.claims[q.id+'/'+helper].paid,30);
+state.scene.present.push(who);state.entities.pc.sheet.coin_cp+=91;
+assert.ok(payClaim(state,emit,outstanding,20));
+settleQuest(state,emit,q);
+assert.equal(state.party.claims[outstanding.id].paid,30);
+const checkpoint=structuredClone(state);
+settleQuest(state,emit,q);
+assert.deepEqual(state,checkpoint);
+console.log('Three-person odd payout, vested absence, partial payment and idempotent settlement passed.');

@@ -285,7 +285,7 @@ export function encounterRoster(s, slot) {
         if (!e) return id + ' (unavailable)';
         const status = e.status === 'dead' ? 'dead' : e.fled ? 'fled' : e.surrendered_to ? 'surrendered'
             : e.left ? 'alive, last seen elsewhere' : 'alive';
-        const hp = s.encounter?.combatants[id]?.current.hp ?? e.hp;
+        const hp = s.encounter?.combatants[id]?.current.hp ?? (e.status==='dead' ? 0 : e.profile?.hp ?? e.sheet?.hp);
         return [id, e.name, e.descriptors?.[0], status, Number.isFinite(hp) ? hp + ' HP' : null,
             e.profile?.attack?.name].filter(Boolean).join(' · ');
     }).join('; ');

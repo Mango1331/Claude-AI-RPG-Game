@@ -148,6 +148,7 @@ export function applyEvent(state, e) {
             const q = state.quests[d.id];
             if (q?.status !== 'active') throw Error('Work requires an active quest.');
             (q.party_work ||= {})[d.source] ??= [...d.members];
+            if(d.standard?.length) q.standard_workers=[...new Set([...(q.standard_workers || []),...d.standard])];
             break;
         }
         case 'party.member': case 'party.agreement': case 'party.claim':

@@ -280,7 +280,7 @@ export function bookDelivery(s, emit, before, to, n, seq, { drop = false, object
             const receipt = { key: `${s.turn}:${seq}:${objectId}:${o.id || o.what}`, objective: o.id || o.what,
                 object: objectId, origin: root, capacity, qty: count, to: clone(to), at: s.scene.at, turn: s.turn, seq };
             emit({ t: 'quest.delivered', d: { id: q.id, receipt } });
-            const partners = following(s).filter(m => s.party.agreements[m.agreement]?.terms.quest === q.id);
+            const partners = following(s);
             if (partners.length) recordWork(s,emit,q,receipt.key,['pc', ...partners.map(m => m.who)]);
             available -= count; remaining -= count;
         }

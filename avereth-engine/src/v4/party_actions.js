@@ -2,6 +2,7 @@ import { materialise } from '../engine.js';
 import { applyEvent } from '../state.js';
 import { Dice } from '../rng.js';
 import { agreementsOf, membersOf, partyDecision, bindPartyEquipment } from '../party.js';
+import { vestQuest } from '../party_rewards.js';
 import { contractReady } from './guild.js';
 import { trueDungeonOf } from './dungeon.js';
 import { hash32, normText } from '../util.js';
@@ -36,6 +37,10 @@ export async function partyControl(before,content,{act,ref='',source,revision},a
     const active=membersOf(s).filter(m=>m.mode!=='left');
     const memberEvent=(who,mode,extra={})=>{
         const m=s.party?.members[who];
+        if(mode==='left' && m) {
+            const quests=Object.values(s.quests).filter(q=>q.status==='active' && q.party_work);
+            for(const q of quests) if(contractReady(s,content,q,{c:true}).ok) vestQuest(s,emit,q);
+        }
         emit({t:'party.member',d:{...m,who,mode,at:available(s,who)?s.scene.at:m?.at,request:null,
             previous:m?.revision || 0,source:{actor:'pc',quote:source,turn:s.turn,at:s.scene.at},...extra}});
     };

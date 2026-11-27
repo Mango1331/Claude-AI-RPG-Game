@@ -1,6 +1,6 @@
 import { allyAssets, decisionOf } from './v4/surrender.js';
 import { profileOf, restoreOf, restoreEffect, rankRefusal, freeObjectId } from './v4/items.js';
-import { claim, payClaim, vestQuest, questEntitlement, questFee } from './party_rewards.js';
+import { claim, payClaim, workAgreement, vestQuest, questEntitlement, questFee } from './party_rewards.js';
 import { deriveCharacter, fullMana } from './derived.js';
 import { hash32 } from './util.js';
 import { coinEvidence, numberRuns } from './economy.js';
@@ -232,7 +232,7 @@ export function partyDecision(s, content, command, source, actor, emit, contract
         if (!terms) return failure('The work and compensation must match the quoted terms.');
         const id = 'party.'+who+'.'+s.turn+'.'+hash32(JSON.stringify([actor,c.seq,c.quote]));
         if (s.party?.agreements?.[id]) return failure('Offer already recorded.');
-        const priorAgreement=s.party?.agreements?.[member?.agreement];
+        const priorAgreement=workAgreement(s,who,terms.quest) || s.party?.agreements?.[member?.agreement];
         const amends=c.agreement && c.agreement===priorAgreement?.id && terms.quest &&
             terms.quest===priorAgreement.terms.quest && (terms.half || terms.cp) && /\b(?:revise|amend|change|replace)\b/i.test(statement);
         if ((c.agreement || priorAgreement && /\b(?:amend|revise|replace)\b/i.test(statement)) && !amends && agreement?.phase!=='open') return failure('Identify the current agreement being changed.');
@@ -254,7 +254,7 @@ export function partyDecision(s, content, command, source, actor, emit, contract
             return failure('Quote a definite response to the unchanged terms.');
         const accepts = c.act === 'accept';
         const parent=agreement.amends || agreement.installmentOn;
-        if (accepts && parent && member?.agreement!==parent) return failure('The agreement being amended has changed.');
+        if (accepts && parent && workAgreement(s,who,agreement.terms.quest)?.id!==parent) return failure('The agreement being amended has changed.');
         if (accepts && agreement.terms.quest) {
             const q = s.quests[agreement.terms.quest];
             if (!q || q.status !== 'active') return failure('Quest is no longer active.');
@@ -264,7 +264,7 @@ export function partyDecision(s, content, command, source, actor, emit, contract
             const vested=claimsOf(s).filter(r=>r.source===q.id);
             for (const id of new Set(vested.map(r=>r.who))) reserve(id,questEntitlement(vested.filter(r=>r.who===id)));
             for (const m of membersOf(s).filter(m=>m.who!==who && m.mode!=='left')) {
-                const other=s.party.agreements[m.agreement];
+                const other=workAgreement(s,m.who,q.id);
                 if (other?.terms.quest===q.id) reserve(m.who,cost(other));
             }
             if (agreement.amends) reserved.set(who,vested.filter(r=>r.who===who).reduce((n,r)=>n+r.paid,0));
@@ -276,7 +276,10 @@ export function partyDecision(s, content, command, source, actor, emit, contract
             return failure('This loot has already been promised.');
         emit({t:'party.agreement',d:{...agreement,phase:accepts?'accepted':'declined',answer:sourceRef,previous:agreement.revision}});
         if (accepts) {
-            memberEvent(member?.mode==='wait'?'wait':'follow',{agreement:agreement.id,combat:member?.standard || agreement.terms.combat,...(agreement.standard?{standard:true}:{})});
+            const prior=s.party.agreements[member?.agreement];
+            const standardJoin=agreement.standard || (!agreement.terms.quest && !agreement.terms.loot && !member);
+            const keep=prior?.phase==='accepted' && prior.terms.quest && prior.terms.quest!==agreement.terms.quest;
+            memberEvent(member?.mode==='wait'?'wait':'follow',{...(keep?{quest_agreements:{...member.quest_agreements,[prior.terms.quest]:prior.id}}:{}),agreement:agreement.id,combat:standardJoin || member?.standard || agreement.terms.combat,...(standardJoin?{standard:true}:{})});
             if (agreement.terms.combat) bindPartyEquipment(s,who,emit);
             if (agreement.amends && claimsOf(s).some(r=>r.who===who && r.source===agreement.terms.quest)) {
                 const amount=questFee(s.quests[agreement.terms.quest],agreement.terms);

@@ -169,6 +169,8 @@ const mock = http.createServer(async (req, res) => {
         purpose = 'plan';
         const t = turnOf(users) || [...tradeTurns, ...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns, ...pulse164Turns, ...pulse167Turns, ...npc169Turns, ...npc172Turns, ...pilot01Turns, ...bossloot193Turns, ...campTurns].find(t => users.includes(`PLAYER MESSAGE:\n${t.player}`));
         text = JSON.stringify(actionHudPlan(users) || (t ? t.plan : { commands: [] }));
+    } else if (system.startsWith('Decide for the named NPC alone')) {
+        purpose='party_decision';
     } else if (system.startsWith('You are the command interpreter')) {
         purpose = 'interpret';
         text = JSON.stringify({ commands: [] });

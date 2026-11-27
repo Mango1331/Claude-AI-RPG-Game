@@ -26,11 +26,26 @@ export async function partySmoke({page,calls,send,idle,out,onReload}) {
         else {await page.fill('#send_textarea','#party');if(kind==='enter') await page.press('#send_textarea','Enter');else await page.click('#send_but');}
         await page.waitForSelector('#avereth-party-panel[open]');
         const text=await page.locator('#avereth-party-panel').innerText();
-        await page.locator('#avereth-party-panel button').click();
+        await page.getByRole('button',{name:'Schließen',exact:true}).click();
         const after=await snap();
         return /Ossen/.test(text) && before.length===after.length && JSON.stringify(before.state)===JSON.stringify(after.state) && calls.length===count;
     }
     try {
+        await seed(original.slice(0,15));
+        const clickParty=async(act,ref)=>{
+            await page.fill('#send_textarea','#party');await page.click('#send_but');
+            const button=page.locator('#avereth-party-panel [data-party-action="'+act+'"]'+(ref?'[data-ref="'+ref+'"]':''));
+            await button.click();await idle();
+        };
+        replies={party_decision:req=>{const {invitation,who}=JSON.parse(req.messages.at(-1).content);return JSON.stringify({invitation,who,decision:'accept'});}};
+        const start=calls.length;
+        await clickParty('invite',who);
+        checks.nativeJoin=(await snap()).state.party?.members[who]?.mode==='follow';
+        await clickParty('wait',who);
+        checks.nativeWait=(await snap()).state.party?.members[who]?.mode==='wait';
+        await clickParty('follow',who);
+        await clickParty('disband');
+        checks.nativeDisband=(await snap()).state.party?.members[who]?.mode==='left' && calls.length===start+1;
         await seed(original.slice(0,15));
         let b=calls.length;
         const words='Let us fight together, half each.';

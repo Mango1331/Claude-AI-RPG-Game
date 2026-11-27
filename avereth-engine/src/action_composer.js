@@ -1,3 +1,4 @@
+import { partyControls } from './v4/party_actions.js';
 import { partyView } from './party.js';
 import {availableActions,validateActionSelection,actionPrefix,actionInputOf,actionLabel,actionBands} from './action_input.js';
 import {surrenderAssets,negotiators,describeTerms} from './v4/surrender.js';
@@ -290,10 +291,32 @@ export function installActionComposer({context,state,content,enabled,settings,bl
             const close = document.createElement('button');
             close.type = 'button'; close.textContent = 'Schließen';
             close.onclick = () => panel.close();
-            panel.append(details,close); document.body.append(panel);
+            const controls=document.createElement('div');
+            controls.className='avereth-party-controls';
+            panel.append(details,controls,close); document.body.append(panel);
         }
         const lines = partyView(state(),content());
         panel.querySelector('pre').textContent = ['[PARTY]',...lines.length ? lines : ['Keine Gefährten oder offenen Abreden.']].join('\n');
+        const owner=key(), revision=actionPrefix(context().chat), controls=panel.querySelector('.avereth-party-controls');
+        controls.replaceChildren();
+        for(const action of partyControls(state())){
+            const button=document.createElement('button');
+            button.type='button';button.textContent=action.label;button.dataset.partyAction=action.act;button.dataset.ref=action.ref;
+            const unavailable=()=>blocked() || (generating?'Erzählung läuft':null) ||
+                (state().encounter || state().pending_combat?.length?'Begegnung zuerst abschließen':null) ||
+                (draft() || textarea().value.trim()?'Vorbereitete Eingabe zuerst senden oder entfernen':null);
+            const reason=unavailable();
+            if(reason){button.disabled=true;button.title=reason;}
+            button.onclick=()=>{
+                if(owner!==key() || actionPrefix(context().chat)!==revision){panel.close();tell('Die Welt hat sich geändert. Party erneut öffnen.');return;}
+                const why=unavailable();if(why){tell(why);return;}
+                panel.close();
+                textarea().value=['#party',action.act,action.ref].filter(Boolean).join(' ');
+                textarea().dispatchEvent(new Event('input',{bubbles:true}));
+                document.getElementById('send_but')?.click();
+            };
+            controls.append(button);
+        }
         if (!panel.open) panel.showModal();
     }
     function refusal(){

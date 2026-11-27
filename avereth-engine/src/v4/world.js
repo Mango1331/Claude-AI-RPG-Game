@@ -54,7 +54,7 @@ import { freeObjectId, itemTraits, useOf, itemProfile, priceAudit, gearRetailPri
 import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity.js';
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
 import { anchorFor, speciesAnchor, templateFor, npcTemplate, rulesetOf } from '../content.js';
-import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotMet, resolved, nextSlot, slotForNew, resolvedSlotNamed, slotEntityEvents, establishEvents, syncEvents, insideOf } from './living.js';
+import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, clearDone, livingOf, floorAt, slotMet, resolved, nextSlot, slotForNew, resolvedSlotNamed, slotEntityEvents, establishEvents, syncEvents, insideOf } from './living.js';
 import { refusedCreatureInThread, unbookedDungeonThreat } from './run9_evidence.js';
 import { knownAt } from './catalog.js';
 import { jobOf, paymentJob, recordJobWork } from './private_jobs.js';
@@ -2399,6 +2399,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
         if (!q) { reject(d, 'quest', 'unknown quest'); return; }
         if (q.status !== 'active') { reject(d, 'quest', `the quest is ${q.status}`); return; }
+        const clearance = cPath && rulesetOf(s) >= 2 && q.kind === 'guild_contract' && clearDone(s, q);
+        if (clearance && !clearance.ok) {
+            reject(d, 'dungeon_clear', clearance.name + ', level ' + clearance.floor + ': ' + clearance.text);
+            return;
+        }
         // the readiness note is story memory too: the contract's status, payout, XP or rank stay the engine's
         const ownNote = q.kind === 'guild_contract' && d.note ? stripOwned(d.note, { store: 'note', quest: q }).kept.join(' ') : d.note;
         const claimed = String(ownNote || q.desired_end_state || '');

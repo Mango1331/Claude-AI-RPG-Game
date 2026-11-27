@@ -979,9 +979,19 @@ export function contextLines(s, content = null) {
 export function catalogLines(s, { extractor = false } = {}) {
     const root = trueDungeonOf(s, s.scene.at);
     const x = livingOf(s, root);
-    if (!x) return [];
+    if (!x) {
+        const entrance = extractor && livingOf(s, s.scene.approaching);
+        const slot = entrance?.run.floors[1]?.slots[0];
+        if (!slot || slotMet(slot) || slot.taken || slot.role !== 'minion') return [];
+        return ['If individually visible across the threshold: creature.new ref "'+slot.ref+'", anchor "'+slot.anchor+'", count '+slot.count+', population "independent", across and separate desc quoted literally, actual band. Sounds alone are clues.'];
+    }
     const mine = Math.max(1, floorAt(s, s.scene.at));
     const L = [floorText(s, x, mine)];
+    if (extractor) {
+        L.push('If an authorized advance reaches a new chamber, use the same {new:{name,kind:"interior",parent:"'+root+'"}} in expected.at and arrive.at. The departure room ID means the party stayed there. A glimpse alone is no arrival.');
+    } else {
+        L.push('Entering the first chamber from the threshold or walking onward on this level is go with to:{new:"on"}. Descending to a LOWER level requires the actual stairs.');
+    }
     if (extractor && x.ahead?.turn === s.turn) {
         for (const a of [x.ahead, x.ahead.next].filter(Boolean)) {
             const sl = x.run.floors[a.floor]?.slots.find((y) => y.id === a.slot);

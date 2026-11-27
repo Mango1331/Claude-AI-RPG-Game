@@ -195,3 +195,13 @@ test('Batch3 narrated handover after a canonical purchase cannot create a second
     assert.equal(Object.values(r.state.objects).filter(o => o.name === 'Primer of Mend').length, 1);
     assert.equal(r.events.filter(e => e.t === 'transaction.completed').length, 1);
 });
+
+test('A narrator readiness claim cannot mark a partially cleared Guild floor ready', () => {
+    const s = structuredClone(f.accept.state);
+    const q = s.quests[A];
+    assert.equal(q.status, 'active');
+    const claim = {scene:'here', expected:{}, deltas:[{seq:1, type:'quest.ready', quest:A, note:q.desired_end_state}]};
+    const r = applyWorld(s, content, claim, {msg:180, prose:'The last two skeletons in the chamber fell.'});
+    assert.ok(r.rejected.some(d => d.rule === 'dungeon_clear'));
+    assert.ok(!r.state.quests[A].ready);
+});

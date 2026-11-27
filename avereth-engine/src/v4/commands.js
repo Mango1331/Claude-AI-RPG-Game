@@ -668,6 +668,10 @@ const HANDLERS = {
         if (typeof c.to?.scene === 'string' && envx?.c && rulesetOf(s)>=2 && !c.within) {
             const chosen=chosenKnownRoute(s,c.quote);
             if (chosen) c={...c,to:chosen};
+            else if (s.services?.some(x=>x.service==='lodging' && x.at===s.scene.at && x.turn===s.turn)
+                &&  /^(?:upstairs|up the stairs|(?:(?:the|my|our|rented|paid|upstairs) )*(?:room|quarters|lodging)(?: upstairs)?)$/i.test(c.to.scene.trim()))
+                c={...c,to:{new:c.to.scene}};
+
         }
         if (typeof c.to?.scene === 'string') {
             const focus = c.to.scene.trim();

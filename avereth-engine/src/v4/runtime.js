@@ -426,7 +426,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
 
     const recruitment=pc?.type==='party' && (pc.act==='invite' || pc.act==='offer' && !pc.agreement &&
         (!before.party?.members[pc.who] || before.party.members[pc.who].mode==='left'));
-    if(pc?.type==='party' && pc.needs==null && rest.every(c=>['go','other'].includes(c.type)) && (recruitment || ['wait','follow','leave'].includes(pc.act) && before.party?.members[pc.who]?.standard)){
+    if(pc?.type==='party' && pc.needs==null && rest.every(c=>['go','other'].includes(c.type)) && (recruitment || ['wait','follow','leave'].includes(pc.act) && before.party?.members[pc.who] && before.party.members[pc.who].mode!=='left')){
         const local=await partyControl(before,content,{act:recruitment?'invite':pc.act==='leave'?'remove':pc.act,ref:pc.who,source:msg.mes,revision:actionPrefix(chat,u),
             proposal:recruitment && (pc.act==='offer' || hasPartyTerms(msg.mes,content,pc)) ? pc : null},
             messages=>ask(llm,messages,'party_decision',{maxTokens:200,temperature:0.3}));

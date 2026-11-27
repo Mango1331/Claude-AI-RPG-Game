@@ -1,0 +1,40 @@
+{
+  "build": "4.3.0-c.6.6.229",
+  "commit": "f4d89bc224f6a137ed9fdc8137a92f40593e6fbf",
+  "seed": 3509323178,
+  "model": "openai/gpt-4.1-mini",
+  "provider": "openai",
+  "reasoning": null,
+  "st": "1.19.0",
+  "prefix": "Echte Party aus I nach Zug 22, bereits zwei Encounter abgeschlossen. Drei fortlaufende Gehentscheidungen auf .229.",
+  "savedMessages": 66,
+  "requests": 9,
+  "costUSD": "0.0200484",
+  "usage": {
+    "prompt_tokens": 122473,
+    "completion_tokens": 1664,
+    "total_tokens": 124137
+  },
+  "sha256": {
+    "actions.jsonl.gz": "9d257e1af6eb28f20419f6e7580bb730ff358e150a55e1cef3d8a6fade673478",
+    "chat.jsonl.gz": "1527c383dcc8307c9391aca41a7e8ca4f91df8f6137ecca368aa0904871410ea",
+    "decisions.log.gz": "5c9bb045cb652fe460130410eec6e32b9c3dc658e46da15b9ad441416b142b48",
+    "events.json.gz": "8e58f5a44271905ebe0f33b93d9896bb93959132e2ec9cbd99b19641538a45dc",
+    "last-verified-world.json.gz": "79eddb2439eb98732512255ce5949a75380d833a35e2bce2ca5fd190ba542d29",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "7f23ef6ef6f208570d91e520458388da82bff9dbdc2c6a221b9c785d4c435d9c",
+    "raw-176.gz": "cf5cc75de226990b56b4dca42ba6130a2ba26ef5b0156ac6f8ce27eef3e3b42d",
+    "raw-177.gz": "8871e2f3652bf6680901edbbf2278f62831fcfde68cd14a18db4b66ff8aa487e",
+    "raw-178.gz": "87926f1b3f9d8936da0da3df716f11a7c5a307db547e7a53e5aa5819d020e1c0",
+    "raw-179.gz": "406cfb29cf94cc06595d1b17787a6916693facff4dded1ec0dfa1d07058bf312",
+    "raw-180.gz": "8a3dd4190a051ce52a673a0a09ba51da415326eaf06bebdb8510522092ba9093",
+    "raw-181.gz": "1aa919d462226cc97b9d747b2f8c03131bca93d79ec65f6076ddb5e0aa6d7e82",
+    "raw-182.gz": "e5b5be996a9c97a8b9e9bcc3b76cd8da01d33ed2b2dff4bb3a5347190d2e1f5b",
+    "raw-183.gz": "45fa3d7ceb79b8ee59fbad3e66f9af7cfe45200e018f391827c655c30aee2b6f",
+    "raw-184.gz": "03ade859dd719aabdf4c4b4f6e9642819e6c6b6d4ce95471c1863f9d1c6a32bd",
+    "requests.jsonl.gz": "a95a43c3bd4232a05fb636bbd18f64a3a6100c16a2367f6074990942076eaa85",
+    "st.log.gz": "7add73b59e5d4b0826e5b7d46b9f57cf2bf090a6ac849f329ab898ab69629be6",
+    "turns.jsonl.gz": "e1efde8f2083d7cbc98d95dbcb42f04ff6763c85e46cc2083f18c03fce6c4710",
+    "visible.json.gz": "da6574ca9e0d55807f023f4243828803d69ec4bc68c525ee0efa1f6a6e83f7fc"
+  }
+}

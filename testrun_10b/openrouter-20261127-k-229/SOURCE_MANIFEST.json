@@ -1,0 +1,40 @@
+{
+  "build": "4.3.0-c.6.6.229",
+  "commit": "f4d89bc224f6a137ed9fdc8137a92f40593e6fbf",
+  "seed": 3042268705,
+  "model": "openai/gpt-4.1-mini",
+  "provider": "openai",
+  "reasoning": null,
+  "st": "1.19.0",
+  "prefix": "User15 M0–72 byteidentischer persönlicher Chat, offenes Gasthausangebot t72.3.",
+  "savedMessages": 79,
+  "requests": 9,
+  "costUSD": "0.0227944",
+  "usage": {
+    "prompt_tokens": 121414,
+    "completion_tokens": 1077,
+    "total_tokens": 122491
+  },
+  "sha256": {
+    "actions.jsonl.gz": "87b79e9f6769b7545a1dc15036460d2b9dff373b592c092bd8a7c336e951616d",
+    "chat.jsonl.gz": "4cc830e35298a5ab792b5f2cdb4b143b7a0f7ad94d51c7f4ac1abc3bd6a19b05",
+    "events.json.gz": "3627fee8f19da5622eb9674a5dbc577faa0409ebbc18d604e83f80923d203966",
+    "field.log.gz": "77b6e13758694344aca947fa7deb58ef103a2e160d73e2c7fc002136efecad68",
+    "last-verified-world.json.gz": "ad857d084f22d7315f3244c979b2747c733ab99171ebd70ec6a929bb75554049",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "96cb01bb711ff22b5d11cfc5cfd2343c0dae4d35d029a426d7144e9adedd7b78",
+    "raw-167.gz": "dc0ba6879b1e6a447776fcc50952bf0e9feb38537c66ac4237ae6ac1320f357f",
+    "raw-168.gz": "c3077ba9f9dcfad47ff10ac0f8fd5478f2ac977687e7b821e79b0a1393baccc8",
+    "raw-169.gz": "b5d4d90556ab68505872f35fa4f2e3d9d1081f9bb115c641d6a3d9a455512a02",
+    "raw-170.gz": "fccec835d62b449db082da276c1f9b56c57563211ba0638f1413ecab6f22617d",
+    "raw-171.gz": "2160f43c698bc0f635db75107d953dec458feb56fdc2201118bb0c16831bdeab",
+    "raw-172.gz": "e055d0eaa0931d6179e4c5c1d089e3ca77de9941d069c611370add2ffa7577e6",
+    "raw-173.gz": "8caa0fdf2b311e37b8441b2cde4bef38951357daaed15d08f40458ead3cfe4fa",
+    "raw-174.gz": "3e5ab07436d27137af1a9aacf0d48061619d3aa8b2283fd1fce3ba38d3acb296",
+    "raw-175.gz": "5915dfb2ccfd4479d39c68296cd6c55c06406c36eef3984fdb89f2ddce825314",
+    "requests.jsonl.gz": "37b378e4d1a432eddb5575f24ac636d1e397fd792352a3145d68601076085446",
+    "st.log.gz": "d774675d21bfdb6e3ff08ec4b2c0987c4b8a649d7f68ce3e2c10983e4961c61b",
+    "turns.jsonl.gz": "94c1ef4fe4dfb7e08e57d76706fe3024bbd37f89ccb79d9fff8db26568b16b75",
+    "visible.json.gz": "df7ab3f766f3119b990c32b4987e2e664d918a6b4df3e2791b8ed17018acc210"
+  }
+}

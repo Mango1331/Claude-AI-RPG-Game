@@ -1,0 +1,40 @@
+{
+  "build": "4.3.0-c.6.6.234",
+  "commit": "4e4fc9b3f52fc4ec253fd511722fd607bfd92597",
+  "seed": 526138360,
+  "model": "openai/gpt-5.4-mini",
+  "provider": "openai",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "User16 M38, unveränderte Narration und derselbe gekennzeichnete Ausgangszustand wie J/O/Q/R/U. Frischer X und danach zwei neue reale Spielerzüge.",
+  "savedMessages": 43,
+  "requests": 8,
+  "costUSD": "0.05927220",
+  "usage": {
+    "prompt_tokens": 110238,
+    "completion_tokens": 2037,
+    "total_tokens": 112275
+  },
+  "sha256": {
+    "actions.jsonl.gz": "6e89e4251860a688b879c9a708e41050338dc322bbe4dea15d9936e4c7c3c4a0",
+    "chat.jsonl.gz": "a99b835f5b74379d738ce33b1edafc36052fb67fd80a9385766b03f0ec5187dc",
+    "decisions.log.gz": "b5a3eee3130cac747b0786bdd3f737a0854de0299f32041a9c9e4a9abc2adab2",
+    "entry-boundary.json.gz": "bab451a8827230beafa86453f5fa1f677f3bf67a12aaa7be60225f1dae3b4a9e",
+    "events.json.gz": "c7da7b18abc29f20ae5ebf98dbe66d0a6fbed68a74c9ee729ea5d824f21020f7",
+    "last-verified-world.json.gz": "39372d0aa144620fbb0fd528820463497c113a6179330dce540df0b8266acd79",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "20a9ecb59cc525ffc04e0df56f6b08daa484e005e1790a603c4bbff6f32a5a31",
+    "raw-267.gz": "72f03d19cbdec5ae7f5ba0f7e08783d64ac7ad20b631a544c5af80bf62a768a3",
+    "raw-268.gz": "81e5340ac95118cb97fcde78f882bd5660a25794e029a8f53249ff88325d48ae",
+    "raw-269.gz": "491a7d7591cc5ae0f3f3bca9ae90fce662678df3bf6dcd1d22675180815ae887",
+    "raw-270.gz": "30b118bac3cf46fbd0b8a061f373a9bab7d98d1769674c3c78946067e52df934",
+    "raw-271.gz": "28080ec386d60ae457e1aef008907f5aaf9ec2490d71172a769bdf44a1ce7f71",
+    "raw-272.gz": "c6dd41f4388672c10d609986c8f53a412a40cdf66d1eb76d3c51f8737438154e",
+    "raw-273.gz": "0daf28b85bf105d377ad534fb7c3bcd1198ac977bfaaa7b5898d6ffe995c797d",
+    "raw-274.gz": "4e0dc362a95983cf2393f821b21dbf240952f717497097ad36edc09ea59cd07a",
+    "requests.jsonl.gz": "28ea599b3e7198f4c5dc84501bc9f37e3600f303ef3c1fd7b0c98874783abf02",
+    "st.log.gz": "2f0f946547bfb8de5ea7db2b5ac30bf5464cdb54467634192b406878884b22b6",
+    "turns.jsonl.gz": "de3bbe0c55289a297964be05fab04d635c3229da67621a693ce379399a70abd3",
+    "visible.json.gz": "156d754894787eee0aee03a4e7ceba462b9ca2ca8ad8251831af51d7ad2a3408"
+  }
+}

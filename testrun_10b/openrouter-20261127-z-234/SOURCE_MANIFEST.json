@@ -1,0 +1,37 @@
+{
+  "build": "4.3.0-c.6.6.234",
+  "commit": "4e4fc9b3f52fc4ec253fd511722fd607bfd92597",
+  "seed": 3509323178,
+  "model": "openai/gpt-5.4-mini",
+  "provider": "openai",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "N4 nach Warden und vor Abgabe, Variante mit direkter Ansprache zur Trennung.",
+  "savedMessages": 71,
+  "requests": 6,
+  "costUSD": "0.04307685",
+  "usage": {
+    "prompt_tokens": 83213,
+    "completion_tokens": 1771,
+    "total_tokens": 84984
+  },
+  "sha256": {
+    "actions.jsonl.gz": "3b553289c7eba2ba5e7dea388faada9d34888fe60901400bb38d3a96e22d2dd1",
+    "chat.jsonl.gz": "7e5ac2c68470a34ebbe659dfa44e07044af9a280b24f4b387e4c23f5b64880c8",
+    "decisions.log.gz": "f3f0a16372219625756d7733a57ada4ed44557f794e28c2837a60f53cbeaa7ae",
+    "events.json.gz": "c96b26fdc18abae92dd3ff12b6ff3fd85adad79fb60baaa30928d9c46d73ac1f",
+    "last-verified-world.json.gz": "4f9aea5310b1157e552272a287e42db782546c70b7ce7fc9735d91e16f001176",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "d32f8cb7cb7cec6342e06864c2a6a13e6f798e1b515f48c7325827c0ca34b58b",
+    "raw-275.gz": "19f054cc7aaa26954239a15283cf24cb8cbdd001b0543931f02ad4188176fb24",
+    "raw-276.gz": "04a95aa27d7430ae0df97c5833b3dffc54e6d6ca39e307602986ed7dd07e8149",
+    "raw-277.gz": "02659057ed2052510c7e5360c5a4bc569141f42a7bc17a8306bf2808cf5cfcf3",
+    "raw-278.gz": "0b31e184be5b01ee8880968789596e51e321e23fb9141b85e7633db4b68fef6f",
+    "raw-279.gz": "62a563fd92dbdbb83ac5d1d84d950f70688a7224905c75b436574806ad535e73",
+    "raw-280.gz": "d80d235598056c71eb829ac6bb3e4f0d99e91c7fc04eeaf7bb176617fea6102f",
+    "requests.jsonl.gz": "140fa96980406fdc9148404db4a262b8290293aa6522a28c7861a2e954ae3a44",
+    "st.log.gz": "4817bacb45f50f17121f30cbcb12e3b7ff09aad4bab3a020fd3fe238c61158c9",
+    "turns.jsonl.gz": "18a195f9dd10bbf2fa7828aa8905fd8ee5ce0ba488978ad95ca27e228eb8f1df",
+    "visible.json.gz": "2e0f43cd84732d09c2f11ad2f98356f402f2c00a982f20a4446506bbf80356d6"
+  }
+}

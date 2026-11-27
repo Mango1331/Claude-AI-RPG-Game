@@ -1,0 +1,37 @@
+{
+  "build": "4.3.0-c.6.6.234",
+  "commit": "4e4fc9b3f52fc4ec253fd511722fd607bfd92597",
+  "seed": 526138360,
+  "model": "openai/gpt-5.4-mini",
+  "provider": "openai",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Y3 einschließlich tatsächlichem Tod und Flucht der Slotgegner. Von außen weiter bis zur Begegnung beim Betreten.",
+  "savedMessages": 46,
+  "requests": 6,
+  "costUSD": "0.02728140",
+  "usage": {
+    "prompt_tokens": 79316,
+    "completion_tokens": 1464,
+    "total_tokens": 80780
+  },
+  "sha256": {
+    "actions.jsonl.gz": "05cf13bc7096c4fa4dac59771f3cc1eaf5c20309f917428fe8f2e33cc3e8ce4c",
+    "chat.jsonl.gz": "f8a709171c672707237fed945ac99e9c1cec57251888264b1f7fe1e755b45695",
+    "decisions.log.gz": "2f1dd1581c77a41f08b0a6b6ac28ad4a0b7b693af5e3695fbfdc344acc204d2e",
+    "events.json.gz": "47df4c90a88d1b9dc53a773473bcedd76913e339870783447cd4ed8136b01dd0",
+    "last-verified-world.json.gz": "4d96f87333eaf75645dc93f1d442b7a34182010e4f045d65ba3f3bec371d3397",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "ea7c285c8b04600402c34287a5f656c6dff6e28f23911a4ff8840fde51cf4b40",
+    "raw-281.gz": "5d1510a4c3bf06621650edf787f97d601ce15775c8c312ad2b42deb9f2d9c695",
+    "raw-282.gz": "86e9f4ab8decc5ceeb1773a92e3f04f411d65ee8cdbfb6cd717371a06263dfbb",
+    "raw-283.gz": "fd027a731d548549c3de28001787c43c4f61e2cf531262bb9af2dc4081fa2f9a",
+    "raw-284.gz": "67def2541533c61d6528b623f3a6a5b5cb39e92678c8a277f90f60041b7ddf1d",
+    "raw-285.gz": "9e3a7f86bfa1dd88e1622c2c2d524e341d168cb5ad64682eb1ef6ef05be64625",
+    "raw-286.gz": "f05f97a94f7908a3be62def7fb836b727465b035cd45942ea6e185078df86f18",
+    "requests.jsonl.gz": "1b1998b43ad0ad122bf142e9a8bb62348db4f48b6a75cc959ef944736234550f",
+    "st.log.gz": "ec7d34ee804e6fc0f47503a43dbe92e487b54e88760a8c8a9821fc7dd3b68822",
+    "turns.jsonl.gz": "ef8e2b5e32b9b8ed823f9707942b4223f925a013c90ed84e9f61b3d6cc457a1b",
+    "visible.json.gz": "174ccd41b3438196b548224a79bbba48df40569a81b406e11881c566bd0e4910"
+  }
+}

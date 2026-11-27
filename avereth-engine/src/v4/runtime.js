@@ -1,3 +1,4 @@
+import { chosenKnownRoute, knownRoutes } from './known_routes.js';
 import {SurrenderTransferError} from './commands.js';
 import {negotiationExtraction,reactionError,describeTerms} from './surrender.js';
 import {extractJsonObject} from './json.js';
@@ -414,6 +415,8 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
         return executeMappedTurn(chat,content,{u,before,m:valid.mapped,inputHash,llm,previous,plan,interp,typed:true,
             irRec:{v:IR_VERSION,route:'v3',reason:'hud',links:[],acts:combatChoice.steps.map(s=>({...s,source:'player'}))}});
     }
+    const chosen = !actionInput && !pl.commands.length && chosenKnownRoute(before,msg.mes);
+    if (chosen) pl.commands=[{seq:1,type:'go',to:chosen,quote:msg.mes.split(/[.!?]/)[0]}];
     const guarded = guardCommands(msg.mes, pl.commands.filter(c=>!hud?.bound.includes(c.seq)), guardContext(before, content, catalog));
     if(hud)guarded.kept=[...guarded.kept,...pl.commands.filter(c=>hud.bound.includes(c.seq))].sort((a,b)=>a.seq-b.seq);
     const pc=guarded.kept.length===1 && !guarded.dropped.length && !actionInput && guarded.kept[0];
@@ -836,7 +839,12 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
                 messages=>ask(llm,messages,'party_decision',{maxTokens:200,temperature:0.3}))
             : !actionInput && ir.intent?.kind === 'command' && before.mode === 'story' && isC && rulesetOf(before) >= 2
             ? nativeAction(before,content,msg.mes,u) : null;
-        if (native) {
+        const dest = !actionInput && isC && before.mode==='story' && rulesetOf(before)>=2 && /^#go\s+(\S+)$/i.exec(msg.mes.trim());
+        if (dest) {
+            r = knownRoutes(before).includes(dest[1]) && before.entities.pc?.status!=='dead'
+                ? await executeMappedTurn(chat,content,{u,before,m:{route:'v4',commands:[{seq:1,type:'go',to:dest[1],quote:msg.mes}]},inputHash,llm,previous:null,typed:true,irRec:irRecord(ir)})
+                : actionRefused(inputHash,'Dieses Ziel ist von hier aus nicht verfügbar.');
+        } else if (native) {
             r = {v:RECORD_V4,input_hash:inputHash,route:'v4',ir:irRecord(ir),events:native.events,command:native.command,...(native.party_call?{party_call:native.party_call}:{})};
         } else if(actionInput?.mode==='hud_roleplay') {
             const m=validateActionSelection(actionInput.selection,before,content).mapped;

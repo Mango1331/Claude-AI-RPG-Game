@@ -1,3 +1,4 @@
+import { chosenKnownRoute } from './known_routes.js';
 import { following, partyDecision } from '../party.js';
 import { applyEvent } from '../state.js';
 import { tradeDraft } from '../trade_input.js';
@@ -663,6 +664,10 @@ const HANDLERS = {
             const name = placeName(s,approaching);
             if (entry.endsWith(normText(name)) && entersThisDungeon(entry,name)
                 && !/\b(?:if|unless|instead|but|before|without)\b|\?/i.test(c.quote)) c = {...c,to:approaching};
+        }
+        if (typeof c.to?.scene === 'string' && envx?.c && rulesetOf(s)>=2 && !c.within) {
+            const chosen=chosenKnownRoute(s,c.quote);
+            if (chosen) c={...c,to:chosen};
         }
         if (typeof c.to?.scene === 'string') {
             const focus = c.to.scene.trim();

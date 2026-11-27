@@ -1,3 +1,4 @@
+import { knownRoutes } from './v4/known_routes.js';
 import { partyControls } from './v4/party_actions.js';
 import { partyView } from './party.js';
 import {availableActions,validateActionSelection,actionPrefix,actionInputOf,actionLabel,actionBands} from './action_input.js';
@@ -67,6 +68,26 @@ export function installActionComposer({context,state,content,enabled,settings,bl
     rest.id = 'avereth-rest'; rest.className = 'avereth-shop';
     rest.innerHTML = '<summary>Rasten</summary><select aria-label="Rastdauer"><option value="30">30 Minuten</option><option value="60">1 Stunde</option><option value="120">2 Stunden</option><option value="">Eigene Dauer</option></select> <input aria-label="Rastdauer in Minuten" type="number" min="1" max="1440" value="30" hidden> <button type="button" aria-describedby="avereth-rest-reason">Rast beginnen</button> <span id="avereth-rest-reason" role="status"></span>';
     box.append(rest);
+    const routes=document.createElement('details');
+    routes.innerHTML='<summary>Bekannte Wege</summary>';
+    box.append(routes);
+    function drawRoutes(s) {
+        routes.querySelectorAll('button').forEach(b=>b.remove());
+        const ids=knownRoutes(s);
+        routes.hidden=!ids.length || !canRestHere(s);
+        const stamp=actionPrefix(context().chat), owner=key();
+        for (const id of ids) {
+            const b=document.createElement('button');
+            b.type='button';b.textContent=s.places[id].name;
+            b.onclick=()=>{
+                if (owner!==key() || stamp!==actionPrefix(context().chat) || blocked() || generating || draft() || textarea().value.trim() || textarea().disabled || textarea().readOnly) return tell('Ort oder Eingabe prüfen.');
+                textarea().value='#go '+id;
+                textarea().dispatchEvent(new Event('input',{bubbles:true}));
+                document.getElementById('send_but')?.click();
+            };
+            routes.append(b);
+        }
+    }
     const duration = rest.querySelector('select'), minutes = rest.querySelector('input');
     const startRest = rest.querySelector('button');
     const restReason = rest.querySelector('#avereth-rest-reason');
@@ -134,6 +155,7 @@ export function installActionComposer({context,state,content,enabled,settings,bl
         box.hidden=!enabled();controls.hidden=box.hidden;if(box.hidden)return;
         const owner=key();if(controlsOrigin!==owner){clearControls();controlsOrigin=owner;}
         const s=state(),projected=availableActions(s,content());options=projected.actions;targets=projected.targets;
+        drawRoutes(s);
         rest.hidden = !canRestHere(s);
         refreshTrade(s,content());
         const panels=[...document.querySelectorAll('#chat :is(.avereth-combat-hud,.custom-avereth-combat-hud)')];

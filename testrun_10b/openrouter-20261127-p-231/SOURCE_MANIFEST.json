@@ -1,0 +1,40 @@
+{
+  "build": "4.3.0-c.6.6.231",
+  "commit": "ae6bf7a288a735f23067f7783cf6bbd81e2446e3",
+  "seed": 526138360,
+  "model": "openai/gpt-4.1-mini",
+  "provider": "openai",
+  "reasoning": null,
+  "st": "1.19.0",
+  "prefix": "Tatsächliches Ende von O, keine Dammar-Erwähnung durch den Testspieler. Erinnerungsziele stammen aus dem gekennzeichneten Offline-User16-Präfix.",
+  "savedMessages": 48,
+  "requests": 9,
+  "costUSD": "0.0227148",
+  "usage": {
+    "prompt_tokens": 123207,
+    "completion_tokens": 1059,
+    "total_tokens": 124266
+  },
+  "sha256": {
+    "actions.jsonl.gz": "a8591e24cbb3fbbdae81604e54e2a2d3c20a01b57d52c6bd08b4eb85a1e60943",
+    "chat.jsonl.gz": "badd9d128b6bac17b2fae10b4b2f4c5973680322414cb6591f3be96a58953251",
+    "decisions.log.gz": "6aaac4c953d82c4b0bda6153dfd2ffc96b10b092827ffc9de20fc3443faec261",
+    "events.json.gz": "cca8be927c9adb33b15a01c986958cfc92b6b8483c83606f64540d9f72377fad",
+    "last-verified-world.json.gz": "00270ffaddddc3fdbef1e36deae20fe9eaf236546005a690df4e79e935abe30a",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "c5f873f3510e22e8908e37cf7fdcf7cfe74b59d7b9343b18f72f2be3e2d36a24",
+    "raw-215.gz": "25e71d60b0d8a17e8dafb420bedfe7cb0f1d805f454d0908b4a2e1dd24698154",
+    "raw-216.gz": "e1eb35a88dee3d2385d57a39f9ebde28b4a6746a6e219c8d0638f051b1c0b81d",
+    "raw-217.gz": "a05790f61620247a91714ea364ef1374578cd553ec4c54c15205618de1d3d9f3",
+    "raw-218.gz": "24c54ce9fe08bb2e4c92b2c5135d5040bf2d9a62567322b7fe34bcaf2b8df462",
+    "raw-219.gz": "bd6d5e24351062b5b0eabc1fc94ab9a008fb596478522a4ef05fd881992e6cea",
+    "raw-220.gz": "02239775f7725323ad92ca82c9b9e5e407bfdb592ca6f934ecd445b9fccd64e1",
+    "raw-221.gz": "e2cd8e5c7b93c2c7441f571217cd4c996a7b7d1c77a9a4505dc88a6cc354ab80",
+    "raw-222.gz": "11685b9bf20861d189788d37f08a786127463110e227c044ad23557f2036f050",
+    "raw-223.gz": "22f3c774a9433181a022b25e9173eb5d2060cb58c8909e9b621d16796699a6b2",
+    "requests.jsonl.gz": "29cb27bf82676028e76871b43d006ace034b6fabc32beb1ac41978e1c6d2addf",
+    "st.log.gz": "5db02d1b48558e9d932cdc093dc1259916f55acf087bbd8ecf4bf7f941fcd5a2",
+    "turns.jsonl.gz": "8858095776664e0aca99ad1ce7caa2e5a22019eccc3718658fc94f316b78b2c8",
+    "visible.json.gz": "a8fa1b8be31d8903453305f74b86092f4445d9ba23911955d44a4fa650bb120f"
+  }
+}

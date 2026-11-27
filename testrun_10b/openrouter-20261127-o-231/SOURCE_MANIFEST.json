@@ -1,0 +1,39 @@
+{
+  "build": "4.3.0-c.6.6.231",
+  "commit": "ae6bf7a288a735f23067f7783cf6bbd81e2446e3",
+  "seed": 526138360,
+  "model": "openai/gpt-4.1-mini",
+  "provider": "openai",
+  "reasoning": null,
+  "st": "1.19.0",
+  "prefix": "User16 M38 im Originalwortlaut, reproduzierter .221/.222-Präfix wie J. Angriff und Beobachtung als neue Spielereingaben nach echtem X.",
+  "savedMessages": 43,
+  "requests": 7,
+  "costUSD": "0.0163272",
+  "usage": {
+    "prompt_tokens": 98394,
+    "completion_tokens": 870,
+    "total_tokens": 99264
+  },
+  "sha256": {
+    "actions.jsonl.gz": "b7b7fb357ac6bd0388f7943ac93309df76b5902ec761d7c37c16748c3998c0ca",
+    "chat.jsonl.gz": "c55c483b75539183bb9d54b110fe2d13db52bdf3871311cd3e84ec071a0591b6",
+    "decisions.log.gz": "be5f2c06c30f8e4c47813e7628a923089a1600e3d35a557af1d8428e75871b72",
+    "entry-boundary.json.gz": "bab451a8827230beafa86453f5fa1f677f3bf67a12aaa7be60225f1dae3b4a9e",
+    "events.json.gz": "a46bf4268db927e6ef3589c6d51e4b524956ca3b708a18f34d41a272e30846c6",
+    "last-verified-world.json.gz": "0aac5910824acf243b292b7b414ef76da076f74a0111cbae6e2833ff475f6bc8",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "388621eeb75982765e59b881def9de1697eb2d282820a4f80b79eec247094f97",
+    "raw-208.gz": "d81049ae571f3c229ab35f1b26d26de050079ea7b6b36f8d1124224ac89d07e4",
+    "raw-209.gz": "5a5503b8385e4f9a97c31a4fe95b6fdadb6104ab71ee03c24cc962f855d11855",
+    "raw-210.gz": "c9aefe9fef5543d13dd18fc553053caad090ad2bb73a7c812de8d02867ceb440",
+    "raw-211.gz": "242361740125c320cc1170cd86c82ea69b8989b2c2f823db844bc2cfcf8e2bef",
+    "raw-212.gz": "348aacac660b56afc3c5e1677f230c914520342d86cfccdee9958b252e77e300",
+    "raw-213.gz": "7b1a5faf0f95f6a0a02d4b5a52e9b21559b8c192d3420defa84294fbf08a17fe",
+    "raw-214.gz": "4ba394500285e1d9e4d2b973b506fa25de6d4b5d9409b9f69c46c7864f95bec3",
+    "requests.jsonl.gz": "7a2c6925d27f84d9e0872943f91a5028d0a8adcba1113baa993f96b82bdb5811",
+    "st.log.gz": "e250d55bd389279a6f2be0b50c0d5f7e920645b520ead88744b78262b0f8368f",
+    "turns.jsonl.gz": "c298d6fbce78b2f5e6ed19cacb8485e1f4f267433d247b04c8f5e5dbd649ea89",
+    "visible.json.gz": "c62c3caf29c9e7a3b35f08ce323ab1ef6875f577737bacd468a427ed191eb602"
+  }
+}

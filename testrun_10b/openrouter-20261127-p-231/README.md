@@ -1,0 +1,3 @@
+# Organische Erinnerung beim Wiederbetreten der Gilde
+
+P setzt den gespeicherten O-Lauf fort. Der vorbereitete User16-Präfix enthält die enger gefasste bedingte Zusage mit ihrem Erinnerungsort. P1 führt tatsächlich nach Ashbridge zurück. Im zugestellten Narratorrequest zum beiläufigen Gruß in P2 stehen die bedingte Empfehlung, der Ausschluss versprochener Sammelrechte und der ursprüngliche Konflikt mit Wenna. Der Spieler hat Dammar in keinem dieser drei Züge erwähnt. Die offene Zusage bleibt erhalten. P3 fragt nach verfügbarer Arbeit. Weder im Clerk-Wissen noch im Thread ist eine erfolgte Meldung gebucht. Das gesonderte E-Präfix mit alten persönlichen Speicherereignissen hatte den Erinnerungsort noch nicht. [Authentische Requests und Save](SOURCE_MANIFEST.json)

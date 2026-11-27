@@ -1,0 +1,35 @@
+{
+  "build": "4.3.0-c.6.6.233",
+  "commit": "396bb2ffe125fad387afa14c377385f95e02cf24",
+  "seed": 3509323178,
+  "model": "openai/gpt-5.4-mini",
+  "provider": "openai",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Echter N4 vor der Questabgabe, unabhängige Variante mit dem Wunsch nach Trennung vor der Auszahlung.",
+  "savedMessages": 71,
+  "requests": 4,
+  "costUSD": "0.03291165",
+  "usage": {
+    "prompt_tokens": 57177,
+    "completion_tokens": 1413,
+    "total_tokens": 58590
+  },
+  "sha256": {
+    "actions.jsonl.gz": "2560f7c5ac8349bb2e02e3a6e61578ac5219d9fe7667d9c3c76cd4f6d2871ec6",
+    "chat.jsonl.gz": "5b3d7ff73bf4a76f41f8b82410af41e23f6c7cb24e19d5e7fbf35e483687b612",
+    "decisions.log.gz": "eee91ad25cfa3edff04a4a20c9c83a57a59d263f261d0f0325d2f0ba82c3a2d0",
+    "events.json.gz": "01bfb9c44cbfeac218ade982fedc0a0b2757c0a7d9bb05d548d345f4328db26c",
+    "last-verified-world.json.gz": "be57f7cf076ce9c7a713a6b41dfb0eceaaf94bde5478d29c37dad63446c39be2",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "f0e9cadbfb0465e6fa066ab30780f2d259a94cb03187f533ea48931785ad6fce",
+    "raw-263.gz": "ac68bdf097f8ed0b733749885d6639fb39a55b132d5849c552c774206629d8ac",
+    "raw-264.gz": "808e2313a05e4d1fa0cdd35fa22bc4135bbb406ec55a18a82751b54629fa9fa3",
+    "raw-265.gz": "f2cf76e38ba9566a0d854268292769452d89c6b816e322a7f63a7b7c116759e1",
+    "raw-266.gz": "bf5651b138f1b7cde7a1c27894b703a24f7f033706765381e6accfbe1b28f178",
+    "requests.jsonl.gz": "0357f4207752d9c05e411f00b892fb0082f92dcfe7b510a6fa02db4b34f95973",
+    "st.log.gz": "0990996dfc939bc203d55faa6e48a2c421018f3fecf31dd83c2855afd7e5c9ae",
+    "turns.jsonl.gz": "ac425443e40aea56e98274eef96e9cd7eb947b326399634dbff6724a7b5cc000",
+    "visible.json.gz": "6cf73dfac66d79a7d886c3bfcc6864ecc3c6334bb369431a6ee9d73ec82b776b"
+  }
+}

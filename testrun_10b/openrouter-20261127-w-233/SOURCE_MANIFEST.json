@@ -1,0 +1,35 @@
+{
+  "build": "4.3.0-c.6.6.233",
+  "commit": "396bb2ffe125fad387afa14c377385f95e02cf24",
+  "seed": 526138360,
+  "model": "openai/gpt-5.4-mini",
+  "provider": "openai",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Gleicher User16-M38-Präfix; frischer X durch GPT-5.4-mini auf .233. Abgleich scheitert vor dem nächsten Spielerzug.",
+  "savedMessages": 39,
+  "requests": 2,
+  "costUSD": "0.01511520",
+  "usage": {
+    "prompt_tokens": 30386,
+    "completion_tokens": 541,
+    "total_tokens": 30927
+  },
+  "sha256": {
+    "actions.jsonl.gz": "39107a45ef3ee4dbbd49037b3652fc138166d0171cc062e1b9c3546c842f6a73",
+    "chat.jsonl.gz": "b77c82a625404f6f636688709f9c489706bde20989002937624e2c544ce80b51",
+    "decisions.log.gz": "62e77517b5760b6d482ce41ce7c4bdbe2f7dbaf002e6afeedbf4e3666a014c97",
+    "entry-boundary.json.gz": "bab451a8827230beafa86453f5fa1f677f3bf67a12aaa7be60225f1dae3b4a9e",
+    "events.json.gz": "2343d6e8b5b4fac3e2d3d6258acdb662f7593494a23f966074c664b94c49be72",
+    "interrupted-browser-chat.json.gz": "2998c1357de0cd94b84e7eedb3e33e4a4ead2d72079dc12f54508e21057f1db9",
+    "last-verified-world.json.gz": "352f9b432cd7f61467f8d6e967e99c1fc941656c72022b855c52053f233647e3",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "f1906ab8f22e27404b19223de66104a647c43cf1a354f454d441db1307e0e135",
+    "raw-261.gz": "7e11ac9839c470ebc1333e88fe6f162de4adb8910332ddcbb73ee0ecf27277a4",
+    "raw-262.gz": "16ac4b2c0e5a510469e17748eef7ca455242356979fee170666cddc527a2c9af",
+    "requests.jsonl.gz": "61bb3dffd3e170101dc954c56812c02e51a894531b80f75d0e45a499e22c2c38",
+    "st.log.gz": "0722ef16afef359cbbbc2b4a97d932d72a2a7412ed8dfde7cd8c99f8311f238e",
+    "turns.jsonl.gz": "73cd2bee8488bb519beacb8d76460c915e02c97feecaec63a4542febe5d2b10f",
+    "visible.json.gz": "33ac120c508505b2b1fda2785eaa8ab14e8e3cf8eca0b1631efd7ed61143256b"
+  }
+}

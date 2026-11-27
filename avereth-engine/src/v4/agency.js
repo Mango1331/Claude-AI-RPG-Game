@@ -363,10 +363,10 @@ export function guardCommands(message, commands, context = {}, { language = true
         if (otherSpeech(message, evidence, context)) { drop(c, 'npc_speech', "the evidence is someone else's quoted words"); continue; }
         // In a tactical request “Name, guard me”, the vocative identifies the addressee.
         // The party handler validates the addressee and action; attributed NPC dialogue was excluded above.
-        const vocative = type === 'party' && /^([^,!?".]{1,50}),/.exec(c.quote || '');
-        const namedPartner = vocative && context.present?.find(person => person.id === c.who &&
+        const vocative = (type === 'party' || type==='go') && /^([^,!?".]{1,50}),/.exec(c.quote || '');
+        const namedPartner = vocative && context.present?.find(person => (type==='go' || person.id === c.who) &&
             person.names.some(name => normText(name) === normText(vocative[1].trim())));
-        const address = vocative && (c.act === 'coordinate' || (c.act === 'leave' && namedPartner));
+        const address = vocative && (c.act === 'coordinate' || (namedPartner && (['leave','wait','follow','invite'].includes(c.act) || type==='go' && /,\s*(?:let['’]s|we)\b/i.test(c.quote))));
         if (otherActor(evidence, context) && !address) { drop(c, 'npc_actor', 'the evidence is what someone else does'); continue; }
         // Build .138 (batch 20 T50: "I'll take that fifty copper now" became pay 50 cp to Tam, booked with enough coin):
         // a payment moves his own coin out, so its evidence must show his will to pay it (pay, give, hand, put, tip,

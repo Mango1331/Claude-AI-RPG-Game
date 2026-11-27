@@ -32,10 +32,11 @@
   "commands": [
     {
       "type": "party",
-      "summary": "Voluntary cooperation with one present NPC. offer: agreement=null for a new proposal, quest=active contract ID, combat=true if proposing to fight together. Equal split: share=\"half\", amount=null even if they name the payout; fixed fee: amount in copper, share=null. accept/decline: copy the OPEN agreement ID, never prose. No open proposal? Report an actual new offer only. An explicit amendment of an earned fee cites the accepted agreement ID and its new total. wait/follow/leave describe a real change. coordinate names the request to attack a target, protect a person, act independently, take point or bring up the rear. A request outside agreed tactical authority awaits the addressed partner. Report their own acceptance or refusal with coordinate and the same priority and target. Use the speaker's exact decision, never a guess or mere co-presence. Use loot/goods for named loot or its half sale proceeds. due is only for an explicit fixed advance or partial payment. pay requires an existing claim ID and literal money. Only what the current player actually decides.",
+      "summary": "Invite a present NPC to a lasting ordinary party with invite, even when inviting them for the current adventure. Use offer only for a special explicit fee, loot or other negotiated terms. offer: agreement=null for a new proposal, quest=active contract ID, combat=true if proposing to fight together. Equal split: share=\"half\", amount=null even if they name the payout; fixed fee: amount in copper, share=null. accept/decline: copy the OPEN agreement ID, never prose. No open proposal? Report an actual new offer only. An explicit amendment of an earned fee cites the accepted agreement ID and its new total. wait/follow/leave describe a real change. coordinate names the request to attack a target, protect a person, act independently, take point or bring up the rear. A request outside agreed tactical authority awaits the addressed partner. Report their own acceptance or refusal with coordinate and the same priority and target. Use the speaker's exact decision, never a guess or mere co-presence. Use loot/goods for named loot or its half sale proceeds. due is only for an explicit fixed advance or partial payment. pay requires an existing claim ID and literal money. Only what the current player actually decides.",
       "args": {
         "act": {
           "enum": [
+            "invite",
             "offer",
             "accept",
             "decline",

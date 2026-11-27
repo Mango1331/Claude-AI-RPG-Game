@@ -4,6 +4,7 @@ import {extractJsonObject} from './json.js';
 import { activeMessage, bindGeneratedReply, previousRevision, reconcileRevisions, rememberRevision } from './revisions.js';
 import { plannedNegotiation, actionInputOf, actionInputHash, actionPrefix, validateActionSelection, reconcileHudPlan } from '../action_input.js';
 import { boardRepairGuidance, boardSlotRepair, parseBoardSlot, parseInitialBoard } from './guild.js';
+import { partyControl } from './party_actions.js';
 import { nativeAction } from './native_actions.js';
 import { movementEvidence } from './narration_evidence.js';
 import { ordinaryChoice, localApproach } from './travel_continuation.js';
@@ -414,6 +415,12 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     }
     const guarded = guardCommands(msg.mes, pl.commands.filter(c=>!hud?.bound.includes(c.seq)), guardContext(before, content, catalog));
     if(hud)guarded.kept=[...guarded.kept,...pl.commands.filter(c=>hud.bound.includes(c.seq))].sort((a,b)=>a.seq-b.seq);
+    const pc=guarded.kept.length===1 && !guarded.dropped.length && !actionInput && guarded.kept[0];
+    if(pc?.type==='party' && (pc.act==='invite' || ['wait','follow','leave'].includes(pc.act) && before.party?.members[pc.who]?.standard)){
+        const local=await partyControl(before,content,{act:pc.act==='leave'?'remove':pc.act,ref:pc.who,source:msg.mes,revision:actionPrefix(chat,u)},
+            messages=>ask(llm,messages,'party_decision',{maxTokens:200,temperature:0.3}));
+        return {v:RECORD_V4,input_hash:inputHash,route:'v4',ir:irRecord(ir),plan,interp,...local};
+    }
     // a contract given up only in words for later is no act now (live run 03.10.2026)
     const announced = announcedAbandon(msg.mes, guarded.kept, before);
     guarded.kept = announced.kept;
@@ -819,10 +826,14 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
             if(reason){r=actionRefused(inputHash,reason);commit();return {action:'not_executed',dirty:true,index:u,notice:reason};}
         }
         const isC = campaignPath(chat, settings.legacyPlanner ?? settings.planner) === 'c';
-        const native = !actionInput && ir.intent?.kind === 'command' && before.mode === 'story' && isC && rulesetOf(before) >= 2
+        const management = /^#party\s+(invite|wait|follow|remove|disband|accept)(?:\s+(.+))?$/i.exec(msg.mes.trim());
+        const native = management && !actionInput && before.mode==='story' && isC && rulesetOf(before)>=2
+            ? await partyControl(before,content,{act:management[1].toLowerCase(),ref:management[2]?.trim(),source:msg.mes,revision:actionPrefix(chat,u)},
+                messages=>ask(llm,messages,'party_decision',{maxTokens:200,temperature:0.3}))
+            : !actionInput && ir.intent?.kind === 'command' && before.mode === 'story' && isC && rulesetOf(before) >= 2
             ? nativeAction(before,content,msg.mes,u) : null;
         if (native) {
-            r = {v:RECORD_V4,input_hash:inputHash,route:'v4',ir:irRecord(ir),events:native.events,command:native.command};
+            r = {v:RECORD_V4,input_hash:inputHash,route:'v4',ir:irRecord(ir),events:native.events,command:native.command,...(native.party_call?{party_call:native.party_call}:{})};
         } else if(actionInput?.mode==='hud_roleplay') {
             const m=validateActionSelection(actionInput.selection,before,content).mapped;
             r=await executeMappedTurn(chat,content,{u,before,m,inputHash,llm,previous:null,typed:true,
@@ -901,7 +912,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         if (r.command.posted) return { action: 'abort', dirty };
         r.command.posted = true;
         setRec(msg, r);
-        const updateHud = r.events.some(e => ['stat.assigned','item.equipped','resource.changed','time.advanced'].includes(e.t));
+        const updateHud = r.events.some(e => ['stat.assigned','item.equipped','resource.changed','time.advanced','party.member','party.agreement'].includes(e.t));
         return { action: 'panels', panels: r.command.panels, index: u, dirty: true,
             ...(updateHud ? {hud:renderHud(foldChat(chat).state,content,settings.hud,{showFreePoints:true})} : {}) };
     }

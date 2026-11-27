@@ -212,15 +212,15 @@ export function bindPartyEquipment(s,who,emit) {
     }
 }
 
-export function partyDecision(s, content, command, source, actor, emit, contractReady) {
+export function partyDecision(s, content, command, source, actor, emit, contractReady, nativeAccept=false) {
     const c = command, who = c.who, person = s.entities[who];
     const failure = reason => ({status:'clarify',reason,line:'CLARIFY — '+reason});
     if (person?.kind !== 'npc' || person.status === 'dead' || !s.scene.present.includes(who)) return failure('The named living partner must be present.');
     const listener = actor==='pc' ? who : (c.act==='give' ? c.target : 'pc');
-    const words = evidenceOf(s, who, source, c.quote, actor, listener);
+    const words = nativeAccept ? source : evidenceOf(s, who, source, c.quote, actor, listener);
     if (!words) return failure('The decision needs words from the identified speaker.');
-    const statement = statementOf(words,c.quote);
-    if (!statement || !addressedTo(s,statement,listener)) return failure('Quote the decision addressed to this person.');
+    const statement = nativeAccept ? source : statementOf(words,c.quote);
+    if (!statement || (!nativeAccept && !addressedTo(s,statement,listener))) return failure('Quote the decision addressed to this person.');
     const member = s.party?.members?.[who];
     const open = agreementsOf(s).filter(a => a.who === who && a.phase === 'open');
     let agreement = c.agreement ? s.party?.agreements?.[c.agreement] : open.length === 1 ? open[0] : null;
@@ -249,7 +249,7 @@ export function partyDecision(s, content, command, source, actor, emit, contract
     } else if (['accept','decline'].includes(c.act)) {
         if (!agreement || agreement.who !== who || agreement.phase !== 'open' || agreement.proposer === actor) return failure('Identify one current offer from the other party.');
         const answer=withoutAddress(s,statement);
-        if (c.act === 'accept' ? !unchangedAnswer(s,content,agreement,words,statement,actor) :
+        if (c.act === 'accept' ? !nativeAccept && !unchangedAnswer(s,content,agreement,words,statement,actor) :
             answer.includes('?') || qualified.test(answer) || !(decisionOf(answer)==='refuse' || /^(?:no thanks|I (?:decline|refuse|won't|will not))\b/i.test(answer)))
             return failure('Quote a definite response to the unchanged terms.');
         const accepts = c.act === 'accept';
@@ -276,7 +276,7 @@ export function partyDecision(s, content, command, source, actor, emit, contract
             return failure('This loot has already been promised.');
         emit({t:'party.agreement',d:{...agreement,phase:accepts?'accepted':'declined',answer:sourceRef,previous:agreement.revision}});
         if (accepts) {
-            memberEvent(member?.mode==='wait'?'wait':'follow',{agreement:agreement.id,combat:agreement.terms.combat});
+            memberEvent(member?.mode==='wait'?'wait':'follow',{agreement:agreement.id,combat:member?.standard || agreement.terms.combat,...(agreement.standard?{standard:true}:{})});
             if (agreement.terms.combat) bindPartyEquipment(s,who,emit);
             if (agreement.amends && claimsOf(s).some(r=>r.who===who && r.source===agreement.terms.quest)) {
                 const amount=questFee(s.quests[agreement.terms.quest],agreement.terms);

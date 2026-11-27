@@ -124,3 +124,14 @@ saved[index].mes=originalReply;runtime.onEditedV4(saved,index,content);
 check('R3 edited revision restores both owner and equipment',state(saved).objects[bow].holder.entity==='pc' &&
     !state(saved).entities[who].sheet.equipment.weapon && !host.foldChat(saved).errors.length);
 assert.deepEqual(failed,[]);
+
+// A quoted equal split may name the pot. An extra or altered personal fee is not that pot.
+for (const [text,ok] of [
+    ["I'd like to clear the first level with you and split the Guild's ninety copper evenly",true],
+    ["I'd like to clear the first level with you and split the Guild's eighty copper evenly",false],
+    ["I'd like to split the Guild's ninety copper evenly and give you twenty copper extra",false],
+]) {
+    const run=structuredClone(original.slice(0,15));
+    await player(run,text,{act:'offer',quest,combat:true,share:'half',quote:text});
+    assert.equal(Object.values(state(run).party?.agreements||{}).some(a=>a.phase==='open' && a.terms.half),ok);
+}

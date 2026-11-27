@@ -148,16 +148,26 @@ function performed(s,source,c,actor,words) {
     return own.test(statement) && narratedEvent(statement,statement,{minWords:2}).ok ? statement : '';
 }
 
+// In an equal division the explicitly named pot can be the whole quest reward.
+function splitPot(text, sum, payout) {
+    if (sum.cp !== payout) return false;
+    const before = text.slice(0,sum.raw_start), after = text.slice(sum.raw_end);
+    return /\b(?:split|divide|share)\s+(?:(?:the|our)\s+)?(?:guild['’]s\s+)?$/i.test(before)
+        && /^\s+(?:evenly|equally|in half|half each)\b/i.test(after);
+}
 function termsFrom(s, content, c, words, actor) {
     if (c.quest && s.quests[c.quest]?.status !== 'active') return null;
     const terms = { quest:c.quest || null, combat:c.combat === true, text:c.quote };
     if (terms.combat && !together.test(words) && !/\b(?:fight|battle|guard|protect|defend)\b/i.test(words)) return null;
-    const half = halfShare.test(words);
-    if (c.share === 'half' && (!half || !terms.quest)) return null;
-    if (half && c.share !== 'half' && !c.loot || c.share==='half' && !halfShare.test(c.quote)) return null;
     const amounts=coinEvidence(words,content);
+    const payout=s.quests[c.quest]?.payout_cp;
+    const pot=amounts.sums.find(sum=>splitPot(words,sum,payout));
+    const quotedHalf=halfShare.test(c.quote) || coinEvidence(c.quote,content).sums.some(sum=>splitPot(c.quote,sum,payout));
+    const half = halfShare.test(words) || !!pot;
+    if (c.share === 'half' && (!half || !terms.quest)) return null;
+    if (half && c.share !== 'half' && !c.loot || c.share==='half' && !quotedHalf) return null;
     const fee=c.share==='half' ? Math.floor(s.quests[c.quest].payout_cp/2) : c.amount;
-    if (!amounts.complete || amounts.sums.some(sum=>sum.cp!==fee) || (c.amount && wrongFeeRecipient(s,words,c.who,actor))) return null;
+    if (!amounts.complete || amounts.sums.some(sum=>sum.cp!==fee && !(sum===pot && c.share==='half')) || (c.amount && wrongFeeRecipient(s,words,c.who,actor))) return null;
     if (fee && /\b(?:additional|extra|on top of)\b/i.test(words)) return null;
     if (terms.combat && (actor==='pc' ? /\b(?:follow my (?:lead|orders)|I (?:choose|call) (?:our|the) targets)\b/i :
         /\b(?:follow your (?:lead|orders)|you (?:choose|call) (?:our|the) targets)\b/i).test(words)) terms.tactics=true;
@@ -199,7 +209,7 @@ export function bindPartyEquipment(s,who,emit) {
 
 export function partyDecision(s, content, command, source, actor, emit, contractReady) {
     const c = command, who = c.who, person = s.entities[who];
-    const failure = reason => ({status:'clarify',reason,line:'PARTY — '+reason});
+    const failure = reason => ({status:'clarify',reason,line:'CLARIFY — '+reason});
     if (person?.kind !== 'npc' || person.status === 'dead' || !s.scene.present.includes(who)) return failure('The named living partner must be present.');
     const listener = actor==='pc' ? who : (c.act==='give' ? c.target : 'pc');
     const words = evidenceOf(s, who, source, c.quote, actor, listener);

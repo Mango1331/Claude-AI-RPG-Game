@@ -3,6 +3,7 @@
 export async function readNarratorFrames(frames, finish) {
     const reader = frames.getReader();
     let done = false, stopped = false, valid = true;
+    let terminal = null;
     try {
         for (;;) {
             const frame = await reader.read();
@@ -17,10 +18,22 @@ export async function readNarratorFrames(frames, finish) {
                 try {
                     const packet = JSON.parse(data);
                     const choice = packet?.choices?.find(c => (c.index ?? 0) === 0);
+                    // Wafer repeats the empty primary stop on its final usage receipt.
+                    // It must belong to the same generation and carry no new output.
+                    const receipt = stopped && terminal && packet.usage && packet.choices?.length === 1
+                        && packet.id === terminal.id && packet.model === terminal.model && packet.provider === terminal.provider
+                        && choice?.finish_reason === 'stop' && choice.native_finish_reason === terminal.native_finish_reason
+                        && choice.delta && Object.entries(choice.delta).every(([k,v]) =>
+                            k === 'role' ? v === 'assistant' : ['content','reasoning'].includes(k) && (v === '' || v === null))
+                        && !choice.message && !packet.error;
+                    if (receipt) { terminal = null; continue; }
                     if (packet?.error || (stopped && choice)) valid = false;
                     if (choice?.finish_reason != null) {
                         stopped = choice.finish_reason === 'stop';
                         if (!stopped) valid = false;
+                        if (stopped && packet.id && packet.model && packet.provider) terminal = {
+                            id:packet.id, model:packet.model, provider:packet.provider, native_finish_reason:choice.native_finish_reason
+                        };
                     }
                 } catch { valid = false; }
             }

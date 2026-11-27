@@ -30,3 +30,16 @@ test('stream receipt only authorizes its original processor, user, chat, epoch, 
         assert.equal(streamReply({...owner,...change},ctx,9),null);
     }
 });
+
+test('empty metering stop for the same generation preserves a completed narration',async()=>{
+    const chunk={id:'generation',model:'model',provider:'provider',choices:[{index:0,delta:{content:'',role:'assistant'},finish_reason:'stop',native_finish_reason:'stop'}]};
+    for (const [change,valid] of [[{},true],[{id:'other'},false],[{usage:null},false],[{choices:[{...chunk.choices[0],delta:{content:'more'}}]},false]]) {
+        const frames=new ReadableStream({start(c){
+            for(const data of [JSON.stringify(chunk),JSON.stringify({...chunk,usage:{total_tokens:45},...change}),done]) c.enqueue({data});
+            c.close();
+        }});
+        const receipts=[];
+        await readNarratorFrames(frames,v=>receipts.push(v));
+        assert.deepEqual(receipts,[valid]);
+    }
+});

@@ -29,7 +29,7 @@ MESSAGE: Six of the eels, please.
 MESSAGE: Would the smith buy my old boots? Maybe I'll ask him tomorrow.
 → {"commands":[]}
 MESSAGE: *I turn toward the cracking branches, ready my sword, and walk in the direction of the sound.*
-→ {"commands":[{"seq":1,"type":"go","to":{"new":"toward the sound"},"quote":"walk in the direction of the sound"}]}
+→ {"commands":[{"seq":1,"type":"go","to":{"scene":"the sound"},"quote":"walk in the direction of the sound"}]}
 CATALOG: OBJECTS: item.starter_longsword (Starter Longsword, held by Alaric, equipped: weapon)
 MESSAGE: *I get my sword out and hold it ready.*
 → {"commands":[]}
@@ -138,6 +138,7 @@ export function catalogText(catalog) {
     // Patch 8: a Living Dungeon's level (src/v4/living.js)
     if ((catalog.dungeon || []).length) L.push(`DUNGEON: ${catalog.dungeon.join(' · ')}`);
     if ((catalog.open || []).length) L.push(`OPEN DECISIONS: ${catalog.open.join(' · ')}`);
+    if (here.focus) L.push('LOCAL STANDPOINT (same site): ' + here.focus);
     if ((catalog.paid || []).length) L.push(`PAID HERE: ${catalog.paid.join(' · ')}`);
     // Patch 9C-2c: his Passives and the developments offered to him
     if ((catalog.passives || []).length || (catalog.passive_offers || []).length) L.push(`PASSIVES (${catalog.passive_slots} slots): ${(catalog.passives || []).map((p) => `${p.id} (${p.text})`).join(' · ') || 'none'}`);
@@ -198,7 +199,10 @@ export function interpreterSchema(vocab, catalog) {
     const ids = catalogIds(catalog);
     const variants = vocab.commands.map((c) => {
         const props = { seq: I(1), type: E([c.type]) };
-        for (const [k, spec] of Object.entries(c.args || {})) props[k] = argSchema(spec, ids);
+        for (const [k, spec] of Object.entries(c.args || {})) {
+            const arg = argSchema(spec, ids);
+            props[k] = c.type === 'go' && k === 'to' ? { anyOf: [...(arg.anyOf || [arg]), O({ scene: S() })] } : arg;
+        }
         props.quote = S();
         return O(props);
     });

@@ -156,8 +156,12 @@ export function applyEvent(state, e) {
         case 'entity.sheet_set': // full combat-profile materialisation for an NPC (npcgen)
             state.entities[d.id].sheet = clone(d.sheet);
             break;
+        case 'scene.focus':
+            state.scene.focus = d.text;
+            break;
         case 'scene.moved': {
             const from = state.scene.at;
+            if (d.reset_present || (d.at && d.at !== from)) delete state.scene.focus;
             if (d.reset_present && state.party) for (const id of state.scene.present) rememberMember(state,id,from);
             if (d.track_history && d.at !== undefined && d.at !== from && from) state.scene.history = [...(state.scene.history || []), from].slice(-16);
             state.scene.location = d.location ?? state.scene.location;

@@ -66,7 +66,7 @@ test('.190 4D (N1): after a refused arrival the engine block opens with WHERE, t
     const text = r.context.text;
     const head = text.indexOf('WHERE — Ashbridge');
     assert.ok(head > 0 && head < text.indexOf('CORRECTIONS') || !text.includes('CORRECTIONS'), 'at the head of the block');
-    assert.match(text, /WHERE — Ashbridge[^\n]*The last reply's the smithy by the well was not reached: what it told there did not happen\./);
+    assert.match(text, /WHERE — Ashbridge[^\n]*The last reply's the smithy by the well was not reached\. Only established observations from here carry forward\./);
     assert.match(text, /TRAVEL THIS TURN — no booked route from Ashbridge; this turn has no continuation assessment/);
     assert.match(text, /Keep his established place unless actually displaced by an external cause/);
     assert.match(text, /NOT HERE — Werrin Hale[^\n]*: he speaks of them from where he is/);

@@ -75,7 +75,7 @@ export function eventKind(e, s = null) {
         case 'creation.class_selected': case 'creation.completed':
             return 'pc.progress';
         case 'scene.moved': return 'pc.location';
-        case 'scene.entered': case 'scene.left': case 'scene.position': case 'scene.awareness': case 'scene.tactical': case 'scene.concealed': case 'journey.party':
+        case 'scene.focus': case 'scene.entered': case 'scene.left': case 'scene.position': case 'scene.awareness': case 'scene.tactical': case 'scene.concealed': case 'journey.party':
             return 'scene';
         case 'entity.created': case 'entity.updated': case 'entity.sheet_set': return 'entities';
         case 'combat.negotiation': case 'encounter.started': case 'encounter.updated': case 'encounter.ended':

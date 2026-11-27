@@ -89,6 +89,7 @@ const EXPECTED_SHAPES = {
     // reply shows handling a desk step) are checked by World; a missing or malformed one is null (never a repair)
     go: (refs) => O({ arrived: B(), at: N(refs.place), with: N(A(S())), met: N(A(O({ who: S(), evidence: S() }))) }),
     desk: () => O({ handled_by: N(O({ who: S(), evidence: S() })) }),
+    approach: () => O({ standpoint: N(S()) }),
     activity: () => O({ minutes: I(0), done: B() }),
     take: () => O({ taken: B() }),
     buy: () => O({ priced: B(), taken_anyway: B() }),

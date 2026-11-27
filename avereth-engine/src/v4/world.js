@@ -2199,15 +2199,23 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     if (cPath) slipMarks(s, content, emit);
     // Arrival resets visibility as always. Only now, after this room's complete population (including
     // the Living Dungeon fallback), can the existing opposed Stealth check resolve this one GO.
-    if (stealthGo && stealthAt === s.scene.at && s.scene.at !== startAt && s.scene.at !== transit && !s.encounter) {
-        const r = bookStealth(s, content, dice, emit, { what: 'arrival stealth', at: s.scene.at, turn: s.turn, seq: stealthGo.seq });
+    const approach = auth.approach;
+    const standpoint = approach && expected[approach.seq]?.standpoint;
+    const local = approach && approach.at === s.scene.at && !s.encounter && typeof standpoint === 'string'
+        && standpoint.length <= 400 && sceneMatches(answer.scene) && !travel.some(t => !t.ok)
+        && narratedEvent(prose, standpoint).ok;
+    if (local) emit({t:'scene.focus', d:{text:standpoint}});
+    const localStealth = local && approach.stealth && s.scene.present.some(id => id !== 'pc' && statusOf(s,id) !== 'dead');
+    const arrivedStealth = stealthGo && stealthAt === s.scene.at && s.scene.at !== startAt && s.scene.at !== transit && !s.encounter;
+    if (localStealth || arrivedStealth) {
+        const r = bookStealth(s, content, dice, emit, { what: localStealth ? 'local stealth' : 'arrival stealth', at: s.scene.at, turn: s.turn, seq: localStealth ? approach.seq : stealthGo.seq });
         stealthSettled = true;
         if (r.check.success) {
             for (const p of [...s.pending_combat]) if (s.scene.present.includes(p.by) && s.scene.awareness[p.by] !== 'aware') {
                 emit({ t: 'combat.pending_cleared', d: { by: p.by } });
             }
         }
-        corrections.push(`ARRIVAL STEALTH — ${placeName(s, s.scene.at)}: ${r.check.success ? 'SUCCESS; use the engine concealment and observer awareness, not an earlier narrated discovery' : 'FAILURE; use the engine observer awareness. Detection alone is not an attack'}. No further movement or attack was chosen.`);
+        corrections.push(`${localStealth ? 'LOCAL' : 'ARRIVAL'} STEALTH — ${placeName(s, s.scene.at)}: ${r.check.success ? 'SUCCESS; use the engine concealment and observer awareness, not an earlier narrated discovery' : 'FAILURE; use the engine observer awareness. Detection alone is not an attack'}. No further movement or attack was chosen.`);
     }
     else if (stealthGos.some(g => g.manner?.scope === 'destination')) {
         system.push(`DESTINATION STEALTH NOT RESOLVED — current location: ${placeName(s, s.scene.at)}. The voluntary target arrival was not confirmed; no destination Detection result or future stealth permission was granted.`);

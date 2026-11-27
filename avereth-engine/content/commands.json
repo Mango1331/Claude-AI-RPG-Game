@@ -86,7 +86,7 @@
     },
     {
       "type": "go",
-      "summary": "within is the current established habitat id ONLY when continuing locally inside it toward an unnamed part/den/trail; null for departure or an independent destination. Alaric sets off for another place or toward a perceptible lead: walks, travels, heads back, goes inside or down, walks toward a sound/tracks/direction, or looks for a kind of place (\"look for an inn\" → {new:\"an inn\"}; \"walk toward the sound\" → {new:\"toward the sound\"}).",
+      "summary": "For local movement toward a perceptible person, sign or vantage in this scene use to:{\"scene\":\"focus in his words\"}. Looking alone needs no GO. For actual travel, entry or crossing use the established place id, or {\"new\":\"place name\"} for a genuinely new site. within is only the established habitat for exploring an unnamed part of it.",
       "args": {
         "to": {
           "ref": "place"

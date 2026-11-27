@@ -78,6 +78,7 @@ export function ordinaryChoice(s, input, boundary = null) {
 
 export function reportedContinuation(s, content, answer, prose) {
     const o = s.last?.outcome;
+    if (o?.auth?.approach && !o.auth.gos?.length) return null;
     const boundary = o?.auth?.continuation;
     const frame = ordinaryChoice(s,s.last?.input,boundary) ?? boundary;
     const arrivals = (answer.deltas || []).filter(d => d.type === 'arrive');

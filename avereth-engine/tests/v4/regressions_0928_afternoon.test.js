@@ -157,10 +157,10 @@ test('active Guild quest catalog is continuity memory; V4 contract keeps quest f
     assert.match(contract, /objectives\/proof.*memory.*not a permission system|Quest objectives\/proof.*memory/i);
 });
 
-test('interpreter contract explicitly treats walking toward a sound/track/direction as GO', () => {
+test('interpreter contract distinguishes approaching a sound in this scene from travel', () => {
     const go = contentPack.commandVocab.commands.find((x) => x.type === 'go');
-    assert.match(go.summary, /walks toward a sound\/tracks\/direction/);
-    assert.match(interpreterSystem(contentPack.commandVocab), /walk toward the sound/);
+    assert.match(go.summary, /local movement.*scene/i);
+    assert.match(interpreterSystem(contentPack.commandVocab), /"scene":"the sound"/);
 });
 
 // 4.0.5 removed the generic CHECK DIE and 4.0.6 the check delta: an engine search check (PER vs moderate, Core #7) is

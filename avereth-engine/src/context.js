@@ -1099,14 +1099,16 @@ function whereLines(state, input, opts) {
         && normText(e.name).split(' ').filter((w) => w.length >= 4).some((w) => words.includes(` ${w} `))).slice(0, 3);
     const frame = opts.outcome?.auth?.continuation;
     const ordinary = ordinaryChoice(state,input,frame);
-    const unbooked = ordinary?.assisted ? `he asks to be carried: ${ordinary.choice}. If an available helper agrees and can reach the destination, carry it out as voluntary assistance`
+    const unbooked = opts.outcome?.auth?.approach ? `approach ${opts.outcome.auth.approach.focus} within ${here}`
+        : ordinary?.assisted ? `he asks to be carried: ${ordinary.choice}. If an available helper agrees and can reach the destination, carry it out as voluntary assistance`
         : frame === 'stay' ? `he stays at ${here} as requested`
         : frame && frame !== 'local' ? `chosen continuation: ${frame.choice}; ${frame.with ? 'only if '+entityLabel(state,frame.with)+' agrees; ' : ''}${frame.after ? 'only once '+frame.after+' is fulfilled; ' : ''}no trip is booked yet`
             : !frame && ordinary ? `carry out the local movement he chose: ${ordinary.choice}. Keep the established site for furniture and ordinary steps within it`
             : !frame ? `no booked route from ${here}; this turn has no continuation assessment. Keep his established place unless actually displaced by an external cause`
             : `no booked route from ${here}. Ordinary movement within the present site may follow the current choice. Directions alone, an invitation, refusal or a deferred plan keeps him here. Actual external displacement remains possible`;
     return [
-        `WHERE — ${here}${town && town !== here ? ` (${town})` : ''}.${missed.length ? ` The last reply's ${missed.join(', ')} ${missed.length > 1 ? 'were' : 'was'} not reached: what it told there did not happen.` : ''}`,
+        `WHERE — ${here}${town && town !== here ? ` (${town})` : ''}.${missed.length ? ` The last reply's ${missed.join(', ')} ${missed.length > 1 ? 'were' : 'was'} not reached. Only established observations from here carry forward.` : ''}`,
+        state.scene.focus ? `Standpoint at this site: ${state.scene.focus}` : '',
         `TRAVEL THIS TURN — ${steps.length ? steps.join('; ') : unbooked}.`,
         absent.length ? `NOT HERE — ${absent.map((e) => `${e.name}${e.at && state.places?.[e.at] ? ` (${placeName(state, e.at)})` : ''}`).join(', ')}: he speaks of them from where he is; they answer only if the story brings them here.` : '',
     ].filter(Boolean).join('\n');

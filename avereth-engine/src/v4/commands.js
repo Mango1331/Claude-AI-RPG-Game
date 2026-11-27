@@ -652,6 +652,15 @@ const HANDLERS = {
     },
     go(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT GO — not while the fight runs.' };
+        if (typeof c.to?.scene === 'string') {
+            const focus = c.to.scene.trim();
+            if (!focus || focus.length > 200 || c.within || ctx.auth.approach) return {status:'refused', line:'A local approach needs a focus in this scene.'};
+            const previous = ctx.auth.gos.at(-1);
+            ctx.auth.approach = {seq:c.seq, at:previous ? previous.to : s.scene.at,
+                focus, stealth:c.manner?.kind === 'stealth' || !!c.sneak};
+            ctx.expectedKeys[String(c.seq)] = 'approach';
+            return {status:'authorized', line:`LOCAL APPROACH — ${focus}. Carry out this movement within the scene to the extent possible. Describe his standpoint and what he can perceive from it. Passage, attacks and mechanical cover are separate.${ctx.auth.approach.stealth ? ' Detection awaits actual observers. Do not decide concealment.' : ''}`};
+        }
         const wordsFor = typeof c.to?.new === 'string' ? c.to.new : ''; // his words for the place, before any resolution
         const guildTown = envx?.c && rulesetOf(s) >= 2 && guildJourney(s, c);
         if (guildTown) c = { ...c, to: { new: `Guild hall in ${s.places[guildTown].name}` } };

@@ -57,7 +57,7 @@ import { anchorFor, speciesAnchor, templateFor, npcTemplate, rulesetOf } from '.
 import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, clearDone, livingOf, floorAt, slotMet, resolved, nextSlot, thresholdSlot, slotForNew, resolvedSlotNamed, slotEntityEvents, establishEvents, syncEvents, insideOf } from './living.js';
 import { refusedCreatureInThread, unbookedDungeonThreat } from './run9_evidence.js';
 import { jobOf, paymentJob, recordJobWork } from './private_jobs.js';
-import { forcedRelocation, visualDetail, narratedEvent, guildParticipationEvidence, deskHandlingEvidence, personProfile } from './narration_evidence.js';
+import { forcedRelocation, visualDetail, narratedEvent } from './narration_evidence.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
 // delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
@@ -535,7 +535,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     let stealthAt = null; // actual voluntary arrival of this GO, never a forced relocation
     let arrivedHall = null;
     let sceneEpoch = 0;
-    const deskWitnesses = [];
+    const deskVisits = new Map();
     const endpoints = reportedEndpoints(answer, state, content);
     const reachedGoals = new Map(); // GO seq → actual accepted place
     const deniedPresence = new Set();
@@ -586,24 +586,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const named = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.status !== 'dead' && s.scene.present.includes(e.id) && own(e).includes(word));
         return named.length === 1 ? named[0].id : null;
     };
-    const personalLabels = who => {
-        const name=s.entities[who]?.name;
-        if (!name) return personLabels(who);
-        const first=name.split(/\s+/)[0];
-        const unique=Object.values(s.entities).filter(e=>e.kind === 'npc' && e.name?.split(/\s+/)[0] === first).length === 1;
-        return unique ? [name,first] : [name];
-    };
     const mapRef = (ref) => (typeof ref === 'string' ? idOf(ref) || ref : ref);
-    const personLabels = (id) => {
-        const e = s.entities[id] || {};
-        const names = [e.name, e.known_name].filter(x => typeof x === 'string' && x.trim());
-        // As in makeResolver, one word of a known name can identify its owner. Arrival evidence must also be
-        // unambiguous among absent people: never borrow the shared "Marla" of two different known persons.
-        const others = new Set(Object.values(s.entities).filter(x => ['npc', 'pc'].includes(x.kind) && x.id !== id)
-            .flatMap(x => [x.name, x.known_name].filter(Boolean).flatMap(name => normText(name).split(' '))));
-        const short = names.flatMap(name => normText(name).split(' ')).filter(word => word.length >= 3 && !others.has(word));
-        return [...names, ...short, truth(s, id, 'occupation')[0]?.o, e.role, ...(e.descriptors || [])].filter((x) => typeof x === 'string' && x.trim());
-    };
     // Concrete entity handles must resolve to real entities; ordinary narrative
     // phrases remain free text. A rejected person.named must not leave a ghost fact.
     const missingEntityRef = ref => typeof ref === 'string' && (/^(?:npc|mon)\./i.test(ref) ? !s.entities[ref]
@@ -2245,6 +2228,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const q = s.quests[k.quest];
         const r = q?.status === 'active' ? completeContract(s, content, q, emit, { step: k.seq, c: cPath }) : { ok: false, reason: 'the contract is no longer active' };
         k.done = true;
+        if (r.ok) deskVisits.set(String(k.seq),sceneEpoch);
         emit({ t: 'cmd.completed', d: { seq: k.seq, ok: r.ok, reason: r.reason ?? null } });
         if (!r.ok) system.push(`TURN-IN REFUSED — ${q?.title || k.quest}: ${r.reason}`);
     }
@@ -2512,32 +2496,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     function enterKnown(who, d) {
         v3({ enter: [who] }, d);
         if (s.scene.present.includes(who)) {
-            if (s.entities[who]?.kind === 'npc' && hallOf(s,s.scene.at) && firewallContext(s,content).isGuildPerson(who)) {
-                for (const w of deskWitnesses.filter(w=>w.epoch === sceneEpoch && w.at === s.scene.at)) {
-                    if (!knows(s,who,w.fact) && guildParticipationEvidence(prose, personalLabels(who), {payoutCp:w.cp,content})) {
-                        emit({t:'knowledge.gained',d:{who,about:w.fact,stance:'knows',source:'witnessed',turn:s.turn,minute:s.clock.minute}});
-                    }
-                }
-            }
             if (s.entities[who]?.kind === 'npc' && s.entities[who].at !== s.scene.at)
                 emit({ t: 'entity.updated', d: { id: who, set: { at: s.scene.at } } });
             for (const ref of [...blockedPeople]) if (idOf(ref) === who) blockedPeople.delete(ref);
         }
     }
 
-    /** NPC E2-A: a person as the evidence checks see them (src/v4/narration_evidence.js personProfile). */
-    function profileOf(id) {
-        const e = s.entities[id] || {};
-        const names = [e.name, e.known_name].filter((x) => typeof x === 'string' && x.trim());
-        const others = new Set(Object.values(s.entities).filter((x) => ['npc', 'pc'].includes(x.kind) && x.id !== id)
-            .flatMap((x) => [x.name, x.known_name].filter(Boolean).flatMap((n) => normText(n).split(' '))));
-        const nameWords = names.flatMap((n) => normText(n).split(' ')).filter((w) => w.length >= 3 && !others.has(w));
-        const occupation = truth(s, id, 'occupation')[0]?.o;
-        const role = occupation && !s.entities[occupation] ? occupation : e.descriptors?.[0] || e.role || null;
-        const look = [e.traits, ...(e.descriptors || []).slice(1).filter((x) => !/^(?:npc|person|creature)\./.test(x)), truth(s, id, 'appearance')[0]?.o, truth(s, id, 'armed')[0]?.o].filter((x) => typeof x === 'string');
-        return personProfile({ id, names, nameWords, role, look, group: isGroupPerson(e) });
-    }
-    /** A historical person entity that stands for a group ("Two clerks working the long counter"): kept, never extended. */
     function isGroupPerson(e) {
         return !!e && e.kind === 'npc' && collectivePerson(e.descriptors?.[0] || e.role || '', [e.traits, ...(e.descriptors || []).slice(1)].filter(Boolean), e.name || null);
     }
@@ -2567,30 +2531,21 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             }) ?? null;
     }
 
-    /**
-     * NPC E2-A (R2): the Guild person the extractor says handled a desk step of the player's (outcome.desk) learns the
-     * engine's own fact of that step as witnessed: only when the step happened (resolved at the player's turn, or its
-     * conditional completed in this reply), the person is here, alive and of the Guild, and the reply shows them doing it.
-     */
+    /** Attribute each actual desk step within the visit in which the Guild booked it. */
     function deskHandlers() {
-        for (const [k, type] of Object.entries(outcome.expected_keys || {})) {
-            const desk = type === 'desk' ? outcome.desk?.[k] : null;
-            const h = desk ? expected[k]?.handled_by : null;
-            if (!h || typeof h !== 'object') continue;
-            const item = { seq: Number(k), type: 'expected', handled_by: h };
-            const res = (outcome.resolutions || []).find((r) => String(r.seq) === String(k));
-            const done = res?.status === 'resolved' || (res?.status === 'conditional' && events.some((e) => e.t === 'cmd.completed' && String(e.d.seq) === String(k) && e.d.ok === true));
+        if (!hallOf(s,s.scene.at)) return;
+        for (const [k,desk] of Object.entries(outcome.desk || {})) {
+            const res = outcome.resolutions?.find(r => String(r.seq) === k);
+            const visit = res?.status === 'resolved' ? 0 : deskVisits.get(k);
+            if (visit !== sceneEpoch) continue;
             const fact = desk.kind === 'accept' ? `f.pc.accepted.${desk.quest}` : `f.pc.completed.${desk.quest}`;
-            if (!done || !s.facts[fact]) { reject(item, 'desk_handler', `step ${k} (${desk.kind} ${desk.quest}) did not happen`); continue; }
-            const who = idOf(h.who);
-            if (!who || s.entities[who]?.kind !== 'npc' || statusOf(s, who) === 'dead' || !s.scene.present.includes(who) || !hallOf(s, s.scene.at) || !firewallContext(s, content).isGuildPerson(who)) {
-                reject(item, 'desk_handler', `${h.who} is no Guild person present at the desk`);
-                continue;
-            }
-            const people = s.scene.present.filter((id) => s.entities[id]?.kind === 'npc').map(profileOf);
-            const ev = deskHandlingEvidence(prose, h.evidence, who, people, { self: [s.entities.pc?.name, 'Alaric'].filter(Boolean) });
-            if (!ev.ok) { reject(item, 'desk_handler', `${who}: ${ev.why}`); continue; }
-            if (!knows(s, who, fact)) emit({ t: 'knowledge.gained', d: { who, about: fact, stance: 'knows', source: 'witnessed', turn: s.turn, minute: s.clock.minute } });
+            if (!s.facts[fact]) continue;
+            const staff = s.scene.present.filter(who => s.entities[who]?.kind === 'npc'
+                && statusOf(s,who) !== 'dead' && firewallContext(s,content).isGuildPerson(who));
+            const ref = expected[k]?.handled_by;
+            const who = staff.length === 1 ? staff[0] : idOf(ref?.who ?? ref);
+            if (who && staff.includes(who) && !knows(s,who,fact))
+                emit({t:'knowledge.gained',d:{who,about:fact,stance:'knows',source:'witnessed',turn:s.turn,minute:s.clock.minute}});
         }
     }
 
@@ -3139,6 +3094,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 : [...new Set([...party,...companions])];
         }
         arrivals.add(id);
+        if (explicitTravel) deskHandlers();
         sceneEpoch++;
         const town = locationOf(s, id);
         const from = s.scene.at;
@@ -3267,6 +3223,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     const accepted = q?.status === 'listed' ? acceptContract(s, content, q, emit, { step: k.seq })
                         : { ok: false, reason: 'the contract is no longer on the board' };
                     const { ok, reason } = accepted;
+                    if (ok) deskVisits.set(String(k.seq),sceneEpoch);
                     emit({ t: 'cmd.completed', d: { seq: k.seq, ok, reason: ok ? null : reason } });
                     if (!ok) {
                         const why = q?.status === 'listed' ? reason : 'it is no longer on the board';
@@ -3288,7 +3245,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     continue;
                 }
                 const r = q && q.status === 'active' ? completeContract(s, content, q, emit, { step: k.seq, c: cPath }) : { ok: false, reason: 'the contract is no longer active' };
-                if (r.ok) deskWitnesses.push({fact:`f.pc.completed.${q.id}`,at:s.scene.at,epoch:sceneEpoch,cp:q.payout_cp});
+                if (r.ok) deskVisits.set(String(k.seq),sceneEpoch);
                 emit({ t: 'cmd.completed', d: { seq: k.seq, ok: r.ok, reason: r.reason ?? null } });
                 if (!r.ok) system.push(`TURN-IN REFUSED — ${q?.title || k.quest}: ${r.reason}`);
             }

@@ -55,7 +55,7 @@ test('158 original unaccepted I56/I68 scene switches remain rejected',()=>{
 });
 
 import { runExtraction, processReplyAny } from '../../src/v4/runtime.js';
-import { movementEvidence, guildParticipationEvidence } from '../../src/v4/narration_evidence.js';
+import { movementEvidence } from '../../src/v4/narration_evidence.js';
 import { floorRefusal, levelVia } from '../../src/v4/dungeon.js';
 import { makeResolver } from '../../src/delta.js';
 import { validateState } from '../../src/validate.js';
@@ -113,11 +113,8 @@ test('158 compact selection is stable under reordered present list and excludes 
 });
 test('158 evidence rejects remembered/hypothetical/dialogue actions and mere clerk presence',()=>{
  assert.equal(movementEvidence('"I will walk out," he said.'),false);assert.equal(movementEvidence('He remembered how he walked outside.'),false);
- assert.equal(guildParticipationEvidence('Tam was behind the counter.',['Tam']),false);
- assert.equal(guildParticipationEvidence('Tam counted ninety copper onto the counter.',['Tam']),true);
- assert.equal(guildParticipationEvidence('"Tam paid me yesterday," he said.',['Tam']),false);
 });
-test('158 new arrival clerk learns own booked turn-in, bystander/next visit does not',()=>{
+test('A sole present clerk learns the completed turn-in on this visit',()=>{
  const s=before(51),hall='loc.glassmere.guild_hall',qid='quest.clear_glimmerdeep_grotto_level_1',id=Object.values(s.entities).find(e=>e.name==='Tam Ostler').id;
  const text='I go to the Guild and turn in the quest';
  const go=playerTurnV4(s,content,text,{c:true,commands:[{seq:1,type:'go',to:hall,quote:text},{seq:2,type:'quest.turn_in',quest:qid,quote:text}]});
@@ -125,14 +122,10 @@ test('158 new arrival clerk learns own booked turn-in, bystander/next visit does
  for(const participates of [true,false]){
   const prose=participates?'He entered the Guild hall. Tam counted ninety copper onto the counter.':'He entered the Guild hall. Tam stood behind the counter.';
   const r=replyTurnV4(go.state,content,raw,{prose});assert.equal(r.state.quests[qid].status,'completed');
-  assert.equal(r.events.some(e=>e.t==='knowledge.gained'&&e.d.who===id&&e.d.about===`f.pc.completed.${qid}`),participates);
+  assert.equal(r.events.some(e=>e.t==='knowledge.gained'&&e.d.who===id&&e.d.about===`f.pc.completed.${qid}`),true);
  }
 });
 
-test('158 later clerk arrival is not personal participation; no knowledge leak from another actor',()=>{
- assert.equal(guildParticipationEvidence('Before Brenna arrived, the clerk counted sixty copper.',['Brenna']),false);
- assert.equal(guildParticipationEvidence('Brenna remembered how she paid sixty copper.',['Brenna']),false);
-});
 test('158 unlabeled downward arrival cannot leave a phantom room before passage rejection',()=>{
  const s=before(49),name='Uncharted lower landing',at={new:{name,kind:'interior',parent:root}};
  const text='I go down';const go=playerTurnV4(s,content,text,{c:true,commands:[{seq:1,type:'go',to:{new:name},quote:text}]});
@@ -161,11 +154,6 @@ test('158 I48 retains canonical population and rejects the invented lower passag
  const s=before(48),r=replyTurnV4(s,content,rec(chat[48]).extraction.raw,{msg:48,prose:chat[48].mes});
  assert.ok(!r.events.some(e=>e.t==='place.created'&&e.d.place.level===2));assert.deepEqual(Object.keys(r.state.dungeons[root].floors),['1']);
  assert.ok(r.rejected.some(x=>x.rule==='dungeon_foe'));
-});
-
-test('158 unrelated coin handling is not evidence of the booked payout',()=>{
- assert.equal(guildParticipationEvidence('Tam counted four copper onto the counter.',['Tam'],{payoutCp:90,content}),false);
- assert.equal(guildParticipationEvidence('Tam counted ninety copper onto the counter.',['Tam'],{payoutCp:90,content}),true);
 });
 
 test('158 identical regenerated prose refreshes actual context without repeating committed events',async()=>{

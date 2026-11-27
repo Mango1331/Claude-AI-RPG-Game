@@ -140,31 +140,18 @@ test('E2-A A2: User04 I73/I74 – the older clerk who takes and stamps the posti
     assert.equal(r.events.filter((e) => e.t === 'knowledge.gained' && e.d.about === accepted(TITAN)).length, 1, 'no second acceptance knowledge for anyone else');
     assert.equal(r.events.filter((e) => ['quest.status', 'coin.changed', 'xp.changed', 'transaction.completed'].includes(e.t)).length, 0, 'no booking');
 });
-test('E2-A A2a/A2c: a watching bystander, Alaric\'s pronoun and a non-Guild handler earn no knowledge', () => {
-    const cases = [
-        [WIRY, 'The wiry woman had stopped by the door with her rolled maps, watching'],
-        ['older_clerk', 'He stamped the slip, blotted it and held it out'],
-    ];
-    for (const [who, evidence] of cases) {
-        const r = reply(p73, { scene: HALL, expected: { 1: { handled_by: { who, evidence } } }, deltas: [older] }, prose74, 74);
-        assert.equal(r.events.filter((e) => e.t === 'knowledge.gained' && e.d.about === accepted(TITAN)).length, 0, evidence);
-        assert.equal(ruled(r, 'desk_handler'), 1, evidence);
+test('Desk knowledge follows the one staff member in this visit or the reported ID among several', () => {
+    const woman = { ...older, seq: 2, ref: 'second_clerk', distinct_from: 'older_clerk', desc: ['grey-haired woman wearing spectacles'] };
+    const run = (staff, handled_by) => reply(p73, { scene:HALL, expected:{1:{handled_by}}, deltas:staff }, prose74,74);
+    const sole = run([older],null);
+    assert.equal(learned(sole,newId(sole),accepted(TITAN)),1);
+    for (const handler of [null, WIRY, 'npc.unknown']) {
+        const ambiguous = run([older,woman],handler);
+        assert.equal(ambiguous.events.filter(e => e.t === 'knowledge.gained' && e.d.about === accepted(TITAN)).length,0);
     }
-    const bow = structuredClone(p73); bow.state.scene.present.push(BOW);
-    const r = reply(bow, { scene: HALL, expected: { 1: { handled_by: { who: BOW, evidence: 'The stocky man with the crossbow took the slip and stamped it' } } }, deltas: [] },
-        'The stocky man with the crossbow took the slip and stamped it, grinning.', 74);
-    assert.equal(learned(r, BOW, accepted(TITAN)), 0);
-    assert.equal(ruled(r, 'desk_handler'), 1);
-});
-test('E2-A A2b: two clerks of the same role – "the clerk" is ambiguous, "the older clerk" names one', () => {
-    const woman = { ...older, seq: 2, ref: 'clerk_woman', desc: ['grey-haired woman with spectacles pushed up into her hair'] };
-    const prose = 'The grey-haired clerk sorted slips at one end of the counter. The older clerk took the posting from Alaric. The clerk stamped the slip. The older clerk stamped the slip.';
-    const run = (evidence) => reply(p73, { scene: HALL, expected: { 1: { handled_by: { who: 'older_clerk', evidence } } }, deltas: [older, woman] }, prose, 74);
-    const amb = run('The clerk stamped the slip');
-    assert.equal(amb.events.filter((e) => e.t === 'knowledge.gained' && e.d.about === accepted(TITAN)).length, 0);
-    const one = run('The older clerk stamped the slip');
-    assert.equal(learned(one, newId(one), accepted(TITAN)), 1);
-    assert.equal(one.events.filter((e) => e.t === 'knowledge.gained' && e.d.about === accepted(TITAN)).length, 1);
+    const chosen = run([older,woman],'older_clerk');
+    assert.equal(learned(chosen,newId(chosen),accepted(TITAN)),1);
+    assert.equal(chosen.events.filter(e => e.t === 'knowledge.gained' && e.d.about === accepted(TITAN)).length,1);
 });
 const p63 = play(before(63), 63);
 const prose64 = f.chat[64].mes;
@@ -181,7 +168,7 @@ test('E2-A A3: User04 I64 – GO + conditional turn-in; the clerk the original p
         assert.ok(k > i, 'knowledge only after the completion');
     }
     const plain = reply(p63, ans64(null), prose64, 64);
-    assert.equal(learned(plain, CLERKS, completed), 0, 'without handled_by the .158 literal check stays as it was (false on this prose)');
+    assert.equal(learned(plain, CLERKS, completed), 1, 'one staff member on the booked visit');
 });
 test('E2-A A3a/A3d/A3e: not reached, refused, and the .158 literal fallback', () => {
     const away = reply(p63, ans64({ who: CLERKS, evidence: 'she said, and took the slip' }, { arrived: false }), prose64, 64);

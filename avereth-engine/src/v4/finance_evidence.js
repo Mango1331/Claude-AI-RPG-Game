@@ -155,7 +155,7 @@ export function moneyLiteral(source, quote, { content, currencyQuote = null, wit
     // the same money words said more than once ("Seventeen copper for everything. … Seventeen copper, four pelts, nine
     // fangs. Done?") are that amount only if every place reads it alike; each place is kept for the later checks
     if (q.state === 'ambiguous') {
-        const each = q.hits.map((h) => moneyLiteral(source, quote, { content, currencyQuote, within: h, scope: within }));
+        const each = q.hits.map((h) => moneyLiteral(source, quote, { content, currencyQuote, within: h, scope: scope || within }));
         if (each.every((r) => r.state === EVIDENCE.VERIFIED && r.cp === each[0].cp))
             return result(EVIDENCE.VERIFIED, { cp: each[0].cp, reason: each[0].reason, source: { ranges: each.flatMap((r) => r.source?.ranges || []), money: each.flatMap((r) => moneyRanges(r)) }, calculation: each[0].calculation });
         return result(EVIDENCE.MISSING, { reason: 'quote_ambiguous' });
@@ -246,7 +246,10 @@ export function priceEvidence(pricing, { source, content, units = 1, lines = nul
     const literal = (p) => {
         // Build .144 (S2, plan §7.1): a new NPC price carries its own coin word (ownCurrency); a bare number with a coin
         // word taken from its sentence is no binding total
-        const near = within ? moneyLiteral(source, p.quote, { content, currencyQuote: ownCurrency ? null : p.currency_quote ?? null, within }) : null;
+        // The amount belongs to this line. Its currency may come from another sentence of
+        // the same offer. Use the existing speech boundary so a second speaker cannot price it.
+        const scope = ownCurrency && p.currency_quote && within ? passageAt(speechPassages(source),within) : null;
+        const near = within ? moneyLiteral(source,p.quote,{content,currencyQuote:p.currency_quote,within,scope}) : null;
         return near || result(EVIDENCE.MISSING, { reason: 'no_action_anchor' });
     };
     // Build .144 (finance simplification S2): a new price binds only as ONE total in its own words for exactly these

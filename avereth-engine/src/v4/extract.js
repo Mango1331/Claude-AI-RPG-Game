@@ -94,7 +94,7 @@ const EXPECTED_SHAPES = {
         ...(Object.hasOwn(supplied,'with') ? {with:N(A(S()))} : {}),
         ...(Object.hasOwn(supplied,'met') ? {met:N(A(O({who:S(),evidence:S()})))} : {}),
     }),
-    desk: () => O({ handled_by: N(O({ who: S(), evidence: S() })) }),
+    desk: () => O({ handled_by: N(S()) }),
     approach: () => O({ standpoint: N(S()) }),
     activity: () => O({ minutes: I(0), done: B() }),
     take: () => O({ taken: B() }),
@@ -161,7 +161,6 @@ export const FORMAT_RULES = [
     'quest-ref and object-ref mean the exact matching CATALOG id; use {"new":"..."} only when the thing is genuinely new and that reference type permits it.',
     'A real handover or return of an existing item uses object.move with its catalog ID at the transfer scene, even for a loan or a shorter spoken name. For a requested loan or gift set expected.taken true only on receipt and move that ID. For an offer alone omit the receipt or report false, and no move. Record voluntary receipt, actual quantity and holder; identify a different source for a second namesake. A TAKE boolean alone does not identify a loan. For a newly created object use object.new {name:"bread",holder:"npc.giver",...} then object.move {object:{new:"bread"},to:"pc",...}. object.new has no ref field. Never invent an obj.* id. The new-name reference must identify exactly one earlier created object; otherwise distinguish the actual objects by their established descriptions.',
     'In a multi-place reply use the existing per-delta scene explicitly for events before the last arrival. Example: enter known npc.giver at the starting place; create bread on that giver there; move {new:"bread"} to pc there; arrive at the authorized destination. present means co-presence at that step. Known return: enter with catalog ID/evidence. leave means the NPC departs, not Alaric.',
-    'Chronology: when the reply establishes arrival and then meets local people or creatures, emit arrive BEFORE their present:true introductions, with increasing seq. A destination scene label never makes an earlier introduction local. Remote reports use present:false. Individuals actually visible through a nearby opening use present:true with across, even when Alaric stays outside. In a repair correct both missing scene fields and event order to match the REPLY; never invent an arrival or sort every arrival to the front.',
     'person-ref is a person id from PRESENT or the CATALOG, or the ref of a person.new/creature.new earlier in the same answer.',
     'offer_line is {"what":string,"kind":"goods"|"service","service":"lodging"|"bath"|"laundry"|"meal"|"healing"|"training"|"other"|null,"qty":integer>=1,"price_cp":integer>=0,"said":string|null (the reply\'s words for the price),"effect":"heal"|"restore_mp"|"restore_sta"|null (only for a potion, draught or tonic that restores HP, MP or STA; the engine fixes how much),"teaches":teaches|null,"equipment":boolean|null,"base":string|null,"quality":string|null,"phase":"firm"|"conditional"|"unclear","condition":string|null,"pricing":pricing}.',
     'pricing names the reply\'s words that carry a price: {"basis":"total","quote":"the exact money words that are the price of the whole line or bid"} or {"basis":"unknown"} when the reply names no such total (only a price per piece for several pieces, only part prices, no price). Quote only money words that carry their own coin word ("fifty-six copper", "one hundred fifty copper", "eight silver and four"); currency_quote is null. A bare number ("fifty-six the lot") or an added part ("two more") is no binding total: unknown. A price per piece is the total only of one piece (qty 1). An explicit price for everything ("one hundred fifty for the lot") is the total even after line prices.',
@@ -278,11 +277,10 @@ export function extractorRequest(vocab, { catalog, actions, player = null, expec
     // Patch 8.1 (§9, live 21.10.2026 10:17: twice all 2,500 tokens went to deliberation and the answer was empty): an
     // empty answer is not repeated back; the one repair asks for the report at once, short, without deliberating
     if (previous !== null && errors && !String(previous).trim()) {
-        messages.push({ role: 'user', content: 'Your previous answer was empty: it ran out of room before the JSON. Answer now with the JSON object alone, at once and short: report only what the reply plainly establishes, include every required expected key and all actual movements with chronological arrive deltas and their scenes. A GO goal alone proves no arrival. Leave out uncertain claims; empty deltas are valid only when the reply establishes no changes. Do not deliberate.' });
+        messages.push({ role: 'user', content: 'Your previous answer was empty: it ran out of room before the JSON. Answer now with the JSON object alone, at once and short: report only what the reply plainly establishes, include every required expected key and all actual movements with chronological arrive deltas. A GO goal alone proves no arrival. Leave out uncertain claims; empty deltas are valid only when the reply establishes no changes. Do not deliberate.' });
     } else if (previous !== null && errors) {
         messages.push({ role: 'assistant', content: String(previous) }, { role: 'user', content: `Your answer was not valid: ${errors.slice(0, 8).join('; ')}. Answer again with only the corrected JSON object, nothing else.${repairForm(vocab, expectedKeys, errors)}` });
         if (errors.some(e => /Place reference|\.(?:at|scene):/.test(e))) messages.at(-1).content += ' Place references must be a known id or {"new":{"name":"exact name","kind":"interior","parent":"known id or full new-parent object"}}. Preserve already valid scene and expected fields. Correct only invalid references and actual story chronology; never invent travel.';
-        if (startScene && errors.some(e => /\.scene\b/.test(e))) messages.at(-1).content += ` Engine starting scene: ${JSON.stringify(startScene)}. Annotate earlier deltas with their actual scene before the later arrival (including any actual intermediate stop); the final scene is not retroactive. Preserve valid expected answers and independent deltas. Never invent or reorder arrivals to bypass the error.`;
     }
     return { system, user, messages };
 }
@@ -568,7 +566,10 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     const pair = (x) => x && typeof x === 'object' && !Array.isArray(x) && typeof x.who === 'string' && typeof x.evidence === 'string' ? { who: x.who, evidence: x.evidence } : null;
     for (const [k, t] of Object.entries(expectedKeys || {})) {
         if (t === 'go' && exp[k] && Object.hasOwn(exp[k], 'met')) exp[k].met = Array.isArray(exp[k].met) && exp[k].met.map(pair).filter(Boolean).length ? exp[k].met.map(pair).filter(Boolean) : null;
-        if (t === 'desk' && exp[k] && typeof exp[k] === 'object' && !Array.isArray(exp[k])) exp[k] = { handled_by: pair(exp[k].handled_by) };
+        if (t === 'desk') {
+            const ref = exp[k]?.handled_by;
+            exp[k] = {handled_by: typeof ref === 'string' ? ref : typeof ref?.who === 'string' ? ref.who : null};
+        }
     }
     // A new dungeon section already has an engine ID in the authorized step. Its
     // name becomes a place reference in this report only alongside its reported arrival.

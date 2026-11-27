@@ -380,7 +380,10 @@ export function partyDecision(s, content, command, source, actor, emit, contract
         if (q?.status==='active' && q.party_work && contractReady(s,content,q,{c:true}).ok) vestQuest(s,emit,q);
         memberEvent({wait:'wait',follow:'follow',leave:'left'}[c.act],member.request ? {request:null}:{});
     }
-    return {status:'resolved',done:true,line:'PARTY — '+person.name+' · '+c.act+' · '+c.quote};
+    const response = c.act === 'offer' && actor === 'pc'
+        ? ' The proposal is open. Show the named partner’s own reply here, attributing their words clearly. No journey or other player action has been chosen by making this offer.'
+        : '';
+    return {status:'resolved',done:true,line:'PARTY — '+person.name+' · '+c.act+' · '+c.quote+response};
 }
 
 export function reduceParty(s,t,d) {

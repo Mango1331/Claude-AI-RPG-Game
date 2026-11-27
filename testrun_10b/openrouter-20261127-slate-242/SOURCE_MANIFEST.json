@@ -1,0 +1,38 @@
+{
+  "build": "4.3.0-c.6.6.242",
+  "commit": "27334c480a4dd4579022d2fac945472eb23231da",
+  "seed": 526138360,
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Vollständiger Y-Endstand mit getötetem Messerträger und lebendem zweiten Gegner; ausdrücklicher Eintritt.",
+  "savedMessages": 45,
+  "requests": 3,
+  "costUSD": "0.002150010",
+  "usage": {
+    "prompt_tokens": 40269,
+    "completion_tokens": 2493,
+    "total_tokens": 42762
+  },
+  "sha256": {
+    "actions.jsonl.gz": "2f951f8387d5ceb2c30b8c9341bb822c7e3e003313c45a8e75b0a2ca9dd03c67",
+    "chat-0.jsonl.gz": "32f4f0d81d9801f4fe91d3d06622aa9ee518c4884770ceaa9f06e1cb6ade948f",
+    "chat.jsonl.gz": "8f7e8809b2266da389a6069a78a719fc5256a8115decef98bc1a5a0fc271111e",
+    "events.json.gz": "2f19a8542d1e05464cfe33b319c20e3d9b639c09dcb25a9690dfd4e446bb02f3",
+    "explore.log.gz": "c4c61f35d5b699a1b8f82afac9a47ad7445f0dcd1fb8f514a76616bfa0cf54a4",
+    "last-verified-world.json.gz": "971bfb380d028a0a5797de425bc1d84e6b1c4d0b9cc3544935ed656dabaf2c73",
+    "parent-check.json.gz": "12c0b5aae9f7358c832c587a15231c90dec269bab64581f8545bd6a394671566",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "ac448e0797683cfa37b3fe26d8e3ce86ccc74386e08d2128a9f0e400ce7fad63",
+    "raw-82.gz": "ab22dd91db506c5a00b8504bf1de2f440ed1c4a1c107f7a8ade1b89771be9ca3",
+    "raw-83.gz": "36d4061ffc9a0bf1e6fa59cd48224acdfad0a1b54477b45cff14a3f48a98a6ea",
+    "raw-84.gz": "7316f4aef0a032d23e85d35ce24f1484b5d678a5a0d524401ba4a65632454406",
+    "requests.jsonl.gz": "76dfd0fab7a03d1472cd5f87b3a12716ee72270da3c08be3e38a470ef97e6e02",
+    "response.json.gz": "697ad179bd030333ad693e2b746af94d28dabb5e8c93705490650854292f5ad2",
+    "st.log.gz": "319d9d7bed0a57bf21b4e326108111df2cebf91f7ce24c91dc66cb42bb8c7e42",
+    "turns.jsonl.gz": "07a61ddf4a1e6ffcaffe069e9e9692c2b1de057432993d89197e16460cea053a",
+    "visible.json.gz": "0c8b58fbc28ded5f6846607222562b02c4c63e33d54b0e4984aaac96790cbb41",
+    "world-0.json.gz": "39372d0aa144620fbb0fd528820463497c113a6179330dce540df0b8266acd79"
+  }
+}

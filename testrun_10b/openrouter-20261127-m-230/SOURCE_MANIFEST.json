@@ -1,0 +1,35 @@
+{
+  "build": "4.3.0-c.6.6.230",
+  "commit": "eba34f841b801e17d7856c8b4af49c672e88d8ae",
+  "seed": 3509323178,
+  "model": "openai/gpt-4.1-mini",
+  "provider": "openai",
+  "reasoning": null,
+  "st": "1.19.0",
+  "prefix": "Identischer I22-Stand. Ein tatsächlicher Vormarsch mit zwei Extractorantworten und fehlgeschlagenem Weltabgleich.",
+  "savedMessages": 62,
+  "requests": 4,
+  "costUSD": "0.0076948",
+  "usage": {
+    "prompt_tokens": 57169,
+    "completion_tokens": 813,
+    "total_tokens": 57982
+  },
+  "sha256": {
+    "actions.jsonl.gz": "ca7130028506eccc1a5d24c56da70b16bfe1a3bd826adc742e1b3d39b279a056",
+    "chat.jsonl.gz": "bf43c05faab5df9709120319ae08ffd034bab072d1ed5bfd166efd5a9929c1ca",
+    "decisions.log.gz": "7aec60e1e726e2655f11bd755031e18c8d7903cb9f4f73ad0bd386da46efa110",
+    "events.json.gz": "24658f9cc1ad70fc9794618b054255ed0412873c6b83923ec10f77afe6499a87",
+    "interrupted-browser-chat.json.gz": "767d835b87d997538c8ee89c1ed1afed932c9c436fcb8a4acc638501c5d0603a",
+    "last-verified-world.json.gz": "3accf17127cf8e103abc0f642aa710085b669bb9d1b34a47971e575119ebef85",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "18665f8a1fda21297c754120b7e0dc9a411c3feecc4c58af3e1dbbe680e4e594",
+    "raw-185.gz": "dd5bd47463d3f09a5ed82b11f5b0e6bb7171f2e8baf0e9d084c697a49d103a62",
+    "raw-186.gz": "18fc8599ec8cc7bee271644765a1dc9024e502c6f7201afb0136e11de413c396",
+    "raw-187.gz": "afad8592a2c25e3654e7f15d27a217d08671d0f733cb643265e7d727ee864eea",
+    "raw-188.gz": "d23086ee41a778fb6d1a4dd85bd5961deffbbd5e7bfa8885aecd5f8c5d6833f9",
+    "requests.jsonl.gz": "f057bfea36199a68446f16df3bfa94246f82da88348fa79974c36c9a045e7e86",
+    "st.log.gz": "e0352a120c1d5f42247ce36a7bb9846479854c572cbb255279f766cc14894d53",
+    "visible.json.gz": "8703ead396a48d7202ba848f059944588691a1eeb5251e3a1511c2d77bc82e3b"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "build": "4.3.0-c.6.6.225",
+  "commit": "44dbfa7ae96b977814f700be851fa461fc5668e2",
+  "seed": 3509323178,
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "User14 M0–14; vier neue Züge auf .225",
+  "savedMessages": 23,
+  "requests": 13,
+  "costUSD": "0.008636532",
+  "usage": {
+    "prompt_tokens": 189062,
+    "completion_tokens": 4577,
+    "total_tokens": 193639
+  },
+  "sha256": {
+    "actions.jsonl.gz": "8b8aac9bde1d288c828ee5885270237f3f54e9d6ec7e09f4b1bfc0417b4e0697",
+    "chat.jsonl.gz": "b52058396ce6fdc669219a4d88f4bc1956c3870236b777fcf2c3930bb0335261",
+    "events.json.gz": "ef9f21794d11fdb89ecc2c6c870d9236370d033deca11a222874a0fd63434b91",
+    "last-verified-world.json.gz": "644edf870cb4b69334a0d46bfa0490700d565d4cc8eef1a60e0d4e3795084737",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "c10e0e6ed2ebd05ec8877ef113fdb12acde9f42a390a0da75cf0d319f76fc011",
+    "raw-72.gz": "e929b959d2f5d3a36b7f341928a0e6939dbfce6a309529aff88f6a5f1091d22c",
+    "raw-73.gz": "afab31ed628c4689433d25f797270afa0a2e681b8158e7bd779b120e36919a9f",
+    "raw-74.gz": "e9813edd5da4a91a0130d4df5c329dfda3dd7c35d35d63bd3746366a98f49821",
+    "raw-75.gz": "ddf2ea7a745f28a1dbe2037db370b01363dedcfc5f104996897238806c8c1b63",
+    "raw-76.gz": "c59c6c16a4ea35b5681ecb19a0b09160913c308d24c6a5f7d371de19221cf9c1",
+    "raw-77.gz": "82b20475cfb70652d2a31975f23d72a69feab34e00029ab955e6bc6ce8d7bc12",
+    "raw-78.gz": "2ea9c9c608677352eb91132b6b397a4e66bbc8de168d67e81102b0eb0a3bc179",
+    "raw-79.gz": "8f070dd615e7c12d6e241db9697cb48dbdcd08218c2ba908eeded6519479946e",
+    "raw-80.gz": "257bca4f04f56c507ad1c83d8aeebf5b24c30f140076d10aee00a49d6e665fe7",
+    "raw-81.gz": "079365b77356ec3336dd92c2e27b7f840532d44163662272da4a4f2a176ad0a6",
+    "raw-82.gz": "75e6e733a26b908cc1b46e0807bc8d16433352d22ec633c076d70009919f07c1",
+    "raw-83.gz": "79e8f0eec0f8321057e00836044e852ec565707a46a2067a2db3ce90edce397b",
+    "raw-84.gz": "3b0c9212c4d8e6453839990717bb221d230ac8f75ae5a689e9a8a34b6002826f",
+    "requests.jsonl.gz": "47510e24bda82f8d189be405f2f851f0ec116822a78645c0f7af6a475add1e17",
+    "st.log.gz": "b2df24f8ed991b2fe0efddb521142764e381dc4e3f6dce0240b623e4b10624df",
+    "turns.jsonl.gz": "9cf398768bd2a9c5d705ab423b933e06edc32660e1b0fd56bfb8f7aba1ddd4d5",
+    "visible.json.gz": "25714dda7a4a076877c4f2827d54ae58bcbde35a9f0a16dbc45335cc51fc3c49"
+  }
+}

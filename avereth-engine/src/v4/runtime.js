@@ -1,4 +1,4 @@
-import { chosenKnownRoute, knownRoutes } from './known_routes.js';
+import { chosenKnownRoute, explicitJourneyClause, knownRoutes } from './known_routes.js';
 import {SurrenderTransferError} from './commands.js';
 import {negotiationExtraction,reactionError,describeTerms} from './surrender.js';
 import {extractJsonObject} from './json.js';
@@ -394,7 +394,16 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     if(actionInput)ctx.actionInput=actionInput;
     const priorBinding = actionInput && previous?.plan?.raw?.length ? parsePlan(previous.plan.raw.at(-1),content.commandVocab,ctx,msg.mes) : null;
     const reuse = previous?.plan && previous.interp?.commands ? {travel_frame:previous.plan.travel_frame, hud_binding:previous.plan.hud_binding || priorBinding?.hud_binding, hud_normalized:previous.plan.hud_normalized || priorBinding?.hud_normalized, commands: previous.interp.commands, failed: false, error: null, ms: 0, repaired: !!previous.interp.repaired, raw: previous.plan.raw || [], calls: previous.plan.llm, recovery: previous.plan.recovery || null } : null;
-    const pl = reuse || await planMessage(llm, content, ctx, msg.mes, { recent, isCurrent, moveHints: (commands) => ineffectiveMoves(before, ctx, commands) });
+    const moveHints = commands => {
+        const hints = ineffectiveMoves(before, ctx, commands);
+        if (actionInput || ctx.fight || rulesetOf(before)<2 || chosenKnownRoute(before,msg.mes)) return hints;
+        const missing = !commands.length;
+        const localOnly = commands.length === 1 && commands[0].type === 'go' && commands[0].to?.scene;
+        if ((missing || localOnly) && explicitJourneyClause(msg.mes))
+            hints.push("Recheck the player's stated destination and the actual scene. Preserve their chosen journey toward an unvisited place or back along a route. A destination elsewhere is not a standpoint here. Preserve obstacles and leave arrival for the world report.");
+        return hints;
+    };
+    const pl = reuse || await planMessage(llm, content, ctx, msg.mes, { recent, isCurrent, moveHints });
     if (!reuse && !pl.failed && !ctx.fight && !actionInput && pl.commands?.length === 0 &&
         (!pl.travel_frame || pl.travel_frame === 'local') && rulesetOf(before) >= 2) {
         const go = localApproach(before,msg.mes,p >= 0 ? chat[p].mes : '');

@@ -33,3 +33,13 @@ export function chosenKnownRoute(s, input) {
         [e.name,...(e.descriptors || [])].some(label=>label && normText(label).replace(/^the /,'')===target));
     return people.length===1 && !s.scene.present.includes(people[0].id) && ids.includes(people[0].at) ? people[0].at : null;
 }
+
+// A bounded repair hint, never a GO or an arrival. Only flag a direct physical choice with
+// evidence of travel beyond the scene (destination in another locality or retracing a route).
+export function explicitJourneyClause(input) {
+    if (/^[^.!?]*\?/.test(input)) return false;
+    const clause = String(input).trim().split(/[.!?]/)[0];
+    if (!/^(?:I|we)\s/i.test(clause) || /[?]|\b(?:if|unless|might|would|could|should|not|never|later|tomorrow|plan|intend|want|hope)\b/i.test(clause) || /n['’]t\b/i.test(clause)) return false;
+    return /(?:^(?:I|we)\s+|\band\s+)(?:go|walk|travel|head|return|ride)\s+(?:back\s+)?(?:to|into)\s+[^.!?]+/i.test(clause) &&
+        /\b(?:town|city|village|settlement)['’]s\s|\b(?:the way (?:I|we) came|back along the route)\b/i.test(clause);
+}
